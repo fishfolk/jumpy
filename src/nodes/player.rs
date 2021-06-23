@@ -210,8 +210,6 @@ impl Fish {
     pub fn draw(&mut self, id: i32) {
         let resources = storage::get::<Resources>();
 
-        self.fish_sprite.update();
-
         draw_texture_ex(
             if id == 0 {
                 resources.whale
@@ -294,11 +292,10 @@ pub struct Player {
 
     deathmatch: bool,
     win: bool,
-    pub want_quit: bool,
     jump_grace_timer: f32,
     state_machine: StateMachine<RefMut<Player>>,
     leaderboard_written: bool,
-    controller_id: i32,
+    pub controller_id: i32,
 }
 
 impl Player {
@@ -314,7 +311,7 @@ impl Player {
             let objects = &resources.tiled_map.layers["logic"].objects;
             let macroquad_tiled::Object {
                 world_x, world_y, ..
-            } = objects[0];
+            } = objects[rand::gen_range(0, objects.len()) as usize];
             vec2(world_x, world_y)
         };
 
@@ -345,7 +342,6 @@ impl Player {
             fish: Fish::new(spawner_pos),
             deathmatch,
             win: false,
-            want_quit: false,
             jump_grace_timer: 0.,
             state_machine,
             leaderboard_written: false,
@@ -432,7 +428,7 @@ impl Player {
                 let objects = &resources.tiled_map.layers["logic"].objects;
                 let macroquad_tiled::Object {
                     world_x, world_y, ..
-                } = objects[0];
+                } = objects[rand::gen_range(0, objects.len()) as usize];
 
                 vec2(world_x, world_y)
             };
@@ -586,9 +582,6 @@ impl Player {
                 } else {
                     ui.label(vec2(190., 30.), "You lost!");
                 }
-                if ui.button(vec2(130., 60.), "Return to lobby") {
-                    node.want_quit = true;
-                }
             },
         );
         ui::root_ui().pop_skin();
@@ -678,6 +671,9 @@ impl scene::Node for Player {
     fn update(mut node: RefMut<Self>) {
         let game_started = true;
 
+        node.fish.fish_sprite.update();
+
+        #[cfg(target_os = "macos")]
         if game_started {
             let mut controller = storage::get_mut::<gamepad_rs::ControllerContext>();
 
@@ -696,20 +692,21 @@ impl scene::Node for Player {
             }
         }
 
-        // win condition
-        if node.deathmatch == false && game_started {
-            // let others = scene::find_nodes_by_type::<crate::nodes::RemotePlayer>();
-            // let alive_enemies = others.filter(|player| player.dead == false).count();
+        #[cfg(not(target_os = "macos"))]
+        if game_started && node.controller_id == 0 {
+            node.fish.input.jump = is_key_pressed(KeyCode::Space) || is_key_pressed(KeyCode::W);
+            node.fish.input.fire =
+                is_key_pressed(KeyCode::LeftControl) || is_key_pressed(KeyCode::F);
+            node.fish.input.left = is_key_down(KeyCode::A);
+            node.fish.input.right = is_key_down(KeyCode::D);
+        }
 
-            // if node.fish.dead {
-            //     node.win = false;
-            //     node.state_machine.set_state(Self::ST_AFTERMATCH);
-            // }
-
-            // if alive_enemies == 0 {
-            //     node.win = true;
-            //     node.state_machine.set_state(Self::ST_AFTERMATCH);
-            // }
+        #[cfg(not(target_os = "macos"))]
+        if game_started && node.controller_id == 1 {
+            node.fish.input.jump = is_key_pressed(KeyCode::Up);
+            node.fish.input.fire = is_key_pressed(KeyCode::L);
+            node.fish.input.left = is_key_down(KeyCode::Left);
+            node.fish.input.right = is_key_down(KeyCode::Right);
         }
 
         {

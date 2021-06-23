@@ -16,7 +16,7 @@ pub struct Camera {
 impl Camera {
     const BUFFER_CAPACITY: usize = 20;
 
-    pub fn new(bounds: Rect, viewport_height: f32, player: Handle<Player>) -> Camera {
+    pub fn new(bounds: Rect, viewport_height: f32, player: Handle<Player>, id: i32) -> Camera {
         Camera {
             player,
             bounds,
@@ -54,7 +54,7 @@ impl scene::Node for Camera {
             );
             let aspect = screen_width() / screen_height();
 
-            let viewport_width = node.viewport_height * aspect;
+            let viewport_width = node.viewport_height * aspect / 2.;
 
             if pos.x < viewport_width / 2. {
                 pos.x = viewport_width / 2.;
@@ -76,9 +76,27 @@ impl scene::Node for Camera {
                     -1.0 / node.viewport_height as f32 * 2.,
                 ),
                 target: vec2(pos.x, pos.y),
+                viewport: if player.controller_id == 0 {
+                    Some((0, 0, screen_width() as i32 / 2, screen_height() as i32))
+                } else {
+                    Some((
+                        screen_width() as i32 / 2,
+                        0,
+                        screen_width() as i32 / 2,
+                        screen_height() as i32,
+                    ))
+                },
                 ..Default::default()
+            };
+
+            if player.controller_id == 0 {
+                scene::set_camera_1(*node.macroquad_camera());
+            } else {
+                scene::set_camera_2(*node.macroquad_camera());
             }
+            
+
         }
-        scene::set_camera(*node.macroquad_camera());
+
     }
 }

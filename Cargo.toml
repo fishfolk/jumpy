@@ -10,4 +10,9 @@ macroquad = { version = "0.3" }
 macroquad-platformer = "0.1"
 macroquad-tiled = "0.1"
 macroquad-particles = {version = "0.1", features = ["nanoserde"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
 gamepad-rs = { git = "https://github.com/unrust/gamepad-rs.git" }
+
+[patch.crates-io]
+macroquad = { git = "https://github.com/not-fl3/macroquad.git", rev = "6320673" }

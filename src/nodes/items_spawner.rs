@@ -11,30 +11,25 @@ use crate::{
     Resources,
 };
 
-pub struct GlobalEvents {
+pub struct ItemsSpawner {
     last_spawn_time: f64,
-    _player: Handle<Player>,
-
-    uid: usize,
 }
 
-impl GlobalEvents {
+impl ItemsSpawner {
     const SPAWN_INTERVAL: f32 = 2.0;
 
-    pub fn new(player: Handle<Player>, player2: Handle<Player>) -> GlobalEvents {
-        GlobalEvents {
-            _player: player,
+    pub fn new() -> ItemsSpawner {
+        ItemsSpawner {
             last_spawn_time: 0.0,
-            uid: 0,
         }
     }
 }
 
-impl scene::Node for GlobalEvents {
+impl scene::Node for ItemsSpawner {
     fn update(mut node: RefMut<Self>) {
-        let spawned_items_len = scene::find_nodes_by_type::<Pickup>().count();
-        let spawned_items = scene::find_nodes_by_type::<Pickup>();
-        if get_time() - node.last_spawn_time >= Self::SPAWN_INTERVAL as _ && spawned_items_len < 3 {
+        if get_time() - node.last_spawn_time >= Self::SPAWN_INTERVAL as _
+            && scene::find_nodes_by_type::<Pickup>().count() < 3
+        {
             let resources = storage::get::<Resources>();
 
             let tilewidth = resources.tiled_map.raw_tiled_map.tilewidth as f32;
@@ -72,8 +67,6 @@ impl scene::Node for GlobalEvents {
             };
 
             scene::add_node(Pickup::new(pos, item_type));
-
-            node.uid += 1;
         }
     }
 }

@@ -162,8 +162,8 @@ impl Resources {
     }
 }
 
-async fn network_game(game_type: GameType) {
-    use nodes::{Bullets, Camera, Decoration, Fxses, GlobalEvents, LevelBackground, Player};
+async fn game(game_type: GameType) {
+    use nodes::{Bullets, Camera, Decoration, Fxses, ItemsSpawner, LevelBackground, Player};
 
     let resources_loading = start_coroutine(async move {
         let resources = Resources::new().await.unwrap();
@@ -216,39 +216,31 @@ async fn network_game(game_type: GameType) {
     let player2 = scene::add_node(Player::new(game_type == GameType::Deathmatch, 1));
 
     scene::add_node(Bullets::new(player, player2));
-    scene::add_node(GlobalEvents::new(player, player2));
+    scene::add_node(ItemsSpawner::new());
 
-    let camera = scene::add_node(Camera::new(
+    scene::add_node(Camera::new(
         Rect::new(0.0, 0.0, w as f32, h as f32),
-        400.0,
+        500.0,
         player,
+        0,
     ));
-    scene::get_node(level_background).camera = camera;
-    scene::add_node(Fxses { camera });
+    scene::add_node(Camera::new(
+        Rect::new(0.0, 0.0, w as f32, h as f32),
+        500.0,
+        player2,
+        1,
+    ));
+    scene::add_node(Fxses {});
 
     loop {
         clear_background(BLACK);
 
+        #[cfg(target_os = "macos")]
         {
             let mut controller = storage::get_mut::<gamepad_rs::ControllerContext>();
             for i in 0..2 {
                 controller.update(i);
             }
-        }
-
-        {
-            let resources = storage::get_mut::<gui::GuiResources>();
-
-            ui::root_ui().push_skin(&resources.login_skin);
-
-            if ui::root_ui().button(None, "back")
-                || scene::find_node_by_type::<Player>().unwrap().want_quit
-            {
-                ui::root_ui().pop_skin();
-                stop_sound(battle_music);
-                return;
-            }
-            ui::root_ui().pop_skin();
         }
 
         // profiler::profiler(profiler::ProfilerParams {
@@ -259,21 +251,29 @@ async fn network_game(game_type: GameType) {
     }
 }
 
-#[macroquad::main("Fishgame")]
-async fn main() {
-    let whale_theme = load_sound("assets/music/whale theme.ogg").await.unwrap();
-    let fish_bowl = load_sound("assets/music/fish bowl.ogg").await.unwrap();
+fn window_conf() -> Conf {
+    Conf {
+        window_title: "FISH".to_owned(),
+        high_dpi: false,
+        window_width: 1600,
+        window_height: 768,
+        ..Default::default()
+    }
+}
 
-    let controller = gamepad_rs::ControllerContext::new().unwrap();
-    storage::store(controller);
+#[macroquad::main(window_conf)]
+async fn main() {
+    #[cfg(target_os = "macos")]
+    {
+        let controller = gamepad_rs::ControllerContext::new().unwrap();
+        storage::store(controller);
+    }
 
     let gui_resources = gui::GuiResources::new();
     storage::store(gui_resources);
 
     loop {
-        stop_sound(whale_theme);
-
-        network_game(GameType::Deathmatch).await;
+        game(GameType::Deathmatch).await;
 
         scene::clear();
     }

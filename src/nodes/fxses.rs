@@ -6,11 +6,9 @@ use macroquad::{
     telemetry,
 };
 
-use crate::{nodes::Camera, Resources};
+use crate::Resources;
 
-pub struct Fxses {
-    pub camera: Handle<Camera>,
-}
+pub struct Fxses {}
 
 impl scene::Node for Fxses {
     fn draw(_node: RefMut<Self>) {

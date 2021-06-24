@@ -4,6 +4,9 @@ version = "0.1.0"
 authors = ["Fedor Logachev <not.fl3@gmail.com>"]
 edition = "2018"
 
+[profile.dev.package."*"]
+opt-level = 3
+
 [dependencies]
 nanoserde = "0.1"
 macroquad = { version = "0.3" }

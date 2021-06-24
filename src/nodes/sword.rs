@@ -107,7 +107,7 @@ impl scene::Node for Sword {
             let mut resources = storage::get_mut::<Resources>();
             node.pos = resources.collision_world.actor_pos(collider);
 
-            if (node.origin_pos - node.pos).length() > 100. {
+            if (node.origin_pos - node.pos).length() > 70. {
                 node.deadly_dangerous = true;
             }
             let on_ground = resources

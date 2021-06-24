@@ -511,6 +511,13 @@ impl Player {
                     sword.throw();
                 }
                 fish.sword = None;
+            } else {
+                for sword in scene::find_nodes_by_type::<Sword>() {
+                    if sword.thrown && sword.pos.distance(fish.pos) < 80. {
+                        sword.delete();
+                        fish.pick_weapon(ItemType::Sword);
+                    }
+                }
             }
         }
 

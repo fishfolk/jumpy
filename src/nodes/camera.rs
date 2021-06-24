@@ -28,10 +28,6 @@ impl Camera {
 }
 
 impl Camera {
-    pub fn pos(&self) -> Vec2 {
-        self.macroquad_camera.target
-    }
-
     pub fn macroquad_camera(&self) -> &Camera2D {
         &self.macroquad_camera
     }

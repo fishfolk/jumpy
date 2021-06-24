@@ -9,6 +9,7 @@ use macroquad::{
     },
     prelude::*,
 };
+use macroquad_platformer::Actor;
 
 use crate::{nodes::Player, Resources};
 
@@ -16,10 +17,17 @@ pub struct Sword {
     pub sword_sprite: AnimatedSprite,
     pub facing: bool,
     pub pos: Vec2,
+    pub thrown: bool,
+    pub angle: f32,
+
+    speed: Vec2,
+    collider: Option<Actor>,
+    origin_pos: Vec2,
+    deadly_dangerous: bool,
 }
 
 impl scene::Node for Sword {
-    fn draw(mut sword: RefMut<Self>) {
+    fn draw(sword: RefMut<Self>) {
         let resources = storage::get_mut::<Resources>();
 
         //sword.dead == false && matches!(sword.weapon, Some(Weapon::Sword)) {
@@ -45,17 +53,24 @@ impl scene::Node for Sword {
         } else {
             // just casually holding a sword
 
-            let sword_mount_pos = if sword.facing {
-                vec2(5., 10.)
+            let sword_mount_pos = if sword.thrown == false {
+                if sword.facing {
+                    vec2(5., 10.)
+                } else {
+                    vec2(-45., 10.)
+                }
             } else {
-                vec2(-45., 10.)
+                if sword.facing {
+                    vec2(-25., 0.)
+                } else {
+                    vec2(5., 0.)
+                }
             };
 
             let rotation = if sword.facing {
-                // 45 + a little bit
-                -std::f32::consts::PI / 4. - 0.3
+                -sword.angle
             } else {
-                std::f32::consts::PI / 4. + 0.3
+                sword.angle
             };
             draw_texture_ex(
                 resources.fish_sword,
@@ -70,10 +85,80 @@ impl scene::Node for Sword {
                 },
             );
         }
+
+        if let Some(_collider) = sword.collider {
+            //let pos = resources.collision_world.actor_pos(collider);
+
+            // let sword_hit_box = Rect::new(pos.x, pos.y, 40., 30.);
+            // draw_rectangle(
+            //     sword_hit_box.x,
+            //     sword_hit_box.y,
+            //     sword_hit_box.w,
+            //     sword_hit_box.h,
+            //     RED,
+            // );
+        }
     }
 
     fn update(mut node: RefMut<Self>) {
         node.sword_sprite.update();
+        if node.thrown {
+            let collider = node.collider.unwrap();
+            let mut resources = storage::get_mut::<Resources>();
+            node.pos = resources.collision_world.actor_pos(collider);
+
+            if (node.origin_pos - node.pos).length() > 100. {
+                node.deadly_dangerous = true;
+            }
+            let on_ground = resources
+                .collision_world
+                .collide_check(collider, node.pos + vec2(0., 5.));
+
+            if on_ground == false {
+                node.angle += node.speed.x.abs() * 0.00015 + node.speed.y.abs() * 0.00005;
+
+                node.speed.y += crate::consts::GRAVITY * get_frame_time();
+            } else {
+                node.deadly_dangerous = false;
+
+                node.angle %= std::f32::consts::PI * 2.;
+                let goal = if node.angle <= std::f32::consts::PI {
+                    std::f32::consts::PI
+                } else {
+                    std::f32::consts::PI * 2.
+                };
+
+                let rest = goal - node.angle;
+                if rest.abs() >= 0.1 {
+                    node.angle += (rest * 0.1).max(0.1);
+                }
+            }
+
+            node.speed.x *= 0.98;
+            if node.speed.x.abs() <= 1. {
+                node.speed.x = 0.0;
+            }
+            resources
+                .collision_world
+                .move_h(collider, node.speed.x * get_frame_time());
+            if !resources
+                .collision_world
+                .move_v(collider, node.speed.y * get_frame_time())
+            {
+                node.speed.y = 0.0;
+            }
+
+            if node.deadly_dangerous {
+                let others = scene::find_nodes_by_type::<crate::nodes::Player>();
+                let sword_hit_box = Rect::new(node.pos.x - 10., node.pos.y, 60., 30.);
+
+                for mut other in others {
+                    if Rect::new(other.pos().x, other.pos().y, 20., 64.).overlaps(&sword_hit_box) {
+                        other.kill(!node.facing);
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -103,8 +188,40 @@ impl Sword {
             sword_sprite,
             pos,
             facing,
+            thrown: false,
+            angle: std::f32::consts::PI / 4. + 0.3,
+            collider: None,
+            origin_pos: pos,
+            speed: vec2(0., 0.),
+            deadly_dangerous: false,
         }
     }
+
+    pub fn throw(&mut self) {
+        self.thrown = true;
+
+        self.speed = if self.facing {
+            vec2(1600., -50.)
+        } else {
+            vec2(-1600., -50.)
+        };
+
+        let mut resources = storage::get_mut::<Resources>();
+
+        let sword_mount_pos = if self.facing {
+            vec2(30., 10.)
+        } else {
+            vec2(-50., 10.)
+        };
+
+        self.collider = Some(resources.collision_world.add_actor(
+            self.pos + sword_mount_pos,
+            40,
+            30,
+        ));
+        self.origin_pos = self.pos + sword_mount_pos / 2.;
+    }
+
     pub fn shot(node: Handle<Sword>, player: Handle<Player>) -> Coroutine {
         let coroutine = async move {
             {

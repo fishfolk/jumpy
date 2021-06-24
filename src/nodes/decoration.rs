@@ -45,9 +45,11 @@ impl Decoration {
 }
 
 impl scene::Node for Decoration {
-    fn draw(mut node: RefMut<Self>) {
+    fn update(mut node: RefMut<Self>) {
         node.sprite.update();
+    }
 
+    fn draw(node: RefMut<Self>) {
         let resources = storage::get_mut::<Resources>();
 
         draw_texture_ex(

@@ -18,5 +18,5 @@ macroquad-particles = {version = "0.1", features = ["nanoserde"] }
 gamepad-rs = { git = "https://github.com/unrust/gamepad-rs.git" }
 
 [patch.crates-io]
-#macroquad = { git = "https://github.com/not-fl3/macroquad.git", rev = "6320673" }
-macroquad = { path = "../macroquad" }
+macroquad = { git = "https://github.com/not-fl3/macroquad.git", rev = "fdbeba9" }
+#macroquad = { path = "../macroquad" }

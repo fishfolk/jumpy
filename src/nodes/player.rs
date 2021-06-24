@@ -21,6 +21,7 @@ use crate::{
 #[derive(Default, Debug, Clone)]
 pub struct Input {
     jump: bool,
+    throw: bool,
     fire: bool,
     left: bool,
     right: bool,
@@ -128,26 +129,6 @@ impl Fish {
             sword: None,
             input: Default::default(),
         }
-    }
-
-    pub fn facing(&self) -> bool {
-        self.facing
-    }
-
-    pub fn pos(&self) -> Vec2 {
-        self.pos
-    }
-
-    pub fn set_pos(&mut self, pos: Vec2) {
-        self.pos = pos;
-    }
-
-    pub fn set_animation(&mut self, animation: usize) {
-        self.fish_sprite.set_animation(animation);
-    }
-
-    pub fn set_facing(&mut self, facing: bool) {
-        self.facing = facing;
     }
 
     pub fn disarm(&mut self) {
@@ -262,10 +243,8 @@ pub struct Player {
     pub fish: Fish,
 
     deathmatch: bool,
-    win: bool,
     jump_grace_timer: f32,
     pub state_machine: StateMachine<RefMut<Player>>,
-    leaderboard_written: bool,
     pub controller_id: i32,
 }
 
@@ -312,20 +291,14 @@ impl Player {
         Player {
             fish: Fish::new(spawner_pos),
             deathmatch,
-            win: false,
             jump_grace_timer: 0.,
             state_machine,
-            leaderboard_written: false,
             controller_id,
         }
     }
 
     pub fn pos(&self) -> Vec2 {
         self.fish.pos
-    }
-
-    pub fn facing(&self) -> bool {
-        self.fish.facing
     }
 
     pub fn pick_weapon(&mut self, item_type: ItemType) {
@@ -341,14 +314,6 @@ impl Player {
     pub fn kill(&mut self, direction: bool) {
         self.fish.facing = direction;
         self.state_machine.set_state(Self::ST_DEATH);
-    }
-
-    pub fn weapon(&self) -> Option<ItemType> {
-        match self.fish.weapon {
-            None => None,
-            Some(Weapon::Gun { .. }) => Some(ItemType::Gun),
-            Some(Weapon::Sword) => Some(ItemType::Sword),
-        }
     }
 
     fn death_coroutine(node: &mut RefMut<Player>) -> Coroutine {
@@ -506,6 +471,16 @@ impl Player {
         if is_key_pressed(KeyCode::U) {
             node.kill(false);
         }
+        if is_key_pressed(KeyCode::I) {
+            for sword in scene::find_nodes_by_type::<Sword>() {
+                if sword.thrown {
+                    sword.delete();
+                }
+            }
+        }
+        if is_key_pressed(KeyCode::P) {
+            node.pick_weapon(ItemType::Sword);
+        }
 
         let node = &mut **node;
         let fish = &mut node.fish;
@@ -527,6 +502,15 @@ impl Player {
             if node.jump_grace_timer > 0. {
                 node.jump_grace_timer = 0.0;
                 fish.jump();
+            }
+        }
+
+        if fish.input.throw {
+            if let Some(sword) = fish.sword {
+                if let Some(mut sword) = scene::try_get_node(sword) {
+                    sword.throw();
+                }
+                fish.sword = None;
             }
         }
 
@@ -606,12 +590,15 @@ impl scene::Node for Player {
                 node.fish.input.right = x > 0.5;
                 node.fish.input.jump = state.digital_state[2];
                 node.fish.input.fire = state.digital_state[1];
+                node.fish.input.throw = state.digital_state[3];
             }
         }
 
         #[cfg(not(target_os = "macos"))]
         if game_started && node.controller_id == 0 {
             node.fish.input.jump = is_key_pressed(KeyCode::Space) || is_key_pressed(KeyCode::W);
+            node.fish.input.throw = is_key_pressed(KeyCode::Z);
+
             node.fish.input.fire =
                 is_key_pressed(KeyCode::LeftControl) || is_key_pressed(KeyCode::F);
             node.fish.input.left = is_key_down(KeyCode::A);
@@ -621,6 +608,7 @@ impl scene::Node for Player {
         #[cfg(not(target_os = "macos"))]
         if game_started && node.controller_id == 1 {
             node.fish.input.jump = is_key_pressed(KeyCode::Up);
+            node.fish.input.throw = is_key_pressed(KeyCode::K);
             node.fish.input.fire = is_key_pressed(KeyCode::L);
             node.fish.input.left = is_key_down(KeyCode::Left);
             node.fish.input.right = is_key_down(KeyCode::Right);

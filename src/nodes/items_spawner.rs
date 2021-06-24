@@ -1,13 +1,13 @@
 use macroquad::{
     experimental::{
         collections::storage,
-        scene::{self, Handle, RefMut},
+        scene::{self, RefMut},
     },
     prelude::*,
 };
 
 use crate::{
-    nodes::{pickup::ItemType, Pickup, Player},
+    nodes::{pickup::ItemType, Pickup},
     Resources,
 };
 

@@ -1,7 +1,7 @@
 use macroquad::{
     experimental::{
         collections::storage,
-        scene::{self, Handle, RefMut},
+        scene::{self, RefMut},
     },
     telemetry,
 };

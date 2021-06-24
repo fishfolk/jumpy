@@ -4,21 +4,18 @@ use macroquad_particles as particles;
 use macroquad_tiled as tiled;
 
 use macroquad::{
-    audio::{load_sound, play_sound, stop_sound, PlaySoundParams, Sound},
+    audio::{load_sound, play_sound, PlaySoundParams, Sound},
     experimental::{
         collections::storage,
         coroutines::start_coroutine,
         scene::{self},
     },
-    ui,
 };
 
 use macroquad_platformer::World as CollisionWorld;
 use particles::EmittersCache;
 
 mod nodes;
-
-mod gui;
 
 pub mod consts {
     pub const GRAVITY: f32 = 900.0;
@@ -54,6 +51,7 @@ struct Resources {
     whale_red: Texture2D,
     gun: Texture2D,
     sword: Texture2D,
+    fish_sword: Texture2D,
     background_01: Texture2D,
     background_02: Texture2D,
     background_03: Texture2D,
@@ -94,6 +92,9 @@ impl Resources {
 
         let sword = load_texture("assets/Whale/Sword(65x93).png").await?;
         sword.set_filter(FilterMode::Nearest);
+
+        let fish_sword = load_texture("assets/Whale/FishSword.png").await?;
+        fish_sword.set_filter(FilterMode::Nearest);
 
         let background_01 = load_texture("assets/Background/01.png").await?;
         background_01.set_filter(FilterMode::Nearest);
@@ -149,6 +150,7 @@ impl Resources {
             whale_red,
             gun,
             sword,
+            fish_sword,
             background_01,
             background_02,
             background_03,
@@ -202,7 +204,7 @@ async fn game(game_type: GameType) {
     let w = resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width;
     let h = resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height;
 
-    let level_background = scene::add_node(LevelBackground::new());
+    let _level_background = scene::add_node(LevelBackground::new());
 
     for object in &resources.tiled_map.layers["decorations"].objects {
         scene::add_node(Decoration::new(
@@ -215,20 +217,18 @@ async fn game(game_type: GameType) {
     let player = scene::add_node(Player::new(game_type == GameType::Deathmatch, 0));
     let player2 = scene::add_node(Player::new(game_type == GameType::Deathmatch, 1));
 
-    scene::add_node(Bullets::new(player, player2));
+    scene::add_node(Bullets::new());
     scene::add_node(ItemsSpawner::new());
 
     scene::add_node(Camera::new(
         Rect::new(0.0, 0.0, w as f32, h as f32),
         500.0,
         player,
-        0,
     ));
     scene::add_node(Camera::new(
         Rect::new(0.0, 0.0, w as f32, h as f32),
         500.0,
         player2,
-        1,
     ));
     scene::add_node(Fxses {});
 
@@ -268,9 +268,6 @@ async fn main() {
         let controller = gamepad_rs::ControllerContext::new().unwrap();
         storage::store(controller);
     }
-
-    let gui_resources = gui::GuiResources::new();
-    storage::store(gui_resources);
 
     loop {
         game(GameType::Deathmatch).await;

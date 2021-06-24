@@ -16,7 +16,7 @@ pub struct Camera {
 impl Camera {
     const BUFFER_CAPACITY: usize = 20;
 
-    pub fn new(bounds: Rect, viewport_height: f32, player: Handle<Player>, id: i32) -> Camera {
+    pub fn new(bounds: Rect, viewport_height: f32, player: Handle<Player>) -> Camera {
         Camera {
             player,
             bounds,

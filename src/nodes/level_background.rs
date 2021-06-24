@@ -1,12 +1,12 @@
 use macroquad::{
     experimental::{
         collections::storage,
-        scene::{self, Handle, RefMut},
+        scene::{self, RefMut},
     },
     prelude::*,
 };
 
-use crate::{nodes::Camera, Resources};
+use crate::Resources;
 
 pub struct LevelBackground {}
 
@@ -40,9 +40,9 @@ fn parallax(texture: Texture2D, depth: f32, camera_pos: Vec2) -> Rect {
 }
 
 impl scene::Node for LevelBackground {
-    fn draw(node: RefMut<Self>) {
+    fn draw(_node: RefMut<Self>) {
         let resources = storage::get_mut::<Resources>();
-        let pos = vec2(0., 0.); //scene::get_node(node.camera).pos();
+        let pos = scene::camera_pos();
 
         draw_texture_ex(
             resources.background_04,

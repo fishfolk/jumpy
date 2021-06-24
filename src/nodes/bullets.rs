@@ -3,7 +3,7 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::{consts, nodes::Player, Resources};
+use crate::{consts, Resources};
 
 struct Bullet {
     pos: Vec2,
@@ -13,16 +13,12 @@ struct Bullet {
 }
 
 pub struct Bullets {
-    player: scene::Handle<Player>,
-    player2: scene::Handle<Player>,
     bullets: Vec<Bullet>,
 }
 
 impl Bullets {
-    pub fn new(player: scene::Handle<Player>, player2: scene::Handle<Player>) -> Bullets {
+    pub fn new() -> Bullets {
         Bullets {
-            player,
-            player2,
             bullets: Vec::with_capacity(200),
         }
     }

@@ -5,17 +5,16 @@ use macroquad::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
         coroutines::{start_coroutine, wait_seconds, Coroutine},
-        scene::{self, RefMut},
+        scene::{self, Handle, RefMut},
         state_machine::{State, StateMachine},
     },
     prelude::*,
-    ui::{self, hash},
 };
 use macroquad_platformer::Actor;
 
 use crate::{
     consts,
-    nodes::{pickup::ItemType, Pickup},
+    nodes::{pickup::ItemType, Pickup, Sword},
     Resources,
 };
 
@@ -35,16 +34,16 @@ pub enum Weapon {
 pub struct Fish {
     fish_sprite: AnimatedSprite,
     gun_sprite: AnimatedSprite,
-    pub sword_sprite: AnimatedSprite,
     gun_fx_sprite: AnimatedSprite,
     gun_fx: bool,
     pub collider: Actor,
-    pos: Vec2,
-    speed: Vec2,
-    on_ground: bool,
-    dead: bool,
-    facing: bool,
+    pub pos: Vec2,
+    pub speed: Vec2,
+    pub on_ground: bool,
+    pub dead: bool,
+    pub facing: bool,
     pub weapon: Option<Weapon>,
+    pub sword: Option<Handle<Sword>>,
     input: Input,
 }
 
@@ -102,25 +101,6 @@ impl Fish {
             ],
             false,
         );
-        let sword_sprite = AnimatedSprite::new(
-            65,
-            93,
-            &[
-                Animation {
-                    name: "idle".to_string(),
-                    row: 0,
-                    frames: 1,
-                    fps: 1,
-                },
-                Animation {
-                    name: "shoot".to_string(),
-                    row: 1,
-                    frames: 4,
-                    fps: 15,
-                },
-            ],
-            false,
-        );
         let gun_fx_sprite = AnimatedSprite::new(
             92,
             32,
@@ -138,7 +118,6 @@ impl Fish {
             gun_fx_sprite,
             gun_fx: false,
             gun_sprite,
-            sword_sprite,
             collider: resources.collision_world.add_actor(spawner_pos, 30, 54),
             on_ground: false,
             dead: false,
@@ -146,6 +125,7 @@ impl Fish {
             speed: vec2(0., 0.),
             facing: true,
             weapon: None,
+            sword: None,
             input: Default::default(),
         }
     }
@@ -172,17 +152,29 @@ impl Fish {
 
     pub fn disarm(&mut self) {
         self.weapon = None;
+
+        if let Some(sword) = self.sword {
+            if let Some(sword) = scene::try_get_node(sword) {
+                sword.delete();
+            }
+            self.sword = None;
+        }
     }
 
     pub fn pick_weapon(&mut self, item_type: ItemType) {
         let resources = storage::get_mut::<Resources>();
         play_sound_once(resources.pickup_sound);
 
+        self.disarm();
+
         match item_type {
             ItemType::Gun => {
                 self.weapon = Some(Weapon::Gun { bullets: 3 });
             }
-            ItemType::Sword => self.weapon = Some(Weapon::Sword),
+            ItemType::Sword => {
+                self.sword = Some(scene::add_node(Sword::new(self.facing, self.pos)));
+                self.weapon = Some(Weapon::Sword);
+            }
         }
     }
 
@@ -263,27 +255,6 @@ impl Fish {
                 );
             }
         }
-
-        if self.dead == false && matches!(self.weapon, Some(Weapon::Sword)) {
-            let sword_mount_pos = if self.facing {
-                vec2(10., -35.)
-            } else {
-                vec2(-50., -35.)
-            };
-            self.sword_sprite.update();
-            draw_texture_ex(
-                resources.sword,
-                self.pos.x + sword_mount_pos.x,
-                self.pos.y + sword_mount_pos.y,
-                color::WHITE,
-                DrawTextureParams {
-                    source: Some(self.sword_sprite.frame().source_rect),
-                    dest_size: Some(self.sword_sprite.frame().dest_size),
-                    flip_x: !self.facing,
-                    ..Default::default()
-                },
-            );
-        }
     }
 }
 
@@ -293,17 +264,17 @@ pub struct Player {
     deathmatch: bool,
     win: bool,
     jump_grace_timer: f32,
-    state_machine: StateMachine<RefMut<Player>>,
+    pub state_machine: StateMachine<RefMut<Player>>,
     leaderboard_written: bool,
     pub controller_id: i32,
 }
 
 impl Player {
-    const ST_NORMAL: usize = 0;
-    const ST_DEATH: usize = 1;
-    const ST_SHOOT: usize = 2;
-    const ST_SWORD_SHOOT: usize = 3;
-    const ST_AFTERMATCH: usize = 4;
+    pub const ST_NORMAL: usize = 0;
+    pub const ST_DEATH: usize = 1;
+    pub const ST_SHOOT: usize = 2;
+    pub const ST_SWORD_SHOOT: usize = 3;
+    pub const ST_AFTERMATCH: usize = 4;
 
     pub fn new(deathmatch: bool, controller_id: i32) -> Player {
         let spawner_pos = {
@@ -358,9 +329,7 @@ impl Player {
     }
 
     pub fn pick_weapon(&mut self, item_type: ItemType) {
-        if self.state_machine.state() != Self::ST_SHOOT
-            && self.state_machine.state() != Self::ST_SWORD_SHOOT
-        {
+        if self.state_machine.state() == Self::ST_NORMAL {
             self.fish.pick_weapon(item_type);
         }
     }
@@ -508,52 +477,17 @@ impl Player {
     }
 
     fn sword_shoot_coroutine(node: &mut RefMut<Player>) -> Coroutine {
-        let handle = node.handle();
-        let coroutine = async move {
-            {
-                let resources = storage::get_mut::<Resources>();
-                play_sound_once(resources.sword_sound);
+        if let Some(sword) = node.fish.sword {
+            Sword::shot(sword, node.handle())
+        } else {
+            let handle = node.handle();
 
-                let node = &mut *scene::get_node(handle);
-                node.fish.sword_sprite.set_animation(1);
-            }
-
-            {
-                let node = &mut *scene::get_node(handle);
-                let others = scene::find_nodes_by_type::<crate::nodes::Player>();
-                let sword_hit_box = if node.fish.facing {
-                    Rect::new(node.pos().x + 35., node.pos().y - 5., 40., 60.)
-                } else {
-                    Rect::new(node.pos().x - 50., node.pos().y - 5., 40., 60.)
-                };
-
-                for mut player in others {
-                    if Rect::new(player.pos().x, player.pos().y, 20., 64.).overlaps(&sword_hit_box)
-                    {
-                        player.kill(!node.fish.facing);
-                    }
-                }
-            }
-
-            for i in 0u32..3 {
-                {
-                    let node = &mut *scene::get_node(handle);
-                    node.fish.sword_sprite.set_frame(i);
-                }
-
-                wait_seconds(0.08).await;
-            }
-
-            {
-                let mut node = scene::get_node(handle);
-                node.fish.sword_sprite.set_animation(0);
-            }
-
-            let node = &mut *scene::get_node(handle);
-            node.state_machine.set_state(Self::ST_NORMAL);
-        };
-
-        start_coroutine(coroutine)
+            start_coroutine(async move {
+                println!("thats weird");
+                let player = &mut *scene::get_node(handle);
+                player.state_machine.set_state(Player::ST_NORMAL);
+            })
+        }
     }
 
     fn update_sword_shoot(node: &mut RefMut<Player>, _dt: f32) {
@@ -561,30 +495,7 @@ impl Player {
     }
 
     fn update_aftermatch(node: &mut RefMut<Player>, _dt: f32) {
-        let resources = storage::get::<crate::gui::GuiResources>();
-
         node.fish.speed.x = 0.0;
-
-        ui::root_ui().push_skin(&resources.login_skin);
-        ui::root_ui().window(
-            hash!(),
-            Vec2::new(
-                screen_width() / 2. - 500. / 2.,
-                screen_height() / 2. - 200. / 2.,
-            ),
-            Vec2::new(500., 200.),
-            move |ui| {
-                if node.win {
-                    ui.label(vec2(190., 30.), "You win!");
-                    if !node.leaderboard_written {
-                        node.leaderboard_written = true;
-                    }
-                } else {
-                    ui.label(vec2(190., 30.), "You lost!");
-                }
-            },
-        );
-        ui::root_ui().pop_skin();
     }
 
     fn update_normal(node: &mut RefMut<Player>, _dt: f32) {
@@ -672,6 +583,12 @@ impl scene::Node for Player {
         let game_started = true;
 
         node.fish.fish_sprite.update();
+
+        if let Some(sword) = node.fish.sword {
+            let mut sword = scene::get_node(sword);
+            sword.pos = node.fish.pos;
+            sword.facing = node.fish.facing;
+        }
 
         #[cfg(target_os = "macos")]
         if game_started {

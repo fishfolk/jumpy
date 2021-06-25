@@ -35,6 +35,7 @@ pub struct Input {
     was_fire: bool,
     left: bool,
     right: bool,
+    down: bool,
 }
 
 pub struct Fish {
@@ -387,12 +388,12 @@ impl Player {
         if fish.input.throw {
             if let Some(sword) = fish.sword {
                 if let Some(mut sword) = scene::try_get_node(sword) {
-                    sword.throw(true);
+                    sword.throw(fish.input.down == false);
                 }
                 fish.sword = None;
             } else if let Some(muscet) = fish.muscet {
                 if let Some(mut muscet) = scene::try_get_node(muscet) {
-                    muscet.throw(true);
+                    muscet.throw(fish.input.down == false);
                 }
                 fish.muscet = None;
             } else {
@@ -508,9 +509,11 @@ impl scene::Node for Player {
                 let state = controller.state(node.controller_id as _);
 
                 let x = state.analog_state[0];
+                let y = state.analog_state[1];
 
                 node.fish.input.left = x < -0.5;
                 node.fish.input.right = x > 0.5;
+                node.fish.input.down = y < -0.5;
 
                 const JUMP_BTN: usize = 2;
                 const FIRE_BTN: usize = 1;
@@ -548,6 +551,7 @@ impl scene::Node for Player {
                 is_key_pressed(KeyCode::LeftControl) || is_key_pressed(KeyCode::F);
             node.fish.input.left = is_key_down(KeyCode::A);
             node.fish.input.right = is_key_down(KeyCode::D);
+            node.fish.input.down = is_key_down(KeyCode::S);
         }
 
         #[cfg(not(target_os = "macos"))]
@@ -557,6 +561,7 @@ impl scene::Node for Player {
             node.fish.input.fire = is_key_pressed(KeyCode::L);
             node.fish.input.left = is_key_down(KeyCode::Left);
             node.fish.input.right = is_key_down(KeyCode::Right);
+            node.fish.input.down = is_key_down(KeyCode::Down);
         }
 
         {

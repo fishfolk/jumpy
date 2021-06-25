@@ -213,9 +213,9 @@ impl Muscet {
 
         if force {
             self.speed = if self.facing {
-                vec2(1600., -50.)
+                vec2(600., -200.)
             } else {
-                vec2(-1600., -50.)
+                vec2(-600., -200.)
             };
         } else {
             self.angle = 3.5;

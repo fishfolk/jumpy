@@ -18,8 +18,8 @@ use particles::EmittersCache;
 mod nodes;
 
 pub mod consts {
-    pub const GRAVITY: f32 = 900.0;
-    pub const JUMP_SPEED: f32 = 480.0;
+    pub const GRAVITY: f32 = 1800.0;
+    pub const JUMP_SPEED: f32 = 700.0;
     pub const RUN_SPEED: f32 = 250.0;
     pub const PLAYER_SPRITE: u32 = 120;
     pub const BULLET_SPEED: f32 = 500.0;

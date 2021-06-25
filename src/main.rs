@@ -12,7 +12,7 @@ use macroquad::{
     },
 };
 
-use macroquad_platformer::World as CollisionWorld;
+use macroquad_platformer::{Tile, World as CollisionWorld};
 use particles::EmittersCache;
 
 mod nodes;
@@ -123,7 +123,11 @@ impl Resources {
 
         let mut static_colliders = vec![];
         for (_x, _y, tile) in tiled_map.tiles("main layer", None) {
-            static_colliders.push(tile.is_some());
+            static_colliders.push(match tile {
+                None => Tile::Empty,
+                Some(tile) if tile.attrs.contains("jumpthrough") => Tile::JumpThrough,
+                _ => Tile::Solid,
+            });
         }
         let mut collision_world = CollisionWorld::new();
         collision_world.add_static_tiled_layer(
@@ -165,9 +169,7 @@ impl Resources {
 }
 
 async fn game(game_type: GameType) {
-    use nodes::{
-        Bullets, Camera, Decoration, Fxses, LevelBackground, Muscet, Player, Sword,
-    };
+    use nodes::{Bullets, Camera, Decoration, Fxses, LevelBackground, Muscet, Player, Sword};
 
     let resources_loading = start_coroutine(async move {
         let resources = Resources::new().await.unwrap();
@@ -238,7 +240,6 @@ async fn game(game_type: GameType) {
             wat_facing ^= true;
         }
     }
-
 
     let player = scene::add_node(Player::new(game_type == GameType::Deathmatch, 0));
     let player2 = scene::add_node(Player::new(game_type == GameType::Deathmatch, 1));

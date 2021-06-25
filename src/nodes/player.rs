@@ -14,7 +14,7 @@ use macroquad_platformer::Actor;
 
 use crate::{
     consts,
-    nodes::{pickup::ItemType, Pickup, Sword},
+    nodes::{pickup::ItemType, Muscet, Pickup, Sword},
     Resources,
 };
 
@@ -27,24 +27,16 @@ pub struct Input {
     right: bool,
 }
 
-pub enum Weapon {
-    Gun { bullets: i32 },
-    Sword,
-}
-
 pub struct Fish {
     fish_sprite: AnimatedSprite,
-    gun_sprite: AnimatedSprite,
-    gun_fx_sprite: AnimatedSprite,
-    gun_fx: bool,
     pub collider: Actor,
     pub pos: Vec2,
     pub speed: Vec2,
     pub on_ground: bool,
     pub dead: bool,
     pub facing: bool,
-    pub weapon: Option<Weapon>,
     pub sword: Option<Handle<Sword>>,
+    pub muscet: Option<Handle<Muscet>>,
     input: Input,
 }
 
@@ -83,56 +75,28 @@ impl Fish {
             ],
             true,
         );
-        let gun_sprite = AnimatedSprite::new(
-            92,
-            32,
-            &[
-                Animation {
-                    name: "idle".to_string(),
-                    row: 0,
-                    frames: 1,
-                    fps: 1,
-                },
-                Animation {
-                    name: "shoot".to_string(),
-                    row: 1,
-                    frames: 3,
-                    fps: 15,
-                },
-            ],
-            false,
-        );
-        let gun_fx_sprite = AnimatedSprite::new(
-            92,
-            32,
-            &[Animation {
-                name: "shoot".to_string(),
-                row: 2,
-                frames: 3,
-                fps: 15,
-            }],
-            false,
-        );
 
         Fish {
             fish_sprite,
-            gun_fx_sprite,
-            gun_fx: false,
-            gun_sprite,
             collider: resources.collision_world.add_actor(spawner_pos, 30, 54),
             on_ground: false,
             dead: false,
             pos: spawner_pos,
             speed: vec2(0., 0.),
             facing: true,
-            weapon: None,
             sword: None,
+            muscet: None,
             input: Default::default(),
         }
     }
 
     pub fn disarm(&mut self) {
-        self.weapon = None;
+        if let Some(muscet) = self.muscet {
+            if let Some(muscet) = scene::try_get_node(muscet) {
+                muscet.delete();
+            }
+            self.muscet = None;
+        }
 
         if let Some(sword) = self.sword {
             if let Some(sword) = scene::try_get_node(sword) {
@@ -150,11 +114,10 @@ impl Fish {
 
         match item_type {
             ItemType::Gun => {
-                self.weapon = Some(Weapon::Gun { bullets: 3 });
+                self.muscet = Some(scene::add_node(Muscet::new(self.facing, self.pos)));
             }
             ItemType::Sword => {
                 self.sword = Some(scene::add_node(Sword::new(self.facing, self.pos)));
-                self.weapon = Some(Weapon::Sword);
             }
         }
     }
@@ -199,43 +162,6 @@ impl Fish {
                 ..Default::default()
             },
         );
-
-        if self.dead == false && matches!(self.weapon, Some(Weapon::Gun { .. })) {
-            let gun_mount_pos = if self.facing {
-                vec2(0., 16.)
-            } else {
-                vec2(-60., 16.)
-            };
-            self.gun_sprite.update();
-            draw_texture_ex(
-                resources.gun,
-                self.pos.x + gun_mount_pos.x,
-                self.pos.y + gun_mount_pos.y,
-                color::WHITE,
-                DrawTextureParams {
-                    source: Some(self.gun_sprite.frame().source_rect),
-                    dest_size: Some(self.gun_sprite.frame().dest_size),
-                    flip_x: !self.facing,
-                    ..Default::default()
-                },
-            );
-
-            if self.gun_fx {
-                self.gun_fx_sprite.update();
-                draw_texture_ex(
-                    resources.gun,
-                    self.pos.x + gun_mount_pos.x,
-                    self.pos.y + gun_mount_pos.y,
-                    color::WHITE,
-                    DrawTextureParams {
-                        source: Some(self.gun_fx_sprite.frame().source_rect),
-                        dest_size: Some(self.gun_fx_sprite.frame().dest_size),
-                        flip_x: !self.facing,
-                        ..Default::default()
-                    },
-                );
-            }
-        }
     }
 }
 
@@ -383,58 +309,17 @@ impl Player {
     }
 
     fn shoot_coroutine(node: &mut RefMut<Player>) -> Coroutine {
-        let handle = node.handle();
-        let coroutine = async move {
-            {
-                let resources = storage::get_mut::<Resources>();
-                play_sound_once(resources.shoot_sound);
+        if let Some(muscet) = node.fish.muscet {
+            Muscet::shot(muscet, node.handle())
+        } else {
+            let handle = node.handle();
 
-                let mut node = &mut *scene::get_node(handle);
-
-                node.fish.gun_fx = true;
-
-                let mut bullets = scene::find_node_by_type::<crate::nodes::Bullets>().unwrap();
-                bullets.spawn_bullet(node.fish.pos, node.fish.facing);
-                node.fish.speed.x = -consts::GUN_THROWBACK * node.fish.facing_dir();
-            }
-            {
-                let node = &mut *scene::get_node(handle);
-                node.fish.gun_sprite.set_animation(1);
-            }
-            for i in 0u32..3 {
-                {
-                    let node = &mut *scene::get_node(handle);
-                    node.fish.gun_sprite.set_frame(i);
-                    node.fish.gun_fx_sprite.set_frame(i);
-                }
-
-                wait_seconds(0.08).await;
-            }
-            {
-                let mut node = scene::get_node(handle);
-                node.fish.gun_sprite.set_animation(0);
-            }
-
-            let mut node = &mut *scene::get_node(handle);
-
-            node.fish.gun_fx = false;
-
-            if let Weapon::Gun { bullets } = node.fish.weapon.as_mut().unwrap() {
-                *bullets -= 1;
-
-                if *bullets <= 0 {
-                    let mut resources = storage::get_mut::<Resources>();
-                    resources.disarm_fxses.spawn(node.fish.pos + vec2(16., 33.));
-                    node.fish.weapon = None;
-                }
-            }
-
-            // node.weapon_animation.play(0, 0..5).await;
-            // node.weapon_animation.play(0, 5..).await;
-            node.state_machine.set_state(Self::ST_NORMAL);
-        };
-
-        start_coroutine(coroutine)
+            start_coroutine(async move {
+                println!("thats weird");
+                let player = &mut *scene::get_node(handle);
+                player.state_machine.set_state(Player::ST_NORMAL);
+            })
+        }
     }
 
     fn update_shoot(node: &mut RefMut<Player>, _dt: f32) {
@@ -471,16 +356,6 @@ impl Player {
         if is_key_pressed(KeyCode::U) {
             node.kill(false);
         }
-        if is_key_pressed(KeyCode::I) {
-            for sword in scene::find_nodes_by_type::<Sword>() {
-                if sword.thrown {
-                    sword.delete();
-                }
-            }
-        }
-        if is_key_pressed(KeyCode::P) {
-            node.pick_weapon(ItemType::Sword);
-        }
 
         let node = &mut **node;
         let fish = &mut node.fish;
@@ -508,24 +383,49 @@ impl Player {
         if fish.input.throw {
             if let Some(sword) = fish.sword {
                 if let Some(mut sword) = scene::try_get_node(sword) {
-                    sword.throw();
+                    sword.throw(true);
                 }
                 fish.sword = None;
+            } else if let Some(muscet) = fish.muscet {
+                if let Some(mut muscet) = scene::try_get_node(muscet) {
+                    muscet.throw(true);
+                }
+                fish.muscet = None;
             } else {
+                let mut picked = false;
+
                 for sword in scene::find_nodes_by_type::<Sword>() {
+                    if picked {
+                        break;
+                    }
                     if sword.thrown && sword.pos.distance(fish.pos) < 80. {
+                        picked = true;
                         sword.delete();
                         fish.pick_weapon(ItemType::Sword);
+                    }
+                }
+                for muscet in scene::find_nodes_by_type::<Muscet>() {
+                    if picked {
+                        break;
+                    }
+                    if muscet.thrown && muscet.pos.distance(fish.pos) < 80. {
+                        picked = true;
+                        muscet.delete();
+                        fish.pick_weapon(ItemType::Gun);
                     }
                 }
             }
         }
 
         if fish.input.fire {
-            match fish.weapon {
-                Some(Weapon::Gun { .. }) => node.state_machine.set_state(Self::ST_SHOOT),
-                Some(Weapon::Sword) => node.state_machine.set_state(Self::ST_SWORD_SHOOT),
-                None => {}
+            if node.fish.muscet.is_some()
+                && scene::try_get_node(node.fish.muscet.unwrap())
+                    .map_or(false, |muscet| muscet.bullets > 0)
+            {
+                node.state_machine.set_state(Self::ST_SHOOT);
+            }
+            if node.fish.sword.is_some() {
+                node.state_machine.set_state(Self::ST_SWORD_SHOOT);
             }
         }
     }
@@ -534,13 +434,17 @@ impl Player {
         if self.is_dead() {
             return;
         }
-        if let Some(Weapon::Gun { bullets }) = self.fish.weapon {
+        if let Some(muscet) = self
+            .fish
+            .muscet
+            .and_then(|muscet| scene::try_get_node(muscet))
+        {
             let full_color = Color::new(0.8, 0.9, 1.0, 1.0);
             let empty_color = Color::new(0.8, 0.9, 1.0, 0.8);
             for i in 0..3 {
                 let x = self.fish.pos.x + 15.0 * i as f32;
 
-                if i >= bullets {
+                if i >= muscet.bullets {
                     draw_circle_lines(x, self.fish.pos.y - 4.0, 4.0, 2., empty_color);
                 } else {
                     draw_circle(x, self.fish.pos.y - 4.0, 4.0, full_color);
@@ -579,6 +483,15 @@ impl scene::Node for Player {
             let mut sword = scene::get_node(sword);
             sword.pos = node.fish.pos;
             sword.facing = node.fish.facing;
+        }
+
+        if let Some(mut muscet) = node
+            .fish
+            .muscet
+            .and_then(|muscet| scene::try_get_node(muscet))
+        {
+            muscet.pos = node.fish.pos;
+            muscet.facing = node.fish.facing;
         }
 
         #[cfg(target_os = "macos")]

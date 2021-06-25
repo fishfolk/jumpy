@@ -165,7 +165,9 @@ impl Resources {
 }
 
 async fn game(game_type: GameType) {
-    use nodes::{Bullets, Camera, Decoration, Fxses, ItemsSpawner, LevelBackground, Player};
+    use nodes::{
+        Bullets, Camera, Decoration, Fxses, LevelBackground, Muscet, Player, Sword,
+    };
 
     let resources_loading = start_coroutine(async move {
         let resources = Resources::new().await.unwrap();
@@ -212,13 +214,36 @@ async fn game(game_type: GameType) {
             object.gid.unwrap(),
         ));
     }
+
+    let objects = resources.tiled_map.layers["items"].objects.clone();
+
     drop(resources);
+
+    let mut wat_facing = false;
+
+    for object in &objects {
+        if object.name == "sword" {
+            let mut sword =
+                Sword::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
+            sword.throw(false);
+            scene::add_node(sword);
+            wat_facing ^= true;
+        }
+
+        if object.name == "muscet" {
+            let mut muscet =
+                Muscet::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
+            muscet.throw(false);
+            scene::add_node(muscet);
+            wat_facing ^= true;
+        }
+    }
+
 
     let player = scene::add_node(Player::new(game_type == GameType::Deathmatch, 0));
     let player2 = scene::add_node(Player::new(game_type == GameType::Deathmatch, 1));
 
     scene::add_node(Bullets::new());
-    scene::add_node(ItemsSpawner::new());
 
     scene::add_node(Camera::new(
         Rect::new(0.0, 0.0, w as f32, h as f32),

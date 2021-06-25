@@ -1,11 +1,4 @@
 { "compressionlevel":-1,
- "editorsettings":
-    {
-     "export":
-        {
-         "target":"."
-        }
-    },
  "height":21,
  "infinite":false,
  "layers":[
@@ -270,12 +263,71 @@
          "visible":true,
          "x":0,
          "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":5,
+         "name":"items",
+         "objects":[
+                {
+                 "height":0,
+                 "id":53,
+                 "name":"muscet",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":545,
+                 "y":163
+                }, 
+                {
+                 "height":0,
+                 "id":54,
+                 "name":"muscet",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":52,
+                 "y":131
+                }, 
+                {
+                 "height":0,
+                 "id":55,
+                 "name":"sword",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":309,
+                 "y":264
+                }, 
+                {
+                 "height":0,
+                 "id":56,
+                 "name":"sword",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":788,
+                 "y":266
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
         }],
- "nextlayerid":5,
- "nextobjectid":53,
+ "nextlayerid":6,
+ "nextobjectid":57,
  "orientation":"orthogonal",
  "renderorder":"right-down",
- "tiledversion":"1.4.3",
+ "tiledversion":"1.7.0",
  "tileheight":32,
  "tilesets":[
         {
@@ -306,6 +358,6 @@
         }],
  "tilewidth":32,
  "type":"map",
- "version":1.4,
+ "version":"1.6",
  "width":27
 }

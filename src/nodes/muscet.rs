@@ -13,12 +13,17 @@ use macroquad_platformer::Actor;
 
 use crate::{nodes::Player, Resources};
 
-pub struct Sword {
-    pub sword_sprite: AnimatedSprite,
+pub struct Muscet {
+    pub muscet_sprite: AnimatedSprite,
+    pub muscet_fx_sprite: AnimatedSprite,
+    pub muscet_fx: bool,
+
     pub facing: bool,
     pub pos: Vec2,
     pub thrown: bool,
     pub angle: f32,
+
+    pub bullets: i32,
 
     speed: Vec2,
     collider: Option<Actor>,
@@ -26,82 +31,71 @@ pub struct Sword {
     deadly_dangerous: bool,
 }
 
-impl scene::Node for Sword {
-    fn draw(sword: RefMut<Self>) {
+impl scene::Node for Muscet {
+    fn draw(mut muscet: RefMut<Self>) {
         let resources = storage::get_mut::<Resources>();
 
-        //sword.dead == false && matches!(sword.weapon, Some(Weapon::Sword)) {
-        // for attack animation - old, pre-rotated sprite
-        if sword.sword_sprite.current_animation() == 1 {
-            let sword_mount_pos = if sword.facing {
-                vec2(10., -35.)
+        let muscet_mount_pos = if muscet.thrown == false {
+            if muscet.facing {
+                vec2(0., 16.)
             } else {
-                vec2(-50., -35.)
-            };
-            draw_texture_ex(
-                resources.sword,
-                sword.pos.x + sword_mount_pos.x,
-                sword.pos.y + sword_mount_pos.y,
-                color::WHITE,
-                DrawTextureParams {
-                    source: Some(sword.sword_sprite.frame().source_rect),
-                    dest_size: Some(sword.sword_sprite.frame().dest_size),
-                    flip_x: !sword.facing,
-                    ..Default::default()
-                },
-            );
+                vec2(-60., 16.)
+            }
         } else {
-            // just casually holding a sword
-
-            let sword_mount_pos = if sword.thrown == false {
-                if sword.facing {
-                    vec2(5., 10.)
-                } else {
-                    vec2(-45., 10.)
-                }
+            if muscet.facing {
+                vec2(-25., 0.)
             } else {
-                if sword.facing {
-                    vec2(-25., 0.)
-                } else {
-                    vec2(5., 0.)
-                }
-            };
+                vec2(5., 0.)
+            }
+        };
 
-            let rotation = if sword.facing {
-                -sword.angle
-            } else {
-                sword.angle
-            };
+        draw_texture_ex(
+            resources.gun,
+            muscet.pos.x + muscet_mount_pos.x,
+            muscet.pos.y + muscet_mount_pos.y,
+            color::WHITE,
+            DrawTextureParams {
+                source: Some(muscet.muscet_sprite.frame().source_rect),
+                dest_size: Some(muscet.muscet_sprite.frame().dest_size),
+                flip_x: !muscet.facing,
+                rotation: muscet.angle,
+                ..Default::default()
+            },
+        );
+
+        if muscet.muscet_fx {
+            muscet.muscet_fx_sprite.update();
             draw_texture_ex(
-                resources.fish_sword,
-                sword.pos.x + sword_mount_pos.x,
-                sword.pos.y + sword_mount_pos.y,
+                resources.gun,
+                muscet.pos.x + muscet_mount_pos.x,
+                muscet.pos.y + muscet_mount_pos.y,
                 color::WHITE,
                 DrawTextureParams {
-                    dest_size: Some(vec2(65., 17.)),
-                    flip_x: !sword.facing,
-                    rotation: rotation, //get_time() as _,
+                    source: Some(muscet.muscet_fx_sprite.frame().source_rect),
+                    dest_size: Some(muscet.muscet_fx_sprite.frame().dest_size),
+                    flip_x: !muscet.facing,
                     ..Default::default()
                 },
             );
         }
 
-        if let Some(_collider) = sword.collider {
-            //let pos = resources.collision_world.actor_pos(collider);
+        // if let Some(collider) = muscet.collider {
+        //     let pos = resources.collision_world.actor_pos(collider);
 
-            // let sword_hit_box = Rect::new(pos.x, pos.y, 40., 30.);
-            // draw_rectangle(
-            //     sword_hit_box.x,
-            //     sword_hit_box.y,
-            //     sword_hit_box.w,
-            //     sword_hit_box.h,
-            //     RED,
-            // );
-        }
+        //     let sword_hit_box = Rect::new(pos.x, pos.y, 40., 30.);
+        //     draw_rectangle(
+        //         sword_hit_box.x,
+        //         sword_hit_box.y,
+        //         sword_hit_box.w,
+        //         sword_hit_box.h,
+        //         RED,
+        //     );
+        // }
     }
 
     fn update(mut node: RefMut<Self>) {
-        node.sword_sprite.update();
+        node.muscet_sprite.update();
+
         if node.thrown {
             let collider = node.collider.unwrap();
             let mut resources = storage::get_mut::<Resources>();
@@ -162,11 +156,11 @@ impl scene::Node for Sword {
     }
 }
 
-impl Sword {
-    pub fn new(facing: bool, pos: Vec2) -> Sword {
-        let sword_sprite = AnimatedSprite::new(
-            65,
-            93,
+impl Muscet {
+    pub fn new(facing: bool, pos: Vec2) -> Muscet {
+        let muscet_sprite = AnimatedSprite::new(
+            92,
+            32,
             &[
                 Animation {
                     name: "idle".to_string(),
@@ -177,19 +171,33 @@ impl Sword {
                 Animation {
                     name: "shoot".to_string(),
                     row: 1,
-                    frames: 4,
+                    frames: 3,
                     fps: 15,
                 },
             ],
             false,
         );
+        let muscet_fx_sprite = AnimatedSprite::new(
+            92,
+            32,
+            &[Animation {
+                name: "shoot".to_string(),
+                row: 2,
+                frames: 3,
+                fps: 15,
+            }],
+            false,
+        );
 
-        Sword {
-            sword_sprite,
+        Muscet {
+            muscet_sprite,
+            muscet_fx_sprite,
+            muscet_fx: false,
             pos,
             facing,
             thrown: false,
-            angle: std::f32::consts::PI / 4. + 0.3,
+            bullets: 3,
+            angle: 0.0,
             collider: None,
             origin_pos: pos,
             speed: vec2(0., 0.),
@@ -206,6 +214,8 @@ impl Sword {
             } else {
                 vec2(-1600., -50.)
             };
+        } else {
+            self.angle = 3.5;
         }
 
         let mut resources = storage::get_mut::<Resources>();
@@ -224,48 +234,51 @@ impl Sword {
         self.origin_pos = self.pos + sword_mount_pos / 2.;
     }
 
-    pub fn shot(node: Handle<Sword>, player: Handle<Player>) -> Coroutine {
+    pub fn shot(node: Handle<Muscet>, player: Handle<Player>) -> Coroutine {
         let coroutine = async move {
             {
                 let resources = storage::get_mut::<Resources>();
-                play_sound_once(resources.sword_sound);
+                play_sound_once(resources.shoot_sound);
 
-                let sword = &mut *scene::get_node(node);
-                sword.sword_sprite.set_animation(1);
-            }
-
-            {
+                let mut node = &mut *scene::get_node(node);
                 let player = &mut *scene::get_node(player);
-                let others = scene::find_nodes_by_type::<crate::nodes::Player>();
-                let sword_hit_box = if player.fish.facing {
-                    Rect::new(player.pos().x + 35., player.pos().y - 5., 40., 60.)
-                } else {
-                    Rect::new(player.pos().x - 50., player.pos().y - 5., 40., 60.)
-                };
 
-                for mut other in others {
-                    if Rect::new(other.pos().x, other.pos().y, 20., 64.).overlaps(&sword_hit_box) {
-                        other.kill(!player.fish.facing);
-                    }
-                }
+                node.muscet_fx = true;
+
+                let mut bullets = scene::find_node_by_type::<crate::nodes::Bullets>().unwrap();
+                bullets.spawn_bullet(node.pos, node.facing);
+                player.fish.speed.x = -crate::consts::GUN_THROWBACK * player.fish.facing_dir();
             }
-
+            {
+                let node = &mut *scene::get_node(node);
+                node.muscet_sprite.set_animation(1);
+            }
             for i in 0u32..3 {
                 {
-                    let sword = &mut *scene::get_node(node);
-                    sword.sword_sprite.set_frame(i);
+                    let node = &mut *scene::get_node(node);
+                    node.muscet_sprite.set_frame(i);
+                    node.muscet_fx_sprite.set_frame(i);
                 }
 
                 wait_seconds(0.08).await;
             }
-
             {
-                let mut sword = scene::get_node(node);
-                sword.sword_sprite.set_animation(0);
+                let mut node = scene::get_node(node);
+                node.muscet_sprite.set_animation(0);
             }
 
-            let player = &mut *scene::get_node(player);
-            player.state_machine.set_state(Player::ST_NORMAL);
+            {
+                let mut node = scene::get_node(node);
+                node.muscet_fx = false;
+                node.bullets -= 1;
+            }
+
+            {
+                let player = &mut *scene::get_node(player);
+                // node.weapon_animation.play(0, 0..5).await;
+                // node.weapon_animation.play(0, 5..).await;
+                player.state_machine.set_state(Player::ST_NORMAL);
+            }
         };
 
         start_coroutine(coroutine)

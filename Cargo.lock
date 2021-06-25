@@ -638,6 +638,7 @@ dependencies = [
 [[package]]
 name = "macroquad"
 version = "0.3.6"
+source = "git+https://github.com/not-fl3/macroquad.git?rev=cc7d9a8#cc7d9a8c5d76576df22b28d11c5a8ee79e7023e8"
 dependencies = [
  "audir-sles",
  "audrey",
@@ -654,8 +655,7 @@ dependencies = [
 [[package]]
 name = "macroquad-particles"
 version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8505dc035e4d68799a53a459afef0bc345410039325b5928af2e0d83eb15de40"
+source = "git+https://github.com/not-fl3/macroquad.git?rev=cc7d9a8#cc7d9a8c5d76576df22b28d11c5a8ee79e7023e8"
 dependencies = [
  "macroquad",
  "nanoserde",
@@ -673,8 +673,7 @@ dependencies = [
 [[package]]
 name = "macroquad-tiled"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8bd057cf2f006367a287b5d59ac50d8fcd12ba5575d68f9a5e55d3f7912d81ed"
+source = "git+https://github.com/not-fl3/macroquad.git?rev=cc7d9a8#cc7d9a8c5d76576df22b28d11c5a8ee79e7023e8"
 dependencies = [
  "macroquad",
  "nanoserde",
@@ -683,6 +682,7 @@ dependencies = [
 [[package]]
 name = "macroquad_macro"
 version = "0.1.5"
+source = "git+https://github.com/not-fl3/macroquad.git?rev=cc7d9a8#cc7d9a8c5d76576df22b28d11c5a8ee79e7023e8"
 
 [[package]]
 name = "maybe-uninit"

@@ -104,6 +104,9 @@ impl scene::Node for Muscet {
             if (node.origin_pos - node.pos).length() > 70. {
                 node.deadly_dangerous = true;
             }
+            if node.speed.length() <= 500.0 {
+                node.deadly_dangerous = false;
+            }
             let on_ground = resources
                 .collision_world
                 .collide_check(collider, node.pos + vec2(0., 5.));

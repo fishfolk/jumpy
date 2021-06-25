@@ -110,12 +110,15 @@ impl scene::Node for Sword {
             if (node.origin_pos - node.pos).length() > 70. {
                 node.deadly_dangerous = true;
             }
+            if node.speed.length() <= 500.0 {
+                node.deadly_dangerous = false;
+            }
             let on_ground = resources
                 .collision_world
                 .collide_check(collider, node.pos + vec2(0., 5.));
 
             if on_ground == false {
-                node.angle += node.speed.x.abs() * 0.00015 + node.speed.y.abs() * 0.00005;
+                node.angle += node.speed.x.abs() * 0.00015 + node.speed.y.abs() * 0.0001;
 
                 node.speed.y += crate::consts::GRAVITY * get_frame_time();
             } else {

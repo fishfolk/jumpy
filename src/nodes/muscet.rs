@@ -107,10 +107,9 @@ impl scene::Node for Muscet {
             if node.speed.length() <= 500.0 {
                 node.deadly_dangerous = false;
             }
-            let on_ground =
-                resources
-                    .collision_world
-                    .collide_check(collider, node.pos + vec2(0., 5.), false);
+            let on_ground = resources
+                .collision_world
+                .collide_check(collider, node.pos + vec2(0., 5.));
 
             if on_ground == false {
                 node.angle += node.speed.x.abs() * 0.00015 + node.speed.y.abs() * 0.00005;
@@ -138,10 +137,10 @@ impl scene::Node for Muscet {
             }
             resources
                 .collision_world
-                .move_h(collider, node.speed.x * get_frame_time(), false);
+                .move_h(collider, node.speed.x * get_frame_time());
             if !resources
                 .collision_world
-                .move_v(collider, node.speed.y * get_frame_time(), false)
+                .move_v(collider, node.speed.y * get_frame_time())
             {
                 node.speed.y = 0.0;
             }

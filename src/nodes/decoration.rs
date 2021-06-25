@@ -15,7 +15,7 @@ pub struct Decoration {
 }
 
 impl Decoration {
-    pub fn new(pos: Vec2, gid: u32) -> Decoration {
+    pub fn new(pos: Vec2, name: &str) -> Decoration {
         let mut sprite = AnimatedSprite::new(
             48,
             51,
@@ -35,10 +35,10 @@ impl Decoration {
             ],
             true,
         );
-        if gid == 50 {
-            sprite.set_animation(0);
-        } else {
+        if name == "pot" {
             sprite.set_animation(1);
+        } else {
+            sprite.set_animation(0);
         }
         Decoration { pos, sprite }
     }

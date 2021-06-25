@@ -213,7 +213,7 @@ async fn game(game_type: GameType) {
     for object in &resources.tiled_map.layers["decorations"].objects {
         scene::add_node(Decoration::new(
             vec2(object.world_x, object.world_y),
-            object.gid.unwrap(),
+            &object.name,
         ));
     }
 

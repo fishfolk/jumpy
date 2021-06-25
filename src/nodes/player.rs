@@ -49,7 +49,6 @@ pub struct Fish {
     pub sword: Option<Handle<Sword>>,
     pub muscet: Option<Handle<Muscet>>,
     input: Input,
-    descent: bool,
 }
 
 impl Fish {
@@ -99,7 +98,6 @@ impl Fish {
             sword: None,
             muscet: None,
             input: Default::default(),
-            descent: false,
         }
     }
 
@@ -388,7 +386,8 @@ impl Player {
         }
 
         if fish.input.down {
-            fish.descent = true;
+            let mut resources = storage::get_mut::<Resources>();
+            resources.collision_world.descent(fish.collider, true)
         }
 
         if fish.input.throw {
@@ -577,51 +576,15 @@ impl scene::Node for Player {
             let mut resources = storage::get_mut::<Resources>();
             fish.pos = resources.collision_world.actor_pos(fish.collider);
 
-            let on_wood = (resources.collision_world.collide_check(
-                fish.collider,
-                fish.pos + vec2(0., -55.),
-                true,
-            ) == false
-                && resources.collision_world.collide_check(
-                    fish.collider,
-                    fish.pos + vec2(0., -55.),
-                    false,
-                ))
-                || (resources.collision_world.collide_check(
-                    fish.collider,
-                    fish.pos + vec2(-1., -1.),
-                    true,
-                ) == false
-                    && resources.collision_world.collide_check(
-                        fish.collider,
-                        fish.pos + vec2(-1., -1.),
-                        false,
-                    ))
-                || (resources.collision_world.collide_check(
-                    fish.collider,
-                    fish.pos + vec2(31., -1.),
-                    true,
-                ) == false
-                    && resources.collision_world.collide_check(
-                        fish.collider,
-                        fish.pos + vec2(31., -1.),
-                        false,
-                    ));
-            if on_wood {
-                fish.descent = true;
-            }
-
-            fish.on_ground = resources.collision_world.collide_check(
-                fish.collider,
-                fish.pos + vec2(0., 1.),
-                fish.descent,
-            );
-            if fish.on_ground || (on_wood == false && fish.input.down == false) {
-                fish.descent = false;
-            }
+            fish.on_ground = resources
+                .collision_world
+                .collide_check(fish.collider, fish.pos + vec2(0., 1.));
 
             if fish.on_ground == false {
                 fish.speed.y += consts::GRAVITY * get_frame_time();
+            }
+            if fish.on_ground {
+                resources.collision_world.descent(fish.collider, false);
             }
 
             if fish.on_ground {
@@ -630,16 +593,13 @@ impl scene::Node for Player {
                 node.jump_grace_timer -= get_frame_time();
             }
 
-            resources.collision_world.move_h(
-                fish.collider,
-                fish.speed.x * get_frame_time(),
-                fish.descent,
-            );
-            if !resources.collision_world.move_v(
-                fish.collider,
-                fish.speed.y * get_frame_time(),
-                fish.descent,
-            ) {
+            resources
+                .collision_world
+                .move_h(fish.collider, fish.speed.x * get_frame_time());
+            if !resources
+                .collision_world
+                .move_v(fish.collider, fish.speed.y * get_frame_time())
+            {
                 fish.speed.y = 0.0;
             }
         }

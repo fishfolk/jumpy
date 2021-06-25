@@ -205,9 +205,9 @@ impl Sword {
 
         if force {
             self.speed = if self.facing {
-                vec2(1600., -50.)
+                vec2(800., -50.)
             } else {
-                vec2(-1600., -50.)
+                vec2(-800., -50.)
             };
         }
 

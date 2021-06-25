@@ -513,8 +513,8 @@ impl scene::Node for Player {
                 node.fish.input.left = x < -0.5;
                 node.fish.input.right = x > 0.5;
 
-                const JUMP_BTN: usize = 2;
-                const FIRE_BTN: usize = 1;
+                const JUMP_BTN: usize = 1;
+                const FIRE_BTN: usize = 0;
                 const THROW_BTN: usize = 3;
 
                 if state.digital_state[JUMP_BTN] && node.fish.input.was_jump == false {

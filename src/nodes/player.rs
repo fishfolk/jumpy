@@ -14,9 +14,16 @@ use macroquad_platformer::Actor;
 
 use crate::{
     consts,
-    nodes::{pickup::ItemType, Muscet, Pickup, Sword},
+    nodes::{Muscet, Sword},
     Resources,
 };
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+#[repr(u8)]
+pub enum ItemType {
+    Gun = 1,
+    Sword = 2,
+}
 
 #[derive(Default, Debug, Clone)]
 pub struct Input {
@@ -225,12 +232,6 @@ impl Player {
 
     pub fn pos(&self) -> Vec2 {
         self.fish.pos
-    }
-
-    pub fn pick_weapon(&mut self, item_type: ItemType) {
-        if self.state_machine.state() == Self::ST_NORMAL {
-            self.fish.pick_weapon(item_type);
-        }
     }
 
     pub fn is_dead(&self) -> bool {
@@ -566,16 +567,5 @@ impl scene::Node for Player {
             }
         }
         StateMachine::update_detached(&mut node, |node| &mut node.state_machine);
-
-        for pickup in scene::find_nodes_by_type::<Pickup>() {
-            let collide = |player: Vec2, pickup: Vec2| {
-                (player + vec2(16., 32.)).distance(pickup + vec2(16., 16.)) < 90.
-            };
-
-            if collide(node.pos(), pickup.pos) {
-                node.pick_weapon(pickup.item_type);
-                pickup.delete();
-            }
-        }
     }
 }

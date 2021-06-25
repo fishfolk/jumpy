@@ -28,8 +28,11 @@ pub enum ItemType {
 #[derive(Default, Debug, Clone)]
 pub struct Input {
     jump: bool,
+    was_jump: bool,
     throw: bool,
+    was_throw: bool,
     fire: bool,
+    was_fire: bool,
     left: bool,
     right: bool,
 }
@@ -509,9 +512,31 @@ impl scene::Node for Player {
 
                 node.fish.input.left = x < -0.5;
                 node.fish.input.right = x > 0.5;
-                node.fish.input.jump = state.digital_state[2];
-                node.fish.input.fire = state.digital_state[1];
-                node.fish.input.throw = state.digital_state[3];
+
+                const JUMP_BTH: usize = 2;
+                const FIRE_BTH: usize = 1;
+                const THROW_BTH: usize = 3;
+
+                if state.digital_state[JUMP_BTN] && node.fish.input.was_jump == false {
+                    node.fish.input.jump = true;
+                } else {
+                    node.fish.input.jump = false;
+                }
+                node.fish.input.was_jump = state.digital_state[JUMP_BTN];
+
+                if state.digital_state[FIRE_BTN] && node.fish.input.was_fire == false {
+                    node.fish.input.fire = true;
+                } else {
+                    node.fish.input.fire = false;
+                }
+                node.fish.input.was_fire = state.digital_state[FIRE_BTN];
+
+                if state.digital_state[THROW_BTN] && node.fish.input.was_throw == false {
+                    node.fish.input.throw = true;
+                } else {
+                    node.fish.input.throw = false;
+                }
+                node.fish.input.was_throw = state.digital_state[THROW_BTN];
             }
         }
 

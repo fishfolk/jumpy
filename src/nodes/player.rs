@@ -508,7 +508,6 @@ impl scene::Node for Player {
                 let state = controller.state(node.controller_id as _);
 
                 let x = state.analog_state[0];
-                let y = state.analog_state[1];
 
                 node.fish.input.left = x < -0.5;
                 node.fish.input.right = x > 0.5;

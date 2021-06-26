@@ -101,17 +101,17 @@ impl Fish {
         }
     }
 
-    pub fn disarm(&mut self) {
+    pub fn drop_weapon(&mut self) {
         if let Some(muscet) = self.muscet {
-            if let Some(muscet) = scene::try_get_node(muscet) {
-                muscet.delete();
+            if let Some(mut muscet) = scene::try_get_node(muscet) {
+                muscet.throw(false);
             }
             self.muscet = None;
         }
 
         if let Some(sword) = self.sword {
-            if let Some(sword) = scene::try_get_node(sword) {
-                sword.delete();
+            if let Some(mut sword) = scene::try_get_node(sword) {
+                sword.throw(false);
             }
             self.sword = None;
         }
@@ -121,7 +121,7 @@ impl Fish {
         let resources = storage::get_mut::<Resources>();
         play_sound_once(resources.pickup_sound);
 
-        self.disarm();
+        self.drop_weapon();
 
         match item_type {
             ItemType::Gun => {
@@ -286,10 +286,10 @@ impl Player {
 
             wait_seconds(0.5).await;
 
-            let mut resources = storage::get_mut::<Resources>();
             let mut this = scene::get_node(handle);
 
             this.fish.pos = {
+                let resources = storage::get_mut::<Resources>();
                 let objects = &resources.tiled_map.layers["logic"].objects;
                 let macroquad_tiled::Object {
                     world_x, world_y, ..
@@ -298,10 +298,12 @@ impl Player {
                 vec2(world_x, world_y)
             };
             this.fish.fish_sprite.playing = true;
-            this.fish.disarm();
+            this.fish.drop_weapon();
 
             // in deathmatch we can just get back to normal after death
             if this.deathmatch {
+                let mut resources = storage::get_mut::<Resources>();
+
                 this.state_machine.set_state(Self::ST_NORMAL);
                 this.fish.dead = false;
                 resources

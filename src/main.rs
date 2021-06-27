@@ -261,7 +261,6 @@ async fn game(game_type: GameType) {
     loop {
         clear_background(BLACK);
 
-        #[cfg(target_os = "macos")]
         {
             let mut controller = storage::get_mut::<gamepad_rs::ControllerContext>();
             for i in 0..2 {
@@ -281,15 +280,14 @@ fn window_conf() -> Conf {
     Conf {
         window_title: "FISH".to_owned(),
         high_dpi: false,
-        window_width: 1600,
-        window_height: 768,
+        window_width: 1910,
+        window_height: 600,
         ..Default::default()
     }
 }
 
 #[macroquad::main(window_conf)]
 async fn main() {
-    #[cfg(target_os = "macos")]
     {
         let controller = gamepad_rs::ControllerContext::new().unwrap();
         storage::store(controller);

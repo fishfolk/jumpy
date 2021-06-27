@@ -110,7 +110,7 @@ impl scene::Node for Sword {
             if (node.origin_pos - node.pos).length() > 70. {
                 node.deadly_dangerous = true;
             }
-            if node.speed.length() <= 500.0 {
+            if node.speed.length() <= 200.0 {
                 node.deadly_dangerous = false;
             }
             let on_ground = resources

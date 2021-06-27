@@ -418,7 +418,6 @@ dependencies = [
 [[package]]
 name = "gamepad-rs"
 version = "0.1.0"
-source = "git+https://github.com/unrust/gamepad-rs.git#65b6a780d58855be204a4f9a97f3ed7826e94f4c"
 dependencies = [
  "IOKit-sys",
  "core-foundation",
@@ -638,7 +637,6 @@ dependencies = [
 [[package]]
 name = "macroquad"
 version = "0.3.6"
-source = "git+https://github.com/not-fl3/macroquad.git?rev=d580662#d5806624da1d948d43da895e6bb88085dca5248b"
 dependencies = [
  "audir-sles",
  "audrey",
@@ -655,7 +653,6 @@ dependencies = [
 [[package]]
 name = "macroquad-particles"
 version = "0.1.1"
-source = "git+https://github.com/not-fl3/macroquad.git?rev=d580662#d5806624da1d948d43da895e6bb88085dca5248b"
 dependencies = [
  "macroquad",
  "nanoserde",
@@ -664,7 +661,6 @@ dependencies = [
 [[package]]
 name = "macroquad-platformer"
 version = "0.1.1"
-source = "git+https://github.com/not-fl3/macroquad.git?rev=d580662#d5806624da1d948d43da895e6bb88085dca5248b"
 dependencies = [
  "macroquad",
 ]
@@ -672,7 +668,6 @@ dependencies = [
 [[package]]
 name = "macroquad-tiled"
 version = "0.1.0"
-source = "git+https://github.com/not-fl3/macroquad.git?rev=d580662#d5806624da1d948d43da895e6bb88085dca5248b"
 dependencies = [
  "macroquad",
  "nanoserde",
@@ -681,7 +676,6 @@ dependencies = [
 [[package]]
 name = "macroquad_macro"
 version = "0.1.5"
-source = "git+https://github.com/not-fl3/macroquad.git?rev=d580662#d5806624da1d948d43da895e6bb88085dca5248b"
 
 [[package]]
 name = "maybe-uninit"

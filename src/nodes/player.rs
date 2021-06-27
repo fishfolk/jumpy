@@ -322,7 +322,6 @@ impl Player {
             let handle = node.handle();
 
             start_coroutine(async move {
-                println!("thats weird");
                 let player = &mut *scene::get_node(handle);
                 player.state_machine.set_state(Player::ST_NORMAL);
             })
@@ -389,7 +388,7 @@ impl Player {
 
         if fish.input.down {
             let mut resources = storage::get_mut::<Resources>();
-            resources.collision_world.descent(fish.collider, true)
+            resources.collision_world.descent(fish.collider);
         }
 
         if fish.input.throw {
@@ -506,25 +505,28 @@ impl scene::Node for Player {
             muscet.facing = node.fish.facing;
         }
 
-        #[cfg(target_os = "macos")]
         if game_started {
-            let mut controller = storage::get_mut::<gamepad_rs::ControllerContext>();
+            let controller = storage::get_mut::<gamepad_rs::ControllerContext>();
 
             let status = controller.state(node.controller_id as _).status;
 
             if status == gamepad_rs::ControllerStatus::Connected {
                 let state = controller.state(node.controller_id as _);
-
                 let x = state.analog_state[0];
                 let y = state.analog_state[1];
 
                 node.fish.input.left = x < -0.5;
                 node.fish.input.right = x > 0.5;
-                node.fish.input.down = y < -0.5;
 
-                const JUMP_BTN: usize = 1;
-                const FIRE_BTN: usize = 0;
-                const THROW_BTN: usize = 3;
+                if cfg!(target_os = "macos") {
+                    node.fish.input.down = y < -0.5;
+                } else {
+                    node.fish.input.down = y > 0.5;
+                };
+
+                const JUMP_BTN: usize = if cfg!(target_os = "macos") { 1 } else { 2 };
+                const FIRE_BTN: usize = if cfg!(target_os = "macos") { 0 } else { 1 };
+                const THROW_BTN: usize = if cfg!(target_os = "macos") { 3 } else { 3 };
 
                 if state.digital_state[JUMP_BTN] && node.fish.input.was_jump == false {
                     node.fish.input.jump = true;
@@ -552,24 +554,25 @@ impl scene::Node for Player {
         #[cfg(not(target_os = "macos"))]
         if game_started && node.controller_id == 0 {
             node.fish.input.jump = is_key_pressed(KeyCode::Space) || is_key_pressed(KeyCode::W);
-            node.fish.input.throw = is_key_pressed(KeyCode::Z);
+            node.fish.input.throw = is_key_pressed(KeyCode::R) || is_key_pressed(KeyCode::K);
 
-            node.fish.input.fire =
-                is_key_pressed(KeyCode::LeftControl) || is_key_pressed(KeyCode::F);
+            node.fish.input.fire = is_key_pressed(KeyCode::LeftControl)
+                || is_key_pressed(KeyCode::F)
+                || is_key_pressed(KeyCode::L);
             node.fish.input.left = is_key_down(KeyCode::A);
             node.fish.input.right = is_key_down(KeyCode::D);
             node.fish.input.down = is_key_down(KeyCode::S);
         }
 
-        #[cfg(not(target_os = "macos"))]
-        if game_started && node.controller_id == 1 {
-            node.fish.input.jump = is_key_pressed(KeyCode::Up);
-            node.fish.input.throw = is_key_pressed(KeyCode::K);
-            node.fish.input.fire = is_key_pressed(KeyCode::L);
-            node.fish.input.left = is_key_down(KeyCode::Left);
-            node.fish.input.right = is_key_down(KeyCode::Right);
-            node.fish.input.down = is_key_down(KeyCode::Down);
-        }
+        // #[cfg(not(target_os = "macos"))]
+        // if game_started && node.controller_id == 1 {
+        //     node.fish.input.jump = is_key_pressed(KeyCode::Up);
+        //     node.fish.input.throw = is_key_pressed(KeyCode::K);
+        //     node.fish.input.fire = is_key_pressed(KeyCode::L);
+        //     node.fish.input.left = is_key_down(KeyCode::Left);
+        //     node.fish.input.right = is_key_down(KeyCode::Right);
+        //     node.fish.input.down = is_key_down(KeyCode::Down);
+        // }
 
         {
             let node = &mut *node;
@@ -578,15 +581,15 @@ impl scene::Node for Player {
             let mut resources = storage::get_mut::<Resources>();
             fish.pos = resources.collision_world.actor_pos(fish.collider);
 
+            if fish.input.down {
+                resources.collision_world.descent(fish.collider);
+            }
             fish.on_ground = resources
                 .collision_world
                 .collide_check(fish.collider, fish.pos + vec2(0., 1.));
 
             if fish.on_ground == false {
                 fish.speed.y += consts::GRAVITY * get_frame_time();
-            }
-            if fish.on_ground {
-                resources.collision_world.descent(fish.collider, false);
             }
 
             if fish.on_ground {
@@ -598,12 +601,14 @@ impl scene::Node for Player {
             resources
                 .collision_world
                 .move_h(fish.collider, fish.speed.x * get_frame_time());
+
             if !resources
                 .collision_world
                 .move_v(fish.collider, fish.speed.y * get_frame_time())
             {
                 fish.speed.y = 0.0;
             }
+
         }
         StateMachine::update_detached(&mut node, |node| &mut node.state_machine);
     }

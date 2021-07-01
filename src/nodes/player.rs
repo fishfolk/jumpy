@@ -5,7 +5,7 @@ use macroquad::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
         coroutines::{start_coroutine, wait_seconds, Coroutine},
-        scene::{self, Handle, RefMut},
+        scene::{self, HandleUntyped, Lens, RefMut},
         state_machine::{State, StateMachine},
     },
     prelude::*,
@@ -18,6 +18,19 @@ use crate::{
     Resources,
 };
 
+pub mod capabilities {
+    use crate::nodes::Player;
+    use macroquad::experimental::{
+        coroutines::Coroutine,
+        scene::{Handle, HandleUntyped},
+    };
+
+    #[derive(Clone)]
+    pub struct Gun {
+        pub throw: fn(node: HandleUntyped, force: bool),
+        pub shoot: fn(node: HandleUntyped, player: Handle<Player>) -> Coroutine,
+    }
+}
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[repr(u8)]
 pub enum ItemType {
@@ -46,8 +59,7 @@ pub struct Fish {
     pub on_ground: bool,
     pub dead: bool,
     pub facing: bool,
-    pub sword: Option<Handle<Sword>>,
-    pub muscet: Option<Handle<Muscet>>,
+    pub weapon: Option<(HandleUntyped, Lens<Vec2>, capabilities::Gun)>,
     input: Input,
 }
 
@@ -95,26 +107,16 @@ impl Fish {
             pos: spawner_pos,
             speed: vec2(0., 0.),
             facing: true,
-            sword: None,
-            muscet: None,
+            weapon: None,
             input: Default::default(),
         }
     }
 
     pub fn drop_weapon(&mut self) {
-        if let Some(muscet) = self.muscet {
-            if let Some(mut muscet) = scene::try_get_node(muscet) {
-                muscet.throw(false);
-            }
-            self.muscet = None;
+        if let Some((weapon, _, gun)) = self.weapon.as_mut() {
+            (gun.throw)(*weapon, false);
         }
-
-        if let Some(sword) = self.sword {
-            if let Some(mut sword) = scene::try_get_node(sword) {
-                sword.throw(false);
-            }
-            self.sword = None;
-        }
+        self.weapon = None;
     }
 
     pub fn pick_weapon(&mut self, item_type: ItemType) {
@@ -125,10 +127,20 @@ impl Fish {
 
         match item_type {
             ItemType::Gun => {
-                self.muscet = Some(scene::add_node(Muscet::new(self.facing, self.pos)));
+                let node = scene::add_node(Muscet::new(self.facing, self.pos));
+                self.weapon = Some((
+                    node.untyped(),
+                    node.lens(|node| &mut node.pos),
+                    Muscet::gun_capabilities(),
+                ));
             }
             ItemType::Sword => {
-                self.sword = Some(scene::add_node(Sword::new(self.facing, self.pos)));
+                let node = scene::add_node(Sword::new(self.facing, self.pos));
+                self.weapon = Some((
+                    node.untyped(),
+                    node.lens(|node| &mut node.pos),
+                    Sword::gun_capabilities(),
+                ));
             }
         }
     }
@@ -189,7 +201,6 @@ impl Player {
     pub const ST_NORMAL: usize = 0;
     pub const ST_DEATH: usize = 1;
     pub const ST_SHOOT: usize = 2;
-    pub const ST_SWORD_SHOOT: usize = 3;
     pub const ST_AFTERMATCH: usize = 4;
 
     pub fn new(deathmatch: bool, controller_id: i32) -> Player {
@@ -213,12 +224,6 @@ impl Player {
             State::new()
                 .update(Self::update_shoot)
                 .coroutine(Self::shoot_coroutine),
-        );
-        state_machine.add_state(
-            Self::ST_SWORD_SHOOT,
-            State::new()
-                .update(Self::update_sword_shoot)
-                .coroutine(Self::sword_shoot_coroutine),
         );
         state_machine.add_state(
             Self::ST_AFTERMATCH,
@@ -316,8 +321,8 @@ impl Player {
     }
 
     fn shoot_coroutine(node: &mut RefMut<Player>) -> Coroutine {
-        if let Some(muscet) = node.fish.muscet {
-            Muscet::shot(muscet, node.handle())
+        if let Some((weapon, _, gun)) = node.fish.weapon.as_mut() {
+            (gun.shoot)(*weapon, node.handle())
         } else {
             let handle = node.handle();
 
@@ -329,24 +334,6 @@ impl Player {
     }
 
     fn update_shoot(node: &mut RefMut<Player>, _dt: f32) {
-        node.fish.speed.x *= 0.9;
-    }
-
-    fn sword_shoot_coroutine(node: &mut RefMut<Player>) -> Coroutine {
-        if let Some(sword) = node.fish.sword {
-            Sword::shot(sword, node.handle())
-        } else {
-            let handle = node.handle();
-
-            start_coroutine(async move {
-                println!("thats weird");
-                let player = &mut *scene::get_node(handle);
-                player.state_machine.set_state(Player::ST_NORMAL);
-            })
-        }
-    }
-
-    fn update_sword_shoot(node: &mut RefMut<Player>, _dt: f32) {
         node.fish.speed.x *= 0.9;
     }
 
@@ -392,16 +379,9 @@ impl Player {
         }
 
         if fish.input.throw {
-            if let Some(sword) = fish.sword {
-                if let Some(mut sword) = scene::try_get_node(sword) {
-                    sword.throw(fish.input.down == false);
-                }
-                fish.sword = None;
-            } else if let Some(muscet) = fish.muscet {
-                if let Some(mut muscet) = scene::try_get_node(muscet) {
-                    muscet.throw(fish.input.down == false);
-                }
-                fish.muscet = None;
+            if let Some((weapon, _, gun)) = fish.weapon.as_mut() {
+                (gun.throw)(*weapon, fish.input.down == false);
+                fish.weapon = None;
             } else {
                 let mut picked = false;
 
@@ -429,37 +409,8 @@ impl Player {
         }
 
         if fish.input.fire {
-            if node.fish.muscet.is_some()
-                && scene::try_get_node(node.fish.muscet.unwrap())
-                    .map_or(false, |muscet| muscet.bullets > 0)
-            {
+            if node.fish.weapon.is_some() {
                 node.state_machine.set_state(Self::ST_SHOOT);
-            }
-            if node.fish.sword.is_some() {
-                node.state_machine.set_state(Self::ST_SWORD_SHOOT);
-            }
-        }
-    }
-
-    fn draw_hud(&self) {
-        if self.is_dead() {
-            return;
-        }
-        if let Some(muscet) = self
-            .fish
-            .muscet
-            .and_then(|muscet| scene::try_get_node(muscet))
-        {
-            let full_color = Color::new(0.8, 0.9, 1.0, 1.0);
-            let empty_color = Color::new(0.8, 0.9, 1.0, 0.8);
-            for i in 0..3 {
-                let x = self.fish.pos.x + 15.0 * i as f32;
-
-                if i >= muscet.bullets {
-                    draw_circle_lines(x, self.fish.pos.y - 4.0, 4.0, 2., empty_color);
-                } else {
-                    draw_circle(x, self.fish.pos.y - 4.0, 4.0, full_color);
-                };
             }
         }
     }
@@ -481,8 +432,6 @@ impl scene::Node for Player {
         //     );
         let id = node.controller_id;
         node.fish.draw(id);
-
-        node.draw_hud();
     }
 
     fn update(mut node: RefMut<Self>) {
@@ -490,19 +439,13 @@ impl scene::Node for Player {
 
         node.fish.fish_sprite.update();
 
-        if let Some(sword) = node.fish.sword {
-            let mut sword = scene::get_node(sword);
-            sword.pos = node.fish.pos;
-            sword.facing = node.fish.facing;
-        }
-
-        if let Some(mut muscet) = node
-            .fish
-            .muscet
-            .and_then(|muscet| scene::try_get_node(muscet))
         {
-            muscet.pos = node.fish.pos;
-            muscet.facing = node.fish.facing;
+            let node = &mut *node;
+            if let Some((_, weapon_pos, _)) = node.fish.weapon.as_mut() {
+                let pos = weapon_pos.get().unwrap();
+                *pos = node.fish.pos;
+                //sword.facing = node.fish.facing;
+            }
         }
 
         if game_started {
@@ -608,7 +551,6 @@ impl scene::Node for Player {
             {
                 fish.speed.y = 0.0;
             }
-
         }
         StateMachine::update_detached(&mut node, |node| &mut node.state_machine);
     }

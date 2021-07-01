@@ -5,13 +5,13 @@ use macroquad::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
         coroutines::{start_coroutine, wait_seconds, Coroutine},
-        scene::{self, Handle, RefMut},
+        scene::{self, Handle, HandleUntyped, RefMut},
     },
     prelude::*,
 };
 use macroquad_platformer::Actor;
 
-use crate::{nodes::Player, Resources};
+use crate::{nodes::player::capabilities, nodes::Player, Resources};
 
 pub struct Sword {
     pub sword_sprite: AnimatedSprite,
@@ -227,7 +227,7 @@ impl Sword {
         self.origin_pos = self.pos + sword_mount_pos / 2.;
     }
 
-    pub fn shot(node: Handle<Sword>, player: Handle<Player>) -> Coroutine {
+    pub fn shoot(node: Handle<Sword>, player: Handle<Player>) -> Coroutine {
         let coroutine = async move {
             {
                 let resources = storage::get_mut::<Resources>();
@@ -272,5 +272,24 @@ impl Sword {
         };
 
         start_coroutine(coroutine)
+    }
+
+    pub fn gun_capabilities() -> capabilities::Gun {
+        fn throw(node: HandleUntyped, force: bool) {
+            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Sword>();
+
+            Sword::throw(&mut *node, force);
+        }
+
+        fn shoot(node: HandleUntyped, player: Handle<Player>) -> Coroutine {
+            let node = scene::get_untyped_node(node)
+                .unwrap()
+                .to_typed::<Sword>()
+                .handle();
+
+            Sword::shoot(node, player)
+        }
+
+        capabilities::Gun { throw, shoot }
     }
 }

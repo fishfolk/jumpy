@@ -5,13 +5,13 @@ use macroquad::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
         coroutines::{start_coroutine, wait_seconds, Coroutine},
-        scene::{self, Handle, RefMut},
+        scene::{self, Handle, HandleUntyped, RefMut},
     },
     prelude::*,
 };
 use macroquad_platformer::Actor;
 
-use crate::{nodes::Player, Resources};
+use crate::{nodes::player::capabilities, nodes::Player, Resources};
 
 pub struct Muscet {
     pub muscet_sprite: AnimatedSprite,
@@ -208,6 +208,20 @@ impl Muscet {
         }
     }
 
+    fn draw_hud(&self) {
+        let full_color = Color::new(0.8, 0.9, 1.0, 1.0);
+        let empty_color = Color::new(0.8, 0.9, 1.0, 0.8);
+        for i in 0..3 {
+            let x = self.pos.x + 15.0 * i as f32;
+
+            if i >= self.bullets {
+                draw_circle_lines(x, self.pos.y - 4.0, 4.0, 2., empty_color);
+            } else {
+                draw_circle(x, self.pos.y - 4.0, 4.0, full_color);
+            };
+        }
+    }
+
     pub fn throw(&mut self, force: bool) {
         self.thrown = true;
 
@@ -237,7 +251,7 @@ impl Muscet {
         self.origin_pos = self.pos + sword_mount_pos / 2.;
     }
 
-    pub fn shot(node: Handle<Muscet>, player: Handle<Player>) -> Coroutine {
+    pub fn shoot(node: Handle<Muscet>, player: Handle<Player>) -> Coroutine {
         let coroutine = async move {
             {
                 let resources = storage::get_mut::<Resources>();
@@ -285,5 +299,24 @@ impl Muscet {
         };
 
         start_coroutine(coroutine)
+    }
+
+    pub fn gun_capabilities() -> capabilities::Gun {
+        fn throw(node: HandleUntyped, force: bool) {
+            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Muscet>();
+
+            Muscet::throw(&mut *node, force);
+        }
+
+        fn shoot(node: HandleUntyped, player: Handle<Player>) -> Coroutine {
+            let node = scene::get_untyped_node(node)
+                .unwrap()
+                .to_typed::<Muscet>()
+                .handle();
+
+            Muscet::shoot(node, player)
+        }
+
+        capabilities::Gun { throw, shoot }
     }
 }

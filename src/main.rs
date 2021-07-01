@@ -81,7 +81,7 @@ impl Resources {
         let decorations = load_texture("assets/decorations1.png").await?;
         decorations.set_filter(FilterMode::Nearest);
 
-        let whale_red = load_texture("assets/Whale/Whale(76x66)(Orange).png").await?;
+        let whale_red = load_texture("assets/Whale/Whale(76x66)(Green).png").await?;
         whale_red.set_filter(FilterMode::Nearest);
 
         let whale = load_texture("assets/Whale/Whale(76x66)(Blue).png").await?;

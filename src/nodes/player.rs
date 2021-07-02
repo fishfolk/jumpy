@@ -213,6 +213,7 @@ impl Player {
     pub const JUMP_SPEED: f32 = 700.0;
     pub const RUN_SPEED: f32 = 250.0;
     pub const JUMP_GRACE_TIME: f32 = 0.15;
+    pub const MAP_BOTTOM: f32 = 630.0;
 
     pub fn new(deathmatch: bool, controller_id: i32) -> Player {
         let spawner_pos = {
@@ -318,8 +319,12 @@ impl Player {
             // give some take for a dead fish to take off the ground
             wait_seconds(0.1).await;
 
-            // wait until it lands
-            while scene::get_node(handle).body.on_ground == false {
+            // wait until it lands (or fall down the map)
+            while {
+                let node = scene::get_node(handle);
+
+                (node.body.on_ground || node.body.pos.y > Self::MAP_BOTTOM) == false
+            } {
                 next_frame().await;
             }
 
@@ -488,6 +493,10 @@ impl scene::Node for Player {
         let game_started = true;
 
         node.fish_sprite.update();
+
+        if node.body.pos.y > Self::MAP_BOTTOM {
+            node.kill(false);
+        }
 
         {
             let node = &mut *node;

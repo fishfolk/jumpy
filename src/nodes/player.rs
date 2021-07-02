@@ -579,7 +579,7 @@ impl scene::Node for Player {
         {
             let node = &mut *node;
 
-            if node.body.on_ground {
+            if node.body.on_ground && node.input.was_jump == false {
                 node.jump_grace_timer = Self::JUMP_GRACE_TIME;
             } else if node.jump_grace_timer > 0. {
                 node.jump_grace_timer -= get_frame_time();

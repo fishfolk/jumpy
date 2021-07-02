@@ -57,6 +57,7 @@ pub struct PhysicsBody {
     pub angle: f32,
     pub collider: Option<Actor>,
     pub on_ground: bool,
+    pub have_gravity: bool,
 }
 
 impl PhysicsBody {
@@ -84,7 +85,7 @@ impl PhysicsBody {
 
             self.pos = collision_world.actor_pos(collider);
             self.on_ground = collision_world.collide_check(collider, self.pos + vec2(0., 1.));
-            if self.on_ground == false {
+            if self.on_ground == false && self.have_gravity {
                 self.speed.y += Self::GRAVITY * get_frame_time();
             }
             collision_world.move_h(collider, self.speed.x * get_frame_time());
@@ -200,6 +201,10 @@ pub struct Player {
 
     deathmatch: bool,
     jump_grace_timer: f32,
+
+    was_floating: bool,
+    floating: bool,
+
     pub state_machine: StateMachine<RefMut<Player>>,
     pub controller_id: i32,
 }
@@ -214,6 +219,7 @@ impl Player {
     pub const RUN_SPEED: f32 = 250.0;
     pub const JUMP_GRACE_TIME: f32 = 0.15;
     pub const MAP_BOTTOM: f32 = 630.0;
+    pub const FLOAT_SPEED: f32 = 50.0;
 
     pub fn new(deathmatch: bool, controller_id: i32) -> Player {
         let spawner_pos = {
@@ -252,6 +258,7 @@ impl Player {
             speed: vec2(0., 0.),
             pos: spawner_pos,
             facing: true,
+            have_gravity: true,
         };
 
         let fish_sprite = AnimatedSprite::new(
@@ -282,6 +289,12 @@ impl Player {
                     frames: 4,
                     fps: 8,
                 },
+                Animation {
+                    name: "float".to_string(),
+                    row: 6,
+                    frames: 4,
+                    fps: 8,
+                },
             ],
             true,
         );
@@ -295,6 +308,8 @@ impl Player {
             fish_sprite,
             deathmatch,
             jump_grace_timer: 0.,
+            floating: false,
+            was_floating: false,
             state_machine,
             controller_id,
         }
@@ -410,16 +425,23 @@ impl Player {
         let node = &mut **node;
 
         if node.input.right {
-            node.fish_sprite.set_animation(1);
             node.body.speed.x = Self::RUN_SPEED;
             node.body.facing = true;
         } else if node.input.left {
-            node.fish_sprite.set_animation(1);
             node.body.speed.x = -Self::RUN_SPEED;
             node.body.facing = false;
         } else {
-            node.fish_sprite.set_animation(0);
             node.body.speed.x = 0.;
+        }
+
+        if node.floating {
+            node.fish_sprite.set_animation(4);
+        } else {
+            if node.input.right || node.input.left {
+                node.fish_sprite.set_animation(1);
+            } else {
+                node.fish_sprite.set_animation(0);
+            }
         }
 
         if node.input.jump {
@@ -433,10 +455,37 @@ impl Player {
             node.body.descent();
         }
 
+        // if in jump and want to jump again
+        if node.body.on_ground == false && node.input.jump {
+            if node.was_floating == false {
+                node.floating = true;
+                node.was_floating = true;
+                node.body.have_gravity = false;
+            }
+        }
+        // jump button released, stop to float
+        if node.input.was_jump == false {
+            node.floating = false;
+        }
+        if node.body.on_ground {
+            node.was_floating = false;
+            node.floating = false;
+        }
+        if node.floating {
+            node.body.speed.y = Self::FLOAT_SPEED;
+        } else {
+            node.body.have_gravity = true;
+        }
+
         if node.input.throw {
             if let Some((weapon, _, gun)) = node.weapon.as_mut() {
                 (gun.throw)(*weapon, node.input.down == false);
                 node.weapon = None;
+
+                // when the floating fish is throwing a weapon and keeps
+                // floating it looks less cool than if its stop floating and
+                // falls, but idk
+                node.floating = false;
             } else {
                 let mut picked = false;
 
@@ -466,6 +515,7 @@ impl Player {
         if node.input.fire {
             if node.weapon.is_some() {
                 node.state_machine.set_state(Self::ST_SHOOT);
+                node.floating = false;
             }
         }
     }
@@ -556,6 +606,8 @@ impl scene::Node for Player {
         #[cfg(not(target_os = "macos"))]
         if game_started && node.controller_id == 0 {
             node.input.jump = is_key_pressed(KeyCode::Space) || is_key_pressed(KeyCode::W);
+            node.input.was_jump = is_key_down(KeyCode::Space) || is_key_down(KeyCode::W);
+
             node.input.throw = is_key_pressed(KeyCode::R) || is_key_pressed(KeyCode::K);
 
             node.input.fire = is_key_pressed(KeyCode::LeftControl)

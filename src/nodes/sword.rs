@@ -165,6 +165,7 @@ impl Sword {
                 angle: std::f32::consts::PI / 4. + 0.3,
                 collider: None,
                 on_ground: false,
+                have_gravity: true,
             },
             thrown: false,
             origin_pos: pos,

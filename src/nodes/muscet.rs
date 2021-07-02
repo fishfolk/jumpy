@@ -175,6 +175,7 @@ impl Muscet {
                 speed: vec2(0., 0.),
                 collider: None,
                 on_ground: false,
+                have_gravity: true,
             },
             thrown: false,
             bullets: 3,

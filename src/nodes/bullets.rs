@@ -3,7 +3,7 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::{consts, Resources};
+use crate::Resources;
 
 struct Bullet {
     pos: Vec2,
@@ -17,6 +17,8 @@ pub struct Bullets {
 }
 
 impl Bullets {
+    pub const BULLET_SPEED: f32 = 500.0;
+
     pub fn new() -> Bullets {
         Bullets {
             bullets: Vec::with_capacity(200),
@@ -31,7 +33,7 @@ impl Bullets {
         };
         self.bullets.push(Bullet {
             pos: pos + vec2(16.0, 30.0) + dir * 32.0,
-            speed: dir * consts::BULLET_SPEED,
+            speed: dir * Self::BULLET_SPEED,
             lived: 0.0,
             lifetime: 0.7,
         });
@@ -62,8 +64,8 @@ impl scene::Node for Bullets {
             let mut killed = false;
             for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
                 let self_damaged =
-                    Rect::new(player.pos().x, player.pos().y, 20., 64.).contains(bullet.pos);
-                let direction = bullet.pos.x > (player.pos().x + 10.);
+                    Rect::new(player.body.pos.x, player.body.pos.y, 20., 64.).contains(bullet.pos);
+                let direction = bullet.pos.x > (player.body.pos.x + 10.);
 
                 if self_damaged {
                     killed = true;

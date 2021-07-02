@@ -36,7 +36,7 @@ impl Camera {
 impl scene::Node for Camera {
     fn update(mut node: RefMut<Self>) {
         if let Some(player) = scene::try_get_node::<Player>(node.player) {
-            node.follow_buffer.insert(0, player.pos());
+            node.follow_buffer.insert(0, player.body.pos);
             node.follow_buffer.truncate(Self::BUFFER_CAPACITY);
 
             let mut sum = (0.0f64, 0.0f64);
@@ -90,9 +90,6 @@ impl scene::Node for Camera {
             } else {
                 scene::set_camera_2(*node.macroquad_camera());
             }
-            
-
         }
-
     }
 }

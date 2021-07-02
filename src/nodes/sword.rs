@@ -9,19 +9,19 @@ use macroquad::{
     },
     prelude::*,
 };
-use macroquad_platformer::Actor;
 
-use crate::{nodes::player::capabilities, nodes::Player, Resources};
+use crate::{
+    nodes::player::{capabilities, PhysicsBody},
+    nodes::Player,
+    Resources,
+};
 
 pub struct Sword {
     pub sword_sprite: AnimatedSprite,
-    pub facing: bool,
-    pub pos: Vec2,
     pub thrown: bool,
-    pub angle: f32,
 
-    speed: Vec2,
-    collider: Option<Actor>,
+    pub body: PhysicsBody,
+
     origin_pos: Vec2,
     deadly_dangerous: bool,
 }
@@ -33,20 +33,20 @@ impl scene::Node for Sword {
         //sword.dead == false && matches!(sword.weapon, Some(Weapon::Sword)) {
         // for attack animation - old, pre-rotated sprite
         if sword.sword_sprite.current_animation() == 1 {
-            let sword_mount_pos = if sword.facing {
+            let sword_mount_pos = if sword.body.facing {
                 vec2(10., -35.)
             } else {
                 vec2(-50., -35.)
             };
             draw_texture_ex(
                 resources.sword,
-                sword.pos.x + sword_mount_pos.x,
-                sword.pos.y + sword_mount_pos.y,
+                sword.body.pos.x + sword_mount_pos.x,
+                sword.body.pos.y + sword_mount_pos.y,
                 color::WHITE,
                 DrawTextureParams {
                     source: Some(sword.sword_sprite.frame().source_rect),
                     dest_size: Some(sword.sword_sprite.frame().dest_size),
-                    flip_x: !sword.facing,
+                    flip_x: !sword.body.facing,
                     ..Default::default()
                 },
             );
@@ -54,39 +54,40 @@ impl scene::Node for Sword {
             // just casually holding a sword
 
             let sword_mount_pos = if sword.thrown == false {
-                if sword.facing {
+                if sword.body.facing {
                     vec2(5., 10.)
                 } else {
                     vec2(-45., 10.)
                 }
             } else {
-                if sword.facing {
+                if sword.body.facing {
                     vec2(-25., 0.)
                 } else {
                     vec2(5., 0.)
                 }
             };
 
-            let rotation = if sword.facing {
-                -sword.angle
+            let rotation = if sword.body.facing {
+                -sword.body.angle
             } else {
-                sword.angle
+                sword.body.angle
             };
+
             draw_texture_ex(
                 resources.fish_sword,
-                sword.pos.x + sword_mount_pos.x,
-                sword.pos.y + sword_mount_pos.y,
+                sword.body.pos.x + sword_mount_pos.x,
+                sword.body.pos.y + sword_mount_pos.y,
                 color::WHITE,
                 DrawTextureParams {
                     dest_size: Some(vec2(65., 17.)),
-                    flip_x: !sword.facing,
+                    flip_x: !sword.body.facing,
                     rotation: rotation, //get_time() as _,
                     ..Default::default()
                 },
             );
         }
 
-        if let Some(_collider) = sword.collider {
+        if let Some(_collider) = sword.body.collider {
             //let pos = resources.collision_world.actor_pos(collider);
 
             // let sword_hit_box = Rect::new(pos.x, pos.y, 40., 30.);
@@ -102,62 +103,30 @@ impl scene::Node for Sword {
 
     fn update(mut node: RefMut<Self>) {
         node.sword_sprite.update();
-        if node.thrown {
-            let collider = node.collider.unwrap();
-            let mut resources = storage::get_mut::<Resources>();
-            node.pos = resources.collision_world.actor_pos(collider);
 
-            if (node.origin_pos - node.pos).length() > 70. {
+        if node.thrown {
+            node.body.update();
+            node.body.update_throw();
+
+            if (node.origin_pos - node.body.pos).length() > 70. {
                 node.deadly_dangerous = true;
             }
-            if node.speed.length() <= 200.0 {
+            if node.body.speed.length() <= 200.0 {
                 node.deadly_dangerous = false;
             }
-            let on_ground = resources
-                .collision_world
-                .collide_check(collider, node.pos + vec2(0., 5.));
-
-            if on_ground == false {
-                node.angle += node.speed.x.abs() * 0.00015 + node.speed.y.abs() * 0.0001;
-
-                node.speed.y += crate::consts::GRAVITY * get_frame_time();
-            } else {
+            if node.body.on_ground {
                 node.deadly_dangerous = false;
-
-                node.angle %= std::f32::consts::PI * 2.;
-                let goal = if node.angle <= std::f32::consts::PI {
-                    std::f32::consts::PI
-                } else {
-                    std::f32::consts::PI * 2.
-                };
-
-                let rest = goal - node.angle;
-                if rest.abs() >= 0.1 {
-                    node.angle += (rest * 0.1).max(0.1);
-                }
-            }
-
-            node.speed.x *= 0.98;
-            if node.speed.x.abs() <= 1. {
-                node.speed.x = 0.0;
-            }
-            resources
-                .collision_world
-                .move_h(collider, node.speed.x * get_frame_time());
-            if !resources
-                .collision_world
-                .move_v(collider, node.speed.y * get_frame_time())
-            {
-                node.speed.y = 0.0;
             }
 
             if node.deadly_dangerous {
                 let others = scene::find_nodes_by_type::<crate::nodes::Player>();
-                let sword_hit_box = Rect::new(node.pos.x - 10., node.pos.y, 60., 30.);
+                let sword_hit_box = Rect::new(node.body.pos.x - 10., node.body.pos.y, 60., 30.);
 
                 for mut other in others {
-                    if Rect::new(other.pos().x, other.pos().y, 20., 64.).overlaps(&sword_hit_box) {
-                        other.kill(!node.facing);
+                    if Rect::new(other.body.pos.x, other.body.pos.y, 20., 64.)
+                        .overlaps(&sword_hit_box)
+                    {
+                        other.kill(!node.body.facing);
                     }
                 }
             }
@@ -189,13 +158,16 @@ impl Sword {
 
         Sword {
             sword_sprite,
-            pos,
-            facing,
+            body: PhysicsBody {
+                pos,
+                facing,
+                speed: vec2(0., 0.),
+                angle: std::f32::consts::PI / 4. + 0.3,
+                collider: None,
+                on_ground: false,
+            },
             thrown: false,
-            angle: std::f32::consts::PI / 4. + 0.3,
-            collider: None,
             origin_pos: pos,
-            speed: vec2(0., 0.),
             deadly_dangerous: false,
         }
     }
@@ -204,7 +176,7 @@ impl Sword {
         self.thrown = true;
 
         if force {
-            self.speed = if self.facing {
+            self.body.speed = if self.body.facing {
                 vec2(800., -50.)
             } else {
                 vec2(-800., -50.)
@@ -213,18 +185,18 @@ impl Sword {
 
         let mut resources = storage::get_mut::<Resources>();
 
-        let sword_mount_pos = if self.facing {
+        let sword_mount_pos = if self.body.facing {
             vec2(30., 10.)
         } else {
             vec2(-50., 10.)
         };
 
-        self.collider = Some(resources.collision_world.add_actor(
-            self.pos + sword_mount_pos,
+        self.body.collider = Some(resources.collision_world.add_actor(
+            self.body.pos + sword_mount_pos,
             40,
             30,
         ));
-        self.origin_pos = self.pos + sword_mount_pos / 2.;
+        self.origin_pos = self.body.pos + sword_mount_pos / 2.;
     }
 
     pub fn shoot(node: Handle<Sword>, player: Handle<Player>) -> Coroutine {
@@ -240,15 +212,17 @@ impl Sword {
             {
                 let player = &mut *scene::get_node(player);
                 let others = scene::find_nodes_by_type::<crate::nodes::Player>();
-                let sword_hit_box = if player.fish.facing {
-                    Rect::new(player.pos().x + 35., player.pos().y - 5., 40., 60.)
+                let sword_hit_box = if player.body.facing {
+                    Rect::new(player.body.pos.x + 35., player.body.pos.y - 5., 40., 60.)
                 } else {
-                    Rect::new(player.pos().x - 50., player.pos().y - 5., 40., 60.)
+                    Rect::new(player.body.pos.x - 50., player.body.pos.y - 5., 40., 60.)
                 };
 
                 for mut other in others {
-                    if Rect::new(other.pos().x, other.pos().y, 20., 64.).overlaps(&sword_hit_box) {
-                        other.kill(!player.fish.facing);
+                    if Rect::new(other.body.pos.x, other.body.pos.y, 20., 64.)
+                        .overlaps(&sword_hit_box)
+                    {
+                        other.kill(!player.body.facing);
                     }
                 }
             }

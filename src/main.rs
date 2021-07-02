@@ -17,17 +17,6 @@ use particles::EmittersCache;
 
 mod nodes;
 
-pub mod consts {
-    pub const GRAVITY: f32 = 1800.0;
-    pub const JUMP_SPEED: f32 = 700.0;
-    pub const RUN_SPEED: f32 = 250.0;
-    pub const PLAYER_SPRITE: u32 = 120;
-    pub const BULLET_SPEED: f32 = 500.0;
-    pub const JUMP_GRACE_TIME: f32 = 0.15;
-    pub const NETWORK_FPS: f32 = 15.0;
-    pub const GUN_THROWBACK: f32 = 700.0;
-}
-
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum GameType {
     // No wining conditions, game going forever

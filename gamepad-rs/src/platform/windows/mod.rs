@@ -70,7 +70,7 @@ impl ControllerContext {
         }
     }
     /// Get current state of Controller
-    pub fn state(&mut self, index: usize) -> &ControllerState {
+    pub fn state(&self, index: usize) -> &ControllerState {
         if index < MAX_DEVICES {
             &self.state[index]
         } else {

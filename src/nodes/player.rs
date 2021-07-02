@@ -444,19 +444,12 @@ impl Player {
             }
         }
 
-        if node.input.jump {
-            if node.jump_grace_timer > 0. {
-                node.jump_grace_timer = 0.0;
-                node.jump();
-            }
-        }
-
         if node.input.down {
             node.body.descent();
         }
 
         // if in jump and want to jump again
-        if node.body.on_ground == false && node.input.jump {
+        if node.body.on_ground == false && node.input.jump && node.jump_grace_timer <= 0.0 {
             if node.was_floating == false {
                 node.floating = true;
                 node.was_floating = true;
@@ -475,6 +468,13 @@ impl Player {
             node.body.speed.y = Self::FLOAT_SPEED;
         } else {
             node.body.have_gravity = true;
+        }
+
+        if node.input.jump {
+            if node.jump_grace_timer > 0. {
+                node.jump_grace_timer = 0.0;
+                node.jump();
+            }
         }
 
         if node.input.throw {

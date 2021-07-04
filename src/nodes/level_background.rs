@@ -21,7 +21,7 @@ fn parallax(texture: Texture2D, depth: f32, camera_pos: Vec2) -> Rect {
     let h = texture.height();
 
     let dest_rect = Rect::new(0., 0., w, h);
-    let parallax_w = w as f32 * 0.1;
+    let parallax_w = w as f32 * 0.5;
 
     let mut dest_rect2 = Rect::new(
         -parallax_w,
@@ -30,8 +30,8 @@ fn parallax(texture: Texture2D, depth: f32, camera_pos: Vec2) -> Rect {
         h + parallax_w * 2.,
     );
 
-    let parallax_x = camera_pos.x / dest_rect.w;
-    let parallax_y = camera_pos.y / dest_rect.h;
+    let parallax_x = camera_pos.x / dest_rect.w - 1.0;
+    let parallax_y = camera_pos.y / dest_rect.h - 1.0;
 
     dest_rect2.x += parallax_w * parallax_x * depth;
     dest_rect2.y += parallax_w * parallax_y * depth;

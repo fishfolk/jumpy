@@ -5,6 +5,7 @@ use macroquad_tiled as tiled;
 
 use macroquad::{
     audio::{load_sound, play_sound, PlaySoundParams, Sound},
+    //audio::{load_sound, Sound},
     experimental::{
         collections::storage,
         coroutines::start_coroutine,
@@ -194,8 +195,6 @@ async fn game(game_type: GameType) {
     );
 
     let resources = storage::get::<Resources>();
-    let w = resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width;
-    let h = resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height;
 
     let _level_background = scene::add_node(LevelBackground::new());
 
@@ -235,16 +234,8 @@ async fn game(game_type: GameType) {
 
     scene::add_node(Bullets::new());
 
-    scene::add_node(Camera::new(
-        Rect::new(0.0, 0.0, w as f32, h as f32),
-        500.0,
-        player,
-    ));
-    scene::add_node(Camera::new(
-        Rect::new(0.0, 0.0, w as f32, h as f32),
-        500.0,
-        player2,
-    ));
+    scene::add_node(Camera::new(player));
+    scene::add_node(Camera::new(player2));
     scene::add_node(Fxses {});
 
     loop {

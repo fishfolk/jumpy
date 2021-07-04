@@ -17,6 +17,8 @@ use crate::{
     Resources,
 };
 
+mod ai;
+
 pub mod capabilities {
     use crate::nodes::Player;
     use macroquad::experimental::{
@@ -30,6 +32,7 @@ pub mod capabilities {
         pub shoot: fn(node: HandleUntyped, player: Handle<Player>) -> Coroutine,
     }
 }
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[repr(u8)]
 pub enum ItemType {
@@ -207,6 +210,9 @@ pub struct Player {
 
     pub state_machine: StateMachine<RefMut<Player>>,
     pub controller_id: i32,
+
+    ai_enabled: bool,
+    ai: Option<ai::Ai>,
 }
 
 impl Player {
@@ -312,6 +318,8 @@ impl Player {
             was_floating: false,
             state_machine,
             controller_id,
+            ai_enabled: false,
+            ai: Some(ai::Ai::new()),
         }
     }
 
@@ -603,8 +611,28 @@ impl scene::Node for Player {
             }
         }
 
+        if node.ai_enabled {
+            let mut ai = node.ai.take().unwrap();
+            let input = ai.update(&mut *node);
+            node.input = input;
+            node.ai = Some(ai);
+        }
+
+        if is_key_pressed(KeyCode::B) && node.controller_id == 0 {
+            node.ai_enabled ^= true;
+            if node.weapon.is_none() {
+                node.pick_weapon(ItemType::Sword);
+            }
+        }
+        if is_key_pressed(KeyCode::N) && node.controller_id == 1 {
+            node.ai_enabled ^= true;
+            if node.weapon.is_none() {
+                node.pick_weapon(ItemType::Sword);
+            }
+        }
+
         #[cfg(not(target_os = "macos"))]
-        if game_started && node.controller_id == 0 {
+        if game_started && node.ai_enabled == false && node.controller_id == 1 {
             node.input.jump = is_key_pressed(KeyCode::Space) || is_key_pressed(KeyCode::W);
             node.input.was_jump = is_key_down(KeyCode::Space) || is_key_down(KeyCode::W);
 

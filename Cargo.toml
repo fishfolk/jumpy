@@ -12,18 +12,20 @@ nanoserde = "0.1"
 macroquad = { version = "0.3" }
 macroquad-platformer = "0.1"
 macroquad-tiled = "0.1"
+macroquad-profiler = "0.1"
 macroquad-particles = {version = "0.1", features = ["nanoserde"] }
 
 #gamepad-rs = { path = "https://github.com/unrust/gamepad-rs.git" }
 gamepad-rs = { path = "./gamepad-rs" }
 
 [patch.crates-io]
-macroquad = { git = "https://github.com/not-fl3/macroquad.git", rev = "9a34792" }
-macroquad-particles = { git = "https://github.com/not-fl3/macroquad.git", rev = "9a34792" }
-macroquad-tiled = { git = "https://github.com/not-fl3/macroquad.git", rev = "9a34792" }
-macroquad-platformer = { git = "https://github.com/not-fl3/macroquad.git", rev = "9a34792" }
+# macroquad = { git = "https://github.com/not-fl3/macroquad.git", rev = "9a34792" }
+# macroquad-particles = { git = "https://github.com/not-fl3/macroquad.git", rev = "9a34792" }
+# macroquad-tiled = { git = "https://github.com/not-fl3/macroquad.git", rev = "9a34792" }
+# macroquad-platformer = { git = "https://github.com/not-fl3/macroquad.git", rev = "9a34792" }
 
-# macroquad = { path = "../macroquad" }
-# macroquad-particles = { path = "../macroquad/particles" }
-# macroquad-tiled = { path = "../macroquad/tiled" }
-# macroquad-platformer = { path = "../macroquad/physics-platformer" }
+macroquad = { path = "../macroquad" }
+macroquad-particles = { path = "../macroquad/particles" }
+macroquad-tiled = { path = "../macroquad/tiled" }
+macroquad-platformer = { path = "../macroquad/physics-platformer" }
+macroquad-profiler = { path = "../macroquad/profiler" }

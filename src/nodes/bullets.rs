@@ -52,7 +52,7 @@ impl scene::Node for Bullets {
         }
     }
 
-    fn update(mut node: RefMut<Self>) {
+    fn fixed_update(mut node: RefMut<Self>) {
         let mut resources = storage::get_mut::<Resources>();
 
         for bullet in &mut node.bullets {

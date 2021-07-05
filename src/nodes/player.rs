@@ -97,7 +97,7 @@ impl PhysicsBody {
 
     pub fn update_throw(&mut self) {
         if self.on_ground == false {
-            self.angle += self.speed.x.abs() * 0.00015 + self.speed.y.abs() * 0.00005;
+            self.angle += self.speed.x.abs() * 0.00045 + self.speed.y.abs() * 0.00015;
 
             self.speed.y += Self::GRAVITY * get_frame_time();
         } else {
@@ -578,6 +578,16 @@ impl scene::Node for Player {
     }
 
     fn update(mut node: RefMut<Self>) {
+        if is_key_pressed(KeyCode::B) && node.controller_id == 0 {
+            node.ai_enabled ^= true;
+        }
+
+        if is_key_pressed(KeyCode::N) && node.controller_id == 1 {
+            node.ai_enabled ^= true;
+        }
+    }
+
+    fn fixed_update(mut node: RefMut<Self>) {
         let game_started = true;
 
         node.fish_sprite.update();
@@ -595,7 +605,7 @@ impl scene::Node for Player {
             }
         }
 
-        if game_started {
+        if false {
             let controller = storage::get_mut::<gamepad_rs::ControllerContext>();
 
             let status = controller.state(node.controller_id as _).status;
@@ -679,23 +689,19 @@ impl scene::Node for Player {
                 .shake();
         }
 
-        if is_key_pressed(KeyCode::B) && node.controller_id == 0 {
-            node.ai_enabled ^= true;
-        }
-        if is_key_pressed(KeyCode::N) && node.controller_id == 1 {
-            node.ai_enabled ^= true;
-        }
-
         #[cfg(not(target_os = "macos"))]
         if game_started && node.ai_enabled == false && node.controller_id == 1 {
-            node.input.jump = is_key_pressed(KeyCode::Space) || is_key_pressed(KeyCode::W);
-            node.input.was_jump = is_key_down(KeyCode::Space) || is_key_down(KeyCode::W);
+            let jump = is_key_down(KeyCode::Space) || is_key_down(KeyCode::W);
+            node.input.jump = jump && node.input.was_jump == false;
+            node.input.was_jump = jump;
 
-            node.input.throw = is_key_pressed(KeyCode::R) || is_key_pressed(KeyCode::K);
+            let throw = is_key_down(KeyCode::R) || is_key_down(KeyCode::K);
+            node.input.throw = throw && node.input.was_throw == false;
+            node.input.was_throw = throw;
 
-            node.input.fire = is_key_pressed(KeyCode::LeftControl)
-                || is_key_pressed(KeyCode::F)
-                || is_key_pressed(KeyCode::L);
+            node.input.fire = is_key_down(KeyCode::LeftControl)
+                || is_key_down(KeyCode::F)
+                || is_key_down(KeyCode::L);
             node.input.left = is_key_down(KeyCode::A);
             node.input.right = is_key_down(KeyCode::D);
             node.input.down = is_key_down(KeyCode::S);
@@ -703,7 +709,9 @@ impl scene::Node for Player {
 
         #[cfg(not(target_os = "macos"))]
         if game_started && node.ai_enabled == false && node.controller_id == 0 {
-            node.input.jump = is_key_pressed(KeyCode::Up);
+            let jump = is_key_down(KeyCode::Up);
+            node.input.jump = jump && node.input.was_jump == false;
+            node.input.was_jump = jump;
             node.input.left = is_key_down(KeyCode::Left);
             node.input.right = is_key_down(KeyCode::Right);
             node.input.down = is_key_down(KeyCode::Down);

@@ -104,7 +104,7 @@ impl scene::Node for Sword {
         }
     }
 
-    fn update(mut node: RefMut<Self>) {
+    fn fixed_update(mut node: RefMut<Self>) {
         node.sword_sprite.update();
 
         // respawn sword

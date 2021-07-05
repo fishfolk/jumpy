@@ -19,5 +19,9 @@ impl scene::Node for Fxses {
         resources.hit_fxses.draw();
         resources.explosion_fxses.draw();
         resources.disarm_fxses.draw();
+
+        macroquad_profiler::profiler(macroquad_profiler::ProfilerParams {
+            fps_counter_pos: macroquad::math::vec2(50.0, 20.0),
+        });
     }
 }

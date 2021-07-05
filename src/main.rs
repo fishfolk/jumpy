@@ -185,9 +185,7 @@ async fn game(game_type: GameType, map: &str) -> i32 {
             .await
             .unwrap()
     } else {
-        load_sound("assets/music/fish tide.ogg")
-            .await
-            .unwrap()
+        load_sound("assets/music/fish tide.ogg").await.unwrap()
     };
 
     play_sound(
@@ -260,15 +258,11 @@ async fn game(game_type: GameType, map: &str) -> i32 {
         }
 
         for player in scene::find_nodes_by_type::<Player>() {
-            if player.loses >= 3 {
+            if player.loses >= 100 {
                 macroquad::audio::stop_sound(battle_music);
                 return player.controller_id;
             }
         }
-
-        // profiler::profiler(profiler::ProfilerParams {
-        //     fps_counter_pos: vec2(50.0, 20.0),
-        // });
 
         next_frame().await;
     }
@@ -303,7 +297,7 @@ async fn main() {
 
         scene::clear();
 
-        for _ in 0..100 {
+        for _ in 0..400 {
             if res == 1 {
                 clear_background(Color::from_rgba(126, 168, 166, 255));
             } else {

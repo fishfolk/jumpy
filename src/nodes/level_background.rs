@@ -30,8 +30,8 @@ fn parallax(texture: Texture2D, depth: f32, camera_pos: Vec2) -> Rect {
         h + parallax_w * 2.,
     );
 
-    let parallax_x = camera_pos.x / dest_rect.w - 1.0;
-    let parallax_y = camera_pos.y / dest_rect.h - 1.0;
+    let parallax_x = camera_pos.x / dest_rect.w - 0.3;
+    let parallax_y = camera_pos.y / dest_rect.h * 0.6 - 0.5;
 
     dest_rect2.x += parallax_w * parallax_x * depth;
     dest_rect2.y += parallax_w * parallax_y * depth;
@@ -44,16 +44,8 @@ impl scene::Node for LevelBackground {
         let resources = storage::get_mut::<Resources>();
         let pos = scene::camera_pos();
 
-        draw_texture_ex(
-            resources.background_04,
-            0.0,
-            30.0,
-            WHITE,
-            DrawTextureParams {
-                dest_size: Some(vec2(1000.0, 1500.0)),
-                ..Default::default()
-            },
-        );
+        clear_background(Color::from_rgba(126, 168, 166, 255));
+
         let dest_rect = parallax(resources.background_03, 2.0, pos);
         draw_texture_ex(
             resources.background_03,

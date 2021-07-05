@@ -24,6 +24,9 @@ pub struct Sword {
 
     origin_pos: Vec2,
     deadly_dangerous: bool,
+
+    // hack, just for swordthrow loc
+    spawn_pos: (Vec2, bool),
 }
 
 impl scene::Node for Sword {
@@ -104,6 +107,17 @@ impl scene::Node for Sword {
     fn update(mut node: RefMut<Self>) {
         node.sword_sprite.update();
 
+        // respawn sword
+        // should not be here, just a hack for swordthrow loc
+        if node.body.pos.y > Player::MAP_BOTTOM {
+            node.body.pos = node.spawn_pos.0;
+            node.body.facing = node.spawn_pos.1;
+            node.body.speed = vec2(0., 0.);
+            node.deadly_dangerous = false;
+            node.throw(false);
+            return;
+        }
+
         if node.thrown {
             node.body.update();
             node.body.update_throw();
@@ -114,7 +128,7 @@ impl scene::Node for Sword {
             if node.body.speed.length() <= 200.0 {
                 node.deadly_dangerous = false;
             }
-            if node.body.on_ground {
+            if node.body.on_ground && node.body.speed.length() <= 300.0 {
                 node.deadly_dangerous = false;
             }
 
@@ -164,12 +178,14 @@ impl Sword {
                 speed: vec2(0., 0.),
                 angle: std::f32::consts::PI / 4. + 0.3,
                 collider: None,
+                last_frame_on_ground: false,
                 on_ground: false,
                 have_gravity: true,
             },
             thrown: false,
             origin_pos: pos,
             deadly_dangerous: false,
+            spawn_pos: (pos, facing),
         }
     }
 
@@ -192,11 +208,17 @@ impl Sword {
             vec2(-50., 10.)
         };
 
-        self.body.collider = Some(resources.collision_world.add_actor(
-            self.body.pos + sword_mount_pos,
-            40,
-            30,
-        ));
+        if self.body.collider.is_none() {
+            self.body.collider = Some(resources.collision_world.add_actor(
+                self.body.pos + sword_mount_pos,
+                40,
+                30,
+            ));
+        } else {
+            resources
+                .collision_world
+                .set_actor_position(self.body.collider.unwrap(), self.body.pos + sword_mount_pos);
+        }
         self.origin_pos = self.body.pos + sword_mount_pos / 2.;
     }
 
@@ -223,6 +245,9 @@ impl Sword {
                     if Rect::new(other.body.pos.x, other.body.pos.y, 20., 64.)
                         .overlaps(&sword_hit_box)
                     {
+                        scene::find_node_by_type::<crate::nodes::Camera>()
+                            .unwrap()
+                            .shake();
                         other.kill(!player.body.facing);
                     }
                 }

@@ -29,10 +29,10 @@ struct JsEvent {
     number: u8,
 }
 
-fn joystick_thread(tx: mpsc::Sender<JsEvent>) {
+fn joystick_thread(tx: mpsc::Sender<JsEvent>, path: &str) {
     use std::fs::File;
     use std::io::Read;
-    let mut f = File::open("/dev/input/js0").unwrap();
+    let mut f = File::open(path).unwrap();
     loop {
         let mut b: [u8; std::mem::size_of::<JsEvent>()] = [0; std::mem::size_of::<JsEvent>()];
         f.read_exact(&mut b).unwrap();
@@ -42,21 +42,31 @@ fn joystick_thread(tx: mpsc::Sender<JsEvent>) {
 }
 pub struct ControllerContext {
     rx: mpsc::Receiver<JsEvent>,
-    controller_state: ControllerState,
+    rx1: mpsc::Receiver<JsEvent>,
+    controller_state: [ControllerState; 2],
 }
 
 impl ControllerContext {
     pub fn new() -> Option<Self> {
         let (tx, rx) = mpsc::channel();
+        let (tx1, rx1) = mpsc::channel();
 
-        std::thread::spawn(move || joystick_thread(tx));
+        std::thread::spawn(move || joystick_thread(tx, "/dev/input/js0"));
+        std::thread::spawn(move || joystick_thread(tx1, "/dev/input/js1"));
 
         Some(Self {
             rx,
-            controller_state: ControllerState {
-                status: ControllerStatus::Connected,
-                ..DEFAULT_CONTROLLER_STATE
-            },
+            rx1,
+            controller_state: [
+                ControllerState {
+                    status: ControllerStatus::Connected,
+                    ..DEFAULT_CONTROLLER_STATE
+                },
+                ControllerState {
+                    status: ControllerStatus::Connected,
+                    ..DEFAULT_CONTROLLER_STATE
+                },
+            ],
         })
     }
     /// Update controller state by index
@@ -64,10 +74,21 @@ impl ControllerContext {
         while let Ok(event) = self.rx.try_recv() {
             if (event.type_ & JsEventType::Axis as u8) != 0 {
                 let value = event.value as f32 / std::u16::MAX as f32 * 2.;
-                self.controller_state.analog_state[event.number as usize] = value;
+                self.controller_state[0].analog_state[event.number as usize] = value;
             }
             if (event.type_ & JsEventType::Button as u8) != 0 {
-                self.controller_state.digital_state[event.number as usize] = event.value != 0;
+                self.controller_state[0].digital_state[event.number as usize] = event.value != 0;
+            }
+            if (event.type_ & JsEventType::Init as u8) != 0 {}
+        }
+
+        while let Ok(event) = self.rx1.try_recv() {
+            if (event.type_ & JsEventType::Axis as u8) != 0 {
+                let value = event.value as f32 / std::u16::MAX as f32 * 2.;
+                self.controller_state[1].analog_state[event.number as usize] = value;
+            }
+            if (event.type_ & JsEventType::Button as u8) != 0 {
+                self.controller_state[1].digital_state[event.number as usize] = event.value != 0;
             }
             if (event.type_ & JsEventType::Init as u8) != 0 {}
         }
@@ -76,7 +97,7 @@ impl ControllerContext {
     pub fn info(&self, _index: usize) -> &ControllerInfo {
         &*DEFAULT_CONTROLLER_INFO
     }
-    pub fn state(&self, _index: usize) -> &ControllerState {
-        &self.controller_state
+    pub fn state(&self, index: usize) -> &ControllerState {
+        &self.controller_state[index]
     }
 }

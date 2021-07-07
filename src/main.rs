@@ -45,7 +45,6 @@ struct Resources {
     background_01: Texture2D,
     background_02: Texture2D,
     background_03: Texture2D,
-    background_04: Texture2D,
     decorations: Texture2D,
     jump_sound: Sound,
     shoot_sound: Sound,
@@ -64,7 +63,7 @@ pub const WEAPON_DISARM_FX: &'static str = r#"{"local_coords":false,"emission_sh
 
 impl Resources {
     // TODO: fix macroquad error type here
-    async fn new() -> Result<Resources, macroquad::prelude::FileError> {
+    async fn new(map: &str) -> Result<Resources, macroquad::prelude::FileError> {
         let tileset = load_texture("assets/tileset.png").await?;
         tileset.set_filter(FilterMode::Nearest);
 
@@ -95,15 +94,12 @@ impl Resources {
         let background_03 = load_texture("assets/Background/03.png").await?;
         background_03.set_filter(FilterMode::Nearest);
 
-        let background_04 = load_texture("assets/Background/04.png").await?;
-        background_04.set_filter(FilterMode::Nearest);
-
         let jump_sound = load_sound("assets/sounds/jump.wav").await?;
         let shoot_sound = load_sound("assets/sounds/shoot.ogg").await?;
         let sword_sound = load_sound("assets/sounds/sword.wav").await?;
         let pickup_sound = load_sound("assets/sounds/pickup.wav").await?;
 
-        let tiled_map_json = load_string("assets/map.json").await.unwrap();
+        let tiled_map_json = load_string(map).await.unwrap();
         let tiled_map = tiled::load_map(
             &tiled_map_json,
             &[("tileset.png", tileset), ("decorations1.png", decorations)],
@@ -148,7 +144,6 @@ impl Resources {
             background_01,
             background_02,
             background_03,
-            background_04,
             decorations,
             jump_sound,
             shoot_sound,
@@ -158,12 +153,15 @@ impl Resources {
     }
 }
 
-async fn game(game_type: GameType) {
+async fn game(game_type: GameType, map: &str) -> i32 {
     use nodes::{Bullets, Camera, Decoration, Fxses, LevelBackground, Muscet, Player, Sword};
 
-    let resources_loading = start_coroutine(async move {
-        let resources = Resources::new().await.unwrap();
-        storage::store(resources);
+    let resources_loading = start_coroutine({
+        let map = map.to_string();
+        async move {
+            let resources = Resources::new(&map).await.unwrap();
+            storage::store(resources);
+        }
     });
 
     while resources_loading.is_done() == false {
@@ -182,9 +180,15 @@ async fn game(game_type: GameType) {
         next_frame().await;
     }
 
-    let battle_music = load_sound("assets/music/across the pond.ogg")
-        .await
-        .unwrap();
+    let battle_music = if map == "assets/map.json" {
+        load_sound("assets/music/across the pond.ogg")
+            .await
+            .unwrap()
+    } else {
+        load_sound("assets/music/fish tide.ogg")
+            .await
+            .unwrap()
+    };
 
     play_sound(
         battle_music,
@@ -209,8 +213,10 @@ async fn game(game_type: GameType) {
 
     drop(resources);
 
-    let mut wat_facing = false;
+    let _player = scene::add_node(Player::new(game_type == GameType::Deathmatch, 0));
+    let _player2 = scene::add_node(Player::new(game_type == GameType::Deathmatch, 1));
 
+    let mut wat_facing = false;
     for object in &objects {
         if object.name == "sword" {
             let mut sword =
@@ -229,22 +235,34 @@ async fn game(game_type: GameType) {
         }
     }
 
-    let player = scene::add_node(Player::new(game_type == GameType::Deathmatch, 0));
-    let player2 = scene::add_node(Player::new(game_type == GameType::Deathmatch, 1));
-
     scene::add_node(Bullets::new());
 
-    scene::add_node(Camera::new(player));
-    scene::add_node(Camera::new(player2));
+    let bounds = {
+        let resources = storage::get::<Resources>();
+
+        let w =
+            resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width;
+        let h =
+            resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height;
+        Rect::new(0., 0., w as f32, h as f32)
+    };
+
+    scene::add_node(Camera::new(bounds));
+    //scene::add_node(Camera::new(player2));
     scene::add_node(Fxses {});
 
     loop {
-        clear_background(BLACK);
-
         {
             let mut controller = storage::get_mut::<gamepad_rs::ControllerContext>();
             for i in 0..2 {
                 controller.update(i);
+            }
+        }
+
+        for player in scene::find_nodes_by_type::<Player>() {
+            if player.loses >= 3 {
+                macroquad::audio::stop_sound(battle_music);
+                return player.controller_id;
             }
         }
 
@@ -261,7 +279,7 @@ fn window_conf() -> Conf {
     Conf {
         window_title: "FISH".to_owned(),
         high_dpi: false,
-        window_width: 1910,
+        window_width: 955,
         window_height: 600,
         ..Default::default()
     }
@@ -274,9 +292,43 @@ async fn main() {
         storage::store(controller);
     }
 
+    let mut n = 0;
     loop {
-        game(GameType::Deathmatch).await;
+        let map = match n % 2 {
+            0 => "assets/map.json",
+            1 => "assets/swordthrow-map.json",
+            _ => "assets/map.json",
+        };
+        n += 1;
+        let res = game(GameType::Deathmatch, map).await;
 
         scene::clear();
+
+        for _ in 0..100 {
+            if res == 1 {
+                clear_background(Color::from_rgba(126, 168, 166, 255));
+            } else {
+                clear_background(Color::from_rgba(126, 178, 126, 255));
+            }
+
+            let resources = storage::get::<Resources>();
+
+            draw_texture_ex(
+                if res == 1 {
+                    resources.whale
+                } else {
+                    resources.whale_red
+                },
+                0.,
+                0.0,
+                WHITE,
+                DrawTextureParams {
+                    source: Some(Rect::new(0.0, 0.0, 76., 66.)),
+                    dest_size: Some(vec2(screen_width(), screen_height())),
+                    ..Default::default()
+                },
+            );
+            next_frame().await;
+        }
     }
 }

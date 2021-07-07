@@ -175,6 +175,7 @@ impl Muscet {
                 speed: vec2(0., 0.),
                 collider: None,
                 on_ground: false,
+                last_frame_on_ground: false,
                 have_gravity: true,
             },
             thrown: false,
@@ -219,11 +220,17 @@ impl Muscet {
             vec2(-50., 10.)
         };
 
-        self.body.collider = Some(resources.collision_world.add_actor(
-            self.body.pos + sword_mount_pos,
-            40,
-            30,
-        ));
+        if self.body.collider.is_none() {
+            self.body.collider = Some(resources.collision_world.add_actor(
+                self.body.pos + sword_mount_pos,
+                40,
+                30,
+            ));
+        } else {
+            resources
+                .collision_world
+                .set_actor_position(self.body.collider.unwrap(), self.body.pos + sword_mount_pos);
+        }
         self.origin_pos = self.body.pos + sword_mount_pos / 2.;
     }
 
@@ -239,6 +246,11 @@ impl Muscet {
                 }
             }
 
+            // {
+            //     scene::find_node_by_type::<crate::nodes::Camera>()
+            //         .unwrap()
+            //         .shake();
+            // }
             {
                 let resources = storage::get_mut::<Resources>();
                 play_sound_once(resources.shoot_sound);

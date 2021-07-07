@@ -637,7 +637,7 @@ dependencies = [
 [[package]]
 name = "macroquad"
 version = "0.3.6"
-source = "git+https://github.com/not-fl3/macroquad.git?rev=2154feb#2154feb63b781eef61480f4b4e375d63a306a1eb"
+source = "git+https://github.com/not-fl3/macroquad.git?rev=9a34792#9a3479224a9f16a93f75a587aeb2e7274d8740af"
 dependencies = [
  "audir-sles",
  "audrey",
@@ -654,7 +654,7 @@ dependencies = [
 [[package]]
 name = "macroquad-particles"
 version = "0.1.1"
-source = "git+https://github.com/not-fl3/macroquad.git?rev=2154feb#2154feb63b781eef61480f4b4e375d63a306a1eb"
+source = "git+https://github.com/not-fl3/macroquad.git?rev=9a34792#9a3479224a9f16a93f75a587aeb2e7274d8740af"
 dependencies = [
  "macroquad",
  "nanoserde",
@@ -663,7 +663,7 @@ dependencies = [
 [[package]]
 name = "macroquad-platformer"
 version = "0.1.1"
-source = "git+https://github.com/not-fl3/macroquad.git?rev=2154feb#2154feb63b781eef61480f4b4e375d63a306a1eb"
+source = "git+https://github.com/not-fl3/macroquad.git?rev=9a34792#9a3479224a9f16a93f75a587aeb2e7274d8740af"
 dependencies = [
  "macroquad",
 ]
@@ -671,7 +671,7 @@ dependencies = [
 [[package]]
 name = "macroquad-tiled"
 version = "0.1.0"
-source = "git+https://github.com/not-fl3/macroquad.git?rev=2154feb#2154feb63b781eef61480f4b4e375d63a306a1eb"
+source = "git+https://github.com/not-fl3/macroquad.git?rev=9a34792#9a3479224a9f16a93f75a587aeb2e7274d8740af"
 dependencies = [
  "macroquad",
  "nanoserde",
@@ -680,7 +680,7 @@ dependencies = [
 [[package]]
 name = "macroquad_macro"
 version = "0.1.5"
-source = "git+https://github.com/not-fl3/macroquad.git?rev=2154feb#2154feb63b781eef61480f4b4e375d63a306a1eb"
+source = "git+https://github.com/not-fl3/macroquad.git?rev=9a34792#9a3479224a9f16a93f75a587aeb2e7274d8740af"
 
 [[package]]
 name = "maybe-uninit"

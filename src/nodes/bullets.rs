@@ -69,6 +69,11 @@ impl scene::Node for Bullets {
 
                 if self_damaged {
                     killed = true;
+
+                    scene::find_node_by_type::<crate::nodes::Camera>()
+                        .unwrap()
+                        .shake();
+
                     player.kill(direction);
                 }
             }

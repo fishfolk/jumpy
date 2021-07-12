@@ -186,7 +186,6 @@ impl Player {
     pub const JUMP_SPEED: f32 = 700.0;
     pub const RUN_SPEED: f32 = 250.0;
     pub const JUMP_GRACE_TIME: f32 = 0.15;
-    pub const MAP_BOTTOM: f32 = 630.0;
     pub const FLOAT_SPEED: f32 = 100.0;
 
     pub fn new(deathmatch: bool, controller_id: i32) -> Player {
@@ -295,6 +294,13 @@ impl Player {
 
     fn death_coroutine(node: &mut RefMut<Player>) -> Coroutine {
         let handle = node.handle();
+
+        let map_bottom = {
+            let resources = storage::get::<Resources>();
+
+            resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height
+        } as f32;
+
         let coroutine = async move {
             {
                 let mut node = scene::get_node(handle);
@@ -308,7 +314,7 @@ impl Player {
 
             if {
                 let node = scene::get_node(handle);
-                node.body.pos.y < Self::MAP_BOTTOM
+                node.body.pos.y < map_bottom
             } {
                 // give some take for a dead fish to take off the ground
                 wait_seconds(0.1).await;
@@ -317,7 +323,7 @@ impl Player {
                 while {
                     let node = scene::get_node(handle);
 
-                    (node.body.on_ground || node.body.pos.y > Self::MAP_BOTTOM) == false
+                    (node.body.on_ground || node.body.pos.y > map_bottom) == false
                 } {
                     next_frame().await;
                 }
@@ -586,7 +592,13 @@ impl scene::Node for Player {
     fn fixed_update(mut node: RefMut<Self>) {
         node.fish_sprite.update();
 
-        if node.body.pos.y > Self::MAP_BOTTOM {
+        let map_bottom = {
+            let resources = storage::get::<Resources>();
+
+            resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height
+        } as f32;
+
+        if node.body.pos.y > map_bottom {
             node.kill(false);
         }
 

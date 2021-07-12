@@ -107,9 +107,14 @@ impl scene::Node for Sword {
     fn fixed_update(mut node: RefMut<Self>) {
         node.sword_sprite.update();
 
+        let map_bottom = {
+            let resources = storage::get::<Resources>();
+
+            resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height
+        } as f32;
         // respawn sword
         // should not be here, just a hack for swordthrow loc
-        if node.body.pos.y > Player::MAP_BOTTOM {
+        if node.body.pos.y > map_bottom {
             node.body.pos = node.spawn_pos.0;
             node.body.facing = node.spawn_pos.1;
             node.body.speed = vec2(0., 0.);

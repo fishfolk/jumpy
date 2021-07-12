@@ -637,7 +637,8 @@ dependencies = [
 
 [[package]]
 name = "macroquad"
-version = "0.3.6"
+version = "0.3.7"
+source = "git+https://github.com/not-fl3/macroquad.git?rev=c68969b#c68969b1330a01bdba77d67881743efccf9dcba5"
 dependencies = [
  "audir-sles",
  "audrey",
@@ -654,6 +655,7 @@ dependencies = [
 [[package]]
 name = "macroquad-particles"
 version = "0.1.1"
+source = "git+https://github.com/not-fl3/macroquad.git?rev=c68969b#c68969b1330a01bdba77d67881743efccf9dcba5"
 dependencies = [
  "macroquad",
  "nanoserde",
@@ -662,6 +664,7 @@ dependencies = [
 [[package]]
 name = "macroquad-platformer"
 version = "0.1.1"
+source = "git+https://github.com/not-fl3/macroquad.git?rev=c68969b#c68969b1330a01bdba77d67881743efccf9dcba5"
 dependencies = [
  "macroquad",
 ]
@@ -669,6 +672,8 @@ dependencies = [
 [[package]]
 name = "macroquad-profiler"
 version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4cfbe9a07d3f695bc12127a583e7154dc71a88c0daa7eead6c4ddc8a233b5f36"
 dependencies = [
  "macroquad",
 ]
@@ -676,6 +681,7 @@ dependencies = [
 [[package]]
 name = "macroquad-tiled"
 version = "0.1.0"
+source = "git+https://github.com/not-fl3/macroquad.git?rev=c68969b#c68969b1330a01bdba77d67881743efccf9dcba5"
 dependencies = [
  "macroquad",
  "nanoserde",
@@ -684,6 +690,7 @@ dependencies = [
 [[package]]
 name = "macroquad_macro"
 version = "0.1.5"
+source = "git+https://github.com/not-fl3/macroquad.git?rev=c68969b#c68969b1330a01bdba77d67881743efccf9dcba5"
 
 [[package]]
 name = "maybe-uninit"

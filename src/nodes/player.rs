@@ -92,6 +92,7 @@ impl PhysicsBody {
             if !collision_world.move_v(collider, self.speed.y * get_frame_time()) {
                 self.speed.y = 0.0;
             }
+            self.pos = collision_world.actor_pos(collider);
         }
     }
 
@@ -147,27 +148,6 @@ impl Player {
             audio::PlaySoundParams {
                 looped: false,
                 volume: 0.6,
-            },
-        );
-    }
-
-    pub fn draw(&mut self, id: i32) {
-        let resources = storage::get::<Resources>();
-
-        draw_texture_ex(
-            if id == 0 {
-                resources.whale
-            } else {
-                resources.whale_red
-            },
-            self.body.pos.x - 25.,
-            self.body.pos.y - 10.,
-            color::WHITE,
-            DrawTextureParams {
-                source: Some(self.fish_sprite.frame().source_rect),
-                dest_size: Some(self.fish_sprite.frame().dest_size),
-                flip_x: !self.body.facing,
-                ..Default::default()
             },
         );
     }
@@ -548,7 +528,7 @@ impl Player {
 }
 
 impl scene::Node for Player {
-    fn draw(mut node: RefMut<Self>) {
+    fn draw(node: RefMut<Self>) {
         //     let sword_hit_box = if node.fish.facing {
         //         Rect::new(node.pos().x + 35., node.pos().y - 5., 40., 60.)
         //     } else {
@@ -573,8 +553,24 @@ impl scene::Node for Player {
 
         //draw_rectangle_lines(fish_box.x, fish_box.y, fish_box.w, fish_box.h, 5., BLUE);
 
-        let id = node.controller_id;
-        node.draw(id);
+        let resources = storage::get::<Resources>();
+
+        draw_texture_ex(
+            if node.controller_id == 0 {
+                resources.whale
+            } else {
+                resources.whale_red
+            },
+            node.body.pos.x - 25.,
+            node.body.pos.y - 10.,
+            color::WHITE,
+            DrawTextureParams {
+                source: Some(node.fish_sprite.frame().source_rect),
+                dest_size: Some(node.fish_sprite.frame().dest_size),
+                flip_x: !node.body.facing,
+                ..Default::default()
+            },
+        );
     }
 
     fn update(mut node: RefMut<Self>) {
@@ -588,8 +584,6 @@ impl scene::Node for Player {
     }
 
     fn fixed_update(mut node: RefMut<Self>) {
-        let game_started = true;
-
         node.fish_sprite.update();
 
         if node.body.pos.y > Self::MAP_BOTTOM {
@@ -690,7 +684,7 @@ impl scene::Node for Player {
         }
 
         #[cfg(not(target_os = "macos"))]
-        if game_started && node.ai_enabled == false && node.controller_id == 1 {
+        if node.ai_enabled == false && node.controller_id == 1 {
             let jump = is_key_down(KeyCode::Space) || is_key_down(KeyCode::W);
             node.input.jump = jump && node.input.was_jump == false;
             node.input.was_jump = jump;
@@ -708,7 +702,7 @@ impl scene::Node for Player {
         }
 
         #[cfg(not(target_os = "macos"))]
-        if game_started && node.ai_enabled == false && node.controller_id == 0 {
+        if node.ai_enabled == false && node.controller_id == 0 {
             let jump = is_key_down(KeyCode::Up);
             node.input.jump = jump && node.input.was_jump == false;
             node.input.was_jump = jump;

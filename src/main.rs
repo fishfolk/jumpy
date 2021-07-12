@@ -4,8 +4,7 @@ use macroquad_particles as particles;
 use macroquad_tiled as tiled;
 
 use macroquad::{
-    audio::{load_sound, play_sound, PlaySoundParams, Sound},
-    //audio::{load_sound, Sound},
+    audio::{self, load_sound},
     experimental::{
         collections::storage,
         coroutines::start_coroutine,
@@ -46,10 +45,10 @@ struct Resources {
     background_02: Texture2D,
     background_03: Texture2D,
     decorations: Texture2D,
-    jump_sound: Sound,
-    shoot_sound: Sound,
-    sword_sound: Sound,
-    pickup_sound: Sound,
+    jump_sound: audio::Sound,
+    shoot_sound: audio::Sound,
+    sword_sound: audio::Sound,
+    pickup_sound: audio::Sound,
 }
 
 pub const HIT_FX: &'static str = r#"{"local_coords":false,"emission_shape":{"Point":[]},"one_shot":true,"lifetime":0.2,"lifetime_randomness":0,"explosiveness":0.65,"amount":41,"shape":{"Circle":{"subdivisions":10}},"emitting":false,"initial_direction":{"x":0,"y":-1},"initial_direction_spread":6.2831855,"initial_velocity":73.9,"initial_velocity_randomness":0.2,"linear_accel":0,"size":5.6000004,"size_randomness":0.4,"blend_mode":{"Alpha":[]},"colors_curve":{"start":{"r":0.8200004,"g":1,"b":0.31818175,"a":1},"mid":{"r":0.71000004,"g":0.36210018,"b":0,"a":1},"end":{"r":0.02,"g":0,"b":0.000000007152557,"a":1}},"gravity":{"x":0,"y":0},"post_processing":{}}
@@ -188,13 +187,25 @@ async fn game(game_type: GameType, map: &str) -> i32 {
         load_sound("assets/music/fish tide.ogg").await.unwrap()
     };
 
-    play_sound(
-        battle_music,
-        PlaySoundParams {
-            looped: true,
-            volume: 0.6,
-        },
-    );
+    // audio::play_sound(
+    //     battle_music,
+    //     audio::PlaySoundParams {
+    //         looped: true,
+    //         volume: 0.6,
+    //     },
+    // );
+
+    let bounds = {
+        let resources = storage::get::<Resources>();
+
+        let w =
+            resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width;
+        let h =
+            resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height;
+        Rect::new(0., 0., w as f32, h as f32)
+    };
+
+    scene::add_node(Camera::new(bounds));
 
     let resources = storage::get::<Resources>();
 
@@ -235,17 +246,6 @@ async fn game(game_type: GameType, map: &str) -> i32 {
 
     scene::add_node(Bullets::new());
 
-    let bounds = {
-        let resources = storage::get::<Resources>();
-
-        let w =
-            resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width;
-        let h =
-            resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height;
-        Rect::new(0., 0., w as f32, h as f32)
-    };
-
-    scene::add_node(Camera::new(bounds));
     //scene::add_node(Camera::new(player2));
     scene::add_node(Fxses {});
 
@@ -258,7 +258,7 @@ async fn game(game_type: GameType, map: &str) -> i32 {
         }
 
         for player in scene::find_nodes_by_type::<Player>() {
-            if player.loses >= 100 {
+            if player.loses >= 4 {
                 macroquad::audio::stop_sound(battle_music);
                 return player.controller_id;
             }
@@ -287,17 +287,17 @@ async fn main() {
 
     let mut n = 0;
     loop {
-        let map = match n % 2 {
-            0 => "assets/map.json",
-            1 => "assets/swordthrow-map.json",
-            _ => "assets/map.json",
+        let map = match n % 3 {
+            0 => "assets/levels/lev02.json",
+            1 => "assets/levels/lev02.json",
+            _ => "assets/levels/lev03.json",
         };
         n += 1;
         let res = game(GameType::Deathmatch, map).await;
 
         scene::clear();
 
-        for _ in 0..400 {
+        for _ in 0..100 {
             if res == 1 {
                 clear_background(Color::from_rgba(126, 168, 166, 255));
             } else {

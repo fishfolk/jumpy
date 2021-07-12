@@ -288,9 +288,10 @@ async fn main() {
     let mut n = 0;
     loop {
         let map = match n % 3 {
-            0 => "assets/levels/lev02.json",
+            0 => "assets/levels/lev01.json",
             1 => "assets/levels/lev02.json",
-            _ => "assets/levels/lev03.json",
+            3 => "assets/levels/lev03.json",
+            _ => "assets/levels/lev01.json",
         };
         n += 1;
         let res = game(GameType::Deathmatch, map).await;

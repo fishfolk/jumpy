@@ -249,7 +249,7 @@
         {
          "columns":7,
          "firstgid":1,
-         "image":"..\/..\/Documents\/GitHub\/fish2\/assets\/tileset.png",
+         "image":"tileset.png",
          "imageheight":288,
          "imagewidth":224,
          "margin":0,
@@ -275,7 +275,7 @@
         {
          "columns":5,
          "firstgid":64,
-         "image":"..\/..\/Documents\/GitHub\/fish2\/assets\/decorations1.png",
+         "image":"decorations1.png",
          "imageheight":102,
          "imagewidth":240,
          "margin":0,

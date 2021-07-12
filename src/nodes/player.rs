@@ -92,12 +92,13 @@ impl PhysicsBody {
             if !collision_world.move_v(collider, self.speed.y * get_frame_time()) {
                 self.speed.y = 0.0;
             }
+            self.pos = collision_world.actor_pos(collider);
         }
     }
 
     pub fn update_throw(&mut self) {
         if self.on_ground == false {
-            self.angle += self.speed.x.abs() * 0.00015 + self.speed.y.abs() * 0.00005;
+            self.angle += self.speed.x.abs() * 0.00045 + self.speed.y.abs() * 0.00015;
 
             self.speed.y += Self::GRAVITY * get_frame_time();
         } else {
@@ -150,27 +151,6 @@ impl Player {
             },
         );
     }
-
-    pub fn draw(&mut self, id: i32) {
-        let resources = storage::get::<Resources>();
-
-        draw_texture_ex(
-            if id == 0 {
-                resources.whale
-            } else {
-                resources.whale_red
-            },
-            self.body.pos.x - 25.,
-            self.body.pos.y - 10.,
-            color::WHITE,
-            DrawTextureParams {
-                source: Some(self.fish_sprite.frame().source_rect),
-                dest_size: Some(self.fish_sprite.frame().dest_size),
-                flip_x: !self.body.facing,
-                ..Default::default()
-            },
-        );
-    }
 }
 
 pub struct Player {
@@ -206,7 +186,6 @@ impl Player {
     pub const JUMP_SPEED: f32 = 700.0;
     pub const RUN_SPEED: f32 = 250.0;
     pub const JUMP_GRACE_TIME: f32 = 0.15;
-    pub const MAP_BOTTOM: f32 = 630.0;
     pub const FLOAT_SPEED: f32 = 100.0;
 
     pub fn new(deathmatch: bool, controller_id: i32) -> Player {
@@ -315,6 +294,13 @@ impl Player {
 
     fn death_coroutine(node: &mut RefMut<Player>) -> Coroutine {
         let handle = node.handle();
+
+        let map_bottom = {
+            let resources = storage::get::<Resources>();
+
+            resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height
+        } as f32;
+
         let coroutine = async move {
             {
                 let mut node = scene::get_node(handle);
@@ -328,7 +314,7 @@ impl Player {
 
             if {
                 let node = scene::get_node(handle);
-                node.body.pos.y < Self::MAP_BOTTOM
+                node.body.pos.y < map_bottom
             } {
                 // give some take for a dead fish to take off the ground
                 wait_seconds(0.1).await;
@@ -337,7 +323,7 @@ impl Player {
                 while {
                     let node = scene::get_node(handle);
 
-                    (node.body.on_ground || node.body.pos.y > Self::MAP_BOTTOM) == false
+                    (node.body.on_ground || node.body.pos.y > map_bottom) == false
                 } {
                     next_frame().await;
                 }
@@ -548,7 +534,7 @@ impl Player {
 }
 
 impl scene::Node for Player {
-    fn draw(mut node: RefMut<Self>) {
+    fn draw(node: RefMut<Self>) {
         //     let sword_hit_box = if node.fish.facing {
         //         Rect::new(node.pos().x + 35., node.pos().y - 5., 40., 60.)
         //     } else {
@@ -573,16 +559,46 @@ impl scene::Node for Player {
 
         //draw_rectangle_lines(fish_box.x, fish_box.y, fish_box.w, fish_box.h, 5., BLUE);
 
-        let id = node.controller_id;
-        node.draw(id);
+        let resources = storage::get::<Resources>();
+
+        draw_texture_ex(
+            if node.controller_id == 0 {
+                resources.whale
+            } else {
+                resources.whale_red
+            },
+            node.body.pos.x - 25.,
+            node.body.pos.y - 10.,
+            color::WHITE,
+            DrawTextureParams {
+                source: Some(node.fish_sprite.frame().source_rect),
+                dest_size: Some(node.fish_sprite.frame().dest_size),
+                flip_x: !node.body.facing,
+                ..Default::default()
+            },
+        );
     }
 
     fn update(mut node: RefMut<Self>) {
-        let game_started = true;
+        if is_key_pressed(KeyCode::B) && node.controller_id == 0 {
+            node.ai_enabled ^= true;
+        }
 
+        if is_key_pressed(KeyCode::N) && node.controller_id == 1 {
+            node.ai_enabled ^= true;
+        }
+    }
+
+    fn fixed_update(mut node: RefMut<Self>) {
         node.fish_sprite.update();
 
-        if node.body.pos.y > Self::MAP_BOTTOM {
+        let map_bottom = {
+            let resources = storage::get::<Resources>();
+
+            resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height
+        } as f32;
+
+        if node.body.pos.y > map_bottom {
             node.kill(false);
         }
 
@@ -595,7 +611,7 @@ impl scene::Node for Player {
             }
         }
 
-        if game_started {
+        if false {
             let controller = storage::get_mut::<gamepad_rs::ControllerContext>();
 
             let status = controller.state(node.controller_id as _).status;
@@ -679,31 +695,29 @@ impl scene::Node for Player {
                 .shake();
         }
 
-        if is_key_pressed(KeyCode::B) && node.controller_id == 0 {
-            node.ai_enabled ^= true;
-        }
-        if is_key_pressed(KeyCode::N) && node.controller_id == 1 {
-            node.ai_enabled ^= true;
-        }
-
         #[cfg(not(target_os = "macos"))]
-        if game_started && node.ai_enabled == false && node.controller_id == 1 {
-            node.input.jump = is_key_pressed(KeyCode::Space) || is_key_pressed(KeyCode::W);
-            node.input.was_jump = is_key_down(KeyCode::Space) || is_key_down(KeyCode::W);
+        if node.ai_enabled == false && node.controller_id == 1 {
+            let jump = is_key_down(KeyCode::Space) || is_key_down(KeyCode::W);
+            node.input.jump = jump && node.input.was_jump == false;
+            node.input.was_jump = jump;
 
-            node.input.throw = is_key_pressed(KeyCode::R) || is_key_pressed(KeyCode::K);
+            let throw = is_key_down(KeyCode::R) || is_key_down(KeyCode::K);
+            node.input.throw = throw && node.input.was_throw == false;
+            node.input.was_throw = throw;
 
-            node.input.fire = is_key_pressed(KeyCode::LeftControl)
-                || is_key_pressed(KeyCode::F)
-                || is_key_pressed(KeyCode::L);
+            node.input.fire = is_key_down(KeyCode::LeftControl)
+                || is_key_down(KeyCode::F)
+                || is_key_down(KeyCode::L);
             node.input.left = is_key_down(KeyCode::A);
             node.input.right = is_key_down(KeyCode::D);
             node.input.down = is_key_down(KeyCode::S);
         }
 
         #[cfg(not(target_os = "macos"))]
-        if game_started && node.ai_enabled == false && node.controller_id == 0 {
-            node.input.jump = is_key_pressed(KeyCode::Up);
+        if node.ai_enabled == false && node.controller_id == 0 {
+            let jump = is_key_down(KeyCode::Up);
+            node.input.jump = jump && node.input.was_jump == false;
+            node.input.was_jump = jump;
             node.input.left = is_key_down(KeyCode::Left);
             node.input.right = is_key_down(KeyCode::Right);
             node.input.down = is_key_down(KeyCode::Down);

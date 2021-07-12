@@ -96,7 +96,7 @@ impl scene::Node for Muscet {
         }
     }
 
-    fn update(mut node: RefMut<Self>) {
+    fn fixed_update(mut node: RefMut<Self>) {
         node.muscet_sprite.update();
 
         if node.thrown {

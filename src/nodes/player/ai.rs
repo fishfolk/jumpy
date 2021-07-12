@@ -12,6 +12,7 @@ use crate::{
 
 pub struct Ai {
     jump_cooldown: f32,
+    throw_cooldown: f32,
     keep_direction_until_event: bool,
     keep_direction_timeout: f32,
     fix_direction: i32,
@@ -24,6 +25,7 @@ impl Ai {
             keep_direction_until_event: false,
             keep_direction_timeout: 0.,
             fix_direction: 0,
+            throw_cooldown: 0.,
         }
     }
 
@@ -98,6 +100,11 @@ impl Ai {
             self.keep_direction_until_event = true;
         }
 
+        if rand::gen_range(0, 800) == 5 {
+            input.throw = true;
+            self.throw_cooldown = 1.;
+        }
+
         if player.body.pos.distance(foe.body.pos) <= 100. || rand::gen_range(0, 180) == 5 {
             if player.state_machine.state() == Player::ST_NORMAL && player.weapon.is_some() {
                 player.state_machine.set_state(Player::ST_SHOOT);
@@ -107,9 +114,21 @@ impl Ai {
         if self.jump_cooldown >= 0. {
             self.jump_cooldown -= get_frame_time();
         }
+        if self.throw_cooldown >= 0. {
+            self.throw_cooldown -= get_frame_time();
+        }
 
         if self.keep_direction_timeout >= 0. {
             self.keep_direction_timeout -= get_frame_time();
+        }
+
+        if self.throw_cooldown <= 0.0 {
+            for sword in scene::find_nodes_by_type::<crate::nodes::Sword>() {
+                if sword.body.pos.distance(player.body.pos) <= 80. {
+                    input.throw = true;
+                }
+            }
+            self.throw_cooldown = 1.;
         }
 
         input

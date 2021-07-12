@@ -13,7 +13,7 @@ pub struct Camera {
 }
 
 impl Camera {
-    const BUFFER_CAPACITY: usize = 30;
+    const BUFFER_CAPACITY: usize = 20;
 
     pub fn new(bounds: Rect) -> Camera {
         Camera {
@@ -36,11 +36,10 @@ impl Camera {
 }
 
 impl scene::Node for Camera {
-    fn update(mut node: RefMut<Self>) {
-        let aspect = screen_width() / screen_height();
-
+    fn fixed_update(mut node: RefMut<Self>) {
         {
             let players = scene::find_nodes_by_type::<Player>();
+            let aspect = screen_width() / screen_height();
 
             let mut players_amount = 0;
             let mut middle_point = vec2(0., 0.);
@@ -73,7 +72,6 @@ impl scene::Node for Camera {
             node.follow_buffer.insert(0, (middle_point, zoom));
             node.follow_buffer.truncate(Self::BUFFER_CAPACITY);
         }
-
         let mut sum_pos = (0.0f64, 0.0f64);
         let mut sum_zoom = 0.0;
         for (pos, zoom) in &node.follow_buffer {
@@ -102,6 +100,11 @@ impl scene::Node for Camera {
                 node.shake = None;
             }
         }
+
+        let aspect = screen_width() / screen_height();
+
+        // let middle_point = vec2(400., 600.);
+        // let zoom = 400.;
         node.macroquad_camera = Camera2D {
             target: middle_point,
             zoom: vec2(1. / aspect, -1.) / zoom * 2.,

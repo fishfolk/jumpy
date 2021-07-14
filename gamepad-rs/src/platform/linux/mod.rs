@@ -3,7 +3,7 @@ use super::super::{
     DEFAULT_CONTROLLER_STATE,
 };
 
-use std::sync::mpsc;
+use std::{path::Path, sync::mpsc};
 
 #[derive(Debug, Clone, Copy)]
 #[repr(u8)]
@@ -30,6 +30,12 @@ struct JsEvent {
 }
 
 fn joystick_thread(tx: mpsc::Sender<JsEvent>, path: &str) {
+    // If a joystick is not connected, the corresponding block device may not exist.
+    //
+    if !Path::new(path).exists() {
+        return;
+    }
+
     use std::fs::File;
     use std::io::Read;
     let mut f = File::open(path).unwrap();

@@ -30,6 +30,11 @@ There's ample opportunity for collaboration here: Fish Fight is a tribute to and
 The game is fully playable: \
 https://twitter.com/fedor_games/status/1408868565772652544
 
+#### Install
+
+1. Install Rust with [Rustup.rs](https://rustup.rs/)
+2. `cargo run`
+
 We are currently focused on making the game as enjoyable as possible on local multiplayer, i.e. couch co-op. Check out the [roadmap](https://github.com/fishfight/fish2/issues/2) for more.
 
 ### Learning Materials

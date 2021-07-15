@@ -16,6 +16,7 @@ pub struct ScoreCounter {
 
 impl ScoreCounter {
     pub const POSITION_Y_OFFSET: f32 = 90.0;
+    pub const FONT_SIZE: f32 = 72.0;
 
     pub fn new() -> ScoreCounter {
         ScoreCounter {
@@ -27,11 +28,15 @@ impl ScoreCounter {
 
 impl scene::Node for ScoreCounter {
     fn draw(_node: RefMut<Self>) {
-        let pos = scene::find_node_by_type::<crate::nodes::Camera>()
-            .unwrap()
-            .macroquad_camera()
-            .screen_to_world(vec2(screen_width() / 2.0, Self::POSITION_Y_OFFSET));
-
-        draw_text(&format!("{} / {}", _node.player_one, _node.player_two),  pos.x, pos.y,40.0,WHITE);
+        push_camera_state();
+        set_default_camera();
+        draw_text(
+            &format!("{} / {}", _node.player_one, _node.player_two),
+            screen_width() / 2.0,
+            Self::POSITION_Y_OFFSET,
+            Self::FONT_SIZE,
+            WHITE,
+        );
+        pop_camera_state();
     }
 }

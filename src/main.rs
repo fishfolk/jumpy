@@ -153,7 +153,7 @@ impl Resources {
 }
 
 async fn game(game_type: GameType, map: &str) -> i32 {
-    use nodes::{Bullets, Camera, Decoration, Fxses, LevelBackground, Muscet, Player, Sword};
+    use nodes::{Bullets, Camera, Decoration, Fxses, LevelBackground, ScoreCounter, Muscet, Player, Sword};
 
     let resources_loading = start_coroutine({
         let map = map.to_string();
@@ -211,6 +211,8 @@ async fn game(game_type: GameType, map: &str) -> i32 {
 
     let _level_background = scene::add_node(LevelBackground::new());
 
+    let _score_counter = scene::add_node(ScoreCounter::new());
+
     for object in &resources.tiled_map.layers["decorations"].objects {
         scene::add_node(Decoration::new(
             vec2(object.world_x, object.world_y),
@@ -222,8 +224,8 @@ async fn game(game_type: GameType, map: &str) -> i32 {
 
     drop(resources);
 
-    let _player = scene::add_node(Player::new(game_type == GameType::Deathmatch, 0));
-    let _player2 = scene::add_node(Player::new(game_type == GameType::Deathmatch, 1));
+    let _player = scene::add_node(Player::new(game_type == GameType::Deathmatch, 1, 0));
+    let _player2 = scene::add_node(Player::new(game_type == GameType::Deathmatch, 2, 1));
 
     let mut wat_facing = false;
     for object in &objects {

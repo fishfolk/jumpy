@@ -1,5 +1,5 @@
 use macroquad::{
-    audio::play_sound_once,
+    //audio::play_sound_once,
     color,
     experimental::{
         animation::{AnimatedSprite, Animation},
@@ -136,11 +136,10 @@ impl Grenades {
             }
 
             {
-                let resources = storage::get_mut::<Resources>();
+                //let resources = storage::get_mut::<Resources>();
                 //play_sound_once(resources.shoot_sound);
 
-                let mut node = &mut *scene::get_node(node);
-                let player = &mut *scene::get_node(player);
+                let node = scene::get_node(node);
 
                 let mut grenades = scene::find_node_by_type::<crate::nodes::ArmedGrenades>().unwrap();
                 grenades.spawn_grenade(node.body.pos, node.body.facing);
@@ -233,7 +232,7 @@ impl scene::Node for Grenades {
         }
     }
 
-    fn draw(mut node: RefMut<Self>) {
+    fn draw(node: RefMut<Self>) {
         let resources = storage::get_mut::<Resources>();
 
         let grenade_mount_pos = if node.thrown == false {

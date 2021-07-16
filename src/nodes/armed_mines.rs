@@ -113,6 +113,8 @@ impl scene::Node for ArmedMines {
             // TODO: Fix animation
             if mine.lived >= ArmedMine::ARMED_AFTER_DURATION && mine.mine_sprite.current_animation() != 1 {
                 mine.mine_sprite.set_animation(1);
+                // This is a temp hack until animation works
+                mine.mine_sprite.set_frame(1);
             }
 
             if mine.body.on_ground {

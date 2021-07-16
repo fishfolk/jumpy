@@ -11,19 +11,22 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::Resources;
+use crate::{
+    nodes::player::PhysicsBody,
+    Resources,
+};
 
 pub struct ArmedGrenade {
     grenade_sprite: AnimatedSprite,
-    pos: Vec2,
-    speed: Vec2,
+    body: PhysicsBody,
     lived: f32,
     countdown: f32,
 }
 
 impl ArmedGrenade {
-    pub const GRENADE_SPEED: f32 = 500.0;
-    pub const GRENADE_COUNTDOWN_DURATION: f32 = 5.0;
+    pub const GRENADE_COUNTDOWN_DURATION: f32 = 0.5;
+    pub const EXPLOSION_WIDTH: f32 = 40.0;
+    pub const EXPLOSION_HEIGHT: f32 = 40.0;
 
     pub fn new(pos: Vec2, facing: bool) -> Self {
         // TODO: In case we want to animate thrown grenades rotating etc.
@@ -37,26 +40,44 @@ impl ArmedGrenade {
                     frames: 1,
                     fps: 1,
                 },
-                Animation {
-                    name: "shoot".to_string(),
-                    row: 0,
-                    frames: 1,
-                    fps: 1,
-                },
             ],
             false,
         );
 
-        let dir = if facing {
-            vec2(1.0, -0.5)
+        let speed = if facing {
+            vec2(600., -200.)
         } else {
-            vec2(-1.0, -0.5)
+            vec2(-600., -200.)
         };
+
+        let mut body = PhysicsBody {
+            pos,
+            facing,
+            angle: 0.0,
+            speed,
+            collider: None,
+            on_ground: false,
+            last_frame_on_ground: false,
+            have_gravity: true,
+        };
+
+        let mut resources = storage::get_mut::<Resources>();
+
+        let grenade_mount_pos = if facing {
+            vec2(30., 10.)
+        } else {
+            vec2(-50., 10.)
+        };
+
+        body.collider = Some(resources.collision_world.add_actor(
+            body.pos + grenade_mount_pos,
+            15,
+            15,
+        ));
 
         ArmedGrenade {
             grenade_sprite,
-            pos: pos + vec2(16.0, 30.0) + dir * 32.0,
-            speed: dir * Self::GRENADE_SPEED,
+            body,
             lived: 0.0,
             countdown: Self::GRENADE_COUNTDOWN_DURATION,
         }
@@ -68,8 +89,6 @@ pub struct ArmedGrenades {
 }
 
 impl ArmedGrenades {
-    pub const GRAVITY: f32 = 50.0;
-
     pub fn new() -> Self {
         ArmedGrenades {
             grenades: Vec::with_capacity(200),
@@ -83,37 +102,36 @@ impl ArmedGrenades {
 
 impl scene::Node for ArmedGrenades {
     fn fixed_update(mut node: RefMut<Self>) {
-        let mut resources = storage::get_mut::<Resources>();
-
         for grenade in &mut node.grenades {
-            grenade.speed.y += Self::GRAVITY;
-            grenade.pos += grenade.speed * get_frame_time();
+            grenade.body.update();
             grenade.lived += get_frame_time();
         }
 
         node.grenades.retain(|grenade| {
-            let mut killed = false;
-            for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
-                let self_damaged =
-                    Rect::new(player.body.pos.x, player.body.pos.y, 20., 64.).contains(grenade.pos);
-                let direction = grenade.pos.x > (player.body.pos.x + 10.);
-
-                if self_damaged {
-                    killed = true;
-
-                    scene::find_node_by_type::<crate::nodes::Camera>()
-                        .unwrap()
-                        .shake();
-
-                    player.kill(direction);
+            if grenade.lived >= grenade.countdown {
+                {
+                    let mut resources = storage::get_mut::<Resources>();
+                    resources.hit_fxses.spawn(grenade.body.pos);
                 }
-            }
-
-            if resources.collision_world.solid_at(grenade.pos) || killed {
-                resources.hit_fxses.spawn(grenade.pos);
+                for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
+                    let self_damaged =
+                        Rect::new(
+                            player.body.pos.x,
+                            player.body.pos.y,
+                            ArmedGrenade::EXPLOSION_WIDTH,
+                            ArmedGrenade::EXPLOSION_HEIGHT,
+                        ).contains(grenade.body.pos);
+                    let direction = grenade.body.pos.x > (player.body.pos.x + 10.);
+                    if self_damaged {
+                        scene::find_node_by_type::<crate::nodes::Camera>()
+                            .unwrap()
+                            .shake();
+                        player.kill(direction);
+                    }
+                }
                 return false;
             }
-            grenade.lived < grenade.countdown
+            return true;
         });
     }
 
@@ -122,8 +140,8 @@ impl scene::Node for ArmedGrenades {
         for grenade in &node.grenades {
             draw_texture_ex(
                 resources.grenades,
-                grenade.pos.x,
-                grenade.pos.y,
+                grenade.body.pos.x,
+                grenade.body.pos.y,
                 color::WHITE,
                 DrawTextureParams {
                     source: Some(grenade.grenade_sprite.frame().source_rect),

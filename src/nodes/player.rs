@@ -16,6 +16,7 @@ use crate::{
     nodes::{Muscet, Sword},
     Resources,
 };
+use crate::nodes::Grenades;
 
 mod ai;
 
@@ -519,6 +520,24 @@ impl Player {
                             Muscet::gun_capabilities(),
                         );
                         node.pick_weapon(muscet);
+                    }
+                }
+                for mut grenades in scene::find_nodes_by_type::<Grenades>() {
+                    if picked {
+                        break;
+                    }
+                    if grenades.thrown && grenades.body.pos.distance(node.body.pos) < 80. {
+                        picked = true;
+                        grenades.body.angle = 0.;
+                        grenades.thrown = false;
+                        grenades.amount = 3;
+
+                        let grenades = (
+                            grenades.handle().untyped(),
+                            grenades.handle().lens(|node| &mut node.body),
+                            Grenades::gun_capabilities(),
+                        );
+                        node.pick_weapon(grenades);
                     }
                 }
             }

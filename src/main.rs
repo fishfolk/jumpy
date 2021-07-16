@@ -38,6 +38,7 @@ struct Resources {
     collision_world: CollisionWorld,
     whale: Texture2D,
     whale_red: Texture2D,
+    grenades: Texture2D,
     gun: Texture2D,
     sword: Texture2D,
     fish_sword: Texture2D,
@@ -80,6 +81,9 @@ impl Resources {
 
         let sword = load_texture("assets/Whale/Sword(65x93).png").await?;
         sword.set_filter(FilterMode::Nearest);
+
+        let grenades = load_texture("assets/Whale/Grenades(15x15).png").await?;
+        grenades.set_filter(FilterMode::Nearest);
 
         let fish_sword = load_texture("assets/Whale/FishSword.png").await?;
         fish_sword.set_filter(FilterMode::Nearest);
@@ -137,6 +141,7 @@ impl Resources {
             collision_world,
             whale,
             whale_red,
+            grenades,
             gun,
             sword,
             fish_sword,
@@ -153,7 +158,7 @@ impl Resources {
 }
 
 async fn game(game_type: GameType, map: &str) -> i32 {
-    use nodes::{Bullets, Camera, Decoration, Fxses, LevelBackground, Muscet, Player, Sword};
+    use nodes::{Bullets, Camera, Decoration, Fxses, LevelBackground, Muscet, Grenades, ArmedGrenades, Player, Sword};
 
     let resources_loading = start_coroutine({
         let map = map.to_string();
@@ -242,7 +247,17 @@ async fn game(game_type: GameType, map: &str) -> i32 {
             scene::add_node(muscet);
             wat_facing ^= true;
         }
+
+        if object.name == "grenades" {
+            let mut grenade =
+                Grenades::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
+            grenade.throw(false);
+            scene::add_node(grenade);
+            wat_facing ^= true;
+        }
     }
+
+    scene::add_node(ArmedGrenades::new());
 
     scene::add_node(Bullets::new());
 

@@ -25,8 +25,8 @@ pub struct ArmedGrenade {
 
 impl ArmedGrenade {
     pub const GRENADE_COUNTDOWN_DURATION: f32 = 0.5;
-    pub const EXPLOSION_WIDTH: f32 = 40.0;
-    pub const EXPLOSION_HEIGHT: f32 = 40.0;
+    pub const EXPLOSION_WIDTH: f32 = 100.0;
+    pub const EXPLOSION_HEIGHT: f32 = 100.0;
 
     pub fn new(pos: Vec2, facing: bool) -> Self {
         // TODO: In case we want to animate thrown grenades rotating etc.
@@ -114,15 +114,20 @@ impl scene::Node for ArmedGrenades {
                     resources.hit_fxses.spawn(grenade.body.pos);
                 }
                 for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
-                    let self_damaged =
+                    let no_intersect =
                         Rect::new(
-                            player.body.pos.x,
-                            player.body.pos.y,
+                            grenade.body.pos.x,
+                            grenade.body.pos.y,
                             ArmedGrenade::EXPLOSION_WIDTH,
                             ArmedGrenade::EXPLOSION_HEIGHT,
-                        ).contains(grenade.body.pos);
+                        ).intersect(Rect::new(
+                            player.body.pos.x,
+                            player.body.pos.y,
+                            20.0,
+                            64.0,
+                        )).is_none();
                     let direction = grenade.body.pos.x > (player.body.pos.x + 10.);
-                    if self_damaged {
+                    if !no_intersect {
                         scene::find_node_by_type::<crate::nodes::Camera>()
                             .unwrap()
                             .shake();

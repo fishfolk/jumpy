@@ -114,10 +114,10 @@ impl scene::Node for ArmedGrenades {
                     resources.hit_fxses.spawn(grenade.body.pos);
                 }
                 for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
-                    let no_intersect =
+                    let intersect =
                         Rect::new(
-                            grenade.body.pos.x,
-                            grenade.body.pos.y,
+                            grenade.body.pos.x - (ArmedGrenade::EXPLOSION_WIDTH / 2.0),
+                            grenade.body.pos.y - (ArmedGrenade::EXPLOSION_HEIGHT / 2.0),
                             ArmedGrenade::EXPLOSION_WIDTH,
                             ArmedGrenade::EXPLOSION_HEIGHT,
                         ).intersect(Rect::new(
@@ -125,9 +125,10 @@ impl scene::Node for ArmedGrenades {
                             player.body.pos.y,
                             20.0,
                             64.0,
-                        )).is_none();
+                        ));
+                    println!();
                     let direction = grenade.body.pos.x > (player.body.pos.x + 10.);
-                    if !no_intersect {
+                    if !intersect.is_none() {
                         scene::find_node_by_type::<crate::nodes::Camera>()
                             .unwrap()
                             .shake();

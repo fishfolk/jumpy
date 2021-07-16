@@ -218,7 +218,7 @@ impl scene::Node for Grenades {
 
             if node.deadly_dangerous {
                 let others = scene::find_nodes_by_type::<crate::nodes::Player>();
-                let grenades_hit_box = Rect::new(node.body.pos.x - 10., node.body.pos.y, 60., 30.);
+                let grenades_hit_box = Rect::new(node.body.pos.x - 7.5, node.body.pos.y, 15., 15.);
 
                 for mut other in others {
                     if Rect::new(other.body.pos.x, other.body.pos.y, 20., 64.)

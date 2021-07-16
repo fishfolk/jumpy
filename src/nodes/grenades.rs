@@ -148,14 +148,13 @@ impl Grenades {
                 let node = &mut *scene::get_node(node);
                 node.grenade_sprite.set_animation(1);
             }
-            for i in 0u32..3 {
-                {
-                    let node = &mut *scene::get_node(node);
-                    node.grenade_sprite.set_frame(i);
-                }
-
-                wait_seconds(0.08).await;
+            {
+                let node = &mut *scene::get_node(node);
+                node.grenade_sprite.set_frame(0);
             }
+
+            wait_seconds(0.08).await;
+
             {
                 let mut node = scene::get_node(node);
                 node.grenade_sprite.set_animation(0);

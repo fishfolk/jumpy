@@ -24,8 +24,8 @@ pub struct ArmedMine {
 
 impl ArmedMine {
     pub const ARMED_AFTER_DURATION: f32 = 0.75;
-    pub const TRIGGER_WIDTH: f32 = 100.0;
-    pub const TRIGGER_HEIGHT: f32 = 100.0;
+    pub const TRIGGER_WIDTH: f32 = 30.0;
+    pub const TRIGGER_HEIGHT: f32 = 15.0;
 
     pub fn new(pos: Vec2, facing: bool) -> Self {
         // TODO: In case we want to animate thrown grenades rotating etc.
@@ -116,7 +116,7 @@ impl scene::Node for ArmedMines {
             }
 
             if mine.body.on_ground {
-                mine.body.speed = Vec2::zero();
+                mine.body.speed = Vec2::ZERO;
             }
         }
 
@@ -158,7 +158,7 @@ impl scene::Node for ArmedMines {
     fn draw(mut node: RefMut<Self>) {
         for mine in &mut node.mines {
             mine.mine_sprite.update();
-            let mut resources = storage::get_mut::<Resources>();
+            let resources = storage::get_mut::<Resources>();
             draw_texture_ex(
                 resources.mines,
                 mine.body.pos.x,

@@ -6,6 +6,8 @@ mod level_background;
 mod muscet;
 mod player;
 mod sword;
+mod mines;
+mod armed_mines;
 
 pub use bullets::Bullets;
 pub use camera::Camera;
@@ -15,3 +17,5 @@ pub use level_background::LevelBackground;
 pub use muscet::Muscet;
 pub use player::Player;
 pub use sword::Sword;
+pub use mines::Mines;
+pub use armed_mines::ArmedMines;

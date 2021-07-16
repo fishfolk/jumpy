@@ -13,7 +13,7 @@ use macroquad::{
 use macroquad_platformer::Actor;
 
 use crate::{
-    nodes::{Muscet, Sword},
+    nodes::{Muscet, Sword, Mines},
     Resources,
 };
 
@@ -519,6 +519,24 @@ impl Player {
                             Muscet::gun_capabilities(),
                         );
                         node.pick_weapon(muscet);
+                    }
+                }
+                for mut mines in scene::find_nodes_by_type::<Mines>() {
+                    if picked {
+                        break;
+                    }
+                    if mines.thrown && mines.body.pos.distance(node.body.pos) < 80. {
+                        picked = true;
+                        mines.body.angle = 0.;
+                        mines.thrown = false;
+                        mines.amount = 3;
+
+                        let mines = (
+                            mines.handle().untyped(),
+                            mines.handle().lens(|node| &mut node.body),
+                            Mines::gun_capabilities(),
+                        );
+                        node.pick_weapon(mines);
                     }
                 }
             }

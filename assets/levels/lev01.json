@@ -328,6 +328,18 @@
                  "width":0,
                  "x":300.333333333333,
                  "y":548.0
+                },
+                {
+                 "height":0,
+                 "id":65,
+                 "name":"grenades",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":400.333333333333,
+                 "y":548.0
                 }],
          "opacity":1,
          "type":"objectgroup",

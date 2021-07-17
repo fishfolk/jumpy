@@ -8,13 +8,14 @@ use macroquad::{
     experimental::{
         collections::storage,
         coroutines::start_coroutine,
-        scene::{self},
+        scene::{self, Handle},
     },
 };
 
 use macroquad_platformer::{Tile, World as CollisionWorld};
 use particles::EmittersCache;
 
+mod gui;
 mod nodes;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -33,7 +34,7 @@ pub enum GameType {
 struct Resources {
     hit_fxses: EmittersCache,
     explosion_fxses: EmittersCache,
-    disarm_fxses: EmittersCache,
+    life_explosion_fxses: EmittersCache,
     tiled_map: tiled::Map,
     collision_world: CollisionWorld,
     whale: Texture2D,
@@ -53,14 +54,13 @@ struct Resources {
     pickup_sound: audio::Sound,
 }
 
-pub const HIT_FX: &'static str = r#"{"local_coords":false,"emission_shape":{"Point":[]},"one_shot":true,"lifetime":0.2,"lifetime_randomness":0,"explosiveness":0.65,"amount":41,"shape":{"Circle":{"subdivisions":10}},"emitting":false,"initial_direction":{"x":0,"y":-1},"initial_direction_spread":6.2831855,"initial_velocity":73.9,"initial_velocity_randomness":0.2,"linear_accel":0,"size":5.6000004,"size_randomness":0.4,"blend_mode":{"Alpha":[]},"colors_curve":{"start":{"r":0.8200004,"g":1,"b":0.31818175,"a":1},"mid":{"r":0.71000004,"g":0.36210018,"b":0,"a":1},"end":{"r":0.02,"g":0,"b":0.000000007152557,"a":1}},"gravity":{"x":0,"y":0},"post_processing":{}}
+pub const HIT_FX: &'static str = r#"{"local_coords":false,"emission_shape":"Point","one_shot":true,"lifetime":0.2,"lifetime_randomness":0,"explosiveness":0.65,"amount":41,"shape":{"Circle":{"subdivisions":10}},"emitting":false,"initial_direction":{"x":0,"y":-1},"initial_direction_spread":6.2831855,"initial_velocity":73.9,"initial_velocity_randomness":0.2,"linear_accel":0,"size":5.6000004,"size_randomness":0.4,"blend_mode":"Alpha","colors_curve":{"start":{"r":0.8200004,"g":1,"b":0.31818175,"a":1},"mid":{"r":0.71000004,"g":0.36210018,"b":0,"a":1},"end":{"r":0.02,"g":0,"b":0.000000007152557,"a":1}},"gravity":{"x":0,"y":0},"post_processing":{}}
 "#;
 
-pub const EXPLOSION_FX: &'static str = r#"{"local_coords":false,"emission_shape":{"Sphere":{"radius":0.6}},"one_shot":true,"lifetime":0.35,"lifetime_randomness":0,"explosiveness":0.6,"amount":131,"shape":{"Circle":{"subdivisions":10}},"emitting":false,"initial_direction":{"x":0,"y":-1},"initial_direction_spread":6.2831855,"initial_velocity":316,"initial_velocity_randomness":0.6,"linear_accel":-7.4000025,"size":5.5,"size_randomness":0.3,"size_curve":{"points":[[0.005,1.48],[0.255,1.0799999],[1,0.120000005]],"interpolation":{"Linear":[]},"resolution":30},"blend_mode":{"Additive":[]},"colors_curve":{"start":{"r":0.9825908,"g":1,"b":0.13,"a":1},"mid":{"r":0.8,"g":0.19999999,"b":0.2000002,"a":1},"end":{"r":0.101,"g":0.099,"b":0.099,"a":1}},"gravity":{"x":0,"y":-500},"post_processing":{}}
+pub const EXPLOSION_FX: &'static str = r#"{"local_coords":false,"emission_shape":{"Sphere":{"radius":0.6}},"one_shot":true,"lifetime":0.35,"lifetime_randomness":0,"explosiveness":0.6,"amount":131,"shape":{"Circle":{"subdivisions":10}},"emitting":false,"initial_direction":{"x":0,"y":-1},"initial_direction_spread":6.2831855,"initial_velocity":316,"initial_velocity_randomness":0.6,"linear_accel":-7.4000025,"size":5.5,"size_randomness":0.3,"size_curve":{"points":[[0.005,1.48],[0.255,1.0799999],[1,0.120000005]],"interpolation":"Linear","resolution":30},"blend_mode":"Additive","colors_curve":{"start":{"r":0.9825908,"g":1,"b":0.13,"a":1},"mid":{"r":0.8,"g":0.19999999,"b":0.2000002,"a":1},"end":{"r":0.101,"g":0.099,"b":0.099,"a":1}},"gravity":{"x":0,"y":-500},"post_processing":{}}
 "#;
 
-pub const WEAPON_DISARM_FX: &'static str = r#"{"local_coords":false,"emission_shape":{"Sphere":{"radius":0.6}},"one_shot":true,"lifetime":0.1,"lifetime_randomness":0,"explosiveness":1,"amount":100,"shape":{"Circle":{"subdivisions":10}},"emitting":false,"initial_direction":{"x":0,"y":-1},"initial_direction_spread":6.2831855,"initial_velocity":359.6,"initial_velocity_randomness":0.8,"linear_accel":-2.400001,"size":2.5,"size_randomness":0,"size_curve":{"points":[[0,0.92971194],[0.295,1.1297119],[1,0.46995974]],"interpolation":{"Linear":[]},"resolution":30},"blend_mode":{"Additive":[]},"colors_curve":{"start":{"r":0.99999994,"g":0.9699999,"b":0.37000006,"a":1},"mid":{"r":0.81000006,"g":0.6074995,"b":0,"a":1},"end":{"r":0.72,"g":0.54,"b":0,"a":1}},"gravity":{"x":0,"y":-300},"post_processing":{}}
-"#;
+pub const LIFE_EXPLOSION_FX: &'static str = r#"{"local_coords":false,"emission_shape":{"Sphere":{"radius":1.9}},"one_shot":true,"lifetime":1.6500002,"lifetime_randomness":0,"explosiveness":1,"amount":131,"shape":{"Circle":{"subdivisions":20}},"emitting":false,"initial_direction":{"x":0,"y":-1.2},"initial_direction_spread":0.5,"initial_velocity":316,"initial_velocity_randomness":0.70000005,"linear_accel":0,"size":5.5,"size_randomness":0.3,"size_curve":{"points":[[0.005,1.48],[0.255,1.0799999],[1,0.120000005]],"interpolation":"Linear","resolution":30},"blend_mode":"Additive","colors_curve":{"start":{"r":0.9825908,"g":1,"b":0.13,"a":1},"mid":{"r":0.8,"g":0.19999999,"b":0.2000002,"a":1},"end":{"r":0.101,"g":0.099,"b":0.099,"a":1}},"gravity":{"x":0,"y":1000},"post_processing":{}}"#;
 
 impl Resources {
     // TODO: fix macroquad error type here
@@ -134,13 +134,13 @@ impl Resources {
         let hit_fxses = EmittersCache::new(nanoserde::DeJson::deserialize_json(HIT_FX).unwrap());
         let explosion_fxses =
             EmittersCache::new(nanoserde::DeJson::deserialize_json(EXPLOSION_FX).unwrap());
-        let disarm_fxses =
-            EmittersCache::new(nanoserde::DeJson::deserialize_json(WEAPON_DISARM_FX).unwrap());
+        let life_explosion_fxses =
+            EmittersCache::new(nanoserde::DeJson::deserialize_json(LIFE_EXPLOSION_FX).unwrap());
 
         Ok(Resources {
             hit_fxses,
             explosion_fxses,
-            disarm_fxses,
+            life_explosion_fxses,
             tiled_map,
             collision_world,
             whale,
@@ -163,7 +163,10 @@ impl Resources {
 }
 
 async fn game(game_type: GameType, map: &str) -> i32 {
-    use nodes::{Bullets, Camera, Decoration, Fxses, LevelBackground, Muscet, Grenades, ArmedGrenades, Mines, ArmedMines, ScoreCounter, Player, Sword};
+    use nodes::{
+        ArmedGrenades, ArmedMines, Bullets, Camera, Decoration, Fxses, GameState, Grenades,
+        LevelBackground, Mines, Muscet, Player, ScoreCounter, Sword,
+    };
 
     let resources_loading = start_coroutine({
         let map = map.to_string();
@@ -189,13 +192,13 @@ async fn game(game_type: GameType, map: &str) -> i32 {
         next_frame().await;
     }
 
-    let battle_music = if map == "assets/map.json" {
-        load_sound("assets/music/across the pond.ogg")
-            .await
-            .unwrap()
-    } else {
-        load_sound("assets/music/fish tide.ogg").await.unwrap()
-    };
+    // let battle_music = if map == "assets/map.json" {
+    //     load_sound("assets/music/across the pond.ogg")
+    //         .await
+    //         .unwrap()
+    // } else {
+    //     load_sound("assets/music/fish tide.ogg").await.unwrap()
+    // };
 
     // audio::play_sound(
     //     battle_music,
@@ -234,8 +237,19 @@ async fn game(game_type: GameType, map: &str) -> i32 {
 
     drop(resources);
 
-    let _player = scene::add_node(Player::new(game_type == GameType::Deathmatch, 1, 0));
-    let _player2 = scene::add_node(Player::new(game_type == GameType::Deathmatch, 2, 1));
+    let score_counter = scene::add_node(nodes::ScoreCounter::new());
+    let player1 = scene::add_node(Player::new(
+        game_type == GameType::Deathmatch,
+        0,
+        score_counter,
+        Handle::null(),
+    ));
+    let player2 = scene::add_node(Player::new(
+        game_type == GameType::Deathmatch,
+        1,
+        score_counter,
+        Handle::null(),
+    ));
 
     let mut wat_facing = false;
     for object in &objects {
@@ -279,6 +293,11 @@ async fn game(game_type: GameType, map: &str) -> i32 {
     //scene::add_node(Camera::new(player2));
     scene::add_node(Fxses {});
 
+    let game_state = scene::add_node(GameState::new());
+
+    scene::get_node(player1).game_state = game_state;
+    scene::get_node(player2).game_state = game_state;
+
     loop {
         {
             let mut controller = storage::get_mut::<gamepad_rs::ControllerContext>();
@@ -287,11 +306,8 @@ async fn game(game_type: GameType, map: &str) -> i32 {
             }
         }
 
-        for player in scene::find_nodes_by_type::<Player>() {
-            if player.loses >= 4 {
-                macroquad::audio::stop_sound(battle_music);
-                return player.controller_id;
-            }
+        if scene::find_node_by_type::<GameState>().unwrap().want_quit {
+            return -1;
         }
 
         next_frame().await;
@@ -315,44 +331,45 @@ async fn main() {
         storage::store(controller);
     }
 
-    let mut n = 0;
+    {
+        let gui_resources = gui::GuiResources::load().await;
+        storage::store(gui_resources);
+    }
+
     loop {
-        let map = match n % 3 {
-            0 => "assets/levels/lev01.json",
-            1 => "assets/levels/lev02.json",
-            3 => "assets/levels/lev03.json",
-            _ => "assets/levels/lev01.json",
-        };
-        n += 1;
-        let res = game(GameType::Deathmatch, map).await;
+        let map = gui::main_menu::gui().await;
+        //let map = "assets/levels/lev06.json";
+        let res = game(GameType::Deathmatch, &map).await;
 
         scene::clear();
 
-        for _ in 0..100 {
-            if res == 1 {
-                clear_background(Color::from_rgba(126, 168, 166, 255));
-            } else {
-                clear_background(Color::from_rgba(126, 178, 126, 255));
-            }
-
-            let resources = storage::get::<Resources>();
-
-            draw_texture_ex(
+        if res != -1 {
+            for _ in 0..100 {
                 if res == 1 {
-                    resources.whale
+                    clear_background(Color::from_rgba(126, 168, 166, 255));
                 } else {
-                    resources.whale_red
-                },
-                0.,
-                0.0,
-                WHITE,
-                DrawTextureParams {
-                    source: Some(Rect::new(0.0, 0.0, 76., 66.)),
-                    dest_size: Some(vec2(screen_width(), screen_height())),
-                    ..Default::default()
-                },
-            );
-            next_frame().await;
+                    clear_background(Color::from_rgba(126, 178, 126, 255));
+                }
+
+                let resources = storage::get::<Resources>();
+
+                draw_texture_ex(
+                    if res == 1 {
+                        resources.whale
+                    } else {
+                        resources.whale_red
+                    },
+                    0.,
+                    0.0,
+                    WHITE,
+                    DrawTextureParams {
+                        source: Some(Rect::new(0.0, 0.0, 76., 66.)),
+                        dest_size: Some(vec2(screen_width(), screen_height())),
+                        ..Default::default()
+                    },
+                );
+                next_frame().await;
+            }
         }
     }
 }

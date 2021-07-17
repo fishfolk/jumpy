@@ -5,7 +5,7 @@ use macroquad::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
         coroutines::{start_coroutine, wait_seconds, Coroutine},
-        scene::{self, HandleUntyped, Lens, RefMut},
+        scene::{self, Handle, HandleUntyped, Lens, RefMut},
         state_machine::{State, StateMachine},
     },
     prelude::*,
@@ -13,7 +13,7 @@ use macroquad::{
 use macroquad_platformer::Actor;
 
 use crate::{
-    nodes::{Muscet, Sword, Mines},
+    nodes::{GameState, Muscet, ScoreCounter, Mines, Sword},
     Resources,
 };
 use crate::nodes::Grenades;
@@ -157,8 +157,6 @@ impl Player {
 pub struct Player {
     pub body: PhysicsBody,
 
-    pub player_number: i32,
-
     fish_sprite: AnimatedSprite,
     pub dead: bool,
     pub weapon: Option<(HandleUntyped, Lens<PhysicsBody>, capabilities::Gun)>,
@@ -177,7 +175,9 @@ pub struct Player {
     ai: Option<ai::Ai>,
 
     pub camera_box: Rect,
-    pub loses: i32,
+
+    score_counter: Handle<ScoreCounter>,
+    pub game_state: Handle<GameState>,
 }
 
 impl Player {
@@ -191,7 +191,12 @@ impl Player {
     pub const JUMP_GRACE_TIME: f32 = 0.15;
     pub const FLOAT_SPEED: f32 = 100.0;
 
-    pub fn new(deathmatch: bool, player_number: i32, controller_id: i32) -> Player {
+    pub fn new(
+        deathmatch: bool,
+        controller_id: i32,
+        score_counter: Handle<ScoreCounter>,
+        game_state: Handle<GameState>,
+    ) -> Player {
         let spawner_pos = {
             let resources = storage::get_mut::<Resources>();
             let objects = &resources.tiled_map.layers["logic"].objects;
@@ -271,8 +276,6 @@ impl Player {
         );
 
         Player {
-            player_number,
-
             dead: false,
             weapon: None,
             input: Default::default(),
@@ -285,10 +288,11 @@ impl Player {
             was_floating: false,
             state_machine,
             controller_id,
-            ai_enabled: false,
+            ai_enabled: controller_id == 0,
             ai: Some(ai::Ai::new()),
             camera_box: Rect::new(spawner_pos.x - 30., spawner_pos.y - 150., 100., 210.),
-            loses: 0,
+            score_counter,
+            game_state,
         }
     }
 
@@ -337,14 +341,15 @@ impl Player {
                     let mut node = scene::get_node(handle);
                     node.fish_sprite.set_animation(3);
                     node.body.speed = vec2(0., 0.);
-
-                    node.loses += 1;
                 }
 
                 wait_seconds(0.5).await;
-            } else {
-                let mut node = scene::get_node(handle);
-                node.loses += 1;
+            }
+
+            {
+                let node = scene::get_node(handle);
+                let mut score_counter = scene::get_node(node.score_counter);
+                score_counter.count_loss(node.controller_id)
             }
 
             {
@@ -485,7 +490,7 @@ impl Player {
                 (gun.throw)(*weapon, node.input.down == false);
                 node.weapon = None;
 
-                // when the floating fish is throwing a weapon and keeps
+                // when the flocating fish is throwing a weapon and keeps
                 // floating it looks less cool than if its stop floating and
                 // falls, but idk
                 node.floating = false;
@@ -601,14 +606,6 @@ impl scene::Node for Player {
 
         //draw_rectangle_lines(fish_box.x, fish_box.y, fish_box.w, fish_box.h, 5., BLUE);
 
-        let mut score_counter = scene::find_node_by_type::<crate::nodes::ScoreCounter>()
-            .unwrap();
-        if node.player_number == 1 {
-            score_counter.player_two = node.loses;
-        } else if node.player_number == 2 {
-            score_counter.player_one = node.loses;
-        }
-
         let resources = storage::get::<Resources>();
 
         draw_texture_ex(
@@ -640,6 +637,12 @@ impl scene::Node for Player {
     }
 
     fn fixed_update(mut node: RefMut<Self>) {
+        {
+            if scene::get_node(node.game_state).game_paused {
+                return;
+            }
+        }
+
         node.fish_sprite.update();
 
         let map_bottom = {

@@ -41,23 +41,25 @@ impl scene::Node for Camera {
             let players = scene::find_nodes_by_type::<Player>();
             let aspect = screen_width() / screen_height();
 
-            let mut players_amount = 0;
+            //let mut players_amount = 0;
             let mut middle_point = vec2(0., 0.);
             let mut min = vec2(10000., 10000.);
             let mut max = vec2(-10000., -10000.);
 
             for player in players {
                 let camera_pox_middle = player.camera_box.point() + player.camera_box.size() / 2.;
-                players_amount += 1;
-                middle_point += camera_pox_middle;
+                let k = if player.controller_id == 1 { 0.8 } else { 0.2 };
+                //players_amount += 1;
+                middle_point += camera_pox_middle * k;
 
                 min = min.min(camera_pox_middle);
                 max = max.max(camera_pox_middle);
             }
-            middle_point /= players_amount as f32;
+            //middle_point /= players_amount as f32;
 
-            let border = 150.;
-            let mut scale = (max - min).abs() + vec2(border * 2., border * 2.);
+            let border_x = 150.;
+            let border_y = 200.;
+            let mut scale = (max - min).abs() + vec2(border_x * 2., border_y * 2.);
 
             if scale.x > scale.y * aspect {
                 scale.y = scale.x / aspect;

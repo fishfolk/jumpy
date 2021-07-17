@@ -6,6 +6,8 @@ mod level_background;
 mod muscet;
 mod player;
 mod sword;
+mod grenades;
+mod armed_grenades;
 mod score_counter;
 
 pub use bullets::Bullets;
@@ -16,4 +18,6 @@ pub use level_background::LevelBackground;
 pub use muscet::Muscet;
 pub use player::Player;
 pub use sword::Sword;
+pub use grenades::Grenades;
+pub use armed_grenades::ArmedGrenades;
 pub use score_counter::ScoreCounter;

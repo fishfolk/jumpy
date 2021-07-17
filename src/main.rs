@@ -163,7 +163,7 @@ impl Resources {
 }
 
 async fn game(game_type: GameType, map: &str) -> i32 {
-    use nodes::{Bullets, Camera, Decoration, Fxses, LevelBackground, Muscet, Grenades, ArmedGrenades, Player, Sword};
+    use nodes::{Bullets, Camera, Decoration, Fxses, LevelBackground, Muscet, Grenades, ArmedGrenades, Mines, ArmedMines, ScoreCounter, Player, Sword};
 
     let resources_loading = start_coroutine({
         let map = map.to_string();

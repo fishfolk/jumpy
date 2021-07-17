@@ -38,6 +38,7 @@ struct Resources {
     collision_world: CollisionWorld,
     whale: Texture2D,
     whale_red: Texture2D,
+    grenades: Texture2D,
     gun: Texture2D,
     mines: Texture2D,
     sword: Texture2D,
@@ -84,6 +85,9 @@ impl Resources {
 
         let sword = load_texture("assets/Whale/Sword(65x93).png").await?;
         sword.set_filter(FilterMode::Nearest);
+
+        let grenades = load_texture("assets/Whale/Grenades(15x15).png").await?;
+        grenades.set_filter(FilterMode::Nearest);
 
         let fish_sword = load_texture("assets/Whale/FishSword.png").await?;
         fish_sword.set_filter(FilterMode::Nearest);
@@ -141,6 +145,7 @@ impl Resources {
             collision_world,
             whale,
             whale_red,
+            grenades,
             gun,
             mines,
             sword,
@@ -158,7 +163,7 @@ impl Resources {
 }
 
 async fn game(game_type: GameType, map: &str) -> i32 {
-    use nodes::{Bullets, Camera, Decoration, Fxses, LevelBackground, Muscet, Mines, ArmedMines, Player, Sword};
+    use nodes::{Bullets, Camera, Decoration, Fxses, LevelBackground, Muscet, Grenades, ArmedGrenades, Player, Sword};
 
     let resources_loading = start_coroutine({
         let map = map.to_string();
@@ -216,6 +221,8 @@ async fn game(game_type: GameType, map: &str) -> i32 {
 
     let _level_background = scene::add_node(LevelBackground::new());
 
+    let _score_counter = scene::add_node(ScoreCounter::new());
+
     for object in &resources.tiled_map.layers["decorations"].objects {
         scene::add_node(Decoration::new(
             vec2(object.world_x, object.world_y),
@@ -227,8 +234,8 @@ async fn game(game_type: GameType, map: &str) -> i32 {
 
     drop(resources);
 
-    let _player = scene::add_node(Player::new(game_type == GameType::Deathmatch, 0));
-    let _player2 = scene::add_node(Player::new(game_type == GameType::Deathmatch, 1));
+    let _player = scene::add_node(Player::new(game_type == GameType::Deathmatch, 1, 0));
+    let _player2 = scene::add_node(Player::new(game_type == GameType::Deathmatch, 2, 1));
 
     let mut wat_facing = false;
     for object in &objects {
@@ -255,7 +262,16 @@ async fn game(game_type: GameType, map: &str) -> i32 {
             scene::add_node(mines);
             wat_facing ^= true;
         }
+        if object.name == "grenades" {
+            let mut grenade =
+                Grenades::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
+            grenade.throw(false);
+            scene::add_node(grenade);
+            wat_facing ^= true;
+        }
     }
+
+    scene::add_node(ArmedGrenades::new());
 
     scene::add_node(Bullets::new());
     scene::add_node(ArmedMines::new());

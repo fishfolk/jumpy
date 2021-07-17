@@ -8,6 +8,9 @@ mod player;
 mod sword;
 mod mines;
 mod armed_mines;
+mod grenades;
+mod armed_grenades;
+mod score_counter;
 
 pub use bullets::Bullets;
 pub use camera::Camera;
@@ -19,3 +22,6 @@ pub use player::Player;
 pub use sword::Sword;
 pub use mines::Mines;
 pub use armed_mines::ArmedMines;
+pub use grenades::Grenades;
+pub use armed_grenades::ArmedGrenades;
+pub use score_counter::ScoreCounter;

@@ -16,6 +16,7 @@ use crate::{
     nodes::{Muscet, Sword, Mines},
     Resources,
 };
+use crate::nodes::Grenades;
 
 mod ai;
 
@@ -156,6 +157,8 @@ impl Player {
 pub struct Player {
     pub body: PhysicsBody,
 
+    pub player_number: i32,
+
     fish_sprite: AnimatedSprite,
     pub dead: bool,
     pub weapon: Option<(HandleUntyped, Lens<PhysicsBody>, capabilities::Gun)>,
@@ -188,7 +191,7 @@ impl Player {
     pub const JUMP_GRACE_TIME: f32 = 0.15;
     pub const FLOAT_SPEED: f32 = 100.0;
 
-    pub fn new(deathmatch: bool, controller_id: i32) -> Player {
+    pub fn new(deathmatch: bool, player_number: i32, controller_id: i32) -> Player {
         let spawner_pos = {
             let resources = storage::get_mut::<Resources>();
             let objects = &resources.tiled_map.layers["logic"].objects;
@@ -268,6 +271,8 @@ impl Player {
         );
 
         Player {
+            player_number,
+
             dead: false,
             weapon: None,
             input: Default::default(),
@@ -539,6 +544,25 @@ impl Player {
                         node.pick_weapon(mines);
                     }
                 }
+
+                for mut grenades in scene::find_nodes_by_type::<Grenades>() {
+                    if picked {
+                        break;
+                    }
+                    if grenades.thrown && grenades.body.pos.distance(node.body.pos) < 80. {
+                        picked = true;
+                        grenades.body.angle = 0.;
+                        grenades.thrown = false;
+                        grenades.amount = 3;
+
+                        let grenades = (
+                            grenades.handle().untyped(),
+                            grenades.handle().lens(|node| &mut node.body),
+                            Grenades::gun_capabilities(),
+                        );
+                        node.pick_weapon(grenades);
+                    }
+                }
             }
         }
 
@@ -576,6 +600,14 @@ impl scene::Node for Player {
         // );
 
         //draw_rectangle_lines(fish_box.x, fish_box.y, fish_box.w, fish_box.h, 5., BLUE);
+
+        let mut score_counter = scene::find_node_by_type::<crate::nodes::ScoreCounter>()
+            .unwrap();
+        if node.player_number == 1 {
+            score_counter.player_two = node.loses;
+        } else if node.player_number == 2 {
+            score_counter.player_one = node.loses;
+        }
 
         let resources = storage::get::<Resources>();
 

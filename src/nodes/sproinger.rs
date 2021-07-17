@@ -26,6 +26,7 @@ impl Sproinger {
     pub const TRIGGER_HEIGHT: f32 = 8.0;
     pub const FORCE: f32 = 600.0;
     pub const COOLDOWN: f32 = 0.5;
+    pub const STOPPED_THRESHOLD: f32 = 0.01;
 
     pub fn new(pos: Vec2) -> Self {
         let sprite = AnimatedSprite::new(
@@ -92,20 +93,22 @@ impl scene::Node for Sproinger {
             );
 
             for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
-                let intersect = sproinger_rect.intersect(Rect::new(
-                    player.body.pos.x,
-                    player.body.pos.y,
-                    20.0,
-                    64.0,
-                ));
-                if !intersect.is_none() {
-                    player.body.speed.y = -Self::FORCE;
-                    node.sproing();
+                if player.body.speed.length() > Self::STOPPED_THRESHOLD {
+                    let intersect = sproinger_rect.intersect(Rect::new(
+                        player.body.pos.x,
+                        player.body.pos.y,
+                        20.0,
+                        64.0,
+                    ));
+                    if !intersect.is_none() {
+                        player.body.speed.y = -Self::FORCE;
+                        node.sproing();
+                    }
                 }
             }
 
             for mut muscet in scene::find_nodes_by_type::<crate::nodes::Muscet>() {
-                if muscet.deadly_dangerous {
+                if muscet.body.speed.length() > Self::STOPPED_THRESHOLD {
                     let intersect = sproinger_rect.intersect(Rect::new(
                         muscet.body.pos.x,
                         muscet.body.pos.y,
@@ -120,12 +123,12 @@ impl scene::Node for Sproinger {
             }
 
             for mut sword in scene::find_nodes_by_type::<crate::nodes::Sword>() {
-                if sword.deadly_dangerous {
+                if sword.body.speed.length() > Self::STOPPED_THRESHOLD {
                     let intersect = sproinger_rect.intersect(Rect::new(
                         sword.body.pos.x,
                         sword.body.pos.y,
-                        65.0,
-                        93.0,
+                        64.0,
+                        32.0,
                     ));
                     if !intersect.is_none() {
                         sword.body.speed.y = -Self::FORCE;
@@ -135,12 +138,12 @@ impl scene::Node for Sproinger {
             }
 
             for mut mines in scene::find_nodes_by_type::<crate::nodes::Mines>() {
-                if mines.deadly_dangerous {
+                if mines.body.speed.length() > Self::STOPPED_THRESHOLD {
                     let intersect = sproinger_rect.intersect(Rect::new(
                         mines.body.pos.x,
                         mines.body.pos.y,
+                        16.0,
                         32.0,
-                        15.0,
                     ));
                     if !intersect.is_none() {
                         mines.body.speed.y = -Self::FORCE;
@@ -154,8 +157,8 @@ impl scene::Node for Sproinger {
                     let intersect = sproinger_rect.intersect(Rect::new(
                         mine.body.pos.x,
                         mine.body.pos.y,
-                        32.0,
                         16.0,
+                        32.0,
                     ));
                     if !intersect.is_none() {
                         mine.body.speed.y = -Self::FORCE;
@@ -165,12 +168,12 @@ impl scene::Node for Sproinger {
             }
 
             for mut grenades in scene::find_nodes_by_type::<crate::nodes::Grenades>() {
-                if grenades.deadly_dangerous {
+                if grenades.body.speed.length() > Self::STOPPED_THRESHOLD {
                     let intersect = sproinger_rect.intersect(Rect::new(
                         grenades.body.pos.x,
                         grenades.body.pos.y,
-                        15.0,
-                        15.0,
+                        16.0,
+                        96.0,
                     ));
                     if !intersect.is_none() {
                         grenades.body.speed.y = -Self::FORCE;
@@ -185,7 +188,7 @@ impl scene::Node for Sproinger {
                         grenade.body.pos.x,
                         grenade.body.pos.y,
                         16.0,
-                        16.0,
+                        32.0,
                     ));
                     if !intersect.is_none() {
                         grenade.body.speed.y = -Self::FORCE;

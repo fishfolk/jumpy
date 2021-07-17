@@ -11,7 +11,7 @@ use macroquad::{
 };
 
 use crate::{
-    nodes::player::{capabilities, PhysicsBody},
+    nodes::player::{capabilities, PhysicsBody, Weapon},
     nodes::Player,
     Resources,
 };
@@ -31,7 +31,7 @@ pub struct Sword {
 
 impl scene::Node for Sword {
     fn ready(mut node: RefMut<Self>) {
-        node.provides((
+        node.provides::<Weapon>((
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
             Self::gun_capabilities(),

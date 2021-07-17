@@ -1,9 +1,7 @@
 use macroquad::{
     experimental::{
-        collections::storage,
         scene::{self, RefMut},
     },
-    telemetry,
     prelude::*,
 };
 

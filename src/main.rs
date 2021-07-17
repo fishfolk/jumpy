@@ -40,6 +40,7 @@ struct Resources {
     whale_red: Texture2D,
     grenades: Texture2D,
     gun: Texture2D,
+    mines: Texture2D,
     sword: Texture2D,
     fish_sword: Texture2D,
     background_01: Texture2D,
@@ -78,6 +79,9 @@ impl Resources {
 
         let gun = load_texture("assets/Whale/Gun(92x32).png").await?;
         gun.set_filter(FilterMode::Nearest);
+
+        let mines = load_texture("assets/Whale/Mines(30x15).png").await?;
+        mines.set_filter(FilterMode::Nearest);
 
         let sword = load_texture("assets/Whale/Sword(65x93).png").await?;
         sword.set_filter(FilterMode::Nearest);
@@ -143,6 +147,7 @@ impl Resources {
             whale_red,
             grenades,
             gun,
+            mines,
             sword,
             fish_sword,
             background_01,
@@ -250,6 +255,13 @@ async fn game(game_type: GameType, map: &str) -> i32 {
             wat_facing ^= true;
         }
 
+        if object.name == "mines" {
+            let mut mines =
+                Mines::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
+            mines.throw(false);
+            scene::add_node(mines);
+            wat_facing ^= true;
+        }
         if object.name == "grenades" {
             let mut grenade =
                 Grenades::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
@@ -262,6 +274,7 @@ async fn game(game_type: GameType, map: &str) -> i32 {
     scene::add_node(ArmedGrenades::new());
 
     scene::add_node(Bullets::new());
+    scene::add_node(ArmedMines::new());
 
     //scene::add_node(Camera::new(player2));
     scene::add_node(Fxses {});

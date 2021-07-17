@@ -9,7 +9,7 @@ mod grenades;
 mod level_background;
 mod mines;
 mod muscet;
-mod player;
+pub mod player;
 mod score_counter;
 mod sword;
 

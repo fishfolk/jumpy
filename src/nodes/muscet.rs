@@ -31,6 +31,14 @@ pub struct Muscet {
 }
 
 impl scene::Node for Muscet {
+    fn ready(mut node: RefMut<Self>) {
+        node.provides((
+            node.handle().untyped(),
+            node.handle().lens(|node| &mut node.body),
+            Self::gun_capabilities(),
+        ));
+    }
+
     fn draw(mut node: RefMut<Self>) {
         let resources = storage::get_mut::<Resources>();
 
@@ -315,6 +323,24 @@ impl Muscet {
             Muscet::shoot(node, player)
         }
 
-        capabilities::Gun { throw, shoot }
+        fn is_thrown(node: HandleUntyped) -> bool {
+            let node = scene::get_untyped_node(node).unwrap().to_typed::<Muscet>();
+
+            node.thrown
+        }
+
+        fn pick_up(node: HandleUntyped) {
+            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Muscet>();
+
+            node.body.angle = 0.;
+            node.bullets = 3;
+            node.thrown = false;
+        }
+        capabilities::Gun {
+            throw,
+            shoot,
+            is_thrown,
+            pick_up,
+        }
     }
 }

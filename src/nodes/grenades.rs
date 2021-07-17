@@ -116,9 +116,10 @@ impl Grenades {
                 30,
             ));
         } else {
-            resources
-                .collision_world
-                .set_actor_position(self.body.collider.unwrap(), self.body.pos + grenade_mount_pos);
+            resources.collision_world.set_actor_position(
+                self.body.collider.unwrap(),
+                self.body.pos + grenade_mount_pos,
+            );
         }
         self.origin_pos = self.body.pos + grenade_mount_pos / 2.;
     }
@@ -141,7 +142,8 @@ impl Grenades {
 
                 let node = scene::get_node(node);
 
-                let mut grenades = scene::find_node_by_type::<crate::nodes::ArmedGrenades>().unwrap();
+                let mut grenades =
+                    scene::find_node_by_type::<crate::nodes::ArmedGrenades>().unwrap();
                 grenades.spawn_grenade(node.body.pos, node.body.facing);
             }
             {
@@ -194,11 +196,43 @@ impl Grenades {
             Grenades::shoot(node, player)
         }
 
-        capabilities::Gun { throw, shoot }
+        fn is_thrown(node: HandleUntyped) -> bool {
+            let node = scene::get_untyped_node(node)
+                .unwrap()
+                .to_typed::<Grenades>();
+
+            node.thrown
+        }
+
+        fn pick_up(node: HandleUntyped) {
+            let mut node = scene::get_untyped_node(node)
+                .unwrap()
+                .to_typed::<Grenades>();
+
+            node.body.angle = 0.;
+            node.amount = 3;
+
+            node.thrown = false;
+        }
+
+        capabilities::Gun {
+            throw,
+            shoot,
+            is_thrown,
+            pick_up,
+        }
     }
 }
 
 impl scene::Node for Grenades {
+    fn ready(mut node: RefMut<Self>) {
+        node.provides((
+            node.handle().untyped(),
+            node.handle().lens(|node| &mut node.body),
+            Self::gun_capabilities(),
+        ));
+    }
+
     fn fixed_update(mut node: RefMut<Self>) {
         node.grenade_sprite.update();
 

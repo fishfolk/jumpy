@@ -13,12 +13,13 @@ use macroquad::{
 use macroquad_platformer::Actor;
 
 use crate::{
-    nodes::{GameState, Muscet, ScoreCounter, Mines, Sword},
+    nodes::{GameState, ScoreCounter},
     Resources,
 };
-use crate::nodes::Grenades;
 
 mod ai;
+
+pub type Weapon = (HandleUntyped, Lens<PhysicsBody>, capabilities::Gun);
 
 pub mod capabilities {
     use crate::nodes::Player;
@@ -29,6 +30,8 @@ pub mod capabilities {
 
     #[derive(Clone)]
     pub struct Gun {
+        pub is_thrown: fn(node: HandleUntyped) -> bool,
+        pub pick_up: fn(node: HandleUntyped),
         pub throw: fn(node: HandleUntyped, force: bool),
         pub shoot: fn(node: HandleUntyped, player: Handle<Player>) -> Coroutine,
     }
@@ -131,7 +134,7 @@ impl Player {
         self.weapon = None;
     }
 
-    pub fn pick_weapon(&mut self, weapon: (HandleUntyped, Lens<PhysicsBody>, capabilities::Gun)) {
+    pub fn pick_weapon(&mut self, weapon: Weapon) {
         let resources = storage::get_mut::<Resources>();
         play_sound_once(resources.pickup_sound);
 
@@ -159,7 +162,7 @@ pub struct Player {
 
     fish_sprite: AnimatedSprite,
     pub dead: bool,
-    pub weapon: Option<(HandleUntyped, Lens<PhysicsBody>, capabilities::Gun)>,
+    pub weapon: Option<Weapon>,
     input: Input,
 
     deathmatch: bool,
@@ -288,7 +291,7 @@ impl Player {
             was_floating: false,
             state_machine,
             controller_id,
-            ai_enabled: false,//controller_id == 0,
+            ai_enabled: false, //controller_id == 0,
             ai: Some(ai::Ai::new()),
             camera_box: Rect::new(spawner_pos.x - 30., spawner_pos.y - 150., 100., 210.),
             score_counter,
@@ -497,75 +500,16 @@ impl Player {
             } else {
                 let mut picked = false;
 
-                for mut sword in scene::find_nodes_by_type::<Sword>() {
+                for (weapon, mut body, gun) in scene::find_nodes_with::<Weapon>() {
                     if picked {
                         break;
                     }
-                    if sword.thrown && sword.body.pos.distance(node.body.pos) < 80. {
+                    if (gun.is_thrown)(weapon)
+                        && body.get().unwrap().pos.distance(node.body.pos) < 80.
+                    {
                         picked = true;
-                        sword.body.angle = std::f32::consts::PI / 4. + 0.3;
-                        sword.thrown = false;
-                        let sword = (
-                            sword.handle().untyped(),
-                            sword.handle().lens(|node| &mut node.body),
-                            Sword::gun_capabilities(),
-                        );
-                        node.pick_weapon(sword);
-                    }
-                }
-                for mut muscet in scene::find_nodes_by_type::<Muscet>() {
-                    if picked {
-                        break;
-                    }
-                    if muscet.thrown && muscet.body.pos.distance(node.body.pos) < 80. {
-                        picked = true;
-                        muscet.body.angle = 0.;
-                        muscet.thrown = false;
-                        muscet.bullets = 3;
-
-                        let muscet = (
-                            muscet.handle().untyped(),
-                            muscet.handle().lens(|node| &mut node.body),
-                            Muscet::gun_capabilities(),
-                        );
-                        node.pick_weapon(muscet);
-                    }
-                }
-                for mut mines in scene::find_nodes_by_type::<Mines>() {
-                    if picked {
-                        break;
-                    }
-                    if mines.thrown && mines.body.pos.distance(node.body.pos) < 80. {
-                        picked = true;
-                        mines.body.angle = 0.;
-                        mines.thrown = false;
-                        mines.amount = 3;
-
-                        let mines = (
-                            mines.handle().untyped(),
-                            mines.handle().lens(|node| &mut node.body),
-                            Mines::gun_capabilities(),
-                        );
-                        node.pick_weapon(mines);
-                    }
-                }
-
-                for mut grenades in scene::find_nodes_by_type::<Grenades>() {
-                    if picked {
-                        break;
-                    }
-                    if grenades.thrown && grenades.body.pos.distance(node.body.pos) < 80. {
-                        picked = true;
-                        grenades.body.angle = 0.;
-                        grenades.thrown = false;
-                        grenades.amount = 3;
-
-                        let grenades = (
-                            grenades.handle().untyped(),
-                            grenades.handle().lens(|node| &mut node.body),
-                            Grenades::gun_capabilities(),
-                        );
-                        node.pick_weapon(grenades);
+                        (gun.pick_up)(weapon);
+                        node.pick_weapon((weapon, body, gun));
                     }
                 }
             }

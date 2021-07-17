@@ -31,7 +31,6 @@ pub struct Mines {
 }
 
 impl Mines {
-
     pub const INITIAL_AMOUNT: i32 = 3;
     pub const MAXIMUM_AMOUNT: i32 = 3;
 
@@ -179,15 +178,13 @@ impl Mines {
 
     pub fn gun_capabilities() -> capabilities::Gun {
         fn throw(node: HandleUntyped, force: bool) {
-            let mut node = scene::get_untyped_node(node)
-                .unwrap()
-                .to_typed::<Mines>();
+            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Mines>();
 
             Mines::throw(&mut *node, force);
         }
 
         fn shoot(node: HandleUntyped, player: Handle<Player>) -> Coroutine {
-            let node = scene::get_untyped_node(node)
+            let mut node = scene::get_untyped_node(node)
                 .unwrap()
                 .to_typed::<Mines>()
                 .handle();
@@ -195,11 +192,38 @@ impl Mines {
             Mines::shoot(node, player)
         }
 
-        capabilities::Gun { throw, shoot }
+        fn is_thrown(node: HandleUntyped) -> bool {
+            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Mines>();
+
+            node.thrown
+        }
+
+        fn pick_up(node: HandleUntyped) {
+            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Mines>();
+
+            node.body.angle = 0.;
+            node.amount = 3;
+            node.thrown = false;
+        }
+
+        capabilities::Gun {
+            throw,
+            shoot,
+            is_thrown,
+            pick_up,
+        }
     }
 }
 
 impl scene::Node for Mines {
+    fn ready(mut node: RefMut<Self>) {
+        node.provides((
+            node.handle().untyped(),
+            node.handle().lens(|node| &mut node.body),
+            Self::gun_capabilities(),
+        ));
+    }
+
     fn fixed_update(mut node: RefMut<Self>) {
         node.mines_sprite.update();
 

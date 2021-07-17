@@ -159,7 +159,13 @@ impl scene::Node for ArmedMines {
 
     fn draw(mut node: RefMut<Self>) {
         for mine in &mut node.mines {
+            // TODO: Fix animation
             mine.mine_sprite.update();
+            if mine.lived >= ArmedMine::ARMED_AFTER_DURATION && mine.mine_sprite.current_animation() != 1 {
+                mine.mine_sprite.set_animation(1);
+                // This is a temp hack until animation works
+                mine.mine_sprite.set_frame(1);
+            }
             let resources = storage::get_mut::<Resources>();
             draw_texture_ex(
                 resources.mines,

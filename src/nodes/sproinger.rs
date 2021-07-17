@@ -24,7 +24,7 @@ pub struct Sproinger {
 impl Sproinger {
     pub const TRIGGER_WIDTH: f32 = 32.0;
     pub const TRIGGER_HEIGHT: f32 = 8.0;
-    pub const FORCE: f32 = 600.0;
+    pub const FORCE: f32 = 1100.0;
     pub const COOLDOWN: f32 = 0.5;
     pub const STOPPED_THRESHOLD: f32 = 0.01;
 
@@ -112,7 +112,7 @@ impl scene::Node for Sproinger {
                     let intersect = sproinger_rect.intersect(Rect::new(
                         muscet.body.pos.x,
                         muscet.body.pos.y,
-                        92.0,
+                        48.0,
                         32.0,
                     ));
                     if !intersect.is_none() {
@@ -127,7 +127,7 @@ impl scene::Node for Sproinger {
                     let intersect = sproinger_rect.intersect(Rect::new(
                         sword.body.pos.x,
                         sword.body.pos.y,
-                        64.0,
+                        48.0,
                         32.0,
                     ));
                     if !intersect.is_none() {
@@ -173,7 +173,7 @@ impl scene::Node for Sproinger {
                         grenades.body.pos.x,
                         grenades.body.pos.y,
                         16.0,
-                        96.0,
+                        32.0,
                     ));
                     if !intersect.is_none() {
                         grenades.body.speed.y = -Self::FORCE;

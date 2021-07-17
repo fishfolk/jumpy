@@ -340,6 +340,18 @@
                  "width":0,
                  "x":400.333333333333,
                  "y":548.0
+                },
+                {
+                 "height":0,
+                 "id":66,
+                 "name":"sproinger",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":450.0,
+                 "y":568.0
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -348,7 +360,7 @@
          "y":0
         }],
  "nextlayerid":6,
- "nextobjectid":66,
+ "nextobjectid":67,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.7.0",

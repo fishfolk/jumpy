@@ -113,8 +113,7 @@ impl scene::Node for ArmedMines {
             // TODO: Fix animation
             if mine.lived >= ArmedMine::ARMED_AFTER_DURATION && mine.mine_sprite.current_animation() != 1 {
                 mine.mine_sprite.set_animation(1);
-                // This is a temp hack until animation works
-                mine.mine_sprite.set_frame(1);
+                mine.mine_sprite.playing = true;
             }
 
             if mine.body.on_ground {
@@ -125,21 +124,22 @@ impl scene::Node for ArmedMines {
         node.mines.retain(|mine| {
             if mine.lived >= ArmedMine::ARMED_AFTER_DURATION {
                 let mut killed = false;
+                let mine_rect = Rect::new(
+                    mine.body.pos.x - (ArmedMine::TRIGGER_WIDTH / 2.0),
+                    mine.body.pos.y - (ArmedMine::TRIGGER_HEIGHT / 2.0),
+                    ArmedMine::TRIGGER_WIDTH,
+                    ArmedMine::TRIGGER_HEIGHT,
+                );
                 for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
                     let intersect =
-                        Rect::new(
-                            mine.body.pos.x - (ArmedMine::TRIGGER_WIDTH / 2.0),
-                            mine.body.pos.y - (ArmedMine::TRIGGER_HEIGHT / 2.0),
-                            ArmedMine::TRIGGER_WIDTH,
-                            ArmedMine::TRIGGER_HEIGHT,
-                        ).intersect(Rect::new(
+                        mine_rect.intersect(Rect::new(
                             player.body.pos.x,
                             player.body.pos.y,
                             20.0,
                             64.0,
                         ));
-                    let direction = mine.body.pos.x > (player.body.pos.x + 10.);
                     if !intersect.is_none() {
+                        let direction = mine.body.pos.x > (player.body.pos.x + 10.);
                         scene::find_node_by_type::<crate::nodes::Camera>()
                             .unwrap()
                             .shake();
@@ -159,16 +159,11 @@ impl scene::Node for ArmedMines {
 
     fn draw(mut node: RefMut<Self>) {
         for mine in &mut node.mines {
+            mine.mine_sprite.update();
+
             if mine.lived >= ArmedMine::ARMED_AFTER_DURATION && mine.mine_sprite.current_animation() != 1 {
                 mine.mine_sprite.set_animation(1);
-                mine.mine_sprite.playing = true;
             }
-            if mine.mine_sprite.current_animation() == 1 && !mine.mine_sprite.playing {
-                // Is there a better way to loop animation?
-                mine.mine_sprite.playing = true;
-            }
-
-            mine.mine_sprite.update();
 
             let resources = storage::get_mut::<Resources>();
             draw_texture_ex(

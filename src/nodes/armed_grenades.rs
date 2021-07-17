@@ -113,22 +113,22 @@ impl scene::Node for ArmedGrenades {
                     let mut resources = storage::get_mut::<Resources>();
                     resources.hit_fxses.spawn(grenade.body.pos);
                 }
+                let grenade_rect = Rect::new(
+                    grenade.body.pos.x - (ArmedGrenade::EXPLOSION_WIDTH / 2.0),
+                    grenade.body.pos.y - (ArmedGrenade::EXPLOSION_HEIGHT / 2.0),
+                    ArmedGrenade::EXPLOSION_WIDTH,
+                    ArmedGrenade::EXPLOSION_HEIGHT,
+                );
                 for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
                     let intersect =
-                        Rect::new(
-                            grenade.body.pos.x - (ArmedGrenade::EXPLOSION_WIDTH / 2.0),
-                            grenade.body.pos.y - (ArmedGrenade::EXPLOSION_HEIGHT / 2.0),
-                            ArmedGrenade::EXPLOSION_WIDTH,
-                            ArmedGrenade::EXPLOSION_HEIGHT,
-                        ).intersect(Rect::new(
+                        grenade_rect.intersect(Rect::new(
                             player.body.pos.x,
                             player.body.pos.y,
                             20.0,
                             64.0,
                         ));
-                    println!();
-                    let direction = grenade.body.pos.x > (player.body.pos.x + 10.);
                     if !intersect.is_none() {
+                        let direction = grenade.body.pos.x > (player.body.pos.x + 10.);
                         scene::find_node_by_type::<crate::nodes::Camera>()
                             .unwrap()
                             .shake();

@@ -288,7 +288,7 @@ impl Player {
             was_floating: false,
             state_machine,
             controller_id,
-            ai_enabled: controller_id == 0,
+            ai_enabled: false,//controller_id == 0,
             ai: Some(ai::Ai::new()),
             camera_box: Rect::new(spawner_pos.x - 30., spawner_pos.y - 150., 100., 210.),
             score_counter,

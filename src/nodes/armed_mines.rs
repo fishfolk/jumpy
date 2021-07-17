@@ -43,7 +43,7 @@ impl ArmedMine {
                     name: "armed".to_string(),
                     row: 0,
                     frames: 2,
-                    fps: 2,
+                    fps: 3,
                 },
             ],
             false,
@@ -159,13 +159,17 @@ impl scene::Node for ArmedMines {
 
     fn draw(mut node: RefMut<Self>) {
         for mine in &mut node.mines {
-            // TODO: Fix animation
-            mine.mine_sprite.update();
             if mine.lived >= ArmedMine::ARMED_AFTER_DURATION && mine.mine_sprite.current_animation() != 1 {
                 mine.mine_sprite.set_animation(1);
-                // This is a temp hack until animation works
-                mine.mine_sprite.set_frame(1);
+                mine.mine_sprite.playing = true;
             }
+            if mine.mine_sprite.current_animation() == 1 && !mine.mine_sprite.playing {
+                // Is there a better way to loop animation?
+                mine.mine_sprite.playing = true;
+            }
+
+            mine.mine_sprite.update();
+
             let resources = storage::get_mut::<Resources>();
             draw_texture_ex(
                 resources.mines,

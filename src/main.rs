@@ -289,9 +289,9 @@ async fn game(game_type: GameType, map: &str) -> i32 {
         }
 
         if object.name == "sproinger" {
-            let mut grenade =
+            let sproinger =
                 Sproinger::new(vec2(object.world_x - 35., object.world_y - 25.));
-            scene::add_node(grenade);
+            scene::add_node(sproinger);
         }
     }
 

@@ -1,5 +1,5 @@
 use macroquad::{
-    audio::{self, play_sound_once},
+    audio::play_sound_once,
     experimental::{
       collections::storage,
       scene::RefMut,
@@ -13,7 +13,6 @@ use macroquad::{
 };
 
 use crate::Resources;
-use crate::nodes::player::PhysicsBody;
 
 pub struct Sproinger {
     sprite: AnimatedSprite,

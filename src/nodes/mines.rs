@@ -184,7 +184,7 @@ impl Mines {
         }
 
         fn shoot(node: HandleUntyped, player: Handle<Player>) -> Coroutine {
-            let mut node = scene::get_untyped_node(node)
+            let node = scene::get_untyped_node(node)
                 .unwrap()
                 .to_typed::<Mines>()
                 .handle();
@@ -193,7 +193,7 @@ impl Mines {
         }
 
         fn is_thrown(node: HandleUntyped) -> bool {
-            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Mines>();
+            let node = scene::get_untyped_node(node).unwrap().to_typed::<Mines>();
 
             node.thrown
         }

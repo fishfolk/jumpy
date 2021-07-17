@@ -224,8 +224,6 @@ async fn game(game_type: GameType, map: &str) -> i32 {
 
     let _level_background = scene::add_node(LevelBackground::new());
 
-    let _score_counter = scene::add_node(ScoreCounter::new());
-
     for object in &resources.tiled_map.layers["decorations"].objects {
         scene::add_node(Decoration::new(
             vec2(object.world_x, object.world_y),
@@ -237,7 +235,7 @@ async fn game(game_type: GameType, map: &str) -> i32 {
 
     drop(resources);
 
-    let score_counter = scene::add_node(nodes::ScoreCounter::new());
+    let score_counter = scene::add_node(ScoreCounter::new());
     let player1 = scene::add_node(Player::new(
         game_type == GameType::Deathmatch,
         0,

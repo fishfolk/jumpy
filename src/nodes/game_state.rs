@@ -14,7 +14,6 @@ enum State {
     Starting,
     Paused,
     InProgress,
-    Finished,
 }
 
 /// Mediator of a game
@@ -57,8 +56,6 @@ impl GameState {
             label: "".to_string(),
         }
     }
-
-    pub fn count_loss(_node: RefMut<Self>, _id: i32) {}
 }
 
 impl scene::Node for GameState {

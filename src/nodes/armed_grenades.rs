@@ -18,7 +18,7 @@ use crate::{
 
 pub struct ArmedGrenade {
     grenade_sprite: AnimatedSprite,
-    body: PhysicsBody,
+    pub body: PhysicsBody,
     lived: f32,
     countdown: f32,
 }
@@ -85,7 +85,7 @@ impl ArmedGrenade {
 }
 
 pub struct ArmedGrenades {
-    grenades: Vec<ArmedGrenade>,
+    pub grenades: Vec<ArmedGrenade>,
 }
 
 impl ArmedGrenades {

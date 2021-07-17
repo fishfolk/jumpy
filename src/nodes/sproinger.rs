@@ -13,6 +13,7 @@ use macroquad::{
 };
 
 use crate::Resources;
+use crate::nodes::player::PhysicsBody;
 
 pub struct Sproinger {
     sprite: AnimatedSprite,
@@ -61,6 +62,16 @@ impl Sproinger {
             time_since_sproing: 0.0,
         }
     }
+
+    pub fn sproing(&mut self) {
+        self.has_sproinged = true;
+        self.time_since_sproing = 0.0;
+        // self.sprite.set_animation(1);
+        // self.sprite.playing = true;
+
+        let resources = storage::get_mut::<Resources>();
+        play_sound_once(resources.jump_sound);
+    }
 }
 
 impl scene::Node for Sproinger {
@@ -90,13 +101,97 @@ impl scene::Node for Sproinger {
                 ));
                 if !intersect.is_none() {
                     player.body.speed.y = -Self::FORCE;
-                    node.has_sproinged = true;
-                    node.time_since_sproing = 0.0;
-                    // node.sprite.set_animation(1);
-                    // node.sprite.playing = true;
+                    node.sproing();
+                }
+            }
 
-                    let resources = storage::get_mut::<Resources>();
-                    play_sound_once(resources.jump_sound);
+            for mut muscet in scene::find_nodes_by_type::<crate::nodes::Muscet>() {
+                if muscet.deadly_dangerous {
+                    let intersect = sproinger_rect.intersect(Rect::new(
+                        muscet.body.pos.x,
+                        muscet.body.pos.y,
+                        92.0,
+                        32.0,
+                    ));
+                    if !intersect.is_none() {
+                        muscet.body.speed.y = -Self::FORCE;
+                        node.sproing();
+                    }
+                }
+            }
+
+            for mut sword in scene::find_nodes_by_type::<crate::nodes::Sword>() {
+                if sword.deadly_dangerous {
+                    let intersect = sproinger_rect.intersect(Rect::new(
+                        sword.body.pos.x,
+                        sword.body.pos.y,
+                        65.0,
+                        93.0,
+                    ));
+                    if !intersect.is_none() {
+                        sword.body.speed.y = -Self::FORCE;
+                        node.sproing();
+                    }
+                }
+            }
+
+            for mut mines in scene::find_nodes_by_type::<crate::nodes::Mines>() {
+                if mines.deadly_dangerous {
+                    let intersect = sproinger_rect.intersect(Rect::new(
+                        mines.body.pos.x,
+                        mines.body.pos.y,
+                        32.0,
+                        15.0,
+                    ));
+                    if !intersect.is_none() {
+                        mines.body.speed.y = -Self::FORCE;
+                        node.sproing();
+                    }
+                }
+            }
+
+            for mut mines in scene::find_nodes_by_type::<crate::nodes::ArmedMines>() {
+                for mine in &mut mines.mines {
+                    let intersect = sproinger_rect.intersect(Rect::new(
+                        mine.body.pos.x,
+                        mine.body.pos.y,
+                        32.0,
+                        16.0,
+                    ));
+                    if !intersect.is_none() {
+                        mine.body.speed.y = -Self::FORCE;
+                        node.sproing();
+                    }
+                }
+            }
+
+            for mut grenades in scene::find_nodes_by_type::<crate::nodes::Grenades>() {
+                if grenades.deadly_dangerous {
+                    let intersect = sproinger_rect.intersect(Rect::new(
+                        grenades.body.pos.x,
+                        grenades.body.pos.y,
+                        15.0,
+                        15.0,
+                    ));
+                    if !intersect.is_none() {
+                        grenades.body.speed.y = -Self::FORCE;
+                        node.sproing();
+                    }
+                }
+            }
+
+            for mut grenades in scene::find_nodes_by_type::<crate::nodes::ArmedGrenades>() {
+                for grenade in &mut grenades.grenades {
+                    let intersect = sproinger_rect.intersect(Rect::new(
+                        grenade.body.pos.x,
+                        grenade.body.pos.y,
+                        16.0,
+                        16.0,
+                    ));
+                    if !intersect.is_none() {
+                        grenade.body.speed.y = -Self::FORCE;
+                        node.sproing();
+                    }
                 }
             }
         }

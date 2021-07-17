@@ -27,7 +27,7 @@ pub struct Grenades {
     pub body: PhysicsBody,
 
     origin_pos: Vec2,
-    deadly_dangerous: bool,
+    pub deadly_dangerous: bool,
 }
 
 impl Grenades {

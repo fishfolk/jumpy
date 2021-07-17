@@ -18,7 +18,7 @@ use crate::{
 
 pub struct ArmedMine {
     mine_sprite: AnimatedSprite,
-    body: PhysicsBody,
+    pub body: PhysicsBody,
     lived: f32,
 }
 
@@ -89,7 +89,7 @@ impl ArmedMine {
 }
 
 pub struct ArmedMines {
-    mines: Vec<ArmedMine>,
+    pub mines: Vec<ArmedMine>,
 }
 
 impl ArmedMines {

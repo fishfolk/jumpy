@@ -23,7 +23,7 @@ pub struct Sword {
     pub body: PhysicsBody,
 
     origin_pos: Vec2,
-    deadly_dangerous: bool,
+    pub deadly_dangerous: bool,
 
     // hack, just for swordthrow loc
     spawn_pos: (Vec2, bool),

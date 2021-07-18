@@ -13,6 +13,7 @@ use macroquad::{
 use crate::Resources;
 
 use super::{
+    cannonball::CANNONBALL_HEIGHT,
     player::{capabilities, PhysicsBody, Weapon, PLAYER_HITBOX_HEIGHT, PLAYER_HITBOX_WIDTH},
     Player,
 };
@@ -132,10 +133,13 @@ impl Cannon {
                     return;
                 }
 
-                println!("TODO: Cannon::shoot()");
-                // let mut cannonball =
-                //     scene::find_node_by_type::<crate::nodes::Cannonball>().unwrap();
-                // cannonball.spawn_cannonball(node.body.pos, node.body.facing);
+                let mut cannonballs =
+                    scene::find_node_by_type::<crate::nodes::Cannonballs>().unwrap();
+                let cannonball_pos = vec2(
+                    node.body.pos.x,
+                    node.body.pos.y - 20. - (CANNONBALL_HEIGHT as f32 / 2.),
+                );
+                cannonballs.spawn_cannonball(cannonball_pos, node.body.facing, player);
             }
 
             wait_seconds(0.08).await;

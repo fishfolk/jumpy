@@ -7,10 +7,16 @@ use macroquad::{
             RefMut,
             HandleUntyped,
             Lens,
+            Handle,
         },
         animation::{
             AnimatedSprite,
             Animation,
+        },
+        coroutines::{
+            Coroutine,
+            start_coroutine,
+            wait_seconds,
         },
     },
     color,
@@ -72,6 +78,44 @@ impl Sproinger {
             time_since_sproing: 0.0,
         }
     }
+
+    fn animate(node_handle: Handle<Sproinger>) -> Coroutine {
+        let coroutine = async move {
+            {
+                let mut node = scene::get_node(node_handle);
+                node.sprite.set_animation(1);
+            }
+            for i in 0..2 {
+                {
+                    let mut node = scene::get_node(node_handle);
+                    if node.sprite.current_animation() != 1 {
+                        return;
+                    }
+                    node.sprite.set_frame(i);
+                }
+                wait_seconds(0.08).await;
+            }
+            {
+                let mut node = scene::get_node(node_handle);
+                node.sprite.set_animation(2);
+            }
+            for i in 0..2 {
+                {
+                    let mut node = scene::get_node(node_handle);
+                    if node.sprite.current_animation() != 2 {
+                        return;
+                    }
+                    node.sprite.set_frame(i);
+                }
+                wait_seconds(0.08).await;
+            }
+            {
+                let mut node = scene::get_node(node_handle);
+                node.sprite.set_animation(0);
+            }
+        };
+        start_coroutine(coroutine)
+    }
 }
 
 impl scene::Node for Sproinger {
@@ -103,14 +147,15 @@ impl scene::Node for Sproinger {
                             size.y,
                         ));
                         if !intersect.is_none() {
+                            let resources = storage::get_mut::<Resources>();
+                            play_sound_once(resources.jump_sound);
+
                             body.speed.y = -Self::FORCE;
                             node.has_sproinged = true;
                             node.time_since_sproing = 0.0;
                             // self.sprite.set_animation(1);
                             // self.sprite.playing = true;
-
-                            let resources = storage::get_mut::<Resources>();
-                            play_sound_once(resources.jump_sound);
+                            Sproinger::animate(node.handle());
                         }
                     }
                 }

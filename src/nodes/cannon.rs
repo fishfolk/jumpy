@@ -4,7 +4,7 @@ use macroquad::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
         coroutines::{start_coroutine, wait_seconds, Coroutine},
-        draw_circle, draw_circle_lines, draw_texture_ex,
+        draw_circle, draw_circle_lines, draw_texture_ex, get_frame_time,
         scene::{self, Handle, HandleUntyped, RefMut},
         vec2, Color, DrawTextureParams, Rect, Vec2,
     },
@@ -25,6 +25,8 @@ const CANNON_WIDTH: f32 = 32.;
 const CANNON_HEIGHT: f32 = 32.;
 const CANNON_ANIMATION_BASE: &'static str = "base";
 
+const SHOOTING_GRACE_TIME: f32 = 1.0; // seconds
+
 pub struct Cannon {
     cannon_sprite: AnimatedSprite,
 
@@ -35,6 +37,8 @@ pub struct Cannon {
 
     origin_pos: Vec2,
     deadly_dangerous: bool,
+
+    grace_time: f32,
 }
 
 impl Cannon {
@@ -68,6 +72,7 @@ impl Cannon {
             amount: INITIAL_CANNONBALLS,
             origin_pos: pos,
             deadly_dangerous: false,
+            grace_time: 0.,
         }
     }
 
@@ -124,13 +129,17 @@ impl Cannon {
     pub fn shoot(node_h: Handle<Cannon>, player: Handle<Player>) -> Coroutine {
         let coroutine = async move {
             {
-                let node = scene::get_node(node_h);
+                let mut node = scene::get_node(node_h);
 
-                if node.amount <= 0 {
+                if node.amount <= 0 || node.grace_time > 0. {
                     let player = &mut *scene::get_node(player);
                     player.state_machine.set_state(Player::ST_NORMAL);
 
+                    node.grace_time -= get_frame_time();
+
                     return;
+                } else {
+                    node.grace_time = SHOOTING_GRACE_TIME;
                 }
 
                 let mut cannonballs =
@@ -246,6 +255,8 @@ impl scene::Node for Cannon {
                 }
             }
         }
+
+        node.grace_time -= get_frame_time();
     }
 
     fn draw(node: RefMut<Self>) {

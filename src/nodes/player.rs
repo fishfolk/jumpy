@@ -163,6 +163,8 @@ impl Player {
 }
 
 pub struct Player {
+    pub id: u8,
+
     pub body: PhysicsBody,
 
     fish_sprite: AnimatedSprite,
@@ -205,6 +207,7 @@ impl Player {
 
     pub fn new(
         deathmatch: bool,
+        player_id: u8,
         controller_id: i32,
         score_counter: Handle<ScoreCounter>,
         game_state: Handle<GameState>,
@@ -289,6 +292,7 @@ impl Player {
         );
 
         Player {
+            id: player_id,
             dead: false,
             weapon: None,
             input: Default::default(),

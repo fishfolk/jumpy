@@ -265,11 +265,13 @@ async fn game(game_type: GameType, map: &str) {
     let player1 = scene::add_node(Player::new(
         game_type == GameType::Deathmatch,
         0,
+        0,
         score_counter,
         Handle::null(),
     ));
     let player2 = scene::add_node(Player::new(
         game_type == GameType::Deathmatch,
+        1,
         1,
         score_counter,
         Handle::null(),

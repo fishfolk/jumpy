@@ -531,6 +531,24 @@ impl scene::Node for Player {
     }
 
     fn draw(node: RefMut<Self>) {
+        #[cfg(feature = "draw_hitboxes")]
+        {
+            let player_hitbox = Rect::new(
+                node.body.pos.x,
+                node.body.pos.y,
+                PLAYER_HITBOX_WIDTH,
+                PLAYER_HITBOX_HEIGHT,
+            );
+            draw_rectangle_lines(
+                player_hitbox.x,
+                player_hitbox.y,
+                player_hitbox.w,
+                player_hitbox.h,
+                5.,
+                RED,
+            );
+        }
+
         //     let sword_hit_box = if node.fish.facing {
         //         Rect::new(node.pos().x + 35., node.pos().y - 5., 40., 60.)
         //     } else {

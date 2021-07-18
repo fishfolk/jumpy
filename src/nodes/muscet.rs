@@ -11,8 +11,9 @@ use macroquad::{
 };
 
 use crate::{
-    nodes::player::{capabilities, PhysicsBody},
+    nodes::player::{capabilities, PhysicsBody, Weapon},
     nodes::Player,
+    nodes::sproinger::Sproingable,
     Resources,
 };
 
@@ -32,12 +33,12 @@ pub struct Muscet {
 
 impl scene::Node for Muscet {
     fn ready(mut node: RefMut<Self>) {
-        node.provides((
+        node.provides::<Weapon>((
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
             Self::gun_capabilities(),
         ));
-        node.provides((
+        node.provides::<Sproingable>((
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
             vec2(48.0, 32.0),

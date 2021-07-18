@@ -13,6 +13,7 @@ use macroquad::{
 
 use crate::{
     nodes::player::PhysicsBody,
+    nodes::sproinger::Sproingable,
     Resources,
 };
 
@@ -95,7 +96,7 @@ impl ArmedMine {
 
 impl scene::Node for ArmedMine {
     fn ready(mut node: RefMut<Self>) {
-        node.provides((
+        node.provides::<Sproingable>((
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
             vec2(32.0, 16.0),

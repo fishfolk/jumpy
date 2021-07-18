@@ -167,7 +167,7 @@ impl Resources {
     }
 }
 
-async fn game(game_type: GameType, map: &str) -> i32 {
+async fn game(game_type: GameType, map: &str) {
     use nodes::{
         Bullets, Camera, Decoration, Fxses, GameState, Grenades,
         LevelBackground, Mines, Muscet, Player, ScoreCounter, Sword, Sproinger,
@@ -300,7 +300,7 @@ async fn game(game_type: GameType, map: &str) -> i32 {
     //scene::add_node(Camera::new(player2));
     scene::add_node(Fxses {});
 
-    let game_state = scene::add_node(GameState::new());
+    let game_state = scene::add_node(GameState::new(score_counter));
 
     scene::get_node(player1).game_state = game_state;
     scene::get_node(player2).game_state = game_state;
@@ -314,7 +314,7 @@ async fn game(game_type: GameType, map: &str) -> i32 {
         }
 
         if scene::find_node_by_type::<GameState>().unwrap().want_quit {
-            return -1;
+            return;
         }
 
         next_frame().await;
@@ -346,37 +346,8 @@ async fn main() {
     loop {
         let map = gui::main_menu::gui().await;
         //let map = "assets/levels/lev06.json";
-        let res = game(GameType::Deathmatch, &map).await;
+        game(GameType::Deathmatch, &map).await;
 
         scene::clear();
-
-        if res != -1 {
-            for _ in 0..100 {
-                if res == 1 {
-                    clear_background(Color::from_rgba(126, 168, 166, 255));
-                } else {
-                    clear_background(Color::from_rgba(126, 178, 126, 255));
-                }
-
-                let resources = storage::get::<Resources>();
-
-                draw_texture_ex(
-                    if res == 1 {
-                        resources.whale
-                    } else {
-                        resources.whale_red
-                    },
-                    0.,
-                    0.0,
-                    WHITE,
-                    DrawTextureParams {
-                        source: Some(Rect::new(0.0, 0.0, 76., 66.)),
-                        dest_size: Some(vec2(screen_width(), screen_height())),
-                        ..Default::default()
-                    },
-                );
-                next_frame().await;
-            }
-        }
     }
 }

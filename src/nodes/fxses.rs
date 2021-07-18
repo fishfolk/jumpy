@@ -24,8 +24,8 @@ impl scene::Node for Fxses {
         set_default_camera();
         resources.life_explosion_fxses.draw();
         pop_camera_state();
-        macroquad_profiler::profiler(macroquad_profiler::ProfilerParams {
-            fps_counter_pos: macroquad::math::vec2(50.0, 20.0),
-        });
+        // macroquad_profiler::profiler(macroquad_profiler::ProfilerParams {
+        //     fps_counter_pos: macroquad::math::vec2(50.0, 20.0),
+        // });
     }
 }

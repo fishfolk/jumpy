@@ -12,9 +12,10 @@ use macroquad::{
 
 use crate::{
     nodes::{
-        player::{capabilities, PhysicsBody},
+        player::{capabilities, PhysicsBody, Weapon},
         Player,
         ArmedMine,
+        sproinger::Sproingable,
     },
     Resources,
 };
@@ -217,15 +218,16 @@ impl Mines {
 
 impl scene::Node for Mines {
     fn ready(mut node: RefMut<Self>) {
-        node.provides((
+        node.provides::<Weapon>((
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
             Self::gun_capabilities(),
         ));
-        node.provides((
+
+        node.provides::<Sproingable>((
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
-            vec2(32.0, 16.0),
+            vec2(32.0, 28.0),
         ));
     }
 

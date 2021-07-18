@@ -13,13 +13,18 @@ use macroquad::{
 use macroquad_platformer::Actor;
 
 use crate::{
-    nodes::{GameState, ScoreCounter},
+    nodes::{
+        GameState,
+        ScoreCounter,
+        sproinger::Sproingable,
+    },
     Resources,
 };
 
 mod ai;
 
 pub type Weapon = (HandleUntyped, Lens<PhysicsBody>, capabilities::Gun);
+pub type PhysicsObject = (HandleUntyped, Lens<PhysicsBody>);
 
 pub mod capabilities {
     use crate::nodes::Player;
@@ -322,6 +327,9 @@ impl Player {
 
                 node.dead = true;
                 node.fish_sprite.set_animation(2);
+
+                let mut score_counter = scene::get_node(node.score_counter);
+                score_counter.count_loss(node.controller_id)
             }
 
             if {
@@ -347,12 +355,6 @@ impl Player {
                 }
 
                 wait_seconds(0.5).await;
-            }
-
-            {
-                let node = scene::get_node(handle);
-                let mut score_counter = scene::get_node(node.score_counter);
-                score_counter.count_loss(node.controller_id)
             }
 
             {
@@ -526,7 +528,12 @@ impl Player {
 
 impl scene::Node for Player {
     fn ready(mut node: RefMut<Self>) {
-        node.provides((
+        node.provides::<PhysicsObject>((
+            node.handle().untyped(),
+            node.handle().lens(|node| &mut node.body),
+        ));
+
+        node.provides::<Sproingable>((
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
             vec2(20.0, 64.0),

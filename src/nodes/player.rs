@@ -19,6 +19,9 @@ use crate::{
 
 mod ai;
 
+pub const PLAYER_HITBOX_HEIGHT: f32 = 64.;
+pub const PLAYER_HITBOX_WIDTH: f32 = 20.;
+
 pub type Weapon = (HandleUntyped, Lens<PhysicsBody>, capabilities::Gun);
 pub type PhysicsObject = (HandleUntyped, Lens<PhysicsBody>);
 

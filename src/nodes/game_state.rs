@@ -1,19 +1,23 @@
 use macroquad::{
     experimental::{
         coroutines::{start_coroutine, wait_seconds},
-        scene::{self, RefMut},
+        scene::{self, Handle, RefMut},
     },
     prelude::*,
     window::miniquad::*,
 };
 
-use crate::gui::pause_menu;
+use crate::{
+    gui::pause_menu,
+    nodes::{Player, ScoreCounter},
+};
 
 #[derive(Clone, Copy, PartialEq)]
 enum State {
     Starting,
     Paused,
     InProgress,
+    Finished,
 }
 
 /// Mediator of a game
@@ -25,11 +29,17 @@ pub struct GameState {
 
     material: Material,
     state: State,
-    label: String,
+    start_label: String,
+    win_label: String,
+
+    winner: Option<Handle<Player>>,
+    k: f32,
+
+    score_counter: Handle<ScoreCounter>,
 }
 
 impl GameState {
-    pub fn new() -> GameState {
+    pub fn new(score_counter: Handle<ScoreCounter>) -> GameState {
         let material = load_material(
             VERTEX,
             FRAGMENT,
@@ -53,7 +63,11 @@ impl GameState {
             game_paused: true,
             want_quit: false,
             state: State::Starting,
-            label: "".to_string(),
+            start_label: "".to_string(),
+            win_label: "".to_string(),
+            k: 0.0,
+            winner: None,
+            score_counter,
         }
     }
 }
@@ -67,22 +81,22 @@ impl scene::Node for GameState {
         start_coroutine(async move {
             {
                 let mut node = scene::get_node(handle);
-                node.label = "FISH".to_string();
+                node.start_label = "FISH".to_string();
             }
             wait_seconds(0.11).await;
             {
                 let mut node = scene::get_node(handle);
-                node.label = "FIGHT".to_string();
+                node.start_label = "FIGHT".to_string();
             }
             wait_seconds(0.11).await;
             {
                 let mut node = scene::get_node(handle);
-                node.label = "KILL".to_string();
+                node.start_label = "KILL".to_string();
             }
             wait_seconds(0.11).await;
             {
                 let mut node = scene::get_node(handle);
-                node.label = "FISH".to_string();
+                node.start_label = "FISH".to_string();
             }
             wait_seconds(0.11).await;
 
@@ -93,7 +107,7 @@ impl scene::Node for GameState {
     }
 
     fn draw(mut node: RefMut<Self>) {
-        if let State::Starting = node.state {
+        if node.state == State::Starting {
             push_camera_state();
             set_default_camera();
 
@@ -105,7 +119,7 @@ impl scene::Node for GameState {
                 Color::new(0., 0., 0., 0.8),
             );
 
-            let text_size = measure_text(&node.label, None, 16, 1.);
+            let text_size = measure_text(&node.start_label, None, 16, 1.);
 
             let pos = vec2(
                 screen_width() / 2. - text_size.width / 2. * 20.,
@@ -114,7 +128,7 @@ impl scene::Node for GameState {
 
             gl_use_material(node.material);
             draw_text_ex(
-                &node.label,
+                &node.start_label,
                 pos.x,
                 pos.y,
                 TextParams {
@@ -126,6 +140,47 @@ impl scene::Node for GameState {
             gl_use_default_material();
 
             pop_camera_state();
+        }
+
+        if node.state == State::Finished {
+            push_camera_state();
+            set_default_camera();
+
+            draw_rectangle(
+                0.0,
+                0.0,
+                screen_width(),
+                screen_height(),
+                Color::new(0., 0., 0., node.k.min(0.5)),
+            );
+            if node.k >= 0.0001 {
+                node.k += get_frame_time();
+            }
+
+            let text_size = measure_text(&node.win_label, None, 16, 1.);
+
+            let pos = vec2(
+                screen_width() / 2. - text_size.width / 2. * 10.,
+                screen_height() / 2. + text_size.height / 2. * 10.,
+            );
+
+            draw_text_ex(
+                &node.win_label,
+                pos.x,
+                pos.y,
+                TextParams {
+                    font_size: 16,
+                    font_scale: 10.,
+                    ..Default::default()
+                },
+            );
+            gl_use_default_material();
+            pop_camera_state();
+
+            if let Some(winner) = node.winner {
+                let player = scene::get_node(winner);
+                Player::draw(player);
+            }
         }
         if node.state == State::Paused {
             match pause_menu::gui() {
@@ -150,6 +205,49 @@ impl scene::Node for GameState {
                 node.state = State::InProgress;
                 node.game_paused = false;
             }
+        }
+
+        if node.state == State::InProgress {
+            let score = scene::get_node(node.score_counter);
+            if score.player0_lifes <= 0 || score.player1_lifes <= 0 {
+                node.state = State::Finished;
+                node.game_paused = true;
+                let handle = node.handle();
+                start_coroutine(Self::win_coroutine(
+                    handle,
+                    if score.player0_lifes <= 0 { 1 } else { 0 },
+                ));
+            }
+        }
+    }
+}
+
+impl GameState {
+    async fn win_coroutine(handle: Handle<GameState>, winner: i32) {
+        {
+            let player = scene::find_nodes_by_type::<crate::nodes::Player>()
+                .find(|node| node.controller_id == winner)
+                .unwrap();
+            let mut camera = scene::find_node_by_type::<crate::nodes::Camera>().unwrap();
+            camera.manual = Some((player.body.pos + vec2(-30., 30.), 90.));
+
+            let mut node = scene::get_node(handle);
+            node.winner = Some(player.handle());
+            node.k = 0.0001;
+        }
+
+        wait_seconds(1.5).await;
+
+        {
+            let mut node = scene::get_node(handle);
+            node.win_label = "THE FISH ->   ".to_string();
+        }
+
+        wait_seconds(2.0).await;
+
+        {
+            let mut node = scene::get_node(handle);
+            node.want_quit = true;
         }
     }
 }

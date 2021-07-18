@@ -9,8 +9,8 @@ use macroquad::{
 use crate::Resources;
 
 pub struct ScoreCounter {
-    player0_lifes: i32,
-    player1_lifes: i32,
+    pub player0_lifes: i32,
+    pub player1_lifes: i32,
 }
 
 impl ScoreCounter {

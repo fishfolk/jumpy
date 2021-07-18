@@ -12,7 +12,7 @@ use macroquad::{
 
 use crate::{
     nodes::{
-        player::{capabilities, PhysicsBody},
+        player::{capabilities, PhysicsBody, Weapon},
         Player,
     },
     Resources,
@@ -226,7 +226,7 @@ impl Grenades {
 
 impl scene::Node for Grenades {
     fn ready(mut node: RefMut<Self>) {
-        node.provides((
+        node.provides::<Weapon>((
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
             Self::gun_capabilities(),

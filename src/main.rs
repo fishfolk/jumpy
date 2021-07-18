@@ -41,6 +41,7 @@ struct Resources {
     whale: Texture2D,
     whale_red: Texture2D,
     grenades: Texture2D,
+    cannon: Texture2D,
     curse: Texture2D,
     flying_curses: Texture2D,
     gun: Texture2D,
@@ -97,6 +98,9 @@ impl Resources {
 
         let sproinger = load_texture("assets/Whale/Sproinger(32x32).png").await?;
         sproinger.set_filter(FilterMode::Nearest);
+
+        let cannon = load_texture("assets/Whale/Cannon(32x32).png").await?;
+        cannon.set_filter(FilterMode::Nearest);
 
         let curse = load_texture("assets/Whale/Curse(32x32).png").await?;
         curse.set_filter(FilterMode::Nearest);
@@ -167,6 +171,7 @@ impl Resources {
             whale,
             whale_red,
             grenades,
+            cannon,
             curse,
             flying_curses,
             gun,
@@ -190,8 +195,8 @@ impl Resources {
 
 async fn game(game_type: GameType, map: &str) {
     use nodes::{
-        Bullets, Camera, Crate, Curse, Decoration, FlyingCurses, Fxses, GameState, Grenades,
-        LevelBackground, Mines, Muscet, Player, ScoreCounter, Shoes, Sproinger, Sword,
+        Bullets, Camera, Cannon, Crate, Curse, Decoration, FlyingCurses, Fxses, GameState,
+        Grenades, LevelBackground, Mines, Muscet, Player, ScoreCounter, Shoes, Sproinger, Sword,
     };
 
     let resources_loading = start_coroutine({
@@ -308,6 +313,13 @@ async fn game(game_type: GameType, map: &str) {
                 Grenades::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
             grenade.throw(false);
             scene::add_node(grenade);
+            wat_facing ^= true;
+        }
+        if object.name == "cannon" {
+            let mut cannon =
+                Cannon::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
+            cannon.throw(false);
+            scene::add_node(cannon);
             wat_facing ^= true;
         }
 

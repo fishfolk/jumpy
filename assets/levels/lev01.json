@@ -331,6 +331,18 @@
                 }, 
                 {
                  "height":0,
+                 "id":70,
+                 "name":"cannon",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":700.0,
+                 "y":548.0
+                }, 
+                {
+                 "height":0,
                  "id":68,
                  "name":"sproinger",
                  "point":true,

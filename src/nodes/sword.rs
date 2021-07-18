@@ -36,6 +36,11 @@ impl scene::Node for Sword {
             node.handle().lens(|node| &mut node.body),
             Self::gun_capabilities(),
         ));
+        node.provides((
+            node.handle().untyped(),
+            node.handle().lens(|node| &mut node.body),
+            vec2(48.0, 32.0),
+        ));
     }
 
     fn draw(sword: RefMut<Self>) {

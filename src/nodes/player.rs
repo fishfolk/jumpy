@@ -525,6 +525,14 @@ impl Player {
 }
 
 impl scene::Node for Player {
+    fn ready(mut node: RefMut<Self>) {
+        node.provides((
+            node.handle().untyped(),
+            node.handle().lens(|node| &mut node.body),
+            vec2(20.0, 64.0),
+        ));
+    }
+
     fn draw(node: RefMut<Self>) {
         //     let sword_hit_box = if node.fish.facing {
         //         Rect::new(node.pos().x + 35., node.pos().y - 5., 40., 60.)

@@ -14,6 +14,7 @@ use crate::{
     nodes::{
         player::{capabilities, PhysicsBody},
         Player,
+        ArmedMine,
     },
     Resources,
 };
@@ -141,8 +142,7 @@ impl Mines {
 
                 let node = scene::get_node(node);
 
-                let mut mines = scene::find_node_by_type::<crate::nodes::ArmedMines>().unwrap();
-                mines.spawn_mine(node.body.pos, node.body.facing);
+                ArmedMine::spawn(node.body.pos, node.body.facing);
             }
             {
                 let node = &mut *scene::get_node(node);
@@ -221,6 +221,11 @@ impl scene::Node for Mines {
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
             Self::gun_capabilities(),
+        ));
+        node.provides((
+            node.handle().untyped(),
+            node.handle().lens(|node| &mut node.body),
+            vec2(32.0, 16.0),
         ));
     }
 

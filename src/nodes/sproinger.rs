@@ -1,18 +1,28 @@
 use macroquad::{
     audio::play_sound_once,
     experimental::{
-      collections::storage,
-      scene::RefMut,
-      animation::{
-          AnimatedSprite,
-          Animation,
-      },
+        collections::storage,
+        scene::{
+            self,
+            RefMut,
+            HandleUntyped,
+            Lens,
+        },
+        animation::{
+            AnimatedSprite,
+            Animation,
+        },
     },
     color,
     prelude::*,
 };
 
-use crate::Resources;
+use crate::{
+    Resources,
+    nodes::player::PhysicsBody,
+};
+
+pub type Sproingable = (HandleUntyped, Lens<PhysicsBody>, Vec2);
 
 pub struct Sproinger {
     sprite: AnimatedSprite,
@@ -62,16 +72,6 @@ impl Sproinger {
             time_since_sproing: 0.0,
         }
     }
-
-    pub fn sproing(&mut self) {
-        self.has_sproinged = true;
-        self.time_since_sproing = 0.0;
-        // self.sprite.set_animation(1);
-        // self.sprite.playing = true;
-
-        let resources = storage::get_mut::<Resources>();
-        play_sound_once(resources.jump_sound);
-    }
 }
 
 impl scene::Node for Sproinger {
@@ -92,107 +92,26 @@ impl scene::Node for Sproinger {
                 Self::TRIGGER_HEIGHT,
             );
 
-            for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
-                if player.body.speed.length() > Self::STOPPED_THRESHOLD {
-                    let intersect = sproinger_rect.intersect(Rect::new(
-                        player.body.pos.x,
-                        player.body.pos.y,
-                        20.0,
-                        64.0,
-                    ));
-                    if !intersect.is_none() {
-                        player.body.speed.y = -Self::FORCE;
-                        node.sproing();
-                    }
-                }
-            }
+            for (_actor, mut body_lens, size) in scene::find_nodes_with::<Sproingable>() {
+                if body_lens.get().is_some() {
+                    let body = body_lens.get().unwrap();
+                    if body.speed.length() > Self::STOPPED_THRESHOLD {
+                        let intersect = sproinger_rect.intersect(Rect::new(
+                            body.pos.x,
+                            body.pos.y,
+                            size.x,
+                            size.y,
+                        ));
+                        if !intersect.is_none() {
+                            body.speed.y = -Self::FORCE;
+                            node.has_sproinged = true;
+                            node.time_since_sproing = 0.0;
+                            // self.sprite.set_animation(1);
+                            // self.sprite.playing = true;
 
-            for mut muscet in scene::find_nodes_by_type::<crate::nodes::Muscet>() {
-                if muscet.body.speed.length() > Self::STOPPED_THRESHOLD {
-                    let intersect = sproinger_rect.intersect(Rect::new(
-                        muscet.body.pos.x,
-                        muscet.body.pos.y,
-                        48.0,
-                        32.0,
-                    ));
-                    if !intersect.is_none() {
-                        muscet.body.speed.y = -Self::FORCE;
-                        node.sproing();
-                    }
-                }
-            }
-
-            for mut sword in scene::find_nodes_by_type::<crate::nodes::Sword>() {
-                if sword.body.speed.length() > Self::STOPPED_THRESHOLD {
-                    let intersect = sproinger_rect.intersect(Rect::new(
-                        sword.body.pos.x,
-                        sword.body.pos.y,
-                        48.0,
-                        32.0,
-                    ));
-                    if !intersect.is_none() {
-                        sword.body.speed.y = -Self::FORCE;
-                        node.sproing();
-                    }
-                }
-            }
-
-            for mut mines in scene::find_nodes_by_type::<crate::nodes::Mines>() {
-                if mines.body.speed.length() > Self::STOPPED_THRESHOLD {
-                    let intersect = sproinger_rect.intersect(Rect::new(
-                        mines.body.pos.x,
-                        mines.body.pos.y,
-                        16.0,
-                        32.0,
-                    ));
-                    if !intersect.is_none() {
-                        mines.body.speed.y = -Self::FORCE;
-                        node.sproing();
-                    }
-                }
-            }
-
-            for mut mines in scene::find_nodes_by_type::<crate::nodes::ArmedMines>() {
-                for mine in &mut mines.mines {
-                    let intersect = sproinger_rect.intersect(Rect::new(
-                        mine.body.pos.x,
-                        mine.body.pos.y,
-                        16.0,
-                        32.0,
-                    ));
-                    if !intersect.is_none() {
-                        mine.body.speed.y = -Self::FORCE;
-                        node.sproing();
-                    }
-                }
-            }
-
-            for mut grenades in scene::find_nodes_by_type::<crate::nodes::Grenades>() {
-                if grenades.body.speed.length() > Self::STOPPED_THRESHOLD {
-                    let intersect = sproinger_rect.intersect(Rect::new(
-                        grenades.body.pos.x,
-                        grenades.body.pos.y,
-                        16.0,
-                        32.0,
-                    ));
-                    if !intersect.is_none() {
-                        grenades.body.speed.y = -Self::FORCE;
-                        node.sproing();
-                    }
-                }
-            }
-
-            for mut grenades in scene::find_nodes_by_type::<crate::nodes::ArmedGrenades>() {
-                for grenade in &mut grenades.grenades {
-                    let intersect = sproinger_rect.intersect(Rect::new(
-                        grenade.body.pos.x,
-                        grenade.body.pos.y,
-                        16.0,
-                        32.0,
-                    ));
-                    if !intersect.is_none() {
-                        grenade.body.speed.y = -Self::FORCE;
-                        node.sproing();
+                            let resources = storage::get_mut::<Resources>();
+                            play_sound_once(resources.jump_sound);
+                        }
                     }
                 }
             }

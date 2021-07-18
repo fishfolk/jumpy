@@ -169,7 +169,7 @@ impl Resources {
 
 async fn game(game_type: GameType, map: &str) -> i32 {
     use nodes::{
-        ArmedGrenades, ArmedMines, Bullets, Camera, Decoration, Fxses, GameState, Grenades,
+        Bullets, Camera, Decoration, Fxses, GameState, Grenades,
         LevelBackground, Mines, Muscet, Player, ScoreCounter, Sword, Sproinger,
     };
 
@@ -295,10 +295,7 @@ async fn game(game_type: GameType, map: &str) -> i32 {
         }
     }
 
-    scene::add_node(ArmedGrenades::new());
-
     scene::add_node(Bullets::new());
-    scene::add_node(ArmedMines::new());
 
     //scene::add_node(Camera::new(player2));
     scene::add_node(Fxses {});

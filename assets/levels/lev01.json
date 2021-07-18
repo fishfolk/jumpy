@@ -340,6 +340,18 @@
                  "width":0,
                  "x":750.333333333333,
                  "y":232.666666666667
+                },
+                {
+                 "height":0,
+                 "id":67,
+                 "name":"parrot",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":350.0,
+                 "y":548.0
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -348,7 +360,7 @@
          "y":0
         }],
  "nextlayerid":6,
- "nextobjectid":67,
+ "nextobjectid":68,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.7.0",

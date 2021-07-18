@@ -40,6 +40,8 @@ struct Resources {
     whale: Texture2D,
     whale_red: Texture2D,
     grenades: Texture2D,
+    parrot: Texture2D,
+    flying_parrots: Texture2D,
     gun: Texture2D,
     mines: Texture2D,
     sword: Texture2D,
@@ -88,6 +90,12 @@ impl Resources {
 
         let grenades = load_texture("assets/Whale/Grenades(15x15).png").await?;
         grenades.set_filter(FilterMode::Nearest);
+
+        let parrot = load_texture("assets/Whale/Parrot(19x24).png").await?;
+        parrot.set_filter(FilterMode::Nearest);
+
+        let flying_parrots = load_texture("assets/Whale/FlyingParrot(40x18).png").await?;
+        flying_parrots.set_filter(FilterMode::Nearest);
 
         let fish_sword = load_texture("assets/Whale/FishSword.png").await?;
         fish_sword.set_filter(FilterMode::Nearest);
@@ -146,6 +154,8 @@ impl Resources {
             whale,
             whale_red,
             grenades,
+            parrot,
+            flying_parrots,
             gun,
             mines,
             sword,
@@ -164,8 +174,8 @@ impl Resources {
 
 async fn game(game_type: GameType, map: &str) {
     use nodes::{
-        ArmedGrenades, ArmedMines, Bullets, Camera, Decoration, Fxses, GameState, Grenades,
-        LevelBackground, Mines, Muscet, Player, ScoreCounter, Sword,
+        ArmedGrenades, ArmedMines, Bullets, Camera, Decoration, FlyingParrots, Fxses, GameState,
+        Grenades, LevelBackground, Mines, Muscet, Parrot, Player, ScoreCounter, Sword,
     };
 
     let resources_loading = start_coroutine({
@@ -281,9 +291,17 @@ async fn game(game_type: GameType, map: &str) {
             scene::add_node(grenade);
             wat_facing ^= true;
         }
+        if object.name == "parrot" {
+            let mut parrot =
+                Parrot::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
+            parrot.throw(false);
+            scene::add_node(parrot);
+            wat_facing ^= true;
+        }
     }
 
     scene::add_node(ArmedGrenades::new());
+    scene::add_node(FlyingParrots::new());
 
     scene::add_node(Bullets::new());
     scene::add_node(ArmedMines::new());

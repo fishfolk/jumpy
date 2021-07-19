@@ -3,7 +3,10 @@ use super::super::{
     DEFAULT_CONTROLLER_STATE,
 };
 
-use std::{path::Path, sync::mpsc};
+use std::sync::mpsc;
+
+const JOYSTICK_BLOCK_DEVICES_PATTERN: &str = "/dev/input";
+const JOYSTICK_BLOCK_DEVICE_FILENAME_PREFIX: &str = "js";
 
 #[derive(Debug, Clone, Copy)]
 #[repr(u8)]
@@ -29,13 +32,28 @@ struct JsEvent {
     number: u8,
 }
 
-fn joystick_thread(tx: mpsc::Sender<JsEvent>, path: &str) {
-    // If a joystick is not connected, the corresponding block device may not exist.
-    //
-    if !Path::new(path).exists() {
-        return;
-    }
+fn find_all_joystick_block_devices() -> Vec<String> {
+    let input_block_devices = std::fs::read_dir(JOYSTICK_BLOCK_DEVICES_PATTERN).unwrap();
 
+    let mut joystick_block_devices = input_block_devices
+        .filter_map(|entry| {
+            let path = entry.unwrap().path();
+            let file_name = path.file_name().unwrap().to_str().unwrap();
+
+            if file_name.starts_with(JOYSTICK_BLOCK_DEVICE_FILENAME_PREFIX) {
+                Some(path.into_os_string().into_string().unwrap())
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>();
+
+    joystick_block_devices.sort();
+
+    joystick_block_devices
+}
+
+fn joystick_thread(tx: mpsc::Sender<JsEvent>, path: String) {
     use std::fs::File;
     use std::io::Read;
     let mut f = File::open(path).unwrap();
@@ -57,8 +75,19 @@ impl ControllerContext {
         let (tx, rx) = mpsc::channel();
         let (tx1, rx1) = mpsc::channel();
 
-        std::thread::spawn(move || joystick_thread(tx, "/dev/input/js0"));
-        std::thread::spawn(move || joystick_thread(tx1, "/dev/input/js1"));
+        // Input devices don't necessarily start at js0. If connected with Bluetooth, the may start
+        // from js1. For this reason, we enumerate them and selected the first two available (if any).
+        //
+        let all_joystick_block_devs = find_all_joystick_block_devices();
+
+        if let Some(block_device) = all_joystick_block_devs.get(0) {
+            let block_device = block_device.clone();
+            std::thread::spawn(move || joystick_thread(tx, block_device));
+        }
+        if let Some(block_device) = all_joystick_block_devs.get(1) {
+            let block_device = block_device.clone();
+            std::thread::spawn(move || joystick_thread(tx1, block_device));
+        }
 
         Some(Self {
             rx,

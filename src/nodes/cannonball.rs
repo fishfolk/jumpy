@@ -16,6 +16,11 @@ use super::{
 };
 
 const CANNONBALL_COUNTDOWN_DURATION: f32 = 0.5;
+/// After shooting, the owner is safe for this amount of time. This is crucial, otherwise, given the
+/// large hitbox, they will die immediately on shoot.
+/// The formula is simplified (it doesn't include mount position, run speed and throwback).
+const CANNONBALL_OWNER_SAFE_TIME: f32 =
+    (EXPLOSION_HITBOX_WIDTH / 2.) / CANNONBALL_INITIAL_SPEED_X_REL;
 
 const CANNONBALL_WIDTH: f32 = 32.;
 pub const CANNONBALL_HEIGHT: f32 = 32.;
@@ -34,6 +39,7 @@ pub struct Cannonball {
     lived: f32,
     countdown: f32,
     owner: Handle<Player>,
+    owner_safe_countdown: f32,
 }
 
 impl Cannonball {
@@ -90,6 +96,7 @@ impl Cannonball {
             lived: 0.0,
             countdown: CANNONBALL_COUNTDOWN_DURATION,
             owner,
+            owner_safe_countdown: CANNONBALL_OWNER_SAFE_TIME,
         }
     }
 }
@@ -115,6 +122,7 @@ impl scene::Node for Cannonballs {
         for cannonball in &mut node.cannonballs {
             cannonball.body.update();
             cannonball.lived += get_frame_time();
+            cannonball.owner_safe_countdown -= get_frame_time();
         }
 
         node.cannonballs.retain(|cannonball| {
@@ -133,7 +141,7 @@ impl scene::Node for Cannonballs {
                 );
 
                 for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
-                    if player.id != cannonball_owner_id {
+                    if player.id != cannonball_owner_id || cannonball.owner_safe_countdown < 0. {
                         let player_hitbox = Rect::new(
                             player.body.pos.x,
                             player.body.pos.y,

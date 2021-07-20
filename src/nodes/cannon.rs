@@ -25,6 +25,7 @@ const CANNON_WIDTH: f32 = 32.;
 const CANNON_HEIGHT: f32 = 32.;
 const CANNON_ANIMATION_BASE: &'static str = "base";
 
+const CANNON_THROWBACK: f32 = 1050.0;
 const SHOOTING_GRACE_TIME: f32 = 1.0; // seconds
 
 pub struct Cannon {
@@ -149,6 +150,9 @@ impl Cannon {
                     node.body.pos.y - 20. - (CANNONBALL_HEIGHT as f32 / 2.),
                 );
                 cannonballs.spawn_cannonball(cannonball_pos, node.body.facing, player);
+
+                let player = &mut *scene::get_node(player);
+                player.body.speed.x = -CANNON_THROWBACK * player.body.facing_dir();
             }
 
             wait_seconds(0.08).await;

@@ -749,6 +749,8 @@ impl scene::Node for Player {
                 ));
                 if is_overlapping {
                     if hit_box.y + 60.0 < other.body.pos.y + Self::BODY_THRESHOLD {
+                        let resources = storage::get_mut::<Resources>();
+                        play_sound_once(resources.jump_sound);
                         other.kill(!node.body.facing);
                     }
                 }

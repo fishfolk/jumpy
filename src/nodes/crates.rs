@@ -16,6 +16,7 @@ use macroquad::{
             start_coroutine,
         },
     },
+    audio::play_sound_once,
     color,
     prelude::*,
 };
@@ -196,6 +197,8 @@ impl Node for Crate {
                     ));
                     if is_overlapping {
                         if node.body.pos.y + 32.0 < other.body.pos.y + Player::BODY_THRESHOLD {
+                            let resources = storage::get_mut::<Resources>();
+                            play_sound_once(resources.jump_sound);
                             other.kill(!node.body.facing);
                         }
                     }

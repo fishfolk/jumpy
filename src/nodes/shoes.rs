@@ -29,8 +29,8 @@ pub struct Shoes {
 impl Shoes {
     pub fn new(pos: Vec2) -> Self {
         let sprite = AnimatedSprite::new(
-            22,
-            22,
+            32,
+            32,
             &[
                 Animation {
                     name: "idle".to_string(),
@@ -51,7 +51,7 @@ impl Shoes {
 
 impl Node for Shoes {
     fn fixed_update(mut node: RefMut<Self>) {
-        let shoes_rect = Rect::new(node.pos.x, node.pos.y, 20.0, 20.0);
+        let shoes_rect = Rect::new(node.pos.x, node.pos.y, 30.0, 30.0);
         let mut picked_up = false;
         for mut player in scene::find_nodes_by_type::<Player>() {
             if !player.can_head_boink {

@@ -5,8 +5,6 @@ use super::super::{
     DEFAULT_CONTROLLER_STATE,
 };
 
-use std::{path::Path, sync::mpsc};
-
 use std::path::PathBuf;
 
 mod ioctl;
@@ -245,9 +243,9 @@ pub struct ControllerContext {
 
 impl ControllerContext {
     pub fn new() -> Option<Self> {
-        let mut gamepads = unsafe { platform_init_joysticks() };
-
-        Some(ControllerContext { gamepads })
+        Some(ControllerContext {
+            gamepads: unsafe { platform_init_joysticks() },
+        })
     }
 
     /// Update controller state by index

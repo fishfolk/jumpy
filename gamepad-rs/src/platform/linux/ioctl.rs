@@ -87,7 +87,7 @@ pub const SIZEMASK: u32 = (1 << SIZEBITS) - 1;
 pub const DIRMASK: u32 = (1 << DIRBITS) - 1;
 
 /// Encode an ioctl command.
-pub fn ioc(dir: u64, ty: u64, nr: u64, sz: u64) -> u64 {
+pub const fn ioc(dir: u64, ty: u64, nr: u64, sz: u64) -> u64 {
     (((dir as u32) << DIRSHIFT)
         | ((ty as u32) << TYPESHIFT)
         | ((nr as u32) << NRSHIFT) 
@@ -95,29 +95,23 @@ pub fn ioc(dir: u64, ty: u64, nr: u64, sz: u64) -> u64 {
 }
 
 /// Encode an ioctl command that has no associated data.
-pub fn io(ty: u64, nr: u64) -> u64 {
+pub const fn io(ty: u64, nr: u64) -> u64 {
     ioc(NONE as _, ty, nr, 0)
 }
 
 /// Encode an ioctl command that reads.
-pub fn ior(ty: u64, nr: u64, sz: u64) -> u64 {
+pub const fn ior(ty: u64, nr: u64, sz: u64) -> u64 {
     ioc(READ as _, ty, nr, sz)
 }
 
 /// Encode an ioctl command that writes.
-#[macro_export]
-macro_rules! iow {
-    ($ty:expr, $nr:expr, $sz:expr) => {
-        ioc!($crate::WRITE, $ty, $nr, $sz)
-    };
+pub const fn iow(ty: u64, nr: u64, sz: u64) -> u64 {
+    ioc(WRITE as _, ty, nr, sz)
 }
 
 /// Encode an ioctl command that both reads and writes.
-#[macro_export]
-macro_rules! iorw {
-    ($ty:expr, $nr:expr, $sz:expr) => {
-        ioc!($crate::READ | $crate::WRITE, $ty, $nr, $sz)
-    };
+pub const fn iorw(ty: u64, nr: u64, sz: u64) -> u64 {
+    ioc((READ | WRITE) as _, ty, nr, sz)
 }
 
 #[repr(C)]
@@ -136,6 +130,6 @@ impl ::std::default::Default for input_absinfo {
     }
 }
 
-pub fn eviocgabs(abs: u32) -> ::libc::c_ulong {
+pub const fn eviocgabs(abs: u32) -> ::libc::c_ulong {
     ior(b'E' as _, (0x40 + abs) as _, std::mem::size_of::<input_absinfo>() as _) as ::libc::c_ulong
 }

@@ -12,6 +12,7 @@ mod muscet;
 pub mod player;
 mod score_counter;
 mod sword;
+mod crates;
 
 pub use armed_grenades::ArmedGrenades;
 pub use armed_mines::ArmedMines;
@@ -27,3 +28,4 @@ pub use muscet::Muscet;
 pub use player::Player;
 pub use score_counter::ScoreCounter;
 pub use sword::Sword;
+pub use crates::Crate;

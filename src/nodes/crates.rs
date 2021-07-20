@@ -41,6 +41,8 @@ pub struct Crate {
 }
 
 impl Crate {
+    pub const BODY_THRESHOLD: f32 = 24.0;
+
     pub fn new(facing: bool, pos: Vec2) -> Self {
         let sprite = AnimatedSprite::new(
             32,
@@ -172,19 +174,25 @@ impl Node for Crate {
             if node.body.speed.length() <= 200.0 {
                 node.deadly_dangerous = false;
             }
-            if node.body.on_ground {
-                node.deadly_dangerous = false;
-            }
+            // if node.body.on_ground {
+            //     node.deadly_dangerous = false;
+            // }
 
             if node.deadly_dangerous {
                 let others = scene::find_nodes_by_type::<crate::nodes::Player>();
                 let hit_box = Rect::new(node.body.pos.x, node.body.pos.y, 30., 30.);
 
                 for mut other in others {
-                    if Rect::new(other.body.pos.x, other.body.pos.y, 30., 30.)
-                        .overlaps(&hit_box)
-                    {
-                        other.kill(!node.body.facing);
+                    let is_overlapping = hit_box.overlaps(&Rect::new(
+                        other.body.pos.x,
+                        other.body.pos.y,
+                        30.,
+                        30.,
+                    ));
+                    if is_overlapping {
+                        if node.body.pos.y + 32.0 < other.body.pos.y + Self::BODY_THRESHOLD {
+                            other.kill(!node.body.facing);
+                        }
                     }
                 }
             }

@@ -45,6 +45,7 @@ struct Resources {
     sword: Texture2D,
     fish_sword: Texture2D,
     crates: Texture2D,
+    shoes: Texture2D,
     background_01: Texture2D,
     background_02: Texture2D,
     background_03: Texture2D,
@@ -95,6 +96,9 @@ impl Resources {
 
         let crates = load_texture("assets/Whale/Crate(32x32).png").await?;
         crates.set_filter(FilterMode::Nearest);
+
+        let shoes = load_texture("assets/Whale/Shoes(32x32).png").await?;
+        shoes.set_filter(FilterMode::Nearest);
 
         let background_01 = load_texture("assets/Background/01.png").await?;
         background_01.set_filter(FilterMode::Nearest);
@@ -155,6 +159,7 @@ impl Resources {
             sword,
             fish_sword,
             crates,
+            shoes,
             background_01,
             background_02,
             background_03,
@@ -170,7 +175,7 @@ impl Resources {
 async fn game(game_type: GameType, map: &str) {
     use nodes::{
         ArmedGrenades, ArmedMines, Bullets, Camera, Decoration, Fxses, GameState, Grenades,
-        LevelBackground, Mines, Muscet, Player, ScoreCounter, Sword, Crate,
+        LevelBackground, Mines, Muscet, Player, ScoreCounter, Sword, Crate, Shoes,
     };
 
     let resources_loading = start_coroutine({
@@ -293,6 +298,13 @@ async fn game(game_type: GameType, map: &str) {
                 Crate::new(wat_facing, vec2(object.world_x - 32., object.world_y - 32.));
             crate_node.throw(false);
             scene::add_node(crate_node);
+            wat_facing ^= true;
+        }
+
+        if object.name == "shoes" {
+            let mut shoes =
+                Shoes::new(vec2(object.world_x - 32., object.world_y - 32.));
+            scene::add_node(shoes);
             wat_facing ^= true;
         }
     }

@@ -44,8 +44,6 @@ pub struct Crate {
 }
 
 impl Crate {
-    pub const BODY_THRESHOLD: f32 = 24.0;
-
     pub fn new(facing: bool, pos: Vec2) -> Self {
         let sprite = AnimatedSprite::new(
             32,
@@ -197,7 +195,7 @@ impl Node for Crate {
                         30.,
                     ));
                     if is_overlapping {
-                        if node.body.pos.y + 32.0 < other.body.pos.y + Self::BODY_THRESHOLD {
+                        if node.body.pos.y + 32.0 < other.body.pos.y + Player::BODY_THRESHOLD {
                             other.kill(!node.body.facing);
                         }
                     }

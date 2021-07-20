@@ -376,6 +376,18 @@
                  "width":0,
                  "x": 714.333333333333,
                  "y": 546.666666666667
+                },
+                {
+                 "height":0,
+                 "id":70,
+                 "name":"shoes",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x": 400.333333333333,
+                 "y": 576.666666666667
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -384,7 +396,7 @@
          "y":0
         }],
  "nextlayerid":6,
- "nextobjectid":70,
+ "nextobjectid":71,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.7.0",

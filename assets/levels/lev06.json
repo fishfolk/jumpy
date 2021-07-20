@@ -244,6 +244,18 @@
                  "width":0,
                  "x":111.333333333333,
                  "y":433.333333333333
+                }, 
+                {
+                 "height":0,
+                 "id":88,
+                 "name":"mines",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":432,
+                 "y":40
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -252,7 +264,7 @@
          "y":0
         }],
  "nextlayerid":6,
- "nextobjectid":88,
+ "nextobjectid":89,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.7.0",

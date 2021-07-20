@@ -58,7 +58,7 @@ impl scene::Node for ScoreCounter {
             draw_texture_ex(
                 resources.whale,
                 (w + 2.) * i as f32,
-                0.0,
+                5.0,
                 WHITE,
                 DrawTextureParams {
                     source: Some(Rect::new(0.0, 0.0, 76.0, 66.0)),
@@ -73,7 +73,7 @@ impl scene::Node for ScoreCounter {
             draw_texture_ex(
                 resources.whale_red,
                 screen_width() - (w + 2.) * (i + 1) as f32,
-                0.0,
+                5.0,
                 WHITE,
                 DrawTextureParams {
                     source: Some(Rect::new(0.0, 0.0, 76.0, 66.0)),

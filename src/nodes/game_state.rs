@@ -160,8 +160,8 @@ impl scene::Node for GameState {
             let text_size = measure_text(&node.win_label, None, 16, 1.);
 
             let pos = vec2(
-                screen_width() / 2. - text_size.width / 2. * 10.,
-                screen_height() / 2. + text_size.height / 2. * 10.,
+                screen_width() / 2. - text_size.width / 2. * 8.,
+                screen_height() / 2. + text_size.height / 2. * 8.,
             );
 
             draw_text_ex(
@@ -170,7 +170,7 @@ impl scene::Node for GameState {
                 pos.y,
                 TextParams {
                     font_size: 16,
-                    font_scale: 10.,
+                    font_scale: 8.,
                     ..Default::default()
                 },
             );
@@ -240,7 +240,7 @@ impl GameState {
 
         {
             let mut node = scene::get_node(handle);
-            node.win_label = "THE FISH ->   ".to_string();
+            node.win_label = "THE FISH ->      ".to_string();
         }
 
         wait_seconds(2.0).await;

@@ -8,8 +8,9 @@ use crate::nodes::Player;
 pub struct Camera {
     bounds: Rect,
     follow_buffer: Vec<(Vec2, f32)>,
-    macroquad_camera: Camera2D,
     shake: Option<(f32, f32)>,
+
+    pub manual: Option<(Vec2, f32)>,
 }
 
 impl Camera {
@@ -19,17 +20,13 @@ impl Camera {
         Camera {
             bounds,
             follow_buffer: vec![],
-            macroquad_camera: Camera2D::default(),
             shake: None,
+            manual: None,
         }
     }
 }
 
 impl Camera {
-    pub fn macroquad_camera(&self) -> &Camera2D {
-        &self.macroquad_camera
-    }
-
     pub fn shake(&mut self) {
         self.shake = Some((0.0, 0.1));
     }
@@ -48,25 +45,32 @@ impl scene::Node for Camera {
 
             for player in players {
                 let camera_pox_middle = player.camera_box.point() + player.camera_box.size() / 2.;
+                //let k = if player.controller_id == 1 { 0.8 } else { 0.2 };
                 players_amount += 1;
-                middle_point += camera_pox_middle;
+                middle_point += camera_pox_middle; // * k;
 
                 min = min.min(camera_pox_middle);
                 max = max.max(camera_pox_middle);
             }
             middle_point /= players_amount as f32;
 
-            let border = 150.;
-            let mut scale = (max - min).abs() + vec2(border * 2., border * 2.);
+            let border_x = 150.;
+            let border_y = 200.;
+            let mut scale = (max - min).abs() + vec2(border_x * 2., border_y * 2.);
 
             if scale.x > scale.y * aspect {
                 scale.y = scale.x / aspect;
             }
-            let zoom = scale.y;
+            let mut zoom = scale.y;
 
             // bottom camera bound
             if scale.y / 2. + middle_point.y > node.bounds.h {
                 middle_point.y = node.bounds.h - scale.y / 2.;
+            }
+
+            if let Some((override_target, override_zoom)) = node.manual {
+                middle_point = override_target;
+                zoom = override_zoom;
             }
 
             node.follow_buffer.insert(0, (middle_point, zoom));
@@ -105,13 +109,13 @@ impl scene::Node for Camera {
 
         // let middle_point = vec2(400., 600.);
         // let zoom = 400.;
-        node.macroquad_camera = Camera2D {
+        let macroquad_camera = Camera2D {
             target: middle_point,
             zoom: vec2(1. / aspect, -1.) / zoom * 2.,
             rotation,
             ..Camera2D::default()
         };
 
-        scene::set_camera_1(*node.macroquad_camera());
+        scene::set_camera_1(macroquad_camera);
     }
 }

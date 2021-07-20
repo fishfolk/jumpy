@@ -5,7 +5,7 @@ use macroquad::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
         coroutines::{start_coroutine, wait_seconds, Coroutine},
-        scene::{self, HandleUntyped, Lens, RefMut},
+        scene::{self, Handle, HandleUntyped, Lens, RefMut},
         state_machine::{State, StateMachine},
     },
     prelude::*,
@@ -13,11 +13,14 @@ use macroquad::{
 use macroquad_platformer::Actor;
 
 use crate::{
-    nodes::{Muscet, Sword},
+    nodes::{GameState, ScoreCounter},
     Resources,
 };
 
 mod ai;
+
+pub type Weapon = (HandleUntyped, Lens<PhysicsBody>, capabilities::Gun);
+pub type PhysicsObject = (HandleUntyped, Lens<PhysicsBody>);
 
 pub mod capabilities {
     use crate::nodes::Player;
@@ -28,6 +31,8 @@ pub mod capabilities {
 
     #[derive(Clone)]
     pub struct Gun {
+        pub is_thrown: fn(node: HandleUntyped) -> bool,
+        pub pick_up: fn(node: HandleUntyped),
         pub throw: fn(node: HandleUntyped, force: bool),
         pub shoot: fn(node: HandleUntyped, player: Handle<Player>) -> Coroutine,
     }
@@ -130,7 +135,7 @@ impl Player {
         self.weapon = None;
     }
 
-    pub fn pick_weapon(&mut self, weapon: (HandleUntyped, Lens<PhysicsBody>, capabilities::Gun)) {
+    pub fn pick_weapon(&mut self, weapon: Weapon) {
         let resources = storage::get_mut::<Resources>();
         play_sound_once(resources.pickup_sound);
 
@@ -158,7 +163,7 @@ pub struct Player {
 
     fish_sprite: AnimatedSprite,
     pub dead: bool,
-    pub weapon: Option<(HandleUntyped, Lens<PhysicsBody>, capabilities::Gun)>,
+    pub weapon: Option<Weapon>,
     input: Input,
 
     deathmatch: bool,
@@ -174,7 +179,9 @@ pub struct Player {
     ai: Option<ai::Ai>,
 
     pub camera_box: Rect,
-    pub loses: i32,
+
+    score_counter: Handle<ScoreCounter>,
+    pub game_state: Handle<GameState>,
 }
 
 impl Player {
@@ -188,7 +195,12 @@ impl Player {
     pub const JUMP_GRACE_TIME: f32 = 0.15;
     pub const FLOAT_SPEED: f32 = 100.0;
 
-    pub fn new(deathmatch: bool, controller_id: i32) -> Player {
+    pub fn new(
+        deathmatch: bool,
+        controller_id: i32,
+        score_counter: Handle<ScoreCounter>,
+        game_state: Handle<GameState>,
+    ) -> Player {
         let spawner_pos = {
             let resources = storage::get_mut::<Resources>();
             let objects = &resources.tiled_map.layers["logic"].objects;
@@ -280,10 +292,11 @@ impl Player {
             was_floating: false,
             state_machine,
             controller_id,
-            ai_enabled: false,
+            ai_enabled: false, //controller_id == 0,
             ai: Some(ai::Ai::new()),
             camera_box: Rect::new(spawner_pos.x - 30., spawner_pos.y - 150., 100., 210.),
-            loses: 0,
+            score_counter,
+            game_state,
         }
     }
 
@@ -310,6 +323,9 @@ impl Player {
 
                 node.dead = true;
                 node.fish_sprite.set_animation(2);
+
+                let mut score_counter = scene::get_node(node.score_counter);
+                score_counter.count_loss(node.controller_id)
             }
 
             if {
@@ -332,14 +348,9 @@ impl Player {
                     let mut node = scene::get_node(handle);
                     node.fish_sprite.set_animation(3);
                     node.body.speed = vec2(0., 0.);
-
-                    node.loses += 1;
                 }
 
                 wait_seconds(0.5).await;
-            } else {
-                let mut node = scene::get_node(handle);
-                node.loses += 1;
             }
 
             {
@@ -480,45 +491,23 @@ impl Player {
                 (gun.throw)(*weapon, node.input.down == false);
                 node.weapon = None;
 
-                // when the floating fish is throwing a weapon and keeps
+                // when the flocating fish is throwing a weapon and keeps
                 // floating it looks less cool than if its stop floating and
                 // falls, but idk
                 node.floating = false;
             } else {
                 let mut picked = false;
 
-                for mut sword in scene::find_nodes_by_type::<Sword>() {
+                for (weapon, mut body, gun) in scene::find_nodes_with::<Weapon>() {
                     if picked {
                         break;
                     }
-                    if sword.thrown && sword.body.pos.distance(node.body.pos) < 80. {
+                    if (gun.is_thrown)(weapon)
+                        && body.get().unwrap().pos.distance(node.body.pos) < 80.
+                    {
                         picked = true;
-                        sword.body.angle = std::f32::consts::PI / 4. + 0.3;
-                        sword.thrown = false;
-                        let sword = (
-                            sword.handle().untyped(),
-                            sword.handle().lens(|node| &mut node.body),
-                            Sword::gun_capabilities(),
-                        );
-                        node.pick_weapon(sword);
-                    }
-                }
-                for mut muscet in scene::find_nodes_by_type::<Muscet>() {
-                    if picked {
-                        break;
-                    }
-                    if muscet.thrown && muscet.body.pos.distance(node.body.pos) < 80. {
-                        picked = true;
-                        muscet.body.angle = 0.;
-                        muscet.thrown = false;
-                        muscet.bullets = 3;
-
-                        let muscet = (
-                            muscet.handle().untyped(),
-                            muscet.handle().lens(|node| &mut node.body),
-                            Muscet::gun_capabilities(),
-                        );
-                        node.pick_weapon(muscet);
+                        (gun.pick_up)(weapon);
+                        node.pick_weapon((weapon, body, gun));
                     }
                 }
             }
@@ -534,6 +523,13 @@ impl Player {
 }
 
 impl scene::Node for Player {
+    fn ready(mut node: RefMut<Self>) {
+        node.provides::<PhysicsObject>((
+            node.handle().untyped(),
+            node.handle().lens(|node| &mut node.body),
+        ));
+    }
+
     fn draw(node: RefMut<Self>) {
         //     let sword_hit_box = if node.fish.facing {
         //         Rect::new(node.pos().x + 35., node.pos().y - 5., 40., 60.)
@@ -590,6 +586,12 @@ impl scene::Node for Player {
     }
 
     fn fixed_update(mut node: RefMut<Self>) {
+        {
+            if scene::get_node(node.game_state).game_paused {
+                return;
+            }
+        }
+
         node.fish_sprite.update();
 
         let map_bottom = {
@@ -611,74 +613,98 @@ impl scene::Node for Player {
             }
         }
 
-        if false {
-            let controller = storage::get_mut::<gamepad_rs::ControllerContext>();
+        let controller = storage::get_mut::<gamepad_rs::ControllerContext>();
+        let status = controller.state(node.controller_id as _).status;
 
-            let status = controller.state(node.controller_id as _).status;
+        if status == gamepad_rs::ControllerStatus::Connected {
+            let state = controller.state(node.controller_id as _);
+            let info = controller.info(node.controller_id as _);
 
-            if status == gamepad_rs::ControllerStatus::Connected {
-                let state = controller.state(node.controller_id as _);
+            let x = state.analog_state[0];
+            let y = state.analog_state[1];
 
-                let x = state.analog_state[0];
-                let y = state.analog_state[1];
+            node.input.left = x < -0.5;
+            node.input.right = x > 0.5;
 
-                node.input.left = x < -0.5;
-                node.input.right = x > 0.5;
+            if cfg!(target_os = "macos") {
+                node.input.down = y < -0.5;
+            } else {
+                node.input.down = y > 0.5;
+            };
 
-                if cfg!(target_os = "macos") {
-                    node.input.down = y < -0.5;
-                } else {
-                    node.input.down = y > 0.5;
-                };
-
-                let jump_btn: usize = if cfg!(target_os = "macos") {
+            let jump_btn: usize = if cfg!(target_os = "macos") {
+                1
+            } else {
+                if info.name.contains("SFC30") {
                     1
                 } else {
-                    if node.controller_id == 1 {
-                        2
-                    } else {
-                        1
-                    }
-                };
-                let fire_btn: usize = if cfg!(target_os = "macos") {
+                    2
+                }
+            };
+            let fire_btn: usize = if cfg!(target_os = "macos") {
+                0
+            } else {
+                if info.name.contains("SFC30") {
                     0
                 } else {
-                    if node.controller_id == 1 {
-                        1
-                    } else {
-                        0
-                    }
-                };
-                let throw_btn: usize = if cfg!(target_os = "macos") {
+                    1
+                }
+            };
+            let throw_btn: usize = if cfg!(target_os = "macos") {
+                3
+            } else {
+                if info.name.contains("SFC30") {
+                    4
+                } else {
                     3
-                } else {
-                    if node.controller_id == 1 {
-                        3
-                    } else {
-                        4
-                    }
-                };
-
-                if state.digital_state[jump_btn] && node.input.was_jump == false {
-                    node.input.jump = true;
-                } else {
-                    node.input.jump = false;
                 }
-                node.input.was_jump = state.digital_state[jump_btn];
+            };
 
-                if state.digital_state[fire_btn] && node.input.was_fire == false {
-                    node.input.fire = true;
-                } else {
-                    node.input.fire = false;
-                }
-                node.input.was_fire = state.digital_state[fire_btn];
+            if state.digital_state[jump_btn] && node.input.was_jump == false {
+                node.input.jump = true;
+            } else {
+                node.input.jump = false;
+            }
+            node.input.was_jump = state.digital_state[jump_btn];
 
-                if state.digital_state[throw_btn] && node.input.was_throw == false {
-                    node.input.throw = true;
-                } else {
-                    node.input.throw = false;
-                }
-                node.input.was_throw = state.digital_state[throw_btn];
+            if state.digital_state[fire_btn] && node.input.was_fire == false {
+                node.input.fire = true;
+            } else {
+                node.input.fire = false;
+            }
+            node.input.was_fire = state.digital_state[fire_btn];
+
+            if state.digital_state[throw_btn] && node.input.was_throw == false {
+                node.input.throw = true;
+            } else {
+                node.input.throw = false;
+            }
+            node.input.was_throw = state.digital_state[throw_btn];
+        } else {
+            if node.ai_enabled == false && node.controller_id == 1 {
+                let jump = is_key_down(KeyCode::Space) || is_key_down(KeyCode::W);
+                node.input.jump = jump && node.input.was_jump == false;
+                node.input.was_jump = jump;
+
+                let throw = is_key_down(KeyCode::R) || is_key_down(KeyCode::K);
+                node.input.throw = throw && node.input.was_throw == false;
+                node.input.was_throw = throw;
+
+                node.input.fire = is_key_down(KeyCode::LeftControl)
+                    || is_key_down(KeyCode::F)
+                    || is_key_down(KeyCode::L);
+                node.input.left = is_key_down(KeyCode::A);
+                node.input.right = is_key_down(KeyCode::D);
+                node.input.down = is_key_down(KeyCode::S);
+            }
+
+            if node.ai_enabled == false && node.controller_id == 0 {
+                let jump = is_key_down(KeyCode::Up);
+                node.input.jump = jump && node.input.was_jump == false;
+                node.input.was_jump = jump;
+                node.input.left = is_key_down(KeyCode::Left);
+                node.input.right = is_key_down(KeyCode::Right);
+                node.input.down = is_key_down(KeyCode::Down);
             }
         }
 
@@ -693,34 +719,6 @@ impl scene::Node for Player {
             scene::find_node_by_type::<crate::nodes::Camera>()
                 .unwrap()
                 .shake();
-        }
-
-        #[cfg(not(target_os = "macos"))]
-        if node.ai_enabled == false && node.controller_id == 1 {
-            let jump = is_key_down(KeyCode::Space) || is_key_down(KeyCode::W);
-            node.input.jump = jump && node.input.was_jump == false;
-            node.input.was_jump = jump;
-
-            let throw = is_key_down(KeyCode::R) || is_key_down(KeyCode::K);
-            node.input.throw = throw && node.input.was_throw == false;
-            node.input.was_throw = throw;
-
-            node.input.fire = is_key_down(KeyCode::LeftControl)
-                || is_key_down(KeyCode::F)
-                || is_key_down(KeyCode::L);
-            node.input.left = is_key_down(KeyCode::A);
-            node.input.right = is_key_down(KeyCode::D);
-            node.input.down = is_key_down(KeyCode::S);
-        }
-
-        #[cfg(not(target_os = "macos"))]
-        if node.ai_enabled == false && node.controller_id == 0 {
-            let jump = is_key_down(KeyCode::Up);
-            node.input.jump = jump && node.input.was_jump == false;
-            node.input.was_jump = jump;
-            node.input.left = is_key_down(KeyCode::Left);
-            node.input.right = is_key_down(KeyCode::Right);
-            node.input.down = is_key_down(KeyCode::Down);
         }
 
         {

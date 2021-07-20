@@ -1,4 +1,5 @@
 use macroquad::{
+    camera::*,
     experimental::{
         collections::storage,
         scene::{self, RefMut},
@@ -18,10 +19,13 @@ impl scene::Node for Fxses {
 
         resources.hit_fxses.draw();
         resources.explosion_fxses.draw();
-        resources.disarm_fxses.draw();
 
-        macroquad_profiler::profiler(macroquad_profiler::ProfilerParams {
-            fps_counter_pos: macroquad::math::vec2(50.0, 20.0),
-        });
+        push_camera_state();
+        set_default_camera();
+        resources.life_explosion_fxses.draw();
+        pop_camera_state();
+        // macroquad_profiler::profiler(macroquad_profiler::ProfilerParams {
+        //     fps_counter_pos: macroquad::math::vec2(50.0, 20.0),
+        // });
     }
 }

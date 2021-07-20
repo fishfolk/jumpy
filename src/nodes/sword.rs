@@ -11,7 +11,7 @@ use macroquad::{
 };
 
 use crate::{
-    nodes::player::{capabilities, PhysicsBody},
+    nodes::player::{capabilities, PhysicsBody, PhysicsObject, Weapon},
     nodes::Player,
     Resources,
 };
@@ -30,6 +30,19 @@ pub struct Sword {
 }
 
 impl scene::Node for Sword {
+    fn ready(mut node: RefMut<Self>) {
+        node.provides::<PhysicsObject>((
+            node.handle().untyped(),
+            node.handle().lens(|node| &mut node.body),
+        ));
+
+        node.provides::<Weapon>((
+            node.handle().untyped(),
+            node.handle().lens(|node| &mut node.body),
+            Self::gun_capabilities(),
+        ));
+    }
+
     fn draw(sword: RefMut<Self>) {
         let resources = storage::get_mut::<Resources>();
 
@@ -295,6 +308,24 @@ impl Sword {
             Sword::shoot(node, player)
         }
 
-        capabilities::Gun { throw, shoot }
+        fn is_thrown(node: HandleUntyped) -> bool {
+            let node = scene::get_untyped_node(node).unwrap().to_typed::<Sword>();
+
+            node.thrown
+        }
+
+        fn pick_up(node: HandleUntyped) {
+            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Sword>();
+
+            node.body.angle = std::f32::consts::PI / 4. + 0.3;
+            node.thrown = false;
+        }
+
+        capabilities::Gun {
+            throw,
+            shoot,
+            is_thrown,
+            pick_up,
+        }
     }
 }

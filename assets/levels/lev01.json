@@ -316,6 +316,30 @@
                  "width":0,
                  "x":333.333333333333,
                  "y":49.9999999999998
+                }, 
+                {
+                 "height":0,
+                 "id":64,
+                 "name":"mines",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":183.333333333333,
+                 "y":225.666666666667
+                }, 
+                {
+                 "height":0,
+                 "id":66,
+                 "name":"mines",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":750.333333333333,
+                 "y":232.666666666667
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -324,7 +348,7 @@
          "y":0
         }],
  "nextlayerid":6,
- "nextobjectid":66,
+ "nextobjectid":67,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.7.0",

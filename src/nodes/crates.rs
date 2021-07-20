@@ -11,7 +11,10 @@ use macroquad::{
             Animation,
         },
         collections::storage,
-        coroutines::Coroutine,
+        coroutines::{
+            Coroutine,
+            start_coroutine,
+        },
     },
     color,
     prelude::*,
@@ -26,9 +29,9 @@ use crate::{
             PhysicsBody,
             Weapon,
         },
+        // sproingers::Sproingables,
     }
 };
-use macroquad::prelude::coroutines::start_coroutine;
 
 pub struct Crate {
     pub sprite: AnimatedSprite,
@@ -160,7 +163,11 @@ impl Node for Crate {
             node.handle().lens(|node| &mut node.body),
             Self::gun_capabilities(),
         ));
-        //node.provides::<Sproingable>()
+        //node.provides::<Sproingable>((
+        //    node.handle().untyped(),
+        //    node.handle().lens(|node| &mut node.body),
+        //    vec2(30.0, 30.0),
+        // ));
     }
 
     fn fixed_update(mut node: RefMut<Self>) {

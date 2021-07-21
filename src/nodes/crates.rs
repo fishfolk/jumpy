@@ -30,7 +30,7 @@ use crate::{
             PhysicsBody,
             Weapon,
         },
-        // sproingers::Sproingables,
+        sproinger::Sproingable,
     }
 };
 
@@ -69,6 +69,7 @@ impl Crate {
             on_ground: false,
             last_frame_on_ground: false,
             have_gravity: true,
+            bouncyness: 0.0,
         };
 
         Crate{
@@ -162,11 +163,12 @@ impl Node for Crate {
             node.handle().lens(|node| &mut node.body),
             Self::gun_capabilities(),
         ));
-        //node.provides::<Sproingable>((
-        //    node.handle().untyped(),
-        //    node.handle().lens(|node| &mut node.body),
-        //    vec2(30.0, 30.0),
-        // ));
+
+        node.provides::<Sproingable>((
+           node.handle().untyped(),
+           node.handle().lens(|node| &mut node.body),
+           vec2(30.0, 30.0),
+        ));
     }
 
     fn fixed_update(mut node: RefMut<Self>) {

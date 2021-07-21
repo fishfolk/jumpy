@@ -62,7 +62,7 @@ impl ControllerContext {
         }
     }
     /// Get current information of Controller
-    pub fn info(&mut self, index: usize) -> &ControllerInfo {
+    pub fn info(&self, index: usize) -> &ControllerInfo {
         if index < MAX_DEVICES {
             &self.info[index]
         } else {

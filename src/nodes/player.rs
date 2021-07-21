@@ -623,74 +623,98 @@ impl scene::Node for Player {
             }
         }
 
-        if false {
-            let controller = storage::get_mut::<gamepad_rs::ControllerContext>();
+        let controller = storage::get_mut::<gamepad_rs::ControllerContext>();
+        let status = controller.state(node.controller_id as _).status;
 
-            let status = controller.state(node.controller_id as _).status;
+        if status == gamepad_rs::ControllerStatus::Connected {
+            let state = controller.state(node.controller_id as _);
+            let info = controller.info(node.controller_id as _);
 
-            if status == gamepad_rs::ControllerStatus::Connected {
-                let state = controller.state(node.controller_id as _);
+            let x = state.analog_state[0];
+            let y = state.analog_state[1];
 
-                let x = state.analog_state[0];
-                let y = state.analog_state[1];
+            node.input.left = x < -0.5;
+            node.input.right = x > 0.5;
 
-                node.input.left = x < -0.5;
-                node.input.right = x > 0.5;
+            if cfg!(target_os = "macos") {
+                node.input.down = y < -0.5;
+            } else {
+                node.input.down = y > 0.5;
+            };
 
-                if cfg!(target_os = "macos") {
-                    node.input.down = y < -0.5;
-                } else {
-                    node.input.down = y > 0.5;
-                };
-
-                let jump_btn: usize = if cfg!(target_os = "macos") {
+            let jump_btn: usize = if cfg!(target_os = "macos") {
+                1
+            } else {
+                if info.name.contains("SFC30") {
                     1
                 } else {
-                    if node.controller_id == 1 {
-                        2
-                    } else {
-                        1
-                    }
-                };
-                let fire_btn: usize = if cfg!(target_os = "macos") {
+                    2
+                }
+            };
+            let fire_btn: usize = if cfg!(target_os = "macos") {
+                0
+            } else {
+                if info.name.contains("SFC30") {
                     0
                 } else {
-                    if node.controller_id == 1 {
-                        1
-                    } else {
-                        0
-                    }
-                };
-                let throw_btn: usize = if cfg!(target_os = "macos") {
+                    1
+                }
+            };
+            let throw_btn: usize = if cfg!(target_os = "macos") {
+                3
+            } else {
+                if info.name.contains("SFC30") {
+                    4
+                } else {
                     3
-                } else {
-                    if node.controller_id == 1 {
-                        3
-                    } else {
-                        4
-                    }
-                };
-
-                if state.digital_state[jump_btn] && node.input.was_jump == false {
-                    node.input.jump = true;
-                } else {
-                    node.input.jump = false;
                 }
-                node.input.was_jump = state.digital_state[jump_btn];
+            };
 
-                if state.digital_state[fire_btn] && node.input.was_fire == false {
-                    node.input.fire = true;
-                } else {
-                    node.input.fire = false;
-                }
-                node.input.was_fire = state.digital_state[fire_btn];
+            if state.digital_state[jump_btn] && node.input.was_jump == false {
+                node.input.jump = true;
+            } else {
+                node.input.jump = false;
+            }
+            node.input.was_jump = state.digital_state[jump_btn];
 
-                if state.digital_state[throw_btn] && node.input.was_throw == false {
-                    node.input.throw = true;
-                } else {
-                    node.input.throw = false;
-                }
-                node.input.was_throw = state.digital_state[throw_btn];
+            if state.digital_state[fire_btn] && node.input.was_fire == false {
+                node.input.fire = true;
+            } else {
+                node.input.fire = false;
+            }
+            node.input.was_fire = state.digital_state[fire_btn];
+
+            if state.digital_state[throw_btn] && node.input.was_throw == false {
+                node.input.throw = true;
+            } else {
+                node.input.throw = false;
+            }
+            node.input.was_throw = state.digital_state[throw_btn];
+        } else {
+            if node.ai_enabled == false && node.controller_id == 1 {
+                let jump = is_key_down(KeyCode::Space) || is_key_down(KeyCode::W);
+                node.input.jump = jump && node.input.was_jump == false;
+                node.input.was_jump = jump;
+
+                let throw = is_key_down(KeyCode::R) || is_key_down(KeyCode::K);
+                node.input.throw = throw && node.input.was_throw == false;
+                node.input.was_throw = throw;
+
+                node.input.fire = is_key_down(KeyCode::LeftControl)
+                    || is_key_down(KeyCode::F)
+                    || is_key_down(KeyCode::L);
+                node.input.left = is_key_down(KeyCode::A);
+                node.input.right = is_key_down(KeyCode::D);
+                node.input.down = is_key_down(KeyCode::S);
+            }
+
+            if node.ai_enabled == false && node.controller_id == 0 {
+                let jump = is_key_down(KeyCode::Up);
+                node.input.jump = jump && node.input.was_jump == false;
+                node.input.was_jump = jump;
+                node.input.left = is_key_down(KeyCode::Left);
+                node.input.right = is_key_down(KeyCode::Right);
+                node.input.down = is_key_down(KeyCode::Down);
             }
         }
 
@@ -705,34 +729,6 @@ impl scene::Node for Player {
             scene::find_node_by_type::<crate::nodes::Camera>()
                 .unwrap()
                 .shake();
-        }
-
-        #[cfg(not(target_os = "macos"))]
-        if node.ai_enabled == false && node.controller_id == 1 {
-            let jump = is_key_down(KeyCode::Space) || is_key_down(KeyCode::W);
-            node.input.jump = jump && node.input.was_jump == false;
-            node.input.was_jump = jump;
-
-            let throw = is_key_down(KeyCode::R) || is_key_down(KeyCode::K);
-            node.input.throw = throw && node.input.was_throw == false;
-            node.input.was_throw = throw;
-
-            node.input.fire = is_key_down(KeyCode::LeftControl)
-                || is_key_down(KeyCode::F)
-                || is_key_down(KeyCode::L);
-            node.input.left = is_key_down(KeyCode::A);
-            node.input.right = is_key_down(KeyCode::D);
-            node.input.down = is_key_down(KeyCode::S);
-        }
-
-        #[cfg(not(target_os = "macos"))]
-        if node.ai_enabled == false && node.controller_id == 0 {
-            let jump = is_key_down(KeyCode::Up);
-            node.input.jump = jump && node.input.was_jump == false;
-            node.input.was_jump = jump;
-            node.input.left = is_key_down(KeyCode::Left);
-            node.input.right = is_key_down(KeyCode::Right);
-            node.input.down = is_key_down(KeyCode::Down);
         }
 
         {

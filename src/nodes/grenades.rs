@@ -68,6 +68,7 @@ impl Grenades {
                 on_ground: false,
                 last_frame_on_ground: false,
                 have_gravity: true,
+                bouncyness: 0.0,
             },
             thrown: false,
             amount: Self::INITIAL_AMOUNT,

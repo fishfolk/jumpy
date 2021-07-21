@@ -13,6 +13,8 @@ pub mod player;
 mod score_counter;
 mod sword;
 mod sproinger;
+mod crates;
+mod shoes;
 
 pub use armed_grenade::ArmedGrenade;
 pub use armed_mine::ArmedMine;
@@ -29,3 +31,5 @@ pub use player::Player;
 pub use score_counter::ScoreCounter;
 pub use sword::Sword;
 pub use sproinger::Sproinger;
+pub use crates::Crate;
+pub use shoes::Shoes;

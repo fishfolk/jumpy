@@ -14,6 +14,8 @@ use crate::{
     nodes::{
         player::{capabilities, PhysicsBody, Weapon},
         Player,
+        ArmedMine,
+        sproinger::Sproingable,
     },
     Resources,
 };
@@ -27,7 +29,7 @@ pub struct Mines {
     pub body: PhysicsBody,
 
     origin_pos: Vec2,
-    deadly_dangerous: bool,
+    pub deadly_dangerous: bool,
 }
 
 impl Mines {
@@ -141,8 +143,7 @@ impl Mines {
 
                 let node = scene::get_node(node);
 
-                let mut mines = scene::find_node_by_type::<crate::nodes::ArmedMines>().unwrap();
-                mines.spawn_mine(node.body.pos, node.body.facing);
+                ArmedMine::spawn(node.body.pos, node.body.facing);
             }
             {
                 let node = &mut *scene::get_node(node);
@@ -221,6 +222,12 @@ impl scene::Node for Mines {
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
             Self::gun_capabilities(),
+        ));
+
+        node.provides::<Sproingable>((
+            node.handle().untyped(),
+            node.handle().lens(|node| &mut node.body),
+            vec2(32.0, 28.0),
         ));
     }
 

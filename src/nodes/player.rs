@@ -13,7 +13,11 @@ use macroquad::{
 use macroquad_platformer::Actor;
 
 use crate::{
-    nodes::{GameState, ScoreCounter},
+    nodes::{
+        GameState,
+        ScoreCounter,
+        sproinger::Sproingable,
+    },
     Resources,
 };
 
@@ -527,6 +531,12 @@ impl scene::Node for Player {
         node.provides::<PhysicsObject>((
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
+        ));
+
+        node.provides::<Sproingable>((
+            node.handle().untyped(),
+            node.handle().lens(|node| &mut node.body),
+            vec2(20.0, 64.0),
         ));
     }
 

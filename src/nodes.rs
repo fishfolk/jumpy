@@ -1,5 +1,5 @@
-mod armed_grenades;
-mod armed_mines;
+mod armed_grenade;
+mod armed_mine;
 mod bullets;
 mod camera;
 mod decoration;
@@ -12,9 +12,10 @@ mod muscet;
 pub mod player;
 mod score_counter;
 mod sword;
+mod sproinger;
 
-pub use armed_grenades::ArmedGrenades;
-pub use armed_mines::ArmedMines;
+pub use armed_grenade::ArmedGrenade;
+pub use armed_mine::ArmedMine;
 pub use bullets::Bullets;
 pub use camera::Camera;
 pub use decoration::Decoration;
@@ -27,3 +28,4 @@ pub use muscet::Muscet;
 pub use player::Player;
 pub use score_counter::ScoreCounter;
 pub use sword::Sword;
+pub use sproinger::Sproinger;

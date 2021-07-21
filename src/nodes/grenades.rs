@@ -14,6 +14,8 @@ use crate::{
     nodes::{
         player::{capabilities, PhysicsBody, Weapon},
         Player,
+        ArmedGrenade,
+        sproinger::Sproingable,
     },
     Resources,
 };
@@ -27,7 +29,7 @@ pub struct Grenades {
     pub body: PhysicsBody,
 
     origin_pos: Vec2,
-    deadly_dangerous: bool,
+    pub deadly_dangerous: bool,
 }
 
 impl Grenades {
@@ -142,9 +144,7 @@ impl Grenades {
 
                 let node = scene::get_node(node);
 
-                let mut grenades =
-                    scene::find_node_by_type::<crate::nodes::ArmedGrenades>().unwrap();
-                grenades.spawn_grenade(node.body.pos, node.body.facing);
+                ArmedGrenade::spawn(node.body.pos, node.body.facing);
             }
             {
                 let node = &mut *scene::get_node(node);
@@ -230,6 +230,12 @@ impl scene::Node for Grenades {
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
             Self::gun_capabilities(),
+        ));
+
+        node.provides::<Sproingable>((
+            node.handle().untyped(),
+            node.handle().lens(|node| &mut node.body),
+            vec2(32.0, 26.0),
         ));
     }
 

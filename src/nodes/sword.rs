@@ -206,6 +206,7 @@ impl Sword {
                 last_frame_on_ground: false,
                 on_ground: false,
                 have_gravity: true,
+                bouncyness: 0.0,
             },
             thrown: false,
             origin_pos: pos,

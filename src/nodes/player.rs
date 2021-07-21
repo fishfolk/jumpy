@@ -64,6 +64,7 @@ pub struct PhysicsBody {
     pub on_ground: bool,
     pub last_frame_on_ground: bool,
     pub have_gravity: bool,
+    pub bouncyness: f32,
 }
 
 impl PhysicsBody {
@@ -96,10 +97,10 @@ impl PhysicsBody {
                 self.speed.y += Self::GRAVITY * get_frame_time();
             }
             if !collision_world.move_h(collider, self.speed.x * get_frame_time()) {
-                self.speed.x = 0.0;
+                self.speed.x *= -self.bouncyness;
             }
             if !collision_world.move_v(collider, self.speed.y * get_frame_time()) {
-                self.speed.y = 0.0;
+                self.speed.y *= -self.bouncyness;
             }
             self.pos = collision_world.actor_pos(collider);
         }
@@ -243,6 +244,7 @@ impl Player {
             facing: true,
             last_frame_on_ground: false,
             have_gravity: true,
+            bouncyness: 0.0,
         };
 
         let fish_sprite = AnimatedSprite::new(

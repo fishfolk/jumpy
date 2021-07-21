@@ -60,6 +60,7 @@ impl ArmedGrenade {
             on_ground: false,
             last_frame_on_ground: false,
             have_gravity: true,
+            bouncyness: 0.5,
         };
 
         let mut resources = storage::get_mut::<Resources>();

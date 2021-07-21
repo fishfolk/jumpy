@@ -185,11 +185,15 @@ pub struct Player {
 
     pub camera_box: Rect,
 
+    pub can_head_boink: bool,
+
     score_counter: Handle<ScoreCounter>,
     pub game_state: Handle<GameState>,
 }
 
 impl Player {
+    pub const BODY_THRESHOLD: f32 = 24.0;
+
     pub const ST_NORMAL: usize = 0;
     pub const ST_DEATH: usize = 1;
     pub const ST_SHOOT: usize = 2;
@@ -301,6 +305,7 @@ impl Player {
             ai_enabled: false, //controller_id == 0,
             ai: Some(ai::Ai::new()),
             camera_box: Rect::new(spawner_pos.x - 30., spawner_pos.y - 150., 100., 210.),
+            can_head_boink: false,
             score_counter,
             game_state,
         }
@@ -743,6 +748,25 @@ impl scene::Node for Player {
             }
 
             node.body.update();
+        }
+
+        if node.can_head_boink && node.body.speed.y > 0.0 {
+            let hit_box = Rect::new(node.body.pos.x, node.body.pos.y, 32.0, 60.0);
+            for mut other in scene::find_nodes_by_type::<Player>() {
+                let is_overlapping = hit_box.overlaps(&Rect::new(
+                    other.body.pos.x,
+                    other.body.pos.y,
+                    32.0,
+                    60.0,
+                ));
+                if is_overlapping {
+                    if hit_box.y + 60.0 < other.body.pos.y + Self::BODY_THRESHOLD {
+                        let resources = storage::get_mut::<Resources>();
+                        play_sound_once(resources.jump_sound);
+                        other.kill(!node.body.facing);
+                    }
+                }
+            }
         }
 
         // update camera bound box

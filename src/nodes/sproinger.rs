@@ -18,7 +18,6 @@ pub struct Sproinger {
     sprite: AnimatedSprite,
     pos: Vec2,
     has_sproinged: bool,
-    time_since_sproing: f32,
 }
 
 impl Sproinger {
@@ -58,7 +57,6 @@ impl Sproinger {
             sprite,
             pos,
             has_sproinged: false,
-            time_since_sproing: 0.0,
         }
     }
 
@@ -126,7 +124,6 @@ impl scene::Node for Sproinger {
 
                             body.speed.y = -Self::FORCE;
                             node.has_sproinged = true;
-                            node.time_since_sproing = 0.0;
                             // self.sprite.set_animation(1);
                             // self.sprite.playing = true;
                             Sproinger::animate(node.handle());

@@ -50,7 +50,7 @@ impl Shoes {
 }
 
 impl Node for Shoes {
-    fn fixed_update(mut node: RefMut<Self>) {
+    fn fixed_update(node: RefMut<Self>) {
         let shoes_rect = Rect::new(node.pos.x, node.pos.y, 30.0, 30.0);
         let mut picked_up = false;
         for mut player in scene::find_nodes_by_type::<Player>() {

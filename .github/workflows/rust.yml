@@ -10,8 +10,8 @@ jobs:
     name: Push to SourceHut
     runs-on: ubuntu-latest
     steps:
-        - uses: actions/checkout@v2   
+        - uses: actions/checkout@v2
         - run: |
-          mkdir ~/.ssh
-          echo "${{ secrets.hut_id_rsa }}" > ~/.ssh/id_rsa
-        - run: git push git@git.sr.ht:~not-fl3/FishFight master
+            mkdir ~/.ssh
+            echo "${{ secrets.hut_id_rsa }}" > ~/.ssh/id_rsa
+            git push git@git.sr.ht:~not-fl3/FishFight master

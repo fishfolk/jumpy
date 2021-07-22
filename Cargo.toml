@@ -8,7 +8,7 @@ edition = "2018"
 opt-level = 3
 
 [dependencies]
-nanoserde = "0.1.28"
+nanoserde = "0.1.29"
 macroquad = { version = "0.3" }
 macroquad-platformer = "0.1"
 macroquad-tiled = "0.1"
@@ -23,8 +23,6 @@ macroquad = { git = "https://github.com/not-fl3/macroquad.git", rev = "4980aa0" 
 macroquad-particles = { git = "https://github.com/not-fl3/macroquad.git", rev = "4980aa0" }
 macroquad-tiled = { git = "https://github.com/not-fl3/macroquad.git", rev = "4980aa0" }
 macroquad-platformer = { git = "https://github.com/not-fl3/macroquad.git", rev = "4980aa0" }
-
-nanoserde = { path = "../nanoserde" }
 
 # macroquad = { path = "../macroquad" }
 # macroquad-particles = { path = "../macroquad/particles" }

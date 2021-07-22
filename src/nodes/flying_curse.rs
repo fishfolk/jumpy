@@ -31,10 +31,11 @@ pub struct FlyingCurse {
     facing: bool,
     lived: f32,
     countdown: f32,
+    owner_id: u8,
 }
 
 impl FlyingCurse {
-    pub fn new(curse_body: &PhysicsBody) -> Self {
+    pub fn new(curse_body: &PhysicsBody, owner_id: u8) -> Self {
         // This can be easily turned into a single sprite, rotated via DrawTextureParams.
         //
         let flying_curse_sprite = AnimatedSprite::new(
@@ -62,6 +63,7 @@ impl FlyingCurse {
             facing: curse_body.facing,
             lived: 0.0,
             countdown: FLYING_CURSE_COUNTDOWN_DURATION,
+            owner_id,
         }
     }
 
@@ -85,8 +87,9 @@ impl FlyingCurses {
         }
     }
 
-    pub fn spawn_flying_curse(&mut self, curse_body: &PhysicsBody) {
-        self.flying_curses.push(FlyingCurse::new(curse_body));
+    pub fn spawn_flying_curse(&mut self, curse_body: &PhysicsBody, owner_id: u8) {
+        self.flying_curses
+            .push(FlyingCurse::new(curse_body, owner_id));
     }
 }
 
@@ -113,24 +116,26 @@ impl scene::Node for FlyingCurses {
                 );
 
                 for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
-                    let player_hitbox = Rect::new(
-                        player.body.pos.x,
-                        player.body.pos.y,
-                        PLAYER_HITBOX_WIDTH,
-                        PLAYER_HITBOX_HEIGHT,
-                    );
-                    if player_hitbox.intersect(flying_curse_hitbox).is_some() {
-                        hit_fxses.spawn(explosion_position);
+                    if flying_curse.owner_id != player.id {
+                        let player_hitbox = Rect::new(
+                            player.body.pos.x,
+                            player.body.pos.y,
+                            PLAYER_HITBOX_WIDTH,
+                            PLAYER_HITBOX_HEIGHT,
+                        );
+                        if player_hitbox.intersect(flying_curse_hitbox).is_some() {
+                            hit_fxses.spawn(explosion_position);
 
-                        scene::find_node_by_type::<crate::nodes::Camera>()
-                            .unwrap()
-                            .shake();
+                            scene::find_node_by_type::<crate::nodes::Camera>()
+                                .unwrap()
+                                .shake();
 
-                        let direction =
-                            flying_curse.current_x > (player.body.pos.x + PLAYER_HITBOX_WIDTH / 2.);
-                        player.kill(direction);
+                            let direction = flying_curse.current_x
+                                > (player.body.pos.x + PLAYER_HITBOX_WIDTH / 2.);
+                            player.kill(direction);
 
-                        return false;
+                            return false;
+                        }
                     }
                 }
 

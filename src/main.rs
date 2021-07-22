@@ -150,6 +150,7 @@ impl Resources {
         let life_explosion_fxses =
             EmittersCache::new(nanoserde::DeJson::deserialize_json(LIFE_EXPLOSION_FX).unwrap());
 
+
         Ok(Resources {
             hit_fxses,
             explosion_fxses,
@@ -378,7 +379,6 @@ async fn main() {
     loop {
         let map = gui::main_menu::gui().await;
 
-        //let map = "assets/levels/lev06.json";
         game(GameType::Deathmatch, &map).await;
 
         scene::clear();

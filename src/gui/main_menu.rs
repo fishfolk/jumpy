@@ -6,50 +6,7 @@ use macroquad::{
 
 use crate::gui::GuiResources;
 
-struct Level {
-    preview: Texture2D,
-    map: String,
-    size: f32,
-}
-
 pub async fn gui() -> String {
-    let mut levels = {
-        let gui_resources = storage::get::<GuiResources>();
-
-        vec![
-            Level {
-                preview: gui_resources.lev01,
-                map: "assets/levels/lev01.json".to_string(),
-                size: 0.,
-            },
-            Level {
-                preview: gui_resources.lev02,
-                map: "assets/levels/lev02.json".to_string(),
-                size: 0.,
-            },
-            Level {
-                preview: gui_resources.lev03,
-                map: "assets/levels/lev03.json".to_string(),
-                size: 0.,
-            },
-            Level {
-                preview: gui_resources.lev04,
-                map: "assets/levels/lev04.json".to_string(),
-                size: 0.,
-            },
-            Level {
-                preview: gui_resources.lev05,
-                map: "assets/levels/lev05.json".to_string(),
-                size: 0.,
-            },
-            Level {
-                preview: gui_resources.lev06,
-                map: "assets/levels/lev06.json".to_string(),
-                size: 0.,
-            },
-        ]
-    };
-
     let mut hovered: i32 = 0;
 
     {
@@ -65,13 +22,17 @@ pub async fn gui() -> String {
     }
 
     loop {
-        let gui_resources = storage::get::<GuiResources>();
+        let mut gui_resources = storage::get_mut::<GuiResources>();
 
         clear_background(BLACK);
 
+        let levels_amount = gui_resources.levels.len();
+
         root_ui().push_skin(&gui_resources.skins.main_menu_skin);
+
+        let rows = (levels_amount + 2) / 3;
         let w = (screen_width() - 120.) / 3. - 50.;
-        let h = (screen_height() - 180.) / 2. - 50.;
+        let h = (screen_height() - 180.) / rows as f32 - 50.;
 
         {
             let axises = storage::get::<crate::input_axis::InputAxises>();
@@ -89,7 +50,9 @@ pub async fn gui() -> String {
             if axises.right_pressed {
                 hovered += 1;
             }
-            hovered = (hovered + 6) % 6;
+            hovered = (hovered + levels_amount as i32) % levels_amount as i32;
+
+            let mut levels = &mut gui_resources.levels;
 
             for (n, level) in levels.iter_mut().enumerate() {
                 let is_hovered = hovered == n as i32;

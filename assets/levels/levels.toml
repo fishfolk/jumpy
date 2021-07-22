@@ -1,0 +1,23 @@
+[[level]]
+map = "assets/levels/lev01.json"
+preview = "assets/levels/lev01.png"
+
+[[level]]
+map = "assets/levels/lev02.json"
+preview = "assets/levels/lev02.png"
+
+[[level]]
+map = "assets/levels/lev03.json"
+preview = "assets/levels/lev03.png"
+
+[[level]]
+map = "assets/levels/lev04.json"
+preview = "assets/levels/lev04.png"
+
+[[level]]
+map = "assets/levels/lev05.json"
+preview = "assets/levels/lev05.png"
+
+[[level]]
+map = "assets/levels/lev06.json"
+preview = "assets/levels/lev06.png"

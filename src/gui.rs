@@ -4,30 +4,39 @@ mod style;
 
 pub use style::SkinCollection;
 
-use macroquad::texture::{load_texture, Texture2D};
+use macroquad::{
+    file::load_string,
+    texture::{load_texture, Texture2D},
+};
+
+struct Level {
+    preview: Texture2D,
+    map: String,
+    size: f32,
+}
 
 pub struct GuiResources {
-    pub lev01: Texture2D,
-    pub lev02: Texture2D,
-    pub lev03: Texture2D,
-    pub lev04: Texture2D,
-    pub lev05: Texture2D,
-    pub lev06: Texture2D,
-
+    levels: Vec<Level>,
     pub skins: SkinCollection,
 }
 
 impl GuiResources {
     pub async fn load() -> GuiResources {
-        GuiResources {
-            lev01: load_texture("assets/levels/lev01.png").await.unwrap(),
-            lev02: load_texture("assets/levels/lev02.png").await.unwrap(),
-            lev03: load_texture("assets/levels/lev03.png").await.unwrap(),
-            lev04: load_texture("assets/levels/lev04.png").await.unwrap(),
-            lev05: load_texture("assets/levels/lev05.png").await.unwrap(),
-            lev06: load_texture("assets/levels/lev06.png").await.unwrap(),
+        let mut levels = vec![];
+        let levels_str = load_string("assets/levels/levels.toml").await.unwrap();
+        let toml = nanoserde::TomlParser::parse(&levels_str).unwrap();
 
+        for level in toml["level"].arr() {
+            levels.push(Level {
+                map: level["map"].str().to_owned(),
+                preview: load_texture(level["preview"].str()).await.unwrap(),
+                size: 0.,
+            })
+        }
+
+        GuiResources {
             skins: SkinCollection::new(),
+            levels,
         }
     }
 }

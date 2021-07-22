@@ -1,32 +1,16 @@
 use macroquad::{
     audio::play_sound_once,
-    experimental::{
-        collections::storage,
-        scene::{
-            self,
-            RefMut,
-            HandleUntyped,
-            Lens,
-            Handle,
-        },
-        animation::{
-            AnimatedSprite,
-            Animation,
-        },
-        coroutines::{
-            Coroutine,
-            start_coroutine,
-            wait_seconds,
-        },
-    },
     color,
+    experimental::{
+        animation::{AnimatedSprite, Animation},
+        collections::storage,
+        coroutines::{start_coroutine, wait_seconds, Coroutine},
+        scene::{self, Handle, HandleUntyped, Lens, RefMut},
+    },
     prelude::*,
 };
 
-use crate::{
-    Resources,
-    nodes::player::PhysicsBody,
-};
+use crate::{nodes::player::PhysicsBody, Resources};
 
 pub type Sproingable = (HandleUntyped, Lens<PhysicsBody>, Vec2);
 
@@ -41,7 +25,6 @@ impl Sproinger {
     pub const TRIGGER_WIDTH: f32 = 32.0;
     pub const TRIGGER_HEIGHT: f32 = 8.0;
     pub const FORCE: f32 = 1100.0;
-    pub const COOLDOWN: f32 = 0.5;
     pub const STOPPED_THRESHOLD: f32 = 0.01;
 
     pub fn new(pos: Vec2) -> Self {
@@ -109,8 +92,11 @@ impl Sproinger {
                 }
                 wait_seconds(0.08).await;
             }
+            wait_seconds(0.5).await;
+
             {
                 let mut node = scene::get_node(node_handle);
+                node.has_sproinged = false;
                 node.sprite.set_animation(0);
             }
         };
@@ -120,14 +106,6 @@ impl Sproinger {
 
 impl scene::Node for Sproinger {
     fn fixed_update(mut node: RefMut<Self>) {
-        if node.has_sproinged {
-            node.time_since_sproing += get_frame_time();
-            if node.time_since_sproing >= Self::COOLDOWN {
-                node.has_sproinged = false;
-                node.time_since_sproing = 0.0;
-            }
-        }
-
         if !node.has_sproinged {
             let sproinger_rect = Rect::new(
                 node.pos.x, // - (Self::TRIGGER_WIDTH / 2.0),
@@ -140,12 +118,8 @@ impl scene::Node for Sproinger {
                 if body_lens.get().is_some() {
                     let body = body_lens.get().unwrap();
                     if body.speed.length() > Self::STOPPED_THRESHOLD {
-                        let intersect = sproinger_rect.intersect(Rect::new(
-                            body.pos.x,
-                            body.pos.y,
-                            size.x,
-                            size.y,
-                        ));
+                        let intersect = sproinger_rect
+                            .intersect(Rect::new(body.pos.x, body.pos.y, size.x, size.y));
                         if !intersect.is_none() {
                             let resources = storage::get_mut::<Resources>();
                             play_sound_once(resources.jump_sound);

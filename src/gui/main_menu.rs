@@ -50,7 +50,19 @@ pub async fn gui() -> String {
         ]
     };
 
-    let mut hovered: Option<usize> = None;
+    let mut hovered: i32 = 0;
+
+    {
+        let mut controller = storage::get_mut::<gamepad_rs::ControllerContext>();
+        for i in 0..2 {
+            controller.update(i);
+        }
+    }
+
+    {
+        let mut input = storage::get_mut::<crate::input_axis::InputAxises>();
+        input.update();
+    }
 
     loop {
         let gui_resources = storage::get::<GuiResources>();
@@ -61,36 +73,65 @@ pub async fn gui() -> String {
         let w = (screen_width() - 120.) / 3. - 50.;
         let h = (screen_height() - 180.) / 2. - 50.;
 
-        for (n, level) in levels.iter_mut().enumerate() {
-            let is_hovered = hovered.map_or(false, |h| h == n);
+        {
+            let axises = storage::get::<crate::input_axis::InputAxises>();
 
-            let rect = Rect::new(
-                60. + (n % 3) as f32 * (w + 50.) - level.size * 30.,
-                90. + (n / 3) as f32 * (h + 100.) - level.size * 30.,
-                w + level.size * 60.,
-                h + level.size * 60.,
-            );
-            if is_hovered {
-                level.size = level.size * 0.8 + 1.0 * 0.2;
-            } else {
-                level.size = level.size * 0.9;
+            if axises.up_pressed {
+                hovered -= 3;
             }
-
-            if rect.contains(vec2(mouse_position().0, mouse_position().1)) {
-                hovered = Some(n);
+            if axises.down_pressed {
+                hovered += 3;
+                hovered = hovered.max(0);
             }
+            if axises.left_pressed {
+                hovered -= 1;
+            }
+            if axises.right_pressed {
+                hovered += 1;
+            }
+            hovered = (hovered + 6) % 6;
 
-            if ui::widgets::Button::new(level.preview)
-                .size(rect.size())
-                .position(rect.point())
-                .ui(&mut *root_ui())
-            {
-                root_ui().pop_skin();
-                return level.map.clone();
+            for (n, level) in levels.iter_mut().enumerate() {
+                let is_hovered = hovered == n as i32;
+
+                let rect = Rect::new(
+                    60. + (n % 3) as f32 * (w + 50.) - level.size * 30.,
+                    90. + (n / 3) as f32 * (h + 100.) - level.size * 30.,
+                    w + level.size * 60.,
+                    h + level.size * 60.,
+                );
+                if is_hovered {
+                    level.size = level.size * 0.8 + 1.0 * 0.2;
+                } else {
+                    level.size = level.size * 0.9;
+                }
+
+                if ui::widgets::Button::new(level.preview)
+                    .size(rect.size())
+                    .position(rect.point())
+                    .ui(&mut *root_ui())
+                    || axises.btn_a_pressed
+                {
+                    root_ui().pop_skin();
+                    let level = &levels[hovered as usize];
+                    return level.map.clone();
+                }
             }
         }
 
         root_ui().pop_skin();
+
+        {
+            let mut controller = storage::get_mut::<gamepad_rs::ControllerContext>();
+            for i in 0..2 {
+                controller.update(i);
+            }
+        }
+
+        {
+            let mut input = storage::get_mut::<crate::input_axis::InputAxises>();
+            input.update();
+        }
 
         next_frame().await;
     }

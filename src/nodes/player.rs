@@ -13,11 +13,7 @@ use macroquad::{
 use macroquad_platformer::Actor;
 
 use crate::{
-    nodes::{
-        GameState,
-        ScoreCounter,
-        sproinger::Sproingable,
-    },
+    nodes::{sproinger::Sproingable, GameState, ScoreCounter},
     Resources,
 };
 
@@ -125,7 +121,7 @@ impl PhysicsBody {
             }
         }
 
-        self.speed.x *= 0.98;
+        self.speed.x *= 0.96;
         if self.speed.x.abs() <= 1. {
             self.speed.x = 0.0;
         }
@@ -313,7 +309,9 @@ impl Player {
 
     pub fn kill(&mut self, direction: bool) {
         self.body.facing = direction;
-        self.state_machine.set_state(Self::ST_DEATH);
+        if self.state_machine.state() != Self::ST_DEATH {
+            self.state_machine.set_state(Self::ST_DEATH);
+        }
     }
 
     fn death_coroutine(node: &mut RefMut<Player>) -> Coroutine {
@@ -753,12 +751,8 @@ impl scene::Node for Player {
         if node.can_head_boink && node.body.speed.y > 0.0 {
             let hit_box = Rect::new(node.body.pos.x, node.body.pos.y, 32.0, 60.0);
             for mut other in scene::find_nodes_by_type::<Player>() {
-                let is_overlapping = hit_box.overlaps(&Rect::new(
-                    other.body.pos.x,
-                    other.body.pos.y,
-                    32.0,
-                    60.0,
-                ));
+                let is_overlapping =
+                    hit_box.overlaps(&Rect::new(other.body.pos.x, other.body.pos.y, 32.0, 60.0));
                 if is_overlapping {
                     if hit_box.y + 60.0 < other.body.pos.y + Self::BODY_THRESHOLD {
                         let resources = storage::get_mut::<Resources>();

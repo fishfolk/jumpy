@@ -259,18 +259,6 @@
                 }, 
                 {
                  "height":0,
-                 "id":78,
-                 "name":"mines",
-                 "point":true,
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":473.953279791268,
-                 "y":41.0942150108036
-                }, 
-                {
-                 "height":0,
                  "id":79,
                  "name":"mines",
                  "point":true,
@@ -280,6 +268,30 @@
                  "width":0,
                  "x":635.590525500428,
                  "y":41.0942150108035
+                }, 
+                {
+                 "height":0,
+                 "id":81,
+                 "name":"sproinger",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":531.485180806392,
+                 "y":367.108320763178
+                }, 
+                {
+                 "height":0,
+                 "id":82,
+                 "name":"sproinger",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":618.874896381154,
+                 "y":366.118458423363
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -288,7 +300,7 @@
          "y":0
         }],
  "nextlayerid":6,
- "nextobjectid":80,
+ "nextobjectid":84,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.7.0",

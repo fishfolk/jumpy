@@ -153,7 +153,7 @@ impl scene::Node for Sword {
             if node.body.speed.length() <= 200.0 {
                 node.deadly_dangerous = false;
             }
-            if node.body.on_ground && node.body.speed.length() <= 300.0 {
+            if node.body.on_ground && node.body.speed.length() <= 400.0 {
                 node.deadly_dangerous = false;
             }
 

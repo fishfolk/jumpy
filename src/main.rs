@@ -16,6 +16,7 @@ use macroquad_platformer::{Tile, World as CollisionWorld};
 use particles::EmittersCache;
 
 mod gui;
+mod input_axis;
 mod nodes;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -179,8 +180,8 @@ impl Resources {
 
 async fn game(game_type: GameType, map: &str) {
     use nodes::{
-        Bullets, Camera, Decoration, Fxses, GameState, Grenades,
-        LevelBackground, Mines, Muscet, Player, ScoreCounter, Sword, Sproinger, Crate, Shoes,
+        Bullets, Camera, Crate, Decoration, Fxses, GameState, Grenades, LevelBackground, Mines,
+        Muscet, Player, ScoreCounter, Shoes, Sproinger, Sword,
     };
 
     let resources_loading = start_coroutine({
@@ -207,21 +208,21 @@ async fn game(game_type: GameType, map: &str) {
         next_frame().await;
     }
 
-    // let battle_music = if map == "assets/map.json" {
-    //     load_sound("assets/music/across the pond.ogg")
-    //         .await
-    //         .unwrap()
-    // } else {
-    //     load_sound("assets/music/fish tide.ogg").await.unwrap()
-    // };
+    let battle_music = if map == "assets/map.json" {
+        load_sound("assets/music/across the pond.ogg")
+            .await
+            .unwrap()
+    } else {
+        load_sound("assets/music/fish tide.ogg").await.unwrap()
+    };
 
-    // audio::play_sound(
-    //     battle_music,
-    //     audio::PlaySoundParams {
-    //         looped: true,
-    //         volume: 0.6,
-    //     },
-    // );
+    audio::play_sound(
+        battle_music,
+        audio::PlaySoundParams {
+            looped: true,
+            volume: 0.6,
+        },
+    );
 
     let bounds = {
         let resources = storage::get::<Resources>();
@@ -307,18 +308,18 @@ async fn game(game_type: GameType, map: &str) {
         }
 
         if object.name == "shoes" {
-            let mut shoes =
-                Shoes::new(vec2(object.world_x - 32., object.world_y - 32.));
+            let mut shoes = Shoes::new(vec2(object.world_x - 32., object.world_y - 32.));
             scene::add_node(shoes);
             wat_facing ^= true;
         }
 
         if object.name == "sproinger" {
-            let sproinger =
-                Sproinger::new(vec2(object.world_x - 35., object.world_y - 25.));
+            let sproinger = Sproinger::new(vec2(object.world_x - 35., object.world_y - 25.));
             scene::add_node(sproinger);
         }
     }
+
+    scene::add_node(Bullets::new());
 
     //scene::add_node(Camera::new(player2));
     scene::add_node(Fxses {});
@@ -329,6 +330,11 @@ async fn game(game_type: GameType, map: &str) {
     scene::get_node(player2).game_state = game_state;
 
     loop {
+        if scene::find_node_by_type::<GameState>().unwrap().want_quit {
+            macroquad::audio::stop_sound(battle_music);
+            return;
+        }
+
         {
             let mut controller = storage::get_mut::<gamepad_rs::ControllerContext>();
             for i in 0..2 {
@@ -336,8 +342,9 @@ async fn game(game_type: GameType, map: &str) {
             }
         }
 
-        if scene::find_node_by_type::<GameState>().unwrap().want_quit {
-            return;
+        {
+            let mut input = storage::get_mut::<crate::input_axis::InputAxises>();
+            input.update();
         }
 
         next_frame().await;
@@ -366,8 +373,11 @@ async fn main() {
         storage::store(gui_resources);
     }
 
+    storage::store(input_axis::InputAxises::default());
+
     loop {
         let map = gui::main_menu::gui().await;
+
         //let map = "assets/levels/lev06.json";
         game(GameType::Deathmatch, &map).await;
 

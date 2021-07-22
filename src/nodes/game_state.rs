@@ -1,5 +1,6 @@
 use macroquad::{
     experimental::{
+        collections::storage,
         coroutines::{start_coroutine, wait_seconds},
         scene::{self, Handle, RefMut},
     },
@@ -197,7 +198,8 @@ impl scene::Node for GameState {
     }
 
     fn update(mut node: RefMut<Self>) {
-        if is_key_pressed(KeyCode::Escape) {
+        let input_axis = storage::get::<crate::input_axis::InputAxises>();
+        if input_axis.start_pressed {
             if node.state == State::InProgress {
                 node.state = State::Paused;
                 node.game_paused = true;

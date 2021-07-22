@@ -21,3 +21,39 @@ preview = "assets/levels/lev05.png"
 [[level]]
 map = "assets/levels/lev06.json"
 preview = "assets/levels/lev06.png"
+
+[[level]]
+map = "assets/levels/zyrafa01.json"
+preview = "assets/levels/zyrafa01.png"
+name = "Duality of Fish"
+description = "A small level with a gun, mines and some swords"
+
+[[level]]
+map = "assets/levels/zyrafa02.json"
+preview = "assets/levels/zyrafa02.png"
+name = "The Gunroom"
+description = "Closed level with a couple of guns and one sword"
+
+[[level]]
+map = "assets/levels/zyrafa03.json"
+preview = "assets/levels/zyrafa03.png"
+name = "At Shooting Distance"
+description = "A map with more empty space for shooting and a small pole in the middle"
+
+[[level]]
+map = "assets/levels/zyrafa04.json"
+preview = "assets/levels/zyrafa04.png"
+name = "Flappy Fish"
+description = "Level with 2 quite wide holes, some grenades and a single gun accesible via a sproinger"
+
+[[level]]
+map = "assets/levels/zyrafa05.json"
+preview = "assets/levels/zyrafa05.png"
+name = "Too High Up"
+description = "One gun in the middle and swords and grenades accessible via spriongers"
+
+[[level]]
+map = "assets/levels/zyrafa06.json"
+preview = "assets/levels/zyrafa06.png"
+name = "Fish Squared"
+description = "Asymmetrical, small, horizontal level with just swords"

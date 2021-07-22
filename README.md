@@ -1,5 +1,7 @@
 # Fish Fight
 
+[![Github Actions](https://github.com/fishfight/fish2/workflows/Cross-compile/badge.svg)](https://github.com/fishfight/fish2/actions?query=workflow%3A)
+
 ### Introduction
 
 Fish Fight is a tactical 2D shooter, played by up to 4 players online or on a shared screen. Aim either left or right; the rest is up to clever movement and positioning in this fish-on-fish brawler!

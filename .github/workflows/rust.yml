@@ -1,0 +1,36 @@
+on: [push, pull_request]
+
+name: Cross-compile
+
+jobs:
+  build:
+    name: Build
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - { os: ubuntu-latest, target: 'x86_64-unknown-linux-gnu' }
+          - { os: ubuntu-latest, target: 'x86_64-pc-windows-gnu' }
+          - { os: macos-latest, target: 'x86_64-apple-darwin' }
+          - { os: windows-latest, target: 'x86_64-pc-windows-msvc' }
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.config.target }}
+          override: true
+      - name: Workaround MinGW issue # https://github.com/rust-lang/rust/issues/47048
+        if: runner.os == 'Linux' && matrix.config.target == 'x86_64-pc-windows-gnu'
+        run: |
+          sudo apt-get -yq --no-install-suggests --no-install-recommends install gcc-mingw-w64
+          sudo cp /usr/x86_64-w64-mingw32/lib/dllcrt2.o  ~/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/dllcrt2.o
+          sudo cp /usr/x86_64-w64-mingw32/lib/crt2.o  ~/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/crt2.o
+          echo "[target.x86_64-pc-windows-gnu]" >> ~/.cargo/config
+          echo "linker = \"/usr/bin/x86_64-w64-mingw32-gcc\"" >> ~/.cargo/config
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --all-targets --target=${{ matrix.config.target }}

@@ -24,12 +24,12 @@ impl InputAxises {
     pub fn update(&mut self) {
         let old = self.clone();
 
-        self.left = input::is_key_down(KeyCode::Left);
-        self.right = input::is_key_down(KeyCode::Right);
-        self.up = input::is_key_down(KeyCode::Up);
-        self.down = input::is_key_down(KeyCode::Down);
+        self.left = input::is_key_down(KeyCode::Left) || input::is_key_down(KeyCode::A);
+        self.right = input::is_key_down(KeyCode::Right) || input::is_key_down(KeyCode::D);
+        self.up = input::is_key_down(KeyCode::Up) || input::is_key_down(KeyCode::W);
+        self.down = input::is_key_down(KeyCode::Down) || input::is_key_down(KeyCode::S);
         self.start = input::is_key_down(KeyCode::Escape);
-        self.btn_a = input::is_key_down(KeyCode::K);
+        self.btn_a = input::is_key_down(KeyCode::Enter);
         self.btn_b = input::is_key_down(KeyCode::L);
 
         let controller = storage::get_mut::<gamepad_rs::ControllerContext>();
@@ -37,7 +37,8 @@ impl InputAxises {
             let state = controller.state(i);
             let info = controller.info(i);
 
-            if state.status == Connected {// { && info.name.contains("MY-POWER CO") {
+            if state.status == Connected {
+                // { && info.name.contains("MY-POWER CO") {
                 let x = state.analog_state[0];
                 let y = state.analog_state[1];
 

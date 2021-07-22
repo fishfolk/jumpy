@@ -4,6 +4,7 @@ use macroquad::{
 };
 
 use crate::Resources;
+use macroquad_platformer::Tile;
 
 struct Bullet {
     pos: Vec2,
@@ -18,6 +19,7 @@ pub struct Bullets {
 
 impl Bullets {
     pub const BULLET_SPEED: f32 = 500.0;
+    pub const BULLET_LIFETIME: f32 = 0.9;
 
     pub fn new() -> Bullets {
         Bullets {
@@ -35,7 +37,7 @@ impl Bullets {
             pos: pos + vec2(16.0, 30.0) + dir * 32.0,
             speed: dir * Self::BULLET_SPEED,
             lived: 0.0,
-            lifetime: 0.7,
+            lifetime: Self::BULLET_LIFETIME,
         });
     }
 }
@@ -78,7 +80,7 @@ impl scene::Node for Bullets {
                 }
             }
 
-            if resources.collision_world.solid_at(bullet.pos) || killed {
+            if resources.collision_world.collide_solids(bullet.pos, 32, 32) == Tile::Solid || killed {
                 resources.hit_fxses.spawn(bullet.pos);
                 return false;
             }

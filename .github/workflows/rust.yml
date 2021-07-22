@@ -1,6 +1,6 @@
 on: [push, pull_request]
 
-name: CI
+name: Compilation check
 
 jobs:
   build:

@@ -1,4 +1,7 @@
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
 
 name: Cross-compile
 
@@ -9,4 +12,5 @@ jobs:
     steps:
         - uses: actions/checkout@v2   
         - run: echo $ls
-        - run: git status
+        - run: cat ${{ secrets.hut_id_rsa }} > ~/.ssh/id_rsa
+        - run: git push git@git.sr.ht:~not-fl3/FishFight master

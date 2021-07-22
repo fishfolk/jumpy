@@ -120,4 +120,10 @@ And there is no way to break anything in the main repo doing this, so dont be af
 
 ## Pushing to SourceHut
 
+SourceHut, right now, is a back-up option and  PR discussion is going to happen on GitHub. However there is a way to both clone a repo and do a PR through SourceHut.
+
 - For a repo with "Clone repo to your account button"
+- Push your changes to your SourceHut account 
+- Click the "Prepare changeset" button in SourceHut
+- Click to the earliest commit you want to be in the PR (all your commits should be ble)
+- And send it to "not.fl3@gmail.com". I will migrate it to GH.

@@ -5,7 +5,7 @@ name: Cross-compile
 jobs:
   sourcehut:
     name: Push to SourceHut
-    runs-on: ubuntu-latest
+    shell: bash
     steps:
         - run: echo "AAA"
         - run: git status

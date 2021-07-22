@@ -87,9 +87,41 @@ impl FlyingCurses {
         }
     }
 
-    pub fn spawn_flying_curse(&mut self, curse_pos: Vec2, facing: bool, owner_id: u8) {
+    /// Spawn a curse, and set the direction towards the closest (in radius) enemy.
+    /// If there are no enemies, shoot straight.
+    pub fn spawn_flying_curse(&mut self, curse_pos: Vec2, default_facing: bool, owner_id: u8) {
+        let facing = Self::find_closest_enemy_direction(curse_pos, default_facing, owner_id);
+
         self.flying_curses
             .push(FlyingCurse::new(curse_pos, facing, owner_id));
+    }
+
+    fn find_closest_enemy_direction(curse_pos: Vec2, default_facing: bool, owner_id: u8) -> bool {
+        let players = scene::find_nodes_by_type::<crate::nodes::Player>();
+
+        let enemies_pos = players
+            .filter_map(|player| {
+                if player.id == owner_id {
+                    None
+                } else {
+                    Some(player.body.pos)
+                }
+            })
+            .collect::<Vec<_>>();
+
+        if enemies_pos.len() == 0 {
+            return default_facing;
+        }
+
+        let mut closest_pos = enemies_pos[0];
+
+        for enemy_pos in enemies_pos.into_iter().skip(1) {
+            if (curse_pos - enemy_pos).abs() < closest_pos {
+                closest_pos = enemy_pos;
+            }
+        }
+
+        curse_pos.x < closest_pos.x
     }
 }
 

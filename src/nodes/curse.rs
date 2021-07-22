@@ -114,7 +114,7 @@ impl Curse {
 
             let mut flying_curses =
                 scene::find_node_by_type::<crate::nodes::FlyingCurses>().unwrap();
-            flying_curses.spawn_flying_curse(&node.body, player.id);
+            flying_curses.spawn_flying_curse(node.body.pos, node.body.facing, player.id);
 
             // WATCH OUT! Each weapon's throw() method is not the entire logic required to throw a weapon.
             // The whole logic (copied below) is in Player#update_normal, and requires a refactoring,

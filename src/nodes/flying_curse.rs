@@ -8,7 +8,7 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::{nodes::player::PhysicsBody, Resources};
+use crate::Resources;
 
 use super::player::{PLAYER_HITBOX_HEIGHT, PLAYER_HITBOX_WIDTH};
 
@@ -35,7 +35,7 @@ pub struct FlyingCurse {
 }
 
 impl FlyingCurse {
-    pub fn new(curse_body: &PhysicsBody, owner_id: u8) -> Self {
+    pub fn new(curse_pos: Vec2, facing: bool, owner_id: u8) -> Self {
         // This can be easily turned into a single sprite, rotated via DrawTextureParams.
         //
         let flying_curse_sprite = AnimatedSprite::new(
@@ -50,17 +50,17 @@ impl FlyingCurse {
             true,
         );
 
-        let facing_x_factor = if curse_body.facing { 1. } else { -1. };
+        let facing_x_factor = if facing { 1. } else { -1. };
 
         let speed_x = facing_x_factor * FLYING_CURSE_SPEED_X;
-        let current_x = curse_body.pos.x - facing_x_factor * FLYING_CURSE_MOUNT_X_REL;
+        let current_x = curse_pos.x - facing_x_factor * FLYING_CURSE_MOUNT_X_REL;
 
         Self {
             flying_curse_sprite,
             current_x,
-            reference_pos: vec2(curse_body.pos.x, curse_body.pos.y),
+            reference_pos: vec2(curse_pos.x, curse_pos.y),
             speed_x,
-            facing: curse_body.facing,
+            facing: facing,
             lived: 0.0,
             countdown: FLYING_CURSE_COUNTDOWN_DURATION,
             owner_id,
@@ -87,9 +87,9 @@ impl FlyingCurses {
         }
     }
 
-    pub fn spawn_flying_curse(&mut self, curse_body: &PhysicsBody, owner_id: u8) {
+    pub fn spawn_flying_curse(&mut self, curse_pos: Vec2, facing: bool, owner_id: u8) {
         self.flying_curses
-            .push(FlyingCurse::new(curse_body, owner_id));
+            .push(FlyingCurse::new(curse_pos, facing, owner_id));
     }
 }
 

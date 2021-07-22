@@ -174,7 +174,7 @@ pub struct Player {
     jump_grace_timer: f32,
 
     was_floating: bool,
-    floating: bool,
+    pub floating: bool,
 
     pub state_machine: StateMachine<RefMut<Player>>,
     pub controller_id: i32,

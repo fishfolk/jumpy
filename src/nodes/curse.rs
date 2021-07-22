@@ -3,10 +3,10 @@ use macroquad::{
     prelude::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
-        coroutines::{start_coroutine, wait_seconds, Coroutine},
-        draw_circle, draw_circle_lines, draw_texture_ex, get_frame_time,
+        coroutines::{start_coroutine, Coroutine},
+        draw_texture_ex,
         scene::{self, Handle, HandleUntyped, RefMut},
-        vec2, Color, DrawTextureParams, Rect, Vec2,
+        vec2, DrawTextureParams, Rect, Vec2,
     },
 };
 
@@ -17,29 +17,21 @@ use super::{
     Player,
 };
 
-const INITIAL_FLYING_CURSES: i32 = 3;
-const MAXIMUM_FLYING_CURSES: i32 = 3;
-
 const CURSE_WIDTH: f32 = 32.;
 const CURSE_HEIGHT: f32 = 32.;
 const CURSE_ANIMATION_BASE: &'static str = "base";
 const CURSE_MOUNT_X_REL: f32 = -12.;
 const CURSE_MOUNT_Y: f32 = -10.;
 
-const SHOOTING_GRACE_TIME: f32 = 1.0; // seconds
-
 pub struct Curse {
     curse_sprite: AnimatedSprite,
 
     pub thrown: bool,
 
-    pub amount: i32,
     pub body: PhysicsBody,
 
     origin_pos: Vec2,
     deadly_dangerous: bool,
-
-    grace_time: f32,
 }
 
 impl Curse {
@@ -70,24 +62,8 @@ impl Curse {
                 bouncyness: 0.0,
             },
             thrown: false,
-            amount: INITIAL_FLYING_CURSES,
             origin_pos: pos,
             deadly_dangerous: false,
-            grace_time: 0.,
-        }
-    }
-
-    fn draw_hud(&self) {
-        let full_color = Color::new(0.8, 0.9, 1.0, 1.0);
-        let empty_color = Color::new(0.8, 0.9, 1.0, 0.8);
-        for i in 0..MAXIMUM_FLYING_CURSES {
-            let x = self.body.pos.x + 15.0 * i as f32;
-
-            if i >= self.amount {
-                draw_circle_lines(x, self.body.pos.y - 12.0, 4.0, 2., empty_color);
-            } else {
-                draw_circle(x, self.body.pos.y - 12.0, 4.0, full_color);
-            };
         }
     }
 
@@ -128,35 +104,27 @@ impl Curse {
 
     pub fn shoot(node_h: Handle<Curse>, player: Handle<Player>) -> Coroutine {
         let coroutine = async move {
-            {
-                let mut node = scene::get_node(node_h);
+            let mut node = scene::get_node(node_h);
+            let player = &mut *scene::get_node(player);
 
-                if node.amount <= 0 || node.grace_time > 0. {
-                    let player = &mut *scene::get_node(player);
-                    player.state_machine.set_state(Player::ST_NORMAL);
-
-                    node.grace_time -= get_frame_time();
-
-                    return;
-                } else {
-                    node.grace_time = SHOOTING_GRACE_TIME;
-                }
-
-                let mut flying_curses =
-                    scene::find_node_by_type::<crate::nodes::FlyingCurses>().unwrap();
-                flying_curses.spawn_flying_curse(&node.body);
-            }
-
-            wait_seconds(0.08).await;
-
-            {
-                let mut node = scene::get_node(node_h);
-
-                node.amount -= 1;
-
-                let player = &mut *scene::get_node(player);
+            if node.thrown == true {
                 player.state_machine.set_state(Player::ST_NORMAL);
+                return;
             }
+
+            let mut flying_curses =
+                scene::find_node_by_type::<crate::nodes::FlyingCurses>().unwrap();
+            flying_curses.spawn_flying_curse(&node.body);
+
+            // WATCH OUT! Each weapon's throw() method is not the entire logic required to throw a weapon.
+            // The whole logic (copied below) is in Player#update_normal, and requires a refactoring,
+            // otherwise, two throw() methods are going to be confusing.
+            //
+            node.throw(true);
+            player.weapon = None;
+            player.floating = false;
+
+            player.state_machine.set_state(Player::ST_NORMAL);
         };
 
         start_coroutine(coroutine)
@@ -188,7 +156,6 @@ impl Curse {
             let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Curse>();
 
             node.body.angle = 0.;
-            node.amount = INITIAL_FLYING_CURSES;
 
             node.thrown = false;
         }
@@ -247,8 +214,6 @@ impl scene::Node for Curse {
                 }
             }
         }
-
-        node.grace_time -= get_frame_time();
     }
 
     fn draw(node: RefMut<Self>) {
@@ -281,9 +246,5 @@ impl scene::Node for Curse {
                 ..Default::default()
             },
         );
-
-        if node.thrown == false {
-            node.draw_hud();
-        }
     }
 }

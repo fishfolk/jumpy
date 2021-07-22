@@ -7,5 +7,6 @@ jobs:
     name: Push to SourceHut
     runs-on: ubuntu-latest
     steps:
-        - run: ls
-        - run: pwd
+        - uses: actions/checkout@v2   
+        - run: echo $ls
+        - run: git status

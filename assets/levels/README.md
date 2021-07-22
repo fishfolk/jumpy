@@ -1,4 +1,4 @@
-# Hot to add Fish level
+# Hot to add a level to the FishFight
 
 Tiled: https://www.mapeditor.org/, also in most distros is available as `tiled` package. 
 1.7+ version required. 

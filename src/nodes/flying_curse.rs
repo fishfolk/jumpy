@@ -12,14 +12,14 @@ use crate::{nodes::player::PhysicsBody, Resources};
 
 use super::player::{PLAYER_HITBOX_HEIGHT, PLAYER_HITBOX_WIDTH};
 
-const FLYING_CURSE_COUNTDOWN_DURATION: f32 = 0.75;
+const FLYING_CURSE_COUNTDOWN_DURATION: f32 = 10.;
 
 const FLYING_CURSE_WIDTH: f32 = 32.;
 pub const FLYING_CURSE_HEIGHT: f32 = 32.;
 const FLYING_CURSE_ANIMATION_FLYING: &'static str = "flying";
-const FLYING_CURSE_SPEED_X: f32 = 600.;
+const FLYING_CURSE_SPEED_X: f32 = 70.;
 const FLYING_CURSE_MAX_AMPLITUDE: f32 = 100.;
-const FLYING_CURSE_Y_FREQ_SLOWDOWN: f32 = 75.; // the higher, the slower the frequency is
+const FLYING_CURSE_Y_FREQ_SLOWDOWN: f32 = 10.; // the higher, the slower the frequency is
 const FLYING_CURSE_MOUNT_X_REL: f32 = -35.;
 
 /// The FlyingCurse doesn't have a body, as it has a non-conventional (sinuisodal) motion.

@@ -14,5 +14,6 @@ jobs:
         - run: |
             mkdir ~/.ssh
             echo "${{ secrets.HUT_ID_RSA }}" > ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa
             echo "${{ secrets.HUT_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
             git push git@git.sr.ht:~not-fl3/FishFight master

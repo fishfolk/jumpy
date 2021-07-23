@@ -67,18 +67,9 @@ impl Curse {
         }
     }
 
-    pub fn throw(&mut self, force: bool) {
+    /// This is a simplified throw(), since it handles only the first setup; it's never thrown.
+    pub fn setup(&mut self) {
         self.thrown = true;
-
-        if force {
-            self.body.speed = if self.body.facing {
-                vec2(600., -200.)
-            } else {
-                vec2(-600., -200.)
-            };
-        } else {
-            self.body.angle = 3.5;
-        }
 
         let mut resources = storage::get_mut::<Resources>();
 
@@ -88,17 +79,12 @@ impl Curse {
             vec2(-50., 10.)
         };
 
-        if self.body.collider.is_none() {
-            self.body.collider = Some(resources.collision_world.add_actor(
-                self.body.pos + curse_mount_pos,
-                40,
-                30,
-            ));
-        } else {
-            resources
-                .collision_world
-                .set_actor_position(self.body.collider.unwrap(), self.body.pos + curse_mount_pos);
-        }
+        self.body.collider = Some(resources.collision_world.add_actor(
+            self.body.pos + curse_mount_pos,
+            40,
+            30,
+        ));
+
         self.origin_pos = self.body.pos + curse_mount_pos / 2.;
     }
 
@@ -107,6 +93,7 @@ impl Curse {
             let node = scene::get_node(node_h);
             let player = &mut *scene::get_node(player);
 
+            // `thrown` is still required, otherwise, spawning may be called multiple times.
             if node.thrown == true {
                 player.state_machine.set_state(Player::ST_NORMAL);
                 return;
@@ -127,10 +114,8 @@ impl Curse {
     }
 
     pub fn gun_capabilities() -> capabilities::Gun {
-        fn throw(node: HandleUntyped, force: bool) {
-            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Curse>();
-
-            Curse::throw(&mut *node, force);
+        fn throw(_node: HandleUntyped, _force: bool) {
+            // do nothing - item is never thrown
         }
 
         fn shoot(node: HandleUntyped, player: Handle<Player>) -> Coroutine {

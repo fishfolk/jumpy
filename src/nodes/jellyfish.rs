@@ -21,10 +21,18 @@ const JELLYFISH_WIDTH: f32 = 32.;
 const JELLYFISH_HEIGHT: f32 = 29.;
 const JELLYFISH_ANIMATION_BASE: &'static str = "base";
 
+/// Statuses, in order
+enum MountStatus {
+    Dropped,
+    Mounted,
+    Driving,
+    Dismounted,
+}
+
 pub struct Jellyfish {
     jellyfish_sprite: AnimatedSprite,
 
-    pub thrown: bool,
+    mount_status: MountStatus,
 
     pub body: PhysicsBody,
 
@@ -59,14 +67,14 @@ impl Jellyfish {
                 have_gravity: true,
                 bouncyness: 0.0,
             },
-            thrown: false,
+            mount_status: MountStatus::Mounted,
             origin_pos: pos,
             deadly_dangerous: false,
         }
     }
 
     pub fn throw(&mut self, force: bool) {
-        self.thrown = true;
+        self.mount_status = MountStatus::Dropped;
 
         if force {
             self.body.speed = if self.body.facing {
@@ -167,7 +175,7 @@ impl Jellyfish {
                 .unwrap()
                 .to_typed::<Jellyfish>();
 
-            node.thrown
+            matches!(node.mount_status, MountStatus::Dropped)
         }
 
         fn pick_up(node: HandleUntyped) {
@@ -176,7 +184,7 @@ impl Jellyfish {
                 .to_typed::<Jellyfish>();
 
             node.body.angle = 0.;
-            node.thrown = false;
+            node.mount_status = MountStatus::Mounted;
         }
 
         capabilities::Gun {
@@ -200,7 +208,7 @@ impl scene::Node for Jellyfish {
     fn fixed_update(mut node: RefMut<Self>) {
         node.jellyfish_sprite.update();
 
-        if node.thrown {
+        if matches!(node.mount_status, MountStatus::Dropped) {
             node.body.update();
             node.body.update_throw();
 
@@ -242,17 +250,20 @@ impl scene::Node for Jellyfish {
     fn draw(node: RefMut<Self>) {
         let resources = storage::get_mut::<Resources>();
 
-        let jellyfish_mount_pos = if node.thrown == false {
-            if node.body.facing {
-                vec2(-8., -19.)
-            } else {
-                vec2(4., -19.)
+        let jellyfish_mount_pos = match node.mount_status {
+            MountStatus::Mounted | MountStatus::Dismounted => {
+                if node.body.facing {
+                    vec2(-8., -19.)
+                } else {
+                    vec2(4., -19.)
+                }
             }
-        } else {
-            if node.body.facing {
-                vec2(-25., 0.)
-            } else {
-                vec2(5., 0.)
+            MountStatus::Dropped => {
+                if node.body.facing {
+                    vec2(-25., 0.)
+                } else {
+                    vec2(5., 0.)
+                }
             }
         };
 

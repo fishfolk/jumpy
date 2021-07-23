@@ -103,7 +103,7 @@ impl Resources {
         let cannon = load_texture("assets/Whale/Cannon(32x32).png").await?;
         cannon.set_filter(FilterMode::Nearest);
 
-        let cannonballs = load_texture("assets/Whale/Cannonball(32x32).png").await?;
+        let cannonballs = load_texture("assets/Whale/Cannonball(32x36).png").await?;
         cannonballs.set_filter(FilterMode::Nearest);
 
         let curse = load_texture("assets/Whale/Curse(32x32).png").await?;

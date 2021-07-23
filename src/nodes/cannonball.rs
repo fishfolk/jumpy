@@ -23,7 +23,7 @@ const CANNONBALL_OWNER_SAFE_TIME: f32 =
     (EXPLOSION_HITBOX_WIDTH / 2.) / CANNONBALL_INITIAL_SPEED_X_REL;
 
 const CANNONBALL_WIDTH: f32 = 32.;
-pub const CANNONBALL_HEIGHT: f32 = 32.;
+pub const CANNONBALL_HEIGHT: f32 = 36.;
 const CANNONBALL_ANIMATION_ROLLING: &'static str = "rolling";
 const CANNONBALL_INITIAL_SPEED_X_REL: f32 = 600.;
 const CANNONBALL_INITIAL_SPEED_Y: f32 = -200.;
@@ -52,8 +52,8 @@ impl Cannonball {
             &[Animation {
                 name: CANNONBALL_ANIMATION_ROLLING.to_string(),
                 row: 0,
-                frames: 4,
-                fps: 12,
+                frames: 1,
+                fps: 1,
             }],
             true,
         );

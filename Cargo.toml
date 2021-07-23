@@ -19,10 +19,10 @@ macroquad-particles = {version = "0.1", features = ["nanoserde"] }
 gamepad-rs = { path = "./gamepad-rs" }
 
 [patch.crates-io]
-macroquad = { git = "https://github.com/not-fl3/macroquad.git", rev = "4980aa0" }
-macroquad-particles = { git = "https://github.com/not-fl3/macroquad.git", rev = "4980aa0" }
-macroquad-tiled = { git = "https://github.com/not-fl3/macroquad.git", rev = "4980aa0" }
-macroquad-platformer = { git = "https://github.com/not-fl3/macroquad.git", rev = "4980aa0" }
+macroquad = { git = "https://github.com/not-fl3/macroquad.git", rev = "8d611b8" }
+macroquad-particles = { git = "https://github.com/not-fl3/macroquad.git", rev = "8d611b8" }
+macroquad-tiled = { git = "https://github.com/not-fl3/macroquad.git", rev = "8d611b8" }
+macroquad-platformer = { git = "https://github.com/not-fl3/macroquad.git", rev = "8d611b8" }
 
 # macroquad = { path = "../macroquad" }
 # macroquad-particles = { path = "../macroquad/particles" }

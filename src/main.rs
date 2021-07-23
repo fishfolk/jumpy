@@ -15,8 +15,6 @@ use macroquad::{
 use macroquad_platformer::{Tile, World as CollisionWorld};
 use particles::EmittersCache;
 
-use crate::nodes::Jellyfish;
-
 mod gui;
 mod input_axis;
 mod nodes;
@@ -50,6 +48,7 @@ struct Resources {
     curse: Texture2D,
     flying_curses: Texture2D,
     jellyfish: Texture2D,
+    flappy_jellyfishes: Texture2D,
     gun: Texture2D,
     machine_gun: Texture2D,
     mines: Texture2D,
@@ -131,6 +130,9 @@ impl Resources {
         let jellyfish = load_texture("assets/Whale/Jellyfish(32x29).png").await?;
         jellyfish.set_filter(FilterMode::Nearest);
 
+        let flappy_jellyfishes = load_texture("assets/Whale/FlappyJellyfish(50x51).png").await?;
+        flappy_jellyfishes.set_filter(FilterMode::Nearest);
+
         let fish_sword = load_texture("assets/Whale/FishSword.png").await?;
         fish_sword.set_filter(FilterMode::Nearest);
 
@@ -203,6 +205,7 @@ impl Resources {
             curse,
             flying_curses,
             jellyfish,
+            flappy_jellyfishes,
             gun,
             machine_gun,
             mines,
@@ -226,8 +229,8 @@ impl Resources {
 async fn game(game_type: GameType, map: &str) {
     use nodes::{
         Bullets, Camera, Cannon, Cannonballs, Crate, Curse, Decoration, FlyingCurses, Fxses,
-        GameState, Grenades, KickBombs, LevelBackground, MachineGun, Mines, Muscet, Player,
-        ScoreCounter, Shoes, Sproinger, Sword,
+        GameState, Grenades, Jellyfish, KickBombs, LevelBackground, MachineGun, Mines, Muscet,
+        Player, ScoreCounter, Shoes, Sproinger, Sword,
     };
 
     let resources_loading = start_coroutine({

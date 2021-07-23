@@ -14,7 +14,7 @@ use crate::Resources;
 
 use super::{
     player::{capabilities, PhysicsBody, Weapon, PLAYER_HITBOX_HEIGHT, PLAYER_HITBOX_WIDTH},
-    Player,
+    FlappyJellyfish, Player,
 };
 
 const JELLYFISH_WIDTH: f32 = 32.;
@@ -112,40 +112,13 @@ impl Jellyfish {
     pub fn shoot(node_h: Handle<Jellyfish>, player: Handle<Player>) -> Coroutine {
         let coroutine = async move {
             {
-                //                 let mut node = scene::get_node(node_h);
-                //
-                //                 if node.amount <= 0 || node.grace_time > 0. {
-                //                     let player = &mut *scene::get_node(player);
-                //                     player.state_machine.set_state(Player::ST_NORMAL);
-                //
-                //                     node.grace_time -= get_frame_time();
-                //
-                //                     return;
-                //                 } else {
-                //                     node.grace_time = SHOOTING_GRACE_TIME;
-                //                 }
-                //
-                //                 let mut jellyfishes =
-                //                     scene::find_node_by_type::<crate::nodes::Jellyfishballs>().unwrap();
-                //                 let jellyfish_pos = vec2(
-                //                     node.body.pos.x,
-                //                     node.body.pos.y - 20. - (JELLYFISH_HEIGHT as f32 / 2.),
-                //                 );
-                //                 jellyfishes.spawn_jellyfish(jellyfish_pos, node.body.facing, player);
-                //
-                //                 let player = &mut *scene::get_node(player);
-                //                 player.body.speed.x = -JELLYFISH_THROWBACK * player.body.facing_dir();
-                //             }
-                //
-                //             wait_seconds(0.08).await;
-                //
-                //             {
-                //                 let mut node = scene::get_node(node_h);
-                //
-                //                 node.amount -= 1;
-                //
-                //                 let player = &mut *scene::get_node(player);
-                //                 player.state_machine.set_state(Player::ST_NORMAL);
+                let node = scene::get_node(node_h);
+                let player = &mut *scene::get_node(player);
+
+                FlappyJellyfish::spawn(node.body.pos, player.id);
+
+                player.floating = false;
+                player.state_machine.set_state(Player::ST_NORMAL);
             }
         };
 
@@ -224,23 +197,22 @@ impl scene::Node for Jellyfish {
 
             if node.deadly_dangerous {
                 let others = scene::find_nodes_by_type::<crate::nodes::Player>();
-                let jellyfish_hit_box = Rect::new(
+                let jellyfish_hitbox = Rect::new(
                     node.body.pos.x,
                     node.body.pos.y,
                     JELLYFISH_WIDTH,
                     JELLYFISH_HEIGHT,
                 );
 
-                for mut other in others {
-                    if Rect::new(
-                        other.body.pos.x,
-                        other.body.pos.y,
+                for mut player in others {
+                    let player_hitbox = Rect::new(
+                        player.body.pos.x,
+                        player.body.pos.y,
                         PLAYER_HITBOX_WIDTH,
                         PLAYER_HITBOX_HEIGHT,
-                    )
-                    .overlaps(&jellyfish_hit_box)
-                    {
-                        other.kill(!node.body.facing);
+                    );
+                    if player_hitbox.overlaps(&jellyfish_hitbox) {
+                        player.kill(!node.body.facing);
                     }
                 }
             }
@@ -251,18 +223,18 @@ impl scene::Node for Jellyfish {
         let resources = storage::get_mut::<Resources>();
 
         let jellyfish_mount_pos = match node.mount_status {
-            MountStatus::Mounted | MountStatus::Dismounted => {
-                if node.body.facing {
-                    vec2(-8., -19.)
-                } else {
-                    vec2(4., -19.)
-                }
-            }
             MountStatus::Dropped => {
                 if node.body.facing {
                     vec2(-25., 0.)
                 } else {
                     vec2(5., 0.)
+                }
+            }
+            _ => {
+                if node.body.facing {
+                    vec2(-8., -19.)
+                } else {
+                    vec2(4., -19.)
                 }
             }
         };

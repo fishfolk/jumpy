@@ -24,7 +24,7 @@ const FLYING_CURSE_Y_FREQ_SLOWDOWN: f32 = 10.; // the higher, the slower the fre
 /// The FlyingCurse doesn't have a body, as it has a non-conventional (sinuisodal) motion.
 pub struct FlyingCurse {
     flying_curse_sprite: AnimatedSprite,
-    reference_pos: Vec2,
+    distance_traveled: f32,
     current_x: f32,
     current_base_y: f32,
     speed: Vec2,
@@ -56,7 +56,7 @@ impl FlyingCurse {
             flying_curse_sprite,
             current_x: curse_pos.x,
             current_base_y: curse_pos.y,
-            reference_pos: vec2(curse_pos.x, curse_pos.y),
+            distance_traveled: 0.,
             speed,
             facing,
             lived: 0.0,
@@ -66,11 +66,9 @@ impl FlyingCurse {
     }
 
     fn current_y(&self) -> f32 {
-        // Start always from the negative value, so that the motion always starts upwards.
-        let current_pos = vec2(self.current_x, self.current_base_y);
-        let distance_from_reference = -(current_pos - self.reference_pos).length().abs();
+        // We negate the sin, so that the motion always starts upwards.
 
-        let displacement = (distance_from_reference / FLYING_CURSE_Y_FREQ_SLOWDOWN).sin()
+        let displacement = -(self.distance_traveled / FLYING_CURSE_Y_FREQ_SLOWDOWN).sin()
             * (FLYING_CURSE_MAX_AMPLITUDE / 2.);
         self.current_base_y + displacement
     }
@@ -90,14 +88,19 @@ impl FlyingCurses {
     /// Spawn a curse, and set the direction towards the closest (in radius) enemy.
     /// If there are no enemies, shoot straight.
     pub fn spawn_flying_curse(&mut self, curse_pos: Vec2, default_facing: bool, owner_id: u8) {
-        let distance = Self::find_closest_enemy_distance(curse_pos, default_facing, owner_id);
-        let speed = distance.normalize() * FLYING_CURSE_SPEED;
+        let default_speed = vec2(
+            FLYING_CURSE_SPEED * if default_facing { 1. } else { -1. },
+            0.,
+        );
+
+        let speed = Self::find_closest_enemy_direction(curse_pos, default_speed, owner_id);
 
         self.flying_curses
             .push(FlyingCurse::new(curse_pos, speed, owner_id));
     }
 
-    fn find_closest_enemy_distance(curse_pos: Vec2, default_facing: bool, owner_id: u8) -> Vec2 {
+    /// The default speed is used if, for any reason, there are no enemies.
+    fn find_closest_enemy_direction(current_pos: Vec2, default_speed: Vec2, owner_id: u8) -> Vec2 {
         let players = scene::find_nodes_by_type::<crate::nodes::Player>();
 
         let enemies_pos = players
@@ -111,19 +114,18 @@ impl FlyingCurses {
             .collect::<Vec<_>>();
 
         if enemies_pos.len() == 0 {
-            let facing_x_factor = if default_facing { 1. } else { -1. };
-            return vec2(FLYING_CURSE_SPEED * facing_x_factor, 0.);
+            return default_speed;
         }
 
         let mut closest_pos = enemies_pos[0];
 
         for enemy_pos in enemies_pos.into_iter().skip(1) {
-            if (curse_pos - enemy_pos).abs() < closest_pos {
+            if (current_pos - enemy_pos).abs() < closest_pos {
                 closest_pos = enemy_pos;
             }
         }
 
-        closest_pos - curse_pos
+        (closest_pos - current_pos).normalize() * FLYING_CURSE_SPEED
     }
 }
 
@@ -131,6 +133,7 @@ impl scene::Node for FlyingCurses {
     fn fixed_update(mut node: RefMut<Self>) {
         for flying_curse in &mut node.flying_curses {
             flying_curse.lived += get_frame_time();
+            flying_curse.distance_traveled += flying_curse.speed.length() * get_frame_time();
             flying_curse.current_x += flying_curse.speed.x * get_frame_time();
             flying_curse.current_base_y += flying_curse.speed.y * get_frame_time();
         }

@@ -47,6 +47,7 @@ struct Resources {
     curse: Texture2D,
     flying_curses: Texture2D,
     gun: Texture2D,
+    machine_gun: Texture2D,
     mines: Texture2D,
     sword: Texture2D,
     sproinger: Texture2D,
@@ -92,6 +93,9 @@ impl Resources {
 
         let gun = load_texture("assets/Whale/Gun(92x32).png").await?;
         gun.set_filter(FilterMode::Nearest);
+
+        let machine_gun = load_texture("assets/Whale/MachineGun(92x32).png").await?;
+        machine_gun.set_filter(FilterMode::Nearest);
 
         let mines = load_texture("assets/Whale/Mines(30x15).png").await?;
         mines.set_filter(FilterMode::Nearest);
@@ -188,6 +192,7 @@ impl Resources {
             curse,
             flying_curses,
             gun,
+            machine_gun,
             mines,
             sword,
             sproinger,
@@ -210,7 +215,7 @@ async fn game(game_type: GameType, map: &str) {
     use nodes::{
         Bullets, Camera, Cannon, Cannonballs, Crate, Curse, Decoration, FlyingCurses, Fxses,
         GameState, Grenades, LevelBackground, Mines, Muscet, Player, ScoreCounter, Shoes,
-        Sproinger, Sword,
+        Sproinger, Sword, MachineGun,
     };
 
     let resources_loading = start_coroutine({
@@ -314,6 +319,14 @@ async fn game(game_type: GameType, map: &str) {
             wat_facing ^= true;
         }
 
+        if object.name == "machine_gun" {
+            let mut machine_gun =
+                MachineGun::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
+            machine_gun.throw(false);
+            scene::add_node(machine_gun);
+            wat_facing ^= true;
+        }
+
         if object.name == "mines" {
             let mut mines =
                 Mines::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
@@ -359,7 +372,7 @@ async fn game(game_type: GameType, map: &str) {
         if object.name == "curse" {
             let mut curse =
                 Curse::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
-            curse.throw(false);
+            curse.setup();
             scene::add_node(curse);
             wat_facing ^= true;
         }

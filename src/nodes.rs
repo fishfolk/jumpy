@@ -19,6 +19,7 @@ mod score_counter;
 mod shoes;
 mod sproinger;
 mod sword;
+mod machine_gun;
 
 pub use armed_grenade::ArmedGrenade;
 pub use armed_mine::ArmedMine;
@@ -41,3 +42,4 @@ pub use score_counter::ScoreCounter;
 pub use shoes::Shoes;
 pub use sproinger::Sproinger;
 pub use sword::Sword;
+pub use machine_gun::MachineGun;

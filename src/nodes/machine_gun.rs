@@ -68,9 +68,9 @@ impl MachineGun {
                 },
                 Animation {
                     name: "shoot".to_string(),
-                    row: 0,
-                    frames: 1,
-                    fps: 1,
+                    row: 1,
+                    frames: 3,
+                    fps: 25,
                 },
             ],
             false,

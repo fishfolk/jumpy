@@ -34,6 +34,7 @@ pub enum GameType {
 
 struct Resources {
     hit_fxses: EmittersCache,
+    cannonball_hit_fxses: EmittersCache,
     explosion_fxses: EmittersCache,
     life_explosion_fxses: EmittersCache,
     tiled_map: tiled::Map,
@@ -41,6 +42,8 @@ struct Resources {
     whale: Texture2D,
     whale_red: Texture2D,
     grenades: Texture2D,
+    cannon: Texture2D,
+    cannonballs: Texture2D,
     curse: Texture2D,
     flying_curses: Texture2D,
     gun: Texture2D,
@@ -62,6 +65,10 @@ struct Resources {
 }
 
 pub const HIT_FX: &'static str = r#"{"local_coords":false,"emission_shape":"Point","one_shot":true,"lifetime":0.2,"lifetime_randomness":0,"explosiveness":0.65,"amount":41,"shape":{"Circle":{"subdivisions":10}},"emitting":false,"initial_direction":{"x":0,"y":-1},"initial_direction_spread":6.2831855,"initial_velocity":73.9,"initial_velocity_randomness":0.2,"linear_accel":0,"size":5.6000004,"size_randomness":0.4,"blend_mode":"Alpha","colors_curve":{"start":{"r":0.8200004,"g":1,"b":0.31818175,"a":1},"mid":{"r":0.71000004,"g":0.36210018,"b":0,"a":1},"end":{"r":0.02,"g":0,"b":0.000000007152557,"a":1}},"gravity":{"x":0,"y":0},"post_processing":{}}
+"#;
+
+/// Has no size randomness, in order to make it clear to players which the radius is.
+pub const CANNONBALL_HIT_FX: &'static str = r#"{"local_coords":false,"emission_shape":"Point","one_shot":true,"lifetime":0.2,"lifetime_randomness":0,"explosiveness":0.65,"amount":41,"shape":{"Circle":{"subdivisions":10}},"emitting":false,"initial_direction":{"x":0,"y":-1},"initial_direction_spread":6.2831855,"initial_velocity":73.9,"initial_velocity_randomness":0.2,"linear_accel":0,"size":64.0,"size_randomness":0.0,"blend_mode":"Alpha","colors_curve":{"start":{"r":0.8200004,"g":1,"b":0.31818175,"a":1},"mid":{"r":0.71000004,"g":0.36210018,"b":0,"a":1},"end":{"r":0.02,"g":0,"b":0.000000007152557,"a":1}},"gravity":{"x":0,"y":0},"post_processing":{}}
 "#;
 
 pub const EXPLOSION_FX: &'static str = r#"{"local_coords":false,"emission_shape":{"Sphere":{"radius":0.6}},"one_shot":true,"lifetime":0.35,"lifetime_randomness":0,"explosiveness":0.6,"amount":131,"shape":{"Circle":{"subdivisions":10}},"emitting":false,"initial_direction":{"x":0,"y":-1},"initial_direction_spread":6.2831855,"initial_velocity":316,"initial_velocity_randomness":0.6,"linear_accel":-7.4000025,"size":5.5,"size_randomness":0.3,"size_curve":{"points":[[0.005,1.48],[0.255,1.0799999],[1,0.120000005]],"interpolation":"Linear","resolution":30},"blend_mode":"Additive","colors_curve":{"start":{"r":0.9825908,"g":1,"b":0.13,"a":1},"mid":{"r":0.8,"g":0.19999999,"b":0.2000002,"a":1},"end":{"r":0.101,"g":0.099,"b":0.099,"a":1}},"gravity":{"x":0,"y":-500},"post_processing":{}}
@@ -101,6 +108,12 @@ impl Resources {
 
         let sproinger = load_texture("assets/Whale/Sproinger(32x32).png").await?;
         sproinger.set_filter(FilterMode::Nearest);
+
+        let cannon = load_texture("assets/Whale/Cannon(50x30).png").await?;
+        cannon.set_filter(FilterMode::Nearest);
+
+        let cannonballs = load_texture("assets/Whale/Cannonball(32x36).png").await?;
+        cannonballs.set_filter(FilterMode::Nearest);
 
         let curse = load_texture("assets/Whale/Curse(32x32).png").await?;
         curse.set_filter(FilterMode::Nearest);
@@ -157,6 +170,8 @@ impl Resources {
         );
 
         let hit_fxses = EmittersCache::new(nanoserde::DeJson::deserialize_json(HIT_FX).unwrap());
+        let cannonball_hit_fxses =
+            EmittersCache::new(nanoserde::DeJson::deserialize_json(CANNONBALL_HIT_FX).unwrap());
         let explosion_fxses =
             EmittersCache::new(nanoserde::DeJson::deserialize_json(EXPLOSION_FX).unwrap());
         let life_explosion_fxses =
@@ -164,6 +179,7 @@ impl Resources {
 
         Ok(Resources {
             hit_fxses,
+            cannonball_hit_fxses,
             explosion_fxses,
             life_explosion_fxses,
             tiled_map,
@@ -171,6 +187,8 @@ impl Resources {
             whale,
             whale_red,
             grenades,
+            cannon,
+            cannonballs,
             curse,
             flying_curses,
             gun,
@@ -195,8 +213,9 @@ impl Resources {
 
 async fn game(game_type: GameType, map: &str) {
     use nodes::{
-        Bullets, Camera, Crate, Curse, Decoration, FlyingCurses, Fxses, GameState, Grenades,
-        LevelBackground, Mines, Muscet, Player, ScoreCounter, Shoes, Sproinger, Sword, MachineGun,
+        Bullets, Camera, Cannon, Cannonballs, Crate, Curse, Decoration, FlyingCurses, Fxses,
+        GameState, Grenades, LevelBackground, Mines, Muscet, Player, ScoreCounter, Shoes,
+        Sproinger, Sword, MachineGun,
     };
 
     let resources_loading = start_coroutine({
@@ -323,6 +342,13 @@ async fn game(game_type: GameType, map: &str) {
             scene::add_node(grenade);
             wat_facing ^= true;
         }
+        if object.name == "cannon" {
+            let mut cannon =
+                Cannon::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
+            cannon.throw(false);
+            scene::add_node(cannon);
+            wat_facing ^= true;
+        }
 
         if object.name == "crate" {
             let mut crate_node =
@@ -353,6 +379,7 @@ async fn game(game_type: GameType, map: &str) {
     }
 
     scene::add_node(FlyingCurses::new());
+    scene::add_node(Cannonballs::new());
 
     scene::add_node(Bullets::new());
 

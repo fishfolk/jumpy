@@ -276,7 +276,7 @@ impl Muscet {
                 node.muscet_fx = true;
 
                 let mut bullets = scene::find_node_by_type::<crate::nodes::Bullets>().unwrap();
-                bullets.spawn_bullet(node.body.pos, node.body.facing);
+                bullets.spawn_bullet(node.body.pos, 4.0, node.body.facing);
                 player.body.speed.x = -Self::GUN_THROWBACK * player.body.facing_dir();
             }
             {

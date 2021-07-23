@@ -222,7 +222,7 @@ impl scene::Node for Curse {
             DrawTextureParams {
                 source: Some(node.curse_sprite.frame().source_rect),
                 dest_size: Some(node.curse_sprite.frame().dest_size),
-                flip_x: !node.body.facing,
+                flip_x: node.body.facing,
                 rotation: node.body.angle,
                 ..Default::default()
             },

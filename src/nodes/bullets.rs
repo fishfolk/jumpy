@@ -9,6 +9,7 @@ use macroquad_platformer::Tile;
 struct Bullet {
     pos: Vec2,
     speed: Vec2,
+    size: f32,
     lived: f32,
     lifetime: f32,
 }
@@ -27,7 +28,7 @@ impl Bullets {
         }
     }
 
-    pub fn spawn_bullet(&mut self, pos: Vec2, facing: bool) {
+    pub fn spawn_bullet(&mut self, pos: Vec2, size: f32, facing: bool) {
         let dir = if facing {
             vec2(1.0, 0.0)
         } else {
@@ -36,6 +37,7 @@ impl Bullets {
         self.bullets.push(Bullet {
             pos: pos + vec2(16.0, 30.0) + dir * 32.0,
             speed: dir * Self::BULLET_SPEED,
+            size,
             lived: 0.0,
             lifetime: Self::BULLET_LIFETIME,
         });
@@ -48,7 +50,7 @@ impl scene::Node for Bullets {
             draw_circle(
                 bullet.pos.x,
                 bullet.pos.y,
-                4.,
+                bullet.size,
                 Color::new(1.0, 1.0, 0.8, 1.0),
             );
         }

@@ -15,6 +15,7 @@ mod sword;
 mod sproinger;
 mod crates;
 mod shoes;
+mod machine_gun;
 
 pub use armed_grenade::ArmedGrenade;
 pub use armed_mine::ArmedMine;
@@ -33,3 +34,4 @@ pub use sword::Sword;
 pub use sproinger::Sproinger;
 pub use crates::Crate;
 pub use shoes::Shoes;
+pub use machine_gun::MachineGun;

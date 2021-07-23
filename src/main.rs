@@ -182,7 +182,7 @@ impl Resources {
 async fn game(game_type: GameType, map: &str) {
     use nodes::{
         Bullets, Camera, Crate, Decoration, Fxses, GameState, Grenades, LevelBackground, Mines,
-        Muscet, Player, ScoreCounter, Shoes, Sproinger, Sword,
+        Muscet, Player, ScoreCounter, Shoes, Sproinger, Sword, MachineGun,
     };
 
     let resources_loading = start_coroutine({
@@ -281,6 +281,14 @@ async fn game(game_type: GameType, map: &str) {
                 Muscet::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
             muscet.throw(false);
             scene::add_node(muscet);
+            wat_facing ^= true;
+        }
+
+        if object.name == "machine_gun" {
+            let mut machine_gun =
+                MachineGun::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
+            machine_gun.throw(false);
+            scene::add_node(machine_gun);
             wat_facing ^= true;
         }
 

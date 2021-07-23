@@ -28,7 +28,6 @@ pub struct FlyingCurse {
     current_x: f32,
     current_base_y: f32,
     speed: Vec2,
-    facing: bool,
     lived: f32,
     countdown: f32,
     owner_id: u8,
@@ -50,15 +49,12 @@ impl FlyingCurse {
             true,
         );
 
-        let facing = speed.x >= 0.;
-
         Self {
             flying_curse_sprite,
             current_x: curse_pos.x,
             current_base_y: curse_pos.y,
             distance_traveled: 0.,
             speed,
-            facing,
             lived: 0.0,
             countdown: FLYING_CURSE_COUNTDOWN_DURATION,
             owner_id,
@@ -71,6 +67,14 @@ impl FlyingCurse {
         let displacement = -(self.distance_traveled / FLYING_CURSE_Y_FREQ_SLOWDOWN).sin()
             * (FLYING_CURSE_MAX_AMPLITUDE / 2.);
         self.current_base_y + displacement
+    }
+
+    fn update_speed(&mut self) {
+        self.speed = FlyingCurses::find_closest_enemy_direction(
+            vec2(self.current_x, self.current_base_y),
+            self.speed,
+            self.owner_id,
+        );
     }
 }
 
@@ -133,6 +137,7 @@ impl scene::Node for FlyingCurses {
     fn fixed_update(mut node: RefMut<Self>) {
         for flying_curse in &mut node.flying_curses {
             flying_curse.lived += get_frame_time();
+            flying_curse.update_speed();
             flying_curse.distance_traveled += flying_curse.speed.length() * get_frame_time();
             flying_curse.current_x += flying_curse.speed.x * get_frame_time();
             flying_curse.current_base_y += flying_curse.speed.y * get_frame_time();
@@ -199,7 +204,7 @@ impl scene::Node for FlyingCurses {
                 DrawTextureParams {
                     source: Some(flying_curse.flying_curse_sprite.frame().source_rect),
                     dest_size: Some(flying_curse.flying_curse_sprite.frame().dest_size),
-                    flip_x: flying_curse.facing,
+                    flip_x: flying_curse.speed.x >= 0.,
                     rotation: 0.0,
                     ..Default::default()
                 },

@@ -19,6 +19,9 @@ use crate::{
 
 mod ai;
 
+pub const PLAYER_HITBOX_HEIGHT: f32 = 64.;
+pub const PLAYER_HITBOX_WIDTH: f32 = 20.;
+
 pub type Weapon = (HandleUntyped, Lens<PhysicsBody>, capabilities::Gun);
 pub type PhysicsObject = (HandleUntyped, Lens<PhysicsBody>);
 
@@ -160,6 +163,8 @@ impl Player {
 }
 
 pub struct Player {
+    pub id: u8,
+
     pub body: PhysicsBody,
 
     fish_sprite: AnimatedSprite,
@@ -171,7 +176,7 @@ pub struct Player {
     jump_grace_timer: f32,
 
     was_floating: bool,
-    floating: bool,
+    pub floating: bool,
 
     pub state_machine: StateMachine<RefMut<Player>>,
     pub controller_id: i32,
@@ -202,6 +207,7 @@ impl Player {
 
     pub fn new(
         deathmatch: bool,
+        player_id: u8,
         controller_id: i32,
         score_counter: Handle<ScoreCounter>,
         game_state: Handle<GameState>,
@@ -286,6 +292,7 @@ impl Player {
         );
 
         Player {
+            id: player_id,
             dead: false,
             weapon: None,
             input: Default::default(),

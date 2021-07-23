@@ -333,7 +333,7 @@ async fn game(game_type: GameType, map: &str) {
         if object.name == "curse" {
             let mut curse =
                 Curse::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
-            curse.throw(false);
+            curse.setup();
             scene::add_node(curse);
             wat_facing ^= true;
         }

@@ -127,10 +127,9 @@ impl Curse {
             Curse::shoot(node, player)
         }
 
-        fn is_thrown(node: HandleUntyped) -> bool {
-            let node = scene::get_untyped_node(node).unwrap().to_typed::<Curse>();
-
-            node.thrown
+        fn is_thrown(_node: HandleUntyped) -> bool {
+            // phony - item is never thrown
+            true
         }
 
         fn pick_up(node: HandleUntyped) {

@@ -15,6 +15,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
       - uses: actions-rs/cargo@v1
         with:
           command: check

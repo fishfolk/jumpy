@@ -104,7 +104,7 @@ impl Curse {
 
     pub fn shoot(node_h: Handle<Curse>, player: Handle<Player>) -> Coroutine {
         let coroutine = async move {
-            let mut node = scene::get_node(node_h);
+            let node = scene::get_node(node_h);
             let player = &mut *scene::get_node(player);
 
             if node.thrown == true {
@@ -116,13 +116,9 @@ impl Curse {
                 scene::find_node_by_type::<crate::nodes::FlyingCurses>().unwrap();
             flying_curses.spawn_flying_curse(node.body.pos, node.body.facing, player.id);
 
-            // WATCH OUT! Each weapon's throw() method is not the entire logic required to throw a weapon.
-            // The whole logic (copied below) is in Player#update_normal, and requires a refactoring,
-            // otherwise, two throw() methods are going to be confusing.
-            //
-            node.throw(true);
             player.weapon = None;
             player.floating = false;
+            node.delete();
 
             player.state_machine.set_state(Player::ST_NORMAL);
         };

@@ -68,9 +68,9 @@ impl MachineGun {
                 },
                 Animation {
                     name: "shoot".to_string(),
-                    row: 1,
-                    frames: 3,
-                    fps: 15,
+                    row: 0,
+                    frames: 1,
+                    fps: 1,
                 },
             ],
             false,
@@ -82,7 +82,7 @@ impl MachineGun {
             &[Animation {
                 name: "shoot".to_string(),
                 row: 2,
-                frames: 3,
+                frames: 2,
                 fps: 15,
             }],
             false,
@@ -333,7 +333,7 @@ impl Node for MachineGun {
         };
 
         draw_texture_ex(
-            resources.gun,
+            resources.machine_gun,
             node.body.pos.x + mount_pos.x,
             node.body.pos.y + mount_pos.y,
             color::WHITE,
@@ -349,7 +349,7 @@ impl Node for MachineGun {
         if node.fx_active {
             node.fx_sprite.update();
             draw_texture_ex(
-                resources.gun,
+                resources.machine_gun,
                 node.body.pos.x + mount_pos.x,
                 node.body.pos.y + mount_pos.y,
                 color::WHITE,

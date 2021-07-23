@@ -44,6 +44,7 @@ struct Resources {
     curse: Texture2D,
     flying_curses: Texture2D,
     gun: Texture2D,
+    machine_gun: Texture2D,
     mines: Texture2D,
     sword: Texture2D,
     sproinger: Texture2D,
@@ -85,6 +86,9 @@ impl Resources {
 
         let gun = load_texture("assets/Whale/Gun(92x32).png").await?;
         gun.set_filter(FilterMode::Nearest);
+
+        let machine_gun = load_texture("assets/Whale/MachineGun(92x32).png").await?;
+        machine_gun.set_filter(FilterMode::Nearest);
 
         let mines = load_texture("assets/Whale/Mines(30x15).png").await?;
         mines.set_filter(FilterMode::Nearest);
@@ -170,6 +174,7 @@ impl Resources {
             curse,
             flying_curses,
             gun,
+            machine_gun,
             mines,
             sword,
             sproinger,

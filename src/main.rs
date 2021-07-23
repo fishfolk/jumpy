@@ -100,7 +100,7 @@ impl Resources {
         let sproinger = load_texture("assets/Whale/Sproinger(32x32).png").await?;
         sproinger.set_filter(FilterMode::Nearest);
 
-        let cannon = load_texture("assets/Whale/Cannon(32x32).png").await?;
+        let cannon = load_texture("assets/Whale/Cannon(50x30).png").await?;
         cannon.set_filter(FilterMode::Nearest);
 
         let cannonballs = load_texture("assets/Whale/Cannonball(32x36).png").await?;

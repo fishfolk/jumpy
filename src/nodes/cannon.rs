@@ -21,8 +21,8 @@ use super::{
 const INITIAL_CANNONBALLS: i32 = 3;
 const MAXIMUM_CANNONBALLS: i32 = 3;
 
-const CANNON_WIDTH: f32 = 32.;
-const CANNON_HEIGHT: f32 = 32.;
+const CANNON_WIDTH: f32 = 50.;
+const CANNON_HEIGHT: f32 = 30.;
 const CANNON_ANIMATION_BASE: &'static str = "base";
 
 const CANNON_THROWBACK: f32 = 1050.0;
@@ -268,9 +268,9 @@ impl scene::Node for Cannon {
 
         let cannon_mount_pos = if node.thrown == false {
             if node.body.facing {
-                vec2(0., 16.)
+                vec2(5., 16.)
             } else {
-                vec2(-5., 16.)
+                vec2(-30., 16.)
             }
         } else {
             if node.body.facing {

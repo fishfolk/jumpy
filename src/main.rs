@@ -359,7 +359,7 @@ async fn game(game_type: GameType, map: &str) {
         }
 
         if object.name == "shoes" {
-            let mut shoes = Shoes::new(vec2(object.world_x - 32., object.world_y - 32.));
+            let shoes = Shoes::new(vec2(object.world_x - 32., object.world_y - 32.));
             scene::add_node(shoes);
             wat_facing ^= true;
         }

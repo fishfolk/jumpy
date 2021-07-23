@@ -52,7 +52,7 @@ pub async fn gui() -> String {
             }
             hovered = (hovered + levels_amount as i32) % levels_amount as i32;
 
-            let mut levels = &mut gui_resources.levels;
+            let levels = &mut gui_resources.levels;
 
             for (n, level) in levels.iter_mut().enumerate() {
                 let is_hovered = hovered == n as i32;

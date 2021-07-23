@@ -35,7 +35,7 @@ impl InputAxises {
         let controller = storage::get_mut::<gamepad_rs::ControllerContext>();
         for i in 0..2 {
             let state = controller.state(i);
-            let info = controller.info(i);
+            // let info = controller.info(i);
 
             if state.status == Connected {
                 // { && info.name.contains("MY-POWER CO") {

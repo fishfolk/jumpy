@@ -1,7 +1,6 @@
 # Fish Fight
 
-[![Github Actions](https://github.com/fishfight/fish2/workflows/
-Compilation check/badge.svg)](https://github.com/fishfight/fish2/actions?query=workflow%3A)
+[![Github Actions](https://github.com/fishfight/fish2/workflows/Compilation%20check/badge.svg)](https://github.com/fishfight/fish2/actions?query=workflow%3A)
 
 ### Introduction
 

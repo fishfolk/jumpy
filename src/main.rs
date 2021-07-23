@@ -41,6 +41,8 @@ struct Resources {
     whale: Texture2D,
     whale_red: Texture2D,
     grenades: Texture2D,
+    curse: Texture2D,
+    flying_curses: Texture2D,
     gun: Texture2D,
     mines: Texture2D,
     sword: Texture2D,
@@ -96,6 +98,12 @@ impl Resources {
         let sproinger = load_texture("assets/Whale/Sproinger(32x32).png").await?;
         sproinger.set_filter(FilterMode::Nearest);
 
+        let curse = load_texture("assets/Whale/Curse(32x32).png").await?;
+        curse.set_filter(FilterMode::Nearest);
+
+        let flying_curses = load_texture("assets/Whale/Curse(32x32).png").await?;
+        flying_curses.set_filter(FilterMode::Nearest);
+
         let fish_sword = load_texture("assets/Whale/FishSword.png").await?;
         fish_sword.set_filter(FilterMode::Nearest);
 
@@ -150,7 +158,6 @@ impl Resources {
         let life_explosion_fxses =
             EmittersCache::new(nanoserde::DeJson::deserialize_json(LIFE_EXPLOSION_FX).unwrap());
 
-
         Ok(Resources {
             hit_fxses,
             explosion_fxses,
@@ -160,6 +167,8 @@ impl Resources {
             whale,
             whale_red,
             grenades,
+            curse,
+            flying_curses,
             gun,
             mines,
             sword,
@@ -181,8 +190,8 @@ impl Resources {
 
 async fn game(game_type: GameType, map: &str) {
     use nodes::{
-        Bullets, Camera, Crate, Decoration, Fxses, GameState, Grenades, LevelBackground, Mines,
-        Muscet, Player, ScoreCounter, Shoes, Sproinger, Sword, MachineGun,
+        Bullets, Camera, Crate, Curse, Decoration, FlyingCurses, Fxses, GameState, Grenades,
+        LevelBackground, Mines, Muscet, Player, ScoreCounter, Shoes, Sproinger, Sword, MachineGun,
     };
 
     let resources_loading = start_coroutine({
@@ -256,11 +265,13 @@ async fn game(game_type: GameType, map: &str) {
     let player1 = scene::add_node(Player::new(
         game_type == GameType::Deathmatch,
         0,
+        0,
         score_counter,
         Handle::null(),
     ));
     let player2 = scene::add_node(Player::new(
         game_type == GameType::Deathmatch,
+        1,
         1,
         score_counter,
         Handle::null(),
@@ -326,7 +337,17 @@ async fn game(game_type: GameType, map: &str) {
             let sproinger = Sproinger::new(vec2(object.world_x - 35., object.world_y - 25.));
             scene::add_node(sproinger);
         }
+
+        if object.name == "curse" {
+            let mut curse =
+                Curse::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
+            curse.throw(false);
+            scene::add_node(curse);
+            wat_facing ^= true;
+        }
     }
+
+    scene::add_node(FlyingCurses::new());
 
     scene::add_node(Bullets::new());
 

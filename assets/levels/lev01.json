@@ -318,6 +318,18 @@
                  "y":232.666666666667
                 },
                 {
+                  "height":0,
+                  "id":67,
+                  "name":"curse",
+                  "point":true,
+                  "rotation":0,
+                  "type":"",
+                  "visible":true,
+                  "width":0,
+                  "x":210.0,
+                  "y":548.0
+                }, 
+                {
                  "height":0,
                  "id":68,
                  "name":"sproinger",

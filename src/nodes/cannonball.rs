@@ -126,7 +126,8 @@ impl scene::Node for Cannonballs {
         }
 
         node.cannonballs.retain(|cannonball| {
-            let hit_fxses = &mut storage::get_mut::<Resources>().hit_fxses;
+            let hit_fxses = &mut storage::get_mut::<Resources>().cannonball_hit_fxses;
+
             let explosion_position =
                 cannonball.body.pos + vec2(CANNONBALL_WIDTH / 2., CANNONBALL_HEIGHT / 2.);
 

@@ -39,10 +39,20 @@ pub async fn gui() -> String {
 
             if axises.up_pressed {
                 hovered -= 3;
+                let ceiled_levels_amount = levels_amount as i32 + 3 - (levels_amount % 3) as i32;
+                if hovered < 0 {
+                    hovered = (hovered + ceiled_levels_amount as i32) % ceiled_levels_amount;
+                    if hovered >= levels_amount as i32 {
+                        hovered -= 3;
+                    }
+                }
             }
             if axises.down_pressed {
                 hovered += 3;
-                hovered = hovered.max(0);
+                if hovered >= levels_amount as i32 {
+                    let row = hovered % 3;
+                    hovered = row;
+                }
             }
             if axises.left_pressed {
                 hovered -= 1;
@@ -59,7 +69,7 @@ pub async fn gui() -> String {
 
                 let rect = Rect::new(
                     60. + (n % 3) as f32 * (w + 50.) - level.size * 30.,
-                    90. + (n / 3) as f32 * (h + 100.) - level.size * 30.,
+                    90. + 25. + (n / 3) as f32 * (h + 50.) - level.size * 30.,
                     w + level.size * 60.,
                     h + level.size * 60.,
                 );

@@ -51,7 +51,8 @@ pub struct MachineGun {
 }
 
 impl MachineGun {
-    pub const GUN_THROWBACK: f32 = 350.0;
+    pub const GUN_THROWBACK: f32 = 75.0;
+    pub const FIRE_INTERVAL: f32 = 0.0025; // Time in animation lock between bullets
     pub const MAX_BULLETS: i32 = 20;
 
     pub fn new(facing: bool, pos: Vec2) -> Self {
@@ -112,15 +113,19 @@ impl MachineGun {
     }
 
     fn draw_hud(&self) {
+        let line_height = 16.0;
+        let line_spacing = 1.0;
+        let line_thickness = 2.0;
         let full_color = Color::new(0.8, 0.9, 1.0, 1.0);
         let empty_color = Color::new(0.8, 0.9, 1.0, 0.8);
-        for i in 0..3 {
-            let x = self.body.pos.x + 15.0 * i as f32;
+        for i in 0..Self::MAX_BULLETS {
+            let x = self.body.pos.x - 15.0 + (line_thickness + line_spacing) * i as f32;
+            let y = self.body.pos.y - 12.0;
 
             if i >= self.bullets {
-                draw_circle_lines(x, self.body.pos.y - 12.0, 4.0, 2., empty_color);
+                draw_line(x, y, x, y - line_height, line_thickness, full_color);
             } else {
-                draw_circle(x, self.body.pos.y - 12.0, 4.0, full_color);
+                draw_line(x, y, x, y - line_height, line_thickness, empty_color);
             };
         }
     }
@@ -201,7 +206,7 @@ impl MachineGun {
                     node.fx_sprite.set_frame(i);
                 }
 
-                wait_seconds(0.08).await;
+                wait_seconds(MachineGun::FIRE_INTERVAL / 3.0).await;
             }
             {
                 let mut node = scene::get_node(node);
@@ -278,6 +283,38 @@ impl Node for MachineGun {
         ));
     }
 
+    fn fixed_update(mut node: RefMut<Self>) {
+        node.sprite.update();
+
+        if node.thrown {
+            node.body.update();
+            node.body.update_throw();
+
+            if (node.origin_pos - node.body.pos).length() > 70. {
+                node.deadly_dangerous = true;
+            }
+            if node.body.speed.length() <= 200.0 {
+                node.deadly_dangerous = false;
+            }
+            if node.body.on_ground {
+                node.deadly_dangerous = false;
+            }
+
+            if node.deadly_dangerous {
+                let others = scene::find_nodes_by_type::<crate::nodes::Player>();
+                let sword_hit_box = Rect::new(node.body.pos.x - 10., node.body.pos.y, 60., 30.);
+
+                for mut other in others {
+                    if Rect::new(other.body.pos.x, other.body.pos.y, 20., 64.)
+                        .overlaps(&sword_hit_box)
+                    {
+                        other.kill(!node.body.facing);
+                    }
+                }
+            }
+        }
+    }
+
     fn draw(mut node: RefMut<Self>) {
         let resources = storage::get_mut::<Resources>();
 
@@ -340,38 +377,6 @@ impl Node for MachineGun {
 
         if node.thrown == false {
             node.draw_hud();
-        }
-    }
-
-    fn fixed_update(mut node: RefMut<Self>) {
-        node.sprite.update();
-
-        if node.thrown {
-            node.body.update();
-            node.body.update_throw();
-
-            if (node.origin_pos - node.body.pos).length() > 70. {
-                node.deadly_dangerous = true;
-            }
-            if node.body.speed.length() <= 200.0 {
-                node.deadly_dangerous = false;
-            }
-            if node.body.on_ground {
-                node.deadly_dangerous = false;
-            }
-
-            if node.deadly_dangerous {
-                let others = scene::find_nodes_by_type::<crate::nodes::Player>();
-                let sword_hit_box = Rect::new(node.body.pos.x - 10., node.body.pos.y, 60., 30.);
-
-                for mut other in others {
-                    if Rect::new(other.body.pos.x, other.body.pos.y, 20., 64.)
-                        .overlaps(&sword_hit_box)
-                    {
-                        other.kill(!node.body.facing);
-                    }
-                }
-            }
         }
     }
 }

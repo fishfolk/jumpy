@@ -260,7 +260,7 @@
                 {
                  "height":0,
                  "id":54,
-                 "name":"muscet",
+                 "name":"machine_gun",
                  "point":true,
                  "rotation":0,
                  "type":"",
@@ -339,18 +339,6 @@
                  "visible":true,
                  "width":0,
                  "x":595,
-                 "y":562
-                },
-                {
-                 "height":0,
-                 "id":70,
-                 "name":"machine_gun",
-                 "point":true,
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":400,
                  "y":562
                 }],
          "opacity":1,

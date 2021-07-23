@@ -82,7 +82,7 @@ impl scene::Node for Bullets {
                 }
             }
 
-            if resources.collision_world.collide_solids(bullet.pos, 32, 32) == Tile::Solid || killed {
+            if resources.collision_world.collide_solids(bullet.pos, bullet.size as i32, bullet.size as i32) == Tile::Solid || killed {
                 resources.hit_fxses.spawn(bullet.pos);
                 return false;
             }

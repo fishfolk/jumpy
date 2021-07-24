@@ -33,6 +33,7 @@ pub struct Mines {
 }
 
 impl Mines {
+    pub const FIRE_INTERVAL: f32 = 0.5;
     pub const INITIAL_AMOUNT: i32 = 3;
     pub const MAXIMUM_AMOUNT: i32 = 3;
 
@@ -129,48 +130,22 @@ impl Mines {
     pub fn shoot(node: Handle<Mines>, player: Handle<Player>) -> Coroutine {
         let coroutine = async move {
             {
-                let node = scene::get_node(node);
+                let mut node = scene::get_node(node);
                 if node.amount <= 0 {
                     let player = &mut *scene::get_node(player);
                     player.state_machine.set_state(Player::ST_NORMAL);
 
                     return;
                 }
-            }
-
-            {
-                //let resources = storage::get_mut::<Resources>();
-                //play_sound_once(resources.shoot_sound);
-
-                let node = scene::get_node(node);
 
                 ArmedMine::spawn(node.body.pos, node.body.facing);
-            }
-            {
-                let node = &mut *scene::get_node(node);
-                node.mines_sprite.set_animation(1);
-            }
-            {
-                let node = &mut *scene::get_node(node);
-                node.mines_sprite.set_frame(0);
-            }
-
-            wait_seconds(0.08).await;
-
-            {
-                let mut node = scene::get_node(node);
-                node.mines_sprite.set_animation(0);
-            }
-
-            {
-                let mut node = scene::get_node(node);
                 node.amount -= 1;
             }
 
+            wait_seconds(Mines::FIRE_INTERVAL).await;
+
             {
                 let player = &mut *scene::get_node(player);
-                // node.weapon_animation.play(0, 0..5).await;
-                // node.weapon_animation.play(0, 5..).await;
                 player.state_machine.set_state(Player::ST_NORMAL);
             }
         };

@@ -308,7 +308,7 @@
                 {
                  "height":0,
                  "id":66,
-                 "name":"mines",
+                 "name":"kick_bomb",
                  "point":true,
                  "rotation":0,
                  "type":"",
@@ -328,7 +328,7 @@
                   "width":0,
                   "x":210.0,
                   "y":548.0
-                }, 
+                },
                 {
                  "height":0,
                  "id":70,
@@ -340,7 +340,7 @@
                  "width":0,
                  "x":700.0,
                  "y":548.0
-                }, 
+                },
                 {
                  "height":0,
                  "id":68,

@@ -1,7 +1,10 @@
 use macroquad::{
     experimental::{
         collections::storage,
-        scene::RefMut,
+        scene::{
+            RefMut,
+            Node,
+        },
         animation::{
             AnimatedSprite,
             Animation,
@@ -21,11 +24,10 @@ pub struct ArmedGrenade {
     grenade_sprite: AnimatedSprite,
     pub body: PhysicsBody,
     lived: f32,
-    countdown: f32,
 }
 
 impl ArmedGrenade {
-    pub const GRENADE_COUNTDOWN_DURATION: f32 = 0.5;
+    pub const COUNTDOWN_DURATION: f32 = 0.5;
     pub const EXPLOSION_WIDTH: f32 = 100.0;
     pub const EXPLOSION_HEIGHT: f32 = 100.0;
 
@@ -81,7 +83,6 @@ impl ArmedGrenade {
             grenade_sprite,
             body,
             lived: 0.0,
-            countdown: Self::GRENADE_COUNTDOWN_DURATION,
         }
     }
 
@@ -91,7 +92,7 @@ impl ArmedGrenade {
     }
 }
 
-impl scene::Node for ArmedGrenade {
+impl Node for ArmedGrenade {
     fn ready(mut node: RefMut<Self>) {
         node.provides::<Sproingable>((
           node.handle().untyped(),
@@ -104,7 +105,7 @@ impl scene::Node for ArmedGrenade {
         node.body.update();
         node.lived += get_frame_time();
 
-        if node.lived >= node.countdown {
+        if node.lived >= ArmedGrenade::COUNTDOWN_DURATION {
             {
                 let mut resources = storage::get_mut::<Resources>();
                 resources.hit_fxses.spawn(node.body.pos);

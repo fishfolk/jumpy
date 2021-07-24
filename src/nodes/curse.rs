@@ -6,14 +6,14 @@ use macroquad::{
         coroutines::{start_coroutine, Coroutine},
         draw_texture_ex,
         scene::{self, Handle, HandleUntyped, RefMut},
-        vec2, DrawTextureParams, Rect, Vec2,
+        vec2, DrawTextureParams, Vec2,
     },
 };
 
 use crate::Resources;
 
 use super::{
-    player::{capabilities, PhysicsBody, Weapon, PLAYER_HITBOX_HEIGHT, PLAYER_HITBOX_WIDTH},
+    player::{capabilities, PhysicsBody, Weapon},
     Player,
 };
 
@@ -29,9 +29,6 @@ pub struct Curse {
     pub thrown: bool,
 
     pub body: PhysicsBody,
-
-    origin_pos: Vec2,
-    deadly_dangerous: bool,
 }
 
 impl Curse {
@@ -62,30 +59,12 @@ impl Curse {
                 bouncyness: 0.0,
             },
             thrown: false,
-            origin_pos: pos,
-            deadly_dangerous: false,
         }
     }
 
     /// This is a simplified throw(), since it handles only the first setup; it's never thrown.
     pub fn setup(&mut self) {
         self.thrown = true;
-
-        let mut resources = storage::get_mut::<Resources>();
-
-        let curse_mount_pos = if self.body.facing {
-            vec2(30., 10.)
-        } else {
-            vec2(-50., 10.)
-        };
-
-        self.body.collider = Some(resources.collision_world.add_actor(
-            self.body.pos + curse_mount_pos,
-            40,
-            30,
-        ));
-
-        self.origin_pos = self.body.pos + curse_mount_pos / 2.;
     }
 
     pub fn shoot(node_h: Handle<Curse>, player: Handle<Player>) -> Coroutine {
@@ -160,40 +139,6 @@ impl scene::Node for Curse {
 
     fn fixed_update(mut node: RefMut<Self>) {
         node.curse_sprite.update();
-
-        if node.thrown {
-            node.body.update();
-            node.body.update_throw();
-
-            if (node.origin_pos - node.body.pos).length() > 70. {
-                node.deadly_dangerous = true;
-            }
-            if node.body.speed.length() <= 200.0 {
-                node.deadly_dangerous = false;
-            }
-            if node.body.on_ground {
-                node.deadly_dangerous = false;
-            }
-
-            if node.deadly_dangerous {
-                let others = scene::find_nodes_by_type::<crate::nodes::Player>();
-                let curse_hit_box =
-                    Rect::new(node.body.pos.x, node.body.pos.y, CURSE_WIDTH, CURSE_HEIGHT);
-
-                for mut other in others {
-                    if Rect::new(
-                        other.body.pos.x,
-                        other.body.pos.y,
-                        PLAYER_HITBOX_WIDTH,
-                        PLAYER_HITBOX_HEIGHT,
-                    )
-                    .overlaps(&curse_hit_box)
-                    {
-                        other.kill(!node.body.facing);
-                    }
-                }
-            }
-        }
     }
 
     fn draw(node: RefMut<Self>) {

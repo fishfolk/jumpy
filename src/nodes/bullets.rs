@@ -28,11 +28,12 @@ impl Bullets {
         }
     }
 
-    pub fn spawn_bullet(&mut self, pos: Vec2, size: f32, facing: bool) {
+    pub fn spawn_bullet(&mut self, pos: Vec2, size: f32, facing: bool, spread: f32) {
+        let y = rand::gen_range(-spread, spread);
         let dir = if facing {
-            vec2(1.0, 0.0)
+            vec2(1.0, y)
         } else {
-            vec2(-1.0, 0.0)
+            vec2(-1.0, y)
         };
         self.bullets.push(Bullet {
             pos: pos + vec2(16.0, 30.0) + dir * 32.0,

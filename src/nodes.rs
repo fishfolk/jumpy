@@ -20,7 +20,8 @@ mod shoes;
 mod sproinger;
 mod sword;
 mod machine_gun;
-mod kick_bomb;
+mod kick_bombs;
+mod armed_kick_bomb;
 
 pub use armed_grenade::ArmedGrenade;
 pub use armed_mine::ArmedMine;
@@ -44,5 +45,5 @@ pub use shoes::Shoes;
 pub use sproinger::Sproinger;
 pub use sword::Sword;
 pub use machine_gun::MachineGun;
-pub use kick_bomb::KickBomb;
-pub use kick_bomb::ArmedKickBomb;
+pub use kick_bombs::KickBombs;
+pub use armed_kick_bomb::ArmedKickBomb;

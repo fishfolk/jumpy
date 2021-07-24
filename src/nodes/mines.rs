@@ -34,7 +34,6 @@ pub struct Mines {
 
 impl Mines {
     pub const FIRE_INTERVAL: f32 = 0.5;
-    pub const INITIAL_AMOUNT: i32 = 3;
     pub const MAXIMUM_AMOUNT: i32 = 3;
 
     pub fn new(facing: bool, pos: Vec2) -> Self {
@@ -44,12 +43,6 @@ impl Mines {
             &[
                 Animation {
                     name: "idle".to_string(),
-                    row: 0,
-                    frames: 1,
-                    fps: 1,
-                },
-                Animation {
-                    name: "shoot".to_string(),
                     row: 0,
                     frames: 1,
                     fps: 1,
@@ -72,7 +65,7 @@ impl Mines {
                 bouncyness: 0.0,
             },
             thrown: false,
-            amount: Self::INITIAL_AMOUNT,
+            amount: Self::MAXIMUM_AMOUNT,
             origin_pos: pos,
             deadly_dangerous: false,
         }
@@ -179,7 +172,7 @@ impl Mines {
             let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Mines>();
 
             node.body.angle = 0.;
-            node.amount = 3;
+            node.amount = Mines::MAXIMUM_AMOUNT;
             node.thrown = false;
         }
 

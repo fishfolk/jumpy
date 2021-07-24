@@ -43,15 +43,15 @@ pub mod capabilities {
 
 #[derive(Default, Debug, Clone)]
 pub struct Input {
-    jump: bool,
-    was_jump: bool,
-    throw: bool,
-    was_throw: bool,
-    fire: bool,
-    was_fire: bool,
-    left: bool,
-    right: bool,
-    down: bool,
+    pub jump: bool,
+    pub was_jump: bool,
+    pub throw: bool,
+    pub was_throw: bool,
+    pub fire: bool,
+    pub was_fire: bool,
+    pub left: bool,
+    pub right: bool,
+    pub down: bool,
 }
 
 pub struct PhysicsBody {
@@ -170,7 +170,7 @@ pub struct Player {
     fish_sprite: AnimatedSprite,
     pub dead: bool,
     pub weapon: Option<Weapon>,
-    input: Input,
+    pub input: Input,
 
     deathmatch: bool,
     jump_grace_timer: f32,

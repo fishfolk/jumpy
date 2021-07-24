@@ -18,6 +18,7 @@ impl scene::Node for Fxses {
         let _z = telemetry::ZoneGuard::new("draw particles");
 
         resources.hit_fxses.draw();
+        resources.cannonball_hit_fxses.draw();
         resources.explosion_fxses.draw();
 
         push_camera_state();

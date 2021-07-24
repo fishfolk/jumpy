@@ -4,10 +4,12 @@ use macroquad::{
 };
 
 use crate::Resources;
+use macroquad_platformer::Tile;
 
 struct Bullet {
     pos: Vec2,
     speed: Vec2,
+    size: f32,
     lived: f32,
     lifetime: f32,
 }
@@ -18,6 +20,7 @@ pub struct Bullets {
 
 impl Bullets {
     pub const BULLET_SPEED: f32 = 500.0;
+    pub const BULLET_LIFETIME: f32 = 0.9;
 
     pub fn new() -> Bullets {
         Bullets {
@@ -25,7 +28,7 @@ impl Bullets {
         }
     }
 
-    pub fn spawn_bullet(&mut self, pos: Vec2, facing: bool) {
+    pub fn spawn_bullet(&mut self, pos: Vec2, size: f32, facing: bool) {
         let dir = if facing {
             vec2(1.0, 0.0)
         } else {
@@ -34,8 +37,9 @@ impl Bullets {
         self.bullets.push(Bullet {
             pos: pos + vec2(16.0, 30.0) + dir * 32.0,
             speed: dir * Self::BULLET_SPEED,
+            size,
             lived: 0.0,
-            lifetime: 0.7,
+            lifetime: Self::BULLET_LIFETIME,
         });
     }
 }
@@ -46,7 +50,7 @@ impl scene::Node for Bullets {
             draw_circle(
                 bullet.pos.x,
                 bullet.pos.y,
-                4.,
+                bullet.size,
                 Color::new(1.0, 1.0, 0.8, 1.0),
             );
         }
@@ -78,7 +82,7 @@ impl scene::Node for Bullets {
                 }
             }
 
-            if resources.collision_world.solid_at(bullet.pos) || killed {
+            if resources.collision_world.collide_solids(bullet.pos, bullet.size as i32, bullet.size as i32) == Tile::Solid || killed {
                 resources.hit_fxses.spawn(bullet.pos);
                 return false;
             }

@@ -13,11 +13,14 @@ use macroquad::{
 use macroquad_platformer::Actor;
 
 use crate::{
-    nodes::{GameState, ScoreCounter},
+    nodes::{sproinger::Sproingable, GameState, ScoreCounter},
     Resources,
 };
 
 mod ai;
+
+pub const PLAYER_HITBOX_HEIGHT: f32 = 64.;
+pub const PLAYER_HITBOX_WIDTH: f32 = 20.;
 
 pub type Weapon = (HandleUntyped, Lens<PhysicsBody>, capabilities::Gun);
 pub type PhysicsObject = (HandleUntyped, Lens<PhysicsBody>);
@@ -60,6 +63,7 @@ pub struct PhysicsBody {
     pub on_ground: bool,
     pub last_frame_on_ground: bool,
     pub have_gravity: bool,
+    pub bouncyness: f32,
 }
 
 impl PhysicsBody {
@@ -92,10 +96,10 @@ impl PhysicsBody {
                 self.speed.y += Self::GRAVITY * get_frame_time();
             }
             if !collision_world.move_h(collider, self.speed.x * get_frame_time()) {
-                self.speed.x = 0.0;
+                self.speed.x *= -self.bouncyness;
             }
             if !collision_world.move_v(collider, self.speed.y * get_frame_time()) {
-                self.speed.y = 0.0;
+                self.speed.y *= -self.bouncyness;
             }
             self.pos = collision_world.actor_pos(collider);
         }
@@ -120,7 +124,7 @@ impl PhysicsBody {
             }
         }
 
-        self.speed.x *= 0.98;
+        self.speed.x *= 0.96;
         if self.speed.x.abs() <= 1. {
             self.speed.x = 0.0;
         }
@@ -159,6 +163,8 @@ impl Player {
 }
 
 pub struct Player {
+    pub id: u8,
+
     pub body: PhysicsBody,
 
     fish_sprite: AnimatedSprite,
@@ -170,7 +176,7 @@ pub struct Player {
     jump_grace_timer: f32,
 
     was_floating: bool,
-    floating: bool,
+    pub floating: bool,
 
     pub state_machine: StateMachine<RefMut<Player>>,
     pub controller_id: i32,
@@ -180,11 +186,15 @@ pub struct Player {
 
     pub camera_box: Rect,
 
+    pub can_head_boink: bool,
+
     score_counter: Handle<ScoreCounter>,
     pub game_state: Handle<GameState>,
 }
 
 impl Player {
+    pub const BODY_THRESHOLD: f32 = 24.0;
+
     pub const ST_NORMAL: usize = 0;
     pub const ST_DEATH: usize = 1;
     pub const ST_SHOOT: usize = 2;
@@ -197,6 +207,7 @@ impl Player {
 
     pub fn new(
         deathmatch: bool,
+        player_id: u8,
         controller_id: i32,
         score_counter: Handle<ScoreCounter>,
         game_state: Handle<GameState>,
@@ -239,6 +250,7 @@ impl Player {
             facing: true,
             last_frame_on_ground: false,
             have_gravity: true,
+            bouncyness: 0.0,
         };
 
         let fish_sprite = AnimatedSprite::new(
@@ -280,6 +292,7 @@ impl Player {
         );
 
         Player {
+            id: player_id,
             dead: false,
             weapon: None,
             input: Default::default(),
@@ -295,6 +308,7 @@ impl Player {
             ai_enabled: false, //controller_id == 0,
             ai: Some(ai::Ai::new()),
             camera_box: Rect::new(spawner_pos.x - 30., spawner_pos.y - 150., 100., 210.),
+            can_head_boink: false,
             score_counter,
             game_state,
         }
@@ -302,7 +316,9 @@ impl Player {
 
     pub fn kill(&mut self, direction: bool) {
         self.body.facing = direction;
-        self.state_machine.set_state(Self::ST_DEATH);
+        if self.state_machine.state() != Self::ST_DEATH {
+            self.state_machine.set_state(Self::ST_DEATH);
+        }
     }
 
     fn death_coroutine(node: &mut RefMut<Player>) -> Coroutine {
@@ -528,6 +544,12 @@ impl scene::Node for Player {
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
         ));
+
+        node.provides::<Sproingable>((
+            node.handle().untyped(),
+            node.handle().lens(|node| &mut node.body),
+            vec2(20.0, 64.0),
+        ));
     }
 
     fn draw(node: RefMut<Self>) {
@@ -731,6 +753,21 @@ impl scene::Node for Player {
             }
 
             node.body.update();
+        }
+
+        if node.can_head_boink && node.body.speed.y > 0.0 {
+            let hit_box = Rect::new(node.body.pos.x, node.body.pos.y, 32.0, 60.0);
+            for mut other in scene::find_nodes_by_type::<Player>() {
+                let is_overlapping =
+                    hit_box.overlaps(&Rect::new(other.body.pos.x, other.body.pos.y, 32.0, 60.0));
+                if is_overlapping {
+                    if hit_box.y + 60.0 < other.body.pos.y + Self::BODY_THRESHOLD {
+                        let resources = storage::get_mut::<Resources>();
+                        play_sound_once(resources.jump_sound);
+                        other.kill(!node.body.facing);
+                    }
+                }
+            }
         }
 
         // update camera bound box

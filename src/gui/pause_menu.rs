@@ -20,12 +20,13 @@ pub fn gui() -> PauseResult {
     )
     .titlebar(false)
     .ui(&mut *root_ui(), |ui| {
+        let axises = storage::get::<crate::input_axis::InputAxises>();
         ui.label(None, "Exit, you sure?");
-        if ui.button(None, "yes") {
+        if ui.button(None, "yes") || axises.btn_a_pressed {
             res = PauseResult::Quit;
         }
         ui.same_line(90.);
-        if ui.button(None, "no") {
+        if ui.button(None, "no") || axises.btn_b_pressed {
             res = PauseResult::Close;
         }
     });

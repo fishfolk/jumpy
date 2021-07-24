@@ -1,5 +1,6 @@
 use macroquad::{
     experimental::{
+        collections::storage,
         coroutines::{start_coroutine, wait_seconds},
         scene::{self, Handle, RefMut},
     },
@@ -197,7 +198,8 @@ impl scene::Node for GameState {
     }
 
     fn update(mut node: RefMut<Self>) {
-        if is_key_pressed(KeyCode::Escape) {
+        let input_axis = storage::get::<crate::input_axis::InputAxises>();
+        if input_axis.start_pressed {
             if node.state == State::InProgress {
                 node.state = State::Paused;
                 node.game_paused = true;
@@ -224,6 +226,8 @@ impl scene::Node for GameState {
 
 impl GameState {
     async fn win_coroutine(handle: Handle<GameState>, winner: i32) {
+        wait_seconds(0.7).await;
+
         {
             let player = scene::find_nodes_by_type::<crate::nodes::Player>()
                 .find(|node| node.controller_id == winner)

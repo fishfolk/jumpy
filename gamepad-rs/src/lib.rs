@@ -1,7 +1,5 @@
 #[cfg(target_os = "linux")]
 extern crate libc;
-#[cfg(target_os = "linux")]
-extern crate libudev_sys;
 
 #[cfg(target_os = "windows")]
 extern crate winapi;

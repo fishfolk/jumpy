@@ -12,6 +12,7 @@ use macroquad::{
 
 use crate::{
     nodes::player::{capabilities, PhysicsBody, PhysicsObject, Weapon},
+    nodes::sproinger::Sproingable,
     nodes::Player,
     Resources,
 };
@@ -23,7 +24,7 @@ pub struct Sword {
     pub body: PhysicsBody,
 
     origin_pos: Vec2,
-    deadly_dangerous: bool,
+    pub deadly_dangerous: bool,
 
     // hack, just for swordthrow loc
     spawn_pos: (Vec2, bool),
@@ -40,6 +41,12 @@ impl scene::Node for Sword {
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
             Self::gun_capabilities(),
+        ));
+
+        node.provides::<Sproingable>((
+            node.handle().untyped(),
+            node.handle().lens(|node| &mut node.body),
+            vec2(48.0, 32.0),
         ));
     }
 
@@ -146,7 +153,7 @@ impl scene::Node for Sword {
             if node.body.speed.length() <= 200.0 {
                 node.deadly_dangerous = false;
             }
-            if node.body.on_ground && node.body.speed.length() <= 300.0 {
+            if node.body.on_ground && node.body.speed.length() <= 400.0 {
                 node.deadly_dangerous = false;
             }
 
@@ -199,6 +206,7 @@ impl Sword {
                 last_frame_on_ground: false,
                 on_ground: false,
                 have_gravity: true,
+                bouncyness: 0.0,
             },
             thrown: false,
             origin_pos: pos,

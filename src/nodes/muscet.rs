@@ -13,6 +13,7 @@ use macroquad::{
 use crate::{
     nodes::player::{capabilities, PhysicsBody, Weapon},
     nodes::Player,
+    nodes::sproinger::Sproingable,
     Resources,
 };
 
@@ -27,7 +28,7 @@ pub struct Muscet {
     pub body: PhysicsBody,
 
     origin_pos: Vec2,
-    deadly_dangerous: bool,
+    pub deadly_dangerous: bool,
 }
 
 impl scene::Node for Muscet {
@@ -36,6 +37,11 @@ impl scene::Node for Muscet {
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
             Self::gun_capabilities(),
+        ));
+        node.provides::<Sproingable>((
+            node.handle().untyped(),
+            node.handle().lens(|node| &mut node.body),
+            vec2(48.0, 32.0),
         ));
     }
 
@@ -185,6 +191,7 @@ impl Muscet {
                 on_ground: false,
                 last_frame_on_ground: false,
                 have_gravity: true,
+                bouncyness: 0.0,
             },
             thrown: false,
             bullets: 3,
@@ -269,7 +276,7 @@ impl Muscet {
                 node.muscet_fx = true;
 
                 let mut bullets = scene::find_node_by_type::<crate::nodes::Bullets>().unwrap();
-                bullets.spawn_bullet(node.body.pos, node.body.facing);
+                bullets.spawn_bullet(node.body.pos, 4.0, node.body.facing);
                 player.body.speed.x = -Self::GUN_THROWBACK * player.body.facing_dir();
             }
             {

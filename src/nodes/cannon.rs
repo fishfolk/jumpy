@@ -1,27 +1,35 @@
 use macroquad::{
-    //audio::play_sound_once,
     color,
-    experimental::{
+    prelude::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
         coroutines::{start_coroutine, wait_seconds, Coroutine},
+        draw_circle, draw_circle_lines, draw_texture_ex, get_frame_time,
         scene::{self, Handle, HandleUntyped, RefMut},
+        vec2, Color, DrawTextureParams, Rect, Vec2,
     },
-    prelude::*,
 };
 
-use crate::{
-    nodes::{
-        player::{capabilities, PhysicsBody, Weapon},
-        Player,
-        ArmedMine,
-        sproinger::Sproingable,
-    },
-    Resources,
+use crate::Resources;
+
+use super::{
+    cannonball::CANNONBALL_HEIGHT,
+    player::{capabilities, PhysicsBody, Weapon, PLAYER_HITBOX_HEIGHT, PLAYER_HITBOX_WIDTH},
+    Player,
 };
 
-pub struct Mines {
-    mines_sprite: AnimatedSprite,
+const INITIAL_CANNONBALLS: i32 = 3;
+const MAXIMUM_CANNONBALLS: i32 = 3;
+
+const CANNON_WIDTH: f32 = 50.;
+const CANNON_HEIGHT: f32 = 30.;
+const CANNON_ANIMATION_BASE: &'static str = "base";
+
+const CANNON_THROWBACK: f32 = 1050.0;
+const SHOOTING_GRACE_TIME: f32 = 1.0; // seconds
+
+pub struct Cannon {
+    cannon_sprite: AnimatedSprite,
 
     pub thrown: bool,
 
@@ -29,36 +37,27 @@ pub struct Mines {
     pub body: PhysicsBody,
 
     origin_pos: Vec2,
-    pub deadly_dangerous: bool,
+    deadly_dangerous: bool,
+
+    grace_time: f32,
 }
 
-impl Mines {
-    pub const INITIAL_AMOUNT: i32 = 3;
-    pub const MAXIMUM_AMOUNT: i32 = 3;
-
+impl Cannon {
     pub fn new(facing: bool, pos: Vec2) -> Self {
-        let mines_sprite = AnimatedSprite::new(
-            30,
-            15,
-            &[
-                Animation {
-                    name: "idle".to_string(),
-                    row: 0,
-                    frames: 1,
-                    fps: 1,
-                },
-                Animation {
-                    name: "shoot".to_string(),
-                    row: 0,
-                    frames: 1,
-                    fps: 1,
-                },
-            ],
+        let cannon_sprite = AnimatedSprite::new(
+            CANNON_WIDTH as u32,
+            CANNON_HEIGHT as u32,
+            &[Animation {
+                name: CANNON_ANIMATION_BASE.to_string(),
+                row: 0,
+                frames: 1,
+                fps: 1,
+            }],
             false,
         );
 
-        Mines {
-            mines_sprite,
+        Self {
+            cannon_sprite,
             body: PhysicsBody {
                 pos,
                 facing,
@@ -71,16 +70,17 @@ impl Mines {
                 bouncyness: 0.0,
             },
             thrown: false,
-            amount: Self::INITIAL_AMOUNT,
+            amount: INITIAL_CANNONBALLS,
             origin_pos: pos,
             deadly_dangerous: false,
+            grace_time: 0.,
         }
     }
 
     fn draw_hud(&self) {
         let full_color = Color::new(0.8, 0.9, 1.0, 1.0);
         let empty_color = Color::new(0.8, 0.9, 1.0, 0.8);
-        for i in 0..Self::MAXIMUM_AMOUNT {
+        for i in 0..MAXIMUM_CANNONBALLS {
             let x = self.body.pos.x + 15.0 * i as f32;
 
             if i >= self.amount {
@@ -106,7 +106,7 @@ impl Mines {
 
         let mut resources = storage::get_mut::<Resources>();
 
-        let mines_mount_pos = if self.body.facing {
+        let cannon_mount_pos = if self.body.facing {
             vec2(30., 10.)
         } else {
             vec2(-50., 10.)
@@ -114,63 +114,55 @@ impl Mines {
 
         if self.body.collider.is_none() {
             self.body.collider = Some(resources.collision_world.add_actor(
-                self.body.pos + mines_mount_pos,
-                15,
+                self.body.pos + cannon_mount_pos,
+                40,
                 30,
             ));
         } else {
-            resources
-                .collision_world
-                .set_actor_position(self.body.collider.unwrap(), self.body.pos + mines_mount_pos);
+            resources.collision_world.set_actor_position(
+                self.body.collider.unwrap(),
+                self.body.pos + cannon_mount_pos,
+            );
         }
-        self.origin_pos = self.body.pos + mines_mount_pos / 2.;
+        self.origin_pos = self.body.pos + cannon_mount_pos / 2.;
     }
 
-    pub fn shoot(node: Handle<Mines>, player: Handle<Player>) -> Coroutine {
+    pub fn shoot(node_h: Handle<Cannon>, player: Handle<Player>) -> Coroutine {
         let coroutine = async move {
             {
-                let node = scene::get_node(node);
-                if node.amount <= 0 {
+                let mut node = scene::get_node(node_h);
+
+                if node.amount <= 0 || node.grace_time > 0. {
                     let player = &mut *scene::get_node(player);
                     player.state_machine.set_state(Player::ST_NORMAL);
 
+                    node.grace_time -= get_frame_time();
+
                     return;
+                } else {
+                    node.grace_time = SHOOTING_GRACE_TIME;
                 }
-            }
 
-            {
-                //let resources = storage::get_mut::<Resources>();
-                //play_sound_once(resources.shoot_sound);
+                let mut cannonballs =
+                    scene::find_node_by_type::<crate::nodes::Cannonballs>().unwrap();
+                let cannonball_pos = vec2(
+                    node.body.pos.x,
+                    node.body.pos.y - 20. - (CANNONBALL_HEIGHT as f32 / 2.),
+                );
+                cannonballs.spawn_cannonball(cannonball_pos, node.body.facing, player);
 
-                let node = scene::get_node(node);
-
-                ArmedMine::spawn(node.body.pos, node.body.facing);
-            }
-            {
-                let node = &mut *scene::get_node(node);
-                node.mines_sprite.set_animation(1);
-            }
-            {
-                let node = &mut *scene::get_node(node);
-                node.mines_sprite.set_frame(0);
+                let player = &mut *scene::get_node(player);
+                player.body.speed.x = -CANNON_THROWBACK * player.body.facing_dir();
             }
 
             wait_seconds(0.08).await;
 
             {
-                let mut node = scene::get_node(node);
-                node.mines_sprite.set_animation(0);
-            }
+                let mut node = scene::get_node(node_h);
 
-            {
-                let mut node = scene::get_node(node);
                 node.amount -= 1;
-            }
 
-            {
                 let player = &mut *scene::get_node(player);
-                // node.weapon_animation.play(0, 0..5).await;
-                // node.weapon_animation.play(0, 5..).await;
                 player.state_machine.set_state(Player::ST_NORMAL);
             }
         };
@@ -180,31 +172,32 @@ impl Mines {
 
     pub fn gun_capabilities() -> capabilities::Gun {
         fn throw(node: HandleUntyped, force: bool) {
-            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Mines>();
+            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Cannon>();
 
-            Mines::throw(&mut *node, force);
+            Cannon::throw(&mut *node, force);
         }
 
         fn shoot(node: HandleUntyped, player: Handle<Player>) -> Coroutine {
             let node = scene::get_untyped_node(node)
                 .unwrap()
-                .to_typed::<Mines>()
+                .to_typed::<Cannon>()
                 .handle();
 
-            Mines::shoot(node, player)
+            Cannon::shoot(node, player)
         }
 
         fn is_thrown(node: HandleUntyped) -> bool {
-            let node = scene::get_untyped_node(node).unwrap().to_typed::<Mines>();
+            let node = scene::get_untyped_node(node).unwrap().to_typed::<Cannon>();
 
             node.thrown
         }
 
         fn pick_up(node: HandleUntyped) {
-            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Mines>();
+            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Cannon>();
 
             node.body.angle = 0.;
-            node.amount = 3;
+            node.amount = INITIAL_CANNONBALLS;
+
             node.thrown = false;
         }
 
@@ -217,23 +210,17 @@ impl Mines {
     }
 }
 
-impl scene::Node for Mines {
+impl scene::Node for Cannon {
     fn ready(mut node: RefMut<Self>) {
         node.provides::<Weapon>((
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
             Self::gun_capabilities(),
         ));
-
-        node.provides::<Sproingable>((
-            node.handle().untyped(),
-            node.handle().lens(|node| &mut node.body),
-            vec2(32.0, 28.0),
-        ));
     }
 
     fn fixed_update(mut node: RefMut<Self>) {
-        node.mines_sprite.update();
+        node.cannon_sprite.update();
 
         if node.thrown {
             node.body.update();
@@ -251,27 +238,39 @@ impl scene::Node for Mines {
 
             if node.deadly_dangerous {
                 let others = scene::find_nodes_by_type::<crate::nodes::Player>();
-                let mines_hit_box = Rect::new(node.body.pos.x - 7.5, node.body.pos.y, 15., 15.);
+                let cannon_hit_box = Rect::new(
+                    node.body.pos.x,
+                    node.body.pos.y,
+                    CANNON_WIDTH,
+                    CANNON_HEIGHT,
+                );
 
                 for mut other in others {
-                    if Rect::new(other.body.pos.x, other.body.pos.y, 20., 64.)
-                        .overlaps(&mines_hit_box)
+                    if Rect::new(
+                        other.body.pos.x,
+                        other.body.pos.y,
+                        PLAYER_HITBOX_WIDTH,
+                        PLAYER_HITBOX_HEIGHT,
+                    )
+                    .overlaps(&cannon_hit_box)
                     {
                         other.kill(!node.body.facing);
                     }
                 }
             }
         }
+
+        node.grace_time -= get_frame_time();
     }
 
     fn draw(node: RefMut<Self>) {
         let resources = storage::get_mut::<Resources>();
 
-        let mine_mount_pos = if node.thrown == false {
+        let cannon_mount_pos = if node.thrown == false {
             if node.body.facing {
-                vec2(0., 16.)
+                vec2(5., 16.)
             } else {
-                vec2(-5., 16.)
+                vec2(-30., 16.)
             }
         } else {
             if node.body.facing {
@@ -282,13 +281,13 @@ impl scene::Node for Mines {
         };
 
         draw_texture_ex(
-            resources.mines,
-            node.body.pos.x + mine_mount_pos.x,
-            node.body.pos.y + mine_mount_pos.y,
+            resources.cannon,
+            node.body.pos.x + cannon_mount_pos.x,
+            node.body.pos.y + cannon_mount_pos.y,
             color::WHITE,
             DrawTextureParams {
-                source: Some(node.mines_sprite.frame().source_rect),
-                dest_size: Some(node.mines_sprite.frame().dest_size),
+                source: Some(node.cannon_sprite.frame().source_rect),
+                dest_size: Some(node.cannon_sprite.frame().dest_size),
                 flip_x: !node.body.facing,
                 rotation: node.body.angle,
                 ..Default::default()

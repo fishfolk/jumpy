@@ -16,6 +16,7 @@ use macroquad_platformer::{Tile, World as CollisionWorld};
 use particles::EmittersCache;
 
 mod gui;
+mod input_axis;
 mod nodes;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -33,6 +34,7 @@ pub enum GameType {
 
 struct Resources {
     hit_fxses: EmittersCache,
+    cannonball_hit_fxses: EmittersCache,
     explosion_fxses: EmittersCache,
     life_explosion_fxses: EmittersCache,
     tiled_map: tiled::Map,
@@ -40,10 +42,18 @@ struct Resources {
     whale: Texture2D,
     whale_red: Texture2D,
     grenades: Texture2D,
+    cannon: Texture2D,
+    cannonballs: Texture2D,
+    curse: Texture2D,
+    flying_curses: Texture2D,
     gun: Texture2D,
+    machine_gun: Texture2D,
     mines: Texture2D,
     sword: Texture2D,
+    sproinger: Texture2D,
     fish_sword: Texture2D,
+    crates: Texture2D,
+    shoes: Texture2D,
     background_01: Texture2D,
     background_02: Texture2D,
     background_03: Texture2D,
@@ -55,6 +65,10 @@ struct Resources {
 }
 
 pub const HIT_FX: &'static str = r#"{"local_coords":false,"emission_shape":"Point","one_shot":true,"lifetime":0.2,"lifetime_randomness":0,"explosiveness":0.65,"amount":41,"shape":{"Circle":{"subdivisions":10}},"emitting":false,"initial_direction":{"x":0,"y":-1},"initial_direction_spread":6.2831855,"initial_velocity":73.9,"initial_velocity_randomness":0.2,"linear_accel":0,"size":5.6000004,"size_randomness":0.4,"blend_mode":"Alpha","colors_curve":{"start":{"r":0.8200004,"g":1,"b":0.31818175,"a":1},"mid":{"r":0.71000004,"g":0.36210018,"b":0,"a":1},"end":{"r":0.02,"g":0,"b":0.000000007152557,"a":1}},"gravity":{"x":0,"y":0},"post_processing":{}}
+"#;
+
+/// Has no size randomness, in order to make it clear to players which the radius is.
+pub const CANNONBALL_HIT_FX: &'static str = r#"{"local_coords":false,"emission_shape":"Point","one_shot":true,"lifetime":0.2,"lifetime_randomness":0,"explosiveness":0.65,"amount":41,"shape":{"Circle":{"subdivisions":10}},"emitting":false,"initial_direction":{"x":0,"y":-1},"initial_direction_spread":6.2831855,"initial_velocity":73.9,"initial_velocity_randomness":0.2,"linear_accel":0,"size":64.0,"size_randomness":0.0,"blend_mode":"Alpha","colors_curve":{"start":{"r":0.8200004,"g":1,"b":0.31818175,"a":1},"mid":{"r":0.71000004,"g":0.36210018,"b":0,"a":1},"end":{"r":0.02,"g":0,"b":0.000000007152557,"a":1}},"gravity":{"x":0,"y":0},"post_processing":{}}
 "#;
 
 pub const EXPLOSION_FX: &'static str = r#"{"local_coords":false,"emission_shape":{"Sphere":{"radius":0.6}},"one_shot":true,"lifetime":0.35,"lifetime_randomness":0,"explosiveness":0.6,"amount":131,"shape":{"Circle":{"subdivisions":10}},"emitting":false,"initial_direction":{"x":0,"y":-1},"initial_direction_spread":6.2831855,"initial_velocity":316,"initial_velocity_randomness":0.6,"linear_accel":-7.4000025,"size":5.5,"size_randomness":0.3,"size_curve":{"points":[[0.005,1.48],[0.255,1.0799999],[1,0.120000005]],"interpolation":"Linear","resolution":30},"blend_mode":"Additive","colors_curve":{"start":{"r":0.9825908,"g":1,"b":0.13,"a":1},"mid":{"r":0.8,"g":0.19999999,"b":0.2000002,"a":1},"end":{"r":0.101,"g":0.099,"b":0.099,"a":1}},"gravity":{"x":0,"y":-500},"post_processing":{}}
@@ -80,6 +94,9 @@ impl Resources {
         let gun = load_texture("assets/Whale/Gun(92x32).png").await?;
         gun.set_filter(FilterMode::Nearest);
 
+        let machine_gun = load_texture("assets/Whale/MachineGun(92x32).png").await?;
+        machine_gun.set_filter(FilterMode::Nearest);
+
         let mines = load_texture("assets/Whale/Mines(30x15).png").await?;
         mines.set_filter(FilterMode::Nearest);
 
@@ -89,8 +106,29 @@ impl Resources {
         let grenades = load_texture("assets/Whale/Grenades(15x15).png").await?;
         grenades.set_filter(FilterMode::Nearest);
 
+        let sproinger = load_texture("assets/Whale/Sproinger(32x32).png").await?;
+        sproinger.set_filter(FilterMode::Nearest);
+
+        let cannon = load_texture("assets/Whale/Cannon(50x30).png").await?;
+        cannon.set_filter(FilterMode::Nearest);
+
+        let cannonballs = load_texture("assets/Whale/Cannonball(32x36).png").await?;
+        cannonballs.set_filter(FilterMode::Nearest);
+
+        let curse = load_texture("assets/Whale/Curse(32x32).png").await?;
+        curse.set_filter(FilterMode::Nearest);
+
+        let flying_curses = load_texture("assets/Whale/Curse(32x32).png").await?;
+        flying_curses.set_filter(FilterMode::Nearest);
+
         let fish_sword = load_texture("assets/Whale/FishSword.png").await?;
         fish_sword.set_filter(FilterMode::Nearest);
+
+        let crates = load_texture("assets/Whale/Crate(32x32).png").await?;
+        crates.set_filter(FilterMode::Nearest);
+
+        let shoes = load_texture("assets/Whale/Shoes(32x32).png").await?;
+        shoes.set_filter(FilterMode::Nearest);
 
         let background_01 = load_texture("assets/Background/01.png").await?;
         background_01.set_filter(FilterMode::Nearest);
@@ -132,6 +170,8 @@ impl Resources {
         );
 
         let hit_fxses = EmittersCache::new(nanoserde::DeJson::deserialize_json(HIT_FX).unwrap());
+        let cannonball_hit_fxses =
+            EmittersCache::new(nanoserde::DeJson::deserialize_json(CANNONBALL_HIT_FX).unwrap());
         let explosion_fxses =
             EmittersCache::new(nanoserde::DeJson::deserialize_json(EXPLOSION_FX).unwrap());
         let life_explosion_fxses =
@@ -139,6 +179,7 @@ impl Resources {
 
         Ok(Resources {
             hit_fxses,
+            cannonball_hit_fxses,
             explosion_fxses,
             life_explosion_fxses,
             tiled_map,
@@ -146,10 +187,18 @@ impl Resources {
             whale,
             whale_red,
             grenades,
+            cannon,
+            cannonballs,
+            curse,
+            flying_curses,
             gun,
+            machine_gun,
             mines,
             sword,
+            sproinger,
             fish_sword,
+            crates,
+            shoes,
             background_01,
             background_02,
             background_03,
@@ -164,8 +213,9 @@ impl Resources {
 
 async fn game(game_type: GameType, map: &str) {
     use nodes::{
-        ArmedGrenades, ArmedMines, Bullets, Camera, Decoration, Fxses, GameState, Grenades,
-        LevelBackground, Mines, Muscet, Player, ScoreCounter, Sword,
+        Bullets, Camera, Cannon, Cannonballs, Crate, Curse, Decoration, FlyingCurses, Fxses,
+        GameState, Grenades, LevelBackground, Mines, Muscet, Player, ScoreCounter, Shoes,
+        Sproinger, Sword, MachineGun,
     };
 
     let resources_loading = start_coroutine({
@@ -192,21 +242,21 @@ async fn game(game_type: GameType, map: &str) {
         next_frame().await;
     }
 
-    // let battle_music = if map == "assets/map.json" {
-    //     load_sound("assets/music/across the pond.ogg")
-    //         .await
-    //         .unwrap()
-    // } else {
-    //     load_sound("assets/music/fish tide.ogg").await.unwrap()
-    // };
+    let battle_music = if map == "assets/map.json" {
+        load_sound("assets/music/across the pond.ogg")
+            .await
+            .unwrap()
+    } else {
+        load_sound("assets/music/fish tide.ogg").await.unwrap()
+    };
 
-    // audio::play_sound(
-    //     battle_music,
-    //     audio::PlaySoundParams {
-    //         looped: true,
-    //         volume: 0.6,
-    //     },
-    // );
+    audio::play_sound(
+        battle_music,
+        audio::PlaySoundParams {
+            looped: true,
+            volume: 0.6,
+        },
+    );
 
     let bounds = {
         let resources = storage::get::<Resources>();
@@ -239,11 +289,13 @@ async fn game(game_type: GameType, map: &str) {
     let player1 = scene::add_node(Player::new(
         game_type == GameType::Deathmatch,
         0,
+        0,
         score_counter,
         Handle::null(),
     ));
     let player2 = scene::add_node(Player::new(
         game_type == GameType::Deathmatch,
+        1,
         1,
         score_counter,
         Handle::null(),
@@ -267,6 +319,14 @@ async fn game(game_type: GameType, map: &str) {
             wat_facing ^= true;
         }
 
+        if object.name == "machine_gun" {
+            let mut machine_gun =
+                MachineGun::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
+            machine_gun.throw(false);
+            scene::add_node(machine_gun);
+            wat_facing ^= true;
+        }
+
         if object.name == "mines" {
             let mut mines =
                 Mines::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
@@ -274,6 +334,7 @@ async fn game(game_type: GameType, map: &str) {
             scene::add_node(mines);
             wat_facing ^= true;
         }
+
         if object.name == "grenades" {
             let mut grenade =
                 Grenades::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
@@ -281,12 +342,46 @@ async fn game(game_type: GameType, map: &str) {
             scene::add_node(grenade);
             wat_facing ^= true;
         }
+        if object.name == "cannon" {
+            let mut cannon =
+                Cannon::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
+            cannon.throw(false);
+            scene::add_node(cannon);
+            wat_facing ^= true;
+        }
+
+        if object.name == "crate" {
+            let mut crate_node =
+                Crate::new(wat_facing, vec2(object.world_x - 32., object.world_y - 32.));
+            crate_node.throw(false);
+            scene::add_node(crate_node);
+            wat_facing ^= true;
+        }
+
+        if object.name == "shoes" {
+            let shoes = Shoes::new(vec2(object.world_x - 32., object.world_y - 32.));
+            scene::add_node(shoes);
+            wat_facing ^= true;
+        }
+
+        if object.name == "sproinger" {
+            let sproinger = Sproinger::new(vec2(object.world_x - 35., object.world_y - 25.));
+            scene::add_node(sproinger);
+        }
+
+        if object.name == "curse" {
+            let mut curse =
+                Curse::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
+            curse.setup();
+            scene::add_node(curse);
+            wat_facing ^= true;
+        }
     }
 
-    scene::add_node(ArmedGrenades::new());
+    scene::add_node(FlyingCurses::new());
+    scene::add_node(Cannonballs::new());
 
     scene::add_node(Bullets::new());
-    scene::add_node(ArmedMines::new());
 
     //scene::add_node(Camera::new(player2));
     scene::add_node(Fxses {});
@@ -297,6 +392,11 @@ async fn game(game_type: GameType, map: &str) {
     scene::get_node(player2).game_state = game_state;
 
     loop {
+        if scene::find_node_by_type::<GameState>().unwrap().want_quit {
+            macroquad::audio::stop_sound(battle_music);
+            return;
+        }
+
         {
             let mut controller = storage::get_mut::<gamepad_rs::ControllerContext>();
             for i in 0..2 {
@@ -304,8 +404,9 @@ async fn game(game_type: GameType, map: &str) {
             }
         }
 
-        if scene::find_node_by_type::<GameState>().unwrap().want_quit {
-            return;
+        {
+            let mut input = storage::get_mut::<crate::input_axis::InputAxises>();
+            input.update();
         }
 
         // profiler::profiler(profiler::ProfilerParams {
@@ -339,9 +440,11 @@ async fn main() {
         storage::store(gui_resources);
     }
 
+    storage::store(input_axis::InputAxises::default());
+
     loop {
         let map = gui::main_menu::gui().await;
-        //let map = "assets/levels/lev06.json";
+
         game(GameType::Deathmatch, &map).await;
 
         scene::clear();

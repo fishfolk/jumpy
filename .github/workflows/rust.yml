@@ -1,0 +1,30 @@
+on: [push, pull_request]
+
+name: Compilation check
+
+jobs:
+  build:
+    name: Build
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - { os: macos-latest, target: 'x86_64-apple-darwin' }
+          - { os: windows-latest, target: 'x86_64-pc-windows-msvc' }
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
+      - uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --target=${{ matrix.config.target }}
+            

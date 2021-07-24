@@ -22,7 +22,8 @@ const JELLYFISH_HEIGHT: f32 = 29.;
 const JELLYFISH_ANIMATION_BASE: &'static str = "base";
 
 /// Statuses, in order
-enum MountStatus {
+pub enum MountStatus {
+    // This is the normal sequence of statuses. Death will reset the state to Dropped
     Dropped,
     Mounted,
     Driving,
@@ -32,7 +33,7 @@ enum MountStatus {
 pub struct Jellyfish {
     jellyfish_sprite: AnimatedSprite,
 
-    mount_status: MountStatus,
+    pub mount_status: MountStatus,
 
     pub body: PhysicsBody,
 
@@ -112,13 +113,12 @@ impl Jellyfish {
     pub fn shoot(node_h: Handle<Jellyfish>, player: Handle<Player>) -> Coroutine {
         let coroutine = async move {
             {
-                let node = scene::get_node(node_h);
+                let mut node = scene::get_node(node_h);
                 let player = &mut *scene::get_node(player);
 
-                FlappyJellyfish::spawn(node.body.pos, player.id);
+                FlappyJellyfish::spawn(&mut *node, player);
 
                 player.floating = false;
-                player.state_machine.set_state(Player::ST_NORMAL);
             }
         };
 

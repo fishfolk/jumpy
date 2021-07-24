@@ -52,6 +52,7 @@ pub struct MachineGun {
 
 impl MachineGun {
     pub const GUN_THROWBACK: f32 = 75.0;
+    pub const BULLET_SPREAD: f32 = 0.1;
     pub const FIRE_INTERVAL: f32 = 0.0025; // Time in animation lock between bullets
     pub const MAX_BULLETS: i32 = 20;
 
@@ -192,7 +193,7 @@ impl MachineGun {
                 node.fx_active = true;
 
                 let mut bullets = scene::find_node_by_type::<crate::nodes::Bullets>().unwrap();
-                bullets.spawn_bullet(node.body.pos, 2.0, node.body.facing);
+                bullets.spawn_bullet(node.body.pos, 2.0, node.body.facing, Self::BULLET_SPREAD);
                 player.body.speed.x = -Self::GUN_THROWBACK * player.body.facing_dir();
             }
             {

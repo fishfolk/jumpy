@@ -145,6 +145,7 @@ impl scene::Node for Muscet {
 
 impl Muscet {
     pub const GUN_THROWBACK: f32 = 700.0;
+    pub const BULLET_SPREAD: f32 = 0.0;
 
     pub fn new(facing: bool, pos: Vec2) -> Muscet {
         let muscet_sprite = AnimatedSprite::new(
@@ -276,7 +277,7 @@ impl Muscet {
                 node.muscet_fx = true;
 
                 let mut bullets = scene::find_node_by_type::<crate::nodes::Bullets>().unwrap();
-                bullets.spawn_bullet(node.body.pos, 4.0, node.body.facing);
+                bullets.spawn_bullet(node.body.pos, 4.0, node.body.facing, Self::BULLET_SPREAD);
                 player.body.speed.x = -Self::GUN_THROWBACK * player.body.facing_dir();
             }
             {

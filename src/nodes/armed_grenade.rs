@@ -15,7 +15,11 @@ use macroquad::{
 };
 
 use crate::{
-    nodes::player::PhysicsBody,
+    nodes::player::{
+        PhysicsBody,
+        PLAYER_HITBOX_WIDTH,
+        PLAYER_HITBOX_HEIGHT,
+    },
     nodes::sproinger::Sproingable,
     Resources,
 };
@@ -121,8 +125,8 @@ impl Node for ArmedGrenade {
                     grenade_rect.intersect(Rect::new(
                         player.body.pos.x,
                         player.body.pos.y,
-                        20.0,
-                        64.0,
+                        PLAYER_HITBOX_WIDTH,
+                        PLAYER_HITBOX_HEIGHT,
                     ));
                 if !intersect.is_none() {
                     let direction = node.body.pos.x > (player.body.pos.x + 10.);

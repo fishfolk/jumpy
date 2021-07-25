@@ -18,12 +18,15 @@ use macroquad::{
 };
 
 use crate::{
-    nodes::player::PhysicsBody,
+    nodes::player::{
+        PLAYER_HITBOX_HEIGHT,
+        PLAYER_HITBOX_WIDTH,
+        Player,
+        PhysicsBody,
+    },
     nodes::sproinger::Sproingable,
     Resources,
 };
-
-pub type Kickable = (HandleUntyped, Lens<PhysicsBody>, Vec2);
 
 pub struct ArmedKickBomb {
     sprite: AnimatedSprite,
@@ -32,9 +35,10 @@ pub struct ArmedKickBomb {
 }
 
 impl ArmedKickBomb {
-    pub const COUNTDOWN_DURATION: f32 = 0.5;
-    pub const EXPLOSION_WIDTH: f32 = 100.0;
-    pub const EXPLOSION_HEIGHT: f32 = 100.0;
+    pub const KICK_FORCE: f32 = 900.0;
+    pub const COUNTDOWN_DURATION: f32 = 3.0;
+    pub const EXPLOSION_WIDTH: f32 = 150.0;
+    pub const EXPLOSION_HEIGHT: f32 = 150.0;
 
     pub fn new(pos: Vec2, facing: bool) -> Self {
         let sprite = AnimatedSprite::new(
@@ -97,38 +101,56 @@ impl Node for ArmedKickBomb {
             node.handle().lens(|node| &mut node.body),
             vec2(30.0, 30.0),
         ));
-
-        node.provides::<Kickable>((
-            node.handle().untyped(),
-            node.handle().lens(|node| &mut node.body),
-            vec2(30.0, 30.0),
-        ));
     }
 
     fn fixed_update(mut node: RefMut<Self>) {
         node.body.update();
         node.lived += get_frame_time();
 
-        if node.lived >= ArmedKickBomb::COUNTDOWN_DURATION {
+        if node.lived < ArmedKickBomb::COUNTDOWN_DURATION {
+            let hit_box = Rect::new(
+                node.body.pos.x,
+                node.body.pos.y,
+                30.0,
+                30.0,
+            );
+            for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
+                let is_overlapping =
+                    hit_box.overlaps(&Rect::new(
+                        player.body.pos.x,
+                        player.body.pos.y,
+                        PLAYER_HITBOX_WIDTH,
+                        PLAYER_HITBOX_HEIGHT,
+                    ));
+                if is_overlapping && hit_box.y + 36.0 >= player.body.pos.y + Player::LEGS_THRESHOLD {
+                    let direction = node.body.pos.x > (player.body.pos.x + 10.);
+                    node.body.speed.x = if direction {
+                        Self::KICK_FORCE
+                    } else {
+                        -Self::KICK_FORCE
+                    }
+                }
+            }
+        } else {
             {
                 let mut resources = storage::get_mut::<Resources>();
                 resources.hit_fxses.spawn(node.body.pos);
             }
-            let kick_bomb_rect = Rect::new(
+            let hit_box = Rect::new(
                 node.body.pos.x - (ArmedKickBomb::EXPLOSION_WIDTH / 2.0),
                 node.body.pos.y - (ArmedKickBomb::EXPLOSION_HEIGHT / 2.0),
                 ArmedKickBomb::EXPLOSION_WIDTH,
                 ArmedKickBomb::EXPLOSION_HEIGHT,
             );
             for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
-                let intersect =
-                    kick_bomb_rect.intersect(Rect::new(
+                let is_overlapping =
+                    hit_box.overlaps(&Rect::new(
                         player.body.pos.x,
                         player.body.pos.y,
-                        20.0,
-                        64.0,
+                        PLAYER_HITBOX_WIDTH,
+                        PLAYER_HITBOX_HEIGHT,
                     ));
-                if !intersect.is_none() {
+                if is_overlapping {
                     let direction = node.body.pos.x > (player.body.pos.x + 10.);
                     scene::find_node_by_type::<crate::nodes::Camera>()
                         .unwrap()

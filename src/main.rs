@@ -384,7 +384,7 @@ async fn game(game_type: GameType, map: &str) {
 
         if object.name == "kick_bombs" {
             let mut kick_bombs =
-                KickBombs::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
+                KickBombs::new(wat_facing, vec2(object.world_x - 32., object.world_y - 36.));
             kick_bombs.throw(false);
             scene::add_node(kick_bombs);
             wat_facing ^= true;

@@ -22,6 +22,7 @@ const JELLYFISH_HEIGHT: f32 = 29.;
 const JELLYFISH_ANIMATION_BASE: &'static str = "base";
 
 /// Statuses, in order
+#[derive(Copy, Clone, Debug)]
 pub enum MountStatus {
     // This is the normal sequence of statuses. Death will reset the state to Dropped
     Dropped,
@@ -116,7 +117,16 @@ impl Jellyfish {
                 let mut node = scene::get_node(node_h);
                 let player = &mut *scene::get_node(player);
 
-                FlappyJellyfish::spawn(&mut *node, player);
+                match node.mount_status {
+                    MountStatus::Mounted => FlappyJellyfish::spawn(&mut *node, player),
+                    MountStatus::Dismounted => {
+                        Jellyfish::throw(&mut *node, true);
+                        player.weapon = None;
+                        player.state_machine.set_state(Player::ST_NORMAL);
+                    }
+
+                    _ => panic!("Unexpected jellyfish mount status: {:?}", node.mount_status),
+                }
 
                 player.floating = false;
             }

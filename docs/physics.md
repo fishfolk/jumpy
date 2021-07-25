@@ -70,7 +70,7 @@ Collision between nodes is done by creating collider `Rect` objects and calling 
 
 ### Force
 
-When it comes to enacting force on nodes, this is done by setting a speed on a nodes body. Most nodes will have a body, but not all, as the primary use for a body is to hold a collider. For simpler nodes, we might just put a position vector and a speed vector directly on the node, in stead. This can be checked in the specific nodes implementation. As mentioned, we set the velocity directly, in stead of accumulating force over several frames, as this leads to much more predictable and precise game physics (the age old Mario, using acceleration, vs Megaman, using binary force, dichotomy).  
+When it comes to enacting force on nodes, this is done by setting a speed on a node. Most nodes will have a body, but not all, as the primary use for a body is to hold a collider. For simpler nodes, we might just put a position vector and a speed vector directly on the node, in stead. This can be checked in the specific nodes implementation. As mentioned, we set the velocity directly, in stead of accumulating force over several frames, as this leads to much more predictable and precise game physics (the age old Mario, using acceleration, vs Megaman, using binary force, dichotomy).  
 
 This means that, in order to implement an explosion, for example, you would decide on a force, find the node(s) that the explosion will act upon and apply this force by setting the speed of the node, or the nodes body, depending on its implementation, to the value of the force in the appropriate direction. See below for a simplified example of something exerting a force, on the x-axis, on a player, if an arbitrary hit check condition is fulfilled:
 

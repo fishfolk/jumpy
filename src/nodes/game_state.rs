@@ -226,6 +226,8 @@ impl scene::Node for GameState {
 
 impl GameState {
     async fn win_coroutine(handle: Handle<GameState>, winner: i32) {
+        wait_seconds(0.7).await;
+
         {
             let player = scene::find_nodes_by_type::<crate::nodes::Player>()
                 .find(|node| node.controller_id == winner)

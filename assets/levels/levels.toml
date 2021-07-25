@@ -57,3 +57,7 @@ map = "assets/levels/zyrafa06.json"
 preview = "assets/levels/zyrafa06.png"
 name = "Fish Squared"
 description = "Asymmetrical, small, horizontal level with just swords"
+
+[[level]]
+map = "assets/levels/test_level.json"
+preview = "assets/test.png"

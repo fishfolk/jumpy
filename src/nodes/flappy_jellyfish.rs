@@ -114,24 +114,15 @@ impl FlappyJellyfish {
 
 impl scene::Node for FlappyJellyfish {
     fn fixed_update(mut flappy_jellyfish: RefMut<Self>) {
-        // The termination logic needs to be always separate, due to entities scoping or BCK.
+        // Termination
+        //
+        // Over this function, he termination logic needs to be always separate, due to entities scoping
+        // or BCK.
 
         let terminate_flappy_jellyfish = {
             let player = scene::find_nodes_by_type::<crate::nodes::Player>()
                 .find(|p| p.id == flappy_jellyfish.owner_id)
                 .unwrap();
-
-            if player.input.jump {
-                flappy_jellyfish.current_y_speed += JUMP_SPEED;
-            }
-            if player.input.left {
-                flappy_jellyfish.current_pos +=
-                    vec2(-FLAPPY_JELLYFISH_X_SPEED * get_frame_time(), 0.);
-            }
-            if player.input.right {
-                flappy_jellyfish.current_pos +=
-                    vec2(FLAPPY_JELLYFISH_X_SPEED * get_frame_time(), 0.);
-            }
 
             // It's crucial to inspect tapping here, not pressing, otherwise, the shoot() keypress will
             // flow here, causing immediate termination on spawn!
@@ -143,37 +134,75 @@ impl scene::Node for FlappyJellyfish {
             return;
         }
 
+        // Movement
+        //
         // Displacement formula: `y = gt²/2 + vᵢt`
         // Speed formula: `vₜ = vᵢ + tg`
-        //
-        flappy_jellyfish.current_y_speed = (flappy_jellyfish.current_y_speed
-            + get_frame_time() * GRAVITY)
-            .clamp(-ABSOLUTE_MAX_SPEED, ABSOLUTE_MAX_SPEED);
 
-        let fall_displacement = GRAVITY * get_frame_time().powi(2) / 2.
-            + flappy_jellyfish.current_y_speed * get_frame_time();
-        flappy_jellyfish.current_pos += vec2(0., fall_displacement);
+        let mut diff_pos = vec2(0., 0.);
+        let mut diff_y_speed = 0.;
 
-        // Check/act on map borders
+        {
+            let player = scene::find_nodes_by_type::<crate::nodes::Player>()
+                .find(|p| p.id == flappy_jellyfish.owner_id)
+                .unwrap();
 
-        let (map_width, map_height) = {
-            let resources = storage::get::<Resources>();
+            if player.input.jump {
+                diff_y_speed += JUMP_SPEED;
+            }
+            if player.input.left {
+                diff_pos += vec2(-FLAPPY_JELLYFISH_X_SPEED * get_frame_time(), 0.);
+            }
+            if player.input.right {
+                diff_pos += vec2(FLAPPY_JELLYFISH_X_SPEED * get_frame_time(), 0.);
+            }
 
-            let width = resources.tiled_map.raw_tiled_map.tilewidth
-                * resources.tiled_map.raw_tiled_map.width;
-            let height = resources.tiled_map.raw_tiled_map.tileheight
-                * resources.tiled_map.raw_tiled_map.height;
+            let y_speed_before_gravity = flappy_jellyfish.current_y_speed + diff_y_speed;
+            flappy_jellyfish.current_y_speed = (y_speed_before_gravity
+                + get_frame_time() * GRAVITY)
+                .clamp(-ABSOLUTE_MAX_SPEED, ABSOLUTE_MAX_SPEED);
 
-            (width as f32, height as f32)
+            let fall_displacement = GRAVITY * get_frame_time().powi(2) / 2.
+                + flappy_jellyfish.current_y_speed * get_frame_time();
+            diff_pos += vec2(0., fall_displacement);
+        }
+
+        let new_pos = flappy_jellyfish.current_pos + diff_pos;
+
+        let collides_solid = {
+            let resources = storage::get_mut::<Resources>();
+
+            resources.collision_world.collide_solids(
+                new_pos,
+                FLAPPY_JELLYFISH_WIDTH as i32,
+                FLAPPY_JELLYFISH_HEIGHT as i32,
+            ) == Tile::Solid
         };
 
-        if flappy_jellyfish.current_pos.x < 0.
-            || flappy_jellyfish.current_pos.x > map_width as f32
-            || flappy_jellyfish.current_pos.y < 0.
-            || flappy_jellyfish.current_pos.y > map_height as f32
-        {
-            FlappyJellyfish::terminate(flappy_jellyfish, vec![]);
-            return;
+        if !collides_solid {
+            flappy_jellyfish.current_pos = new_pos;
+
+            // Check/act on map borders
+
+            let (map_width, map_height) = {
+                let resources = storage::get::<Resources>();
+
+                let width = resources.tiled_map.raw_tiled_map.tilewidth
+                    * resources.tiled_map.raw_tiled_map.width;
+                let height = resources.tiled_map.raw_tiled_map.tileheight
+                    * resources.tiled_map.raw_tiled_map.height;
+
+                (width as f32, height as f32)
+            };
+
+            if flappy_jellyfish.current_pos.x < 0.
+                || flappy_jellyfish.current_pos.x > map_width as f32
+                || flappy_jellyfish.current_pos.y < 0.
+                || flappy_jellyfish.current_pos.y > map_height as f32
+            {
+                FlappyJellyfish::terminate(flappy_jellyfish, vec![]);
+                return;
+            }
         }
 
         // Check/act on player collisions

@@ -137,7 +137,29 @@ impl scene::Node for FlappyJellyfish {
             + flappy_jellyfish.current_y_speed * get_frame_time();
         flappy_jellyfish.current_pos += vec2(0., fall_displacement);
 
-        // Check/act on collisions
+        // Check/act on map borders
+
+        let (map_width, map_height) = {
+            let resources = storage::get::<Resources>();
+
+            let width = resources.tiled_map.raw_tiled_map.tilewidth
+                * resources.tiled_map.raw_tiled_map.width;
+            let height = resources.tiled_map.raw_tiled_map.tileheight
+                * resources.tiled_map.raw_tiled_map.height;
+
+            (width as f32, height as f32)
+        };
+
+        if flappy_jellyfish.current_pos.x < 0.
+            || flappy_jellyfish.current_pos.x > map_width as f32
+            || flappy_jellyfish.current_pos.y < 0.
+            || flappy_jellyfish.current_pos.y > map_height as f32
+        {
+            FlappyJellyfish::terminate(flappy_jellyfish, vec![]);
+            return;
+        }
+
+        // Check/act on player collisions
 
         let flappy_jellyfish_hitbox = Rect::new(
             flappy_jellyfish.current_pos.x,

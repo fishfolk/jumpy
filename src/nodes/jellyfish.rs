@@ -118,7 +118,13 @@ impl Jellyfish {
                 let player = &mut *scene::get_node(player);
 
                 match node.mount_status {
-                    MountStatus::Mounted => FlappyJellyfish::spawn(&mut *node, player),
+                    MountStatus::Mounted => {
+                        let was_spawned = FlappyJellyfish::spawn(&mut *node, player);
+
+                        if !was_spawned {
+                            player.state_machine.set_state(Player::ST_NORMAL);
+                        }
+                    }
                     MountStatus::Dismounted => {
                         Jellyfish::throw(&mut *node, true);
                         player.weapon = None;

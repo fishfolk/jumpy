@@ -3,6 +3,7 @@ use macroquad::{
     experimental::animation::{AnimatedSprite, Animation},
     prelude::{collections::storage, scene::RefMut, *},
 };
+use macroquad_platformer::Tile;
 
 use crate::Resources;
 
@@ -55,18 +56,34 @@ impl FlappyJellyfish {
         }
     }
 
-    pub fn spawn(jellyfish: &mut Jellyfish, owner: &mut Player) {
+    /// Returns true if the jellyfish was successfully spawned.
+    /// It won't spawn if colliding a solid.
+    pub fn spawn(jellyfish: &mut Jellyfish, owner: &mut Player) -> bool {
         let direction_x_factor = if jellyfish.body.facing { 1. } else { -1. };
         let flappy_jellyfish_pos =
             jellyfish.body.pos + vec2(direction_x_factor * FLAPPY_JELLYFISH_SPAWN_X_DISTANCE, 0.);
 
-        let flappy_jellyfish = Self::new(flappy_jellyfish_pos, owner.id);
+        let collides_solid = {
+            let resources = storage::get_mut::<Resources>();
 
-        scene::add_node(flappy_jellyfish);
+            resources.collision_world.collide_solids(
+                flappy_jellyfish_pos,
+                FLAPPY_JELLYFISH_WIDTH as i32,
+                FLAPPY_JELLYFISH_HEIGHT as i32,
+            ) == Tile::Solid
+        };
 
-        jellyfish.mount_status = MountStatus::Driving;
+        if !collides_solid {
+            let flappy_jellyfish = Self::new(flappy_jellyfish_pos, owner.id);
 
-        owner.remote_control = true;
+            scene::add_node(flappy_jellyfish);
+
+            jellyfish.mount_status = MountStatus::Driving;
+
+            owner.remote_control = true;
+        }
+
+        !collides_solid
     }
 
     /// Handles everything, but needs access to the player/jellyfish nodes, so they must not be in scope.

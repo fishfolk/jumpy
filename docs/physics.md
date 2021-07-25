@@ -10,7 +10,7 @@ To learn more about basic game physics, as they are implemented in Fish Fight, y
 
 As for the specifics of Fish Fight, I will elaborate in the following paragraphs. Please note, however, that the game is currently in a very early prototype stage, so the implementation is neither perfect nor, in any way, optimized, at this stage.
 
-### Accessing scene nodes
+### Scene nodes
 
 The game uses the [Macroquad library](https://github.com/not-fl3/macroquad), by [Fedor](https://github.com/not-fl3), who is also part of the core team of Fish Fight. This means that our scenes are composed of scene nodes, made by implementing the `Node` type. The most relevant method, when discussing physics, is the `fixed_update` method, which is called for every node, every physics frame. This means that, in order to explore the existing physics of any existing in-game object, you should browse to the corresponding node source file, in [`src/nodes`](https://github.com/fishfight/fish2/tree/master/src/nodes), and look for the `impl Node for T` section and the encapsulated `fixed_update` implementation.  
 

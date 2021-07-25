@@ -44,6 +44,7 @@ struct Resources {
     grenades: Texture2D,
     cannon: Texture2D,
     cannonballs: Texture2D,
+    kick_bombs: Texture2D,
     curse: Texture2D,
     flying_curses: Texture2D,
     gun: Texture2D,
@@ -114,6 +115,9 @@ impl Resources {
 
         let cannonballs = load_texture("assets/Whale/Cannonball(32x36).png").await?;
         cannonballs.set_filter(FilterMode::Nearest);
+
+        let kick_bombs = load_texture("assets/Whale/KickBomb(32x36).png").await?;
+        kick_bombs.set_filter(FilterMode::Nearest);
 
         let curse = load_texture("assets/Whale/Curse(32x32).png").await?;
         curse.set_filter(FilterMode::Nearest);
@@ -189,6 +193,7 @@ impl Resources {
             grenades,
             cannon,
             cannonballs,
+            kick_bombs,
             curse,
             flying_curses,
             gun,
@@ -215,7 +220,7 @@ async fn game(game_type: GameType, map: &str) {
     use nodes::{
         Bullets, Camera, Cannon, Cannonballs, Crate, Curse, Decoration, FlyingCurses, Fxses,
         GameState, Grenades, LevelBackground, Mines, Muscet, Player, ScoreCounter, Shoes,
-        Sproinger, Sword, MachineGun,
+        Sproinger, Sword, MachineGun, KickBombs,
     };
 
     let resources_loading = start_coroutine({
@@ -374,6 +379,14 @@ async fn game(game_type: GameType, map: &str) {
                 Curse::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
             curse.setup();
             scene::add_node(curse);
+            wat_facing ^= true;
+        }
+
+        if object.name == "kick_bombs" {
+            let mut kick_bombs =
+                KickBombs::new(wat_facing, vec2(object.world_x - 32., object.world_y - 36.));
+            kick_bombs.throw(false);
+            scene::add_node(kick_bombs);
             wat_facing ^= true;
         }
     }

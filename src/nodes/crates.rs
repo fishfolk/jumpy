@@ -198,7 +198,7 @@ impl Node for Crate {
                         30.,
                     ));
                     if is_overlapping {
-                        if node.body.pos.y + 32.0 < other.body.pos.y + Player::BODY_THRESHOLD {
+                        if node.body.pos.y + 32.0 < other.body.pos.y + Player::HEAD_THRESHOLD {
                             let resources = storage::get_mut::<Resources>();
                             play_sound_once(resources.jump_sound);
                             other.kill(!node.body.facing);

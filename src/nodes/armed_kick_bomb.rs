@@ -4,9 +4,6 @@ use macroquad::{
         scene::{
             RefMut,
             Node,
-            HandleUntyped,
-            Handle,
-            Lens,
         },
         animation::{
             AnimatedSprite,
@@ -47,7 +44,7 @@ impl ArmedKickBomb {
             &[
                 Animation {
                     name: "idle".to_string(),
-                    row: 0,
+                    row: 1,
                     frames: 1,
                     fps: 1,
                 },
@@ -114,7 +111,7 @@ impl Node for ArmedKickBomb {
                 30.0,
                 30.0,
             );
-            for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
+            for player in scene::find_nodes_by_type::<crate::nodes::Player>() {
                 let is_overlapping =
                     hit_box.overlaps(&Rect::new(
                         player.body.pos.x,

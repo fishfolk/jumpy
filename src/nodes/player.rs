@@ -712,9 +712,12 @@ impl scene::Node for Player {
                 node.input.throw = throw && node.input.was_throw == false;
                 node.input.was_throw = throw;
 
-                node.input.fire = is_key_down(KeyCode::LeftControl)
+                let fire_pressed = is_key_down(KeyCode::LeftControl)
                     || is_key_down(KeyCode::F)
                     || is_key_down(KeyCode::L);
+                node.input.fire = fire_pressed && node.input.was_fire == false;
+                node.input.was_fire = fire_pressed;
+
                 node.input.left = is_key_down(KeyCode::A);
                 node.input.right = is_key_down(KeyCode::D);
                 node.input.down = is_key_down(KeyCode::S);

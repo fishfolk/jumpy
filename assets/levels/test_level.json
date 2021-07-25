@@ -126,6 +126,18 @@
                  "y":518
                 }, 
                 {
+                  "height":0,
+                  "id":100,
+                  "name":"jellyfish",
+                  "point":true,
+                  "rotation":0,
+                  "type":"",
+                  "visible":true,
+                  "width":0,
+                  "x":700,
+                  "y":650
+                 }, 
+                {
                  "height":0,
                  "id":140,
                  "name":"grenades",

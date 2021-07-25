@@ -43,15 +43,15 @@ pub mod capabilities {
 
 #[derive(Default, Debug, Clone)]
 pub struct Input {
-    jump: bool,
-    was_jump: bool,
-    throw: bool,
-    was_throw: bool,
-    fire: bool,
-    was_fire: bool,
-    left: bool,
-    right: bool,
-    down: bool,
+    pub jump: bool,
+    pub was_jump: bool,
+    pub throw: bool,
+    pub was_throw: bool,
+    pub fire: bool,
+    pub was_fire: bool,
+    pub left: bool,
+    pub right: bool,
+    pub down: bool,
 }
 
 pub struct PhysicsBody {
@@ -170,7 +170,7 @@ pub struct Player {
     fish_sprite: AnimatedSprite,
     pub dead: bool,
     pub weapon: Option<Weapon>,
-    input: Input,
+    pub input: Input,
 
     deathmatch: bool,
     jump_grace_timer: f32,
@@ -180,6 +180,7 @@ pub struct Player {
 
     pub state_machine: StateMachine<RefMut<Player>>,
     pub controller_id: i32,
+    pub remote_control: bool,
 
     ai_enabled: bool,
     ai: Option<ai::Ai>,
@@ -306,6 +307,7 @@ impl Player {
             was_floating: false,
             state_machine,
             controller_id,
+            remote_control: false,
             ai_enabled: false, //controller_id == 0,
             ai: Some(ai::Ai::new()),
             camera_box: Rect::new(spawner_pos.x - 30., spawner_pos.y - 150., 100., 210.),
@@ -433,6 +435,10 @@ impl Player {
     }
 
     fn update_normal(node: &mut RefMut<Player>, _dt: f32) {
+        if node.remote_control {
+            return;
+        }
+
         // self destruct, for debugging only
         if is_key_pressed(KeyCode::Y) {
             node.kill(true);

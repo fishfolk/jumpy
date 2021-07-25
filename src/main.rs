@@ -47,6 +47,8 @@ struct Resources {
     kick_bombs: Texture2D,
     curse: Texture2D,
     flying_curses: Texture2D,
+    jellyfish: Texture2D,
+    flappy_jellyfishes: Texture2D,
     gun: Texture2D,
     machine_gun: Texture2D,
     mines: Texture2D,
@@ -125,6 +127,12 @@ impl Resources {
         let flying_curses = load_texture("assets/Whale/Curse(32x32).png").await?;
         flying_curses.set_filter(FilterMode::Nearest);
 
+        let jellyfish = load_texture("assets/Whale/Jellyfish(32x29).png").await?;
+        jellyfish.set_filter(FilterMode::Nearest);
+
+        let flappy_jellyfishes = load_texture("assets/Whale/FlappyJellyfish(50x51).png").await?;
+        flappy_jellyfishes.set_filter(FilterMode::Nearest);
+
         let fish_sword = load_texture("assets/Whale/FishSword.png").await?;
         fish_sword.set_filter(FilterMode::Nearest);
 
@@ -196,6 +204,8 @@ impl Resources {
             kick_bombs,
             curse,
             flying_curses,
+            jellyfish,
+            flappy_jellyfishes,
             gun,
             machine_gun,
             mines,
@@ -219,8 +229,8 @@ impl Resources {
 async fn game(game_type: GameType, map: &str) {
     use nodes::{
         Bullets, Camera, Cannon, Cannonballs, Crate, Curse, Decoration, FlyingCurses, Fxses,
-        GameState, Grenades, LevelBackground, Mines, Muscet, Player, ScoreCounter, Shoes,
-        Sproinger, Sword, MachineGun, KickBombs,
+        GameState, Grenades, Jellyfish, KickBombs, LevelBackground, MachineGun, Mines, Muscet,
+        Player, ScoreCounter, Shoes, Sproinger, Sword,
     };
 
     let resources_loading = start_coroutine({
@@ -372,6 +382,14 @@ async fn game(game_type: GameType, map: &str) {
         if object.name == "sproinger" {
             let sproinger = Sproinger::new(vec2(object.world_x - 35., object.world_y - 25.));
             scene::add_node(sproinger);
+        }
+
+        if object.name == "jellyfish" {
+            let mut jellyfish =
+                Jellyfish::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
+            jellyfish.throw(false);
+            scene::add_node(jellyfish);
+            wat_facing ^= true;
         }
 
         if object.name == "curse" {

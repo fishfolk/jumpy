@@ -193,7 +193,8 @@ pub struct Player {
 }
 
 impl Player {
-    pub const BODY_THRESHOLD: f32 = 24.0;
+    pub const HEAD_THRESHOLD: f32 = 24.0;
+    pub const LEGS_THRESHOLD: f32 = 42.0;
 
     pub const ST_NORMAL: usize = 0;
     pub const ST_DEATH: usize = 1;
@@ -689,12 +690,8 @@ impl scene::Node for Player {
             }
             node.input.was_jump = state.digital_state[jump_btn];
 
-            if state.digital_state[fire_btn] && node.input.was_fire == false {
-                node.input.fire = true;
-            } else {
-                node.input.fire = false;
-            }
-            node.input.was_fire = state.digital_state[fire_btn];
+            node.input.was_fire = node.input.fire;
+            node.input.fire = state.digital_state[fire_btn];
 
             if state.digital_state[throw_btn] && node.input.was_throw == false {
                 node.input.throw = true;
@@ -712,9 +709,11 @@ impl scene::Node for Player {
                 node.input.throw = throw && node.input.was_throw == false;
                 node.input.was_throw = throw;
 
+                node.input.was_fire = node.input.fire;
                 node.input.fire = is_key_down(KeyCode::LeftControl)
                     || is_key_down(KeyCode::F)
                     || is_key_down(KeyCode::L);
+
                 node.input.left = is_key_down(KeyCode::A);
                 node.input.right = is_key_down(KeyCode::D);
                 node.input.down = is_key_down(KeyCode::S);
@@ -761,7 +760,7 @@ impl scene::Node for Player {
                 let is_overlapping =
                     hit_box.overlaps(&Rect::new(other.body.pos.x, other.body.pos.y, 32.0, 60.0));
                 if is_overlapping {
-                    if hit_box.y + 60.0 < other.body.pos.y + Self::BODY_THRESHOLD {
+                    if hit_box.y + 60.0 < other.body.pos.y + Self::HEAD_THRESHOLD {
                         let resources = storage::get_mut::<Resources>();
                         play_sound_once(resources.jump_sound);
                         other.kill(!node.body.facing);

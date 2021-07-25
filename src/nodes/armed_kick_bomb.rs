@@ -16,34 +16,35 @@ use macroquad::{
 
 use crate::{
     nodes::player::{
-        PhysicsBody,
-        PLAYER_HITBOX_WIDTH,
         PLAYER_HITBOX_HEIGHT,
+        PLAYER_HITBOX_WIDTH,
+        Player,
+        PhysicsBody,
     },
     nodes::sproinger::Sproingable,
     Resources,
 };
 
-pub struct ArmedGrenade {
-    grenade_sprite: AnimatedSprite,
+pub struct ArmedKickBomb {
+    sprite: AnimatedSprite,
     pub body: PhysicsBody,
     lived: f32,
 }
 
-impl ArmedGrenade {
-    pub const COUNTDOWN_DURATION: f32 = 0.5;
-    pub const EXPLOSION_WIDTH: f32 = 100.0;
-    pub const EXPLOSION_HEIGHT: f32 = 100.0;
+impl ArmedKickBomb {
+    pub const KICK_FORCE: f32 = 900.0;
+    pub const COUNTDOWN_DURATION: f32 = 3.0;
+    pub const EXPLOSION_WIDTH: f32 = 150.0;
+    pub const EXPLOSION_HEIGHT: f32 = 150.0;
 
     pub fn new(pos: Vec2, facing: bool) -> Self {
-        // TODO: In case we want to animate thrown grenades rotating etc.
-        let grenade_sprite = AnimatedSprite::new(
-            15,
-            15,
+        let sprite = AnimatedSprite::new(
+            32,
+            36,
             &[
                 Animation {
                     name: "idle".to_string(),
-                    row: 0,
+                    row: 1,
                     frames: 1,
                     fps: 1,
                 },
@@ -51,17 +52,11 @@ impl ArmedGrenade {
             false,
         );
 
-        let speed = if facing {
-            vec2(600., -200.)
-        } else {
-            vec2(-600., -200.)
-        };
-
         let mut body = PhysicsBody {
             pos,
             facing,
             angle: 0.0,
-            speed,
+            speed: Vec2::ZERO,
             collider: None,
             on_ground: false,
             last_frame_on_ground: false,
@@ -71,37 +66,37 @@ impl ArmedGrenade {
 
         let mut resources = storage::get_mut::<Resources>();
 
-        let grenade_mount_pos = if facing {
+        let mount_pos = if facing {
             vec2(30., 10.)
         } else {
             vec2(-50., 10.)
         };
 
         body.collider = Some(resources.collision_world.add_actor(
-            body.pos + grenade_mount_pos,
-            15,
-            15,
+            body.pos + mount_pos,
+            30,
+            30,
         ));
 
-        ArmedGrenade {
-            grenade_sprite,
+        ArmedKickBomb {
+            sprite,
             body,
             lived: 0.0,
         }
     }
 
     pub fn spawn(pos: Vec2, facing: bool) {
-        let grenade = ArmedGrenade::new(pos, facing);
-        scene::add_node(grenade);
+        let kick_bomb = ArmedKickBomb::new(pos, facing);
+        scene::add_node(kick_bomb);
     }
 }
 
-impl Node for ArmedGrenade {
+impl Node for ArmedKickBomb {
     fn ready(mut node: RefMut<Self>) {
         node.provides::<Sproingable>((
-          node.handle().untyped(),
-          node.handle().lens(|node| &mut node.body),
-          vec2(16.0, 32.0),
+            node.handle().untyped(),
+            node.handle().lens(|node| &mut node.body),
+            vec2(30.0, 30.0),
         ));
     }
 
@@ -109,26 +104,52 @@ impl Node for ArmedGrenade {
         node.body.update();
         node.lived += get_frame_time();
 
-        if node.lived >= ArmedGrenade::COUNTDOWN_DURATION {
-            {
-                let mut resources = storage::get_mut::<Resources>();
-                resources.hit_fxses.spawn(node.body.pos);
-            }
-            let grenade_rect = Rect::new(
-                node.body.pos.x - (ArmedGrenade::EXPLOSION_WIDTH / 2.0),
-                node.body.pos.y - (ArmedGrenade::EXPLOSION_HEIGHT / 2.0),
-                ArmedGrenade::EXPLOSION_WIDTH,
-                ArmedGrenade::EXPLOSION_HEIGHT,
+        if node.lived < ArmedKickBomb::COUNTDOWN_DURATION {
+            let hit_box = Rect::new(
+                node.body.pos.x,
+                node.body.pos.y,
+                30.0,
+                30.0,
             );
-            for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
-                let intersect =
-                    grenade_rect.intersect(Rect::new(
+            for player in scene::find_nodes_by_type::<crate::nodes::Player>() {
+                let is_overlapping =
+                    hit_box.overlaps(&Rect::new(
                         player.body.pos.x,
                         player.body.pos.y,
                         PLAYER_HITBOX_WIDTH,
                         PLAYER_HITBOX_HEIGHT,
                     ));
-                if !intersect.is_none() {
+                if is_overlapping && hit_box.y + 36.0 >= player.body.pos.y + Player::LEGS_THRESHOLD {
+                    let direction = node.body.pos.x > (player.body.pos.x + 10.);
+                    if direction == player.body.facing {
+                        node.body.speed.x = if direction {
+                            Self::KICK_FORCE
+                        } else {
+                            -Self::KICK_FORCE
+                        }
+                    }
+                }
+            }
+        } else {
+            {
+                let mut resources = storage::get_mut::<Resources>();
+                resources.hit_fxses.spawn(node.body.pos);
+            }
+            let hit_box = Rect::new(
+                node.body.pos.x - (ArmedKickBomb::EXPLOSION_WIDTH / 2.0),
+                node.body.pos.y - (ArmedKickBomb::EXPLOSION_HEIGHT / 2.0),
+                ArmedKickBomb::EXPLOSION_WIDTH,
+                ArmedKickBomb::EXPLOSION_HEIGHT,
+            );
+            for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
+                let is_overlapping =
+                    hit_box.overlaps(&Rect::new(
+                        player.body.pos.x,
+                        player.body.pos.y,
+                        PLAYER_HITBOX_WIDTH,
+                        PLAYER_HITBOX_HEIGHT,
+                    ));
+                if is_overlapping {
                     let direction = node.body.pos.x > (player.body.pos.x + 10.);
                     scene::find_node_by_type::<crate::nodes::Camera>()
                         .unwrap()
@@ -143,13 +164,13 @@ impl Node for ArmedGrenade {
     fn draw(node: RefMut<Self>) {
         let resources = storage::get_mut::<Resources>();
         draw_texture_ex(
-            resources.grenades,
+            resources.kick_bombs,
             node.body.pos.x,
             node.body.pos.y,
             color::WHITE,
             DrawTextureParams {
-                source: Some(node.grenade_sprite.frame().source_rect),
-                dest_size: Some(node.grenade_sprite.frame().dest_size),
+                source: Some(node.sprite.frame().source_rect),
+                dest_size: Some(node.sprite.frame().dest_size),
                 flip_x: false,
                 rotation: 0.0,
                 ..Default::default()

@@ -14,14 +14,14 @@ use crate::{
     nodes::{
         player::{capabilities, PhysicsBody, Weapon},
         Player,
-        ArmedGrenade,
+        ArmedKickBomb,
         sproinger::Sproingable,
     },
     Resources,
 };
 
-pub struct Grenades {
-    grenade_sprite: AnimatedSprite,
+pub struct KickBombs {
+    sprite: AnimatedSprite,
 
     pub thrown: bool,
 
@@ -32,14 +32,14 @@ pub struct Grenades {
     pub deadly_dangerous: bool,
 }
 
-impl Grenades {
+impl KickBombs {
     pub const FIRE_INTERVAL: f32 = 0.25;
     pub const MAXIMUM_AMOUNT: i32 = 3;
 
     pub fn new(facing: bool, pos: Vec2) -> Self {
-        let grenade_sprite = AnimatedSprite::new(
-            15,
-            15,
+        let sprite = AnimatedSprite::new(
+            32,
+            36,
             &[
                 Animation {
                     name: "idle".to_string(),
@@ -51,8 +51,8 @@ impl Grenades {
             false,
         );
 
-        Grenades {
-            grenade_sprite,
+        KickBombs {
+            sprite,
             body: PhysicsBody {
                 pos,
                 facing,
@@ -100,7 +100,7 @@ impl Grenades {
 
         let mut resources = storage::get_mut::<Resources>();
 
-        let grenade_mount_pos = if self.body.facing {
+        let mount_pos = if self.body.facing {
             vec2(30., 10.)
         } else {
             vec2(-50., 10.)
@@ -108,20 +108,20 @@ impl Grenades {
 
         if self.body.collider.is_none() {
             self.body.collider = Some(resources.collision_world.add_actor(
-                self.body.pos + grenade_mount_pos,
+                self.body.pos + mount_pos,
                 40,
                 30,
             ));
         } else {
             resources.collision_world.set_actor_position(
                 self.body.collider.unwrap(),
-                self.body.pos + grenade_mount_pos,
+                self.body.pos + mount_pos,
             );
         }
-        self.origin_pos = self.body.pos + grenade_mount_pos / 2.;
+        self.origin_pos = self.body.pos + mount_pos / 2.;
     }
 
-    pub fn shoot(node: Handle<Grenades>, player: Handle<Player>) -> Coroutine {
+    pub fn shoot(node: Handle<KickBombs>, player: Handle<Player>) -> Coroutine {
         let coroutine = async move {
             {
                 let mut node = scene::get_node(node);
@@ -132,11 +132,11 @@ impl Grenades {
                     return;
                 }
 
-                ArmedGrenade::spawn(node.body.pos, node.body.facing);
+                ArmedKickBomb::spawn(node.body.pos, node.body.facing);
                 node.amount -= 1;
             }
 
-            wait_seconds(Grenades::FIRE_INTERVAL).await;
+            wait_seconds(KickBombs::FIRE_INTERVAL).await;
 
             {
                 let player = &mut *scene::get_node(player);
@@ -151,24 +151,24 @@ impl Grenades {
         fn throw(node: HandleUntyped, force: bool) {
             let mut node = scene::get_untyped_node(node)
                 .unwrap()
-                .to_typed::<Grenades>();
+                .to_typed::<KickBombs>();
 
-            Grenades::throw(&mut *node, force);
+            KickBombs::throw(&mut *node, force);
         }
 
         fn shoot(node: HandleUntyped, player: Handle<Player>) -> Coroutine {
             let node = scene::get_untyped_node(node)
                 .unwrap()
-                .to_typed::<Grenades>()
+                .to_typed::<KickBombs>()
                 .handle();
 
-            Grenades::shoot(node, player)
+            KickBombs::shoot(node, player)
         }
 
         fn is_thrown(node: HandleUntyped) -> bool {
             let node = scene::get_untyped_node(node)
                 .unwrap()
-                .to_typed::<Grenades>();
+                .to_typed::<KickBombs>();
 
             node.thrown
         }
@@ -176,10 +176,10 @@ impl Grenades {
         fn pick_up(node: HandleUntyped) {
             let mut node = scene::get_untyped_node(node)
                 .unwrap()
-                .to_typed::<Grenades>();
+                .to_typed::<KickBombs>();
 
             node.body.angle = 0.;
-            node.amount = Grenades::MAXIMUM_AMOUNT;
+            node.amount = KickBombs::MAXIMUM_AMOUNT;
 
             node.thrown = false;
         }
@@ -193,7 +193,7 @@ impl Grenades {
     }
 }
 
-impl scene::Node for Grenades {
+impl scene::Node for KickBombs {
     fn ready(mut node: RefMut<Self>) {
         node.provides::<Weapon>((
             node.handle().untyped(),
@@ -204,12 +204,12 @@ impl scene::Node for Grenades {
         node.provides::<Sproingable>((
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
-            vec2(32.0, 26.0),
+            vec2(30.0, 30.0),
         ));
     }
 
     fn fixed_update(mut node: RefMut<Self>) {
-        node.grenade_sprite.update();
+        node.sprite.update();
 
         if node.thrown {
             node.body.update();
@@ -227,11 +227,11 @@ impl scene::Node for Grenades {
 
             if node.deadly_dangerous {
                 let others = scene::find_nodes_by_type::<crate::nodes::Player>();
-                let grenades_hit_box = Rect::new(node.body.pos.x - 7.5, node.body.pos.y, 15., 15.);
+                let hit_box = Rect::new(node.body.pos.x - 7.5, node.body.pos.y, 15., 15.);
 
                 for mut other in others {
                     if Rect::new(other.body.pos.x, other.body.pos.y, 20., 64.)
-                        .overlaps(&grenades_hit_box)
+                        .overlaps(&hit_box)
                     {
                         other.kill(!node.body.facing);
                     }
@@ -243,7 +243,7 @@ impl scene::Node for Grenades {
     fn draw(node: RefMut<Self>) {
         let resources = storage::get_mut::<Resources>();
 
-        let grenade_mount_pos = if node.thrown == false {
+        let mount_pos = if node.thrown == false {
             if node.body.facing {
                 vec2(0., 16.)
             } else {
@@ -258,13 +258,13 @@ impl scene::Node for Grenades {
         };
 
         draw_texture_ex(
-            resources.grenades,
-            node.body.pos.x + grenade_mount_pos.x,
-            node.body.pos.y + grenade_mount_pos.y,
+            resources.kick_bombs,
+            node.body.pos.x + mount_pos.x,
+            node.body.pos.y + mount_pos.y,
             color::WHITE,
             DrawTextureParams {
-                source: Some(node.grenade_sprite.frame().source_rect),
-                dest_size: Some(node.grenade_sprite.frame().dest_size),
+                source: Some(node.sprite.frame().source_rect),
+                dest_size: Some(node.sprite.frame().dest_size),
                 flip_x: !node.body.facing,
                 rotation: node.body.angle,
                 ..Default::default()

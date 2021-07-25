@@ -690,12 +690,8 @@ impl scene::Node for Player {
             }
             node.input.was_jump = state.digital_state[jump_btn];
 
-            if state.digital_state[fire_btn] && node.input.was_fire == false {
-                node.input.fire = true;
-            } else {
-                node.input.fire = false;
-            }
-            node.input.was_fire = state.digital_state[fire_btn];
+            node.input.was_fire = node.input.fire;
+            node.input.fire = state.digital_state[fire_btn];
 
             if state.digital_state[throw_btn] && node.input.was_throw == false {
                 node.input.throw = true;

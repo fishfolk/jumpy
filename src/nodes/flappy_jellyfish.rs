@@ -15,14 +15,19 @@ use super::{
 const FLAPPY_JELLYFISH_WIDTH: f32 = 50.;
 pub const FLAPPY_JELLYFISH_HEIGHT: f32 = 51.;
 const FLAPPY_JELLYFISH_ANIMATION_FLAPPY: &'static str = "flappy";
-const FLAPPY_JELLYFISH_SPEED: f32 = 200.;
+const FLAPPY_JELLYFISH_X_SPEED: f32 = 200.;
 // Use the player width, for simplicity
 const FLAPPY_JELLYFISH_SPAWN_X_DISTANCE: f32 = 76.;
+const JUMP_SPEED: f32 = -500.;
+const GRAVITY: f32 = 700.;
+const ABSOLUTE_MAX_SPEED: f32 = 300.;
 
 /// The FlappyJellyfish doesn't have a body, as it has a non-conventional (flappy bird-style) motion.
 pub struct FlappyJellyfish {
     flappy_jellyfish_sprite: AnimatedSprite,
     current_pos: Vec2,
+    /// Positive: downwards
+    current_y_speed: f32,
     owner_id: u8,
 }
 
@@ -45,6 +50,7 @@ impl FlappyJellyfish {
         Self {
             flappy_jellyfish_sprite,
             current_pos: jellyfish_pos,
+            current_y_speed: JUMP_SPEED,
             owner_id,
         }
     }
@@ -98,19 +104,16 @@ impl scene::Node for FlappyJellyfish {
                 .find(|p| p.id == flappy_jellyfish.owner_id)
                 .unwrap();
 
-            if player.input.was_jump {
-                flappy_jellyfish.current_pos +=
-                    vec2(0., -FLAPPY_JELLYFISH_SPEED * get_frame_time());
-            }
-            if player.input.down {
-                flappy_jellyfish.current_pos += vec2(0., FLAPPY_JELLYFISH_SPEED * get_frame_time());
+            if player.input.jump {
+                flappy_jellyfish.current_y_speed += JUMP_SPEED;
             }
             if player.input.left {
                 flappy_jellyfish.current_pos +=
-                    vec2(-FLAPPY_JELLYFISH_SPEED * get_frame_time(), 0.);
+                    vec2(-FLAPPY_JELLYFISH_X_SPEED * get_frame_time(), 0.);
             }
             if player.input.right {
-                flappy_jellyfish.current_pos += vec2(FLAPPY_JELLYFISH_SPEED * get_frame_time(), 0.);
+                flappy_jellyfish.current_pos +=
+                    vec2(FLAPPY_JELLYFISH_X_SPEED * get_frame_time(), 0.);
             }
 
             // It's crucial to inspect tapping here, not pressing, otherwise, the shoot() keypress will
@@ -122,6 +125,17 @@ impl scene::Node for FlappyJellyfish {
             FlappyJellyfish::terminate(flappy_jellyfish, vec![]);
             return;
         }
+
+        // Displacement formula: `y = gt²/2 + vᵢt`
+        // Speed formula: `vₜ = vᵢ + tg`
+        //
+        flappy_jellyfish.current_y_speed = (flappy_jellyfish.current_y_speed
+            + get_frame_time() * GRAVITY)
+            .clamp(-ABSOLUTE_MAX_SPEED, ABSOLUTE_MAX_SPEED);
+
+        let fall_displacement = GRAVITY * get_frame_time().powi(2) / 2.
+            + flappy_jellyfish.current_y_speed * get_frame_time();
+        flappy_jellyfish.current_pos += vec2(0., fall_displacement);
 
         // Check/act on collisions
 

@@ -94,4 +94,4 @@ impl Node for T {
 }
 ```
 
-The same methods would be used for movement, for example, but in stead of checking for a collision, you would check for input. For examples of this, check out the [`player node implementation`](https://github.com/fishfight/fish2/tree/master/src/nodes/player.rs).
+The same methods would be used for movement, for example, but instead of checking for a collision, you would check for input. For examples of this, check out the [`player node implementation`](https://github.com/fishfight/fish2/tree/master/src/nodes/player.rs).

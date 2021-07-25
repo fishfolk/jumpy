@@ -30,6 +30,7 @@ pub struct FlappyJellyfish {
     /// Positive: downwards
     current_y_speed: f32,
     owner_id: u8,
+    previous_fire_state: bool,
 }
 
 /// This type is dynamically added and removed from the scene graph, as it's the simplest way.
@@ -53,6 +54,7 @@ impl FlappyJellyfish {
             current_pos: jellyfish_pos,
             current_y_speed: JUMP_SPEED,
             owner_id,
+            previous_fire_state: true,
         }
     }
 
@@ -114,22 +116,22 @@ impl FlappyJellyfish {
 
 impl scene::Node for FlappyJellyfish {
     fn fixed_update(mut flappy_jellyfish: RefMut<Self>) {
-        // Termination
-        //
-        // Over this function, he termination logic needs to be always separate, due to entities scoping
-        // or BCK.
-
-        let terminate_flappy_jellyfish = {
+        // It's crucial to inspect tapping, not pressing, otherwise, the shoot() keypress will flow
+        // here, causing immediate termination on spawn!
+        // For this reason, on spawning, previous_fire_state must be set to true.
+        let fire_tapped = {
             let player = scene::find_nodes_by_type::<crate::nodes::Player>()
                 .find(|p| p.id == flappy_jellyfish.owner_id)
                 .unwrap();
 
-            // It's crucial to inspect tapping here, not pressing, otherwise, the shoot() keypress will
-            // flow here, causing immediate termination on spawn!
-            player.input.fire
+            let fire_tapped = player.input.fire && !flappy_jellyfish.previous_fire_state;
+            flappy_jellyfish.previous_fire_state = player.input.fire;
+            fire_tapped
         };
 
-        if terminate_flappy_jellyfish {
+        // Termination
+
+        if fire_tapped {
             FlappyJellyfish::terminate(flappy_jellyfish, vec![]);
             return;
         }

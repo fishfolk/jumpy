@@ -121,10 +121,12 @@ impl Node for ArmedKickBomb {
                     ));
                 if is_overlapping && hit_box.y + 36.0 >= player.body.pos.y + Player::LEGS_THRESHOLD {
                     let direction = node.body.pos.x > (player.body.pos.x + 10.);
-                    node.body.speed.x = if direction {
-                        Self::KICK_FORCE
-                    } else {
-                        -Self::KICK_FORCE
+                    if direction == player.body.facing {
+                        node.body.speed.x = if direction {
+                            Self::KICK_FORCE
+                        } else {
+                            -Self::KICK_FORCE
+                        }
                     }
                 }
             }

@@ -14,7 +14,7 @@ use crate::Resources;
 
 use super::{
     player::{capabilities, PhysicsBody, Weapon},
-    Player,
+    FlyingGalleon, Player,
 };
 
 const GALLEON_WIDTH: f32 = 32.;
@@ -27,6 +27,7 @@ pub struct Galleon {
     galleon_sprite: AnimatedSprite,
 
     pub thrown: bool,
+    pub used: bool,
 
     pub body: PhysicsBody,
 }
@@ -59,6 +60,7 @@ impl Galleon {
                 bouncyness: 0.0,
             },
             thrown: false,
+            used: false,
         }
     }
 
@@ -97,11 +99,25 @@ impl Galleon {
         }
     }
 
-    pub fn shoot(_galleon: Handle<Galleon>, player: Handle<Player>) -> Coroutine {
+    pub fn shoot(galleon: Handle<Galleon>, player: Handle<Player>) -> Coroutine {
         let coroutine = async move {
+            let mut galleon = scene::get_node(galleon);
             let player = &mut *scene::get_node(player);
 
+            // `used` is still required, otherwise, spawning may be called multiple times.
+            if galleon.used {
+                player.state_machine.set_state(Player::ST_NORMAL);
+                return;
+            }
+
+            galleon.used = true;
+
+            FlyingGalleon::spawn(player.id);
+
+            player.weapon = None;
             player.floating = false;
+
+            galleon.delete();
 
             player.state_machine.set_state(Player::ST_NORMAL);
         };
@@ -128,11 +144,14 @@ impl Galleon {
         }
 
         fn is_thrown(galleon: HandleUntyped) -> bool {
-            let galleon = scene::get_untyped_node(galleon)
-                .unwrap()
-                .to_typed::<Galleon>();
+            let galleon = scene::get_untyped_node(galleon);
 
-            galleon.thrown
+            // The item may have been shot at this stage; in this case, it's gone.
+            if let Some(galleon) = galleon {
+                galleon.to_typed::<Galleon>().thrown
+            } else {
+                false
+            }
         }
 
         fn pick_up(galleon: HandleUntyped) {

@@ -1,3 +1,5 @@
+use std::time::{SystemTime, UNIX_EPOCH};
+
 use macroquad::prelude::*;
 
 use macroquad_particles as particles;
@@ -467,6 +469,13 @@ async fn main() {
     }
 
     storage::store(input_axis::InputAxises::default());
+
+    rand::srand(
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos() as u64,
+    );
 
     loop {
         let map = gui::main_menu::gui().await;

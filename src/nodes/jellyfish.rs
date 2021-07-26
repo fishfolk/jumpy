@@ -39,7 +39,6 @@ pub struct Jellyfish {
     pub body: PhysicsBody,
 
     origin_pos: Vec2,
-    deadly_dangerous: bool,
 }
 
 impl Jellyfish {
@@ -71,7 +70,6 @@ impl Jellyfish {
             },
             mount_status: MountStatus::Mounted,
             origin_pos: pos,
-            deadly_dangerous: false,
         }
     }
 
@@ -200,38 +198,6 @@ impl scene::Node for Jellyfish {
         if matches!(node.mount_status, MountStatus::Dropped) {
             node.body.update();
             node.body.update_throw();
-
-            if (node.origin_pos - node.body.pos).length() > 70. {
-                node.deadly_dangerous = true;
-            }
-            if node.body.speed.length() <= 200.0 {
-                node.deadly_dangerous = false;
-            }
-            if node.body.on_ground {
-                node.deadly_dangerous = false;
-            }
-
-            if node.deadly_dangerous {
-                let others = scene::find_nodes_by_type::<crate::nodes::Player>();
-                let jellyfish_hitbox = Rect::new(
-                    node.body.pos.x,
-                    node.body.pos.y,
-                    JELLYFISH_WIDTH,
-                    JELLYFISH_HEIGHT,
-                );
-
-                for mut player in others {
-                    let player_hitbox = Rect::new(
-                        player.body.pos.x,
-                        player.body.pos.y,
-                        PLAYER_HITBOX_WIDTH,
-                        PLAYER_HITBOX_HEIGHT,
-                    );
-                    if player_hitbox.overlaps(&jellyfish_hitbox) {
-                        player.kill(!node.body.facing);
-                    }
-                }
-            }
         }
     }
 

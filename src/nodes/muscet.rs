@@ -28,7 +28,6 @@ pub struct Muscet {
     pub body: PhysicsBody,
 
     origin_pos: Vec2,
-    pub deadly_dangerous: bool,
 }
 
 impl scene::Node for Muscet {
@@ -116,29 +115,6 @@ impl scene::Node for Muscet {
         if node.thrown {
             node.body.update();
             node.body.update_throw();
-
-            if (node.origin_pos - node.body.pos).length() > 70. {
-                node.deadly_dangerous = true;
-            }
-            if node.body.speed.length() <= 200.0 {
-                node.deadly_dangerous = false;
-            }
-            if node.body.on_ground {
-                node.deadly_dangerous = false;
-            }
-
-            if node.deadly_dangerous {
-                let others = scene::find_nodes_by_type::<crate::nodes::Player>();
-                let sword_hit_box = Rect::new(node.body.pos.x - 10., node.body.pos.y, 60., 30.);
-
-                for mut other in others {
-                    if Rect::new(other.body.pos.x, other.body.pos.y, 20., 64.)
-                        .overlaps(&sword_hit_box)
-                    {
-                        other.kill(!node.body.facing);
-                    }
-                }
-            }
         }
     }
 }
@@ -197,7 +173,6 @@ impl Muscet {
             thrown: false,
             bullets: 3,
             origin_pos: pos,
-            deadly_dangerous: false,
         }
     }
 

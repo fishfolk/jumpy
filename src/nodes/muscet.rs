@@ -12,8 +12,8 @@ use macroquad::{
 
 use crate::{
     nodes::player::{capabilities, PhysicsBody, Weapon},
-    nodes::Player,
     nodes::sproinger::Sproingable,
+    nodes::Player,
     Resources,
 };
 
@@ -26,8 +26,6 @@ pub struct Muscet {
 
     pub bullets: i32,
     pub body: PhysicsBody,
-
-    origin_pos: Vec2,
 }
 
 impl scene::Node for Muscet {
@@ -172,7 +170,6 @@ impl Muscet {
             },
             thrown: false,
             bullets: 3,
-            origin_pos: pos,
         }
     }
 
@@ -222,7 +219,6 @@ impl Muscet {
                 .collision_world
                 .set_actor_position(self.body.collider.unwrap(), self.body.pos + sword_mount_pos);
         }
-        self.origin_pos = self.body.pos + sword_mount_pos / 2.;
     }
 
     pub fn shoot(node: Handle<Muscet>, player: Handle<Player>) -> Coroutine {

@@ -6,7 +6,7 @@ use macroquad::{
         coroutines::{start_coroutine, wait_seconds, Coroutine},
         draw_circle, draw_circle_lines, draw_texture_ex, get_frame_time,
         scene::{self, Handle, HandleUntyped, RefMut},
-        vec2, Color, DrawTextureParams, Rect, Vec2,
+        vec2, Color, DrawTextureParams, Vec2,
     },
 };
 
@@ -14,7 +14,7 @@ use crate::Resources;
 
 use super::{
     cannonball::CANNONBALL_HEIGHT,
-    player::{capabilities, PhysicsBody, Weapon, PLAYER_HITBOX_HEIGHT, PLAYER_HITBOX_WIDTH},
+    player::{capabilities, PhysicsBody, Weapon},
     Player,
 };
 
@@ -35,8 +35,6 @@ pub struct Cannon {
 
     pub amount: i32,
     pub body: PhysicsBody,
-
-    origin_pos: Vec2,
 
     grace_time: f32,
 }
@@ -70,7 +68,6 @@ impl Cannon {
             },
             thrown: false,
             amount: INITIAL_CANNONBALLS,
-            origin_pos: pos,
             grace_time: 0.,
         }
     }
@@ -122,7 +119,6 @@ impl Cannon {
                 self.body.pos + cannon_mount_pos,
             );
         }
-        self.origin_pos = self.body.pos + cannon_mount_pos / 2.;
     }
 
     pub fn shoot(node_h: Handle<Cannon>, player: Handle<Player>) -> Coroutine {

@@ -29,7 +29,6 @@ pub struct Mines {
     pub body: PhysicsBody,
 
     origin_pos: Vec2,
-    pub deadly_dangerous: bool,
 }
 
 impl Mines {
@@ -67,7 +66,6 @@ impl Mines {
             thrown: false,
             amount: Self::MAXIMUM_AMOUNT,
             origin_pos: pos,
-            deadly_dangerous: false,
         }
     }
 
@@ -206,29 +204,6 @@ impl scene::Node for Mines {
         if node.thrown {
             node.body.update();
             node.body.update_throw();
-
-            if (node.origin_pos - node.body.pos).length() > 70. {
-                node.deadly_dangerous = true;
-            }
-            if node.body.speed.length() <= 200.0 {
-                node.deadly_dangerous = false;
-            }
-            if node.body.on_ground {
-                node.deadly_dangerous = false;
-            }
-
-            if node.deadly_dangerous {
-                let others = scene::find_nodes_by_type::<crate::nodes::Player>();
-                let mines_hit_box = Rect::new(node.body.pos.x - 7.5, node.body.pos.y, 15., 15.);
-
-                for mut other in others {
-                    if Rect::new(other.body.pos.x, other.body.pos.y, 20., 64.)
-                        .overlaps(&mines_hit_box)
-                    {
-                        other.kill(!node.body.facing);
-                    }
-                }
-            }
         }
     }
 

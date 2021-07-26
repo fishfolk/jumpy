@@ -136,7 +136,19 @@
                   "width":0,
                   "x":700,
                   "y":650
-                 }, 
+                }, 
+                {
+                  "height":0,
+                  "id":147,
+                  "name":"galleon",
+                  "point":true,
+                  "rotation":0,
+                  "type":"",
+                  "visible":true,
+                  "width":0,
+                  "x":500,
+                  "y":650
+                }, 
                 {
                  "height":0,
                  "id":140,
@@ -228,7 +240,7 @@
          "y":0
         }],
  "nextlayerid":6,
- "nextobjectid":147,
+ "nextobjectid":148,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.7.1",

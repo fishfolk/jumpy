@@ -239,8 +239,8 @@ impl Resources {
 async fn game(game_type: GameType, map: &str) {
     use nodes::{
         Bullets, Camera, Cannon, Cannonballs, Crate, Curse, Decoration, FlyingCurses, Fxses,
-        GameState, Grenades, Jellyfish, KickBombs, LevelBackground, MachineGun, Mines, Muscet,
-        Player, ScoreCounter, Shoes, Sproinger, Sword,
+        Galleon, GameState, Grenades, Jellyfish, KickBombs, LevelBackground, MachineGun, Mines,
+        Muscet, Player, ScoreCounter, Shoes, Sproinger, Sword,
     };
 
     let resources_loading = start_coroutine({
@@ -407,6 +407,14 @@ async fn game(game_type: GameType, map: &str) {
                 Curse::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
             curse.setup();
             scene::add_node(curse);
+            wat_facing ^= true;
+        }
+
+        if object.name == "galleon" {
+            let mut galleon =
+                Galleon::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
+            galleon.throw(false);
+            scene::add_node(galleon);
             wat_facing ^= true;
         }
 

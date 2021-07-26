@@ -13,9 +13,8 @@ use macroquad::{
 use crate::{
     nodes::{
         player::{capabilities, PhysicsBody, Weapon},
-        Player,
-        ArmedMine,
         sproinger::Sproingable,
+        ArmedMine, Player,
     },
     Resources,
 };
@@ -27,8 +26,6 @@ pub struct Mines {
 
     pub amount: i32,
     pub body: PhysicsBody,
-
-    origin_pos: Vec2,
 }
 
 impl Mines {
@@ -39,14 +36,12 @@ impl Mines {
         let mines_sprite = AnimatedSprite::new(
             30,
             15,
-            &[
-                Animation {
-                    name: "idle".to_string(),
-                    row: 0,
-                    frames: 1,
-                    fps: 1,
-                },
-            ],
+            &[Animation {
+                name: "idle".to_string(),
+                row: 0,
+                frames: 1,
+                fps: 1,
+            }],
             false,
         );
 
@@ -65,7 +60,6 @@ impl Mines {
             },
             thrown: false,
             amount: Self::MAXIMUM_AMOUNT,
-            origin_pos: pos,
         }
     }
 
@@ -115,7 +109,6 @@ impl Mines {
                 .collision_world
                 .set_actor_position(self.body.collider.unwrap(), self.body.pos + mines_mount_pos);
         }
-        self.origin_pos = self.body.pos + mines_mount_pos / 2.;
     }
 
     pub fn shoot(node: Handle<Mines>, player: Handle<Player>) -> Coroutine {

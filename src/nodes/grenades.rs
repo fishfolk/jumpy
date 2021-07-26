@@ -13,9 +13,8 @@ use macroquad::{
 use crate::{
     nodes::{
         player::{capabilities, PhysicsBody, Weapon},
-        Player,
-        ArmedGrenade,
         sproinger::Sproingable,
+        ArmedGrenade, Player,
     },
     Resources,
 };
@@ -27,8 +26,6 @@ pub struct Grenades {
 
     pub amount: i32,
     pub body: PhysicsBody,
-
-    origin_pos: Vec2,
 }
 
 impl Grenades {
@@ -39,14 +36,12 @@ impl Grenades {
         let grenade_sprite = AnimatedSprite::new(
             15,
             15,
-            &[
-                Animation {
-                    name: "idle".to_string(),
-                    row: 0,
-                    frames: 1,
-                    fps: 1,
-                },
-            ],
+            &[Animation {
+                name: "idle".to_string(),
+                row: 0,
+                frames: 1,
+                fps: 1,
+            }],
             false,
         );
 
@@ -65,7 +60,6 @@ impl Grenades {
             },
             thrown: false,
             amount: Self::MAXIMUM_AMOUNT,
-            origin_pos: pos,
         }
     }
 
@@ -116,7 +110,6 @@ impl Grenades {
                 self.body.pos + grenade_mount_pos,
             );
         }
-        self.origin_pos = self.body.pos + grenade_mount_pos / 2.;
     }
 
     pub fn shoot(node: Handle<Grenades>, player: Handle<Player>) -> Coroutine {

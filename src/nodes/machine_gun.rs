@@ -1,38 +1,21 @@
 use macroquad::{
-    experimental::{
-        animation::{
-            AnimatedSprite,
-            Animation,
-        },
-        scene::{
-            RefMut,
-            Node,
-            Handle,
-            HandleUntyped,
-        },
-        coroutines::{
-            Coroutine,
-            start_coroutine,
-            wait_seconds,
-        },
-        collections::storage,
-    },
-    color,
     audio::play_sound_once,
-    prelude::*
+    color,
+    experimental::{
+        animation::{AnimatedSprite, Animation},
+        collections::storage,
+        coroutines::{start_coroutine, wait_seconds, Coroutine},
+        scene::{Handle, HandleUntyped, Node, RefMut},
+    },
+    prelude::*,
 };
 
 use crate::{
-    Resources,
     nodes::{
+        player::{capabilities, PhysicsBody, Player, Weapon},
         sproinger::Sproingable,
-        player::{
-            Player,
-            capabilities,
-            PhysicsBody,
-            Weapon,
-        }
-    }
+    },
+    Resources,
 };
 
 pub struct MachineGun {
@@ -45,8 +28,6 @@ pub struct MachineGun {
     pub thrown: bool,
 
     pub bullets: i32,
-
-    origin_pos: Vec2,
 }
 
 impl MachineGun {
@@ -107,7 +88,6 @@ impl MachineGun {
             body,
             thrown: false,
             bullets: Self::MAX_BULLETS,
-            origin_pos: pos,
         }
     }
 
@@ -161,7 +141,6 @@ impl MachineGun {
                 .collision_world
                 .set_actor_position(self.body.collider.unwrap(), self.body.pos + sword_mount_pos);
         }
-        self.origin_pos = self.body.pos + sword_mount_pos / 2.;
     }
 
     pub fn shoot(node: Handle<MachineGun>, player: Handle<Player>) -> Coroutine {
@@ -231,7 +210,9 @@ impl MachineGun {
 
     pub fn gun_capabilities() -> capabilities::Gun {
         fn throw(node: HandleUntyped, force: bool) {
-            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<MachineGun>();
+            let mut node = scene::get_untyped_node(node)
+                .unwrap()
+                .to_typed::<MachineGun>();
 
             MachineGun::throw(&mut *node, force);
         }
@@ -246,13 +227,17 @@ impl MachineGun {
         }
 
         fn is_thrown(node: HandleUntyped) -> bool {
-            let node = scene::get_untyped_node(node).unwrap().to_typed::<MachineGun>();
+            let node = scene::get_untyped_node(node)
+                .unwrap()
+                .to_typed::<MachineGun>();
 
             node.thrown
         }
 
         fn pick_up(node: HandleUntyped) {
-            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<MachineGun>();
+            let mut node = scene::get_untyped_node(node)
+                .unwrap()
+                .to_typed::<MachineGun>();
 
             node.body.angle = 0.;
             node.bullets = MachineGun::MAX_BULLETS;

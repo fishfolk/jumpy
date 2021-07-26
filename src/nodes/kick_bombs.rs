@@ -13,9 +13,8 @@ use macroquad::{
 use crate::{
     nodes::{
         player::{capabilities, PhysicsBody, Weapon},
-        Player,
-        ArmedKickBomb,
         sproinger::Sproingable,
+        ArmedKickBomb, Player,
     },
     Resources,
 };
@@ -27,8 +26,6 @@ pub struct KickBombs {
 
     pub amount: i32,
     pub body: PhysicsBody,
-
-    origin_pos: Vec2,
 }
 
 impl KickBombs {
@@ -39,14 +36,12 @@ impl KickBombs {
         let sprite = AnimatedSprite::new(
             32,
             36,
-            &[
-                Animation {
-                    name: "idle".to_string(),
-                    row: 0,
-                    frames: 1,
-                    fps: 1,
-                },
-            ],
+            &[Animation {
+                name: "idle".to_string(),
+                row: 0,
+                frames: 1,
+                fps: 1,
+            }],
             false,
         );
 
@@ -65,7 +60,6 @@ impl KickBombs {
             },
             thrown: false,
             amount: Self::MAXIMUM_AMOUNT,
-            origin_pos: pos,
         }
     }
 
@@ -111,12 +105,10 @@ impl KickBombs {
                 30,
             ));
         } else {
-            resources.collision_world.set_actor_position(
-                self.body.collider.unwrap(),
-                self.body.pos + mount_pos,
-            );
+            resources
+                .collision_world
+                .set_actor_position(self.body.collider.unwrap(), self.body.pos + mount_pos);
         }
-        self.origin_pos = self.body.pos + mount_pos / 2.;
     }
 
     pub fn shoot(node: Handle<KickBombs>, player: Handle<Player>) -> Coroutine {

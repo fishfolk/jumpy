@@ -6,14 +6,14 @@ use macroquad::{
         coroutines::{start_coroutine, Coroutine},
         draw_texture_ex,
         scene::{self, Handle, HandleUntyped, RefMut},
-        vec2, DrawTextureParams, Rect, Vec2,
+        vec2, DrawTextureParams, Vec2,
     },
 };
 
 use crate::Resources;
 
 use super::{
-    player::{capabilities, PhysicsBody, Weapon, PLAYER_HITBOX_HEIGHT, PLAYER_HITBOX_WIDTH},
+    player::{capabilities, PhysicsBody, Weapon},
     FlappyJellyfish, Player,
 };
 
@@ -37,8 +37,6 @@ pub struct Jellyfish {
     pub mount_status: MountStatus,
 
     pub body: PhysicsBody,
-
-    origin_pos: Vec2,
 }
 
 impl Jellyfish {
@@ -69,7 +67,6 @@ impl Jellyfish {
                 bouncyness: 0.0,
             },
             mount_status: MountStatus::Mounted,
-            origin_pos: pos,
         }
     }
 
@@ -106,7 +103,6 @@ impl Jellyfish {
                 self.body.pos + jellyfish_mount_pos,
             );
         }
-        self.origin_pos = self.body.pos + jellyfish_mount_pos / 2.;
     }
 
     pub fn shoot(node_h: Handle<Jellyfish>, player: Handle<Player>) -> Coroutine {

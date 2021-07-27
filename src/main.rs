@@ -464,7 +464,6 @@ async fn game(game_type: GameType, map: &str) {
         //     fps_counter_pos: vec2(50.0, 20.0),
         // });
 
-        println!("{}", get_fps());
         next_frame().await;
     }
 }

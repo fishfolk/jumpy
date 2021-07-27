@@ -6,7 +6,7 @@ use macroquad::{
         coroutines::{start_coroutine, wait_seconds, Coroutine},
         draw_circle, draw_circle_lines, draw_texture_ex, get_frame_time,
         scene::{self, Handle, HandleUntyped, RefMut},
-        vec2, Color, DrawTextureParams, Rect, Vec2,
+        vec2, Color, DrawTextureParams, Vec2,
     },
 };
 
@@ -14,7 +14,7 @@ use crate::Resources;
 
 use super::{
     cannonball::CANNONBALL_HEIGHT,
-    player::{capabilities, PhysicsBody, Weapon, PLAYER_HITBOX_HEIGHT, PLAYER_HITBOX_WIDTH},
+    player::{capabilities, PhysicsBody, Weapon},
     Player,
 };
 
@@ -35,9 +35,6 @@ pub struct Cannon {
 
     pub amount: i32,
     pub body: PhysicsBody,
-
-    origin_pos: Vec2,
-    deadly_dangerous: bool,
 
     grace_time: f32,
 }
@@ -71,8 +68,6 @@ impl Cannon {
             },
             thrown: false,
             amount: INITIAL_CANNONBALLS,
-            origin_pos: pos,
-            deadly_dangerous: false,
             grace_time: 0.,
         }
     }
@@ -124,7 +119,6 @@ impl Cannon {
                 self.body.pos + cannon_mount_pos,
             );
         }
-        self.origin_pos = self.body.pos + cannon_mount_pos / 2.;
     }
 
     pub fn shoot(node_h: Handle<Cannon>, player: Handle<Player>) -> Coroutine {
@@ -225,39 +219,6 @@ impl scene::Node for Cannon {
         if node.thrown {
             node.body.update();
             node.body.update_throw();
-
-            if (node.origin_pos - node.body.pos).length() > 70. {
-                node.deadly_dangerous = true;
-            }
-            if node.body.speed.length() <= 200.0 {
-                node.deadly_dangerous = false;
-            }
-            if node.body.on_ground {
-                node.deadly_dangerous = false;
-            }
-
-            if node.deadly_dangerous {
-                let others = scene::find_nodes_by_type::<crate::nodes::Player>();
-                let cannon_hit_box = Rect::new(
-                    node.body.pos.x,
-                    node.body.pos.y,
-                    CANNON_WIDTH,
-                    CANNON_HEIGHT,
-                );
-
-                for mut other in others {
-                    if Rect::new(
-                        other.body.pos.x,
-                        other.body.pos.y,
-                        PLAYER_HITBOX_WIDTH,
-                        PLAYER_HITBOX_HEIGHT,
-                    )
-                    .overlaps(&cannon_hit_box)
-                    {
-                        other.kill(!node.body.facing);
-                    }
-                }
-            }
         }
 
         node.grace_time -= get_frame_time();

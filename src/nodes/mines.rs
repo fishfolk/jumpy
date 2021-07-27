@@ -13,9 +13,8 @@ use macroquad::{
 use crate::{
     nodes::{
         player::{capabilities, PhysicsBody, Weapon},
-        Player,
-        ArmedMine,
         sproinger::Sproingable,
+        ArmedMine, Player,
     },
     Resources,
 };
@@ -27,9 +26,6 @@ pub struct Mines {
 
     pub amount: i32,
     pub body: PhysicsBody,
-
-    origin_pos: Vec2,
-    pub deadly_dangerous: bool,
 }
 
 impl Mines {
@@ -40,14 +36,12 @@ impl Mines {
         let mines_sprite = AnimatedSprite::new(
             30,
             15,
-            &[
-                Animation {
-                    name: "idle".to_string(),
-                    row: 0,
-                    frames: 1,
-                    fps: 1,
-                },
-            ],
+            &[Animation {
+                name: "idle".to_string(),
+                row: 0,
+                frames: 1,
+                fps: 1,
+            }],
             false,
         );
 
@@ -66,8 +60,6 @@ impl Mines {
             },
             thrown: false,
             amount: Self::MAXIMUM_AMOUNT,
-            origin_pos: pos,
-            deadly_dangerous: false,
         }
     }
 
@@ -117,7 +109,6 @@ impl Mines {
                 .collision_world
                 .set_actor_position(self.body.collider.unwrap(), self.body.pos + mines_mount_pos);
         }
-        self.origin_pos = self.body.pos + mines_mount_pos / 2.;
     }
 
     pub fn shoot(node: Handle<Mines>, player: Handle<Player>) -> Coroutine {
@@ -206,29 +197,6 @@ impl scene::Node for Mines {
         if node.thrown {
             node.body.update();
             node.body.update_throw();
-
-            if (node.origin_pos - node.body.pos).length() > 70. {
-                node.deadly_dangerous = true;
-            }
-            if node.body.speed.length() <= 200.0 {
-                node.deadly_dangerous = false;
-            }
-            if node.body.on_ground {
-                node.deadly_dangerous = false;
-            }
-
-            if node.deadly_dangerous {
-                let others = scene::find_nodes_by_type::<crate::nodes::Player>();
-                let mines_hit_box = Rect::new(node.body.pos.x - 7.5, node.body.pos.y, 15., 15.);
-
-                for mut other in others {
-                    if Rect::new(other.body.pos.x, other.body.pos.y, 20., 64.)
-                        .overlaps(&mines_hit_box)
-                    {
-                        other.kill(!node.body.facing);
-                    }
-                }
-            }
         }
     }
 

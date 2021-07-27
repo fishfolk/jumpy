@@ -54,6 +54,7 @@ struct Resources {
     galleon_icon: Texture2D,
     flying_galleon: Texture2D,
     shark_icon: Texture2D,
+    raining_shark: Texture2D,
     gun: Texture2D,
     machine_gun: Texture2D,
     mines: Texture2D,
@@ -147,6 +148,9 @@ impl Resources {
         let shark_icon = load_texture("assets/Whale/SharkIcon(32x34).png").await?;
         shark_icon.set_filter(FilterMode::Nearest);
 
+        let raining_shark = load_texture("assets/Whale/RainingShark(60x220).png").await?;
+        raining_shark.set_filter(FilterMode::Nearest);
+
         let fish_sword = load_texture("assets/Whale/FishSword.png").await?;
         fish_sword.set_filter(FilterMode::Nearest);
 
@@ -223,6 +227,7 @@ impl Resources {
             galleon_icon,
             flying_galleon,
             shark_icon,
+            raining_shark,
             gun,
             machine_gun,
             mines,

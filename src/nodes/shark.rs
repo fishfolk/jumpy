@@ -14,7 +14,7 @@ use crate::Resources;
 
 use super::{
     player::{capabilities, PhysicsBody, Weapon},
-    Player,
+    Player, RainingShark,
 };
 
 const SHARK_WIDTH: f32 = 32.;
@@ -111,8 +111,7 @@ impl Shark {
 
             shark.used = true;
 
-            // WRITEME
-            // FlyingShark::spawn(player.id);
+            RainingShark::rain(player.id);
 
             player.weapon = None;
             player.floating = false;

@@ -150,6 +150,18 @@
                   "y":650
                 }, 
                 {
+                  "height":0,
+                  "id":148,
+                  "name":"shark",
+                  "point":true,
+                  "rotation":0,
+                  "type":"",
+                  "visible":true,
+                  "width":0,
+                  "x":300,
+                  "y":50
+                }, 
+                {
                  "height":0,
                  "id":140,
                  "name":"grenades",
@@ -240,7 +252,7 @@
          "y":0
         }],
  "nextlayerid":6,
- "nextobjectid":148,
+ "nextobjectid":149,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.7.1",

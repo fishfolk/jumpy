@@ -53,6 +53,8 @@ struct Resources {
     flappy_jellyfishes: Texture2D,
     galleon_icon: Texture2D,
     flying_galleon: Texture2D,
+    shark_icon: Texture2D,
+    raining_shark: Texture2D,
     gun: Texture2D,
     machine_gun: Texture2D,
     mines: Texture2D,
@@ -143,6 +145,12 @@ impl Resources {
         let flying_galleon = load_texture("assets/Whale/FlyingGalleon(326x300).png").await?;
         flying_galleon.set_filter(FilterMode::Nearest);
 
+        let shark_icon = load_texture("assets/Whale/SharkIcon(32x34).png").await?;
+        shark_icon.set_filter(FilterMode::Nearest);
+
+        let raining_shark = load_texture("assets/Whale/RainingShark(60x220).png").await?;
+        raining_shark.set_filter(FilterMode::Nearest);
+
         let fish_sword = load_texture("assets/Whale/FishSword.png").await?;
         fish_sword.set_filter(FilterMode::Nearest);
 
@@ -218,6 +226,8 @@ impl Resources {
             flappy_jellyfishes,
             galleon_icon,
             flying_galleon,
+            shark_icon,
+            raining_shark,
             gun,
             machine_gun,
             mines,
@@ -242,7 +252,7 @@ async fn game(game_type: GameType, map: &str) {
     use nodes::{
         Bullets, Camera, Cannon, Cannonballs, Crate, Curse, Decoration, FlyingCurses, Fxses,
         Galleon, GameState, Grenades, Jellyfish, KickBombs, LevelBackground, MachineGun, Mines,
-        Muscet, Player, ScoreCounter, Shoes, Sproinger, Sword,
+        Muscet, Player, ScoreCounter, Shark, Shoes, Sproinger, Sword,
     };
 
     let resources_loading = start_coroutine({
@@ -417,6 +427,14 @@ async fn game(game_type: GameType, map: &str) {
                 Galleon::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
             galleon.throw(false);
             scene::add_node(galleon);
+            wat_facing ^= true;
+        }
+
+        if object.name == "shark" {
+            let mut shark =
+                Shark::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
+            shark.throw(false);
+            scene::add_node(shark);
             wat_facing ^= true;
         }
 

@@ -16,7 +16,11 @@ use super::player::{PLAYER_HITBOX_HEIGHT, PLAYER_HITBOX_WIDTH};
 const RAINING_SHARK_WIDTH: f32 = 60.;
 const RAINING_SHARK_HEIGHT: f32 = 220.;
 const RAINING_SHARK_ANIMATION_RAINING: &'static str = "raining";
+
+const SHARKS_COUNT: usize = 5;
 const RAINING_SHARK_SPEED: f32 = 350.;
+/// Determines the vertical spread of the sharks
+const MIN_START_Y: f32 = -400. - RAINING_SHARK_HEIGHT;
 
 /// RainingShark's don't have a body, as they don't have physics.
 pub struct RainingShark {
@@ -57,18 +61,34 @@ impl RainingShark {
         }
     }
 
+    // Uses the st00pidest possible algorithm for not superposing sharks.
+    //
+    // The strict and not st00pid algorithm is likely a series of random weighted choices, using a list
+    // of available slots, and placing each shark via binary search (tot.: n log₂n).
+    //
     fn compute_raining_shark_positions() -> Vec<Vec2> {
-        let positions = vec![
-            vec2(0., 0.),
-            vec2(150., -100.),
-            vec2(200., 50.),
-            vec2(700., -200.),
-            vec2(850., 20.),
-        ];
+        let mut x_positions: Vec<u32> = vec![];
+        let map_width = {
+            let resources = storage::get::<Resources>();
+            resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width
+        };
 
-        positions
+        while x_positions.len() < SHARKS_COUNT {
+            let attempted_x = gen_range(0, map_width);
+
+            let position_ok = x_positions.iter().all(|existing_x| {
+                attempted_x >= existing_x + RAINING_SHARK_WIDTH as u32
+                    || attempted_x <= existing_x.saturating_sub(RAINING_SHARK_WIDTH as u32)
+            });
+
+            if position_ok {
+                x_positions.push(attempted_x);
+            }
+        }
+
+        x_positions
             .iter()
-            .map(|pos| vec2(pos.x, pos.y - RAINING_SHARK_HEIGHT))
+            .map(|x| vec2(*x as f32, gen_range(MIN_START_Y, -RAINING_SHARK_HEIGHT)))
             .collect()
     }
 }

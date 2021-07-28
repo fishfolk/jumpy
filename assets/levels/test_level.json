@@ -151,6 +151,18 @@
                 }, 
                 {
                   "height":0,
+                  "id":149,
+                  "name":"volcano",
+                  "point":true,
+                  "rotation":0,
+                  "type":"",
+                  "visible":true,
+                  "width":0,
+                  "x":350,
+                  "y":650
+                }, 
+                {
+                  "height":0,
                   "id":148,
                   "name":"shark",
                   "point":true,
@@ -252,7 +264,7 @@
          "y":0
         }],
  "nextlayerid":6,
- "nextobjectid":149,
+ "nextobjectid":150,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.7.1",

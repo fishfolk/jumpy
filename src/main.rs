@@ -54,6 +54,7 @@ struct Resources {
     flappy_jellyfishes: Texture2D,
     galleon_icon: Texture2D,
     flying_galleon: Texture2D,
+    volcano_icon: Texture2D,
     shark_icon: Texture2D,
     raining_shark: Texture2D,
     gun: Texture2D,
@@ -148,6 +149,9 @@ impl Resources {
         let flying_galleon = load_texture("assets/Whale/FlyingGalleon(326x300).png").await?;
         flying_galleon.set_filter(FilterMode::Nearest);
 
+        let volcano_icon = load_texture("assets/Whale/VolcanoIcon(36x22).png").await?;
+        volcano_icon.set_filter(FilterMode::Nearest);
+
         let shark_icon = load_texture("assets/Whale/SharkIcon(32x34).png").await?;
         shark_icon.set_filter(FilterMode::Nearest);
 
@@ -235,6 +239,7 @@ impl Resources {
             flappy_jellyfishes,
             galleon_icon,
             flying_galleon,
+            volcano_icon,
             shark_icon,
             raining_shark,
             gun,
@@ -263,7 +268,7 @@ async fn game(game_type: GameType, map: &str) {
     use nodes::{
         Bullets, Camera, Cannon, Cannonballs, Crate, Curse, Decoration, FlyingCurses, Fxses,
         Galleon, GameState, Grenades, Jellyfish, KickBombs, LevelBackground, MachineGun, Mines,
-        Muscet, Player, ScoreCounter, Shark, Shoes, Sproinger, Sword, TurtleShell,
+        Muscet, Player, ScoreCounter, Shark, Shoes, Sproinger, Sword, TurtleShell, Volcano
     };
 
     let resources_loading = start_coroutine({
@@ -444,6 +449,14 @@ async fn game(game_type: GameType, map: &str) {
                 Galleon::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
             galleon.throw(false);
             scene::add_node(galleon);
+            wat_facing ^= true;
+        }
+
+        if object.name == "volcano" {
+            let mut volcano =
+                Volcano::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
+            volcano.throw(false);
+            scene::add_node(volcano);
             wat_facing ^= true;
         }
 

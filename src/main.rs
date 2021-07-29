@@ -55,6 +55,7 @@ struct Resources {
     galleon_icon: Texture2D,
     flying_galleon: Texture2D,
     volcano_icon: Texture2D,
+    erupting_volcano: Texture2D,
     shark_icon: Texture2D,
     raining_shark: Texture2D,
     gun: Texture2D,
@@ -152,6 +153,9 @@ impl Resources {
         let volcano_icon = load_texture("assets/Whale/VolcanoIcon(36x22).png").await?;
         volcano_icon.set_filter(FilterMode::Nearest);
 
+        let erupting_volcano = load_texture("assets/Whale/EruptingVolcano(395x100).png").await?;
+        erupting_volcano.set_filter(FilterMode::Nearest);
+
         let shark_icon = load_texture("assets/Whale/SharkIcon(32x34).png").await?;
         shark_icon.set_filter(FilterMode::Nearest);
 
@@ -240,6 +244,7 @@ impl Resources {
             galleon_icon,
             flying_galleon,
             volcano_icon,
+            erupting_volcano,
             shark_icon,
             raining_shark,
             gun,

@@ -14,7 +14,7 @@ use crate::Resources;
 
 use super::{
     player::{capabilities, PhysicsBody, Weapon},
-    Player,
+    EruptingVolcano, Player,
 };
 
 const VOLCANO_WIDTH: f32 = 36.;
@@ -105,8 +105,7 @@ impl Volcano {
 
             volcano.used = true;
 
-            // WRITEME
-            // EruptingVolcano::spawn(player.id);
+            EruptingVolcano::spawn();
 
             player.weapon = None;
             player.floating = false;

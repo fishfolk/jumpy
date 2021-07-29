@@ -10,7 +10,7 @@ use macroquad::{
 
 use crate::Resources;
 
-use super::player::{PLAYER_HITBOX_HEIGHT, PLAYER_HITBOX_WIDTH};
+use super::Player;
 
 const FLYING_CURSE_COUNTDOWN_DURATION: f32 = 10.;
 
@@ -160,12 +160,7 @@ impl scene::Node for FlyingCurses {
 
                 for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
                     if flying_curse.owner_id != player.id {
-                        let player_hitbox = Rect::new(
-                            player.body.pos.x,
-                            player.body.pos.y,
-                            PLAYER_HITBOX_WIDTH,
-                            PLAYER_HITBOX_HEIGHT,
-                        );
+                        let player_hitbox = player.get_hitbox();
                         if player_hitbox.intersect(flying_curse_hitbox).is_some() {
                             hit_fxses.spawn(explosion_position);
 
@@ -174,7 +169,7 @@ impl scene::Node for FlyingCurses {
                                 .shake();
 
                             let direction = flying_curse.current_x
-                                > (player.body.pos.x + PLAYER_HITBOX_WIDTH / 2.);
+                                > (player.body.pos.x + player_hitbox.w / 2.);
                             player.kill(direction);
 
                             return false;

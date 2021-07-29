@@ -11,7 +11,6 @@ use macroquad::{
 use crate::{nodes::player::PhysicsBody, Resources};
 
 use super::{
-    player::{PLAYER_HITBOX_HEIGHT, PLAYER_HITBOX_WIDTH},
     Player,
 };
 
@@ -143,12 +142,7 @@ impl scene::Node for Cannonballs {
 
                 for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
                     if player.id != cannonball_owner_id || cannonball.owner_safe_countdown < 0. {
-                        let player_hitbox = Rect::new(
-                            player.body.pos.x,
-                            player.body.pos.y,
-                            PLAYER_HITBOX_WIDTH,
-                            PLAYER_HITBOX_HEIGHT,
-                        );
+                        let player_hitbox = player.get_hitbox();
                         if player_hitbox.intersect(cannonball_hitbox).is_some() {
                             hit_fxses.spawn(explosion_position);
 
@@ -157,7 +151,7 @@ impl scene::Node for Cannonballs {
                                 .shake();
 
                             let direction = cannonball.body.pos.x
-                                > (player.body.pos.x + PLAYER_HITBOX_WIDTH / 2.);
+                                > (player.body.pos.x + player_hitbox.w / 2.);
                             player.kill(direction);
 
                             return false;

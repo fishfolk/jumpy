@@ -9,7 +9,6 @@ use crate::Resources;
 
 use super::{
     jellyfish::MountStatus,
-    player::{PLAYER_HITBOX_HEIGHT, PLAYER_HITBOX_WIDTH},
     Jellyfish, Player,
 };
 
@@ -219,19 +218,14 @@ impl scene::Node for FlappyJellyfish {
         let killed_player_ids = scene::find_nodes_by_type::<crate::nodes::Player>().fold(
             vec![],
             |mut killed_player_ids, mut player| {
-                let player_hitbox = Rect::new(
-                    player.body.pos.x,
-                    player.body.pos.y,
-                    PLAYER_HITBOX_WIDTH,
-                    PLAYER_HITBOX_HEIGHT,
-                );
+                let player_hitbox = player.get_hitbox();
                 if player_hitbox.intersect(flappy_jellyfish_hitbox).is_some() {
                     scene::find_node_by_type::<crate::nodes::Camera>()
                         .unwrap()
                         .shake();
 
                     let direction = flappy_jellyfish.current_pos.x
-                        > (player.body.pos.x + PLAYER_HITBOX_WIDTH / 2.);
+                        > (player.body.pos.x + player_hitbox.w / 2.);
                     player.kill(direction);
 
                     killed_player_ids.push(player.id);

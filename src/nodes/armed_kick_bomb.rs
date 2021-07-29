@@ -16,8 +16,6 @@ use macroquad::{
 
 use crate::{
     nodes::player::{
-        PLAYER_HITBOX_HEIGHT,
-        PLAYER_HITBOX_WIDTH,
         Player,
         PhysicsBody,
     },
@@ -113,12 +111,7 @@ impl Node for ArmedKickBomb {
             );
             for player in scene::find_nodes_by_type::<crate::nodes::Player>() {
                 let is_overlapping =
-                    hit_box.overlaps(&Rect::new(
-                        player.body.pos.x,
-                        player.body.pos.y,
-                        PLAYER_HITBOX_WIDTH,
-                        PLAYER_HITBOX_HEIGHT,
-                    ));
+                    hit_box.overlaps(&player.get_hitbox());
                 if is_overlapping && hit_box.y + 36.0 >= player.body.pos.y + Player::LEGS_THRESHOLD {
                     let direction = node.body.pos.x > (player.body.pos.x + 10.);
                     if direction == player.body.facing {
@@ -143,12 +136,7 @@ impl Node for ArmedKickBomb {
             );
             for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
                 let is_overlapping =
-                    hit_box.overlaps(&Rect::new(
-                        player.body.pos.x,
-                        player.body.pos.y,
-                        PLAYER_HITBOX_WIDTH,
-                        PLAYER_HITBOX_HEIGHT,
-                    ));
+                    hit_box.overlaps(&player.get_hitbox());
                 if is_overlapping {
                     let direction = node.body.pos.x > (player.body.pos.x + 10.);
                     scene::find_node_by_type::<crate::nodes::Camera>()

@@ -11,7 +11,7 @@ use macroquad::{
 
 use crate::Resources;
 
-use super::player::{PLAYER_HITBOX_HEIGHT, PLAYER_HITBOX_WIDTH};
+use super::Player;
 
 const RAINING_SHARK_WIDTH: f32 = 60.;
 const RAINING_SHARK_HEIGHT: f32 = 220.;
@@ -122,12 +122,7 @@ impl scene::Node for RainingShark {
             }
 
             if shark.owner_id != player.id {
-                let player_hitbox = Rect::new(
-                    player.body.pos.x,
-                    player.body.pos.y,
-                    PLAYER_HITBOX_WIDTH,
-                    PLAYER_HITBOX_HEIGHT,
-                );
+                let player_hitbox = player.get_hitbox();
 
                 if player_hitbox.intersect(shark_hitbox).is_some() {
                     scene::find_node_by_type::<crate::nodes::Camera>()
@@ -135,7 +130,7 @@ impl scene::Node for RainingShark {
                         .shake();
 
                     let direction =
-                        shark.current_pos.x > (player.body.pos.x + PLAYER_HITBOX_WIDTH / 2.);
+                        shark.current_pos.x > (player.body.pos.x + player_hitbox.w / 2.);
                     player.kill(direction);
                 }
             }

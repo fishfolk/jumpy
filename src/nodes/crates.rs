@@ -187,21 +187,17 @@ impl Node for Crate {
             // }
 
             if node.deadly_dangerous {
-                let others = scene::find_nodes_by_type::<crate::nodes::Player>();
+                let players = scene::find_nodes_by_type::<crate::nodes::Player>();
                 let hit_box = Rect::new(node.body.pos.x, node.body.pos.y, 30., 30.);
 
-                for mut other in others {
-                    let is_overlapping = hit_box.overlaps(&Rect::new(
-                        other.body.pos.x,
-                        other.body.pos.y,
-                        30.,
-                        30.,
-                    ));
+                for mut player in players {
+                    let player_hitbox = player.get_hitbox();
+                    let is_overlapping = hit_box.overlaps(&player_hitbox);
                     if is_overlapping {
-                        if node.body.pos.y + 32.0 < other.body.pos.y + Player::HEAD_THRESHOLD {
+                        if node.body.pos.y + 30.0 < player_hitbox.y + Player::HEAD_THRESHOLD {
                             let resources = storage::get_mut::<Resources>();
                             play_sound_once(resources.jump_sound);
-                            other.kill(!node.body.facing);
+                            player.kill(!node.body.facing);
                         }
                     }
                 }

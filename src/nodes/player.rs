@@ -19,9 +19,6 @@ use crate::{
 
 mod ai;
 
-pub const PLAYER_HITBOX_HEIGHT: f32 = 64.;
-pub const PLAYER_HITBOX_WIDTH: f32 = 20.;
-
 pub type Weapon = (HandleUntyped, Lens<PhysicsBody>, capabilities::Gun);
 pub type PhysicsObject = (HandleUntyped, Lens<PhysicsBody>);
 
@@ -188,6 +185,7 @@ pub struct Player {
     pub camera_box: Rect,
 
     pub can_head_boink: bool,
+    pub is_crouched: bool,
 
     score_counter: Handle<ScoreCounter>,
     pub game_state: Handle<GameState>,
@@ -289,6 +287,12 @@ impl Player {
                     frames: 4,
                     fps: 8,
                 },
+                Animation {
+                    name: "crouch".to_string(),
+                    row: 16,
+                    frames: 2,
+                    fps: 8,
+                }
             ],
             true,
         );
@@ -312,6 +316,7 @@ impl Player {
             ai: Some(ai::Ai::new()),
             camera_box: Rect::new(spawner_pos.x - 30., spawner_pos.y - 150., 100., 210.),
             can_head_boink: false,
+            is_crouched: false,
             score_counter,
             game_state,
         }
@@ -449,14 +454,23 @@ impl Player {
 
         let node = &mut **node;
 
-        if node.input.right {
-            node.body.speed.x = Self::RUN_SPEED;
-            node.body.facing = true;
-        } else if node.input.left {
-            node.body.speed.x = -Self::RUN_SPEED;
-            node.body.facing = false;
+        if node.is_crouched {
+            // TODO: Sliding
+            if node.input.right {
+                node.body.facing = true;
+            } else if node.input.left {
+                node.body.facing = false;
+            }
         } else {
-            node.body.speed.x = 0.;
+            if node.input.right {
+                node.body.speed.x = Self::RUN_SPEED;
+                node.body.facing = true;
+            } else if node.input.left {
+                node.body.speed.x = -Self::RUN_SPEED;
+                node.body.facing = false;
+            } else {
+                node.body.speed.x = 0.;
+            }
         }
 
         // shanke on fall
@@ -468,16 +482,15 @@ impl Player {
 
         if node.floating {
             node.fish_sprite.set_animation(4);
+        } else if node.is_crouched {
+            // TODO: Sliding etc.
+            node.fish_sprite.set_animation(5);
         } else {
             if node.input.right || node.input.left {
                 node.fish_sprite.set_animation(1);
             } else {
                 node.fish_sprite.set_animation(0);
             }
-        }
-
-        if node.input.down {
-            node.body.descent();
         }
 
         // if in jump and want to jump again
@@ -502,11 +515,19 @@ impl Player {
             node.body.have_gravity = true;
         }
 
-        if node.input.jump {
-            if node.jump_grace_timer > 0. {
-                node.jump_grace_timer = 0.0;
-                node.jump();
+        node.is_crouched = node.input.down;
+
+        if node.body.on_ground {
+            if node.input.down && node.input.jump {
+                node.body.descent();
+            } else if node.input.jump {
+                if node.jump_grace_timer > 0. {
+                    node.jump_grace_timer = 0.0;
+                    node.jump();
+                }
             }
+        } else if node.input.down {
+            node.body.descent();
         }
 
         if node.input.throw {
@@ -542,6 +563,15 @@ impl Player {
                 node.floating = false;
             }
         }
+    }
+
+    pub fn get_hitbox(&self) -> Rect {
+        Rect::new(
+            self.body.pos.x,
+            if self.is_crouched { self.body.pos.y + 32.0 } else { self.body.pos.y },
+            20.0,
+            if self.is_crouched { 32.0 } else { 64.0 }
+        )
     }
 }
 
@@ -761,12 +791,13 @@ impl scene::Node for Player {
         }
 
         if node.can_head_boink && node.body.speed.y > 0.0 {
-            let hit_box = Rect::new(node.body.pos.x, node.body.pos.y, 32.0, 60.0);
+            let hitbox = node.get_hitbox();
             for mut other in scene::find_nodes_by_type::<Player>() {
+                let other_hitbox = other.get_hitbox();
                 let is_overlapping =
-                    hit_box.overlaps(&Rect::new(other.body.pos.x, other.body.pos.y, 32.0, 60.0));
+                    hitbox.overlaps(&other_hitbox);
                 if is_overlapping {
-                    if hit_box.y + 60.0 < other.body.pos.y + Self::HEAD_THRESHOLD {
+                    if hitbox.y + 60.0 < other_hitbox.y + Self::HEAD_THRESHOLD {
                         let resources = storage::get_mut::<Resources>();
                         play_sound_once(resources.jump_sound);
                         other.kill(!node.body.facing);

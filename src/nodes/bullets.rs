@@ -3,7 +3,10 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::Resources;
+use crate::{
+    Resources,
+    nodes::Player,
+};
 use macroquad_platformer::Tile;
 
 struct Bullet {
@@ -69,7 +72,7 @@ impl scene::Node for Bullets {
             let mut killed = false;
             for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
                 let self_damaged =
-                    Rect::new(player.body.pos.x, player.body.pos.y, 20., 64.).contains(bullet.pos);
+                    player.get_hitbox().contains(bullet.pos);
                 let direction = bullet.pos.x > (player.body.pos.x + 10.);
 
                 if self_damaged {

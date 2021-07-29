@@ -35,16 +35,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "739f4a8db6605981345c5654f3a85b056ce52f37a39d34da03f25bf2151ea16e"
 
 [[package]]
-name = "alsa-sys"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0edcbbf9ef68f15ae1b620f722180b82a98b6f0628d30baa6b8d2a5abc87d58"
-dependencies = [
- "libc",
- "pkg-config",
-]
-
-[[package]]
 name = "audir-sles"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -268,7 +258,7 @@ dependencies = [
 [[package]]
 name = "macroquad"
 version = "0.3.7"
-source = "git+https://github.com/not-fl3/macroquad.git?rev=cfd7099#cfd7099f30d5de5384313a66038f23ccf1392930"
+source = "git+https://github.com/not-fl3/macroquad.git?rev=1fdc24c#1fdc24cf9340846f1147f1f38757f3aa80aa6e87"
 dependencies = [
  "bumpalo",
  "fontdue",
@@ -283,7 +273,7 @@ dependencies = [
 [[package]]
 name = "macroquad-particles"
 version = "0.1.1"
-source = "git+https://github.com/not-fl3/macroquad.git?rev=cfd7099#cfd7099f30d5de5384313a66038f23ccf1392930"
+source = "git+https://github.com/not-fl3/macroquad.git?rev=1fdc24c#1fdc24cf9340846f1147f1f38757f3aa80aa6e87"
 dependencies = [
  "macroquad",
  "nanoserde",
@@ -292,7 +282,7 @@ dependencies = [
 [[package]]
 name = "macroquad-platformer"
 version = "0.1.1"
-source = "git+https://github.com/not-fl3/macroquad.git?rev=cfd7099#cfd7099f30d5de5384313a66038f23ccf1392930"
+source = "git+https://github.com/not-fl3/macroquad.git?rev=1fdc24c#1fdc24cf9340846f1147f1f38757f3aa80aa6e87"
 dependencies = [
  "macroquad",
 ]
@@ -309,7 +299,7 @@ dependencies = [
 [[package]]
 name = "macroquad-tiled"
 version = "0.1.0"
-source = "git+https://github.com/not-fl3/macroquad.git?rev=cfd7099#cfd7099f30d5de5384313a66038f23ccf1392930"
+source = "git+https://github.com/not-fl3/macroquad.git?rev=1fdc24c#1fdc24cf9340846f1147f1f38757f3aa80aa6e87"
 dependencies = [
  "macroquad",
  "nanoserde",
@@ -318,7 +308,7 @@ dependencies = [
 [[package]]
 name = "macroquad_macro"
 version = "0.1.5"
-source = "git+https://github.com/not-fl3/macroquad.git?rev=cfd7099#cfd7099f30d5de5384313a66038f23ccf1392930"
+source = "git+https://github.com/not-fl3/macroquad.git?rev=1fdc24c#1fdc24cf9340846f1147f1f38757f3aa80aa6e87"
 
 [[package]]
 name = "maybe-uninit"
@@ -422,12 +412,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pkg-config"
-version = "0.3.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3831453b3449ceb48b6d9c7ad7c96d5ea673e9b470a1dc578c2ce6521230884c"
-
-[[package]]
 name = "png"
 version = "0.16.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -440,6 +424,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "quad-alsa-sys"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c66c2f04a6946293477973d85adc251d502da51c57b08cd9c997f0cfd8dcd4b5"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "quad-rand"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -447,13 +440,14 @@ checksum = "658fa1faf7a4cc5f057c9ee5ef560f717ad9d8dc66d975267f709624d6e1ab88"
 
 [[package]]
 name = "quad-snd"
-version = "0.1.0"
-source = "git+https://github.com/not-fl3/quad-snd.git?rev=8892248#8892248c933c42cfa73d9135812deac5606e007b"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e7c5f4e4c20c8ea5c41b2f6cdf85443cb9fcbfb282b19816a4e9e702644c6f0e"
 dependencies = [
- "alsa-sys",
  "audir-sles",
  "audrey",
  "libc",
+ "quad-alsa-sys",
  "winapi",
 ]
 

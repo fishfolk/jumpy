@@ -476,10 +476,6 @@ impl Player {
             }
         }
 
-        if node.input.down {
-            node.body.descent();
-        }
-
         // if in jump and want to jump again
         if node.body.on_ground == false && node.input.jump && node.jump_grace_timer <= 0.0 {
             if node.was_floating == false {
@@ -502,11 +498,20 @@ impl Player {
             node.body.have_gravity = true;
         }
 
-        if node.input.jump {
-            if node.jump_grace_timer > 0. {
-                node.jump_grace_timer = 0.0;
-                node.jump();
+        if node.body.on_ground {
+            if node.input.down && node.input.was_jump {
+                node.body.descent();
+            } else if node.input.down {
+                // crouch
+
+            } else if node.input.jump {
+                if node.jump_grace_timer > 0. {
+                    node.jump_grace_timer = 0.0;
+                    node.jump();
+                }
             }
+        } else if node.input.down {
+            node.body.descent();
         }
 
         if node.input.throw {

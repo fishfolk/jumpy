@@ -326,9 +326,12 @@ impl Player {
     }
 
     pub fn kill(&mut self, direction: bool) {
+        // check if armor blocks the kill
         if direction != self.body.facing && self.back_armor > 0 {
             self.back_armor -= 1;
         } else {
+            // set armor to 0
+            self.back_armor = 0;
             self.body.facing = direction;
             if self.state_machine.state() != Self::ST_DEATH {
                 self.state_machine.set_state(Self::ST_DEATH);
@@ -644,6 +647,7 @@ impl scene::Node for Player {
             },
         );
 
+        // draw turtle shell on player if the player has back armor
         if node.back_armor > 0 {
             draw_texture_ex(
                 if node.back_armor == 1 {

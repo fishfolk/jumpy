@@ -7,6 +7,7 @@ use macroquad::{
     },
     prelude::*,
 };
+use macroquad_platformer::Tile;
 
 use crate::{nodes::player::PhysicsBody, nodes::sproinger::Sproingable, Resources};
 
@@ -14,6 +15,11 @@ pub struct ArmedGrenade {
     grenade_sprite: AnimatedSprite,
     pub body: PhysicsBody,
     lived: f32,
+    /// True if erupting from a volcano
+    erupting: bool,
+    /// When erupting, enable the collider etc. after passing this coordinate on the way down. Set/valid
+    /// only when erupting.
+    erupting_enable_on_y: Option<f32>,
 }
 
 impl ArmedGrenade {
@@ -71,6 +77,8 @@ impl ArmedGrenade {
             grenade_sprite,
             body,
             lived: 0.0,
+            erupting: false,
+            erupting_enable_on_y: None,
         }
     }
 
@@ -79,12 +87,14 @@ impl ArmedGrenade {
         scene::add_node(grenade);
     }
 
-    pub fn spawn_for_volcano(pos: Vec2, speed: Vec2) {
+    pub fn spawn_for_volcano(pos: Vec2, speed: Vec2, enable_at_y: f32) {
         let mut grenade = ArmedGrenade::new(pos, true);
 
-        grenade.lived = -10.;
+        grenade.lived -= 2.; // give extra life, since they're random
         grenade.body.speed = speed;
         grenade.body.collider = None;
+        grenade.erupting = true;
+        grenade.erupting_enable_on_y = Some(enable_at_y);
 
         scene::add_node(grenade);
     }
@@ -100,24 +110,33 @@ impl Node for ArmedGrenade {
     }
 
     fn fixed_update(mut node: RefMut<Self>) {
-        if node.body.collider.is_some() {
-            node.body.update();
-        } else {
+        // Take control while erupting, and the collider hasn't been enabled. Afer that point, behave
+        // as usual.
+        if node.erupting && node.body.collider.is_none() {
             node.body.pos.y += PhysicsBody::GRAVITY * get_frame_time().powi(2) / 2.
                 + node.body.speed.y * get_frame_time();
             node.body.pos.x += node.body.speed.x * get_frame_time();
 
             node.body.speed.y += PhysicsBody::GRAVITY * get_frame_time();
 
-            let resources = storage::get::<Resources>();
-            let map_height = (resources.tiled_map.raw_tiled_map.tileheight
-                * resources.tiled_map.raw_tiled_map.height) as f32;
+            let enable_at_y = node.erupting_enable_on_y.unwrap();
 
-            if node.body.pos.y >= map_height {
-                node.delete();
+            if node.body.pos.y < enable_at_y || node.body.speed.y < 0. {
                 return;
             }
+
+            let collision_world = &mut storage::get_mut::<Resources>().collision_world;
+
+            let tile = collision_world.collide_solids(node.body.pos, 15, 15);
+
+            if tile != Tile::Empty {
+                return;
+            }
+
+            node.body.collider = Some(collision_world.add_actor(node.body.pos, 15, 15));
         }
+
+        node.body.update();
 
         node.lived += get_frame_time();
 

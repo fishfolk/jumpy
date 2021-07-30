@@ -78,6 +78,16 @@ impl ArmedGrenade {
         let grenade = ArmedGrenade::new(pos, facing);
         scene::add_node(grenade);
     }
+
+    pub fn spawn_for_volcano(pos: Vec2, speed: Vec2) {
+        let mut grenade = ArmedGrenade::new(pos, true);
+
+        grenade.lived = -10.;
+        grenade.body.speed = speed;
+        grenade.body.collider = None;
+
+        scene::add_node(grenade);
+    }
 }
 
 impl Node for ArmedGrenade {
@@ -90,7 +100,25 @@ impl Node for ArmedGrenade {
     }
 
     fn fixed_update(mut node: RefMut<Self>) {
-        node.body.update();
+        if node.body.collider.is_some() {
+            node.body.update();
+        } else {
+            node.body.pos.y += PhysicsBody::GRAVITY * get_frame_time().powi(2) / 2.
+                + node.body.speed.y * get_frame_time();
+            node.body.pos.x += node.body.speed.x * get_frame_time();
+
+            node.body.speed.y += PhysicsBody::GRAVITY * get_frame_time();
+
+            let resources = storage::get::<Resources>();
+            let map_height = (resources.tiled_map.raw_tiled_map.tileheight
+                * resources.tiled_map.raw_tiled_map.height) as f32;
+
+            if node.body.pos.y >= map_height {
+                node.delete();
+                return;
+            }
+        }
+
         node.lived += get_frame_time();
 
         if node.lived >= ArmedGrenade::COUNTDOWN_DURATION {

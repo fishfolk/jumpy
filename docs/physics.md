@@ -14,7 +14,7 @@ As for the specifics of Fish Fight, I will elaborate in the following paragraphs
 
 The game uses the [Macroquad library](https://github.com/not-fl3/macroquad), by [Fedor](https://github.com/not-fl3), who is also part of the core team of Fish Fight. This means that our scenes are composed of scene nodes, made by implementing the `Node` type. The most relevant method, when discussing physics, is the `fixed_update` method, which is called for every node, every physics frame. This means that, in order to explore the existing physics of any existing in-game object, you should browse to the corresponding node source file, in [`src/nodes`](https://github.com/fishfight/fish2/tree/master/src/nodes), and look for the `impl Node for T` section and the encapsulated `fixed_update` implementation.  
 
-This method takes a `RefMut<T>` as an argument (can be both mutable and immutable), where `T` is the type of the node that it is being implemented for. From here, you can do many things; like manipulating the node, itself, through the `RefMut<T>` parameter, as well as access other nodes by fetching them from the scene, either by type, or by specific interfaces, made by calling `node.provides([...])` in a nodes `ready` implementation. For examples of this, you can check the code of most nodes for the code providing the `Sproingable` interface, for example.
+This method takes a `RefMut<T>` as an argument (can be both mutable and immutable), where `T` is the type of the node that it is being implemented for. From here, you can do many things; like manipulating the node, itself, through the `RefMut<T>` parameter, as well as access other nodes by fetching them from the scene, either by type, or by specific traits, made by calling `node.provides([...])` in a nodes `ready` implementation. For examples of this, you can check the code of most nodes for the code providing the `Sproingable` trait, for example.
 
 Examples of code for accessing other nodes:
 
@@ -40,7 +40,7 @@ for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
 ```
 
 ```rust
-// This is from the Sproinger node, iterating through nodes providing the Sproingable interface
+// This is from the Sproinger node, iterating through nodes providing the Sproingable trait
 // and checking for collision, before performing a "sproing" on them, if they overlap
 for (_actor, mut body_lens, size) in scene::find_nodes_with::<Sproingable>() {
     if body_lens.get().is_some() {

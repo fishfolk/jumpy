@@ -206,8 +206,8 @@ impl Player {
 
     pub const JUMP_SPEED: f32 = 700.0;
     pub const RUN_SPEED: f32 = 250.0;
-    pub const SLIDE_SPEED: f32 = 900.0;
-    pub const SLIDE_DURATION: f32 = 0.5;
+    pub const SLIDE_SPEED: f32 = 800.0;
+    pub const SLIDE_DURATION: f32 = 0.05;
     pub const JUMP_GRACE_TIME: f32 = 0.15;
     pub const FLOAT_SPEED: f32 = 100.0;
 

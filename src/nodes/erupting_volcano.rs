@@ -11,7 +11,7 @@ use macroquad::{
 
 use crate::{nodes::ArmedGrenade, Resources};
 
-use super::player::PhysicsBody;
+use super::{player::PhysicsBody, EruptedItem};
 
 const VOLCANO_WIDTH: f32 = 395.;
 const VOLCANO_HEIGHT: f32 = 100.;

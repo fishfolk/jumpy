@@ -7,9 +7,10 @@ use macroquad::{
     },
     prelude::*,
 };
-use macroquad_platformer::Tile;
 
 use crate::{nodes::player::PhysicsBody, nodes::sproinger::Sproingable, Resources};
+
+use super::EruptedItem;
 
 pub struct ArmedGrenade {
     grenade_sprite: AnimatedSprite,
@@ -86,8 +87,10 @@ impl ArmedGrenade {
         let grenade = ArmedGrenade::new(pos, facing);
         scene::add_node(grenade);
     }
+}
 
-    pub fn spawn_for_volcano(pos: Vec2, speed: Vec2, enable_at_y: f32) {
+impl EruptedItem for ArmedGrenade {
+    fn spawn_for_volcano(pos: Vec2, speed: Vec2, enable_at_y: f32) {
         let mut grenade = ArmedGrenade::new(pos, true);
 
         grenade.lived -= 2.; // give extra life, since they're random
@@ -97,6 +100,13 @@ impl ArmedGrenade {
         grenade.erupting_enable_on_y = Some(enable_at_y);
 
         scene::add_node(grenade);
+    }
+
+    fn body(&mut self) -> &mut PhysicsBody {
+        &mut self.body
+    }
+    fn enable_at_y(&self) -> f32 {
+        self.erupting_enable_on_y.unwrap()
     }
 }
 
@@ -110,30 +120,12 @@ impl Node for ArmedGrenade {
     }
 
     fn fixed_update(mut node: RefMut<Self>) {
-        // Take control while erupting, and the collider hasn't been enabled. Afer that point, behave
-        // as usual.
-        if node.erupting && node.body.collider.is_none() {
-            node.body.pos.y += PhysicsBody::GRAVITY * get_frame_time().powi(2) / 2.
-                + node.body.speed.y * get_frame_time();
-            node.body.pos.x += node.body.speed.x * get_frame_time();
+        if node.erupting {
+            let node_enabled = node.eruption_update();
 
-            node.body.speed.y += PhysicsBody::GRAVITY * get_frame_time();
-
-            let enable_at_y = node.erupting_enable_on_y.unwrap();
-
-            if node.body.pos.y < enable_at_y || node.body.speed.y < 0. {
+            if !node_enabled {
                 return;
             }
-
-            let collision_world = &mut storage::get_mut::<Resources>().collision_world;
-
-            let tile = collision_world.collide_solids(node.body.pos, 15, 15);
-
-            if tile != Tile::Empty {
-                return;
-            }
-
-            node.body.collider = Some(collision_world.add_actor(node.body.pos, 15, 15));
         }
 
         node.body.update();

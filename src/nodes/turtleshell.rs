@@ -40,6 +40,7 @@ impl Node for TurtleShell {
         for mut player in scene::find_nodes_by_type::<Player>() {
             let player_rect = Rect::new(player.body.pos.x, player.body.pos.y, 30.0, 54.0);
             if player_rect.overlaps(&turtleshell_rect) {
+                // give the player two armor on pickup
                 player.back_armor += 2;
                 picked_up = true;
             }

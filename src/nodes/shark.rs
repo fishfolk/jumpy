@@ -173,6 +173,7 @@ impl scene::Node for Shark {
         node.provides::<Weapon>((
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
+            vec2(SHARK_WIDTH, SHARK_HEIGHT),
             Self::gun_capabilities(),
         ));
     }

@@ -19,7 +19,7 @@ use crate::{
 
 mod ai;
 
-pub type Weapon = (HandleUntyped, Lens<PhysicsBody>, capabilities::Gun);
+pub type Weapon = (HandleUntyped, Lens<PhysicsBody>, Vec2, capabilities::Gun);
 pub type PhysicsObject = (HandleUntyped, Lens<PhysicsBody>);
 
 pub mod capabilities {
@@ -131,7 +131,7 @@ impl PhysicsBody {
 
 impl Player {
     pub fn drop_weapon(&mut self) {
-        if let Some((weapon, _, gun)) = self.weapon.as_mut() {
+        if let Some((weapon, _, _, gun)) = self.weapon.as_mut() {
             (gun.throw)(*weapon, false);
         }
         self.weapon = None;
@@ -190,6 +190,8 @@ pub struct Player {
     pub is_sliding: bool,
 
     pub slide_timer: f32,
+
+    pub back_armor: i32,
 
     score_counter: Handle<ScoreCounter>,
     pub game_state: Handle<GameState>,
@@ -328,6 +330,7 @@ impl Player {
             ai: Some(ai::Ai::new()),
             camera_box: Rect::new(spawner_pos.x - 30., spawner_pos.y - 150., 100., 210.),
             can_head_boink: false,
+            back_armor: 0,
             is_crouched: false,
             is_sliding: false,
             slide_timer: 0.0,
@@ -337,9 +340,16 @@ impl Player {
     }
 
     pub fn kill(&mut self, direction: bool) {
-        self.body.facing = direction;
-        if self.state_machine.state() != Self::ST_DEATH {
-            self.state_machine.set_state(Self::ST_DEATH);
+        // check if armor blocks the kill
+        if direction != self.body.facing && self.back_armor > 0 {
+            self.back_armor -= 1;
+        } else {
+            // set armor to 0
+            self.back_armor = 0;
+            self.body.facing = direction;
+            if self.state_machine.state() != Self::ST_DEATH {
+                self.state_machine.set_state(Self::ST_DEATH);
+            }
         }
     }
 
@@ -433,7 +443,7 @@ impl Player {
     }
 
     fn shoot_coroutine(node: &mut RefMut<Player>) -> Coroutine {
-        if let Some((weapon, _, gun)) = node.weapon.as_mut() {
+        if let Some((weapon, _, _, gun)) = node.weapon.as_mut() {
             (gun.shoot)(*weapon, node.handle())
         } else {
             let handle = node.handle();
@@ -558,7 +568,7 @@ impl Player {
         }
 
         if node.input.throw {
-            if let Some((weapon, _, gun)) = node.weapon.as_mut() {
+            if let Some((weapon, _, _, gun)) = node.weapon.as_mut() {
                 (gun.throw)(*weapon, node.input.down == false);
                 node.weapon = None;
 
@@ -569,16 +579,16 @@ impl Player {
             } else {
                 let mut picked = false;
 
-                for (weapon, mut body, gun) in scene::find_nodes_with::<Weapon>() {
+                for (weapon, mut body, size, gun) in scene::find_nodes_with::<Weapon>() {
                     if picked {
                         break;
                     }
-                    if (gun.is_thrown)(weapon)
-                        && body.get().unwrap().pos.distance(node.body.pos) < 80.
-                    {
+                    let pos = body.get().unwrap().pos;
+                    let gun_rect = Rect::new(pos.x, pos.y, size.x, size.y);
+                    if (gun.is_thrown)(weapon) && node.get_hitbox().overlaps(&gun_rect) {
                         picked = true;
                         (gun.pick_up)(weapon);
-                        node.pick_weapon((weapon, body, gun));
+                        node.pick_weapon((weapon, body, size, gun));
                     }
                 }
             }
@@ -595,9 +605,13 @@ impl Player {
     pub fn get_hitbox(&self) -> Rect {
         Rect::new(
             self.body.pos.x,
-            if self.is_crouched { self.body.pos.y + 32.0 } else { self.body.pos.y },
+            if self.is_crouched {
+                self.body.pos.y + 32.0
+            } else {
+                self.body.pos.y
+            },
             20.0,
-            if self.is_crouched { 32.0 } else { 64.0 }
+            if self.is_crouched { 32.0 } else { 64.0 },
         )
     }
 }
@@ -659,6 +673,25 @@ impl scene::Node for Player {
                 ..Default::default()
             },
         );
+
+        // draw turtle shell on player if the player has back armor
+        if node.back_armor > 0 {
+            draw_texture_ex(
+                if node.back_armor == 1 {
+                    resources.broken_turtleshell
+                } else {
+                    resources.turtleshell
+                },
+                node.body.pos.x + if node.body.facing { -20.0 } else { 15.0 },
+                node.body.pos.y,
+                color::WHITE,
+                DrawTextureParams {
+                    flip_y: node.body.facing,
+                    rotation: std::f32::consts::PI / 2.0,
+                    ..Default::default()
+                },
+            )
+        }
     }
 
     fn update(mut node: RefMut<Self>) {
@@ -692,7 +725,7 @@ impl scene::Node for Player {
 
         {
             let node = &mut *node;
-            if let Some((_, weapon_body, _)) = node.weapon.as_mut() {
+            if let Some((_, weapon_body, _, _)) = node.weapon.as_mut() {
                 let body = weapon_body.get().unwrap();
                 body.pos = node.body.pos;
                 body.facing = node.body.facing;
@@ -835,8 +868,7 @@ impl scene::Node for Player {
             let hitbox = node.get_hitbox();
             for mut other in scene::find_nodes_by_type::<Player>() {
                 let other_hitbox = other.get_hitbox();
-                let is_overlapping =
-                    hitbox.overlaps(&other_hitbox);
+                let is_overlapping = hitbox.overlaps(&other_hitbox);
                 if is_overlapping {
                     if hitbox.y + 60.0 < other_hitbox.y + Self::HEAD_THRESHOLD {
                         let resources = storage::get_mut::<Resources>();

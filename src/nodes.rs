@@ -28,6 +28,7 @@ mod shark;
 mod shoes;
 mod sproinger;
 mod sword;
+mod turtleshell;
 
 pub use armed_grenade::ArmedGrenade;
 pub use armed_kick_bomb::ArmedKickBomb;
@@ -59,3 +60,4 @@ pub use shark::Shark;
 pub use shoes::Shoes;
 pub use sproinger::Sproinger;
 pub use sword::Sword;
+pub use turtleshell::TurtleShell;

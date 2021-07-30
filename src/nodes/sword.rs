@@ -40,6 +40,7 @@ impl scene::Node for Sword {
         node.provides::<Weapon>((
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
+            vec2(48.0, 32.0),
             Self::gun_capabilities(),
         ));
 

@@ -17,6 +17,7 @@ use super::{
     player::{capabilities, PhysicsBody, Weapon},
     Player,
 };
+use crate::nodes::sproinger::Sproingable;
 
 const INITIAL_CANNONBALLS: i32 = 3;
 const MAXIMUM_CANNONBALLS: i32 = 3;
@@ -209,7 +210,14 @@ impl scene::Node for Cannon {
         node.provides::<Weapon>((
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
+            vec2(CANNON_WIDTH, CANNON_HEIGHT),
             Self::gun_capabilities(),
+        ));
+
+        node.provides::<Sproingable>((
+            node.handle().untyped(),
+            node.handle().lens(|node| &mut node.body),
+            vec2(CANNON_WIDTH, CANNON_HEIGHT),
         ));
     }
 

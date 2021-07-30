@@ -181,6 +181,7 @@ impl scene::Node for Mines {
         node.provides::<Weapon>((
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
+            vec2(32.0, 28.0),
             Self::gun_capabilities(),
         ));
 

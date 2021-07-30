@@ -1,26 +1,14 @@
 use macroquad::{
-    experimental::{
-        collections::storage,
-        scene::{
-            RefMut,
-            Node,
-        },
-        animation::{
-            AnimatedSprite,
-            Animation,
-        },
-    },
     color,
+    experimental::{
+        animation::{AnimatedSprite, Animation},
+        collections::storage,
+        scene::{Node, RefMut},
+    },
     prelude::*,
 };
 
-use crate::{
-    nodes::player::{
-        PhysicsBody,
-    },
-    nodes::sproinger::Sproingable,
-    Resources,
-};
+use crate::{nodes::player::PhysicsBody, nodes::sproinger::Sproingable, Resources};
 
 pub struct ArmedGrenade {
     grenade_sprite: AnimatedSprite,
@@ -38,14 +26,12 @@ impl ArmedGrenade {
         let grenade_sprite = AnimatedSprite::new(
             15,
             15,
-            &[
-                Animation {
-                    name: "idle".to_string(),
-                    row: 0,
-                    frames: 1,
-                    fps: 1,
-                },
-            ],
+            &[Animation {
+                name: "idle".to_string(),
+                row: 0,
+                frames: 1,
+                fps: 1,
+            }],
             false,
         );
 
@@ -97,9 +83,9 @@ impl ArmedGrenade {
 impl Node for ArmedGrenade {
     fn ready(mut node: RefMut<Self>) {
         node.provides::<Sproingable>((
-          node.handle().untyped(),
-          node.handle().lens(|node| &mut node.body),
-          vec2(16.0, 32.0),
+            node.handle().untyped(),
+            node.handle().lens(|node| &mut node.body),
+            vec2(16.0, 32.0),
         ));
     }
 
@@ -119,8 +105,7 @@ impl Node for ArmedGrenade {
                 ArmedGrenade::EXPLOSION_HEIGHT,
             );
             for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
-                let intersect =
-                    grenade_rect.intersect(player.get_hitbox());
+                let intersect = grenade_rect.intersect(player.get_hitbox());
                 if !intersect.is_none() {
                     let direction = node.body.pos.x > (player.body.pos.x + 10.);
                     scene::find_node_by_type::<crate::nodes::Camera>()

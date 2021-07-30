@@ -78,8 +78,9 @@ impl EruptingVolcano {
     fn throw_item(&mut self) {
         let item_pos = Self::new_item_pos();
         let item_speed = Self::new_item_speed(item_pos.x);
+        let item_enable_at_y = Self::new_item_enable_at_y();
 
-        ArmedGrenade::spawn_for_volcano(item_pos, item_speed);
+        ArmedGrenade::spawn_for_volcano(item_pos, item_speed, item_enable_at_y);
     }
 
     fn eruption_shake(mut erupting_volcano: RefMut<Self>) {
@@ -162,6 +163,12 @@ impl EruptingVolcano {
         let item_x = gen_range(mouth_left_x, mouth_left_x + VOLCANO_MOUTH_X_LEN);
 
         vec2(item_x, item_y)
+    }
+
+    fn new_item_enable_at_y() -> f32 {
+        let map_height = Self::map_dimensions().1;
+
+        gen_range(0., map_height)
     }
 }
 

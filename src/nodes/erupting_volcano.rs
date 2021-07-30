@@ -9,33 +9,24 @@ use macroquad::{
     rand::gen_range,
 };
 
-use crate::Resources;
+use crate::{nodes::ArmedGrenade, Resources};
 
-use super::cannonball::Cannonball;
+use super::player::PhysicsBody;
 
 const VOLCANO_WIDTH: f32 = 395.;
 const VOLCANO_HEIGHT: f32 = 100.;
 const VOLCANO_ANIMATION_ERUPTING: &'static str = "erupting";
 /// Also applies to submersion
-const VOLCANO_EMERSION_TIME: f32 = 3.0;
+const VOLCANO_EMERSION_TIME: f32 = 5.1;
 const VOLCANO_ERUPTION_TIME: f32 = 5.0;
-const VOLCANO_APPROX_ERUPTED_ITEMS: u8 = 32;
+const VOLCANO_APPROX_ERUPTED_ITEMS: u8 = 15;
+const SHAKE_INTERVAL: f32 = 0.2;
 
 /// Relative to the volcano top
 const VOLCANO_MOUTH_Y: f32 = 30.;
 /// Relative to the volcano left
 const VOLCANO_MOUTH_X_START: f32 = 118.;
 const VOLCANO_MOUTH_X_LEN: f32 = 150.;
-
-// Based on these two, the max (initial) speed is calculated.
-// For simplicity, on the way up, the standard gravity law applies, but on the way back, there is a
-// cap on speed.
-const GRAVITY: f32 = 700.;
-/// Time to reach the top of the map
-const ITEMS_TIME_TO_CROSS_MAP: f32 = 4.;
-const MAX_FALLING_SPEED: f32 = 500.;
-
-const SHAKE_GRACE_TIME: f32 = 0.2;
 
 enum EruptingVolcanoState {
     Emerging,
@@ -50,7 +41,6 @@ pub struct EruptingVolcano {
     state: EruptingVolcanoState,
     last_shake_time: f32,
     time_to_throw_next_item: f32,
-    thrown_items: Vec<Cannonball>,
 }
 
 impl EruptingVolcano {
@@ -80,18 +70,28 @@ impl EruptingVolcano {
             sprite: erupting_volcano_sprite,
             current_pos: start_pos,
             state: EruptingVolcanoState::Emerging,
-            last_shake_time: SHAKE_GRACE_TIME,
-            time_to_throw_next_item: Self::time_for_next_item(),
-            thrown_items: vec![],
+            last_shake_time: SHAKE_INTERVAL,
+            time_to_throw_next_item: Self::time_before_new_item(),
         }
     }
 
-    fn throw_item() {
-        let item_speed = Self::start_items_max_speed();
-        let item_pos = Self::pos_for_next_item();
+    fn throw_item(&mut self) {
+        let item_pos = Self::new_item_pos();
+        let item_speed = Self::new_item_speed(item_pos.x);
 
-        println!("WRITEME: throwing item: {}, {}", item_pos, item_speed);
+        ArmedGrenade::spawn_for_volcano(item_pos, item_speed);
     }
+
+    fn eruption_shake(mut erupting_volcano: RefMut<Self>) {
+        if erupting_volcano.last_shake_time >= SHAKE_INTERVAL {
+            scene::find_node_by_type::<crate::nodes::Camera>()
+                .unwrap()
+                .shake();
+            erupting_volcano.last_shake_time = 0.;
+        }
+    }
+
+    // POSITION HELPERS ////////////////////////////////////////////////////////
 
     /// Returns (start_posion, direction)
     fn start_position() -> Vec2 {
@@ -104,11 +104,8 @@ impl EruptingVolcano {
         vec2(start_x, start_y)
     }
 
-    fn start_items_max_speed() -> f32 {
-        let (_, map_height) = Self::map_dimensions();
-
-        // Gravity law: y = gt²/2 + vᵢt
-        (map_height - GRAVITY * VOLCANO_EMERSION_TIME.powi(2) / 2.) / VOLCANO_EMERSION_TIME
+    fn max_emersion_y() -> f32 {
+        Self::map_dimensions().1 - VOLCANO_HEIGHT
     }
 
     /// Returns (map_width, map_height)
@@ -123,20 +120,9 @@ impl EruptingVolcano {
         (map_width, map_height)
     }
 
-    fn max_emersion_y() -> f32 {
-        Self::map_dimensions().1 - VOLCANO_HEIGHT
-    }
+    // NEW ITEM HELPERS ////////////////////////////////////////////////////////
 
-    fn eruption_shake(mut erupting_volcano: RefMut<Self>) {
-        if erupting_volcano.last_shake_time >= SHAKE_GRACE_TIME {
-            scene::find_node_by_type::<crate::nodes::Camera>()
-                .unwrap()
-                .shake();
-            erupting_volcano.last_shake_time = 0.;
-        }
-    }
-
-    fn time_for_next_item() -> f32 {
+    fn time_before_new_item() -> f32 {
         // Multiply by two, so in average, we have the expected number of items.
         // Note that if an item is shot immediately, this logic will be more likely to shoot one item
         // more than intended.
@@ -146,7 +132,30 @@ impl EruptingVolcano {
         )
     }
 
-    fn pos_for_next_item() -> Vec2 {
+    fn new_item_speed(item_x: f32) -> Vec2 {
+        let (map_width, map_height) = Self::map_dimensions();
+
+        // Gravity law: vₜ² = vᵢ² - 2gy
+        // We take the negative solution, since we go upwards.
+        let y_speed = -(2. * PhysicsBody::GRAVITY * map_height).sqrt();
+
+        let x_distance = if item_x >= map_width / 2. {
+            map_width - item_x
+        } else {
+            -item_x
+        };
+
+        // Gravity law: t = (vₜ - vᵢ) / g
+        // The 2* factor is due to going up, then down.
+        let time_on_map: f32 = (-y_speed / PhysicsBody::GRAVITY) * 2.;
+        let max_x_speed = x_distance / time_on_map;
+
+        let x_speed = gen_range(0., max_x_speed);
+
+        vec2(x_speed, y_speed)
+    }
+
+    fn new_item_pos() -> Vec2 {
         let item_y = Self::max_emersion_y() + VOLCANO_MOUTH_Y;
 
         let mouth_left_x = Self::start_position().x + VOLCANO_MOUTH_X_START;
@@ -158,8 +167,6 @@ impl EruptingVolcano {
 
 impl scene::Node for EruptingVolcano {
     fn fixed_update(mut erupting_volcano: RefMut<Self>) {
-        println!("WRITEME: Complete EruptingVolcano fixed_update()");
-
         match &mut erupting_volcano.state {
             EruptingVolcanoState::Emerging => {
                 erupting_volcano.current_pos.y -=
@@ -178,13 +185,13 @@ impl scene::Node for EruptingVolcano {
 
                 if *time >= VOLCANO_ERUPTION_TIME {
                     erupting_volcano.state = EruptingVolcanoState::Submerging;
-                    erupting_volcano.last_shake_time = SHAKE_GRACE_TIME;
+                    erupting_volcano.last_shake_time = SHAKE_INTERVAL;
                 } else {
                     erupting_volcano.time_to_throw_next_item -= get_frame_time();
 
                     if erupting_volcano.time_to_throw_next_item <= 0. {
-                        Self::throw_item();
-                        erupting_volcano.time_to_throw_next_item = Self::time_for_next_item();
+                        erupting_volcano.throw_item();
+                        erupting_volcano.time_to_throw_next_item = Self::time_before_new_item();
                     }
                 }
             }
@@ -201,56 +208,6 @@ impl scene::Node for EruptingVolcano {
                 }
             }
         }
-
-        //         let direction_x_factor = if erupting_volcano.direction { 1. } else { -1. };
-        //         let map_width = {
-        //             let resources = storage::get::<Resources>();
-        //             (resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width)
-        //                 as f32
-        //         };
-        //
-        //         erupting_volcano.current_pos.x +=
-        //             direction_x_factor * get_frame_time() * VOLCANO_SPEED;
-        //
-        //         if erupting_volcano.current_pos.x + VOLCANO_WIDTH < 0.
-        //             || erupting_volcano.current_pos.x > map_width - 1.
-        //         {
-        //             erupting_volcano.delete();
-        //             return;
-        //         }
-        //
-        //         let erupting_volcano_hitbox = Rect::new(
-        //             erupting_volcano.current_pos.x,
-        //             erupting_volcano.current_pos.y,
-        //             VOLCANO_WIDTH,
-        //             VOLCANO_HEIGHT,
-        //         );
-        //
-        //         for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
-        //             // The vessel is very large, so we need to avoid triggering this routine multiple times.
-        //             if player.dead {
-        //                 continue;
-        //             }
-        //
-        //             if erupting_volcano.owner_id != player.id {
-        //                 let player_hitbox = Rect::new(
-        //                     player.body.pos.x,
-        //                     player.body.pos.y,
-        //                     PLAYER_HITBOX_WIDTH,
-        //                     PLAYER_HITBOX_HEIGHT,
-        //                 );
-        //
-        //                 if player_hitbox.intersect(erupting_volcano_hitbox).is_some() {
-        //                     scene::find_node_by_type::<crate::nodes::Camera>()
-        //                         .unwrap()
-        //                         .shake();
-        //
-        //                     let direction = erupting_volcano.current_pos.x
-        //                         > (player.body.pos.x + PLAYER_HITBOX_WIDTH / 2.);
-        //                     player.kill(direction);
-        //                 }
-        //             }
-        //         }
     }
 
     fn draw(mut erupting_volcano: RefMut<Self>) {

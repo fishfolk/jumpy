@@ -187,6 +187,8 @@ pub struct Player {
     pub can_head_boink: bool,
     pub is_crouched: bool,
 
+    pub back_armor: i32,
+
     score_counter: Handle<ScoreCounter>,
     pub game_state: Handle<GameState>,
 }
@@ -292,7 +294,7 @@ impl Player {
                     row: 16,
                     frames: 2,
                     fps: 8,
-                }
+                },
             ],
             true,
         );
@@ -316,6 +318,7 @@ impl Player {
             ai: Some(ai::Ai::new()),
             camera_box: Rect::new(spawner_pos.x - 30., spawner_pos.y - 150., 100., 210.),
             can_head_boink: false,
+            back_armor: 0,
             is_crouched: false,
             score_counter,
             game_state,
@@ -323,9 +326,13 @@ impl Player {
     }
 
     pub fn kill(&mut self, direction: bool) {
-        self.body.facing = direction;
-        if self.state_machine.state() != Self::ST_DEATH {
-            self.state_machine.set_state(Self::ST_DEATH);
+        if direction != self.body.facing && self.back_armor > 0 {
+            self.back_armor -= 1;
+        } else {
+            self.body.facing = direction;
+            if self.state_machine.state() != Self::ST_DEATH {
+                self.state_machine.set_state(Self::ST_DEATH);
+            }
         }
     }
 
@@ -568,9 +575,13 @@ impl Player {
     pub fn get_hitbox(&self) -> Rect {
         Rect::new(
             self.body.pos.x,
-            if self.is_crouched { self.body.pos.y + 32.0 } else { self.body.pos.y },
+            if self.is_crouched {
+                self.body.pos.y + 32.0
+            } else {
+                self.body.pos.y
+            },
             20.0,
-            if self.is_crouched { 32.0 } else { 64.0 }
+            if self.is_crouched { 32.0 } else { 64.0 },
         )
     }
 }
@@ -632,6 +643,24 @@ impl scene::Node for Player {
                 ..Default::default()
             },
         );
+
+        if node.back_armor > 0 {
+            draw_texture_ex(
+                if node.back_armor == 1 {
+                    resources.broken_turtleshell
+                } else {
+                    resources.turtleshell
+                },
+                node.body.pos.x + if node.body.facing { -20.0 } else { 15.0 },
+                node.body.pos.y,
+                color::WHITE,
+                DrawTextureParams {
+                    flip_y: node.body.facing,
+                    rotation: std::f32::consts::PI / 2.0,
+                    ..Default::default()
+                },
+            )
+        }
     }
 
     fn update(mut node: RefMut<Self>) {
@@ -794,8 +823,7 @@ impl scene::Node for Player {
             let hitbox = node.get_hitbox();
             for mut other in scene::find_nodes_by_type::<Player>() {
                 let other_hitbox = other.get_hitbox();
-                let is_overlapping =
-                    hitbox.overlaps(&other_hitbox);
+                let is_overlapping = hitbox.overlaps(&other_hitbox);
                 if is_overlapping {
                     if hitbox.y + 60.0 < other_hitbox.y + Self::HEAD_THRESHOLD {
                         let resources = storage::get_mut::<Resources>();

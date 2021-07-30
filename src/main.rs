@@ -63,6 +63,8 @@ struct Resources {
     fish_sword: Texture2D,
     crates: Texture2D,
     shoes: Texture2D,
+    broken_turtleshell: Texture2D,
+    turtleshell: Texture2D,
     background_01: Texture2D,
     background_02: Texture2D,
     background_03: Texture2D,
@@ -160,6 +162,12 @@ impl Resources {
         let shoes = load_texture("assets/Whale/Shoes(32x32).png").await?;
         shoes.set_filter(FilterMode::Nearest);
 
+        let broken_turtleshell = load_texture("assets/Whale/BrokenTurtleShell(32x32).png").await?;
+        broken_turtleshell.set_filter(FilterMode::Nearest);
+
+        let turtleshell = load_texture("assets/Whale/TurtleShell(32x32).png").await?;
+        turtleshell.set_filter(FilterMode::Nearest);
+
         let background_01 = load_texture("assets/Background/01.png").await?;
         background_01.set_filter(FilterMode::Nearest);
 
@@ -236,6 +244,8 @@ impl Resources {
             fish_sword,
             crates,
             shoes,
+            broken_turtleshell,
+            turtleshell,
             background_01,
             background_02,
             background_03,
@@ -252,7 +262,7 @@ async fn game(game_type: GameType, map: &str) {
     use nodes::{
         Bullets, Camera, Cannon, Cannonballs, Crate, Curse, Decoration, FlyingCurses, Fxses,
         Galleon, GameState, Grenades, Jellyfish, KickBombs, LevelBackground, MachineGun, Mines,
-        Muscet, Player, ScoreCounter, Shark, Shoes, Sproinger, Sword,
+        Muscet, Player, ScoreCounter, Shark, Shoes, Sproinger, Sword, TurtleShell,
     };
 
     let resources_loading = start_coroutine({
@@ -398,6 +408,12 @@ async fn game(game_type: GameType, map: &str) {
         if object.name == "shoes" {
             let shoes = Shoes::new(vec2(object.world_x - 32., object.world_y - 32.));
             scene::add_node(shoes);
+            wat_facing ^= true;
+        }
+
+        if object.name == "turtleshell" {
+            let turtleshell = TurtleShell::new(vec2(object.world_x - 32., object.world_y - 32.));
+            scene::add_node(turtleshell);
             wat_facing ^= true;
         }
 

@@ -11,8 +11,6 @@ use macroquad::{
 
 use crate::Resources;
 
-use super::Player;
-
 const RAINING_SHARK_WIDTH: f32 = 60.;
 const RAINING_SHARK_HEIGHT: f32 = 220.;
 const RAINING_SHARK_ANIMATION_RAINING: &'static str = "raining";

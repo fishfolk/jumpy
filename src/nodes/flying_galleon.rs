@@ -11,8 +11,6 @@ use macroquad::{
 
 use crate::Resources;
 
-use super::Player;
-
 const FLYING_GALLEON_WIDTH: f32 = 326.;
 const FLYING_GALLEON_HEIGHT: f32 = 300.;
 const FLYING_GALLEON_ANIMATION_FLYING: &'static str = "flying";

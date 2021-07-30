@@ -5,7 +5,6 @@ use macroquad::{
 
 use crate::{
     Resources,
-    nodes::Player,
 };
 use macroquad_platformer::Tile;
 

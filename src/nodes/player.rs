@@ -19,7 +19,7 @@ use crate::{
 
 mod ai;
 
-pub type Weapon = (HandleUntyped, Lens<PhysicsBody>, capabilities::Gun);
+pub type Weapon = (HandleUntyped, Lens<PhysicsBody>, Vec2, capabilities::Gun);
 pub type PhysicsObject = (HandleUntyped, Lens<PhysicsBody>);
 
 pub mod capabilities {
@@ -130,7 +130,7 @@ impl PhysicsBody {
 
 impl Player {
     pub fn drop_weapon(&mut self) {
-        if let Some((weapon, _, gun)) = self.weapon.as_mut() {
+        if let Some((weapon, _, _, gun)) = self.weapon.as_mut() {
             (gun.throw)(*weapon, false);
         }
         self.weapon = None;
@@ -429,7 +429,7 @@ impl Player {
     }
 
     fn shoot_coroutine(node: &mut RefMut<Player>) -> Coroutine {
-        if let Some((weapon, _, gun)) = node.weapon.as_mut() {
+        if let Some((weapon, _, _, gun)) = node.weapon.as_mut() {
             (gun.shoot)(*weapon, node.handle())
         } else {
             let handle = node.handle();
@@ -541,7 +541,7 @@ impl Player {
         }
 
         if node.input.throw {
-            if let Some((weapon, _, gun)) = node.weapon.as_mut() {
+            if let Some((weapon, _, _, gun)) = node.weapon.as_mut() {
                 (gun.throw)(*weapon, node.input.down == false);
                 node.weapon = None;
 
@@ -552,16 +552,16 @@ impl Player {
             } else {
                 let mut picked = false;
 
-                for (weapon, mut body, gun) in scene::find_nodes_with::<Weapon>() {
+                for (weapon, mut body, size, gun) in scene::find_nodes_with::<Weapon>() {
                     if picked {
                         break;
                     }
-                    if (gun.is_thrown)(weapon)
-                        && body.get().unwrap().pos.distance(node.body.pos) < 80.
-                    {
+                    let pos = body.get().unwrap().pos;
+                    let gun_rect = Rect::new(pos.x, pos.y, size.x, size.y);
+                    if (gun.is_thrown)(weapon) && node.get_hitbox().overlaps(&gun_rect) {
                         picked = true;
                         (gun.pick_up)(weapon);
-                        node.pick_weapon((weapon, body, gun));
+                        node.pick_weapon((weapon, body, size, gun));
                     }
                 }
             }
@@ -698,7 +698,7 @@ impl scene::Node for Player {
 
         {
             let node = &mut *node;
-            if let Some((_, weapon_body, _)) = node.weapon.as_mut() {
+            if let Some((_, weapon_body, _, _)) = node.weapon.as_mut() {
                 let body = weapon_body.get().unwrap();
                 body.pos = node.body.pos;
                 body.facing = node.body.facing;

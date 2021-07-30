@@ -133,6 +133,7 @@ impl scene::Node for Curse {
         node.provides::<Weapon>((
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
+            vec2(CURSE_WIDTH, CURSE_HEIGHT),
             Self::gun_capabilities(),
         ));
     }

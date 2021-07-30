@@ -49,6 +49,7 @@ pub struct Input {
     pub left: bool,
     pub right: bool,
     pub down: bool,
+    pub slide: bool,
 }
 
 pub struct PhysicsBody {
@@ -186,6 +187,9 @@ pub struct Player {
 
     pub can_head_boink: bool,
     pub is_crouched: bool,
+    pub is_sliding: bool,
+
+    pub slide_timer: f32,
 
     pub back_armor: i32,
 
@@ -204,6 +208,8 @@ impl Player {
 
     pub const JUMP_SPEED: f32 = 700.0;
     pub const RUN_SPEED: f32 = 250.0;
+    pub const SLIDE_SPEED: f32 = 800.0;
+    pub const SLIDE_DURATION: f32 = 0.05;
     pub const JUMP_GRACE_TIME: f32 = 0.15;
     pub const FLOAT_SPEED: f32 = 100.0;
 
@@ -295,6 +301,12 @@ impl Player {
                     frames: 2,
                     fps: 8,
                 },
+                Animation {
+                    name: "slide".to_string(),
+                    row: 18,
+                    frames: 2,
+                    fps: 8,
+                }
             ],
             true,
         );
@@ -320,6 +332,8 @@ impl Player {
             can_head_boink: false,
             back_armor: 0,
             is_crouched: false,
+            is_sliding: false,
+            slide_timer: 0.0,
             score_counter,
             game_state,
         }
@@ -464,22 +478,29 @@ impl Player {
 
         let node = &mut **node;
 
-        if node.is_crouched {
-            // TODO: Sliding
-            if node.input.right {
-                node.body.facing = true;
-            } else if node.input.left {
-                node.body.facing = false;
-            }
-        } else {
-            if node.input.right {
-                node.body.speed.x = Self::RUN_SPEED;
-                node.body.facing = true;
-            } else if node.input.left {
-                node.body.speed.x = -Self::RUN_SPEED;
-                node.body.facing = false;
+        if node.is_sliding {
+            node.body.speed.x = if node.body.facing {
+                Self::SLIDE_SPEED
             } else {
-                node.body.speed.x = 0.;
+                -Self::SLIDE_SPEED
+            };
+        } else {
+            if node.is_crouched {
+                if node.input.right {
+                    node.body.facing = true;
+                } else if node.input.left {
+                    node.body.facing = false;
+                }
+            } else {
+                if node.input.right {
+                    node.body.speed.x = Self::RUN_SPEED;
+                    node.body.facing = true;
+                } else if node.input.left {
+                    node.body.speed.x = -Self::RUN_SPEED;
+                    node.body.facing = false;
+                } else {
+                    node.body.speed.x = 0.;
+                }
             }
         }
 
@@ -492,8 +513,9 @@ impl Player {
 
         if node.floating {
             node.fish_sprite.set_animation(4);
+        } else if node.is_sliding {
+            node.fish_sprite.set_animation(6);
         } else if node.is_crouched {
-            // TODO: Sliding etc.
             node.fish_sprite.set_animation(5);
         } else {
             if node.input.right || node.input.left {
@@ -528,15 +550,20 @@ impl Player {
         node.is_crouched = node.input.down;
 
         if node.body.on_ground {
-            if node.input.down && node.input.jump {
-                node.body.descent();
+            if node.input.down {
+                if node.input.jump {
+                    node.body.descent();
+                } else if !node.is_sliding && node.input.slide {
+                    node.is_sliding = true;
+                    node.slide_timer = 0.0;
+                }
             } else if node.input.jump {
                 if node.jump_grace_timer > 0. {
                     node.jump_grace_timer = 0.0;
                     node.jump();
                 }
             }
-        } else if node.input.down {
+        } else if !node.is_sliding && node.input.down {
             node.body.descent();
         }
 
@@ -786,6 +813,8 @@ impl scene::Node for Player {
                 node.input.left = is_key_down(KeyCode::A);
                 node.input.right = is_key_down(KeyCode::D);
                 node.input.down = is_key_down(KeyCode::S);
+
+                node.input.slide = is_key_down(KeyCode::C);
             }
 
             if node.ai_enabled == false && node.controller_id == 0 {
@@ -795,6 +824,8 @@ impl scene::Node for Player {
                 node.input.left = is_key_down(KeyCode::Left);
                 node.input.right = is_key_down(KeyCode::Right);
                 node.input.down = is_key_down(KeyCode::Down);
+
+                node.input.slide = is_key_down(KeyCode::RightControl);
             }
         }
 
@@ -814,10 +845,20 @@ impl scene::Node for Player {
         {
             let node = &mut *node;
 
-            if node.body.on_ground && node.input.was_jump == false {
-                node.jump_grace_timer = Self::JUMP_GRACE_TIME;
-            } else if node.jump_grace_timer > 0. {
-                node.jump_grace_timer -= get_frame_time();
+            if node.is_sliding {
+                node.slide_timer += get_frame_time();
+                if node.slide_timer >= Player::SLIDE_DURATION {
+                    node.is_sliding = false;
+                    node.slide_timer = 0.0;
+                }
+            }
+
+            if !node.is_sliding {
+                if node.body.on_ground && node.input.was_jump == false {
+                    node.jump_grace_timer = Self::JUMP_GRACE_TIME;
+                } else if node.jump_grace_timer > 0. {
+                    node.jump_grace_timer -= get_frame_time();
+                }
             }
 
             node.body.update();

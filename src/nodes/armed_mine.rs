@@ -14,7 +14,6 @@ use macroquad::{
 use crate::{
     nodes::player::{
         PhysicsBody,
-        Player,
     },
     nodes::sproinger::Sproingable,
     Resources,

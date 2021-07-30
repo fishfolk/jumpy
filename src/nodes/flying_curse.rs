@@ -10,8 +10,6 @@ use macroquad::{
 
 use crate::Resources;
 
-use super::Player;
-
 const FLYING_CURSE_COUNTDOWN_DURATION: f32 = 10.;
 
 const FLYING_CURSE_WIDTH: f32 = 32.;

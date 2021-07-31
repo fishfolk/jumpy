@@ -145,24 +145,20 @@ impl scene::Node for Curse {
     fn draw(node: RefMut<Self>) {
         let resources = storage::get_mut::<Resources>();
 
-        let curse_mount_pos = if node.thrown == false {
-            if node.body.facing {
+        let mut draw_pos = node.body.pos;
+
+        if !node.thrown {
+            draw_pos += if node.body.facing {
                 vec2(CURSE_MOUNT_X_REL, CURSE_MOUNT_Y)
             } else {
                 vec2(-CURSE_MOUNT_X_REL, CURSE_MOUNT_Y)
-            }
-        } else {
-            if node.body.facing {
-                vec2(-CURSE_WIDTH, 0.)
-            } else {
-                vec2(CURSE_WIDTH, 0.)
             }
         };
 
         draw_texture_ex(
             resources.curse,
-            node.body.pos.x + curse_mount_pos.x,
-            node.body.pos.y + curse_mount_pos.y,
+            draw_pos.x,
+            draw_pos.y,
             color::WHITE,
             DrawTextureParams {
                 source: Some(node.curse_sprite.frame().source_rect),

@@ -20,6 +20,7 @@ use particles::EmittersCache;
 mod gui;
 mod input_axis;
 mod nodes;
+mod circle;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum GameType {

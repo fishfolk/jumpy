@@ -11,6 +11,7 @@ use macroquad::{
 use crate::{nodes::player::PhysicsBody, nodes::sproinger::Sproingable, Resources};
 
 use super::EruptedItem;
+use crate::circle::Circle;
 
 pub struct ArmedGrenade {
     grenade_sprite: AnimatedSprite,
@@ -25,8 +26,7 @@ pub struct ArmedGrenade {
 
 impl ArmedGrenade {
     pub const COUNTDOWN_DURATION: f32 = 0.5;
-    pub const EXPLOSION_WIDTH: f32 = 100.0;
-    pub const EXPLOSION_HEIGHT: f32 = 100.0;
+    pub const EXPLOSION_RADIUS: f32 = 100.0;
 
     pub fn new(pos: Vec2, facing: bool) -> Self {
         // TODO: In case we want to animate thrown grenades rotating etc.
@@ -137,15 +137,13 @@ impl Node for ArmedGrenade {
                 let mut resources = storage::get_mut::<Resources>();
                 resources.hit_fxses.spawn(node.body.pos);
             }
-            let grenade_rect = Rect::new(
-                node.body.pos.x - (ArmedGrenade::EXPLOSION_WIDTH / 2.0),
-                node.body.pos.y - (ArmedGrenade::EXPLOSION_HEIGHT / 2.0),
-                ArmedGrenade::EXPLOSION_WIDTH,
-                ArmedGrenade::EXPLOSION_HEIGHT,
+            let grenade_circ = Circle::new(
+                node.body.pos.x,
+                node.body.pos.y,
+                ArmedGrenade::EXPLOSION_RADIUS,
             );
             for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
-                let intersect = grenade_rect.intersect(player.get_hitbox());
-                if !intersect.is_none() {
+                if grenade_circ.overlaps(player.get_hitbox()) {
                     let direction = node.body.pos.x > (player.body.pos.x + 10.);
                     scene::find_node_by_type::<crate::nodes::Camera>()
                         .unwrap()

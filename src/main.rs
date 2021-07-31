@@ -17,10 +17,10 @@ use macroquad::{
 use macroquad_platformer::{Tile, World as CollisionWorld};
 use particles::EmittersCache;
 
+mod circle;
 mod gui;
 mod input_axis;
 mod nodes;
-mod circle;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum GameType {
@@ -273,7 +273,7 @@ async fn game(game_type: GameType, map: &str) {
     use nodes::{
         Bullets, Camera, Cannon, Cannonballs, Crate, Curse, Decoration, FlyingCurses, Fxses,
         Galleon, GameState, Grenades, Jellyfish, KickBombs, LevelBackground, MachineGun, Mines,
-        Muscet, Player, ScoreCounter, Shark, Shoes, Sproinger, Sword, TurtleShell, Volcano
+        Muscet, Player, ScoreCounter, Shark, Shoes, Sproinger, Sword, TurtleShell, Volcano,
     };
 
     let resources_loading = start_coroutine({

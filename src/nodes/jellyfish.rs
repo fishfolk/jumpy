@@ -22,7 +22,7 @@ const JELLYFISH_HEIGHT: f32 = 29.;
 const JELLYFISH_ANIMATION_BASE: &'static str = "base";
 
 /// Statuses, in order
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum MountStatus {
     // This is the normal sequence of statuses. Death will reset the state to Dropped
     Dropped,
@@ -201,27 +201,20 @@ impl scene::Node for Jellyfish {
     fn draw(node: RefMut<Self>) {
         let resources = storage::get_mut::<Resources>();
 
-        let jellyfish_mount_pos = match node.mount_status {
-            MountStatus::Dropped => {
-                if node.body.facing {
-                    vec2(-25., 0.)
-                } else {
-                    vec2(5., 0.)
-                }
+        let mut draw_pos = node.body.pos;
+
+        if node.mount_status != MountStatus::Dropped {
+            draw_pos += if node.body.facing {
+                vec2(-8., -19.)
+            } else {
+                vec2(4., -19.)
             }
-            _ => {
-                if node.body.facing {
-                    vec2(-8., -19.)
-                } else {
-                    vec2(4., -19.)
-                }
-            }
-        };
+        }
 
         draw_texture_ex(
             resources.jellyfish,
-            node.body.pos.x + jellyfish_mount_pos.x,
-            node.body.pos.y + jellyfish_mount_pos.y,
+            draw_pos.x,
+            draw_pos.y,
             color::WHITE,
             DrawTextureParams {
                 source: Some(node.jellyfish_sprite.frame().source_rect),

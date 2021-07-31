@@ -18,6 +18,7 @@ use crate::{
     nodes::sproinger::Sproingable,
     Resources,
 };
+use crate::circle::Circle;
 
 pub struct ArmedMine {
     mine_sprite: AnimatedSprite,
@@ -27,8 +28,8 @@ pub struct ArmedMine {
 
 impl ArmedMine {
     pub const ARMED_AFTER_DURATION: f32 = 0.75;
-    pub const TRIGGER_WIDTH: f32 = 30.0;
-    pub const TRIGGER_HEIGHT: f32 = 15.0;
+    pub const TRIGGER_RADIUS: f32 = 15.0;
+    pub const EXPLOSION_RADIUS: f32 = 150.0;
 
     pub fn new(pos: Vec2, facing: bool) -> Self {
         // TODO: In case we want to animate thrown grenades rotating etc.
@@ -122,22 +123,28 @@ impl scene::Node for ArmedMine {
 
         if node.lived >= ArmedMine::ARMED_AFTER_DURATION {
             let mut killed = false;
-            let mine_rect = Rect::new(
-                node.body.pos.x - (ArmedMine::TRIGGER_WIDTH / 2.0),
-                node.body.pos.y - (ArmedMine::TRIGGER_HEIGHT / 2.0),
-                ArmedMine::TRIGGER_WIDTH,
-                ArmedMine::TRIGGER_HEIGHT,
+            let trigger = Circle::new(
+                node.body.pos.x,
+                node.body.pos.y,
+                ArmedMine::TRIGGER_RADIUS,
             );
             for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
-                let intersect =
-                    mine_rect.intersect(player.get_hitbox());
-                if !intersect.is_none() {
-                    let direction = node.body.pos.x > (player.body.pos.x + 10.);
+                let player_hitbox = player.get_hitbox();
+                if trigger.overlaps(player_hitbox) {
                     scene::find_node_by_type::<crate::nodes::Camera>()
                         .unwrap()
                         .shake();
-                    player.kill(direction);
-                    killed = true;
+
+                    let explosion = Circle::new(
+                        node.body.pos.x,
+                        node.body.pos.y,
+                        ArmedMine::EXPLOSION_RADIUS,
+                    );
+                    if explosion.overlaps(player_hitbox) {
+                        let direction = node.body.pos.x > (player.body.pos.x + 10.);
+                        player.kill(direction);
+                        killed = true;
+                    }
                 }
             }
             if killed {

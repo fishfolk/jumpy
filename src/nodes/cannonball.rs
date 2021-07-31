@@ -13,6 +13,7 @@ use crate::{nodes::player::PhysicsBody, Resources};
 use super::{
     Player,
 };
+use crate::circle::Circle;
 
 const CANNONBALL_COUNTDOWN_DURATION: f32 = 0.5;
 /// After shooting, the owner is safe for this amount of time. This is crucial, otherwise, given the
@@ -29,8 +30,7 @@ const CANNONBALL_INITIAL_SPEED_Y: f32 = -200.;
 const CANNONBALL_MOUNT_X_REL: f32 = 20.;
 const CANNONBALL_MOUNT_Y: f32 = 40.;
 
-const EXPLOSION_HITBOX_WIDTH: f32 = 4. * CANNONBALL_WIDTH;
-const EXPLOSION_HITBOX_HEIGHT: f32 = 4. * CANNONBALL_HEIGHT;
+const EXPLOSION_RADIUS: f32 = 4. * CANNONBALL_WIDTH;
 
 pub struct Cannonball {
     cannonball_sprite: AnimatedSprite,
@@ -133,17 +133,16 @@ impl scene::Node for Cannonballs {
             if cannonball.lived < cannonball.countdown {
                 let cannonball_owner_id = scene::get_node(cannonball.owner).id;
 
-                let cannonball_hitbox = Rect::new(
-                    cannonball.body.pos.x + (CANNONBALL_WIDTH - EXPLOSION_HITBOX_WIDTH) / 2.,
-                    cannonball.body.pos.y + (CANNONBALL_HEIGHT - EXPLOSION_HITBOX_HEIGHT) / 2.,
-                    EXPLOSION_HITBOX_WIDTH,
-                    EXPLOSION_HITBOX_HEIGHT,
+                let explosion = Circle::new(
+                    cannonball.body.pos.x,
+                    cannonball.body.pos.y,
+                    EXPLOSION_RADIUS,
                 );
 
                 for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
                     if player.id != cannonball_owner_id || cannonball.owner_safe_countdown < 0. {
                         let player_hitbox = player.get_hitbox();
-                        if player_hitbox.intersect(cannonball_hitbox).is_some() {
+                        if explosion.overlaps(player_hitbox) {
                             hit_fxses.spawn(explosion_position);
 
                             scene::find_node_by_type::<crate::nodes::Camera>()

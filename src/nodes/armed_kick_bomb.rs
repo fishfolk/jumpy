@@ -22,6 +22,7 @@ use crate::{
     nodes::sproinger::Sproingable,
     Resources,
 };
+use crate::circle::Circle;
 
 pub struct ArmedKickBomb {
     sprite: AnimatedSprite,
@@ -32,8 +33,7 @@ pub struct ArmedKickBomb {
 impl ArmedKickBomb {
     pub const KICK_FORCE: f32 = 900.0;
     pub const COUNTDOWN_DURATION: f32 = 3.0;
-    pub const EXPLOSION_WIDTH: f32 = 150.0;
-    pub const EXPLOSION_HEIGHT: f32 = 150.0;
+    pub const EXPLOSION_RADIUS: f32 = 150.0;
 
     pub fn new(pos: Vec2, facing: bool) -> Self {
         let sprite = AnimatedSprite::new(
@@ -128,16 +128,13 @@ impl Node for ArmedKickBomb {
                 let mut resources = storage::get_mut::<Resources>();
                 resources.hit_fxses.spawn(node.body.pos);
             }
-            let hit_box = Rect::new(
-                node.body.pos.x - (ArmedKickBomb::EXPLOSION_WIDTH / 2.0),
-                node.body.pos.y - (ArmedKickBomb::EXPLOSION_HEIGHT / 2.0),
-                ArmedKickBomb::EXPLOSION_WIDTH,
-                ArmedKickBomb::EXPLOSION_HEIGHT,
+            let explosion = Circle::new(
+                node.body.pos.x,
+                node.body.pos.y,
+                ArmedKickBomb::EXPLOSION_RADIUS,
             );
             for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
-                let is_overlapping =
-                    hit_box.overlaps(&player.get_hitbox());
-                if is_overlapping {
+                if explosion.overlaps(player.get_hitbox()) {
                     let direction = node.body.pos.x > (player.body.pos.x + 10.);
                     scene::find_node_by_type::<crate::nodes::Camera>()
                         .unwrap()

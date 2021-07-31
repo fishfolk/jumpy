@@ -20,7 +20,7 @@ const CANNONBALL_COUNTDOWN_DURATION: f32 = 0.5;
 /// large hitbox, they will die immediately on shoot.
 /// The formula is simplified (it doesn't include mount position, run speed and throwback).
 const CANNONBALL_OWNER_SAFE_TIME: f32 =
-    (EXPLOSION_HITBOX_WIDTH / 2.) / CANNONBALL_INITIAL_SPEED_X_REL;
+    EXPLOSION_RADIUS / CANNONBALL_INITIAL_SPEED_X_REL;
 
 const CANNONBALL_WIDTH: f32 = 32.;
 pub const CANNONBALL_HEIGHT: f32 = 36.;

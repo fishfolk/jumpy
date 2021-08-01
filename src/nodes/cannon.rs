@@ -235,24 +235,20 @@ impl scene::Node for Cannon {
     fn draw(node: RefMut<Self>) {
         let resources = storage::get_mut::<Resources>();
 
-        let cannon_mount_pos = if node.thrown == false {
-            if node.body.facing {
+        let mut draw_pos = node.body.pos;
+
+        if !node.thrown {
+            draw_pos += if node.body.facing {
                 vec2(5., 16.)
             } else {
                 vec2(-30., 16.)
-            }
-        } else {
-            if node.body.facing {
-                vec2(-25., 0.)
-            } else {
-                vec2(5., 0.)
             }
         };
 
         draw_texture_ex(
             resources.cannon,
-            node.body.pos.x + cannon_mount_pos.x,
-            node.body.pos.y + cannon_mount_pos.y,
+            draw_pos.x,
+            draw_pos.y,
             color::WHITE,
             DrawTextureParams {
                 source: Some(node.cannon_sprite.frame().source_rect),

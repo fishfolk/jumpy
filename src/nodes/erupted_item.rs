@@ -6,7 +6,7 @@ use crate::Resources;
 use super::player::PhysicsBody;
 
 pub trait EruptedItem {
-    fn spawn_for_volcano(pos: Vec2, speed: Vec2, enable_at_y: f32);
+    fn spawn_for_volcano(pos: Vec2, speed: Vec2, enable_at_y: f32, owner_id: u8);
 
     fn body(&mut self) -> &mut PhysicsBody;
     fn enable_at_y(&self) -> f32;

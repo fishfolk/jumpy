@@ -190,24 +190,20 @@ impl scene::Node for Shark {
     fn draw(shark: RefMut<Self>) {
         let texture = storage::get_mut::<Resources>().shark_icon;
 
-        let mount_pos = if !shark.thrown {
-            if shark.body.facing {
+        let mut draw_pos = shark.body.pos;
+
+        if !shark.thrown {
+            draw_pos += if shark.body.facing {
                 vec2(SHARK_MOUNT_X_REL, SHARK_MOUNT_Y)
             } else {
                 vec2(-SHARK_MOUNT_X_REL, SHARK_MOUNT_Y)
-            }
-        } else {
-            if shark.body.facing {
-                vec2(-SHARK_WIDTH, 0.)
-            } else {
-                vec2(SHARK_WIDTH, 0.)
             }
         };
 
         draw_texture_ex(
             texture,
-            shark.body.pos.x + mount_pos.x,
-            shark.body.pos.y + mount_pos.y,
+            draw_pos.x,
+            draw_pos.y,
             color::WHITE,
             DrawTextureParams {
                 source: Some(shark.shark_sprite.frame().source_rect),

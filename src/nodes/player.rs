@@ -353,7 +353,10 @@ impl Player {
         }
     }
 
-    pub fn incapacitate(&mut self, duration: f32, should_fall: bool) {
+    pub fn incapacitate(&mut self, duration: f32, should_stop: bool, should_fall: bool) {
+        if should_stop {
+            self.body.speed.x = 0.0;
+        }
         self.incapacitated_duration = duration;
         self.incapacitated_timer = 0.0;
         self.state_machine.set_state(Self::ST_INCAPACITATED);

@@ -10,6 +10,7 @@ use macroquad::{
 
 use crate::{nodes::player::PhysicsBody, Resources};
 
+use super::EruptedItem;
 use crate::circle::Circle;
 
 const CANNONBALL_COUNTDOWN_DURATION: f32 = 0.5;
@@ -35,6 +36,11 @@ pub struct Cannonball {
     countdown: f32,
     owner_id: u8,
     owner_safe_countdown: f32,
+    /// True if erupting from a volcano
+    erupting: bool,
+    /// When erupting, enable the collider etc. after passing this coordinate on the way down. Set/valid
+    /// only when erupting.
+    erupting_enable_on_y: Option<f32>,
 }
 
 impl Cannonball {
@@ -94,6 +100,8 @@ impl Cannonball {
             countdown: CANNONBALL_COUNTDOWN_DURATION,
             owner_id,
             owner_safe_countdown: CANNONBALL_OWNER_SAFE_TIME,
+            erupting: false,
+            erupting_enable_on_y: None,
         }
     }
 
@@ -103,8 +111,37 @@ impl Cannonball {
     }
 }
 
+impl EruptedItem for Cannonball {
+    fn spawn_for_volcano(pos: Vec2, speed: Vec2, enable_at_y: f32, owner_id: u8) {
+        let mut cannonball = Self::new(pos, true, owner_id);
+
+        cannonball.lived -= 2.; // give extra life, since they're random
+        cannonball.body.speed = speed;
+        cannonball.body.collider = None;
+        cannonball.erupting = true;
+        cannonball.erupting_enable_on_y = Some(enable_at_y);
+
+        scene::add_node(cannonball);
+    }
+
+    fn body(&mut self) -> &mut PhysicsBody {
+        &mut self.body
+    }
+    fn enable_at_y(&self) -> f32 {
+        self.erupting_enable_on_y.unwrap()
+    }
+}
+
 impl scene::Node for Cannonball {
     fn fixed_update(mut cannonball: RefMut<Self>) {
+        if cannonball.erupting {
+            let cannonball_enabled = cannonball.eruption_update();
+
+            if !cannonball_enabled {
+                return;
+            }
+        }
+
         cannonball.body.update();
         cannonball.lived += get_frame_time();
         cannonball.owner_safe_countdown -= get_frame_time();

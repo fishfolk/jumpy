@@ -11,7 +11,7 @@ use macroquad::{
 
 use crate::{nodes::ArmedGrenade, Resources};
 
-use super::{player::PhysicsBody, EruptedItem};
+use super::{player::PhysicsBody, Cannonball, EruptedItem};
 
 const VOLCANO_WIDTH: f32 = 395.;
 const VOLCANO_HEIGHT: f32 = 100.;
@@ -28,7 +28,10 @@ const VOLCANO_MOUTH_Y: f32 = 30.;
 const VOLCANO_MOUTH_X_START: f32 = 118.;
 const VOLCANO_MOUTH_X_LEN: f32 = 150.;
 
-const SPAWNERS: [fn(Vec2, Vec2, f32, u8); 1] = [ArmedGrenade::spawn_for_volcano];
+const SPAWNERS: [fn(Vec2, Vec2, f32, u8); 2] = [
+    ArmedGrenade::spawn_for_volcano,
+    Cannonball::spawn_for_volcano,
+];
 
 enum EruptingVolcanoState {
     Emerging,

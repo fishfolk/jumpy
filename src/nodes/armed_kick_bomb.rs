@@ -104,14 +104,12 @@ impl Node for ArmedKickBomb {
         node.body.update();
         node.lived += get_frame_time();
 
-        if !node.body.on_ground {
-            let hitbox = Rect::new(node.body.pos.x, node.body.pos.y, ArmedKickBomb::COLLIDER_WIDTH, ArmedKickBomb::COLLIDER_HEIGHT);
-            for mut player in scene::find_nodes_by_type::<Player>() {
-                if hitbox.overlaps(&player.get_hitbox()) {
-                    if let Some((weapon, _, _, gun)) = player.weapon.as_mut() {
-                        (gun.throw)(*weapon, false);
-                        player.weapon = None;
-                    }
+        let hitbox = Rect::new(node.body.pos.x, node.body.pos.y, ArmedKickBomb::COLLIDER_WIDTH, ArmedKickBomb::COLLIDER_HEIGHT);
+        for mut player in scene::find_nodes_by_type::<Player>() {
+            if hitbox.overlaps(&player.get_hitbox()) {
+                if let Some((weapon, _, _, gun)) = player.weapon.as_mut() {
+                    (gun.throw)(*weapon, false);
+                    player.weapon = None;
                 }
             }
         }

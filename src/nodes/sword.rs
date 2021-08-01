@@ -40,14 +40,14 @@ impl scene::Node for Sword {
         node.provides::<Weapon>((
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
-            vec2(48.0, 32.0),
+            vec2(Sword::COLLIDER_WIDTH, Sword::COLLIDER_HEIGHT),
             Self::gun_capabilities(),
         ));
 
         node.provides::<Sproingable>((
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
-            vec2(48.0, 32.0),
+            vec2(Sword::COLLIDER_WIDTH, Sword::COLLIDER_HEIGHT),
         ));
     }
 
@@ -148,6 +148,18 @@ impl scene::Node for Sword {
             node.body.update();
             node.body.update_throw();
 
+            if !node.body.on_ground {
+                let hitbox = Rect::new(node.body.pos.x, node.body.pos.y, Sword::COLLIDER_WIDTH, Sword::COLLIDER_HEIGHT);
+                for mut player in scene::find_nodes_by_type::<Player>() {
+                    if hitbox.overlaps(&player.get_hitbox()) {
+                        if let Some((weapon, _, _, gun)) = player.weapon.as_mut() {
+                            (gun.throw)(*weapon, false);
+                            player.weapon = None;
+                        }
+                    }
+                }
+            }
+
             if (node.origin_pos - node.body.pos).length() > 70. {
                 node.deadly_dangerous = true;
             }
@@ -175,6 +187,9 @@ impl scene::Node for Sword {
 }
 
 impl Sword {
+    pub const COLLIDER_WIDTH: f32 = 48.0;
+    pub const COLLIDER_HEIGHT: f32 = 32.0;
+
     pub fn new(facing: bool, pos: Vec2) -> Sword {
         let sword_sprite = AnimatedSprite::new(
             65,

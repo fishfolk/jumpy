@@ -29,6 +29,8 @@ pub struct Grenades {
 }
 
 impl Grenades {
+    pub const COLLIDER_WIDTH: f32 = 15.0;
+    pub const COLLIDER_HEIGHT: f32 = 15.0;
     pub const FIRE_INTERVAL: f32 = 0.25;
     pub const MAXIMUM_AMOUNT: i32 = 3;
 
@@ -206,6 +208,18 @@ impl scene::Node for Grenades {
         if node.thrown {
             node.body.update();
             node.body.update_throw();
+
+            if !node.body.on_ground {
+                let hitbox = Rect::new(node.body.pos.x, node.body.pos.y, Grenades::COLLIDER_WIDTH, Grenades::COLLIDER_HEIGHT);
+                for mut player in scene::find_nodes_by_type::<Player>() {
+                    if hitbox.overlaps(&player.get_hitbox()) {
+                        if let Some((weapon, _, _, gun)) = player.weapon.as_mut() {
+                            (gun.throw)(*weapon, false);
+                            player.weapon = None;
+                        }
+                    }
+                }
+            }
         }
     }
 

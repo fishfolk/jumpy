@@ -801,7 +801,7 @@ impl scene::Node for Player {
                 node.input.jump = jump && node.input.was_jump == false;
                 node.input.was_jump = jump;
 
-                let throw = is_key_down(KeyCode::R) || is_key_down(KeyCode::K);
+                let throw = is_key_down(KeyCode::R);
                 node.input.throw = throw && node.input.was_throw == false;
                 node.input.was_throw = throw;
 
@@ -818,6 +818,9 @@ impl scene::Node for Player {
             }
 
             if node.ai_enabled == false && node.controller_id == 0 {
+                let throw = is_key_down(KeyCode::K);
+                node.input.throw = throw && node.input.was_throw == false;
+                node.input.was_throw = throw;
                 let jump = is_key_down(KeyCode::Up);
                 node.input.jump = jump && node.input.was_jump == false;
                 node.input.was_jump = jump;

@@ -178,7 +178,7 @@ impl Resources {
         let turtleshell = load_texture("assets/Whale/TurtleShell(32x32).png").await?;
         turtleshell.set_filter(FilterMode::Nearest);
 
-        let seaweed = load_texture("assets/Whale/Seaweed(32x16).png").await?;
+        let seaweed = load_texture("assets/Whale/Seaweed(48x51).png").await?;
         seaweed.set_filter(FilterMode::Nearest);
 
         let background_01 = load_texture("assets/Background/01.png").await?;

@@ -62,9 +62,32 @@ impl Curse {
         }
     }
 
-    /// This is a simplified throw(), since it handles only the first setup; it's never thrown.
-    pub fn setup(&mut self) {
+    pub fn throw(&mut self, force: bool) {
         self.thrown = true;
+
+        if force {
+            self.body.speed = if self.body.facing {
+                vec2(600., -200.)
+            } else {
+                vec2(-600., -200.)
+            };
+        } else {
+            self.body.angle = 3.5;
+        }
+
+        let mut resources = storage::get_mut::<Resources>();
+
+        if let Some(collider) = self.body.collider {
+            resources
+                .collision_world
+                .set_actor_position(collider, self.body.pos);
+        } else {
+            self.body.collider = Some(resources.collision_world.add_actor(
+                self.body.pos,
+                CURSE_WIDTH as i32,
+                CURSE_HEIGHT as i32,
+            ));
+        }
     }
 
     pub fn shoot(node_h: Handle<Curse>, player: Handle<Player>) -> Coroutine {
@@ -93,8 +116,10 @@ impl Curse {
     }
 
     pub fn gun_capabilities() -> capabilities::Gun {
-        fn throw(_node: HandleUntyped, _force: bool) {
-            // do nothing - item is never thrown
+        fn throw(curse: HandleUntyped, force: bool) {
+            let mut curse = scene::get_untyped_node(curse).unwrap().to_typed::<Curse>();
+
+            Curse::throw(&mut *curse, force)
         }
 
         fn shoot(node: HandleUntyped, player: Handle<Player>) -> Coroutine {
@@ -106,9 +131,15 @@ impl Curse {
             Curse::shoot(node, player)
         }
 
-        fn is_thrown(_node: HandleUntyped) -> bool {
-            // phony - item is never thrown
-            true
+        fn is_thrown(curse: HandleUntyped) -> bool {
+            let curse = scene::get_untyped_node(curse);
+
+            // The item may have been shot at this stage; in this case, it's gone.
+            if let Some(curse) = curse {
+                curse.to_typed::<Curse>().thrown
+            } else {
+                false
+            }
         }
 
         fn pick_up(node: HandleUntyped) {
@@ -140,29 +171,30 @@ impl scene::Node for Curse {
 
     fn fixed_update(mut node: RefMut<Self>) {
         node.curse_sprite.update();
+
+        if node.thrown {
+            node.body.update();
+            node.body.update_throw();
+        }
     }
 
     fn draw(node: RefMut<Self>) {
         let resources = storage::get_mut::<Resources>();
 
-        let curse_mount_pos = if node.thrown == false {
-            if node.body.facing {
+        let mut draw_pos = node.body.pos;
+
+        if !node.thrown {
+            draw_pos += if node.body.facing {
                 vec2(CURSE_MOUNT_X_REL, CURSE_MOUNT_Y)
             } else {
                 vec2(-CURSE_MOUNT_X_REL, CURSE_MOUNT_Y)
-            }
-        } else {
-            if node.body.facing {
-                vec2(-CURSE_WIDTH, 0.)
-            } else {
-                vec2(CURSE_WIDTH, 0.)
             }
         };
 
         draw_texture_ex(
             resources.curse,
-            node.body.pos.x + curse_mount_pos.x,
-            node.body.pos.y + curse_mount_pos.y,
+            draw_pos.x,
+            draw_pos.y,
             color::WHITE,
             DrawTextureParams {
                 source: Some(node.curse_sprite.frame().source_rect),

@@ -17,10 +17,10 @@ use macroquad::{
 use macroquad_platformer::{Tile, World as CollisionWorld};
 use particles::EmittersCache;
 
+mod circle;
 mod gui;
 mod input_axis;
 mod nodes;
-mod circle;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum GameType {
@@ -449,7 +449,7 @@ async fn game(game_type: GameType, map: &str) {
         if object.name == "curse" {
             let mut curse =
                 Curse::new(wat_facing, vec2(object.world_x - 35., object.world_y - 25.));
-            curse.setup();
+            curse.throw(false);
             scene::add_node(curse);
             wat_facing ^= true;
         }

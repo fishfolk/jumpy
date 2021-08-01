@@ -60,10 +60,7 @@ impl RainingShark {
     }
 
     // Uses the st00pidest possible algorithm for not superposing sharks.
-    //
-    // The strict and not st00pid algorithm is likely a series of random weighted choices, using a list
-    // of available slots, and placing each shark via binary search (tot.: n log₂n).
-    //
+    // Another very simple approach is to generate random spaces between sharks, then resize to match the map width.
     fn compute_raining_shark_positions() -> Vec<Vec2> {
         let mut x_positions: Vec<u32> = vec![];
         let map_width = {

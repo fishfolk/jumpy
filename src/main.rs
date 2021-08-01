@@ -68,6 +68,7 @@ struct Resources {
     shoes: Texture2D,
     broken_turtleshell: Texture2D,
     turtleshell: Texture2D,
+    seaweed: Texture2D,
     background_01: Texture2D,
     background_02: Texture2D,
     background_03: Texture2D,
@@ -177,6 +178,9 @@ impl Resources {
         let turtleshell = load_texture("assets/Whale/TurtleShell(32x32).png").await?;
         turtleshell.set_filter(FilterMode::Nearest);
 
+        let seaweed = load_texture("assets/Whale/Seaweed(48x51).png").await?;
+        seaweed.set_filter(FilterMode::Nearest);
+
         let background_01 = load_texture("assets/Background/01.png").await?;
         background_01.set_filter(FilterMode::Nearest);
 
@@ -257,6 +261,7 @@ impl Resources {
             shoes,
             broken_turtleshell,
             turtleshell,
+            seaweed,
             background_01,
             background_02,
             background_03,
@@ -273,7 +278,7 @@ async fn game(game_type: GameType, map: &str) {
     use nodes::{
         Bullets, Camera, Cannon, Cannonballs, Crate, Curse, Decoration, FlyingCurses, Fxses,
         Galleon, GameState, Grenades, Jellyfish, KickBombs, LevelBackground, MachineGun, Mines,
-        Muscet, Player, ScoreCounter, Shark, Shoes, Sproinger, Sword, TurtleShell, Volcano,
+        Muscet, Player, ScoreCounter, Shark, Shoes, Sproinger, Sword, TurtleShell, Volcano, Seaweed
     };
 
     let resources_loading = start_coroutine({
@@ -479,6 +484,12 @@ async fn game(game_type: GameType, map: &str) {
             kick_bombs.throw(false);
             scene::add_node(kick_bombs);
             wat_facing ^= true;
+        }
+
+        if object.name == "seaweed" {
+            let mut seaweed =
+                Seaweed::new(vec2(object.world_x - 32., object.world_y - 36.));
+            scene::add_node(seaweed);
         }
     }
 

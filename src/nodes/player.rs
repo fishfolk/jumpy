@@ -190,6 +190,8 @@ pub struct Player {
     pub is_sliding: bool,
 
     pub slide_timer: f32,
+    pub incapacitated_duration: f32,
+    pub incapacitated_timer: f32,
 
     pub back_armor: i32,
 
@@ -204,6 +206,7 @@ impl Player {
     pub const ST_NORMAL: usize = 0;
     pub const ST_DEATH: usize = 1;
     pub const ST_SHOOT: usize = 2;
+    pub const ST_INCAPACITATED: usize = 3;
     pub const ST_AFTERMATCH: usize = 4;
 
     pub const JUMP_SPEED: f32 = 700.0;
@@ -212,6 +215,9 @@ impl Player {
     pub const SLIDE_DURATION: f32 = 0.05;
     pub const JUMP_GRACE_TIME: f32 = 0.15;
     pub const FLOAT_SPEED: f32 = 100.0;
+
+    pub const INCAPACITATED_BREAK_FACTOR: f32 = 0.9;
+    pub const INCAPACITATED_STOP_THRESHOLD: f32 = 20.0;
 
     pub fn new(
         deathmatch: bool,
@@ -240,6 +246,12 @@ impl Player {
             State::new()
                 .update(Self::update_shoot)
                 .coroutine(Self::shoot_coroutine),
+        );
+        state_machine.add_state(
+          Self::ST_INCAPACITATED,
+            State::new()
+                .update(Self::update_incapacitated)
+                .coroutine(Self::incapacitated_coroutine),
         );
         state_machine.add_state(
             Self::ST_AFTERMATCH,
@@ -334,8 +346,22 @@ impl Player {
             is_crouched: false,
             is_sliding: false,
             slide_timer: 0.0,
+            incapacitated_timer: 0.0,
+            incapacitated_duration: 0.0,
             score_counter,
             game_state,
+        }
+    }
+
+    pub fn incapacitate(&mut self, duration: f32, should_stop: bool, should_fall: bool) {
+        if should_stop {
+            self.body.speed.x = 0.0;
+        }
+        self.incapacitated_duration = duration;
+        self.incapacitated_timer = 0.0;
+        self.state_machine.set_state(Self::ST_INCAPACITATED);
+        if should_fall {
+            self.fish_sprite.set_animation(6);
         }
     }
 
@@ -351,6 +377,16 @@ impl Player {
                 self.state_machine.set_state(Self::ST_DEATH);
             }
         }
+    }
+
+    fn incapacitated_coroutine(node: &mut RefMut<Player>) -> Coroutine {
+        let _handle = node.handle();
+
+        let coroutine = async move {
+            // NOTHING HERE FOR NOW
+        };
+
+        start_coroutine(coroutine)
     }
 
     fn death_coroutine(node: &mut RefMut<Player>) -> Coroutine {
@@ -455,6 +491,15 @@ impl Player {
         }
     }
 
+    fn update_incapacitated(node: &mut RefMut<Player>, dt: f32) {
+        node.incapacitated_timer += dt;
+        if node.incapacitated_timer >= node.incapacitated_duration {
+            node.incapacitated_timer = 0.0;
+            node.incapacitated_duration = 0.0;
+            node.state_machine.set_state(Player::ST_NORMAL);
+        }
+    }
+
     fn update_shoot(node: &mut RefMut<Player>, _dt: f32) {
         node.body.speed.x *= 0.9;
     }
@@ -486,6 +531,9 @@ impl Player {
             };
         } else {
             if node.is_crouched {
+                if !node.is_sliding {
+                    node.body.speed.x = 0.0;
+                }
                 if node.input.right {
                     node.body.facing = true;
                 } else if node.input.left {
@@ -603,15 +651,24 @@ impl Player {
     }
 
     pub fn get_hitbox(&self) -> Rect {
+        let state = self.state_machine.state();
         Rect::new(
             self.body.pos.x,
-            if self.is_crouched {
+            if state == Self::ST_INCAPACITATED || self.is_sliding || self.is_crouched {
                 self.body.pos.y + 32.0
             } else {
                 self.body.pos.y
             },
-            20.0,
-            if self.is_crouched { 32.0 } else { 64.0 },
+            if state == Self::ST_INCAPACITATED || self.is_sliding {
+                40.0
+            } else {
+                20.0
+            },
+            if state == Self::ST_INCAPACITATED || self.is_sliding || self.is_crouched {
+                32.0
+            } else {
+                64.0
+            },
         )
     }
 }
@@ -705,6 +762,15 @@ impl scene::Node for Player {
     }
 
     fn fixed_update(mut node: RefMut<Self>) {
+        // Break incapacitated
+        if node.state_machine.state() == Player::ST_INCAPACITATED && node.body.speed.x != 0.0 {
+            if node.body.speed.x > Player::INCAPACITATED_STOP_THRESHOLD || node.body.speed.x < -Player::INCAPACITATED_STOP_THRESHOLD {
+                node.body.speed.x *= Player::INCAPACITATED_BREAK_FACTOR;
+            } else {
+                node.body.speed.x = 0.0;
+            }
+        }
+
         {
             if scene::get_node(node.game_state).game_paused {
                 return;
@@ -801,7 +867,7 @@ impl scene::Node for Player {
                 node.input.jump = jump && node.input.was_jump == false;
                 node.input.was_jump = jump;
 
-                let throw = is_key_down(KeyCode::R) || is_key_down(KeyCode::K);
+                let throw = is_key_down(KeyCode::R);
                 node.input.throw = throw && node.input.was_throw == false;
                 node.input.was_throw = throw;
 
@@ -818,6 +884,9 @@ impl scene::Node for Player {
             }
 
             if node.ai_enabled == false && node.controller_id == 0 {
+                let throw = is_key_down(KeyCode::K);
+                node.input.throw = throw && node.input.was_throw == false;
+                node.input.was_throw = throw;
                 let jump = is_key_down(KeyCode::Up);
                 node.input.jump = jump && node.input.was_jump == false;
                 node.input.was_jump = jump;

@@ -32,6 +32,7 @@ mod sproinger;
 mod sword;
 mod turtleshell;
 mod volcano;
+mod seaweed;
 
 pub use armed_grenade::ArmedGrenade;
 pub use armed_kick_bomb::ArmedKickBomb;
@@ -67,3 +68,4 @@ pub use sproinger::Sproinger;
 pub use sword::Sword;
 pub use turtleshell::TurtleShell;
 pub use volcano::Volcano;
+pub use seaweed::Seaweed;

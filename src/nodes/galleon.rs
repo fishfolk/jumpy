@@ -195,24 +195,20 @@ impl scene::Node for Galleon {
     fn draw(galleon: RefMut<Self>) {
         let texture = storage::get_mut::<Resources>().galleon_icon;
 
-        let mount_pos = if !galleon.thrown {
-            if galleon.body.facing {
+        let mut draw_pos = galleon.body.pos;
+
+        if !galleon.thrown {
+            draw_pos += if galleon.body.facing {
                 vec2(GALLEON_MOUNT_X_REL, GALLEON_MOUNT_Y)
             } else {
                 vec2(-GALLEON_MOUNT_X_REL, GALLEON_MOUNT_Y)
-            }
-        } else {
-            if galleon.body.facing {
-                vec2(-GALLEON_WIDTH, 0.)
-            } else {
-                vec2(GALLEON_WIDTH, 0.)
             }
         };
 
         draw_texture_ex(
             texture,
-            galleon.body.pos.x + mount_pos.x,
-            galleon.body.pos.y + mount_pos.y,
+            draw_pos.x,
+            draw_pos.y,
             color::WHITE,
             DrawTextureParams {
                 source: Some(galleon.galleon_sprite.frame().source_rect),

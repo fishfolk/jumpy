@@ -31,6 +31,8 @@ pub struct ArmedKickBomb {
 }
 
 impl ArmedKickBomb {
+    pub const COLLIDER_WIDTH: f32 = 30.0;
+    pub const COLLIDER_HEIGHT: f32 = 30.0;
     pub const KICK_FORCE: f32 = 900.0;
     pub const COUNTDOWN_DURATION: f32 = 3.0;
     pub const EXPLOSION_RADIUS: f32 = 150.0;
@@ -94,13 +96,25 @@ impl Node for ArmedKickBomb {
         node.provides::<Sproingable>((
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
-            vec2(30.0, 30.0),
+            vec2(ArmedKickBomb::COLLIDER_WIDTH, ArmedKickBomb::COLLIDER_HEIGHT),
         ));
     }
 
     fn fixed_update(mut node: RefMut<Self>) {
         node.body.update();
         node.lived += get_frame_time();
+
+        if !node.body.on_ground {
+            let hitbox = Rect::new(node.body.pos.x, node.body.pos.y, ArmedKickBomb::COLLIDER_WIDTH, ArmedKickBomb::COLLIDER_HEIGHT);
+            for mut player in scene::find_nodes_by_type::<Player>() {
+                if hitbox.overlaps(&player.get_hitbox()) {
+                    if let Some((weapon, _, _, gun)) = player.weapon.as_mut() {
+                        (gun.throw)(*weapon, false);
+                        player.weapon = None;
+                    }
+                }
+            }
+        }
 
         if node.lived < ArmedKickBomb::COUNTDOWN_DURATION {
             let hit_box = Rect::new(

@@ -763,7 +763,7 @@ impl scene::Node for Player {
 
     fn fixed_update(mut node: RefMut<Self>) {
         // Break incapacitated
-        if node.state_machine.state() == Player::ST_INCAPACITATED {
+        if node.state_machine.state() == Player::ST_INCAPACITATED && node.body.speed.x != 0.0 {
             if node.body.speed.x > Player::INCAPACITATED_STOP_THRESHOLD || node.body.speed.x < -Player::INCAPACITATED_STOP_THRESHOLD {
                 node.body.speed.x *= Player::INCAPACITATED_BREAK_FACTOR;
             } else {

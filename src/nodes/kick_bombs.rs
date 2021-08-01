@@ -24,7 +24,6 @@ pub struct KickBombs {
 
     pub thrown: bool,
 
-    pub amount: i32,
     pub body: PhysicsBody,
 }
 
@@ -32,7 +31,6 @@ impl KickBombs {
     pub const COLLIDER_WIDTH: f32 = 30.0;
     pub const COLLIDER_HEIGHT: f32 = 30.0;
     pub const FIRE_INTERVAL: f32 = 0.25;
-    pub const MAXIMUM_AMOUNT: i32 = 3;
 
     pub fn new(facing: bool, pos: Vec2) -> Self {
         let sprite = AnimatedSprite::new(
@@ -61,21 +59,6 @@ impl KickBombs {
                 bouncyness: 0.0,
             },
             thrown: false,
-            amount: Self::MAXIMUM_AMOUNT,
-        }
-    }
-
-    fn draw_hud(&self) {
-        let full_color = Color::new(0.8, 0.9, 1.0, 1.0);
-        let empty_color = Color::new(0.8, 0.9, 1.0, 0.8);
-        for i in 0..Self::MAXIMUM_AMOUNT {
-            let x = self.body.pos.x + 15.0 * i as f32;
-
-            if i >= self.amount {
-                draw_circle_lines(x, self.body.pos.y - 12.0, 4.0, 2., empty_color);
-            } else {
-                draw_circle(x, self.body.pos.y - 12.0, 4.0, full_color);
-            };
         }
     }
 
@@ -117,15 +100,12 @@ impl KickBombs {
         let coroutine = async move {
             {
                 let mut node = scene::get_node(node);
-                if node.amount <= 0 {
-                    let player = &mut *scene::get_node(player);
-                    player.state_machine.set_state(Player::ST_NORMAL);
-
-                    return;
-                }
+                let mut player = &mut *scene::get_node(player);
+                player.weapon = None;
 
                 ArmedKickBomb::spawn(node.body.pos, node.body.facing);
-                node.amount -= 1;
+
+                node.delete();
             }
 
             wait_seconds(KickBombs::FIRE_INTERVAL).await;
@@ -171,7 +151,6 @@ impl KickBombs {
                 .to_typed::<KickBombs>();
 
             node.body.angle = 0.;
-            node.amount = KickBombs::MAXIMUM_AMOUNT;
 
             node.thrown = false;
         }
@@ -252,9 +231,5 @@ impl scene::Node for KickBombs {
                 ..Default::default()
             },
         );
-
-        if node.thrown == false {
-            node.draw_hud();
-        }
     }
 }

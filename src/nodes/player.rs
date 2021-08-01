@@ -216,6 +216,9 @@ impl Player {
     pub const JUMP_GRACE_TIME: f32 = 0.15;
     pub const FLOAT_SPEED: f32 = 100.0;
 
+    pub const INCAPACITATED_BREAK_FACTOR: f32 = 0.9;
+    pub const INCAPACITATED_STOP_THRESHOLD: f32 = 20.0;
+
     pub fn new(
         deathmatch: bool,
         player_id: u8,
@@ -525,6 +528,9 @@ impl Player {
             };
         } else {
             if node.is_crouched {
+                if !node.is_sliding {
+                    node.body.speed.x = 0.0;
+                }
                 if node.input.right {
                     node.body.facing = true;
                 } else if node.input.left {
@@ -753,6 +759,15 @@ impl scene::Node for Player {
     }
 
     fn fixed_update(mut node: RefMut<Self>) {
+        // Break incapacitated
+        if node.state_machine.state() == Player::ST_INCAPACITATED {
+            if node.body.speed.x > Player::INCAPACITATED_STOP_THRESHOLD || node.body.speed.x < -Player::INCAPACITATED_STOP_THRESHOLD {
+                node.body.speed.x *= Player::INCAPACITATED_BREAK_FACTOR;
+            } else {
+                node.body.speed.x = 0.0;
+            }
+        }
+
         {
             if scene::get_node(node.game_state).game_paused {
                 return;

@@ -36,7 +36,7 @@ impl ArmedKickBomb {
     pub const KICK_SPEED_THRESHOLD: f32 = 150.0;
     pub const KICK_FORCE: f32 = 900.0;
     pub const COUNTDOWN_DURATION: f32 = 3.0;
-    pub const EXPLOSION_RADIUS: f32 = 150.0;
+    pub const EXPLOSION_RADIUS: f32 = 100.0;
 
     pub fn new(pos: Vec2, facing: bool) -> Self {
         let sprite = AnimatedSprite::new(

@@ -11,7 +11,7 @@ use macroquad::{
 
 use crate::{nodes::ArmedGrenade, Resources};
 
-use super::{player::PhysicsBody, EruptedItem};
+use super::{player::PhysicsBody, Cannonball, EruptedItem};
 
 const VOLCANO_WIDTH: f32 = 395.;
 const VOLCANO_HEIGHT: f32 = 100.;
@@ -28,6 +28,11 @@ const VOLCANO_MOUTH_Y: f32 = 30.;
 const VOLCANO_MOUTH_X_START: f32 = 118.;
 const VOLCANO_MOUTH_X_LEN: f32 = 150.;
 
+const SPAWNERS: [fn(Vec2, Vec2, f32, u8); 2] = [
+    ArmedGrenade::spawn_for_volcano,
+    Cannonball::spawn_for_volcano,
+];
+
 enum EruptingVolcanoState {
     Emerging,
     Erupting(f32),
@@ -41,17 +46,18 @@ pub struct EruptingVolcano {
     state: EruptingVolcanoState,
     last_shake_time: f32,
     time_to_throw_next_item: f32,
+    owner_id: u8,
 }
 
 impl EruptingVolcano {
     /// Takes care of adding the FG to the node graph.
-    pub fn spawn() {
-        let erupting_volcano = Self::new();
+    pub fn spawn(owner_id: u8) {
+        let erupting_volcano = Self::new(owner_id);
 
         scene::add_node(erupting_volcano);
     }
 
-    fn new() -> Self {
+    fn new(owner_id: u8) -> Self {
         let erupting_volcano_sprite = AnimatedSprite::new(
             VOLCANO_WIDTH as u32,
             VOLCANO_HEIGHT as u32,
@@ -72,6 +78,7 @@ impl EruptingVolcano {
             state: EruptingVolcanoState::Emerging,
             last_shake_time: SHAKE_INTERVAL,
             time_to_throw_next_item: Self::time_before_new_item(),
+            owner_id,
         }
     }
 
@@ -80,7 +87,9 @@ impl EruptingVolcano {
         let item_speed = Self::new_item_speed(item_pos.x);
         let item_enable_at_y = Self::new_item_enable_at_y();
 
-        ArmedGrenade::spawn_for_volcano(item_pos, item_speed, item_enable_at_y);
+        let spawner = SPAWNERS[gen_range(0, SPAWNERS.len())];
+
+        spawner(item_pos, item_speed, item_enable_at_y, self.owner_id);
     }
 
     fn eruption_shake(mut erupting_volcano: RefMut<Self>) {

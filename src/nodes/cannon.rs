@@ -15,7 +15,7 @@ use crate::Resources;
 use super::{
     cannonball::CANNONBALL_HEIGHT,
     player::{capabilities, PhysicsBody, Weapon},
-    Player,
+    Cannonball, Player,
 };
 use crate::nodes::sproinger::Sproingable;
 use macroquad::math::Rect;
@@ -139,15 +139,14 @@ impl Cannon {
                     node.grace_time = SHOOTING_GRACE_TIME;
                 }
 
-                let mut cannonballs =
-                    scene::find_node_by_type::<crate::nodes::Cannonballs>().unwrap();
+                let player = &mut *scene::get_node(player);
+
                 let cannonball_pos = vec2(
                     node.body.pos.x,
                     node.body.pos.y - 20. - (CANNONBALL_HEIGHT as f32 / 2.),
                 );
-                cannonballs.spawn_cannonball(cannonball_pos, node.body.facing, player);
+                Cannonball::spawn(cannonball_pos, node.body.facing, player.id);
 
-                let player = &mut *scene::get_node(player);
                 player.body.speed.x = -CANNON_THROWBACK * player.body.facing_dir();
             }
 

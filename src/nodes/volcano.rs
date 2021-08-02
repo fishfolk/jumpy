@@ -105,7 +105,7 @@ impl Volcano {
 
             volcano.used = true;
 
-            EruptingVolcano::spawn();
+            EruptingVolcano::spawn(player.id);
 
             player.weapon = None;
             player.floating = false;

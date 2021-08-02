@@ -5,22 +5,19 @@ use macroquad::{
         collections::storage,
         scene::RefMut,
     },
-    prelude::{scene::Handle, *},
+    prelude::*,
 };
 
 use crate::{nodes::player::PhysicsBody, Resources};
 
-use super::{
-    Player,
-};
+use super::EruptedItem;
 use crate::circle::Circle;
 
 const CANNONBALL_COUNTDOWN_DURATION: f32 = 0.5;
 /// After shooting, the owner is safe for this amount of time. This is crucial, otherwise, given the
 /// large hitbox, they will die immediately on shoot.
 /// The formula is simplified (it doesn't include mount position, run speed and throwback).
-const CANNONBALL_OWNER_SAFE_TIME: f32 =
-    EXPLOSION_RADIUS / CANNONBALL_INITIAL_SPEED_X_REL;
+const CANNONBALL_OWNER_SAFE_TIME: f32 = EXPLOSION_RADIUS / CANNONBALL_INITIAL_SPEED_X_REL;
 
 const CANNONBALL_WIDTH: f32 = 32.;
 pub const CANNONBALL_HEIGHT: f32 = 36.;
@@ -37,12 +34,19 @@ pub struct Cannonball {
     body: PhysicsBody,
     lived: f32,
     countdown: f32,
-    owner: Handle<Player>,
+    owner_id: u8,
     owner_safe_countdown: f32,
+    /// True if erupting from a volcano
+    erupting: bool,
+    /// When erupting, enable the collider etc. after passing this coordinate on the way down. Set/valid
+    /// only when erupting.
+    erupting_enable_on_y: Option<f32>,
 }
 
 impl Cannonball {
-    pub fn new(pos: Vec2, facing: bool, owner: Handle<Player>) -> Self {
+    // Use Cannonball::spawn(), which handles the scene graph.
+    //
+    fn new(pos: Vec2, facing: bool, owner_id: u8) -> Self {
         // This can be easily turned into a single sprite, rotated via DrawTextureParams.
         //
         let cannonball_sprite = AnimatedSprite::new(
@@ -94,97 +98,112 @@ impl Cannonball {
             body,
             lived: 0.0,
             countdown: CANNONBALL_COUNTDOWN_DURATION,
-            owner,
+            owner_id,
             owner_safe_countdown: CANNONBALL_OWNER_SAFE_TIME,
-        }
-    }
-}
-
-pub struct Cannonballs {
-    cannonballs: Vec<Cannonball>,
-}
-
-impl Cannonballs {
-    pub fn new() -> Self {
-        Cannonballs {
-            cannonballs: vec![],
+            erupting: false,
+            erupting_enable_on_y: None,
         }
     }
 
-    pub fn spawn_cannonball(&mut self, pos: Vec2, facing: bool, owner: Handle<Player>) {
-        self.cannonballs.push(Cannonball::new(pos, facing, owner));
+    pub fn spawn(pos: Vec2, facing: bool, owner_id: u8) {
+        let cannonball = Cannonball::new(pos, facing, owner_id);
+        scene::add_node(cannonball);
     }
 }
 
-impl scene::Node for Cannonballs {
-    fn fixed_update(mut node: RefMut<Self>) {
-        for cannonball in &mut node.cannonballs {
-            cannonball.body.update();
-            cannonball.lived += get_frame_time();
-            cannonball.owner_safe_countdown -= get_frame_time();
-        }
+impl EruptedItem for Cannonball {
+    fn spawn_for_volcano(pos: Vec2, speed: Vec2, enable_at_y: f32, owner_id: u8) {
+        let mut cannonball = Self::new(pos, true, owner_id);
 
-        node.cannonballs.retain(|cannonball| {
-            let hit_fxses = &mut storage::get_mut::<Resources>().cannonball_hit_fxses;
+        cannonball.lived -= 2.; // give extra life, since they're random
+        cannonball.body.speed = speed;
+        cannonball.body.collider = None;
+        cannonball.erupting = true;
+        cannonball.erupting_enable_on_y = Some(enable_at_y);
 
-            let explosion_position =
-                cannonball.body.pos + vec2(CANNONBALL_WIDTH / 2., CANNONBALL_HEIGHT / 2.);
+        scene::add_node(cannonball);
+    }
 
-            if cannonball.lived < cannonball.countdown {
-                let cannonball_owner_id = scene::get_node(cannonball.owner).id;
+    fn body(&mut self) -> &mut PhysicsBody {
+        &mut self.body
+    }
+    fn enable_at_y(&self) -> f32 {
+        self.erupting_enable_on_y.unwrap()
+    }
+}
 
-                let explosion = Circle::new(
-                    cannonball.body.pos.x,
-                    cannonball.body.pos.y,
-                    EXPLOSION_RADIUS,
-                );
+impl scene::Node for Cannonball {
+    fn fixed_update(mut cannonball: RefMut<Self>) {
+        if cannonball.erupting {
+            let cannonball_enabled = cannonball.eruption_update();
 
-                for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
-                    if player.id != cannonball_owner_id || cannonball.owner_safe_countdown < 0. {
-                        let player_hitbox = player.get_hitbox();
-                        if explosion.overlaps(player_hitbox) {
-                            hit_fxses.spawn(explosion_position);
-
-                            scene::find_node_by_type::<crate::nodes::Camera>()
-                                .unwrap()
-                                .shake();
-
-                            let direction = cannonball.body.pos.x
-                                > (player.body.pos.x + player_hitbox.w / 2.);
-                            player.kill(direction);
-
-                            return false;
-                        }
-                    }
-                }
-
-                return true;
+            if !cannonball_enabled {
+                return;
             }
+        }
 
-            hit_fxses.spawn(explosion_position);
+        cannonball.body.update();
+        cannonball.lived += get_frame_time();
+        cannonball.owner_safe_countdown -= get_frame_time();
 
-            false
-        });
-    }
+        let hit_fxses = &mut storage::get_mut::<Resources>().cannonball_hit_fxses;
 
-    fn draw(mut node: RefMut<Self>) {
-        let resources = storage::get_mut::<Resources>();
-        for cannonball in &mut node.cannonballs {
-            cannonball.cannonball_sprite.update();
+        let explosion_position =
+            cannonball.body.pos + vec2(CANNONBALL_WIDTH / 2., CANNONBALL_HEIGHT / 2.);
 
-            draw_texture_ex(
-                resources.cannonballs,
+        if cannonball.lived < cannonball.countdown {
+            let explosion = Circle::new(
                 cannonball.body.pos.x,
                 cannonball.body.pos.y,
-                color::WHITE,
-                DrawTextureParams {
-                    source: Some(cannonball.cannonball_sprite.frame().source_rect),
-                    dest_size: Some(cannonball.cannonball_sprite.frame().dest_size),
-                    flip_x: cannonball.body.facing,
-                    rotation: 0.0,
-                    ..Default::default()
-                },
+                EXPLOSION_RADIUS,
             );
+
+            for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
+                if player.id != cannonball.owner_id || cannonball.owner_safe_countdown < 0. {
+                    let player_hitbox = player.get_hitbox();
+                    if explosion.overlaps(player_hitbox) {
+                        hit_fxses.spawn(explosion_position);
+
+                        scene::find_node_by_type::<crate::nodes::Camera>()
+                            .unwrap()
+                            .shake();
+
+                        let direction =
+                            cannonball.body.pos.x > (player.body.pos.x + player_hitbox.w / 2.);
+                        player.kill(direction);
+
+                        cannonball.delete();
+
+                        return;
+                    }
+                }
+            }
+
+            return;
         }
+
+        hit_fxses.spawn(explosion_position);
+
+        cannonball.delete();
+    }
+
+    fn draw(mut cannonball: RefMut<Self>) {
+        let resources = storage::get_mut::<Resources>();
+
+        cannonball.cannonball_sprite.update();
+
+        draw_texture_ex(
+            resources.cannonballs,
+            cannonball.body.pos.x,
+            cannonball.body.pos.y,
+            color::WHITE,
+            DrawTextureParams {
+                source: Some(cannonball.cannonball_sprite.frame().source_rect),
+                dest_size: Some(cannonball.cannonball_sprite.frame().dest_size),
+                flip_x: cannonball.body.facing,
+                rotation: 0.0,
+                ..Default::default()
+            },
+        );
     }
 }

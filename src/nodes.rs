@@ -40,7 +40,7 @@ pub use armed_mine::ArmedMine;
 pub use bullets::Bullets;
 pub use camera::Camera;
 pub use cannon::Cannon;
-pub use cannonball::Cannonballs;
+pub use cannonball::Cannonball;
 pub use crates::Crate;
 pub use curse::Curse;
 pub use decoration::Decoration;

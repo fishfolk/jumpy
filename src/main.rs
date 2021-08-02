@@ -276,9 +276,9 @@ impl Resources {
 
 async fn game(game_type: GameType, map: &str) {
     use nodes::{
-        Bullets, Camera, Cannon, Cannonballs, Crate, Curse, Decoration, FlyingCurses, Fxses,
-        Galleon, GameState, Grenades, Jellyfish, KickBombs, LevelBackground, MachineGun, Mines,
-        Muscet, Player, ScoreCounter, Shark, Shoes, Sproinger, Sword, TurtleShell, Volcano, Seaweed
+        Bullets, Camera, Cannon, Crate, Curse, Decoration, FlyingCurses, Fxses, Galleon, GameState,
+        Grenades, Jellyfish, KickBombs, LevelBackground, MachineGun, Mines, Muscet, Player,
+        ScoreCounter, Seaweed, Shark, Shoes, Sproinger, Sword, TurtleShell, Volcano,
     };
 
     let resources_loading = start_coroutine({
@@ -487,14 +487,12 @@ async fn game(game_type: GameType, map: &str) {
         }
 
         if object.name == "seaweed" {
-            let mut seaweed =
-                Seaweed::new(vec2(object.world_x - 32., object.world_y - 36.));
+            let seaweed = Seaweed::new(vec2(object.world_x - 32., object.world_y - 36.));
             scene::add_node(seaweed);
         }
     }
 
     scene::add_node(FlyingCurses::new());
-    scene::add_node(Cannonballs::new());
 
     scene::add_node(Bullets::new());
 

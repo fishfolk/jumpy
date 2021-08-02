@@ -5,12 +5,11 @@ use macroquad::{
         collections::storage,
         scene::RefMut,
     },
-    prelude::{scene::Handle, *},
+    prelude::*,
 };
 
 use crate::{nodes::player::PhysicsBody, Resources};
 
-use super::Player;
 use crate::circle::Circle;
 
 const CANNONBALL_COUNTDOWN_DURATION: f32 = 0.5;
@@ -34,14 +33,14 @@ pub struct Cannonball {
     body: PhysicsBody,
     lived: f32,
     countdown: f32,
-    owner: Handle<Player>,
+    owner_id: u8,
     owner_safe_countdown: f32,
 }
 
 impl Cannonball {
     // Use Cannonball::spawn(), which handles the scene graph.
     //
-    fn new(pos: Vec2, facing: bool, owner: Handle<Player>) -> Self {
+    fn new(pos: Vec2, facing: bool, owner_id: u8) -> Self {
         // This can be easily turned into a single sprite, rotated via DrawTextureParams.
         //
         let cannonball_sprite = AnimatedSprite::new(
@@ -93,13 +92,13 @@ impl Cannonball {
             body,
             lived: 0.0,
             countdown: CANNONBALL_COUNTDOWN_DURATION,
-            owner,
+            owner_id,
             owner_safe_countdown: CANNONBALL_OWNER_SAFE_TIME,
         }
     }
 
-    pub fn spawn(pos: Vec2, facing: bool, owner: Handle<Player>) {
-        let cannonball = Cannonball::new(pos, facing, owner);
+    pub fn spawn(pos: Vec2, facing: bool, owner_id: u8) {
+        let cannonball = Cannonball::new(pos, facing, owner_id);
         scene::add_node(cannonball);
     }
 }
@@ -116,8 +115,6 @@ impl scene::Node for Cannonball {
             cannonball.body.pos + vec2(CANNONBALL_WIDTH / 2., CANNONBALL_HEIGHT / 2.);
 
         if cannonball.lived < cannonball.countdown {
-            let cannonball_owner_id = scene::get_node(cannonball.owner).id;
-
             let explosion = Circle::new(
                 cannonball.body.pos.x,
                 cannonball.body.pos.y,
@@ -125,7 +122,7 @@ impl scene::Node for Cannonball {
             );
 
             for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
-                if player.id != cannonball_owner_id || cannonball.owner_safe_countdown < 0. {
+                if player.id != cannonball.owner_id || cannonball.owner_safe_countdown < 0. {
                     let player_hitbox = player.get_hitbox();
                     if explosion.overlaps(player_hitbox) {
                         hit_fxses.spawn(explosion_position);

@@ -139,13 +139,14 @@ impl Cannon {
                     node.grace_time = SHOOTING_GRACE_TIME;
                 }
 
+                let player = &mut *scene::get_node(player);
+
                 let cannonball_pos = vec2(
                     node.body.pos.x,
                     node.body.pos.y - 20. - (CANNONBALL_HEIGHT as f32 / 2.),
                 );
-                Cannonball::spawn(cannonball_pos, node.body.facing, player);
+                Cannonball::spawn(cannonball_pos, node.body.facing, player.id);
 
-                let player = &mut *scene::get_node(player);
                 player.body.speed.x = -CANNON_THROWBACK * player.body.facing_dir();
             }
 

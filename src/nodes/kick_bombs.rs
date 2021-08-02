@@ -99,7 +99,7 @@ impl KickBombs {
     pub fn shoot(node: Handle<KickBombs>, player: Handle<Player>) -> Coroutine {
         let coroutine = async move {
             {
-                let mut node = scene::get_node(node);
+                let node = scene::get_node(node);
                 let mut player = &mut *scene::get_node(player);
                 player.weapon = None;
 
@@ -188,7 +188,12 @@ impl scene::Node for KickBombs {
             node.body.update_throw();
 
             if !node.body.on_ground {
-                let hitbox = Rect::new(node.body.pos.x, node.body.pos.y, KickBombs::COLLIDER_WIDTH, KickBombs::COLLIDER_HEIGHT);
+                let hitbox = Rect::new(
+                    node.body.pos.x,
+                    node.body.pos.y,
+                    KickBombs::COLLIDER_WIDTH,
+                    KickBombs::COLLIDER_HEIGHT,
+                );
                 for mut player in scene::find_nodes_by_type::<Player>() {
                     if hitbox.overlaps(&player.get_hitbox()) {
                         if let Some((weapon, _, _, gun)) = player.weapon.as_mut() {

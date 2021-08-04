@@ -143,7 +143,7 @@ impl Node for ArmedGrenade {
                 ArmedGrenade::EXPLOSION_RADIUS,
             );
             for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
-                if grenade_circ.overlaps(player.get_hitbox()) {
+                if grenade_circ.overlaps_rect(&player.get_hitbox()) {
                     let direction = node.body.pos.x > (player.body.pos.x + 10.);
                     scene::find_node_by_type::<crate::nodes::Camera>()
                         .unwrap()

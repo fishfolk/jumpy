@@ -161,7 +161,7 @@ impl scene::Node for Cannonball {
             for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
                 if player.id != cannonball.owner_id || cannonball.owner_safe_countdown < 0. {
                     let player_hitbox = player.get_hitbox();
-                    if explosion.overlaps(player_hitbox) {
+                    if explosion.overlaps_rect(&player_hitbox) {
                         hit_fxses.spawn(explosion_position);
 
                         scene::find_node_by_type::<crate::nodes::Camera>()

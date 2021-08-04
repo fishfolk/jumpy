@@ -144,7 +144,7 @@ impl Node for ArmedKickBomb {
                 ArmedKickBomb::EXPLOSION_RADIUS,
             );
             for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
-                if explosion.overlaps(player.get_hitbox()) {
+                if explosion.overlaps_rect(&player.get_hitbox()) {
                     let direction = node.body.pos.x > (player.body.pos.x + 10.);
                     scene::find_node_by_type::<crate::nodes::Camera>()
                         .unwrap()

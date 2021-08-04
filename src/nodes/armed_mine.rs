@@ -130,7 +130,7 @@ impl scene::Node for ArmedMine {
             );
             for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
                 let player_hitbox = player.get_hitbox();
-                if trigger.overlaps(player_hitbox) {
+                if trigger.overlaps_rect(&player_hitbox) {
                     scene::find_node_by_type::<crate::nodes::Camera>()
                         .unwrap()
                         .shake();
@@ -140,7 +140,7 @@ impl scene::Node for ArmedMine {
                         node.body.pos.y,
                         ArmedMine::EXPLOSION_RADIUS,
                     );
-                    if explosion.overlaps(player_hitbox) {
+                    if explosion.overlaps_rect(&player_hitbox) {
                         let direction = node.body.pos.x > (player.body.pos.x + 10.);
                         player.kill(direction);
                         killed = true;

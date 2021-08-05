@@ -34,20 +34,14 @@ impl ArmedMine {
     pub fn new(pos: Vec2, facing: bool) -> Self {
         // TODO: In case we want to animate thrown grenades rotating etc.
         let mine_sprite = AnimatedSprite::new(
-            30,
-            15,
+            26,
+            40,
             &[
                 Animation {
                     name: "idle".to_string(),
-                    row: 0,
-                    frames: 1,
-                    fps: 1,
-                },
-                Animation {
-                    name: "armed".to_string(),
-                    row: 0,
-                    frames: 2,
-                    fps: 3,
+                    row: 1,
+                    frames: 10,
+                    fps: 8,
                 },
             ],
             false,
@@ -111,9 +105,7 @@ impl scene::Node for ArmedMine {
         node.body.update();
         node.lived += get_frame_time();
 
-        // TODO: Fix animation
         if node.lived >= ArmedMine::ARMED_AFTER_DURATION && node.mine_sprite.current_animation() != 1 {
-            node.mine_sprite.set_animation(1);
             node.mine_sprite.playing = true;
         }
 
@@ -158,15 +150,11 @@ impl scene::Node for ArmedMine {
     fn draw(mut node: RefMut<Self>) {
         node.mine_sprite.update();
 
-        if node.lived >= ArmedMine::ARMED_AFTER_DURATION && node.mine_sprite.current_animation() != 1 {
-            node.mine_sprite.set_animation(1);
-        }
-
         let resources = storage::get_mut::<Resources>();
         draw_texture_ex(
             resources.mines,
             node.body.pos.x,
-            node.body.pos.y,
+            node.body.pos.y - 20.0,
             color::WHITE,
             DrawTextureParams {
                 source: Some(node.mine_sprite.frame().source_rect),

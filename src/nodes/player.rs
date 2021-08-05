@@ -716,9 +716,17 @@ impl scene::Node for Player {
 
         draw_texture_ex(
             if node.controller_id == 0 {
-                resources.whale
+                if node.can_head_boink {
+                    resources.whale_boots_blue
+                } else {
+                    resources.whale_blue
+                }
             } else {
-                resources.whale_red
+                if node.can_head_boink {
+                    resources.whale_boots_green
+                } else {
+                    resources.whale_green
+                }
             },
             node.body.pos.x - 25.,
             node.body.pos.y - 10.,

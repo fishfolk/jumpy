@@ -42,8 +42,10 @@ struct Resources {
     life_explosion_fxses: EmittersCache,
     tiled_map: tiled::Map,
     collision_world: CollisionWorld,
-    whale: Texture2D,
-    whale_red: Texture2D,
+    whale_green: Texture2D,
+    whale_blue: Texture2D,
+    whale_boots_blue: Texture2D,
+    whale_boots_green: Texture2D,
     grenades: Texture2D,
     cannon: Texture2D,
     cannonballs: Texture2D,
@@ -100,46 +102,52 @@ impl Resources {
         let decorations = load_texture("assets/decorations1.png").await?;
         decorations.set_filter(FilterMode::Nearest);
 
-        let whale_red = load_texture("assets/Whale/Whale(76x66)(Green).png").await?;
-        whale_red.set_filter(FilterMode::Nearest);
+        let whale_green = load_texture("assets/Whale/Whale(76x66)(Green).png").await?;
+        whale_green.set_filter(FilterMode::Nearest);
 
-        let whale = load_texture("assets/Whale/Whale(76x66)(Blue).png").await?;
-        whale.set_filter(FilterMode::Nearest);
+        let whale_blue = load_texture("assets/Whale/Whale(76x66)(Blue).png").await?;
+        whale_blue.set_filter(FilterMode::Nearest);
+
+        let whale_boots_green = load_texture("assets/Whale/WhaleBoots(76x66)(Green).png").await?;
+        whale_boots_green.set_filter(FilterMode::Nearest);
+
+        let whale_boots_blue = load_texture("assets/Whale/WhaleBoots(76x66)(Blue).png").await?;
+        whale_boots_blue.set_filter(FilterMode::Nearest);
 
         let gun = load_texture("assets/Whale/Gun(92x32).png").await?;
         gun.set_filter(FilterMode::Nearest);
 
-        let machine_gun = load_texture("assets/Whale/MachineGun(92x32).png").await?;
+        let machine_gun = load_texture("assets/Whale/MachineGun.png").await?;
         machine_gun.set_filter(FilterMode::Nearest);
 
-        let mines = load_texture("assets/Whale/Mines(30x15).png").await?;
+        let mines = load_texture("assets/Whale/Mines.png").await?;
         mines.set_filter(FilterMode::Nearest);
 
         let sword = load_texture("assets/Whale/Sword(65x93).png").await?;
         sword.set_filter(FilterMode::Nearest);
 
-        let grenades = load_texture("assets/Whale/Grenades(15x15).png").await?;
+        let grenades = load_texture("assets/Whale/Grenades.png").await?;
         grenades.set_filter(FilterMode::Nearest);
 
-        let sproinger = load_texture("assets/Whale/Sproinger(32x32).png").await?;
+        let sproinger = load_texture("assets/Whale/Sproinger.png").await?;
         sproinger.set_filter(FilterMode::Nearest);
 
-        let cannon = load_texture("assets/Whale/Cannon(50x30).png").await?;
+        let cannon = load_texture("assets/Whale/Cannon.png").await?;
         cannon.set_filter(FilterMode::Nearest);
 
         let cannonballs = load_texture("assets/Whale/Cannonball(32x36).png").await?;
         cannonballs.set_filter(FilterMode::Nearest);
 
-        let kick_bombs = load_texture("assets/Whale/KickBomb(32x36).png").await?;
+        let kick_bombs = load_texture("assets/Whale/KickBomb.png").await?;
         kick_bombs.set_filter(FilterMode::Nearest);
 
-        let curse = load_texture("assets/Whale/Curse(32x32).png").await?;
+        let curse = load_texture("assets/Whale/Curse.png").await?;
         curse.set_filter(FilterMode::Nearest);
 
         let flying_curses = load_texture("assets/Whale/Curse(32x32).png").await?;
         flying_curses.set_filter(FilterMode::Nearest);
 
-        let jellyfish = load_texture("assets/Whale/Jellyfish(32x29).png").await?;
+        let jellyfish = load_texture("assets/Whale/Jellyfish.png").await?;
         jellyfish.set_filter(FilterMode::Nearest);
 
         let flappy_jellyfishes = load_texture("assets/Whale/FlappyJellyfish(50x51).png").await?;
@@ -235,8 +243,10 @@ impl Resources {
             life_explosion_fxses,
             tiled_map,
             collision_world,
-            whale,
-            whale_red,
+            whale_blue,
+            whale_green,
+            whale_boots_blue,
+            whale_boots_green,
             grenades,
             cannon,
             cannonballs,
@@ -434,7 +444,7 @@ async fn game(game_type: GameType, map: &str) {
         }
 
         if object.name == "sproinger" {
-            let sproinger = Sproinger::new(vec2(object.world_x - 35., object.world_y - 25.));
+            let sproinger = Sproinger::new(vec2(object.world_x - 35., object.world_y));
             scene::add_node(sproinger);
         }
 
@@ -480,7 +490,7 @@ async fn game(game_type: GameType, map: &str) {
 
         if object.name == "kick_bombs" {
             let mut kick_bombs =
-                KickBombs::new(wat_facing, vec2(object.world_x - 32., object.world_y - 36.));
+                KickBombs::new(wat_facing, vec2(object.world_x - 32., object.world_y - 54.));
             kick_bombs.throw(false);
             scene::add_node(kick_bombs);
             wat_facing ^= true;

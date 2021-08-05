@@ -36,8 +36,8 @@ impl Mines {
 
     pub fn new(facing: bool, pos: Vec2) -> Self {
         let mines_sprite = AnimatedSprite::new(
-            30,
-            15,
+            26,
+            40,
             &[Animation {
                 name: "idle".to_string(),
                 row: 0,
@@ -226,9 +226,9 @@ impl scene::Node for Mines {
             }
         } else {
             if node.body.facing {
-                vec2(-25., 0.)
+                vec2(-25., -10.)
             } else {
-                vec2(5., 0.)
+                vec2(5., -10.)
             }
         };
 

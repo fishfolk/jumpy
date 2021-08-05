@@ -40,14 +40,14 @@ impl ArmedKickBomb {
 
     pub fn new(pos: Vec2, facing: bool) -> Self {
         let sprite = AnimatedSprite::new(
-            32,
-            36,
+            28,
+            38,
             &[
                 Animation {
                     name: "idle".to_string(),
                     row: 1,
-                    frames: 1,
-                    fps: 1,
+                    frames: 4,
+                    fps: 8,
                 },
             ],
             false,

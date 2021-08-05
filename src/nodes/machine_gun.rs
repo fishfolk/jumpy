@@ -31,8 +31,8 @@ pub struct MachineGun {
 }
 
 impl MachineGun {
-    pub const COLLIDER_WIDTH: f32 = 48.0;
-    pub const COLLIDER_HEIGHT: f32 = 32.0;
+    pub const COLLIDER_WIDTH: f32 = 60.0;
+    pub const COLLIDER_HEIGHT: f32 = 20.0;
 
     pub const GUN_THROWBACK: f32 = 75.0;
     pub const BULLET_SPREAD: f32 = 0.1;
@@ -41,8 +41,8 @@ impl MachineGun {
 
     pub fn new(facing: bool, pos: Vec2) -> Self {
         let sprite = AnimatedSprite::new(
-            92,
-            32,
+            80,
+            24,
             &[
                 Animation {
                     name: "idle".to_string(),
@@ -53,8 +53,8 @@ impl MachineGun {
                 Animation {
                     name: "shoot".to_string(),
                     row: 1,
-                    frames: 3,
-                    fps: 25,
+                    frames: 2,
+                    fps: 8,
                 },
             ],
             false,
@@ -170,7 +170,7 @@ impl MachineGun {
                 let mut node = &mut *scene::get_node(node);
                 let player = &mut *scene::get_node(player);
 
-                node.fx_active = true;
+               // node.fx_active = true;
 
                 let mut bullets = scene::find_node_by_type::<crate::nodes::Bullets>().unwrap();
                 let x = node.body.pos.x + if node.body.facing { 32.0 } else { -32.0 };

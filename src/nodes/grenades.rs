@@ -29,15 +29,15 @@ pub struct Grenades {
 }
 
 impl Grenades {
-    pub const COLLIDER_WIDTH: f32 = 15.0;
-    pub const COLLIDER_HEIGHT: f32 = 15.0;
+    pub const COLLIDER_WIDTH: f32 = 21.0;
+    pub const COLLIDER_HEIGHT: f32 = 29.0;
     pub const FIRE_INTERVAL: f32 = 0.25;
     pub const MAXIMUM_AMOUNT: i32 = 3;
 
     pub fn new(facing: bool, pos: Vec2) -> Self {
         let grenade_sprite = AnimatedSprite::new(
-            15,
-            15,
+            21,
+            28,
             &[Animation {
                 name: "idle".to_string(),
                 row: 0,
@@ -191,14 +191,14 @@ impl scene::Node for Grenades {
         node.provides::<Weapon>((
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
-            vec2(32.0, 32.0),
+            vec2(38.0, 38.0),
             Self::gun_capabilities(),
         ));
 
         node.provides::<Sproingable>((
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
-            vec2(32.0, 26.0),
+            vec2(38.0, 26.0),
         ));
     }
 

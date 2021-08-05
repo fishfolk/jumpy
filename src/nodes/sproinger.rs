@@ -28,8 +28,8 @@ impl Sproinger {
 
     pub fn new(pos: Vec2) -> Self {
         let sprite = AnimatedSprite::new(
-            32,
-            32,
+            31,
+            20,
             &[
                 Animation {
                     name: "idle".to_string(),
@@ -39,14 +39,14 @@ impl Sproinger {
                 },
                 Animation {
                     name: "sproing".to_string(),
-                    row: 0,
-                    frames: 3,
+                    row: 1,
+                    frames: 2,
                     fps: 10,
                 },
                 Animation {
                     name: "desproing".to_string(),
                     row: 1,
-                    frames: 3,
+                    frames: 2,
                     fps: 10,
                 },
             ],

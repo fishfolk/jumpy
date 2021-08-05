@@ -34,8 +34,8 @@ impl KickBombs {
 
     pub fn new(facing: bool, pos: Vec2) -> Self {
         let sprite = AnimatedSprite::new(
-            32,
-            36,
+            28,
+            38,
             &[Animation {
                 name: "idle".to_string(),
                 row: 0,

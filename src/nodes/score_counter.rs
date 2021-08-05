@@ -56,7 +56,7 @@ impl scene::Node for ScoreCounter {
         let h = 66.0 / 2.;
         for i in 0..node.player0_lifes {
             draw_texture_ex(
-                resources.whale,
+                resources.whale_blue,
                 (w + 2.) * i as f32,
                 5.0,
                 WHITE,
@@ -71,7 +71,7 @@ impl scene::Node for ScoreCounter {
 
         for i in 0..node.player1_lifes {
             draw_texture_ex(
-                resources.whale_red,
+                resources.whale_green,
                 screen_width() - (w + 2.) * (i + 1) as f32,
                 5.0,
                 WHITE,

@@ -31,13 +31,13 @@ impl ArmedGrenade {
     pub fn new(pos: Vec2, facing: bool) -> Self {
         // TODO: In case we want to animate thrown grenades rotating etc.
         let grenade_sprite = AnimatedSprite::new(
-            15,
-            15,
+            21,
+            28,
             &[Animation {
                 name: "idle".to_string(),
-                row: 0,
-                frames: 1,
-                fps: 1,
+                row: 1,
+                frames: 4,
+                fps: 8,
             }],
             false,
         );
@@ -115,7 +115,7 @@ impl Node for ArmedGrenade {
         node.provides::<Sproingable>((
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
-            vec2(16.0, 32.0),
+            vec2(24.0, 38.0),
         ));
     }
 

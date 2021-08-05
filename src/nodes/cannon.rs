@@ -23,9 +23,10 @@ use macroquad::math::Rect;
 const INITIAL_CANNONBALLS: i32 = 3;
 const MAXIMUM_CANNONBALLS: i32 = 3;
 
-const CANNON_WIDTH: f32 = 50.;
-const CANNON_HEIGHT: f32 = 30.;
+const CANNON_WIDTH: f32 = 88.;
+const CANNON_HEIGHT: f32 = 36.;
 const CANNON_ANIMATION_BASE: &'static str = "base";
+const CANNON_ANIMATION_SHOOT: &'static str = "shoot";
 
 const CANNON_THROWBACK: f32 = 1050.0;
 const SHOOTING_GRACE_TIME: f32 = 1.0; // seconds
@@ -51,6 +52,12 @@ impl Cannon {
                 row: 0,
                 frames: 1,
                 fps: 1,
+            },
+            Animation {
+                name: CANNON_ANIMATION_SHOOT.to_string(),
+                row: 1,
+                frames: 4,
+                fps: 8,
             }],
             false,
         );
@@ -104,9 +111,9 @@ impl Cannon {
         let mut resources = storage::get_mut::<Resources>();
 
         let cannon_mount_pos = if self.body.facing {
-            vec2(30., 10.)
+            vec2(30., 5.)
         } else {
-            vec2(-50., 10.)
+            vec2(-50., 5.)
         };
 
         if self.body.collider.is_none() {
@@ -251,9 +258,9 @@ impl scene::Node for Cannon {
 
         if !node.thrown {
             draw_pos += if node.body.facing {
-                vec2(5., 16.)
+                vec2(0., 5.)
             } else {
-                vec2(-30., 16.)
+                vec2(-50., 5.)
             }
         };
 

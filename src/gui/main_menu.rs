@@ -21,6 +21,8 @@ pub async fn gui() -> String {
         input.update();
     }
 
+    let mut old_mouse_position = mouse_position();
+
     loop {
         let mut gui_resources = storage::get_mut::<GuiResources>();
 
@@ -47,6 +49,7 @@ pub async fn gui() -> String {
                     }
                 }
             }
+
             if axises.down_pressed {
                 hovered += 3;
                 if hovered >= levels_amount as i32 {
@@ -73,6 +76,11 @@ pub async fn gui() -> String {
                     w + level.size * 60.,
                     h + level.size * 60.,
                 );
+                if old_mouse_position != mouse_position() && rect.contains(mouse_position().into())
+                {
+                    hovered = n as _;
+                }
+
                 if is_hovered {
                     level.size = level.size * 0.8 + 1.0 * 0.2;
                 } else {
@@ -105,6 +113,8 @@ pub async fn gui() -> String {
             let mut input = storage::get_mut::<crate::input_axis::InputAxises>();
             input.update();
         }
+
+        old_mouse_position = mouse_position();
 
         next_frame().await;
     }

@@ -49,13 +49,12 @@ impl Node for Seaweed {
             Seaweed::TRIGGER_HEIGHT,
         );
         for mut player in scene::find_nodes_by_type::<Player>() {
-            if hitbox.overlaps(&player.get_hitbox()) {
-                if player.body.on_ground
-                    && (player.body.speed.x >= Seaweed::SPEED_THRESHOLD
-                        || player.body.speed.x <= -Seaweed::SPEED_THRESHOLD)
-                {
-                    player.incapacitate(Seaweed::INCAPACITATE_DURATION, false, true);
-                }
+            if hitbox.overlaps(&player.get_hitbox())
+                && player.body.on_ground
+                && (player.body.speed.x >= Seaweed::SPEED_THRESHOLD
+                    || player.body.speed.x <= -Seaweed::SPEED_THRESHOLD)
+            {
+                player.incapacitate(Seaweed::INCAPACITATE_DURATION, false, true);
             }
         }
     }

@@ -52,12 +52,10 @@ impl scene::Node for Muscet {
             } else {
                 vec2(-60., 16.)
             }
+        } else if node.body.facing {
+            vec2(-25., 0.)
         } else {
-            if node.body.facing {
-                vec2(-25., 0.)
-            } else {
-                vec2(5., 0.)
-            }
+            vec2(5., 0.)
         };
 
         draw_texture_ex(
@@ -275,7 +273,7 @@ impl Muscet {
                 let node = &mut *scene::get_node(node);
                 node.muscet_sprite.set_animation(1);
             }
-            for i in 0u32..3 {
+            for i in 0_u32..3 {
                 {
                     let node = &mut *scene::get_node(node);
                     node.muscet_sprite.set_frame(i);

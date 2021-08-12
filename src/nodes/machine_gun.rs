@@ -186,7 +186,7 @@ impl MachineGun {
                 let node = &mut *scene::get_node(node);
                 node.sprite.set_animation(1);
             }
-            for i in 0u32..3 {
+            for i in 0_u32..3 {
                 {
                     let node = &mut *scene::get_node(node);
                     node.sprite.set_frame(i);
@@ -306,18 +306,16 @@ impl Node for MachineGun {
     fn draw(mut node: RefMut<Self>) {
         let resources = storage::get_mut::<Resources>();
 
-        let mount_pos = if node.thrown == false {
+        let mount_pos = if !node.thrown {
             if node.body.facing {
                 vec2(0., 16.)
             } else {
                 vec2(-60., 16.)
             }
+        } else if node.body.facing {
+            vec2(-25., 0.)
         } else {
-            if node.body.facing {
-                vec2(-25., 0.)
-            } else {
-                vec2(5., 0.)
-            }
+            vec2(5., 0.)
         };
 
         draw_texture_ex(

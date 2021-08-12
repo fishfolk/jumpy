@@ -144,9 +144,8 @@ impl Cannon {
                     node.grace_time -= get_frame_time();
 
                     return;
-                } else {
-                    node.grace_time = SHOOTING_GRACE_TIME;
                 }
+                node.grace_time = SHOOTING_GRACE_TIME;
 
                 let player = &mut *scene::get_node(player);
 

@@ -176,12 +176,12 @@ impl Node for Crate {
                 for mut player in players {
                     let player_hitbox = player.get_hitbox();
                     let is_overlapping = hit_box.overlaps(&player_hitbox);
-                    if is_overlapping {
-                        if node.body.pos.y + 30.0 < player_hitbox.y + Player::HEAD_THRESHOLD {
-                            let resources = storage::get_mut::<Resources>();
-                            play_sound_once(resources.jump_sound);
-                            player.kill(!node.body.facing);
-                        }
+                    if is_overlapping
+                        && node.body.pos.y + 30.0 < player_hitbox.y + Player::HEAD_THRESHOLD
+                    {
+                        let resources = storage::get_mut::<Resources>();
+                        play_sound_once(resources.jump_sound);
+                        player.kill(!node.body.facing);
                     }
                 }
             }
@@ -199,12 +199,10 @@ impl Node for Crate {
             } else {
                 vec2(5., 0.)
             }
+        } else if node.body.facing {
+            vec2(24., 16.)
         } else {
-            if node.body.facing {
-                vec2(24., 16.)
-            } else {
-                vec2(-24., 16.)
-            }
+            vec2(-24., 16.)
         };
 
         draw_texture_ex(

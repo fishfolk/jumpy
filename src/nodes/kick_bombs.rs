@@ -215,12 +215,10 @@ impl scene::Node for KickBombs {
             } else {
                 vec2(-5., 16.)
             }
+        } else if node.body.facing {
+            vec2(-25., 0.)
         } else {
-            if node.body.facing {
-                vec2(-25., 0.)
-            } else {
-                vec2(5., 0.)
-            }
+            vec2(5., 0.)
         };
 
         draw_texture_ex(

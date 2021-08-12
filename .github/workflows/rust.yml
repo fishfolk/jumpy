@@ -24,7 +24,7 @@ jobs:
         run: rustup component add clippy
 
       - name: Run Clippy
-        run: cargo clippy -- -W clippy::pedantic --deny warnings
+        run: cargo clippy -- -W clippy::pedantic
 
   build:
     name: Build

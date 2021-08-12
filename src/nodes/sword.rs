@@ -83,12 +83,10 @@ impl scene::Node for Sword {
                 } else {
                     vec2(-45., 10.)
                 }
+            } else if sword.body.facing {
+                vec2(-25., 0.)
             } else {
-                if sword.body.facing {
-                    vec2(-25., 0.)
-                } else {
-                    vec2(5., 0.)
-                }
+                vec2(5., 0.)
             };
 
             let rotation = if sword.body.facing {
@@ -105,7 +103,7 @@ impl scene::Node for Sword {
                 DrawTextureParams {
                     dest_size: Some(vec2(65., 17.)),
                     flip_x: !sword.body.facing,
-                    rotation: rotation, //get_time() as _,
+                    rotation, //get_time() as _,
                     ..Default::default()
                 },
             );
@@ -300,7 +298,7 @@ impl Sword {
                 }
             }
 
-            for i in 0u32..3 {
+            for i in 0_u32..3 {
                 {
                     let sword = &mut *scene::get_node(node);
                     sword.sword_sprite.set_frame(i);

@@ -90,7 +90,7 @@ pub const DIRMASK: u32 = (1 << DIRBITS) - 1;
 pub const fn ioc(dir: u64, ty: u64, nr: u64, sz: u64) -> u64 {
     (((dir as u32) << DIRSHIFT)
         | ((ty as u32) << TYPESHIFT)
-        | ((nr as u32) << NRSHIFT) 
+        | ((nr as u32) << NRSHIFT)
         | ((sz as u32) << SIZESHIFT)) as u64
 }
 
@@ -131,5 +131,9 @@ impl ::std::default::Default for input_absinfo {
 }
 
 pub const fn eviocgabs(abs: u32) -> ::libc::c_ulong {
-    ior(b'E' as _, (0x40 + abs) as _, std::mem::size_of::<input_absinfo>() as _) as ::libc::c_ulong
+    ior(
+        b'E' as _,
+        (0x40 + abs) as _,
+        std::mem::size_of::<input_absinfo>() as _,
+    ) as ::libc::c_ulong
 }

@@ -1,7 +1,9 @@
 mod hid;
 
-use super::super::{ControllerInfo, ControllerState, ControllerStatus, DEFAULT_CONTROLLER_INFO,
-                   DEFAULT_CONTROLLER_STATE, MAX_ANALOG, MAX_DEVICES, MAX_DIGITAL};
+use super::super::{
+    ControllerInfo, ControllerState, ControllerStatus, DEFAULT_CONTROLLER_INFO,
+    DEFAULT_CONTROLLER_STATE, MAX_ANALOG, MAX_DEVICES, MAX_DIGITAL,
+};
 
 pub struct ControllerContext {
     info: Vec<ControllerInfo>,

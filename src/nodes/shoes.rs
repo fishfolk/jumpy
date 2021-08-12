@@ -1,25 +1,14 @@
 use macroquad::{
-    experimental::{
-        animation::{
-            AnimatedSprite,
-            Animation,
-        },
-        scene::{
-            Node,
-            RefMut,
-        },
-        collections::storage,
-    },
     color,
+    experimental::{
+        animation::{AnimatedSprite, Animation},
+        collections::storage,
+        scene::{Node, RefMut},
+    },
     prelude::*,
 };
 
-use crate::{
-    Resources,
-    nodes::{
-        Player,
-    }
-};
+use crate::{nodes::Player, Resources};
 
 pub struct Shoes {
     sprite: AnimatedSprite,
@@ -31,21 +20,16 @@ impl Shoes {
         let sprite = AnimatedSprite::new(
             32,
             32,
-            &[
-                Animation {
-                    name: "idle".to_string(),
-                    row: 0,
-                    frames: 1,
-                    fps: 1
-                }
-            ],
+            &[Animation {
+                name: "idle".to_string(),
+                row: 0,
+                frames: 1,
+                fps: 1,
+            }],
             false,
         );
 
-        Shoes {
-            sprite,
-            pos,
-        }
+        Shoes { sprite, pos }
     }
 }
 

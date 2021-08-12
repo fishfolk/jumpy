@@ -1,24 +1,15 @@
 use macroquad::{
+    color,
     experimental::{
+        animation::{AnimatedSprite, Animation},
         collections::storage,
         scene::RefMut,
-        animation::{
-            AnimatedSprite,
-            Animation,
-        },
     },
-    color,
     prelude::*,
 };
 
-use crate::{
-    nodes::player::{
-        PhysicsBody,
-    },
-    nodes::sproinger::Sproingable,
-    Resources,
-};
 use crate::circle::Circle;
+use crate::{nodes::player::PhysicsBody, nodes::sproinger::Sproingable, Resources};
 
 pub struct ArmedMine {
     mine_sprite: AnimatedSprite,
@@ -36,14 +27,12 @@ impl ArmedMine {
         let mine_sprite = AnimatedSprite::new(
             26,
             40,
-            &[
-                Animation {
-                    name: "idle".to_string(),
-                    row: 1,
-                    frames: 10,
-                    fps: 8,
-                },
-            ],
+            &[Animation {
+                name: "idle".to_string(),
+                row: 1,
+                frames: 10,
+                fps: 8,
+            }],
             false,
         );
 
@@ -105,7 +94,9 @@ impl scene::Node for ArmedMine {
         node.body.update();
         node.lived += get_frame_time();
 
-        if node.lived >= ArmedMine::ARMED_AFTER_DURATION && node.mine_sprite.current_animation() != 1 {
+        if node.lived >= ArmedMine::ARMED_AFTER_DURATION
+            && node.mine_sprite.current_animation() != 1
+        {
             node.mine_sprite.playing = true;
         }
 
@@ -115,11 +106,7 @@ impl scene::Node for ArmedMine {
 
         if node.lived >= ArmedMine::ARMED_AFTER_DURATION {
             let mut killed = false;
-            let trigger = Circle::new(
-                node.body.pos.x,
-                node.body.pos.y,
-                ArmedMine::TRIGGER_RADIUS,
-            );
+            let trigger = Circle::new(node.body.pos.x, node.body.pos.y, ArmedMine::TRIGGER_RADIUS);
             for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
                 let player_hitbox = player.get_hitbox();
                 if trigger.overlaps_rect(&player_hitbox) {

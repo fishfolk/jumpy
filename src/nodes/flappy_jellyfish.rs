@@ -7,10 +7,7 @@ use macroquad_platformer::Tile;
 
 use crate::Resources;
 
-use super::{
-    jellyfish::MountStatus,
-    Jellyfish, Player,
-};
+use super::{jellyfish::MountStatus, Jellyfish, Player};
 
 const FLAPPY_JELLYFISH_WIDTH: f32 = 50.;
 pub const FLAPPY_JELLYFISH_HEIGHT: f32 = 51.;
@@ -224,8 +221,8 @@ impl scene::Node for FlappyJellyfish {
                         .unwrap()
                         .shake();
 
-                    let direction = flappy_jellyfish.current_pos.x
-                        > (player.body.pos.x + player_hitbox.w / 2.);
+                    let direction =
+                        flappy_jellyfish.current_pos.x > (player.body.pos.x + player_hitbox.w / 2.);
                     player.kill(direction);
 
                     killed_player_ids.push(player.id);

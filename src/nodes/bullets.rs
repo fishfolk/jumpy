@@ -3,9 +3,7 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::{
-    Resources,
-};
+use crate::Resources;
 use macroquad_platformer::Tile;
 
 struct Bullet {
@@ -32,11 +30,7 @@ impl Bullets {
 
     pub fn spawn_bullet(&mut self, pos: Vec2, size: f32, facing: bool, spread: f32) {
         let y = rand::gen_range(-spread, spread);
-        let dir = if facing {
-            vec2(1.0, y)
-        } else {
-            vec2(-1.0, y)
-        };
+        let dir = if facing { vec2(1.0, y) } else { vec2(-1.0, y) };
         self.bullets.push(Bullet {
             pos: pos + vec2(16.0, 30.0) + dir * 32.0,
             speed: dir * Self::BULLET_SPEED,
@@ -70,8 +64,7 @@ impl scene::Node for Bullets {
         node.bullets.retain(|bullet| {
             let mut killed = false;
             for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
-                let self_damaged =
-                    player.get_hitbox().contains(bullet.pos);
+                let self_damaged = player.get_hitbox().contains(bullet.pos);
                 let direction = bullet.pos.x > (player.body.pos.x + 10.);
 
                 if self_damaged {
@@ -85,7 +78,13 @@ impl scene::Node for Bullets {
                 }
             }
 
-            if resources.collision_world.collide_solids(bullet.pos, bullet.size as i32, bullet.size as i32) == Tile::Solid || killed {
+            if resources.collision_world.collide_solids(
+                bullet.pos,
+                bullet.size as i32,
+                bullet.size as i32,
+            ) == Tile::Solid
+                || killed
+            {
                 resources.hit_fxses.spawn(bullet.pos);
                 return false;
             }

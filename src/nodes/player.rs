@@ -248,7 +248,7 @@ impl Player {
                 .coroutine(Self::shoot_coroutine),
         );
         state_machine.add_state(
-          Self::ST_INCAPACITATED,
+            Self::ST_INCAPACITATED,
             State::new()
                 .update(Self::update_incapacitated)
                 .coroutine(Self::incapacitated_coroutine),
@@ -318,7 +318,7 @@ impl Player {
                     row: 18,
                     frames: 2,
                     fps: 8,
-                }
+                },
             ],
             true,
         );
@@ -772,7 +772,9 @@ impl scene::Node for Player {
     fn fixed_update(mut node: RefMut<Self>) {
         // Break incapacitated
         if node.state_machine.state() == Player::ST_INCAPACITATED && node.body.speed.x != 0.0 {
-            if node.body.speed.x > Player::INCAPACITATED_STOP_THRESHOLD || node.body.speed.x < -Player::INCAPACITATED_STOP_THRESHOLD {
+            if node.body.speed.x > Player::INCAPACITATED_STOP_THRESHOLD
+                || node.body.speed.x < -Player::INCAPACITATED_STOP_THRESHOLD
+            {
                 node.body.speed.x *= Player::INCAPACITATED_BREAK_FACTOR;
             } else {
                 node.body.speed.x = 0.0;

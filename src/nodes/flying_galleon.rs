@@ -116,8 +116,8 @@ impl scene::Node for FlyingGalleon {
                         .unwrap()
                         .shake();
 
-                    let direction = flying_galleon.current_pos.x
-                        > (player.body.pos.x + player_hitbox.w / 2.);
+                    let direction =
+                        flying_galleon.current_pos.x > (player.body.pos.x + player_hitbox.w / 2.);
                     player.kill(direction);
                 }
             }

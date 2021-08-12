@@ -149,7 +149,12 @@ impl scene::Node for Sword {
             node.body.update_throw();
 
             if !node.body.on_ground {
-                let hitbox = Rect::new(node.body.pos.x, node.body.pos.y, Sword::COLLIDER_WIDTH, Sword::COLLIDER_HEIGHT);
+                let hitbox = Rect::new(
+                    node.body.pos.x,
+                    node.body.pos.y,
+                    Sword::COLLIDER_WIDTH,
+                    Sword::COLLIDER_HEIGHT,
+                );
                 for mut player in scene::find_nodes_by_type::<Player>() {
                     if hitbox.overlaps(&player.get_hitbox()) {
                         if let Some((weapon, _, _, gun)) = player.weapon.as_mut() {

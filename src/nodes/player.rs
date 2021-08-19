@@ -603,12 +603,14 @@ impl Player {
                     node.is_sliding = true;
                     node.slide_timer = 0.0;
                 }
-            } else if node.input.jump && node.jump_grace_timer > 0. {
-                node.jump_grace_timer = 0.0;
-                node.jump();
             }
         } else if !node.is_sliding && node.input.down {
             node.body.descent();
+        }
+
+        if node.input.jump && node.jump_grace_timer > 0. {
+            node.jump_grace_timer = 0.0;
+            node.jump();
         }
 
         if node.input.throw {

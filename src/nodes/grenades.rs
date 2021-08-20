@@ -178,10 +178,10 @@ impl Grenades {
         }
 
         capabilities::Gun {
-            throw,
-            shoot,
             is_thrown,
             pick_up,
+            throw,
+            shoot,
         }
     }
 }
@@ -231,7 +231,7 @@ impl scene::Node for Grenades {
     fn draw(node: RefMut<Self>) {
         let resources = storage::get_mut::<Resources>();
 
-        let grenade_mount_pos = if node.thrown == false {
+        let grenade_mount_pos = if !node.thrown {
             if node.body.facing {
                 vec2(0., 16.)
             } else {
@@ -257,7 +257,7 @@ impl scene::Node for Grenades {
             },
         );
 
-        if node.thrown == false {
+        if !node.thrown {
             node.draw_hud();
         }
     }

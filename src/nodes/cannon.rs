@@ -205,10 +205,10 @@ impl Cannon {
         }
 
         capabilities::Gun {
-            throw,
-            shoot,
             is_thrown,
             pick_up,
+            throw,
+            shoot,
         }
     }
 }
@@ -284,7 +284,7 @@ impl scene::Node for Cannon {
             },
         );
 
-        if node.thrown == false {
+        if !node.thrown {
             node.draw_hud();
         }
     }

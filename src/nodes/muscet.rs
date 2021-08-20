@@ -334,10 +334,10 @@ impl Muscet {
             node.thrown = false;
         }
         capabilities::Gun {
-            throw,
-            shoot,
             is_thrown,
             pick_up,
+            throw,
+            shoot,
         }
     }
 }

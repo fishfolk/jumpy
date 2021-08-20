@@ -232,7 +232,7 @@ impl scene::Node for FlappyJellyfish {
             },
         );
 
-        if killed_player_ids.len() > 0 {
+        if !killed_player_ids.is_empty() {
             FlappyJellyfish::terminate(flappy_jellyfish, killed_player_ids);
         }
     }

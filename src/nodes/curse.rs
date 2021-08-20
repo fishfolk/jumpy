@@ -96,7 +96,7 @@ impl Curse {
             let player = &mut *scene::get_node(player);
 
             // `thrown` is still required, otherwise, spawning may be called multiple times.
-            if node.thrown == true {
+            if node.thrown {
                 player.state_machine.set_state(Player::ST_NORMAL);
                 return;
             }
@@ -151,10 +151,10 @@ impl Curse {
         }
 
         capabilities::Gun {
-            throw,
-            shoot,
             is_thrown,
             pick_up,
+            throw,
+            shoot,
         }
     }
 }

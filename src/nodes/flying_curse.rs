@@ -115,7 +115,7 @@ impl FlyingCurses {
             })
             .collect::<Vec<_>>();
 
-        if enemies_pos.len() == 0 {
+        if enemies_pos.is_empty() {
             return default_speed;
         }
 

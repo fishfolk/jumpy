@@ -170,10 +170,10 @@ impl Mines {
         }
 
         capabilities::Gun {
-            throw,
-            shoot,
             is_thrown,
             pick_up,
+            throw,
+            shoot,
         }
     }
 }
@@ -223,18 +223,16 @@ impl scene::Node for Mines {
     fn draw(node: RefMut<Self>) {
         let resources = storage::get_mut::<Resources>();
 
-        let mine_mount_pos = if node.thrown == false {
+        let mine_mount_pos = if !node.thrown {
             if node.body.facing {
                 vec2(0., 16.)
             } else {
                 vec2(-5., 16.)
             }
+        } else if node.body.facing {
+            vec2(-25., -10.)
         } else {
-            if node.body.facing {
-                vec2(-25., -10.)
-            } else {
-                vec2(5., -10.)
-            }
+            vec2(5., -10.)
         };
 
         draw_texture_ex(
@@ -251,7 +249,7 @@ impl scene::Node for Mines {
             },
         );
 
-        if node.thrown == false {
+        if !node.thrown {
             node.draw_hud();
         }
     }

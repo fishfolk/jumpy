@@ -15,7 +15,7 @@ use super::{player::PhysicsBody, Cannonball, EruptedItem};
 
 const VOLCANO_WIDTH: f32 = 395.;
 const VOLCANO_HEIGHT: f32 = 100.;
-const VOLCANO_ANIMATION_ERUPTING: &'static str = "erupting";
+const VOLCANO_ANIMATION_ERUPTING: &str = "erupting";
 /// Also applies to submersion
 const VOLCANO_EMERSION_TIME: f32 = 5.1;
 const VOLCANO_ERUPTION_TIME: f32 = 5.0;

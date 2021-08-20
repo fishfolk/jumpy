@@ -11,7 +11,7 @@ use super::{jellyfish::MountStatus, Jellyfish, Player};
 
 const FLAPPY_JELLYFISH_WIDTH: f32 = 50.;
 pub const FLAPPY_JELLYFISH_HEIGHT: f32 = 51.;
-const FLAPPY_JELLYFISH_ANIMATION_FLAPPY: &'static str = "flappy";
+const FLAPPY_JELLYFISH_ANIMATION_FLAPPY: &str = "flappy";
 const FLAPPY_JELLYFISH_X_SPEED: f32 = 200.;
 // Use the player width, for simplicity
 const FLAPPY_JELLYFISH_SPAWN_X_DISTANCE: f32 = 76.;
@@ -232,7 +232,7 @@ impl scene::Node for FlappyJellyfish {
             },
         );
 
-        if killed_player_ids.len() > 0 {
+        if !killed_player_ids.is_empty() {
             FlappyJellyfish::terminate(flappy_jellyfish, killed_player_ids);
         }
     }

@@ -84,7 +84,7 @@ pub async fn gui() -> String {
                 if is_hovered {
                     level.size = level.size * 0.8 + 1.0 * 0.2;
                 } else {
-                    level.size = level.size * 0.9;
+                    level.size *= 0.9;
                 }
 
                 if ui::widgets::Button::new(level.preview)

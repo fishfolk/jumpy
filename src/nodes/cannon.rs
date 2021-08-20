@@ -25,8 +25,8 @@ const MAXIMUM_CANNONBALLS: i32 = 3;
 
 const CANNON_WIDTH: f32 = 88.;
 const CANNON_HEIGHT: f32 = 36.;
-const CANNON_ANIMATION_BASE: &'static str = "base";
-const CANNON_ANIMATION_SHOOT: &'static str = "shoot";
+const CANNON_ANIMATION_BASE: &str = "base";
+const CANNON_ANIMATION_SHOOT: &str = "shoot";
 
 const CANNON_THROWBACK: f32 = 1050.0;
 const SHOOTING_GRACE_TIME: f32 = 1.0; // seconds
@@ -205,10 +205,10 @@ impl Cannon {
         }
 
         capabilities::Gun {
-            throw,
-            shoot,
             is_thrown,
             pick_up,
+            throw,
+            shoot,
         }
     }
 }
@@ -284,7 +284,7 @@ impl scene::Node for Cannon {
             },
         );
 
-        if node.thrown == false {
+        if !node.thrown {
             node.draw_hud();
         }
     }

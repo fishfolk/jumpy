@@ -19,7 +19,7 @@ use super::{
 
 const GALLEON_WIDTH: f32 = 32.;
 const GALLEON_HEIGHT: f32 = 29.;
-const GALLEON_ANIMATION_BASE: &'static str = "base";
+const GALLEON_ANIMATION_BASE: &str = "base";
 const GALLEON_MOUNT_X_REL: f32 = -12.;
 const GALLEON_MOUNT_Y: f32 = -10.;
 
@@ -165,10 +165,10 @@ impl Galleon {
         }
 
         capabilities::Gun {
-            throw,
-            shoot,
             is_thrown,
             pick_up,
+            throw,
+            shoot,
         }
     }
 }

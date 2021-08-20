@@ -14,7 +14,7 @@ const FLYING_CURSE_COUNTDOWN_DURATION: f32 = 10.;
 
 const FLYING_CURSE_WIDTH: f32 = 32.;
 pub const FLYING_CURSE_HEIGHT: f32 = 32.;
-const FLYING_CURSE_ANIMATION_FLYING: &'static str = "flying";
+const FLYING_CURSE_ANIMATION_FLYING: &str = "flying";
 const FLYING_CURSE_SPEED: f32 = 70.;
 const FLYING_CURSE_MAX_AMPLITUDE: f32 = 100.;
 const FLYING_CURSE_Y_FREQ_SLOWDOWN: f32 = 10.; // the higher, the slower the frequency is
@@ -115,7 +115,7 @@ impl FlyingCurses {
             })
             .collect::<Vec<_>>();
 
-        if enemies_pos.len() == 0 {
+        if enemies_pos.is_empty() {
             return default_speed;
         }
 

@@ -167,7 +167,7 @@ impl MachineGun {
                 let resources = storage::get_mut::<Resources>();
                 play_sound_once(resources.shoot_sound);
 
-                let mut node = &mut *scene::get_node(node);
+                let node = &mut *scene::get_node(node);
                 let player = &mut *scene::get_node(player);
 
                 // node.fx_active = true;
@@ -254,10 +254,10 @@ impl MachineGun {
         }
 
         capabilities::Gun {
-            throw,
-            shoot,
             is_thrown,
             pick_up,
+            throw,
+            shoot,
         }
     }
 }
@@ -361,7 +361,7 @@ impl Node for MachineGun {
         //     );
         // }
 
-        if node.thrown == false {
+        if !node.thrown {
             node.draw_hud();
         }
     }

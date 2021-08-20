@@ -19,7 +19,7 @@ use super::{
 
 const CURSE_WIDTH: f32 = 32.;
 const CURSE_HEIGHT: f32 = 32.;
-const CURSE_ANIMATION_BASE: &'static str = "base";
+const CURSE_ANIMATION_BASE: &str = "base";
 const CURSE_MOUNT_X_REL: f32 = -12.;
 const CURSE_MOUNT_Y: f32 = -10.;
 
@@ -96,7 +96,7 @@ impl Curse {
             let player = &mut *scene::get_node(player);
 
             // `thrown` is still required, otherwise, spawning may be called multiple times.
-            if node.thrown == true {
+            if node.thrown {
                 player.state_machine.set_state(Player::ST_NORMAL);
                 return;
             }
@@ -151,10 +151,10 @@ impl Curse {
         }
 
         capabilities::Gun {
-            throw,
-            shoot,
             is_thrown,
             pick_up,
+            throw,
+            shoot,
         }
     }
 }

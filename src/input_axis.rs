@@ -53,43 +53,43 @@ impl InputAxises {
             }
         }
 
-        if old.start == false && self.start {
+        if !old.start && self.start {
             self.start_pressed = true;
         } else {
             self.start_pressed = false;
         }
 
-        if old.btn_a == false && self.btn_a {
+        if !old.btn_a && self.btn_a {
             self.btn_a_pressed = true;
         } else {
             self.btn_a_pressed = false;
         }
 
-        if old.btn_b == false && self.btn_b {
+        if !old.btn_b && self.btn_b {
             self.btn_b_pressed = true;
         } else {
             self.btn_b_pressed = false;
         }
 
-        if old.up == false && self.up {
+        if !old.up && self.up {
             self.up_pressed = true;
         } else {
             self.up_pressed = false;
         }
 
-        if old.down == false && self.down {
+        if !old.down && self.down {
             self.down_pressed = true;
         } else {
             self.down_pressed = false;
         }
 
-        if old.left == false && self.left {
+        if !old.left && self.left {
             self.left_pressed = true;
         } else {
             self.left_pressed = false;
         }
 
-        if old.right == false && self.right {
+        if !old.right && self.right {
             self.right_pressed = true;
         } else {
             self.right_pressed = false;

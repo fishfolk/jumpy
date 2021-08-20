@@ -19,7 +19,7 @@ use super::{
 
 const SHARK_WIDTH: f32 = 32.;
 const SHARK_HEIGHT: f32 = 29.;
-const SHARK_ANIMATION_BASE: &'static str = "base";
+const SHARK_ANIMATION_BASE: &str = "base";
 const SHARK_MOUNT_X_REL: f32 = -12.;
 const SHARK_MOUNT_Y: f32 = -10.;
 
@@ -160,10 +160,10 @@ impl Shark {
         }
 
         capabilities::Gun {
-            throw,
-            shoot,
             is_thrown,
             pick_up,
+            throw,
+            shoot,
         }
     }
 }

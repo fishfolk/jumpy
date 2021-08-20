@@ -13,7 +13,7 @@ use crate::Resources;
 
 const RAINING_SHARK_WIDTH: f32 = 60.;
 const RAINING_SHARK_HEIGHT: f32 = 220.;
-const RAINING_SHARK_ANIMATION_RAINING: &'static str = "raining";
+const RAINING_SHARK_ANIMATION_RAINING: &str = "raining";
 
 const SHARKS_COUNT: usize = 5;
 const RAINING_SHARK_SPEED: f32 = 350.;

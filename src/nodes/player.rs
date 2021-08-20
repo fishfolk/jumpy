@@ -538,16 +538,14 @@ impl Player {
             } else if node.input.left {
                 node.body.facing = false;
             }
+        } else if node.input.right {
+            node.body.speed.x = Self::RUN_SPEED;
+            node.body.facing = true;
+        } else if node.input.left {
+            node.body.speed.x = -Self::RUN_SPEED;
+            node.body.facing = false;
         } else {
-            if node.input.right {
-                node.body.speed.x = Self::RUN_SPEED;
-                node.body.facing = true;
-            } else if node.input.left {
-                node.body.speed.x = -Self::RUN_SPEED;
-                node.body.facing = false;
-            } else {
-                node.body.speed.x = 0.;
-            }
+            node.body.speed.x = 0.;
         }
 
         // shanke on fall
@@ -823,30 +821,24 @@ impl scene::Node for Player {
 
             let jump_btn: usize = if cfg!(target_os = "macos") {
                 1
+            } else if info.name.contains("SFC30") {
+                1
             } else {
-                if info.name.contains("SFC30") {
-                    1
-                } else {
-                    2
-                }
+                2
             };
             let fire_btn: usize = if cfg!(target_os = "macos") {
                 0
+            } else if info.name.contains("SFC30") {
+                0
             } else {
-                if info.name.contains("SFC30") {
-                    0
-                } else {
-                    1
-                }
+                1
             };
             let throw_btn: usize = if cfg!(target_os = "macos") {
                 3
+            } else if info.name.contains("SFC30") {
+                4
             } else {
-                if info.name.contains("SFC30") {
-                    4
-                } else {
-                    3
-                }
+                3
             };
 
             if state.digital_state[jump_btn] && node.input.was_jump == false {

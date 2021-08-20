@@ -229,12 +229,10 @@ impl scene::Node for Mines {
             } else {
                 vec2(-5., 16.)
             }
+        } else if node.body.facing {
+            vec2(-25., -10.)
         } else {
-            if node.body.facing {
-                vec2(-25., -10.)
-            } else {
-                vec2(5., -10.)
-            }
+            vec2(5., -10.)
         };
 
         draw_texture_ex(

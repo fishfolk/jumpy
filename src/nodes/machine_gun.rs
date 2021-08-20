@@ -167,7 +167,7 @@ impl MachineGun {
                 let resources = storage::get_mut::<Resources>();
                 play_sound_once(resources.shoot_sound);
 
-                let mut node = &mut *scene::get_node(node);
+                let node = &mut *scene::get_node(node);
                 let player = &mut *scene::get_node(player);
 
                 // node.fx_active = true;

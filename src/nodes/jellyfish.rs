@@ -19,7 +19,7 @@ use super::{
 
 const JELLYFISH_WIDTH: f32 = 32.;
 const JELLYFISH_HEIGHT: f32 = 29.;
-const JELLYFISH_ANIMATION_BASE: &'static str = "base";
+const JELLYFISH_ANIMATION_BASE: &str = "base";
 
 /// Statuses, in order
 #[derive(Copy, Clone, Debug, PartialEq)]

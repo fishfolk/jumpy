@@ -19,7 +19,7 @@ use super::{
 
 const VOLCANO_WIDTH: f32 = 36.;
 const VOLCANO_HEIGHT: f32 = 22.;
-const VOLCANO_ANIMATION_BASE: &'static str = "base";
+const VOLCANO_ANIMATION_BASE: &str = "base";
 const VOLCANO_MOUNT_X_REL: f32 = -12.;
 const VOLCANO_MOUNT_Y: f32 = -10.;
 

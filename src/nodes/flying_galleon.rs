@@ -13,7 +13,7 @@ use crate::Resources;
 
 const FLYING_GALLEON_WIDTH: f32 = 326.;
 const FLYING_GALLEON_HEIGHT: f32 = 300.;
-const FLYING_GALLEON_ANIMATION_FLYING: &'static str = "flying";
+const FLYING_GALLEON_ANIMATION_FLYING: &str = "flying";
 const FLYING_GALLEON_SPEED: f32 = 150.;
 
 /// The FlyingGalleon doesn't have a body, as it doesn't have physics.

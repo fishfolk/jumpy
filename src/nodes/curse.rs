@@ -19,7 +19,7 @@ use super::{
 
 const CURSE_WIDTH: f32 = 32.;
 const CURSE_HEIGHT: f32 = 32.;
-const CURSE_ANIMATION_BASE: &'static str = "base";
+const CURSE_ANIMATION_BASE: &str = "base";
 const CURSE_MOUNT_X_REL: f32 = -12.;
 const CURSE_MOUNT_Y: f32 = -10.;
 

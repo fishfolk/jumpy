@@ -1,28 +1,19 @@
 use macroquad::{
-    experimental::{
-        collections::storage,
-        scene::{
-            RefMut,
-            Node,
-        },
-        animation::{
-            AnimatedSprite,
-            Animation,
-        },
-    },
     color,
+    experimental::{
+        animation::{AnimatedSprite, Animation},
+        collections::storage,
+        scene::{Node, RefMut},
+    },
     prelude::*,
 };
 
+use crate::circle::Circle;
 use crate::{
-    nodes::player::{
-        Player,
-        PhysicsBody,
-    },
+    nodes::player::{PhysicsBody, Player},
     nodes::sproinger::Sproingable,
     Resources,
 };
-use crate::circle::Circle;
 
 pub struct ArmedKickBomb {
     sprite: AnimatedSprite,
@@ -42,14 +33,12 @@ impl ArmedKickBomb {
         let sprite = AnimatedSprite::new(
             28,
             38,
-            &[
-                Animation {
-                    name: "idle".to_string(),
-                    row: 1,
-                    frames: 4,
-                    fps: 8,
-                },
-            ],
+            &[Animation {
+                name: "idle".to_string(),
+                row: 1,
+                frames: 4,
+                fps: 8,
+            }],
             false,
         );
 
@@ -73,11 +62,11 @@ impl ArmedKickBomb {
             vec2(-50., 10.)
         };
 
-        body.collider = Some(resources.collision_world.add_actor(
-            body.pos + mount_pos,
-            30,
-            30,
-        ));
+        body.collider = Some(
+            resources
+                .collision_world
+                .add_actor(body.pos + mount_pos, 30, 30),
+        );
 
         ArmedKickBomb {
             sprite,
@@ -97,7 +86,10 @@ impl Node for ArmedKickBomb {
         node.provides::<Sproingable>((
             node.handle().untyped(),
             node.handle().lens(|node| &mut node.body),
-            vec2(ArmedKickBomb::COLLIDER_WIDTH, ArmedKickBomb::COLLIDER_HEIGHT),
+            vec2(
+                ArmedKickBomb::COLLIDER_WIDTH,
+                ArmedKickBomb::COLLIDER_HEIGHT,
+            ),
         ));
     }
 
@@ -105,7 +97,12 @@ impl Node for ArmedKickBomb {
         node.body.update();
         node.lived += get_frame_time();
 
-        let hitbox = Rect::new(node.body.pos.x, node.body.pos.y, ArmedKickBomb::COLLIDER_WIDTH, ArmedKickBomb::COLLIDER_HEIGHT);
+        let hitbox = Rect::new(
+            node.body.pos.x,
+            node.body.pos.y,
+            ArmedKickBomb::COLLIDER_WIDTH,
+            ArmedKickBomb::COLLIDER_HEIGHT,
+        );
 
         for mut player in scene::find_nodes_by_type::<Player>() {
             if hitbox.overlaps(&player.get_hitbox()) {
@@ -118,10 +115,13 @@ impl Node for ArmedKickBomb {
 
         if node.lived < ArmedKickBomb::COUNTDOWN_DURATION {
             for player in scene::find_nodes_by_type::<crate::nodes::Player>() {
-                if player.body.speed.x >= ArmedKickBomb::KICK_SPEED_THRESHOLD || player.body.speed.x <= -ArmedKickBomb::KICK_SPEED_THRESHOLD {
-                    let is_overlapping =
-                        hitbox.overlaps(&player.get_hitbox());
-                    if is_overlapping && hitbox.y + 36.0 >= player.body.pos.y + Player::LEGS_THRESHOLD {
+                if player.body.speed.x >= ArmedKickBomb::KICK_SPEED_THRESHOLD
+                    || player.body.speed.x <= -ArmedKickBomb::KICK_SPEED_THRESHOLD
+                {
+                    let is_overlapping = hitbox.overlaps(&player.get_hitbox());
+                    if is_overlapping
+                        && hitbox.y + 36.0 >= player.body.pos.y + Player::LEGS_THRESHOLD
+                    {
                         let direction = node.body.pos.x > (player.body.pos.x + 10.);
                         if direction == player.body.facing {
                             node.body.speed.x = if direction {

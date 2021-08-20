@@ -1,23 +1,14 @@
 use macroquad::{
-    experimental::{
-        animation::{
-            AnimatedSprite,
-            Animation,
-        },
-        scene::{
-            Node,
-            RefMut,
-        },
-        collections::storage,
-    },
     color,
+    experimental::{
+        animation::{AnimatedSprite, Animation},
+        collections::storage,
+        scene::{Node, RefMut},
+    },
     prelude::*,
 };
 
-use crate::{
-    Resources,
-    nodes::Player
-};
+use crate::{nodes::Player, Resources};
 
 pub struct Seaweed {
     pub sprite: AnimatedSprite,
@@ -36,32 +27,34 @@ impl Seaweed {
         let sprite = AnimatedSprite::new(
             48,
             51,
-            &[
-                Animation {
-                    name: "idle".to_string(),
-                    row: 0,
-                    frames: 5,
-                    fps: 8,
-                },
-            ],
+            &[Animation {
+                name: "idle".to_string(),
+                row: 0,
+                frames: 5,
+                fps: 8,
+            }],
             false,
         );
 
-        Seaweed{
-            sprite,
-            pos,
-        }
+        Seaweed { sprite, pos }
     }
 }
 
 impl Node for Seaweed {
     fn fixed_update(node: RefMut<Seaweed>) {
-        let hitbox = Rect::new(node.pos.x + Seaweed::TRIGGER_OFFSET_X, node.pos.y, Seaweed::TRIGGER_WIDTH, Seaweed::TRIGGER_HEIGHT);
+        let hitbox = Rect::new(
+            node.pos.x + Seaweed::TRIGGER_OFFSET_X,
+            node.pos.y,
+            Seaweed::TRIGGER_WIDTH,
+            Seaweed::TRIGGER_HEIGHT,
+        );
         for mut player in scene::find_nodes_by_type::<Player>() {
-            if hitbox.overlaps(&player.get_hitbox()) {
-                if player.body.on_ground && (player.body.speed.x >= Seaweed::SPEED_THRESHOLD || player.body.speed.x <= -Seaweed::SPEED_THRESHOLD) {
-                    player.incapacitate(Seaweed::INCAPACITATE_DURATION, false,true);
-                }
+            if hitbox.overlaps(&player.get_hitbox())
+                && player.body.on_ground
+                && (player.body.speed.x >= Seaweed::SPEED_THRESHOLD
+                    || player.body.speed.x <= -Seaweed::SPEED_THRESHOLD)
+            {
+                player.incapacitate(Seaweed::INCAPACITATE_DURATION, false, true);
             }
         }
     }

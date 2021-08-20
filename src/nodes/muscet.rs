@@ -52,12 +52,10 @@ impl scene::Node for Muscet {
             } else {
                 vec2(-60., 16.)
             }
+        } else if node.body.facing {
+            vec2(-25., 0.)
         } else {
-            if node.body.facing {
-                vec2(-25., 0.)
-            } else {
-                vec2(5., 0.)
-            }
+            vec2(5., 0.)
         };
 
         draw_texture_ex(
@@ -116,7 +114,12 @@ impl scene::Node for Muscet {
             node.body.update_throw();
 
             if !node.body.on_ground {
-                let hitbox = Rect::new(node.body.pos.x, node.body.pos.y, Muscet::COLLIDER_WIDTH, Muscet::COLLIDER_HEIGHT);
+                let hitbox = Rect::new(
+                    node.body.pos.x,
+                    node.body.pos.y,
+                    Muscet::COLLIDER_WIDTH,
+                    Muscet::COLLIDER_HEIGHT,
+                );
                 for mut player in scene::find_nodes_by_type::<Player>() {
                     if hitbox.overlaps(&player.get_hitbox()) {
                         if let Some((weapon, _, _, gun)) = player.weapon.as_mut() {
@@ -270,7 +273,7 @@ impl Muscet {
                 let node = &mut *scene::get_node(node);
                 node.muscet_sprite.set_animation(1);
             }
-            for i in 0u32..3 {
+            for i in 0_u32..3 {
                 {
                     let node = &mut *scene::get_node(node);
                     node.muscet_sprite.set_frame(i);

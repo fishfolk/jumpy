@@ -170,18 +170,23 @@ impl MachineGun {
                 let mut node = &mut *scene::get_node(node);
                 let player = &mut *scene::get_node(player);
 
-               // node.fx_active = true;
+                // node.fx_active = true;
 
                 let mut bullets = scene::find_node_by_type::<crate::nodes::Bullets>().unwrap();
                 let x = node.body.pos.x + if node.body.facing { 32.0 } else { -32.0 };
-                bullets.spawn_bullet(vec2(x, node.body.pos.y), 2.0, node.body.facing, Self::BULLET_SPREAD);
+                bullets.spawn_bullet(
+                    vec2(x, node.body.pos.y),
+                    2.0,
+                    node.body.facing,
+                    Self::BULLET_SPREAD,
+                );
                 player.body.speed.x = -Self::GUN_THROWBACK * player.body.facing_dir();
             }
             {
                 let node = &mut *scene::get_node(node);
                 node.sprite.set_animation(1);
             }
-            for i in 0u32..3 {
+            for i in 0_u32..3 {
                 {
                     let node = &mut *scene::get_node(node);
                     node.sprite.set_frame(i);
@@ -280,7 +285,12 @@ impl Node for MachineGun {
             node.body.update_throw();
 
             if !node.body.on_ground {
-                let hitbox = Rect::new(node.body.pos.x, node.body.pos.y, MachineGun::COLLIDER_WIDTH, MachineGun::COLLIDER_HEIGHT);
+                let hitbox = Rect::new(
+                    node.body.pos.x,
+                    node.body.pos.y,
+                    MachineGun::COLLIDER_WIDTH,
+                    MachineGun::COLLIDER_HEIGHT,
+                );
                 for mut player in scene::find_nodes_by_type::<Player>() {
                     if hitbox.overlaps(&player.get_hitbox()) {
                         if let Some((weapon, _, _, gun)) = player.weapon.as_mut() {
@@ -296,18 +306,16 @@ impl Node for MachineGun {
     fn draw(mut node: RefMut<Self>) {
         let resources = storage::get_mut::<Resources>();
 
-        let mount_pos = if node.thrown == false {
+        let mount_pos = if !node.thrown {
             if node.body.facing {
                 vec2(0., 16.)
             } else {
                 vec2(-60., 16.)
             }
+        } else if node.body.facing {
+            vec2(-25., 0.)
         } else {
-            if node.body.facing {
-                vec2(-25., 0.)
-            } else {
-                vec2(5., 0.)
-            }
+            vec2(5., 0.)
         };
 
         draw_texture_ex(

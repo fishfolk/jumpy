@@ -4,6 +4,7 @@ use macroquad::{
 };
 
 use crate::nodes::Player;
+const ZERO: f64 = 0.0;
 
 pub struct Camera {
     bounds: Rect,
@@ -76,7 +77,7 @@ impl scene::Node for Camera {
             node.follow_buffer.insert(0, (middle_point, zoom));
             node.follow_buffer.truncate(Self::BUFFER_CAPACITY);
         }
-        let mut sum_pos = (0.0f64, 0.0f64);
+        let mut sum_pos = (ZERO, ZERO);
         let mut sum_zoom = 0.0;
         for (pos, zoom) in &node.follow_buffer {
             sum_pos.0 += pos.x as f64;

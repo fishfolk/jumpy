@@ -1,37 +1,21 @@
 use macroquad::{
-    experimental::{
-        scene::{
-            Node,
-            RefMut,
-            HandleUntyped,
-            Handle,
-        },
-        animation::{
-            AnimatedSprite,
-            Animation,
-        },
-        collections::storage,
-        coroutines::{
-            Coroutine,
-            start_coroutine,
-        },
-    },
     audio::play_sound_once,
     color,
+    experimental::{
+        animation::{AnimatedSprite, Animation},
+        collections::storage,
+        coroutines::{start_coroutine, Coroutine},
+        scene::{Handle, HandleUntyped, Node, RefMut},
+    },
     prelude::*,
 };
 
 use crate::{
-    Resources,
     nodes::{
-        player::{
-            Player,
-            capabilities,
-            PhysicsBody,
-            Weapon,
-        },
+        player::{capabilities, PhysicsBody, Player, Weapon},
         sproinger::Sproingable,
-    }
+    },
+    Resources,
 };
 
 pub struct Crate {
@@ -49,18 +33,16 @@ impl Crate {
         let sprite = AnimatedSprite::new(
             32,
             32,
-            &[
-                Animation {
-                    name: "idle".to_string(),
-                    row: 0,
-                    frames: 1,
-                    fps: 1,
-                },
-            ],
+            &[Animation {
+                name: "idle".to_string(),
+                row: 0,
+                frames: 1,
+                fps: 1,
+            }],
             false,
         );
 
-        let body= PhysicsBody {
+        let body = PhysicsBody {
             pos,
             facing,
             angle: 0.0,
@@ -72,7 +54,7 @@ impl Crate {
             bouncyness: 0.0,
         };
 
-        Crate{
+        Crate {
             sprite,
             body,
             thrown: false,
@@ -166,9 +148,9 @@ impl Node for Crate {
         ));
 
         node.provides::<Sproingable>((
-           node.handle().untyped(),
-           node.handle().lens(|node| &mut node.body),
-           vec2(30.0, 30.0),
+            node.handle().untyped(),
+            node.handle().lens(|node| &mut node.body),
+            vec2(30.0, 30.0),
         ));
     }
 
@@ -194,12 +176,12 @@ impl Node for Crate {
                 for mut player in players {
                     let player_hitbox = player.get_hitbox();
                     let is_overlapping = hit_box.overlaps(&player_hitbox);
-                    if is_overlapping {
-                        if node.body.pos.y + 30.0 < player_hitbox.y + Player::HEAD_THRESHOLD {
-                            let resources = storage::get_mut::<Resources>();
-                            play_sound_once(resources.jump_sound);
-                            player.kill(!node.body.facing);
-                        }
+                    if is_overlapping
+                        && node.body.pos.y + 30.0 < player_hitbox.y + Player::HEAD_THRESHOLD
+                    {
+                        let resources = storage::get_mut::<Resources>();
+                        play_sound_once(resources.jump_sound);
+                        player.kill(!node.body.facing);
                     }
                 }
             }
@@ -217,12 +199,10 @@ impl Node for Crate {
             } else {
                 vec2(5., 0.)
             }
+        } else if node.body.facing {
+            vec2(24., 16.)
         } else {
-            if node.body.facing {
-                vec2(24., 16.)
-            } else {
-                vec2(-24., 16.)
-            }
+            vec2(-24., 16.)
         };
 
         draw_texture_ex(

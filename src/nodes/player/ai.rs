@@ -40,14 +40,14 @@ impl Ai {
 
         let mut following_horiz = false;
 
-        if (player.body.pos.x - foe.body.pos.x).abs() >= 50. {
-            if self.keep_direction_until_event == false {
-                following_horiz = true;
-                if player.body.pos.x > foe.body.pos.x {
-                    input.left = true;
-                } else {
-                    input.right = true;
-                }
+        if (player.body.pos.x - foe.body.pos.x).abs() >= 50.
+            && self.keep_direction_until_event == false
+        {
+            following_horiz = true;
+            if player.body.pos.x > foe.body.pos.x {
+                input.left = true;
+            } else {
+                input.right = true;
             }
         }
 
@@ -105,10 +105,11 @@ impl Ai {
             self.throw_cooldown = 1.;
         }
 
-        if player.body.pos.distance(foe.body.pos) <= 100. || rand::gen_range(0, 180) == 5 {
-            if player.state_machine.state() == Player::ST_NORMAL && player.weapon.is_some() {
-                player.state_machine.set_state(Player::ST_SHOOT);
-            }
+        if (player.body.pos.distance(foe.body.pos) <= 100. || rand::gen_range(0, 180) == 5)
+            && player.state_machine.state() == Player::ST_NORMAL
+            && player.weapon.is_some()
+        {
+            player.state_machine.set_state(Player::ST_SHOOT);
         }
 
         if self.jump_cooldown >= 0. {

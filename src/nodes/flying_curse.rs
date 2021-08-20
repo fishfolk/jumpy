@@ -166,8 +166,8 @@ impl scene::Node for FlyingCurses {
                                 .unwrap()
                                 .shake();
 
-                            let direction = flying_curse.current_x
-                                > (player.body.pos.x + player_hitbox.w / 2.);
+                            let direction =
+                                flying_curse.current_x > (player.body.pos.x + player_hitbox.w / 2.);
                             player.kill(direction);
 
                             return false;

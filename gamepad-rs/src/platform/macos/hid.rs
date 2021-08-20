@@ -5,7 +5,9 @@ use core_foundation::array::{CFArray, CFArrayRef};
 use core_foundation::base::{CFGetTypeID, CFRetain, TCFType};
 use core_foundation::dictionary::CFDictionary;
 use core_foundation::number::{kCFNumberSInt32Type, CFNumber, CFNumberGetValue};
-use core_foundation::runloop::{kCFRunLoopRunHandledSource, CFRunLoopGetCurrent, CFRunLoopRunInMode};
+use core_foundation::runloop::{
+    kCFRunLoopRunHandledSource, CFRunLoopGetCurrent, CFRunLoopRunInMode,
+};
 use core_foundation::string::CFString;
 
 use io_kit;
@@ -363,9 +365,9 @@ impl Device {
                         }
                         _ => (),
                     },
-                    io_kit_const::kHIDPage_Button | 
+                    io_kit_const::kHIDPage_Button |
                     // e.g. 'pause' button on Steelseries MFi gamepads.
-                    io_kit_const::kHIDPage_Consumer => {                        
+                    io_kit_const::kHIDPage_Consumer => {
                         if !self.contain_element(cookie) {
                             self.buttons.push(HIDElement {
                                 usage,
@@ -422,7 +424,8 @@ impl Device {
             };
 
             //  Filter device list to non-keyboard/mouse stuff
-            if usage != kHIDUsage_GD_Joystick as i32 && usage != kHIDUsage_GD_GamePad as i32
+            if usage != kHIDUsage_GD_Joystick as i32
+                && usage != kHIDUsage_GD_GamePad as i32
                 && usage != kHIDUsage_GD_MultiAxisController as i32
             {
                 return None;

@@ -529,26 +529,24 @@ impl Player {
             } else {
                 -Self::SLIDE_SPEED
             };
+        } else if node.is_crouched {
+            if !node.is_sliding {
+                node.body.speed.x = 0.0;
+            }
+            if node.input.right {
+                node.body.facing = true;
+            } else if node.input.left {
+                node.body.facing = false;
+            }
         } else {
-            if node.is_crouched {
-                if !node.is_sliding {
-                    node.body.speed.x = 0.0;
-                }
-                if node.input.right {
-                    node.body.facing = true;
-                } else if node.input.left {
-                    node.body.facing = false;
-                }
+            if node.input.right {
+                node.body.speed.x = Self::RUN_SPEED;
+                node.body.facing = true;
+            } else if node.input.left {
+                node.body.speed.x = -Self::RUN_SPEED;
+                node.body.facing = false;
             } else {
-                if node.input.right {
-                    node.body.speed.x = Self::RUN_SPEED;
-                    node.body.facing = true;
-                } else if node.input.left {
-                    node.body.speed.x = -Self::RUN_SPEED;
-                    node.body.facing = false;
-                } else {
-                    node.body.speed.x = 0.;
-                }
+                node.body.speed.x = 0.;
             }
         }
 
@@ -565,21 +563,21 @@ impl Player {
             node.fish_sprite.set_animation(6);
         } else if node.is_crouched {
             node.fish_sprite.set_animation(5);
+        } else if node.input.right || node.input.left {
+            node.fish_sprite.set_animation(1);
         } else {
-            if node.input.right || node.input.left {
-                node.fish_sprite.set_animation(1);
-            } else {
-                node.fish_sprite.set_animation(0);
-            }
+            node.fish_sprite.set_animation(0);
         }
 
         // if in jump and want to jump again
-        if node.body.on_ground == false && node.input.jump && node.jump_grace_timer <= 0.0 {
-            if node.was_floating == false {
-                node.floating = true;
-                node.was_floating = true;
-                node.body.have_gravity = false;
-            }
+        if node.body.on_ground == false
+            && node.input.jump
+            && node.jump_grace_timer <= 0.0
+            && !node.was_floating
+        {
+            node.floating = true;
+            node.was_floating = true;
+            node.body.have_gravity = false;
         }
         // jump button released, stop to float
         if node.input.was_jump == false {
@@ -642,11 +640,9 @@ impl Player {
             }
         }
 
-        if node.input.fire {
-            if node.weapon.is_some() {
-                node.state_machine.set_state(Self::ST_SHOOT);
-                node.floating = false;
-            }
+        if node.input.fire && node.weapon.is_some() {
+            node.state_machine.set_state(Self::ST_SHOOT);
+            node.floating = false;
         }
     }
 
@@ -721,12 +717,10 @@ impl scene::Node for Player {
                 } else {
                     resources.whale_blue
                 }
+            } else if node.can_head_boink {
+                resources.whale_boots_green
             } else {
-                if node.can_head_boink {
-                    resources.whale_boots_green
-                } else {
-                    resources.whale_green
-                }
+                resources.whale_green
             },
             node.body.pos.x - 25.,
             node.body.pos.y - 10.,
@@ -948,12 +942,10 @@ impl scene::Node for Player {
             for mut other in scene::find_nodes_by_type::<Player>() {
                 let other_hitbox = other.get_hitbox();
                 let is_overlapping = hitbox.overlaps(&other_hitbox);
-                if is_overlapping {
-                    if hitbox.y + 60.0 < other_hitbox.y + Self::HEAD_THRESHOLD {
-                        let resources = storage::get_mut::<Resources>();
-                        play_sound_once(resources.jump_sound);
-                        other.kill(!node.body.facing);
-                    }
+                if is_overlapping && hitbox.y + 60.0 < other_hitbox.y + Self::HEAD_THRESHOLD {
+                    let resources = storage::get_mut::<Resources>();
+                    play_sound_once(resources.jump_sound);
+                    other.kill(!node.body.facing);
                 }
             }
         }

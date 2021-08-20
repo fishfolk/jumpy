@@ -47,18 +47,20 @@ impl Cannon {
         let cannon_sprite = AnimatedSprite::new(
             CANNON_WIDTH as u32,
             CANNON_HEIGHT as u32,
-            &[Animation {
-                name: CANNON_ANIMATION_BASE.to_string(),
-                row: 0,
-                frames: 1,
-                fps: 1,
-            },
-            Animation {
-                name: CANNON_ANIMATION_SHOOT.to_string(),
-                row: 1,
-                frames: 4,
-                fps: 8,
-            }],
+            &[
+                Animation {
+                    name: CANNON_ANIMATION_BASE.to_string(),
+                    row: 0,
+                    frames: 1,
+                    fps: 1,
+                },
+                Animation {
+                    name: CANNON_ANIMATION_SHOOT.to_string(),
+                    row: 1,
+                    frames: 4,
+                    fps: 8,
+                },
+            ],
             false,
         );
 
@@ -142,9 +144,8 @@ impl Cannon {
                     node.grace_time -= get_frame_time();
 
                     return;
-                } else {
-                    node.grace_time = SHOOTING_GRACE_TIME;
                 }
+                node.grace_time = SHOOTING_GRACE_TIME;
 
                 let player = &mut *scene::get_node(player);
 
@@ -236,7 +237,12 @@ impl scene::Node for Cannon {
             node.body.update_throw();
 
             if !node.body.on_ground {
-                let hitbox = Rect::new(node.body.pos.x, node.body.pos.y, CANNON_WIDTH, CANNON_HEIGHT);
+                let hitbox = Rect::new(
+                    node.body.pos.x,
+                    node.body.pos.y,
+                    CANNON_WIDTH,
+                    CANNON_HEIGHT,
+                );
                 for mut player in scene::find_nodes_by_type::<Player>() {
                     if hitbox.overlaps(&player.get_hitbox()) {
                         if let Some((weapon, _, _, gun)) = player.weapon.as_mut() {

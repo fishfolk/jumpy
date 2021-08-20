@@ -85,7 +85,6 @@ impl Ai {
             }
 
             if (obstacle_soon || (!wants_descent && cliff_soon))
-                // TODO-JULIA: Fix method name
                 && player.body.on_ground
                 && self.jump_cooldown <= 0.
             {

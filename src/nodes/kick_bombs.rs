@@ -209,7 +209,7 @@ impl scene::Node for KickBombs {
     fn draw(node: RefMut<Self>) {
         let resources = storage::get_mut::<Resources>();
 
-        let mount_pos = if node.thrown == false {
+        let mount_pos = if !node.thrown {
             if node.body.facing {
                 vec2(0., 16.)
             } else {

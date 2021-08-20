@@ -361,7 +361,7 @@ impl Node for MachineGun {
         //     );
         // }
 
-        if node.thrown == false {
+        if !node.thrown {
             node.draw_hud();
         }
     }

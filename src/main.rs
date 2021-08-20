@@ -243,8 +243,8 @@ impl Resources {
             life_explosion_fxses,
             tiled_map,
             collision_world,
-            whale_blue,
             whale_green,
+            whale_blue,
             whale_boots_blue,
             whale_boots_green,
             grenades,
@@ -299,7 +299,7 @@ async fn game(game_type: GameType, map: &str) {
         }
     });
 
-    while resources_loading.is_done() == false {
+    while !resources_loading.is_done() {
         clear_background(BLACK);
         draw_text(
             &format!(

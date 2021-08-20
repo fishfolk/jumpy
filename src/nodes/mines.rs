@@ -170,10 +170,10 @@ impl Mines {
         }
 
         capabilities::Gun {
-            throw,
-            shoot,
             is_thrown,
             pick_up,
+            throw,
+            shoot,
         }
     }
 }

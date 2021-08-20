@@ -90,7 +90,7 @@ impl PhysicsBody {
             self.pos = collision_world.actor_pos(collider);
             self.last_frame_on_ground = self.on_ground;
             self.on_ground = collision_world.collide_check(collider, self.pos + vec2(0., 1.));
-            if self.on_ground == false && self.have_gravity {
+            if !self.on_ground && self.have_gravity {
                 self.speed.y += Self::GRAVITY * get_frame_time();
             }
             if !collision_world.move_h(collider, self.speed.x * get_frame_time()) {
@@ -104,7 +104,7 @@ impl PhysicsBody {
     }
 
     pub fn update_throw(&mut self) {
-        if self.on_ground == false {
+        if !self.on_ground {
             self.angle += self.speed.x.abs() * 0.00045 + self.speed.y.abs() * 0.00015;
 
             self.speed.y += Self::GRAVITY * get_frame_time();
@@ -412,10 +412,12 @@ impl Player {
                 score_counter.count_loss(node.controller_id)
             }
 
-            if {
+            let is_body_pos_y_below_map_bottom = {
                 let node = scene::get_node(handle);
                 node.body.pos.y < map_bottom
-            } {
+            };
+
+            if is_body_pos_y_below_map_bottom {
                 // give some take for a dead fish to take off the ground
                 wait_seconds(0.1).await;
 
@@ -423,7 +425,7 @@ impl Player {
                 while {
                     let node = scene::get_node(handle);
 
-                    (node.body.on_ground || node.body.pos.y > map_bottom) == false
+                    !(node.body.on_ground || node.body.pos.y > map_bottom)
                 } {
                     next_frame().await;
                 }
@@ -549,7 +551,7 @@ impl Player {
         }
 
         // shanke on fall
-        if node.body.on_ground && node.body.last_frame_on_ground == false {
+        if node.body.on_ground && !node.body.last_frame_on_ground {
             // scene::find_node_by_type::<crate::nodes::Camera>()
             //     .unwrap()
             //     .shake();
@@ -568,7 +570,7 @@ impl Player {
         }
 
         // if in jump and want to jump again
-        if node.body.on_ground == false
+        if !node.body.on_ground
             && node.input.jump
             && node.jump_grace_timer <= 0.0
             && !node.was_floating
@@ -578,7 +580,7 @@ impl Player {
             node.body.have_gravity = false;
         }
         // jump button released, stop to float
-        if node.input.was_jump == false {
+        if !node.input.was_jump {
             node.floating = false;
         }
         if node.body.on_ground {
@@ -613,7 +615,7 @@ impl Player {
 
         if node.input.throw {
             if let Some((weapon, _, _, gun)) = node.weapon.as_mut() {
-                (gun.throw)(*weapon, node.input.down == false);
+                (gun.throw)(*weapon, !node.input.down);
                 node.weapon = None;
 
                 // when the flocating fish is throwing a weapon and keeps
@@ -819,16 +821,12 @@ impl scene::Node for Player {
                 node.input.down = y > 0.5;
             };
 
-            let jump_btn: usize = if cfg!(target_os = "macos") {
-                1
-            } else if info.name.contains("SFC30") {
+            let jump_btn: usize = if cfg!(target_os = "macos") || info.name.contains("SFC30") {
                 1
             } else {
                 2
             };
-            let fire_btn: usize = if cfg!(target_os = "macos") {
-                0
-            } else if info.name.contains("SFC30") {
+            let fire_btn: usize = if cfg!(target_os = "macos") || info.name.contains("SFC30") {
                 0
             } else {
                 1
@@ -841,7 +839,7 @@ impl scene::Node for Player {
                 3
             };
 
-            if state.digital_state[jump_btn] && node.input.was_jump == false {
+            if state.digital_state[jump_btn] && !node.input.was_jump {
                 node.input.jump = true;
             } else {
                 node.input.jump = false;
@@ -851,20 +849,20 @@ impl scene::Node for Player {
             node.input.was_fire = node.input.fire;
             node.input.fire = state.digital_state[fire_btn];
 
-            if state.digital_state[throw_btn] && node.input.was_throw == false {
+            if state.digital_state[throw_btn] && !node.input.was_throw {
                 node.input.throw = true;
             } else {
                 node.input.throw = false;
             }
             node.input.was_throw = state.digital_state[throw_btn];
         } else {
-            if node.ai_enabled == false && node.controller_id == 1 {
+            if !node.ai_enabled && node.controller_id == 1 {
                 let jump = is_key_down(KeyCode::Space) || is_key_down(KeyCode::W);
-                node.input.jump = jump && node.input.was_jump == false;
+                node.input.jump = jump && !node.input.was_jump;
                 node.input.was_jump = jump;
 
                 let throw = is_key_down(KeyCode::R);
-                node.input.throw = throw && node.input.was_throw == false;
+                node.input.throw = throw && !node.input.was_throw;
                 node.input.was_throw = throw;
 
                 node.input.was_fire = node.input.fire;
@@ -879,12 +877,12 @@ impl scene::Node for Player {
                 node.input.slide = is_key_down(KeyCode::C);
             }
 
-            if node.ai_enabled == false && node.controller_id == 0 {
+            if !node.ai_enabled && node.controller_id == 0 {
                 let throw = is_key_down(KeyCode::K);
-                node.input.throw = throw && node.input.was_throw == false;
+                node.input.throw = throw && !node.input.was_throw;
                 node.input.was_throw = throw;
                 let jump = is_key_down(KeyCode::Up);
-                node.input.jump = jump && node.input.was_jump == false;
+                node.input.jump = jump && !node.input.was_jump;
                 node.input.was_jump = jump;
                 node.input.left = is_key_down(KeyCode::Left);
                 node.input.right = is_key_down(KeyCode::Right);
@@ -919,7 +917,7 @@ impl scene::Node for Player {
             }
 
             if !node.is_sliding {
-                if node.body.on_ground && node.input.was_jump == false {
+                if node.body.on_ground && !node.input.was_jump {
                     node.jump_grace_timer = Self::JUMP_GRACE_TIME;
                 } else if node.jump_grace_timer > 0. {
                     node.jump_grace_timer -= get_frame_time();

@@ -46,7 +46,7 @@ impl scene::Node for Muscet {
     fn draw(mut node: RefMut<Self>) {
         let resources = storage::get_mut::<Resources>();
 
-        let muscet_mount_pos = if node.thrown == false {
+        let muscet_mount_pos = if !node.thrown {
             if node.body.facing {
                 vec2(0., 16.)
             } else {
@@ -101,7 +101,7 @@ impl scene::Node for Muscet {
         //     );
         // }
 
-        if node.thrown == false {
+        if !node.thrown {
             node.draw_hud();
         }
     }

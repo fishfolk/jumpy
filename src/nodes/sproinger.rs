@@ -118,7 +118,7 @@ impl scene::Node for Sproinger {
                     if body.speed.length() > Self::STOPPED_THRESHOLD {
                         let intersect = sproinger_rect
                             .intersect(Rect::new(body.pos.x, body.pos.y, size.x, size.y));
-                        if !intersect.is_none() {
+                        if intersect.is_some() {
                             let resources = storage::get_mut::<Resources>();
                             play_sound_once(resources.jump_sound);
 

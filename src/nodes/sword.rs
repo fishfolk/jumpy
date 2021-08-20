@@ -77,7 +77,7 @@ impl scene::Node for Sword {
         } else {
             // just casually holding a sword
 
-            let sword_mount_pos = if sword.thrown == false {
+            let sword_mount_pos = if !sword.thrown {
                 if sword.body.facing {
                     vec2(5., 10.)
                 } else {

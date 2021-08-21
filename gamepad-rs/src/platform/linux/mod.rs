@@ -251,14 +251,14 @@ impl ControllerContext {
     }
 
     pub fn info(&self, index: usize) -> &ControllerInfo {
-        if let Some(ref gamepad) = self.gamepads.get(index) {
+        if let Some(gamepad) = self.gamepads.get(index) {
             &gamepad.info
         } else {
             &*DEFAULT_CONTROLLER_INFO
         }
     }
     pub fn state(&self, index: usize) -> &ControllerState {
-        if let Some(ref gamepad) = self.gamepads.get(index) {
+        if let Some(gamepad) = self.gamepads.get(index) {
             &gamepad.state
         } else {
             &DEFAULT_CONTROLLER_STATE

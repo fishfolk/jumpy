@@ -12,7 +12,7 @@ pub struct ControllerContext {
 }
 
 // Helper function for convert Vec to array
-fn to_digital_state_array(state: &Vec<bool>) -> [bool; MAX_DIGITAL] {
+fn to_digital_state_array(state: &[bool]) -> [bool; MAX_DIGITAL] {
     let mut arr = [false; MAX_DIGITAL];
     for (place, element) in arr.iter_mut().zip(state.iter()) {
         *place = *element;
@@ -20,7 +20,7 @@ fn to_digital_state_array(state: &Vec<bool>) -> [bool; MAX_DIGITAL] {
     arr
 }
 
-fn to_analog_state_array(state: &Vec<f32>) -> [f32; MAX_ANALOG] {
+fn to_analog_state_array(state: &[f32]) -> [f32; MAX_ANALOG] {
     let mut arr = [0.0; MAX_ANALOG];
     for (place, element) in arr.iter_mut().zip(state.iter()) {
         *place = *element;

@@ -104,11 +104,7 @@ impl PhysicsBody {
     }
 
     pub fn update_throw(&mut self) {
-        if !self.on_ground {
-            self.angle += self.speed.x.abs() * 0.00045 + self.speed.y.abs() * 0.00015;
-
-            self.speed.y += Self::GRAVITY * get_frame_time();
-        } else {
+        if self.on_ground {
             self.angle %= std::f32::consts::PI * 2.;
             let goal = if self.angle <= std::f32::consts::PI {
                 std::f32::consts::PI
@@ -120,6 +116,10 @@ impl PhysicsBody {
             if rest.abs() >= 0.1 {
                 self.angle += (rest * 0.1).max(0.1);
             }
+        } else {
+            self.angle += self.speed.x.abs() * 0.00045 + self.speed.y.abs() * 0.00015;
+
+            self.speed.y += Self::GRAVITY * get_frame_time();
         }
 
         self.speed.x *= 0.96;

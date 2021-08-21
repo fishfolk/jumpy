@@ -39,6 +39,12 @@ impl ControllerInfo {
     }
 }
 
+impl Default for ControllerInfo {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 lazy_static! {
     static ref DEFAULT_CONTROLLER_INFO: ControllerInfo = ControllerInfo {
         name: String::from("null"),
@@ -69,6 +75,12 @@ impl ControllerState {
             digital_state: [false; MAX_DIGITAL],
             analog_state: [0.0; MAX_ANALOG],
         }
+    }
+}
+
+impl Default for ControllerState {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

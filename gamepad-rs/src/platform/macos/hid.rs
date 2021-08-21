@@ -97,7 +97,7 @@ pub struct HID {
 impl Drop for HID {
     fn drop(&mut self) {
         if let Some(state) = self.state.upgrade() {
-            if state.hidman != ptr::null_mut() {
+            if !state.hidman.is_null() {
                 {
                     let devices = state.devices.borrow();
                     for d in devices.iter() {
@@ -111,7 +111,7 @@ impl Drop for HID {
                 unsafe {
                     let current_loop = CFRunLoopGetCurrent();
                     let mode = gamepad_rs_runloop_mode();
-                    if current_loop != ptr::null_mut() {
+                    if !current_loop.is_null() {
                         io_kit::IOHIDManagerUnscheduleFromRunLoop(
                             state.hidman,
                             current_loop as _,
@@ -151,11 +151,7 @@ impl HIDElement {
         let device_scale = (max - min) as f32;
         let read_scale = (self.max_report - self.min_report) as f32;
 
-        let state = self.query_state(device_ref);
-        if state.is_none() {
-            return None;
-        }
-        let state = state.unwrap();
+        let state = self.query_state(device_ref)?;
 
         Some((((state - self.min_report) as f32) * device_scale / read_scale) as i32 + min)
     }
@@ -163,7 +159,7 @@ impl HIDElement {
     fn query_state(&mut self, device_ref: IOHIDDeviceRef) -> Option<i32> {
         use std::mem;
 
-        if device_ref == ptr::null_mut() || self.ref_elem == ptr::null_mut() {
+        if device_ref.is_null() || self.ref_elem.is_null() {
             return None;
         }
         let mut value_ref: io_kit::IOHIDValueRef = ptr::null_mut();
@@ -225,7 +221,7 @@ unsafe fn get_property_i32(dev: IOHIDDeviceRef, s: &'static str) -> Option<i32> 
 
     let key = CFString::from(s);
     let ref_cf = io_kit::IOHIDDeviceGetProperty(dev, key.as_CFTypeRef() as _);
-    if ref_cf == ptr::null() {
+    if ref_cf.is_null() {
         return None;
     }
 
@@ -242,7 +238,7 @@ unsafe fn get_property_i32(dev: IOHIDDeviceRef, s: &'static str) -> Option<i32> 
 unsafe fn get_property_str(dev: IOHIDDeviceRef, s: &'static str) -> Option<String> {
     let key = CFString::from(s);
     let ref_cf = io_kit::IOHIDDeviceGetProperty(dev, key.as_CFTypeRef() as _);
-    if ref_cf == ptr::null() {
+    if ref_cf.is_null() {
         return None;
     }
 
@@ -252,11 +248,12 @@ unsafe fn get_property_str(dev: IOHIDDeviceRef, s: &'static str) -> Option<Strin
 
 impl Device {
     fn remove_from_runloop(&mut self) {
-        if self.device != ptr::null_mut() {
+        if !self.device.is_null() {
             use std::mem;
             unsafe {
                 io_kit::IOHIDDeviceRegisterRemovalCallback(
                     self.device,
+                    #[allow(clippy::transmuting_null)]
                     mem::transmute::<*const (), _>(ptr::null()),
                     ptr::null_mut(),
                 );
@@ -286,7 +283,7 @@ impl Device {
     }
 
     fn add_element(&mut self, ref_elem: IOHIDElementRef) {
-        if ref_elem == ptr::null_mut() {
+        if ref_elem.is_null() {
             return;
         }
 
@@ -403,25 +400,13 @@ impl Device {
 
     fn from_raw_dev(dev: IOHIDDeviceRef) -> Option<Rc<RefCell<Device>>> {
         unsafe {
-            let page = {
-                if let Some(val) = get_property_i32(dev, kIOHIDPrimaryUsagePageKey()) {
-                    val
-                } else {
-                    return None;
-                }
-            };
+            let page = get_property_i32(dev, kIOHIDPrimaryUsagePageKey())?;
             //  Filter device list to non-keyboard/mouse stuff
             if page != kHIDPage_GenericDesktop as i32 {
                 return None;
             }
 
-            let usage = {
-                if let Some(val) = get_property_i32(dev, kIOHIDPrimaryUsageKey()) {
-                    val
-                } else {
-                    return None;
-                }
-            };
+            let usage = get_property_i32(dev, kIOHIDPrimaryUsageKey())?;
 
             //  Filter device list to non-keyboard/mouse stuff
             if usage != kHIDUsage_GD_Joystick as i32
@@ -431,6 +416,7 @@ impl Device {
                 return None;
             }
 
+            #[allow(clippy::or_fun_call)]
             let product = get_property_str(dev, kIOHIDManufacturerKey())
                 .unwrap_or("Unidentified joystick".to_owned());
 
@@ -448,7 +434,7 @@ impl Device {
             let array_cf =
                 io_kit::IOHIDDeviceCopyMatchingElements(dev, ptr::null(), kIOHIDOptionsTypeNone);
 
-            if array_cf != ptr::null() {
+            if !array_cf.is_null() {
                 device.add_elements(array_cf as _);
 
                 // sort all elements by usage
@@ -552,7 +538,7 @@ impl HID {
         let devices = state.devices.borrow();
 
         for dev in devices.iter() {
-            if let Some(_) = dev.upgrade() {
+            if dev.upgrade().is_some() {
                 n += 1;
             }
         }

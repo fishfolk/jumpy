@@ -14,7 +14,7 @@ use self::ioctl::eviocgabs;
 use self::linux_input::*;
 
 fn is_bit_set(bit: usize, arr: &[u8]) -> bool {
-    return (arr[bit / 8] & (1 << ((bit as usize) % 8))) != 0;
+    (arr[bit / 8] & (1 << ((bit as usize) % 8))) != 0
 }
 
 #[repr(C)]
@@ -65,15 +65,14 @@ struct GamePad {
 impl GamePad {
     unsafe fn poll_abs_info(&mut self) {
         for code in &self.axis_map {
-            if *code != -1 {
-                if libc::ioctl(
+            if *code != -1
+                && libc::ioctl(
                     self.fd,
                     eviocgabs(*code as _),
                     &mut self.axis_info[*code as usize],
                 ) < 0
-                {
-                    continue;
-                }
+            {
+                continue;
             }
         }
     }
@@ -100,10 +99,7 @@ impl GamePad {
             let value = if e.code >= ABS_HAT0X as _ && e.code <= ABS_HAT3Y as _ {
                 e.value as f32
             } else {
-                ((e.value as f32 - info.minimum as f32)
-                    / (info.maximum as f32 - info.minimum as f32)
-                    - 0.5)
-                    * 2.
+                ((e.value - info.minimum) as f32 / (info.maximum - info.minimum) as f32 - 0.5) * 2.
             };
             self.state.analog_state[self.axis_map[e.code as usize] as usize] = value;
         }
@@ -189,16 +185,13 @@ unsafe fn open_joystick_device(path: PathBuf) -> Option<GamePad> {
             continue;
         }
 
-        if code >= ABS_HAT0X && code <= ABS_HAT3Y {
-            axis_map[code as usize] = analog_count as i32;
-            analog_count += 1;
-        } else {
-            if libc::ioctl(fd, eviocgabs(code as _), &mut axis_info[code as usize]) < 0 {
-                continue;
-            }
-            axis_map[code as usize] = analog_count as i32;
-            analog_count += 1;
+        if !(ABS_HAT0X..=ABS_HAT3Y).contains(&code)
+            && libc::ioctl(fd, eviocgabs(code as _), &mut axis_info[code as usize]) < 0
+        {
+            continue;
         }
+        axis_map[code as usize] = analog_count as i32;
+        analog_count += 1;
     }
 
     let mut gamepad = GamePad {
@@ -258,14 +251,14 @@ impl ControllerContext {
     }
 
     pub fn info(&self, index: usize) -> &ControllerInfo {
-        if let Some(ref gamepad) = self.gamepads.get(index) {
+        if let Some(gamepad) = self.gamepads.get(index) {
             &gamepad.info
         } else {
             &*DEFAULT_CONTROLLER_INFO
         }
     }
     pub fn state(&self, index: usize) -> &ControllerState {
-        if let Some(ref gamepad) = self.gamepads.get(index) {
+        if let Some(gamepad) = self.gamepads.get(index) {
             &gamepad.state
         } else {
             &DEFAULT_CONTROLLER_STATE

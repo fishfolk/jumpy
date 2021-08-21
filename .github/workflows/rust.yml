@@ -23,8 +23,11 @@ jobs:
       - name: Install Clippy
         run: rustup component add clippy
 
-      - name: Run Clippy
+      - name: Run Clippy src
         run: cargo clippy -- -W clippy::correctness -D warnings
+
+      - name: Run Clippy gamepad-rs
+        run: cd  gamepad-rs && cargo clippy -- -W clippy::correctness -D warnings
 
   build:
     name: Build

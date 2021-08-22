@@ -149,7 +149,8 @@ impl Player {
     pub fn jump(&mut self) {
         let resources = storage::get::<Resources>();
 
-        self.body.speed.y = -Self::JUMP_SPEED;
+        self.body.speed.y = -Self::JUMP_UPWARDS_SPEED;
+        self.jump_frames_left = Self::JUMP_HEIGHT_CONTROL_FRAMES;
         audio::play_sound(
             resources.jump_sound,
             audio::PlaySoundParams {
@@ -172,6 +173,7 @@ pub struct Player {
 
     deathmatch: bool,
     jump_grace_timer: f32,
+    jump_frames_left: i32,
 
     was_floating: bool,
     pub floating: bool,
@@ -209,7 +211,11 @@ impl Player {
     pub const ST_INCAPACITATED: usize = 3;
     pub const ST_AFTERMATCH: usize = 4;
 
-    pub const JUMP_SPEED: f32 = 700.0;
+    pub const JUMP_UPWARDS_SPEED: f32 = 650.0;
+    pub const JUMP_RELEASE_SPEED: f32 = 300.0;
+    pub const JUMP_RELEASE_MIN_SPEED: f32 = 200.0;
+    pub const JUMP_RELEASE_MAX_SPEED: f32 = 300.0;
+    pub const JUMP_HEIGHT_CONTROL_FRAMES: i32 = 10;
     pub const RUN_SPEED: f32 = 250.0;
     pub const SLIDE_SPEED: f32 = 800.0;
     pub const SLIDE_DURATION: f32 = 0.05;
@@ -333,6 +339,7 @@ impl Player {
             fish_sprite,
             deathmatch,
             jump_grace_timer: 0.,
+            jump_frames_left: 0,
             floating: false,
             was_floating: false,
             state_machine,
@@ -890,6 +897,23 @@ impl scene::Node for Player {
 
                 node.input.slide = is_key_down(KeyCode::RightControl);
             }
+        }
+
+        if node.input.was_jump {
+            if node.jump_frames_left > 0{
+                node.body.speed.y = -Player::JUMP_UPWARDS_SPEED;
+                node.jump_frames_left-=1; 
+            }
+        }else{
+            if node.jump_frames_left > 0 {
+                let jump_progress = 1.0 - node.jump_frames_left as f32/Player::JUMP_HEIGHT_CONTROL_FRAMES as f32;
+                node.body.speed.y = -((Player::JUMP_RELEASE_MAX_SPEED - Player::JUMP_RELEASE_MIN_SPEED) * jump_progress * jump_progress + Player::JUMP_RELEASE_MIN_SPEED); 
+                node.body.speed.y = -Player::JUMP_RELEASE_SPEED;
+                // Lerp between apex speed and release speed depending on how long the jump has been going on. 
+                // progress is squared to get a better feel. Gives greater detail at shorter jumps, compensating for the fact that greater progress exponentially increases jump height.
+                //Short jumps result both a shorter amount of time moving at top speed, and a lower end speed, resulting in drastically lower jumps.
+            }
+            node.jump_frames_left = 0;
         }
 
         if node.ai_enabled {

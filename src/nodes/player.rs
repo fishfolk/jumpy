@@ -211,8 +211,8 @@ impl Player {
     pub const ST_INCAPACITATED: usize = 3;
     pub const ST_AFTERMATCH: usize = 4;
 
-    pub const JUMP_UPWARDS_SPEED: f32 = 650.0;
-    pub const JUMP_HEIGHT_CONTROL_FRAMES: i32 = 10;
+    pub const JUMP_UPWARDS_SPEED: f32 = 600.0;
+    pub const JUMP_HEIGHT_CONTROL_FRAMES: i32 = 8;
     pub const JUMP_RELEASE_GRAVITY_INCREASE: f32 = 35.0; // When up key is released and player is moving upwards, apply extra gravity to stop them faster
     pub const RUN_SPEED: f32 = 250.0;
     pub const SLIDE_SPEED: f32 = 800.0;

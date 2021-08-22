@@ -212,10 +212,8 @@ impl Player {
     pub const ST_AFTERMATCH: usize = 4;
 
     pub const JUMP_UPWARDS_SPEED: f32 = 650.0;
-    pub const JUMP_RELEASE_SPEED: f32 = 300.0;
-    pub const JUMP_RELEASE_MIN_SPEED: f32 = 200.0;
-    pub const JUMP_RELEASE_MAX_SPEED: f32 = 300.0;
     pub const JUMP_HEIGHT_CONTROL_FRAMES: i32 = 10;
+    pub const JUMP_RELEASE_GRAVITY_INCREASE: f32 = 35.0; // When up key is released and player is moving upwards, apply extra gravity to stop them faster
     pub const RUN_SPEED: f32 = 250.0;
     pub const SLIDE_SPEED: f32 = 800.0;
     pub const SLIDE_DURATION: f32 = 0.05;
@@ -905,13 +903,8 @@ impl scene::Node for Player {
                 node.jump_frames_left-=1; 
             }
         }else{
-            if node.jump_frames_left > 0 {
-                let jump_progress = 1.0 - node.jump_frames_left as f32/Player::JUMP_HEIGHT_CONTROL_FRAMES as f32;
-                node.body.speed.y = -((Player::JUMP_RELEASE_MAX_SPEED - Player::JUMP_RELEASE_MIN_SPEED) * jump_progress * jump_progress + Player::JUMP_RELEASE_MIN_SPEED); 
-                node.body.speed.y = -Player::JUMP_RELEASE_SPEED;
-                // Lerp between apex speed and release speed depending on how long the jump has been going on. 
-                // progress is squared to get a better feel. Gives greater detail at shorter jumps, compensating for the fact that greater progress exponentially increases jump height.
-                //Short jumps result both a shorter amount of time moving at top speed, and a lower end speed, resulting in drastically lower jumps.
+            if node.body.speed.y < 0.0{
+                node.body.speed.y += Player::JUMP_RELEASE_GRAVITY_INCREASE;
             }
             node.jump_frames_left = 0;
         }

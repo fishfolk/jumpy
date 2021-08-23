@@ -114,7 +114,7 @@ impl scene::Node for FlyingGalleon {
                 if player_hitbox.intersect(flying_galleon_hitbox).is_some() {
                     scene::find_node_by_type::<crate::nodes::Camera>()
                         .unwrap()
-                        .shake();
+                        .shake_noise(0.4, 20, 0.4);
 
                     let direction =
                         flying_galleon.current_pos.x > (player.body.pos.x + player_hitbox.w / 2.);

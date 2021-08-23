@@ -157,6 +157,7 @@ impl scene::Node for Cannonball {
                 cannonball.body.pos.y,
                 EXPLOSION_RADIUS,
             );
+            
 
             for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
                 if player.id != cannonball.owner_id || cannonball.owner_safe_countdown < 0. {
@@ -164,15 +165,16 @@ impl scene::Node for Cannonball {
                     if explosion.overlaps_rect(&player_hitbox) {
                         hit_fxses.spawn(explosion_position);
 
-                        scene::find_node_by_type::<crate::nodes::Camera>()
-                            .unwrap()
-                            .shake();
+                        
 
                         let direction =
                             cannonball.body.pos.x > (player.body.pos.x + player_hitbox.w / 2.);
                         player.kill(direction);
 
                         cannonball.delete();
+                        scene::find_node_by_type::<crate::nodes::Camera>()
+                            .unwrap()
+                            .shake_noise(1., 6, 0.8);
 
                         return;
                     }
@@ -183,6 +185,9 @@ impl scene::Node for Cannonball {
         }
 
         hit_fxses.spawn(explosion_position);
+        scene::find_node_by_type::<crate::nodes::Camera>()
+            .unwrap()
+            .shake_noise(1., 6, 0.8);
 
         cannonball.delete();
     }

@@ -110,10 +110,6 @@ impl scene::Node for ArmedMine {
             for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
                 let player_hitbox = player.get_hitbox();
                 if trigger.overlaps_rect(&player_hitbox) {
-                    scene::find_node_by_type::<crate::nodes::Camera>()
-                        .unwrap()
-                        .shake();
-
                     let explosion = Circle::new(
                         node.body.pos.x,
                         node.body.pos.y,
@@ -129,6 +125,9 @@ impl scene::Node for ArmedMine {
             if killed {
                 let mut resources = storage::get_mut::<Resources>();
                 resources.hit_fxses.spawn(node.body.pos);
+                scene::find_node_by_type::<crate::nodes::Camera>()
+                    .unwrap()
+                    .shake_noise(2., 10, 0.8);
                 node.delete();
             }
         }

@@ -21,6 +21,7 @@ mod circle;
 mod gui;
 mod input_axis;
 mod nodes;
+mod noise;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum GameType {

@@ -164,7 +164,7 @@ impl scene::Node for FlyingCurses {
 
                             scene::find_node_by_type::<crate::nodes::Camera>()
                                 .unwrap()
-                                .shake();
+                                .shake_noise(0.3, 10, 1.0);
 
                             let direction =
                                 flying_curse.current_x > (player.body.pos.x + player_hitbox.w / 2.);

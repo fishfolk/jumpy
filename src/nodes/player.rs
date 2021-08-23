@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use macroquad::{
     audio::{self, play_sound_once},
     color,
@@ -902,7 +904,7 @@ impl scene::Node for Player {
         if is_key_pressed(KeyCode::Q) {
             scene::find_node_by_type::<crate::nodes::Camera>()
                 .unwrap()
-                .shake();
+                .shake_sinusodial(3.0, 20, 2., PI / 2.0);
         }
 
         {

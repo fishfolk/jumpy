@@ -122,7 +122,7 @@ impl scene::Node for RainingShark {
                 if player_hitbox.intersect(shark_hitbox).is_some() {
                     scene::find_node_by_type::<crate::nodes::Camera>()
                         .unwrap()
-                        .shake();
+                        .shake_noise(0.4, 15, 0.6);
 
                     let direction =
                         shark.current_pos.x > (player.body.pos.x + player_hitbox.w / 2.);

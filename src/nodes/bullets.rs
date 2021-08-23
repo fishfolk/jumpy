@@ -72,7 +72,7 @@ impl scene::Node for Bullets {
 
                     scene::find_node_by_type::<crate::nodes::Camera>()
                         .unwrap()
-                        .shake();
+                        .shake_noise(0.8, 5, 1.);
 
                     player.kill(direction);
                 }

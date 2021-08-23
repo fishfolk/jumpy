@@ -182,6 +182,9 @@ impl MachineGun {
                 );
                 player.body.speed.x = -Self::GUN_THROWBACK * player.body.facing_dir();
             }
+            scene::find_node_by_type::<crate::nodes::Camera>()
+                .unwrap()
+                .shake_noise_dir(0.2, 4, 1.4, (1.0, 0.5));
             {
                 let node = &mut *scene::get_node(node);
                 node.sprite.set_animation(1);

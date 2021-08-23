@@ -269,6 +269,9 @@ impl Muscet {
                 bullets.spawn_bullet(node.body.pos, 4.0, node.body.facing, Self::BULLET_SPREAD);
                 player.body.speed.x = -Self::GUN_THROWBACK * player.body.facing_dir();
             }
+            scene::find_node_by_type::<crate::nodes::Camera>()
+                .unwrap()
+                .shake_noise_dir(0.4, 5, 1.0, (1.0, 0.5));
             {
                 let node = &mut *scene::get_node(node);
                 node.muscet_sprite.set_animation(1);

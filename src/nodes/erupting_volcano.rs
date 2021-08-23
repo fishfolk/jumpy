@@ -96,7 +96,7 @@ impl EruptingVolcano {
         if erupting_volcano.last_shake_time >= SHAKE_INTERVAL {
             scene::find_node_by_type::<crate::nodes::Camera>()
                 .unwrap()
-                .shake();
+                .shake_noise(0.5, 18, 0.5);
             erupting_volcano.last_shake_time = 0.;
         }
     }

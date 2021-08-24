@@ -157,15 +157,12 @@ impl scene::Node for Cannonball {
                 cannonball.body.pos.y,
                 EXPLOSION_RADIUS,
             );
-            
 
             for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
                 if player.id != cannonball.owner_id || cannonball.owner_safe_countdown < 0. {
                     let player_hitbox = player.get_hitbox();
                     if explosion.overlaps_rect(&player_hitbox) {
                         hit_fxses.spawn(explosion_position);
-
-                        
 
                         let direction =
                             cannonball.body.pos.x > (player.body.pos.x + player_hitbox.w / 2.);

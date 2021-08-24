@@ -6,19 +6,19 @@ use macroquad::{
 use crate::{nodes::Player, noise::NoiseGenerator};
 const ZERO: f64 = 0.0;
 
-struct Shake{
+struct Shake {
     direction: (f32, f32),
     kind: ShakeType,
     magnitude: f32,
     length: f32,
     age: f32,
     random_offset: f32,
-    frequency: f32 // 1 is pretty standard, .2 is a punch (with 10 frames of shake it oscillates about max twice). With .5 it's more of a rumble
+    frequency: f32, // 1 is pretty standard, .2 is a punch (with 10 frames of shake it oscillates about max twice). With .5 it's more of a rumble
 }
 
-enum ShakeType{
+enum ShakeType {
     Noise,
-    Sinusodial
+    Sinusodial,
 }
 
 pub struct Camera {
@@ -35,79 +35,97 @@ impl Camera {
     const BUFFER_CAPACITY: usize = 20;
 
     pub fn new(bounds: Rect) -> Camera {
-        /*let mut n = noise_generator::new(5);
-        for i in 0..2000{
-            let val = n.perlin_2d(0.0, i as f32/25.0);
-            let mut v = 0.0;
-            while v < val{
-                print!(".");
-                v += 0.01;
-            }            
-            println!("");
-        }*/
-
         Camera {
             bounds,
             follow_buffer: vec![],
             shake: vec![],
             manual: None,
             noisegen: NoiseGenerator::new(5),
-            noisegen_position: 5.0
+            noisegen_position: 5.0,
         }
     }
 }
 
 impl Camera {
-
-    pub fn shake_noise(&mut self, magnitude: f32, length: i32, frequency: f32){
-        self.shake.push(Shake{
+    pub fn shake_noise(&mut self, magnitude: f32, length: i32, frequency: f32) {
+        self.shake.push(Shake {
             direction: (1.0, 1.0),
             kind: ShakeType::Noise,
             magnitude,
             length: length as f32,
             age: 0.0,
             random_offset: rand::gen_range(1.0, 100.0),
-            frequency
+            frequency,
         });
     }
 
-    pub fn shake_noise_dir(&mut self, magnitude: f32, length: i32, frequency: f32, direction: (f32, f32)){
-        self.shake.push(Shake{
+    pub fn shake_noise_dir(
+        &mut self,
+        magnitude: f32,
+        length: i32,
+        frequency: f32,
+        direction: (f32, f32),
+    ) {
+        self.shake.push(Shake {
             direction,
             kind: ShakeType::Noise,
             magnitude,
             length: length as f32,
             age: 0.0,
             random_offset: rand::gen_range(1.0, 100.0),
-            frequency
+            frequency,
         });
     }
 
-    pub fn shake_sinusodial(&mut self, magnitude: f32, length: i32, frequency: f32, angle: f32){
-        self.shake.push(Shake{
+    pub fn shake_sinusodial(&mut self, magnitude: f32, length: i32, frequency: f32, angle: f32) {
+        self.shake.push(Shake {
             direction: (angle.cos(), angle.sin()),
             kind: ShakeType::Sinusodial,
             magnitude,
             length: length as f32,
             age: 0.0,
             random_offset: 0.0,
-            frequency
+            frequency,
         });
     }
 
-    pub fn get_shake(&mut self) -> Vec2{
+    pub fn get_shake(&mut self) -> Vec2 {
         self.noisegen_position += 0.5;
         let mut shake_offset = vec2(0.0, 0.0);
         for i in 0..self.shake.len() {
-            let strength = 1.0 - self.shake[i].age/self.shake[i].length;
-            match self.shake[i].kind{
-                ShakeType::Noise =>{
-                    shake_offset.x += self.noisegen.perlin_2d(self.noisegen_position * self.shake[i].frequency + self.shake[i].random_offset, 5.0) * self.shake[i].magnitude * self.shake[i].direction.0 * strength * 100.0;
-                    shake_offset.y += self.noisegen.perlin_2d(self.noisegen_position * self.shake[i].frequency + self.shake[i].random_offset, 7.0) * self.shake[i].magnitude * self.shake[i].direction.1 * strength * 100.0;
-                },
-                ShakeType::Sinusodial =>{
-                    shake_offset.x += (self.noisegen_position * self.shake[i].frequency * 1.0).sin() * self.shake[i].magnitude * self.shake[i].direction.0 * strength * 50.0; // Noise values are +/- 0.5, trig is twice as large
-                    shake_offset.y += (self.noisegen_position * self.shake[i].frequency * 1.0).sin() * self.shake[i].magnitude * self.shake[i].direction.1 * strength * 50.0;
+            let strength = 1.0 - self.shake[i].age / self.shake[i].length;
+            match self.shake[i].kind {
+                ShakeType::Noise => {
+                    shake_offset.x += self.noisegen.perlin_2d(
+                        self.noisegen_position * self.shake[i].frequency
+                            + self.shake[i].random_offset,
+                        5.0,
+                    ) * self.shake[i].magnitude
+                        * self.shake[i].direction.0
+                        * strength
+                        * 100.0;
+                    shake_offset.y += self.noisegen.perlin_2d(
+                        self.noisegen_position * self.shake[i].frequency
+                            + self.shake[i].random_offset,
+                        7.0,
+                    ) * self.shake[i].magnitude
+                        * self.shake[i].direction.1
+                        * strength
+                        * 100.0;
+                }
+                ShakeType::Sinusodial => {
+                    shake_offset.x += (self.noisegen_position * self.shake[i].frequency * 1.0)
+                        .sin()
+                        * self.shake[i].magnitude
+                        * self.shake[i].direction.0
+                        * strength
+                        * 50.0; // Noise values are +/- 0.5, trig is twice as large
+                    shake_offset.y += (self.noisegen_position * self.shake[i].frequency * 1.0)
+                        .sin()
+                        * self.shake[i].magnitude
+                        * self.shake[i].direction.1
+                        * strength
+                        * 50.0;
                 }
             };
 
@@ -182,10 +200,7 @@ impl scene::Node for Camera {
 
         let shake = node.get_shake();
         middle_point += shake;
-        if shake != vec2(0.0, 0.0) && false{
-            println!("{}", shake);
-        }
-        
+
         let aspect = screen_width() / screen_height();
 
         let rotation = 0.0;

@@ -156,8 +156,8 @@ impl Cannon {
                 Cannonball::spawn(cannonball_pos, node.body.facing, player.id);
 
                 scene::find_node_by_type::<crate::nodes::Camera>()
-                        .unwrap()
-                        .shake_noise_dir(0.4, 5, 1.0, (1.0, 0.0));
+                    .unwrap()
+                    .shake_noise_dir(0.4, 5, 1.0, (1.0, 0.0));
 
                 player.body.speed.x = -CANNON_THROWBACK * player.body.facing_dir();
             }

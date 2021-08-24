@@ -900,12 +900,12 @@ impl scene::Node for Player {
         }
 
         if node.input.was_jump {
-            if node.jump_frames_left > 0{
+            if node.jump_frames_left > 0 {
                 node.body.speed.y = -Player::JUMP_UPWARDS_SPEED;
-                node.jump_frames_left-=1; 
+                node.jump_frames_left -= 1;
             }
-        }else{
-            if node.body.speed.y < 0.0{
+        } else {
+            if node.body.speed.y < 0.0 {
                 node.body.speed.y += Player::JUMP_RELEASE_GRAVITY_INCREASE;
             }
             node.jump_frames_left = 0;

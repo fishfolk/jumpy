@@ -19,6 +19,7 @@ impl scene::Node for Fxses {
 
         resources.hit_fxses.draw();
         resources.cannonball_hit_fxses.draw();
+        resources.explosion_particles.draw();
         resources.explosion_fxses.draw();
 
         push_camera_state();

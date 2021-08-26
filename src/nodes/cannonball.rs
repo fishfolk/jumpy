@@ -146,8 +146,6 @@ impl scene::Node for Cannonball {
         cannonball.lived += get_frame_time();
         cannonball.owner_safe_countdown -= get_frame_time();
 
-        let hit_fxses = &mut storage::get_mut::<Resources>().cannonball_hit_fxses;
-
         let explosion_position =
             cannonball.body.pos + vec2(CANNONBALL_WIDTH / 2., CANNONBALL_HEIGHT / 2.);
 
@@ -162,8 +160,15 @@ impl scene::Node for Cannonball {
                 if player.id != cannonball.owner_id || cannonball.owner_safe_countdown < 0. {
                     let player_hitbox = player.get_hitbox();
                     if explosion.overlaps_rect(&player_hitbox) {
-                        hit_fxses.spawn(explosion_position);
-
+                        {
+                            let hit_fxses =
+                                &mut storage::get_mut::<Resources>().cannonball_hit_fxses;
+                            hit_fxses.spawn(explosion_position);
+                        }
+                        {
+                            let fx2 = &mut storage::get_mut::<Resources>().explosion_particles;
+                            fx2.spawn(explosion_position);
+                        }
                         let direction =
                             cannonball.body.pos.x > (player.body.pos.x + player_hitbox.w / 2.);
                         player.kill(direction);
@@ -181,7 +186,16 @@ impl scene::Node for Cannonball {
             return;
         }
 
-        hit_fxses.spawn(explosion_position);
+        {
+            let hit_fxses = &mut storage::get_mut::<Resources>().cannonball_hit_fxses;
+            hit_fxses.spawn(explosion_position);
+        }
+        {
+            let fx2 = &mut storage::get_mut::<Resources>().explosion_particles;
+            fx2.spawn(explosion_position);
+        }
+
+        //hit_fxses.spawn(explosion_position);
         scene::find_node_by_type::<crate::nodes::Camera>()
             .unwrap()
             .shake_noise(1., 6, 0.8);

@@ -41,6 +41,7 @@ struct Resources {
     cannonball_hit_fxses: EmittersCache,
     explosion_fxses: EmittersCache,
     life_explosion_fxses: EmittersCache,
+    explosion_particles: EmittersCache,
     tiled_map: tiled::Map,
     collision_world: CollisionWorld,
     whale_green: Texture2D,
@@ -88,6 +89,9 @@ pub const HIT_FX: &str = r#"{"local_coords":false,"emission_shape":"Point","one_
 
 /// Has no size randomness, in order to make it clear to players which the radius is.
 pub const CANNONBALL_HIT_FX: &str = r#"{"local_coords":false,"emission_shape":"Point","one_shot":true,"lifetime":0.2,"lifetime_randomness":0,"explosiveness":0.65,"amount":41,"shape":{"Circle":{"subdivisions":10}},"emitting":false,"initial_direction":{"x":0,"y":-1},"initial_direction_spread":6.2831855,"initial_velocity":73.9,"initial_velocity_randomness":0.2,"linear_accel":0,"size":64.0,"size_randomness":0.0,"blend_mode":"Alpha","colors_curve":{"start":{"r":0.8200004,"g":1,"b":0.31818175,"a":1},"mid":{"r":0.71000004,"g":0.36210018,"b":0,"a":1},"end":{"r":0.02,"g":0,"b":0.000000007152557,"a":1}},"gravity":{"x":0,"y":0},"post_processing":{}}
+"#;
+
+pub const EXPLOSION_PARTICLES: &str = r#"{"local_coords":false,"emission_shape":"Point","one_shot":true,"lifetime":1.0,"lifetime_randomness":0.0,"explosiveness":1.0,"amount":50,"emitting":false,"initial_direction":{"x":0,"y":-1},"initial_direction_spread":4.5,"initial_velocity":800,"initial_velocity_randomness":0.5,"linear_accel":-5.0,"size":10.3,"size_randomness":0.4,"blend_mode":"Additive","gravity":{"x":0,"y":800},"colors_curve":{"start":{"r":1,"g":0.79319996,"b":0.059999943,"a":1},"mid":{"r":0.46000004,"g":0.06899994,"b":0,"a":0.8},"end":{"r":1,"g":0.9624,"b":0.96000004,"a":0.1}},"shape":{"Circle":{"subdivisions":5}},"post_processing":{}}
 "#;
 
 pub const EXPLOSION_FX: &str = r#"{"local_coords":false,"emission_shape":{"Sphere":{"radius":0.6}},"one_shot":true,"lifetime":0.35,"lifetime_randomness":0,"explosiveness":0.6,"amount":131,"shape":{"Circle":{"subdivisions":10}},"emitting":false,"initial_direction":{"x":0,"y":-1},"initial_direction_spread":6.2831855,"initial_velocity":316,"initial_velocity_randomness":0.6,"linear_accel":-7.4000025,"size":5.5,"size_randomness":0.3,"size_curve":{"points":[[0.005,1.48],[0.255,1.0799999],[1,0.120000005]],"interpolation":"Linear","resolution":30},"blend_mode":"Additive","colors_curve":{"start":{"r":0.9825908,"g":1,"b":0.13,"a":1},"mid":{"r":0.8,"g":0.19999999,"b":0.2000002,"a":1},"end":{"r":0.101,"g":0.099,"b":0.099,"a":1}},"gravity":{"x":0,"y":-500},"post_processing":{}}
@@ -234,6 +238,8 @@ impl Resources {
         );
 
         let hit_fxses = EmittersCache::new(nanoserde::DeJson::deserialize_json(HIT_FX).unwrap());
+        let explosion_particles =
+            EmittersCache::new(nanoserde::DeJson::deserialize_json(EXPLOSION_PARTICLES).unwrap());
         let cannonball_hit_fxses =
             EmittersCache::new(nanoserde::DeJson::deserialize_json(CANNONBALL_HIT_FX).unwrap());
         let explosion_fxses =
@@ -245,6 +251,7 @@ impl Resources {
             hit_fxses,
             cannonball_hit_fxses,
             explosion_fxses,
+            explosion_particles,
             life_explosion_fxses,
             tiled_map,
             collision_world,

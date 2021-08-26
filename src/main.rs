@@ -63,6 +63,7 @@ struct Resources {
     raining_shark: Texture2D,
     gun: Texture2D,
     machine_gun: Texture2D,
+    smoke_trail: Texture2D,
     mines: Texture2D,
     sword: Texture2D,
     sproinger: Texture2D,
@@ -120,6 +121,9 @@ impl Resources {
 
         let machine_gun = load_texture("assets/Whale/MachineGun.png").await?;
         machine_gun.set_filter(FilterMode::Nearest);
+
+        let smoke_trail = load_texture("assets/Whale/bullettrail.png").await?;
+        smoke_trail.set_filter(FilterMode::Nearest);
 
         let mines = load_texture("assets/Whale/Mines.png").await?;
         mines.set_filter(FilterMode::Nearest);
@@ -264,6 +268,7 @@ impl Resources {
             raining_shark,
             gun,
             machine_gun,
+            smoke_trail,
             mines,
             sword,
             sproinger,

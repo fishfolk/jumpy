@@ -175,8 +175,8 @@ impl MachineGun {
                 let mut bullets = scene::find_node_by_type::<crate::nodes::Bullets>().unwrap();
                 let x = node.body.pos.x + if node.body.facing { 32.0 } else { -32.0 };
                 bullets.spawn_bullet(
-                    vec2(x, node.body.pos.y),
-                    2.0,
+                    vec2(x, node.body.pos.y - 10.0),
+                    3.0,
                     node.body.facing,
                     Self::BULLET_SPREAD,
                 );

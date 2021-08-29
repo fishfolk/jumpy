@@ -6,6 +6,7 @@ use macroquad::{
 };
 
 use crate::{
+    capabilities::Weapon,
     nodes::{player::Input, Player},
     Resources,
 };
@@ -70,14 +71,11 @@ impl Ai {
         {
             let collision_world = &mut storage::get_mut::<Resources>().collision_world;
 
-            let obstacle_soon = collision_world.collide_check(
-                player.body.collider.unwrap(),
-                player.body.pos + vec2(15. * dir, 0.),
-            );
-            let cliff_soon = collision_world.collide_check(
-                player.body.collider.unwrap(),
-                player.body.pos + vec2(5. * dir, 5.),
-            ) == false;
+            let obstacle_soon = collision_world
+                .collide_check(player.body.collider, player.body.pos + vec2(15. * dir, 0.));
+            let cliff_soon = collision_world
+                .collide_check(player.body.collider, player.body.pos + vec2(5. * dir, 5.))
+                == false;
             let wants_descent = player.body.pos.y < foe.body.pos.y;
 
             if (cliff_soon || obstacle_soon) && self.keep_direction_timeout <= 0. {
@@ -123,8 +121,11 @@ impl Ai {
         }
 
         if self.throw_cooldown <= 0.0 {
-            for sword in scene::find_nodes_by_type::<crate::nodes::Sword>() {
-                if sword.body.pos.distance(player.body.pos) <= 80. {
+            for weapon in scene::find_nodes_with::<Weapon>() {
+                use crate::capabilities::WeaponTrait;
+
+                let weapon_rect = weapon.collider();
+                if weapon_rect.point().distance(player.body.pos) <= 80. {
                     input.throw = true;
                 }
             }

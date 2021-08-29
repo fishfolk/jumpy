@@ -5,139 +5,29 @@ use macroquad::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
         coroutines::{start_coroutine, wait_seconds, Coroutine},
-        scene::{self, Handle, HandleUntyped, Lens, RefMut},
+        scene::{self, HandleUntyped, NodeWith, RefMut},
         state_machine::{State, StateMachine},
     },
     prelude::*,
 };
-use macroquad_platformer::Actor;
 
 use crate::{
-    nodes::{sproinger::Sproingable, GameState, ScoreCounter},
-    Resources,
+    capabilities::{NetworkReplicate, PhysicsObject, Weapon, WeaponTrait},
+    components::PhysicsBody,
+    Input, Resources,
 };
 
 mod ai;
 
-pub type Weapon = (HandleUntyped, Lens<PhysicsBody>, Vec2, capabilities::Gun);
-pub type PhysicsObject = (HandleUntyped, Lens<PhysicsBody>);
-
-pub mod capabilities {
-    use crate::nodes::Player;
-    use macroquad::experimental::{
-        coroutines::Coroutine,
-        scene::{Handle, HandleUntyped},
-    };
-
-    #[derive(Clone)]
-    pub struct Gun {
-        pub is_thrown: fn(node: HandleUntyped) -> bool,
-        pub pick_up: fn(node: HandleUntyped),
-        pub throw: fn(node: HandleUntyped, force: bool),
-        pub shoot: fn(node: HandleUntyped, player: Handle<Player>) -> Coroutine,
-    }
-}
-
-#[derive(Default, Debug, Clone)]
-pub struct Input {
-    pub jump: bool,
-    pub was_jump: bool,
-    pub throw: bool,
-    pub was_throw: bool,
-    pub fire: bool,
-    pub was_fire: bool,
-    pub left: bool,
-    pub right: bool,
-    pub down: bool,
-    pub slide: bool,
-}
-
-pub struct PhysicsBody {
-    pub pos: Vec2,
-    pub speed: Vec2,
-    pub facing: bool,
-    pub angle: f32,
-    pub collider: Option<Actor>,
-    pub on_ground: bool,
-    pub last_frame_on_ground: bool,
-    pub have_gravity: bool,
-    pub bouncyness: f32,
-}
-
-impl PhysicsBody {
-    pub const GRAVITY: f32 = 1800.0;
-
-    pub fn facing_dir(&self) -> f32 {
-        if self.facing {
-            1.
-        } else {
-            -1.
-        }
-    }
-
-    pub fn descent(&mut self) {
-        let collision_world = &mut storage::get_mut::<Resources>().collision_world;
-
-        if let Some(collider) = self.collider {
-            collision_world.descent(collider);
-        }
-    }
-
-    pub fn update(&mut self) {
-        if let Some(collider) = self.collider {
-            let collision_world = &mut storage::get_mut::<Resources>().collision_world;
-
-            self.pos = collision_world.actor_pos(collider);
-            self.last_frame_on_ground = self.on_ground;
-            self.on_ground = collision_world.collide_check(collider, self.pos + vec2(0., 1.));
-            if self.on_ground == false && self.have_gravity {
-                self.speed.y += Self::GRAVITY * get_frame_time();
-            }
-            if !collision_world.move_h(collider, self.speed.x * get_frame_time()) {
-                self.speed.x *= -self.bouncyness;
-            }
-            if !collision_world.move_v(collider, self.speed.y * get_frame_time()) {
-                self.speed.y *= -self.bouncyness;
-            }
-            self.pos = collision_world.actor_pos(collider);
-        }
-    }
-
-    pub fn update_throw(&mut self) {
-        if self.on_ground == false {
-            self.angle += self.speed.x.abs() * 0.00045 + self.speed.y.abs() * 0.00015;
-
-            self.speed.y += Self::GRAVITY * get_frame_time();
-        } else {
-            self.angle %= std::f32::consts::PI * 2.;
-            let goal = if self.angle <= std::f32::consts::PI {
-                std::f32::consts::PI
-            } else {
-                std::f32::consts::PI * 2.
-            };
-
-            let rest = goal - self.angle;
-            if rest.abs() >= 0.1 {
-                self.angle += (rest * 0.1).max(0.1);
-            }
-        }
-
-        self.speed.x *= 0.96;
-        if self.speed.x.abs() <= 1. {
-            self.speed.x = 0.0;
-        }
-    }
-}
-
 impl Player {
     pub fn drop_weapon(&mut self) {
-        if let Some((weapon, _, _, gun)) = self.weapon.as_mut() {
-            (gun.throw)(*weapon, false);
+        if let Some(weapon) = self.weapon.as_mut() {
+            weapon.throw(false);
         }
         self.weapon = None;
     }
 
-    pub fn pick_weapon(&mut self, weapon: Weapon) {
+    pub fn pick_weapon(&mut self, weapon: NodeWith<Weapon>) {
         let resources = storage::get_mut::<Resources>();
         play_sound_once(resources.pickup_sound);
 
@@ -158,6 +48,9 @@ impl Player {
             },
         );
     }
+    fn slide(&mut self) {
+        self.state_machine.set_state(Self::ST_SLIDE);
+    }
 }
 
 pub struct Player {
@@ -167,10 +60,10 @@ pub struct Player {
 
     fish_sprite: AnimatedSprite,
     pub dead: bool,
-    pub weapon: Option<Weapon>,
+    pub weapon: Option<NodeWith<Weapon>>,
     pub input: Input,
+    pub last_frame_input: Input,
 
-    deathmatch: bool,
     jump_grace_timer: f32,
 
     was_floating: bool,
@@ -187,16 +80,11 @@ pub struct Player {
 
     pub can_head_boink: bool,
     pub is_crouched: bool,
-    pub is_sliding: bool,
 
-    pub slide_timer: f32,
     pub incapacitated_duration: f32,
     pub incapacitated_timer: f32,
 
     pub back_armor: i32,
-
-    score_counter: Handle<ScoreCounter>,
-    pub game_state: Handle<GameState>,
 }
 
 impl Player {
@@ -206,26 +94,21 @@ impl Player {
     pub const ST_NORMAL: usize = 0;
     pub const ST_DEATH: usize = 1;
     pub const ST_SHOOT: usize = 2;
-    pub const ST_INCAPACITATED: usize = 3;
-    pub const ST_AFTERMATCH: usize = 4;
+    pub const ST_SLIDE: usize = 3;
+    pub const ST_INCAPACITATED: usize = 4;
+    pub const ST_AFTERMATCH: usize = 5;
 
     pub const JUMP_SPEED: f32 = 700.0;
     pub const RUN_SPEED: f32 = 250.0;
     pub const SLIDE_SPEED: f32 = 800.0;
-    pub const SLIDE_DURATION: f32 = 0.05;
+    pub const SLIDE_DURATION: f32 = 0.1;
     pub const JUMP_GRACE_TIME: f32 = 0.15;
     pub const FLOAT_SPEED: f32 = 100.0;
 
     pub const INCAPACITATED_BREAK_FACTOR: f32 = 0.9;
     pub const INCAPACITATED_STOP_THRESHOLD: f32 = 20.0;
 
-    pub fn new(
-        deathmatch: bool,
-        player_id: u8,
-        controller_id: i32,
-        score_counter: Handle<ScoreCounter>,
-        game_state: Handle<GameState>,
-    ) -> Player {
+    pub fn new(player_id: u8, controller_id: i32) -> Player {
         let spawner_pos = {
             let resources = storage::get_mut::<Resources>();
             let objects = &resources.tiled_map.layers["logic"].objects;
@@ -258,15 +141,23 @@ impl Player {
             State::new().update(Self::update_aftermatch),
         );
 
+        state_machine.add_state(
+            Self::ST_SLIDE,
+            State::new()
+                .update(Self::update_slide)
+                .coroutine(Self::slide_coroutine),
+        );
+
         let body = PhysicsBody {
             collider: {
                 let mut resources = storage::get_mut::<Resources>();
-                Some(resources.collision_world.add_actor(spawner_pos, 30, 54))
+                resources.collision_world.add_actor(spawner_pos, 30, 54)
             },
             on_ground: false,
             angle: 0.0,
             speed: vec2(0., 0.),
             pos: spawner_pos,
+            size: vec2(30., 54.),
             facing: true,
             last_frame_on_ground: false,
             have_gravity: true,
@@ -328,10 +219,10 @@ impl Player {
             dead: false,
             weapon: None,
             input: Default::default(),
+            last_frame_input: Default::default(),
 
             body,
             fish_sprite,
-            deathmatch,
             jump_grace_timer: 0.,
             floating: false,
             was_floating: false,
@@ -344,13 +235,14 @@ impl Player {
             can_head_boink: false,
             back_armor: 0,
             is_crouched: false,
-            is_sliding: false,
-            slide_timer: 0.0,
             incapacitated_timer: 0.0,
             incapacitated_duration: 0.0,
-            score_counter,
-            game_state,
         }
+    }
+
+    pub fn apply_input(&mut self, input: Input) {
+        self.last_frame_input = self.input;
+        self.input = input;
     }
 
     pub fn incapacitate(&mut self, duration: f32, should_stop: bool, should_fall: bool) {
@@ -401,15 +293,15 @@ impl Player {
         let coroutine = async move {
             {
                 let mut node = scene::get_node(handle);
-                node.body.speed.x = -300. * node.body.facing_dir();
+                node.body.speed.x = -300. * node.body.facing_dir().x;
                 node.body.speed.y = -150.;
                 node.body.have_gravity = true;
 
                 node.dead = true;
                 node.fish_sprite.set_animation(2);
 
-                let mut score_counter = scene::get_node(node.score_counter);
-                score_counter.count_loss(node.controller_id)
+                // let mut score_counter = scene::get_node(node.score_counter);
+                // score_counter.count_loss(node.controller_id)
             }
 
             if {
@@ -464,14 +356,14 @@ impl Player {
             this.drop_weapon();
 
             // in deathmatch we can just get back to normal after death
-            if this.deathmatch {
+            {
                 let mut resources = storage::get_mut::<Resources>();
 
                 this.state_machine.set_state(Self::ST_NORMAL);
                 this.dead = false;
                 resources
                     .collision_world
-                    .set_actor_position(this.body.collider.unwrap(), this.body.pos);
+                    .set_actor_position(this.body.collider, this.body.pos);
             }
         };
 
@@ -479,8 +371,8 @@ impl Player {
     }
 
     fn shoot_coroutine(node: &mut RefMut<Player>) -> Coroutine {
-        if let Some((weapon, _, _, gun)) = node.weapon.as_mut() {
-            (gun.shoot)(*weapon, node.handle())
+        if let Some(ref weapon) = node.weapon {
+            weapon.shoot(node.handle())
         } else {
             let handle = node.handle();
 
@@ -508,6 +400,32 @@ impl Player {
         node.body.speed.x = 0.0;
     }
 
+    fn update_slide(node: &mut RefMut<Player>, _dt: f32) {}
+
+    fn slide_coroutine(node: &mut RefMut<Player>) -> Coroutine {
+        let handle = node.handle();
+
+        let coroutine = async move {
+            {
+                let mut node = scene::get_node(handle);
+                node.body.speed.x = if node.body.facing {
+                    Self::SLIDE_SPEED
+                } else {
+                    -Self::SLIDE_SPEED
+                };
+                node.fish_sprite.set_animation(6);
+            }
+
+            wait_seconds(Self::SLIDE_DURATION).await;
+
+            {
+                let mut node = scene::get_node(handle);
+                node.state_machine.set_state(Self::ST_NORMAL);
+            }
+        };
+
+        start_coroutine(coroutine)
+    }
     fn update_normal(node: &mut RefMut<Player>, _dt: f32) {
         if node.remote_control {
             return;
@@ -521,34 +439,26 @@ impl Player {
             node.kill(false);
         }
 
+        let node_handle = node.handle();
         let node = &mut **node;
 
-        if node.is_sliding {
-            node.body.speed.x = if node.body.facing {
-                Self::SLIDE_SPEED
-            } else {
-                -Self::SLIDE_SPEED
-            };
+        if node.is_crouched {
+            node.body.speed.x = 0.0;
+
+            if node.input.right {
+                node.body.facing = true;
+            } else if node.input.left {
+                node.body.facing = false;
+            }
         } else {
-            if node.is_crouched {
-                if !node.is_sliding {
-                    node.body.speed.x = 0.0;
-                }
-                if node.input.right {
-                    node.body.facing = true;
-                } else if node.input.left {
-                    node.body.facing = false;
-                }
+            if node.input.right {
+                node.body.speed.x = Self::RUN_SPEED;
+                node.body.facing = true;
+            } else if node.input.left {
+                node.body.speed.x = -Self::RUN_SPEED;
+                node.body.facing = false;
             } else {
-                if node.input.right {
-                    node.body.speed.x = Self::RUN_SPEED;
-                    node.body.facing = true;
-                } else if node.input.left {
-                    node.body.speed.x = -Self::RUN_SPEED;
-                    node.body.facing = false;
-                } else {
-                    node.body.speed.x = 0.;
-                }
+                node.body.speed.x = 0.;
             }
         }
 
@@ -561,8 +471,6 @@ impl Player {
 
         if node.floating {
             node.fish_sprite.set_animation(4);
-        } else if node.is_sliding {
-            node.fish_sprite.set_animation(6);
         } else if node.is_crouched {
             node.fish_sprite.set_animation(5);
         } else {
@@ -574,7 +482,11 @@ impl Player {
         }
 
         // if in jump and want to jump again
-        if node.body.on_ground == false && node.input.jump && node.jump_grace_timer <= 0.0 {
+        if node.body.on_ground == false
+            && node.input.jump
+            && !node.last_frame_input.jump
+            && node.jump_grace_timer <= 0.0
+        {
             if node.was_floating == false {
                 node.floating = true;
                 node.was_floating = true;
@@ -582,7 +494,7 @@ impl Player {
             }
         }
         // jump button released, stop to float
-        if node.input.was_jump == false {
+        if node.floating && !node.input.jump && node.last_frame_input.jump {
             node.floating = false;
         }
         if node.body.on_ground {
@@ -595,29 +507,33 @@ impl Player {
             node.body.have_gravity = true;
         }
 
-        node.is_crouched = node.input.down;
+        node.is_crouched = node.body.on_ground && node.input.down;
 
         if node.body.on_ground {
             if node.input.down {
-                if node.input.jump {
+                if node.input.jump && !node.last_frame_input.jump {
                     node.body.descent();
-                } else if !node.is_sliding && node.input.slide {
-                    node.is_sliding = true;
-                    node.slide_timer = 0.0;
+                } else if node.input.slide && !node.last_frame_input.slide {
+                    node.slide();
                 }
             }
-        } else if !node.is_sliding && node.input.down {
+        } else if node.input.down {
             node.body.descent();
         }
 
-        if node.input.jump && node.jump_grace_timer > 0. {
+        if node.input.down == false
+            && node.input.jump
+            && !node.last_frame_input.jump
+            && node.jump_grace_timer > 0.
+        {
             node.jump_grace_timer = 0.0;
+
             node.jump();
         }
 
-        if node.input.throw {
-            if let Some((weapon, _, _, gun)) = node.weapon.as_mut() {
-                (gun.throw)(*weapon, node.input.down == false);
+        if node.input.throw && !node.last_frame_input.throw {
+            if let Some(weapon) = node.weapon.as_mut() {
+                weapon.throw(node.input.down == false);
                 node.weapon = None;
 
                 // when the flocating fish is throwing a weapon and keeps
@@ -627,16 +543,22 @@ impl Player {
             } else {
                 let mut picked = false;
 
-                for (weapon, mut body, size, gun) in scene::find_nodes_with::<Weapon>() {
+                for weapon in scene::find_nodes_with::<Weapon>() {
                     if picked {
                         break;
                     }
-                    let pos = body.get().unwrap().pos;
-                    let gun_rect = Rect::new(pos.x, pos.y, size.x, size.y);
-                    if (gun.is_thrown)(weapon) && node.get_hitbox().overlaps(&gun_rect) {
+                    let gun_rect = weapon.collider();
+                    // make it little bigger to simplify picking up
+                    let gun_rect = Rect::new(
+                        gun_rect.x - 50.,
+                        gun_rect.y - 50.,
+                        gun_rect.w + 100.,
+                        gun_rect.h + 100.,
+                    );
+                    if weapon.is_thrown() && node.get_hitbox().overlaps(&gun_rect) {
                         picked = true;
-                        (gun.pick_up)(weapon);
-                        node.pick_weapon((weapon, body, size, gun));
+                        weapon.pick_up(node_handle);
+                        node.pick_weapon(weapon);
                     }
                 }
             }
@@ -654,64 +576,130 @@ impl Player {
         let state = self.state_machine.state();
         Rect::new(
             self.body.pos.x,
-            if state == Self::ST_INCAPACITATED || self.is_sliding || self.is_crouched {
+            if state == Self::ST_INCAPACITATED || state == Self::ST_SLIDE || self.is_crouched {
                 self.body.pos.y + 32.0
             } else {
                 self.body.pos.y
             },
-            if state == Self::ST_INCAPACITATED || self.is_sliding {
+            if state == Self::ST_INCAPACITATED || state == Self::ST_SLIDE {
                 40.0
             } else {
                 20.0
             },
-            if state == Self::ST_INCAPACITATED || self.is_sliding || self.is_crouched {
+            if state == Self::ST_INCAPACITATED || state == Self::ST_SLIDE || self.is_crouched {
                 32.0
             } else {
                 64.0
             },
         )
     }
+
+    fn network_update(mut node: RefMut<Self>) {
+        // Break incapacitated
+        if node.state_machine.state() == Player::ST_INCAPACITATED && node.body.speed.x != 0.0 {
+            if node.body.speed.x > Player::INCAPACITATED_STOP_THRESHOLD
+                || node.body.speed.x < -Player::INCAPACITATED_STOP_THRESHOLD
+            {
+                node.body.speed.x *= Player::INCAPACITATED_BREAK_FACTOR;
+            } else {
+                node.body.speed.x = 0.0;
+            }
+        }
+
+        {
+            // if scene::get_node(node.game_state).game_paused {
+            //     return;
+            // }
+        }
+
+        node.fish_sprite.update();
+
+        let map_bottom = {
+            let resources = storage::get::<Resources>();
+
+            resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height
+        } as f32;
+
+        if node.body.pos.y > map_bottom {
+            node.kill(false);
+        }
+
+        {
+            let node = &mut *node;
+            if let Some(weapon) = node.weapon.as_mut() {
+                weapon.mount(node.body.pos, node.body.facing);
+            }
+        }
+
+        if node.ai_enabled {
+            let mut ai = node.ai.take().unwrap();
+            let input = ai.update(&mut *node);
+            node.input = input;
+            node.ai = Some(ai);
+        }
+
+        if is_key_pressed(KeyCode::Q) {
+            scene::find_node_by_type::<crate::nodes::Camera>()
+                .unwrap()
+                .shake();
+        }
+
+        {
+            let node = &mut *node;
+
+            if node.body.on_ground && !node.input.jump {
+                node.jump_grace_timer = Self::JUMP_GRACE_TIME;
+            } else if node.jump_grace_timer > 0. {
+                node.jump_grace_timer -= get_frame_time();
+            }
+
+            node.body.update();
+        }
+
+        if node.can_head_boink && node.body.speed.y > 0.0 {
+            let hitbox = node.get_hitbox();
+            for mut other in scene::find_nodes_by_type::<Player>() {
+                let other_hitbox = other.get_hitbox();
+                let is_overlapping = hitbox.overlaps(&other_hitbox);
+                if is_overlapping {
+                    if hitbox.y + 60.0 < other_hitbox.y + Self::HEAD_THRESHOLD {
+                        let resources = storage::get_mut::<Resources>();
+                        play_sound_once(resources.jump_sound);
+                        other.kill(!node.body.facing);
+                    }
+                }
+            }
+        }
+
+        // update camera bound box
+        {
+            let fish_box = Rect::new(node.body.pos.x, node.body.pos.y, 32., 60.);
+
+            if fish_box.x < node.camera_box.x {
+                node.camera_box.x = fish_box.x;
+            }
+            if fish_box.x + fish_box.w > node.camera_box.x + node.camera_box.w {
+                node.camera_box.x = fish_box.x + fish_box.w - node.camera_box.w;
+            }
+            if fish_box.y < node.camera_box.y {
+                node.camera_box.y = fish_box.y;
+            }
+            if fish_box.y + fish_box.h > node.camera_box.y + node.camera_box.h {
+                node.camera_box.y = fish_box.y + fish_box.h - node.camera_box.h;
+            }
+        }
+
+        StateMachine::update_detached(&mut node, |node| &mut node.state_machine);
+    }
 }
 
 impl scene::Node for Player {
     fn ready(mut node: RefMut<Self>) {
-        node.provides::<PhysicsObject>((
-            node.handle().untyped(),
-            node.handle().lens(|node| &mut node.body),
-        ));
-
-        node.provides::<Sproingable>((
-            node.handle().untyped(),
-            node.handle().lens(|node| &mut node.body),
-            vec2(20.0, 64.0),
-        ));
+        node.provides(Self::physics_capabilities());
+        node.provides(Self::network_capabilities());
     }
 
     fn draw(node: RefMut<Self>) {
-        //     let sword_hit_box = if node.fish.facing {
-        //         Rect::new(node.pos().x + 35., node.pos().y - 5., 40., 60.)
-        //     } else {
-        //         Rect::new(node.pos().x - 50., node.pos().y - 5., 40., 60.)
-        //     };
-        //     draw_rectangle(
-        //         sword_hit_box.x,
-        //         sword_hit_box.y,
-        //         sword_hit_box.w,
-        //         sword_hit_box.h,
-        //         RED,
-        //     );
-
-        // draw_rectangle_lines(
-        //     node.camera_box.x,
-        //     node.camera_box.y,
-        //     node.camera_box.w,
-        //     node.camera_box.h,
-        //     5.,
-        //     RED,
-        // );
-
-        //draw_rectangle_lines(fish_box.x, fish_box.y, fish_box.w, fish_box.h, 5., BLUE);
-
         let resources = storage::get::<Resources>();
 
         draw_texture_ex(
@@ -768,213 +756,54 @@ impl scene::Node for Player {
             node.ai_enabled ^= true;
         }
     }
+}
 
-    fn fixed_update(mut node: RefMut<Self>) {
-        // Break incapacitated
-        if node.state_machine.state() == Player::ST_INCAPACITATED && node.body.speed.x != 0.0 {
-            if node.body.speed.x > Player::INCAPACITATED_STOP_THRESHOLD
-                || node.body.speed.x < -Player::INCAPACITATED_STOP_THRESHOLD
-            {
-                node.body.speed.x *= Player::INCAPACITATED_BREAK_FACTOR;
-            } else {
-                node.body.speed.x = 0.0;
-            }
+impl Player {
+    fn physics_capabilities() -> PhysicsObject {
+        fn active(handle: HandleUntyped) -> bool {
+            true
         }
-
-        {
-            if scene::get_node(node.game_state).game_paused {
-                return;
-            }
-        }
-
-        node.fish_sprite.update();
-
-        let map_bottom = {
-            let resources = storage::get::<Resources>();
-
-            resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height
-        } as f32;
-
-        if node.body.pos.y > map_bottom {
-            node.kill(false);
-        }
-
-        {
-            let node = &mut *node;
-            if let Some((_, weapon_body, _, _)) = node.weapon.as_mut() {
-                let body = weapon_body.get().unwrap();
-                body.pos = node.body.pos;
-                body.facing = node.body.facing;
-            }
-        }
-
-        let controller = storage::get_mut::<gamepad_rs::ControllerContext>();
-        let status = controller.state(node.controller_id as _).status;
-
-        if status == gamepad_rs::ControllerStatus::Connected {
-            let state = controller.state(node.controller_id as _);
-            let info = controller.info(node.controller_id as _);
-
-            let x = state.analog_state[0];
-            let y = state.analog_state[1];
-
-            node.input.left = x < -0.5;
-            node.input.right = x > 0.5;
-
-            if cfg!(target_os = "macos") {
-                node.input.down = y < -0.5;
-            } else {
-                node.input.down = y > 0.5;
-            };
-
-            let jump_btn: usize = if cfg!(target_os = "macos") {
-                1
-            } else {
-                if info.name.contains("SFC30") {
-                    1
-                } else {
-                    2
-                }
-            };
-            let fire_btn: usize = if cfg!(target_os = "macos") {
-                0
-            } else {
-                if info.name.contains("SFC30") {
-                    0
-                } else {
-                    1
-                }
-            };
-            let throw_btn: usize = if cfg!(target_os = "macos") {
-                3
-            } else {
-                if info.name.contains("SFC30") {
-                    4
-                } else {
-                    3
-                }
-            };
-
-            if state.digital_state[jump_btn] && node.input.was_jump == false {
-                node.input.jump = true;
-            } else {
-                node.input.jump = false;
-            }
-            node.input.was_jump = state.digital_state[jump_btn];
-
-            node.input.was_fire = node.input.fire;
-            node.input.fire = state.digital_state[fire_btn];
-
-            if state.digital_state[throw_btn] && node.input.was_throw == false {
-                node.input.throw = true;
-            } else {
-                node.input.throw = false;
-            }
-            node.input.was_throw = state.digital_state[throw_btn];
-        } else {
-            if node.ai_enabled == false && node.controller_id == 1 {
-                let jump = is_key_down(KeyCode::Space) || is_key_down(KeyCode::W);
-                node.input.jump = jump && node.input.was_jump == false;
-                node.input.was_jump = jump;
-
-                let throw = is_key_down(KeyCode::R);
-                node.input.throw = throw && node.input.was_throw == false;
-                node.input.was_throw = throw;
-
-                node.input.was_fire = node.input.fire;
-                node.input.fire = is_key_down(KeyCode::LeftControl)
-                    || is_key_down(KeyCode::F)
-                    || is_key_down(KeyCode::L);
-
-                node.input.left = is_key_down(KeyCode::A);
-                node.input.right = is_key_down(KeyCode::D);
-                node.input.down = is_key_down(KeyCode::S);
-
-                node.input.slide = is_key_down(KeyCode::C);
-            }
-
-            if node.ai_enabled == false && node.controller_id == 0 {
-                let throw = is_key_down(KeyCode::K);
-                node.input.throw = throw && node.input.was_throw == false;
-                node.input.was_throw = throw;
-                let jump = is_key_down(KeyCode::Up);
-                node.input.jump = jump && node.input.was_jump == false;
-                node.input.was_jump = jump;
-                node.input.left = is_key_down(KeyCode::Left);
-                node.input.right = is_key_down(KeyCode::Right);
-                node.input.down = is_key_down(KeyCode::Down);
-
-                node.input.slide = is_key_down(KeyCode::RightControl);
-            }
-        }
-
-        if node.ai_enabled {
-            let mut ai = node.ai.take().unwrap();
-            let input = ai.update(&mut *node);
-            node.input = input;
-            node.ai = Some(ai);
-        }
-
-        if is_key_pressed(KeyCode::Q) {
-            scene::find_node_by_type::<crate::nodes::Camera>()
+        fn collider(handle: HandleUntyped) -> Rect {
+            let mut node = scene::get_untyped_node(handle)
                 .unwrap()
-                .shake();
+                .to_typed::<Player>();
+
+            Rect::new(
+                node.body.pos.x,
+                node.body.pos.y,
+                node.body.size.x,
+                node.body.size.y,
+            )
+        }
+        fn set_speed_x(handle: HandleUntyped, speed: f32) {
+            let mut node = scene::get_untyped_node(handle)
+                .unwrap()
+                .to_typed::<Player>();
+            node.body.speed.x = speed;
+        }
+        fn set_speed_y(handle: HandleUntyped, speed: f32) {
+            let mut node = scene::get_untyped_node(handle)
+                .unwrap()
+                .to_typed::<Player>();
+            node.body.speed.y = speed;
         }
 
-        {
-            let node = &mut *node;
+        PhysicsObject {
+            active,
+            collider,
+            set_speed_x,
+            set_speed_y,
+        }
+    }
 
-            if node.is_sliding {
-                node.slide_timer += get_frame_time();
-                if node.slide_timer >= Player::SLIDE_DURATION {
-                    node.is_sliding = false;
-                    node.slide_timer = 0.0;
-                }
-            }
-
-            if !node.is_sliding {
-                if node.body.on_ground && node.input.was_jump == false {
-                    node.jump_grace_timer = Self::JUMP_GRACE_TIME;
-                } else if node.jump_grace_timer > 0. {
-                    node.jump_grace_timer -= get_frame_time();
-                }
-            }
-
-            node.body.update();
+    fn network_capabilities() -> NetworkReplicate {
+        fn network_update(handle: HandleUntyped) {
+            let mut node = scene::get_untyped_node(handle)
+                .unwrap()
+                .to_typed::<Player>();
+            Player::network_update(node);
         }
 
-        if node.can_head_boink && node.body.speed.y > 0.0 {
-            let hitbox = node.get_hitbox();
-            for mut other in scene::find_nodes_by_type::<Player>() {
-                let other_hitbox = other.get_hitbox();
-                let is_overlapping = hitbox.overlaps(&other_hitbox);
-                if is_overlapping {
-                    if hitbox.y + 60.0 < other_hitbox.y + Self::HEAD_THRESHOLD {
-                        let resources = storage::get_mut::<Resources>();
-                        play_sound_once(resources.jump_sound);
-                        other.kill(!node.body.facing);
-                    }
-                }
-            }
-        }
-
-        // update camera bound box
-        {
-            let fish_box = Rect::new(node.body.pos.x, node.body.pos.y, 32., 60.);
-
-            if fish_box.x < node.camera_box.x {
-                node.camera_box.x = fish_box.x;
-            }
-            if fish_box.x + fish_box.w > node.camera_box.x + node.camera_box.w {
-                node.camera_box.x = fish_box.x + fish_box.w - node.camera_box.w;
-            }
-            if fish_box.y < node.camera_box.y {
-                node.camera_box.y = fish_box.y;
-            }
-            if fish_box.y + fish_box.h > node.camera_box.y + node.camera_box.h {
-                node.camera_box.y = fish_box.y + fish_box.h - node.camera_box.h;
-            }
-        }
-        StateMachine::update_detached(&mut node, |node| &mut node.state_machine);
+        NetworkReplicate { network_update }
     }
 }

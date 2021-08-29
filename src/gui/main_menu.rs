@@ -1,25 +1,91 @@
 use macroquad::{
     experimental::collections::storage,
     prelude::*,
-    ui::{self, *},
+    ui::{self, hash, root_ui, widgets},
 };
 
-use crate::gui::GuiResources;
+use crate::{gui::GuiResources, GameType};
 
-pub async fn gui() -> String {
-    let mut hovered: i32 = 0;
+pub async fn game_type() -> GameType {
+    let mut self_addr = "127.0.0.1:2323".to_string();
+    let mut other_addr = "127.0.0.1:2324".to_string();
+    let mut id = "0".to_string();
 
-    {
-        let mut controller = storage::get_mut::<gamepad_rs::ControllerContext>();
-        for i in 0..2 {
-            controller.update(i);
+    let window_width = 700.;
+    let window_height = 400.;
+
+    loop {
+        let mut res = None;
+        let mut gui_resources = storage::get_mut::<GuiResources>();
+
+        root_ui().push_skin(&gui_resources.skins.login_skin);
+
+        root_ui().window(
+            hash!(),
+            Vec2::new(
+                screen_width() / 2. - window_width / 2.,
+                screen_height() / 2. - window_height / 2.,
+            ),
+            Vec2::new(window_width, window_height),
+            |ui| {
+                ui.group(hash!(), vec2(window_width / 2. - 28., 170.), |ui| {
+                    ui.label(None, "Local game");
+                    ui.separator();
+                    ui.separator();
+                    ui.label(None, "Two players on the same");
+                    ui.label(None, "local machine");
+                    ui.separator();
+
+                    if ui.button(None, "PLAY") {
+                        res = Some(GameType::Local);
+                    }
+                });
+                ui.group(hash!(), vec2(window_width / 2. - 28., 220.), |ui| {
+                    ui.label(None, "Network P2P game");
+                    widgets::InputText::new(hash!())
+                        .ratio(3. / 4.)
+                        .label("Self UDP addr")
+                        .ui(ui, &mut self_addr);
+                    widgets::InputText::new(hash!())
+                        .ratio(3. / 4.)
+                        .label("Remote UDP addr")
+                        .ui(ui, &mut other_addr);
+                    widgets::InputText::new(hash!())
+                        .ratio(3. / 4.)
+                        .label("ID (0 or 1)")
+                        .ui(ui, &mut id);
+
+                    ui.separator();
+
+                    if ui.button(None, "Connect") {
+                        res = Some(GameType::Network {
+                            id: id.parse().unwrap(),
+                            self_addr: self_addr.clone(),
+                            other_addr: other_addr.clone(),
+                        });
+                    }
+                    if ui.button(None, "Connect_dbg") {
+                        res = Some(GameType::Network {
+                            id: 1,
+                            self_addr: "127.0.0.1:2324".to_string(),
+                            other_addr: "127.0.0.1:2323".to_string(),
+                        });
+                    }
+                });
+            },
+        );
+
+        root_ui().pop_skin();
+
+        if let Some(res) = res {
+            return res;
         }
+        next_frame().await;
     }
+}
 
-    {
-        let mut input = storage::get_mut::<crate::input_axis::InputAxises>();
-        input.update();
-    }
+pub async fn location_select() -> String {
+    let mut hovered: i32 = 0;
 
     let mut old_mouse_position = mouse_position();
 
@@ -37,9 +103,7 @@ pub async fn gui() -> String {
         let h = (screen_height() - 180.) / rows as f32 - 50.;
 
         {
-            let axises = storage::get::<crate::input_axis::InputAxises>();
-
-            if axises.up_pressed {
+            if is_key_pressed(KeyCode::Up) {
                 hovered -= 3;
                 let ceiled_levels_amount = levels_amount as i32 + 3 - (levels_amount % 3) as i32;
                 if hovered < 0 {
@@ -50,17 +114,17 @@ pub async fn gui() -> String {
                 }
             }
 
-            if axises.down_pressed {
+            if is_key_pressed(KeyCode::Down) {
                 hovered += 3;
                 if hovered >= levels_amount as i32 {
                     let row = hovered % 3;
                     hovered = row;
                 }
             }
-            if axises.left_pressed {
+            if is_key_pressed(KeyCode::Left) {
                 hovered -= 1;
             }
-            if axises.right_pressed {
+            if is_key_pressed(KeyCode::Right) {
                 hovered += 1;
             }
             hovered = (hovered + levels_amount as i32) % levels_amount as i32;
@@ -91,7 +155,7 @@ pub async fn gui() -> String {
                     .size(rect.size())
                     .position(rect.point())
                     .ui(&mut *root_ui())
-                    || axises.btn_a_pressed
+                    || is_key_pressed(KeyCode::Enter)
                 {
                     root_ui().pop_skin();
                     let level = &levels[hovered as usize];
@@ -101,18 +165,6 @@ pub async fn gui() -> String {
         }
 
         root_ui().pop_skin();
-
-        {
-            let mut controller = storage::get_mut::<gamepad_rs::ControllerContext>();
-            for i in 0..2 {
-                controller.update(i);
-            }
-        }
-
-        {
-            let mut input = storage::get_mut::<crate::input_axis::InputAxises>();
-            input.update();
-        }
 
         old_mouse_position = mouse_position();
 

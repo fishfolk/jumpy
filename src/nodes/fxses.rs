@@ -18,12 +18,15 @@ impl scene::Node for Fxses {
         let _z = telemetry::ZoneGuard::new("draw particles");
 
         resources.hit_fxses.draw();
-        resources.cannonball_hit_fxses.draw();
         resources.explosion_fxses.draw();
+
+        for fx in resources.items_fxses.values_mut() {
+            fx.draw();
+        }
 
         push_camera_state();
         set_default_camera();
-        resources.life_explosion_fxses.draw();
+        resources.life_ui_explosion_fxses.draw();
         pop_camera_state();
         // macroquad_profiler::profiler(macroquad_profiler::ProfilerParams {
         //     fps_counter_pos: macroquad::math::vec2(50.0, 20.0),

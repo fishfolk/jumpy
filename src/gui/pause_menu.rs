@@ -1,4 +1,8 @@
-use macroquad::{experimental::collections::storage, prelude::*, ui::*};
+use macroquad::{
+    experimental::collections::storage,
+    prelude::*,
+    ui::{hash, root_ui, widgets},
+};
 
 use crate::gui::GuiResources;
 
@@ -20,13 +24,12 @@ pub fn gui() -> PauseResult {
     )
     .titlebar(false)
     .ui(&mut *root_ui(), |ui| {
-        let axises = storage::get::<crate::input_axis::InputAxises>();
         ui.label(None, "Exit, you sure?");
-        if ui.button(None, "yes") || axises.btn_a_pressed {
+        if ui.button(None, "yes") || is_key_pressed(KeyCode::Enter) {
             res = PauseResult::Quit;
         }
         ui.same_line(90.);
-        if ui.button(None, "no") || axises.btn_b_pressed {
+        if ui.button(None, "no") || is_key_pressed(KeyCode::Escape) {
             res = PauseResult::Close;
         }
     });

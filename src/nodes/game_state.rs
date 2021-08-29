@@ -8,10 +8,7 @@ use macroquad::{
     window::miniquad::*,
 };
 
-use crate::{
-    gui::pause_menu,
-    nodes::{Player, ScoreCounter},
-};
+use crate::{gui::pause_menu, nodes::Player};
 
 #[derive(Clone, Copy, PartialEq)]
 enum State {
@@ -35,12 +32,10 @@ pub struct GameState {
 
     winner: Option<Handle<Player>>,
     k: f32,
-
-    score_counter: Handle<ScoreCounter>,
 }
 
 impl GameState {
-    pub fn new(score_counter: Handle<ScoreCounter>) -> GameState {
+    pub fn new() -> GameState {
         let material = load_material(
             VERTEX,
             FRAGMENT,
@@ -68,7 +63,6 @@ impl GameState {
             win_label: "".to_string(),
             k: 0.0,
             winner: None,
-            score_counter,
         }
     }
 }
@@ -210,16 +204,16 @@ impl scene::Node for GameState {
         }
 
         if node.state == State::InProgress {
-            let score = scene::get_node(node.score_counter);
-            if score.player0_lifes <= 0 || score.player1_lifes <= 0 {
-                node.state = State::Finished;
-                node.game_paused = true;
-                let handle = node.handle();
-                start_coroutine(Self::win_coroutine(
-                    handle,
-                    if score.player0_lifes <= 0 { 1 } else { 0 },
-                ));
-            }
+            // let score = scene::get_node(node.score_counter);
+            // if score.player0_lifes <= 0 || score.player1_lifes <= 0 {
+            //     node.state = State::Finished;
+            //     node.game_paused = true;
+            //     let handle = node.handle();
+            //     start_coroutine(Self::win_coroutine(
+            //         handle,
+            //         if score.player0_lifes <= 0 { 1 } else { 0 },
+            //     ));
+            // }
         }
     }
 }

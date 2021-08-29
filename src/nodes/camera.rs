@@ -116,6 +116,6 @@ impl scene::Node for Camera {
             ..Camera2D::default()
         };
 
-        scene::set_camera_1(macroquad_camera);
+        scene::set_camera(0, Some(macroquad_camera));
     }
 }

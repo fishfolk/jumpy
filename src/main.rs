@@ -82,6 +82,19 @@ struct Resources {
     shoot_sound: audio::Sound,
     sword_sound: audio::Sound,
     pickup_sound: audio::Sound,
+    throw_sound: audio::Sound,
+    gun_empty_sound: audio::Sound,
+    gun_emptyb_sound: audio::Sound,
+    bullet_hit_dull_sound: audio::Sound,
+    bullet_hit_metal_sound: audio::Sound,
+    explode_m_sound: audio::Sound,
+    heavy_landing_sound: audio::Sound,
+    light_landing_sound: audio::Sound,
+    player_landing_sound: audio::Sound,
+    player_slip_sound: audio::Sound,
+    player_die_sound: audio::Sound,
+    mine_set_sound: audio::Sound
+
 }
 
 pub const HIT_FX: &str = r#"{"local_coords":false,"emission_shape":"Point","one_shot":true,"lifetime":0.2,"lifetime_randomness":0,"explosiveness":0.65,"amount":30,"shape":{"Circle":{"subdivisions":10}},"emitting":false,"initial_direction":{"x":0,"y":-1},"initial_direction_spread":6.2831855,"initial_velocity":73.9,"initial_velocity_randomness":0.2,"linear_accel":0,"size":5.6000004,"size_randomness":0.4,"blend_mode":"Additive","colors_curve":{"start":{"r":0.8200004,"g":1,"b":0.31818175,"a":1},"mid":{"r":0.71000004,"g":0.36210018,"b":0,"a":0.8},"end":{"r":0.02,"g":0,"b":0.000000007152557,"a":0.2}},"gravity":{"x":0,"y":0},"post_processing":{}}
@@ -211,6 +224,19 @@ impl Resources {
         let shoot_sound = load_sound("assets/sounds/shoot.ogg").await?;
         let sword_sound = load_sound("assets/sounds/sword.wav").await?;
         let pickup_sound = load_sound("assets/sounds/pickup.wav").await?;
+        let throw_sound = load_sound("assets/sounds/throw.wav").await?;
+        let gun_empty_sound = load_sound("assets/sounds/gun_empty.wav").await?;
+        let gun_emptyb_sound = load_sound("assets/sounds/gun_empty_b.wav").await?;
+        let bullet_hit_dull_sound = load_sound("assets/sounds/bullet_hit_dull.wav").await?;
+        let bullet_hit_metal_sound = load_sound("assets/sounds/bullet_hit_metal.wav").await?;
+        let explode_m_sound = load_sound("assets/sounds/explode_m.wav").await?;
+        let heavy_landing_sound = load_sound("assets/sounds/land_heavy.wav").await?;
+        let light_landing_sound = load_sound("assets/sounds/land_light.wav").await?;
+        let player_landing_sound = load_sound("assets/sounds/player_landing.wav").await?;
+        let player_slip_sound = load_sound("assets/sounds/player_slip.wav").await?;
+        let player_die_sound = load_sound("assets/sounds/fish_fillet.wav").await?;
+        let mine_set_sound = load_sound("assets/sounds/mine_set.wav").await?;
+
 
         let tiled_map_json = load_string(map).await.unwrap();
         let tiled_map = tiled::load_map(
@@ -293,6 +319,18 @@ impl Resources {
             shoot_sound,
             sword_sound,
             pickup_sound,
+            throw_sound,
+            gun_empty_sound,
+            gun_emptyb_sound,
+            bullet_hit_dull_sound,
+            bullet_hit_metal_sound,
+            explode_m_sound,
+            heavy_landing_sound,
+            light_landing_sound,
+            player_landing_sound,
+            player_slip_sound,
+            player_die_sound,
+            mine_set_sound
         })
     }
 }

@@ -382,6 +382,8 @@ impl Player {
             self.body.facing = direction;
             if self.state_machine.state() != Self::ST_DEATH {
                 self.state_machine.set_state(Self::ST_DEATH);
+                let resources = storage::get::<Resources>();
+                play_sound_once(resources.player_die_sound);
             }
         }
     }
@@ -559,6 +561,10 @@ impl Player {
 
         // shanke on fall
         if node.body.on_ground && !node.body.last_frame_on_ground {
+        {
+            let resources = storage::get::<Resources>();
+            play_sound_once(resources.player_landing_sound);
+        }
             // scene::find_node_by_type::<crate::nodes::Camera>()
             //     .unwrap()
             //     .shake();
@@ -622,6 +628,11 @@ impl Player {
 
         if node.input.throw {
             if let Some((weapon, _, _, gun)) = node.weapon.as_mut() {
+                {
+                    let resources = storage::get::<Resources>();
+                    play_sound_once(resources.throw_sound);
+                }
+
                 (gun.throw)(*weapon, !node.input.down);
                 node.weapon = None;
 

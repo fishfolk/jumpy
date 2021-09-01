@@ -1,5 +1,5 @@
 use macroquad::{
-    audio::{play_sound_once},
+    audio::play_sound_once,
     color,
     experimental::{
         animation::{AnimatedSprite, Animation},

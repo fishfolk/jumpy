@@ -151,8 +151,6 @@ impl scene::Node for Bullets {
     }
 
     fn fixed_update(mut node: RefMut<Self>) {
-        let mut resources = storage::get_mut::<Resources>();
-
         for bullet in &mut node.bullets {
             bullet.pos += bullet.speed * get_frame_time();
             bullet.lived += get_frame_time();
@@ -175,15 +173,18 @@ impl scene::Node for Bullets {
                 }
             }
 
-            if resources.collision_world.collide_solids(
-                bullet.pos,
-                bullet.size as i32,
-                bullet.size as i32,
-            ) == Tile::Solid
-                || killed
             {
-                resources.hit_fxses.spawn(bullet.pos);
-                return false;
+                let mut resources = storage::get_mut::<Resources>();
+                if resources.collision_world.collide_solids(
+                    bullet.pos,
+                    bullet.size as i32,
+                    bullet.size as i32,
+                ) == Tile::Solid
+                    || killed
+                {
+                    resources.hit_fxses.spawn(bullet.pos);
+                    return false;
+                }
             }
             bullet.lived < bullet.lifetime
         });

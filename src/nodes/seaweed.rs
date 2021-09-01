@@ -1,4 +1,5 @@
 use macroquad::{
+    audio::{play_sound_once},
     color,
     experimental::{
         animation::{AnimatedSprite, Animation},
@@ -55,6 +56,10 @@ impl Node for Seaweed {
                     || player.body.speed.x <= -Seaweed::SPEED_THRESHOLD)
             {
                 player.incapacitate(Seaweed::INCAPACITATE_DURATION, false, true);
+                {
+                    let resources = storage::get::<Resources>();
+                    play_sound_once(resources.player_slip_sound);
+                }
             }
         }
     }

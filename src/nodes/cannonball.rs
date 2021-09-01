@@ -1,4 +1,5 @@
 use macroquad::{
+    audio::{play_sound_once},
     color,
     experimental::{
         animation::{AnimatedSprite, Animation},
@@ -173,6 +174,10 @@ impl scene::Node for Cannonball {
                             cannonball.body.pos.x > (player.body.pos.x + player_hitbox.w / 2.);
                         player.kill(direction);
 
+                        {
+                            let resources = storage::get::<Resources>();
+                            play_sound_once(resources.explode_m_sound);
+                        }
                         cannonball.delete();
                         scene::find_node_by_type::<crate::nodes::Camera>()
                             .unwrap()
@@ -182,7 +187,6 @@ impl scene::Node for Cannonball {
                     }
                 }
             }
-
             return;
         }
 
@@ -200,6 +204,10 @@ impl scene::Node for Cannonball {
             .unwrap()
             .shake_noise(1., 6, 0.8);
 
+        {
+            let resources = storage::get::<Resources>();
+            play_sound_once(resources.explode_m_sound);
+        }
         cannonball.delete();
     }
 

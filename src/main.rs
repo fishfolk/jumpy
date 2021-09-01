@@ -83,6 +83,7 @@ struct Resources {
     sword_sound: audio::Sound,
     pickup_sound: audio::Sound,
     throw_sound: audio::Sound,
+    swing_sound: audio::Sound,
     gun_empty_sound: audio::Sound,
     gun_emptyb_sound: audio::Sound,
     bullet_hit_dull_sound: audio::Sound,
@@ -225,6 +226,7 @@ impl Resources {
         let sword_sound = load_sound("assets/sounds/sword.wav").await?;
         let pickup_sound = load_sound("assets/sounds/pickup.wav").await?;
         let throw_sound = load_sound("assets/sounds/throw.wav").await?;
+        let swing_sound = load_sound("assets/sounds/swing.wav").await?;
         let gun_empty_sound = load_sound("assets/sounds/gun_empty.wav").await?;
         let gun_emptyb_sound = load_sound("assets/sounds/gun_empty_b.wav").await?;
         let bullet_hit_dull_sound = load_sound("assets/sounds/bullet_hit_dull.wav").await?;
@@ -320,6 +322,7 @@ impl Resources {
             sword_sound,
             pickup_sound,
             throw_sound,
+            swing_sound,
             gun_empty_sound,
             gun_emptyb_sound,
             bullet_hit_dull_sound,

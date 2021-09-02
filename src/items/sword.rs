@@ -215,9 +215,9 @@ impl Sword {
                     if Rect::new(other.body.pos.x, other.body.pos.y, 20., 64.)
                         .overlaps(&sword_hit_box)
                     {
-                        scene::find_node_by_type::<crate::nodes::Camera>()
+                        let cam = scene::find_node_by_type::<crate::nodes::Camera>()
                             .unwrap()
-                            .shake();
+                            .shake_noise(2., 6, 1.0);
                         other.kill(!player.body.facing);
                     }
                 }

@@ -1,14 +1,32 @@
+use crate::{nodes::Player, noise::NoiseGenerator};
 use macroquad::{
     experimental::scene::{self, RefMut},
     prelude::*,
+    rand::gen_range,
 };
 
-use crate::nodes::Player;
+struct Shake {
+    direction: (f32, f32),
+    kind: ShakeType,
+    magnitude: f32,
+    length: f32, //in frames, but stored in float to avoid casting
+    age: f32,
+    random_offset: f32,
+    frequency: f32, // 1 is pretty standard, .2 is a punch (with 10 frames of shake it oscillates about max twice). With .5 it's more of a rumble
+}
+
+enum ShakeType {
+    Noise,
+    Sinusodial,
+    Rotational,
+}
 
 pub struct Camera {
     bounds: Rect,
     follow_buffer: Vec<(Vec2, f32)>,
-    shake: Option<(f32, f32)>,
+    shake: Vec<Shake>,
+    noisegen: NoiseGenerator,
+    noisegen_position: f32,
 
     pub manual: Option<(Vec2, f32)>,
 }
@@ -20,15 +38,124 @@ impl Camera {
         Camera {
             bounds,
             follow_buffer: vec![],
-            shake: None,
+            shake: vec![],
             manual: None,
+            noisegen: NoiseGenerator::new(5),
+            noisegen_position: 5.0,
         }
     }
 }
 
 impl Camera {
-    pub fn shake(&mut self) {
-        self.shake = Some((0.0, 0.1));
+    pub fn shake_noise(&mut self, magnitude: f32, length: i32, frequency: f32) {
+        self.shake.push(Shake {
+            direction: (1.0, 1.0),
+            kind: ShakeType::Noise,
+            magnitude,
+            length: length as f32,
+            age: 0.0,
+            random_offset: rand::gen_range(1.0, 100.0),
+            frequency,
+        });
+    }
+
+    pub fn shake_noise_dir(
+        &mut self,
+        magnitude: f32,
+        length: i32,
+        frequency: f32,
+        direction: (f32, f32),
+    ) {
+        self.shake.push(Shake {
+            direction,
+            kind: ShakeType::Noise,
+            magnitude,
+            length: length as f32,
+            age: 0.0,
+            random_offset: rand::gen_range(1.0, 100.0),
+            frequency,
+        });
+    }
+
+    pub fn shake_sinusodial(&mut self, magnitude: f32, length: i32, frequency: f32, angle: f32) {
+        self.shake.push(Shake {
+            direction: (angle.cos(), angle.sin()),
+            kind: ShakeType::Sinusodial,
+            magnitude,
+            length: length as f32,
+            age: 0.0,
+            random_offset: 0.0,
+            frequency,
+        });
+    }
+
+    pub fn shake_rotational(&mut self, magnitude: f32, length: i32) {
+        self.shake.push(Shake {
+            direction: (1.0, 1.0),
+            kind: ShakeType::Rotational,
+            magnitude: magnitude * (gen_range(0, 2) as f32 - 0.5) * 2.0,
+            length: length as f32,
+            age: 0.0,
+            random_offset: 0.0,
+            frequency: 0.0,
+        });
+    }
+
+    pub fn get_shake(&mut self) -> (Vec2, f32) {
+        //(x translate, y translate, rotation)
+        self.noisegen_position += 0.5;
+        let mut shake_offset = vec2(0.0, 0.0);
+        let mut shake_rotation = 0.0;
+        for i in 0..self.shake.len() {
+            let strength = 1.0 - self.shake[i].age / self.shake[i].length;
+            match self.shake[i].kind {
+                ShakeType::Noise => {
+                    shake_offset.x += self.noisegen.perlin_2d(
+                        self.noisegen_position * self.shake[i].frequency
+                            + self.shake[i].random_offset,
+                        5.0,
+                    ) * self.shake[i].magnitude
+                        * self.shake[i].direction.0
+                        * strength
+                        * 100.0;
+                    shake_offset.y += self.noisegen.perlin_2d(
+                        self.noisegen_position * self.shake[i].frequency
+                            + self.shake[i].random_offset,
+                        7.0,
+                    ) * self.shake[i].magnitude
+                        * self.shake[i].direction.1
+                        * strength
+                        * 100.0;
+                }
+                ShakeType::Sinusodial => {
+                    shake_offset.x += (self.noisegen_position * self.shake[i].frequency * 1.0)
+                        .sin()
+                        * self.shake[i].magnitude
+                        * self.shake[i].direction.0
+                        * strength
+                        * 50.0; // Noise values are +/- 0.5, trig is twice as large
+                    shake_offset.y += (self.noisegen_position * self.shake[i].frequency * 1.0)
+                        .sin()
+                        * self.shake[i].magnitude
+                        * self.shake[i].direction.1
+                        * strength
+                        * 50.0;
+                }
+                ShakeType::Rotational => {
+                    //shake_rotation += self.noisegen.perlin_2d(self.noisegen_position * self.shake[i].frequency + self.shake[i].random_offset, 5.0) * self.shake[i].magnitude * strength.powi(3);
+                    shake_rotation += self.shake[i].magnitude * strength.powi(3) * 3.0;
+                }
+            };
+
+            self.shake[i].age += 1.0;
+        }
+
+        self.shake.retain(|s| s.age < s.length);
+
+        shake_offset.x = (shake_offset.x.abs() + 1.0).log2() * shake_offset.x.signum(); // log2(x+1) is almost linear from 0-1, but then flattens out. Limits the screenshake so if there is lots at the same time, the scene won't fly away
+        shake_offset.y = (shake_offset.y.abs() + 1.0).log2() * shake_offset.y.signum();
+
+        (shake_offset, shake_rotation)
     }
 }
 
@@ -89,21 +216,9 @@ impl scene::Node for Camera {
         );
         let zoom = (sum_zoom / node.follow_buffer.len() as f64) as f32;
 
-        let mut rotation = 0.0;
-
-        if let Some(ref mut shake) = node.shake {
-            let t = shake.0 / shake.1;
-
-            let t1 = 1.0 - t;
-            //let shift_x = 0.;
-            let shift_y = t1 * t1;
-            middle_point += vec2(0., shift_y * 20.);
-            rotation = (t * t * std::f32::consts::PI).cos() * 2.;
-            shake.0 += get_frame_time();
-            if shake.0 >= shake.1 {
-                node.shake = None;
-            }
-        }
+        let shake = node.get_shake();
+        middle_point += shake.0;
+        let rotation = shake.1;
 
         let aspect = screen_width() / screen_height();
 

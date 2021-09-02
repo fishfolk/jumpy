@@ -17,6 +17,8 @@ use crate::{
     Input, Resources,
 };
 
+use std::f32;
+
 mod ai;
 
 impl Player {
@@ -463,11 +465,12 @@ impl Player {
         }
 
         // shanke on fall
-        if node.body.on_ground && node.body.last_frame_on_ground == false {
-            // scene::find_node_by_type::<crate::nodes::Camera>()
-            //     .unwrap()
-            //     .shake();
-        }
+        // TODO: This needs to adjust magnitude depending on velocity on collision, it's weird and sickening otherwise
+        /*if node.body.on_ground && node.body.last_frame_on_ground == false {
+            scene::find_node_by_type::<crate::nodes::Camera>()
+                .unwrap()
+                .shake_sinusodial(0.3, 6, 0.5, f32::consts::PI / 2.);
+        }*/
 
         if node.floating {
             node.fish_sprite.set_animation(4);
@@ -639,9 +642,10 @@ impl Player {
         }
 
         if is_key_pressed(KeyCode::Q) {
+            //Will fail half of the time, because it is triggered by both players and it's a 50% chance that they counteract each other.
             scene::find_node_by_type::<crate::nodes::Camera>()
                 .unwrap()
-                .shake();
+                .shake_rotational(1.0, 10);
         }
 
         {

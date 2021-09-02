@@ -21,6 +21,7 @@ mod gui;
 mod input;
 mod items;
 mod nodes;
+mod noise;
 
 pub mod components;
 

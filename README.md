@@ -37,7 +37,14 @@ https://twitter.com/fedor_games/status/1408868565772652544
 1. Install Rust with [Rustup.rs](https://rustup.rs/)
 2. `cargo run`
 
+### Contributing
 We are currently focused on making the game as enjoyable as possible on local multiplayer, i.e. couch co-op. Check out the [roadmap](https://github.com/fishfight/fish2/issues/2) for more.
+
+Before committing and opening a PR, run the following commands and do as they say:
+1. `cargo clippy -- -W clippy::correctness -D warnings`
+2. `cargo fmt`
+
+
 
 ### Learning Materials
 - https://macroquad.rs/tutorials/fish-tutorial/

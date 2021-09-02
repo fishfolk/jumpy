@@ -39,7 +39,9 @@ impl Player {
     pub fn jump(&mut self) {
         let resources = storage::get::<Resources>();
 
-        self.body.speed.y = -Self::JUMP_SPEED;
+        self.body.speed.y = -Self::JUMP_UPWARDS_SPEED;
+        self.jump_frames_left = Self::JUMP_HEIGHT_CONTROL_FRAMES;
+
         audio::play_sound(
             resources.jump_sound,
             audio::PlaySoundParams {
@@ -65,6 +67,7 @@ pub struct Player {
     pub last_frame_input: Input,
 
     jump_grace_timer: f32,
+    jump_frames_left: i32,
 
     was_floating: bool,
     pub floating: bool,
@@ -98,7 +101,9 @@ impl Player {
     pub const ST_INCAPACITATED: usize = 4;
     pub const ST_AFTERMATCH: usize = 5;
 
-    pub const JUMP_SPEED: f32 = 700.0;
+    pub const JUMP_UPWARDS_SPEED: f32 = 600.0;
+    pub const JUMP_HEIGHT_CONTROL_FRAMES: i32 = 8;
+    pub const JUMP_RELEASE_GRAVITY_INCREASE: f32 = 35.0; // When up key is released and player is moving upwards, apply extra gravity to stop them fasterpub const JUMP_SPEED: f32 = 700.0;
     pub const RUN_SPEED: f32 = 250.0;
     pub const SLIDE_SPEED: f32 = 800.0;
     pub const SLIDE_DURATION: f32 = 0.1;
@@ -224,6 +229,7 @@ impl Player {
             body,
             fish_sprite,
             jump_grace_timer: 0.,
+            jump_frames_left: 0,
             floating: false,
             was_floating: false,
             state_machine,
@@ -629,6 +635,18 @@ impl Player {
             if let Some(weapon) = node.weapon.as_mut() {
                 weapon.mount(node.body.pos, node.body.facing);
             }
+        }
+
+        if node.input.jump {
+            if node.jump_frames_left > 0 {
+                node.body.speed.y = -Player::JUMP_UPWARDS_SPEED;
+                node.jump_frames_left -= 1;
+            }
+        } else {
+            if node.body.speed.y < 0.0 {
+                node.body.speed.y += Player::JUMP_RELEASE_GRAVITY_INCREASE;
+            }
+            node.jump_frames_left = 0;
         }
 
         if node.ai_enabled {

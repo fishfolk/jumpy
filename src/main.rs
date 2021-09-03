@@ -11,7 +11,7 @@ use macroquad::{
 };
 
 use macroquad_platformer::{Tile, World as CollisionWorld};
-use particles::EmittersCache;
+use particles::{Emitter, EmittersCache};
 
 use std::collections::HashMap;
 
@@ -21,6 +21,7 @@ mod gui;
 mod input;
 mod items;
 mod nodes;
+mod utils;
 
 pub mod components;
 
@@ -39,6 +40,9 @@ struct Resources {
     hit_fxses: EmittersCache,
     explosion_fxses: EmittersCache,
     life_ui_explosion_fxses: EmittersCache,
+    fx_cannonball_hit: Emitter,
+    fx_explosion_particles: EmittersCache,
+    fx_smoke: Emitter,
     tiled_map: tiled::Map,
     collision_world: CollisionWorld,
     whale_green: Texture2D,
@@ -128,12 +132,19 @@ impl Resources {
         const HIT_FX: &str = include_str!("../assets/fxses/hit.json");
         const EXPLOSION_FX: &str = include_str!("../assets/fxses/explosion.json");
         const LIFE_UI_FX: &str = include_str!("../assets/fxses/life_ui_explosion.json");
-
+        const CANNONBALL_HIT_FX: &str = include_str!("../assets/fxses/canonball_hit.json");
+        const EXPLOSION_PARTICLES: &str = include_str!("../assets/fxses/explosion_particles.json");
+        const SMOKE_FX: &str = include_str!("../assets/fxses/smoke.json");
         let hit_fxses = EmittersCache::new(nanoserde::DeJson::deserialize_json(HIT_FX).unwrap());
         let explosion_fxses =
             EmittersCache::new(nanoserde::DeJson::deserialize_json(EXPLOSION_FX).unwrap());
         let life_ui_explosion_fxses =
             EmittersCache::new(nanoserde::DeJson::deserialize_json(LIFE_UI_FX).unwrap());
+        let fx_cannonball_hit =
+            Emitter::new(nanoserde::DeJson::deserialize_json(CANNONBALL_HIT_FX).unwrap());
+        let fx_explosion_particles =
+            EmittersCache::new(nanoserde::DeJson::deserialize_json(EXPLOSION_PARTICLES).unwrap());
+        let fx_smoke = Emitter::new(nanoserde::DeJson::deserialize_json(SMOKE_FX).unwrap());
 
         let mut items_textures = HashMap::new();
         let mut items_fxses = HashMap::new();
@@ -159,6 +170,7 @@ impl Resources {
             hit_fxses,
             explosion_fxses,
             life_ui_explosion_fxses,
+            fx_smoke,
             items_fxses,
             tiled_map,
             collision_world,
@@ -177,6 +189,8 @@ impl Resources {
             sword_sound,
             pickup_sound,
             items_textures,
+            fx_cannonball_hit,
+            fx_explosion_particles,
         })
     }
 }

@@ -16,7 +16,7 @@ pub async fn game_type() -> GameType {
 
     loop {
         let mut res = None;
-        let mut gui_resources = storage::get_mut::<GuiResources>();
+        let gui_resources = storage::get_mut::<GuiResources>();
 
         root_ui().push_skin(&gui_resources.skins.login_skin);
 

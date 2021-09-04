@@ -15,6 +15,7 @@ struct Shake {
     frequency: f32, // 1 is pretty standard, .2 is a punch (with 10 frames of shake it oscillates about max twice). With .5 it's more of a rumble
 }
 
+#[allow(dead_code)]
 enum ShakeType {
     Noise,
     Sinusodial,
@@ -46,6 +47,7 @@ impl Camera {
     }
 }
 
+#[allow(dead_code)]
 impl Camera {
     pub fn shake_noise(&mut self, magnitude: f32, length: i32, frequency: f32) {
         self.shake.push(Shake {

@@ -9,10 +9,7 @@ use crate::{
     nodes::Player,
 };
 
-use std::{
-    net::UdpSocket,
-    sync::{mpsc, Arc, Mutex},
-};
+use std::{net::UdpSocket, sync::mpsc};
 
 use nanoserde::{DeBin, SerBin};
 
@@ -74,7 +71,7 @@ impl Network {
         self_addr: &str,
         other_addr: &str,
     ) -> Network {
-        let mut self_socket = UdpSocket::bind(self_addr).unwrap();
+        let self_socket = UdpSocket::bind(self_addr).unwrap();
         self_socket.connect(other_addr).unwrap();
 
         let (tx, rx) = mpsc::channel::<Message>();
@@ -92,7 +89,7 @@ impl Network {
                         Ok((count, _)) => {
                             assert!(count < 256);
                             let message = DeBin::deserialize_bin(&data[0..count]).unwrap();
-                            tx1.send(message);
+                            tx1.send(message).unwrap();
                         }
                     }
                 }
@@ -105,7 +102,7 @@ impl Network {
             loop {
                 if let Ok(message) = rx.recv() {
                     let data = SerBin::serialize_bin(&message);
-                    self_socket.send_to(&data, &other_addr);
+                    self_socket.send_to(&data, &other_addr).unwrap();
                 }
             }
         });
@@ -148,11 +145,13 @@ impl Node for Network {
         // go through the whole frames_buffer and re-send frames missing on remote fish
         for i in 0..Self::CONSTANT_DELAY {
             if node.frames_buffer[i][remote_id].is_none() {
-                node.tx.send(Message::Input {
-                    frame: node.ack_frame,
-                    pos: i as u8,
-                    input: node.frames_buffer[i][node.self_id].unwrap(),
-                });
+                node.tx
+                    .send(Message::Input {
+                        frame: node.ack_frame,
+                        pos: i as u8,
+                        input: node.frames_buffer[i][node.self_id].unwrap(),
+                    })
+                    .unwrap();
             }
         }
 
@@ -187,10 +186,12 @@ impl Node for Network {
         }
 
         // notify the other fish on the state of our input buffer
-        node.tx.send(Message::Ack {
-            frame: node.ack_frame,
-            ack: remote_inputs_ack(remote_id, &node.frames_buffer),
-        });
+        node.tx
+            .send(Message::Ack {
+                frame: node.ack_frame,
+                ack: remote_inputs_ack(remote_id, &node.frames_buffer),
+            })
+            .unwrap();
 
         if remote_ack & 1 == 0 {
             println!("Not enough inputs received, pausing game to wait");

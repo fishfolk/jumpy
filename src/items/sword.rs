@@ -5,7 +5,7 @@ use macroquad::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
         coroutines::{start_coroutine, wait_seconds, Coroutine},
-        scene::{self, Handle, HandleUntyped, Node, RefMut},
+        scene::{self, Handle, HandleUntyped, RefMut},
     },
     prelude::*,
 };
@@ -215,7 +215,7 @@ impl Sword {
                     if Rect::new(other.body.pos.x, other.body.pos.y, 20., 64.)
                         .overlaps(&sword_hit_box)
                     {
-                        let cam = scene::find_node_by_type::<crate::nodes::Camera>()
+                        scene::find_node_by_type::<crate::nodes::Camera>()
                             .unwrap()
                             .shake_noise(2., 6, 1.0);
                         other.kill(!player.body.facing);
@@ -287,7 +287,8 @@ impl Sword {
         }
 
         fn collider(node: HandleUntyped) -> Rect {
-            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Sword>();
+            let node = scene::get_untyped_node(node).unwrap().to_typed::<Sword>();
+
             Rect::new(
                 node.body.pos.x,
                 node.body.pos.y,
@@ -308,12 +309,12 @@ impl Sword {
 
     fn physics_capabilities() -> capabilities::PhysicsObject {
         fn active(handle: HandleUntyped) -> bool {
-            let mut node = scene::get_untyped_node(handle).unwrap().to_typed::<Sword>();
+            let node = scene::get_untyped_node(handle).unwrap().to_typed::<Sword>();
 
             node.throwable.owner.is_none()
         }
         fn collider(handle: HandleUntyped) -> Rect {
-            let mut node = scene::get_untyped_node(handle).unwrap().to_typed::<Sword>();
+            let node = scene::get_untyped_node(handle).unwrap().to_typed::<Sword>();
 
             Rect::new(
                 node.body.pos.x,

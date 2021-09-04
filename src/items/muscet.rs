@@ -1,6 +1,5 @@
 use macroquad::{
     audio::play_sound_once,
-    color,
     experimental::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
@@ -41,7 +40,7 @@ impl MuscetBullet {
     }
 }
 impl scene::Node for MuscetBullet {
-    fn draw(mut node: RefMut<Self>) {
+    fn draw(node: RefMut<Self>) {
         draw_circle(
             node.bullet.pos.x,
             node.bullet.pos.y,
@@ -74,9 +73,7 @@ impl scene::Node for Muscet {
         node.provides(Self::physics_capabilities());
     }
 
-    fn draw(mut node: RefMut<Self>) {
-        let resources = storage::get_mut::<Resources>();
-
+    fn draw(node: RefMut<Self>) {
         node.muscet_sprite
             .draw(node.body.pos, node.body.facing, node.body.angle);
 
@@ -292,7 +289,7 @@ impl Muscet {
         }
 
         fn collider(node: HandleUntyped) -> Rect {
-            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Muscet>();
+            let node = scene::get_untyped_node(node).unwrap().to_typed::<Muscet>();
             Rect::new(
                 node.body.pos.x,
                 node.body.pos.y,
@@ -312,14 +309,14 @@ impl Muscet {
     }
     fn physics_capabilities() -> capabilities::PhysicsObject {
         fn active(handle: HandleUntyped) -> bool {
-            let mut node = scene::get_untyped_node(handle)
+            let node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<Muscet>();
 
             node.throwable.owner.is_none()
         }
         fn collider(handle: HandleUntyped) -> Rect {
-            let mut node = scene::get_untyped_node(handle)
+            let node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<Muscet>();
 

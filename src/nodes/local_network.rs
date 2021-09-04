@@ -7,11 +7,7 @@
 
 use macroquad::experimental::scene::{self, Handle, Node, NodeWith, RefMut};
 
-use crate::{
-    capabilities::NetworkReplicate,
-    input::{self, Input},
-    nodes::Player,
-};
+use crate::{capabilities::NetworkReplicate, input, nodes::Player};
 
 pub struct LocalNetwork {
     player1: Handle<Player>,
@@ -25,7 +21,7 @@ impl LocalNetwork {
 }
 
 impl Node for LocalNetwork {
-    fn fixed_update(mut node: RefMut<Self>) {
+    fn fixed_update(node: RefMut<Self>) {
         scene::get_node(node.player1).apply_input(input::collect_input(0));
         scene::get_node(node.player2).apply_input(input::collect_input(1));
 

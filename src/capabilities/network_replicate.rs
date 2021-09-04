@@ -1,12 +1,4 @@
-use crate::nodes::Player;
-
-use macroquad::{
-    experimental::{
-        coroutines::Coroutine,
-        scene::{CapabilityTrait, Handle, HandleUntyped, NodeWith},
-    },
-    math::{Rect, Vec2},
-};
+use macroquad::experimental::scene::HandleUntyped;
 
 #[derive(Clone, Copy)]
 pub struct NetworkReplicate {

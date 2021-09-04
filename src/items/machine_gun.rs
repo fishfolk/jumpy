@@ -1,6 +1,5 @@
 use macroquad::{
     audio::play_sound_once,
-    color,
     experimental::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
@@ -11,7 +10,7 @@ use macroquad::{
 };
 
 use crate::{
-    capabilities::{self, PhysicsObject, Weapon},
+    capabilities,
     components::{Bullet, GunlikeAnimation, PhysicsBody, ThrowableItem},
     nodes::Player,
     Resources,
@@ -41,7 +40,7 @@ impl MachinegunBullet {
     }
 }
 impl scene::Node for MachinegunBullet {
-    fn draw(mut node: RefMut<Self>) {
+    fn draw(node: RefMut<Self>) {
         draw_circle(
             node.bullet.pos.x,
             node.bullet.pos.y,
@@ -160,7 +159,7 @@ impl MachineGun {
                 let resources = storage::get_mut::<Resources>();
                 play_sound_once(resources.shoot_sound);
 
-                let mut node = &mut *scene::get_node(node);
+                let node = &mut *scene::get_node(node);
                 let player = &mut *scene::get_node(player);
 
                 scene::add_node(MachinegunBullet::new(
@@ -255,7 +254,7 @@ impl MachineGun {
         }
 
         fn collider(node: HandleUntyped) -> Rect {
-            let mut node = scene::get_untyped_node(node)
+            let node = scene::get_untyped_node(node)
                 .unwrap()
                 .to_typed::<MachineGun>();
             Rect::new(
@@ -278,14 +277,14 @@ impl MachineGun {
 
     fn physics_capabilities() -> capabilities::PhysicsObject {
         fn active(handle: HandleUntyped) -> bool {
-            let mut node = scene::get_untyped_node(handle)
+            let node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<MachineGun>();
 
             node.throwable.owner.is_none()
         }
         fn collider(handle: HandleUntyped) -> Rect {
-            let mut node = scene::get_untyped_node(handle)
+            let node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<MachineGun>();
 
@@ -331,9 +330,7 @@ impl Node for MachineGun {
         node.throwable.update(&mut node.body, true);
     }
 
-    fn draw(mut node: RefMut<Self>) {
-        let resources = storage::get_mut::<Resources>();
-
+    fn draw(node: RefMut<Self>) {
         node.sprite
             .draw(node.body.pos, node.body.facing, node.body.angle);
 

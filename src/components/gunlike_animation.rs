@@ -18,7 +18,7 @@
 
 use macroquad::{
     color,
-    experimental::animation::{AnimatedSprite, Animation},
+    experimental::animation::AnimatedSprite,
     math::Vec2,
     texture::{draw_texture_ex, DrawTextureParams, Texture2D},
 };

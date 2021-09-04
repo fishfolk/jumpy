@@ -6,12 +6,15 @@ use macroquad::{
 
 use crate::gui::GuiResources;
 
+// pause menu is temporary not used by the battle, but will be back soon
+#[allow(dead_code)]
 pub enum PauseResult {
     Quit,
     Close,
     Nothing,
 }
 
+#[allow(dead_code)]
 pub fn gui() -> PauseResult {
     let gui_resources = storage::get::<GuiResources>();
 

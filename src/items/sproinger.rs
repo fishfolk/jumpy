@@ -5,13 +5,13 @@ use macroquad::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
         coroutines::{start_coroutine, wait_seconds, Coroutine},
-        scene::{self, Handle, HandleUntyped, RefMut},
+        scene::{self, HandleUntyped, RefMut},
         state_machine::{State, StateMachine},
     },
     prelude::*,
 };
 
-use crate::{capabilities::PhysicsObject, components::PhysicsBody, Resources};
+use crate::{capabilities::PhysicsObject, Resources};
 
 use crate::capabilities::PhysicsObjectTrait;
 
@@ -96,7 +96,7 @@ impl Sproinger {
         }
     }
 
-    pub fn update_jump(node: &mut RefMut<Self>, _dt: f32) {}
+    pub fn update_jump(_node: &mut RefMut<Self>, _dt: f32) {}
 
     fn jump_coroutine(node: &mut RefMut<Self>) -> Coroutine {
         let node_handle = node.handle();

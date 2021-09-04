@@ -1,11 +1,6 @@
-use crate::nodes::Player;
-
 use macroquad::{
-    experimental::{
-        coroutines::Coroutine,
-        scene::{CapabilityTrait, Handle, HandleUntyped, NodeWith},
-    },
-    math::{Rect, Vec2},
+    experimental::scene::{CapabilityTrait, HandleUntyped, NodeWith},
+    math::Rect,
 };
 
 /// Anything that can be thrown, pushed, dragged etc

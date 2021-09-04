@@ -408,7 +408,7 @@ impl Player {
         node.body.speed.x = 0.0;
     }
 
-    fn update_slide(node: &mut RefMut<Player>, _dt: f32) {}
+    fn update_slide(_node: &mut RefMut<Player>, _dt: f32) {}
 
     fn slide_coroutine(node: &mut RefMut<Player>) -> Coroutine {
         let handle = node.handle();
@@ -782,11 +782,11 @@ impl scene::Node for Player {
 
 impl Player {
     fn physics_capabilities() -> PhysicsObject {
-        fn active(handle: HandleUntyped) -> bool {
+        fn active(_: HandleUntyped) -> bool {
             true
         }
         fn collider(handle: HandleUntyped) -> Rect {
-            let mut node = scene::get_untyped_node(handle)
+            let node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<Player>();
 
@@ -820,7 +820,7 @@ impl Player {
 
     fn network_capabilities() -> NetworkReplicate {
         fn network_update(handle: HandleUntyped) {
-            let mut node = scene::get_untyped_node(handle)
+            let node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<Player>();
             Player::network_update(node);

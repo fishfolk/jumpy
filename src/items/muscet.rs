@@ -154,7 +154,7 @@ impl Muscet {
                 0.0,
                 vec2(Self::COLLIDER_WIDTH, Self::COLLIDER_HEIGHT),
             ),
-            throwable: ThrowableItem::new(),
+            throwable: ThrowableItem::default(),
             bullets: 3,
         })
         .untyped()
@@ -301,10 +301,10 @@ impl Muscet {
         capabilities::Weapon {
             collider,
             mount,
-            throw,
-            shoot,
             is_thrown,
             pick_up,
+            throw,
+            shoot,
         }
     }
     fn physics_capabilities() -> capabilities::PhysicsObject {

@@ -153,6 +153,7 @@ impl Resources {
             }
         }
 
+        #[allow(clippy::inconsistent_struct_constructor)]
         Ok(Resources {
             hit_fxses,
             explosion_fxses,
@@ -190,7 +191,7 @@ async fn game(map: &str, game_type: GameType) {
         }
     });
 
-    while resources_loading.is_done() == false {
+    while !resources_loading.is_done() {
         clear_background(BLACK);
         draw_text(
             &format!(

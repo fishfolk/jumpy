@@ -85,8 +85,8 @@ impl NoiseGenerator {
         let x = x - x_f as f32;
         let y = y - y_f as f32;
 
-        x_f = x_f & 255;
-        y_f = y_f & 255;
+        x_f &= 255;
+        y_f &= 255;
 
         let n00 = NoiseGenerator::dot2(self.grad_p[x_f as usize + self.perm[y_f as usize]], x, y);
         let n01 = NoiseGenerator::dot2(
@@ -115,14 +115,14 @@ impl NoiseGenerator {
     }
 
     fn dot2(tuple: (i32, i32, i32), x: f32, y: f32) -> f32 {
-        return tuple.0 as f32 * x + tuple.1 as f32 * y;
+        tuple.0 as f32 * x + tuple.1 as f32 * y
     }
 
     fn fade(t: f32) -> f32 {
-        return t * t * t * (t * (t * 6. - 15.) + 10.);
+        t * t * t * (t * (t * 6. - 15.) + 10.)
     }
 
     fn lerp(a: f32, b: f32, t: f32) -> f32 {
-        return (1. - t) * a + t * b;
+        (1. - t) * a + t * b
     }
 }

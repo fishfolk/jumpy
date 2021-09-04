@@ -64,7 +64,7 @@ impl PhysicsBody {
         self.pos = collision_world.actor_pos(self.collider);
         self.last_frame_on_ground = self.on_ground;
         self.on_ground = collision_world.collide_check(self.collider, self.pos + vec2(0., 1.));
-        if self.on_ground == false && self.have_gravity {
+        if !self.on_ground && self.have_gravity {
             self.speed.y += Self::GRAVITY * get_frame_time();
         }
         if !collision_world.move_h(self.collider, self.speed.x * get_frame_time()) {
@@ -77,7 +77,7 @@ impl PhysicsBody {
     }
 
     pub fn update_throw(&mut self) {
-        if self.on_ground == false {
+        if !self.on_ground {
             self.angle += self.speed.x.abs() * 0.00045 + self.speed.y.abs() * 0.00015;
 
             self.speed.y += Self::GRAVITY * get_frame_time();

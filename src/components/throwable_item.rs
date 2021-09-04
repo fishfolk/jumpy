@@ -8,15 +8,12 @@ use macroquad::{
 
 use crate::{components::PhysicsBody, nodes::Player, Resources};
 
+#[derive(Default)]
 pub struct ThrowableItem {
     pub owner: Option<Handle<Player>>,
 }
 
 impl ThrowableItem {
-    pub fn new() -> ThrowableItem {
-        ThrowableItem { owner: None }
-    }
-
     pub fn thrown(&self) -> bool {
         self.owner.is_none()
     }

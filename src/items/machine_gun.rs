@@ -110,7 +110,7 @@ impl MachineGun {
         scene::add_node(MachineGun {
             sprite,
             body,
-            throwable: ThrowableItem::new(),
+            throwable: ThrowableItem::default(),
             bullets: Self::MAX_BULLETS,
         })
         .untyped()
@@ -268,10 +268,10 @@ impl MachineGun {
         capabilities::Weapon {
             collider,
             mount,
-            throw,
-            shoot,
             is_thrown,
             pick_up,
+            throw,
+            shoot,
         }
     }
 

@@ -75,7 +75,7 @@ impl scene::Node for Sword {
                 DrawTextureParams {
                     dest_size: Some(vec2(65., 17.)),
                     flip_x: !sword.body.facing,
-                    rotation: rotation, //get_time() as _,
+                    rotation, //get_time() as _,
                     ..Default::default()
                 },
             );
@@ -178,7 +178,7 @@ impl Sword {
                 std::f32::consts::PI / 4. + 0.3,
                 vec2(Self::COLLIDER_WIDTH, Self::COLLIDER_HEIGHT),
             ),
-            throwable: ThrowableItem::new(),
+            throwable: ThrowableItem::default(),
             origin_pos: pos,
             deadly_dangerous: false,
             spawn_pos: (pos, true),
@@ -300,10 +300,10 @@ impl Sword {
         capabilities::Weapon {
             collider,
             mount,
-            throw,
-            shoot,
             is_thrown,
             pick_up,
+            throw,
+            shoot,
         }
     }
 

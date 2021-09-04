@@ -51,6 +51,8 @@ fn remote_inputs_ack(
     buffer: &[[Option<Input>; 2]; Network::CONSTANT_DELAY as usize],
 ) -> u8 {
     let mut ack = 0;
+
+    #[allow(clippy::needless_range_loop)]
     for i in 0..Network::CONSTANT_DELAY as usize {
         if buffer[i][remote_player_id].is_some() {
             ack |= 1 << i;
@@ -102,7 +104,7 @@ impl Network {
             loop {
                 if let Ok(message) = rx.recv() {
                     let data = SerBin::serialize_bin(&message);
-                    self_socket.send_to(&data, &other_addr).unwrap();
+                    let _ = self_socket.send_to(&data, &other_addr);
                 }
             }
         });
@@ -115,6 +117,7 @@ impl Network {
         // But with pre-filled buffer we can avoid any special-case logic
         // at the start of the game and later on will just wait for remote
         // fish to fill up their part of the buffer
+        #[allow(clippy::needless_range_loop)]
         for i in 0..Self::CONSTANT_DELAY {
             frames_buffer[i][controller_id as usize] = Some(Input::default());
         }

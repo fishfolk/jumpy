@@ -148,7 +148,7 @@ pub async fn location_select() -> String {
                 if is_hovered {
                     level.size = level.size * 0.8 + 1.0 * 0.2;
                 } else {
-                    level.size = level.size * 0.9;
+                    level.size = level.size * 0.9 + 0.0;
                 }
 
                 if ui::widgets::Button::new(level.preview)

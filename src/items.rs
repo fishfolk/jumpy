@@ -33,7 +33,7 @@ pub struct Item {
     pub fxses: &'static [(&'static str, &'static str)],
 }
 
-pub const ITEMS: &'static [Item] = &[
+pub const ITEMS: &[Item] = &[
     Item {
         tiled_name: "sword",
         constructor: sword::Sword::spawn,

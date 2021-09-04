@@ -312,6 +312,7 @@ impl Player {
                 // score_counter.count_loss(node.controller_id)
             }
 
+            #[allow(clippy::blocks_in_if_conditions)]
             if {
                 let node = scene::get_node(handle);
                 node.body.pos.y < map_bottom
@@ -323,7 +324,7 @@ impl Player {
                 while {
                     let node = scene::get_node(handle);
 
-                    (node.body.on_ground || node.body.pos.y > map_bottom) == false
+                    !(node.body.on_ground || node.body.pos.y > map_bottom)
                 } {
                     next_frame().await;
                 }
@@ -459,6 +460,7 @@ impl Player {
                 node.body.facing = false;
             }
         } else {
+            //
             if node.input.right {
                 node.body.speed.x = Self::RUN_SPEED;
                 node.body.facing = true;
@@ -483,6 +485,7 @@ impl Player {
         } else if node.is_crouched {
             node.fish_sprite.set_animation(5);
         } else {
+            //
             if node.input.right || node.input.left {
                 node.fish_sprite.set_animation(1);
             } else {
@@ -491,12 +494,13 @@ impl Player {
         }
 
         // if in jump and want to jump again
-        if node.body.on_ground == false
+        if !node.body.on_ground
             && node.input.jump
             && !node.last_frame_input.jump
             && node.jump_grace_timer <= 0.0
         {
-            if node.was_floating == false {
+            //
+            if !node.was_floating {
                 node.floating = true;
                 node.was_floating = true;
                 node.body.have_gravity = false;
@@ -530,7 +534,7 @@ impl Player {
             node.body.descent();
         }
 
-        if node.input.down == false
+        if !node.input.down
             && node.input.jump
             && !node.last_frame_input.jump
             && node.jump_grace_timer > 0.
@@ -542,7 +546,7 @@ impl Player {
 
         if node.input.throw && !node.last_frame_input.throw {
             if let Some(weapon) = node.weapon.as_mut() {
-                weapon.throw(node.input.down == false);
+                weapon.throw(!node.input.down);
                 node.weapon = None;
 
                 // when the flocating fish is throwing a weapon and keeps
@@ -574,6 +578,7 @@ impl Player {
         }
 
         if node.input.fire {
+            //
             if node.weapon.is_some() {
                 node.state_machine.set_state(Self::ST_SHOOT);
                 node.floating = false;
@@ -684,6 +689,7 @@ impl Player {
                 let other_hitbox = other.get_hitbox();
                 let is_overlapping = hitbox.overlaps(&other_hitbox);
                 if is_overlapping {
+                    //
                     if hitbox.y + 60.0 < other_hitbox.y + Self::HEAD_THRESHOLD {
                         let resources = storage::get_mut::<Resources>();
                         play_sound_once(resources.jump_sound);
@@ -732,6 +738,7 @@ impl scene::Node for Player {
                     resources.whale_blue
                 }
             } else {
+                //
                 if node.can_head_boink {
                     resources.whale_boots_green
                 } else {

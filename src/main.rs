@@ -16,7 +16,6 @@ use particles::EmittersCache;
 use std::collections::HashMap;
 
 mod capabilities;
-mod circle;
 mod gui;
 mod input;
 mod items;

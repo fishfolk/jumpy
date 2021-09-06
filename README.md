@@ -37,7 +37,7 @@ Before committing and opening a PR, please run the following commands and follow
 - https://macroquad.rs/tutorials/fish-tutorial/
 - https://not-fl3.github.io/platformer-book/intro.html
 - https://sokoban.iolivia.me/ (we do not use an ECS)
-- https://pragprog.com/titles/hwrust/hands-on-rust/ (ask Erlend for a free copy)
+- https://pragprog.com/titles/hwrust/hands-on-rust/
 
 ## Install & play
 

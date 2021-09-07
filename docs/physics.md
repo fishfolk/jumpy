@@ -2,9 +2,11 @@
 
 As you might already know, Fish Fight is a homage to the excellent Duck Game and thus we have chosen to replicate the rather simple and straight forward linear physics found in that game. It follows standard platformer physics, with force being translated to two-dimensional velocity, acting against gravity and drag, every physics update (`fixed_update`).
 
+[The same physics system is used in Towerfall and Celeste.](https://maddythorson.medium.com/celeste-and-towerfall-physics-d24bd2ae0fc5)
+
 To learn more about basic game physics, as they are implemented in Fish Fight, you can explore the following sources:  
 
-`[Links to sources]`
+`[Ask us about missing links!]`
 
 ## Fish Fight's physics implementation
 

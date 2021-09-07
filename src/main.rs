@@ -40,7 +40,7 @@ struct Resources {
     hit_fxses: EmittersCache,
     explosion_fxses: EmittersCache,
     life_ui_explosion_fxses: EmittersCache,
-    fx_cannonball_hit: Emitter,
+    fx_explosion_fire: Emitter,
     fx_explosion_particles: EmittersCache,
     fx_smoke: Emitter,
     tiled_map: tiled::Map,
@@ -140,7 +140,7 @@ impl Resources {
             EmittersCache::new(nanoserde::DeJson::deserialize_json(EXPLOSION_FX).unwrap());
         let life_ui_explosion_fxses =
             EmittersCache::new(nanoserde::DeJson::deserialize_json(LIFE_UI_FX).unwrap());
-        let fx_cannonball_hit =
+        let fx_explosion_fire =
             Emitter::new(nanoserde::DeJson::deserialize_json(CANNONBALL_HIT_FX).unwrap());
         let fx_explosion_particles =
             EmittersCache::new(nanoserde::DeJson::deserialize_json(EXPLOSION_PARTICLES).unwrap());
@@ -189,7 +189,7 @@ impl Resources {
             sword_sound,
             pickup_sound,
             items_textures,
-            fx_cannonball_hit,
+            fx_explosion_fire,
             fx_explosion_particles,
         })
     }

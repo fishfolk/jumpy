@@ -21,7 +21,7 @@ impl scene::Node for Fxses {
         resources.fx_smoke.draw(Vec2::new(0., 0.));
         resources.hit_fxses.draw();
         resources.explosion_fxses.draw();
-        resources.fx_cannonball_hit.draw(Vec2::new(0., 0.));
+        resources.fx_explosion_fire.draw(Vec2::new(0., 0.));
         resources.fx_explosion_particles.draw();
 
         for fx in resources.items_fxses.values_mut() {

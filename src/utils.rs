@@ -18,7 +18,7 @@ pub fn explode(position: Vec2, radius: f32) {
         r += 10.0 / (r + 1.);
         let angle = gen_range(0.0, f32::consts::PI * 2.);
         resources
-            .fx_cannonball_hit
+            .fx_explosion_fire
             .emit(position + Vec2::new(angle.cos(), angle.sin()) * r, 1); //Explosion
     }
 

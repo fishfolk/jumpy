@@ -777,11 +777,11 @@ impl scene::Node for Player {
     }
 
     fn update(mut node: RefMut<Self>) {
-        if is_key_pressed(KeyCode::B) && node.controller_id == 0 {
+        if is_key_pressed(KeyCode::Key0) && node.controller_id == 0 {
             node.ai_enabled ^= true;
         }
 
-        if is_key_pressed(KeyCode::N) && node.controller_id == 1 {
+        if is_key_pressed(KeyCode::Key1) && node.controller_id == 1 {
             node.ai_enabled ^= true;
         }
     }

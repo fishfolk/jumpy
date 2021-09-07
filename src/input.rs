@@ -18,24 +18,26 @@ pub fn collect_input(controller_id: usize) -> Input {
     let mut input = Input::default();
 
     if controller_id == 1 {
-        input.jump = is_key_down(KeyCode::Space) || is_key_down(KeyCode::W);
-        input.throw = is_key_down(KeyCode::R);
-        input.fire =
-            is_key_down(KeyCode::LeftControl) || is_key_down(KeyCode::F) || is_key_down(KeyCode::L);
+        input.throw = is_key_down(KeyCode::C);
+        input.fire = is_key_down(KeyCode::V) || is_key_down(KeyCode::LeftControl);
 
+        input.jump = is_key_down(KeyCode::W) || is_key_down(KeyCode::Space);
         input.left = is_key_down(KeyCode::A);
-        input.right = is_key_down(KeyCode::D);
         input.down = is_key_down(KeyCode::S);
+        input.right = is_key_down(KeyCode::D);
 
         input.slide = is_key_down(KeyCode::C);
     }
 
     if controller_id == 0 {
         input.throw = is_key_down(KeyCode::K);
+        input.fire = is_key_down(KeyCode::L);
+
         input.jump = is_key_down(KeyCode::Up);
         input.left = is_key_down(KeyCode::Left);
-        input.right = is_key_down(KeyCode::Right);
         input.down = is_key_down(KeyCode::Down);
+        input.right = is_key_down(KeyCode::Right);
+
         input.slide = is_key_down(KeyCode::RightControl);
     }
 

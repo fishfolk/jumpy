@@ -45,3 +45,18 @@ Before committing and opening a PR, please run the following commands and follow
 2. `cargo run`
 
 We'll start distributing executables shortly!
+
+## Default key bindings
+
+For player 0:
+- movement: arrow keys `↑`, `←`, `↓`, `→`
+- pick/drop: `K`
+- attack: `L`
+- toggle AI: `0`
+
+For player 1:
+- movement: `W`, `A`, `S`, `D` (& `Space` for jump)
+- pick/drop: `C`
+- attack: `V` & `LeftCtrl`
+- toogle AI: `1`
+

@@ -486,7 +486,7 @@ impl Player {
 
         // Just adding this here for the SFX for the time being
         // - Arc
-        if node.body.on_ground && node.body.last_frame_on_ground == false {
+        if node.body.on_ground && !node.body.last_frame_on_ground {
             {
                 let resources = storage::get::<Resources>();
                 play_sound_once(resources.player_landing_sound);

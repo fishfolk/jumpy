@@ -566,7 +566,6 @@ impl Player {
                     play_sound_once(resources.player_throw_sound);
                 }
 
-
                 // when the flocating fish is throwing a weapon and keeps
                 // floating it looks less cool than if its stop floating and
                 // falls, but idk

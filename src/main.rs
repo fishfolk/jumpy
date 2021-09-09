@@ -53,6 +53,19 @@ struct Resources {
     shoot_sound: audio::Sound,
     sword_sound: audio::Sound,
     pickup_sound: audio::Sound,
+    swing_sound: audio::Sound,
+    gun_empty_sound: audio::Sound,
+    gun_emptyb_sound: audio::Sound,
+    bullet_hit_dull_sound: audio::Sound,
+    bullet_hit_metal_sound: audio::Sound,
+    explode_m_sound: audio::Sound,
+    heavy_landing_sound: audio::Sound,
+    light_landing_sound: audio::Sound,
+    player_landing_sound: audio::Sound,
+    player_throw_sound: audio::Sound,
+    player_slip_sound: audio::Sound,
+    player_die_sound: audio::Sound,
+    mine_set_sound: audio::Sound,
     items_textures: HashMap<String, Texture2D>,
     items_fxses: HashMap<String, EmittersCache>,
 }
@@ -97,6 +110,19 @@ impl Resources {
         let shoot_sound = load_sound("assets/sounds/shoot.ogg").await?;
         let sword_sound = load_sound("assets/sounds/sword.wav").await?;
         let pickup_sound = load_sound("assets/sounds/pickup.wav").await?;
+        let swing_sound = load_sound("assets/sounds/swing.wav").await?;
+        let gun_empty_sound = load_sound("assets/sounds/gun_empty.wav").await?;
+        let gun_emptyb_sound = load_sound("assets/sounds/gun_empty_b.wav").await?;
+        let bullet_hit_dull_sound = load_sound("assets/sounds/bullet_hit_dull.wav").await?;
+        let bullet_hit_metal_sound = load_sound("assets/sounds/bullet_hit_metal.wav").await?;
+        let explode_m_sound = load_sound("assets/sounds/explode_m.wav").await?;
+        let heavy_landing_sound = load_sound("assets/sounds/land_heavy.wav").await?;
+        let light_landing_sound = load_sound("assets/sounds/land_light.wav").await?;
+        let player_landing_sound = load_sound("assets/sounds/player_landing.wav").await?;
+        let player_throw_sound = load_sound("assets/sounds/throw_noiz.wav").await?;
+        let player_slip_sound = load_sound("assets/sounds/player_slip.wav").await?;
+        let player_die_sound = load_sound("assets/sounds/fish_fillet.wav").await?;
+        let mine_set_sound = load_sound("assets/sounds/mine_set.wav").await?;
 
         let tiled_map_json = load_string(map).await.unwrap();
         let tiled_map = tiled::load_map(
@@ -175,6 +201,19 @@ impl Resources {
             shoot_sound,
             sword_sound,
             pickup_sound,
+            swing_sound,
+            gun_empty_sound,
+            gun_emptyb_sound,
+            bullet_hit_dull_sound,
+            bullet_hit_metal_sound,
+            explode_m_sound,
+            heavy_landing_sound,
+            light_landing_sound,
+            player_landing_sound,
+            player_throw_sound,
+            player_slip_sound,
+            player_die_sound,
+            mine_set_sound,
             items_textures,
         })
     }

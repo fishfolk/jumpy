@@ -275,6 +275,10 @@ impl Player {
             self.body.facing = direction;
             if self.state_machine.state() != Self::ST_DEATH {
                 self.state_machine.set_state(Self::ST_DEATH);
+                {
+                    let resources = storage::get::<Resources>();
+                    play_sound_once(resources.player_die_sound);
+                }
             }
         }
     }
@@ -480,6 +484,15 @@ impl Player {
                 .shake_sinusodial(0.3, 6, 0.5, f32::consts::PI / 2.);
         }*/
 
+        // Just adding this here for the SFX for the time being
+        // - Arc
+        if node.body.on_ground && node.body.last_frame_on_ground == false {
+            {
+                let resources = storage::get::<Resources>();
+                play_sound_once(resources.player_landing_sound);
+            }
+        }
+
         if node.floating {
             node.fish_sprite.set_animation(4);
         } else if node.is_crouched {
@@ -548,6 +561,11 @@ impl Player {
             if let Some(weapon) = node.weapon.as_mut() {
                 weapon.throw(!node.input.down);
                 node.weapon = None;
+                {
+                    let resources = storage::get::<Resources>();
+                    play_sound_once(resources.player_throw_sound);
+                }
+
 
                 // when the flocating fish is throwing a weapon and keeps
                 // floating it looks less cool than if its stop floating and

@@ -53,6 +53,9 @@ struct Resources {
     shoot_sound: audio::Sound,
     sword_sound: audio::Sound,
     pickup_sound: audio::Sound,
+    player_landing_sound: audio::Sound,
+    player_throw_sound: audio::Sound,
+    player_die_sound: audio::Sound,
     items_textures: HashMap<String, Texture2D>,
     items_fxses: HashMap<String, EmittersCache>,
 }
@@ -97,6 +100,9 @@ impl Resources {
         let shoot_sound = load_sound("assets/sounds/shoot.ogg").await?;
         let sword_sound = load_sound("assets/sounds/sword.wav").await?;
         let pickup_sound = load_sound("assets/sounds/pickup.wav").await?;
+        let player_landing_sound = load_sound("assets/sounds/player_landing.wav").await?;
+        let player_throw_sound = load_sound("assets/sounds/throw_noiz.wav").await?;
+        let player_die_sound = load_sound("assets/sounds/fish_fillet.wav").await?;
 
         let tiled_map_json = load_string(map).await.unwrap();
         let tiled_map = tiled::load_map(
@@ -175,6 +181,9 @@ impl Resources {
             shoot_sound,
             sword_sound,
             pickup_sound,
+            player_landing_sound,
+            player_throw_sound,
+            player_die_sound,
             items_textures,
         })
     }

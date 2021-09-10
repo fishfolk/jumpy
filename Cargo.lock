@@ -115,7 +115,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "fishgame"
+name = "fishfight"
 version = "0.2.0"
 dependencies = [
  "macroquad",

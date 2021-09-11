@@ -48,15 +48,21 @@ We'll start distributing executables shortly!
 
 ## Default key bindings
 
-For player 0:
+Keyboard left:
 - movement: arrow keys `↑`, `←`, `↓`, `→`
 - pick/drop: `K`
 - attack: `L`
 - toggle AI: `0`
 
-For player 1:
+Keyboard right:
 - movement: `W`, `A`, `S`, `D` (& `Space` for jump)
 - pick/drop: `C`
 - attack: `V` & `LeftCtrl`
 - toogle AI: `1`
 
+Gamepad:
+- movement: direction axis
+- pick/drop: `X`
+- attack: `B`
+- jump: `A`
+- slide: `Down` + `Y`

@@ -81,6 +81,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3d7b894f5411737b7867f4827955924d7c254fc9f4d91a6aad6b097804b1018b"
 
 [[package]]
+name = "core-foundation"
+version = "0.6.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "25b9e03f145fd4f2bf705e07b900cd41fc636598fe5dc452fd0db1441c3f496d"
+dependencies = [
+ "core-foundation-sys",
+ "libc",
+]
+
+[[package]]
+name = "core-foundation-sys"
+version = "0.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e7ca8a5221364ef15ce201e8ed2f609fc312682a8f4e0e3d4aa5879764e0fa3b"
+
+[[package]]
 name = "crc32fast"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -124,6 +140,7 @@ dependencies = [
  "macroquad-profiler",
  "macroquad-tiled",
  "nanoserde",
+ "quad-gamepad",
 ]
 
 [[package]]
@@ -369,6 +386,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c66c2f04a6946293477973d85adc251d502da51c57b08cd9c997f0cfd8dcd4b5"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "quad-gamepad"
+version = "0.2.0-alpha"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f05bac7eb09befe62a72a883ec924d817dbf92a09a24e1b1657c7a0535f8502c"
+dependencies = [
+ "core-foundation",
+ "libc",
+ "winapi",
 ]
 
 [[package]]

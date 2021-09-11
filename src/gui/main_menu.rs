@@ -4,7 +4,7 @@ use macroquad::{
     ui::{self, hash, root_ui, widgets},
 };
 
-use crate::{gui::GuiResources, GameType};
+use crate::{gui::GuiResources, input::InputScheme, GameType};
 
 pub async fn game_type() -> GameType {
     let mut self_addr = "127.0.0.1:2323".to_string();
@@ -14,9 +14,38 @@ pub async fn game_type() -> GameType {
     let window_width = 700.;
     let window_height = 400.;
 
+    let mut players = vec![];
+
     loop {
         let mut res = None;
-        let gui_resources = storage::get_mut::<GuiResources>();
+        let mut gui_resources = storage::get_mut::<GuiResources>();
+
+        gui_resources.gamepads.update();
+
+        if players.len() < 2 {
+            if is_key_pressed(KeyCode::V) {
+                //
+                if !players.contains(&InputScheme::KeyboardLeft) {
+                    players.push(InputScheme::KeyboardLeft);
+                }
+            }
+            if is_key_pressed(KeyCode::L) {
+                //
+                if !players.contains(&InputScheme::KeyboardRight) {
+                    players.push(InputScheme::KeyboardRight);
+                }
+            }
+            for ix in 0..quad_gamepad::MAX_DEVICES {
+                let state = gui_resources.gamepads.state(ix);
+
+                if state.digital_state[quad_gamepad::GamepadButton::Start as usize] {
+                    //
+                    if !players.contains(&InputScheme::Gamepad(ix)) {
+                        players.push(InputScheme::Gamepad(ix));
+                    }
+                }
+            }
+        }
 
         root_ui().push_skin(&gui_resources.skins.login_skin);
 
@@ -27,31 +56,72 @@ pub async fn game_type() -> GameType {
                 screen_height() / 2. - window_height / 2.,
             ),
             Vec2::new(window_width, window_height),
-            |ui| {
-                ui.group(hash!(), vec2(window_width / 2. - 28., 170.), |ui| {
-                    ui.label(None, "Local game");
-                    ui.separator();
-                    ui.separator();
-                    ui.label(None, "Two players on the same");
-                    ui.label(None, "local machine");
+            |ui| match ui.tabbar(
+                hash!(),
+                vec2(window_width - 50., 50.),
+                &["Local game", "Network game"],
+            ) {
+                0 => {
+                    ui.label(None, "To connect:");
+                    ui.label(None, "Press Start on gamepad");
                     ui.separator();
 
-                    if ui.button(None, "PLAY") {
-                        res = Some(GameType::Local);
+                    ui.label(None, "Or V for keyboard 1");
+                    ui.label(None, "Or L for keyboard 2");
+
+                    ui.separator();
+                    ui.separator();
+                    ui.separator();
+                    ui.separator();
+
+                    ui.group(hash!(), vec2(window_width / 2. - 50., 70.), |ui| {
+                        if players.get(0).is_none() {
+                            ui.label(None, "Player 1: Not connected");
+                        }
+                        if let Some(input) = players.get(0) {
+                            ui.label(None, "Player 1: Connected!");
+                            ui.label(None, &format!("{:?}", input));
+                        }
+                    });
+                    ui.group(hash!(), vec2(window_width / 2. - 50., 70.), |ui| {
+                        if players.get(1).is_none() {
+                            ui.label(None, "Player 2: Not connected");
+                        }
+                        if let Some(input) = players.get(1) {
+                            ui.label(None, "Player 2: Connected!");
+                            ui.label(None, &format!("{:?}", input));
+                        }
+                    });
+                    if players.len() == 2 {
+                        let mut btn_a = false;
+                        for ix in 0..quad_gamepad::MAX_DEVICES {
+                            let state = gui_resources.gamepads.state(ix);
+                            if state.digital_state[quad_gamepad::GamepadButton::A as usize]
+                                && !state.digital_state_prev
+                                    [quad_gamepad::GamepadButton::A as usize]
+                            {
+                                btn_a = true;
+                                break;
+                            }
+                        }
+                        let enter = is_key_pressed(KeyCode::Enter);
+
+                        if ui.button(None, "Ready! (A) (Enter)") || btn_a || enter {
+                            res = Some(GameType::Local(players.clone()));
+                        }
                     }
-                });
-                ui.group(hash!(), vec2(window_width / 2. - 28., 220.), |ui| {
-                    ui.label(None, "Network P2P game");
+                }
+                1 => {
                     widgets::InputText::new(hash!())
-                        .ratio(3. / 4.)
+                        .ratio(1. / 2.)
                         .label("Self UDP addr")
                         .ui(ui, &mut self_addr);
                     widgets::InputText::new(hash!())
-                        .ratio(3. / 4.)
+                        .ratio(1. / 2.)
                         .label("Remote UDP addr")
                         .ui(ui, &mut other_addr);
                     widgets::InputText::new(hash!())
-                        .ratio(3. / 4.)
+                        .ratio(1. / 2.)
                         .label("ID (0 or 1)")
                         .ui(ui, &mut id);
 
@@ -71,7 +141,8 @@ pub async fn game_type() -> GameType {
                             other_addr: "127.0.0.1:2323".to_string(),
                         });
                     }
-                });
+                }
+                _ => unreachable!(),
             },
         );
 
@@ -89,9 +160,44 @@ pub async fn location_select() -> String {
 
     let mut old_mouse_position = mouse_position();
 
+    // skip a frame to let Enter be unpressed from the previous screen
+    next_frame().await;
+
+    let mut prev_up = false;
+    let mut prev_down = false;
+    let mut prev_right = false;
+    let mut prev_left = false;
+
     loop {
         let mut gui_resources = storage::get_mut::<GuiResources>();
 
+        gui_resources.gamepads.update();
+
+        let mut up = is_key_pressed(KeyCode::Up);
+        let mut down = is_key_pressed(KeyCode::Down);
+        let mut right = is_key_pressed(KeyCode::Right);
+        let mut left = is_key_pressed(KeyCode::Left);
+        let mut start = is_key_pressed(KeyCode::Enter);
+
+        for ix in 0..quad_gamepad::MAX_DEVICES {
+            use quad_gamepad::GamepadButton::*;
+
+            let state = gui_resources.gamepads.state(ix);
+            if state.status == quad_gamepad::ControllerStatus::Connected {
+                up |= !prev_up && state.analog_state[1] < -0.5;
+                down |= !prev_down && state.analog_state[1] > 0.5;
+                left |= !prev_left && state.analog_state[0] < -0.5;
+                right |= !prev_right && state.analog_state[0] > 0.5;
+                start |= (state.digital_state[A as usize] && !state.digital_state_prev[A as usize])
+                    || (state.digital_state[Start as usize]
+                        && !state.digital_state_prev[Start as usize]);
+
+                prev_up = state.analog_state[1] < -0.5;
+                prev_down = state.analog_state[1] > 0.5;
+                prev_left = state.analog_state[0] < -0.5;
+                prev_right = state.analog_state[0] > 0.5;
+            }
+        }
         clear_background(BLACK);
 
         let levels_amount = gui_resources.levels.len();
@@ -103,7 +209,7 @@ pub async fn location_select() -> String {
         let h = (screen_height() - 180.) / rows as f32 - 50.;
 
         {
-            if is_key_pressed(KeyCode::Up) {
+            if up {
                 hovered -= 3;
                 let ceiled_levels_amount = levels_amount as i32 + 3 - (levels_amount % 3) as i32;
                 if hovered < 0 {
@@ -114,17 +220,17 @@ pub async fn location_select() -> String {
                 }
             }
 
-            if is_key_pressed(KeyCode::Down) {
+            if down {
                 hovered += 3;
                 if hovered >= levels_amount as i32 {
                     let row = hovered % 3;
                     hovered = row;
                 }
             }
-            if is_key_pressed(KeyCode::Left) {
+            if left {
                 hovered -= 1;
             }
-            if is_key_pressed(KeyCode::Right) {
+            if right {
                 hovered += 1;
             }
             hovered = (hovered + levels_amount as i32) % levels_amount as i32;
@@ -155,7 +261,7 @@ pub async fn location_select() -> String {
                     .size(rect.size())
                     .position(rect.point())
                     .ui(&mut *root_ui())
-                    || is_key_pressed(KeyCode::Enter)
+                    || start
                 {
                     root_ui().pop_skin();
                     let level = &levels[hovered as usize];

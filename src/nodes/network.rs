@@ -138,7 +138,7 @@ impl Node for Network {
     fn fixed_update(mut node: RefMut<Self>) {
         let node = &mut *node;
 
-        let own_input = input::collect_input(1);
+        let own_input = input::collect_input(input::InputScheme::KeyboardRight);
 
         // Right now there are only two players, so it is possible to find out
         // remote fish id as "not ours" id. With more fish it will be more complicated

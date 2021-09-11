@@ -30,6 +30,7 @@ pub enum GameType {
         id: usize,
         self_addr: String,
         other_addr: String,
+        input_scheme: InputScheme,
     },
 }
 
@@ -272,8 +273,16 @@ async fn game(map: &str, game_type: GameType) {
             id,
             ref self_addr,
             ref other_addr,
+            input_scheme,
         } => {
-            scene::add_node(Network::new(id, player1, player2, self_addr, other_addr));
+            scene::add_node(Network::new(
+                input_scheme,
+                player1,
+                player2,
+                id,
+                self_addr,
+                other_addr,
+            ));
         }
     }
 

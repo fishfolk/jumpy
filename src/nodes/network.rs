@@ -5,7 +5,7 @@ use macroquad::experimental::scene::{self, Handle, Node, NodeWith, RefMut};
 
 use crate::{
     capabilities::NetworkReplicate,
-    input::{self, Input},
+    input::{self, Input, InputScheme},
     nodes::Player,
 };
 
@@ -32,6 +32,8 @@ enum Message {
 }
 
 pub struct Network {
+    input_scheme: InputScheme,
+
     player1: Handle<Player>,
     player2: Handle<Player>,
 
@@ -67,9 +69,10 @@ impl Network {
     const CONSTANT_DELAY: usize = 8;
 
     pub fn new(
-        controller_id: usize,
+        input_scheme: InputScheme,
         player1: Handle<Player>,
         player2: Handle<Player>,
+        controller_id: usize,
         self_addr: &str,
         other_addr: &str,
     ) -> Network {
@@ -91,6 +94,10 @@ impl Network {
                         Ok((count, _)) => {
                             assert!(count < 256);
                             let message = DeBin::deserialize_bin(&data[0..count]).unwrap();
+                            std::thread::sleep(std::time::Duration::from_millis(
+                                macroquad::rand::gen_range(0, 10),
+                            ));
+
                             tx1.send(message).unwrap();
                         }
                     }
@@ -123,6 +130,7 @@ impl Network {
         }
 
         Network {
+            input_scheme,
             self_id: controller_id,
             player1,
             player2,
@@ -138,7 +146,7 @@ impl Node for Network {
     fn fixed_update(mut node: RefMut<Self>) {
         let node = &mut *node;
 
-        let own_input = input::collect_input(input::InputScheme::KeyboardRight);
+        let own_input = input::collect_input(node.input_scheme);
 
         // Right now there are only two players, so it is possible to find out
         // remote fish id as "not ours" id. With more fish it will be more complicated
@@ -178,12 +186,18 @@ impl Node for Network {
                     // a few times on the remote fish
                     // shift their ack back to our timeline
                     let shift = frame as i64 - node.ack_frame as i64;
-                    let ack = if shift > 0 {
-                        ack << shift
-                    } else {
-                        ack >> (-shift)
-                    };
-                    remote_ack |= ack as u8;
+
+                    // otherwise ack is from non-relevant frame
+                    // maybe some random packet just got received
+                    if shift.abs() < Self::CONSTANT_DELAY as _ {
+                        println!("{} {}", ack, shift);
+                        let ack = if shift > 0 {
+                            ack << shift
+                        } else {
+                            ack >> (-shift)
+                        };
+                        remote_ack |= ack as u8;
+                    }
                 }
             }
         }
@@ -197,8 +211,9 @@ impl Node for Network {
             .unwrap();
 
         if remote_ack & 1 == 0 {
-            println!("Not enough inputs received, pausing game to wait");
+            //println!("Not enough inputs received, pausing game to wait");
         }
+
         // we have an input for "-CONSTANT_DELAY" frame, so we can
         // advance the simulation
         if remote_ack & 1 == 1 {

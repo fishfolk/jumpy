@@ -141,6 +141,7 @@ dependencies = [
  "macroquad-tiled",
  "nanoserde",
  "quad-gamepad",
+ "server",
 ]
 
 [[package]]
@@ -209,8 +210,6 @@ checksum = "3cb00336871be5ed2c8ed44b60ae9959dc5b9f08539422ed43f09e34ecaeba21"
 [[package]]
 name = "macroquad"
 version = "0.3.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c11792fb3af71339e4354ee3dbde4bbe5731dac266cc087b414338dfb1ca1bd"
 dependencies = [
  "bumpalo",
  "fontdue",
@@ -225,8 +224,6 @@ dependencies = [
 [[package]]
 name = "macroquad-particles"
 version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8505dc035e4d68799a53a459afef0bc345410039325b5928af2e0d83eb15de40"
 dependencies = [
  "macroquad",
  "nanoserde",
@@ -235,8 +232,6 @@ dependencies = [
 [[package]]
 name = "macroquad-platformer"
 version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a912b373a1edc678242e262010d58e3e7e7977bf00227d5343dd9e641d52fa2"
 dependencies = [
  "macroquad",
 ]
@@ -253,8 +248,6 @@ dependencies = [
 [[package]]
 name = "macroquad-tiled"
 version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6fee87816ce03b309adf842e1cb984fdd2f1917ccf0542028cdc7af67000c97f"
 dependencies = [
  "macroquad",
  "nanoserde",
@@ -263,8 +256,6 @@ dependencies = [
 [[package]]
 name = "macroquad_macro"
 version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "15db41b6abd0156c498868ec69f8973731ef75874768ac234980422579e70805"
 
 [[package]]
 name = "maybe-uninit"
@@ -480,6 +471,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "server"
+version = "0.1.0"
+dependencies = [
+ "nanoserde",
+]
+
+[[package]]
 name = "smallvec"
 version = "0.6.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -515,3 +513,7 @@ name = "winapi-x86_64-pc-windows-gnu"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
+
+[[patch.unused]]
+name = "macroquad-profiler"
+version = "0.1.2"

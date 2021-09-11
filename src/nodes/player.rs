@@ -74,7 +74,7 @@ pub struct Player {
     was_floating: bool,
     pub floating: bool,
 
-    pub state_machine: StateMachine<RefMut<Player>>,
+    pub state_machine: StateMachine<Player>,
     pub controller_id: i32,
     pub remote_control: bool,
 
@@ -734,7 +734,7 @@ impl Player {
             }
         }
 
-        StateMachine::update_detached(&mut node, |node| &mut node.state_machine);
+        StateMachine::update_detached(node, |node| &mut node.state_machine);
     }
 }
 

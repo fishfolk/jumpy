@@ -124,6 +124,34 @@ impl SkinCollection {
                 .text_color(Color::from_rgba(120, 120, 120, 255))
                 .font_size(20)
                 .build();
+            let checkbox_style = root_ui()
+                .style_builder()
+                .background(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/checkbox_background.png"),
+                    None,
+                ))
+                .background_hovered(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/checkbox_hovered_background.png"),
+                    None,
+                ))
+                .background_clicked(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/checkbox_clicked_background.png"),
+                    None,
+                ))
+                .build();
+            let combobox_style = root_ui()
+                .style_builder()
+                .background(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/combobox_background.png"),
+                    None,
+                ))
+                .background_margin(RectOffset::new(4., 25., 6., 6.))
+                .font(include_bytes!("../../assets/ui/MinimalPixel v2.ttf"))
+                .unwrap()
+                .text_color(Color::from_rgba(120, 120, 120, 255))
+                .color(Color::from_rgba(210, 210, 210, 255))
+                .font_size(25)
+                .build();
 
             Skin {
                 label_style,
@@ -131,6 +159,8 @@ impl SkinCollection {
                 tabbar_style,
                 window_style,
                 editbox_style,
+                combobox_style,
+                checkbox_style,
                 ..root_ui().default_skin()
             }
         };

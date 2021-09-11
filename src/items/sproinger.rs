@@ -11,14 +11,17 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::{capabilities::PhysicsObject, Resources};
+use crate::{
+    capabilities::{NetworkReplicate, PhysicsObject},
+    Resources,
+};
 
 use crate::capabilities::PhysicsObjectTrait;
 
 pub struct Sproinger {
     sprite: AnimatedSprite,
     pos: Vec2,
-    state_machine: StateMachine<RefMut<Self>>,
+    state_machine: StateMachine<Self>,
 }
 
 impl Sproinger {
@@ -128,9 +131,25 @@ impl Sproinger {
     }
 }
 
+impl Sproinger {
+    fn network_capabilities() -> NetworkReplicate {
+        fn network_update(handle: HandleUntyped) {
+            let node = scene::get_untyped_node(handle)
+                .unwrap()
+                .to_typed::<Sproinger>();
+            Sproinger::network_update(node);
+        }
+
+        NetworkReplicate { network_update }
+    }
+
+    fn network_update(node: RefMut<Self>) {
+        StateMachine::update_detached(node, |node| &mut node.state_machine);
+    }
+}
 impl scene::Node for Sproinger {
-    fn fixed_update(mut node: RefMut<Self>) {
-        StateMachine::update_detached(&mut node, |node| &mut node.state_machine);
+    fn ready(mut node: RefMut<Self>) {
+        node.provides(Self::network_capabilities());
     }
 
     fn draw(mut node: RefMut<Self>) {

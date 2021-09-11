@@ -22,10 +22,10 @@ mod noise;
 
 pub mod components;
 
-pub use input::Input;
+pub use input::{Input, InputScheme};
 
 pub enum GameType {
-    Local,
+    Local(Vec<InputScheme>),
     Network {
         id: usize,
         self_addr: String,
@@ -261,8 +261,12 @@ async fn game(map: &str, game_type: GameType) {
     let player2 = scene::add_node(Player::new(1, 1));
 
     match game_type {
-        GameType::Local => {
-            scene::add_node(LocalNetwork::new(player1, player2));
+        GameType::Local(players_input) => {
+            assert!(
+                players_input.len() == 2,
+                "Only 2 player games are supported now"
+            );
+            scene::add_node(LocalNetwork::new(players_input, player1, player2));
         }
         GameType::Network {
             id,
@@ -289,6 +293,11 @@ async fn game(map: &str, game_type: GameType) {
     scene::add_node(Fxses {});
 
     loop {
+        {
+            let mut gui_resources = storage::get_mut::<crate::gui::GuiResources>();
+            gui_resources.gamepads.update();
+        }
+
         next_frame().await;
     }
 }
@@ -316,7 +325,7 @@ async fn main() {
         let game_type = gui::main_menu::game_type().await;
 
         let map = match game_type {
-            GameType::Local => gui::main_menu::location_select().await,
+            GameType::Local(..) => gui::main_menu::location_select().await,
             GameType::Network { .. } => "assets/levels/lev01.json".to_string(),
         };
 

@@ -15,6 +15,8 @@ macroquad-tiled = "0.1"
 macroquad-profiler = "0.1"
 macroquad-particles = {version = "0.1", features = ["nanoserde"] }
 
+quad-gamepad = "0.2.0-alpha"
+
 #[patch.crates-io]
 #macroquad = { path = "../macroquad" }
 #macroquad-particles = { path = "../macroquad/particles" }

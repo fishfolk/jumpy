@@ -39,7 +39,30 @@ impl MuscetBullet {
         }
     }
 }
+
+impl MuscetBullet {
+    fn network_capabilities() -> capabilities::NetworkReplicate {
+        fn network_update(handle: HandleUntyped) {
+            let node = scene::get_untyped_node(handle)
+                .unwrap()
+                .to_typed::<MuscetBullet>();
+            MuscetBullet::network_update(node);
+        }
+
+        capabilities::NetworkReplicate { network_update }
+    }
+
+    fn network_update(mut node: RefMut<Self>) {
+        if !node.bullet.update() {
+            node.delete();
+        }
+    }
+}
 impl scene::Node for MuscetBullet {
+    fn ready(mut node: RefMut<Self>) {
+        node.provides(Self::network_capabilities());
+    }
+
     fn draw(node: RefMut<Self>) {
         draw_circle(
             node.bullet.pos.x,
@@ -47,12 +70,6 @@ impl scene::Node for MuscetBullet {
             node.size,
             Color::new(1.0, 1.0, 0.8, 1.0),
         );
-    }
-
-    fn fixed_update(mut node: RefMut<Self>) {
-        if !node.bullet.update() {
-            node.delete();
-        }
     }
 }
 

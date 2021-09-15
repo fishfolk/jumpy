@@ -21,8 +21,10 @@ quad-gamepad = "0.2.0-alpha"
 server = { path = "server" }
 
 [patch.crates-io]
-macroquad = { path = "../macroquad" }
-macroquad-particles = { path = "../macroquad/particles" }
-macroquad-tiled = { path = "../macroquad/tiled" }
-macroquad-platformer = { path = "../macroquad/physics-platformer" }
-macroquad-profiler = { path = "../macroquad/profiler" }
+macroquad = { git = "https://github.com/not-fl3/macroquad" }
+
+#macroquad = { path = "../macroquad" }
+#macroquad-particles = { path = "../macroquad/particles" }
+#macroquad-tiled = { path = "../macroquad/tiled" }
+#macroquad-platformer = { path = "../macroquad/physics-platformer" }
+#macroquad-profiler = { path = "../macroquad/profiler" }

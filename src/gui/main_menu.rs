@@ -71,8 +71,8 @@ struct NetworkUiState {
     self_id: String,
 }
 
-//const SERVER_ADDR: &str = "173.0.157.169:34500";
-const SERVER_ADDR: &str = "0.0.0.0:34500";
+const SERVER_ADDR: &str = "173.0.157.169:34500";
+//const SERVER_ADDR: &str = "0.0.0.0:34500";
 
 async fn connect_through_matchmaker(_public: bool, input_scheme: InputScheme) -> GameType {
     use server::MetaMessage;
@@ -128,13 +128,11 @@ async fn connect_through_matchmaker(_public: bool, input_scheme: InputScheme) ->
         });
 
         let mut buf = [0u8; 100];
-        let amount = self_socket.recv(&mut buf).unwrap_or_else(|_| {
+        let _amount = self_socket.recv(&mut buf).unwrap_or_else(|_| {
             tx.send(Message::Log("UdpSocket::recv failed".to_string()))
                 .unwrap();
             panic!();
         });
-
-        println!("received bytes: {}", amount);
 
         let message: MetaMessage = DeBin::deserialize_bin(&buf).unwrap_or_else(|_| {
             tx.send(Message::Log("deserialize_bin failed".to_string()))

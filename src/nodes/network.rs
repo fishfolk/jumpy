@@ -16,18 +16,9 @@ use nanoserde::{DeBin, SerBin};
 #[derive(DeBin, SerBin)]
 enum Message {
     Input {
-        // position in the buffer
-        pos: u8,
         // current simulation frame
         frame: u64,
         input: Input,
-    },
-    Ack {
-        // last simulated frame
-        frame: u64,
-        /// bitmask for last 8 frames
-        /// one bit - one received input in a frames_buffer
-        ack: u8,
     },
 }
 
@@ -39,29 +30,28 @@ pub struct Network {
 
     self_id: usize,
 
-    ack_frame: u64,
+    frame: u64,
 
     tx: mpsc::Sender<Message>,
     rx: mpsc::Receiver<Message>,
 
-    frames_buffer: [[Option<Input>; 2]; Self::CONSTANT_DELAY as usize],
+    // all the inputs from the beginning of the game
+    // will optimize memory later
+    frames_buffer: Vec<[Option<Input>; 2]>,
 }
 
-// get a bitmask of received remote inputs out of frames_buffer
-fn remote_inputs_ack(
-    remote_player_id: usize,
-    buffer: &[[Option<Input>; 2]; Network::CONSTANT_DELAY as usize],
-) -> u8 {
-    let mut ack = 0;
+// // get a bitmask of received remote inputs out of frames_buffer
+// fn remote_inputs_ack(remote_player_id: usize, buffer: &[[Option<Input>; 2]]) -> u8 {
+//     let mut ack = 0;
 
-    #[allow(clippy::needless_range_loop)]
-    for i in 0..Network::CONSTANT_DELAY as usize {
-        if buffer[i][remote_player_id].is_some() {
-            ack |= 1 << i;
-        }
-    }
-    ack
-}
+//     #[allow(clippy::needless_range_loop)]
+//     for i in 0..Network::CONSTANT_DELAY as usize {
+//         if buffer[i][remote_player_id].is_some() {
+//             ack |= 1 << i;
+//         }
+//     }
+//     ack
+// }
 
 impl Network {
     /// 8-bit bitmask is used for ACK, to make CONSTANT_DELAY more than 8
@@ -79,6 +69,8 @@ impl Network {
         let self_socket = UdpSocket::bind(self_addr).unwrap();
         self_socket.connect(other_addr).unwrap();
 
+        self_socket.set_nonblocking(true).unwrap();
+
         let (tx, rx) = mpsc::channel::<Message>();
 
         let (tx1, rx1) = mpsc::channel::<Message>();
@@ -94,9 +86,6 @@ impl Network {
                         Ok((count, _)) => {
                             assert!(count < 256);
                             let message = DeBin::deserialize_bin(&data[0..count]).unwrap();
-                            std::thread::sleep(std::time::Duration::from_millis(
-                                macroquad::rand::gen_range(0, 10),
-                            ));
 
                             tx1.send(message).unwrap();
                         }
@@ -111,12 +100,23 @@ impl Network {
             loop {
                 if let Ok(message) = rx.recv() {
                     let data = SerBin::serialize_bin(&message);
+
+                    let self_socket = self_socket.try_clone().unwrap();
+                    let other_addr = other_addr.clone();
+                    // std::thread::spawn(move || {
+                    //     std::thread::sleep(std::time::Duration::from_millis(
+                    //         macroquad::rand::gen_range(0, 150),
+                    //     ));
+                    //     if macroquad::rand::gen_range(0, 100) > 20 {
+                    //         let _ = self_socket.send_to(&data, &other_addr);
+                    //     }
+                    // });
                     let _ = self_socket.send_to(&data, &other_addr);
                 }
             }
         });
 
-        let mut frames_buffer = [[None, None]; Self::CONSTANT_DELAY];
+        let mut frames_buffer = vec![];
 
         // Fill first CONSTANT_DELAY frames
         // this will not really change anything - the fish will just always spend
@@ -125,8 +125,11 @@ impl Network {
         // at the start of the game and later on will just wait for remote
         // fish to fill up their part of the buffer
         #[allow(clippy::needless_range_loop)]
-        for i in 0..Self::CONSTANT_DELAY {
-            frames_buffer[i][controller_id as usize] = Some(Input::default());
+        for _ in 0..Self::CONSTANT_DELAY {
+            let mut frame = [None; 2];
+            frame[controller_id as usize] = Some(Input::default());
+
+            frames_buffer.push(frame);
         }
 
         Network {
@@ -134,7 +137,7 @@ impl Network {
             self_id: controller_id,
             player1,
             player2,
-            ack_frame: 0,
+            frame: Self::CONSTANT_DELAY as u64,
             tx,
             rx: rx1,
             frames_buffer,
@@ -153,77 +156,55 @@ impl Node for Network {
         // and ID will be part of a protocol
         let remote_id = if node.self_id == 1 { 0 } else { 1 };
 
-        // go through the whole frames_buffer and re-send frames missing on remote fish
-        for i in 0..Self::CONSTANT_DELAY {
-            if node.frames_buffer[i][remote_id].is_none() {
-                node.tx
-                    .send(Message::Input {
-                        frame: node.ack_frame,
-                        pos: i as u8,
-                        input: node.frames_buffer[i][node.self_id].unwrap(),
-                    })
-                    .unwrap();
+        // re-send frames missing on remote fish
+        // very excessive send, we should check ACK and
+        // send only frames actually missing on the remote fish
+        for i in
+            (node.frame as i64 - Self::CONSTANT_DELAY as i64 * 2).max(0) as u64 as u64..node.frame
+        {
+            node.tx
+                .send(Message::Input {
+                    frame: i,
+                    input: node.frames_buffer[i as usize][node.self_id].unwrap(),
+                })
+                .unwrap();
+        }
+
+        // we just received only CONSTANT_DELAY frames, assuming we certainly
+        // had remote input for all the previous frames
+        // lets double check this assumption
+        if node.frame - 1 >= Self::CONSTANT_DELAY as _ {
+            for i in 0..node.frame - Self::CONSTANT_DELAY as u64 - 1 {
+                assert!(node.frames_buffer[i as usize][remote_id].is_some());
             }
         }
 
         // Receive other fish input
-        let mut remote_ack = 0;
         while let Ok(message) = node.rx.try_recv() {
             match message {
-                Message::Input { pos, frame, input } => {
-                    // frame may come from the past and from the future, so
-                    // we do frame-corrective here
-                    let ix = pos as i64 + (frame as i64 - node.ack_frame as i64);
-
-                    // if packet is outside of CONSTANT_DELAY window - just skip it
-                    // it will be resend anyway
-                    if ix >= 0 && ix < Self::CONSTANT_DELAY as i64 {
-                        node.frames_buffer[ix as usize][remote_id] = Some(input);
-                    }
-                }
-                Message::Ack { frame, ack } => {
-                    // ack is from another frame, the buffer was shifted
-                    // a few times on the remote fish
-                    // shift their ack back to our timeline
-                    let shift = frame as i64 - node.ack_frame as i64;
-
-                    // otherwise ack is from non-relevant frame
-                    // maybe some random packet just got received
-                    if shift.abs() < Self::CONSTANT_DELAY as _ {
-                        println!("{} {}", ack, shift);
-                        let ack = if shift > 0 {
-                            ack << shift
-                        } else {
-                            ack >> (-shift)
-                        };
-                        remote_ack |= ack as u8;
+                Message::Input { frame, input } => {
+                    // frame from the future, need to wait until will simulate
+                    // the game enough to use this data
+                    if frame < node.frames_buffer.len() as _ {
+                        node.frames_buffer[frame as usize][remote_id] = Some(input);
                     }
                 }
             }
         }
 
-        // notify the other fish on the state of our input buffer
-        node.tx
-            .send(Message::Ack {
-                frame: node.ack_frame,
-                ack: remote_inputs_ack(remote_id, &node.frames_buffer),
-            })
-            .unwrap();
-
-        if remote_ack & 1 == 0 {
-            //println!("Not enough inputs received, pausing game to wait");
-        }
+        // // notify the other fish on the state of our input buffer
+        // node.tx
+        //     .send(Message::Ack {
+        //         frame: node.frame,
+        //         ack: remote_inputs_ack(remote_id, &node.frames_buffer),
+        //     })
+        //     .unwrap();
 
         // we have an input for "-CONSTANT_DELAY" frame, so we can
         // advance the simulation
-        if remote_ack & 1 == 1 {
-            let [p1_input, p2_input] = node.frames_buffer[0];
-            assert!(p1_input.is_some());
-            assert!(p2_input.is_some());
-
-            let p1_input = p1_input.unwrap();
-            let p2_input = p2_input.unwrap();
-
+        if let [Some(p1_input), Some(p2_input)] =
+            node.frames_buffer[node.frames_buffer.len() - Self::CONSTANT_DELAY]
+        {
             scene::get_node(node.player1).apply_input(p1_input);
             scene::get_node(node.player2).apply_input(p2_input);
 
@@ -232,17 +213,12 @@ impl Node for Network {
                 (capability.network_update)(node);
             }
 
-            // this input frame is processed, so shifting input buffer
-            for i in 1..Self::CONSTANT_DELAY as usize {
-                node.frames_buffer[i - 1] = node.frames_buffer[i];
-            }
+            let mut new_frame = [None, None];
+            new_frame[node.self_id] = Some(own_input);
 
-            // and inserting own input to buffer's last frame
-            node.frames_buffer[Self::CONSTANT_DELAY - 1][node.self_id] = Some(own_input);
-            // clean up the other fish input
-            node.frames_buffer[Self::CONSTANT_DELAY - 1][remote_id] = None;
+            node.frames_buffer.push(new_frame);
 
-            node.ack_frame += 1;
+            node.frame += 1;
         }
     }
 }

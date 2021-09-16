@@ -3,7 +3,7 @@ mod decoration;
 mod fxses;
 mod level_background;
 mod local_network;
-mod network;
+pub mod network;
 mod player;
 
 pub use camera::Camera;

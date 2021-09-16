@@ -17,13 +17,14 @@ macroquad-particles = {version = "0.1", features = ["nanoserde"] }
 
 quad-gamepad = "0.2.0-alpha"
 
-# fish needs some common structs from randezvous server to establish p2p connections
-server = { path = "server" }
+stunclient = { git = "https://github.com/not-fl3/rust-stunclient", default-features = false }
 
 [patch.crates-io]
-macroquad = { git = "https://github.com/not-fl3/macroquad" }
+#macroquad = { git = "https://github.com/not-fl3/macroquad" }
 
-#macroquad = { path = "../macroquad" }
+miniquad = { path = "../miniquad" }
+
+macroquad = { path = "../macroquad" }
 #macroquad-particles = { path = "../macroquad/particles" }
 #macroquad-tiled = { path = "../macroquad/tiled" }
 #macroquad-platformer = { path = "../macroquad/physics-platformer" }

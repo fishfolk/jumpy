@@ -31,6 +31,12 @@ pub struct Item {
     /// Later they will be accessible in resources.items_fxses
     /// by "tiled_name/resource_id"
     pub fxses: &'static [(&'static str, &'static str)],
+    /// Right now items used in network play should be carefull
+    /// about using random and similar things
+    /// It will be automatically tested and undetermenistic weapons will be denied
+    /// by the game itself, but, right now, its up for a weapon developer to veryfy
+    /// that nothing network-illegal is going on
+    pub network_ready: bool,
 }
 
 pub const ITEMS: &[Item] = &[
@@ -44,6 +50,7 @@ pub const ITEMS: &[Item] = &[
         ],
         sounds: &[],
         fxses: &[],
+        network_ready: true,
     },
     Item {
         tiled_name: "sproinger",
@@ -52,6 +59,7 @@ pub const ITEMS: &[Item] = &[
         textures: &[("sproinger", "assets/Whale/Sproinger.png")],
         sounds: &[],
         fxses: &[],
+        network_ready: true,
     },
     Item {
         tiled_name: "muscet",
@@ -60,6 +68,7 @@ pub const ITEMS: &[Item] = &[
         textures: &[("gun", "assets/Whale/Gun(92x32).png")],
         sounds: &[],
         fxses: &[],
+        network_ready: true,
     },
     Item {
         tiled_name: "machine_gun",
@@ -68,5 +77,6 @@ pub const ITEMS: &[Item] = &[
         textures: &[("gun", "assets/Whale/MachineGun.png")],
         sounds: &[],
         fxses: &[],
+        network_ready: false,
     },
 ];

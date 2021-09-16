@@ -4,22 +4,39 @@ use macroquad::{
     ui::{self, hash, root_ui, widgets},
 };
 
-use crate::{gui::GuiResources, input::InputScheme, GameType};
+use crate::{gui::GuiResources, input::InputScheme, nodes::network::Message, GameType};
 
+const RELAY_ADDR: &str = "173.0.157.169:35000";
 const WINDOW_WIDTH: f32 = 700.;
 const WINDOW_HEIGHT: f32 = 400.;
 
-enum MainMenuResult {
-    /// Nothing selected yet, keep showing main menu
-    None,
-    /// Game type selected and is ready to return to main.rs to start a game
-    DirectGame(GameType),
-    /// Matchmaking should happen to get a GameType, proceeding to a next screen
-    MatchmakerGame { public: bool, input: InputScheme },
-}
-
-fn local_game_ui(ui: &mut ui::Ui, players: &mut Vec<InputScheme>) -> MainMenuResult {
+fn local_game_ui(ui: &mut ui::Ui, players: &mut Vec<InputScheme>) -> Option<GameType> {
     let gui_resources = storage::get_mut::<GuiResources>();
+
+    if players.len() < 2 {
+        if is_key_pressed(KeyCode::V) {
+            //
+            if !players.contains(&InputScheme::KeyboardLeft) {
+                players.push(InputScheme::KeyboardLeft);
+            }
+        }
+        if is_key_pressed(KeyCode::L) {
+            //
+            if !players.contains(&InputScheme::KeyboardRight) {
+                players.push(InputScheme::KeyboardRight);
+            }
+        }
+        for ix in 0..quad_gamepad::MAX_DEVICES {
+            let state = gui_resources.gamepads.state(ix);
+
+            if state.digital_state[quad_gamepad::GamepadButton::Start as usize] {
+                //
+                if !players.contains(&InputScheme::Gamepad(ix)) {
+                    players.push(InputScheme::Gamepad(ix));
+                }
+            }
+        }
+    }
 
     ui.label(None, "To connect:");
     ui.label(None, "Press Start on gamepad");
@@ -56,153 +73,113 @@ fn local_game_ui(ui: &mut ui::Ui, players: &mut Vec<InputScheme>) -> MainMenuRes
         let enter = is_key_pressed(KeyCode::Enter);
 
         if ui.button(None, "Ready! (A) (Enter)") || btn_a || enter {
-            return MainMenuResult::DirectGame(GameType::Local(players.clone()));
+            return Some(GameType::Local(players.clone()));
         }
     }
 
-    MainMenuResult::None
+    None
 }
 
+#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum ConnectionKind {
+    Lan,
+    Stun,
+    Relay,
+    Unknown,
+}
+
+#[derive(Debug, PartialEq)]
+enum ConnectionStatus {
+    Unknown,
+    Connected,
+}
+
+struct Connection {
+    kind: ConnectionKind,
+    socket: Option<std::net::UdpSocket>,
+    local_addr: String,
+    opponent_addr: String,
+    status: ConnectionStatus,
+}
+
+impl Connection {
+    fn new() -> Connection {
+        Connection {
+            kind: ConnectionKind::Unknown,
+            socket: None,
+            local_addr: "".to_string(),
+            opponent_addr: "".to_string(),
+            status: ConnectionStatus::Unknown,
+        }
+    }
+
+    fn update(&mut self, kind: ConnectionKind) {
+        if let Some(socket) = self.socket.as_mut() {
+            let mut buf = [0; 100];
+            if let Ok(_) = socket.recv(&mut buf) {
+                let message: Message = nanoserde::DeBin::deserialize_bin(&buf[..]).ok().unwrap();
+                self.status = ConnectionStatus::Connected;
+            }
+        }
+
+        if kind != self.kind {
+            self.kind = kind;
+            self.status = ConnectionStatus::Unknown;
+
+            use std::net::SocketAddr;
+
+            let addrs = [
+                SocketAddr::from(([0, 0, 0, 0], 3400)),
+                SocketAddr::from(([0, 0, 0, 0], 3401)),
+                SocketAddr::from(([0, 0, 0, 0], 3402)),
+                SocketAddr::from(([0, 0, 0, 0], 3403)),
+            ];
+            match kind {
+                ConnectionKind::Lan => {
+                    let socket = std::net::UdpSocket::bind(&addrs[..]).unwrap();
+
+                    self.local_addr = format!("{}", socket.local_addr().unwrap());
+                    socket.set_nonblocking(true).unwrap();
+
+                    self.socket = Some(socket);
+                }
+                ConnectionKind::Stun => {
+                    let socket = std::net::UdpSocket::bind(&addrs[..]).unwrap();
+
+                    let sc = stunclient::StunClient::with_google_stun_server();
+                    self.local_addr = format!("{}", sc.query_external_address(&socket).unwrap());
+                    socket.set_nonblocking(true).unwrap();
+
+                    self.socket = Some(socket);
+                }
+                _ => {}
+            }
+        }
+    }
+
+    pub fn probe(&mut self) -> Option<()> {
+        assert!(self.socket.is_some());
+
+        let socket = self.socket.as_mut().unwrap();
+
+        socket.connect(&self.opponent_addr).ok()?;
+
+        for _ in 0..100 {
+            socket
+                .send(&nanoserde::SerBin::serialize_bin(&Message::Idle))
+                .ok()?;
+        }
+
+        None
+    }
+}
 struct NetworkUiState {
-    connection: usize,
-    public: bool,
-    self_addr: String,
-    other_addr: String,
-    self_id: String,
-}
-
-const SERVER_ADDR: &str = "173.0.157.169:34500";
-//const SERVER_ADDR: &str = "0.0.0.0:34500";
-
-async fn connect_through_matchmaker(_public: bool, input_scheme: InputScheme) -> GameType {
-    use server::MetaMessage;
-
-    use std::{
-        net::{SocketAddr, UdpSocket},
-        sync::mpsc::channel,
-    };
-
-    use nanoserde::{DeBin, SerBin};
-
-    enum Message {
-        Log(String),
-        OpponentIp(i32, String),
-        SelfIp(String),
-    }
-
-    let mut messages = vec!["Connecting...".to_string()];
-
-    let (tx, rx) = channel();
-
-    std::thread::spawn(move || {
-        let addrs = [
-            SocketAddr::from(([0, 0, 0, 0], 2324)),
-            SocketAddr::from(([0, 0, 0, 0], 2325)),
-            SocketAddr::from(([0, 0, 0, 0], 2326)),
-            SocketAddr::from(([0, 0, 0, 0], 2327)),
-        ];
-        let self_socket = UdpSocket::bind(&addrs[..]).unwrap_or_else(|_| {
-            tx.send(Message::Log("UdpSocket::bind failed".to_string()))
-                .unwrap();
-            panic!();
-        });
-
-        let self_addr = self_socket.local_addr().unwrap_or_else(|_| {
-            tx.send(Message::Log("local_addr() failed".to_string()))
-                .unwrap();
-            panic!();
-        });
-
-        tx.send(Message::SelfIp(format!("{}", self_addr))).unwrap();
-        self_socket.connect(SERVER_ADDR).unwrap_or_else(|_| {
-            tx.send(Message::Log("UdpSocket::connect failed".to_string()))
-                .unwrap();
-            panic!();
-        });
-
-        let message = SerBin::serialize_bin(&MetaMessage::ConnectionRequest);
-        self_socket.send(&message).unwrap_or_else(|_| {
-            tx.send(Message::Log("UdpSocket::send failed".to_string()))
-                .unwrap();
-            panic!();
-        });
-
-        let mut buf = [0u8; 100];
-        let _amount = self_socket.recv(&mut buf).unwrap_or_else(|_| {
-            tx.send(Message::Log("UdpSocket::recv failed".to_string()))
-                .unwrap();
-            panic!();
-        });
-
-        let message: MetaMessage = DeBin::deserialize_bin(&buf).unwrap_or_else(|_| {
-            tx.send(Message::Log("deserialize_bin failed".to_string()))
-                .unwrap();
-            panic!();
-        });
-        match message {
-            MetaMessage::OpponentIp { id, ip } => {
-                tx.send(Message::OpponentIp(id, ip.to_string())).unwrap();
-            }
-            msg => {
-                tx.send(Message::Log(format!(
-                    "received unexpected message {:?}",
-                    msg
-                )))
-                .unwrap();
-            }
-        };
-        tx.send(Message::Log("Connected!".to_string())).unwrap();
-    });
-
-    let mut res = MainMenuResult::None;
-
-    let mut self_ip = "".to_string();
-
-    loop {
-        {
-            let gui_resources = storage::get_mut::<GuiResources>();
-            root_ui().push_skin(&gui_resources.skins.login_skin);
-        }
-
-        root_ui().window(
-            hash!(),
-            Vec2::new(
-                screen_width() / 2. - WINDOW_WIDTH / 2.,
-                screen_height() / 2. - WINDOW_HEIGHT / 2.,
-            ),
-            Vec2::new(WINDOW_WIDTH, WINDOW_HEIGHT),
-            |ui| {
-                match rx.try_recv() {
-                    Ok(Message::Log(msg)) => {
-                        messages.push(msg);
-                    }
-                    Ok(Message::OpponentIp(id, ip)) => {
-                        res = MainMenuResult::DirectGame(GameType::Network {
-                            self_addr: self_ip.clone(),
-                            other_addr: ip,
-                            id: id as _,
-                            input_scheme,
-                        });
-                    }
-                    Ok(Message::SelfIp(ip)) => {
-                        self_ip = ip;
-                    }
-                    Err(_) => {}
-                }
-
-                for message in &messages {
-                    ui.label(None, message.as_str());
-                }
-            },
-        );
-
-        root_ui().pop_skin();
-
-        if let MainMenuResult::DirectGame(res) = res {
-            return res;
-        }
-        next_frame().await;
-    }
+    input_scheme: InputScheme,
+    connection_kind: ConnectionKind,
+    connection: Connection,
+    relay_addr: String,
+    custom_relay: bool,
 }
 
 fn is_gamepad_btn_pressed(gui_resources: &GuiResources, btn: quad_gamepad::GamepadButton) -> bool {
@@ -216,100 +193,113 @@ fn is_gamepad_btn_pressed(gui_resources: &GuiResources, btn: quad_gamepad::Gamep
     return false;
 }
 
-fn network_game_ui(
-    ui: &mut ui::Ui,
-    state: &mut NetworkUiState,
-    players: &mut Vec<InputScheme>,
-) -> MainMenuResult {
-    ui.combo_box(
-        hash!(),
-        "Connection type",
-        &["Matchmaking server", "Direct IP"],
-        &mut state.connection,
-    );
-
-    match state.connection {
-        0 => {
-            ui.checkbox(hash!(), "Join public queue", &mut state.public);
-            if let Some(input) = players.get(0) {
-                let gui_resources = storage::get_mut::<GuiResources>();
-                let btn_a = is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::A);
-                let enter = is_key_pressed(KeyCode::Enter);
-
-                if ui.button(None, "Connect(A) (Enter)") || btn_a || enter {
-                    return MainMenuResult::MatchmakerGame {
-                        public: state.public,
-                        input: input.clone(),
-                    };
-                }
-            }
+fn network_game_ui(ui: &mut ui::Ui, state: &mut NetworkUiState) -> Option<GameType> {
+    let mut connection_kind_ui = state.connection_kind as usize;
+    widgets::ComboBox::new(hash!(), &["Lan network", "STUN server", "Relay server"])
+        .ratio(0.4)
+        .label("Connection type")
+        .ui(ui, &mut connection_kind_ui);
+    match connection_kind_ui {
+        x if x == ConnectionKind::Stun as usize => {
+            state.connection_kind = ConnectionKind::Stun;
         }
-        1 => {
-            widgets::InputText::new(hash!())
-                .ratio(1. / 2.)
-                .label("Self UDP addr")
-                .ui(ui, &mut state.self_addr);
-            widgets::InputText::new(hash!())
-                .ratio(1. / 2.)
-                .label("Remote UDP addr")
-                .ui(ui, &mut state.other_addr);
-            widgets::InputText::new(hash!())
-                .ratio(1. / 2.)
-                .label("ID (0 or 1)")
-                .ui(ui, &mut state.self_id);
-
-            ui.separator();
-
-            if let Some(input) = players.get(0) {
-                if ui.button(None, "Connect") {
-                    return MainMenuResult::DirectGame(GameType::Network {
-                        id: state.self_id.parse().unwrap(),
-                        self_addr: state.self_addr.clone(),
-                        other_addr: state.other_addr.clone(),
-                        input_scheme: input.clone(),
-                    });
-                }
-                if ui.button(None, "Connect_dbg") {
-                    return MainMenuResult::DirectGame(GameType::Network {
-                        id: 1,
-                        self_addr: "127.0.0.1:2324".to_string(),
-                        other_addr: "127.0.0.1:2323".to_string(),
-                        input_scheme: input.clone(),
-                    });
-                }
-            }
+        x if x == ConnectionKind::Lan as usize => {
+            state.connection_kind = ConnectionKind::Lan;
+        }
+        x if x == ConnectionKind::Relay as usize => {
+            state.connection_kind = ConnectionKind::Relay;
         }
         _ => unreachable!(),
     }
 
-    if let Some(input) = players.get(0) {
-        ui.label(None, &format!("Input: {:?}", input));
-    } else {
-        ui.label(None, "To select input scheme:");
-        ui.label(None, "Press Start on gamepad");
-        ui.separator();
+    if state.connection_kind == ConnectionKind::Relay {
+        widgets::Checkbox::new(hash!())
+            .label("Use custom relay server")
+            .ratio(0.4)
+            .ui(ui, &mut state.custom_relay);
 
-        ui.label(None, "Or V for keyboard 1");
-        ui.label(None, "Or L for keyboard 2");
+        if state.custom_relay {
+            widgets::InputText::new(hash!())
+                .ratio(0.4)
+                .label("Self addr")
+                .ui(ui, &mut state.relay_addr);
+        }
     }
 
-    MainMenuResult::None
+    let mut self_addr = state.connection.local_addr.clone();
+    widgets::InputText::new(hash!())
+        .ratio(0.4)
+        .label("Self addr")
+        .ui(ui, &mut self_addr);
+
+    widgets::InputText::new(hash!())
+        .ratio(0.4)
+        .label("Opponent addr")
+        .ui(ui, &mut state.connection.opponent_addr);
+
+    state.connection.update(state.connection_kind);
+
+    if ui.button(None, "Probe connection") {
+        state.connection.probe();
+    }
+
+    ui.label(
+        None,
+        &format!("Connection status: {:?}", state.connection.status),
+    );
+
+    if state.connection.status == ConnectionStatus::Connected
+        && ui.button(None, "Connect (A) (Enter)")
+    {
+        return Some(GameType::Network {
+            socket: state.connection.socket.take().unwrap(),
+            other_addr: state.connection.opponent_addr.clone(),
+            id: if state.connection.local_addr > state.connection.opponent_addr {
+                0
+            } else {
+                1
+            },
+            input_scheme: state.input_scheme.clone(),
+        });
+    }
+
+    ui.label(
+        vec2(430., 310.),
+        &format!("Input: {:?}", state.input_scheme),
+    );
+    ui.label(vec2(360., 330.), "Press V/L/Start to change");
+    if is_key_pressed(KeyCode::V) {
+        state.input_scheme = InputScheme::KeyboardLeft;
+    }
+    if is_key_pressed(KeyCode::L) {
+        state.input_scheme = InputScheme::KeyboardRight;
+    }
+    for ix in 0..quad_gamepad::MAX_DEVICES {
+        let gui_resources = storage::get_mut::<GuiResources>();
+        let gamepad_state = gui_resources.gamepads.state(ix);
+
+        if gamepad_state.digital_state[quad_gamepad::GamepadButton::Start as usize] {
+            state.input_scheme = InputScheme::Gamepad(ix);
+        }
+    }
+
+    None
 }
 
 pub async fn game_type() -> GameType {
     let mut players = vec![];
 
     let mut network_ui_state = NetworkUiState {
-        self_addr: "127.0.0.1:2323".to_string(),
-        other_addr: "127.0.0.1:2324".to_string(),
-        self_id: "0".to_string(),
-        connection: 0,
-        public: true,
+        connection: Connection::new(),
+        input_scheme: InputScheme::KeyboardLeft,
+        connection_kind: ConnectionKind::Lan,
+        custom_relay: false,
+        relay_addr: RELAY_ADDR.to_string(),
     };
 
     let mut tab = 0;
     loop {
-        let mut res = MainMenuResult::None;
+        let mut res = None;
 
         {
             let mut gui_resources = storage::get_mut::<GuiResources>();
@@ -331,30 +321,6 @@ pub async fn game_type() -> GameType {
                 tab += 1;
                 tab %= 2;
             }
-            if players.len() < 2 {
-                if is_key_pressed(KeyCode::V) {
-                    //
-                    if !players.contains(&InputScheme::KeyboardLeft) {
-                        players.push(InputScheme::KeyboardLeft);
-                    }
-                }
-                if is_key_pressed(KeyCode::L) {
-                    //
-                    if !players.contains(&InputScheme::KeyboardRight) {
-                        players.push(InputScheme::KeyboardRight);
-                    }
-                }
-                for ix in 0..quad_gamepad::MAX_DEVICES {
-                    let state = gui_resources.gamepads.state(ix);
-
-                    if state.digital_state[quad_gamepad::GamepadButton::Start as usize] {
-                        //
-                        if !players.contains(&InputScheme::Gamepad(ix)) {
-                            players.push(InputScheme::Gamepad(ix));
-                        }
-                    }
-                }
-            }
         }
 
         {
@@ -372,7 +338,7 @@ pub async fn game_type() -> GameType {
             |ui| match widgets::Tabbar::new(
                 hash!(),
                 vec2(WINDOW_WIDTH - 50., 50.),
-                &["<< Local game, LT", "Network game, RT >>4"],
+                &["<< Lan game, LT", "Network game, RT >>"],
             )
             .selected_tab(Some(&mut tab))
             .ui(ui)
@@ -381,7 +347,7 @@ pub async fn game_type() -> GameType {
                     res = local_game_ui(ui, &mut players);
                 }
                 1 => {
-                    res = network_game_ui(ui, &mut network_ui_state, &mut players);
+                    res = network_game_ui(ui, &mut network_ui_state);
                 }
                 _ => unreachable!(),
             },
@@ -389,11 +355,8 @@ pub async fn game_type() -> GameType {
 
         root_ui().pop_skin();
 
-        if let MainMenuResult::DirectGame(res) = res {
+        if let Some(res) = res {
             return res;
-        }
-        if let MainMenuResult::MatchmakerGame { public, input } = res {
-            return connect_through_matchmaker(public, input).await;
         }
         next_frame().await;
     }
@@ -417,10 +380,10 @@ pub async fn location_select() -> String {
 
         gui_resources.gamepads.update();
 
-        let mut up = is_key_pressed(KeyCode::Up);
-        let mut down = is_key_pressed(KeyCode::Down);
-        let mut right = is_key_pressed(KeyCode::Right);
-        let mut left = is_key_pressed(KeyCode::Left);
+        let mut up = is_key_pressed(KeyCode::Up) || is_key_pressed(KeyCode::W);
+        let mut down = is_key_pressed(KeyCode::Down) || is_key_pressed(KeyCode::S);
+        let mut right = is_key_pressed(KeyCode::Right) || is_key_pressed(KeyCode::D);
+        let mut left = is_key_pressed(KeyCode::Left) || is_key_pressed(KeyCode::A);
         let mut start = is_key_pressed(KeyCode::Enter);
 
         for ix in 0..quad_gamepad::MAX_DEVICES {

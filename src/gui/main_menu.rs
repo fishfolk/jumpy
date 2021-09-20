@@ -391,7 +391,7 @@ pub async fn game_type() -> GameType {
             |ui| match widgets::Tabbar::new(
                 hash!(),
                 vec2(WINDOW_WIDTH - 50., 50.),
-                &["<< Lan game, LT", "Network game, RT >>"],
+                &["<< Local game, LT", "Network game, RT >>"],
             )
             .selected_tab(Some(&mut tab))
             .ui(ui)

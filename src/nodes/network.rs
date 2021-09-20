@@ -172,7 +172,7 @@ impl Node for Network {
         // we just received only CONSTANT_DELAY frames, assuming we certainly
         // had remote input for all the previous frames
         // lets double check this assumption
-        if node.frame - 1 >= Self::CONSTANT_DELAY as _ {
+        if node.frame > Self::CONSTANT_DELAY as _ {
             for i in 0..node.frame - Self::CONSTANT_DELAY as u64 - 1 {
                 assert!(node.frames_buffer[i as usize][remote_id].is_some());
             }
@@ -180,15 +180,12 @@ impl Node for Network {
 
         // Receive other fish input
         while let Ok(message) = node.rx.try_recv() {
-            match message {
-                Message::Input { frame, input } => {
-                    // frame from the future, need to wait until will simulate
-                    // the game enough to use this data
-                    if frame < node.frames_buffer.len() as _ {
-                        node.frames_buffer[frame as usize][remote_id] = Some(input);
-                    }
+            if let Message::Input { frame, input } = message {
+                // frame from the future, need to wait until will simulate
+                // the game enough to use this data
+                if frame < node.frames_buffer.len() as _ {
+                    node.frames_buffer[frame as usize][remote_id] = Some(input);
                 }
-                _ => {}
             }
         }
 

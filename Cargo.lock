@@ -260,7 +260,9 @@ checksum = "3cb00336871be5ed2c8ed44b60ae9959dc5b9f08539422ed43f09e34ecaeba21"
 
 [[package]]
 name = "macroquad"
-version = "0.3.9"
+version = "0.3.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d54a31d3996831b27b429f8e9d7b948aa589d3571305eba39f57b4600bd2cd01"
 dependencies = [
  "bumpalo",
  "fontdue",
@@ -312,7 +314,9 @@ dependencies = [
 
 [[package]]
 name = "macroquad_macro"
-version = "0.1.6"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f5cecfede1e530599c8686f7f2d609489101d3d63741a6dc423afc997ce3fcc8"
 
 [[package]]
 name = "maybe-uninit"
@@ -329,6 +333,8 @@ checksum = "490cc448043f947bae3cbee9c203358d62dbee0db12107a74be5c30ccfd09771"
 [[package]]
 name = "miniquad"
 version = "0.3.0-alpha.37"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6793a3ef846953fc7c01302093abf8749be22742c63db05c66ef0a2c889a7fbb"
 dependencies = [
  "sapp-android",
  "sapp-darwin",
@@ -537,6 +543,8 @@ dependencies = [
 [[package]]
 name = "sapp-android"
 version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5a4a81f462ba2783213978528560aa138adf2f94da1ac940c1b5c854c03e1724"
 dependencies = [
  "libc",
  "ndk-sys",
@@ -545,6 +553,8 @@ dependencies = [
 [[package]]
 name = "sapp-darwin"
 version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0310e2445f307468aa13f1cde94d6fba6b8fd329afbb642dedbe3faf1a145f31"
 dependencies = [
  "cc",
 ]
@@ -552,6 +562,8 @@ dependencies = [
 [[package]]
 name = "sapp-dummy"
 version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "66f1ad26a5b6c682b9ca27c66db9aa91002b8d98a82ac7101ded57285215a478"
 dependencies = [
  "libc",
 ]
@@ -559,6 +571,8 @@ dependencies = [
 [[package]]
 name = "sapp-ios"
 version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "081e6e5261c9ac2e938979b6a854a53b439f065fc3c897205ce7e69d3028b4a9"
 dependencies = [
  "cc",
 ]
@@ -566,6 +580,8 @@ dependencies = [
 [[package]]
 name = "sapp-linux"
 version = "0.1.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bbdb2f8011955c62544d9e626a58333e788810d00bd7411d52b81611b92af142"
 dependencies = [
  "libc",
 ]
@@ -573,10 +589,14 @@ dependencies = [
 [[package]]
 name = "sapp-wasm"
 version = "0.1.26"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "00e859e8645a3bcb85aecd40bab883438e4105f21b21bccbeac2348760f508bb"
 
 [[package]]
 name = "sapp-windows"
 version = "0.2.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d8faec983cb54ce5e9529815fc0aae6c36bab9fba9cd0ae5590dfa17bc0719fa"
 dependencies = [
  "winapi",
 ]

@@ -121,7 +121,7 @@ impl Connection {
     fn update(&mut self, kind: ConnectionKind) {
         if let Some(socket) = self.socket.as_mut() {
             let mut buf = [0; 100];
-            if let Ok(_) = socket.recv(&mut buf) {
+            if socket.recv(&mut buf).is_ok() {
                 let _message: Message = nanoserde::DeBin::deserialize_bin(&buf[..]).ok().unwrap();
                 self.status = ConnectionStatus::Connected;
             }
@@ -167,7 +167,7 @@ impl Connection {
                             .send(&nanoserde::SerBin::serialize_bin(&Message::RelayRequestId));
 
                         let mut buf = [0; 100];
-                        if let Ok(_) = socket.recv(&mut buf) {
+                        if socket.recv(&mut buf).is_ok() {
                             let message: Message =
                                 nanoserde::DeBin::deserialize_bin(&buf[..]).ok().unwrap();
                             if let Message::RelayIdAssigned(id) = message {
@@ -197,7 +197,7 @@ impl Connection {
                     ));
 
                     let mut buf = [0; 100];
-                    if let Ok(_) = socket.recv(&mut buf) {
+                    if socket.recv(&mut buf).is_ok() {
                         let message: Message =
                             nanoserde::DeBin::deserialize_bin(&buf[..]).ok().unwrap();
                         if let Message::RelayConnected = message {
@@ -243,7 +243,7 @@ fn is_gamepad_btn_pressed(gui_resources: &GuiResources, btn: quad_gamepad::Gamep
         }
     }
 
-    return false;
+    false
 }
 
 fn network_game_ui(ui: &mut ui::Ui, state: &mut NetworkUiState) -> Option<GameType> {
@@ -313,7 +313,7 @@ fn network_game_ui(ui: &mut ui::Ui, state: &mut NetworkUiState) -> Option<GameTy
             } else {
                 1
             },
-            input_scheme: state.input_scheme.clone(),
+            input_scheme: state.input_scheme,
         });
     }
 

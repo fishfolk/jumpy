@@ -13,8 +13,7 @@ use std::sync::mpsc;
 
 use nanoserde::{DeBin, SerBin};
 
-#[derive(Debug)]
-#[derive(DeBin, SerBin)]
+#[derive(Debug, DeBin, SerBin)]
 pub enum Message {
     /// Empty message, used for connection test
     Idle,
@@ -70,10 +69,7 @@ impl Network {
         input_scheme: InputScheme,
         player1: Handle<Player>,
         player2: Handle<Player>,
-        other_addr: &str,
     ) -> Network {
-        socket.connect(other_addr).unwrap();
-
         socket.set_nonblocking(true).unwrap();
 
         let (tx, rx) = mpsc::channel::<Message>();
@@ -99,24 +95,22 @@ impl Network {
             });
         }
 
-        let other_addr = other_addr.to_owned();
         std::thread::spawn(move || {
-            let other_addr = other_addr.to_owned();
             loop {
                 if let Ok(message) = rx.recv() {
                     let data = SerBin::serialize_bin(&message);
 
                     let socket = socket.try_clone().unwrap();
-                    let other_addr = other_addr.clone();
+
                     // std::thread::spawn(move || {
                     //     std::thread::sleep(std::time::Duration::from_millis(
                     //         macroquad::rand::gen_range(0, 150),
                     //     ));
                     //     if macroquad::rand::gen_range(0, 100) > 20 {
-                    //         let _ = socket.send_to(&data, &other_addr);
+                    //         let _ = socket.send(&data);
                     //     }
                     // });
-                    socket.send_to(&data, &other_addr).unwrap();
+                    socket.send(&data).unwrap();
                 }
             }
         });

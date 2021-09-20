@@ -6,6 +6,8 @@ use macroquad::{
 
 use crate::{gui::GuiResources, input::InputScheme, nodes::network::Message, GameType};
 
+use std::net::UdpSocket;
+
 const RELAY_ADDR: &str = "173.0.157.169:35000";
 const WINDOW_WIDTH: f32 = 700.;
 const WINDOW_HEIGHT: f32 = 400.;
@@ -97,9 +99,10 @@ enum ConnectionStatus {
 
 struct Connection {
     kind: ConnectionKind,
-    socket: Option<std::net::UdpSocket>,
+    socket: Option<UdpSocket>,
     local_addr: String,
     opponent_addr: String,
+    relay_addr: String,
     status: ConnectionStatus,
 }
 
@@ -110,6 +113,7 @@ impl Connection {
             socket: None,
             local_addr: "".to_string(),
             opponent_addr: "".to_string(),
+            relay_addr: RELAY_ADDR.to_string(),
             status: ConnectionStatus::Unknown,
         }
     }
@@ -118,7 +122,7 @@ impl Connection {
         if let Some(socket) = self.socket.as_mut() {
             let mut buf = [0; 100];
             if let Ok(_) = socket.recv(&mut buf) {
-                let message: Message = nanoserde::DeBin::deserialize_bin(&buf[..]).ok().unwrap();
+                let _message: Message = nanoserde::DeBin::deserialize_bin(&buf[..]).ok().unwrap();
                 self.status = ConnectionStatus::Connected;
             }
         }
@@ -137,7 +141,7 @@ impl Connection {
             ];
             match kind {
                 ConnectionKind::Lan => {
-                    let socket = std::net::UdpSocket::bind(&addrs[..]).unwrap();
+                    let socket = UdpSocket::bind(&addrs[..]).unwrap();
 
                     self.local_addr = format!("{}", socket.local_addr().unwrap());
                     socket.set_nonblocking(true).unwrap();
@@ -145,7 +149,7 @@ impl Connection {
                     self.socket = Some(socket);
                 }
                 ConnectionKind::Stun => {
-                    let socket = std::net::UdpSocket::bind(&addrs[..]).unwrap();
+                    let socket = UdpSocket::bind(&addrs[..]).unwrap();
 
                     let sc = stunclient::StunClient::with_google_stun_server();
                     self.local_addr = format!("{}", sc.query_external_address(&socket).unwrap());
@@ -153,14 +157,64 @@ impl Connection {
 
                     self.socket = Some(socket);
                 }
+                ConnectionKind::Relay => {
+                    let socket = UdpSocket::bind(&addrs[..]).unwrap();
+                    socket.connect(&self.relay_addr).unwrap();
+                    socket.set_nonblocking(true).unwrap();
+
+                    loop {
+                        let _ = socket
+                            .send(&nanoserde::SerBin::serialize_bin(&Message::RelayRequestId));
+
+                        let mut buf = [0; 100];
+                        if let Ok(_) = socket.recv(&mut buf) {
+                            let message: Message =
+                                nanoserde::DeBin::deserialize_bin(&buf[..]).ok().unwrap();
+                            if let Message::RelayIdAssigned(id) = message {
+                                self.local_addr = format!("{}", id);
+                                break;
+                            }
+                        }
+                    }
+                    self.socket = Some(socket);
+                }
                 _ => {}
             }
         }
     }
 
+    pub fn connect(&mut self) {
+        let socket = self.socket.as_mut().unwrap();
+        match self.kind {
+            ConnectionKind::Lan | ConnectionKind::Stun => {
+                socket.connect(&self.opponent_addr).unwrap();
+            }
+            ConnectionKind::Relay => {
+                let other_id = self.opponent_addr.parse::<u64>().unwrap();
+                loop {
+                    let _ = socket.send(&nanoserde::SerBin::serialize_bin(
+                        &Message::RelayConnectTo(other_id),
+                    ));
+
+                    let mut buf = [0; 100];
+                    if let Ok(_) = socket.recv(&mut buf) {
+                        let message: Message =
+                            nanoserde::DeBin::deserialize_bin(&buf[..]).ok().unwrap();
+                        if let Message::RelayConnected = message {
+                            break;
+                        }
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
     pub fn probe(&mut self) -> Option<()> {
         assert!(self.socket.is_some());
 
+        if self.kind == ConnectionKind::Relay {
+            return Some(());
+        }
         let socket = self.socket.as_mut().unwrap();
 
         socket.connect(&self.opponent_addr).ok()?;
@@ -178,7 +232,6 @@ struct NetworkUiState {
     input_scheme: InputScheme,
     connection_kind: ConnectionKind,
     connection: Connection,
-    relay_addr: String,
     custom_relay: bool,
 }
 
@@ -222,7 +275,7 @@ fn network_game_ui(ui: &mut ui::Ui, state: &mut NetworkUiState) -> Option<GameTy
             widgets::InputText::new(hash!())
                 .ratio(0.4)
                 .label("Self addr")
-                .ui(ui, &mut state.relay_addr);
+                .ui(ui, &mut state.connection.relay_addr);
         }
     }
 
@@ -251,9 +304,10 @@ fn network_game_ui(ui: &mut ui::Ui, state: &mut NetworkUiState) -> Option<GameTy
     if state.connection.status == ConnectionStatus::Connected
         && ui.button(None, "Connect (A) (Enter)")
     {
+        state.connection.connect();
+
         return Some(GameType::Network {
             socket: state.connection.socket.take().unwrap(),
-            other_addr: state.connection.opponent_addr.clone(),
             id: if state.connection.local_addr > state.connection.opponent_addr {
                 0
             } else {
@@ -294,7 +348,6 @@ pub async fn game_type() -> GameType {
         input_scheme: InputScheme::KeyboardLeft,
         connection_kind: ConnectionKind::Lan,
         custom_relay: false,
-        relay_addr: RELAY_ADDR.to_string(),
     };
 
     let mut tab = 0;

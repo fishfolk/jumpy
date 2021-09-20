@@ -29,7 +29,6 @@ pub enum GameType {
     Network {
         socket: std::net::UdpSocket,
         id: usize,
-        other_addr: String,
         input_scheme: InputScheme,
     },
 }
@@ -271,19 +270,11 @@ async fn game(map: &str, game_type: GameType) {
             scene::add_node(LocalNetwork::new(players_input, player1, player2));
         }
         GameType::Network {
-            ref other_addr,
             input_scheme,
             socket,
             id,
         } => {
-            scene::add_node(Network::new(
-                id,
-                socket,
-                input_scheme,
-                player1,
-                player2,
-                other_addr,
-            ));
+            scene::add_node(Network::new(id, socket, input_scheme, player1, player2));
         }
     }
 

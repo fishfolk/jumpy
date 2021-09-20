@@ -1,13 +1,12 @@
 use macroquad::{
-    color,
     math::Rect,
     prelude::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
         coroutines::{start_coroutine, wait_seconds, Coroutine},
-        draw_circle, draw_circle_lines, draw_texture_ex, get_frame_time,
+        draw_circle, draw_circle_lines, get_frame_time,
         scene::{self, Handle, HandleUntyped, RefMut},
-        vec2, Color, DrawTextureParams, Vec2,
+        vec2, Color, Vec2,
     },
 };
 
@@ -75,7 +74,7 @@ impl Cannon {
                 0.0,
                 vec2(Self::CANNON_WIDTH, Self::CANNON_HEIGHT),
             ),
-            throwable: ThrowableItem::new(),
+            throwable: ThrowableItem::default(),
             amount: Self::INITIAL_CANNONBALLS,
             grace_time: 0.,
         })
@@ -103,6 +102,11 @@ impl Cannon {
     pub fn shoot(node_h: Handle<Cannon>, player: Handle<Player>) -> Coroutine {
         let coroutine = async move {
             {
+                scene::find_node_by_type::<crate::nodes::Camera>()
+                    .unwrap()
+                    .shake_noise_dir(0.8, 4, 0.2, (1.0, 0.1));
+            }
+            {
                 let mut node = scene::get_node(node_h);
 
                 if node.amount <= 0 || node.grace_time > 0. {
@@ -127,7 +131,7 @@ impl Cannon {
                 player.body.speed.x = -Self::CANNON_THROWBACK * player.body.facing_dir().x;
             }
 
-            //wait_seconds(0.08).await;
+            wait_seconds(0.08).await;
 
             {
                 {
@@ -143,7 +147,7 @@ impl Cannon {
                     let mut node = scene::get_node(node_h);
                     node.cannon_sprite.set_animation(1);
                 }
-                for i in 0..4 {
+                for i in 0u32..4 {
                     {
                         let mut node = scene::get_node(node_h);
                         node.cannon_sprite.set_frame(i);
@@ -162,14 +166,14 @@ impl Cannon {
 
     fn physics_capabilities() -> capabilities::PhysicsObject {
         fn active(handle: HandleUntyped) -> bool {
-            let mut node = scene::get_untyped_node(handle)
+            let node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<Cannon>();
 
             node.throwable.owner.is_none()
         }
         fn collider(handle: HandleUntyped) -> Rect {
-            let mut node = scene::get_untyped_node(handle)
+            let node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<Cannon>();
 
@@ -246,7 +250,7 @@ impl Cannon {
         }
 
         fn collider(node: HandleUntyped) -> Rect {
-            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Cannon>();
+            let node = scene::get_untyped_node(node).unwrap().to_typed::<Cannon>();
             Rect::new(
                 node.body.pos.x,
                 node.body.pos.y,
@@ -282,11 +286,10 @@ impl scene::Node for Cannon {
     }
 
     fn draw(node: RefMut<Self>) {
-        let resources = storage::get_mut::<Resources>();
         node.cannon_sprite
             .draw(node.body.pos, node.body.facing, node.body.angle);
 
-        if node.throwable.thrown() == false {
+        if !node.throwable.thrown() {
             node.draw_hud();
         }
     }

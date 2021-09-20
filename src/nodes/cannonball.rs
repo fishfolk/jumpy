@@ -8,7 +8,7 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::{capabilities, circle, components::PhysicsBody, Resources};
+use crate::{components::PhysicsBody, Resources};
 
 //use super::EruptedItem;
 
@@ -19,11 +19,11 @@ pub struct Cannonball {
     countdown: f32,
     owner_id: u8,
     owner_safe_countdown: f32,
-    /// True if erupting from a volcano
-    erupting: bool,
-    /// When erupting, enable the collider etc. after passing this coordinate on the way down. Set/valid
-    /// only when erupting.
-    erupting_enable_on_y: Option<f32>,
+    //   True if erupting from a volcano
+    //erupting: bool,
+    //     When erupting, enable the collider etc. after passing this coordinate on the way down. Set/valid
+    //     only when erupting.
+    //erupting_enable_on_y: Option<f32>,
 }
 
 impl Cannonball {
@@ -39,8 +39,8 @@ impl Cannonball {
     const CANNONBALL_ANIMATION_ROLLING: &'static str = "rolling";
     const CANNONBALL_INITIAL_SPEED_X_REL: f32 = 600.;
     const CANNONBALL_INITIAL_SPEED_Y: f32 = -200.;
-    const CANNONBALL_MOUNT_X_REL: f32 = 20.;
-    const CANNONBALL_MOUNT_Y: f32 = 40.;
+    //const CANNONBALL_MOUNT_X_REL: f32 = 20.;
+    //const CANNONBALL_MOUNT_Y: f32 = 40.;
 
     const EXPLOSION_RADIUS: f32 = 4. * Self::CANNONBALL_WIDTH;
 
@@ -94,11 +94,11 @@ impl Cannonball {
             bouncyness: 1.0,
         };*/
 
-        let cannonball_mount_pos = if facing {
+        /*let cannonball_mount_pos = if facing {
             vec2(Self::CANNONBALL_MOUNT_X_REL, Self::CANNONBALL_MOUNT_Y)
         } else {
             vec2(-Self::CANNONBALL_MOUNT_X_REL, Self::CANNONBALL_MOUNT_Y)
-        };
+        };*/
 
         /*body.collider = Some(resources.collision_world.add_actor(
             body.pos + cannonball_mount_pos,
@@ -113,8 +113,8 @@ impl Cannonball {
             countdown: Self::CANNONBALL_COUNTDOWN_DURATION,
             owner_id,
             owner_safe_countdown: Self::CANNONBALL_OWNER_SAFE_TIME,
-            erupting: false,
-            erupting_enable_on_y: None,
+            //erupting: false,
+            //erupting_enable_on_y: None,
         }
     }
 
@@ -168,7 +168,6 @@ impl scene::Node for Cannonball {
             for player in
                 crate::utils::player_circle_hit(explosion_position, Self::EXPLOSION_RADIUS)
             {
-                println!("{}", player.id);
                 if player.id != cannonball.owner_id || cannonball.owner_safe_countdown < 0. {
                     explode = true;
                     break;

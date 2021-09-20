@@ -1,6 +1,7 @@
 //! Things available to spawn from the level editor
 //! Proto-mods, eventually some of the items will move to some sort of a wasm runtime
 
+mod cannon;
 mod machine_gun;
 mod muscet;
 mod sproinger;
@@ -78,5 +79,16 @@ pub const ITEMS: &[Item] = &[
         sounds: &[],
         fxses: &[],
         network_ready: false,
+    },
+    Item {
+        tiled_name: "cannon",
+        constructor: cannon::Cannon::spawn,
+        tiled_offset: (-35., -25.),
+        textures: &[
+            ("gun", "assets/Whale/Cannon.png"),
+            ("cannonball", "assets/Whale/Cannonball(32x36).png"),
+        ],
+        sounds: &[],
+        fxses: &[],
     },
 ];

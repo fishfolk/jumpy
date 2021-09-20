@@ -1,12 +1,14 @@
 use macroquad::{
     experimental::collections::storage,
+    experimental::scene,
+    experimental::scene::RefMut,
     prelude::{get_frame_time, get_internal_gl, InternalGlContext, Vec2},
     rand::gen_range,
 };
 use macroquad_particles::Emitter;
 
-use crate::Resources;
-use std::f32;
+use crate::{circle::Circle, nodes::Player, Resources};
+use std::{f32, iter::Filter, slice::Iter};
 
 pub fn explode(position: Vec2, radius: f32) {
     //Center position, radius of explosion. Only FX at the moment
@@ -31,4 +33,19 @@ pub fn explode(position: Vec2, radius: f32) {
             .emit(position + Vec2::new(a.cos(), a.sin()) * (radius - 15.0), 1); //Smoke at the edges of the explosion
         a += 4.0 / radius;
     }
+
+    for mut player in player_circle_hit(position, radius) {
+        println!("Explode {}", player.id);
+        let xpos = player.body.pos.x;
+        let hitbox_width = player.get_hitbox().x;
+        player.kill(position.x > (xpos + hitbox_width / 2.)); //Verify player is thrown in correct direction
+    }
+}
+
+pub fn player_circle_hit(position: Vec2, radius: f32) -> Vec<RefMut<Player>> {
+    let hitbox = Circle::new(position.x, position.y, radius);
+
+    scene::find_nodes_by_type::<crate::nodes::Player>()
+        .filter(|player| hitbox.overlaps_rect(&player.get_hitbox()))
+        .collect::<Vec<RefMut<Player>>>()
 }

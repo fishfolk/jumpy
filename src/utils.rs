@@ -6,8 +6,8 @@ use macroquad::{
 use crate::{nodes::Player, Circle, Resources};
 use std::f32;
 
+/// Creates explosion FX and kills players within `radius`
 pub fn explode(position: Vec2, radius: f32) {
-    //Center position, radius of explosion. Only FX at the moment
     let mut r = 0.0;
     {
         let mut resources = storage::get_mut::<Resources>();

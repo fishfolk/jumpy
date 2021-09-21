@@ -243,8 +243,6 @@ impl Cannon {
                 vec2(-60., 16.)
             };
 
-            //let mount_pos = vec2(-40., 0.);
-
             node.body.pos = parent_pos + mount_pos;
             node.body.facing = parent_facing;
         }

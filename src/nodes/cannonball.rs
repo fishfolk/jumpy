@@ -10,8 +10,6 @@ use macroquad::{
 
 use crate::{components::PhysicsBody, Resources};
 
-//use super::EruptedItem;
-
 pub struct Cannonball {
     cannonball_sprite: AnimatedSprite,
     body: PhysicsBody,
@@ -19,11 +17,6 @@ pub struct Cannonball {
     countdown: f32,
     owner_id: u8,
     owner_safe_countdown: f32,
-    //   True if erupting from a volcano
-    //erupting: bool,
-    //     When erupting, enable the collider etc. after passing this coordinate on the way down. Set/valid
-    //     only when erupting.
-    //erupting_enable_on_y: Option<f32>,
 }
 
 impl Cannonball {
@@ -39,8 +32,6 @@ impl Cannonball {
     const CANNONBALL_ANIMATION_ROLLING: &'static str = "rolling";
     const CANNONBALL_INITIAL_SPEED_X_REL: f32 = 600.;
     const CANNONBALL_INITIAL_SPEED_Y: f32 = -200.;
-    //const CANNONBALL_MOUNT_X_REL: f32 = 20.;
-    //const CANNONBALL_MOUNT_Y: f32 = 40.;
 
     const EXPLOSION_RADIUS: f32 = 4. * Self::CANNONBALL_WIDTH;
 
@@ -82,30 +73,6 @@ impl Cannonball {
         );
         body.speed = speed;
 
-        /*PhysicsBody {
-            pos,
-            facing,
-            angle: 0.0,
-            speed,
-            collider: None,
-            on_ground: false,
-            last_frame_on_ground: false,
-            have_gravity: true,
-            bouncyness: 1.0,
-        };*/
-
-        /*let cannonball_mount_pos = if facing {
-            vec2(Self::CANNONBALL_MOUNT_X_REL, Self::CANNONBALL_MOUNT_Y)
-        } else {
-            vec2(-Self::CANNONBALL_MOUNT_X_REL, Self::CANNONBALL_MOUNT_Y)
-        };*/
-
-        /*body.collider = Some(resources.collision_world.add_actor(
-            body.pos + cannonball_mount_pos,
-            CANNONBALL_WIDTH as i32,
-            CANNONBALL_HEIGHT as i32,
-        ));*/
-
         Self {
             cannonball_sprite,
             body,
@@ -113,8 +80,6 @@ impl Cannonball {
             countdown: Self::CANNONBALL_COUNTDOWN_DURATION,
             owner_id,
             owner_safe_countdown: Self::CANNONBALL_OWNER_SAFE_TIME,
-            //erupting: false,
-            //erupting_enable_on_y: None,
         }
     }
 
@@ -124,37 +89,8 @@ impl Cannonball {
     }
 }
 
-/*impl EruptedItem for Cannonball {
-    fn spawn_for_volcano(pos: Vec2, speed: Vec2, enable_at_y: f32, owner_id: u8) {
-        let mut cannonball = Self::new(pos, true, owner_id);
-
-        cannonball.lived -= 2.; // give extra life, since they're random
-        cannonball.body.speed = speed;
-        cannonball.body.collider = None;
-        cannonball.erupting = true;
-        cannonball.erupting_enable_on_y = Some(enable_at_y);
-
-        scene::add_node(cannonball);
-    }
-
-    fn body(&mut self) -> &mut PhysicsBody {
-        &mut self.body
-    }
-    fn enable_at_y(&self) -> f32 {
-        self.erupting_enable_on_y.unwrap()
-    }
-}*/
-
 impl scene::Node for Cannonball {
     fn fixed_update(mut cannonball: RefMut<Self>) {
-        /*if cannonball.erupting {
-            let cannonball_enabled = cannonball.eruption_update();
-
-            if !cannonball_enabled {
-                return;
-            }
-        }*/
-
         cannonball.body.update();
         cannonball.lived += get_frame_time();
         cannonball.owner_safe_countdown -= get_frame_time();

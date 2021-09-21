@@ -5,7 +5,7 @@ mod machine_gun;
 mod muscet;
 mod sproinger;
 mod sword;
-
+mod turtle_shell;
 use macroquad::{experimental::scene::HandleUntyped, math::Vec2};
 
 /// Proto-mod
@@ -75,6 +75,15 @@ pub const ITEMS: &[Item] = &[
         constructor: machine_gun::MachineGun::spawn,
         tiled_offset: (-35., -25.),
         textures: &[("gun", "assets/Whale/MachineGun.png")],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    },
+    Item {
+        tiled_name: "turtleshell",
+        constructor: turtle_shell::TurtleShell::spawn,
+        tiled_offset: (0., 0.),
+        textures: &[("shell", "assets/Whale/TurtleShell(32x32).png")],
         sounds: &[],
         fxses: &[],
         network_ready: false,

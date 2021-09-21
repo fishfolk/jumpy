@@ -305,7 +305,7 @@ async fn game(map: &str, game_type: GameType) {
 
 fn window_conf() -> Conf {
     Conf {
-        window_title: "FISH".to_owned(),
+        window_title: "FishFight".to_owned(),
         high_dpi: false,
         window_width: 955,
         window_height: 600,

@@ -79,7 +79,6 @@ pub const ITEMS: &[Item] = &[
         fxses: &[],
         network_ready: false,
     },
-
     Item {
         tiled_name: "turtleshell",
         constructor: turtle_shell::TurtleShell::spawn,
@@ -88,5 +87,5 @@ pub const ITEMS: &[Item] = &[
         sounds: &[],
         fxses: &[],
         network_ready: false,
-    }
+    },
 ];

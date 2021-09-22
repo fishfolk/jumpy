@@ -11,7 +11,6 @@ use macroquad::{
 
 use crate::{
     components::{PhysicsBody, EruptedItem},
-    nodes::Player,
     Resources
 };
 
@@ -112,23 +111,31 @@ impl EruptedItem for ArmedGrenade {
 
 impl Node for ArmedGrenade {
     fn fixed_update(mut node: RefMut<Self>) {
-        let node = &mut *node;
-
         node.grenade_sprite.update();
 
-        let grenade_circ = Circle::new(
-            node.body.pos.x,
-            node.body.pos.y,
-            ArmedGrenade::EXPLOSION_RADIUS,
-        );
+        node.body.update();
 
-        for mut player in scene::find_nodes_by_type::<Player>() {
-            if grenade_circ.overlaps_rect(&player.get_hitbox()) {
-                let direction = node.body.pos.x > (player.body.pos.x + 10.);
-                scene::find_node_by_type::<crate::nodes::Camera>()
-                    .unwrap();
-                player.kill(direction);
+        node.lived += get_frame_time();
+
+        if node.lived >= ArmedGrenade::COUNTDOWN_DURATION {
+            {
+                let mut resources = storage::get_mut::<Resources>();
+                resources.hit_fxses.spawn(node.body.pos);
             }
+            let grenade_circ = Circle::new(
+                node.body.pos.x,
+                node.body.pos.y,
+                ArmedGrenade::EXPLOSION_RADIUS,
+            );
+            for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
+                if grenade_circ.overlaps_rect(&player.get_hitbox()) {
+                    let direction = node.body.pos.x > (player.body.pos.x + 10.);
+                    scene::find_node_by_type::<crate::nodes::Camera>()
+                        .unwrap();
+                    player.kill(direction);
+                }
+            }
+            node.delete();
         }
     }
 

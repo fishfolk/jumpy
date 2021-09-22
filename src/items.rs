@@ -6,7 +6,9 @@ mod muscet;
 mod sproinger;
 mod sword;
 mod turtle_shell;
+mod grenades;
 use macroquad::{experimental::scene::HandleUntyped, math::Vec2};
+use crate::components;
 
 /// Proto-mod
 /// A meta description on how to create an item from the map
@@ -84,6 +86,15 @@ pub const ITEMS: &[Item] = &[
         constructor: turtle_shell::TurtleShell::spawn,
         tiled_offset: (0., 0.),
         textures: &[("shell", "assets/Whale/TurtleShell(32x32).png")],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    },
+    Item {
+        tiled_name: "grenades",
+        constructor: grenades::Grenades::spawn,
+        tiled_offset: (0., 0.),
+        textures: &[("explosives", "assets/Whale/Grenades(15x15).png")],
         sounds: &[],
         fxses: &[],
         network_ready: false,

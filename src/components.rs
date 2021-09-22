@@ -13,8 +13,12 @@ mod bullet;
 mod gunlike_animation;
 mod physics_body;
 mod throwable_item;
+mod armed_grenade;
+mod erupted_item;
 
 pub use bullet::Bullet;
 pub use gunlike_animation::GunlikeAnimation;
 pub use physics_body::PhysicsBody;
 pub use throwable_item::ThrowableItem;
+pub use armed_grenade::ArmedGrenade;
+pub use erupted_item::EruptedItem;

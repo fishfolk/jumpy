@@ -9,20 +9,12 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::{
-    components::{EruptedItem, PhysicsBody},
-    Resources,
-};
+use crate::{components::PhysicsBody, Resources};
 
 pub struct ArmedGrenade {
     grenade_sprite: AnimatedSprite,
     pub body: PhysicsBody,
     lived: f32,
-    /// True if erupting from a volcano
-    erupting: bool,
-    /// When erupting, enable the collider etc. after passing this coordinate on the way down. Set/valid
-    /// only when erupting.
-    erupting_enable_on_y: Option<f32>,
 }
 
 impl ArmedGrenade {
@@ -80,34 +72,12 @@ impl ArmedGrenade {
             grenade_sprite,
             body,
             lived: 0.0,
-            erupting: false,
-            erupting_enable_on_y: None,
         }
     }
 
     pub fn spawn(pos: Vec2, facing: bool) {
         let grenade = ArmedGrenade::new(pos, facing);
         scene::add_node(grenade);
-    }
-}
-
-impl EruptedItem for ArmedGrenade {
-    fn spawn_for_volcano(pos: Vec2, speed: Vec2, enable_at_y: f32, _owner_id: u8) {
-        let mut grenade = ArmedGrenade::new(pos, true);
-
-        grenade.lived -= 2.; // give extra life, since they're random
-        grenade.body.speed = speed;
-        grenade.erupting = true;
-        grenade.erupting_enable_on_y = Some(enable_at_y);
-
-        scene::add_node(grenade);
-    }
-
-    fn body(&mut self) -> &mut PhysicsBody {
-        &mut self.body
-    }
-    fn enable_at_y(&self) -> f32 {
-        self.erupting_enable_on_y.unwrap()
     }
 }
 

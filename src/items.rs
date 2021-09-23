@@ -1,6 +1,7 @@
 //! Things available to spawn from the level editor
 //! Proto-mods, eventually some of the items will move to some sort of a wasm runtime
 
+mod armed_grenade;
 mod grenades;
 mod machine_gun;
 mod muscet;

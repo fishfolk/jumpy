@@ -11,7 +11,8 @@ use macroquad::{
 
 use crate::{
     capabilities,
-    components::{ArmedGrenade, GunlikeAnimation, PhysicsBody, ThrowableItem},
+    components::{GunlikeAnimation, PhysicsBody, ThrowableItem},
+    items::armed_grenade::ArmedGrenade,
     nodes::Player,
     Resources,
 };

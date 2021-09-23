@@ -8,7 +8,6 @@ mod sword;
 mod turtle_shell;
 mod grenades;
 use macroquad::{experimental::scene::HandleUntyped, math::Vec2};
-use crate::components;
 
 /// Proto-mod
 /// A meta description on how to create an item from the map

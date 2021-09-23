@@ -3,6 +3,7 @@
 
 mod machine_gun;
 mod muscet;
+pub mod shoes;
 mod sproinger;
 mod sword;
 mod turtle_shell;
@@ -94,6 +95,15 @@ pub const ITEMS: &[Item] = &[
         constructor: grenades::Grenades::spawn,
         tiled_offset: (0., 0.),
         textures: &[("explosives", "assets/Whale/Grenades.png")],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    },
+    Item {
+        tiled_name: "shoes",
+        constructor: shoes::Shoes::spawn,
+        tiled_offset: (0., 0.),
+        textures: &[("shoes", "assets/Whale/Shoes(32x32).png")],
         sounds: &[],
         fxses: &[],
         network_ready: false,

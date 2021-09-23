@@ -3,9 +3,12 @@ pub mod explosives {
         color,
         experimental::{animation::AnimatedSprite, collections::storage, scene::RefMut},
         prelude::*,
+        rand::gen_range,
     };
 
-    use crate::{components::PhysicsBody, Resources};
+    use crate::{components::PhysicsBody, nodes::Player, Resources};
+
+    use std::f32;
 
     pub struct Explosive {
         texture: String,
@@ -17,7 +20,7 @@ pub mod explosives {
     }
 
     pub struct DetonationParameters {
-        /// If a player is within this radius, it will explode. 0 for no proximity detonation. 
+        /// If a player is within this radius, it will explode. 0 for no proximity detonation.
         pub trigger_radius: f32,
         /// Duration for which the owner of the explosive will not trigger the proximity fuze.
         pub owner_safe_fuse: f32,
@@ -94,9 +97,11 @@ pub mod explosives {
 
             let mut explode = false;
 
-            if explosive.lived < explosive.detonation_parameters.fuse && explosive.detonation_parameters.fuse != 0. {
+            if explosive.lived < explosive.detonation_parameters.fuse
+                && explosive.detonation_parameters.fuse != 0.
+            {
                 if explosive.detonation_parameters.trigger_radius > 0. {
-                    for player in crate::utils::player_circle_hit(
+                    for player in player_circle_hit(
                         explosion_position,
                         explosive.detonation_parameters.trigger_radius,
                     ) {
@@ -113,7 +118,7 @@ pub mod explosives {
             }
 
             if explode {
-                crate::utils::explode(
+                create_explosion(
                     explosion_position,
                     explosive.detonation_parameters.explosion_radius,
                 );
@@ -140,5 +145,53 @@ pub mod explosives {
                 },
             );
         }
+    }
+
+    /// Creates explosion FX and kills players within `radius`
+    pub fn create_explosion(position: Vec2, radius: f32) {
+        let mut r = 0.0;
+        {
+            let mut resources = storage::get_mut::<Resources>();
+            while r < radius - 5. {
+                // Particles are 5 in radius
+                r += 10.0 / (r + 1.);
+                let angle = gen_range(0.0, f32::consts::PI * 2.);
+                resources
+                    .fx_explosion_fire
+                    .emit(position + Vec2::new(angle.cos(), angle.sin()) * r, 1);
+                //Explosion
+            }
+
+            resources.fx_explosion_particles.spawn(position); //Bits/particles
+
+            let mut a = 0.0;
+            while a < f32::consts::PI * 2.0 {
+                resources
+                    .fx_smoke
+                    .emit(position + Vec2::new(a.cos(), a.sin()) * (radius - 15.0), 1); //Smoke at the edges of the explosion
+                a += 4.0 / radius;
+            }
+        }
+
+        for mut player in player_circle_hit(position, radius) {
+            let xpos = player.body.pos.x;
+            let hitbox_width = player.get_hitbox().x;
+            player.kill(position.x > (xpos + hitbox_width / 2.)); //Verify player is thrown in correct direction
+        }
+
+        scene::find_node_by_type::<crate::nodes::Camera>()
+            .unwrap()
+            .shake_noise(radius / 3., 15, 0.6);
+        scene::find_node_by_type::<crate::nodes::Camera>()
+            .unwrap()
+            .shake_rotational(1., 5);
+    }
+
+    pub fn player_circle_hit(position: Vec2, radius: f32) -> Vec<RefMut<Player>> {
+        let hitbox = Circle::new(position.x, position.y, radius);
+
+        scene::find_nodes_by_type::<crate::nodes::Player>()
+            .filter(|player| hitbox.overlaps_rect(&player.get_hitbox()))
+            .collect::<Vec<RefMut<Player>>>()
     }
 }

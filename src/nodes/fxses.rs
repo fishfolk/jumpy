@@ -4,7 +4,7 @@ use macroquad::{
         collections::storage,
         scene::{self, RefMut},
     },
-    prelude::Vec2,
+    math::Vec2,
     telemetry,
 };
 

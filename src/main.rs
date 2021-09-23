@@ -19,7 +19,6 @@ mod input;
 mod items;
 mod nodes;
 mod noise;
-mod utils;
 
 pub mod components;
 

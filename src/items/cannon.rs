@@ -13,7 +13,7 @@ use macroquad::{
 use crate::{
     capabilities,
     components::{GunlikeAnimation, PhysicsBody, ThrowableItem},
-    nodes::{Cannonball, Player},
+    nodes::{explosives, Player},
     Resources,
 };
 
@@ -39,6 +39,23 @@ impl Cannon {
 
     const CANNON_THROWBACK: f32 = 1050.0;
     const SHOOTING_GRACE_TIME: f32 = 1.0; // seconds
+
+    // --- Cannonball Settings
+    const CANNONBALL_TEXTURE_NAME: &'static str = "cannon/cannonball";
+    const CANNONBALL_COUNTDOWN_DURATION: f32 = 0.5;
+    /// After shooting, the owner is safe for this amount of time. This is crucial, otherwise, given the
+    /// large hitbox, they will die immediately on shoot.
+    /// The formula is simplified (it doesn't include mount position, run speed and throwback).
+    const CANNONBALL_OWNER_SAFE_TIME: f32 =
+        Self::EXPLOSION_RADIUS / Self::CANNONBALL_INITIAL_SPEED_X_REL;
+
+    const CANNONBALL_WIDTH: f32 = 32.;
+    pub const CANNONBALL_HEIGHT: f32 = 36.;
+    const CANNONBALL_ANIMATION_ROLLING: &'static str = "rolling";
+    const CANNONBALL_INITIAL_SPEED_X_REL: f32 = 600.;
+    const CANNONBALL_INITIAL_SPEED_Y: f32 = -200.;
+
+    const EXPLOSION_RADIUS: f32 = 4. * Self::CANNONBALL_WIDTH;
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
         let mut resources = storage::get_mut::<Resources>();
@@ -124,9 +141,36 @@ impl Cannon {
 
                 let cannonball_pos = vec2(
                     node.body.pos.x,
-                    node.body.pos.y + 20. - (Cannonball::CANNONBALL_HEIGHT as f32 / 2.),
+                    node.body.pos.y + 20. - (Self::CANNONBALL_HEIGHT as f32 / 2.),
                 );
-                Cannonball::spawn(cannonball_pos, node.body.facing, player.id);
+
+                explosives::Explosive::spawn(
+                    cannonball_pos,
+                    vec2(
+                        Self::CANNONBALL_INITIAL_SPEED_X_REL * player.body.facing_dir().x,
+                        Self::CANNONBALL_INITIAL_SPEED_Y,
+                    ),
+                    explosives::DetonationParameters {
+                        trigger_radius: Self::EXPLOSION_RADIUS,
+                        owner_safe_fuse: Self::CANNONBALL_OWNER_SAFE_TIME,
+                        explosion_radius: Self::EXPLOSION_RADIUS,
+                        fuse: Self::CANNONBALL_COUNTDOWN_DURATION,
+                    },
+                    Self::CANNONBALL_TEXTURE_NAME,
+                    AnimatedSprite::new(
+                        Self::CANNONBALL_WIDTH as u32,
+                        Self::CANNONBALL_HEIGHT as u32,
+                        &[Animation {
+                            name: Self::CANNONBALL_ANIMATION_ROLLING.to_string(),
+                            row: 0,
+                            frames: 1,
+                            fps: 1,
+                        }],
+                        true,
+                    ),
+                    vec2(Self::CANNONBALL_WIDTH, Self::CANNONBALL_HEIGHT),
+                    player.id,
+                );
 
                 player.body.speed.x = -Self::CANNON_THROWBACK * player.body.facing_dir().x;
             }

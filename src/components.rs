@@ -9,16 +9,16 @@
 //! results from component's calls
 //! Or just copy-paste the whole component code into a weapon and modify it. This is fine!
 
+mod armed_grenade;
 mod bullet;
+mod erupted_item;
 mod gunlike_animation;
 mod physics_body;
 mod throwable_item;
-mod armed_grenade;
-mod erupted_item;
 
+pub use armed_grenade::ArmedGrenade;
 pub use bullet::Bullet;
+pub use erupted_item::EruptedItem;
 pub use gunlike_animation::GunlikeAnimation;
 pub use physics_body::PhysicsBody;
 pub use throwable_item::ThrowableItem;
-pub use armed_grenade::ArmedGrenade;
-pub use erupted_item::EruptedItem;

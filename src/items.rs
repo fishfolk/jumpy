@@ -1,13 +1,13 @@
 //! Things available to spawn from the level editor
 //! Proto-mods, eventually some of the items will move to some sort of a wasm runtime
 
+mod grenades;
 mod machine_gun;
 mod muscet;
 pub mod shoes;
 mod sproinger;
 mod sword;
 mod turtle_shell;
-mod grenades;
 use macroquad::{experimental::scene::HandleUntyped, math::Vec2};
 
 /// Proto-mod

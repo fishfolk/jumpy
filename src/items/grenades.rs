@@ -11,7 +11,7 @@ use macroquad::{
 
 use crate::{
     capabilities,
-    components::{PhysicsBody, ThrowableItem, ArmedGrenade, GunlikeAnimation},
+    components::{ArmedGrenade, GunlikeAnimation, PhysicsBody, ThrowableItem},
     nodes::Player,
     Resources,
 };
@@ -36,7 +36,7 @@ impl Grenades {
         let mut resources = storage::get_mut::<Resources>();
 
         let grenade_sprite = GunlikeAnimation::new(
-                AnimatedSprite::new(
+            AnimatedSprite::new(
                 21,
                 28,
                 &[Animation {
@@ -62,9 +62,9 @@ impl Grenades {
             thrown: false,
             throwable: ThrowableItem::default(),
             amount: Self::MAXIMUM_AMOUNT,
-        }).untyped()
+        })
+        .untyped()
     }
-
 
     fn draw_hud(&self) {
         let full_color = Color::new(0.8, 0.9, 1.0, 1.0);
@@ -129,7 +129,9 @@ impl Grenades {
         }
 
         fn is_thrown(node: HandleUntyped) -> bool {
-            let node = scene::get_untyped_node(node).unwrap().to_typed::<Grenades>();
+            let node = scene::get_untyped_node(node)
+                .unwrap()
+                .to_typed::<Grenades>();
 
             node.throwable.thrown()
         }
@@ -148,7 +150,9 @@ impl Grenades {
         }
 
         fn mount(node: HandleUntyped, parent_pos: Vec2, parent_facing: bool) {
-            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Grenades>();
+            let mut node = scene::get_untyped_node(node)
+                .unwrap()
+                .to_typed::<Grenades>();
             let mount_pos = if node.body.facing {
                 vec2(0., 16.)
             } else {
@@ -160,7 +164,9 @@ impl Grenades {
         }
 
         fn collider(node: HandleUntyped) -> Rect {
-            let node = scene::get_untyped_node(node).unwrap().to_typed::<Grenades>();
+            let node = scene::get_untyped_node(node)
+                .unwrap()
+                .to_typed::<Grenades>();
             Rect::new(
                 node.body.pos.x,
                 node.body.pos.y,
@@ -172,10 +178,10 @@ impl Grenades {
         capabilities::Weapon {
             collider,
             mount,
-            throw,
-            shoot,
             is_thrown,
             pick_up,
+            throw,
+            shoot,
         }
     }
 

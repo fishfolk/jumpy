@@ -1,5 +1,5 @@
-use macroquad::prelude::{collections::storage, get_frame_time};
 use macroquad::math::{vec2, Vec2};
+use macroquad::prelude::{collections::storage, get_frame_time};
 
 use crate::Resources;
 

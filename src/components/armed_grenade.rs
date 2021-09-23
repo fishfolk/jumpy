@@ -3,15 +3,15 @@ use macroquad::{
     experimental::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
-        scene::{Node, RefMut,},
+        scene::{Node, RefMut},
     },
     math::{vec2, Vec2},
     prelude::*,
 };
 
 use crate::{
-    components::{PhysicsBody, EruptedItem},
-    Resources
+    components::{EruptedItem, PhysicsBody},
+    Resources,
 };
 
 pub struct ArmedGrenade {
@@ -49,7 +49,6 @@ impl ArmedGrenade {
             vec2(-600., -200.)
         };
 
-
         let mut resources = storage::get_mut::<Resources>();
 
         let grenade_mount_pos = if facing {
@@ -64,15 +63,18 @@ impl ArmedGrenade {
             pos,
             facing,
             angle: 0.0,
-            size, 
+            size,
             speed,
-            collider: resources.collision_world.add_actor(pos + grenade_mount_pos, size.x as _, size.y as _),
+            collider: resources.collision_world.add_actor(
+                pos + grenade_mount_pos,
+                size.x as _,
+                size.y as _,
+            ),
             on_ground: false,
             last_frame_on_ground: false,
             have_gravity: true,
             bouncyness: 0.5,
         };
-
 
         ArmedGrenade {
             grenade_sprite,
@@ -130,8 +132,7 @@ impl Node for ArmedGrenade {
             for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
                 if grenade_circ.overlaps_rect(&player.get_hitbox()) {
                     let direction = node.body.pos.x > (player.body.pos.x + 10.);
-                    scene::find_node_by_type::<crate::nodes::Camera>()
-                        .unwrap();
+                    scene::find_node_by_type::<crate::nodes::Camera>().unwrap();
                     player.kill(direction);
                 }
             }
@@ -142,7 +143,7 @@ impl Node for ArmedGrenade {
     fn draw(node: RefMut<Self>) {
         let resources = storage::get_mut::<Resources>();
         draw_texture_ex(
-        resources.items_textures["grenades/explosives"],
+            resources.items_textures["grenades/explosives"],
             node.body.pos.x,
             node.body.pos.y,
             color::WHITE,

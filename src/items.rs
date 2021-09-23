@@ -94,7 +94,7 @@ pub const ITEMS: &[Item] = &[
         tiled_name: "grenades",
         constructor: grenades::Grenades::spawn,
         tiled_offset: (0., 0.),
-        textures: &[("explosives", "assets/Whale/Grenades(15x15).png")],
+        textures: &[("explosives", "assets/Whale/Grenades.png")],
         sounds: &[],
         fxses: &[],
         network_ready: false,

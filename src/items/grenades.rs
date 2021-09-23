@@ -95,7 +95,7 @@ impl Grenades {
                     return;
                 }
 
-                ArmedGrenade::spawn(node.body.pos);
+                ArmedGrenade::spawn(node.body.pos, node.body.facing);
                 node.amount -= 1;
             }
 

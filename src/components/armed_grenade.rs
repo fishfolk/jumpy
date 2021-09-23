@@ -83,8 +83,8 @@ impl ArmedGrenade {
         }
     }
 
-    pub fn spawn(pos: Vec2) {
-        let grenade = ArmedGrenade::new(pos, true);
+    pub fn spawn(pos: Vec2, facing: bool) {
+        let grenade = ArmedGrenade::new(pos, facing);
         scene::add_node(grenade);
     }
 }

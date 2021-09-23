@@ -14,6 +14,7 @@ use macroquad::{
 use crate::{
     capabilities::{NetworkReplicate, PhysicsObject, Weapon, WeaponTrait},
     components::PhysicsBody,
+    items::shoes::Shoes,
     Input, Resources,
 };
 
@@ -83,13 +84,13 @@ pub struct Player {
 
     pub camera_box: Rect,
 
-    pub can_head_boink: bool,
     pub is_crouched: bool,
 
     pub incapacitated_duration: f32,
     pub incapacitated_timer: f32,
 
     pub back_armor: i32,
+    pub can_head_boink: bool,
 }
 
 impl Player {
@@ -355,6 +356,11 @@ impl Player {
             wait_seconds(0.5).await;
 
             let mut this = scene::get_node(handle);
+
+            if this.can_head_boink {
+                Shoes::spawn(this.body.pos);
+                this.can_head_boink = false;
+            }
 
             this.body.pos = {
                 let resources = storage::get_mut::<Resources>();
@@ -705,13 +711,10 @@ impl Player {
             for mut other in scene::find_nodes_by_type::<Player>() {
                 let other_hitbox = other.get_hitbox();
                 let is_overlapping = hitbox.overlaps(&other_hitbox);
-                if is_overlapping {
-                    //
-                    if hitbox.y + 60.0 < other_hitbox.y + Self::HEAD_THRESHOLD {
-                        let resources = storage::get_mut::<Resources>();
-                        play_sound_once(resources.jump_sound);
-                        other.kill(!node.body.facing);
-                    }
+                if is_overlapping && hitbox.y + 60.0 < other_hitbox.y + Self::HEAD_THRESHOLD {
+                    let resources = storage::get::<Resources>();
+                    play_sound_once(resources.jump_sound);
+                    other.kill(!node.body.facing);
                 }
             }
         }

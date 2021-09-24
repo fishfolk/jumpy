@@ -125,7 +125,7 @@ impl Node for Shoes {
                 source: Some(node.sprite.frame().source_rect),
                 dest_size: Some(node.sprite.frame().dest_size),
                 flip_x: false,
-                rotation: 0.0,
+                rotation: node.body.angle,
                 ..Default::default()
             },
         )

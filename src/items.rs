@@ -1,6 +1,7 @@
 //! Things available to spawn from the level editor
 //! Proto-mods, eventually some of the items will move to some sort of a wasm runtime
 
+mod grenades;
 mod machine_gun;
 mod muscet;
 pub mod shoes;
@@ -85,6 +86,15 @@ pub const ITEMS: &[Item] = &[
         constructor: turtle_shell::TurtleShell::spawn,
         tiled_offset: (0., 0.),
         textures: &[("shell", "assets/Whale/TurtleShell(32x32).png")],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    },
+    Item {
+        tiled_name: "grenades",
+        constructor: grenades::Grenades::spawn,
+        tiled_offset: (0., 0.),
+        textures: &[("explosives", "assets/Whale/Grenades.png")],
         sounds: &[],
         fxses: &[],
         network_ready: false,

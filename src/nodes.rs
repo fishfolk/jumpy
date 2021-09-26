@@ -1,6 +1,6 @@
 mod camera;
 mod decoration;
-mod explosive;
+pub mod explosive;
 mod fxses;
 mod level_background;
 mod local_network;
@@ -9,7 +9,6 @@ mod player;
 
 pub use camera::Camera;
 pub use decoration::Decoration;
-pub use explosive::explosives;
 pub use fxses::Fxses;
 pub use level_background::LevelBackground;
 pub use local_network::LocalNetwork;

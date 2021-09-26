@@ -13,7 +13,7 @@ use macroquad::{
 use crate::{
     capabilities,
     components::{GunlikeAnimation, PhysicsBody, ThrowableItem},
-    nodes::{explosives, Player},
+    nodes::{explosive, Player},
     Resources,
 };
 
@@ -144,17 +144,17 @@ impl Cannon {
                     node.body.pos.y + 20. - (Self::CANNONBALL_HEIGHT as f32 / 2.),
                 );
 
-                explosives::Explosive::spawn(
+                explosive::Explosive::spawn(
                     cannonball_pos,
                     vec2(
                         Self::CANNONBALL_INITIAL_SPEED_X_REL * player.body.facing_dir().x,
                         Self::CANNONBALL_INITIAL_SPEED_Y,
                     ),
-                    explosives::DetonationParameters {
-                        trigger_radius: Self::EXPLOSION_RADIUS,
+                    explosive::DetonationParameters {
+                        trigger_radius: Some(Self::EXPLOSION_RADIUS),
                         owner_safe_fuse: Self::CANNONBALL_OWNER_SAFE_TIME,
                         explosion_radius: Self::EXPLOSION_RADIUS,
-                        fuse: Self::CANNONBALL_COUNTDOWN_DURATION,
+                        fuse: Some(Self::CANNONBALL_COUNTDOWN_DURATION),
                     },
                     Self::CANNONBALL_TEXTURE_NAME,
                     AnimatedSprite::new(

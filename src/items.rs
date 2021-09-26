@@ -8,6 +8,7 @@ pub mod shoes;
 mod sproinger;
 mod sword;
 mod turtle_shell;
+mod galleon;
 use macroquad::{experimental::scene::HandleUntyped, math::Vec2};
 
 /// Proto-mod
@@ -104,6 +105,15 @@ pub const ITEMS: &[Item] = &[
         constructor: shoes::Shoes::spawn,
         tiled_offset: (0., 0.),
         textures: &[("shoes", "assets/Whale/Shoes(32x32).png")],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    },
+    Item {
+        tiled_name: "galleon",
+        constructor: galleon::Galleon::spawn,
+        tiled_offset: (0., 0.),
+        textures: &[("galleon", "assets/Whale/GalleonIcon(32x29).png")],
         sounds: &[],
         fxses: &[],
         network_ready: false,

@@ -94,7 +94,7 @@ pub const ITEMS: &[Item] = &[
         fxses: &[],
         network_ready: false, // There's no random but I can't verify)
     },
-    Item{
+    Item {
         tiled_name: "turtleshell",
         constructor: turtle_shell::TurtleShell::spawn,
         tiled_offset: (0., 0.),

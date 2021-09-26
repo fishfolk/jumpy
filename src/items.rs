@@ -2,11 +2,13 @@
 //! Proto-mods, eventually some of the items will move to some sort of a wasm runtime
 
 mod cannon;
+mod grenades;
 mod machine_gun;
 mod muscet;
+pub mod shoes;
 mod sproinger;
 mod sword;
-
+mod turtle_shell;
 use macroquad::{experimental::scene::HandleUntyped, math::Vec2};
 
 /// Proto-mod
@@ -91,5 +93,32 @@ pub const ITEMS: &[Item] = &[
         sounds: &[],
         fxses: &[],
         network_ready: false, // There's no random but I can't verify)
+    },
+    Item{
+        tiled_name: "turtleshell",
+        constructor: turtle_shell::TurtleShell::spawn,
+        tiled_offset: (0., 0.),
+        textures: &[("shell", "assets/Whale/TurtleShell(32x32).png")],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    },
+    Item {
+        tiled_name: "grenades",
+        constructor: grenades::Grenades::spawn,
+        tiled_offset: (0., 0.),
+        textures: &[("explosives", "assets/Whale/Grenades.png")],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    },
+    Item {
+        tiled_name: "shoes",
+        constructor: shoes::Shoes::spawn,
+        tiled_offset: (0., 0.),
+        textures: &[("shoes", "assets/Whale/Shoes(32x32).png")],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
     },
 ];

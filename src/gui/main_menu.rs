@@ -183,14 +183,18 @@ impl Connection {
         }
     }
 
-    pub fn connect(&mut self) {
+    pub fn connect(&mut self) -> bool {
         let socket = self.socket.as_mut().unwrap();
         match self.kind {
             ConnectionKind::Lan | ConnectionKind::Stun => {
                 socket.connect(&self.opponent_addr).unwrap();
             }
             ConnectionKind::Relay => {
-                let other_id = self.opponent_addr.parse::<u64>().unwrap();
+                let other_id;
+                match self.opponent_addr.parse::<u64>() {
+                    Ok(v) => other_id = v,
+                    Err(_) => return false,
+                };
                 loop {
                     let _ = socket.send(&nanoserde::SerBin::serialize_bin(
                         &Message::RelayConnectTo(other_id),
@@ -208,6 +212,7 @@ impl Connection {
             }
             _ => {}
         }
+        true
     }
     pub fn probe(&mut self) -> Option<()> {
         assert!(self.socket.is_some());
@@ -303,9 +308,8 @@ fn network_game_ui(ui: &mut ui::Ui, state: &mut NetworkUiState) -> Option<GameTy
 
     if state.connection.status == ConnectionStatus::Connected
         && ui.button(None, "Connect (A) (Enter)")
+        && state.connection.connect()
     {
-        state.connection.connect();
-
         return Some(GameType::Network {
             socket: state.connection.socket.take().unwrap(),
             id: if state.connection.local_addr > state.connection.opponent_addr {

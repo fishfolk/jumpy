@@ -1,9 +1,23 @@
 use macroquad::{
     experimental::collections::storage,
-    input::{is_key_down, KeyCode},
+    input::{
+        is_key_down,
+        is_key_pressed,
+        KeyCode,
+        MouseButton,
+        is_mouse_button_down,
+        is_mouse_button_pressed,
+    },
+    math::{
+        Vec2,
+        vec2,
+    },
 };
 
+use quad_gamepad::GamepadButton;
+
 use nanoserde::{DeBin, SerBin};
+use macroquad::input::mouse_wheel;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum InputScheme {
@@ -55,7 +69,7 @@ pub fn collect_input(scheme: InputScheme) -> Input {
     }
 
     if let InputScheme::Gamepad(ix) = scheme {
-        use quad_gamepad::GamepadButton::*;
+        use GamepadButton::*;
 
         let gui_resources = storage::get_mut::<crate::gui::GuiResources>();
 
@@ -70,6 +84,82 @@ pub fn collect_input(scheme: InputScheme) -> Input {
         input.down = state.analog_state[1] > 0.5;
 
         input.slide = state.digital_state[Y as usize];
+    }
+
+    input
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum EditorInputScheme {
+    Keyboard,
+    Gamepad(usize),
+}
+
+#[derive(Default, Debug, Clone, Copy)]
+pub struct EditorInput {
+    pub action: bool,
+    pub back: bool,
+    pub context_menu: bool,
+    pub camera_move: Vec2,
+    pub camera_zoom: f32,
+    pub cursor_move: Vec2,
+}
+
+pub fn collect_editor_input(scheme: EditorInputScheme) -> EditorInput {
+    let mut input = EditorInput::default();
+
+    match scheme {
+        EditorInputScheme::Keyboard => {
+            input.action = is_mouse_button_down(MouseButton::Left);
+            input.back = is_mouse_button_down(MouseButton::Middle);
+            input.context_menu = is_mouse_button_pressed(MouseButton::Right);
+
+            if is_key_down(KeyCode::Left) || is_key_down(KeyCode::A) {
+                input.camera_move.x = -1.0;
+            } else if is_key_down(KeyCode::Right) || is_key_down(KeyCode::D) {
+                input.camera_move.x = 1.0;
+            }
+
+            if is_key_down(KeyCode::Up) || is_key_down(KeyCode::W) {
+                input.camera_move.y = -1.0;
+            } else if is_key_down(KeyCode::Down) || is_key_down(KeyCode::S) {
+                input.camera_move.y = 1.0;
+            }
+
+            let (_, zoom) = mouse_wheel();
+            if zoom < 0.0 {
+                input.camera_zoom = -1.0;
+            } else if zoom > 0.0 {
+                input.camera_zoom = 1.0;
+            }
+        },
+        EditorInputScheme::Gamepad(ix) => {
+            let gui_resources = storage::get_mut::<crate::gui::GuiResources>();
+
+            let state = gui_resources.gamepads.state(ix);
+
+            input.action = state.digital_state[GamepadButton::B as usize];
+            input.back = state.digital_state[GamepadButton::A as usize];
+            input.context_menu = state.digital_state[GamepadButton::X as usize];
+
+            input.camera_move = {
+                let direction = vec2(
+                    state.analog_state[0],
+                    state.analog_state[1],
+                );
+
+                direction.normalize_or_zero()
+            };
+
+            input.cursor_move = {
+                let direction = vec2(
+                    state.analog_state[2],
+                    state.analog_state[3],
+                );
+
+                direction.normalize_or_zero()
+            };
+        }
     }
 
     input

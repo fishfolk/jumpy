@@ -5,7 +5,14 @@ use macroquad_tiled as tiled;
 
 use macroquad::{
     audio::{self, load_sound},
-    experimental::{collections::storage, coroutines::start_coroutine, scene},
+    experimental::{
+        collections::storage,
+        coroutines::start_coroutine,
+        scene::{
+            self,
+            Handle,
+        },
+    },
 };
 
 use macroquad_platformer::{Tile, World as CollisionWorld};
@@ -22,10 +29,14 @@ mod noise;
 
 pub mod components;
 
-pub use input::{Input, InputScheme};
+pub use input::{Input, InputScheme, EditorInput, EditorInputScheme};
 
 pub enum GameType {
     Local(Vec<InputScheme>),
+    Editor {
+        input_scheme: EditorInputScheme,
+        is_new_map: bool,
+    },
     Network {
         socket: std::net::UdpSocket,
         id: usize,
@@ -190,7 +201,7 @@ impl Resources {
 }
 
 async fn game(map: &str, game_type: GameType) {
-    use nodes::{Camera, Decoration, Fxses, LevelBackground, LocalNetwork, Network, Player};
+    use nodes::{Camera, EditorCamera, Decoration, Fxses, LevelBackground, LocalNetwork, Network, Editor, Player};
 
     let resources_loading = start_coroutine({
         let map = map.to_string();
@@ -224,13 +235,15 @@ async fn game(map: &str, game_type: GameType) {
         load_sound("assets/music/fish tide.ogg").await.unwrap()
     };
 
-    audio::play_sound(
-        battle_music,
-        audio::PlaySoundParams {
-            looped: true,
-            volume: 0.6,
-        },
-    );
+    if matches!(game_type, GameType::Editor {..}) == false {
+        audio::play_sound(
+            battle_music,
+            audio::PlaySoundParams {
+                looped: true,
+                volume: 0.6,
+            },
+        );
+    }
 
     let bounds = {
         let resources = storage::get::<Resources>();
@@ -263,11 +276,13 @@ async fn game(map: &str, game_type: GameType) {
     let local_game = matches!(game_type, GameType::Local(..));
     match game_type {
         GameType::Local(players_input) => {
-            assert!(
-                players_input.len() == 2,
-                "Only 2 player games are supported now"
-            );
+            assert_eq!(players_input.len(), 2, "There should be two player input schemes for this game mode!");
             scene::add_node(LocalNetwork::new(players_input, player1, player2));
+            scene::add_node(Camera::new(bounds));
+        }
+        GameType::Editor { input_scheme, is_new_map: _ } => {
+            scene::add_node(Editor::new(input_scheme));
+            scene::add_node(EditorCamera::new(bounds.point()));
         }
         GameType::Network {
             input_scheme,
@@ -275,10 +290,9 @@ async fn game(map: &str, game_type: GameType) {
             id,
         } => {
             scene::add_node(Network::new(id, socket, input_scheme, player1, player2));
+            scene::add_node(Camera::new(bounds));
         }
     }
-
-    scene::add_node(Camera::new(bounds));
 
     for object in &objects {
         for item_desc in items::ITEMS {
@@ -326,7 +340,14 @@ async fn main() {
         let game_type = gui::main_menu::game_type().await;
 
         let map = match game_type {
-            GameType::Local(..) => gui::main_menu::location_select().await,
+            GameType::Local(..) => gui::main_menu::location_select(false).await,
+            GameType::Editor { input_scheme: _, is_new_map } => {
+                if is_new_map {
+                    // not implemented
+                }
+
+                gui::main_menu::location_select(true).await
+            },
             GameType::Network { .. } => "assets/levels/lev01.json".to_string(),
         };
 

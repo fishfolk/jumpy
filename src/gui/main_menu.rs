@@ -4,7 +4,10 @@ use macroquad::{
     ui::{self, hash, root_ui, widgets},
 };
 
-use crate::{gui::GuiResources, input::InputScheme, nodes::network::Message, GameType};
+use crate::{gui::{
+    Level,
+    GuiResources,
+}, input::InputScheme, nodes::network::Message, GameType, EditorInputScheme};
 
 use std::net::UdpSocket;
 
@@ -77,6 +80,25 @@ fn local_game_ui(ui: &mut ui::Ui, players: &mut Vec<InputScheme>) -> Option<Game
         if ui.button(None, "Ready! (A) (Enter)") || btn_a || enter {
             return Some(GameType::Local(players.clone()));
         }
+    }
+
+    None
+}
+
+fn editor_ui(ui: &mut ui::Ui) -> Option<GameType> {
+    let gui_resources = storage::get_mut::<GuiResources>();
+
+    ui.label(None, "Level Editor");
+
+    ui.separator();
+    ui.separator();
+    ui.separator();
+
+    let btn_a = is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::A);
+    let enter = is_key_pressed(KeyCode::Enter);
+
+    if ui.button(None, "Ready! (A) (Enter)") || btn_a || enter {
+        return Some(GameType::Editor { input_scheme: EditorInputScheme::Keyboard, is_new_map: true });
     }
 
     None
@@ -344,6 +366,8 @@ fn network_game_ui(ui: &mut ui::Ui, state: &mut NetworkUiState) -> Option<GameTy
     None
 }
 
+const MODE_SELECTION_TAB_COUNT: u32 = 3;
+
 pub async fn game_type() -> GameType {
     let mut players = vec![];
 
@@ -367,16 +391,20 @@ pub async fn game_type() -> GameType {
                 || is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::BumperLeft)
                 || is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::ThumbLeft)
             {
-                tab += 1;
-                tab %= 2;
+                let mut next_tab = tab as i32 - 1;
+                tab = if next_tab < 0 {
+                    MODE_SELECTION_TAB_COUNT
+                } else {
+                    next_tab as u32 % MODE_SELECTION_TAB_COUNT
+                };
             }
-            // for two tabs going left and right is the same thing
+
             if is_key_pressed(KeyCode::Right)
                 || is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::BumperRight)
                 || is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::ThumbRight)
             {
                 tab += 1;
-                tab %= 2;
+                tab %= MODE_SELECTION_TAB_COUNT;
             }
         }
 
@@ -395,7 +423,7 @@ pub async fn game_type() -> GameType {
             |ui| match widgets::Tabbar::new(
                 hash!(),
                 vec2(WINDOW_WIDTH - 50., 50.),
-                &["<< Local game, LT", "Network game, RT >>"],
+                &["<< LT, Local", "Editor", "Network, RT >>"],
             )
             .selected_tab(Some(&mut tab))
             .ui(ui)
@@ -404,6 +432,9 @@ pub async fn game_type() -> GameType {
                     res = local_game_ui(ui, &mut players);
                 }
                 1 => {
+                    res = editor_ui(ui);
+                }
+                2 => {
                     res = network_game_ui(ui, &mut network_ui_state);
                 }
                 _ => unreachable!(),
@@ -419,7 +450,7 @@ pub async fn game_type() -> GameType {
     }
 }
 
-pub async fn location_select() -> String {
+pub async fn location_select(is_editor_mode: bool) -> String {
     let mut hovered: i32 = 0;
 
     let mut old_mouse_position = mouse_position();
@@ -464,7 +495,10 @@ pub async fn location_select() -> String {
         }
         clear_background(BLACK);
 
-        let levels_amount = gui_resources.levels.len();
+        let mut levels_amount = gui_resources.levels.len();
+        if is_editor_mode {
+            levels_amount += 1;
+        }
 
         root_ui().push_skin(&gui_resources.skins.main_menu_skin);
 

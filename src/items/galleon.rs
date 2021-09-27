@@ -1,5 +1,4 @@
 use macroquad::{
-    audio::play_sound_once,
     experimental::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
@@ -11,7 +10,7 @@ use macroquad::{
 
 use crate::{
     capabilities,
-    components::{GunlikeAnimation, PhysicsBody, ThrowableItem},
+    components::{FlyingGalleon, GunlikeAnimation, PhysicsBody, ThrowableItem},
     nodes::Player,
     Resources,
 };
@@ -34,9 +33,10 @@ impl Galleon {
     pub fn shoot(node: Handle<Galleon>, player: Handle<Player>) -> Coroutine {
         let coroutine = async move {
             {
-                let resources = storage::get_mut::<Resources>();
-                play_sound_once(resources.shoot_sound);
-
+                let player = &mut *scene::get_node(player);
+                scene::add_node(FlyingGalleon::new(
+                    player.id
+                ));
             }
 
             {
@@ -44,7 +44,7 @@ impl Galleon {
                 player.state_machine.set_state(Player::ST_NORMAL);
 
                 player.weapon = None;
-                scene::find_node_by_type::<Galleon>().unwrap().delete();
+                scene::get_node(node).delete();
             }
         };
 

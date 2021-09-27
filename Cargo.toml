@@ -15,7 +15,7 @@ macroquad-tiled = "0.1"
 macroquad-profiler = "0.1"
 macroquad-particles = {version = "0.1", features = ["nanoserde"] }
 
-quad-gamepad = "0.2.0-alpha"
+gilrs = "0.8.1"
 
 stunclient = { git = "https://github.com/not-fl3/rust-stunclient", default-features = false }
 

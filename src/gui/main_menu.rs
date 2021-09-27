@@ -28,14 +28,11 @@ fn local_game_ui(ui: &mut ui::Ui, players: &mut Vec<InputScheme>) -> Option<Game
                 players.push(InputScheme::KeyboardRight);
             }
         }
-        for ix in 0..quad_gamepad::MAX_DEVICES {
-            let state = gui_resources.gamepads.state(ix);
-
-            if state.digital_state[quad_gamepad::GamepadButton::Start as usize] {
-                //
-                if !players.contains(&InputScheme::Gamepad(ix)) {
-                    players.push(InputScheme::Gamepad(ix));
-                }
+        for (ix, gamepad) in gui_resources.gamepads.gamepads() {
+            if gamepad.is_pressed(gilrs::Button::Start)
+                && !players.contains(&InputScheme::Gamepad(ix))
+            {
+                players.push(InputScheme::Gamepad(ix));
             }
         }
     }
@@ -71,7 +68,7 @@ fn local_game_ui(ui: &mut ui::Ui, players: &mut Vec<InputScheme>) -> Option<Game
         }
     });
     if players.len() == 2 {
-        let btn_a = is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::A);
+        let btn_a = is_gamepad_btn_pressed(&*gui_resources, gilrs::Button::South);
         let enter = is_key_pressed(KeyCode::Enter);
 
         if ui.button(None, "Ready! (A) (Enter)") || btn_a || enter {
@@ -240,11 +237,12 @@ struct NetworkUiState {
     custom_relay: bool,
 }
 
-fn is_gamepad_btn_pressed(gui_resources: &GuiResources, btn: quad_gamepad::GamepadButton) -> bool {
-    for ix in 0..quad_gamepad::MAX_DEVICES {
-        let state = gui_resources.gamepads.state(ix);
-        if state.digital_state[btn as usize] && !state.digital_state_prev[btn as usize] {
-            return true;
+fn is_gamepad_btn_pressed(gui_resources: &GuiResources, btn: gilrs::Button) -> bool {
+    for (_, gamepad) in gui_resources.gamepads.gamepads() {
+        if let Some(d) = gamepad.button_data(btn) {
+            if d.is_pressed() && d.counter() == gui_resources.gamepads.counter() {
+                return true;
+            }
         }
     }
 
@@ -332,11 +330,9 @@ fn network_game_ui(ui: &mut ui::Ui, state: &mut NetworkUiState) -> Option<GameTy
     if is_key_pressed(KeyCode::L) {
         state.input_scheme = InputScheme::KeyboardRight;
     }
-    for ix in 0..quad_gamepad::MAX_DEVICES {
-        let gui_resources = storage::get_mut::<GuiResources>();
-        let gamepad_state = gui_resources.gamepads.state(ix);
-
-        if gamepad_state.digital_state[quad_gamepad::GamepadButton::Start as usize] {
+    let gui_resources = storage::get_mut::<GuiResources>();
+    for (ix, gamepad) in gui_resources.gamepads.gamepads() {
+        if gamepad.is_pressed(gilrs::Button::Start) {
             state.input_scheme = InputScheme::Gamepad(ix);
         }
     }
@@ -361,19 +357,20 @@ pub async fn game_type() -> GameType {
         {
             let mut gui_resources = storage::get_mut::<GuiResources>();
 
-            gui_resources.gamepads.update();
+            gui_resources.gamepads.inc();
+            while gui_resources.gamepads.next_event().is_some() {}
 
             if is_key_pressed(KeyCode::Left)
-                || is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::BumperLeft)
-                || is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::ThumbLeft)
+                || is_gamepad_btn_pressed(&*gui_resources, gilrs::Button::LeftTrigger)
+                || is_gamepad_btn_pressed(&*gui_resources, gilrs::Button::LeftThumb)
             {
                 tab += 1;
                 tab %= 2;
             }
             // for two tabs going left and right is the same thing
             if is_key_pressed(KeyCode::Right)
-                || is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::BumperRight)
-                || is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::ThumbRight)
+                || is_gamepad_btn_pressed(&*gui_resources, gilrs::Button::RightTrigger)
+                || is_gamepad_btn_pressed(&*gui_resources, gilrs::Button::RightThumb)
             {
                 tab += 1;
                 tab %= 2;
@@ -435,7 +432,8 @@ pub async fn location_select() -> String {
     loop {
         let mut gui_resources = storage::get_mut::<GuiResources>();
 
-        gui_resources.gamepads.update();
+        gui_resources.gamepads.inc();
+        while gui_resources.gamepads.next_event().is_some() {}
 
         let mut up = is_key_pressed(KeyCode::Up) || is_key_pressed(KeyCode::W);
         let mut down = is_key_pressed(KeyCode::Down) || is_key_pressed(KeyCode::S);
@@ -443,24 +441,23 @@ pub async fn location_select() -> String {
         let mut left = is_key_pressed(KeyCode::Left) || is_key_pressed(KeyCode::A);
         let mut start = is_key_pressed(KeyCode::Enter);
 
-        for ix in 0..quad_gamepad::MAX_DEVICES {
-            use quad_gamepad::GamepadButton::*;
+        for (_, gamepad) in gui_resources.gamepads.gamepads() {
+            use gilrs::{Axis, Button};
 
-            let state = gui_resources.gamepads.state(ix);
-            if state.status == quad_gamepad::ControllerStatus::Connected {
-                up |= !prev_up && state.analog_state[1] < -0.5;
-                down |= !prev_down && state.analog_state[1] > 0.5;
-                left |= !prev_left && state.analog_state[0] < -0.5;
-                right |= !prev_right && state.analog_state[0] > 0.5;
-                start |= (state.digital_state[A as usize] && !state.digital_state_prev[A as usize])
-                    || (state.digital_state[Start as usize]
-                        && !state.digital_state_prev[Start as usize]);
-
-                prev_up = state.analog_state[1] < -0.5;
-                prev_down = state.analog_state[1] > 0.5;
-                prev_left = state.analog_state[0] < -0.5;
-                prev_right = state.analog_state[0] > 0.5;
+            up |= !prev_up && gamepad.value(Axis::LeftStickY) < -0.5;
+            down |= !prev_down && gamepad.value(Axis::LeftStickY) > 0.5;
+            left |= !prev_left && gamepad.value(Axis::LeftStickX) < -0.5;
+            right |= !prev_right && gamepad.value(Axis::LeftStickX) > 0.5;
+            if let Some(d) = gamepad.button_data(Button::South) {
+                start |= d.is_pressed() && d.counter() == gui_resources.gamepads.counter();
+            } else if let Some(d) = gamepad.button_data(Button::Start) {
+                start |= d.is_pressed() && d.counter() == gui_resources.gamepads.counter();
             }
+
+            prev_up = gamepad.value(Axis::LeftStickY) < -0.5;
+            prev_down = gamepad.value(Axis::LeftStickY) > 0.5;
+            prev_left = gamepad.value(Axis::LeftStickX) < -0.5;
+            prev_right = gamepad.value(Axis::LeftStickX) > 0.5;
         }
         clear_background(BLACK);
 

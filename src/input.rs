@@ -12,7 +12,7 @@ pub enum InputScheme {
     /// Left side of the keyboard, around Arrows
     KeyboardLeft,
     /// Gamepad index
-    Gamepad(usize),
+    Gamepad(gilrs::GamepadId),
 }
 
 #[derive(Default, Debug, Clone, Copy, DeBin, SerBin)]
@@ -55,21 +55,21 @@ pub fn collect_input(scheme: InputScheme) -> Input {
     }
 
     if let InputScheme::Gamepad(ix) = scheme {
-        use quad_gamepad::GamepadButton::*;
+        use gilrs::{Axis, Button};
 
         let gui_resources = storage::get_mut::<crate::gui::GuiResources>();
 
-        let state = gui_resources.gamepads.state(ix);
+        let gamepad = gui_resources.gamepads.gamepad(ix);
 
-        input.throw = state.digital_state[X as usize];
-        input.fire = state.digital_state[B as usize];
+        input.throw = gamepad.is_pressed(Button::West);
+        input.fire = gamepad.is_pressed(Button::East);
 
-        input.jump = state.digital_state[A as usize];
-        input.left = state.analog_state[0] < -0.5;
-        input.right = state.analog_state[0] > 0.5;
-        input.down = state.analog_state[1] > 0.5;
+        input.jump = gamepad.is_pressed(Button::South);
+        input.left = gamepad.value(Axis::LeftStickX) < -0.5;
+        input.right = gamepad.value(Axis::LeftStickX) > 0.5;
+        input.down = gamepad.value(Axis::LeftStickY) > 0.5;
 
-        input.slide = state.digital_state[Y as usize];
+        input.slide = gamepad.is_pressed(Button::North);
     }
 
     input

@@ -4,7 +4,7 @@ mod style;
 
 pub use style::SkinCollection;
 
-use quad_gamepad::ControllerContext;
+use gilrs::Gilrs;
 
 use macroquad::{
     file::load_string,
@@ -19,7 +19,7 @@ struct Level {
 
 pub struct GuiResources {
     levels: Vec<Level>,
-    pub gamepads: ControllerContext,
+    pub gamepads: Gilrs,
     pub skins: SkinCollection,
 }
 
@@ -39,7 +39,7 @@ impl GuiResources {
 
         GuiResources {
             skins: SkinCollection::new(),
-            gamepads: ControllerContext::new().unwrap(),
+            gamepads: Gilrs::new().unwrap(),
             levels,
         }
     }

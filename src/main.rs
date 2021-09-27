@@ -296,7 +296,8 @@ async fn game(map: &str, game_type: GameType) {
     loop {
         {
             let mut gui_resources = storage::get_mut::<crate::gui::GuiResources>();
-            gui_resources.gamepads.update();
+            gui_resources.gamepads.inc();
+            while gui_resources.gamepads.next_event().is_some() {}
         }
 
         next_frame().await;

@@ -13,10 +13,8 @@ mod bullet;
 mod gunlike_animation;
 mod physics_body;
 mod throwable_item;
-mod flying_galleon;
 
 pub use bullet::Bullet;
 pub use gunlike_animation::GunlikeAnimation;
 pub use physics_body::PhysicsBody;
 pub use throwable_item::ThrowableItem;
-pub use flying_galleon::FlyingGalleon;

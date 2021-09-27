@@ -1,16 +1,16 @@
 use macroquad::{
     color,
+    //audio::play_sound_once,
     experimental::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
-        scene::{Node, RefMut},
+        scene::{self, Node, RefMut},
     },
-    math::{vec2, Vec2},
     prelude::*,
 };
 
 use crate::{
-    components::{EruptedItem, PhysicsBody},
+    components::{PhysicsBody, EruptedItem},
     Resources,
 };
 
@@ -94,12 +94,10 @@ impl ArmedGrenade {
 impl EruptedItem for ArmedGrenade {
     fn spawn_for_volcano(pos: Vec2, speed: Vec2, enable_at_y: f32, _owner_id: u8) {
         let mut grenade = ArmedGrenade::new(pos, true);
-
         grenade.lived -= 2.; // give extra life, since they're random
         grenade.body.speed = speed;
         grenade.erupting = true;
         grenade.erupting_enable_on_y = Some(enable_at_y);
-
         scene::add_node(grenade);
     }
 

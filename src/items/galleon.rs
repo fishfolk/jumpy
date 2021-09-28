@@ -1,13 +1,13 @@
 use macroquad::{
+    color,
     experimental::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
         coroutines::{start_coroutine, Coroutine},
         scene::{Handle, HandleUntyped, Node, RefMut},
     },
-    rand::gen_range,
-    color,
     prelude::*,
+    rand::gen_range,
 };
 
 use crate::{
@@ -37,7 +37,11 @@ impl FlyingGalleon {
         let sprite = resources.items_textures["galleon/flying_galleon"];
 
         let (pos, facing) = Self::start_position();
-        let dir = if facing {Vec2::new(1., 0.)} else { Vec2::new(-1., 0.)};
+        let dir = if facing {
+            Vec2::new(1., 0.)
+        } else {
+            Vec2::new(-1., 0.)
+        };
 
         FlyingGalleon {
             sprite,
@@ -57,7 +61,14 @@ impl FlyingGalleon {
             resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height;
 
         let facing = gen_range(0, 2) == 0;
-        let pos = Vec2::new(if facing {-Self::WIDTH} else {map_width as f32}, gen_range(0., map_height as f32 - Self::HEIGHT));
+        let pos = Vec2::new(
+            if facing {
+                -Self::WIDTH
+            } else {
+                map_width as f32
+            },
+            gen_range(0., map_height as f32 - Self::HEIGHT),
+        );
 
         (pos, facing)
     }
@@ -71,20 +82,23 @@ impl FlyingGalleon {
         }
 
         for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
-            if player.get_hitbox().overlaps(&Rect::new(self.pos.x, self.pos.y, Self::WIDTH, Self::HEIGHT)) && player.id != self.owner_id && !player.dead {
-                
+            if player.get_hitbox().overlaps(&Rect::new(
+                self.pos.x,
+                self.pos.y,
+                Self::WIDTH,
+                Self::HEIGHT,
+            )) && player.id != self.owner_id
+                && !player.dead
+            {
                 scene::find_node_by_type::<crate::nodes::Camera>()
                     .unwrap()
                     .shake_noise(1.0, 10, 1.);
 
-                {
-                    let mut resources = storage::get_mut::<Resources>();
-                    resources.hit_fxses.spawn(player.body.pos)
-                }
-                {
-                    let direction = self.pos.x > (player.body.pos.x + 10.);
-                    player.kill(direction);
-                }
+                let mut resources = storage::get_mut::<Resources>();
+                resources.hit_fxses.spawn(player.body.pos);
+
+                let direction = self.pos.x > (player.body.pos.x + 10.);
+                player.kill(direction);
             }
         }
 
@@ -135,20 +149,13 @@ impl Galleon {
 
     pub fn shoot(node: Handle<Galleon>, player: Handle<Player>) -> Coroutine {
         let coroutine = async move {
-            {
-                let player = &mut *scene::get_node(player);
-                scene::add_node(FlyingGalleon::new(
-                    player.id
-                ));
-            }
+            let player = &mut *scene::get_node(player);
+            scene::add_node(FlyingGalleon::new(player.id));
 
-            {
-                let player = &mut *scene::get_node(player);
-                player.state_machine.set_state(Player::ST_NORMAL);
+            player.state_machine.set_state(Player::ST_NORMAL);
 
-                player.weapon = None;
-                scene::get_node(node).delete();
-            }
+            player.weapon = None;
+            scene::get_node(node).delete();
         };
 
         start_coroutine(coroutine)
@@ -161,14 +168,12 @@ impl Galleon {
             AnimatedSprite::new(
                 32,
                 29,
-                &[
-                    Animation {
-                        name: "idle".to_string(),
-                        row: 0,
-                        frames: 1,
-                        fps: 1,
-                    },
-                ],
+                &[Animation {
+                    name: "idle".to_string(),
+                    row: 0,
+                    frames: 1,
+                    fps: 1,
+                }],
                 false,
             ),
             resources.items_textures["galleon/galleon"],
@@ -192,9 +197,7 @@ impl Galleon {
 
     pub fn weapon_capabilities() -> capabilities::Weapon {
         fn throw(node: HandleUntyped, force: bool) {
-            let mut node = scene::get_untyped_node(node)
-                .unwrap()
-                .to_typed::<Galleon>();
+            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Galleon>();
 
             Galleon::throw(&mut *node, force);
         }
@@ -208,26 +211,20 @@ impl Galleon {
         }
 
         fn is_thrown(node: HandleUntyped) -> bool {
-            let node = scene::get_untyped_node(node)
-                .unwrap()
-                .to_typed::<Galleon>();
+            let node = scene::get_untyped_node(node).unwrap().to_typed::<Galleon>();
 
             node.throwable.thrown()
         }
 
         fn pick_up(node: HandleUntyped, owner: Handle<Player>) {
-            let mut node = scene::get_untyped_node(node)
-                .unwrap()
-                .to_typed::<Galleon>();
+            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Galleon>();
 
             node.body.angle = 0.;
             node.throwable.owner = Some(owner);
         }
 
         fn mount(node: HandleUntyped, parent_pos: Vec2, parent_facing: bool) {
-            let mut node = scene::get_untyped_node(node)
-                .unwrap()
-                .to_typed::<Galleon>();
+            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Galleon>();
             let mount_pos = if node.body.facing {
                 vec2(15., 16.)
             } else {
@@ -239,9 +236,7 @@ impl Galleon {
         }
 
         fn collider(node: HandleUntyped) -> Rect {
-            let node = scene::get_untyped_node(node)
-                .unwrap()
-                .to_typed::<Galleon>();
+            let node = scene::get_untyped_node(node).unwrap().to_typed::<Galleon>();
             Rect::new(
                 node.body.pos.x,
                 node.body.pos.y,

@@ -111,6 +111,15 @@ impl EruptedItem for ArmedGrenade {
 
 impl Node for ArmedGrenade {
     fn fixed_update(mut node: RefMut<Self>) {
+        if node.erupting {
+            let node_enabled = node.eruption_update();
+            node.erupting = !node_enabled;
+
+            if !node_enabled {
+                return;
+            }
+        }
+
         node.grenade_sprite.update();
 
         node.body.update();

@@ -1,5 +1,6 @@
 use macroquad::math::{vec2, Vec2};
 use macroquad::prelude::{collections::storage, get_frame_time};
+use macroquad_platformer::Tile;
 
 use crate::Resources;
 
@@ -23,24 +24,23 @@ pub trait EruptedItem {
         // as usual.
         let collision_world = &mut storage::get_mut::<Resources>().collision_world;
 
-        body.pos = collision_world.actor_pos(body.collider);
-        body.last_frame_on_ground = body.on_ground;
-        body.on_ground = collision_world.collide_check(body.collider, body.pos + vec2(0., 1.));
-        if !body.on_ground && body.have_gravity {
-            body.pos.y += PhysicsBody::GRAVITY * get_frame_time().powi(2) / 2.
-                + body.speed.y * get_frame_time();
-            body.pos.x += body.speed.x * get_frame_time();
-            body.speed.y += PhysicsBody::GRAVITY * get_frame_time();
-        }
-        if !collision_world.move_h(body.collider, body.speed.x * get_frame_time()) {
-            body.speed.x *= -body.bouncyness;
-        }
-        if !collision_world.move_v(body.collider, body.speed.y * get_frame_time()) {
-            body.speed.y *= -body.bouncyness;
-        }
-        body.pos = collision_world.actor_pos(body.collider);
+        body.pos.y += PhysicsBody::GRAVITY * get_frame_time().powi(2) / 2.
+            + body.speed.y * get_frame_time();
+        body.pos.x += body.speed.x * get_frame_time();
+        body.speed.y += PhysicsBody::GRAVITY * get_frame_time();
+
+        collision_world.move_h(body.collider, body.speed.x * get_frame_time());
+        
+        collision_world.move_v(body.collider, body.speed.y * get_frame_time());
+
 
         if body.pos.y < enable_at_y || body.speed.y < 0. {
+            return false;
+        }
+
+        let tile = collision_world.collide_solids(body.pos, 15, 15);
+
+        if tile != Tile::Empty {
             return false;
         }
 

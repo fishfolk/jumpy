@@ -1,8 +1,10 @@
 //! Things available to spawn from the level editor
 //! Proto-mods, eventually some of the items will move to some sort of a wasm runtime
 
+mod gun;
 mod machine_gun;
-mod muscet;
+mod musket;
+mod sniper;
 mod sproinger;
 mod sword;
 mod turtle_shell;
@@ -62,8 +64,17 @@ pub const ITEMS: &[Item] = &[
         network_ready: true,
     },
     Item {
-        tiled_name: "muscet",
-        constructor: muscet::Muscet::spawn,
+        tiled_name: "musket",
+        constructor: gun::Gun::spawn_musket,
+        tiled_offset: (-35., -25.),
+        textures: &[("gun", "assets/Whale/Gun(92x32).png")],
+        sounds: &[],
+        fxses: &[],
+        network_ready: true,
+    },
+    Item {
+        tiled_name: "sniper",
+        constructor: gun::Gun::spawn_sniper,
         tiled_offset: (-35., -25.),
         textures: &[("gun", "assets/Whale/Gun(92x32).png")],
         sounds: &[],

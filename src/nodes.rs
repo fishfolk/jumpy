@@ -1,5 +1,6 @@
 mod camera;
 mod decoration;
+pub mod explosive;
 mod fxses;
 mod level_background;
 mod local_network;

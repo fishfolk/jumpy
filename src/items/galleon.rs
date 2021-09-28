@@ -94,14 +94,11 @@ impl FlyingGalleon {
                     .unwrap()
                     .shake_noise(1.0, 10, 1.);
 
-                {
-                    let mut resources = storage::get_mut::<Resources>();
-                    resources.hit_fxses.spawn(player.body.pos)
-                }
-                {
-                    let direction = self.pos.x > (player.body.pos.x + 10.);
-                    player.kill(direction);
-                }
+                let mut resources = storage::get_mut::<Resources>();
+                resources.hit_fxses.spawn(player.body.pos);
+
+                let direction = self.pos.x > (player.body.pos.x + 10.);
+                player.kill(direction);
             }
         }
 
@@ -152,18 +149,13 @@ impl Galleon {
 
     pub fn shoot(node: Handle<Galleon>, player: Handle<Player>) -> Coroutine {
         let coroutine = async move {
-            {
-                let player = &mut *scene::get_node(player);
-                scene::add_node(FlyingGalleon::new(player.id));
-            }
+            let player = &mut *scene::get_node(player);
+            scene::add_node(FlyingGalleon::new(player.id));
 
-            {
-                let player = &mut *scene::get_node(player);
-                player.state_machine.set_state(Player::ST_NORMAL);
+            player.state_machine.set_state(Player::ST_NORMAL);
 
-                player.weapon = None;
-                scene::get_node(node).delete();
-            }
+            player.weapon = None;
+            scene::get_node(node).delete();
         };
 
         start_coroutine(coroutine)

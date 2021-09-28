@@ -20,6 +20,9 @@ jobs:
     name: Linting
     steps:
       - uses: actions/checkout@v2
+      - name: Install libudev
+        run: sudo apt-get install libudev-dev
+
       - name: Install Clippy
         run: rustup component add clippy
 
@@ -39,6 +42,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: Install libudev
+        run: sudo apt-get install libudev-dev
+        if: runner.os == 'Linux'
       - name: Cache Cargo dependencies
         uses: actions/cache@v2
         with:

@@ -1,5 +1,4 @@
 use macroquad::{
-
     //audio::play_sound_once,
     experimental::{
         animation::{AnimatedSprite, Animation},
@@ -12,7 +11,7 @@ use macroquad::{
 
 use crate::{
     capabilities,
-    components::{GunlikeAnimation, PhysicsBody, ThrowableItem, ArmedGrenade},
+    components::{ArmedGrenade, GunlikeAnimation, PhysicsBody, ThrowableItem},
     nodes::Player,
     Resources,
 };

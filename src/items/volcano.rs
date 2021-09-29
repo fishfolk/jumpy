@@ -1,13 +1,13 @@
 use macroquad::{
     color,
+    prelude::*,
     prelude::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
         coroutines::{start_coroutine, Coroutine},
-        scene::{Handle, HandleUntyped, RefMut, Node},
+        scene::{Handle, HandleUntyped, Node, RefMut},
         vec2, DrawTextureParams, Vec2,
     },
-    prelude::*,
     rand::gen_range,
 };
 
@@ -15,7 +15,7 @@ use crate::Resources;
 
 use crate::{
     capabilities,
-    components::{PhysicsBody, ThrowableItem, GunlikeAnimation, ArmedGrenade, EruptedItem},
+    components::{ArmedGrenade, EruptedItem, GunlikeAnimation, PhysicsBody, ThrowableItem},
     nodes::Player,
 };
 
@@ -39,14 +39,12 @@ impl Volcano {
             AnimatedSprite::new(
                 36,
                 22,
-                &[
-                    Animation {
-                        name: "idle".to_string(),
-                        row: 0,
-                        frames: 1,
-                        fps: 1,
-                    },
-                ],
+                &[Animation {
+                    name: "idle".to_string(),
+                    row: 0,
+                    frames: 1,
+                    fps: 1,
+                }],
                 false,
             ),
             resources.items_textures["volcano/icon"],
@@ -57,7 +55,7 @@ impl Volcano {
             &mut resources.collision_world,
             pos,
             0.0,
-            vec2(Self::COLLIDER_WIDTH, Self::COLLIDER_HEIGHT)
+            vec2(Self::COLLIDER_WIDTH, Self::COLLIDER_HEIGHT),
         );
 
         scene::add_node(Volcano {
@@ -65,7 +63,8 @@ impl Volcano {
             body,
             throwable: ThrowableItem::default(),
             used: false,
-        }).untyped()
+        })
+        .untyped()
     }
 
     pub fn throw(&mut self, force: bool) {
@@ -100,9 +99,7 @@ impl Volcano {
 
     pub fn weapon_capabilities() -> capabilities::Weapon {
         fn throw(node: HandleUntyped, force: bool) {
-            let mut volcano = scene::get_untyped_node(node)
-                .unwrap()
-                .to_typed::<Volcano>();
+            let mut volcano = scene::get_untyped_node(node).unwrap().to_typed::<Volcano>();
 
             Volcano::throw(&mut *volcano, force)
         }
@@ -117,26 +114,20 @@ impl Volcano {
         }
 
         fn is_thrown(node: HandleUntyped) -> bool {
-            let node = scene::get_untyped_node(node)
-                .unwrap()
-                .to_typed::<Volcano>();
+            let node = scene::get_untyped_node(node).unwrap().to_typed::<Volcano>();
 
             node.throwable.thrown()
         }
 
         fn pick_up(node: HandleUntyped, owner: Handle<Player>) {
-            let mut node = scene::get_untyped_node(node)
-                .unwrap()
-                .to_typed::<Volcano>();
+            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Volcano>();
 
             node.body.angle = 0.;
             node.throwable.owner = Some(owner);
         }
 
         fn mount(node: HandleUntyped, parent_pos: Vec2, parent_facing: bool) {
-            let mut node = scene::get_untyped_node(node)
-                .unwrap()
-                .to_typed::<Volcano>();
+            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Volcano>();
             let mount_pos = if node.body.facing {
                 vec2(5., 16.)
             } else {
@@ -148,9 +139,7 @@ impl Volcano {
         }
 
         fn collider(node: HandleUntyped) -> Rect {
-            let node = scene::get_untyped_node(node)
-                .unwrap()
-                .to_typed::<Volcano>();
+            let node = scene::get_untyped_node(node).unwrap().to_typed::<Volcano>();
             Rect::new(
                 node.body.pos.x,
                 node.body.pos.y,
@@ -230,10 +219,7 @@ impl Node for Volcano {
     }
 }
 
-
-const SPAWNERS: [fn(Vec2, Vec2, f32, u8); 1] = [
-    ArmedGrenade::spawn_for_volcano,
-];
+const SPAWNERS: [fn(Vec2, Vec2, f32, u8); 1] = [ArmedGrenade::spawn_for_volcano];
 
 enum EruptingVolcanoState {
     Emerging,
@@ -311,8 +297,7 @@ impl EruptingVolcano {
 
     fn eruption_shake(mut erupting_volcano: RefMut<Self>) {
         if erupting_volcano.last_shake_time >= Self::SHAKE_INTERVAL {
-            scene::find_node_by_type::<crate::nodes::Camera>()
-                .unwrap();
+            scene::find_node_by_type::<crate::nodes::Camera>().unwrap();
             erupting_volcano.last_shake_time = 0.;
         }
     }

@@ -138,7 +138,7 @@ pub const ITEMS: &[Item] = &[
         tiled_offset: (0., 0.),
         textures: &[
             ("icon", "temp/VolcanoIcon(36x22).png"),
-            ("erupting", "temp/EruptingVolcano(395x100).png")
+            ("erupting", "temp/EruptingVolcano(395x100).png"),
         ],
         sounds: &[],
         fxses: &[],

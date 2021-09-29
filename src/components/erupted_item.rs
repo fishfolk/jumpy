@@ -1,4 +1,4 @@
-use macroquad::math::{Vec2};
+use macroquad::math::Vec2;
 use macroquad::prelude::{collections::storage, get_frame_time};
 use macroquad_platformer::Tile;
 
@@ -23,8 +23,8 @@ pub trait EruptedItem {
         // Controls the Actor as long as is erupting,
         // afterwards it informs the actor update to stop calling this function
 
-        body.pos.y += PhysicsBody::GRAVITY * get_frame_time().powi(2) / 2.
-            + body.speed.y * get_frame_time();
+        body.pos.y +=
+            PhysicsBody::GRAVITY * get_frame_time().powi(2) / 2. + body.speed.y * get_frame_time();
         body.pos.x += body.speed.x * get_frame_time();
         body.speed.y += PhysicsBody::GRAVITY * get_frame_time();
 

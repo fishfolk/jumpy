@@ -5,6 +5,7 @@ mod galleon;
 mod cannon;
 mod grenades;
 mod machine_gun;
+mod mines;
 mod muscet;
 pub mod shoes;
 mod sproinger;
@@ -79,6 +80,15 @@ pub const ITEMS: &[Item] = &[
         constructor: machine_gun::MachineGun::spawn,
         tiled_offset: (-35., -25.),
         textures: &[("gun", "assets/Whale/MachineGun.png")],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    },
+    Item {
+        tiled_name: "mines",
+        constructor: mines::Mines::spawn,
+        tiled_offset: (-35., -25.),
+        textures: &[("mines", "assets/Whale/Mines.png")],
         sounds: &[],
         fxses: &[],
         network_ready: false,

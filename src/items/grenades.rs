@@ -10,12 +10,10 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::{
-    capabilities,
-    components::{GunlikeAnimation, PhysicsBody, ThrowableItem},
-    nodes::Player,
-    Resources,
-};
+use crate::{capabilities, components::{GunlikeAnimation, PhysicsBody, ThrowableItem}, Resources, nodes::{
+    Player,
+    SceneRenderer,
+}, CollisionKind, GameWorld};
 
 pub struct Grenades {
     grenade_sprite: GunlikeAnimation,
@@ -34,7 +32,7 @@ impl Grenades {
     pub const MAXIMUM_AMOUNT: i32 = 3;
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
-        let mut resources = storage::get_mut::<Resources>();
+        let resources = storage::get::<Resources>();
 
         let grenade_sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
@@ -52,10 +50,12 @@ impl Grenades {
             Self::COLLIDER_WIDTH,
         );
 
+        let mut world = storage::get_mut::<GameWorld>();
+
         scene::add_node(Grenades {
             grenade_sprite,
             body: PhysicsBody::new(
-                &mut resources.collision_world,
+                &mut world.collision_world,
                 pos,
                 0.,
                 vec2(Self::COLLIDER_WIDTH, Self::COLLIDER_HEIGHT),
@@ -281,7 +281,7 @@ impl ArmedGrenade {
             vec2(-600., -200.)
         };
 
-        let mut resources = storage::get_mut::<Resources>();
+        let mut world = storage::get_mut::<GameWorld>();
 
         let grenade_mount_pos = if facing {
             vec2(30., 10.)
@@ -291,13 +291,15 @@ impl ArmedGrenade {
 
         let size = vec2(15.0, 15.0);
 
+        let mut world = storage::get_mut::<GameWorld>();
+
         let body = PhysicsBody {
             pos,
             facing,
             angle: 0.0,
             size,
             speed,
-            collider: resources.collision_world.add_actor(
+            collider: world.collision_world.add_actor(
                 pos + grenade_mount_pos,
                 size.x as _,
                 size.y as _,

@@ -94,11 +94,51 @@ fn editor_ui(ui: &mut ui::Ui) -> Option<GameType> {
     ui.separator();
     ui.separator();
 
-    let btn_a = is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::A);
-    let enter = is_key_pressed(KeyCode::Enter);
+    let mut input_scheme = EditorInputScheme::Keyboard;
 
-    if ui.button(None, "Ready! (A) (Enter)") || btn_a || enter {
-        return Some(GameType::Editor { input_scheme: EditorInputScheme::Keyboard, is_new_map: true });
+    for i in 0..quad_gamepad::MAX_DEVICES {
+        let state = gui_resources.gamepads.state(i);
+
+        if state.digital_state[quad_gamepad::GamepadButton::Start as usize] {
+            input_scheme = EditorInputScheme::Gamepad(i);
+        }
+    }
+
+    ui.label(None, "To connect:");
+    ui.label(None, "Press Start on gamepad");
+
+    ui.separator();
+
+    ui.label(None, "Or proceed using keyboard and mouse...");
+
+    ui.separator();
+    ui.separator();
+    ui.separator();
+    ui.separator();
+
+    ui.group(hash!(), vec2(WINDOW_WIDTH / 2. - 50., 70.), |ui| {
+        match input_scheme {
+            EditorInputScheme::Keyboard => {
+                ui.label(None, "Gamepad not connected");
+            }
+            EditorInputScheme::Gamepad(i) => {
+                ui.label(None, "Gamepad connected!");
+                ui.label(None, &format!("{:?}", i));
+            }
+        }
+    });
+
+    let btn_a = is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::A);
+    let btn_b = is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::B);
+
+    if ui.button(None, "Create map (A)") || btn_a {
+        return Some(GameType::Editor { input_scheme, is_new_map: true });
+    }
+
+    ui.same_line(204.0);
+
+    if ui.button(None, "Load map (B)") || btn_b {
+        return Some(GameType::Editor { input_scheme, is_new_map: false });
     }
 
     None
@@ -450,7 +490,7 @@ pub async fn game_type() -> GameType {
     }
 }
 
-pub async fn location_select(is_editor_mode: bool) -> String {
+pub async fn location_select() -> Level {
     let mut hovered: i32 = 0;
 
     let mut old_mouse_position = mouse_position();
@@ -495,10 +535,7 @@ pub async fn location_select(is_editor_mode: bool) -> String {
         }
         clear_background(BLACK);
 
-        let mut levels_amount = gui_resources.levels.len();
-        if is_editor_mode {
-            levels_amount += 1;
-        }
+        let levels_amount = gui_resources.levels.len();
 
         root_ui().push_skin(&gui_resources.skins.main_menu_skin);
 
@@ -562,8 +599,8 @@ pub async fn location_select(is_editor_mode: bool) -> String {
                     || start
                 {
                     root_ui().pop_skin();
-                    let level = &levels[hovered as usize];
-                    return level.map.clone();
+                    let level = levels.get(hovered as usize).unwrap();
+                    return level.clone();
                 }
             }
         }
@@ -571,6 +608,88 @@ pub async fn location_select(is_editor_mode: bool) -> String {
         root_ui().pop_skin();
 
         old_mouse_position = mouse_position();
+
+        next_frame().await;
+    }
+}
+
+pub async fn new_map() -> (String, Vec2, UVec2) {
+    let mut res = None;
+
+    let size = vec2(400.0, 500.0);
+    let position = vec2(
+        (screen_width() - size.x) / 2.0,
+        (screen_height() - size.y) / 2.0,
+    );
+
+    next_frame().await;
+
+    let mut gui_resources = storage::get_mut::<GuiResources>();
+    root_ui().push_skin(&gui_resources.skins.login_skin);
+
+    let mut map_name = "Unnamed Map".to_string();
+    let mut map_grid_width = "100".to_string();
+    let mut map_grid_height = "100".to_string();
+    let mut map_tile_width  = "32".to_string();
+    let mut map_tile_height  = "32".to_string();
+
+    loop {
+        gui_resources.gamepads.update();
+
+        clear_background(BLACK);
+
+        widgets::Window::new(hash!(), position, size).titlebar(false).movable(false).ui(&mut *root_ui(), |ui| {
+            ui.label(None, "Create new map");
+
+            ui.separator();
+
+            widgets::InputText::new(hash!())
+                .ratio(0.4)
+                .label("Map name")
+                .ui(ui, &mut map_name);
+
+            widgets::InputText::new(hash!())
+                .ratio(0.4)
+                .label("Grid width")
+                .ui(ui, &mut map_grid_width);
+
+            widgets::InputText::new(hash!())
+                .ratio(0.4)
+                .label("Grid height")
+                .ui(ui, &mut map_grid_height);
+
+            widgets::InputText::new(hash!())
+                .ratio(0.4)
+                .label("Tile width")
+                .ui(ui, &mut map_tile_width);
+
+            widgets::InputText::new(hash!())
+                .ratio(0.4)
+                .label("Tile height")
+                .ui(ui, &mut map_tile_height);
+
+            ui.separator();
+
+            if ui.button(None, "Confirm") {
+                let grid_size = uvec2(
+                    map_grid_width.parse::<u32>().unwrap(),
+                    map_grid_height.parse::<u32>().unwrap(),
+                );
+
+                let tile_size = vec2(
+                    map_tile_width.parse::<f32>().unwrap(),
+                    map_tile_height.parse::<f32>().unwrap(),
+                );
+
+                let map_params = (map_name.clone(), tile_size, grid_size);
+                res = Some(map_params);
+            }
+        });
+
+        if let Some(res) = res {
+            root_ui().pop_skin();
+            return res;
+        }
 
         next_frame().await;
     }

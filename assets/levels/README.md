@@ -33,7 +33,10 @@ Add a record to `assets/levels/levels.toml`, just like this:
 [[level]]
 map = "assets/levels/lev01.json"
 preview = "assets/levels/lev01.png"
+is_tiled = true
 ```
+
+Remember to set `is_tiled` to `true` for any maps made in Tiled, so that the game knows that it must be converted to the internal format when it is loaded.
 
 **Note** that both map and preview are required! If there is no preview yet - just use a random texture, preview of other map or whatever.
 

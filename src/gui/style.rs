@@ -14,7 +14,10 @@ pub struct SkinCollection {
     pub authenticating_skin: Skin,
     pub error_skin: Skin,
     pub editor_skin: Skin,
+    pub editor_menu_skin: Skin,
+    pub editor_menu_selected_skin: Skin,
     pub editor_context_menu_skin: Skin,
+    pub editor_group_bg_hack: Skin,
     pub cheat_skin: Skin,
 }
 
@@ -184,6 +187,7 @@ impl SkinCollection {
                 ..root_ui().default_skin()
             }
         };
+
         let error_skin = {
             let label_style = root_ui()
                 .style_builder()
@@ -200,6 +204,29 @@ impl SkinCollection {
         };
 
         let editor_skin = {
+            let window_style = root_ui()
+                .style_builder()
+                .background(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/window_background_2.png"),
+                    None,
+                ))
+                .background_margin(RectOffset::new(52.0, 52.0, 52.0, 52.0))
+                .margin(RectOffset::new(-30.0, -30.0, -30.0, -30.0))
+                .build();
+
+            let group_style = root_ui()
+                .style_builder()
+                .background(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/window_background_2.png"),
+                    None,
+                ))
+                .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .color(NO_COLOR)
+                .color_hovered(NO_COLOR)
+                .color_clicked(NO_COLOR)
+                .build();
+
             let label_style = root_ui()
                 .style_builder()
                 .font(include_bytes!("../../assets/ui/MinimalPixel v2.ttf"))
@@ -210,10 +237,6 @@ impl SkinCollection {
 
             let button_style = root_ui()
                 .style_builder()
-                .background(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/preview_background_2.png"),
-                    None,
-                ))
                 .background_margin(RectOffset::new(52.0, 52.0, 52.0, 52.0))
                 .margin(RectOffset::new(-40.0, -40.0, -40.0, -40.0))
                 .background_hovered(Image::from_file_with_format(
@@ -232,37 +255,38 @@ impl SkinCollection {
                 .build();
 
             Skin {
+                window_style,
+                group_style,
                 label_style,
                 button_style,
                 ..root_ui().default_skin()
             }
         };
 
-        let editor_context_menu_skin = {
-            let group_style = root_ui()
+        let editor_menu_skin = {
+            let window_style = root_ui()
                 .style_builder()
-                .margin(RectOffset::new(0.0,0.0,0.0,0.0))
-                .background_margin(RectOffset::new(0.0,0.0,0.0,0.0))
-                .color(NO_COLOR)
-                .color_hovered(NO_COLOR)
-                .color_clicked(NO_COLOR)
+                .background(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/editor_panel_background.png"),
+                    None,
+                ))
+                .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .color(Color::from_rgba(58, 68, 68, 255))
                 .build();
 
             let label_style = root_ui()
                 .style_builder()
-                .margin(RectOffset::new(8.0,8.0,4.0,4.0))
-                .background_margin(RectOffset::new(0.0,0.0,0.0,0.0))
-                .color(Color::from_rgba(58, 68, 68, 255))
-                .color_hovered(Color::from_rgba(58, 68, 102, 255))
-                .color_clicked(Color::from_rgba(58, 68, 68, 255))
+                .margin(RectOffset::new(8.0, 8.0, 4.0, 4.0))
+                .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
                 .text_color(Color::from_rgba(200, 200, 160, 255))
                 .font_size(16)
                 .build();
 
             let button_style = root_ui()
                 .style_builder()
-                .margin(RectOffset::new(0.0,0.0,0.0,0.0))
-                .background_margin(RectOffset::new(0.0,0.0,0.0,0.0))
+                .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
                 .color(Color::from_rgba(58, 68, 68, 255))
                 .color_hovered(Color::from_rgba(58, 68, 102, 255))
                 .color_clicked(Color::from_rgba(58, 68, 68, 255))
@@ -281,11 +305,82 @@ impl SkinCollection {
                 .build();
 
             Skin {
-                group_style,
+                window_style,
                 label_style,
                 button_style,
                 scrollbar_style,
                 scrollbar_handle_style,
+                ..editor_skin.clone()
+            }
+        };
+
+        let editor_menu_selected_skin = {
+            let label_style = root_ui()
+                .style_builder()
+                .margin(RectOffset::new(8.0, 8.0, 4.0, 4.0))
+                .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .text_color(Color::from_rgba(200, 200, 160, 255))
+                .font_size(16)
+                .build();
+
+            let button_style = root_ui()
+                .style_builder()
+                .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .color(Color::from_rgba(58, 68, 68, 255))
+                .color_hovered(Color::from_rgba(58, 68, 102, 255))
+                .color_clicked(Color::from_rgba(58, 68, 68, 255))
+                .build();
+
+            Skin {
+                label_style,
+                button_style,
+                ..editor_menu_skin.clone()
+            }
+        };
+
+        let editor_context_menu_skin = {
+            let button_style = root_ui()
+                .style_builder()
+                .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .color(Color::from_rgba(38, 43, 68, 255))
+                .color_hovered(Color::from_rgba(38, 43, 102, 255))
+                .color_clicked(Color::from_rgba(38, 43, 68, 255))
+                .build();
+
+            let scrollbar_style = root_ui()
+                .style_builder()
+                .color(Color::from_rgba(0, 0, 0, 0))
+                .build();
+
+            let scrollbar_handle_style = root_ui()
+                .style_builder()
+                .color(Color::from_rgba(0, 0, 0, 0))
+                .color_hovered(Color::from_rgba(0, 0, 0, 0))
+                .color_clicked(Color::from_rgba(0, 0, 0, 0))
+                .build();
+
+            Skin {
+                button_style,
+                scrollbar_style,
+                scrollbar_handle_style,
+                ..editor_menu_skin.clone()
+            }
+        };
+
+        let editor_group_bg_hack = {
+            let button_style = root_ui()
+                .style_builder()
+                .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .color(Color::from_rgba(58, 68, 68, 255))
+                .color_hovered(Color::from_rgba(58, 68, 68, 255))
+                .color_clicked(Color::from_rgba(58, 68, 68, 255))
+                .build();
+
+            Skin {
+                button_style,
                 ..editor_skin.clone()
             }
         };
@@ -298,7 +393,10 @@ impl SkinCollection {
             authenticating_skin,
             error_skin,
             editor_skin,
+            editor_menu_skin,
+            editor_menu_selected_skin,
             editor_context_menu_skin,
+            editor_group_bg_hack,
             cheat_skin,
         }
     }

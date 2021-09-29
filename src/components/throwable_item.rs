@@ -6,7 +6,7 @@ use macroquad::{
     math::{vec2, Rect},
 };
 
-use crate::{components::PhysicsBody, nodes::Player, Resources};
+use crate::{components::PhysicsBody, nodes::Player, Resources, GameWorld};
 
 #[derive(Default)]
 pub struct ThrowableItem {
@@ -31,9 +31,9 @@ impl ThrowableItem {
             body.angle = 3.5;
         }
 
-        let mut resources = storage::get_mut::<Resources>();
+        let mut world = storage::get_mut::<GameWorld>();
 
-        resources
+        world
             .collision_world
             .set_actor_position(body.collider, body.pos);
     }

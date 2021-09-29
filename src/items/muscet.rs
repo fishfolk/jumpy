@@ -9,12 +9,7 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::{
-    capabilities,
-    components::{Bullet, GunlikeAnimation, PhysicsBody, ThrowableItem},
-    nodes::Player,
-    Resources,
-};
+use crate::{capabilities, components::{Bullet, GunlikeAnimation, PhysicsBody, ThrowableItem}, nodes::Player, Resources, GameWorld};
 
 pub struct MuscetBullet {
     bullet: Bullet,
@@ -119,7 +114,7 @@ impl Muscet {
     pub const GUN_THROWBACK: f32 = 700.0;
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
-        let mut resources = storage::get_mut::<Resources>();
+        let resources = storage::get::<Resources>();
 
         let muscet_sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
@@ -161,12 +156,14 @@ impl Muscet {
             Self::COLLIDER_WIDTH,
         );
 
+        let mut world = storage::get_mut::<GameWorld>();
+
         scene::add_node(Muscet {
             muscet_sprite,
             muscet_fx_sprite,
             muscet_fx: false,
             body: PhysicsBody::new(
-                &mut resources.collision_world,
+                &mut world.collision_world,
                 pos,
                 0.0,
                 vec2(Self::COLLIDER_WIDTH, Self::COLLIDER_HEIGHT),
@@ -213,7 +210,7 @@ impl Muscet {
             //         .shake();
             // }
             {
-                let resources = storage::get_mut::<Resources>();
+                let resources = storage::get::<Resources>();
                 play_sound_once(resources.shoot_sound);
 
                 let mut node = &mut *scene::get_node(node);

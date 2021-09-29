@@ -10,12 +10,7 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::{
-    capabilities,
-    components::{PhysicsBody, ThrowableItem},
-    nodes::Player,
-    Resources,
-};
+use crate::{capabilities, components::{PhysicsBody, ThrowableItem}, nodes::Player, Resources, GameWorld};
 
 pub struct Sword {
     sprite: AnimatedSprite,
@@ -97,9 +92,9 @@ impl scene::Node for Sword {
         node.sprite.update();
 
         let map_bottom = {
-            let resources = storage::get::<Resources>();
+            let world = storage::get::<GameWorld>();
 
-            resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height
+            world.map.grid_size.y as f32 * world.map.tile_size.y
         } as f32;
 
         // respawn sword
@@ -168,12 +163,12 @@ impl Sword {
             false,
         );
 
-        let mut resources = storage::get_mut::<Resources>();
+        let mut world = storage::get_mut::<GameWorld>();
 
         scene::add_node(Sword {
             sprite,
             body: PhysicsBody::new(
-                &mut resources.collision_world,
+                &mut world.collision_world,
                 pos,
                 std::f32::consts::PI / 4. + 0.3,
                 vec2(Self::COLLIDER_WIDTH, Self::COLLIDER_HEIGHT),

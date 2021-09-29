@@ -236,33 +236,3 @@ impl scene::Node for Camera {
         scene::set_camera(0, Some(macroquad_camera));
     }
 }
-
-pub struct EditorCamera {
-    pub position: Vec2,
-    pub zoom: f32,
-}
-
-impl EditorCamera {
-    const DEFAULT_ZOOM: f32 = 1.0;
-
-    pub fn new(position: Vec2) -> Self {
-        EditorCamera {
-            position,
-            zoom: Self::DEFAULT_ZOOM,
-        }
-    }
-}
-
-impl scene::Node for EditorCamera {
-    fn fixed_update(mut node: RefMut<Self>) {
-        let aspect = screen_width() / screen_height();
-
-        let macroquad_camera = Camera2D {
-            target: node.position,
-            zoom: vec2(1.0 / aspect, -1.0) / node.zoom * 2.0,
-            ..Camera2D::default()
-        };
-
-        scene::set_camera(0, Some(macroquad_camera));
-    }
-}

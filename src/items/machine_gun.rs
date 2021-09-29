@@ -9,12 +9,7 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::{
-    capabilities,
-    components::{Bullet, GunlikeAnimation, PhysicsBody, ThrowableItem},
-    nodes::Player,
-    Resources,
-};
+use crate::{capabilities, components::{Bullet, GunlikeAnimation, PhysicsBody, ThrowableItem}, nodes::Player, Resources, GameWorld};
 
 pub struct MachinegunBullet {
     bullet: Bullet,
@@ -74,7 +69,7 @@ impl MachineGun {
     pub const MAX_BULLETS: i32 = 20;
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
-        let mut resources = storage::get_mut::<Resources>();
+        let resources = storage::get::<Resources>();
 
         let sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
@@ -100,8 +95,10 @@ impl MachineGun {
             Self::COLLIDER_WIDTH,
         );
 
+        let mut world = storage::get_mut::<GameWorld>();
+
         let body = PhysicsBody::new(
-            &mut resources.collision_world,
+            &mut world.collision_world,
             pos,
             0.0,
             vec2(Self::COLLIDER_WIDTH, Self::COLLIDER_HEIGHT),

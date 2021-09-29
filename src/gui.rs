@@ -1,6 +1,5 @@
 pub mod main_menu;
 pub mod pause_menu;
-pub mod editor;
 mod style;
 
 use nanoserde::{
@@ -18,11 +17,12 @@ use macroquad::{
 };
 
 #[derive(Debug, Clone)]
-struct Level {
-    preview: Texture2D,
-    map: String,
-    size: f32,
-    is_custom: bool,
+pub struct Level {
+    pub preview: Texture2D,
+    pub map: String,
+    pub size: f32,
+    pub is_tiled: bool,
+    pub is_custom: bool,
 }
 
 pub struct GuiResources {
@@ -38,6 +38,13 @@ impl GuiResources {
         let toml = TomlParser::parse(&levels_str).unwrap();
 
         for level in toml["level"].arr() {
+            let mut is_tiled = false;
+            if let Some(val) = level.get("is_tiled") {
+                if let Toml::Bool(true) = val {
+                    is_tiled = true;
+                }
+            }
+
             let mut is_custom = false;
             if let Some(val) = level.get("is_custom") {
                 if let Toml::Bool(true) = val {
@@ -48,7 +55,8 @@ impl GuiResources {
             levels.push(Level {
                 map: level["map"].str().to_owned(),
                 preview: load_texture(level["preview"].str()).await.unwrap(),
-                size: 0.,
+                size: 0.0,
+                is_tiled,
                 is_custom,
             })
         }

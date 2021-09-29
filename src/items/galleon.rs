@@ -21,14 +21,12 @@ pub struct FlyingGalleon {
     pub sprite: Texture2D,
     pub pos: Vec2,
     pub speed: Vec2,
-    pub lived: f32,
     pub facing: bool,
     pub owner_id: u8,
 }
 
 impl FlyingGalleon {
     pub const SPEED: f32 = 200.;
-    pub const LIFETIME: f32 = 15.;
     pub const WIDTH: f32 = 425.;
     pub const HEIGHT: f32 = 390.;
 
@@ -47,7 +45,6 @@ impl FlyingGalleon {
             sprite,
             pos,
             speed: dir * Self::SPEED,
-            lived: 0.,
             facing,
             owner_id,
         }
@@ -75,10 +72,14 @@ impl FlyingGalleon {
 
     pub fn update(&mut self) -> bool {
         self.pos += self.speed * get_frame_time();
-        self.lived += get_frame_time();
 
-        if self.lived > Self::LIFETIME {
-            return false;
+        {
+            let resources = storage::get::<Resources>();
+            let map_width = (resources.tiled_map.raw_tiled_map.tilewidth
+                * resources.tiled_map.raw_tiled_map.width) as f32;
+            if self.pos.x + Self::WIDTH < -map_width * 0.5 || self.pos.x > map_width * 1.5 {
+                return false;
+            }
         }
 
         for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
@@ -93,10 +94,10 @@ impl FlyingGalleon {
                 scene::find_node_by_type::<crate::nodes::Camera>()
                     .unwrap()
                     .shake_noise(1.0, 10, 1.);
-
-                let mut resources = storage::get_mut::<Resources>();
-                resources.hit_fxses.spawn(player.body.pos);
-
+                {
+                    let mut resources = storage::get_mut::<Resources>();
+                    resources.hit_fxses.spawn(player.body.pos);
+                }
                 let direction = self.pos.x > (player.body.pos.x + 10.);
                 player.kill(direction);
             }

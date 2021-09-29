@@ -10,7 +10,7 @@ use macroquad::{
 };
 
 use crate::{
-    components::{PhysicsBody, EruptedItem},
+    components::{EruptedItem, PhysicsBody},
     Resources,
 };
 
@@ -112,7 +112,6 @@ impl EruptedItem for ArmedGrenade {
 impl Node for ArmedGrenade {
     fn fixed_update(mut node: RefMut<Self>) {
         node.grenade_sprite.update();
-        
         // the check to avoid EruptedItem and PhysicsBody to run in the same frame
         if node.erupting {
             let node_enabled = node.eruption_update();

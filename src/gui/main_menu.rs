@@ -431,7 +431,7 @@ pub async fn game_type() -> GameType {
                 || is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::BumperLeft)
                 || is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::ThumbLeft)
             {
-                let mut next_tab = tab as i32 - 1;
+                let next_tab = tab as i32 - 1;
                 tab = if next_tab < 0 {
                     MODE_SELECTION_TAB_COUNT
                 } else {
@@ -616,7 +616,7 @@ pub async fn location_select() -> Level {
 pub async fn new_map() -> (String, Vec2, UVec2) {
     let mut res = None;
 
-    let size = vec2(400.0, 500.0);
+    let size = vec2(350.0, 230.0);
     let position = vec2(
         (screen_width() - size.x) / 2.0,
         (screen_height() - size.y) / 2.0,
@@ -642,35 +642,66 @@ pub async fn new_map() -> (String, Vec2, UVec2) {
             ui.label(None, "Create new map");
 
             ui.separator();
-
-            widgets::InputText::new(hash!())
-                .ratio(0.4)
-                .label("Map name")
-                .ui(ui, &mut map_name);
-
-            widgets::InputText::new(hash!())
-                .ratio(0.4)
-                .label("Grid width")
-                .ui(ui, &mut map_grid_width);
-
-            widgets::InputText::new(hash!())
-                .ratio(0.4)
-                .label("Grid height")
-                .ui(ui, &mut map_grid_height);
-
-            widgets::InputText::new(hash!())
-                .ratio(0.4)
-                .label("Tile width")
-                .ui(ui, &mut map_tile_width);
-
-            widgets::InputText::new(hash!())
-                .ratio(0.4)
-                .label("Tile height")
-                .ui(ui, &mut map_tile_height);
-
+            ui.separator();
+            ui.separator();
             ui.separator();
 
-            if ui.button(None, "Confirm") {
+            {
+                let size = vec2(173.0, 25.0);
+
+                widgets::InputText::new(hash!())
+                    .size(size)
+                    .ratio(1.0)
+                    .label("Map name")
+                    .ui(ui, &mut map_name);
+            }
+
+            ui.separator();
+            ui.separator();
+
+            {
+                let size = vec2(75.0, 25.0);
+
+                widgets::InputText::new(hash!())
+                    .size(size)
+                    .ratio(1.0)
+                    .label("x")
+                    .ui(ui, &mut map_grid_width);
+
+                ui.same_line(size.x + 25.0);
+
+                widgets::InputText::new(hash!())
+                    .size(size)
+                    .ratio(1.0)
+                    .label("Grid size")
+                    .ui(ui, &mut map_grid_height);
+
+                widgets::InputText::new(hash!())
+                    .size(size)
+                    .ratio(1.0)
+                    .label("x")
+                    .ui(ui, &mut map_tile_width);
+
+                ui.same_line(size.x + 25.0);
+
+                widgets::InputText::new(hash!())
+                    .size(size)
+                    .ratio(1.0)
+                    .label("Tile size")
+                    .ui(ui, &mut map_tile_height);
+            }
+
+            ui.separator();
+            ui.separator();
+            ui.separator();
+            ui.separator();
+
+            let btn_a = is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::A);
+            let enter = is_key_pressed(KeyCode::Enter);
+
+            if ui.button(None, "Confirm (A) (Enter)") || btn_a || enter {
+                // TODO: Validate input
+
                 let grid_size = uvec2(
                     map_grid_width.parse::<u32>().unwrap(),
                     map_grid_height.parse::<u32>().unwrap(),

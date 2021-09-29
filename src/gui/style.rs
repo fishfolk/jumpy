@@ -17,7 +17,8 @@ pub struct SkinCollection {
     pub editor_menu_skin: Skin,
     pub editor_menu_selected_skin: Skin,
     pub editor_context_menu_skin: Skin,
-    pub editor_group_bg_hack: Skin,
+    pub editor_menu_bg: Skin,
+    pub editor_menu_header_bg: Skin,
     pub cheat_skin: Skin,
 }
 
@@ -229,10 +230,10 @@ impl SkinCollection {
 
             let label_style = root_ui()
                 .style_builder()
-                .font(include_bytes!("../../assets/ui/MinimalPixel v2.ttf"))
-                .unwrap()
-                .text_color(Color::from_rgba(255, 255, 255, 255))
-                .font_size(130)
+                .margin(RectOffset::new(8.0, 8.0, 4.0, 4.0))
+                .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .text_color(Color::from_rgba(200, 200, 160, 255))
+                .font_size(16)
                 .build();
 
             let button_style = root_ui()
@@ -264,17 +265,6 @@ impl SkinCollection {
         };
 
         let editor_menu_skin = {
-            let window_style = root_ui()
-                .style_builder()
-                .background(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/editor_panel_background.png"),
-                    None,
-                ))
-                .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .color(Color::from_rgba(58, 68, 68, 255))
-                .build();
-
             let label_style = root_ui()
                 .style_builder()
                 .margin(RectOffset::new(8.0, 8.0, 4.0, 4.0))
@@ -305,7 +295,6 @@ impl SkinCollection {
                 .build();
 
             Skin {
-                window_style,
                 label_style,
                 button_style,
                 scrollbar_style,
@@ -369,7 +358,7 @@ impl SkinCollection {
             }
         };
 
-        let editor_group_bg_hack = {
+        let editor_menu_bg = {
             let button_style = root_ui()
                 .style_builder()
                 .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
@@ -377,6 +366,22 @@ impl SkinCollection {
                 .color(Color::from_rgba(58, 68, 68, 255))
                 .color_hovered(Color::from_rgba(58, 68, 68, 255))
                 .color_clicked(Color::from_rgba(58, 68, 68, 255))
+                .build();
+
+            Skin {
+                button_style,
+                ..editor_skin.clone()
+            }
+        };
+
+        let editor_menu_header_bg = {
+            let button_style = root_ui()
+                .style_builder()
+                .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .color(Color::from_rgba(38, 43, 68, 255))
+                .color_hovered(Color::from_rgba(38, 43, 68, 255))
+                .color_clicked(Color::from_rgba(38, 43, 68, 255))
                 .build();
 
             Skin {
@@ -396,7 +401,8 @@ impl SkinCollection {
             editor_menu_skin,
             editor_menu_selected_skin,
             editor_context_menu_skin,
-            editor_group_bg_hack,
+            editor_menu_bg,
+            editor_menu_header_bg,
             cheat_skin,
         }
     }

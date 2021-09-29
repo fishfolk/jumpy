@@ -330,7 +330,9 @@ async fn game(map: Map, game_type: GameType) {
             input_scheme,
             ..
         } => {
-            scene::add_node(EditorCamera::new(Vec2::ZERO));
+            let position = map.get_size() * 0.5;
+
+            scene::add_node(EditorCamera::new(position));
             scene::add_node(Editor::new(input_scheme, map));
         }
         GameType::Network {

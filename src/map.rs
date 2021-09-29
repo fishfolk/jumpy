@@ -89,6 +89,13 @@ impl Map {
         Ok(map)
     }
 
+    pub fn get_size(&self) -> Vec2 {
+        vec2(
+            self.grid_size.x as f32 * self.tile_size.x,
+            self.grid_size.y as f32 * self.tile_size.y,
+        )
+    }
+
     pub fn to_grid(&self, rect: Rect) -> URect {
         let p = self.to_coords(rect.point());
         let w = ((rect.w / self.tile_size.x) as u32).clamp(0, self.grid_size.x - p.x - 1);

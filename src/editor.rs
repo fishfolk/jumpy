@@ -183,18 +183,14 @@ impl Node for Editor {
         let mut camera = scene::find_node_by_type::<EditorCamera>().unwrap();
 
         // TODO: LERP viewport edge to cursor position when movement is due to cursor being over move threshold
-        camera.position += pan_direction * Self::CAMERA_PAN_SPEED;
+        let movement = pan_direction * Self::CAMERA_PAN_SPEED;
+        camera.position = (camera.position + movement).clamp(Vec2::ZERO, node.map.get_size());
 
         camera.scale = (camera.scale + input.camera_zoom * Self::CAMERA_ZOOM_STEP).clamp(0.0, Self::CAMERA_ZOOM_MAX);
     }
 
     fn draw(mut node: RefMut<Self>) {
-        {
-            let camera = scene::find_node_by_type::<EditorCamera>().unwrap();
-            let frustum = camera.get_padded_frustum();
-            let rect = node.map.to_grid(frustum);
-            node.map.draw(Some(rect));
-        }
+        node.map.draw(None);
 
         let mut layers = Vec::new();
         for layer_id in &node.map.draw_order {

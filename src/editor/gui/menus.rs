@@ -149,12 +149,10 @@ fn get_corrected_context_menu_position(position: Vec2, entries: &[ContextMenuEnt
 
     let x = if is_root {
         position.x.clamp(0.0, screen_width - ContextMenuEntry::WIDTH)
+    } else if position.x + ContextMenuEntry::WIDTH > screen_width {
+        position.x - ContextMenuEntry::WIDTH * 2.0
     } else {
-        if position.x + ContextMenuEntry::WIDTH > screen_width {
-            position.x - ContextMenuEntry::WIDTH * 2.0
-        } else {
-            position.x
-        }
+        position.x
     };
 
     let y = position.y.clamp(0.0, screen_height - height);
@@ -240,7 +238,7 @@ fn draw_context_menu_entries(ui: &mut Ui, position: Vec2, entries: &mut [Context
 }
 
 pub const RIGHT_MENUBAR_WIDTH: f32 = 150.0;
-const LAYER_LIST_ENTRY_HEIGHT: f32 = 25.0;
+const MENU_ENTRY_HEIGHT: f32 = 25.0;
 const LAYER_LIST_HEIGHT_FACTOR: f32 = 0.4;
 
 pub fn draw_right_menu_bar(ui: &mut Ui, current_layer: Option<String>, layers: &[(String, MapLayerKind)]) -> Option<EditorAction> {
@@ -255,20 +253,28 @@ pub fn draw_right_menu_bar(ui: &mut Ui, current_layer: Option<String>, layers: &
     let gui_resources = storage::get::<GuiResources>();
     ui.push_skin(&gui_resources.skins.editor_menu_skin);
 
-    ui.push_skin(&gui_resources.skins.editor_group_bg_hack);
-    widgets::Button::new("").position(position).size(size).ui(ui);
-    ui.pop_skin();
-
     widgets::Group::new(hash!(), size)
         .position(position)
         .ui(ui, |ui| {
-            let size = vec2(RIGHT_MENUBAR_WIDTH, screen_height * LAYER_LIST_HEIGHT_FACTOR);
-            let position = Vec2::ZERO;
+            let mut position = Vec2::ZERO;
+            let entry_size = vec2(RIGHT_MENUBAR_WIDTH, MENU_ENTRY_HEIGHT);
+
+            ui.push_skin(&gui_resources.skins.editor_menu_bg);
+            widgets::Button::new("").position(position).size(size).ui(ui);
+            ui.pop_skin();
+
+            ui.push_skin(&gui_resources.skins.editor_menu_header_bg);
+            widgets::Button::new("").position(position).size(entry_size).ui(ui);
+            ui.label(position, "Layers");
+            ui.pop_skin();
+
+            position.y += MENU_ENTRY_HEIGHT;
+
+            let size = vec2(RIGHT_MENUBAR_WIDTH, (screen_height * LAYER_LIST_HEIGHT_FACTOR) - MENU_ENTRY_HEIGHT);
 
             widgets::Group::new(hash!(), size).position(position).ui(ui, |ui| {
-                let size = vec2(RIGHT_MENUBAR_WIDTH, LAYER_LIST_ENTRY_HEIGHT);
+                let mut position = Vec2::ZERO;
 
-                let mut i = 0;
                 for (id, kind) in layers {
                     let is_selected =
                         if let Some(current_layer) = &current_layer {
@@ -277,14 +283,12 @@ pub fn draw_right_menu_bar(ui: &mut Ui, current_layer: Option<String>, layers: &
                             false
                         };
 
-                    let position = vec2(0.0, i as f32 * LAYER_LIST_ENTRY_HEIGHT);
-
                     if is_selected {
                         ui.push_skin(&gui_resources.skins.editor_menu_selected_skin);
                     }
 
                     let button = widgets::Button::new("")
-                        .size(size)
+                        .size(entry_size)
                         .position(position)
                         .ui(ui);
 
@@ -316,7 +320,7 @@ pub fn draw_right_menu_bar(ui: &mut Ui, current_layer: Option<String>, layers: &
                         ui.pop_skin();
                     }
 
-                    i += 1;
+                    position.y += MENU_ENTRY_HEIGHT;
                 }
             });
         });

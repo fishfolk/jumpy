@@ -37,20 +37,14 @@ impl Volcano {
 
         let sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
-                80,
-                24,
+                36,
+                22,
                 &[
                     Animation {
                         name: "idle".to_string(),
                         row: 0,
                         frames: 1,
                         fps: 1,
-                    },
-                    Animation {
-                        name: "shoot".to_string(),
-                        row: 1,
-                        frames: 2,
-                        fps: 8,
                     },
                 ],
                 false,

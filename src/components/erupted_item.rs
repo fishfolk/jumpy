@@ -1,4 +1,4 @@
-use macroquad::math::{vec2, Vec2};
+use macroquad::math::{Vec2};
 use macroquad::prelude::{collections::storage, get_frame_time};
 use macroquad_platformer::Tile;
 
@@ -20,29 +20,27 @@ pub trait EruptedItem {
         let enable_at_y = self.enable_at_y();
         let body = self.body();
 
-        // Take control while erupting, and the collider hasn't been enabled. Afer that point, behave
-        // as usual.
-        let collision_world = &mut storage::get_mut::<Resources>().collision_world;
+        // Controls the Actor as long as is erupting,
+        // afterwards it informs the actor update to stop calling this function
 
         body.pos.y += PhysicsBody::GRAVITY * get_frame_time().powi(2) / 2.
             + body.speed.y * get_frame_time();
         body.pos.x += body.speed.x * get_frame_time();
         body.speed.y += PhysicsBody::GRAVITY * get_frame_time();
 
-        collision_world.move_h(body.collider, body.speed.x * get_frame_time());
-        
-        collision_world.move_v(body.collider, body.speed.y * get_frame_time());
-
-
         if body.pos.y < enable_at_y || body.speed.y < 0. {
             return false;
         }
+
+        let collision_world = &mut storage::get_mut::<Resources>().collision_world;
 
         let tile = collision_world.collide_solids(body.pos, 15, 15);
 
         if tile != Tile::Empty {
             return false;
         }
+
+        body.collider = collision_world.add_actor(body.pos, 15, 15);
 
         true
     }

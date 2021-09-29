@@ -1,8 +1,10 @@
 //! Things available to spawn from the level editor
 //! Proto-mods, eventually some of the items will move to some sort of a wasm runtime
 
+mod cannon;
 mod grenades;
 mod machine_gun;
+mod mines;
 mod muscet;
 pub mod shoes;
 mod sproinger;
@@ -81,6 +83,27 @@ pub const ITEMS: &[Item] = &[
         sounds: &[],
         fxses: &[],
         network_ready: false,
+    },
+    Item {
+        tiled_name: "mines",
+        constructor: mines::Mines::spawn,
+        tiled_offset: (-35., -25.),
+        textures: &[("mines", "assets/Whale/Mines.png")],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    },
+    Item {
+        tiled_name: "cannon",
+        constructor: cannon::Cannon::spawn,
+        tiled_offset: (-35., -25.),
+        textures: &[
+            ("gun", "assets/Whale/Cannon.png"),
+            ("cannonball", "assets/Whale/KickBomb(32x36).png"),
+        ],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false, // There's no random but I can't verify)
     },
     Item {
         tiled_name: "turtleshell",

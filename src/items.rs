@@ -150,8 +150,8 @@ pub const ITEMS: &[Item] = &[
         constructor: galleon::Galleon::spawn,
         tiled_offset: (0., 0.),
         textures: &[
-           ("galleon", "assets/Whale/GalleonIcon(32x29).png"),
-           ("flying_galleon", "assets/Whale/FlyingGalleon(326x300).png"),
+            ("galleon", "assets/Whale/GalleonIcon(32x29).png"),
+            ("flying_galleon", "assets/Whale/FlyingGalleon(326x300).png"),
         ],
         sounds: &[],
         fxses: &[],

@@ -109,6 +109,10 @@ impl Map {
         uvec2(x, y)
     }
 
+    pub fn to_index(&self, coords: UVec2) -> usize {
+        ((coords.y * self.grid_size.x) + coords.x) as usize
+    }
+
     pub fn to_position(&self, point: UVec2) -> Vec2 {
         vec2(
             point.x as f32 * self.tile_size.x + self.world_offset.x,
@@ -427,8 +431,8 @@ pub struct MapTileset {
     pub texture_id: String,
     #[serde(with = "json::def_uvec2")]
     pub texture_size: UVec2,
-    #[serde(with = "json::def_uvec2")]
-    pub tile_size: UVec2,
+    #[serde(with = "json::def_vec2")]
+    pub tile_size: Vec2,
     #[serde(with = "json::def_uvec2")]
     pub grid_size: UVec2,
     pub first_tile_id: u32,
@@ -440,6 +444,31 @@ pub struct MapTileset {
 }
 
 impl MapTileset {
+    pub fn new(
+        id: &str,
+        texture_id: &str,
+        texture_size: UVec2,
+        tile_size: Vec2,
+        first_tile_id: u32,
+    ) -> Self {
+        let grid_size = uvec2(
+            texture_size.x / tile_size.x,
+            texture_size.y / tile_size.y,
+        );
+
+        MapTileset {
+            id: id.to_string(),
+            texture_id: texture_id.to_string(),
+            texture_size,
+            tile_size,
+            grid_size,
+            first_tile_id,
+            tile_cnt: grid_size.x * grid_size.y,
+            tile_attributes: HashMap::new(),
+            properties: HashMap::new(),
+        }
+    }
+
     pub fn get_texture_coords(&self, tile_id: u32) -> Vec2 {
         let x = ((tile_id % self.grid_size.x) * self.tile_size.x) as f32;
         let y = ((tile_id / self.grid_size.x) * self.tile_size.y) as f32;

@@ -17,6 +17,9 @@ use actions::{
     Result,
     EditorAction,
     CreateLayer,
+    DeleteLayer,
+    PlaceTile,
+    RemoveTile,
 };
 
 mod input;
@@ -117,11 +120,26 @@ impl Editor {
             EditorAction::Redo => {
                 return self.history.redo(&mut self.map);
             }
-            EditorAction::SelectLayer(layer_id) => {
-                self.current_layer = Some(layer_id);
+            EditorAction::SelectLayer(id) => {
+                self.current_layer = Some(id);
             }
-            EditorAction::CreateLayer { id, kind, index } => {
-                let action = CreateLayer::new(&id, kind, index);
+            EditorAction::CreateLayer { id, kind, draw_order_index } => {
+                let action = CreateLayer::new(id, kind, draw_order_index);
+                return self.history.apply(Box::new(action), &mut self.map);
+            }
+            EditorAction::DeleteLayer(id) => {
+                let action = DeleteLayer::new(id);
+                return self.history.apply(Box::new(action), &mut self.map);
+            }
+            EditorAction::CreateTileset { id, texture_id} => {
+                let action
+            }
+            EditorAction::PlaceTile { id, layer_id, tileset_id, coords } => {
+                let action = PlaceTile::new(id, layer_id, tileset_id, coords);
+                return self.history.apply(Box::new(action), &mut self.map);
+            }
+            EditorAction::RemoveTile { layer_id, coords } => {
+                let action = RemoveTile::new(layer_id, coords);
                 return self.history.apply(Box::new(action), &mut self.map);
             }
         }

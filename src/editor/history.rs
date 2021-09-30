@@ -12,6 +12,7 @@ pub struct EditorHistory {
 
 impl EditorHistory {
     pub fn new() -> Self {
+        // TODO: Do allocation for stacks?
         EditorHistory {
             undo_stack: Vec::new(),
             redo_stack: Vec::new(),

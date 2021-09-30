@@ -6,6 +6,7 @@ mod grenades;
 mod machine_gun;
 mod mines;
 mod muscet;
+mod shark_rain;
 pub mod shoes;
 mod sproinger;
 mod sword;
@@ -127,6 +128,18 @@ pub const ITEMS: &[Item] = &[
         constructor: shoes::Shoes::spawn,
         tiled_offset: (0., 0.),
         textures: &[("shoes", "assets/Whale/Shoes(32x32).png")],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    },
+    Item {
+        tiled_name: "shark_rain",
+        constructor: shark_rain::SharkRain::spawn,
+        tiled_offset: (0., 0.),
+        textures: &[
+            ("shark_rain", "assets/Whale/SharkIcon(32x34).png"),
+            ("flying_shark", "assets/Whale/RainingShark(60x220).png"),
+        ],
         sounds: &[],
         fxses: &[],
         network_ready: false,

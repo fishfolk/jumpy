@@ -24,15 +24,19 @@ pub struct GuiResources {
 }
 
 impl GuiResources {
-    pub async fn load() -> GuiResources {
+    pub async fn load(assets_dir: &str) -> GuiResources {
         let mut levels = vec![];
-        let levels_str = load_string("assets/levels/levels.toml").await.unwrap();
+        let levels_str = load_string(&format!("{}/assets/levels/levels.toml", assets_dir))
+            .await
+            .unwrap();
         let toml = nanoserde::TomlParser::parse(&levels_str).unwrap();
 
         for level in toml["level"].arr() {
             levels.push(Level {
-                map: level["map"].str().to_owned(),
-                preview: load_texture(level["preview"].str()).await.unwrap(),
+                map: format!("{}/{}", assets_dir, level["map"].str()),
+                preview: load_texture(&format!("{}/{}", assets_dir, level["preview"].str()))
+                    .await
+                    .unwrap(),
                 size: 0.,
             })
         }

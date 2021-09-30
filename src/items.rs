@@ -132,16 +132,4 @@ pub const ITEMS: &[Item] = &[
         fxses: &[],
         network_ready: false,
     },
-    Item {
-        tiled_name: "shark_rain",
-        constructor: shark_rain::SharkRain::spawn,
-        tiled_offset: (0., 0.),
-        textures: &[
-            ("shark_rain", "assets/Whale/SharkIcon(32x34).png"),
-            ("raining_shark", "assets/Whale/RainingShark(60x220).png"),
-        ],
-        sounds: &[],
-        fxses: &[],
-        network_ready: false,
-    },
 ];

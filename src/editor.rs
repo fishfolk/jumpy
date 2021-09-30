@@ -18,6 +18,8 @@ use actions::{
     EditorAction,
     CreateLayer,
     DeleteLayer,
+    CreateTileset,
+    DeleteTileset,
     PlaceTile,
     RemoveTile,
 };
@@ -132,7 +134,12 @@ impl Editor {
                 return self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::CreateTileset { id, texture_id} => {
-                let action
+                let action = CreateTileset::new(id, texture_id);
+                return self.history.apply(Box::new(action), &mut self.map);
+            }
+            EditorAction::DeleteTileset(id) => {
+                let action = DeleteTileset::new(id);
+                return self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::PlaceTile { id, layer_id, tileset_id, coords } => {
                 let action = PlaceTile::new(id, layer_id, tileset_id, coords);

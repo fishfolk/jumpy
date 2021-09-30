@@ -24,6 +24,12 @@ pub enum EditorAction {
     Undo,
     Redo,
     SelectLayer(String),
+    SetLayerDrawOrderIndex {
+        id: String,
+        index: usize,
+    },
+    OpenCreateLayerMenu(usize),
+    CloseCreateLayerMenu,
     CreateLayer {
         id: String,
         kind: MapLayerKind,
@@ -61,6 +67,65 @@ pub trait UndoableAction {
     }
 }
 
+pub struct SetLayerDrawOrderIndex {
+    id: String,
+    draw_order_index: usize,
+    old_draw_order_index: Option<usize>,
+}
+
+impl SetLayerDrawOrderIndex {
+    pub fn new(id: String, draw_order_index: usize) -> Self {
+        SetLayerDrawOrderIndex {
+            id,
+            draw_order_index,
+            old_draw_order_index: None,
+        }
+    }
+}
+
+impl UndoableAction for SetLayerDrawOrderIndex {
+    fn apply(&mut self, map: &mut Map) -> Result {
+        for i in 0..map.draw_order.len() {
+            let id = map.draw_order.get(i).unwrap();
+            if id == &self.id {
+                self.old_draw_order_index = Some(i);
+                map.draw_order.remove(i);
+                break;
+            }
+        }
+
+        if self.old_draw_order_index.is_none() {
+            return Err("SetLayerDrawOrderIndex: Could not find the specified layer in the map draw order array");
+        }
+
+        if self.draw_order_index >= map.draw_order.len() {
+            map.draw_order.push(self.id.clone());
+        } else {
+            map.draw_order.insert(self.draw_order_index, self.id.clone());
+        }
+
+        Ok(())
+    }
+
+    fn undo(&mut self, map: &mut Map) -> Result {
+        if map.draw_order.remove(self.draw_order_index) != self.id {
+            return Err("SetLayerDrawOrderIndex (Undo): There was a mismatch between the layer id found in at the specified draw order index and the id stored in the action");
+        }
+
+        if let Some(i) = self.old_draw_order_index {
+            if i > map.draw_order.len() {
+                map.draw_order.push(self.id.clone());
+            } else {
+                map.draw_order.insert(i, self.id.clone());
+            }
+        } else {
+            return Err("SetLayerDrawOrderIndex (Undo): No old draw order index was found")
+        }
+
+        Ok(())
+    }
+}
+
 pub struct CreateLayer {
     id: String,
     kind: MapLayerKind,
@@ -79,17 +144,29 @@ impl CreateLayer {
 
 impl UndoableAction for CreateLayer {
     fn apply(&mut self, map: &mut Map) -> Result {
+        if map.layers.contains_key(&self.id) {
+            let len = map.draw_order.len();
+            for i in 0..len {
+                let id = map.draw_order.get(i).unwrap();
+                if id == &self.id {
+                    map.draw_order.remove(i);
+                    break;
+                }
+            }
+        }
+
         let layer = MapLayer::new(&self.id, self.kind);
         map.layers.insert(self.id.clone(), layer);
-        if let Some(i) = self.draw_order_index {
-            if i > map.draw_order.len() - 1 {
-                return Err("CreateLayer: The actions draw order index is out of bounds");
-            }
 
-            map.draw_order.insert(i, self.id.clone());
-        } else {
-            map.draw_order.push(self.id.clone());
+        if let Some(i) = self.draw_order_index {
+            if i <= map.draw_order.len() {
+                map.draw_order.insert(i, self.id.clone());
+
+                return Ok(());
+            }
         }
+
+        map.draw_order.push(self.id.clone());
 
         Ok(())
     }
@@ -130,7 +207,9 @@ impl DeleteLayer {
 
 impl UndoableAction for DeleteLayer {
     fn apply(&mut self, map: &mut Map) -> Result {
-        if map.layers.remove(&self.id).is_none() {
+        if let Some(layer) = map.layers.remove(&self.id) {
+            self.layer = Some(layer);
+        } else {
             return Err("DeleteLayer: The specified layer does not exist");
         }
 
@@ -138,7 +217,9 @@ impl UndoableAction for DeleteLayer {
         for i in 0..len {
             let layer_id = map.draw_order.get(i).unwrap();
             if layer_id == &self.id {
+                map.draw_order.remove(i);
                 self.draw_order_index = Some(i);
+                break;
             }
         }
 
@@ -153,11 +234,11 @@ impl UndoableAction for DeleteLayer {
         if let Some(layer) = self.layer.take() {
             map.layers.insert(self.id.clone(), layer);
             if let Some(i) = self.draw_order_index {
-                if i > map.draw_order.len() - 1 {
-                    return Err("DeleteLayer (Undo): The actions draw order index is out of bounds");
+                if i >= map.draw_order.len() {
+                    map.draw_order.push(self.id.clone());
+                } else {
+                    map.draw_order.insert(i, self.id.clone());
                 }
-
-                map.draw_order.insert(i, self.id.clone());
             } else {
                 return Err("DeleteLayer (Undo): No draw order index stored in action. Undo was probably called on an action that was never applied");
             }
@@ -189,7 +270,7 @@ impl UndoableAction for CreateTileset {
         if let Some(texture) = resources.textures.get(&self.texture_id) {
             let texture_size = uvec2(texture.width() as u32, texture.height() as u32);
             let mut first_tile_id = 1;
-            for (_, tileset) in map.tilesets {
+            for (_, tileset) in &map.tilesets {
                 let next_tile_id = tileset.first_tile_id + tileset.tile_cnt;
                 if next_tile_id > first_tile_id {
                     first_tile_id = next_tile_id;

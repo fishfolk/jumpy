@@ -14,6 +14,7 @@ pub struct SkinCollection {
     pub authenticating_skin: Skin,
     pub error_skin: Skin,
     pub editor_skin: Skin,
+    pub editor_window_header_skin: Skin,
     pub editor_menu_skin: Skin,
     pub editor_menu_selected_skin: Skin,
     pub editor_context_menu_skin: Skin,
@@ -238,21 +239,66 @@ impl SkinCollection {
 
             let button_style = root_ui()
                 .style_builder()
-                .background_margin(RectOffset::new(52.0, 52.0, 52.0, 52.0))
-                .margin(RectOffset::new(-40.0, -40.0, -40.0, -40.0))
+                .background(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/button_background_2.png"),
+                    None,
+                ))
+                .background_margin(RectOffset::new(8.0, 8.0, 12.0, 12.0))
+                .margin(RectOffset::new(8.0, 8.0, -4.0, -4.0))
                 .background_hovered(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/preview_background_2.png"),
+                    include_bytes!("../../assets/ui/button_hovered_background_2.png"),
                     None,
                 ))
                 .background_clicked(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/preview_background_2.png"),
+                    include_bytes!("../../assets/ui/button_clicked_background_2.png"),
                     None,
                 ))
-                .font(include_bytes!("../../assets/ui/MinimalPixel v2.ttf"))
-                .unwrap()
                 .text_color(Color::from_rgba(200, 200, 160, 255))
-                .reverse_background_z(true)
-                .font_size(45)
+                .font_size(20)
+                .build();
+
+            let editbox_style = root_ui()
+                .style_builder()
+                .background(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/editbox_background2.png"),
+                    None,
+                ))
+                .background_clicked(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/editbox_background.png"),
+                    None,
+                ))
+                .background_margin(RectOffset::new(2., 2., 2., 2.))
+                .margin(RectOffset::new(0.0,0.0,4.0,4.0))
+                .text_color(Color::from_rgba(200, 200, 160, 255))
+                .font_size(22)
+                .build();
+
+            let checkbox_style = root_ui()
+                .style_builder()
+                .background(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/checkbox_background.png"),
+                    None,
+                ))
+                .background_hovered(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/checkbox_hovered_background.png"),
+                    None,
+                ))
+                .background_clicked(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/checkbox_clicked_background.png"),
+                    None,
+                ))
+                .build();
+
+            let combobox_style = root_ui()
+                .style_builder()
+                .background(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/combobox_background.png"),
+                    None,
+                ))
+                .background_margin(RectOffset::new(4., 25., 6., 6.))
+                .text_color(Color::from_rgba(120, 120, 120, 255))
+                .color(Color::from_rgba(210, 210, 210, 255))
+                .font_size(22)
                 .build();
 
             Skin {
@@ -260,7 +306,25 @@ impl SkinCollection {
                 group_style,
                 label_style,
                 button_style,
+                editbox_style,
+                checkbox_style,
+                combobox_style,
                 ..root_ui().default_skin()
+            }
+        };
+
+        let editor_window_header_skin = {
+            let label_style = root_ui()
+                .style_builder()
+                .margin(RectOffset::new(8.0, 8.0, 4.0, 16.0))
+                .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .text_color(Color::from_rgba(200, 200, 160, 255))
+                .font_size(22)
+                .build();
+
+            Skin {
+                label_style,
+                ..editor_skin.clone()
             }
         };
 
@@ -316,9 +380,9 @@ impl SkinCollection {
                 .style_builder()
                 .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .color(Color::from_rgba(58, 68, 68, 255))
-                .color_hovered(Color::from_rgba(58, 68, 102, 255))
-                .color_clicked(Color::from_rgba(58, 68, 68, 255))
+                .color(Color::from_rgba(58, 68, 102, 255))
+                .color_hovered(Color::from_rgba(58, 68, 68, 255))
+                .color_clicked(Color::from_rgba(58, 68, 102, 255))
                 .build();
 
             Skin {
@@ -398,6 +462,7 @@ impl SkinCollection {
             authenticating_skin,
             error_skin,
             editor_skin,
+            editor_window_header_skin,
             editor_menu_skin,
             editor_menu_selected_skin,
             editor_context_menu_skin,

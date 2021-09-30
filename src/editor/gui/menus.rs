@@ -17,8 +17,14 @@ use crate::{
     map::{
         MapLayerKind,
         ObjectLayerKind,
+        CollisionKind,
     },
     editor::actions::EditorAction,
+};
+
+use super::window_builder::{
+    WindowPosition,
+    WindowBuilder,
 };
 
 #[derive(Debug, Clone)]
@@ -238,8 +244,14 @@ fn draw_context_menu_entries(ui: &mut Ui, position: Vec2, entries: &mut [Context
 }
 
 pub const RIGHT_MENUBAR_WIDTH: f32 = 150.0;
-const MENU_ENTRY_HEIGHT: f32 = 25.0;
+pub const MENU_ENTRY_HEIGHT: f32 = 25.0;
+
 const LAYER_LIST_HEIGHT_FACTOR: f32 = 0.4;
+
+pub fn  get_layer_list_height() -> f32 {
+    let height = screen_height() * LAYER_LIST_HEIGHT_FACTOR;
+    (height / MENU_ENTRY_HEIGHT).floor() * MENU_ENTRY_HEIGHT
+}
 
 pub fn draw_right_menu_bar(ui: &mut Ui, current_layer: Option<String>, layers: &[(String, MapLayerKind)]) -> Option<EditorAction> {
     let mut res = None;
@@ -270,7 +282,7 @@ pub fn draw_right_menu_bar(ui: &mut Ui, current_layer: Option<String>, layers: &
 
             position.y += MENU_ENTRY_HEIGHT;
 
-            let size = vec2(RIGHT_MENUBAR_WIDTH, (screen_height * LAYER_LIST_HEIGHT_FACTOR) - MENU_ENTRY_HEIGHT);
+            let size = vec2(RIGHT_MENUBAR_WIDTH, get_layer_list_height());
 
             widgets::Group::new(hash!(), size).position(position).ui(ui, |ui| {
                 let mut position = Vec2::ZERO;
@@ -328,4 +340,99 @@ pub fn draw_right_menu_bar(ui: &mut Ui, current_layer: Option<String>, layers: &
     ui.pop_skin();
 
     res
+}
+
+pub struct CreateLayerWindow {
+    layer_id: String,
+    layer_kind: MapLayerKind,
+    layer_collision: CollisionKind,
+    draw_order_index: usize,
+}
+
+impl CreateLayerWindow {
+    pub fn new(draw_order_index: usize) -> Self {
+        CreateLayerWindow {
+            layer_id: "Unnamed Layer".to_string(),
+            layer_kind: MapLayerKind::TileLayer,
+            layer_collision: CollisionKind::None,
+            draw_order_index,
+        }
+    }
+
+    pub fn draw(&mut self, ui: &mut Ui, layers: &[(String, MapLayerKind)]) -> Option<EditorAction> {
+        let mut res = None;
+
+        let size = vec2(350.0, 350.0);
+        let position = WindowPosition::Centered;
+
+        WindowBuilder::new(size)
+            .with_position(position, true)
+            .with_title("Create Layer")
+            .build(hash!(), ui, |ui| {
+                {
+                    let size = vec2(173.0, 25.0);
+
+                    widgets::InputText::new(hash!())
+                        .size(size)
+                        .ratio(1.0)
+                        .label("Name")
+                        .ui(ui, &mut self.layer_id);
+                }
+
+                ui.separator();
+                ui.separator();
+                ui.separator();
+                ui.separator();
+
+                let mut layer_kind = match self.layer_kind {
+                    MapLayerKind::TileLayer => 0,
+                    MapLayerKind::ObjectLayer(kind) => {
+                        match kind {
+                            ObjectLayerKind::Items => 1,
+                            ObjectLayerKind::SpawnPoints => 2,
+                            _ => unreachable!(),
+                        }
+                    },
+                };
+
+                widgets::ComboBox::new(hash!(), &["Tiles", "Items", "Spawn Points"])
+                    .ratio(0.4)
+                    .label("Type")
+                    .ui(ui, &mut layer_kind);
+
+                self.layer_kind = match layer_kind {
+                    0 => MapLayerKind::TileLayer,
+                    1 => MapLayerKind::ObjectLayer(ObjectLayerKind::Items),
+                    2 => MapLayerKind::ObjectLayer(ObjectLayerKind::SpawnPoints),
+                    _ => unreachable!(),
+                };
+
+                let is_existing_id = layers
+                    .iter()
+                    .find(|(id, _)| id == &self.layer_id)
+                    .is_some();
+
+                if is_existing_id {
+                    ui.label(None, "A layer with this name already exist!");
+                } else {
+                    ui.label(None, "")
+                }
+
+                if ui.button(None, "Create") && is_existing_id == false {
+                    res = Some(EditorAction::CreateLayer {
+                        id: self.layer_id.clone(),
+                        kind: self.layer_kind,
+                        draw_order_index: Some(self.draw_order_index),
+                    });
+                }
+
+                ui.same_line(0.0);
+
+                if ui.button(None, "Cancel") {
+                    res = Some(EditorAction::CloseCreateLayerMenu);
+                }
+            });
+
+        res
+    }
 }

@@ -12,7 +12,7 @@ pub struct EditorHistory {
 
 impl EditorHistory {
     pub fn new() -> Self {
-        // TODO: Do allocation for stacks?
+        // TODO: Do allocation for stacks? Also, the stack sizes must be limited
         EditorHistory {
             undo_stack: Vec::new(),
             redo_stack: Vec::new(),
@@ -22,6 +22,7 @@ impl EditorHistory {
     pub fn apply(&mut self, mut action: Box<dyn UndoableAction>, map: &mut Map) -> Result {
         action.apply(map)?;
         self.undo_stack.push(action);
+        self.redo_stack.clear();
 
         Ok(())
     }
@@ -42,5 +43,17 @@ impl EditorHistory {
         }
 
         Ok(())
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.undo_stack.is_empty() && self.redo_stack.is_empty()
+    }
+
+    pub fn has_undo(&self) -> bool {
+        self.undo_stack.is_empty() == false
+    }
+
+    pub fn has_redo(&self) -> bool {
+        self.redo_stack.is_empty() == false
     }
 }

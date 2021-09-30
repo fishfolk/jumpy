@@ -277,11 +277,10 @@ impl<'a> Iterator for MapTileIterator<'a> {
             (self.current.0 + 1, self.current.1)
         };
 
-        if self.current.1 >= self.rect.y + self.rect.h {
+        let i = (self.current.1 * self.layer.grid_size.x + self.current.0) as usize;
+        if self.current.1 >= self.rect.y + self.rect.h || i >= self.layer.tiles.len() {
             return None;
         }
-
-        let i = (self.current.1 * self.layer.grid_size.x + self.current.0) as usize;
 
         let res = Some((
             self.current.0,
@@ -452,8 +451,8 @@ impl MapTileset {
         first_tile_id: u32,
     ) -> Self {
         let grid_size = uvec2(
-            texture_size.x / tile_size.x,
-            texture_size.y / tile_size.y,
+            texture_size.x / tile_size.x as u32,
+            texture_size.y / tile_size.y as u32,
         );
 
         MapTileset {
@@ -470,8 +469,8 @@ impl MapTileset {
     }
 
     pub fn get_texture_coords(&self, tile_id: u32) -> Vec2 {
-        let x = ((tile_id % self.grid_size.x) * self.tile_size.x) as f32;
-        let y = ((tile_id / self.grid_size.x) * self.tile_size.y) as f32;
+        let x = (tile_id % self.grid_size.x)  as f32 * self.tile_size.x;
+        let y = (tile_id / self.grid_size.x)  as f32 * self.tile_size.y;
         vec2(x, y)
     }
 }

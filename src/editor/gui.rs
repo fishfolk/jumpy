@@ -1,4 +1,5 @@
 pub mod menus;
+pub mod window_builder;
 
 use macroquad::{
     experimental::{
@@ -30,6 +31,7 @@ use crate::{
 use menus::{
     ContextMenu,
     ContextMenuEntry,
+    CreateLayerWindow,
 };
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -37,17 +39,20 @@ pub enum EditorGuiElement {
     None,
     ContextMenu,
     LayerList,
-    LayerListEntry(String),
+    RightMenuBar,
+    LayerListEntry(usize),
 }
 
 pub struct EditorGui {
-    context_menu: Option<ContextMenu>,
+    pub context_menu: Option<ContextMenu>,
+    pub create_layer_menu: Option<CreateLayerWindow>,
 }
 
 impl EditorGui {
     pub fn new() -> Self {
         EditorGui {
             context_menu: None,
+            create_layer_menu: None,
         }
     }
 
@@ -61,29 +66,23 @@ impl EditorGui {
 
         res = menus::draw_right_menu_bar(ui, current_layer, layers);
 
-        if let Some(context_menu) = &mut self.context_menu {
-            res = context_menu.draw(ui);
-        };
-
-        if res.is_some() {
-            self.context_menu = None;
-        }
-
-        res
-    }
-
-    pub fn get_element_at(&self, point: Vec2) -> EditorGuiElement {
-        if let Some(context_menu) = &self.context_menu {
-            if context_menu.contains(point) {
-                return EditorGuiElement::ContextMenu;
+        if let Some(create_layer_menu) = &mut self.create_layer_menu {
+            let was_some = res.is_some();
+            res = create_layer_menu.draw(ui, layers);
+            if was_some == false && res.is_some() {
+                self.create_layer_menu = None;
             }
         }
 
-        if point.x >= screen_width() - menus::RIGHT_MENUBAR_WIDTH {
-            return EditorGuiElement::LayerList;
+        if let Some(context_menu) = &mut self.context_menu {
+            let was_some = res.is_some();
+             res = context_menu.draw(ui);
+            if was_some == false && res.is_some() {
+                self.context_menu = None;
+            }
         }
 
-        EditorGuiElement::None
+        res
     }
 
     pub fn open_context_menu(&mut self, position: Vec2, entries: &[ContextMenuEntry]) {
@@ -95,5 +94,14 @@ impl EditorGui {
 
     pub fn close_context_menu(&mut self) {
         self.context_menu = None;
+    }
+
+    pub fn open_create_layer_menu(&mut self, index: usize) {
+        let menu = CreateLayerWindow::new(index);
+        self.create_layer_menu = Some(menu);
+    }
+
+    pub fn close_create_layer_menu(&mut self) {
+        self.create_layer_menu = None;
     }
 }

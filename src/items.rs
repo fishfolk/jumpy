@@ -2,7 +2,9 @@
 //! Proto-mods, eventually some of the items will move to some sort of a wasm runtime
 
 mod cannon;
+mod galleon;
 mod grenades;
+pub mod jellyfish;
 mod machine_gun;
 mod mines;
 mod muscet;
@@ -11,6 +13,7 @@ pub mod shoes;
 mod sproinger;
 mod sword;
 mod turtle_shell;
+mod volcano;
 use macroquad::{experimental::scene::HandleUntyped, math::Vec2};
 
 /// Proto-mod
@@ -128,6 +131,39 @@ pub const ITEMS: &[Item] = &[
         constructor: shoes::Shoes::spawn,
         tiled_offset: (0., 0.),
         textures: &[("shoes", "assets/Whale/Shoes(32x32).png")],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    },
+    Item {
+        tiled_name: "volcano",
+        constructor: volcano::Volcano::spawn,
+        tiled_offset: (0., 0.),
+        textures: &[
+            ("icon", "temp/VolcanoIcon(36x22).png"),
+            ("erupting", "temp/EruptingVolcano(395x100).png"),
+        ],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    },
+    Item {
+        tiled_name: "galleon",
+        constructor: galleon::Galleon::spawn,
+        tiled_offset: (0., 0.),
+        textures: &[
+            ("galleon", "assets/Whale/GalleonIcon(32x29).png"),
+            ("flying_galleon", "assets/Whale/FlyingGalleon(326x300).png"),
+        ],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    },
+    Item {
+        tiled_name: "jellyfish",
+        constructor: jellyfish::Jellyfish::spawn,
+        tiled_offset: (0., 0.),
+        textures: &[("jellyfish", "assets/Whale/Jellyfish(30x39).png")],
         sounds: &[],
         fxses: &[],
         network_ready: false,

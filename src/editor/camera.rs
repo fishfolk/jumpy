@@ -43,7 +43,7 @@ impl scene::Node for EditorCamera {
         let camera = Some(Camera2D {
             offset: vec2(0.0, 0.0),
             target: vec2(node.position.x.round(), node.position.y.round()),
-            zoom: vec2(node.scale / screen_width(), node.scale / screen_height()) * 2.0,
+            zoom: vec2(node.scale / screen_width(), -node.scale / screen_height()) * 2.0,
             ..Camera2D::default()
         });
 

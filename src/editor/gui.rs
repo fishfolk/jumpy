@@ -36,7 +36,7 @@ use menus::{
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum EditorGuiElement {
-    None,
+    Map,
     ContextMenu,
     LayerList,
     RightMenuBar,

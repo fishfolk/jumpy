@@ -55,12 +55,16 @@ use macroquad::{
 use crate::{
     map::{
         Map,
+        MapLayerKind,
+        ObjectLayerKind,
     },
 };
 
 pub struct Editor {
     map: Map,
-    current_layer: Option<String>,
+    selected_layer: Option<String>,
+    selected_tileset: Option<String>,
+    selected_tile: Option<u32>,
     gui: EditorGui,
     input_scheme: EditorInputScheme,
     cursor_position: Option<Vec2>,
@@ -77,7 +81,17 @@ impl Editor {
     const CURSOR_MOVE_SPEED: f32 = 5.0;
 
     pub fn new(input_scheme: EditorInputScheme, map: Map) -> Self {
-        let current_layer = map.draw_order.first().cloned();
+        let selected_layer = map.draw_order.first().cloned();
+        let mut selected_tileset = None;
+        let mut selected_tile = None;
+
+        if map.tilesets.is_empty() == false {
+            for (key, tileset) in &map.tilesets {
+                selected_tileset = Some(key.clone());
+                selected_tile = Some(tileset.first_tile_id);
+                break;
+            }
+        }
 
         let cursor_position = match input_scheme {
             EditorInputScheme::Keyboard => None,
@@ -89,7 +103,9 @@ impl Editor {
 
         Editor {
             map,
-            current_layer,
+            selected_layer,
+            selected_tileset,
+            selected_tile,
             gui: EditorGui::new(),
             input_scheme,
             cursor_position,
@@ -126,7 +142,7 @@ impl Editor {
             return EditorGuiElement::RightMenuBar;
         }
 
-        EditorGuiElement::None
+        EditorGuiElement::Map
     }
 
     fn get_context_menu_entries(&self, context: EditorGuiElement) -> Vec<ContextMenuEntry> {
@@ -173,7 +189,7 @@ impl Editor {
 
                     entries
                 }
-                ContextMenu | None => {
+                ContextMenu | Map => {
                     vec!()
                 }
             };
@@ -197,6 +213,17 @@ impl Editor {
         entries
     }
 
+    fn get_selected_tile(&self) -> Option<(u32, String)> {
+        if let Some(tileset_id) = self.selected_tileset.clone() {
+            if let Some(tile_id) = self.selected_tile.clone() {
+                let selected = (tile_id, tileset_id);
+                return Some(selected);
+            }
+        }
+
+        None
+    }
+
     fn apply_action(&mut self, action: EditorAction) -> Result {
         match action {
             EditorAction::Undo => {
@@ -212,7 +239,7 @@ impl Editor {
                 self.gui.close_create_layer_menu();
             }
             EditorAction::SelectLayer(id) => {
-                self.current_layer = Some(id);
+                self.selected_layer = Some(id);
             }
             EditorAction::SetLayerDrawOrderIndex { id, index } => {
                 let action = SetLayerDrawOrderIndex::new(id, index);
@@ -250,13 +277,13 @@ impl Editor {
 
 impl Node for Editor {
     fn update(mut node: RefMut<Self>) {
-        if let Some(current_layer) = &node.current_layer {
+        if let Some(current_layer) = &node.selected_layer {
             if node.map.draw_order.contains(current_layer) == false {
-                node.current_layer = None;
+                node.selected_layer = None;
             }
         } else {
             if let Some(id) = node.map.draw_order.first().cloned() {
-                node.current_layer = Some(id);
+                node.selected_layer = Some(id);
             }
         }
 
@@ -268,6 +295,31 @@ impl Node for Editor {
         if input.action {
             if cursor_context != EditorGuiElement::ContextMenu {
                 node.gui.close_context_menu();
+            }
+
+            if cursor_context == EditorGuiElement::Map {
+                if let Some(layer_id) = node.selected_layer.clone() {
+                    if let Some(layer_kind) = node.map.get_layer_kind(&layer_id) {
+                        match layer_kind {
+                            MapLayerKind::TileLayer => {
+                                if let Some(selected) = node.get_selected_tile() {
+                                    let (id, tileset_id) = selected;
+                                    let coords = node.map.to_coords(cursor_position);
+
+                                    node.apply_action(EditorAction::PlaceTile {
+                                        id,
+                                        layer_id,
+                                        tileset_id,
+                                        coords,
+                                    });
+                                }
+                            }
+                            MapLayerKind::ObjectLayer(..) => {
+                                // TODO: Implement object layers
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -302,9 +354,9 @@ impl Node for Editor {
             pan_direction.x = 1.0;
         }
 
-        if cursor_position.y >= screen_size.y - threshold.y {
+        if cursor_position.y <= threshold.y {
             pan_direction.y = -1.0;
-        } else if cursor_position.y <= threshold.y {
+        } else if cursor_position.y >= screen_size.y - threshold.y {
             pan_direction.y = 1.0;
         }
 
@@ -326,7 +378,7 @@ impl Node for Editor {
             layers.push(layer_info)
         }
 
-        let current_layer = node.current_layer.clone();
+        let current_layer = node.selected_layer.clone();
         if let Some(action) = node.gui.draw(current_layer, &layers) {
             match node.apply_action(action) {
                 Ok(_) => {

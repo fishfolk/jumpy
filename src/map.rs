@@ -233,6 +233,14 @@ impl Map {
         }
     }
 
+    pub fn get_layer_kind(&self, layer_id: &str) -> Option<MapLayerKind> {
+        if let Some(layer) = self.layers.get(layer_id) {
+            return Some(layer.kind);
+        }
+
+        None
+    }
+
     pub fn default_background_color() -> Color {
         Color::new(0.0,0.0,0.0,0.0)
     }
@@ -387,7 +395,6 @@ impl Default for MapLayer {
         }
     }
 }
-
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MapTile {

@@ -38,9 +38,9 @@ pub fn collect_editor_input(scheme: EditorInputScheme) -> EditorInput {
                 input.camera_pan.x = 1.0;
             }
 
-            if is_key_down(KeyCode::Down) || is_key_down(KeyCode::S) {
+            if is_key_down(KeyCode::Up) || is_key_down(KeyCode::W) {
                 input.camera_pan.y = -1.0;
-            } else if is_key_down(KeyCode::Up) || is_key_down(KeyCode::W) {
+            } else if is_key_down(KeyCode::Down) || is_key_down(KeyCode::S) {
                 input.camera_pan.y = 1.0;
             }
 

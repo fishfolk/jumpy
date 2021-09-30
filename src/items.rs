@@ -2,6 +2,7 @@
 //! Proto-mods, eventually some of the items will move to some sort of a wasm runtime
 
 mod cannon;
+mod galleon;
 mod grenades;
 pub mod jellyfish;
 mod machine_gun;
@@ -140,6 +141,18 @@ pub const ITEMS: &[Item] = &[
         textures: &[
             ("icon", "temp/VolcanoIcon(36x22).png"),
             ("erupting", "temp/EruptingVolcano(395x100).png"),
+        ],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    },
+    Item {
+        tiled_name: "galleon",
+        constructor: galleon::Galleon::spawn,
+        tiled_offset: (0., 0.),
+        textures: &[
+            ("galleon", "assets/Whale/GalleonIcon(32x29).png"),
+            ("flying_galleon", "assets/Whale/FlyingGalleon(326x300).png"),
         ],
         sounds: &[],
         fxses: &[],

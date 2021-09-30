@@ -444,20 +444,29 @@ pub async fn location_select() -> String {
         for (_, gamepad) in gui_resources.gamepads.gamepads() {
             use gilrs::{Axis, Button};
 
-            up |= !prev_up && gamepad.value(Axis::LeftStickY) > 0.5;
-            down |= !prev_down && gamepad.value(Axis::LeftStickY) < -0.5;
-            left |= !prev_left && gamepad.value(Axis::LeftStickX) < -0.5;
-            right |= !prev_right && gamepad.value(Axis::LeftStickX) > 0.5;
+            let gamepad_up =
+                gamepad.value(Axis::LeftStickY) > 0.5 || gamepad.is_pressed(Button::DPadUp);
+            let gamepad_down =
+                gamepad.value(Axis::LeftStickY) < -0.5 || gamepad.is_pressed(Button::DPadDown);
+            let gamepad_left =
+                gamepad.value(Axis::LeftStickX) < -0.5 || gamepad.is_pressed(Button::DPadLeft);
+            let gamepad_right =
+                gamepad.value(Axis::LeftStickX) > 0.5 || gamepad.is_pressed(Button::DPadRight);
+
+            up |= !prev_up && gamepad_up;
+            down |= !prev_down && gamepad_down;
+            left |= !prev_left && gamepad_left;
+            right |= !prev_right && gamepad_right;
             if let Some(d) = gamepad.button_data(Button::South) {
                 start |= d.is_pressed() && d.counter() == gui_resources.gamepads.counter();
             } else if let Some(d) = gamepad.button_data(Button::Start) {
                 start |= d.is_pressed() && d.counter() == gui_resources.gamepads.counter();
             }
 
-            prev_up = gamepad.value(Axis::LeftStickY) > 0.5;
-            prev_down = gamepad.value(Axis::LeftStickY) < -0.5;
-            prev_left = gamepad.value(Axis::LeftStickX) < -0.5;
-            prev_right = gamepad.value(Axis::LeftStickX) > 0.5;
+            prev_up = gamepad_up;
+            prev_down = gamepad_down;
+            prev_left = gamepad_left;
+            prev_right = gamepad_right;
         }
         clear_background(BLACK);
 

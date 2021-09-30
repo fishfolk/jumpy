@@ -1,4 +1,5 @@
 use macroquad::{
+    color,
     experimental::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
@@ -14,6 +15,104 @@ use crate::{
     nodes::Player,
     Resources,
 };
+
+pub struct RainingShark {
+    pub sprite: Texture2D,
+    pub pos: Vec2,
+    pub speed: Vec2,
+    pub owner_id: u8,
+}
+
+impl RainingShark {
+    pub const SPEED: f32 = 400.;
+    pub const WIDTH: f32 = 60.;
+    pub const HEIGHT: f32 = 220.;
+    pub const KNOCKBACK: f32 = 10.;
+
+    pub fn new(owner_id: u8) -> RainingShark {
+        let resources = storage::get::<Resources>();
+        let sprite = resources.items_textures["shark_rain/raining_shark"];
+
+        let pos = Self::start_position();
+
+        RainingShark {
+            sprite,
+            pos,
+            speed: Vec2::new(0., Self::SPEED),
+            owner_id,
+        }
+    }
+
+    pub fn start_position() -> Vec2 {
+        //need to implement randomization
+        let resources = storage::get::<Resources>();
+        let map_width =
+            resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width;
+
+        Vec2::new(map_width as f32 / 2., 0.0)
+    }
+
+    pub fn update(&mut self) -> bool {
+        self.pos += self.speed * get_frame_time();
+
+        {
+            let resources = storage::get::<Resources>();
+            let map_height =
+                (resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height) as f32;
+            if self.pos.y > map_height {
+                return false;
+            }
+        }
+
+        for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
+            if player.get_hitbox().overlaps(&Rect::new(
+                self.pos.x,
+                self.pos.y,
+                Self::WIDTH,
+                Self::HEIGHT,
+            )) && player.id != self.owner_id
+                && !player.dead
+            {
+                scene::find_node_by_type::<crate::nodes::Camera>()
+                    .unwrap()
+                    .shake_noise(1.0, 10, 1.);
+                {
+                    let mut resources = storage::get_mut::<Resources>();
+                    resources.hit_fxses.spawn(player.body.pos);
+                }
+                let direction = self.pos.x > (player.body.pos.x + Self::KNOCKBACK);
+                player.kill(direction);
+            }
+        }
+
+        true
+    }
+
+    pub fn draw(&self, pos: Vec2) {
+        draw_texture_ex(
+            self.sprite,
+            pos.x,
+            pos.y,
+            color::WHITE,
+            DrawTextureParams {
+                dest_size: Some(Vec2::new(Self::WIDTH, Self::HEIGHT)),
+                ..Default::default()
+            },
+        );
+    }
+}
+
+impl Node for RainingShark {
+    fn draw(node: RefMut<Self>) {
+        node.draw(node.pos);
+    }
+
+    fn fixed_update(mut node: RefMut<Self>) {
+        if !node.update() {
+            node.delete();
+        }
+    }
+}
 
 pub struct SharkRain {
     sprite: GunlikeAnimation,
@@ -36,6 +135,8 @@ impl SharkRain {
         let coroutine = async move {
             let player = &mut *scene::get_node(player);
             player.state_machine.set_state(Player::ST_NORMAL);
+
+            scene::add_node(RainingShark::new(player.id));
 
             player.weapon = None;
             scene::get_node(node).delete();

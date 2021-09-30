@@ -138,7 +138,7 @@ pub const ITEMS: &[Item] = &[
         tiled_offset: (0., 0.),
         textures: &[
             ("shark_rain", "assets/Whale/SharkIcon(32x34).png"),
-            ("flying_shark", "assets/Whale/RainingShark(60x220).png"),
+            ("raining_shark", "assets/Whale/RainingShark(60x220).png"),
         ],
         sounds: &[],
         fxses: &[],

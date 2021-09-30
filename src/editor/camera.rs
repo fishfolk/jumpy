@@ -36,6 +36,11 @@ impl EditorCamera {
         res.h += Self::FRUSTUM_PADDING * 2.0;
         res
     }
+
+    pub fn to_world_space(&self, position: Vec2) -> Vec2 {
+        let rect = self.get_view_rect();
+        position / self.scale + rect.point()
+    }
 }
 
 impl scene::Node for EditorCamera {

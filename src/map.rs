@@ -25,6 +25,7 @@ use crate::{
         self,
         TiledMap,
     },
+    editor::EditorCamera,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -242,7 +243,7 @@ impl Map {
     }
 
     pub fn default_background_color() -> Color {
-        Color::new(0.0,0.0,0.0,0.0)
+        Color::new(0.0, 0.0, 0.0, 0.0)
     }
 
     #[cfg(any(target_family = "unix", target_family = "windows"))]
@@ -476,8 +477,8 @@ impl MapTileset {
     }
 
     pub fn get_texture_coords(&self, tile_id: u32) -> Vec2 {
-        let x = (tile_id % self.grid_size.x)  as f32 * self.tile_size.x;
-        let y = (tile_id / self.grid_size.x)  as f32 * self.tile_size.y;
+        let x = (tile_id % self.grid_size.x) as f32 * self.tile_size.x;
+        let y = (tile_id / self.grid_size.x) as f32 * self.tile_size.y;
         vec2(x, y)
     }
 }

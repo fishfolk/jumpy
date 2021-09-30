@@ -76,7 +76,8 @@ impl Editor {
 
     const CAMERA_PAN_SPEED: f32 = 5.0;
     const CAMERA_ZOOM_STEP: f32 = 0.05;
-    const CAMERA_ZOOM_MAX: f32 = 3.0;
+    const CAMERA_ZOOM_MIN: f32 = 0.5;
+    const CAMERA_ZOOM_MAX: f32 = 1.5;
 
     const CURSOR_MOVE_SPEED: f32 = 5.0;
 
@@ -292,6 +293,11 @@ impl Node for Editor {
         let cursor_position = node.get_cursor_position();
         let cursor_context = node.get_context_at(cursor_position);
 
+        let cursor_world_position = {
+            let camera = scene::find_node_by_type::<EditorCamera>().unwrap();
+            camera.to_world_space(cursor_position)
+        };
+
         if input.action {
             if cursor_context != EditorGuiElement::ContextMenu {
                 node.gui.close_context_menu();
@@ -304,7 +310,7 @@ impl Node for Editor {
                             MapLayerKind::TileLayer => {
                                 if let Some(selected) = node.get_selected_tile() {
                                     let (id, tileset_id) = selected;
-                                    let coords = node.map.to_coords(cursor_position);
+                                    let coords = node.map.to_coords(cursor_world_position);
 
                                     node.apply_action(EditorAction::PlaceTile {
                                         id,
@@ -365,7 +371,7 @@ impl Node for Editor {
         let movement = pan_direction * Self::CAMERA_PAN_SPEED;
         camera.position = (camera.position + movement).clamp(Vec2::ZERO, node.map.get_size());
 
-        camera.scale = (camera.scale + input.camera_zoom * Self::CAMERA_ZOOM_STEP).clamp(0.0, Self::CAMERA_ZOOM_MAX);
+        camera.scale = (camera.scale + input.camera_zoom * Self::CAMERA_ZOOM_STEP).clamp(Self::CAMERA_ZOOM_MIN, Self::CAMERA_ZOOM_MAX);
     }
 
     fn draw(mut node: RefMut<Self>) {

@@ -17,6 +17,7 @@ const MUSKET_COLLIDER_WIDTH: f32 = 48.0;
 const MUSKET_COLLIDER_HEIGHT: f32 = 32.0;
 const MUSKET_RECOIL: f32 = 700.0;
 const MUSKET_BULLETS: i32 = 3;
+const MUSKET_BULLET_SPEED: f32 = 500.0;
 
 impl Gun {
     pub fn spawn_musket(pos: Vec2) -> HandleUntyped {
@@ -74,6 +75,8 @@ impl Gun {
             ),
             throwable: ThrowableItem::default(),
             bullets: MUSKET_BULLETS,
+            max_bullets: MUSKET_BULLETS,
+            bullet_speed: MUSKET_BULLET_SPEED,
             collider_width: MUSKET_COLLIDER_WIDTH,
             collider_height: MUSKET_COLLIDER_HEIGHT,
             recoil: MUSKET_RECOIL,

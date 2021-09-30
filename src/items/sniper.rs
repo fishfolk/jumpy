@@ -17,6 +17,7 @@ const SNIPER_COLLIDER_WIDTH: f32 = 48.0;
 const SNIPER_COLLIDER_HEIGHT: f32 = 32.0;
 const SNIPER_RECOIL: f32 = 1400.0;
 const SNIPER_BULLETS: i32 = 2;
+const SNIPER_BULLET_SPEED: f32 = 1200.0;
 
 impl Gun {
     pub fn spawn_sniper(pos: Vec2) -> HandleUntyped {
@@ -74,6 +75,8 @@ impl Gun {
             ),
             throwable: ThrowableItem::default(),
             bullets: SNIPER_BULLETS,
+            max_bullets: SNIPER_BULLETS,
+            bullet_speed: SNIPER_BULLET_SPEED,
             collider_width: SNIPER_COLLIDER_WIDTH,
             collider_height: SNIPER_COLLIDER_HEIGHT,
             recoil: SNIPER_RECOIL,

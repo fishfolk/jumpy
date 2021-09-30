@@ -1,7 +1,6 @@
 use macroquad::{
     audio::play_sound_once,
     experimental::{
-        animation::{AnimatedSprite, Animation},
         collections::storage,
         coroutines::{start_coroutine, wait_seconds, Coroutine},
         scene::{self, Handle, HandleUntyped, RefMut},
@@ -21,7 +20,9 @@ pub struct Gun {
     pub gun_fx_sprite: GunlikeAnimation,
     pub gun_fx: bool,
 
+    pub max_bullets: i32,
     pub bullets: i32,
+    pub bullet_speed: f32,
 
     pub body: PhysicsBody,
     pub throwable: ThrowableItem,
@@ -35,7 +36,7 @@ impl Gun {
     fn draw_hud(&self) {
         let full_color = Color::new(0.8, 0.9, 1.0, 1.0);
         let empty_color = Color::new(0.8, 0.9, 1.0, 0.8);
-        for i in 0..3 {
+        for i in 0..self.max_bullets {
             let x = self.body.pos.x + 15.0 * i as f32;
 
             if i >= self.bullets {
@@ -80,6 +81,7 @@ impl Gun {
                     node.body.pos + vec2(16.0, 15.0) + node.body.facing_dir() * 32.0,
                     node.body.facing,
                     4.,
+                    node.bullet_speed,
                 ));
                 player.body.speed.x = -node.recoil * player.body.facing_dir().x;
             }
@@ -144,7 +146,7 @@ impl Gun {
             let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Gun>();
 
             node.body.angle = 0.;
-            node.bullets = 3;
+            node.bullets = node.max_bullets;
             node.throwable.owner = Some(owner);
         }
 
@@ -248,17 +250,16 @@ pub struct GunBullet {
 }
 
 impl GunBullet {
-    pub const BULLET_SPEED: f32 = 500.0;
     pub const BULLET_LIFETIME: f32 = 0.9;
     pub const BULLET_SPREAD: f32 = 0.0;
 
-    pub fn new(pos: Vec2, facing: bool, size: f32) -> GunBullet {
+    pub fn new(pos: Vec2, facing: bool, size: f32, speed: f32) -> GunBullet {
         GunBullet {
             bullet: Bullet::new(
                 pos,
                 Self::BULLET_LIFETIME,
                 facing,
-                Self::BULLET_SPEED,
+                speed,
                 Self::BULLET_SPREAD,
             ),
             size,

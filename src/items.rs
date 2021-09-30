@@ -4,6 +4,7 @@
 mod cannon;
 mod galleon;
 mod grenades;
+pub mod jellyfish;
 mod machine_gun;
 mod mines;
 mod muscet;
@@ -153,6 +154,15 @@ pub const ITEMS: &[Item] = &[
             ("galleon", "assets/Whale/GalleonIcon(32x29).png"),
             ("flying_galleon", "assets/Whale/FlyingGalleon(326x300).png"),
         ],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    },
+    Item {
+        tiled_name: "jellyfish",
+        constructor: jellyfish::Jellyfish::spawn,
+        tiled_offset: (0., 0.),
+        textures: &[("jellyfish", "assets/Whale/Jellyfish(30x39).png")],
         sounds: &[],
         fxses: &[],
         network_ready: false,

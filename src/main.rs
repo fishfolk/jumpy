@@ -116,7 +116,11 @@ impl Resources {
         .await?;
         turtleshell.set_filter(FilterMode::Nearest);
 
-        let flappy_jellyfish = load_texture("assets/Whale/FlappyJellyfish(34x47).png").await?;
+        let flappy_jellyfish = load_texture(&format!(
+            "{}/assets/Whale/FlappyJellyfish(34x47).png",
+            assets_dir
+        ))
+        .await?;
         flappy_jellyfish.set_filter(FilterMode::Nearest);
 
         let background_01 =

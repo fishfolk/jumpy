@@ -10,6 +10,7 @@ pub mod shoes;
 mod sproinger;
 mod sword;
 mod turtle_shell;
+mod volcano;
 use macroquad::{experimental::scene::HandleUntyped, math::Vec2};
 
 /// Proto-mod
@@ -127,6 +128,18 @@ pub const ITEMS: &[Item] = &[
         constructor: shoes::Shoes::spawn,
         tiled_offset: (0., 0.),
         textures: &[("shoes", "assets/Whale/Shoes(32x32).png")],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    },
+    Item {
+        tiled_name: "volcano",
+        constructor: volcano::Volcano::spawn,
+        tiled_offset: (0., 0.),
+        textures: &[
+            ("icon", "temp/VolcanoIcon(36x22).png"),
+            ("erupting", "temp/EruptingVolcano(395x100).png"),
+        ],
         sounds: &[],
         fxses: &[],
         network_ready: false,

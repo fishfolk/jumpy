@@ -29,6 +29,7 @@ impl FlyingGalleon {
     pub const SPEED: f32 = 200.;
     pub const WIDTH: f32 = 425.;
     pub const HEIGHT: f32 = 390.;
+    pub const KNOCKBACK: f32 = 10.;
 
     pub fn new(owner_id: u8) -> FlyingGalleon {
         let resources = storage::get::<Resources>();
@@ -98,7 +99,7 @@ impl FlyingGalleon {
                     let mut resources = storage::get_mut::<Resources>();
                     resources.hit_fxses.spawn(player.body.pos);
                 }
-                let direction = self.pos.x > (player.body.pos.x + 10.);
+                let direction = self.pos.x > (player.body.pos.x + Self::KNOCKBACK);
                 player.kill(direction);
             }
         }
@@ -141,8 +142,10 @@ pub struct Galleon {
 }
 
 impl Galleon {
-    pub const COLLIDER_WIDTH: f32 = 32.0;
-    pub const COLLIDER_HEIGHT: f32 = 29.0;
+    pub const SPRITE_WIDTH: u32 = 32;
+    pub const SPRITE_HEIGHT: u32 = 29;
+    pub const RIGHT_OFFSET: [f32; 2] = [15., 16.];
+    pub const LEFT_OFFSET: [f32; 2] = [-22., 16.];
 
     pub fn throw(&mut self, force: bool) {
         self.throwable.throw(&mut self.body, force);
@@ -167,8 +170,8 @@ impl Galleon {
 
         let sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
-                32,
-                29,
+                Self::SPRITE_WIDTH,
+                Self::SPRITE_HEIGHT,
                 &[Animation {
                     name: "idle".to_string(),
                     row: 0,
@@ -178,14 +181,14 @@ impl Galleon {
                 false,
             ),
             resources.items_textures["galleon/galleon"],
-            Self::COLLIDER_WIDTH,
+            Self::SPRITE_WIDTH as f32,
         );
 
         let body = PhysicsBody::new(
             &mut resources.collision_world,
             pos,
             0.0,
-            vec2(Self::COLLIDER_WIDTH, Self::COLLIDER_HEIGHT),
+            vec2(Self::SPRITE_WIDTH as f32, Self::SPRITE_HEIGHT as f32),
         );
 
         scene::add_node(Galleon {
@@ -227,9 +230,9 @@ impl Galleon {
         fn mount(node: HandleUntyped, parent_pos: Vec2, parent_facing: bool) {
             let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Galleon>();
             let mount_pos = if node.body.facing {
-                vec2(15., 16.)
+                vec2(Galleon::RIGHT_OFFSET[0], Galleon::RIGHT_OFFSET[1])
             } else {
-                vec2(-22., 16.)
+                vec2(Galleon::LEFT_OFFSET[0], Galleon::LEFT_OFFSET[1])
             };
 
             node.body.pos = parent_pos + mount_pos;
@@ -241,8 +244,8 @@ impl Galleon {
             Rect::new(
                 node.body.pos.x,
                 node.body.pos.y,
-                Galleon::COLLIDER_WIDTH,
-                Galleon::COLLIDER_HEIGHT,
+                Galleon::SPRITE_WIDTH as f32,
+                Galleon::SPRITE_HEIGHT as f32,
             )
         }
 

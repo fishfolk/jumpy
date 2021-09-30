@@ -1,6 +1,7 @@
 mod camera;
 mod decoration;
 pub mod explosive;
+pub mod flappy_jellyfish;
 mod fxses;
 mod level_background;
 mod local_network;

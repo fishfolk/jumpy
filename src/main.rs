@@ -49,6 +49,7 @@ struct Resources {
     whale_boots_green: Texture2D,
     broken_turtleshell: Texture2D,
     turtleshell: Texture2D,
+    flappy_jellyfish: Texture2D,
     background_01: Texture2D,
     background_02: Texture2D,
     background_03: Texture2D,
@@ -114,6 +115,9 @@ impl Resources {
         ))
         .await?;
         turtleshell.set_filter(FilterMode::Nearest);
+
+        let flappy_jellyfish = load_texture("assets/Whale/FlappyJellyfish(34x47).png").await?;
+        flappy_jellyfish.set_filter(FilterMode::Nearest);
 
         let background_01 =
             load_texture(&format!("{}/assets/Background/01.png", assets_dir)).await?;
@@ -215,6 +219,7 @@ impl Resources {
             whale_boots_green,
             turtleshell,
             broken_turtleshell,
+            flappy_jellyfish,
             background_01,
             background_02,
             background_03,

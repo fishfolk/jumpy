@@ -67,7 +67,7 @@ pub fn collect_input(scheme: InputScheme) -> Input {
         input.jump = gamepad.is_pressed(Button::South);
         input.left = gamepad.value(Axis::LeftStickX) < -0.5;
         input.right = gamepad.value(Axis::LeftStickX) > 0.5;
-        input.down = gamepad.value(Axis::LeftStickY) > 0.5;
+        input.down = gamepad.value(Axis::LeftStickY) < -0.5;
 
         input.slide = gamepad.is_pressed(Button::North);
     }

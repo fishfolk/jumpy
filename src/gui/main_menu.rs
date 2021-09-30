@@ -444,8 +444,8 @@ pub async fn location_select() -> String {
         for (_, gamepad) in gui_resources.gamepads.gamepads() {
             use gilrs::{Axis, Button};
 
-            up |= !prev_up && gamepad.value(Axis::LeftStickY) < -0.5;
-            down |= !prev_down && gamepad.value(Axis::LeftStickY) > 0.5;
+            up |= !prev_up && gamepad.value(Axis::LeftStickY) > 0.5;
+            down |= !prev_down && gamepad.value(Axis::LeftStickY) < -0.5;
             left |= !prev_left && gamepad.value(Axis::LeftStickX) < -0.5;
             right |= !prev_right && gamepad.value(Axis::LeftStickX) > 0.5;
             if let Some(d) = gamepad.button_data(Button::South) {
@@ -454,8 +454,8 @@ pub async fn location_select() -> String {
                 start |= d.is_pressed() && d.counter() == gui_resources.gamepads.counter();
             }
 
-            prev_up = gamepad.value(Axis::LeftStickY) < -0.5;
-            prev_down = gamepad.value(Axis::LeftStickY) > 0.5;
+            prev_up = gamepad.value(Axis::LeftStickY) > 0.5;
+            prev_down = gamepad.value(Axis::LeftStickY) < -0.5;
             prev_left = gamepad.value(Axis::LeftStickX) < -0.5;
             prev_right = gamepad.value(Axis::LeftStickX) > 0.5;
         }

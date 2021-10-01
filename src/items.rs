@@ -8,6 +8,7 @@ pub mod jellyfish;
 mod machine_gun;
 mod mines;
 mod muscet;
+mod shark_rain;
 pub mod shoes;
 mod sproinger;
 mod sword;
@@ -163,6 +164,18 @@ pub const ITEMS: &[Item] = &[
         constructor: jellyfish::Jellyfish::spawn,
         tiled_offset: (0., 0.),
         textures: &[("jellyfish", "assets/Whale/Jellyfish(30x39).png")],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    },
+    Item {
+        tiled_name: "shark_rain",
+        constructor: shark_rain::SharkRain::spawn,
+        tiled_offset: (0., 0.),
+        textures: &[
+            ("shark_rain", "assets/Whale/SharkIcon(32x34).png"),
+            ("raining_shark", "assets/Whale/RainingShark(60x220).png"),
+        ],
         sounds: &[],
         fxses: &[],
         network_ready: false,

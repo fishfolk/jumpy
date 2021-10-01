@@ -7,6 +7,7 @@ use macroquad::{
         scene::{Handle, HandleUntyped, Node, RefMut},
     },
     prelude::*,
+    rand::gen_range,
 };
 
 use crate::{
@@ -24,16 +25,17 @@ pub struct RainingShark {
 }
 
 impl RainingShark {
-    pub const SPEED: f32 = 400.;
+    pub const SPEED: f32 = 500.;
     pub const WIDTH: f32 = 60.;
     pub const HEIGHT: f32 = 220.;
     pub const KNOCKBACK: f32 = 10.;
+    pub const COUNT: usize = 5;
+    pub const START_HEIGHT: f32 = -100.;
+    pub const HEIGHT_DIFF: f32 = 200.;
 
-    pub fn new(owner_id: u8) -> RainingShark {
+    pub fn new(owner_id: u8, pos: Vec2) -> RainingShark {
         let resources = storage::get::<Resources>();
         let sprite = resources.items_textures["shark_rain/raining_shark"];
-
-        let pos = Self::start_position();
 
         RainingShark {
             sprite,
@@ -43,22 +45,13 @@ impl RainingShark {
         }
     }
 
-    pub fn start_position() -> Vec2 {
-        //need to implement randomization
-        let resources = storage::get::<Resources>();
-        let map_width =
-            resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width;
-
-        Vec2::new(map_width as f32 / 2., 0.0)
-    }
-
     pub fn update(&mut self) -> bool {
         self.pos += self.speed * get_frame_time();
 
         {
             let resources = storage::get::<Resources>();
-            let map_height =
-                (resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height) as f32;
+            let map_height = (resources.tiled_map.raw_tiled_map.tileheight
+                * resources.tiled_map.raw_tiled_map.height) as f32;
             if self.pos.y > map_height {
                 return false;
             }
@@ -116,7 +109,6 @@ impl Node for RainingShark {
 
 pub struct SharkRain {
     sprite: GunlikeAnimation,
-
     body: PhysicsBody,
     throwable: ThrowableItem,
 }
@@ -136,13 +128,44 @@ impl SharkRain {
             let player = &mut *scene::get_node(player);
             player.state_machine.set_state(Player::ST_NORMAL);
 
-            scene::add_node(RainingShark::new(player.id));
+            let positions = Self::start_positions();
+
+            for pos in positions {
+                scene::add_node(RainingShark::new(player.id, pos));
+            }
 
             player.weapon = None;
             scene::get_node(node).delete();
         };
 
         start_coroutine(coroutine)
+    }
+
+    pub fn start_positions() -> Vec<Vec2> {
+        let resources = storage::get::<Resources>();
+        let map_width =
+            resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width;
+
+        let mut positions: Vec<Vec2> = Vec::new();
+        let mut start = 0.;
+        let mut quant = RainingShark::COUNT as f32;
+
+        for _ in 0..RainingShark::COUNT {
+            let free_space = (map_width as f32 - start - RainingShark::WIDTH * quant) / quant;
+            let pos = Vec2::new(
+                gen_range(start, free_space + start),
+                gen_range(
+                    RainingShark::START_HEIGHT,
+                    RainingShark::START_HEIGHT - RainingShark::HEIGHT_DIFF,
+                ),
+            );
+
+            positions.push(pos);
+            quant -= 1.;
+            start = pos.x + RainingShark::WIDTH;
+        }
+
+        positions
     }
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {

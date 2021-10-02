@@ -28,7 +28,7 @@ use super::{
     ToolbarElementBuilder,
 };
 
-pub fn create_layer_list(width: f32, height_factor: f32) -> ToolbarElement {
+pub fn create_layer_list_element(width: f32, height_factor: f32) -> ToolbarElement {
     ToolbarElementBuilder::new(width, height_factor)
         .with_header("Layers")
         .build(hash!("layer_list"), draw_layer_list)

@@ -25,6 +25,10 @@ use crate::{
 pub enum EditorAction {
     Undo,
     Redo,
+    SelectTile {
+        id: u32,
+        tileset_id: String,
+    },
     OpenCreateLayerWindow,
     CloseCreateLayerWindow,
     SelectLayer(String),

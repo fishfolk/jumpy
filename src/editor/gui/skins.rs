@@ -11,12 +11,14 @@ const NO_COLOR: Color = Color::new(0.0, 0.0, 0.0, 0.0);
 pub struct EditorSkinCollection {
     pub default: Skin,
     pub window_header: Skin,
-    pub toolbar: Skin,
-    pub toolbar_bg: Skin,
-    pub toolbar_header_bg: Skin,
     pub menu: Skin,
     pub menu_selected: Skin,
     pub context_menu: Skin,
+    pub toolbar: Skin,
+    pub toolbar_bg: Skin,
+    pub toolbar_header_bg: Skin,
+    pub toolbar_tileset_grid: Skin,
+    pub toolbar_tileset_grid_selected: Skin,
 }
 
 impl EditorSkinCollection {
@@ -118,6 +120,8 @@ impl EditorSkinCollection {
                 .font_size(22)
                 .build();
 
+            let scroll_multiplier = 10.0;
+
             Skin {
                 window_style,
                 group_style,
@@ -126,6 +130,7 @@ impl EditorSkinCollection {
                 editbox_style,
                 checkbox_style,
                 combobox_style,
+                scroll_multiplier,
                 ..root_ui().default_skin()
             }
         };
@@ -271,7 +276,7 @@ impl EditorSkinCollection {
 
             Skin {
                 button_style,
-                ..default.clone()
+                ..toolbar.clone()
             }
         };
 
@@ -296,7 +301,39 @@ impl EditorSkinCollection {
             Skin {
                 label_style,
                 button_style,
-                ..default.clone()
+                ..toolbar.clone()
+            }
+        };
+
+        let toolbar_tileset_grid = {
+            let button_style = root_ui()
+                .style_builder()
+                .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .color(Color::from_rgba(0, 0, 0, 0))
+                .color_hovered(Color::from_rgba(38, 43, 102, 180))
+                .color_clicked(Color::from_rgba(0, 0, 0, 0))
+                .build();
+
+            Skin {
+                button_style,
+                ..toolbar.clone()
+            }
+        };
+
+        let toolbar_tileset_grid_selected = {
+            let button_style = root_ui()
+                .style_builder()
+                .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .color(Color::from_rgba(38, 43, 68, 180))
+                .color_hovered(Color::from_rgba(38, 43, 68, 180))
+                .color_clicked(Color::from_rgba(38, 43, 68, 180))
+                .build();
+
+            Skin {
+                button_style,
+                ..toolbar.clone()
             }
         };
 
@@ -309,6 +346,8 @@ impl EditorSkinCollection {
             toolbar,
             toolbar_bg,
             toolbar_header_bg,
+            toolbar_tileset_grid,
+            toolbar_tileset_grid_selected,
         }
     }
 }

@@ -29,11 +29,13 @@ pub use builder::{
 };
 
 mod layer_list;
-pub use layer_list::create_layer_list;
+pub use layer_list::create_layer_list_element;
 
 mod tileset_list;
-pub use tileset_list::create_tileset_list;
+pub use tileset_list::create_tileset_list_element;
 
+mod tileset_details;
+pub use tileset_details::create_tileset_details_element;
 
 #[derive(Clone)]
 pub struct  ToolbarElement {
@@ -190,7 +192,8 @@ const TILESET_DETAILS_HEIGHT_FACTOR: f32 = 0.5;
 
 pub fn create_right_toolbar(width: f32) -> Toolbar {
     Toolbar::new(ToolbarPosition::Right, width, &[
-        create_layer_list(width, LAYER_LIST_HEIGHT_FACTOR),
-        create_tileset_list(width, TILESET_LIST_HEIGHT_FACTOR),
+        create_layer_list_element(width, LAYER_LIST_HEIGHT_FACTOR),
+        create_tileset_list_element(width, TILESET_LIST_HEIGHT_FACTOR),
+        create_tileset_details_element(width, TILESET_DETAILS_HEIGHT_FACTOR),
     ])
 }

@@ -150,6 +150,14 @@ impl Editor {
             EditorAction::Redo => {
                 return self.history.redo(&mut self.map);
             }
+            EditorAction::SelectTile { id, tileset_id } => {
+                if let Some(tileset) = self.map.tilesets.get(&tileset_id) {
+                    if id < tileset.first_tile_id + tileset.tile_cnt {
+                        self.selected_tileset = Some(tileset_id);
+                        self.selected_tile = Some(id);
+                    }
+                }
+            }
             EditorAction::OpenCreateLayerWindow => {
                 let mut gui = storage::get_mut::<EditorGui>();
                 gui.open_create_layer_window();

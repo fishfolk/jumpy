@@ -9,6 +9,7 @@ use macroquad::{
     },
     prelude::*,
 };
+
 use crate::{
     Resources,
     map::{
@@ -74,6 +75,13 @@ pub trait UndoableAction {
     fn redo(&mut self, map: &mut Map) -> Result {
         self.apply(map)
     }
+
+    // Implement this so that it returns true if the action is redundant (ie. no change will
+    // take place if it is applied). This is to avoid history being filled up with repeat actions
+    // if user is holding input down for a long time, for example
+    fn is_redundant(&self, map: &Map) -> bool {
+        false
+    }
 }
 
 #[derive(Debug)]
@@ -133,6 +141,17 @@ impl UndoableAction for SetLayerDrawOrderIndex {
         }
 
         Ok(())
+    }
+
+    fn is_redundant(&self, map: &Map) -> bool {
+        for i in 0..map.draw_order.len() {
+            let id = map.draw_order.get(i).unwrap();
+            if id == &self.id && i == self.draw_order_index {
+                return true;
+            }
+        }
+
+        false
     }
 }
 
@@ -412,14 +431,14 @@ impl UndoableAction for PlaceTile {
 
         if let Some(layer) = map.layers.get_mut(&self.layer_id) {
             if let MapLayerKind::TileLayer = layer.kind {
-                if layer.tiles.remove(i as usize).is_none() {
+                if layer.tiles.get(i as usize).is_none() {
                     return Err("PlaceTile (Undo): No tile at the specified coords, in the specified layer. Undo was probably called on an action that was never applied");
                 }
 
                 if let Some(tile) = self.replaced_tile.take() {
-                    layer.tiles.insert(i as usize, Some(tile));
+                    layer.tiles[i as usize] = Some(tile);
                 } else {
-                    layer.tiles.insert(i as usize, None);
+                    layer.tiles[i as usize] = None;
                 }
             } else {
                 return Err("PlaceTile (Undo): The specified layer is not a tile layer");
@@ -429,6 +448,19 @@ impl UndoableAction for PlaceTile {
         }
 
         Ok(())
+    }
+
+    fn is_redundant(&self, map: &Map) -> bool {
+        if let Some(layer) = map.layers.get(&self.layer_id) {
+            let i = map.to_index(self.coords);
+            if let Some(tile) = layer.tiles.get(i) {
+                if let Some(tile) = tile  {
+                    return &tile.tileset_id == &self.tileset_id && tile.tile_id == self.id;
+                }
+            }
+        }
+
+        false
     }
 }
 
@@ -490,5 +522,16 @@ impl UndoableAction for RemoveTile {
         }
 
         Ok(())
+    }
+
+    fn is_redundant(&self, map: &Map) -> bool {
+        let i = map.to_index(self.coords);
+        if let Some(layer) = map.layers.get(&self.layer_id) {
+            if let Some(tile) = layer.tiles.get(i) {
+                return tile.is_none();
+            }
+        }
+
+        false
     }
 }

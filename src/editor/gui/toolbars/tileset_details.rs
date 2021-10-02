@@ -104,87 +104,39 @@ fn draw_tileset_details(ui: &mut Ui, id: Id, size: Vec2, map: &Map, params: &Edi
 
     ui.pop_skin();
 
-    // position.y += size.y;
-    //
-    // let size = vec2(size.x, Toolbar::BUTTON_BAR_TOTAL_HEIGHT);
-    //
-    // widgets::Group::new(hash!(id, "layer_list_button_bar"), size).position(position).ui(ui, |ui| {
-    //     let mut position = vec2(0.0, Toolbar::SEPARATOR_HEIGHT);
-    //
-    //     let button_size = vec2(size.x * 0.25, Toolbar::BUTTON_BAR_BUTTON_HEIGHT);
-    //
-    //     let create_btn = widgets::Button::new("+")
-    //         .size(button_size)
-    //         .position(position)
-    //         .ui(ui);
-    //
-    //     if create_btn {
-    //         res = Some(EditorAction::OpenCreateLayerWindow);
-    //     }
-    //
-    //     position.x += button_size.x;
-    //
-    //     let delete_btn = widgets::Button::new("-")
-    //         .size(button_size)
-    //         .position(position)
-    //         .ui(ui);
-    //
-    //     if delete_btn {
-    //         if let Some(layer_id) = params.selected_layer.clone() {
-    //             res = Some(EditorAction::DeleteLayer(layer_id));
-    //         }
-    //     }
-    //
-    //     position.x += button_size.x;
-    //
-    //     let up_btn = widgets::Button::new("Up")
-    //         .size(button_size)
-    //         .position(position)
-    //         .ui(ui);
-    //
-    //     if up_btn {
-    //         if let Some(layer_id) = &params.selected_layer {
-    //             let mut i = 0;
-    //             for id in &map.draw_order {
-    //                 if id == layer_id && i > 0 {
-    //                     res = Some(EditorAction::SetLayerDrawOrderIndex {
-    //                         id: layer_id.clone(),
-    //                         index: i - 1,
-    //                     });
-    //
-    //                     break;
-    //                 }
-    //
-    //                 i += 1;
-    //             }
-    //         }
-    //     }
-    //
-    //     position.x += button_size.x;
-    //
-    //     let down_btn = widgets::Button::new("Down")
-    //         .size(button_size)
-    //         .position(position)
-    //         .ui(ui);
-    //
-    //     if down_btn {
-    //         if let Some(layer_id) = &params.selected_layer {
-    //             let mut i = 0;
-    //             for id in &map.draw_order {
-    //                 if id == layer_id && i + 1 < map.draw_order.len() {
-    //                     res = Some(EditorAction::SetLayerDrawOrderIndex {
-    //                         id: layer_id.clone(),
-    //                         index: i + 1,
-    //                     });
-    //
-    //                     break;
-    //                 }
-    //
-    //                 i += 1;
-    //             }
-    //         }
-    //     }
-    //});
+    position.y += size.y;
+
+    let size = vec2(size.x, Toolbar::BUTTON_BAR_TOTAL_HEIGHT);
+
+    widgets::Group::new(hash!(id, "tileset_details_button_bar"), size).position(position).ui(ui, |ui| {
+        let mut position = vec2(0.0, Toolbar::SEPARATOR_HEIGHT);
+
+        let button_size = vec2(size.x * 0.5, Toolbar::BUTTON_BAR_BUTTON_HEIGHT);
+
+        position.x += button_size.x;
+
+        let attributes_btn = widgets::Button::new("attributes")
+            .size(button_size)
+            .position(position)
+            .ui(ui);
+
+        if attributes_btn {
+            if let Some(tileset_id) = params.selected_tileset.clone() {
+                //res = Some(EditorAction::OpenTileAttributesWindow(tileset_id));
+            }
+        }
+
+        let properties_btn = widgets::Button::new("props")
+            .size(button_size)
+            .position(position)
+            .ui(ui);
+
+        if properties_btn {
+            if let Some(tileset_id) = params.selected_tileset.clone() {
+                //res = Some(EditorAction::OpenTilesetPropertiesWindow(tileset_id));
+            }
+        }
+    });
 
     res
 }

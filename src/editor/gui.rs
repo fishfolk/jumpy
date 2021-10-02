@@ -1,5 +1,8 @@
-pub mod menus;
-pub mod window_builder;
+pub mod windows;
+pub mod toolbars;
+pub mod context_menu;
+
+pub mod skins;
 
 use macroquad::{
     experimental::{
@@ -22,86 +25,166 @@ use super::{
 
 use crate::{
     map::{
+        Map,
         MapLayerKind,
         ObjectLayerKind,
     },
     gui::GuiResources,
 };
 
-use menus::{
-    ContextMenu,
-    ContextMenuEntry,
-    CreateLayerWindow,
+use toolbars::{
+    ToolbarElementBuilder,
+    ToolbarPosition,
+    Toolbar,
+    create_left_toolbar,
+    create_right_toolbar,
 };
 
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub enum EditorGuiElement {
-    Map,
+use windows::{
+    CreateLayerWindow,
+    CreateTilesetWindow,
+};
+
+use context_menu::{
     ContextMenu,
-    LayerList,
-    RightMenuBar,
-    LayerListEntry(usize),
+    ContextMenuEntry,
+};
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum GuiElement {
+    ContextMenu,
+    Toolbar,
+    Window,
+}
+
+#[derive(Debug, Clone)]
+pub struct EditorDrawParams {
+    pub selected_layer: Option<String>,
+    pub selected_tileset: Option<String>,
+    pub selected_tile: Option<u32>,
 }
 
 pub struct EditorGui {
-    pub context_menu: Option<ContextMenu>,
-    pub create_layer_menu: Option<CreateLayerWindow>,
+    left_toolbar: Toolbar,
+    right_toolbar: Toolbar,
+    create_layer_window: Option<CreateLayerWindow>,
+    create_tileset_window: Option<CreateTilesetWindow>,
+    context_menu: Option<ContextMenu>,
 }
 
 impl EditorGui {
+    const LEFT_TOOLBAR_WIDTH: f32 = 50.0;
+    const RIGHT_TOOLBAR_WIDTH: f32 = 250.0;
+
     pub fn new() -> Self {
+        let left_toolbar = create_left_toolbar(Self::LEFT_TOOLBAR_WIDTH);
+        let right_toolbar = create_right_toolbar(Self::RIGHT_TOOLBAR_WIDTH);
+
         EditorGui {
+            left_toolbar,
+            right_toolbar,
+            create_layer_window: None,
+            create_tileset_window: None,
             context_menu: None,
-            create_layer_menu: None,
         }
     }
 
-    pub fn draw(&mut self, current_layer: Option<String>, layers: &[(String, MapLayerKind)]) -> Option<EditorAction> {
-        let gui_resources = storage::get::<GuiResources>();
-
-        let mut res = None;
-
-        let ui = &mut root_ui();
-        ui.push_skin(&gui_resources.skins.editor_skin);
-
-        res = menus::draw_right_menu_bar(ui, current_layer, layers);
-
-        if let Some(create_layer_menu) = &mut self.create_layer_menu {
-            let was_some = res.is_some();
-            res = create_layer_menu.draw(ui, layers);
-            if was_some == false && res.is_some() {
-                self.create_layer_menu = None;
+    pub fn get_element_at(&self, position: Vec2) -> Option<GuiElement> {
+        if let Some(context_menu) = &self.context_menu {
+            if context_menu.contains(position) {
+                return Some(GuiElement::ContextMenu);
             }
         }
 
-        if let Some(context_menu) = &mut self.context_menu {
-            let was_some = res.is_some();
-             res = context_menu.draw(ui);
-            if was_some == false && res.is_some() {
-                self.context_menu = None;
+        if self.left_toolbar.contains(position) || self.right_toolbar.contains(position) {
+            return Some(GuiElement::Toolbar);
+        }
+
+        if let Some(window) = &self.create_layer_window {
+            if window.contains(position) {
+                return Some(GuiElement::Window);
             }
         }
 
-        res
+        if let Some(window) = &self.create_tileset_window {
+            if window.contains(position) {
+                return Some(GuiElement::Window);
+            }
+        }
+
+        None
     }
 
-    pub fn open_context_menu(&mut self, position: Vec2, entries: &[ContextMenuEntry]) {
-        if entries.len() > 0 {
-            let menu = ContextMenu::new(position, entries);
-            self.context_menu = Some(menu);
-        }
+    pub fn is_element_at(&self, position: Vec2) -> bool {
+        self.get_element_at(position).is_some()
+    }
+
+    pub fn open_context_menu(&mut self, position: Vec2) {
+        let menu = ContextMenu::new(position, &[
+            ContextMenuEntry::action("Undo", EditorAction::Undo),
+            ContextMenuEntry::action("Redo", EditorAction::Redo),
+        ]);
+
+        self.context_menu = Some(menu);
     }
 
     pub fn close_context_menu(&mut self) {
         self.context_menu = None;
     }
 
-    pub fn open_create_layer_menu(&mut self, index: usize) {
-        let menu = CreateLayerWindow::new(index);
-        self.create_layer_menu = Some(menu);
+    pub fn open_create_layer_window(&mut self) {
+        let window = CreateLayerWindow::new();
+        self.create_layer_window = Some(window);
     }
 
-    pub fn close_create_layer_menu(&mut self) {
-        self.create_layer_menu = None;
+    pub fn close_create_layer_window(&mut self) {
+        self.create_layer_window = None;
+    }
+
+    pub fn open_create_tileset_window(&mut self) {
+        let window = CreateTilesetWindow::new();
+        self.create_tileset_window = Some(window);
+    }
+
+    pub fn close_create_tileset_window(&mut self) {
+        self.create_tileset_window = None;
+    }
+
+    pub fn draw(&mut self, map: &Map, params: EditorDrawParams) -> Option<EditorAction> {
+        let mut res = None;
+
+        let gui_resources = storage::get::<GuiResources>();
+
+        let ui = &mut root_ui();
+        ui.push_skin(&gui_resources.editor_skins.default);
+
+        res = self.left_toolbar.draw(ui, map, &params);
+        res = self.right_toolbar.draw(ui, map, &params);
+
+        if let Some(window) = &mut self.create_layer_window {
+            res = window.draw(ui, map, &params);
+            if res.is_some() {
+                self.create_layer_window = None;
+            }
+        }
+
+        if let Some(window) = &mut self.create_tileset_window {
+            res = window.draw(ui, map, &params);
+            if res.is_some() {
+                self.create_tileset_window = None;
+            }
+        }
+
+        if let Some(context_menu) = &mut self.context_menu {
+            let was_some = res.is_some();
+            res = context_menu.draw(ui);
+            if was_some == false && res.is_some() {
+                self.context_menu = None;
+            }
+        }
+
+        ui.pop_skin();
+
+        res
     }
 }

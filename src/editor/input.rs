@@ -21,6 +21,8 @@ pub struct EditorInput {
     pub camera_pan: Vec2,
     pub camera_zoom: f32,
     pub cursor_move: Vec2,
+    pub undo: bool,
+    pub redo: bool,
 }
 
 pub fn collect_editor_input(scheme: EditorInputScheme) -> EditorInput {
@@ -49,6 +51,16 @@ pub fn collect_editor_input(scheme: EditorInputScheme) -> EditorInput {
                 input.camera_zoom = -1.0;
             } else if zoom > 0.0 {
                 input.camera_zoom = 1.0;
+            }
+
+            if is_key_down(KeyCode::LeftControl) {
+                if is_key_pressed(KeyCode::Z) {
+                    if is_key_down(KeyCode::LeftShift) {
+                        input.redo = true;
+                    } else {
+                        input.undo = true;
+                    }
+                }
             }
         },
         EditorInputScheme::Gamepad(ix) => {

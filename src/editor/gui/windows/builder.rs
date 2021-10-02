@@ -6,6 +6,7 @@ use macroquad::{
             self,
             Window,
         },
+        hash,
     },
     experimental::{
         collections::storage,
@@ -15,9 +16,29 @@ use macroquad::{
 
 use crate::gui::GuiResources;
 
+use crate::editor::{
+    EditorAction,
+    EditorDrawParams,
+};
+
+#[derive(Debug, Copy, Clone)]
 pub enum WindowPosition {
     Centered,
     Custom(Vec2),
+}
+
+impl WindowPosition {
+    pub fn to_absolute(&self, size: Vec2) -> Vec2 {
+        match self {
+            Self::Centered => {
+                let screen_size = vec2(screen_width(), screen_height());
+                (screen_size - size) / 2.0
+            }
+            Self::Custom(position) => {
+                *position
+            }
+        }
+    }
 }
 
 // This should be moved out of editor and into the root ui module, if we
@@ -54,26 +75,16 @@ impl WindowBuilder {
         }
     }
 
-    pub fn build<F: FnOnce(&mut Ui)>(&self, id: Id, ui: &mut Ui, f: F) {
-        let position =
-            match self.position {
-                WindowPosition::Centered => {
-                    let x = (screen_width() - self.size.x) / 2.0;
-                    let y = (screen_height() - self.size.y) / 2.0;
-                    vec2(x, y)
-                }
-                WindowPosition::Custom(position) => {
-                    position
-                }
-            };
+    pub fn build<F: FnOnce(&mut Ui)>(&self, ui: &mut Ui, f: F) {
+        let position = self.position.to_absolute(self.size);
 
-        Window::new(id, position, self.size)
+        Window::new(hash!(), position, self.size)
             .titlebar(false)
             .movable(self.is_static == false)
             .ui(ui, |ui| {
                 if let Some(title) = &self.title {
                     let gui_resources = storage::get::<GuiResources>();
-                    ui.push_skin(&gui_resources.skins.editor_window_header_skin);
+                    ui.push_skin(&gui_resources.editor_skins.window_header);
                     ui.label(None, title);
                     ui.pop_skin();
                 }

@@ -405,7 +405,7 @@ async fn main() {
                 let level = gui::main_menu::location_select().await;
                 Map::load_tiled(&level.map, None).await.unwrap()
             },
-            GameType::Editor { input_scheme: _, is_new_map } => {
+            GameType::Editor { is_new_map, .. } => {
                 if *is_new_map {
                     let (name, tile_size, grid_size) = gui::main_menu::new_map().await;
                     Map::new(&name, tile_size, grid_size)

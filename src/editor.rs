@@ -1,23 +1,27 @@
+use std::path::Path;
+
 mod camera;
 
 pub use camera::EditorCamera;
 
-mod gui;
+pub mod gui;
 
 use gui::{
+    EditorDrawParams,
     EditorGui,
-    EditorGuiElement,
-    menus::{
+    context_menu::{
         ContextMenuEntry,
-        RIGHT_MENUBAR_WIDTH,
-        MENU_ENTRY_HEIGHT,
-        get_layer_list_height,
     },
+    toolbars::{
+        ToolbarElementBuilder,
+        ToolbarPosition,
+        Toolbar,
+    }
 };
 
 mod actions;
-
 pub use actions::UndoableAction;
+
 use actions::{
     Result,
     EditorAction,
@@ -29,13 +33,13 @@ use actions::{
     PlaceTile,
     RemoveTile,
 };
-
 mod input;
+
 mod history;
 
 use history::EditorHistory;
-
 pub use input::EditorInputScheme;
+
 use input::{
     EditorInput,
     collect_editor_input,
@@ -48,6 +52,7 @@ use macroquad::{
             Handle,
             RefMut,
         },
+        collections::storage,
     },
     prelude::*,
 };
@@ -59,13 +64,13 @@ use crate::{
         ObjectLayerKind,
     },
 };
+use crate::editor::gui::GuiElement;
 
 pub struct Editor {
     map: Map,
     selected_layer: Option<String>,
     selected_tileset: Option<String>,
     selected_tile: Option<u32>,
-    gui: EditorGui,
     input_scheme: EditorInputScheme,
     cursor_position: Option<Vec2>,
     history: EditorHistory,
@@ -102,12 +107,14 @@ impl Editor {
             )),
         };
 
+        let gui = EditorGui::new();
+        storage::store(gui);
+
         Editor {
             map,
             selected_layer,
             selected_tileset,
             selected_tile,
-            gui: EditorGui::new(),
             input_scheme,
             cursor_position,
             history: EditorHistory::new(),
@@ -123,97 +130,6 @@ impl Editor {
         vec2(x, y)
     }
 
-    fn get_context_at(&self, point: Vec2) -> EditorGuiElement {
-        if let Some(context_menu) = &self.gui.context_menu {
-            if context_menu.contains(point) {
-                return EditorGuiElement::ContextMenu;
-            }
-        }
-
-        if point.x >= screen_width() - RIGHT_MENUBAR_WIDTH {
-            if point.y <= get_layer_list_height() {
-                let i = (point.y - MENU_ENTRY_HEIGHT) as usize / MENU_ENTRY_HEIGHT as usize;
-                if i < self.map.layers.len() {
-                    return EditorGuiElement::LayerListEntry(i);
-                }
-
-                return EditorGuiElement::LayerList;
-            }
-
-            return EditorGuiElement::RightMenuBar;
-        }
-
-        EditorGuiElement::Map
-    }
-
-    fn get_context_menu_entries(&self, context: EditorGuiElement) -> Vec<ContextMenuEntry> {
-        use EditorGuiElement::*;
-        let mut entries =
-            match context {
-                RightMenuBar => {
-                    vec!()
-                }
-                LayerList => {
-                    vec!(
-                        ContextMenuEntry::action("Create layer", EditorAction::OpenCreateLayerMenu(self.map.layers.len())),
-                    )
-                }
-                LayerListEntry(i) => {
-                    let layer_id = self.map.draw_order.get(i).cloned().unwrap();
-
-                    let mut entries = vec!(
-                        ContextMenuEntry::action("Create layer", EditorAction::OpenCreateLayerMenu(i)),
-                        ContextMenuEntry::action("Delete layer", EditorAction::DeleteLayer(layer_id.clone())),
-                    );
-
-                    if i > 0 {
-                        let action = EditorAction::SetLayerDrawOrderIndex {
-                            id: layer_id.clone(),
-                            index: i - 1,
-                        };
-
-                        let entry = ContextMenuEntry::action("Move layer up", action);
-
-                        entries.push(entry);
-                    }
-
-                    if i + 1 < self.map.draw_order.len() {
-                        let action = EditorAction::SetLayerDrawOrderIndex {
-                            id: layer_id,
-                            index: i + 1,
-                        };
-
-                        let entry = ContextMenuEntry::action("Move layer down", action);
-
-                        entries.push(entry);
-                    }
-
-                    entries
-                }
-                ContextMenu | Map => {
-                    vec!()
-                }
-            };
-
-        if self.history.is_empty() == false {
-            let mut common = vec!();
-
-            if self.history.has_undo() {
-                let action = ContextMenuEntry::action("Undo", EditorAction::Undo);
-                common.push(action);
-            }
-
-            if self.history.has_redo() {
-                let action = ContextMenuEntry::action("Redo", EditorAction::Redo);
-                common.push(action);
-            }
-
-            entries.append(&mut common);
-        }
-
-        entries
-    }
-
     fn get_selected_tile(&self) -> Option<(u32, String)> {
         if let Some(tileset_id) = self.selected_tileset.clone() {
             if let Some(tile_id) = self.selected_tile.clone() {
@@ -226,6 +142,7 @@ impl Editor {
     }
 
     fn apply_action(&mut self, action: EditorAction) -> Result {
+        //println!("Action: {:?}", action);
         match action {
             EditorAction::Undo => {
                 return self.history.undo(&mut self.map);
@@ -233,14 +150,18 @@ impl Editor {
             EditorAction::Redo => {
                 return self.history.redo(&mut self.map);
             }
-            EditorAction::OpenCreateLayerMenu(mut index) => {
-                self.gui.open_create_layer_menu(index);
+            EditorAction::OpenCreateLayerWindow => {
+                let mut gui = storage::get_mut::<EditorGui>();
+                gui.open_create_layer_window();
             }
-            EditorAction::CloseCreateLayerMenu => {
-                self.gui.close_create_layer_menu();
+            EditorAction::CloseCreateLayerWindow => {
+                let mut gui = storage::get_mut::<EditorGui>();
+                gui.close_create_layer_window();
             }
             EditorAction::SelectLayer(id) => {
-                self.selected_layer = Some(id);
+                if self.map.layers.contains_key(&id) {
+                    self.selected_layer = Some(id);
+                }
             }
             EditorAction::SetLayerDrawOrderIndex { id, index } => {
                 let action = SetLayerDrawOrderIndex::new(id, index);
@@ -253,6 +174,19 @@ impl Editor {
             EditorAction::DeleteLayer(id) => {
                 let action = DeleteLayer::new(id.clone());
                 return self.history.apply(Box::new(action), &mut self.map);
+            }
+            EditorAction::OpenCreateTilesetWindow => {
+                let mut gui = storage::get_mut::<EditorGui>();
+                gui.open_create_tileset_window();
+            }
+            EditorAction::CloseCreateTilesetWindow => {
+                let mut gui = storage::get_mut::<EditorGui>();
+                gui.close_create_tileset_window();
+            }
+            EditorAction::SelectTileset(id) => {
+                if self.map.tilesets.contains_key(&id) {
+                    self.selected_tileset = Some(id);
+                }
             }
             EditorAction::CreateTileset { id, texture_id } => {
                 let action = CreateTileset::new(id, texture_id);
@@ -291,19 +225,33 @@ impl Node for Editor {
         let input = collect_editor_input(node.input_scheme);
 
         let cursor_position = node.get_cursor_position();
-        let cursor_context = node.get_context_at(cursor_position);
+        let element_at_cursor = {
+            let mut gui = storage::get_mut::<EditorGui>();
+            gui.get_element_at(cursor_position)
+        };
 
         let cursor_world_position = {
             let camera = scene::find_node_by_type::<EditorCamera>().unwrap();
             camera.to_world_space(cursor_position)
         };
 
+        if input.undo {
+            if let Err(err) = node.apply_action(EditorAction::Undo) {
+                panic!("EditorAction Error: {}", err);
+            }
+        } else if input.redo {
+            if let Err(err) = node.apply_action(EditorAction::Redo) {
+                panic!("EditorAction Error: {}", err);
+            }
+        }
+
         if input.action {
-            if cursor_context != EditorGuiElement::ContextMenu {
-                node.gui.close_context_menu();
+            if element_at_cursor.is_none() || element_at_cursor.unwrap() != GuiElement::ContextMenu {
+                let mut gui = storage::get_mut::<EditorGui>();
+                gui.close_context_menu();
             }
 
-            if cursor_context == EditorGuiElement::Map {
+            if element_at_cursor.is_none() {
                 if let Some(layer_id) = node.selected_layer.clone() {
                     if let Some(layer_kind) = node.map.get_layer_kind(&layer_id) {
                         match layer_kind {
@@ -312,12 +260,16 @@ impl Node for Editor {
                                     let (id, tileset_id) = selected;
                                     let coords = node.map.to_coords(cursor_world_position);
 
-                                    node.apply_action(EditorAction::PlaceTile {
+                                    let action = EditorAction::PlaceTile {
                                         id,
                                         layer_id,
                                         tileset_id,
                                         coords,
-                                    });
+                                    };
+
+                                    if let Err(err) = node.apply_action(action) {
+                                        panic!("EditorAction Error: {}", err);
+                                    }
                                 }
                             }
                             MapLayerKind::ObjectLayer(..) => {
@@ -329,9 +281,9 @@ impl Node for Editor {
             }
         }
 
-        if input.context_menu {
-            let entries = node.get_context_menu_entries(cursor_context);
-            node.gui.open_context_menu(cursor_position, &entries);
+        if input.context_menu  {
+            let mut gui = storage::get_mut::<EditorGui>();
+            gui.open_context_menu(cursor_position);
         }
     }
 
@@ -344,6 +296,10 @@ impl Node for Editor {
         }
 
         let cursor_position = node.get_cursor_position();
+        let element_at_cursor = {
+            let gui = storage::get::<EditorGui>();
+            gui.get_element_at(cursor_position)
+        };
 
         let screen_size = vec2(
             screen_width(),
@@ -371,29 +327,33 @@ impl Node for Editor {
         let movement = pan_direction * Self::CAMERA_PAN_SPEED;
         camera.position = (camera.position + movement).clamp(Vec2::ZERO, node.map.get_size());
 
-        camera.scale = (camera.scale + input.camera_zoom * Self::CAMERA_ZOOM_STEP).clamp(Self::CAMERA_ZOOM_MIN, Self::CAMERA_ZOOM_MAX);
+        if element_at_cursor.is_none() {
+            camera.scale = (camera.scale + input.camera_zoom * Self::CAMERA_ZOOM_STEP).clamp(Self::CAMERA_ZOOM_MIN, Self::CAMERA_ZOOM_MAX);
+        }
     }
 
     fn draw(mut node: RefMut<Self>) {
         node.map.draw(None);
 
-        let mut layers = Vec::new();
-        for layer_id in &node.map.draw_order {
-            let layer = node.map.layers.get(layer_id).unwrap();
-            let layer_info = (layer_id.clone(), layer.kind.clone());
-            layers.push(layer_info)
-        }
+        let params = EditorDrawParams {
+            selected_layer: node.selected_layer.clone(),
+            selected_tileset: node.selected_tileset.clone(),
+            selected_tile: node.selected_tile,
+        };
 
-        let current_layer = node.selected_layer.clone();
-        if let Some(action) = node.gui.draw(current_layer, &layers) {
-            match node.apply_action(action) {
-                Ok(_) => {
-                    node.gui.close_context_menu();
-                }
-                Err(err) => {
-                    panic!("EditorAction Error: {}", err)
-                }
+        let action = {
+            let mut gui = storage::get_mut:: < EditorGui>();
+            gui.draw(&node.map, params)
+        };
+
+        if let Some(action) = action {
+            if let Err(err) = node.apply_action(action) {
+
+                panic!("EditorAction Error: {}", err)
             }
+
+            let mut gui = storage::get_mut:: < EditorGui>();
+            gui.close_context_menu();
         }
     }
 }

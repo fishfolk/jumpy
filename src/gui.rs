@@ -16,6 +16,8 @@ use macroquad::{
     texture::{load_texture, Texture2D},
 };
 
+use crate::editor::gui::skins::EditorSkinCollection;
+
 #[derive(Debug, Clone)]
 pub struct Level {
     pub preview: Texture2D,
@@ -29,6 +31,7 @@ pub struct GuiResources {
     levels: Vec<Level>,
     pub gamepads: ControllerContext,
     pub skins: SkinCollection,
+    pub editor_skins: EditorSkinCollection,
 }
 
 impl GuiResources {
@@ -63,6 +66,7 @@ impl GuiResources {
 
         GuiResources {
             skins: SkinCollection::new(),
+            editor_skins: EditorSkinCollection::new(),
             gamepads: ControllerContext::new().unwrap(),
             levels,
         }

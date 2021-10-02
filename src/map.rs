@@ -343,7 +343,7 @@ pub enum ObjectLayerKind {
     SpawnPoints,
 }
 
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum MapLayerKind {
     TileLayer,

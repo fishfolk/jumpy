@@ -44,16 +44,4 @@ impl EditorHistory {
 
         Ok(())
     }
-
-    pub fn is_empty(&self) -> bool {
-        self.undo_stack.is_empty() && self.redo_stack.is_empty()
-    }
-
-    pub fn has_undo(&self) -> bool {
-        self.undo_stack.is_empty() == false
-    }
-
-    pub fn has_redo(&self) -> bool {
-        self.redo_stack.is_empty() == false
-    }
 }

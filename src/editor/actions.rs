@@ -1,4 +1,7 @@
-use std::result;
+use std::{
+    fmt,
+    result,
+};
 
 use macroquad::{
     experimental::{
@@ -6,7 +9,6 @@ use macroquad::{
     },
     prelude::*,
 };
-
 use crate::{
     Resources,
     map::{
@@ -23,19 +25,22 @@ use crate::{
 pub enum EditorAction {
     Undo,
     Redo,
+    OpenCreateLayerWindow,
+    CloseCreateLayerWindow,
     SelectLayer(String),
     SetLayerDrawOrderIndex {
         id: String,
         index: usize,
     },
-    OpenCreateLayerMenu(usize),
-    CloseCreateLayerMenu,
     CreateLayer {
         id: String,
         kind: MapLayerKind,
         draw_order_index: Option<usize>,
     },
     DeleteLayer(String),
+    SelectTileset(String),
+    OpenCreateTilesetWindow,
+    CloseCreateTilesetWindow,
     CreateTileset {
         id: String,
         texture_id: String,
@@ -67,6 +72,7 @@ pub trait UndoableAction {
     }
 }
 
+#[derive(Debug)]
 pub struct SetLayerDrawOrderIndex {
     id: String,
     draw_order_index: usize,
@@ -126,6 +132,7 @@ impl UndoableAction for SetLayerDrawOrderIndex {
     }
 }
 
+#[derive(Debug)]
 pub struct CreateLayer {
     id: String,
     kind: MapLayerKind,
@@ -189,6 +196,7 @@ impl UndoableAction for CreateLayer {
     }
 }
 
+#[derive(Debug)]
 pub struct DeleteLayer {
     id: String,
     layer: Option<MapLayer>,
@@ -250,6 +258,7 @@ impl UndoableAction for DeleteLayer {
     }
 }
 
+#[derive(Debug)]
 pub struct CreateTileset {
     id: String,
     texture_id: String,
@@ -302,6 +311,7 @@ impl UndoableAction for CreateTileset {
     }
 }
 
+#[derive(Debug)]
 pub struct DeleteTileset {
     id: String,
     tileset: Option<MapTileset>,
@@ -338,6 +348,7 @@ impl UndoableAction for DeleteTileset {
     }
 }
 
+#[derive(Debug)]
 pub struct PlaceTile {
     id: u32,
     layer_id: String,
@@ -417,6 +428,7 @@ impl UndoableAction for PlaceTile {
     }
 }
 
+#[derive(Debug)]
 pub struct RemoveTile {
     layer_id: String,
     coords: UVec2,

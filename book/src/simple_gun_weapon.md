@@ -53,7 +53,7 @@ const SNIPER_BULLETS: i32 = 2;
 const SNIPER_BULLET_SPEED: f32 = 1200.0;
 ```
 
-Next, create an `impl Gun` block and add a public function called `spawn_your_item`, for the sniper weapon I'm calling this function `spawn_sniper`. Then, add code to this function to spawn your new weapon. It should be very similar to the code I have here, but with your weapon's values instead of the sniper values.
+Next, create an `impl Gun` block and add a public function called `spawn_your_weapon`, for the sniper weapon I'm calling this function `spawn_sniper`. Then, add code to this function to spawn your new weapon. It should be very similar to the code I have here, but with your weapon's values instead of the sniper values. I copied the following code from `src/items/musket.rs` and changed the values to suit for my sniper weapon.
 
 ```rust
 impl Gun {
@@ -111,6 +111,7 @@ impl Gun {
                 vec2(SNIPER_COLLIDER_WIDTH, SNIPER_COLLIDER_HEIGHT),
             ),
             throwable: ThrowableItem::default(),
+            // Use your weapon's constants here
             bullets: SNIPER_BULLETS,
             max_bullets: SNIPER_BULLETS,
             bullet_speed: SNIPER_BULLET_SPEED,
@@ -125,7 +126,7 @@ impl Gun {
 
 ### Items Array
 
-Open `src/items.rs` and add find the `ITEMS` array. Add an entry to this array for your weapon using your new spawn function. I copied the `Item` entry for the musket weapon and changed the `tiled_name` and `constructor` fields to `sniper` and `gun::Gun::spawn_sniper` respectively. This names my item "sniper" and will call the spawn function we programmed above to spawn the sniper weapon. The following is the entry for the sniper weapon:
+Open `src/items.rs` and add find the `ITEMS` array. Add an entry to this array for your weapon using your new spawn function. I copied the `Item` entry for the musket weapon and changed the `tiled_name` and `constructor` fields to `sniper` and `gun::Gun::spawn_sniper` respectively. The `tiled_name` field is used identifying the item when designing levels. The `constructor` is the function to spawn the item into the game. We programmed this spawn function the previous [Item File](#item-file) section. The following is the entry for the sniper weapon:
 
 ```rust
 Item {
@@ -143,7 +144,7 @@ If you like, you can skip to the testing section to test your new weapon, but if
 
 ## Texture
 
-It is important to make sure that your weapon is able to be visually distinguished between the other weapons in the game. When I added the sniper rifle to the `ITEMS` array, I copied all of the data from existing musket weapon, changing only `tiled_name` and `constructor`. To give my sniper weapon a new texture, I will also need to change the "gun" texture in the `textures` field. Currently, the "gun" texture is set to `assets/Whale/Gun(92x32).png`. I'll open this file with my pixel editor of choice, [Aseprite](https://www.aseprite.org/) ([GIMP](https://www.gimp.org/) would also work fine).
+It is important to make sure that your weapon is able to be visually distinguished between the other weapons in the game. When I added the sniper rifle to the `ITEMS` array, I copied all of the data from existing musket weapon, changing only the `tiled_name` and `constructor`. To give my sniper weapon a new texture, I will also need to change the `gun` texture in the `textures` field. Currently, the `gun` texture is set to `assets/Whale/Gun(92x32).png`. I'll open this file with my pixel editor of choice, [Aseprite](https://www.aseprite.org/) ([GIMP](https://www.gimp.org/) would also work fine).
 
 ![open_gun_texture](assets/open_gun_texture.png)
 
@@ -175,7 +176,7 @@ Item {
 
 ## Testing
 
-The last thing we need to do is put our new weapon in the game and test it! Fish Fight's levels are defined in json files in the `assets/levels` directory. For testing items there is a test level in the game defined in a file called `test_level.json`. Open this file.
+The last thing we need to do is put our new weapon in the game and test it! Fish Fight's levels are defined in json files in the `assets/levels` directory. For testing items, there is a test level in the game defined in a file called `test_level.json`. Open this file.
 
 In this file you will see a long list of item entries containing data about items that are placed in the level. The easiest way to add your new weapon to this level is to replace the `name` field of one of other items currently in the level with the name of your new weapon (referred to as `your_weapon` throughout this chapter). Here is the entry for my sniper weapon.
 

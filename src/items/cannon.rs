@@ -304,10 +304,10 @@ impl Cannon {
         capabilities::Weapon {
             collider,
             mount,
-            throw,
-            shoot,
             is_thrown,
             pick_up,
+            throw,
+            shoot,
         }
     }
 }

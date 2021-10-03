@@ -66,6 +66,7 @@ pub struct Player {
     fish_sprite: AnimatedSprite,
     pub dead: bool,
     pub weapon: Option<NodeWith<Weapon>>,
+    pub pick_grace_timer: f32,
     pub input: Input,
     pub last_frame_input: Input,
 
@@ -111,6 +112,7 @@ impl Player {
     pub const SLIDE_SPEED: f32 = 800.0;
     pub const SLIDE_DURATION: f32 = 0.1;
     pub const JUMP_GRACE_TIME: f32 = 0.15;
+    pub const PICK_GRACE_TIME: f32 = 0.30;
     pub const FLOAT_SPEED: f32 = 100.0;
 
     pub const INCAPACITATED_BREAK_FACTOR: f32 = 0.9;
@@ -226,6 +228,7 @@ impl Player {
             id: player_id,
             dead: false,
             weapon: None,
+            pick_grace_timer: 0.,
             input: Default::default(),
             last_frame_input: Default::default(),
 
@@ -563,6 +566,10 @@ impl Player {
             node.jump();
         }
 
+        if node.weapon.is_none() && node.pick_grace_timer > 0. {
+            node.pick_grace_timer -= get_frame_time();
+        }
+
         if node.input.throw && !node.last_frame_input.throw {
             if let Some(weapon) = node.weapon.as_mut() {
                 weapon.throw(!node.input.down);
@@ -572,11 +579,16 @@ impl Player {
                     play_sound_once(resources.player_throw_sound);
                 }
 
+                // set a grace time for picking up the weapon again
+                if !node.body.on_ground {
+                    node.pick_grace_timer = Self::PICK_GRACE_TIME;
+                }
+
                 // when the flocating fish is throwing a weapon and keeps
                 // floating it looks less cool than if its stop floating and
                 // falls, but idk
                 node.floating = false;
-            } else {
+            } else if node.pick_grace_timer <= 0.0 {
                 let mut picked = false;
 
                 for weapon in scene::find_nodes_with::<Weapon>() {

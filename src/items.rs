@@ -4,12 +4,14 @@
 mod cannon;
 mod galleon;
 mod grenades;
+mod gun;
 pub mod jellyfish;
 mod machine_gun;
 mod mines;
-mod muscet;
+mod musket;
 mod shark_rain;
 pub mod shoes;
+mod sniper;
 mod sproinger;
 mod sword;
 mod turtle_shell;
@@ -70,10 +72,19 @@ pub const ITEMS: &[Item] = &[
         network_ready: true,
     },
     Item {
-        tiled_name: "muscet",
-        constructor: muscet::Muscet::spawn,
+        tiled_name: "musket",
+        constructor: gun::Gun::spawn_musket,
         tiled_offset: (-35., -25.),
         textures: &[("gun", "assets/Whale/Gun(92x32).png")],
+        sounds: &[],
+        fxses: &[],
+        network_ready: true,
+    },
+    Item {
+        tiled_name: "sniper",
+        constructor: gun::Gun::spawn_sniper,
+        tiled_offset: (-35., -25.),
+        textures: &[("gun", "assets/Whale/Sniper(92x32).png")],
         sounds: &[],
         fxses: &[],
         network_ready: true,

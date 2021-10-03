@@ -76,10 +76,16 @@ pub trait UndoableAction {
         self.apply(map)
     }
 
-    // Implement this so that it returns true if the action is redundant (ie. no change will
-    // take place if it is applied). This is to avoid history being filled up with repeat actions
-    // if user is holding input down for a long time, for example
-    fn is_redundant(&self, map: &Map) -> bool {
+    // Implement this for actions that can be redundant (ie. no change will take place if it is applied).
+    // This is to avoid history being filled up with repeat actions if user is holding input down
+    // for a long time, for example.
+    // This should not be used to circumvent bugs and errors, however. It is meant to stop the same
+    // action from firing several times in a row, for example from holding mouse down on the map
+    // (placing multiple tiles, with the same id, to the same coords).
+    // Edge cases, like an action wanting to delete a layer that does not exist, should be handled
+    // with errors, in stead (basically, things like that shouldn't happen, as it should be prevented
+    // at a higher level
+    fn is_redundant(&self, _map: &Map) -> bool {
         false
     }
 }

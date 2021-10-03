@@ -50,6 +50,10 @@ use context_menu::{
     ContextMenuEntry,
 };
 
+pub const NO_COLOR: Color = Color::new(0.0, 0.0, 0.0, 0.0);
+
+pub const ELEMENT_MARGIN: f32 = 8.0;
+
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum GuiElement {
     ContextMenu,

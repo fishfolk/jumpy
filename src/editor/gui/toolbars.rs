@@ -28,6 +28,8 @@ pub use builder::{
     ToolbarElementBuilder
 };
 
+use super::ELEMENT_MARGIN;
+
 mod layer_list;
 pub use layer_list::create_layer_list_element;
 
@@ -44,6 +46,8 @@ pub struct  ToolbarElement {
     width: f32,
     height_factor: f32,
     draw_func: ToolbarDrawFunc,
+    menubar_draw_func: Option<ToolbarDrawFunc>,
+    has_margins: bool,
 }
 
 impl ToolbarElement {
@@ -57,7 +61,7 @@ impl ToolbarElement {
         vec2(x, y)
     }
 
-    pub fn draw(&self, ui: &mut Ui, map: &Map, params: &EditorDrawParams) -> Option<EditorAction> {
+    pub fn draw(&self, ui: &mut Ui, toolbar: ToolbarPosition, map: &Map, params: &EditorDrawParams) -> Option<EditorAction> {
         let mut res = None;
 
         let mut position = Vec2::ZERO;
@@ -82,9 +86,41 @@ impl ToolbarElement {
             ui.pop_skin();
         }
 
+        if self.menubar_draw_func.is_some() {
+            size.y -= Toolbar::MENUBAR_TOTAL_HEIGHT;
+        }
+
+        if self.has_margins {
+            size.x -= ELEMENT_MARGIN;
+            position.x += ELEMENT_MARGIN;
+        }
+
         widgets::Group::new(hash!(self.id, "element"), size).position(position).ui(ui, |ui| {
-            res = (self.draw_func)(ui, self.id, size, map, params);
+            if let Some(action) = (self.draw_func)(ui, self.id, size, map, params) {
+                // If this is not handled in this way, the result doesn't register, for some reason...
+                res = Some(action);
+            }
         });
+
+        if let Some(draw_func) = self.menubar_draw_func {
+            position.y += size.y + ELEMENT_MARGIN;
+
+            let mut size = vec2(size.x, Toolbar::MENUBAR_HEIGHT);
+
+            if self.has_margins {
+                size.x -= ELEMENT_MARGIN;
+            } else {
+                size.x -= ELEMENT_MARGIN * 2.0;
+                position.x += ELEMENT_MARGIN;
+            }
+
+            widgets::Group::new(hash!(self.id, "menubar"), size).position(position).ui(ui, |ui| {
+               if let Some(action) = (draw_func)(ui, self.id, size, map, params) {
+                   // If this is not handled in this way, the result doesn't register, for some reason...
+                   res = Some(action);
+               }
+            });
+        }
 
         res
     }
@@ -103,10 +139,11 @@ pub struct Toolbar {
 }
 
 impl Toolbar {
+    pub const MARGIN: f32 = 8.0;
+
     pub const LIST_ENTRY_HEIGHT: f32 = 25.0;
-    pub const SEPARATOR_HEIGHT: f32 = 4.0;
-    pub const BUTTON_BAR_BUTTON_HEIGHT: f32 = 25.0;
-    pub const BUTTON_BAR_TOTAL_HEIGHT: f32 = Self::BUTTON_BAR_BUTTON_HEIGHT + (Self::SEPARATOR_HEIGHT * 2.0);
+    pub const MENUBAR_HEIGHT: f32 = 25.0;
+    pub const MENUBAR_TOTAL_HEIGHT: f32 = Self::MENUBAR_HEIGHT + (Self::MARGIN * 2.0);
 
     pub fn new(position: ToolbarPosition, width: f32, elements: &[ToolbarElement]) -> Self {
         let elements = elements.to_vec();
@@ -143,7 +180,7 @@ impl Toolbar {
             position.x += screen_width() - self.width;
         }
 
-        let mut size = vec2(self.width, screen_height());
+        let size = vec2(self.width, screen_height());
 
         {
             let mut total_height_factor = 0.0;
@@ -154,7 +191,7 @@ impl Toolbar {
             assert!(total_height_factor <= 1.0, "Total height factor of all toolbar elements exceed 1.0");
         }
 
-        widgets::Group::new(hash!(self.position, "toolbar_group"), size).position(position).ui(ui, |ui| {
+        widgets::Group::new(hash!(self.position, "toolbar", "main_group"), size).position(position).ui(ui, |ui| {
             let mut position = Vec2::ZERO;
 
             ui.push_skin(&gui_resources.editor_skins.toolbar_bg);
@@ -163,9 +200,10 @@ impl Toolbar {
 
             for element in &mut self.elements {
                 let size = element.get_size();
+                let toolbar = self.position;
 
-                widgets::Group::new(hash!(self.position, element.id, "outer_group"), size).position(position).ui(ui, |ui| {
-                    if let Some(action) = element.draw(ui, map, params) {
+                widgets::Group::new(hash!(self.position, element.id, "group"), size).position(position).ui(ui, |ui| {
+                    if let Some(action) = element.draw(ui, toolbar, map, params) {
                         // If this is not handled in this way, the result doesn't register, for some reason...
                         res = Some(action);
                     }

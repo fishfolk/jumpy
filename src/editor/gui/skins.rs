@@ -6,7 +6,10 @@ use macroquad::{
     prelude::*,
 };
 
-const NO_COLOR: Color = Color::new(0.0, 0.0, 0.0, 0.0);
+use super::{
+    NO_COLOR,
+    ELEMENT_MARGIN,
+};
 
 pub struct EditorSkinCollection {
     pub default: Skin,
@@ -120,7 +123,20 @@ impl EditorSkinCollection {
                 .font_size(22)
                 .build();
 
+            let scrollbar_style = root_ui()
+                .style_builder()
+                .color(Color::from_rgba(38, 43, 68, 255))
+                .build();
+
+            let scrollbar_handle_style = root_ui()
+                .style_builder()
+                .color(Color::from_rgba(38, 43, 68, 255))
+                .color_hovered(Color::from_rgba(58, 68, 102, 255))
+                .color_clicked(Color::from_rgba(38, 43, 68, 255))
+                .build();
+
             let scroll_multiplier = 10.0;
+            let margin = ELEMENT_MARGIN;
 
             Skin {
                 window_style,
@@ -130,7 +146,10 @@ impl EditorSkinCollection {
                 editbox_style,
                 checkbox_style,
                 combobox_style,
+                scrollbar_style,
+                scrollbar_handle_style,
                 scroll_multiplier,
+                margin,
                 ..root_ui().default_skin()
             }
         };
@@ -168,23 +187,9 @@ impl EditorSkinCollection {
                 .color_clicked(Color::from_rgba(58, 68, 68, 255))
                 .build();
 
-            let scrollbar_style = root_ui()
-                .style_builder()
-                .color(Color::from_rgba(38, 43, 68, 255))
-                .build();
-
-            let scrollbar_handle_style = root_ui()
-                .style_builder()
-                .color(Color::from_rgba(58, 68, 68, 255))
-                .color_hovered(Color::from_rgba(58, 68, 102, 255))
-                .color_clicked(Color::from_rgba(58, 68, 68, 255))
-                .build();
-
             Skin {
                 label_style,
                 button_style,
-                scrollbar_style,
-                scrollbar_handle_style,
                 ..default.clone()
             }
         };

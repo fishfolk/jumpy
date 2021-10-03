@@ -180,6 +180,12 @@ impl Editor {
                 return self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::DeleteLayer(id) => {
+                if let Some(selected_id) = &self.selected_layer {
+                    if selected_id == &id {
+                        self.selected_layer = None;
+                    }
+                }
+
                 let action = DeleteLayer::new(id.clone());
                 return self.history.apply(Box::new(action), &mut self.map);
             }
@@ -201,6 +207,13 @@ impl Editor {
                 return self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::DeleteTileset(id) => {
+                if let Some(selected_id) = &self.selected_tileset {
+                    if selected_id == &id {
+                        self.selected_tileset = None;
+                        self.selected_tile = None;
+                    }
+                }
+
                 let action = DeleteTileset::new(id);
                 return self.history.apply(Box::new(action), &mut self.map);
             }
@@ -234,7 +247,7 @@ impl Node for Editor {
 
         let cursor_position = node.get_cursor_position();
         let element_at_cursor = {
-            let mut gui = storage::get_mut::<EditorGui>();
+            let gui = storage::get_mut::<EditorGui>();
             gui.get_element_at(cursor_position)
         };
 
@@ -356,7 +369,6 @@ impl Node for Editor {
 
         if let Some(action) = action {
             if let Err(err) = node.apply_action(action) {
-
                 panic!("EditorAction Error: {}", err)
             }
 

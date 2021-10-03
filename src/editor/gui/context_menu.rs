@@ -15,6 +15,7 @@ use crate::{
 };
 
 use super::{
+    ELEMENT_MARGIN,
     EditorAction,
 };
 
@@ -35,7 +36,6 @@ pub enum ContextMenuEntry {
 impl ContextMenuEntry {
     const WIDTH: f32 = 150.0;
     const ENTRY_HEIGHT: f32 = 25.0;
-    const SEPARATOR_HEIGHT: f32 = 10.0;
 
     pub fn separator() -> Self {
         ContextMenuEntry::Separator
@@ -51,7 +51,7 @@ impl ContextMenuEntry {
 
     fn get_height(&self) -> f32 {
         if let Self::Separator = self {
-            return Self::SEPARATOR_HEIGHT;
+            return ELEMENT_MARGIN;
         }
 
         Self::ENTRY_HEIGHT
@@ -121,12 +121,10 @@ impl ContextMenu {
     }
 
     pub fn draw(&mut self, ui: &mut Ui) -> Option<EditorAction> {
-        let mut res = None;
-
         let gui_resources = storage::get::<GuiResources>();
         ui.push_skin(&gui_resources.editor_skins.context_menu);
 
-        res = draw_entries(ui, self.position, &mut self.entries);
+        let res = draw_entries(ui, self.position, &mut self.entries);
 
         ui.pop_skin();
 

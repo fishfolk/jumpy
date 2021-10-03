@@ -281,7 +281,7 @@ impl ArmedGrenade {
             vec2(-600., -200.)
         };
 
-        let mut world = storage::get_mut::<GameWorld>();
+        let world = storage::get_mut::<GameWorld>();
 
         let grenade_mount_pos = if facing {
             vec2(30., 10.)

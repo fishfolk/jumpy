@@ -24,13 +24,12 @@ use super::{
 pub fn create_tileset_list_element(width: f32, height_factor: f32) -> ToolbarElement {
     ToolbarElementBuilder::new(width, height_factor)
         .with_header("Tilesets")
-        .build(hash!("tileset_list"), draw_tileset_list)
+        .with_menubar(draw_tileset_list_menubar)
+        .build(hash!("tileset_list"), draw_tileset_list_element)
 }
 
-fn draw_tileset_list(ui: &mut Ui, id: Id, size: Vec2, map: &Map, params: &EditorDrawParams) -> Option<EditorAction> {
+fn draw_tileset_list_element(ui: &mut Ui, id: Id, size: Vec2, map: &Map, params: &EditorDrawParams) -> Option<EditorAction> {
     let mut res = None;
-
-    let size = vec2(size.x, size.y - Toolbar::BUTTON_BAR_TOTAL_HEIGHT);
 
     let entry_size = vec2(size.x, Toolbar::LIST_ENTRY_HEIGHT);
     let mut position = Vec2::ZERO;
@@ -38,7 +37,7 @@ fn draw_tileset_list(ui: &mut Ui, id: Id, size: Vec2, map: &Map, params: &Editor
     let gui_resources = storage::get::<GuiResources>();
     ui.push_skin(&gui_resources.editor_skins.menu);
 
-    widgets::Group::new(hash!(id, "tileset_list_group"), size).position(position).ui(ui, |ui| {
+    widgets::Group::new(hash!(id, "main_group"), size).position(position).ui(ui, |ui| {
         let mut position = Vec2::ZERO;
 
         for (id, _) in &map.tilesets {
@@ -73,37 +72,37 @@ fn draw_tileset_list(ui: &mut Ui, id: Id, size: Vec2, map: &Map, params: &Editor
 
     ui.pop_skin();
 
-    position.y += size.y;
+    res
+}
 
-    let size = vec2(size.x, Toolbar::BUTTON_BAR_TOTAL_HEIGHT);
+fn draw_tileset_list_menubar(ui: &mut Ui, _id: Id, size: Vec2, _map: &Map, params: &EditorDrawParams) -> Option<EditorAction> {
+    let mut res = None;
 
-    widgets::Group::new(hash!(id, "tileset_button_bar"), size).position(position).ui(ui, |ui| {
-        let mut position = vec2(0.0, Toolbar::SEPARATOR_HEIGHT);
+    let mut position = Vec2::ZERO;
 
-        let button_size = vec2(size.x * 0.25, Toolbar::BUTTON_BAR_BUTTON_HEIGHT);
+    let button_size = vec2(size.x * 0.25, Toolbar::MENUBAR_HEIGHT);
 
-        let create_btn = widgets::Button::new("+")
-            .size(button_size)
-            .position(position)
-            .ui(ui);
+    let create_btn = widgets::Button::new("+")
+        .size(button_size)
+        .position(position)
+        .ui(ui);
 
-        if create_btn {
-            res = Some(EditorAction::OpenCreateTilesetWindow);
+    if create_btn {
+        res = Some(EditorAction::OpenCreateTilesetWindow);
+    }
+
+    position.x += button_size.x;
+
+    let delete_btn = widgets::Button::new("-")
+        .size(button_size)
+        .position(position)
+        .ui(ui);
+
+    if delete_btn {
+        if let Some(id) = params.selected_tileset.clone() {
+            res = Some(EditorAction::DeleteTileset(id));
         }
-
-        position.x += button_size.x;
-
-        let delete_btn = widgets::Button::new("-")
-            .size(button_size)
-            .position(position)
-            .ui(ui);
-
-        if delete_btn {
-            if let Some(id) = params.selected_tileset.clone() {
-                res = Some(EditorAction::DeleteTileset(id));
-            }
-        }
-    });
+    }
 
     res
 }

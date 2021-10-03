@@ -11,7 +11,6 @@ opt-level = 3
 nanoserde = "0.1.29"
 macroquad = { version = "0.3.10" }
 macroquad-platformer = "0.1"
-macroquad-tiled = "0.1"
 macroquad-profiler = "0.1"
 macroquad-particles = {version = "0.1", features = ["nanoserde"] }
 

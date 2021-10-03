@@ -5,7 +5,7 @@ use macroquad::{
     time::get_frame_time,
 };
 
-use crate::{capabilities::Weapon, nodes::{player::Input, Player}, Resources, GameWorld};
+use crate::{capabilities::Weapon, nodes::{player::Input, Player}, GameWorld};
 
 pub struct Ai {
     jump_cooldown: f32,

@@ -15,7 +15,7 @@ pub enum PauseResult {
 }
 
 #[allow(dead_code)]
-pub fn gui(is_editor_mode: bool) -> PauseResult {
+pub fn gui() -> PauseResult {
     let gui_resources = storage::get::<GuiResources>();
 
     let mut res = PauseResult::Nothing;

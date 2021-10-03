@@ -6,7 +6,7 @@ use macroquad::{
 
 use macroquad_platformer::{Actor, World as CollisionWorld};
 
-use crate::{Resources, GameWorld};
+use crate::{GameWorld};
 
 pub struct PhysicsBody {
     pub pos: Vec2,

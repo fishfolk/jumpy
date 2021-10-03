@@ -4,13 +4,13 @@ pub mod context_menu;
 
 pub mod skins;
 
+pub use skins::EditorSkinCollection;
+
 use macroquad::{
     experimental::{
         collections::storage,
     },
     ui::{
-        Id,
-        Ui,
         widgets,
         root_ui,
     },
@@ -20,14 +20,11 @@ use macroquad::{
 
 use super::{
     EditorAction,
-    UndoableAction,
 };
 
 use crate::{
     map::{
         Map,
-        MapLayerKind,
-        ObjectLayerKind,
     },
     gui::GuiResources,
 };
@@ -37,12 +34,19 @@ use toolbars::{
     Toolbar,
     ToolbarElement,
     ToolbarElementParams,
-    LayerList,
-    TilesetList,
-    TilesetDetails,
+    LayerListElement,
+    TilesetListElement,
+    TilesetDetailsElement,
 };
 
 use windows::{
+    Window,
+    WindowParams,
+    WindowResult,
+};
+
+pub use windows::{
+    ConfirmDialog,
     CreateLayerWindow,
     CreateTilesetWindow,
 };
@@ -73,8 +77,7 @@ pub struct EditorDrawParams {
 pub struct EditorGui {
     left_toolbar: Toolbar,
     right_toolbar: Toolbar,
-    create_layer_window: Option<CreateLayerWindow>,
-    create_tileset_window: Option<CreateTilesetWindow>,
+    open_windows: Vec<Box<dyn Window>>,
     context_menu: Option<ContextMenu>,
 }
 
@@ -90,15 +93,14 @@ impl EditorGui {
         let left_toolbar = Toolbar::new(ToolbarPosition::Left, Self::LEFT_TOOLBAR_WIDTH);
 
         let right_toolbar = Toolbar::new(ToolbarPosition::Right, Self::RIGHT_TOOLBAR_WIDTH)
-            .with_element(Self::LAYER_LIST_HEIGHT_FACTOR, LayerList::new())
-            .with_element(Self::TILESET_LIST_HEIGHT_FACTOR, TilesetList::new())
-            .with_element(Self::TILESET_DETAILS_HEIGHT_FACTOR, TilesetDetails::new());
+            .with_element(Self::LAYER_LIST_HEIGHT_FACTOR, LayerListElement::new())
+            .with_element(Self::TILESET_LIST_HEIGHT_FACTOR, TilesetListElement::new())
+            .with_element(Self::TILESET_DETAILS_HEIGHT_FACTOR, TilesetDetailsElement::new());
 
         EditorGui {
             left_toolbar,
             right_toolbar,
-            create_layer_window: None,
-            create_tileset_window: None,
+            open_windows: Vec::new(),
             context_menu: None,
         }
     }
@@ -114,13 +116,7 @@ impl EditorGui {
             return Some(GuiElement::Toolbar);
         }
 
-        if let Some(window) = &self.create_layer_window {
-            if window.contains(position) {
-                return Some(GuiElement::Window);
-            }
-        }
-
-        if let Some(window) = &self.create_tileset_window {
+        for window in &self.open_windows {
             if window.contains(position) {
                 return Some(GuiElement::Window);
             }
@@ -146,51 +142,79 @@ impl EditorGui {
         self.context_menu = None;
     }
 
-    pub fn open_create_layer_window(&mut self) {
-        let window = CreateLayerWindow::new();
-        self.create_layer_window = Some(window);
+    pub fn add_window(&mut self, window: Box<dyn Window>) {
+        self.open_windows.push(window);
     }
 
-    pub fn close_create_layer_window(&mut self) {
-        self.create_layer_window = None;
-    }
-
-    pub fn open_create_tileset_window(&mut self) {
-        let window = CreateTilesetWindow::new();
-        self.create_tileset_window = Some(window);
-    }
-
-    pub fn close_create_tileset_window(&mut self) {
-        self.create_tileset_window = None;
-    }
-
-    pub fn draw(&mut self, map: &Map, params: EditorDrawParams) -> Option<EditorAction> {
+    pub fn draw(&mut self, map: &Map, draw_params: EditorDrawParams) -> Option<EditorAction> {
         let mut res = None;
 
-        let gui_resources = storage::get::<GuiResources>();
-
         let ui = &mut root_ui();
-        ui.push_skin(&gui_resources.editor_skins.default);
 
-        if let Some(action) = self.left_toolbar.draw(ui, map, &params) {
+        {
+            let gui_resources = storage::get::<GuiResources>();
+            ui.push_skin(&gui_resources.editor_skins.default);
+        }
+
+        if let Some(action) = self.left_toolbar.draw(ui, map, &draw_params) {
             res = Some(action);
         }
 
-        if let Some(action) = self.right_toolbar.draw(ui, map, &params) {
+        if let Some(action) = self.right_toolbar.draw(ui, map, &draw_params) {
             res = Some(action);
         }
 
-        if let Some(window) = &mut self.create_layer_window {
-            if let Some(action) = window.draw(ui, map, &params) {
-                res = Some(action)
-            }
-        }
+        let mut i = 0;
+        while i < self.open_windows.len() {
+            let window = self.open_windows.get_mut(i).unwrap();
+            let params = window.get_params().clone();
 
-        if let Some(window) = &mut self.create_tileset_window {
-            if let Some(action) = window.draw(ui, map, &params) {
-                res = Some(action);
+            let position = params.get_absolute_position();
+            let size = params.size;
+
+            let id = hash!("window", i);
+
+            let mut should_close = false;
+            widgets::Window::new(id, position, size).titlebar(false).movable(params.is_static == false).ui(ui, |ui| {
+                let mut content_size = size - vec2(
+                    EditorSkinCollection::WINDOW_MARGIN_LEFT + EditorSkinCollection::WINDOW_MARGIN_RIGHT,
+                    EditorSkinCollection::WINDOW_MARGIN_TOP + EditorSkinCollection::WINDOW_MARGIN_BOTTOM,
+                );
+
+                let mut content_position = Vec2::ZERO;
+
+                if let Some(title) = &params.title {
+                    let gui_resources = storage::get::<GuiResources>();
+                    ui.push_skin(&gui_resources.editor_skins.window_header);
+
+                    ui.label(content_position, title);
+
+                    let label_size = ui.calc_size(title);
+
+                    content_size.y -= label_size.y;
+                    content_position.y += label_size.y;
+
+                    ui.pop_skin();
+                }
+
+                widgets::Group::new(hash!(id, "group"), content_size).position(content_position).ui(ui, |ui| {
+                    if let Some(window_res) = window.draw(ui, size, map, &draw_params) {
+                        if let WindowResult::Action(action) = window_res {
+                            res = Some(action);
+                        }
+
+                        should_close = true;
+                    }
+                });
+            });
+
+            if should_close {
+                self.open_windows.remove(i);
+                continue;
             }
-        }
+
+            i += 1;
+        };
 
         if let Some(context_menu) = &mut self.context_menu {
             if let Some(action) = context_menu.draw(ui) {

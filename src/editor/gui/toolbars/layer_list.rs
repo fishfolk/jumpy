@@ -1,8 +1,6 @@
 use macroquad::{
     ui::{
-        Id,
         Ui,
-        hash,
         widgets,
     },
     experimental::{
@@ -28,26 +26,25 @@ use super::{
     ToolbarElementParams,
 };
 
-pub struct LayerList {
+pub struct LayerListElement {
     params: ToolbarElementParams,
 }
 
-impl LayerList {
+impl LayerListElement {
     pub fn new() -> Box<Self> {
         let params = ToolbarElementParams {
-            id: hash!("layer_list"),
             header: Some("Layers".to_string()),
             has_menubar: true,
             has_margins: false,
         };
 
-        Box::new(LayerList {
+        Box::new(LayerListElement {
             params,
         })
     }
 }
 
-impl ToolbarElement for LayerList {
+impl ToolbarElement for LayerListElement {
     fn get_params(&self) -> ToolbarElementParams {
         self.params.clone()
     }
@@ -61,12 +58,12 @@ impl ToolbarElement for LayerList {
         let gui_resources = storage::get::<GuiResources>();
         ui.push_skin(&gui_resources.editor_skins.menu);
 
-        for id in &map.draw_order {
-            let layer = map.layers.get(id).unwrap();
+        for layer_id in &map.draw_order {
+            let layer = map.layers.get(layer_id).unwrap();
             let kind = &layer.kind;
 
             let is_selected = if let Some(selected_id) = &draw_params.selected_layer {
-                id == selected_id
+                layer_id == selected_id
             } else {
                 false
             };
@@ -80,7 +77,7 @@ impl ToolbarElement for LayerList {
                 .position(position)
                 .ui(ui);
 
-            ui.label(position, id);
+            ui.label(position, layer_id);
 
             {
                 let suffix = match kind {
@@ -101,7 +98,7 @@ impl ToolbarElement for LayerList {
             }
 
             if button {
-                res = Some(EditorAction::SelectLayer(id.clone()));
+                res = Some(EditorAction::SelectLayer(layer_id.clone()));
             }
 
             if is_selected {

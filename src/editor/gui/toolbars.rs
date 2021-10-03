@@ -1,8 +1,6 @@
 use macroquad::{
     ui::{
-        self,
         widgets,
-        Id,
         Ui,
         hash,
     },
@@ -18,24 +16,22 @@ use crate::{
     editor::{
         EditorAction,
         EditorDrawParams,
-        ContextMenuEntry,
     },
 };
 
 use super::ELEMENT_MARGIN;
 
 mod layer_list;
-pub use layer_list::LayerList;
+pub use layer_list::LayerListElement;
 
 mod tileset_list;
-pub use tileset_list::TilesetList;
+pub use tileset_list::TilesetListElement;
 
 mod tileset_details;
-pub use tileset_details::TilesetDetails;
+pub use tileset_details::TilesetDetailsElement;
 
 #[derive(Debug, Clone)]
 pub struct ToolbarElementParams {
-    id: Id,
     header: Option<String>,
     has_menubar: bool,
     has_margins: bool,
@@ -44,7 +40,6 @@ pub struct ToolbarElementParams {
 impl Default for ToolbarElementParams {
     fn default() -> Self {
         ToolbarElementParams {
-            id: hash!(),
             header: None,
             has_menubar: false,
             has_margins: false,
@@ -100,7 +95,7 @@ impl Toolbar {
     }
 
     pub fn add_element(&mut self, height_factor: f32, element: Box<dyn ToolbarElement>) {
-        self.elements.push((height_factor, element))
+        self.elements.push((height_factor, element));
     }
 
     pub fn get_rect(&self) -> Rect {
@@ -141,7 +136,9 @@ impl Toolbar {
             assert!(total_height_factor <= 1.0, "Total height factor of all toolbar elements exceed 1.0");
         }
 
-        widgets::Group::new(hash!(self.position, "toolbar"), toolbar_size).position(position).ui(ui, |ui| {
+        let id = hash!(self.position);
+
+        widgets::Group::new(id, toolbar_size).position(position).ui(ui, |ui| {
             let mut position = Vec2::ZERO;
 
             {
@@ -151,19 +148,22 @@ impl Toolbar {
                 ui.pop_skin();
             }
 
+            let mut i = 0;
             for (height_factor, element) in &mut self.elements {
-                let height_factor = *height_factor;
+                let params = element.get_params();
+
+                let element_id = hash!(id, "element", i);
+                i += 1;
 
                 let element_size = {
-                    let height = screen_height() * height_factor;
+                    let height = screen_height() * *height_factor;
                     vec2(self.width, height)
                 };
 
                 let element_position = position;
-                let mut element_content_position = element_position;
-                let mut element_content_size = element_size;
+                let mut content_position = element_position;
+                let mut content_size = element_size;
 
-                let params = element.get_params();
                 if let Some(header) = params.header {
                     let gui_resources = storage::get::<GuiResources>();
                     ui.push_skin(&gui_resources.editor_skins.toolbar_header_bg);
@@ -177,45 +177,45 @@ impl Toolbar {
                         ui.label(element_position, &header);
                     }
 
-                    element_content_size.y -= header_height;
-                    element_content_position.y += header_height;
+                    content_size.y -= header_height;
+                    content_position.y += header_height;
 
                     ui.pop_skin();
                 }
 
                 if params.has_menubar {
-                    element_content_size.y -= Toolbar::MENUBAR_TOTAL_HEIGHT;
+                    content_size.y -= Toolbar::MENUBAR_TOTAL_HEIGHT;
                 }
 
                 if params.has_margins {
-                    element_content_size.x -= ELEMENT_MARGIN;
-                    element_content_position.x += ELEMENT_MARGIN;
+                    content_size.x -= ELEMENT_MARGIN;
+                    content_position.x += ELEMENT_MARGIN;
                 }
 
                 {
                     let has_margins = params.has_margins;
 
-                    widgets::Group::new(hash!(params.id, "element"), element_content_size).position(element_content_position).ui(ui, |ui| {
+                    widgets::Group::new(element_id, content_size).position(content_position).ui(ui, |ui| {
                         if has_margins {
                             // This is done here so that scrollbar is pushed to edge of screen, even when the element has margins
-                            element_content_size.x -= ELEMENT_MARGIN;
+                            content_size.x -= ELEMENT_MARGIN;
                         }
 
-                        if let Some(action) = element.draw(ui, element_content_size, map, draw_params) {
+                        if let Some(action) = element.draw(ui, content_size, map, draw_params) {
                             res = Some(action);
                         }
                     });
                 }
 
                 if params.has_menubar {
-                    let mut menubar_position = vec2(element_position.x, element_content_position.y);
-                    menubar_position.y += element_content_size.y + ELEMENT_MARGIN;
+                    let mut menubar_position = vec2(element_position.x, content_position.y);
+                    menubar_position.y += content_size.y + ELEMENT_MARGIN;
                     menubar_position.x += ELEMENT_MARGIN;
 
                     let mut menubar_size = vec2(element_size.x, Toolbar::MENUBAR_HEIGHT);
                     menubar_size.x -= ELEMENT_MARGIN * 2.0;
 
-                    widgets::Group::new(hash!(params.id, "menubar"), menubar_size).position(menubar_position).ui(ui, |ui| {
+                    widgets::Group::new(hash!(element_id, "menubar"), menubar_size).position(menubar_position).ui(ui, |ui| {
                         if let Some(action) = element.draw_menubar(ui, menubar_size, map, draw_params) {
                             res = Some(action);
                         }

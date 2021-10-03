@@ -3,7 +3,6 @@ use macroquad::{
     math::RectOffset,
     texture::Image,
     ui::{root_ui, Skin},
-    color,
 };
 
 pub struct SkinCollection {

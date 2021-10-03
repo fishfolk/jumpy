@@ -1,5 +1,4 @@
 use std::{
-    fmt,
     result,
 };
 
@@ -16,7 +15,6 @@ use crate::{
         Map,
         MapLayer,
         MapLayerKind,
-        CollisionKind,
         MapTile,
         MapTileset,
     }
@@ -34,7 +32,6 @@ pub enum EditorAction {
         tileset_id: String,
     },
     OpenCreateLayerWindow,
-    CloseCreateLayerWindow,
     SelectLayer(String),
     SetLayerDrawOrderIndex {
         id: String,
@@ -48,7 +45,6 @@ pub enum EditorAction {
     DeleteLayer(String),
     SelectTileset(String),
     OpenCreateTilesetWindow,
-    CloseCreateTilesetWindow,
     CreateTileset {
         id: String,
         texture_id: String,

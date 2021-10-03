@@ -2,7 +2,6 @@ use std::{
     io,
     path::Path,
     collections::HashMap,
-    iter::FromIterator,
 };
 
 use macroquad::{
@@ -25,7 +24,6 @@ use crate::{
         self,
         TiledMap,
     },
-    editor::EditorCamera,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

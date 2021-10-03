@@ -6,7 +6,7 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::{Resources, Map, CollisionWorld, GameWorld};
+use crate::{Resources, GameWorld};
 
 pub struct SceneRenderer;
 

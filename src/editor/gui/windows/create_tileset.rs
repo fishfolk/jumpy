@@ -2,7 +2,6 @@ use std::ops::Deref;
 
 use macroquad::{
     ui::{
-        Id,
         Ui,
         hash,
         widgets,
@@ -23,39 +22,40 @@ use crate::{
 };
 
 use super::{
-    WindowPosition,
-    WindowBuilder,
+    Window,
+    WindowParams,
+    WindowResult,
 };
 
 pub struct CreateTilesetWindow {
-    position: WindowPosition,
-    size: Vec2,
+    params: WindowParams,
     tileset_id: String,
     texture_id: String,
 }
 
 impl CreateTilesetWindow {
-    pub fn new() -> Self {
-        CreateTilesetWindow {
-            position: WindowPosition::Centered,
+    pub fn new() -> Box<Self> {
+        let params = WindowParams {
+            title: Some("Create Tileset".to_string()),
             size: vec2(350.0, 350.0),
+            ..Default::default()
+        };
+
+        Box::new(CreateTilesetWindow {
+            params,
             tileset_id: "Unnamed Tileset".to_string(),
             texture_id: "tileset".to_string(),
-        }
+        })
+    }
+}
+
+impl Window for CreateTilesetWindow {
+    fn get_params(&self) -> &WindowParams {
+        &self.params
     }
 
-    pub fn get_rect(&self) -> Rect {
-        let position = self.position.to_absolute(self.size);
-        Rect::new(position.x, position.y, self.size.x, self.size.y)
-    }
-
-    pub fn contains(&self, point: Vec2) -> bool {
-        let rect = self.get_rect();
-        rect.contains(point)
-    }
-
-    pub fn draw(&mut self, ui: &mut Ui, map: &Map, _params: &EditorDrawParams) -> Option<EditorAction> {
-        let mut res = None;
+    fn draw(&mut self, ui: &mut Ui, _size: Vec2, map: &Map, _draw_params: &EditorDrawParams) -> Option<WindowResult> {
+        let id = hash!("create_tileset_element");
 
         let resources = storage::get::<Resources>();
         let mut textures = resources.textures
@@ -65,74 +65,66 @@ impl CreateTilesetWindow {
 
         textures.sort();
 
-        WindowBuilder::new(self.size)
-            .with_position(self.position, true)
-            .with_title("Create Tileset")
-            .build(ui, |ui| {
-                {
-                    let size = vec2(173.0, 25.0);
+        {
+            let size = vec2(173.0, 25.0);
 
-                    widgets::InputText::new(hash!())
-                        .size(size)
-                        .ratio(1.0)
-                        .label("Name")
-                        .ui(ui, &mut self.tileset_id);
-                }
+            widgets::InputText::new(hash!(id, "name_input"))
+                .size(size)
+                .ratio(1.0)
+                .label("Name")
+                .ui(ui, &mut self.tileset_id);
+        }
 
-                ui.separator();
-                ui.separator();
-                ui.separator();
-                ui.separator();
+        ui.separator();
+        ui.separator();
+        ui.separator();
+        ui.separator();
 
-                let mut texture_index = 0;
-                for id in &textures {
-                    if id == &self.texture_id {
-                        break;
-                    }
+        let mut texture_index = 0;
+        for id in &textures {
+            if id == &self.texture_id {
+                break;
+            }
 
-                    texture_index += 1;
-                }
+            texture_index += 1;
+        }
 
-                widgets::ComboBox::new(hash!(), textures.as_slice())
-                    .ratio(0.4)
-                    .label("Texture")
-                    .ui(ui, &mut texture_index);
+        widgets::ComboBox::new(hash!(id, "texture_input"), textures.as_slice())
+            .ratio(0.4)
+            .label("Texture")
+            .ui(ui, &mut texture_index);
 
-                self.texture_id = textures
-                    .get(texture_index)
-                    .unwrap()
-                    .to_string();
+        self.texture_id = textures
+            .get(texture_index)
+            .unwrap()
+            .to_string();
 
-                let is_existing_id = map.tilesets
-                    .iter()
-                    .find(|(id, _)| *id == &self.tileset_id)
-                    .is_some();
+        let is_existing_id = map.tilesets
+            .iter()
+            .find(|(id, _)| *id == &self.tileset_id)
+            .is_some();
 
-                if is_existing_id {
-                    ui.label(None, "A tileset with this name already exist!");
-                } else {
-                    ui.label(None, "")
-                }
+        if is_existing_id {
+            ui.label(None, "A tileset with this name already exist!");
+        } else {
+            ui.label(None, "")
+        }
 
-                if ui.button(None, "Create") && is_existing_id == false {
-                    let batch = EditorAction::batch(&[
-                        EditorAction::CloseCreateTilesetWindow,
-                        EditorAction::CreateTileset {
-                            id: self.tileset_id.clone(),
-                            texture_id: self.texture_id.clone(),
-                        }
-                    ]);
+        if ui.button(None, "Create") && is_existing_id == false {
+            let action = EditorAction::CreateTileset {
+                id: self.tileset_id.clone(),
+                texture_id: self.texture_id.clone(),
+            };
 
-                    res = Some(batch);
-                }
+            return Some(WindowResult::Action(action));
+        }
 
-                ui.same_line(0.0);
+        ui.same_line(0.0);
 
-                if ui.button(None, "Cancel") {
-                    res = Some(EditorAction::CloseCreateTilesetWindow);
-                }
-            });
+        if ui.button(None, "Cancel") {
+            return Some(WindowResult::Cancel);
+        }
 
-        res
+        None
     }
 }

@@ -1,8 +1,6 @@
 use macroquad::{
     ui::{
-        Id,
         Ui,
-        hash,
         widgets,
     },
     experimental::{
@@ -21,26 +19,25 @@ use super::{
     Map,
 };
 
-pub struct TilesetList {
+pub struct TilesetListElement {
     params: ToolbarElementParams,
 }
 
-impl TilesetList {
+impl TilesetListElement {
     pub fn new() -> Box<Self> {
         let params = ToolbarElementParams {
-            id: hash!("tileset_list"),
             header: Some("Tilesets".to_string()),
             has_menubar: true,
             has_margins: false,
         };
 
-        Box::new(TilesetList {
+        Box::new(TilesetListElement {
             params,
         })
     }
 }
 
-impl ToolbarElement for TilesetList {
+impl ToolbarElement for TilesetListElement {
     fn get_params(&self) -> ToolbarElementParams {
         self.params.clone()
     }
@@ -54,9 +51,9 @@ impl ToolbarElement for TilesetList {
         let gui_resources = storage::get::<GuiResources>();
         ui.push_skin(&gui_resources.editor_skins.menu);
 
-        for (id, _) in &map.tilesets {
+        for (tileset_id, _) in &map.tilesets {
             let is_selected = if let Some(selected_id) = &draw_params.selected_tileset {
-                id == selected_id
+                tileset_id == selected_id
             } else {
                 false
             };
@@ -70,10 +67,10 @@ impl ToolbarElement for TilesetList {
                 .position(position)
                 .ui(ui);
 
-            ui.label(position, id);
+            ui.label(position, tileset_id);
 
             if button {
-                res = Some(EditorAction::SelectTileset(id.clone()));
+                res = Some(EditorAction::SelectTileset(tileset_id.clone()));
             }
 
             if is_selected {

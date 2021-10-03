@@ -1,8 +1,6 @@
 use macroquad::{
     ui::{
-        Id,
         Ui,
-        hash,
         widgets,
     },
     experimental::{
@@ -13,11 +11,6 @@ use macroquad::{
 
 use crate::{
     Resources,
-    editor::{
-        gui::{
-            ELEMENT_MARGIN,
-        },
-    },
 };
 
 use super::{
@@ -30,26 +23,25 @@ use super::{
     EditorDrawParams,
 };
 
-pub struct TilesetDetails {
+pub struct TilesetDetailsElement {
     params: ToolbarElementParams,
 }
 
-impl TilesetDetails {
+impl TilesetDetailsElement {
     pub fn new() -> Box<Self> {
         let params = ToolbarElementParams {
-            id: hash!("tileset_details"),
             header: None,
             has_menubar: true,
             has_margins: true,
         };
 
-        Box::new(TilesetDetails {
+        Box::new(TilesetDetailsElement {
             params,
         })
     }
 }
 
-impl ToolbarElement for TilesetDetails {
+impl ToolbarElement for TilesetDetailsElement {
     fn get_params(&self) -> ToolbarElementParams {
         self.params.clone()
     }
@@ -59,8 +51,8 @@ impl ToolbarElement for TilesetDetails {
 
         let mut position = Vec2::ZERO;
 
-        if let Some(id) = &draw_params.selected_tileset {
-            let tileset = map.tilesets.get(id).unwrap();
+        if let Some(tileset_id) = &draw_params.selected_tileset {
+            let tileset = map.tilesets.get(tileset_id).unwrap();
 
             let texture = {
                 let resources = storage::get::<Resources>();

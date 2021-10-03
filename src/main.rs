@@ -1,11 +1,8 @@
-use std::ops::Deref;
-
 use std::collections::HashMap;
 use macroquad::prelude::*;
 
 use macroquad_particles as particles;
 
-use macroquad_tiled as tiled;
 use macroquad::{
     audio::{self, load_sound},
     experimental::{
@@ -316,8 +313,7 @@ async fn setup_game_scene(map: Map, is_local_game: bool) -> Vec<Handle<Player>> 
 }
 
 async fn game(map: Map, game_type: GameType) {
-    use nodes::{LocalNetwork, Network, Player};
-    use editor::{EditorCamera, Editor};
+    use nodes::{LocalNetwork, Network};
 
     match game_type {
         GameType::Local(players_input) => {

@@ -6,7 +6,6 @@ use std::{
 };
 
 use macroquad::{
-    color,
     prelude::*,
 };
 
@@ -17,7 +16,7 @@ use serde::{
 
 use crate::{
     json,
-    map::{Map, MapLayerKind, MapLayer, MapTile, MapObject, MapTileset, ObjectLayerKind, MapProperty, CollisionKind},
+    map::{Map, MapLayerKind, MapLayer, MapTile, MapObject, MapTileset, MapProperty, CollisionKind},
 };
 
 pub use tiled::TiledMap;

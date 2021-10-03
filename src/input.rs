@@ -2,22 +2,13 @@ use macroquad::{
     experimental::collections::storage,
     input::{
         is_key_down,
-        is_key_pressed,
         KeyCode,
-        MouseButton,
-        is_mouse_button_down,
-        is_mouse_button_pressed,
-    },
-    math::{
-        Vec2,
-        vec2,
     },
 };
 
 use quad_gamepad::GamepadButton;
 
 use nanoserde::{DeBin, SerBin};
-use macroquad::input::mouse_wheel;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum InputScheme {

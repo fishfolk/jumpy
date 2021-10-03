@@ -1,10 +1,8 @@
 use std::{
     collections::HashMap,
-    iter::FromIterator,
 };
 
 use macroquad::{
-    color,
     prelude::*,
 };
 

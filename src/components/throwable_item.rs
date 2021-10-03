@@ -6,7 +6,7 @@ use macroquad::{
     math::{vec2, Rect},
 };
 
-use crate::{components::PhysicsBody, nodes::Player, Resources, GameWorld};
+use crate::{components::PhysicsBody, nodes::Player, GameWorld};
 
 #[derive(Default)]
 pub struct ThrowableItem {

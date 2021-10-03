@@ -1,16 +1,23 @@
 use macroquad::{
-    ui::Ui,
+    ui::{
+        Ui,
+    },
     prelude::*,
 };
 
 use super::{
-    WindowBuilder,
-    WindowPosition,
+    Map,
+    EditorAction,
+    EditorDrawParams,
+    Window,
+    WindowParams,
+    WindowResult,
 };
 
 pub struct ConfirmDialog {
-    size: Vec2,
+    params: WindowParams,
     body: Vec<String>,
+    confirm_action: EditorAction,
 }
 
 impl ConfirmDialog {
@@ -18,56 +25,51 @@ impl ConfirmDialog {
     const CONFIRM_LABEL: &'static str = "Ok";
     const CANCEL_LABEL: &'static str = "Cancel";
 
-    pub fn new(size: Vec2, body: &[&str]) -> Self {
+    pub fn new(size: Vec2, body: &[&str], confirm_action: EditorAction) -> Box<Self> {
+        let params = WindowParams {
+            title: Some(Self::WINDOW_TITLE.to_string()),
+            size,
+            is_static: true,
+            ..Default::default()
+        };
+
         let body = body
             .into_iter()
             .map(|line| line.to_string())
             .collect();
 
-        ConfirmDialog {
-            size,
+        Box::new(ConfirmDialog {
+            params,
             body,
+            confirm_action,
+        })
+    }
+}
+
+impl Window for ConfirmDialog {
+    fn get_params(&self) -> &WindowParams {
+        &self.params
+    }
+
+    fn draw(&mut self, ui: &mut Ui, _size: Vec2, _map: &Map, _draw_params: &EditorDrawParams) -> Option<WindowResult> {
+        for line in &self.body {
+            ui.label(None, line);
         }
-    }
 
-    pub fn get_rect(&self) -> Rect {
-        let position = WindowPosition::Centered.to_absolute(self.size);
-        Rect::new(position.x, position.y, self.size.x, self.size.y)
-    }
+        ui.separator();
+        ui.separator();
+        ui.separator();
+        ui.separator();
 
-    pub fn contains(&self, point: Vec2) -> bool {
-        let rect = self.get_rect();
-        rect.contains(point)
-    }
+        if ui.button(None, Self::CONFIRM_LABEL) {
+            return Some(WindowResult::Action(self.confirm_action.clone()));
+        }
 
-    pub fn draw(&self, ui: &mut Ui) -> Option<bool> {
-        let mut res = None;
+        if ui.button(None, Self::CANCEL_LABEL) {
+            return Some(WindowResult::Cancel);
+        }
 
-        WindowBuilder::new(self.size)
-            .with_title(Self::WINDOW_TITLE)
-            .with_position(WindowPosition::Centered, true)
-            .build(ui, |ui| {
-                for line in &self.body {
-                    ui.label(None, line);
-                }
-
-                ui.separator();
-                ui.separator();
-                ui.separator();
-                ui.separator();
-
-                if ui.button(None, Self::CONFIRM_LABEL) {
-                    res = Some(true);
-                }
-
-                if ui.button(None, Self::CANCEL_LABEL) {
-                    res = Some(false);
-                }
-            });
-
-        ui.pop_skin();
-
-        res
+        None
     }
 }
 

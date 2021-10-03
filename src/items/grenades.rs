@@ -10,10 +10,19 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::{capabilities, components::{GunlikeAnimation, PhysicsBody, ThrowableItem}, Resources, nodes::{
-    Player,
-    SceneRenderer,
-}, CollisionKind, GameWorld};
+use crate::{
+    capabilities,
+    components::{
+        GunlikeAnimation,
+        PhysicsBody,
+        ThrowableItem,
+    },
+    Resources,
+    nodes::{
+        Player,
+    },
+    GameWorld,
+};
 
 pub struct Grenades {
     grenade_sprite: GunlikeAnimation,
@@ -64,7 +73,7 @@ impl Grenades {
             throwable: ThrowableItem::default(),
             amount: Self::MAXIMUM_AMOUNT,
         })
-        .untyped()
+            .untyped()
     }
 
     fn draw_hud(&self) {
@@ -280,8 +289,6 @@ impl ArmedGrenade {
         } else {
             vec2(-600., -200.)
         };
-
-        let world = storage::get_mut::<GameWorld>();
 
         let grenade_mount_pos = if facing {
             vec2(30., 10.)

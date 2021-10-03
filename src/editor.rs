@@ -1,5 +1,3 @@
-use std::path::Path;
-
 mod camera;
 
 pub use camera::EditorCamera;
@@ -7,21 +5,19 @@ pub use camera::EditorCamera;
 pub mod gui;
 
 use gui::{
+    GuiElement,
+    CreateLayerWindow,
+    CreateTilesetWindow,
     EditorDrawParams,
     EditorGui,
     context_menu::{
         ContextMenuEntry,
     },
-    toolbars::{
-        ToolbarPosition,
-        Toolbar,
-    }
 };
 
 mod actions;
-pub use actions::UndoableAction;
-
 use actions::{
+    UndoableAction,
     Result,
     EditorAction,
     SetLayerDrawOrderIndex,
@@ -32,6 +28,7 @@ use actions::{
     PlaceTile,
     RemoveTile,
 };
+
 mod input;
 
 mod history;
@@ -40,7 +37,6 @@ use history::EditorHistory;
 pub use input::EditorInputScheme;
 
 use input::{
-    EditorInput,
     collect_editor_input,
 };
 
@@ -48,7 +44,6 @@ use macroquad::{
     experimental::{
         scene::{
             Node,
-            Handle,
             RefMut,
         },
         collections::storage,
@@ -60,10 +55,8 @@ use crate::{
     map::{
         Map,
         MapLayerKind,
-        ObjectLayerKind,
     },
 };
-use crate::editor::gui::GuiElement;
 
 pub struct Editor {
     map: Map,
@@ -169,11 +162,7 @@ impl Editor {
             }
             EditorAction::OpenCreateLayerWindow => {
                 let mut gui = storage::get_mut::<EditorGui>();
-                gui.open_create_layer_window();
-            }
-            EditorAction::CloseCreateLayerWindow => {
-                let mut gui = storage::get_mut::<EditorGui>();
-                gui.close_create_layer_window();
+                gui.add_window(CreateLayerWindow::new());
             }
             EditorAction::SelectLayer(id) => {
                 if self.map.layers.contains_key(&id) {
@@ -200,11 +189,7 @@ impl Editor {
             }
             EditorAction::OpenCreateTilesetWindow => {
                 let mut gui = storage::get_mut::<EditorGui>();
-                gui.open_create_tileset_window();
-            }
-            EditorAction::CloseCreateTilesetWindow => {
-                let mut gui = storage::get_mut::<EditorGui>();
-                gui.close_create_tileset_window();
+                gui.add_window(CreateTilesetWindow::new());
             }
             EditorAction::SelectTileset(id) => {
                 if self.map.tilesets.contains_key(&id) {

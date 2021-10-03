@@ -25,17 +25,30 @@ pub struct EditorSkinCollection {
 }
 
 impl EditorSkinCollection {
+    pub const WINDOW_MARGIN_LEFT: f32 = 20.0;
+    pub const WINDOW_MARGIN_RIGHT: f32 = 20.0;
+    pub const WINDOW_MARGIN_TOP: f32 = 20.0;
+    pub const WINDOW_MARGIN_BOTTOM: f32 = 20.0;
+
     pub fn new() -> Self {
 
         let default = {
+            let window_background_margin = RectOffset::new(52.0, 52.0, 52.0, 52.0);
+            let window_margin = RectOffset::new(
+                Self::WINDOW_MARGIN_LEFT - window_background_margin.left,
+                Self::WINDOW_MARGIN_RIGHT - window_background_margin.right,
+                Self::WINDOW_MARGIN_TOP - window_background_margin.top,
+                Self::WINDOW_MARGIN_BOTTOM - window_background_margin.bottom,
+            );
+
             let window_style = root_ui()
                 .style_builder()
                 .background(Image::from_file_with_format(
                     include_bytes!("../../../assets/ui/window_background_2.png"),
                     None,
                 ))
-                .background_margin(RectOffset::new(52.0, 52.0, 52.0, 52.0))
-                .margin(RectOffset::new(-30.0, -30.0, -30.0, -30.0))
+                .background_margin(window_background_margin)
+                .margin(window_margin)
                 .build();
 
             let group_style = root_ui()

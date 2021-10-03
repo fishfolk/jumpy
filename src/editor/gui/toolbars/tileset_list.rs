@@ -93,7 +93,7 @@ impl ToolbarElement for TilesetList {
 
         let mut position = Vec2::ZERO;
 
-        let button_size = vec2(size.x * 0.25, Toolbar::MENUBAR_HEIGHT);
+        let button_size = vec2(size.x * 0.25, size.y);
 
         let create_btn = widgets::Button::new("+")
             .size(button_size)

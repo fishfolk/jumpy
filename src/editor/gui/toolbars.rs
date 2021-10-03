@@ -202,7 +202,6 @@ impl Toolbar {
                         }
 
                         if let Some(action) = element.draw(ui, element_content_size, map, draw_params) {
-                            // If this is not handled in this way, the result doesn't register, for some reason...
                             res = Some(action);
                         }
                     });
@@ -218,7 +217,6 @@ impl Toolbar {
 
                     widgets::Group::new(hash!(params.id, "menubar"), menubar_size).position(menubar_position).ui(ui, |ui| {
                         if let Some(action) = element.draw_menubar(ui, menubar_size, map, draw_params) {
-                            // If this is not handled in this way, the result doesn't register, for some reason...
                             res = Some(action);
                         }
                     });
@@ -234,17 +232,3 @@ impl Toolbar {
     }
 }
 
-pub fn create_left_toolbar(width: f32) -> Toolbar {
-    Toolbar::new(ToolbarPosition::Left, width)
-}
-
-const LAYER_LIST_HEIGHT_FACTOR: f32 = 0.2;
-const TILESET_LIST_HEIGHT_FACTOR: f32 = 0.3;
-const TILESET_DETAILS_HEIGHT_FACTOR: f32 = 0.5;
-
-pub fn create_right_toolbar(width: f32) -> Toolbar {
-    Toolbar::new(ToolbarPosition::Right, width)
-        .with_element(LAYER_LIST_HEIGHT_FACTOR, LayerList::new())
-        .with_element(TILESET_LIST_HEIGHT_FACTOR, TilesetList::new())
-        .with_element(TILESET_DETAILS_HEIGHT_FACTOR, TilesetDetails::new())
-}

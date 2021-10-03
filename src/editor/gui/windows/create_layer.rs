@@ -136,11 +136,16 @@ impl CreateLayerWindow {
                 }
 
                 if ui.button(None, "Create") && is_existing_id == false {
-                    res = Some(EditorAction::CreateLayer {
-                        id: self.layer_id.clone(),
-                        kind: self.layer_kind,
-                        draw_order_index: None,
-                    });
+                    let batch = EditorAction::batch(&[
+                        EditorAction::CloseCreateLayerWindow,
+                        EditorAction::CreateLayer {
+                            id: self.layer_id.clone(),
+                            kind: self.layer_kind,
+                            draw_order_index: None,
+                        }
+                    ]);
+
+                    res = Some(batch);
                 }
 
                 ui.same_line(0.0);

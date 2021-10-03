@@ -37,8 +37,9 @@ use toolbars::{
     Toolbar,
     ToolbarElement,
     ToolbarElementParams,
-    create_left_toolbar,
-    create_right_toolbar,
+    LayerList,
+    TilesetList,
+    TilesetDetails,
 };
 
 use windows::{
@@ -81,9 +82,17 @@ impl EditorGui {
     const LEFT_TOOLBAR_WIDTH: f32 = 50.0;
     const RIGHT_TOOLBAR_WIDTH: f32 = 250.0;
 
+    const LAYER_LIST_HEIGHT_FACTOR: f32 = 0.2;
+    const TILESET_LIST_HEIGHT_FACTOR: f32 = 0.3;
+    const TILESET_DETAILS_HEIGHT_FACTOR: f32 = 0.5;
+
     pub fn new() -> Self {
-        let left_toolbar = create_left_toolbar(Self::LEFT_TOOLBAR_WIDTH);
-        let right_toolbar = create_right_toolbar(Self::RIGHT_TOOLBAR_WIDTH);
+        let left_toolbar = Toolbar::new(ToolbarPosition::Left, Self::LEFT_TOOLBAR_WIDTH);
+
+        let right_toolbar = Toolbar::new(ToolbarPosition::Right, Self::RIGHT_TOOLBAR_WIDTH)
+            .with_element(Self::LAYER_LIST_HEIGHT_FACTOR, LayerList::new())
+            .with_element(Self::TILESET_LIST_HEIGHT_FACTOR, TilesetList::new())
+            .with_element(Self::TILESET_DETAILS_HEIGHT_FACTOR, TilesetDetails::new());
 
         EditorGui {
             left_toolbar,
@@ -163,28 +172,30 @@ impl EditorGui {
         let ui = &mut root_ui();
         ui.push_skin(&gui_resources.editor_skins.default);
 
-        res = self.left_toolbar.draw(ui, map, &params);
-        res = self.right_toolbar.draw(ui, map, &params);
+        if let Some(action) = self.left_toolbar.draw(ui, map, &params) {
+            res = Some(action);
+        }
+
+        if let Some(action) = self.right_toolbar.draw(ui, map, &params) {
+            res = Some(action);
+        }
 
         if let Some(window) = &mut self.create_layer_window {
-            res = window.draw(ui, map, &params);
-            if res.is_some() {
-                self.create_layer_window = None;
+            if let Some(action) = window.draw(ui, map, &params) {
+                res = Some(action)
             }
         }
 
         if let Some(window) = &mut self.create_tileset_window {
-            res = window.draw(ui, map, &params);
-            if res.is_some() {
-                self.create_tileset_window = None;
+            if let Some(action) = window.draw(ui, map, &params) {
+                res = Some(action);
             }
         }
 
         if let Some(context_menu) = &mut self.context_menu {
-            let was_some = res.is_some();
-            res = context_menu.draw(ui);
-            if was_some == false && res.is_some() {
+            if let Some(action) = context_menu.draw(ui) {
                 self.context_menu = None;
+                res = Some(action);
             }
         }
 

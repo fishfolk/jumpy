@@ -115,10 +115,15 @@ impl CreateTilesetWindow {
                 }
 
                 if ui.button(None, "Create") && is_existing_id == false {
-                    res = Some(EditorAction::CreateTileset {
-                        id: self.tileset_id.clone(),
-                        texture_id: self.texture_id.clone(),
-                    });
+                    let batch = EditorAction::batch(&[
+                        EditorAction::CloseCreateTilesetWindow,
+                        EditorAction::CreateTileset {
+                            id: self.tileset_id.clone(),
+                            texture_id: self.texture_id.clone(),
+                        }
+                    ]);
+
+                    res = Some(batch);
                 }
 
                 ui.same_line(0.0);

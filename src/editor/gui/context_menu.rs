@@ -178,8 +178,8 @@ fn draw_entries(ui: &mut Ui, position: Vec2, entries: &mut [ContextMenuEntry]) -
                     ContextMenuEntry::Separator => {
                         widgets::Group::new(hash!(), size)
                             .position(entry_position)
-                            .ui(ui, |ui| {
-                                // TODO: draw separator
+                            .ui(ui, |_ui| {
+                                // TODO: Draw texture
                             });
                     }
                     ContextMenuEntry::Action { label, action } => {

@@ -35,8 +35,6 @@ pub struct TilesetDetails {
 }
 
 impl TilesetDetails {
-    const MIN_TILE_WIDTH: f32 = 48.0;
-
     pub fn new() -> Box<Self> {
         let params = ToolbarElementParams {
             id: hash!("tileset_details"),
@@ -132,7 +130,7 @@ impl ToolbarElement for TilesetDetails {
         let mut position = Vec2::ZERO;
 
         {
-            let button_size = vec2(size.x * 0.25, Toolbar::MENUBAR_HEIGHT);
+            let button_size = vec2(size.x * 0.25, size.y);
 
             let zoom_in_btn = widgets::Button::new("+")
                 .size(button_size)
@@ -161,7 +159,7 @@ impl ToolbarElement for TilesetDetails {
             position.x += button_size.x;
         }
 
-        let button_size = vec2(size.x * 0.5, Toolbar::MENUBAR_HEIGHT);
+        let button_size = vec2(size.x * 0.5, size.y);
 
         let advanced_btn = widgets::Button::new("advanced")
             .size(button_size)

@@ -142,14 +142,22 @@ impl Editor {
 
     // This applies an `EditorAction`. This is to be used, exclusively, in stead of, for example,
     // applying `UndoableActions` directly on the `History` of `Editor`.
-    fn apply_action(&mut self, action: EditorAction) -> Result {
+    fn apply_action(&mut self, action: EditorAction) {
         //println!("Action: {:?}", action);
+
+        let mut res = Ok(());
+
         match action {
+            EditorAction::Batch(actions) => {
+                for action in actions {
+                    self.apply_action(action)
+                }
+            }
             EditorAction::Undo => {
-                return self.history.undo(&mut self.map);
+                res = self.history.undo(&mut self.map);
             }
             EditorAction::Redo => {
-                return self.history.redo(&mut self.map);
+                res = self.history.redo(&mut self.map);
             }
             EditorAction::SelectTile { id, tileset_id } => {
                 if let Some(tileset) = self.map.tilesets.get(&tileset_id) {
@@ -174,11 +182,11 @@ impl Editor {
             }
             EditorAction::SetLayerDrawOrderIndex { id, index } => {
                 let action = SetLayerDrawOrderIndex::new(id, index);
-                return self.history.apply(Box::new(action), &mut self.map);
+                res = self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::CreateLayer { id, kind, draw_order_index } => {
                 let action = CreateLayer::new(id.clone(), kind, draw_order_index);
-                return self.history.apply(Box::new(action), &mut self.map);
+                res = self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::DeleteLayer(id) => {
                 if let Some(selected_id) = &self.selected_layer {
@@ -188,7 +196,7 @@ impl Editor {
                 }
 
                 let action = DeleteLayer::new(id.clone());
-                return self.history.apply(Box::new(action), &mut self.map);
+                res = self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::OpenCreateTilesetWindow => {
                 let mut gui = storage::get_mut::<EditorGui>();
@@ -205,7 +213,7 @@ impl Editor {
             }
             EditorAction::CreateTileset { id, texture_id } => {
                 let action = CreateTileset::new(id, texture_id);
-                return self.history.apply(Box::new(action), &mut self.map);
+                res = self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::DeleteTileset(id) => {
                 if let Some(selected_id) = &self.selected_tileset {
@@ -216,19 +224,21 @@ impl Editor {
                 }
 
                 let action = DeleteTileset::new(id);
-                return self.history.apply(Box::new(action), &mut self.map);
+                res = self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::PlaceTile { id, layer_id, tileset_id, coords } => {
                 let action = PlaceTile::new(id, layer_id, tileset_id, coords);
-                return self.history.apply(Box::new(action), &mut self.map);
+                res = self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::RemoveTile { layer_id, coords } => {
                 let action = RemoveTile::new(layer_id, coords);
-                return self.history.apply(Box::new(action), &mut self.map);
+                res = self.history.apply(Box::new(action), &mut self.map);
             }
         }
 
-        Ok(())
+        if let Err(err) = res {
+            panic!("EditorAction Error: {}", err);
+        }
     }
 }
 
@@ -258,13 +268,9 @@ impl Node for Editor {
         };
 
         if input.undo {
-            if let Err(err) = node.apply_action(EditorAction::Undo) {
-                panic!("EditorAction Error: {}", err);
-            }
+            node.apply_action(EditorAction::Undo);
         } else if input.redo {
-            if let Err(err) = node.apply_action(EditorAction::Redo) {
-                panic!("EditorAction Error: {}", err);
-            }
+            node.apply_action(EditorAction::Redo);
         }
 
         if input.action {
@@ -289,9 +295,7 @@ impl Node for Editor {
                                         coords,
                                     };
 
-                                    if let Err(err) = node.apply_action(action) {
-                                        panic!("EditorAction Error: {}", err);
-                                    }
+                                    node.apply_action(action);
                                 }
                             }
                             MapLayerKind::ObjectLayer(..) => {
@@ -363,15 +367,13 @@ impl Node for Editor {
             selected_tile: node.selected_tile,
         };
 
-        let action = {
+        let res = {
             let mut gui = storage::get_mut:: < EditorGui>();
             gui.draw(&node.map, params)
         };
 
-        if let Some(action) = action {
-            if let Err(err) = node.apply_action(action) {
-                panic!("EditorAction Error: {}", err)
-            }
+        if let Some(action) = res {
+            node.apply_action(action);
 
             let mut gui = storage::get_mut:: < EditorGui>();
             gui.close_context_menu();

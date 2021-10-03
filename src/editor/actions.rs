@@ -22,8 +22,11 @@ use crate::{
     }
 };
 
+// These are all the actions available for the GUI and other sub-systems of the editor.
+// If you need to perform multiple actions in one call, use the `Batch` variant.
 #[derive(Debug, Clone)]
 pub enum EditorAction {
+    Batch(Vec<EditorAction>),
     Undo,
     Redo,
     SelectTile {
@@ -61,6 +64,12 @@ pub enum EditorAction {
         layer_id: String,
         coords: UVec2,
     },
+}
+
+impl EditorAction {
+    pub fn batch(actions: &[EditorAction]) -> Self {
+        Self::Batch(actions.to_vec())
+    }
 }
 
 pub type Error = &'static str;

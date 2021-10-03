@@ -59,7 +59,7 @@ impl Gun {
                 }],
                 false,
             ),
-            resources.items_textures["sniper/gun"],
+            resources.items_textures["musket/gun"],
             MUSKET_COLLIDER_WIDTH,
         );
 

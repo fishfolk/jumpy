@@ -80,7 +80,7 @@ pub const ITEMS: &[Item] = &[
         tiled_name: "sniper",
         constructor: gun::Gun::spawn_sniper,
         tiled_offset: (-35., -25.),
-        textures: &[("gun", "assets/Whale/Gun(92x32).png")],
+        textures: &[("gun", "assets/Whale/Sniper(92x32).png")],
         sounds: &[],
         fxses: &[],
         network_ready: true,

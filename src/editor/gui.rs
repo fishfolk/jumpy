@@ -33,9 +33,10 @@ use crate::{
 };
 
 use toolbars::{
-    ToolbarElementBuilder,
     ToolbarPosition,
     Toolbar,
+    ToolbarElement,
+    ToolbarElementParams,
     create_left_toolbar,
     create_right_toolbar,
 };

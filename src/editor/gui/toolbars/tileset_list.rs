@@ -15,33 +15,47 @@ use super::{
     GuiResources,
     Toolbar,
     ToolbarElement,
-    ToolbarElementBuilder,
+    ToolbarElementParams,
     EditorDrawParams,
     EditorAction,
     Map,
 };
 
-pub fn create_tileset_list_element(width: f32, height_factor: f32) -> ToolbarElement {
-    ToolbarElementBuilder::new(width, height_factor)
-        .with_header("Tilesets")
-        .with_menubar(draw_tileset_list_menubar)
-        .build(hash!("tileset_list"), draw_tileset_list_element)
+pub struct TilesetList {
+    params: ToolbarElementParams,
 }
 
-fn draw_tileset_list_element(ui: &mut Ui, id: Id, size: Vec2, map: &Map, params: &EditorDrawParams) -> Option<EditorAction> {
-    let mut res = None;
+impl TilesetList {
+    pub fn new() -> Box<Self> {
+        let params = ToolbarElementParams {
+            id: hash!("tileset_list"),
+            header: Some("Tilesets".to_string()),
+            has_menubar: true,
+            has_margins: false,
+        };
 
-    let entry_size = vec2(size.x, Toolbar::LIST_ENTRY_HEIGHT);
-    let mut position = Vec2::ZERO;
+        Box::new(TilesetList {
+            params,
+        })
+    }
+}
 
-    let gui_resources = storage::get::<GuiResources>();
-    ui.push_skin(&gui_resources.editor_skins.menu);
+impl ToolbarElement for TilesetList {
+    fn get_params(&self) -> ToolbarElementParams {
+        self.params.clone()
+    }
 
-    widgets::Group::new(hash!(id, "main_group"), size).position(position).ui(ui, |ui| {
+    fn draw(&mut self, ui: &mut Ui, size: Vec2, map: &Map, draw_params: &EditorDrawParams) -> Option<EditorAction> {
+        let mut res = None;
+
+        let entry_size = vec2(size.x, Toolbar::LIST_ENTRY_HEIGHT);
         let mut position = Vec2::ZERO;
 
+        let gui_resources = storage::get::<GuiResources>();
+        ui.push_skin(&gui_resources.editor_skins.menu);
+
         for (id, _) in &map.tilesets {
-            let is_selected = if let Some(selected_id) = &params.selected_tileset {
+            let is_selected = if let Some(selected_id) = &draw_params.selected_tileset {
                 id == selected_id
             } else {
                 false
@@ -68,41 +82,41 @@ fn draw_tileset_list_element(ui: &mut Ui, id: Id, size: Vec2, map: &Map, params:
 
             position.y += entry_size.y;
         }
-    });
 
-    ui.pop_skin();
+        ui.pop_skin();
 
-    res
-}
-
-fn draw_tileset_list_menubar(ui: &mut Ui, _id: Id, size: Vec2, _map: &Map, params: &EditorDrawParams) -> Option<EditorAction> {
-    let mut res = None;
-
-    let mut position = Vec2::ZERO;
-
-    let button_size = vec2(size.x * 0.25, Toolbar::MENUBAR_HEIGHT);
-
-    let create_btn = widgets::Button::new("+")
-        .size(button_size)
-        .position(position)
-        .ui(ui);
-
-    if create_btn {
-        res = Some(EditorAction::OpenCreateTilesetWindow);
+        res
     }
 
-    position.x += button_size.x;
+    fn draw_menubar(&mut self, ui: &mut Ui, size: Vec2, _map: &Map, draw_params: &EditorDrawParams) -> Option<EditorAction> {
+        let mut res = None;
 
-    let delete_btn = widgets::Button::new("-")
-        .size(button_size)
-        .position(position)
-        .ui(ui);
+        let mut position = Vec2::ZERO;
 
-    if delete_btn {
-        if let Some(id) = params.selected_tileset.clone() {
-            res = Some(EditorAction::DeleteTileset(id));
+        let button_size = vec2(size.x * 0.25, Toolbar::MENUBAR_HEIGHT);
+
+        let create_btn = widgets::Button::new("+")
+            .size(button_size)
+            .position(position)
+            .ui(ui);
+
+        if create_btn {
+            res = Some(EditorAction::OpenCreateTilesetWindow);
         }
-    }
 
-    res
+        position.x += button_size.x;
+
+        let delete_btn = widgets::Button::new("-")
+            .size(button_size)
+            .position(position)
+            .ui(ui);
+
+        if delete_btn {
+            if let Some(id) = draw_params.selected_tileset.clone() {
+                res = Some(EditorAction::DeleteTileset(id));
+            }
+        }
+
+        res
+    }
 }

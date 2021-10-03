@@ -24,31 +24,44 @@ use super::{
     Map,
     GuiResources,
     Toolbar,
+    ToolbarElementParams,
     ToolbarElement,
-    ToolbarElementBuilder,
     EditorAction,
     EditorDrawParams,
 };
 
-pub fn create_tileset_details_element(width: f32, height_factor: f32) -> ToolbarElement {
-    ToolbarElementBuilder::new(width, height_factor)
-        .with_menubar(draw_tileset_details_menubar)
-        .with_margins()
-        .build(hash!("tileset_details"), draw_tileset_details_element)
+pub struct TilesetDetails {
+    params: ToolbarElementParams,
 }
 
-fn draw_tileset_details_element(ui: &mut Ui, id: Id, size: Vec2, map: &Map, params: &EditorDrawParams) -> Option<EditorAction> {
-    let mut res = None;
+impl TilesetDetails {
+    const MIN_TILE_WIDTH: f32 = 48.0;
 
-    let mut position = Vec2::ZERO;
+    pub fn new() -> Box<Self> {
+        let params = ToolbarElementParams {
+            id: hash!("tileset_details"),
+            header: None,
+            has_menubar: true,
+            has_margins: true,
+        };
 
-    let gui_resources = storage::get::<GuiResources>();
-    ui.push_skin(&gui_resources.editor_skins.menu);
+        Box::new(TilesetDetails {
+            params,
+        })
+    }
+}
 
-    widgets::Group::new(hash!(id, "main_group"), size).position(position).ui(ui, |ui| {
+impl ToolbarElement for TilesetDetails {
+    fn get_params(&self) -> ToolbarElementParams {
+        self.params.clone()
+    }
+
+    fn draw(&mut self, ui: &mut Ui, size: Vec2, map: &Map, draw_params: &EditorDrawParams) -> Option<EditorAction> {
+        let mut res = None;
+
         let mut position = Vec2::ZERO;
 
-        if let Some(id) = &params.selected_tileset {
+        if let Some(id) = &draw_params.selected_tileset {
             let tileset = map.tilesets.get(id).unwrap();
 
             let texture = {
@@ -56,23 +69,26 @@ fn draw_tileset_details_element(ui: &mut Ui, id: Id, size: Vec2, map: &Map, para
                 resources.textures.get(&tileset.texture_id).cloned().unwrap()
             };
 
-            let width = size.x - (ELEMENT_MARGIN * 2.0);
-            let height = (width / texture.width()) * texture.height();
+            let grid_size = vec2(tileset.grid_size.x as f32, tileset.grid_size.y as f32);
 
-            let cell_size = vec2(width / tileset.grid_size.x as f32, height / tileset.grid_size.y as f32);
+            let scaled_width = size.x;
+            let scaled_height = (scaled_width / texture.width()) * texture.height();
+
+            let scaled_tile_size = vec2(scaled_width / grid_size.x, scaled_height / grid_size.y);
 
             widgets::Texture::new(texture)
                 .position(position)
-                .size(width, height)
+                .size(scaled_width, scaled_height)
                 .ui(ui);
 
+            let gui_resources = storage::get::<GuiResources>();
             ui.push_skin(&gui_resources.editor_skins.toolbar_tileset_grid);
 
             for y in 0..tileset.grid_size.y {
                 for x in 0..tileset.grid_size.x {
                     let tile_id = y * tileset.grid_size.x + x;
 
-                    let is_selected = if let Some(selected) = params.selected_tile {
+                    let is_selected = if let Some(selected) = draw_params.selected_tile {
                         selected == tile_id
                     } else {
                         false
@@ -82,10 +98,10 @@ fn draw_tileset_details_element(ui: &mut Ui, id: Id, size: Vec2, map: &Map, para
                         ui.push_skin(&gui_resources.editor_skins.toolbar_tileset_grid_selected);
                     }
 
-                    let position = vec2(x as f32, y as f32) * cell_size;
+                    let position = vec2(x as f32, y as f32) * scaled_tile_size;
 
                     let button = widgets::Button::new("")
-                        .size(cell_size)
+                        .size(scaled_tile_size)
                         .position(position)
                         .ui(ui);
 
@@ -104,45 +120,60 @@ fn draw_tileset_details_element(ui: &mut Ui, id: Id, size: Vec2, map: &Map, para
 
             ui.pop_skin();
 
-            position.y += height + Toolbar::MARGIN;
+            position.y += scaled_height + Toolbar::MARGIN;
         }
-    });
 
-    ui.pop_skin();
-
-    res
-}
-
-fn draw_tileset_details_menubar(ui: &mut Ui, id: Id, size: Vec2, _map: &Map, params: &EditorDrawParams) -> Option<EditorAction> {
-    let mut res = None;
-
-    let mut position = Vec2::ZERO;
-
-    let button_size = vec2(size.x * 0.5, Toolbar::MENUBAR_HEIGHT);
-
-    let attributes_btn = widgets::Button::new("attributes")
-        .size(button_size)
-        .position(position)
-        .ui(ui);
-
-    if attributes_btn {
-        if let Some(tileset_id) = params.selected_tileset.clone() {
-            //res = Some(EditorAction::OpenTileAttributesWindow(tileset_id));
-        }
+        res
     }
 
-    position.x += button_size.x;
+    fn draw_menubar(&mut self, ui: &mut Ui, size: Vec2, _map: &Map, draw_params: &EditorDrawParams) -> Option<EditorAction> {
+        let mut res = None;
 
-    let advanced_btn = widgets::Button::new("advanced")
-        .size(button_size)
-        .position(position)
-        .ui(ui);
+        let mut position = Vec2::ZERO;
 
-    if advanced_btn {
-        if let Some(tileset_id) = params.selected_tileset.clone() {
-            //res = Some(EditorAction::OpenTilesetPropertiesWindow(tileset_id));
+        {
+            let button_size = vec2(size.x * 0.25, Toolbar::MENUBAR_HEIGHT);
+
+            let zoom_in_btn = widgets::Button::new("+")
+                .size(button_size)
+                .position(position)
+                .ui(ui);
+
+            if zoom_in_btn {
+                if let Some(tileset_id) = draw_params.selected_tileset.clone() {
+                    //res = Some(EditorAction::OpenTileAttributesWindow(tileset_id));
+                }
+            }
+
+            position.x += button_size.x;
+
+            let zoom_out_btn = widgets::Button::new("-")
+                .size(button_size)
+                .position(position)
+                .ui(ui);
+
+            if zoom_out_btn {
+                if let Some(tileset_id) = draw_params.selected_tileset.clone() {
+                    //res = Some(EditorAction::OpenTileAttributesWindow(tileset_id));
+                }
+            }
+
+            position.x += button_size.x;
         }
-    }
 
-    res
+        let button_size = vec2(size.x * 0.5, Toolbar::MENUBAR_HEIGHT);
+
+        let advanced_btn = widgets::Button::new("advanced")
+            .size(button_size)
+            .position(position)
+            .ui(ui);
+
+        if advanced_btn {
+            if let Some(tileset_id) = draw_params.selected_tileset.clone() {
+                //res = Some(EditorAction::OpenTilesetPropertiesWindow(tileset_id));
+            }
+        }
+
+        res
+    }
 }

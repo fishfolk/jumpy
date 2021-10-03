@@ -22,107 +22,43 @@ use crate::{
     },
 };
 
-mod builder;
-pub use builder::{
-    ToolbarDrawFunc,
-    ToolbarElementBuilder
-};
-
 use super::ELEMENT_MARGIN;
 
 mod layer_list;
-pub use layer_list::create_layer_list_element;
+pub use layer_list::LayerList;
 
 mod tileset_list;
-pub use tileset_list::create_tileset_list_element;
+pub use tileset_list::TilesetList;
 
 mod tileset_details;
-pub use tileset_details::create_tileset_details_element;
+pub use tileset_details::TilesetDetails;
 
-#[derive(Clone)]
-pub struct  ToolbarElement {
+#[derive(Debug, Clone)]
+pub struct ToolbarElementParams {
     id: Id,
     header: Option<String>,
-    width: f32,
-    height_factor: f32,
-    draw_func: ToolbarDrawFunc,
-    menubar_draw_func: Option<ToolbarDrawFunc>,
+    has_menubar: bool,
     has_margins: bool,
 }
 
-impl ToolbarElement {
-    pub fn get_height(&self) -> f32 {
-        screen_height() * self.height_factor
+impl Default for ToolbarElementParams {
+    fn default() -> Self {
+        ToolbarElementParams {
+            id: hash!(),
+            header: None,
+            has_menubar: false,
+            has_margins: false,
+        }
     }
+}
 
-    pub fn get_size(&self) -> Vec2 {
-        let x = self.width;
-        let y = self.get_height();
-        vec2(x, y)
-    }
+pub trait ToolbarElement {
+    fn get_params(&self) -> ToolbarElementParams;
 
-    pub fn draw(&self, ui: &mut Ui, toolbar: ToolbarPosition, map: &Map, params: &EditorDrawParams) -> Option<EditorAction> {
-        let mut res = None;
+    fn draw(&mut self, ui: &mut Ui, size: Vec2, map: &Map, draw_params: &EditorDrawParams) -> Option<EditorAction>;
 
-        let mut position = Vec2::ZERO;
-        let mut size = self.get_size();
-
-        if let Some(header) = &self.header {
-            let gui_resources = storage::get::<GuiResources>();
-            ui.push_skin(&gui_resources.editor_skins.toolbar_header_bg);
-
-            let header_height= ui.calc_size(header).y;
-
-            {
-                let size = vec2(size.x, header_height);
-
-                widgets::Button::new("").position(position).size(size).ui(ui);
-                ui.label(position, header);
-            }
-
-            size.y -= header_height;
-            position.y += header_height;
-
-            ui.pop_skin();
-        }
-
-        if self.menubar_draw_func.is_some() {
-            size.y -= Toolbar::MENUBAR_TOTAL_HEIGHT;
-        }
-
-        if self.has_margins {
-            size.x -= ELEMENT_MARGIN;
-            position.x += ELEMENT_MARGIN;
-        }
-
-        widgets::Group::new(hash!(self.id, "element"), size).position(position).ui(ui, |ui| {
-            if let Some(action) = (self.draw_func)(ui, self.id, size, map, params) {
-                // If this is not handled in this way, the result doesn't register, for some reason...
-                res = Some(action);
-            }
-        });
-
-        if let Some(draw_func) = self.menubar_draw_func {
-            position.y += size.y + ELEMENT_MARGIN;
-
-            let mut size = vec2(size.x, Toolbar::MENUBAR_HEIGHT);
-
-            if self.has_margins {
-                size.x -= ELEMENT_MARGIN;
-            } else {
-                size.x -= ELEMENT_MARGIN * 2.0;
-                position.x += ELEMENT_MARGIN;
-            }
-
-            widgets::Group::new(hash!(self.id, "menubar"), size).position(position).ui(ui, |ui| {
-               if let Some(action) = (draw_func)(ui, self.id, size, map, params) {
-                   // If this is not handled in this way, the result doesn't register, for some reason...
-                   res = Some(action);
-               }
-            });
-        }
-
-        res
+    fn draw_menubar(&mut self, _ui: &mut Ui, _size: Vec2, _map: &Map, _draw_params: &EditorDrawParams) -> Option<EditorAction> {
+        None
     }
 }
 
@@ -135,7 +71,7 @@ pub enum ToolbarPosition {
 pub struct Toolbar {
     pub width: f32,
     position: ToolbarPosition,
-    elements: Vec<ToolbarElement>,
+    elements: Vec<(f32, Box<dyn ToolbarElement>)>,
 }
 
 impl Toolbar {
@@ -145,14 +81,26 @@ impl Toolbar {
     pub const MENUBAR_HEIGHT: f32 = 25.0;
     pub const MENUBAR_TOTAL_HEIGHT: f32 = Self::MENUBAR_HEIGHT + (Self::MARGIN * 2.0);
 
-    pub fn new(position: ToolbarPosition, width: f32, elements: &[ToolbarElement]) -> Self {
-        let elements = elements.to_vec();
-
+    pub fn new(position: ToolbarPosition, width: f32) -> Self {
         Toolbar {
             position,
             width,
-            elements,
+            elements: Vec::new(),
         }
+    }
+
+    pub fn with_element(self, height_factor: f32, element: Box<dyn ToolbarElement>) -> Self {
+        let mut elements = self.elements;
+        elements.push((height_factor, element));
+
+        Toolbar {
+            elements,
+            ..self
+        }
+    }
+
+    pub fn add_element(&mut self, height_factor: f32, element: Box<dyn ToolbarElement>) {
+        self.elements.push((height_factor, element))
     }
 
     pub fn get_rect(&self) -> Rect {
@@ -169,47 +117,114 @@ impl Toolbar {
         rect.contains(point)
     }
 
-    pub fn draw(&mut self, ui: &mut Ui, map: &Map, params: &EditorDrawParams) -> Option<EditorAction> {
+    pub fn draw(&mut self, ui: &mut Ui, map: &Map, draw_params: &EditorDrawParams) -> Option<EditorAction> {
         let mut res = None;
 
-        let gui_resources = storage::get::<GuiResources>();
-        ui.push_skin(&gui_resources.editor_skins.toolbar);
+        {
+            let gui_resources = storage::get::<GuiResources>();
+            ui.push_skin(&gui_resources.editor_skins.toolbar);
+        }
 
         let mut position = Vec2::ZERO;
         if self.position == ToolbarPosition::Right {
             position.x += screen_width() - self.width;
         }
 
-        let size = vec2(self.width, screen_height());
+        let toolbar_size = vec2(self.width, screen_height());
 
         {
             let mut total_height_factor = 0.0;
-            for element in &self.elements {
-                total_height_factor += element.height_factor;
+            for (height_factor, _) in &self.elements {
+                total_height_factor += *height_factor;
             }
 
             assert!(total_height_factor <= 1.0, "Total height factor of all toolbar elements exceed 1.0");
         }
 
-        widgets::Group::new(hash!(self.position, "toolbar", "main_group"), size).position(position).ui(ui, |ui| {
+        widgets::Group::new(hash!(self.position, "toolbar"), toolbar_size).position(position).ui(ui, |ui| {
             let mut position = Vec2::ZERO;
 
-            ui.push_skin(&gui_resources.editor_skins.toolbar_bg);
-            widgets::Button::new("").position(position).size(size).ui(ui);
-            ui.pop_skin();
+            {
+                let gui_resources = storage::get::<GuiResources>();
+                ui.push_skin(&gui_resources.editor_skins.toolbar_bg);
+                widgets::Button::new("").position(position).size(toolbar_size).ui(ui);
+                ui.pop_skin();
+            }
 
-            for element in &mut self.elements {
-                let size = element.get_size();
-                let toolbar = self.position;
+            for (height_factor, element) in &mut self.elements {
+                let height_factor = *height_factor;
 
-                widgets::Group::new(hash!(self.position, element.id, "group"), size).position(position).ui(ui, |ui| {
-                    if let Some(action) = element.draw(ui, toolbar, map, params) {
-                        // If this is not handled in this way, the result doesn't register, for some reason...
-                        res = Some(action);
+                let element_size = {
+                    let height = screen_height() * height_factor;
+                    vec2(self.width, height)
+                };
+
+                let element_position = position;
+                let mut element_content_position = element_position;
+                let mut element_content_size = element_size;
+
+                let params = element.get_params();
+                if let Some(header) = params.header {
+                    let gui_resources = storage::get::<GuiResources>();
+                    ui.push_skin(&gui_resources.editor_skins.toolbar_header_bg);
+
+                    let header_height= ui.calc_size(&header).y;
+
+                    {
+                        let size = vec2(toolbar_size.x, header_height);
+
+                        widgets::Button::new("").position(element_position).size(size).ui(ui);
+                        ui.label(element_position, &header);
                     }
-                });
 
-                position.y += size.y;
+                    element_content_size.y -= header_height;
+                    element_content_position.y += header_height;
+
+                    ui.pop_skin();
+                }
+
+                if params.has_menubar {
+                    element_content_size.y -= Toolbar::MENUBAR_TOTAL_HEIGHT;
+                }
+
+                if params.has_margins {
+                    element_content_size.x -= ELEMENT_MARGIN;
+                    element_content_position.x += ELEMENT_MARGIN;
+                }
+
+                {
+                    let has_margins = params.has_margins;
+
+                    widgets::Group::new(hash!(params.id, "element"), element_content_size).position(element_content_position).ui(ui, |ui| {
+                        if has_margins {
+                            // This is done here so that scrollbar is pushed to edge of screen, even when the element has margins
+                            element_content_size.x -= ELEMENT_MARGIN;
+                        }
+
+                        if let Some(action) = element.draw(ui, element_content_size, map, draw_params) {
+                            // If this is not handled in this way, the result doesn't register, for some reason...
+                            res = Some(action);
+                        }
+                    });
+                }
+
+                if params.has_menubar {
+                    let mut menubar_position = vec2(element_position.x, element_content_position.y);
+                    menubar_position.y += element_content_size.y + ELEMENT_MARGIN;
+                    menubar_position.x += ELEMENT_MARGIN;
+
+                    let mut menubar_size = vec2(element_size.x, Toolbar::MENUBAR_HEIGHT);
+                    menubar_size.x -= ELEMENT_MARGIN * 2.0;
+
+                    widgets::Group::new(hash!(params.id, "menubar"), menubar_size).position(menubar_position).ui(ui, |ui| {
+                        if let Some(action) = element.draw_menubar(ui, menubar_size, map, draw_params) {
+                            // If this is not handled in this way, the result doesn't register, for some reason...
+                            res = Some(action);
+                        }
+                    });
+                }
+
+                position.y += element_size.y;
             }
         });
 
@@ -220,8 +235,7 @@ impl Toolbar {
 }
 
 pub fn create_left_toolbar(width: f32) -> Toolbar {
-    Toolbar::new(ToolbarPosition::Left, width, &[
-    ])
+    Toolbar::new(ToolbarPosition::Left, width)
 }
 
 const LAYER_LIST_HEIGHT_FACTOR: f32 = 0.2;
@@ -229,9 +243,8 @@ const TILESET_LIST_HEIGHT_FACTOR: f32 = 0.3;
 const TILESET_DETAILS_HEIGHT_FACTOR: f32 = 0.5;
 
 pub fn create_right_toolbar(width: f32) -> Toolbar {
-    Toolbar::new(ToolbarPosition::Right, width, &[
-        create_layer_list_element(width, LAYER_LIST_HEIGHT_FACTOR),
-        create_tileset_list_element(width, TILESET_LIST_HEIGHT_FACTOR),
-        create_tileset_details_element(width, TILESET_DETAILS_HEIGHT_FACTOR),
-    ])
+    Toolbar::new(ToolbarPosition::Right, width)
+        .with_element(LAYER_LIST_HEIGHT_FACTOR, LayerList::new())
+        .with_element(TILESET_LIST_HEIGHT_FACTOR, TilesetList::new())
+        .with_element(TILESET_DETAILS_HEIGHT_FACTOR, TilesetDetails::new())
 }

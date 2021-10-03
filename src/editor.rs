@@ -13,7 +13,6 @@ use gui::{
         ContextMenuEntry,
     },
     toolbars::{
-        ToolbarElementBuilder,
         ToolbarPosition,
         Toolbar,
     }
@@ -141,6 +140,8 @@ impl Editor {
         None
     }
 
+    // This applies an `EditorAction`. This is to be used, exclusively, in stead of, for example,
+    // applying `UndoableActions` directly on the `History` of `Editor`.
     fn apply_action(&mut self, action: EditorAction) -> Result {
         //println!("Action: {:?}", action);
         match action {

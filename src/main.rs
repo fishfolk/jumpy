@@ -15,9 +15,11 @@ use macroquad::{
     },
 };
 
-use macroquad_platformer::Tile;
+use macroquad_platformer::{Tile};
+use particles::{Emitter, EmittersCache};
 
-use particles::EmittersCache;
+use std::env;
+
 mod capabilities;
 mod gui;
 mod input;
@@ -91,7 +93,7 @@ impl GameWorld {
                                 CollisionKind::Barrier => {
                                     static_colliders[i] = Tile::Solid;
                                 }
-                                CollisionKind::None => {},
+                                CollisionKind::None => {}
                             }
                         }
                     }
@@ -120,12 +122,16 @@ struct Resources {
     hit_fxses: EmittersCache,
     explosion_fxses: EmittersCache,
     life_ui_explosion_fxses: EmittersCache,
+    fx_explosion_fire: Emitter,
+    fx_explosion_particles: EmittersCache,
+    fx_smoke: Emitter,
     whale_green: Texture2D,
     whale_blue: Texture2D,
     whale_boots_blue: Texture2D,
     whale_boots_green: Texture2D,
     broken_turtleshell: Texture2D,
     turtleshell: Texture2D,
+    flappy_jellyfish: Texture2D,
     background_01: Texture2D,
     background_02: Texture2D,
     background_03: Texture2D,
@@ -146,63 +152,107 @@ struct Resources {
 
 impl Resources {
     // TODO: fix macroquad error type here
-    async fn new() -> Result<Resources, macroquad::prelude::FileError> {
-        let tileset = load_texture("assets/tileset.png").await?;
+    async fn new(assets_dir: &str) -> Result<Resources, macroquad::prelude::FileError> {
+        let tileset = load_texture(&format!("{}/assets/tileset.png", assets_dir)).await?;
         tileset.set_filter(FilterMode::Nearest);
 
-        let decorations = load_texture("assets/decorations1.png").await?;
+        let decorations = load_texture(&format!("{}/assets/decorations1.png", assets_dir)).await?;
         decorations.set_filter(FilterMode::Nearest);
 
-        let whale_green = load_texture("assets/Whale/Whale(76x66)(Green).png").await?;
+        let whale_green = load_texture(&format!(
+            "{}/assets/Whale/Whale(76x66)(Green).png",
+            assets_dir
+        ))
+            .await?;
         whale_green.set_filter(FilterMode::Nearest);
 
-        let whale_blue = load_texture("assets/Whale/Whale(76x66)(Blue).png").await?;
+        let whale_blue = load_texture(&format!(
+            "{}/assets/Whale/Whale(76x66)(Blue).png",
+            assets_dir
+        ))
+            .await?;
         whale_blue.set_filter(FilterMode::Nearest);
 
-        let whale_boots_green = load_texture("assets/Whale/WhaleBoots(76x66)(Green).png").await?;
+        let whale_boots_green = load_texture(&format!(
+            "{}/assets/Whale/WhaleBoots(76x66)(Green).png",
+            assets_dir
+        ))
+            .await?;
         whale_boots_green.set_filter(FilterMode::Nearest);
 
-        let whale_boots_blue = load_texture("assets/Whale/WhaleBoots(76x66)(Blue).png").await?;
+        let whale_boots_blue = load_texture(&format!(
+            "{}/assets/Whale/WhaleBoots(76x66)(Blue).png",
+            assets_dir
+        ))
+            .await?;
         whale_boots_blue.set_filter(FilterMode::Nearest);
 
-        let broken_turtleshell = load_texture("assets/Whale/BrokenTurtleShell(32x32).png").await?;
+        let broken_turtleshell = load_texture(&format!(
+            "{}/assets/Whale/BrokenTurtleShell(32x32).png",
+            assets_dir
+        ))
+            .await?;
         broken_turtleshell.set_filter(FilterMode::Nearest);
 
-        let turtleshell = load_texture("assets/Whale/TurtleShell(32x32).png").await?;
+        let turtleshell = load_texture(&format!(
+            "{}/assets/Whale/TurtleShell(32x32).png",
+            assets_dir
+        ))
+            .await?;
         turtleshell.set_filter(FilterMode::Nearest);
 
-        let background_01 = load_texture("assets/Background/01.png").await?;
+        let flappy_jellyfish = load_texture(&format!(
+            "{}/assets/Whale/FlappyJellyfish(34x47).png",
+            assets_dir
+        ))
+            .await?;
+        flappy_jellyfish.set_filter(FilterMode::Nearest);
+
+        let background_01 =
+            load_texture(&format!("{}/assets/Background/01.png", assets_dir)).await?;
         background_01.set_filter(FilterMode::Nearest);
 
-        let background_02 = load_texture("assets/Background/02.png").await?;
+        let background_02 =
+            load_texture(&format!("{}/assets/Background/02.png", assets_dir)).await?;
         background_02.set_filter(FilterMode::Nearest);
 
-        let background_03 = load_texture("assets/Background/03.png").await?;
+        let background_03 =
+            load_texture(&format!("{}/assets/Background/03.png", assets_dir)).await?;
         background_03.set_filter(FilterMode::Nearest);
 
-        let jump_sound = load_sound("assets/sounds/jump.wav").await?;
-        let shoot_sound = load_sound("assets/sounds/shoot.ogg").await?;
-        let sword_sound = load_sound("assets/sounds/sword.wav").await?;
-        let pickup_sound = load_sound("assets/sounds/pickup.wav").await?;
-        let player_landing_sound = load_sound("assets/sounds/player_landing.wav").await?;
-        let player_throw_sound = load_sound("assets/sounds/throw_noiz.wav").await?;
-        let player_die_sound = load_sound("assets/sounds/fish_fillet.wav").await?;
+        let jump_sound = load_sound(&format!("{}/assets/sounds/jump.wav", assets_dir)).await?;
+        let shoot_sound = load_sound(&format!("{}/assets/sounds/shoot.ogg", assets_dir)).await?;
+        let sword_sound = load_sound(&format!("{}/assets/sounds/sword.wav", assets_dir)).await?;
+        let pickup_sound = load_sound(&format!("{}/assets/sounds/pickup.wav", assets_dir)).await?;
+        let player_landing_sound =
+            load_sound(&format!("{}/assets/sounds/player_landing.wav", assets_dir)).await?;
+        let player_throw_sound =
+            load_sound(&format!("{}/assets/sounds/throw_noiz.wav", assets_dir)).await?;
+        let player_die_sound =
+            load_sound(&format!("{}/assets/sounds/fish_fillet.wav", assets_dir)).await?;
 
         const HIT_FX: &str = include_str!("../assets/fxses/hit.json");
         const EXPLOSION_FX: &str = include_str!("../assets/fxses/explosion.json");
         const LIFE_UI_FX: &str = include_str!("../assets/fxses/life_ui_explosion.json");
-
+        const CANNONBALL_HIT_FX: &str = include_str!("../assets/fxses/canonball_hit.json");
+        const EXPLOSION_PARTICLES: &str = include_str!("../assets/fxses/explosion_particles.json");
+        const SMOKE_FX: &str = include_str!("../assets/fxses/smoke.json");
         let hit_fxses = EmittersCache::new(nanoserde::DeJson::deserialize_json(HIT_FX).unwrap());
         let explosion_fxses =
             EmittersCache::new(nanoserde::DeJson::deserialize_json(EXPLOSION_FX).unwrap());
         let life_ui_explosion_fxses =
             EmittersCache::new(nanoserde::DeJson::deserialize_json(LIFE_UI_FX).unwrap());
+        let fx_explosion_fire =
+            Emitter::new(nanoserde::DeJson::deserialize_json(CANNONBALL_HIT_FX).unwrap());
+        let fx_explosion_particles =
+            EmittersCache::new(nanoserde::DeJson::deserialize_json(EXPLOSION_PARTICLES).unwrap());
+        let fx_smoke = Emitter::new(nanoserde::DeJson::deserialize_json(SMOKE_FX).unwrap());
 
         let mut items_textures = HashMap::new();
         let mut items_fxses = HashMap::new();
         for item in items::ITEMS {
             for (id, path) in item.textures {
-                let texture = load_texture(path).await?;
+                let texture = load_texture(&format!("{}/{}", assets_dir, path)).await?;
                 texture.set_filter(FilterMode::Nearest);
                 items_textures.insert(format!("{}/{}", item.tiled_name, id.to_string()), texture);
             }
@@ -227,6 +277,7 @@ impl Resources {
             hit_fxses,
             explosion_fxses,
             life_ui_explosion_fxses,
+            fx_smoke,
             items_fxses,
             whale_blue,
             whale_green,
@@ -234,6 +285,7 @@ impl Resources {
             whale_boots_green,
             turtleshell,
             broken_turtleshell,
+            flappy_jellyfish,
             background_01,
             background_02,
             background_03,
@@ -247,14 +299,41 @@ impl Resources {
             player_die_sound,
             items_textures,
             textures,
+            fx_explosion_fire,
+            fx_explosion_particles,
         })
     }
 }
 
-async fn setup_game_scene(map: Map, is_local_game: bool) -> Vec<Handle<Player>> {
+async fn setup_game_scene(map: Map, assets_dir: &str, is_local_game: bool) -> Vec<Handle<Player>> {
     use nodes::{Camera, SceneRenderer, Decoration, Fxses};
 
-    let battle_music = load_sound("assets/music/fish tide.ogg").await.unwrap();
+    let resources_loading = start_coroutine({
+        let assets_dir = assets_dir.to_string();
+        async move {
+            let resources = Resources::new(&assets_dir).await.unwrap();
+            storage::store(resources);
+        }
+    });
+
+    while !resources_loading.is_done() {
+        clear_background(BLACK);
+        draw_text(
+            &format!(
+                "Loading resources {}",
+                ".".repeat(((get_time() * 2.0) as usize) % 4)
+            ),
+            screen_width() / 2.0 - 160.0,
+            screen_height() / 2.0,
+            40.,
+            WHITE,
+        );
+
+        next_frame().await;
+    }
+
+    let battle_music =
+        load_sound(&format!("{}/assets/music/fish tide.ogg", assets_dir)).await.unwrap();
 
     audio::play_sound(
         battle_music,
@@ -312,14 +391,14 @@ async fn setup_game_scene(map: Map, is_local_game: bool) -> Vec<Handle<Player>> 
     players
 }
 
-async fn game(map: Map, game_type: GameType) {
+async fn game(map: Map, game_type: GameType, assets_dir: &str) {
     use nodes::{LocalNetwork, Network};
 
     match game_type {
         GameType::Local(players_input) => {
             assert_eq!(players_input.len(), 2, "There should be two player input schemes for this game mode!");
 
-            let players = setup_game_scene(map, true).await;
+            let players = setup_game_scene(map, assets_dir, true).await;
             scene::add_node(LocalNetwork::new(players_input, players[0], players[1]));
         }
         GameType::Editor {
@@ -336,7 +415,7 @@ async fn game(map: Map, game_type: GameType) {
             socket,
             id,
         } => {
-            let players = setup_game_scene(map, false).await;
+            let players = setup_game_scene(map, assets_dir, false).await;
             scene::add_node(Network::new(id, socket, input_scheme, players[0], players[1]));
         }
     }
@@ -363,16 +442,18 @@ fn window_conf() -> Conf {
 
 #[macroquad::main(window_conf)]
 async fn main() {
+    let assets_dir = env::var("FISHFIGHT_ASSETS").unwrap_or_else(|_| String::from("."));
     {
-        let gui_resources = gui::GuiResources::load().await;
+        let gui_resources = gui::GuiResources::load(&assets_dir).await;
         storage::store(gui_resources);
     }
 
     rand::srand(0);
 
     let resources_loading = start_coroutine({
+        let assets_dir = assets_dir.clone();
         async move {
-            let resources = Resources::new().await.unwrap();
+            let resources = Resources::new(&assets_dir).await.unwrap();
             storage::store(resources);
         }
     });
@@ -400,7 +481,7 @@ async fn main() {
             GameType::Local(..) => {
                 let level = gui::main_menu::location_select().await;
                 Map::load_tiled(&level.map, None).await.unwrap()
-            },
+            }
             GameType::Editor { is_new_map, .. } => {
                 if *is_new_map {
                     let (name, tile_size, grid_size) = gui::main_menu::new_map().await;
@@ -416,10 +497,10 @@ async fn main() {
             }
             GameType::Network { .. } => {
                 Map::load_tiled("assets/levels/lev01.json", None).await.unwrap()
-            },
+            }
         };
 
-        game(map, game_type).await;
+        game(map, game_type, &assets_dir).await;
 
         scene::clear();
     }

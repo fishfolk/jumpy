@@ -237,7 +237,7 @@ impl Editor {
         }
 
         if let Err(err) = res {
-            panic!("EditorAction Error: {}", err);
+            panic!("Error: {}", err);
         }
     }
 }

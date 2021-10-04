@@ -33,8 +33,10 @@ jobs:
       fail-fast: false
       matrix:
         config:
+          - { os: ubuntu-latest, target: 'x86_64-unknown-linux-gnu' }
           - { os: macos-latest, target: 'x86_64-apple-darwin' }
           - { os: windows-latest, target: 'x86_64-pc-windows-msvc' }
+        profile: ['' , --release]
 
     steps:
       - uses: actions/checkout@v2
@@ -49,5 +51,5 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --target=${{ matrix.config.target }}
+          args: --target=${{ matrix.config.target }} ${{ matrix.profile }}
             

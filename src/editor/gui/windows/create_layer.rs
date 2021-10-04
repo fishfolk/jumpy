@@ -63,13 +63,14 @@ impl Window for CreateLayerWindow {
 
         let mut action = None;
         if is_existing_id == false {
-            let editor_action = EditorAction::CreateLayer {
+            let batch = self.get_close_action()
+                .then(EditorAction::CreateLayer {
                 id: self.layer_id.clone(),
                 kind: self.layer_kind,
                 draw_order_index: None,
-            };
+            });
 
-            action = Some(self.get_close_then_action(editor_action));
+            action = Some(batch);
         }
 
         res.push(ButtonParams {
@@ -87,7 +88,7 @@ impl Window for CreateLayerWindow {
         res
     }
 
-    fn draw(&mut self, ui: &mut Ui, _size: Vec2, map: &Map, _params: &EditorDrawParams) -> Option<EditorAction> {
+    fn draw(&mut self, ui: &mut Ui, _size: Vec2, _map: &Map, _params: &EditorDrawParams) -> Option<EditorAction> {
         let id = hash!("create_layer_window");
 
         {

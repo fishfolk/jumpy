@@ -1,6 +1,5 @@
 use std::{
     any::{
-        Any,
         TypeId,
     },
     collections::HashMap,
@@ -40,8 +39,6 @@ use crate::{
 use toolbars::{
     ToolbarPosition,
     Toolbar,
-    ToolbarElement,
-    ToolbarElementParams,
     LayerListElement,
     TilesetListElement,
     TilesetDetailsElement,
@@ -49,7 +46,6 @@ use toolbars::{
 
 use windows::{
     Window,
-    WindowParams,
 };
 
 pub use windows::{
@@ -63,7 +59,6 @@ use context_menu::{
     ContextMenu,
     ContextMenuEntry,
 };
-use std::ops::Deref;
 
 pub const NO_COLOR: Color = Color::new(0.0, 0.0, 0.0, 0.0);
 

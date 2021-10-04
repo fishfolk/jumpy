@@ -69,8 +69,6 @@ impl Jellyfish {
     const COLLIDER_HEIGHT: f32 = 39.;
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
-        let resources = storage::get::<Resources>();
-
         let sprite = AnimatedSprite::new(
             30,
             39,

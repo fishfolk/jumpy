@@ -2,7 +2,7 @@ use macroquad::math::Vec2;
 use macroquad::prelude::{collections::storage, get_frame_time};
 use macroquad_platformer::Tile;
 
-use crate::{Resources, GameWorld};
+use crate::GameWorld;
 
 use crate::components::PhysicsBody;
 

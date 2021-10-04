@@ -54,11 +54,12 @@ impl Window for ConfirmDialog {
     fn get_buttons(&self, _map: &Map, _draw_params: &EditorDrawParams) -> Vec<ButtonParams> {
         let mut res = Vec::new();
 
-        let confirm_action = self.confirm_action.clone();
+        let action = self.get_close_action()
+            .then(self.confirm_action.clone());
 
         res.push(ButtonParams {
             label: Self::CONFIRM_LABEL,
-            action: Some(self.get_close_then_action(confirm_action)),
+            action: Some(action),
             ..Default::default()
         });
 

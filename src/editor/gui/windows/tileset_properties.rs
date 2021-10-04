@@ -144,10 +144,13 @@ impl Window for TilesetPropertiesWindow {
             }
 
             if self.has_data {
-                let mut position = Vec2::ZERO;
+                {
+                    let size = size;
+                    let position = Vec2::ZERO;
 
-                if let Some(action) = self.draw_autotile_settings(ui, position, size, tileset) {
-                    return Some(action);
+                    if let Some(action) = self.draw_autotile_settings(ui, position, size, tileset) {
+                        return Some(action);
+                    }
                 }
             }
         }
@@ -161,11 +164,15 @@ impl Window for TilesetPropertiesWindow {
         let id = self.tileset_id.clone();
         let autotile_mask = self.autotile_mask.clone();
 
-        let action = EditorAction::UpdateTilesetAutotileMask { id, autotile_mask };
+        let action = self.get_close_action()
+            .then(EditorAction::UpdateTilesetAutotileMask {
+                id,
+                autotile_mask
+            });
 
         res.push(ButtonParams {
             label: "Save",
-            action: Some(self.get_close_then_action(action)),
+            action: Some(action),
             ..Default::default()
         });
 

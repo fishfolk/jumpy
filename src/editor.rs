@@ -10,9 +10,6 @@ use gui::{
     CreateTilesetWindow,
     EditorDrawParams,
     EditorGui,
-    context_menu::{
-        ContextMenuEntry,
-    },
 };
 
 mod actions;

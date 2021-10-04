@@ -1,14 +1,10 @@
 use std::{
-    collections::HashMap,
-    any::{Any, TypeId},
-    result,
-    error,
+    any::TypeId,
 };
 
 use macroquad::{
     ui::{
         Ui,
-        widgets,
     },
     prelude::*,
 };
@@ -29,7 +25,6 @@ use super::{
     ButtonParams,
     EditorAction,
     EditorDrawParams,
-    ELEMENT_MARGIN,
 };
 
 #[derive(Debug, Copy, Clone)]
@@ -115,12 +110,5 @@ pub trait Window {
     fn get_close_action(&self) -> EditorAction where Self: 'static {
         let id = TypeId::of::<Self>();
         EditorAction::CloseWindow(id)
-    }
-
-    fn get_close_then_action(&self, then_action: EditorAction) -> EditorAction where Self: 'static {
-        EditorAction::batch(&[
-            self.get_close_action(),
-            then_action,
-        ])
     }
 }

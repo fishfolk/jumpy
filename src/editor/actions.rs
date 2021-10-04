@@ -1,5 +1,7 @@
+
 use std::{
     result,
+    any::TypeId,
 };
 
 use macroquad::{
@@ -8,7 +10,6 @@ use macroquad::{
     },
     prelude::*,
 };
-
 use crate::{
     Resources,
     map::{
@@ -19,7 +20,6 @@ use crate::{
         MapTileset,
     },
 };
-use std::any::{TypeId, Any};
 use crate::editor::gui::windows::Window;
 
 // These are all the actions available for the GUI and other sub-systems of the editor.
@@ -80,9 +80,9 @@ impl EditorAction {
         EditorAction::CloseWindow(id)
     }
 
-    pub fn close_window_then<T: Window + ?Sized + 'static>(action: EditorAction) -> Self {
-        EditorAction::batch(&[
-            EditorAction::close_window::<T>(),
+    pub fn then(self, action: EditorAction) -> Self {
+        Self::batch(&[
+            self,
             action,
         ])
     }

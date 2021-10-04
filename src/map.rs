@@ -465,14 +465,14 @@ impl MapTileset {
         );
 
 
-        let tile_subdivisions = Self::default_tile_subdivisions();;
+        let tile_subdivisions = Self::default_tile_subdivisions();
 
         let subtile_grid_size = grid_size * tile_subdivisions;
 
         let subtile_cnt = (subtile_grid_size.x * subtile_grid_size.y) as usize;
         let mut autotile_mask = Vec::with_capacity(subtile_cnt);
 
-        for i in 0..subtile_cnt {
+        for _ in 0..subtile_cnt {
             autotile_mask.push(false);
         }
 

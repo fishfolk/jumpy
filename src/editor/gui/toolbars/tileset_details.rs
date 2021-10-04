@@ -17,7 +17,6 @@ use super::{
     Map,
     GuiResources,
     ButtonParams,
-    Toolbar,
     ToolbarElementParams,
     ToolbarElement,
     EditorAction,

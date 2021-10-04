@@ -4,7 +4,6 @@ mod style;
 
 use nanoserde::{
     Toml,
-    TomlParser,
 };
 
 pub use style::SkinCollection;

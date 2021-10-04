@@ -1,6 +1,5 @@
 use std::{
     any::{
-        Any,
         TypeId,
     },
     collections::HashMap,
@@ -143,7 +142,7 @@ impl Toolbar {
 
         {
             let mut total_height_factor = 0.0;
-            for (id, height_factor) in &self.draw_order {
+            for (_, height_factor) in &self.draw_order {
                 total_height_factor += *height_factor;
             }
 
@@ -163,7 +162,7 @@ impl Toolbar {
             }
 
             for (element_id, height_factor) in self.draw_order.clone() {
-                let mut element = self.elements.get_mut(&element_id).unwrap();
+                let element = self.elements.get_mut(&element_id).unwrap();
 
                 let params = element.get_params().clone();
 

@@ -162,50 +162,50 @@ impl Resources {
         let whale_green = load_texture(&format!(
             "{}/assets/Whale/Whale(76x66)(Green).png",
             assets_dir
-        ))
-            .await?;
+        )).await?;
+
         whale_green.set_filter(FilterMode::Nearest);
 
         let whale_blue = load_texture(&format!(
             "{}/assets/Whale/Whale(76x66)(Blue).png",
             assets_dir
-        ))
-            .await?;
+        )).await?;
+
         whale_blue.set_filter(FilterMode::Nearest);
 
         let whale_boots_green = load_texture(&format!(
             "{}/assets/Whale/WhaleBoots(76x66)(Green).png",
             assets_dir
-        ))
-            .await?;
+        )).await?;
+
         whale_boots_green.set_filter(FilterMode::Nearest);
 
         let whale_boots_blue = load_texture(&format!(
             "{}/assets/Whale/WhaleBoots(76x66)(Blue).png",
             assets_dir
-        ))
-            .await?;
+        )).await?;
+
         whale_boots_blue.set_filter(FilterMode::Nearest);
 
         let broken_turtleshell = load_texture(&format!(
             "{}/assets/Whale/BrokenTurtleShell(32x32).png",
             assets_dir
-        ))
-            .await?;
+        )).await?;
+
         broken_turtleshell.set_filter(FilterMode::Nearest);
 
         let turtleshell = load_texture(&format!(
             "{}/assets/Whale/TurtleShell(32x32).png",
             assets_dir
-        ))
-            .await?;
+        )).await?;
+
         turtleshell.set_filter(FilterMode::Nearest);
 
         let flappy_jellyfish = load_texture(&format!(
             "{}/assets/Whale/FlappyJellyfish(34x47).png",
             assets_dir
-        ))
-            .await?;
+        )).await?;
+
         flappy_jellyfish.set_filter(FilterMode::Nearest);
 
         let background_01 =

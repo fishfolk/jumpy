@@ -62,12 +62,13 @@ impl Window for CreateTilesetWindow {
 
         let mut action = None;
         if is_existing_id == false {
-            let editor_action = EditorAction::CreateTileset {
-                id: self.tileset_id.clone(),
-                texture_id: self.texture_id.clone(),
-            };
+            let batch = self.get_close_action()
+                .then(EditorAction::CreateTileset {
+                    id: self.tileset_id.clone(),
+                    texture_id: self.texture_id.clone(),
+                });
 
-            action = Some(self.get_close_then_action(editor_action));
+            action = Some(batch);
         }
 
         res.push(ButtonParams {
@@ -85,7 +86,7 @@ impl Window for CreateTilesetWindow {
         res
     }
 
-    fn draw(&mut self, ui: &mut Ui, _size: Vec2, map: &Map, _draw_params: &EditorDrawParams) -> Option<EditorAction> {
+    fn draw(&mut self, ui: &mut Ui, _size: Vec2, _map: &Map, _draw_params: &EditorDrawParams) -> Option<EditorAction> {
         let id = hash!("create_tileset_element");
 
         let resources = storage::get::<Resources>();

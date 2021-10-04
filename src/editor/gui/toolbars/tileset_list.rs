@@ -18,28 +18,54 @@ use super::{
     EditorAction,
     Map,
 };
+use crate::editor::gui::ButtonParams;
 
 pub struct TilesetListElement {
     params: ToolbarElementParams,
 }
 
 impl TilesetListElement {
-    pub fn new() -> Box<Self> {
+    pub fn new() -> Self {
         let params = ToolbarElementParams {
             header: Some("Tilesets".to_string()),
-            has_menubar: true,
+            has_buttons: true,
             has_margins: false,
         };
 
-        Box::new(TilesetListElement {
+        TilesetListElement {
             params,
-        })
+        }
     }
 }
 
 impl ToolbarElement for TilesetListElement {
-    fn get_params(&self) -> ToolbarElementParams {
-        self.params.clone()
+    fn get_params(&self) -> &ToolbarElementParams {
+        &self.params
+    }
+
+    fn get_buttons(&self, _map: &Map, draw_params: &EditorDrawParams) -> Vec<ButtonParams> {
+        let mut res = Vec::new();
+
+        let mut action = None;
+        if let Some(tileset_id) = draw_params.selected_tileset.clone() {
+            action = Some(EditorAction::DeleteTileset(tileset_id));
+        }
+
+        res.push(ButtonParams {
+            label: "+",
+            width_override: Some(0.25),
+            action: Some(EditorAction::OpenCreateTilesetWindow),
+            ..Default::default()
+        });
+
+        res.push(ButtonParams {
+            label: "-",
+            width_override: Some(0.25),
+            action,
+            ..Default::default()
+        });
+
+        res
     }
 
     fn draw(&mut self, ui: &mut Ui, size: Vec2, map: &Map, draw_params: &EditorDrawParams) -> Option<EditorAction> {
@@ -81,38 +107,6 @@ impl ToolbarElement for TilesetListElement {
         }
 
         ui.pop_skin();
-
-        res
-    }
-
-    fn draw_menubar(&mut self, ui: &mut Ui, size: Vec2, _map: &Map, draw_params: &EditorDrawParams) -> Option<EditorAction> {
-        let mut res = None;
-
-        let mut position = Vec2::ZERO;
-
-        let button_size = vec2(size.x * 0.25, size.y);
-
-        let create_btn = widgets::Button::new("+")
-            .size(button_size)
-            .position(position)
-            .ui(ui);
-
-        if create_btn {
-            res = Some(EditorAction::OpenCreateTilesetWindow);
-        }
-
-        position.x += button_size.x;
-
-        let delete_btn = widgets::Button::new("-")
-            .size(button_size)
-            .position(position)
-            .ui(ui);
-
-        if delete_btn {
-            if let Some(id) = draw_params.selected_tileset.clone() {
-                res = Some(EditorAction::DeleteTileset(id));
-            }
-        }
 
         res
     }

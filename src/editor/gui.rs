@@ -1,3 +1,11 @@
+use std::{
+    any::{
+        Any,
+        TypeId,
+    },
+    collections::HashMap,
+};
+
 pub mod windows;
 pub mod toolbars;
 pub mod context_menu;
@@ -42,29 +50,52 @@ use toolbars::{
 use windows::{
     Window,
     WindowParams,
-    WindowResult,
 };
 
 pub use windows::{
     ConfirmDialog,
     CreateLayerWindow,
     CreateTilesetWindow,
+    TilesetPropertiesWindow,
 };
 
 use context_menu::{
     ContextMenu,
     ContextMenuEntry,
 };
+use std::ops::Deref;
 
 pub const NO_COLOR: Color = Color::new(0.0, 0.0, 0.0, 0.0);
 
 pub const ELEMENT_MARGIN: f32 = 8.0;
+
+pub const WINDOW_BUTTON_HEIGHT: f32 = 32.0;
+
+pub const WINDOW_BUTTON_MIN_WIDTH: f32 = 64.0;
+pub const WINDOW_BUTTON_MAX_WIDTH: f32 = 96.0;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum GuiElement {
     ContextMenu,
     Toolbar,
     Window,
+}
+
+#[derive(Debug, Clone)]
+pub struct ButtonParams {
+    pub label: &'static str,
+    pub width_override: Option<f32>,
+    pub action: Option<EditorAction>,
+}
+
+impl Default for ButtonParams {
+    fn default() -> Self {
+        ButtonParams {
+            label: "",
+            width_override: None,
+            action: None,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -77,7 +108,7 @@ pub struct EditorDrawParams {
 pub struct EditorGui {
     left_toolbar: Toolbar,
     right_toolbar: Toolbar,
-    open_windows: Vec<Box<dyn Window>>,
+    open_windows: HashMap<TypeId, Box<dyn Window>>,
     context_menu: Option<ContextMenu>,
 }
 
@@ -85,8 +116,8 @@ impl EditorGui {
     const LEFT_TOOLBAR_WIDTH: f32 = 50.0;
     const RIGHT_TOOLBAR_WIDTH: f32 = 250.0;
 
-    const LAYER_LIST_HEIGHT_FACTOR: f32 = 0.2;
-    const TILESET_LIST_HEIGHT_FACTOR: f32 = 0.3;
+    const LAYER_LIST_HEIGHT_FACTOR: f32 = 0.3;
+    const TILESET_LIST_HEIGHT_FACTOR: f32 = 0.2;
     const TILESET_DETAILS_HEIGHT_FACTOR: f32 = 0.5;
 
     pub fn new() -> Self {
@@ -100,7 +131,7 @@ impl EditorGui {
         EditorGui {
             left_toolbar,
             right_toolbar,
-            open_windows: Vec::new(),
+            open_windows: HashMap::new(),
             context_menu: None,
         }
     }
@@ -116,7 +147,7 @@ impl EditorGui {
             return Some(GuiElement::Toolbar);
         }
 
-        for window in &self.open_windows {
+        for (_, window) in &self.open_windows {
             if window.contains(position) {
                 return Some(GuiElement::Window);
             }
@@ -142,8 +173,20 @@ impl EditorGui {
         self.context_menu = None;
     }
 
-    pub fn add_window(&mut self, window: Box<dyn Window>) {
-        self.open_windows.push(window);
+    pub fn add_window<W: Window + 'static>(&mut self, window: W) {
+        let key = TypeId::of::<W>();
+        if self.open_windows.contains_key(&key) == false {
+            self.open_windows.insert(key, Box::new(window));
+        }
+    }
+
+    pub fn remove_window<W: Window + 'static>(&mut self) {
+        let key = TypeId::of::<W>();
+        self.open_windows.remove(&key).unwrap();
+    }
+
+    pub fn remove_window_id(&mut self, id: TypeId) {
+        self.open_windows.remove(&id).unwrap();
     }
 
     pub fn draw(&mut self, map: &Map, draw_params: EditorDrawParams) -> Option<EditorAction> {
@@ -164,18 +207,13 @@ impl EditorGui {
             res = Some(action);
         }
 
-        let mut i = 0;
-        while i < self.open_windows.len() {
-            let window = self.open_windows.get_mut(i).unwrap();
+        for (id, window) in &mut self.open_windows {
             let params = window.get_params().clone();
 
             let position = params.get_absolute_position();
             let size = params.size;
 
-            let id = hash!("window", i);
-
-            let mut should_close = false;
-            widgets::Window::new(id, position, size).titlebar(false).movable(params.is_static == false).ui(ui, |ui| {
+            widgets::Window::new(hash!(id), position, size).titlebar(false).movable(params.is_static == false).ui(ui, |ui| {
                 let mut content_size = size - vec2(
                     EditorSkinCollection::WINDOW_MARGIN_LEFT + EditorSkinCollection::WINDOW_MARGIN_RIGHT,
                     EditorSkinCollection::WINDOW_MARGIN_TOP + EditorSkinCollection::WINDOW_MARGIN_BOTTOM,
@@ -197,23 +235,57 @@ impl EditorGui {
                     ui.pop_skin();
                 }
 
-                widgets::Group::new(hash!(id, "group"), content_size).position(content_position).ui(ui, |ui| {
-                    if let Some(window_res) = window.draw(ui, size, map, &draw_params) {
-                        if let WindowResult::Action(action) = window_res {
-                            res = Some(action);
-                        }
+                if params.has_buttons {
+                    content_size.y -= WINDOW_BUTTON_HEIGHT + ELEMENT_MARGIN;
+                }
 
-                        should_close = true;
+                widgets::Group::new(hash!(id, "content"), content_size).position(content_position).ui(ui, |ui| {
+                    if let Some(action) = window.draw(ui, content_size, map, &draw_params) {
+                        res = Some(action);
                     }
                 });
+
+                if params.has_buttons {
+                    let button_area_size = vec2(content_size.x, WINDOW_BUTTON_HEIGHT);
+                    let button_area_position = vec2(content_position.x, content_size.y + ELEMENT_MARGIN);
+
+                    widgets::Group::new(hash!(id, "buttons"), button_area_size).position(button_area_position).ui(ui, |ui| {
+                        let mut button_position = Vec2::ZERO;
+
+                        let buttons = window.get_buttons(map, &draw_params);
+
+                        let button_cnt = buttons.len();
+                        let margins = (button_cnt - 1) as f32 * ELEMENT_MARGIN;
+                        let width = ((size.x - margins) / button_cnt as f32)
+                            .clamp(WINDOW_BUTTON_MIN_WIDTH, WINDOW_BUTTON_MAX_WIDTH);
+
+                        let button_size = vec2(width, WINDOW_BUTTON_HEIGHT);
+
+                        for button in buttons {
+                            if button.action.is_none() {
+                                let gui_resources = storage::get::<GuiResources>();
+                                ui.push_skin(&gui_resources.editor_skins.button_disabled);
+                            }
+
+                            let was_clicked = widgets::Button::new(button.label)
+                                .position(button_position)
+                                .size(button_size)
+                                .ui(ui);
+
+
+                            if button.action.is_some() {
+                                if was_clicked {
+                                    res = button.action;
+                                }
+                            } else {
+                                ui.pop_skin();
+                            }
+
+                            button_position.x += button_size.x + ELEMENT_MARGIN;
+                        }
+                    });
+                }
             });
-
-            if should_close {
-                self.open_windows.remove(i);
-                continue;
-            }
-
-            i += 1;
         };
 
         if let Some(context_menu) = &mut self.context_menu {

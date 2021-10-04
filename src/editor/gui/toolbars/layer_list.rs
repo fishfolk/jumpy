@@ -25,28 +25,97 @@ use super::{
     ToolbarElement,
     ToolbarElementParams,
 };
+use crate::editor::gui::ButtonParams;
 
 pub struct LayerListElement {
     params: ToolbarElementParams,
 }
 
 impl LayerListElement {
-    pub fn new() -> Box<Self> {
+    pub fn new() -> Self {
         let params = ToolbarElementParams {
             header: Some("Layers".to_string()),
-            has_menubar: true,
+            has_buttons: true,
             has_margins: false,
         };
 
-        Box::new(LayerListElement {
+        LayerListElement {
             params,
-        })
+        }
     }
 }
 
 impl ToolbarElement for LayerListElement {
-    fn get_params(&self) -> ToolbarElementParams {
-        self.params.clone()
+    fn get_params(&self) -> &ToolbarElementParams {
+        &self.params
+    }
+
+    fn get_buttons(&self, map: &Map, draw_params: &EditorDrawParams) -> Vec<ButtonParams> {
+        let mut res = Vec::new();
+
+        let mut delete_action = None;
+        let mut move_up_action = None;
+        let mut move_down_action = None;
+
+        if let Some(layer_id) = &draw_params.selected_layer {
+            let mut index = None;
+
+            {
+                let mut i = 0;
+                for id in &map.draw_order {
+                    if id == layer_id {
+                        index = Some(i);
+                        break;
+                    }
+
+                    i += 1;
+                }
+            }
+
+            delete_action = Some(EditorAction::DeleteLayer(layer_id.clone()));
+
+            if let Some(index) = index {
+                if index > 0 {
+                    move_up_action = Some(EditorAction::SetLayerDrawOrderIndex {
+                        id: layer_id.clone(),
+                        index: index - 1,
+                    });
+                }
+
+                if index + 1 < map.draw_order.len() {
+                    move_down_action = Some(EditorAction::SetLayerDrawOrderIndex {
+                        id: layer_id.clone(),
+                        index: index + 1,
+                    });
+                }
+            }
+        }
+
+        res.push(ButtonParams {
+            label: "+",
+            action: Some(EditorAction::OpenCreateLayerWindow),
+            ..Default::default()
+        });
+
+        res.push(ButtonParams {
+            label: "-",
+            action: delete_action,
+            ..Default::default()
+        });
+
+        res.push(ButtonParams {
+            label: "Up",
+            action: move_up_action,
+            ..Default::default()
+        });
+
+        res.push(ButtonParams {
+            label: "Down",
+            action: move_down_action,
+            ..Default::default()
+        });
+
+        res
     }
 
     fn draw(&mut self, ui: &mut Ui, size: Vec2, map: &Map, draw_params: &EditorDrawParams) -> Option<EditorAction> {
@@ -109,88 +178,6 @@ impl ToolbarElement for LayerListElement {
         }
 
         ui.pop_skin();
-
-        res
-    }
-
-    fn draw_menubar(&mut self, ui: &mut Ui, size: Vec2, map: &Map, draw_params: &EditorDrawParams) -> Option<EditorAction> {
-        let mut res = None;
-
-        let mut position = Vec2::ZERO;
-
-        let button_size = vec2(size.x * 0.25, size.y);
-
-        let create_btn = widgets::Button::new("+")
-            .size(button_size)
-            .position(position)
-            .ui(ui);
-
-        if create_btn {
-            res = Some(EditorAction::OpenCreateLayerWindow);
-        }
-
-        position.x += button_size.x;
-
-        let delete_btn = widgets::Button::new("-")
-            .size(button_size)
-            .position(position)
-            .ui(ui);
-
-        if delete_btn {
-            if let Some(layer_id) = draw_params.selected_layer.clone() {
-                res = Some(EditorAction::DeleteLayer(layer_id));
-            }
-        }
-
-        position.x += button_size.x;
-
-        let up_btn = widgets::Button::new("Up")
-            .size(button_size)
-            .position(position)
-            .ui(ui);
-
-        if up_btn {
-            if let Some(layer_id) = &draw_params.selected_layer {
-                let mut i = 0;
-                for id in &map.draw_order {
-                    if id == layer_id && i > 0 {
-                        res = Some(EditorAction::SetLayerDrawOrderIndex {
-                            id: layer_id.clone(),
-                            index: i - 1,
-                        });
-
-                        break;
-                    }
-
-                    i += 1;
-                }
-            }
-        }
-
-        position.x += button_size.x;
-
-        let down_btn = widgets::Button::new("Down")
-            .size(button_size)
-            .position(position)
-            .ui(ui);
-
-        if down_btn {
-            if let Some(layer_id) = &draw_params.selected_layer {
-                let mut i = 0;
-                for id in &map.draw_order {
-                    if id == layer_id && i + 1 < map.draw_order.len() {
-                        res = Some(EditorAction::SetLayerDrawOrderIndex {
-                            id: layer_id.clone(),
-                            index: i + 1,
-                        });
-
-                        break;
-                    }
-
-                    i += 1;
-                }
-            }
-        }
 
         res
     }

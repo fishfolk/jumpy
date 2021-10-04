@@ -155,12 +155,23 @@ impl TiledMap {
 
             let mut texture_id = None;
             if let Some(prop) = properties.remove("texture_id") {
-                if let MapProperty::String { value} = prop {
+                if let MapProperty::String { value } = prop {
                     texture_id = Some(value)
                 }
             }
 
             let texture_id = texture_id.expect(&format!("Tiled tileset '{}' needs a 'texture_id' property!", tiled_tileset.name));
+
+            let tile_subdivisions = MapTileset::default_tile_subdivisions();
+
+            let subdivision_grid_size = grid_size * tile_subdivisions;
+
+            let subtile_cnt = (subdivision_grid_size.x * subdivision_grid_size.y) as usize;
+            let mut autotile_mask = Vec::with_capacity(subtile_cnt as usize);
+
+            for _ in 0..subtile_cnt {
+                autotile_mask.push(false);
+            }
 
             let tileset = MapTileset {
                 id: tiled_tileset.name.clone(),
@@ -170,6 +181,8 @@ impl TiledMap {
                 grid_size,
                 first_tile_id: tiled_tileset.firstgid,
                 tile_cnt: tiled_tileset.tilecount,
+                tile_subdivisions,
+                autotile_mask,
                 tile_attributes,
                 properties,
             };
@@ -271,7 +284,7 @@ impl TiledMap {
 
             let mut collision = CollisionKind::None;
             if let Some(prop) = properties.remove(Self::COLLISION_LAYER_PROP) {
-                if let MapProperty::String { value} = prop {
+                if let MapProperty::String { value } = prop {
                     collision = CollisionKind::from(value)
                 }
             }

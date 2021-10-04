@@ -13,6 +13,7 @@ use super::{
 
 pub struct EditorSkinCollection {
     pub default: Skin,
+    pub button_disabled: Skin,
     pub window_header: Skin,
     pub menu: Skin,
     pub menu_selected: Skin,
@@ -20,18 +21,20 @@ pub struct EditorSkinCollection {
     pub toolbar: Skin,
     pub toolbar_bg: Skin,
     pub toolbar_header_bg: Skin,
-    pub toolbar_tileset_grid: Skin,
-    pub toolbar_tileset_grid_selected: Skin,
+    pub toolbar_button_disabled: Skin,
+    pub tileset_grid: Skin,
+    pub tileset_grid_selected: Skin,
+    pub tileset_subtile_grid: Skin,
+    pub tileset_subtile_grid_selected: Skin,
 }
 
 impl EditorSkinCollection {
-    pub const WINDOW_MARGIN_LEFT: f32 = 20.0;
-    pub const WINDOW_MARGIN_RIGHT: f32 = 20.0;
-    pub const WINDOW_MARGIN_TOP: f32 = 20.0;
-    pub const WINDOW_MARGIN_BOTTOM: f32 = 20.0;
+    pub const WINDOW_MARGIN_LEFT: f32 = 32.0;
+    pub const WINDOW_MARGIN_RIGHT: f32 = 32.0;
+    pub const WINDOW_MARGIN_TOP: f32 = 32.0;
+    pub const WINDOW_MARGIN_BOTTOM: f32 = 32.0;
 
     pub fn new() -> Self {
-
         let default = {
             let window_background_margin = RectOffset::new(52.0, 52.0, 52.0, 52.0);
             let window_margin = RectOffset::new(
@@ -164,6 +167,33 @@ impl EditorSkinCollection {
                 scroll_multiplier,
                 margin,
                 ..root_ui().default_skin()
+            }
+        };
+
+        let button_disabled = {
+            let button_style = root_ui()
+                .style_builder()
+                .background(Image::from_file_with_format(
+                    include_bytes!("../../../assets/ui/button_disabled_background.png"),
+                    None,
+                ))
+                .background_margin(RectOffset::new(8.0, 8.0, 12.0, 12.0))
+                .margin(RectOffset::new(8.0, 8.0, -4.0, -4.0))
+                .background_hovered(Image::from_file_with_format(
+                    include_bytes!("../../../assets/ui/button_disabled_background.png"),
+                    None,
+                ))
+                .background_clicked(Image::from_file_with_format(
+                    include_bytes!("../../../assets/ui/button_disabled_background.png"),
+                    None,
+                ))
+                .text_color(Color::from_rgba(88, 88, 88, 255))
+                .font_size(20)
+                .build();
+
+            Skin {
+                button_style,
+                ..default.clone()
             }
         };
 
@@ -323,7 +353,34 @@ impl EditorSkinCollection {
             }
         };
 
-        let toolbar_tileset_grid = {
+        let toolbar_button_disabled = {
+            let button_style = root_ui()
+                .style_builder()
+                .background(Image::from_file_with_format(
+                    include_bytes!("../../../assets/ui/button_disabled_background.png"),
+                    None,
+                ))
+                .background_margin(RectOffset::new(8.0, 8.0, 12.0, 12.0))
+                .margin(RectOffset::new(8.0, 8.0, -4.0, -4.0))
+                .background_hovered(Image::from_file_with_format(
+                    include_bytes!("../../../assets/ui/button_disabled_background.png"),
+                    None,
+                ))
+                .background_clicked(Image::from_file_with_format(
+                    include_bytes!("../../../assets/ui/button_disabled_background.png"),
+                    None,
+                ))
+                .text_color(Color::from_rgba(200, 200, 160, 255))
+                .font_size(20)
+                .build();
+
+            Skin {
+                button_style,
+                ..toolbar.clone()
+            }
+        };
+
+        let tileset_grid = {
             let button_style = root_ui()
                 .style_builder()
                 .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
@@ -339,7 +396,7 @@ impl EditorSkinCollection {
             }
         };
 
-        let toolbar_tileset_grid_selected = {
+        let tileset_grid_selected = {
             let button_style = root_ui()
                 .style_builder()
                 .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
@@ -355,8 +412,42 @@ impl EditorSkinCollection {
             }
         };
 
+
+        let tileset_subtile_grid = {
+            let button_style = root_ui()
+                .style_builder()
+                .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .color(Color::from_rgba(0, 0, 0, 0))
+                .color_hovered(Color::from_rgba(98, 43, 38, 200))
+                .color_clicked(Color::from_rgba(0, 0, 0, 0))
+                .build();
+
+            Skin {
+                button_style,
+                ..toolbar.clone()
+            }
+        };
+
+        let tileset_subtile_grid_selected = {
+            let button_style = root_ui()
+                .style_builder()
+                .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .color(Color::from_rgba(98, 43, 38, 200))
+                .color_hovered(Color::from_rgba(98, 43, 38, 200))
+                .color_clicked(Color::from_rgba(98, 43, 38, 200))
+                .build();
+
+            Skin {
+                button_style,
+                ..toolbar.clone()
+            }
+        };
+
         EditorSkinCollection {
             default,
+            button_disabled,
             window_header,
             menu,
             menu_selected,
@@ -364,8 +455,11 @@ impl EditorSkinCollection {
             toolbar,
             toolbar_bg,
             toolbar_header_bg,
-            toolbar_tileset_grid,
-            toolbar_tileset_grid_selected,
+            toolbar_button_disabled,
+            tileset_grid,
+            tileset_grid_selected,
+            tileset_subtile_grid,
+            tileset_subtile_grid_selected,
         }
     }
 }

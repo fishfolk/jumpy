@@ -25,6 +25,7 @@ use actions::{
     DeleteLayer,
     CreateTileset,
     DeleteTileset,
+    UpdateTilesetAutotileMask,
     PlaceTile,
     RemoveTile,
 };
@@ -57,6 +58,8 @@ use crate::{
         MapLayerKind,
     },
 };
+
+use gui::TilesetPropertiesWindow;
 
 pub struct Editor {
     map: Map,
@@ -152,6 +155,22 @@ impl Editor {
             EditorAction::Redo => {
                 res = self.history.redo(&mut self.map);
             }
+            EditorAction::OpenCreateLayerWindow => {
+                let mut gui = storage::get_mut::<EditorGui>();
+                gui.add_window(CreateLayerWindow::new());
+            }
+            EditorAction::OpenCreateTilesetWindow => {
+                let mut gui = storage::get_mut::<EditorGui>();
+                gui.add_window(CreateTilesetWindow::new());
+            }
+            EditorAction::OpenTilesetPropertiesWindow(tileset_id) => {
+                let mut gui = storage::get_mut::<EditorGui>();
+                gui.add_window(TilesetPropertiesWindow::new(&tileset_id));
+            }
+            EditorAction::CloseWindow(id) => {
+                let mut gui = storage::get_mut::<EditorGui>();
+                gui.remove_window_id(id);
+            }
             EditorAction::SelectTile { id, tileset_id } => {
                 if let Some(tileset) = self.map.tilesets.get(&tileset_id) {
                     if id < tileset.first_tile_id + tileset.tile_cnt {
@@ -159,10 +178,6 @@ impl Editor {
                         self.selected_tile = Some(id);
                     }
                 }
-            }
-            EditorAction::OpenCreateLayerWindow => {
-                let mut gui = storage::get_mut::<EditorGui>();
-                gui.add_window(CreateLayerWindow::new());
             }
             EditorAction::SelectLayer(id) => {
                 if self.map.layers.contains_key(&id) {
@@ -187,10 +202,6 @@ impl Editor {
                 let action = DeleteLayer::new(id.clone());
                 res = self.history.apply(Box::new(action), &mut self.map);
             }
-            EditorAction::OpenCreateTilesetWindow => {
-                let mut gui = storage::get_mut::<EditorGui>();
-                gui.add_window(CreateTilesetWindow::new());
-            }
             EditorAction::SelectTileset(id) => {
                 if self.map.tilesets.contains_key(&id) {
                     self.selected_tileset = Some(id);
@@ -209,6 +220,10 @@ impl Editor {
                 }
 
                 let action = DeleteTileset::new(id);
+                res = self.history.apply(Box::new(action), &mut self.map);
+            }
+            EditorAction::UpdateTilesetAutotileMask { id, autotile_mask } => {
+                let action = UpdateTilesetAutotileMask::new(id, autotile_mask);
                 res = self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::PlaceTile { id, layer_id, tileset_id, coords } => {

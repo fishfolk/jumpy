@@ -16,34 +16,54 @@ use crate::{
 use super::{
     Map,
     GuiResources,
+    ButtonParams,
     Toolbar,
     ToolbarElementParams,
     ToolbarElement,
     EditorAction,
     EditorDrawParams,
 };
+use crate::editor::gui::ELEMENT_MARGIN;
 
 pub struct TilesetDetailsElement {
     params: ToolbarElementParams,
 }
 
 impl TilesetDetailsElement {
-    pub fn new() -> Box<Self> {
+    pub fn new() -> Self {
         let params = ToolbarElementParams {
             header: None,
-            has_menubar: true,
+            has_buttons: true,
             has_margins: true,
         };
 
-        Box::new(TilesetDetailsElement {
+        TilesetDetailsElement {
             params,
-        })
+        }
     }
 }
 
 impl ToolbarElement for TilesetDetailsElement {
-    fn get_params(&self) -> ToolbarElementParams {
-        self.params.clone()
+    fn get_params(&self) -> &ToolbarElementParams {
+        &self.params
+    }
+
+    fn get_buttons(&self, _map: &Map, draw_params: &EditorDrawParams) -> Vec<ButtonParams> {
+        let mut res = Vec::new();
+
+        let mut action = None;
+        if let Some(tileset_id) = draw_params.selected_tileset.clone() {
+            action = Some(EditorAction::OpenTilesetPropertiesWindow(tileset_id));
+        }
+
+        res.push(ButtonParams {
+            label: "Properties",
+            width_override: Some(0.5),
+            action,
+            ..Default::default()
+        });
+
+        res
     }
 
     fn draw(&mut self, ui: &mut Ui, size: Vec2, map: &Map, draw_params: &EditorDrawParams) -> Option<EditorAction> {
@@ -71,8 +91,10 @@ impl ToolbarElement for TilesetDetailsElement {
                 .size(scaled_width, scaled_height)
                 .ui(ui);
 
-            let gui_resources = storage::get::<GuiResources>();
-            ui.push_skin(&gui_resources.editor_skins.toolbar_tileset_grid);
+            {
+                let gui_resources = storage::get::<GuiResources>();
+                ui.push_skin(&gui_resources.editor_skins.tileset_grid);
+            }
 
             for y in 0..tileset.grid_size.y {
                 for x in 0..tileset.grid_size.x {
@@ -85,7 +107,8 @@ impl ToolbarElement for TilesetDetailsElement {
                     };
 
                     if is_selected {
-                        ui.push_skin(&gui_resources.editor_skins.toolbar_tileset_grid_selected);
+                        let gui_resources = storage::get::<GuiResources>();
+                        ui.push_skin(&gui_resources.editor_skins.tileset_grid_selected);
                     }
 
                     let position = vec2(x as f32, y as f32) * scaled_tile_size;
@@ -110,58 +133,7 @@ impl ToolbarElement for TilesetDetailsElement {
 
             ui.pop_skin();
 
-            position.y += scaled_height + Toolbar::MARGIN;
-        }
-
-        res
-    }
-
-    fn draw_menubar(&mut self, ui: &mut Ui, size: Vec2, _map: &Map, draw_params: &EditorDrawParams) -> Option<EditorAction> {
-        let mut res = None;
-
-        let mut position = Vec2::ZERO;
-
-        {
-            let button_size = vec2(size.x * 0.25, size.y);
-
-            let zoom_in_btn = widgets::Button::new("+")
-                .size(button_size)
-                .position(position)
-                .ui(ui);
-
-            if zoom_in_btn {
-                if let Some(tileset_id) = draw_params.selected_tileset.clone() {
-                    //res = Some(EditorAction::OpenTileAttributesWindow(tileset_id));
-                }
-            }
-
-            position.x += button_size.x;
-
-            let zoom_out_btn = widgets::Button::new("-")
-                .size(button_size)
-                .position(position)
-                .ui(ui);
-
-            if zoom_out_btn {
-                if let Some(tileset_id) = draw_params.selected_tileset.clone() {
-                    //res = Some(EditorAction::OpenTileAttributesWindow(tileset_id));
-                }
-            }
-
-            position.x += button_size.x;
-        }
-
-        let button_size = vec2(size.x * 0.5, size.y);
-
-        let advanced_btn = widgets::Button::new("advanced")
-            .size(button_size)
-            .position(position)
-            .ui(ui);
-
-        if advanced_btn {
-            if let Some(tileset_id) = draw_params.selected_tileset.clone() {
-                //res = Some(EditorAction::OpenTilesetPropertiesWindow(tileset_id));
-            }
+            position.y += scaled_height + ELEMENT_MARGIN;
         }
 
         res

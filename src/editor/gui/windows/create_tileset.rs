@@ -15,16 +15,14 @@ use macroquad::{
 use crate::{
     map::Map,
     Resources,
-    editor::{
-        EditorAction,
-        EditorDrawParams,
-    }
 };
 
 use super::{
+    ButtonParams,
     Window,
     WindowParams,
-    WindowResult,
+    EditorAction,
+    EditorDrawParams,
 };
 
 pub struct CreateTilesetWindow {
@@ -34,18 +32,18 @@ pub struct CreateTilesetWindow {
 }
 
 impl CreateTilesetWindow {
-    pub fn new() -> Box<Self> {
+    pub fn new() -> Self {
         let params = WindowParams {
             title: Some("Create Tileset".to_string()),
             size: vec2(350.0, 350.0),
             ..Default::default()
         };
 
-        Box::new(CreateTilesetWindow {
+        CreateTilesetWindow {
             params,
             tileset_id: "Unnamed Tileset".to_string(),
             texture_id: "tileset".to_string(),
-        })
+        }
     }
 }
 
@@ -54,7 +52,40 @@ impl Window for CreateTilesetWindow {
         &self.params
     }
 
-    fn draw(&mut self, ui: &mut Ui, _size: Vec2, map: &Map, _draw_params: &EditorDrawParams) -> Option<WindowResult> {
+    fn get_buttons(&self, map: &Map, _draw_params: &EditorDrawParams) -> Vec<ButtonParams> {
+        let mut res = Vec::new();
+
+        let is_existing_id = map.tilesets
+            .iter()
+            .find(|(id, _)| *id == &self.tileset_id)
+            .is_some();
+
+        let mut action = None;
+        if is_existing_id == false {
+            let editor_action = EditorAction::CreateTileset {
+                id: self.tileset_id.clone(),
+                texture_id: self.texture_id.clone(),
+            };
+
+            action = Some(self.get_close_then_action(editor_action));
+        }
+
+        res.push(ButtonParams {
+            label: "Create",
+            action,
+            ..Default::default()
+        });
+
+        res.push(ButtonParams {
+            label: "Cancel",
+            action: Some(self.get_close_action()),
+            ..Default::default()
+        });
+
+        res
+    }
+
+    fn draw(&mut self, ui: &mut Ui, _size: Vec2, map: &Map, _draw_params: &EditorDrawParams) -> Option<EditorAction> {
         let id = hash!("create_tileset_element");
 
         let resources = storage::get::<Resources>();
@@ -98,32 +129,6 @@ impl Window for CreateTilesetWindow {
             .get(texture_index)
             .unwrap()
             .to_string();
-
-        let is_existing_id = map.tilesets
-            .iter()
-            .find(|(id, _)| *id == &self.tileset_id)
-            .is_some();
-
-        if is_existing_id {
-            ui.label(None, "A tileset with this name already exist!");
-        } else {
-            ui.label(None, "")
-        }
-
-        if ui.button(None, "Create") && is_existing_id == false {
-            let action = EditorAction::CreateTileset {
-                id: self.tileset_id.clone(),
-                texture_id: self.texture_id.clone(),
-            };
-
-            return Some(WindowResult::Action(action));
-        }
-
-        ui.same_line(0.0);
-
-        if ui.button(None, "Cancel") {
-            return Some(WindowResult::Cancel);
-        }
 
         None
     }

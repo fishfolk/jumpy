@@ -17,8 +17,10 @@ use crate::{
         MapLayerKind,
         MapTile,
         MapTileset,
-    }
+    },
 };
+use std::any::{TypeId, Any};
+use crate::editor::gui::windows::Window;
 
 // These are all the actions available for the GUI and other sub-systems of the editor.
 // If you need to perform multiple actions in one call, use the `Batch` variant.
@@ -27,11 +29,14 @@ pub enum EditorAction {
     Batch(Vec<EditorAction>),
     Undo,
     Redo,
+    OpenCreateLayerWindow,
+    OpenCreateTilesetWindow,
+    OpenTilesetPropertiesWindow(String),
+    CloseWindow(TypeId),
     SelectTile {
         id: u32,
         tileset_id: String,
     },
-    OpenCreateLayerWindow,
     SelectLayer(String),
     SetLayerDrawOrderIndex {
         id: String,
@@ -44,12 +49,15 @@ pub enum EditorAction {
     },
     DeleteLayer(String),
     SelectTileset(String),
-    OpenCreateTilesetWindow,
     CreateTileset {
         id: String,
         texture_id: String,
     },
     DeleteTileset(String),
+    UpdateTilesetAutotileMask {
+        id: String,
+        autotile_mask: Vec<bool>,
+    },
     PlaceTile {
         id: u32,
         layer_id: String,
@@ -66,9 +74,22 @@ impl EditorAction {
     pub fn batch(actions: &[EditorAction]) -> Self {
         Self::Batch(actions.to_vec())
     }
+
+    pub fn close_window<T: Window + ?Sized + 'static>() -> Self {
+        let id = TypeId::of::<T>();
+        EditorAction::CloseWindow(id)
+    }
+
+    pub fn close_window_then<T: Window + ?Sized + 'static>(action: EditorAction) -> Self {
+        EditorAction::batch(&[
+            EditorAction::close_window::<T>(),
+            action,
+        ])
+    }
 }
 
-pub type Error = &'static str;
+// &&str is thin pointer
+pub type Error = &'static &'static str;
 
 pub type Result = result::Result<(), Error>;
 
@@ -124,7 +145,7 @@ impl UndoableAction for SetLayerDrawOrderIndex {
         }
 
         if self.old_draw_order_index.is_none() {
-            return Err("SetLayerDrawOrderIndex: Could not find the specified layer in the map draw order array");
+            return Err(&"SetLayerDrawOrderIndex: Could not find the specified layer in the map draw order array");
         }
 
         if self.draw_order_index >= map.draw_order.len() {
@@ -138,7 +159,7 @@ impl UndoableAction for SetLayerDrawOrderIndex {
 
     fn undo(&mut self, map: &mut Map) -> Result {
         if map.draw_order.remove(self.draw_order_index) != self.id {
-            return Err("SetLayerDrawOrderIndex (Undo): There was a mismatch between the layer id found in at the specified draw order index and the id stored in the action");
+            return Err(&"SetLayerDrawOrderIndex (Undo): There was a mismatch between the layer id found in at the specified draw order index and the id stored in the action");
         }
 
         if let Some(i) = self.old_draw_order_index {
@@ -148,7 +169,7 @@ impl UndoableAction for SetLayerDrawOrderIndex {
                 map.draw_order.insert(i, self.id.clone());
             }
         } else {
-            return Err("SetLayerDrawOrderIndex (Undo): No old draw order index was found")
+            return Err(&"SetLayerDrawOrderIndex (Undo): No old draw order index was found");
         }
 
         Ok(())
@@ -214,13 +235,13 @@ impl UndoableAction for CreateLayer {
 
     fn undo(&mut self, map: &mut Map) -> Result {
         if map.layers.remove(&self.id).is_none() {
-            return Err("CreateLayer (Undo): The specified layer does not exist");
+            return Err(&"CreateLayer (Undo): The specified layer does not exist");
         }
 
         if let Some(i) = self.draw_order_index {
             let id = map.draw_order.remove(i);
             if id != self.id {
-                return Err("CreateLayer (Undo): There is a mismatch between the actions layer id and the one found at the actions draw order index");
+                return Err(&"CreateLayer (Undo): There is a mismatch between the actions layer id and the one found at the actions draw order index");
             }
         } else {
             map.draw_order.retain(|id| id != &self.id);
@@ -252,7 +273,7 @@ impl UndoableAction for DeleteLayer {
         if let Some(layer) = map.layers.remove(&self.id) {
             self.layer = Some(layer);
         } else {
-            return Err("DeleteLayer: The specified layer does not exist");
+            return Err(&"DeleteLayer: The specified layer does not exist");
         }
 
         let len = map.draw_order.len();
@@ -266,7 +287,7 @@ impl UndoableAction for DeleteLayer {
         }
 
         if self.draw_order_index.is_none() {
-            return Err("DeleteLayer: The specified layer was not found in the draw order array");
+            return Err(&"DeleteLayer: The specified layer was not found in the draw order array");
         }
 
         Ok(())
@@ -282,10 +303,10 @@ impl UndoableAction for DeleteLayer {
                     map.draw_order.insert(i, self.id.clone());
                 }
             } else {
-                return Err("DeleteLayer (Undo): No draw order index stored in action. Undo was probably called on an action that was never applied");
+                return Err(&"DeleteLayer (Undo): No draw order index stored in action. Undo was probably called on an action that was never applied");
             }
         } else {
-            return Err("DeleteLayer (Undo): No layer stored in action. Undo was probably called on an action that was never applied");
+            return Err(&"DeleteLayer (Undo): No layer stored in action. Undo was probably called on an action that was never applied");
         }
 
         Ok(())
@@ -330,7 +351,7 @@ impl UndoableAction for CreateTileset {
 
             map.tilesets.insert(self.id.clone(), tileset);
         } else {
-            return Err("CreateTileset: The specified texture does not exist");
+            return Err(&"CreateTileset: The specified texture does not exist");
         }
 
         Ok(())
@@ -338,7 +359,7 @@ impl UndoableAction for CreateTileset {
 
     fn undo(&mut self, map: &mut Map) -> Result {
         if map.tilesets.remove(&self.id).is_none() {
-            return Err("CreateTileset (Undo): The specified tileset does not exist. Undo was probably called on an action that was never applied");
+            return Err(&"CreateTileset (Undo): The specified tileset does not exist. Undo was probably called on an action that was never applied");
         }
 
         Ok(())
@@ -365,7 +386,7 @@ impl UndoableAction for DeleteTileset {
         if let Some(tileset) = map.tilesets.remove(&self.id) {
             self.tileset = Some(tileset);
         } else {
-            return Err("DeleteTileset: The specified tileset does not exist");
+            return Err(&"DeleteTileset: The specified tileset does not exist");
         }
 
         Ok(())
@@ -375,10 +396,64 @@ impl UndoableAction for DeleteTileset {
         if let Some(tileset) = self.tileset.take() {
             map.tilesets.insert(self.id.clone(), tileset);
         } else {
-            return Err("DeleteTileset (Undo): No tileset stored in action. Undo was probably called on an action that was never applied");
+            return Err(&"DeleteTileset (Undo): No tileset stored in action. Undo was probably called on an action that was never applied");
         }
 
         Ok(())
+    }
+}
+
+#[derive(Debug)]
+pub struct UpdateTilesetAutotileMask {
+    id: String,
+    autotile_mask: Vec<bool>,
+    old_autotile_mask: Option<Vec<bool>>,
+}
+
+impl UpdateTilesetAutotileMask {
+    pub fn new(id: String, autotile_mask: Vec<bool>) -> Self {
+        UpdateTilesetAutotileMask {
+            id,
+            autotile_mask,
+            old_autotile_mask: None,
+        }
+    }
+}
+
+impl UndoableAction for UpdateTilesetAutotileMask {
+    fn apply(&mut self, map: &mut Map) -> Result {
+        if let Some(tileset) = map.tilesets.get_mut(&self.id) {
+            if self.autotile_mask.len() != tileset.autotile_mask.len() {
+                return Err(&"UpdateTilesetAutotileMask: There is a size mismatch between the actions autotile mask vector and the one on the tileset");
+            }
+
+            self.old_autotile_mask = Some(tileset.autotile_mask.clone());
+            tileset.autotile_mask = self.autotile_mask.clone();
+        } else {
+            return Err(&"UpdateTilesetAutotileMask: The specified tileset does not exist");
+        }
+
+        Ok(())
+    }
+
+    fn undo(&mut self, map: &mut Map) -> Result {
+        if let Some(tileset) = map.tilesets.get_mut(&self.id) {
+            if let Some(old_autotile_mask) = &self.old_autotile_mask {
+                if old_autotile_mask.len() != tileset.autotile_mask.len() {
+                    return Err(&"UpdateTilesetAutotileMask (Undo): There is a size mismatch between the actions autotile mask vector and the one on the tileset");
+                }
+
+                tileset.autotile_mask = old_autotile_mask.clone();
+                self.old_autotile_mask = None;
+            } else {
+                return Err(&"UpdateTilesetAutotileMask (Undo): No old autotile mask stored in action. Undo was probably called on an action that was never applied")
+            }
+        } else {
+            return Err(&"UpdateTilesetAutotileMask (Undo): The specified tileset does not exist");
+        }
+
+        Ok(())
+
     }
 }
 
@@ -425,13 +500,13 @@ impl UndoableAction for PlaceTile {
 
                     layer.tiles.insert(i as usize, Some(tile));
                 } else {
-                    return Err("PlaceTile: The specified layer is not a tile layer");
+                    return Err(&"PlaceTile: The specified layer is not a tile layer");
                 }
             } else {
-                return Err("PlaceTile: The specified layer does not exist");
+                return Err(&"PlaceTile: The specified layer does not exist");
             }
         } else {
-            return Err("PlaceTile: The specified tileset does not exist");
+            return Err(&"PlaceTile: The specified tileset does not exist");
         }
 
         Ok(())
@@ -443,7 +518,7 @@ impl UndoableAction for PlaceTile {
         if let Some(layer) = map.layers.get_mut(&self.layer_id) {
             if let MapLayerKind::TileLayer = layer.kind {
                 if layer.tiles.get(i as usize).is_none() {
-                    return Err("PlaceTile (Undo): No tile at the specified coords, in the specified layer. Undo was probably called on an action that was never applied");
+                    return Err(&"PlaceTile (Undo): No tile at the specified coords, in the specified layer. Undo was probably called on an action that was never applied");
                 }
 
                 if let Some(tile) = self.replaced_tile.take() {
@@ -452,10 +527,10 @@ impl UndoableAction for PlaceTile {
                     layer.tiles[i as usize] = None;
                 }
             } else {
-                return Err("PlaceTile (Undo): The specified layer is not a tile layer");
+                return Err(&"PlaceTile (Undo): The specified layer is not a tile layer");
             }
         } else {
-            return Err("PlaceTile (Undo): The specified layer does not exist");
+            return Err(&"PlaceTile (Undo): The specified layer does not exist");
         }
 
         Ok(())
@@ -465,7 +540,7 @@ impl UndoableAction for PlaceTile {
         if let Some(layer) = map.layers.get(&self.layer_id) {
             let i = map.to_index(self.coords);
             if let Some(tile) = layer.tiles.get(i) {
-                if let Some(tile) = tile  {
+                if let Some(tile) = tile {
                     return &tile.tileset_id == &self.tileset_id && tile.tile_id == self.id;
                 }
             }
@@ -503,13 +578,13 @@ impl UndoableAction for RemoveTile {
 
                     layer.tiles.insert(i, None);
                 } else {
-                    return Err("RemoveTile: No tile at the specified coords, in the specified layer. Undo was probably called on an action that was never applied");
+                    return Err(&"RemoveTile: No tile at the specified coords, in the specified layer. Undo was probably called on an action that was never applied");
                 }
             } else {
-                return Err("RemoveTile: The specified layer is not a tile layer");
+                return Err(&"RemoveTile: The specified layer is not a tile layer");
             }
         } else {
-            return Err("RemoveTile: The specified layer does not exist");
+            return Err(&"RemoveTile: The specified layer does not exist");
         }
 
         Ok(())
@@ -523,13 +598,13 @@ impl UndoableAction for RemoveTile {
                 if let Some(tile) = self.tile.take() {
                     layer.tiles.insert(i, Some(tile));
                 } else {
-                    return Err("RemoveTile (Undo): No tile stored in action. Undo was probably called on an action that was never applied");
+                    return Err(&"RemoveTile (Undo): No tile stored in action. Undo was probably called on an action that was never applied");
                 }
             } else {
-                return Err("RemoveTile (Undo): The specified layer is not a tile layer");
+                return Err(&"RemoveTile (Undo): The specified layer is not a tile layer");
             }
         } else {
-            return Err("RemoveTile (Undo): The specified layer does not exist");
+            return Err(&"RemoveTile (Undo): The specified layer does not exist");
         }
 
         Ok(())

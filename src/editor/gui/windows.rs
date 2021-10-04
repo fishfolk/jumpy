@@ -1,22 +1,35 @@
+use std::{
+    collections::HashMap,
+    any::{Any, TypeId},
+    result,
+    error,
+};
+
 use macroquad::{
     ui::{
         Ui,
+        widgets,
     },
     prelude::*,
 };
 
 mod confirm_dialog;
 mod create_tileset;
+
 mod create_layer;
+mod tileset_properties;
 
 pub use confirm_dialog::ConfirmDialog;
 pub use create_layer::CreateLayerWindow;
-pub use create_tileset::CreateTilesetWindow;
 
+pub use create_tileset::CreateTilesetWindow;
+pub use tileset_properties::TilesetPropertiesWindow;
 use super::{
     Map,
+    ButtonParams,
     EditorAction,
     EditorDrawParams,
+    ELEMENT_MARGIN,
 };
 
 #[derive(Debug, Copy, Clone)]
@@ -44,6 +57,7 @@ pub struct WindowParams {
     pub title: Option<String>,
     pub size: Vec2,
     pub position: WindowPosition,
+    pub has_buttons: bool,
     pub is_static: bool,
 }
 
@@ -59,21 +73,28 @@ impl Default for WindowParams {
             title: None,
             size: vec2(250.0, 350.0),
             position: WindowPosition::Centered,
+            has_buttons: true,
             is_static: false,
         }
     }
 }
 
-#[derive(Debug, Clone)]
-pub enum WindowResult {
-    Action(EditorAction),
-    Cancel,
-}
-
 pub trait Window {
     fn get_params(&self) -> &WindowParams;
 
-    fn draw(&mut self, ui: &mut Ui, size: Vec2, map: &Map, draw_params: &EditorDrawParams) -> Option<WindowResult>;
+    fn get_buttons(&self, _map: &Map, _draw_params: &EditorDrawParams) -> Vec<ButtonParams> where Self: 'static {
+        let mut res = Vec::new();
+
+        res.push(ButtonParams {
+            label: "Close",
+            action: Some(self.get_close_action()),
+            ..Default::default()
+        });
+
+        res
+    }
+
+    fn draw(&mut self, ui: &mut Ui, size: Vec2, map: &Map, draw_params: &EditorDrawParams) -> Option<EditorAction>;
 
     fn get_absolute_position(&self) -> Vec2 {
         let params = self.get_params();
@@ -89,5 +110,17 @@ pub trait Window {
     fn contains(&self, point: Vec2) -> bool {
         let rect = self.get_rect();
         rect.contains(point)
+    }
+
+    fn get_close_action(&self) -> EditorAction where Self: 'static {
+        let id = TypeId::of::<Self>();
+        EditorAction::CloseWindow(id)
+    }
+
+    fn get_close_then_action(&self, then_action: EditorAction) -> EditorAction where Self: 'static {
+        EditorAction::batch(&[
+            self.get_close_action(),
+            then_action,
+        ])
     }
 }

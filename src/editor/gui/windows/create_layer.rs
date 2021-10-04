@@ -14,16 +14,14 @@ use crate::{
         ObjectLayerKind,
         CollisionKind,
     },
-    editor::{
-        EditorAction,
-        EditorDrawParams,
-    },
 };
 
 use super::{
     Window,
+    ButtonParams,
     WindowParams,
-    WindowResult,
+    EditorAction,
+    EditorDrawParams,
 };
 
 pub struct CreateLayerWindow {
@@ -34,19 +32,19 @@ pub struct CreateLayerWindow {
 }
 
 impl CreateLayerWindow {
-    pub fn new() -> Box<Self> {
+    pub fn new() -> Self {
         let params = WindowParams {
             title: Some("Create Layer".to_string()),
             size: vec2(350.0, 350.0),
             ..Default::default()
         };
 
-        Box::new(CreateLayerWindow {
+        CreateLayerWindow {
             params,
             layer_id: "Unnamed Layer".to_string(),
             layer_kind: MapLayerKind::TileLayer,
             layer_collision: CollisionKind::None,
-        })
+        }
     }
 }
 
@@ -54,8 +52,42 @@ impl Window for CreateLayerWindow {
     fn get_params(&self) -> &WindowParams {
         &self.params
     }
-    
-    fn draw(&mut self, ui: &mut Ui, _size: Vec2, map: &Map, _params: &EditorDrawParams) -> Option<WindowResult> {
+
+    fn get_buttons(&self, map: &Map, _draw_params: &EditorDrawParams) -> Vec<ButtonParams> {
+        let mut res = Vec::new();
+
+        let is_existing_id = map.draw_order
+            .iter()
+            .find(|id| *id == &self.layer_id)
+            .is_some();
+
+        let mut action = None;
+        if is_existing_id == false {
+            let editor_action = EditorAction::CreateLayer {
+                id: self.layer_id.clone(),
+                kind: self.layer_kind,
+                draw_order_index: None,
+            };
+
+            action = Some(self.get_close_then_action(editor_action));
+        }
+
+        res.push(ButtonParams {
+            label: "Create",
+            action,
+            ..Default::default()
+        });
+
+        res.push(ButtonParams {
+            label: "Cancel",
+            action: Some(self.get_close_action()),
+            ..Default::default()
+        });
+
+        res
+    }
+
+    fn draw(&mut self, ui: &mut Ui, _size: Vec2, map: &Map, _params: &EditorDrawParams) -> Option<EditorAction> {
         let id = hash!("create_layer_window");
 
         {
@@ -112,33 +144,6 @@ impl Window for CreateLayerWindow {
                 0 => CollisionKind::None,
                 _ => CollisionKind::Solid,
             };
-        }
-
-        let is_existing_id = map.draw_order
-            .iter()
-            .find(|id| *id == &self.layer_id)
-            .is_some();
-
-        if is_existing_id {
-            ui.label(None, "A layer with this name already exist!");
-        } else {
-            ui.label(None, "")
-        }
-
-        if ui.button(None, "Create") && is_existing_id == false {
-            let action = EditorAction::CreateLayer {
-                id: self.layer_id.clone(),
-                kind: self.layer_kind,
-                draw_order_index: None,
-            };
-
-            return Some(WindowResult::Action(action));
-        }
-
-        ui.same_line(0.0);
-
-        if ui.button(None, "Cancel") {
-            return Some(WindowResult::Cancel);
         }
 
         None

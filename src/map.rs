@@ -442,6 +442,9 @@ pub struct MapTileset {
     pub grid_size: UVec2,
     pub first_tile_id: u32,
     pub tile_cnt: u32,
+    #[serde(default = "MapTileset::default_tile_subdivisions", with = "json::def_uvec2")]
+    pub tile_subdivisions: UVec2,
+    pub autotile_mask: Vec<bool>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub tile_attributes: HashMap<u32, Vec<String>>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
@@ -461,6 +464,18 @@ impl MapTileset {
             texture_size.y / tile_size.y as u32,
         );
 
+
+        let tile_subdivisions = Self::default_tile_subdivisions();;
+
+        let subtile_grid_size = grid_size * tile_subdivisions;
+
+        let subtile_cnt = (subtile_grid_size.x * subtile_grid_size.y) as usize;
+        let mut autotile_mask = Vec::with_capacity(subtile_cnt);
+
+        for i in 0..subtile_cnt {
+            autotile_mask.push(false);
+        }
+
         MapTileset {
             id: id.to_string(),
             texture_id: texture_id.to_string(),
@@ -469,6 +484,8 @@ impl MapTileset {
             grid_size,
             first_tile_id,
             tile_cnt: grid_size.x * grid_size.y,
+            tile_subdivisions,
+            autotile_mask,
             tile_attributes: HashMap::new(),
             properties: HashMap::new(),
         }
@@ -478,6 +495,10 @@ impl MapTileset {
         let x = (tile_id % self.grid_size.x) as f32 * self.tile_size.x;
         let y = (tile_id / self.grid_size.x) as f32 * self.tile_size.y;
         vec2(x, y)
+    }
+
+    pub fn default_tile_subdivisions() -> UVec2 {
+        uvec2(3, 3)
     }
 }
 

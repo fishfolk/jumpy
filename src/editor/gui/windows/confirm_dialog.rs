@@ -11,8 +11,8 @@ use super::{
     EditorDrawParams,
     Window,
     WindowParams,
-    WindowResult,
 };
+use crate::editor::gui::windows::ButtonParams;
 
 pub struct ConfirmDialog {
     params: WindowParams,
@@ -25,7 +25,7 @@ impl ConfirmDialog {
     const CONFIRM_LABEL: &'static str = "Ok";
     const CANCEL_LABEL: &'static str = "Cancel";
 
-    pub fn new(size: Vec2, body: &[&str], confirm_action: EditorAction) -> Box<Self> {
+    pub fn new(size: Vec2, body: &[&str], confirm_action: EditorAction) -> Self {
         let params = WindowParams {
             title: Some(Self::WINDOW_TITLE.to_string()),
             size,
@@ -38,11 +38,11 @@ impl ConfirmDialog {
             .map(|line| line.to_string())
             .collect();
 
-        Box::new(ConfirmDialog {
+        ConfirmDialog {
             params,
             body,
             confirm_action,
-        })
+        }
     }
 }
 
@@ -51,7 +51,27 @@ impl Window for ConfirmDialog {
         &self.params
     }
 
-    fn draw(&mut self, ui: &mut Ui, _size: Vec2, _map: &Map, _draw_params: &EditorDrawParams) -> Option<WindowResult> {
+    fn get_buttons(&self, _map: &Map, _draw_params: &EditorDrawParams) -> Vec<ButtonParams> {
+        let mut res = Vec::new();
+
+        let confirm_action = self.confirm_action.clone();
+
+        res.push(ButtonParams {
+            label: Self::CONFIRM_LABEL,
+            action: Some(self.get_close_then_action(confirm_action)),
+            ..Default::default()
+        });
+
+        res.push(ButtonParams {
+            label: Self::CANCEL_LABEL,
+            action: Some(self.get_close_action()),
+            ..Default::default()
+        });
+
+        res
+    }
+
+    fn draw(&mut self, ui: &mut Ui, _size: Vec2, _map: &Map, _draw_params: &EditorDrawParams) -> Option<EditorAction> {
         for line in &self.body {
             ui.label(None, line);
         }
@@ -60,14 +80,6 @@ impl Window for ConfirmDialog {
         ui.separator();
         ui.separator();
         ui.separator();
-
-        if ui.button(None, Self::CONFIRM_LABEL) {
-            return Some(WindowResult::Action(self.confirm_action.clone()));
-        }
-
-        if ui.button(None, Self::CANCEL_LABEL) {
-            return Some(WindowResult::Cancel);
-        }
 
         None
     }

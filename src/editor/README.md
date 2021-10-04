@@ -20,7 +20,9 @@ implementations stores the state of the data it modifies, before application, an
 actions `undo` method is called. There can be no exceptions to this.
 
 Furthermore, actions should be called from the existing ui, and the existing ui should not be expanded, without
-it being approved beforehand. This is to reduce clutter, which can break a tool like this.
-The exception to this, are windows that are needed to input parameters to an action, like the `CreateLayerWindow`.
-If adding such windows, use the `WindowBuilder` and follow the general workflow of the rest of the code. The design
-is not final but if everything is made coherently, implementing design changes will be less time consuming.
+it being discussed beforehand in an issue or on discord. We want to keep the UI simple and straight forward, so
+any additions or changes should be planned accordingly.
+
+It is also important to make sure that you adhere to the API that has been created for UI elements. This means
+that you should implement the `Window` trait to create windows, the `ToolbarElement` trait to expand the toolbars,
+and so on.

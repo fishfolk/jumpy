@@ -5,8 +5,7 @@ use macroquad::{
 };
 
 use super::{
-    EditorAction, EditorContext, GuiResources, Map, Toolbar, ToolbarElement,
-    ToolbarElementParams,
+    EditorAction, EditorContext, GuiResources, Map, Toolbar, ToolbarElement, ToolbarElementParams,
 };
 use crate::editor::gui::ButtonParams;
 

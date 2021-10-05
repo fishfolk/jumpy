@@ -15,7 +15,7 @@ use macroquad::{
     ui::{root_ui, widgets},
 };
 
-use super::{EditorAction, EditorContext, EditorTool};
+use super::{EditorAction, EditorContext};
 
 use crate::{gui::GuiResources, map::Map};
 

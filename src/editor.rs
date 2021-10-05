@@ -18,11 +18,7 @@ mod input;
 mod history;
 mod tools;
 
-pub use tools::{
-    DEFAULT_TOOL_ICON_TEXTURE_ID,
-    EditorToolParams,
-    EditorTool,
-};
+pub use tools::{EditorTool, EditorToolParams, DEFAULT_TOOL_ICON_TEXTURE_ID};
 
 use history::EditorHistory;
 pub use input::EditorInputScheme;
@@ -251,7 +247,7 @@ impl Editor {
                 kind,
                 draw_order_index,
             } => {
-                let action = CreateLayer::new(id.clone(), kind, draw_order_index);
+                let action = CreateLayer::new(id, kind, draw_order_index);
                 res = self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::DeleteLayer(id) => {
@@ -320,7 +316,8 @@ impl Node for Editor {
         };
 
         if input.action {
-            if element_at_cursor.is_none() || element_at_cursor.unwrap() != GuiElement::ContextMenu {
+            if element_at_cursor.is_none() || element_at_cursor.unwrap() != GuiElement::ContextMenu
+            {
                 let mut gui = storage::get_mut::<EditorGui>();
                 gui.close_context_menu();
             }

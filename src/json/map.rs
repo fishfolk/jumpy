@@ -8,9 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     json,
-    map::{
-        Map, MapLayer, MapLayerKind, MapObject, MapProperty, MapTile, MapTileset,
-    },
+    map::{Map, MapLayer, MapLayerKind, MapObject, MapProperty, MapTile, MapTileset},
 };
 
 pub use tiled::TiledMap;

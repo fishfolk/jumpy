@@ -110,12 +110,7 @@ impl Toolbar {
         rect.contains(point)
     }
 
-    pub fn draw(
-        &mut self,
-        ui: &mut Ui,
-        map: &Map,
-        ctx: &EditorContext,
-    ) -> Option<EditorAction> {
+    pub fn draw(&mut self, ui: &mut Ui, map: &Map, ctx: &EditorContext) -> Option<EditorAction> {
         let mut res = None;
 
         {
@@ -217,9 +212,7 @@ impl Toolbar {
                                     content_size.x -= ELEMENT_MARGIN;
                                 }
 
-                                if let Some(action) =
-                                    element.draw(ui, content_size, map, ctx)
-                                {
+                                if let Some(action) = element.draw(ui, content_size, map, ctx) {
                                     res = Some(action);
                                 }
                             });

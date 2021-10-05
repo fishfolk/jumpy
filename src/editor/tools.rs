@@ -1,11 +1,8 @@
-use macroquad::{
-    prelude::*,
-};
+use macroquad::prelude::*;
 
-use super::{Map, EditorContext, EditorAction};
+use super::{EditorAction, EditorContext, Map};
 
-
-pub const DEFAULT_TOOL_ICON_TEXTURE_ID: &'static str = "default_tool_icon";
+pub const DEFAULT_TOOL_ICON_TEXTURE_ID: &str = "default_tool_icon";
 
 #[derive(Debug, Clone)]
 pub struct EditorToolParams {

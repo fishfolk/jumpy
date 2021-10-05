@@ -32,7 +32,7 @@ pub mod map;
 pub mod editor;
 pub mod math;
 
-use editor::{DEFAULT_TOOL_ICON_TEXTURE_ID, Editor, EditorCamera, EditorInputScheme};
+use editor::{Editor, EditorCamera, EditorInputScheme, DEFAULT_TOOL_ICON_TEXTURE_ID};
 
 pub use input::{Input, InputScheme};
 
@@ -72,7 +72,10 @@ impl GameWorld {
             if layer.has_collision {
                 for (i, (_, _, tile)) in map.get_tiles(layer_id, None).enumerate() {
                     if let Some(tile) = tile {
-                        if tile.attributes.contains(&Map::PLATFORM_TILE_ATTRIBUTE.to_string()) {
+                        if tile
+                            .attributes
+                            .contains(&Map::PLATFORM_TILE_ATTRIBUTE.to_string())
+                        {
                             static_colliders[i] = Tile::JumpThrough;
                         } else {
                             static_colliders[i] = Tile::Solid;
@@ -260,7 +263,9 @@ impl Resources {
         textures.insert("tileset".to_string(), tileset);
         textures.insert("decorations".to_string(), decorations);
 
-        let no_icon = load_texture(&format!("{}/assets/ui/tool_icons/no_icon.png", assets_dir)).await.unwrap();
+        let no_icon = load_texture(&format!("{}/assets/ui/tool_icons/no_icon.png", assets_dir))
+            .await
+            .unwrap();
         textures.insert(DEFAULT_TOOL_ICON_TEXTURE_ID.to_string(), no_icon);
 
         #[allow(clippy::inconsistent_struct_constructor)]

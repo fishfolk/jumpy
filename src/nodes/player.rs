@@ -11,7 +11,12 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::{capabilities::{NetworkReplicate, PhysicsObject, Weapon, WeaponTrait}, components::PhysicsBody, items::shoes::Shoes, Input, Resources, GameWorld};
+use crate::{
+    capabilities::{NetworkReplicate, PhysicsObject, Weapon, WeaponTrait},
+    components::PhysicsBody,
+    items::shoes::Shoes,
+    GameWorld, Input, Resources,
+};
 
 use std::f32;
 

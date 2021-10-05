@@ -13,8 +13,7 @@ use crate::{
     capabilities,
     components::{ArmedGrenade, GunlikeAnimation, PhysicsBody, ThrowableItem},
     nodes::Player,
-    Resources,
-    GameWorld,
+    GameWorld, Resources,
 };
 
 pub struct Grenades {
@@ -66,7 +65,7 @@ impl Grenades {
             throwable: ThrowableItem::default(),
             amount: Self::MAXIMUM_AMOUNT,
         })
-            .untyped()
+        .untyped()
     }
 
     fn draw_hud(&self) {
@@ -252,4 +251,3 @@ impl Node for Grenades {
         }
     }
 }
-

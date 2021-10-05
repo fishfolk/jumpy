@@ -1,12 +1,9 @@
-use super::{
-    ToolbarElement,
-    ToolbarElementParams,
-};
-use macroquad::ui::Ui;
-use macroquad::math::Vec2;
-use crate::map::Map;
-use crate::editor::gui::EditorDrawParams;
+use super::{ToolbarElement, ToolbarElementParams};
 use crate::editor::actions::EditorAction;
+use crate::editor::gui::EditorDrawParams;
+use crate::map::Map;
+use macroquad::math::Vec2;
+use macroquad::ui::Ui;
 
 pub struct ToolSelectorElement {
     params: ToolbarElementParams,
@@ -20,9 +17,7 @@ impl ToolSelectorElement {
             has_margins: true,
         };
 
-        ToolSelectorElement {
-            params,
-        }
+        ToolSelectorElement { params }
     }
 }
 
@@ -31,7 +26,13 @@ impl ToolbarElement for ToolSelectorElement {
         &self.params
     }
 
-    fn draw(&mut self, _ui: &mut Ui, _size: Vec2, _map: &Map, _draw_params: &EditorDrawParams) -> Option<EditorAction> {
+    fn draw(
+        &mut self,
+        _ui: &mut Ui,
+        _size: Vec2,
+        _map: &Map,
+        _draw_params: &EditorDrawParams,
+    ) -> Option<EditorAction> {
         None
     }
 }

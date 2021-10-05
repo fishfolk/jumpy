@@ -10,7 +10,12 @@ use macroquad::{
     rand::gen_range,
 };
 
-use crate::{capabilities, components::{GunlikeAnimation, PhysicsBody, ThrowableItem}, nodes::Player, Resources, GameWorld};
+use crate::{
+    capabilities,
+    components::{GunlikeAnimation, PhysicsBody, ThrowableItem},
+    nodes::Player,
+    GameWorld, Resources,
+};
 
 pub struct FlyingGalleon {
     pub sprite: Texture2D,
@@ -53,11 +58,7 @@ impl FlyingGalleon {
 
         let facing = gen_range(0, 2) == 0;
         let pos = Vec2::new(
-            if facing {
-                -Self::WIDTH
-            } else {
-                map_size.x
-            },
+            if facing { -Self::WIDTH } else { map_size.x },
             gen_range(0., map_size.y - Self::HEIGHT),
         );
 

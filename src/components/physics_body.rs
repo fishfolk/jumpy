@@ -6,7 +6,7 @@ use macroquad::{
 
 use macroquad_platformer::{Actor, World as CollisionWorld};
 
-use crate::{GameWorld};
+use crate::GameWorld;
 
 pub struct PhysicsBody {
     pub pos: Vec2,
@@ -62,14 +62,22 @@ impl PhysicsBody {
 
         self.pos = world.collision_world.actor_pos(self.collider);
         self.last_frame_on_ground = self.on_ground;
-        self.on_ground = world.collision_world.collide_check(self.collider, self.pos + vec2(0., 1.));
+        self.on_ground = world
+            .collision_world
+            .collide_check(self.collider, self.pos + vec2(0., 1.));
         if !self.on_ground && self.have_gravity {
             self.speed.y += Self::GRAVITY * get_frame_time();
         }
-        if !world.collision_world.move_h(self.collider, self.speed.x * get_frame_time()) {
+        if !world
+            .collision_world
+            .move_h(self.collider, self.speed.x * get_frame_time())
+        {
             self.speed.x *= -self.bouncyness;
         }
-        if !world.collision_world.move_v(self.collider, self.speed.y * get_frame_time()) {
+        if !world
+            .collision_world
+            .move_v(self.collider, self.speed.y * get_frame_time())
+        {
             self.speed.y *= -self.bouncyness;
         }
         self.pos = world.collision_world.actor_pos(self.collider);

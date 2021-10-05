@@ -1,29 +1,13 @@
-use std::{
-    io,
-    path::Path,
-    collections::HashMap,
-};
+use std::{collections::HashMap, io, path::Path};
 
-use macroquad::{
-    experimental::{
-        collections::storage,
-    },
-    color,
-    prelude::*,
-};
+use macroquad::{color, experimental::collections::storage, prelude::*};
 
-use serde::{
-    Serialize,
-    Deserialize,
-};
+use serde::{Deserialize, Serialize};
 
 use crate::{
-    Resources,
+    json::{self, TiledMap},
     math::URect,
-    json::{
-        self,
-        TiledMap,
-    },
+    Resources,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -72,7 +56,10 @@ impl Map {
         Ok(map)
     }
 
-    pub async fn load_tiled<P: AsRef<Path>>(path: P, export_path: Option<P>) -> Result<Self, FileError> {
+    pub async fn load_tiled<P: AsRef<Path>>(
+        path: P,
+        export_path: Option<P>,
+    ) -> Result<Self, FileError> {
         let path = path.as_ref();
 
         let bytes = load_file(&path.to_string_lossy()).await?;
@@ -103,8 +90,10 @@ impl Map {
     }
 
     pub fn to_coords(&self, position: Vec2) -> UVec2 {
-        let x = (((position.x - self.world_offset.x) / self.tile_size.x) as u32).clamp(0, self.grid_size.x - 1);
-        let y = (((position.y - self.world_offset.y) / self.tile_size.y) as u32).clamp(0, self.grid_size.y - 1);
+        let x = (((position.x - self.world_offset.x) / self.tile_size.x) as u32)
+            .clamp(0, self.grid_size.x - 1);
+        let y = (((position.y - self.world_offset.y) / self.tile_size.y) as u32)
+            .clamp(0, self.grid_size.y - 1);
         uvec2(x, y)
     }
 
@@ -120,7 +109,8 @@ impl Map {
     }
 
     pub fn get_tile(&self, layer_id: &str, x: u32, y: u32) -> &Option<MapTile> {
-        let layer = self.layers
+        let layer = self
+            .layers
             .get(layer_id)
             .unwrap_or_else(|| panic!("No layer with id '{}'!", layer_id));
 
@@ -134,7 +124,9 @@ impl Map {
 
     pub fn get_tiles(&self, layer_id: &str, rect: Option<URect>) -> MapTileIterator {
         let rect = rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.x, self.grid_size.y));
-        let layer = self.layers.get(layer_id)
+        let layer = self
+            .layers
+            .get(layer_id)
             .unwrap_or_else(|| panic!("No layer with id '{}'!", layer_id));
 
         MapTileIterator::new(layer, rect)
@@ -160,11 +152,10 @@ impl Map {
                             tile_position.y,
                             self.tile_size.x,
                             self.tile_size.y,
-                        ).overlaps(&collider) {
-                            collisions.push((
-                                tile_position,
-                                layer.collision,
-                            ));
+                        )
+                        .overlaps(&collider)
+                        {
+                            collisions.push((tile_position, layer.collision));
                         }
                     }
                 }
@@ -189,15 +180,16 @@ impl Map {
                 if layer.is_visible && layer.kind == MapLayerKind::TileLayer {
                     for (x, y, tile) in self.get_tiles(layer_id, Some(rect)) {
                         if let Some(tile) = tile {
-                            let world_position = self.world_offset + vec2(
-                                x as f32 * self.tile_size.x,
-                                y as f32 * self.tile_size.y,
-                            );
+                            let world_position = self.world_offset
+                                + vec2(x as f32 * self.tile_size.x, y as f32 * self.tile_size.y);
 
-                            let texture = resources.textures
+                            let texture = resources
+                                .textures
                                 .get(&tile.texture_id)
                                 .cloned()
-                                .unwrap_or_else(|| panic!("No texture with id '{}'!", tile.texture_id));
+                                .unwrap_or_else(|| {
+                                    panic!("No texture with id '{}'!", tile.texture_id)
+                                });
 
                             draw_texture_ex(
                                 texture,
@@ -208,13 +200,10 @@ impl Map {
                                     source: Some(Rect::new(
                                         tile.texture_coords.x, // + 0.1,
                                         tile.texture_coords.y, // + 0.1,
-                                        self.tile_size.x, // - 0.2,
-                                        self.tile_size.y, // - 0.2,
+                                        self.tile_size.x,      // - 0.2,
+                                        self.tile_size.y,      // - 0.2,
                                     )),
-                                    dest_size: Some(vec2(
-                                        self.tile_size.x,
-                                        self.tile_size.y,
-                                    )),
+                                    dest_size: Some(vec2(self.tile_size.x, self.tile_size.y)),
                                     ..Default::default()
                                 },
                             );
@@ -282,11 +271,7 @@ impl<'a> Iterator for MapTileIterator<'a> {
             return None;
         }
 
-        let res = Some((
-            self.current.0,
-            self.current.1,
-            &self.layer.tiles[i],
-        ));
+        let res = Some((self.current.0, self.current.1, &self.layer.tiles[i]));
 
         self.current = next;
 
@@ -404,7 +389,11 @@ pub struct MapObject {
     pub name: String,
     #[serde(with = "json::def_vec2")]
     pub position: Vec2,
-    #[serde(default, with = "json::opt_vec2", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        with = "json::opt_vec2",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub size: Option<Vec2>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub properties: HashMap<String, MapProperty>,
@@ -413,13 +402,21 @@ pub struct MapObject {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case", tag = "type")]
 pub enum MapProperty {
-    Bool { value: bool },
-    Float { value: f32 },
-    Int { value: i32 },
-    String { value: String },
+    Bool {
+        value: bool,
+    },
+    Float {
+        value: f32,
+    },
+    Int {
+        value: i32,
+    },
+    String {
+        value: String,
+    },
     Color {
         #[serde(with = "json::ColorDef")]
-        value: Color
+        value: Color,
     },
 }
 
@@ -435,7 +432,10 @@ pub struct MapTileset {
     pub grid_size: UVec2,
     pub first_tile_id: u32,
     pub tile_cnt: u32,
-    #[serde(default = "MapTileset::default_tile_subdivisions", with = "json::def_uvec2")]
+    #[serde(
+        default = "MapTileset::default_tile_subdivisions",
+        with = "json::def_uvec2"
+    )]
     pub tile_subdivisions: UVec2,
     pub autotile_mask: Vec<bool>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
@@ -457,14 +457,13 @@ impl MapTileset {
             texture_size.y / tile_size.y as u32,
         );
 
-
         let tile_subdivisions = Self::default_tile_subdivisions();
 
         let subtile_grid_size = grid_size * tile_subdivisions;
 
         let subtile_cnt = (subtile_grid_size.x * subtile_grid_size.y) as usize;
 
-        let mut autotile_mask = vec!();
+        let mut autotile_mask = vec![];
         autotile_mask.resize(subtile_cnt, false);
 
         MapTileset {

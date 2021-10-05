@@ -5,7 +5,9 @@ use macroquad::{
 };
 use macroquad_platformer::Tile;
 
-use crate::{items::jellyfish::Jellyfish, items::jellyfish::MountStatus, nodes::Player, Resources, GameWorld};
+use crate::{
+    items::jellyfish::Jellyfish, items::jellyfish::MountStatus, nodes::Player, GameWorld, Resources,
+};
 
 /// The FlappyJellyfish doesn't have a body, as it has a non-conventional (flappy bird-style) motion.
 pub struct FlappyJellyfish {

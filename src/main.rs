@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use macroquad::prelude::*;
+use std::collections::HashMap;
 
 use macroquad_particles as particles;
 
@@ -8,14 +8,11 @@ use macroquad::{
     experimental::{
         collections::storage,
         coroutines::start_coroutine,
-        scene::{
-            self,
-            Handle,
-        },
+        scene::{self, Handle},
     },
 };
 
-use macroquad_platformer::{Tile};
+use macroquad_platformer::Tile;
 use particles::{Emitter, EmittersCache};
 
 use std::env;
@@ -32,22 +29,15 @@ pub mod components;
 pub mod json;
 pub mod map;
 
-pub mod math;
 pub mod editor;
+pub mod math;
 
-use editor::{
-    Editor,
-    EditorCamera,
-    EditorInputScheme,
-};
+use editor::{Editor, EditorCamera, EditorInputScheme};
 
 pub use input::{Input, InputScheme};
 
+use crate::{map::CollisionKind, nodes::Player};
 use map::Map;
-use crate::{
-    nodes::Player,
-    map::CollisionKind,
-};
 
 pub type CollisionWorld = macroquad_platformer::World;
 
@@ -160,49 +150,56 @@ impl Resources {
         let whale_green = load_texture(&format!(
             "{}/assets/Whale/Whale(76x66)(Green).png",
             assets_dir
-        )).await?;
+        ))
+        .await?;
 
         whale_green.set_filter(FilterMode::Nearest);
 
         let whale_blue = load_texture(&format!(
             "{}/assets/Whale/Whale(76x66)(Blue).png",
             assets_dir
-        )).await?;
+        ))
+        .await?;
 
         whale_blue.set_filter(FilterMode::Nearest);
 
         let whale_boots_green = load_texture(&format!(
             "{}/assets/Whale/WhaleBoots(76x66)(Green).png",
             assets_dir
-        )).await?;
+        ))
+        .await?;
 
         whale_boots_green.set_filter(FilterMode::Nearest);
 
         let whale_boots_blue = load_texture(&format!(
             "{}/assets/Whale/WhaleBoots(76x66)(Blue).png",
             assets_dir
-        )).await?;
+        ))
+        .await?;
 
         whale_boots_blue.set_filter(FilterMode::Nearest);
 
         let broken_turtleshell = load_texture(&format!(
             "{}/assets/Whale/BrokenTurtleShell(32x32).png",
             assets_dir
-        )).await?;
+        ))
+        .await?;
 
         broken_turtleshell.set_filter(FilterMode::Nearest);
 
         let turtleshell = load_texture(&format!(
             "{}/assets/Whale/TurtleShell(32x32).png",
             assets_dir
-        )).await?;
+        ))
+        .await?;
 
         turtleshell.set_filter(FilterMode::Nearest);
 
         let flappy_jellyfish = load_texture(&format!(
             "{}/assets/Whale/FlappyJellyfish(34x47).png",
             assets_dir
-        )).await?;
+        ))
+        .await?;
 
         flappy_jellyfish.set_filter(FilterMode::Nearest);
 
@@ -271,7 +268,7 @@ impl Resources {
         textures.insert("decorations".to_string(), decorations);
 
         #[allow(clippy::inconsistent_struct_constructor)]
-            Ok(Resources {
+        Ok(Resources {
             hit_fxses,
             explosion_fxses,
             life_ui_explosion_fxses,
@@ -304,7 +301,7 @@ impl Resources {
 }
 
 async fn build_game_scene(map: Map, assets_dir: &str, is_local_game: bool) -> Vec<Handle<Player>> {
-    use nodes::{Camera, SceneRenderer, Decoration, Fxses};
+    use nodes::{Camera, Decoration, Fxses, SceneRenderer};
 
     let resources_loading = start_coroutine({
         let assets_dir = assets_dir.to_string();
@@ -330,8 +327,9 @@ async fn build_game_scene(map: Map, assets_dir: &str, is_local_game: bool) -> Ve
         next_frame().await;
     }
 
-    let battle_music =
-        load_sound(&format!("{}/assets/music/fish tide.ogg", assets_dir)).await.unwrap();
+    let battle_music = load_sound(&format!("{}/assets/music/fish tide.ogg", assets_dir))
+        .await
+        .unwrap();
 
     audio::play_sound(
         battle_music,
@@ -342,10 +340,8 @@ async fn build_game_scene(map: Map, assets_dir: &str, is_local_game: bool) -> Ve
     );
 
     let bounds = {
-        let w =
-            map.grid_size.x as f32 * map.tile_size.x;
-        let h =
-            map.grid_size.y as f32 * map.tile_size.y;
+        let w = map.grid_size.x as f32 * map.tile_size.x;
+        let h = map.grid_size.y as f32 * map.tile_size.y;
         Rect::new(0., 0., w, h)
     };
 
@@ -356,10 +352,7 @@ async fn build_game_scene(map: Map, assets_dir: &str, is_local_game: bool) -> Ve
     let resources = storage::get::<Resources>();
 
     for object in &map.layers["decorations"].objects {
-        scene::add_node(Decoration::new(
-            object.position,
-            &object.name,
-        ));
+        scene::add_node(Decoration::new(object.position, &object.name));
     }
 
     let objects = map.layers["items"].objects.clone();
@@ -368,10 +361,10 @@ async fn build_game_scene(map: Map, assets_dir: &str, is_local_game: bool) -> Ve
 
     drop(resources);
 
-    let players = vec!(
+    let players = vec![
         scene::add_node(Player::new(0, 0)),
         scene::add_node(Player::new(1, 1)),
-    );
+    ];
 
     for object in &objects {
         for item_desc in items::ITEMS {
@@ -394,15 +387,16 @@ async fn game(map: Map, game_type: GameType, assets_dir: &str) {
 
     match game_type {
         GameType::Local(players_input) => {
-            assert_eq!(players_input.len(), 2, "There should be two player input schemes for this game mode!");
+            assert_eq!(
+                players_input.len(),
+                2,
+                "There should be two player input schemes for this game mode!"
+            );
 
             let players = build_game_scene(map, assets_dir, true).await;
             scene::add_node(LocalNetwork::new(players_input, players[0], players[1]));
         }
-        GameType::Editor {
-            input_scheme,
-            ..
-        } => {
+        GameType::Editor { input_scheme, .. } => {
             let position = map.get_size() * 0.5;
 
             scene::add_node(EditorCamera::new(position));
@@ -414,7 +408,13 @@ async fn game(map: Map, game_type: GameType, assets_dir: &str) {
             id,
         } => {
             let players = build_game_scene(map, assets_dir, false).await;
-            scene::add_node(Network::new(id, socket, input_scheme, players[0], players[1]));
+            scene::add_node(Network::new(
+                id,
+                socket,
+                input_scheme,
+                players[0],
+                players[1],
+            ));
         }
     }
 
@@ -493,9 +493,9 @@ async fn main() {
                     }
                 }
             }
-            GameType::Network { .. } => {
-                Map::load_tiled("assets/levels/lev01.json", None).await.unwrap()
-            }
+            GameType::Network { .. } => Map::load_tiled("assets/levels/lev01.json", None)
+                .await
+                .unwrap(),
         };
 
         game(map, game_type, &assets_dir).await;

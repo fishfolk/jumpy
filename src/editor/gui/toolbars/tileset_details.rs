@@ -1,26 +1,14 @@
 use macroquad::{
-    ui::{
-        Ui,
-        widgets,
-    },
-    experimental::{
-        collections::storage,
-    },
+    experimental::collections::storage,
     prelude::*,
+    ui::{widgets, Ui},
 };
 
-use crate::{
-    Resources,
-};
+use crate::Resources;
 
 use super::{
-    Map,
-    GuiResources,
-    ButtonParams,
+    ButtonParams, EditorAction, EditorDrawParams, GuiResources, Map, ToolbarElement,
     ToolbarElementParams,
-    ToolbarElement,
-    EditorAction,
-    EditorDrawParams,
 };
 use crate::editor::gui::ELEMENT_MARGIN;
 
@@ -36,9 +24,7 @@ impl TilesetDetailsElement {
             has_margins: true,
         };
 
-        TilesetDetailsElement {
-            params,
-        }
+        TilesetDetailsElement { params }
     }
 }
 
@@ -47,7 +33,13 @@ impl ToolbarElement for TilesetDetailsElement {
         &self.params
     }
 
-    fn draw(&mut self, ui: &mut Ui, size: Vec2, map: &Map, draw_params: &EditorDrawParams) -> Option<EditorAction> {
+    fn draw(
+        &mut self,
+        ui: &mut Ui,
+        size: Vec2,
+        map: &Map,
+        draw_params: &EditorDrawParams,
+    ) -> Option<EditorAction> {
         let mut res = None;
 
         let mut position = Vec2::ZERO;
@@ -57,7 +49,11 @@ impl ToolbarElement for TilesetDetailsElement {
 
             let texture = {
                 let resources = storage::get::<Resources>();
-                resources.textures.get(&tileset.texture_id).cloned().unwrap()
+                resources
+                    .textures
+                    .get(&tileset.texture_id)
+                    .cloned()
+                    .unwrap()
             };
 
             let grid_size = vec2(tileset.grid_size.x as f32, tileset.grid_size.y as f32);

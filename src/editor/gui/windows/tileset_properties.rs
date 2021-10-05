@@ -1,27 +1,12 @@
 use macroquad::{
-    ui::{
-        Ui,
-        widgets,
-    },
-    experimental::{
-        collections::storage,
-    },
+    experimental::collections::storage,
     prelude::*,
+    ui::{widgets, Ui},
 };
 
-use crate::{
-    Resources,
-    gui::GuiResources,
-};
+use crate::{gui::GuiResources, Resources};
 
-use super::{
-    Map,
-    ButtonParams,
-    Window,
-    WindowParams,
-    EditorAction,
-    EditorDrawParams,
-};
+use super::{ButtonParams, EditorAction, EditorDrawParams, Map, Window, WindowParams};
 use crate::map::MapTileset;
 
 pub struct TilesetPropertiesWindow {
@@ -65,10 +50,20 @@ impl TilesetPropertiesWindow {
         }
     }
 
-    fn draw_autotile_settings(&mut self, ui: &mut Ui, position: Vec2, size: Vec2, tileset: &MapTileset) -> Option<EditorAction> {
+    fn draw_autotile_settings(
+        &mut self,
+        ui: &mut Ui,
+        position: Vec2,
+        size: Vec2,
+        tileset: &MapTileset,
+    ) -> Option<EditorAction> {
         let tileset_texture = {
             let resources = storage::get::<Resources>();
-            resources.textures.get(&tileset.texture_id).cloned().unwrap()
+            resources
+                .textures
+                .get(&tileset.texture_id)
+                .cloned()
+                .unwrap()
         };
 
         let tileset_texture_size = vec2(tileset_texture.width(), tileset_texture.height());
@@ -137,7 +132,13 @@ impl Window for TilesetPropertiesWindow {
         &self.params
     }
 
-    fn draw(&mut self, ui: &mut Ui, size: Vec2, map: &Map, _draw_params: &EditorDrawParams) -> Option<EditorAction> {
+    fn draw(
+        &mut self,
+        ui: &mut Ui,
+        size: Vec2,
+        map: &Map,
+        _draw_params: &EditorDrawParams,
+    ) -> Option<EditorAction> {
         if let Some(tileset) = map.tilesets.get(&self.tileset_id) {
             if !self.has_data {
                 self.read_from_tileset(map);
@@ -164,11 +165,9 @@ impl Window for TilesetPropertiesWindow {
         let id = self.tileset_id.clone();
         let autotile_mask = self.autotile_mask.clone();
 
-        let action = self.get_close_action()
-            .then(EditorAction::UpdateTilesetAutotileMask {
-                id,
-                autotile_mask
-            });
+        let action = self
+            .get_close_action()
+            .then(EditorAction::UpdateTilesetAutotileMask { id, autotile_mask });
 
         res.push(ButtonParams {
             label: "Save",

@@ -1,26 +1,11 @@
+use std::{any::TypeId, result};
 
-use std::{
-    result,
-    any::TypeId,
-};
-
-use macroquad::{
-    experimental::{
-        collections::storage,
-    },
-    prelude::*,
-};
-use crate::{
-    Resources,
-    map::{
-        Map,
-        MapLayer,
-        MapLayerKind,
-        MapTile,
-        MapTileset,
-    },
-};
 use crate::editor::gui::windows::Window;
+use crate::{
+    map::{Map, MapLayer, MapLayerKind, MapTile, MapTileset},
+    Resources,
+};
+use macroquad::{experimental::collections::storage, prelude::*};
 
 // These are all the actions available for the GUI and other sub-systems of the editor.
 // If you need to perform multiple actions in one call, use the `Batch` variant.
@@ -81,10 +66,7 @@ impl EditorAction {
     }
 
     pub fn then(self, action: EditorAction) -> Self {
-        Self::batch(&[
-            self,
-            action,
-        ])
+        Self::batch(&[self, action])
     }
 }
 
@@ -151,7 +133,8 @@ impl UndoableAction for SetLayerDrawOrderIndex {
         if self.draw_order_index >= map.draw_order.len() {
             map.draw_order.push(self.id.clone());
         } else {
-            map.draw_order.insert(self.draw_order_index, self.id.clone());
+            map.draw_order
+                .insert(self.draw_order_index, self.id.clone());
         }
 
         Ok(())
@@ -321,10 +304,7 @@ pub struct CreateTileset {
 
 impl CreateTileset {
     pub fn new(id: String, texture_id: String) -> Self {
-        CreateTileset {
-            id,
-            texture_id,
-        }
+        CreateTileset { id, texture_id }
     }
 }
 
@@ -374,10 +354,7 @@ pub struct DeleteTileset {
 
 impl DeleteTileset {
     pub fn new(id: String) -> Self {
-        DeleteTileset {
-            id,
-            tileset: None,
-        }
+        DeleteTileset { id, tileset: None }
     }
 }
 
@@ -446,14 +423,13 @@ impl UndoableAction for UpdateTilesetAutotileMask {
                 tileset.autotile_mask = old_autotile_mask.clone();
                 self.old_autotile_mask = None;
             } else {
-                return Err(&"UpdateTilesetAutotileMask (Undo): No old autotile mask stored in action. Undo was probably called on an action that was never applied")
+                return Err(&"UpdateTilesetAutotileMask (Undo): No old autotile mask stored in action. Undo was probably called on an action that was never applied");
             }
         } else {
             return Err(&"UpdateTilesetAutotileMask (Undo): The specified tileset does not exist");
         }
 
         Ok(())
-
     }
 }
 
@@ -495,7 +471,7 @@ impl UndoableAction for PlaceTile {
                         tileset_id: self.tileset_id.clone(),
                         texture_id,
                         texture_coords,
-                        attributes: vec!(),
+                        attributes: vec![],
                     };
 
                     layer.tiles.insert(i as usize, Some(tile));

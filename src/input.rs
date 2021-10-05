@@ -1,9 +1,6 @@
 use macroquad::{
     experimental::collections::storage,
-    input::{
-        is_key_down,
-        KeyCode,
-    },
+    input::{is_key_down, KeyCode},
 };
 
 use quad_gamepad::GamepadButton;

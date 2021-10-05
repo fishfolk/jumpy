@@ -1,28 +1,11 @@
 use macroquad::{
-    ui::{
-        Ui,
-        hash,
-        widgets,
-    },
     prelude::*,
+    ui::{hash, widgets, Ui},
 };
 
-use crate::{
-    map::{
-        Map,
-        MapLayerKind,
-        ObjectLayerKind,
-        CollisionKind,
-    },
-};
+use crate::map::{CollisionKind, Map, MapLayerKind, ObjectLayerKind};
 
-use super::{
-    Window,
-    ButtonParams,
-    WindowParams,
-    EditorAction,
-    EditorDrawParams,
-};
+use super::{ButtonParams, EditorAction, EditorDrawParams, Window, WindowParams};
 
 pub struct CreateLayerWindow {
     params: WindowParams,
@@ -56,14 +39,11 @@ impl Window for CreateLayerWindow {
     fn get_buttons(&self, map: &Map, _draw_params: &EditorDrawParams) -> Vec<ButtonParams> {
         let mut res = Vec::new();
 
-        let is_existing_id = map.draw_order
-            .iter()
-            .any(|id| id == &self.layer_id);
+        let is_existing_id = map.draw_order.iter().any(|id| id == &self.layer_id);
 
         let mut action = None;
         if !is_existing_id {
-            let batch = self.get_close_action()
-                .then(EditorAction::CreateLayer {
+            let batch = self.get_close_action().then(EditorAction::CreateLayer {
                 id: self.layer_id.clone(),
                 kind: self.layer_kind,
                 draw_order_index: None,
@@ -87,7 +67,13 @@ impl Window for CreateLayerWindow {
         res
     }
 
-    fn draw(&mut self, ui: &mut Ui, _size: Vec2, _map: &Map, _params: &EditorDrawParams) -> Option<EditorAction> {
+    fn draw(
+        &mut self,
+        ui: &mut Ui,
+        _size: Vec2,
+        _map: &Map,
+        _params: &EditorDrawParams,
+    ) -> Option<EditorAction> {
         let id = hash!("create_layer_window");
 
         {
@@ -107,13 +93,11 @@ impl Window for CreateLayerWindow {
 
         let mut layer_kind = match self.layer_kind {
             MapLayerKind::TileLayer => 0,
-            MapLayerKind::ObjectLayer(kind) => {
-                match kind {
-                    ObjectLayerKind::Items => 1,
-                    ObjectLayerKind::SpawnPoints => 2,
-                    _ => unreachable!(),
-                }
-            }
+            MapLayerKind::ObjectLayer(kind) => match kind {
+                ObjectLayerKind::Items => 1,
+                ObjectLayerKind::SpawnPoints => 2,
+                _ => unreachable!(),
+            },
         };
 
         widgets::ComboBox::new(hash!(id, "type_input"), &["Tiles", "Items", "Spawn Points"])

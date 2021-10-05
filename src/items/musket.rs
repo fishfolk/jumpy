@@ -7,7 +7,11 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::{components::{GunlikeAnimation, PhysicsBody, ThrowableItem}, items::gun::Gun, Resources, GameWorld};
+use crate::{
+    components::{GunlikeAnimation, PhysicsBody, ThrowableItem},
+    items::gun::Gun,
+    GameWorld, Resources,
+};
 
 const MUSKET_COLLIDER_WIDTH: f32 = 48.0;
 const MUSKET_COLLIDER_HEIGHT: f32 = 32.0;

@@ -6,7 +6,7 @@ use macroquad::{
 };
 use macroquad_platformer::Tile;
 
-use crate::{Resources, GameWorld};
+use crate::{GameWorld, Resources};
 
 pub struct Bullet {
     pub pos: Vec2,

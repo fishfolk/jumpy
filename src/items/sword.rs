@@ -10,7 +10,12 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::{capabilities, components::{PhysicsBody, ThrowableItem}, nodes::Player, Resources, GameWorld};
+use crate::{
+    capabilities,
+    components::{PhysicsBody, ThrowableItem},
+    nodes::Player,
+    GameWorld, Resources,
+};
 
 pub struct Sword {
     sprite: AnimatedSprite,

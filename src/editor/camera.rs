@@ -1,9 +1,4 @@
-use macroquad::{
-    experimental::{
-        scene::RefMut,
-    },
-    prelude::*,
-};
+use macroquad::{experimental::scene::RefMut, prelude::*};
 
 pub struct EditorCamera {
     pub position: Vec2,

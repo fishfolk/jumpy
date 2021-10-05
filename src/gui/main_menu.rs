@@ -4,10 +4,12 @@ use macroquad::{
     ui::{self, hash, root_ui, widgets},
 };
 
-use crate::{gui::{
-    Level,
-    GuiResources,
-}, input::InputScheme, nodes::network::Message, GameType, EditorInputScheme};
+use crate::{
+    gui::{GuiResources, Level},
+    input::InputScheme,
+    nodes::network::Message,
+    EditorInputScheme, GameType,
+};
 
 use std::net::UdpSocket;
 
@@ -116,8 +118,10 @@ fn editor_ui(ui: &mut ui::Ui) -> Option<GameType> {
     ui.separator();
     ui.separator();
 
-    ui.group(hash!(), vec2(WINDOW_WIDTH / 2. - 50., 70.), |ui| {
-        match input_scheme {
+    ui.group(
+        hash!(),
+        vec2(WINDOW_WIDTH / 2. - 50., 70.),
+        |ui| match input_scheme {
             EditorInputScheme::Keyboard => {
                 ui.label(None, "Gamepad not connected");
             }
@@ -125,20 +129,26 @@ fn editor_ui(ui: &mut ui::Ui) -> Option<GameType> {
                 ui.label(None, "Gamepad connected!");
                 ui.label(None, &format!("{:?}", i));
             }
-        }
-    });
+        },
+    );
 
     let btn_a = is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::A);
     let btn_b = is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::B);
 
     if ui.button(None, "Create map (A)") || btn_a {
-        return Some(GameType::Editor { input_scheme, is_new_map: true });
+        return Some(GameType::Editor {
+            input_scheme,
+            is_new_map: true,
+        });
     }
 
     ui.same_line(204.0);
 
     if ui.button(None, "Load map (B)") || btn_b {
-        return Some(GameType::Editor { input_scheme, is_new_map: false });
+        return Some(GameType::Editor {
+            input_scheme,
+            is_new_map: false,
+        });
     }
 
     None
@@ -630,92 +640,95 @@ pub async fn new_map() -> (String, Vec2, UVec2) {
     let mut map_name = "Unnamed Map".to_string();
     let mut map_grid_width = "100".to_string();
     let mut map_grid_height = "100".to_string();
-    let mut map_tile_width  = "32".to_string();
-    let mut map_tile_height  = "32".to_string();
+    let mut map_tile_width = "32".to_string();
+    let mut map_tile_height = "32".to_string();
 
     loop {
         gui_resources.gamepads.update();
 
         clear_background(BLACK);
 
-        widgets::Window::new(hash!(), position, size).titlebar(false).movable(false).ui(&mut *root_ui(), |ui| {
-            ui.label(None, "Create new map");
+        widgets::Window::new(hash!(), position, size)
+            .titlebar(false)
+            .movable(false)
+            .ui(&mut *root_ui(), |ui| {
+                ui.label(None, "Create new map");
 
-            ui.separator();
-            ui.separator();
-            ui.separator();
-            ui.separator();
+                ui.separator();
+                ui.separator();
+                ui.separator();
+                ui.separator();
 
-            {
-                let size = vec2(173.0, 25.0);
+                {
+                    let size = vec2(173.0, 25.0);
 
-                widgets::InputText::new(hash!())
-                    .size(size)
-                    .ratio(1.0)
-                    .label("Map name")
-                    .ui(ui, &mut map_name);
-            }
+                    widgets::InputText::new(hash!())
+                        .size(size)
+                        .ratio(1.0)
+                        .label("Map name")
+                        .ui(ui, &mut map_name);
+                }
 
-            ui.separator();
-            ui.separator();
+                ui.separator();
+                ui.separator();
 
-            {
-                let size = vec2(75.0, 25.0);
+                {
+                    let size = vec2(75.0, 25.0);
 
-                widgets::InputText::new(hash!())
-                    .size(size)
-                    .ratio(1.0)
-                    .label("x")
-                    .ui(ui, &mut map_grid_width);
+                    widgets::InputText::new(hash!())
+                        .size(size)
+                        .ratio(1.0)
+                        .label("x")
+                        .ui(ui, &mut map_grid_width);
 
-                ui.same_line(size.x + 25.0);
+                    ui.same_line(size.x + 25.0);
 
-                widgets::InputText::new(hash!())
-                    .size(size)
-                    .ratio(1.0)
-                    .label("Grid size")
-                    .ui(ui, &mut map_grid_height);
+                    widgets::InputText::new(hash!())
+                        .size(size)
+                        .ratio(1.0)
+                        .label("Grid size")
+                        .ui(ui, &mut map_grid_height);
 
-                widgets::InputText::new(hash!())
-                    .size(size)
-                    .ratio(1.0)
-                    .label("x")
-                    .ui(ui, &mut map_tile_width);
+                    widgets::InputText::new(hash!())
+                        .size(size)
+                        .ratio(1.0)
+                        .label("x")
+                        .ui(ui, &mut map_tile_width);
 
-                ui.same_line(size.x + 25.0);
+                    ui.same_line(size.x + 25.0);
 
-                widgets::InputText::new(hash!())
-                    .size(size)
-                    .ratio(1.0)
-                    .label("Tile size")
-                    .ui(ui, &mut map_tile_height);
-            }
+                    widgets::InputText::new(hash!())
+                        .size(size)
+                        .ratio(1.0)
+                        .label("Tile size")
+                        .ui(ui, &mut map_tile_height);
+                }
 
-            ui.separator();
-            ui.separator();
-            ui.separator();
-            ui.separator();
+                ui.separator();
+                ui.separator();
+                ui.separator();
+                ui.separator();
 
-            let btn_a = is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::A);
-            let enter = is_key_pressed(KeyCode::Enter);
+                let btn_a = is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::A);
+                let enter = is_key_pressed(KeyCode::Enter);
 
-            if ui.button(None, "Confirm (A) (Enter)") || btn_a || enter {
-                // TODO: Validate input
+                if ui.button(None, "Confirm (A) (Enter)") || btn_a || enter {
+                    // TODO: Validate input
 
-                let grid_size = uvec2(
-                    map_grid_width.parse::<u32>().unwrap(),
-                    map_grid_height.parse::<u32>().unwrap(),
-                );
+                    let grid_size = uvec2(
+                        map_grid_width.parse::<u32>().unwrap(),
+                        map_grid_height.parse::<u32>().unwrap(),
+                    );
 
-                let tile_size = vec2(
-                    map_tile_width.parse::<f32>().unwrap(),
-                    map_tile_height.parse::<f32>().unwrap(),
-                );
+                    let tile_size = vec2(
+                        map_tile_width.parse::<f32>().unwrap(),
+                        map_tile_height.parse::<f32>().unwrap(),
+                    );
 
-                let map_params = (map_name.clone(), tile_size, grid_size);
-                res = Some(map_params);
-            }
-        });
+                    let map_params = (map_name.clone(), tile_size, grid_size);
+                    res = Some(map_params);
+                }
+            });
 
         if let Some(res) = res {
             root_ui().pop_skin();

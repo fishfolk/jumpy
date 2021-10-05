@@ -10,7 +10,12 @@ use macroquad::{
     },
 };
 
-use crate::{capabilities, components::{GunlikeAnimation, PhysicsBody, ThrowableItem}, nodes::{explosive, Player}, Resources, GameWorld};
+use crate::{
+    capabilities,
+    components::{GunlikeAnimation, PhysicsBody, ThrowableItem},
+    nodes::{explosive, Player},
+    GameWorld, Resources,
+};
 
 pub struct Cannon {
     cannon_sprite: GunlikeAnimation,

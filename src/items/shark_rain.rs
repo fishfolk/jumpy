@@ -10,7 +10,12 @@ use macroquad::{
     rand::gen_range,
 };
 
-use crate::{capabilities, components::{GunlikeAnimation, PhysicsBody, ThrowableItem}, nodes::Player, Resources, GameWorld};
+use crate::{
+    capabilities,
+    components::{GunlikeAnimation, PhysicsBody, ThrowableItem},
+    nodes::Player,
+    GameWorld, Resources,
+};
 
 pub struct RainingShark {
     pub sprite: Texture2D,

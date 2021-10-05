@@ -1,29 +1,14 @@
 use std::ops::Deref;
 
 use macroquad::{
-    ui::{
-        Ui,
-        hash,
-        widgets,
-    },
-    experimental::{
-        collections::storage,
-    },
+    experimental::collections::storage,
     prelude::*,
+    ui::{hash, widgets, Ui},
 };
 
-use crate::{
-    map::Map,
-    Resources,
-};
+use crate::{map::Map, Resources};
 
-use super::{
-    ButtonParams,
-    Window,
-    WindowParams,
-    EditorAction,
-    EditorDrawParams,
-};
+use super::{ButtonParams, EditorAction, EditorDrawParams, Window, WindowParams};
 
 pub struct CreateTilesetWindow {
     params: WindowParams,
@@ -55,17 +40,14 @@ impl Window for CreateTilesetWindow {
     fn get_buttons(&self, map: &Map, _draw_params: &EditorDrawParams) -> Vec<ButtonParams> {
         let mut res = Vec::new();
 
-        let is_existing_id = map.tilesets
-            .iter()
-            .any(|(id, _)| id == &self.tileset_id);
+        let is_existing_id = map.tilesets.iter().any(|(id, _)| id == &self.tileset_id);
 
         let mut action = None;
         if !is_existing_id {
-            let batch = self.get_close_action()
-                .then(EditorAction::CreateTileset {
-                    id: self.tileset_id.clone(),
-                    texture_id: self.texture_id.clone(),
-                });
+            let batch = self.get_close_action().then(EditorAction::CreateTileset {
+                id: self.tileset_id.clone(),
+                texture_id: self.texture_id.clone(),
+            });
 
             action = Some(batch);
         }
@@ -85,11 +67,18 @@ impl Window for CreateTilesetWindow {
         res
     }
 
-    fn draw(&mut self, ui: &mut Ui, _size: Vec2, _map: &Map, _draw_params: &EditorDrawParams) -> Option<EditorAction> {
+    fn draw(
+        &mut self,
+        ui: &mut Ui,
+        _size: Vec2,
+        _map: &Map,
+        _draw_params: &EditorDrawParams,
+    ) -> Option<EditorAction> {
         let id = hash!("create_tileset_element");
 
         let resources = storage::get::<Resources>();
-        let mut textures = resources.textures
+        let mut textures = resources
+            .textures
             .iter()
             .map(|(key, _)| key.deref())
             .collect::<Vec<&str>>();
@@ -125,10 +114,7 @@ impl Window for CreateTilesetWindow {
             .label("Texture")
             .ui(ui, &mut texture_index);
 
-        self.texture_id = textures
-            .get(texture_index)
-            .unwrap()
-            .to_string();
+        self.texture_id = textures.get(texture_index).unwrap().to_string();
 
         None
     }

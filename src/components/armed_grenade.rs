@@ -9,7 +9,10 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::{components::{EruptedItem, PhysicsBody}, Resources, GameWorld};
+use crate::{
+    components::{EruptedItem, PhysicsBody},
+    GameWorld, Resources,
+};
 
 pub struct ArmedGrenade {
     grenade_sprite: AnimatedSprite,

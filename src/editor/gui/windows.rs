@@ -1,13 +1,6 @@
-use std::{
-    any::TypeId,
-};
+use std::any::TypeId;
 
-use macroquad::{
-    ui::{
-        Ui,
-    },
-    prelude::*,
-};
+use macroquad::{prelude::*, ui::Ui};
 
 mod confirm_dialog;
 mod create_tileset;
@@ -18,14 +11,9 @@ mod tileset_properties;
 pub use confirm_dialog::ConfirmDialog;
 pub use create_layer::CreateLayerWindow;
 
+use super::{ButtonParams, EditorAction, EditorDrawParams, Map};
 pub use create_tileset::CreateTilesetWindow;
 pub use tileset_properties::TilesetPropertiesWindow;
-use super::{
-    Map,
-    ButtonParams,
-    EditorAction,
-    EditorDrawParams,
-};
 
 #[derive(Debug, Copy, Clone)]
 pub enum WindowPosition {
@@ -40,9 +28,7 @@ impl WindowPosition {
                 let screen_size = vec2(screen_width(), screen_height());
                 (screen_size - size) / 2.0
             }
-            WindowPosition::Absolute(position) => {
-                *position
-            }
+            WindowPosition::Absolute(position) => *position,
         }
     }
 }
@@ -77,17 +63,24 @@ impl Default for WindowParams {
 pub trait Window {
     fn get_params(&self) -> &WindowParams;
 
-    fn get_buttons(&self, _map: &Map, _draw_params: &EditorDrawParams) -> Vec<ButtonParams> where Self: 'static {
-        vec!(
-            ButtonParams {
-                label: "Close",
-                action: Some(self.get_close_action()),
-                ..Default::default()
-            }
-        )
+    fn get_buttons(&self, _map: &Map, _draw_params: &EditorDrawParams) -> Vec<ButtonParams>
+    where
+        Self: 'static,
+    {
+        vec![ButtonParams {
+            label: "Close",
+            action: Some(self.get_close_action()),
+            ..Default::default()
+        }]
     }
 
-    fn draw(&mut self, ui: &mut Ui, size: Vec2, map: &Map, draw_params: &EditorDrawParams) -> Option<EditorAction>;
+    fn draw(
+        &mut self,
+        ui: &mut Ui,
+        size: Vec2,
+        map: &Map,
+        draw_params: &EditorDrawParams,
+    ) -> Option<EditorAction>;
 
     fn get_absolute_position(&self) -> Vec2 {
         let params = self.get_params();
@@ -105,7 +98,10 @@ pub trait Window {
         rect.contains(point)
     }
 
-    fn get_close_action(&self) -> EditorAction where Self: 'static {
+    fn get_close_action(&self) -> EditorAction
+    where
+        Self: 'static,
+    {
         let id = TypeId::of::<Self>();
         EditorAction::CloseWindow(id)
     }

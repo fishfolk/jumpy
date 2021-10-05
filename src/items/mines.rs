@@ -8,7 +8,12 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::{capabilities, components::{GunlikeAnimation, PhysicsBody, ThrowableItem}, nodes::{explosive, Player}, Resources, GameWorld};
+use crate::{
+    capabilities,
+    components::{GunlikeAnimation, PhysicsBody, ThrowableItem},
+    nodes::{explosive, Player},
+    GameWorld, Resources,
+};
 
 pub struct Mines {
     mines_sprite: GunlikeAnimation,

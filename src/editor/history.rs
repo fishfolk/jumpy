@@ -1,9 +1,6 @@
 use crate::Map;
 
-use super::{
-    Result,
-    UndoableAction,
-};
+use super::{Result, UndoableAction};
 
 pub struct EditorHistory {
     undo_stack: Vec<Box<dyn UndoableAction>>,

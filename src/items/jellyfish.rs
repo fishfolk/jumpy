@@ -9,7 +9,13 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::{capabilities, components::{PhysicsBody, ThrowableItem}, nodes::flappy_jellyfish::FlappyJellyfish, nodes::Player, Resources, GameWorld};
+use crate::{
+    capabilities,
+    components::{PhysicsBody, ThrowableItem},
+    nodes::flappy_jellyfish::FlappyJellyfish,
+    nodes::Player,
+    GameWorld, Resources,
+};
 
 /// Statuses, in order
 #[derive(Copy, Clone, Debug)]

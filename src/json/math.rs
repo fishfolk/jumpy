@@ -1,13 +1,8 @@
 use macroquad::prelude::*;
 
-use serde::{
-    Serialize,
-    Deserialize,
-};
+use serde::{Deserialize, Serialize};
 
-pub use crate::math::{
-    URect,
-};
+pub use crate::math::URect;
 
 #[derive(Copy, Clone, Serialize, Deserialize)]
 pub struct Vec2Def {
@@ -17,19 +12,13 @@ pub struct Vec2Def {
 
 impl Vec2Def {
     pub fn new(x: f32, y: f32) -> Self {
-        Vec2Def {
-            x,
-            y,
-        }
+        Vec2Def { x, y }
     }
 }
 
 impl Default for Vec2Def {
     fn default() -> Self {
-        Vec2Def {
-            x: 0.0,
-            y: 0.0,
-        }
+        Vec2Def { x: 0.0, y: 0.0 }
     }
 }
 
@@ -44,10 +33,7 @@ impl From<Vec2> for Vec2Def {
 
 impl From<Vec2Def> for Vec2 {
     fn from(other: Vec2Def) -> Self {
-        vec2(
-            other.x,
-            other.y,
-        )
+        vec2(other.x, other.y)
     }
 }
 
@@ -59,10 +45,7 @@ pub struct UVec2Def {
 
 impl UVec2Def {
     pub fn new(x: u32, y: u32) -> Self {
-        UVec2Def {
-            x,
-            y,
-        }
+        UVec2Def { x, y }
     }
 }
 
@@ -77,10 +60,7 @@ impl From<UVec2> for UVec2Def {
 
 impl From<UVec2Def> for UVec2 {
     fn from(other: UVec2Def) -> Self {
-        uvec2(
-            other.x,
-            other.y,
-        )
+        uvec2(other.x, other.y)
     }
 }
 
@@ -119,20 +99,19 @@ impl From<RectDef> for Rect {
 
 pub mod def_vec2 {
     use super::{Vec2, Vec2Def};
-    use serde::{Serialize, Serializer, Deserialize, Deserializer};
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     pub fn serialize<S>(value: &Vec2, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
+    where
+        S: Serializer,
     {
-
         let helper = Vec2Def::from(*value);
         Vec2Def::serialize(&helper, serializer)
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<Vec2, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         let helper = Vec2Def::deserialize(deserializer)?;
         Ok(Vec2::from(helper))
@@ -141,11 +120,11 @@ pub mod def_vec2 {
 
 pub mod opt_vec2 {
     use super::Vec2;
-    use serde::{Serialize, Serializer, Deserialize, Deserializer};
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     pub fn serialize<S>(value: &Option<Vec2>, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
+    where
+        S: Serializer,
     {
         #[derive(Serialize)]
         struct Helper<'a>(#[serde(with = "super::def_vec2")] &'a Vec2);
@@ -154,8 +133,8 @@ pub mod opt_vec2 {
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Vec2>, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
         struct Helper(#[serde(with = "super::def_vec2")] Vec2);
@@ -167,11 +146,11 @@ pub mod opt_vec2 {
 
 pub mod vec_vec2 {
     use super::Vec2;
-    use serde::{Serialize, Serializer, Deserialize, Deserializer};
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     pub fn serialize<S>(value: &[Vec2], serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
+    where
+        S: Serializer,
     {
         #[derive(Serialize)]
         struct Helper<'a>(#[serde(with = "super::def_vec2")] &'a Vec2);
@@ -181,33 +160,35 @@ pub mod vec_vec2 {
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<Vec<Vec2>, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
         struct Helper(#[serde(with = "super::def_vec2")] Vec2);
 
         let helper = Vec::deserialize(deserializer)?;
-        Ok(helper.into_iter().map(|Helper(external)| external).collect())
+        Ok(helper
+            .into_iter()
+            .map(|Helper(external)| external)
+            .collect())
     }
 }
 
 pub mod def_uvec2 {
     use super::{UVec2, UVec2Def};
-    use serde::{Serialize, Serializer, Deserialize, Deserializer};
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     pub fn serialize<S>(value: &UVec2, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
+    where
+        S: Serializer,
     {
-
         let helper = UVec2Def::from(*value);
         UVec2Def::serialize(&helper, serializer)
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<UVec2, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         let helper = UVec2Def::deserialize(deserializer)?;
         Ok(UVec2::from(helper))
@@ -216,26 +197,32 @@ pub mod def_uvec2 {
 
 pub mod opt_uvec2 {
     use super::UVec2;
-    use serde::{Serialize, Serializer, Deserialize, Deserializer};
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     pub fn serialize<S>(value: &Option<UVec2>, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
+    where
+        S: Serializer,
     {
         #[derive(Serialize)]
-        struct Helper<'a>(#[serde(skip_serializing_if = "Option::is_none")]
-                          #[serde(with = "super::def_uvec2")] &'a UVec2);
+        struct Helper<'a>(
+            #[serde(skip_serializing_if = "Option::is_none")]
+            #[serde(with = "super::def_uvec2")]
+            &'a UVec2,
+        );
 
         value.as_ref().map(Helper).serialize(serializer)
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<UVec2>, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
-        struct Helper(#[serde(skip_serializing_if = "Option::is_none")]
-                      #[serde(with = "super::def_uvec2")] UVec2);
+        struct Helper(
+            #[serde(skip_serializing_if = "Option::is_none")]
+            #[serde(with = "super::def_uvec2")]
+            UVec2,
+        );
 
         let helper = Option::deserialize(deserializer)?;
         Ok(helper.map(|Helper(external)| external))
@@ -244,11 +231,11 @@ pub mod opt_uvec2 {
 
 pub mod opt_rect {
     use super::{Rect, RectDef};
-    use serde::{Serialize, Serializer, Deserialize, Deserializer};
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     pub fn serialize<S>(value: &Option<Rect>, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
+    where
+        S: Serializer,
     {
         #[derive(Serialize)]
         struct Helper<'a>(#[serde(with = "RectDef")] &'a Rect);
@@ -257,8 +244,8 @@ pub mod opt_rect {
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Rect>, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
         struct Helper(#[serde(with = "RectDef")] Rect);

@@ -1,15 +1,9 @@
 use macroquad::{
-    ui::{
-        root_ui,
-        Skin,
-    },
     prelude::*,
+    ui::{root_ui, Skin},
 };
 
-use super::{
-    NO_COLOR,
-    ELEMENT_MARGIN,
-};
+use super::{ELEMENT_MARGIN, NO_COLOR};
 
 pub struct EditorSkinCollection {
     pub default: Skin,
@@ -106,7 +100,7 @@ impl EditorSkinCollection {
                     None,
                 ))
                 .background_margin(RectOffset::new(2., 2., 2., 2.))
-                .margin(RectOffset::new(0.0,0.0,4.0,4.0))
+                .margin(RectOffset::new(0.0, 0.0, 4.0, 4.0))
                 .text_color(Color::from_rgba(200, 200, 160, 255))
                 .font_size(22)
                 .build();
@@ -411,7 +405,6 @@ impl EditorSkinCollection {
                 ..toolbar.clone()
             }
         };
-
 
         let tileset_subtile_grid = {
             let button_style = root_ui()

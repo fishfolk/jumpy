@@ -11,7 +11,7 @@ use macroquad::{
     rand::gen_range,
 };
 
-use crate::{Resources, GameWorld};
+use crate::{GameWorld, Resources};
 
 use crate::{
     capabilities,

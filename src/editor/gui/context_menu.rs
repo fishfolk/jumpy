@@ -1,23 +1,12 @@
 use macroquad::{
-    experimental::{
-        collections::storage,
-    },
-    ui::{
-        Ui,
-        hash,
-        widgets,
-    },
+    experimental::collections::storage,
     prelude::*,
+    ui::{hash, widgets, Ui},
 };
 
-use crate::{
-    gui::GuiResources,
-};
+use crate::gui::GuiResources;
 
-use super::{
-    ELEMENT_MARGIN,
-    EditorAction,
-};
+use super::{EditorAction, ELEMENT_MARGIN};
 
 #[derive(Debug, Clone)]
 pub enum ContextMenuEntry {
@@ -42,11 +31,18 @@ impl ContextMenuEntry {
     }
 
     pub fn action(label: &str, action: EditorAction) -> Self {
-        ContextMenuEntry::Action { label: label.to_string(), action }
+        ContextMenuEntry::Action {
+            label: label.to_string(),
+            action,
+        }
     }
 
     pub fn sub_menu(label: &str, entries: &[ContextMenuEntry]) -> Self {
-        ContextMenuEntry::SubMenu { label: label.to_string(), entries: entries.to_vec(), is_open: false }
+        ContextMenuEntry::SubMenu {
+            label: label.to_string(),
+            entries: entries.to_vec(),
+            is_open: false,
+        }
     }
 
     fn get_height(&self) -> f32 {
@@ -63,7 +59,10 @@ impl ContextMenuEntry {
             return true;
         }
 
-        if let Self::SubMenu { entries, is_open, .. } = self {
+        if let Self::SubMenu {
+            entries, is_open, ..
+        } = self
+        {
             if *is_open {
                 let mut position = vec2(position.x + Self::WIDTH, position.y);
                 position = get_corrected_position(position, entries, false);
@@ -92,10 +91,7 @@ impl ContextMenu {
         let entries = entries.to_vec();
         let position = get_corrected_position(position, &entries, true);
 
-        ContextMenu {
-            entries,
-            position,
-        }
+        ContextMenu { entries, position }
     }
 
     pub fn get_size(&self) -> Vec2 {
@@ -143,7 +139,9 @@ fn get_corrected_position(position: Vec2, entries: &[ContextMenuEntry], is_root:
     let screen_height = screen_height();
 
     let x = if is_root {
-        position.x.clamp(0.0, screen_width - ContextMenuEntry::WIDTH)
+        position
+            .x
+            .clamp(0.0, screen_width - ContextMenuEntry::WIDTH)
     } else if position.x + ContextMenuEntry::WIDTH > screen_width {
         position.x - ContextMenuEntry::WIDTH * 2.0
     } else {
@@ -155,7 +153,11 @@ fn get_corrected_position(position: Vec2, entries: &[ContextMenuEntry], is_root:
     vec2(x, y)
 }
 
-fn draw_entries(ui: &mut Ui, position: Vec2, entries: &mut [ContextMenuEntry]) -> Option<EditorAction> {
+fn draw_entries(
+    ui: &mut Ui,
+    position: Vec2,
+    entries: &mut [ContextMenuEntry],
+) -> Option<EditorAction> {
     let mut res = None;
 
     let mut size = vec2(ContextMenuEntry::WIDTH, 0.0);
@@ -194,7 +196,11 @@ fn draw_entries(ui: &mut Ui, position: Vec2, entries: &mut [ContextMenuEntry]) -
                             res = Some(action.clone());
                         }
                     }
-                    ContextMenuEntry::SubMenu { label, entries, is_open } => {
+                    ContextMenuEntry::SubMenu {
+                        label,
+                        entries,
+                        is_open,
+                    } => {
                         let button = widgets::Button::new("")
                             .position(entry_position)
                             .size(size)
@@ -205,7 +211,8 @@ fn draw_entries(ui: &mut Ui, position: Vec2, entries: &mut [ContextMenuEntry]) -
                         {
                             let suffix = if *is_open { "<" } else { ">" };
                             let suffix_width = ui.calc_size(suffix).x;
-                            let position = vec2(entry_position.x + size.x - suffix_width, entry_position.y);
+                            let position =
+                                vec2(entry_position.x + size.x - suffix_width, entry_position.y);
                             ui.label(position, suffix);
                         }
 
@@ -214,7 +221,11 @@ fn draw_entries(ui: &mut Ui, position: Vec2, entries: &mut [ContextMenuEntry]) -
                         }
 
                         if *is_open {
-                            let position = position + vec2(entry_position.x + ContextMenuEntry::WIDTH, entry_position.y);
+                            let position = position
+                                + vec2(
+                                    entry_position.x + ContextMenuEntry::WIDTH,
+                                    entry_position.y,
+                                );
                             sub_menus.push((position, entries));
                         }
                     }

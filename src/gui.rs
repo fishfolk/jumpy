@@ -2,9 +2,7 @@ pub mod main_menu;
 pub mod pause_menu;
 mod style;
 
-use nanoserde::{
-    Toml,
-};
+use nanoserde::Toml;
 
 pub use style::SkinCollection;
 
@@ -56,7 +54,9 @@ impl GuiResources {
 
             levels.push(Level {
                 map: format!("{}/{}", assets_dir, level["map"].str()),
-                preview: load_texture(&format!("{}/{}", assets_dir, level["preview"].str())).await.unwrap(),
+                preview: load_texture(&format!("{}/{}", assets_dir, level["preview"].str()))
+                    .await
+                    .unwrap(),
                 size: 0.0,
                 is_tiled,
                 is_custom,

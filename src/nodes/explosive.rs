@@ -5,7 +5,7 @@ use macroquad::{
     rand::gen_range,
 };
 
-use crate::{components::PhysicsBody, nodes::Player, Resources, GameWorld};
+use crate::{components::PhysicsBody, nodes::Player, GameWorld, Resources};
 
 use std::f32;
 

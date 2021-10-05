@@ -9,7 +9,12 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::{capabilities, components::{Bullet, GunlikeAnimation, PhysicsBody, ThrowableItem}, nodes::Player, Resources, GameWorld};
+use crate::{
+    capabilities,
+    components::{Bullet, GunlikeAnimation, PhysicsBody, ThrowableItem},
+    nodes::Player,
+    GameWorld, Resources,
+};
 
 pub struct MachinegunBullet {
     bullet: Bullet,

@@ -1,9 +1,4 @@
-use macroquad::{
-    experimental::{
-        collections::storage,
-    },
-    prelude::*,
-};
+use macroquad::{experimental::collections::storage, prelude::*};
 
 use quad_gamepad::GamepadButton;
 
@@ -71,19 +66,13 @@ pub fn collect_editor_input(scheme: EditorInputScheme) -> EditorInput {
             input.context_menu = state.digital_state[GamepadButton::X as usize];
 
             input.camera_pan = {
-                let direction = vec2(
-                    state.analog_state[0],
-                    state.analog_state[1],
-                );
+                let direction = vec2(state.analog_state[0], state.analog_state[1]);
 
                 direction.normalize_or_zero()
             };
 
             input.cursor_move = {
-                let direction = vec2(
-                    state.analog_state[2],
-                    state.analog_state[3],
-                );
+                let direction = vec2(state.analog_state[2], state.analog_state[3]);
 
                 direction.normalize_or_zero()
             };

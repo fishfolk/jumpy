@@ -1,22 +1,12 @@
 use macroquad::{
-    ui::{
-        Ui,
-        widgets,
-    },
-    experimental::{
-        collections::storage,
-    },
+    experimental::collections::storage,
     prelude::*,
+    ui::{widgets, Ui},
 };
 
 use super::{
-    GuiResources,
-    Toolbar,
-    ToolbarElement,
+    EditorAction, EditorDrawParams, GuiResources, Map, Toolbar, ToolbarElement,
     ToolbarElementParams,
-    EditorDrawParams,
-    EditorAction,
-    Map,
 };
 use crate::editor::gui::ButtonParams;
 
@@ -32,9 +22,7 @@ impl TilesetListElement {
             has_margins: false,
         };
 
-        TilesetListElement {
-            params,
-        }
+        TilesetListElement { params }
     }
 }
 
@@ -66,7 +54,13 @@ impl ToolbarElement for TilesetListElement {
         res
     }
 
-    fn draw(&mut self, ui: &mut Ui, size: Vec2, map: &Map, draw_params: &EditorDrawParams) -> Option<EditorAction> {
+    fn draw(
+        &mut self,
+        ui: &mut Ui,
+        size: Vec2,
+        map: &Map,
+        draw_params: &EditorDrawParams,
+    ) -> Option<EditorAction> {
         let mut res = None;
 
         let entry_size = vec2(size.x, Toolbar::LIST_ENTRY_HEIGHT);

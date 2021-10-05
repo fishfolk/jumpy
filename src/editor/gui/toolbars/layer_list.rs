@@ -1,30 +1,15 @@
 use macroquad::{
-    ui::{
-        Ui,
-        widgets,
-    },
-    experimental::{
-        collections::storage,
-    },
+    experimental::collections::storage,
     prelude::*,
+    ui::{widgets, Ui},
 };
 
 use crate::{
     gui::GuiResources,
-    map::{
-        Map,
-        MapLayerKind,
-        ObjectLayerKind,
-    },
+    map::{Map, MapLayerKind, ObjectLayerKind},
 };
 
-use super::{
-    EditorAction,
-    EditorDrawParams,
-    Toolbar,
-    ToolbarElement,
-    ToolbarElementParams,
-};
+use super::{EditorAction, EditorDrawParams, Toolbar, ToolbarElement, ToolbarElementParams};
 use crate::editor::gui::ButtonParams;
 
 pub struct LayerListElement {
@@ -39,9 +24,7 @@ impl LayerListElement {
             has_margins: false,
         };
 
-        LayerListElement {
-            params,
-        }
+        LayerListElement { params }
     }
 }
 
@@ -115,7 +98,13 @@ impl ToolbarElement for LayerListElement {
         res
     }
 
-    fn draw(&mut self, ui: &mut Ui, size: Vec2, map: &Map, draw_params: &EditorDrawParams) -> Option<EditorAction> {
+    fn draw(
+        &mut self,
+        ui: &mut Ui,
+        size: Vec2,
+        map: &Map,
+        draw_params: &EditorDrawParams,
+    ) -> Option<EditorAction> {
         let mut res = None;
 
         let entry_size = vec2(size.x, Toolbar::LIST_ENTRY_HEIGHT);
@@ -148,13 +137,11 @@ impl ToolbarElement for LayerListElement {
             {
                 let suffix = match kind {
                     MapLayerKind::TileLayer => "T",
-                    MapLayerKind::ObjectLayer(kind) => {
-                        match kind {
-                            ObjectLayerKind::None => "O",
-                            ObjectLayerKind::Items => "I",
-                            ObjectLayerKind::SpawnPoints => "S",
-                        }
-                    }
+                    MapLayerKind::ObjectLayer(kind) => match kind {
+                        ObjectLayerKind::None => "O",
+                        ObjectLayerKind::Items => "I",
+                        ObjectLayerKind::SpawnPoints => "S",
+                    },
                 };
 
                 let suffix_size = ui.calc_size(suffix);

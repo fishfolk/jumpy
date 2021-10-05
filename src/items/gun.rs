@@ -8,7 +8,12 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::{capabilities, components::{Bullet, GunlikeAnimation, PhysicsBody, ThrowableItem}, nodes::Player, Resources};
+use crate::{
+    capabilities,
+    components::{Bullet, GunlikeAnimation, PhysicsBody, ThrowableItem},
+    nodes::Player,
+    Resources,
+};
 
 pub struct Gun {
     pub gun_sprite: GunlikeAnimation,

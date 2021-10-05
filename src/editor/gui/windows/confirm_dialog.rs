@@ -1,17 +1,6 @@
-use macroquad::{
-    ui::{
-        Ui,
-    },
-    prelude::*,
-};
+use macroquad::{prelude::*, ui::Ui};
 
-use super::{
-    Map,
-    EditorAction,
-    EditorDrawParams,
-    Window,
-    WindowParams,
-};
+use super::{EditorAction, EditorDrawParams, Map, Window, WindowParams};
 use crate::editor::gui::windows::ButtonParams;
 
 pub struct ConfirmDialog {
@@ -33,10 +22,7 @@ impl ConfirmDialog {
             ..Default::default()
         };
 
-        let body = body
-            .iter()
-            .map(|line| line.to_string())
-            .collect();
+        let body = body.iter().map(|line| line.to_string()).collect();
 
         ConfirmDialog {
             params,
@@ -54,8 +40,7 @@ impl Window for ConfirmDialog {
     fn get_buttons(&self, _map: &Map, _draw_params: &EditorDrawParams) -> Vec<ButtonParams> {
         let mut res = Vec::new();
 
-        let action = self.get_close_action()
-            .then(self.confirm_action.clone());
+        let action = self.get_close_action().then(self.confirm_action.clone());
 
         res.push(ButtonParams {
             label: Self::CONFIRM_LABEL,
@@ -72,7 +57,13 @@ impl Window for ConfirmDialog {
         res
     }
 
-    fn draw(&mut self, ui: &mut Ui, _size: Vec2, _map: &Map, _draw_params: &EditorDrawParams) -> Option<EditorAction> {
+    fn draw(
+        &mut self,
+        ui: &mut Ui,
+        _size: Vec2,
+        _map: &Map,
+        _draw_params: &EditorDrawParams,
+    ) -> Option<EditorAction> {
         for line in &self.body {
             ui.label(None, line);
         }
@@ -85,4 +76,3 @@ impl Window for ConfirmDialog {
         None
     }
 }
-

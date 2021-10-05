@@ -4,28 +4,13 @@ pub use camera::EditorCamera;
 
 pub mod gui;
 
-use gui::{
-    GuiElement,
-    CreateLayerWindow,
-    CreateTilesetWindow,
-    EditorDrawParams,
-    EditorGui,
-};
+use gui::{CreateLayerWindow, CreateTilesetWindow, EditorDrawParams, EditorGui, GuiElement};
 
 mod actions;
 
 use actions::{
-    UndoableAction,
-    Result,
-    EditorAction,
-    SetLayerDrawOrderIndex,
-    CreateLayer,
-    DeleteLayer,
-    CreateTileset,
-    DeleteTileset,
-    UpdateTilesetAutotileMask,
-    PlaceTile,
-    RemoveTile,
+    CreateLayer, CreateTileset, DeleteLayer, DeleteTileset, EditorAction, PlaceTile, RemoveTile,
+    Result, SetLayerDrawOrderIndex, UndoableAction, UpdateTilesetAutotileMask,
 };
 
 mod input;
@@ -36,27 +21,17 @@ pub mod tools;
 use history::EditorHistory;
 pub use input::EditorInputScheme;
 
-use input::{
-    collect_editor_input,
-};
+use input::collect_editor_input;
 
 use macroquad::{
     experimental::{
-        scene::{
-            Node,
-            RefMut,
-        },
         collections::storage,
+        scene::{Node, RefMut},
     },
     prelude::*,
 };
 
-use crate::{
-    map::{
-        Map,
-        MapLayerKind,
-    },
-};
+use crate::map::{Map, MapLayerKind};
 
 use gui::TilesetPropertiesWindow;
 
@@ -96,10 +71,9 @@ impl Editor {
 
         let cursor_position = match input_scheme {
             EditorInputScheme::Keyboard => None,
-            EditorInputScheme::Gamepad(..) => Some(vec2(
-                screen_width() / 2.0,
-                screen_height() / 2.0,
-            )),
+            EditorInputScheme::Gamepad(..) => {
+                Some(vec2(screen_width() / 2.0, screen_height() / 2.0))
+            }
         };
 
         let gui = EditorGui::new();
@@ -188,7 +162,11 @@ impl Editor {
                 let action = SetLayerDrawOrderIndex::new(id, index);
                 res = self.history.apply(Box::new(action), &mut self.map);
             }
-            EditorAction::CreateLayer { id, kind, draw_order_index } => {
+            EditorAction::CreateLayer {
+                id,
+                kind,
+                draw_order_index,
+            } => {
                 let action = CreateLayer::new(id, kind, draw_order_index);
                 res = self.history.apply(Box::new(action), &mut self.map);
             }
@@ -226,7 +204,12 @@ impl Editor {
                 let action = UpdateTilesetAutotileMask::new(id, autotile_mask);
                 res = self.history.apply(Box::new(action), &mut self.map);
             }
-            EditorAction::PlaceTile { id, layer_id, tileset_id, coords } => {
+            EditorAction::PlaceTile {
+                id,
+                layer_id,
+                tileset_id,
+                coords,
+            } => {
                 let action = PlaceTile::new(id, layer_id, tileset_id, coords);
                 res = self.history.apply(Box::new(action), &mut self.map);
             }
@@ -272,7 +255,8 @@ impl Node for Editor {
         }
 
         if input.action {
-            if element_at_cursor.is_none() || element_at_cursor.unwrap() != GuiElement::ContextMenu {
+            if element_at_cursor.is_none() || element_at_cursor.unwrap() != GuiElement::ContextMenu
+            {
                 let mut gui = storage::get_mut::<EditorGui>();
                 gui.close_context_menu();
             }
@@ -325,10 +309,7 @@ impl Node for Editor {
             gui.get_element_at(cursor_position)
         };
 
-        let screen_size = vec2(
-            screen_width(),
-            screen_height(),
-        );
+        let screen_size = vec2(screen_width(), screen_height());
 
         let threshold = screen_size * Self::CAMERA_PAN_THRESHOLD;
 
@@ -352,7 +333,8 @@ impl Node for Editor {
         camera.position = (camera.position + movement).clamp(Vec2::ZERO, node.map.get_size());
 
         if element_at_cursor.is_none() {
-            camera.scale = (camera.scale + input.camera_zoom * Self::CAMERA_ZOOM_STEP).clamp(Self::CAMERA_ZOOM_MIN, Self::CAMERA_ZOOM_MAX);
+            camera.scale = (camera.scale + input.camera_zoom * Self::CAMERA_ZOOM_STEP)
+                .clamp(Self::CAMERA_ZOOM_MIN, Self::CAMERA_ZOOM_MAX);
         }
     }
 

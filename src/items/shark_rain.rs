@@ -14,7 +14,7 @@ use crate::{
     capabilities,
     components::{GunlikeAnimation, PhysicsBody, ThrowableItem},
     nodes::Player,
-    Resources,
+    GameWorld, Resources,
 };
 
 pub struct RainingShark {
@@ -49,10 +49,9 @@ impl RainingShark {
         self.pos += self.speed * get_frame_time();
 
         {
-            let resources = storage::get::<Resources>();
-            let map_height = (resources.tiled_map.raw_tiled_map.tileheight
-                * resources.tiled_map.raw_tiled_map.height) as f32;
-            if self.pos.y > map_height {
+            let world = storage::get::<GameWorld>();
+            let map_size = world.map.get_size();
+            if self.pos.y > map_size.y {
                 return false;
             }
         }
@@ -142,16 +141,15 @@ impl SharkRain {
     }
 
     pub fn start_positions() -> Vec<Vec2> {
-        let resources = storage::get::<Resources>();
-        let map_width =
-            resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width;
+        let world = storage::get::<GameWorld>();
+        let map_size = world.map.get_size();
 
         let mut positions: Vec<Vec2> = Vec::new();
         let mut start = 0.;
         let mut quant = RainingShark::COUNT as f32;
 
         for _ in 0..RainingShark::COUNT {
-            let free_space = (map_width as f32 - start - RainingShark::WIDTH * quant) / quant;
+            let free_space = (map_size.x - start - RainingShark::WIDTH * quant) / quant;
             let pos = Vec2::new(
                 gen_range(start, free_space + start),
                 gen_range(
@@ -169,7 +167,7 @@ impl SharkRain {
     }
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
-        let mut resources = storage::get_mut::<Resources>();
+        let resources = storage::get::<Resources>();
 
         let sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
@@ -187,8 +185,10 @@ impl SharkRain {
             Self::SPRITE_WIDTH as f32,
         );
 
+        let mut world = storage::get_mut::<GameWorld>();
+
         let body = PhysicsBody::new(
-            &mut resources.collision_world,
+            &mut world.collision_world,
             pos,
             0.0,
             vec2(Self::SPRITE_WIDTH as f32, Self::SPRITE_HEIGHT as f32),

@@ -4,7 +4,12 @@ use macroquad::{
     ui::{self, hash, root_ui, widgets},
 };
 
-use crate::{gui::GuiResources, input::InputScheme, nodes::network::Message, GameType};
+use crate::{
+    gui::{GuiResources, Level},
+    input::InputScheme,
+    nodes::network::Message,
+    EditorInputScheme, GameType,
+};
 
 use std::net::UdpSocket;
 
@@ -77,6 +82,73 @@ fn local_game_ui(ui: &mut ui::Ui, players: &mut Vec<InputScheme>) -> Option<Game
         if ui.button(None, "Ready! (A) (Enter)") || btn_a || enter {
             return Some(GameType::Local(players.clone()));
         }
+    }
+
+    None
+}
+
+fn editor_ui(ui: &mut ui::Ui) -> Option<GameType> {
+    let gui_resources = storage::get_mut::<GuiResources>();
+
+    ui.label(None, "Level Editor");
+
+    ui.separator();
+    ui.separator();
+    ui.separator();
+
+    let mut input_scheme = EditorInputScheme::Keyboard;
+
+    for i in 0..quad_gamepad::MAX_DEVICES {
+        let state = gui_resources.gamepads.state(i);
+
+        if state.digital_state[quad_gamepad::GamepadButton::Start as usize] {
+            input_scheme = EditorInputScheme::Gamepad(i);
+        }
+    }
+
+    ui.label(None, "To connect:");
+    ui.label(None, "Press Start on gamepad");
+
+    ui.separator();
+
+    ui.label(None, "Or proceed using keyboard and mouse...");
+
+    ui.separator();
+    ui.separator();
+    ui.separator();
+    ui.separator();
+
+    ui.group(
+        hash!(),
+        vec2(WINDOW_WIDTH / 2. - 50., 70.),
+        |ui| match input_scheme {
+            EditorInputScheme::Keyboard => {
+                ui.label(None, "Gamepad not connected");
+            }
+            EditorInputScheme::Gamepad(i) => {
+                ui.label(None, "Gamepad connected!");
+                ui.label(None, &format!("{:?}", i));
+            }
+        },
+    );
+
+    let btn_a = is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::A);
+    let btn_b = is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::B);
+
+    if ui.button(None, "Create map (A)") || btn_a {
+        return Some(GameType::Editor {
+            input_scheme,
+            is_new_map: true,
+        });
+    }
+
+    ui.same_line(204.0);
+
+    if ui.button(None, "Load map (B)") || btn_b {
+        return Some(GameType::Editor {
+            input_scheme,
+            is_new_map: false,
+        });
     }
 
     None
@@ -344,6 +416,8 @@ fn network_game_ui(ui: &mut ui::Ui, state: &mut NetworkUiState) -> Option<GameTy
     None
 }
 
+const MODE_SELECTION_TAB_COUNT: u32 = 3;
+
 pub async fn game_type() -> GameType {
     let mut players = vec![];
 
@@ -367,16 +441,20 @@ pub async fn game_type() -> GameType {
                 || is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::BumperLeft)
                 || is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::ThumbLeft)
             {
-                tab += 1;
-                tab %= 2;
+                let next_tab = tab as i32 - 1;
+                tab = if next_tab < 0 {
+                    MODE_SELECTION_TAB_COUNT
+                } else {
+                    next_tab as u32 % MODE_SELECTION_TAB_COUNT
+                };
             }
-            // for two tabs going left and right is the same thing
+
             if is_key_pressed(KeyCode::Right)
                 || is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::BumperRight)
                 || is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::ThumbRight)
             {
                 tab += 1;
-                tab %= 2;
+                tab %= MODE_SELECTION_TAB_COUNT;
             }
         }
 
@@ -395,7 +473,7 @@ pub async fn game_type() -> GameType {
             |ui| match widgets::Tabbar::new(
                 hash!(),
                 vec2(WINDOW_WIDTH - 50., 50.),
-                &["<< Local game, LT", "Network game, RT >>"],
+                &["<< LT, Local", "Editor", "Network, RT >>"],
             )
             .selected_tab(Some(&mut tab))
             .ui(ui)
@@ -404,6 +482,9 @@ pub async fn game_type() -> GameType {
                     res = local_game_ui(ui, &mut players);
                 }
                 1 => {
+                    res = editor_ui(ui);
+                }
+                2 => {
                     res = network_game_ui(ui, &mut network_ui_state);
                 }
                 _ => unreachable!(),
@@ -419,7 +500,7 @@ pub async fn game_type() -> GameType {
     }
 }
 
-pub async fn location_select() -> String {
+pub async fn location_select() -> Level {
     let mut hovered: i32 = 0;
 
     let mut old_mouse_position = mouse_position();
@@ -528,8 +609,8 @@ pub async fn location_select() -> String {
                     || start
                 {
                     root_ui().pop_skin();
-                    let level = &levels[hovered as usize];
-                    return level.map.clone();
+                    let level = levels.get(hovered as usize).unwrap();
+                    return level.clone();
                 }
             }
         }
@@ -537,6 +618,122 @@ pub async fn location_select() -> String {
         root_ui().pop_skin();
 
         old_mouse_position = mouse_position();
+
+        next_frame().await;
+    }
+}
+
+pub async fn new_map() -> (String, Vec2, UVec2) {
+    let mut res = None;
+
+    let size = vec2(350.0, 230.0);
+    let position = vec2(
+        (screen_width() - size.x) / 2.0,
+        (screen_height() - size.y) / 2.0,
+    );
+
+    next_frame().await;
+
+    let mut gui_resources = storage::get_mut::<GuiResources>();
+    root_ui().push_skin(&gui_resources.skins.login_skin);
+
+    let mut map_name = "Unnamed Map".to_string();
+    let mut map_grid_width = "100".to_string();
+    let mut map_grid_height = "100".to_string();
+    let mut map_tile_width = "32".to_string();
+    let mut map_tile_height = "32".to_string();
+
+    loop {
+        gui_resources.gamepads.update();
+
+        clear_background(BLACK);
+
+        widgets::Window::new(hash!(), position, size)
+            .titlebar(false)
+            .movable(false)
+            .ui(&mut *root_ui(), |ui| {
+                ui.label(None, "Create new map");
+
+                ui.separator();
+                ui.separator();
+                ui.separator();
+                ui.separator();
+
+                {
+                    let size = vec2(173.0, 25.0);
+
+                    widgets::InputText::new(hash!())
+                        .size(size)
+                        .ratio(1.0)
+                        .label("Map name")
+                        .ui(ui, &mut map_name);
+                }
+
+                ui.separator();
+                ui.separator();
+
+                {
+                    let size = vec2(75.0, 25.0);
+
+                    widgets::InputText::new(hash!())
+                        .size(size)
+                        .ratio(1.0)
+                        .label("x")
+                        .ui(ui, &mut map_grid_width);
+
+                    ui.same_line(size.x + 25.0);
+
+                    widgets::InputText::new(hash!())
+                        .size(size)
+                        .ratio(1.0)
+                        .label("Grid size")
+                        .ui(ui, &mut map_grid_height);
+
+                    widgets::InputText::new(hash!())
+                        .size(size)
+                        .ratio(1.0)
+                        .label("x")
+                        .ui(ui, &mut map_tile_width);
+
+                    ui.same_line(size.x + 25.0);
+
+                    widgets::InputText::new(hash!())
+                        .size(size)
+                        .ratio(1.0)
+                        .label("Tile size")
+                        .ui(ui, &mut map_tile_height);
+                }
+
+                ui.separator();
+                ui.separator();
+                ui.separator();
+                ui.separator();
+
+                let btn_a = is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::A);
+                let enter = is_key_pressed(KeyCode::Enter);
+
+                if ui.button(None, "Confirm (A) (Enter)") || btn_a || enter {
+                    // TODO: Validate input
+
+                    let grid_size = uvec2(
+                        map_grid_width.parse::<u32>().unwrap(),
+                        map_grid_height.parse::<u32>().unwrap(),
+                    );
+
+                    let tile_size = vec2(
+                        map_tile_width.parse::<f32>().unwrap(),
+                        map_tile_height.parse::<f32>().unwrap(),
+                    );
+
+                    let map_params = (map_name.clone(), tile_size, grid_size);
+                    res = Some(map_params);
+                }
+            });
+
+        if let Some(res) = res {
+            root_ui().pop_skin();
+            return res;
+        }
 
         next_frame().await;
     }

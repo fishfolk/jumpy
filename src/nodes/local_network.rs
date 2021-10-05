@@ -24,7 +24,6 @@ impl LocalNetwork {
         player1: Handle<Player>,
         player2: Handle<Player>,
     ) -> LocalNetwork {
-        assert!(players_input.len() == 2);
         LocalNetwork {
             player1,
             player2,

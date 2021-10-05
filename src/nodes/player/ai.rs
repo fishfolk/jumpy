@@ -8,7 +8,7 @@ use macroquad::{
 use crate::{
     capabilities::Weapon,
     nodes::{player::Input, Player},
-    Resources,
+    GameWorld,
 };
 
 pub struct Ai {
@@ -70,7 +70,7 @@ impl Ai {
         };
 
         {
-            let collision_world = &mut storage::get_mut::<Resources>().collision_world;
+            let collision_world = &mut storage::get_mut::<GameWorld>().collision_world;
 
             let obstacle_soon = collision_world
                 .collide_check(player.body.collider, player.body.pos + vec2(15. * dir, 0.));

@@ -12,7 +12,7 @@ use crate::{
     capabilities,
     components::{GunlikeAnimation, PhysicsBody, ThrowableItem},
     nodes::{explosive, Player},
-    Resources,
+    GameWorld, Resources,
 };
 
 pub struct Mines {
@@ -29,7 +29,7 @@ impl Mines {
     pub const MAXIMUM_AMOUNT: i32 = 3;
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
-        let mut resources = storage::get_mut::<Resources>();
+        let resources = storage::get::<Resources>();
         let mines_sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
                 26,
@@ -46,10 +46,12 @@ impl Mines {
             Self::COLLIDER_WIDTH,
         );
 
+        let mut world = storage::get_mut::<GameWorld>();
+
         scene::add_node(Mines {
             mines_sprite,
             body: PhysicsBody::new(
-                &mut resources.collision_world,
+                &mut world.collision_world,
                 pos,
                 0.0,
                 vec2(Self::COLLIDER_WIDTH, Self::COLLIDER_HEIGHT),

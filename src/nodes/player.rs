@@ -15,7 +15,7 @@ use crate::{
     capabilities::{NetworkReplicate, PhysicsObject, Weapon, WeaponTrait},
     components::PhysicsBody,
     items::shoes::Shoes,
-    Input, Resources,
+    GameWorld, Input, Resources,
 };
 
 use std::f32;
@@ -31,7 +31,7 @@ impl Player {
     }
 
     pub fn pick_weapon(&mut self, weapon: NodeWith<Weapon>) {
-        let resources = storage::get_mut::<Resources>();
+        let resources = storage::get::<Resources>();
         play_sound_once(resources.pickup_sound);
 
         self.drop_weapon();
@@ -120,12 +120,10 @@ impl Player {
 
     pub fn new(player_id: u8, controller_id: i32) -> Player {
         let spawner_pos = {
-            let resources = storage::get_mut::<Resources>();
-            let objects = &resources.tiled_map.layers["logic"].objects;
-            let macroquad_tiled::Object {
-                world_x, world_y, ..
-            } = objects[rand::gen_range(0, objects.len()) as usize];
-            vec2(world_x, world_y)
+            let world = storage::get_mut::<GameWorld>();
+            let objects = &world.map.layers["logic"].objects;
+            let object = &objects[rand::gen_range(0, objects.len()) as usize];
+            object.position
         };
 
         let mut state_machine = StateMachine::new();
@@ -160,8 +158,8 @@ impl Player {
 
         let body = PhysicsBody {
             collider: {
-                let mut resources = storage::get_mut::<Resources>();
-                resources.collision_world.add_actor(spawner_pos, 30, 54)
+                let mut world = storage::get_mut::<GameWorld>();
+                world.collision_world.add_actor(spawner_pos, 30, 54)
             },
             on_ground: false,
             angle: 0.0,
@@ -301,9 +299,9 @@ impl Player {
         let handle = node.handle();
 
         let map_bottom = {
-            let resources = storage::get::<Resources>();
+            let world = storage::get::<GameWorld>();
 
-            resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height
+            world.map.grid_size.y as f32 * world.map.tile_size.y
         } as f32;
 
         let coroutine = async move {
@@ -366,24 +364,21 @@ impl Player {
             }
 
             this.body.pos = {
-                let resources = storage::get_mut::<Resources>();
-                let objects = &resources.tiled_map.layers["logic"].objects;
-                let macroquad_tiled::Object {
-                    world_x, world_y, ..
-                } = objects[rand::gen_range(0, objects.len()) as usize];
-
-                vec2(world_x, world_y)
+                let world = storage::get_mut::<GameWorld>();
+                let objects = &world.map.layers["logic"].objects;
+                let object = &objects[rand::gen_range(0, objects.len()) as usize];
+                object.position
             };
             this.fish_sprite.playing = true;
             this.drop_weapon();
 
             // in deathmatch we can just get back to normal after death
             {
-                let mut resources = storage::get_mut::<Resources>();
+                let mut world = storage::get_mut::<GameWorld>();
 
                 this.state_machine.set_state(Self::ST_NORMAL);
                 this.dead = false;
-                resources
+                world
                     .collision_world
                     .set_actor_position(this.body.collider, this.body.pos);
             }
@@ -664,9 +659,9 @@ impl Player {
         node.fish_sprite.update();
 
         let map_bottom = {
-            let resources = storage::get::<Resources>();
+            let world = storage::get::<GameWorld>();
 
-            resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height
+            world.map.grid_size.y as f32 * world.map.tile_size.y
         } as f32;
 
         if node.body.pos.y > map_bottom {

@@ -11,7 +11,7 @@ use macroquad::{
     rand::gen_range,
 };
 
-use crate::Resources;
+use crate::{GameWorld, Resources};
 
 use crate::{
     capabilities,
@@ -33,7 +33,7 @@ impl Volcano {
     const COLLIDER_HEIGHT: f32 = 22.;
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
-        let mut resources = storage::get_mut::<Resources>();
+        let resources = storage::get::<Resources>();
 
         let sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
@@ -51,8 +51,10 @@ impl Volcano {
             Self::COLLIDER_WIDTH,
         );
 
+        let mut world = storage::get_mut::<GameWorld>();
+
         let body = PhysicsBody::new(
-            &mut resources.collision_world,
+            &mut world.collision_world,
             pos,
             0.0,
             vec2(Self::COLLIDER_WIDTH, Self::COLLIDER_HEIGHT),
@@ -321,14 +323,11 @@ impl EruptingVolcano {
 
     /// Returns (map_width, map_height)
     fn map_dimensions() -> (f32, f32) {
-        let resources = storage::get::<Resources>();
+        let world = storage::get::<GameWorld>();
 
-        let map_width = (resources.tiled_map.raw_tiled_map.tilewidth
-            * resources.tiled_map.raw_tiled_map.width) as f32;
-        let map_height = (resources.tiled_map.raw_tiled_map.tileheight
-            * resources.tiled_map.raw_tiled_map.height) as f32;
+        let map_size = world.map.get_size();
 
-        (map_width, map_height)
+        (map_size.x, map_size.y)
     }
 
     // NEW ITEM HELPERS ////////////////////////////////////////////////////////

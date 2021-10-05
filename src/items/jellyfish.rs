@@ -14,7 +14,7 @@ use crate::{
     components::{PhysicsBody, ThrowableItem},
     nodes::flappy_jellyfish::FlappyJellyfish,
     nodes::Player,
-    Resources,
+    GameWorld, Resources,
 };
 
 /// Statuses, in order
@@ -75,8 +75,6 @@ impl Jellyfish {
     const COLLIDER_HEIGHT: f32 = 39.;
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
-        let mut resources = storage::get_mut::<Resources>();
-
         let sprite = AnimatedSprite::new(
             30,
             39,
@@ -97,10 +95,12 @@ impl Jellyfish {
             false,
         );
 
+        let mut world = storage::get_mut::<GameWorld>();
+
         scene::add_node(Jellyfish {
             sprite,
             body: PhysicsBody::new(
-                &mut resources.collision_world,
+                &mut world.collision_world,
                 pos,
                 0.0,
                 vec2(Self::COLLIDER_WIDTH, Self::COLLIDER_HEIGHT),

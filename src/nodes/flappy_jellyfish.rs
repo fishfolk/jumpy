@@ -5,7 +5,9 @@ use macroquad::{
 };
 use macroquad_platformer::Tile;
 
-use crate::{items::jellyfish::Jellyfish, items::jellyfish::MountStatus, nodes::Player, Resources};
+use crate::{
+    items::jellyfish::Jellyfish, items::jellyfish::MountStatus, nodes::Player, GameWorld, Resources,
+};
 
 /// The FlappyJellyfish doesn't have a body, as it has a non-conventional (flappy bird-style) motion.
 pub struct FlappyJellyfish {
@@ -61,9 +63,9 @@ impl FlappyJellyfish {
             jellyfish.body.pos + vec2(direction_x_factor * Self::SPAWN_X_DISTANCE, 0.);
 
         let collides_solid = {
-            let resources = storage::get_mut::<Resources>();
+            let world = storage::get_mut::<GameWorld>();
 
-            resources.collision_world.collide_solids(
+            world.collision_world.collide_solids(
                 flappy_jellyfish_pos,
                 Self::COLLIDER_WIDTH as i32,
                 Self::COLLIDER_HEIGHT as i32,
@@ -182,9 +184,9 @@ impl scene::Node for FlappyJellyfish {
         let new_pos = flappy_jellyfish.current_pos + diff_pos;
 
         let collides_solid = {
-            let resources = storage::get_mut::<Resources>();
+            let world = storage::get_mut::<GameWorld>();
 
-            resources.collision_world.collide_solids(
+            world.collision_world.collide_solids(
                 new_pos,
                 Self::COLLIDER_WIDTH as i32,
                 Self::COLLIDER_HEIGHT as i32,
@@ -197,14 +199,11 @@ impl scene::Node for FlappyJellyfish {
             // Check/act on map borders
 
             let (map_width, map_height) = {
-                let resources = storage::get::<Resources>();
+                let world = storage::get::<GameWorld>();
 
-                let width = resources.tiled_map.raw_tiled_map.tilewidth
-                    * resources.tiled_map.raw_tiled_map.width;
-                let height = resources.tiled_map.raw_tiled_map.tileheight
-                    * resources.tiled_map.raw_tiled_map.height;
+                let map_size = world.map.get_size();
 
-                (width as f32, height as f32)
+                (map_size.x, map_size.y)
             };
 
             if flappy_jellyfish.current_pos.x < 0.

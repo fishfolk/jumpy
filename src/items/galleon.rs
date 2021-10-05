@@ -14,7 +14,7 @@ use crate::{
     capabilities,
     components::{GunlikeAnimation, PhysicsBody, ThrowableItem},
     nodes::Player,
-    Resources,
+    GameWorld, Resources,
 };
 
 pub struct FlyingGalleon {
@@ -52,20 +52,14 @@ impl FlyingGalleon {
     }
 
     pub fn start_position() -> (Vec2, bool) {
-        let resources = storage::get::<Resources>();
-        let map_width =
-            resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width;
-        let map_height =
-            resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height;
+        let world = storage::get::<GameWorld>();
+
+        let map_size = world.map.get_size();
 
         let facing = gen_range(0, 2) == 0;
         let pos = Vec2::new(
-            if facing {
-                -Self::WIDTH
-            } else {
-                map_width as f32
-            },
-            gen_range(0., map_height as f32 - Self::HEIGHT),
+            if facing { -Self::WIDTH } else { map_size.x },
+            gen_range(0., map_size.y - Self::HEIGHT),
         );
 
         (pos, facing)
@@ -75,10 +69,11 @@ impl FlyingGalleon {
         self.pos += self.speed * get_frame_time();
 
         {
-            let resources = storage::get::<Resources>();
-            let map_width = (resources.tiled_map.raw_tiled_map.tilewidth
-                * resources.tiled_map.raw_tiled_map.width) as f32;
-            if self.pos.x + Self::WIDTH < -map_width * 0.5 || self.pos.x > map_width * 1.5 {
+            let world = storage::get::<GameWorld>();
+
+            let map_size = world.map.get_size();
+
+            if self.pos.x + Self::WIDTH < -map_size.x * 0.5 || self.pos.x > map_size.x * 1.5 {
                 return false;
             }
         }
@@ -166,7 +161,7 @@ impl Galleon {
     }
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
-        let mut resources = storage::get_mut::<Resources>();
+        let resources = storage::get::<Resources>();
 
         let sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
@@ -184,8 +179,10 @@ impl Galleon {
             Self::SPRITE_WIDTH as f32,
         );
 
+        let mut world = storage::get_mut::<GameWorld>();
+
         let body = PhysicsBody::new(
-            &mut resources.collision_world,
+            &mut world.collision_world,
             pos,
             0.0,
             vec2(Self::SPRITE_WIDTH as f32, Self::SPRITE_HEIGHT as f32),

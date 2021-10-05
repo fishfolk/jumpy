@@ -2,7 +2,7 @@ use macroquad::math::Vec2;
 use macroquad::prelude::{collections::storage, get_frame_time};
 use macroquad_platformer::Tile;
 
-use crate::Resources;
+use crate::GameWorld;
 
 use crate::components::PhysicsBody;
 
@@ -32,7 +32,7 @@ pub trait EruptedItem {
             return false;
         }
 
-        let collision_world = &mut storage::get_mut::<Resources>().collision_world;
+        let collision_world = &mut storage::get_mut::<GameWorld>().collision_world;
 
         let tile = collision_world.collide_solids(body.pos, 15, 15);
 

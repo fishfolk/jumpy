@@ -69,7 +69,7 @@ impl Gun {
             //         .shake();
             // }
             {
-                let resources = storage::get_mut::<Resources>();
+                let resources = storage::get::<Resources>();
                 play_sound_once(resources.shoot_sound);
 
                 let mut node = &mut *scene::get_node(node);
@@ -181,6 +181,7 @@ impl Gun {
             shoot,
         }
     }
+
     fn physics_capabilities() -> capabilities::PhysicsObject {
         fn active(handle: HandleUntyped) -> bool {
             let node = scene::get_untyped_node(handle).unwrap().to_typed::<Gun>();
@@ -285,6 +286,7 @@ impl GunBullet {
         }
     }
 }
+
 impl scene::Node for GunBullet {
     fn ready(mut node: RefMut<Self>) {
         node.provides(Self::network_capabilities());

@@ -12,7 +12,7 @@ use crate::{
     capabilities,
     components::{PhysicsBody, ThrowableItem},
     nodes::Player,
-    Resources,
+    GameWorld, Resources,
 };
 
 pub struct Shoes {
@@ -38,12 +38,12 @@ impl Shoes {
             false,
         );
 
-        let mut resources = storage::get_mut::<Resources>();
+        let mut world = storage::get_mut::<GameWorld>();
 
         scene::add_node(Shoes {
             sprite,
             body: PhysicsBody::new(
-                &mut resources.collision_world,
+                &mut world.collision_world,
                 pos,
                 0.0,
                 vec2(Self::COLLIDER_WIDTH, Self::COLLIDER_HEIGHT),

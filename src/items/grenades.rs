@@ -13,7 +13,7 @@ use crate::{
     capabilities,
     components::{ArmedGrenade, GunlikeAnimation, PhysicsBody, ThrowableItem},
     nodes::Player,
-    Resources,
+    GameWorld, Resources,
 };
 
 pub struct Grenades {
@@ -33,7 +33,7 @@ impl Grenades {
     pub const MAXIMUM_AMOUNT: i32 = 3;
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
-        let mut resources = storage::get_mut::<Resources>();
+        let resources = storage::get::<Resources>();
 
         let grenade_sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
@@ -51,10 +51,12 @@ impl Grenades {
             Self::COLLIDER_WIDTH,
         );
 
+        let mut world = storage::get_mut::<GameWorld>();
+
         scene::add_node(Grenades {
             grenade_sprite,
             body: PhysicsBody::new(
-                &mut resources.collision_world,
+                &mut world.collision_world,
                 pos,
                 0.,
                 vec2(Self::COLLIDER_WIDTH, Self::COLLIDER_HEIGHT),

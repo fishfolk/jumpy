@@ -179,6 +179,7 @@ impl SkinCollection {
                 ..root_ui().default_skin()
             }
         };
+
         let error_skin = {
             let label_style = root_ui()
                 .style_builder()

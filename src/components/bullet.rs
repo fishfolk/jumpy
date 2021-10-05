@@ -6,7 +6,7 @@ use macroquad::{
 };
 use macroquad_platformer::Tile;
 
-use crate::Resources;
+use crate::{GameWorld, Resources};
 
 pub struct Bullet {
     pub pos: Vec2,
@@ -59,7 +59,8 @@ impl Bullet {
         }
 
         let mut resources = storage::get_mut::<Resources>();
-        if resources.collision_world.collide_solids(self.pos, 5, 5) == Tile::Solid {
+        let world = storage::get::<GameWorld>();
+        if world.collision_world.collide_solids(self.pos, 5, 5) == Tile::Solid {
             resources.hit_fxses.spawn(self.pos);
             return false;
         }

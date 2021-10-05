@@ -14,7 +14,7 @@ use crate::{
     capabilities,
     components::{GunlikeAnimation, PhysicsBody, ThrowableItem},
     nodes::{explosive, Player},
-    Resources,
+    GameWorld, Resources,
 };
 
 pub struct Cannon {
@@ -58,7 +58,7 @@ impl Cannon {
     const EXPLOSION_RADIUS: f32 = 4. * Self::CANNONBALL_WIDTH;
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
-        let mut resources = storage::get_mut::<Resources>();
+        let resources = storage::get::<Resources>();
         let cannon_sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
                 Self::CANNON_WIDTH as u32,
@@ -83,10 +83,12 @@ impl Cannon {
             Self::CANNON_WIDTH,
         );
 
+        let mut world = storage::get_mut::<GameWorld>();
+
         scene::add_node(Self {
             cannon_sprite,
             body: PhysicsBody::new(
-                &mut resources.collision_world,
+                &mut world.collision_world,
                 pos,
                 0.0,
                 vec2(Self::CANNON_WIDTH, Self::CANNON_HEIGHT),

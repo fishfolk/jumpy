@@ -10,7 +10,7 @@ use macroquad::{
 use crate::{
     components::{GunlikeAnimation, PhysicsBody, ThrowableItem},
     items::gun::Gun,
-    Resources,
+    GameWorld, Resources,
 };
 
 const MUSKET_COLLIDER_WIDTH: f32 = 48.0;
@@ -21,7 +21,7 @@ const MUSKET_BULLET_SPEED: f32 = 500.0;
 
 impl Gun {
     pub fn spawn_musket(pos: Vec2) -> HandleUntyped {
-        let mut resources = storage::get_mut::<Resources>();
+        let resources = storage::get::<Resources>();
 
         let gun_sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
@@ -63,12 +63,14 @@ impl Gun {
             MUSKET_COLLIDER_WIDTH,
         );
 
+        let mut world = storage::get_mut::<GameWorld>();
+
         scene::add_node(Gun {
             gun_sprite,
             gun_fx_sprite,
             gun_fx: false,
             body: PhysicsBody::new(
-                &mut resources.collision_world,
+                &mut world.collision_world,
                 pos,
                 0.0,
                 vec2(MUSKET_COLLIDER_WIDTH, MUSKET_COLLIDER_HEIGHT),

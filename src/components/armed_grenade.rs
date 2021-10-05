@@ -11,7 +11,7 @@ use macroquad::{
 
 use crate::{
     components::{EruptedItem, PhysicsBody},
-    Resources,
+    GameWorld, Resources,
 };
 
 pub struct ArmedGrenade {
@@ -49,7 +49,7 @@ impl ArmedGrenade {
             vec2(-600., -200.)
         };
 
-        let mut resources = storage::get_mut::<Resources>();
+        let mut world = storage::get_mut::<GameWorld>();
 
         let grenade_mount_pos = if facing {
             vec2(30., 10.)
@@ -65,7 +65,7 @@ impl ArmedGrenade {
             angle: 0.0,
             size,
             speed,
-            collider: resources.collision_world.add_actor(
+            collider: world.collision_world.add_actor(
                 pos + grenade_mount_pos,
                 size.x as _,
                 size.y as _,

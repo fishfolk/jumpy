@@ -5,7 +5,7 @@ use macroquad::{
     rand::gen_range,
 };
 
-use crate::{components::PhysicsBody, nodes::Player, Resources};
+use crate::{components::PhysicsBody, nodes::Player, GameWorld, Resources};
 
 use std::f32;
 
@@ -43,9 +43,9 @@ impl Explosive {
     ) -> Self {
         // This can be easily turned into a single sprite, rotated via DrawTextureParams.
         //
-        let mut resources = storage::get_mut::<Resources>();
+        let mut world = storage::get_mut::<GameWorld>();
 
-        let mut body = PhysicsBody::new(&mut resources.collision_world, pos, 0.0, size);
+        let mut body = PhysicsBody::new(&mut world.collision_world, pos, 0.0, size);
         body.speed = velocity;
 
         Self {

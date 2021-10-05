@@ -11,13 +11,17 @@ opt-level = 3
 nanoserde = "0.1.29"
 macroquad = { version = "0.3.10" }
 macroquad-platformer = "0.1"
-macroquad-tiled = "0.1"
 macroquad-profiler = "0.1"
 macroquad-particles = {version = "0.1", features = ["nanoserde"] }
 
 quad-gamepad = "0.2.0-alpha"
 
 stunclient = { git = "https://github.com/not-fl3/rust-stunclient", default-features = false }
+
+hex = "0.4"
+
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 
 #[patch.crates-io]
 #macroquad = { git = "https://github.com/not-fl3/macroquad" }

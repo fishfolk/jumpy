@@ -1,4 +1,4 @@
-# Hot to add a level to the FishFight
+# How to add a level to the FishFight
 
 Tiled: https://www.mapeditor.org/, also in most distros is available as `tiled` package. 
 1.7+ version required. 
@@ -8,7 +8,7 @@ Tiled: https://www.mapeditor.org/, also in most distros is available as `tiled` 
 ![image](https://user-images.githubusercontent.com/910977/126675836-128e394c-755d-4061-9103-5ed93f6e55cd.png)
 *"Project" is that little thing on the left.*
 
-Tiled project's are an optional thing to help navigate the levels while in tiled.
+Tiled projects are an optional thing to help navigate the levels while in tiled.
 
 To open project window, click:
 `View -> Toolbars -> Project`
@@ -16,7 +16,7 @@ To open project window, click:
 To open project with all our levels:
 `File -> Open file or project`
 
-Than click on lev0*.json in the project window to open up a level. 
+Then click on lev0*.json in the project window to open up a level. 
 
 ## Creating a level
 
@@ -33,7 +33,10 @@ Add a record to `assets/levels/levels.toml`, just like this:
 [[level]]
 map = "assets/levels/lev01.json"
 preview = "assets/levels/lev01.png"
+is_tiled = true
 ```
+
+Remember to set `is_tiled` to `true` for any maps made in Tiled, so that the game knows that it must be converted to the internal format when it is loaded.
 
 **Note** that both map and preview are required! If there is no preview yet - just use a random texture, preview of other map or whatever.
 
@@ -45,7 +48,7 @@ name = "Cool level name"
 description = "Sword fighting 1x1 level for the real fishes"
 ```
 
-they will do nothing in the game, but may be helpful to figure what UI we will need in level selection menu etc. 
+They will do nothing in the game, but may be helpful to figure what UI we will need in level selection menu etc. 
 
 This is it, after adding level to levels.toml it should appear in the game!
 Levels are sorted in the same order as they are in the toml. 
@@ -99,7 +102,7 @@ Changes to be committed:
 	modified:   assets/levels/levels.toml
 ```
 
-Looks good enough, than to actually make a PR:
+Looks good enough, then to actually make a PR:
 
 Create a named branch 
 ```bash

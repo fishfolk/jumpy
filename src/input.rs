@@ -3,6 +3,8 @@ use macroquad::{
     input::{is_key_down, KeyCode},
 };
 
+use quad_gamepad::GamepadButton;
+
 use nanoserde::{DeBin, SerBin};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -55,7 +57,7 @@ pub fn collect_input(scheme: InputScheme) -> Input {
     }
 
     if let InputScheme::Gamepad(ix) = scheme {
-        use quad_gamepad::GamepadButton::*;
+        use GamepadButton::*;
 
         let gui_resources = storage::get_mut::<crate::gui::GuiResources>();
 

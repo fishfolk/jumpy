@@ -6,7 +6,7 @@ use macroquad::{
 
 use macroquad_platformer::{Actor, World as CollisionWorld};
 
-use crate::Resources;
+use crate::GameWorld;
 
 pub struct PhysicsBody {
     pub pos: Vec2,
@@ -53,27 +53,34 @@ impl PhysicsBody {
     }
 
     pub fn descent(&mut self) {
-        let collision_world = &mut storage::get_mut::<Resources>().collision_world;
-
-        collision_world.descent(self.collider);
+        let mut world = storage::get_mut::<GameWorld>();
+        world.collision_world.descent(self.collider);
     }
 
     pub fn update(&mut self) {
-        let collision_world = &mut storage::get_mut::<Resources>().collision_world;
+        let mut world = storage::get_mut::<GameWorld>();
 
-        self.pos = collision_world.actor_pos(self.collider);
+        self.pos = world.collision_world.actor_pos(self.collider);
         self.last_frame_on_ground = self.on_ground;
-        self.on_ground = collision_world.collide_check(self.collider, self.pos + vec2(0., 1.));
+        self.on_ground = world
+            .collision_world
+            .collide_check(self.collider, self.pos + vec2(0., 1.));
         if !self.on_ground && self.have_gravity {
             self.speed.y += Self::GRAVITY * get_frame_time();
         }
-        if !collision_world.move_h(self.collider, self.speed.x * get_frame_time()) {
+        if !world
+            .collision_world
+            .move_h(self.collider, self.speed.x * get_frame_time())
+        {
             self.speed.x *= -self.bouncyness;
         }
-        if !collision_world.move_v(self.collider, self.speed.y * get_frame_time()) {
+        if !world
+            .collision_world
+            .move_v(self.collider, self.speed.y * get_frame_time())
+        {
             self.speed.y *= -self.bouncyness;
         }
-        self.pos = collision_world.actor_pos(self.collider);
+        self.pos = world.collision_world.actor_pos(self.collider);
     }
 
     pub fn update_throw(&mut self) {

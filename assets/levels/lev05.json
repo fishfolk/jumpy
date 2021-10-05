@@ -8,6 +8,12 @@
          "id":1,
          "name":"main layer",
          "opacity":1,
+         "properties":[
+                {
+                 "name":"collision",
+                 "type":"string",
+                 "value":"solid"
+                }],
          "type":"tilelayer",
          "visible":true,
          "width":45,
@@ -230,12 +236,6 @@
  "nextlayerid":6,
  "nextobjectid":78,
  "orientation":"orthogonal",
- "properties":[
-        {
-         "name":"collision",
-         "type":"string",
-         "value":"solid"
-        }],
  "renderorder":"right-down",
  "tiledversion":"1.7.2",
  "tileheight":32,

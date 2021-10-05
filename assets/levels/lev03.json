@@ -8,6 +8,12 @@
          "id":1,
          "name":"main layer",
          "opacity":1,
+         "properties":[
+                {
+                 "name":"collision",
+                 "type":"string",
+                 "value":"solid"
+                }],
          "type":"tilelayer",
          "visible":true,
          "width":35,

@@ -5,8 +5,7 @@ use macroquad::{
 };
 
 use super::{
-    EditorAction, EditorDrawParams, GuiResources, Map, Toolbar, ToolbarElement,
-    ToolbarElementParams,
+    EditorAction, EditorContext, GuiResources, Map, Toolbar, ToolbarElement, ToolbarElementParams,
 };
 use crate::editor::gui::ButtonParams;
 
@@ -31,27 +30,24 @@ impl ToolbarElement for TilesetListElement {
         &self.params
     }
 
-    fn get_buttons(&self, _map: &Map, draw_params: &EditorDrawParams) -> Vec<ButtonParams> {
-        let mut res = Vec::new();
-
+    fn get_buttons(&self, _map: &Map, ctx: &EditorContext) -> Vec<ButtonParams> {
         let mut action = None;
-        if let Some(tileset_id) = draw_params.selected_tileset.clone() {
+        if let Some(tileset_id) = ctx.selected_tileset.clone() {
             action = Some(EditorAction::DeleteTileset(tileset_id));
         }
 
-        res.push(ButtonParams {
-            label: "+",
-            width_override: Some(0.25),
-            action: Some(EditorAction::OpenCreateTilesetWindow),
-        });
-
-        res.push(ButtonParams {
-            label: "-",
-            width_override: Some(0.25),
-            action,
-        });
-
-        res
+        vec![
+            ButtonParams {
+                label: "+",
+                width_override: Some(0.25),
+                action: Some(EditorAction::OpenCreateTilesetWindow),
+            },
+            ButtonParams {
+                label: "-",
+                width_override: Some(0.25),
+                action,
+            },
+        ]
     }
 
     fn draw(
@@ -59,7 +55,7 @@ impl ToolbarElement for TilesetListElement {
         ui: &mut Ui,
         size: Vec2,
         map: &Map,
-        draw_params: &EditorDrawParams,
+        ctx: &EditorContext,
     ) -> Option<EditorAction> {
         let mut res = None;
 
@@ -70,7 +66,7 @@ impl ToolbarElement for TilesetListElement {
         ui.push_skin(&gui_resources.editor_skins.menu);
 
         for tileset_id in map.tilesets.keys() {
-            let is_selected = if let Some(selected_id) = &draw_params.selected_tileset {
+            let is_selected = if let Some(selected_id) = &ctx.selected_tileset {
                 tileset_id == selected_id
             } else {
                 false

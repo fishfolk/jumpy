@@ -8,7 +8,7 @@ use macroquad::{
 
 use crate::{gui::GuiResources, map::Map};
 
-use super::{ButtonParams, EditorAction, EditorDrawParams, ELEMENT_MARGIN};
+use super::{ButtonParams, EditorAction, EditorContext, ELEMENT_MARGIN};
 
 mod tool_selector;
 
@@ -41,10 +41,14 @@ pub trait ToolbarElement {
         ui: &mut Ui,
         size: Vec2,
         map: &Map,
-        draw_params: &EditorDrawParams,
+        ctx: &EditorContext,
     ) -> Option<EditorAction>;
 
-    fn get_buttons(&self, _map: &Map, _draw_params: &EditorDrawParams) -> Vec<ButtonParams> {
+    // Implement this and set `has_buttons` to true in the `ToolbarElementParams` returned by
+    // `get_params` to add a button bar to the bottom of the element.
+    // There can be no more than four buttons, each represented by a `ButtonParam` struct, in
+    // the `Vec` returned by this method.
+    fn get_buttons(&self, _map: &Map, _ctx: &EditorContext) -> Vec<ButtonParams> {
         Vec::new()
     }
 }
@@ -106,12 +110,7 @@ impl Toolbar {
         rect.contains(point)
     }
 
-    pub fn draw(
-        &mut self,
-        ui: &mut Ui,
-        map: &Map,
-        draw_params: &EditorDrawParams,
-    ) -> Option<EditorAction> {
+    pub fn draw(&mut self, ui: &mut Ui, map: &Map, ctx: &EditorContext) -> Option<EditorAction> {
         let mut res = None;
 
         {
@@ -213,9 +212,7 @@ impl Toolbar {
                                     content_size.x -= ELEMENT_MARGIN;
                                 }
 
-                                if let Some(action) =
-                                    element.draw(ui, content_size, map, draw_params)
-                                {
+                                if let Some(action) = element.draw(ui, content_size, map, ctx) {
                                     res = Some(action);
                                 }
                             });
@@ -232,7 +229,7 @@ impl Toolbar {
                         widgets::Group::new(hash!(element_id, "menubar"), menubar_size)
                             .position(menubar_position)
                             .ui(ui, |ui| {
-                                let buttons = element.get_buttons(map, draw_params);
+                                let buttons = element.get_buttons(map, ctx);
 
                                 let button_cnt = buttons.len().clamp(0, 4);
 

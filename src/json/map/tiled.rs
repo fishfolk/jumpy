@@ -6,8 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     map::{
-        CollisionKind, Map, MapLayer, MapLayerKind, MapObject, MapProperty, MapTile, MapTileset,
-        ObjectLayerKind,
+        Map, MapLayer, MapLayerKind, MapObject, MapProperty, MapTile, MapTileset, ObjectLayerKind,
     },
     math::color_from_hex_string,
 };
@@ -288,11 +287,10 @@ impl TiledMap {
                 }
             }
 
-            let mut collision = CollisionKind::None;
-            if let Some(MapProperty::String { value }) =
-                properties.remove(Self::COLLISION_LAYER_PROP)
+            let mut has_collision = false;
+            if let Some(MapProperty::Bool { value }) = properties.remove(Self::COLLISION_LAYER_PROP)
             {
-                collision = CollisionKind::from(value)
+                has_collision = value
             }
 
             let kind = if tiled_layer.layer_type == *"tilelayer" {
@@ -304,7 +302,7 @@ impl TiledMap {
             let layer = MapLayer {
                 id: tiled_layer.name.clone(),
                 kind,
-                collision,
+                has_collision,
                 grid_size,
                 tiles,
                 objects,

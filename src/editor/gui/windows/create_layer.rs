@@ -3,15 +3,15 @@ use macroquad::{
     ui::{hash, widgets, Ui},
 };
 
-use crate::map::{CollisionKind, Map, MapLayerKind, ObjectLayerKind};
+use crate::map::{Map, MapLayerKind, ObjectLayerKind};
 
-use super::{ButtonParams, EditorAction, EditorDrawParams, Window, WindowParams};
+use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 
 pub struct CreateLayerWindow {
     params: WindowParams,
-    layer_id: String,
+    id: String,
     layer_kind: MapLayerKind,
-    layer_collision: CollisionKind,
+    has_collision: bool,
 }
 
 impl CreateLayerWindow {
@@ -24,9 +24,9 @@ impl CreateLayerWindow {
 
         CreateLayerWindow {
             params,
-            layer_id: "Unnamed Layer".to_string(),
+            id: "Unnamed Layer".to_string(),
             layer_kind: MapLayerKind::TileLayer,
-            layer_collision: CollisionKind::None,
+            has_collision: false,
         }
     }
 }
@@ -36,15 +36,15 @@ impl Window for CreateLayerWindow {
         &self.params
     }
 
-    fn get_buttons(&self, map: &Map, _draw_params: &EditorDrawParams) -> Vec<ButtonParams> {
+    fn get_buttons(&self, map: &Map, _ctx: &EditorContext) -> Vec<ButtonParams> {
         let mut res = Vec::new();
 
-        let is_existing_id = map.draw_order.iter().any(|id| id == &self.layer_id);
+        let is_existing_id = map.draw_order.iter().any(|id| id == &self.id);
 
         let mut action = None;
         if !is_existing_id {
             let batch = self.get_close_action().then(EditorAction::CreateLayer {
-                id: self.layer_id.clone(),
+                id: self.id.clone(),
                 kind: self.layer_kind,
                 draw_order_index: None,
             });
@@ -72,7 +72,7 @@ impl Window for CreateLayerWindow {
         ui: &mut Ui,
         _size: Vec2,
         _map: &Map,
-        _params: &EditorDrawParams,
+        _params: &EditorContext,
     ) -> Option<EditorAction> {
         let id = hash!("create_layer_window");
 
@@ -83,7 +83,7 @@ impl Window for CreateLayerWindow {
                 .size(size)
                 .ratio(1.0)
                 .label("Name")
-                .ui(ui, &mut self.layer_id);
+                .ui(ui, &mut self.id);
         }
 
         ui.separator();
@@ -113,21 +113,10 @@ impl Window for CreateLayerWindow {
         };
 
         if self.layer_kind == MapLayerKind::TileLayer {
-            let mut collision = match self.layer_collision {
-                CollisionKind::None => 0,
-                CollisionKind::Solid => 1,
-                CollisionKind::Barrier => 1,
-            };
-
-            widgets::ComboBox::new(hash!(id, "collision_input"), &["None", "Solid"])
+            widgets::Checkbox::new(hash!(id, "collision_input"))
                 .ratio(0.4)
                 .label("Collision")
-                .ui(ui, &mut collision);
-
-            self.layer_collision = match collision {
-                0 => CollisionKind::None,
-                _ => CollisionKind::Solid,
-            };
+                .ui(ui, &mut self.has_collision);
         }
 
         None

@@ -18,6 +18,7 @@ pub enum EditorAction {
     OpenCreateTilesetWindow,
     OpenTilesetPropertiesWindow(String),
     CloseWindow(TypeId),
+    SelectTool,
     SelectTile {
         id: u32,
         tileset_id: String,

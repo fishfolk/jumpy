@@ -15,12 +15,13 @@ use macroquad::{
     ui::{root_ui, widgets},
 };
 
-use super::EditorAction;
+use super::{EditorAction, EditorContext};
 
 use crate::{gui::GuiResources, map::Map};
 
 use toolbars::{
-    LayerListElement, TilesetDetailsElement, TilesetListElement, Toolbar, ToolbarPosition,
+    LayerListElement, TilesetDetailsElement, TilesetListElement, ToolSelectorElement, Toolbar,
+    ToolbarPosition,
 };
 
 use windows::Window;
@@ -48,15 +49,12 @@ pub enum GuiElement {
 #[derive(Debug, Default, Clone)]
 pub struct ButtonParams {
     pub label: &'static str,
+    // This should be an absolute width for window and a width factor for toolbar elements.
+    // Permitted width factors for toolbar element buttons are 0.25, 0.5, 0.75 and 1.0
     pub width_override: Option<f32>,
+    // This holds the action that will be applied on click.
+    // Setting this to `None` will disable the button.
     pub action: Option<EditorAction>,
-}
-
-#[derive(Debug, Clone)]
-pub struct EditorDrawParams {
-    pub selected_layer: Option<String>,
-    pub selected_tileset: Option<String>,
-    pub selected_tile: Option<u32>,
 }
 
 pub struct EditorGui {
@@ -70,12 +68,17 @@ impl EditorGui {
     const LEFT_TOOLBAR_WIDTH: f32 = 50.0;
     const RIGHT_TOOLBAR_WIDTH: f32 = 250.0;
 
+    const TOOL_SELECTOR_HEIGHT_FACTOR: f32 = 0.5;
     const LAYER_LIST_HEIGHT_FACTOR: f32 = 0.3;
     const TILESET_LIST_HEIGHT_FACTOR: f32 = 0.2;
     const TILESET_DETAILS_HEIGHT_FACTOR: f32 = 0.5;
 
     pub fn new() -> Self {
-        let left_toolbar = Toolbar::new(ToolbarPosition::Left, Self::LEFT_TOOLBAR_WIDTH);
+        let left_toolbar = Toolbar::new(ToolbarPosition::Left, Self::LEFT_TOOLBAR_WIDTH)
+            .with_element(
+                Self::TOOL_SELECTOR_HEIGHT_FACTOR,
+                ToolSelectorElement::new(),
+            );
 
         let right_toolbar = Toolbar::new(ToolbarPosition::Right, Self::RIGHT_TOOLBAR_WIDTH)
             .with_element(Self::LAYER_LIST_HEIGHT_FACTOR, LayerListElement::new())
@@ -149,7 +152,7 @@ impl EditorGui {
         self.open_windows.remove(&id).unwrap();
     }
 
-    pub fn draw(&mut self, map: &Map, draw_params: EditorDrawParams) -> Option<EditorAction> {
+    pub fn draw(&mut self, map: &Map, ctx: EditorContext) -> Option<EditorAction> {
         let mut res = None;
 
         let ui = &mut root_ui();
@@ -159,11 +162,11 @@ impl EditorGui {
             ui.push_skin(&gui_resources.editor_skins.default);
         }
 
-        if let Some(action) = self.left_toolbar.draw(ui, map, &draw_params) {
+        if let Some(action) = self.left_toolbar.draw(ui, map, &ctx) {
             res = Some(action);
         }
 
-        if let Some(action) = self.right_toolbar.draw(ui, map, &draw_params) {
+        if let Some(action) = self.right_toolbar.draw(ui, map, &ctx) {
             res = Some(action);
         }
 
@@ -208,7 +211,7 @@ impl EditorGui {
                     widgets::Group::new(hash!(id, "content"), content_size)
                         .position(content_position)
                         .ui(ui, |ui| {
-                            if let Some(action) = window.draw(ui, content_size, map, &draw_params) {
+                            if let Some(action) = window.draw(ui, content_size, map, &ctx) {
                                 res = Some(action);
                             }
                         });
@@ -223,7 +226,7 @@ impl EditorGui {
                             .ui(ui, |ui| {
                                 let mut button_position = Vec2::ZERO;
 
-                                let buttons = window.get_buttons(map, &draw_params);
+                                let buttons = window.get_buttons(map, &ctx);
 
                                 let button_cnt = buttons.len();
                                 let margins = (button_cnt - 1) as f32 * ELEMENT_MARGIN;

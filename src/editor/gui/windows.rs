@@ -11,7 +11,7 @@ mod tileset_properties;
 pub use confirm_dialog::ConfirmDialog;
 pub use create_layer::CreateLayerWindow;
 
-use super::{ButtonParams, EditorAction, EditorDrawParams, Map};
+use super::{ButtonParams, EditorAction, EditorContext, Map};
 pub use create_tileset::CreateTilesetWindow;
 pub use tileset_properties::TilesetPropertiesWindow;
 
@@ -60,10 +60,15 @@ impl Default for WindowParams {
     }
 }
 
+// This should be implemented for any windows opened by the gui.
+// It provides a uniform standardization of window, boot visually and in regards to how control
+// flow is handled, by returning actions, in stead of performing the logic in the window draw.
 pub trait Window {
     fn get_params(&self) -> &WindowParams;
 
-    fn get_buttons(&self, _map: &Map, _draw_params: &EditorDrawParams) -> Vec<ButtonParams>
+    // Implement this and set `has_buttons` to true in the `WindowParams` returned by
+    // `get_params` to add buttons to the bottom of the window.
+    fn get_buttons(&self, _map: &Map, _ctx: &EditorContext) -> Vec<ButtonParams>
     where
         Self: 'static,
     {
@@ -79,7 +84,7 @@ pub trait Window {
         ui: &mut Ui,
         size: Vec2,
         map: &Map,
-        draw_params: &EditorDrawParams,
+        ctx: &EditorContext,
     ) -> Option<EditorAction>;
 
     fn get_absolute_position(&self) -> Vec2 {

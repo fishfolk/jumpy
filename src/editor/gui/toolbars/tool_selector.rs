@@ -1,6 +1,6 @@
 use super::{ToolbarElement, ToolbarElementParams};
 use crate::editor::actions::EditorAction;
-use crate::editor::gui::EditorDrawParams;
+use crate::editor::gui::EditorContext;
 use crate::map::Map;
 use macroquad::math::Vec2;
 use macroquad::ui::Ui;
@@ -31,7 +31,7 @@ impl ToolbarElement for ToolSelectorElement {
         _ui: &mut Ui,
         _size: Vec2,
         _map: &Map,
-        _draw_params: &EditorDrawParams,
+        _ctx: &EditorContext,
     ) -> Option<EditorAction> {
         None
     }

@@ -18,8 +18,8 @@
          "properties":[
                 {
                  "name":"collision",
-                 "type":"string",
-                 "value":"solid"
+                 "type":"bool",
+                 "value":true
                 }],
          "type":"tilelayer",
          "visible":true,

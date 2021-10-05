@@ -8,7 +8,7 @@ use macroquad::{
 
 use crate::{map::Map, Resources};
 
-use super::{ButtonParams, EditorAction, EditorDrawParams, Window, WindowParams};
+use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 
 pub struct CreateTilesetWindow {
     params: WindowParams,
@@ -37,7 +37,7 @@ impl Window for CreateTilesetWindow {
         &self.params
     }
 
-    fn get_buttons(&self, map: &Map, _draw_params: &EditorDrawParams) -> Vec<ButtonParams> {
+    fn get_buttons(&self, map: &Map, _ctx: &EditorContext) -> Vec<ButtonParams> {
         let mut res = Vec::new();
 
         let is_existing_id = map.tilesets.iter().any(|(id, _)| id == &self.tileset_id);
@@ -72,7 +72,7 @@ impl Window for CreateTilesetWindow {
         ui: &mut Ui,
         _size: Vec2,
         _map: &Map,
-        _draw_params: &EditorDrawParams,
+        _ctx: &EditorContext,
     ) -> Option<EditorAction> {
         let id = hash!("create_tileset_element");
 

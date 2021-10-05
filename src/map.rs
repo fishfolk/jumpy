@@ -33,6 +33,8 @@ pub struct Map {
 impl Map {
     pub const DEFAULT_NAME: &'static str = "unnamed_map";
 
+    pub const PLATFORM_TILE_ATTRIBUTE: &'static str = "jumpthrough";
+
     pub fn new(name: &str, tile_size: Vec2, grid_size: UVec2) -> Self {
         Map {
             name: name.to_string(),
@@ -132,7 +134,7 @@ impl Map {
         MapTileIterator::new(layer, rect)
     }
 
-    pub fn get_collisions(&self, collider: Rect) -> Vec<(Vec2, CollisionKind)> {
+    pub fn get_collisions(&self, collider: Rect) -> Vec<Vec2> {
         let collider = Rect::new(
             collider.x - self.tile_size.x,
             collider.y - self.tile_size.y,
@@ -143,7 +145,7 @@ impl Map {
         let rect = self.to_grid(collider);
         let mut collisions = Vec::new();
         for layer in self.layers.values() {
-            if layer.is_visible && layer.collision != CollisionKind::None {
+            if layer.is_visible && layer.has_collision {
                 for (x, y, tile) in self.get_tiles(&layer.id, Some(rect)) {
                     if tile.is_some() {
                         let tile_position = self.to_position(uvec2(x, y));
@@ -155,7 +157,7 @@ impl Map {
                         )
                         .overlaps(&collider)
                         {
-                            collisions.push((tile_position, layer.collision));
+                            collisions.push(tile_position);
                         }
                     }
                 }
@@ -281,38 +283,6 @@ impl<'a> Iterator for MapTileIterator<'a> {
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum CollisionKind {
-    None,
-    Barrier,
-    Solid,
-}
-
-impl CollisionKind {
-    pub fn is_none(&self) -> bool {
-        *self == Self::None
-    }
-}
-
-impl From<String> for CollisionKind {
-    fn from(str: String) -> Self {
-        if str == *"barrier" {
-            CollisionKind::Barrier
-        } else if str == *"solid" {
-            CollisionKind::Solid
-        } else {
-            CollisionKind::None
-        }
-    }
-}
-
-impl Default for CollisionKind {
-    fn default() -> Self {
-        Self::None
-    }
-}
-
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
 pub enum ObjectLayerKind {
     None,
     Items,
@@ -336,8 +306,8 @@ impl Default for MapLayerKind {
 pub struct MapLayer {
     pub id: String,
     pub kind: MapLayerKind,
-    #[serde(default, skip_serializing_if = "CollisionKind::is_none")]
-    pub collision: CollisionKind,
+    #[serde(default, rename = "collision")]
+    pub has_collision: bool,
     #[serde(with = "json::def_uvec2")]
     pub grid_size: UVec2,
     pub tiles: Vec<Option<MapTile>>,
@@ -362,7 +332,7 @@ impl Default for MapLayer {
     fn default() -> Self {
         MapLayer {
             id: "".to_string(),
-            collision: CollisionKind::None,
+            has_collision: false,
             kind: MapLayerKind::TileLayer,
             grid_size: UVec2::ZERO,
             tiles: Vec::new(),

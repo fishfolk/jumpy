@@ -1,6 +1,6 @@
 use macroquad::{prelude::*, ui::Ui};
 
-use super::{EditorAction, EditorDrawParams, Map, Window, WindowParams};
+use super::{EditorAction, EditorContext, Map, Window, WindowParams};
 use crate::editor::gui::windows::ButtonParams;
 
 pub struct ConfirmDialog {
@@ -37,7 +37,7 @@ impl Window for ConfirmDialog {
         &self.params
     }
 
-    fn get_buttons(&self, _map: &Map, _draw_params: &EditorDrawParams) -> Vec<ButtonParams> {
+    fn get_buttons(&self, _map: &Map, _ctx: &EditorContext) -> Vec<ButtonParams> {
         let mut res = Vec::new();
 
         let action = self.get_close_action().then(self.confirm_action.clone());
@@ -62,7 +62,7 @@ impl Window for ConfirmDialog {
         ui: &mut Ui,
         _size: Vec2,
         _map: &Map,
-        _draw_params: &EditorDrawParams,
+        _ctx: &EditorContext,
     ) -> Option<EditorAction> {
         for line in &self.body {
             ui.label(None, line);

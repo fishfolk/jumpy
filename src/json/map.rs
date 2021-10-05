@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     json,
     map::{
-        CollisionKind, Map, MapLayer, MapLayerKind, MapObject, MapProperty, MapTile, MapTileset,
+        Map, MapLayer, MapLayerKind, MapObject, MapProperty, MapTile, MapTileset,
     },
 };
 
@@ -73,7 +73,7 @@ impl From<Map> for MapDef {
                     let layer = MapLayerDef {
                         id: layer.id.clone(),
                         kind: layer.kind,
-                        collision: layer.collision,
+                        has_collision: layer.has_collision,
                         objects,
                         tiles,
                         is_visible: layer.is_visible,
@@ -169,7 +169,7 @@ impl From<MapDef> for Map {
             let layer = MapLayer {
                 id: layer.id.clone(),
                 kind: layer.kind,
-                collision: layer.collision,
+                has_collision: layer.has_collision,
                 grid_size: def.grid_size,
                 tiles,
                 objects,
@@ -197,8 +197,8 @@ impl From<MapDef> for Map {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MapLayerDef {
     pub id: String,
-    #[serde(default, skip_serializing_if = "CollisionKind::is_none")]
-    pub collision: CollisionKind,
+    #[serde(default, rename = "collision")]
+    pub has_collision: bool,
     pub kind: MapLayerKind,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tiles: Option<Vec<u32>>,
@@ -214,7 +214,7 @@ impl Default for MapLayerDef {
     fn default() -> Self {
         MapLayerDef {
             id: "".to_string(),
-            collision: CollisionKind::None,
+            has_collision: false,
             kind: MapLayerKind::TileLayer,
             tiles: Some(Vec::new()),
             objects: None,

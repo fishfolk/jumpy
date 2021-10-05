@@ -6,7 +6,7 @@ use macroquad::{
 
 use crate::{gui::GuiResources, Resources};
 
-use super::{ButtonParams, EditorAction, EditorDrawParams, Map, Window, WindowParams};
+use super::{ButtonParams, EditorAction, EditorContext, Map, Window, WindowParams};
 use crate::map::MapTileset;
 
 pub struct TilesetPropertiesWindow {
@@ -137,7 +137,7 @@ impl Window for TilesetPropertiesWindow {
         ui: &mut Ui,
         size: Vec2,
         map: &Map,
-        _draw_params: &EditorDrawParams,
+        _ctx: &EditorContext,
     ) -> Option<EditorAction> {
         if let Some(tileset) = map.tilesets.get(&self.tileset_id) {
             if !self.has_data {
@@ -159,7 +159,7 @@ impl Window for TilesetPropertiesWindow {
         None
     }
 
-    fn get_buttons(&self, _map: &Map, _draw_params: &EditorDrawParams) -> Vec<ButtonParams> {
+    fn get_buttons(&self, _map: &Map, _ctx: &EditorContext) -> Vec<ButtonParams> {
         let mut res = Vec::new();
 
         let id = self.tileset_id.clone();

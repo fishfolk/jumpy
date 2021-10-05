@@ -9,7 +9,7 @@ use crate::{
     map::{Map, MapLayerKind, ObjectLayerKind},
 };
 
-use super::{EditorAction, EditorDrawParams, Toolbar, ToolbarElement, ToolbarElementParams};
+use super::{EditorAction, EditorContext, Toolbar, ToolbarElement, ToolbarElementParams};
 use crate::editor::gui::ButtonParams;
 
 pub struct LayerListElement {
@@ -33,14 +33,14 @@ impl ToolbarElement for LayerListElement {
         &self.params
     }
 
-    fn get_buttons(&self, map: &Map, draw_params: &EditorDrawParams) -> Vec<ButtonParams> {
+    fn get_buttons(&self, map: &Map, ctx: &EditorContext) -> Vec<ButtonParams> {
         let mut res = Vec::new();
 
         let mut delete_action = None;
         let mut move_up_action = None;
         let mut move_down_action = None;
 
-        if let Some(layer_id) = &draw_params.selected_layer {
+        if let Some(layer_id) = &ctx.selected_layer {
             let mut index = None;
 
             {
@@ -103,7 +103,7 @@ impl ToolbarElement for LayerListElement {
         ui: &mut Ui,
         size: Vec2,
         map: &Map,
-        draw_params: &EditorDrawParams,
+        ctx: &EditorContext,
     ) -> Option<EditorAction> {
         let mut res = None;
 
@@ -117,7 +117,7 @@ impl ToolbarElement for LayerListElement {
             let layer = map.layers.get(layer_id).unwrap();
             let kind = &layer.kind;
 
-            let is_selected = if let Some(selected_id) = &draw_params.selected_layer {
+            let is_selected = if let Some(selected_id) = &ctx.selected_layer {
                 layer_id == selected_id
             } else {
                 false

@@ -7,7 +7,7 @@ use macroquad::{
 use crate::Resources;
 
 use super::{
-    ButtonParams, EditorAction, EditorDrawParams, GuiResources, Map, ToolbarElement,
+    ButtonParams, EditorAction, EditorContext, GuiResources, Map, ToolbarElement,
     ToolbarElementParams,
 };
 use crate::editor::gui::ELEMENT_MARGIN;
@@ -38,13 +38,13 @@ impl ToolbarElement for TilesetDetailsElement {
         ui: &mut Ui,
         size: Vec2,
         map: &Map,
-        draw_params: &EditorDrawParams,
+        ctx: &EditorContext,
     ) -> Option<EditorAction> {
         let mut res = None;
 
         let mut position = Vec2::ZERO;
 
-        if let Some(tileset_id) = &draw_params.selected_tileset {
+        if let Some(tileset_id) = &ctx.selected_tileset {
             let tileset = map.tilesets.get(tileset_id).unwrap();
 
             let texture = {
@@ -77,7 +77,7 @@ impl ToolbarElement for TilesetDetailsElement {
                 for x in 0..tileset.grid_size.x {
                     let tile_id = y * tileset.grid_size.x + x;
 
-                    let is_selected = if let Some(selected) = draw_params.selected_tile {
+                    let is_selected = if let Some(selected) = ctx.selected_tile {
                         selected == tile_id
                     } else {
                         false
@@ -116,11 +116,11 @@ impl ToolbarElement for TilesetDetailsElement {
         res
     }
 
-    fn get_buttons(&self, _map: &Map, draw_params: &EditorDrawParams) -> Vec<ButtonParams> {
+    fn get_buttons(&self, _map: &Map, ctx: &EditorContext) -> Vec<ButtonParams> {
         let mut res = Vec::new();
 
         let mut action = None;
-        if let Some(tileset_id) = draw_params.selected_tileset.clone() {
+        if let Some(tileset_id) = ctx.selected_tileset.clone() {
             action = Some(EditorAction::OpenTilesetPropertiesWindow(tileset_id));
         }
 

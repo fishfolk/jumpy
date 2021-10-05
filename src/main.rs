@@ -32,11 +32,11 @@ pub mod map;
 pub mod editor;
 pub mod math;
 
-use editor::{Editor, EditorCamera, EditorInputScheme};
+use editor::{DEFAULT_TOOL_ICON_TEXTURE_ID, Editor, EditorCamera, EditorInputScheme};
 
 pub use input::{Input, InputScheme};
 
-use crate::{map::CollisionKind, nodes::Player};
+use crate::nodes::Player;
 use map::Map;
 
 pub type CollisionWorld = macroquad_platformer::World;
@@ -69,21 +69,13 @@ impl GameWorld {
 
         for layer_id in &map.draw_order {
             let layer = map.layers.get(layer_id).unwrap();
-            if layer.collision != CollisionKind::None {
+            if layer.has_collision {
                 for (i, (_, _, tile)) in map.get_tiles(layer_id, None).enumerate() {
                     if let Some(tile) = tile {
-                        if tile.attributes.contains(&"jumpthrough".to_string()) {
+                        if tile.attributes.contains(&Map::PLATFORM_TILE_ATTRIBUTE.to_string()) {
                             static_colliders[i] = Tile::JumpThrough;
                         } else {
-                            match layer.collision {
-                                CollisionKind::Solid => {
-                                    static_colliders[i] = Tile::Solid;
-                                }
-                                CollisionKind::Barrier => {
-                                    static_colliders[i] = Tile::Solid;
-                                }
-                                CollisionKind::None => {}
-                            }
+                            static_colliders[i] = Tile::Solid;
                         }
                     }
                 }
@@ -264,8 +256,12 @@ impl Resources {
         }
 
         let mut textures = HashMap::new();
+
         textures.insert("tileset".to_string(), tileset);
         textures.insert("decorations".to_string(), decorations);
+
+        let no_icon = load_texture(&format!("{}/assets/ui/tool_icons/no_icon.png", assets_dir)).await.unwrap();
+        textures.insert(DEFAULT_TOOL_ICON_TEXTURE_ID.to_string(), no_icon);
 
         #[allow(clippy::inconsistent_struct_constructor)]
         Ok(Resources {

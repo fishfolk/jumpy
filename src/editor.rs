@@ -10,7 +10,7 @@ mod actions;
 
 use actions::{
     CreateLayer, CreateTileset, DeleteLayer, DeleteTileset, EditorAction, PlaceTile, RemoveTile,
-    Result, SetLayerDrawOrderIndex, UndoableAction, UpdateTilesetAutotileMask,
+    Result, SetLayerDrawOrderIndex, SetTilesetAutotileMask, UndoableAction,
 };
 
 mod input;
@@ -33,7 +33,7 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::map::{Map, MapLayerKind, ObjectLayerKind};
+use crate::map::{Map, MapLayerKind};
 
 use gui::TilesetPropertiesWindow;
 
@@ -43,7 +43,7 @@ pub struct EditorContext {
     pub selected_layer: Option<String>,
     pub selected_tileset: Option<String>,
     pub selected_tile: Option<u32>,
-    pub selected_item: Option<String>,
+    pub selected_object: Option<String>,
     pub input_scheme: EditorInputScheme,
     pub cursor_position: Vec2,
 }
@@ -55,7 +55,7 @@ impl Default for EditorContext {
             selected_layer: None,
             selected_tileset: None,
             selected_tile: None,
-            selected_item: None,
+            selected_object: None,
             input_scheme: EditorInputScheme::Keyboard,
             cursor_position: Vec2::ZERO,
         }
@@ -68,7 +68,7 @@ pub struct Editor {
     selected_layer: Option<String>,
     selected_tileset: Option<String>,
     selected_tile: Option<u32>,
-    selected_item: Option<String>,
+    selected_object: Option<String>,
     input_scheme: EditorInputScheme,
     // This will hold the gamepad cursor position and be `None` if not using a gamepad.
     // Use the `get_cursor_position` method to get the actual cursor position, as that will return
@@ -106,7 +106,7 @@ impl Editor {
             selected_layer,
             selected_tileset: None,
             selected_tile: None,
-            selected_item: None,
+            selected_object: None,
             input_scheme,
             cursor_position,
             history: EditorHistory::new(),
@@ -145,7 +145,7 @@ impl Editor {
             selected_layer: self.selected_layer.clone(),
             selected_tileset: self.selected_tileset.clone(),
             selected_tile: self.selected_tile,
-            selected_item: self.selected_item.clone(),
+            selected_object: self.selected_object.clone(),
             input_scheme: self.input_scheme,
             cursor_position: self.get_cursor_position(),
         }
@@ -165,15 +165,11 @@ impl Editor {
 
             match layer.kind {
                 MapLayerKind::TileLayer => {
-                    self.selected_item = None;
+                    self.selected_object = None;
                 }
-                MapLayerKind::ObjectLayer(kind) => {
+                MapLayerKind::ObjectLayer => {
                     self.selected_tileset = None;
                     self.selected_tile = None;
-
-                    if kind != ObjectLayerKind::Items {
-                        self.selected_item = None;
-                    }
                 }
             }
         }
@@ -245,9 +241,10 @@ impl Editor {
             EditorAction::CreateLayer {
                 id,
                 kind,
+                has_collision,
                 draw_order_index,
             } => {
-                let action = CreateLayer::new(id, kind, draw_order_index);
+                let action = CreateLayer::new(id, kind, has_collision, draw_order_index);
                 res = self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::DeleteLayer(id) => {
@@ -265,8 +262,8 @@ impl Editor {
                 let action = DeleteTileset::new(id);
                 res = self.history.apply(Box::new(action), &mut self.map);
             }
-            EditorAction::UpdateTilesetAutotileMask { id, autotile_mask } => {
-                let action = UpdateTilesetAutotileMask::new(id, autotile_mask);
+            EditorAction::SetTilesetAutotileMask { id, autotile_mask } => {
+                let action = SetTilesetAutotileMask::new(id, autotile_mask);
                 res = self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::PlaceTile {
@@ -338,7 +335,7 @@ impl Node for Editor {
                                     node.apply_action(action);
                                 }
                             }
-                            MapLayerKind::ObjectLayer(..) => {
+                            MapLayerKind::ObjectLayer => {
                                 // TODO: Implement object layers
                             }
                         }

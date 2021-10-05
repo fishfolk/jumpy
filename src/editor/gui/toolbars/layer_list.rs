@@ -6,11 +6,11 @@ use macroquad::{
 
 use crate::{
     gui::GuiResources,
-    map::{Map, MapLayerKind, ObjectLayerKind},
+    map::{Map, MapLayerKind},
 };
 
 use super::{EditorAction, EditorContext, Toolbar, ToolbarElement, ToolbarElementParams};
-use crate::editor::gui::ButtonParams;
+use crate::editor::gui::{ButtonParams, ELEMENT_MARGIN};
 
 pub struct LayerListElement {
     params: ToolbarElementParams,
@@ -136,16 +136,12 @@ impl ToolbarElement for LayerListElement {
 
             {
                 let suffix = match kind {
-                    MapLayerKind::TileLayer => "T",
-                    MapLayerKind::ObjectLayer(kind) => match kind {
-                        ObjectLayerKind::None => "O",
-                        ObjectLayerKind::Items => "I",
-                        ObjectLayerKind::SpawnPoints => "S",
-                    },
+                    MapLayerKind::TileLayer => "(Tile)",
+                    MapLayerKind::ObjectLayer => "(Obj)",
                 };
 
                 let suffix_size = ui.calc_size(suffix);
-                let position = vec2(size.x - suffix_size.x, position.y);
+                let position = vec2(size.x - suffix_size.x - ELEMENT_MARGIN, position.y);
 
                 ui.label(position, suffix);
             }

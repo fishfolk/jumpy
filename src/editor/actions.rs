@@ -31,6 +31,7 @@ pub enum EditorAction {
     CreateLayer {
         id: String,
         kind: MapLayerKind,
+        has_collision: bool,
         draw_order_index: Option<usize>,
     },
     DeleteLayer(String),
@@ -40,7 +41,7 @@ pub enum EditorAction {
         texture_id: String,
     },
     DeleteTileset(String),
-    UpdateTilesetAutotileMask {
+    SetTilesetAutotileMask {
         id: String,
         autotile_mask: Vec<bool>,
     },
@@ -175,14 +176,21 @@ impl UndoableAction for SetLayerDrawOrderIndex {
 pub struct CreateLayer {
     id: String,
     kind: MapLayerKind,
+    has_collision: bool,
     draw_order_index: Option<usize>,
 }
 
 impl CreateLayer {
-    pub fn new(id: String, kind: MapLayerKind, draw_order_index: Option<usize>) -> Self {
+    pub fn new(
+        id: String,
+        kind: MapLayerKind,
+        has_collision: bool,
+        draw_order_index: Option<usize>,
+    ) -> Self {
         CreateLayer {
             id,
             kind,
+            has_collision,
             draw_order_index,
         }
     }
@@ -201,7 +209,7 @@ impl UndoableAction for CreateLayer {
             }
         }
 
-        let layer = MapLayer::new(&self.id, self.kind);
+        let layer = MapLayer::new(&self.id, self.kind, self.has_collision);
         map.layers.insert(self.id.clone(), layer);
 
         if let Some(i) = self.draw_order_index {
@@ -382,15 +390,15 @@ impl UndoableAction for DeleteTileset {
 }
 
 #[derive(Debug)]
-pub struct UpdateTilesetAutotileMask {
+pub struct SetTilesetAutotileMask {
     id: String,
     autotile_mask: Vec<bool>,
     old_autotile_mask: Option<Vec<bool>>,
 }
 
-impl UpdateTilesetAutotileMask {
+impl SetTilesetAutotileMask {
     pub fn new(id: String, autotile_mask: Vec<bool>) -> Self {
-        UpdateTilesetAutotileMask {
+        SetTilesetAutotileMask {
             id,
             autotile_mask,
             old_autotile_mask: None,
@@ -398,7 +406,7 @@ impl UpdateTilesetAutotileMask {
     }
 }
 
-impl UndoableAction for UpdateTilesetAutotileMask {
+impl UndoableAction for SetTilesetAutotileMask {
     fn apply(&mut self, map: &mut Map) -> Result {
         if let Some(tileset) = map.tilesets.get_mut(&self.id) {
             if self.autotile_mask.len() != tileset.autotile_mask.len() {

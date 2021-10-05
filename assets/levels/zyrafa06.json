@@ -273,8 +273,14 @@
  "nextlayerid":6,
  "nextobjectid":131,
  "orientation":"orthogonal",
+ "properties":[
+        {
+         "name":"collision",
+         "type":"string",
+         "value":"solid"
+        }],
  "renderorder":"right-down",
- "tiledversion":"1.7.1",
+ "tiledversion":"1.7.2",
  "tileheight":32,
  "tilesets":[
         {
@@ -285,6 +291,12 @@
          "imagewidth":224,
          "margin":0,
          "name":"tileset",
+         "properties":[
+                {
+                 "name":"texture_id",
+                 "type":"string",
+                 "value":"tileset"
+                }],
          "spacing":0,
          "tilecount":63,
          "tileheight":32,
@@ -311,6 +323,12 @@
          "imagewidth":240,
          "margin":0,
          "name":"decorations1",
+         "properties":[
+                {
+                 "name":"texture_id",
+                 "type":"string",
+                 "value":"decorations"
+                }],
          "spacing":0,
          "tilecount":10,
          "tileheight":51,

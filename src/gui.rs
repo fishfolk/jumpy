@@ -40,6 +40,7 @@ impl GuiResources {
         let levels_str = load_string(&format!("{}/assets/levels/levels.toml", assets_dir))
             .await
             .unwrap();
+
         let toml = nanoserde::TomlParser::parse(&levels_str).unwrap();
 
         for level in toml["level"].arr() {

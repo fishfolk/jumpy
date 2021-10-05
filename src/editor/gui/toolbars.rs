@@ -29,6 +29,10 @@ use super::{
     ELEMENT_MARGIN,
 };
 
+mod tool_selector;
+
+pub use tool_selector::ToolSelectorElement;
+
 mod layer_list;
 
 pub use layer_list::LayerListElement;

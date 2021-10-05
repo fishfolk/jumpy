@@ -30,6 +30,7 @@ use actions::{
 mod input;
 
 mod history;
+pub mod tools;
 
 use history::EditorHistory;
 pub use input::EditorInputScheme;
@@ -64,6 +65,7 @@ pub struct Editor {
     selected_tileset: Option<String>,
     selected_tile: Option<u32>,
     input_scheme: EditorInputScheme,
+    // This will hold the gamepad cursor position
     cursor_position: Option<Vec2>,
     history: EditorHistory,
 }
@@ -364,16 +366,12 @@ impl Node for Editor {
             selected_tile: node.selected_tile,
         };
 
-        let res = {
-            let mut gui = storage::get_mut:: < EditorGui>();
-            gui.draw(&node.map, params)
-        };
-
-        if let Some(action) = res {
-            node.apply_action(action);
-
-            let mut gui = storage::get_mut:: < EditorGui>();
-            gui.close_context_menu();
+        {
+            let mut gui = storage::get_mut::<EditorGui>();
+            if let Some(action) = gui.draw(&node.map, params) {
+                node.apply_action(action);
+                gui.close_context_menu();
+            }
         }
     }
 }

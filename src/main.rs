@@ -305,7 +305,7 @@ impl Resources {
     }
 }
 
-async fn setup_game_scene(map: Map, assets_dir: &str, is_local_game: bool) -> Vec<Handle<Player>> {
+async fn build_game_scene(map: Map, assets_dir: &str, is_local_game: bool) -> Vec<Handle<Player>> {
     use nodes::{Camera, SceneRenderer, Decoration, Fxses};
 
     let resources_loading = start_coroutine({
@@ -398,7 +398,7 @@ async fn game(map: Map, game_type: GameType, assets_dir: &str) {
         GameType::Local(players_input) => {
             assert_eq!(players_input.len(), 2, "There should be two player input schemes for this game mode!");
 
-            let players = setup_game_scene(map, assets_dir, true).await;
+            let players = build_game_scene(map, assets_dir, true).await;
             scene::add_node(LocalNetwork::new(players_input, players[0], players[1]));
         }
         GameType::Editor {
@@ -415,7 +415,7 @@ async fn game(map: Map, game_type: GameType, assets_dir: &str) {
             socket,
             id,
         } => {
-            let players = setup_game_scene(map, assets_dir, false).await;
+            let players = build_game_scene(map, assets_dir, false).await;
             scene::add_node(Network::new(id, socket, input_scheme, players[0], players[1]));
         }
     }

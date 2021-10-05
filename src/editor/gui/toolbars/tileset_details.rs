@@ -47,24 +47,6 @@ impl ToolbarElement for TilesetDetailsElement {
         &self.params
     }
 
-    fn get_buttons(&self, _map: &Map, draw_params: &EditorDrawParams) -> Vec<ButtonParams> {
-        let mut res = Vec::new();
-
-        let mut action = None;
-        if let Some(tileset_id) = draw_params.selected_tileset.clone() {
-            action = Some(EditorAction::OpenTilesetPropertiesWindow(tileset_id));
-        }
-
-        res.push(ButtonParams {
-            label: "Properties",
-            width_override: Some(0.5),
-            action,
-            ..Default::default()
-        });
-
-        res
-    }
-
     fn draw(&mut self, ui: &mut Ui, size: Vec2, map: &Map, draw_params: &EditorDrawParams) -> Option<EditorAction> {
         let mut res = None;
 
@@ -117,15 +99,15 @@ impl ToolbarElement for TilesetDetailsElement {
                         .position(position)
                         .ui(ui);
 
-                    if is_selected {
-                        ui.pop_skin();
-                    }
-
                     if button {
                         res = Some(EditorAction::SelectTile {
                             id: tile_id,
                             tileset_id: tileset.id.clone(),
                         });
+                    }
+
+                    if is_selected {
+                        ui.pop_skin();
                     }
                 }
             }
@@ -134,6 +116,24 @@ impl ToolbarElement for TilesetDetailsElement {
 
             position.y += scaled_height + ELEMENT_MARGIN;
         }
+
+        res
+    }
+
+    fn get_buttons(&self, _map: &Map, draw_params: &EditorDrawParams) -> Vec<ButtonParams> {
+        let mut res = Vec::new();
+
+        let mut action = None;
+        if let Some(tileset_id) = draw_params.selected_tileset.clone() {
+            action = Some(EditorAction::OpenTilesetPropertiesWindow(tileset_id));
+        }
+
+        res.push(ButtonParams {
+            label: "Properties",
+            width_override: Some(0.5),
+            action,
+            ..Default::default()
+        });
 
         res
     }

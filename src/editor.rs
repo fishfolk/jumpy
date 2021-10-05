@@ -13,6 +13,7 @@ use gui::{
 };
 
 mod actions;
+
 use actions::{
     UndoableAction,
     Result,
@@ -85,11 +86,11 @@ impl Editor {
         let mut selected_tileset = None;
         let mut selected_tile = None;
 
-        if map.tilesets.is_empty() == false {
-            for (key, tileset) in &map.tilesets {
+        if !map.tilesets.is_empty() {
+            if let Some(entry) = &map.tilesets.iter().next() {
+                let (key, tileset) = *entry;
                 selected_tileset = Some(key.clone());
                 selected_tile = Some(tileset.first_tile_id);
-                break;
             }
         }
 
@@ -126,7 +127,7 @@ impl Editor {
 
     fn get_selected_tile(&self) -> Option<(u32, String)> {
         if let Some(tileset_id) = self.selected_tileset.clone() {
-            if let Some(tile_id) = self.selected_tile.clone() {
+            if let Some(tile_id) = self.selected_tile {
                 let selected = (tile_id, tileset_id);
                 return Some(selected);
             }
@@ -188,7 +189,7 @@ impl Editor {
                 res = self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::CreateLayer { id, kind, draw_order_index } => {
-                let action = CreateLayer::new(id.clone(), kind, draw_order_index);
+                let action = CreateLayer::new(id, kind, draw_order_index);
                 res = self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::DeleteLayer(id) => {
@@ -198,7 +199,7 @@ impl Editor {
                     }
                 }
 
-                let action = DeleteLayer::new(id.clone());
+                let action = DeleteLayer::new(id);
                 res = self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::SelectTileset(id) => {
@@ -244,13 +245,11 @@ impl Editor {
 impl Node for Editor {
     fn update(mut node: RefMut<Self>) {
         if let Some(current_layer) = &node.selected_layer {
-            if node.map.draw_order.contains(current_layer) == false {
+            if !node.map.draw_order.contains(current_layer) {
                 node.selected_layer = None;
             }
-        } else {
-            if let Some(id) = node.map.draw_order.first().cloned() {
-                node.selected_layer = Some(id);
-            }
+        } else if let Some(id) = node.map.draw_order.first().cloned() {
+            node.selected_layer = Some(id);
         }
 
         let input = collect_editor_input(node.input_scheme);
@@ -306,7 +305,7 @@ impl Node for Editor {
             }
         }
 
-        if input.context_menu  {
+        if input.context_menu {
             let mut gui = storage::get_mut::<EditorGui>();
             gui.open_context_menu(cursor_position);
         }

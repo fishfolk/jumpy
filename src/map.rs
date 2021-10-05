@@ -122,7 +122,7 @@ impl Map {
     pub fn get_tile(&self, layer_id: &str, x: u32, y: u32) -> &Option<MapTile> {
         let layer = self.layers
             .get(layer_id)
-            .expect(&format!("No layer with id '{}'!", layer_id));
+            .unwrap_or_else(|| panic!("No layer with id '{}'!", layer_id));
 
         if x >= self.grid_size.x || y >= self.grid_size.y {
             return &None;
@@ -133,9 +133,9 @@ impl Map {
     }
 
     pub fn get_tiles(&self, layer_id: &str, rect: Option<URect>) -> MapTileIterator {
-        let rect = rect.unwrap_or(URect::new(0, 0, self.grid_size.x, self.grid_size.y));
+        let rect = rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.x, self.grid_size.y));
         let layer = self.layers.get(layer_id)
-            .expect(&format!("No layer with id '{}'!", layer_id));
+            .unwrap_or_else(|| panic!("No layer with id '{}'!", layer_id));
 
         MapTileIterator::new(layer, rect)
     }
@@ -150,23 +150,21 @@ impl Map {
 
         let rect = self.to_grid(collider);
         let mut collisions = Vec::new();
-        for (_, layer) in &self.layers {
-            if layer.is_visible {
-                if layer.collision != CollisionKind::None {
-                    for (x, y, tile) in self.get_tiles(&layer.id, Some(rect)) {
-                        if let Some(_) = tile {
-                            let tile_position = self.to_position(uvec2(x, y));
-                            if Rect::new(
-                                tile_position.x,
-                                tile_position.y,
-                                self.tile_size.x,
-                                self.tile_size.y,
-                            ).overlaps(&collider) {
-                                collisions.push((
-                                    tile_position,
-                                    layer.collision.clone(),
-                                ));
-                            }
+        for layer in self.layers.values() {
+            if layer.is_visible && layer.collision != CollisionKind::None {
+                for (x, y, tile) in self.get_tiles(&layer.id, Some(rect)) {
+                    if tile.is_some() {
+                        let tile_position = self.to_position(uvec2(x, y));
+                        if Rect::new(
+                            tile_position.x,
+                            tile_position.y,
+                            self.tile_size.x,
+                            self.tile_size.y,
+                        ).overlaps(&collider) {
+                            collisions.push((
+                                tile_position,
+                                layer.collision,
+                            ));
                         }
                     }
                 }
@@ -176,7 +174,7 @@ impl Map {
     }
 
     pub fn draw(&self, rect: Option<URect>) {
-        let rect = rect.unwrap_or(URect::new(0, 0, self.grid_size.x, self.grid_size.y));
+        let rect = rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.x, self.grid_size.y));
         draw_rectangle(
             self.world_offset.x + (rect.x as f32 * self.tile_size.x),
             self.world_offset.y + (rect.y as f32 * self.tile_size.y),
@@ -188,44 +186,39 @@ impl Map {
         let resources = storage::get::<Resources>();
         for layer_id in &self.draw_order {
             if let Some(layer) = self.layers.get(layer_id) {
-                if layer.is_visible {
-                    match layer.kind {
-                        MapLayerKind::TileLayer => {
-                            for (x, y, tile) in self.get_tiles(layer_id, Some(rect)) {
-                                if let Some(tile) = tile {
-                                    let world_position = self.world_offset + vec2(
-                                        x as f32 * self.tile_size.x,
-                                        y as f32 * self.tile_size.y,
-                                    );
+                if layer.is_visible && layer.kind == MapLayerKind::TileLayer {
+                    for (x, y, tile) in self.get_tiles(layer_id, Some(rect)) {
+                        if let Some(tile) = tile {
+                            let world_position = self.world_offset + vec2(
+                                x as f32 * self.tile_size.x,
+                                y as f32 * self.tile_size.y,
+                            );
 
-                                    let texture = resources.textures
-                                        .get(&tile.texture_id)
-                                        .cloned()
-                                        .expect(&format!("No texture with id '{}'!", tile.texture_id));
+                            let texture = resources.textures
+                                .get(&tile.texture_id)
+                                .cloned()
+                                .unwrap_or_else(|| panic!("No texture with id '{}'!", tile.texture_id));
 
-                                    draw_texture_ex(
-                                        texture,
-                                        world_position.x,
-                                        world_position.y,
-                                        color::WHITE,
-                                        DrawTextureParams {
-                                            source: Some(Rect::new(
-                                                tile.texture_coords.x, // + 0.1,
-                                                tile.texture_coords.y, // + 0.1,
-                                                self.tile_size.x, // - 0.2,
-                                                self.tile_size.y, // - 0.2,
-                                            )),
-                                            dest_size: Some(vec2(
-                                                self.tile_size.x,
-                                                self.tile_size.y,
-                                            )),
-                                            ..Default::default()
-                                        },
-                                    );
-                                }
-                            }
+                            draw_texture_ex(
+                                texture,
+                                world_position.x,
+                                world_position.y,
+                                color::WHITE,
+                                DrawTextureParams {
+                                    source: Some(Rect::new(
+                                        tile.texture_coords.x, // + 0.1,
+                                        tile.texture_coords.y, // + 0.1,
+                                        self.tile_size.x, // - 0.2,
+                                        self.tile_size.y, // - 0.2,
+                                    )),
+                                    dest_size: Some(vec2(
+                                        self.tile_size.x,
+                                        self.tile_size.y,
+                                    )),
+                                    ..Default::default()
+                                },
+                            );
                         }
-                        _ => {}
                     }
                 }
             }
@@ -317,9 +310,9 @@ impl CollisionKind {
 
 impl From<String> for CollisionKind {
     fn from(str: String) -> Self {
-        if str == "barrier".to_string() {
+        if str == *"barrier" {
             CollisionKind::Barrier
-        } else if str == "solid".to_string() {
+        } else if str == *"solid" {
             CollisionKind::Solid
         } else {
             CollisionKind::None
@@ -470,11 +463,9 @@ impl MapTileset {
         let subtile_grid_size = grid_size * tile_subdivisions;
 
         let subtile_cnt = (subtile_grid_size.x * subtile_grid_size.y) as usize;
-        let mut autotile_mask = Vec::with_capacity(subtile_cnt);
 
-        for _ in 0..subtile_cnt {
-            autotile_mask.push(false);
-        }
+        let mut autotile_mask = vec!();
+        autotile_mask.resize(subtile_cnt, false);
 
         MapTileset {
             id: id.to_string(),

@@ -53,16 +53,14 @@ pub fn collect_editor_input(scheme: EditorInputScheme) -> EditorInput {
                 input.camera_zoom = 1.0;
             }
 
-            if is_key_down(KeyCode::LeftControl) {
-                if is_key_pressed(KeyCode::Z) {
-                    if is_key_down(KeyCode::LeftShift) {
-                        input.redo = true;
-                    } else {
-                        input.undo = true;
-                    }
+            if is_key_down(KeyCode::LeftControl) && is_key_pressed(KeyCode::Z) {
+                if is_key_down(KeyCode::LeftShift) {
+                    input.redo = true;
+                } else {
+                    input.undo = true;
                 }
             }
-        },
+        }
         EditorInputScheme::Gamepad(ix) => {
             let gui_resources = storage::get_mut::<crate::gui::GuiResources>();
 

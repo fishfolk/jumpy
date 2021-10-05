@@ -68,7 +68,7 @@ impl TilesetPropertiesWindow {
     fn draw_autotile_settings(&mut self, ui: &mut Ui, position: Vec2, size: Vec2, tileset: &MapTileset) -> Option<EditorAction> {
         let tileset_texture = {
             let resources = storage::get::<Resources>();
-            resources.textures.get(&tileset.texture_id).unwrap().clone()
+            resources.textures.get(&tileset.texture_id).cloned().unwrap()
         };
 
         let tileset_texture_size = vec2(tileset_texture.width(), tileset_texture.height());
@@ -139,7 +139,7 @@ impl Window for TilesetPropertiesWindow {
 
     fn draw(&mut self, ui: &mut Ui, size: Vec2, map: &Map, _draw_params: &EditorDrawParams) -> Option<EditorAction> {
         if let Some(tileset) = map.tilesets.get(&self.tileset_id) {
-            if self.has_data == false {
+            if !self.has_data {
                 self.read_from_tileset(map);
             }
 

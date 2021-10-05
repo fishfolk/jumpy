@@ -134,44 +134,36 @@ impl TiledMap {
             let tile_size = vec2(tiled_tileset.tilewidth as f32, tiled_tileset.tileheight as f32);
             let grid_size = uvec2(tiled_tileset.columns as u32, tiled_tileset.tilecount as u32 / tiled_tileset.columns as u32);
 
-            let mut tile_attributes = HashMap::new();
-            if let Some(tiled_tile_attributes) = tiled_tileset.tile_attributes {
+            let mut tile_attributes: HashMap<u32, Vec<String>> = HashMap::new();
+            if let Some(tiled_tile_attributes) = tiled_tileset.tile_attributes.as_ref() {
                 for tiled_attr in tiled_tile_attributes {
-                    if tile_attributes.contains_key(&tiled_attr.id) == false {
-                        tile_attributes.insert(tiled_attr.id, Vec::new());
-                    }
-
-                    tile_attributes.get_mut(&tiled_attr.id).unwrap().push(tiled_attr.attribute);
+                    tile_attributes.entry(tiled_attr.id).or_default();
+                    tile_attributes.get_mut(&tiled_attr.id).unwrap().push(tiled_attr.attribute.clone());
                 }
             }
 
             let mut properties = HashMap::new();
-            if let Some(tiled_props) = tiled_tileset.properties {
+            if let Some(tiled_props) = tiled_tileset.properties.as_ref() {
                 for tiled_prop in tiled_props {
-                    let (name, prop) = pair_from_tiled_prop(tiled_prop);
+                    let (name, prop) = pair_from_tiled_prop(tiled_prop.clone());
                     properties.insert(name, prop);
                 }
             }
 
             let mut texture_id = None;
-            if let Some(prop) = properties.remove("texture_id") {
-                if let MapProperty::String { value } = prop {
-                    texture_id = Some(value)
-                }
+            if let Some(MapProperty::String { value }) = properties.remove("texture_id") {
+                texture_id = Some(value)
             }
 
-            let texture_id = texture_id.expect(&format!("Tiled tileset '{}' needs a 'texture_id' property!", tiled_tileset.name));
+            let texture_id = texture_id.unwrap_or_else(|| panic!("Tiled tileset '{}' needs a 'texture_id' property!", &tiled_tileset.name));
 
             let tile_subdivisions = MapTileset::default_tile_subdivisions();
 
             let subdivision_grid_size = grid_size * tile_subdivisions;
 
             let subtile_cnt = (subdivision_grid_size.x * subdivision_grid_size.y) as usize;
-            let mut autotile_mask = Vec::with_capacity(subtile_cnt as usize);
-
-            for _ in 0..subtile_cnt {
-                autotile_mask.push(false);
-            }
+            let mut autotile_mask = vec!();
+            autotile_mask.resize(subtile_cnt, false);
 
             let tileset = MapTileset {
                 id: tiled_tileset.name.clone(),
@@ -283,13 +275,11 @@ impl TiledMap {
             }
 
             let mut collision = CollisionKind::None;
-            if let Some(prop) = properties.remove(Self::COLLISION_LAYER_PROP) {
-                if let MapProperty::String { value } = prop {
-                    collision = CollisionKind::from(value)
-                }
+            if let Some(MapProperty::String { value }) = properties.remove(Self::COLLISION_LAYER_PROP) {
+                collision = CollisionKind::from(value)
             }
 
-            let kind = if tiled_layer.layer_type == "tilelayer".to_string() {
+            let kind = if tiled_layer.layer_type == *"tilelayer" {
                 MapLayerKind::TileLayer
             } else {
                 MapLayerKind::ObjectLayer(object_layer_kind)

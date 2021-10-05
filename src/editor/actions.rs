@@ -334,7 +334,7 @@ impl UndoableAction for CreateTileset {
         if let Some(texture) = resources.textures.get(&self.texture_id) {
             let texture_size = uvec2(texture.width() as u32, texture.height() as u32);
             let mut first_tile_id = 1;
-            for (_, tileset) in &map.tilesets {
+            for tileset in map.tilesets.values() {
                 let next_tile_id = tileset.first_tile_id + tileset.tile_cnt;
                 if next_tile_id > first_tile_id {
                     first_tile_id = next_tile_id;
@@ -539,10 +539,8 @@ impl UndoableAction for PlaceTile {
     fn is_redundant(&self, map: &Map) -> bool {
         if let Some(layer) = map.layers.get(&self.layer_id) {
             let i = map.to_index(self.coords);
-            if let Some(tile) = layer.tiles.get(i) {
-                if let Some(tile) = tile {
-                    return &tile.tileset_id == &self.tileset_id && tile.tile_id == self.id;
-                }
+            if let Some(Some(tile)) = layer.tiles.get(i) {
+                return tile.tileset_id == self.tileset_id && tile.tile_id == self.id;
             }
         }
 

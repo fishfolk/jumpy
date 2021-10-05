@@ -61,14 +61,11 @@ impl ToolbarElement for LayerListElement {
             let mut index = None;
 
             {
-                let mut i = 0;
-                for id in &map.draw_order {
+                for (i, id) in map.draw_order.iter().enumerate() {
                     if id == layer_id {
                         index = Some(i);
                         break;
                     }
-
-                    i += 1;
                 }
             }
 
@@ -180,5 +177,11 @@ impl ToolbarElement for LayerListElement {
         ui.pop_skin();
 
         res
+    }
+}
+
+impl Default for LayerListElement {
+    fn default() -> Self {
+        Self::new()
     }
 }

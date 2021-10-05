@@ -35,3 +35,9 @@ impl ToolbarElement for ToolSelectorElement {
         None
     }
 }
+
+impl Default for ToolSelectorElement {
+    fn default() -> Self {
+        Self::new()
+    }
+}

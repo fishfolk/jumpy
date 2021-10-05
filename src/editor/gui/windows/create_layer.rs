@@ -58,11 +58,10 @@ impl Window for CreateLayerWindow {
 
         let is_existing_id = map.draw_order
             .iter()
-            .find(|id| *id == &self.layer_id)
-            .is_some();
+            .any(|id| id == &self.layer_id);
 
         let mut action = None;
-        if is_existing_id == false {
+        if !is_existing_id {
             let batch = self.get_close_action()
                 .then(EditorAction::CreateLayer {
                 id: self.layer_id.clone(),
@@ -148,5 +147,11 @@ impl Window for CreateLayerWindow {
         }
 
         None
+    }
+}
+
+impl Default for CreateLayerWindow {
+    fn default() -> Self {
+        Self::new()
     }
 }

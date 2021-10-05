@@ -57,11 +57,10 @@ impl Window for CreateTilesetWindow {
 
         let is_existing_id = map.tilesets
             .iter()
-            .find(|(id, _)| *id == &self.tileset_id)
-            .is_some();
+            .any(|(id, _)| id == &self.tileset_id);
 
         let mut action = None;
-        if is_existing_id == false {
+        if !is_existing_id {
             let batch = self.get_close_action()
                 .then(EditorAction::CreateTileset {
                     id: self.tileset_id.clone(),
@@ -95,7 +94,7 @@ impl Window for CreateTilesetWindow {
             .map(|(key, _)| key.deref())
             .collect::<Vec<&str>>();
 
-        textures.sort();
+        textures.sort_unstable();
 
         {
             let size = vec2(173.0, 25.0);
@@ -132,5 +131,11 @@ impl Window for CreateTilesetWindow {
             .to_string();
 
         None
+    }
+}
+
+impl Default for CreateTilesetWindow {
+    fn default() -> Self {
+        Self::new()
     }
 }

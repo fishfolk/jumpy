@@ -51,7 +51,7 @@ impl From<Vec2Def> for Vec2 {
     }
 }
 
-#[derive(Copy, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Copy, Clone, Serialize, Deserialize)]
 pub struct UVec2Def {
     pub x: u32,
     pub y: u32,
@@ -62,15 +62,6 @@ impl UVec2Def {
         UVec2Def {
             x,
             y,
-        }
-    }
-}
-
-impl Default for UVec2Def {
-    fn default() -> Self {
-        UVec2Def {
-            x: 0,
-            y: 0,
         }
     }
 }
@@ -178,7 +169,7 @@ pub mod vec_vec2 {
     use super::Vec2;
     use serde::{Serialize, Serializer, Deserialize, Deserializer};
 
-    pub fn serialize<S>(value: &Vec<Vec2>, serializer: S) -> Result<S::Ok, S::Error>
+    pub fn serialize<S>(value: &[Vec2], serializer: S) -> Result<S::Ok, S::Error>
         where
             S: Serializer,
     {

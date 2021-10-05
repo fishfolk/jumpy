@@ -463,3 +463,9 @@ impl EditorSkinCollection {
         }
     }
 }
+
+impl Default for EditorSkinCollection {
+    fn default() -> Self {
+        Self::new()
+    }
+}

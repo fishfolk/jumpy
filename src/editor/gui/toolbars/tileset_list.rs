@@ -55,14 +55,12 @@ impl ToolbarElement for TilesetListElement {
             label: "+",
             width_override: Some(0.25),
             action: Some(EditorAction::OpenCreateTilesetWindow),
-            ..Default::default()
         });
 
         res.push(ButtonParams {
             label: "-",
             width_override: Some(0.25),
             action,
-            ..Default::default()
         });
 
         res
@@ -77,7 +75,7 @@ impl ToolbarElement for TilesetListElement {
         let gui_resources = storage::get::<GuiResources>();
         ui.push_skin(&gui_resources.editor_skins.menu);
 
-        for (tileset_id, _) in &map.tilesets {
+        for tileset_id in map.tilesets.keys() {
             let is_selected = if let Some(selected_id) = &draw_params.selected_tileset {
                 tileset_id == selected_id
             } else {
@@ -109,5 +107,11 @@ impl ToolbarElement for TilesetListElement {
         ui.pop_skin();
 
         res
+    }
+}
+
+impl Default for TilesetListElement {
+    fn default() -> Self {
+        Self::new()
     }
 }

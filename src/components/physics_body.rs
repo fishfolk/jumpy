@@ -53,9 +53,8 @@ impl PhysicsBody {
     }
 
     pub fn descent(&mut self) {
-        let collision_world = &mut storage::get_mut::<CollisionWorld>();
-
-        collision_world.descent(self.collider);
+        let mut world = &mut storage::get_mut::<GameWorld>();
+        world.collision_world.descent(self.collider);
     }
 
     pub fn update(&mut self) {

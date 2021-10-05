@@ -45,17 +45,13 @@ impl GuiResources {
 
         for level in toml["level"].arr() {
             let mut is_tiled = false;
-            if let Some(val) = level.get("is_tiled") {
-                if let Toml::Bool(true) = val {
-                    is_tiled = true;
-                }
+            if let Some(Toml::Bool(true)) = level.get("is_tiled") {
+                is_tiled = true;
             }
 
             let mut is_custom = false;
-            if let Some(val) = level.get("is_custom") {
-                if let Toml::Bool(true) = val {
-                    is_custom = true;
-                }
+            if let Some(Toml::Bool(true)) = level.get("is_custom") {
+                is_custom = true;
             }
 
             levels.push(Level {

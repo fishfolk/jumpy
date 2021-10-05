@@ -45,21 +45,11 @@ mod tileset_details;
 
 pub use tileset_details::TilesetDetailsElement;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct ToolbarElementParams {
     header: Option<String>,
     has_buttons: bool,
     has_margins: bool,
-}
-
-impl Default for ToolbarElementParams {
-    fn default() -> Self {
-        ToolbarElementParams {
-            header: None,
-            has_buttons: false,
-            has_margins: false,
-        }
-    }
 }
 
 pub trait ToolbarElement {
@@ -191,7 +181,7 @@ impl Toolbar {
                         let size = vec2(toolbar_size.x, header_height);
 
                         widgets::Button::new("").position(element_position).size(size).ui(ui);
-                        ui.label(element_position, &header);
+                        ui.label(element_position, header);
                     }
 
                     content_size.y -= header_height;

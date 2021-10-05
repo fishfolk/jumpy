@@ -132,9 +132,14 @@ impl ToolbarElement for TilesetDetailsElement {
             label: "Properties",
             width_override: Some(0.5),
             action,
-            ..Default::default()
         });
 
         res
+    }
+}
+
+impl Default for TilesetDetailsElement {
+    fn default() -> Self {
+        Self::new()
     }
 }

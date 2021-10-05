@@ -290,8 +290,14 @@
  "nextlayerid":6,
  "nextobjectid":151,
  "orientation":"orthogonal",
+ "properties":[
+        {
+         "name":"collision",
+         "type":"string",
+         "value":"solid"
+        }],
  "renderorder":"right-down",
- "tiledversion":"1.7.1",
+ "tiledversion":"1.7.2",
  "tileheight":32,
  "tilesets":[
         {

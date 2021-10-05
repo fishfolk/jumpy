@@ -80,8 +80,7 @@ impl GameWorld {
         for layer_id in &map.draw_order {
             let layer = map.layers.get(layer_id).unwrap();
             if layer.collision != CollisionKind::None {
-                let mut i = 0;
-                for (_, _, tile) in map.get_tiles(layer_id, None) {
+                for (i, (_, _, tile)) in map.get_tiles(layer_id, None).enumerate() {
                     if let Some(tile) = tile {
                         if tile.attributes.contains(&"jumpthrough".to_string()) {
                             static_colliders[i] = Tile::JumpThrough;
@@ -97,7 +96,6 @@ impl GameWorld {
                             }
                         }
                     }
-                    i += 1;
                 }
             }
         }
@@ -269,8 +267,8 @@ impl Resources {
         }
 
         let mut textures = HashMap::new();
-        textures.insert("tileset".to_string(), tileset.clone());
-        textures.insert("decorations".to_string(), decorations.clone());
+        textures.insert("tileset".to_string(), tileset);
+        textures.insert("decorations".to_string(), decorations);
 
         #[allow(clippy::inconsistent_struct_constructor)]
             Ok(Resources {

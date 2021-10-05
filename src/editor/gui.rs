@@ -76,21 +76,11 @@ pub enum GuiElement {
     Window,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct ButtonParams {
     pub label: &'static str,
     pub width_override: Option<f32>,
     pub action: Option<EditorAction>,
-}
-
-impl Default for ButtonParams {
-    fn default() -> Self {
-        ButtonParams {
-            label: "",
-            width_override: None,
-            action: None,
-        }
-    }
 }
 
 #[derive(Debug, Clone)]
@@ -142,7 +132,7 @@ impl EditorGui {
             return Some(GuiElement::Toolbar);
         }
 
-        for (_, window) in &self.open_windows {
+        for window in self.open_windows.values() {
             if window.contains(position) {
                 return Some(GuiElement::Window);
             }
@@ -170,9 +160,7 @@ impl EditorGui {
 
     pub fn add_window<W: Window + 'static>(&mut self, window: W) {
         let key = TypeId::of::<W>();
-        if self.open_windows.contains_key(&key) == false {
-            self.open_windows.insert(key, Box::new(window));
-        }
+        self.open_windows.entry(key).or_insert_with(|| Box::new(window));
     }
 
     pub fn remove_window<W: Window + 'static>(&mut self) {
@@ -208,7 +196,7 @@ impl EditorGui {
             let position = params.get_absolute_position();
             let size = params.size;
 
-            widgets::Window::new(hash!(id), position, size).titlebar(false).movable(params.is_static == false).ui(ui, |ui| {
+            widgets::Window::new(hash!(id), position, size).titlebar(false).movable(!params.is_static).ui(ui, |ui| {
                 let mut content_size = size - vec2(
                     EditorSkinCollection::WINDOW_MARGIN_LEFT + EditorSkinCollection::WINDOW_MARGIN_RIGHT,
                     EditorSkinCollection::WINDOW_MARGIN_TOP + EditorSkinCollection::WINDOW_MARGIN_BOTTOM,
@@ -293,5 +281,11 @@ impl EditorGui {
         ui.pop_skin();
 
         res
+    }
+}
+
+impl Default for EditorGui {
+    fn default() -> Self {
+        Self::new()
     }
 }

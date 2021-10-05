@@ -78,15 +78,13 @@ pub trait Window {
     fn get_params(&self) -> &WindowParams;
 
     fn get_buttons(&self, _map: &Map, _draw_params: &EditorDrawParams) -> Vec<ButtonParams> where Self: 'static {
-        let mut res = Vec::new();
-
-        res.push(ButtonParams {
-            label: "Close",
-            action: Some(self.get_close_action()),
-            ..Default::default()
-        });
-
-        res
+        vec!(
+            ButtonParams {
+                label: "Close",
+                action: Some(self.get_close_action()),
+                ..Default::default()
+            }
+        )
     }
 
     fn draw(&mut self, ui: &mut Ui, size: Vec2, map: &Map, draw_params: &EditorDrawParams) -> Option<EditorAction>;

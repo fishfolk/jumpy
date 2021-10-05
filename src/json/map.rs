@@ -38,16 +38,16 @@ pub(crate) struct MapDef {
     pub properties: HashMap<String, MapProperty>,
 }
 
-impl Into<MapDef> for Map {
-    fn into(self) -> MapDef {
-        let layers = self.draw_order.iter().filter_map(|layer_id|  {
-            if let Some(layer) = self.layers.get(layer_id) {
+impl From<Map> for MapDef {
+    fn from(other: Map) -> MapDef {
+        let layers = other.draw_order.iter().filter_map(|layer_id|  {
+            if let Some(layer) = other.layers.get(layer_id) {
                 let (tiles, objects) = match &layer.kind {
                     MapLayerKind::TileLayer => {
                         let tiles = layer.tiles.iter().map(|opt| match opt {
                             Some(tile) => {
-                                let tileset = self.tilesets.get(&tile.tileset_id)
-                                    .expect(&format!("Unable to find tileset with id '{}'!", tile.tileset_id));
+                                let tileset = other.tilesets.get(&tile.tileset_id)
+                                    .unwrap_or_else(|| panic!("Unable to find tileset with id '{}'!", tile.tileset_id));
                                 tile.tile_id + tileset.first_tile_id
                             },
                             _ => 0,
@@ -64,33 +64,34 @@ impl Into<MapDef> for Map {
 
                 let layer = MapLayerDef {
                     id: layer.id.clone(),
-                    kind: layer.kind.clone(),
-                    collision: layer.collision.clone(),
+                    kind: layer.kind,
+                    collision: layer.collision,
                     objects,
                     tiles,
                     is_visible: layer.is_visible,
                     properties: layer.properties.clone(),
                 };
-                Some(layer)
-            } else {
-                None
+
+                return Some(layer);
             }
+
+            None
         }).collect();
 
-        let tilesets = self.tilesets
+        let tilesets = other.tilesets
             .into_iter()
             .map(|(_, tileset)| tileset)
             .collect();
 
         MapDef {
-            name: self.name,
-            background_color: self.background_color,
-            world_offset: self.world_offset,
-            grid_size: self.grid_size,
-            tile_size: self.tile_size,
+            name: other.name,
+            background_color: other.background_color,
+            world_offset: other.world_offset,
+            grid_size: other.grid_size,
+            tile_size: other.tile_size,
             layers,
             tilesets,
-            properties: self.properties,
+            properties: other.properties,
         }
     }
 }
@@ -148,12 +149,12 @@ impl From<MapDef> for Map {
                             tile
                         }).collect();
 
-                    let objects = layer.objects.clone().unwrap_or(Vec::new());
+                    let objects = layer.objects.clone().unwrap_or_default();
 
                     let layer = MapLayer {
                         id: layer.id.clone(),
-                        kind: layer.kind.clone(),
-                        collision: layer.collision.clone(),
+                        kind: layer.kind,
+                        collision: layer.collision,
                         grid_size: def.grid_size,
                         tiles,
                         objects,

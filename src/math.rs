@@ -133,20 +133,20 @@ impl From<(UVec2, UVec2)> for URect {
     }
 }
 
-impl Into<Rect> for URect {
-    fn into(self) -> Rect {
+impl From<URect> for Rect {
+    fn from(other: URect) -> Rect {
         Rect {
-            x: self.x as f32,
-            y: self.y as f32,
-            w: self.w as f32,
-            h: self.h as f32,
+            x: other.x as f32,
+            y: other.y as f32,
+            w: other.w as f32,
+            h: other.h as f32,
         }
     }
 }
 
 
 pub fn color_from_hex_string(str: &str) -> Color {
-    let str = if str.starts_with("#") {
+    let str = if str.starts_with('#') {
         str[1..str.len()].to_string()
     } else {
         str.to_string()

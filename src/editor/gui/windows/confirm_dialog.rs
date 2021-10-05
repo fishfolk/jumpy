@@ -34,7 +34,7 @@ impl ConfirmDialog {
         };
 
         let body = body
-            .into_iter()
+            .iter()
             .map(|line| line.to_string())
             .collect();
 

@@ -15,6 +15,7 @@ pub enum EditorAction {
     Batch(Vec<EditorAction>),
     Undo,
     Redo,
+    SelectTool(usize),
     OpenCreateLayerWindow,
     OpenCreateTilesetWindow,
     OpenTilesetPropertiesWindow(String),
@@ -27,7 +28,6 @@ pub enum EditorAction {
         layer_id: String,
     },
     CloseWindow(TypeId),
-    SelectTool,
     SelectTile {
         id: u32,
         tileset_id: String,

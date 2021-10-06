@@ -1,4 +1,9 @@
-use std::{any::TypeId, collections::HashMap};
+use std::{
+    any::TypeId,
+    collections::HashMap,
+    ops::{Deref, DerefMut},
+    borrow::{Borrow, BorrowMut},
+};
 
 use macroquad::{
     experimental::collections::storage,
@@ -33,17 +38,14 @@ pub use object_list::ObjectListElement;
 #[derive(Debug, Default, Clone)]
 pub struct ToolbarElementParams {
     header: Option<String>,
-    has_buttons: bool,
     has_margins: bool,
+    has_buttons: bool,
 }
 
 pub trait ToolbarElement {
     fn get_params(&self) -> &ToolbarElementParams;
 
-    // This will be called when the element is drawn. It will be drawn inside its own UI group and
-    // the `size` parameter holds the size of that group. It is possible to exceed this size, but
-    // this will cause scrolling in stead of growing the component group beyond its specified
-    // height factor.
+    // The `size` parameter will be the size of the group containing the element
     fn draw(
         &mut self,
         ui: &mut Ui,
@@ -60,9 +62,8 @@ pub trait ToolbarElement {
         Vec::new()
     }
 
-    // This controls whether the element is drawn or not. If your element depends on some contextual
-    // state for relevancy, do the necessary checks here.
-    fn predicate(&self, _map: &Map, _ctx: &EditorContext) -> bool {
+    // This controls whether the element is drawn or not
+    fn is_drawn(&self, _map: &Map, _ctx: &EditorContext) -> bool {
         true
     }
 }
@@ -102,22 +103,16 @@ impl Toolbar {
 
     pub fn add_element<E: ToolbarElement + 'static>(&mut self, height_factor: f32, element: E) {
         let id = TypeId::of::<E>();
-
-        self.draw_order.push(id);
         self.elements.insert(id, (height_factor, Box::new(element)));
+        self.draw_order.push(id);
     }
 
     pub fn remove_element<E: ToolbarElement + 'static>(
         &mut self,
     ) -> Option<Box<dyn ToolbarElement>> {
         let id = TypeId::of::<E>();
-
-        self.draw_order.retain(|other_id| id != *other_id);
-        if let Some((_, element)) = self.elements.remove(&id) {
-            return Some(element);
-        }
-
-        None
+        self.draw_order.retain(|other_id| *other_id != id);
+        self.elements.remove(&id).map(|(_, id)| id)
     }
 
     pub fn get_rect(&self) -> Rect {
@@ -172,7 +167,7 @@ impl Toolbar {
                         .map(|(height_factor, element)| (*height_factor, element))
                         .unwrap();
 
-                    if element.predicate(map, ctx) {
+                    if element.is_drawn(map, ctx) {
                         let params = element.get_params().clone();
 
                         let element_id = hash!(toolbar_id, element_id);
@@ -212,35 +207,27 @@ impl Toolbar {
                             content_size.y -= Toolbar::BUTTON_HEIGHT + (ELEMENT_MARGIN * 2.0);
                         }
 
+                        let margins = vec2(ELEMENT_MARGIN, ELEMENT_MARGIN);
                         if params.has_margins {
-                            content_size.x -= ELEMENT_MARGIN;
-                            content_position.x += ELEMENT_MARGIN;
+                            content_size -= vec2(margins.x, margins.y * 2.0);
+                            content_position += margins;
                         }
 
-                        {
-                            let has_margins = params.has_margins;
-
-                            widgets::Group::new(element_id, content_size)
-                                .position(content_position)
-                                .ui(ui, |ui| {
-                                    if has_margins {
-                                        // This is done here so that scrollbar is pushed to edge of screen, even when the element has margins
-                                        content_size.x -= ELEMENT_MARGIN;
-                                    }
-
-                                    if let Some(action) = element.draw(ui, content_size, map, ctx) {
-                                        res = Some(action);
-                                    }
-                                });
-                        }
+                        widgets::Group::new(hash!(element_id, "content"), content_size)
+                            .position(content_position)
+                            .ui(ui, |ui| {
+                                content_size.x -= margins.x;
+                                if let Some(action) = element.draw(ui, content_size, map, ctx) {
+                                    res = Some(action);
+                                }
+                            });
 
                         if params.has_buttons {
-                            let mut menubar_position = vec2(element_position.x, content_position.y);
-                            menubar_position.y += content_size.y + ELEMENT_MARGIN;
-                            menubar_position.x += ELEMENT_MARGIN;
+                            let mut menubar_position = vec2(element_position.x, content_position.y) + margins;
+                            menubar_position.y += content_size.y;
 
                             let mut menubar_size = vec2(element_size.x, Toolbar::BUTTON_HEIGHT);
-                            menubar_size.x -= ELEMENT_MARGIN * 2.0;
+                            menubar_size.x -= margins.x * 2.0;
 
                             widgets::Group::new(hash!(element_id, "menubar"), menubar_size)
                                 .position(menubar_position)
@@ -253,7 +240,7 @@ impl Toolbar {
                                         let mut button_position = Vec2::ZERO;
 
                                         let total_width = menubar_size.x
-                                            - (ELEMENT_MARGIN * (button_cnt - 1) as f32);
+                                            - (margins.x * (button_cnt - 1) as f32);
 
                                         let mut overrides = 0;
                                         let mut total_override_factor = 0.0;
@@ -309,7 +296,7 @@ impl Toolbar {
                                                 ui.pop_skin();
                                             }
 
-                                            button_position.x += button_size.x + ELEMENT_MARGIN;
+                                            button_position.x += button_size.x + margins.x;
 
                                             i += 1;
 

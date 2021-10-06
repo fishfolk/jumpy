@@ -110,7 +110,7 @@ impl ToolbarElement for TilesetListElement {
         res
     }
 
-    fn predicate(&self, map: &Map, ctx: &EditorContext) -> bool {
+    fn is_drawn(&self, map: &Map, ctx: &EditorContext) -> bool {
         if let Some(layer_id) = &ctx.selected_layer {
             if let Some(layer) = map.layers.get(layer_id) {
                 return layer.kind == MapLayerKind::TileLayer;

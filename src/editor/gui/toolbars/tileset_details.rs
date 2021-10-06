@@ -112,7 +112,7 @@ impl ToolbarElement for TilesetDetailsElement {
         res
     }
 
-    fn predicate(&self, _map: &Map, ctx: &EditorContext) -> bool {
+    fn is_drawn(&self, _map: &Map, ctx: &EditorContext) -> bool {
         ctx.selected_tileset.is_some()
     }
 }

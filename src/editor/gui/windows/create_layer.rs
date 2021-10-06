@@ -3,7 +3,7 @@ use macroquad::{
     ui::{hash, widgets, Ui},
 };
 
-use crate::map::{Map, MapLayerKind, ObjectLayerKind};
+use crate::map::{Map, MapLayerKind};
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 
@@ -36,37 +36,6 @@ impl Window for CreateLayerWindow {
         &self.params
     }
 
-    fn get_buttons(&self, map: &Map, _ctx: &EditorContext) -> Vec<ButtonParams> {
-        let mut res = Vec::new();
-
-        let is_existing_id = map.draw_order.iter().any(|id| id == &self.id);
-
-        let mut action = None;
-        if !is_existing_id {
-            let batch = self.get_close_action().then(EditorAction::CreateLayer {
-                id: self.id.clone(),
-                kind: self.layer_kind,
-                draw_order_index: None,
-            });
-
-            action = Some(batch);
-        }
-
-        res.push(ButtonParams {
-            label: "Create",
-            action,
-            ..Default::default()
-        });
-
-        res.push(ButtonParams {
-            label: "Cancel",
-            action: Some(self.get_close_action()),
-            ..Default::default()
-        });
-
-        res
-    }
-
     fn draw(
         &mut self,
         ui: &mut Ui,
@@ -93,22 +62,17 @@ impl Window for CreateLayerWindow {
 
         let mut layer_kind = match self.layer_kind {
             MapLayerKind::TileLayer => 0,
-            MapLayerKind::ObjectLayer(kind) => match kind {
-                ObjectLayerKind::Items => 1,
-                ObjectLayerKind::SpawnPoints => 2,
-                _ => unreachable!(),
-            },
+            MapLayerKind::ObjectLayer => 1,
         };
 
-        widgets::ComboBox::new(hash!(id, "type_input"), &["Tiles", "Items", "Spawn Points"])
+        widgets::ComboBox::new(hash!(id, "type_input"), &["tile layer", "object layer"])
             .ratio(0.4)
             .label("Type")
             .ui(ui, &mut layer_kind);
 
         self.layer_kind = match layer_kind {
             0 => MapLayerKind::TileLayer,
-            1 => MapLayerKind::ObjectLayer(ObjectLayerKind::Items),
-            2 => MapLayerKind::ObjectLayer(ObjectLayerKind::SpawnPoints),
+            1 => MapLayerKind::ObjectLayer,
             _ => unreachable!(),
         };
 
@@ -120,6 +84,38 @@ impl Window for CreateLayerWindow {
         }
 
         None
+    }
+
+    fn get_buttons(&self, map: &Map, _ctx: &EditorContext) -> Vec<ButtonParams> {
+        let mut res = Vec::new();
+
+        let is_existing_id = map.draw_order.iter().any(|id| id == &self.id);
+
+        let mut action = None;
+        if !is_existing_id {
+            let batch = self.get_close_action().then(EditorAction::CreateLayer {
+                id: self.id.clone(),
+                kind: self.layer_kind,
+                has_collision: self.has_collision,
+                index: None,
+            });
+
+            action = Some(batch);
+        }
+
+        res.push(ButtonParams {
+            label: "Create",
+            action,
+            ..Default::default()
+        });
+
+        res.push(ButtonParams {
+            label: "Cancel",
+            action: Some(self.get_close_action()),
+            ..Default::default()
+        });
+
+        res
     }
 }
 

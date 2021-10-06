@@ -1,5 +1,6 @@
-use macroquad::prelude::*;
 use std::collections::HashMap;
+
+use macroquad::prelude::*;
 
 use macroquad_particles as particles;
 

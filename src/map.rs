@@ -31,7 +31,7 @@ pub struct Map {
 }
 
 impl Map {
-    pub const DEFAULT_NAME: &'static str = "unnamed_map";
+    pub const DEFAULT_NAME: &'static str = "Unnamed Map";
 
     pub const PLATFORM_TILE_ATTRIBUTE: &'static str = "jumpthrough";
 
@@ -283,17 +283,9 @@ impl<'a> Iterator for MapTileIterator<'a> {
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum ObjectLayerKind {
-    None,
-    Items,
-    SpawnPoints,
-}
-
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
 pub enum MapLayerKind {
     TileLayer,
-    ObjectLayer(ObjectLayerKind),
+    ObjectLayer,
 }
 
 impl Default for MapLayerKind {
@@ -306,11 +298,13 @@ impl Default for MapLayerKind {
 pub struct MapLayer {
     pub id: String,
     pub kind: MapLayerKind,
-    #[serde(default, rename = "collision")]
+    #[serde(default)]
     pub has_collision: bool,
     #[serde(with = "json::def_uvec2")]
     pub grid_size: UVec2,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub tiles: Vec<Option<MapTile>>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub objects: Vec<MapObject>,
     #[serde(default)]
     pub is_visible: bool,
@@ -319,10 +313,17 @@ pub struct MapLayer {
 }
 
 impl MapLayer {
-    pub fn new(id: &str, kind: MapLayerKind) -> Self {
+    pub fn new(id: &str, kind: MapLayerKind, has_collision: bool) -> Self {
+        let has_collision = if kind == MapLayerKind::TileLayer {
+            has_collision
+        } else {
+            false
+        };
+
         MapLayer {
             id: id.to_string(),
             kind,
+            has_collision,
             ..Default::default()
         }
     }
@@ -367,6 +368,17 @@ pub struct MapObject {
     pub size: Option<Vec2>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub properties: HashMap<String, MapProperty>,
+}
+
+impl MapObject {
+    pub fn new(name: &str, position: Vec2, size: Option<Vec2>) -> Self {
+        MapObject {
+            name: name.to_string(),
+            position,
+            size,
+            properties: HashMap::new(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

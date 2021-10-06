@@ -61,7 +61,7 @@ impl From<Map> for MapDef {
 
                             (Some(tiles), None)
                         }
-                        MapLayerKind::ObjectLayer(_) => {
+                        MapLayerKind::ObjectLayer => {
                             let objects = layer.objects.clone();
 
                             (None, Some(objects))
@@ -195,9 +195,9 @@ impl From<MapDef> for Map {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MapLayerDef {
     pub id: String,
-    #[serde(default, rename = "collision")]
-    pub has_collision: bool,
     pub kind: MapLayerKind,
+    #[serde(default)]
+    pub has_collision: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tiles: Option<Vec<u32>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -212,8 +212,8 @@ impl Default for MapLayerDef {
     fn default() -> Self {
         MapLayerDef {
             id: "".to_string(),
-            has_collision: false,
             kind: MapLayerKind::TileLayer,
+            has_collision: false,
             tiles: Some(Vec::new()),
             objects: None,
             is_visible: true,

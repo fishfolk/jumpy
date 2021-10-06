@@ -20,24 +20,21 @@ use super::{EditorAction, EditorContext};
 use crate::{gui::GuiResources, map::Map};
 
 use toolbars::{
-    LayerListElement, TilesetDetailsElement, TilesetListElement, ToolSelectorElement, Toolbar,
-    ToolbarPosition,
+    LayerListElement, ObjectListElement, TilesetDetailsElement, TilesetListElement,
+    ToolSelectorElement, Toolbar, ToolbarPosition,
 };
 
-use windows::Window;
-
-pub use windows::{ConfirmDialog, CreateLayerWindow, CreateTilesetWindow, TilesetPropertiesWindow};
+pub use windows::{
+    ConfirmDialog, CreateLayerWindow, CreateObjectWindow, CreateTilesetWindow,
+    TilesetPropertiesWindow, Window, WINDOW_BUTTON_HEIGHT, WINDOW_BUTTON_MAX_WIDTH,
+    WINDOW_BUTTON_MIN_WIDTH,
+};
 
 use context_menu::{ContextMenu, ContextMenuEntry};
 
 pub const NO_COLOR: Color = Color::new(0.0, 0.0, 0.0, 0.0);
 
 pub const ELEMENT_MARGIN: f32 = 8.0;
-
-pub const WINDOW_BUTTON_HEIGHT: f32 = 32.0;
-
-pub const WINDOW_BUTTON_MIN_WIDTH: f32 = 64.0;
-pub const WINDOW_BUTTON_MAX_WIDTH: f32 = 96.0;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum GuiElement {
@@ -72,6 +69,7 @@ impl EditorGui {
     const LAYER_LIST_HEIGHT_FACTOR: f32 = 0.3;
     const TILESET_LIST_HEIGHT_FACTOR: f32 = 0.2;
     const TILESET_DETAILS_HEIGHT_FACTOR: f32 = 0.5;
+    const OBJECT_LIST_HEIGHT_FACTOR: f32 = 0.7;
 
     pub fn new() -> Self {
         let left_toolbar = Toolbar::new(ToolbarPosition::Left, Self::LEFT_TOOLBAR_WIDTH)
@@ -86,7 +84,8 @@ impl EditorGui {
             .with_element(
                 Self::TILESET_DETAILS_HEIGHT_FACTOR,
                 TilesetDetailsElement::new(),
-            );
+            )
+            .with_element(Self::OBJECT_LIST_HEIGHT_FACTOR, ObjectListElement::new());
 
         EditorGui {
             left_toolbar,

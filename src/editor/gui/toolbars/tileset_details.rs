@@ -4,13 +4,9 @@ use macroquad::{
     ui::{widgets, Ui},
 };
 
-use crate::Resources;
+use super::{EditorAction, EditorContext, GuiResources, Map, ToolbarElement, ToolbarElementParams};
 
-use super::{
-    ButtonParams, EditorAction, EditorContext, GuiResources, Map, ToolbarElement,
-    ToolbarElementParams,
-};
-use crate::editor::gui::ELEMENT_MARGIN;
+use crate::{editor::gui::ELEMENT_MARGIN, Resources};
 
 pub struct TilesetDetailsElement {
     params: ToolbarElementParams,
@@ -20,8 +16,8 @@ impl TilesetDetailsElement {
     pub fn new() -> Self {
         let params = ToolbarElementParams {
             header: None,
-            has_buttons: true,
             has_margins: true,
+            ..Default::default()
         };
 
         TilesetDetailsElement { params }
@@ -116,21 +112,8 @@ impl ToolbarElement for TilesetDetailsElement {
         res
     }
 
-    fn get_buttons(&self, _map: &Map, ctx: &EditorContext) -> Vec<ButtonParams> {
-        let mut res = Vec::new();
-
-        let mut action = None;
-        if let Some(tileset_id) = ctx.selected_tileset.clone() {
-            action = Some(EditorAction::OpenTilesetPropertiesWindow(tileset_id));
-        }
-
-        res.push(ButtonParams {
-            label: "Properties",
-            width_override: Some(0.5),
-            action,
-        });
-
-        res
+    fn predicate(&self, _map: &Map, ctx: &EditorContext) -> bool {
+        ctx.selected_tileset.is_some()
     }
 }
 

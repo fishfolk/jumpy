@@ -115,7 +115,6 @@ impl ToolbarElement for LayerListElement {
 
         for layer_id in &map.draw_order {
             let layer = map.layers.get(layer_id).unwrap();
-            let kind = &layer.kind;
 
             let is_selected = if let Some(selected_id) = &ctx.selected_layer {
                 layer_id == selected_id
@@ -134,11 +133,8 @@ impl ToolbarElement for LayerListElement {
 
             ui.label(position, layer_id);
 
-            {
-                let suffix = match kind {
-                    MapLayerKind::TileLayer => "(Tile)",
-                    MapLayerKind::ObjectLayer => "(Obj)",
-                };
+            if layer.kind == MapLayerKind::ObjectLayer {
+                let suffix = "(Obj)";
 
                 let suffix_size = ui.calc_size(suffix);
                 let position = vec2(size.x - suffix_size.x - ELEMENT_MARGIN, position.y);

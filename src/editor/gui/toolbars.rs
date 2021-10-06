@@ -36,6 +36,10 @@ pub struct ToolbarElementParams {
 pub trait ToolbarElement {
     fn get_params(&self) -> &ToolbarElementParams;
 
+    // This will be called when the element is drawn. It will be drawn inside its own UI group and
+    // the `size` parameter holds the size of that group. It is possible to exceed this size, but
+    // this will cause scrolling in stead of growing the component group beyond its specified
+    // height factor.
     fn draw(
         &mut self,
         ui: &mut Ui,
@@ -50,6 +54,12 @@ pub trait ToolbarElement {
     // the `Vec` returned by this method.
     fn get_buttons(&self, _map: &Map, _ctx: &EditorContext) -> Vec<ButtonParams> {
         Vec::new()
+    }
+
+    // This controls whether the element is drawn or not. If your element depends on some contextual
+    // state for relevancy, do the necessary checks here.
+    fn predicate(&self, _map: &Map, _ctx: &EditorContext) -> bool {
+        true
     }
 }
 
@@ -87,13 +97,13 @@ impl Toolbar {
     }
 
     pub fn add_element<E: ToolbarElement + 'static>(&mut self, height_factor: f32, element: E) {
-        let key = TypeId::of::<E>();
+        let id = TypeId::of::<E>();
 
-        let entry = (key, height_factor);
+        let entry = (id, height_factor);
         self.draw_order.push(entry);
 
         let value = Box::new(element);
-        self.elements.insert(key, value);
+        self.elements.insert(id, value);
     }
 
     pub fn get_rect(&self) -> Rect {
@@ -103,6 +113,15 @@ impl Toolbar {
         }
 
         Rect::new(offset, 0.0, self.width, screen_height())
+    }
+
+    pub fn remove_element<E: ToolbarElement + 'static>(
+        &mut self,
+    ) -> Option<Box<dyn ToolbarElement>> {
+        let id = TypeId::of::<E>();
+
+        self.draw_order.retain(|(other_id, _)| id != *other_id);
+        self.elements.remove(&id)
     }
 
     pub fn contains(&self, point: Vec2) -> bool {
@@ -123,21 +142,8 @@ impl Toolbar {
             position.x += screen_width() - self.width;
         }
 
-        let toolbar_size = vec2(self.width, screen_height());
-
-        {
-            let mut total_height_factor = 0.0;
-            for (_, height_factor) in &self.draw_order {
-                total_height_factor += *height_factor;
-            }
-
-            assert!(
-                total_height_factor <= 1.0,
-                "Total height factor of all toolbar elements exceed 1.0"
-            );
-        }
-
         let toolbar_id = hash!(self.position);
+        let toolbar_size = vec2(self.width, screen_height());
 
         widgets::Group::new(toolbar_id, toolbar_size)
             .position(position)
@@ -157,147 +163,157 @@ impl Toolbar {
                 for (element_id, height_factor) in self.draw_order.clone() {
                     let element = self.elements.get_mut(&element_id).unwrap();
 
-                    let params = element.get_params().clone();
+                    if element.predicate(map, ctx) {
+                        let params = element.get_params().clone();
 
-                    let element_id = hash!(toolbar_id, element_id);
+                        let element_id = hash!(toolbar_id, element_id);
 
-                    let element_size = {
-                        let height = screen_height() * height_factor;
-                        vec2(self.width, height)
-                    };
+                        let element_size = {
+                            let height = screen_height() * height_factor;
+                            vec2(self.width, height)
+                        };
 
-                    let element_position = position;
-                    let mut content_position = element_position;
-                    let mut content_size = element_size;
+                        let element_position = position;
+                        let mut content_position = element_position;
+                        let mut content_size = element_size;
 
-                    if let Some(header) = &params.header {
-                        let gui_resources = storage::get::<GuiResources>();
-                        ui.push_skin(&gui_resources.editor_skins.toolbar_header_bg);
+                        if let Some(header) = &params.header {
+                            let gui_resources = storage::get::<GuiResources>();
+                            ui.push_skin(&gui_resources.editor_skins.toolbar_header_bg);
 
-                        let header_height = ui.calc_size(header).y;
+                            let header_height = ui.calc_size(header).y;
 
-                        {
-                            let size = vec2(toolbar_size.x, header_height);
+                            {
+                                let size = vec2(toolbar_size.x, header_height);
 
-                            widgets::Button::new("")
-                                .position(element_position)
-                                .size(size)
-                                .ui(ui);
-                            ui.label(element_position, header);
+                                widgets::Button::new("")
+                                    .position(element_position)
+                                    .size(size)
+                                    .ui(ui);
+                                ui.label(element_position, header);
+                            }
+
+                            content_size.y -= header_height;
+                            content_position.y += header_height;
+
+                            ui.pop_skin();
                         }
 
-                        content_size.y -= header_height;
-                        content_position.y += header_height;
+                        if params.has_buttons {
+                            content_size.y -= Toolbar::BUTTON_HEIGHT + (ELEMENT_MARGIN * 2.0);
+                        }
 
-                        ui.pop_skin();
-                    }
+                        if params.has_margins {
+                            content_size.x -= ELEMENT_MARGIN;
+                            content_position.x += ELEMENT_MARGIN;
+                        }
 
-                    if params.has_buttons {
-                        content_size.y -= Toolbar::BUTTON_HEIGHT + (ELEMENT_MARGIN * 2.0);
-                    }
+                        {
+                            let has_margins = params.has_margins;
 
-                    if params.has_margins {
-                        content_size.x -= ELEMENT_MARGIN;
-                        content_position.x += ELEMENT_MARGIN;
-                    }
-
-                    {
-                        let has_margins = params.has_margins;
-
-                        widgets::Group::new(element_id, content_size)
-                            .position(content_position)
-                            .ui(ui, |ui| {
-                                if has_margins {
-                                    // This is done here so that scrollbar is pushed to edge of screen, even when the element has margins
-                                    content_size.x -= ELEMENT_MARGIN;
-                                }
-
-                                if let Some(action) = element.draw(ui, content_size, map, ctx) {
-                                    res = Some(action);
-                                }
-                            });
-                    }
-
-                    if params.has_buttons {
-                        let mut menubar_position = vec2(element_position.x, content_position.y);
-                        menubar_position.y += content_size.y + ELEMENT_MARGIN;
-                        menubar_position.x += ELEMENT_MARGIN;
-
-                        let mut menubar_size = vec2(element_size.x, Toolbar::BUTTON_HEIGHT);
-                        menubar_size.x -= ELEMENT_MARGIN * 2.0;
-
-                        widgets::Group::new(hash!(element_id, "menubar"), menubar_size)
-                            .position(menubar_position)
-                            .ui(ui, |ui| {
-                                let buttons = element.get_buttons(map, ctx);
-
-                                let button_cnt = buttons.len().clamp(0, 4);
-
-                                if button_cnt > 0 {
-                                    let mut button_position = Vec2::ZERO;
-
-                                    let total_width = menubar_size.x - (ELEMENT_MARGIN * 3.0);
-
-                                    let mut overrides = 0;
-                                    let mut total_override_factor = 0.0;
-                                    for i in 0..button_cnt {
-                                        let button = buttons.get(i).unwrap();
-                                        if let Some(width_factor) = button.width_override {
-                                            total_override_factor +=
-                                                to_corrected_button_width_factor(width_factor);
-                                            overrides += 1;
-                                        }
+                            widgets::Group::new(element_id, content_size)
+                                .position(content_position)
+                                .ui(ui, |ui| {
+                                    if has_margins {
+                                        // This is done here so that scrollbar is pushed to edge of screen, even when the element has margins
+                                        content_size.x -= ELEMENT_MARGIN;
                                     }
 
-                                    let auto_width = {
-                                        let remaining_buttons = button_cnt - overrides;
-                                        let remaining_width_factor = 1.0 - total_override_factor;
-                                        let width_factor =
-                                            remaining_width_factor / remaining_buttons as f32;
-                                        total_width * to_corrected_button_width_factor(width_factor)
-                                    };
+                                    if let Some(action) = element.draw(ui, content_size, map, ctx) {
+                                        res = Some(action);
+                                    }
+                                });
+                        }
 
-                                    let mut i = 0;
-                                    for button in buttons {
-                                        let mut button_size = vec2(auto_width, Self::BUTTON_HEIGHT);
-                                        if let Some(width_factor) = button.width_override {
-                                            button_size.x = total_width
-                                                * to_corrected_button_width_factor(width_factor);
-                                        }
+                        if params.has_buttons {
+                            let mut menubar_position = vec2(element_position.x, content_position.y);
+                            menubar_position.y += content_size.y + ELEMENT_MARGIN;
+                            menubar_position.x += ELEMENT_MARGIN;
 
-                                        if button.action.is_none() {
-                                            let gui_resources = storage::get::<GuiResources>();
-                                            ui.push_skin(
-                                                &gui_resources.editor_skins.toolbar_button_disabled,
-                                            );
-                                        }
+                            let mut menubar_size = vec2(element_size.x, Toolbar::BUTTON_HEIGHT);
+                            menubar_size.x -= ELEMENT_MARGIN * 2.0;
 
-                                        let was_clicked = widgets::Button::new(button.label)
-                                            .size(button_size)
-                                            .position(button_position)
-                                            .ui(ui);
+                            widgets::Group::new(hash!(element_id, "menubar"), menubar_size)
+                                .position(menubar_position)
+                                .ui(ui, |ui| {
+                                    let buttons = element.get_buttons(map, ctx);
 
-                                        if button.action.is_some() {
-                                            if was_clicked {
-                                                res = button.action;
+                                    let button_cnt = buttons.len().clamp(0, 4);
+
+                                    if button_cnt > 0 {
+                                        let mut button_position = Vec2::ZERO;
+
+                                        let total_width = menubar_size.x
+                                            - (ELEMENT_MARGIN * (button_cnt - 1) as f32);
+
+                                        let mut overrides = 0;
+                                        let mut total_override_factor = 0.0;
+                                        for i in 0..button_cnt {
+                                            let button = buttons.get(i).unwrap();
+                                            if let Some(width_factor) = button.width_override {
+                                                total_override_factor +=
+                                                    to_corrected_button_width_factor(width_factor);
+                                                overrides += 1;
                                             }
-                                        } else {
-                                            ui.pop_skin();
                                         }
 
-                                        button_position.x += button_size.x + ELEMENT_MARGIN;
+                                        let auto_width = {
+                                            let remaining_buttons = button_cnt - overrides;
+                                            let remaining_width_factor =
+                                                1.0 - total_override_factor;
+                                            let width_factor =
+                                                remaining_width_factor / remaining_buttons as f32;
+                                            total_width
+                                                * to_corrected_button_width_factor(width_factor)
+                                        };
 
-                                        i += 1;
+                                        let mut i = 0;
+                                        for button in buttons {
+                                            let mut button_size =
+                                                vec2(auto_width, Self::BUTTON_HEIGHT);
+                                            if let Some(width_factor) = button.width_override {
+                                                button_size.x = total_width
+                                                    * to_corrected_button_width_factor(
+                                                        width_factor,
+                                                    );
+                                            }
 
-                                        if i >= button_cnt {
-                                            break;
+                                            if button.action.is_none() {
+                                                let gui_resources = storage::get::<GuiResources>();
+                                                ui.push_skin(
+                                                    &gui_resources
+                                                        .editor_skins
+                                                        .toolbar_button_disabled,
+                                                );
+                                            }
+
+                                            let was_clicked = widgets::Button::new(button.label)
+                                                .size(button_size)
+                                                .position(button_position)
+                                                .ui(ui);
+
+                                            if button.action.is_some() {
+                                                if was_clicked {
+                                                    res = button.action;
+                                                }
+                                            } else {
+                                                ui.pop_skin();
+                                            }
+
+                                            button_position.x += button_size.x + ELEMENT_MARGIN;
+
+                                            i += 1;
+
+                                            if i >= button_cnt {
+                                                break;
+                                            }
                                         }
                                     }
-                                }
-                            });
-                    }
+                                });
+                        }
 
-                    position.y += element_size.y;
+                        position.y += element_size.y;
+                    }
                 }
             });
 
@@ -310,11 +326,7 @@ impl Toolbar {
 fn to_corrected_button_width_factor(width_factor: f32) -> f32 {
     if width_factor <= 0.25 {
         0.25
-    } else if width_factor <= 0.5 {
-        0.5
-    } else if width_factor <= 0.75 {
-        0.75
     } else {
-        1.0
+        0.5
     }
 }

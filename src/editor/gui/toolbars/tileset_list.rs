@@ -7,7 +7,8 @@ use macroquad::{
 use super::{
     EditorAction, EditorContext, GuiResources, Map, Toolbar, ToolbarElement, ToolbarElementParams,
 };
-use crate::editor::gui::ButtonParams;
+
+use crate::{editor::gui::ButtonParams, map::MapLayerKind};
 
 pub struct TilesetListElement {
     params: ToolbarElementParams,
@@ -31,9 +32,14 @@ impl ToolbarElement for TilesetListElement {
     }
 
     fn get_buttons(&self, _map: &Map, ctx: &EditorContext) -> Vec<ButtonParams> {
-        let mut action = None;
-        if let Some(tileset_id) = ctx.selected_tileset.clone() {
-            action = Some(EditorAction::DeleteTileset(tileset_id));
+        let mut delete_action = None;
+        let mut properties_action = None;
+
+        if let Some(tileset_id) = &ctx.selected_tileset {
+            delete_action = Some(EditorAction::DeleteTileset(tileset_id.clone()));
+            properties_action = Some(EditorAction::OpenTilesetPropertiesWindow(
+                tileset_id.clone(),
+            ));
         }
 
         vec![
@@ -45,7 +51,12 @@ impl ToolbarElement for TilesetListElement {
             ButtonParams {
                 label: "-",
                 width_override: Some(0.25),
-                action,
+                action: delete_action,
+            },
+            ButtonParams {
+                label: "Properties",
+                width_override: Some(0.5),
+                action: properties_action,
             },
         ]
     }
@@ -76,14 +87,14 @@ impl ToolbarElement for TilesetListElement {
                 ui.push_skin(&gui_resources.editor_skins.menu_selected);
             }
 
-            let button = widgets::Button::new("")
+            let was_clicked = widgets::Button::new("")
                 .size(entry_size)
                 .position(position)
                 .ui(ui);
 
             ui.label(position, tileset_id);
 
-            if button {
+            if was_clicked {
                 res = Some(EditorAction::SelectTileset(tileset_id.clone()));
             }
 
@@ -97,6 +108,16 @@ impl ToolbarElement for TilesetListElement {
         ui.pop_skin();
 
         res
+    }
+
+    fn predicate(&self, map: &Map, ctx: &EditorContext) -> bool {
+        if let Some(layer_id) = &ctx.selected_layer {
+            if let Some(layer) = map.layers.get(layer_id) {
+                return layer.kind == MapLayerKind::TileLayer;
+            }
+        }
+
+        false
     }
 }
 

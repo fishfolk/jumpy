@@ -15,6 +15,11 @@ use super::{ButtonParams, EditorAction, EditorContext, Map};
 pub use create_tileset::CreateTilesetWindow;
 pub use tileset_properties::TilesetPropertiesWindow;
 
+pub const WINDOW_BUTTON_HEIGHT: f32 = 32.0;
+
+pub const WINDOW_BUTTON_MIN_WIDTH: f32 = 64.0;
+pub const WINDOW_BUTTON_MAX_WIDTH: f32 = 96.0;
+
 #[derive(Debug, Copy, Clone)]
 pub enum WindowPosition {
     Centered,

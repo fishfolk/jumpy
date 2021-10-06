@@ -1,14 +1,8 @@
-use macroquad::{
-    experimental::collections::storage,
-    prelude::*,
-    ui::{widgets, Ui},
-};
+use macroquad::{experimental::collections::storage, prelude::*, ui::Ui};
 
-use super::{
-    EditorAction, EditorContext, Map, ToolbarElement, ToolbarElementParams, ELEMENT_MARGIN,
-};
+use super::{EditorAction, EditorContext, Map, ToolbarElement, ToolbarElementParams};
 
-use crate::{gui::GuiResources, Resources};
+use crate::gui::GuiResources;
 
 pub struct ToolSelectorElement {
     params: ToolbarElementParams,
@@ -34,21 +28,21 @@ impl ToolbarElement for ToolSelectorElement {
     fn draw(
         &mut self,
         ui: &mut Ui,
-        size: Vec2,
+        _size: Vec2,
         _map: &Map,
-        ctx: &EditorContext,
+        _ctx: &EditorContext,
     ) -> Option<EditorAction> {
-        let mut res = None;
+        let res = None;
 
         {
             let gui_resources = storage::get::<GuiResources>();
             ui.push_skin(&gui_resources.editor_skins.tool_selector);
         }
 
-        let size = vec2(size.x, size.x);
-        let mut position = Vec2::ZERO;
-
-        let resources = storage::get::<Resources>();
+        // let size = vec2(size.x, size.x);
+        // let mut position = Vec2::ZERO;
+        //
+        // let resources = storage::get::<Resources>();
         // for (index, params) in ctx.available_tools.iter().enumerate() {
         //     let mut is_selected = false;
         //     if let Some(selected_index) = ctx.selected_tool {

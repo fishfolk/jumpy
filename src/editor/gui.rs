@@ -1,8 +1,4 @@
-use std::{
-    any::TypeId,
-    collections::HashMap,
-    ops::{Deref, DerefMut},
-};
+use std::{any::TypeId, collections::HashMap};
 
 pub mod context_menu;
 pub mod toolbars;
@@ -25,7 +21,7 @@ use crate::{gui::GuiResources, map::Map};
 
 use toolbars::{
     LayerListElement, ObjectListElement, TilesetDetailsElement, TilesetListElement,
-    ToolSelectorElement, ToolbarElement, Toolbar, ToolbarPosition,
+    ToolSelectorElement, Toolbar, ToolbarPosition,
 };
 
 pub use windows::{

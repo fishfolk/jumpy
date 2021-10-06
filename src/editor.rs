@@ -1,7 +1,3 @@
-use std::{
-    any::TypeId,
-};
-
 mod camera;
 
 pub use camera::EditorCamera;
@@ -26,7 +22,9 @@ mod input;
 mod history;
 mod tools;
 
-pub use tools::{add_tool_instance, get_tool_instance, EraserTool, PlacementTool, DEFAULT_TOOL_ICON_TEXTURE_ID};
+pub use tools::{
+    add_tool_instance, get_tool_instance, EraserTool, PlacementTool, DEFAULT_TOOL_ICON_TEXTURE_ID,
+};
 
 use history::EditorHistory;
 pub use input::EditorInputScheme;
@@ -133,6 +131,7 @@ impl Editor {
         vec2(x, y)
     }
 
+    #[allow(dead_code)]
     fn get_selected_tile(&self) -> Option<(u32, String)> {
         if let Some(tileset_id) = self.selected_tileset.clone() {
             if let Some(tile_id) = self.selected_tile {

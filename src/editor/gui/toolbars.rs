@@ -1,9 +1,4 @@
-use std::{
-    any::TypeId,
-    collections::HashMap,
-    ops::{Deref, DerefMut},
-    borrow::{Borrow, BorrowMut},
-};
+use std::{any::TypeId, collections::HashMap};
 
 use macroquad::{
     experimental::collections::storage,
@@ -223,7 +218,8 @@ impl Toolbar {
                             });
 
                         if params.has_buttons {
-                            let mut menubar_position = vec2(element_position.x, content_position.y) + margins;
+                            let mut menubar_position =
+                                vec2(element_position.x, content_position.y) + margins;
                             menubar_position.y += content_size.y;
 
                             let mut menubar_size = vec2(element_size.x, Toolbar::BUTTON_HEIGHT);
@@ -239,8 +235,8 @@ impl Toolbar {
                                     if button_cnt > 0 {
                                         let mut button_position = Vec2::ZERO;
 
-                                        let total_width = menubar_size.x
-                                            - (margins.x * (button_cnt - 1) as f32);
+                                        let total_width =
+                                            menubar_size.x - (margins.x * (button_cnt - 1) as f32);
 
                                         let mut overrides = 0;
                                         let mut total_override_factor = 0.0;

@@ -8,7 +8,6 @@ use macroquad::prelude::*;
 
 use super::{EditorAction, EditorContext, Map};
 
-
 static mut TOOL_INSTANCES: Option<Vec<Box<dyn EditorTool>>> = None;
 
 unsafe fn get_all_tool_instances() -> &'static mut Vec<Box<dyn EditorTool>> {
@@ -24,7 +23,10 @@ pub fn add_tool_instance<T: EditorTool + 'static>(tool: T) {
 }
 
 pub fn get_tool_instance(index: usize) -> &'static mut dyn EditorTool {
-    unsafe { get_all_tool_instances() }.get_mut(index).unwrap().as_mut()
+    unsafe { get_all_tool_instances() }
+        .get_mut(index)
+        .unwrap()
+        .as_mut()
 }
 
 pub const DEFAULT_TOOL_ICON_TEXTURE_ID: &str = "default_tool_icon";

@@ -370,6 +370,17 @@ pub struct MapObject {
     pub properties: HashMap<String, MapProperty>,
 }
 
+impl MapObject {
+    pub fn new(name: &str, position: Vec2, size: Option<Vec2>) -> Self {
+        MapObject {
+            name: name.to_string(),
+            position,
+            size,
+            properties: HashMap::new(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case", tag = "type")]
 pub enum MapProperty {

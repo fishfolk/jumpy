@@ -33,6 +33,66 @@ impl ToolbarElement for LayerListElement {
         &self.params
     }
 
+    fn draw(
+        &mut self,
+        ui: &mut Ui,
+        size: Vec2,
+        map: &Map,
+        ctx: &EditorContext,
+    ) -> Option<EditorAction> {
+        let mut res = None;
+
+        let entry_size = vec2(size.x, Toolbar::LIST_ENTRY_HEIGHT);
+        let mut position = Vec2::ZERO;
+
+        let gui_resources = storage::get::<GuiResources>();
+        ui.push_skin(&gui_resources.editor_skins.menu);
+
+        for layer_id in &map.draw_order {
+            let layer = map.layers.get(layer_id).unwrap();
+
+            let is_selected = if let Some(selected_id) = &ctx.selected_layer {
+                layer_id == selected_id
+            } else {
+                false
+            };
+
+            if is_selected {
+                ui.push_skin(&gui_resources.editor_skins.menu_selected);
+            }
+
+            let button = widgets::Button::new("")
+                .size(entry_size)
+                .position(position)
+                .ui(ui);
+
+            ui.label(position, layer_id);
+
+            if layer.kind == MapLayerKind::ObjectLayer {
+                let suffix = "(Obj)";
+
+                let suffix_size = ui.calc_size(suffix);
+                let position = vec2(size.x - suffix_size.x - ELEMENT_MARGIN, position.y);
+
+                ui.label(position, suffix);
+            }
+
+            if button {
+                res = Some(EditorAction::SelectLayer(layer_id.clone()));
+            }
+
+            if is_selected {
+                ui.pop_skin();
+            }
+
+            position.y += entry_size.y;
+        }
+
+        ui.pop_skin();
+
+        res
+    }
+
     fn get_buttons(&self, map: &Map, ctx: &EditorContext) -> Vec<ButtonParams> {
         let mut res = Vec::new();
 
@@ -94,66 +154,6 @@ impl ToolbarElement for LayerListElement {
             action: move_down_action,
             ..Default::default()
         });
-
-        res
-    }
-
-    fn draw(
-        &mut self,
-        ui: &mut Ui,
-        size: Vec2,
-        map: &Map,
-        ctx: &EditorContext,
-    ) -> Option<EditorAction> {
-        let mut res = None;
-
-        let entry_size = vec2(size.x, Toolbar::LIST_ENTRY_HEIGHT);
-        let mut position = Vec2::ZERO;
-
-        let gui_resources = storage::get::<GuiResources>();
-        ui.push_skin(&gui_resources.editor_skins.menu);
-
-        for layer_id in &map.draw_order {
-            let layer = map.layers.get(layer_id).unwrap();
-
-            let is_selected = if let Some(selected_id) = &ctx.selected_layer {
-                layer_id == selected_id
-            } else {
-                false
-            };
-
-            if is_selected {
-                ui.push_skin(&gui_resources.editor_skins.menu_selected);
-            }
-
-            let button = widgets::Button::new("")
-                .size(entry_size)
-                .position(position)
-                .ui(ui);
-
-            ui.label(position, layer_id);
-
-            if layer.kind == MapLayerKind::ObjectLayer {
-                let suffix = "(Obj)";
-
-                let suffix_size = ui.calc_size(suffix);
-                let position = vec2(size.x - suffix_size.x - ELEMENT_MARGIN, position.y);
-
-                ui.label(position, suffix);
-            }
-
-            if button {
-                res = Some(EditorAction::SelectLayer(layer_id.clone()));
-            }
-
-            if is_selected {
-                ui.pop_skin();
-            }
-
-            position.y += entry_size.y;
-        }
-
-        ui.pop_skin();
 
         res
     }

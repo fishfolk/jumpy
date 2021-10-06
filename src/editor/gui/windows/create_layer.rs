@@ -97,7 +97,7 @@ impl Window for CreateLayerWindow {
                 id: self.id.clone(),
                 kind: self.layer_kind,
                 has_collision: self.has_collision,
-                draw_order_index: None,
+                index: None,
             });
 
             action = Some(batch);

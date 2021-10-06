@@ -26,6 +26,10 @@ mod tileset_details;
 
 pub use tileset_details::TilesetDetailsElement;
 
+mod object_list;
+
+pub use object_list::ObjectListElement;
+
 #[derive(Debug, Default, Clone)]
 pub struct ToolbarElementParams {
     header: Option<String>,
@@ -72,8 +76,8 @@ pub enum ToolbarPosition {
 pub struct Toolbar {
     pub width: f32,
     position: ToolbarPosition,
-    draw_order: Vec<(TypeId, f32)>,
-    elements: HashMap<TypeId, Box<dyn ToolbarElement>>,
+    draw_order: Vec<TypeId>,
+    elements: HashMap<TypeId, (f32, Box<dyn ToolbarElement>)>,
 }
 
 impl Toolbar {
@@ -99,11 +103,21 @@ impl Toolbar {
     pub fn add_element<E: ToolbarElement + 'static>(&mut self, height_factor: f32, element: E) {
         let id = TypeId::of::<E>();
 
-        let entry = (id, height_factor);
-        self.draw_order.push(entry);
+        self.draw_order.push(id);
+        self.elements.insert(id, (height_factor, Box::new(element)));
+    }
 
-        let value = Box::new(element);
-        self.elements.insert(id, value);
+    pub fn remove_element<E: ToolbarElement + 'static>(
+        &mut self,
+    ) -> Option<Box<dyn ToolbarElement>> {
+        let id = TypeId::of::<E>();
+
+        self.draw_order.retain(|other_id| id != *other_id);
+        if let Some((_, element)) = self.elements.remove(&id) {
+            return Some(element);
+        }
+
+        None
     }
 
     pub fn get_rect(&self) -> Rect {
@@ -113,15 +127,6 @@ impl Toolbar {
         }
 
         Rect::new(offset, 0.0, self.width, screen_height())
-    }
-
-    pub fn remove_element<E: ToolbarElement + 'static>(
-        &mut self,
-    ) -> Option<Box<dyn ToolbarElement>> {
-        let id = TypeId::of::<E>();
-
-        self.draw_order.retain(|(other_id, _)| id != *other_id);
-        self.elements.remove(&id)
     }
 
     pub fn contains(&self, point: Vec2) -> bool {
@@ -160,8 +165,12 @@ impl Toolbar {
                     ui.pop_skin();
                 }
 
-                for (element_id, height_factor) in self.draw_order.clone() {
-                    let element = self.elements.get_mut(&element_id).unwrap();
+                for element_id in &self.draw_order {
+                    let (height_factor, element) = self
+                        .elements
+                        .get_mut(element_id)
+                        .map(|(height_factor, element)| (*height_factor, element))
+                        .unwrap();
 
                     if element.predicate(map, ctx) {
                         let params = element.get_params().clone();

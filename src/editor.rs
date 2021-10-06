@@ -4,13 +4,14 @@ pub use camera::EditorCamera;
 
 pub mod gui;
 
-use gui::{CreateLayerWindow, CreateTilesetWindow, EditorGui, GuiElement};
+use gui::{CreateLayerWindow, CreateObjectWindow, CreateTilesetWindow, EditorGui, GuiElement};
 
 mod actions;
 
 use actions::{
-    CreateLayer, CreateTileset, DeleteLayer, DeleteTileset, EditorAction, PlaceTile, RemoveTile,
-    Result, SetLayerDrawOrderIndex, SetTilesetAutotileMask, UndoableAction,
+    CreateLayerAction, CreateObjectAction, CreateTilesetAction, DeleteLayerAction,
+    DeleteObjectAction, DeleteTilesetAction, EditorAction, PlaceTileAction, RemoveTileAction,
+    Result, SetLayerDrawOrderIndexAction, SetTilesetAutotileMaskAction, UndoableAction,
 };
 
 mod input;
@@ -43,7 +44,7 @@ pub struct EditorContext {
     pub selected_layer: Option<String>,
     pub selected_tileset: Option<String>,
     pub selected_tile: Option<u32>,
-    pub selected_object: Option<String>,
+    pub selected_object: Option<usize>,
     pub input_scheme: EditorInputScheme,
     pub cursor_position: Vec2,
 }
@@ -68,7 +69,7 @@ pub struct Editor {
     selected_layer: Option<String>,
     selected_tileset: Option<String>,
     selected_tile: Option<u32>,
-    selected_object: Option<String>,
+    selected_object: Option<usize>,
     input_scheme: EditorInputScheme,
     // This will hold the gamepad cursor position and be `None` if not using a gamepad.
     // Use the `get_cursor_position` method to get the actual cursor position, as that will return
@@ -145,7 +146,7 @@ impl Editor {
             selected_layer: self.selected_layer.clone(),
             selected_tileset: self.selected_tileset.clone(),
             selected_tile: self.selected_tile,
-            selected_object: self.selected_object.clone(),
+            selected_object: self.selected_object,
             input_scheme: self.input_scheme,
             cursor_position: self.get_cursor_position(),
         }
@@ -156,8 +157,8 @@ impl Editor {
             if !self.map.draw_order.contains(layer_id) {
                 self.selected_layer = None;
             }
-        } else if let Some(id) = self.map.draw_order.first() {
-            self.selected_layer = Some(id.clone());
+        } else if let Some(layer_id) = self.map.draw_order.first() {
+            self.selected_layer = Some(layer_id.clone());
         }
 
         if let Some(layer_id) = &self.selected_layer {
@@ -171,6 +172,19 @@ impl Editor {
                     self.selected_tileset = None;
                     self.selected_tile = None;
                 }
+            }
+        }
+
+        if let Some(tileset_id) = &self.selected_tileset {
+            if let Some(tileset) = self.map.tilesets.get(tileset_id) {
+                if let Some(tile_id) = self.selected_tile {
+                    if tile_id >= tileset.tile_cnt {
+                        self.selected_tile = None;
+                    }
+                }
+            } else {
+                self.selected_tileset = None;
+                self.selected_tile = None;
             }
         }
     }
@@ -222,6 +236,11 @@ impl Editor {
                 let mut gui = storage::get_mut::<EditorGui>();
                 gui.add_window(TilesetPropertiesWindow::new(&tileset_id));
             }
+            EditorAction::OpenCreateObjectWindow { position, layer_id } => {
+                let mut gui = storage::get_mut::<EditorGui>();
+                gui.add_window(CreateObjectWindow::new(position, layer_id))
+            }
+            EditorAction::OpenObjectPropertiesWindow { .. } => {}
             EditorAction::CloseWindow(id) => {
                 let mut gui = storage::get_mut::<EditorGui>();
                 gui.remove_window_id(id);
@@ -235,35 +254,52 @@ impl Editor {
                 }
             }
             EditorAction::SetLayerDrawOrderIndex { id, index } => {
-                let action = SetLayerDrawOrderIndex::new(id, index);
+                let action = SetLayerDrawOrderIndexAction::new(id, index);
                 res = self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::CreateLayer {
                 id,
                 kind,
                 has_collision,
-                draw_order_index,
+                index,
             } => {
-                let action = CreateLayer::new(id, kind, has_collision, draw_order_index);
+                let action = CreateLayerAction::new(id, kind, has_collision, index);
                 res = self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::DeleteLayer(id) => {
-                let action = DeleteLayer::new(id);
+                let action = DeleteLayerAction::new(id);
                 res = self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::SelectTileset(id) => {
                 self.select_tileset(&id, None);
             }
             EditorAction::CreateTileset { id, texture_id } => {
-                let action = CreateTileset::new(id, texture_id);
+                let action = CreateTilesetAction::new(id, texture_id);
                 res = self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::DeleteTileset(id) => {
-                let action = DeleteTileset::new(id);
+                let action = DeleteTilesetAction::new(id);
                 res = self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::SetTilesetAutotileMask { id, autotile_mask } => {
-                let action = SetTilesetAutotileMask::new(id, autotile_mask);
+                let action = SetTilesetAutotileMaskAction::new(id, autotile_mask);
+                res = self.history.apply(Box::new(action), &mut self.map);
+            }
+            EditorAction::SelectObject { index, layer_id } => {
+                self.selected_layer = Some(layer_id);
+                self.selected_object = Some(index);
+            }
+            EditorAction::CreateObject {
+                name,
+                position,
+                size,
+                layer_id,
+            } => {
+                let action = CreateObjectAction::new(name, position, size, layer_id);
+                res = self.history.apply(Box::new(action), &mut self.map);
+            }
+            EditorAction::DeleteObject { index, layer_id } => {
+                let action = DeleteObjectAction::new(index, layer_id);
                 res = self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::PlaceTile {
@@ -272,11 +308,11 @@ impl Editor {
                 tileset_id,
                 coords,
             } => {
-                let action = PlaceTile::new(id, layer_id, tileset_id, coords);
+                let action = PlaceTileAction::new(id, layer_id, tileset_id, coords);
                 res = self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::RemoveTile { layer_id, coords } => {
-                let action = RemoveTile::new(layer_id, coords);
+                let action = RemoveTileAction::new(layer_id, coords);
                 res = self.history.apply(Box::new(action), &mut self.map);
             }
         }

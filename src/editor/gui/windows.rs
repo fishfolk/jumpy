@@ -6,14 +6,21 @@ mod confirm_dialog;
 mod create_tileset;
 
 mod create_layer;
+mod create_object;
 mod tileset_properties;
 
 pub use confirm_dialog::ConfirmDialog;
 pub use create_layer::CreateLayerWindow;
+pub use create_object::CreateObjectWindow;
 
 use super::{ButtonParams, EditorAction, EditorContext, Map};
 pub use create_tileset::CreateTilesetWindow;
 pub use tileset_properties::TilesetPropertiesWindow;
+
+pub const WINDOW_BUTTON_HEIGHT: f32 = 32.0;
+
+pub const WINDOW_BUTTON_MIN_WIDTH: f32 = 64.0;
+pub const WINDOW_BUTTON_MAX_WIDTH: f32 = 96.0;
 
 #[derive(Debug, Copy, Clone)]
 pub enum WindowPosition {

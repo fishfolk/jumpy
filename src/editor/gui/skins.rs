@@ -16,6 +16,8 @@ pub struct EditorSkinCollection {
     pub toolbar_bg: Skin,
     pub toolbar_header_bg: Skin,
     pub toolbar_button_disabled: Skin,
+    pub tool_selector: Skin,
+    pub tool_selector_selected: Skin,
     pub tileset_grid: Skin,
     pub tileset_grid_selected: Skin,
     pub tileset_subtile_grid: Skin,
@@ -374,6 +376,34 @@ impl EditorSkinCollection {
             }
         };
 
+        let tool_selector = {
+            let button_style = root_ui()
+                .style_builder()
+                .color(Color::from_rgba(0, 0, 0, 0))
+                .color_hovered(Color::from_rgba(0, 0, 0, 0))
+                .color_clicked(Color::from_rgba(0, 0, 0, 0))
+                .build();
+
+            Skin {
+                button_style,
+                ..toolbar.clone()
+            }
+        };
+
+        let tool_selector_selected = {
+            let button_style = root_ui()
+                .style_builder()
+                .color(Color::from_rgba(0, 0, 0, 0))
+                .color_hovered(Color::from_rgba(0, 0, 0, 0))
+                .color_clicked(Color::from_rgba(0, 0, 0, 0))
+                .build();
+
+            Skin {
+                button_style,
+                ..tool_selector.clone()
+            }
+        };
+
         let tileset_grid = {
             let button_style = root_ui()
                 .style_builder()
@@ -449,6 +479,8 @@ impl EditorSkinCollection {
             toolbar_bg,
             toolbar_header_bg,
             toolbar_button_disabled,
+            tool_selector,
+            tool_selector_selected,
             tileset_grid,
             tileset_grid_selected,
             tileset_subtile_grid,

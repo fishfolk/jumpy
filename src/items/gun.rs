@@ -1,9 +1,11 @@
 use macroquad::{
+    color,
     audio::play_sound_once,
     experimental::{
         collections::storage,
         coroutines::{start_coroutine, wait_seconds, Coroutine},
         scene::{self, Handle, HandleUntyped, RefMut},
+        animation::{AnimatedSprite, Animation}
     },
     prelude::*,
 };
@@ -79,9 +81,8 @@ impl Gun {
 
                 scene::add_node(GunBullet::new(
                     node.body.pos + vec2(16.0, 15.0) + node.body.facing_dir() * 32.0,
-                    node.body.facing,
-                    4.,
                     node.bullet_speed,
+                    node.body.facing,
                 ));
                 player.body.speed.x = -node.recoil * player.body.facing_dir().x;
             }
@@ -247,14 +248,16 @@ impl scene::Node for Gun {
 
 pub struct GunBullet {
     bullet: Bullet,
-    size: f32,
+    sprite: AnimatedSprite,
+    angle: f32,
+    facing: bool,
 }
 
 impl GunBullet {
     pub const BULLET_LIFETIME: f32 = 0.9;
     pub const BULLET_SPREAD: f32 = 0.0;
 
-    pub fn new(pos: Vec2, facing: bool, size: f32, speed: f32) -> GunBullet {
+    pub fn new(pos: Vec2, speed: f32, facing: bool) -> GunBullet {
         GunBullet {
             bullet: Bullet::new(
                 pos,
@@ -263,7 +266,19 @@ impl GunBullet {
                 speed,
                 Self::BULLET_SPREAD,
             ),
-            size,
+            sprite: AnimatedSprite::new(
+                15,
+                15,
+                &[Animation {
+                    name: "idle".to_string(),
+                    row: 0,
+                    frames: 1,
+                    fps: 1,
+                }],
+                true,
+            ),
+            angle: rand::gen_range(0.0, 6.28),
+            facing,
         }
     }
 }
@@ -292,12 +307,26 @@ impl scene::Node for GunBullet {
         node.provides(Self::network_capabilities());
     }
 
-    fn draw(node: RefMut<Self>) {
-        draw_circle(
-            node.bullet.pos.x,
-            node.bullet.pos.y,
-            node.size,
-            Color::new(1.0, 1.0, 0.8, 1.0),
+    fn draw(mut node: RefMut<Self>) {
+        node.sprite.update();
+
+        let resources = storage::get::<Resources>();
+
+        node.angle += 0.1;
+
+        let frame = node.sprite.frame();
+        draw_texture_ex(
+            resources.items_textures["musket/bullet"],
+            node.bullet.pos.x - frame.source_rect.h / 2.0,
+            node.bullet.pos.y - frame.source_rect.w / 2.0,
+            color::WHITE,
+            DrawTextureParams {
+                source: Some(frame.source_rect),
+                dest_size: Some(frame.dest_size),
+                flip_x: !node.facing,
+                rotation: node.angle,
+                ..Default::default()
+            },
         );
     }
 }

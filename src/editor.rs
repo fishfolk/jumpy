@@ -113,8 +113,6 @@ impl Editor {
             }
         };
 
-        let mut gui = EditorGui::new();
-
         let tool_selector_element = ToolSelectorElement::new()
             .with_tool::<PlacementTool>()
             .with_tool::<EraserTool>();
@@ -124,8 +122,6 @@ impl Editor {
                 EditorGui::TOOL_SELECTOR_HEIGHT_FACTOR,
                 tool_selector_element,
             );
-
-        gui.add_toolbar(left_toolbar);
 
         let right_toolbar = Toolbar::new(ToolbarPosition::Right, EditorGui::RIGHT_TOOLBAR_WIDTH)
             .with_element(EditorGui::LAYER_LIST_HEIGHT_FACTOR, LayerListElement::new())
@@ -142,7 +138,9 @@ impl Editor {
                 ObjectListElement::new(),
             );
 
-        gui.add_toolbar(right_toolbar);
+        let gui = EditorGui::new()
+            .with_toolbar(left_toolbar)
+            .with_toolbar(right_toolbar);
 
         storage::store(gui);
 

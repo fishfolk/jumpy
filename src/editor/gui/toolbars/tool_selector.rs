@@ -72,7 +72,7 @@ impl ToolbarElement for ToolSelectorElement {
         let size = vec2(size.x, size.x);
         let mut position = Vec2::ZERO;
 
-        // TODO: Gray out inactive tools, in stead of removing them altogether
+        // TODO: Grey out inactive tools, in stead of removing them altogether
         let available_tools = self
             .tools
             .iter()

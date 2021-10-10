@@ -1,6 +1,11 @@
+use macroquad::prelude::*;
+
 use super::{EditorAction, EditorContext, EditorTool, EditorToolParams};
 
-use crate::map::{Map, MapLayerKind};
+use crate::{
+    editor::EditorCamera,
+    map::{Map, MapLayerKind},
+};
 
 #[derive(Default)]
 pub struct EraserTool {
@@ -24,22 +29,26 @@ impl EditorTool for EraserTool {
     }
 
     fn get_action(&mut self, map: &Map, ctx: &EditorContext) -> Option<EditorAction> {
-        let mut res = None;
-
-        if let Some(layer_id) = ctx.selected_layer.clone() {
-            let coords = map.to_coords(ctx.cursor_position);
-            res = Some(EditorAction::RemoveTile { layer_id, coords });
-        }
-
-        res
-    }
-
-    fn is_available(&self, map: &Map, ctx: &EditorContext) -> bool {
         if let Some(layer_id) = &ctx.selected_layer {
             let layer = map.layers.get(layer_id).unwrap();
-            return layer.kind == MapLayerKind::TileLayer;
+            let camera = scene::find_node_by_type::<EditorCamera>().unwrap();
+            let world_position = camera.to_world_space(ctx.cursor_position);
+
+            match layer.kind {
+                MapLayerKind::TileLayer => {
+                    let coords = map.to_coords(world_position);
+
+                    return Some(EditorAction::RemoveTile {
+                        layer_id: layer_id.clone(),
+                        coords,
+                    });
+                }
+                MapLayerKind::ObjectLayer => {
+                    // TODO: Implement object layers
+                }
+            }
         }
 
-        false
+        None
     }
 }

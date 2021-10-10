@@ -71,7 +71,7 @@ pub enum ToolbarPosition {
 
 pub struct Toolbar {
     pub width: f32,
-    position: ToolbarPosition,
+    pub position: ToolbarPosition,
     draw_order: Vec<TypeId>,
     elements: HashMap<TypeId, (f32, Box<dyn ToolbarElement>)>,
 }

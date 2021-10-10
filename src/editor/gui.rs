@@ -19,9 +19,9 @@ use super::{EditorAction, EditorContext};
 
 use crate::{gui::GuiResources, map::Map};
 
-use toolbars::{
+pub use toolbars::{
     LayerListElement, ObjectListElement, TilesetDetailsElement, TilesetListElement,
-    ToolSelectorElement, Toolbar, ToolbarPosition,
+    ToolSelectorElement, Toolbar, ToolbarElement, ToolbarElementParams, ToolbarPosition,
 };
 
 pub use windows::{
@@ -55,43 +55,39 @@ pub struct ButtonParams {
 }
 
 pub struct EditorGui {
-    left_toolbar: Toolbar,
-    right_toolbar: Toolbar,
+    left_toolbar: Option<Toolbar>,
+    right_toolbar: Option<Toolbar>,
     open_windows: HashMap<TypeId, Box<dyn Window>>,
     context_menu: Option<ContextMenu>,
 }
 
 impl EditorGui {
-    const LEFT_TOOLBAR_WIDTH: f32 = 50.0;
-    const RIGHT_TOOLBAR_WIDTH: f32 = 250.0;
+    pub const LEFT_TOOLBAR_WIDTH: f32 = 50.0;
+    pub const RIGHT_TOOLBAR_WIDTH: f32 = 250.0;
 
-    const TOOL_SELECTOR_HEIGHT_FACTOR: f32 = 0.5;
-    const LAYER_LIST_HEIGHT_FACTOR: f32 = 0.3;
-    const TILESET_LIST_HEIGHT_FACTOR: f32 = 0.2;
-    const TILESET_DETAILS_HEIGHT_FACTOR: f32 = 0.5;
-    const OBJECT_LIST_HEIGHT_FACTOR: f32 = 0.7;
+    pub const TOOL_SELECTOR_HEIGHT_FACTOR: f32 = 0.5;
+    pub const LAYER_LIST_HEIGHT_FACTOR: f32 = 0.3;
+    pub const TILESET_LIST_HEIGHT_FACTOR: f32 = 0.2;
+    pub const TILESET_DETAILS_HEIGHT_FACTOR: f32 = 0.5;
+    pub const OBJECT_LIST_HEIGHT_FACTOR: f32 = 0.7;
 
     pub fn new() -> Self {
-        let left_toolbar = Toolbar::new(ToolbarPosition::Left, Self::LEFT_TOOLBAR_WIDTH)
-            .with_element(
-                Self::TOOL_SELECTOR_HEIGHT_FACTOR,
-                ToolSelectorElement::new(),
-            );
-
-        let right_toolbar = Toolbar::new(ToolbarPosition::Right, Self::RIGHT_TOOLBAR_WIDTH)
-            .with_element(Self::LAYER_LIST_HEIGHT_FACTOR, LayerListElement::new())
-            .with_element(Self::TILESET_LIST_HEIGHT_FACTOR, TilesetListElement::new())
-            .with_element(
-                Self::TILESET_DETAILS_HEIGHT_FACTOR,
-                TilesetDetailsElement::new(),
-            )
-            .with_element(Self::OBJECT_LIST_HEIGHT_FACTOR, ObjectListElement::new());
-
         EditorGui {
-            left_toolbar,
-            right_toolbar,
+            left_toolbar: None,
+            right_toolbar: None,
             open_windows: HashMap::new(),
             context_menu: None,
+        }
+    }
+
+    pub fn add_toolbar(&mut self, toolbar: Toolbar) {
+        match toolbar.position {
+            ToolbarPosition::Left => {
+                self.left_toolbar = Some(toolbar);
+            }
+            ToolbarPosition::Right => {
+                self.right_toolbar = Some(toolbar);
+            }
         }
     }
 
@@ -102,8 +98,16 @@ impl EditorGui {
             }
         }
 
-        if self.left_toolbar.contains(position) || self.right_toolbar.contains(position) {
-            return Some(GuiElement::Toolbar);
+        if let Some(left_toolbar) = &self.left_toolbar {
+            if left_toolbar.contains(position) {
+                return Some(GuiElement::Toolbar);
+            }
+        }
+
+        if let Some(right_toolbar) = &self.right_toolbar {
+            if right_toolbar.contains(position) {
+                return Some(GuiElement::Toolbar);
+            }
         }
 
         for window in self.open_windows.values() {
@@ -161,12 +165,16 @@ impl EditorGui {
             ui.push_skin(&gui_resources.editor_skins.default);
         }
 
-        if let Some(action) = self.left_toolbar.draw(ui, map, &ctx) {
-            res = Some(action);
+        if let Some(left_toolbar) = &mut self.left_toolbar {
+            if let Some(action) = left_toolbar.draw(ui, map, &ctx) {
+                res = Some(action);
+            }
         }
 
-        if let Some(action) = self.right_toolbar.draw(ui, map, &ctx) {
-            res = Some(action);
+        if let Some(right_toolbar) = &mut self.right_toolbar {
+            if let Some(action) = right_toolbar.draw(ui, map, &ctx) {
+                res = Some(action);
+            }
         }
 
         for (id, window) in &mut self.open_windows {

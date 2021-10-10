@@ -1,11 +1,25 @@
-use macroquad::{experimental::collections::storage, prelude::*, ui::Ui};
+use std::any::TypeId;
 
-use super::{EditorAction, EditorContext, Map, ToolbarElement, ToolbarElementParams};
+use macroquad::{
+    experimental::collections::storage,
+    prelude::*,
+    ui::{widgets, Ui},
+};
 
-use crate::gui::GuiResources;
+use super::{
+    EditorAction, EditorContext, Map, ToolbarElement, ToolbarElementParams, ELEMENT_MARGIN,
+};
+
+use crate::editor::tools::EditorTool;
+use crate::{
+    editor::tools::{get_tool_instance_of_id, EditorToolParams},
+    gui::GuiResources,
+    Resources,
+};
 
 pub struct ToolSelectorElement {
     params: ToolbarElementParams,
+    tools: Vec<TypeId>,
 }
 
 impl ToolSelectorElement {
@@ -16,7 +30,23 @@ impl ToolSelectorElement {
             has_buttons: false,
         };
 
-        ToolSelectorElement { params }
+        ToolSelectorElement {
+            params,
+            tools: Vec::new(),
+        }
+    }
+
+    pub fn with_tool<T: EditorTool + 'static>(self) -> Self {
+        let id = TypeId::of::<T>();
+        let mut tools = self.tools;
+        tools.push(id);
+
+        ToolSelectorElement { tools, ..self }
+    }
+
+    pub fn add_tool<T: EditorTool + 'static>(&mut self) {
+        let id = TypeId::of::<T>();
+        self.tools.push(id);
     }
 }
 
@@ -28,54 +58,68 @@ impl ToolbarElement for ToolSelectorElement {
     fn draw(
         &mut self,
         ui: &mut Ui,
-        _size: Vec2,
-        _map: &Map,
-        _ctx: &EditorContext,
+        size: Vec2,
+        map: &Map,
+        ctx: &EditorContext,
     ) -> Option<EditorAction> {
-        let res = None;
+        let mut res = None;
 
         {
             let gui_resources = storage::get::<GuiResources>();
             ui.push_skin(&gui_resources.editor_skins.tool_selector);
         }
 
-        // let size = vec2(size.x, size.x);
-        // let mut position = Vec2::ZERO;
-        //
-        // let resources = storage::get::<Resources>();
-        // for (index, params) in ctx.available_tools.iter().enumerate() {
-        //     let mut is_selected = false;
-        //     if let Some(selected_index) = ctx.selected_tool {
-        //         is_selected = index == selected_index;
-        //     }
-        //
-        //     if is_selected {
-        //         let gui_resources = storage::get::<GuiResources>();
-        //         ui.push_skin(&gui_resources.editor_skins.tool_selector_selected);
-        //     }
-        //
-        //     let texture = *resources.textures.get(&params.icon_texture_id).unwrap();
-        //
-        //     widgets::Texture::new(texture)
-        //         .position(position)
-        //         .size(size.x, size.y)
-        //         .ui(ui);
-        //
-        //     let was_clicked = widgets::Button::new("")
-        //         .position(position)
-        //         .size(size)
-        //         .ui(ui);
-        //
-        //     if was_clicked {
-        //         res = Some(EditorAction::SelectTool(index));
-        //     }
-        //
-        //     position.y += size.y + ELEMENT_MARGIN;
-        //
-        //     if is_selected {
-        //         ui.pop_skin();
-        //     }
-        // }
+        let size = vec2(size.x, size.x);
+        let mut position = Vec2::ZERO;
+
+        // TODO: Gray out inactive tools, in stead of removing them altogether
+        let available_tools = self
+            .tools
+            .iter()
+            .filter_map(|id| {
+                let tool = get_tool_instance_of_id(id);
+                if tool.is_available(map, ctx) {
+                    return Some((*id, tool.get_params().clone()));
+                }
+
+                None
+            })
+            .collect::<Vec<(TypeId, EditorToolParams)>>();
+
+        let resources = storage::get::<Resources>();
+        for (id, params) in available_tools {
+            let mut is_selected = false;
+            if let Some(selected_id) = ctx.selected_tool {
+                is_selected = id == selected_id;
+            }
+
+            if is_selected {
+                let gui_resources = storage::get::<GuiResources>();
+                ui.push_skin(&gui_resources.editor_skins.tool_selector_selected);
+            }
+
+            let was_clicked = widgets::Button::new("")
+                .position(position)
+                .size(size)
+                .ui(ui);
+
+            let texture = *resources.textures.get(&params.icon_texture_id).unwrap();
+
+            widgets::Texture::new(texture)
+                .position(position)
+                .size(size.x, size.y)
+                .ui(ui);
+
+            if was_clicked {
+                res = Some(EditorAction::SelectTool(id));
+            }
+
+            position.y += size.y + ELEMENT_MARGIN;
+
+            if is_selected {
+                ui.pop_skin();
+            }
+        }
 
         ui.pop_skin();
 

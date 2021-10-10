@@ -228,6 +228,7 @@ impl EditorGui {
                         let button_area_position =
                             vec2(content_position.x, content_size.y + ELEMENT_MARGIN);
 
+                        // TODO: Move to bottom of the window
                         widgets::Group::new(hash!(id, "buttons"), button_area_size)
                             .position(button_area_position)
                             .ui(ui, |ui| {

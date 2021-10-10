@@ -1,7 +1,4 @@
-use std::{
-    collections::HashMap,
-    any::TypeId,
-};
+use std::{any::TypeId, collections::HashMap};
 
 mod eraser;
 mod placement;
@@ -42,10 +39,12 @@ pub fn get_tool_instance<T: EditorTool + 'static>() -> &'static mut dyn EditorTo
     get_tool_instance_of_id(&id)
 }
 
+#[allow(dead_code)]
 pub fn get_tool_params_of_id(id: &TypeId) -> &'static EditorToolParams {
     get_tool_instance_of_id(id).get_params()
 }
 
+#[allow(dead_code)]
 pub fn get_tool_params<T: EditorTool + 'static>() -> &'static EditorToolParams {
     let id = TypeId::of::<T>();
     get_tool_params_of_id(&id)

@@ -3,8 +3,8 @@ use macroquad::prelude::*;
 use super::{EditorAction, EditorContext, EditorTool, EditorToolParams};
 
 use crate::{
-    map::{Map, MapLayerKind},
     editor::EditorCamera,
+    map::{Map, MapLayerKind},
 };
 
 #[derive(Default)]

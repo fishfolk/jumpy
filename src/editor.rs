@@ -7,9 +7,12 @@ pub use camera::EditorCamera;
 pub mod gui;
 
 use gui::{
+    toolbars::{
+        LayerListElement, ObjectListElement, TilesetDetailsElement, TilesetListElement,
+        ToolSelectorElement, Toolbar, ToolbarPosition,
+    },
     CreateLayerWindow, CreateObjectWindow, CreateTilesetWindow, EditorGui, GuiElement,
     TilesetPropertiesWindow,
-    toolbars::{Toolbar, TilesetDetailsElement, ToolbarPosition, LayerListElement, TilesetListElement, ObjectListElement, ToolSelectorElement},
 };
 
 mod actions;
@@ -26,7 +29,8 @@ mod history;
 mod tools;
 
 pub use tools::{
-    add_tool_instance, get_tool_instance, get_tool_instance_of_id, EraserTool, PlacementTool, DEFAULT_TOOL_ICON_TEXTURE_ID,
+    add_tool_instance, get_tool_instance, get_tool_instance_of_id, EraserTool, PlacementTool,
+    DEFAULT_TOOL_ICON_TEXTURE_ID,
 };
 
 use history::EditorHistory;
@@ -42,10 +46,7 @@ use macroquad::{
     prelude::*,
 };
 
-use super::map::{
-    Map,
-    MapLayerKind,
-};
+use super::map::{Map, MapLayerKind};
 
 #[derive(Debug, Clone)]
 pub struct EditorContext {
@@ -121,17 +122,25 @@ impl Editor {
         let left_toolbar = Toolbar::new(ToolbarPosition::Left, EditorGui::LEFT_TOOLBAR_WIDTH)
             .with_element(
                 EditorGui::TOOL_SELECTOR_HEIGHT_FACTOR,
-                tool_selector_element);
+                tool_selector_element,
+            );
 
         gui.add_toolbar(left_toolbar);
 
         let right_toolbar = Toolbar::new(ToolbarPosition::Right, EditorGui::RIGHT_TOOLBAR_WIDTH)
             .with_element(EditorGui::LAYER_LIST_HEIGHT_FACTOR, LayerListElement::new())
-            .with_element(EditorGui::TILESET_LIST_HEIGHT_FACTOR, TilesetListElement::new())
+            .with_element(
+                EditorGui::TILESET_LIST_HEIGHT_FACTOR,
+                TilesetListElement::new(),
+            )
             .with_element(
                 EditorGui::TILESET_DETAILS_HEIGHT_FACTOR,
-                TilesetDetailsElement::new())
-            .with_element(EditorGui::OBJECT_LIST_HEIGHT_FACTOR, ObjectListElement::new());
+                TilesetDetailsElement::new(),
+            )
+            .with_element(
+                EditorGui::OBJECT_LIST_HEIGHT_FACTOR,
+                ObjectListElement::new(),
+            );
 
         gui.add_toolbar(right_toolbar);
 
@@ -159,6 +168,7 @@ impl Editor {
         vec2(x, y)
     }
 
+    #[allow(dead_code)]
     fn get_selected_tile(&self) -> Option<(String, u32)> {
         if let Some(tileset_id) = self.selected_tileset.clone() {
             if let Some(tile_id) = self.selected_tile {

@@ -3,23 +3,19 @@ use std::any::TypeId;
 use macroquad::{
     experimental::collections::storage,
     prelude::*,
-    ui::{
-        Ui,
-        widgets,
-    },
+    ui::{widgets, Ui},
 };
 
-use super::{EditorAction, EditorContext, Map, ToolbarElement, ToolbarElementParams, ELEMENT_MARGIN};
+use super::{
+    EditorAction, EditorContext, Map, ToolbarElement, ToolbarElementParams, ELEMENT_MARGIN,
+};
 
+use crate::editor::tools::EditorTool;
 use crate::{
+    editor::tools::{get_tool_instance_of_id, EditorToolParams},
     gui::GuiResources,
     Resources,
-    editor::tools::{
-        get_tool_instance_of_id,
-        EditorToolParams,
-    },
 };
-use crate::editor::tools::EditorTool;
 
 pub struct ToolSelectorElement {
     params: ToolbarElementParams,
@@ -45,10 +41,7 @@ impl ToolSelectorElement {
         let mut tools = self.tools;
         tools.push(id);
 
-        ToolSelectorElement {
-            tools,
-            ..self
-        }
+        ToolSelectorElement { tools, ..self }
     }
 
     pub fn add_tool<T: EditorTool + 'static>(&mut self) {
@@ -80,7 +73,8 @@ impl ToolbarElement for ToolSelectorElement {
         let mut position = Vec2::ZERO;
 
         // TODO: Gray out inactive tools, in stead of removing them altogether
-        let available_tools = self.tools
+        let available_tools = self
+            .tools
             .iter()
             .filter_map(|id| {
                 let tool = get_tool_instance_of_id(id);

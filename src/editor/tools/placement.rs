@@ -4,10 +4,7 @@ use super::{EditorAction, EditorContext, EditorTool, EditorToolParams};
 
 use crate::{
     editor::EditorCamera,
-    map::{
-        Map,
-        MapLayerKind,
-    },
+    map::{Map, MapLayerKind},
 };
 
 #[derive(Default)]

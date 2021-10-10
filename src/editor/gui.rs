@@ -21,7 +21,7 @@ use crate::{gui::GuiResources, map::Map};
 
 pub use toolbars::{
     LayerListElement, ObjectListElement, TilesetDetailsElement, TilesetListElement,
-    ToolSelectorElement, Toolbar, ToolbarPosition, ToolbarElement, ToolbarElementParams,
+    ToolSelectorElement, Toolbar, ToolbarElement, ToolbarElementParams, ToolbarPosition,
 };
 
 pub use windows::{

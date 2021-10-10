@@ -313,17 +313,22 @@ pub struct MapLayer {
 }
 
 impl MapLayer {
-    pub fn new(id: &str, kind: MapLayerKind, has_collision: bool) -> Self {
+    pub fn new(id: &str, kind: MapLayerKind, has_collision: bool, grid_size: UVec2) -> Self {
         let has_collision = if kind == MapLayerKind::TileLayer {
             has_collision
         } else {
             false
         };
 
+        let mut tiles = Vec::new();
+        tiles.resize((grid_size.x * grid_size.y) as usize, None);
+
         MapLayer {
             id: id.to_string(),
             kind,
             has_collision,
+            tiles,
+            grid_size,
             ..Default::default()
         }
     }

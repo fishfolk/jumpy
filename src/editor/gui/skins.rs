@@ -393,11 +393,20 @@ impl EditorSkinCollection {
         let tool_selector_selected = {
             let button_style = root_ui()
                 .style_builder()
-                .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .color(Color::from_rgba(58, 68, 102, 255))
-                .color_hovered(Color::from_rgba(58, 68, 102, 255))
-                .color_clicked(Color::from_rgba(58, 68, 102, 255))
+                .background(Image::from_file_with_format(
+                    include_bytes!("../../../assets/ui/button_hovered_background_2.png"),
+                    None,
+                ))
+                .background_margin(RectOffset::new(8.0, 8.0, 12.0, 12.0))
+                .margin(RectOffset::new(8.0, 8.0, -4.0, -4.0))
+                .background_hovered(Image::from_file_with_format(
+                    include_bytes!("../../../assets/ui/button_hovered_background_2.png"),
+                    None,
+                ))
+                .background_clicked(Image::from_file_with_format(
+                    include_bytes!("../../../assets/ui/button_hovered_background_2.png"),
+                    None,
+                ))
                 .build();
 
             Skin {

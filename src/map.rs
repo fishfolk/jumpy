@@ -177,10 +177,14 @@ impl Map {
         );
 
         let resources = storage::get::<Resources>();
-        for layer_id in &self.draw_order {
-            if let Some(layer) = self.layers.get(layer_id) {
+
+        let mut draw_order = self.draw_order.clone();
+        draw_order.reverse();
+
+        for layer_id in draw_order {
+            if let Some(layer) = self.layers.get(&layer_id) {
                 if layer.is_visible && layer.kind == MapLayerKind::TileLayer {
-                    for (x, y, tile) in self.get_tiles(layer_id, Some(rect)) {
+                    for (x, y, tile) in self.get_tiles(&layer_id, Some(rect)) {
                         if let Some(tile) = tile {
                             let world_position = self.world_offset
                                 + vec2(x as f32 * self.tile_size.x, y as f32 * self.tile_size.y);

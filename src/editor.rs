@@ -1,3 +1,5 @@
+use std::any::TypeId;
+
 mod camera;
 
 pub use camera::EditorCamera;
@@ -7,6 +9,7 @@ pub mod gui;
 use gui::{
     CreateLayerWindow, CreateObjectWindow, CreateTilesetWindow, EditorGui, GuiElement,
     TilesetPropertiesWindow,
+    toolbars::{Toolbar, TilesetDetailsElement, ToolbarPosition, LayerListElement, TilesetListElement, ObjectListElement, ToolSelectorElement},
 };
 
 mod actions;
@@ -23,7 +26,7 @@ mod history;
 mod tools;
 
 pub use tools::{
-    add_tool_instance, get_tool_instance, EraserTool, PlacementTool, DEFAULT_TOOL_ICON_TEXTURE_ID,
+    add_tool_instance, get_tool_instance, get_tool_instance_of_id, EraserTool, PlacementTool, DEFAULT_TOOL_ICON_TEXTURE_ID,
 };
 
 use history::EditorHistory;
@@ -39,11 +42,14 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::map::{Map, MapLayerKind};
+use super::map::{
+    Map,
+    MapLayerKind,
+};
 
 #[derive(Debug, Clone)]
 pub struct EditorContext {
-    pub selected_tool: Option<usize>,
+    pub selected_tool: Option<TypeId>,
     pub selected_layer: Option<String>,
     pub selected_tileset: Option<String>,
     pub selected_tile: Option<u32>,
@@ -68,7 +74,7 @@ impl Default for EditorContext {
 
 pub struct Editor {
     map: Map,
-    selected_tool: Option<usize>,
+    selected_tool: Option<TypeId>,
     selected_layer: Option<String>,
     selected_tileset: Option<String>,
     selected_tile: Option<u32>,
@@ -95,7 +101,7 @@ impl Editor {
         add_tool_instance(PlacementTool::new());
         add_tool_instance(EraserTool::new());
 
-        let selected_tool = Some(0);
+        let selected_tool = None;
 
         let selected_layer = map.draw_order.first().cloned();
 
@@ -106,7 +112,29 @@ impl Editor {
             }
         };
 
-        let gui = EditorGui::new();
+        let mut gui = EditorGui::new();
+
+        let tool_selector_element = ToolSelectorElement::new()
+            .with_tool::<PlacementTool>()
+            .with_tool::<EraserTool>();
+
+        let left_toolbar = Toolbar::new(ToolbarPosition::Left, EditorGui::LEFT_TOOLBAR_WIDTH)
+            .with_element(
+                EditorGui::TOOL_SELECTOR_HEIGHT_FACTOR,
+                tool_selector_element);
+
+        gui.add_toolbar(left_toolbar);
+
+        let right_toolbar = Toolbar::new(ToolbarPosition::Right, EditorGui::RIGHT_TOOLBAR_WIDTH)
+            .with_element(EditorGui::LAYER_LIST_HEIGHT_FACTOR, LayerListElement::new())
+            .with_element(EditorGui::TILESET_LIST_HEIGHT_FACTOR, TilesetListElement::new())
+            .with_element(
+                EditorGui::TILESET_DETAILS_HEIGHT_FACTOR,
+                TilesetDetailsElement::new())
+            .with_element(EditorGui::OBJECT_LIST_HEIGHT_FACTOR, ObjectListElement::new());
+
+        gui.add_toolbar(right_toolbar);
+
         storage::store(gui);
 
         Editor {
@@ -131,11 +159,10 @@ impl Editor {
         vec2(x, y)
     }
 
-    #[allow(dead_code)]
-    fn get_selected_tile(&self) -> Option<(u32, String)> {
+    fn get_selected_tile(&self) -> Option<(String, u32)> {
         if let Some(tileset_id) = self.selected_tileset.clone() {
             if let Some(tile_id) = self.selected_tile {
-                let selected = (tile_id, tileset_id);
+                let selected = (tileset_id, tile_id);
                 return Some(selected);
             }
         }
@@ -188,6 +215,14 @@ impl Editor {
             } else {
                 self.selected_tileset = None;
                 self.selected_tile = None;
+            }
+        }
+
+        if let Some(tool_id) = &self.selected_tool {
+            let tool = get_tool_instance_of_id(tool_id);
+            let ctx = self.get_context();
+            if !tool.is_available(&self.map, &ctx) {
+                self.selected_tool = None;
             }
         }
     }
@@ -356,9 +391,9 @@ impl Node for Editor {
             }
 
             if element_at_cursor.is_none() {
-                if let Some(index) = node.selected_tool {
+                if let Some(id) = &node.selected_tool {
                     let ctx = node.get_context();
-                    let tool = get_tool_instance(index);
+                    let tool = get_tool_instance_of_id(id);
                     if let Some(action) = tool.get_action(&node.map, &ctx) {
                         node.apply_action(action);
                     }
@@ -418,9 +453,13 @@ impl Node for Editor {
     fn draw(mut node: RefMut<Self>) {
         node.map.draw(None);
 
-        let ctx = node.get_context();
-        let mut gui = storage::get_mut::<EditorGui>();
-        if let Some(action) = gui.draw(&node.map, ctx) {
+        let res = {
+            let ctx = node.get_context();
+            let mut gui = storage::get_mut::<EditorGui>();
+            gui.draw(&node.map, ctx)
+        };
+
+        if let Some(action) = res {
             node.apply_action(action);
         }
     }

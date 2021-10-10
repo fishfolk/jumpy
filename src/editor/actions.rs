@@ -15,7 +15,7 @@ pub enum EditorAction {
     Batch(Vec<EditorAction>),
     Undo,
     Redo,
-    SelectTool(usize),
+    SelectTool(TypeId),
     OpenCreateLayerWindow,
     OpenCreateTilesetWindow,
     OpenTilesetPropertiesWindow(String),

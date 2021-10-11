@@ -37,7 +37,7 @@ pub const NO_COLOR: Color = Color::new(0.0, 0.0, 0.0, 0.0);
 pub const ELEMENT_MARGIN: f32 = 8.0;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum GuiElement {
+pub enum GuiElementKind {
     ContextMenu,
     Toolbar,
     Window,
@@ -47,7 +47,7 @@ pub enum GuiElement {
 pub struct ButtonParams {
     pub label: &'static str,
     // This should be an absolute width for window and a width factor for toolbar elements.
-    // Permitted width factors for toolbar element buttons are 0.25, 0.5, 0.75 and 1.0
+    // Permitted width factors for toolbar element buttons are 0.25 and 0.5.
     pub width_override: Option<f32>,
     // This holds the action that will be applied on click.
     // Setting this to `None` will disable the button.
@@ -62,7 +62,7 @@ pub struct EditorGui {
 }
 
 impl EditorGui {
-    pub const LEFT_TOOLBAR_WIDTH: f32 = 50.0;
+    pub const LEFT_TOOLBAR_WIDTH: f32 = 82.0;
     pub const RIGHT_TOOLBAR_WIDTH: f32 = 250.0;
 
     pub const TOOL_SELECTOR_HEIGHT_FACTOR: f32 = 0.5;
@@ -97,28 +97,28 @@ impl EditorGui {
         gui
     }
 
-    pub fn get_element_at(&self, position: Vec2) -> Option<GuiElement> {
+    pub fn get_element_at(&self, position: Vec2) -> Option<GuiElementKind> {
         if let Some(context_menu) = &self.context_menu {
             if context_menu.contains(position) {
-                return Some(GuiElement::ContextMenu);
+                return Some(GuiElementKind::ContextMenu);
             }
         }
 
         if let Some(left_toolbar) = &self.left_toolbar {
             if left_toolbar.contains(position) {
-                return Some(GuiElement::Toolbar);
+                return Some(GuiElementKind::Toolbar);
             }
         }
 
         if let Some(right_toolbar) = &self.right_toolbar {
             if right_toolbar.contains(position) {
-                return Some(GuiElement::Toolbar);
+                return Some(GuiElementKind::Toolbar);
             }
         }
 
         for window in self.open_windows.values() {
             if window.contains(position) {
-                return Some(GuiElement::Window);
+                return Some(GuiElementKind::Window);
             }
         }
 

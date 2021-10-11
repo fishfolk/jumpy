@@ -11,7 +11,7 @@ use gui::{
         LayerListElement, ObjectListElement, TilesetDetailsElement, TilesetListElement,
         ToolSelectorElement, Toolbar, ToolbarPosition,
     },
-    CreateLayerWindow, CreateObjectWindow, CreateTilesetWindow, EditorGui, GuiElement,
+    CreateLayerWindow, CreateObjectWindow, CreateTilesetWindow, EditorGui, GuiElementKind,
     TilesetPropertiesWindow,
 };
 
@@ -394,7 +394,8 @@ impl Node for Editor {
         };
 
         if input.action {
-            if element_at_cursor.is_none() || element_at_cursor.unwrap() != GuiElement::ContextMenu
+            if element_at_cursor.is_none()
+                || element_at_cursor.unwrap() != GuiElementKind::ContextMenu
             {
                 let mut gui = storage::get_mut::<EditorGui>();
                 gui.close_context_menu();

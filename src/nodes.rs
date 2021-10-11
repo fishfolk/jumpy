@@ -1,3 +1,4 @@
+pub mod armed_kickbomb;
 mod camera;
 mod decoration;
 pub mod explosive;

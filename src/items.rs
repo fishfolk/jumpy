@@ -6,6 +6,7 @@ mod galleon;
 mod grenades;
 mod gun;
 pub mod jellyfish;
+mod kickbomb;
 mod machine_gun;
 mod mines;
 mod musket;
@@ -187,6 +188,15 @@ pub const ITEMS: &[Item] = &[
             ("shark_rain", "assets/Whale/SharkIcon(32x34).png"),
             ("raining_shark", "assets/Whale/RainingShark(60x220).png"),
         ],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    },
+    Item {
+        tiled_name: "kickbomb",
+        constructor: kickbomb::Kickbomb::spawn,
+        tiled_offset: (0., 0.),
+        textures: &[("bomb", "assets/Whale/KickBomb(32x36).png")],
         sounds: &[],
         fxses: &[],
         network_ready: false,

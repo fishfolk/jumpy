@@ -16,6 +16,7 @@ mod sproinger;
 mod sword;
 mod turtle_shell;
 mod volcano;
+mod life_ring;
 use macroquad::{experimental::scene::HandleUntyped, math::Vec2};
 
 /// Proto-mod
@@ -191,4 +192,13 @@ pub const ITEMS: &[Item] = &[
         fxses: &[],
         network_ready: false,
     },
+    Item {
+        tiled_name: "life_ring",
+        constructor: life_ring::LifeRing::spawn,
+        tiled_offset: (0.0, 0.0),
+        textures: &[("life_ring", "temp/LifeRing.png")],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    }
 ];

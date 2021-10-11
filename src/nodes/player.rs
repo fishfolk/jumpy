@@ -42,7 +42,7 @@ impl Player {
     pub fn jump(&mut self) {
         let resources = storage::get::<Resources>();
 
-        self.body.speed.y = -Self::JUMP_UPWARDS_SPEED;
+        self.body.speed.y = -Self::JUMP_UPWARDS_SPEED * self.body.gravity_dir;
         self.jump_frames_left = Self::JUMP_HEIGHT_CONTROL_FRAMES;
 
         audio::play_sound(
@@ -167,8 +167,10 @@ impl Player {
             pos: spawner_pos,
             size: vec2(30., 54.),
             facing: true,
+            inverted: false,
             last_frame_on_ground: false,
             have_gravity: true,
+            gravity_dir: 1.0,
             bouncyness: 0.0,
         };
 
@@ -532,7 +534,7 @@ impl Player {
             node.floating = false;
         }
         if node.floating {
-            node.body.speed.y = Self::FLOAT_SPEED;
+            node.body.speed.y = Self::FLOAT_SPEED * node.body.gravity_dir;
         } else {
             node.body.have_gravity = true;
         }
@@ -779,6 +781,7 @@ impl scene::Node for Player {
                 source: Some(node.fish_sprite.frame().source_rect),
                 dest_size: Some(node.fish_sprite.frame().dest_size),
                 flip_x: !node.body.facing,
+                flip_y: node.body.inverted,
                 ..Default::default()
             },
         );

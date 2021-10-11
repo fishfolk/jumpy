@@ -340,12 +340,13 @@ impl Editor {
                 self.selected_object = Some(index);
             }
             EditorAction::CreateObject {
-                name,
+                id,
+                kind,
                 position,
                 size,
                 layer_id,
             } => {
-                let action = CreateObjectAction::new(name, position, size, layer_id);
+                let action = CreateObjectAction::new(id, kind, position, size, layer_id);
                 res = self.history.apply(Box::new(action), &mut self.map);
             }
             EditorAction::DeleteObject { index, layer_id } => {
@@ -462,7 +463,7 @@ impl Node for Editor {
     }
 
     fn draw(mut node: RefMut<Self>) {
-        node.map.draw(None);
+        node.map.draw(true, None);
 
         let res = {
             let ctx = node.get_context();

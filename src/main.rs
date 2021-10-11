@@ -32,6 +32,7 @@ pub mod map;
 
 pub mod editor;
 pub mod math;
+pub mod text;
 
 use editor::{Editor, EditorCamera, EditorInputScheme, DEFAULT_TOOL_ICON_TEXTURE_ID};
 
@@ -354,7 +355,7 @@ async fn build_game_scene(map: Map, assets_dir: &str, is_local_game: bool) -> Ve
     let resources = storage::get::<Resources>();
 
     for object in &map.layers["decorations"].objects {
-        scene::add_node(Decoration::new(object.position, &object.name));
+        scene::add_node(Decoration::new(object.position, &object.id));
     }
 
     let objects = map.layers["items"].objects.clone();
@@ -370,7 +371,7 @@ async fn build_game_scene(map: Map, assets_dir: &str, is_local_game: bool) -> Ve
 
     for object in &objects {
         for item_desc in items::ITEMS {
-            if object.name == item_desc.tiled_name && (is_local_game || item_desc.network_ready) {
+            if object.id == item_desc.tiled_name && (is_local_game || item_desc.network_ready) {
                 (item_desc.constructor)(vec2(
                     object.position.x + item_desc.tiled_offset.0,
                     object.position.y + item_desc.tiled_offset.1,

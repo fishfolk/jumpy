@@ -16,7 +16,92 @@ mod sproinger;
 mod sword;
 mod turtle_shell;
 mod volcano;
-use macroquad::{experimental::scene::HandleUntyped, math::Vec2};
+
+use macroquad::{
+    experimental::scene::{
+        HandleUntyped,
+        Handle,
+    },
+    math::Vec2,
+};
+
+use crate::{
+    Player,
+    json,
+};
+
+use serde::{
+    Serialize,
+    Deserialize,
+};
+
+// Move to appropriate module
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct AnimationParams {
+
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Weapon {
+    id: String,
+    attack_speed: f32,
+    damage: f32,
+    effect_delivery: EffectDeliveryParams,
+    effect: EffectKind,
+}
+
+impl Weapon {
+    pub fn attack() {
+
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum EffectDeliveryTrigger {
+    Player,
+    Ground,
+    Both,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "snake_case")]
+enum EffectDeliveryParams {
+    // Cone that delivers the effect to anyone that passes its collision check.
+    // This would typically be used for things like a flame thrower or any melee weapons.
+    Cone {
+        #[serde(with = "json::def_vec2")]
+        direction: Vec2,
+        range: f32,
+        angle: f32,
+    },
+    // Projectile should be used for anything that spawns an object that delivers an effect on hit.
+    // This would typically be used for things like a gun.
+    Projectile {
+        speed: f32,
+        spread: f32,
+        size: f32,
+    },
+    // PhysicsBody will spawn a new object that has physics. It requires either a `timer` or a
+    // `trigger`, or both, to function.
+    // This would typically be used for things like grenades.
+    PhysicsBody {
+        texture_id: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        animation_params: Option<AnimationParams>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        timer: Option<f32>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        trigger: Option<EffectDeliveryTrigger>,
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "snake_case")]
+enum EffectKind {
+    DirectDamage,
+    AreaOfEffect,
+}
 
 /// Proto-mod
 /// A meta description on how to create an item from the map

@@ -8,6 +8,7 @@ use crate::{
     map::{Map, MapLayer, MapLayerKind, MapObject, MapProperty, MapTile, MapTileset},
     math::color_from_hex_string,
 };
+use crate::map::MapObjectKind;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case", tag = "type")]
@@ -238,10 +239,10 @@ impl TiledMap {
             }
 
             let mut objects = Vec::new();
-            for object in &tiled_layer.objects {
-                let position = vec2(object.x, object.y);
+            for tiled_object in &tiled_layer.objects {
+                let position = vec2(tiled_object.x, tiled_object.y);
                 let size = {
-                    let size = vec2(object.width, object.height);
+                    let size = vec2(tiled_object.width, tiled_object.height);
                     if size != Vec2::ZERO {
                         Some(size)
                     } else {
@@ -250,15 +251,18 @@ impl TiledMap {
                 };
 
                 let mut properties = HashMap::new();
-                if let Some(tiled_props) = object.properties.clone() {
+                if let Some(tiled_props) = tiled_object.properties.clone() {
                     for tiled_prop in tiled_props {
                         let (name, prop) = pair_from_tiled_prop(tiled_prop);
                         properties.insert(name, prop);
                     }
                 }
 
+                let kind = MapObjectKind::from(tiled_object.object_type.clone());
+
                 let object = MapObject {
-                    name: object.name.clone(),
+                    id: tiled_object.name.clone(),
+                    kind,
                     position,
                     size,
                     properties,

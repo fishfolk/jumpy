@@ -84,6 +84,6 @@ impl scene::Node for SceneRenderer {
         }
 
         let world = storage::get::<GameWorld>();
-        world.map.draw(None);
+        world.map.draw(false, None);
     }
 }

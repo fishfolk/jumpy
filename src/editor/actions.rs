@@ -1,7 +1,7 @@
 use std::{any::TypeId, result};
 
 use crate::editor::gui::windows::Window;
-use crate::map::MapObject;
+use crate::map::{MapObject, MapObjectKind};
 use crate::{
     map::{Map, MapLayer, MapLayerKind, MapTile, MapTileset},
     Resources,
@@ -59,7 +59,8 @@ pub enum EditorAction {
         layer_id: String,
     },
     CreateObject {
-        name: String,
+        id: String,
+        kind: MapObjectKind,
         position: Vec2,
         size: Option<Vec2>,
         layer_id: String,
@@ -466,16 +467,18 @@ impl UndoableAction for SetTilesetAutotileMaskAction {
 
 #[derive(Debug)]
 pub struct CreateObjectAction {
-    name: String,
+    id: String,
+    kind: MapObjectKind,
     position: Vec2,
     size: Option<Vec2>,
     layer_id: String,
 }
 
 impl CreateObjectAction {
-    pub fn new(name: String, position: Vec2, size: Option<Vec2>, layer_id: String) -> Self {
+    pub fn new(id: String, kind: MapObjectKind, position: Vec2, size: Option<Vec2>, layer_id: String) -> Self {
         CreateObjectAction {
-            name,
+            id,
+            kind,
             position,
             size,
             layer_id,
@@ -486,7 +489,7 @@ impl CreateObjectAction {
 impl UndoableAction for CreateObjectAction {
     fn apply(&mut self, map: &mut Map) -> Result {
         if let Some(layer) = map.layers.get_mut(&self.layer_id) {
-            let object = MapObject::new(&self.name, self.position, self.size);
+            let object = MapObject::new(&self.id, self.kind, self.position, self.size);
 
             layer.objects.insert(0, object);
         } else {

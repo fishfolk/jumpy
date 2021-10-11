@@ -29,8 +29,8 @@ mod history;
 mod tools;
 
 pub use tools::{
-    add_tool_instance, get_tool_instance, get_tool_instance_of_id, EraserTool, PlacementTool,
-    DEFAULT_TOOL_ICON_TEXTURE_ID,
+    add_tool_instance, get_tool_instance, get_tool_instance_of_id, EraserTool, ObjectPlacementTool,
+    TilePlacementTool, DEFAULT_TOOL_ICON_TEXTURE_ID,
 };
 
 use history::EditorHistory;
@@ -99,7 +99,8 @@ impl Editor {
     const CURSOR_MOVE_SPEED: f32 = 5.0;
 
     pub fn new(input_scheme: EditorInputScheme, map: Map) -> Self {
-        add_tool_instance(PlacementTool::new());
+        add_tool_instance(TilePlacementTool::new());
+        add_tool_instance(ObjectPlacementTool::new());
         add_tool_instance(EraserTool::new());
 
         let selected_tool = None;
@@ -114,7 +115,8 @@ impl Editor {
         };
 
         let tool_selector_element = ToolSelectorElement::new()
-            .with_tool::<PlacementTool>()
+            .with_tool::<TilePlacementTool>()
+            .with_tool::<ObjectPlacementTool>()
             .with_tool::<EraserTool>();
 
         let left_toolbar = Toolbar::new(ToolbarPosition::Left, EditorGui::LEFT_TOOLBAR_WIDTH)

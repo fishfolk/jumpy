@@ -251,6 +251,7 @@ pub struct GunBullet {
     sprite: AnimatedSprite,
     angle: f32,
     facing: bool,
+    time: f32,
 }
 
 impl GunBullet {
@@ -279,6 +280,7 @@ impl GunBullet {
             ),
             angle: rand::gen_range(0.0, 6.28),
             facing,
+            time: 0.0,
         }
     }
 }
@@ -310,7 +312,13 @@ impl scene::Node for GunBullet {
     fn draw(mut node: RefMut<Self>) {
         node.sprite.update();
 
-        let resources = storage::get::<Resources>();
+        let mut resources = storage::get_mut::<Resources>();
+
+        if node.time > 0.05 {
+            node.time = 0.0;
+            resources.fx_bullet_smoke.spawn(node.bullet.pos);
+        }
+        node.time += get_frame_time();
 
         node.angle += 0.1;
 

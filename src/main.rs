@@ -109,6 +109,7 @@ struct Resources {
     fx_explosion_fire: Emitter,
     fx_explosion_particles: EmittersCache,
     fx_smoke: Emitter,
+    fx_bullet_smoke: EmittersCache,
     whale_green: Texture2D,
     whale_blue: Texture2D,
     whale_boots_blue: Texture2D,
@@ -228,6 +229,7 @@ impl Resources {
         const CANNONBALL_HIT_FX: &str = include_str!("../assets/fxses/canonball_hit.json");
         const EXPLOSION_PARTICLES: &str = include_str!("../assets/fxses/explosion_particles.json");
         const SMOKE_FX: &str = include_str!("../assets/fxses/smoke.json");
+        const BULLET_SMOKE_FX: &str = include_str!("../assets/fxses/bullet_smoke.json");
         let hit_fxses = EmittersCache::new(nanoserde::DeJson::deserialize_json(HIT_FX).unwrap());
         let explosion_fxses =
             EmittersCache::new(nanoserde::DeJson::deserialize_json(EXPLOSION_FX).unwrap());
@@ -238,6 +240,7 @@ impl Resources {
         let fx_explosion_particles =
             EmittersCache::new(nanoserde::DeJson::deserialize_json(EXPLOSION_PARTICLES).unwrap());
         let fx_smoke = Emitter::new(nanoserde::DeJson::deserialize_json(SMOKE_FX).unwrap());
+        let fx_bullet_smoke = EmittersCache::new(nanoserde::DeJson::deserialize_json(BULLET_SMOKE_FX).unwrap());
 
         let mut items_textures = HashMap::new();
         let mut items_fxses = HashMap::new();
@@ -298,6 +301,7 @@ impl Resources {
             textures,
             fx_explosion_fire,
             fx_explosion_particles,
+            fx_bullet_smoke,
         })
     }
 }

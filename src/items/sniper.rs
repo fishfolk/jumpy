@@ -22,6 +22,7 @@ const SNIPER_BULLET_SPEED: f32 = 1200.0;
 impl Gun {
     pub fn spawn_sniper(pos: Vec2) -> HandleUntyped {
         let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get("sniper").unwrap();
 
         let gun_sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
@@ -43,7 +44,7 @@ impl Gun {
                 ],
                 false,
             ),
-            resources.items_textures["sniper/gun"],
+            texture_entry.texture,
             SNIPER_COLLIDER_WIDTH,
         );
 
@@ -59,7 +60,7 @@ impl Gun {
                 }],
                 false,
             ),
-            resources.items_textures["sniper/gun"],
+            texture_entry.texture,
             SNIPER_COLLIDER_WIDTH,
         );
 

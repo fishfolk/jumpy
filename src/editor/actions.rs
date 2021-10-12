@@ -341,8 +341,8 @@ impl CreateTilesetAction {
 impl UndoableAction for CreateTilesetAction {
     fn apply(&mut self, map: &mut Map) -> Result {
         let resources = storage::get::<Resources>();
-        if let Some(texture) = resources.textures.get(&self.texture_id) {
-            let texture_size = uvec2(texture.width() as u32, texture.height() as u32);
+        if let Some(texture_entry) = resources.textures.get(&self.texture_id).cloned() {
+            let texture_size = uvec2(texture_entry.texture.width() as u32, texture_entry.texture.height() as u32);
             let mut first_tile_id = 1;
             for tileset in map.tilesets.values() {
                 let next_tile_id = tileset.first_tile_id + tileset.tile_cnt;

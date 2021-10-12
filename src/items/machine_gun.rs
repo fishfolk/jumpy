@@ -75,6 +75,7 @@ impl MachineGun {
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
         let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get("machine_gun").unwrap();
 
         let sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
@@ -96,7 +97,7 @@ impl MachineGun {
                 ],
                 false,
             ),
-            resources.items_textures["machine_gun/gun"],
+            texture_entry.texture,
             Self::COLLIDER_WIDTH,
         );
 

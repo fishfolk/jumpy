@@ -124,12 +124,13 @@ impl scene::Node for Explosive {
     }
 
     fn draw(mut explosive: RefMut<Self>) {
-        let resources = storage::get_mut::<Resources>();
-
         explosive.sprite.update();
 
+        let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get(&explosive.texture).unwrap();
+
         draw_texture_ex(
-            resources.items_textures[&explosive.texture],
+            texture_entry.texture,
             explosive.body.pos.x,
             explosive.body.pos.y,
             color::WHITE,

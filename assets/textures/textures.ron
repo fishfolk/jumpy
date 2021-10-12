@@ -1,0 +1,273 @@
+// This contains specifications for all textures that should be loaded into `Resources`.
+// Every entry must have an `id` (`String`) and a `path` (`String`).
+// A `frame_size` (`UVec2`) should also be specified for any texture that will act as a sprite
+// sheet, with animations, in-game. If no `frame_size` is specified, the game will default to
+// the texture file size.
+// Additionally, a `filter_mode` (`String`) can be set to either `"nearest_neighbor"` or `"linear"`.
+// If no `filter_mode` is specified, `"nearest_neighbor"` will be used as default.
+[
+    (
+        id: "default_tool_icon",
+        path: "editor_icons/no_icon.png",
+    ),
+    (
+        id: "default_tileset",
+        path: "map/default_tileset.png",
+        frame_size: (
+            x: 32,
+            y: 32,
+        ),
+    ),
+    (
+        id: "default_decorations",
+        path: "map/default_decorations.png",
+        frame_size: (
+            x: 51,
+            y: 48,
+        ),
+    ),
+    (
+        id: "background_01",
+        path: "map/background_01.png",
+    ),
+    (
+        id: "background_02",
+        path: "map/background_02.png",
+    ),
+    (
+        id: "background_03",
+        path: "map/background_03.png",
+    ),
+    (
+        id: "background_04",
+        path: "map/background_04.png",
+    ),
+    (
+        id: "player_blue",
+        path: "player/Whale(76x66)(Blue).png",
+        frame_size: (
+            x: 76,
+            y: 66,
+        ),
+    ),
+    (
+        id: "player_green",
+        path: "player/Whale(76x66)(Green).png",
+        frame_size: (
+            x: 76,
+            y: 66,
+        ),
+    ),
+    (
+        id: "player_orange",
+        path: "player/Whale(76x66)(Orange).png",
+        frame_size: (
+            x: 76,
+            y: 66,
+        ),
+    ),
+    (
+        id: "player_purple",
+        path: "player/Whale(76x66)(Purple).png",
+        frame_size: (
+            x: 76,
+            y: 66,
+        ),
+    ),
+    (
+        id: "player_with_boots_blue",
+        path: "player/WhaleBoots(76x66)(Blue).png",
+        frame_size: (
+            x: 76,
+            y: 66,
+        ),
+    ),
+    (
+        id: "player_with_boots_green",
+        path: "player/WhaleBoots(76x66)(Green).png",
+        frame_size: (
+            x: 76,
+            y: 66,
+        ),
+    ),
+    (
+        id: "player_with_boots_orange",
+        path: "player/WhaleBoots(76x66)(Orange).png",
+        frame_size: (
+            x: 76,
+            y: 66,
+        ),
+    ),
+    (
+        id: "player_with_boots_purple",
+        path: "player/WhaleBoots(76x66)(Purple).png",
+        frame_size: (
+            x: 76,
+            y: 66,
+        ),
+    ),
+    (
+        id: "boots",
+        path: "items/Boots(32x32).png",
+        frame_size: (
+            x: 32,
+            y: 32,
+        ),
+    ),
+    (
+        id: "cannon",
+        path: "items/Cannon(88x36).png",
+        frame_size: (
+            x: 88,
+            y: 36,
+        ),
+    ),
+    (
+        id: "crate",
+        path: "items/Crate(36x31).png",
+        frame_size: (
+            x: 36,
+            y: 31,
+        ),
+    ),
+    (
+        id: "curse",
+        path: "items/Curse(30x44).png",
+        frame_size: (
+            x: 30,
+            y: 44,
+        ),
+    ),
+    (
+        id: "grenade",
+        path: "items/Grenade(15x15).png",
+        frame_size: (
+            x: 15,
+            y: 15,
+        ),
+    ),
+    (
+        id: "jellyfish",
+        path: "items/Jellyfish(34x47).png",
+        frame_size: (
+            x: 34,
+            y: 47,
+        ),
+    ),
+    (
+        id: "kick_bomb",
+        path: "items/KickBomb(56x38).png",
+        frame_size: (
+            x: 56,
+            y: 38,
+        ),
+    ),
+    (
+        id: "machine_gun",
+        path: "items/MachineGun(80x24).png",
+        frame_size: (
+            x: 80,
+            y: 24,
+        ),
+    ),
+    (
+        id: "mine",
+        path: "items/Mine(26x31).png",
+        frame_size: (
+            x: 26,
+            y: 31,
+        ),
+    ),
+    (
+        id: "musket",
+        path: "items/Musket(92x32).png",
+        frame_size: (
+            x: 92,
+            y: 32,
+        ),
+    ),
+    (
+        id: "seaweed",
+        path: "items/Seaweed(48x51).png",
+        frame_size: (
+            x: 48,
+            y: 51,
+        ),
+    ),
+    (
+        id: "sniper",
+        path: "items/Sniper(92x32).png",
+        frame_size: (
+            x: 92,
+            y: 32,
+        ),
+    ),
+    (
+        id: "sproinger",
+        path: "items/Sproinger(31x20).png",
+        frame_size: (
+            x: 31,
+            y: 20,
+        ),
+    ),
+    (
+        id: "sword",
+        path: "items/Sword(65x93).png",
+        frame_size: (
+            x: 65,
+            y: 93,
+        ),
+    ),
+    (
+        id: "sword_held",
+        path: "items/SwordHeld(65x17).png",
+        frame_size: (
+            x: 65,
+            y: 93,
+        ),
+    ),
+    (
+        id: "turtle_shell",
+        path: "items/TurtleShell(32x32).png",
+        frame_size: (
+            x: 32,
+            y: 32,
+        ),
+    ),
+    (
+        id: "turtle_shell_broken",
+        path: "items/TurtleShellBroken(32x32).png",
+        frame_size: (
+            x: 32,
+            y: 32,
+        ),
+    ),
+    (
+        id: "cannonball",
+        path: "temp/Cannonball(32x36).png",
+    ),
+    (
+        id: "galleon",
+        path: "temp/Galleon(326x300).png",
+    ),
+    (
+        id: "galleon_icon",
+        path: "temp/GalleonIcon(32x29).png",
+    ),
+    (
+        id: "shark",
+        path: "temp/Shark(60x220).png",
+    ),
+    (
+        id: "shark_icon",
+        path: "temp/SharkIcon(32x34).png",
+    ),
+    (
+        id: "volcano",
+        path: "temp/Volcano(395x100).png",
+    ),
+    (
+        id: "volcano_icon",
+        path: "temp/VolcanoIcon(36x22).png",
+    ),
+]

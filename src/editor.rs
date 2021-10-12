@@ -11,7 +11,7 @@ use gui::{
         LayerListElement, ObjectListElement, TilesetDetailsElement, TilesetListElement,
         ToolSelectorElement, Toolbar, ToolbarPosition,
     },
-    CreateLayerWindow, CreateObjectWindow, CreateTilesetWindow, EditorGui, GuiElementKind,
+    CreateLayerWindow, CreateObjectWindow, CreateTilesetWindow, EditorGui,
     TilesetPropertiesWindow,
 };
 
@@ -389,20 +389,25 @@ impl Node for Editor {
         }
 
         let cursor_position = node.get_cursor_position();
-        let element_at_cursor = {
-            let gui = storage::get::<EditorGui>();
-            gui.get_element_at(cursor_position)
-        };
 
         if input.action {
-            if element_at_cursor.is_none()
-                || element_at_cursor.unwrap() != GuiElementKind::ContextMenu
-            {
+            let (is_cursor_over_gui, is_cursor_over_context_menu) = {
+                let gui = storage::get::<EditorGui>();
+                let is_over_gui = gui.contains(cursor_position);
+                let mut is_over_context_menu = false;
+                if is_over_gui && gui.context_menu_contains(cursor_position) {
+                    is_over_context_menu = true;
+                }
+
+                (is_over_gui, is_over_context_menu)
+            };
+
+            if !is_cursor_over_context_menu {
                 let mut gui = storage::get_mut::<EditorGui>();
                 gui.close_context_menu();
             }
 
-            if element_at_cursor.is_none() {
+            if !is_cursor_over_gui {
                 if let Some(id) = &node.selected_tool {
                     let ctx = node.get_context();
                     let tool = get_tool_instance_of_id(id);
@@ -428,9 +433,9 @@ impl Node for Editor {
         }
 
         let cursor_position = node.get_cursor_position();
-        let element_at_cursor = {
+        let is_cursor_over_map = {
             let gui = storage::get::<EditorGui>();
-            gui.get_element_at(cursor_position)
+            !gui.contains(cursor_position)
         };
 
         let screen_size = vec2(screen_width(), screen_height());
@@ -456,7 +461,7 @@ impl Node for Editor {
 
         camera.position = (camera.position + movement).clamp(Vec2::ZERO, node.map.get_size());
 
-        if element_at_cursor.is_none() {
+        if is_cursor_over_map {
             camera.scale = (camera.scale + input.camera_zoom * Self::CAMERA_ZOOM_STEP)
                 .clamp(Self::CAMERA_ZOOM_MIN, Self::CAMERA_ZOOM_MAX);
         }

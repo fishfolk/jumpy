@@ -41,7 +41,7 @@ impl Cannon {
     const SHOOTING_GRACE_TIME: f32 = 1.0; // seconds
 
     // --- Cannonball Settings
-    const CANNONBALL_TEXTURE_NAME: &'static str = "cannon/cannonball";
+    const CANNONBALL_TEXTURE_ID: &'static str = "cannonball";
     const CANNONBALL_COUNTDOWN_DURATION: f32 = 0.5;
     /// After shooting, the owner is safe for this amount of time. This is crucial, otherwise, given the
     /// large hitbox, they will die immediately on shoot.
@@ -59,6 +59,8 @@ impl Cannon {
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
         let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get("cannon").unwrap();
+
         let cannon_sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
                 Self::CANNON_WIDTH as u32,
@@ -79,7 +81,7 @@ impl Cannon {
                 ],
                 false,
             ),
-            resources.items_textures["cannon/gun"],
+            texture_entry.texture,
             Self::CANNON_WIDTH,
         );
 
@@ -158,7 +160,7 @@ impl Cannon {
                         explosion_radius: Self::EXPLOSION_RADIUS,
                         fuse: Some(Self::CANNONBALL_COUNTDOWN_DURATION),
                     },
-                    Self::CANNONBALL_TEXTURE_NAME,
+                    Self::CANNONBALL_TEXTURE_ID,
                     AnimatedSprite::new(
                         Self::CANNONBALL_WIDTH as u32,
                         Self::CANNONBALL_HEIGHT as u32,

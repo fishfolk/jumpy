@@ -3,7 +3,13 @@ use macroquad::{
     ui::{hash, widgets, Ui},
 };
 
-use crate::map::{Map, MapObjectKind};
+use crate::{
+    map::{Map, MapObjectKind},
+    editor::gui::{
+        ComboBoxValue,
+        ComboBoxBuilder,
+    },
+};
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 
@@ -81,30 +87,13 @@ impl Window for CreateObjectWindow {
             widgets::InputText::new(hash!(id, "id_input"))
                 .size(size)
                 .ratio(1.0)
-                .label("Object ID")
+                .label("ID")
                 .ui(ui, &mut self.id);
 
-            let mut object_kind = match self.kind {
-                MapObjectKind::Item => 0,
-                MapObjectKind::Weapon => 1,
-                MapObjectKind::SpawnPoint => 2,
-                MapObjectKind::Environment => 3,
-                MapObjectKind::Decoration => 4,
-            };
-
-            widgets::ComboBox::new(hash!(id, "kind_input"), &["Item", "Weapon", "Spawn point", "Environment", "Decoration"])
-                .ratio(0.4)
-                .label("Object type")
-                .ui(ui, &mut object_kind);
-
-            self.kind = match object_kind {
-                0 => MapObjectKind::Item,
-                1 => MapObjectKind::Weapon,
-                2 => MapObjectKind::SpawnPoint,
-                3 => MapObjectKind::Environment,
-                4 => MapObjectKind::Decoration,
-                _ => unreachable!(),
-            }
+            ComboBoxBuilder::new(hash!(id, "type_input"))
+                .with_ratio(0.8)
+                .with_label("Type")
+                .build(ui, &mut self.kind);
         }
 
         None

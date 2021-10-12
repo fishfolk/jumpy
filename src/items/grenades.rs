@@ -34,6 +34,7 @@ impl Grenades {
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
         let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get("grenade").unwrap();
 
         let grenade_sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
@@ -47,7 +48,7 @@ impl Grenades {
                 }],
                 false,
             ),
-            resources.items_textures["grenades/explosives"],
+            texture_entry.texture,
             Self::COLLIDER_WIDTH,
         );
 

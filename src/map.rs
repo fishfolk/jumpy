@@ -13,6 +13,9 @@ use crate::{
         HorizontalAlignment,
         VerticalAlignment,
     },
+    editor::{
+        gui::combobox::ComboBoxValue
+    },
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -198,16 +201,15 @@ impl Map {
                                 let world_position = self.world_offset
                                     + vec2(x as f32 * self.tile_size.x, y as f32 * self.tile_size.y);
 
-                                let texture = resources
+                                let texture_entry = resources
                                     .textures
                                     .get(&tile.texture_id)
-                                    .cloned()
                                     .unwrap_or_else(|| {
                                         panic!("No texture with id '{}'!", tile.texture_id)
                                     });
 
                                 draw_texture_ex(
-                                    texture,
+                                    texture_entry.texture,
                                     world_position.x,
                                     world_position.y,
                                     color::WHITE,
@@ -311,6 +313,30 @@ impl<'a> Iterator for MapTileIterator<'a> {
 pub enum MapLayerKind {
     TileLayer,
     ObjectLayer,
+}
+
+impl ComboBoxValue for MapLayerKind {
+    fn from_index(index: usize) -> Self {
+        match index {
+            0 => Self::TileLayer,
+            1 => Self::ObjectLayer,
+            _ => unreachable!(),
+        }
+    }
+
+    fn to_index(&self) -> usize {
+        match self {
+            Self::TileLayer => 0,
+            Self::ObjectLayer => 1,
+        }
+    }
+
+    fn options() -> &'static [&'static str] {
+        &[
+            "Tiles",
+            "Objects",
+        ]
+    }
 }
 
 impl Default for MapLayerKind {
@@ -430,12 +456,45 @@ impl From<String> for MapObjectKind {
 impl Into<String> for MapObjectKind {
     fn into(self) -> String {
         match self {
-            Self::Decoration => Self::DECORATION.to_string(),
             Self::Item => Self::ITEM.to_string(),
+            Self::Weapon => Self::WEAPON.to_string(),
             Self::SpawnPoint => Self::SPAWN_POINT.to_string(),
             Self::Environment => Self::ENVIRONMENT.to_string(),
-            Self::Weapon => Self::WEAPON.to_string(),
+            Self::Decoration => Self::DECORATION.to_string(),
         }
+    }
+}
+
+impl ComboBoxValue for MapObjectKind {
+    fn from_index(index: usize) -> Self {
+        match index {
+            0 => Self::Item,
+            1 => Self::Weapon,
+            2 => Self::SpawnPoint,
+            3 => Self::Environment,
+            4 => Self::Decoration,
+            _ => unreachable!(),
+        }
+    }
+
+    fn to_index(&self) -> usize {
+        match self {
+            Self::Item => 0,
+            Self::Weapon => 1,
+            Self::SpawnPoint => 2,
+            Self::Environment => 3,
+            Self::Decoration => 4,
+        }
+    }
+
+    fn options() -> &'static [&'static str] {
+        &[
+            "Item",
+            "Weapon",
+            "Spawn point",
+            "Environment",
+            "Decoration",
+        ]
     }
 }
 

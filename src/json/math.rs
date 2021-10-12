@@ -64,6 +64,14 @@ impl From<UVec2Def> for UVec2 {
     }
 }
 
+pub fn vec2_is_zero(val: &Vec2) -> bool {
+    *val == Vec2::ZERO
+}
+
+pub fn uvec2_is_zero(val: &UVec2) -> bool {
+    *val == UVec2::ZERO
+}
+
 #[derive(Copy, Clone, Serialize, Deserialize)]
 #[serde(remote = "Rect")]
 pub struct RectDef {

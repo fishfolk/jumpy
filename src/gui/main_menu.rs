@@ -1,3 +1,5 @@
+use std::net::UdpSocket;
+
 use macroquad::{
     experimental::collections::storage,
     prelude::*,
@@ -5,13 +7,14 @@ use macroquad::{
 };
 
 use crate::{
-    gui::{GuiResources, Level},
+    gui::GuiResources,
     input::InputScheme,
     nodes::network::Message,
     EditorInputScheme, GameType,
+    Resources,
+    resources::MapEntry,
+    text::{draw_aligned_text, HorizontalAlignment, VerticalAlignment},
 };
-
-use std::net::UdpSocket;
 
 const RELAY_ADDR: &str = "173.0.157.169:35000";
 const WINDOW_WIDTH: f32 = 700.;
@@ -500,10 +503,14 @@ pub async fn game_type() -> GameType {
     }
 }
 
-pub async fn location_select() -> Level {
-    let mut hovered: i32 = 0;
+const MAP_SELECT_SCREEN_MARGIN_FACTOR: f32 = 0.1;
+const MAP_SELECT_PREVIEW_TARGET_WIDTH: f32 = 250.0;
+const MAP_SELECT_PREVIEW_RATIO: f32 = 10.0 / 16.0;
+const MAP_SELECT_PREVIEW_SHRINK_FACTOR: f32 = 0.8;
 
-    let mut old_mouse_position = mouse_position();
+pub async fn location_select() -> MapEntry {
+    let mut current_page: i32 = 0;
+    let mut hovered: i32 = 0;
 
     // skip a frame to let Enter be unpressed from the previous screen
     next_frame().await;
@@ -523,6 +530,10 @@ pub async fn location_select() -> Level {
         let mut right = is_key_pressed(KeyCode::Right) || is_key_pressed(KeyCode::D);
         let mut left = is_key_pressed(KeyCode::Left) || is_key_pressed(KeyCode::A);
         let mut start = is_key_pressed(KeyCode::Enter);
+
+        let (_, mouse_wheel) = mouse_wheel();
+        let page_up = mouse_wheel < 0.0;
+        let page_down = mouse_wheel > 0.0;
 
         for ix in 0..quad_gamepad::MAX_DEVICES {
             use quad_gamepad::GamepadButton::*;
@@ -545,79 +556,155 @@ pub async fn location_select() -> Level {
         }
         clear_background(BLACK);
 
-        let levels_amount = gui_resources.levels.len();
+        let resources = storage::get::<Resources>();
+        let map_cnt = resources.maps.len();
 
         root_ui().push_skin(&gui_resources.skins.main_menu_skin);
 
-        let rows = (levels_amount + 2) / 3;
-        let w = (screen_width() - 120.) / 3. - 50.;
-        let h = (screen_height() - 180.) / rows as f32 - 50.;
+        let screen_size = vec2(screen_width(), screen_height());
+        let screen_margins = vec2(screen_size.x * MAP_SELECT_SCREEN_MARGIN_FACTOR, screen_size.y * MAP_SELECT_SCREEN_MARGIN_FACTOR);
+        let content_size = vec2(screen_size.x - (screen_margins.x * 2.0), screen_size.y - (screen_margins.y * 2.0));
+
+        let entries_per_row = (content_size.x / MAP_SELECT_PREVIEW_TARGET_WIDTH).round() as usize;
+        let row_cnt = (map_cnt / entries_per_row) + 1;
+
+        let entry_size = {
+            let width = content_size.x / entries_per_row as f32;
+            vec2(width, width * MAP_SELECT_PREVIEW_RATIO)
+        };
+
+        let rows_per_page = (content_size.y / entry_size.y) as usize;
+        let entries_per_page = rows_per_page * entries_per_row;
+
+        let page_cnt = (row_cnt / rows_per_page) + 1;
 
         {
             if up {
-                hovered -= 3;
-                let ceiled_levels_amount = levels_amount as i32 + 3 - (levels_amount % 3) as i32;
+                hovered -= entries_per_row as i32;
                 if hovered < 0 {
-                    hovered = (hovered + ceiled_levels_amount as i32) % ceiled_levels_amount;
-                    if hovered >= levels_amount as i32 {
-                        hovered -= 3;
+                    hovered += 1 + map_cnt as i32 + (map_cnt % entries_per_row) as i32;
+                    if hovered >= map_cnt as i32 {
+                        hovered = map_cnt as i32 - 1;
                     }
                 }
             }
 
             if down {
-                hovered += 3;
-                if hovered >= levels_amount as i32 {
-                    let row = hovered % 3;
-                    hovered = row;
+                let old = hovered;
+                hovered += entries_per_row as i32;
+                if hovered >= map_cnt as i32 {
+                    if old == map_cnt as i32 - 1 {
+                        hovered = 0;
+                    } else {
+                        hovered = map_cnt as i32 - 1;
+                    }
                 }
             }
+
             if left {
+                let row_begin = (hovered / entries_per_row as i32) * entries_per_row as i32;
                 hovered -= 1;
+                if hovered < row_begin {
+                    hovered = row_begin + entries_per_row as i32 - 1;
+                }
             }
+
             if right {
+                let row_begin = (hovered / entries_per_row as i32) * entries_per_row as i32;
                 hovered += 1;
+                if hovered >= row_begin + entries_per_row as i32 {
+                    hovered = row_begin;
+                }
             }
-            hovered = (hovered + levels_amount as i32) % levels_amount as i32;
 
-            let levels = &mut gui_resources.levels;
+            current_page = hovered / entries_per_page as i32;
 
-            for (n, level) in levels.iter_mut().enumerate() {
-                let is_hovered = hovered == n as i32;
-
-                let rect = Rect::new(
-                    60. + (n % 3) as f32 * (w + 50.) - level.size * 30.,
-                    90. + 25. + (n / 3) as f32 * (h + 50.) - level.size * 30.,
-                    w + level.size * 60.,
-                    h + level.size * 60.,
-                );
-                if old_mouse_position != mouse_position() && rect.contains(mouse_position().into())
-                {
-                    hovered = n as _;
-                }
-
-                if is_hovered {
-                    level.size = level.size * 0.8 + 1.0 * 0.2;
+            if page_up {
+                current_page -= 1;
+                if current_page < 0 {
+                    current_page = page_cnt as i32 - 1;
+                    hovered += (map_cnt + (entries_per_page - (map_cnt % entries_per_page)) - entries_per_page) as i32;
+                    if hovered >= map_cnt as i32 {
+                        hovered = map_cnt as i32 - 1
+                    }
                 } else {
-                    level.size = level.size * 0.9 + 0.0;
+                    hovered -= entries_per_page as i32;
+                }
+            }
+
+            if page_down {
+                current_page += 1;
+                if current_page >= page_cnt as i32 {
+                    current_page = 0;
+                    hovered = hovered % entries_per_page as i32;
+                } else {
+                    hovered += entries_per_page as i32;
+                    if hovered >= map_cnt as i32 {
+                        hovered = map_cnt as i32 - 1;
+                    }
+                }
+            }
+
+            current_page %= page_cnt as i32;
+
+            {
+                if page_cnt > 1 {
+                    draw_aligned_text(
+                        &format!("page {}/{}", current_page + 1, page_cnt),
+                        screen_size - vec2(25.0, 25.0),
+                        HorizontalAlignment::Right,
+                        VerticalAlignment::Bottom,
+                        Default::default(),
+                    );
                 }
 
-                if ui::widgets::Button::new(level.preview)
-                    .size(rect.size())
-                    .position(rect.point())
-                    .ui(&mut *root_ui())
-                    || start
-                {
-                    root_ui().pop_skin();
-                    let level = levels.get(hovered as usize).unwrap();
-                    return level.clone();
+                let begin = (current_page as usize * entries_per_page);
+                let end = (begin + entries_per_page).clamp(begin, map_cnt);
+
+                let mut pi = 0;
+                for i in begin..end {
+                    let map_entry = resources.maps.get(i).unwrap();
+                    let is_hovered = hovered == i as i32;
+
+                    let mut rect = Rect::new(
+                        screen_margins.x + ((pi % entries_per_row) as f32 * entry_size.x),
+                        screen_margins.y + ((pi / entries_per_row) as f32 * entry_size.y),
+                        entry_size.x,
+                        entry_size.y,
+                    );
+
+                    if !is_hovered {
+                        let w = rect.w * MAP_SELECT_PREVIEW_SHRINK_FACTOR;
+                        let h = rect.h * MAP_SELECT_PREVIEW_SHRINK_FACTOR;
+
+                        rect.x += (rect.w - w) / 2.0;
+                        rect.y += (rect.h - h) / 2.0;
+
+                        rect.w = w;
+                        rect.h = h;
+                    }
+
+                    if rect.contains(mouse_position().into()) {
+                        hovered = i as _;
+                    }
+
+                    if ui::widgets::Button::new(map_entry.preview)
+                        .size(rect.size())
+                        .position(rect.point())
+                        .ui(&mut *root_ui())
+                        || start
+                    {
+                        root_ui().pop_skin();
+                        let map_entry = resources.maps.get(hovered as usize).unwrap();
+                        return map_entry.clone();
+                    }
+
+                    pi += 1;
                 }
             }
         }
 
         root_ui().pop_skin();
-
-        old_mouse_position = mouse_position();
 
         next_frame().await;
     }

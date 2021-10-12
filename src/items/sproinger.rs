@@ -154,10 +154,12 @@ impl scene::Node for Sproinger {
 
     fn draw(mut node: RefMut<Self>) {
         node.sprite.update();
-        let resources = storage::get_mut::<Resources>();
+
+        let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get("sproinger").unwrap();
 
         draw_texture_ex(
-            resources.items_textures["sproinger/sproinger"],
+            texture_entry.texture,
             node.pos.x,
             node.pos.y,
             color::WHITE,

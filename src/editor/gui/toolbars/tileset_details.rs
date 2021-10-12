@@ -43,23 +43,22 @@ impl ToolbarElement for TilesetDetailsElement {
         if let Some(tileset_id) = &ctx.selected_tileset {
             let tileset = map.tilesets.get(tileset_id).unwrap();
 
-            let texture = {
+            let texture_entry = {
                 let resources = storage::get::<Resources>();
-                resources
+                *resources
                     .textures
                     .get(&tileset.texture_id)
-                    .cloned()
                     .unwrap()
             };
 
             let grid_size = vec2(tileset.grid_size.x as f32, tileset.grid_size.y as f32);
 
             let scaled_width = size.x;
-            let scaled_height = (scaled_width / texture.width()) * texture.height();
+            let scaled_height = (scaled_width / texture_entry.texture.width()) * texture_entry.texture.height();
 
             let scaled_tile_size = vec2(scaled_width / grid_size.x, scaled_height / grid_size.y);
 
-            widgets::Texture::new(texture)
+            widgets::Texture::new(texture_entry.texture)
                 .position(position)
                 .size(scaled_width, scaled_height)
                 .ui(ui);

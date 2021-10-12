@@ -36,7 +36,7 @@ impl scene::Node for Sword {
     }
 
     fn draw(sword: RefMut<Self>) {
-        let resources = storage::get_mut::<Resources>();
+        let resources = storage::get::<Resources>();
 
         //sword.dead == false && matches!(sword.weapon, Some(Weapon::Sword)) {
         // for attack animation - old, pre-rotated sprite
@@ -46,8 +46,10 @@ impl scene::Node for Sword {
             // this little hack compensates this
             let hack_offset = vec2(0.0, -35.);
 
+            let texture_entry = resources.textures.get("sword").unwrap();
+
             draw_texture_ex(
-                resources.items_textures["sword/sword"],
+                texture_entry.texture,
                 sword.body.pos.x + hack_offset.x,
                 sword.body.pos.y + hack_offset.y,
                 color::WHITE,
@@ -67,8 +69,10 @@ impl scene::Node for Sword {
                 sword.body.angle
             };
 
+            let texture_entry = resources.textures.get("sword_held").unwrap();
+
             draw_texture_ex(
-                resources.items_textures["sword/fish_sword"],
+                texture_entry.texture,
                 sword.body.pos.x,
                 sword.body.pos.y,
                 color::WHITE,

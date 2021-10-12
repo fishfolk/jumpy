@@ -250,12 +250,13 @@ impl scene::Node for FlappyJellyfish {
     }
 
     fn draw(mut flappy_jellyfish: RefMut<Self>) {
-        let resources = storage::get_mut::<Resources>();
+        let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get("flappy_jellyfish").unwrap();
 
         flappy_jellyfish.flappy_jellyfish_sprite.update();
 
         draw_texture_ex(
-            resources.flappy_jellyfish,
+            texture_entry.texture,
             flappy_jellyfish.current_pos.x,
             flappy_jellyfish.current_pos.y,
             color::WHITE,

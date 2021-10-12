@@ -5,8 +5,14 @@ pub mod toolbars;
 pub mod windows;
 
 pub mod skins;
+pub mod combobox;
 
 pub use skins::EditorSkinCollection;
+
+pub use combobox::{
+    ComboBoxValue,
+    ComboBoxBuilder,
+};
 
 use macroquad::{
     experimental::collections::storage,
@@ -35,13 +41,6 @@ use context_menu::{ContextMenu, ContextMenuEntry};
 pub const NO_COLOR: Color = Color::new(0.0, 0.0, 0.0, 0.0);
 
 pub const ELEMENT_MARGIN: f32 = 8.0;
-
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum GuiElementKind {
-    ContextMenu,
-    Toolbar,
-    Window,
-}
 
 #[derive(Debug, Default, Clone)]
 pub struct ButtonParams {
@@ -97,36 +96,40 @@ impl EditorGui {
         gui
     }
 
-    pub fn get_element_at(&self, position: Vec2) -> Option<GuiElementKind> {
+    pub fn context_menu_contains(&self, position: Vec2) -> bool {
         if let Some(context_menu) = &self.context_menu {
             if context_menu.contains(position) {
-                return Some(GuiElementKind::ContextMenu);
+                return true;
             }
+        }
+
+        false
+    }
+
+    pub fn contains(&self, position: Vec2) -> bool {
+        if self.context_menu_contains(position) {
+            return true;
         }
 
         if let Some(left_toolbar) = &self.left_toolbar {
             if left_toolbar.contains(position) {
-                return Some(GuiElementKind::Toolbar);
+                return true;
             }
         }
 
         if let Some(right_toolbar) = &self.right_toolbar {
             if right_toolbar.contains(position) {
-                return Some(GuiElementKind::Toolbar);
+                return true;
             }
         }
 
         for window in self.open_windows.values() {
             if window.contains(position) {
-                return Some(GuiElementKind::Window);
+                return true;
             }
         }
 
-        None
-    }
-
-    pub fn is_element_at(&self, position: Vec2) -> bool {
-        self.get_element_at(position).is_some()
+        false
     }
 
     pub fn open_context_menu(&mut self, position: Vec2) {

@@ -757,21 +757,24 @@ impl scene::Node for Player {
     fn draw(node: RefMut<Self>) {
         let resources = storage::get::<Resources>();
 
-        draw_texture_ex(
-            if node.controller_id == 0 {
-                if node.can_head_boink {
-                    resources.whale_boots_blue
-                } else {
-                    resources.whale_blue
-                }
+        let texture_id = if node.controller_id == 0 {
+            if node.can_head_boink {
+                "player_with_boots_blue"
             } else {
-                //
-                if node.can_head_boink {
-                    resources.whale_boots_green
-                } else {
-                    resources.whale_green
-                }
-            },
+                "player_blue"
+            }
+        } else {
+            if node.can_head_boink {
+                "player_with_boots_green"
+            } else {
+                "player_green"
+            }
+        };
+
+        let texture_entry = resources.textures.get(texture_id).unwrap();
+
+        draw_texture_ex(
+            texture_entry.texture,
             node.body.pos.x - 25.,
             node.body.pos.y - 10.,
             color::WHITE,
@@ -785,12 +788,16 @@ impl scene::Node for Player {
 
         // draw turtle shell on player if the player has back armor
         if node.back_armor > 0 {
+            let texture_id = if node.back_armor == 1 {
+                "turtle_shell_broken"
+            } else {
+                "turtle_shell"
+            };
+
+            let texture_entry = resources.textures.get(texture_id).unwrap();
+
             draw_texture_ex(
-                if node.back_armor == 1 {
-                    resources.broken_turtleshell
-                } else {
-                    resources.turtleshell
-                },
+                texture_entry.texture,
                 node.body.pos.x + if node.body.facing { -20.0 } else { 15.0 },
                 node.body.pos.y,
                 color::WHITE,

@@ -115,9 +115,10 @@ impl Node for Shoes {
         node.sprite.update();
 
         let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get("boots").unwrap();
 
         draw_texture_ex(
-            resources.items_textures["shoes/shoes"],
+            texture_entry.texture,
             node.body.pos.x,
             node.body.pos.y,
             color::WHITE,

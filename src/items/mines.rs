@@ -30,6 +30,8 @@ impl Mines {
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
         let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get("mine").unwrap();
+
         let mines_sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
                 26,
@@ -42,7 +44,7 @@ impl Mines {
                 }],
                 false,
             ),
-            resources.items_textures["mines/mines"],
+            texture_entry.texture,
             Self::COLLIDER_WIDTH,
         );
 
@@ -99,7 +101,7 @@ impl Mines {
                         explosion_radius: 30.,
                         fuse: None,
                     },
-                    "mines/mines",
+                    "mines",
                     AnimatedSprite::new(
                         32,
                         32,

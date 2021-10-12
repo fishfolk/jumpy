@@ -50,10 +50,11 @@ impl scene::Node for Decoration {
     }
 
     fn draw(node: RefMut<Self>) {
-        let resources = storage::get_mut::<Resources>();
+        let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get("default_decorations").unwrap();
 
         draw_texture_ex(
-            resources.decorations,
+            texture_entry.texture,
             node.pos.x,
             node.pos.y - 51.,
             WHITE,

@@ -25,84 +25,6 @@ use macroquad::{
     math::Vec2,
 };
 
-use crate::{
-    Player,
-    json,
-};
-
-use serde::{
-    Serialize,
-    Deserialize,
-};
-
-// Move to appropriate module
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct AnimationParams {
-
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Weapon {
-    id: String,
-    attack_speed: f32,
-    damage: f32,
-    effect_delivery: EffectDeliveryParams,
-    effect: EffectKind,
-}
-
-impl Weapon {
-    pub fn attack() {
-
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum EffectDeliveryTrigger {
-    Player,
-    Ground,
-    Both,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type", rename_all = "snake_case")]
-enum EffectDeliveryParams {
-    // Cone that delivers the effect to anyone that passes its collision check.
-    // This would typically be used for things like a flame thrower or any melee weapons.
-    Cone {
-        #[serde(with = "json::def_vec2")]
-        direction: Vec2,
-        range: f32,
-        angle: f32,
-    },
-    // Projectile should be used for anything that spawns an object that delivers an effect on hit.
-    // This would typically be used for things like a gun.
-    Projectile {
-        speed: f32,
-        spread: f32,
-        size: f32,
-    },
-    // PhysicsBody will spawn a new object that has physics. It requires either a `timer` or a
-    // `trigger`, or both, to function.
-    // This would typically be used for things like grenades.
-    PhysicsBody {
-        texture_id: String,
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        animation_params: Option<AnimationParams>,
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        timer: Option<f32>,
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        trigger: Option<EffectDeliveryTrigger>,
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type", rename_all = "snake_case")]
-enum EffectKind {
-    DirectDamage,
-    AreaOfEffect,
-}
-
 /// Proto-mod
 /// A meta description on how to create an item from the map
 pub struct Item {
@@ -113,10 +35,6 @@ pub struct Item {
     /// Mostly legacy, should be gone with a proper level editor
     /// may be will be a Vec2 soon, waiting for https://github.com/bitshifter/glam-rs/issues/76
     pub tiled_offset: (f32, f32),
-    /// List of texture resources to load
-    /// Later they will be accessible in resources.items_textures
-    /// by tiled_name/resource_id
-    pub textures: &'static [(&'static str, &'static str)],
     /// List of audio resources to load
     /// Later they will be accessible in resources.items_sounds
     /// by "tiled_name/resource_id"
@@ -139,10 +57,6 @@ pub const ITEMS: &[Item] = &[
         tiled_name: "sword",
         constructor: sword::Sword::spawn,
         tiled_offset: (-35., -25.),
-        textures: &[
-            ("sword", "assets/Whale/Sword(65x93).png"),
-            ("fish_sword", "assets/Whale/FishSword.png"),
-        ],
         sounds: &[],
         fxses: &[],
         network_ready: true,
@@ -151,7 +65,6 @@ pub const ITEMS: &[Item] = &[
         tiled_name: "sproinger",
         constructor: sproinger::Sproinger::spawn,
         tiled_offset: (-35., 0.),
-        textures: &[("sproinger", "assets/Whale/Sproinger.png")],
         sounds: &[],
         fxses: &[],
         network_ready: true,
@@ -160,7 +73,6 @@ pub const ITEMS: &[Item] = &[
         tiled_name: "musket",
         constructor: gun::Gun::spawn_musket,
         tiled_offset: (-35., -25.),
-        textures: &[("gun", "assets/Whale/Gun(92x32).png")],
         sounds: &[],
         fxses: &[],
         network_ready: true,
@@ -169,7 +81,6 @@ pub const ITEMS: &[Item] = &[
         tiled_name: "sniper",
         constructor: gun::Gun::spawn_sniper,
         tiled_offset: (-35., -25.),
-        textures: &[("gun", "assets/Whale/Sniper(92x32).png")],
         sounds: &[],
         fxses: &[],
         network_ready: true,
@@ -178,7 +89,6 @@ pub const ITEMS: &[Item] = &[
         tiled_name: "machine_gun",
         constructor: machine_gun::MachineGun::spawn,
         tiled_offset: (-35., -25.),
-        textures: &[("gun", "assets/Whale/MachineGun.png")],
         sounds: &[],
         fxses: &[],
         network_ready: false,
@@ -187,7 +97,6 @@ pub const ITEMS: &[Item] = &[
         tiled_name: "mines",
         constructor: mines::Mines::spawn,
         tiled_offset: (-35., -25.),
-        textures: &[("mines", "assets/Whale/Mines.png")],
         sounds: &[],
         fxses: &[],
         network_ready: false,
@@ -196,37 +105,30 @@ pub const ITEMS: &[Item] = &[
         tiled_name: "cannon",
         constructor: cannon::Cannon::spawn,
         tiled_offset: (-35., -25.),
-        textures: &[
-            ("gun", "assets/Whale/Cannon.png"),
-            ("cannonball", "assets/Whale/KickBomb(32x36).png"),
-        ],
         sounds: &[],
         fxses: &[],
         network_ready: false, // There's no random but I can't verify)
     },
     Item {
-        tiled_name: "turtleshell",
+        tiled_name: "turtle_shell",
         constructor: turtle_shell::TurtleShell::spawn,
         tiled_offset: (0., 0.),
-        textures: &[("shell", "assets/Whale/TurtleShell(32x32).png")],
         sounds: &[],
         fxses: &[],
         network_ready: false,
     },
     Item {
-        tiled_name: "grenades",
+        tiled_name: "grenade",
         constructor: grenades::Grenades::spawn,
         tiled_offset: (0., 0.),
-        textures: &[("explosives", "assets/Whale/Grenades.png")],
         sounds: &[],
         fxses: &[],
         network_ready: false,
     },
     Item {
-        tiled_name: "shoes",
+        tiled_name: "boots",
         constructor: shoes::Shoes::spawn,
         tiled_offset: (0., 0.),
-        textures: &[("shoes", "assets/Whale/Shoes(32x32).png")],
         sounds: &[],
         fxses: &[],
         network_ready: false,
@@ -235,10 +137,6 @@ pub const ITEMS: &[Item] = &[
         tiled_name: "volcano",
         constructor: volcano::Volcano::spawn,
         tiled_offset: (0., 0.),
-        textures: &[
-            ("icon", "temp/VolcanoIcon(36x22).png"),
-            ("erupting", "temp/EruptingVolcano(395x100).png"),
-        ],
         sounds: &[],
         fxses: &[],
         network_ready: false,
@@ -247,10 +145,6 @@ pub const ITEMS: &[Item] = &[
         tiled_name: "galleon",
         constructor: galleon::Galleon::spawn,
         tiled_offset: (0., 0.),
-        textures: &[
-            ("galleon", "assets/Whale/GalleonIcon(32x29).png"),
-            ("flying_galleon", "assets/Whale/FlyingGalleon(326x300).png"),
-        ],
         sounds: &[],
         fxses: &[],
         network_ready: false,
@@ -259,7 +153,6 @@ pub const ITEMS: &[Item] = &[
         tiled_name: "jellyfish",
         constructor: jellyfish::Jellyfish::spawn,
         tiled_offset: (0., 0.),
-        textures: &[("jellyfish", "assets/Whale/Jellyfish(30x39).png")],
         sounds: &[],
         fxses: &[],
         network_ready: false,
@@ -268,10 +161,6 @@ pub const ITEMS: &[Item] = &[
         tiled_name: "shark_rain",
         constructor: shark_rain::SharkRain::spawn,
         tiled_offset: (0., 0.),
-        textures: &[
-            ("shark_rain", "assets/Whale/SharkIcon(32x34).png"),
-            ("raining_shark", "assets/Whale/RainingShark(60x220).png"),
-        ],
         sounds: &[],
         fxses: &[],
         network_ready: false,

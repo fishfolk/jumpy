@@ -148,9 +148,11 @@ impl Node for ArmedGrenade {
     }
 
     fn draw(node: RefMut<Self>) {
-        let resources = storage::get_mut::<Resources>();
+        let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get("grenade").unwrap();
+
         draw_texture_ex(
-            resources.items_textures["grenades/explosives"],
+            texture_entry.texture,
             node.body.pos.x,
             node.body.pos.y,
             color::WHITE,

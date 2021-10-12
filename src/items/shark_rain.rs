@@ -35,10 +35,10 @@ impl RainingShark {
 
     pub fn new(owner_id: u8, pos: Vec2) -> RainingShark {
         let resources = storage::get::<Resources>();
-        let sprite = resources.items_textures["shark_rain/raining_shark"];
+        let texture_entry = resources.textures.get("shark").unwrap();
 
         RainingShark {
-            sprite,
+            sprite: texture_entry.texture,
             pos,
             speed: Vec2::new(0., Self::SPEED),
             owner_id,
@@ -168,6 +168,7 @@ impl SharkRain {
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
         let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get("shark_icon").unwrap();
 
         let sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
@@ -181,7 +182,7 @@ impl SharkRain {
                 }],
                 false,
             ),
-            resources.items_textures["shark_rain/shark_rain"],
+            texture_entry.texture,
             Self::SPRITE_WIDTH as f32,
         );
 

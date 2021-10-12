@@ -22,6 +22,7 @@ const MUSKET_BULLET_SPEED: f32 = 500.0;
 impl Gun {
     pub fn spawn_musket(pos: Vec2) -> HandleUntyped {
         let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get("musket").unwrap();
 
         let gun_sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
@@ -43,7 +44,7 @@ impl Gun {
                 ],
                 false,
             ),
-            resources.items_textures["musket/gun"],
+            texture_entry.texture,
             MUSKET_COLLIDER_WIDTH,
         );
 
@@ -59,7 +60,7 @@ impl Gun {
                 }],
                 false,
             ),
-            resources.items_textures["musket/gun"],
+            texture_entry.texture,
             MUSKET_COLLIDER_WIDTH,
         );
 

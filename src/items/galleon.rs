@@ -33,7 +33,7 @@ impl FlyingGalleon {
 
     pub fn new(owner_id: u8) -> FlyingGalleon {
         let resources = storage::get::<Resources>();
-        let sprite = resources.items_textures["galleon/flying_galleon"];
+        let texture_entry = resources.textures.get("galleon").unwrap();
 
         let (pos, facing) = Self::start_position();
         let dir = if facing {
@@ -43,7 +43,7 @@ impl FlyingGalleon {
         };
 
         FlyingGalleon {
-            sprite,
+            sprite: texture_entry.texture,
             pos,
             speed: dir * Self::SPEED,
             facing,
@@ -162,6 +162,7 @@ impl Galleon {
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
         let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get("galleon_icon").unwrap();
 
         let sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
@@ -175,7 +176,7 @@ impl Galleon {
                 }],
                 false,
             ),
-            resources.items_textures["galleon/galleon"],
+            texture_entry.texture,
             Self::SPRITE_WIDTH as f32,
         );
 

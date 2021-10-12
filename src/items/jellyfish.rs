@@ -46,9 +46,10 @@ impl scene::Node for Jellyfish {
         node.sprite.update();
 
         let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get("jellyfish").unwrap();
 
         draw_texture_ex(
-            resources.items_textures["jellyfish/jellyfish"],
+            texture_entry.texture,
             node.body.pos.x,
             node.body.pos.y,
             color::WHITE,

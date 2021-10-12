@@ -1,0 +1,67 @@
+[
+    (
+        path: "lev01.json",
+        preview_path: "lev01.png",
+        is_tiled: true,
+    ),
+    (
+        path: "lev02.json",
+        preview_path: "lev02.png",
+        is_tiled: true,
+    ),
+    (
+        path: "lev03.json",
+        preview_path: "lev03.png",
+        is_tiled: true,
+    ),
+    (
+        path: "lev04.json",
+        preview_path: "lev04.png",
+        is_tiled: true,
+    ),
+    (
+        path: "lev05.json",
+        preview_path: "lev05.png",
+        is_tiled: true,
+    ),
+    (
+        path: "lev06.json",
+        preview_path: "lev06.png",
+        is_tiled: true,
+    ),
+    (
+        path: "zyrafa01.json",
+        preview_path: "zyrafa01.png",
+        is_tiled: true,
+    ),
+    (
+        path: "zyrafa02.json",
+        preview_path: "zyrafa02.png",
+        is_tiled: true,
+    ),
+    (
+        path: "zyrafa03.json",
+        preview_path: "zyrafa03.png",
+        is_tiled: true,
+    ),
+    (
+        path: "zyrafa04.json",
+        preview_path: "zyrafa04.png",
+        is_tiled: true,
+    ),
+    (
+        path: "zyrafa05.json",
+        preview_path: "zyrafa05.png",
+        is_tiled: true,
+    ),
+    (
+        path: "zyrafa06.json",
+        preview_path: "zyrafa06.png",
+        is_tiled: true,
+    ),
+    (
+        path: "test_level.json",
+        preview_path: "test_level.png",
+        is_tiled: true,
+    ),
+]

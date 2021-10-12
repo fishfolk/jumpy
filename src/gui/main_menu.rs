@@ -512,6 +512,8 @@ pub async fn location_select() -> MapEntry {
     let mut current_page: i32 = 0;
     let mut hovered: i32 = 0;
 
+    let mut previous_mouse_pos = mouse_position();
+
     // skip a frame to let Enter be unpressed from the previous screen
     next_frame().await;
 
@@ -684,7 +686,7 @@ pub async fn location_select() -> MapEntry {
                         rect.h = h;
                     }
 
-                    if rect.contains(mouse_position().into()) {
+                    if previous_mouse_pos != mouse_position() && rect.contains(mouse_position().into()) {
                         hovered = i as _;
                     }
 
@@ -703,6 +705,8 @@ pub async fn location_select() -> MapEntry {
                 }
             }
         }
+
+        previous_mouse_pos = mouse_position();
 
         root_ui().pop_skin();
 

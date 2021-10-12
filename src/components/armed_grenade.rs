@@ -129,7 +129,7 @@ impl Node for ArmedGrenade {
         if node.lived >= ArmedGrenade::COUNTDOWN_DURATION {
             {
                 let mut resources = storage::get_mut::<Resources>();
-                resources.hit_fxses.spawn(node.body.pos);
+                resources.hit_emitters.spawn(node.body.pos);
             }
             let grenade_circ = Circle::new(
                 node.body.pos.x,

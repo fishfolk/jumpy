@@ -1,0 +1,38 @@
+[
+    (
+        id: "across_the_pond",
+        path: "across_the_pond.ogg",
+    ),
+    (
+        id: "ahoy",
+        path: "ahoy!.ogg",
+    ),
+    (
+        id: "bait_the_hook",
+        path: "bait_the_hook.ogg",
+    ),
+    (
+        id: "fish_and_ships",
+        path: "fish_and_ships.ogg",
+    ),
+    (
+        id: "fish_bowl",
+        path: "fish_bowl.ogg",
+    ),
+    (
+        id: "fish_tide",
+        path: "fish_tide.ogg",
+    ),
+    (
+        id: "fishsticks",
+        path: "fishsticks.ogg",
+    ),
+    (
+        id: "krill_or_be_krilled",
+        path: "krill_or_be_krilled.ogg",
+    ),
+    (
+        id: "whale_theme",
+        path: "whale_theme.ogg",
+    ),
+]

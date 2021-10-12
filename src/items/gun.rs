@@ -70,7 +70,9 @@ impl Gun {
             // }
             {
                 let resources = storage::get::<Resources>();
-                play_sound_once(resources.shoot_sound);
+                let shoot_sound = resources.sounds["shoot"];
+
+                play_sound_once(shoot_sound);
 
                 let mut node = &mut *scene::get_node(node);
                 let player = &mut *scene::get_node(player);

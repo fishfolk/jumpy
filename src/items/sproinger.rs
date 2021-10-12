@@ -90,7 +90,9 @@ impl Sproinger {
             let intersect = sproinger_rect.intersect(object_collider);
             if intersect.is_some() {
                 let resources = storage::get_mut::<Resources>();
-                play_sound_once(resources.jump_sound);
+                let jump_sound = resources.sounds["jump"];
+
+                play_sound_once(jump_sound);
 
                 physics_object.set_speed_y(-Self::FORCE);
 

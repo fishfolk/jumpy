@@ -200,7 +200,9 @@ impl Sword {
         let coroutine = async move {
             {
                 let resources = storage::get_mut::<Resources>();
-                play_sound_once(resources.sword_sound);
+                let sword_sound = resources.sounds["sword"];
+
+                play_sound_once(sword_sound);
 
                 let sword = &mut *scene::get_node(node);
                 sword.sprite.set_animation(1);

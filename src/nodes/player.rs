@@ -32,7 +32,9 @@ impl Player {
 
     pub fn pick_weapon(&mut self, weapon: NodeWith<Weapon>) {
         let resources = storage::get::<Resources>();
-        play_sound_once(resources.pickup_sound);
+        let pickup_sound = resources.sounds["pickup"];
+
+        play_sound_once(pickup_sound);
 
         self.drop_weapon();
 
@@ -41,12 +43,13 @@ impl Player {
 
     pub fn jump(&mut self) {
         let resources = storage::get::<Resources>();
+        let jump_sound = resources.sounds["jump"];
 
         self.body.speed.y = -Self::JUMP_UPWARDS_SPEED;
         self.jump_frames_left = Self::JUMP_HEIGHT_CONTROL_FRAMES;
 
         audio::play_sound(
-            resources.jump_sound,
+            jump_sound,
             audio::PlaySoundParams {
                 looped: false,
                 volume: 0.6,
@@ -279,7 +282,9 @@ impl Player {
                 self.state_machine.set_state(Self::ST_DEATH);
                 {
                     let resources = storage::get::<Resources>();
-                    play_sound_once(resources.player_die_sound);
+                    let die_sound = resources.sounds["die"];
+
+                    play_sound_once(die_sound);
                 }
             }
         }
@@ -351,7 +356,7 @@ impl Player {
 
                 node.fish_sprite.playing = false;
                 node.body.speed = vec2(0., 0.);
-                resources.explosion_fxses.spawn(pos + vec2(15., 33.));
+                resources.explosion_emitters.spawn(pos + vec2(15., 33.));
             }
 
             wait_seconds(0.5).await;
@@ -493,7 +498,9 @@ impl Player {
         if node.body.on_ground && !node.body.last_frame_on_ground {
             {
                 let resources = storage::get::<Resources>();
-                play_sound_once(resources.player_landing_sound);
+                let land_sound = resources.sounds["land"];
+
+                play_sound_once(land_sound);
             }
         }
 
@@ -571,7 +578,9 @@ impl Player {
                 node.weapon = None;
                 {
                     let resources = storage::get::<Resources>();
-                    play_sound_once(resources.player_throw_sound);
+                    let throw_sound = resources.sounds["throw"];
+
+                    play_sound_once(throw_sound);
                 }
 
                 // set a grace time for picking up the weapon again
@@ -720,7 +729,9 @@ impl Player {
                 let is_overlapping = hitbox.overlaps(&other_hitbox);
                 if is_overlapping && hitbox.y + 60.0 < other_hitbox.y + Self::HEAD_THRESHOLD {
                     let resources = storage::get::<Resources>();
-                    play_sound_once(resources.jump_sound);
+                    let jump_sound = resources.sounds["jump"];
+
+                    play_sound_once(jump_sound);
                     other.kill(!node.body.facing);
                 }
             }

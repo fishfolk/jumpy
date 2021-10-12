@@ -87,7 +87,7 @@ impl FlappyJellyfish {
 
     /// Handles everything, but needs access to the player/jellyfish nodes, so they must not be in scope.
     pub fn terminate(flappy_jellyfish: RefMut<FlappyJellyfish>, killed_player_ids: Vec<u8>) {
-        let hit_fxses = &mut storage::get_mut::<Resources>().hit_fxses;
+        let hit_fxses = &mut storage::get_mut::<Resources>().hit_emitters;
         let explosion_position = vec2(
             flappy_jellyfish.current_pos.x + Self::COLLIDER_WIDTH / 2.,
             flappy_jellyfish.current_pos.y + Self::COLLIDER_HEIGHT / 2.,

@@ -49,7 +49,7 @@ impl Bullet {
 
                 {
                     let mut resources = storage::get_mut::<Resources>();
-                    resources.hit_fxses.spawn(self.pos);
+                    resources.hit_emitters.spawn(self.pos);
                 }
 
                 player.kill(direction);
@@ -61,7 +61,7 @@ impl Bullet {
         let mut resources = storage::get_mut::<Resources>();
         let world = storage::get::<GameWorld>();
         if world.collision_world.collide_solids(self.pos, 5, 5) == Tile::Solid {
-            resources.hit_fxses.spawn(self.pos);
+            resources.hit_emitters.spawn(self.pos);
             return false;
         }
 

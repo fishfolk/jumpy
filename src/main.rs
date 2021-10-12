@@ -65,33 +65,8 @@ pub enum GameType {
 async fn build_game_scene(map: Map, assets_dir: &str, is_local_game: bool) -> Vec<Handle<Player>> {
     use nodes::{Camera, Decoration, Fxses, SceneRenderer};
 
-    let resources_loading = start_coroutine({
-        let assets_dir = assets_dir.to_string();
-        async move {
-            let resources = Resources::new(&assets_dir).await.unwrap();
-            storage::store(resources);
-        }
-    });
-
-    while !resources_loading.is_done() {
-        clear_background(BLACK);
-        draw_text(
-            &format!(
-                "Loading resources {}",
-                ".".repeat(((get_time() * 2.0) as usize) % 4)
-            ),
-            screen_width() / 2.0 - 160.0,
-            screen_height() / 2.0,
-            40.,
-            WHITE,
-        );
-
-        next_frame().await;
-    }
-
-    let battle_music = load_sound(&format!("{}/music/fish tide.ogg", assets_dir))
-        .await
-        .unwrap();
+    let resources = storage::get::<Resources>();
+    let battle_music = resources.music["fish_tide"];
 
     audio::play_sound(
         battle_music,

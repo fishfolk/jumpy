@@ -23,7 +23,12 @@ use crate::{
     editor::DEFAULT_TOOL_ICON_TEXTURE_ID,
     json,
 };
-use nanoserde::Toml;
+
+#[derive(Serialize, Deserialize)]
+struct SoundResource {
+    id: String,
+    path: String,
+}
 
 #[derive(Serialize, Deserialize)]
 struct TextureResource {
@@ -57,26 +62,32 @@ pub struct MapEntry {
 }
 
 pub struct Resources {
-    pub hit_fxses: EmittersCache,
-    pub explosion_fxses: EmittersCache,
-    pub life_ui_explosion_fxses: EmittersCache,
-    pub fx_explosion_fire: Emitter,
-    pub fx_explosion_particles: EmittersCache,
-    pub fx_smoke: Emitter,
-    pub jump_sound: Sound,
-    pub shoot_sound: Sound,
-    pub sword_sound: Sound,
-    pub pickup_sound: Sound,
-    pub player_landing_sound: Sound,
-    pub player_throw_sound: Sound,
-    pub player_die_sound: Sound,
-    pub items_fxses: HashMap<String, EmittersCache>,
+    // These should be moved somewhere else.
+    // Optimally, Resources should hold only game data and assets, not state, like these
+    // Emitters and EmitterCaches...
+    pub hit_emitters: EmittersCache,
+    pub explosion_emitters: EmittersCache,
+    pub life_ui_explosion_emitters: EmittersCache,
+    pub explosion_fire_emitter: Emitter,
+    pub explosion_particle_emitters: EmittersCache,
+    pub smoke_emitter: Emitter,
+    pub item_emitters: HashMap<String, EmittersCache>,
 
+    pub sounds: HashMap<String, Sound>,
+    pub music: HashMap<String, Sound>,
     pub textures: HashMap<String, TextureEntry>,
     pub maps: Vec<MapEntry>,
 }
 
 impl Resources {
+    const EFFECTS_DIR: &'static str = "effects";
+
+    const SOUNDS_DIR: &'static str = "sounds";
+    const SOUNDS_FILE: &'static str = "sounds.ron";
+
+    const MUSIC_DIR: &'static str = "music";
+    const MUSIC_FILE: &'static str = "music.ron";
+
     const TEXTURES_DIR: &'static str = "textures";
     const TEXTURES_FILE: &'static str = "textures.ron";
 
@@ -85,117 +96,148 @@ impl Resources {
 
     // TODO: fix macroquad error type here
     pub async fn new(assets_dir: &str) -> Result<Resources, macroquad::prelude::FileError> {
-        let jump_sound = load_sound(&format!("{}/sounds/jump.wav", assets_dir)).await?;
-        let shoot_sound = load_sound(&format!("{}/sounds/shoot.ogg", assets_dir)).await?;
-        let sword_sound = load_sound(&format!("{}/sounds/sword.wav", assets_dir)).await?;
-        let pickup_sound = load_sound(&format!("{}/sounds/pickup.wav", assets_dir)).await?;
+        let assets_dir = Path::new(assets_dir);
 
-        let player_landing_sound =
-            load_sound(&format!("{}/sounds/player_landing.wav", assets_dir)).await?;
-        let player_throw_sound =
-            load_sound(&format!("{}/sounds/throw_noiz.wav", assets_dir)).await?;
-        let player_die_sound =
-            load_sound(&format!("{}/sounds/fish_fillet.wav", assets_dir)).await?;
+        let effects_dir = assets_dir.join(Self::EFFECTS_DIR);
 
-        const HIT_FX: &str = include_str!("../assets/fxses/hit.json");
-        const EXPLOSION_FX: &str = include_str!("../assets/fxses/explosion.json");
-        const LIFE_UI_FX: &str = include_str!("../assets/fxses/life_ui_explosion.json");
-        const CANNONBALL_HIT_FX: &str = include_str!("../assets/fxses/canonball_hit.json");
-        const EXPLOSION_PARTICLES: &str = include_str!("../assets/fxses/explosion_particles.json");
-        const SMOKE_FX: &str = include_str!("../assets/fxses/smoke.json");
+        let hit_emitters = {
+            let file_path = effects_dir.join("hit.json");
+            let json = load_string(&file_path.to_string_lossy()).await?;
+            EmittersCache::new(nanoserde::DeJson::deserialize_json(&json).unwrap())
+        };
 
-        let hit_fxses = EmittersCache::new(nanoserde::DeJson::deserialize_json(HIT_FX).unwrap());
-        let explosion_fxses =
-            EmittersCache::new(nanoserde::DeJson::deserialize_json(EXPLOSION_FX).unwrap());
-        let life_ui_explosion_fxses =
-            EmittersCache::new(nanoserde::DeJson::deserialize_json(LIFE_UI_FX).unwrap());
-        let fx_explosion_fire =
-            Emitter::new(nanoserde::DeJson::deserialize_json(CANNONBALL_HIT_FX).unwrap());
-        let fx_explosion_particles =
-            EmittersCache::new(nanoserde::DeJson::deserialize_json(EXPLOSION_PARTICLES).unwrap());
-        let fx_smoke = Emitter::new(nanoserde::DeJson::deserialize_json(SMOKE_FX).unwrap());
+        let explosion_emitters = {
+            let file_path = effects_dir.join("explosion.json");
+            let json = load_string(&file_path.to_string_lossy()).await?;
+            EmittersCache::new(nanoserde::DeJson::deserialize_json(&json).unwrap())
+        };
 
-        let mut items_fxses = HashMap::new();
-        for item in ITEMS {
-            for (id, path) in item.fxses {
-                let json = load_string(path).await?;
-                let emitter_cache =
-                    EmittersCache::new(nanoserde::DeJson::deserialize_json(&json).unwrap());
-                items_fxses.insert(
-                    format!("{}/{}", item.tiled_name, id.to_string()),
-                    emitter_cache,
-                );
+        let life_ui_explosion_emitters = {
+            let file_path = effects_dir.join("life_ui_explosion.json");
+            let json = load_string(&file_path.to_string_lossy()).await?;
+            EmittersCache::new(nanoserde::DeJson::deserialize_json(&json).unwrap())
+        };
+
+        let explosion_fire_emitter = {
+            let file_path = effects_dir.join("cannonball_hit.json");
+            let json = load_string(&file_path.to_string_lossy()).await?;
+            Emitter::new(nanoserde::DeJson::deserialize_json(&json).unwrap())
+        };
+
+        let explosion_particle_emitters = {
+            let file_path = effects_dir.join("explosion_particles.json");
+            let json = load_string(&file_path.to_string_lossy()).await?;
+            EmittersCache::new(nanoserde::DeJson::deserialize_json(&json).unwrap())
+        };
+
+        let smoke_emitter = {
+            let file_path = effects_dir.join("smoke.json");
+            let json = load_string(&file_path.to_string_lossy()).await?;
+            Emitter::new(nanoserde::DeJson::deserialize_json(&json).unwrap())
+        };
+
+        let mut sounds = HashMap::new();
+
+        {
+            let sounds_dir = assets_dir.join(Self::SOUNDS_DIR);
+            let sounds_file = sounds_dir.join(Self::SOUNDS_FILE);
+
+            let bytes = load_file(&sounds_file.to_string_lossy()).await?;
+            let sound_resources: Vec<SoundResource> = ron::de::from_bytes(&bytes).unwrap();
+
+            for res in sound_resources {
+                let file_path = sounds_dir.join(res.path);
+
+                let sound = load_sound(&file_path.to_string_lossy()).await?;
+
+                sounds.insert(res.id, sound);
             }
         }
 
-        let assets_dir = Path::new(assets_dir);
+        let mut music = HashMap::new();
+
+        {
+            let music_dir = assets_dir.join(Self::MUSIC_DIR);
+            let music_file = music_dir.join(Self::MUSIC_FILE);
+
+            let bytes = load_file(&music_file.to_string_lossy()).await?;
+            let music_resources: Vec<SoundResource> = ron::de::from_bytes(&bytes).unwrap();
+
+            for res in music_resources {
+                let file_path = music_dir.join(res.path);
+
+                let sound = load_sound(&file_path.to_string_lossy()).await?;
+
+                music.insert(res.id, sound);
+            }
+        }
 
         let mut textures = HashMap::new();
 
-        let textures_dir = assets_dir.join(Self::TEXTURES_DIR);
-        let textures_file = textures_dir.join(Self::TEXTURES_FILE);
+        {
+            let textures_dir = assets_dir.join(Self::TEXTURES_DIR);
+            let textures_file = textures_dir.join(Self::TEXTURES_FILE);
 
-        let bytes = load_file(&textures_file.to_string_lossy()).await?;
-        let texture_resources: Vec<TextureResource> = ron::de::from_bytes(&bytes).unwrap();
+            let bytes = load_file(&textures_file.to_string_lossy()).await?;
+            let texture_resources: Vec<TextureResource> = ron::de::from_bytes(&bytes).unwrap();
 
-        for res in texture_resources {
-            let file_path = textures_dir.join(res.path);
+            for res in texture_resources {
+                let file_path = textures_dir.join(res.path);
 
-            let texture = load_texture(&file_path.to_string_lossy()).await?;
-            texture.set_filter(res.filter_mode);
+                let texture = load_texture(&file_path.to_string_lossy()).await?;
+                texture.set_filter(res.filter_mode);
 
-            let mut frame_size = res.frame_size;
-            if frame_size == UVec2::ZERO {
-                frame_size = uvec2(texture.width() as u32, texture.height() as u32)
+                let mut frame_size = res.frame_size;
+                if frame_size == UVec2::ZERO {
+                    frame_size = uvec2(texture.width() as u32, texture.height() as u32)
+                }
+
+                let entry = TextureEntry {
+                    texture,
+                    frame_size,
+                };
+
+                textures.insert(res.id, entry);
             }
-
-            let entry = TextureEntry {
-                texture,
-                frame_size,
-            };
-
-            textures.insert(res.id, entry);
         }
 
         let mut maps = Vec::new();
 
-        let maps_dir = assets_dir.join(Self::MAPS_DIR);
-        let maps_file = maps_dir.join(Self::MAPS_FILE);
+        {
+            let maps_dir = assets_dir.join(Self::MAPS_DIR);
+            let maps_file = maps_dir.join(Self::MAPS_FILE);
 
-        let bytes= load_file(&maps_file.to_string_lossy()).await?;
-        let map_resources: Vec<MapResource> = ron::de::from_bytes(&bytes).unwrap();
+            let bytes = load_file(&maps_file.to_string_lossy()).await?;
+            let map_resources: Vec<MapResource> = ron::de::from_bytes(&bytes).unwrap();
 
-        for res in map_resources {
-            let map_path = maps_dir.join(res.path);
-            let preview_path = maps_dir.join(res.preview_path);
+            for res in map_resources {
+                let map_path = maps_dir.join(res.path);
+                let preview_path = maps_dir.join(res.preview_path);
 
-            let preview = load_texture(&preview_path.to_string_lossy()).await?;
+                let preview = load_texture(&preview_path.to_string_lossy()).await?;
 
-            let entry = MapEntry {
-                path: map_path.to_string_lossy().into(),
-                preview,
-                is_tiled: res.is_tiled,
-            };
+                let entry = MapEntry {
+                    path: map_path.to_string_lossy().into(),
+                    preview,
+                    is_tiled: res.is_tiled,
+                };
 
-            maps.push(entry)
+                maps.push(entry)
+            }
         }
 
         #[allow(clippy::inconsistent_struct_constructor)]
             Ok(Resources {
-            hit_fxses,
-            explosion_fxses,
-            life_ui_explosion_fxses,
-            fx_smoke,
-            items_fxses,
-            jump_sound,
-            shoot_sound,
-            sword_sound,
-            pickup_sound,
-            player_landing_sound,
-            player_throw_sound,
-            player_die_sound,
-            fx_explosion_fire,
-            fx_explosion_particles,
+            hit_emitters,
+            explosion_emitters,
+            life_ui_explosion_emitters,
+            smoke_emitter,
+            explosion_fire_emitter,
+            explosion_particle_emitters,
+            item_emitters: HashMap::new(),
+
+            sounds,
+            music,
             textures,
             maps,
         })

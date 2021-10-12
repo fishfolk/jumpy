@@ -92,7 +92,7 @@ impl FlyingGalleon {
                     .shake_noise(1.0, 10, 1.);
                 {
                     let mut resources = storage::get_mut::<Resources>();
-                    resources.hit_fxses.spawn(player.body.pos);
+                    resources.hit_emitters.spawn(player.body.pos);
                 }
                 let direction = self.pos.x > (player.body.pos.x + Self::KNOCKBACK);
                 player.kill(direction);

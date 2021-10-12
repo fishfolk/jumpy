@@ -159,8 +159,10 @@ impl MachineGun {
             //         .shake();
             // }
             {
-                let resources = storage::get_mut::<Resources>();
-                play_sound_once(resources.shoot_sound);
+                let resources = storage::get::<Resources>();
+                let shoot_sound = resources.sounds["shoot"];
+
+                play_sound_once(shoot_sound);
 
                 let node = &mut *scene::get_node(node);
                 let player = &mut *scene::get_node(player);

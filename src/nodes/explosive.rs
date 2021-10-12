@@ -155,17 +155,17 @@ pub fn create_explosion(position: Vec2, radius: f32) {
             r += 10.0 / (r + 1.);
             let angle = gen_range(0.0, f32::consts::PI * 2.);
             resources
-                .fx_explosion_fire
+                .explosion_fire_emitter
                 .emit(position + Vec2::new(angle.cos(), angle.sin()) * r, 1);
             //Explosion
         }
 
-        resources.fx_explosion_particles.spawn(position); //Bits/particles
+        resources.explosion_particle_emitters.spawn(position); //Bits/particles
 
         let mut a = 0.0;
         while a < f32::consts::PI * 2.0 {
             resources
-                .fx_smoke
+                .smoke_emitter
                 .emit(position + Vec2::new(a.cos(), a.sin()) * (radius - 15.0), 1); //Smoke at the edges of the explosion
             a += 4.0 / radius;
         }

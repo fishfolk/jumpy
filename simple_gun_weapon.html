@@ -1,0 +1,408 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js navy">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Simple Gun Weapon - Fish Fight Documentation</title>
+        
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "navy";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('navy')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="gameplay.html"><strong aria-hidden="true">1.</strong> Gameplay</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="controls.html"><strong aria-hidden="true">1.1.</strong> Controls</a></li><li class="chapter-item expanded "><a href="items.html"><strong aria-hidden="true">1.2.</strong> Items</a></li><li class="chapter-item expanded "><a href="multiplayer.html"><strong aria-hidden="true">1.3.</strong> Multiplayer</a></li></ol></li><li class="chapter-item expanded "><a href="mechanics.html"><strong aria-hidden="true">2.</strong> Mechanics</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="physics.html"><strong aria-hidden="true">2.1.</strong> Physics</a></li><li class="chapter-item expanded "><a href="environmental_weapons.html"><strong aria-hidden="true">2.2.</strong> Environmental Weapons</a></li><li class="chapter-item expanded "><a href="netcode.html"><strong aria-hidden="true">2.3.</strong> Netcode</a></li></ol></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">3.</strong> Contributing</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="simple_gun_weapon.html" class="active"><strong aria-hidden="true">3.1.</strong> Simple Gun Weapon</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                        
+                    </div>
+
+                    <h1 class="menu-title">Fish Fight Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        
+                        <a href="https://github.com/fishfight/FishFight" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1><a class="header" href="#simple-gun-weapon" id="simple-gun-weapon">Simple Gun Weapon</a></h1>
+<p>This section will walk through the process of adding a new gun weapon to Fish Fight, using a sniper weapon as an example. The weapon added in this section will be an instance of the <code>Gun</code> struct.</p>
+<h2><a class="header" href="#planning" id="planning">Planning</a></h2>
+<p>Before jumping into the games code, it is a good idea to do some planning about what you want your new weapon to do. I determined that my sniper weapon should have the following properties:</p>
+<ul>
+<li>High bullet speed</li>
+<li>Large recoil</li>
+<li>2 bullets</li>
+</ul>
+<h2><a class="header" href="#programming" id="programming">Programming</a></h2>
+<p>Open your cloned &quot;FishFight&quot; directory using your code editor of choice.</p>
+<h3><a class="header" href="#item-file" id="item-file">Item File</a></h3>
+<p>Open <code>src/items.rs</code> and add a new module called <code>your_weapon</code> at the top of the file. Below is the code for adding the sniper module:</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>mod sniper;
+<span class="boring">}
+</span></code></pre></pre>
+<p>Create a new rust file in <code>src/items</code> called <code>your_weapon.rs</code>. I'll name the item file for this example <code>sniper.rs</code>.</p>
+<p>At the top of the file, add the following imports:</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>use macroquad::{
+    experimental::{
+        animation::{AnimatedSprite, Animation},
+        collections::storage,
+        scene::{self, HandleUntyped},
+    },
+    prelude::*,
+};
+
+use crate::{
+    components::{GunlikeAnimation, PhysicsBody, ThrowableItem},
+    items::gun::Gun,
+    Resources,
+};
+<span class="boring">}
+</span></code></pre></pre>
+<p>Next, define some constant values for your new item. The following are the values that I came up with for the sniper rifle, but you should play around with your own values until you find values that you like for your item.</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>const SNIPER_COLLIDER_WIDTH: f32 = 48.0;
+const SNIPER_COLLIDER_HEIGHT: f32 = 32.0;
+const SNIPER_RECOIL: f32 = 1400.0;
+const SNIPER_BULLETS: i32 = 2;
+const SNIPER_BULLET_SPEED: f32 = 1200.0;
+<span class="boring">}
+</span></code></pre></pre>
+<p>Next, create an <code>impl Gun</code> block and add a public function called <code>spawn_your_weapon</code>, for the sniper weapon I'm calling this function <code>spawn_sniper</code>. Then, add code to this function to spawn your new weapon. It should be very similar to the code I have here, but with your weapon's values instead of the sniper values. I copied the following code from <code>src/items/musket.rs</code> and changed the values to suit for my sniper weapon.</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>impl Gun {
+    pub fn spawn_sniper(pos: Vec2) -&gt; HandleUntyped {
+        let mut resources = storage::get_mut::&lt;Resources&gt;();
+
+        let gun_sprite = GunlikeAnimation::new(
+            AnimatedSprite::new(
+                92,
+                32,
+                &amp;[
+                    Animation {
+                        name: &quot;idle&quot;.to_string(),
+                        row: 0,
+                        frames: 1,
+                        fps: 1,
+                    },
+                    Animation {
+                        name: &quot;shoot&quot;.to_string(),
+                        row: 1,
+                        frames: 3,
+                        fps: 15,
+                    },
+                ],
+                false,
+            ),
+            resources.items_textures[&quot;sniper/gun&quot;], // Change this to `your_weapon/gun`
+            SNIPER_COLLIDER_WIDTH,
+        );
+
+        let gun_fx_sprite = GunlikeAnimation::new(
+            AnimatedSprite::new(
+                92,
+                32,
+                &amp;[Animation {
+                    name: &quot;shoot&quot;.to_string(),
+                    row: 2,
+                    frames: 3,
+                    fps: 15,
+                }],
+                false,
+            ),
+            resources.items_textures[&quot;sniper/gun&quot;], // Change this to `your_weapon/gun`
+            SNIPER_COLLIDER_WIDTH,
+        );
+
+        scene::add_node(Gun {
+            gun_sprite,
+            gun_fx_sprite,
+            gun_fx: false,
+            body: PhysicsBody::new(
+                &amp;mut resources.collision_world,
+                pos,
+                0.0,
+                vec2(SNIPER_COLLIDER_WIDTH, SNIPER_COLLIDER_HEIGHT),
+            ),
+            throwable: ThrowableItem::default(),
+            // Use your weapon's constants here
+            bullets: SNIPER_BULLETS,
+            max_bullets: SNIPER_BULLETS,
+            bullet_speed: SNIPER_BULLET_SPEED,
+            collider_width: SNIPER_COLLIDER_WIDTH,
+            collider_height: SNIPER_COLLIDER_HEIGHT,
+            recoil: SNIPER_RECOIL,
+        })
+        .untyped()
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<h3><a class="header" href="#items-array" id="items-array">Items Array</a></h3>
+<p>Open <code>src/items.rs</code> and add find the <code>ITEMS</code> array. Add an entry to this array for your weapon using your new spawn function. I copied the <code>Item</code> entry for the musket weapon and changed the <code>tiled_name</code> and <code>constructor</code> fields to <code>sniper</code> and <code>gun::Gun::spawn_sniper</code> respectively. The <code>tiled_name</code> field is used identifying the item when designing levels. The <code>constructor</code> is the function to spawn the item into the game. We programmed this spawn function the previous <a href="#item-file">Item File</a> section. The following is the entry for the sniper weapon:</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>Item {
+    tiled_name: &quot;sniper&quot;,
+    constructor: gun::Gun::spawn_sniper,
+    tiled_offset: (-35., -25.),
+    textures: &amp;[(&quot;gun&quot;, &quot;assets/Whale/Gun(92x32).png&quot;)], // Temporarily using the existing gun texture
+    sounds: &amp;[],
+    fxses: &amp;[],
+    network_ready: true,
+},
+<span class="boring">}
+</span></code></pre></pre>
+<p>If you like, you can skip to the testing section to test your new weapon, but if you haven't added a new texture or modified an existing texture, you will not be able to visually recognize your item before picking it up. For this reason, I recommend you continue to the <a href="#texture">Texture</a> section next.</p>
+<h2><a class="header" href="#texture" id="texture">Texture</a></h2>
+<p>It is important to make sure that your weapon is able to be visually distinguished between the other weapons in the game. When I added the sniper rifle to the <code>ITEMS</code> array, I copied all of the data from existing musket weapon, changing only the <code>tiled_name</code> and <code>constructor</code>. To give my sniper weapon a new texture, I will also need to change the <code>gun</code> texture in the <code>textures</code> field. Currently, the <code>gun</code> texture is set to <code>assets/Whale/Gun(92x32).png</code>. I'll open this file with my pixel editor of choice, <a href="https://www.aseprite.org/">Aseprite</a> (<a href="https://www.gimp.org/">GIMP</a> would also work fine).</p>
+<p><img src="assets/open_gun_texture.png" alt="open_gun_texture" /></p>
+<p>I don't consider myself an artist so I'm just going to modify the hue of the golden part of the gun texture to a reddish color. First I'll select a color range and adjust the threshold to select only the golden part of the gun texture.</p>
+<p><img src="assets/select_gun_colors.png" alt="select_gun_colors" /></p>
+<p>Then I'll adjust the hue of the selected colors to turn all of the gold color red.</p>
+<p><img src="assets/adjust_gun_hue.png" alt="adjust_gun_hue" /></p>
+<p>This texture is now distinguishable from the other gun textures in the game. I'll save this new texture into the project's <code>assets/Whale</code> directory as <code>Sniper(92x32).png</code>.</p>
+<p>This, of course, is just one way of distinguishing the texture from the other textures in the game. Feel free to copy and modify textures using your own methods, or if you feel inclined, make your own unique texture for your weapon!</p>
+<p>Now all I have to do to put my new texture in the game is to change value of the gun texture for the sniper entry in the <code>ITEMS</code> array in <code>src/items.rs</code>. Here is the modified sniper entry using the new texture:</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>Item {
+    tiled_name: &quot;sniper&quot;,
+    constructor: gun::Gun::spawn_sniper,
+    tiled_offset: (-35., -25.),
+    textures: &amp;[(&quot;gun&quot;, &quot;assets/Whale/Sniper(92x32).png&quot;)],
+    sounds: &amp;[],
+    fxses: &amp;[],
+    network_ready: true,
+},
+<span class="boring">}
+</span></code></pre></pre>
+<h2><a class="header" href="#testing" id="testing">Testing</a></h2>
+<p>The last thing we need to do is put our new weapon in the game and test it! Fish Fight's levels are defined in json files in the <code>assets/levels</code> directory. For testing items, there is a test level in the game defined in a file called <code>test_level.json</code>. Open this file.</p>
+<p>In this file you will see a long list of item entries containing data about items that are placed in the level. The easiest way to add your new weapon to this level is to replace the <code>name</code> field of one of other items currently in the level with the name of your new weapon (referred to as <code>your_weapon</code> throughout this chapter). Here is the entry for my sniper weapon.</p>
+<pre><code class="language-json">...
+{
+    &quot;draworder&quot;:&quot;topdown&quot;,
+    &quot;id&quot;:5,
+    &quot;name&quot;:&quot;items&quot;,
+    &quot;objects&quot;:[
+        ...
+        {
+            &quot;height&quot;:0,
+            &quot;id&quot;:147,
+            &quot;name&quot;:&quot;sniper&quot;,
+            &quot;point&quot;:true,
+            &quot;rotation&quot;:0,
+            &quot;type&quot;:&quot;&quot;,
+            &quot;visible&quot;:true,
+            &quot;width&quot;:0,
+            &quot;x&quot;:400,
+            &quot;y&quot;:690
+        },
+        ...
+    ],
+    ...
+}
+</code></pre>
+<p>If you followed all of these steps correctly, your new weapon should be in the game. Run the game using <code>cargo run</code>, then select the test level. You should see your gun in the level and be able to try it out.</p>
+<p><img src="assets/sniper_weapon_test.gif" alt="sniper_weapon_test" /></p>
+<p>Now all you need to do is modify the values in <code>src/items/your_weapon.rs</code> until the weapon feels right to you! Then you are ready to make a pull request.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                            <a rel="prev" href="contributing.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                    <a rel="prev" href="contributing.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+        
+        
+        <script type="text/javascript">
+            window.playpen_copyable = true;
+        </script>
+        
+
+        
+
+        
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+
+    </body>
+</html>

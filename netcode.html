@@ -1,0 +1,288 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js navy">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Netcode - Fish Fight Documentation</title>
+        
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "navy";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('navy')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="gameplay.html"><strong aria-hidden="true">1.</strong> Gameplay</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="controls.html"><strong aria-hidden="true">1.1.</strong> Controls</a></li><li class="chapter-item expanded "><a href="items.html"><strong aria-hidden="true">1.2.</strong> Items</a></li><li class="chapter-item expanded "><a href="multiplayer.html"><strong aria-hidden="true">1.3.</strong> Multiplayer</a></li></ol></li><li class="chapter-item expanded "><a href="mechanics.html"><strong aria-hidden="true">2.</strong> Mechanics</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="physics.html"><strong aria-hidden="true">2.1.</strong> Physics</a></li><li class="chapter-item expanded "><a href="environmental_weapons.html"><strong aria-hidden="true">2.2.</strong> Environmental Weapons</a></li><li class="chapter-item expanded "><a href="netcode.html" class="active"><strong aria-hidden="true">2.3.</strong> Netcode</a></li></ol></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">3.</strong> Contributing</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="simple_gun_weapon.html"><strong aria-hidden="true">3.1.</strong> Simple Gun Weapon</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                        
+                    </div>
+
+                    <h1 class="menu-title">Fish Fight Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        
+                        <a href="https://github.com/fishfight/FishFight" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1><a class="header" href="#netcode" id="netcode">Netcode</a></h1>
+<p>The netcode in <a href="https://github.com/fishfight/FishFight">Fish Fight</a> is something called delay-based netcode by many players, but is more  specifically deterministic lockstep. A peer-to-peer architecture that is completely deterministic.</p>
+<p>This video was the main inspiration for our netcode architecture:</p>
+<iframe src="https://www.youtube.com/embed/7jb0FOcImdg" allowfullscreen="" width="500" height="281" frameborder="0"></iframe>
+<p>What is described from 6:09 to 7:15 is the current state of our  netcode. The video proceeds to explain the limitations of this approach  and how they iterated from there to what can more accurately be called <a href="https://en.wikipedia.org/wiki/GGPO">GGPO</a>. That is where we are headed as well, beginning with a minimal  foundation that we have a full grasp and agency over. From the  intentionally naive “Player Unhappy” model we will gradually work our  way towards “Player Very Happy”.</p>
+<h2><a class="header" href="#terms-and-concepts" id="terms-and-concepts">Terms and Concepts</a></h2>
+<p>Before we go any further, let’s explain some terms and concepts.</p>
+<p>First off, what makes online multiplayer games difficult to make?  There are two main issues: (1) The latency (travel time) for information over the internet, and (2) when circumventing that, ensuring that  nobody can cheat while also fairly integrating everyone’s input. What’s  important isn’t that the solution is ”correct”, but that it feels great  to your players. Game networking consists largely of clever tricks and  smoke and mirrors, all to disguise the inherent limits of space-time.</p>
+<p>A peer/client is someone who joins an online game session. (We will  use these terms interchangeably, but there might be reasons to  differentiate the two). For example, when you play Minecraft, you join  servers as a client. Most games these days use a server-client  architecture, where clients will join a server that handles everything  in the online game session, and streams necessary data to the clients.</p>
+<p>However, this isn’t the only way of handling things. Indeed, before  the server-client architecture became commonplace, there was the  peer-to-peer (P2P) architecture. Instead of relying on an authoritative  server to tell the clients what’s happening, the peers instead tell EACH OTHER what is happening. This means that any one peer has to send out  data to every single other peer, and as such the required bandwidth  scales linearly as more players join. For this reason most games just  use the server-client system for anything more than 6-8 players.  However, for a game like Fish Fight which will only have 2-4 players in  any one given match, a peer-to-peer system will make more sense.</p>
+<p>This has several benefits. First and foremost, there’s no need to pay for hosting. While for a small project like Fish Fight, with a  relatively simple simulation, that cost would likely be low. But there’s a plethora of problems that must be addressed: that cost isn’t zero and still has to be paid somehow, and if the game gets immensely popular  the price will quickly skyrocket. And then you must also write a load  distribution system, and DDOS protection, the list goes on. A  peer-to-peer architecture offloads all the costs to the players, who are in any case already running the simulation. This also means that you  don’t need to maintain two separate client and server codebases, that  must exactly line up in behaviour. Peer-to-peer might even offer lower  latency, since the packets don’t have to go back and forth through a  server.</p>
+<p>This is because hosting servers is EXPENSIVE. For example, hosting a  Minecraft server on Minecraft Realms is $8 dollars per month. That’s not much, but it's only one session. If we assume that this will “only”  have a max player count of 40 people per day, that means we have to host 10 servers. That means $80 dollars per month. This doesn’t even take  into account all of the other things we might have to worry about when  developing a server-client architecture, like having to maintain two  different codebases at the same time.</p>
+<p>As such, making a peer-to-peer game makes sense at this scale.  However, any one who wants to make an online multiplayer game MUST  understand that every multiplayer solution is specialized to your  use-case. The server-client architecture has many other benefits, mainly scalability. But also, in Fish Fight there is no persistent state or  complex systems that must always be online. The ”servers” in P2P go  offline as soon as a player quits.</p>
+<p>The Authority is whoever decides what is true, and can overwrite  anyone else’s state. The authority isn’t necessarily one party, but  rather authority is held over singular objects or values. For example, a player might hold authority over a ball they are kicking, so they don’t have to ask the server for confirmation before interacting resulting in a snappier experience. This isn’t exactly applicable in a lockstep P2P  architecture, but is foundational for client-servers so you’ll likely  see the term if you ever read anything about networking. In those cases  the server is almost always the authority, so the players can’t cheat.</p>
+<p>Listen Servers are a network architecture/topology not to be confused with peer-to-peer. It is simply a client-server architecture where one  of the clients hosts the server. This combines the cost benefits of a  P2P topology while also allowing for better lag compensation methods. It still requires the same bandwidth as P2P, but only for the client who  is running the server so the game is no longer capped by the slowest  connection. Fish Fight might eventually move to this topology or move to a P2P model.</p>
+<p>Ping/Latency/Round Trip Time all relate to the time it takes for a  message to travel over a network. Latency is the time it takes to travel from the sender to the recipient, while Round Trip Time (RTT) and Ping  refers to the time it takes both back and forth. RTT however is not  necessarily twice the latency, although often very close. On the  network, different conditions and even routes means that times will  vary.</p>
+<p>Jitter is related to latency, and is the amount by which it varies. A bad connection does not only have long latency, but the time it takes  for packets to arrive will also vary greatly. This is a major hindrance  when you want data to arrive in a smooth and regular manner, such as  frames in a video, sound in a voice chat or input for a player. This is  managed by adding a Buffer, which stores values for a short while and  then dispenses them like an even flow. The tradeoff is that the fastest  packets are slowed down to be in time with the slowest packets, leading  to an overall slowdown.</p>
+<p>Then there’s Packet Loss, where a packet gets completely lost at some crossroad of the internet. Bad connections also means that not all  packets will arrive. This is countered by adding Redundancy. Common ways to compensate is to send packets multiple times, so at least one is  likely to arrive, or send a confirmation once a packet is received. If  the confirmation is not received, resend the packet until you get a  response.</p>
+<p>For some slightly more low-level things that you can do without:</p>
+<p>TCP/UDP relates to packet loss. UDP is a transport protocol on the IP stack that “simply” sends messages, fire-and-forget, with no regard to  whether it arrives. TCP on the other hand has more overhead but  guarantees that your messages arrive. FishFight uses UDP for speed, and  implements a custom redundancy layer on top of that for extra  performance. TCP is often overkill, and a custom built solution almost  always works better since it can exploit the exact workings of your  game. Overhead is the extra data that is sent every packet, and adds to  the required bandwidth. By sending more data per packet, the overhead  will make up a smaller part of the data sent.</p>
+<h2><a class="header" href="#delayed-lockstep" id="delayed-lockstep">Delayed Lockstep</a></h2>
+<p>Anyways, we explained the peer-to-peer part, but you’re probably  wondering what is deterministic lockstep. Gaffer on Games already wrote  about this in <a href="https://gafferongames.com/post/deterministic_lockstep/">an article you can read here</a>, but in summary.</p>
+<p>At its very basics, lockstep works by collecting input from every  player and then simulating one frame once all input is gathered. In  other words, the only thing that gets transmitted between players is  their input. Input often can be packed into a single byte, and therefore very little bandwidth is required. When the input then arrives, the  simulation is advanced one step. Since everyone waits for input from  each other, everyone steps in sync.</p>
+<p>But however small the packets are, the latency will remain largely  the same. To wait for every player to send their input each time would  mean that the game can not update faster than (in the best case) 1/RTT/2 Hz (confirmation can be sent later). If you want your game loop to run  at 60Hz, you can’t have an RTT over 30 ms which is difficult to achieve  outside of wired and geographically small networks.</p>
+<p>Enter: Delayed Lockstep. The ”delay” part is an input buffer that  stores inputs for a short while before executing them. Now every input  packet also contains a frame timestamp so that all remote input can be  matched up with the local input and executed at the same frame. As input rolls in it is stored in the matching slot in a buffer, and by the time a frame should be simulated the corresponding buffer slot should be  filled with input from all players. The latest input is then popped off  the buffer, which shifts one frame forward, and the game progresses one  step. By maintaining this buffer (barring major interruptions) the game  always has input at hand, and can as soon and as quickly as it wants.  But as you might guess, there’s a tradeoff, and that is of course the  added delay. The remote players already have some delay so it doesn’t  matter too much, but the local input must be slowed down to match the  slowest player, leading to slower response to keyboard input. To  minimise this delay, the buffer should be as short as possible. To give  everyone’s input time to arrive the buffer must be as long as the  slowest players ping + their jitter. To improve the experience, your  networking should continually measure how long it is between the last  player’s input arriving and the buffer running out, and then adjusting  the buffer to be as short as possible. A too long buffer means  unnecessary input delay, but if the buffer is too short and runs out the game must freeze until input arrives. It’s a fine line to walk, but  it’s usually better to lean towards too long than having interruptions.</p>
+<p>However, there’s one big, or rather HUGE, issue: Determinism. Since  all that is sent between clients is their inputs, one requirement must  be met. Given the same world state and inputs, every time, on every  computer, OS, architecture, instruction set, etc. etc. the game must be  able to generate the exact same next frame. The tiniest deviation  accumulates and quickly makes the game unplayable. The main source of  nondeterminism is floating point arithmetic. Performing operations with  floating point numbers famously produces varying results, which depends  on many factors. Random number generators must also be kept in sync.</p>
+<p>We want to reduce the amount of data being sent online by each peer,  AND we don’t want to have people hack the game. The way to do this then, is to have players only send their inputs to each other, so that you  can’t have people change their position all willy nilly <a href="https://www.youtube.com/watch?v=yMVkh4BJe7k">like this</a>.</p>
+<p>However, we want to make sure that when inputs are sent to each  player, the game itself is fully deterministic: the same thing must  happen with the same inputs every time to prevent clients from desyncing with each other. There’s a lot of ways to handle this that we not going to get into, but I’m sure could make for a very interesting separate  article.</p>
+<p>For now, we are going to assume that the game itself is fully deterministic and just take a look at the code itself in <a href="https://github.com/fishfight/FishFight/blob/main/src/nodes/network.rs">src/nodes/network.rs</a>.</p>
+<p>We are first going to take a look at the data being sent online, the  packets. In this case, the packets in network.rs are called messages,  which is what they are so it makes sense.</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>#[derive(DeBin, SerBin)]
+enum Message {
+    Input {
+        // position in the buffer
+        pos: u8,
+        // current simulation frame
+        frame: u64,
+        input: Input,
+    },
+    Ack {
+        // last simulated frame
+        frame: u64,
+        /// bitmask for last 8 frames
+        /// one bit - one received input in a frames_buffer
+        ack: u8,
+    },
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Each message has two different parts to it. It has an Input struct,  which contains the position in the input buffer, the frame that the game is currently on, and the actual input. It also has an Ack struct (which is sent to assure the other clients they received their input) that  contains the frame the game is on. The Ack struct also has a bitflag  that tells what inputs they got from what clients.</p>
+<p>Now, the person reading this might wonder: why is there an input  buffer here? Well, we forgot to mention one thing. See, in the real  world, deterministic lockstep doesn’t actually work. Well, it doesn’t work the way you might think at first.</p>
+<p>Every packet being sent online is always going to have a little bit  of delay to it (latency) since there is going to be some distance that  is covered by the packet as it travels. Even at the speed of light, it  still takes a nanosecond for a packet to get across from one side of the room to the other.</p>
+<p>As such, if you were to have a naive interpretation of deterministic  lockstep without accounting for latency, it would just freeze every  single frame as it waits for inputs to appear.</p>
+<p>This image taken from <a href="https://ki.infil.net/w02-netcode.html">Infil’s article about the netcode in Killer Instinct</a> (with permission!) should show what that looks like.</p>
+<iframe src='https://gfycat.com/ifr/FaithfulImmaculateBug' frameborder='0' scrolling='no' allowfullscreen width='640' height='405'></iframe>
+<p>(Note that this isn’t actually delay-based netcode either, but that’s a discussion for another time)</p>
+<p>What instead is done is adding in an artificial delay to the program  itself, and having a buffer of input of a certain amount of frames. This allows the inputs time to arrive.</p>
+<iframe src='https://gfycat.com/ifr/ActiveFormalAtlanticsharpnosepuffer' frameborder='0' scrolling='no' allowfullscreen width='640' height='405'></iframe>
+<p>When the inputs come to the other players, it gets added into the  input buffer which also lasts a certain amount of frames. This means  that most moves and stuff feel noticeably slower with added delay.</p>
+<iframe src='https://gfycat.com/ifr/AffectionateDescriptiveAiredaleterrier' frameborder='0' scrolling='no' allowfullscreen width='640' height='405'></iframe>
+<hr />
+<p>This concludes part 1 of our &quot;Netcode Explained&quot; series. In part 2 we will do a code walk-through and piecemeal analysis.</p>
+<p><em>Written by Srayan “ValorZard” Jana and grufkok, with editing by Erlend</em></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                            <a rel="prev" href="environmental_weapons.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+
+                        
+                            <a rel="next" href="contributing.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                    <a rel="prev" href="environmental_weapons.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a rel="next" href="contributing.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+        
+        
+        <script type="text/javascript">
+            window.playpen_copyable = true;
+        </script>
+        
+
+        
+
+        
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+
+    </body>
+</html>

@@ -31,16 +31,6 @@ pub use effects::{
 
 pub use projectiles::Projectiles;
 
-// Move to appropriate module
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AnimationParams {
-    pub texture_id: String,
-    #[serde(with = "json::def_uvec2")]
-    pub tile_size: UVec2,
-    #[serde(with = "json::vec_animation")]
-    pub animations: Vec<Animation>,
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WeaponParams {
     pub id: String,

@@ -5,9 +5,7 @@ use macroquad::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    map::{
-        Map, MapLayer, MapLayerKind, MapObject, MapProperty, MapTile, MapTileset, ObjectLayerKind,
-    },
+    map::{Map, MapLayer, MapLayerKind, MapObject, MapProperty, MapTile, MapTileset},
     math::color_from_hex_string,
 };
 
@@ -109,13 +107,11 @@ pub struct TiledMap {
 }
 
 impl TiledMap {
-    pub const OBJECT_LAYER_KIND_PROP_KEY: &'static str = "object_layer_kind";
-    pub const SPAWN_POINTS_LAYER_PROP: &'static str = "spawn_points";
-    pub const ITEMS_LAYER_PROP: &'static str = "items";
-    pub const COLLISION_LAYER_PROP: &'static str = "collision";
-}
+    pub const TILE_LAYER_TYPE: &'static str = "tilelayer";
 
-impl TiledMap {
+    pub const COLLISION_LAYER_PROP: &'static str = "collision";
+    pub const TEXTURE_ID_PROP: &'static str = "texture_id";
+
     pub fn into_map(self, name: &str) -> Map {
         let background_color = if let Some(background_color) = self.backgroundcolor {
             color_from_hex_string(&background_color)
@@ -129,10 +125,12 @@ impl TiledMap {
                 tiled_tileset.imagewidth as u32,
                 tiled_tileset.imageheight as u32,
             );
+
             let tile_size = vec2(
                 tiled_tileset.tilewidth as f32,
                 tiled_tileset.tileheight as f32,
             );
+
             let grid_size = uvec2(
                 tiled_tileset.columns as u32,
                 tiled_tileset.tilecount as u32 / tiled_tileset.columns as u32,
@@ -149,17 +147,21 @@ impl TiledMap {
                 }
             }
 
+            let mut texture_id = None;
             let mut properties = HashMap::new();
+
             if let Some(tiled_props) = tiled_tileset.properties.as_ref() {
                 for tiled_prop in tiled_props {
                     let (name, prop) = pair_from_tiled_prop(tiled_prop.clone());
+                    if name == Self::TEXTURE_ID_PROP {
+                        if let MapProperty::String { value } = &prop {
+                            texture_id = Some(value.clone());
+                            continue;
+                        }
+                    }
+
                     properties.insert(name, prop);
                 }
-            }
-
-            let mut texture_id = None;
-            if let Some(MapProperty::String { value }) = properties.remove("texture_id") {
-                texture_id = Some(value)
             }
 
             let texture_id = texture_id.unwrap_or_else(|| {
@@ -170,7 +172,6 @@ impl TiledMap {
             });
 
             let tile_subdivisions = MapTileset::default_tile_subdivisions();
-
             let subdivision_grid_size = grid_size * tile_subdivisions;
 
             let subtile_cnt = (subdivision_grid_size.x * subdivision_grid_size.y) as usize;
@@ -268,35 +269,26 @@ impl TiledMap {
 
             let grid_size = uvec2(self.width, self.height);
 
-            let mut object_layer_kind = ObjectLayerKind::None;
+            let mut has_collision = false;
             let mut properties = HashMap::new();
             if let Some(tiled_props) = &tiled_layer.properties {
                 for tiled_prop in tiled_props {
                     let (name, prop) = pair_from_tiled_prop(tiled_prop.clone());
-                    if name == TiledMap::OBJECT_LAYER_KIND_PROP_KEY {
-                        if let MapProperty::String { value } = &prop {
-                            if value == TiledMap::ITEMS_LAYER_PROP {
-                                object_layer_kind = ObjectLayerKind::Items;
-                            } else if value == TiledMap::SPAWN_POINTS_LAYER_PROP {
-                                object_layer_kind = ObjectLayerKind::SpawnPoints;
-                            }
+                    if name == Self::COLLISION_LAYER_PROP {
+                        if let MapProperty::Bool { value } = &prop {
+                            has_collision = *value;
+                            continue;
                         }
-                    } else {
-                        properties.insert(name, prop);
                     }
+
+                    properties.insert(name, prop);
                 }
             }
 
-            let mut has_collision = false;
-            if let Some(MapProperty::Bool { value }) = properties.remove(Self::COLLISION_LAYER_PROP)
-            {
-                has_collision = value
-            }
-
-            let kind = if tiled_layer.layer_type == *"tilelayer" {
+            let kind = if tiled_layer.layer_type == *Self::TILE_LAYER_TYPE {
                 MapLayerKind::TileLayer
             } else {
-                MapLayerKind::ObjectLayer(object_layer_kind)
+                MapLayerKind::ObjectLayer
             };
 
             let layer = MapLayer {

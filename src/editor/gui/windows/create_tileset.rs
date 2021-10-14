@@ -74,7 +74,7 @@ impl Window for CreateTilesetWindow {
         _map: &Map,
         _ctx: &EditorContext,
     ) -> Option<EditorAction> {
-        let id = hash!("create_tileset_element");
+        let id = hash!("create_tileset_window");
 
         let resources = storage::get::<Resources>();
         let mut textures = resources

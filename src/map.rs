@@ -31,7 +31,7 @@ pub struct Map {
 }
 
 impl Map {
-    pub const DEFAULT_NAME: &'static str = "unnamed_map";
+    pub const DEFAULT_NAME: &'static str = "Unnamed Map";
 
     pub const PLATFORM_TILE_ATTRIBUTE: &'static str = "jumpthrough";
 
@@ -177,10 +177,14 @@ impl Map {
         );
 
         let resources = storage::get::<Resources>();
-        for layer_id in &self.draw_order {
-            if let Some(layer) = self.layers.get(layer_id) {
+
+        let mut draw_order = self.draw_order.clone();
+        draw_order.reverse();
+
+        for layer_id in draw_order {
+            if let Some(layer) = self.layers.get(&layer_id) {
                 if layer.is_visible && layer.kind == MapLayerKind::TileLayer {
-                    for (x, y, tile) in self.get_tiles(layer_id, Some(rect)) {
+                    for (x, y, tile) in self.get_tiles(&layer_id, Some(rect)) {
                         if let Some(tile) = tile {
                             let world_position = self.world_offset
                                 + vec2(x as f32 * self.tile_size.x, y as f32 * self.tile_size.y);
@@ -283,17 +287,9 @@ impl<'a> Iterator for MapTileIterator<'a> {
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum ObjectLayerKind {
-    None,
-    Items,
-    SpawnPoints,
-}
-
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
 pub enum MapLayerKind {
     TileLayer,
-    ObjectLayer(ObjectLayerKind),
+    ObjectLayer,
 }
 
 impl Default for MapLayerKind {
@@ -306,11 +302,13 @@ impl Default for MapLayerKind {
 pub struct MapLayer {
     pub id: String,
     pub kind: MapLayerKind,
-    #[serde(default, rename = "collision")]
+    #[serde(default)]
     pub has_collision: bool,
     #[serde(with = "json::def_uvec2")]
     pub grid_size: UVec2,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub tiles: Vec<Option<MapTile>>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub objects: Vec<MapObject>,
     #[serde(default)]
     pub is_visible: bool,
@@ -319,10 +317,22 @@ pub struct MapLayer {
 }
 
 impl MapLayer {
-    pub fn new(id: &str, kind: MapLayerKind) -> Self {
+    pub fn new(id: &str, kind: MapLayerKind, has_collision: bool, grid_size: UVec2) -> Self {
+        let has_collision = if kind == MapLayerKind::TileLayer {
+            has_collision
+        } else {
+            false
+        };
+
+        let mut tiles = Vec::new();
+        tiles.resize((grid_size.x * grid_size.y) as usize, None);
+
         MapLayer {
             id: id.to_string(),
             kind,
+            has_collision,
+            tiles,
+            grid_size,
             ..Default::default()
         }
     }
@@ -367,6 +377,17 @@ pub struct MapObject {
     pub size: Option<Vec2>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub properties: HashMap<String, MapProperty>,
+}
+
+impl MapObject {
+    pub fn new(name: &str, position: Vec2, size: Option<Vec2>) -> Self {
+        MapObject {
+            name: name.to_string(),
+            position,
+            size,
+            properties: HashMap::new(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

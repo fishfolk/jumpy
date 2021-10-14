@@ -167,7 +167,7 @@ impl Window for TilesetPropertiesWindow {
 
         let action = self
             .get_close_action()
-            .then(EditorAction::UpdateTilesetAutotileMask { id, autotile_mask });
+            .then(EditorAction::SetTilesetAutotileMask { id, autotile_mask });
 
         res.push(ButtonParams {
             label: "Save",

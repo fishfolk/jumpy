@@ -69,6 +69,8 @@ impl Gun {
             gun_sprite,
             gun_fx_sprite,
             gun_fx: false,
+            smoke_fx_counter: 0,
+            smoke_fx_timer: 0.0,
             body: PhysicsBody::new(
                 &mut world.collision_world,
                 pos,

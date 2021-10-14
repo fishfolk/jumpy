@@ -1,11 +1,11 @@
 use macroquad::{
-    color,
     audio::play_sound_once,
+    color,
     experimental::{
+        animation::{AnimatedSprite, Animation},
         collections::storage,
         coroutines::{start_coroutine, wait_seconds, Coroutine},
         scene::{self, Handle, HandleUntyped, RefMut},
-        animation::{AnimatedSprite, Animation}
     },
     prelude::*,
 };
@@ -21,6 +21,9 @@ pub struct Gun {
     pub gun_sprite: GunlikeAnimation,
     pub gun_fx_sprite: GunlikeAnimation,
     pub gun_fx: bool,
+
+    pub smoke_fx_counter: i8,
+    pub smoke_fx_timer: f32,
 
     pub max_bullets: i32,
     pub bullets: i32,
@@ -223,7 +226,7 @@ impl scene::Node for Gun {
         node.provides(Self::physics_capabilities());
     }
 
-    fn draw(node: RefMut<Self>) {
+    fn draw(mut node: RefMut<Self>) {
         node.gun_sprite
             .draw(node.body.pos, node.body.facing, node.body.angle);
 
@@ -234,6 +237,26 @@ impl scene::Node for Gun {
 
         if !node.throwable.thrown() {
             node.draw_hud();
+
+            if !node.gun_fx {
+                if node.smoke_fx_counter < 5 {
+                    if node.smoke_fx_timer > 0.15 {
+                        node.smoke_fx_timer = 0.1;
+                        node.smoke_fx_counter += 1;
+                        {
+                            let mut resources = storage::get_mut::<Resources>();
+
+                            resources.fx_gun_smoke.spawn(
+                                node.body.pos + vec2(16.0, 15.0) + node.body.facing_dir() * 32.0,
+                            );
+                        }
+                    }
+                    node.smoke_fx_timer += get_frame_time()
+                }
+            } else {
+                node.smoke_fx_timer = 0.0;
+                node.smoke_fx_counter = 0;
+            }
         }
     }
 

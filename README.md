@@ -66,3 +66,7 @@ Gamepad:
 - attack: `B`
 - jump: `A`
 - slide: `Down` + `Y`
+
+## Credits
+
+- Input Icons: [Kadith's Icons](https://kadith.itch.io/kadiths-free-icons) by Kadith

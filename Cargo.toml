@@ -14,7 +14,7 @@ macroquad-platformer = "0.1"
 macroquad-profiler = "0.1"
 macroquad-particles = {version = "0.1", features = ["nanoserde"] }
 
-quad-gamepad = "0.2.0-alpha"
+fishsticks = { git = "https://github.com/PotatoTech/fishsticks", features = ["bundled-sdl2"] }
 
 stunclient = { git = "https://github.com/not-fl3/rust-stunclient", default-features = false }
 

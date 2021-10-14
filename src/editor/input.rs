@@ -1,11 +1,11 @@
 use macroquad::{experimental::collections::storage, prelude::*};
 
-use quad_gamepad::GamepadButton;
+use fishsticks::{Axis, Button};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum EditorInputScheme {
     Keyboard,
-    Gamepad(usize),
+    Gamepad(fishsticks::GamepadId),
 }
 
 #[derive(Default, Debug, Clone, Copy)]
@@ -57,25 +57,46 @@ pub fn collect_editor_input(scheme: EditorInputScheme) -> EditorInput {
             }
         }
         EditorInputScheme::Gamepad(ix) => {
-            let gui_resources = storage::get_mut::<crate::gui::GuiResources>();
+            let gamepad_system = storage::get_mut::<fishsticks::GamepadContext>();
+            let gamepad = gamepad_system.gamepad(ix);
 
-            let state = gui_resources.gamepads.state(ix);
+            if let Some(gamepad) = gamepad {
+                input.action = gamepad.digital_inputs.activated(Button::B);
+                input.back = gamepad.digital_inputs.activated(Button::A);
+                input.context_menu = gamepad.digital_inputs.activated(Button::X);
 
-            input.action = state.digital_state[GamepadButton::B as usize];
-            input.back = state.digital_state[GamepadButton::A as usize];
-            input.context_menu = state.digital_state[GamepadButton::X as usize];
+                input.camera_pan = {
+                    let direction_x = match gamepad.analog_inputs.value(Axis::LeftX) {
+                        Some(value) => value.get(),
+                        None => 0.0,
+                    };
 
-            input.camera_pan = {
-                let direction = vec2(state.analog_state[0], state.analog_state[1]);
+                    let direction_y = match gamepad.analog_inputs.value(Axis::LeftX) {
+                        Some(value) => value.get(),
+                        None => 0.0,
+                    };
 
-                direction.normalize_or_zero()
-            };
+                    let direction = vec2(direction_x, direction_y);
 
-            input.cursor_move = {
-                let direction = vec2(state.analog_state[2], state.analog_state[3]);
+                    direction.normalize_or_zero()
+                };
 
-                direction.normalize_or_zero()
-            };
+                input.cursor_move = {
+                    let direction_x = match gamepad.analog_inputs.value(Axis::RightX) {
+                        Some(value) => value.get(),
+                        None => 0.0,
+                    };
+
+                    let direction_y = match gamepad.analog_inputs.value(Axis::RightY) {
+                        Some(value) => value.get(),
+                        None => 0.0,
+                    };
+
+                    let direction = vec2(direction_x, direction_y);
+
+                    direction.normalize_or_zero()
+                };
+            }
         }
     }
 

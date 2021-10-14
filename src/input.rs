@@ -3,7 +3,7 @@ use macroquad::{
     input::{is_key_down, KeyCode},
 };
 
-use quad_gamepad::GamepadButton;
+use fishsticks::{Axis, Button};
 
 use nanoserde::{DeBin, SerBin};
 
@@ -14,7 +14,7 @@ pub enum InputScheme {
     /// Left side of the keyboard, around Arrows
     KeyboardLeft,
     /// Gamepad index
-    Gamepad(usize),
+    Gamepad(fishsticks::GamepadId),
 }
 
 #[derive(Default, Debug, Clone, Copy, DeBin, SerBin)]
@@ -57,21 +57,33 @@ pub fn collect_input(scheme: InputScheme) -> Input {
     }
 
     if let InputScheme::Gamepad(ix) = scheme {
-        use GamepadButton::*;
+        let gamepad_system = storage::get_mut::<fishsticks::GamepadContext>();
+        let gamepad = gamepad_system.gamepad(ix);
 
-        let gui_resources = storage::get_mut::<crate::gui::GuiResources>();
+        if let Some(gamepad) = gamepad {
+            input.throw = gamepad.digital_inputs.activated(Button::X);
+            input.fire = gamepad.digital_inputs.activated(Button::B);
 
-        let state = gui_resources.gamepads.state(ix);
+            input.jump = gamepad.digital_inputs.activated(Button::A);
 
-        input.throw = state.digital_state[X as usize];
-        input.fire = state.digital_state[B as usize];
+            input.left = gamepad.digital_inputs.activated(Button::DPadLeft)
+                || matches!(
+                    gamepad.analog_inputs.value(Axis::LeftX),
+                    Some(value) if value.get() < -0.5
+                );
 
-        input.jump = state.digital_state[A as usize];
-        input.left = state.analog_state[0] < -0.5;
-        input.right = state.analog_state[0] > 0.5;
-        input.down = state.analog_state[1] > 0.5;
+            input.right = gamepad.digital_inputs.activated(Button::DPadRight)
+                || matches!(
+                    gamepad.analog_inputs.value(Axis::LeftX),
+                    Some(value) if value.get() > 0.5
+                );
 
-        input.slide = state.digital_state[Y as usize];
+            input.down = gamepad.digital_inputs.activated(Button::DPadDown)
+                || matches!(
+                    gamepad.analog_inputs.value(Axis::LeftY),
+                    Some(value) if value.get() < -0.5
+                );
+        }
     }
 
     input

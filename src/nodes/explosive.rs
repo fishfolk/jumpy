@@ -86,6 +86,7 @@ impl Explosive {
         scene::add_node(explosive);
     }
 
+    /// If return is `true`, delete the node.
     pub fn update(&mut self) -> bool {
         self.body.update();
         self.lived += get_frame_time();

@@ -2,35 +2,39 @@ use macroquad::{
     experimental::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
-        coroutines::{start_coroutine, wait_seconds, Coroutine},
+        coroutines::{start_coroutine, Coroutine},
         scene::{self, Handle, HandleUntyped, RefMut},
     },
     prelude::*,
 };
 
-use crate::{GameWorld, Resources, capabilities, components::{GunlikeAnimation, PhysicsBody, ThrowableItem}, nodes::{Player, armed_kickbomb, explosive}};
+use crate::{
+    capabilities,
+    components::{GunlikeAnimation, PhysicsBody, ThrowableItem},
+    nodes::{armed_kickbomb, Player},
+    GameWorld, Resources,
+};
 
 pub struct Kickbomb {
     sprite: GunlikeAnimation,
     pub amount: i32,
     pub body: PhysicsBody,
     pub throwable: ThrowableItem,
+    cooldown: i32,
 }
 
 impl Kickbomb {
     pub const COLLIDER_WIDTH: f32 = 32.0;
     pub const COLLIDER_HEIGHT: f32 = 36.0;
-    pub const FIRE_INTERVAL: f32 = 0.5;
+    pub const FIRE_INTERVAL: i32 = 50;
     pub const MAXIMUM_AMOUNT: i32 = 3;
-    const THROW_STRENGTH: f32 = 50.0;
-    const KICK_STRENGTH: f32 = 600.0;
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
         let resources = storage::get::<Resources>();
         let sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
-                26,
-                40,
+                Self::COLLIDER_WIDTH as u32,
+                Self::COLLIDER_HEIGHT as u32,
                 &[Animation {
                     name: "idle".to_string(),
                     row: 0,
@@ -55,6 +59,7 @@ impl Kickbomb {
             ),
             amount: Self::MAXIMUM_AMOUNT,
             throwable: ThrowableItem::default(),
+            cooldown: 0,
         })
         .untyped()
     }
@@ -81,25 +86,26 @@ impl Kickbomb {
         let coroutine = async move {
             {
                 let mut node = scene::get_node(node);
-                if node.amount <= 0 {
-                    let player = &mut *scene::get_node(player);
-                    player.state_machine.set_state(Player::ST_NORMAL);
-                    return;
-                }
-                armed_kickbomb::ArmedKickBomb::spawn(node.body.pos, false);
-                node.amount -= 1;
-            }
-            wait_seconds(Kickbomb::FIRE_INTERVAL).await;
-            {
                 let player = &mut *scene::get_node(player);
                 player.state_machine.set_state(Player::ST_NORMAL);
+
+                if node.amount <= 0 || node.cooldown > 0 {
+                    return;
+                }
+                let pos = if node.body.facing {
+                    Vec2::new(40., -10.)
+                } else {
+                    Vec2::new(-20., -10.)
+                };
+                armed_kickbomb::ArmedKickBomb::spawn(node.body.pos + pos);
+                node.amount -= 1;
+                node.cooldown = Self::FIRE_INTERVAL;
             }
         };
         start_coroutine(coroutine)
     }
-    pub fn weapon_capabilities() -> capabilities::Weapon{
-
-        pub fn mount(node: HandleUntyped, parent_pos: Vec2, parent_facing: bool){            
+    pub fn weapon_capabilities() -> capabilities::Weapon {
+        pub fn mount(node: HandleUntyped, parent_pos: Vec2, parent_facing: bool) {
             let mut node = scene::get_untyped_node(node)
                 .unwrap()
                 .to_typed::<Kickbomb>();
@@ -223,8 +229,9 @@ impl scene::Node for Kickbomb {
     }
 
     fn fixed_update(mut node: RefMut<Self>) {
-        let node = &mut *node;
+        node.cooldown -= 1;
         node.sprite.update();
+        let node = &mut *node;
         node.throwable.update(&mut node.body, true);
     }
 }

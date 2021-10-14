@@ -337,7 +337,7 @@ impl scene::Node for GunBullet {
 
         let mut resources = storage::get_mut::<Resources>();
 
-        if node.time > 0.05 {
+        if node.time > 0.075 {
             node.time = 0.0;
             resources.fx_bullet_smoke.spawn(node.bullet.pos);
         }

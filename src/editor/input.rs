@@ -71,7 +71,7 @@ pub fn collect_editor_input(scheme: EditorInputScheme) -> EditorInput {
                         None => 0.0,
                     };
 
-                    let direction_y = match gamepad.analog_inputs.value(Axis::LeftX) {
+                    let direction_y = match gamepad.analog_inputs.value(Axis::LeftY) {
                         Some(value) => value.get(),
                         None => 0.0,
                     };

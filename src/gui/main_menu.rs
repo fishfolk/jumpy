@@ -443,7 +443,7 @@ pub async fn game_type() -> GameType {
             {
                 let next_tab = tab as i32 - 1;
                 tab = if next_tab < 0 {
-                    MODE_SELECTION_TAB_COUNT
+                    MODE_SELECTION_TAB_COUNT - 1
                 } else {
                     next_tab as u32 % MODE_SELECTION_TAB_COUNT
                 };

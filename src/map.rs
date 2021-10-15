@@ -177,10 +177,14 @@ impl Map {
         );
 
         let resources = storage::get::<Resources>();
-        for layer_id in &self.draw_order {
-            if let Some(layer) = self.layers.get(layer_id) {
+
+        let mut draw_order = self.draw_order.clone();
+        draw_order.reverse();
+
+        for layer_id in draw_order {
+            if let Some(layer) = self.layers.get(&layer_id) {
                 if layer.is_visible && layer.kind == MapLayerKind::TileLayer {
-                    for (x, y, tile) in self.get_tiles(layer_id, Some(rect)) {
+                    for (x, y, tile) in self.get_tiles(&layer_id, Some(rect)) {
                         if let Some(tile) = tile {
                             let world_position = self.world_offset
                                 + vec2(x as f32 * self.tile_size.x, y as f32 * self.tile_size.y);
@@ -313,17 +317,22 @@ pub struct MapLayer {
 }
 
 impl MapLayer {
-    pub fn new(id: &str, kind: MapLayerKind, has_collision: bool) -> Self {
+    pub fn new(id: &str, kind: MapLayerKind, has_collision: bool, grid_size: UVec2) -> Self {
         let has_collision = if kind == MapLayerKind::TileLayer {
             has_collision
         } else {
             false
         };
 
+        let mut tiles = Vec::new();
+        tiles.resize((grid_size.x * grid_size.y) as usize, None);
+
         MapLayer {
             id: id.to_string(),
             kind,
             has_collision,
+            tiles,
+            grid_size,
             ..Default::default()
         }
     }

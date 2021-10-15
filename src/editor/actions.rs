@@ -15,7 +15,7 @@ pub enum EditorAction {
     Batch(Vec<EditorAction>),
     Undo,
     Redo,
-    SelectTool(usize),
+    SelectTool(TypeId),
     OpenCreateLayerWindow,
     OpenCreateTilesetWindow,
     OpenTilesetPropertiesWindow(String),
@@ -155,7 +155,7 @@ impl UndoableAction for SetLayerDrawOrderIndexAction {
             return Err(&"SetLayerDrawOrderIndexAction: Could not find the specified layer in the map draw order array");
         }
 
-        if self.draw_order_index >= map.draw_order.len() {
+        if self.draw_order_index > map.draw_order.len() {
             map.draw_order.push(self.id.clone());
         } else {
             map.draw_order
@@ -227,7 +227,7 @@ impl UndoableAction for CreateLayerAction {
             }
         }
 
-        let layer = MapLayer::new(&self.id, self.kind, self.has_collision);
+        let layer = MapLayer::new(&self.id, self.kind, self.has_collision, map.grid_size);
         map.layers.insert(self.id.clone(), layer);
 
         if let Some(i) = self.index {
@@ -687,8 +687,12 @@ impl UndoableAction for RemoveTileAction {
 
         if let Some(layer) = map.layers.get_mut(&self.layer_id) {
             if let MapLayerKind::TileLayer = layer.kind {
-                if let Some(tile) = self.tile.take() {
-                    layer.tiles.insert(i, Some(tile));
+                if let Some(old_tile) = self.tile.take() {
+                    if let Some(tile) = layer.tiles.get_mut(i) {
+                        *tile = Some(old_tile);
+                    } else {
+                        return Err(&"RemoveTileAction (Undo): No tile found vec entry in map at the index stored in action (this should not be possible, as the entry should be a `None` if the tile was empty)");
+                    }
                 } else {
                     return Err(&"RemoveTileAction (Undo): No tile stored in action. Undo was probably called on an action that was never applied");
                 }

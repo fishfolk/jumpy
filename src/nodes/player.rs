@@ -804,6 +804,20 @@ impl scene::Node for Player {
                 },
             )
         }
+
+        if node.body.inverted {
+            draw_texture_ex(
+                resources.items_textures["life_ring/life_ring"],
+                node.body.pos.x,
+                node.body.pos.y,
+                color::WHITE,
+                DrawTextureParams {
+                    flip_x: false,
+                    rotation: 0.0,
+                    ..Default::default()
+                },
+            )
+        }
     }
 
     fn update(mut node: RefMut<Self>) {

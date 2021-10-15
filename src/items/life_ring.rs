@@ -35,6 +35,7 @@ impl LifeRing {
     pub fn spawn(pos: Vec2) -> HandleUntyped {
         let resources = storage::get_mut::<Resources>();
 
+
         let sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
                 Self::COLLIDER_WIDTH as u32,
@@ -245,6 +246,4 @@ impl Node for LifeRing {
     fn draw(node: RefMut<Self>) {
         node.sprite.draw(node.body.pos, node.body.facing, node.body.inverted, node.body.angle);
     }
-
-
 }

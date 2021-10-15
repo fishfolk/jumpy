@@ -68,7 +68,7 @@ impl Gun {
         scene::add_node(Gun {
             gun_sprite,
             gun_fx_sprite,
-            gun_fx: false,
+            gun_fx: true,
             smoke_fx_counter: 0,
             smoke_fx_timer: 0.0,
             body: PhysicsBody::new(

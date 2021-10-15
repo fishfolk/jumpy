@@ -126,7 +126,7 @@ impl Mines {
     }
 
     pub fn weapon_capabilities() -> capabilities::Weapon {
-        fn mount(node: HandleUntyped, parent_pos: Vec2, parent_facing: bool) {
+        fn mount(node: HandleUntyped, parent_pos: Vec2, parent_facing: bool, parent_inverted: bool) {
             let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Mines>();
             let mount_pos = if node.body.facing {
                 vec2(0., 16.)
@@ -136,6 +136,7 @@ impl Mines {
 
             node.body.pos = parent_pos + mount_pos;
             node.body.facing = parent_facing;
+            node.body.inverted = parent_inverted;
         }
 
         fn collider(node: HandleUntyped) -> Rect {
@@ -225,7 +226,7 @@ impl scene::Node for Mines {
 
     fn draw(node: RefMut<Self>) {
         node.mines_sprite
-            .draw(node.body.pos, node.body.facing, node.body.angle);
+            .draw(node.body.pos, node.body.facing, node.body.inverted, node.body.angle);
         if !node.throwable.thrown() {
             node.draw_hud();
         }

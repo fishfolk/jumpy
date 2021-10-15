@@ -224,7 +224,7 @@ impl Galleon {
             node.throwable.owner = Some(owner);
         }
 
-        fn mount(node: HandleUntyped, parent_pos: Vec2, parent_facing: bool) {
+        fn mount(node: HandleUntyped, parent_pos: Vec2, parent_facing: bool, parent_inverted: bool) {
             let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Galleon>();
             let mount_pos = if node.body.facing {
                 vec2(Galleon::RIGHT_OFFSET[0], Galleon::RIGHT_OFFSET[1])
@@ -234,6 +234,7 @@ impl Galleon {
 
             node.body.pos = parent_pos + mount_pos;
             node.body.facing = parent_facing;
+            node.body.inverted = parent_inverted;
         }
 
         fn collider(node: HandleUntyped) -> Rect {
@@ -313,6 +314,6 @@ impl Node for Galleon {
 
     fn draw(node: RefMut<Self>) {
         node.sprite
-            .draw(node.body.pos, node.body.facing, node.body.angle);
+            .draw(node.body.pos, node.body.facing, node.body.inverted, node.body.angle);
     }
 }

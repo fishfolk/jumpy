@@ -2,8 +2,8 @@ use macroquad::{
     experimental::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
-        coroutines::{start_coroutine, wait_seconds, Coroutine},
         scene::{HandleUntyped, Handle, Node, RefMut},
+        coroutines::{start_coroutine, Coroutine},
     },
     prelude::*,
 };
@@ -15,9 +15,10 @@ use crate::{
     components::{PhysicsBody, GunlikeAnimation, ThrowableItem}
 };
 
+use std::f32;
 pub struct LifeRing {
     sprite: GunlikeAnimation,
-    pos: Vec2,
+    used: bool,
     pub body: PhysicsBody,
     pub throwable: ThrowableItem,
     pub mount_pos: [Vec2; 2],
@@ -27,8 +28,8 @@ impl LifeRing {
     const COLLIDER_WIDTH: f32 = 44.0;
     const COLLIDER_HEIGHT: f32 = 12.0;
 
-    pub const PICK_MOUNT: [(f32, f32); 2] = [(44.0, 0.0), (-44.0, 0.0)];
-    pub const EQUIP_MOUNT: [(f32, f32); 2] = [(0.0, 0.0), (0.0, 0.0)];
+    pub const PICK_MOUNT: [(f32, f32); 2] = [(35.0, 0.0), (-44.0, 0.0)];
+    pub const EQUIP_MOUNT: [(f32, f32); 2] = [(0.0, 0.0), (-10.0, 0.0)];
 
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
@@ -57,7 +58,7 @@ impl LifeRing {
 
         scene::add_node(LifeRing {
             sprite,
-            pos,
+            used: false,
             body: PhysicsBody::new(
                 &mut world.collision_world,
                 pos,
@@ -76,7 +77,7 @@ impl LifeRing {
         self.throwable.throw(&mut self.body, force);
     }
 
-    pub fn shoot(node: Handle<LifeRing>, player: Handle<Player>) -> Coroutine{
+    pub fn shoot(node: Handle<LifeRing>, player: Handle<Player>) -> Coroutine {
         let coroutine = async move {
             let life_ring = &mut *scene::get_node(node);
             life_ring.mount_pos = [
@@ -87,11 +88,11 @@ impl LifeRing {
             {
                 let player = &mut *scene::get_node(player);
                 player.body.gravity_dir = -1.0;
-                //player.body.angle = 180.0;
                 player.body.inverted = true;
+                player.body.speed.y = -600.0;
             }
 
-            wait_seconds(0.08);
+            life_ring.used = true;
             
             let player = &mut *scene::get_node(player);
             player.state_machine.set_state(Player::ST_NORMAL);
@@ -102,52 +103,73 @@ impl LifeRing {
 
     pub fn weapon_capabilities() -> capabilities::Weapon {
         fn throw(node: HandleUntyped, force: bool) {
-            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<LifeRing>();
-
-            LifeRing::throw(&mut *node, force);
+            if let Some(life_ring) = scene::get_untyped_node(node) {
+                LifeRing::throw(&mut *life_ring.to_typed::<LifeRing>(), force);
+            }
         }
 
-        fn shoot(node: HandleUntyped, player: Handle<Player>) -> Coroutine {
-            let node = scene::get_untyped_node(node)
-                .unwrap()
-                .to_typed::<LifeRing>()
-                .handle();
-            LifeRing::shoot(node, player)
+        fn shoot(node: HandleUntyped, player: Handle<Player>) -> Coroutine{
+            if let Some(life_ring) = scene::get_untyped_node(node) {
+                let life_ring = life_ring.to_typed::<LifeRing>().handle();
+                LifeRing::shoot(life_ring, player)
+            } else {
+                let coroutine = async move {
+                    let player = &mut *scene::get_node(player);
+                    player.state_machine.set_state(Player::ST_NORMAL);
+                };
+                start_coroutine(coroutine)
+            }
         }
 
         fn is_thrown(node: HandleUntyped) -> bool {
-            let node = scene::get_untyped_node(node).unwrap().to_typed::<LifeRing>();
-
-            node.throwable.thrown()
+            if let Some(life_ring) = scene::get_untyped_node(node) {
+                life_ring.to_typed::<LifeRing>().throwable.thrown()
+            } else {
+                false
+            }
         }
 
         fn pick_up(node: HandleUntyped, owner: Handle<Player>) {
-            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<LifeRing>();
-
-            node.body.angle = 0.;
-            node.throwable.owner = Some(owner);
+            if let Some(life_ring) = scene::get_untyped_node(node) {
+                let mut life_ring = life_ring.to_typed::<LifeRing>();
+                life_ring.body.angle = 0.;
+                life_ring.throwable.owner = Some(owner);
+            }
         }
 
-        fn mount(node: HandleUntyped, parent_pos: Vec2, parent_facing: bool) {
-            let mut node = scene::get_untyped_node(node).unwrap().to_typed::<LifeRing>();
-            let mount_pos = if node.body.facing {
-                node.mount_pos[0]
-            } else {
-                node.mount_pos[1]
-            };
-
-            node.body.pos = parent_pos + mount_pos;
-            node.body.facing = parent_facing;
+        fn mount(node: HandleUntyped, parent_pos: Vec2, parent_facing: bool, parent_inverted: bool) {
+            if let Some(life_ring) = scene::get_untyped_node(node) {
+                let mut life_ring = life_ring.to_typed::<LifeRing>();
+                let mount_pos = if life_ring.body.facing {
+                    life_ring.mount_pos[0]
+                } else {
+                    life_ring.mount_pos[1]
+                };
+    
+                life_ring.body.pos = parent_pos + mount_pos;
+                life_ring.body.facing = parent_facing;
+                life_ring.body.inverted = parent_inverted;
+            }
         }
 
         fn collider(node: HandleUntyped) -> Rect {
-            let node = scene::get_untyped_node(node).unwrap().to_typed::<LifeRing>();
-            Rect::new(
-                node.body.pos.x,
-                node.body.pos.y,
-                LifeRing::COLLIDER_WIDTH as f32,
-                LifeRing::COLLIDER_HEIGHT as f32,
-            )
+            match scene::get_untyped_node(node) {
+                Some(life_ring) => {
+                    let life_ring = life_ring.to_typed::<LifeRing>();
+                    return Rect::new(
+                        life_ring.body.pos.x,
+                        life_ring.body.pos.y,
+                        LifeRing::COLLIDER_WIDTH as f32,
+                        LifeRing::COLLIDER_HEIGHT as f32,
+                    )
+                }
+                None => return Rect::new(
+                    f32::MAX,
+                    f32::MAX,
+                    0.0,
+                    0.0,
+                ),
+            }
         }
 
         capabilities::Weapon {
@@ -209,14 +231,19 @@ impl Node for LifeRing {
     }
 
     fn fixed_update(mut node: RefMut<Self>) {
-        let node = &mut *node;
-        node.sprite.update();
-        node.throwable.update(&mut node.body, true);
+        {
+            let node = &mut *node;
+            node.sprite.update();
+            node.throwable.update(&mut node.body, true);
+        }
+        if node.used == true {
+            node.delete();
+        }
     }
     
 
-    fn draw(mut node: RefMut<Self>) {
-        node.sprite.draw(node.body.pos, node.body.facing, node.body.angle);
+    fn draw(node: RefMut<Self>) {
+        node.sprite.draw(node.body.pos, node.body.facing, node.body.inverted, node.body.angle);
     }
 
 

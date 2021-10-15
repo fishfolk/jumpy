@@ -673,18 +673,18 @@ impl Player {
         {
             let node = &mut *node;
             if let Some(weapon) = node.weapon.as_mut() {
-                weapon.mount(node.body.pos, node.body.facing);
+                weapon.mount(node.body.pos, node.body.facing, node.body.inverted);
             }
         }
 
         if node.input.jump {
             if node.jump_frames_left > 0 {
-                node.body.speed.y = -Player::JUMP_UPWARDS_SPEED;
+                node.body.speed.y = -Player::JUMP_UPWARDS_SPEED * node.body.gravity_dir;
                 node.jump_frames_left -= 1;
             }
         } else {
-            if node.body.speed.y < 0.0 {
-                node.body.speed.y += Player::JUMP_RELEASE_GRAVITY_INCREASE;
+            if node.body.speed.y * node.body.gravity_dir < 0.0 {
+                node.body.speed.y += Player::JUMP_RELEASE_GRAVITY_INCREASE * node.body.gravity_dir;
             }
             node.jump_frames_left = 0;
         }

@@ -88,7 +88,7 @@ impl LifeRing {
 
             {
                 let player = &mut *scene::get_node(player);
-                player.body.gravity_dir = -1.0;
+                player.body.gravity_dir = -1.4;
                 player.body.inverted = true;
                 player.body.speed.y = -600.0;
             }

@@ -813,7 +813,6 @@ impl scene::Node for Player {
                 color::WHITE,
                 DrawTextureParams {
                     flip_x: false,
-                    rotation: 0.0,
                     ..Default::default()
                 },
             )

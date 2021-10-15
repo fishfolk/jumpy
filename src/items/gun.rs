@@ -226,7 +226,7 @@ impl scene::Node for Gun {
         node.provides(Self::physics_capabilities());
     }
 
-    fn draw(mut node: RefMut<Self>) {
+    fn draw(node: RefMut<Self>) {
         node.gun_sprite
             .draw(node.body.pos, node.body.facing, node.body.angle);
 
@@ -237,7 +237,13 @@ impl scene::Node for Gun {
 
         if !node.throwable.thrown() {
             node.draw_hud();
+        }
+    }
 
+    fn fixed_update(mut node: RefMut<Self>) {
+        let node = &mut *node;
+
+        if !node.throwable.thrown() {
             if !node.gun_fx {
                 if node.smoke_fx_counter < 5 {
                     if node.smoke_fx_timer > 0.15 {
@@ -258,10 +264,6 @@ impl scene::Node for Gun {
                 node.smoke_fx_counter = 0;
             }
         }
-    }
-
-    fn fixed_update(mut node: RefMut<Self>) {
-        let node = &mut *node;
 
         node.gun_sprite.update();
         node.gun_fx_sprite.update();
@@ -274,7 +276,7 @@ pub struct GunBullet {
     sprite: AnimatedSprite,
     angle: f32,
     facing: bool,
-    time: f32,
+    smoke_fx_timer: f32,
 }
 
 impl GunBullet {
@@ -303,7 +305,7 @@ impl GunBullet {
             ),
             angle: rand::gen_range(0.0, 6.28),
             facing,
-            time: 0.0,
+            smoke_fx_timer: 0.0,
         }
     }
 }
@@ -335,15 +337,7 @@ impl scene::Node for GunBullet {
     fn draw(mut node: RefMut<Self>) {
         node.sprite.update();
 
-        let mut resources = storage::get_mut::<Resources>();
-
-        if node.time > 0.075 {
-            node.time = 0.0;
-            resources.fx_bullet_smoke.spawn(node.bullet.pos);
-        }
-        node.time += get_frame_time();
-
-        node.angle += 0.1;
+        let resources = storage::get::<Resources>();
 
         let frame = node.sprite.frame();
         draw_texture_ex(
@@ -359,5 +353,18 @@ impl scene::Node for GunBullet {
                 ..Default::default()
             },
         );
+    }
+
+    fn fixed_update(mut node: RefMut<Self>) {
+        if node.smoke_fx_timer > 0.075 {
+            node.smoke_fx_timer = 0.0;
+            {
+                let mut resources = storage::get_mut::<Resources>();
+                resources.fx_bullet_smoke.spawn(node.bullet.pos);
+            }
+        }
+        node.smoke_fx_timer += get_frame_time();
+
+        node.angle += 0.1;
     }
 }

@@ -200,5 +200,5 @@ pub const ITEMS: &[Item] = &[
         sounds: &[],
         fxses: &[],
         network_ready: false,
-    }
+    },
 ];

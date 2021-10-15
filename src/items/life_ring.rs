@@ -237,7 +237,7 @@ impl Node for LifeRing {
             node.sprite.update();
             node.throwable.update(&mut node.body, true);
         }
-        if node.used == true {
+        if node.used {
             node.delete();
         }
     }

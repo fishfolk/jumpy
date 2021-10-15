@@ -62,7 +62,9 @@ impl scene::Node for Sword {
         } else {
             // just casually holding a sword
 
-            let rotation = if (sword.body.facing && !sword.body.inverted) || (!sword.body.facing && sword.body.inverted) {
+            let rotation = if (sword.body.facing && !sword.body.inverted)
+                || (!sword.body.facing && sword.body.inverted)
+            {
                 -sword.body.angle
             } else {
                 sword.body.angle
@@ -275,7 +277,12 @@ impl Sword {
             node.throwable.owner = Some(owner);
         }
 
-        fn mount(node: HandleUntyped, parent_pos: Vec2, parent_facing: bool, parent_inverted: bool) {
+        fn mount(
+            node: HandleUntyped,
+            parent_pos: Vec2,
+            parent_facing: bool,
+            parent_inverted: bool,
+        ) {
             let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Sword>();
 
             let sword_mount_pos = if parent_facing {

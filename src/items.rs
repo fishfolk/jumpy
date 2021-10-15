@@ -6,6 +6,7 @@ mod galleon;
 mod grenades;
 mod gun;
 pub mod jellyfish;
+mod life_ring;
 mod machine_gun;
 mod mines;
 mod musket;
@@ -16,7 +17,6 @@ mod sproinger;
 mod sword;
 mod turtle_shell;
 mod volcano;
-mod life_ring;
 use macroquad::{experimental::scene::HandleUntyped, math::Vec2};
 
 /// Proto-mod

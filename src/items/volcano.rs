@@ -128,7 +128,12 @@ impl Volcano {
             node.throwable.owner = Some(owner);
         }
 
-        fn mount(node: HandleUntyped, parent_pos: Vec2, parent_facing: bool, parent_inverted: bool) {
+        fn mount(
+            node: HandleUntyped,
+            parent_pos: Vec2,
+            parent_facing: bool,
+            parent_inverted: bool,
+        ) {
             let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Volcano>();
             let mount_pos = if node.body.facing {
                 vec2(5., 16.)
@@ -217,8 +222,12 @@ impl Node for Volcano {
     }
 
     fn draw(node: RefMut<Self>) {
-        node.sprite
-            .draw(node.body.pos, node.body.facing, node.body.inverted, node.body.angle);
+        node.sprite.draw(
+            node.body.pos,
+            node.body.facing,
+            node.body.inverted,
+            node.body.angle,
+        );
     }
 }
 

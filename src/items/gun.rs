@@ -150,7 +150,12 @@ impl Gun {
             node.throwable.owner = Some(owner);
         }
 
-        fn mount(node: HandleUntyped, parent_pos: Vec2, parent_facing: bool, parent_inverted: bool) {
+        fn mount(
+            node: HandleUntyped,
+            parent_pos: Vec2,
+            parent_facing: bool,
+            parent_inverted: bool,
+        ) {
             let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Gun>();
             let mount_pos = if node.body.facing {
                 vec2(0., 16.)
@@ -224,12 +229,20 @@ impl scene::Node for Gun {
     }
 
     fn draw(node: RefMut<Self>) {
-        node.gun_sprite
-            .draw(node.body.pos, node.body.facing, node.body.inverted, node.body.angle);
+        node.gun_sprite.draw(
+            node.body.pos,
+            node.body.facing,
+            node.body.inverted,
+            node.body.angle,
+        );
 
         if node.gun_fx {
-            node.gun_fx_sprite
-                .draw(node.body.pos, node.body.facing, node.body.inverted, node.body.angle);
+            node.gun_fx_sprite.draw(
+                node.body.pos,
+                node.body.facing,
+                node.body.inverted,
+                node.body.angle,
+            );
         }
 
         if !node.throwable.thrown() {

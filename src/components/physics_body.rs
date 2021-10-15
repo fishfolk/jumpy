@@ -68,12 +68,12 @@ impl PhysicsBody {
         self.last_frame_on_ground = self.on_ground;
         if self.gravity_dir > 0.0 {
             self.on_ground = world
-            .collision_world
-            .collide_check(self.collider, self.pos + vec2(0., 1.));
+                .collision_world
+                .collide_check(self.collider, self.pos + vec2(0., 1.));
         } else {
             self.on_ground = world
-            .collision_world
-            .collide_check(self.collider, self.pos + vec2(0., -1.));
+                .collision_world
+                .collide_check(self.collider, self.pos + vec2(0., -1.));
         }
         if !self.on_ground && self.have_gravity {
             self.speed.y += Self::GRAVITY * get_frame_time() * self.gravity_dir;

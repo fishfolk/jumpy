@@ -6,6 +6,7 @@ mod galleon;
 mod grenades;
 mod gun;
 pub mod jellyfish;
+mod life_ring;
 mod machine_gun;
 mod mines;
 mod musket;
@@ -190,6 +191,15 @@ pub const ITEMS: &[Item] = &[
             ("shark_rain", "assets/Whale/SharkIcon(32x34).png"),
             ("raining_shark", "assets/Whale/RainingShark(60x220).png"),
         ],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    },
+    Item {
+        tiled_name: "life_ring",
+        constructor: life_ring::LifeRing::spawn,
+        tiled_offset: (0.0, 0.0),
+        textures: &[("life_ring", "temp/LifeRing.png")],
         sounds: &[],
         fxses: &[],
         network_ready: false,

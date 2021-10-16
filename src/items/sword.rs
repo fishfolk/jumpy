@@ -55,13 +55,16 @@ impl scene::Node for Sword {
                     source: Some(sword.sprite.frame().source_rect),
                     dest_size: Some(sword.sprite.frame().dest_size),
                     flip_x: !sword.body.facing,
+                    flip_y: sword.body.inverted,
                     ..Default::default()
                 },
             );
         } else {
             // just casually holding a sword
 
-            let rotation = if sword.body.facing {
+            let rotation = if (sword.body.facing && !sword.body.inverted)
+                || (!sword.body.facing && sword.body.inverted)
+            {
                 -sword.body.angle
             } else {
                 sword.body.angle
@@ -75,6 +78,7 @@ impl scene::Node for Sword {
                 DrawTextureParams {
                     dest_size: Some(vec2(65., 17.)),
                     flip_x: !sword.body.facing,
+                    flip_y: sword.body.inverted,
                     rotation, //get_time() as _,
                     ..Default::default()
                 },
@@ -273,7 +277,12 @@ impl Sword {
             node.throwable.owner = Some(owner);
         }
 
-        fn mount(node: HandleUntyped, parent_pos: Vec2, parent_facing: bool) {
+        fn mount(
+            node: HandleUntyped,
+            parent_pos: Vec2,
+            parent_facing: bool,
+            parent_inverted: bool,
+        ) {
             let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Sword>();
 
             let sword_mount_pos = if parent_facing {
@@ -284,6 +293,7 @@ impl Sword {
 
             node.body.pos = parent_pos + sword_mount_pos;
             node.body.facing = parent_facing;
+            node.body.inverted = parent_inverted;
         }
 
         fn collider(node: HandleUntyped) -> Rect {

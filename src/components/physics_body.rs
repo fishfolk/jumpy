@@ -13,11 +13,13 @@ pub struct PhysicsBody {
     pub size: Vec2,
     pub speed: Vec2,
     pub facing: bool,
+    pub inverted: bool,
     pub angle: f32,
     pub collider: Actor,
     pub on_ground: bool,
     pub last_frame_on_ground: bool,
     pub have_gravity: bool,
+    pub gravity_dir: f32,
     pub bouncyness: f32,
 }
 
@@ -34,12 +36,14 @@ impl PhysicsBody {
             pos,
             size,
             facing: true,
+            inverted: false,
             speed: vec2(0., 0.),
             angle,
             collider: collision_world.add_actor(pos, size.x as _, size.y as _),
             last_frame_on_ground: false,
             on_ground: false,
             have_gravity: true,
+            gravity_dir: 1.0,
             bouncyness: 0.0,
         }
     }
@@ -62,11 +66,17 @@ impl PhysicsBody {
 
         self.pos = world.collision_world.actor_pos(self.collider);
         self.last_frame_on_ground = self.on_ground;
-        self.on_ground = world
-            .collision_world
-            .collide_check(self.collider, self.pos + vec2(0., 1.));
+        if self.gravity_dir > 0.0 {
+            self.on_ground = world
+                .collision_world
+                .collide_check(self.collider, self.pos + vec2(0., 1.));
+        } else {
+            self.on_ground = world
+                .collision_world
+                .collide_check(self.collider, self.pos + vec2(0., -1.));
+        }
         if !self.on_ground && self.have_gravity {
-            self.speed.y += Self::GRAVITY * get_frame_time();
+            self.speed.y += Self::GRAVITY * get_frame_time() * self.gravity_dir;
         }
         if !world
             .collision_world

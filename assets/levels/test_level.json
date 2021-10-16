@@ -298,7 +298,19 @@
                  "width":0,
                  "x":435.333333333333,
                  "y":547.333333333334
-                }],
+                },
+                {
+                 "height":0,
+                 "id":152,
+                 "name":"flippers",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":500,
+                 "y":650
+              }],
          "opacity":1,
          "type":"objectgroup",
          "visible":true,

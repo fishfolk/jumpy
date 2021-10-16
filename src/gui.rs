@@ -6,8 +6,6 @@ use nanoserde::Toml;
 
 pub use style::SkinCollection;
 
-use quad_gamepad::ControllerContext;
-
 use macroquad::{
     file::load_string,
     texture::{load_texture, Texture2D},
@@ -26,7 +24,6 @@ pub struct Level {
 
 pub struct GuiResources {
     levels: Vec<Level>,
-    pub gamepads: ControllerContext,
     pub skins: SkinCollection,
     pub editor_skins: EditorSkinCollection,
 }
@@ -66,7 +63,6 @@ impl GuiResources {
         GuiResources {
             skins: SkinCollection::new(),
             editor_skins: EditorSkinCollection::new(),
-            gamepads: ControllerContext::new().unwrap(),
             levels,
         }
     }

@@ -432,8 +432,8 @@ async fn game(map: Map, game_type: GameType, assets_dir: &str) {
 
     loop {
         {
-            let mut gui_resources = storage::get_mut::<crate::gui::GuiResources>();
-            gui_resources.gamepads.update();
+            let mut gamepad_system = storage::get_mut::<fishsticks::GamepadContext>();
+            let _ = gamepad_system.update();
         }
 
         next_frame().await;
@@ -482,6 +482,11 @@ async fn main() {
         );
 
         next_frame().await;
+    }
+
+    {
+        let gamepad_system = fishsticks::GamepadContext::init().unwrap();
+        storage::store(gamepad_system);
     }
 
     loop {

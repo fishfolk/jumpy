@@ -42,7 +42,7 @@ impl Player {
     pub fn jump(&mut self) {
         let resources = storage::get::<Resources>();
 
-        self.body.speed.y = -Self::JUMP_UPWARDS_SPEED;
+        self.body.speed.y = -Self::JUMP_UPWARDS_SPEED * self.body.gravity_dir;
         self.jump_frames_left = Self::JUMP_HEIGHT_CONTROL_FRAMES;
 
         audio::play_sound(
@@ -167,8 +167,10 @@ impl Player {
             pos: spawner_pos,
             size: vec2(30., 54.),
             facing: true,
+            inverted: false,
             last_frame_on_ground: false,
             have_gravity: true,
+            gravity_dir: 1.0,
             bouncyness: 0.0,
         };
 
@@ -532,7 +534,7 @@ impl Player {
             node.floating = false;
         }
         if node.floating {
-            node.body.speed.y = Self::FLOAT_SPEED;
+            node.body.speed.y = Self::FLOAT_SPEED * node.body.gravity_dir;
         } else {
             node.body.have_gravity = true;
         }
@@ -671,18 +673,18 @@ impl Player {
         {
             let node = &mut *node;
             if let Some(weapon) = node.weapon.as_mut() {
-                weapon.mount(node.body.pos, node.body.facing);
+                weapon.mount(node.body.pos, node.body.facing, node.body.inverted);
             }
         }
 
         if node.input.jump {
             if node.jump_frames_left > 0 {
-                node.body.speed.y = -Player::JUMP_UPWARDS_SPEED;
+                node.body.speed.y = -Player::JUMP_UPWARDS_SPEED * node.body.gravity_dir;
                 node.jump_frames_left -= 1;
             }
         } else {
-            if node.body.speed.y < 0.0 {
-                node.body.speed.y += Player::JUMP_RELEASE_GRAVITY_INCREASE;
+            if node.body.speed.y * node.body.gravity_dir < 0.0 {
+                node.body.speed.y += Player::JUMP_RELEASE_GRAVITY_INCREASE * node.body.gravity_dir;
             }
             node.jump_frames_left = 0;
         }
@@ -779,6 +781,7 @@ impl scene::Node for Player {
                 source: Some(node.fish_sprite.frame().source_rect),
                 dest_size: Some(node.fish_sprite.frame().dest_size),
                 flip_x: !node.body.facing,
+                flip_y: node.body.inverted,
                 ..Default::default()
             },
         );
@@ -797,6 +800,19 @@ impl scene::Node for Player {
                 DrawTextureParams {
                     flip_y: node.body.facing,
                     rotation: std::f32::consts::PI / 2.0,
+                    ..Default::default()
+                },
+            )
+        }
+
+        if node.body.inverted {
+            draw_texture_ex(
+                resources.items_textures["life_ring/life_ring"],
+                node.body.pos.x,
+                node.body.pos.y,
+                color::WHITE,
+                DrawTextureParams {
+                    flip_x: false,
                     ..Default::default()
                 },
             )

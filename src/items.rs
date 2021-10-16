@@ -7,6 +7,7 @@ mod grenades;
 mod gun;
 pub mod jellyfish;
 mod kickbomb;
+mod life_ring;
 mod machine_gun;
 mod mines;
 mod musket;
@@ -199,7 +200,16 @@ pub const ITEMS: &[Item] = &[
         tiled_name: "kickbomb",
         constructor: kickbomb::Kickbomb::spawn,
         tiled_offset: (0., 0.),
-        textures: &[("bomb", "assets/Whale/KickBomb(32x36).png")],
+        textures: &[("bomb", "assets/Whale/KickBomb(32x36).png")],      
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    },  
+    Item {
+        tiled_name: "life_ring",
+        constructor: life_ring::LifeRing::spawn,
+        tiled_offset: (0.0, 0.0),
+        textures: &[("life_ring", "temp/LifeRing.png")],
         sounds: &[],
         fxses: &[],
         network_ready: false,

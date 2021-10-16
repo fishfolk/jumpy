@@ -46,7 +46,7 @@ impl GunlikeAnimation {
         self.sprite.update();
     }
 
-    pub fn draw(&self, pos: Vec2, facing: bool, angle: f32) {
+    pub fn draw(&self, pos: Vec2, facing: bool, inverted: bool, angle: f32) {
         let w = self.sprite.frame().source_rect.w;
 
         draw_texture_ex(
@@ -58,6 +58,7 @@ impl GunlikeAnimation {
                 source: Some(self.sprite.frame().source_rect),
                 dest_size: Some(self.sprite.frame().dest_size),
                 flip_x: !facing,
+                flip_y: inverted,
                 rotation: angle,
                 ..Default::default()
             },

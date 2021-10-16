@@ -62,6 +62,7 @@ impl ArmedGrenade {
         let body = PhysicsBody {
             pos,
             facing,
+            inverted: false,
             angle: 0.0,
             size,
             speed,
@@ -73,6 +74,7 @@ impl ArmedGrenade {
             on_ground: false,
             last_frame_on_ground: false,
             have_gravity: true,
+            gravity_dir: 1.0,
             bouncyness: 0.5,
         };
 

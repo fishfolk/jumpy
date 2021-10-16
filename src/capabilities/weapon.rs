@@ -24,7 +24,7 @@ pub struct Weapon {
     /// or are being handled by a fish
     /// "mount" is being called to attach the weapon to a fish
     /// in other words - mount should move a weapon to a mount point on a fish
-    pub mount: fn(node: HandleUntyped, parent_pos: Vec2, parent_facing: bool),
+    pub mount: fn(node: HandleUntyped, parent_pos: Vec2, parent_facing: bool, inverted: bool),
     pub is_thrown: fn(node: HandleUntyped) -> bool,
     pub pick_up: fn(node: HandleUntyped, owner: Handle<Player>),
     pub throw: fn(node: HandleUntyped, force: bool),

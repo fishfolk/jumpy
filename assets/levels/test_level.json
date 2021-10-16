@@ -286,10 +286,22 @@
                  "width":0,
                  "x":769.333333333333,
                  "y":552
-                },
+                }, 
                 {
                  "height":0,
                  "id":151,
+                 "name":"life_ring",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":435.333333333333,
+                 "y":547.333333333334
+                },
+                {
+                 "height":0,
+                 "id":152,
                  "name":"flippers",
                  "point":true,
                  "rotation":0,
@@ -306,7 +318,7 @@
          "y":0
         }],
  "nextlayerid":6,
- "nextobjectid":151,
+ "nextobjectid":152,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.7.2",

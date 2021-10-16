@@ -367,14 +367,13 @@ impl Player {
 
             let mut this = scene::get_node(handle);
 
-            if this.can_head_boink {
-                Shoes::spawn(this.body.pos);
-                this.can_head_boink = false;
-            }
-
             if this.can_extra_jump {
                 Flippers::spawn(this.body.pos);
                 this.can_extra_jump = false;
+                this.can_head_boink = false;
+            } else if this.can_head_boink {
+                Shoes::spawn(this.body.pos);
+                this.can_head_boink = false;
             }
 
             this.body.pos = {

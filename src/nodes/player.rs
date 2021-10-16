@@ -14,6 +14,7 @@ use macroquad::{
 use crate::{
     capabilities::{NetworkReplicate, PhysicsObject, Weapon, WeaponTrait},
     components::PhysicsBody,
+    items::flippers::Flippers,
     items::shoes::Shoes,
     GameWorld, Input, Resources,
 };
@@ -90,6 +91,9 @@ pub struct Player {
     pub incapacitated_duration: f32,
     pub incapacitated_timer: f32,
 
+    pub can_extra_jump: bool,
+    pub extra_jump_count: i32,
+
     pub back_armor: i32,
     pub can_head_boink: bool,
 }
@@ -114,6 +118,7 @@ impl Player {
     pub const JUMP_GRACE_TIME: f32 = 0.15;
     pub const PICK_GRACE_TIME: f32 = 0.30;
     pub const FLOAT_SPEED: f32 = 100.0;
+    pub const MAX_JUMP_COUNT: i32 = 3;
 
     pub const INCAPACITATED_BREAK_FACTOR: f32 = 0.9;
     pub const INCAPACITATED_STOP_THRESHOLD: f32 = 20.0;
@@ -243,6 +248,8 @@ impl Player {
             ai: Some(ai::Ai::new()),
             camera_box: Rect::new(spawner_pos.x - 30., spawner_pos.y - 150., 100., 210.),
             can_head_boink: false,
+            can_extra_jump: false,
+            extra_jump_count: 0,
             back_armor: 0,
             is_crouched: false,
             incapacitated_timer: 0.0,
@@ -361,6 +368,11 @@ impl Player {
             if this.can_head_boink {
                 Shoes::spawn(this.body.pos);
                 this.can_head_boink = false;
+            }
+
+            if this.can_extra_jump {
+                Flippers::spawn(this.body.pos);
+                this.can_extra_jump = false;
             }
 
             this.body.pos = {
@@ -511,10 +523,11 @@ impl Player {
         }
 
         // if in jump and want to jump again
-        if !node.body.on_ground
-            && node.input.jump
-            && !node.last_frame_input.jump
+        if (node.extra_jump_count >= Self::MAX_JUMP_COUNT || !node.can_extra_jump)
             && node.jump_grace_timer <= 0.0
+            && !node.last_frame_input.jump
+            && node.input.jump
+            && !node.body.on_ground
         {
             //
             if !node.was_floating {
@@ -551,14 +564,18 @@ impl Player {
             node.body.descent();
         }
 
-        if !node.input.down
-            && node.input.jump
-            && !node.last_frame_input.jump
-            && node.jump_grace_timer > 0.
-        {
-            node.jump_grace_timer = 0.0;
-
-            node.jump();
+        if !node.input.down && node.input.jump && !node.last_frame_input.jump {
+            if node.can_extra_jump
+                && node.extra_jump_count < Self::MAX_JUMP_COUNT
+                && node.jump_grace_timer <= 0.
+            {
+                node.jump();
+                node.extra_jump_count += 1;
+                node.jump_grace_timer = Self::JUMP_GRACE_TIME;
+            } else if node.jump_grace_timer > 0. && node.extra_jump_count == 0 {
+                node.jump_grace_timer = 0.0;
+                node.jump();
+            }
         }
 
         if node.weapon.is_none() && node.pick_grace_timer > 0. {
@@ -706,6 +723,7 @@ impl Player {
 
             if node.body.on_ground && !node.input.jump {
                 node.jump_grace_timer = Self::JUMP_GRACE_TIME;
+                node.extra_jump_count = 0;
             } else if node.jump_grace_timer > 0. {
                 node.jump_grace_timer -= get_frame_time();
             }
@@ -720,8 +738,14 @@ impl Player {
                 let is_overlapping = hitbox.overlaps(&other_hitbox);
                 if is_overlapping && hitbox.y + 60.0 < other_hitbox.y + Self::HEAD_THRESHOLD {
                     let resources = storage::get::<Resources>();
-                    play_sound_once(resources.jump_sound);
-                    other.kill(!node.body.facing);
+                    if node.can_extra_jump && other.weapon.is_some() {
+                        node.jump();
+                        other.drop_weapon();
+                        play_sound_once(resources.player_throw_sound);
+                    } else if !node.can_extra_jump {
+                        other.kill(!node.body.facing);
+                        play_sound_once(resources.jump_sound);
+                    }
                 }
             }
         }
@@ -759,14 +783,14 @@ impl scene::Node for Player {
 
         draw_texture_ex(
             if node.controller_id == 0 {
-                if node.can_head_boink {
+                if node.can_head_boink && !node.can_extra_jump {
                     resources.whale_boots_blue
                 } else {
                     resources.whale_blue
                 }
             } else {
                 //
-                if node.can_head_boink {
+                if node.can_head_boink && !node.can_extra_jump {
                     resources.whale_boots_green
                 } else {
                     resources.whale_green
@@ -782,6 +806,20 @@ impl scene::Node for Player {
                 ..Default::default()
             },
         );
+
+        // draw flippers
+        if node.can_extra_jump {
+            draw_texture_ex(
+                resources.items_textures["flippers/flippers_weared"],
+                node.body.pos.x + if node.body.facing { 5. } else { -24. },
+                node.body.pos.y + 30.,
+                color::WHITE,
+                DrawTextureParams {
+                    flip_x: !node.body.facing,
+                    ..Default::default()
+                },
+            )
+        }
 
         // draw turtle shell on player if the player has back armor
         if node.back_armor > 0 {

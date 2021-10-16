@@ -74,6 +74,8 @@ pub fn collect_input(scheme: InputScheme) -> Input {
 
             input.down = gamepad.digital_inputs.activated(Button::DPadDown)
                 || gamepad.analog_inputs.value_digital(Axis::LeftY) > 0.0;
+
+            input.slide = gamepad.digital_inputs.activated(Button::Y)
         }
     }
 

@@ -519,26 +519,26 @@ pub async fn location_select() -> Level {
 
             up |= gamepad.digital_inputs.just_activated(Button::DPadUp)
                 || matches!(
-                    gamepad.analog_inputs.just_activated(Axis::LeftY),
-                    Some(value) if value.get() < -0.1
+                    gamepad.analog_inputs.just_activated_digital(Axis::LeftY),
+                    Some(value) if value < 0.0
                 );
 
             down |= gamepad.digital_inputs.just_activated(Button::DPadDown)
                 || matches!(
-                    gamepad.analog_inputs.just_activated(Axis::LeftY),
-                    Some(value) if value.get() > 0.1
+                    gamepad.analog_inputs.just_activated_digital(Axis::LeftY),
+                    Some(value) if value > 0.0
                 );
 
             left |= gamepad.digital_inputs.just_activated(Button::DPadLeft)
                 || matches!(
-                    gamepad.analog_inputs.just_activated(Axis::LeftX),
-                    Some(value) if value.get() < -0.1
+                    gamepad.analog_inputs.just_activated_digital(Axis::LeftX),
+                    Some(value) if value < 0.0
                 );
 
             right |= gamepad.digital_inputs.just_activated(Button::DPadRight)
                 || matches!(
-                    gamepad.analog_inputs.just_activated(Axis::LeftX),
-                    Some(value) if value.get() > 0.1
+                    gamepad.analog_inputs.just_activated_digital(Axis::LeftX),
+                    Some(value) if value > 0.0
                 );
 
             start |= gamepad.digital_inputs.just_activated(Button::A)

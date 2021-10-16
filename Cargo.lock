@@ -171,8 +171,8 @@ dependencies = [
 
 [[package]]
 name = "fishsticks"
-version = "0.1.0"
-source = "git+https://github.com/PotatoTech/fishsticks#f1c805ee0adc6a88d99a7b9440ec1167863a2d55"
+version = "0.1.1"
+source = "git+https://github.com/PotatoTech/fishsticks#1b72eedf8c3663c79d73614226f54dea489a2b83"
 dependencies = [
  "sdl2",
 ]

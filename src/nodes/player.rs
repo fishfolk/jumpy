@@ -739,10 +739,15 @@ impl Player {
                 let is_overlapping = hitbox.overlaps(&other_hitbox);
                 if is_overlapping && hitbox.y + 60.0 < other_hitbox.y + Self::HEAD_THRESHOLD {
                     let resources = storage::get::<Resources>();
-                    if node.can_extra_jump && other.weapon.is_some() {
-                        node.jump();
-                        other.drop_weapon();
-                        play_sound_once(resources.player_throw_sound);
+                    if node.can_extra_jump {
+                        if other.weapon.is_some() {
+                            other.drop_weapon();
+                            play_sound_once(resources.player_throw_sound);
+                            node.jump();
+                        } else if other.back_armor > 0 {
+                            other.back_armor -= 1;
+                            node.jump();
+                        }
                     } else if !node.can_extra_jump {
                         other.kill(!node.body.facing);
                         play_sound_once(resources.jump_sound);

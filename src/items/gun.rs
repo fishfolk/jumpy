@@ -1,6 +1,8 @@
 use macroquad::{
     audio::play_sound_once,
+    color,
     experimental::{
+        animation::{AnimatedSprite, Animation},
         collections::storage,
         coroutines::{start_coroutine, wait_seconds, Coroutine},
         scene::{self, Handle, HandleUntyped, RefMut},
@@ -19,6 +21,9 @@ pub struct Gun {
     pub gun_sprite: GunlikeAnimation,
     pub gun_fx_sprite: GunlikeAnimation,
     pub gun_fx: bool,
+
+    pub smoke_fx_counter: i8,
+    pub smoke_fx_timer: f32,
 
     pub max_bullets: i32,
     pub bullets: i32,
@@ -79,9 +84,8 @@ impl Gun {
 
                 scene::add_node(GunBullet::new(
                     node.body.pos + vec2(16.0, 15.0) + node.body.facing_dir() * 32.0,
-                    node.body.facing,
-                    4.,
                     node.bullet_speed,
+                    node.body.facing,
                 ));
                 player.body.speed.x = -node.recoil * player.body.facing_dir().x;
             }
@@ -150,7 +154,12 @@ impl Gun {
             node.throwable.owner = Some(owner);
         }
 
-        fn mount(node: HandleUntyped, parent_pos: Vec2, parent_facing: bool) {
+        fn mount(
+            node: HandleUntyped,
+            parent_pos: Vec2,
+            parent_facing: bool,
+            parent_inverted: bool,
+        ) {
             let mut node = scene::get_untyped_node(node).unwrap().to_typed::<Gun>();
             let mount_pos = if node.body.facing {
                 vec2(0., 16.)
@@ -160,6 +169,7 @@ impl Gun {
 
             node.body.pos = parent_pos + mount_pos;
             node.body.facing = parent_facing;
+            node.body.inverted = parent_inverted;
         }
 
         fn collider(node: HandleUntyped) -> Rect {
@@ -223,12 +233,20 @@ impl scene::Node for Gun {
     }
 
     fn draw(node: RefMut<Self>) {
-        node.gun_sprite
-            .draw(node.body.pos, node.body.facing, node.body.angle);
+        node.gun_sprite.draw(
+            node.body.pos,
+            node.body.facing,
+            node.body.inverted,
+            node.body.angle,
+        );
 
         if node.gun_fx {
-            node.gun_fx_sprite
-                .draw(node.body.pos, node.body.facing, node.body.angle);
+            node.gun_fx_sprite.draw(
+                node.body.pos,
+                node.body.facing,
+                node.body.inverted,
+                node.body.angle,
+            );
         }
 
         if !node.throwable.thrown() {
@@ -239,6 +257,28 @@ impl scene::Node for Gun {
     fn fixed_update(mut node: RefMut<Self>) {
         let node = &mut *node;
 
+        if !node.throwable.thrown() {
+            if !node.gun_fx {
+                if node.smoke_fx_counter < 5 {
+                    if node.smoke_fx_timer > 0.15 {
+                        node.smoke_fx_timer = 0.1;
+                        node.smoke_fx_counter += 1;
+                        {
+                            let mut resources = storage::get_mut::<Resources>();
+
+                            resources.fx_gun_smoke.spawn(
+                                node.body.pos + vec2(16.0, 15.0) + node.body.facing_dir() * 32.0,
+                            );
+                        }
+                    }
+                    node.smoke_fx_timer += get_frame_time()
+                }
+            } else {
+                node.smoke_fx_timer = 0.0;
+                node.smoke_fx_counter = 0;
+            }
+        }
+
         node.gun_sprite.update();
         node.gun_fx_sprite.update();
         node.throwable.update(&mut node.body, true);
@@ -247,14 +287,17 @@ impl scene::Node for Gun {
 
 pub struct GunBullet {
     bullet: Bullet,
-    size: f32,
+    sprite: AnimatedSprite,
+    angle: f32,
+    facing: bool,
+    smoke_fx_timer: f32,
 }
 
 impl GunBullet {
     pub const BULLET_LIFETIME: f32 = 0.9;
     pub const BULLET_SPREAD: f32 = 0.0;
 
-    pub fn new(pos: Vec2, facing: bool, size: f32, speed: f32) -> GunBullet {
+    pub fn new(pos: Vec2, speed: f32, facing: bool) -> GunBullet {
         GunBullet {
             bullet: Bullet::new(
                 pos,
@@ -263,7 +306,20 @@ impl GunBullet {
                 speed,
                 Self::BULLET_SPREAD,
             ),
-            size,
+            sprite: AnimatedSprite::new(
+                15,
+                15,
+                &[Animation {
+                    name: "idle".to_string(),
+                    row: 0,
+                    frames: 1,
+                    fps: 1,
+                }],
+                true,
+            ),
+            angle: rand::gen_range(0.0, 6.28),
+            facing,
+            smoke_fx_timer: 0.0,
         }
     }
 }
@@ -292,12 +348,37 @@ impl scene::Node for GunBullet {
         node.provides(Self::network_capabilities());
     }
 
-    fn draw(node: RefMut<Self>) {
-        draw_circle(
-            node.bullet.pos.x,
-            node.bullet.pos.y,
-            node.size,
-            Color::new(1.0, 1.0, 0.8, 1.0),
+    fn draw(mut node: RefMut<Self>) {
+        node.sprite.update();
+
+        let resources = storage::get::<Resources>();
+
+        let frame = node.sprite.frame();
+        draw_texture_ex(
+            resources.items_textures["musket/bullet"],
+            node.bullet.pos.x - frame.source_rect.h / 2.0,
+            node.bullet.pos.y - frame.source_rect.w / 2.0,
+            color::WHITE,
+            DrawTextureParams {
+                source: Some(frame.source_rect),
+                dest_size: Some(frame.dest_size),
+                flip_x: !node.facing,
+                rotation: node.angle,
+                ..Default::default()
+            },
         );
+    }
+
+    fn fixed_update(mut node: RefMut<Self>) {
+        if node.smoke_fx_timer > 0.075 {
+            node.smoke_fx_timer = 0.0;
+            {
+                let mut resources = storage::get_mut::<Resources>();
+                resources.fx_bullet_smoke.spawn(node.bullet.pos);
+            }
+        }
+        node.smoke_fx_timer += get_frame_time();
+
+        node.angle += 0.1;
     }
 }

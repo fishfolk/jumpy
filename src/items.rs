@@ -2,10 +2,12 @@
 //! Proto-mods, eventually some of the items will move to some sort of a wasm runtime
 
 mod cannon;
+pub mod flippers;
 mod galleon;
 mod grenades;
 mod gun;
 pub mod jellyfish;
+mod life_ring;
 mod machine_gun;
 mod mines;
 mod musket;
@@ -75,7 +77,10 @@ pub const ITEMS: &[Item] = &[
         tiled_name: "musket",
         constructor: gun::Gun::spawn_musket,
         tiled_offset: (-35., -25.),
-        textures: &[("gun", "assets/Whale/Gun(92x32).png")],
+        textures: &[
+            ("gun", "assets/Whale/Gun(92x32).png"),
+            ("bullet", "assets/Whale/Bullet(15x15).png"),
+        ],
         sounds: &[],
         fxses: &[],
         network_ready: true,
@@ -124,6 +129,18 @@ pub const ITEMS: &[Item] = &[
         constructor: turtle_shell::TurtleShell::spawn,
         tiled_offset: (0., 0.),
         textures: &[("shell", "assets/Whale/TurtleShell(32x32).png")],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    },
+    Item {
+        tiled_name: "flippers",
+        constructor: flippers::Flippers::spawn,
+        tiled_offset: (0., 0.),
+        textures: &[
+            ("flippers_item", "assets/Whale/Flippers(65x45).png"),
+            ("flippers_weared", "assets/Whale/Flippers(45x36).png"),
+        ],
         sounds: &[],
         fxses: &[],
         network_ready: false,
@@ -187,6 +204,15 @@ pub const ITEMS: &[Item] = &[
             ("shark_rain", "assets/Whale/SharkIcon(32x34).png"),
             ("raining_shark", "assets/Whale/RainingShark(60x220).png"),
         ],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    },
+    Item {
+        tiled_name: "life_ring",
+        constructor: life_ring::LifeRing::spawn,
+        tiled_offset: (0.0, 0.0),
+        textures: &[("life_ring", "temp/LifeRing.png")],
         sounds: &[],
         fxses: &[],
         network_ready: false,

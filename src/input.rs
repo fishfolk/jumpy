@@ -67,13 +67,13 @@ pub fn collect_input(scheme: InputScheme) -> Input {
             input.jump = gamepad.digital_inputs.activated(Button::A);
 
             input.left = gamepad.digital_inputs.activated(Button::DPadLeft)
-                || gamepad.analog_inputs.value(Axis::LeftX) < -0.5;
+                || gamepad.analog_inputs.value_digital(Axis::LeftX) < 0.0;
 
             input.right = gamepad.digital_inputs.activated(Button::DPadRight)
-                || gamepad.analog_inputs.value(Axis::LeftX) > 0.5;
+                || gamepad.analog_inputs.value_digital(Axis::LeftX) > 0.0;
 
             input.down = gamepad.digital_inputs.activated(Button::DPadDown)
-                || gamepad.analog_inputs.value(Axis::LeftY) > 0.5;
+                || gamepad.analog_inputs.value_digital(Axis::LeftY) > 0.0;
         }
     }
 

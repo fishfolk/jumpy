@@ -9,4 +9,4 @@
   - [Environmental Weapons](./environmental_weapons.md)
   - [Netcode](./netcode.md)
 - [Contributing](./contributing.md)
-  - [Simple Gun Weapon](./simple_gun_weapon.md)  
+  - [Simple Gun Weapon](./simple_gun_weapon.md) 

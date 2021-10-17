@@ -7,6 +7,7 @@ use macroquad::{
 
 use crate::{components::PhysicsBody, nodes::Player, GameWorld, Resources};
 
+use crate::nodes::ParticleEmitters;
 use std::f32;
 
 pub struct Explosive {
@@ -149,23 +150,23 @@ impl scene::Node for Explosive {
 pub fn create_explosion(position: Vec2, radius: f32) {
     let mut r = 0.0;
     {
-        let mut resources = storage::get_mut::<Resources>();
+        let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
         while r < radius - 5. {
             // Particles are 5 in radius
             r += 10.0 / (r + 1.);
             let angle = gen_range(0.0, f32::consts::PI * 2.);
-            resources
-                .explosion_fire_emitter
+            particles
+                .explosion_fire
                 .emit(position + Vec2::new(angle.cos(), angle.sin()) * r, 1);
             //Explosion
         }
 
-        resources.explosion_particle_emitters.spawn(position); //Bits/particles
+        particles.explosion_particles.spawn(position); //Bits/particles
 
         let mut a = 0.0;
         while a < f32::consts::PI * 2.0 {
-            resources
-                .smoke_emitter
+            particles
+                .smoke
                 .emit(position + Vec2::new(a.cos(), a.sin()) * (radius - 15.0), 1); //Smoke at the edges of the explosion
             a += 4.0 / radius;
         }

@@ -1,245 +1,350 @@
-use std::{
-    path::Path,
-    collections::HashMap,
-};
+use std::{collections::HashMap, fs, path::Path};
 
 use macroquad::{
-    audio::{
-        Sound,
-        load_sound,
-    },
+    audio::{load_sound, Sound},
     prelude::*,
 };
 
-use macroquad_particles::{Emitter, EmittersCache};
+use macroquad_particles::EmitterConfig;
 
-use serde::{
-    Serialize,
-    Deserialize,
-};
+use serde::{Deserialize, Serialize};
 
 use crate::{
-    items::ITEMS,
-    editor::DEFAULT_TOOL_ICON_TEXTURE_ID,
-    json,
+    error::{ErrorKind, Result},
+    formaterr,
+    items::ItemParams,
+    json::{self, deserialize_bytes},
+    map::Map,
 };
 
 #[derive(Serialize, Deserialize)]
-struct SoundResource {
+struct ParticleEffectMetadata {
     id: String,
     path: String,
 }
 
 #[derive(Serialize, Deserialize)]
-struct TextureResource {
+struct SoundMetadata {
     id: String,
     path: String,
-    #[serde(default, with = "json::def_uvec2", skip_serializing_if = "json::uvec2_is_zero")]
-    frame_size: UVec2,
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TextureKind {
+    Background,
+    Tileset,
+    Spritesheet,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextureMetadata {
+    pub id: String,
+    pub path: String,
+    #[serde(default, rename = "type", skip_serializing_if = "Option::is_none")]
+    pub kind: Option<TextureKind>,
+    #[serde(
+        default,
+        with = "json::uvec2_opt",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub sprite_size: Option<UVec2>,
     #[serde(default = "json::default_filter_mode", with = "json::FilterModeDef")]
-    filter_mode: FilterMode,
+    pub filter_mode: FilterMode,
 }
 
-#[derive(Copy, Clone)]
-pub struct TextureEntry {
+#[derive(Debug, Clone)]
+pub struct TextureResource {
     pub texture: Texture2D,
-    pub frame_size: UVec2,
+    pub meta: TextureMetadata,
 }
 
-#[derive(Serialize, Deserialize)]
-struct MapResource {
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MapMetadata {
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
     pub path: String,
     pub preview_path: String,
-    #[serde(default)]
-    pub is_tiled: bool,
+    #[serde(default, skip_serializing_if = "json::is_false")]
+    pub is_tiled_map: bool,
+    #[serde(default, skip_serializing_if = "json::is_false")]
+    pub is_user_map: bool,
 }
 
-#[derive(Clone)]
-pub struct MapEntry {
-    pub path: String,
+#[derive(Debug, Clone)]
+pub struct MapResource {
+    pub map: Map,
     pub preview: Texture2D,
-    pub is_tiled: bool,
+    pub meta: MapMetadata,
 }
 
 pub struct Resources {
-    // These should be moved somewhere else.
-    // Optimally, Resources should hold only game data and assets, not state, like these
-    // Emitters and EmitterCaches...
-    pub hit_emitters: EmittersCache,
-    pub explosion_emitters: EmittersCache,
-    pub life_ui_explosion_emitters: EmittersCache,
-    pub explosion_fire_emitter: Emitter,
-    pub explosion_particle_emitters: EmittersCache,
-    pub smoke_emitter: Emitter,
-    pub item_emitters: HashMap<String, EmittersCache>,
+    pub assets_dir: String,
 
+    // NOTE: Particle emitters has been moved to ParticleEmitter node.
+    // Resources is for data and assets, loaded from external files, and should not hold any state
+    pub particle_effects: HashMap<String, EmitterConfig>,
     pub sounds: HashMap<String, Sound>,
     pub music: HashMap<String, Sound>,
-    pub textures: HashMap<String, TextureEntry>,
-    pub maps: Vec<MapEntry>,
+    pub textures: HashMap<String, TextureResource>,
+    pub maps: Vec<MapResource>,
+    pub items: HashMap<String, ItemParams>,
 }
 
 impl Resources {
-    const EFFECTS_DIR: &'static str = "effects";
+    pub const PARTICLE_EFFECTS_DIR: &'static str = "particle_effects";
+    pub const SOUNDS_FILE: &'static str = "sounds";
+    pub const MUSIC_FILE: &'static str = "music";
+    pub const TEXTURES_FILE: &'static str = "textures";
+    pub const MAPS_FILE: &'static str = "maps";
+    pub const ITEMS_FILE: &'static str = "items";
 
-    const SOUNDS_DIR: &'static str = "sounds";
-    const SOUNDS_FILE: &'static str = "sounds.ron";
+    pub const RESOURCE_FILES_EXTENSION: &'static str = "json";
 
-    const MUSIC_DIR: &'static str = "music";
-    const MUSIC_FILE: &'static str = "music.ron";
+    pub const MAP_EXPORTS_EXTENSION: &'static str = "ron";
+    pub const MAP_EXPORTS_DEFAULT_DIR: &'static str = "maps";
+    pub const MAP_PREVIEW_PLACEHOLDER_PATH: &'static str = "maps/no_preview.png";
+    pub const MAP_PREVIEW_PLACEHOLDER_ID: &'static str = "map_preview_placeholder";
 
-    const TEXTURES_DIR: &'static str = "textures";
-    const TEXTURES_FILE: &'static str = "textures.ron";
+    pub async fn new(assets_dir: &str) -> Result<Resources> {
+        let assets_dir_path = Path::new(assets_dir);
 
-    const MAPS_DIR: &'static str = "maps";
-    const MAPS_FILE: &'static str = "maps.ron";
+        let mut particle_effects = HashMap::new();
 
-    // TODO: fix macroquad error type here
-    pub async fn new(assets_dir: &str) -> Result<Resources, macroquad::prelude::FileError> {
-        let assets_dir = Path::new(assets_dir);
+        {
+            let particle_effects_file_path = assets_dir_path
+                .join(Self::PARTICLE_EFFECTS_DIR)
+                .with_extension(Self::RESOURCE_FILES_EXTENSION);
 
-        let effects_dir = assets_dir.join(Self::EFFECTS_DIR);
+            let bytes = load_file(&particle_effects_file_path.to_string_lossy()).await?;
+            let metadata: Vec<ParticleEffectMetadata> =
+                deserialize_bytes(Self::RESOURCE_FILES_EXTENSION, &bytes)?;
 
-        let hit_emitters = {
-            let file_path = effects_dir.join("hit.json");
-            let json = load_string(&file_path.to_string_lossy()).await?;
-            EmittersCache::new(nanoserde::DeJson::deserialize_json(&json).unwrap())
-        };
+            for meta in metadata {
+                let file_path = assets_dir_path.join(&meta.path);
 
-        let explosion_emitters = {
-            let file_path = effects_dir.join("explosion.json");
-            let json = load_string(&file_path.to_string_lossy()).await?;
-            EmittersCache::new(nanoserde::DeJson::deserialize_json(&json).unwrap())
-        };
+                // TODO: Make serde interface for `EmitterConfig` to remove nanoserde dependency
+                let str = load_string(&file_path.to_string_lossy()).await?;
+                let cfg: EmitterConfig = nanoserde::DeJson::deserialize_json(&str)?;
 
-        let life_ui_explosion_emitters = {
-            let file_path = effects_dir.join("life_ui_explosion.json");
-            let json = load_string(&file_path.to_string_lossy()).await?;
-            EmittersCache::new(nanoserde::DeJson::deserialize_json(&json).unwrap())
-        };
-
-        let explosion_fire_emitter = {
-            let file_path = effects_dir.join("cannonball_hit.json");
-            let json = load_string(&file_path.to_string_lossy()).await?;
-            Emitter::new(nanoserde::DeJson::deserialize_json(&json).unwrap())
-        };
-
-        let explosion_particle_emitters = {
-            let file_path = effects_dir.join("explosion_particles.json");
-            let json = load_string(&file_path.to_string_lossy()).await?;
-            EmittersCache::new(nanoserde::DeJson::deserialize_json(&json).unwrap())
-        };
-
-        let smoke_emitter = {
-            let file_path = effects_dir.join("smoke.json");
-            let json = load_string(&file_path.to_string_lossy()).await?;
-            Emitter::new(nanoserde::DeJson::deserialize_json(&json).unwrap())
-        };
+                particle_effects.insert(meta.id, cfg);
+            }
+        }
 
         let mut sounds = HashMap::new();
 
         {
-            let sounds_dir = assets_dir.join(Self::SOUNDS_DIR);
-            let sounds_file = sounds_dir.join(Self::SOUNDS_FILE);
+            let sounds_file_path = assets_dir_path
+                .join(Self::SOUNDS_FILE)
+                .with_extension(Self::RESOURCE_FILES_EXTENSION);
 
-            let bytes = load_file(&sounds_file.to_string_lossy()).await?;
-            let sound_resources: Vec<SoundResource> = ron::de::from_bytes(&bytes).unwrap();
+            let bytes = load_file(&sounds_file_path.to_string_lossy()).await?;
+            let metadata: Vec<SoundMetadata> =
+                deserialize_bytes(Self::RESOURCE_FILES_EXTENSION, &bytes)?;
 
-            for res in sound_resources {
-                let file_path = sounds_dir.join(res.path);
+            for meta in metadata {
+                let file_path = assets_dir_path.join(meta.path);
 
                 let sound = load_sound(&file_path.to_string_lossy()).await?;
 
-                sounds.insert(res.id, sound);
+                sounds.insert(meta.id, sound);
             }
         }
 
         let mut music = HashMap::new();
 
         {
-            let music_dir = assets_dir.join(Self::MUSIC_DIR);
-            let music_file = music_dir.join(Self::MUSIC_FILE);
+            let music_file_path = assets_dir_path
+                .join(Self::MUSIC_FILE)
+                .with_extension(Self::RESOURCE_FILES_EXTENSION);
 
-            let bytes = load_file(&music_file.to_string_lossy()).await?;
-            let music_resources: Vec<SoundResource> = ron::de::from_bytes(&bytes).unwrap();
+            let bytes = load_file(&music_file_path.to_string_lossy()).await?;
+            let metadata: Vec<SoundMetadata> =
+                deserialize_bytes(Self::RESOURCE_FILES_EXTENSION, &bytes)?;
 
-            for res in music_resources {
-                let file_path = music_dir.join(res.path);
+            for meta in metadata {
+                let file_path = assets_dir_path.join(meta.path);
 
                 let sound = load_sound(&file_path.to_string_lossy()).await?;
 
-                music.insert(res.id, sound);
+                music.insert(meta.id, sound);
             }
         }
 
         let mut textures = HashMap::new();
 
         {
-            let textures_dir = assets_dir.join(Self::TEXTURES_DIR);
-            let textures_file = textures_dir.join(Self::TEXTURES_FILE);
+            let textures_file_path = assets_dir_path
+                .join(Self::TEXTURES_FILE)
+                .with_extension(Self::RESOURCE_FILES_EXTENSION);
 
-            let bytes = load_file(&textures_file.to_string_lossy()).await?;
-            let texture_resources: Vec<TextureResource> = ron::de::from_bytes(&bytes).unwrap();
+            let bytes = load_file(&textures_file_path.to_string_lossy()).await?;
+            let metadata: Vec<TextureMetadata> =
+                deserialize_bytes(Self::RESOURCE_FILES_EXTENSION, &bytes)?;
 
-            for res in texture_resources {
-                let file_path = textures_dir.join(res.path);
+            for meta in metadata {
+                let file_path = assets_dir_path.join(&meta.path);
 
                 let texture = load_texture(&file_path.to_string_lossy()).await?;
-                texture.set_filter(res.filter_mode);
+                texture.set_filter(meta.filter_mode);
 
-                let mut frame_size = res.frame_size;
-                if frame_size == UVec2::ZERO {
-                    frame_size = uvec2(texture.width() as u32, texture.height() as u32)
-                }
+                let sprite_size = {
+                    let val = meta
+                        .sprite_size
+                        .unwrap_or_else(|| vec2(texture.width(), texture.height()).as_u32());
 
-                let entry = TextureEntry {
-                    texture,
-                    frame_size,
+                    Some(val)
                 };
 
-                textures.insert(res.id, entry);
+                let key = meta.id.clone();
+
+                let res = TextureResource {
+                    texture,
+                    meta: TextureMetadata {
+                        sprite_size,
+                        ..meta
+                    },
+                };
+
+                textures.insert(key, res);
             }
         }
 
         let mut maps = Vec::new();
 
         {
-            let maps_dir = assets_dir.join(Self::MAPS_DIR);
-            let maps_file = maps_dir.join(Self::MAPS_FILE);
+            let maps_file_path = assets_dir_path
+                .join(Self::MAPS_FILE)
+                .with_extension(Self::RESOURCE_FILES_EXTENSION);
 
-            let bytes = load_file(&maps_file.to_string_lossy()).await?;
-            let map_resources: Vec<MapResource> = ron::de::from_bytes(&bytes).unwrap();
+            let bytes = load_file(&maps_file_path.to_string_lossy()).await?;
+            let metadata: Vec<MapMetadata> =
+                deserialize_bytes(Self::RESOURCE_FILES_EXTENSION, &bytes)?;
 
-            for res in map_resources {
-                let map_path = maps_dir.join(res.path);
-                let preview_path = maps_dir.join(res.preview_path);
+            for meta in metadata {
+                let map_path = assets_dir_path.join(&meta.path);
+                let preview_path = assets_dir_path.join(&meta.preview_path);
+
+                let map = if meta.is_tiled_map {
+                    Map::load_tiled(map_path, None).await?
+                } else {
+                    Map::load(map_path).await?
+                };
 
                 let preview = load_texture(&preview_path.to_string_lossy()).await?;
 
-                let entry = MapEntry {
-                    path: map_path.to_string_lossy().into(),
-                    preview,
-                    is_tiled: res.is_tiled,
-                };
+                let res = MapResource { map, preview, meta };
 
-                maps.push(entry)
+                maps.push(res)
+            }
+        }
+
+        let mut items = HashMap::new();
+
+        {
+            let items_file_path = assets_dir_path
+                .join(Self::ITEMS_FILE)
+                .with_extension(Self::RESOURCE_FILES_EXTENSION);
+
+            let bytes = load_file(&items_file_path.to_string_lossy()).await?;
+            let items_params: Vec<ItemParams> =
+                deserialize_bytes(Self::RESOURCE_FILES_EXTENSION, &bytes)?;
+
+            for params in items_params {
+                items.insert(params.id.clone(), params);
             }
         }
 
         #[allow(clippy::inconsistent_struct_constructor)]
-            Ok(Resources {
-            hit_emitters,
-            explosion_emitters,
-            life_ui_explosion_emitters,
-            smoke_emitter,
-            explosion_fire_emitter,
-            explosion_particle_emitters,
-            item_emitters: HashMap::new(),
-
+        Ok(Resources {
+            assets_dir: assets_dir.to_string(),
+            particle_effects,
             sounds,
             music,
             textures,
             maps,
+            items,
         })
     }
+
+    pub fn create_map(
+        &mut self,
+        name: &str,
+        description: Option<&str>,
+        tile_size: Vec2,
+        grid_size: UVec2,
+        should_overwrite: bool,
+    ) -> Result<MapResource> {
+        let description = description.map(|str| str.to_string());
+
+        let assets_path = Path::new(&self.assets_dir);
+
+        let map_path = Path::new(Self::MAP_EXPORTS_DEFAULT_DIR)
+            .join(map_name_to_filename(name))
+            .with_extension(Self::MAP_EXPORTS_EXTENSION);
+
+        let path = map_path.to_string_lossy().into_owned();
+
+        if assets_path.join(&map_path).exists() {
+            let mut i = 0;
+            while i < self.maps.len() {
+                let res = &self.maps[i];
+                if res.meta.path == path {
+                    if res.meta.is_user_map && should_overwrite {
+                        self.maps.remove(i);
+                        break;
+                    } else {
+                        return Err(formaterr!(
+                            ErrorKind::General,
+                            "Resources: The path '{}' is in use and it is not possible to overwrite. Please choose a different map name",
+                            map_path.to_str().unwrap(),
+                        ));
+                    }
+                }
+
+                i += 1;
+            }
+        }
+
+        let preview_path = Path::new(Self::MAP_PREVIEW_PLACEHOLDER_PATH)
+            .to_string_lossy()
+            .into_owned();
+
+        let meta = MapMetadata {
+            name: name.to_string(),
+            description,
+            path,
+            preview_path,
+            is_tiled_map: false,
+            is_user_map: true,
+        };
+
+        let map = Map::new(tile_size, grid_size);
+        map.save(assets_path.join(map_path))?;
+
+        let preview = {
+            let res = self.textures.get(Self::MAP_PREVIEW_PLACEHOLDER_ID).unwrap();
+            res.texture
+        };
+
+        let map_resource = MapResource { map, preview, meta };
+
+        self.maps.push(map_resource.clone());
+
+        let maps_file_path = assets_path
+            .join(Self::MAPS_FILE)
+            .with_extension(Self::RESOURCE_FILES_EXTENSION);
+
+        let metadata: Vec<MapMetadata> = self.maps.iter().map(|res| res.meta.clone()).collect();
+
+        let str = serde_json::to_string_pretty(&metadata)?;
+        fs::write(maps_file_path, &str)?;
+
+        Ok(map_resource)
+    }
+}
+
+pub fn map_name_to_filename(name: &str) -> String {
+    name.replace(' ', "_").replace('.', "_").to_lowercase()
 }

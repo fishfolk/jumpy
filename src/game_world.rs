@@ -1,7 +1,4 @@
-use macroquad_platformer::{
-    Tile,
-    World as CollisionWorld,
-};
+use macroquad_platformer::{Tile, World as CollisionWorld};
 
 use crate::Map;
 

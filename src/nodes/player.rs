@@ -18,6 +18,7 @@ use crate::{
     GameWorld, Input, Resources,
 };
 
+use crate::nodes::ParticleEmitters;
 use std::f32;
 
 mod ai;
@@ -282,7 +283,7 @@ impl Player {
                 self.state_machine.set_state(Self::ST_DEATH);
                 {
                     let resources = storage::get::<Resources>();
-                    let die_sound = resources.sounds["die"];
+                    let die_sound = resources.sounds["death"];
 
                     play_sound_once(die_sound);
                 }
@@ -350,13 +351,14 @@ impl Player {
             }
 
             {
-                let mut resources = storage::get_mut::<Resources>();
                 let mut node = scene::get_node(handle);
                 let pos = node.body.pos;
 
                 node.fish_sprite.playing = false;
                 node.body.speed = vec2(0., 0.);
-                resources.explosion_emitters.spawn(pos + vec2(15., 33.));
+
+                let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
+                particles.explosions.spawn(pos + vec2(15., 33.));
             }
 
             wait_seconds(0.5).await;
@@ -448,6 +450,7 @@ impl Player {
 
         start_coroutine(coroutine)
     }
+
     fn update_normal(node: &mut RefMut<Player>, _dt: f32) {
         if node.remote_control {
             return;
@@ -774,12 +777,10 @@ impl scene::Node for Player {
             } else {
                 "player_blue"
             }
+        } else if node.can_head_boink {
+            "player_with_boots_green"
         } else {
-            if node.can_head_boink {
-                "player_with_boots_green"
-            } else {
-                "player_green"
-            }
+            "player_green"
         };
 
         let texture_entry = resources.textures.get(texture_id).unwrap();

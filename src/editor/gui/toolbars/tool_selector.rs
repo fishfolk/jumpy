@@ -103,7 +103,11 @@ impl ToolbarElement for ToolSelectorElement {
                 .size(size)
                 .ui(ui);
 
-            let texture_entry = *resources.textures.get(&params.icon_texture_id).unwrap();
+            let texture_entry = resources
+                .textures
+                .get(&params.icon_texture_id)
+                .cloned()
+                .unwrap();
 
             widgets::Texture::new(texture_entry.texture)
                 .position(position)

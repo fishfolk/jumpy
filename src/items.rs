@@ -17,17 +17,112 @@ mod sword;
 mod turtle_shell;
 mod volcano;
 
+pub mod effects;
+
 use macroquad::{
-    experimental::scene::{
-        HandleUntyped,
-        Handle,
+    experimental::{
+        collections::storage,
+        scene::{HandleUntyped, Node, RefMut},
     },
-    math::Vec2,
+    prelude::*,
 };
+
+use serde::{Deserialize, Serialize};
+
+use crate::{
+    capabilities::NetworkReplicate,
+    components::{PhysicsBody, Sprite, SpriteParams},
+    json, GameWorld,
+};
+
+use effects::{Effect, EffectDelivery};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum ItemKind {
+    Weapon {
+        #[serde(flatten)]
+        effect: Effect,
+        #[serde(flatten)]
+        effect_delivery: EffectDelivery,
+        cooldown: f32,
+        #[serde(default)]
+        recoil: f32,
+    },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ItemParams {
+    pub id: String,
+    #[serde(flatten)]
+    pub kind: ItemKind,
+    #[serde(with = "json::uvec2_def")]
+    pub size: UVec2,
+    #[serde(flatten)]
+    pub sprite: SpriteParams,
+}
+
+pub struct Item {
+    pub id: String,
+    pub kind: ItemKind,
+    pub sprite: Sprite,
+    pub body: PhysicsBody,
+}
+
+impl Item {
+    pub fn _new(position: Vec2, params: ItemParams) -> Self {
+        let mut world = storage::get_mut::<GameWorld>();
+
+        let body = PhysicsBody::new(
+            &mut world.collision_world,
+            position,
+            0.0,
+            params.size.as_f32(),
+        );
+
+        let sprite = Sprite::new(params.sprite);
+
+        Item {
+            id: params.id,
+            kind: params.kind,
+            body,
+            sprite,
+        }
+    }
+
+    fn network_update(mut node: RefMut<Self>) {
+        node.body.update_throw();
+    }
+
+    fn network_capabilities() -> NetworkReplicate {
+        fn network_update(handle: HandleUntyped) {
+            let node = scene::get_untyped_node(handle).unwrap().to_typed::<Item>();
+            Item::network_update(node);
+        }
+
+        NetworkReplicate { network_update }
+    }
+}
+
+impl Node for Item {
+    fn ready(mut node: RefMut<Self>)
+    where
+        Self: Sized,
+    {
+        node.provides(Self::network_capabilities());
+    }
+
+    fn draw(node: RefMut<Self>)
+    where
+        Self: Sized,
+    {
+        node.sprite.draw(node.body.pos, node.body.angle, None);
+    }
+}
 
 /// Proto-mod
 /// A meta description on how to create an item from the map
-pub struct Item {
+pub struct OldItem {
     /// Tiled object name used on the objects layer, like "sword" or "sproinger"
     pub tiled_name: &'static str,
     pub constructor: fn(_: Vec2) -> HandleUntyped,
@@ -52,8 +147,8 @@ pub struct Item {
     pub network_ready: bool,
 }
 
-pub const ITEMS: &[Item] = &[
-    Item {
+pub const ITEMS: &[OldItem] = &[
+    OldItem {
         tiled_name: "sword",
         constructor: sword::Sword::spawn,
         tiled_offset: (-35., -25.),
@@ -61,7 +156,7 @@ pub const ITEMS: &[Item] = &[
         fxses: &[],
         network_ready: true,
     },
-    Item {
+    OldItem {
         tiled_name: "sproinger",
         constructor: sproinger::Sproinger::spawn,
         tiled_offset: (-35., 0.),
@@ -69,7 +164,7 @@ pub const ITEMS: &[Item] = &[
         fxses: &[],
         network_ready: true,
     },
-    Item {
+    OldItem {
         tiled_name: "musket",
         constructor: gun::Gun::spawn_musket,
         tiled_offset: (-35., -25.),
@@ -77,7 +172,7 @@ pub const ITEMS: &[Item] = &[
         fxses: &[],
         network_ready: true,
     },
-    Item {
+    OldItem {
         tiled_name: "sniper",
         constructor: gun::Gun::spawn_sniper,
         tiled_offset: (-35., -25.),
@@ -85,7 +180,7 @@ pub const ITEMS: &[Item] = &[
         fxses: &[],
         network_ready: true,
     },
-    Item {
+    OldItem {
         tiled_name: "machine_gun",
         constructor: machine_gun::MachineGun::spawn,
         tiled_offset: (-35., -25.),
@@ -93,7 +188,7 @@ pub const ITEMS: &[Item] = &[
         fxses: &[],
         network_ready: false,
     },
-    Item {
+    OldItem {
         tiled_name: "mines",
         constructor: mines::Mines::spawn,
         tiled_offset: (-35., -25.),
@@ -101,7 +196,7 @@ pub const ITEMS: &[Item] = &[
         fxses: &[],
         network_ready: false,
     },
-    Item {
+    OldItem {
         tiled_name: "cannon",
         constructor: cannon::Cannon::spawn,
         tiled_offset: (-35., -25.),
@@ -109,7 +204,7 @@ pub const ITEMS: &[Item] = &[
         fxses: &[],
         network_ready: false, // There's no random but I can't verify)
     },
-    Item {
+    OldItem {
         tiled_name: "turtle_shell",
         constructor: turtle_shell::TurtleShell::spawn,
         tiled_offset: (0., 0.),
@@ -117,7 +212,7 @@ pub const ITEMS: &[Item] = &[
         fxses: &[],
         network_ready: false,
     },
-    Item {
+    OldItem {
         tiled_name: "grenade",
         constructor: grenades::Grenades::spawn,
         tiled_offset: (0., 0.),
@@ -125,7 +220,7 @@ pub const ITEMS: &[Item] = &[
         fxses: &[],
         network_ready: false,
     },
-    Item {
+    OldItem {
         tiled_name: "boots",
         constructor: shoes::Shoes::spawn,
         tiled_offset: (0., 0.),
@@ -133,7 +228,7 @@ pub const ITEMS: &[Item] = &[
         fxses: &[],
         network_ready: false,
     },
-    Item {
+    OldItem {
         tiled_name: "volcano",
         constructor: volcano::Volcano::spawn,
         tiled_offset: (0., 0.),
@@ -141,7 +236,7 @@ pub const ITEMS: &[Item] = &[
         fxses: &[],
         network_ready: false,
     },
-    Item {
+    OldItem {
         tiled_name: "galleon",
         constructor: galleon::Galleon::spawn,
         tiled_offset: (0., 0.),
@@ -149,7 +244,7 @@ pub const ITEMS: &[Item] = &[
         fxses: &[],
         network_ready: false,
     },
-    Item {
+    OldItem {
         tiled_name: "jellyfish",
         constructor: jellyfish::Jellyfish::spawn,
         tiled_offset: (0., 0.),
@@ -157,7 +252,7 @@ pub const ITEMS: &[Item] = &[
         fxses: &[],
         network_ready: false,
     },
-    Item {
+    OldItem {
         tiled_name: "shark_rain",
         constructor: shark_rain::SharkRain::spawn,
         tiled_offset: (0., 0.),

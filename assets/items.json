@@ -1,0 +1,32 @@
+[
+    {
+        "id": "sword",
+        "texture_id": "sword",
+        "type": "weapon",
+        "cooldown": 0.5,
+        "effect": "direct_damage",
+        "effect_delivery": "cone",
+        "cone_angle": 150.0,
+        "cone_length": 65.0,
+        "size": {
+            "x": 65,
+            "y": 93
+        }
+    },
+    {
+        "id": "musket",
+        "texture_id": "musket",
+        "type": "weapon",
+        "cooldown": 0.5,
+        "recoil": 0.5,
+        "effect": "direct_damage",
+        "effect_delivery": "projectile",
+        "projectile_range": 128.0,
+        "projectile_speed": 5.0,
+        "projectile_size": 5.0,
+        "size": {
+            "x": 92,
+            "y": 32
+        }
+    }
+]

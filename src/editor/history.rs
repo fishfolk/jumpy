@@ -9,7 +9,6 @@ pub struct EditorHistory {
 
 impl EditorHistory {
     pub fn new() -> Self {
-        // TODO: Do allocation for stacks? Also, the stack sizes must be limited
         EditorHistory {
             undo_stack: Vec::new(),
             redo_stack: Vec::new(),

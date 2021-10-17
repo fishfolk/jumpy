@@ -15,14 +15,13 @@ pub use tiled::TiledMap;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct MapDef {
-    pub name: String,
     #[serde(default = "Map::default_background_color", with = "json::ColorDef")]
     pub background_color: Color,
-    #[serde(with = "super::def_vec2", default)]
+    #[serde(with = "super::vec2_def", default)]
     pub world_offset: Vec2,
-    #[serde(with = "super::def_uvec2")]
+    #[serde(with = "super::uvec2_def")]
     pub grid_size: UVec2,
-    #[serde(with = "super::def_vec2")]
+    #[serde(with = "super::vec2_def")]
     pub tile_size: Vec2,
     pub layers: Vec<MapLayerDef>,
     pub tilesets: Vec<MapTileset>,
@@ -92,7 +91,6 @@ impl From<Map> for MapDef {
             .collect();
 
         MapDef {
-            name: other.name,
             background_color: other.background_color,
             world_offset: other.world_offset,
             grid_size: other.grid_size,
@@ -179,7 +177,6 @@ impl From<MapDef> for Map {
         }));
 
         Map {
-            name: def.name,
             background_color: def.background_color,
             world_offset: def.world_offset,
             grid_size: def.grid_size,

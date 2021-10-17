@@ -1,20 +1,13 @@
-use std::collections::HashMap;
-
 use macroquad::prelude::*;
 
-use macroquad_particles as particles;
-
 use macroquad::{
-    audio::{self, load_sound},
+    audio,
     experimental::{
         collections::storage,
         coroutines::start_coroutine,
         scene::{self, Handle},
     },
 };
-
-use macroquad_platformer::Tile;
-use particles::{Emitter, EmittersCache};
 
 use std::env;
 
@@ -31,21 +24,27 @@ pub mod json;
 pub mod map;
 
 pub mod editor;
-pub mod math;
-pub mod text;
-pub mod weapons;
 pub mod game_world;
+pub mod math;
 pub mod resources;
+pub mod text;
 
-pub use resources::Resources;
+#[macro_use]
+pub mod error;
+
 pub use game_world::GameWorld;
+pub use resources::Resources;
 
-use editor::{Editor, EditorCamera, EditorInputScheme, DEFAULT_TOOL_ICON_TEXTURE_ID};
+use editor::{Editor, EditorCamera, EditorInputScheme};
 
 pub use input::{Input, InputScheme};
 
 use crate::nodes::Player;
 use map::Map;
+
+use crate::items::effects::Projectiles;
+use crate::resources::MapResource;
+use error::Result;
 
 pub type CollisionWorld = macroquad_platformer::World;
 
@@ -62,8 +61,8 @@ pub enum GameType {
     },
 }
 
-async fn build_game_scene(map: Map, assets_dir: &str, is_local_game: bool) -> Vec<Handle<Player>> {
-    use nodes::{Camera, Decoration, Fxses, SceneRenderer};
+async fn build_game_scene(map: Map, is_local_game: bool) -> Result<Vec<Handle<Player>>> {
+    use nodes::{Camera, Decoration, ParticleEmitters, SceneRenderer};
 
     let resources = storage::get::<Resources>();
     let battle_music = resources.music["fish_tide"];
@@ -114,12 +113,13 @@ async fn build_game_scene(map: Map, assets_dir: &str, is_local_game: bool) -> Ve
         }
     }
 
-    scene::add_node(Fxses {});
+    scene::add_node(ParticleEmitters::new().await?);
+    scene::add_node(Projectiles::new());
 
-    players
+    Ok(players)
 }
 
-async fn game(map: Map, game_type: GameType, assets_dir: &str) {
+async fn game(map_resource: MapResource, game_type: GameType) -> Result<()> {
     use nodes::{LocalNetwork, Network};
 
     match game_type {
@@ -130,21 +130,21 @@ async fn game(map: Map, game_type: GameType, assets_dir: &str) {
                 "There should be two player input schemes for this game mode!"
             );
 
-            let players = build_game_scene(map, assets_dir, true).await;
+            let players = build_game_scene(map_resource.map, true).await?;
             scene::add_node(LocalNetwork::new(players_input, players[0], players[1]));
         }
         GameType::Editor { input_scheme, .. } => {
-            let position = map.get_size() * 0.5;
+            let position = map_resource.map.get_size() * 0.5;
 
             scene::add_node(EditorCamera::new(position));
-            scene::add_node(Editor::new(input_scheme, map));
+            scene::add_node(Editor::new(input_scheme, map_resource));
         }
         GameType::Network {
             input_scheme,
             socket,
             id,
         } => {
-            let players = build_game_scene(map, assets_dir, false).await;
+            let players = build_game_scene(map_resource.map, false).await?;
             scene::add_node(Network::new(
                 id,
                 socket,
@@ -176,7 +176,7 @@ fn window_conf() -> Conf {
 }
 
 #[macroquad::main(window_conf)]
-async fn main() {
+async fn main() -> Result<()> {
     let assets_dir = env::var("FISHFIGHT_ASSETS").unwrap_or_else(|_| "./assets".to_string());
 
     {
@@ -213,30 +213,28 @@ async fn main() {
     loop {
         let game_type = gui::main_menu::game_type().await;
 
-        let map = match &game_type {
-            GameType::Local(..) => {
-                let map_entry = gui::main_menu::location_select().await;
-                Map::load_tiled(&map_entry.path, None).await.unwrap()
-            }
+        let map_resource = match &game_type {
+            GameType::Local(..) => gui::main_menu::location_select().await,
             GameType::Editor { is_new_map, .. } => {
                 if *is_new_map {
-                    let (name, tile_size, grid_size) = gui::main_menu::new_map().await;
-                    Map::new(&name, tile_size, grid_size)
+                    gui::main_menu::create_map().await?
                 } else {
-                    let map_entry = gui::main_menu::location_select().await;
-                    if map_entry.is_tiled {
-                        Map::load_tiled(&map_entry.path, None).await.unwrap()
-                    } else {
-                        Map::load(&map_entry.path).await.unwrap()
-                    }
+                    gui::main_menu::location_select().await
                 }
             }
-            GameType::Network { .. } => Map::load_tiled("assets/levels/lev01.json", None)
-                .await
-                .unwrap(),
+            GameType::Network { .. } => {
+                let resources = storage::get::<Resources>();
+
+                resources
+                    .maps
+                    .iter()
+                    .find(|res| res.meta.path.ends_with("level_01.json"))
+                    .cloned()
+                    .unwrap()
+            }
         };
 
-        game(map, game_type, &assets_dir).await;
+        game(map_resource, game_type).await?;
 
         scene::clear();
     }

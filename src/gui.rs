@@ -2,16 +2,9 @@ pub mod main_menu;
 pub mod pause_menu;
 mod style;
 
-use nanoserde::Toml;
-
 pub use style::SkinCollection;
 
 use quad_gamepad::ControllerContext;
-
-use macroquad::{
-    file::load_string,
-    texture::{load_texture, Texture2D},
-};
 
 use crate::editor::gui::skins::EditorSkinCollection;
 

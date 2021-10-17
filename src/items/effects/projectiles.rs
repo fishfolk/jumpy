@@ -1,24 +1,17 @@
 use macroquad::{
-    experimental::{
-        scene::{
-            Node,
-            Handle,
-            HandleUntyped,
-            RefMut,
-        },
-    },
+    experimental::scene::{Handle, HandleUntyped, Node, RefMut},
     prelude::*,
 };
 
-use crate::{
-    Player,
-    capabilities::NetworkReplicate,
-};
+use crate::{capabilities::NetworkReplicate, Player};
 
-pub struct Projectile {
+// TODO: Performance test this and reduce complexity as needed
+struct Projectile {
     owner: Handle<Player>,
     position: Vec2,
     velocity: Vec2,
+    color: Color,
+    size: f32,
     ttl: Option<f32>,
     ttl_timer: f32,
 }
@@ -29,9 +22,27 @@ pub struct Projectiles {
 
 impl Projectiles {
     pub fn new() -> Self {
-        Projectiles {
-            active: Vec::new(),
-        }
+        Projectiles { active: Vec::new() }
+    }
+
+    pub fn _spawn(
+        &mut self,
+        owner: Handle<Player>,
+        origin: Vec2,
+        velocity: Vec2,
+        color: Color,
+        size: f32,
+        ttl: Option<f32>,
+    ) {
+        self.active.push(Projectile {
+            owner,
+            position: origin,
+            velocity,
+            color,
+            size,
+            ttl,
+            ttl_timer: 0.0,
+        });
     }
 
     fn network_update(mut node: RefMut<Self>) {
@@ -48,7 +59,7 @@ impl Projectiles {
 
             projectile.position += projectile.velocity;
 
-            // Borrow owner so that it is excluded from the following iteration and hit checking
+            // Borrow owner so that it is excluded from the following iteration and hit check
             let _owner = scene::try_get_node(projectile.owner);
 
             for mut player in scene::find_nodes_by_type::<Player>() {
@@ -79,7 +90,18 @@ impl Projectiles {
 }
 
 impl Node for Projectiles {
-    fn ready(mut node: RefMut<Self>) where Self: Sized {
+    fn ready(mut node: RefMut<Self>) {
         node.provides(Self::network_capabilities());
+    }
+
+    fn draw(node: RefMut<Self>) {
+        for projectile in &node.active {
+            draw_circle(
+                projectile.position.x,
+                projectile.position.y,
+                projectile.size,
+                projectile.color,
+            )
+        }
     }
 }

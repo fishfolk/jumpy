@@ -1,27 +1,22 @@
-use std::{collections::HashMap, io, path::Path};
+use std::{collections::HashMap, path::Path};
 
 use macroquad::{color, experimental::collections::storage, prelude::*};
 
 use serde::{Deserialize, Serialize};
 
+use crate::error::Result;
+
 use crate::{
+    editor::gui::combobox::ComboBoxValue,
     json::{self, TiledMap},
     math::URect,
+    text::{draw_aligned_text, HorizontalAlignment, VerticalAlignment},
     Resources,
-    text::{
-        draw_aligned_text,
-        HorizontalAlignment,
-        VerticalAlignment,
-    },
-    editor::{
-        gui::combobox::ComboBoxValue
-    },
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(into = "json::MapDef", from = "json::MapDef")]
 pub struct Map {
-    pub name: String,
     #[serde(default = "Map::default_background_color", with = "json::ColorDef")]
     pub background_color: Color,
     #[serde(with = "json::def_vec2")]
@@ -39,13 +34,10 @@ pub struct Map {
 }
 
 impl Map {
-    pub const DEFAULT_NAME: &'static str = "Unnamed Map";
-
     pub const PLATFORM_TILE_ATTRIBUTE: &'static str = "jumpthrough";
 
-    pub fn new(name: &str, tile_size: Vec2, grid_size: UVec2) -> Self {
+    pub fn new(tile_size: Vec2, grid_size: UVec2) -> Self {
         Map {
-            name: name.to_string(),
             background_color: Self::default_background_color(),
             world_offset: Vec2::ZERO,
             grid_size,
@@ -57,7 +49,7 @@ impl Map {
         }
     }
 
-    pub async fn load<P: AsRef<Path>>(path: P) -> Result<Self, FileError> {
+    pub async fn load<P: AsRef<Path>>(path: P) -> Result<Self> {
         let path = path.as_ref();
 
         let bytes = load_file(&path.to_string_lossy()).await?;
@@ -66,17 +58,13 @@ impl Map {
         Ok(map)
     }
 
-    pub async fn load_tiled<P: AsRef<Path>>(
-        path: P,
-        export_path: Option<P>,
-    ) -> Result<Self, FileError> {
+    pub async fn load_tiled<P: AsRef<Path>>(path: P, export_path: Option<P>) -> Result<Self> {
         let path = path.as_ref();
 
         let bytes = load_file(&path.to_string_lossy()).await?;
         let tiled_map: TiledMap = serde_json::from_slice(&bytes).unwrap();
 
-        let name = map_name_from_path(path);
-        let map = tiled_map.into_map(&name);
+        let map = tiled_map.into_map();
 
         if let Some(export_path) = export_path {
             map.save(export_path).unwrap();
@@ -163,7 +151,7 @@ impl Map {
                             self.tile_size.x,
                             self.tile_size.y,
                         )
-                            .overlaps(&collider)
+                        .overlaps(&collider)
                         {
                             collisions.push(tile_position);
                         }
@@ -199,12 +187,13 @@ impl Map {
                         for (x, y, tile) in self.get_tiles(&layer_id, Some(rect)) {
                             if let Some(tile) = tile {
                                 let world_position = self.world_offset
-                                    + vec2(x as f32 * self.tile_size.x, y as f32 * self.tile_size.y);
+                                    + vec2(
+                                        x as f32 * self.tile_size.x,
+                                        y as f32 * self.tile_size.y,
+                                    );
 
-                                let texture_entry = resources
-                                    .textures
-                                    .get(&tile.texture_id)
-                                    .unwrap_or_else(|| {
+                                let texture_entry =
+                                    resources.textures.get(&tile.texture_id).unwrap_or_else(|| {
                                         panic!("No texture with id '{}'!", tile.texture_id)
                                     });
 
@@ -256,7 +245,7 @@ impl Map {
     }
 
     #[cfg(any(target_family = "unix", target_family = "windows"))]
-    pub fn save<P: AsRef<Path>>(&self, path: P) -> io::Result<()> {
+    pub fn save<P: AsRef<Path>>(&self, path: P) -> Result<()> {
         let json = serde_json::to_string_pretty(self)?;
         std::fs::write(path, json)?;
         Ok(())
@@ -332,10 +321,7 @@ impl ComboBoxValue for MapLayerKind {
     }
 
     fn options() -> &'static [&'static str] {
-        &[
-            "Tiles",
-            "Objects",
-        ]
+        &["Tiles", "Objects"]
     }
 }
 
@@ -351,7 +337,7 @@ pub struct MapLayer {
     pub kind: MapLayerKind,
     #[serde(default)]
     pub has_collision: bool,
-    #[serde(with = "json::def_uvec2")]
+    #[serde(with = "json::uvec2_def")]
     pub grid_size: UVec2,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub tiles: Vec<Option<MapTile>>,
@@ -405,7 +391,7 @@ pub struct MapTile {
     pub tile_id: u32,
     pub tileset_id: String,
     pub texture_id: String,
-    #[serde(with = "json::def_vec2")]
+    #[serde(with = "json::vec2_def")]
     pub texture_coords: Vec2,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub attributes: Vec<String>,
@@ -415,7 +401,6 @@ pub struct MapTile {
 #[serde(rename_all = "snake_case")]
 pub enum MapObjectKind {
     Item,
-    Weapon,
     SpawnPoint,
     Environment,
     Decoration,
@@ -423,7 +408,6 @@ pub enum MapObjectKind {
 
 impl MapObjectKind {
     const ITEM: &'static str = "item";
-    const WEAPON: &'static str = "weapon";
     const SPAWN_POINT: &'static str = "spawn_point";
     const ENVIRONMENT: &'static str = "environment";
     const DECORATION: &'static str = "decoration";
@@ -433,8 +417,6 @@ impl From<String> for MapObjectKind {
     fn from(str: String) -> Self {
         if str == Self::ITEM {
             Self::Item
-        } else if str == Self::WEAPON {
-            Self::Weapon
         } else if str == Self::SPAWN_POINT {
             Self::SpawnPoint
         } else if str == Self::ENVIRONMENT {
@@ -453,14 +435,13 @@ impl From<String> for MapObjectKind {
     }
 }
 
-impl Into<String> for MapObjectKind {
-    fn into(self) -> String {
-        match self {
-            Self::Item => Self::ITEM.to_string(),
-            Self::Weapon => Self::WEAPON.to_string(),
-            Self::SpawnPoint => Self::SPAWN_POINT.to_string(),
-            Self::Environment => Self::ENVIRONMENT.to_string(),
-            Self::Decoration => Self::DECORATION.to_string(),
+impl From<MapObjectKind> for String {
+    fn from(kind: MapObjectKind) -> String {
+        match kind {
+            MapObjectKind::Item => MapObjectKind::ITEM.to_string(),
+            MapObjectKind::SpawnPoint => MapObjectKind::SPAWN_POINT.to_string(),
+            MapObjectKind::Environment => MapObjectKind::ENVIRONMENT.to_string(),
+            MapObjectKind::Decoration => MapObjectKind::DECORATION.to_string(),
         }
     }
 }
@@ -469,10 +450,9 @@ impl ComboBoxValue for MapObjectKind {
     fn from_index(index: usize) -> Self {
         match index {
             0 => Self::Item,
-            1 => Self::Weapon,
-            2 => Self::SpawnPoint,
-            3 => Self::Environment,
-            4 => Self::Decoration,
+            1 => Self::SpawnPoint,
+            2 => Self::Environment,
+            3 => Self::Decoration,
             _ => unreachable!(),
         }
     }
@@ -480,35 +460,27 @@ impl ComboBoxValue for MapObjectKind {
     fn to_index(&self) -> usize {
         match self {
             Self::Item => 0,
-            Self::Weapon => 1,
-            Self::SpawnPoint => 2,
-            Self::Environment => 3,
-            Self::Decoration => 4,
+            Self::SpawnPoint => 1,
+            Self::Environment => 2,
+            Self::Decoration => 3,
         }
     }
 
     fn options() -> &'static [&'static str] {
-        &[
-            "Item",
-            "Weapon",
-            "Spawn point",
-            "Environment",
-            "Decoration",
-        ]
+        &["Item", "Spawn point", "Environment", "Decoration"]
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MapObject {
-    // The ID of the item, referencing an entry in the appropriate data file for its `MapObjectKind`
     pub id: String,
     pub kind: MapObjectKind,
-    #[serde(with = "json::def_vec2")]
+    #[serde(with = "json::vec2_def")]
     pub position: Vec2,
     #[serde(
-    default,
-    with = "json::opt_vec2",
-    skip_serializing_if = "Option::is_none"
+        default,
+        with = "json::vec2_opt",
+        skip_serializing_if = "Option::is_none"
     )]
     pub size: Option<Vec2>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
@@ -552,17 +524,17 @@ pub enum MapProperty {
 pub struct MapTileset {
     pub id: String,
     pub texture_id: String,
-    #[serde(with = "json::def_uvec2")]
+    #[serde(with = "json::uvec2_def")]
     pub texture_size: UVec2,
-    #[serde(with = "json::def_vec2")]
+    #[serde(with = "json::vec2_def")]
     pub tile_size: Vec2,
-    #[serde(with = "json::def_uvec2")]
+    #[serde(with = "json::uvec2_def")]
     pub grid_size: UVec2,
     pub first_tile_id: u32,
     pub tile_cnt: u32,
     #[serde(
-    default = "MapTileset::default_tile_subdivisions",
-    with = "json::def_uvec2"
+        default = "MapTileset::default_tile_subdivisions",
+        with = "json::uvec2_def"
     )]
     pub tile_subdivisions: UVec2,
     pub autotile_mask: Vec<bool>,
@@ -618,22 +590,4 @@ impl MapTileset {
     pub fn default_tile_subdivisions() -> UVec2 {
         uvec2(3, 3)
     }
-}
-
-pub fn map_name_from_path<P: AsRef<Path>>(path: P) -> String {
-    let path = path.as_ref();
-    if let Some(os_str) = path.file_name() {
-        let str = os_str.to_str().unwrap();
-        let mut split = str.split('.').collect::<Vec<_>>();
-        let split_len = split.len();
-        if split_len > 0 {
-            if split_len > 1 {
-                split.pop();
-            }
-
-            return split.join(".");
-        }
-    }
-
-    Map::DEFAULT_NAME.to_string()
 }

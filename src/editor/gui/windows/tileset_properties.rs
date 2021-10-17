@@ -59,13 +59,17 @@ impl TilesetPropertiesWindow {
     ) -> Option<EditorAction> {
         let texture_entry = {
             let resources = storage::get::<Resources>();
-            *resources
+            resources
                 .textures
                 .get(&tileset.texture_id)
+                .cloned()
                 .unwrap()
         };
 
-        let tileset_texture_size = vec2(texture_entry.texture.width(), texture_entry.texture.height());
+        let tileset_texture_size = vec2(
+            texture_entry.texture.width(),
+            texture_entry.texture.height(),
+        );
 
         let mut scaled_width = size.x;
         let mut scaled_height = (scaled_width / tileset_texture_size.x) * tileset_texture_size.y;

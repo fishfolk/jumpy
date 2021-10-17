@@ -9,6 +9,7 @@ use macroquad::{
     prelude::*,
 };
 
+use crate::nodes::ParticleEmitters;
 use crate::{
     components::{EruptedItem, PhysicsBody},
     GameWorld, Resources,
@@ -128,8 +129,8 @@ impl Node for ArmedGrenade {
 
         if node.lived >= ArmedGrenade::COUNTDOWN_DURATION {
             {
-                let mut resources = storage::get_mut::<Resources>();
-                resources.hit_emitters.spawn(node.body.pos);
+                let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
+                particles.hit.spawn(node.body.pos);
             }
             let grenade_circ = Circle::new(
                 node.body.pos.x,

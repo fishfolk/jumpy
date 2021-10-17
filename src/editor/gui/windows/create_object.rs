@@ -4,11 +4,8 @@ use macroquad::{
 };
 
 use crate::{
+    editor::gui::ComboBoxBuilder,
     map::{Map, MapObjectKind},
-    editor::gui::{
-        ComboBoxValue,
-        ComboBoxBuilder,
-    },
 };
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};

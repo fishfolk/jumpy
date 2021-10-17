@@ -6,7 +6,8 @@ use macroquad::{
 };
 use macroquad_platformer::Tile;
 
-use crate::{GameWorld, Resources};
+use crate::nodes::ParticleEmitters;
+use crate::GameWorld;
 
 pub struct Bullet {
     pub pos: Vec2,
@@ -48,8 +49,8 @@ impl Bullet {
                     .shake_noise(1.0, 10, 1.);
 
                 {
-                    let mut resources = storage::get_mut::<Resources>();
-                    resources.hit_emitters.spawn(self.pos);
+                    let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
+                    particles.hit.spawn(self.pos);
                 }
 
                 player.kill(direction);
@@ -58,10 +59,10 @@ impl Bullet {
             }
         }
 
-        let mut resources = storage::get_mut::<Resources>();
         let world = storage::get::<GameWorld>();
         if world.collision_world.collide_solids(self.pos, 5, 5) == Tile::Solid {
-            resources.hit_emitters.spawn(self.pos);
+            let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
+            particles.hit.spawn(self.pos);
             return false;
         }
 

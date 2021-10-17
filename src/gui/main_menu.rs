@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use std::net::UdpSocket;
 
 use macroquad::{
@@ -7,13 +9,13 @@ use macroquad::{
 };
 
 use crate::{
+    error::Result,
     gui::GuiResources,
     input::InputScheme,
     nodes::network::Message,
-    EditorInputScheme, GameType,
-    Resources,
-    resources::MapEntry,
+    resources::{map_name_to_filename, MapResource},
     text::{draw_aligned_text, HorizontalAlignment, VerticalAlignment},
+    EditorInputScheme, GameType, Resources,
 };
 
 const RELAY_ADDR: &str = "173.0.157.169:35000";
@@ -308,6 +310,7 @@ impl Connection {
         None
     }
 }
+
 struct NetworkUiState {
     input_scheme: InputScheme,
     connection_kind: ConnectionKind,
@@ -476,7 +479,7 @@ pub async fn game_type() -> GameType {
             |ui| match widgets::Tabbar::new(
                 hash!(),
                 vec2(WINDOW_WIDTH - 50., 50.),
-                &["<< LT, Local", "Editor", "Network, RT >>"],
+                &["<< LB, Local", "Editor", "Network, RB >>"],
             )
             .selected_tab(Some(&mut tab))
             .ui(ui)
@@ -508,8 +511,8 @@ const MAP_SELECT_PREVIEW_TARGET_WIDTH: f32 = 250.0;
 const MAP_SELECT_PREVIEW_RATIO: f32 = 10.0 / 16.0;
 const MAP_SELECT_PREVIEW_SHRINK_FACTOR: f32 = 0.8;
 
-pub async fn location_select() -> MapEntry {
-    let mut current_page: i32 = 0;
+pub async fn location_select() -> MapResource {
+    let mut current_page: i32;
     let mut hovered: i32 = 0;
 
     let mut previous_mouse_pos = mouse_position();
@@ -564,8 +567,14 @@ pub async fn location_select() -> MapEntry {
         root_ui().push_skin(&gui_resources.skins.main_menu_skin);
 
         let screen_size = vec2(screen_width(), screen_height());
-        let screen_margins = vec2(screen_size.x * MAP_SELECT_SCREEN_MARGIN_FACTOR, screen_size.y * MAP_SELECT_SCREEN_MARGIN_FACTOR);
-        let content_size = vec2(screen_size.x - (screen_margins.x * 2.0), screen_size.y - (screen_margins.y * 2.0));
+        let screen_margins = vec2(
+            screen_size.x * MAP_SELECT_SCREEN_MARGIN_FACTOR,
+            screen_size.y * MAP_SELECT_SCREEN_MARGIN_FACTOR,
+        );
+        let content_size = vec2(
+            screen_size.x - (screen_margins.x * 2.0),
+            screen_size.y - (screen_margins.y * 2.0),
+        );
 
         let entries_per_row = (content_size.x / MAP_SELECT_PREVIEW_TARGET_WIDTH).round() as usize;
         let row_cnt = (map_cnt / entries_per_row) + 1;
@@ -625,7 +634,8 @@ pub async fn location_select() -> MapEntry {
                 current_page -= 1;
                 if current_page < 0 {
                     current_page = page_cnt as i32 - 1;
-                    hovered += (map_cnt + (entries_per_page - (map_cnt % entries_per_page)) - entries_per_page) as i32;
+                    hovered += (map_cnt + (entries_per_page - (map_cnt % entries_per_page))
+                        - entries_per_page) as i32;
                     if hovered >= map_cnt as i32 {
                         hovered = map_cnt as i32 - 1
                     }
@@ -638,7 +648,7 @@ pub async fn location_select() -> MapEntry {
                 current_page += 1;
                 if current_page >= page_cnt as i32 {
                     current_page = 0;
-                    hovered = hovered % entries_per_page as i32;
+                    hovered %= entries_per_page as i32;
                 } else {
                     hovered += entries_per_page as i32;
                     if hovered >= map_cnt as i32 {
@@ -660,11 +670,10 @@ pub async fn location_select() -> MapEntry {
                     );
                 }
 
-                let begin = (current_page as usize * entries_per_page);
-                let end = (begin + entries_per_page).clamp(begin, map_cnt);
+                let begin = (current_page as usize * entries_per_page).clamp(0, map_cnt);
+                let end = (begin as usize + entries_per_page).clamp(begin, map_cnt);
 
-                let mut pi = 0;
-                for i in begin..end {
+                for (pi, i) in (begin..end).enumerate() {
                     let map_entry = resources.maps.get(i).unwrap();
                     let is_hovered = hovered == i as i32;
 
@@ -686,7 +695,9 @@ pub async fn location_select() -> MapEntry {
                         rect.h = h;
                     }
 
-                    if previous_mouse_pos != mouse_position() && rect.contains(mouse_position().into()) {
+                    if previous_mouse_pos != mouse_position()
+                        && rect.contains(mouse_position().into())
+                    {
                         hovered = i as _;
                     }
 
@@ -697,11 +708,9 @@ pub async fn location_select() -> MapEntry {
                         || start
                     {
                         root_ui().pop_skin();
-                        let map_entry = resources.maps.get(hovered as usize).unwrap();
-                        return map_entry.clone();
+                        let res = resources.maps.get(hovered as usize).cloned().unwrap();
+                        return res;
                     }
-
-                    pi += 1;
                 }
             }
         }
@@ -714,10 +723,10 @@ pub async fn location_select() -> MapEntry {
     }
 }
 
-pub async fn new_map() -> (String, Vec2, UVec2) {
+pub async fn create_map() -> Result<MapResource> {
     let mut res = None;
 
-    let size = vec2(350.0, 230.0);
+    let size = vec2(450.0, 500.0);
     let position = vec2(
         (screen_width() - size.x) / 2.0,
         (screen_height() - size.y) / 2.0,
@@ -728,11 +737,17 @@ pub async fn new_map() -> (String, Vec2, UVec2) {
     let mut gui_resources = storage::get_mut::<GuiResources>();
     root_ui().push_skin(&gui_resources.skins.login_skin);
 
-    let mut map_name = "Unnamed Map".to_string();
-    let mut map_grid_width = "100".to_string();
-    let mut map_grid_height = "100".to_string();
-    let mut map_tile_width = "32".to_string();
-    let mut map_tile_height = "32".to_string();
+    let mut name = "Unnamed Map".to_string();
+    let mut description = "".to_string();
+    let mut grid_width = "100".to_string();
+    let mut grid_height = "100".to_string();
+    let mut tile_width = "32".to_string();
+    let mut tile_height = "32".to_string();
+
+    let map_exports_path = {
+        let resources = storage::get::<Resources>();
+        Path::new(&resources.assets_dir).join(Resources::MAP_EXPORTS_DEFAULT_DIR)
+    };
 
     loop {
         gui_resources.gamepads.update();
@@ -743,7 +758,7 @@ pub async fn new_map() -> (String, Vec2, UVec2) {
             .titlebar(false)
             .movable(false)
             .ui(&mut *root_ui(), |ui| {
-                ui.label(None, "Create new map");
+                ui.label(None, "New map");
 
                 ui.separator();
                 ui.separator();
@@ -751,15 +766,43 @@ pub async fn new_map() -> (String, Vec2, UVec2) {
                 ui.separator();
 
                 {
-                    let size = vec2(173.0, 25.0);
+                    let size = vec2(300.0, 25.0);
 
                     widgets::InputText::new(hash!())
                         .size(size)
                         .ratio(1.0)
-                        .label("Map name")
-                        .ui(ui, &mut map_name);
+                        .ui(ui, &mut name);
                 }
 
+                ui.separator();
+                ui.separator();
+                ui.separator();
+                ui.separator();
+
+                {
+                    let path_label = map_exports_path
+                        .join(map_name_to_filename(&name))
+                        .with_extension(Resources::MAP_EXPORTS_EXTENSION);
+
+                    widgets::Label::new(format!("'{}'", path_label.to_str().unwrap())).ui(ui);
+                }
+
+                ui.separator();
+                ui.separator();
+                ui.separator();
+                ui.separator();
+
+                {
+                    let size = vec2(300.0, 75.0);
+
+                    widgets::InputText::new(hash!())
+                        .size(size)
+                        .ratio(1.0)
+                        .ui(ui, &mut description);
+                }
+
+                ui.separator();
+                ui.separator();
                 ui.separator();
                 ui.separator();
 
@@ -770,21 +813,7 @@ pub async fn new_map() -> (String, Vec2, UVec2) {
                         .size(size)
                         .ratio(1.0)
                         .label("x")
-                        .ui(ui, &mut map_grid_width);
-
-                    ui.same_line(size.x + 25.0);
-
-                    widgets::InputText::new(hash!())
-                        .size(size)
-                        .ratio(1.0)
-                        .label("Grid size")
-                        .ui(ui, &mut map_grid_height);
-
-                    widgets::InputText::new(hash!())
-                        .size(size)
-                        .ratio(1.0)
-                        .label("x")
-                        .ui(ui, &mut map_tile_width);
+                        .ui(ui, &mut tile_width);
 
                     ui.same_line(size.x + 25.0);
 
@@ -792,7 +821,21 @@ pub async fn new_map() -> (String, Vec2, UVec2) {
                         .size(size)
                         .ratio(1.0)
                         .label("Tile size")
-                        .ui(ui, &mut map_tile_height);
+                        .ui(ui, &mut tile_height);
+
+                    widgets::InputText::new(hash!())
+                        .size(size)
+                        .ratio(1.0)
+                        .label("x")
+                        .ui(ui, &mut grid_width);
+
+                    ui.same_line(size.x + 25.0);
+
+                    widgets::InputText::new(hash!())
+                        .size(size)
+                        .ratio(1.0)
+                        .label("Grid size")
+                        .ui(ui, &mut grid_height);
                 }
 
                 ui.separator();
@@ -806,24 +849,33 @@ pub async fn new_map() -> (String, Vec2, UVec2) {
                 if ui.button(None, "Confirm (A) (Enter)") || btn_a || enter {
                     // TODO: Validate input
 
-                    let grid_size = uvec2(
-                        map_grid_width.parse::<u32>().unwrap(),
-                        map_grid_height.parse::<u32>().unwrap(),
-                    );
-
                     let tile_size = vec2(
-                        map_tile_width.parse::<f32>().unwrap(),
-                        map_tile_height.parse::<f32>().unwrap(),
+                        tile_width.parse::<f32>().unwrap(),
+                        tile_height.parse::<f32>().unwrap(),
                     );
 
-                    let map_params = (map_name.clone(), tile_size, grid_size);
-                    res = Some(map_params);
+                    let grid_size = uvec2(
+                        grid_width.parse::<u32>().unwrap(),
+                        grid_height.parse::<u32>().unwrap(),
+                    );
+
+                    let params = (name.clone(), description.clone(), tile_size, grid_size);
+
+                    res = Some(params);
                 }
             });
 
-        if let Some(res) = res {
+        if let Some((name, description, tile_size, grid_size)) = res {
             root_ui().pop_skin();
-            return res;
+
+            let description = if description.is_empty() {
+                None
+            } else {
+                Some(description.as_str())
+            };
+
+            let mut resources = storage::get_mut::<Resources>();
+            return resources.create_map(&name, description, tile_size, grid_size, true);
         }
 
         next_frame().await;

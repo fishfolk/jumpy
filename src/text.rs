@@ -1,11 +1,6 @@
-use macroquad::{
-    prelude::*,
-};
+use macroquad::prelude::*;
 
-use serde::{
-    Serialize,
-    Deserialize,
-};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -23,13 +18,14 @@ pub enum VerticalAlignment {
     Bottom,
 }
 
-pub fn draw_aligned_text(text: &str, position: Vec2, ha: HorizontalAlignment, va: VerticalAlignment, params: TextParams) {
-    let measure = measure_text(
-        text,
-        Some(params.font),
-        params.font_size,
-        params.font_scale,
-    );
+pub fn draw_aligned_text(
+    text: &str,
+    position: Vec2,
+    ha: HorizontalAlignment,
+    va: VerticalAlignment,
+    params: TextParams,
+) {
+    let measure = measure_text(text, Some(params.font), params.font_size, params.font_scale);
 
     let x = match ha {
         HorizontalAlignment::Left => position.x,

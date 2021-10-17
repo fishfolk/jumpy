@@ -1,20 +1,4 @@
-use macroquad::{
-    experimental::animation::Animation,
-    prelude::*,
-};
-
-use macroquad_particles::{
-    BlendMode,
-    Curve,
-    Interpolation,
-    ColorCurve,
-    EmissionShape,
-    EmitterConfig,
-    ParticleShape,
-    AtlasConfig,
-    ParticleMaterial,
-    PostProcessing,
-};
+use macroquad::{experimental::animation::Animation, prelude::*};
 
 use serde::{Deserialize, Serialize};
 
@@ -53,7 +37,7 @@ impl From<ColorDef> for Color {
     }
 }
 
-pub mod opt_color {
+pub mod color_opt {
     use super::Color;
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
@@ -110,42 +94,45 @@ impl From<AnimationDef> for Animation {
     }
 }
 
-pub mod vec_animation {
+pub mod animation_vec {
     use super::{Animation, AnimationDef};
-    use serde::{Serialize, Serializer, Deserialize, Deserializer};
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-    pub fn serialize<S>(value: &Vec<Animation>, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
+    pub fn serialize<S>(value: &[Animation], serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
     {
         #[derive(Serialize)]
         struct Helper<'a>(#[serde(with = "AnimationDef")] &'a Animation);
 
         value
-            .into_iter()
+            .iter()
             .map(Helper)
             .collect::<Vec<Helper>>()
             .serialize(serializer)
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<Vec<Animation>, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
         struct Helper(#[serde(with = "AnimationDef")] Animation);
 
         let helper = Vec::deserialize(deserializer)?;
-        Ok(helper.iter().map(|Helper(external)| external.clone()).collect())
+        Ok(helper
+            .iter()
+            .map(|Helper(external)| external.clone())
+            .collect())
     }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(remote = "FilterMode")]
 pub enum FilterModeDef {
-    #[serde(alias = "linear")]
+    #[serde(rename = "linear")]
     Linear,
-    #[serde(alias = "nearest_neighbor")]
+    #[serde(rename = "nearest_neighbor")]
     Nearest,
 }
 

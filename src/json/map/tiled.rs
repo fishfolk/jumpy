@@ -4,11 +4,11 @@ use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
+use crate::map::MapObjectKind;
 use crate::{
     map::{Map, MapLayer, MapLayerKind, MapObject, MapProperty, MapTile, MapTileset},
     math::color_from_hex_string,
 };
-use crate::map::MapObjectKind;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case", tag = "type")]
@@ -113,7 +113,7 @@ impl TiledMap {
     pub const COLLISION_LAYER_PROP: &'static str = "collision";
     pub const TEXTURE_ID_PROP: &'static str = "texture_id";
 
-    pub fn into_map(self, name: &str) -> Map {
+    pub fn into_map(self) -> Map {
         let background_color = if let Some(background_color) = self.backgroundcolor {
             color_from_hex_string(&background_color)
         } else {
@@ -321,7 +321,6 @@ impl TiledMap {
         }
 
         Map {
-            name: name.to_string(),
             background_color,
             world_offset: Vec2::ZERO,
             grid_size,

@@ -1,10 +1,6 @@
 use macroquad::{
-    ui::{
-        Ui,
-        Id,
-        widgets,
-    },
     prelude::*,
+    ui::{widgets, Id, Ui},
 };
 
 pub trait ComboBoxValue {

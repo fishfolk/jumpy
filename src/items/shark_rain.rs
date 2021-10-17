@@ -10,6 +10,7 @@ use macroquad::{
     rand::gen_range,
 };
 
+use crate::nodes::ParticleEmitters;
 use crate::{
     capabilities,
     components::{GunlikeAnimation, PhysicsBody, ThrowableItem},
@@ -69,8 +70,8 @@ impl RainingShark {
                     .unwrap()
                     .shake_noise(1.0, 10, 1.);
                 {
-                    let mut resources = storage::get_mut::<Resources>();
-                    resources.hit_emitters.spawn(player.body.pos);
+                    let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
+                    particles.hit.spawn(player.body.pos);
                 }
                 let direction = self.pos.x > (player.body.pos.x + Self::KNOCKBACK);
                 player.kill(direction);

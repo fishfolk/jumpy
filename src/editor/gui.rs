@@ -4,15 +4,12 @@ pub mod context_menu;
 pub mod toolbars;
 pub mod windows;
 
-pub mod skins;
 pub mod combobox;
+pub mod skins;
 
 pub use skins::EditorSkinCollection;
 
-pub use combobox::{
-    ComboBoxValue,
-    ComboBoxBuilder,
-};
+pub use combobox::{ComboBoxBuilder, ComboBoxValue};
 
 use macroquad::{
     experimental::collections::storage,
@@ -234,10 +231,10 @@ impl EditorGui {
 
                     if params.has_buttons {
                         let button_area_size = vec2(content_size.x, WINDOW_BUTTON_HEIGHT);
+                        // TODO: Calculate button size and place buttons at content_size.y - said size
                         let button_area_position =
                             vec2(content_position.x, content_size.y + ELEMENT_MARGIN);
 
-                        // TODO: Move to bottom of the window
                         widgets::Group::new(hash!(id, "buttons"), button_area_size)
                             .position(button_area_position)
                             .ui(ui, |ui| {

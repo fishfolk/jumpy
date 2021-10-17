@@ -1,0 +1,38 @@
+[
+  {
+    "id": "across_the_pond",
+    "path": "music/across_the_pond.ogg"
+  },
+  {
+    "id": "ahoy",
+    "path": "music/ahoy!.ogg"
+  },
+  {
+    "id": "bait_the_hook",
+    "path": "music/bait_the_hook.ogg"
+  },
+  {
+    "id": "fish_and_ships",
+    "path": "music/fish_and_ships.ogg"
+  },
+  {
+    "id": "fish_bowl",
+    "path": "music/fish_bowl.ogg"
+  },
+  {
+    "id": "fish_tide",
+    "path": "music/fish_tide.ogg"
+  },
+  {
+    "id": "fishsticks",
+    "path": "music/fishsticks.ogg"
+  },
+  {
+    "id": "krill_or_be_krilled",
+    "path": "music/krill_or_be_krilled.ogg"
+  },
+  {
+    "id": "whale_theme",
+    "path": "music/whale_theme.ogg"
+  }
+]

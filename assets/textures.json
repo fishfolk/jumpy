@@ -1,0 +1,309 @@
+[
+  {
+    "id": "default_tool_icon",
+    "path": "textures/editor_icons/no_icon.png",
+    "sprite_size": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  {
+    "id": "map_preview_placeholder",
+    "path": "maps/no_preview.png",
+    "sprite_size": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  {
+    "id": "default_tileset",
+    "path": "textures/map/default_tileset.png",
+    "type": "tileset",
+    "sprite_size": {
+      "x": 32,
+      "y": 32
+    }
+  },
+  {
+    "id": "default_decorations",
+    "path": "textures/map/default_decorations.png",
+    "type": "tileset",
+    "sprite_size": {
+      "x": 51,
+      "y": 48
+    }
+  },
+  {
+    "id": "background_01",
+    "path": "textures/map/background_01.png",
+    "type": "background"
+  },
+  {
+    "id": "background_02",
+    "path": "textures/map/background_02.png",
+    "type": "background"
+  },
+  {
+    "id": "background_03",
+    "path": "textures/map/background_03.png",
+    "type": "background"
+  },
+  {
+    "id": "background_04",
+    "path": "textures/map/background_04.png",
+    "type": "background"
+  },
+  {
+    "id": "player_blue",
+    "path": "textures/player/Whale(76x66)(Blue).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 76,
+      "y": 66
+    }
+  },
+  {
+    "id": "player_green",
+    "path": "textures/player/Whale(76x66)(Green).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 76,
+      "y": 66
+    }
+  },
+  {
+    "id": "player_orange",
+    "path": "textures/player/Whale(76x66)(Orange).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 76,
+      "y": 66
+    }
+  },
+  {
+    "id": "player_purple",
+    "path": "textures/player/Whale(76x66)(Purple).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 76,
+      "y": 66
+    }
+  },
+  {
+    "id": "player_with_boots_blue",
+    "path": "textures/player/WhaleBoots(76x66)(Blue).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 76,
+      "y": 66
+    }
+  },
+  {
+    "id": "player_with_boots_green",
+    "path": "textures/player/WhaleBoots(76x66)(Green).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 76,
+      "y": 66
+    }
+  },
+  {
+    "id": "player_with_boots_orange",
+    "path": "textures/player/WhaleBoots(76x66)(Orange).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 76,
+      "y": 66
+    }
+  },
+  {
+    "id": "player_with_boots_purple",
+    "path": "textures/player/WhaleBoots(76x66)(Purple).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 76,
+      "y": 66
+    }
+  },
+  {
+    "id": "boots",
+    "path": "textures/items/Boots(32x32).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 32,
+      "y": 32
+    }
+  },
+  {
+    "id": "cannon",
+    "path": "textures/items/Cannon(88x36).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 88,
+      "y": 36
+    }
+  },
+  {
+    "id": "crate",
+    "path": "textures/items/Crate(36x31).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 36,
+      "y": 31
+    }
+  },
+  {
+    "id": "curse",
+    "path": "textures/items/Curse(30x44).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 30,
+      "y": 44
+    }
+  },
+  {
+    "id": "grenade",
+    "path": "textures/items/Grenade(15x15).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 15,
+      "y": 15
+    }
+  },
+  {
+    "id": "jellyfish",
+    "path": "textures/items/Jellyfish(34x47).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 34,
+      "y": 47
+    }
+  },
+  {
+    "id": "kick_bomb",
+    "path": "textures/items/KickBomb(56x38).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 56,
+      "y": 38
+    }
+  },
+  {
+    "id": "machine_gun",
+    "path": "textures/items/MachineGun(80x24).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 80,
+      "y": 24
+    }
+  },
+  {
+    "id": "mine",
+    "path": "textures/items/Mine(26x31).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 26,
+      "y": 31
+    }
+  },
+  {
+    "id": "musket",
+    "path": "textures/items/Musket(92x32).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 92,
+      "y": 32
+    }
+  },
+  {
+    "id": "seaweed",
+    "path": "textures/items/Seaweed(48x51).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 48,
+      "y": 51
+    }
+  },
+  {
+    "id": "sniper",
+    "path": "textures/items/Sniper(92x32).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 92,
+      "y": 32
+    }
+  },
+  {
+    "id": "sproinger",
+    "path": "textures/items/Sproinger(31x20).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 31,
+      "y": 20
+    }
+  },
+  {
+    "id": "sword",
+    "path": "textures/items/Sword(65x93).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 65,
+      "y": 93
+    }
+  },
+  {
+    "id": "sword_held",
+    "path": "textures/items/SwordHeld(65x17).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 65,
+      "y": 93
+    }
+  },
+  {
+    "id": "turtle_shell",
+    "path": "textures/items/TurtleShell(32x32).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 32,
+      "y": 32
+    }
+  },
+  {
+    "id": "turtle_shell_broken",
+    "path": "textures/items/TurtleShellBroken(32x32).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 32,
+      "y": 32
+    }
+  },
+  {
+    "id": "cannonball",
+    "path": "textures/temp/Cannonball(32x36).png"
+  },
+  {
+    "id": "galleon",
+    "path": "textures/temp/Galleon(326x300).png"
+  },
+  {
+    "id": "galleon_icon",
+    "path": "textures/temp/GalleonIcon(32x29).png"
+  },
+  {
+    "id": "shark",
+    "path": "textures/temp/Shark(60x220).png"
+  },
+  {
+    "id": "shark_icon",
+    "path": "textures/temp/SharkIcon(32x34).png"
+  },
+  {
+    "id": "volcano",
+    "path": "textures/temp/Volcano(395x100).png"
+  },
+  {
+    "id": "volcano_icon",
+    "path": "textures/temp/VolcanoIcon(36x22).png"
+  }
+]

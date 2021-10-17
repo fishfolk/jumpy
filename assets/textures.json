@@ -162,7 +162,7 @@
     }
   },
   {
-    "id": "grenade",
+    "id": "grenades",
     "path": "textures/items/Grenade(15x15).png",
     "type": "spritesheet",
     "sprite_size": {
@@ -198,7 +198,7 @@
     }
   },
   {
-    "id": "mine",
+    "id": "mines",
     "path": "textures/items/Mine(26x31).png",
     "type": "spritesheet",
     "sprite_size": {

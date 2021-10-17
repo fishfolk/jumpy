@@ -1,4 +1,8 @@
-use macroquad::{experimental::collections::storage, prelude::*};
+use macroquad::{
+    experimental::collections::storage,
+    color,
+    prelude::*,
+};
 
 use serde::{Deserialize, Serialize};
 
@@ -47,10 +51,10 @@ impl Sprite {
                 .map(|val| val.as_f32())
                 .unwrap_or_else(|| vec2(texture_res.texture.width(), texture_res.texture.height()));
 
-            Rect::new(0.0, 0.0, sprite_size.x as f32, sprite_size.y as f32)
+            Rect::new(0.0, 0.0, sprite_size.x, sprite_size.y)
         });
 
-        let tint = params.tint.unwrap_or_default();
+        let tint = params.tint.unwrap_or_else(|| color::WHITE);
         let offset = params.offset.unwrap_or_default();
         let pivot = params.pivot.unwrap_or_default();
 
@@ -74,21 +78,19 @@ impl Sprite {
             self.source_rect.size()
         };
 
-        let params = DrawTextureParams {
-            flip_x: self.flip_x,
-            flip_y: self.flip_y,
-            rotation,
-            source: Some(self.source_rect),
-            dest_size: Some(dest_size),
-            pivot: Some(self.pivot),
-        };
-
         draw_texture_ex(
             self.texture,
             position.x + self.offset.x,
             position.y + self.offset.y,
             self.tint,
-            params,
+            DrawTextureParams {
+                flip_x: self.flip_x,
+                flip_y: self.flip_y,
+                rotation,
+                source: Some(self.source_rect),
+                dest_size: Some(dest_size),
+                pivot: Some(self.pivot),
+            },
         )
     }
 }

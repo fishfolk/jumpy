@@ -70,7 +70,7 @@ pub struct Item {
 }
 
 impl Item {
-    pub fn _new(position: Vec2, params: ItemParams) -> Self {
+    pub fn new(position: Vec2, params: ItemParams) -> Self {
         let mut world = storage::get_mut::<GameWorld>();
 
         let body = PhysicsBody::new(
@@ -91,7 +91,7 @@ impl Item {
     }
 
     fn network_update(mut node: RefMut<Self>) {
-        node.body.update_throw();
+        node.body.update();
     }
 
     fn network_capabilities() -> NetworkReplicate {
@@ -105,17 +105,11 @@ impl Item {
 }
 
 impl Node for Item {
-    fn ready(mut node: RefMut<Self>)
-    where
-        Self: Sized,
-    {
+    fn ready(mut node: RefMut<Self>) {
         node.provides(Self::network_capabilities());
     }
 
-    fn draw(node: RefMut<Self>)
-    where
-        Self: Sized,
-    {
+    fn draw(node: RefMut<Self>) {
         node.sprite.draw(node.body.pos, node.body.angle, None);
     }
 }

@@ -30,7 +30,7 @@ impl Mines {
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
         let resources = storage::get::<Resources>();
-        let texture_entry = resources.textures.get("mine").unwrap();
+        let texture_entry = resources.textures.get("mines").unwrap();
 
         let mines_sprite = GunlikeAnimation::new(
             AnimatedSprite::new(

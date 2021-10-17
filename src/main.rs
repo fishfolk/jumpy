@@ -39,12 +39,20 @@ use editor::{Editor, EditorCamera, EditorInputScheme};
 
 pub use input::{Input, InputScheme};
 
-use crate::nodes::Player;
+use nodes::Player;
+
 use map::Map;
 
-use crate::items::effects::Projectiles;
-use crate::resources::MapResource;
+use items::{
+    Item,
+    effects::Projectiles,
+};
+
+use resources::MapResource;
+
 use error::Result;
+
+use map::{MapLayerKind, MapObjectKind};
 
 pub type CollisionWorld = macroquad_platformer::World;
 
@@ -85,15 +93,40 @@ async fn build_game_scene(map: Map, is_local_game: bool) -> Result<Vec<Handle<Pl
 
     scene::add_node(SceneRenderer::new());
 
+
     let resources = storage::get::<Resources>();
 
-    for object in &map.layers["decorations"].objects {
-        scene::add_node(Decoration::new(object.position, &object.id));
+    // Objects are cloned since Item constructor requires `GameWorld` in storage
+    let mut map_objects = Vec::new();
+    for layer in map.layers.values() {
+        if layer.kind == MapLayerKind::ObjectLayer {
+            map_objects.append(&mut layer.objects.clone());
+        }
     }
 
-    let objects = map.layers["items"].objects.clone();
-
     storage::store(GameWorld::new(map));
+
+    for object in map_objects {
+        match object.kind {
+            MapObjectKind::Decoration => {
+                scene::add_node(Decoration::new(object.position, &object.id));
+            }
+            MapObjectKind::Environment => {
+                // TODO: Add environment objects
+            }
+            MapObjectKind::SpawnPoint => {
+                // TODO: Add spawn points
+            }
+            MapObjectKind::Item => {
+                let params = resources.items
+                    .get(&object.id)
+                    .cloned()
+                    .unwrap_or_else(|| panic!("Invalid Item ID '{}'", &object.id));
+
+                scene::add_node(Item::new(object.position, params));
+            }
+        }
+    }
 
     drop(resources);
 
@@ -101,17 +134,6 @@ async fn build_game_scene(map: Map, is_local_game: bool) -> Result<Vec<Handle<Pl
         scene::add_node(Player::new(0, 0)),
         scene::add_node(Player::new(1, 1)),
     ];
-
-    for object in &objects {
-        for item_desc in items::ITEMS {
-            if object.id == item_desc.tiled_name && (is_local_game || item_desc.network_ready) {
-                (item_desc.constructor)(vec2(
-                    object.position.x + item_desc.tiled_offset.0,
-                    object.position.y + item_desc.tiled_offset.1,
-                ));
-            }
-        }
-    }
 
     scene::add_node(ParticleEmitters::new().await?);
     scene::add_node(Projectiles::new());

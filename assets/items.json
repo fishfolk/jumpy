@@ -2,6 +2,12 @@
     {
         "id": "sword",
         "texture_id": "sword",
+        "sprite_source_rect": {
+            "x": 0.0,
+            "y": 0.0,
+            "width": 65,
+            "height": 93
+        },
         "type": "weapon",
         "cooldown": 0.5,
         "effect": "direct_damage",
@@ -27,6 +33,70 @@
         "size": {
             "x": 92,
             "y": 32
+        }
+    },
+    {
+        "id": "machine_gun",
+        "texture_id": "machine_gun",
+        "type": "weapon",
+        "cooldown": 0.5,
+        "recoil": 0.5,
+        "effect": "direct_damage",
+        "effect_delivery": "projectile",
+        "projectile_range": 128.0,
+        "projectile_speed": 5.0,
+        "projectile_size": 5.0,
+        "size": {
+            "x": 80,
+            "y": 24
+        }
+    },
+    {
+        "id": "mines",
+        "texture_id": "mines",
+        "type": "weapon",
+        "cooldown": 0.5,
+        "recoil": 0.5,
+        "effect": "direct_damage",
+        "effect_delivery": "projectile",
+        "projectile_range": 128.0,
+        "projectile_speed": 5.0,
+        "projectile_size": 5.0,
+        "size": {
+            "x": 26,
+            "y": 31
+        }
+    },
+    {
+        "id": "curse",
+        "texture_id": "curse",
+        "type": "weapon",
+        "cooldown": 0.5,
+        "recoil": 0.5,
+        "effect": "direct_damage",
+        "effect_delivery": "projectile",
+        "projectile_range": 128.0,
+        "projectile_speed": 5.0,
+        "projectile_size": 5.0,
+        "size": {
+            "x": 30,
+            "y": 44
+        }
+    },
+    {
+        "id": "cannon",
+        "texture_id": "cannon",
+        "type": "weapon",
+        "cooldown": 0.5,
+        "recoil": 0.5,
+        "effect": "direct_damage",
+        "effect_delivery": "projectile",
+        "projectile_range": 128.0,
+        "projectile_speed": 5.0,
+        "projectile_size": 5.0,
+        "size": {
+            "x": 88,
+            "y": 36
         }
     }
 ]

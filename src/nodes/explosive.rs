@@ -16,6 +16,7 @@ pub struct Explosive {
     lived: f32,
     owner_id: u8,
     detonation_parameters: DetonationParameters,
+    last_vel: Vec2,
 }
 
 pub struct DetonationParameters {
@@ -54,6 +55,7 @@ impl Explosive {
             lived: 0.0,
             owner_id,
             detonation_parameters,
+            last_vel: vec2(0.0, 0.0),
         }
     }
     /// Creates a new explosive and adds it to the scene.
@@ -90,6 +92,14 @@ impl Explosive {
     pub fn update(&mut self) -> bool {
         self.body.update();
         self.lived += get_frame_time();
+
+        if self.body.speed.x == 0.0 {
+            self.body.speed.x = -self.last_vel.x * 0.6;
+        }
+        if self.body.speed.y == 0.0 && self.last_vel.y.abs() > 75.0 {
+            self.body.speed.y = -self.last_vel.y * 0.6;
+        }
+        self.last_vel = self.body.speed;
 
         let explosion_position = self.body.pos + self.body.size / 2.;
 

@@ -12,7 +12,7 @@ use std::f32;
 pub struct Explosive {
     texture: String,
     sprite: AnimatedSprite,
-    body: PhysicsBody,
+    pub body: PhysicsBody,
     lived: f32,
     owner_id: u8,
     detonation_parameters: DetonationParameters,
@@ -30,9 +30,8 @@ pub struct DetonationParameters {
 }
 
 impl Explosive {
-    // Use Explosive::spawn(), which handles the scene graph.
-    //
-    fn new(
+    /// Use Explosive::spawn(), which handles the scene graph.
+    pub fn new(
         pos: Vec2,
         velocity: Vec2,
         detonation_parameters: DetonationParameters,
@@ -86,27 +85,26 @@ impl Explosive {
         );
         scene::add_node(explosive);
     }
-}
 
-impl scene::Node for Explosive {
-    fn fixed_update(mut explosive: RefMut<Self>) {
-        explosive.body.update();
-        explosive.lived += get_frame_time();
+    /// If return is `true`, delete the node.
+    pub fn update(&mut self) -> bool {
+        self.body.update();
+        self.lived += get_frame_time();
 
-        let explosion_position = explosive.body.pos + explosive.body.size / 2.;
+        let explosion_position = self.body.pos + self.body.size / 2.;
 
         let mut explode = false;
 
-        if let Some(fuse) = explosive.detonation_parameters.fuse {
-            if explosive.lived > fuse {
+        if let Some(fuse) = self.detonation_parameters.fuse {
+            if self.lived > fuse {
                 explode = true;
             }
         }
 
-        if let Some(radius) = explosive.detonation_parameters.trigger_radius {
+        if let Some(radius) = self.detonation_parameters.trigger_radius {
             for player in player_circle_hit(explosion_position, radius) {
-                if explosive.lived > explosive.detonation_parameters.owner_safe_fuse
-                    || player.id != explosive.owner_id
+                if self.lived > self.detonation_parameters.owner_safe_fuse
+                    || player.id != self.owner_id
                 {
                     explode = true;
                     break;
@@ -117,30 +115,43 @@ impl scene::Node for Explosive {
         if explode {
             create_explosion(
                 explosion_position,
-                explosive.detonation_parameters.explosion_radius,
+                self.detonation_parameters.explosion_radius,
             );
+            return true;
+        }
+        false
+    }
+
+    pub fn draw(&mut self) {
+        let resources = storage::get_mut::<Resources>();
+
+        self.sprite.update();
+
+        draw_texture_ex(
+            resources.items_textures[&self.texture],
+            self.body.pos.x,
+            self.body.pos.y,
+            color::WHITE,
+            DrawTextureParams {
+                source: Some(self.sprite.frame().source_rect),
+                dest_size: Some(self.sprite.frame().dest_size),
+                flip_x: self.body.facing,
+                rotation: 0.0,
+                ..Default::default()
+            },
+        );
+    }
+}
+
+impl scene::Node for Explosive {
+    fn fixed_update(mut explosive: RefMut<Self>) {
+        if Explosive::update(&mut explosive) {
             explosive.delete();
         }
     }
 
     fn draw(mut explosive: RefMut<Self>) {
-        let resources = storage::get_mut::<Resources>();
-
-        explosive.sprite.update();
-
-        draw_texture_ex(
-            resources.items_textures[&explosive.texture],
-            explosive.body.pos.x,
-            explosive.body.pos.y,
-            color::WHITE,
-            DrawTextureParams {
-                source: Some(explosive.sprite.frame().source_rect),
-                dest_size: Some(explosive.sprite.frame().dest_size),
-                flip_x: explosive.body.facing,
-                rotation: 0.0,
-                ..Default::default()
-            },
-        );
+        Explosive::draw(&mut explosive);
     }
 }
 

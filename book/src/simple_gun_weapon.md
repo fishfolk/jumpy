@@ -142,7 +142,7 @@ Item {
 
 If you like, you can skip to the testing section to test your new weapon, but if you haven't added a new texture or modified an existing texture, you will not be able to visually recognize your item before picking it up. For this reason, I recommend you continue to the [Texture](#texture) section next.
 
-## Texture
+## Texture (Optional)
 
 It is important to make sure that your weapon is able to be visually distinguished between the other weapons in the game. When I added the sniper rifle to the `ITEMS` array, I copied all of the data from existing musket weapon, changing only the `tiled_name` and `constructor`. To give my sniper weapon a new texture, I will also need to change the `gun` texture in the `textures` field. Currently, the `gun` texture is set to `assets/Whale/Gun(92x32).png`. I'll open this file with my pixel editor of choice, [Aseprite](https://www.aseprite.org/) ([GIMP](https://www.gimp.org/) would also work fine).
 
@@ -173,6 +173,20 @@ Item {
     network_ready: true,
 },
 ```
+
+## Size (Optional)
+
+### Sprite
+
+- sprites are defined in spawn function (sniper and musket)
+- tiled height and width used as grid for sprites on spritesheet
+- size of sprites can be modified as long as tiled width and height are updated as well
+- explain gunlike animation with graphic (src/components/gunlike_animation.rs)
+
+### Collider
+
+- change collider width and collider height constants
+- view hitboxes?
 
 ## Testing
 

@@ -103,7 +103,7 @@ impl Node for Shoes {
             Self::COLLIDER_HEIGHT,
         );
         for mut player in scene::find_nodes_by_type::<Player>() {
-            if player.get_hitbox().overlaps(&shoes_rect) {
+            if player.get_hitbox().overlaps(&shoes_rect) && !player.can_extra_jump {
                 player.can_head_boink = true;
                 node.delete();
                 return;

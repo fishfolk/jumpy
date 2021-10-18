@@ -2,6 +2,7 @@
 //! Proto-mods, eventually some of the items will move to some sort of a wasm runtime
 
 mod cannon;
+pub mod flippers;
 mod galleon;
 mod grenades;
 mod gun;
@@ -129,6 +130,18 @@ pub const ITEMS: &[Item] = &[
         constructor: turtle_shell::TurtleShell::spawn,
         tiled_offset: (0., 0.),
         textures: &[("shell", "assets/Whale/TurtleShell(32x32).png")],
+        sounds: &[],
+        fxses: &[],
+        network_ready: false,
+    },
+    Item {
+        tiled_name: "flippers",
+        constructor: flippers::Flippers::spawn,
+        tiled_offset: (0., 0.),
+        textures: &[
+            ("flippers_item", "assets/Whale/Flippers(65x45).png"),
+            ("flippers_weared", "assets/Whale/Flippers(45x36).png"),
+        ],
         sounds: &[],
         fxses: &[],
         network_ready: false,

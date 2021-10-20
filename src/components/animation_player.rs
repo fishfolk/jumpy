@@ -164,8 +164,8 @@ impl AnimationPlayer {
         Rect::new(position.x, position.y, size.x, size.y)
     }
 
-    pub fn get_animation(&self, animation: usize) -> &Animation {
-        self.animations.get(animation).unwrap()
+    pub fn get_animation(&self, animation: usize) -> Option<&Animation> {
+        self.animations.get(animation)
     }
 
     pub fn set_animation(&mut self, animation: usize) {

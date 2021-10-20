@@ -187,37 +187,44 @@ impl Weapon {
         let animation_coroutine = async move {
             let attack_animation = {
                 let player = &mut *scene::get_node(player_handle);
-                let weapon = player.weapon.as_ref().unwrap();
-
-                weapon.attack_animation
+                if let Some(weapon) = player.weapon.as_mut() {
+                    weapon.attack_animation
+                } else {
+                    None
+                }
             };
 
             if let Some(index) = attack_animation {
                 let animation = {
                     let player = &mut *scene::get_node(player_handle);
-                    let weapon = player.weapon.as_mut().unwrap();
-
-                    weapon.animation_player.set_animation(index);
-                    weapon.animation_player.get_animation(index).clone()
+                    if let Some(weapon) = player.weapon.as_mut() {
+                        weapon.animation_player.set_animation(index);
+                        weapon.animation_player.get_animation(index).cloned()
+                    } else {
+                        None
+                    }
                 };
 
-                let frame_interval = 1.0 / animation.fps as f32;
+                if let Some(animation) = animation {
+                    let frame_interval = 1.0 / animation.fps as f32;
 
-                for i in 0..animation.frames as usize {
-                    {
-                        let player = &mut *scene::get_node(player_handle);
-                        let weapon = player.weapon.as_mut().unwrap();
+                    for i in 0..animation.frames as usize {
+                        {
+                            let player = &mut *scene::get_node(player_handle);
+                            if let Some(weapon) = player.weapon.as_mut() {
+                                weapon.animation_player.set_frame(i);
+                            }
+                        }
 
-                        weapon.animation_player.set_frame(i);
+                        wait_seconds(frame_interval).await;
                     }
 
-                    wait_seconds(frame_interval).await;
-                }
-
-                {
-                    let player = &mut *scene::get_node(player_handle);
-                    let weapon = player.weapon.as_mut().unwrap();
-                    weapon.animation_player.set_animation(weapon.idle_animation);
+                    {
+                        let player = &mut *scene::get_node(player_handle);
+                        if let Some(weapon) = player.weapon.as_mut() {
+                            weapon.animation_player.set_animation(weapon.idle_animation);
+                        }
+                    }
                 }
             }
         };
@@ -229,31 +236,36 @@ impl Weapon {
         let coroutine = async move {
             {
                 let player = &mut *scene::get_node(player_handle);
-                let weapon = player.weapon.as_mut().unwrap();
+                if let Some(weapon) = player.weapon.as_mut() {
+                    weapon.use_cnt += 1;
+                    weapon.cooldown_timer = 0.0;
 
-                weapon.use_cnt += 1;
-                weapon.cooldown_timer = 0.0;
+                    if let Some(sound_effect) = weapon.sound_effect {
+                        play_sound_once(sound_effect);
+                    }
 
-                if let Some(sound_effect) = weapon.sound_effect {
-                    play_sound_once(sound_effect);
+                    player.body.velocity.x = if player.body.facing { -weapon.recoil } else { weapon.recoil };
+
+                    let origin = player.body.pos + player.weapon_mount_offset + weapon.get_effect_offset(player.body.facing_dir());
+
+                    weapon_effect_coroutine(player_handle, origin, weapon.effect.clone());
                 }
-
-                player.body.velocity.x = if player.body.facing { -weapon.recoil } else { weapon.recoil };
-
-                let origin = player.body.pos + player.weapon_mount_offset + weapon.get_effect_offset(player.body.facing_dir());
-
-                weapon_effect_coroutine(player_handle, origin, weapon.effect.clone());
             }
 
             Weapon::animation_coroutine(player_handle);
 
             let attack_duration = {
                 let player = &*scene::get_node(player_handle);
-                let weapon = player.weapon.as_ref().unwrap();
-                weapon.attack_duration
+                if let Some(weapon) = &player.weapon {
+                    Some(weapon.attack_duration)
+                } else {
+                    None
+                }
             };
 
-            wait_seconds(attack_duration).await;
+            if let Some(attack_duration) = attack_duration {
+                wait_seconds(attack_duration).await;
+            }
 
             {
                 let player = &mut *scene::get_node(player_handle);

@@ -133,7 +133,7 @@ fn get_custom_weapon_effect(id: &str) -> CustomWeaponEffectCoroutine {
 // This is implemented for `Custom` effects (remember to also add it to the effects directory).
 // This is not strictly necessary as of writing this, as there is no way of adding effects through
 // scripts etc., so new effects can also be implemented by creating a new variant of
-// `WeaponEffectKind` and implementing the effect directly in the match of `weapon_effect_coroutine`
+// `WeaponEffectKind` and implementing the effect directly in the `weapon_effect_coroutine` function
 pub type CustomWeaponEffectCoroutine = fn(Handle<Player>, HashMap<String, CustomWeaponEffectParam>) -> Coroutine;
 
 pub fn weapon_effect_coroutine(player_handle: Handle<Player>, origin: Vec2, params: WeaponEffectParams) -> Coroutine {

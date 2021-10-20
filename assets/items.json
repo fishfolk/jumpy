@@ -100,6 +100,10 @@
       "x": 60,
       "y": 4
     },
+    "mount_offset": {
+      "x": -8,
+      "y": 0
+    },
     "projectile_range": 128.0,
     "projectile_speed": 5.0,
     "projectile_spread": 5.0,

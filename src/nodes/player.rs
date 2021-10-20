@@ -1,3 +1,4 @@
+use std::thread::spawn;
 use macroquad::{
     audio::{self, play_sound_once},
     color,
@@ -37,7 +38,6 @@ pub struct Player {
     pub dead: bool,
 
     pub weapon: Option<Weapon>,
-    pub weapon_mount_offset: Vec2,
 
     pub input: Input,
     pub last_frame_input: Input,
@@ -92,6 +92,11 @@ impl Player {
     pub const INCAPACITATED_STOP_THRESHOLD: f32 = 20.0;
 
     const ITEM_THROW_FORCE: f32 = 800.0;
+    const WEAPON_HUD_Y_OFFSET: f32 = 16.0;
+
+    // TODO: Fix offsetting of player sprite and collider, so that origin is always on the middle
+    // of the sprite x-axis
+    const SPRITE_X_OFFSET: f32 = 20.0;
 
     pub fn new(player_id: u8, controller_id: i32) -> Player {
         let spawn_point = {
@@ -199,7 +204,6 @@ impl Player {
             id: player_id,
             dead: false,
             weapon: None,
-            weapon_mount_offset: vec2(0.0, 48.0),
             input: Default::default(),
             last_frame_input: Default::default(),
             pick_grace_timer: 0.,
@@ -253,6 +257,18 @@ impl Player {
         self.drop_weapon(false);
 
         self.weapon = Some(weapon);
+    }
+
+    pub fn get_weapon_mount(&self) -> Vec2 {
+        let mut offset = vec2(Self::SPRITE_X_OFFSET, 0.0);
+
+        if self.is_crouched {
+            offset.y = 32.0;
+        } else {
+            offset.y = 16.0;
+        }
+
+        offset
     }
 
     pub fn jump(&mut self) {
@@ -647,8 +663,8 @@ impl Player {
 
     pub fn get_hitbox(&self) -> Rect {
         let state = self.state_machine.state();
-        Rect::new(
-            self.body.pos.x,
+        let mut rect = Rect::new(
+            self.body.pos.x + Self::SPRITE_X_OFFSET,
             if state == Self::ST_INCAPACITATED || state == Self::ST_SLIDE || self.is_crouched {
                 self.body.pos.y + 32.0
             } else {
@@ -664,7 +680,10 @@ impl Player {
             } else {
                 64.0
             },
-        )
+        );
+
+        rect.x -= rect.w / 2.0;
+        rect
     }
 
     fn network_update(mut node: RefMut<Self>) {
@@ -796,20 +815,46 @@ impl scene::Node for Player {
             "player_green"
         };
 
-        let texture_entry = resources.textures.get(texture_id).unwrap();
+        let texture_entry = resources.textures
+            .get(texture_id)
+            .unwrap();
+
+        let dest_size = node.sprite.frame().dest_size;
 
         draw_texture_ex(
             texture_entry.texture,
-            node.body.pos.x - 25.0,
+            node.body.pos.x - Self::SPRITE_X_OFFSET,
             node.body.pos.y - 10.0,
             color::WHITE,
             DrawTextureParams {
                 source: Some(node.sprite.frame().source_rect),
-                dest_size: Some(node.sprite.frame().dest_size),
+                dest_size: Some(dest_size),
                 flip_x: !node.body.facing,
                 ..Default::default()
             },
         );
+
+        draw_rectangle_lines(
+            node.body.pos.x - Self::SPRITE_X_OFFSET,
+            node.body.pos.y - 10.0,
+            dest_size.x,
+            dest_size.y,
+            2.0,
+            color::BLUE,
+        );
+
+        {
+            let hitbox = node.get_hitbox();
+
+            draw_rectangle_lines(
+                hitbox.x,
+                hitbox.y,
+                hitbox.w,
+                hitbox.h,
+                2.0,
+                color::RED,
+            );
+        }
 
         // draw turtle shell on player if the player has back armor
         if node.back_armor > 0 {
@@ -835,14 +880,8 @@ impl scene::Node for Player {
         }
 
         if let Some(weapon) = &node.weapon {
-            let position = {
-                let mut offset = node.weapon_mount_offset;
-                if !node.body.facing {
-                    offset.x = -offset.x;
-                }
-
-                node.body.pos + offset
-            };
+            let position = node.body.pos + node.get_weapon_mount()
+                + weapon.get_mount_offset(node.body.facing_dir());
 
             weapon.draw(
                 position,
@@ -854,7 +893,7 @@ impl scene::Node for Player {
 
             if let Some(uses) = weapon.uses {
                 let mut position = node.body.pos;
-                position.y -= 16.0;
+                position.y -= Self::WEAPON_HUD_Y_OFFSET;
 
                 let remaining = uses - weapon.use_cnt;
 
@@ -862,7 +901,7 @@ impl scene::Node for Player {
                 let empty_color = Color::new(0.8, 0.9, 1.0, 0.8);
 
                 if uses >= Weapon::CONDENSED_USE_COUNT_THRESHOLD {
-                    let x = position.x - ((4.0 * uses as f32) / 2.0);
+                    let x = position.x + Self::SPRITE_X_OFFSET - ((4.0 * uses as f32) / 2.0);
 
                     for i in 0..uses {
                         let x = x + 4.0 * i as f32;

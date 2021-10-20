@@ -167,7 +167,14 @@ impl Weapon {
     pub fn get_effect_offset(&self, facing_direction: Vec2) -> Vec2 {
         vec2(
             facing_direction.x * self.effect_offset.x,
-            facing_direction.y * self.effect_offset.y,
+            self.effect_offset.y,
+        )
+    }
+
+    pub fn get_mount_offset(&self, facing_direction: Vec2) -> Vec2 {
+        vec2(
+            facing_direction.x * self.mount_offset.x,
+            self.mount_offset.y,
         )
     }
 
@@ -245,8 +252,13 @@ impl Weapon {
                     }
 
                     player.body.velocity.x = if player.body.facing { -weapon.recoil } else { weapon.recoil };
+                }
+            }
 
-                    let origin = player.body.pos + player.weapon_mount_offset + weapon.get_effect_offset(player.body.facing_dir());
+            {
+                let player = &*scene::get_node(player_handle);
+                if let Some(weapon) = &player.weapon {
+                    let origin = player.body.pos + player.get_weapon_mount() + weapon.get_effect_offset(player.body.facing_dir());
 
                     weapon_effect_coroutine(player_handle, origin, weapon.effect.clone());
                 }

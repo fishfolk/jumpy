@@ -80,7 +80,7 @@ impl Map {
         )
     }
 
-    pub fn to_grid(&self, rect: Rect) -> URect {
+    pub fn to_grid(&self, rect: &Rect) -> URect {
         let p = self.to_coords(rect.point());
         let w = ((rect.w / self.tile_size.x) as u32).clamp(0, self.grid_size.x - p.x - 1);
         let h = ((rect.h / self.tile_size.y) as u32).clamp(0, self.grid_size.y - p.y - 1);
@@ -130,7 +130,7 @@ impl Map {
         MapTileIterator::new(layer, rect)
     }
 
-    pub fn get_collisions(&self, collider: Rect) -> Vec<Vec2> {
+    pub fn get_collisions(&self, collider: &Rect) -> Vec<Vec2> {
         let collider = Rect::new(
             collider.x - self.tile_size.x,
             collider.y - self.tile_size.y,
@@ -138,7 +138,7 @@ impl Map {
             collider.h + self.tile_size.y * 2.0,
         );
 
-        let rect = self.to_grid(collider);
+        let rect = self.to_grid(&collider);
         let mut collisions = Vec::new();
         for layer in self.layers.values() {
             if layer.is_visible && layer.has_collision {
@@ -159,7 +159,25 @@ impl Map {
                 }
             }
         }
+
         collisions
+    }
+
+    pub fn is_collision_at(&self, position: Vec2) -> bool {
+        let index = {
+            let coords = self.to_coords(position);
+            self.to_index(coords)
+        };
+
+        for layer in self.layers.values() {
+            if layer.is_visible && layer.has_collision {
+                if let Some(Some(_)) = layer.tiles.get(index) {
+                    return true;
+                }
+            }
+        }
+
+        false
     }
 
     // This will draw the map.

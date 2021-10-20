@@ -59,6 +59,7 @@ impl Volcano {
             pos,
             0.0,
             vec2(Self::COLLIDER_WIDTH, Self::COLLIDER_HEIGHT),
+            false,
         );
 
         scene::add_node(Volcano {
@@ -185,13 +186,13 @@ impl Volcano {
             let mut node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<Volcano>();
-            node.body.speed.x = speed;
+            node.body.velocity.x = speed;
         }
         fn set_speed_y(handle: HandleUntyped, speed: f32) {
             let mut node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<Volcano>();
-            node.body.speed.y = speed;
+            node.body.velocity.y = speed;
         }
 
         capabilities::PhysicsObject {

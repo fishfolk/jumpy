@@ -252,15 +252,6 @@
     }
   },
   {
-    "id": "sword_held",
-    "path": "textures/items/SwordHeld(65x17).png",
-    "type": "spritesheet",
-    "sprite_size": {
-      "x": 65,
-      "y": 93
-    }
-  },
-  {
     "id": "turtle_shell",
     "path": "textures/items/TurtleShell(32x32).png",
     "type": "spritesheet",

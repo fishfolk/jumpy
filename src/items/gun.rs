@@ -85,7 +85,7 @@ impl Gun {
                     4.,
                     node.bullet_speed,
                 ));
-                player.body.speed.x = -node.recoil * player.body.facing_dir().x;
+                player.body.velocity.x = -node.recoil * player.body.facing_dir().x;
             }
             {
                 let node = &mut *scene::get_node(node);
@@ -190,6 +190,7 @@ impl Gun {
 
             node.throwable.owner.is_none()
         }
+
         fn collider(handle: HandleUntyped) -> Rect {
             let node = scene::get_untyped_node(handle).unwrap().to_typed::<Gun>();
 
@@ -200,13 +201,15 @@ impl Gun {
                 node.body.size.y,
             )
         }
+
         fn set_speed_x(handle: HandleUntyped, speed: f32) {
             let mut node = scene::get_untyped_node(handle).unwrap().to_typed::<Gun>();
-            node.body.speed.x = speed;
+            node.body.velocity.x = speed;
         }
+
         fn set_speed_y(handle: HandleUntyped, speed: f32) {
             let mut node = scene::get_untyped_node(handle).unwrap().to_typed::<Gun>();
-            node.body.speed.y = speed;
+            node.body.velocity.y = speed;
         }
 
         capabilities::PhysicsObject {

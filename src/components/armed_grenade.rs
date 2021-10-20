@@ -65,7 +65,7 @@ impl ArmedGrenade {
             facing,
             angle: 0.0,
             size,
-            speed,
+            velocity: speed,
             collider: world.collision_world.add_actor(
                 pos + grenade_mount_pos,
                 size.x as _,
@@ -73,8 +73,9 @@ impl ArmedGrenade {
             ),
             on_ground: false,
             last_frame_on_ground: false,
-            have_gravity: true,
+            has_gravity: true,
             bouncyness: 0.5,
+            can_rotate: true,
         };
 
         ArmedGrenade {
@@ -96,7 +97,7 @@ impl EruptedItem for ArmedGrenade {
     fn spawn_for_volcano(pos: Vec2, speed: Vec2, enable_at_y: f32, _owner_id: u8) {
         let mut grenade = ArmedGrenade::new(pos, true);
         grenade.lived -= 2.; // give extra life, since they're random
-        grenade.body.speed = speed;
+        grenade.body.velocity = speed;
         grenade.erupting = true;
         grenade.erupting_enable_on_y = Some(enable_at_y);
         scene::add_node(grenade);

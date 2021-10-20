@@ -1,102 +1,228 @@
 [
-    {
-        "id": "sword",
-        "texture_id": "sword",
-        "sprite_source_rect": {
-            "x": 0.0,
-            "y": 0.0,
-            "width": 65,
-            "height": 93
+  {
+    "id": "sword",
+    "sprite": {
+      "texture_id": "sword",
+      "index": 8
+    },
+    "type": "weapon",
+    "cooldown": 0.75,
+    "attack_duration": 0.5,
+    "sound_effect_id": "sword",
+    "effect": "cone",
+    "cone_angle": 150.0,
+    "cone_length": 65.0,
+    "collider_size": {
+      "x": 65,
+      "y": 17
+    },
+    "mount_offset": {
+      "x": 16,
+      "y": -88
+    },
+    "animation": {
+      "texture_id": "sword",
+      "animations": [
+        {
+          "name": "idle",
+          "row": 0,
+          "frames": 1,
+          "fps": 1
         },
-        "type": "weapon",
-        "cooldown": 0.5,
-        "effect": "direct_damage",
-        "effect_delivery": "cone",
-        "cone_angle": 150.0,
-        "cone_length": 65.0,
-        "size": {
-            "x": 65,
-            "y": 93
+        {
+          "name": "attack",
+          "row": 1,
+          "frames": 4,
+          "fps": 15
         }
+      ]
     },
-    {
-        "id": "musket",
-        "texture_id": "musket",
-        "type": "weapon",
-        "cooldown": 0.5,
-        "recoil": 0.5,
-        "effect": "direct_damage",
-        "effect_delivery": "projectile",
-        "projectile_range": 128.0,
-        "projectile_speed": 5.0,
-        "projectile_size": 5.0,
-        "size": {
-            "x": 92,
-            "y": 32
-        }
+    "is_network_ready": true
+  },
+  {
+    "id": "musket",
+    "sprite": {
+      "texture_id": "musket",
+      "offset": {
+        "x": 0,
+        "y": -8
+      }
     },
-    {
-        "id": "machine_gun",
-        "texture_id": "machine_gun",
-        "type": "weapon",
-        "cooldown": 0.5,
-        "recoil": 0.5,
-        "effect": "direct_damage",
-        "effect_delivery": "projectile",
-        "projectile_range": 128.0,
-        "projectile_speed": 5.0,
-        "projectile_size": 5.0,
-        "size": {
-            "x": 80,
-            "y": 24
-        }
+    "type": "weapon",
+    "uses": 3,
+    "cooldown": 0.75,
+    "attack_duration": 0.5,
+    "recoil": 250.0,
+    "sound_effect_id": "shoot",
+    "effect": "projectile",
+    "effect_offset": {
+      "x": 64,
+      "y": 16
     },
-    {
-        "id": "mines",
-        "texture_id": "mines",
-        "type": "weapon",
-        "cooldown": 0.5,
-        "recoil": 0.5,
-        "effect": "direct_damage",
-        "effect_delivery": "projectile",
-        "projectile_range": 128.0,
-        "projectile_speed": 5.0,
-        "projectile_size": 5.0,
-        "size": {
-            "x": 26,
-            "y": 31
-        }
+    "projectile_range": 128.0,
+    "projectile_speed": 5.0,
+    "projectile_size": 5.0,
+    "collider_size": {
+      "x": 64,
+      "y": 24
     },
-    {
-        "id": "curse",
-        "texture_id": "curse",
-        "type": "weapon",
-        "cooldown": 0.5,
-        "recoil": 0.5,
-        "effect": "direct_damage",
-        "effect_delivery": "projectile",
-        "projectile_range": 128.0,
-        "projectile_speed": 5.0,
-        "projectile_size": 5.0,
-        "size": {
-            "x": 30,
-            "y": 44
+    "animation": {
+      "texture_id": "musket",
+      "animations": [
+        {
+          "name": "idle",
+          "row": 0,
+          "frames": 1,
+          "fps": 1
+        },
+        {
+          "name": "attack",
+          "row": 1,
+          "frames": 3,
+          "fps": 15
         }
+      ]
     },
-    {
-        "id": "cannon",
-        "texture_id": "cannon",
-        "type": "weapon",
-        "cooldown": 0.5,
-        "recoil": 0.5,
-        "effect": "direct_damage",
-        "effect_delivery": "projectile",
-        "projectile_range": 128.0,
-        "projectile_speed": 5.0,
-        "projectile_size": 5.0,
-        "size": {
-            "x": 88,
-            "y": 36
+    "is_network_ready": true
+  },
+  {
+    "id": "machine_gun",
+    "sprite": {
+      "texture_id": "machine_gun"
+    },
+    "type": "weapon",
+    "cooldown": 0.15,
+    "recoil": 125.0,
+    "uses": 24,
+    "sound_effect_id": "shoot",
+    "effect": "projectile",
+    "effect_offset": {
+      "x": 60,
+      "y": 4
+    },
+    "projectile_range": 128.0,
+    "projectile_speed": 5.0,
+    "projectile_spread": 5.0,
+    "projectile_size": 1.5,
+    "collider_size": {
+      "x": 68,
+      "y": 24
+    },
+    "animation": {
+      "texture_id": "machine_gun",
+      "animations": [
+        {
+          "name": "idle",
+          "row": 0,
+          "frames": 1,
+          "fps": 1
+        },
+        {
+          "name": "attack",
+          "row": 1,
+          "frames": 2,
+          "fps": 8
         }
+      ]
+    },
+    "is_network_ready": false
+  },
+  {
+    "id": "mines",
+    "sprite": {
+      "texture_id": "mines"
+    },
+    "type": "weapon",
+    "cooldown": 0.5,
+    "recoil": 0.5,
+    "effect": "projectile",
+    "projectile_range": 128.0,
+    "projectile_speed": 5.0,
+    "projectile_size": 5.0,
+    "collider_size": {
+      "x": 26,
+      "y": 31
+    },
+    "animation": {
+      "texture_id": "mines",
+      "animations": [
+        {
+          "name": "idle",
+          "row": 0,
+          "frames": 1,
+          "fps": 1
+        }
+      ]
     }
+  },
+  {
+    "id": "curse",
+    "sprite": {
+      "texture_id": "curse",
+      "offset": {
+        "x": 0,
+        "y": -22
+      }
+    },
+    "type": "weapon",
+    "cooldown": 0.5,
+    "recoil": 0.5,
+    "effect": "projectile",
+    "projectile_range": 128.0,
+    "projectile_speed": 5.0,
+    "projectile_size": 5.0,
+    "collider_size": {
+      "x": 30,
+      "y": 22
+    },
+    "animation": {
+      "texture_id": "curse",
+      "animations": [
+        {
+          "name": "idle",
+          "row": 0,
+          "frames": 1,
+          "fps": 1
+        }
+      ]
+    }
+  },
+  {
+    "id": "cannon",
+    "sprite": {
+      "texture_id": "cannon",
+      "offset": {
+        "x": 0,
+        "y": -8
+      }
+    },
+    "type": "weapon",
+    "cooldown": 0.5,
+    "recoil": 0.5,
+    "effect": "projectile",
+    "projectile_range": 128.0,
+    "projectile_speed": 400.0,
+    "projectile_size": 5.0,
+    "collider_size": {
+      "x": 64,
+      "y": 24
+    },
+    "animation": {
+      "texture_id": "cannon",
+      "animations": [
+        {
+          "name": "idle",
+          "row": 0,
+          "frames": 1,
+          "fps": 1
+        },
+        {
+          "name": "attack",
+          "row": 1,
+          "frames": 4,
+          "fps": 8
+        }
+      ]
+    }
+  }
 ]

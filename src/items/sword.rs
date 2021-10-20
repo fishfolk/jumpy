@@ -111,7 +111,7 @@ impl scene::Node for Sword {
         if node.body.pos.y > map_bottom {
             node.body.pos = node.spawn_pos.0;
             node.body.facing = node.spawn_pos.1;
-            node.body.speed = vec2(0., 0.);
+            node.body.velocity = vec2(0., 0.);
             node.deadly_dangerous = false;
             node.throw(false);
             return;
@@ -124,10 +124,10 @@ impl scene::Node for Sword {
             if (node.origin_pos - node.body.pos).length() > 70. {
                 node.deadly_dangerous = true;
             }
-            if node.body.speed.length() <= 200.0 {
+            if node.body.velocity.length() <= 200.0 {
                 node.deadly_dangerous = false;
             }
-            if node.body.on_ground && node.body.speed.length() <= 400.0 {
+            if node.body.on_ground && node.body.velocity.length() <= 400.0 {
                 node.deadly_dangerous = false;
             }
 
@@ -181,6 +181,7 @@ impl Sword {
                 pos,
                 std::f32::consts::PI / 4. + 0.3,
                 vec2(Self::COLLIDER_WIDTH, Self::COLLIDER_HEIGHT),
+                false,
             ),
             throwable: ThrowableItem::default(),
             origin_pos: pos,
@@ -331,11 +332,11 @@ impl Sword {
         }
         fn set_speed_x(handle: HandleUntyped, speed: f32) {
             let mut node = scene::get_untyped_node(handle).unwrap().to_typed::<Sword>();
-            node.body.speed.x = speed;
+            node.body.velocity.x = speed;
         }
         fn set_speed_y(handle: HandleUntyped, speed: f32) {
             let mut node = scene::get_untyped_node(handle).unwrap().to_typed::<Sword>();
-            node.body.speed.y = speed;
+            node.body.velocity.y = speed;
         }
 
         capabilities::PhysicsObject {

@@ -94,6 +94,7 @@ impl Cannon {
                 pos,
                 0.0,
                 vec2(Self::CANNON_WIDTH, Self::CANNON_HEIGHT),
+                false,
             ),
             throwable: ThrowableItem::default(),
             amount: Self::INITIAL_CANNONBALLS,
@@ -176,7 +177,7 @@ impl Cannon {
                     player.id,
                 );
 
-                player.body.speed.x = -Self::CANNON_THROWBACK * player.body.facing_dir().x;
+                player.body.velocity.x = -Self::CANNON_THROWBACK * player.body.facing_dir().x;
             }
 
             wait_seconds(0.08).await;
@@ -236,13 +237,13 @@ impl Cannon {
             let mut node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<Cannon>();
-            node.body.speed.x = speed;
+            node.body.velocity.x = speed;
         }
         fn set_speed_y(handle: HandleUntyped, speed: f32) {
             let mut node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<Cannon>();
-            node.body.speed.y = speed;
+            node.body.velocity.y = speed;
         }
 
         capabilities::PhysicsObject {

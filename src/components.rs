@@ -13,7 +13,6 @@ mod animation_player;
 mod armed_grenade;
 mod bullet;
 mod erupted_item;
-mod gunlike_animation;
 mod physics_body;
 mod sprite;
 mod throwable_item;
@@ -21,7 +20,6 @@ mod throwable_item;
 pub use armed_grenade::ArmedGrenade;
 pub use bullet::Bullet;
 pub use erupted_item::EruptedItem;
-pub use gunlike_animation::GunlikeAnimation;
 pub use physics_body::PhysicsBody;
 pub use throwable_item::ThrowableItem;
 

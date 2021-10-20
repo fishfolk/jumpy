@@ -12,7 +12,7 @@ nanoserde = "0.1.29"
 macroquad = { version = "0.3.10" }
 macroquad-platformer = "0.1"
 macroquad-profiler = "0.1"
-macroquad-particles = {version = "0.1", features = ["nanoserde"] }
+macroquad-particles = { git = "https://github.com/olefasting/macroquad_particles", features = ["serde"] }
 
 quad-gamepad = "0.2.0-alpha"
 
@@ -20,7 +20,6 @@ stunclient = { git = "https://github.com/not-fl3/rust-stunclient", default-featu
 
 hex = "0.4"
 
-ron = "0.6"
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 

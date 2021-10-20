@@ -45,12 +45,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
 
 [[package]]
-name = "base64"
-version = "0.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "904dfeac50f3cdaba28fc6f57fdcddb75f49ed61346676a78c4ffe55877802fd"
-
-[[package]]
 name = "bitflags"
 version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -178,7 +172,6 @@ dependencies = [
  "macroquad-profiler",
  "nanoserde",
  "quad-gamepad",
- "ron",
  "serde",
  "serde_json",
  "stunclient",
@@ -298,11 +291,10 @@ dependencies = [
 [[package]]
 name = "macroquad-particles"
 version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8505dc035e4d68799a53a459afef0bc345410039325b5928af2e0d83eb15de40"
+source = "git+https://github.com/olefasting/macroquad_particles#3258c54aa152f79b55793a6e1b4b7c016d52b476"
 dependencies = [
  "macroquad",
- "nanoserde",
+ "serde",
 ]
 
 [[package]]
@@ -549,17 +541,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d51e9f596de227fda2ea6c84607f5558e196eeaf43c986b724ba4fb8fdf497e7"
 dependencies = [
  "rand_core",
-]
-
-[[package]]
-name = "ron"
-version = "0.6.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "45005aa836116903a49cf3461474da697cfe66221762c6e95871092009ec86d6"
-dependencies = [
- "base64",
- "bitflags",
- "serde",
 ]
 
 [[package]]

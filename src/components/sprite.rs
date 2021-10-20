@@ -1,8 +1,4 @@
-use macroquad::{
-    experimental::collections::storage,
-    color,
-    prelude::*,
-};
+use macroquad::{color, experimental::collections::storage, prelude::*};
 
 use serde::{Deserialize, Serialize};
 
@@ -11,26 +7,41 @@ use crate::{json, Resources};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SpriteParams {
     pub texture_id: String,
-    #[serde(default, rename = "sprite_tint", with = "json::color_opt")]
+    #[serde(default)]
+    pub index: usize,
+    #[serde(
+        default,
+        with = "json::color_opt",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub tint: Option<Color>,
-    #[serde(default, rename = "sprite_offset", with = "json::vec2_opt")]
+    #[serde(
+        default,
+        with = "json::vec2_opt",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub offset: Option<Vec2>,
-    #[serde(default, rename = "sprite_pivot", with = "json::vec2_opt")]
+    #[serde(
+        default,
+        with = "json::vec2_opt",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub pivot: Option<Vec2>,
-    #[serde(default, rename = "sprite_source_rect", with = "json::rect_opt")]
-    pub source_rect: Option<Rect>,
+    #[serde(
+        default,
+        with = "json::uvec2_opt",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub size: Option<UVec2>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Sprite {
     texture: Texture2D,
     source_rect: Rect,
-    pub tint: Color,
-    pub offset: Vec2,
-    pub pivot: Vec2,
-    pub flip_x: bool,
-    pub flip_y: bool,
-    pub is_disabled: bool,
+    tint: Color,
+    offset: Vec2,
+    pivot: Vec2,
 }
 
 impl Sprite {
@@ -44,17 +55,39 @@ impl Sprite {
                 .unwrap_or_else(|| panic!("Sprite: Invalid texture ID '{}'", &params.texture_id))
         };
 
-        let source_rect = params.source_rect.unwrap_or_else(|| {
-            let sprite_size = texture_res
+        let source_rect = {
+            let sprite_size = params.size
+                .map(|uvec| uvec.as_f32())
+                .unwrap_or_else(|| texture_res
                 .meta
                 .sprite_size
                 .map(|val| val.as_f32())
-                .unwrap_or_else(|| vec2(texture_res.texture.width(), texture_res.texture.height()));
+                .unwrap_or_else(|| vec2(texture_res.texture.width(), texture_res.texture.height())));
 
-            Rect::new(0.0, 0.0, sprite_size.x, sprite_size.y)
-        });
+            let grid_size = uvec2(
+                (texture_res.texture.width() / sprite_size.x) as u32,
+                (texture_res.texture.height() / sprite_size.y) as u32,
+            );
 
-        let tint = params.tint.unwrap_or_else(|| color::WHITE);
+            {
+                let frame_cnt = (grid_size.x * grid_size.y) as usize;
+                assert!(
+                    params.index < frame_cnt,
+                    "Sprite: index '{}' exceeds total frame count '{}'",
+                    params.index,
+                    frame_cnt
+                );
+            }
+
+            let position = vec2(
+                (params.index as u32 % grid_size.x) as f32 * sprite_size.x,
+                (params.index as u32 / grid_size.x) as f32 * sprite_size.y,
+            );
+
+            Rect::new(position.x, position.y, sprite_size.x, sprite_size.y)
+        };
+
+        let tint = params.tint.unwrap_or(color::WHITE);
         let offset = params.offset.unwrap_or_default();
         let pivot = params.pivot.unwrap_or_default();
 
@@ -64,33 +97,66 @@ impl Sprite {
             tint,
             offset,
             pivot,
-            flip_x: false,
-            flip_y: false,
-            is_disabled: false,
         }
     }
 
-    pub fn draw(&self, position: Vec2, rotation: f32, scale: Option<Vec2>) {
-        let dest_size = if let Some(scale) = scale {
-            let size = self.source_rect.size();
-            vec2(size.x * scale.x, size.y * scale.y)
-        } else {
-            self.source_rect.size()
+    pub fn draw(
+        &self,
+        position: Vec2,
+        rotation: f32,
+        scale: Option<Vec2>,
+        flip_x: bool,
+        flip_y: bool,
+    ) {
+        let rect = self.get_rect(scale);
+
+        let pivot = {
+            let size= self.get_size(scale);
+            let mut pivot = self.pivot;
+            if flip_x {
+                pivot.x = size.x - self.pivot.x;
+            }
+            if flip_y {
+                pivot.y = size.y - self.pivot.y;
+            }
+
+            pivot
         };
 
         draw_texture_ex(
             self.texture,
-            position.x + self.offset.x,
-            position.y + self.offset.y,
+            position.x + rect.x,
+            position.y + rect.y,
             self.tint,
             DrawTextureParams {
-                flip_x: self.flip_x,
-                flip_y: self.flip_y,
+                flip_x,
+                flip_y,
                 rotation,
                 source: Some(self.source_rect),
-                dest_size: Some(dest_size),
-                pivot: Some(self.pivot),
+                dest_size: Some(rect.size()),
+                pivot: Some(pivot),
             },
         )
+    }
+
+    pub fn get_size(&self, scale: Option<Vec2>) -> Vec2 {
+        if let Some(scale) = scale {
+            let size = self.source_rect.size();
+            vec2(size.x * scale.x, size.y * scale.y)
+        } else {
+            self.source_rect.size()
+        }
+    }
+
+    pub fn get_rect(&self, scale: Option<Vec2>) -> Rect {
+        let position = if let Some(scale) = scale {
+            vec2(self.offset.x * scale.x, self.offset.y * scale.y)
+        } else {
+            self.offset
+        };
+
+        let size = self.get_size(scale);
+
+        Rect::new(position.x, position.y, size.x, size.y)
     }
 }

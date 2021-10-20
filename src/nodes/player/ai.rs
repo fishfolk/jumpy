@@ -99,7 +99,7 @@ impl Ai {
         }
 
         if rand::gen_range(0, 800) == 5 {
-            input.throw = true;
+            input.pickup = true;
             self.throw_cooldown = 1.;
         }
 
@@ -127,7 +127,7 @@ impl Ai {
 
                 let weapon_rect = weapon.collider();
                 if weapon_rect.point().distance(player.body.pos) <= 80. {
-                    input.throw = true;
+                    input.pickup = true;
                 }
             }
             self.throw_cooldown = 1.;

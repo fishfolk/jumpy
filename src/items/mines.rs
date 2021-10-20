@@ -57,6 +57,7 @@ impl Mines {
                 pos,
                 0.0,
                 vec2(Self::COLLIDER_WIDTH, Self::COLLIDER_HEIGHT),
+                false,
             ),
             amount: Self::MAXIMUM_AMOUNT,
             throwable: ThrowableItem::default(),
@@ -203,11 +204,11 @@ impl Mines {
         }
         fn set_speed_x(handle: HandleUntyped, speed: f32) {
             let mut node = scene::get_untyped_node(handle).unwrap().to_typed::<Mines>();
-            node.body.speed.x = speed;
+            node.body.velocity.x = speed;
         }
         fn set_speed_y(handle: HandleUntyped, speed: f32) {
             let mut node = scene::get_untyped_node(handle).unwrap().to_typed::<Mines>();
-            node.body.speed.y = speed;
+            node.body.velocity.y = speed;
         }
 
         capabilities::PhysicsObject {

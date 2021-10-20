@@ -1,19 +1,22 @@
 use macroquad::{
-    experimental::scene::{Handle, HandleUntyped, Node, RefMut},
+    experimental::{
+        collections::storage,
+        scene::{Handle, HandleUntyped, Node, RefMut},
+    },
     prelude::*,
 };
 
-use crate::{capabilities::NetworkReplicate, Player};
+use crate::{capabilities::NetworkReplicate, GameWorld, Player};
 
 // TODO: Performance test this and reduce complexity as needed
 struct Projectile {
     owner: Handle<Player>,
+    origin: Vec2,
     position: Vec2,
     velocity: Vec2,
-    color: Color,
+    range: f32,
     size: f32,
-    ttl: Option<f32>,
-    ttl_timer: f32,
+    color: Color,
 }
 
 pub struct Projectiles {
@@ -25,23 +28,23 @@ impl Projectiles {
         Projectiles { active: Vec::new() }
     }
 
-    pub fn _spawn(
+    pub fn spawn(
         &mut self,
         owner: Handle<Player>,
         origin: Vec2,
         velocity: Vec2,
-        color: Color,
+        range: f32,
         size: f32,
-        ttl: Option<f32>,
+        color: Color,
     ) {
         self.active.push(Projectile {
             owner,
+            origin,
             position: origin,
             velocity,
-            color,
+            range,
             size,
-            ttl,
-            ttl_timer: 0.0,
+            color,
         });
     }
 
@@ -49,22 +52,45 @@ impl Projectiles {
         let mut i = 0;
         'projectiles: while i < node.active.len() {
             let projectile = &mut node.active[i];
-            if let Some(ttl) = projectile.ttl {
-                projectile.ttl_timer += get_frame_time();
-                if projectile.ttl_timer >= ttl {
+            projectile.position += projectile.velocity;
+
+            {
+                let distance = projectile.position.distance(projectile.origin);
+                if distance > projectile.range {
+                    node.active.remove(i);
+                    continue 'projectiles;
+                }
+
+                let world = storage::get::<GameWorld>();
+
+                if world.map.is_collision_at(projectile.position) {
                     node.active.remove(i);
                     continue 'projectiles;
                 }
             }
 
-            projectile.position += projectile.velocity;
+            let mut collider = None;
+            if projectile.size > 1.5 {
+                let circle = Circle::new(
+                    projectile.position.x,
+                    projectile.position.y,
+                    projectile.size,
+                );
+                collider = Some(circle);
+            }
 
             // Borrow owner so that it is excluded from the following iteration and hit check
             let _owner = scene::try_get_node(projectile.owner);
 
             for mut player in scene::find_nodes_by_type::<Player>() {
                 let hitbox = player.get_hitbox();
-                if hitbox.contains(projectile.position) {
+                let has_collision = if let Some(circle) = &collider {
+                    circle.overlaps_rect(&hitbox)
+                } else {
+                    hitbox.contains(projectile.position)
+                };
+
+                if has_collision {
                     let direction = projectile.position.x > player.body.pos.x;
                     player.kill(direction);
 

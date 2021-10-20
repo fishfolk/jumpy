@@ -108,6 +108,7 @@ impl MachineGun {
             pos,
             0.0,
             vec2(Self::COLLIDER_WIDTH, Self::COLLIDER_HEIGHT),
+            false,
         );
 
         scene::add_node(MachineGun {
@@ -173,7 +174,7 @@ impl MachineGun {
                     3.,
                 ));
 
-                player.body.speed.x = -Self::GUN_THROWBACK * player.body.facing_dir().x;
+                player.body.velocity.x = -Self::GUN_THROWBACK * player.body.facing_dir().x;
             }
             {
                 let node = &mut *scene::get_node(node);
@@ -304,13 +305,13 @@ impl MachineGun {
             let mut node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<MachineGun>();
-            node.body.speed.x = speed;
+            node.body.velocity.x = speed;
         }
         fn set_speed_y(handle: HandleUntyped, speed: f32) {
             let mut node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<MachineGun>();
-            node.body.speed.y = speed;
+            node.body.velocity.y = speed;
         }
 
         capabilities::PhysicsObject {

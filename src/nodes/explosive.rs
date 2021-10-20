@@ -46,8 +46,15 @@ impl Explosive {
         //
         let mut world = storage::get_mut::<GameWorld>();
 
-        let mut body = PhysicsBody::new(&mut world.collision_world, pos, 0.0, size);
-        body.speed = velocity;
+        let mut body = PhysicsBody::new(
+            &mut world.collision_world,
+            pos,
+            0.0,
+            size,
+            false,
+        );
+
+        body.velocity = velocity;
 
         Self {
             texture: texture.to_string(),

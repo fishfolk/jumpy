@@ -185,12 +185,6 @@ impl From<serde_json::Error> for Error {
     }
 }
 
-impl From<ron::Error> for Error {
-    fn from(error: ron::Error) -> Self {
-        Error::new(ErrorKind::Parsing, error)
-    }
-}
-
 impl From<nanoserde::DeJsonErr> for Error {
     fn from(error: DeJsonErr) -> Self {
         Error::new(ErrorKind::Parsing, error)

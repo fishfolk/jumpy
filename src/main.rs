@@ -1,5 +1,6 @@
-use macroquad::prelude::*;
+use std::env;
 
+use macroquad::prelude::*;
 use macroquad::{
     audio,
     experimental::{
@@ -9,7 +10,24 @@ use macroquad::{
     },
 };
 
-use std::env;
+use editor::{Editor, EditorCamera, EditorInputScheme};
+use error::Result;
+
+pub use game_world::GameWorld;
+pub use input::{Input, InputScheme};
+
+use items::{
+    weapons::effects::Projectiles,
+    Item,
+};
+
+use map::{Map, MapLayerKind, MapObjectKind};
+
+use nodes::Player;
+
+use resources::MapResource;
+
+pub use resources::Resources;
 
 mod capabilities;
 mod gui;
@@ -32,27 +50,7 @@ pub mod text;
 #[macro_use]
 pub mod error;
 
-pub use game_world::GameWorld;
-pub use resources::Resources;
-
-use editor::{Editor, EditorCamera, EditorInputScheme};
-
-pub use input::{Input, InputScheme};
-
-use nodes::Player;
-
-use map::Map;
-
-use items::{
-    Item,
-    effects::Projectiles,
-};
-
-use resources::MapResource;
-
-use error::Result;
-
-use map::{MapLayerKind, MapObjectKind};
+const ASSETS_DIR_ENV_VAR: &str = "FISHFIGHT_ASSETS";
 
 pub type CollisionWorld = macroquad_platformer::World;
 
@@ -93,7 +91,6 @@ async fn build_game_scene(map: Map, is_local_game: bool) -> Result<Vec<Handle<Pl
 
     scene::add_node(SceneRenderer::new());
 
-
     let resources = storage::get::<Resources>();
 
     // Objects are cloned since Item constructor requires `GameWorld` in storage
@@ -104,7 +101,8 @@ async fn build_game_scene(map: Map, is_local_game: bool) -> Result<Vec<Handle<Pl
         }
     }
 
-    storage::store(GameWorld::new(map));
+    let mut spawn_points = Vec::new();
+    let mut items = Vec::new();
 
     for object in map_objects {
         match object.kind {
@@ -115,17 +113,26 @@ async fn build_game_scene(map: Map, is_local_game: bool) -> Result<Vec<Handle<Pl
                 // TODO: Add environment objects
             }
             MapObjectKind::SpawnPoint => {
-                // TODO: Add spawn points
+                spawn_points.push(object.position);
             }
             MapObjectKind::Item => {
-                let params = resources.items
+                let params = resources
+                    .items
                     .get(&object.id)
                     .cloned()
                     .unwrap_or_else(|| panic!("Invalid Item ID '{}'", &object.id));
 
-                scene::add_node(Item::new(object.position, params));
+                if params.is_network_ready || is_local_game {
+                    items.push((object.position, params));
+                }
             }
         }
+    }
+
+    storage::store(GameWorld::new(map, spawn_points));
+
+    for (position, params) in items {
+        scene::add_node(Item::new(position, params));
     }
 
     drop(resources);
@@ -149,7 +156,7 @@ async fn game(map_resource: MapResource, game_type: GameType) -> Result<()> {
             assert_eq!(
                 players_input.len(),
                 2,
-                "There should be two player input schemes for this game mode!"
+                "Local: There should be two player input schemes for this game mode"
             );
 
             let players = build_game_scene(map_resource.map, true).await?;
@@ -199,7 +206,8 @@ fn window_conf() -> Conf {
 
 #[macroquad::main(window_conf)]
 async fn main() -> Result<()> {
-    let assets_dir = env::var("FISHFIGHT_ASSETS").unwrap_or_else(|_| "./assets".to_string());
+    let assets_dir = env::var(ASSETS_DIR_ENV_VAR)
+        .unwrap_or_else(|_| "./assets".to_string());
 
     {
         let gui_resources = gui::GuiResources::load(&assets_dir).await;
@@ -211,7 +219,11 @@ async fn main() -> Result<()> {
     let resources_loading = start_coroutine({
         let assets_dir = assets_dir.clone();
         async move {
-            let resources = Resources::new(&assets_dir).await.unwrap();
+            let resources = match Resources::new(&assets_dir).await {
+                Ok(val) => val,
+                Err(err) => panic!("{}: {}", err.kind().as_str(), err.to_string()),
+            };
+
             storage::store(resources);
         }
     });

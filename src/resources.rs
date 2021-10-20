@@ -124,9 +124,8 @@ impl Resources {
             for meta in metadata {
                 let file_path = assets_dir_path.join(&meta.path);
 
-                // TODO: Make serde interface for `EmitterConfig` to remove nanoserde dependency
-                let str = load_string(&file_path.to_string_lossy()).await?;
-                let cfg: EmitterConfig = nanoserde::DeJson::deserialize_json(&str)?;
+                let bytes = load_file(&file_path.to_string_lossy()).await?;
+                let cfg: EmitterConfig = serde_json::from_slice(&bytes)?;
 
                 particle_effects.insert(meta.id, cfg);
             }

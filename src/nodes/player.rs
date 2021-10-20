@@ -5,74 +5,43 @@ use macroquad::{
         animation::{AnimatedSprite, Animation},
         collections::storage,
         coroutines::{start_coroutine, wait_seconds, Coroutine},
-        scene::{self, HandleUntyped, NodeWith, RefMut},
+        scene::{self, HandleUntyped, RefMut},
         state_machine::{State, StateMachine},
     },
     prelude::*,
 };
 
 use crate::{
-    capabilities::{NetworkReplicate, PhysicsObject, Weapon, WeaponTrait},
+    capabilities::{NetworkReplicate, PhysicsObject},
     components::PhysicsBody,
-    items::shoes::Shoes,
+    items::{
+        weapons::{
+            Weapon,
+            WeaponEffectKind,
+        },
+        Item, ItemKind,
+    },
+    math::{deg_to_rad, rotate_vector},
+    nodes::ParticleEmitters,
     GameWorld, Input, Resources,
 };
 
-use crate::nodes::ParticleEmitters;
-use std::f32;
-
 mod ai;
-
-impl Player {
-    pub fn drop_weapon(&mut self) {
-        if let Some(weapon) = self.weapon.as_mut() {
-            weapon.throw(false);
-        }
-        self.weapon = None;
-    }
-
-    pub fn pick_weapon(&mut self, weapon: NodeWith<Weapon>) {
-        let resources = storage::get::<Resources>();
-        let pickup_sound = resources.sounds["pickup"];
-
-        play_sound_once(pickup_sound);
-
-        self.drop_weapon();
-
-        self.weapon = Some(weapon);
-    }
-
-    pub fn jump(&mut self) {
-        let resources = storage::get::<Resources>();
-        let jump_sound = resources.sounds["jump"];
-
-        self.body.speed.y = -Self::JUMP_UPWARDS_SPEED;
-        self.jump_frames_left = Self::JUMP_HEIGHT_CONTROL_FRAMES;
-
-        audio::play_sound(
-            jump_sound,
-            audio::PlaySoundParams {
-                looped: false,
-                volume: 0.6,
-            },
-        );
-    }
-    fn slide(&mut self) {
-        self.state_machine.set_state(Self::ST_SLIDE);
-    }
-}
 
 pub struct Player {
     pub id: u8,
 
     pub body: PhysicsBody,
+    sprite: AnimatedSprite,
 
-    fish_sprite: AnimatedSprite,
     pub dead: bool,
-    pub weapon: Option<NodeWith<Weapon>>,
-    pub pick_grace_timer: f32,
+
+    pub weapon: Option<Weapon>,
+    pub weapon_mount_offset: Vec2,
+
     pub input: Input,
     pub last_frame_input: Input,
+    pub pick_grace_timer: f32,
 
     jump_grace_timer: f32,
     jump_frames_left: i32,
@@ -122,32 +91,36 @@ impl Player {
     pub const INCAPACITATED_BREAK_FACTOR: f32 = 0.9;
     pub const INCAPACITATED_STOP_THRESHOLD: f32 = 20.0;
 
+    const ITEM_THROW_FORCE: f32 = 800.0;
+
     pub fn new(player_id: u8, controller_id: i32) -> Player {
-        let spawner_pos = {
+        let spawn_point = {
             let world = storage::get_mut::<GameWorld>();
-            let objects = &world.map.layers["logic"].objects;
-            let object = &objects[rand::gen_range(0, objects.len()) as usize];
-            object.position
+            world.get_random_spawn_point()
         };
 
         let mut state_machine = StateMachine::new();
         state_machine.add_state(Self::ST_NORMAL, State::new().update(Self::update_normal));
+
         state_machine.add_state(
             Self::ST_DEATH,
             State::new().coroutine(Self::death_coroutine),
         );
+
         state_machine.add_state(
             Self::ST_SHOOT,
             State::new()
                 .update(Self::update_shoot)
                 .coroutine(Self::shoot_coroutine),
         );
+
         state_machine.add_state(
             Self::ST_INCAPACITATED,
             State::new()
                 .update(Self::update_incapacitated)
                 .coroutine(Self::incapacitated_coroutine),
         );
+
         state_machine.add_state(
             Self::ST_AFTERMATCH,
             State::new().update(Self::update_aftermatch),
@@ -160,23 +133,19 @@ impl Player {
                 .coroutine(Self::slide_coroutine),
         );
 
-        let body = PhysicsBody {
-            collider: {
-                let mut world = storage::get_mut::<GameWorld>();
-                world.collision_world.add_actor(spawner_pos, 30, 54)
-            },
-            on_ground: false,
-            angle: 0.0,
-            speed: vec2(0., 0.),
-            pos: spawner_pos,
-            size: vec2(30., 54.),
-            facing: true,
-            last_frame_on_ground: false,
-            have_gravity: true,
-            bouncyness: 0.0,
+        let body = {
+            let mut world = storage::get_mut::<GameWorld>();
+
+            PhysicsBody::new(
+                &mut world.collision_world,
+                spawn_point,
+                0.0,
+                vec2(30.0, 54.0),
+                false,
+            )
         };
 
-        let fish_sprite = AnimatedSprite::new(
+        let sprite = AnimatedSprite::new(
             76,
             66,
             &[
@@ -230,12 +199,12 @@ impl Player {
             id: player_id,
             dead: false,
             weapon: None,
-            pick_grace_timer: 0.,
+            weapon_mount_offset: vec2(0.0, 48.0),
             input: Default::default(),
             last_frame_input: Default::default(),
-
+            pick_grace_timer: 0.,
             body,
-            fish_sprite,
+            sprite,
             jump_grace_timer: 0.,
             jump_frames_left: 0,
             floating: false,
@@ -245,13 +214,65 @@ impl Player {
             remote_control: false,
             ai_enabled: false, //controller_id == 0,
             ai: Some(ai::Ai::new()),
-            camera_box: Rect::new(spawner_pos.x - 30., spawner_pos.y - 150., 100., 210.),
+            camera_box: Rect::new(spawn_point.x - 30., spawn_point.y - 150., 100., 210.),
             can_head_boink: false,
             back_armor: 0,
             is_crouched: false,
             incapacitated_timer: 0.0,
             incapacitated_duration: 0.0,
         }
+    }
+
+    pub fn drop_weapon(&mut self, is_thrown: bool) {
+        if let Some(weapon) = self.weapon.take() {
+            let params = {
+                let resources = storage::get::<Resources>();
+                resources
+                    .items
+                    .get(&weapon.id)
+                    .cloned()
+                    .unwrap_or_else(|| panic!("Player: Invalid weapon ID '{}'", &weapon.id))
+            };
+
+            let mut item = Item::new(self.body.pos, params);
+
+            if is_thrown {
+                item.body.velocity = self.body.facing_dir() * Self::ITEM_THROW_FORCE;
+            }
+
+            scene::add_node(item);
+        }
+    }
+
+    pub fn pick_weapon(&mut self, weapon: Weapon) {
+        let resources = storage::get::<Resources>();
+        let pickup_sound = resources.sounds["pickup"];
+
+        play_sound_once(pickup_sound);
+
+        self.drop_weapon(false);
+
+        self.weapon = Some(weapon);
+    }
+
+    pub fn jump(&mut self) {
+        let resources = storage::get::<Resources>();
+        let jump_sound = resources.sounds["jump"];
+
+        self.body.velocity.y = -Self::JUMP_UPWARDS_SPEED;
+        self.jump_frames_left = Self::JUMP_HEIGHT_CONTROL_FRAMES;
+
+        audio::play_sound(
+            jump_sound,
+            audio::PlaySoundParams {
+                looped: false,
+                volume: 0.6,
+            },
+        );
+    }
+
+    fn slide(&mut self) {
+        self.state_machine.set_state(Self::ST_SLIDE);
     }
 
     pub fn apply_input(&mut self, input: Input) {
@@ -261,13 +282,13 @@ impl Player {
 
     pub fn incapacitate(&mut self, duration: f32, should_stop: bool, should_fall: bool) {
         if should_stop {
-            self.body.speed.x = 0.0;
+            self.body.velocity.x = 0.0;
         }
         self.incapacitated_duration = duration;
         self.incapacitated_timer = 0.0;
         self.state_machine.set_state(Self::ST_INCAPACITATED);
         if should_fall {
-            self.fish_sprite.set_animation(6);
+            self.sprite.set_animation(6);
         }
     }
 
@@ -313,12 +334,12 @@ impl Player {
         let coroutine = async move {
             {
                 let mut node = scene::get_node(handle);
-                node.body.speed.x = -300. * node.body.facing_dir().x;
-                node.body.speed.y = -150.;
-                node.body.have_gravity = true;
+                node.body.velocity.x = -300. * node.body.facing_dir().x;
+                node.body.velocity.y = -150.;
+                node.body.has_gravity = true;
 
                 node.dead = true;
-                node.fish_sprite.set_animation(2);
+                node.sprite.set_animation(2);
 
                 // let mut score_counter = scene::get_node(node.score_counter);
                 // score_counter.count_loss(node.controller_id)
@@ -343,8 +364,8 @@ impl Player {
 
                 {
                     let mut node = scene::get_node(handle);
-                    node.fish_sprite.set_animation(3);
-                    node.body.speed = vec2(0., 0.);
+                    node.sprite.set_animation(3);
+                    node.body.velocity = vec2(0., 0.);
                 }
 
                 wait_seconds(0.5).await;
@@ -354,8 +375,8 @@ impl Player {
                 let mut node = scene::get_node(handle);
                 let pos = node.body.pos;
 
-                node.fish_sprite.playing = false;
-                node.body.speed = vec2(0., 0.);
+                node.sprite.playing = false;
+                node.body.velocity = vec2(0., 0.);
 
                 let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
                 particles.explosions.spawn(pos + vec2(15., 33.));
@@ -366,18 +387,16 @@ impl Player {
             let mut this = scene::get_node(handle);
 
             if this.can_head_boink {
-                Shoes::spawn(this.body.pos);
+                // Shoes::spawn(this.body.pos);
                 this.can_head_boink = false;
             }
 
             this.body.pos = {
                 let world = storage::get_mut::<GameWorld>();
-                let objects = &world.map.layers["logic"].objects;
-                let object = &objects[rand::gen_range(0, objects.len()) as usize];
-                object.position
+                world.get_random_spawn_point()
             };
-            this.fish_sprite.playing = true;
-            this.drop_weapon();
+            this.sprite.playing = true;
+            this.drop_weapon(false);
 
             // in deathmatch we can just get back to normal after death
             {
@@ -395,15 +414,17 @@ impl Player {
     }
 
     fn shoot_coroutine(node: &mut RefMut<Player>) -> Coroutine {
-        if let Some(ref weapon) = node.weapon {
-            weapon.shoot(node.handle())
-        } else {
-            let handle = node.handle();
+        let player = node.handle();
 
-            start_coroutine(async move {
-                let player = &mut *scene::get_node(handle);
+        if node.weapon.is_some() && node.weapon.as_ref().unwrap().is_ready() {
+            Weapon::attack_coroutine(player)
+        } else {
+            let coroutine = async move {
+                let player = &mut *scene::get_node(player);
                 player.state_machine.set_state(Player::ST_NORMAL);
-            })
+            };
+
+            start_coroutine(coroutine)
         }
     }
 
@@ -417,11 +438,11 @@ impl Player {
     }
 
     fn update_shoot(node: &mut RefMut<Player>, _dt: f32) {
-        node.body.speed.x *= 0.9;
+        node.body.velocity.x *= 0.9;
     }
 
     fn update_aftermatch(node: &mut RefMut<Player>, _dt: f32) {
-        node.body.speed.x = 0.0;
+        node.body.velocity.x = 0.0;
     }
 
     fn update_slide(_node: &mut RefMut<Player>, _dt: f32) {}
@@ -432,12 +453,12 @@ impl Player {
         let coroutine = async move {
             {
                 let mut node = scene::get_node(handle);
-                node.body.speed.x = if node.body.facing {
+                node.body.velocity.x = if node.body.facing {
                     Self::SLIDE_SPEED
                 } else {
                     -Self::SLIDE_SPEED
                 };
-                node.fish_sprite.set_animation(6);
+                node.sprite.set_animation(6);
             }
 
             wait_seconds(Self::SLIDE_DURATION).await;
@@ -464,11 +485,10 @@ impl Player {
             node.kill(false);
         }
 
-        let node_handle = node.handle();
         let node = &mut **node;
 
         if node.is_crouched {
-            node.body.speed.x = 0.0;
+            node.body.velocity.x = 0.0;
 
             if node.input.right {
                 node.body.facing = true;
@@ -478,13 +498,13 @@ impl Player {
         } else {
             //
             if node.input.right {
-                node.body.speed.x = Self::RUN_SPEED;
+                node.body.velocity.x = Self::RUN_SPEED;
                 node.body.facing = true;
             } else if node.input.left {
-                node.body.speed.x = -Self::RUN_SPEED;
+                node.body.velocity.x = -Self::RUN_SPEED;
                 node.body.facing = false;
             } else {
-                node.body.speed.x = 0.;
+                node.body.velocity.x = 0.;
             }
         }
 
@@ -508,15 +528,15 @@ impl Player {
         }
 
         if node.floating {
-            node.fish_sprite.set_animation(4);
+            node.sprite.set_animation(4);
         } else if node.is_crouched {
-            node.fish_sprite.set_animation(5);
+            node.sprite.set_animation(5);
         } else {
             //
             if node.input.right || node.input.left {
-                node.fish_sprite.set_animation(1);
+                node.sprite.set_animation(1);
             } else {
-                node.fish_sprite.set_animation(0);
+                node.sprite.set_animation(0);
             }
         }
 
@@ -530,7 +550,7 @@ impl Player {
             if !node.was_floating {
                 node.floating = true;
                 node.was_floating = true;
-                node.body.have_gravity = false;
+                node.body.has_gravity = false;
             }
         }
         // jump button released, stop to float
@@ -542,9 +562,9 @@ impl Player {
             node.floating = false;
         }
         if node.floating {
-            node.body.speed.y = Self::FLOAT_SPEED;
+            node.body.velocity.y = Self::FLOAT_SPEED;
         } else {
-            node.body.have_gravity = true;
+            node.body.has_gravity = true;
         }
 
         node.is_crouched = node.body.on_ground && node.input.down;
@@ -575,10 +595,10 @@ impl Player {
             node.pick_grace_timer -= get_frame_time();
         }
 
-        if node.input.throw && !node.last_frame_input.throw {
-            if let Some(weapon) = node.weapon.as_mut() {
-                weapon.throw(!node.input.down);
-                node.weapon = None;
+        if node.input.pickup && !node.last_frame_input.pickup {
+            if node.weapon.is_some() {
+                node.drop_weapon(true);
+
                 {
                     let resources = storage::get::<Resources>();
                     let throw_sound = resources.sounds["throw"];
@@ -596,24 +616,21 @@ impl Player {
                 // falls, but idk
                 node.floating = false;
             } else if node.pick_grace_timer <= 0.0 {
-                let mut picked = false;
+                for item in scene::find_nodes_by_type::<Item>() {
+                    if node.get_hitbox().overlaps(&item.get_collider()) {
+                        let was_picked_up = match &item.kind {
+                            ItemKind::Weapon { params } => {
+                                let weapon = Weapon::new(&item.id, params.clone());
+                                node.pick_weapon(weapon);
+                                true
+                            }
+                            ItemKind::Misc => false,
+                        };
 
-                for weapon in scene::find_nodes_with::<Weapon>() {
-                    if picked {
-                        break;
-                    }
-                    let gun_rect = weapon.collider();
-                    // make it little bigger to simplify picking up
-                    let gun_rect = Rect::new(
-                        gun_rect.x - 50.,
-                        gun_rect.y - 50.,
-                        gun_rect.w + 100.,
-                        gun_rect.h + 100.,
-                    );
-                    if weapon.is_thrown() && node.get_hitbox().overlaps(&gun_rect) {
-                        picked = true;
-                        weapon.pick_up(node_handle);
-                        node.pick_weapon(weapon);
+                        if was_picked_up {
+                            item.delete();
+                            break;
+                        }
                     }
                 }
             }
@@ -652,13 +669,13 @@ impl Player {
 
     fn network_update(mut node: RefMut<Self>) {
         // Break incapacitated
-        if node.state_machine.state() == Player::ST_INCAPACITATED && node.body.speed.x != 0.0 {
-            if node.body.speed.x > Player::INCAPACITATED_STOP_THRESHOLD
-                || node.body.speed.x < -Player::INCAPACITATED_STOP_THRESHOLD
+        if node.state_machine.state() == Player::ST_INCAPACITATED && node.body.velocity.x != 0.0 {
+            if node.body.velocity.x > Player::INCAPACITATED_STOP_THRESHOLD
+                || node.body.velocity.x < -Player::INCAPACITATED_STOP_THRESHOLD
             {
-                node.body.speed.x *= Player::INCAPACITATED_BREAK_FACTOR;
+                node.body.velocity.x *= Player::INCAPACITATED_BREAK_FACTOR;
             } else {
-                node.body.speed.x = 0.0;
+                node.body.velocity.x = 0.0;
             }
         }
 
@@ -668,7 +685,10 @@ impl Player {
             // }
         }
 
-        node.fish_sprite.update();
+        node.sprite.update();
+        if let Some(weapon) = &mut node.weapon {
+            weapon.update();
+        }
 
         let map_bottom = {
             let world = storage::get::<GameWorld>();
@@ -680,21 +700,14 @@ impl Player {
             node.kill(false);
         }
 
-        {
-            let node = &mut *node;
-            if let Some(weapon) = node.weapon.as_mut() {
-                weapon.mount(node.body.pos, node.body.facing);
-            }
-        }
-
         if node.input.jump {
             if node.jump_frames_left > 0 {
-                node.body.speed.y = -Player::JUMP_UPWARDS_SPEED;
+                node.body.velocity.y = -Player::JUMP_UPWARDS_SPEED;
                 node.jump_frames_left -= 1;
             }
         } else {
-            if node.body.speed.y < 0.0 {
-                node.body.speed.y += Player::JUMP_RELEASE_GRAVITY_INCREASE;
+            if node.body.velocity.y < 0.0 {
+                node.body.velocity.y += Player::JUMP_RELEASE_GRAVITY_INCREASE;
             }
             node.jump_frames_left = 0;
         }
@@ -725,7 +738,7 @@ impl Player {
             node.body.update();
         }
 
-        if node.can_head_boink && node.body.speed.y > 0.0 {
+        if node.can_head_boink && node.body.velocity.y > 0.0 {
             let hitbox = node.get_hitbox();
             for mut other in scene::find_nodes_by_type::<Player>() {
                 let other_hitbox = other.get_hitbox();
@@ -787,12 +800,12 @@ impl scene::Node for Player {
 
         draw_texture_ex(
             texture_entry.texture,
-            node.body.pos.x - 25.,
-            node.body.pos.y - 10.,
+            node.body.pos.x - 25.0,
+            node.body.pos.y - 10.0,
             color::WHITE,
             DrawTextureParams {
-                source: Some(node.fish_sprite.frame().source_rect),
-                dest_size: Some(node.fish_sprite.frame().dest_size),
+                source: Some(node.sprite.frame().source_rect),
+                dest_size: Some(node.sprite.frame().dest_size),
                 flip_x: !node.body.facing,
                 ..Default::default()
             },
@@ -810,7 +823,7 @@ impl scene::Node for Player {
 
             draw_texture_ex(
                 texture_entry.texture,
-                node.body.pos.x + if node.body.facing { -20.0 } else { 15.0 },
+                node.body.pos.x + if node.body.facing { -15.0 } else { 20.0 },
                 node.body.pos.y,
                 color::WHITE,
                 DrawTextureParams {
@@ -819,6 +832,59 @@ impl scene::Node for Player {
                     ..Default::default()
                 },
             )
+        }
+
+        if let Some(weapon) = &node.weapon {
+            let position = {
+                let mut offset = node.weapon_mount_offset;
+                if !node.body.facing {
+                    offset.x = -offset.x;
+                }
+
+                node.body.pos + offset
+            };
+
+            weapon.draw(
+                position,
+                node.body.angle,
+                None,
+                !node.body.facing,
+                false,
+            );
+
+            if let Some(uses) = weapon.uses {
+                let mut position = node.body.pos;
+                position.y -= 16.0;
+
+                let remaining = uses - weapon.use_cnt;
+
+                let full_color = Color::new(0.8, 0.9, 1.0, 1.0);
+                let empty_color = Color::new(0.8, 0.9, 1.0, 0.8);
+
+                if uses >= Weapon::CONDENSED_USE_COUNT_THRESHOLD {
+                    let x = position.x - ((4.0 * uses as f32) / 2.0);
+
+                    for i in 0..uses {
+                        let x = x + 4.0 * i as f32;
+
+                        if i >= remaining {
+                            draw_rectangle(x, position.y - 12.0, 2.0, 12.0, empty_color);
+                        } else {
+                            draw_rectangle(x, position.y - 12.0, 2.0, 12.0, full_color);
+                        };
+                    }
+                } else {
+                    for i in 0..uses {
+                        let x = position.x + 15.0 * i as f32;
+
+                        if i >= remaining {
+                            draw_circle_lines(x, position.y - 12.0, 4.0, 2.0, empty_color);
+                        } else {
+                            draw_circle(x, position.y - 12.0, 4.0, full_color);
+                        };
+                    }
+                }
+            }
         }
     }
 
@@ -838,6 +904,7 @@ impl Player {
         fn active(_: HandleUntyped) -> bool {
             true
         }
+
         fn collider(handle: HandleUntyped) -> Rect {
             let node = scene::get_untyped_node(handle)
                 .unwrap()
@@ -850,17 +917,19 @@ impl Player {
                 node.body.size.y,
             )
         }
+
         fn set_speed_x(handle: HandleUntyped, speed: f32) {
             let mut node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<Player>();
-            node.body.speed.x = speed;
+            node.body.velocity.x = speed;
         }
+
         fn set_speed_y(handle: HandleUntyped, speed: f32) {
             let mut node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<Player>();
-            node.body.speed.y = speed;
+            node.body.velocity.y = speed;
         }
 
         PhysicsObject {

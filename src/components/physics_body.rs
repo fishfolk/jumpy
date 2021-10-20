@@ -11,14 +11,15 @@ use crate::GameWorld;
 pub struct PhysicsBody {
     pub pos: Vec2,
     pub size: Vec2,
-    pub speed: Vec2,
+    pub velocity: Vec2,
     pub facing: bool,
     pub angle: f32,
     pub collider: Actor,
     pub on_ground: bool,
     pub last_frame_on_ground: bool,
-    pub have_gravity: bool,
+    pub has_gravity: bool,
     pub bouncyness: f32,
+    pub can_rotate: bool,
 }
 
 impl PhysicsBody {
@@ -29,18 +30,20 @@ impl PhysicsBody {
         pos: Vec2,
         angle: f32,
         size: Vec2,
+        can_rotate: bool,
     ) -> PhysicsBody {
         PhysicsBody {
             pos,
             size,
             facing: true,
-            speed: vec2(0., 0.),
+            velocity: vec2(0., 0.),
             angle,
             collider: collision_world.add_actor(pos, size.x as _, size.y as _),
             last_frame_on_ground: false,
             on_ground: false,
-            have_gravity: true,
+            has_gravity: true,
             bouncyness: 0.0,
+            can_rotate,
         }
     }
 
@@ -65,29 +68,37 @@ impl PhysicsBody {
         self.on_ground = world
             .collision_world
             .collide_check(self.collider, self.pos + vec2(0., 1.));
-        if !self.on_ground && self.have_gravity {
-            self.speed.y += Self::GRAVITY * get_frame_time();
+
+        if !self.on_ground && self.has_gravity {
+            self.velocity.y += Self::GRAVITY * get_frame_time();
         }
+
         if !world
             .collision_world
-            .move_h(self.collider, self.speed.x * get_frame_time())
+            .move_h(self.collider, self.velocity.x * get_frame_time())
         {
-            self.speed.x *= -self.bouncyness;
+            self.velocity.x *= -self.bouncyness;
         }
+
         if !world
             .collision_world
-            .move_v(self.collider, self.speed.y * get_frame_time())
+            .move_v(self.collider, self.velocity.y * get_frame_time())
         {
-            self.speed.y *= -self.bouncyness;
+            self.velocity.y *= -self.bouncyness;
         }
+
         self.pos = world.collision_world.actor_pos(self.collider);
+
+        if self.can_rotate {
+            // TODO: Rotation
+        }
     }
 
     pub fn update_throw(&mut self) {
         if !self.on_ground {
-            self.angle += self.speed.x.abs() * 0.00045 + self.speed.y.abs() * 0.00015;
+            self.angle += self.velocity.x.abs() * 0.00045 + self.velocity.y.abs() * 0.00015;
 
-            self.speed.y += Self::GRAVITY * get_frame_time();
+            self.velocity.y += Self::GRAVITY * get_frame_time();
         } else {
             self.angle %= std::f32::consts::PI * 2.;
             let goal = if self.angle <= std::f32::consts::PI {
@@ -102,9 +113,9 @@ impl PhysicsBody {
             }
         }
 
-        self.speed.x *= 0.96;
-        if self.speed.x.abs() <= 1. {
-            self.speed.x = 0.0;
+        self.velocity.x *= 0.96;
+        if self.velocity.x.abs() <= 1. {
+            self.velocity.x = 0.0;
         }
     }
 }

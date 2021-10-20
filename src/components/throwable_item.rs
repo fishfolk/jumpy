@@ -22,7 +22,7 @@ impl ThrowableItem {
         self.owner = None;
 
         if force {
-            body.speed = if body.facing {
+            body.velocity = if body.facing {
                 vec2(600., -200.)
             } else {
                 vec2(-600., -200.)
@@ -47,12 +47,7 @@ impl ThrowableItem {
                 let hitbox = Rect::new(body.pos.x, body.pos.y, body.size.x, body.size.y);
                 for mut player in scene::find_nodes_by_type::<Player>() {
                     if hitbox.overlaps(&player.get_hitbox()) {
-                        if let Some(weapon) = player.weapon.as_mut() {
-                            use crate::capabilities::WeaponTrait;
-
-                            weapon.throw(false);
-                            player.weapon = None;
-                        }
+                        player.drop_weapon(false);
                     }
                 }
             }

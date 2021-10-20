@@ -194,6 +194,7 @@ impl SharkRain {
             pos,
             0.0,
             vec2(Self::SPRITE_WIDTH as f32, Self::SPRITE_HEIGHT as f32),
+            false,
         );
 
         scene::add_node(SharkRain {
@@ -298,13 +299,13 @@ impl SharkRain {
             let mut node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<SharkRain>();
-            node.body.speed.x = speed;
+            node.body.velocity.x = speed;
         }
         fn set_speed_y(handle: HandleUntyped, speed: f32) {
             let mut node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<SharkRain>();
-            node.body.speed.y = speed;
+            node.body.velocity.y = speed;
         }
 
         capabilities::PhysicsObject {

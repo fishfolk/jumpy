@@ -75,6 +75,7 @@ impl Gun {
                 pos,
                 0.0,
                 vec2(SNIPER_COLLIDER_WIDTH, SNIPER_COLLIDER_HEIGHT),
+                false,
             ),
             throwable: ThrowableItem::default(),
             bullets: SNIPER_BULLETS,

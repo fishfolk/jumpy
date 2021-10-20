@@ -75,6 +75,7 @@ impl Gun {
                 pos,
                 0.0,
                 vec2(MUSKET_COLLIDER_WIDTH, MUSKET_COLLIDER_HEIGHT),
+                false,
             ),
             throwable: ThrowableItem::default(),
             bullets: MUSKET_BULLETS,

@@ -183,6 +183,24 @@ Item {
 - size of sprites can be modified as long as tiled width and height are updated as well
 - explain gunlike animation with graphic (src/components/gunlike_animation.rs)
 
+STEPS to Recreate
+
+- open sniper spritesheet in aseprite
+- draw a grid of the tile size (92x32)
+- determine new tile size based on idea for new sprite (112x32)
+- multiply out to create new spritesheet (448x160)
+- draw grid of new tile size (112x32)
+- add new sprites/modify existing
+- save to fishfight assets folder
+- change sniper.rs tile width and height
+- change sprite sheet file name in items.rs
+
+This section will go over how to go beyond simply changing the texture of an existing sprite to also change the size of your item's new sprite. For my sniper, I also want to change the length of the sprite in the x direction so the sniper will look significantly longer than the musket. To start off, I'll open my existing sniper texture in Aseprite. Then I want to draw boxes around all of the sprites, so I can visualize all of the space they encompass. First I need to know the size of the sprite sheet I'm currently using.
+
+
+In Aseprite this can be done through View > Grid > Grid Settings. Then in the window I can set the width to 92 and the height to 32.
+
+
 ### Collider
 
 - change collider width and collider height constants

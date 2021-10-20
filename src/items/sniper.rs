@@ -25,7 +25,7 @@ impl Gun {
 
         let gun_sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
-                92,
+                112,
                 32,
                 &[
                     Animation {

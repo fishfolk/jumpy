@@ -1,4 +1,3 @@
-use std::thread::spawn;
 use macroquad::{
     audio::{self, play_sound_once},
     color,
@@ -15,14 +14,7 @@ use macroquad::{
 use crate::{
     capabilities::{NetworkReplicate, PhysicsObject},
     components::PhysicsBody,
-    items::{
-        weapons::{
-            Weapon,
-            WeaponEffectKind,
-        },
-        Item, ItemKind,
-    },
-    math::{deg_to_rad, rotate_vector},
+    items::{weapons::Weapon, Item, ItemKind},
     nodes::ParticleEmitters,
     GameWorld, Input, Resources,
 };
@@ -261,6 +253,10 @@ impl Player {
 
     pub fn get_weapon_mount(&self) -> Vec2 {
         let mut offset = vec2(Self::SPRITE_X_OFFSET, 0.0);
+
+        if !self.body.facing {
+            offset.x += Self::SPRITE_X_OFFSET;
+        }
 
         if self.is_crouched {
             offset.y = 32.0;
@@ -815,9 +811,7 @@ impl scene::Node for Player {
             "player_green"
         };
 
-        let texture_entry = resources.textures
-            .get(texture_id)
-            .unwrap();
+        let texture_entry = resources.textures.get(texture_id).unwrap();
 
         let dest_size = node.sprite.frame().dest_size;
 
@@ -846,14 +840,7 @@ impl scene::Node for Player {
         {
             let hitbox = node.get_hitbox();
 
-            draw_rectangle_lines(
-                hitbox.x,
-                hitbox.y,
-                hitbox.w,
-                hitbox.h,
-                2.0,
-                color::RED,
-            );
+            draw_rectangle_lines(hitbox.x, hitbox.y, hitbox.w, hitbox.h, 2.0, color::RED);
         }
 
         // draw turtle shell on player if the player has back armor
@@ -880,16 +867,11 @@ impl scene::Node for Player {
         }
 
         if let Some(weapon) = &node.weapon {
-            let position = node.body.pos + node.get_weapon_mount()
+            let position = node.body.pos
+                + node.get_weapon_mount()
                 + weapon.get_mount_offset(node.body.facing_dir());
 
-            weapon.draw(
-                position,
-                node.body.angle,
-                None,
-                !node.body.facing,
-                false,
-            );
+            weapon.draw(position, node.body.angle, None, !node.body.facing, false);
 
             if let Some(uses) = weapon.uses {
                 let mut position = node.body.pos;

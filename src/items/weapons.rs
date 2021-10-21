@@ -1,35 +1,27 @@
 use macroquad::{
+    audio::play_sound_once,
     audio::Sound,
     color,
     experimental::{
         collections::storage,
-        coroutines::{
-            Coroutine,
-            start_coroutine,
-            wait_seconds,
-        },
+        coroutines::{start_coroutine, wait_seconds, Coroutine},
         scene::Handle,
     },
-    audio::play_sound_once,
     prelude::*,
 };
 
 use serde::{Deserialize, Serialize};
 
-pub use effects::{
-    EffectTrigger,
-    WeaponEffectKind,
-    WeaponEffectParams,
-    weapon_effect_coroutine,
-};
+pub use effects::{weapon_effect_coroutine, EffectTrigger, WeaponEffectKind, WeaponEffectParams};
 
 use crate::{
     components::{AnimationParams, AnimationPlayer},
-    json,
-    Player, Resources,
+    json, Player, Resources,
 };
 
 pub mod effects;
+
+pub use effects::{add_custom_weapon_effect, CustomWeaponEffectCoroutine, CustomWeaponEffectParam};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WeaponParams {
@@ -104,11 +96,10 @@ impl Weapon {
             }
         }
 
-        let animation_player = AnimationPlayer::new(
-            AnimationParams {
-                pivot: Some(params.mount_offset),
-                ..params.animation
-            });
+        let animation_player = AnimationPlayer::new(AnimationParams {
+            pivot: Some(params.mount_offset),
+            ..params.animation
+        });
 
         Weapon {
             id: id.to_string(),
@@ -251,14 +242,20 @@ impl Weapon {
                         play_sound_once(sound_effect);
                     }
 
-                    player.body.velocity.x = if player.body.facing { -weapon.recoil } else { weapon.recoil };
+                    player.body.velocity.x = if player.body.facing {
+                        -weapon.recoil
+                    } else {
+                        weapon.recoil
+                    };
                 }
             }
 
             {
                 let player = &*scene::get_node(player_handle);
                 if let Some(weapon) = &player.weapon {
-                    let origin = player.body.pos + player.get_weapon_mount() + weapon.get_effect_offset(player.body.facing_dir());
+                    let origin = player.body.pos
+                        + player.get_weapon_mount()
+                        + weapon.get_effect_offset(player.body.facing_dir());
 
                     weapon_effect_coroutine(player_handle, origin, weapon.effect.clone());
                 }
@@ -268,11 +265,7 @@ impl Weapon {
 
             let attack_duration = {
                 let player = &*scene::get_node(player_handle);
-                if let Some(weapon) = &player.weapon {
-                    Some(weapon.attack_duration)
-                } else {
-                    None
-                }
+                player.weapon.as_ref().map(|weapon| weapon.attack_duration)
             };
 
             if let Some(attack_duration) = attack_duration {

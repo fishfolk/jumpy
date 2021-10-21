@@ -1,7 +1,6 @@
 use macroquad::{experimental::animation::Animation, prelude::*};
 
-use serde::{Deserialize, Deserializer, Serialize};
-use serde::de::Error;
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(remote = "Color")]

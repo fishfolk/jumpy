@@ -16,10 +16,7 @@ use error::Result;
 pub use game_world::GameWorld;
 pub use input::{Input, InputScheme};
 
-use items::{
-    weapons::effects::Projectiles,
-    Item,
-};
+use items::{weapons::effects::Projectiles, Item};
 
 use map::{Map, MapLayerKind, MapObjectKind};
 
@@ -206,8 +203,7 @@ fn window_conf() -> Conf {
 
 #[macroquad::main(window_conf)]
 async fn main() -> Result<()> {
-    let assets_dir = env::var(ASSETS_DIR_ENV_VAR)
-        .unwrap_or_else(|_| "./assets".to_string());
+    let assets_dir = env::var(ASSETS_DIR_ENV_VAR).unwrap_or_else(|_| "./assets".to_string());
 
     {
         let gui_resources = gui::GuiResources::load(&assets_dir).await;

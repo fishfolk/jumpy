@@ -115,7 +115,7 @@ impl AnimationPlayer {
         let rect = self.get_rect(scale);
 
         let pivot = {
-            let size= self.get_size(scale);
+            let size = self.get_size(scale);
             let mut pivot = self.pivot;
             if flip_x {
                 pivot.x = size.x - self.pivot.x;

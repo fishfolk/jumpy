@@ -2,13 +2,8 @@ use std::collections::HashMap;
 
 use macroquad::{
     experimental::{
-        scene::{
-            Handle,
-        },
-        coroutines::{
-            Coroutine,
-            start_coroutine,
-        }
+        coroutines::{start_coroutine, Coroutine},
+        scene::Handle,
     },
     prelude::*,
 };
@@ -16,9 +11,9 @@ use macroquad::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    Player,
-    math::{deg_to_rad, rotate_vector},
     json,
+    math::{deg_to_rad, rotate_vector},
+    Player,
 };
 
 pub mod projectiles;
@@ -36,10 +31,18 @@ pub enum EffectTrigger {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum CustomWeaponEffectParam {
-    Bool { value: bool },
-    Int { value: i32 },
-    Float { value: f32 },
-    String { value: String },
+    Bool {
+        value: bool,
+    },
+    Int {
+        value: i32,
+    },
+    Float {
+        value: f32,
+    },
+    String {
+        value: String,
+    },
     Color {
         #[serde(with = "json::ColorDef")]
         value: Color,
@@ -51,7 +54,7 @@ pub enum CustomWeaponEffectParam {
     UVec2 {
         #[serde(with = "json::uvec2_def")]
         value: UVec2,
-    }
+    },
 }
 
 // This should hold implementations of the commonly used weapon effects, that see usage spanning
@@ -113,7 +116,8 @@ pub struct WeaponEffectParams {
 
 static mut CUSTOM_WEAPON_EFFECTS: Option<HashMap<String, CustomWeaponEffectCoroutine>> = None;
 
-unsafe fn get_custom_weapon_effects_map() -> &'static mut HashMap<String, CustomWeaponEffectCoroutine> {
+unsafe fn get_custom_weapon_effects_map(
+) -> &'static mut HashMap<String, CustomWeaponEffectCoroutine> {
     if CUSTOM_WEAPON_EFFECTS.is_none() {
         CUSTOM_WEAPON_EFFECTS = Some(HashMap::new());
     }
@@ -121,6 +125,7 @@ unsafe fn get_custom_weapon_effects_map() -> &'static mut HashMap<String, Custom
     CUSTOM_WEAPON_EFFECTS.as_mut().unwrap()
 }
 
+#[allow(dead_code)]
 pub fn add_custom_weapon_effect(id: &str, f: CustomWeaponEffectCoroutine) {
     unsafe { get_custom_weapon_effects_map() }.insert(id.to_string(), f);
 }
@@ -134,21 +139,21 @@ fn get_custom_weapon_effect(id: &str) -> CustomWeaponEffectCoroutine {
 // This is not strictly necessary as of writing this, as there is no way of adding effects through
 // scripts etc., so new effects can also be implemented by creating a new variant of
 // `WeaponEffectKind` and implementing the effect directly in the `weapon_effect_coroutine` function
-pub type CustomWeaponEffectCoroutine = fn(Handle<Player>, HashMap<String, CustomWeaponEffectParam>) -> Coroutine;
+pub type CustomWeaponEffectCoroutine =
+    fn(Handle<Player>, HashMap<String, CustomWeaponEffectParam>) -> Coroutine;
 
-pub fn weapon_effect_coroutine(player_handle: Handle<Player>, origin: Vec2, params: WeaponEffectParams) -> Coroutine {
+pub fn weapon_effect_coroutine(
+    player_handle: Handle<Player>,
+    origin: Vec2,
+    params: WeaponEffectParams,
+) -> Coroutine {
     let coroutine = async move {
         match params.kind {
-            WeaponEffectKind::Custom {
-                id,
-                params,
-            } => {
+            WeaponEffectKind::Custom { id, params } => {
                 let f = get_custom_weapon_effect(&id);
                 f(player_handle, params);
             }
-            WeaponEffectKind::Batch {
-                effects,
-            } => {
+            WeaponEffectKind::Batch { effects } => {
                 for params in effects {
                     weapon_effect_coroutine(player_handle, origin, params);
                 }
@@ -172,17 +177,9 @@ pub fn weapon_effect_coroutine(player_handle: Handle<Player>, origin: Vec2, para
 
                 let velocity = rotate_vector(player.body.facing_dir() * speed, spread);
 
-                let mut projectiles =
-                    scene::find_node_by_type::<Projectiles>().unwrap();
+                let mut projectiles = scene::find_node_by_type::<Projectiles>().unwrap();
 
-                projectiles.spawn(
-                    player_handle,
-                    origin,
-                    velocity,
-                    range,
-                    size,
-                    color,
-                );
+                projectiles.spawn(player_handle, origin, velocity, range, size, color);
             }
         }
     };

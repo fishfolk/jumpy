@@ -56,13 +56,15 @@ impl Sprite {
         };
 
         let source_rect = {
-            let sprite_size = params.size
-                .map(|uvec| uvec.as_f32())
-                .unwrap_or_else(|| texture_res
-                .meta
-                .sprite_size
-                .map(|val| val.as_f32())
-                .unwrap_or_else(|| vec2(texture_res.texture.width(), texture_res.texture.height())));
+            let sprite_size = params.size.map(|uvec| uvec.as_f32()).unwrap_or_else(|| {
+                texture_res
+                    .meta
+                    .sprite_size
+                    .map(|val| val.as_f32())
+                    .unwrap_or_else(|| {
+                        vec2(texture_res.texture.width(), texture_res.texture.height())
+                    })
+            });
 
             let grid_size = uvec2(
                 (texture_res.texture.width() / sprite_size.x) as u32,
@@ -111,7 +113,7 @@ impl Sprite {
         let rect = self.get_rect(scale);
 
         let pivot = {
-            let size= self.get_size(scale);
+            let size = self.get_size(scale);
             let mut pivot = self.pivot;
             if flip_x {
                 pivot.x = size.x - self.pivot.x;

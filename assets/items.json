@@ -17,8 +17,8 @@
       "y": 17
     },
     "mount_offset": {
-      "x": 16,
-      "y": -88
+      "x": 0,
+      "y": -32
     },
     "animation": {
       "texture_id": "sword",

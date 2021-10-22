@@ -195,10 +195,45 @@ STEPS to Recreate
 - change sniper.rs tile width and height
 - change sprite sheet file name in items.rs
 
-This section will go over how to go beyond simply changing the texture of an existing sprite to also change the size of your item's new sprite. For my sniper, I also want to change the length of the sprite in the x direction so the sniper will look significantly longer than the musket. To start off, I'll open my existing sniper texture in Aseprite. Then I want to draw boxes around all of the sprites, so I can visualize all of the space they encompass. First I need to know the size of the sprite sheet I'm currently using.
+This section will go over how to go beyond changing the hue of an existing sprite to also changing the size of your new item's sprite. For my sniper, I want to change the length of the sprite in the x direction so the sniper will look significantly longer than the musket.
+
+To start off, I'll open my existing sniper texture in Aseprite. Then, to visualize the tiled sprites, I use Aseprite's grid feature (View > Grid > Settings) to draw boxes around them. The size of the spritesheet's tiles can be found in the constructor for your item. Since I copied most of the sniper's constructor from the musket's, the sprite tile dimensions are the same as the musket, which after checking the `spawn_sniper` function in `sniper.rs`, I can see are 92 wide by 32 tall.
+
+```rust
+    let gun_sprite = GunlikeAnimation::new(
+        AnimatedSprite::new(
+            92,
+            32,
+            &[
+                Animation {
+                    name: "idle".to_string(),
+                    row: 0,
+                    frames: 1,
+                    fps: 1,
+                },
+                Animation {
+                    name: "shoot".to_string(),
+                    row: 1,
+                    frames: 3,
+                    fps: 15,
+                },
+            ],
+            false,
+        ),
+        resources.items_textures["sniper/gun"],
+        SNIPER_COLLIDER_WIDTH,
+    );
+```
+
+In Aseprite I can enter these dimensions in the Grid Settings dialogue box. Then a grid will appear around the sprites as shown below.
+
+![sniper_grid](assets/sniper_grid.png)
+
+Next, I need to determine by how much I want to change the sprite dimensions by. For my sniper, I only want to change the width of the sprite so that it has a longer barrel than the musket. Arbitrarily, I chose to extend the width of the spite by 20 pixels. This will make my new sprites' tiles dimensions 112 wide by 32 tall.
+
+Now I need to do a little math to determine the size of the new spritesheet. Since the old spritesheet had 4 sprites across and 5 sprites up, the new spritesheet size will be (112 X 4) wide by (32 x 5) tall. This comes out to 448 wide by 160 tall. I'll create a new spritesheet in Aseprite with these dimensions.
 
 
-In Aseprite this can be done through View > Grid > Grid Settings. Then in the window I can set the width to 92 and the height to 32.
 
 
 ### Collider

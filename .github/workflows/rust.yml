@@ -4,9 +4,11 @@ on:
       - main
     paths-ignore:
       - '**.md'
+      - '**.json'
   pull_request:
     paths-ignore:
       - '**.md'
+      - '**.json'
 
 name: Compilation check
 

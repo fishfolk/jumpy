@@ -2,7 +2,6 @@ use macroquad::{
     audio::{self, play_sound_once},
     color,
     experimental::{
-        animation::{AnimatedSprite, Animation},
         collections::storage,
         coroutines::{start_coroutine, wait_seconds, Coroutine},
         scene::{self, HandleUntyped, RefMut},
@@ -19,13 +18,15 @@ use crate::{
     GameWorld, Input, Resources,
 };
 
+use crate::components::{Animation, AnimationParams, AnimationPlayer};
+
 mod ai;
 
 pub struct Player {
     pub id: u8,
 
     pub body: PhysicsBody,
-    sprite: AnimatedSprite,
+    animation_player: AnimationPlayer,
 
     pub is_dead: bool,
 
@@ -61,7 +62,7 @@ pub struct Player {
 
 impl Player {
     pub const HEAD_THRESHOLD: f32 = 24.0;
-    pub const LEGS_THRESHOLD: f32 = 42.0;
+    pub const _LEGS_THRESHOLD: f32 = 42.0;
 
     pub const ST_NORMAL: usize = 0;
     pub const ST_DEATH: usize = 1;
@@ -83,7 +84,7 @@ impl Player {
     pub const INCAPACITATED_BREAK_FACTOR: f32 = 0.9;
     pub const INCAPACITATED_STOP_THRESHOLD: f32 = 20.0;
 
-    const ITEM_THROW_FORCE: f32 = 800.0;
+    const ITEM_THROW_FORCE: f32 = 600.0;
 
     const WEAPON_HUD_Y_OFFSET: f32 = -16.0;
     const WEAPON_MOUNT_Y_OFFSET: f32 = 16.0;
@@ -93,6 +94,14 @@ impl Player {
     const COLLIDER_WIDTH_INCAPACITATED: f32 = 40.0;
     const COLLIDER_HEIGHT: f32 = 64.0;
     const COLLIDER_HEIGHT_CROUCHED: f32 = 48.0;
+
+    const IDLE_ANIMATION_ID: &'static str = "idle";
+    const MOVE_ANIMATION_ID: &'static str = "move";
+    const DEATH_ANIMATION_ID: &'static str = "death";
+    const DEATH_ALT_ANIMATION_ID: &'static str = "death2";
+    const FLOAT_ANIMATION_ID: &'static str = "float";
+    const CROUCH_ANIMATION_ID: &'static str = "crouch";
+    const SLIDE_ANIMATION_ID: &'static str = "slide";
 
     pub fn new(player_id: u8, controller_id: i32) -> Player {
         let spawn_point = {
@@ -143,58 +152,73 @@ impl Player {
                 0.0,
                 vec2(30.0, 54.0),
                 false,
+                false,
             )
         };
 
-        let sprite = AnimatedSprite::new(
-            76,
-            66,
-            &[
+        let texture_id = if controller_id == 0 {
+            "player_blue"
+        } else {
+            "player_green"
+        };
+
+        let frame_size = {
+            let resources = storage::get::<Resources>();
+            let texture_entry = resources.textures.get(texture_id).unwrap();
+            texture_entry.meta.sprite_size.unwrap()
+        };
+
+        let animation_player = AnimationPlayer::new(AnimationParams {
+            texture_id: texture_id.to_string(),
+            offset: Some(vec2(-(frame_size.x as f32 / 2.0), -10.0)),
+            frame_size: Some(frame_size),
+            animations: vec![
                 Animation {
-                    name: "idle".to_string(),
+                    id: Self::IDLE_ANIMATION_ID.to_string(),
                     row: 0,
                     frames: 7,
                     fps: 12,
                 },
                 Animation {
-                    name: "run".to_string(),
+                    id: Self::MOVE_ANIMATION_ID.to_string(),
                     row: 2,
                     frames: 6,
                     fps: 10,
                 },
                 Animation {
-                    name: "death".to_string(),
+                    id: Self::DEATH_ANIMATION_ID.to_string(),
                     row: 12,
                     frames: 3,
                     fps: 5,
                 },
                 Animation {
-                    name: "death2".to_string(),
+                    id: Self::DEATH_ALT_ANIMATION_ID.to_string(),
                     row: 14,
                     frames: 4,
                     fps: 8,
                 },
                 Animation {
-                    name: "float".to_string(),
+                    id: Self::FLOAT_ANIMATION_ID.to_string(),
                     row: 6,
                     frames: 4,
                     fps: 8,
                 },
                 Animation {
-                    name: "crouch".to_string(),
+                    id: Self::CROUCH_ANIMATION_ID.to_string(),
                     row: 16,
                     frames: 2,
                     fps: 8,
                 },
                 Animation {
-                    name: "slide".to_string(),
+                    id: Self::SLIDE_ANIMATION_ID.to_string(),
                     row: 18,
                     frames: 2,
                     fps: 8,
                 },
             ],
-            true,
-        );
+            should_autoplay: true,
+            ..Default::default()
+        });
 
         Player {
             id: player_id,
@@ -204,7 +228,7 @@ impl Player {
             last_frame_input: Default::default(),
             pick_grace_timer: 0.,
             body,
-            sprite,
+            animation_player,
             jump_grace_timer: 0.,
             jump_frames_left: 0,
             floating: false,
@@ -255,8 +279,12 @@ impl Player {
         self.weapon = Some(weapon);
     }
 
-    pub fn get_weapon_mount(&self) -> Vec2 {
-        let mut offset = vec2(0.0, 0.0);
+    pub fn get_weapon_mount_offset(&self) -> Vec2 {
+        let mut offset = if let Some(weapon) = &self.weapon {
+            weapon.get_mount_offset(self.body.facing_dir())
+        } else {
+            vec2(0.0, 0.0)
+        };
 
         if self.is_crouched {
             offset.y = Self::WEAPON_MOUNT_Y_OFFSET_CROUCHED;
@@ -292,15 +320,18 @@ impl Player {
         self.input = input;
     }
 
+    #[allow(dead_code)]
     pub fn incapacitate(&mut self, duration: f32, should_stop: bool, should_fall: bool) {
         if should_stop {
             self.body.velocity.x = 0.0;
         }
+
         self.incapacitated_duration = duration;
         self.incapacitated_timer = 0.0;
         self.state_machine.set_state(Self::ST_INCAPACITATED);
         if should_fall {
-            self.sprite.set_animation(6);
+            self.animation_player
+                .set_animation(Self::SLIDE_ANIMATION_ID);
         }
     }
 
@@ -352,32 +383,37 @@ impl Player {
                 node.body.has_gravity = true;
 
                 node.is_dead = true;
-                node.sprite.set_animation(2);
+                node.animation_player
+                    .set_animation(Self::DEATH_ANIMATION_ID);
 
                 // let mut score_counter = scene::get_node(node.score_counter);
                 // score_counter.count_loss(node.controller_id)
             }
 
-            #[allow(clippy::blocks_in_if_conditions)]
-            if {
+            let is_out_of_bounds = {
                 let node = scene::get_node(handle);
                 node.body.pos.y < map_bottom
-            } {
+            };
+
+            if is_out_of_bounds {
                 // give some take for a dead fish to take off the ground
                 wait_seconds(0.1).await;
 
                 // wait until it lands (or fall down the map)
-                while {
-                    let node = scene::get_node(handle);
-
-                    !(node.body.on_ground || node.body.pos.y > map_bottom)
-                } {
+                let mut should_continue = false;
+                while should_continue {
                     next_frame().await;
+
+                    should_continue = {
+                        let node = scene::get_node(handle);
+                        !(node.body.on_ground || node.body.pos.y > map_bottom)
+                    };
                 }
 
                 {
                     let mut node = scene::get_node(handle);
-                    node.sprite.set_animation(3);
+                    node.animation_player
+                        .set_animation(Self::DEATH_ALT_ANIMATION_ID);
                     node.body.velocity = vec2(0., 0.);
                 }
 
@@ -388,7 +424,7 @@ impl Player {
                 let mut node = scene::get_node(handle);
                 let pos = node.body.pos;
 
-                node.sprite.playing = false;
+                node.animation_player.stop();
                 node.body.velocity = vec2(0., 0.);
 
                 let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
@@ -397,28 +433,29 @@ impl Player {
 
             wait_seconds(0.5).await;
 
-            let mut this = scene::get_node(handle);
+            let mut node = scene::get_node(handle);
 
-            if this.can_head_boink {
+            if node.can_head_boink {
                 // Shoes::spawn(this.body.pos);
-                this.can_head_boink = false;
+                node.can_head_boink = false;
             }
 
-            this.body.pos = {
+            node.body.pos = {
                 let world = storage::get_mut::<GameWorld>();
                 world.get_random_spawn_point()
             };
-            this.sprite.playing = true;
+
+            node.animation_player.play();
 
             // in deathmatch we can just get back to normal after death
             {
                 let mut world = storage::get_mut::<GameWorld>();
 
-                this.state_machine.set_state(Self::ST_NORMAL);
-                this.is_dead = false;
+                node.state_machine.set_state(Self::ST_NORMAL);
+                node.is_dead = false;
                 world
                     .collision_world
-                    .set_actor_position(this.body.collider, this.body.pos);
+                    .set_actor_position(node.body.collider, node.body.pos);
             }
         };
 
@@ -470,7 +507,8 @@ impl Player {
                 } else {
                     -Self::SLIDE_SPEED
                 };
-                node.sprite.set_animation(6);
+                node.animation_player
+                    .set_animation(Self::SLIDE_ANIMATION_ID);
             }
 
             wait_seconds(Self::SLIDE_DURATION).await;
@@ -540,15 +578,17 @@ impl Player {
         }
 
         if node.floating {
-            node.sprite.set_animation(4);
+            node.animation_player
+                .set_animation(Self::FLOAT_ANIMATION_ID);
         } else if node.is_crouched {
-            node.sprite.set_animation(5);
+            node.animation_player
+                .set_animation(Self::CROUCH_ANIMATION_ID);
         } else {
             //
             if node.input.right || node.input.left {
-                node.sprite.set_animation(1);
+                node.animation_player.set_animation(Self::MOVE_ANIMATION_ID);
             } else {
-                node.sprite.set_animation(0);
+                node.animation_player.set_animation(Self::IDLE_ANIMATION_ID);
             }
         }
 
@@ -700,7 +740,7 @@ impl Player {
             // }
         }
 
-        node.sprite.update();
+        node.animation_player.update();
         if let Some(weapon) = &mut node.weapon {
             weapon.update();
         }
@@ -800,42 +840,12 @@ impl scene::Node for Player {
         let draw_player = || {
             let resources = storage::get::<Resources>();
 
-            let texture_id = if node.controller_id == 0 {
-                if node.can_head_boink {
-                    "player_with_boots_blue"
-                } else {
-                    "player_blue"
-                }
-            } else if node.can_head_boink {
-                "player_with_boots_green"
-            } else {
-                "player_green"
-            };
-
-            let texture_entry = resources.textures.get(texture_id).unwrap();
-
-            let dest_size = node.sprite.frame().dest_size;
-
-            draw_texture_ex(
-                texture_entry.texture,
-                node.body.pos.x - (dest_size.x / 2.0),
-                node.body.pos.y - 10.0,
-                color::WHITE,
-                DrawTextureParams {
-                    source: Some(node.sprite.frame().source_rect),
-                    dest_size: Some(dest_size),
-                    flip_x: !node.body.is_facing_right,
-                    ..Default::default()
-                },
-            );
-
-            draw_rectangle_lines(
-                node.body.pos.x - (dest_size.x / 2.0),
-                node.body.pos.y - 10.0,
-                dest_size.x,
-                dest_size.y,
-                2.0,
-                color::BLUE,
+            node.animation_player.draw(
+                node.body.pos,
+                node.body.angle,
+                None,
+                !node.body.is_facing_right,
+                false,
             );
 
             {
@@ -876,9 +886,7 @@ impl scene::Node for Player {
         let draw_weapon = || {
             if let Some(weapon) = &node.weapon {
                 {
-                    let position = node.body.pos
-                        + node.get_weapon_mount()
-                        + weapon.get_mount_offset(node.body.facing_dir());
+                    let position = node.body.pos + node.get_weapon_mount_offset();
 
                     weapon.draw(
                         position,

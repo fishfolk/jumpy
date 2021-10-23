@@ -62,8 +62,6 @@ pub struct Item {
 }
 
 impl Item {
-    const GROUND_FRICTION_FACTOR: f32 = 0.9;
-
     pub fn new(position: Vec2, params: ItemParams) -> Self {
         let mut world = storage::get_mut::<GameWorld>();
 
@@ -72,6 +70,7 @@ impl Item {
             position,
             0.0,
             params.collider_size.as_f32(),
+            true,
             true,
         );
 
@@ -126,10 +125,6 @@ impl Item {
     }
 
     fn network_update(mut node: RefMut<Self>) {
-        if node.body.on_ground {
-            node.body.velocity *= Self::GROUND_FRICTION_FACTOR;
-        }
-
         node.body.update();
     }
 

@@ -266,7 +266,7 @@
                 {
                  "height":0,
                  "id":147,
-                 "name":"sniper",
+                 "name":"sniper_rifle",
                  "point":true,
                  "rotation":0,
                  "type":"item",
@@ -294,7 +294,7 @@
          "y":0
         }],
  "nextlayerid":6,
- "nextobjectid":151,
+ "nextobjectid":152,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.7.2",

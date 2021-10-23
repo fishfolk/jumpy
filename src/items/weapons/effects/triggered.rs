@@ -15,16 +15,22 @@ use crate::items::weapons::weapon_effect_coroutine;
 use crate::{GameWorld, Player};
 
 pub struct TriggeredEffectParams {
+    pub offset: Vec2,
+    pub velocity: Vec2,
     pub is_friendly_fire: bool,
     pub activation_delay: f32,
+    pub timed_trigger: Option<f32>,
     pub animation: Option<AnimationParams>,
 }
 
 impl Default for TriggeredEffectParams {
     fn default() -> Self {
         TriggeredEffectParams {
+            offset: Vec2::ZERO,
+            velocity: Vec2::ZERO,
             is_friendly_fire: false,
             activation_delay: 0.0,
+            timed_trigger: None,
             animation: None,
         }
     }
@@ -38,8 +44,11 @@ struct TriggeredEffect {
     pub is_friendly_fire: bool,
     pub animation_player: Option<AnimationPlayer>,
     pub body: PhysicsBody,
+    pub offset: Vec2,
     pub activation_delay: f32,
     pub activation_timer: f32,
+    pub timed_trigger: Option<f32>,
+    pub timed_trigger_timer: f32,
 }
 
 pub struct TriggeredEffects {
@@ -66,10 +75,19 @@ impl TriggeredEffects {
             animation_player = Some(AnimationPlayer::new(animation_params));
         }
 
-        let body = {
+        let mut body = {
             let mut game_world = storage::get_mut::<GameWorld>();
-            PhysicsBody::new(&mut game_world.collision_world, position, 0.0, size, false)
+            PhysicsBody::new(
+                &mut game_world.collision_world,
+                position + params.offset,
+                0.0,
+                size,
+                false,
+                true,
+            )
         };
+
+        body.velocity = params.velocity;
 
         self.active.push(TriggeredEffect {
             owner,
@@ -78,9 +96,12 @@ impl TriggeredEffects {
             effect,
             animation_player,
             body,
+            offset: params.offset,
             is_friendly_fire: params.is_friendly_fire,
             activation_delay: params.activation_delay,
             activation_timer: 0.0,
+            timed_trigger: params.timed_trigger,
+            timed_trigger_timer: 0.0,
         })
     }
 
@@ -91,15 +112,26 @@ impl TriggeredEffects {
 
             trigger.body.update();
 
-            if trigger.activation_timer >= trigger.activation_delay {
+            let mut is_triggered = false;
+
+            if let Some(timed_trigger) = trigger.timed_trigger {
+                trigger.timed_trigger_timer += get_frame_time();
+                if trigger.timed_trigger_timer >= timed_trigger {
+                    is_triggered = true;
+                }
+            }
+
+            if trigger.activation_delay > 0.0 {
+                trigger.activation_timer += get_frame_time();
+            }
+
+            if !is_triggered && trigger.activation_timer >= trigger.activation_delay {
                 let collider = Rect::new(
-                    trigger.body.pos.x,
-                    trigger.body.pos.y,
+                    trigger.body.pos.x + trigger.offset.x,
+                    trigger.body.pos.y + trigger.offset.y,
                     trigger.size.x,
                     trigger.size.y,
                 );
-
-                let mut is_triggered = false;
 
                 if trigger.kind == WeaponEffectTriggerKind::Player
                     || trigger.kind == WeaponEffectTriggerKind::Both
@@ -127,16 +159,12 @@ impl TriggeredEffects {
                         is_triggered = true;
                     }
                 }
+            }
 
-                if is_triggered {
-                    weapon_effect_coroutine(
-                        trigger.owner,
-                        trigger.body.pos,
-                        trigger.effect.clone(),
-                    );
-                    node.active.remove(i);
-                    continue;
-                }
+            if is_triggered {
+                weapon_effect_coroutine(trigger.owner, trigger.body.pos, trigger.effect.clone());
+                node.active.remove(i);
+                continue;
             }
 
             i += 1;
@@ -165,10 +193,6 @@ impl Node for TriggeredEffects {
         Self: Sized,
     {
         for trigger in &mut node.active {
-            if trigger.activation_delay > 0.0 {
-                trigger.activation_timer += get_frame_time();
-            }
-
             if let Some(animation_player) = trigger.animation_player.as_mut() {
                 animation_player.update();
             }

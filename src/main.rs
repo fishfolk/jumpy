@@ -116,14 +116,18 @@ async fn build_game_scene(map: Map, is_local_game: bool) -> Result<Vec<Handle<Pl
                 spawn_points.push(object.position);
             }
             MapObjectKind::Item => {
-                let params = resources
-                    .items
-                    .get(&object.id)
-                    .cloned()
-                    .unwrap_or_else(|| panic!("Invalid Item ID '{}'", &object.id));
+                // let params = resources
+                //     .items
+                //     .get(&object.id)
+                //     .cloned()
+                //     .unwrap_or_else(|| panic!("Invalid Item id '{}'", &object.id));
 
-                if params.is_network_ready || is_local_game {
-                    items.push((object.position, params));
+                if let Some(params) = resources.items.get(&object.id).cloned() {
+                    if params.is_network_ready || is_local_game {
+                        items.push((object.position, params));
+                    }
+                } else {
+                    println!("WARNING: Invalid object id '{}'", &object.id);
                 }
             }
         }

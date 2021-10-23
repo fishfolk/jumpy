@@ -62,6 +62,20 @@ pub struct AnimationParams {
     pub should_autoplay: bool,
 }
 
+impl Default for AnimationParams {
+    fn default() -> Self {
+        AnimationParams {
+            texture_id: "".to_string(),
+            offset: None,
+            pivot: None,
+            frame_size: None,
+            tint: None,
+            animations: vec![],
+            should_autoplay: false,
+        }
+    }
+}
+
 pub struct AnimationPlayer {
     texture: Texture2D,
     offset: Vec2,
@@ -80,7 +94,7 @@ impl AnimationPlayer {
             .unwrap_or_else(|| {
                 panic!(
                     "AnimationPlayer: Invalid texture ID '{}'",
-                    &params.texture_id
+                    &params.texture_id,
                 )
             });
 
@@ -184,6 +198,15 @@ impl AnimationPlayer {
                 dest_size: Some(rect.size()),
                 pivot: Some(pivot),
             },
+        );
+
+        draw_rectangle_lines(
+            position.x + rect.x,
+            position.y + rect.y,
+            rect.w,
+            rect.h,
+            1.0,
+            color::BLUE,
         );
     }
 

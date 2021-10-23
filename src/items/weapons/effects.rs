@@ -98,12 +98,22 @@ pub enum WeaponEffectKind {
         kind: WeaponEffectTriggerKind,
         #[serde(rename = "triggered_effect_trigger_size", with = "json::vec2_def")]
         size: Vec2,
+        #[serde(
+            default,
+            rename = "triggered_effect_trigger_offset",
+            with = "json::vec2_def"
+        )]
+        offset: Vec2,
+        #[serde(default, rename = "triggered_effect_velocity", with = "json::vec2_def")]
+        velocity: Vec2,
         #[serde(rename = "triggered_effect")]
         effect: Box<WeaponEffectParams>,
         #[serde(default, rename = "triggered_effect_animation")]
         animation: Option<AnimationParams>,
         #[serde(default, rename = "triggered_effect_activation_delay")]
         activation_delay: f32,
+        #[serde(default, rename = "triggered_effect_timed_trigger")]
+        timed_trigger: Option<f32>,
     },
     // Spawn a projectile.
     // This would typically be used for things like a gun.
@@ -227,16 +237,27 @@ pub fn weapon_effect_coroutine(
             WeaponEffectKind::TriggeredEffect {
                 kind,
                 size,
+                offset,
+                velocity,
                 effect,
                 animation,
                 activation_delay,
+                timed_trigger,
             } => {
                 let mut triggered_effects = scene::find_node_by_type::<TriggeredEffects>().unwrap();
 
+                let mut velocity = velocity;
+                if !is_facing_right {
+                    velocity.x = -velocity.x;
+                }
+
                 let params = TriggeredEffectParams {
+                    offset,
+                    velocity,
                     animation,
                     is_friendly_fire: params.is_friendly_fire,
                     activation_delay,
+                    timed_trigger,
                 };
 
                 triggered_effects.spawn(player_handle, kind, origin, size, *effect, params)
@@ -274,6 +295,7 @@ pub fn weapon_effect_coroutine(
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum WeaponEffectTriggerKind {
+    None,
     Player,
     Ground,
     Both,

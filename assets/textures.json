@@ -163,11 +163,11 @@
   },
   {
     "id": "grenades",
-    "path": "textures/items/Grenades(15x15).png",
+    "path": "textures/items/Grenades(32x48).png",
     "type": "spritesheet",
     "sprite_size": {
-      "x": 15,
-      "y": 15
+      "x": 32,
+      "y": 48
     }
   },
   {
@@ -181,11 +181,11 @@
   },
   {
     "id": "kick_bomb",
-    "path": "textures/items/KickBomb(56x38).png",
+    "path": "textures/items/KickBomb(48x32).png",
     "type": "spritesheet",
     "sprite_size": {
-      "x": 56,
-      "y": 38
+      "x": 48,
+      "y": 32
     }
   },
   {
@@ -199,11 +199,11 @@
   },
   {
     "id": "mines",
-    "path": "textures/items/Mines(26x31).png",
+    "path": "textures/items/Mines(48x48).png",
     "type": "spritesheet",
     "sprite_size": {
-      "x": 26,
-      "y": 31
+      "x": 48,
+      "y": 48
     }
   },
   {
@@ -225,8 +225,8 @@
     }
   },
   {
-    "id": "sniper",
-    "path": "textures/items/Sniper(92x32).png",
+    "id": "sniper_rifle",
+    "path": "textures/items/SniperRifle(92x32).png",
     "type": "spritesheet",
     "sprite_size": {
       "x": 92,

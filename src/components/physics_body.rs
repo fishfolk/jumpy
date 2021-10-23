@@ -14,6 +14,7 @@ pub struct PhysicsBody {
     pub velocity: Vec2,
     pub is_facing_right: bool,
     pub angle: f32,
+    pub has_friction: bool,
     pub collider: Actor,
     pub on_ground: bool,
     pub last_frame_on_ground: bool,
@@ -31,6 +32,7 @@ impl PhysicsBody {
         angle: f32,
         size: Vec2,
         can_rotate: bool,
+        has_friction: bool,
     ) -> PhysicsBody {
         PhysicsBody {
             pos,
@@ -38,6 +40,7 @@ impl PhysicsBody {
             is_facing_right: true,
             velocity: vec2(0., 0.),
             angle,
+            has_friction,
             collider: collision_world.add_actor(pos, size.x as _, size.y as _),
             last_frame_on_ground: false,
             on_ground: false,
@@ -91,6 +94,13 @@ impl PhysicsBody {
 
         if self.can_rotate {
             // TODO: Rotation
+        }
+
+        if self.on_ground && self.has_friction {
+            self.velocity.x *= 0.96;
+            if self.velocity.x.abs() <= 1.0 {
+                self.velocity.x = 0.0;
+            }
         }
     }
 

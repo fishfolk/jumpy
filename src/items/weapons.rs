@@ -1,7 +1,6 @@
 use macroquad::{
     audio::play_sound_once,
     audio::Sound,
-    color,
     experimental::{
         collections::storage,
         coroutines::{start_coroutine, wait_seconds, Coroutine},
@@ -157,15 +156,6 @@ impl Weapon {
 
         self.animation_player
             .draw(corrected_position, rotation, scale, flip_x, flip_y);
-
-        draw_rectangle_lines(
-            corrected_position.x,
-            corrected_position.y,
-            rect.w,
-            rect.h,
-            1.0,
-            color::RED,
-        );
     }
 
     pub fn draw_hud(&self, position: Vec2) {
@@ -197,19 +187,21 @@ impl Weapon {
                     };
                 }
             } else {
+                let x = position.x - (uses as f32 * 14.0) / 2.0;
+
                 for i in 0..uses {
-                    let x = position.x + 15.0 * i as f32;
+                    let x = x + 14.0 * i as f32;
 
                     if i >= remaining {
                         draw_circle_lines(
                             x,
-                            position.y - 12.0,
+                            position.y - 4.0,
                             4.0,
                             2.0,
                             Self::HUD_USE_COUNT_COLOR_EMPTY,
                         );
                     } else {
-                        draw_circle(x, position.y - 12.0, 4.0, Self::HUD_USE_COUNT_COLOR_FULL);
+                        draw_circle(x, position.y - 4.0, 4.0, Self::HUD_USE_COUNT_COLOR_FULL);
                     };
                 }
             }
@@ -316,9 +308,11 @@ impl Weapon {
             {
                 let player = &*scene::get_node(player_handle);
                 if let Some(weapon) = &player.weapon {
+                    let facing_dir = player.body.facing_dir();
+
                     let origin = player.body.pos
-                        + player.get_weapon_mount()
-                        + weapon.get_effect_offset(player.body.facing_dir());
+                        + player.get_weapon_mount_offset()
+                        + weapon.get_effect_offset(facing_dir);
 
                     weapon_effect_coroutine(player_handle, origin, weapon.effect.clone());
                 }

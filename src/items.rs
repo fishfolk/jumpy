@@ -2,7 +2,6 @@
 //! Proto-mods, eventually some of the items will move to some sort of a wasm runtime
 
 use macroquad::{
-    color,
     experimental::{
         collections::storage,
         scene::{HandleUntyped, Node, RefMut},
@@ -150,14 +149,5 @@ impl Node for Item {
     fn draw(node: RefMut<Self>) {
         node.sprite
             .draw(node.body.pos, node.body.rotation, None, false, false);
-
-        draw_rectangle_lines(
-            node.body.pos.x,
-            node.body.pos.y,
-            node.body.size.x,
-            node.body.size.y,
-            1.0,
-            color::RED,
-        )
     }
 }

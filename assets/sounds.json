@@ -34,5 +34,9 @@
   {
     "id": "sword",
     "path": "sounds/sword.wav"
+  },
+  {
+    "id": "explode",
+    "path": "sounds/explode_m.wav"
   }
 ]

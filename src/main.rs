@@ -27,8 +27,8 @@ use nodes::Player;
 
 use resources::MapResource;
 
-pub use resources::Resources;
 use crate::items::Sproinger;
+pub use resources::Resources;
 
 mod capabilities;
 mod gui;
@@ -68,7 +68,7 @@ pub enum GameType {
     },
 }
 
-async fn build_game_scene(map: Map, is_local_game: bool) -> Result<Vec<Handle<Player>>> {
+fn build_game_scene(map: Map, is_local_game: bool) -> Vec<Handle<Player>> {
     use nodes::{Camera, Decoration, ParticleEmitters, SceneRenderer};
 
     let resources = storage::get::<Resources>();
@@ -110,27 +110,24 @@ async fn build_game_scene(map: Map, is_local_game: bool) -> Result<Vec<Handle<Pl
             MapObjectKind::Decoration => {
                 scene::add_node(Decoration::new(object.position, &object.id));
             }
+
             MapObjectKind::Environment => {
                 if object.id == Sproinger::OBJECT_ID {
                     Sproinger::spawn(object.position);
+                } else {
+                    println!("WARNING: Invalid environment object id '{}'", &object.id);
                 }
             }
             MapObjectKind::SpawnPoint => {
                 spawn_points.push(object.position);
             }
             MapObjectKind::Item => {
-                // let params = resources
-                //     .items
-                //     .get(&object.id)
-                //     .cloned()
-                //     .unwrap_or_else(|| panic!("Invalid Item id '{}'", &object.id));
-
                 if let Some(params) = resources.items.get(&object.id).cloned() {
                     if params.is_network_ready || is_local_game {
                         items.push((object.position, params));
                     }
                 } else {
-                    println!("WARNING: Invalid object id '{}'", &object.id);
+                    println!("WARNING: Invalid item id '{}'", &object.id);
                 }
             }
         }
@@ -151,9 +148,9 @@ async fn build_game_scene(map: Map, is_local_game: bool) -> Result<Vec<Handle<Pl
 
     scene::add_node(TriggeredEffects::new());
     scene::add_node(Projectiles::new());
-    scene::add_node(ParticleEmitters::new().await?);
+    scene::add_node(ParticleEmitters::new());
 
-    Ok(players)
+    players
 }
 
 async fn game(map_resource: MapResource, game_type: GameType) -> Result<()> {
@@ -167,7 +164,7 @@ async fn game(map_resource: MapResource, game_type: GameType) -> Result<()> {
                 "Local: There should be two player input schemes for this game mode"
             );
 
-            let players = build_game_scene(map_resource.map, true).await?;
+            let players = build_game_scene(map_resource.map, true);
             scene::add_node(LocalNetwork::new(players_input, players[0], players[1]));
         }
         GameType::Editor { input_scheme, .. } => {
@@ -181,7 +178,7 @@ async fn game(map_resource: MapResource, game_type: GameType) -> Result<()> {
             socket,
             id,
         } => {
-            let players = build_game_scene(map_resource.map, false).await?;
+            let players = build_game_scene(map_resource.map, false);
             scene::add_node(Network::new(
                 id,
                 socket,

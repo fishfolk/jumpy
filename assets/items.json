@@ -187,15 +187,19 @@
   {
     "id": "mines",
     "sprite": {
-      "texture_id": "mines"
+      "texture_id": "mines",
+      "offset": {
+        "x": 6,
+        "y": -12
+      }
     },
     "type": "weapon",
     "cooldown": 0.5,
     "uses": 3,
     "effect": "triggered_effect",
     "effect_offset": {
-      "x": 16,
-      "y": 0
+      "x": 6,
+      "y": -12
     },
     "triggered_effect_trigger": "player",
     "triggered_effect_trigger_size": {
@@ -207,7 +211,9 @@
     "triggered_effect": {
       "effect": "circle_collider",
       "circle_collider_radius": 64,
-      "effect_is_friendly_fire": true
+      "effect_is_friendly_fire": true,
+      "effect_particle_effect_id": "hit",
+      "effect_sound_effect_id": "explode"
     },
     "triggered_effect_animation": {
       "texture_id": "mines",
@@ -225,8 +231,8 @@
       ]
     },
     "collider_size": {
-      "x": 48,
-      "y": 48
+      "x": 32,
+      "y": 32
     },
     "mount_offset": {
       "x": 6,
@@ -270,7 +276,9 @@
     "triggered_effect": {
       "effect": "circle_collider",
       "circle_collider_radius": 64,
-      "effect_is_friendly_fire": true
+      "effect_is_friendly_fire": true,
+      "effect_particle_effect_id": "hit",
+      "effect_sound_effect_id": "explode"
     },
     "triggered_effect_animation": {
       "texture_id": "grenades",
@@ -298,38 +306,6 @@
     },
     "animation": {
       "texture_id": "grenades",
-      "animations": [
-        {
-          "id": "idle",
-          "row": 0,
-          "frames": 1,
-          "fps": 1
-        }
-      ]
-    }
-  },
-  {
-    "id": "curse",
-    "sprite": {
-      "texture_id": "curse",
-      "offset": {
-        "x": 0,
-        "y": -22
-      }
-    },
-    "type": "weapon",
-    "cooldown": 0.5,
-    "recoil": 0.5,
-    "effect": "projectile",
-    "projectile_range": 128.0,
-    "projectile_speed": 5.0,
-    "projectile_size": 5.0,
-    "collider_size": {
-      "x": 30,
-      "y": 22
-    },
-    "animation": {
-      "texture_id": "curse",
       "animations": [
         {
           "id": "idle",
@@ -380,7 +356,9 @@
     "triggered_effect": {
       "effect": "circle_collider",
       "circle_collider_radius": 64,
-      "effect_is_friendly_fire": true
+      "effect_is_friendly_fire": true,
+      "effect_particle_effect_id": "hit",
+      "effect_sound_effect_id": "explode"
     },
     "triggered_effect_animation": {
       "texture_id": "kick_bomb",

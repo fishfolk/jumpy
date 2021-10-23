@@ -138,7 +138,16 @@ impl Sprite {
                 dest_size: Some(rect.size()),
                 pivot: Some(pivot),
             },
-        )
+        );
+
+        // draw_rectangle_lines(
+        //     position.x + rect.x,
+        //     position.y + rect.y,
+        //     rect.w,
+        //     rect.h,
+        //     2.0,
+        //     color::BLUE,
+        // )
     }
 
     pub fn get_size(&self, scale: Option<Vec2>) -> Vec2 {

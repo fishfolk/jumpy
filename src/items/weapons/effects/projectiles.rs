@@ -6,6 +6,7 @@ use macroquad::{
     prelude::*,
 };
 
+use crate::nodes::ParticleEmitters;
 use crate::{capabilities::NetworkReplicate, GameWorld, Player};
 
 // TODO: Performance test this and reduce complexity as needed
@@ -50,53 +51,67 @@ impl Projectiles {
 
     fn network_update(mut node: RefMut<Self>) {
         let mut i = 0;
-        'projectiles: while i < node.active.len() {
+        while i < node.active.len() {
             let projectile = &mut node.active[i];
             projectile.position += projectile.velocity;
+
+            let mut is_hit = false;
 
             {
                 let distance = projectile.position.distance(projectile.origin);
                 if distance > projectile.range {
-                    node.active.remove(i);
-                    continue 'projectiles;
+                    is_hit = true;
                 }
 
-                let world = storage::get::<GameWorld>();
+                if !is_hit {
+                    let world = storage::get::<GameWorld>();
 
-                if world.map.is_collision_at(projectile.position, true) {
-                    node.active.remove(i);
-                    continue 'projectiles;
+                    if world.map.is_collision_at(projectile.position, true) {
+                        is_hit = true;
+                    }
                 }
             }
 
-            let mut collider = None;
-            if projectile.size > 1.5 {
-                let circle = Circle::new(
-                    projectile.position.x,
-                    projectile.position.y,
-                    projectile.size,
-                );
-                collider = Some(circle);
+            if !is_hit {
+                let mut collider = None;
+                if projectile.size > 1.5 {
+                    let circle = Circle::new(
+                        projectile.position.x,
+                        projectile.position.y,
+                        projectile.size,
+                    );
+                    collider = Some(circle);
+                }
+
+                // Borrow owner so that it is excluded from the following iteration and hit check
+                let _owner = scene::try_get_node(projectile.owner);
+
+                for mut player in scene::find_nodes_by_type::<Player>() {
+                    let hitbox = player.get_collider();
+                    let has_collision = if let Some(circle) = &collider {
+                        circle.overlaps_rect(&hitbox)
+                    } else {
+                        hitbox.contains(projectile.position)
+                    };
+
+                    if has_collision {
+                        let direction = projectile.position.x > player.body.pos.x;
+                        player.kill(direction);
+
+                        is_hit = true;
+                        break;
+                    }
+                }
             }
 
-            // Borrow owner so that it is excluded from the following iteration and hit check
-            let _owner = scene::try_get_node(projectile.owner);
+            if is_hit {
+                let position = projectile.position;
+                node.active.remove(i);
 
-            for mut player in scene::find_nodes_by_type::<Player>() {
-                let hitbox = player.get_collider();
-                let has_collision = if let Some(circle) = &collider {
-                    circle.overlaps_rect(&hitbox)
-                } else {
-                    hitbox.contains(projectile.position)
-                };
+                let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
+                particles.spawn("hit", position);
 
-                if has_collision {
-                    let direction = projectile.position.x > player.body.pos.x;
-                    player.kill(direction);
-
-                    node.active.remove(i);
-                    continue 'projectiles;
-                }
+                continue;
             }
 
             i += 1;

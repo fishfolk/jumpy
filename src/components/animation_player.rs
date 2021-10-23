@@ -200,14 +200,14 @@ impl AnimationPlayer {
             },
         );
 
-        draw_rectangle_lines(
-            position.x + rect.x,
-            position.y + rect.y,
-            rect.w,
-            rect.h,
-            1.0,
-            color::BLUE,
-        );
+        // draw_rectangle_lines(
+        //     position.x + rect.x,
+        //     position.y + rect.y,
+        //     rect.w,
+        //     rect.h,
+        //     2.0,
+        //     color::BLUE,
+        // );
     }
 
     pub fn get_size(&self, scale: Option<Vec2>) -> Vec2 {

@@ -35,11 +35,13 @@ impl Decoration {
             ],
             true,
         );
+
         if name == "pot" {
             sprite.set_animation(1);
         } else {
             sprite.set_animation(0);
         }
+
         Decoration { pos, sprite }
     }
 }

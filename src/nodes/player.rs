@@ -428,7 +428,7 @@ impl Player {
                 node.body.velocity = vec2(0., 0.);
 
                 let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
-                particles.explosions.spawn(pos + vec2(15., 33.));
+                particles.spawn("explosion", pos + vec2(15.0, 33.0));
             }
 
             wait_seconds(0.5).await;
@@ -848,11 +848,11 @@ impl scene::Node for Player {
                 false,
             );
 
-            {
-                let hitbox = node.get_collider();
-
-                draw_rectangle_lines(hitbox.x, hitbox.y, hitbox.w, hitbox.h, 2.0, color::RED);
-            }
+            // {
+            //     let hitbox = node.get_collider();
+            //
+            //     draw_rectangle_lines(hitbox.x, hitbox.y, hitbox.w, hitbox.h, 2.0, color::RED);
+            // }
 
             // draw turtle shell on player if the player has back armor
             if node.back_armor > 0 {

@@ -42,6 +42,12 @@ pub struct WeaponEffectParams {
         skip_serializing_if = "Option::is_none"
     )]
     pub particle_effect_id: Option<String>,
+    #[serde(
+        default,
+        rename = "effect_sound_effect_id",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub sound_effect_id: Option<String>,
     #[serde(default, rename = "effect_delay")]
     pub delay: f32,
     #[serde(default, rename = "effect_is_friendly_fire")]
@@ -141,17 +147,7 @@ pub fn weapon_effect_coroutine(
 
         if let Some(particle_effect_id) = &params.particle_effect_id {
             let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
-            let emitter = particles
-                .emitters
-                .get_mut(particle_effect_id)
-                .unwrap_or_else(|| {
-                    panic!(
-                        "Invalid particle effect emitter ID '{}'",
-                        particle_effect_id
-                    )
-                });
-
-            emitter.spawn(origin);
+            particles.spawn(particle_effect_id, origin);
         }
 
         let is_facing_right = {

@@ -2,65 +2,54 @@ use std::collections::HashMap;
 
 use macroquad::{
     experimental::{
-        coroutines::{start_coroutine, Coroutine},
+        coroutines::{
+            Coroutine,
+            start_coroutine,
+            wait_seconds,
+        },
         scene::Handle,
     },
     prelude::*,
 };
-use macroquad::prelude::coroutines::wait_seconds;
 
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    nodes::{
+        ParticleEmitters,
+        Player,
+    },
+    math::{
+        deg_to_rad,
+        rotate_vector,
+    },
     json,
-    math::{deg_to_rad, rotate_vector},
-    Player,
 };
 
 pub mod projectiles;
+
+mod custom;
+
+pub use custom::{
+    CustomWeaponEffectParam,
+    CustomWeaponEffectCoroutine,
+    add_custom_weapon_effect,
+    get_custom_weapon_effect,
+};
 
 pub use projectiles::{
     Projectiles,
     default_projectile_color,
 };
 
-use crate::nodes::ParticleEmitters;
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum EffectTrigger {
-    Player,
-    Ground,
-    Both,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type", rename_all = "snake_case")]
-pub enum CustomWeaponEffectParam {
-    Bool {
-        value: bool,
-    },
-    Int {
-        value: i32,
-    },
-    Float {
-        value: f32,
-    },
-    String {
-        value: String,
-    },
-    Color {
-        #[serde(with = "json::ColorDef")]
-        value: Color,
-    },
-    Vec2 {
-        #[serde(with = "json::vec2_def")]
-        value: Vec2,
-    },
-    UVec2 {
-        #[serde(with = "json::uvec2_def")]
-        value: UVec2,
-    },
+pub struct WeaponEffectParams {
+    #[serde(flatten)]
+    pub kind: WeaponEffectKind,
+    #[serde(default, rename = "effect_particle_effect_id", skip_serializing_if = "Option::is_none")]
+    pub particle_effect_id: Option<String>,
+    #[serde(default, rename = "effect_delay")]
+    pub delay: f32,
 }
 
 // This should hold implementations of the commonly used weapon effects, that see usage spanning
@@ -87,17 +76,26 @@ pub enum WeaponEffectKind {
         #[serde(default, rename = "custom_effect_params")]
         params: HashMap<String, CustomWeaponEffectParam>,
     },
+    // Check for hits with a `Circle` collider.
+    // Can select a segment of the circle by setting `segment`. This can be either a quarter or a
+    // half of the circle, selected by setting `x` and `y` of `segment`.
+    // If `x` is one and `y` is zero, the forward-facing half of the circle will be used, if `x` is
+    // one and `y` is negative one, the upper forward-facing quarter of the circle will be used,
+    // if `x` is negative one and `y` is one, the lower backward-facing quarter of the circle will
+    // be used, and so on.
     CircleCollider {
-        #[serde(rename = "circle_radius")]
+        #[serde(rename = "circle_collider_radius")]
         radius: f32,
+        #[serde(default, rename = "circle_collider_segment", with = "json::ivec2_opt")]
+        segment: Option<IVec2>,
     },
     RectCollider {
-        #[serde(rename = "rect_width")]
+        #[serde(rename = "rect_collider_width")]
         width: f32,
-        #[serde(rename = "rect_height")]
+        #[serde(rename = "rect_collider_height")]
         height: f32,
     },
-    // Spawn a projectile..
+    // Spawn a projectile.
     // This would typically be used for things like a gun.
     Projectile {
         #[serde(rename = "projectile_speed")]
@@ -113,64 +111,23 @@ pub enum WeaponEffectKind {
     },
 }
 
-static mut CUSTOM_WEAPON_EFFECTS: Option<HashMap<String, CustomWeaponEffectCoroutine>> = None;
-
-unsafe fn get_custom_weapon_effects_map(
-) -> &'static mut HashMap<String, CustomWeaponEffectCoroutine> {
-    if CUSTOM_WEAPON_EFFECTS.is_none() {
-        CUSTOM_WEAPON_EFFECTS = Some(HashMap::new());
-    }
-
-    CUSTOM_WEAPON_EFFECTS.as_mut().unwrap()
-}
-
-#[allow(dead_code)]
-pub fn add_custom_weapon_effect(id: &str, f: CustomWeaponEffectCoroutine) {
-    unsafe { get_custom_weapon_effects_map() }.insert(id.to_string(), f);
-}
-
-fn get_custom_weapon_effect(id: &str) -> CustomWeaponEffectCoroutine {
-    let res = unsafe { get_custom_weapon_effects_map() }.get(id).unwrap();
-    *res
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct WeaponEffectParams {
-    #[serde(flatten)]
-    pub kind: WeaponEffectKind,
-    #[serde(default, rename = "effect_particle_effect_id", skip_serializing_if = "Option::is_none")]
-    pub particle_effect_id: Option<String>,
-    #[serde(default, rename = "effect_delay")]
-    pub delay: f32,
-}
-
-// This is implemented for `Custom` effects (remember to also add it to the effects directory).
-// This is not strictly necessary as of writing this, as there is no way of adding effects through
-// scripts etc., so new effects can also be implemented by creating a new variant of
-// `WeaponEffectKind` and implementing the effect directly in the `weapon_effect_coroutine` function
-pub type CustomWeaponEffectCoroutine =
-    fn(Handle<Player>, HashMap<String, CustomWeaponEffectParam>) -> Coroutine;
-
-pub fn weapon_effect_coroutine(
-    player_handle: Handle<Player>,
-    origin: Vec2,
-    params: WeaponEffectParams,
-) -> Coroutine {
+pub fn weapon_effect_coroutine(player_handle: Handle<Player>, origin: Vec2, params: WeaponEffectParams) -> Coroutine {
     let coroutine = async move {
         wait_seconds(params.delay).await;
-
-        let is_facing_right = {
-            let player = scene::get_node(player_handle);
-            player.body.is_facing_right
-        };
 
         if let Some(particle_effect_id) = &params.particle_effect_id {
             let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
             let emitter = particles.emitters
                 .get_mut(particle_effect_id)
                 .unwrap_or_else(|| panic!("Invalid particle effect emitter ID '{}'", particle_effect_id));
+
             emitter.spawn(origin);
         }
+
+        let is_facing_right = {
+            let player = scene::get_node(player_handle);
+            player.body.is_facing_right
+        };
 
         match params.kind {
             WeaponEffectKind::Batch { effects } => {
@@ -187,16 +144,41 @@ pub fn weapon_effect_coroutine(
             }
             WeaponEffectKind::CircleCollider {
                 radius,
+                segment,
             } => {
                 // borrow player so that it is excluded from hit check below
                 let _player = scene::get_node(player_handle);
 
                 let circle = Circle::new(origin.x, origin.y, radius);
                 for mut player in scene::find_nodes_by_type::<Player>() {
-                    if circle.overlaps_rect(&player.get_hitbox()) {
-                        println!("overlap");
-                        let is_to_the_right = origin.x < player.body.pos.x;
-                        player.kill(is_to_the_right);
+                    let collider = player.get_collider();
+                    if circle.overlaps_rect(&collider) {
+                        let mut is_killed = false;
+
+                        if let Some(mut segment) = segment {
+                            if !is_facing_right {
+                                segment.x = -segment.x;
+                            }
+
+                            if segment.x == 1 {
+                                is_killed = collider.x + collider.w >= circle.point().x;
+                            } else if segment.x == -1 {
+                                is_killed = collider.x <= circle.point().x;
+                            }
+
+                            if segment.y == 1 {
+                                is_killed = is_killed && collider.y + collider.h <= circle.point().y;
+                            } else if segment.y == -1 {
+                                is_killed = is_killed && collider.y >= circle.point().y;
+                            }
+                        } else {
+                            is_killed = true;
+                        }
+
+                        if is_killed {
+                            let is_to_the_right = origin.x < player.body.pos.x;
+                            player.kill(is_to_the_right);
+                        }
                     }
                 }
             }
@@ -213,7 +195,7 @@ pub fn weapon_effect_coroutine(
                 }
 
                 for mut player in scene::find_nodes_by_type::<Player>() {
-                    if rect.overlaps(&player.get_hitbox()) {
+                    if rect.overlaps(&player.get_collider()) {
                         let is_to_the_right = origin.x < player.body.pos.x;
                         player.kill(is_to_the_right);
                     }
@@ -241,4 +223,12 @@ pub fn weapon_effect_coroutine(
     };
 
     start_coroutine(coroutine)
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum WeaponEffectTrigger {
+    Player,
+    Ground,
+    Both,
 }

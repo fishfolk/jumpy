@@ -46,7 +46,7 @@ impl ThrowableItem {
             if disarm && !body.on_ground {
                 let hitbox = Rect::new(body.pos.x, body.pos.y, body.size.x, body.size.y);
                 for mut player in scene::find_nodes_by_type::<Player>() {
-                    if hitbox.overlaps(&player.get_hitbox()) {
+                    if hitbox.overlaps(&player.get_collider()) {
                         player.drop_weapon(false);
                     }
                 }

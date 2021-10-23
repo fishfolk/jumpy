@@ -83,7 +83,7 @@ impl Projectiles {
             let _owner = scene::try_get_node(projectile.owner);
 
             for mut player in scene::find_nodes_by_type::<Player>() {
-                let hitbox = player.get_hitbox();
+                let hitbox = player.get_collider();
                 let has_collision = if let Some(circle) = &collider {
                     circle.overlaps_rect(&hitbox)
                 } else {

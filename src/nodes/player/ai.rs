@@ -106,7 +106,7 @@ impl Ai {
         if player.body.pos.distance(foe.body.pos) <= 100. || rand::gen_range(0, 180) == 5 {
             //
             if player.state_machine.state() == Player::ST_NORMAL && player.weapon.is_some() {
-                player.state_machine.set_state(Player::ST_SHOOT);
+                player.state_machine.set_state(Player::ST_ATTACK);
             }
         }
 

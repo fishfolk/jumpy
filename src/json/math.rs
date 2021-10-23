@@ -88,8 +88,8 @@ pub mod uvec2_def {
     use std::fmt;
 
     pub fn serialize<S>(value: &UVec2, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+        where
+            S: Serializer,
     {
         let mut state = serializer.serialize_struct(stringify!(UVec2), 2)?;
         state.serialize_field("x", &value.x)?;
@@ -98,8 +98,8 @@ pub mod uvec2_def {
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<UVec2, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
         #[serde(field_identifier, rename_all = "snake_case")]
@@ -118,8 +118,8 @@ pub mod uvec2_def {
             }
 
             fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
-            where
-                A: MapAccess<'de>,
+                where
+                    A: MapAccess<'de>,
             {
                 let mut x = None;
                 let mut y = None;
@@ -149,6 +149,82 @@ pub mod uvec2_def {
         }
 
         deserializer.deserialize_struct(stringify!(UVec2), &["x", "y"], UVec2Visitor)
+    }
+}
+
+pub mod ivec2_def {
+    use super::{ivec2, IVec2};
+    use serde::de::MapAccess;
+    use serde::{
+        de::{self, Visitor},
+        ser::SerializeStruct,
+        Deserialize, Deserializer, Serializer,
+    };
+
+    use std::fmt;
+
+    pub fn serialize<S>(value: &IVec2, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+    {
+        let mut state = serializer.serialize_struct(stringify!(UVec2), 2)?;
+        state.serialize_field("x", &value.x)?;
+        state.serialize_field("y", &value.y)?;
+        state.end()
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<IVec2, D::Error>
+        where
+            D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        #[serde(field_identifier, rename_all = "snake_case")]
+        enum Field {
+            X,
+            Y,
+        }
+
+        struct IVec2Visitor;
+
+        impl<'de> Visitor<'de> for IVec2Visitor {
+            type Value = IVec2;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+                formatter.write_str(concat!("struct ", stringify!(IVec2)))
+            }
+
+            fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+                where
+                    A: MapAccess<'de>,
+            {
+                let mut x = None;
+                let mut y = None;
+
+                while let Some(key) = map.next_key()? {
+                    match key {
+                        Field::X => {
+                            if x.is_some() {
+                                return Err(de::Error::duplicate_field("x"));
+                            }
+                            x = Some(map.next_value()?);
+                        }
+                        Field::Y => {
+                            if y.is_some() {
+                                return Err(de::Error::duplicate_field("y"));
+                            }
+                            y = Some(map.next_value()?);
+                        }
+                    }
+                }
+
+                let x = x.ok_or_else(|| de::Error::missing_field("x"))?;
+                let y = y.ok_or_else(|| de::Error::missing_field("y"))?;
+
+                Ok(ivec2(x, y))
+            }
+        }
+
+        deserializer.deserialize_struct(stringify!(IVec2), &["x", "y"], IVec2Visitor)
     }
 }
 
@@ -213,8 +289,8 @@ pub mod uvec2_opt {
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     pub fn serialize<S>(value: &Option<UVec2>, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+        where
+            S: Serializer,
     {
         #[derive(Serialize)]
         struct Helper<'a>(
@@ -227,14 +303,48 @@ pub mod uvec2_opt {
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<UVec2>, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
         struct Helper(
             #[serde(skip_serializing_if = "Option::is_none")]
             #[serde(with = "super::uvec2_def")]
             UVec2,
+        );
+
+        let helper = Option::deserialize(deserializer)?;
+        Ok(helper.map(|Helper(external)| external))
+    }
+}
+
+pub mod ivec2_opt {
+    use super::IVec2;
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+    pub fn serialize<S>(value: &Option<IVec2>, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+    {
+        #[derive(Serialize)]
+        struct Helper<'a>(
+            #[serde(skip_serializing_if = "Option::is_none")]
+            #[serde(with = "super::ivec2_def")]
+            &'a IVec2,
+        );
+
+        value.as_ref().map(Helper).serialize(serializer)
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<IVec2>, D::Error>
+        where
+            D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        struct Helper(
+            #[serde(skip_serializing_if = "Option::is_none")]
+            #[serde(with = "super::ivec2_def")]
+            IVec2,
         );
 
         let helper = Option::deserialize(deserializer)?;

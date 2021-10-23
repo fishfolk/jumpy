@@ -65,7 +65,7 @@ impl Player {
 
     pub const ST_NORMAL: usize = 0;
     pub const ST_DEATH: usize = 1;
-    pub const ST_SHOOT: usize = 2;
+    pub const ST_ATTACK: usize = 2;
     pub const ST_SLIDE: usize = 3;
     pub const ST_INCAPACITATED: usize = 4;
     pub const ST_AFTERMATCH: usize = 5;
@@ -84,11 +84,15 @@ impl Player {
     pub const INCAPACITATED_STOP_THRESHOLD: f32 = 20.0;
 
     const ITEM_THROW_FORCE: f32 = 800.0;
-    const WEAPON_HUD_Y_OFFSET: f32 = 16.0;
 
-    // TODO: Fix offsetting of player sprite and collider, so that origin is always on the middle
-    // of the sprite x-axis
-    const SPRITE_X_OFFSET: f32 = 20.0;
+    const WEAPON_HUD_Y_OFFSET: f32 = -16.0;
+    const WEAPON_MOUNT_Y_OFFSET: f32 = 16.0;
+    const WEAPON_MOUNT_Y_OFFSET_CROUCHED: f32 = 32.0;
+
+    const COLLIDER_WIDTH: f32 = 20.0;
+    const COLLIDER_WIDTH_INCAPACITATED: f32 = 40.0;
+    const COLLIDER_HEIGHT: f32 = 64.0;
+    const COLLIDER_HEIGHT_CROUCHED: f32 = 48.0;
 
     pub fn new(player_id: u8, controller_id: i32) -> Player {
         let spawn_point = {
@@ -105,10 +109,10 @@ impl Player {
         );
 
         state_machine.add_state(
-            Self::ST_SHOOT,
+            Self::ST_ATTACK,
             State::new()
-                .update(Self::update_shoot)
-                .coroutine(Self::shoot_coroutine),
+                .update(Self::update_attack)
+                .coroutine(Self::attack_coroutine),
         );
 
         state_machine.add_state(
@@ -252,12 +256,12 @@ impl Player {
     }
 
     pub fn get_weapon_mount(&self) -> Vec2 {
-        let mut offset = vec2(Self::SPRITE_X_OFFSET, 0.0);
+        let mut offset = vec2(0.0, 0.0);
 
         if self.is_crouched {
-            offset.y = 32.0;
+            offset.y = Self::WEAPON_MOUNT_Y_OFFSET_CROUCHED;
         } else {
-            offset.y = 16.0;
+            offset.y = Self::WEAPON_MOUNT_Y_OFFSET;
         }
 
         offset
@@ -421,7 +425,7 @@ impl Player {
         start_coroutine(coroutine)
     }
 
-    fn shoot_coroutine(node: &mut RefMut<Player>) -> Coroutine {
+    fn attack_coroutine(node: &mut RefMut<Player>) -> Coroutine {
         let player = node.handle();
 
         if node.weapon.is_some() && node.weapon.as_ref().unwrap().is_ready() {
@@ -445,7 +449,7 @@ impl Player {
         }
     }
 
-    fn update_shoot(node: &mut RefMut<Player>, _dt: f32) {
+    fn update_attack(node: &mut RefMut<Player>, _dt: f32) {
         node.body.velocity.x *= 0.9;
     }
 
@@ -625,7 +629,7 @@ impl Player {
                 node.floating = false;
             } else if node.pick_grace_timer <= 0.0 {
                 for item in scene::find_nodes_by_type::<Item>() {
-                    if node.get_hitbox().overlaps(&item.get_collider()) {
+                    if node.get_collider().overlaps(&item.get_collider()) {
                         let was_picked_up = match &item.kind {
                             ItemKind::Weapon { params } => {
                                 let weapon = Weapon::new(&item.id, params.clone());
@@ -647,34 +651,34 @@ impl Player {
         if node.input.fire {
             //
             if node.weapon.is_some() {
-                node.state_machine.set_state(Self::ST_SHOOT);
+                node.state_machine.set_state(Self::ST_ATTACK);
                 node.floating = false;
             }
         }
     }
 
-    pub fn get_hitbox(&self) -> Rect {
+    pub fn get_collider(&self) -> Rect {
         let state = self.state_machine.state();
+
         let mut rect = Rect::new(
-            self.body.pos.x + Self::SPRITE_X_OFFSET,
-            if state == Self::ST_INCAPACITATED || state == Self::ST_SLIDE || self.is_crouched {
-                self.body.pos.y + 32.0
-            } else {
-                self.body.pos.y
-            },
-            if state == Self::ST_INCAPACITATED || state == Self::ST_SLIDE {
-                40.0
-            } else {
-                20.0
-            },
-            if state == Self::ST_INCAPACITATED || state == Self::ST_SLIDE || self.is_crouched {
-                32.0
-            } else {
-                64.0
-            },
+            self.body.pos.x,
+            self.body.pos.y,
+            Self::COLLIDER_WIDTH,
+            Self::COLLIDER_HEIGHT,
         );
 
         rect.x -= rect.w / 2.0;
+
+        if state == Self::ST_INCAPACITATED || state == Self::ST_SLIDE {
+            rect.x -= (rect.w - Self::COLLIDER_WIDTH_INCAPACITATED) / 2.0;
+            rect.w = Self::COLLIDER_WIDTH_INCAPACITATED
+        }
+
+        if state == Self::ST_INCAPACITATED || state == Self::ST_SLIDE || self.is_crouched {
+            rect.y += rect.h - Self::COLLIDER_HEIGHT_CROUCHED;
+            rect.h = Self::COLLIDER_HEIGHT_CROUCHED;
+        }
+
         rect
     }
 
@@ -750,9 +754,9 @@ impl Player {
         }
 
         if node.can_head_boink && node.body.velocity.y > 0.0 {
-            let hitbox = node.get_hitbox();
+            let hitbox = node.get_collider();
             for mut other in scene::find_nodes_by_type::<Player>() {
-                let other_hitbox = other.get_hitbox();
+                let other_hitbox = other.get_collider();
                 let is_overlapping = hitbox.overlaps(&other_hitbox);
                 if is_overlapping && hitbox.y + 60.0 < other_hitbox.y + Self::HEAD_THRESHOLD {
                     let resources = storage::get::<Resources>();
@@ -793,115 +797,102 @@ impl scene::Node for Player {
     }
 
     fn draw(node: RefMut<Self>) {
-        let resources = storage::get::<Resources>();
+        let draw_player = || {
+            let resources = storage::get::<Resources>();
 
-        let texture_id = if node.controller_id == 0 {
-            if node.can_head_boink {
-                "player_with_boots_blue"
+            let texture_id = if node.controller_id == 0 {
+                if node.can_head_boink {
+                    "player_with_boots_blue"
+                } else {
+                    "player_blue"
+                }
+            } else if node.can_head_boink {
+                "player_with_boots_green"
             } else {
-                "player_blue"
-            }
-        } else if node.can_head_boink {
-            "player_with_boots_green"
-        } else {
-            "player_green"
-        };
-
-        let texture_entry = resources.textures.get(texture_id).unwrap();
-
-        let dest_size = node.sprite.frame().dest_size;
-
-        draw_texture_ex(
-            texture_entry.texture,
-            node.body.pos.x - Self::SPRITE_X_OFFSET,
-            node.body.pos.y - 10.0,
-            color::WHITE,
-            DrawTextureParams {
-                source: Some(node.sprite.frame().source_rect),
-                dest_size: Some(dest_size),
-                flip_x: !node.body.is_facing_right,
-                ..Default::default()
-            },
-        );
-
-        draw_rectangle_lines(
-            node.body.pos.x - Self::SPRITE_X_OFFSET,
-            node.body.pos.y - 10.0,
-            dest_size.x,
-            dest_size.y,
-            2.0,
-            color::BLUE,
-        );
-
-        {
-            let hitbox = node.get_hitbox();
-
-            draw_rectangle_lines(hitbox.x, hitbox.y, hitbox.w, hitbox.h, 2.0, color::RED);
-        }
-
-        // draw turtle shell on player if the player has back armor
-        if node.back_armor > 0 {
-            let texture_id = if node.back_armor == 1 {
-                "turtle_shell_broken"
-            } else {
-                "turtle_shell"
+                "player_green"
             };
 
             let texture_entry = resources.textures.get(texture_id).unwrap();
 
+            let dest_size = node.sprite.frame().dest_size;
+
             draw_texture_ex(
                 texture_entry.texture,
-                node.body.pos.x + if node.body.is_facing_right { -15.0 } else { 20.0 },
-                node.body.pos.y,
+                node.body.pos.x - (dest_size.x / 2.0),
+                node.body.pos.y - 10.0,
                 color::WHITE,
                 DrawTextureParams {
-                    flip_y: node.body.is_facing_right,
-                    rotation: std::f32::consts::PI / 2.0,
+                    source: Some(node.sprite.frame().source_rect),
+                    dest_size: Some(dest_size),
+                    flip_x: !node.body.is_facing_right,
                     ..Default::default()
                 },
-            )
-        }
+            );
 
-        if let Some(weapon) = &node.weapon {
-            let position = node.body.pos
-                + node.get_weapon_mount()
-                + weapon.get_mount_offset(node.body.facing_dir());
+            draw_rectangle_lines(
+                node.body.pos.x - (dest_size.x / 2.0),
+                node.body.pos.y - 10.0,
+                dest_size.x,
+                dest_size.y,
+                2.0,
+                color::BLUE,
+            );
 
-            weapon.draw(position, node.body.angle, None, !node.body.is_facing_right, false);
+            {
+                let hitbox = node.get_collider();
 
-            if let Some(uses) = weapon.uses {
-                let mut position = node.body.pos;
-                position.y -= Self::WEAPON_HUD_Y_OFFSET;
+                draw_rectangle_lines(hitbox.x, hitbox.y, hitbox.w, hitbox.h, 2.0, color::RED);
+            }
 
-                let remaining = uses - weapon.use_cnt;
-
-                let full_color = Color::new(0.8, 0.9, 1.0, 1.0);
-                let empty_color = Color::new(0.8, 0.9, 1.0, 0.8);
-
-                if uses >= Weapon::CONDENSED_USE_COUNT_THRESHOLD {
-                    let x = position.x + Self::SPRITE_X_OFFSET - ((4.0 * uses as f32) / 2.0);
-
-                    for i in 0..uses {
-                        let x = x + 4.0 * i as f32;
-
-                        if i >= remaining {
-                            draw_rectangle(x, position.y - 12.0, 2.0, 12.0, empty_color);
-                        } else {
-                            draw_rectangle(x, position.y - 12.0, 2.0, 12.0, full_color);
-                        };
-                    }
+            // draw turtle shell on player if the player has back armor
+            if node.back_armor > 0 {
+                let texture_id = if node.back_armor == 1 {
+                    "turtle_shell_broken"
                 } else {
-                    for i in 0..uses {
-                        let x = position.x + 15.0 * i as f32;
+                    "turtle_shell"
+                };
 
-                        if i >= remaining {
-                            draw_circle_lines(x, position.y - 12.0, 4.0, 2.0, empty_color);
-                        } else {
-                            draw_circle(x, position.y - 12.0, 4.0, full_color);
-                        };
-                    }
+                let texture_entry = resources.textures.get(texture_id).unwrap();
+
+                draw_texture_ex(
+                    texture_entry.texture,
+                    node.body.pos.x + if node.body.is_facing_right { -15.0 } else { 20.0 },
+                    node.body.pos.y,
+                    color::WHITE,
+                    DrawTextureParams {
+                        flip_y: node.body.is_facing_right,
+                        rotation: std::f32::consts::PI / 2.0,
+                        ..Default::default()
+                    },
+                )
+            }
+        };
+
+        let draw_weapon = || {
+            if let Some(weapon) = &node.weapon {
+                {
+                    let position = node.body.pos
+                        + node.get_weapon_mount()
+                        + weapon.get_mount_offset(node.body.facing_dir());
+
+                    weapon.draw(position, node.body.angle, None, !node.body.is_facing_right, false);
+                }
+
+                {
+                    let mut position = node.body.pos;
+                    position.y += Self::WEAPON_HUD_Y_OFFSET;
+
+                    weapon.draw_hud(position);
                 }
             }
+        };
+
+        if node.body.is_facing_right {
+            draw_player();
+            draw_weapon();
+        } else {
+            draw_weapon();
+            draw_player();
         }
     }
 

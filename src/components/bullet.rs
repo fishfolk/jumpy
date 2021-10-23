@@ -41,7 +41,7 @@ impl Bullet {
         }
 
         for mut player in scene::find_nodes_by_type::<crate::nodes::Player>() {
-            if player.get_hitbox().contains(self.pos) {
+            if player.get_collider().contains(self.pos) {
                 let direction = self.pos.x > (player.body.pos.x + 10.);
 
                 scene::find_node_by_type::<crate::nodes::Camera>()

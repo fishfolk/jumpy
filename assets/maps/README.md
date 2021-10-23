@@ -1,22 +1,20 @@
 # How to add a level to the FishFight
 
 Tiled: https://www.mapeditor.org/, also in most distros is available as `tiled` package. 
-1.7+ version required. 
+1.7+ version is required, or you will have to open your `json` map file in a text editor and change the maps `version`
+field to a `string`, manually, in order for it to work.
 
 ## Project window
 
-![image](https://user-images.githubusercontent.com/910977/126675836-128e394c-755d-4061-9103-5ed93f6e55cd.png)
-*"Project" is that little thing on the left.*
-
 Tiled projects are an optional thing to help navigate the levels while in tiled.
 
-To open project window, click:
+To open the project toolbar, click:
 `View -> Toolbars -> Project`
 
-To open project with all our levels:
-`File -> Open file or project`
+To open the project with all our levels:
+`File -> Open file or project -> levels.tiled-project`
 
-Then click on lev0*.json in the project window to open up a level. 
+This should result in a list of all the available maps in your project toolbar (the left-most list view)
 
 ## Creating a level
 
@@ -24,36 +22,35 @@ Section heavily under construction, if you feel there is some tips that can help
 
 Usually to create a new level I click "Right Click -> Open containing folder" on lev*.json in Project window and in the file manager I duplicate this file. 
 
-Right now objects positioning is kinda messed up and awaits fixing, so item will be spawn somewhere around that thing in "items" layer, but exact positioning of things like swords is pretty much impossible right now. Will fix!
+If you do not copy an existing map, there are a few requirements for Tiled maps that need to be met, in order to make them compatible with our internal format:
 
-## Adding level to the game
+- Every tileset needs a `String` prop, named `texture_id`, that references a texture in `assets/textures.json`. This texture entry also needs to be of type `tilemap`.
+The default ones, used in the core maps, are `default_tileset`, for the tiles, and `default_decorations` for the decorations (decorations are objects, not tiles, though. More on that below).
+- Every tile layer with collisions needs a `bool` prop, named `collision`, set to true.
+- Every object needs both a `name` and a `type` set (except for spawn points, which only need a `type`). The `name` acts as an id in-game, which will reference an entry in the appropriate data file, based on the objects `type`. Available types are:
+    * `item` for items such as power-ups and weapons 
+    * `decoration` for decorations, such as `seaweed` and `pots`, found in most maps
+    * `spawn` for player spawn points
 
-Add a record to `assets/levels/levels.toml`, just like this: 
-```toml
-[[level]]
-map = "assets/levels/lev01.json"
-preview = "assets/levels/lev01.png"
-is_tiled = true
+## Adding a map to the game
+
+Add an entry to `assets/maps.json` and it will show up in the in-game maps menu:
+
+```json
+{
+  "name": "My Awesome Map",
+  "path": "assets/levels/lev01.json",
+  "preview": "assets/levels/lev01.png",
+  "is_tiled": true
+}
 ```
 
-Remember to set `is_tiled` to `true` for any maps made in Tiled, so that the game knows that it must be converted to the internal format when it is loaded.
+Remember to set `is_tiled` to `true` for any map made in Tiled, so that the game knows that it must be converted to the internal format when it is loaded.
 
-**Note** that both map and preview are required! If there is no preview yet - just use a random texture, preview of other map or whatever.
+If you have no preview for your map, yet, you can use the generic `no_preview.png` in stead. This should not be used outside of testing, though.
 
-In the future there will be some other metadata, description, name, etc. 
-Feel free to add keys to the toml like
-
-```toml
-name = "Cool level name"
-description = "Sword fighting 1x1 level for the real fishes"
-```
-
-They will do nothing in the game, but may be helpful to figure what UI we will need in level selection menu etc. 
-
-This is it, after adding level to levels.toml it should appear in the game!
-Levels are sorted in the same order as they are in the toml. 
-Maybe we need a "priority" toml param? Maybe later, rn just move records in the toml around
-
+This is it, after adding level to `levels.json`, it should appear in the game!
+Levels are sorted in the same order as they are in the toml.
 
 ## Making a PR
 
@@ -117,16 +114,6 @@ git commit -m "I made a level!"
 
 - Fork a repo in github's web UI
 - Push to your repo `git push git://github.com/YOUR_USERNAME/fish2`
-- Click the green button that will appear on your fork of GH web ui
+- Click the green button that will appear on your fork of github web ui
 
-And there is no way to break anything in the main repo doing this, so dont be afraid. It OK to commit extra files, do tons of extra commits, commit with a crazy commit message etc. 
-
-## Pushing to SourceHut
-
-SourceHut, right now, is a back-up option and  PR discussion is going to happen on GitHub. However there is a way to both clone a repo and do a PR through SourceHut.
-
-- For a repo with "Clone repo to your account button"
-- Push your changes to your SourceHut account 
-- Click the "Prepare changeset" button in SourceHut
-- Click to the earliest commit you want to be in the PR (all your commits should be ble)
-- And send it to "not.fl3@gmail.com". I will migrate it to GH.
+And there is no way to break anything in the main repo doing this, so dont be afraid. It's OK to commit extra files, do tons of extra commits, commit with a crazy commit message etc. 

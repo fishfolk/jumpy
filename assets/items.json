@@ -9,12 +9,15 @@
     "cooldown": 0.75,
     "attack_duration": 0.5,
     "sound_effect_id": "sword",
-    "effect": "rect_collider",
-    "rect_width": 32.0,
-    "rect_height": 64.0,
+    "effect": "circle_collider",
+    "circle_collider_radius": 65,
+    "circle_collider_segment": {
+      "x": 1,
+      "y": -1
+    },
     "effect_offset": {
       "x": 0,
-      "y": -16
+      "y": -64
     },
     "collider_size": {
       "x": 65,
@@ -28,13 +31,13 @@
       "texture_id": "sword",
       "animations": [
         {
-          "name": "idle",
+          "id": "idle",
           "row": 0,
           "frames": 1,
           "fps": 1
         },
         {
-          "name": "attack",
+          "id": "attack",
           "row": 1,
           "frames": 4,
           "fps": 15
@@ -74,13 +77,13 @@
       "texture_id": "musket",
       "animations": [
         {
-          "name": "idle",
+          "id": "idle",
           "row": 0,
           "frames": 1,
           "fps": 1
         },
         {
-          "name": "attack",
+          "id": "attack",
           "row": 1,
           "frames": 3,
           "fps": 15
@@ -120,13 +123,13 @@
       "texture_id": "machine_gun",
       "animations": [
         {
-          "name": "idle",
+          "id": "idle",
           "row": 0,
           "frames": 1,
           "fps": 1
         },
         {
-          "name": "attack",
+          "id": "attack",
           "row": 1,
           "frames": 2,
           "fps": 8
@@ -155,10 +158,16 @@
       "texture_id": "mines",
       "animations": [
         {
-          "name": "idle",
+          "id": "idle",
           "row": 0,
           "frames": 1,
           "fps": 1
+        },
+        {
+          "id": "armed",
+          "row": 1,
+          "frames": 10,
+          "fps": 3
         }
       ]
     }
@@ -187,7 +196,7 @@
       "texture_id": "curse",
       "animations": [
         {
-          "name": "idle",
+          "id": "idle",
           "row": 0,
           "frames": 1,
           "fps": 1
@@ -219,13 +228,13 @@
       "texture_id": "cannon",
       "animations": [
         {
-          "name": "idle",
+          "id": "idle",
           "row": 0,
           "frames": 1,
           "fps": 1
         },
         {
-          "name": "attack",
+          "id": "attack",
           "row": 1,
           "frames": 4,
           "fps": 8

@@ -1,7 +1,8 @@
+use std::collections::HashMap;
 use macroquad::{
     color,
     experimental::{
-        animation::{AnimatedSprite, Animation},
+        animation::{AnimatedSprite, Animation as MQAnimation},
         collections::storage,
     },
     prelude::*,
@@ -12,33 +13,51 @@ use serde::{Deserialize, Serialize};
 use crate::{json, Resources};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Animation {
+    pub id: String,
+    pub row: u32,
+    pub frames: u32,
+    pub fps: u32,
+}
+
+impl From<Animation> for MQAnimation {
+    fn from(a: Animation) -> Self {
+        MQAnimation {
+            name: a.id,
+            row: a.row,
+            frames: a.frames,
+            fps: a.fps,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AnimationParams {
     pub texture_id: String,
     #[serde(
-        default,
-        with = "json::vec2_opt",
-        skip_serializing_if = "Option::is_none"
+    default,
+    with = "json::vec2_opt",
+    skip_serializing_if = "Option::is_none"
     )]
     pub offset: Option<Vec2>,
     #[serde(
-        default,
-        with = "json::vec2_opt",
-        skip_serializing_if = "Option::is_none"
+    default,
+    with = "json::vec2_opt",
+    skip_serializing_if = "Option::is_none"
     )]
     pub pivot: Option<Vec2>,
     #[serde(
-        default,
-        with = "json::uvec2_opt",
-        skip_serializing_if = "Option::is_none"
+    default,
+    with = "json::uvec2_opt",
+    skip_serializing_if = "Option::is_none"
     )]
     pub frame_size: Option<UVec2>,
     #[serde(
-        default,
-        with = "json::color_opt",
-        skip_serializing_if = "Option::is_none"
+    default,
+    with = "json::color_opt",
+    skip_serializing_if = "Option::is_none"
     )]
     pub tint: Option<Color>,
-    #[serde(with = "json::animation_vec")]
     pub animations: Vec<Animation>,
     #[serde(default)]
     pub should_autoplay: bool,
@@ -65,6 +84,7 @@ impl AnimationPlayer {
                     &params.texture_id
                 )
             });
+
         let texture = texture_resource.texture;
 
         let offset = params.offset.unwrap_or(Vec2::ZERO);
@@ -80,10 +100,27 @@ impl AnimationPlayer {
 
         let tint = params.tint.unwrap_or(color::WHITE);
 
+        assert!(!params.animations.is_empty(), "AnimationPlayer: One or more animations are required");
+
+        let animations: Vec<MQAnimation> = {
+            let mut ids = Vec::new();
+            params.animations
+                .clone()
+                .into_iter()
+                .map(|a| {
+                    assert!(!ids.contains(&a.id), "AnimationPlayer: Invalid animation id '{}' (duplicate)", &a.id);
+                    ids.push(a.id.clone());
+
+                    let res: MQAnimation = a.into();
+                    res
+                })
+                .collect()
+        };
+
         let sprite = AnimatedSprite::new(
             frame_size.x,
             frame_size.y,
-            &params.animations,
+            &animations,
             params.should_autoplay,
         );
 
@@ -164,15 +201,40 @@ impl AnimationPlayer {
         Rect::new(position.x, position.y, size.x, size.y)
     }
 
-    pub fn get_animation(&self, animation: usize) -> Option<&Animation> {
-        self.animations.get(animation)
+    pub fn get_animation(&self, id: &str) -> Option<&Animation> {
+        self.animations.iter().find(|a| a.id == id)
     }
 
-    pub fn set_animation(&mut self, animation: usize) {
-        self.sprite.set_animation(animation);
+    // Set the current animation, using the animations id.
+    // Will return a reference to the animation or `None`, if it doesn't exist
+    pub fn set_animation(&mut self, id: &str) -> Option<&Animation> {
+        let res = self.animations
+            .iter()
+            .enumerate()
+            .find(|(i, a)| a.id == id);
+
+        if let Some((i, animation)) = res {
+            self.sprite.set_animation(i);
+            return Some(animation);
+        }
+
+        None
     }
 
+    // Set the frame of the current animation
     pub fn set_frame(&mut self, frame: usize) {
         self.sprite.set_frame(frame as u32);
+    }
+
+    pub fn play(&mut self) {
+        self.sprite.playing = true;
+    }
+
+    pub fn stop(&mut self) {
+        self.sprite.playing = false;
+    }
+
+    pub fn is_playing(&self) -> bool {
+        self.sprite.playing
     }
 }

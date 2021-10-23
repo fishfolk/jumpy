@@ -12,16 +12,26 @@ use macroquad::{
 
 use serde::{Deserialize, Serialize};
 
-pub use effects::{weapon_effect_coroutine, EffectTrigger, WeaponEffectKind, WeaponEffectParams};
-
 use crate::{
     components::{AnimationParams, AnimationPlayer},
     json, Player, Resources,
+    math::{deg_to_rad, rotate_vector},
+    nodes::ParticleEmitters,
 };
 
 pub mod effects;
 
-pub use effects::{add_custom_weapon_effect, CustomWeaponEffectCoroutine, CustomWeaponEffectParam};
+pub use effects::{
+    Projectiles,
+    CustomWeaponEffectCoroutine,
+    CustomWeaponEffectParam,
+    WeaponEffectTrigger,
+    WeaponEffectKind,
+    WeaponEffectParams,
+    add_custom_weapon_effect,
+    get_custom_weapon_effect,
+    weapon_effect_coroutine,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WeaponParams {
@@ -55,8 +65,6 @@ pub struct Weapon {
     pub particle_effect_id: Option<String>,
     pub uses: Option<u32>,
     pub use_cnt: u32,
-    pub idle_animation: usize,
-    pub attack_animation: Option<usize>,
     pub animation_player: AnimationPlayer,
     pub cooldown_timer: f32,
     mount_offset: Vec2,
@@ -64,10 +72,13 @@ pub struct Weapon {
 }
 
 impl Weapon {
-    pub const CONDENSED_USE_COUNT_THRESHOLD: u32 = 12;
+    const HUD_CONDENSED_USE_COUNT_THRESHOLD: u32 = 12;
+    const HUD_USE_COUNT_COLOR_FULL: Color = Color { r: 0.8, g: 0.9, b: 1.0, a: 1.0 };
+    const HUD_USE_COUNT_COLOR_EMPTY: Color = Color { r: 0.8, g: 0.9, b: 1.0, a: 0.8 };
 
-    const IDLE_ANIMATION_NAME: &'static str = "idle";
-    const ATTACK_ANIMATION_NAME: &'static str = "attack";
+    const IDLE_ANIMATION_ID: &'static str = "idle";
+    const ATTACK_ANIMATION_ID: &'static str = "attack";
+    const ARMED_ANIMATION_ID: &'static str = "armed";
 
     pub fn new(id: &str, params: WeaponParams) -> Self {
         let sound_effect = if let Some(sound_effect_id) = &params.sound_effect_id {
@@ -82,21 +93,16 @@ impl Weapon {
             None
         };
 
-        assert!(
-            !params.animation.animations.is_empty(),
-            "Weapon: A minimum of one animation ({}) is required",
-            Self::IDLE_ANIMATION_NAME
-        );
+        {
+            let res = params.animation.animations
+                .iter()
+                .find(|a| a.id == Self::IDLE_ANIMATION_ID);
 
-        let mut idle_animation = 0;
-        let mut attack_animation = None;
-
-        for (i, animation) in params.animation.animations.iter().enumerate() {
-            if animation.name == Self::IDLE_ANIMATION_NAME {
-                idle_animation = i;
-            } else if animation.name == Self::ATTACK_ANIMATION_NAME {
-                attack_animation = Some(i);
-            }
+            assert!(
+            res.is_some(),
+            "Weapon: An animation with id '{}' is required",
+            Self::IDLE_ANIMATION_ID
+            );
         }
 
         let animation_player = AnimationPlayer::new(AnimationParams {
@@ -116,8 +122,6 @@ impl Weapon {
             use_cnt: 0,
             animation_player,
             cooldown_timer: params.cooldown,
-            idle_animation,
-            attack_animation,
             mount_offset: params.mount_offset,
             effect_offset: params.effect_offset,
         }
@@ -161,6 +165,39 @@ impl Weapon {
         );
     }
 
+    pub fn draw_hud(
+        &self,
+        position: Vec2,
+    ) {
+        if let Some(uses) = self.uses {
+            let remaining = uses - self.use_cnt;
+
+            if uses >= Self::HUD_CONDENSED_USE_COUNT_THRESHOLD {
+                let x = position.x - ((4.0 * uses as f32) / 2.0);
+
+                for i in 0..uses {
+                    let x = x + 4.0 * i as f32;
+
+                    if i >= remaining {
+                        draw_rectangle(x, position.y - 12.0, 2.0, 12.0, Self::HUD_USE_COUNT_COLOR_EMPTY);
+                    } else {
+                        draw_rectangle(x, position.y - 12.0, 2.0, 12.0, Self::HUD_USE_COUNT_COLOR_FULL);
+                    };
+                }
+            } else {
+                for i in 0..uses {
+                    let x = position.x + 15.0 * i as f32;
+
+                    if i >= remaining {
+                        draw_circle_lines(x, position.y - 12.0, 4.0, 2.0, Self::HUD_USE_COUNT_COLOR_EMPTY);
+                    } else {
+                        draw_circle(x, position.y - 12.0, 4.0, Self::HUD_USE_COUNT_COLOR_FULL);
+                    };
+                }
+            }
+        }
+    }
+
     pub fn get_effect_offset(&self, facing_direction: Vec2) -> Vec2 {
         vec2(
             facing_direction.x * self.effect_offset.x,
@@ -187,53 +224,48 @@ impl Weapon {
         true
     }
 
-    pub fn animation_coroutine(player_handle: Handle<Player>) -> Coroutine {
-        let animation_coroutine = async move {
-            let attack_animation = {
+    fn animation_coroutine(player_handle: Handle<Player>, animation_id: &str) -> Coroutine {
+        let animation_id = animation_id.to_string();
+
+        let coroutine = async move {
+            let mut animation = None;
+
+            {
                 let player = &mut *scene::get_node(player_handle);
-                if let Some(weapon) = player.weapon.as_mut() {
-                    weapon.attack_animation
-                } else {
-                    None
+                if let Some(weapon) = &mut player.weapon {
+                    animation = weapon.animation_player.set_animation(&animation_id).cloned();
+
+                    if animation.is_some() {
+                        weapon.animation_player.stop();
+                    }
                 }
-            };
+            }
 
-            if let Some(index) = attack_animation {
-                let animation = {
-                    let player = &mut *scene::get_node(player_handle);
-                    if let Some(weapon) = player.weapon.as_mut() {
-                        weapon.animation_player.set_animation(index);
-                        weapon.animation_player.get_animation(index).cloned()
-                    } else {
-                        None
-                    }
-                };
+            if let Some(animation) = animation {
+                let frame_interval = 1.0 / animation.fps as f32;
 
-                if let Some(animation) = animation {
-                    let frame_interval = 1.0 / animation.fps as f32;
-
-                    for i in 0..animation.frames as usize {
-                        {
-                            let player = &mut *scene::get_node(player_handle);
-                            if let Some(weapon) = player.weapon.as_mut() {
-                                weapon.animation_player.set_frame(i);
-                            }
-                        }
-
-                        wait_seconds(frame_interval).await;
-                    }
-
+                for i in 0..animation.frames as usize {
                     {
                         let player = &mut *scene::get_node(player_handle);
                         if let Some(weapon) = player.weapon.as_mut() {
-                            weapon.animation_player.set_animation(weapon.idle_animation);
+                            weapon.animation_player.set_frame(i);
                         }
+                    }
+
+                    wait_seconds(frame_interval).await;
+                }
+
+                {
+                    let player = &mut *scene::get_node(player_handle);
+                    if let Some(weapon) = player.weapon.as_mut() {
+                        weapon.animation_player.set_animation(Self::IDLE_ANIMATION_ID);
+                        weapon.animation_player.play();
                     }
                 }
             }
         };
 
-        start_coroutine(animation_coroutine)
+        start_coroutine(coroutine)
     }
 
     pub fn attack_coroutine(player_handle: Handle<Player>) -> Coroutine {
@@ -253,6 +285,8 @@ impl Weapon {
                     } else {
                         weapon.recoil
                     };
+                } else {
+                    return;
                 }
             }
 
@@ -267,7 +301,9 @@ impl Weapon {
                 }
             }
 
-            Weapon::animation_coroutine(player_handle);
+            {
+                Weapon::animation_coroutine(player_handle, Self::ATTACK_ANIMATION_ID);
+            }
 
             let attack_duration = {
                 let player = &*scene::get_node(player_handle);

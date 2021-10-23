@@ -1,5 +1,5 @@
-use std::env;
 use fishsticks::GamepadContext;
+use std::env;
 
 use macroquad::prelude::*;
 use macroquad::{
@@ -193,7 +193,7 @@ async fn game(map_resource: MapResource, game_type: GameType) -> Result<()> {
     loop {
         {
             let mut gamepad_system = storage::get_mut::<GamepadContext>();
-            gamepad_system.update();
+            gamepad_system.update()?;
         }
 
         next_frame().await;

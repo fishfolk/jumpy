@@ -73,6 +73,7 @@ impl TriggeredEffects {
 
         if let Some(animation_params) = params.animation {
             animation_player = Some(AnimationPlayer::new(animation_params));
+
         }
 
         let mut body = {
@@ -192,10 +193,7 @@ impl Node for TriggeredEffects {
         node.provides(Self::network_capabilities());
     }
 
-    fn update(mut node: RefMut<Self>)
-    where
-        Self: Sized,
-    {
+    fn update(mut node: RefMut<Self>) {
         for trigger in &mut node.active {
             if let Some(animation_player) = trigger.animation_player.as_mut() {
                 animation_player.update();

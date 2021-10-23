@@ -1,7 +1,4 @@
-use std::{
-    net::UdpSocket,
-    path::Path,
-};
+use std::{net::UdpSocket, path::Path};
 
 use macroquad::{
     experimental::collections::storage,
@@ -11,18 +8,16 @@ use macroquad::{
 
 use fishsticks::GamepadContext;
 
+use crate::resources::map_name_to_filename;
 use crate::{
+    error::Result,
     gui::GuiResources,
     input::InputScheme,
     nodes::network::Message,
-    EditorInputScheme,
-    GameType,
-    Resources,
     resources::MapResource,
-    error::Result,
-    text::{draw_aligned_text, HorizontalAlignment, VerticalAlignment}
+    text::{draw_aligned_text, HorizontalAlignment, VerticalAlignment},
+    EditorInputScheme, GameType, Resources,
 };
-use crate::resources::map_name_to_filename;
 
 const RELAY_ADDR: &str = "173.0.157.169:35000";
 const WINDOW_WIDTH: f32 = 700.;
@@ -518,7 +513,7 @@ pub async fn location_select() -> MapResource {
     next_frame().await;
 
     loop {
-        let mut gui_resources = storage::get_mut::<GuiResources>();
+        let gui_resources = storage::get::<GuiResources>();
         let mut gamepad_system = storage::get_mut::<GamepadContext>();
 
         let _ = gamepad_system.update();

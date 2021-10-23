@@ -155,6 +155,12 @@ impl error::Error for Error {
     }
 }
 
+impl From<String> for Error {
+    fn from(error: String) -> Error {
+        Error::new_message(ErrorKind::General, &error)
+    }
+}
+
 impl From<io::Error> for Error {
     fn from(error: io::Error) -> Error {
         Error::new(ErrorKind::File, error)

@@ -226,9 +226,10 @@
           "id": "armed",
           "row": 0,
           "frames": 13,
-          "fps": 3
+          "fps": 12
         }
-      ]
+      ],
+      "should_autoplay": true
     },
     "collider_size": {
       "x": 32,

@@ -145,11 +145,31 @@
     },
     "type": "weapon",
     "cooldown": 0.5,
-    "recoil": 0.5,
-    "effect": "projectile",
-    "projectile_range": 128.0,
-    "projectile_speed": 5.0,
-    "projectile_size": 5.0,
+    "recoil": 0.0,
+    "effect": "triggered_effect",
+    "triggered_effect_trigger": "player",
+    "triggered_effect_trigger_size": {
+      "x": 26,
+      "y": 26
+    },
+    "effect_is_friendly_fire": true,
+    "triggered_effect_activation_delay": 1.5,
+    "triggered_effect": {
+      "effect": "circle_collider",
+      "circle_collider_radius": 64,
+      "effect_is_friendly_fire": true
+    },
+    "triggered_effect_animation": {
+      "texture_id": "mines",
+      "animations": [
+        {
+          "id": "armed",
+          "row": 1,
+          "frames": 10,
+          "fps": 3
+        }
+      ]
+    },
     "collider_size": {
       "x": 26,
       "y": 31
@@ -162,12 +182,6 @@
           "row": 0,
           "frames": 1,
           "fps": 1
-        },
-        {
-          "id": "armed",
-          "row": 1,
-          "frames": 10,
-          "fps": 3
         }
       ]
     }

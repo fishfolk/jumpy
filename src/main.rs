@@ -16,7 +16,10 @@ use error::Result;
 pub use game_world::GameWorld;
 pub use input::{Input, InputScheme};
 
-use items::{weapons::effects::Projectiles, Item};
+use items::{
+    weapons::effects::{Projectiles, TriggeredEffects},
+    Item,
+};
 
 use map::{Map, MapLayerKind, MapObjectKind};
 
@@ -139,8 +142,9 @@ async fn build_game_scene(map: Map, is_local_game: bool) -> Result<Vec<Handle<Pl
         scene::add_node(Player::new(1, 1)),
     ];
 
-    scene::add_node(ParticleEmitters::new().await?);
+    scene::add_node(TriggeredEffects::new());
     scene::add_node(Projectiles::new());
+    scene::add_node(ParticleEmitters::new().await?);
 
     Ok(players)
 }

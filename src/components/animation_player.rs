@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use macroquad::{
     color,
     experimental::{
@@ -35,27 +34,27 @@ impl From<Animation> for MQAnimation {
 pub struct AnimationParams {
     pub texture_id: String,
     #[serde(
-    default,
-    with = "json::vec2_opt",
-    skip_serializing_if = "Option::is_none"
+        default,
+        with = "json::vec2_opt",
+        skip_serializing_if = "Option::is_none"
     )]
     pub offset: Option<Vec2>,
     #[serde(
-    default,
-    with = "json::vec2_opt",
-    skip_serializing_if = "Option::is_none"
+        default,
+        with = "json::vec2_opt",
+        skip_serializing_if = "Option::is_none"
     )]
     pub pivot: Option<Vec2>,
     #[serde(
-    default,
-    with = "json::uvec2_opt",
-    skip_serializing_if = "Option::is_none"
+        default,
+        with = "json::uvec2_opt",
+        skip_serializing_if = "Option::is_none"
     )]
     pub frame_size: Option<UVec2>,
     #[serde(
-    default,
-    with = "json::color_opt",
-    skip_serializing_if = "Option::is_none"
+        default,
+        with = "json::color_opt",
+        skip_serializing_if = "Option::is_none"
     )]
     pub tint: Option<Color>,
     pub animations: Vec<Animation>,
@@ -100,15 +99,23 @@ impl AnimationPlayer {
 
         let tint = params.tint.unwrap_or(color::WHITE);
 
-        assert!(!params.animations.is_empty(), "AnimationPlayer: One or more animations are required");
+        assert!(
+            !params.animations.is_empty(),
+            "AnimationPlayer: One or more animations are required"
+        );
 
         let animations: Vec<MQAnimation> = {
             let mut ids = Vec::new();
-            params.animations
+            params
+                .animations
                 .clone()
                 .into_iter()
                 .map(|a| {
-                    assert!(!ids.contains(&a.id), "AnimationPlayer: Invalid animation id '{}' (duplicate)", &a.id);
+                    assert!(
+                        !ids.contains(&a.id),
+                        "AnimationPlayer: Invalid animation id '{}' (duplicate)",
+                        &a.id
+                    );
                     ids.push(a.id.clone());
 
                     let res: MQAnimation = a.into();
@@ -208,10 +215,7 @@ impl AnimationPlayer {
     // Set the current animation, using the animations id.
     // Will return a reference to the animation or `None`, if it doesn't exist
     pub fn set_animation(&mut self, id: &str) -> Option<&Animation> {
-        let res = self.animations
-            .iter()
-            .enumerate()
-            .find(|(i, a)| a.id == id);
+        let res = self.animations.iter().enumerate().find(|(_, a)| a.id == id);
 
         if let Some((i, animation)) = res {
             self.sprite.set_animation(i);

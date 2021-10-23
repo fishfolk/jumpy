@@ -15,22 +15,14 @@ use serde::{Deserialize, Serialize};
 use crate::{
     components::{AnimationParams, AnimationPlayer},
     json, Player, Resources,
-    math::{deg_to_rad, rotate_vector},
-    nodes::ParticleEmitters,
 };
 
 pub mod effects;
 
 pub use effects::{
-    Projectiles,
-    CustomWeaponEffectCoroutine,
-    CustomWeaponEffectParam,
-    WeaponEffectTrigger,
-    WeaponEffectKind,
-    WeaponEffectParams,
-    add_custom_weapon_effect,
-    get_custom_weapon_effect,
-    weapon_effect_coroutine,
+    add_custom_weapon_effect, get_custom_weapon_effect, weapon_effect_coroutine,
+    CustomWeaponEffectCoroutine, CustomWeaponEffectParam, Projectiles, WeaponEffectKind,
+    WeaponEffectParams, WeaponEffectTriggerKind,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -73,12 +65,21 @@ pub struct Weapon {
 
 impl Weapon {
     const HUD_CONDENSED_USE_COUNT_THRESHOLD: u32 = 12;
-    const HUD_USE_COUNT_COLOR_FULL: Color = Color { r: 0.8, g: 0.9, b: 1.0, a: 1.0 };
-    const HUD_USE_COUNT_COLOR_EMPTY: Color = Color { r: 0.8, g: 0.9, b: 1.0, a: 0.8 };
+    const HUD_USE_COUNT_COLOR_FULL: Color = Color {
+        r: 0.8,
+        g: 0.9,
+        b: 1.0,
+        a: 1.0,
+    };
+    const HUD_USE_COUNT_COLOR_EMPTY: Color = Color {
+        r: 0.8,
+        g: 0.9,
+        b: 1.0,
+        a: 0.8,
+    };
 
     const IDLE_ANIMATION_ID: &'static str = "idle";
     const ATTACK_ANIMATION_ID: &'static str = "attack";
-    const ARMED_ANIMATION_ID: &'static str = "armed";
 
     pub fn new(id: &str, params: WeaponParams) -> Self {
         let sound_effect = if let Some(sound_effect_id) = &params.sound_effect_id {
@@ -94,14 +95,16 @@ impl Weapon {
         };
 
         {
-            let res = params.animation.animations
+            let res = params
+                .animation
+                .animations
                 .iter()
                 .find(|a| a.id == Self::IDLE_ANIMATION_ID);
 
             assert!(
-            res.is_some(),
-            "Weapon: An animation with id '{}' is required",
-            Self::IDLE_ANIMATION_ID
+                res.is_some(),
+                "Weapon: An animation with id '{}' is required",
+                Self::IDLE_ANIMATION_ID
             );
         }
 
@@ -165,10 +168,7 @@ impl Weapon {
         );
     }
 
-    pub fn draw_hud(
-        &self,
-        position: Vec2,
-    ) {
+    pub fn draw_hud(&self, position: Vec2) {
         if let Some(uses) = self.uses {
             let remaining = uses - self.use_cnt;
 
@@ -179,9 +179,21 @@ impl Weapon {
                     let x = x + 4.0 * i as f32;
 
                     if i >= remaining {
-                        draw_rectangle(x, position.y - 12.0, 2.0, 12.0, Self::HUD_USE_COUNT_COLOR_EMPTY);
+                        draw_rectangle(
+                            x,
+                            position.y - 12.0,
+                            2.0,
+                            12.0,
+                            Self::HUD_USE_COUNT_COLOR_EMPTY,
+                        );
                     } else {
-                        draw_rectangle(x, position.y - 12.0, 2.0, 12.0, Self::HUD_USE_COUNT_COLOR_FULL);
+                        draw_rectangle(
+                            x,
+                            position.y - 12.0,
+                            2.0,
+                            12.0,
+                            Self::HUD_USE_COUNT_COLOR_FULL,
+                        );
                     };
                 }
             } else {
@@ -189,7 +201,13 @@ impl Weapon {
                     let x = position.x + 15.0 * i as f32;
 
                     if i >= remaining {
-                        draw_circle_lines(x, position.y - 12.0, 4.0, 2.0, Self::HUD_USE_COUNT_COLOR_EMPTY);
+                        draw_circle_lines(
+                            x,
+                            position.y - 12.0,
+                            4.0,
+                            2.0,
+                            Self::HUD_USE_COUNT_COLOR_EMPTY,
+                        );
                     } else {
                         draw_circle(x, position.y - 12.0, 4.0, Self::HUD_USE_COUNT_COLOR_FULL);
                     };
@@ -233,7 +251,10 @@ impl Weapon {
             {
                 let player = &mut *scene::get_node(player_handle);
                 if let Some(weapon) = &mut player.weapon {
-                    animation = weapon.animation_player.set_animation(&animation_id).cloned();
+                    animation = weapon
+                        .animation_player
+                        .set_animation(&animation_id)
+                        .cloned();
 
                     if animation.is_some() {
                         weapon.animation_player.stop();
@@ -258,7 +279,9 @@ impl Weapon {
                 {
                     let player = &mut *scene::get_node(player_handle);
                     if let Some(weapon) = player.weapon.as_mut() {
-                        weapon.animation_player.set_animation(Self::IDLE_ANIMATION_ID);
+                        weapon
+                            .animation_player
+                            .set_animation(Self::IDLE_ANIMATION_ID);
                         weapon.animation_player.play();
                     }
                 }

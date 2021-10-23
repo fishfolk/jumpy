@@ -312,6 +312,7 @@ impl Player {
             // set armor to 0
             self.back_armor = 0;
             self.body.is_facing_right = direction;
+            self.drop_weapon(false);
             if self.state_machine.state() != Self::ST_DEATH {
                 self.state_machine.set_state(Self::ST_DEATH);
                 {
@@ -408,7 +409,6 @@ impl Player {
                 world.get_random_spawn_point()
             };
             this.sprite.playing = true;
-            this.drop_weapon(false);
 
             // in deathmatch we can just get back to normal after death
             {
@@ -856,7 +856,12 @@ impl scene::Node for Player {
 
                 draw_texture_ex(
                     texture_entry.texture,
-                    node.body.pos.x + if node.body.is_facing_right { -15.0 } else { 20.0 },
+                    node.body.pos.x
+                        + if node.body.is_facing_right {
+                            -15.0
+                        } else {
+                            20.0
+                        },
                     node.body.pos.y,
                     color::WHITE,
                     DrawTextureParams {
@@ -875,7 +880,13 @@ impl scene::Node for Player {
                         + node.get_weapon_mount()
                         + weapon.get_mount_offset(node.body.facing_dir());
 
-                    weapon.draw(position, node.body.angle, None, !node.body.is_facing_right, false);
+                    weapon.draw(
+                        position,
+                        node.body.angle,
+                        None,
+                        !node.body.is_facing_right,
+                        false,
+                    );
                 }
 
                 {

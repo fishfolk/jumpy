@@ -1,4 +1,4 @@
-use macroquad::{experimental::animation::Animation, prelude::*};
+use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 

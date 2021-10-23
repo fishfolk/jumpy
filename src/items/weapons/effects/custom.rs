@@ -1,24 +1,13 @@
 use std::collections::HashMap;
 
 use macroquad::{
-    experimental::{
-        scene::{
-            Handle,
-        },
-        coroutines::Coroutine,
-    },
+    experimental::{coroutines::Coroutine, scene::Handle},
     prelude::*,
 };
 
-use serde::{
-    Serialize,
-    Deserialize,
-};
+use serde::{Deserialize, Serialize};
 
-use crate::{
-    Player,
-    json,
-};
+use crate::{json, Player};
 
 static mut CUSTOM_WEAPON_EFFECTS: Option<HashMap<String, CustomWeaponEffectCoroutine>> = None;
 
@@ -44,7 +33,8 @@ pub fn get_custom_weapon_effect(id: &str) -> &CustomWeaponEffectCoroutine {
 // This is not strictly necessary as of writing this, as there is no way of adding effects through
 // scripts etc., so new effects can also be implemented by creating a new variant of
 // `WeaponEffectKind` and implementing the effect directly in the `weapon_effect_coroutine` function
-pub type CustomWeaponEffectCoroutine = fn(Handle<Player>, HashMap<String, CustomWeaponEffectParam>) -> Coroutine;
+pub type CustomWeaponEffectCoroutine =
+    fn(Handle<Player>, HashMap<String, CustomWeaponEffectParam>) -> Coroutine;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
@@ -85,7 +75,7 @@ pub enum CustomWeaponEffectParam {
     },
     HashMap {
         value: HashMap<String, Self>,
-    }
+    },
 }
 
 impl CustomWeaponEffectParam {

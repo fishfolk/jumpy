@@ -37,6 +37,8 @@ pub struct WeaponParams {
     pub effect_offset: Vec2,
     #[serde(default)]
     pub attack_duration: f32,
+    #[serde(default)]
+    pub particle_effect_id: Option<String>,
     pub cooldown: f32,
     #[serde(default)]
     pub recoil: f32,
@@ -50,6 +52,7 @@ pub struct Weapon {
     pub cooldown: f32,
     pub recoil: f32,
     pub attack_duration: f32,
+    pub particle_effect_id: Option<String>,
     pub uses: Option<u32>,
     pub use_cnt: u32,
     pub idle_animation: usize,
@@ -108,6 +111,7 @@ impl Weapon {
             cooldown: params.cooldown,
             recoil: params.recoil,
             attack_duration: params.attack_duration,
+            particle_effect_id: params.particle_effect_id,
             uses: params.uses,
             use_cnt: 0,
             animation_player,
@@ -134,10 +138,12 @@ impl Weapon {
         flip_y: bool,
     ) {
         let rect = self.animation_player.get_rect(scale);
-        let mut corrected_position = position + self.mount_offset;
+        let mut corrected_position = position;
+
         if flip_x {
             corrected_position.x -= rect.w;
         }
+
         if flip_y {
             corrected_position.y -= rect.h;
         }
@@ -242,7 +248,7 @@ impl Weapon {
                         play_sound_once(sound_effect);
                     }
 
-                    player.body.velocity.x = if player.body.facing {
+                    player.body.velocity.x = if player.body.is_facing_right {
                         -weapon.recoil
                     } else {
                         weapon.recoil

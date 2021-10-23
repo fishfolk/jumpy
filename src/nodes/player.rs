@@ -27,7 +27,7 @@ pub struct Player {
     pub body: PhysicsBody,
     sprite: AnimatedSprite,
 
-    pub dead: bool,
+    pub is_dead: bool,
 
     pub weapon: Option<Weapon>,
 
@@ -194,7 +194,7 @@ impl Player {
 
         Player {
             id: player_id,
-            dead: false,
+            is_dead: false,
             weapon: None,
             input: Default::default(),
             last_frame_input: Default::default(),
@@ -254,10 +254,6 @@ impl Player {
     pub fn get_weapon_mount(&self) -> Vec2 {
         let mut offset = vec2(Self::SPRITE_X_OFFSET, 0.0);
 
-        if !self.body.facing {
-            offset.x += Self::SPRITE_X_OFFSET;
-        }
-
         if self.is_crouched {
             offset.y = 32.0;
         } else {
@@ -306,12 +302,12 @@ impl Player {
 
     pub fn kill(&mut self, direction: bool) {
         // check if armor blocks the kill
-        if direction != self.body.facing && self.back_armor > 0 {
+        if direction != self.body.is_facing_right && self.back_armor > 0 {
             self.back_armor -= 1;
         } else {
             // set armor to 0
             self.back_armor = 0;
-            self.body.facing = direction;
+            self.body.is_facing_right = direction;
             if self.state_machine.state() != Self::ST_DEATH {
                 self.state_machine.set_state(Self::ST_DEATH);
                 {
@@ -350,7 +346,7 @@ impl Player {
                 node.body.velocity.y = -150.;
                 node.body.has_gravity = true;
 
-                node.dead = true;
+                node.is_dead = true;
                 node.sprite.set_animation(2);
 
                 // let mut score_counter = scene::get_node(node.score_counter);
@@ -415,7 +411,7 @@ impl Player {
                 let mut world = storage::get_mut::<GameWorld>();
 
                 this.state_machine.set_state(Self::ST_NORMAL);
-                this.dead = false;
+                this.is_dead = false;
                 world
                     .collision_world
                     .set_actor_position(this.body.collider, this.body.pos);
@@ -465,7 +461,7 @@ impl Player {
         let coroutine = async move {
             {
                 let mut node = scene::get_node(handle);
-                node.body.velocity.x = if node.body.facing {
+                node.body.velocity.x = if node.body.is_facing_right {
                     Self::SLIDE_SPEED
                 } else {
                     -Self::SLIDE_SPEED
@@ -503,18 +499,18 @@ impl Player {
             node.body.velocity.x = 0.0;
 
             if node.input.right {
-                node.body.facing = true;
+                node.body.is_facing_right = true;
             } else if node.input.left {
-                node.body.facing = false;
+                node.body.is_facing_right = false;
             }
         } else {
             //
             if node.input.right {
                 node.body.velocity.x = Self::RUN_SPEED;
-                node.body.facing = true;
+                node.body.is_facing_right = true;
             } else if node.input.left {
                 node.body.velocity.x = -Self::RUN_SPEED;
-                node.body.facing = false;
+                node.body.is_facing_right = false;
             } else {
                 node.body.velocity.x = 0.;
             }
@@ -763,7 +759,7 @@ impl Player {
                     let jump_sound = resources.sounds["jump"];
 
                     play_sound_once(jump_sound);
-                    other.kill(!node.body.facing);
+                    other.kill(!node.body.is_facing_right);
                 }
             }
         }
@@ -823,7 +819,7 @@ impl scene::Node for Player {
             DrawTextureParams {
                 source: Some(node.sprite.frame().source_rect),
                 dest_size: Some(dest_size),
-                flip_x: !node.body.facing,
+                flip_x: !node.body.is_facing_right,
                 ..Default::default()
             },
         );
@@ -855,11 +851,11 @@ impl scene::Node for Player {
 
             draw_texture_ex(
                 texture_entry.texture,
-                node.body.pos.x + if node.body.facing { -15.0 } else { 20.0 },
+                node.body.pos.x + if node.body.is_facing_right { -15.0 } else { 20.0 },
                 node.body.pos.y,
                 color::WHITE,
                 DrawTextureParams {
-                    flip_y: node.body.facing,
+                    flip_y: node.body.is_facing_right,
                     rotation: std::f32::consts::PI / 2.0,
                     ..Default::default()
                 },
@@ -871,7 +867,7 @@ impl scene::Node for Player {
                 + node.get_weapon_mount()
                 + weapon.get_mount_offset(node.body.facing_dir());
 
-            weapon.draw(position, node.body.angle, None, !node.body.facing, false);
+            weapon.draw(position, node.body.angle, None, !node.body.is_facing_right, false);
 
             if let Some(uses) = weapon.uses {
                 let mut position = node.body.pos;

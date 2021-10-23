@@ -9,16 +9,20 @@
     "cooldown": 0.75,
     "attack_duration": 0.5,
     "sound_effect_id": "sword",
-    "effect": "cone",
-    "cone_angle": 150.0,
-    "cone_length": 65.0,
+    "effect": "rect_collider",
+    "rect_width": 32.0,
+    "rect_height": 64.0,
+    "effect_offset": {
+      "x": 0,
+      "y": -16
+    },
     "collider_size": {
       "x": 65,
       "y": 17
     },
     "mount_offset": {
       "x": 0,
-      "y": -32
+      "y": -64
     },
     "animation": {
       "texture_id": "sword",

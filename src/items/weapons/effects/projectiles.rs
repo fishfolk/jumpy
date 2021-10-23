@@ -131,3 +131,7 @@ impl Node for Projectiles {
         }
     }
 }
+
+pub fn default_projectile_color() -> Color {
+    Color::new(1.0, 1.0, 0.8, 1.0)
+}

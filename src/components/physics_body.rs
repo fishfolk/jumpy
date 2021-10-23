@@ -12,7 +12,7 @@ pub struct PhysicsBody {
     pub pos: Vec2,
     pub size: Vec2,
     pub velocity: Vec2,
-    pub facing: bool,
+    pub is_facing_right: bool,
     pub angle: f32,
     pub collider: Actor,
     pub on_ground: bool,
@@ -35,7 +35,7 @@ impl PhysicsBody {
         PhysicsBody {
             pos,
             size,
-            facing: true,
+            is_facing_right: true,
             velocity: vec2(0., 0.),
             angle,
             collider: collision_world.add_actor(pos, size.x as _, size.y as _),
@@ -48,7 +48,7 @@ impl PhysicsBody {
     }
 
     pub fn facing_dir(&self) -> Vec2 {
-        if self.facing {
+        if self.is_facing_right {
             vec2(1., 0.)
         } else {
             vec2(-1., 0.)

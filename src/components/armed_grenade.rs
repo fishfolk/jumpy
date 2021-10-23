@@ -62,7 +62,7 @@ impl ArmedGrenade {
 
         let body = PhysicsBody {
             pos,
-            facing,
+            is_facing_right: facing,
             angle: 0.0,
             size,
             velocity: speed,

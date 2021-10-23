@@ -22,7 +22,7 @@ impl ThrowableItem {
         self.owner = None;
 
         if force {
-            body.velocity = if body.facing {
+            body.velocity = if body.is_facing_right {
                 vec2(600., -200.)
             } else {
                 vec2(-600., -200.)

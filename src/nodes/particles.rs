@@ -21,7 +21,7 @@ pub struct ParticleEmitters {
     pub explosion_fire: Emitter,
     pub explosion_particles: EmittersCache,
     pub life_ui_explosions: EmittersCache,
-    pub other_emitters: HashMap<String, EmittersCache>,
+    pub emitters: HashMap<String, EmittersCache>,
 }
 
 impl ParticleEmitters {
@@ -102,7 +102,7 @@ impl ParticleEmitters {
             explosion_fire,
             explosion_particles,
             life_ui_explosions,
-            other_emitters: HashMap::new(),
+            emitters: HashMap::new(),
         })
     }
 }
@@ -117,7 +117,7 @@ impl scene::Node for ParticleEmitters {
         node.explosion_fire.draw(Vec2::new(0.0, 0.0));
         node.explosion_particles.draw();
 
-        for emitter in node.other_emitters.values_mut() {
+        for emitter in node.emitters.values_mut() {
             emitter.draw();
         }
 

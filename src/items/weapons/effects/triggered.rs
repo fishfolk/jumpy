@@ -5,14 +5,20 @@ use macroquad::{
     },
     prelude::*,
 };
+use macroquad_platformer::Tile;
 
-use crate::capabilities::NetworkReplicate;
-use crate::components::{AnimationParams, AnimationPlayer, PhysicsBody};
+use crate::{
+    capabilities::NetworkReplicate,
+    components::{AnimationParams, AnimationPlayer, PhysicsBody},
+    GameWorld,
+    Player,
+};
 
-use super::{WeaponEffectParams, WeaponEffectTriggerKind};
-
-use crate::items::weapons::weapon_effect_coroutine;
-use crate::{GameWorld, Player};
+use super::{
+    WeaponEffectParams,
+    WeaponEffectTriggerKind,
+    weapon_effect_coroutine,
+};
 
 pub struct TriggeredEffectParams {
     pub offset: Vec2,
@@ -159,7 +165,8 @@ impl TriggeredEffects {
                         is_triggered = true;
                     } else {
                         let game_world = storage::get::<GameWorld>();
-                        if !game_world.map.get_collisions(&collider, true).is_empty() {
+                        let tile = game_world.collision_world.collide_solids(collider.point(), collider.w as i32, collider.h as i32);
+                        if tile == Tile::Solid {
                             is_triggered = true;
                         }
                     }

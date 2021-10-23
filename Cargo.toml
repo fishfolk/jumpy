@@ -14,14 +14,12 @@ macroquad-platformer = "0.1"
 macroquad-profiler = "0.1"
 macroquad-particles = { git = "https://github.com/olefasting/macroquad_particles", features = ["serde"] }
 
-quad-gamepad = "0.2.0-alpha"
+fishsticks = { git = "https://github.com/PotatoTech/fishsticks", features = ["bundled-sdl2"] }
 
 stunclient = { git = "https://github.com/not-fl3/rust-stunclient", default-features = false }
 
-hex = "0.4"
-
-serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 
 #[patch.crates-io]
 #macroquad = { git = "https://github.com/not-fl3/macroquad" }

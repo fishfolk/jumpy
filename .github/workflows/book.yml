@@ -1,0 +1,40 @@
+# From https://github.com/rust-lang/mdBook/pull/1248
+name: Publish Book to gh-pages
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  book:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install mdbook
+        uses: peaceiris/actions-mdbook@v1
+        with:
+          mdbook-version: "0.3.7"
+
+      - name: Install Rust
+        uses: hecrj/setup-rust-action@v1
+
+      - name: Update apt
+        run: sudo apt-get update
+      - name: Install plantuml
+        run: sudo apt-get install plantuml
+
+      - name: Install mdbook-plantuml
+        run: cargo install mdbook-plantuml
+
+      - name: Generate book from markdown
+        run: |
+            cd book
+            mdbook build
+      - name: Publish HTML
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./book/book/

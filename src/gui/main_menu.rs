@@ -1,6 +1,7 @@
-use std::path::Path;
-
-use std::net::UdpSocket;
+use std::{
+    net::UdpSocket,
+    path::Path,
+};
 
 use macroquad::{
     experimental::collections::storage,
@@ -8,22 +9,27 @@ use macroquad::{
     ui::{self, hash, root_ui, widgets},
 };
 
+use fishsticks::GamepadContext;
+
 use crate::{
-    error::Result,
     gui::GuiResources,
     input::InputScheme,
     nodes::network::Message,
-    resources::{map_name_to_filename, MapResource},
-    text::{draw_aligned_text, HorizontalAlignment, VerticalAlignment},
-    EditorInputScheme, GameType, Resources,
+    EditorInputScheme,
+    GameType,
+    Resources,
+    resources::MapResource,
+    error::Result,
+    text::{draw_aligned_text, HorizontalAlignment, VerticalAlignment}
 };
+use crate::resources::map_name_to_filename;
 
 const RELAY_ADDR: &str = "173.0.157.169:35000";
 const WINDOW_WIDTH: f32 = 700.;
 const WINDOW_HEIGHT: f32 = 400.;
 
 fn local_game_ui(ui: &mut ui::Ui, players: &mut Vec<InputScheme>) -> Option<GameType> {
-    let gui_resources = storage::get_mut::<GuiResources>();
+    let gamepad_system = storage::get_mut::<GamepadContext>();
 
     if players.len() < 2 {
         if is_key_pressed(KeyCode::V) {
@@ -38,14 +44,11 @@ fn local_game_ui(ui: &mut ui::Ui, players: &mut Vec<InputScheme>) -> Option<Game
                 players.push(InputScheme::KeyboardRight);
             }
         }
-        for ix in 0..quad_gamepad::MAX_DEVICES {
-            let state = gui_resources.gamepads.state(ix);
-
-            if state.digital_state[quad_gamepad::GamepadButton::Start as usize] {
-                //
-                if !players.contains(&InputScheme::Gamepad(ix)) {
-                    players.push(InputScheme::Gamepad(ix));
-                }
+        for (ix, gamepad) in gamepad_system.gamepads() {
+            if gamepad.digital_inputs.activated(fishsticks::Button::Start)
+                && !players.contains(&InputScheme::Gamepad(ix))
+            {
+                players.push(InputScheme::Gamepad(ix));
             }
         }
     }
@@ -81,7 +84,7 @@ fn local_game_ui(ui: &mut ui::Ui, players: &mut Vec<InputScheme>) -> Option<Game
         }
     });
     if players.len() == 2 {
-        let btn_a = is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::A);
+        let btn_a = is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::A);
         let enter = is_key_pressed(KeyCode::Enter);
 
         if ui.button(None, "Ready! (A) (Enter)") || btn_a || enter {
@@ -93,7 +96,7 @@ fn local_game_ui(ui: &mut ui::Ui, players: &mut Vec<InputScheme>) -> Option<Game
 }
 
 fn editor_ui(ui: &mut ui::Ui) -> Option<GameType> {
-    let gui_resources = storage::get_mut::<GuiResources>();
+    let gamepad_system = storage::get_mut::<GamepadContext>();
 
     ui.label(None, "Level Editor");
 
@@ -103,11 +106,9 @@ fn editor_ui(ui: &mut ui::Ui) -> Option<GameType> {
 
     let mut input_scheme = EditorInputScheme::Keyboard;
 
-    for i in 0..quad_gamepad::MAX_DEVICES {
-        let state = gui_resources.gamepads.state(i);
-
-        if state.digital_state[quad_gamepad::GamepadButton::Start as usize] {
-            input_scheme = EditorInputScheme::Gamepad(i);
+    for (ix, gamepad) in gamepad_system.gamepads() {
+        if gamepad.digital_inputs.activated(fishsticks::Button::Start) {
+            input_scheme = EditorInputScheme::Gamepad(ix);
         }
     }
 
@@ -137,8 +138,8 @@ fn editor_ui(ui: &mut ui::Ui) -> Option<GameType> {
         },
     );
 
-    let btn_a = is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::A);
-    let btn_b = is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::B);
+    let btn_a = is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::A);
+    let btn_b = is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::B);
 
     if ui.button(None, "Create map (A)") || btn_a {
         return Some(GameType::Editor {
@@ -310,7 +311,6 @@ impl Connection {
         None
     }
 }
-
 struct NetworkUiState {
     input_scheme: InputScheme,
     connection_kind: ConnectionKind,
@@ -318,10 +318,9 @@ struct NetworkUiState {
     custom_relay: bool,
 }
 
-fn is_gamepad_btn_pressed(gui_resources: &GuiResources, btn: quad_gamepad::GamepadButton) -> bool {
-    for ix in 0..quad_gamepad::MAX_DEVICES {
-        let state = gui_resources.gamepads.state(ix);
-        if state.digital_state[btn as usize] && !state.digital_state_prev[btn as usize] {
+fn is_gamepad_btn_pressed(gamepad_system: &GamepadContext, btn: fishsticks::Button) -> bool {
+    for (_, gamepad) in gamepad_system.gamepads() {
+        if gamepad.digital_inputs.just_activated(btn) {
             return true;
         }
     }
@@ -410,11 +409,9 @@ fn network_game_ui(ui: &mut ui::Ui, state: &mut NetworkUiState) -> Option<GameTy
     if is_key_pressed(KeyCode::L) {
         state.input_scheme = InputScheme::KeyboardRight;
     }
-    for ix in 0..quad_gamepad::MAX_DEVICES {
-        let gui_resources = storage::get_mut::<GuiResources>();
-        let gamepad_state = gui_resources.gamepads.state(ix);
-
-        if gamepad_state.digital_state[quad_gamepad::GamepadButton::Start as usize] {
+    let gamepad_system = storage::get_mut::<GamepadContext>();
+    for (ix, gamepad) in gamepad_system.gamepads() {
+        if gamepad.digital_inputs.activated(fishsticks::Button::Start) {
             state.input_scheme = InputScheme::Gamepad(ix);
         }
     }
@@ -439,13 +436,13 @@ pub async fn game_type() -> GameType {
         let mut res = None;
 
         {
-            let mut gui_resources = storage::get_mut::<GuiResources>();
+            let mut gamepad_system = storage::get_mut::<GamepadContext>();
 
-            gui_resources.gamepads.update();
+            let _ = gamepad_system.update();
 
             if is_key_pressed(KeyCode::Left)
-                || is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::BumperLeft)
-                || is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::ThumbLeft)
+                || is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::LeftShoulder)
+                || is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::LeftStick)
             {
                 let next_tab = tab as i32 - 1;
                 tab = if next_tab < 0 {
@@ -456,8 +453,8 @@ pub async fn game_type() -> GameType {
             }
 
             if is_key_pressed(KeyCode::Right)
-                || is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::BumperRight)
-                || is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::ThumbRight)
+                || is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::RightShoulder)
+                || is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::RightStick)
             {
                 tab += 1;
                 tab %= MODE_SELECTION_TAB_COUNT;
@@ -515,20 +512,16 @@ pub async fn location_select() -> MapResource {
     let mut current_page: i32;
     let mut hovered: i32 = 0;
 
-    let mut previous_mouse_pos = mouse_position();
+    let mut old_mouse_position = mouse_position();
 
     // skip a frame to let Enter be unpressed from the previous screen
     next_frame().await;
 
-    let mut prev_up = false;
-    let mut prev_down = false;
-    let mut prev_right = false;
-    let mut prev_left = false;
-
     loop {
         let mut gui_resources = storage::get_mut::<GuiResources>();
+        let mut gamepad_system = storage::get_mut::<GamepadContext>();
 
-        gui_resources.gamepads.update();
+        let _ = gamepad_system.update();
 
         let mut up = is_key_pressed(KeyCode::Up) || is_key_pressed(KeyCode::W);
         let mut down = is_key_pressed(KeyCode::Down) || is_key_pressed(KeyCode::S);
@@ -536,28 +529,40 @@ pub async fn location_select() -> MapResource {
         let mut left = is_key_pressed(KeyCode::Left) || is_key_pressed(KeyCode::A);
         let mut start = is_key_pressed(KeyCode::Enter);
 
-        let (_, mouse_wheel) = mouse_wheel();
-        let page_up = mouse_wheel < 0.0;
-        let page_down = mouse_wheel > 0.0;
+        let (page_up, page_down) = {
+            let mouse_wheel = mouse_wheel();
+            (mouse_wheel.1 > 0.0, mouse_wheel.1 < 0.0)
+        };
 
-        for ix in 0..quad_gamepad::MAX_DEVICES {
-            use quad_gamepad::GamepadButton::*;
+        for (_, gamepad) in gamepad_system.gamepads() {
+            use fishsticks::{Axis, Button};
 
-            let state = gui_resources.gamepads.state(ix);
-            if state.status == quad_gamepad::ControllerStatus::Connected {
-                up |= !prev_up && state.analog_state[1] < -0.5;
-                down |= !prev_down && state.analog_state[1] > 0.5;
-                left |= !prev_left && state.analog_state[0] < -0.5;
-                right |= !prev_right && state.analog_state[0] > 0.5;
-                start |= (state.digital_state[A as usize] && !state.digital_state_prev[A as usize])
-                    || (state.digital_state[Start as usize]
-                        && !state.digital_state_prev[Start as usize]);
+            up |= gamepad.digital_inputs.just_activated(Button::DPadUp)
+                || matches!(
+                    gamepad.analog_inputs.just_activated_digital(Axis::LeftY),
+                    Some(value) if value < 0.0
+                );
 
-                prev_up = state.analog_state[1] < -0.5;
-                prev_down = state.analog_state[1] > 0.5;
-                prev_left = state.analog_state[0] < -0.5;
-                prev_right = state.analog_state[0] > 0.5;
-            }
+            down |= gamepad.digital_inputs.just_activated(Button::DPadDown)
+                || matches!(
+                    gamepad.analog_inputs.just_activated_digital(Axis::LeftY),
+                    Some(value) if value > 0.0
+                );
+
+            left |= gamepad.digital_inputs.just_activated(Button::DPadLeft)
+                || matches!(
+                    gamepad.analog_inputs.just_activated_digital(Axis::LeftX),
+                    Some(value) if value < 0.0
+                );
+
+            right |= gamepad.digital_inputs.just_activated(Button::DPadRight)
+                || matches!(
+                    gamepad.analog_inputs.just_activated_digital(Axis::LeftX),
+                    Some(value) if value > 0.0
+                );
+
+            start |= gamepad.digital_inputs.just_activated(Button::A)
+                || gamepad.digital_inputs.just_activated(Button::Start);
         }
         clear_background(BLACK);
 
@@ -695,7 +700,7 @@ pub async fn location_select() -> MapResource {
                         rect.h = h;
                     }
 
-                    if previous_mouse_pos != mouse_position()
+                    if old_mouse_position != mouse_position()
                         && rect.contains(mouse_position().into())
                     {
                         hovered = i as _;
@@ -715,9 +720,9 @@ pub async fn location_select() -> MapResource {
             }
         }
 
-        previous_mouse_pos = mouse_position();
-
         root_ui().pop_skin();
+
+        old_mouse_position = mouse_position();
 
         next_frame().await;
     }
@@ -734,7 +739,7 @@ pub async fn create_map() -> Result<MapResource> {
 
     next_frame().await;
 
-    let mut gui_resources = storage::get_mut::<GuiResources>();
+    let gui_resources = storage::get_mut::<GuiResources>();
     root_ui().push_skin(&gui_resources.skins.login_skin);
 
     let mut name = "Unnamed Map".to_string();
@@ -749,8 +754,10 @@ pub async fn create_map() -> Result<MapResource> {
         Path::new(&resources.assets_dir).join(Resources::MAP_EXPORTS_DEFAULT_DIR)
     };
 
+    let mut gamepad_system = storage::get_mut::<GamepadContext>();
+
     loop {
-        gui_resources.gamepads.update();
+        let _ = gamepad_system.update();
 
         clear_background(BLACK);
 
@@ -843,7 +850,7 @@ pub async fn create_map() -> Result<MapResource> {
                 ui.separator();
                 ui.separator();
 
-                let btn_a = is_gamepad_btn_pressed(&*gui_resources, quad_gamepad::GamepadButton::A);
+                let btn_a = is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::A);
                 let enter = is_key_pressed(KeyCode::Enter);
 
                 if ui.button(None, "Confirm (A) (Enter)") || btn_a || enter {

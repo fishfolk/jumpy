@@ -63,7 +63,7 @@ impl Projectiles {
 
                 let world = storage::get::<GameWorld>();
 
-                if world.map.is_collision_at(projectile.position) {
+                if world.map.is_collision_at(projectile.position, true) {
                     node.active.remove(i);
                     continue 'projectiles;
                 }

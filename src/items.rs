@@ -22,6 +22,9 @@ use crate::{
 
 pub mod weapons;
 
+mod sproinger;
+pub use sproinger::Sproinger;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ItemKind {
@@ -146,7 +149,7 @@ impl Node for Item {
 
     fn draw(node: RefMut<Self>) {
         node.sprite
-            .draw(node.body.pos, node.body.angle, None, false, false);
+            .draw(node.body.pos, node.body.rotation, None, false, false);
 
         draw_rectangle_lines(
             node.body.pos.x,

@@ -25,6 +25,8 @@ pub struct Sproinger {
 }
 
 impl Sproinger {
+    pub const OBJECT_ID: &'static str = "sproinger";
+
     pub const TRIGGER_WIDTH: f32 = 32.0;
     pub const TRIGGER_HEIGHT: f32 = 8.0;
     pub const FORCE: f32 = 1100.0;

@@ -154,9 +154,13 @@ impl TriggeredEffects {
                     && (trigger.kind == WeaponEffectTriggerKind::Ground
                         || trigger.kind == WeaponEffectTriggerKind::Both)
                 {
-                    let game_world = storage::get::<GameWorld>();
-                    if !game_world.map.get_collisions(&collider).is_empty() {
+                    if trigger.body.is_on_ground {
                         is_triggered = true;
+                    } else {
+                        let game_world = storage::get::<GameWorld>();
+                        if !game_world.map.get_collisions(&collider, true).is_empty() {
+                            is_triggered = true;
+                        }
                     }
                 }
             }

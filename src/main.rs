@@ -28,6 +28,7 @@ use nodes::Player;
 use resources::MapResource;
 
 pub use resources::Resources;
+use crate::items::Sproinger;
 
 mod capabilities;
 mod gui;
@@ -110,7 +111,9 @@ async fn build_game_scene(map: Map, is_local_game: bool) -> Result<Vec<Handle<Pl
                 scene::add_node(Decoration::new(object.position, &object.id));
             }
             MapObjectKind::Environment => {
-                // TODO: Add environment objects
+                if object.id == Sproinger::OBJECT_ID {
+                    Sproinger::spawn(object.position);
+                }
             }
             MapObjectKind::SpawnPoint => {
                 spawn_points.push(object.position);

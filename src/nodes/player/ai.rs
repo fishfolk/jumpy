@@ -85,7 +85,7 @@ impl Ai {
             }
 
             if (obstacle_soon || (!wants_descent && cliff_soon))
-                && player.body.on_ground
+                && player.body.is_on_ground
                 && self.jump_cooldown <= 0.
             {
                 input.jump = true;

@@ -36,6 +36,10 @@ pub struct Map {
 impl Map {
     pub const PLATFORM_TILE_ATTRIBUTE: &'static str = "jumpthrough";
 
+    // Padding added to colliders for collision checks since the collision system stops movement
+    // before collision is registered, if not.
+    pub const COLLIDER_PADDING: f32 = 8.0;
+
     pub fn new(tile_size: Vec2, grid_size: UVec2) -> Self {
         Map {
             background_color: Self::default_background_color(),
@@ -101,8 +105,8 @@ impl Map {
 
     pub fn to_position(&self, point: UVec2) -> Vec2 {
         vec2(
-            point.x as f32 * self.tile_size.x + self.world_offset.x,
-            point.y as f32 * self.tile_size.y + self.world_offset.y,
+            (point.x as f32 * self.tile_size.x) + self.world_offset.x,
+            (point.y as f32 * self.tile_size.y) + self.world_offset.y,
         )
     }
 
@@ -130,30 +134,42 @@ impl Map {
         MapTileIterator::new(layer, rect)
     }
 
-    pub fn get_collisions(&self, collider: &Rect) -> Vec<Vec2> {
+    pub fn get_collisions(&self, collider: &Rect, should_ignore_platforms: bool) -> Vec<Rect> {
         let collider = Rect::new(
+            collider.x - Self::COLLIDER_PADDING,
+            collider.y - Self::COLLIDER_PADDING,
+            collider.w + Self::COLLIDER_PADDING * 2.0,
+            collider.h + Self::COLLIDER_PADDING * 2.0,
+        );
+
+        let grid = self.to_grid(&Rect::new(
             collider.x - self.tile_size.x,
             collider.y - self.tile_size.y,
             collider.w + self.tile_size.x * 2.0,
             collider.h + self.tile_size.y * 2.0,
-        );
+        ));
 
-        let rect = self.to_grid(&collider);
         let mut collisions = Vec::new();
+
+        let platform_attr = Self::PLATFORM_TILE_ATTRIBUTE.to_string();
+
         for layer in self.layers.values() {
             if layer.is_visible && layer.has_collision {
-                for (x, y, tile) in self.get_tiles(&layer.id, Some(rect)) {
-                    if tile.is_some() {
-                        let tile_position = self.to_position(uvec2(x, y));
-                        if Rect::new(
-                            tile_position.x,
-                            tile_position.y,
-                            self.tile_size.x,
-                            self.tile_size.y,
-                        )
-                        .overlaps(&collider)
-                        {
-                            collisions.push(tile_position);
+                for (x, y, tile) in self.get_tiles(&layer.id, Some(grid)) {
+                    if let Some(tile) = tile {
+                        if !(should_ignore_platforms && tile.attributes.contains(&platform_attr)) {
+                            let tile_position = self.to_position(uvec2(x, y));
+
+                            let tile_rect = Rect::new(
+                                tile_position.x,
+                                tile_position.y,
+                                self.tile_size.x,
+                                self.tile_size.y,
+                            );
+
+                            if tile_rect.overlaps(&collider) {
+                                collisions.push(tile_rect);
+                            }
                         }
                     }
                 }
@@ -163,7 +179,7 @@ impl Map {
         collisions
     }
 
-    pub fn is_collision_at(&self, position: Vec2) -> bool {
+    pub fn is_collision_at(&self, position: Vec2, should_ignore_platforms: bool) -> bool {
         let index = {
             let coords = self.to_coords(position);
             self.to_index(coords)
@@ -171,8 +187,11 @@ impl Map {
 
         for layer in self.layers.values() {
             if layer.is_visible && layer.has_collision {
-                if let Some(Some(_)) = layer.tiles.get(index) {
-                    return true;
+                if let Some(Some(tile)) = layer.tiles.get(index) {
+                    return !(should_ignore_platforms
+                        && tile
+                            .attributes
+                            .contains(&Self::PLATFORM_TILE_ATTRIBUTE.to_string()));
                 }
             }
         }

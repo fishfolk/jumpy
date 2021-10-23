@@ -281,15 +281,15 @@ impl Player {
 
     pub fn get_weapon_mount_offset(&self) -> Vec2 {
         let mut offset = if let Some(weapon) = &self.weapon {
-            weapon.get_mount_offset(self.body.facing_dir())
+            weapon.get_mount_offset(self.body.facing_dir(), None)
         } else {
             vec2(0.0, 0.0)
         };
 
         if self.is_crouched {
-            offset.y = Self::WEAPON_MOUNT_Y_OFFSET_CROUCHED;
+            offset.y += Self::WEAPON_MOUNT_Y_OFFSET_CROUCHED;
         } else {
-            offset.y = Self::WEAPON_MOUNT_Y_OFFSET;
+            offset.y += Self::WEAPON_MOUNT_Y_OFFSET;
         }
 
         offset
@@ -406,7 +406,7 @@ impl Player {
 
                     should_continue = {
                         let node = scene::get_node(handle);
-                        !(node.body.on_ground || node.body.pos.y > map_bottom)
+                        !(node.body.is_on_ground || node.body.pos.y > map_bottom)
                     };
                 }
 
@@ -568,7 +568,7 @@ impl Player {
 
         // Just adding this here for the SFX for the time being
         // - Arc
-        if node.body.on_ground && !node.body.last_frame_on_ground {
+        if node.body.is_on_ground && !node.body.was_on_ground_last_frame {
             {
                 let resources = storage::get::<Resources>();
                 let land_sound = resources.sounds["land"];
@@ -593,7 +593,7 @@ impl Player {
         }
 
         // if in jump and want to jump again
-        if !node.body.on_ground
+        if !node.body.is_on_ground
             && node.input.jump
             && !node.last_frame_input.jump
             && node.jump_grace_timer <= 0.0
@@ -609,7 +609,7 @@ impl Player {
         if node.floating && !node.input.jump && node.last_frame_input.jump {
             node.floating = false;
         }
-        if node.body.on_ground {
+        if node.body.is_on_ground {
             node.was_floating = false;
             node.floating = false;
         }
@@ -619,9 +619,9 @@ impl Player {
             node.body.has_gravity = true;
         }
 
-        node.is_crouched = node.body.on_ground && node.input.down;
+        node.is_crouched = node.body.is_on_ground && node.input.down;
 
-        if node.body.on_ground {
+        if node.body.is_on_ground {
             if node.input.down {
                 if node.input.jump && !node.last_frame_input.jump {
                     node.body.descent();
@@ -659,7 +659,7 @@ impl Player {
                 }
 
                 // set a grace time for picking up the weapon again
-                if !node.body.on_ground {
+                if !node.body.is_on_ground {
                     node.pick_grace_timer = Self::PICK_GRACE_TIME;
                 }
 
@@ -784,7 +784,7 @@ impl Player {
         {
             let node = &mut *node;
 
-            if node.body.on_ground && !node.input.jump {
+            if node.body.is_on_ground && !node.input.jump {
                 node.jump_grace_timer = Self::JUMP_GRACE_TIME;
             } else if node.jump_grace_timer > 0. {
                 node.jump_grace_timer -= get_frame_time();
@@ -842,7 +842,7 @@ impl scene::Node for Player {
 
             node.animation_player.draw(
                 node.body.pos,
-                node.body.angle,
+                node.body.rotation,
                 None,
                 !node.body.is_facing_right,
                 false,
@@ -890,7 +890,7 @@ impl scene::Node for Player {
 
                     weapon.draw(
                         position,
-                        node.body.angle,
+                        node.body.rotation,
                         None,
                         !node.body.is_facing_right,
                         false,

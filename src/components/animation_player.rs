@@ -93,7 +93,7 @@ impl AnimationPlayer {
             .get(&params.texture_id)
             .unwrap_or_else(|| {
                 panic!(
-                    "AnimationPlayer: Invalid texture ID '{}'",
+                    "AnimationPlayer: Invalid texture id '{}'",
                     &params.texture_id,
                 )
             });

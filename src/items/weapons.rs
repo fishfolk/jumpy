@@ -144,18 +144,18 @@ impl Weapon {
         flip_y: bool,
     ) {
         let rect = self.animation_player.get_rect(scale);
-        let mut corrected_position = position;
+        let mut position = position;
 
         if flip_x {
-            corrected_position.x -= rect.w;
+            position.x -= rect.w;
         }
 
         if flip_y {
-            corrected_position.y -= rect.h;
+            position.y -= rect.h;
         }
 
         self.animation_player
-            .draw(corrected_position, rotation, scale, flip_x, flip_y);
+            .draw(position, rotation, scale, flip_x, flip_y);
     }
 
     pub fn draw_hud(&self, position: Vec2) {
@@ -208,18 +208,30 @@ impl Weapon {
         }
     }
 
-    pub fn get_effect_offset(&self, facing_direction: Vec2) -> Vec2 {
-        vec2(
+    pub fn get_effect_offset(&self, facing_direction: Vec2, scale: Option<f32>) -> Vec2 {
+        let mut offset = vec2(
             facing_direction.x * self.effect_offset.x,
             self.effect_offset.y,
-        )
+        );
+
+        if let Some(scale) = scale {
+            offset *= scale;
+        }
+
+        offset
     }
 
-    pub fn get_mount_offset(&self, facing_direction: Vec2) -> Vec2 {
-        vec2(
+    pub fn get_mount_offset(&self, facing_direction: Vec2, scale: Option<f32>) -> Vec2 {
+        let mut offset = vec2(
             facing_direction.x * self.mount_offset.x,
             self.mount_offset.y,
-        )
+        );
+
+        if let Some(scale) = scale {
+            offset *= scale;
+        }
+
+        offset
     }
 
     pub fn is_ready(&self) -> bool {
@@ -312,7 +324,7 @@ impl Weapon {
 
                     let origin = player.body.pos
                         + player.get_weapon_mount_offset()
-                        + weapon.get_effect_offset(facing_dir);
+                        + weapon.get_effect_offset(facing_dir, None);
 
                     weapon_effect_coroutine(player_handle, origin, weapon.effect.clone());
                 }

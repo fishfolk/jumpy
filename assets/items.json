@@ -262,6 +262,10 @@
       "x": 24,
       "y": 24
     },
+    "triggered_effect_trigger_offset": {
+      "x": 0,
+      "y": -24
+    },
     "triggered_effect_timed_trigger": 1.5,
     "triggered_effect": {
       "effect": "circle_collider",
@@ -281,7 +285,8 @@
           "frames": 3,
           "fps": 12
         }
-      ]
+      ],
+      "should_autoplay": true
     },
     "collider_size": {
       "x": 32,
@@ -346,11 +351,53 @@
     },
     "type": "weapon",
     "cooldown": 0.5,
-    "recoil": 0.5,
-    "effect": "projectile",
-    "projectile_range": 128.0,
-    "projectile_speed": 400.0,
-    "projectile_size": 5.0,
+    "recoil": 400.0,
+    "uses": 3,
+    "sound_effect_id": "shoot",
+    "effect": "triggered_effect",
+    "effect_offset": {
+      "x": 64,
+      "y": 18
+    },
+    "mount_offset": {
+      "x": 0,
+      "y": -16
+    },
+    "triggered_effect_trigger": "both",
+    "triggered_effect_velocity": {
+      "x": 600.0,
+      "y": -50.0
+    },
+    "triggered_effect_trigger_size": {
+      "x": 24,
+      "y": 24
+    },
+    "triggered_effect_trigger_offset": {
+      "x": -4,
+      "y": -24
+    },
+    "triggered_effect_timed_trigger": 1.5,
+    "triggered_effect": {
+      "effect": "circle_collider",
+      "circle_collider_radius": 64,
+      "effect_is_friendly_fire": true
+    },
+    "triggered_effect_animation": {
+      "texture_id": "kick_bomb",
+      "offset": {
+        "x": -4,
+        "y": -24
+      },
+      "animations": [
+        {
+          "id": "armed",
+          "row": 1,
+          "frames": 3,
+          "fps": 12
+        }
+      ],
+      "should_autoplay": true
+    },
     "collider_size": {
       "x": 64,
       "y": 24

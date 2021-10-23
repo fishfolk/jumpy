@@ -148,19 +148,65 @@ pub fn color_from_hex_string(str: &str) -> Color {
         str.to_string()
     };
 
-    let bytes = hex::decode(&str).unwrap();
-    let alpha = if bytes.len() > 3 {
-        bytes[3] as f32 / 255.0
+    let r = u8::from_str_radix(&str[0..2], 16).unwrap();
+    let g = u8::from_str_radix(&str[2..4], 16).unwrap();
+    let b = u8::from_str_radix(&str[4..6], 16).unwrap();
+    let a = if str.len() > 6 {
+        u8::from_str_radix(&str[6..8], 16).unwrap()
     } else {
-        1.0
+        255
     };
 
     Color::new(
-        bytes[0] as f32 / 255.0,
-        bytes[1] as f32 / 255.0,
-        bytes[2] as f32 / 255.0,
-        alpha,
+        r as f32 / 255.0,
+        g as f32 / 255.0,
+        b as f32 / 255.0,
+        a as f32 / 255.0,
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_color_from_hex_string_no_hash() {
+        assert_eq!(
+            color_from_hex_string("12ab6f"),
+            Color::new(
+                18 as f32 / 255.0,
+                171 as f32 / 255.0,
+                111 as f32 / 255.0,
+                255 as f32 / 255.0,
+            )
+        );
+    }
+
+    #[test]
+    fn test_color_from_hex_string_hash() {
+        assert_eq!(
+            color_from_hex_string("#12ab6f"),
+            Color::new(
+                18 as f32 / 255.0,
+                171 as f32 / 255.0,
+                111 as f32 / 255.0,
+                255 as f32 / 255.0,
+            )
+        );
+    }
+
+    #[test]
+    fn test_color_from_hex_string_alpha() {
+        assert_eq!(
+            color_from_hex_string("12ab6fb2"),
+            Color::new(
+                18 as f32 / 255.0,
+                171 as f32 / 255.0,
+                111 as f32 / 255.0,
+                178 as f32 / 255.0,
+            )
+        );
+    }
 }
 
 pub fn rotate_vector(vec: Vec2, rad: f32) -> Vec2 {

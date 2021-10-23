@@ -80,7 +80,7 @@
                  "type":"environment",
                  "visible":true,
                  "width":0,
-                 "x":98.9166666666666,
+                 "x":66.9166666666666,
                  "y":684.916666666666
                 }, 
                 {
@@ -92,7 +92,7 @@
                  "type":"environment",
                  "visible":true,
                  "width":0,
-                 "x":66.75,
+                 "x":34.75,
                  "y":364.916666666666
                 }, 
                 {
@@ -104,7 +104,7 @@
                  "type":"environment",
                  "visible":true,
                  "width":0,
-                 "x":926.875,
+                 "x":894.875,
                  "y":685.375
                 }, 
                 {
@@ -116,7 +116,7 @@
                  "type":"environment",
                  "visible":true,
                  "width":0,
-                 "x":965.5,
+                 "x":933.5,
                  "y":365.166666666666
                 }, 
                 {
@@ -170,7 +170,7 @@
                 {
                  "height":0,
                  "id":148,
-                 "name":"shark",
+                 "name":"shark_rain",
                  "point":true,
                  "rotation":0,
                  "type":"item",
@@ -286,7 +286,31 @@
                  "width":0,
                  "x":769.333333333333,
                  "y":552
-                }],
+                }, 
+                {
+                 "height":0,
+                 "id":151,
+                 "name":"life_ring",
+                 "type":"item",
+                 "point":true,
+                 "rotation":0,
+                 "visible":true,
+                 "width":0,
+                 "x":435.333333333333,
+                 "y":547.333333333334
+                },
+                {
+                 "height":0,
+                 "id":152,
+                 "name":"flippers",
+                 "point":true,
+                 "rotation":0,
+                 "type":"item",
+                 "visible":true,
+                 "width":0,
+                 "x":500,
+                 "y":650
+              }],
          "opacity":1,
          "type":"objectgroup",
          "visible":true,

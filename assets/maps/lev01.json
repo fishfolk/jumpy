@@ -356,7 +356,7 @@
                  "type":"environment",
                  "visible":true,
                  "width":0,
-                 "x":308,
+                 "x":276,
                  "y":562
                 }, 
                 {
@@ -368,7 +368,7 @@
                  "type":"environment",
                  "visible":true,
                  "width":0,
-                 "x":595,
+                 "x":563,
                  "y":562
                 }],
          "opacity":1,

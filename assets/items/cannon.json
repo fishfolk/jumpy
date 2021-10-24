@@ -51,6 +51,7 @@
       ],
       "should_autoplay": true
     }
+
   },
   "collider_size": {
     "x": 64,

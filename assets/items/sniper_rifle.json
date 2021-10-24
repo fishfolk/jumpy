@@ -34,6 +34,7 @@
     "range": 600.0,
     "speed": 25.0
   },
+
   "collider_size": {
     "x": 64,
     "y": 24

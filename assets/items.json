@@ -2,13 +2,13 @@
   {
     "id": "sword",
     "sprite": {
-      "texture_id": "sword",
+      "texture": "sword",
       "index": 8
     },
     "type": "weapon",
     "cooldown": 0.75,
     "attack_duration": 0.5,
-    "sound_effect_id": "sword",
+    "sound_effect": "sword",
     "effect": "circle_collider",
     "circle_collider_radius": 65,
     "circle_collider_segment": {
@@ -28,7 +28,7 @@
       "y": -64
     },
     "animation": {
-      "texture_id": "sword",
+      "texture": "sword",
       "animations": [
         {
           "id": "idle",
@@ -49,7 +49,7 @@
   {
     "id": "musket",
     "sprite": {
-      "texture_id": "musket",
+      "texture": "musket",
       "offset": {
         "x": 0,
         "y": -8
@@ -60,7 +60,7 @@
     "cooldown": 0.75,
     "attack_duration": 0.5,
     "recoil": 250.0,
-    "sound_effect_id": "shoot",
+    "sound_effect": "shoot",
     "effect": "projectile",
     "effect_offset": {
       "x": 64,
@@ -70,7 +70,7 @@
     "projectile_speed": 5.0,
     "projectile_type": "sprite",
     "projectile_sprite": {
-      "texture_id": "small_projectile",
+      "texture": "small_projectile",
       "size": {
         "x": 8,
         "y": 4
@@ -87,7 +87,7 @@
       "y": 24
     },
     "animation": {
-      "texture_id": "musket",
+      "texture": "musket",
       "animations": [
         {
           "id": "idle",
@@ -108,7 +108,7 @@
   {
     "id": "sniper_rifle",
     "sprite": {
-      "texture_id": "sniper_rifle",
+      "texture": "sniper_rifle",
       "offset": {
         "x": 0,
         "y": -8
@@ -119,7 +119,7 @@
     "cooldown": 1.5,
     "attack_duration": 1.0,
     "recoil": 1400.0,
-    "sound_effect_id": "shoot",
+    "sound_effect": "shoot",
     "effect": "projectile",
     "effect_offset": {
       "x": 64,
@@ -127,7 +127,7 @@
     },
     "projectile_type": "sprite",
     "projectile_sprite": {
-      "texture_id": "small_projectile",
+      "texture": "small_projectile",
       "size": {
         "x": 8,
         "y": 4
@@ -146,7 +146,7 @@
       "y": 24
     },
     "animation": {
-      "texture_id": "sniper_rifle",
+      "texture": "sniper_rifle",
       "animations": [
         {
           "id": "idle",
@@ -167,13 +167,13 @@
   {
     "id": "machine_gun",
     "sprite": {
-      "texture_id": "machine_gun"
+      "texture": "machine_gun"
     },
     "type": "weapon",
     "cooldown": 0.15,
     "recoil": 125.0,
     "uses": 24,
-    "sound_effect_id": "shoot",
+    "sound_effect": "shoot",
     "effect": "projectile",
     "effect_offset": {
       "x": 60,
@@ -188,7 +188,7 @@
     "projectile_spread": 5.0,
     "projectile_type": "sprite",
     "projectile_sprite": {
-      "texture_id": "small_projectile",
+      "texture": "small_projectile",
       "size": {
         "x": 8,
         "y": 4
@@ -205,7 +205,7 @@
       "y": 24
     },
     "animation": {
-      "texture_id": "machine_gun",
+      "texture": "machine_gun",
       "animations": [
         {
           "id": "idle",
@@ -226,7 +226,7 @@
   {
     "id": "mines",
     "sprite": {
-      "texture_id": "mines",
+      "texture": "mines",
       "offset": {
         "x": 6,
         "y": -12
@@ -251,11 +251,11 @@
       "effect": "circle_collider",
       "circle_collider_radius": 64,
       "effect_is_friendly_fire": true,
-      "effect_particle_effect_id": "hit",
-      "effect_sound_effect_id": "explode"
+      "effect_particle_effect": "hit",
+      "effect_sound_effect": "explode"
     },
     "triggered_effect_animation": {
-      "texture_id": "mines",
+      "texture": "mines",
       "offset": {
         "x": 6,
         "y": -12
@@ -279,7 +279,7 @@
       "y": -12
     },
     "animation": {
-      "texture_id": "mines",
+      "texture": "mines",
       "animations": [
         {
           "id": "idle",
@@ -293,7 +293,7 @@
   {
     "id": "grenades",
     "sprite": {
-      "texture_id": "grenades"
+      "texture": "grenades"
     },
     "type": "weapon",
     "cooldown": 0.5,
@@ -317,11 +317,11 @@
       "effect": "circle_collider",
       "circle_collider_radius": 64,
       "effect_is_friendly_fire": true,
-      "effect_particle_effect_id": "hit",
-      "effect_sound_effect_id": "explode"
+      "effect_particle_effect": "hit",
+      "effect_sound_effect": "explode"
     },
     "triggered_effect_animation": {
-      "texture_id": "grenades",
+      "texture": "grenades",
       "offset": {
         "x": 0,
         "y": -24
@@ -345,7 +345,7 @@
       "y": -24
     },
     "animation": {
-      "texture_id": "grenades",
+      "texture": "grenades",
       "animations": [
         {
           "id": "idle",
@@ -359,7 +359,7 @@
   {
     "id": "cannon",
     "sprite": {
-      "texture_id": "cannon",
+      "texture": "cannon",
       "offset": {
         "x": 0,
         "y": -8
@@ -369,7 +369,7 @@
     "cooldown": 0.5,
     "recoil": 400.0,
     "uses": 3,
-    "sound_effect_id": "shoot",
+    "sound_effect": "shoot",
     "effect": "triggered_effect",
     "effect_offset": {
       "x": 64,
@@ -397,11 +397,11 @@
       "effect": "circle_collider",
       "circle_collider_radius": 64,
       "effect_is_friendly_fire": true,
-      "effect_particle_effect_id": "hit",
-      "effect_sound_effect_id": "explode"
+      "effect_particle_effect": "hit",
+      "effect_sound_effect": "explode"
     },
     "triggered_effect_animation": {
-      "texture_id": "kick_bomb",
+      "texture": "kick_bomb",
       "offset": {
         "x": -4,
         "y": -24
@@ -421,7 +421,7 @@
       "y": 24
     },
     "animation": {
-      "texture_id": "cannon",
+      "texture": "cannon",
       "animations": [
         {
           "id": "idle",

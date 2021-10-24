@@ -32,6 +32,7 @@ impl From<Animation> for MQAnimation {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AnimationParams {
+    #[serde(rename = "texture")]
     pub texture_id: String,
     #[serde(
         default,

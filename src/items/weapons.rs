@@ -26,7 +26,11 @@ pub use effects::{
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WeaponParams {
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        rename = "sound_effect",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub sound_effect_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub uses: Option<u32>,
@@ -38,7 +42,7 @@ pub struct WeaponParams {
     pub effect_offset: Vec2,
     #[serde(default)]
     pub attack_duration: f32,
-    #[serde(default)]
+    #[serde(default, rename = "particle_effect")]
     pub particle_effect_id: Option<String>,
     pub cooldown: f32,
     #[serde(default)]

@@ -6,9 +6,8 @@ use macroquad::{
 };
 
 use crate::{
-    capabilities::Weapon,
     nodes::{player::Input, Player},
-    GameWorld,
+    GameWorld, Item,
 };
 
 pub struct Ai {
@@ -122,11 +121,9 @@ impl Ai {
         }
 
         if self.throw_cooldown <= 0.0 {
-            for weapon in scene::find_nodes_with::<Weapon>() {
-                use crate::capabilities::WeaponTrait;
-
-                let weapon_rect = weapon.collider();
-                if weapon_rect.point().distance(player.body.pos) <= 80. {
+            for item in scene::find_nodes_by_type::<Item>() {
+                let item_collider = item.get_collider();
+                if item_collider.point().distance(player.body.pos) <= 80. {
                     input.pickup = true;
                 }
             }

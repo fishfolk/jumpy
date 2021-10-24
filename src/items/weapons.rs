@@ -12,10 +12,7 @@ use macroquad::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    components::{
-        AnimationParams,
-        AnimationPlayer,
-    },
+    components::{AnimationParams, AnimationPlayer},
     json, Player, Resources,
 };
 
@@ -26,7 +23,6 @@ pub use effects::{
     CustomWeaponEffectCoroutine, CustomWeaponEffectParam, Projectiles, WeaponEffectKind,
     WeaponEffectParams, WeaponEffectTriggerKind,
 };
-use crate::math::rotate_vector;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WeaponParams {
@@ -140,13 +136,7 @@ impl Weapon {
         self.cooldown_timer += dt;
     }
 
-    pub fn draw(
-        &mut self,
-        position: Vec2,
-        rotation: f32,
-        flip_x: bool,
-        flip_y: bool,
-    ) {
+    pub fn draw(&mut self, position: Vec2, rotation: f32, flip_x: bool, flip_y: bool) {
         let size = self.animation_player.get_size();
         let mut position = position;
 
@@ -158,7 +148,8 @@ impl Weapon {
             position.y -= size.y;
         }
 
-        self.animation_player.draw(position, rotation, flip_x, flip_y);
+        self.animation_player
+            .draw(position, rotation, flip_x, flip_y);
     }
 
     pub fn draw_hud(&self, position: Vec2) {
@@ -310,9 +301,8 @@ impl Weapon {
                 }
 
                 {
-                    let mut player = &mut *scene::get_node(player_handle);
-                    let origin = player.body.pos
-                        + player.get_weapon_effect_offset();
+                    let player = &mut *scene::get_node(player_handle);
+                    let origin = player.body.pos + player.get_weapon_effect_offset();
 
                     if let Some(weapon) = player.weapon.as_mut() {
                         weapon_effect_coroutine(player_handle, origin, weapon.effect.clone());

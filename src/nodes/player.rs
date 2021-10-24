@@ -19,7 +19,6 @@ use crate::{
 };
 
 use crate::components::{Animation, AnimationParams, AnimationPlayer};
-use crate::math::rotate_vector;
 
 mod ai;
 
@@ -848,8 +847,6 @@ impl Player {
     }
 
     fn draw_player(&self) {
-        let resources = storage::get::<Resources>();
-
         self.animation_player.draw(
             self.body.pos,
             self.body.rotation,
@@ -871,12 +868,7 @@ impl Player {
         let mount_offset = self.get_weapon_mount_offset();
 
         if let Some(weapon) = &mut self.weapon {
-            weapon.draw(
-                position + mount_offset,
-                rotation,
-                !is_facing_right,
-                false,
-            );
+            weapon.draw(position + mount_offset, rotation, !is_facing_right, false);
 
             {
                 let mut position = position;
@@ -905,10 +897,10 @@ impl Player {
                 texture_entry.texture,
                 self.body.pos.x
                     + if self.body.is_facing_right {
-                    -15.0
-                } else {
-                    20.0
-                },
+                        -15.0
+                    } else {
+                        20.0
+                    },
                 self.body.pos.y,
                 color::WHITE,
                 DrawTextureParams {

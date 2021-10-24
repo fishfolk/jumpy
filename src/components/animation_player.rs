@@ -10,7 +10,6 @@ use macroquad::{
 use serde::{Deserialize, Serialize};
 
 use crate::{json, Resources};
-use crate::math::rotate_vector;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Animation {
@@ -163,13 +162,7 @@ impl AnimationPlayer {
         self.sprite.update();
     }
 
-    pub fn draw(
-        &self,
-        position: Vec2,
-        rotation: f32,
-        flip_x: bool,
-        flip_y: bool,
-    ) {
+    pub fn draw(&self, position: Vec2, rotation: f32, flip_x: bool, flip_y: bool) {
         let source_rect = self.sprite.frame().source_rect;
         let rect = self.get_rect(rotation);
 

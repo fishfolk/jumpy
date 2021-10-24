@@ -100,10 +100,7 @@ pub enum WeaponEffectKind {
         kind: WeaponEffectTriggerKind,
         #[serde(with = "json::vec2_def")]
         size: Vec2,
-        #[serde(
-            default,
-            with = "json::vec2_def"
-        )]
+        #[serde(default, with = "json::vec2_def")]
         offset: Vec2,
         #[serde(default, with = "json::vec2_def")]
         velocity: Vec2,

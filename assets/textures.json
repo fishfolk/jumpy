@@ -136,11 +136,29 @@
   },
   {
     "id": "cannon",
-    "path": "textures/items/Cannon(88x36).png",
+    "path": "textures/items/Cannon(64x48).png",
     "type": "spritesheet",
     "sprite_size": {
-      "x": 88,
-      "y": 36
+      "x": 64,
+      "y": 48
+    }
+  },
+  {
+    "id": "cannon_smoke",
+    "path": "textures/items/CannonSmoke(40x48).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 40,
+      "y": 48
+    }
+  },
+  {
+    "id": "cannon_ball",
+    "path": "textures/items/CannonBall(17x17).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 17,
+      "y": 17
     }
   },
   {
@@ -172,11 +190,11 @@
   },
   {
     "id": "jellyfish",
-    "path": "textures/items/Jellyfish(34x47).png",
+    "path": "textures/items/Jellyfish(64x112).png",
     "type": "spritesheet",
     "sprite_size": {
-      "x": 34,
-      "y": 47
+      "x": 64,
+      "y": 112
     }
   },
   {
@@ -277,10 +295,6 @@
       "x": 32,
       "y": 32
     }
-  },
-  {
-    "id": "cannonball",
-    "path": "textures/temp/Cannonball(32x36).png"
   },
   {
     "id": "galleon",

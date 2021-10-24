@@ -67,6 +67,7 @@ impl PhysicsBody {
         let mut world = storage::get_mut::<GameWorld>();
 
         self.pos = world.collision_world.actor_pos(self.collider);
+
         self.was_on_ground_last_frame = self.is_on_ground;
         self.is_on_ground = world
             .collision_world

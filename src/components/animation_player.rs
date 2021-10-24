@@ -162,19 +162,12 @@ impl AnimationPlayer {
         self.sprite.update();
     }
 
-    pub fn draw(
-        &self,
-        position: Vec2,
-        rotation: f32,
-        scale: Option<Vec2>,
-        flip_x: bool,
-        flip_y: bool,
-    ) {
+    pub fn draw(&self, position: Vec2, rotation: f32, flip_x: bool, flip_y: bool) {
         let source_rect = self.sprite.frame().source_rect;
-        let rect = self.get_rect(scale);
+        let rect = self.get_rect(rotation);
 
         let pivot = {
-            let size = self.get_size(scale);
+            let size = self.get_size();
             let mut pivot = self.pivot;
             if flip_x {
                 pivot.x = size.x - self.pivot.x;
@@ -211,25 +204,14 @@ impl AnimationPlayer {
         // );
     }
 
-    pub fn get_size(&self, scale: Option<Vec2>) -> Vec2 {
-        let size = self.sprite.frame().dest_size;
-        if let Some(scale) = scale {
-            vec2(size.x * scale.x, size.y * scale.y)
-        } else {
-            size
-        }
+    pub fn get_size(&self) -> Vec2 {
+        self.sprite.frame().dest_size
     }
 
-    pub fn get_rect(&self, scale: Option<Vec2>) -> Rect {
-        let position = if let Some(scale) = scale {
-            vec2(self.offset.x * scale.x, self.offset.y * scale.y)
-        } else {
-            self.offset
-        };
+    pub fn get_rect(&self, _rotation: f32) -> Rect {
+        let size = self.get_size();
 
-        let size = self.get_size(scale);
-
-        Rect::new(position.x, position.y, size.x, size.y)
+        Rect::new(self.offset.x, self.offset.y, size.x, size.y)
     }
 
     pub fn get_animation(&self, id: &str) -> Option<&Animation> {

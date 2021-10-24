@@ -10,46 +10,49 @@
   "type": "weapon",
   "cooldown": 0.5,
   "uses": 3,
-  "effect": "triggered_effect",
-  "effect_offset": {
-    "x": 6,
-    "y": -12
-  },
-  "triggered_effect_trigger": "player",
-  "triggered_effect_trigger_size": {
-    "x": 36,
-    "y": 36
-  },
-  "effect_is_friendly_fire": true,
-  "triggered_effect_activation_delay": 1.5,
-  "triggered_effect": {
-    "effect": "circle_collider",
-    "circle_collider_radius": 64,
-    "effect_is_friendly_fire": true,
-    "effect_particle_effect": "hit",
-    "effect_sound_effect": "explode"
-  },
-  "triggered_effect_animation": {
-    "texture": "mines",
-    "offset": {
-      "x": 6,
-      "y": -12
+  "effect": {
+    "type": "triggered_effect",
+    "trigger": "player",
+    "size": {
+      "x": 36,
+      "y": 36
     },
-    "animations": [
-      {
-        "id": "armed",
-        "row": 0,
-        "frames": 13,
-        "fps": 12
-      }
-    ],
-    "should_autoplay": true
+    "is_friendly_fire": true,
+    "activation_delay": 1.5,
+    "triggered_effect": {
+      "type": "circle_collider",
+      "radius": 64,
+      "is_friendly_fire": true,
+      "particle_effect": "hit",
+      "sound_effect": "explode"
+    },
+    "animation": {
+      "texture": "mines",
+      "offset": {
+        "x": 6,
+        "y": -12
+      },
+      "animations": [
+        {
+          "id": "armed",
+          "row": 0,
+          "frames": 13,
+          "fps": 12
+        }
+      ],
+      "should_autoplay": true
+    }
+
   },
   "collider_size": {
     "x": 32,
     "y": 32
   },
   "mount_offset": {
+    "x": 6,
+    "y": -12
+  },
+  "effect_offset": {
     "x": 6,
     "y": -12
   },

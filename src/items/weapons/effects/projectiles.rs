@@ -17,24 +17,21 @@ use crate::{
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "projectile_type", rename_all = "snake_case")]
+#[serde(tag = "type", rename_all = "snake_case")]
 pub enum ProjectileKind {
     Circle {
-        #[serde(rename = "projectile_radius")]
         radius: f32,
-        #[serde(rename = "projectile_color", with = "json::ColorDef")]
+        #[serde(with = "json::ColorDef")]
         color: Color,
     },
     Rect {
-        #[serde(rename = "projectile_width")]
         width: f32,
-        #[serde(rename = "projectile_height")]
         height: f32,
-        #[serde(rename = "projectile_color", with = "json::ColorDef")]
+        #[serde(with = "json::ColorDef")]
         color: Color,
     },
     Sprite {
-        #[serde(rename = "projectile_sprite")]
+        #[serde(rename = "sprite")]
         params: Option<SpriteParams>,
     },
 }

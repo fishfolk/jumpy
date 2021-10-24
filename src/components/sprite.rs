@@ -6,6 +6,7 @@ use crate::{json, Resources};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SpriteParams {
+    #[serde(rename = "texture")]
     pub texture_id: String,
     #[serde(default)]
     pub index: usize,

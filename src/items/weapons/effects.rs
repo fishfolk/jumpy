@@ -38,13 +38,13 @@ pub struct WeaponEffectParams {
     pub kind: WeaponEffectKind,
     #[serde(
         default,
-        rename = "effect_particle_effect_id",
+        rename = "effect_particle_effect",
         skip_serializing_if = "Option::is_none"
     )]
     pub particle_effect_id: Option<String>,
     #[serde(
         default,
-        rename = "effect_sound_effect_id",
+        rename = "effect_sound_effect",
         skip_serializing_if = "Option::is_none"
     )]
     pub sound_effect_id: Option<String>,

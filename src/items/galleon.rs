@@ -10,6 +10,7 @@ use macroquad::{
     rand::gen_range,
 };
 
+use crate::nodes::ParticleEmitters;
 use crate::{
     capabilities,
     components::{GunlikeAnimation, PhysicsBody, ThrowableItem},
@@ -33,7 +34,7 @@ impl FlyingGalleon {
 
     pub fn new(owner_id: u8) -> FlyingGalleon {
         let resources = storage::get::<Resources>();
-        let sprite = resources.items_textures["galleon/flying_galleon"];
+        let texture_entry = resources.textures.get("galleon").unwrap();
 
         let (pos, facing) = Self::start_position();
         let dir = if facing {
@@ -43,7 +44,7 @@ impl FlyingGalleon {
         };
 
         FlyingGalleon {
-            sprite,
+            sprite: texture_entry.texture,
             pos,
             speed: dir * Self::SPEED,
             facing,
@@ -91,8 +92,8 @@ impl FlyingGalleon {
                     .unwrap()
                     .shake_noise(1.0, 10, 1.);
                 {
-                    let mut resources = storage::get_mut::<Resources>();
-                    resources.hit_fxses.spawn(player.body.pos);
+                    let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
+                    particles.hit.spawn(player.body.pos);
                 }
                 let direction = self.pos.x > (player.body.pos.x + Self::KNOCKBACK);
                 player.kill(direction);
@@ -162,6 +163,7 @@ impl Galleon {
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
         let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get("galleon_icon").unwrap();
 
         let sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
@@ -175,7 +177,7 @@ impl Galleon {
                 }],
                 false,
             ),
-            resources.items_textures["galleon/galleon"],
+            texture_entry.texture,
             Self::SPRITE_WIDTH as f32,
         );
 
@@ -186,6 +188,7 @@ impl Galleon {
             pos,
             0.0,
             vec2(Self::SPRITE_WIDTH as f32, Self::SPRITE_HEIGHT as f32),
+            false,
         );
 
         scene::add_node(Galleon {
@@ -286,13 +289,13 @@ impl Galleon {
             let mut node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<Galleon>();
-            node.body.speed.x = speed;
+            node.body.velocity.x = speed;
         }
         fn set_speed_y(handle: HandleUntyped, speed: f32) {
             let mut node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<Galleon>();
-            node.body.speed.y = speed;
+            node.body.velocity.y = speed;
         }
 
         capabilities::PhysicsObject {

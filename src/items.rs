@@ -1,230 +1,153 @@
 //! Things available to spawn from the level editor
 //! Proto-mods, eventually some of the items will move to some sort of a wasm runtime
 
-mod cannon;
-pub mod flippers;
-mod galleon;
-mod grenades;
-mod gun;
-pub mod jellyfish;
-mod kickbomb;
-mod life_ring;
-mod machine_gun;
-mod mines;
-mod musket;
-mod shark_rain;
-pub mod shoes;
-mod sniper;
-mod sproinger;
-mod sword;
-mod turtle_shell;
-mod volcano;
-use macroquad::{experimental::scene::HandleUntyped, math::Vec2};
+use macroquad::{
+    experimental::{
+        collections::storage,
+        scene::{HandleUntyped, Node, RefMut},
+    },
+    prelude::*,
+};
 
-/// Proto-mod
-/// A meta description on how to create an item from the map
-pub struct Item {
-    /// Tiled object name used on the objects layer, like "sword" or "sproinger"
-    pub tiled_name: &'static str,
-    pub constructor: fn(_: Vec2) -> HandleUntyped,
-    /// Spawn offset from a tiled object position
-    /// Mostly legacy, should be gone with a proper level editor
-    /// may be will be a Vec2 soon, waiting for https://github.com/bitshifter/glam-rs/issues/76
-    pub tiled_offset: (f32, f32),
-    /// List of texture resources to load
-    /// Later they will be accessible in resources.items_textures
-    /// by tiled_name/resource_id
-    pub textures: &'static [(&'static str, &'static str)],
-    /// List of audio resources to load
-    /// Later they will be accessible in resources.items_sounds
-    /// by "tiled_name/resource_id"
-    pub sounds: &'static [(&'static str, &'static str)],
-    /// List of fxses to load. Each fx will be an EmitterCache, rendered
-    /// in the world space
-    /// Later they will be accessible in resources.items_fxses
-    /// by "tiled_name/resource_id"
-    pub fxses: &'static [(&'static str, &'static str)],
-    /// Right now items used in network play should be carefull
-    /// about using random and similar things
-    /// It will be automatically tested and undetermenistic weapons will be denied
-    /// by the game itself, but, right now, its up for a weapon developer to veryfy
-    /// that nothing network-illegal is going on
-    pub network_ready: bool,
+use serde::{Deserialize, Serialize};
+
+use weapons::WeaponParams;
+
+use crate::{
+    capabilities::{NetworkReplicate, PhysicsObject},
+    components::{PhysicsBody, Sprite, SpriteParams},
+    json, GameWorld,
+};
+
+pub mod weapons;
+
+mod sproinger;
+pub use sproinger::Sproinger;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum ItemKind {
+    Weapon {
+        #[serde(flatten)]
+        params: WeaponParams,
+    },
+    Misc,
 }
 
-pub const ITEMS: &[Item] = &[
-    Item {
-        tiled_name: "sword",
-        constructor: sword::Sword::spawn,
-        tiled_offset: (-35., -25.),
-        textures: &[
-            ("sword", "assets/Whale/Sword(65x93).png"),
-            ("fish_sword", "assets/Whale/FishSword.png"),
-        ],
-        sounds: &[],
-        fxses: &[],
-        network_ready: true,
-    },
-    Item {
-        tiled_name: "sproinger",
-        constructor: sproinger::Sproinger::spawn,
-        tiled_offset: (-35., 0.),
-        textures: &[("sproinger", "assets/Whale/Sproinger.png")],
-        sounds: &[],
-        fxses: &[],
-        network_ready: true,
-    },
-    Item {
-        tiled_name: "musket",
-        constructor: gun::Gun::spawn_musket,
-        tiled_offset: (-35., -25.),
-        textures: &[
-            ("gun", "assets/Whale/Gun(92x32).png"),
-            ("bullet", "assets/Whale/Bullet(15x15).png"),
-        ],
-        sounds: &[],
-        fxses: &[],
-        network_ready: true,
-    },
-    Item {
-        tiled_name: "sniper",
-        constructor: gun::Gun::spawn_sniper,
-        tiled_offset: (-35., -25.),
-        textures: &[("gun", "assets/Whale/Sniper(92x32).png")],
-        sounds: &[],
-        fxses: &[],
-        network_ready: true,
-    },
-    Item {
-        tiled_name: "machine_gun",
-        constructor: machine_gun::MachineGun::spawn,
-        tiled_offset: (-35., -25.),
-        textures: &[("gun", "assets/Whale/MachineGun.png")],
-        sounds: &[],
-        fxses: &[],
-        network_ready: false,
-    },
-    Item {
-        tiled_name: "mines",
-        constructor: mines::Mines::spawn,
-        tiled_offset: (-35., -25.),
-        textures: &[("mines", "assets/Whale/Mines.png")],
-        sounds: &[],
-        fxses: &[],
-        network_ready: false,
-    },
-    Item {
-        tiled_name: "cannon",
-        constructor: cannon::Cannon::spawn,
-        tiled_offset: (-35., -25.),
-        textures: &[
-            ("gun", "assets/Whale/Cannon.png"),
-            ("cannonball", "assets/Whale/KickBomb(32x36).png"),
-        ],
-        sounds: &[],
-        fxses: &[],
-        network_ready: false, // There's no random but I can't verify)
-    },
-    Item {
-        tiled_name: "turtleshell",
-        constructor: turtle_shell::TurtleShell::spawn,
-        tiled_offset: (0., 0.),
-        textures: &[("shell", "assets/Whale/TurtleShell(32x32).png")],
-        sounds: &[],
-        fxses: &[],
-        network_ready: false,
-    },
-    Item {
-        tiled_name: "flippers",
-        constructor: flippers::Flippers::spawn,
-        tiled_offset: (0., 0.),
-        textures: &[
-            ("flippers_item", "assets/Whale/Flippers(65x45).png"),
-            ("flippers_weared", "assets/Whale/Flippers(45x36).png"),
-        ],
-        sounds: &[],
-        fxses: &[],
-        network_ready: false,
-    },
-    Item {
-        tiled_name: "grenades",
-        constructor: grenades::Grenades::spawn,
-        tiled_offset: (0., 0.),
-        textures: &[("explosives", "assets/Whale/Grenades.png")],
-        sounds: &[],
-        fxses: &[],
-        network_ready: false,
-    },
-    Item {
-        tiled_name: "shoes",
-        constructor: shoes::Shoes::spawn,
-        tiled_offset: (0., 0.),
-        textures: &[("shoes", "assets/Whale/Shoes(32x32).png")],
-        sounds: &[],
-        fxses: &[],
-        network_ready: false,
-    },
-    Item {
-        tiled_name: "volcano",
-        constructor: volcano::Volcano::spawn,
-        tiled_offset: (0., 0.),
-        textures: &[
-            ("icon", "temp/VolcanoIcon(36x22).png"),
-            ("erupting", "temp/EruptingVolcano(395x100).png"),
-        ],
-        sounds: &[],
-        fxses: &[],
-        network_ready: false,
-    },
-    Item {
-        tiled_name: "galleon",
-        constructor: galleon::Galleon::spawn,
-        tiled_offset: (0., 0.),
-        textures: &[
-            ("galleon", "assets/Whale/GalleonIcon(32x29).png"),
-            ("flying_galleon", "assets/Whale/FlyingGalleon(326x300).png"),
-        ],
-        sounds: &[],
-        fxses: &[],
-        network_ready: false,
-    },
-    Item {
-        tiled_name: "jellyfish",
-        constructor: jellyfish::Jellyfish::spawn,
-        tiled_offset: (0., 0.),
-        textures: &[("jellyfish", "assets/Whale/Jellyfish(30x39).png")],
-        sounds: &[],
-        fxses: &[],
-        network_ready: false,
-    },
-    Item {
-        tiled_name: "shark_rain",
-        constructor: shark_rain::SharkRain::spawn,
-        tiled_offset: (0., 0.),
-        textures: &[
-            ("shark_rain", "assets/Whale/SharkIcon(32x34).png"),
-            ("raining_shark", "assets/Whale/RainingShark(60x220).png"),
-        ],
-        sounds: &[],
-        fxses: &[],
-        network_ready: false,
-    },
-    Item {
-        tiled_name: "kickbomb",
-        constructor: kickbomb::Kickbomb::spawn,
-        tiled_offset: (0., 0.),
-        textures: &[("bomb", "assets/Whale/KickBomb(32x36).png")],
-        sounds: &[],
-        fxses: &[],
-        network_ready: false,
-    },
-    Item {
-        tiled_name: "life_ring",
-        constructor: life_ring::LifeRing::spawn,
-        tiled_offset: (0.0, 0.0),
-        textures: &[("life_ring", "temp/LifeRing.png")],
-        sounds: &[],
-        fxses: &[],
-        network_ready: false,
-    },
-];
+impl ItemKind {
+    pub fn is_weapon(&self) -> bool {
+        if let Self::Weapon { .. } = self {
+            return true;
+        }
+
+        false
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ItemParams {
+    pub id: String,
+    #[serde(flatten)]
+    pub kind: ItemKind,
+    #[serde(with = "json::uvec2_def")]
+    pub collider_size: UVec2,
+    pub sprite: SpriteParams,
+    #[serde(default)]
+    pub is_network_ready: bool,
+}
+
+pub struct Item {
+    pub id: String,
+    pub kind: ItemKind,
+    pub body: PhysicsBody,
+    sprite: Sprite,
+}
+
+impl Item {
+    pub fn new(position: Vec2, params: ItemParams) -> Self {
+        let mut world = storage::get_mut::<GameWorld>();
+
+        let body = PhysicsBody::new(
+            &mut world.collision_world,
+            position,
+            0.0,
+            params.collider_size.as_f32(),
+            true,
+            true,
+        );
+
+        let sprite = Sprite::new(params.sprite);
+
+        Item {
+            id: params.id,
+            kind: params.kind,
+            body,
+            sprite,
+        }
+    }
+
+    pub fn get_collider(&self) -> Rect {
+        Rect::new(
+            self.body.pos.x,
+            self.body.pos.y,
+            self.body.size.x,
+            self.body.size.y,
+        )
+    }
+
+    fn physics_capabilities() -> PhysicsObject {
+        fn active(_: HandleUntyped) -> bool {
+            true
+        }
+
+        fn collider(handle: HandleUntyped) -> Rect {
+            let node = scene::get_untyped_node(handle).unwrap().to_typed::<Item>();
+
+            node.get_collider()
+        }
+
+        fn set_speed_x(handle: HandleUntyped, speed: f32) {
+            let mut node = scene::get_untyped_node(handle).unwrap().to_typed::<Item>();
+
+            node.body.velocity.x = speed;
+        }
+
+        fn set_speed_y(handle: HandleUntyped, speed: f32) {
+            let mut node = scene::get_untyped_node(handle).unwrap().to_typed::<Item>();
+
+            node.body.velocity.y = speed;
+        }
+
+        PhysicsObject {
+            active,
+            collider,
+            set_speed_x,
+            set_speed_y,
+        }
+    }
+
+    fn network_update(mut node: RefMut<Self>) {
+        node.body.update();
+    }
+
+    fn network_capabilities() -> NetworkReplicate {
+        fn network_update(handle: HandleUntyped) {
+            let node = scene::get_untyped_node(handle).unwrap().to_typed::<Item>();
+            Item::network_update(node);
+        }
+
+        NetworkReplicate { network_update }
+    }
+}
+
+impl Node for Item {
+    fn ready(mut node: RefMut<Self>) {
+        node.provides(Self::network_capabilities());
+        node.provides(Self::physics_capabilities());
+    }
+
+    fn draw(node: RefMut<Self>) {
+        node.sprite
+            .draw(node.body.pos, node.body.rotation, None, false, false);
+    }
+}

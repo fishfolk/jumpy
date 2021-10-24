@@ -20,7 +20,7 @@ pub enum InputScheme {
 #[derive(Default, Debug, Clone, Copy, DeBin, SerBin)]
 pub struct Input {
     pub jump: bool,
-    pub throw: bool,
+    pub pickup: bool,
     pub fire: bool,
     pub slide: bool,
 
@@ -33,7 +33,7 @@ pub fn collect_input(scheme: InputScheme) -> Input {
     let mut input = Input::default();
 
     if let InputScheme::KeyboardLeft = scheme {
-        input.throw = is_key_down(KeyCode::C);
+        input.pickup = is_key_down(KeyCode::C);
         input.fire = is_key_down(KeyCode::V) || is_key_down(KeyCode::LeftControl);
 
         input.jump = is_key_down(KeyCode::W) || is_key_down(KeyCode::Space);
@@ -45,7 +45,7 @@ pub fn collect_input(scheme: InputScheme) -> Input {
     }
 
     if let InputScheme::KeyboardRight = scheme {
-        input.throw = is_key_down(KeyCode::K);
+        input.pickup = is_key_down(KeyCode::K);
         input.fire = is_key_down(KeyCode::L);
 
         input.jump = is_key_down(KeyCode::Up);
@@ -61,7 +61,7 @@ pub fn collect_input(scheme: InputScheme) -> Input {
         let gamepad = gamepad_system.gamepad(ix);
 
         if let Some(gamepad) = gamepad {
-            input.throw = gamepad.digital_inputs.activated(Button::X);
+            input.pickup = gamepad.digital_inputs.activated(Button::X);
             input.fire = gamepad.digital_inputs.activated(Button::B);
 
             input.jump = gamepad.digital_inputs.activated(Button::A);

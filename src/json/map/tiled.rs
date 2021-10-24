@@ -4,6 +4,7 @@ use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
+use crate::map::MapObjectKind;
 use crate::{
     map::{Map, MapLayer, MapLayerKind, MapObject, MapProperty, MapTile, MapTileset},
     math::color_from_hex_string,
@@ -112,7 +113,7 @@ impl TiledMap {
     pub const COLLISION_LAYER_PROP: &'static str = "collision";
     pub const TEXTURE_ID_PROP: &'static str = "texture_id";
 
-    pub fn into_map(self, name: &str) -> Map {
+    pub fn into_map(self) -> Map {
         let background_color = if let Some(background_color) = self.backgroundcolor {
             color_from_hex_string(&background_color)
         } else {
@@ -238,10 +239,10 @@ impl TiledMap {
             }
 
             let mut objects = Vec::new();
-            for object in &tiled_layer.objects {
-                let position = vec2(object.x, object.y);
+            for tiled_object in &tiled_layer.objects {
+                let position = vec2(tiled_object.x, tiled_object.y);
                 let size = {
-                    let size = vec2(object.width, object.height);
+                    let size = vec2(tiled_object.width, tiled_object.height);
                     if size != Vec2::ZERO {
                         Some(size)
                     } else {
@@ -250,15 +251,18 @@ impl TiledMap {
                 };
 
                 let mut properties = HashMap::new();
-                if let Some(tiled_props) = object.properties.clone() {
+                if let Some(tiled_props) = tiled_object.properties.clone() {
                     for tiled_prop in tiled_props {
                         let (name, prop) = pair_from_tiled_prop(tiled_prop);
                         properties.insert(name, prop);
                     }
                 }
 
+                let kind = MapObjectKind::from(tiled_object.object_type.clone());
+
                 let object = MapObject {
-                    name: object.name.clone(),
+                    id: tiled_object.name.clone(),
+                    kind,
                     position,
                     size,
                     properties,
@@ -317,7 +321,6 @@ impl TiledMap {
         }
 
         Map {
-            name: name.to_string(),
             background_color,
             world_offset: Vec2::ZERO,
             grid_size,

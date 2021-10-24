@@ -55,10 +55,11 @@ impl Node for TurtleShell {
     fn draw(mut node: RefMut<Self>) {
         node.sprite.update();
 
-        let resources = storage::get_mut::<Resources>();
+        let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get("turtle_shell").unwrap();
 
         draw_texture_ex(
-            resources.turtleshell,
+            texture_entry.texture,
             node.pos.x,
             node.pos.y,
             color::WHITE,

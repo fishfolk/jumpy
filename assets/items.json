@@ -1,0 +1,441 @@
+[
+  {
+    "id": "sword",
+    "sprite": {
+      "texture_id": "sword",
+      "index": 8
+    },
+    "type": "weapon",
+    "cooldown": 0.75,
+    "attack_duration": 0.5,
+    "sound_effect_id": "sword",
+    "effect": "circle_collider",
+    "circle_collider_radius": 65,
+    "circle_collider_segment": {
+      "x": 1,
+      "y": -1
+    },
+    "effect_offset": {
+      "x": 0,
+      "y": -64
+    },
+    "collider_size": {
+      "x": 65,
+      "y": 17
+    },
+    "mount_offset": {
+      "x": 0,
+      "y": -64
+    },
+    "animation": {
+      "texture_id": "sword",
+      "animations": [
+        {
+          "id": "idle",
+          "row": 0,
+          "frames": 1,
+          "fps": 1
+        },
+        {
+          "id": "attack",
+          "row": 1,
+          "frames": 4,
+          "fps": 15
+        }
+      ]
+    },
+    "is_network_ready": true
+  },
+  {
+    "id": "musket",
+    "sprite": {
+      "texture_id": "musket",
+      "offset": {
+        "x": 0,
+        "y": -8
+      }
+    },
+    "type": "weapon",
+    "uses": 3,
+    "cooldown": 0.75,
+    "attack_duration": 0.5,
+    "recoil": 250.0,
+    "sound_effect_id": "shoot",
+    "effect": "projectile",
+    "effect_offset": {
+      "x": 64,
+      "y": 16
+    },
+    "projectile_range": 128.0,
+    "projectile_speed": 5.0,
+    "projectile_type": "sprite",
+    "projectile_sprite": {
+      "texture_id": "small_projectile",
+      "size": {
+        "x": 8,
+        "y": 4
+      },
+      "tint": {
+        "r": 0.9,
+        "g": 0.75,
+        "b": 0.12,
+        "a": 1.0
+      }
+    },
+    "collider_size": {
+      "x": 64,
+      "y": 24
+    },
+    "animation": {
+      "texture_id": "musket",
+      "animations": [
+        {
+          "id": "idle",
+          "row": 0,
+          "frames": 1,
+          "fps": 1
+        },
+        {
+          "id": "attack",
+          "row": 1,
+          "frames": 3,
+          "fps": 15
+        }
+      ]
+    },
+    "is_network_ready": true
+  },
+  {
+    "id": "sniper_rifle",
+    "sprite": {
+      "texture_id": "sniper_rifle",
+      "offset": {
+        "x": 0,
+        "y": -8
+      }
+    },
+    "type": "weapon",
+    "uses": 2,
+    "cooldown": 1.5,
+    "attack_duration": 1.0,
+    "recoil": 1400.0,
+    "sound_effect_id": "shoot",
+    "effect": "projectile",
+    "effect_offset": {
+      "x": 64,
+      "y": 16
+    },
+    "projectile_type": "sprite",
+    "projectile_sprite": {
+      "texture_id": "small_projectile",
+      "size": {
+        "x": 8,
+        "y": 4
+      },
+      "tint": {
+        "r": 0.9,
+        "g": 0.75,
+        "b": 0.12,
+        "a": 1.0
+      }
+    },
+    "projectile_range": 600.0,
+    "projectile_speed": 25.0,
+    "collider_size": {
+      "x": 64,
+      "y": 24
+    },
+    "animation": {
+      "texture_id": "sniper_rifle",
+      "animations": [
+        {
+          "id": "idle",
+          "row": 0,
+          "frames": 1,
+          "fps": 1
+        },
+        {
+          "id": "attack",
+          "row": 1,
+          "frames": 3,
+          "fps": 15
+        }
+      ]
+    },
+    "is_network_ready": true
+  },
+  {
+    "id": "machine_gun",
+    "sprite": {
+      "texture_id": "machine_gun"
+    },
+    "type": "weapon",
+    "cooldown": 0.15,
+    "recoil": 125.0,
+    "uses": 24,
+    "sound_effect_id": "shoot",
+    "effect": "projectile",
+    "effect_offset": {
+      "x": 60,
+      "y": 4
+    },
+    "mount_offset": {
+      "x": -8,
+      "y": 0
+    },
+    "projectile_range": 128.0,
+    "projectile_speed": 5.0,
+    "projectile_spread": 5.0,
+    "projectile_type": "sprite",
+    "projectile_sprite": {
+      "texture_id": "small_projectile",
+      "size": {
+        "x": 8,
+        "y": 4
+      },
+      "tint": {
+        "r": 0.9,
+        "g": 0.75,
+        "b": 0.12,
+        "a": 1.0
+      }
+    },
+    "collider_size": {
+      "x": 68,
+      "y": 24
+    },
+    "animation": {
+      "texture_id": "machine_gun",
+      "animations": [
+        {
+          "id": "idle",
+          "row": 0,
+          "frames": 1,
+          "fps": 1
+        },
+        {
+          "id": "attack",
+          "row": 1,
+          "frames": 2,
+          "fps": 8
+        }
+      ]
+    },
+    "is_network_ready": false
+  },
+  {
+    "id": "mines",
+    "sprite": {
+      "texture_id": "mines",
+      "offset": {
+        "x": 6,
+        "y": -12
+      }
+    },
+    "type": "weapon",
+    "cooldown": 0.5,
+    "uses": 3,
+    "effect": "triggered_effect",
+    "effect_offset": {
+      "x": 6,
+      "y": -12
+    },
+    "triggered_effect_trigger": "player",
+    "triggered_effect_trigger_size": {
+      "x": 36,
+      "y": 36
+    },
+    "effect_is_friendly_fire": true,
+    "triggered_effect_activation_delay": 1.5,
+    "triggered_effect": {
+      "effect": "circle_collider",
+      "circle_collider_radius": 64,
+      "effect_is_friendly_fire": true,
+      "effect_particle_effect_id": "hit",
+      "effect_sound_effect_id": "explode"
+    },
+    "triggered_effect_animation": {
+      "texture_id": "mines",
+      "offset": {
+        "x": 6,
+        "y": -12
+      },
+      "animations": [
+        {
+          "id": "armed",
+          "row": 0,
+          "frames": 13,
+          "fps": 12
+        }
+      ],
+      "should_autoplay": true
+    },
+    "collider_size": {
+      "x": 32,
+      "y": 32
+    },
+    "mount_offset": {
+      "x": 6,
+      "y": -12
+    },
+    "animation": {
+      "texture_id": "mines",
+      "animations": [
+        {
+          "id": "idle",
+          "row": 0,
+          "frames": 1,
+          "fps": 1
+        }
+      ]
+    }
+  },
+  {
+    "id": "grenades",
+    "sprite": {
+      "texture_id": "grenades"
+    },
+    "type": "weapon",
+    "cooldown": 0.5,
+    "uses": 3,
+    "effect": "triggered_effect",
+    "triggered_effect_trigger": "player",
+    "triggered_effect_velocity": {
+      "x": 400.0,
+      "y": 0.0
+    },
+    "triggered_effect_trigger_size": {
+      "x": 24,
+      "y": 24
+    },
+    "triggered_effect_trigger_offset": {
+      "x": 0,
+      "y": -24
+    },
+    "triggered_effect_timed_trigger": 1.5,
+    "triggered_effect": {
+      "effect": "circle_collider",
+      "circle_collider_radius": 64,
+      "effect_is_friendly_fire": true,
+      "effect_particle_effect_id": "hit",
+      "effect_sound_effect_id": "explode"
+    },
+    "triggered_effect_animation": {
+      "texture_id": "grenades",
+      "offset": {
+        "x": 0,
+        "y": -24
+      },
+      "animations": [
+        {
+          "id": "armed",
+          "row": 1,
+          "frames": 3,
+          "fps": 12
+        }
+      ],
+      "should_autoplay": true
+    },
+    "collider_size": {
+      "x": 32,
+      "y": 48
+    },
+    "mount_offset": {
+      "x": 0,
+      "y": -24
+    },
+    "animation": {
+      "texture_id": "grenades",
+      "animations": [
+        {
+          "id": "idle",
+          "row": 0,
+          "frames": 1,
+          "fps": 1
+        }
+      ]
+    }
+  },
+  {
+    "id": "cannon",
+    "sprite": {
+      "texture_id": "cannon",
+      "offset": {
+        "x": 0,
+        "y": -8
+      }
+    },
+    "type": "weapon",
+    "cooldown": 0.5,
+    "recoil": 400.0,
+    "uses": 3,
+    "sound_effect_id": "shoot",
+    "effect": "triggered_effect",
+    "effect_offset": {
+      "x": 64,
+      "y": 18
+    },
+    "mount_offset": {
+      "x": 0,
+      "y": -16
+    },
+    "triggered_effect_trigger": "both",
+    "triggered_effect_velocity": {
+      "x": 600.0,
+      "y": -50.0
+    },
+    "triggered_effect_trigger_size": {
+      "x": 24,
+      "y": 24
+    },
+    "triggered_effect_trigger_offset": {
+      "x": -4,
+      "y": -24
+    },
+    "triggered_effect_timed_trigger": 1.5,
+    "triggered_effect": {
+      "effect": "circle_collider",
+      "circle_collider_radius": 64,
+      "effect_is_friendly_fire": true,
+      "effect_particle_effect_id": "hit",
+      "effect_sound_effect_id": "explode"
+    },
+    "triggered_effect_animation": {
+      "texture_id": "kick_bomb",
+      "offset": {
+        "x": -4,
+        "y": -24
+      },
+      "animations": [
+        {
+          "id": "armed",
+          "row": 1,
+          "frames": 3,
+          "fps": 12
+        }
+      ],
+      "should_autoplay": true
+    },
+    "collider_size": {
+      "x": 64,
+      "y": 24
+    },
+    "animation": {
+      "texture_id": "cannon",
+      "animations": [
+        {
+          "id": "idle",
+          "row": 0,
+          "frames": 1,
+          "fps": 1
+        },
+        {
+          "id": "attack",
+          "row": 1,
+          "frames": 4,
+          "fps": 8
+        }
+      ]
+    }
+  }
+]

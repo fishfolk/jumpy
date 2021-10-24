@@ -85,7 +85,7 @@ impl Ai {
             }
 
             if (obstacle_soon || (!wants_descent && cliff_soon))
-                && player.body.on_ground
+                && player.body.is_on_ground
                 && self.jump_cooldown <= 0.
             {
                 input.jump = true;
@@ -99,14 +99,14 @@ impl Ai {
         }
 
         if rand::gen_range(0, 800) == 5 {
-            input.throw = true;
+            input.pickup = true;
             self.throw_cooldown = 1.;
         }
 
         if player.body.pos.distance(foe.body.pos) <= 100. || rand::gen_range(0, 180) == 5 {
             //
             if player.state_machine.state() == Player::ST_NORMAL && player.weapon.is_some() {
-                player.state_machine.set_state(Player::ST_SHOOT);
+                player.state_machine.set_state(Player::ST_ATTACK);
             }
         }
 
@@ -127,7 +127,7 @@ impl Ai {
 
                 let weapon_rect = weapon.collider();
                 if weapon_rect.point().distance(player.body.pos) <= 80. {
-                    input.throw = true;
+                    input.pickup = true;
                 }
             }
             self.throw_cooldown = 1.;

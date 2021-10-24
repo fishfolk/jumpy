@@ -34,6 +34,7 @@ impl Volcano {
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
         let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get("volcano_icon").unwrap();
 
         let sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
@@ -47,7 +48,7 @@ impl Volcano {
                 }],
                 false,
             ),
-            resources.items_textures["volcano/icon"],
+            texture_entry.texture,
             Self::COLLIDER_WIDTH,
         );
 
@@ -58,6 +59,7 @@ impl Volcano {
             pos,
             0.0,
             vec2(Self::COLLIDER_WIDTH, Self::COLLIDER_HEIGHT),
+            false,
         );
 
         scene::add_node(Volcano {
@@ -190,13 +192,13 @@ impl Volcano {
             let mut node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<Volcano>();
-            node.body.speed.x = speed;
+            node.body.velocity.x = speed;
         }
         fn set_speed_y(handle: HandleUntyped, speed: f32) {
             let mut node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<Volcano>();
-            node.body.speed.y = speed;
+            node.body.velocity.y = speed;
         }
 
         capabilities::PhysicsObject {
@@ -437,11 +439,13 @@ impl Node for EruptingVolcano {
     }
 
     fn draw(mut erupting_volcano: RefMut<Self>) {
-        let resources = storage::get_mut::<Resources>();
         erupting_volcano.sprite.update();
 
+        let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get("volcano").unwrap();
+
         draw_texture_ex(
-            resources.items_textures["volcano/erupting"],
+            texture_entry.texture,
             erupting_volcano.current_pos.x,
             erupting_volcano.current_pos.y,
             color::WHITE,

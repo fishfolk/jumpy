@@ -11,8 +11,7 @@ use gui::{
         LayerListElement, ObjectListElement, TilesetDetailsElement, TilesetListElement,
         ToolSelectorElement, Toolbar, ToolbarPosition,
     },
-    CreateLayerWindow, CreateObjectWindow, CreateTilesetWindow, EditorGui, GuiElement,
-    TilesetPropertiesWindow,
+    CreateLayerWindow, CreateObjectWindow, CreateTilesetWindow, EditorGui, TilesetPropertiesWindow,
 };
 
 mod actions;
@@ -47,6 +46,7 @@ use macroquad::{
 };
 
 use super::map::{Map, MapLayerKind};
+use crate::resources::MapResource;
 
 #[derive(Debug, Clone)]
 pub struct EditorContext {
@@ -74,7 +74,7 @@ impl Default for EditorContext {
 }
 
 pub struct Editor {
-    map: Map,
+    map_resource: MapResource,
     selected_tool: Option<TypeId>,
     selected_layer: Option<String>,
     selected_tileset: Option<String>,
@@ -98,14 +98,14 @@ impl Editor {
 
     const CURSOR_MOVE_SPEED: f32 = 5.0;
 
-    pub fn new(input_scheme: EditorInputScheme, map: Map) -> Self {
+    pub fn new(input_scheme: EditorInputScheme, map_resource: MapResource) -> Self {
         add_tool_instance(TilePlacementTool::new());
         add_tool_instance(ObjectPlacementTool::new());
         add_tool_instance(EraserTool::new());
 
         let selected_tool = None;
 
-        let selected_layer = map.draw_order.first().cloned();
+        let selected_layer = map_resource.map.draw_order.first().cloned();
 
         let cursor_position = match input_scheme {
             EditorInputScheme::Keyboard => None,
@@ -147,7 +147,7 @@ impl Editor {
         storage::store(gui);
 
         Editor {
-            map,
+            map_resource,
             selected_tool,
             selected_layer,
             selected_tileset: None,
@@ -180,6 +180,14 @@ impl Editor {
         None
     }
 
+    fn get_map(&self) -> &Map {
+        &self.map_resource.map
+    }
+
+    fn get_map_mut(&mut self) -> &mut Map {
+        &mut self.map_resource.map
+    }
+
     fn get_context(&self) -> EditorContext {
         EditorContext {
             selected_tool: self.selected_tool,
@@ -194,15 +202,15 @@ impl Editor {
 
     fn update_context(&mut self) {
         if let Some(layer_id) = &self.selected_layer {
-            if !self.map.draw_order.contains(layer_id) {
+            if !self.get_map().draw_order.contains(layer_id) {
                 self.selected_layer = None;
             }
-        } else if let Some(layer_id) = self.map.draw_order.first() {
+        } else if let Some(layer_id) = self.get_map().draw_order.first() {
             self.selected_layer = Some(layer_id.clone());
         }
 
         if let Some(layer_id) = &self.selected_layer {
-            let layer = self.map.layers.get(layer_id).unwrap();
+            let layer = self.get_map().layers.get(layer_id).unwrap();
 
             match layer.kind {
                 MapLayerKind::TileLayer => {
@@ -216,7 +224,7 @@ impl Editor {
         }
 
         if let Some(tileset_id) = &self.selected_tileset {
-            if let Some(tileset) = self.map.tilesets.get(tileset_id) {
+            if let Some(tileset) = self.get_map().tilesets.get(tileset_id) {
                 if let Some(tile_id) = self.selected_tile {
                     if tile_id >= tileset.tile_cnt {
                         self.selected_tile = None;
@@ -231,14 +239,14 @@ impl Editor {
         if let Some(tool_id) = &self.selected_tool {
             let tool = get_tool_instance_of_id(tool_id);
             let ctx = self.get_context();
-            if !tool.is_available(&self.map, &ctx) {
+            if !tool.is_available(self.get_map(), &ctx) {
                 self.selected_tool = None;
             }
         }
     }
 
     fn select_tileset(&mut self, tileset_id: &str, tile_id: Option<u32>) {
-        if let Some(tileset) = self.map.tilesets.get(tileset_id) {
+        if let Some(tileset) = self.map_resource.map.tilesets.get(tileset_id) {
             self.selected_tileset = Some(tileset_id.to_string());
 
             if let Some(tile_id) = tile_id {
@@ -266,10 +274,10 @@ impl Editor {
                 }
             }
             EditorAction::Undo => {
-                res = self.history.undo(&mut self.map);
+                res = self.history.undo(&mut self.map_resource.map);
             }
             EditorAction::Redo => {
-                res = self.history.redo(&mut self.map);
+                res = self.history.redo(&mut self.map_resource.map);
             }
             EditorAction::SelectTool(index) => {
                 self.selected_tool = Some(index);
@@ -299,13 +307,15 @@ impl Editor {
                 self.select_tileset(&tileset_id, Some(id));
             }
             EditorAction::SelectLayer(id) => {
-                if self.map.layers.contains_key(&id) {
+                if self.get_map().layers.contains_key(&id) {
                     self.selected_layer = Some(id);
                 }
             }
             EditorAction::SetLayerDrawOrderIndex { id, index } => {
                 let action = SetLayerDrawOrderIndexAction::new(id, index);
-                res = self.history.apply(Box::new(action), &mut self.map);
+                res = self
+                    .history
+                    .apply(Box::new(action), &mut self.map_resource.map);
             }
             EditorAction::CreateLayer {
                 id,
@@ -314,43 +324,58 @@ impl Editor {
                 index,
             } => {
                 let action = CreateLayerAction::new(id, kind, has_collision, index);
-                res = self.history.apply(Box::new(action), &mut self.map);
+                res = self
+                    .history
+                    .apply(Box::new(action), &mut self.map_resource.map);
             }
             EditorAction::DeleteLayer(id) => {
                 let action = DeleteLayerAction::new(id);
-                res = self.history.apply(Box::new(action), &mut self.map);
+                res = self
+                    .history
+                    .apply(Box::new(action), &mut self.map_resource.map);
             }
             EditorAction::SelectTileset(id) => {
                 self.select_tileset(&id, None);
             }
             EditorAction::CreateTileset { id, texture_id } => {
                 let action = CreateTilesetAction::new(id, texture_id);
-                res = self.history.apply(Box::new(action), &mut self.map);
+                res = self
+                    .history
+                    .apply(Box::new(action), &mut self.map_resource.map);
             }
             EditorAction::DeleteTileset(id) => {
                 let action = DeleteTilesetAction::new(id);
-                res = self.history.apply(Box::new(action), &mut self.map);
+                res = self
+                    .history
+                    .apply(Box::new(action), &mut self.map_resource.map);
             }
             EditorAction::SetTilesetAutotileMask { id, autotile_mask } => {
                 let action = SetTilesetAutotileMaskAction::new(id, autotile_mask);
-                res = self.history.apply(Box::new(action), &mut self.map);
+                res = self
+                    .history
+                    .apply(Box::new(action), &mut self.map_resource.map);
             }
             EditorAction::SelectObject { index, layer_id } => {
                 self.selected_layer = Some(layer_id);
                 self.selected_object = Some(index);
             }
             EditorAction::CreateObject {
-                name,
+                id,
+                kind,
                 position,
                 size,
                 layer_id,
             } => {
-                let action = CreateObjectAction::new(name, position, size, layer_id);
-                res = self.history.apply(Box::new(action), &mut self.map);
+                let action = CreateObjectAction::new(id, kind, position, size, layer_id);
+                res = self
+                    .history
+                    .apply(Box::new(action), &mut self.map_resource.map);
             }
             EditorAction::DeleteObject { index, layer_id } => {
                 let action = DeleteObjectAction::new(index, layer_id);
-                res = self.history.apply(Box::new(action), &mut self.map);
+                res = self
+                    .history
+                    .apply(Box::new(action), &mut self.map_resource.map);
             }
             EditorAction::PlaceTile {
                 id,
@@ -359,11 +384,15 @@ impl Editor {
                 coords,
             } => {
                 let action = PlaceTileAction::new(id, layer_id, tileset_id, coords);
-                res = self.history.apply(Box::new(action), &mut self.map);
+                res = self
+                    .history
+                    .apply(Box::new(action), &mut self.map_resource.map);
             }
             EditorAction::RemoveTile { layer_id, coords } => {
                 let action = RemoveTileAction::new(layer_id, coords);
-                res = self.history.apply(Box::new(action), &mut self.map);
+                res = self
+                    .history
+                    .apply(Box::new(action), &mut self.map_resource.map);
             }
         }
 
@@ -388,23 +417,29 @@ impl Node for Editor {
         }
 
         let cursor_position = node.get_cursor_position();
-        let element_at_cursor = {
-            let gui = storage::get::<EditorGui>();
-            gui.get_element_at(cursor_position)
-        };
 
         if input.action {
-            if element_at_cursor.is_none() || element_at_cursor.unwrap() != GuiElement::ContextMenu
-            {
+            let (is_cursor_over_gui, is_cursor_over_context_menu) = {
+                let gui = storage::get::<EditorGui>();
+                let is_over_gui = gui.contains(cursor_position);
+                let mut is_over_context_menu = false;
+                if is_over_gui && gui.context_menu_contains(cursor_position) {
+                    is_over_context_menu = true;
+                }
+
+                (is_over_gui, is_over_context_menu)
+            };
+
+            if !is_cursor_over_context_menu {
                 let mut gui = storage::get_mut::<EditorGui>();
                 gui.close_context_menu();
             }
 
-            if element_at_cursor.is_none() {
+            if !is_cursor_over_gui {
                 if let Some(id) = &node.selected_tool {
                     let ctx = node.get_context();
                     let tool = get_tool_instance_of_id(id);
-                    if let Some(action) = tool.get_action(&node.map, &ctx) {
+                    if let Some(action) = tool.get_action(node.get_map(), &ctx) {
                         node.apply_action(action);
                     }
                 }
@@ -426,9 +461,9 @@ impl Node for Editor {
         }
 
         let cursor_position = node.get_cursor_position();
-        let element_at_cursor = {
+        let is_cursor_over_map = {
             let gui = storage::get::<EditorGui>();
-            gui.get_element_at(cursor_position)
+            !gui.contains(cursor_position)
         };
 
         let screen_size = vec2(screen_width(), screen_height());
@@ -452,21 +487,21 @@ impl Node for Editor {
         let mut camera = scene::find_node_by_type::<EditorCamera>().unwrap();
         let movement = pan_direction * Self::CAMERA_PAN_SPEED;
 
-        camera.position = (camera.position + movement).clamp(Vec2::ZERO, node.map.get_size());
+        camera.position = (camera.position + movement).clamp(Vec2::ZERO, node.get_map().get_size());
 
-        if element_at_cursor.is_none() {
+        if is_cursor_over_map {
             camera.scale = (camera.scale + input.camera_zoom * Self::CAMERA_ZOOM_STEP)
                 .clamp(Self::CAMERA_ZOOM_MIN, Self::CAMERA_ZOOM_MAX);
         }
     }
 
     fn draw(mut node: RefMut<Self>) {
-        node.map.draw(None);
+        node.get_map_mut().draw(true, None);
 
         let res = {
             let ctx = node.get_context();
             let mut gui = storage::get_mut::<EditorGui>();
-            gui.draw(&node.map, ctx)
+            gui.draw(node.get_map(), ctx)
         };
 
         if let Some(action) = res {

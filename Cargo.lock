@@ -172,7 +172,7 @@ dependencies = [
 [[package]]
 name = "fishsticks"
 version = "0.1.1"
-source = "git+https://github.com/PotatoTech/fishsticks#3ebef92a9c225498e201391af169d233cf8c6940"
+source = "git+https://github.com/PotatoTech/fishsticks#b1a6eccbb43515039570e9e72b824d4052073dc0"
 dependencies = [
  "cfg-if",
  "sdl2",
@@ -292,11 +292,10 @@ dependencies = [
 [[package]]
 name = "macroquad-particles"
 version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8505dc035e4d68799a53a459afef0bc345410039325b5928af2e0d83eb15de40"
+source = "git+https://github.com/olefasting/macroquad_particles#3258c54aa152f79b55793a6e1b4b7c016d52b476"
 dependencies = [
  "macroquad",
- "nanoserde",
+ "serde",
 ]
 
 [[package]]

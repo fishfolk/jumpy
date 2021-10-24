@@ -5,6 +5,7 @@ use macroquad::{
 };
 use macroquad_platformer::Tile;
 
+use crate::nodes::ParticleEmitters;
 use crate::{
     items::jellyfish::Jellyfish, items::jellyfish::MountStatus, nodes::Player, GameWorld, Resources,
 };
@@ -87,12 +88,13 @@ impl FlappyJellyfish {
 
     /// Handles everything, but needs access to the player/jellyfish nodes, so they must not be in scope.
     pub fn terminate(flappy_jellyfish: RefMut<FlappyJellyfish>, killed_player_ids: Vec<u8>) {
-        let hit_fxses = &mut storage::get_mut::<Resources>().hit_fxses;
+        let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
         let explosion_position = vec2(
             flappy_jellyfish.current_pos.x + Self::COLLIDER_WIDTH / 2.,
             flappy_jellyfish.current_pos.y + Self::COLLIDER_HEIGHT / 2.,
         );
-        hit_fxses.spawn(explosion_position);
+
+        particles.hit.spawn(explosion_position);
 
         let mut jellyfish = scene::find_node_by_type::<Jellyfish>().unwrap();
         if !matches!(jellyfish.mount_status, MountStatus::Dropped) {
@@ -250,12 +252,13 @@ impl scene::Node for FlappyJellyfish {
     }
 
     fn draw(mut flappy_jellyfish: RefMut<Self>) {
-        let resources = storage::get_mut::<Resources>();
+        let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get("flappy_jellyfish").unwrap();
 
         flappy_jellyfish.flappy_jellyfish_sprite.update();
 
         draw_texture_ex(
-            resources.flappy_jellyfish,
+            texture_entry.texture,
             flappy_jellyfish.current_pos.x,
             flappy_jellyfish.current_pos.y,
             color::WHITE,

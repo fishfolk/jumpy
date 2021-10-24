@@ -7,16 +7,16 @@ use macroquad::{
 
 use crate::{components::PhysicsBody, nodes::Player, GameWorld, Resources};
 
+use crate::nodes::ParticleEmitters;
 use std::f32;
 
 pub struct Explosive {
     texture: String,
     sprite: AnimatedSprite,
-    pub body: PhysicsBody,
+    body: PhysicsBody,
     lived: f32,
     owner_id: u8,
     detonation_parameters: DetonationParameters,
-    last_vel: Vec2,
 }
 
 pub struct DetonationParameters {
@@ -31,8 +31,9 @@ pub struct DetonationParameters {
 }
 
 impl Explosive {
-    /// Use Explosive::spawn(), which handles the scene graph.
-    pub fn new(
+    // Use Explosive::spawn(), which handles the scene graph.
+    //
+    fn new(
         pos: Vec2,
         velocity: Vec2,
         detonation_parameters: DetonationParameters,
@@ -45,8 +46,15 @@ impl Explosive {
         //
         let mut world = storage::get_mut::<GameWorld>();
 
-        let mut body = PhysicsBody::new(&mut world.collision_world, pos, 0.0, size);
-        body.speed = velocity;
+        let mut body = PhysicsBody::new(
+            &mut world.collision_world,
+            pos,
+            0.0,
+            size,
+            false,
+        );
+
+        body.velocity = velocity;
 
         Self {
             texture: texture.to_string(),
@@ -55,7 +63,6 @@ impl Explosive {
             lived: 0.0,
             owner_id,
             detonation_parameters,
-            last_vel: vec2(0.0, 0.0),
         }
     }
     /// Creates a new explosive and adds it to the scene.
@@ -87,34 +94,27 @@ impl Explosive {
         );
         scene::add_node(explosive);
     }
+}
 
-    /// If return is `true`, delete the node.
-    pub fn update(&mut self) -> bool {
-        self.body.update();
-        self.lived += get_frame_time();
+impl scene::Node for Explosive {
+    fn fixed_update(mut explosive: RefMut<Self>) {
+        explosive.body.update();
+        explosive.lived += get_frame_time();
 
-        if self.body.speed.x == 0.0 {
-            self.body.speed.x = -self.last_vel.x * 0.6;
-        }
-        if self.body.speed.y == 0.0 && self.last_vel.y.abs() > 75.0 {
-            self.body.speed.y = -self.last_vel.y * 0.6;
-        }
-        self.last_vel = self.body.speed;
-
-        let explosion_position = self.body.pos + self.body.size / 2.;
+        let explosion_position = explosive.body.pos + explosive.body.size / 2.;
 
         let mut explode = false;
 
-        if let Some(fuse) = self.detonation_parameters.fuse {
-            if self.lived > fuse {
+        if let Some(fuse) = explosive.detonation_parameters.fuse {
+            if explosive.lived > fuse {
                 explode = true;
             }
         }
 
-        if let Some(radius) = self.detonation_parameters.trigger_radius {
+        if let Some(radius) = explosive.detonation_parameters.trigger_radius {
             for player in player_circle_hit(explosion_position, radius) {
-                if self.lived > self.detonation_parameters.owner_safe_fuse
-                    || player.id != self.owner_id
+                if explosive.lived > explosive.detonation_parameters.owner_safe_fuse
+                    || player.id != explosive.owner_id
                 {
                     explode = true;
                     break;
@@ -125,27 +125,27 @@ impl Explosive {
         if explode {
             create_explosion(
                 explosion_position,
-                self.detonation_parameters.explosion_radius,
+                explosive.detonation_parameters.explosion_radius,
             );
-            return true;
+            explosive.delete();
         }
-        false
     }
 
-    pub fn draw(&mut self) {
-        let resources = storage::get_mut::<Resources>();
+    fn draw(mut explosive: RefMut<Self>) {
+        explosive.sprite.update();
 
-        self.sprite.update();
+        let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get(&explosive.texture).unwrap();
 
         draw_texture_ex(
-            resources.items_textures[&self.texture],
-            self.body.pos.x,
-            self.body.pos.y,
+            texture_entry.texture,
+            explosive.body.pos.x,
+            explosive.body.pos.y,
             color::WHITE,
             DrawTextureParams {
-                source: Some(self.sprite.frame().source_rect),
-                dest_size: Some(self.sprite.frame().dest_size),
-                flip_x: self.body.facing,
+                source: Some(explosive.sprite.frame().source_rect),
+                dest_size: Some(explosive.sprite.frame().dest_size),
+                flip_x: explosive.body.facing,
                 rotation: 0.0,
                 ..Default::default()
             },
@@ -153,39 +153,27 @@ impl Explosive {
     }
 }
 
-impl scene::Node for Explosive {
-    fn fixed_update(mut explosive: RefMut<Self>) {
-        if Explosive::update(&mut explosive) {
-            explosive.delete();
-        }
-    }
-
-    fn draw(mut explosive: RefMut<Self>) {
-        Explosive::draw(&mut explosive);
-    }
-}
-
 /// Creates explosion FX and kills players within `radius`
 pub fn create_explosion(position: Vec2, radius: f32) {
     let mut r = 0.0;
     {
-        let mut resources = storage::get_mut::<Resources>();
+        let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
         while r < radius - 5. {
             // Particles are 5 in radius
             r += 10.0 / (r + 1.);
             let angle = gen_range(0.0, f32::consts::PI * 2.);
-            resources
-                .fx_explosion_fire
+            particles
+                .explosion_fire
                 .emit(position + Vec2::new(angle.cos(), angle.sin()) * r, 1);
             //Explosion
         }
 
-        resources.fx_explosion_particles.spawn(position); //Bits/particles
+        particles.explosion_particles.spawn(position); //Bits/particles
 
         let mut a = 0.0;
         while a < f32::consts::PI * 2.0 {
-            resources
-                .fx_smoke
+            particles
+                .smoke
                 .emit(position + Vec2::new(a.cos(), a.sin()) * (radius - 15.0), 1); //Smoke at the edges of the explosion
             a += 4.0 / radius;
         }

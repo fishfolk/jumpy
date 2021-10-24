@@ -25,6 +25,8 @@ pub struct Sproinger {
 }
 
 impl Sproinger {
+    pub const OBJECT_ID: &'static str = "sproinger";
+
     pub const TRIGGER_WIDTH: f32 = 32.0;
     pub const TRIGGER_HEIGHT: f32 = 8.0;
     pub const FORCE: f32 = 1100.0;
@@ -90,7 +92,9 @@ impl Sproinger {
             let intersect = sproinger_rect.intersect(object_collider);
             if intersect.is_some() {
                 let resources = storage::get_mut::<Resources>();
-                play_sound_once(resources.jump_sound);
+                let jump_sound = resources.sounds["jump"];
+
+                play_sound_once(jump_sound);
 
                 physics_object.set_speed_y(-Self::FORCE);
 
@@ -154,10 +158,12 @@ impl scene::Node for Sproinger {
 
     fn draw(mut node: RefMut<Self>) {
         node.sprite.update();
-        let resources = storage::get_mut::<Resources>();
+
+        let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get("sproinger").unwrap();
 
         draw_texture_ex(
-            resources.items_textures["sproinger/sproinger"],
+            texture_entry.texture,
             node.pos.x,
             node.pos.y,
             color::WHITE,

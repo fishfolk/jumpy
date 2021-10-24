@@ -57,7 +57,7 @@ impl TilesetPropertiesWindow {
         size: Vec2,
         tileset: &MapTileset,
     ) -> Option<EditorAction> {
-        let tileset_texture = {
+        let texture_entry = {
             let resources = storage::get::<Resources>();
             resources
                 .textures
@@ -66,7 +66,10 @@ impl TilesetPropertiesWindow {
                 .unwrap()
         };
 
-        let tileset_texture_size = vec2(tileset_texture.width(), tileset_texture.height());
+        let tileset_texture_size = vec2(
+            texture_entry.texture.width(),
+            texture_entry.texture.height(),
+        );
 
         let mut scaled_width = size.x;
         let mut scaled_height = (scaled_width / tileset_texture_size.x) * tileset_texture_size.y;
@@ -83,7 +86,7 @@ impl TilesetPropertiesWindow {
             scaled_height / subgrid_size.y as f32,
         );
 
-        widgets::Texture::new(tileset_texture)
+        widgets::Texture::new(texture_entry.texture)
             .size(scaled_width, scaled_height)
             .position(position)
             .ui(ui);

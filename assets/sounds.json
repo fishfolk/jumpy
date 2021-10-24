@@ -1,0 +1,42 @@
+[
+  {
+    "id": "jump",
+    "path": "sounds/jump.wav"
+  },
+  {
+    "id": "pickup",
+    "path": "sounds/pickup.wav"
+  },
+  {
+    "id": "land",
+    "path": "sounds/land.wav"
+  },
+  {
+    "id": "slip",
+    "path": "sounds/slip.wav"
+  },
+  {
+    "id": "throw",
+    "path": "sounds/throw.wav"
+  },
+  {
+    "id": "death",
+    "path": "sounds/fish_fillet.wav"
+  },
+  {
+    "id": "shoot",
+    "path": "sounds/shoot.ogg"
+  },
+  {
+    "id": "swing",
+    "path": "sounds/swing.wav"
+  },
+  {
+    "id": "sword",
+    "path": "sounds/sword.wav"
+  },
+  {
+    "id": "explode",
+    "path": "sounds/explode_m.wav"
+  }
+]

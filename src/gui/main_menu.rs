@@ -1,3 +1,5 @@
+use std::{net::UdpSocket, path::Path};
+
 use macroquad::{
     experimental::collections::storage,
     prelude::*,
@@ -6,14 +8,16 @@ use macroquad::{
 
 use fishsticks::GamepadContext;
 
+use crate::resources::map_name_to_filename;
 use crate::{
-    gui::{GuiResources, Level},
+    error::Result,
+    gui::GuiResources,
     input::InputScheme,
     nodes::network::Message,
-    EditorInputScheme, GameType,
+    resources::MapResource,
+    text::{draw_aligned_text, HorizontalAlignment, VerticalAlignment},
+    EditorInputScheme, GameType, Resources,
 };
-
-use std::net::UdpSocket;
 
 const RELAY_ADDR: &str = "173.0.157.169:35000";
 const WINDOW_WIDTH: f32 = 700.;
@@ -467,7 +471,7 @@ pub async fn game_type() -> GameType {
             |ui| match widgets::Tabbar::new(
                 hash!(),
                 vec2(WINDOW_WIDTH - 50., 50.),
-                &["<< LT, Local", "Editor", "Network, RT >>"],
+                &["<< LB, Local", "Editor", "Network, RB >>"],
             )
             .selected_tab(Some(&mut tab))
             .ui(ui)
@@ -494,7 +498,13 @@ pub async fn game_type() -> GameType {
     }
 }
 
-pub async fn location_select() -> Level {
+const MAP_SELECT_SCREEN_MARGIN_FACTOR: f32 = 0.1;
+const MAP_SELECT_PREVIEW_TARGET_WIDTH: f32 = 250.0;
+const MAP_SELECT_PREVIEW_RATIO: f32 = 10.0 / 16.0;
+const MAP_SELECT_PREVIEW_SHRINK_FACTOR: f32 = 0.8;
+
+pub async fn location_select() -> MapResource {
+    let mut current_page: i32;
     let mut hovered: i32 = 0;
 
     let mut old_mouse_position = mouse_position();
@@ -503,7 +513,7 @@ pub async fn location_select() -> Level {
     next_frame().await;
 
     loop {
-        let mut gui_resources = storage::get_mut::<GuiResources>();
+        let gui_resources = storage::get::<GuiResources>();
         let mut gamepad_system = storage::get_mut::<GamepadContext>();
 
         let _ = gamepad_system.update();
@@ -513,6 +523,11 @@ pub async fn location_select() -> Level {
         let mut right = is_key_pressed(KeyCode::Right) || is_key_pressed(KeyCode::D);
         let mut left = is_key_pressed(KeyCode::Left) || is_key_pressed(KeyCode::A);
         let mut start = is_key_pressed(KeyCode::Enter);
+
+        let (page_up, page_down) = {
+            let mouse_wheel = mouse_wheel();
+            (mouse_wheel.1 > 0.0, mouse_wheel.1 < 0.0)
+        };
 
         for (_, gamepad) in gamepad_system.gamepads() {
             use fishsticks::{Axis, Button};
@@ -546,72 +561,156 @@ pub async fn location_select() -> Level {
         }
         clear_background(BLACK);
 
-        let levels_amount = gui_resources.levels.len();
+        let resources = storage::get::<Resources>();
+        let map_cnt = resources.maps.len();
 
         root_ui().push_skin(&gui_resources.skins.main_menu_skin);
 
-        let rows = (levels_amount + 2) / 3;
-        let w = (screen_width() - 120.) / 3. - 50.;
-        let h = (screen_height() - 180.) / rows as f32 - 50.;
+        let screen_size = vec2(screen_width(), screen_height());
+        let screen_margins = vec2(
+            screen_size.x * MAP_SELECT_SCREEN_MARGIN_FACTOR,
+            screen_size.y * MAP_SELECT_SCREEN_MARGIN_FACTOR,
+        );
+        let content_size = vec2(
+            screen_size.x - (screen_margins.x * 2.0),
+            screen_size.y - (screen_margins.y * 2.0),
+        );
+
+        let entries_per_row = (content_size.x / MAP_SELECT_PREVIEW_TARGET_WIDTH).round() as usize;
+        let row_cnt = (map_cnt / entries_per_row) + 1;
+
+        let entry_size = {
+            let width = content_size.x / entries_per_row as f32;
+            vec2(width, width * MAP_SELECT_PREVIEW_RATIO)
+        };
+
+        let rows_per_page = (content_size.y / entry_size.y) as usize;
+        let entries_per_page = rows_per_page * entries_per_row;
+
+        let page_cnt = (row_cnt / rows_per_page) + 1;
 
         {
             if up {
-                hovered -= 3;
-                let ceiled_levels_amount = levels_amount as i32 + 3 - (levels_amount % 3) as i32;
+                hovered -= entries_per_row as i32;
                 if hovered < 0 {
-                    hovered = (hovered + ceiled_levels_amount as i32) % ceiled_levels_amount;
-                    if hovered >= levels_amount as i32 {
-                        hovered -= 3;
+                    hovered += 1 + map_cnt as i32 + (map_cnt % entries_per_row) as i32;
+                    if hovered >= map_cnt as i32 {
+                        hovered = map_cnt as i32 - 1;
                     }
                 }
             }
 
             if down {
-                hovered += 3;
-                if hovered >= levels_amount as i32 {
-                    let row = hovered % 3;
-                    hovered = row;
+                let old = hovered;
+                hovered += entries_per_row as i32;
+                if hovered >= map_cnt as i32 {
+                    if old == map_cnt as i32 - 1 {
+                        hovered = 0;
+                    } else {
+                        hovered = map_cnt as i32 - 1;
+                    }
                 }
             }
+
             if left {
+                let row_begin = (hovered / entries_per_row as i32) * entries_per_row as i32;
                 hovered -= 1;
+                if hovered < row_begin {
+                    hovered = row_begin + entries_per_row as i32 - 1;
+                }
             }
+
             if right {
+                let row_begin = (hovered / entries_per_row as i32) * entries_per_row as i32;
                 hovered += 1;
+                if hovered >= row_begin + entries_per_row as i32 {
+                    hovered = row_begin;
+                }
             }
-            hovered = (hovered + levels_amount as i32) % levels_amount as i32;
 
-            let levels = &mut gui_resources.levels;
+            current_page = hovered / entries_per_page as i32;
 
-            for (n, level) in levels.iter_mut().enumerate() {
-                let is_hovered = hovered == n as i32;
-
-                let rect = Rect::new(
-                    60. + (n % 3) as f32 * (w + 50.) - level.size * 30.,
-                    90. + 25. + (n / 3) as f32 * (h + 50.) - level.size * 30.,
-                    w + level.size * 60.,
-                    h + level.size * 60.,
-                );
-                if old_mouse_position != mouse_position() && rect.contains(mouse_position().into())
-                {
-                    hovered = n as _;
-                }
-
-                if is_hovered {
-                    level.size = level.size * 0.8 + 1.0 * 0.2;
+            if page_up {
+                current_page -= 1;
+                if current_page < 0 {
+                    current_page = page_cnt as i32 - 1;
+                    hovered += (map_cnt + (entries_per_page - (map_cnt % entries_per_page))
+                        - entries_per_page) as i32;
+                    if hovered >= map_cnt as i32 {
+                        hovered = map_cnt as i32 - 1
+                    }
                 } else {
-                    level.size = level.size * 0.9 + 0.0;
+                    hovered -= entries_per_page as i32;
+                }
+            }
+
+            if page_down {
+                current_page += 1;
+                if current_page >= page_cnt as i32 {
+                    current_page = 0;
+                    hovered %= entries_per_page as i32;
+                } else {
+                    hovered += entries_per_page as i32;
+                    if hovered >= map_cnt as i32 {
+                        hovered = map_cnt as i32 - 1;
+                    }
+                }
+            }
+
+            current_page %= page_cnt as i32;
+
+            {
+                if page_cnt > 1 {
+                    draw_aligned_text(
+                        &format!("page {}/{}", current_page + 1, page_cnt),
+                        screen_size - vec2(25.0, 25.0),
+                        HorizontalAlignment::Right,
+                        VerticalAlignment::Bottom,
+                        Default::default(),
+                    );
                 }
 
-                if ui::widgets::Button::new(level.preview)
-                    .size(rect.size())
-                    .position(rect.point())
-                    .ui(&mut *root_ui())
-                    || start
-                {
-                    root_ui().pop_skin();
-                    let level = levels.get(hovered as usize).unwrap();
-                    return level.clone();
+                let begin = (current_page as usize * entries_per_page).clamp(0, map_cnt);
+                let end = (begin as usize + entries_per_page).clamp(begin, map_cnt);
+
+                for (pi, i) in (begin..end).enumerate() {
+                    let map_entry = resources.maps.get(i).unwrap();
+                    let is_hovered = hovered == i as i32;
+
+                    let mut rect = Rect::new(
+                        screen_margins.x + ((pi % entries_per_row) as f32 * entry_size.x),
+                        screen_margins.y + ((pi / entries_per_row) as f32 * entry_size.y),
+                        entry_size.x,
+                        entry_size.y,
+                    );
+
+                    if !is_hovered {
+                        let w = rect.w * MAP_SELECT_PREVIEW_SHRINK_FACTOR;
+                        let h = rect.h * MAP_SELECT_PREVIEW_SHRINK_FACTOR;
+
+                        rect.x += (rect.w - w) / 2.0;
+                        rect.y += (rect.h - h) / 2.0;
+
+                        rect.w = w;
+                        rect.h = h;
+                    }
+
+                    if old_mouse_position != mouse_position()
+                        && rect.contains(mouse_position().into())
+                    {
+                        hovered = i as _;
+                    }
+
+                    if ui::widgets::Button::new(map_entry.preview)
+                        .size(rect.size())
+                        .position(rect.point())
+                        .ui(&mut *root_ui())
+                        || start
+                    {
+                        root_ui().pop_skin();
+                        let res = resources.maps.get(hovered as usize).cloned().unwrap();
+                        return res;
+                    }
                 }
             }
         }
@@ -624,10 +723,10 @@ pub async fn location_select() -> Level {
     }
 }
 
-pub async fn new_map() -> (String, Vec2, UVec2) {
+pub async fn create_map() -> Result<MapResource> {
     let mut res = None;
 
-    let size = vec2(350.0, 230.0);
+    let size = vec2(450.0, 500.0);
     let position = vec2(
         (screen_width() - size.x) / 2.0,
         (screen_height() - size.y) / 2.0,
@@ -638,11 +737,17 @@ pub async fn new_map() -> (String, Vec2, UVec2) {
     let gui_resources = storage::get_mut::<GuiResources>();
     root_ui().push_skin(&gui_resources.skins.login_skin);
 
-    let mut map_name = "Unnamed Map".to_string();
-    let mut map_grid_width = "100".to_string();
-    let mut map_grid_height = "100".to_string();
-    let mut map_tile_width = "32".to_string();
-    let mut map_tile_height = "32".to_string();
+    let mut name = "Unnamed Map".to_string();
+    let mut description = "".to_string();
+    let mut grid_width = "100".to_string();
+    let mut grid_height = "100".to_string();
+    let mut tile_width = "32".to_string();
+    let mut tile_height = "32".to_string();
+
+    let map_exports_path = {
+        let resources = storage::get::<Resources>();
+        Path::new(&resources.assets_dir).join(Resources::MAP_EXPORTS_DEFAULT_DIR)
+    };
 
     let mut gamepad_system = storage::get_mut::<GamepadContext>();
 
@@ -655,7 +760,7 @@ pub async fn new_map() -> (String, Vec2, UVec2) {
             .titlebar(false)
             .movable(false)
             .ui(&mut *root_ui(), |ui| {
-                ui.label(None, "Create new map");
+                ui.label(None, "New map");
 
                 ui.separator();
                 ui.separator();
@@ -663,15 +768,43 @@ pub async fn new_map() -> (String, Vec2, UVec2) {
                 ui.separator();
 
                 {
-                    let size = vec2(173.0, 25.0);
+                    let size = vec2(300.0, 25.0);
 
                     widgets::InputText::new(hash!())
                         .size(size)
                         .ratio(1.0)
-                        .label("Map name")
-                        .ui(ui, &mut map_name);
+                        .ui(ui, &mut name);
                 }
 
+                ui.separator();
+                ui.separator();
+                ui.separator();
+                ui.separator();
+
+                {
+                    let path_label = map_exports_path
+                        .join(map_name_to_filename(&name))
+                        .with_extension(Resources::MAP_EXPORTS_EXTENSION);
+
+                    widgets::Label::new(format!("'{}'", path_label.to_str().unwrap())).ui(ui);
+                }
+
+                ui.separator();
+                ui.separator();
+                ui.separator();
+                ui.separator();
+
+                {
+                    let size = vec2(300.0, 75.0);
+
+                    widgets::InputText::new(hash!())
+                        .size(size)
+                        .ratio(1.0)
+                        .ui(ui, &mut description);
+                }
+
+                ui.separator();
+                ui.separator();
                 ui.separator();
                 ui.separator();
 
@@ -682,21 +815,7 @@ pub async fn new_map() -> (String, Vec2, UVec2) {
                         .size(size)
                         .ratio(1.0)
                         .label("x")
-                        .ui(ui, &mut map_grid_width);
-
-                    ui.same_line(size.x + 25.0);
-
-                    widgets::InputText::new(hash!())
-                        .size(size)
-                        .ratio(1.0)
-                        .label("Grid size")
-                        .ui(ui, &mut map_grid_height);
-
-                    widgets::InputText::new(hash!())
-                        .size(size)
-                        .ratio(1.0)
-                        .label("x")
-                        .ui(ui, &mut map_tile_width);
+                        .ui(ui, &mut tile_width);
 
                     ui.same_line(size.x + 25.0);
 
@@ -704,7 +823,21 @@ pub async fn new_map() -> (String, Vec2, UVec2) {
                         .size(size)
                         .ratio(1.0)
                         .label("Tile size")
-                        .ui(ui, &mut map_tile_height);
+                        .ui(ui, &mut tile_height);
+
+                    widgets::InputText::new(hash!())
+                        .size(size)
+                        .ratio(1.0)
+                        .label("x")
+                        .ui(ui, &mut grid_width);
+
+                    ui.same_line(size.x + 25.0);
+
+                    widgets::InputText::new(hash!())
+                        .size(size)
+                        .ratio(1.0)
+                        .label("Grid size")
+                        .ui(ui, &mut grid_height);
                 }
 
                 ui.separator();
@@ -718,24 +851,33 @@ pub async fn new_map() -> (String, Vec2, UVec2) {
                 if ui.button(None, "Confirm (A) (Enter)") || btn_a || enter {
                     // TODO: Validate input
 
-                    let grid_size = uvec2(
-                        map_grid_width.parse::<u32>().unwrap(),
-                        map_grid_height.parse::<u32>().unwrap(),
-                    );
-
                     let tile_size = vec2(
-                        map_tile_width.parse::<f32>().unwrap(),
-                        map_tile_height.parse::<f32>().unwrap(),
+                        tile_width.parse::<f32>().unwrap(),
+                        tile_height.parse::<f32>().unwrap(),
                     );
 
-                    let map_params = (map_name.clone(), tile_size, grid_size);
-                    res = Some(map_params);
+                    let grid_size = uvec2(
+                        grid_width.parse::<u32>().unwrap(),
+                        grid_height.parse::<u32>().unwrap(),
+                    );
+
+                    let params = (name.clone(), description.clone(), tile_size, grid_size);
+
+                    res = Some(params);
                 }
             });
 
-        if let Some(res) = res {
+        if let Some((name, description, tile_size, grid_size)) = res {
             root_ui().pop_skin();
-            return res;
+
+            let description = if description.is_empty() {
+                None
+            } else {
+                Some(description.as_str())
+            };
+
+            let mut resources = storage::get_mut::<Resources>();
+            return resources.create_map(&name, description, tile_size, grid_size, true);
         }
 
         next_frame().await;

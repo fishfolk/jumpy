@@ -46,9 +46,10 @@ impl scene::Node for Jellyfish {
         node.sprite.update();
 
         let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get("jellyfish").unwrap();
 
         draw_texture_ex(
-            resources.items_textures["jellyfish/jellyfish"],
+            texture_entry.texture,
             node.body.pos.x,
             node.body.pos.y,
             color::WHITE,
@@ -104,6 +105,7 @@ impl Jellyfish {
                 pos,
                 0.0,
                 vec2(Self::COLLIDER_WIDTH, Self::COLLIDER_HEIGHT),
+                false,
             ),
             throwable: ThrowableItem::default(),
             used: false,
@@ -251,13 +253,13 @@ impl Jellyfish {
             let mut node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<Jellyfish>();
-            node.body.speed.x = speed;
+            node.body.velocity.x = speed;
         }
         fn set_speed_y(handle: HandleUntyped, speed: f32) {
             let mut node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<Jellyfish>();
-            node.body.speed.y = speed;
+            node.body.velocity.y = speed;
         }
 
         capabilities::PhysicsObject {

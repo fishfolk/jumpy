@@ -13,30 +13,35 @@
   "attack_duration": 1.0,
   "recoil": 1400.0,
   "sound_effect": "shoot",
-  "effect": "projectile",
-  "effect_offset": {
-    "x": 64,
-    "y": 16
-  },
-  "projectile_type": "sprite",
-  "projectile_sprite": {
-    "texture": "small_projectile",
-    "size": {
-      "x": 8,
-      "y": 4
+  "effect": {
+    "type": "projectile",
+    "projectile": {
+      "type": "sprite",
+      "sprite": {
+        "texture": "small_projectile",
+        "size": {
+          "x": 8,
+          "y": 4
+        },
+        "tint": {
+          "r": 0.9,
+          "g": 0.75,
+          "b": 0.12,
+          "a": 1.0
+        }
+      }
     },
-    "tint": {
-      "r": 0.9,
-      "g": 0.75,
-      "b": 0.12,
-      "a": 1.0
-    }
+    "range": 600.0,
+    "speed": 25.0
   },
-  "projectile_range": 600.0,
-  "projectile_speed": 25.0,
+
   "collider_size": {
     "x": 64,
     "y": 24
+  },
+  "effect_offset": {
+    "x": 64,
+    "y": 16
   },
   "animation": {
     "texture": "sniper_rifle",

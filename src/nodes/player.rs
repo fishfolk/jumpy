@@ -280,17 +280,45 @@ impl Player {
     }
 
     pub fn get_weapon_mount_offset(&self) -> Vec2 {
-        let mut offset = if let Some(weapon) = &self.weapon {
-            weapon.get_mount_offset(self.body.facing_dir(), None)
-        } else {
-            vec2(0.0, 0.0)
-        };
+        let mut offset = Vec2::ZERO;
+
+        if let Some(weapon) = &self.weapon {
+            offset += weapon.mount_offset;
+        }
+
+        if !self.body.is_facing_right {
+            offset.x = -offset.x;
+        }
 
         if self.is_crouched {
             offset.y += Self::WEAPON_MOUNT_Y_OFFSET_CROUCHED;
         } else {
             offset.y += Self::WEAPON_MOUNT_Y_OFFSET;
         }
+
+        // TODO: Implement rotation
+
+        offset
+    }
+
+    pub fn get_weapon_effect_offset(&self) -> Vec2 {
+        let mut offset = Vec2::ZERO;
+
+        if let Some(weapon) = &self.weapon {
+            offset += weapon.effect_offset;
+        }
+
+        if !self.body.is_facing_right {
+            offset.x = -offset.x;
+        }
+
+        if self.is_crouched {
+            offset.y += Self::WEAPON_MOUNT_Y_OFFSET_CROUCHED;
+        } else {
+            offset.y += Self::WEAPON_MOUNT_Y_OFFSET;
+        }
+
+        // TODO: Implement rotation
 
         offset
     }
@@ -463,18 +491,7 @@ impl Player {
     }
 
     fn attack_coroutine(node: &mut RefMut<Player>) -> Coroutine {
-        let player = node.handle();
-
-        if node.weapon.is_some() && node.weapon.as_ref().unwrap().is_ready() {
-            Weapon::attack_coroutine(player)
-        } else {
-            let coroutine = async move {
-                let player = &mut *scene::get_node(player);
-                player.state_machine.set_state(Player::ST_NORMAL);
-            };
-
-            start_coroutine(coroutine)
-        }
+        Weapon::attack_coroutine(node.handle())
     }
 
     fn update_incapacitated(node: &mut RefMut<Player>, dt: f32) {
@@ -828,6 +845,72 @@ impl Player {
 
         StateMachine::update_detached(node, |node| &mut node.state_machine);
     }
+
+    fn draw_player(&self) {
+        self.animation_player.draw(
+            self.body.pos,
+            self.body.rotation,
+            !self.body.is_facing_right,
+            false,
+        );
+
+        // {
+        //     let hitbox = node.get_collider();
+        //
+        //     draw_rectangle_lines(hitbox.x, hitbox.y, hitbox.w, hitbox.h, 2.0, color::RED);
+        // }
+    }
+
+    fn draw_weapon(&mut self) {
+        let position = self.body.pos;
+        let rotation = self.body.rotation;
+        let is_facing_right = self.body.is_facing_right;
+        let mount_offset = self.get_weapon_mount_offset();
+
+        if let Some(weapon) = &mut self.weapon {
+            weapon.draw(position + mount_offset, rotation, !is_facing_right, false);
+
+            {
+                let mut position = position;
+                position.y += Self::WEAPON_HUD_Y_OFFSET;
+
+                weapon.draw_hud(position);
+            }
+        }
+    }
+
+    fn draw_items(&self) {
+        // draw turtle shell on player if the player has back armor
+        if self.back_armor > 0 {
+            let texture_id = if self.back_armor == 1 {
+                "turtle_shell_broken"
+            } else {
+                "turtle_shell"
+            };
+
+            let texture_entry = {
+                let resources = storage::get::<Resources>();
+                resources.textures.get(texture_id).cloned().unwrap()
+            };
+
+            draw_texture_ex(
+                texture_entry.texture,
+                self.body.pos.x
+                    + if self.body.is_facing_right {
+                        -15.0
+                    } else {
+                        20.0
+                    },
+                self.body.pos.y,
+                color::WHITE,
+                DrawTextureParams {
+                    flip_y: self.body.is_facing_right,
+                    rotation: std::f32::consts::PI / 2.0,
+                    ..Default::default()
+                },
+            )
+        }
+    }
 }
 
 impl scene::Node for Player {
@@ -836,83 +919,15 @@ impl scene::Node for Player {
         node.provides(Self::network_capabilities());
     }
 
-    fn draw(node: RefMut<Self>) {
-        let draw_player = || {
-            let resources = storage::get::<Resources>();
-
-            node.animation_player.draw(
-                node.body.pos,
-                node.body.rotation,
-                None,
-                !node.body.is_facing_right,
-                false,
-            );
-
-            // {
-            //     let hitbox = node.get_collider();
-            //
-            //     draw_rectangle_lines(hitbox.x, hitbox.y, hitbox.w, hitbox.h, 2.0, color::RED);
-            // }
-
-            // draw turtle shell on player if the player has back armor
-            if node.back_armor > 0 {
-                let texture_id = if node.back_armor == 1 {
-                    "turtle_shell_broken"
-                } else {
-                    "turtle_shell"
-                };
-
-                let texture_entry = resources.textures.get(texture_id).unwrap();
-
-                draw_texture_ex(
-                    texture_entry.texture,
-                    node.body.pos.x
-                        + if node.body.is_facing_right {
-                            -15.0
-                        } else {
-                            20.0
-                        },
-                    node.body.pos.y,
-                    color::WHITE,
-                    DrawTextureParams {
-                        flip_y: node.body.is_facing_right,
-                        rotation: std::f32::consts::PI / 2.0,
-                        ..Default::default()
-                    },
-                )
-            }
-        };
-
-        let draw_weapon = || {
-            if let Some(weapon) = &node.weapon {
-                {
-                    let position = node.body.pos + node.get_weapon_mount_offset();
-
-                    weapon.draw(
-                        position,
-                        node.body.rotation,
-                        None,
-                        !node.body.is_facing_right,
-                        false,
-                    );
-                }
-
-                {
-                    let mut position = node.body.pos;
-                    position.y += Self::WEAPON_HUD_Y_OFFSET;
-
-                    weapon.draw_hud(position);
-                }
-            }
-        };
-
+    fn draw(mut node: RefMut<Self>) {
         if node.body.is_facing_right {
-            draw_player();
-            draw_weapon();
+            node.draw_player();
+            node.draw_weapon();
         } else {
-            draw_weapon();
-            draw_player();
+            node.draw_weapon();
+            node.draw_player();
         }
+        node.draw_items();
     }
 
     fn update(mut node: RefMut<Self>) {

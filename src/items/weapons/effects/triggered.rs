@@ -210,7 +210,7 @@ impl Node for TriggeredEffects {
     fn draw(mut node: RefMut<Self>) {
         for trigger in &mut node.active {
             if let Some(animation_player) = &trigger.animation_player {
-                animation_player.draw(trigger.body.pos, 0.0, None, false, false);
+                animation_player.draw(trigger.body.pos, 0.0, false, false);
             }
         }
     }

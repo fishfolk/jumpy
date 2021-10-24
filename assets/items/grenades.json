@@ -6,49 +6,51 @@
   "type": "weapon",
   "cooldown": 0.5,
   "uses": 3,
-  "effect": "triggered_effect",
-  "triggered_effect_trigger": "player",
-  "triggered_effect_velocity": {
-    "x": 400.0,
-    "y": 0.0
-  },
-  "triggered_effect_trigger_size": {
-    "x": 24,
-    "y": 24
-  },
-  "triggered_effect_trigger_offset": {
-    "x": 0,
-    "y": -24
-  },
-  "triggered_effect_timed_trigger": 1.5,
-  "triggered_effect": {
-    "effect": "circle_collider",
-    "circle_collider_radius": 64,
-    "effect_is_friendly_fire": true,
-    "effect_particle_effect": "hit",
-    "effect_sound_effect": "explode"
-  },
-  "triggered_effect_animation": {
-    "texture": "grenades",
-    "offset": {
-      "x": 0,
-      "y": -24
+  "effect": {
+    "type": "triggered_effect",
+    "trigger": "player",
+    "velocity": {
+      "x": 400.0,
+      "y": 0.0
     },
-    "animations": [
-      {
-        "id": "armed",
-        "row": 1,
-        "frames": 3,
-        "fps": 12
-      }
-    ],
-    "should_autoplay": true
+    "size": {
+      "x": 24,
+      "y": 24
+    },
+    "timed_trigger": 1.5,
+    "triggered_effect": {
+      "type": "circle_collider",
+      "radius": 64,
+      "is_friendly_fire": true,
+      "particle_effect": "hit",
+      "sound_effect": "explode"
+    },
+    "animation": {
+      "texture": "grenades",
+      "offset": {
+        "x": 0,
+        "y": -24
+      },
+      "animations": [
+        {
+          "id": "armed",
+          "row": 1,
+          "frames": 3,
+          "fps": 12
+        }
+      ],
+      "should_autoplay": true
+    }
   },
   "collider_size": {
     "x": 32,
     "y": 48
   },
   "mount_offset": {
+    "x": 0,
+    "y": -24
+  },
+  "effect_offset": {
     "x": 0,
     "y": -24
   },

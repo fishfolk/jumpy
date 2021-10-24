@@ -38,19 +38,19 @@ pub struct WeaponEffectParams {
     pub kind: WeaponEffectKind,
     #[serde(
         default,
-        rename = "effect_particle_effect",
+        rename = "particle_effect",
         skip_serializing_if = "Option::is_none"
     )]
     pub particle_effect_id: Option<String>,
     #[serde(
         default,
-        rename = "effect_sound_effect",
+        rename = "sound_effect",
         skip_serializing_if = "Option::is_none"
     )]
     pub sound_effect_id: Option<String>,
-    #[serde(default, rename = "effect_delay")]
+    #[serde(default)]
     pub delay: f32,
-    #[serde(default, rename = "effect_is_friendly_fire")]
+    #[serde(default)]
     pub is_friendly_fire: bool,
 }
 
@@ -63,19 +63,18 @@ pub struct WeaponEffectParams {
 // The effects that have the `Collider` suffix denote effects that do an immediate collider check,
 // upon attack, using the weapons `effect_offset` as origin.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "effect", rename_all = "snake_case")]
+#[serde(tag = "type", rename_all = "snake_case")]
 pub enum WeaponEffectKind {
     // This is used to add multiple effects to a weapon, without having to implement a custom effect
     Batch {
-        #[serde(rename = "batch_effects")]
         effects: Vec<WeaponEffectParams>,
     },
     // Custom effects are made by implementing `WeaponEffectCoroutine`, either directly in code or
     // in scripts if/when we add a scripting API
     Custom {
-        #[serde(rename = "custom_effect_id")]
+        #[serde(rename = "id")]
         id: String,
-        #[serde(default, rename = "custom_effect_params")]
+        #[serde(default, rename = "params")]
         params: HashMap<String, CustomWeaponEffectParam>,
     },
     // Check for hits with a `Circle` collider.
@@ -86,51 +85,45 @@ pub enum WeaponEffectKind {
     // if `x` is negative one and `y` is one, the lower backward-facing quarter of the circle will
     // be used, and so on.
     CircleCollider {
-        #[serde(rename = "circle_collider_radius")]
         radius: f32,
-        #[serde(default, rename = "circle_collider_segment", with = "json::ivec2_opt")]
+        #[serde(default, with = "json::ivec2_opt")]
         segment: Option<IVec2>,
     },
     // Check for hits with a `Rect` collider
     RectCollider {
-        #[serde(rename = "rect_collider_width")]
         width: f32,
-        #[serde(rename = "rect_collider_height")]
         height: f32,
     },
     // Spawn a trigger that will set of another effect if its trigger conditions are met.
     TriggeredEffect {
-        #[serde(rename = "triggered_effect_trigger")]
+        #[serde(rename = "trigger")]
         kind: WeaponEffectTriggerKind,
-        #[serde(rename = "triggered_effect_trigger_size", with = "json::vec2_def")]
+        #[serde(with = "json::vec2_def")]
         size: Vec2,
         #[serde(
             default,
-            rename = "triggered_effect_trigger_offset",
             with = "json::vec2_def"
         )]
         offset: Vec2,
-        #[serde(default, rename = "triggered_effect_velocity", with = "json::vec2_def")]
+        #[serde(default, with = "json::vec2_def")]
         velocity: Vec2,
         #[serde(rename = "triggered_effect")]
         effect: Box<WeaponEffectParams>,
-        #[serde(default, rename = "triggered_effect_animation")]
+        #[serde(default)]
         animation: Option<AnimationParams>,
-        #[serde(default, rename = "triggered_effect_activation_delay")]
+        #[serde(default)]
         activation_delay: f32,
-        #[serde(default, rename = "triggered_effect_timed_trigger")]
+        #[serde(default)]
         timed_trigger: Option<f32>,
     },
     // Spawn a projectile.
     // This would typically be used for things like a gun.
     Projectile {
-        #[serde(flatten)]
+        #[serde(rename = "projectile")]
         kind: ProjectileKind,
-        #[serde(rename = "projectile_speed")]
         speed: f32,
-        #[serde(rename = "projectile_range")]
         range: f32,
-        #[serde(default, rename = "projectile_spread")]
+        #[serde(default)]
         spread: f32,
     },
 }

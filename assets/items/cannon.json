@@ -4,59 +4,53 @@
     "texture": "cannon",
     "offset": {
       "x": 0,
-      "y": -8
+      "y": -22
     }
   },
   "type": "weapon",
   "cooldown": 0.5,
   "recoil": 400.0,
   "uses": 3,
-  "sound_effect": "shoot",
-  "effect": "triggered_effect",
-  "effect_offset": {
-    "x": 64,
-    "y": 18
-  },
   "mount_offset": {
-    "x": 0,
-    "y": -16
+    "x": -16,
+    "y": -22
   },
-  "triggered_effect_trigger": "both",
-  "triggered_effect_velocity": {
-    "x": 600.0,
-    "y": -50.0
+  "effect_offset": {
+    "x": 36,
+    "y": 0
   },
-  "triggered_effect_trigger_size": {
-    "x": 24,
-    "y": 24
-  },
-  "triggered_effect_trigger_offset": {
-    "x": -4,
-    "y": -24
-  },
-  "triggered_effect_timed_trigger": 1.5,
-  "triggered_effect": {
-    "effect": "circle_collider",
-    "circle_collider_radius": 64,
-    "effect_is_friendly_fire": true,
-    "effect_particle_effect": "hit",
-    "effect_sound_effect": "explode"
-  },
-  "triggered_effect_animation": {
-    "texture": "kick_bomb",
-    "offset": {
-      "x": -4,
-      "y": -24
+  "sound_effect": "shoot",
+  "effect": {
+    "type": "triggered_effect",
+    "trigger": "both",
+    "velocity": {
+      "x": 1000.0,
+      "y": -100.0
     },
-    "animations": [
-      {
-        "id": "armed",
-        "row": 1,
-        "frames": 3,
-        "fps": 12
-      }
-    ],
-    "should_autoplay": true
+    "size": {
+      "x": 17,
+      "y": 17
+    },
+    "timed_trigger": 1.5,
+    "triggered_effect": {
+      "type": "circle_collider",
+      "radius": 64,
+      "is_friendly_fire": true,
+      "particle_effect": "hit",
+      "sound_effect": "explode"
+    },
+    "animation": {
+      "texture": "cannon_ball",
+      "animations": [
+        {
+          "id": "armed",
+          "row": 0,
+          "frames": 1,
+          "fps": 1
+        }
+      ],
+      "should_autoplay": true
+    }
   },
   "collider_size": {
     "x": 64,

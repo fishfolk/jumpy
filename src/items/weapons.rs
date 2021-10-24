@@ -12,7 +12,10 @@ use macroquad::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    components::{AnimationParams, AnimationPlayer},
+    components::{
+        AnimationParams,
+        AnimationPlayer,
+    },
     json, Player, Resources,
 };
 
@@ -23,6 +26,7 @@ pub use effects::{
     CustomWeaponEffectCoroutine, CustomWeaponEffectParam, Projectiles, WeaponEffectKind,
     WeaponEffectParams, WeaponEffectTriggerKind,
 };
+use crate::math::rotate_vector;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WeaponParams {
@@ -34,7 +38,6 @@ pub struct WeaponParams {
     pub sound_effect_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub uses: Option<u32>,
-    #[serde(flatten)]
     pub effect: WeaponEffectParams,
     #[serde(default, with = "json::vec2_def")]
     pub mount_offset: Vec2,
@@ -42,8 +45,6 @@ pub struct WeaponParams {
     pub effect_offset: Vec2,
     #[serde(default)]
     pub attack_duration: f32,
-    #[serde(default, rename = "particle_effect")]
-    pub particle_effect_id: Option<String>,
     pub cooldown: f32,
     #[serde(default)]
     pub recoil: f32,
@@ -57,23 +58,24 @@ pub struct Weapon {
     pub cooldown: f32,
     pub recoil: f32,
     pub attack_duration: f32,
-    pub particle_effect_id: Option<String>,
     pub uses: Option<u32>,
     pub use_cnt: u32,
     pub animation_player: AnimationPlayer,
     pub cooldown_timer: f32,
-    mount_offset: Vec2,
-    effect_offset: Vec2,
+    pub mount_offset: Vec2,
+    pub effect_offset: Vec2,
 }
 
 impl Weapon {
     const HUD_CONDENSED_USE_COUNT_THRESHOLD: u32 = 12;
+
     const HUD_USE_COUNT_COLOR_FULL: Color = Color {
         r: 0.8,
         g: 0.9,
         b: 1.0,
         a: 1.0,
     };
+
     const HUD_USE_COUNT_COLOR_EMPTY: Color = Color {
         r: 0.8,
         g: 0.9,
@@ -123,7 +125,6 @@ impl Weapon {
             cooldown: params.cooldown,
             recoil: params.recoil,
             attack_duration: params.attack_duration,
-            particle_effect_id: params.particle_effect_id,
             uses: params.uses,
             use_cnt: 0,
             animation_player,
@@ -140,26 +141,24 @@ impl Weapon {
     }
 
     pub fn draw(
-        &self,
+        &mut self,
         position: Vec2,
         rotation: f32,
-        scale: Option<Vec2>,
         flip_x: bool,
         flip_y: bool,
     ) {
-        let rect = self.animation_player.get_rect(scale);
+        let size = self.animation_player.get_size();
         let mut position = position;
 
         if flip_x {
-            position.x -= rect.w;
+            position.x -= size.x;
         }
 
         if flip_y {
-            position.y -= rect.h;
+            position.y -= size.y;
         }
 
-        self.animation_player
-            .draw(position, rotation, scale, flip_x, flip_y);
+        self.animation_player.draw(position, rotation, flip_x, flip_y);
     }
 
     pub fn draw_hud(&self, position: Vec2) {
@@ -212,33 +211,7 @@ impl Weapon {
         }
     }
 
-    pub fn get_effect_offset(&self, facing_direction: Vec2, scale: Option<f32>) -> Vec2 {
-        let mut offset = vec2(
-            facing_direction.x * self.effect_offset.x,
-            self.effect_offset.y,
-        );
-
-        if let Some(scale) = scale {
-            offset *= scale;
-        }
-
-        offset
-    }
-
-    pub fn get_mount_offset(&self, facing_direction: Vec2, scale: Option<f32>) -> Vec2 {
-        let mut offset = vec2(
-            facing_direction.x * self.mount_offset.x,
-            self.mount_offset.y,
-        );
-
-        if let Some(scale) = scale {
-            offset *= scale;
-        }
-
-        offset
-    }
-
-    pub fn is_ready(&self) -> bool {
+    fn is_ready(&self) -> bool {
         if self.cooldown_timer < self.cooldown {
             return false;
         } else if let Some(uses) = self.uses {
@@ -299,52 +272,65 @@ impl Weapon {
         start_coroutine(coroutine)
     }
 
+    /// This will start a `Coroutine` that performs an attack with the `Weapon` equipped by the
+    /// `Player` fetched with `player_handle`, id one is equipped and ready for use.
     pub fn attack_coroutine(player_handle: Handle<Player>) -> Coroutine {
         let coroutine = async move {
-            {
+            let is_ready = {
                 let player = &mut *scene::get_node(player_handle);
-                if let Some(weapon) = player.weapon.as_mut() {
-                    weapon.use_cnt += 1;
-                    weapon.cooldown_timer = 0.0;
-
-                    if let Some(sound_effect) = weapon.sound_effect {
-                        play_sound_once(sound_effect);
-                    }
-
-                    player.body.velocity.x = if player.body.is_facing_right {
-                        -weapon.recoil
-                    } else {
-                        weapon.recoil
-                    };
-                } else {
-                    return;
-                }
-            }
-
-            {
-                let player = &*scene::get_node(player_handle);
                 if let Some(weapon) = &player.weapon {
-                    let facing_dir = player.body.facing_dir();
-
-                    let origin = player.body.pos
-                        + player.get_weapon_mount_offset()
-                        + weapon.get_effect_offset(facing_dir, None);
-
-                    weapon_effect_coroutine(player_handle, origin, weapon.effect.clone());
+                    weapon.is_ready()
+                } else {
+                    false
                 }
-            }
-
-            {
-                Weapon::animation_coroutine(player_handle, Self::ATTACK_ANIMATION_ID);
-            }
-
-            let attack_duration = {
-                let player = &*scene::get_node(player_handle);
-                player.weapon.as_ref().map(|weapon| weapon.attack_duration)
             };
 
-            if let Some(attack_duration) = attack_duration {
-                wait_seconds(attack_duration).await;
+            if is_ready {
+                {
+                    let player = &mut *scene::get_node(player_handle);
+                    if let Some(weapon) = player.weapon.as_mut() {
+                        if weapon.uses.is_some() {
+                            weapon.use_cnt += 1;
+                        }
+
+                        weapon.cooldown_timer = 0.0;
+
+                        if let Some(sound_effect) = weapon.sound_effect {
+                            play_sound_once(sound_effect);
+                        }
+
+                        player.body.velocity.x = if player.body.is_facing_right {
+                            -weapon.recoil
+                        } else {
+                            weapon.recoil
+                        };
+                    } else {
+                        return;
+                    }
+                }
+
+                {
+                    let mut player = &mut *scene::get_node(player_handle);
+                    let origin = player.body.pos
+                        + player.get_weapon_effect_offset();
+
+                    if let Some(weapon) = player.weapon.as_mut() {
+                        weapon_effect_coroutine(player_handle, origin, weapon.effect.clone());
+                    }
+                }
+
+                {
+                    Weapon::animation_coroutine(player_handle, Self::ATTACK_ANIMATION_ID);
+                }
+
+                let attack_duration = {
+                    let player = &*scene::get_node(player_handle);
+                    player.weapon.as_ref().map(|weapon| weapon.attack_duration)
+                };
+
+                if let Some(attack_duration) = attack_duration {
+                    wait_seconds(attack_duration).await;
+                }
             }
 
             {

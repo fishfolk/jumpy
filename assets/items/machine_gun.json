@@ -7,31 +7,35 @@
   "cooldown": 0.15,
   "recoil": 125.0,
   "uses": 24,
-  "sound_effect": "shoot",
-  "effect": "projectile",
-  "effect_offset": {
-    "x": 60,
-    "y": 4
-  },
   "mount_offset": {
     "x": -8,
     "y": 0
   },
-  "projectile_range": 128.0,
-  "projectile_speed": 5.0,
-  "projectile_spread": 5.0,
-  "projectile_type": "sprite",
-  "projectile_sprite": {
-    "texture": "small_projectile",
-    "size": {
-      "x": 8,
-      "y": 4
-    },
-    "tint": {
-      "r": 0.9,
-      "g": 0.75,
-      "b": 0.12,
-      "a": 1.0
+  "effect_offset": {
+    "x": 60,
+    "y": 4
+  },
+  "sound_effect": "shoot",
+  "effect": {
+    "type": "projectile",
+    "range": 128.0,
+    "speed": 5.0,
+    "spread": 5.0,
+    "projectile": {
+      "type": "sprite",
+      "sprite": {
+        "texture": "small_projectile",
+        "size": {
+          "x": 8,
+          "y": 4
+        },
+        "tint": {
+          "r": 0.9,
+          "g": 0.75,
+          "b": 0.12,
+          "a": 1.0
+        }
+      }
     }
   },
   "collider_size": {

@@ -5,6 +5,7 @@ use macroquad::{
     },
     prelude::*,
 };
+
 use macroquad_platformer::Tile;
 
 use crate::{
@@ -18,10 +19,10 @@ use super::{weapon_effect_coroutine, WeaponEffectParams, WeaponEffectTriggerKind
 pub struct TriggeredEffectParams {
     pub offset: Vec2,
     pub velocity: Vec2,
+    pub animation: Option<AnimationParams>,
     pub is_friendly_fire: bool,
     pub activation_delay: f32,
     pub timed_trigger: Option<f32>,
-    pub animation: Option<AnimationParams>,
 }
 
 impl Default for TriggeredEffectParams {
@@ -29,10 +30,10 @@ impl Default for TriggeredEffectParams {
         TriggeredEffectParams {
             offset: Vec2::ZERO,
             velocity: Vec2::ZERO,
+            animation: None,
             is_friendly_fire: false,
             activation_delay: 0.0,
             timed_trigger: None,
-            animation: None,
         }
     }
 }
@@ -206,11 +207,8 @@ impl Node for TriggeredEffects {
         }
     }
 
-    fn draw(node: RefMut<Self>)
-    where
-        Self: Sized,
-    {
-        for trigger in &node.active {
+    fn draw(mut node: RefMut<Self>) {
+        for trigger in &mut node.active {
             if let Some(animation_player) = &trigger.animation_player {
                 animation_player.draw(trigger.body.pos, 0.0, None, false, false);
             }

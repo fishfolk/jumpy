@@ -742,7 +742,7 @@ impl Player {
 
         node.animation_player.update();
         if let Some(weapon) = &mut node.weapon {
-            weapon.update();
+            weapon.update(get_frame_time());
         }
 
         let map_bottom = {

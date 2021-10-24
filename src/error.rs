@@ -29,6 +29,7 @@ pub enum ErrorKind {
     General,
     File,
     Parsing,
+    Input,
 }
 
 impl ErrorKind {
@@ -37,6 +38,7 @@ impl ErrorKind {
             ErrorKind::General => "General error",
             ErrorKind::File => "File error",
             ErrorKind::Parsing => "Parsing error",
+            ErrorKind::Input => "Input error",
         }
     }
 }
@@ -125,6 +127,15 @@ impl fmt::Debug for Repr {
 }
 
 impl error::Error for Error {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        match self.repr {
+            Repr::Simple(..) => None,
+            Repr::Message(..) => None,
+            Repr::SimpleMessage(..) => None,
+            Repr::Custom(ref c) => c.error.source(),
+        }
+    }
+
     #[allow(deprecated, deprecated_in_future)]
     fn description(&self) -> &str {
         match &self.repr {
@@ -144,20 +155,11 @@ impl error::Error for Error {
             Repr::Custom(ref c) => c.error.cause(),
         }
     }
-
-    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
-        match self.repr {
-            Repr::Simple(..) => None,
-            Repr::Message(..) => None,
-            Repr::SimpleMessage(..) => None,
-            Repr::Custom(ref c) => c.error.source(),
-        }
-    }
 }
 
-impl From<String> for Error {
-    fn from(error: String) -> Error {
-        Error::new_message(ErrorKind::General, &error)
+impl From<fishsticks::error::Error> for Error {
+    fn from(error: fishsticks::error::Error) -> Error {
+        Error::new_message(ErrorKind::Input, &error)
     }
 }
 

@@ -68,7 +68,20 @@
     },
     "projectile_range": 128.0,
     "projectile_speed": 5.0,
-    "projectile_size": 5.0,
+    "projectile_type": "sprite",
+    "projectile_sprite": {
+      "texture_id": "small_projectile",
+      "size": {
+        "x": 8,
+        "y": 4
+      },
+      "tint": {
+        "r": 0.9,
+        "g": 0.75,
+        "b": 0.12,
+        "a": 1.0
+      }
+    },
     "collider_size": {
       "x": 64,
       "y": 24
@@ -112,9 +125,22 @@
       "x": 64,
       "y": 16
     },
+    "projectile_type": "sprite",
+    "projectile_sprite": {
+      "texture_id": "small_projectile",
+      "size": {
+        "x": 8,
+        "y": 4
+      },
+      "tint": {
+        "r": 0.9,
+        "g": 0.75,
+        "b": 0.12,
+        "a": 1.0
+      }
+    },
     "projectile_range": 600.0,
     "projectile_speed": 25.0,
-    "projectile_size": 2.0,
     "collider_size": {
       "x": 64,
       "y": 24
@@ -160,7 +186,20 @@
     "projectile_range": 128.0,
     "projectile_speed": 5.0,
     "projectile_spread": 5.0,
-    "projectile_size": 1.5,
+    "projectile_type": "sprite",
+    "projectile_sprite": {
+      "texture_id": "small_projectile",
+      "size": {
+        "x": 8,
+        "y": 4
+      },
+      "tint": {
+        "r": 0.9,
+        "g": 0.75,
+        "b": 0.12,
+        "a": 1.0
+      }
+    },
     "collider_size": {
       "x": 68,
       "y": 24

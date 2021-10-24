@@ -172,8 +172,9 @@ dependencies = [
 [[package]]
 name = "fishsticks"
 version = "0.1.1"
-source = "git+https://github.com/PotatoTech/fishsticks#1b72eedf8c3663c79d73614226f54dea489a2b83"
+source = "git+https://github.com/PotatoTech/fishsticks#b1a6eccbb43515039570e9e72b824d4052073dc0"
 dependencies = [
+ "cfg-if",
  "sdl2",
 ]
 
@@ -602,7 +603,8 @@ dependencies = [
 [[package]]
 name = "sdl2"
 version = "0.35.0"
-source = "git+https://github.com/Rust-SDL2/rust-sdl2#9d99d7f68ab5be2c9ca2b0c35083e88d6ee5cab4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "71f9a9034e52fc021f0e9e156d875d8ff06ddb48b3d4778ceb2f207de9692a95"
 dependencies = [
  "bitflags",
  "lazy_static",
@@ -613,7 +615,8 @@ dependencies = [
 [[package]]
 name = "sdl2-sys"
 version = "0.35.0"
-source = "git+https://github.com/Rust-SDL2/rust-sdl2#9d99d7f68ab5be2c9ca2b0c35083e88d6ee5cab4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "10d2f0c47c1572146c879a0cba8bf75257ec679222d274819050cfbf19012c74"
 dependencies = [
  "cfg-if",
  "cmake",

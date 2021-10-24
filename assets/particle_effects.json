@@ -1,5 +1,13 @@
 [
   {
+    "id": "bullet_smoke",
+    "path": "particle_effects/bullet_smoke.json"
+  },
+  {
+    "id": "gun_smoke",
+    "path": "particle_effects/gun_smoke.json"
+  },
+  {
     "id": "explosion",
     "path": "particle_effects/explosion.json"
   },

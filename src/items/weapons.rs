@@ -129,10 +129,10 @@ impl Weapon {
         }
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self, dt: f32) {
         self.animation_player.update();
 
-        self.cooldown_timer += get_frame_time();
+        self.cooldown_timer += dt;
     }
 
     pub fn draw(

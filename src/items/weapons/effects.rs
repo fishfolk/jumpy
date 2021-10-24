@@ -28,7 +28,7 @@ pub use custom::{
     CustomWeaponEffectParam,
 };
 
-pub use projectiles::{default_projectile_color, Projectiles};
+pub use projectiles::{ProjectileKind, Projectiles};
 
 use crate::components::AnimationParams;
 
@@ -124,16 +124,14 @@ pub enum WeaponEffectKind {
     // Spawn a projectile.
     // This would typically be used for things like a gun.
     Projectile {
+        #[serde(flatten)]
+        kind: ProjectileKind,
         #[serde(rename = "projectile_speed")]
         speed: f32,
         #[serde(rename = "projectile_range")]
         range: f32,
         #[serde(default, rename = "projectile_spread")]
         spread: f32,
-        #[serde(rename = "projectile_size")]
-        size: f32,
-        #[serde(default = "default_projectile_color", with = "json::ColorDef")]
-        color: Color,
     },
 }
 
@@ -259,11 +257,10 @@ pub fn weapon_effect_coroutine(
                 triggered_effects.spawn(player_handle, kind, origin, size, *effect, params)
             }
             WeaponEffectKind::Projectile {
+                kind,
                 speed,
                 range,
                 spread,
-                size,
-                color,
             } => {
                 let facing_dir = {
                     if let Some(player) = scene::try_get_node(player_handle) {
@@ -280,7 +277,7 @@ pub fn weapon_effect_coroutine(
 
                 let mut projectiles = scene::find_node_by_type::<Projectiles>().unwrap();
 
-                projectiles.spawn(player_handle, origin, velocity, range, size, color);
+                projectiles.spawn(player_handle, kind, origin, velocity, range);
             }
         }
     };

@@ -6,18 +6,48 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::nodes::ParticleEmitters;
-use crate::{capabilities::NetworkReplicate, GameWorld, Player};
+use serde::{Deserialize, Serialize};
+
+use crate::{
+    capabilities::NetworkReplicate,
+    components::{Sprite, SpriteParams},
+    json,
+    nodes::ParticleEmitters,
+    GameWorld, Player,
+};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "projectile_type", rename_all = "snake_case")]
+pub enum ProjectileKind {
+    Circle {
+        #[serde(rename = "projectile_radius")]
+        radius: f32,
+        #[serde(rename = "projectile_color", with = "json::ColorDef")]
+        color: Color,
+    },
+    Rect {
+        #[serde(rename = "projectile_width")]
+        width: f32,
+        #[serde(rename = "projectile_height")]
+        height: f32,
+        #[serde(rename = "projectile_color", with = "json::ColorDef")]
+        color: Color,
+    },
+    Sprite {
+        #[serde(rename = "projectile_sprite")]
+        params: Option<SpriteParams>,
+    },
+}
 
 // TODO: Performance test this and reduce complexity as needed
 struct Projectile {
     owner: Handle<Player>,
+    kind: ProjectileKind,
     origin: Vec2,
     position: Vec2,
     velocity: Vec2,
     range: f32,
-    size: f32,
-    color: Color,
+    sprite: Option<Sprite>,
 }
 
 pub struct Projectiles {
@@ -32,20 +62,26 @@ impl Projectiles {
     pub fn spawn(
         &mut self,
         owner: Handle<Player>,
+        mut kind: ProjectileKind,
         origin: Vec2,
         velocity: Vec2,
         range: f32,
-        size: f32,
-        color: Color,
     ) {
+        let sprite = if let ProjectileKind::Sprite { params } = &mut kind {
+            let params = params.take().unwrap();
+            Some(Sprite::new(params))
+        } else {
+            None
+        };
+
         self.active.push(Projectile {
             owner,
+            kind,
             origin,
             position: origin,
             velocity,
             range,
-            size,
-            color,
+            sprite,
         });
     }
 
@@ -66,35 +102,21 @@ impl Projectiles {
                 if !is_hit {
                     let world = storage::get::<GameWorld>();
 
-                    if world.map.is_collision_at(projectile.position, true) {
-                        is_hit = true;
-                    }
+                    is_hit = world.collision_world.solid_at(projectile.position);
                 }
             }
 
             if !is_hit {
-                let mut collider = None;
-                if projectile.size > 1.5 {
-                    let circle = Circle::new(
-                        projectile.position.x,
-                        projectile.position.y,
-                        projectile.size,
-                    );
-                    collider = Some(circle);
-                }
-
                 // Borrow owner so that it is excluded from the following iteration and hit check
                 let _owner = scene::try_get_node(projectile.owner);
 
                 for mut player in scene::find_nodes_by_type::<Player>() {
                     let hitbox = player.get_collider();
-                    let has_collision = if let Some(circle) = &collider {
-                        circle.overlaps_rect(&hitbox)
-                    } else {
-                        hitbox.contains(projectile.position)
-                    };
 
-                    if has_collision {
+                    if hitbox.contains(projectile.position) {
+                        let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
+                        particles.spawn("hit", projectile.position);
+
                         let direction = projectile.position.x > player.body.pos.x;
                         player.kill(direction);
 
@@ -105,12 +127,7 @@ impl Projectiles {
             }
 
             if is_hit {
-                let position = projectile.position;
                 node.active.remove(i);
-
-                let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
-                particles.spawn("hit", position);
-
                 continue;
             }
 
@@ -135,18 +152,29 @@ impl Node for Projectiles {
         node.provides(Self::network_capabilities());
     }
 
-    fn draw(node: RefMut<Self>) {
-        for projectile in &node.active {
-            draw_circle(
-                projectile.position.x,
-                projectile.position.y,
-                projectile.size,
-                projectile.color,
-            )
+    fn draw(mut node: RefMut<Self>) {
+        for projectile in &mut node.active {
+            match projectile.kind.clone() {
+                ProjectileKind::Circle { radius, color } => {
+                    draw_circle(projectile.position.x, projectile.position.y, radius, color)
+                }
+                ProjectileKind::Rect {
+                    width,
+                    height,
+                    color,
+                } => draw_rectangle(
+                    projectile.position.x,
+                    projectile.position.y,
+                    width,
+                    height,
+                    color,
+                ),
+                ProjectileKind::Sprite { .. } => {
+                    let sprite = projectile.sprite.as_ref().unwrap();
+                    let flip_x = projectile.velocity.x < 0.0;
+                    sprite.draw(projectile.position, 0.0, None, flip_x, false);
+                }
+            }
         }
     }
-}
-
-pub fn default_projectile_color() -> Color {
-    Color::new(1.0, 1.0, 0.8, 1.0)
 }

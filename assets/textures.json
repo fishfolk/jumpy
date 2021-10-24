@@ -225,6 +225,15 @@
     }
   },
   {
+    "id": "small_projectile",
+    "path": "textures/items/SmallProjectile(8x4).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 8,
+      "y": 4
+    }
+  },
+  {
     "id": "sniper_rifle",
     "path": "textures/items/SniperRifle(92x32).png",
     "type": "spritesheet",

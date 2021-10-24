@@ -82,8 +82,6 @@ pub struct MapResource {
 pub struct Resources {
     pub assets_dir: String,
 
-    // NOTE: Particle emitters has been moved to ParticleEmitter node.
-    // Resources is for data and assets, loaded from external files, and should not hold any state
     pub particle_effects: HashMap<String, EmitterConfig>,
     pub sounds: HashMap<String, Sound>,
     pub music: HashMap<String, Sound>,

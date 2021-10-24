@@ -19,19 +19,19 @@ pub struct ParticleEmitters {
 
 impl ParticleEmitters {
     pub fn new() -> Self {
-        let resources = storage::get::<Resources>();
-
-        let mut emitters = HashMap::new();
-
-        for (id, cfg) in resources.particle_effects.clone() {
-            let emitter = EmittersCache::new(cfg);
-            emitters.insert(id, emitter);
+        ParticleEmitters {
+            emitters: HashMap::new(),
         }
-
-        ParticleEmitters { emitters }
     }
 
     pub fn spawn(&mut self, id: &str, position: Vec2) {
+        if !self.emitters.contains_key(id) {
+            let resources = storage::get::<Resources>();
+            let cfg = resources.particle_effects.get(id).cloned().unwrap();
+            self.emitters
+                .insert(id.to_string(), EmittersCache::new(cfg));
+        }
+
         let emitter = self.emitters.get_mut(id).unwrap();
         emitter.spawn(position);
     }

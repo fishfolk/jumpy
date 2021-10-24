@@ -245,7 +245,8 @@ impl Resources {
                 .with_extension(Self::RESOURCE_FILES_EXTENSION);
 
             let bytes = load_file(&items_file_path.to_string_lossy()).await?;
-            let item_paths: Vec<String> = deserialize_bytes(Self::RESOURCE_FILES_EXTENSION, &bytes)?;
+            let item_paths: Vec<String> =
+                deserialize_bytes(Self::RESOURCE_FILES_EXTENSION, &bytes)?;
 
             for path in item_paths {
                 let path = assets_dir_path
@@ -254,8 +255,7 @@ impl Resources {
 
                 let bytes = load_file(&path.to_string_lossy()).await?;
 
-                let params: ItemParams =
-                    deserialize_bytes(Self::RESOURCE_FILES_EXTENSION, &bytes)?;
+                let params: ItemParams = deserialize_bytes(Self::RESOURCE_FILES_EXTENSION, &bytes)?;
 
                 items.insert(params.id.clone(), params);
             }

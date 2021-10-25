@@ -272,8 +272,8 @@
                  "type":"item",
                  "visible":true,
                  "width":0,
-                 "x":400,
-                 "y":690
+                 "x":414.888933360016,
+                 "y":667.170302181309
                 }, 
                 {
                  "height":0,
@@ -291,14 +291,14 @@
                  "height":0,
                  "id":151,
                  "name":"life_ring",
-                 "type":"item",
                  "point":true,
                  "rotation":0,
+                 "type":"item",
                  "visible":true,
                  "width":0,
                  "x":435.333333333333,
                  "y":547.333333333334
-                },
+                }, 
                 {
                  "height":0,
                  "id":152,
@@ -310,7 +310,43 @@
                  "width":0,
                  "x":500,
                  "y":650
-              }],
+                }, 
+                {
+                 "height":0,
+                 "id":152,
+                 "name":"kick_bomb",
+                 "point":true,
+                 "rotation":0,
+                 "type":"item",
+                 "visible":true,
+                 "width":0,
+                 "x":600.520312187312,
+                 "y":656.105663398038
+                }, 
+                {
+                 "height":0,
+                 "id":153,
+                 "name":"kick_bomb",
+                 "point":true,
+                 "rotation":0,
+                 "type":"item",
+                 "visible":true,
+                 "width":0,
+                 "x":176.682009205524,
+                 "y":653.127876726035
+                }, 
+                {
+                 "height":0,
+                 "id":154,
+                 "name":"kick_bomb",
+                 "point":true,
+                 "rotation":0,
+                 "type":"item",
+                 "visible":true,
+                 "width":0,
+                 "x":271.971182709626,
+                 "y":536.994196517911
+                }],
          "opacity":1,
          "type":"objectgroup",
          "visible":true,
@@ -318,7 +354,7 @@
          "y":0
         }],
  "nextlayerid":6,
- "nextobjectid":152,
+ "nextobjectid":155,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.7.2",

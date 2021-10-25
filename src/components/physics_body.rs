@@ -1,6 +1,8 @@
 use macroquad::{
+    color,
     experimental::collections::storage,
     math::{vec2, Vec2},
+    shapes::draw_rectangle_lines,
     time::get_frame_time,
 };
 
@@ -128,5 +130,16 @@ impl PhysicsBody {
         if self.velocity.x.abs() <= 1. {
             self.velocity.x = 0.0;
         }
+    }
+
+    pub fn debug_draw(&self) {
+        draw_rectangle_lines(
+            self.pos.x,
+            self.pos.y,
+            self.size.x,
+            self.size.y,
+            2.0,
+            color::RED,
+        )
     }
 }

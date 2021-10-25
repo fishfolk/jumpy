@@ -51,7 +51,6 @@
       ],
       "should_autoplay": true
     }
-
   },
   "collider_size": {
     "x": 64,
@@ -68,9 +67,20 @@
       },
       {
         "id": "attack",
-        "row": 1,
+        "row": 0,
         "frames": 4,
         "fps": 8
+      }
+    ]
+  },
+  "effect_animation": {
+    "texture": "cannon",
+    "animations": [
+      {
+        "id": "attack_effect",
+        "row": 1,
+        "frames": 5,
+        "fps": 12
       }
     ]
   }

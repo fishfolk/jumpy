@@ -60,5 +60,16 @@
       }
     ]
   },
+  "effect_animation": {
+    "texture": "musket",
+    "animations": [
+      {
+        "id": "attack_effect",
+        "row": 2,
+        "frames": 4,
+        "fps": 12
+      }
+    ]
+  },
   "is_network_ready": true
 }

@@ -3,7 +3,7 @@
   "sprite": {
     "texture": "mines",
     "offset": {
-      "x": 6,
+      "x": 0,
       "y": -12
     }
   },
@@ -29,7 +29,7 @@
     "animation": {
       "texture": "mines",
       "offset": {
-        "x": 6,
+        "x": 0,
         "y": -12
       },
       "animations": [

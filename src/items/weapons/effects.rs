@@ -30,56 +30,64 @@ pub use custom::{
 
 pub use projectiles::{ProjectileKind, Projectiles};
 
+/// This holds all the common parameters, available to all implementations, as well as specialized
+/// parameters, in the `WeaponEffectKind`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WeaponEffectParams {
+    /// This holds all the specialized parameters for the effect, dependent on the implementation,
+    /// specified by its variant. It is flattened into this struct in JSON.
     #[serde(flatten)]
     pub kind: WeaponEffectKind,
+    /// This specifies the id of a particle effect to emit when the effect is instantiated.
     #[serde(
         default,
         rename = "particle_effect",
         skip_serializing_if = "Option::is_none"
     )]
     pub particle_effect_id: Option<String>,
+    /// This specifies the id of a sound effect to play when the effect is instantiated.
     #[serde(
         default,
         rename = "sound_effect",
         skip_serializing_if = "Option::is_none"
     )]
     pub sound_effect_id: Option<String>,
+    /// The delay between instantiation of the effect is requested and the actual instantiation.
+    /// This will delay the entire effect, including sound effects, particle effects and anything
+    /// drawn as a result of the effect, so in most cases it is probably better to use a
+    /// `TriggeredEffect`, with a `timed_trigger` value, in stead of using this.
     #[serde(default)]
     pub delay: f32,
 }
 
-// This should hold implementations of the commonly used weapon effects, that see usage spanning
-// many different weapon implementations. For more specialized effects, only likely to be used
-// for a single weapon implementation, `Custom` can be used. The main reason for adding `Custom`,
-// however, is to accommodate an eventual integration of a scripting API, so all effects,
-// specialized or not, can be implemented as a variant of this enum.
-//
-// The effects that have the `Collider` suffix denote effects that do an immediate collider check,
-// upon attack, using the weapons `effect_offset` as origin.
+/// This should hold implementations of the commonly used weapon effects, that see usage spanning
+/// many different weapon implementations. For more specialized effects, only likely to be used
+/// for a single weapon implementation, `Custom` can be used. The main reason for adding `Custom`,
+/// however, is to accommodate an eventual integration of a scripting API, so all effects,
+/// specialized or not, can be implemented as a variant of this enum.
+///
+/// The effects that have the `Collider` suffix denote effects that do an immediate collider check,
+/// upon attack, using the weapons `effect_offset` as origin.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum WeaponEffectKind {
-    // This is used to add multiple effects to a weapon, without having to implement a custom effect
-    Batch {
-        effects: Vec<WeaponEffectParams>,
-    },
-    // Custom effects are made by implementing `WeaponEffectCoroutine`, either directly in code or
-    // in scripts if/when we add a scripting API
+    /// This is used to add multiple effects to a weapon, without having to implement a custom effect
+    Batch { effects: Vec<WeaponEffectParams> },
+    /// Custom effects are made by implementing `WeaponEffectCoroutine`, either directly in code or
+    /// in scripts if/when we add a scripting API
     Custom {
         #[serde(rename = "id")]
         id: String,
         #[serde(default, rename = "params")]
         params: HashMap<String, CustomWeaponEffectParam>,
     },
-    // Check for hits with a `Circle` collider.
-    // Can select a segment of the circle by setting `segment`. This can be either a quarter or a
-    // half of the circle, selected by setting `x` and `y` of `segment`.
-    // If `x` is one and `y` is zero, the forward-facing half of the circle will be used, if `x` is
-    // one and `y` is negative one, the upper forward-facing quarter of the circle will be used,
-    // if `x` is negative one and `y` is one, the lower backward-facing quarter of the circle will
-    // be used, and so on.
+    /// Check for hits with a `Circle` collider.
+    /// Can select a segment of the circle by setting `segment`. This can be either a quarter or a
+    /// half of the circle, selected by setting `x` and `y` of `segment`.
+    /// If `x` is one and `y` is zero, the forward-facing half of the circle will be used, if `x` is
+    /// one and `y` is negative one, the upper forward-facing quarter of the circle will be used,
+    /// if `x` is negative one and `y` is one, the lower backward-facing quarter of the circle will
+    /// be used, and so on.
     CircleCollider {
         radius: f32,
         #[serde(default, with = "json::ivec2_opt")]
@@ -87,20 +95,17 @@ pub enum WeaponEffectKind {
         #[serde(default)]
         is_explosion: bool,
     },
-    // Check for hits with a `Rect` collider
-    RectCollider {
-        width: f32,
-        height: f32,
-    },
-    // Spawn a trigger that will set of another effect if its trigger conditions are met.
+    /// Check for hits with a `Rect` collider
+    RectCollider { width: f32, height: f32 },
+    /// Spawn a trigger that will set of another effect if its trigger conditions are met.
     TriggeredEffect {
         #[serde(rename = "triggered_effect")]
         effect: Box<WeaponEffectParams>,
         #[serde(flatten)]
         params: TriggeredEffectParams,
     },
-    // Spawn a projectile.
-    // This would typically be used for things like a gun.
+    /// Spawn a projectile.
+    /// This would typically be used for things like a gun.
     Projectile {
         #[serde(rename = "projectile")]
         kind: ProjectileKind,
@@ -210,12 +215,11 @@ pub fn weapon_effect_coroutine(
                     }
                 }
             }
-            WeaponEffectKind::TriggeredEffect { effect, params } => {
+            WeaponEffectKind::TriggeredEffect { effect, mut params } => {
                 let mut triggered_effects = scene::find_node_by_type::<TriggeredEffects>().unwrap();
 
-                let mut velocity = params.velocity;
                 if !is_facing_right {
-                    velocity.x = -velocity.x;
+                    params.velocity.x = -params.velocity.x;
                 }
 
                 triggered_effects.spawn(player_handle, origin, *effect, params)

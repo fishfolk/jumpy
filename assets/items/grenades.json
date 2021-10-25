@@ -6,6 +6,7 @@
   "type": "weapon",
   "cooldown": 0.5,
   "uses": 3,
+  "is_destroyed_on_depletion": true,
   "effect": {
     "type": "triggered_effect",
     "trigger": "enemy",

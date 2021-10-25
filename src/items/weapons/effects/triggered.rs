@@ -163,18 +163,17 @@ struct TriggeredEffect {
     pub animation_player: Option<AnimationPlayer>,
     pub body: PhysicsBody,
     pub activation_delay: f32,
-    pub activation_timer: f32,
     pub trigger_delay: f32,
-    pub trigger_delay_timer: f32,
     pub timed_trigger: Option<f32>,
-    pub timed_trigger_timer: f32,
     pub is_kickable: bool,
-    pub is_kicked: bool,
-    pub kick_delay_timer: f32,
     pub is_triggered: bool,
     /// This can be used to trigger the effect immediately, ignoring delay timers.
-    /// Also required `is_triggered` to be set to `true`, for this to work.
+    /// Also requires `is_triggered` to be set to `true`, for this to work.
     pub should_override_delay: bool,
+    kick_delay_timer: f32,
+    activation_timer: f32,
+    trigger_delay_timer: f32,
+    timed_trigger_timer: f32,
 }
 
 pub struct TriggeredEffects {
@@ -234,7 +233,6 @@ impl TriggeredEffects {
             timed_trigger: params.timed_trigger,
             timed_trigger_timer: 0.0,
             is_kickable: params.is_kickable,
-            is_kicked: false,
             kick_delay_timer: 0.0,
             is_triggered: false,
             should_override_delay: false,
@@ -334,8 +332,8 @@ impl TriggeredEffects {
 
                 if can_be_triggered_by_player || can_be_triggered_by_enemy {
                     let mut _player = None;
-                    if !(can_be_triggered_by_player
-                        || (trigger.is_kickable && trigger.kick_delay_timer >= Self::KICK_DELAY))
+                    if (trigger.is_kickable && trigger.kick_delay_timer < Self::KICK_DELAY)
+                        || (!can_be_triggered_by_player && !trigger.is_kickable)
                     {
                         _player = scene::try_get_node(trigger.owner)
                     }
@@ -343,7 +341,6 @@ impl TriggeredEffects {
                     for player in scene::find_nodes_by_type::<Player>() {
                         if collider.overlaps(&player.get_collider()) {
                             if trigger.is_kickable {
-                                trigger.is_kicked = true;
                                 if !player.body.is_facing_right
                                     && trigger.body.position.x
                                         < player.body.position.x + player.body.size.x

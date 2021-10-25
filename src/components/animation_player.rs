@@ -172,6 +172,7 @@ impl AnimationPlayer {
             let size = self.get_size();
             let offset = self.offset + self.pivot;
 
+
             draw_texture_ex(
                 self.texture,
                 position.x + self.offset.x,

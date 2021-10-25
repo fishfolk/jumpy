@@ -830,7 +830,7 @@ impl Player {
         StateMachine::update_detached(node, |node| &mut node.state_machine);
     }
 
-    fn draw_player(&self) {
+    fn draw_player(&self, position: Vec2) {
         self.animation_player.draw(
             self.body.position,
             self.body.rotation,
@@ -874,7 +874,7 @@ impl Player {
         }
     }
 
-    fn draw_items(&self) {
+    fn draw_items(&self, position: Vec2) {
         // draw turtle shell on player if the player has back armor
         if self.back_armor > 0 {
             let texture_id = if self.back_armor == 1 {
@@ -917,12 +917,15 @@ impl scene::Node for Player {
     }
 
     fn draw(mut node: RefMut<Self>) {
+        let mut position = node.body.pos;
+        position.x += node.body.size.x / 2.0;
+
         if node.body.is_facing_right {
-            node.draw_player();
-            node.draw_weapon();
+            node.draw_player(position);
+            node.draw_weapon(position);
         } else {
-            node.draw_weapon();
-            node.draw_player();
+            node.draw_weapon(position);
+            node.draw_player(position);
         }
 
         node.draw_items();

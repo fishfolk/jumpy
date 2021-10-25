@@ -70,7 +70,7 @@ pub struct TriggeredEffects {
 impl TriggeredEffects {
     const KICK_FORCE: f32 = 800.0;
     // Delay before the player that deploy a kickable effect can kick it (to avoid insta-kicking it)
-    const KICK_DELAY: f32 = 0.15;
+    const KICK_DELAY: f32 = 0.22;
 
     pub fn new() -> Self {
         TriggeredEffects { active: Vec::new() }

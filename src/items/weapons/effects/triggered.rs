@@ -91,6 +91,7 @@ impl TriggeredEffects {
                 size,
                 false,
                 true,
+                None,
             )
         };
 
@@ -141,8 +142,8 @@ impl TriggeredEffects {
 
             if !trigger.is_triggered && trigger.activation_timer >= trigger.activation_delay {
                 let collider = Rect::new(
-                    trigger.body.pos.x + trigger.offset.x,
-                    trigger.body.pos.y + trigger.offset.y,
+                    trigger.body.position.x + trigger.offset.x,
+                    trigger.body.position.y + trigger.offset.y,
                     trigger.size.x,
                     trigger.size.y,
                 );
@@ -186,7 +187,11 @@ impl TriggeredEffects {
             }
 
             if trigger.is_triggered && trigger.trigger_delay_timer >= trigger.trigger_delay {
-                weapon_effect_coroutine(trigger.owner, trigger.body.pos, trigger.effect.clone());
+                weapon_effect_coroutine(
+                    trigger.owner,
+                    trigger.body.position,
+                    trigger.effect.clone(),
+                );
                 node.active.remove(i);
                 continue;
             }
@@ -223,7 +228,7 @@ impl Node for TriggeredEffects {
     fn draw(mut node: RefMut<Self>) {
         for trigger in &mut node.active {
             if let Some(animation_player) = &trigger.animation_player {
-                animation_player.draw(trigger.body.pos, 0.0, false, false);
+                animation_player.draw(trigger.body.position, 0.0, false, false);
             }
         }
     }

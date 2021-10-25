@@ -390,7 +390,7 @@ impl Weapon {
 
                 {
                     let player = &mut *scene::get_node(player_handle);
-                    let weapon_mount = player.body.pos + player.get_weapon_mount_offset();
+                    let weapon_mount = player.get_weapon_mount_position();
 
                     if let Some(weapon) = player.weapon.as_mut() {
                         let origin = weapon_mount

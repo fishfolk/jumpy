@@ -32,25 +32,37 @@ impl From<Animation> for MQAnimation {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AnimationParams {
+    /// The id of the spritesheet texture that will be used
     #[serde(rename = "texture")]
     pub texture_id: String,
+    /// The offset of the drawn frame, relative to the position provided as an argument to the
+    /// `AnimationPlayer` draw method.
+    /// Note that this offset will not be inverted if the frame is flipped.
     #[serde(default, with = "json::vec2_def")]
     pub offset: Vec2,
+    /// The pivot of the frame, relative to the position provided as an argument to the
+    /// `AnimationPlayer` draw method, plus any offset.
+    /// Note that this offset will not be inverted if the frame is flipped.
     #[serde(default, with = "json::vec2_def")]
     pub pivot: Vec2,
+    /// The size of the drawn sprite. If no size is specified, the texture entry's `sprite_size`
+    /// will be used.
     #[serde(
         default,
         with = "json::uvec2_opt",
         skip_serializing_if = "Option::is_none"
     )]
     pub frame_size: Option<UVec2>,
+    /// An optional color to blend with the texture color
     #[serde(
         default,
         with = "json::color_opt",
         skip_serializing_if = "Option::is_none"
     )]
     pub tint: Option<Color>,
+    /// A list of animations that will be available in the `AnimationPlayer`
     pub animations: Vec<Animation>,
+    /// If this is true, the `AnimationPlayer` will not be updated or drawn.
     #[serde(default)]
     pub is_deactivated: bool,
 }
@@ -158,20 +170,7 @@ impl AnimationPlayer {
         if !self.is_deactivated {
             let source_rect = self.sprite.frame().source_rect;
             let size = self.get_size();
-
-            let pivot = {
-                let mut pivot = self.pivot;
-
-                if flip_x {
-                    pivot.x = size.x - self.pivot.x;
-                }
-
-                if flip_y {
-                    pivot.y = size.y - self.pivot.y;
-                }
-
-                pivot
-            };
+            let offset = self.offset + self.pivot;
 
             draw_texture_ex(
                 self.texture,
@@ -184,7 +183,7 @@ impl AnimationPlayer {
                     rotation,
                     source: Some(source_rect),
                     dest_size: Some(size),
-                    pivot: Some(pivot),
+                    pivot: Some(offset),
                 },
             );
 

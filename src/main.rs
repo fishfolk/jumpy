@@ -114,7 +114,6 @@ fn build_game_scene(map: Map, is_local_game: bool) -> Vec<Handle<Player>> {
             MapObjectKind::Decoration => {
                 scene::add_node(Decoration::new(object.position, &object.id));
             }
-
             MapObjectKind::Environment => {
                 if object.id == Sproinger::OBJECT_ID {
                     Sproinger::spawn(object.position);

@@ -194,7 +194,7 @@ pub fn weapon_effect_coroutine(
                         }
 
                         if is_killed {
-                            let is_to_the_right = origin.x < player.body.pos.x;
+                            let is_to_the_right = origin.x < player.body.position.x;
                             player.kill(!is_to_the_right);
                         }
                     }
@@ -215,7 +215,7 @@ pub fn weapon_effect_coroutine(
 
                 for mut player in scene::find_nodes_by_type::<Player>() {
                     if rect.overlaps(&player.get_collider()) {
-                        let is_to_the_right = origin.x < player.body.pos.x;
+                        let is_to_the_right = origin.x < player.body.position.x;
                         player.kill(!is_to_the_right);
                     }
                 }

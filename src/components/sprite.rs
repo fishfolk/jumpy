@@ -4,36 +4,41 @@ use serde::{Deserialize, Serialize};
 
 use crate::{json, Resources, DEBUG};
 
+/// Parameters for `Sprite` component.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SpriteParams {
+    /// The id of the texture that will be used
     #[serde(rename = "texture")]
     pub texture_id: String,
+    /// The sprites index in the sprite sheet
     #[serde(default)]
     pub index: usize,
-    #[serde(
-        default,
-        with = "json::color_opt",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub tint: Option<Color>,
-    #[serde(
-        default,
-        with = "json::vec2_opt",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub offset: Option<Vec2>,
-    #[serde(
-        default,
-        with = "json::vec2_opt",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub pivot: Option<Vec2>,
+    /// The offset of the drawn sprite, relative to the position provided as an argument to the
+    /// `Sprite` draw method.
+    /// Note that this offset will not be inverted if the sprite is flipped.
+    #[serde(default, with = "json::vec2_def")]
+    pub offset: Vec2,
+    /// The pivot of the sprite, relative to the position provided as an argument to the `Sprite`
+    /// draw method, plus any offset.
+    /// Note that this offset will not be inverted if the sprite is flipped.
+    #[serde(default, with = "json::vec2_def")]
+    pub pivot: Vec2,
+    /// The size of the drawn sprite. If no size is specified, the texture entry's `sprite_size`
+    /// will be used, if specified, or the raw texture size, if not.
     #[serde(
         default,
         with = "json::uvec2_opt",
         skip_serializing_if = "Option::is_none"
     )]
     pub size: Option<UVec2>,
+    /// An optional color to blend with the texture color
+    #[serde(
+        default,
+        with = "json::color_opt",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub tint: Option<Color>,
+    /// If this is true, the sprite will not be drawn.
     #[serde(default)]
     pub is_deactivated: bool,
 }
@@ -43,10 +48,10 @@ impl Default for SpriteParams {
         SpriteParams {
             texture_id: "".to_string(),
             index: 0,
-            tint: None,
-            offset: None,
-            pivot: None,
+            offset: Vec2::ZERO,
+            pivot: Vec2::ZERO,
             size: None,
+            tint: None,
             is_deactivated: false,
         }
     }
@@ -108,15 +113,13 @@ impl Sprite {
         };
 
         let tint = params.tint.unwrap_or(color::WHITE);
-        let offset = params.offset.unwrap_or_default();
-        let pivot = params.pivot.unwrap_or_default();
 
         Sprite {
             texture: texture_res.texture,
             source_rect,
             tint,
-            offset,
-            pivot,
+            offset: params.offset,
+            pivot: params.pivot,
             is_deactivated: params.is_deactivated,
         }
     }
@@ -125,17 +128,7 @@ impl Sprite {
         if !self.is_deactivated {
             let size = self.get_size();
 
-            let pivot = {
-                let mut pivot = self.pivot;
-                if flip_x {
-                    pivot.x = size.x - self.pivot.x;
-                }
-                if flip_y {
-                    pivot.y = size.y - self.pivot.y;
-                }
-
-                pivot
-            };
+            let pivot = self.offset + self.pivot;
 
             draw_texture_ex(
                 self.texture,

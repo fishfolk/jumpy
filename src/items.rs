@@ -79,6 +79,7 @@ impl Item {
             params.collider_size.as_f32(),
             true,
             true,
+            None,
         );
 
         let sprite = Sprite::new(params.sprite);
@@ -93,8 +94,8 @@ impl Item {
 
     pub fn get_collider(&self) -> Rect {
         Rect::new(
-            self.body.pos.x,
-            self.body.pos.y,
+            self.body.position.x,
+            self.body.position.y,
             self.body.size.x,
             self.body.size.y,
         )
@@ -153,7 +154,7 @@ impl Node for Item {
 
     fn draw(node: RefMut<Self>) {
         node.sprite
-            .draw(node.body.pos, node.body.rotation, false, false);
+            .draw(node.body.position, node.body.rotation, false, false);
 
         if DEBUG {
             node.body.debug_draw();

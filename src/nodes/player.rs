@@ -147,13 +147,17 @@ impl Player {
         let body = {
             let mut world = storage::get_mut::<GameWorld>();
 
+            let size = vec2(Self::COLLIDER_WIDTH, Self::COLLIDER_HEIGHT);
+            let collider_offset = vec2(-Self::COLLIDER_WIDTH / 2.0, 0.0);
+
             PhysicsBody::new(
                 &mut world.collision_world,
                 spawn_point,
                 0.0,
-                vec2(Self::COLLIDER_WIDTH, Self::COLLIDER_HEIGHT),
+                size,
                 false,
                 false,
+                collider_offset,
             )
         };
 
@@ -258,7 +262,7 @@ impl Player {
                     .unwrap_or_else(|| panic!("Player: Invalid weapon ID '{}'", &weapon.id))
             };
 
-            let mut item = Item::new(self.body.pos, params);
+            let mut item = Item::new(self.body.position, params);
 
             if is_thrown {
                 item.body.velocity = self.body.facing_dir() * Self::ITEM_THROW_FORCE;
@@ -286,22 +290,18 @@ impl Player {
         play_sound_once(pickup_sound);
     }
 
-    pub fn get_weapon_mount_offset(&self) -> Vec2 {
-        let mut offset = Vec2::ZERO;
-
-        if !self.body.is_facing_right {
-            offset.x = -offset.x;
-        }
+    pub fn get_weapon_mount_position(&self) -> Vec2 {
+        let mut position = self.body.position;
 
         if self.is_crouched {
-            offset.y += Self::WEAPON_MOUNT_Y_OFFSET_CROUCHED;
+            position.y += Self::WEAPON_MOUNT_Y_OFFSET_CROUCHED;
         } else {
-            offset.y += Self::WEAPON_MOUNT_Y_OFFSET;
+            position.y += Self::WEAPON_MOUNT_Y_OFFSET;
         }
 
         // TODO: Implement rotation
 
-        offset
+        position
     }
 
     pub fn jump(&mut self) {
@@ -401,7 +401,7 @@ impl Player {
 
             let is_out_of_bounds = {
                 let node = scene::get_node(handle);
-                node.body.pos.y < map_bottom
+                node.body.position.y < map_bottom
             };
 
             if is_out_of_bounds {
@@ -415,7 +415,7 @@ impl Player {
 
                     should_continue = {
                         let node = scene::get_node(handle);
-                        !(node.body.is_on_ground || node.body.pos.y > map_bottom)
+                        !(node.body.is_on_ground || node.body.position.y > map_bottom)
                     };
                 }
 
@@ -431,7 +431,7 @@ impl Player {
 
             {
                 let mut node = scene::get_node(handle);
-                let pos = node.body.pos;
+                let pos = node.body.position;
 
                 node.animation_player.stop();
                 node.body.velocity = vec2(0., 0.);
@@ -449,7 +449,7 @@ impl Player {
                 node.can_head_boink = false;
             }
 
-            node.body.pos = {
+            node.body.position = {
                 let world = storage::get_mut::<GameWorld>();
                 world.get_random_spawn_point()
             };
@@ -464,7 +464,7 @@ impl Player {
                 node.is_dead = false;
                 world
                     .collision_world
-                    .set_actor_position(node.body.collider, node.body.pos);
+                    .set_actor_position(node.body.collider, node.body.position);
             }
         };
 
@@ -701,8 +701,7 @@ impl Player {
 
     pub fn get_collider(&self) -> Rect {
         let state = self.state_machine.state();
-        let mut position = self.body.pos;
-        position.x += self.body.size.x / 2.0;
+        let position = self.body.position + self.body.collider_offset;
 
         let mut rect = Rect::new(
             position.x,
@@ -710,8 +709,6 @@ impl Player {
             Self::COLLIDER_WIDTH,
             Self::COLLIDER_HEIGHT,
         );
-
-        rect.x -= rect.w / 2.0;
 
         if state == Self::ST_INCAPACITATED || state == Self::ST_SLIDE {
             rect.x -= (rect.w - Self::COLLIDER_WIDTH_INCAPACITATED) / 2.0;
@@ -755,7 +752,7 @@ impl Player {
             world.map.grid_size.y as f32 * world.map.tile_size.y
         } as f32;
 
-        if node.body.pos.y > map_bottom {
+        if node.body.position.y > map_bottom {
             node.kill(false);
         }
 
@@ -814,7 +811,7 @@ impl Player {
 
         // update camera bound box
         {
-            let fish_box = Rect::new(node.body.pos.x, node.body.pos.y, 32., 60.);
+            let fish_box = Rect::new(node.body.position.x, node.body.position.y, 32., 60.);
 
             if fish_box.x < node.camera_box.x {
                 node.camera_box.x = fish_box.x;
@@ -833,9 +830,9 @@ impl Player {
         StateMachine::update_detached(node, |node| &mut node.state_machine);
     }
 
-    fn draw_player(&self, position: Vec2) {
+    fn draw_player(&self) {
         self.animation_player.draw(
-            position,
+            self.body.position,
             self.body.rotation,
             !self.body.is_facing_right,
             false,
@@ -857,13 +854,16 @@ impl Player {
         }
     }
 
-    fn draw_weapon(&mut self, position: Vec2) {
+    fn draw_weapon(&mut self) {
+        let position = self.body.position;
+        let weapon_mount = self.get_weapon_mount_position();
         let rotation = self.body.rotation;
         let is_facing_right = self.body.is_facing_right;
-        let mount_offset = self.get_weapon_mount_offset();
 
         if let Some(weapon) = &mut self.weapon {
-            weapon.draw(position + mount_offset, rotation, !is_facing_right, false);
+            {
+                weapon.draw(weapon_mount, rotation, !is_facing_right, false);
+            }
 
             {
                 let mut position = position;
@@ -874,7 +874,7 @@ impl Player {
         }
     }
 
-    fn draw_items(&self, position: Vec2) {
+    fn draw_items(&self) {
         // draw turtle shell on player if the player has back armor
         if self.back_armor > 0 {
             let texture_id = if self.back_armor == 1 {
@@ -887,6 +887,8 @@ impl Player {
                 let resources = storage::get::<Resources>();
                 resources.textures.get(texture_id).cloned().unwrap()
             };
+
+            let position = self.body.position;
 
             draw_texture_ex(
                 texture_entry.texture,
@@ -915,17 +917,15 @@ impl scene::Node for Player {
     }
 
     fn draw(mut node: RefMut<Self>) {
-        let mut position = node.body.pos;
-        position.x += node.body.size.x / 2.0;
-
         if node.body.is_facing_right {
-            node.draw_player(position);
-            node.draw_weapon(position);
+            node.draw_player();
+            node.draw_weapon();
         } else {
-            node.draw_weapon(position);
-            node.draw_player(position);
+            node.draw_weapon();
+            node.draw_player();
         }
-        node.draw_items(position);
+
+        node.draw_items();
     }
 
     fn update(mut node: RefMut<Self>) {
@@ -951,8 +951,8 @@ impl Player {
                 .to_typed::<Player>();
 
             Rect::new(
-                node.body.pos.x,
-                node.body.pos.y,
+                node.body.position.x,
+                node.body.position.y,
                 node.body.size.x,
                 node.body.size.y,
             )

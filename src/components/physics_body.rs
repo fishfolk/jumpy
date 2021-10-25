@@ -11,7 +11,7 @@ use macroquad_platformer::{Actor, World as CollisionWorld};
 use crate::GameWorld;
 
 pub struct PhysicsBody {
-    pub pos: Vec2,
+    pub position: Vec2,
     pub size: Vec2,
     pub velocity: Vec2,
     pub is_facing_right: bool,
@@ -23,32 +23,40 @@ pub struct PhysicsBody {
     pub has_gravity: bool,
     pub bouncyness: f32,
     pub can_rotate: bool,
+    /// This is the offset between the collider and the body's position
+    pub collider_offset: Vec2,
 }
 
 impl PhysicsBody {
     pub const GRAVITY: f32 = 1800.0;
 
-    pub fn new(
+    pub fn new<O: Into<Option<Vec2>>>(
         collision_world: &mut CollisionWorld,
-        pos: Vec2,
+        position: Vec2,
         angle: f32,
         size: Vec2,
         can_rotate: bool,
         has_friction: bool,
+        collider_offset: O,
     ) -> PhysicsBody {
+        let collider_offset = collider_offset.into().unwrap_or_default();
+
+        let collider = collision_world.add_actor(position, size.x as _, size.y as _);
+
         PhysicsBody {
-            pos,
+            position,
             size,
             is_facing_right: true,
             velocity: vec2(0., 0.),
             rotation: angle,
             has_friction,
-            collider: collision_world.add_actor(pos, size.x as _, size.y as _),
+            collider,
             was_on_ground_last_frame: false,
             is_on_ground: false,
             has_gravity: true,
             bouncyness: 0.0,
             can_rotate,
+            collider_offset,
         }
     }
 
@@ -66,34 +74,34 @@ impl PhysicsBody {
     }
 
     pub fn update(&mut self) {
+        let dt = get_frame_time();
         let mut world = storage::get_mut::<GameWorld>();
 
-        self.pos = world.collision_world.actor_pos(self.collider);
+        // Don't use offset position for ground check
+        let position = world.collision_world.actor_pos(self.collider);
 
         self.was_on_ground_last_frame = self.is_on_ground;
         self.is_on_ground = world
             .collision_world
-            .collide_check(self.collider, self.pos + vec2(0., 1.));
+            .collide_check(self.collider, position + vec2(0.0, 1.0));
 
         if !self.is_on_ground && self.has_gravity {
-            self.velocity.y += Self::GRAVITY * get_frame_time();
+            self.velocity.y += Self::GRAVITY * dt;
         }
 
         if !world
             .collision_world
-            .move_h(self.collider, self.velocity.x * get_frame_time())
+            .move_h(self.collider, self.velocity.x * dt)
         {
             self.velocity.x *= -self.bouncyness;
         }
 
         if !world
             .collision_world
-            .move_v(self.collider, self.velocity.y * get_frame_time())
+            .move_v(self.collider, self.velocity.y * dt)
         {
             self.velocity.y *= -self.bouncyness;
         }
-
-        self.pos = world.collision_world.actor_pos(self.collider);
 
         if self.can_rotate {
             // TODO: Rotation
@@ -105,6 +113,8 @@ impl PhysicsBody {
                 self.velocity.x = 0.0;
             }
         }
+
+        self.position = world.collision_world.actor_pos(self.collider) - self.collider_offset;
     }
 
     pub fn update_throw(&mut self) {
@@ -133,9 +143,11 @@ impl PhysicsBody {
     }
 
     pub fn debug_draw(&self) {
+        let position = self.position + self.collider_offset;
+
         draw_rectangle_lines(
-            self.pos.x,
-            self.pos.y,
+            position.x,
+            position.y,
             self.size.x,
             self.size.y,
             2.0,

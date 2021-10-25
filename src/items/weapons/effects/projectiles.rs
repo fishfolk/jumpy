@@ -114,7 +114,7 @@ impl Projectiles {
                         let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
                         particles.spawn("hit", projectile.position);
 
-                        let direction = projectile.position.x > player.body.pos.x;
+                        let direction = projectile.position.x > player.body.position.x;
                         player.kill(direction);
 
                         is_hit = true;

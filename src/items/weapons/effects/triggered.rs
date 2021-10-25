@@ -22,6 +22,7 @@ pub struct TriggeredEffectParams {
     pub animation: Option<AnimationParams>,
     pub is_friendly_fire: bool,
     pub activation_delay: f32,
+    pub trigger_delay: f32,
     pub timed_trigger: Option<f32>,
 }
 
@@ -33,6 +34,7 @@ impl Default for TriggeredEffectParams {
             animation: None,
             is_friendly_fire: false,
             activation_delay: 0.0,
+            trigger_delay: 0.0,
             timed_trigger: None,
         }
     }
@@ -49,8 +51,11 @@ struct TriggeredEffect {
     pub offset: Vec2,
     pub activation_delay: f32,
     pub activation_timer: f32,
+    pub trigger_delay: f32,
+    pub trigger_delay_timer: f32,
     pub timed_trigger: Option<f32>,
     pub timed_trigger_timer: f32,
+    pub is_triggered: bool,
 }
 
 pub struct TriggeredEffects {
@@ -102,8 +107,11 @@ impl TriggeredEffects {
             is_friendly_fire: params.is_friendly_fire,
             activation_delay: params.activation_delay,
             activation_timer: 0.0,
+            trigger_delay: params.trigger_delay,
+            trigger_delay_timer: 0.0,
             timed_trigger: params.timed_trigger,
             timed_trigger_timer: 0.0,
+            is_triggered: false,
         })
     }
 
@@ -114,20 +122,24 @@ impl TriggeredEffects {
 
             trigger.body.update();
 
-            let mut is_triggered = false;
+            let dt = get_frame_time();
 
             if let Some(timed_trigger) = trigger.timed_trigger {
-                trigger.timed_trigger_timer += get_frame_time();
+                trigger.timed_trigger_timer += dt;
                 if trigger.timed_trigger_timer >= timed_trigger {
-                    is_triggered = true;
+                    trigger.is_triggered = true;
                 }
             }
 
             if trigger.activation_delay > 0.0 {
-                trigger.activation_timer += get_frame_time();
+                trigger.activation_timer += dt;
             }
 
-            if !is_triggered && trigger.activation_timer >= trigger.activation_delay {
+            if trigger.is_triggered {
+                trigger.trigger_delay_timer += dt;
+            }
+
+            if !trigger.is_triggered && trigger.activation_timer >= trigger.activation_delay {
                 let collider = Rect::new(
                     trigger.body.pos.x + trigger.offset.x,
                     trigger.body.pos.y + trigger.offset.y,
@@ -146,18 +158,18 @@ impl TriggeredEffects {
 
                     for player in scene::find_nodes_by_type::<Player>() {
                         if collider.overlaps(&player.get_collider()) {
-                            is_triggered = true;
+                            trigger.is_triggered = true;
                             break;
                         }
                     }
                 }
 
-                if !is_triggered
+                if !trigger.is_triggered
                     && (trigger.kind == WeaponEffectTriggerKind::Ground
                         || trigger.kind == WeaponEffectTriggerKind::Both)
                 {
                     if trigger.body.is_on_ground {
-                        is_triggered = true;
+                        trigger.is_triggered = true;
                     } else {
                         let game_world = storage::get::<GameWorld>();
                         let tile = game_world.collision_world.collide_solids(
@@ -165,14 +177,15 @@ impl TriggeredEffects {
                             collider.w as i32,
                             collider.h as i32,
                         );
+
                         if tile == Tile::Solid {
-                            is_triggered = true;
+                            trigger.is_triggered = true;
                         }
                     }
                 }
             }
 
-            if is_triggered {
+            if trigger.is_triggered && trigger.trigger_delay_timer >= trigger.trigger_delay {
                 weapon_effect_coroutine(trigger.owner, trigger.body.pos, trigger.effect.clone());
                 node.active.remove(i);
                 continue;

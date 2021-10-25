@@ -15,10 +15,11 @@ use crate::{
     components::PhysicsBody,
     items::{weapons::Weapon, Item, ItemKind},
     nodes::ParticleEmitters,
-    GameWorld, Input, Resources,
+    GameWorld, Input, Resources, DEBUG,
 };
 
 use crate::components::{Animation, AnimationParams, AnimationPlayer};
+use crate::items::equipment::Equipment;
 
 mod ai;
 
@@ -92,8 +93,8 @@ impl Player {
 
     const COLLIDER_WIDTH: f32 = 20.0;
     const COLLIDER_WIDTH_INCAPACITATED: f32 = 40.0;
-    const COLLIDER_HEIGHT: f32 = 64.0;
-    const COLLIDER_HEIGHT_CROUCHED: f32 = 48.0;
+    const COLLIDER_HEIGHT: f32 = 54.0;
+    const COLLIDER_HEIGHT_CROUCHED: f32 = 38.0;
 
     const IDLE_ANIMATION_ID: &'static str = "idle";
     const MOVE_ANIMATION_ID: &'static str = "move";
@@ -150,7 +151,7 @@ impl Player {
                 &mut world.collision_world,
                 spawn_point,
                 0.0,
-                vec2(30.0, 54.0),
+                vec2(Self::COLLIDER_WIDTH, Self::COLLIDER_HEIGHT),
                 false,
                 false,
             )
@@ -170,7 +171,7 @@ impl Player {
 
         let animation_player = AnimationPlayer::new(AnimationParams {
             texture_id: texture_id.to_string(),
-            offset: Some(vec2(-(frame_size.x as f32 / 2.0), -10.0)),
+            offset: vec2(-(frame_size.x as f32 / 2.0), -10.0),
             frame_size: Some(frame_size),
             animations: vec![
                 Animation {
@@ -216,7 +217,6 @@ impl Player {
                     fps: 8,
                 },
             ],
-            should_autoplay: true,
             ..Default::default()
         });
 
@@ -279,34 +279,15 @@ impl Player {
         self.weapon = Some(weapon);
     }
 
-    pub fn get_weapon_mount_offset(&self) -> Vec2 {
-        let mut offset = Vec2::ZERO;
+    pub fn pick_equipment(&mut self, _equipment: Equipment) {
+        let resources = storage::get::<Resources>();
+        let pickup_sound = resources.sounds["pickup"];
 
-        if let Some(weapon) = &self.weapon {
-            offset += weapon.mount_offset;
-        }
-
-        if !self.body.is_facing_right {
-            offset.x = -offset.x;
-        }
-
-        if self.is_crouched {
-            offset.y += Self::WEAPON_MOUNT_Y_OFFSET_CROUCHED;
-        } else {
-            offset.y += Self::WEAPON_MOUNT_Y_OFFSET;
-        }
-
-        // TODO: Implement rotation
-
-        offset
+        play_sound_once(pickup_sound);
     }
 
-    pub fn get_weapon_effect_offset(&self) -> Vec2 {
+    pub fn get_weapon_mount_offset(&self) -> Vec2 {
         let mut offset = Vec2::ZERO;
-
-        if let Some(weapon) = &self.weapon {
-            offset += weapon.effect_offset;
-        }
 
         if !self.body.is_facing_right {
             offset.x = -offset.x;
@@ -693,7 +674,11 @@ impl Player {
                                 node.pick_weapon(weapon);
                                 true
                             }
-                            ItemKind::Misc => false,
+                            ItemKind::Equipment { params } => {
+                                let equipment = Equipment::new(&item.id, params.clone());
+                                node.pick_equipment(equipment);
+                                true
+                            }
                         };
 
                         if was_picked_up {
@@ -716,10 +701,12 @@ impl Player {
 
     pub fn get_collider(&self) -> Rect {
         let state = self.state_machine.state();
+        let mut position = self.body.pos;
+        position.x += self.body.size.x / 2.0;
 
         let mut rect = Rect::new(
-            self.body.pos.x,
-            self.body.pos.y,
+            position.x,
+            position.y,
             Self::COLLIDER_WIDTH,
             Self::COLLIDER_HEIGHT,
         );
@@ -846,23 +833,31 @@ impl Player {
         StateMachine::update_detached(node, |node| &mut node.state_machine);
     }
 
-    fn draw_player(&self) {
+    fn draw_player(&self, position: Vec2) {
         self.animation_player.draw(
-            self.body.pos,
+            position,
             self.body.rotation,
             !self.body.is_facing_right,
             false,
         );
 
-        // {
-        //     let hitbox = node.get_collider();
-        //
-        //     draw_rectangle_lines(hitbox.x, hitbox.y, hitbox.w, hitbox.h, 2.0, color::RED);
-        // }
+        if DEBUG {
+            let collider = self.get_collider();
+
+            draw_rectangle_lines(
+                collider.x,
+                collider.y,
+                collider.w,
+                collider.h,
+                2.0,
+                color::RED,
+            );
+
+            self.body.debug_draw();
+        }
     }
 
-    fn draw_weapon(&mut self) {
-        let position = self.body.pos;
+    fn draw_weapon(&mut self, position: Vec2) {
         let rotation = self.body.rotation;
         let is_facing_right = self.body.is_facing_right;
         let mount_offset = self.get_weapon_mount_offset();
@@ -879,7 +874,7 @@ impl Player {
         }
     }
 
-    fn draw_items(&self) {
+    fn draw_items(&self, position: Vec2) {
         // draw turtle shell on player if the player has back armor
         if self.back_armor > 0 {
             let texture_id = if self.back_armor == 1 {
@@ -895,13 +890,13 @@ impl Player {
 
             draw_texture_ex(
                 texture_entry.texture,
-                self.body.pos.x
+                position.x
                     + if self.body.is_facing_right {
                         -15.0
                     } else {
                         20.0
                     },
-                self.body.pos.y,
+                position.y,
                 color::WHITE,
                 DrawTextureParams {
                     flip_y: self.body.is_facing_right,
@@ -920,14 +915,17 @@ impl scene::Node for Player {
     }
 
     fn draw(mut node: RefMut<Self>) {
+        let mut position = node.body.pos;
+        position.x += node.body.size.x / 2.0;
+
         if node.body.is_facing_right {
-            node.draw_player();
-            node.draw_weapon();
+            node.draw_player(position);
+            node.draw_weapon(position);
         } else {
-            node.draw_weapon();
-            node.draw_player();
+            node.draw_weapon(position);
+            node.draw_player(position);
         }
-        node.draw_items();
+        node.draw_items(position);
     }
 
     fn update(mut node: RefMut<Self>) {

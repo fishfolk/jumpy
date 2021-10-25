@@ -393,7 +393,8 @@ impl Weapon {
                     let weapon_mount = player.body.pos + player.get_weapon_mount_offset();
 
                     if let Some(weapon) = player.weapon.as_mut() {
-                        let origin = weapon_mount + weapon.get_effect_offset(!player.body.is_facing_right, false);
+                        let origin = weapon_mount
+                            + weapon.get_effect_offset(!player.body.is_facing_right, false);
                         weapon_effect_coroutine(player_handle, origin, weapon.effect.clone());
                     }
                 }

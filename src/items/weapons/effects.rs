@@ -114,6 +114,8 @@ pub enum WeaponEffectKind {
         trigger_delay: f32,
         #[serde(default)]
         timed_trigger: Option<f32>,
+        #[serde(default)]
+        is_kickable: bool,
     },
     // Spawn a projectile.
     // This would typically be used for things like a gun.
@@ -230,6 +232,7 @@ pub fn weapon_effect_coroutine(
                 activation_delay,
                 trigger_delay,
                 timed_trigger,
+                is_kickable,
             } => {
                 let mut triggered_effects = scene::find_node_by_type::<TriggeredEffects>().unwrap();
 
@@ -246,6 +249,7 @@ pub fn weapon_effect_coroutine(
                     activation_delay,
                     trigger_delay,
                     timed_trigger,
+                    is_kickable,
                 };
 
                 triggered_effects.spawn(player_handle, kind, origin, size, *effect, params)

@@ -37,6 +37,33 @@ pub struct WeaponAnimationParams {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum WeaponUsesSpecialized {
+    /// Weapon will have unlimited uses
+    Unlimited,
+    /// Weapon will have a single use and be consumed on use
+    SingleUse,
+}
+
+/// This is untagged so it can be represented by either an int or a variant of the
+/// `WeaponUsesSpecialized` enum in a JSON file.
+/// An int (`Count`) will result in the normal behavior, where a weapon has a specific number of
+/// uses, showing a counter above the player wielding it while `Specialized` will result in more
+/// specialized behavior. See `WeaponUsesSpecialized` for more info.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum WeaponUses {
+    Count(u32),
+    Specialized(WeaponUsesSpecialized),
+}
+
+impl Default for WeaponUses {
+    fn default() -> Self {
+        WeaponUses::Specialized(WeaponUsesSpecialized::Unlimited)
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WeaponParams {
     #[serde(
         default,
@@ -44,8 +71,8 @@ pub struct WeaponParams {
         skip_serializing_if = "Option::is_none"
     )]
     pub sound_effect_id: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub uses: Option<u32>,
+    #[serde(default = "WeaponUses::default")]
+    pub uses: WeaponUses,
     pub effect: WeaponEffectParams,
     #[serde(default, with = "json::vec2_def")]
     pub mount_offset: Vec2,
@@ -53,6 +80,7 @@ pub struct WeaponParams {
     pub effect_offset: Vec2,
     #[serde(default)]
     pub attack_duration: f32,
+    #[serde(default)]
     pub cooldown: f32,
     #[serde(default)]
     pub recoil: f32,
@@ -67,7 +95,7 @@ pub struct Weapon {
     pub cooldown: f32,
     pub recoil: f32,
     pub attack_duration: f32,
-    pub uses: Option<u32>,
+    pub uses: WeaponUses,
     pub use_cnt: u32,
     pub sprite_animation: AnimationPlayer,
     pub effect_animation: Option<AnimationPlayer>,
@@ -221,7 +249,7 @@ impl Weapon {
     }
 
     pub fn draw_hud(&self, position: Vec2) {
-        if let Some(uses) = self.uses {
+        if let WeaponUses::Count(uses) = self.uses {
             let remaining = uses - self.use_cnt;
 
             if uses >= Self::HUD_CONDENSED_USE_COUNT_THRESHOLD {
@@ -265,7 +293,7 @@ impl Weapon {
     fn is_ready(&self) -> bool {
         if self.cooldown_timer < self.cooldown {
             return false;
-        } else if let Some(uses) = self.uses {
+        } else if let WeaponUses::Count(uses) = self.uses {
             if self.use_cnt >= uses {
                 return false;
             }
@@ -365,11 +393,17 @@ impl Weapon {
             };
 
             if is_ready {
+                let mut is_consumed = false;
+
                 {
                     let player = &mut *scene::get_node(player_handle);
                     if let Some(weapon) = player.weapon.as_mut() {
-                        if weapon.uses.is_some() {
+                        if let WeaponUses::Count(..) = weapon.uses {
                             weapon.use_cnt += 1;
+                        } else if let WeaponUses::Specialized(WeaponUsesSpecialized::SingleUse) =
+                            weapon.uses
+                        {
+                            is_consumed = true;
                         }
 
                         weapon.cooldown_timer = 0.0;
@@ -415,6 +449,11 @@ impl Weapon {
 
                 if let Some(attack_duration) = attack_duration {
                     wait_seconds(attack_duration).await;
+                }
+
+                if is_consumed {
+                    let player = &mut *scene::get_node(player_handle);
+                    player.weapon = None;
                 }
             }
 

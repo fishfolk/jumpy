@@ -24,6 +24,7 @@ pub struct TriggeredEffectParams {
     pub activation_delay: f32,
     pub trigger_delay: f32,
     pub timed_trigger: Option<f32>,
+    pub is_kickable: bool,
 }
 
 impl Default for TriggeredEffectParams {
@@ -36,6 +37,7 @@ impl Default for TriggeredEffectParams {
             activation_delay: 0.0,
             trigger_delay: 0.0,
             timed_trigger: None,
+            is_kickable: false,
         }
     }
 }
@@ -56,6 +58,9 @@ struct TriggeredEffect {
     pub timed_trigger: Option<f32>,
     pub timed_trigger_timer: f32,
     pub is_triggered: bool,
+    pub is_kickable: bool,
+    pub is_kicked: bool,
+    pub kick_delay_timer: f32,
 }
 
 pub struct TriggeredEffects {
@@ -63,6 +68,10 @@ pub struct TriggeredEffects {
 }
 
 impl TriggeredEffects {
+    const KICK_FORCE: f32 = 800.0;
+    // Delay before the player that deploy a kickable effect can kick it (to avoid insta-kicking it)
+    const KICK_DELAY: f32 = 0.15;
+
     pub fn new() -> Self {
         TriggeredEffects { active: Vec::new() }
     }
@@ -113,6 +122,9 @@ impl TriggeredEffects {
             timed_trigger: params.timed_trigger,
             timed_trigger_timer: 0.0,
             is_triggered: false,
+            is_kickable: params.is_kickable,
+            is_kicked: false,
+            kick_delay_timer: 0.0,
         })
     }
 
@@ -130,6 +142,10 @@ impl TriggeredEffects {
                 if trigger.timed_trigger_timer >= timed_trigger {
                     trigger.is_triggered = true;
                 }
+            }
+
+            if trigger.kick_delay_timer < Self::KICK_DELAY {
+                trigger.kick_delay_timer += dt;
             }
 
             if trigger.activation_delay > 0.0 {
@@ -151,7 +167,9 @@ impl TriggeredEffects {
                 if trigger.kind == WeaponEffectTriggerKind::Player
                     || trigger.kind == WeaponEffectTriggerKind::Both
                 {
-                    let _player = if trigger.is_friendly_fire {
+                    let _player = if trigger.is_friendly_fire
+                        || (trigger.is_kickable && trigger.kick_delay_timer >= Self::KICK_DELAY)
+                    {
                         None
                     } else {
                         scene::try_get_node(trigger.owner)
@@ -159,7 +177,24 @@ impl TriggeredEffects {
 
                     for player in scene::find_nodes_by_type::<Player>() {
                         if collider.overlaps(&player.get_collider()) {
-                            trigger.is_triggered = true;
+                            if trigger.is_kickable {
+                                trigger.is_kicked = true;
+                                if !player.body.is_facing_right
+                                    && trigger.body.position.x
+                                        < player.body.position.x + player.body.size.x
+                                {
+                                    trigger.body.velocity.x = -Self::KICK_FORCE;
+                                } else if player.body.is_facing_right
+                                    && trigger.body.position.x > player.body.position.x
+                                {
+                                    trigger.body.velocity.x = Self::KICK_FORCE;
+                                } else {
+                                    trigger.is_triggered = true;
+                                }
+                            } else {
+                                trigger.is_triggered = true;
+                            }
+
                             break;
                         }
                     }

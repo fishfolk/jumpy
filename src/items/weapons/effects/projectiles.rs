@@ -114,7 +114,7 @@ impl Projectiles {
                         let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
                         particles.spawn("hit", projectile.position);
 
-                        let direction = projectile.position.x > player.body.pos.x;
+                        let direction = projectile.position.x > player.body.position.x;
                         player.kill(direction);
 
                         is_hit = true;
@@ -169,7 +169,7 @@ impl Node for Projectiles {
                 ProjectileKind::Sprite { .. } => {
                     let sprite = projectile.sprite.as_ref().unwrap();
                     let flip_x = projectile.velocity.x < 0.0;
-                    sprite.draw(projectile.position, 0.0, None, flip_x, false);
+                    sprite.draw(projectile.position, 0.0, flip_x, false);
                 }
             }
         }

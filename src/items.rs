@@ -11,14 +11,16 @@ use macroquad::{
 
 use serde::{Deserialize, Serialize};
 
+use equipment::EquipmentParams;
 use weapons::WeaponParams;
 
 use crate::{
     capabilities::{NetworkReplicate, PhysicsObject},
     components::{PhysicsBody, Sprite, SpriteParams},
-    json, GameWorld,
+    json, GameWorld, DEBUG,
 };
 
+pub mod equipment;
 pub mod weapons;
 
 mod sproinger;
@@ -31,7 +33,10 @@ pub enum ItemKind {
         #[serde(flatten)]
         params: WeaponParams,
     },
-    Misc,
+    Equipment {
+        #[serde(flatten)]
+        params: EquipmentParams,
+    },
 }
 
 impl ItemKind {
@@ -74,6 +79,7 @@ impl Item {
             params.collider_size.as_f32(),
             true,
             true,
+            None,
         );
 
         let sprite = Sprite::new(params.sprite);
@@ -88,8 +94,8 @@ impl Item {
 
     pub fn get_collider(&self) -> Rect {
         Rect::new(
-            self.body.pos.x,
-            self.body.pos.y,
+            self.body.position.x,
+            self.body.position.y,
             self.body.size.x,
             self.body.size.y,
         )
@@ -148,6 +154,10 @@ impl Node for Item {
 
     fn draw(node: RefMut<Self>) {
         node.sprite
-            .draw(node.body.pos, node.body.rotation, None, false, false);
+            .draw(node.body.position, node.body.rotation, false, false);
+
+        if DEBUG {
+            node.body.debug_draw();
+        }
     }
 }

@@ -9,7 +9,7 @@ use macroquad::{
 
 use serde::{Deserialize, Serialize};
 
-use crate::{json, Resources};
+use crate::{json, Resources, DEBUG};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Animation {
@@ -32,47 +32,51 @@ impl From<Animation> for MQAnimation {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AnimationParams {
+    /// The id of the spritesheet texture that will be used
     #[serde(rename = "texture")]
     pub texture_id: String,
-    #[serde(
-        default,
-        with = "json::vec2_opt",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub offset: Option<Vec2>,
-    #[serde(
-        default,
-        with = "json::vec2_opt",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub pivot: Option<Vec2>,
+    /// The offset of the drawn frame, relative to the position provided as an argument to the
+    /// `AnimationPlayer` draw method.
+    /// Note that this offset will not be inverted if the frame is flipped.
+    #[serde(default, with = "json::vec2_def")]
+    pub offset: Vec2,
+    /// The pivot of the frame, relative to the position provided as an argument to the
+    /// `AnimationPlayer` draw method, plus any offset.
+    /// Note that this offset will not be inverted if the frame is flipped.
+    #[serde(default, with = "json::vec2_def")]
+    pub pivot: Vec2,
+    /// The size of the drawn sprite. If no size is specified, the texture entry's `sprite_size`
+    /// will be used.
     #[serde(
         default,
         with = "json::uvec2_opt",
         skip_serializing_if = "Option::is_none"
     )]
     pub frame_size: Option<UVec2>,
+    /// An optional color to blend with the texture color
     #[serde(
         default,
         with = "json::color_opt",
         skip_serializing_if = "Option::is_none"
     )]
     pub tint: Option<Color>,
+    /// A list of animations that will be available in the `AnimationPlayer`
     pub animations: Vec<Animation>,
+    /// If this is true, the `AnimationPlayer` will not be updated or drawn.
     #[serde(default)]
-    pub should_autoplay: bool,
+    pub is_deactivated: bool,
 }
 
 impl Default for AnimationParams {
     fn default() -> Self {
         AnimationParams {
             texture_id: "".to_string(),
-            offset: None,
-            pivot: None,
+            offset: Vec2::ZERO,
+            pivot: Vec2::ZERO,
             frame_size: None,
             tint: None,
             animations: vec![],
-            should_autoplay: false,
+            is_deactivated: false,
         }
     }
 }
@@ -84,6 +88,7 @@ pub struct AnimationPlayer {
     tint: Color,
     sprite: AnimatedSprite,
     animations: Vec<Animation>,
+    pub is_deactivated: bool,
 }
 
 impl AnimationPlayer {
@@ -100,10 +105,6 @@ impl AnimationPlayer {
             });
 
         let texture = texture_resource.texture;
-
-        let offset = params.offset.unwrap_or(Vec2::ZERO);
-
-        let pivot = params.pivot.unwrap_or(Vec2::ZERO);
 
         let frame_size = params.frame_size.unwrap_or_else(|| {
             texture_resource
@@ -143,75 +144,64 @@ impl AnimationPlayer {
             frame_size.x,
             frame_size.y,
             &animations,
-            params.should_autoplay,
+            !params.is_deactivated,
         );
 
         let animations = params.animations.to_vec();
 
         AnimationPlayer {
             texture,
-            offset,
-            pivot,
+            offset: params.offset,
+            pivot: params.pivot,
             tint,
             sprite,
             animations,
+            is_deactivated: params.is_deactivated,
         }
     }
 
     pub fn update(&mut self) {
-        self.sprite.update();
+        if !self.is_deactivated {
+            self.sprite.update();
+        }
     }
 
     pub fn draw(&self, position: Vec2, rotation: f32, flip_x: bool, flip_y: bool) {
-        let source_rect = self.sprite.frame().source_rect;
-        let rect = self.get_rect(rotation);
-
-        let pivot = {
+        if !self.is_deactivated {
+            let source_rect = self.sprite.frame().source_rect;
             let size = self.get_size();
-            let mut pivot = self.pivot;
-            if flip_x {
-                pivot.x = size.x - self.pivot.x;
+            let offset = self.offset + self.pivot;
+
+            draw_texture_ex(
+                self.texture,
+                position.x + self.offset.x,
+                position.y + self.offset.y,
+                self.tint,
+                DrawTextureParams {
+                    flip_x,
+                    flip_y,
+                    rotation,
+                    source: Some(source_rect),
+                    dest_size: Some(size),
+                    pivot: Some(offset),
+                },
+            );
+
+            if DEBUG {
+                draw_rectangle_lines(
+                    position.x + self.offset.x,
+                    position.y + self.offset.y,
+                    size.x,
+                    size.y,
+                    2.0,
+                    color::BLUE,
+                );
             }
-            if flip_y {
-                pivot.y = size.y - self.pivot.y;
-            }
-
-            pivot
-        };
-
-        draw_texture_ex(
-            self.texture,
-            position.x + rect.x,
-            position.y + rect.y,
-            self.tint,
-            DrawTextureParams {
-                flip_x,
-                flip_y,
-                rotation,
-                source: Some(source_rect),
-                dest_size: Some(rect.size()),
-                pivot: Some(pivot),
-            },
-        );
-
-        // draw_rectangle_lines(
-        //     position.x + rect.x,
-        //     position.y + rect.y,
-        //     rect.w,
-        //     rect.h,
-        //     2.0,
-        //     color::BLUE,
-        // );
+        }
     }
 
     pub fn get_size(&self) -> Vec2 {
         self.sprite.frame().dest_size
-    }
-
-    pub fn get_rect(&self, _rotation: f32) -> Rect {
-        let size = self.get_size();
-
-        Rect::new(self.offset.x, self.offset.y, size.x, size.y)
     }
 
     pub fn get_animation(&self, id: &str) -> Option<&Animation> {
@@ -245,6 +235,6 @@ impl AnimationPlayer {
     }
 
     pub fn is_playing(&self) -> bool {
-        self.sprite.playing
+        !self.is_deactivated && self.sprite.playing
     }
 }

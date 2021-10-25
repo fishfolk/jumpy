@@ -40,11 +40,11 @@ impl Ai {
 
         let mut following_horiz = false;
 
-        if (player.body.pos.x - foe.body.pos.x).abs() >= 50. {
+        if (player.body.position.x - foe.body.position.x).abs() >= 50. {
             //
             if !self.keep_direction_until_event {
                 following_horiz = true;
-                if player.body.pos.x > foe.body.pos.x {
+                if player.body.position.x > foe.body.position.x {
                     input.left = true;
                 } else {
                     input.right = true;
@@ -53,7 +53,7 @@ impl Ai {
         }
 
         if !self.keep_direction_until_event
-            && (player.body.pos.y - foe.body.pos.y).abs() >= 50.
+            && (player.body.position.y - foe.body.position.y).abs() >= 50.
             && !following_horiz
         {
             self.fix_direction = if rand::gen_range(0, 2) == 0 { 1 } else { -1 };
@@ -71,11 +71,15 @@ impl Ai {
         {
             let collision_world = &mut storage::get_mut::<GameWorld>().collision_world;
 
-            let obstacle_soon = collision_world
-                .collide_check(player.body.collider, player.body.pos + vec2(15. * dir, 0.));
-            let cliff_soon = !collision_world
-                .collide_check(player.body.collider, player.body.pos + vec2(5. * dir, 5.));
-            let wants_descent = player.body.pos.y < foe.body.pos.y;
+            let obstacle_soon = collision_world.collide_check(
+                player.body.collider,
+                player.body.position + vec2(15. * dir, 0.),
+            );
+            let cliff_soon = !collision_world.collide_check(
+                player.body.collider,
+                player.body.position + vec2(5. * dir, 5.),
+            );
+            let wants_descent = player.body.position.y < foe.body.position.y;
 
             if (cliff_soon || obstacle_soon) && self.keep_direction_timeout <= 0. {
                 self.keep_direction_until_event = false;
@@ -102,7 +106,8 @@ impl Ai {
             self.throw_cooldown = 1.;
         }
 
-        if player.body.pos.distance(foe.body.pos) <= 100. || rand::gen_range(0, 180) == 5 {
+        if player.body.position.distance(foe.body.position) <= 100. || rand::gen_range(0, 180) == 5
+        {
             //
             if player.state_machine.state() == Player::ST_NORMAL && player.weapon.is_some() {
                 player.state_machine.set_state(Player::ST_ATTACK);
@@ -123,7 +128,7 @@ impl Ai {
         if self.throw_cooldown <= 0.0 {
             for item in scene::find_nodes_by_type::<Item>() {
                 let item_collider = item.get_collider();
-                if item_collider.point().distance(player.body.pos) <= 80. {
+                if item_collider.point().distance(player.body.position) <= 80. {
                     input.pickup = true;
                 }
             }

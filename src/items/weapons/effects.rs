@@ -111,6 +111,8 @@ pub enum WeaponEffectKind {
         #[serde(default)]
         activation_delay: f32,
         #[serde(default)]
+        trigger_delay: f32,
+        #[serde(default)]
         timed_trigger: Option<f32>,
     },
     // Spawn a projectile.
@@ -192,8 +194,8 @@ pub fn weapon_effect_coroutine(
                         }
 
                         if is_killed {
-                            let is_to_the_right = origin.x < player.body.pos.x;
-                            player.kill(is_to_the_right);
+                            let is_to_the_right = origin.x < player.body.position.x;
+                            player.kill(!is_to_the_right);
                         }
                     }
                 }
@@ -213,8 +215,8 @@ pub fn weapon_effect_coroutine(
 
                 for mut player in scene::find_nodes_by_type::<Player>() {
                     if rect.overlaps(&player.get_collider()) {
-                        let is_to_the_right = origin.x < player.body.pos.x;
-                        player.kill(is_to_the_right);
+                        let is_to_the_right = origin.x < player.body.position.x;
+                        player.kill(!is_to_the_right);
                     }
                 }
             }
@@ -226,6 +228,7 @@ pub fn weapon_effect_coroutine(
                 effect,
                 animation,
                 activation_delay,
+                trigger_delay,
                 timed_trigger,
             } => {
                 let mut triggered_effects = scene::find_node_by_type::<TriggeredEffects>().unwrap();
@@ -241,6 +244,7 @@ pub fn weapon_effect_coroutine(
                     animation,
                     is_friendly_fire: params.is_friendly_fire,
                     activation_delay,
+                    trigger_delay,
                     timed_trigger,
                 };
 

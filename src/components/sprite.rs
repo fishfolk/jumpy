@@ -2,38 +2,59 @@ use macroquad::{color, experimental::collections::storage, prelude::*};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{json, Resources};
+use crate::{json, Resources, DEBUG};
 
+/// Parameters for `Sprite` component.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SpriteParams {
+    /// The id of the texture that will be used
     #[serde(rename = "texture")]
     pub texture_id: String,
+    /// The sprites index in the sprite sheet
     #[serde(default)]
     pub index: usize,
-    #[serde(
-        default,
-        with = "json::color_opt",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub tint: Option<Color>,
-    #[serde(
-        default,
-        with = "json::vec2_opt",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub offset: Option<Vec2>,
-    #[serde(
-        default,
-        with = "json::vec2_opt",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub pivot: Option<Vec2>,
+    /// The offset of the drawn sprite, relative to the position provided as an argument to the
+    /// `Sprite` draw method.
+    /// Note that this offset will not be inverted if the sprite is flipped.
+    #[serde(default, with = "json::vec2_def")]
+    pub offset: Vec2,
+    /// The pivot of the sprite, relative to the position provided as an argument to the `Sprite`
+    /// draw method, plus any offset.
+    /// Note that this offset will not be inverted if the sprite is flipped.
+    #[serde(default, with = "json::vec2_def")]
+    pub pivot: Vec2,
+    /// The size of the drawn sprite. If no size is specified, the texture entry's `sprite_size`
+    /// will be used, if specified, or the raw texture size, if not.
     #[serde(
         default,
         with = "json::uvec2_opt",
         skip_serializing_if = "Option::is_none"
     )]
     pub size: Option<UVec2>,
+    /// An optional color to blend with the texture color
+    #[serde(
+        default,
+        with = "json::color_opt",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub tint: Option<Color>,
+    /// If this is true, the sprite will not be drawn.
+    #[serde(default)]
+    pub is_deactivated: bool,
+}
+
+impl Default for SpriteParams {
+    fn default() -> Self {
+        SpriteParams {
+            texture_id: "".to_string(),
+            index: 0,
+            offset: Vec2::ZERO,
+            pivot: Vec2::ZERO,
+            size: None,
+            tint: None,
+            is_deactivated: false,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -43,6 +64,7 @@ pub struct Sprite {
     tint: Color,
     offset: Vec2,
     pivot: Vec2,
+    pub is_deactivated: bool,
 }
 
 impl Sprite {
@@ -91,84 +113,52 @@ impl Sprite {
         };
 
         let tint = params.tint.unwrap_or(color::WHITE);
-        let offset = params.offset.unwrap_or_default();
-        let pivot = params.pivot.unwrap_or_default();
 
         Sprite {
             texture: texture_res.texture,
             source_rect,
             tint,
-            offset,
-            pivot,
+            offset: params.offset,
+            pivot: params.pivot,
+            is_deactivated: params.is_deactivated,
         }
     }
 
-    pub fn draw(
-        &self,
-        position: Vec2,
-        rotation: f32,
-        scale: Option<Vec2>,
-        flip_x: bool,
-        flip_y: bool,
-    ) {
-        let rect = self.get_rect(scale);
+    pub fn draw(&self, position: Vec2, rotation: f32, flip_x: bool, flip_y: bool) {
+        if !self.is_deactivated {
+            let size = self.get_size();
 
-        let pivot = {
-            let size = self.get_size(scale);
-            let mut pivot = self.pivot;
-            if flip_x {
-                pivot.x = size.x - self.pivot.x;
+            let pivot = self.offset + self.pivot;
+
+            draw_texture_ex(
+                self.texture,
+                position.x + self.offset.x,
+                position.y + self.offset.y,
+                self.tint,
+                DrawTextureParams {
+                    flip_x,
+                    flip_y,
+                    rotation,
+                    source: Some(self.source_rect),
+                    dest_size: Some(size),
+                    pivot: Some(pivot),
+                },
+            );
+
+            if DEBUG {
+                draw_rectangle_lines(
+                    position.x + self.offset.x,
+                    position.y + self.offset.y,
+                    size.x,
+                    size.y,
+                    2.0,
+                    color::BLUE,
+                )
             }
-            if flip_y {
-                pivot.y = size.y - self.pivot.y;
-            }
-
-            pivot
-        };
-
-        draw_texture_ex(
-            self.texture,
-            position.x + rect.x,
-            position.y + rect.y,
-            self.tint,
-            DrawTextureParams {
-                flip_x,
-                flip_y,
-                rotation,
-                source: Some(self.source_rect),
-                dest_size: Some(rect.size()),
-                pivot: Some(pivot),
-            },
-        );
-
-        // draw_rectangle_lines(
-        //     position.x + rect.x,
-        //     position.y + rect.y,
-        //     rect.w,
-        //     rect.h,
-        //     2.0,
-        //     color::BLUE,
-        // )
-    }
-
-    pub fn get_size(&self, scale: Option<Vec2>) -> Vec2 {
-        if let Some(scale) = scale {
-            let size = self.source_rect.size();
-            vec2(size.x * scale.x, size.y * scale.y)
-        } else {
-            self.source_rect.size()
         }
     }
 
-    pub fn get_rect(&self, scale: Option<Vec2>) -> Rect {
-        let position = if let Some(scale) = scale {
-            vec2(self.offset.x * scale.x, self.offset.y * scale.y)
-        } else {
-            self.offset
-        };
-
-        let size = self.get_size(scale);
-
-        Rect::new(position.x, position.y, size.x, size.y)
+    pub fn get_size(&self) -> Vec2 {
+        self.source_rect.size()
     }
 }

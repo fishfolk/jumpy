@@ -4,12 +4,13 @@
     "texture": "kick_bomb"
   },
   "type": "weapon",
-  "uses": "single_use",
+  "uses": 1,
+  "is_destroyed_on_depletion": true,
   "effect": {
     "type": "triggered_effect",
-    "trigger": "player",
+    "trigger": "all_except_ground",
     "velocity": {
-      "x": 50.0,
+      "x": 200.0,
       "y": 0.0
     },
     "size": {
@@ -21,7 +22,7 @@
     "triggered_effect": {
       "type": "circle_collider",
       "radius": 64,
-      "is_friendly_fire": true,
+      "is_explosion": true,
       "particle_effect": "hit",
       "sound_effect": "explode"
     },
@@ -47,10 +48,6 @@
     "y": 48
   },
   "mount_offset": {
-    "x": 0,
-    "y": -24
-  },
-  "effect_offset": {
     "x": 0,
     "y": -24
   },

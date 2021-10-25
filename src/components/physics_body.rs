@@ -1,23 +1,17 @@
-use macroquad::{
-    color,
-    experimental::collections::storage,
-    math::{vec2, Vec2},
-    shapes::draw_rectangle_lines,
-    time::get_frame_time,
-};
+use macroquad::{color, experimental::collections::storage, prelude::*};
 
 use macroquad_platformer::{Actor, World as CollisionWorld};
 
 use crate::GameWorld;
 
 pub struct PhysicsBody {
+    pub collider: Actor,
     pub position: Vec2,
     pub size: Vec2,
     pub velocity: Vec2,
     pub is_facing_right: bool,
     pub rotation: f32,
     pub has_friction: bool,
-    pub collider: Actor,
     pub is_on_ground: bool,
     pub was_on_ground_last_frame: bool,
     pub has_gravity: bool,
@@ -153,5 +147,9 @@ impl PhysicsBody {
             2.0,
             color::RED,
         )
+    }
+
+    pub fn get_collider_rect(&self) -> Rect {
+        Rect::new(self.position.x, self.position.y, self.size.x, self.size.y)
     }
 }

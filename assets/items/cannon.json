@@ -22,7 +22,11 @@
   "sound_effect": "shoot",
   "effect": {
     "type": "triggered_effect",
-    "trigger": "both",
+    "trigger": [
+      "enemy",
+      "ground",
+      "explosion"
+    ],
     "velocity": {
       "x": 1000.0,
       "y": -100.0
@@ -35,7 +39,7 @@
     "triggered_effect": {
       "type": "circle_collider",
       "radius": 64,
-      "is_friendly_fire": true,
+      "is_explosion": true,
       "particle_effect": "hit",
       "sound_effect": "explode"
     },

@@ -8,6 +8,8 @@ use macroquad::{
 
 use serde::{Deserialize, Serialize};
 
+use crate::items::weapons::effects::TriggeredEffects;
+use crate::items::weapons::TriggeredEffectTrigger;
 use crate::{
     capabilities::NetworkReplicate,
     components::{Sprite, SpriteParams},
@@ -89,6 +91,12 @@ impl Projectiles {
             projectile.position += projectile.velocity;
 
             let mut is_hit = false;
+
+            {
+                let mut triggered_effects = scene::find_node_by_type::<TriggeredEffects>().unwrap();
+                triggered_effects
+                    .check_triggers_point(TriggeredEffectTrigger::Projectile, projectile.position);
+            }
 
             {
                 let distance = projectile.position.distance(projectile.origin);

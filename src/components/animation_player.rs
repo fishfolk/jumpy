@@ -62,6 +62,9 @@ pub struct AnimationParams {
     pub tint: Option<Color>,
     /// A list of animations that will be available in the `AnimationPlayer`
     pub animations: Vec<Animation>,
+    /// If this is true, the `AnimationPlayer` will automatically start playing its first animation.
+    #[serde(default)]
+    pub should_autoplay: bool,
     /// If this is true, the `AnimationPlayer` will not be updated or drawn.
     #[serde(default)]
     pub is_deactivated: bool,
@@ -76,6 +79,7 @@ impl Default for AnimationParams {
             frame_size: None,
             tint: None,
             animations: vec![],
+            should_autoplay: false,
             is_deactivated: false,
         }
     }
@@ -140,12 +144,14 @@ impl AnimationPlayer {
                 .collect()
         };
 
-        let sprite = AnimatedSprite::new(
+        let mut sprite = AnimatedSprite::new(
             frame_size.x,
             frame_size.y,
             &animations,
             !params.is_deactivated,
         );
+
+        sprite.playing = params.should_autoplay;
 
         let animations = params.animations.to_vec();
 

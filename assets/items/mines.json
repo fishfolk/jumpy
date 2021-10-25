@@ -12,17 +12,16 @@
   "uses": 3,
   "effect": {
     "type": "triggered_effect",
-    "trigger": "player",
+    "trigger": "all_except_ground",
     "size": {
       "x": 36,
       "y": 36
     },
-    "is_friendly_fire": true,
     "activation_delay": 1.5,
     "triggered_effect": {
       "type": "circle_collider",
       "radius": 64,
-      "is_friendly_fire": true,
+      "is_explosion": true,
       "particle_effect": "hit",
       "sound_effect": "explode"
     },

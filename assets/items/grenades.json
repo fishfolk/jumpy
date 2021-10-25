@@ -8,7 +8,7 @@
   "uses": 3,
   "effect": {
     "type": "triggered_effect",
-    "trigger": "player",
+    "trigger": "enemy",
     "velocity": {
       "x": 400.0,
       "y": 0.0
@@ -21,7 +21,7 @@
     "triggered_effect": {
       "type": "circle_collider",
       "radius": 64,
-      "is_friendly_fire": true,
+      "is_explosion": true,
       "particle_effect": "hit",
       "sound_effect": "explode"
     },

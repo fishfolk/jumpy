@@ -8,32 +8,145 @@ use macroquad::{
 
 use macroquad_platformer::Tile;
 
+use serde::{Deserialize, Serialize};
+
 use crate::{
     capabilities::NetworkReplicate,
     components::{AnimationParams, AnimationPlayer, PhysicsBody},
-    GameWorld, Player,
+    json, GameWorld, Player,
 };
 
-use super::{weapon_effect_coroutine, WeaponEffectParams, WeaponEffectTriggerKind};
+use super::{weapon_effect_coroutine, WeaponEffectParams};
 
+/// This contains commonly used groups of triggers
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TriggeredEffectTriggerGroup {
+    All,
+    AllPlayers,
+    AllExceptPlayer,
+    AllExceptGround,
+}
+
+impl From<TriggeredEffectTriggerGroup> for Vec<TriggeredEffectTrigger> {
+    fn from(group: TriggeredEffectTriggerGroup) -> Self {
+        match group {
+            TriggeredEffectTriggerGroup::All => vec![
+                TriggeredEffectTrigger::Player,
+                TriggeredEffectTrigger::Enemy,
+                TriggeredEffectTrigger::Ground,
+                TriggeredEffectTrigger::Explosion,
+                TriggeredEffectTrigger::Projectile,
+            ],
+            TriggeredEffectTriggerGroup::AllPlayers => vec![
+                TriggeredEffectTrigger::Player,
+                TriggeredEffectTrigger::Enemy,
+            ],
+            TriggeredEffectTriggerGroup::AllExceptPlayer => vec![
+                TriggeredEffectTrigger::Enemy,
+                TriggeredEffectTrigger::Ground,
+                TriggeredEffectTrigger::Explosion,
+                TriggeredEffectTrigger::Projectile,
+            ],
+            TriggeredEffectTriggerGroup::AllExceptGround => vec![
+                TriggeredEffectTrigger::Player,
+                TriggeredEffectTrigger::Enemy,
+                TriggeredEffectTrigger::Explosion,
+                TriggeredEffectTrigger::Projectile,
+            ],
+        }
+    }
+}
+
+/// The various collision types that can trigger a `TriggeredEffect`.
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TriggeredEffectTrigger {
+    /// The player that deployed the effect
+    Player,
+    /// Enemy players
+    Enemy,
+    /// Ground tiles (all tiles with collision, except platforms)
+    Ground,
+    /// Explosion effects
+    Explosion,
+    /// Projectile hit
+    Projectile,
+}
+
+/// This is an untagged enum that makes it possible to accept a single `TriggeredEffectTrigger`
+/// variant (`Single` variant), a vector of `TriggeredEffectTrigger` (`Vec` variant) or a variant
+/// of `TriggeredEffectTriggerGroup` (`Group` variant), when deserializing JSON.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum TriggeredEffectTriggerParams {
+    Single(TriggeredEffectTrigger),
+    Vec(Vec<TriggeredEffectTrigger>),
+    Group(TriggeredEffectTriggerGroup),
+}
+
+impl From<TriggeredEffectTriggerParams> for Vec<TriggeredEffectTrigger> {
+    fn from(params: TriggeredEffectTriggerParams) -> Self {
+        match params {
+            TriggeredEffectTriggerParams::Single(trigger) => vec![trigger],
+            TriggeredEffectTriggerParams::Vec(triggers) => triggers,
+            TriggeredEffectTriggerParams::Group(group) => group.into(),
+        }
+    }
+}
+
+impl Default for TriggeredEffectTriggerParams {
+    fn default() -> Self {
+        Self::Single(TriggeredEffectTrigger::Player)
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TriggeredEffectParams {
-    pub offset: Vec2,
+    /// This specifies the size of the trigger.
+    #[serde(with = "json::vec2_def")]
+    pub size: Vec2,
+    /// This specifies the valid trigger conditions for the trigger.
+    #[serde(default = "TriggeredEffectTriggerParams::default")]
+    pub trigger: TriggeredEffectTriggerParams,
+    /// This specifies the velocity of the triggers body, when it is instantiated.
+    #[serde(default, with = "json::vec2_def")]
     pub velocity: Vec2,
+    /// This can be used to add an animated sprite to the trigger. If only a sprite is desired, an
+    /// animation with only one frame can be used.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub animation: Option<AnimationParams>,
-    pub is_friendly_fire: bool,
+    /// This specifies the delay between the the trigger is instantiated and when it will be
+    /// possible to trigger it.
+    ///
+    /// Explosions and projectiles, if in the list of valid trigger conditions, will ignore this
+    /// and trigger the effect immediately.
+    #[serde(default)]
     pub activation_delay: f32,
+    /// This specifies the delay between the triggers conditions are met and the effect is triggered.
+    ///
+    /// Explosions and projectiles, if in the list of valid trigger conditions, will ignore this
+    /// and trigger the effect immediately.
+    #[serde(default)]
     pub trigger_delay: f32,
+    /// If a value is specified the effect will trigger automatically after `value` time has passed.
+    ///
+    /// Explosions and projectiles, if in the list of valid trigger conditions, will ignore this
+    /// and trigger the effect immediately.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub timed_trigger: Option<f32>,
+    /// If this is `true` the trigger is kicked by a player, if it hits him while he is facing it
+    #[serde(default)]
     pub is_kickable: bool,
 }
 
 impl Default for TriggeredEffectParams {
     fn default() -> Self {
         TriggeredEffectParams {
-            offset: Vec2::ZERO,
+            size: Vec2::ONE,
+            trigger: TriggeredEffectTriggerParams::Vec(Vec::new()),
             velocity: Vec2::ZERO,
             animation: None,
-            is_friendly_fire: false,
             activation_delay: 0.0,
             trigger_delay: 0.0,
             timed_trigger: None,
@@ -45,22 +158,23 @@ impl Default for TriggeredEffectParams {
 struct TriggeredEffect {
     pub owner: Handle<Player>,
     pub size: Vec2,
-    pub kind: WeaponEffectTriggerKind,
+    pub trigger: Vec<TriggeredEffectTrigger>,
     pub effect: WeaponEffectParams,
-    pub is_friendly_fire: bool,
     pub animation_player: Option<AnimationPlayer>,
     pub body: PhysicsBody,
-    pub offset: Vec2,
     pub activation_delay: f32,
     pub activation_timer: f32,
     pub trigger_delay: f32,
     pub trigger_delay_timer: f32,
     pub timed_trigger: Option<f32>,
     pub timed_trigger_timer: f32,
-    pub is_triggered: bool,
     pub is_kickable: bool,
     pub is_kicked: bool,
     pub kick_delay_timer: f32,
+    pub is_triggered: bool,
+    /// This can be used to trigger the effect immediately, ignoring delay timers.
+    /// Also required `is_triggered` to be set to `true`, for this to work.
+    pub should_override_delay: bool,
 }
 
 pub struct TriggeredEffects {
@@ -69,6 +183,7 @@ pub struct TriggeredEffects {
 
 impl TriggeredEffects {
     const KICK_FORCE: f32 = 800.0;
+
     // Delay before the player that deploy a kickable effect can kick it (to avoid insta-kicking it)
     const KICK_DELAY: f32 = 0.22;
 
@@ -79,14 +194,13 @@ impl TriggeredEffects {
     pub fn spawn(
         &mut self,
         owner: Handle<Player>,
-        kind: WeaponEffectTriggerKind,
         position: Vec2,
-        size: Vec2,
         effect: WeaponEffectParams,
         params: TriggeredEffectParams,
     ) {
-        let mut animation_player = None;
+        let trigger = params.trigger.into();
 
+        let mut animation_player = None;
         if let Some(animation_params) = params.animation {
             animation_player = Some(AnimationPlayer::new(animation_params));
         }
@@ -95,9 +209,9 @@ impl TriggeredEffects {
             let mut game_world = storage::get_mut::<GameWorld>();
             PhysicsBody::new(
                 &mut game_world.collision_world,
-                position + params.offset,
+                position,
                 0.0,
-                size,
+                params.size,
                 false,
                 true,
                 None,
@@ -108,24 +222,71 @@ impl TriggeredEffects {
 
         self.active.push(TriggeredEffect {
             owner,
-            size,
-            kind,
+            size: params.size,
+            trigger,
             effect,
             animation_player,
             body,
-            offset: params.offset,
-            is_friendly_fire: params.is_friendly_fire,
             activation_delay: params.activation_delay,
             activation_timer: 0.0,
             trigger_delay: params.trigger_delay,
             trigger_delay_timer: 0.0,
             timed_trigger: params.timed_trigger,
             timed_trigger_timer: 0.0,
-            is_triggered: false,
             is_kickable: params.is_kickable,
             is_kicked: false,
             kick_delay_timer: 0.0,
+            is_triggered: false,
+            should_override_delay: false,
         })
+    }
+
+    #[allow(dead_code)]
+    pub fn check_triggers(&mut self, trigger: TriggeredEffectTrigger, collider: &Rect) {
+        for effect in &mut self.active {
+            if collider.overlaps(&effect.body.get_collider_rect())
+                && effect.trigger.contains(&trigger)
+            {
+                effect.is_triggered = true;
+                if trigger == TriggeredEffectTrigger::Explosion
+                    || trigger == TriggeredEffectTrigger::Projectile
+                {
+                    effect.should_override_delay = true;
+                }
+                continue;
+            }
+        }
+    }
+
+    pub fn check_triggers_circle(&mut self, trigger: TriggeredEffectTrigger, collider: &Circle) {
+        for effect in &mut self.active {
+            if collider.overlaps_rect(&effect.body.get_collider_rect())
+                && effect.trigger.contains(&trigger)
+            {
+                effect.is_triggered = true;
+                if trigger == TriggeredEffectTrigger::Explosion
+                    || trigger == TriggeredEffectTrigger::Projectile
+                {
+                    effect.should_override_delay = true;
+                }
+                continue;
+            }
+        }
+    }
+
+    pub fn check_triggers_point(&mut self, trigger: TriggeredEffectTrigger, point: Vec2) {
+        for effect in &mut self.active {
+            if effect.body.get_collider_rect().contains(point) && effect.trigger.contains(&trigger)
+            {
+                effect.is_triggered = true;
+                if trigger == TriggeredEffectTrigger::Explosion
+                    || trigger == TriggeredEffectTrigger::Projectile
+                {
+                    effect.should_override_delay = true;
+                }
+                continue;
+            }
+        }
     }
 
     fn network_update(mut node: RefMut<Self>) {
@@ -158,22 +319,26 @@ impl TriggeredEffects {
 
             if !trigger.is_triggered && trigger.activation_timer >= trigger.activation_delay {
                 let collider = Rect::new(
-                    trigger.body.position.x + trigger.offset.x,
-                    trigger.body.position.y + trigger.offset.y,
+                    trigger.body.position.x,
+                    trigger.body.position.y,
                     trigger.size.x,
                     trigger.size.y,
                 );
 
-                if trigger.kind == WeaponEffectTriggerKind::Player
-                    || trigger.kind == WeaponEffectTriggerKind::Both
-                {
-                    let _player = if trigger.is_friendly_fire
-                        || (trigger.is_kickable && trigger.kick_delay_timer >= Self::KICK_DELAY)
+                let can_be_triggered_by_player =
+                    trigger.trigger.contains(&TriggeredEffectTrigger::Player);
+                let can_be_triggered_by_enemy =
+                    trigger.trigger.contains(&TriggeredEffectTrigger::Enemy);
+                let can_be_triggered_by_ground =
+                    trigger.trigger.contains(&TriggeredEffectTrigger::Ground);
+
+                if can_be_triggered_by_player || can_be_triggered_by_enemy {
+                    let mut _player = None;
+                    if !(can_be_triggered_by_player
+                        || (trigger.is_kickable && trigger.kick_delay_timer >= Self::KICK_DELAY))
                     {
-                        None
-                    } else {
-                        scene::try_get_node(trigger.owner)
-                    };
+                        _player = scene::try_get_node(trigger.owner)
+                    }
 
                     for player in scene::find_nodes_by_type::<Player>() {
                         if collider.overlaps(&player.get_collider()) {
@@ -200,10 +365,7 @@ impl TriggeredEffects {
                     }
                 }
 
-                if !trigger.is_triggered
-                    && (trigger.kind == WeaponEffectTriggerKind::Ground
-                        || trigger.kind == WeaponEffectTriggerKind::Both)
-                {
+                if !trigger.is_triggered && can_be_triggered_by_ground {
                     if trigger.body.is_on_ground {
                         trigger.is_triggered = true;
                     } else {
@@ -221,12 +383,16 @@ impl TriggeredEffects {
                 }
             }
 
-            if trigger.is_triggered && trigger.trigger_delay_timer >= trigger.trigger_delay {
+            if trigger.is_triggered
+                && (trigger.should_override_delay
+                    || trigger.trigger_delay_timer >= trigger.trigger_delay)
+            {
                 weapon_effect_coroutine(
                     trigger.owner,
                     trigger.body.position,
                     trigger.effect.clone(),
                 );
+
                 node.active.remove(i);
                 continue;
             }

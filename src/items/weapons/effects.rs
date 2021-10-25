@@ -19,7 +19,7 @@ use crate::{
 pub mod projectiles;
 pub mod triggered;
 
-pub use triggered::{TriggeredEffectParams, TriggeredEffects};
+pub use triggered::{TriggeredEffectParams, TriggeredEffectTrigger, TriggeredEffects};
 
 mod custom;
 
@@ -29,8 +29,6 @@ pub use custom::{
 };
 
 pub use projectiles::{ProjectileKind, Projectiles};
-
-use crate::components::AnimationParams;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WeaponEffectParams {
@@ -50,8 +48,6 @@ pub struct WeaponEffectParams {
     pub sound_effect_id: Option<String>,
     #[serde(default)]
     pub delay: f32,
-    #[serde(default)]
-    pub is_friendly_fire: bool,
 }
 
 // This should hold implementations of the commonly used weapon effects, that see usage spanning
@@ -88,6 +84,8 @@ pub enum WeaponEffectKind {
         radius: f32,
         #[serde(default, with = "json::ivec2_opt")]
         segment: Option<IVec2>,
+        #[serde(default)]
+        is_explosion: bool,
     },
     // Check for hits with a `Rect` collider
     RectCollider {
@@ -96,26 +94,10 @@ pub enum WeaponEffectKind {
     },
     // Spawn a trigger that will set of another effect if its trigger conditions are met.
     TriggeredEffect {
-        #[serde(rename = "trigger")]
-        kind: WeaponEffectTriggerKind,
-        #[serde(with = "json::vec2_def")]
-        size: Vec2,
-        #[serde(default, with = "json::vec2_def")]
-        offset: Vec2,
-        #[serde(default, with = "json::vec2_def")]
-        velocity: Vec2,
         #[serde(rename = "triggered_effect")]
         effect: Box<WeaponEffectParams>,
-        #[serde(default)]
-        animation: Option<AnimationParams>,
-        #[serde(default)]
-        activation_delay: f32,
-        #[serde(default)]
-        trigger_delay: f32,
-        #[serde(default)]
-        timed_trigger: Option<f32>,
-        #[serde(default)]
-        is_kickable: bool,
+        #[serde(flatten)]
+        params: TriggeredEffectParams,
     },
     // Spawn a projectile.
     // This would typically be used for things like a gun.
@@ -160,13 +142,16 @@ pub fn weapon_effect_coroutine(
                 let f = get_custom_weapon_effect(&id);
                 f(player_handle, params);
             }
-            WeaponEffectKind::CircleCollider { radius, segment } => {
+            WeaponEffectKind::CircleCollider {
+                radius,
+                segment,
+                is_explosion,
+            } => {
                 // borrow player so that it is excluded from hit check below
-                let _player = if params.is_friendly_fire {
-                    None
-                } else {
-                    scene::try_get_node(player_handle)
-                };
+                let mut _player = None;
+                if !is_explosion {
+                    _player = scene::try_get_node(player_handle)
+                }
 
                 let circle = Circle::new(origin.x, origin.y, radius);
                 for mut player in scene::find_nodes_by_type::<Player>() {
@@ -201,14 +186,17 @@ pub fn weapon_effect_coroutine(
                         }
                     }
                 }
+
+                if is_explosion {
+                    let mut triggered_effects =
+                        scene::find_node_by_type::<TriggeredEffects>().unwrap();
+                    triggered_effects
+                        .check_triggers_circle(TriggeredEffectTrigger::Explosion, &circle);
+                }
             }
             WeaponEffectKind::RectCollider { width, height } => {
                 // borrow player so that it is excluded from hit check below
-                let _player = if params.is_friendly_fire {
-                    None
-                } else {
-                    scene::try_get_node(player_handle)
-                };
+                let _player = scene::try_get_node(player_handle);
 
                 let mut rect = Rect::new(origin.x, origin.y, width, height);
                 if !is_facing_right {
@@ -222,37 +210,15 @@ pub fn weapon_effect_coroutine(
                     }
                 }
             }
-            WeaponEffectKind::TriggeredEffect {
-                kind,
-                size,
-                offset,
-                velocity,
-                effect,
-                animation,
-                activation_delay,
-                trigger_delay,
-                timed_trigger,
-                is_kickable,
-            } => {
+            WeaponEffectKind::TriggeredEffect { effect, params } => {
                 let mut triggered_effects = scene::find_node_by_type::<TriggeredEffects>().unwrap();
 
-                let mut velocity = velocity;
+                let mut velocity = params.velocity;
                 if !is_facing_right {
                     velocity.x = -velocity.x;
                 }
 
-                let params = TriggeredEffectParams {
-                    offset,
-                    velocity,
-                    animation,
-                    is_friendly_fire: params.is_friendly_fire,
-                    activation_delay,
-                    trigger_delay,
-                    timed_trigger,
-                    is_kickable,
-                };
-
-                triggered_effects.spawn(player_handle, kind, origin, size, *effect, params)
+                triggered_effects.spawn(player_handle, origin, *effect, params)
             }
             WeaponEffectKind::Projectile {
                 kind,
@@ -281,13 +247,4 @@ pub fn weapon_effect_coroutine(
     };
 
     start_coroutine(coroutine)
-}
-
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum WeaponEffectTriggerKind {
-    None,
-    Player,
-    Ground,
-    Both,
 }

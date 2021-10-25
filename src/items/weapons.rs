@@ -20,8 +20,8 @@ pub mod effects;
 
 pub use effects::{
     add_custom_weapon_effect, get_custom_weapon_effect, weapon_effect_coroutine,
-    CustomWeaponEffectCoroutine, CustomWeaponEffectParam, Projectiles, WeaponEffectKind,
-    WeaponEffectParams, WeaponEffectTriggerKind,
+    CustomWeaponEffectCoroutine, CustomWeaponEffectParam, Projectiles, TriggeredEffectTrigger,
+    WeaponEffectKind, WeaponEffectParams,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

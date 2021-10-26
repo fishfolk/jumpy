@@ -11,7 +11,7 @@ use macroquad::{
 
 use serde::{Deserialize, Serialize};
 
-use equipment::EquipmentParams;
+use equipped::EquippedItemParams;
 use weapons::WeaponParams;
 
 use crate::{
@@ -20,7 +20,7 @@ use crate::{
     json, GameWorld,
 };
 
-pub mod equipment;
+pub mod equipped;
 pub mod weapons;
 
 mod sproinger;
@@ -35,7 +35,7 @@ pub enum ItemKind {
     },
     Equipment {
         #[serde(flatten)]
-        params: EquipmentParams,
+        params: EquippedItemParams,
     },
 }
 

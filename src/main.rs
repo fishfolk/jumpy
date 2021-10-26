@@ -1,5 +1,6 @@
 use fishsticks::GamepadContext;
 use std::env;
+use std::path::PathBuf;
 
 use macroquad::prelude::*;
 use macroquad::{
@@ -28,7 +29,9 @@ use nodes::Player;
 
 use resources::MapResource;
 
+use crate::config::Config;
 use crate::items::Sproinger;
+
 pub use resources::Resources;
 
 mod capabilities;
@@ -43,6 +46,7 @@ pub mod components;
 pub mod json;
 pub mod map;
 
+pub mod config;
 pub mod editor;
 pub mod game_world;
 pub mod math;
@@ -56,6 +60,7 @@ pub mod error;
 pub const DEBUG: bool = false;
 
 const ASSETS_DIR_ENV_VAR: &str = "FISHFIGHT_ASSETS";
+const CONFIG_FILE_ENV_VAR: &str = "FISHFIGHT_CONFIG";
 
 pub type CollisionWorld = macroquad_platformer::World;
 
@@ -203,13 +208,22 @@ async fn game(map_resource: MapResource, game_type: GameType) -> Result<()> {
 }
 
 fn window_conf() -> Conf {
-    Conf {
+    let config = Config::parse(
+        env::var(CONFIG_FILE_ENV_VAR)
+            .map(PathBuf::from)
+            .unwrap_or_else(|_| PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("config.json")),
+    )
+    .unwrap();
+    let window_conf = Conf {
         window_title: "FishFight".to_owned(),
-        high_dpi: false,
-        window_width: 955,
-        window_height: 600,
+        high_dpi: config.high_dpi,
+        fullscreen: config.fullscreen,
+        window_width: config.resolution.width,
+        window_height: config.resolution.height,
         ..Default::default()
-    }
+    };
+    storage::store(config);
+    window_conf
 }
 
 #[macroquad::main(window_conf)]

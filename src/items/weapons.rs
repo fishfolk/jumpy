@@ -49,7 +49,7 @@ pub struct WeaponAnimationParams {
 /// This holds parameters specific to the `Weapon` variant of `ItemKind`, used to instantiate a
 /// `Weapon` struct instance, when an `Item` of type `Weapon` is picked up.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct WeaponParams {  
+pub struct WeaponParams {
     /// This specifies the effect to instantiate when the weapon is used to attack
     pub effect: WeaponEffectParams,
     /// This can specify an id of a sound effect that is played when the weapon is used to attack

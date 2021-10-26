@@ -18,6 +18,7 @@ pub struct EquipmentParams {
     pub animation: AnimationParams,
 }
 
+#[allow(dead_code)]
 pub struct Equipment {
     pub id: String,
     pub effects: Vec<PassiveEffect>,
@@ -25,6 +26,7 @@ pub struct Equipment {
 }
 
 impl Equipment {
+    #[allow(dead_code)]
     pub fn new(id: &str, params: EquipmentParams) -> Self {
         let mut effects = Vec::new();
         for effect_params in params.effects.into_vec() {

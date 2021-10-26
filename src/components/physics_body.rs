@@ -2,7 +2,7 @@ use macroquad::{color, experimental::collections::storage, prelude::*};
 
 use macroquad_platformer::{Actor, World as CollisionWorld};
 
-use crate::GameWorld;
+use crate::{GameWorld, debug};
 
 pub struct PhysicsBody {
     pub collider: Actor,
@@ -63,7 +63,9 @@ impl PhysicsBody {
     }
 
     pub fn get_collider_rect(&self) -> Rect {
-        Rect::new(self.position.x, self.position.y, self.size.x, self.size.y)
+        let position = self.position + self.collider_offset;
+
+        Rect::new(position.x, position.y, self.size.x, self.size.y)
     }
 
     pub fn descent(&mut self) {
@@ -140,16 +142,19 @@ impl PhysicsBody {
         }
     }
 
+    #[cfg(debug_assertions)]
     pub fn debug_draw(&self) {
-        let position = self.position + self.collider_offset;
+        if debug::is_debug_draw_enabled() {
+            let collider = self.get_collider_rect();
 
-        draw_rectangle_lines(
-            position.x,
-            position.y,
-            self.size.x,
-            self.size.y,
-            2.0,
-            color::RED,
-        )
+            draw_rectangle_lines(
+                collider.x,
+                collider.y,
+                collider.w,
+                collider.h,
+                2.0,
+                color::RED,
+            )
+        }
     }
 }

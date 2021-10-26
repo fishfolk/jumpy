@@ -17,7 +17,7 @@ use crate::{
     json, GameWorld, Player,
 };
 
-use super::{weapon_effect_coroutine, WeaponEffectParams};
+use super::{active_effect_coroutine, ActiveEffectParams};
 
 /// This contains commonly used groups of triggers
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -106,7 +106,7 @@ impl Default for TriggeredEffectTriggerParams {
 pub struct TriggeredEffectParams {
     /// The effects to instantiate when the triggers condition is met. Can be either a single
     /// effect or a vec of effects
-    pub effects: OneOrMany<WeaponEffectParams>,
+    pub effects: OneOrMany<ActiveEffectParams>,
     /// This specifies the size of the trigger.
     #[serde(with = "json::vec2_def")]
     pub size: Vec2,
@@ -164,7 +164,7 @@ struct TriggeredEffect {
     pub owner: Handle<Player>,
     pub size: Vec2,
     pub trigger: Vec<TriggeredEffectTrigger>,
-    pub effects: Vec<WeaponEffectParams>,
+    pub effects: Vec<ActiveEffectParams>,
     pub animation_player: Option<AnimationPlayer>,
     pub body: PhysicsBody,
     pub activation_delay: f32,
@@ -338,7 +338,7 @@ impl TriggeredEffects {
                     }
 
                     for player in scene::find_nodes_by_type::<Player>() {
-                        if collider.overlaps(&player.get_collider()) {
+                        if collider.overlaps(&player.get_collider_rect()) {
                             if trigger.is_kickable {
                                 if !player.body.is_facing_right
                                     && trigger.body.position.x
@@ -384,7 +384,7 @@ impl TriggeredEffects {
                     || trigger.trigger_delay_timer >= trigger.trigger_delay)
             {
                 for effect in trigger.effects.drain(0..) {
-                    weapon_effect_coroutine(trigger.owner, trigger.body.position, effect);
+                    active_effect_coroutine(trigger.owner, trigger.body.position, effect);
                 }
 
                 node.active.remove(i);

@@ -7,7 +7,7 @@ use macroquad::{
 
 use crate::{
     nodes::{player::Input, Player},
-    GameWorld, Item,
+    GameWorld, items::Item,
 };
 
 pub struct Ai {
@@ -127,7 +127,7 @@ impl Ai {
 
         if self.throw_cooldown <= 0.0 {
             for item in scene::find_nodes_by_type::<Item>() {
-                let item_collider = item.get_collider();
+                let item_collider = item.body.get_collider_rect();
                 if item_collider.point().distance(player.body.position) <= 80. {
                     input.pickup = true;
                 }

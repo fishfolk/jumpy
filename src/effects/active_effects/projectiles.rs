@@ -8,8 +8,11 @@ use macroquad::{
 
 use serde::{Deserialize, Serialize};
 
-use crate::items::weapons::effects::TriggeredEffects;
-use crate::items::weapons::TriggeredEffectTrigger;
+use super::{
+    TriggeredEffects,
+    TriggeredEffectTrigger,
+};
+
 use crate::{
     capabilities::NetworkReplicate,
     components::{Sprite, SpriteParams},
@@ -116,7 +119,7 @@ impl Projectiles {
                 let _owner = scene::try_get_node(projectile.owner);
 
                 for mut player in scene::find_nodes_by_type::<Player>() {
-                    let hitbox = player.get_collider();
+                    let hitbox = player.get_collider_rect();
 
                     if hitbox.contains(projectile.position) {
                         let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();

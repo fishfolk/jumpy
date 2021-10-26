@@ -8,9 +8,7 @@ use crate::{
     Player,
 };
 
-pub mod effects;
-
-pub use effects::{PassiveEffect, PassiveEffectParams};
+use crate::effects::{PassiveEffect, PassiveEffectParams};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct EquipmentParams {

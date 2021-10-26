@@ -17,7 +17,7 @@ use weapons::WeaponParams;
 use crate::{
     capabilities::{NetworkReplicate, PhysicsObject},
     components::{PhysicsBody, Sprite, SpriteParams},
-    json, GameWorld, DEBUG,
+    json, GameWorld,
 };
 
 pub mod equipment;
@@ -92,15 +92,6 @@ impl Item {
         }
     }
 
-    pub fn get_collider(&self) -> Rect {
-        Rect::new(
-            self.body.position.x,
-            self.body.position.y,
-            self.body.size.x,
-            self.body.size.y,
-        )
-    }
-
     fn physics_capabilities() -> PhysicsObject {
         fn active(_: HandleUntyped) -> bool {
             true
@@ -108,7 +99,7 @@ impl Item {
 
         fn collider(handle: HandleUntyped) -> Rect {
             let node = scene::get_untyped_node(handle).unwrap().to_typed::<Item>();
-            node.get_collider()
+            node.body.get_collider_rect()
         }
 
         fn set_speed_x(handle: HandleUntyped, speed: f32) {
@@ -155,8 +146,10 @@ impl Node for Item {
         node.sprite
             .draw(node.body.position, node.body.rotation, false, false);
 
-        if DEBUG {
+        #[cfg(debug_assertions)]
+            node.sprite.debug_draw(node.body.position);
+
+        #[cfg(debug_assertions)]
             node.body.debug_draw();
-        }
     }
 }

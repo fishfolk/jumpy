@@ -230,22 +230,25 @@ pub fn weapon_effect_coroutine(
                 range,
                 spread,
             } => {
-                let facing_dir = {
-                    if let Some(player) = scene::try_get_node(player_handle) {
-                        player.body.facing_dir()
-                    } else {
-                        vec2(1.0, 0.0)
-                    }
-                };
-
                 let rad = deg_to_rad(spread);
                 let spread = rand::gen_range(-rad, rad);
 
-                let velocity = rotate_vector(facing_dir * speed, spread);
+                let mut velocity = Vec2::ZERO;
+                if is_facing_right {
+                    velocity.x = speed
+                } else {
+                    velocity.x = -speed
+                }
 
                 let mut projectiles = scene::find_node_by_type::<Projectiles>().unwrap();
 
-                projectiles.spawn(player_handle, kind, origin, velocity, range);
+                projectiles.spawn(
+                    player_handle,
+                    kind,
+                    origin,
+                    rotate_vector(velocity, spread),
+                    range,
+                );
             }
         }
     };

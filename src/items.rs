@@ -108,7 +108,6 @@ impl Item {
 
         fn collider(handle: HandleUntyped) -> Rect {
             let node = scene::get_untyped_node(handle).unwrap().to_typed::<Item>();
-
             node.get_collider()
         }
 

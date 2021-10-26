@@ -176,7 +176,6 @@ impl AnimationPlayer {
         if !self.is_deactivated {
             let source_rect = self.sprite.frame().source_rect;
             let size = self.get_size();
-            let offset = self.offset + self.pivot;
 
             draw_texture_ex(
                 self.texture,
@@ -189,7 +188,7 @@ impl AnimationPlayer {
                     rotation,
                     source: Some(source_rect),
                     dest_size: Some(size),
-                    pivot: Some(offset),
+                    pivot: Some(self.pivot),
                 },
             );
 

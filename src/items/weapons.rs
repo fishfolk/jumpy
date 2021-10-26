@@ -391,7 +391,7 @@ impl Weapon {
 
     /// This will start a `Coroutine` that performs an attack with the `Weapon` equipped by the
     /// `Player` fetched with `player_handle`, id one is equipped and ready for use.
-    pub fn attack_coroutine(player_handle: Handle<Player>) -> Coroutine {
+    pub fn use_coroutine(player_handle: Handle<Player>) -> Coroutine {
         let coroutine = async move {
             let is_ready = {
                 let player = &mut *scene::get_node(player_handle);

@@ -9,6 +9,7 @@ pub struct EquipmentParams {
     pub animation: AnimationParams,
 }
 
+#[allow(dead_code)]
 pub struct Equipment {
     pub id: String,
     pub sprite_animation: AnimationPlayer,
@@ -17,6 +18,7 @@ pub struct Equipment {
 }
 
 impl Equipment {
+    #[allow(dead_code)]
     pub fn new(id: &str, params: EquipmentParams) -> Self {
         let sprite_animation = AnimationPlayer::new(params.animation);
 

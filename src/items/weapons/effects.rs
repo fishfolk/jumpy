@@ -40,16 +40,16 @@ pub struct WeaponEffectParams {
     pub kind: WeaponEffectKind,
     /// This specifies the id of a particle effect to emit when the effect is instantiated.
     #[serde(
-    default,
-    rename = "particle_effect",
-    skip_serializing_if = "Option::is_none"
+        default,
+        rename = "particle_effect",
+        skip_serializing_if = "Option::is_none"
     )]
     pub particle_effect_id: Option<String>,
     /// This specifies the id of a sound effect to play when the effect is instantiated.
     #[serde(
-    default,
-    rename = "sound_effect",
-    skip_serializing_if = "Option::is_none"
+        default,
+        rename = "sound_effect",
+        skip_serializing_if = "Option::is_none"
     )]
     pub sound_effect_id: Option<String>,
     /// The delay between instantiation of the effect is requested and the actual instantiation.

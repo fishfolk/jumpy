@@ -283,6 +283,7 @@ impl Player {
         self.weapon = Some(weapon);
     }
 
+    #[allow(dead_code)]
     pub fn pick_equipment(&mut self, _equipment: Equipment) {
         let resources = storage::get::<Resources>();
         let pickup_sound = resources.sounds["pickup"];

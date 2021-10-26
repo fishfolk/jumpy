@@ -13,6 +13,14 @@
   "attack_duration": 1.0,
   "recoil": 1400.0,
   "sound_effect": "shoot",
+  "collider_size": {
+    "x": 64,
+    "y": 24
+  },
+  "effect_offset": {
+    "x": 64,
+    "y": 16
+  },
   "effect": {
     "type": "projectile",
     "projectile": {
@@ -33,15 +41,6 @@
     },
     "range": 600.0,
     "speed": 25.0
-  },
-
-  "collider_size": {
-    "x": 64,
-    "y": 24
-  },
-  "effect_offset": {
-    "x": 64,
-    "y": 16
   },
   "animation": {
     "texture": "sniper_rifle",

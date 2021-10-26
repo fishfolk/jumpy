@@ -50,6 +50,8 @@ pub struct WeaponAnimationParams {
 /// `Weapon` struct instance, when an `Item` of type `Weapon` is picked up.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WeaponParams {
+    /// This specifies the effect to instantiate when the weapon is used to attack
+    pub effect: WeaponEffectParams,
     /// This can specify an id of a sound effect that is played when the weapon is used to attack
     #[serde(
         default,
@@ -64,8 +66,6 @@ pub struct WeaponParams {
     /// If this is set to `true` the weapon will be destroyed when it is out of uses
     #[serde(default)]
     pub is_destroyed_on_depletion: bool,
-    /// This specifies the effect to instantiate when the weapon is used to attack
-    pub effect: WeaponEffectParams,
     /// This specifies the offset from the `Player` weapon mount
     #[serde(default, with = "json::vec2_def")]
     pub mount_offset: Vec2,

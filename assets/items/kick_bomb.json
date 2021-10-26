@@ -1,23 +1,23 @@
 {
-  "id": "grenades",
+  "id": "kick_bomb",
   "sprite": {
-    "texture": "grenades"
+    "texture": "kick_bomb"
   },
   "type": "weapon",
-  "cooldown": 0.5,
-  "uses": 3,
+  "uses": 1,
   "is_destroyed_on_depletion": true,
   "effect": {
     "type": "triggered_effect",
-    "trigger": "enemy",
+    "trigger": "all_except_ground",
     "velocity": {
-      "x": 400.0,
+      "x": 200.0,
       "y": 0.0
     },
     "size": {
       "x": 24,
       "y": 24
     },
+    "is_kickable": true,
     "timed_trigger": 1.5,
     "triggered_effect": {
       "type": "circle_collider",
@@ -27,7 +27,7 @@
       "sound_effect": "explode"
     },
     "animation": {
-      "texture": "grenades",
+      "texture": "kick_bomb",
       "offset": {
         "x": 0,
         "y": -24
@@ -51,12 +51,8 @@
     "x": 0,
     "y": -24
   },
-  "effect_offset": {
-    "x": 0,
-    "y": -24
-  },
   "animation": {
-    "texture": "grenades",
+    "texture": "kick_bomb",
     "animations": [
       {
         "id": "idle",

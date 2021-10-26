@@ -8,6 +8,8 @@ use macroquad::{
 
 use serde::{Deserialize, Serialize};
 
+pub mod custom;
+
 use crate::Player;
 
 // static mut EQUIPMENT_EFFECTS: Option<HashMap<String, PassiveEffect>> = None;

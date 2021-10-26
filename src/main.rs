@@ -18,11 +18,6 @@ use error::Result;
 pub use game_world::GameWorld;
 pub use input::{Input, InputScheme};
 
-use items::{
-    weapons::effects::{Projectiles, TriggeredEffects},
-    Item,
-};
-
 use map::{Map, MapLayerKind, MapObjectKind};
 
 use nodes::Player;
@@ -52,12 +47,15 @@ pub mod game_world;
 pub mod math;
 pub mod resources;
 pub mod text;
-
 #[macro_use]
 pub mod error;
+pub mod debug;
+pub mod effects;
 
-// TODO: Make this a toggle of some kind
-pub const DEBUG: bool = false;
+pub use effects::{
+    ActiveEffectKind, ActiveEffectParams, CustomActiveEffectCoroutine, PassiveEffect,
+    PassiveEffectParams,
+};
 
 const ASSETS_DIR_ENV_VAR: &str = "FISHFIGHT_ASSETS";
 const CONFIG_FILE_ENV_VAR: &str = "FISHFIGHT_CONFIG";
@@ -78,6 +76,8 @@ pub enum GameType {
 }
 
 fn build_game_scene(map: Map, is_local_game: bool) -> Vec<Handle<Player>> {
+    use effects::active_effects::{Projectiles, TriggeredEffects};
+    use items::Item;
     use nodes::{Camera, Decoration, ParticleEmitters, SceneRenderer};
 
     let resources = storage::get::<Resources>();

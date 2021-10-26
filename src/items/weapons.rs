@@ -13,16 +13,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     components::{AnimationParams, AnimationPlayer},
+    effects::{active_effect_coroutine, ActiveEffectParams},
     json::{self, OneOrMany},
     Player, Resources,
-};
-
-pub mod effects;
-
-pub use effects::{
-    add_custom_weapon_effect, get_custom_weapon_effect, weapon_effect_coroutine,
-    CustomWeaponEffectCoroutine, Projectiles, TriggeredEffectTrigger, WeaponEffectKind,
-    WeaponEffectParams,
 };
 
 /// This holds the parameters for the `AnimationPlayer` components of an equipped `Weapon`.
@@ -52,8 +45,8 @@ pub struct WeaponAnimationParams {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct WeaponParams {
     /// This specifies the effects to instantiate when the weapon is used to attack. Can be either
-    /// a single `WeaponEffectParams` or a vector of `WeaponEffectParams`-
-    pub effects: OneOrMany<WeaponEffectParams>,
+    /// a single `ActiveEffectParams` or a vector of `ActiveEffectParams`-
+    pub effects: OneOrMany<ActiveEffectParams>,
     /// This can specify an id of a sound effect that is played when the weapon is used to attack
     #[serde(
         default,
@@ -99,7 +92,7 @@ pub struct WeaponParams {
 pub struct Weapon {
     pub id: String,
     pub sound_effect: Option<Sound>,
-    pub effects: Vec<WeaponEffectParams>,
+    pub effects: Vec<ActiveEffectParams>,
     pub cooldown: f32,
     pub recoil: f32,
     pub attack_duration: f32,
@@ -256,6 +249,9 @@ impl Weapon {
         if let Some(effect_animation) = &mut self.effect_animation {
             effect_animation.draw(position, rotation, flip_x, flip_y);
         }
+
+        #[cfg(debug_assertions)]
+        self.sprite_animation.debug_draw(position);
     }
 
     pub fn draw_hud(&self, position: Vec2) {
@@ -442,7 +438,7 @@ impl Weapon {
                         let origin = weapon_mount
                             + weapon.get_effect_offset(!player.body.is_facing_right, false);
                         for params in weapon.effects.clone() {
-                            weapon_effect_coroutine(player_handle, origin, params);
+                            active_effect_coroutine(player_handle, origin, params);
                         }
                     }
                 }

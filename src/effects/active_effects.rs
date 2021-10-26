@@ -23,18 +23,18 @@ pub use triggered::{TriggeredEffectParams, TriggeredEffectTrigger, TriggeredEffe
 
 mod custom;
 
-pub use custom::{add_custom_weapon_effect, get_custom_weapon_effect, CustomWeaponEffectCoroutine};
+pub use custom::{add_custom_active_effect, get_custom_active_effect, CustomActiveEffectCoroutine};
 
 pub use projectiles::{ProjectileKind, Projectiles};
 
 /// This holds all the common parameters, available to all implementations, as well as specialized
-/// parameters, in the `WeaponEffectKind`.
+/// parameters, in the `ActiveEffectKind`.
 #[derive(Clone, Serialize, Deserialize)]
-pub struct WeaponEffectParams {
+pub struct ActiveEffectParams {
     /// This holds all the specialized parameters for the effect, dependent on the implementation,
     /// specified by its variant. It is flattened into this struct in JSON.
     #[serde(flatten)]
-    pub kind: Box<WeaponEffectKind>,
+    pub kind: Box<ActiveEffectKind>,
     /// This specifies the id of a particle effect to emit when the effect is instantiated.
     #[serde(
         default,
@@ -67,7 +67,7 @@ pub struct WeaponEffectParams {
 /// upon attack, using the weapons `effect_offset` as origin.
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
-pub enum WeaponEffectKind {
+pub enum ActiveEffectKind {
     /// Custom effects are made by implementing `WeaponEffectCoroutine`, either directly in code or
     /// in scripts if/when we add a scripting API
     Custom {
@@ -109,10 +109,10 @@ pub enum WeaponEffectKind {
     },
 }
 
-pub fn weapon_effect_coroutine(
+pub fn active_effect_coroutine(
     player_handle: Handle<Player>,
     origin: Vec2,
-    params: WeaponEffectParams,
+    params: ActiveEffectParams,
 ) -> Coroutine {
     let coroutine = async move {
         wait_seconds(params.delay).await;
@@ -131,11 +131,11 @@ pub fn weapon_effect_coroutine(
         };
 
         match *params.kind {
-            WeaponEffectKind::Custom { id, params } => {
-                let f = get_custom_weapon_effect(&id);
+            ActiveEffectKind::Custom { id, params } => {
+                let f = get_custom_active_effect(&id);
                 f(player_handle, params);
             }
-            WeaponEffectKind::CircleCollider {
+            ActiveEffectKind::CircleCollider {
                 radius,
                 segment,
                 is_explosion,
@@ -148,7 +148,7 @@ pub fn weapon_effect_coroutine(
 
                 let circle = Circle::new(origin.x, origin.y, radius);
                 for mut player in scene::find_nodes_by_type::<Player>() {
-                    let collider = player.get_collider();
+                    let collider = player.get_collider_rect();
                     if circle.overlaps_rect(&collider) {
                         let mut is_killed = false;
 
@@ -187,7 +187,7 @@ pub fn weapon_effect_coroutine(
                         .check_triggers_circle(TriggeredEffectTrigger::Explosion, &circle);
                 }
             }
-            WeaponEffectKind::RectCollider { width, height } => {
+            ActiveEffectKind::RectCollider { width, height } => {
                 // borrow player so that it is excluded from hit check below
                 let _player = scene::try_get_node(player_handle);
 
@@ -197,13 +197,13 @@ pub fn weapon_effect_coroutine(
                 }
 
                 for mut player in scene::find_nodes_by_type::<Player>() {
-                    if rect.overlaps(&player.get_collider()) {
+                    if rect.overlaps(&player.get_collider_rect()) {
                         let is_to_the_right = origin.x < player.body.position.x;
                         player.kill(!is_to_the_right);
                     }
                 }
             }
-            WeaponEffectKind::TriggeredEffect { mut params } => {
+            ActiveEffectKind::TriggeredEffect { mut params } => {
                 let mut triggered_effects = scene::find_node_by_type::<TriggeredEffects>().unwrap();
 
                 if !is_facing_right {
@@ -212,7 +212,7 @@ pub fn weapon_effect_coroutine(
 
                 triggered_effects.spawn(player_handle, origin, params)
             }
-            WeaponEffectKind::Projectile {
+            ActiveEffectKind::Projectile {
                 kind,
                 speed,
                 range,

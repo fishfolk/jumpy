@@ -189,14 +189,14 @@ to the item to pick it up:</p>
 </code></pre>
 <p>That is all the required data for the item part of our definition, so now it is time need to add the parameters required for weapon item variants.</p>
 <p>We have quite a few options for customization here that can be explored by looking at the <code>WeaponParams</code> struct in the source code. We are required 
-to define at least the <code>WeaponEffectParams</code>, which holds the parameters of the effect that will be instantiated when the weapon is used to attack,
+to define at least the <code>ActiveEffectParams</code>, which holds the parameters of the effect that will be instantiated when the weapon is used to attack,
 and a <code>WeaponAnimationParams</code>, which holds the parameters of the animation players that will be used to animate and draw the weapon when it is
 equipped. We also wanted our rifle to have two bullets and a heavy recoil, so we should also define these parameters. We should also specify a
 cooldown for our weapon, which governs the interval between shots, and an attack duration, which controls the length of time that the player is
 locked in the attack state (input blocked), after an attack. We should also add a sound effect, to be played when the weapon is used. We will also
 have to add an effect offset, which is the offset from the weapons position to the point where the weapons effect will originate.</p>
 <p>Now, it is time to define the parameters for the affect that will be instantiated when we fire the gun. There are several variants to
-choose from, or a new one can be implemented, either as a new variant of <code>WeaponEffectKind</code> or as an implementation of the <code>WeaponEffectCoroutine</code>
+choose from, or a new one can be implemented, either as a new variant of <code>ActiveEffectKind</code> or as an implementation of the <code>WeaponEffectCoroutine</code>
 type. In our case, however, there is already a perfect fit; the <code>Projectile</code> variant.</p>
 <p>We will want to specify a projectile speed, a projectile range and a specification for how the projectile should be drawn. A projectile can be
 drawn as a simple colored shape or using a texture. We will use a texture and we will also color the projectile by setting a tint:</p>
@@ -219,7 +219,7 @@ drawn as a simple colored shape or using a texture. We will use a texture and we
     &quot;x&quot;: 64,
     &quot;y&quot;: 16
   },
-  &quot;effect&quot;: {
+  &quot;effects&quot;: {
     &quot;type&quot;: &quot;projectile&quot;,
     &quot;projectile&quot;: {
       &quot;type&quot;: &quot;sprite&quot;,

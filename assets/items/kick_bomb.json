@@ -6,7 +6,7 @@
   "type": "weapon",
   "uses": 1,
   "is_destroyed_on_depletion": true,
-  "effect": {
+  "effects": {
     "type": "triggered_effect",
     "trigger": "all_except_ground",
     "velocity": {
@@ -19,7 +19,7 @@
     },
     "is_kickable": true,
     "timed_trigger": 1.5,
-    "triggered_effect": {
+    "effects": {
       "type": "circle_collider",
       "radius": 64,
       "is_explosion": true,

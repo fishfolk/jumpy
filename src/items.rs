@@ -26,7 +26,7 @@ pub mod weapons;
 mod sproinger;
 pub use sproinger::Sproinger;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ItemKind {
     Weapon {
@@ -49,7 +49,7 @@ impl ItemKind {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct ItemParams {
     pub id: String,
     #[serde(flatten)]

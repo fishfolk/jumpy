@@ -14,6 +14,8 @@ use crate::{
     Resources,
 };
 
+pub type MapProperty = json::GenericParam;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(into = "json::MapDef", from = "json::MapDef")]
 pub struct Map {
@@ -534,27 +536,6 @@ impl MapObject {
             properties: HashMap::new(),
         }
     }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case", tag = "type")]
-pub enum MapProperty {
-    Bool {
-        value: bool,
-    },
-    Float {
-        value: f32,
-    },
-    Int {
-        value: i32,
-    },
-    String {
-        value: String,
-    },
-    Color {
-        #[serde(with = "json::ColorDef")]
-        value: Color,
-    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

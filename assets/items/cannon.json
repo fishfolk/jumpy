@@ -20,7 +20,7 @@
     "y": 0
   },
   "sound_effect": "shoot",
-  "effect": {
+  "effects": {
     "type": "triggered_effect",
     "trigger": [
       "enemy",
@@ -36,7 +36,7 @@
       "y": 17
     },
     "timed_trigger": 1.5,
-    "triggered_effect": {
+    "effects": {
       "type": "circle_collider",
       "radius": 64,
       "is_explosion": true,

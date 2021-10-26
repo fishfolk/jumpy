@@ -40,16 +40,16 @@ pub struct WeaponEffectParams {
     pub kind: WeaponEffectKind,
     /// This specifies the id of a particle effect to emit when the effect is instantiated.
     #[serde(
-        default,
-        rename = "particle_effect",
-        skip_serializing_if = "Option::is_none"
+    default,
+    rename = "particle_effect",
+    skip_serializing_if = "Option::is_none"
     )]
     pub particle_effect_id: Option<String>,
     /// This specifies the id of a sound effect to play when the effect is instantiated.
     #[serde(
-        default,
-        rename = "sound_effect",
-        skip_serializing_if = "Option::is_none"
+    default,
+    rename = "sound_effect",
+    skip_serializing_if = "Option::is_none"
     )]
     pub sound_effect_id: Option<String>,
     /// The delay between instantiation of the effect is requested and the actual instantiation.
@@ -230,22 +230,25 @@ pub fn weapon_effect_coroutine(
                 range,
                 spread,
             } => {
-                let facing_dir = {
-                    if let Some(player) = scene::try_get_node(player_handle) {
-                        player.body.facing_dir()
-                    } else {
-                        vec2(1.0, 0.0)
-                    }
-                };
-
                 let rad = deg_to_rad(spread);
                 let spread = rand::gen_range(-rad, rad);
 
-                let velocity = rotate_vector(facing_dir * speed, spread);
+                let mut velocity = Vec2::ZERO;
+                if is_facing_right {
+                    velocity.x = speed
+                } else {
+                    velocity.x = -speed
+                }
 
                 let mut projectiles = scene::find_node_by_type::<Projectiles>().unwrap();
 
-                projectiles.spawn(player_handle, kind, origin, velocity, range);
+                projectiles.spawn(
+                    player_handle,
+                    kind,
+                    origin,
+                    rotate_vector(velocity, spread),
+                    range,
+                );
             }
         }
     };

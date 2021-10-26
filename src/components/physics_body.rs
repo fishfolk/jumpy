@@ -41,7 +41,7 @@ impl PhysicsBody {
             position,
             size,
             is_facing_right: true,
-            velocity: vec2(0., 0.),
+            velocity: vec2(0.0, 0.0),
             rotation: angle,
             has_friction,
             collider,
@@ -56,10 +56,14 @@ impl PhysicsBody {
 
     pub fn facing_dir(&self) -> Vec2 {
         if self.is_facing_right {
-            vec2(1., 0.)
+            vec2(1.0, 0.0)
         } else {
-            vec2(-1., 0.)
+            vec2(-1.0, 0.0)
         }
+    }
+
+    pub fn get_collider_rect(&self) -> Rect {
+        Rect::new(self.position.x, self.position.y, self.size.x, self.size.y)
     }
 
     pub fn descent(&mut self) {
@@ -147,9 +151,5 @@ impl PhysicsBody {
             2.0,
             color::RED,
         )
-    }
-
-    pub fn get_collider_rect(&self) -> Rect {
-        Rect::new(self.position.x, self.position.y, self.size.x, self.size.y)
     }
 }

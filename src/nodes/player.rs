@@ -472,7 +472,7 @@ impl Player {
     }
 
     fn attack_coroutine(node: &mut RefMut<Player>) -> Coroutine {
-        Weapon::attack_coroutine(node.handle())
+        Weapon::use_coroutine(node.handle())
     }
 
     fn update_incapacitated(node: &mut RefMut<Player>, dt: f32) {
@@ -668,20 +668,9 @@ impl Player {
             } else if node.pick_grace_timer <= 0.0 {
                 for item in scene::find_nodes_by_type::<Item>() {
                     if node.get_collider().overlaps(&item.get_collider()) {
-                        let was_picked_up = match &item.kind {
-                            ItemKind::Weapon { params } => {
-                                let weapon = Weapon::new(&item.id, params.clone());
-                                node.pick_weapon(weapon);
-                                true
-                            }
-                            ItemKind::Equipment { params } => {
-                                let equipment = Equipment::new(&item.id, params.clone());
-                                node.pick_equipment(equipment);
-                                true
-                            }
-                        };
-
-                        if was_picked_up {
+                        if let ItemKind::Weapon { params } = &item.kind {
+                            let weapon = Weapon::new(&item.id, params.clone());
+                            node.pick_weapon(weapon);
                             item.delete();
                             break;
                         }

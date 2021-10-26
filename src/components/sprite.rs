@@ -128,8 +128,6 @@ impl Sprite {
         if !self.is_deactivated {
             let size = self.get_size();
 
-            let pivot = self.offset + self.pivot;
-
             draw_texture_ex(
                 self.texture,
                 position.x + self.offset.x,
@@ -141,7 +139,7 @@ impl Sprite {
                     rotation,
                     source: Some(self.source_rect),
                     dest_size: Some(size),
-                    pivot: Some(pivot),
+                    pivot: Some(self.pivot),
                 },
             );
 

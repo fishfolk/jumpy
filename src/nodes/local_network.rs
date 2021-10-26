@@ -7,7 +7,7 @@
 
 use macroquad::experimental::scene::{self, Handle, Node, NodeWith, RefMut};
 
-use crate::{capabilities::NetworkReplicate, input, nodes::Player};
+use crate::{capabilities::NetworkReplicate, debug, input, nodes::Player};
 
 pub struct LocalNetwork {
     player1_input: input::InputScheme,
@@ -38,6 +38,11 @@ impl Node for LocalNetwork {
     fn fixed_update(mut node: RefMut<Self>) {
         scene::get_node(node.player1).apply_input(input::collect_input(node.player1_input));
         scene::get_node(node.player2).apply_input(input::collect_input(node.player2_input));
+
+        #[cfg(debug_assertions)]
+        if macroquad::input::is_key_pressed(macroquad::prelude::KeyCode::U) {
+            debug::toggle_debug_draw();
+        }
 
         if macroquad::input::is_key_down(macroquad::prelude::KeyCode::Z) {
             node.paused = true;

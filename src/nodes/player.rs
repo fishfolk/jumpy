@@ -15,11 +15,11 @@ use crate::{
     components::PhysicsBody,
     items::{weapons::Weapon, Item, ItemKind},
     nodes::ParticleEmitters,
-    GameWorld, Input, Resources, DEBUG,
+    GameWorld, Input, Resources,
 };
 
 use crate::components::{Animation, AnimationParams, AnimationPlayer};
-use crate::items::equipment::Equipment;
+use crate::items::equipped::EquippedItem;
 
 mod ai;
 
@@ -32,7 +32,7 @@ pub struct Player {
     pub is_dead: bool,
 
     pub weapon: Option<Weapon>,
-    pub equipment: Vec<Equipment>,
+    pub equipment: Vec<EquippedItem>,
 
     pub input: Input,
     pub last_frame_input: Input,
@@ -94,7 +94,6 @@ impl Player {
     const WEAPON_MOUNT_Y_OFFSET_CROUCHED: f32 = 32.0;
 
     const COLLIDER_WIDTH: f32 = 20.0;
-    const COLLIDER_WIDTH_INCAPACITATED: f32 = 40.0;
     const COLLIDER_HEIGHT: f32 = 54.0;
     const COLLIDER_HEIGHT_CROUCHED: f32 = 38.0;
 
@@ -287,7 +286,7 @@ impl Player {
         self.weapon = Some(weapon);
     }
 
-    pub fn pick_up_equipment(&mut self, equipment: Equipment) {
+    pub fn pick_up_equipment(&mut self, equipment: EquippedItem) {
         let resources = storage::get::<Resources>();
         let sound = resources.sounds["pickup"];
 
@@ -531,12 +530,9 @@ impl Player {
             return;
         }
 
-        // self destruct, for debugging only
+        #[cfg(debug_assertions)]
         if is_key_pressed(KeyCode::Y) {
             node.kill(true);
-        }
-        if is_key_pressed(KeyCode::U) {
-            node.kill(false);
         }
 
         let node = &mut **node;
@@ -674,7 +670,10 @@ impl Player {
             } else if node.pick_grace_timer <= 0.0 {
                 for item in scene::find_nodes_by_type::<Item>() {
                     if let ItemKind::Weapon { params } = &item.kind {
-                        if node.get_collider().overlaps(&item.get_collider()) {
+                        if node
+                            .get_collider_rect()
+                            .overlaps(&item.body.get_collider_rect())
+                        {
                             let weapon = Weapon::new(&item.id, params.clone());
                             node.pick_up_weapon(weapon);
                             item.delete();
@@ -695,8 +694,11 @@ impl Player {
 
         for item in scene::find_nodes_by_type::<Item>() {
             if let ItemKind::Equipment { params } = &item.kind {
-                if node.get_collider().overlaps(&item.get_collider()) {
-                    let equipment = Equipment::new(&item.id, params.clone());
+                if node
+                    .get_collider_rect()
+                    .overlaps(&item.body.get_collider_rect())
+                {
+                    let equipment = EquippedItem::new(&item.id, params.clone());
                     node.pick_up_equipment(equipment);
                     item.delete();
                 }
@@ -704,21 +706,10 @@ impl Player {
         }
     }
 
-    pub fn get_collider(&self) -> Rect {
+    pub fn get_collider_rect(&self) -> Rect {
         let state = self.state_machine.state();
-        let position = self.body.position + self.body.collider_offset;
 
-        let mut rect = Rect::new(
-            position.x,
-            position.y,
-            Self::COLLIDER_WIDTH,
-            Self::COLLIDER_HEIGHT,
-        );
-
-        if state == Self::ST_INCAPACITATED || state == Self::ST_SLIDE {
-            rect.x -= (rect.w - Self::COLLIDER_WIDTH_INCAPACITATED) / 2.0;
-            rect.w = Self::COLLIDER_WIDTH_INCAPACITATED
-        }
+        let mut rect = self.body.get_collider_rect();
 
         if state == Self::ST_INCAPACITATED || state == Self::ST_SLIDE || self.is_crouched {
             rect.y += rect.h - Self::COLLIDER_HEIGHT_CROUCHED;
@@ -789,12 +780,12 @@ impl Player {
             node.ai = Some(ai);
         }
 
-        if is_key_pressed(KeyCode::Q) {
-            //Will fail half of the time, because it is triggered by both players and it's a 50% chance that they counteract each other.
-            scene::find_node_by_type::<crate::nodes::Camera>()
-                .unwrap()
-                .shake_rotational(1.0, 10);
-        }
+        // if is_key_pressed(KeyCode::Q) {
+        //     //Will fail half of the time, because it is triggered by both players and it's a 50% chance that they counteract each other.
+        //     scene::find_node_by_type::<crate::nodes::Camera>()
+        //         .unwrap()
+        //         .shake_rotational(1.0, 10);
+        // }
 
         {
             let node = &mut *node;
@@ -809,9 +800,9 @@ impl Player {
         }
 
         if node.can_head_boink && node.body.velocity.y > 0.0 {
-            let hitbox = node.get_collider();
+            let hitbox = node.get_collider_rect();
             for mut other in scene::find_nodes_by_type::<Player>() {
-                let other_hitbox = other.get_collider();
+                let other_hitbox = other.get_collider_rect();
                 let is_overlapping = hitbox.overlaps(&other_hitbox);
                 if is_overlapping && hitbox.y + 60.0 < other_hitbox.y + Self::HEAD_THRESHOLD {
                     let resources = storage::get::<Resources>();
@@ -852,20 +843,11 @@ impl Player {
             false,
         );
 
-        if DEBUG {
-            let collider = self.get_collider();
+        #[cfg(debug_assertions)]
+        self.animation_player.debug_draw(self.body.position);
 
-            draw_rectangle_lines(
-                collider.x,
-                collider.y,
-                collider.w,
-                collider.h,
-                2.0,
-                color::RED,
-            );
-
-            self.body.debug_draw();
-        }
+        #[cfg(debug_assertions)]
+        self.body.debug_draw();
     }
 
     fn draw_weapon(&mut self) {
@@ -964,12 +946,7 @@ impl Player {
                 .unwrap()
                 .to_typed::<Player>();
 
-            Rect::new(
-                node.body.position.x,
-                node.body.position.y,
-                node.body.size.x,
-                node.body.size.y,
-            )
+            node.get_collider_rect()
         }
 
         fn set_speed_x(handle: HandleUntyped, speed: f32) {

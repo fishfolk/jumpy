@@ -11,21 +11,21 @@ use crate::{
 use crate::effects::{PassiveEffect, PassiveEffectParams};
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct EquipmentParams {
+pub struct EquippedItemParams {
     pub effects: OneOrMany<PassiveEffectParams>,
     pub animation: AnimationParams,
 }
 
 #[allow(dead_code)]
-pub struct Equipment {
+pub struct EquippedItem {
     pub id: String,
     pub effects: Vec<PassiveEffect>,
     pub sprite_animation: AnimationPlayer,
 }
 
-impl Equipment {
+impl EquippedItem {
     #[allow(dead_code)]
-    pub fn new(id: &str, params: EquipmentParams) -> Self {
+    pub fn new(id: &str, params: EquippedItemParams) -> Self {
         let mut effects = Vec::new();
         for effect_params in params.effects.into_vec() {
             effects.push(PassiveEffect::new(effect_params));
@@ -33,7 +33,7 @@ impl Equipment {
 
         let sprite_animation = AnimationPlayer::new(params.animation);
 
-        Equipment {
+        EquippedItem {
             id: id.to_string(),
             effects,
             sprite_animation,

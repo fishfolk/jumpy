@@ -19,7 +19,7 @@ use crate::{
 };
 
 use crate::components::{Animation, AnimationParams, AnimationPlayer};
-use crate::items::equipment::Equipment;
+use crate::items::equipped::EquippedItem;
 
 mod ai;
 
@@ -32,7 +32,7 @@ pub struct Player {
     pub is_dead: bool,
 
     pub weapon: Option<Weapon>,
-    pub equipment: Vec<Equipment>,
+    pub equipment: Vec<EquippedItem>,
 
     pub input: Input,
     pub last_frame_input: Input,
@@ -286,7 +286,7 @@ impl Player {
         self.weapon = Some(weapon);
     }
 
-    pub fn pick_up_equipment(&mut self, equipment: Equipment) {
+    pub fn pick_up_equipment(&mut self, equipment: EquippedItem) {
         let resources = storage::get::<Resources>();
         let sound = resources.sounds["pickup"];
 
@@ -698,7 +698,7 @@ impl Player {
                     .get_collider_rect()
                     .overlaps(&item.body.get_collider_rect())
                 {
-                    let equipment = Equipment::new(&item.id, params.clone());
+                    let equipment = EquippedItem::new(&item.id, params.clone());
                     node.pick_up_equipment(equipment);
                     item.delete();
                 }

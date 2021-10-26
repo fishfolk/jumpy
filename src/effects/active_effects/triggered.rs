@@ -181,6 +181,7 @@ struct TriggeredEffect {
     timed_trigger_timer: f32,
 }
 
+#[derive(Default)]
 pub struct TriggeredEffects {
     active: Vec<TriggeredEffect>,
 }

@@ -6,8 +6,9 @@ use macroquad::{
 };
 
 use crate::{
+    items::Item,
     nodes::{player::Input, Player},
-    GameWorld, items::Item,
+    GameWorld,
 };
 
 pub struct Ai {

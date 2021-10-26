@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     components::{AnimationParams, AnimationPlayer},
-    effects::{ActiveEffectParams, ActiveEffectKind, active_effect_coroutine},
+    effects::{active_effect_coroutine, ActiveEffectParams},
     json::{self, OneOrMany},
     Player, Resources,
 };

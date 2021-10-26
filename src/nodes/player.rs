@@ -670,7 +670,10 @@ impl Player {
             } else if node.pick_grace_timer <= 0.0 {
                 for item in scene::find_nodes_by_type::<Item>() {
                     if let ItemKind::Weapon { params } = &item.kind {
-                        if node.get_collider_rect().overlaps(&item.body.get_collider_rect()) {
+                        if node
+                            .get_collider_rect()
+                            .overlaps(&item.body.get_collider_rect())
+                        {
                             let weapon = Weapon::new(&item.id, params.clone());
                             node.pick_up_weapon(weapon);
                             item.delete();
@@ -691,7 +694,10 @@ impl Player {
 
         for item in scene::find_nodes_by_type::<Item>() {
             if let ItemKind::Equipment { params } = &item.kind {
-                if node.get_collider_rect().overlaps(&item.body.get_collider_rect()) {
+                if node
+                    .get_collider_rect()
+                    .overlaps(&item.body.get_collider_rect())
+                {
                     let equipment = Equipment::new(&item.id, params.clone());
                     node.pick_up_equipment(equipment);
                     item.delete();

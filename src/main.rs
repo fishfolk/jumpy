@@ -45,15 +45,12 @@ pub mod resources;
 pub mod text;
 #[macro_use]
 pub mod error;
-pub mod effects;
 pub mod debug;
+pub mod effects;
 
 pub use effects::{
-    PassiveEffect,
+    ActiveEffectKind, ActiveEffectParams, CustomActiveEffectCoroutine, PassiveEffect,
     PassiveEffectParams,
-    ActiveEffectParams,
-    ActiveEffectKind,
-    CustomActiveEffectCoroutine,
 };
 
 const ASSETS_DIR_ENV_VAR: &str = "FISHFIGHT_ASSETS";
@@ -75,8 +72,8 @@ pub enum GameType {
 
 fn build_game_scene(map: Map, is_local_game: bool) -> Vec<Handle<Player>> {
     use effects::active_effects::{Projectiles, TriggeredEffects};
-    use nodes::{Camera, Decoration, ParticleEmitters, SceneRenderer};
     use items::Item;
+    use nodes::{Camera, Decoration, ParticleEmitters, SceneRenderer};
 
     let resources = storage::get::<Resources>();
     let battle_music = resources.music["fish_tide"];

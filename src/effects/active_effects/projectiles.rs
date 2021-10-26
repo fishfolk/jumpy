@@ -8,10 +8,7 @@ use macroquad::{
 
 use serde::{Deserialize, Serialize};
 
-use super::{
-    TriggeredEffects,
-    TriggeredEffectTrigger,
-};
+use super::{TriggeredEffectTrigger, TriggeredEffects};
 
 use crate::{
     capabilities::NetworkReplicate,
@@ -52,6 +49,7 @@ struct Projectile {
     sprite: Option<Sprite>,
 }
 
+#[derive(Default)]
 pub struct Projectiles {
     active: Vec<Projectile>,
 }

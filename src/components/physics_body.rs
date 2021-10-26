@@ -2,7 +2,7 @@ use macroquad::{color, experimental::collections::storage, prelude::*};
 
 use macroquad_platformer::{Actor, World as CollisionWorld};
 
-use crate::{GameWorld, debug};
+use crate::{debug, GameWorld};
 
 pub struct PhysicsBody {
     pub collider: Actor,

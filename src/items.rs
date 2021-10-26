@@ -147,9 +147,9 @@ impl Node for Item {
             .draw(node.body.position, node.body.rotation, false, false);
 
         #[cfg(debug_assertions)]
-            node.sprite.debug_draw(node.body.position);
+        node.sprite.debug_draw(node.body.position);
 
         #[cfg(debug_assertions)]
-            node.body.debug_draw();
+        node.body.debug_draw();
     }
 }

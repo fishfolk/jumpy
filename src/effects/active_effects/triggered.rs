@@ -10,13 +10,14 @@ use macroquad_platformer::Tile;
 
 use serde::{Deserialize, Serialize};
 
+use crate::json::OneOrMany;
 use crate::{
     capabilities::NetworkReplicate,
     components::{AnimationParams, AnimationPlayer, PhysicsBody},
     json, GameWorld, Player,
 };
 
-use super::{weapon_effect_coroutine, WeaponEffectParams};
+use super::{active_effect_coroutine, ActiveEffectParams};
 
 /// This contains commonly used groups of triggers
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -101,8 +102,11 @@ impl Default for TriggeredEffectTriggerParams {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct TriggeredEffectParams {
+    /// The effects to instantiate when the triggers condition is met. Can be either a single
+    /// effect or a vec of effects
+    pub effects: OneOrMany<ActiveEffectParams>,
     /// This specifies the size of the trigger.
     #[serde(with = "json::vec2_def")]
     pub size: Vec2,
@@ -143,6 +147,7 @@ pub struct TriggeredEffectParams {
 impl Default for TriggeredEffectParams {
     fn default() -> Self {
         TriggeredEffectParams {
+            effects: OneOrMany::Many(Vec::new()),
             size: Vec2::ONE,
             trigger: TriggeredEffectTriggerParams::Vec(Vec::new()),
             velocity: Vec2::ZERO,
@@ -159,7 +164,7 @@ struct TriggeredEffect {
     pub owner: Handle<Player>,
     pub size: Vec2,
     pub trigger: Vec<TriggeredEffectTrigger>,
-    pub effect: WeaponEffectParams,
+    pub effects: Vec<ActiveEffectParams>,
     pub animation_player: Option<AnimationPlayer>,
     pub body: PhysicsBody,
     pub activation_delay: f32,
@@ -176,6 +181,7 @@ struct TriggeredEffect {
     timed_trigger_timer: f32,
 }
 
+#[derive(Default)]
 pub struct TriggeredEffects {
     active: Vec<TriggeredEffect>,
 }
@@ -190,13 +196,7 @@ impl TriggeredEffects {
         TriggeredEffects { active: Vec::new() }
     }
 
-    pub fn spawn(
-        &mut self,
-        owner: Handle<Player>,
-        position: Vec2,
-        effect: WeaponEffectParams,
-        params: TriggeredEffectParams,
-    ) {
+    pub fn spawn(&mut self, owner: Handle<Player>, position: Vec2, params: TriggeredEffectParams) {
         let trigger = params.trigger.into();
 
         let mut animation_player = None;
@@ -223,7 +223,7 @@ impl TriggeredEffects {
             owner,
             size: params.size,
             trigger,
-            effect,
+            effects: params.effects.into(),
             animation_player,
             body,
             activation_delay: params.activation_delay,
@@ -339,7 +339,7 @@ impl TriggeredEffects {
                     }
 
                     for player in scene::find_nodes_by_type::<Player>() {
-                        if collider.overlaps(&player.get_collider()) {
+                        if collider.overlaps(&player.get_collider_rect()) {
                             if trigger.is_kickable {
                                 if !player.body.is_facing_right
                                     && trigger.body.position.x
@@ -384,11 +384,9 @@ impl TriggeredEffects {
                 && (trigger.should_override_delay
                     || trigger.trigger_delay_timer >= trigger.trigger_delay)
             {
-                weapon_effect_coroutine(
-                    trigger.owner,
-                    trigger.body.position,
-                    trigger.effect.clone(),
-                );
+                for effect in trigger.effects.drain(0..) {
+                    active_effect_coroutine(trigger.owner, trigger.body.position, effect);
+                }
 
                 node.active.remove(i);
                 continue;

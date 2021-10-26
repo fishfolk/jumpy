@@ -15,11 +15,11 @@ use crate::{
     components::PhysicsBody,
     items::{weapons::Weapon, Item, ItemKind},
     nodes::ParticleEmitters,
-    GameWorld, Input, Resources, DEBUG,
+    GameWorld, Input, Resources,
 };
 
 use crate::components::{Animation, AnimationParams, AnimationPlayer};
-use crate::items::equipment::Equipment;
+use crate::items::equipped::EquippedItem;
 
 mod ai;
 
@@ -32,6 +32,7 @@ pub struct Player {
     pub is_dead: bool,
 
     pub weapon: Option<Weapon>,
+    pub equipment: Vec<EquippedItem>,
 
     pub input: Input,
     pub last_frame_input: Input,
@@ -74,7 +75,8 @@ impl Player {
 
     pub const JUMP_UPWARDS_SPEED: f32 = 600.0;
     pub const JUMP_HEIGHT_CONTROL_FRAMES: i32 = 8;
-    pub const JUMP_RELEASE_GRAVITY_INCREASE: f32 = 35.0; // When up key is released and player is moving upwards, apply extra gravity to stop them fasterpub const JUMP_SPEED: f32 = 700.0;
+    pub const JUMP_RELEASE_GRAVITY_INCREASE: f32 = 35.0;
+    // When up key is released and player is moving upwards, apply extra gravity to stop them fasterpub const JUMP_SPEED: f32 = 700.0;
     pub const RUN_SPEED: f32 = 250.0;
     pub const SLIDE_SPEED: f32 = 800.0;
     pub const SLIDE_DURATION: f32 = 0.1;
@@ -92,7 +94,6 @@ impl Player {
     const WEAPON_MOUNT_Y_OFFSET_CROUCHED: f32 = 32.0;
 
     const COLLIDER_WIDTH: f32 = 20.0;
-    const COLLIDER_WIDTH_INCAPACITATED: f32 = 40.0;
     const COLLIDER_HEIGHT: f32 = 54.0;
     const COLLIDER_HEIGHT_CROUCHED: f32 = 38.0;
 
@@ -221,6 +222,7 @@ impl Player {
                     fps: 8,
                 },
             ],
+            should_autoplay: true,
             ..Default::default()
         });
 
@@ -228,6 +230,7 @@ impl Player {
             id: player_id,
             is_dead: false,
             weapon: None,
+            equipment: Vec::new(),
             input: Default::default(),
             last_frame_input: Default::default(),
             pick_grace_timer: 0.,
@@ -272,22 +275,24 @@ impl Player {
         }
     }
 
-    pub fn pick_weapon(&mut self, weapon: Weapon) {
+    pub fn pick_up_weapon(&mut self, weapon: Weapon) {
         let resources = storage::get::<Resources>();
-        let pickup_sound = resources.sounds["pickup"];
+        let sound = resources.sounds["pickup"];
 
-        play_sound_once(pickup_sound);
+        play_sound_once(sound);
 
         self.drop_weapon(false);
 
         self.weapon = Some(weapon);
     }
 
-    pub fn pick_equipment(&mut self, _equipment: Equipment) {
+    pub fn pick_up_equipment(&mut self, equipment: EquippedItem) {
         let resources = storage::get::<Resources>();
-        let pickup_sound = resources.sounds["pickup"];
+        let sound = resources.sounds["pickup"];
 
-        play_sound_once(pickup_sound);
+        play_sound_once(sound);
+
+        self.equipment.push(equipment);
     }
 
     pub fn get_weapon_mount_position(&self) -> Vec2 {
@@ -472,7 +477,7 @@ impl Player {
     }
 
     fn attack_coroutine(node: &mut RefMut<Player>) -> Coroutine {
-        Weapon::attack_coroutine(node.handle())
+        Weapon::use_coroutine(node.handle())
     }
 
     fn update_incapacitated(node: &mut RefMut<Player>, dt: f32) {
@@ -525,12 +530,9 @@ impl Player {
             return;
         }
 
-        // self destruct, for debugging only
+        #[cfg(debug_assertions)]
         if is_key_pressed(KeyCode::Y) {
             node.kill(true);
-        }
-        if is_key_pressed(KeyCode::U) {
-            node.kill(false);
         }
 
         let node = &mut **node;
@@ -667,21 +669,13 @@ impl Player {
                 node.floating = false;
             } else if node.pick_grace_timer <= 0.0 {
                 for item in scene::find_nodes_by_type::<Item>() {
-                    if node.get_collider().overlaps(&item.get_collider()) {
-                        let was_picked_up = match &item.kind {
-                            ItemKind::Weapon { params } => {
-                                let weapon = Weapon::new(&item.id, params.clone());
-                                node.pick_weapon(weapon);
-                                true
-                            }
-                            ItemKind::Equipment { params } => {
-                                let equipment = Equipment::new(&item.id, params.clone());
-                                node.pick_equipment(equipment);
-                                true
-                            }
-                        };
-
-                        if was_picked_up {
+                    if let ItemKind::Weapon { params } = &item.kind {
+                        if node
+                            .get_collider_rect()
+                            .overlaps(&item.body.get_collider_rect())
+                        {
+                            let weapon = Weapon::new(&item.id, params.clone());
+                            node.pick_up_weapon(weapon);
                             item.delete();
                             break;
                         }
@@ -697,23 +691,25 @@ impl Player {
                 node.floating = false;
             }
         }
+
+        for item in scene::find_nodes_by_type::<Item>() {
+            if let ItemKind::Equipment { params } = &item.kind {
+                if node
+                    .get_collider_rect()
+                    .overlaps(&item.body.get_collider_rect())
+                {
+                    let equipment = EquippedItem::new(&item.id, params.clone());
+                    node.pick_up_equipment(equipment);
+                    item.delete();
+                }
+            }
+        }
     }
 
-    pub fn get_collider(&self) -> Rect {
+    pub fn get_collider_rect(&self) -> Rect {
         let state = self.state_machine.state();
-        let position = self.body.position + self.body.collider_offset;
 
-        let mut rect = Rect::new(
-            position.x,
-            position.y,
-            Self::COLLIDER_WIDTH,
-            Self::COLLIDER_HEIGHT,
-        );
-
-        if state == Self::ST_INCAPACITATED || state == Self::ST_SLIDE {
-            rect.x -= (rect.w - Self::COLLIDER_WIDTH_INCAPACITATED) / 2.0;
-            rect.w = Self::COLLIDER_WIDTH_INCAPACITATED
-        }
+        let mut rect = self.body.get_collider_rect();
 
         if state == Self::ST_INCAPACITATED || state == Self::ST_SLIDE || self.is_crouched {
             rect.y += rect.h - Self::COLLIDER_HEIGHT_CROUCHED;
@@ -742,8 +738,17 @@ impl Player {
         }
 
         node.animation_player.update();
+
+        let dt = get_frame_time();
         if let Some(weapon) = &mut node.weapon {
-            weapon.update(get_frame_time());
+            weapon.update(dt);
+        }
+
+        {
+            let player_handle = node.handle();
+            for equipment in &mut node.equipment {
+                equipment.update(dt, player_handle);
+            }
         }
 
         let map_bottom = {
@@ -775,12 +780,12 @@ impl Player {
             node.ai = Some(ai);
         }
 
-        if is_key_pressed(KeyCode::Q) {
-            //Will fail half of the time, because it is triggered by both players and it's a 50% chance that they counteract each other.
-            scene::find_node_by_type::<crate::nodes::Camera>()
-                .unwrap()
-                .shake_rotational(1.0, 10);
-        }
+        // if is_key_pressed(KeyCode::Q) {
+        //     //Will fail half of the time, because it is triggered by both players and it's a 50% chance that they counteract each other.
+        //     scene::find_node_by_type::<crate::nodes::Camera>()
+        //         .unwrap()
+        //         .shake_rotational(1.0, 10);
+        // }
 
         {
             let node = &mut *node;
@@ -795,9 +800,9 @@ impl Player {
         }
 
         if node.can_head_boink && node.body.velocity.y > 0.0 {
-            let hitbox = node.get_collider();
+            let hitbox = node.get_collider_rect();
             for mut other in scene::find_nodes_by_type::<Player>() {
-                let other_hitbox = other.get_collider();
+                let other_hitbox = other.get_collider_rect();
                 let is_overlapping = hitbox.overlaps(&other_hitbox);
                 if is_overlapping && hitbox.y + 60.0 < other_hitbox.y + Self::HEAD_THRESHOLD {
                     let resources = storage::get::<Resources>();
@@ -838,20 +843,11 @@ impl Player {
             false,
         );
 
-        if DEBUG {
-            let collider = self.get_collider();
+        #[cfg(debug_assertions)]
+        self.animation_player.debug_draw(self.body.position);
 
-            draw_rectangle_lines(
-                collider.x,
-                collider.y,
-                collider.w,
-                collider.h,
-                2.0,
-                color::RED,
-            );
-
-            self.body.debug_draw();
-        }
+        #[cfg(debug_assertions)]
+        self.body.debug_draw();
     }
 
     fn draw_weapon(&mut self) {
@@ -950,12 +946,7 @@ impl Player {
                 .unwrap()
                 .to_typed::<Player>();
 
-            Rect::new(
-                node.body.position.x,
-                node.body.position.y,
-                node.body.size.x,
-                node.body.size.y,
-            )
+            node.get_collider_rect()
         }
 
         fn set_speed_x(handle: HandleUntyped, speed: f32) {

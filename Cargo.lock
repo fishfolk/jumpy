@@ -292,7 +292,7 @@ dependencies = [
 [[package]]
 name = "macroquad-particles"
 version = "0.1.1"
-source = "git+https://github.com/olefasting/macroquad_particles#3258c54aa152f79b55793a6e1b4b7c016d52b476"
+source = "git+https://github.com/olefasting/macroquad_particles#18f8528fbd77b723fe076744f295534181de5fd1"
 dependencies = [
  "macroquad",
  "serde",

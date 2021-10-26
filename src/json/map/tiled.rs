@@ -155,7 +155,7 @@ impl TiledMap {
                 for tiled_prop in tiled_props {
                     let (name, prop) = pair_from_tiled_prop(tiled_prop.clone());
                     if name == Self::TEXTURE_ID_PROP {
-                        if let MapProperty::String { value } = &prop {
+                        if let MapProperty::String(value) = &prop {
                             texture_id = Some(value.clone());
                             continue;
                         }
@@ -279,7 +279,7 @@ impl TiledMap {
                 for tiled_prop in tiled_props {
                     let (name, prop) = pair_from_tiled_prop(tiled_prop.clone());
                     if name == Self::COLLISION_LAYER_PROP {
-                        if let MapProperty::Bool { value } = &prop {
+                        if let MapProperty::Bool(value) = &prop {
                             has_collision = *value;
                             continue;
                         }
@@ -335,17 +335,15 @@ impl TiledMap {
 
 fn pair_from_tiled_prop(tiled_prop: TiledProperty) -> (String, MapProperty) {
     match tiled_prop {
-        TiledProperty::Bool { name, value } => (name, MapProperty::Bool { value }),
-        TiledProperty::Float { name, value } => (name, MapProperty::Float { value }),
-        TiledProperty::Int { name, value } => (name, MapProperty::Int { value }),
-        TiledProperty::String { name, value } => (name, MapProperty::String { value }),
-        TiledProperty::Color { name, value } => (
-            name,
-            MapProperty::Color {
-                value: color_from_hex_string(&value),
-            },
-        ),
-        TiledProperty::Object { name, value } => (name, MapProperty::Int { value }),
-        TiledProperty::File { name, value } => (name, MapProperty::String { value }),
+        TiledProperty::Bool { name, value } => (name, MapProperty::Bool(value)),
+        TiledProperty::Float { name, value } => (name, MapProperty::Float(value)),
+        TiledProperty::Int { name, value } => (name, MapProperty::Int(value)),
+        TiledProperty::String { name, value } => (name, MapProperty::String(value)),
+        TiledProperty::Color { name, value } => {
+            let color = color_from_hex_string(&value);
+            (name, MapProperty::Color(color))
+        }
+        TiledProperty::Object { name, value } => (name, MapProperty::Int(value)),
+        TiledProperty::File { name, value } => (name, MapProperty::String(value)),
     }
 }

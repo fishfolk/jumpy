@@ -7,7 +7,7 @@
   "cooldown": 0.5,
   "uses": 3,
   "is_destroyed_on_depletion": true,
-  "effect": {
+  "effects": {
     "type": "triggered_effect",
     "trigger": "enemy",
     "velocity": {
@@ -19,7 +19,7 @@
       "y": 24
     },
     "timed_trigger": 1.5,
-    "triggered_effect": {
+    "effects": {
       "type": "circle_collider",
       "radius": 64,
       "is_explosion": true,

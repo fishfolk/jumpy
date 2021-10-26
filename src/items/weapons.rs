@@ -13,15 +13,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     components::{AnimationParams, AnimationPlayer},
-    json, Player, Resources,
-};
-
-pub mod effects;
-
-pub use effects::{
-    add_custom_weapon_effect, get_custom_weapon_effect, weapon_effect_coroutine,
-    CustomWeaponEffectCoroutine, CustomWeaponEffectParam, Projectiles, TriggeredEffectTrigger,
-    WeaponEffectKind, WeaponEffectParams,
+    effects::{active_effect_coroutine, ActiveEffectParams},
+    json::{self, OneOrMany},
+    Player, Resources,
 };
 
 /// This holds the parameters for the `AnimationPlayer` components of an equipped `Weapon`.
@@ -48,10 +42,11 @@ pub struct WeaponAnimationParams {
 
 /// This holds parameters specific to the `Weapon` variant of `ItemKind`, used to instantiate a
 /// `Weapon` struct instance, when an `Item` of type `Weapon` is picked up.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct WeaponParams {
-    /// This specifies the effect to instantiate when the weapon is used to attack
-    pub effect: WeaponEffectParams,
+    /// This specifies the effects to instantiate when the weapon is used to attack. Can be either
+    /// a single `ActiveEffectParams` or a vector of `ActiveEffectParams`-
+    pub effects: OneOrMany<ActiveEffectParams>,
     /// This can specify an id of a sound effect that is played when the weapon is used to attack
     #[serde(
         default,
@@ -97,7 +92,7 @@ pub struct WeaponParams {
 pub struct Weapon {
     pub id: String,
     pub sound_effect: Option<Sound>,
-    pub effect: WeaponEffectParams,
+    pub effects: Vec<ActiveEffectParams>,
     pub cooldown: f32,
     pub recoil: f32,
     pub attack_duration: f32,
@@ -175,7 +170,7 @@ impl Weapon {
         Weapon {
             id: id.to_string(),
             sound_effect,
-            effect: params.effect,
+            effects: params.effects.into(),
             cooldown: params.cooldown,
             recoil: params.recoil,
             attack_duration: params.attack_duration,
@@ -254,6 +249,9 @@ impl Weapon {
         if let Some(effect_animation) = &mut self.effect_animation {
             effect_animation.draw(position, rotation, flip_x, flip_y);
         }
+
+        #[cfg(debug_assertions)]
+        self.sprite_animation.debug_draw(position);
     }
 
     pub fn draw_hud(&self, position: Vec2) {
@@ -391,7 +389,7 @@ impl Weapon {
 
     /// This will start a `Coroutine` that performs an attack with the `Weapon` equipped by the
     /// `Player` fetched with `player_handle`, id one is equipped and ready for use.
-    pub fn attack_coroutine(player_handle: Handle<Player>) -> Coroutine {
+    pub fn use_coroutine(player_handle: Handle<Player>) -> Coroutine {
         let coroutine = async move {
             let is_ready = {
                 let player = &mut *scene::get_node(player_handle);
@@ -439,7 +437,9 @@ impl Weapon {
                     if let Some(weapon) = player.weapon.as_mut() {
                         let origin = weapon_mount
                             + weapon.get_effect_offset(!player.body.is_facing_right, false);
-                        weapon_effect_coroutine(player_handle, origin, weapon.effect.clone());
+                        for params in weapon.effects.clone() {
+                            active_effect_coroutine(player_handle, origin, params);
+                        }
                     }
                 }
 

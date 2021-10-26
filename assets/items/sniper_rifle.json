@@ -21,7 +21,7 @@
     "x": 64,
     "y": 16
   },
-  "effect": {
+  "effects": {
     "type": "projectile",
     "projectile": {
       "type": "sprite",

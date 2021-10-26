@@ -11,7 +11,7 @@ use macroquad::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    json,
+    json::{self, GenericParam},
     math::{deg_to_rad, rotate_vector},
     nodes::{ParticleEmitters, Player},
 };
@@ -23,21 +23,18 @@ pub use triggered::{TriggeredEffectParams, TriggeredEffectTrigger, TriggeredEffe
 
 mod custom;
 
-pub use custom::{
-    add_custom_weapon_effect, get_custom_weapon_effect, CustomWeaponEffectCoroutine,
-    CustomWeaponEffectParam,
-};
+pub use custom::{add_custom_active_effect, get_custom_active_effect, CustomActiveEffectCoroutine};
 
 pub use projectiles::{ProjectileKind, Projectiles};
 
 /// This holds all the common parameters, available to all implementations, as well as specialized
-/// parameters, in the `WeaponEffectKind`.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct WeaponEffectParams {
+/// parameters, in the `ActiveEffectKind`.
+#[derive(Clone, Serialize, Deserialize)]
+pub struct ActiveEffectParams {
     /// This holds all the specialized parameters for the effect, dependent on the implementation,
     /// specified by its variant. It is flattened into this struct in JSON.
     #[serde(flatten)]
-    pub kind: WeaponEffectKind,
+    pub kind: Box<ActiveEffectKind>,
     /// This specifies the id of a particle effect to emit when the effect is instantiated.
     #[serde(
         default,
@@ -68,18 +65,16 @@ pub struct WeaponEffectParams {
 ///
 /// The effects that have the `Collider` suffix denote effects that do an immediate collider check,
 /// upon attack, using the weapons `effect_offset` as origin.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
-pub enum WeaponEffectKind {
-    /// This is used to add multiple effects to a weapon, without having to implement a custom effect
-    Batch { effects: Vec<WeaponEffectParams> },
+pub enum ActiveEffectKind {
     /// Custom effects are made by implementing `WeaponEffectCoroutine`, either directly in code or
     /// in scripts if/when we add a scripting API
     Custom {
         #[serde(rename = "id")]
         id: String,
         #[serde(default, rename = "params")]
-        params: HashMap<String, CustomWeaponEffectParam>,
+        params: HashMap<String, GenericParam>,
     },
     /// Check for hits with a `Circle` collider.
     /// Can select a segment of the circle by setting `segment`. This can be either a quarter or a
@@ -99,8 +94,6 @@ pub enum WeaponEffectKind {
     RectCollider { width: f32, height: f32 },
     /// Spawn a trigger that will set of another effect if its trigger conditions are met.
     TriggeredEffect {
-        #[serde(rename = "triggered_effect")]
-        effect: Box<WeaponEffectParams>,
         #[serde(flatten)]
         params: TriggeredEffectParams,
     },
@@ -116,10 +109,10 @@ pub enum WeaponEffectKind {
     },
 }
 
-pub fn weapon_effect_coroutine(
+pub fn active_effect_coroutine(
     player_handle: Handle<Player>,
     origin: Vec2,
-    params: WeaponEffectParams,
+    params: ActiveEffectParams,
 ) -> Coroutine {
     let coroutine = async move {
         wait_seconds(params.delay).await;
@@ -137,17 +130,12 @@ pub fn weapon_effect_coroutine(
             }
         };
 
-        match params.kind {
-            WeaponEffectKind::Batch { effects } => {
-                for params in effects {
-                    weapon_effect_coroutine(player_handle, origin, params);
-                }
-            }
-            WeaponEffectKind::Custom { id, params } => {
-                let f = get_custom_weapon_effect(&id);
+        match *params.kind {
+            ActiveEffectKind::Custom { id, params } => {
+                let f = get_custom_active_effect(&id);
                 f(player_handle, params);
             }
-            WeaponEffectKind::CircleCollider {
+            ActiveEffectKind::CircleCollider {
                 radius,
                 segment,
                 is_explosion,
@@ -160,7 +148,7 @@ pub fn weapon_effect_coroutine(
 
                 let circle = Circle::new(origin.x, origin.y, radius);
                 for mut player in scene::find_nodes_by_type::<Player>() {
-                    let collider = player.get_collider();
+                    let collider = player.get_collider_rect();
                     if circle.overlaps_rect(&collider) {
                         let mut is_killed = false;
 
@@ -199,7 +187,7 @@ pub fn weapon_effect_coroutine(
                         .check_triggers_circle(TriggeredEffectTrigger::Explosion, &circle);
                 }
             }
-            WeaponEffectKind::RectCollider { width, height } => {
+            ActiveEffectKind::RectCollider { width, height } => {
                 // borrow player so that it is excluded from hit check below
                 let _player = scene::try_get_node(player_handle);
 
@@ -209,43 +197,46 @@ pub fn weapon_effect_coroutine(
                 }
 
                 for mut player in scene::find_nodes_by_type::<Player>() {
-                    if rect.overlaps(&player.get_collider()) {
+                    if rect.overlaps(&player.get_collider_rect()) {
                         let is_to_the_right = origin.x < player.body.position.x;
                         player.kill(!is_to_the_right);
                     }
                 }
             }
-            WeaponEffectKind::TriggeredEffect { effect, mut params } => {
+            ActiveEffectKind::TriggeredEffect { mut params } => {
                 let mut triggered_effects = scene::find_node_by_type::<TriggeredEffects>().unwrap();
 
                 if !is_facing_right {
                     params.velocity.x = -params.velocity.x;
                 }
 
-                triggered_effects.spawn(player_handle, origin, *effect, params)
+                triggered_effects.spawn(player_handle, origin, params)
             }
-            WeaponEffectKind::Projectile {
+            ActiveEffectKind::Projectile {
                 kind,
                 speed,
                 range,
                 spread,
             } => {
-                let facing_dir = {
-                    if let Some(player) = scene::try_get_node(player_handle) {
-                        player.body.facing_dir()
-                    } else {
-                        vec2(1.0, 0.0)
-                    }
-                };
-
                 let rad = deg_to_rad(spread);
                 let spread = rand::gen_range(-rad, rad);
 
-                let velocity = rotate_vector(facing_dir * speed, spread);
+                let mut velocity = Vec2::ZERO;
+                if is_facing_right {
+                    velocity.x = speed
+                } else {
+                    velocity.x = -speed
+                }
 
                 let mut projectiles = scene::find_node_by_type::<Projectiles>().unwrap();
 
-                projectiles.spawn(player_handle, kind, origin, velocity, range);
+                projectiles.spawn(
+                    player_handle,
+                    kind,
+                    origin,
+                    rotate_vector(velocity, spread),
+                    range,
+                );
             }
         }
     };

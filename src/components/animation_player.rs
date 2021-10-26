@@ -9,7 +9,7 @@ use macroquad::{
 
 use serde::{Deserialize, Serialize};
 
-use crate::{json, Resources, DEBUG};
+use crate::{debug, json, Resources};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Animation {
@@ -176,7 +176,6 @@ impl AnimationPlayer {
         if !self.is_deactivated {
             let source_rect = self.sprite.frame().source_rect;
             let size = self.get_size();
-            let offset = self.offset + self.pivot;
 
             draw_texture_ex(
                 self.texture,
@@ -189,20 +188,25 @@ impl AnimationPlayer {
                     rotation,
                     source: Some(source_rect),
                     dest_size: Some(size),
-                    pivot: Some(offset),
+                    pivot: Some(self.pivot),
                 },
-            );
+            )
+        }
+    }
 
-            if DEBUG {
-                draw_rectangle_lines(
-                    position.x + self.offset.x,
-                    position.y + self.offset.y,
-                    size.x,
-                    size.y,
-                    2.0,
-                    color::BLUE,
-                );
-            }
+    #[cfg(debug_assertions)]
+    pub fn debug_draw(&self, position: Vec2) {
+        if debug::is_debug_draw_enabled() && !self.is_deactivated {
+            let size = self.get_size();
+
+            draw_rectangle_lines(
+                position.x + self.offset.x,
+                position.y + self.offset.y,
+                size.x,
+                size.y,
+                2.0,
+                color::BLUE,
+            )
         }
     }
 

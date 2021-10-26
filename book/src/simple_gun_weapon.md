@@ -153,7 +153,7 @@ This texture is now distinguishable from the other gun textures in the game.
 
 This, of course, is just one way of distinguishing the texture from the other textures in the game. Feel free to copy and modify textures using your own methods, or if you feel inclined, make your own unique texture for your weapon!
 
-Now, all that remains is to add the new texture to the game. This is done by copying the texture file to the `assets/textures` directory and adding an entry to the file `assets/textures.json`.
+Now, all that remains is to add the new texture to the game. This is done by copying the texture file to the `assets/textures/items` directory and adding an entry to the file `assets/textures.json`.
 
 Assuming a texture file name of `SniperRifle(92x32).png`, the following entry should be added to `assets/textures.json`:
 

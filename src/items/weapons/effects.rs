@@ -11,7 +11,7 @@ use macroquad::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    json,
+    json::{self, GenericParam},
     math::{deg_to_rad, rotate_vector},
     nodes::{ParticleEmitters, Player},
 };
@@ -23,21 +23,18 @@ pub use triggered::{TriggeredEffectParams, TriggeredEffectTrigger, TriggeredEffe
 
 mod custom;
 
-pub use custom::{
-    add_custom_weapon_effect, get_custom_weapon_effect, CustomWeaponEffectCoroutine,
-    CustomWeaponEffectParam,
-};
+pub use custom::{add_custom_weapon_effect, get_custom_weapon_effect, CustomWeaponEffectCoroutine};
 
 pub use projectiles::{ProjectileKind, Projectiles};
 
 /// This holds all the common parameters, available to all implementations, as well as specialized
 /// parameters, in the `WeaponEffectKind`.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct WeaponEffectParams {
     /// This holds all the specialized parameters for the effect, dependent on the implementation,
     /// specified by its variant. It is flattened into this struct in JSON.
     #[serde(flatten)]
-    pub kind: WeaponEffectKind,
+    pub kind: Box<WeaponEffectKind>,
     /// This specifies the id of a particle effect to emit when the effect is instantiated.
     #[serde(
         default,
@@ -68,18 +65,16 @@ pub struct WeaponEffectParams {
 ///
 /// The effects that have the `Collider` suffix denote effects that do an immediate collider check,
 /// upon attack, using the weapons `effect_offset` as origin.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum WeaponEffectKind {
-    /// This is used to add multiple effects to a weapon, without having to implement a custom effect
-    Batch { effects: Vec<WeaponEffectParams> },
     /// Custom effects are made by implementing `WeaponEffectCoroutine`, either directly in code or
     /// in scripts if/when we add a scripting API
     Custom {
         #[serde(rename = "id")]
         id: String,
         #[serde(default, rename = "params")]
-        params: HashMap<String, CustomWeaponEffectParam>,
+        params: HashMap<String, GenericParam>,
     },
     /// Check for hits with a `Circle` collider.
     /// Can select a segment of the circle by setting `segment`. This can be either a quarter or a
@@ -99,8 +94,6 @@ pub enum WeaponEffectKind {
     RectCollider { width: f32, height: f32 },
     /// Spawn a trigger that will set of another effect if its trigger conditions are met.
     TriggeredEffect {
-        #[serde(rename = "triggered_effect")]
-        effect: Box<WeaponEffectParams>,
         #[serde(flatten)]
         params: TriggeredEffectParams,
     },
@@ -137,12 +130,7 @@ pub fn weapon_effect_coroutine(
             }
         };
 
-        match params.kind {
-            WeaponEffectKind::Batch { effects } => {
-                for params in effects {
-                    weapon_effect_coroutine(player_handle, origin, params);
-                }
-            }
+        match *params.kind {
             WeaponEffectKind::Custom { id, params } => {
                 let f = get_custom_weapon_effect(&id);
                 f(player_handle, params);
@@ -215,14 +203,14 @@ pub fn weapon_effect_coroutine(
                     }
                 }
             }
-            WeaponEffectKind::TriggeredEffect { effect, mut params } => {
+            WeaponEffectKind::TriggeredEffect { mut params } => {
                 let mut triggered_effects = scene::find_node_by_type::<TriggeredEffects>().unwrap();
 
                 if !is_facing_right {
                     params.velocity.x = -params.velocity.x;
                 }
 
-                triggered_effects.spawn(player_handle, origin, *effect, params)
+                triggered_effects.spawn(player_handle, origin, params)
             }
             WeaponEffectKind::Projectile {
                 kind,

@@ -32,6 +32,7 @@ pub struct Player {
     pub is_dead: bool,
 
     pub weapon: Option<Weapon>,
+    pub equipment: Vec<Equipment>,
 
     pub input: Input,
     pub last_frame_input: Input,
@@ -74,7 +75,8 @@ impl Player {
 
     pub const JUMP_UPWARDS_SPEED: f32 = 600.0;
     pub const JUMP_HEIGHT_CONTROL_FRAMES: i32 = 8;
-    pub const JUMP_RELEASE_GRAVITY_INCREASE: f32 = 35.0; // When up key is released and player is moving upwards, apply extra gravity to stop them fasterpub const JUMP_SPEED: f32 = 700.0;
+    pub const JUMP_RELEASE_GRAVITY_INCREASE: f32 = 35.0;
+    // When up key is released and player is moving upwards, apply extra gravity to stop them fasterpub const JUMP_SPEED: f32 = 700.0;
     pub const RUN_SPEED: f32 = 250.0;
     pub const SLIDE_SPEED: f32 = 800.0;
     pub const SLIDE_DURATION: f32 = 0.1;
@@ -221,6 +223,7 @@ impl Player {
                     fps: 8,
                 },
             ],
+            should_autoplay: true,
             ..Default::default()
         });
 
@@ -228,6 +231,7 @@ impl Player {
             id: player_id,
             is_dead: false,
             weapon: None,
+            equipment: Vec::new(),
             input: Default::default(),
             last_frame_input: Default::default(),
             pick_grace_timer: 0.,
@@ -272,23 +276,24 @@ impl Player {
         }
     }
 
-    pub fn pick_weapon(&mut self, weapon: Weapon) {
+    pub fn pick_up_weapon(&mut self, weapon: Weapon) {
         let resources = storage::get::<Resources>();
-        let pickup_sound = resources.sounds["pickup"];
+        let sound = resources.sounds["pickup"];
 
-        play_sound_once(pickup_sound);
+        play_sound_once(sound);
 
         self.drop_weapon(false);
 
         self.weapon = Some(weapon);
     }
 
-    #[allow(dead_code)]
-    pub fn pick_equipment(&mut self, _equipment: Equipment) {
+    pub fn pick_up_equipment(&mut self, equipment: Equipment) {
         let resources = storage::get::<Resources>();
-        let pickup_sound = resources.sounds["pickup"];
+        let sound = resources.sounds["pickup"];
 
-        play_sound_once(pickup_sound);
+        play_sound_once(sound);
+
+        self.equipment.push(equipment);
     }
 
     pub fn get_weapon_mount_position(&self) -> Vec2 {
@@ -668,10 +673,10 @@ impl Player {
                 node.floating = false;
             } else if node.pick_grace_timer <= 0.0 {
                 for item in scene::find_nodes_by_type::<Item>() {
-                    if node.get_collider().overlaps(&item.get_collider()) {
-                        if let ItemKind::Weapon { params } = &item.kind {
+                    if let ItemKind::Weapon { params } = &item.kind {
+                        if node.get_collider().overlaps(&item.get_collider()) {
                             let weapon = Weapon::new(&item.id, params.clone());
-                            node.pick_weapon(weapon);
+                            node.pick_up_weapon(weapon);
                             item.delete();
                             break;
                         }
@@ -685,6 +690,16 @@ impl Player {
             if node.weapon.is_some() {
                 node.state_machine.set_state(Self::ST_ATTACK);
                 node.floating = false;
+            }
+        }
+
+        for item in scene::find_nodes_by_type::<Item>() {
+            if let ItemKind::Equipment { params } = &item.kind {
+                if node.get_collider().overlaps(&item.get_collider()) {
+                    let equipment = Equipment::new(&item.id, params.clone());
+                    node.pick_up_equipment(equipment);
+                    item.delete();
+                }
             }
         }
     }
@@ -732,8 +747,17 @@ impl Player {
         }
 
         node.animation_player.update();
+
+        let dt = get_frame_time();
         if let Some(weapon) = &mut node.weapon {
-            weapon.update(get_frame_time());
+            weapon.update(dt);
+        }
+
+        {
+            let player_handle = node.handle();
+            for equipment in &mut node.equipment {
+                equipment.update(dt, player_handle);
+            }
         }
 
         let map_bottom = {

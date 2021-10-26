@@ -13,7 +13,7 @@
   "attack_duration": 0.5,
   "recoil": 250.0,
   "sound_effect": "shoot",
-  "effect": {
+  "effects": {
     "type": "projectile",
     "range": 128.0,
     "speed": 5.0,

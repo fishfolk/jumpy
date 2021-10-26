@@ -293,11 +293,7 @@ pub mod uvec2_opt {
         S: Serializer,
     {
         #[derive(Serialize)]
-        struct Helper<'a>(
-            #[serde(skip_serializing_if = "Option::is_none")]
-            #[serde(with = "super::uvec2_def")]
-            &'a UVec2,
-        );
+        struct Helper<'a>(#[serde(with = "super::uvec2_def")] &'a UVec2);
 
         value.as_ref().map(Helper).serialize(serializer)
     }
@@ -307,11 +303,7 @@ pub mod uvec2_opt {
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
-        struct Helper(
-            #[serde(skip_serializing_if = "Option::is_none")]
-            #[serde(with = "super::uvec2_def")]
-            UVec2,
-        );
+        struct Helper(#[serde(with = "super::uvec2_def")] UVec2);
 
         let helper = Option::deserialize(deserializer)?;
         Ok(helper.map(|Helper(external)| external))
@@ -327,11 +319,7 @@ pub mod ivec2_opt {
         S: Serializer,
     {
         #[derive(Serialize)]
-        struct Helper<'a>(
-            #[serde(skip_serializing_if = "Option::is_none")]
-            #[serde(with = "super::ivec2_def")]
-            &'a IVec2,
-        );
+        struct Helper<'a>(#[serde(with = "super::ivec2_def")] &'a IVec2);
 
         value.as_ref().map(Helper).serialize(serializer)
     }
@@ -341,11 +329,7 @@ pub mod ivec2_opt {
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
-        struct Helper(
-            #[serde(skip_serializing_if = "Option::is_none")]
-            #[serde(with = "super::ivec2_def")]
-            IVec2,
-        );
+        struct Helper(#[serde(with = "super::ivec2_def")] IVec2);
 
         let helper = Option::deserialize(deserializer)?;
         Ok(helper.map(|Helper(external)| external))

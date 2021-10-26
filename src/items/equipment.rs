@@ -1,32 +1,64 @@
+use macroquad::{experimental::scene::Handle, prelude::*};
+
 use serde::{Deserialize, Serialize};
 
-use crate::components::{AnimationParams, AnimationPlayer};
+use crate::{
+    components::{AnimationParams, AnimationPlayer},
+    json::OneOrMany,
+    Player,
+};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+pub mod effects;
+
+pub use effects::{PassiveEffect, PassiveEffectParams};
+
+#[derive(Clone, Serialize, Deserialize)]
 pub struct EquipmentParams {
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub uses: Option<u32>,
+    pub effects: OneOrMany<PassiveEffectParams>,
     pub animation: AnimationParams,
 }
 
 #[allow(dead_code)]
 pub struct Equipment {
     pub id: String,
+    pub effects: Vec<PassiveEffect>,
     pub sprite_animation: AnimationPlayer,
-    pub uses: Option<u32>,
-    pub use_cnt: u32,
 }
 
 impl Equipment {
     #[allow(dead_code)]
     pub fn new(id: &str, params: EquipmentParams) -> Self {
+        let mut effects = Vec::new();
+        for effect_params in params.effects.into_vec() {
+            effects.push(PassiveEffect::new(effect_params));
+        }
+
         let sprite_animation = AnimationPlayer::new(params.animation);
 
         Equipment {
             id: id.to_string(),
+            effects,
             sprite_animation,
-            uses: params.uses,
-            use_cnt: 0,
+        }
+    }
+
+    pub fn update(&mut self, dt: f32, player_handle: Handle<Player>) {
+        let mut i = 0;
+        while i < self.effects.len() {
+            let effect = &mut self.effects[i];
+
+            if let Some(duration) = effect.duration {
+                effect.duration_timer += dt;
+
+                if effect.duration_timer >= duration {
+                    self.effects.remove(i);
+                    continue;
+                }
+
+                effect.update_coroutine(player_handle);
+            }
+
+            i += 1;
         }
     }
 }

@@ -38,6 +38,7 @@ pub struct WeaponAnimationParams {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WeaponParams {
+    pub effect: WeaponEffectParams,
     #[serde(
         default,
         rename = "sound_effect",
@@ -46,13 +47,13 @@ pub struct WeaponParams {
     pub sound_effect_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub uses: Option<u32>,
-    pub effect: WeaponEffectParams,
     #[serde(default, with = "json::vec2_def")]
     pub mount_offset: Vec2,
     #[serde(default, with = "json::vec2_def")]
     pub effect_offset: Vec2,
     #[serde(default)]
     pub attack_duration: f32,
+    #[serde(default)]
     pub cooldown: f32,
     #[serde(default)]
     pub recoil: f32,

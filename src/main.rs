@@ -52,10 +52,9 @@ pub mod text;
 #[macro_use]
 pub mod error;
 
-// TODO: Make this a toggle of some kind
-pub const DEBUG: bool = false;
-
 const ASSETS_DIR_ENV_VAR: &str = "FISHFIGHT_ASSETS";
+
+pub const DEBUG: bool = true;
 
 pub type CollisionWorld = macroquad_platformer::World;
 

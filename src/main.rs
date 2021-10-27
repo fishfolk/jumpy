@@ -1,5 +1,3 @@
-#![feature(hash_drain_filter)]
-
 use fishsticks::GamepadContext;
 use std::env;
 

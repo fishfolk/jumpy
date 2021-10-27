@@ -781,15 +781,18 @@ impl Player {
             weapon.update(dt);
         }
 
-        node.equipped_items.drain_filter(|_, item| {
+        for item in node.equipped_items.values_mut() {
             item.update(dt);
-            item.is_depleted()
-        });
+        }
 
-        node.passive_effects.drain_filter(|_, effect| {
+        node.equipped_items.retain(|_, item| !item.is_depleted());
+
+        for effect in node.passive_effects.values_mut() {
             effect.update(dt);
-            effect.is_depleted()
-        });
+        }
+
+        node.passive_effects
+            .retain(|_, effect| !effect.is_depleted());
 
         {
             let player_handle = node.handle();

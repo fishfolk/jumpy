@@ -45,6 +45,7 @@ pub mod text;
 pub mod world;
 #[macro_use]
 pub mod error;
+#[cfg(debug_assertions)]
 pub mod debug;
 pub mod effects;
 pub mod player;

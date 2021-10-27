@@ -7,7 +7,7 @@
 
 use macroquad::experimental::scene::{self, Handle, Node, NodeWith, RefMut};
 
-use crate::{capabilities::NetworkReplicate, debug, input, Player};
+use crate::{capabilities::NetworkReplicate, input, Player};
 
 pub struct LocalNetwork {
     player1_input: input::InputScheme,
@@ -41,7 +41,7 @@ impl Node for LocalNetwork {
 
         #[cfg(debug_assertions)]
         if macroquad::input::is_key_pressed(macroquad::prelude::KeyCode::U) {
-            debug::toggle_debug_draw();
+            crate::debug::toggle_debug_draw();
         }
 
         if macroquad::input::is_key_down(macroquad::prelude::KeyCode::Z) {

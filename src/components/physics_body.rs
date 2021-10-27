@@ -2,7 +2,7 @@ use macroquad::{color, experimental::collections::storage, prelude::*};
 
 use macroquad_platformer::{Actor, World as CollisionWorld};
 
-use crate::{debug, GameWorld};
+use crate::GameWorld;
 
 pub struct PhysicsBody {
     pub collider: Actor,
@@ -146,7 +146,7 @@ impl PhysicsBody {
 
     #[cfg(debug_assertions)]
     pub fn debug_draw(&self) {
-        if debug::is_debug_draw_enabled() {
+        if crate::debug::is_debug_draw_enabled() {
             let collider = self.get_collider_rect();
 
             draw_rectangle_lines(

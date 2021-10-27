@@ -2,7 +2,7 @@ use macroquad::{color, experimental::collections::storage, prelude::*};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{debug, json, Resources};
+use crate::{json, Resources};
 
 /// Parameters for `Sprite` component.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -147,7 +147,7 @@ impl Sprite {
 
     #[cfg(debug_assertions)]
     pub fn debug_draw(&self, position: Vec2) {
-        if debug::is_debug_draw_enabled() && !self.is_deactivated {
+        if crate::debug::is_debug_draw_enabled() && !self.is_deactivated {
             let size = self.get_size();
 
             draw_rectangle_lines(

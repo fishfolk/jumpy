@@ -401,11 +401,9 @@ impl Player {
     fn incapacitated_coroutine(node: &mut RefMut<Player>) -> Coroutine {
         let player_handle = node.handle();
 
-        if let Some(mut node) = scene::try_get_node(player_handle) {
-            for effect in node.passive_effects.values_mut() {
-                let event = PlayerEvent::Incapacitated {};
-                effect.on_player_event(player_handle, event);
-            }
+        for effect in node.passive_effects.values_mut() {
+            let event = PlayerEvent::Incapacitated {};
+            effect.on_player_event(player_handle, event);
         }
 
         let coroutine = async move {
@@ -796,11 +794,9 @@ impl Player {
 
         {
             let player_handle = node.handle();
-            if let Some(mut node) = scene::try_get_node(player_handle) {
-                for effect in node.passive_effects.values_mut() {
-                    let event = PlayerEvent::Update { dt };
-                    effect.on_player_event(player_handle, event);
-                }
+            for effect in node.passive_effects.values_mut() {
+                let event = PlayerEvent::Update { dt };
+                effect.on_player_event(player_handle, event);
             }
         }
 
@@ -1035,6 +1031,7 @@ impl Player {
                             is_from_right,
                             damage_from,
                         };
+
                         effect.on_player_event(player_handle, event);
                     }
 

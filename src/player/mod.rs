@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use macroquad::{
     audio::{self, play_sound_once},
     experimental::{
@@ -8,7 +10,6 @@ use macroquad::{
     },
     prelude::*,
 };
-use std::collections::HashMap;
 
 use crate::{
     capabilities::{NetworkReplicate, PhysicsObject},
@@ -1031,7 +1032,7 @@ impl Player {
                             is_from_right,
                             damage_from,
                         };
-                      
+
                         effect.on_player_event(player_handle, event);
                     }
 

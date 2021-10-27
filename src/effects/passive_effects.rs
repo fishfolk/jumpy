@@ -42,28 +42,58 @@ pub struct PassiveEffectParams {
     pub particle_effect_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub duration: Option<f32>,
-    #[serde(default)]
-    pub delay: f32,
 }
 
 pub struct PassiveEffect {
-    pub particle_effect_id: Option<String>,
-    pub duration: Option<f32>,
-    pub duration_timer: f32,
+    id: String,
+    particle_effect_id: Option<String>,
+    duration: Option<f32>,
+    duration_timer: f32,
 }
 
 impl PassiveEffect {
     pub fn new(params: PassiveEffectParams) -> Self {
         PassiveEffect {
+            id: params.id,
             particle_effect_id: params.particle_effect_id,
             duration: params.duration,
             duration_timer: 0.0,
         }
     }
 
-    pub fn update_coroutine(&self, player_handle: Handle<Player>) -> Coroutine {
+    pub fn update(&mut self, dt: f32) {
+        self.duration_timer += dt;
+    }
+
+    pub fn is_depleted(&self) -> bool {
+        if let Some(duration) = self.duration {
+            if self.duration_timer >= duration {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    pub fn on_player_update(&mut self, _player_handle: Handle<Player>, _dt: f32) -> Coroutine {
         let coroutine = async move {
-            let _player = scene::get_node(player_handle);
+            //
+        };
+
+        start_coroutine(coroutine)
+    }
+
+    pub fn on_player_receive_damage(&mut self, _player_handle: Handle<Player>, _is_from_right: bool, _damage_from: Option<Handle<Player>>) -> Coroutine {
+        let coroutine = async move {
+            //
+        };
+
+        start_coroutine(coroutine)
+    }
+
+    pub fn on_player_give_damage(&mut self, _player_handle: Handle<Player>, _damage_to: Handle<Player>) -> Coroutine {
+        let coroutine = async move {
+            //
         };
 
         start_coroutine(coroutine)

@@ -17,7 +17,7 @@ use crate::{
     json, GameWorld, Player,
 };
 
-use super::{active_effect_coroutine, ActiveEffectParams};
+use super::{active_effect_coroutine, ActiveEffectParams, AnyEffectParams};
 
 /// This contains commonly used groups of triggers
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -105,8 +105,8 @@ impl Default for TriggeredEffectTriggerParams {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct TriggeredEffectParams {
     /// The effects to instantiate when the triggers condition is met. Can be either a single
-    /// effect or a vec of effects
-    pub effects: OneOrMany<ActiveEffectParams>,
+    /// effect or a vec of effects, either passive or active
+    pub effects: OneOrMany<AnyEffectParams>,
     /// This specifies the size of the trigger.
     #[serde(with = "json::vec2_def")]
     pub size: Vec2,
@@ -164,7 +164,7 @@ struct TriggeredEffect {
     pub owner: Handle<Player>,
     pub size: Vec2,
     pub trigger: Vec<TriggeredEffectTrigger>,
-    pub effects: Vec<ActiveEffectParams>,
+    pub effects: Vec<AnyEffectParams>,
     pub animation_player: Option<AnimationPlayer>,
     pub body: PhysicsBody,
     pub activation_delay: f32,
@@ -175,10 +175,26 @@ struct TriggeredEffect {
     /// This can be used to trigger the effect immediately, ignoring delay timers.
     /// Also requires `is_triggered` to be set to `true`, for this to work.
     pub should_override_delay: bool,
+    /// This holds a handle to the player that triggered the effect, if applicable.
+    triggered_by: Option<Handle<Player>>,
     kick_delay_timer: f32,
     activation_timer: f32,
     trigger_delay_timer: f32,
     timed_trigger_timer: f32,
+}
+
+impl TriggeredEffect {
+    fn apply_trigger(&mut self, trigger: TriggeredEffectTrigger, triggered_by: Option<Handle<Player>>) {
+        self.is_triggered = true;
+
+        if trigger == TriggeredEffectTrigger::Explosion
+            || trigger == TriggeredEffectTrigger::Projectile
+        {
+            self.should_override_delay = true;
+        }
+
+        self.triggered_by = triggered_by;
+    }
 }
 
 #[derive(Default)]
@@ -236,52 +252,38 @@ impl TriggeredEffects {
             kick_delay_timer: 0.0,
             is_triggered: false,
             should_override_delay: false,
+            triggered_by: None,
         })
     }
 
     #[allow(dead_code)]
-    pub fn check_triggers(&mut self, trigger: TriggeredEffectTrigger, collider: &Rect) {
+    pub fn check_triggers(&mut self, trigger: TriggeredEffectTrigger, collider: &Rect, triggered_by: Option<Handle<Player>>) {
         for effect in &mut self.active {
             if collider.overlaps(&effect.body.get_collider_rect())
                 && effect.trigger.contains(&trigger)
             {
-                effect.is_triggered = true;
-                if trigger == TriggeredEffectTrigger::Explosion
-                    || trigger == TriggeredEffectTrigger::Projectile
-                {
-                    effect.should_override_delay = true;
-                }
+                effect.apply_trigger(trigger, triggered_by);
                 continue;
             }
         }
     }
 
-    pub fn check_triggers_circle(&mut self, trigger: TriggeredEffectTrigger, collider: &Circle) {
+    pub fn check_triggers_circle(&mut self, trigger: TriggeredEffectTrigger, collider: &Circle, triggered_by: Option<Handle<Player>>) {
         for effect in &mut self.active {
             if collider.overlaps_rect(&effect.body.get_collider_rect())
                 && effect.trigger.contains(&trigger)
             {
-                effect.is_triggered = true;
-                if trigger == TriggeredEffectTrigger::Explosion
-                    || trigger == TriggeredEffectTrigger::Projectile
-                {
-                    effect.should_override_delay = true;
-                }
+                effect.apply_trigger(trigger, triggered_by);
                 continue;
             }
         }
     }
 
-    pub fn check_triggers_point(&mut self, trigger: TriggeredEffectTrigger, point: Vec2) {
+    pub fn check_triggers_point(&mut self, trigger: TriggeredEffectTrigger, point: Vec2, triggered_by: Option<Handle<Player>>) {
         for effect in &mut self.active {
             if effect.body.get_collider_rect().contains(point) && effect.trigger.contains(&trigger)
             {
-                effect.is_triggered = true;
-                if trigger == TriggeredEffectTrigger::Explosion
-                    || trigger == TriggeredEffectTrigger::Projectile
-                {
-                    effect.should_override_delay = true;
-                }
+                effect.apply_trigger(trigger, triggered_by);
                 continue;
             }
         }
@@ -352,9 +354,11 @@ impl TriggeredEffects {
                                     trigger.body.velocity.x = Self::KICK_FORCE;
                                 } else {
                                     trigger.is_triggered = true;
+                                    trigger.triggered_by = Some(player.handle());
                                 }
                             } else {
                                 trigger.is_triggered = true;
+                                trigger.triggered_by = Some(player.handle());
                             }
 
                             break;
@@ -384,8 +388,19 @@ impl TriggeredEffects {
                 && (trigger.should_override_delay
                     || trigger.trigger_delay_timer >= trigger.trigger_delay)
             {
-                for effect in trigger.effects.drain(0..) {
-                    active_effect_coroutine(trigger.owner, trigger.body.position, effect);
+                for params in trigger.effects.drain(0..) {
+                    match params {
+                        AnyEffectParams::Active(params) => {
+                            active_effect_coroutine(trigger.owner, trigger.body.position, params);
+                        }
+                        AnyEffectParams::Passive(params) => {
+                            if let Some(triggered_by) = trigger.triggered_by {
+                                if let Some(mut player) = scene::try_get_node(triggered_by) {
+                                    player.add_passive_effect(params);
+                                }
+                            }
+                        }
+                    }
                 }
 
                 node.active.remove(i);

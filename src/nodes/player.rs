@@ -4,24 +4,33 @@ use macroquad::{
     experimental::{
         collections::storage,
         coroutines::{start_coroutine, wait_seconds, Coroutine},
-        scene::{self, HandleUntyped, RefMut},
+        scene::{self, Handle, HandleUntyped, RefMut},
         state_machine::{State, StateMachine},
     },
     prelude::*,
 };
 
-use crate::{
-    capabilities::{NetworkReplicate, PhysicsObject},
-    components::PhysicsBody,
-    items::{weapons::Weapon, Item, ItemKind},
-    nodes::ParticleEmitters,
-    GameWorld, Input, Resources,
+use serde::{
+    Serialize,
+    Deserialize,
 };
 
+use crate::{capabilities::{NetworkReplicate, PhysicsObject}, components::PhysicsBody, items::{weapons::Weapon, Item, ItemKind}, nodes::ParticleEmitters, GameWorld, Input, Resources, PassiveEffectParams, PassiveEffect};
+
 use crate::components::{Animation, AnimationParams, AnimationPlayer};
+
 use crate::items::equipped::EquippedItem;
 
 mod ai;
+
+/// This contains all the events that can trigger passive effects on a player
+#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum PlayerEvent {
+    Update,
+    ReceiveDamage,
+    GiveDamage,
+}
 
 pub struct Player {
     pub id: u8,
@@ -32,7 +41,9 @@ pub struct Player {
     pub is_dead: bool,
 
     pub weapon: Option<Weapon>,
-    pub equipment: Vec<EquippedItem>,
+    pub equipped_items: Vec<EquippedItem>,
+
+    passive_effects: Vec<PassiveEffect>,
 
     pub input: Input,
     pub last_frame_input: Input,
@@ -76,7 +87,7 @@ impl Player {
     pub const JUMP_UPWARDS_SPEED: f32 = 600.0;
     pub const JUMP_HEIGHT_CONTROL_FRAMES: i32 = 8;
     pub const JUMP_RELEASE_GRAVITY_INCREASE: f32 = 35.0;
-    // When up key is released and player is moving upwards, apply extra gravity to stop them fasterpub const JUMP_SPEED: f32 = 700.0;
+
     pub const RUN_SPEED: f32 = 250.0;
     pub const SLIDE_SPEED: f32 = 800.0;
     pub const SLIDE_DURATION: f32 = 0.1;
@@ -230,7 +241,8 @@ impl Player {
             id: player_id,
             is_dead: false,
             weapon: None,
-            equipment: Vec::new(),
+            equipped_items: Vec::new(),
+            passive_effects: Vec::new(),
             input: Default::default(),
             last_frame_input: Default::default(),
             pick_grace_timer: 0.,
@@ -252,6 +264,16 @@ impl Player {
             incapacitated_timer: 0.0,
             incapacitated_duration: 0.0,
         }
+    }
+
+    pub fn add_passive_effect(&mut self, params: PassiveEffectParams) {
+        if let Some(particle_effect_id) = &params.particle_effect_id {
+            let mut particle_emitters = scene::find_node_by_type::<ParticleEmitters>().unwrap();
+            particle_emitters.spawn(particle_effect_id, self.body.position);
+        }
+
+        let effect = PassiveEffect::new(params);
+        self.passive_effects.push(effect);
     }
 
     pub fn drop_weapon(&mut self, is_thrown: bool) {
@@ -292,7 +314,7 @@ impl Player {
 
         play_sound_once(sound);
 
-        self.equipment.push(equipment);
+        self.equipped_items.push(equipment);
     }
 
     pub fn get_weapon_mount_position(&self) -> Vec2 {
@@ -349,25 +371,57 @@ impl Player {
         }
     }
 
-    pub fn kill(&mut self, direction: bool) {
-        // check if armor blocks the kill
-        if direction != self.body.is_facing_right && self.back_armor > 0 {
-            self.back_armor -= 1;
-        } else {
-            // set armor to 0
-            self.back_armor = 0;
-            self.body.is_facing_right = direction;
-            self.drop_weapon(false);
-            if self.state_machine.state() != Self::ST_DEATH {
-                self.state_machine.set_state(Self::ST_DEATH);
-                {
+    pub fn on_update(player_handle: Handle<Player>, dt: f32) -> Coroutine {
+        let coroutine = async move {
+            if let Some(mut node) = scene::try_get_node(player_handle) {
+                for effect in &mut node.passive_effects {
+                    effect.on_player_update(player_handle, dt);
+                }
+            }
+        };
+
+        start_coroutine(coroutine)
+    }
+
+    pub fn on_receive_damage(player_handle: Handle<Player>, is_from_right: bool, damage_from: Option<Handle<Player>>) -> Coroutine {
+        let coroutine = async move {
+            if let Some(mut node) = scene::try_get_node(player_handle) {
+                for effect in &mut node.passive_effects {
+                    effect.on_player_receive_damage(player_handle, is_from_right, damage_from);
+                }
+
+                node.back_armor = 0;
+                node.body.is_facing_right = is_from_right;
+                node.drop_weapon(false);
+
+                if node.state_machine.state() != Self::ST_DEATH {
+                    node.state_machine.set_state(Self::ST_DEATH);
+
                     let resources = storage::get::<Resources>();
                     let die_sound = resources.sounds["death"];
 
                     play_sound_once(die_sound);
+
+                    if let Some(damage_from) = damage_from {
+                        Player::on_give_damage(damage_from, player_handle);
+                    }
                 }
             }
-        }
+        };
+
+        start_coroutine(coroutine)
+    }
+
+    pub fn on_give_damage(player_handle: Handle<Player>, damage_to: Handle<Player>) -> Coroutine {
+        let coroutine = async move {
+            if let Some(mut node) = scene::try_get_node(player_handle) {
+                for effect in &mut node.passive_effects {
+                    effect.on_player_give_damage(player_handle, damage_to);
+                }
+            }
+        };
+
+        start_coroutine(coroutine)
     }
 
     fn incapacitated_coroutine(node: &mut RefMut<Player>) -> Coroutine {
@@ -532,10 +586,10 @@ impl Player {
 
         #[cfg(debug_assertions)]
         if is_key_pressed(KeyCode::Y) {
-            node.kill(true);
+            Player::on_receive_damage(node.handle(), true, None);
         }
 
-        let node = &mut **node;
+        //let node = &mut **node;
 
         if node.is_crouched {
             node.body.velocity.x = 0.0;
@@ -693,12 +747,13 @@ impl Player {
         }
 
         for item in scene::find_nodes_by_type::<Item>() {
-            if let ItemKind::Equipment { params } = &item.kind {
+            if let ItemKind::EquippedItem { params } = &item.kind {
                 if node
                     .get_collider_rect()
                     .overlaps(&item.body.get_collider_rect())
                 {
-                    let equipment = EquippedItem::new(&item.id, params.clone());
+                    let equipment = EquippedItem::new(&item.id, params.clone(), node);
+
                     node.pick_up_equipment(equipment);
                     item.delete();
                 }
@@ -720,6 +775,13 @@ impl Player {
     }
 
     fn network_update(mut node: RefMut<Self>) {
+        {
+            let player_handle = node.handle();
+            for effect in &mut node.passive_effects {
+                effect.on_player_update(player_handle, get_frame_time());
+            }
+        }
+
         // Break incapacitated
         if node.state_machine.state() == Player::ST_INCAPACITATED && node.body.velocity.x != 0.0 {
             if node.body.velocity.x > Player::INCAPACITATED_STOP_THRESHOLD
@@ -745,9 +807,32 @@ impl Player {
         }
 
         {
-            let player_handle = node.handle();
-            for equipment in &mut node.equipment {
-                equipment.update(dt, player_handle);
+            let mut i = 0;
+            while i < node.equipped_items.len() {
+                let item = &mut node.equipped_items[i];
+
+                item.update(dt);
+                if item.is_depleted() {
+                    node.equipped_items.remove(i);
+                    continue;
+                }
+
+                i += 1;
+            }
+        }
+
+        {
+            let mut i = 0;
+            while i < node.passive_effects.len() {
+                let effect = &mut node.passive_effects[i];
+
+                effect.update(dt);
+                if effect.is_depleted() {
+                    node.passive_effects.remove(i);
+                    continue;
+                }
+
+                i += 1;
             }
         }
 
@@ -758,7 +843,7 @@ impl Player {
         } as f32;
 
         if node.body.position.y > map_bottom {
-            node.kill(false);
+            Player::on_receive_damage(node.handle(), false, None);
         }
 
         if node.input.jump {
@@ -809,7 +894,7 @@ impl Player {
                     let jump_sound = resources.sounds["jump"];
 
                     play_sound_once(jump_sound);
-                    other.kill(!node.body.is_facing_right);
+                    Player::on_receive_damage(other.handle(), !node.body.is_facing_right, Some(node.handle()));
                 }
             }
         }
@@ -836,6 +921,10 @@ impl Player {
     }
 
     fn draw_player(&self) {
+        for equipped in &self.equipped_items {
+            equipped.draw(self.body.position, self.body.rotation, !self.body.is_facing_right, false);
+        }
+
         self.animation_player.draw(
             self.body.position,
             self.body.rotation,
@@ -869,41 +958,6 @@ impl Player {
             }
         }
     }
-
-    fn draw_items(&self) {
-        // draw turtle shell on player if the player has back armor
-        if self.back_armor > 0 {
-            let texture_id = if self.back_armor == 1 {
-                "turtle_shell_broken"
-            } else {
-                "turtle_shell"
-            };
-
-            let texture_entry = {
-                let resources = storage::get::<Resources>();
-                resources.textures.get(texture_id).cloned().unwrap()
-            };
-
-            let position = self.body.position;
-
-            draw_texture_ex(
-                texture_entry.texture,
-                position.x
-                    + if self.body.is_facing_right {
-                        -15.0
-                    } else {
-                        20.0
-                    },
-                position.y,
-                color::WHITE,
-                DrawTextureParams {
-                    flip_y: self.body.is_facing_right,
-                    rotation: std::f32::consts::PI / 2.0,
-                    ..Default::default()
-                },
-            )
-        }
-    }
 }
 
 impl scene::Node for Player {
@@ -920,8 +974,6 @@ impl scene::Node for Player {
             node.draw_weapon();
             node.draw_player();
         }
-
-        node.draw_items();
     }
 
     fn update(mut node: RefMut<Self>) {

@@ -1,0 +1,25 @@
+{
+  "id": "turtle_shell",
+  "type": "equipped_item",
+  "sprite": {
+    "texture": "turtle_shell"
+  },
+  "collider_size": {
+    "x": 32,
+    "y": 32
+  },
+  "effects": {
+    "id": "test_passive_effect",
+    "animation": {
+      "texture": "turtle_shell",
+      "animations": [
+        {
+          "id": "idle",
+          "row": 0,
+          "frames": 1,
+          "fps": 1
+        }
+      ]
+    }
+  }
+}

@@ -1062,14 +1062,25 @@ impl Player {
                         play_sound_once(sound);
                     }
 
-                    if let Some(damage_to) = damage_from {
-                        if let Some(mut node) = scene::try_get_node(player_handle) {
-                            for effect in node.passive_effects.values_mut() {
-                                let event = PlayerEvent::GiveDamage { damage_to };
-                                effect.on_player_event(player_handle, event);
-                            }
-                        }
+                    if let Some(damage_from) = damage_from {
+                        Player::on_give_damage(damage_from, player_handle);
                     }
+                }
+            }
+        };
+
+        start_coroutine(coroutine)
+    }
+
+    pub fn on_give_damage(
+        player_handle: Handle<Player>,
+        damage_to: Handle<Player>,
+    ) -> Coroutine {
+        let coroutine = async move {
+            if let Some(mut node) = scene::try_get_node(player_handle) {
+                for effect in node.passive_effects.values_mut() {
+                    let event = PlayerEvent::GiveDamage { damage_to };
+                    effect.on_player_event(player_handle, event);
                 }
             }
         };

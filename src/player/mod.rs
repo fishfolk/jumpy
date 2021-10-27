@@ -111,7 +111,7 @@ impl Player {
     const ITEM_THROW_FORCE: f32 = 600.0;
 
     const WEAPON_MOUNT_X_OFFSET: f32 = 0.0;
-    const WEAPON_MOUNT_Y_OFFSET: f32 = 16.0;
+    const WEAPON_MOUNT_Y_OFFSET: f32 = 8.0;
     const _WEAPON_MOUNT_Y_OFFSET_CROUCHED: f32 = 32.0;
 
     const WEAPON_HUD_Y_OFFSET: f32 = -16.0;

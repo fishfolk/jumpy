@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use macroquad::{
     audio::{self, play_sound_once},
     experimental::{
@@ -8,7 +10,6 @@ use macroquad::{
     },
     prelude::*,
 };
-use std::collections::HashMap;
 
 use crate::{
     capabilities::{NetworkReplicate, PhysicsObject},
@@ -111,7 +112,7 @@ impl Player {
     const ITEM_THROW_FORCE: f32 = 600.0;
 
     const WEAPON_MOUNT_X_OFFSET: f32 = 0.0;
-    const WEAPON_MOUNT_Y_OFFSET: f32 = 16.0;
+    const WEAPON_MOUNT_Y_OFFSET: f32 = 8.0;
     const _WEAPON_MOUNT_Y_OFFSET_CROUCHED: f32 = 32.0;
 
     const WEAPON_HUD_Y_OFFSET: f32 = -16.0;
@@ -401,11 +402,9 @@ impl Player {
     fn incapacitated_coroutine(node: &mut RefMut<Player>) -> Coroutine {
         let player_handle = node.handle();
 
-        if let Some(mut node) = scene::try_get_node(player_handle) {
-            for effect in node.passive_effects.values_mut() {
-                let event = PlayerEvent::Incapacitated {};
-                effect.on_player_event(player_handle, event);
-            }
+        for effect in node.passive_effects.values_mut() {
+            let event = PlayerEvent::Incapacitated {};
+            effect.on_player_event(player_handle, event);
         }
 
         let coroutine = async move {
@@ -796,11 +795,9 @@ impl Player {
 
         {
             let player_handle = node.handle();
-            if let Some(mut node) = scene::try_get_node(player_handle) {
-                for effect in node.passive_effects.values_mut() {
-                    let event = PlayerEvent::Update { dt };
-                    effect.on_player_event(player_handle, event);
-                }
+            for effect in node.passive_effects.values_mut() {
+                let event = PlayerEvent::Update { dt };
+                effect.on_player_event(player_handle, event);
             }
         }
 
@@ -1035,6 +1032,7 @@ impl Player {
                             is_from_right,
                             damage_from,
                         };
+
                         effect.on_player_event(player_handle, event);
                     }
 
@@ -1064,14 +1062,22 @@ impl Player {
                         play_sound_once(sound);
                     }
 
-                    if let Some(damage_to) = damage_from {
-                        if let Some(mut node) = scene::try_get_node(player_handle) {
-                            for effect in node.passive_effects.values_mut() {
-                                let event = PlayerEvent::GiveDamage { damage_to };
-                                effect.on_player_event(player_handle, event);
-                            }
-                        }
+                    if let Some(damage_from) = damage_from {
+                        Player::on_give_damage(damage_from, player_handle);
                     }
+                }
+            }
+        };
+
+        start_coroutine(coroutine)
+    }
+
+    pub fn on_give_damage(player_handle: Handle<Player>, damage_to: Handle<Player>) -> Coroutine {
+        let coroutine = async move {
+            if let Some(mut node) = scene::try_get_node(player_handle) {
+                for effect in node.passive_effects.values_mut() {
+                    let event = PlayerEvent::GiveDamage { damage_to };
+                    effect.on_player_event(player_handle, event);
                 }
             }
         };

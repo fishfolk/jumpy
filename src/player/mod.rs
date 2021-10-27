@@ -14,14 +14,13 @@ use macroquad::{
 use crate::{
     capabilities::{NetworkReplicate, PhysicsObject},
     components::PhysicsBody,
-    items::{weapons::Weapon, Item, ItemKind},
-    nodes::ParticleEmitters,
-    GameWorld, Input, PassiveEffect, PassiveEffectParams, Resources,
+    items::{Item, ItemKind, Weapon},
+    GameInput, GameWorld, ParticleEmitters, PassiveEffect, PassiveEffectParams, Resources,
 };
 
 use crate::components::{Animation, AnimationParams, AnimationPlayer};
 
-use crate::items::equipped::EquippedItem;
+use crate::items::EquippedItem;
 
 mod ai;
 
@@ -56,8 +55,8 @@ pub struct Player {
 
     passive_effects: HashMap<String, PassiveEffect>,
 
-    pub input: Input,
-    pub last_frame_input: Input,
+    pub input: GameInput,
+    pub last_frame_input: GameInput,
     pub pick_grace_timer: f32,
 
     jump_grace_timer: f32,
@@ -379,7 +378,7 @@ impl Player {
         self.state_machine.set_state(Self::ST_SLIDE);
     }
 
-    pub fn apply_input(&mut self, input: Input) {
+    pub fn apply_input(&mut self, input: GameInput) {
         self.last_frame_input = self.input;
         self.input = input;
     }

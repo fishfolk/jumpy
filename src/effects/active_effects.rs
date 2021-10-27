@@ -13,8 +13,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     json::{self, GenericParam},
     math::{deg_to_rad, rotate_vector},
-    nodes::ParticleEmitters,
-    Player,
+    ParticleEmitters, Player,
 };
 
 use super::AnyEffectParams;

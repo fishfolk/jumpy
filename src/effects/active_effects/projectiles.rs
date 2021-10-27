@@ -13,9 +13,7 @@ use super::{TriggeredEffectTrigger, TriggeredEffects};
 use crate::{
     capabilities::NetworkReplicate,
     components::{Sprite, SpriteParams},
-    json,
-    nodes::ParticleEmitters,
-    GameWorld, Player,
+    json, GameWorld, ParticleEmitters, Player,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

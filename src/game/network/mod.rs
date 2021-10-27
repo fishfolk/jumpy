@@ -1,20 +1,20 @@
 //! Very, very WIP
 //! "Delayed lockstep" networking implementation - first step towards GGPO
 
+use std::sync::mpsc;
+
 use macroquad::experimental::scene::{self, Handle, Node, NodeWith, RefMut};
 
-use crate::{
-    capabilities::NetworkReplicate,
-    input::{self, Input, InputScheme},
-    Player,
-};
-
-use std::sync::mpsc;
+use crate::{capabilities::NetworkReplicate, collect_input, GameInput, GameInputScheme, Player};
 
 use nanoserde::{DeBin, SerBin};
 
+mod connection;
+
+pub use connection::{NetworkConnection, NetworkConnectionKind, NetworkConnectionStatus};
+
 #[derive(Debug, DeBin, SerBin)]
-pub enum Message {
+pub enum NetworkMessage {
     /// Empty message, used for connection test
     Idle,
     RelayRequestId,
@@ -24,25 +24,25 @@ pub enum Message {
     Input {
         // current simulation frame
         frame: u64,
-        input: Input,
+        input: GameInput,
     },
 }
 
-pub struct Network {
-    input_scheme: InputScheme,
+pub struct NetworkGame {
+    input_scheme: GameInputScheme,
 
     player1: Handle<Player>,
     player2: Handle<Player>,
 
     frame: u64,
 
-    tx: mpsc::Sender<Message>,
-    rx: mpsc::Receiver<Message>,
+    tx: mpsc::Sender<NetworkMessage>,
+    rx: mpsc::Receiver<NetworkMessage>,
 
     self_id: usize,
     // all the inputs from the beginning of the game
     // will optimize memory later
-    frames_buffer: Vec<[Option<Input>; 2]>,
+    frames_buffer: Vec<[Option<GameInput>; 2]>,
 }
 
 // // get a bitmask of received remote inputs out of frames_buffer
@@ -58,7 +58,7 @@ pub struct Network {
 //     ack
 // }
 
-impl Network {
+impl NetworkGame {
     /// 8-bit bitmask is used for ACK, to make CONSTANT_DELAY more than 8
     /// bitmask type should be changed
     const CONSTANT_DELAY: usize = 8;
@@ -66,15 +66,15 @@ impl Network {
     pub fn new(
         id: usize,
         socket: std::net::UdpSocket,
-        input_scheme: InputScheme,
+        input_scheme: GameInputScheme,
         player1: Handle<Player>,
         player2: Handle<Player>,
-    ) -> Network {
+    ) -> NetworkGame {
         socket.set_nonblocking(true).unwrap();
 
-        let (tx, rx) = mpsc::channel::<Message>();
+        let (tx, rx) = mpsc::channel::<NetworkMessage>();
 
-        let (tx1, rx1) = mpsc::channel::<Message>();
+        let (tx1, rx1) = mpsc::channel::<NetworkMessage>();
 
         {
             let socket = socket.try_clone().unwrap();
@@ -126,12 +126,12 @@ impl Network {
         #[allow(clippy::needless_range_loop)]
         for _ in 0..Self::CONSTANT_DELAY {
             let mut frame = [None; 2];
-            frame[id as usize] = Some(Input::default());
+            frame[id as usize] = Some(GameInput::default());
 
             frames_buffer.push(frame);
         }
 
-        Network {
+        NetworkGame {
             self_id: id,
             input_scheme,
             player1,
@@ -144,11 +144,11 @@ impl Network {
     }
 }
 
-impl Node for Network {
+impl Node for NetworkGame {
     fn fixed_update(mut node: RefMut<Self>) {
         let node = &mut *node;
 
-        let own_input = input::collect_input(node.input_scheme);
+        let own_input = collect_input(node.input_scheme);
 
         // Right now there are only two players, so it is possible to find out
         // remote fish id as "not ours" id. With more fish it will be more complicated
@@ -162,7 +162,7 @@ impl Node for Network {
             (node.frame as i64 - Self::CONSTANT_DELAY as i64 * 2).max(0) as u64 as u64..node.frame
         {
             node.tx
-                .send(Message::Input {
+                .send(NetworkMessage::Input {
                     frame: i,
                     input: node.frames_buffer[i as usize][node.self_id].unwrap(),
                 })
@@ -180,7 +180,7 @@ impl Node for Network {
 
         // Receive other fish input
         while let Ok(message) = node.rx.try_recv() {
-            if let Message::Input { frame, input } = message {
+            if let NetworkMessage::Input { frame, input } = message {
                 // frame from the future, need to wait until will simulate
                 // the game enough to use this data
                 if frame < node.frames_buffer.len() as _ {

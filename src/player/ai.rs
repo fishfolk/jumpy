@@ -5,7 +5,7 @@ use macroquad::{
     time::get_frame_time,
 };
 
-use crate::{items::Item, player::Input, GameWorld, Player};
+use crate::{items::Item, player::GameInput, GameWorld, Player};
 
 pub struct Ai {
     jump_cooldown: f32,
@@ -26,10 +26,10 @@ impl Ai {
         }
     }
 
-    pub fn update(&mut self, player: &mut Player) -> Input {
+    pub fn update(&mut self, player: &mut Player) -> GameInput {
         let foe = scene::find_nodes_by_type::<Player>().next().unwrap();
 
-        let mut input = Input {
+        let mut input = GameInput {
             right: self.fix_direction == 1,
             left: self.fix_direction == -1,
             ..Default::default()

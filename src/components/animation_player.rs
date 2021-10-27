@@ -9,7 +9,7 @@ use macroquad::{
 
 use serde::{Deserialize, Serialize};
 
-use crate::{debug, json, Resources};
+use crate::{json, Resources};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Animation {
@@ -196,7 +196,7 @@ impl AnimationPlayer {
 
     #[cfg(debug_assertions)]
     pub fn debug_draw(&self, position: Vec2) {
-        if debug::is_debug_draw_enabled() && !self.is_deactivated {
+        if crate::debug::is_debug_draw_enabled() && !self.is_deactivated {
             let size = self.get_size();
 
             draw_rectangle_lines(

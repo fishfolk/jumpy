@@ -33,7 +33,7 @@ pub enum ItemKind {
         #[serde(flatten)]
         params: WeaponParams,
     },
-    Equipment {
+    EquippedItem {
         #[serde(flatten)]
         params: EquippedItemParams,
     },
@@ -54,9 +54,9 @@ pub struct ItemParams {
     pub id: String,
     #[serde(flatten)]
     pub kind: ItemKind,
+    pub sprite: SpriteParams,
     #[serde(with = "json::uvec2_def")]
     pub collider_size: UVec2,
-    pub sprite: SpriteParams,
     #[serde(default)]
     pub is_network_ready: bool,
 }

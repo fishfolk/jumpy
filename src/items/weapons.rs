@@ -186,16 +186,17 @@ impl Weapon {
     }
 
     fn get_mount_offset(&self, flip_x: bool, flip_y: bool) -> Vec2 {
+        let size = self.sprite_animation.get_size();
         let mut offset = Vec2::ZERO;
 
         if flip_x {
-            offset.x = -self.mount_offset.x;
+            offset.x = -(self.mount_offset.x + size.x);
         } else {
             offset.x = self.mount_offset.x
         }
 
         if flip_y {
-            offset.y = -self.mount_offset.y;
+            offset.y = -(self.mount_offset.y + size.y);
         } else {
             offset.y = self.mount_offset.y
         }
@@ -232,16 +233,7 @@ impl Weapon {
     }
 
     pub fn draw(&mut self, position: Vec2, rotation: f32, flip_x: bool, flip_y: bool) {
-        let size = self.sprite_animation.get_size();
-        let mut position = position + self.get_mount_offset(flip_x, flip_y);
-
-        if flip_x {
-            position.x -= size.x;
-        }
-
-        if flip_y {
-            position.y -= size.y;
-        }
+        let position = position + self.get_mount_offset(flip_x, flip_y);
 
         self.sprite_animation
             .draw(position, rotation, flip_x, flip_y);

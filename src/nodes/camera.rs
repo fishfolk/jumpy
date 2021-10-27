@@ -1,9 +1,10 @@
-use crate::{nodes::Player, noise::NoiseGenerator};
 use macroquad::{
     experimental::scene::{self, RefMut},
     prelude::*,
     rand::gen_range,
 };
+
+use crate::{noise::NoiseGenerator, Player};
 
 struct Shake {
     direction: (f32, f32),

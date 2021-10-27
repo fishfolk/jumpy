@@ -8,11 +8,7 @@ static mut CUSTOM_ACTIVE_EFFECTS: Option<HashMap<String, CustomActiveEffectCorou
 
 unsafe fn get_custom_active_effects_map(
 ) -> &'static mut HashMap<String, CustomActiveEffectCoroutine> {
-    if CUSTOM_ACTIVE_EFFECTS.is_none() {
-        CUSTOM_ACTIVE_EFFECTS = Some(HashMap::new());
-    }
-
-    CUSTOM_ACTIVE_EFFECTS.as_mut().unwrap()
+    CUSTOM_ACTIVE_EFFECTS.get_or_insert(HashMap::new())
 }
 
 #[allow(dead_code)]

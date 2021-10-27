@@ -95,8 +95,11 @@ impl Projectiles {
 
             {
                 let mut triggered_effects = scene::find_node_by_type::<TriggeredEffects>().unwrap();
-                triggered_effects
-                    .check_triggers_point(TriggeredEffectTrigger::Projectile, projectile.position);
+                triggered_effects.check_triggers_point(
+                    TriggeredEffectTrigger::Projectile,
+                    projectile.position,
+                    None,
+                );
             }
 
             {
@@ -114,17 +117,21 @@ impl Projectiles {
 
             if !is_hit {
                 // Borrow owner so that it is excluded from the following iteration and hit check
-                let _owner = scene::try_get_node(projectile.owner);
+                let _player = scene::try_get_node(projectile.owner);
 
-                for mut player in scene::find_nodes_by_type::<Player>() {
+                for player in scene::find_nodes_by_type::<Player>() {
                     let hitbox = player.get_collider_rect();
 
                     if hitbox.contains(projectile.position) {
                         let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
                         particles.spawn("hit", projectile.position);
 
-                        let direction = projectile.position.x > player.body.position.x;
-                        player.kill(direction);
+                        let is_from_right = projectile.position.x > player.body.position.x;
+                        Player::on_receive_damage(
+                            player.handle(),
+                            is_from_right,
+                            Some(projectile.owner),
+                        );
 
                         is_hit = true;
                         break;

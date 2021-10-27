@@ -15,12 +15,10 @@ use macroquad::{
 use editor::{Editor, EditorCamera, EditorInputScheme};
 use error::Result;
 
-pub use game_world::GameWorld;
 pub use input::{Input, InputScheme};
+pub use world::GameWorld;
 
 use map::{Map, MapLayerKind, MapObjectKind};
-
-use nodes::Player;
 
 use resources::MapResource;
 
@@ -43,14 +41,18 @@ pub mod map;
 
 pub mod config;
 pub mod editor;
-pub mod game_world;
 pub mod math;
 pub mod resources;
 pub mod text;
+pub mod world;
 #[macro_use]
 pub mod error;
+#[cfg(debug_assertions)]
 pub mod debug;
 pub mod effects;
+pub mod player;
+
+pub use player::{Player, PlayerEvent};
 
 pub use effects::{
     ActiveEffectKind, ActiveEffectParams, CustomActiveEffectCoroutine, PassiveEffect,

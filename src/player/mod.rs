@@ -1072,10 +1072,7 @@ impl Player {
         start_coroutine(coroutine)
     }
 
-    pub fn on_give_damage(
-        player_handle: Handle<Player>,
-        damage_to: Handle<Player>,
-    ) -> Coroutine {
+    pub fn on_give_damage(player_handle: Handle<Player>, damage_to: Handle<Player>) -> Coroutine {
         let coroutine = async move {
             if let Some(mut node) = scene::try_get_node(player_handle) {
                 for effect in node.passive_effects.values_mut() {

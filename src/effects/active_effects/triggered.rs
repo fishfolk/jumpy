@@ -17,7 +17,7 @@ use crate::{
     json, GameWorld, Player,
 };
 
-use super::{active_effect_coroutine, ActiveEffectParams, AnyEffectParams};
+use super::{active_effect_coroutine, AnyEffectParams};
 
 /// This contains commonly used groups of triggers
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -184,7 +184,11 @@ struct TriggeredEffect {
 }
 
 impl TriggeredEffect {
-    fn apply_trigger(&mut self, trigger: TriggeredEffectTrigger, triggered_by: Option<Handle<Player>>) {
+    fn apply_trigger(
+        &mut self,
+        trigger: TriggeredEffectTrigger,
+        triggered_by: Option<Handle<Player>>,
+    ) {
         self.is_triggered = true;
 
         if trigger == TriggeredEffectTrigger::Explosion
@@ -257,7 +261,12 @@ impl TriggeredEffects {
     }
 
     #[allow(dead_code)]
-    pub fn check_triggers(&mut self, trigger: TriggeredEffectTrigger, collider: &Rect, triggered_by: Option<Handle<Player>>) {
+    pub fn check_triggers(
+        &mut self,
+        trigger: TriggeredEffectTrigger,
+        collider: &Rect,
+        triggered_by: Option<Handle<Player>>,
+    ) {
         for effect in &mut self.active {
             if collider.overlaps(&effect.body.get_collider_rect())
                 && effect.trigger.contains(&trigger)
@@ -268,7 +277,12 @@ impl TriggeredEffects {
         }
     }
 
-    pub fn check_triggers_circle(&mut self, trigger: TriggeredEffectTrigger, collider: &Circle, triggered_by: Option<Handle<Player>>) {
+    pub fn check_triggers_circle(
+        &mut self,
+        trigger: TriggeredEffectTrigger,
+        collider: &Circle,
+        triggered_by: Option<Handle<Player>>,
+    ) {
         for effect in &mut self.active {
             if collider.overlaps_rect(&effect.body.get_collider_rect())
                 && effect.trigger.contains(&trigger)
@@ -279,7 +293,12 @@ impl TriggeredEffects {
         }
     }
 
-    pub fn check_triggers_point(&mut self, trigger: TriggeredEffectTrigger, point: Vec2, triggered_by: Option<Handle<Player>>) {
+    pub fn check_triggers_point(
+        &mut self,
+        trigger: TriggeredEffectTrigger,
+        point: Vec2,
+        triggered_by: Option<Handle<Player>>,
+    ) {
         for effect in &mut self.active {
             if effect.body.get_collider_rect().contains(point) && effect.trigger.contains(&trigger)
             {

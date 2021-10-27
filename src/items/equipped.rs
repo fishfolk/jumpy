@@ -1,25 +1,23 @@
-use macroquad::{
-    experimental::{
-        scene::RefMut,
-    },
-    prelude::*,
-};
+use macroquad::{experimental::scene::RefMut, prelude::*};
 
 use serde::{Deserialize, Serialize};
 
 use crate::{
     components::{AnimationParams, AnimationPlayer},
-    json::OneOrMany,
+    json::{self, OneOrMany},
     Player,
 };
 
-use crate::effects::{PassiveEffect, PassiveEffectParams, AnyEffectParams, active_effect_coroutine};
+use crate::effects::{active_effect_coroutine, AnyEffectParams};
 
 /// This holds the parameters used when constructing an `EquippedItem`
 #[derive(Clone, Serialize, Deserialize)]
 pub struct EquippedItemParams {
     /// The effects that will be instantiated when the item is equipped
     pub effects: OneOrMany<AnyEffectParams>,
+    /// This specifies the offset from the player position to where the equipped item is drawn
+    #[serde(default, with = "json::vec2_def")]
+    pub mount_offset: Vec2,
     /// The parameters for the `AnimationPlayer` that will be used to draw the item when it is
     /// equipped by a player.
     #[serde(default)]
@@ -28,14 +26,19 @@ pub struct EquippedItemParams {
     /// passive effects that are added to the player, when equipping the item
     #[serde(default)]
     pub duration: Option<f32>,
+    /// If this is true the item will be dropped if the player holding it dies
+    #[serde(default)]
+    pub is_dropped_on_death: bool,
 }
 
 #[allow(dead_code)]
 pub struct EquippedItem {
-    id: String,
+    pub id: String,
+    mount_offset: Vec2,
     sprite_animation: Option<AnimationPlayer>,
     duration: Option<f32>,
     duration_timer: f32,
+    pub is_dropped_on_death: bool,
 }
 
 impl EquippedItem {
@@ -52,14 +55,15 @@ impl EquippedItem {
             }
         }
 
-        let sprite_animation = params.animation
-            .map(|params| AnimationPlayer::new(params));
+        let sprite_animation = params.animation.map(AnimationPlayer::new);
 
         EquippedItem {
             id: id.to_string(),
+            mount_offset: params.mount_offset,
             sprite_animation,
             duration: params.duration,
             duration_timer: 0.0,
+            is_dropped_on_death: params.is_dropped_on_death,
         }
     }
 
@@ -73,7 +77,22 @@ impl EquippedItem {
 
     pub fn draw(&self, position: Vec2, rotation: f32, flip_x: bool, flip_y: bool) {
         if let Some(sprite) = &self.sprite_animation {
-            sprite.draw(position, rotation, flip_x, flip_y);
+            let size = sprite.get_size();
+            let mut offset = Vec2::ZERO;
+
+            if flip_x {
+                offset.x = -(self.mount_offset.x + size.x);
+            } else {
+                offset.x = self.mount_offset.x;
+            }
+
+            if flip_y {
+                offset.y = -(self.mount_offset.y + size.y);
+            } else {
+                offset.y = self.mount_offset.y;
+            }
+
+            sprite.draw(position + offset, rotation, flip_x, flip_y);
         }
     }
 

@@ -6,7 +6,8 @@ use crate::{json::GenericParam, Player};
 
 static mut CUSTOM_ACTIVE_EFFECTS: Option<HashMap<String, CustomActiveEffectCoroutine>> = None;
 
-unsafe fn get_custom_active_effects_map() -> &'static mut HashMap<String, CustomActiveEffectCoroutine> {
+unsafe fn get_custom_active_effects_map(
+) -> &'static mut HashMap<String, CustomActiveEffectCoroutine> {
     CUSTOM_ACTIVE_EFFECTS.get_or_insert(HashMap::new())
 }
 

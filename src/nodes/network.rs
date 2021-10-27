@@ -6,7 +6,7 @@ use macroquad::experimental::scene::{self, Handle, Node, NodeWith, RefMut};
 use crate::{
     capabilities::NetworkReplicate,
     input::{self, Input, InputScheme},
-    nodes::Player,
+    Player,
 };
 
 use std::sync::mpsc;

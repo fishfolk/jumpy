@@ -9,17 +9,29 @@
     "y": 32
   },
   "effects": {
-    "id": "test_passive_effect",
-    "animation": {
-      "texture": "turtle_shell",
-      "animations": [
-        {
-          "id": "idle",
-          "row": 0,
-          "frames": 1,
-          "fps": 1
-        }
-      ]
-    }
-  }
+    "id": "test_passive_effect"
+  },
+  "animation": {
+    "texture": "turtle_shell",
+    "animations": [
+      {
+        "id": "idle",
+        "row": 1,
+        "frames": 1,
+        "fps": 1
+      },
+      {
+        "id": "broken",
+        "row": 1,
+        "frames": 1,
+        "fps": 1
+      }
+    ]
+  },
+  "mount_offset": {
+    "x": -32,
+    "y": 18
+  },
+  "is_dropped_on_death": true,
+  "is_network_ready": true
 }

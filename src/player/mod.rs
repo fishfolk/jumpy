@@ -1,6 +1,5 @@
 use macroquad::{
     audio::{self, play_sound_once},
-    color,
     experimental::{
         collections::storage,
         coroutines::{start_coroutine, wait_seconds, Coroutine},
@@ -9,13 +8,15 @@ use macroquad::{
     },
     prelude::*,
 };
+use std::collections::HashMap;
 
-use serde::{
-    Serialize,
-    Deserialize,
+use crate::{
+    capabilities::{NetworkReplicate, PhysicsObject},
+    components::PhysicsBody,
+    items::{weapons::Weapon, Item, ItemKind},
+    nodes::ParticleEmitters,
+    GameWorld, Input, PassiveEffect, PassiveEffectParams, Resources,
 };
-
-use crate::{capabilities::{NetworkReplicate, PhysicsObject}, components::PhysicsBody, items::{weapons::Weapon, Item, ItemKind}, nodes::ParticleEmitters, GameWorld, Input, Resources, PassiveEffectParams, PassiveEffect};
 
 use crate::components::{Animation, AnimationParams, AnimationPlayer};
 
@@ -24,12 +25,21 @@ use crate::items::equipped::EquippedItem;
 mod ai;
 
 /// This contains all the events that can trigger passive effects on a player
-#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
 pub enum PlayerEvent {
-    Update,
-    ReceiveDamage,
-    GiveDamage,
+    Update {
+        dt: f32,
+    },
+    ReceiveDamage {
+        is_from_right: bool,
+        damage_from: Option<Handle<Player>>,
+    },
+    GiveDamage {
+        damage_to: Handle<Player>,
+    },
+    Incapacitated {},
+    Collision {
+        collision_with: Handle<Player>,
+    },
 }
 
 pub struct Player {
@@ -41,9 +51,9 @@ pub struct Player {
     pub is_dead: bool,
 
     pub weapon: Option<Weapon>,
-    pub equipped_items: Vec<EquippedItem>,
+    equipped_items: HashMap<String, EquippedItem>,
 
-    passive_effects: Vec<PassiveEffect>,
+    passive_effects: HashMap<String, PassiveEffect>,
 
     pub input: Input,
     pub last_frame_input: Input,
@@ -100,9 +110,11 @@ impl Player {
 
     const ITEM_THROW_FORCE: f32 = 600.0;
 
-    const WEAPON_HUD_Y_OFFSET: f32 = -16.0;
+    const WEAPON_MOUNT_X_OFFSET: f32 = 0.0;
     const WEAPON_MOUNT_Y_OFFSET: f32 = 16.0;
-    const WEAPON_MOUNT_Y_OFFSET_CROUCHED: f32 = 32.0;
+    const _WEAPON_MOUNT_Y_OFFSET_CROUCHED: f32 = 32.0;
+
+    const WEAPON_HUD_Y_OFFSET: f32 = -16.0;
 
     const COLLIDER_WIDTH: f32 = 20.0;
     const COLLIDER_HEIGHT: f32 = 54.0;
@@ -241,8 +253,8 @@ impl Player {
             id: player_id,
             is_dead: false,
             weapon: None,
-            equipped_items: Vec::new(),
-            passive_effects: Vec::new(),
+            equipped_items: HashMap::new(),
+            passive_effects: HashMap::new(),
             input: Default::default(),
             last_frame_input: Default::default(),
             pick_grace_timer: 0.,
@@ -267,13 +279,14 @@ impl Player {
     }
 
     pub fn add_passive_effect(&mut self, params: PassiveEffectParams) {
-        if let Some(particle_effect_id) = &params.particle_effect_id {
+        let effect = PassiveEffect::new(params);
+
+        if let Some(particle_effect_id) = &effect.particle_effect_id {
             let mut particle_emitters = scene::find_node_by_type::<ParticleEmitters>().unwrap();
             particle_emitters.spawn(particle_effect_id, self.body.position);
         }
 
-        let effect = PassiveEffect::new(params);
-        self.passive_effects.push(effect);
+        self.passive_effects.insert(effect.id.clone(), effect);
     }
 
     pub fn drop_weapon(&mut self, is_thrown: bool) {
@@ -308,27 +321,41 @@ impl Player {
         self.weapon = Some(weapon);
     }
 
-    pub fn pick_up_equipment(&mut self, equipment: EquippedItem) {
+    pub fn pick_up_equipped_item(&mut self, equipped_item: EquippedItem) {
         let resources = storage::get::<Resources>();
         let sound = resources.sounds["pickup"];
-
         play_sound_once(sound);
 
-        self.equipped_items.push(equipment);
+        self.equipped_items
+            .insert(equipped_item.id.clone(), equipped_item);
     }
 
     pub fn get_weapon_mount_position(&self) -> Vec2 {
-        let mut position = self.body.position;
+        let mut offset = Vec2::ZERO;
 
-        if self.is_crouched {
-            position.y += Self::WEAPON_MOUNT_Y_OFFSET_CROUCHED;
+        if self.body.is_upside_down {
+            offset.y = -Self::WEAPON_MOUNT_Y_OFFSET;
         } else {
-            position.y += Self::WEAPON_MOUNT_Y_OFFSET;
+            offset.y = Self::WEAPON_MOUNT_Y_OFFSET;
+        }
+
+        if self.body.is_facing_right {
+            offset.x = Self::WEAPON_MOUNT_X_OFFSET;
+        } else {
+            offset.x = -Self::WEAPON_MOUNT_X_OFFSET;
+        }
+
+        let size = self.animation_player.get_size();
+        let mut position = self.body.position + offset;
+        position.y -= size.y - self.body.size.y;
+
+        if self.body.is_upside_down {
+            position.y += size.y;
         }
 
         // TODO: Implement rotation
 
-        position
+        position + offset
     }
 
     pub fn jump(&mut self) {
@@ -371,61 +398,15 @@ impl Player {
         }
     }
 
-    pub fn on_update(player_handle: Handle<Player>, dt: f32) -> Coroutine {
-        let coroutine = async move {
-            if let Some(mut node) = scene::try_get_node(player_handle) {
-                for effect in &mut node.passive_effects {
-                    effect.on_player_update(player_handle, dt);
-                }
-            }
-        };
-
-        start_coroutine(coroutine)
-    }
-
-    pub fn on_receive_damage(player_handle: Handle<Player>, is_from_right: bool, damage_from: Option<Handle<Player>>) -> Coroutine {
-        let coroutine = async move {
-            if let Some(mut node) = scene::try_get_node(player_handle) {
-                for effect in &mut node.passive_effects {
-                    effect.on_player_receive_damage(player_handle, is_from_right, damage_from);
-                }
-
-                node.back_armor = 0;
-                node.body.is_facing_right = is_from_right;
-                node.drop_weapon(false);
-
-                if node.state_machine.state() != Self::ST_DEATH {
-                    node.state_machine.set_state(Self::ST_DEATH);
-
-                    let resources = storage::get::<Resources>();
-                    let die_sound = resources.sounds["death"];
-
-                    play_sound_once(die_sound);
-
-                    if let Some(damage_from) = damage_from {
-                        Player::on_give_damage(damage_from, player_handle);
-                    }
-                }
-            }
-        };
-
-        start_coroutine(coroutine)
-    }
-
-    pub fn on_give_damage(player_handle: Handle<Player>, damage_to: Handle<Player>) -> Coroutine {
-        let coroutine = async move {
-            if let Some(mut node) = scene::try_get_node(player_handle) {
-                for effect in &mut node.passive_effects {
-                    effect.on_player_give_damage(player_handle, damage_to);
-                }
-            }
-        };
-
-        start_coroutine(coroutine)
-    }
-
     fn incapacitated_coroutine(node: &mut RefMut<Player>) -> Coroutine {
-        let _handle = node.handle();
+        let player_handle = node.handle();
+
+        if let Some(mut node) = scene::try_get_node(player_handle) {
+            for effect in node.passive_effects.values_mut() {
+                let event = PlayerEvent::Incapacitated {};
+                effect.on_player_event(player_handle, event);
+            }
+        }
 
         let coroutine = async move {
             // NOTHING HERE FOR NOW
@@ -754,7 +735,7 @@ impl Player {
                 {
                     let equipment = EquippedItem::new(&item.id, params.clone(), node);
 
-                    node.pick_up_equipment(equipment);
+                    node.pick_up_equipped_item(equipment);
                     item.delete();
                 }
             }
@@ -775,13 +756,6 @@ impl Player {
     }
 
     fn network_update(mut node: RefMut<Self>) {
-        {
-            let player_handle = node.handle();
-            for effect in &mut node.passive_effects {
-                effect.on_player_update(player_handle, get_frame_time());
-            }
-        }
-
         // Break incapacitated
         if node.state_machine.state() == Player::ST_INCAPACITATED && node.body.velocity.x != 0.0 {
             if node.body.velocity.x > Player::INCAPACITATED_STOP_THRESHOLD
@@ -802,37 +776,28 @@ impl Player {
         node.animation_player.update();
 
         let dt = get_frame_time();
+
         if let Some(weapon) = &mut node.weapon {
             weapon.update(dt);
         }
 
-        {
-            let mut i = 0;
-            while i < node.equipped_items.len() {
-                let item = &mut node.equipped_items[i];
+        node.equipped_items.drain_filter(|_, item| {
+            item.update(dt);
+            item.is_depleted()
+        });
 
-                item.update(dt);
-                if item.is_depleted() {
-                    node.equipped_items.remove(i);
-                    continue;
-                }
-
-                i += 1;
-            }
-        }
+        node.passive_effects.drain_filter(|_, effect| {
+            effect.update(dt);
+            effect.is_depleted()
+        });
 
         {
-            let mut i = 0;
-            while i < node.passive_effects.len() {
-                let effect = &mut node.passive_effects[i];
-
-                effect.update(dt);
-                if effect.is_depleted() {
-                    node.passive_effects.remove(i);
-                    continue;
+            let player_handle = node.handle();
+            if let Some(mut node) = scene::try_get_node(player_handle) {
+                for effect in node.passive_effects.values_mut() {
+                    let event = PlayerEvent::Update { dt };
+                    effect.on_player_event(player_handle, event);
                 }
-
-                i += 1;
             }
         }
 
@@ -886,15 +851,19 @@ impl Player {
 
         if node.can_head_boink && node.body.velocity.y > 0.0 {
             let hitbox = node.get_collider_rect();
-            for mut other in scene::find_nodes_by_type::<Player>() {
-                let other_hitbox = other.get_collider_rect();
+            for player in scene::find_nodes_by_type::<Player>() {
+                let other_hitbox = player.get_collider_rect();
                 let is_overlapping = hitbox.overlaps(&other_hitbox);
                 if is_overlapping && hitbox.y + 60.0 < other_hitbox.y + Self::HEAD_THRESHOLD {
                     let resources = storage::get::<Resources>();
                     let jump_sound = resources.sounds["jump"];
 
                     play_sound_once(jump_sound);
-                    Player::on_receive_damage(other.handle(), !node.body.is_facing_right, Some(node.handle()));
+                    Player::on_receive_damage(
+                        player.handle(),
+                        !node.body.is_facing_right,
+                        Some(node.handle()),
+                    );
                 }
             }
         }
@@ -917,19 +886,36 @@ impl Player {
             }
         }
 
+        if is_key_pressed(KeyCode::B) {
+            node.body.is_upside_down = !node.body.is_upside_down;
+        }
+
         StateMachine::update_detached(node, |node| &mut node.state_machine);
     }
 
     fn draw_player(&self) {
-        for equipped in &self.equipped_items {
-            equipped.draw(self.body.position, self.body.rotation, !self.body.is_facing_right, false);
+        for equipped in self.equipped_items.values() {
+            let size = self.animation_player.get_size();
+            let mut position = self.body.position;
+            position.y -= size.y - self.body.size.y;
+
+            if self.body.is_upside_down {
+                position.y += size.y;
+            }
+
+            equipped.draw(
+                position,
+                self.body.rotation,
+                !self.body.is_facing_right,
+                self.body.is_upside_down,
+            );
         }
 
         self.animation_player.draw(
             self.body.position,
             self.body.rotation,
             !self.body.is_facing_right,
-            false,
+            self.body.is_upside_down,
         );
 
         #[cfg(debug_assertions)]
@@ -940,22 +926,19 @@ impl Player {
     }
 
     fn draw_weapon(&mut self) {
-        let position = self.body.position;
-        let weapon_mount = self.get_weapon_mount_position();
-        let rotation = self.body.rotation;
-        let is_facing_right = self.body.is_facing_right;
-
+        let position = self.get_weapon_mount_position();
         if let Some(weapon) = &mut self.weapon {
-            {
-                weapon.draw(weapon_mount, rotation, !is_facing_right, false);
-            }
+            weapon.draw(
+                position,
+                self.body.rotation,
+                !self.body.is_facing_right,
+                self.body.is_upside_down,
+            );
 
-            {
-                let mut position = position;
-                position.y += Self::WEAPON_HUD_Y_OFFSET;
+            let mut position = self.body.position;
+            position.y += Self::WEAPON_HUD_Y_OFFSET;
 
-                weapon.draw_hud(position);
-            }
+            weapon.draw_hud(position);
         }
     }
 }
@@ -1032,5 +1015,80 @@ impl Player {
         }
 
         NetworkReplicate { network_update }
+    }
+}
+
+impl Player {
+    pub fn on_receive_damage(
+        player_handle: Handle<Player>,
+        is_from_right: bool,
+        damage_from: Option<Handle<Player>>,
+    ) -> Coroutine {
+        let coroutine = async move {
+            if let Some(mut node) = scene::try_get_node(player_handle) {
+                if node.state_machine.state() != Self::ST_DEATH {
+                    for effect in node.passive_effects.values_mut() {
+                        let event = PlayerEvent::ReceiveDamage {
+                            is_from_right,
+                            damage_from,
+                        };
+                        effect.on_player_event(player_handle, event);
+                    }
+
+                    node.back_armor = 0;
+                    node.body.is_facing_right = is_from_right;
+
+                    node.drop_weapon(false);
+
+                    {
+                        let position = node.body.position;
+                        let resources = storage::get::<Resources>();
+                        for (_, item) in node.equipped_items.drain() {
+                            if item.is_dropped_on_death {
+                                let params = resources.items.get(&item.id).cloned().unwrap();
+                                scene::add_node(Item::new(position, params));
+                            }
+                        }
+                    }
+
+                    node.passive_effects.clear();
+
+                    node.state_machine.set_state(Self::ST_DEATH);
+
+                    {
+                        let resources = storage::get::<Resources>();
+                        let sound = resources.sounds["death"];
+                        play_sound_once(sound);
+                    }
+
+                    if let Some(damage_to) = damage_from {
+                        if let Some(mut node) = scene::try_get_node(player_handle) {
+                            for effect in node.passive_effects.values_mut() {
+                                let event = PlayerEvent::GiveDamage { damage_to };
+                                effect.on_player_event(player_handle, event);
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        start_coroutine(coroutine)
+    }
+
+    pub fn on_collision(
+        player_handle: Handle<Player>,
+        collision_with: Handle<Player>,
+    ) -> Coroutine {
+        let coroutine = async move {
+            if let Some(mut node) = scene::try_get_node(player_handle) {
+                for effect in node.passive_effects.values_mut() {
+                    let event = PlayerEvent::Collision { collision_with };
+                    effect.on_player_event(player_handle, event);
+                }
+            }
+        };
+
+        start_coroutine(coroutine)
     }
 }

@@ -13,7 +13,8 @@ use serde::{Deserialize, Serialize};
 use crate::{
     json::{self, GenericParam},
     math::{deg_to_rad, rotate_vector},
-    nodes::{ParticleEmitters, Player},
+    nodes::ParticleEmitters,
+    Player,
 };
 
 use super::AnyEffectParams;
@@ -149,7 +150,7 @@ pub fn active_effect_coroutine(
                 }
 
                 let circle = Circle::new(origin.x, origin.y, radius);
-                for mut player in scene::find_nodes_by_type::<Player>() {
+                for player in scene::find_nodes_by_type::<Player>() {
                     let collider = player.get_collider_rect();
                     if circle.overlaps_rect(&collider) {
                         let mut is_killed = false;
@@ -177,7 +178,11 @@ pub fn active_effect_coroutine(
 
                         if is_killed {
                             let is_from_right = origin.x > player.body.position.x;
-                            Player::on_receive_damage(player.handle(),  is_from_right, Some(player_handle));
+                            Player::on_receive_damage(
+                                player.handle(),
+                                is_from_right,
+                                Some(player_handle),
+                            );
                         }
                     }
                 }
@@ -185,8 +190,11 @@ pub fn active_effect_coroutine(
                 if is_explosion {
                     let mut triggered_effects =
                         scene::find_node_by_type::<TriggeredEffects>().unwrap();
-                    triggered_effects
-                        .check_triggers_circle(TriggeredEffectTrigger::Explosion, &circle, None);
+                    triggered_effects.check_triggers_circle(
+                        TriggeredEffectTrigger::Explosion,
+                        &circle,
+                        None,
+                    );
                 }
             }
             ActiveEffectKind::RectCollider { width, height } => {
@@ -198,10 +206,14 @@ pub fn active_effect_coroutine(
                     rect.x -= rect.w;
                 }
 
-                for mut player in scene::find_nodes_by_type::<Player>() {
+                for player in scene::find_nodes_by_type::<Player>() {
                     if rect.overlaps(&player.get_collider_rect()) {
                         let is_from_right = origin.x > player.body.position.x;
-                        Player::on_receive_damage(player.handle(), is_from_right, Some(player_handle));
+                        Player::on_receive_damage(
+                            player.handle(),
+                            is_from_right,
+                            Some(player_handle),
+                        );
                     }
                 }
             }

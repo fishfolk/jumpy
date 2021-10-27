@@ -7,7 +7,7 @@
 
 use macroquad::experimental::scene::{self, Handle, Node, NodeWith, RefMut};
 
-use crate::{capabilities::NetworkReplicate, debug, input, nodes::Player};
+use crate::{capabilities::NetworkReplicate, debug, input, Player};
 
 pub struct LocalNetwork {
     player1_input: input::InputScheme,

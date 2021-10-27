@@ -288,15 +288,6 @@
     }
   },
   {
-    "id": "turtle_shell_broken",
-    "path": "textures/items/TurtleShellBroken(32x32).png",
-    "type": "spritesheet",
-    "sprite_size": {
-      "x": 32,
-      "y": 32
-    }
-  },
-  {
     "id": "galleon",
     "path": "textures/temp/Galleon(326x300).png"
   },

@@ -1,3 +1,5 @@
+#![feature(hash_drain_filter)]
+
 use fishsticks::GamepadContext;
 use std::env;
 
@@ -14,12 +16,10 @@ use macroquad::{
 use editor::{Editor, EditorCamera, EditorInputScheme};
 use error::Result;
 
-pub use game_world::GameWorld;
 pub use input::{Input, InputScheme};
+pub use world::GameWorld;
 
 use map::{Map, MapLayerKind, MapObjectKind};
-
-use nodes::Player;
 
 use resources::MapResource;
 
@@ -39,14 +39,17 @@ pub mod json;
 pub mod map;
 
 pub mod editor;
-pub mod game_world;
 pub mod math;
 pub mod resources;
 pub mod text;
+pub mod world;
 #[macro_use]
 pub mod error;
 pub mod debug;
 pub mod effects;
+pub mod player;
+
+pub use player::{Player, PlayerEvent};
 
 pub use effects::{
     ActiveEffectKind, ActiveEffectParams, CustomActiveEffectCoroutine, PassiveEffect,

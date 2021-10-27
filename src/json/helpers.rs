@@ -27,6 +27,12 @@ pub enum OneOrMany<T: Clone> {
     Many(Vec<T>),
 }
 
+impl<T: Clone> Default for OneOrMany<T> {
+    fn default() -> Self {
+        Self::Many(Vec::new())
+    }
+}
+
 impl<T: Clone> OneOrMany<T> {
     pub fn into_vec(self) -> Vec<T> {
         match self {

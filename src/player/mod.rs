@@ -403,7 +403,7 @@ impl Player {
 
         for effect in node.passive_effects.values_mut() {
             let event = PlayerEvent::Incapacitated {};
-            effect.on_player_event(player_handle, event);
+            effect.on_player_event(player_handle, event)
         }
 
         let coroutine = async move {
@@ -1031,7 +1031,7 @@ impl Player {
                             is_from_right,
                             damage_from,
                         };
-
+                      
                         effect.on_player_event(player_handle, event);
                     }
 

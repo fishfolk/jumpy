@@ -1,5 +1,11 @@
 use std::any::TypeId;
 
+use crate::{
+    exit_to_main_menu,
+    gui::{show_game_menu, GameMenuResult},
+    quit_to_desktop,
+};
+
 mod camera;
 
 pub use camera::EditorCamera;
@@ -86,6 +92,8 @@ pub struct Editor {
     // the mouse cursor position, if no gamepad is used and this is set to `None`.
     cursor_position: Option<Vec2>,
     history: EditorHistory,
+    // This is `true` if the game menu is open
+    is_menu_open: bool,
 }
 
 impl Editor {
@@ -156,6 +164,7 @@ impl Editor {
             input_scheme,
             cursor_position,
             history: EditorHistory::new(),
+            is_menu_open: false,
         }
     }
 
@@ -455,6 +464,10 @@ impl Node for Editor {
     fn fixed_update(mut node: RefMut<Self>) {
         let input = collect_editor_input(node.input_scheme);
 
+        if input.toggle_menu {
+            node.is_menu_open = !node.is_menu_open;
+        }
+
         if let Some(cursor_position) = node.cursor_position {
             let cursor_position = cursor_position + input.cursor_move * Self::CURSOR_MOVE_SPEED;
             node.cursor_position = Some(cursor_position);
@@ -506,6 +519,16 @@ impl Node for Editor {
 
         if let Some(action) = res {
             node.apply_action(action);
+        }
+
+        if node.is_menu_open {
+            if let Some(res) = show_game_menu() {
+                match res {
+                    GameMenuResult::MainMenu => exit_to_main_menu(),
+                    GameMenuResult::Quit => quit_to_desktop(),
+                    GameMenuResult::Cancel => node.is_menu_open = false,
+                }
+            }
         }
     }
 }

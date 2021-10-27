@@ -100,7 +100,7 @@ impl Resources {
 
     pub const RESOURCE_FILES_EXTENSION: &'static str = "json";
 
-    pub const MAP_EXPORTS_EXTENSION: &'static str = "ron";
+    pub const MAP_EXPORTS_EXTENSION: &'static str = "json";
     pub const MAP_EXPORTS_DEFAULT_DIR: &'static str = "maps";
     pub const MAP_PREVIEW_PLACEHOLDER_PATH: &'static str = "maps/no_preview.png";
     pub const MAP_PREVIEW_PLACEHOLDER_ID: &'static str = "map_preview_placeholder";

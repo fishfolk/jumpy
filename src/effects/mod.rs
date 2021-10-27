@@ -8,6 +8,7 @@ pub use passive_effects::{PassiveEffect, PassiveEffectParams};
 pub use active_effects::{
     active_effect_coroutine, add_custom_active_effect, get_custom_active_effect, ActiveEffectKind,
     ActiveEffectParams, CustomActiveEffectCoroutine, Projectiles, TriggeredEffectTrigger,
+    TriggeredEffects,
 };
 
 /// This is used to allow both active and passive effects to be used as values in JSON

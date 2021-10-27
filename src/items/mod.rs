@@ -11,17 +11,17 @@ use macroquad::{
 
 use serde::{Deserialize, Serialize};
 
-use equipped::EquippedItemParams;
-use weapons::WeaponParams;
-
 use crate::{
     capabilities::{NetworkReplicate, PhysicsObject},
     components::{PhysicsBody, Sprite, SpriteParams},
     json, GameWorld,
 };
 
-pub mod equipped;
-pub mod weapons;
+mod weapons;
+pub use weapons::{Weapon, WeaponAnimationParams, WeaponParams};
+
+mod equipped;
+pub use equipped::{EquippedItem, EquippedItemParams};
 
 mod sproinger;
 pub use sproinger::Sproinger;

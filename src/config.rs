@@ -1,13 +1,28 @@
 use crate::error::Error;
 use serde::{Deserialize, Serialize};
 use std::fs;
-use std::path::PathBuf;
+use std::path::Path;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     pub fullscreen: bool,
     pub high_dpi: bool,
     pub resolution: Resolution,
+}
+
+impl Config {
+    pub fn load<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
+        let path = path.as_ref();
+
+        let res = if path.exists() {
+            let file_contents = fs::read_to_string(path)?;
+            serde_json::from_str(&file_contents)?
+        } else {
+            Config::default()
+        };
+
+        Ok(res)
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -16,9 +31,11 @@ pub struct Resolution {
     pub height: i32,
 }
 
-impl Config {
-    pub fn parse(path: PathBuf) -> Result<Self, Error> {
-        let file_contents = fs::read_to_string(&path)?;
-        Ok(serde_json::from_str(&file_contents)?)
+impl Default for Resolution {
+    fn default() -> Self {
+        Resolution {
+            width: 955,
+            height: 600,
+        }
     }
 }

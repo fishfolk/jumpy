@@ -23,7 +23,7 @@ enum ShakeType {
     Rotational,
 }
 
-pub struct Camera {
+pub struct GameCamera {
     bounds: Rect,
     follow_buffer: Vec<(Vec2, f32)>,
     shake: Vec<Shake>,
@@ -33,11 +33,11 @@ pub struct Camera {
     pub manual: Option<(Vec2, f32)>,
 }
 
-impl Camera {
+impl GameCamera {
     const BUFFER_CAPACITY: usize = 20;
 
-    pub fn new(bounds: Rect) -> Camera {
-        Camera {
+    pub fn new(bounds: Rect) -> GameCamera {
+        GameCamera {
             bounds,
             follow_buffer: vec![],
             shake: vec![],
@@ -49,7 +49,7 @@ impl Camera {
 }
 
 #[allow(dead_code)]
-impl Camera {
+impl GameCamera {
     pub fn shake_noise(&mut self, magnitude: f32, length: i32, frequency: f32) {
         self.shake.push(Shake {
             direction: (1.0, 1.0),
@@ -162,7 +162,7 @@ impl Camera {
     }
 }
 
-impl scene::Node for Camera {
+impl scene::Node for GameCamera {
     fn fixed_update(mut node: RefMut<Self>) {
         {
             let players = scene::find_nodes_by_type::<Player>();

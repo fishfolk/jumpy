@@ -18,6 +18,7 @@ pub struct EditorInput {
     pub cursor_move: Vec2,
     pub undo: bool,
     pub redo: bool,
+    pub toggle_menu: bool,
 }
 
 pub fn collect_editor_input(scheme: EditorInputScheme) -> EditorInput {
@@ -28,6 +29,8 @@ pub fn collect_editor_input(scheme: EditorInputScheme) -> EditorInput {
             input.action = is_mouse_button_down(MouseButton::Left);
             input.back = is_mouse_button_down(MouseButton::Middle);
             input.context_menu = is_mouse_button_pressed(MouseButton::Right);
+
+            input.toggle_menu = is_key_pressed(KeyCode::Escape);
 
             if is_key_down(KeyCode::Left) || is_key_down(KeyCode::A) {
                 input.camera_pan.x = -1.0;

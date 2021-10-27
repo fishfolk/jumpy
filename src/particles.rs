@@ -13,6 +13,7 @@ use macroquad_particles::EmittersCache;
 
 use crate::Resources;
 
+#[derive(Default)]
 pub struct ParticleEmitters {
     pub emitters: HashMap<String, EmittersCache>,
 }

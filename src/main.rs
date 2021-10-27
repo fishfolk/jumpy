@@ -1,235 +1,116 @@
 use fishsticks::GamepadContext;
+
 use std::env;
 use std::path::PathBuf;
 
-use macroquad::prelude::*;
 use macroquad::{
-    audio,
-    experimental::{
-        collections::storage,
-        coroutines::start_coroutine,
-        scene::{self, Handle},
-    },
+    experimental::{collections::storage, coroutines::start_coroutine},
+    prelude::*,
 };
 
-use editor::{Editor, EditorCamera, EditorInputScheme};
-use error::Result;
-
-pub use input::{Input, InputScheme};
-pub use world::GameWorld;
-
-use map::{Map, MapLayerKind, MapObjectKind};
-
-use resources::MapResource;
-
-use crate::config::Config;
-use crate::items::Sproinger;
-
-pub use resources::Resources;
-
 mod capabilities;
-mod gui;
-mod input;
-mod items;
-mod nodes;
-
-mod noise;
-
 pub mod components;
+pub mod config;
+mod decoration;
+pub mod editor;
+mod gui;
+mod items;
 pub mod json;
 pub mod map;
-
-pub mod config;
-pub mod editor;
 pub mod math;
+mod noise;
 pub mod resources;
 pub mod text;
-pub mod world;
 #[macro_use]
 pub mod error;
 #[cfg(debug_assertions)]
 pub mod debug;
 pub mod effects;
+pub mod events;
+pub mod game;
+pub mod particles;
 pub mod player;
+
+pub mod input;
+
+pub use input::is_gamepad_btn_pressed;
+
+use editor::{Editor, EditorCamera, EditorInputScheme};
+
+pub use error::{Error, Result};
+
+use map::{Map, MapLayerKind, MapObjectKind};
+
+pub use config::Config;
+pub use items::{EquippedItem, Item, Sproinger, Weapon};
+
+pub use events::{dispatch_application_event, ApplicationEvent};
+
+pub use game::{
+    collect_input, create_game_scene, start_music, stop_music, GameCamera, GameInput,
+    GameInputScheme, GameScene, GameWorld, LocalGame, NetworkGame, NetworkMessage,
+};
+
+pub use particles::ParticleEmitters;
+
+pub use resources::Resources;
 
 pub use player::{Player, PlayerEvent};
 
+pub use decoration::Decoration;
+
 pub use effects::{
     ActiveEffectKind, ActiveEffectParams, CustomActiveEffectCoroutine, PassiveEffect,
-    PassiveEffectParams,
+    PassiveEffectParams, Projectiles, TriggeredEffects,
 };
+
+pub type CollisionWorld = macroquad_platformer::World;
 
 const ASSETS_DIR_ENV_VAR: &str = "FISHFIGHT_ASSETS";
 const CONFIG_FILE_ENV_VAR: &str = "FISHFIGHT_CONFIG";
 
-pub type CollisionWorld = macroquad_platformer::World;
+const WINDOW_TITLE: &str = "FishFight";
 
-pub enum GameType {
-    Local(Vec<InputScheme>),
-    Editor {
-        input_scheme: EditorInputScheme,
-        is_new_map: bool,
-    },
-    Network {
-        socket: std::net::UdpSocket,
-        id: usize,
-        input_scheme: InputScheme,
-    },
+/// Exit to main menu
+pub fn exit_to_main_menu() {
+    ApplicationEvent::MainMenu.dispatch();
 }
 
-fn build_game_scene(map: Map, is_local_game: bool) -> Vec<Handle<Player>> {
-    use effects::active_effects::{Projectiles, TriggeredEffects};
-    use items::Item;
-    use nodes::{Camera, Decoration, ParticleEmitters, SceneRenderer};
-
-    let resources = storage::get::<Resources>();
-    let battle_music = resources.music["fish_tide"];
-
-    audio::play_sound(
-        battle_music,
-        audio::PlaySoundParams {
-            looped: true,
-            volume: 0.6,
-        },
-    );
-
-    let bounds = {
-        let w = map.grid_size.x as f32 * map.tile_size.x;
-        let h = map.grid_size.y as f32 * map.tile_size.y;
-        Rect::new(0., 0., w, h)
-    };
-
-    scene::add_node(Camera::new(bounds));
-
-    scene::add_node(SceneRenderer::new());
-
-    let resources = storage::get::<Resources>();
-
-    // Objects are cloned since Item constructor requires `GameWorld` in storage
-    let mut map_objects = Vec::new();
-    for layer in map.layers.values() {
-        if layer.kind == MapLayerKind::ObjectLayer {
-            map_objects.append(&mut layer.objects.clone());
-        }
-    }
-
-    let mut spawn_points = Vec::new();
-    let mut items = Vec::new();
-
-    for object in map_objects {
-        match object.kind {
-            MapObjectKind::Decoration => {
-                scene::add_node(Decoration::new(object.position, &object.id));
-            }
-            MapObjectKind::Environment => {
-                if object.id == Sproinger::OBJECT_ID {
-                    Sproinger::spawn(object.position);
-                } else {
-                    println!("WARNING: Invalid environment object id '{}'", &object.id);
-                }
-            }
-            MapObjectKind::SpawnPoint => {
-                spawn_points.push(object.position);
-            }
-            MapObjectKind::Item => {
-                if let Some(params) = resources.items.get(&object.id).cloned() {
-                    if params.is_network_ready || is_local_game {
-                        items.push((object.position, params));
-                    }
-                } else {
-                    println!("WARNING: Invalid item id '{}'", &object.id);
-                }
-            }
-        }
-    }
-
-    storage::store(GameWorld::new(map, spawn_points));
-
-    for (position, params) in items {
-        scene::add_node(Item::new(position, params));
-    }
-
-    drop(resources);
-
-    let players = vec![
-        scene::add_node(Player::new(0, 0)),
-        scene::add_node(Player::new(1, 1)),
-    ];
-
-    scene::add_node(TriggeredEffects::new());
-    scene::add_node(Projectiles::new());
-    scene::add_node(ParticleEmitters::new());
-
-    players
-}
-
-async fn game(map_resource: MapResource, game_type: GameType) -> Result<()> {
-    use nodes::{LocalNetwork, Network};
-
-    match game_type {
-        GameType::Local(players_input) => {
-            assert_eq!(
-                players_input.len(),
-                2,
-                "Local: There should be two player input schemes for this game mode"
-            );
-
-            let players = build_game_scene(map_resource.map, true);
-            scene::add_node(LocalNetwork::new(players_input, players[0], players[1]));
-        }
-        GameType::Editor { input_scheme, .. } => {
-            let position = map_resource.map.get_size() * 0.5;
-
-            scene::add_node(EditorCamera::new(position));
-            scene::add_node(Editor::new(input_scheme, map_resource));
-        }
-        GameType::Network {
-            input_scheme,
-            socket,
-            id,
-        } => {
-            let players = build_game_scene(map_resource.map, false);
-            scene::add_node(Network::new(
-                id,
-                socket,
-                input_scheme,
-                players[0],
-                players[1],
-            ));
-        }
-    }
-
-    loop {
-        {
-            let mut gamepad_system = storage::get_mut::<GamepadContext>();
-            gamepad_system.update()?;
-        }
-
-        next_frame().await;
-    }
+/// Quit to desktop
+pub fn quit_to_desktop() {
+    ApplicationEvent::Quit.dispatch()
 }
 
 fn window_conf() -> Conf {
-    let config = Config::parse(
+    let config = Config::load(
         env::var(CONFIG_FILE_ENV_VAR)
             .map(PathBuf::from)
-            .unwrap_or_else(|_| PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("config.json")),
+            .unwrap_or_else(|_| {
+                #[cfg(debug_assertions)]
+                return PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("config.join");
+                #[cfg(not(debug_assertions))]
+                return PathBuf::from("./config.json");
+            }),
     )
     .unwrap();
-    let window_conf = Conf {
-        window_title: "FishFight".to_owned(),
+
+    storage::store(config.clone());
+
+    Conf {
+        window_title: WINDOW_TITLE.to_owned(),
         high_dpi: config.high_dpi,
         fullscreen: config.fullscreen,
         window_width: config.resolution.width,
         window_height: config.resolution.height,
         ..Default::default()
-    };
-    storage::store(config);
-    window_conf
+    }
 }
 
 #[macroquad::main(window_conf)]
 async fn main() -> Result<()> {
+    use events::iter_events;
+    use gui::MainMenuResult;
+
     let assets_dir = env::var(ASSETS_DIR_ENV_VAR).unwrap_or_else(|_| "./assets".to_string());
 
     {
@@ -244,7 +125,7 @@ async fn main() -> Result<()> {
         async move {
             let resources = match Resources::new(&assets_dir).await {
                 Ok(val) => val,
-                Err(err) => panic!("{}: {}", err.kind().as_str(), err.to_string()),
+                Err(err) => panic!("{}: {}", err.kind().as_str(), err),
             };
 
             storage::store(resources);
@@ -272,32 +153,86 @@ async fn main() -> Result<()> {
         storage::store(gamepad_system);
     }
 
-    loop {
-        let game_type = gui::main_menu::game_type().await;
-
-        let map_resource = match &game_type {
-            GameType::Local(..) => gui::main_menu::location_select().await,
-            GameType::Editor { is_new_map, .. } => {
-                if *is_new_map {
-                    gui::main_menu::create_map().await?
+    'outer: loop {
+        match gui::show_main_menu().await {
+            MainMenuResult::Editor {
+                input_scheme,
+                is_new_map,
+            } => {
+                let map_resource = if is_new_map {
+                    gui::show_create_map_menu().await?
                 } else {
-                    gui::main_menu::location_select().await
-                }
-            }
-            GameType::Network { .. } => {
-                let resources = storage::get::<Resources>();
+                    gui::show_select_map_menu().await
+                };
 
-                resources
-                    .maps
-                    .iter()
-                    .find(|res| res.meta.path.ends_with("level_01.json"))
-                    .cloned()
-                    .unwrap()
+                let position = map_resource.map.get_size() * 0.5;
+
+                scene::add_node(EditorCamera::new(position));
+                scene::add_node(Editor::new(input_scheme, map_resource));
+            }
+            MainMenuResult::LocalGame(player_input) => {
+                let map_resource = gui::show_select_map_menu().await;
+
+                assert_eq!(
+                    player_input.len(),
+                    2,
+                    "Local: There should be two player input schemes for this game mode"
+                );
+
+                let players = create_game_scene(map_resource.map, true);
+                scene::add_node(LocalGame::new(player_input, players[0], players[1]));
+
+                start_music("fish_tide");
+            }
+            MainMenuResult::NetworkGame {
+                input_scheme,
+                socket,
+                id,
+            } => {
+                let map_resource = {
+                    let resources = storage::get::<Resources>();
+
+                    resources
+                        .maps
+                        .iter()
+                        .find(|res| res.meta.path.ends_with("level_01.json"))
+                        .cloned()
+                        .unwrap()
+                };
+
+                let players = create_game_scene(map_resource.map, false);
+                scene::add_node(NetworkGame::new(
+                    id,
+                    socket,
+                    input_scheme,
+                    players[0],
+                    players[1],
+                ));
+
+                start_music("fish_tide");
             }
         };
 
-        game(map_resource, game_type).await?;
+        'inner: loop {
+            #[allow(clippy::never_loop)]
+            for event in iter_events() {
+                match event {
+                    ApplicationEvent::MainMenu => break 'inner,
+                    ApplicationEvent::Quit => break 'outer,
+                }
+            }
+
+            {
+                let mut gamepad_system = storage::get_mut::<GamepadContext>();
+                gamepad_system.update()?;
+            }
+
+            next_frame().await;
+        }
 
         scene::clear();
+        stop_music();
     }
+
+    Ok(())
 }

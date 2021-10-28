@@ -6,10 +6,7 @@ use macroquad::{
 
 use fishsticks::GamepadContext;
 
-use crate::{
-    gui::GuiResources,
-    is_gamepad_btn_pressed, EditorInputScheme, GameInputScheme,
-};
+use crate::{gui::GuiResources, is_gamepad_btn_pressed, EditorInputScheme, GameInputScheme};
 
 const WINDOW_MARGIN: f32 = 22.0;
 
@@ -88,7 +85,10 @@ pub async fn show_main_menu() -> MainMenuResult {
             }
 
             {
-                let position = vec2(0.0, MENU_HEIGHT - (WINDOW_MARGIN * 2.0) - MENU_BUTTON_HEIGHT);
+                let position = vec2(
+                    0.0,
+                    MENU_HEIGHT - (WINDOW_MARGIN * 2.0) - MENU_BUTTON_HEIGHT,
+                );
                 let size = vec2(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
 
                 let is_btn_clicked = widgets::Button::new("Quit")
@@ -112,7 +112,10 @@ pub async fn show_main_menu() -> MainMenuResult {
     }
 }
 
-fn local_game_ui(ui: &mut ui::Ui, player_input: &mut Vec<GameInputScheme>) -> Option<MainMenuResult> {
+fn local_game_ui(
+    ui: &mut ui::Ui,
+    player_input: &mut Vec<GameInputScheme>,
+) -> Option<MainMenuResult> {
     let gamepad_system = storage::get_mut::<GamepadContext>();
 
     let is_ready = player_input.len() == 2;
@@ -138,7 +141,7 @@ fn local_game_ui(ui: &mut ui::Ui, player_input: &mut Vec<GameInputScheme>) -> Op
     {
         let position = vec2(12.0, 76.0);
 
-        if player_input.len() > 0 {
+        if !player_input.is_empty() {
             ui.label(position, "Player 1: READY");
         } else {
             ui.label(position, "Player 1: press START or ENTER");

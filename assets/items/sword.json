@@ -21,12 +21,12 @@
     "y": 17
   },
   "mount_offset": {
-    "x": 0,
+    "x": -8,
     "y": -64
   },
   "effect_offset": {
     "x": 0,
-    "y": -64
+    "y": 60
   },
   "animation": {
     "texture": "sword",

@@ -16,7 +16,7 @@
   "effects": {
     "type": "projectile",
     "range": 128.0,
-    "speed": 5.0,
+    "speed": 10.0,
     "projectile": {
       "type": "sprite",
       "sprite": {
@@ -32,7 +32,6 @@
           "a": 1.0
         }
       }
-
     }
   },
   "collider_size": {
@@ -42,6 +41,10 @@
   "effect_offset": {
     "x": 64,
     "y": 16
+  },
+  "mount_offset": {
+    "x": -12,
+    "y": -12
   },
   "animation": {
     "texture": "musket",

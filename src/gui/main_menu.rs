@@ -159,6 +159,7 @@ fn local_game_ui(
     }
 
     if is_ready {
+        let key_enter = is_key_pressed(KeyCode::Enter);
         let btn_a = is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::A);
         let btn_start = is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::Start);
 
@@ -170,7 +171,7 @@ fn local_game_ui(
             .size(size)
             .ui(ui);
 
-        if is_btn_clicked || btn_a || btn_start {
+        if is_btn_clicked || key_enter || btn_a || btn_start {
             return Some(MainMenuResult::LocalGame(player_input.clone()));
         }
     }

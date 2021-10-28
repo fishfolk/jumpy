@@ -64,8 +64,8 @@ pub struct WeaponParams {
     /// This specifies the offset from the `Player` weapon mount
     #[serde(default, with = "json::vec2_def")]
     pub mount_offset: Vec2,
-    /// This specifies the offset between the weapons position and the point where its effect is
-    /// instantiated
+    /// This specifies the offset between the upper left corner of the weapon's sprite to the
+    /// position that will serve as the origin of the weapon's effects
     #[serde(default, with = "json::vec2_def")]
     pub effect_offset: Vec2,
     /// This specifies the duration of the weapons attack, ie. the amount of time the player will
@@ -428,6 +428,7 @@ impl Weapon {
 
                     if let Some(weapon) = player.weapon.as_mut() {
                         let origin = weapon_mount
+                            + weapon.mount_offset
                             + weapon.get_effect_offset(!player.body.is_facing_right, false);
                         for params in weapon.effects.clone() {
                             active_effect_coroutine(player_handle, origin, params);

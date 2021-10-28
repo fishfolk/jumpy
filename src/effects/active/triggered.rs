@@ -394,10 +394,9 @@ impl TriggeredEffects {
                     }
                 }
 
-                if !trigger.is_triggered && can_be_triggered_by_ground {
-                    if trigger.body.is_on_ground {
-                        trigger.is_triggered = true;
-                    }
+                if !trigger.is_triggered && can_be_triggered_by_ground && trigger.body.is_on_ground
+                {
+                    trigger.is_triggered = true;
                 }
             }
 

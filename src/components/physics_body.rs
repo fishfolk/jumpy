@@ -83,7 +83,8 @@ impl PhysicsBody {
         let position = world.collision_world.actor_pos(self.collider);
 
         self.was_on_ground_last_frame = self.is_on_ground;
-        self.is_on_ground = world.collision_world
+        self.is_on_ground = world
+            .collision_world
             .collide_check(self.collider, position + vec2(0.0, 1.0));
 
         if !self.is_on_ground && self.has_gravity {

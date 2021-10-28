@@ -155,6 +155,20 @@ async fn main() -> Result<()> {
 
     'outer: loop {
         match gui::show_main_menu().await {
+            MainMenuResult::LocalGame(player_input) => {
+                let map_resource = gui::show_select_map_menu().await;
+
+                assert_eq!(
+                    player_input.len(),
+                    2,
+                    "Local: There should be two player input schemes for this game mode"
+                );
+
+                let players = create_game_scene(map_resource.map, true);
+                scene::add_node(LocalGame::new(player_input, players[0], players[1]));
+
+                start_music("fish_tide");
+            }
             MainMenuResult::Editor {
                 input_scheme,
                 is_new_map,
@@ -170,46 +184,8 @@ async fn main() -> Result<()> {
                 scene::add_node(EditorCamera::new(position));
                 scene::add_node(Editor::new(input_scheme, map_resource));
             }
-            MainMenuResult::LocalGame(player_input) => {
-                let map_resource = gui::show_select_map_menu().await;
-
-                assert_eq!(
-                    player_input.len(),
-                    2,
-                    "Local: There should be two player input schemes for this game mode"
-                );
-
-                let players = create_game_scene(map_resource.map, true);
-                scene::add_node(LocalGame::new(player_input, players[0], players[1]));
-
-                start_music("fish_tide");
-            }
-            MainMenuResult::NetworkGame {
-                input_scheme,
-                socket,
-                id,
-            } => {
-                let map_resource = {
-                    let resources = storage::get::<Resources>();
-
-                    resources
-                        .maps
-                        .iter()
-                        .find(|res| res.meta.path.ends_with("level_01.json"))
-                        .cloned()
-                        .unwrap()
-                };
-
-                let players = create_game_scene(map_resource.map, false);
-                scene::add_node(NetworkGame::new(
-                    id,
-                    socket,
-                    input_scheme,
-                    players[0],
-                    players[1],
-                ));
-
-                start_music("fish_tide");
+            MainMenuResult::Quit => {
+                quit_to_desktop();
             }
         };
 

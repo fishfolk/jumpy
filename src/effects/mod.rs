@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
 
-pub mod active_effects;
-pub mod passive_effects;
+pub mod active;
+pub mod passive;
 
-pub use passive_effects::{PassiveEffect, PassiveEffectParams};
+pub use passive::{PassiveEffect, PassiveEffectParams};
 
-pub use active_effects::{
+pub use active::{
     active_effect_coroutine, add_custom_active_effect, get_custom_active_effect, ActiveEffectKind,
     ActiveEffectParams, CustomActiveEffectCoroutine, Projectiles, TriggeredEffectTrigger,
     TriggeredEffects,

@@ -7,34 +7,34 @@ use macroquad::{
 use fishsticks::GamepadContext;
 
 use crate::{
-    game::{NetworkConnection, NetworkConnectionKind, NetworkConnectionStatus},
     gui::GuiResources,
     is_gamepad_btn_pressed, EditorInputScheme, GameInputScheme,
 };
 
-const MAIN_MENU_WIDTH: f32 = 700.0;
-const MAIN_MENU_HEIGHT: f32 = 400.0;
+const WINDOW_MARGIN: f32 = 22.0;
 
-#[allow(dead_code)]
+const MENU_WIDTH: f32 = 340.0;
+const MENU_HEIGHT: f32 = 282.0;
+
+const MENU_BUTTON_WIDTH: f32 = MENU_WIDTH - (WINDOW_MARGIN * 2.0);
+const MENU_BUTTON_HEIGHT: f32 = 42.0;
+
+const MODE_SELECTION_TAB_COUNT: u32 = 2;
+
 pub enum MainMenuResult {
+    LocalGame(Vec<GameInputScheme>),
     Editor {
         input_scheme: EditorInputScheme,
         is_new_map: bool,
     },
-    LocalGame(Vec<GameInputScheme>),
-    NetworkGame {
-        socket: std::net::UdpSocket,
-        id: usize,
-        input_scheme: GameInputScheme,
-    },
+    Quit,
 }
 
-const MODE_SELECTION_TAB_COUNT: u32 = 2;
-
 pub async fn show_main_menu() -> MainMenuResult {
-    let mut players = vec![];
+    let mut current_tab = 0;
 
-    let mut tab = 0;
+    let mut player_input = Vec::new();
+
     loop {
         let mut res = None;
 
@@ -45,10 +45,9 @@ pub async fn show_main_menu() -> MainMenuResult {
 
             if is_key_pressed(KeyCode::Left)
                 || is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::LeftShoulder)
-                || is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::LeftStick)
             {
-                let next_tab = tab as i32 - 1;
-                tab = if next_tab < 0 {
+                let next_tab = current_tab as i32 - 1;
+                current_tab = if next_tab < 0 {
                     MODE_SELECTION_TAB_COUNT - 1
                 } else {
                     next_tab as u32 % MODE_SELECTION_TAB_COUNT
@@ -57,10 +56,9 @@ pub async fn show_main_menu() -> MainMenuResult {
 
             if is_key_pressed(KeyCode::Right)
                 || is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::RightShoulder)
-                || is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::RightStick)
             {
-                tab += 1;
-                tab %= MODE_SELECTION_TAB_COUNT;
+                current_tab += 1;
+                current_tab %= MODE_SELECTION_TAB_COUNT;
             }
         }
 
@@ -69,101 +67,108 @@ pub async fn show_main_menu() -> MainMenuResult {
             root_ui().push_skin(&gui_resources.skins.menu);
         }
 
-        root_ui().window(
-            hash!(),
-            Vec2::new(
-                screen_width() / 2. - MAIN_MENU_WIDTH / 2.,
-                screen_height() / 2. - MAIN_MENU_HEIGHT / 2.,
-            ),
-            Vec2::new(MAIN_MENU_WIDTH, MAIN_MENU_HEIGHT),
-            |ui| match widgets::Tabbar::new(
-                hash!(),
-                vec2(MAIN_MENU_WIDTH - 50., 50.),
-                &["<< LB, Local", "Editor, RB >>"],
-            )
-            .selected_tab(Some(&mut tab))
-            .ui(ui)
-            {
+        let size = vec2(MENU_WIDTH, MENU_HEIGHT);
+        let position = (vec2(screen_width(), screen_height()) - size) / 2.0;
+
+        root_ui().window(hash!(), position, size, |ui| {
+            let size = vec2(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
+
+            let tab_res = widgets::Tabbar::new(hash!(), size, &["<< LB, Local", "Editor, RB >>"])
+                .selected_tab(Some(&mut current_tab))
+                .ui(ui);
+
+            match tab_res {
                 0 => {
-                    res = local_game_ui(ui, &mut players);
+                    res = local_game_ui(ui, &mut player_input);
                 }
                 1 => {
                     res = editor_ui(ui);
                 }
                 _ => unreachable!(),
-            },
-        );
+            }
+
+            {
+                let position = vec2(0.0, MENU_HEIGHT - (WINDOW_MARGIN * 2.0) - MENU_BUTTON_HEIGHT);
+                let size = vec2(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
+
+                let is_btn_clicked = widgets::Button::new("Quit")
+                    .position(position)
+                    .size(size)
+                    .ui(ui);
+
+                if is_btn_clicked {
+                    res = Some(MainMenuResult::Quit);
+                }
+            }
+        });
 
         root_ui().pop_skin();
 
         if let Some(res) = res {
             return res;
         }
+
         next_frame().await;
     }
 }
 
-fn local_game_ui(ui: &mut ui::Ui, players: &mut Vec<GameInputScheme>) -> Option<MainMenuResult> {
+fn local_game_ui(ui: &mut ui::Ui, player_input: &mut Vec<GameInputScheme>) -> Option<MainMenuResult> {
     let gamepad_system = storage::get_mut::<GamepadContext>();
 
-    if players.len() < 2 {
-        if is_key_pressed(KeyCode::V) {
-            //
-            if !players.contains(&GameInputScheme::KeyboardLeft) {
-                players.push(GameInputScheme::KeyboardLeft);
+    let is_ready = player_input.len() == 2;
+
+    if player_input.len() < 2 {
+        if is_key_pressed(KeyCode::Enter) {
+            if !player_input.contains(&GameInputScheme::KeyboardLeft) {
+                player_input.push(GameInputScheme::KeyboardLeft);
+            } else {
+                player_input.push(GameInputScheme::KeyboardRight);
             }
         }
-        if is_key_pressed(KeyCode::L) {
-            //
-            if !players.contains(&GameInputScheme::KeyboardRight) {
-                players.push(GameInputScheme::KeyboardRight);
-            }
-        }
+
         for (ix, gamepad) in gamepad_system.gamepads() {
             if gamepad.digital_inputs.activated(fishsticks::Button::Start)
-                && !players.contains(&GameInputScheme::Gamepad(ix))
+                && !player_input.contains(&GameInputScheme::Gamepad(ix))
             {
-                players.push(GameInputScheme::Gamepad(ix));
+                player_input.push(GameInputScheme::Gamepad(ix));
             }
         }
     }
 
-    ui.label(None, "To connect:");
-    ui.label(None, "Press Start on gamepad");
-    ui.separator();
+    {
+        let position = vec2(12.0, 76.0);
 
-    ui.label(None, "Or V for keyboard 1");
-    ui.label(None, "Or L for keyboard 2");
+        if player_input.len() > 0 {
+            ui.label(position, "Player 1: READY");
+        } else {
+            ui.label(position, "Player 1: press START or ENTER");
+        }
+    }
 
-    ui.separator();
-    ui.separator();
-    ui.separator();
-    ui.separator();
+    {
+        let position = vec2(12.0, 108.0);
 
-    ui.group(hash!(), vec2(MAIN_MENU_WIDTH / 2. - 50., 70.), |ui| {
-        if players.get(0).is_none() {
-            ui.label(None, "Player 1: Not connected");
+        if player_input.len() > 1 {
+            ui.label(position, "Player 2: READY");
+        } else {
+            ui.label(position, "Player 2: press START or ENTER");
         }
-        if let Some(input) = players.get(0) {
-            ui.label(None, "Player 1: Connected!");
-            ui.label(None, &format!("{:?}", input));
-        }
-    });
-    ui.group(hash!(), vec2(MAIN_MENU_WIDTH / 2. - 50., 70.), |ui| {
-        if players.get(1).is_none() {
-            ui.label(None, "Player 2: Not connected");
-        }
-        if let Some(input) = players.get(1) {
-            ui.label(None, "Player 2: Connected!");
-            ui.label(None, &format!("{:?}", input));
-        }
-    });
-    if players.len() == 2 {
+    }
+
+    if is_ready {
         let btn_a = is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::A);
-        let enter = is_key_pressed(KeyCode::Enter);
+        let btn_start = is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::Start);
 
-        if ui.button(None, "Ready! (A) (Enter)") || btn_a || enter {
-            return Some(MainMenuResult::LocalGame(players.clone()));
+        let position = vec2(0.0, 150.0);
+        let size = vec2(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
+
+        let is_btn_clicked = widgets::Button::new("Start Game")
+            .position(position)
+            .size(size)
+            .ui(ui);
+
+        if is_btn_clicked || btn_a || btn_start {
+            return Some(MainMenuResult::LocalGame(player_input.clone()));
         }
     }
 
@@ -171,71 +176,44 @@ fn local_game_ui(ui: &mut ui::Ui, players: &mut Vec<GameInputScheme>) -> Option<
 }
 
 fn editor_ui(ui: &mut ui::Ui) -> Option<MainMenuResult> {
-    let gamepad_system = storage::get_mut::<GamepadContext>();
+    let size = vec2(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
 
-    ui.label(None, "Level Editor");
+    {
+        let position = vec2(0.0, 104.0);
 
-    ui.separator();
-    ui.separator();
-    ui.separator();
+        let is_btn_clicked = widgets::Button::new("Create Map")
+            .position(position)
+            .size(size)
+            .ui(ui);
 
-    let mut input_scheme = EditorInputScheme::Keyboard;
-
-    for (ix, gamepad) in gamepad_system.gamepads() {
-        if gamepad.digital_inputs.activated(fishsticks::Button::Start) {
-            input_scheme = EditorInputScheme::Gamepad(ix);
+        if is_btn_clicked {
+            return Some(MainMenuResult::Editor {
+                input_scheme: EditorInputScheme::Keyboard,
+                is_new_map: true,
+            });
         }
     }
 
-    ui.label(None, "To connect:");
-    ui.label(None, "Press Start on gamepad");
+    {
+        let position = vec2(0.0, 150.0);
 
-    ui.separator();
+        let is_btn_clicked = widgets::Button::new("Load Map")
+            .position(position)
+            .size(size)
+            .ui(ui);
 
-    ui.label(None, "Or proceed using keyboard and mouse...");
-
-    ui.separator();
-    ui.separator();
-    ui.separator();
-    ui.separator();
-
-    ui.group(
-        hash!(),
-        vec2(MAIN_MENU_WIDTH / 2. - 50., 70.),
-        |ui| match input_scheme {
-            EditorInputScheme::Keyboard => {
-                ui.label(None, "Gamepad not connected");
-            }
-            EditorInputScheme::Gamepad(i) => {
-                ui.label(None, "Gamepad connected!");
-                ui.label(None, &format!("{:?}", i));
-            }
-        },
-    );
-
-    let btn_a = is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::A);
-    let btn_b = is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::B);
-
-    if ui.button(None, "Create map (A)") || btn_a {
-        return Some(MainMenuResult::Editor {
-            input_scheme,
-            is_new_map: true,
-        });
-    }
-
-    ui.same_line(204.0);
-
-    if ui.button(None, "Load map (B)") || btn_b {
-        return Some(MainMenuResult::Editor {
-            input_scheme,
-            is_new_map: false,
-        });
+        if is_btn_clicked {
+            return Some(MainMenuResult::Editor {
+                input_scheme: EditorInputScheme::Keyboard,
+                is_new_map: false,
+            });
+        }
     }
 
     None
 }
 
-#[allow(dead_code)]
+/*
 struct NetworkUiState {
     input_scheme: GameInputScheme,
     connection_kind: NetworkConnectionKind,
@@ -243,7 +221,6 @@ struct NetworkUiState {
     custom_relay: bool,
 }
 
-#[allow(dead_code)]
 fn network_game_ui(ui: &mut ui::Ui, state: &mut NetworkUiState) -> Option<MainMenuResult> {
     let mut connection_kind_ui = state.connection_kind as usize;
 
@@ -339,3 +316,4 @@ fn network_game_ui(ui: &mut ui::Ui, state: &mut NetworkUiState) -> Option<MainMe
 
     None
 }
+*/

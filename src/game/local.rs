@@ -25,15 +25,15 @@ pub struct LocalGame {
 
 impl LocalGame {
     pub fn new(
-        players_input: Vec<GameInputScheme>,
+        player_input: Vec<GameInputScheme>,
         player1: Handle<Player>,
         player2: Handle<Player>,
     ) -> LocalGame {
         LocalGame {
             player1,
             player2,
-            player1_input: players_input[0],
-            player2_input: players_input[1],
+            player1_input: player_input[0],
+            player2_input: player_input[1],
             is_menu_open: false,
         }
     }
@@ -41,9 +41,6 @@ impl LocalGame {
 
 impl Node for LocalGame {
     fn fixed_update(mut node: RefMut<Self>) {
-        scene::get_node(node.player1).apply_input(collect_input(node.player1_input));
-        scene::get_node(node.player2).apply_input(collect_input(node.player2_input));
-
         #[cfg(debug_assertions)]
         if macroquad::input::is_key_pressed(macroquad::prelude::KeyCode::U) {
             crate::debug::toggle_debug_draw();
@@ -54,6 +51,9 @@ impl Node for LocalGame {
         }
 
         if !node.is_menu_open {
+            scene::get_node(node.player1).apply_input(collect_input(node.player1_input));
+            scene::get_node(node.player2).apply_input(collect_input(node.player2_input));
+
             for NodeWith { node, capability } in scene::find_nodes_with::<NetworkReplicate>() {
                 (capability.network_update)(node);
             }

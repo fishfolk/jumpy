@@ -12,7 +12,7 @@
     "trigger": "enemy",
     "velocity": {
       "x": 400.0,
-      "y": 0.0
+      "y": -400.0
     },
     "size": {
       "x": 24,
@@ -53,7 +53,7 @@
   },
   "effect_offset": {
     "x": 0,
-    "y": -24
+    "y": 24
   },
   "animation": {
     "texture": "grenades",

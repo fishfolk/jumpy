@@ -51,6 +51,10 @@
     "x": 0,
     "y": -24
   },
+  "effect_offset": {
+    "x": 0,
+    "y": 24
+  },
   "animation": {
     "texture": "kick_bomb",
     "animations": [

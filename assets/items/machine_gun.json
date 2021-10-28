@@ -8,18 +8,18 @@
   "recoil": 125.0,
   "uses": 24,
   "mount_offset": {
-    "x": -8,
-    "y": 8
+    "x": -16,
+    "y": -4
   },
   "effect_offset": {
-    "x": 60,
-    "y": 8
+    "x": 56,
+    "y": 4
   },
   "sound_effect": "shoot",
   "effects": {
     "type": "projectile",
     "range": 128.0,
-    "speed": 5.0,
+    "speed": 12.0,
     "spread": 5.0,
     "projectile": {
       "type": "sprite",

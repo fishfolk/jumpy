@@ -13,11 +13,11 @@
   "uses": 3,
   "mount_offset": {
     "x": -16,
-    "y": -22
+    "y": -26
   },
   "effect_offset": {
     "x": 36,
-    "y": 0
+    "y": 12
   },
   "sound_effect": "shoot",
   "effects": {
@@ -29,7 +29,7 @@
     ],
     "velocity": {
       "x": 1000.0,
-      "y": -100.0
+      "y": -50.0
     },
     "size": {
       "x": 17,

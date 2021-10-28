@@ -6,8 +6,6 @@ use macroquad::{
     prelude::*,
 };
 
-use macroquad_platformer::Tile;
-
 use serde::{Deserialize, Serialize};
 
 use crate::json::OneOrMany;
@@ -142,6 +140,10 @@ pub struct TriggeredEffectParams {
     /// If this is `true` the trigger is kicked by a player, if it hits him while he is facing it
     #[serde(default)]
     pub is_kickable: bool,
+    /// If this is `true` the effect will collide with platforms. This will also trigger it on
+    /// collisions with platforms, if `ground` is selected as one of the trigger criteria
+    #[serde(default)]
+    pub should_collide_with_platforms: bool,
 }
 
 impl Default for TriggeredEffectParams {
@@ -156,6 +158,7 @@ impl Default for TriggeredEffectParams {
             trigger_delay: 0.0,
             timed_trigger: None,
             is_kickable: false,
+            should_collide_with_platforms: false,
         }
     }
 }
@@ -175,6 +178,7 @@ struct TriggeredEffect {
     /// This can be used to trigger the effect immediately, ignoring delay timers.
     /// Also requires `is_triggered` to be set to `true`, for this to work.
     pub should_override_delay: bool,
+    should_collide_with_platforms: bool,
     /// This holds a handle to the player that triggered the effect, if applicable.
     triggered_by: Option<Handle<Player>>,
     kick_delay_timer: f32,
@@ -256,6 +260,7 @@ impl TriggeredEffects {
             kick_delay_timer: 0.0,
             is_triggered: false,
             should_override_delay: false,
+            should_collide_with_platforms: params.should_collide_with_platforms,
             triggered_by: None,
         })
     }
@@ -312,6 +317,10 @@ impl TriggeredEffects {
         let mut i = 0;
         while i < node.active.len() {
             let trigger = &mut node.active[i];
+
+            if !trigger.should_collide_with_platforms {
+                trigger.body.descent();
+            }
 
             trigger.body.update();
 
@@ -388,17 +397,6 @@ impl TriggeredEffects {
                 if !trigger.is_triggered && can_be_triggered_by_ground {
                     if trigger.body.is_on_ground {
                         trigger.is_triggered = true;
-                    } else {
-                        let game_world = storage::get::<GameWorld>();
-                        let tile = game_world.collision_world.collide_solids(
-                            collider.point(),
-                            collider.w as i32,
-                            collider.h as i32,
-                        );
-
-                        if tile == Tile::Solid {
-                            trigger.is_triggered = true;
-                        }
                     }
                 }
             }
@@ -460,6 +458,8 @@ impl Node for TriggeredEffects {
             if let Some(animation_player) = &trigger.animation_player {
                 animation_player.draw(trigger.body.position, 0.0, false, false);
             }
+
+            trigger.body.debug_draw();
         }
     }
 }

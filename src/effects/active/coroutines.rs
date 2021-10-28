@@ -17,8 +17,7 @@ pub fn add_active_effect_coroutine(id: &str, f: ActiveEffectCoroutine) {
 }
 
 pub fn try_get_active_effect_coroutine(id: &str) -> Option<&ActiveEffectCoroutine> {
-    unsafe { get_active_effects_coroutine_map() }
-        .get(id)
+    unsafe { get_active_effects_coroutine_map() }.get(id)
 }
 
 pub fn get_active_effect_coroutine(id: &str) -> &ActiveEffectCoroutine {

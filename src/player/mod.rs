@@ -36,7 +36,7 @@ pub struct Player {
     pub is_dead: bool,
 
     pub weapon: Option<Weapon>,
-    equipped_items: HashMap<String, EquippedItem>,
+    pub equipped_items: HashMap<String, EquippedItem>,
 
     pub passive_effects: HashMap<String, PassiveEffectInstance>,
 
@@ -263,8 +263,8 @@ impl Player {
         }
     }
 
-    pub fn add_passive_effect(&mut self, params: PassiveEffectParams) {
-        let effect = PassiveEffectInstance::new(params);
+    pub fn add_passive_effect(&mut self, item_id: Option<&str>, params: PassiveEffectParams) {
+        let effect = PassiveEffectInstance::new(item_id, params);
 
         if let Some(particle_effect_id) = &effect.particle_effect_id {
             let mut particle_emitters = scene::find_node_by_type::<ParticleEmitters>().unwrap();
@@ -361,6 +361,37 @@ impl Player {
 
     fn slide(&mut self) {
         self.state_machine.set_state(Self::ST_SLIDE);
+    }
+
+    // This should only be used under special circumstances, when you want to override a damage
+    // blocking effect, for example. To give damage to a player, use `Player::on_receive_damage`
+    pub fn kill(&mut self, is_from_right: bool) {
+        if self.state_machine.state() != Self::ST_DEATH {
+            self.body.is_facing_right = is_from_right;
+
+            self.drop_weapon(false);
+
+            {
+                let position = self.body.position;
+                let resources = storage::get::<Resources>();
+                for (_, item) in self.equipped_items.drain() {
+                    if item.is_dropped_on_death {
+                        let params = resources.items.get(&item.id).cloned().unwrap();
+                        scene::add_node(Item::new(position, params));
+                    }
+                }
+            }
+
+            self.passive_effects.clear();
+
+            self.state_machine.set_state(Self::ST_DEATH);
+
+            {
+                let resources = storage::get::<Resources>();
+                let sound = resources.sounds["death"];
+                play_sound_once(sound);
+            }
+        }
     }
 
     pub fn apply_input(&mut self, input: GameInput) {
@@ -1020,43 +1051,30 @@ impl Player {
                 if node.state_machine.state() != Self::ST_DEATH {
                     let position = node.body.position;
 
+                    let mut is_damage_blocked = false;
+
                     for effect in node.passive_effects.values_mut() {
+                        if effect.blocks_damage
+                            && effect.events.contains(&PlayerEvent::ReceiveDamage)
+                        {
+                            is_damage_blocked = true;
+                        }
+
                         let params = PlayerEventParams::ReceiveDamage {
                             is_from_right,
                             damage_from,
+                            is_damage_blocked,
                         };
 
                         effect.on_player_event(player_handle, position, params);
                     }
 
-                    node.back_armor = 0;
-                    node.body.is_facing_right = is_from_right;
-
-                    node.drop_weapon(false);
-
-                    {
-                        let position = node.body.position;
-                        let resources = storage::get::<Resources>();
-                        for (_, item) in node.equipped_items.drain() {
-                            if item.is_dropped_on_death {
-                                let params = resources.items.get(&item.id).cloned().unwrap();
-                                scene::add_node(Item::new(position, params));
-                            }
-                        }
-                    }
-
-                    node.passive_effects.clear();
-
-                    node.state_machine.set_state(Self::ST_DEATH);
-
-                    {
-                        let resources = storage::get::<Resources>();
-                        let sound = resources.sounds["death"];
-                        play_sound_once(sound);
+                    if !is_damage_blocked {
+                        node.kill(is_from_right);
                     }
 
                     if let Some(damage_from) = damage_from {
-                        Player::on_give_damage(damage_from, player_handle);
+                        Player::on_give_damage(damage_from, player_handle, is_damage_blocked);
                     }
                 }
             }
@@ -1065,13 +1083,20 @@ impl Player {
         start_coroutine(coroutine)
     }
 
-    pub fn on_give_damage(player_handle: Handle<Player>, damage_to: Handle<Player>) -> Coroutine {
+    pub fn on_give_damage(
+        player_handle: Handle<Player>,
+        damage_to: Handle<Player>,
+        is_damage_blocked: bool,
+    ) -> Coroutine {
         let coroutine = async move {
             if let Some(mut node) = scene::try_get_node(player_handle) {
                 let position = node.body.position;
 
                 for effect in node.passive_effects.values_mut() {
-                    let params = PlayerEventParams::GiveDamage { damage_to };
+                    let params = PlayerEventParams::GiveDamage {
+                        damage_to,
+                        is_damage_blocked,
+                    };
                     effect.on_player_event(player_handle, position, params);
                 }
             }

@@ -24,10 +24,6 @@
     "x": -8,
     "y": -64
   },
-  "effect_offset": {
-    "x": 0,
-    "y": 60
-  },
   "animation": {
     "texture": "sword",
     "animations": [

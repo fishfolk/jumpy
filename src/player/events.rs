@@ -36,9 +36,11 @@ pub enum PlayerEventParams {
     ReceiveDamage {
         is_from_right: bool,
         damage_from: Option<Handle<Player>>,
+        is_damage_blocked: bool,
     },
     GiveDamage {
         damage_to: Handle<Player>,
+        is_damage_blocked: bool,
     },
     Incapacitated {
         incapacitated_by: Option<Handle<Player>>,

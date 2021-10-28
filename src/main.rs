@@ -59,11 +59,11 @@ pub use player::{Player, PlayerEventParams};
 
 pub use decoration::Decoration;
 
+use crate::effects::passive::init_passive_effects;
 pub use effects::{
     ActiveEffectCoroutine, ActiveEffectKind, ActiveEffectParams, PassiveEffectInstance,
     PassiveEffectParams, Projectiles, TriggeredEffects,
 };
-use crate::effects::passive::init_passive_effects;
 
 pub type CollisionWorld = macroquad_platformer::World;
 

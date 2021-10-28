@@ -8,12 +8,11 @@
     "x": 32,
     "y": 32
   },
-  "uses": 3,
   "effects": {
     "id": "turtle_shell",
-    "coroutines": {
-      "receive_damage": "turtle_shell"
-    }
+    "events": "receive_damage",
+    "uses": 3,
+    "blocks_damage": true
   },
   "animation": {
     "texture": "turtle_shell",
@@ -36,6 +35,5 @@
     "x": -32,
     "y": 18
   },
-  "is_dropped_on_death": true,
   "is_network_ready": true
 }

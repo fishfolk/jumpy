@@ -14,6 +14,7 @@ use crate::effects::{active_effect_coroutine, AnyEffectParams};
 #[derive(Clone, Serialize, Deserialize)]
 pub struct EquippedItemParams {
     /// The effects that will be instantiated when the item is equipped
+    #[serde(default)]
     pub effects: OneOrMany<AnyEffectParams>,
     /// This specifies the offset from the player position to where the equipped item is drawn
     #[serde(default, with = "json::vec2_def")]
@@ -35,7 +36,7 @@ pub struct EquippedItemParams {
 pub struct EquippedItem {
     pub id: String,
     mount_offset: Vec2,
-    sprite_animation: Option<AnimationPlayer>,
+    pub sprite_animation: Option<AnimationPlayer>,
     duration: Option<f32>,
     duration_timer: f32,
     pub is_dropped_on_death: bool,
@@ -50,7 +51,7 @@ impl EquippedItem {
                     active_effect_coroutine(player.handle(), player.body.position, params);
                 }
                 AnyEffectParams::Passive(params) => {
-                    player.add_passive_effect(params);
+                    player.add_passive_effect(Some(id), params);
                 }
             }
         }

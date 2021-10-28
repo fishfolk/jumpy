@@ -17,8 +17,7 @@ pub fn add_passive_effect_coroutine(id: &str, f: PassiveEffectCoroutine) {
 }
 
 pub fn try_get_passive_effect_coroutine(id: &str) -> Option<&PassiveEffectCoroutine> {
-    unsafe { get_passive_effects_coroutine_map() }
-        .get(id)
+    unsafe { get_passive_effects_coroutine_map() }.get(id)
 }
 
 pub fn get_passive_effect_coroutine(id: &str) -> &PassiveEffectCoroutine {
@@ -29,10 +28,13 @@ pub fn get_passive_effect_coroutine(id: &str) -> &PassiveEffectCoroutine {
 /// any `PassiveEffectInstance` that has its id as their `coroutine_id`.
 /// To access the `PassiveEffectInstance` that is the caller, get the player node from the scene
 /// and access the instance in the `passive_effects` map, using the `instance_id` parameter.
+/// Likewise, the `EquippedItem` the effect belongs to, can be accessed in the player's
+/// `equipped_items` map, by using `item_id`, if one is provided.
 ///
 /// Any implementations must also be added to `init_passive_effects` function.
 pub type PassiveEffectCoroutine = fn(
     instance_id: &str,
+    item_id: Option<&str>,
     player_handle: Handle<Player>,
     event_params: PlayerEventParams,
 ) -> Coroutine;

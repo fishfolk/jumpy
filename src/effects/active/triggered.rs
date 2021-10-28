@@ -458,6 +458,7 @@ impl Node for TriggeredEffects {
                 animation_player.draw(trigger.body.position, 0.0, false, false);
             }
 
+            #[cfg(debug_assertions)]
             trigger.body.debug_draw();
         }
     }

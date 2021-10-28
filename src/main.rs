@@ -88,7 +88,7 @@ fn window_conf() -> Conf {
             .map(PathBuf::from)
             .unwrap_or_else(|_| {
                 #[cfg(debug_assertions)]
-                return PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("config.join");
+                return PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("config.json");
                 #[cfg(not(debug_assertions))]
                 return PathBuf::from("./config.json");
             }),

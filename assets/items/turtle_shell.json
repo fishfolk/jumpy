@@ -8,8 +8,12 @@
     "x": 32,
     "y": 32
   },
+  "uses": 3,
   "effects": {
-    "id": "test_passive_effect"
+    "id": "turtle_shell",
+    "coroutines": {
+      "receive_damage": "turtle_shell"
+    }
   },
   "animation": {
     "texture": "turtle_shell",

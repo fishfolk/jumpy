@@ -23,9 +23,11 @@ pub mod triggered;
 
 pub use triggered::{TriggeredEffectParams, TriggeredEffectTrigger, TriggeredEffects};
 
-mod custom;
+mod coroutines;
 
-pub use custom::{add_custom_active_effect, get_custom_active_effect, CustomActiveEffectCoroutine};
+pub use coroutines::{
+    add_active_effect_coroutine, get_active_effect_coroutine, ActiveEffectCoroutine,
+};
 
 pub use projectiles::{ProjectileKind, Projectiles};
 
@@ -70,7 +72,7 @@ pub struct ActiveEffectParams {
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ActiveEffectKind {
-    /// Custom effects are made by implementing `WeaponEffectCoroutine`, either directly in code or
+    /// Custom effects are made by implementing `ActiveEffectCoroutine`, either directly in code or
     /// in scripts if/when we add a scripting API
     Custom {
         #[serde(rename = "id")]
@@ -97,7 +99,7 @@ pub enum ActiveEffectKind {
     /// Spawn a trigger that will set of another effect if its trigger conditions are met.
     TriggeredEffect {
         #[serde(flatten)]
-        params: TriggeredEffectParams,
+        params: Box<TriggeredEffectParams>,
     },
     /// Spawn a projectile.
     /// This would typically be used for things like a gun.
@@ -134,7 +136,7 @@ pub fn active_effect_coroutine(
 
         match *params.kind {
             ActiveEffectKind::Custom { id, params } => {
-                let f = get_custom_active_effect(&id);
+                let f = get_active_effect_coroutine(&id);
                 f(player_handle, params);
             }
             ActiveEffectKind::CircleCollider {
@@ -223,7 +225,7 @@ pub fn active_effect_coroutine(
                     params.velocity.x = -params.velocity.x;
                 }
 
-                triggered_effects.spawn(player_handle, origin, params)
+                triggered_effects.spawn(player_handle, origin, *params)
             }
             ActiveEffectKind::Projectile {
                 kind,

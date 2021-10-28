@@ -412,7 +412,7 @@ impl TriggeredEffects {
                         AnyEffectParams::Passive(params) => {
                             if let Some(triggered_by) = trigger.triggered_by {
                                 if let Some(mut player) = scene::try_get_node(triggered_by) {
-                                    player.add_passive_effect(params);
+                                    player.add_passive_effect(None, params);
                                 }
                             }
                         }

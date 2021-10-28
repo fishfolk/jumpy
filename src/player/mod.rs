@@ -15,7 +15,7 @@ use crate::{
     capabilities::{NetworkReplicate, PhysicsObject},
     components::PhysicsBody,
     items::{Item, ItemKind, Weapon},
-    GameInput, GameWorld, ParticleEmitters, PassiveEffect, PassiveEffectParams, Resources,
+    GameInput, GameWorld, ParticleEmitters, PassiveEffectInstance, PassiveEffectParams, Resources,
 };
 
 use crate::components::{Animation, AnimationParams, AnimationPlayer};
@@ -23,24 +23,9 @@ use crate::components::{Animation, AnimationParams, AnimationPlayer};
 use crate::items::EquippedItem;
 
 mod ai;
+mod events;
 
-/// This contains all the events that can trigger passive effects on a player
-pub enum PlayerEvent {
-    Update {
-        dt: f32,
-    },
-    ReceiveDamage {
-        is_from_right: bool,
-        damage_from: Option<Handle<Player>>,
-    },
-    GiveDamage {
-        damage_to: Handle<Player>,
-    },
-    Incapacitated {},
-    Collision {
-        collision_with: Handle<Player>,
-    },
-}
+pub use events::{PlayerEvent, PlayerEventParams};
 
 pub struct Player {
     pub id: u8,
@@ -51,9 +36,9 @@ pub struct Player {
     pub is_dead: bool,
 
     pub weapon: Option<Weapon>,
-    equipped_items: HashMap<String, EquippedItem>,
+    pub equipped_items: HashMap<String, EquippedItem>,
 
-    passive_effects: HashMap<String, PassiveEffect>,
+    pub passive_effects: HashMap<String, PassiveEffectInstance>,
 
     pub input: GameInput,
     pub last_frame_input: GameInput,
@@ -278,8 +263,8 @@ impl Player {
         }
     }
 
-    pub fn add_passive_effect(&mut self, params: PassiveEffectParams) {
-        let effect = PassiveEffect::new(params);
+    pub fn add_passive_effect(&mut self, item_id: Option<&str>, params: PassiveEffectParams) {
+        let effect = PassiveEffectInstance::new(item_id, params);
 
         if let Some(particle_effect_id) = &effect.particle_effect_id {
             let mut particle_emitters = scene::find_node_by_type::<ParticleEmitters>().unwrap();
@@ -378,6 +363,37 @@ impl Player {
         self.state_machine.set_state(Self::ST_SLIDE);
     }
 
+    // This should only be used under special circumstances, when you want to override a damage
+    // blocking effect, for example. To give damage to a player, use `Player::on_receive_damage`
+    pub fn kill(&mut self, is_from_right: bool) {
+        if self.state_machine.state() != Self::ST_DEATH {
+            self.body.is_facing_right = is_from_right;
+
+            self.drop_weapon(false);
+
+            {
+                let position = self.body.position;
+                let resources = storage::get::<Resources>();
+                for (_, item) in self.equipped_items.drain() {
+                    if item.is_dropped_on_death {
+                        let params = resources.items.get(&item.id).cloned().unwrap();
+                        scene::add_node(Item::new(position, params));
+                    }
+                }
+            }
+
+            self.passive_effects.clear();
+
+            self.state_machine.set_state(Self::ST_DEATH);
+
+            {
+                let resources = storage::get::<Resources>();
+                let sound = resources.sounds["death"];
+                play_sound_once(sound);
+            }
+        }
+    }
+
     pub fn apply_input(&mut self, input: GameInput) {
         self.last_frame_input = self.input;
         self.input = input;
@@ -401,9 +417,14 @@ impl Player {
     fn incapacitated_coroutine(node: &mut RefMut<Player>) -> Coroutine {
         let player_handle = node.handle();
 
+        let position = node.body.position;
+
         for effect in node.passive_effects.values_mut() {
-            let event = PlayerEvent::Incapacitated {};
-            effect.on_player_event(player_handle, event);
+            // TODO: Move this to where the player is incapacitated and collect the handle of the other player
+            let event = PlayerEventParams::Incapacitated {
+                incapacitated_by: None,
+            };
+            effect.on_player_event(player_handle, position, event);
         }
 
         let coroutine = async move {
@@ -794,9 +815,11 @@ impl Player {
 
         {
             let player_handle = node.handle();
+            let position = node.body.position;
+
             for effect in node.passive_effects.values_mut() {
-                let event = PlayerEvent::Update { dt };
-                effect.on_player_event(player_handle, event);
+                let event = PlayerEventParams::Update { dt };
+                effect.on_player_event(player_handle, position, event);
             }
         }
 
@@ -1026,43 +1049,32 @@ impl Player {
         let coroutine = async move {
             if let Some(mut node) = scene::try_get_node(player_handle) {
                 if node.state_machine.state() != Self::ST_DEATH {
+                    let position = node.body.position;
+
+                    let mut is_damage_blocked = false;
+
                     for effect in node.passive_effects.values_mut() {
-                        let event = PlayerEvent::ReceiveDamage {
+                        if effect.blocks_damage
+                            && effect.events.contains(&PlayerEvent::ReceiveDamage)
+                        {
+                            is_damage_blocked = true;
+                        }
+
+                        let params = PlayerEventParams::ReceiveDamage {
                             is_from_right,
                             damage_from,
+                            is_damage_blocked,
                         };
 
-                        effect.on_player_event(player_handle, event);
+                        effect.on_player_event(player_handle, position, params);
                     }
 
-                    node.back_armor = 0;
-                    node.body.is_facing_right = is_from_right;
-
-                    node.drop_weapon(false);
-
-                    {
-                        let position = node.body.position;
-                        let resources = storage::get::<Resources>();
-                        for (_, item) in node.equipped_items.drain() {
-                            if item.is_dropped_on_death {
-                                let params = resources.items.get(&item.id).cloned().unwrap();
-                                scene::add_node(Item::new(position, params));
-                            }
-                        }
-                    }
-
-                    node.passive_effects.clear();
-
-                    node.state_machine.set_state(Self::ST_DEATH);
-
-                    {
-                        let resources = storage::get::<Resources>();
-                        let sound = resources.sounds["death"];
-                        play_sound_once(sound);
+                    if !is_damage_blocked {
+                        node.kill(is_from_right);
                     }
 
                     if let Some(damage_from) = damage_from {
-                        Player::on_give_damage(damage_from, player_handle);
+                        Player::on_give_damage(damage_from, player_handle, is_damage_blocked);
                     }
                 }
             }
@@ -1071,12 +1083,21 @@ impl Player {
         start_coroutine(coroutine)
     }
 
-    pub fn on_give_damage(player_handle: Handle<Player>, damage_to: Handle<Player>) -> Coroutine {
+    pub fn on_give_damage(
+        player_handle: Handle<Player>,
+        damage_to: Handle<Player>,
+        is_damage_blocked: bool,
+    ) -> Coroutine {
         let coroutine = async move {
             if let Some(mut node) = scene::try_get_node(player_handle) {
+                let position = node.body.position;
+
                 for effect in node.passive_effects.values_mut() {
-                    let event = PlayerEvent::GiveDamage { damage_to };
-                    effect.on_player_event(player_handle, event);
+                    let params = PlayerEventParams::GiveDamage {
+                        damage_to,
+                        is_damage_blocked,
+                    };
+                    effect.on_player_event(player_handle, position, params);
                 }
             }
         };
@@ -1090,9 +1111,11 @@ impl Player {
     ) -> Coroutine {
         let coroutine = async move {
             if let Some(mut node) = scene::try_get_node(player_handle) {
+                let position = node.body.position;
+
                 for effect in node.passive_effects.values_mut() {
-                    let event = PlayerEvent::Collision { collision_with };
-                    effect.on_player_event(player_handle, event);
+                    let params = PlayerEventParams::Collision { collision_with };
+                    effect.on_player_event(player_handle, position, params);
                 }
             }
         };

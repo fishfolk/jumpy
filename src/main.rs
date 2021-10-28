@@ -55,12 +55,13 @@ pub use particles::ParticleEmitters;
 
 pub use resources::Resources;
 
-pub use player::{Player, PlayerEvent};
+pub use player::{Player, PlayerEventParams};
 
 pub use decoration::Decoration;
 
+use crate::effects::passive::init_passive_effects;
 pub use effects::{
-    ActiveEffectKind, ActiveEffectParams, CustomActiveEffectCoroutine, PassiveEffect,
+    ActiveEffectCoroutine, ActiveEffectKind, ActiveEffectParams, PassiveEffectInstance,
     PassiveEffectParams, Projectiles, TriggeredEffects,
 };
 
@@ -152,6 +153,8 @@ async fn main() -> Result<()> {
         let gamepad_system = fishsticks::GamepadContext::init().unwrap();
         storage::store(gamepad_system);
     }
+
+    init_passive_effects();
 
     'outer: loop {
         match gui::show_main_menu().await {

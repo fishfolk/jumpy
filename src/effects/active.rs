@@ -18,6 +18,7 @@ use crate::{
 
 use super::AnyEffectParams;
 
+pub mod particle_controllers;
 pub mod projectiles;
 pub mod triggered;
 
@@ -30,6 +31,8 @@ pub use coroutines::{
 };
 
 pub use projectiles::{ProjectileKind, Projectiles};
+
+pub use particle_controllers::ParticleControllers;
 
 /// This holds all the common parameters, available to all implementations, as well as specialized
 /// parameters, in the `ActiveEffectKind`.
@@ -111,6 +114,25 @@ pub enum ActiveEffectKind {
         #[serde(default)]
         spread: f32,
     },
+    /// Allows fine-tuning the conditions for emitting the particle.
+    /// This, for example, is used for creating a muzzle smoke effect for the musket.
+    ParticleController {
+        /// Each `ParticleController` of one weapon should have a unique id to work properly.
+        id: String,
+        /// Delay before `ParticleController` starts to emit particles.
+        #[serde(default)]
+        start_delay: f32,
+        /// If true, `ParticleController` will be reset when player use weapon.
+        #[serde(default)]
+        is_can_be_interrupted: bool,
+        /// Amount of particles that will be emitted.
+        amount: u32,
+        /// The interval between each particle emit.
+        interval: f32,
+        /// If true, after finishing `ParticleController` will be reset and restarted automatically.
+        #[serde(default)]
+        is_looped: bool,
+    },
 }
 
 pub fn active_effect_coroutine(
@@ -121,9 +143,12 @@ pub fn active_effect_coroutine(
     let coroutine = async move {
         wait_seconds(params.delay).await;
 
-        if let Some(particle_effect_id) = &params.particle_effect_id {
-            let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
-            particles.spawn(particle_effect_id, origin);
+        // ParticleController is responsible for particle emitting by itself
+        if !matches!(*params.kind, ActiveEffectKind::ParticleController { .. }) {
+            if let Some(particle_effect_id) = &params.particle_effect_id {
+                let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
+                particles.spawn(particle_effect_id, origin);
+            }
         }
 
         let is_facing_right = {
@@ -252,6 +277,36 @@ pub fn active_effect_coroutine(
                     rotate_vector(velocity, spread),
                     range,
                 );
+            }
+            ActiveEffectKind::ParticleController {
+                id,
+                start_delay,
+                amount,
+                interval,
+                is_can_be_interrupted,
+                is_looped,
+            } => {
+                if let Some(player) = scene::try_get_node(player_handle) {
+                    let mut particle_controllers =
+                        scene::find_node_by_type::<ParticleControllers>().unwrap();
+
+                    let hash = player.id.to_string() + &id;
+
+                    if let Some(particle_controller) = particle_controllers.active.get_mut(&hash) {
+                        particle_controller.update();
+                    } else {
+                        particle_controllers.spawn(
+                            player_handle,
+                            hash,
+                            params.particle_effect_id.unwrap(),
+                            start_delay,
+                            amount,
+                            interval,
+                            is_can_be_interrupted,
+                            is_looped,
+                        );
+                    }
+                }
             }
         }
     };

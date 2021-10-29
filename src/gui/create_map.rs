@@ -8,6 +8,7 @@ use macroquad::{
 
 use super::{GuiResources, Panel};
 
+use crate::gui::draw_main_menu_background;
 use crate::{
     is_gamepad_btn_pressed,
     resources::{map_name_to_filename, MapResource, Resources},
@@ -45,7 +46,7 @@ pub async fn show_create_map_menu() -> Result<MapResource> {
     loop {
         let _ = gamepad_system.update();
 
-        clear_background(BLACK);
+        draw_main_menu_background();
 
         Panel::new(hash!(), size, position).ui(&mut *root_ui(), |ui| {
             ui.label(None, "New map");

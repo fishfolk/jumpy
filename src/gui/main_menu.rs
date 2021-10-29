@@ -59,48 +59,87 @@ pub async fn show_main_menu() -> MainMenuResult {
             }
         }
 
+        let size = vec2(MENU_WIDTH, MENU_HEIGHT);
+        let mut position = (vec2(screen_width(), screen_height()) - size) / 2.0;
+        position.y += 35.0;
+
         {
             let gui_resources = storage::get::<GuiResources>();
-            root_ui().push_skin(&gui_resources.skins.menu);
+
+            root_ui().push_skin(&gui_resources.skins.menu_header);
+
+            let label = "FISH FIGHT";
+
+            let size = root_ui().calc_size(label);
+            let position = vec2((screen_width() - size.x) / 2.0, position.y - 35.0 - size.y);
+
+            widgets::Label::new(label)
+                .position(position)
+                .ui(&mut root_ui());
+
+            root_ui().pop_skin();
+
+            root_ui().push_skin(&gui_resources.skins.panel_group);
         }
 
-        let size = vec2(MENU_WIDTH, MENU_HEIGHT);
-        let position = (vec2(screen_width(), screen_height()) - size) / 2.0;
+        // Hack to create windows that update their position on screen size change, using a group
+        // drawn on top of a button that has the window background
+        // TODO: Create a builder for this
 
-        root_ui().window(hash!(), position, size, |ui| {
-            let size = vec2(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
+        let _ = widgets::Button::new("")
+            .position(position)
+            .size(size)
+            .ui(&mut root_ui());
 
-            let tab_res = widgets::Tabbar::new(hash!(), size, &["<< LB, Local", "Editor, RB >>"])
-                .selected_tab(Some(&mut current_tab))
-                .ui(ui);
+        let size = size - vec2(44.0, 44.0);
+        let position = position + vec2(22.0, 22.0);
 
-            match tab_res {
-                0 => {
-                    res = local_game_ui(ui, &mut player_input);
+        widgets::Group::new(hash!(), size)
+            .position(position)
+            .ui(&mut root_ui(), |ui| {
+                ui.pop_skin();
+
+                {
+                    let gui_resources = storage::get::<GuiResources>();
+                    ui.push_skin(&gui_resources.skins.menu);
                 }
-                1 => {
-                    res = editor_ui(ui);
-                }
-                _ => unreachable!(),
-            }
 
-            {
-                let position = vec2(
-                    0.0,
-                    MENU_HEIGHT - (WINDOW_MARGIN * 2.0) - MENU_BUTTON_HEIGHT,
-                );
                 let size = vec2(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
 
-                let is_btn_clicked = widgets::Button::new("Quit")
-                    .position(position)
-                    .size(size)
-                    .ui(ui);
+                let tab_res =
+                    widgets::Tabbar::new(hash!(), size, &["<< LB, Local", "Editor, RB >>"])
+                        .selected_tab(Some(&mut current_tab))
+                        .ui(ui);
 
-                if is_btn_clicked {
-                    res = Some(MainMenuResult::Quit);
+                match tab_res {
+                    0 => {
+                        res = local_game_ui(ui, &mut player_input);
+                    }
+                    1 => {
+                        res = editor_ui(ui);
+                    }
+                    _ => unreachable!(),
                 }
-            }
-        });
+
+                {
+                    let position = vec2(
+                        0.0,
+                        MENU_HEIGHT - (WINDOW_MARGIN * 2.0) - MENU_BUTTON_HEIGHT,
+                    );
+                    let size = vec2(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
+
+                    let is_btn_clicked = widgets::Button::new("Quit")
+                        .position(position)
+                        .size(size)
+                        .ui(ui);
+
+                    if is_btn_clicked {
+                        res = Some(MainMenuResult::Quit);
+                    }
+                }
+
+                ui.pop_skin();
+            });
 
         root_ui().pop_skin();
 

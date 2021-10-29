@@ -6,7 +6,7 @@ use macroquad::{
 
 use fishsticks::GamepadContext;
 
-use super::{GuiResources, Panel};
+use super::{draw_main_menu_background, GuiResources, Panel};
 
 use crate::{is_gamepad_btn_pressed, EditorInputScheme, GameInputScheme};
 
@@ -60,6 +60,8 @@ pub async fn show_main_menu() -> MainMenuResult {
                 current_tab %= MODE_SELECTION_TAB_COUNT;
             }
         }
+
+        draw_main_menu_background();
 
         let size = vec2(MENU_WIDTH, MENU_HEIGHT);
         let position = (vec2(screen_width(), screen_height() + 70.0) - size) / 2.0;

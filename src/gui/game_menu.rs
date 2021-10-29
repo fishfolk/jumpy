@@ -4,10 +4,7 @@ use macroquad::{
     ui::{hash, root_ui, widgets},
 };
 
-use super::{
-    GuiResources,
-    Panel,
-};
+use super::{GuiResources, Panel};
 
 const MENU_WIDTH: f32 = 200.0;
 const MENU_HEIGHT: f32 = 136.0;
@@ -27,22 +24,22 @@ pub fn show_game_menu() -> Option<GameMenuResult> {
     let position = (vec2(screen_width(), screen_height()) - size) / 2.0;
 
     Panel::new(hash!(), size, position).ui(&mut *root_ui(), |ui| {
-            let main_menu_btn = widgets::Button::new("Main Menu")
-                .size(vec2(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT))
-                .ui(ui);
+        let main_menu_btn = widgets::Button::new("Main Menu")
+            .size(vec2(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT))
+            .ui(ui);
 
-            if main_menu_btn {
-                res = Some(GameMenuResult::MainMenu);
-            }
+        if main_menu_btn {
+            res = Some(GameMenuResult::MainMenu);
+        }
 
-            let quit_btn = widgets::Button::new("Quit")
-                .size(vec2(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT))
-                .ui(ui);
+        let quit_btn = widgets::Button::new("Quit")
+            .size(vec2(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT))
+            .ui(ui);
 
-            if quit_btn {
-                res = Some(GameMenuResult::Quit);
-            }
-        });
+        if quit_btn {
+            res = Some(GameMenuResult::Quit);
+        }
+    });
 
     root_ui().pop_skin();
 

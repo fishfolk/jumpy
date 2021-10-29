@@ -7,6 +7,8 @@ use macroquad::{
 
 pub struct SkinCollection {
     pub menu: Skin,
+    pub panel_group: Skin,
+    pub menu_header: Skin,
     pub map_selection: Skin,
     pub error: Skin,
     pub cheat: Skin,
@@ -118,6 +120,50 @@ impl SkinCollection {
             }
         };
 
+        // Skin used in a hack to create panels.
+        // Windows will not update their position if screen size changes, so in order to draw
+        // windows, we will have to draw a button with a group on top.
+        let panel_group = {
+            let group_style = root_ui()
+                .style_builder()
+                .color(Color::new(0.0, 0.0, 0.0, 0.0))
+                .color_hovered(Color::new(0.0, 0.0, 0.0, 0.0))
+                .color_clicked(Color::new(0.0, 0.0, 0.0, 0.0))
+                .build();
+
+            let background = Image::from_file_with_format(
+                include_bytes!("../../assets/ui/window_background_2.png"),
+                None,
+            );
+
+            let button_style = root_ui()
+                .style_builder()
+                .background(background.clone())
+                .background_hovered(background.clone())
+                .background_clicked(background)
+                .background_margin(RectOffset::new(52.0, 52.0, 52.0, 52.0))
+                .build();
+
+            Skin {
+                group_style,
+                button_style,
+                ..root_ui().default_skin()
+            }
+        };
+
+        let menu_header = {
+            let label_style = root_ui()
+                .style_builder()
+                .text_color(Color::from_rgba(255, 255, 255, 255))
+                .font_size(160)
+                .build();
+
+            Skin {
+                label_style,
+                ..root_ui().default_skin()
+            }
+        };
+
         let map_selection = {
             let label_style = root_ui()
                 .style_builder()
@@ -170,6 +216,8 @@ impl SkinCollection {
 
         SkinCollection {
             menu,
+            panel_group,
+            menu_header,
             map_selection,
             error,
             cheat,

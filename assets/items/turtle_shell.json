@@ -35,5 +35,6 @@
     "x": -32,
     "y": 18
   },
+  "is_dropped_on_death": true,
   "is_network_ready": true
 }

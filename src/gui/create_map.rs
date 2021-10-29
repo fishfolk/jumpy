@@ -6,7 +6,10 @@ use macroquad::{
     ui::{hash, root_ui, widgets},
 };
 
-use super::GuiResources;
+use super::{
+    GuiResources,
+    Panel,
+};
 
 use crate::{
     is_gamepad_btn_pressed,
@@ -47,10 +50,7 @@ pub async fn show_create_map_menu() -> Result<MapResource> {
 
         clear_background(BLACK);
 
-        widgets::Window::new(hash!(), position, size)
-            .titlebar(false)
-            .movable(false)
-            .ui(&mut *root_ui(), |ui| {
+        Panel::new(hash!(), size, position).ui(&mut *root_ui(), |ui| {
                 ui.label(None, "New map");
 
                 ui.separator();

@@ -11,6 +11,7 @@ use macroquad::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    components::ParticleControllerParams,
     json::{self, GenericParam},
     math::{deg_to_rad, rotate_vector},
     ParticleEmitters, Player,
@@ -30,6 +31,9 @@ pub use coroutines::{
 };
 
 pub use projectiles::{ProjectileKind, Projectiles};
+
+mod particle_controllers;
+pub use particle_controllers::ParticleControllers;
 
 /// This holds all the common parameters, available to all implementations, as well as specialized
 /// parameters, in the `ActiveEffectKind`.
@@ -111,6 +115,12 @@ pub enum ActiveEffectKind {
         #[serde(default)]
         spread: f32,
     },
+    /// Allows fine-tuning the conditions for emitting the particle.
+    /// This, for example, is used for creating a muzzle smoke effect for the musket.
+    ParticleController {
+        #[serde(flatten)]
+        particle_params: ParticleControllerParams,
+    },
 }
 
 pub fn active_effect_coroutine(
@@ -121,9 +131,12 @@ pub fn active_effect_coroutine(
     let coroutine = async move {
         wait_seconds(params.delay).await;
 
-        if let Some(particle_effect_id) = &params.particle_effect_id {
-            let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
-            particles.spawn(particle_effect_id, origin);
+        // ParticleController is responsible for particle emitting by itself
+        if !matches!(*params.kind, ActiveEffectKind::ParticleController { .. }) {
+            if let Some(particle_effect_id) = &params.particle_effect_id {
+                let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
+                particles.spawn(particle_effect_id, origin);
+            }
         }
 
         let is_facing_right = {
@@ -252,6 +265,12 @@ pub fn active_effect_coroutine(
                     rotate_vector(velocity, spread),
                     range,
                 );
+            }
+            ActiveEffectKind::ParticleController { particle_params } => {
+                let mut particle_controllers =
+                    scene::find_node_by_type::<ParticleControllers>().unwrap();
+
+                particle_controllers.spawn_or_update(player_handle, &particle_params);
             }
         }
     };

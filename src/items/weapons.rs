@@ -204,7 +204,7 @@ impl Weapon {
         offset
     }
 
-    fn get_effect_offset(&self, flip_x: bool, flip_y: bool) -> Vec2 {
+    pub fn get_effect_offset(&self, flip_x: bool, flip_y: bool) -> Vec2 {
         let mut offset = Vec2::ZERO;
 
         if flip_x {

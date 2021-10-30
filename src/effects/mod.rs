@@ -7,7 +7,7 @@ pub use passive::{PassiveEffectInstance, PassiveEffectParams};
 
 pub use active::{
     active_effect_coroutine, add_active_effect_coroutine, get_active_effect_coroutine,
-    ActiveEffectCoroutine, ActiveEffectKind, ActiveEffectParams, Projectiles,
+    ActiveEffectCoroutine, ActiveEffectKind, ActiveEffectParams, ParticleControllers, Projectiles,
     TriggeredEffectTrigger, TriggeredEffects,
 };
 

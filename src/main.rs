@@ -114,11 +114,6 @@ async fn main() -> Result<()> {
 
     let assets_dir = env::var(ASSETS_DIR_ENV_VAR).unwrap_or_else(|_| "./assets".to_string());
 
-    {
-        let gui_resources = gui::GuiResources::load(&assets_dir).await;
-        storage::store(gui_resources);
-    }
-
     rand::srand(0);
 
     let resources_loading = start_coroutine({
@@ -132,6 +127,11 @@ async fn main() -> Result<()> {
             storage::store(resources);
         }
     });
+
+    {
+        let gui_resources = gui::GuiResources::load(&assets_dir).await;
+        storage::store(gui_resources);
+    }
 
     while !resources_loading.is_done() {
         clear_background(BLACK);

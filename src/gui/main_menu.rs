@@ -6,7 +6,9 @@ use macroquad::{
 
 use fishsticks::GamepadContext;
 
-use crate::{gui::GuiResources, is_gamepad_btn_pressed, EditorInputScheme, GameInputScheme};
+use super::{draw_main_menu_background, GuiResources, Panel};
+
+use crate::{is_gamepad_btn_pressed, EditorInputScheme, GameInputScheme};
 
 const WINDOW_MARGIN: f32 = 22.0;
 
@@ -59,15 +61,31 @@ pub async fn show_main_menu() -> MainMenuResult {
             }
         }
 
+        draw_main_menu_background();
+
+        let size = vec2(MENU_WIDTH, MENU_HEIGHT);
+        let position = (vec2(screen_width(), screen_height() + 70.0) - size) / 2.0;
+
         {
             let gui_resources = storage::get::<GuiResources>();
+
+            root_ui().push_skin(&gui_resources.skins.menu_header);
+
+            let label = "FISH FIGHT";
+
+            let size = root_ui().calc_size(label);
+            let position = vec2((screen_width() - size.x) / 2.0, position.y - 35.0 - size.y);
+
+            widgets::Label::new(label)
+                .position(position)
+                .ui(&mut root_ui());
+
+            root_ui().pop_skin();
+
             root_ui().push_skin(&gui_resources.skins.menu);
         }
 
-        let size = vec2(MENU_WIDTH, MENU_HEIGHT);
-        let position = (vec2(screen_width(), screen_height()) - size) / 2.0;
-
-        root_ui().window(hash!(), position, size, |ui| {
+        Panel::new(hash!(), size, position).ui(&mut root_ui(), |ui| {
             let size = vec2(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
 
             let tab_res = widgets::Tabbar::new(hash!(), size, &["<< LB, Local", "Editor, RB >>"])

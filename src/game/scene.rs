@@ -169,7 +169,7 @@ pub fn create_game_scene(map: Map, is_local_game: bool) -> Vec<Handle<Player>> {
     scene::add_node(TriggeredEffects::new());
     scene::add_node(Projectiles::new());
     scene::add_node(ParticleEmitters::new());
-    scene::add_node(ParticleControllers::new());
+    scene::add_node(ParticleControllers::default());
 
     players
 }

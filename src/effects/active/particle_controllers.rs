@@ -5,132 +5,80 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::{capabilities::NetworkReplicate, ParticleEmitters, Player};
+use crate::{
+    capabilities::NetworkReplicate,
+    components::{ParticleController, ParticleControllerParams},
+    Player, Weapon,
+};
 
-pub struct ParticleController {
-    owner: Handle<Player>,
-    particle_id: String,
-    start_delay: f32,
-    amount: u32,
-    interval: f32,
-    is_can_be_interrupted: bool,
-    is_looped: bool,
-
-    timer: f32,
-    particles_emitted: u32,
-    is_emitting_started: bool,
-    is_waiting_for_reset: bool,
+pub struct PlayerParticleController {
+    handler: Handle<Player>,
+    particle: ParticleController,
 }
 
-impl ParticleController {
-    fn reset(&mut self) {
-        self.is_emitting_started = false;
-        self.timer = 0.0;
-        self.particles_emitted = 0;
-        self.is_waiting_for_reset = false;
-    }
-
-    pub fn update(&mut self) {
-        if self.is_can_be_interrupted || self.is_waiting_for_reset {
-            self.reset();
-        }
-    }
-}
-
+#[derive(Default)]
 pub struct ParticleControllers {
-    pub active: HashMap<String, ParticleController>,
+    pub active: HashMap<String, PlayerParticleController>,
+}
+
+fn get_effect_position(player: &RefMut<Player>, weapon: &Weapon) -> Vec2 {
+    player.get_weapon_mount_position()
+        + weapon.get_effect_offset(!player.body.is_facing_right, false)
 }
 
 impl ParticleControllers {
-    pub fn new() -> Self {
-        ParticleControllers {
-            active: HashMap::new(),
+    pub fn spawn_or_update(&mut self, owner: Handle<Player>, params: &ParticleControllerParams) {
+        if let Some(player) = scene::try_get_node(owner) {
+            let hash = player.id.to_string() + &params.id;
+
+            if let Some(controller) = self.active.get_mut(&hash) {
+                if let Some(weapon) = &player.weapon {
+                    controller
+                        .particle
+                        .update(get_effect_position(&player, weapon), true);
+                }
+            } else {
+                let particle = ParticleController {
+                    params: params.clone(),
+                    timer: 0.0,
+                    particles_emitted: 0,
+                    is_emitting_started: false,
+                    is_waiting_for_reset: false,
+                };
+
+                let player_particle_controller = PlayerParticleController {
+                    handler: owner,
+                    particle,
+                };
+
+                self.active.insert(hash, player_particle_controller);
+            }
         }
-    }
-
-    pub fn spawn(
-        &mut self,
-        owner: Handle<Player>,
-        particle_controller_id: String,
-        particle_id: String,
-        start_delay: f32,
-        amount: u32,
-        interval: f32,
-        is_can_be_interrupted: bool,
-        is_looped: bool,
-    ) {
-        let particle_controller = ParticleController {
-            owner,
-            particle_id,
-            start_delay,
-            amount,
-            interval,
-            is_can_be_interrupted,
-            is_looped,
-            timer: 0.0,
-            particles_emitted: 0,
-            is_emitting_started: false,
-            is_waiting_for_reset: false,
-        };
-
-        self.active
-            .insert(particle_controller_id, particle_controller);
     }
 
     fn network_update(mut node: RefMut<Self>) {
         let mut controllers_to_delete: Vec<String> = Vec::new();
 
         for (key, controller) in node.active.iter_mut() {
-            if controller.is_waiting_for_reset {
-                continue;
+            let mut need_to_delete = true;
+
+            if let Some(player) = scene::try_get_node(controller.handler) {
+                if let Some(weapon) = &player.weapon {
+                    controller
+                        .particle
+                        .update(get_effect_position(&player, weapon), false);
+
+                    need_to_delete = false;
+                }
             }
 
-            controller.timer += get_frame_time();
-
-            if controller.is_emitting_started {
-                if controller.timer >= controller.interval {
-                    controller.timer = 0.0;
-                    controller.particles_emitted += 1;
-
-                    {
-                        let mut need_to_delete = true;
-                        if let Some(player) = scene::try_get_node(controller.owner) {
-                            if let Some(weapon) = &player.weapon {
-                                let mut particles =
-                                    scene::find_node_by_type::<ParticleEmitters>().unwrap();
-                                    
-                                let origin = player.get_weapon_mount_position()
-                                    + weapon.get_effect_offset(!player.body.is_facing_right, false);
-
-                                particles.spawn(&controller.particle_id, origin);
-
-                                need_to_delete = false;
-                            }
-                        }
-
-                        if need_to_delete {
-                            controllers_to_delete.push(key.into());
-                        }
-                    }
-
-                    if controller.particles_emitted == controller.amount {
-                        if !controller.is_looped {
-                            controller.is_waiting_for_reset = true;
-                        } else {
-                            controller.reset();
-                        }
-                    }
-                }
-            } else {
-                if controller.timer >= controller.start_delay {
-                    controller.is_emitting_started = true;
-                    controller.timer = controller.interval;
-                }
+            if need_to_delete {
+                controllers_to_delete.push(key.into());
             }
         }
 
         for key in &controllers_to_delete {
-            node.active.remove(key.into());
+            node.active.remove(key);
         }
     }
 

@@ -963,17 +963,6 @@ impl Player {
             weapon.draw_hud(position);
         }
     }
-
-    pub fn get_weapon_effect_position(&self) -> Option<Vec2> {
-        if let Some(weapon) = &self.weapon {
-            let origin = self.get_weapon_mount_position()
-                + weapon.get_mount_offset(!self.body.is_facing_right, false)
-                + weapon.get_effect_offset(!self.body.is_facing_right, false);
-
-            return Some(origin);
-        }
-        None
-    }
 }
 
 impl scene::Node for Player {

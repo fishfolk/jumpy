@@ -199,7 +199,7 @@ impl Weapon {
         offset
     }
 
-    pub fn get_effect_offset(&self, flip_x: bool, flip_y: bool) -> Vec2 {
+    fn get_effect_offset(&self, flip_x: bool, flip_y: bool) -> Vec2 {
         let mut offset = Vec2::ZERO;
 
         if flip_x {
@@ -215,6 +215,12 @@ impl Weapon {
         }
 
         offset
+    }
+
+    pub fn get_effect_position(&self, player: &Player) -> Vec2 {
+        player.get_weapon_mount_position()
+            + self.get_mount_offset(!player.body.is_facing_right, false)
+            + self.get_effect_offset(!player.body.is_facing_right, false)
     }
 
     pub fn update(&mut self, dt: f32) {
@@ -431,7 +437,7 @@ impl Weapon {
                     let player = &mut *scene::get_node(player_handle);
 
                     if let Some(weapon) = &player.weapon {
-                        let effect_position = player.get_weapon_effect_position().unwrap();
+                        let effect_position = weapon.get_effect_position(player);
 
                         for params in weapon.effects.clone() {
                             active_effect_coroutine(player_handle, effect_position, params);

@@ -27,8 +27,10 @@ impl ParticleControllers {
             let hash = player.id.to_string() + &params.id;
 
             if let Some(controller) = self.active.get_mut(&hash) {
-                if let Some(effect_position) = player.get_weapon_effect_position() {
-                    controller.particle.update(effect_position, true);
+                if let Some(weapon) = &player.weapon {
+                    controller
+                        .particle
+                        .update(weapon.get_effect_position(&player), true);
                 }
             } else {
                 let particle = ParticleController {
@@ -56,8 +58,10 @@ impl ParticleControllers {
             let mut need_to_delete = true;
 
             if let Some(player) = scene::try_get_node(controller.handler) {
-                if let Some(effect_position) = player.get_weapon_effect_position() {
-                    controller.particle.update(effect_position, false);
+                if let Some(weapon) = &player.weapon {
+                    controller
+                        .particle
+                        .update(weapon.get_effect_position(&player), false);
 
                     need_to_delete = false;
                 }

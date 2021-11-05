@@ -8,7 +8,7 @@ use macroquad::{
 use crate::{
     capabilities::NetworkReplicate,
     components::{ParticleController, ParticleControllerParams},
-    Player, Weapon,
+    Player,
 };
 
 pub struct PlayerParticleController {
@@ -21,21 +21,14 @@ pub struct ParticleControllers {
     pub active: HashMap<String, PlayerParticleController>,
 }
 
-fn get_effect_position(player: &RefMut<Player>, weapon: &Weapon) -> Vec2 {
-    player.get_weapon_mount_position()
-        + weapon.get_effect_offset(!player.body.is_facing_right, false)
-}
-
 impl ParticleControllers {
     pub fn spawn_or_update(&mut self, owner: Handle<Player>, params: &ParticleControllerParams) {
         if let Some(player) = scene::try_get_node(owner) {
             let hash = player.id.to_string() + &params.id;
 
             if let Some(controller) = self.active.get_mut(&hash) {
-                if let Some(weapon) = &player.weapon {
-                    controller
-                        .particle
-                        .update(get_effect_position(&player, weapon), true);
+                if let Some(effect_position) = player.get_weapon_effect_position() {
+                    controller.particle.update(effect_position, true);
                 }
             } else {
                 let particle = ParticleController {
@@ -63,10 +56,8 @@ impl ParticleControllers {
             let mut need_to_delete = true;
 
             if let Some(player) = scene::try_get_node(controller.handler) {
-                if let Some(weapon) = &player.weapon {
-                    controller
-                        .particle
-                        .update(get_effect_position(&player, weapon), false);
+                if let Some(effect_position) = player.get_weapon_effect_position() {
+                    controller.particle.update(effect_position, false);
 
                     need_to_delete = false;
                 }

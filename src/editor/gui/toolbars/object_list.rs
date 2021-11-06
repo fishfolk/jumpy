@@ -75,6 +75,7 @@ impl ToolbarElement for ObjectListElement {
 
             if was_clicked {
                 res = Some(EditorAction::SelectObject {
+                    id: object.id.clone(),
                     index: i,
                     layer_id: layer_id.clone(),
                 });

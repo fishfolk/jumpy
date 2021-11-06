@@ -86,6 +86,7 @@ pub struct Editor {
     selected_tileset: Option<String>,
     selected_tile: Option<u32>,
     selected_object: Option<usize>,
+    selected_id: Option<String>,
     input_scheme: EditorInputScheme,
     // This will hold the gamepad cursor position and be `None` if not using a gamepad.
     // Use the `get_cursor_position` method to get the actual cursor position, as that will return
@@ -161,6 +162,7 @@ impl Editor {
             selected_tileset: None,
             selected_tile: None,
             selected_object: None,
+            selected_id: None,
             input_scheme,
             cursor_position,
             history: EditorHistory::new(),
@@ -364,9 +366,11 @@ impl Editor {
                     .history
                     .apply(Box::new(action), &mut self.map_resource.map);
             }
-            EditorAction::SelectObject { index, layer_id } => {
+            EditorAction::SelectObject { id, index, layer_id } => {
                 self.selected_layer = Some(layer_id);
                 self.selected_object = Some(index);
+                self.selected_id = Some(id);
+                println!("{:?}", self.selected_id);
             }
             EditorAction::CreateObject {
                 id,

@@ -55,6 +55,7 @@ pub enum EditorAction {
         autotile_mask: Vec<bool>,
     },
     SelectObject {
+        id: String,
         index: usize,
         layer_id: String,
     },

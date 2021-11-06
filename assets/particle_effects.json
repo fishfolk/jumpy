@@ -4,8 +4,8 @@
     "path": "particle_effects/bullet_smoke.json"
   },
   {
-    "id": "gun_smoke",
-    "path": "particle_effects/gun_smoke.json"
+    "id": "musket_muzzle_smoke",
+    "path": "particle_effects/musket_muzzle_smoke.json"
   },
   {
     "id": "explosion",

@@ -13,33 +13,44 @@
   "attack_duration": 0.5,
   "recoil": 250.0,
   "sound_effect": "shoot",
-  "effects": {
-    "type": "projectile",
-    "range": 128.0,
-    "speed": 10.0,
-    "projectile": {
-      "type": "sprite",
-      "sprite": {
-        "texture": "small_projectile",
-        "size": {
-          "x": 8,
-          "y": 4
-        },
-        "tint": {
-          "r": 0.9,
-          "g": 0.75,
-          "b": 0.12,
-          "a": 1.0
+  "effects": [
+    {
+      "type": "projectile",
+      "range": 128.0,
+      "speed": 10.0,
+      "projectile": {
+        "type": "sprite",
+        "sprite": {
+          "texture": "small_projectile",
+          "size": {
+            "x": 8,
+            "y": 4
+          },
+          "tint": {
+            "r": 0.9,
+            "g": 0.75,
+            "b": 0.12,
+            "a": 1.0
+          }
         }
       }
+    },
+    {
+      "type": "particle_controller",
+      "id": "0",
+      "particle_id": "musket_muzzle_smoke",
+      "start_delay": 1,
+      "is_can_be_interrupted": true,
+      "amount": 6,
+      "interval": 0.05
     }
-  },
+  ],
   "collider_size": {
     "x": 64,
     "y": 24
   },
   "effect_offset": {
-    "x": 64,
+    "x": 61,
     "y": 16
   },
   "mount_offset": {

@@ -256,14 +256,48 @@ impl Map {
                         }
                     } else if layer.kind == MapLayerKind::TileLayer || should_draw_objects {
                         for object in &layer.objects {
-                            // For now only a generic marker will be drawn
-                            draw_aligned_text(
-                                &object.id,
-                                object.position,
-                                HorizontalAlignment::Center,
-                                VerticalAlignment::Center,
-                                Default::default(),
-                            );
+                            
+                            match object.kind {
+                                MapObjectKind::Item | MapObjectKind::Environment => {
+                                    let texture_entry =
+                                        resources.textures.get(&object.id).unwrap_or_else(|| {
+                                            panic!("No texture with id '{}'!", object.id)
+                                        });
+                                    
+                                    let width = texture_entry.meta.sprite_size.unwrap().x as f32;
+                                    let height = texture_entry.meta.sprite_size.unwrap().y as f32;
+
+                                    draw_texture_ex(
+                                        texture_entry.texture,
+                                        object.position.x,
+                                        object.position.y,
+                                        color::WHITE,
+                                        DrawTextureParams {
+                                            source: Some(Rect::new(
+                                                0.0,
+                                                0.0,
+                                                width,
+                                                height,
+                                            )),
+                                            dest_size: Some(vec2(
+                                                width,
+                                                height,
+                                            )),
+                                            ..Default::default()
+                                        }
+                                    );
+                                }
+                                _ => {
+                                    // For now only a generic marker will be drawn
+                                    draw_aligned_text(
+                                        &object.id,
+                                        object.position,
+                                        HorizontalAlignment::Center,
+                                        VerticalAlignment::Center,
+                                        Default::default(),
+                                    );
+                                }
+                            }
                         }
                     }
                 }

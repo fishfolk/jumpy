@@ -126,7 +126,7 @@
     }
   },
   {
-    "id": "boots",
+    "id": "shoes",
     "path": "textures/items/Boots(32x32).png",
     "type": "spritesheet",
     "sprite_size": {
@@ -288,27 +288,55 @@
     }
   },
   {
-    "id": "galleon",
+    "id": "galleon_active",
     "path": "textures/temp/Galleon(326x300).png"
   },
   {
-    "id": "galleon_icon",
-    "path": "textures/temp/GalleonIcon(32x29).png"
+    "id": "galleon",
+    "path": "textures/temp/GalleonIcon(32x29).png",
+    "sprite_size": {
+      "x": 32,
+      "y": 29
+    }
   },
   {
     "id": "shark",
     "path": "textures/temp/Shark(60x220).png"
   },
   {
-    "id": "shark_icon",
-    "path": "textures/temp/SharkIcon(32x34).png"
+    "id": "shark_rain",
+    "path": "textures/temp/SharkIcon(32x34).png",
+    "sprite_size": {
+      "x": 32,
+      "y": 34
+    }
   },
   {
-    "id": "volcano",
+    "id": "volcano_erupting",
     "path": "textures/temp/Volcano(395x100).png"
   },
   {
-    "id": "volcano_icon",
-    "path": "textures/temp/VolcanoIcon(36x22).png"
+    "id": "volcano",
+    "path": "textures/temp/VolcanoIcon(36x22).png",
+    "sprite_size": {
+      "x": 36,
+      "y": 22
+    }
+  },
+  {
+    "id": "life_ring",
+    "path": "textures/temp/LifeRing(46x13).png",
+    "sprite_size": {
+      "x": 46,
+      "y": 13
+    }
+  },
+  {
+    "id": "flippers",
+    "path": "textures/items/Flippers(65x45).png",
+    "sprite_size": {
+      "x": 65,
+      "y": 45
+    }
   }
 ]

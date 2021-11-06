@@ -114,6 +114,12 @@ pub enum ActiveEffectKind {
         range: f32,
         #[serde(default)]
         spread: f32,
+        #[serde(
+            default,
+            rename = "particle_controller",
+            skip_serializing_if = "Option::is_none"
+        )]
+        particle_params: Option<ParticleControllerParams>,
     },
     /// Allows fine-tuning the conditions for emitting the particle.
     /// This, for example, is used for creating a muzzle smoke effect for the musket.
@@ -245,6 +251,7 @@ pub fn active_effect_coroutine(
                 speed,
                 range,
                 spread,
+                particle_params,
             } => {
                 let rad = deg_to_rad(spread);
                 let spread = rand::gen_range(-rad, rad);
@@ -264,6 +271,7 @@ pub fn active_effect_coroutine(
                     origin,
                     rotate_vector(velocity, spread),
                     range,
+                    particle_params,
                 );
             }
             ActiveEffectKind::ParticleController { particle_params } => {

@@ -33,17 +33,9 @@ impl ParticleControllers {
                         .update(weapon.get_effect_position(&player), true);
                 }
             } else {
-                let particle = ParticleController {
-                    params: params.clone(),
-                    timer: 0.0,
-                    particles_emitted: 0,
-                    is_emitting_started: false,
-                    is_waiting_for_reset: false,
-                };
-
                 let player_particle_controller = PlayerParticleController {
                     handler: owner,
-                    particle,
+                    particle: ParticleController::new(params.clone()),
                 };
 
                 self.active.insert(hash, player_particle_controller);

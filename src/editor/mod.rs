@@ -20,7 +20,7 @@ use gui::{
     CreateLayerWindow, CreateObjectWindow, CreateTilesetWindow, EditorGui, TilesetPropertiesWindow,
 };
 
-mod actions;
+pub mod actions;
 
 use actions::{
     CreateLayerAction, CreateObjectAction, CreateTilesetAction, DeleteLayerAction,
@@ -273,7 +273,7 @@ impl Editor {
 
     // This applies an `EditorAction`. This is to be used, exclusively, in stead of, for example,
     // applying `UndoableActions` directly on the `History` of `Editor`.
-    fn apply_action(&mut self, action: EditorAction) {
+    pub fn apply_action(&mut self, action: EditorAction) {
         //println!("Action: {:?}", action);
 
         let mut res = Ok(());
@@ -513,7 +513,11 @@ impl Node for Editor {
     }
 
     fn draw(mut node: RefMut<Self>) {
-        node.get_map_mut().draw(true, None);
+        let map_action = node.get_map_mut().draw(true, None);
+
+        if let Some(action) = map_action {
+            node.apply_action(action);
+        }
 
         let res = {
             let ctx = node.get_context();

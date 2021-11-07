@@ -1,13 +1,13 @@
 use std::{collections::HashMap, path::Path};
 
-use macroquad::{color, experimental::collections::storage, prelude::*};
+use macroquad::{color, experimental::collections::storage, prelude::*, input::mouse_position};
 
 use serde::{Deserialize, Serialize};
 
 use crate::error::Result;
 
 use crate::{
-    editor::gui::combobox::ComboBoxValue,
+    editor::{EditorCamera, actions::EditorAction, gui::combobox::ComboBoxValue},
     json::{self, TiledMap},
     math::URect,
     text::{draw_aligned_text, HorizontalAlignment, VerticalAlignment},
@@ -204,7 +204,7 @@ impl Map {
     // This will draw the map.
     // If `should_draw_objects` is set to true, objects in object layers will also be drawn.
     // This should only be set to true when drawing the map in the editor....
-    pub fn draw(&self, should_draw_objects: bool, rect: Option<URect>) {
+    pub fn draw(&self, should_draw_objects: bool, rect: Option<URect>) -> Option<EditorAction> {
         let rect = rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.x, self.grid_size.y));
         draw_rectangle(
             self.world_offset.x + (rect.x as f32 * self.tile_size.x),
@@ -218,6 +218,19 @@ impl Map {
 
         let mut draw_order = self.draw_order.clone();
         draw_order.reverse();
+
+        let is_pressed = is_mouse_button_pressed(MouseButton::Left);
+        let (x_mouse, y_mouse) = mouse_position();
+        let camera = match scene::find_node_by_type::<EditorCamera>() {
+            Some(camera) => camera.get_view_rect(),
+            None => Rect::new(0., 0., 0.0, 0.0),
+        };
+
+        let mouse_coord = vec2(camera.x + x_mouse, camera.y + y_mouse);
+ 
+        let collision = Rect::new(mouse_coord.x, mouse_coord.y, 1.0, 1.0);
+
+        let mut res = None;
 
         for layer_id in draw_order {
             if let Some(layer) = self.layers.get(&layer_id) {
@@ -234,7 +247,7 @@ impl Map {
                                 let texture_entry =
                                     resources.textures.get(&tile.texture_id).unwrap_or_else(|| {
                                         panic!("No texture with id '{}'!", tile.texture_id)
-                                    });
+                                    });  
 
                                 draw_texture_ex(
                                     texture_entry.texture,
@@ -255,8 +268,7 @@ impl Map {
                             }
                         }
                     } else if layer.kind == MapLayerKind::TileLayer || should_draw_objects {
-                        for object in &layer.objects {
-                            
+                        for (i, object) in layer.objects.iter().enumerate() {
                             match object.kind {
                                 MapObjectKind::Item | MapObjectKind::Environment => {
                                     let texture_entry =
@@ -266,6 +278,15 @@ impl Map {
                                     
                                     let width = texture_entry.meta.sprite_size.unwrap().x as f32;
                                     let height = texture_entry.meta.sprite_size.unwrap().y as f32;
+
+                                    let object_rect = Rect::new(object.position.x, object.position.y, width, height);
+                                    if is_pressed && collision.overlaps(&object_rect) {
+                                        res = Some(EditorAction::SelectObject {
+                                            id: object.id.clone(),
+                                            index: i,
+                                            layer_id: layer_id.clone(),
+                                        });
+                                    } 
 
                                     draw_texture_ex(
                                         texture_entry.texture,
@@ -288,6 +309,15 @@ impl Map {
                                     );
                                 }
                                 _ => {
+                                    let object_rect = Rect::new(object.position.x, object.position.y, 20.0, 8.0);
+                                    if is_pressed && collision.overlaps(&object_rect) {
+                                        res = Some(EditorAction::SelectObject {
+                                            id: object.id.clone(),
+                                            index: i,
+                                            layer_id: layer_id.clone(),
+                                        });
+                                    }
+
                                     // For now only a generic marker will be drawn
                                     draw_aligned_text(
                                         &object.id,
@@ -302,7 +332,10 @@ impl Map {
                     }
                 }
             }
+
         }
+
+        res
     }
 
     pub fn get_layer_kind(&self, layer_id: &str) -> Option<MapLayerKind> {

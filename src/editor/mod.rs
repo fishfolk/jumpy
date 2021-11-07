@@ -366,11 +366,15 @@ impl Editor {
                     .history
                     .apply(Box::new(action), &mut self.map_resource.map);
             }
-            EditorAction::SelectObject { id, index, layer_id } => {
+            EditorAction::SelectObject {
+                id,
+                index,
+                layer_id,
+            } => {
                 self.selected_layer = Some(layer_id);
                 self.selected_object = Some(index);
                 self.selected_id = Some(id);
-                println!("{:?}", self.selected_id);
+                //println!("{:?}", self.selected_id);
             }
             EditorAction::CreateObject {
                 id,

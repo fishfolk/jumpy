@@ -1,13 +1,13 @@
 use std::{collections::HashMap, path::Path};
 
-use macroquad::{color, experimental::collections::storage, prelude::*, input::mouse_position};
+use macroquad::{color, experimental::collections::storage, input::mouse_position, prelude::*};
 
 use serde::{Deserialize, Serialize};
 
 use crate::error::Result;
 
 use crate::{
-    editor::{EditorCamera, actions::EditorAction, gui::combobox::ComboBoxValue},
+    editor::{actions::EditorAction, gui::combobox::ComboBoxValue, EditorCamera},
     json::{self, TiledMap},
     math::URect,
     text::{draw_aligned_text, HorizontalAlignment, VerticalAlignment},
@@ -227,7 +227,7 @@ impl Map {
         };
 
         let mouse_coord = vec2(camera.x + x_mouse, camera.y + y_mouse);
- 
+
         let collision = Rect::new(mouse_coord.x, mouse_coord.y, 1.0, 1.0);
 
         let mut res = None;
@@ -247,7 +247,7 @@ impl Map {
                                 let texture_entry =
                                     resources.textures.get(&tile.texture_id).unwrap_or_else(|| {
                                         panic!("No texture with id '{}'!", tile.texture_id)
-                                    });  
+                                    });
 
                                 draw_texture_ex(
                                     texture_entry.texture,
@@ -275,18 +275,23 @@ impl Map {
                                         resources.textures.get(&object.id).unwrap_or_else(|| {
                                             panic!("No texture with id '{}'!", object.id)
                                         });
-                                    
+
                                     let width = texture_entry.meta.sprite_size.unwrap().x as f32;
                                     let height = texture_entry.meta.sprite_size.unwrap().y as f32;
 
-                                    let object_rect = Rect::new(object.position.x, object.position.y, width, height);
+                                    let object_rect = Rect::new(
+                                        object.position.x,
+                                        object.position.y,
+                                        width,
+                                        height,
+                                    );
                                     if is_pressed && collision.overlaps(&object_rect) {
                                         res = Some(EditorAction::SelectObject {
                                             id: object.id.clone(),
                                             index: i,
                                             layer_id: layer_id.clone(),
                                         });
-                                    } 
+                                    }
 
                                     draw_texture_ex(
                                         texture_entry.texture,
@@ -294,22 +299,15 @@ impl Map {
                                         object.position.y,
                                         color::WHITE,
                                         DrawTextureParams {
-                                            source: Some(Rect::new(
-                                                0.0,
-                                                0.0,
-                                                width,
-                                                height,
-                                            )),
-                                            dest_size: Some(vec2(
-                                                width,
-                                                height,
-                                            )),
+                                            source: Some(Rect::new(0.0, 0.0, width, height)),
+                                            dest_size: Some(vec2(width, height)),
                                             ..Default::default()
-                                        }
+                                        },
                                     );
                                 }
                                 _ => {
-                                    let object_rect = Rect::new(object.position.x, object.position.y, 20.0, 8.0);
+                                    let object_rect =
+                                        Rect::new(object.position.x, object.position.y, 20.0, 8.0);
                                     if is_pressed && collision.overlaps(&object_rect) {
                                         res = Some(EditorAction::SelectObject {
                                             id: object.id.clone(),
@@ -332,7 +330,6 @@ impl Map {
                     }
                 }
             }
-
         }
 
         res

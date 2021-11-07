@@ -3,7 +3,8 @@ use std::any::TypeId;
 use crate::{
     exit_to_main_menu,
     gui::{show_game_menu, GameMenuResult},
-    quit_to_desktop,
+    map::MapObjectKind,
+    quit_to_desktop, Resources,
 };
 
 mod camera;
@@ -374,7 +375,7 @@ impl Editor {
                 self.selected_layer = Some(layer_id);
                 self.selected_object = Some(index);
                 self.selected_id = Some(id);
-                //println!("{:?}", self.selected_id);
+                println!("{:?}", self.selected_id);
             }
             EditorAction::CreateObject {
                 id,
@@ -433,7 +434,51 @@ impl Node for Editor {
             node.apply_action(EditorAction::Redo);
         }
 
+        let camera = scene::find_node_by_type::<EditorCamera>()
+            .unwrap()
+            .get_view_rect();
+
         let cursor_position = node.get_cursor_position();
+
+        let cursor_position = vec2(camera.x + cursor_position.x, camera.y + cursor_position.y);
+
+        let is_pressed = is_mouse_button_pressed(MouseButton::Left);
+
+        let click_rect = Rect::new(cursor_position.x, cursor_position.y, 1.0, 1.0);
+
+        let mut res = None;
+
+        let resources = storage::get::<Resources>();
+
+        for (layer_name, layer) in node.get_map().layers.iter() {
+            for (i, object) in layer.objects.iter().enumerate() {
+                let object_rect = match object.kind {
+                    MapObjectKind::Item | MapObjectKind::Environment => {
+                        let texture_entry = resources
+                            .textures
+                            .get(&object.id)
+                            .unwrap_or_else(|| panic!("No texture with id '{}'!", object.id));
+
+                        let width = texture_entry.meta.sprite_size.unwrap().x as f32;
+                        let height = texture_entry.meta.sprite_size.unwrap().y as f32;
+
+                        Rect::new(object.position.x, object.position.y, width, height)
+                    }
+                    _ => Rect::new(object.position.x, object.position.y, 30.0, 30.0),
+                };
+                if is_pressed && click_rect.overlaps(&object_rect) {
+                    res = Some(EditorAction::SelectObject {
+                        id: object.id.clone(),
+                        index: i,
+                        layer_id: layer_name.clone(),
+                    });
+                }
+            }
+        }
+
+        if let Some(action) = res {
+            node.apply_action(action);
+        }
 
         if input.action {
             let (is_cursor_over_gui, is_cursor_over_context_menu) = {
@@ -517,11 +562,7 @@ impl Node for Editor {
     }
 
     fn draw(mut node: RefMut<Self>) {
-        let map_action = node.get_map_mut().draw(true, None);
-
-        if let Some(action) = map_action {
-            node.apply_action(action);
-        }
+        node.get_map_mut().draw(true, None);
 
         let res = {
             let ctx = node.get_context();

@@ -1,7 +1,7 @@
 [
   {
-    "id": "bullet_smoke",
-    "path": "particle_effects/bullet_smoke.json"
+    "id": "musket_bullet_smoke",
+    "path": "particle_effects/musket_bullet_smoke.json"
   },
   {
     "id": "musket_muzzle_smoke",

@@ -18,6 +18,7 @@ pub struct ParticleControllerParams {
     /// Amount of particles that will be emitted.
     pub amount: u32,
     /// The interval between each particle emit.
+    #[serde(default)]
     pub interval: f32,
     /// If true, after finishing `ParticleController` will be reset and restarted automatically.
     #[serde(default)]

@@ -36,7 +36,13 @@ pub struct ParticleController {
 
 impl ParticleController {
     pub fn new(params: ParticleControllerParams) -> Self {
-        Self {params, timer: 0.0, particles_emitted: 0, is_emitting_started: false, is_waiting_for_reset: false}
+        Self {
+            params,
+            timer: 0.0,
+            particles_emitted: 0,
+            is_emitting_started: false,
+            is_waiting_for_reset: false,
+        }
     }
 
     fn reset(&mut self) {

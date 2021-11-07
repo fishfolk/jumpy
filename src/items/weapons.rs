@@ -100,7 +100,7 @@ pub struct Weapon {
     pub sprite_animation: AnimationPlayer,
     pub effect_animation: Option<AnimationPlayer>,
     pub cooldown_timer: f32,
-    pub mount_offset: Vec2,
+    mount_offset: Vec2,
     pub effect_offset: Vec2,
     is_destroyed_on_depletion: bool,
     use_cnt: u32,
@@ -185,26 +185,21 @@ impl Weapon {
         }
     }
 
-    fn get_mount_offset(&self, flip_x: bool, flip_y: bool) -> Vec2 {
-        let size = self.sprite_animation.get_size();
-        let mut offset = Vec2::ZERO;
+    pub fn get_mount_offset(&self, flip_x: bool, flip_y: bool) -> Vec2 {
+        let mut offset = self.mount_offset;
 
         if flip_x {
-            offset.x = -(self.mount_offset.x + size.x);
-        } else {
-            offset.x = self.mount_offset.x
+            offset.x *= -1.0;
         }
 
         if flip_y {
-            offset.y = -(self.mount_offset.y + size.y);
-        } else {
-            offset.y = self.mount_offset.y
+            offset.y *= -1.0;
         }
 
         offset
     }
 
-    pub fn get_effect_offset(&self, flip_x: bool, flip_y: bool) -> Vec2 {
+    fn get_effect_offset(&self, flip_x: bool, flip_y: bool) -> Vec2 {
         let mut offset = Vec2::ZERO;
 
         if flip_x {
@@ -222,6 +217,12 @@ impl Weapon {
         offset
     }
 
+    pub fn get_effect_position(&self, player: &Player) -> Vec2 {
+        player.get_weapon_mount_position()
+            + self.get_mount_offset(!player.body.is_facing_right, false)
+            + self.get_effect_offset(!player.body.is_facing_right, false)
+    }
+
     pub fn update(&mut self, dt: f32) {
         self.sprite_animation.update();
 
@@ -233,7 +234,17 @@ impl Weapon {
     }
 
     pub fn draw(&mut self, position: Vec2, rotation: f32, flip_x: bool, flip_y: bool) {
-        let position = position + self.get_mount_offset(flip_x, flip_y);
+        let size = self.sprite_animation.get_size();
+        let mut offset = self.get_mount_offset(flip_x, flip_y);
+
+        if flip_x {
+            offset.x -= size.x;
+        }
+        if flip_y {
+            offset.y -= size.y;
+        }
+
+        let position = position + offset;
 
         self.sprite_animation
             .draw(position, rotation, flip_x, flip_y);
@@ -424,14 +435,12 @@ impl Weapon {
 
                 {
                     let player = &mut *scene::get_node(player_handle);
-                    let weapon_mount = player.get_weapon_mount_position();
 
-                    if let Some(weapon) = player.weapon.as_mut() {
-                        let origin = weapon_mount
-                            + weapon.mount_offset
-                            + weapon.get_effect_offset(!player.body.is_facing_right, false);
+                    if let Some(weapon) = &player.weapon {
+                        let effect_position = weapon.get_effect_position(player);
+
                         for params in weapon.effects.clone() {
-                            active_effect_coroutine(player_handle, origin, params);
+                            active_effect_coroutine(player_handle, effect_position, params);
                         }
                     }
                 }

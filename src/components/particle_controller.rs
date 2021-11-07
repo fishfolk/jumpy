@@ -18,6 +18,7 @@ pub struct ParticleControllerParams {
     /// Amount of particles that will be emitted.
     pub amount: u32,
     /// The interval between each particle emit.
+    #[serde(default)]
     pub interval: f32,
     /// If true, after finishing `ParticleController` will be reset and restarted automatically.
     #[serde(default)]
@@ -27,13 +28,23 @@ pub struct ParticleControllerParams {
 pub struct ParticleController {
     pub params: ParticleControllerParams,
 
-    pub timer: f32,
-    pub particles_emitted: u32,
-    pub is_emitting_started: bool,
-    pub is_waiting_for_reset: bool,
+    timer: f32,
+    particles_emitted: u32,
+    is_emitting_started: bool,
+    is_waiting_for_reset: bool,
 }
 
 impl ParticleController {
+    pub fn new(params: ParticleControllerParams) -> Self {
+        Self {
+            params,
+            timer: 0.0,
+            particles_emitted: 0,
+            is_emitting_started: false,
+            is_waiting_for_reset: false,
+        }
+    }
+
     fn reset(&mut self) {
         self.is_emitting_started = false;
         self.timer = 0.0;

@@ -8,7 +8,7 @@ use macroquad::{
 use crate::{
     capabilities::NetworkReplicate,
     components::{ParticleController, ParticleControllerParams},
-    Player, Weapon,
+    Player,
 };
 
 pub struct PlayerParticleController {
@@ -21,11 +21,6 @@ pub struct ParticleControllers {
     pub active: HashMap<String, PlayerParticleController>,
 }
 
-fn get_effect_position(player: &RefMut<Player>, weapon: &Weapon) -> Vec2 {
-    player.get_weapon_mount_position()
-        + weapon.get_effect_offset(!player.body.is_facing_right, false)
-}
-
 impl ParticleControllers {
     pub fn spawn_or_update(&mut self, owner: Handle<Player>, params: &ParticleControllerParams) {
         if let Some(player) = scene::try_get_node(owner) {
@@ -35,20 +30,12 @@ impl ParticleControllers {
                 if let Some(weapon) = &player.weapon {
                     controller
                         .particle
-                        .update(get_effect_position(&player, weapon), true);
+                        .update(weapon.get_effect_position(&player), true);
                 }
             } else {
-                let particle = ParticleController {
-                    params: params.clone(),
-                    timer: 0.0,
-                    particles_emitted: 0,
-                    is_emitting_started: false,
-                    is_waiting_for_reset: false,
-                };
-
                 let player_particle_controller = PlayerParticleController {
                     handler: owner,
-                    particle,
+                    particle: ParticleController::new(params.clone()),
                 };
 
                 self.active.insert(hash, player_particle_controller);
@@ -66,7 +53,7 @@ impl ParticleControllers {
                 if let Some(weapon) = &player.weapon {
                     controller
                         .particle
-                        .update(get_effect_position(&player, weapon), false);
+                        .update(weapon.get_effect_position(&player), false);
 
                     need_to_delete = false;
                 }

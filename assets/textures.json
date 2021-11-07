@@ -338,5 +338,10 @@
       "x": 65,
       "y": 45
     }
+  },
+
+  {
+    "id": "musket_bullet",
+    "path": "textures/items/MusketBullet(15x15).png"
   }
 ]

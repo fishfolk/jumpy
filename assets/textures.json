@@ -310,5 +310,9 @@
   {
     "id": "volcano_icon",
     "path": "textures/temp/VolcanoIcon(36x22).png"
+  },
+  {
+    "id": "musket_bullet",
+    "path": "textures/items/MusketBullet(15x15).png"
   }
 ]

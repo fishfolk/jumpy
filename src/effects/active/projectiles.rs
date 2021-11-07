@@ -12,7 +12,7 @@ use super::{TriggeredEffectTrigger, TriggeredEffects};
 
 use crate::{
     capabilities::NetworkReplicate,
-    components::{Sprite, SpriteParams},
+    components::{ParticleController, ParticleControllerParams, Sprite, SpriteParams},
     json, GameWorld, ParticleEmitters, Player,
 };
 
@@ -45,6 +45,7 @@ struct Projectile {
     velocity: Vec2,
     range: f32,
     sprite: Option<Sprite>,
+    particle_controller: Option<ParticleController>,
 }
 
 #[derive(Default)]
@@ -64,6 +65,7 @@ impl Projectiles {
         origin: Vec2,
         velocity: Vec2,
         range: f32,
+        particle_params: Option<ParticleControllerParams>,
     ) {
         let sprite = if let ProjectileKind::Sprite { params } = &mut kind {
             let params = params.take().unwrap();
@@ -71,6 +73,8 @@ impl Projectiles {
         } else {
             None
         };
+
+        let particle_controller = particle_params.map(ParticleController::new);
 
         self.active.push(Projectile {
             owner,
@@ -80,6 +84,7 @@ impl Projectiles {
             velocity,
             range,
             sprite,
+            particle_controller,
         });
     }
 
@@ -88,6 +93,10 @@ impl Projectiles {
         while i < node.active.len() {
             let projectile = &mut node.active[i];
             projectile.position += projectile.velocity;
+
+            if let Some(particle_controller) = &mut projectile.particle_controller {
+                particle_controller.update(projectile.position, false);
+            }
 
             let mut is_hit = false;
 

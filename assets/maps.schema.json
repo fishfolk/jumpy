@@ -1,0 +1,47 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/object1636321057.json",
+  "title": "Root",
+  "type": "array",
+  "default": [],
+  "items": {
+    "$id": "#root/items",
+    "title": "Items",
+    "type": "object",
+    "required": ["name", "path", "preview_path", "is_tiled_map"],
+    "properties": {
+      "name": {
+        "$id": "#root/items/name",
+        "title": "Name",
+        "type": "string",
+        "default": "",
+        "examples": ["lev01"],
+        "pattern": "^.*$"
+      },
+      "path": {
+        "$id": "#root/items/path",
+        "title": "Path",
+        "type": "string",
+        "default": "",
+        "examples": ["maps/lev01.json"],
+        "pattern": "^.*$"
+      },
+      "preview_path": {
+        "$id": "#root/items/preview_path",
+        "title": "Preview_path",
+        "type": "string",
+        "default": "",
+        "examples": ["maps/lev01.png"],
+        "pattern": "^.*$"
+      },
+      "is_tiled_map": {
+        "$id": "#root/items/is_tiled_map",
+        "title": "Is_tiled_map",
+        "type": "boolean",
+        "examples": [true],
+        "default": true
+      }
+    }
+  }
+}

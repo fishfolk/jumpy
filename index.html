@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Gameplay - Fish Fight Documentation</title>
+        <title>Introduction - Fish Fight Documentation</title>
         
 
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
@@ -81,7 +81,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="gameplay.html"><strong aria-hidden="true">1.</strong> Gameplay</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="controls.html"><strong aria-hidden="true">1.1.</strong> Controls</a></li><li class="chapter-item expanded "><a href="items.html"><strong aria-hidden="true">1.2.</strong> Items</a></li><li class="chapter-item expanded "><a href="multiplayer.html"><strong aria-hidden="true">1.3.</strong> Multiplayer</a></li></ol></li><li class="chapter-item expanded "><a href="mechanics.html"><strong aria-hidden="true">2.</strong> Mechanics</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="physics.html"><strong aria-hidden="true">2.1.</strong> Physics</a></li><li class="chapter-item expanded "><a href="environmental_weapons.html"><strong aria-hidden="true">2.2.</strong> Environmental Weapons</a></li><li class="chapter-item expanded "><a href="netcode.html"><strong aria-hidden="true">2.3.</strong> Netcode</a></li></ol></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">3.</strong> Contributing</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="simple_gun_weapon.html"><strong aria-hidden="true">3.1.</strong> Simple Gun Weapon</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="code_of_conduct.html"><strong aria-hidden="true">2.</strong> Code of Conduct</a></li><li class="chapter-item expanded "><a href="gameplay.html"><strong aria-hidden="true">3.</strong> Gameplay</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="controls.html"><strong aria-hidden="true">3.1.</strong> Controls</a></li><li class="chapter-item expanded "><a href="items.html"><strong aria-hidden="true">3.2.</strong> Items</a></li><li class="chapter-item expanded "><a href="multiplayer.html"><strong aria-hidden="true">3.3.</strong> Multiplayer</a></li></ol></li><li class="chapter-item expanded "><a href="mechanics.html"><strong aria-hidden="true">4.</strong> Mechanics</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="physics.html"><strong aria-hidden="true">4.1.</strong> Physics</a></li><li class="chapter-item expanded "><a href="environmental_weapons.html"><strong aria-hidden="true">4.2.</strong> Environmental Weapons</a></li><li class="chapter-item expanded "><a href="netcode.html"><strong aria-hidden="true">4.3.</strong> Netcode</a></li></ol></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">5.</strong> Contributing</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="contributing_code.html"><strong aria-hidden="true">5.1.</strong> Contributing Code</a></li><li class="chapter-item expanded "><a href="simple_gun_weapon.html"><strong aria-hidden="true">5.2.</strong> Simple Gun Weapon</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -151,7 +151,73 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#gameplay" id="gameplay">Gameplay</a></h1>
+                        <!-- markdownlint-disable MD041 -->
+<h1><a class="header" href="#fish-fight" id="fish-fight">Fish Fight</a></h1>
+<p><a href="https://github.com/fishfight/fish2/actions?query=workflow%3A"><img src="https://github.com/fishfight/fish2/workflows/Compilation%20check/badge.svg" alt="Github Actions" /></a>
+<img src="https://user-images.githubusercontent.com/583842/132137745-ee1f4565-bd75-4d56-b040-234a259ed2b7.gif" alt="fish-scene" /></p>
+<h2><a class="header" href="#introduction" id="introduction">Introduction</a></h2>
+<p>Fish Fight is a tactical 2D shooter, played by up to 4 players online or on a shared screen. Aim either left or right; the rest is up to clever movement and positioning in this fish-on-fish brawler! For more information about our origin story (Duck Game et.al.) and big-picture plans, see our <a href="https://www.notion.so/erlendsh/Fish-Fight-1647ed74217e4e38a59bd28f4f5bc81a">design document</a>.</p>
+<h3><a class="header" href="#key-features-wip" id="key-features-wip">Key Features (WIP)</a></h3>
+<ul>
+<li>2 to 4 players in either Local Multiplayer or Online Play</li>
+<li>Easy to pick up, emphasizing strategy over twitch reaction</li>
+<li>Customize characters with hats, saved to your cross-platform profile</li>
+<li>Create &amp; explore user-made weapons, levels, audio and other scripted extensions</li>
+<li>Smart level creation tools</li>
+<li>Tournaments &amp; matchmaking built in</li>
+</ul>
+<h3><a class="header" href="#status" id="status">Status</a></h3>
+<p>The game is fully playable: <br />
+https://twitter.com/fishfightgame/status/1424084016467226624</p>
+<h2><a class="header" href="#community" id="community">Community</a></h2>
+<h3><a class="header" href="#contributing" id="contributing">Contributing</a></h3>
+<p>Anyone involved in the Fish Fight community must follow our <a href="https://github.com/fishfight/FishFight/blob/main/CODE_OF_CONDUCT.md">code of conduct</a>.</p>
+<p>If you'd like to make something for Fish Fight, check out our <a href="https://github.com/fishfight/FishFight/labels/help%20wanted">help-wanted</a> issues or just ask us on <a href="https://discord.gg/4smxjcheE5">Discord</a>. We'll soon post an updated roadmap for the next month or two of work ahead.</p>
+<p>Before committing and opening a PR, please run the following commands and follow their instructions:</p>
+<ol>
+<li><code>cargo clippy -- -W clippy::correctness -D warnings</code></li>
+<li><code>cargo fmt</code></li>
+</ol>
+<h3><a class="header" href="#learning-materials" id="learning-materials">Learning Materials</a></h3>
+<ul>
+<li>https://macroquad.rs/tutorials/fish-tutorial/</li>
+<li>https://not-fl3.github.io/platformer-book/intro.html</li>
+<li>https://sokoban.iolivia.me/ (we do not use an ECS)</li>
+<li>https://pragprog.com/titles/hwrust/hands-on-rust/</li>
+</ul>
+<h2><a class="header" href="#install--play" id="install--play">Install &amp; play</a></h2>
+<ol>
+<li>Install Rust with <a href="https://rustup.rs/">Rustup.rs</a></li>
+<li><code>cargo run</code></li>
+</ol>
+<p>We'll start distributing executables shortly!</p>
+<h2><a class="header" href="#default-key-bindings" id="default-key-bindings">Default key bindings</a></h2>
+<p>Keyboard left:</p>
+<ul>
+<li>movement: arrow keys <code>↑</code>, <code>←</code>, <code>↓</code>, <code>→</code></li>
+<li>pick/drop: <code>K</code></li>
+<li>attack: <code>L</code></li>
+<li>toggle AI: <code>0</code></li>
+</ul>
+<p>Keyboard right:</p>
+<ul>
+<li>movement: <code>W</code>, <code>A</code>, <code>S</code>, <code>D</code> (&amp; <code>Space</code> for jump)</li>
+<li>pick/drop: <code>C</code></li>
+<li>attack: <code>V</code> &amp; <code>LeftCtrl</code></li>
+<li>toogle AI: <code>1</code></li>
+</ul>
+<p>Gamepad:</p>
+<ul>
+<li>movement: direction axis</li>
+<li>pick/drop: <code>X</code></li>
+<li>attack: <code>B</code></li>
+<li>jump: <code>A</code></li>
+<li>slide: <code>Down</code> + <code>Y</code></li>
+</ul>
+<h2><a class="header" href="#credits" id="credits">Credits</a></h2>
+<ul>
+<li>Input Icons: <a href="https://kadith.itch.io/kadiths-free-icons">Kadith's Icons</a> by Kadith</li>
+</ul>
 
                     </main>
 
@@ -160,7 +226,7 @@
                         
 
                         
-                            <a rel="next" href="controls.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="code_of_conduct.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -174,7 +240,7 @@
                 
 
                 
-                    <a rel="next" href="controls.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="code_of_conduct.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 

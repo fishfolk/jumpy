@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Mechanics - Fish Fight Documentation</title>
+        <title>Contributing Code - Fish Fight Documentation</title>
         
 
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
@@ -81,7 +81,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="code_of_conduct.html"><strong aria-hidden="true">2.</strong> Code of Conduct</a></li><li class="chapter-item expanded "><a href="gameplay.html"><strong aria-hidden="true">3.</strong> Gameplay</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="controls.html"><strong aria-hidden="true">3.1.</strong> Controls</a></li><li class="chapter-item expanded "><a href="items.html"><strong aria-hidden="true">3.2.</strong> Items</a></li><li class="chapter-item expanded "><a href="multiplayer.html"><strong aria-hidden="true">3.3.</strong> Multiplayer</a></li></ol></li><li class="chapter-item expanded "><a href="mechanics.html" class="active"><strong aria-hidden="true">4.</strong> Mechanics</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="physics.html"><strong aria-hidden="true">4.1.</strong> Physics</a></li><li class="chapter-item expanded "><a href="environmental_weapons.html"><strong aria-hidden="true">4.2.</strong> Environmental Weapons</a></li><li class="chapter-item expanded "><a href="netcode.html"><strong aria-hidden="true">4.3.</strong> Netcode</a></li></ol></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">5.</strong> Contributing</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="contributing_code.html"><strong aria-hidden="true">5.1.</strong> Contributing Code</a></li><li class="chapter-item expanded "><a href="simple_gun_weapon.html"><strong aria-hidden="true">5.2.</strong> Simple Gun Weapon</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="code_of_conduct.html"><strong aria-hidden="true">2.</strong> Code of Conduct</a></li><li class="chapter-item expanded "><a href="gameplay.html"><strong aria-hidden="true">3.</strong> Gameplay</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="controls.html"><strong aria-hidden="true">3.1.</strong> Controls</a></li><li class="chapter-item expanded "><a href="items.html"><strong aria-hidden="true">3.2.</strong> Items</a></li><li class="chapter-item expanded "><a href="multiplayer.html"><strong aria-hidden="true">3.3.</strong> Multiplayer</a></li></ol></li><li class="chapter-item expanded "><a href="mechanics.html"><strong aria-hidden="true">4.</strong> Mechanics</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="physics.html"><strong aria-hidden="true">4.1.</strong> Physics</a></li><li class="chapter-item expanded "><a href="environmental_weapons.html"><strong aria-hidden="true">4.2.</strong> Environmental Weapons</a></li><li class="chapter-item expanded "><a href="netcode.html"><strong aria-hidden="true">4.3.</strong> Netcode</a></li></ol></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">5.</strong> Contributing</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="contributing_code.html" class="active"><strong aria-hidden="true">5.1.</strong> Contributing Code</a></li><li class="chapter-item expanded "><a href="simple_gun_weapon.html"><strong aria-hidden="true">5.2.</strong> Simple Gun Weapon</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -151,20 +151,81 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#mechanics" id="mechanics">Mechanics</a></h1>
+                        <h1><a class="header" href="#contributing-code-to-fish-fight" id="contributing-code-to-fish-fight">Contributing Code to Fish Fight</a></h1>
+<p>Proposing code changes has 3 main steps:</p>
+<ol>
+<li>Setting up your development environment</li>
+<li>Pick an issue to work on</li>
+<li>Write code and submitting for review</li>
+</ol>
+<h2><a class="header" href="#1-setting-up-your-development-environment" id="1-setting-up-your-development-environment">1. Setting up your development environment</a></h2>
+<h3><a class="header" href="#before-starting" id="before-starting">Before starting</a></h3>
+<p>Make sure <a href="https://www.rust-lang.org/">Rust</a> is installed with <a href="https://rustup.rs/">Rustup.rs</a>.</p>
+<p>Have an account on <a href="https://github.com/">GitHub</a>: this is where you'll find the <a href="https://github.com/fishfight/FishFight">source code</a> for Fish Fight.</p>
+<h3><a class="header" href="#getting-the-source-code" id="getting-the-source-code">Getting the source code</a></h3>
+<p>Fish Fight uses <a href="https://git-scm.com/">git</a> as its established choice of version control. You'll be
+using it to clone, track, and manage the source code locally on your machine.</p>
+<p>To get a copy of the code, you'll first need to <a href="https://docs.github.com/en/get-started/quickstart/fork-a-repo">fork the repository</a>.
+The GitHub repository for Fight Fight is <a href="https://github.com/fishfight/FishFight">available here</a>.
+This will allow you to make changes to the project without affecting the original one.</p>
+<p>Once you've forked the Fish Fight repository, you can now clone it:</p>
+<p><code>git clone https://github.com/YOUR_ACCOUNT_NAME/FishFight.git</code></p>
+<p>It's also possible to clone the repo using SSH or GitHub CLI. For more information on how to do
+this, see the <a href="https://docs.github.com/en/get-started/quickstart/fork-a-repo#cloning-your-forked-repository">official GitHub documentation</a>.</p>
+<p>Depending on your connection, the clone can take around 1 minute.</p>
+<p>By the end of this step, you should have successfully forked and downloaded a clone of Fish Fight on your machine.</p>
+<h3><a class="header" href="#build-and-run" id="build-and-run">Build and run</a></h3>
+<p>You can now build your forked copy of Fish Fight:</p>
+<p><code>cargo build</code></p>
+<p>This process should take about a minute or two depending on your machine. You can also <strong>build and run</strong> the game with a single command:</p>
+<p><code>cargo run</code></p>
+<h2><a class="header" href="#2-finding-a-good-first-issue" id="2-finding-a-good-first-issue">2. Finding a good first issue</a></h2>
+<p>Now that you can build and run Fish Fight source code, let's find something to work on!
+We recommend all newcomers start with our <a href="https://github.com/fishfight/FishFight/issues/124">Development Tracks</a>.
+You can also browse <a href="https://github.com/fishfight/FishFight/issues">project's issues list</a> and pick something with a <a href="https://github.com/fishfight/FishFight/labels/help%20wanted">help wanted label</a>.
+In general, you can comment on an issue expressing interest and someone will assign it to you.</p>
+<p>Additionally, if there's a track or issue you're particularly interested in, but you don't know where to start, feel free to
+reach out to the <a href="https://discord.gg/4smxjcheE5">Fish Fight Discord community</a> with your questions
+and someone should reach out shortly!</p>
+<h2><a class="header" href="#3-write-code-and-submitting-for-review" id="3-write-code-and-submitting-for-review">3. Write code and submitting for review</a></h2>
+<p>In general, Fish Fight uses a branch-based workflow (or <a href="https://docs.github.com/en/get-started/quickstart/github-flow">GitHub flow</a>) for submitting changes to the project.</p>
+<h3><a class="header" href="#create-a-new-branch" id="create-a-new-branch">Create a new branch</a></h3>
+<p>You'll want to <a href="https://docs.github.com/en/get-started/quickstart/github-flow#create-a-branch">create a new branch</a> off <code>main</code>:</p>
+<p><code>git checkout -b &lt;branch_name&gt; main</code></p>
+<p>You'll replace <code>&lt;branch-name&gt;</code> with something short and descriptive. For example, if you're adding a new
+item to Fish Fight, your branch name might look like this:</p>
+<p><code>git checkout -b add_new_weapon main</code></p>
+<h3><a class="header" href="#commit-your-changes" id="commit-your-changes">Commit your changes</a></h3>
+<p>Once you've made the desired changes to the code and you're ready for someone on the Fish Fight
+team to review, you need to <a href="https://git-scm.com/docs/git-commit">commit your work</a>. But first,
+we have to run a few commands to ensure the code you're submitting is properly formatted:</p>
+<ol>
+<li><code>cargo clippy -- -W clippy::correctness -D warnings</code></li>
+<li><code>cargo fmt</code></li>
+</ol>
+<p>Now we can start committing your work. First, stage your changes:
+<code>git add</code></p>
+<p>Now commit. It's always good practice to provide a short message that details what the changes are. For example:
+<code>git commit -m &quot;Add a new weapon&quot;</code></p>
+<h3><a class="header" href="#submitting-for-review" id="submitting-for-review">Submitting for review</a></h3>
+<p>You can now start submitting your work for review. First, push your changes:</p>
+<p><code>git push</code></p>
+<p>This will create a new branch on your forked copy of Fish Fight. You can then proceed <a href="https://docs.github.com/en/desktop/contributing-and-collaborating-using-github-desktop/working-with-your-remote-repository-on-github-or-github-enterprise/creating-an-issue-or-pull-request#creating-a-pull-request">making a pull request</a>.
+This is how the Fish Fight team will review and provide feedback on your work.</p>
+<p><a href="https://docs.github.com/en/desktop/contributing-and-collaborating-using-github-desktop">More information on contributing using GitHub</a>.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
-                            <a rel="prev" href="multiplayer.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="contributing.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
                         
 
                         
-                            <a rel="next" href="physics.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="simple_gun_weapon.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -176,13 +237,13 @@
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-                    <a rel="prev" href="multiplayer.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="contributing.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a rel="next" href="physics.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="simple_gun_weapon.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 

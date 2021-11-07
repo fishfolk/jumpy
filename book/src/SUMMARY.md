@@ -1,5 +1,7 @@
 # Summary
 
+- [Introduction](./introduction.md)
+- [Code of Conduct](./code_of_conduct.md)
 - [Gameplay](./gameplay.md)
   - [Controls](./controls.md)
   - [Items](./items.md)

@@ -1,7 +1,7 @@
 use std::{any::TypeId, result};
 
 use crate::editor::gui::windows::Window;
-use crate::map::MapObject;
+use crate::map::{MapObject, MapObjectKind};
 use crate::{
     map::{Map, MapLayer, MapLayerKind, MapTile, MapTileset},
     Resources,
@@ -59,7 +59,8 @@ pub enum EditorAction {
         layer_id: String,
     },
     CreateObject {
-        name: String,
+        id: String,
+        kind: MapObjectKind,
         position: Vec2,
         size: Option<Vec2>,
         layer_id: String,
@@ -340,8 +341,11 @@ impl CreateTilesetAction {
 impl UndoableAction for CreateTilesetAction {
     fn apply(&mut self, map: &mut Map) -> Result {
         let resources = storage::get::<Resources>();
-        if let Some(texture) = resources.textures.get(&self.texture_id) {
-            let texture_size = uvec2(texture.width() as u32, texture.height() as u32);
+        if let Some(texture_entry) = resources.textures.get(&self.texture_id).cloned() {
+            let texture_size = uvec2(
+                texture_entry.texture.width() as u32,
+                texture_entry.texture.height() as u32,
+            );
             let mut first_tile_id = 1;
             for tileset in map.tilesets.values() {
                 let next_tile_id = tileset.first_tile_id + tileset.tile_cnt;
@@ -466,16 +470,24 @@ impl UndoableAction for SetTilesetAutotileMaskAction {
 
 #[derive(Debug)]
 pub struct CreateObjectAction {
-    name: String,
+    id: String,
+    kind: MapObjectKind,
     position: Vec2,
     size: Option<Vec2>,
     layer_id: String,
 }
 
 impl CreateObjectAction {
-    pub fn new(name: String, position: Vec2, size: Option<Vec2>, layer_id: String) -> Self {
+    pub fn new(
+        id: String,
+        kind: MapObjectKind,
+        position: Vec2,
+        size: Option<Vec2>,
+        layer_id: String,
+    ) -> Self {
         CreateObjectAction {
-            name,
+            id,
+            kind,
             position,
             size,
             layer_id,
@@ -486,7 +498,7 @@ impl CreateObjectAction {
 impl UndoableAction for CreateObjectAction {
     fn apply(&mut self, map: &mut Map) -> Result {
         if let Some(layer) = map.layers.get_mut(&self.layer_id) {
-            let object = MapObject::new(&self.name, self.position, self.size);
+            let object = MapObject::new(&self.id, self.kind, self.position, self.size);
 
             layer.objects.insert(0, object);
         } else {

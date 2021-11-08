@@ -1,19 +1,24 @@
-use std::{collections::HashMap, io, path::Path};
+use std::{collections::HashMap, path::Path};
 
 use macroquad::{color, experimental::collections::storage, prelude::*};
 
 use serde::{Deserialize, Serialize};
 
+use crate::error::Result;
+
 use crate::{
+    editor::gui::combobox::ComboBoxValue,
     json::{self, TiledMap},
     math::URect,
+    text::{draw_aligned_text, HorizontalAlignment, VerticalAlignment},
     Resources,
 };
+
+pub type MapProperty = json::GenericParam;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(into = "json::MapDef", from = "json::MapDef")]
 pub struct Map {
-    pub name: String,
     #[serde(default = "Map::default_background_color", with = "json::ColorDef")]
     pub background_color: Color,
     #[serde(with = "json::def_vec2")]
@@ -31,13 +36,14 @@ pub struct Map {
 }
 
 impl Map {
-    pub const DEFAULT_NAME: &'static str = "Unnamed Map";
-
     pub const PLATFORM_TILE_ATTRIBUTE: &'static str = "jumpthrough";
 
-    pub fn new(name: &str, tile_size: Vec2, grid_size: UVec2) -> Self {
+    // Padding added to colliders for collision checks since the collision system stops movement
+    // before collision is registered, if not.
+    pub const COLLIDER_PADDING: f32 = 8.0;
+
+    pub fn new(tile_size: Vec2, grid_size: UVec2) -> Self {
         Map {
-            name: name.to_string(),
             background_color: Self::default_background_color(),
             world_offset: Vec2::ZERO,
             grid_size,
@@ -49,7 +55,7 @@ impl Map {
         }
     }
 
-    pub async fn load<P: AsRef<Path>>(path: P) -> Result<Self, FileError> {
+    pub async fn load<P: AsRef<Path>>(path: P) -> Result<Self> {
         let path = path.as_ref();
 
         let bytes = load_file(&path.to_string_lossy()).await?;
@@ -58,17 +64,13 @@ impl Map {
         Ok(map)
     }
 
-    pub async fn load_tiled<P: AsRef<Path>>(
-        path: P,
-        export_path: Option<P>,
-    ) -> Result<Self, FileError> {
+    pub async fn load_tiled<P: AsRef<Path>>(path: P, export_path: Option<P>) -> Result<Self> {
         let path = path.as_ref();
 
         let bytes = load_file(&path.to_string_lossy()).await?;
         let tiled_map: TiledMap = serde_json::from_slice(&bytes).unwrap();
 
-        let name = map_name_from_path(path);
-        let map = tiled_map.into_map(&name);
+        let map = tiled_map.into_map();
 
         if let Some(export_path) = export_path {
             map.save(export_path).unwrap();
@@ -84,7 +86,7 @@ impl Map {
         )
     }
 
-    pub fn to_grid(&self, rect: Rect) -> URect {
+    pub fn to_grid(&self, rect: &Rect) -> URect {
         let p = self.to_coords(rect.point());
         let w = ((rect.w / self.tile_size.x) as u32).clamp(0, self.grid_size.x - p.x - 1);
         let h = ((rect.h / self.tile_size.y) as u32).clamp(0, self.grid_size.y - p.y - 1);
@@ -105,8 +107,8 @@ impl Map {
 
     pub fn to_position(&self, point: UVec2) -> Vec2 {
         vec2(
-            point.x as f32 * self.tile_size.x + self.world_offset.x,
-            point.y as f32 * self.tile_size.y + self.world_offset.y,
+            (point.x as f32 * self.tile_size.x) + self.world_offset.x,
+            (point.y as f32 * self.tile_size.y) + self.world_offset.y,
         )
     }
 
@@ -134,39 +136,75 @@ impl Map {
         MapTileIterator::new(layer, rect)
     }
 
-    pub fn get_collisions(&self, collider: Rect) -> Vec<Vec2> {
+    pub fn get_collisions(&self, collider: &Rect, should_ignore_platforms: bool) -> Vec<Rect> {
         let collider = Rect::new(
+            collider.x - Self::COLLIDER_PADDING,
+            collider.y - Self::COLLIDER_PADDING,
+            collider.w + Self::COLLIDER_PADDING * 2.0,
+            collider.h + Self::COLLIDER_PADDING * 2.0,
+        );
+
+        let grid = self.to_grid(&Rect::new(
             collider.x - self.tile_size.x,
             collider.y - self.tile_size.y,
             collider.w + self.tile_size.x * 2.0,
             collider.h + self.tile_size.y * 2.0,
-        );
+        ));
 
-        let rect = self.to_grid(collider);
         let mut collisions = Vec::new();
+
+        let platform_attr = Self::PLATFORM_TILE_ATTRIBUTE.to_string();
+
         for layer in self.layers.values() {
             if layer.is_visible && layer.has_collision {
-                for (x, y, tile) in self.get_tiles(&layer.id, Some(rect)) {
-                    if tile.is_some() {
-                        let tile_position = self.to_position(uvec2(x, y));
-                        if Rect::new(
-                            tile_position.x,
-                            tile_position.y,
-                            self.tile_size.x,
-                            self.tile_size.y,
-                        )
-                        .overlaps(&collider)
-                        {
-                            collisions.push(tile_position);
+                for (x, y, tile) in self.get_tiles(&layer.id, Some(grid)) {
+                    if let Some(tile) = tile {
+                        if !(should_ignore_platforms && tile.attributes.contains(&platform_attr)) {
+                            let tile_position = self.to_position(uvec2(x, y));
+
+                            let tile_rect = Rect::new(
+                                tile_position.x,
+                                tile_position.y,
+                                self.tile_size.x,
+                                self.tile_size.y,
+                            );
+
+                            if tile_rect.overlaps(&collider) {
+                                collisions.push(tile_rect);
+                            }
                         }
                     }
                 }
             }
         }
+
         collisions
     }
 
-    pub fn draw(&self, rect: Option<URect>) {
+    pub fn is_collision_at(&self, position: Vec2, should_ignore_platforms: bool) -> bool {
+        let index = {
+            let coords = self.to_coords(position);
+            self.to_index(coords)
+        };
+
+        for layer in self.layers.values() {
+            if layer.is_visible && layer.has_collision {
+                if let Some(Some(tile)) = layer.tiles.get(index) {
+                    return !(should_ignore_platforms
+                        && tile
+                            .attributes
+                            .contains(&Self::PLATFORM_TILE_ATTRIBUTE.to_string()));
+                }
+            }
+        }
+
+        false
+    }
+
+    // This will draw the map.
+    // If `should_draw_objects` is set to true, objects in object layers will also be drawn.
+    // This should only be set to true when drawing the map in the editor....
+    pub fn draw(&self, should_draw_objects: bool, rect: Option<URect>) {
         let rect = rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.x, self.grid_size.y));
         draw_rectangle(
             self.world_offset.x + (rect.x as f32 * self.tile_size.x),
@@ -183,35 +221,48 @@ impl Map {
 
         for layer_id in draw_order {
             if let Some(layer) = self.layers.get(&layer_id) {
-                if layer.is_visible && layer.kind == MapLayerKind::TileLayer {
-                    for (x, y, tile) in self.get_tiles(&layer_id, Some(rect)) {
-                        if let Some(tile) = tile {
-                            let world_position = self.world_offset
-                                + vec2(x as f32 * self.tile_size.x, y as f32 * self.tile_size.y);
+                if layer.is_visible {
+                    if layer.kind == MapLayerKind::TileLayer {
+                        for (x, y, tile) in self.get_tiles(&layer_id, Some(rect)) {
+                            if let Some(tile) = tile {
+                                let world_position = self.world_offset
+                                    + vec2(
+                                        x as f32 * self.tile_size.x,
+                                        y as f32 * self.tile_size.y,
+                                    );
 
-                            let texture = resources
-                                .textures
-                                .get(&tile.texture_id)
-                                .cloned()
-                                .unwrap_or_else(|| {
-                                    panic!("No texture with id '{}'!", tile.texture_id)
-                                });
+                                let texture_entry =
+                                    resources.textures.get(&tile.texture_id).unwrap_or_else(|| {
+                                        panic!("No texture with id '{}'!", tile.texture_id)
+                                    });
 
-                            draw_texture_ex(
-                                texture,
-                                world_position.x,
-                                world_position.y,
-                                color::WHITE,
-                                DrawTextureParams {
-                                    source: Some(Rect::new(
-                                        tile.texture_coords.x, // + 0.1,
-                                        tile.texture_coords.y, // + 0.1,
-                                        self.tile_size.x,      // - 0.2,
-                                        self.tile_size.y,      // - 0.2,
-                                    )),
-                                    dest_size: Some(vec2(self.tile_size.x, self.tile_size.y)),
-                                    ..Default::default()
-                                },
+                                draw_texture_ex(
+                                    texture_entry.texture,
+                                    world_position.x,
+                                    world_position.y,
+                                    color::WHITE,
+                                    DrawTextureParams {
+                                        source: Some(Rect::new(
+                                            tile.texture_coords.x, // + 0.1,
+                                            tile.texture_coords.y, // + 0.1,
+                                            self.tile_size.x,      // - 0.2,
+                                            self.tile_size.y,      // - 0.2,
+                                        )),
+                                        dest_size: Some(vec2(self.tile_size.x, self.tile_size.y)),
+                                        ..Default::default()
+                                    },
+                                );
+                            }
+                        }
+                    } else if layer.kind == MapLayerKind::TileLayer || should_draw_objects {
+                        for object in &layer.objects {
+                            // For now only a generic marker will be drawn
+                            draw_aligned_text(
+                                &object.id,
+                                object.position,
+                                HorizontalAlignment::Center,
+                                VerticalAlignment::Center,
+                                Default::default(),
                             );
                         }
                     }
@@ -233,7 +284,7 @@ impl Map {
     }
 
     #[cfg(any(target_family = "unix", target_family = "windows"))]
-    pub fn save<P: AsRef<Path>>(&self, path: P) -> io::Result<()> {
+    pub fn save<P: AsRef<Path>>(&self, path: P) -> Result<()> {
         let json = serde_json::to_string_pretty(self)?;
         std::fs::write(path, json)?;
         Ok(())
@@ -292,6 +343,27 @@ pub enum MapLayerKind {
     ObjectLayer,
 }
 
+impl ComboBoxValue for MapLayerKind {
+    fn from_index(index: usize) -> Self {
+        match index {
+            0 => Self::TileLayer,
+            1 => Self::ObjectLayer,
+            _ => unreachable!(),
+        }
+    }
+
+    fn to_index(&self) -> usize {
+        match self {
+            Self::TileLayer => 0,
+            Self::ObjectLayer => 1,
+        }
+    }
+
+    fn options() -> &'static [&'static str] {
+        &["Tiles", "Objects"]
+    }
+}
+
 impl Default for MapLayerKind {
     fn default() -> Self {
         MapLayerKind::TileLayer
@@ -304,7 +376,7 @@ pub struct MapLayer {
     pub kind: MapLayerKind,
     #[serde(default)]
     pub has_collision: bool,
-    #[serde(with = "json::def_uvec2")]
+    #[serde(with = "json::uvec2_def")]
     pub grid_size: UVec2,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub tiles: Vec<Option<MapTile>>,
@@ -358,20 +430,95 @@ pub struct MapTile {
     pub tile_id: u32,
     pub tileset_id: String,
     pub texture_id: String,
-    #[serde(with = "json::def_vec2")]
+    #[serde(with = "json::vec2_def")]
     pub texture_coords: Vec2,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub attributes: Vec<String>,
 }
 
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum MapObjectKind {
+    Item,
+    SpawnPoint,
+    Environment,
+    Decoration,
+}
+
+impl MapObjectKind {
+    const ITEM: &'static str = "item";
+    const SPAWN_POINT: &'static str = "spawn_point";
+    const ENVIRONMENT: &'static str = "environment";
+    const DECORATION: &'static str = "decoration";
+}
+
+impl From<String> for MapObjectKind {
+    fn from(str: String) -> Self {
+        if str == Self::ITEM {
+            Self::Item
+        } else if str == Self::SPAWN_POINT {
+            Self::SpawnPoint
+        } else if str == Self::ENVIRONMENT {
+            Self::Environment
+        } else if str == Self::DECORATION {
+            Self::Decoration
+        } else {
+            let str = if str.is_empty() {
+                "NO_OBJECT_TYPE"
+            } else {
+                &str
+            };
+
+            unreachable!("Invalid MapObjectKind '{}'", str)
+        }
+    }
+}
+
+impl From<MapObjectKind> for String {
+    fn from(kind: MapObjectKind) -> String {
+        match kind {
+            MapObjectKind::Item => MapObjectKind::ITEM.to_string(),
+            MapObjectKind::SpawnPoint => MapObjectKind::SPAWN_POINT.to_string(),
+            MapObjectKind::Environment => MapObjectKind::ENVIRONMENT.to_string(),
+            MapObjectKind::Decoration => MapObjectKind::DECORATION.to_string(),
+        }
+    }
+}
+
+impl ComboBoxValue for MapObjectKind {
+    fn from_index(index: usize) -> Self {
+        match index {
+            0 => Self::Item,
+            1 => Self::SpawnPoint,
+            2 => Self::Environment,
+            3 => Self::Decoration,
+            _ => unreachable!(),
+        }
+    }
+
+    fn to_index(&self) -> usize {
+        match self {
+            Self::Item => 0,
+            Self::SpawnPoint => 1,
+            Self::Environment => 2,
+            Self::Decoration => 3,
+        }
+    }
+
+    fn options() -> &'static [&'static str] {
+        &["Item", "Spawn point", "Environment", "Decoration"]
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MapObject {
-    pub name: String,
-    #[serde(with = "json::def_vec2")]
+    pub id: String,
+    pub kind: MapObjectKind,
+    #[serde(with = "json::vec2_def")]
     pub position: Vec2,
     #[serde(
         default,
-        with = "json::opt_vec2",
+        with = "json::vec2_opt",
         skip_serializing_if = "Option::is_none"
     )]
     pub size: Option<Vec2>,
@@ -380,9 +527,10 @@ pub struct MapObject {
 }
 
 impl MapObject {
-    pub fn new(name: &str, position: Vec2, size: Option<Vec2>) -> Self {
+    pub fn new(id: &str, kind: MapObjectKind, position: Vec2, size: Option<Vec2>) -> Self {
         MapObject {
-            name: name.to_string(),
+            id: id.to_string(),
+            kind,
             position,
             size,
             properties: HashMap::new(),
@@ -391,41 +539,20 @@ impl MapObject {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case", tag = "type")]
-pub enum MapProperty {
-    Bool {
-        value: bool,
-    },
-    Float {
-        value: f32,
-    },
-    Int {
-        value: i32,
-    },
-    String {
-        value: String,
-    },
-    Color {
-        #[serde(with = "json::ColorDef")]
-        value: Color,
-    },
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MapTileset {
     pub id: String,
     pub texture_id: String,
-    #[serde(with = "json::def_uvec2")]
+    #[serde(with = "json::uvec2_def")]
     pub texture_size: UVec2,
-    #[serde(with = "json::def_vec2")]
+    #[serde(with = "json::vec2_def")]
     pub tile_size: Vec2,
-    #[serde(with = "json::def_uvec2")]
+    #[serde(with = "json::uvec2_def")]
     pub grid_size: UVec2,
     pub first_tile_id: u32,
     pub tile_cnt: u32,
     #[serde(
         default = "MapTileset::default_tile_subdivisions",
-        with = "json::def_uvec2"
+        with = "json::uvec2_def"
     )]
     pub tile_subdivisions: UVec2,
     pub autotile_mask: Vec<bool>,
@@ -481,22 +608,4 @@ impl MapTileset {
     pub fn default_tile_subdivisions() -> UVec2 {
         uvec2(3, 3)
     }
-}
-
-pub fn map_name_from_path<P: AsRef<Path>>(path: P) -> String {
-    let path = path.as_ref();
-    if let Some(os_str) = path.file_name() {
-        let str = os_str.to_str().unwrap();
-        let mut split = str.split('.').collect::<Vec<_>>();
-        let split_len = split.len();
-        if split_len > 0 {
-            if split_len > 1 {
-                split.pop();
-            }
-
-            return split.join(".");
-        }
-    }
-
-    Map::DEFAULT_NAME.to_string()
 }

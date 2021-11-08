@@ -30,14 +30,27 @@ impl EditorSkinCollection {
     pub const WINDOW_MARGIN_TOP: f32 = 32.0;
     pub const WINDOW_MARGIN_BOTTOM: f32 = 32.0;
 
+    pub const BUTTON_MARGIN_LEFT: f32 = 32.0;
+    pub const BUTTON_MARGIN_RIGHT: f32 = 32.0;
+    pub const BUTTON_MARGIN_TOP: f32 = 32.0;
+    pub const BUTTON_MARGIN_BOTTOM: f32 = 32.0;
+
     pub fn new() -> Self {
         let default = {
             let window_background_margin = RectOffset::new(52.0, 52.0, 52.0, 52.0);
-            let window_margin = RectOffset::new(
+            let window_margins = RectOffset::new(
                 Self::WINDOW_MARGIN_LEFT - window_background_margin.left,
                 Self::WINDOW_MARGIN_RIGHT - window_background_margin.right,
                 Self::WINDOW_MARGIN_TOP - window_background_margin.top,
                 Self::WINDOW_MARGIN_BOTTOM - window_background_margin.bottom,
+            );
+
+            let button_background_margin = RectOffset::new(8.0, 8.0, 12.0, 12.0);
+            let button_margins = RectOffset::new(
+                Self::BUTTON_MARGIN_LEFT - button_background_margin.left,
+                Self::BUTTON_MARGIN_RIGHT - button_background_margin.right,
+                Self::BUTTON_MARGIN_TOP - button_background_margin.top,
+                Self::BUTTON_MARGIN_BOTTOM - button_background_margin.bottom,
             );
 
             let window_style = root_ui()
@@ -47,7 +60,7 @@ impl EditorSkinCollection {
                     None,
                 ))
                 .background_margin(window_background_margin)
-                .margin(window_margin)
+                .margin(window_margins)
                 .build();
 
             let group_style = root_ui()
@@ -77,8 +90,8 @@ impl EditorSkinCollection {
                     include_bytes!("../../../assets/ui/button_background_2.png"),
                     None,
                 ))
-                .background_margin(RectOffset::new(8.0, 8.0, 12.0, 12.0))
-                .margin(RectOffset::new(8.0, 8.0, -4.0, -4.0))
+                .background_margin(button_background_margin)
+                .margin(button_margins)
                 .background_hovered(Image::from_file_with_format(
                     include_bytes!("../../../assets/ui/button_hovered_background_2.png"),
                     None,

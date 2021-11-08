@@ -1,0 +1,40 @@
+{
+  "id": "turtle_shell",
+  "type": "equipped_item",
+  "sprite": {
+    "texture": "turtle_shell"
+  },
+  "collider_size": {
+    "x": 32,
+    "y": 32
+  },
+  "effects": {
+    "id": "turtle_shell",
+    "events": "receive_damage",
+    "uses": 3,
+    "blocks_damage": true
+  },
+  "animation": {
+    "texture": "turtle_shell",
+    "animations": [
+      {
+        "id": "idle",
+        "row": 1,
+        "frames": 1,
+        "fps": 1
+      },
+      {
+        "id": "broken",
+        "row": 1,
+        "frames": 1,
+        "fps": 1
+      }
+    ]
+  },
+  "mount_offset": {
+    "x": -32,
+    "y": 18
+  },
+  "is_dropped_on_death": true,
+  "is_network_ready": true
+}

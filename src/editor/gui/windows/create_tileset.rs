@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use macroquad::{
     experimental::collections::storage,
     prelude::*,
@@ -9,6 +7,7 @@ use macroquad::{
 use crate::{map::Map, Resources};
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
+use crate::resources::TextureKind;
 
 pub struct CreateTilesetWindow {
     params: WindowParams,
@@ -24,10 +23,18 @@ impl CreateTilesetWindow {
             ..Default::default()
         };
 
+        let resources = storage::get::<Resources>();
+        let texture_id = resources
+            .textures
+            .iter()
+            .find(|(_, v)| v.meta.kind.is_some() && v.meta.kind.unwrap() == TextureKind::Tileset)
+            .map(|(k, _)| k.clone())
+            .unwrap_or_else(|| "".to_string());
+
         CreateTilesetWindow {
             params,
             tileset_id: "Unnamed Tileset".to_string(),
-            texture_id: "tileset".to_string(),
+            texture_id,
         }
     }
 }
@@ -80,7 +87,15 @@ impl Window for CreateTilesetWindow {
         let mut textures = resources
             .textures
             .iter()
-            .map(|(key, _)| key.deref())
+            .filter_map(|(k, v)| {
+                if let Some(kind) = v.meta.kind {
+                    if kind == TextureKind::Tileset {
+                        return Some(k.as_str());
+                    }
+                }
+
+                None
+            })
             .collect::<Vec<&str>>();
 
         textures.sort_unstable();
@@ -102,11 +117,17 @@ impl Window for CreateTilesetWindow {
 
         let mut texture_index = 0;
         for id in &textures {
-            if id == &self.texture_id {
+            if *id == self.texture_id {
                 break;
             }
 
             texture_index += 1;
+        }
+
+        let len = textures.len();
+        if texture_index == len || len == 0 {
+            textures = vec!["No tileset textures"];
+            texture_index = 0;
         }
 
         widgets::ComboBox::new(hash!(id, "texture_input"), textures.as_slice())

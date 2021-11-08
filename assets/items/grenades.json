@@ -1,0 +1,69 @@
+{
+  "id": "grenades",
+  "sprite": {
+    "texture": "grenades"
+  },
+  "type": "weapon",
+  "cooldown": 0.5,
+  "uses": 3,
+  "is_destroyed_on_depletion": true,
+  "effects": {
+    "type": "triggered_effect",
+    "trigger": "enemy",
+    "velocity": {
+      "x": 400.0,
+      "y": -400.0
+    },
+    "size": {
+      "x": 24,
+      "y": 24
+    },
+    "timed_trigger": 1.5,
+    "effects": {
+      "type": "circle_collider",
+      "radius": 64,
+      "is_explosion": true,
+      "particle_effect": "hit",
+      "sound_effect": "explode"
+    },
+    "animation": {
+      "texture": "grenades",
+      "offset": {
+        "x": 0,
+        "y": -24
+      },
+      "animations": [
+        {
+          "id": "armed",
+          "row": 1,
+          "frames": 3,
+          "fps": 12
+        }
+      ],
+      "should_autoplay": true
+    }
+  },
+  "collider_size": {
+    "x": 32,
+    "y": 48
+  },
+  "mount_offset": {
+    "x": 0,
+    "y": -24
+  },
+  "effect_offset": {
+    "x": 0,
+    "y": 24
+  },
+  "animation": {
+    "texture": "grenades",
+    "animations": [
+      {
+        "id": "idle",
+        "row": 0,
+        "frames": 1,
+        "fps": 1
+      }
+    ]
+  }
+}

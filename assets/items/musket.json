@@ -1,0 +1,94 @@
+{
+  "id": "musket",
+  "sprite": {
+    "texture": "musket",
+    "offset": {
+      "x": 0,
+      "y": -8
+    }
+  },
+  "type": "weapon",
+  "uses": 3,
+  "cooldown": 0.75,
+  "attack_duration": 0.5,
+  "recoil": 250.0,
+  "sound_effect": "shoot",
+  "effects": [
+    {
+      "type": "projectile",
+      "range": 512.0,
+      "speed": 5.0,
+      "projectile": {
+        "type": "sprite",
+        "sprite": {
+          "texture": "musket_bullet",
+          "size": {
+            "x": 15,
+            "y": 15
+          },
+          "offset": {
+            "x": -7.5,
+            "y": -7.5
+          }
+        }
+      },
+      "particle_controller": {
+        "id": "0",
+        "particle_id": "musket_bullet_smoke",
+        "start_delay": 0.075,
+        "amount": 1,
+        "is_looped": true
+      }
+    },
+    {
+      "type": "particle_controller",
+      "id": "0",
+      "particle_id": "musket_muzzle_smoke",
+      "start_delay": 1,
+      "is_can_be_interrupted": true,
+      "amount": 6,
+      "interval": 0.05
+    }
+  ],
+  "collider_size": {
+    "x": 64,
+    "y": 24
+  },
+  "effect_offset": {
+    "x": 61,
+    "y": 16
+  },
+  "mount_offset": {
+    "x": -12,
+    "y": -12
+  },
+  "animation": {
+    "texture": "musket",
+    "animations": [
+      {
+        "id": "idle",
+        "row": 0,
+        "frames": 1,
+        "fps": 1
+      },
+      {
+        "id": "attack",
+        "row": 1,
+        "frames": 3,
+        "fps": 15
+      }
+    ]
+  },
+  "effect_animation": {
+    "texture": "musket",
+    "animations": [
+      {
+        "id": "attack_effect",
+        "row": 2,
+        "frames": 4,
+        "fps": 12
+      }
+    ]
+  },
+  "is_network_ready": true
+}

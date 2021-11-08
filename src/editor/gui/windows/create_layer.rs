@@ -6,11 +6,12 @@ use macroquad::{
 use crate::map::{Map, MapLayerKind};
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
+use crate::editor::gui::ComboBoxBuilder;
 
 pub struct CreateLayerWindow {
     params: WindowParams,
     id: String,
-    layer_kind: MapLayerKind,
+    kind: MapLayerKind,
     has_collision: bool,
 }
 
@@ -25,7 +26,7 @@ impl CreateLayerWindow {
         CreateLayerWindow {
             params,
             id: "Unnamed Layer".to_string(),
-            layer_kind: MapLayerKind::TileLayer,
+            kind: MapLayerKind::TileLayer,
             has_collision: false,
         }
     }
@@ -60,23 +61,12 @@ impl Window for CreateLayerWindow {
         ui.separator();
         ui.separator();
 
-        let mut layer_kind = match self.layer_kind {
-            MapLayerKind::TileLayer => 0,
-            MapLayerKind::ObjectLayer => 1,
-        };
+        ComboBoxBuilder::new(hash!(id, "type_input"))
+            .with_label("Type")
+            .with_ratio(0.8)
+            .build(ui, &mut self.kind);
 
-        widgets::ComboBox::new(hash!(id, "type_input"), &["tile layer", "object layer"])
-            .ratio(0.4)
-            .label("Type")
-            .ui(ui, &mut layer_kind);
-
-        self.layer_kind = match layer_kind {
-            0 => MapLayerKind::TileLayer,
-            1 => MapLayerKind::ObjectLayer,
-            _ => unreachable!(),
-        };
-
-        if self.layer_kind == MapLayerKind::TileLayer {
+        if self.kind == MapLayerKind::TileLayer {
             widgets::Checkbox::new(hash!(id, "collision_input"))
                 .ratio(0.4)
                 .label("Collision")
@@ -95,7 +85,7 @@ impl Window for CreateLayerWindow {
         if !is_existing_id {
             let batch = self.get_close_action().then(EditorAction::CreateLayer {
                 id: self.id.clone(),
-                kind: self.layer_kind,
+                kind: self.kind,
                 has_collision: self.has_collision,
                 index: None,
             });

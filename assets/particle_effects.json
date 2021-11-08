@@ -1,0 +1,34 @@
+[
+  {
+    "id": "musket_bullet_smoke",
+    "path": "particle_effects/musket_bullet_smoke.json"
+  },
+  {
+    "id": "musket_muzzle_smoke",
+    "path": "particle_effects/musket_muzzle_smoke.json"
+  },
+  {
+    "id": "explosion",
+    "path": "particle_effects/explosion.json"
+  },
+  {
+    "id": "explosion_fire",
+    "path": "particle_effects/explosion_fire.json"
+  },
+  {
+    "id": "explosion_particles",
+    "path": "particle_effects/explosion_particles.json"
+  },
+  {
+    "id": "hit",
+    "path": "particle_effects/hit.json"
+  },
+  {
+    "id": "life_ui_explosion",
+    "path": "particle_effects/life_ui_explosion.json"
+  },
+  {
+    "id": "smoke",
+    "path": "particle_effects/smoke.json"
+  }
+]

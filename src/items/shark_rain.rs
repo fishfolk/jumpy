@@ -10,6 +10,7 @@ use macroquad::{
     rand::gen_range,
 };
 
+use crate::nodes::ParticleEmitters;
 use crate::{
     capabilities,
     components::{GunlikeAnimation, PhysicsBody, ThrowableItem},
@@ -35,10 +36,10 @@ impl RainingShark {
 
     pub fn new(owner_id: u8, pos: Vec2) -> RainingShark {
         let resources = storage::get::<Resources>();
-        let sprite = resources.items_textures["shark_rain/raining_shark"];
+        let texture_entry = resources.textures.get("shark").unwrap();
 
         RainingShark {
-            sprite,
+            sprite: texture_entry.texture,
             pos,
             speed: Vec2::new(0., Self::SPEED),
             owner_id,
@@ -69,8 +70,8 @@ impl RainingShark {
                     .unwrap()
                     .shake_noise(1.0, 10, 1.);
                 {
-                    let mut resources = storage::get_mut::<Resources>();
-                    resources.hit_fxses.spawn(player.body.pos);
+                    let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
+                    particles.hit.spawn(player.body.pos);
                 }
                 let direction = self.pos.x > (player.body.pos.x + Self::KNOCKBACK);
                 player.kill(direction);
@@ -168,6 +169,7 @@ impl SharkRain {
 
     pub fn spawn(pos: Vec2) -> HandleUntyped {
         let resources = storage::get::<Resources>();
+        let texture_entry = resources.textures.get("shark_icon").unwrap();
 
         let sprite = GunlikeAnimation::new(
             AnimatedSprite::new(
@@ -181,7 +183,7 @@ impl SharkRain {
                 }],
                 false,
             ),
-            resources.items_textures["shark_rain/shark_rain"],
+            texture_entry.texture,
             Self::SPRITE_WIDTH as f32,
         );
 
@@ -192,6 +194,7 @@ impl SharkRain {
             pos,
             0.0,
             vec2(Self::SPRITE_WIDTH as f32, Self::SPRITE_HEIGHT as f32),
+            false,
         );
 
         scene::add_node(SharkRain {
@@ -302,13 +305,13 @@ impl SharkRain {
             let mut node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<SharkRain>();
-            node.body.speed.x = speed;
+            node.body.velocity.x = speed;
         }
         fn set_speed_y(handle: HandleUntyped, speed: f32) {
             let mut node = scene::get_untyped_node(handle)
                 .unwrap()
                 .to_typed::<SharkRain>();
-            node.body.speed.y = speed;
+            node.body.velocity.y = speed;
         }
 
         capabilities::PhysicsObject {

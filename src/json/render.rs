@@ -1,4 +1,4 @@
-use macroquad::color::Color;
+use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
@@ -37,7 +37,7 @@ impl From<ColorDef> for Color {
     }
 }
 
-pub mod opt_color {
+pub mod color_opt {
     use super::Color;
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
@@ -61,4 +61,17 @@ pub mod opt_color {
         let helper = Option::deserialize(deserializer)?;
         Ok(helper.map(|Helper(external)| external))
     }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(remote = "FilterMode")]
+pub enum FilterModeDef {
+    #[serde(rename = "linear")]
+    Linear,
+    #[serde(rename = "nearest_neighbor")]
+    Nearest,
+}
+
+pub fn default_filter_mode() -> FilterMode {
+    FilterMode::Nearest
 }

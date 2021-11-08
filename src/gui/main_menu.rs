@@ -6,339 +6,265 @@ use macroquad::{
 
 use fishsticks::GamepadContext;
 
-use crate::{
-    gui::{GuiResources, Level},
-    input::InputScheme,
-    nodes::network::Message,
-    EditorInputScheme, GameType,
-};
+use super::{draw_main_menu_background, GuiResources, Panel};
 
-use std::net::UdpSocket;
+use crate::{is_gamepad_btn_pressed, EditorInputScheme, GameInputScheme};
 
-const RELAY_ADDR: &str = "173.0.157.169:35000";
-const WINDOW_WIDTH: f32 = 700.;
-const WINDOW_HEIGHT: f32 = 400.;
+const WINDOW_MARGIN: f32 = 22.0;
 
-fn local_game_ui(ui: &mut ui::Ui, players: &mut Vec<InputScheme>) -> Option<GameType> {
+const MENU_WIDTH: f32 = 340.0;
+const MENU_HEIGHT: f32 = 282.0;
+
+const MENU_BUTTON_WIDTH: f32 = MENU_WIDTH - (WINDOW_MARGIN * 2.0);
+const MENU_BUTTON_HEIGHT: f32 = 42.0;
+
+const MODE_SELECTION_TAB_COUNT: u32 = 2;
+
+pub enum MainMenuResult {
+    LocalGame(Vec<GameInputScheme>),
+    Editor {
+        input_scheme: EditorInputScheme,
+        is_new_map: bool,
+    },
+    Quit,
+}
+
+pub async fn show_main_menu() -> MainMenuResult {
+    let mut current_tab = 0;
+
+    let mut player_input = Vec::new();
+
+    loop {
+        let mut res = None;
+
+        {
+            let mut gamepad_system = storage::get_mut::<GamepadContext>();
+
+            let _ = gamepad_system.update();
+
+            if is_key_pressed(KeyCode::Left)
+                || is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::LeftShoulder)
+            {
+                let next_tab = current_tab as i32 - 1;
+                current_tab = if next_tab < 0 {
+                    MODE_SELECTION_TAB_COUNT - 1
+                } else {
+                    next_tab as u32 % MODE_SELECTION_TAB_COUNT
+                };
+            }
+
+            if is_key_pressed(KeyCode::Right)
+                || is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::RightShoulder)
+            {
+                current_tab += 1;
+                current_tab %= MODE_SELECTION_TAB_COUNT;
+            }
+        }
+
+        draw_main_menu_background();
+
+        let size = vec2(MENU_WIDTH, MENU_HEIGHT);
+        let position = (vec2(screen_width(), screen_height() + 70.0) - size) / 2.0;
+
+        {
+            let gui_resources = storage::get::<GuiResources>();
+
+            root_ui().push_skin(&gui_resources.skins.menu_header);
+
+            let label = "FISH FIGHT";
+
+            let size = root_ui().calc_size(label);
+            let position = vec2((screen_width() - size.x) / 2.0, position.y - 35.0 - size.y);
+
+            widgets::Label::new(label)
+                .position(position)
+                .ui(&mut root_ui());
+
+            root_ui().pop_skin();
+
+            root_ui().push_skin(&gui_resources.skins.menu);
+        }
+
+        Panel::new(hash!(), size, position).ui(&mut root_ui(), |ui| {
+            let size = vec2(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
+
+            let tab_res = widgets::Tabbar::new(hash!(), size, &["<< LB, Local", "Editor, RB >>"])
+                .selected_tab(Some(&mut current_tab))
+                .ui(ui);
+
+            match tab_res {
+                0 => {
+                    res = local_game_ui(ui, &mut player_input);
+                }
+                1 => {
+                    res = editor_ui(ui);
+                }
+                _ => unreachable!(),
+            }
+
+            {
+                let position = vec2(
+                    0.0,
+                    MENU_HEIGHT - (WINDOW_MARGIN * 2.0) - MENU_BUTTON_HEIGHT,
+                );
+                let size = vec2(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
+
+                let is_btn_clicked = widgets::Button::new("Quit")
+                    .position(position)
+                    .size(size)
+                    .ui(ui);
+
+                if is_btn_clicked {
+                    res = Some(MainMenuResult::Quit);
+                }
+            }
+        });
+
+        root_ui().pop_skin();
+
+        if let Some(res) = res {
+            return res;
+        }
+
+        next_frame().await;
+    }
+}
+
+fn local_game_ui(
+    ui: &mut ui::Ui,
+    player_input: &mut Vec<GameInputScheme>,
+) -> Option<MainMenuResult> {
     let gamepad_system = storage::get_mut::<GamepadContext>();
 
-    if players.len() < 2 {
-        if is_key_pressed(KeyCode::V) {
-            //
-            if !players.contains(&InputScheme::KeyboardLeft) {
-                players.push(InputScheme::KeyboardLeft);
+    let is_ready = player_input.len() == 2;
+
+    if player_input.len() < 2 {
+        if is_key_pressed(KeyCode::Enter) {
+            if !player_input.contains(&GameInputScheme::KeyboardLeft) {
+                player_input.push(GameInputScheme::KeyboardLeft);
+            } else {
+                player_input.push(GameInputScheme::KeyboardRight);
             }
         }
-        if is_key_pressed(KeyCode::L) {
-            //
-            if !players.contains(&InputScheme::KeyboardRight) {
-                players.push(InputScheme::KeyboardRight);
-            }
-        }
+
         for (ix, gamepad) in gamepad_system.gamepads() {
             if gamepad.digital_inputs.activated(fishsticks::Button::Start)
-                && !players.contains(&InputScheme::Gamepad(ix))
+                && !player_input.contains(&GameInputScheme::Gamepad(ix))
             {
-                players.push(InputScheme::Gamepad(ix));
+                player_input.push(GameInputScheme::Gamepad(ix));
             }
         }
     }
 
-    ui.label(None, "To connect:");
-    ui.label(None, "Press Start on gamepad");
-    ui.separator();
+    {
+        let position = vec2(12.0, 76.0);
 
-    ui.label(None, "Or V for keyboard 1");
-    ui.label(None, "Or L for keyboard 2");
+        if !player_input.is_empty() {
+            ui.label(position, "Player 1: READY");
+        } else {
+            ui.label(position, "Player 1: press START or ENTER");
+        }
+    }
 
-    ui.separator();
-    ui.separator();
-    ui.separator();
-    ui.separator();
+    {
+        let position = vec2(12.0, 108.0);
 
-    ui.group(hash!(), vec2(WINDOW_WIDTH / 2. - 50., 70.), |ui| {
-        if players.get(0).is_none() {
-            ui.label(None, "Player 1: Not connected");
+        if player_input.len() > 1 {
+            ui.label(position, "Player 2: READY");
+        } else {
+            ui.label(position, "Player 2: press START or ENTER");
         }
-        if let Some(input) = players.get(0) {
-            ui.label(None, "Player 1: Connected!");
-            ui.label(None, &format!("{:?}", input));
-        }
-    });
-    ui.group(hash!(), vec2(WINDOW_WIDTH / 2. - 50., 70.), |ui| {
-        if players.get(1).is_none() {
-            ui.label(None, "Player 2: Not connected");
-        }
-        if let Some(input) = players.get(1) {
-            ui.label(None, "Player 2: Connected!");
-            ui.label(None, &format!("{:?}", input));
-        }
-    });
-    if players.len() == 2 {
+    }
+
+    if is_ready {
+        let key_enter = is_key_pressed(KeyCode::Enter);
         let btn_a = is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::A);
-        let enter = is_key_pressed(KeyCode::Enter);
+        let btn_start = is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::Start);
 
-        if ui.button(None, "Ready! (A) (Enter)") || btn_a || enter {
-            return Some(GameType::Local(players.clone()));
+        let position = vec2(0.0, 150.0);
+        let size = vec2(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
+
+        let is_btn_clicked = widgets::Button::new("Start Game")
+            .position(position)
+            .size(size)
+            .ui(ui);
+
+        if is_btn_clicked || key_enter || btn_a || btn_start {
+            return Some(MainMenuResult::LocalGame(player_input.clone()));
         }
     }
 
     None
 }
 
-fn editor_ui(ui: &mut ui::Ui) -> Option<GameType> {
-    let gamepad_system = storage::get_mut::<GamepadContext>();
+fn editor_ui(ui: &mut ui::Ui) -> Option<MainMenuResult> {
+    let size = vec2(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
 
-    ui.label(None, "Level Editor");
+    {
+        let position = vec2(0.0, 104.0);
 
-    ui.separator();
-    ui.separator();
-    ui.separator();
+        let is_btn_clicked = widgets::Button::new("Create Map")
+            .position(position)
+            .size(size)
+            .ui(ui);
 
-    let mut input_scheme = EditorInputScheme::Keyboard;
-
-    for (ix, gamepad) in gamepad_system.gamepads() {
-        if gamepad.digital_inputs.activated(fishsticks::Button::Start) {
-            input_scheme = EditorInputScheme::Gamepad(ix);
+        if is_btn_clicked {
+            return Some(MainMenuResult::Editor {
+                input_scheme: EditorInputScheme::Keyboard,
+                is_new_map: true,
+            });
         }
     }
 
-    ui.label(None, "To connect:");
-    ui.label(None, "Press Start on gamepad");
+    {
+        let position = vec2(0.0, 150.0);
 
-    ui.separator();
+        let is_btn_clicked = widgets::Button::new("Load Map")
+            .position(position)
+            .size(size)
+            .ui(ui);
 
-    ui.label(None, "Or proceed using keyboard and mouse...");
-
-    ui.separator();
-    ui.separator();
-    ui.separator();
-    ui.separator();
-
-    ui.group(
-        hash!(),
-        vec2(WINDOW_WIDTH / 2. - 50., 70.),
-        |ui| match input_scheme {
-            EditorInputScheme::Keyboard => {
-                ui.label(None, "Gamepad not connected");
-            }
-            EditorInputScheme::Gamepad(i) => {
-                ui.label(None, "Gamepad connected!");
-                ui.label(None, &format!("{:?}", i));
-            }
-        },
-    );
-
-    let btn_a = is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::A);
-    let btn_b = is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::B);
-
-    if ui.button(None, "Create map (A)") || btn_a {
-        return Some(GameType::Editor {
-            input_scheme,
-            is_new_map: true,
-        });
-    }
-
-    ui.same_line(204.0);
-
-    if ui.button(None, "Load map (B)") || btn_b {
-        return Some(GameType::Editor {
-            input_scheme,
-            is_new_map: false,
-        });
+        if is_btn_clicked {
+            return Some(MainMenuResult::Editor {
+                input_scheme: EditorInputScheme::Keyboard,
+                is_new_map: false,
+            });
+        }
     }
 
     None
 }
 
-#[repr(u32)]
-#[derive(Debug, Clone, Copy, PartialEq)]
-enum ConnectionKind {
-    Lan,
-    Stun,
-    Relay,
-    Unknown,
-}
-
-#[derive(Debug, PartialEq)]
-enum ConnectionStatus {
-    Unknown,
-    Connected,
-}
-
-struct Connection {
-    kind: ConnectionKind,
-    socket: Option<UdpSocket>,
-    local_addr: String,
-    opponent_addr: String,
-    relay_addr: String,
-    status: ConnectionStatus,
-}
-
-impl Connection {
-    fn new() -> Connection {
-        Connection {
-            kind: ConnectionKind::Unknown,
-            socket: None,
-            local_addr: "".to_string(),
-            opponent_addr: "".to_string(),
-            relay_addr: RELAY_ADDR.to_string(),
-            status: ConnectionStatus::Unknown,
-        }
-    }
-
-    fn update(&mut self, kind: ConnectionKind) {
-        if let Some(socket) = self.socket.as_mut() {
-            let mut buf = [0; 100];
-            if socket.recv(&mut buf).is_ok() {
-                let _message: Message = nanoserde::DeBin::deserialize_bin(&buf[..]).ok().unwrap();
-                self.status = ConnectionStatus::Connected;
-            }
-        }
-
-        if kind != self.kind {
-            self.kind = kind;
-            self.status = ConnectionStatus::Unknown;
-
-            use std::net::SocketAddr;
-
-            let addrs = [
-                SocketAddr::from(([0, 0, 0, 0], 3400)),
-                SocketAddr::from(([0, 0, 0, 0], 3401)),
-                SocketAddr::from(([0, 0, 0, 0], 3402)),
-                SocketAddr::from(([0, 0, 0, 0], 3403)),
-            ];
-            match kind {
-                ConnectionKind::Lan => {
-                    let socket = UdpSocket::bind(&addrs[..]).unwrap();
-
-                    self.local_addr = format!("{}", socket.local_addr().unwrap());
-                    socket.set_nonblocking(true).unwrap();
-
-                    self.socket = Some(socket);
-                }
-                ConnectionKind::Stun => {
-                    let socket = UdpSocket::bind(&addrs[..]).unwrap();
-
-                    let sc = stunclient::StunClient::with_google_stun_server();
-                    self.local_addr = format!("{}", sc.query_external_address(&socket).unwrap());
-                    socket.set_nonblocking(true).unwrap();
-
-                    self.socket = Some(socket);
-                }
-                ConnectionKind::Relay => {
-                    let socket = UdpSocket::bind(&addrs[..]).unwrap();
-                    socket.connect(&self.relay_addr).unwrap();
-                    socket.set_nonblocking(true).unwrap();
-
-                    loop {
-                        let _ = socket
-                            .send(&nanoserde::SerBin::serialize_bin(&Message::RelayRequestId));
-
-                        let mut buf = [0; 100];
-                        if socket.recv(&mut buf).is_ok() {
-                            let message: Message =
-                                nanoserde::DeBin::deserialize_bin(&buf[..]).ok().unwrap();
-                            if let Message::RelayIdAssigned(id) = message {
-                                self.local_addr = format!("{}", id);
-                                break;
-                            }
-                        }
-                    }
-                    self.socket = Some(socket);
-                }
-                _ => {}
-            }
-        }
-    }
-
-    pub fn connect(&mut self) -> bool {
-        let socket = self.socket.as_mut().unwrap();
-        match self.kind {
-            ConnectionKind::Lan | ConnectionKind::Stun => {
-                socket.connect(&self.opponent_addr).unwrap();
-            }
-            ConnectionKind::Relay => {
-                let other_id;
-                match self.opponent_addr.parse::<u64>() {
-                    Ok(v) => other_id = v,
-                    Err(_) => return false,
-                };
-                loop {
-                    let _ = socket.send(&nanoserde::SerBin::serialize_bin(
-                        &Message::RelayConnectTo(other_id),
-                    ));
-
-                    let mut buf = [0; 100];
-                    if socket.recv(&mut buf).is_ok() {
-                        let message: Message =
-                            nanoserde::DeBin::deserialize_bin(&buf[..]).ok().unwrap();
-                        if let Message::RelayConnected = message {
-                            break;
-                        }
-                    }
-                }
-            }
-            _ => {}
-        }
-        true
-    }
-    pub fn probe(&mut self) -> Option<()> {
-        assert!(self.socket.is_some());
-
-        if self.kind == ConnectionKind::Relay {
-            return Some(());
-        }
-        let socket = self.socket.as_mut().unwrap();
-
-        socket.connect(&self.opponent_addr).ok()?;
-
-        for _ in 0..100 {
-            socket
-                .send(&nanoserde::SerBin::serialize_bin(&Message::Idle))
-                .ok()?;
-        }
-
-        None
-    }
-}
+/*
 struct NetworkUiState {
-    input_scheme: InputScheme,
-    connection_kind: ConnectionKind,
-    connection: Connection,
+    input_scheme: GameInputScheme,
+    connection_kind: NetworkConnectionKind,
+    connection: NetworkConnection,
     custom_relay: bool,
 }
 
-fn is_gamepad_btn_pressed(gamepad_system: &GamepadContext, btn: fishsticks::Button) -> bool {
-    for (_, gamepad) in gamepad_system.gamepads() {
-        if gamepad.digital_inputs.just_activated(btn) {
-            return true;
-        }
-    }
-
-    false
-}
-
-fn network_game_ui(ui: &mut ui::Ui, state: &mut NetworkUiState) -> Option<GameType> {
+fn network_game_ui(ui: &mut ui::Ui, state: &mut NetworkUiState) -> Option<MainMenuResult> {
     let mut connection_kind_ui = state.connection_kind as usize;
+
     widgets::ComboBox::new(hash!(), &["Lan network", "STUN server", "Relay server"])
         .ratio(0.4)
         .label("Connection type")
         .ui(ui, &mut connection_kind_ui);
+
     match connection_kind_ui {
-        x if x == ConnectionKind::Stun as usize => {
-            state.connection_kind = ConnectionKind::Stun;
+        x if x == NetworkConnectionKind::Stun as usize => {
+            state.connection_kind = NetworkConnectionKind::Stun;
         }
-        x if x == ConnectionKind::Lan as usize => {
-            state.connection_kind = ConnectionKind::Lan;
+        x if x == NetworkConnectionKind::Lan as usize => {
+            state.connection_kind = NetworkConnectionKind::Lan;
         }
-        x if x == ConnectionKind::Relay as usize => {
-            state.connection_kind = ConnectionKind::Relay;
+        x if x == NetworkConnectionKind::Relay as usize => {
+            state.connection_kind = NetworkConnectionKind::Relay;
         }
         _ => unreachable!(),
     }
 
-    if state.connection_kind == ConnectionKind::Relay {
+    if state.connection_kind == NetworkConnectionKind::Relay {
         widgets::Checkbox::new(hash!())
             .label("Use custom relay server")
             .ratio(0.4)
@@ -374,11 +300,11 @@ fn network_game_ui(ui: &mut ui::Ui, state: &mut NetworkUiState) -> Option<GameTy
         &format!("Connection status: {:?}", state.connection.status),
     );
 
-    if state.connection.status == ConnectionStatus::Connected
+    if state.connection.status == NetworkConnectionStatus::Connected
         && ui.button(None, "Connect (A) (Enter)")
         && state.connection.connect()
     {
-        return Some(GameType::Network {
+        return Some(MainMenuResult::NetworkGame {
             socket: state.connection.socket.take().unwrap(),
             id: if state.connection.local_addr > state.connection.opponent_addr {
                 0
@@ -393,351 +319,23 @@ fn network_game_ui(ui: &mut ui::Ui, state: &mut NetworkUiState) -> Option<GameTy
         vec2(430., 310.),
         &format!("Input: {:?}", state.input_scheme),
     );
+
     ui.label(vec2(360., 330.), "Press V/L/Start to change");
     if is_key_pressed(KeyCode::V) {
-        state.input_scheme = InputScheme::KeyboardLeft;
+        state.input_scheme = GameInputScheme::KeyboardLeft;
     }
+
     if is_key_pressed(KeyCode::L) {
-        state.input_scheme = InputScheme::KeyboardRight;
+        state.input_scheme = GameInputScheme::KeyboardRight;
     }
+
     let gamepad_system = storage::get_mut::<GamepadContext>();
     for (ix, gamepad) in gamepad_system.gamepads() {
         if gamepad.digital_inputs.activated(fishsticks::Button::Start) {
-            state.input_scheme = InputScheme::Gamepad(ix);
+            state.input_scheme = GameInputScheme::Gamepad(ix);
         }
     }
 
     None
 }
-
-const MODE_SELECTION_TAB_COUNT: u32 = 3;
-
-pub async fn game_type() -> GameType {
-    let mut players = vec![];
-
-    let mut network_ui_state = NetworkUiState {
-        connection: Connection::new(),
-        input_scheme: InputScheme::KeyboardLeft,
-        connection_kind: ConnectionKind::Lan,
-        custom_relay: false,
-    };
-
-    let mut tab = 0;
-    loop {
-        let mut res = None;
-
-        {
-            let mut gamepad_system = storage::get_mut::<GamepadContext>();
-
-            let _ = gamepad_system.update();
-
-            if is_key_pressed(KeyCode::Left)
-                || is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::LeftShoulder)
-                || is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::LeftStick)
-            {
-                let next_tab = tab as i32 - 1;
-                tab = if next_tab < 0 {
-                    MODE_SELECTION_TAB_COUNT - 1
-                } else {
-                    next_tab as u32 % MODE_SELECTION_TAB_COUNT
-                };
-            }
-
-            if is_key_pressed(KeyCode::Right)
-                || is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::RightShoulder)
-                || is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::RightStick)
-            {
-                tab += 1;
-                tab %= MODE_SELECTION_TAB_COUNT;
-            }
-        }
-
-        {
-            let gui_resources = storage::get_mut::<GuiResources>();
-            root_ui().push_skin(&gui_resources.skins.login_skin);
-        }
-
-        root_ui().window(
-            hash!(),
-            Vec2::new(
-                screen_width() / 2. - WINDOW_WIDTH / 2.,
-                screen_height() / 2. - WINDOW_HEIGHT / 2.,
-            ),
-            Vec2::new(WINDOW_WIDTH, WINDOW_HEIGHT),
-            |ui| match widgets::Tabbar::new(
-                hash!(),
-                vec2(WINDOW_WIDTH - 50., 50.),
-                &["<< LT, Local", "Editor", "Network, RT >>"],
-            )
-            .selected_tab(Some(&mut tab))
-            .ui(ui)
-            {
-                0 => {
-                    res = local_game_ui(ui, &mut players);
-                }
-                1 => {
-                    res = editor_ui(ui);
-                }
-                2 => {
-                    res = network_game_ui(ui, &mut network_ui_state);
-                }
-                _ => unreachable!(),
-            },
-        );
-
-        root_ui().pop_skin();
-
-        if let Some(res) = res {
-            return res;
-        }
-        next_frame().await;
-    }
-}
-
-pub async fn location_select() -> Level {
-    let mut hovered: i32 = 0;
-
-    let mut old_mouse_position = mouse_position();
-
-    // skip a frame to let Enter be unpressed from the previous screen
-    next_frame().await;
-
-    loop {
-        let mut gui_resources = storage::get_mut::<GuiResources>();
-        let mut gamepad_system = storage::get_mut::<GamepadContext>();
-
-        let _ = gamepad_system.update();
-
-        let mut up = is_key_pressed(KeyCode::Up) || is_key_pressed(KeyCode::W);
-        let mut down = is_key_pressed(KeyCode::Down) || is_key_pressed(KeyCode::S);
-        let mut right = is_key_pressed(KeyCode::Right) || is_key_pressed(KeyCode::D);
-        let mut left = is_key_pressed(KeyCode::Left) || is_key_pressed(KeyCode::A);
-        let mut start = is_key_pressed(KeyCode::Enter);
-
-        for (_, gamepad) in gamepad_system.gamepads() {
-            use fishsticks::{Axis, Button};
-
-            up |= gamepad.digital_inputs.just_activated(Button::DPadUp)
-                || matches!(
-                    gamepad.analog_inputs.just_activated_digital(Axis::LeftY),
-                    Some(value) if value < 0.0
-                );
-
-            down |= gamepad.digital_inputs.just_activated(Button::DPadDown)
-                || matches!(
-                    gamepad.analog_inputs.just_activated_digital(Axis::LeftY),
-                    Some(value) if value > 0.0
-                );
-
-            left |= gamepad.digital_inputs.just_activated(Button::DPadLeft)
-                || matches!(
-                    gamepad.analog_inputs.just_activated_digital(Axis::LeftX),
-                    Some(value) if value < 0.0
-                );
-
-            right |= gamepad.digital_inputs.just_activated(Button::DPadRight)
-                || matches!(
-                    gamepad.analog_inputs.just_activated_digital(Axis::LeftX),
-                    Some(value) if value > 0.0
-                );
-
-            start |= gamepad.digital_inputs.just_activated(Button::A)
-                || gamepad.digital_inputs.just_activated(Button::Start);
-        }
-        clear_background(BLACK);
-
-        let levels_amount = gui_resources.levels.len();
-
-        root_ui().push_skin(&gui_resources.skins.main_menu_skin);
-
-        let rows = (levels_amount + 2) / 3;
-        let w = (screen_width() - 120.) / 3. - 50.;
-        let h = (screen_height() - 180.) / rows as f32 - 50.;
-
-        {
-            if up {
-                hovered -= 3;
-                let ceiled_levels_amount = levels_amount as i32 + 3 - (levels_amount % 3) as i32;
-                if hovered < 0 {
-                    hovered = (hovered + ceiled_levels_amount as i32) % ceiled_levels_amount;
-                    if hovered >= levels_amount as i32 {
-                        hovered -= 3;
-                    }
-                }
-            }
-
-            if down {
-                hovered += 3;
-                if hovered >= levels_amount as i32 {
-                    let row = hovered % 3;
-                    hovered = row;
-                }
-            }
-            if left {
-                hovered -= 1;
-            }
-            if right {
-                hovered += 1;
-            }
-            hovered = (hovered + levels_amount as i32) % levels_amount as i32;
-
-            let levels = &mut gui_resources.levels;
-
-            for (n, level) in levels.iter_mut().enumerate() {
-                let is_hovered = hovered == n as i32;
-
-                let rect = Rect::new(
-                    60. + (n % 3) as f32 * (w + 50.) - level.size * 30.,
-                    90. + 25. + (n / 3) as f32 * (h + 50.) - level.size * 30.,
-                    w + level.size * 60.,
-                    h + level.size * 60.,
-                );
-                if old_mouse_position != mouse_position() && rect.contains(mouse_position().into())
-                {
-                    hovered = n as _;
-                }
-
-                if is_hovered {
-                    level.size = level.size * 0.8 + 1.0 * 0.2;
-                } else {
-                    level.size = level.size * 0.9 + 0.0;
-                }
-
-                if ui::widgets::Button::new(level.preview)
-                    .size(rect.size())
-                    .position(rect.point())
-                    .ui(&mut *root_ui())
-                    || start
-                {
-                    root_ui().pop_skin();
-                    let level = levels.get(hovered as usize).unwrap();
-                    return level.clone();
-                }
-            }
-        }
-
-        root_ui().pop_skin();
-
-        old_mouse_position = mouse_position();
-
-        next_frame().await;
-    }
-}
-
-pub async fn new_map() -> (String, Vec2, UVec2) {
-    let mut res = None;
-
-    let size = vec2(350.0, 230.0);
-    let position = vec2(
-        (screen_width() - size.x) / 2.0,
-        (screen_height() - size.y) / 2.0,
-    );
-
-    next_frame().await;
-
-    let gui_resources = storage::get_mut::<GuiResources>();
-    root_ui().push_skin(&gui_resources.skins.login_skin);
-
-    let mut map_name = "Unnamed Map".to_string();
-    let mut map_grid_width = "100".to_string();
-    let mut map_grid_height = "100".to_string();
-    let mut map_tile_width = "32".to_string();
-    let mut map_tile_height = "32".to_string();
-
-    let mut gamepad_system = storage::get_mut::<GamepadContext>();
-
-    loop {
-        let _ = gamepad_system.update();
-
-        clear_background(BLACK);
-
-        widgets::Window::new(hash!(), position, size)
-            .titlebar(false)
-            .movable(false)
-            .ui(&mut *root_ui(), |ui| {
-                ui.label(None, "Create new map");
-
-                ui.separator();
-                ui.separator();
-                ui.separator();
-                ui.separator();
-
-                {
-                    let size = vec2(173.0, 25.0);
-
-                    widgets::InputText::new(hash!())
-                        .size(size)
-                        .ratio(1.0)
-                        .label("Map name")
-                        .ui(ui, &mut map_name);
-                }
-
-                ui.separator();
-                ui.separator();
-
-                {
-                    let size = vec2(75.0, 25.0);
-
-                    widgets::InputText::new(hash!())
-                        .size(size)
-                        .ratio(1.0)
-                        .label("x")
-                        .ui(ui, &mut map_grid_width);
-
-                    ui.same_line(size.x + 25.0);
-
-                    widgets::InputText::new(hash!())
-                        .size(size)
-                        .ratio(1.0)
-                        .label("Grid size")
-                        .ui(ui, &mut map_grid_height);
-
-                    widgets::InputText::new(hash!())
-                        .size(size)
-                        .ratio(1.0)
-                        .label("x")
-                        .ui(ui, &mut map_tile_width);
-
-                    ui.same_line(size.x + 25.0);
-
-                    widgets::InputText::new(hash!())
-                        .size(size)
-                        .ratio(1.0)
-                        .label("Tile size")
-                        .ui(ui, &mut map_tile_height);
-                }
-
-                ui.separator();
-                ui.separator();
-                ui.separator();
-                ui.separator();
-
-                let btn_a = is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::A);
-                let enter = is_key_pressed(KeyCode::Enter);
-
-                if ui.button(None, "Confirm (A) (Enter)") || btn_a || enter {
-                    // TODO: Validate input
-
-                    let grid_size = uvec2(
-                        map_grid_width.parse::<u32>().unwrap(),
-                        map_grid_height.parse::<u32>().unwrap(),
-                    );
-
-                    let tile_size = vec2(
-                        map_tile_width.parse::<f32>().unwrap(),
-                        map_tile_height.parse::<f32>().unwrap(),
-                    );
-
-                    let map_params = (map_name.clone(), tile_size, grid_size);
-                    res = Some(map_params);
-                }
-            });
-
-        if let Some(res) = res {
-            root_ui().pop_skin();
-            return res;
-        }
-
-        next_frame().await;
-    }
-}
+*/

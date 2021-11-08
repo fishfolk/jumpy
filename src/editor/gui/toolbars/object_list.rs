@@ -71,7 +71,7 @@ impl ToolbarElement for ObjectListElement {
                 .position(position)
                 .ui(ui);
 
-            ui.label(position, &object.name);
+            ui.label(position, &object.id);
 
             if was_clicked {
                 res = Some(EditorAction::SelectObject {

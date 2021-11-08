@@ -1,6 +1,6 @@
 # Simple Gun Weapon
 
-This section will walk through the process of adding a new gun weapon to Fish Fight, using a sniper weapon as an example. The weapon added in this section will be an instance of the `Gun` struct.
+This section will walk through the process of adding a new gun weapon to Fish Fight, using a sniper weapon as an example.
 
 ## Planning
 
@@ -10,139 +10,138 @@ Before jumping into the games code, it is a good idea to do some planning about 
 - Large recoil
 - 2 bullets
 
-## Programming
+## Implementation
 
 Open your cloned "FishFight" directory using your code editor of choice.
 
-### Item File
+### The item definition
 
-Open `src/items.rs` and add a new module called `your_weapon` at the top of the file. Below is the code for adding the sniper module:
+To add an item or, in this case, a weapon to the game, you will first have to define the item in a data file. These files are located in
+`assets/items` and will typically have the same name as the item's id. Since we are creating a sniper rifle, we can give this file the 
+name `sniper_rifle.json`. This path to the file must also be added to the file `assets/items.json`, so that game will know where to look
+for it. This is done by simply adding the path to the file, relative to the `items.json` file, to the array within. In this case, the path
+that we add will be `items/sniper_rifle.json`.
 
-```rust
-mod sniper;
-```
+Now, it is time to define the weapons parameters inside the `items.json` file. Begin by creating a new object and adding
+the id (`sniper_rifle`) and the item type (`weapon`).
 
-Create a new rust file in `src/items` called `your_weapon.rs`. I'll name the item file for this example `sniper.rs`.
+Every item that we add will also need a set of sprite parameters (`SpriteParams`) that define the sprite that will be drawn
+when the item is on the ground, before being picked up by the player. Typically, it will be enough to include a texture id here,
+as things like sprite size will most often be defined in the texture's entry in the `assets/textures.json` file.
 
-At the top of the file, add the following imports:
+We will also need to define a collider size, that will be the size of the collider used when checking if a player is close enough
+to the item to pick it up:
 
-```rust
-use macroquad::{
-    experimental::{
-        animation::{AnimatedSprite, Animation},
-        collections::storage,
-        scene::{self, HandleUntyped},
-    },
-    prelude::*,
-};
-
-use crate::{
-    components::{GunlikeAnimation, PhysicsBody, ThrowableItem},
-    items::gun::Gun,
-    Resources,
-};
-```
-
-Next, define some constant values for your new item. The following are the values that I came up with for the sniper rifle, but you should play around with your own values until you find values that you like for your item.
-
-```rust
-const SNIPER_COLLIDER_WIDTH: f32 = 48.0;
-const SNIPER_COLLIDER_HEIGHT: f32 = 32.0;
-const SNIPER_RECOIL: f32 = 1400.0;
-const SNIPER_BULLETS: i32 = 2;
-const SNIPER_BULLET_SPEED: f32 = 1200.0;
-```
-
-Next, create an `impl Gun` block and add a public function called `spawn_your_weapon`, for the sniper weapon I'm calling this function `spawn_sniper`. Then, add code to this function to spawn your new weapon. It should be very similar to the code I have here, but with your weapon's values instead of the sniper values. I copied the following code from `src/items/musket.rs` and changed the values to suit for my sniper weapon.
-
-```rust
-impl Gun {
-    pub fn spawn_sniper(pos: Vec2) -> HandleUntyped {
-        let mut resources = storage::get_mut::<Resources>();
-
-        let gun_sprite = GunlikeAnimation::new(
-            AnimatedSprite::new(
-                92,
-                32,
-                &[
-                    Animation {
-                        name: "idle".to_string(),
-                        row: 0,
-                        frames: 1,
-                        fps: 1,
-                    },
-                    Animation {
-                        name: "shoot".to_string(),
-                        row: 1,
-                        frames: 3,
-                        fps: 15,
-                    },
-                ],
-                false,
-            ),
-            resources.items_textures["sniper/gun"], // Change this to `your_weapon/gun`
-            SNIPER_COLLIDER_WIDTH,
-        );
-
-        let gun_fx_sprite = GunlikeAnimation::new(
-            AnimatedSprite::new(
-                92,
-                32,
-                &[Animation {
-                    name: "shoot".to_string(),
-                    row: 2,
-                    frames: 3,
-                    fps: 15,
-                }],
-                false,
-            ),
-            resources.items_textures["sniper/gun"], // Change this to `your_weapon/gun`
-            SNIPER_COLLIDER_WIDTH,
-        );
-
-        scene::add_node(Gun {
-            gun_sprite,
-            gun_fx_sprite,
-            gun_fx: false,
-            body: PhysicsBody::new(
-                &mut resources.collision_world,
-                pos,
-                0.0,
-                vec2(SNIPER_COLLIDER_WIDTH, SNIPER_COLLIDER_HEIGHT),
-            ),
-            throwable: ThrowableItem::default(),
-            // Use your weapon's constants here
-            bullets: SNIPER_BULLETS,
-            max_bullets: SNIPER_BULLETS,
-            bullet_speed: SNIPER_BULLET_SPEED,
-            collider_width: SNIPER_COLLIDER_WIDTH,
-            collider_height: SNIPER_COLLIDER_HEIGHT,
-            recoil: SNIPER_RECOIL,
-        })
-        .untyped()
-    }
+```json
+{
+  "id": "sniper_rifle",
+  "type": "weapon",
+  "sprite": {
+    "texture": "musket"
+  },
+  "collider_size": {
+    "x": 16,
+    "y": 16
+  }
 }
 ```
 
-### Items Array
+That is all the required data for the item part of our definition, so now it is time need to add the parameters required for weapon item variants.
 
-Open `src/items.rs` and add find the `ITEMS` array. Add an entry to this array for your weapon using your new spawn function. I copied the `Item` entry for the musket weapon and changed the `tiled_name` and `constructor` fields to `sniper` and `gun::Gun::spawn_sniper` respectively. The `tiled_name` field is used identifying the item when designing levels. The `constructor` is the function to spawn the item into the game. We programmed this spawn function the previous [Item File](#item-file) section. The following is the entry for the sniper weapon:
+We have quite a few options for customization here that can be explored by looking at the `WeaponParams` struct in the source code. We are required 
+to define at least the `ActiveEffectParams`, which holds the parameters of the effect that will be instantiated when the weapon is used to attack,
+and a `WeaponAnimationParams`, which holds the parameters of the animation players that will be used to animate and draw the weapon when it is
+equipped. We also wanted our rifle to have two bullets and a heavy recoil, so we should also define these parameters. We should also specify a
+cooldown for our weapon, which governs the interval between shots, and an attack duration, which controls the length of time that the player is
+locked in the attack state (input blocked), after an attack. We should also add a sound effect, to be played when the weapon is used. We will also
+have to add an effect offset, which is the offset from the weapons position to the point where the weapons effect will originate.
 
-```rust
-Item {
-    tiled_name: "sniper",
-    constructor: gun::Gun::spawn_sniper,
-    tiled_offset: (-35., -25.),
-    textures: &[("gun", "assets/Whale/Gun(92x32).png")], // Temporarily using the existing gun texture
-    sounds: &[],
-    fxses: &[],
-    network_ready: true,
-},
+Now, it is time to define the parameters for the affect that will be instantiated when we fire the gun. There are several variants to
+choose from, or a new one can be implemented, either as a new variant of `ActiveEffectKind` or as an implementation of the `WeaponEffectCoroutine`
+type. In our case, however, there is already a perfect fit; the `Projectile` variant.
+
+We will want to specify a projectile speed, a projectile range and a specification for how the projectile should be drawn. A projectile can be
+drawn as a simple colored shape or using a texture. We will use a texture and we will also color the projectile by setting a tint:
+
+```json
+{
+  "id": "sniper_rifle",
+  "type": "weapon",
+  "sprite": {
+    "texture": "musket"
+  },
+  "uses": 2,
+  "cooldown": 1.5,
+  "attack_duration": 1.0,
+  "recoil": 1400.0,
+  "sound_effect": "shoot",
+  "collider_size": {
+    "x": 64,
+    "y": 24
+  },
+  "effect_offset": {
+    "x": 64,
+    "y": 16
+  },
+  "effects": {
+    "type": "projectile",
+    "projectile": {
+      "type": "sprite",
+      "sprite": {
+        "texture": "small_projectile",
+        "size": {
+          "x": 8,
+          "y": 4
+        },
+        "tint": {
+          "r": 0.9,
+          "g": 0.75,
+          "b": 0.12,
+          "a": 1.0
+        }
+      }
+    },
+    "range": 600.0,
+    "speed": 25.0
+  },
+  "animation": {
+    "texture": "musket",
+    "animations": [
+      {
+        "id": "idle",
+        "row": 0,
+        "frames": 1,
+        "fps": 1
+      },
+      {
+        "id": "attack",
+        "row": 1,
+        "frames": 3,
+        "fps": 15
+      }
+    ]
+  },
+  "effect_animation": {
+    "texture": "musket",
+    "animations": [
+      {
+        "id": "attack_effect",
+        "row": 2,
+        "frames": 4,
+        "fps": 12
+      }
+    ]
+  }
+}
 ```
 
+<<<<<<< HEAD
 If you like, you can skip to the testing section to test your new weapon, but if you haven't added a new texture or modified an existing texture, you will not be able to visually recognize your item before picking it up. For this reason, I recommend you continue to the [Texture](#texture) section next.
 
 ## Texture (Optional)
+=======
+## Texture
+>>>>>>> main
 
 It is important to make sure that your weapon is able to be visually distinguished between the other weapons in the game. When I added the sniper rifle to the `ITEMS` array, I copied all of the data from existing musket weapon, changing only the `tiled_name` and `constructor`. To give my sniper weapon a new texture, I will also need to change the `gun` texture in the `textures` field. Currently, the `gun` texture is set to `assets/Whale/Gun(92x32).png`. I'll open this file with my pixel editor of choice, [Aseprite](https://www.aseprite.org/) ([GIMP](https://www.gimp.org/) would also work fine).
 
@@ -156,24 +155,27 @@ Then I'll adjust the hue of the selected colors to turn all of the gold color re
 
 ![adjust_gun_hue](assets/adjust_gun_hue.png)
 
-This texture is now distinguishable from the other gun textures in the game. I'll save this new texture into the project's `assets/Whale` directory as `Sniper(92x32).png`.
+This texture is now distinguishable from the other gun textures in the game.
 
 This, of course, is just one way of distinguishing the texture from the other textures in the game. Feel free to copy and modify textures using your own methods, or if you feel inclined, make your own unique texture for your weapon!
 
-Now all I have to do to put my new texture in the game is to change value of the gun texture for the sniper entry in the `ITEMS` array in `src/items.rs`. Here is the modified sniper entry using the new texture:
+Now, all that remains is to add the new texture to the game. This is done by copying the texture file to the `assets/textures/items` directory and adding an entry to the file `assets/textures.json`.
 
-```rust
-Item {
-    tiled_name: "sniper",
-    constructor: gun::Gun::spawn_sniper,
-    tiled_offset: (-35., -25.),
-    textures: &[("gun", "assets/Whale/Sniper(92x32).png")],
-    sounds: &[],
-    fxses: &[],
-    network_ready: true,
-},
+Assuming a texture file name of `SniperRifle(92x32).png`, the following entry should be added to `assets/textures.json`:
+
+```json
+{
+  "id": "sniper_rifle",
+  "path": "textures/items/SniperRifle(92x32).png",
+  "type": "spritesheet",
+  "sprite_size": {
+    "x": 92,
+    "y": 32
+  }
+}
 ```
 
+<<<<<<< HEAD
 ## Size (Optional)
 
 ### Sprite
@@ -240,12 +242,15 @@ Now I need to do a little math to determine the size of the new spritesheet. Sin
 
 - change collider width and collider height constants
 - view hitboxes?
+=======
+You will also have to change your weapons data file, so that it references this new texture, in stead of `"musket"`. This is done by changing the `texture` fields of your weapons `sprite` and `animation` members to `"sniper_rifle"`.
+>>>>>>> main
 
 ## Testing
 
-The last thing we need to do is put our new weapon in the game and test it! Fish Fight's levels are defined in json files in the `assets/levels` directory. For testing items, there is a test level in the game defined in a file called `test_level.json`. Open this file.
+The last thing we need to do is put our new weapon in the game and test it! Fish Fight's levels are defined in json files in the `assets/maps` directory. For testing items, there is a test level in the game defined in a file called `test_level.json`. Open this file.
 
-In this file you will see a long list of item entries containing data about items that are placed in the level. The easiest way to add your new weapon to this level is to replace the `name` field of one of other items currently in the level with the name of your new weapon (referred to as `your_weapon` throughout this chapter). Here is the entry for my sniper weapon.
+In this file you will see a long list of item entries containing data about items that are placed in the level. The easiest way to add your new weapon to this level is to replace the `name` field of one of other items currently in the level with the id of your new weapon (referred to as `your_weapon` throughout this chapter). Here is the entry for my sniper weapon.
 
 ```json
 ...
@@ -261,7 +266,7 @@ In this file you will see a long list of item entries containing data about item
             "name":"sniper",
             "point":true,
             "rotation":0,
-            "type":"",
+            "type":"item",
             "visible":true,
             "width":0,
             "x":400,

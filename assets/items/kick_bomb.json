@@ -1,0 +1,69 @@
+{
+  "id": "kick_bomb",
+  "sprite": {
+    "texture": "kick_bomb"
+  },
+  "type": "weapon",
+  "uses": 1,
+  "is_destroyed_on_depletion": true,
+  "effects": {
+    "type": "triggered_effect",
+    "trigger": "all_except_ground",
+    "velocity": {
+      "x": 200.0,
+      "y": 0.0
+    },
+    "size": {
+      "x": 24,
+      "y": 24
+    },
+    "is_kickable": true,
+    "timed_trigger": 1.5,
+    "effects": {
+      "type": "circle_collider",
+      "radius": 64,
+      "is_explosion": true,
+      "particle_effect": "hit",
+      "sound_effect": "explode"
+    },
+    "animation": {
+      "texture": "kick_bomb",
+      "offset": {
+        "x": 0,
+        "y": -24
+      },
+      "animations": [
+        {
+          "id": "armed",
+          "row": 1,
+          "frames": 3,
+          "fps": 12
+        }
+      ],
+      "should_autoplay": true
+    }
+  },
+  "collider_size": {
+    "x": 32,
+    "y": 48
+  },
+  "mount_offset": {
+    "x": 0,
+    "y": -24
+  },
+  "effect_offset": {
+    "x": 0,
+    "y": 24
+  },
+  "animation": {
+    "texture": "kick_bomb",
+    "animations": [
+      {
+        "id": "idle",
+        "row": 0,
+        "frames": 1,
+        "fps": 1
+      }
+    ]
+  }
+}

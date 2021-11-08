@@ -1,0 +1,11 @@
+[
+  "items/cannon.json",
+  "items/grenades.json",
+  "items/machine_gun.json",
+  "items/mines.json",
+  "items/musket.json",
+  "items/sniper_rifle.json",
+  "items/sword.json",
+  "items/kick_bomb.json",
+  "items/turtle_shell.json"
+]

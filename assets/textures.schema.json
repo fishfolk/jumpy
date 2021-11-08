@@ -1,0 +1,54 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/object1636321952.json",
+  "title": "Root",
+  "type": "array",
+  "default": [],
+  "items": {
+    "$id": "#root/items",
+    "title": "Items",
+    "type": "object",
+    "required": ["id", "path"],
+    "properties": {
+      "id": {
+        "$id": "#root/items/id",
+        "title": "Id",
+        "type": "string",
+        "default": "",
+        "examples": ["default_tool_icon"],
+        "pattern": "^.*$"
+      },
+      "path": {
+        "$id": "#root/items/path",
+        "title": "Path",
+        "type": "string",
+        "default": "",
+        "examples": ["textures/editor_icons/no_icon.png"],
+        "pattern": "^.*$"
+      },
+      "sprite_size": {
+        "$id": "#root/items/sprite_size",
+        "title": "Sprite_size",
+        "type": "object",
+        "required": ["x", "y"],
+        "properties": {
+          "x": {
+            "$id": "#root/items/sprite_size/x",
+            "title": "X",
+            "type": "integer",
+            "examples": [0],
+            "default": 0
+          },
+          "y": {
+            "$id": "#root/items/sprite_size/y",
+            "title": "Y",
+            "type": "integer",
+            "examples": [0],
+            "default": 0
+          }
+        }
+      }
+    }
+  }
+}

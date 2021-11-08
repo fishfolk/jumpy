@@ -1,0 +1,645 @@
+{
+	"definitions": {},
+	"$schema": "http://json-schema.org/draft-07/schema#", 
+	"$id": "https://example.com/object1636323089.json", 
+	"title": "Root", 
+	"type": "object",
+	"required": [
+		"id",
+		"sprite",
+		"type",
+		"cooldown",
+		"recoil",
+		"uses",
+		"mount_offset",
+		"effect_offset",
+		"sound_effect",
+		"effects",
+		"collider_size",
+		"animation",
+		"effect_animation"
+	],
+	"properties": {
+		"id": {
+			"$id": "#root/id", 
+			"title": "Id", 
+			"type": "string",
+			"default": "",
+			"examples": [
+				"cannon"
+			],
+			"pattern": "^.*$"
+		},
+		"sprite": {
+			"$id": "#root/sprite", 
+			"title": "Sprite", 
+			"type": "object",
+			"required": [
+				"texture",
+				"offset"
+			],
+			"properties": {
+				"texture": {
+					"$id": "#root/sprite/texture", 
+					"title": "Texture", 
+					"type": "string",
+					"default": "",
+					"examples": [
+						"cannon"
+					],
+					"pattern": "^.*$"
+				},
+				"offset": {
+					"$id": "#root/sprite/offset", 
+					"title": "Offset", 
+					"type": "object",
+					"required": [
+						"x",
+						"y"
+					],
+					"properties": {
+						"x": {
+							"$id": "#root/sprite/offset/x", 
+							"title": "X", 
+							"type": "integer",
+							"examples": [
+								0
+							],
+							"default": 0
+						},
+						"y": {
+							"$id": "#root/sprite/offset/y", 
+							"title": "Y", 
+							"type": "integer",
+							"examples": [
+								-22
+							],
+							"default": 0
+						}
+					}
+				}
+
+			}
+		}
+,
+		"type": {
+			"$id": "#root/type", 
+			"title": "Type", 
+			"type": "string",
+			"default": "",
+			"examples": [
+				"weapon"
+			],
+			"pattern": "^.*$"
+		},
+		"cooldown": {
+			"$id": "#root/cooldown", 
+			"title": "Cooldown", 
+			"type": "number",
+			"examples": [
+				0.5
+			],
+			"default": 0.0
+		},
+		"recoil": {
+			"$id": "#root/recoil", 
+			"title": "Recoil", 
+			"type": "integer",
+			"examples": [
+				400
+			],
+			"default": 0
+		},
+		"uses": {
+			"$id": "#root/uses", 
+			"title": "Uses", 
+			"type": "integer",
+			"examples": [
+				3
+			],
+			"default": 0
+		},
+		"mount_offset": {
+			"$id": "#root/mount_offset", 
+			"title": "Mount_offset", 
+			"type": "object",
+			"required": [
+				"x",
+				"y"
+			],
+			"properties": {
+				"x": {
+					"$id": "#root/mount_offset/x", 
+					"title": "X", 
+					"type": "integer",
+					"examples": [
+						-16
+					],
+					"default": 0
+				},
+				"y": {
+					"$id": "#root/mount_offset/y", 
+					"title": "Y", 
+					"type": "integer",
+					"examples": [
+						-26
+					],
+					"default": 0
+				}
+			}
+		}
+,
+		"effect_offset": {
+			"$id": "#root/effect_offset", 
+			"title": "Effect_offset", 
+			"type": "object",
+			"required": [
+				"x",
+				"y"
+			],
+			"properties": {
+				"x": {
+					"$id": "#root/effect_offset/x", 
+					"title": "X", 
+					"type": "integer",
+					"examples": [
+						36
+					],
+					"default": 0
+				},
+				"y": {
+					"$id": "#root/effect_offset/y", 
+					"title": "Y", 
+					"type": "integer",
+					"examples": [
+						12
+					],
+					"default": 0
+				}
+			}
+		}
+,
+		"sound_effect": {
+			"$id": "#root/sound_effect", 
+			"title": "Sound_effect", 
+			"type": "string",
+			"default": "",
+			"examples": [
+				"shoot"
+			],
+			"pattern": "^.*$"
+		},
+		"effects": {
+			"$id": "#root/effects", 
+			"title": "Effects", 
+			"type": "object",
+			"required": [
+				"type",
+				"trigger",
+				"velocity",
+				"size",
+				"timed_trigger",
+				"effects",
+				"animation"
+			],
+			"properties": {
+				"type": {
+					"$id": "#root/effects/type", 
+					"title": "Type", 
+					"type": "string",
+					"default": "",
+					"examples": [
+						"triggered_effect"
+					],
+					"pattern": "^.*$"
+				},
+				"trigger": {
+					"$id": "#root/effects/trigger", 
+					"title": "Trigger", 
+					"type": "array",
+					"default": [],
+					"items":{
+						"$id": "#root/effects/trigger/items", 
+						"title": "Items", 
+						"type": "string",
+						"default": "",
+						"examples": [
+							"enemy"
+						],
+						"pattern": "^.*$"
+					}
+				},
+				"velocity": {
+					"$id": "#root/effects/velocity", 
+					"title": "Velocity", 
+					"type": "object",
+					"required": [
+						"x",
+						"y"
+					],
+					"properties": {
+						"x": {
+							"$id": "#root/effects/velocity/x", 
+							"title": "X", 
+							"type": "integer",
+							"examples": [
+								1000
+							],
+							"default": 0
+						},
+						"y": {
+							"$id": "#root/effects/velocity/y", 
+							"title": "Y", 
+							"type": "integer",
+							"examples": [
+								-50
+							],
+							"default": 0
+						}
+					}
+				}
+,
+				"size": {
+					"$id": "#root/effects/size", 
+					"title": "Size", 
+					"type": "object",
+					"required": [
+						"x",
+						"y"
+					],
+					"properties": {
+						"x": {
+							"$id": "#root/effects/size/x", 
+							"title": "X", 
+							"type": "integer",
+							"examples": [
+								17
+							],
+							"default": 0
+						},
+						"y": {
+							"$id": "#root/effects/size/y", 
+							"title": "Y", 
+							"type": "integer",
+							"examples": [
+								17
+							],
+							"default": 0
+						}
+					}
+				}
+,
+				"timed_trigger": {
+					"$id": "#root/effects/timed_trigger", 
+					"title": "Timed_trigger", 
+					"type": "number",
+					"examples": [
+						1.5
+					],
+					"default": 0.0
+				},
+				"effects": {
+					"$id": "#root/effects/effects", 
+					"title": "Effects", 
+					"type": "object",
+					"required": [
+						"type",
+						"radius",
+						"is_explosion",
+						"particle_effect",
+						"sound_effect"
+					],
+					"properties": {
+						"type": {
+							"$id": "#root/effects/effects/type", 
+							"title": "Type", 
+							"type": "string",
+							"default": "",
+							"examples": [
+								"circle_collider"
+							],
+							"pattern": "^.*$"
+						},
+						"radius": {
+							"$id": "#root/effects/effects/radius", 
+							"title": "Radius", 
+							"type": "integer",
+							"examples": [
+								64
+							],
+							"default": 0
+						},
+						"is_explosion": {
+							"$id": "#root/effects/effects/is_explosion", 
+							"title": "Is_explosion", 
+							"type": "boolean",
+							"examples": [
+								true
+							],
+							"default": true
+						},
+						"particle_effect": {
+							"$id": "#root/effects/effects/particle_effect", 
+							"title": "Particle_effect", 
+							"type": "string",
+							"default": "",
+							"examples": [
+								"hit"
+							],
+							"pattern": "^.*$"
+						},
+						"sound_effect": {
+							"$id": "#root/effects/effects/sound_effect", 
+							"title": "Sound_effect", 
+							"type": "string",
+							"default": "",
+							"examples": [
+								"explode"
+							],
+							"pattern": "^.*$"
+						}
+					}
+				}
+,
+				"animation": {
+					"$id": "#root/effects/animation", 
+					"title": "Animation", 
+					"type": "object",
+					"required": [
+						"texture",
+						"animations",
+						"should_autoplay"
+					],
+					"properties": {
+						"texture": {
+							"$id": "#root/effects/animation/texture", 
+							"title": "Texture", 
+							"type": "string",
+							"default": "",
+							"examples": [
+								"cannon_ball"
+							],
+							"pattern": "^.*$"
+						},
+						"animations": {
+							"$id": "#root/effects/animation/animations", 
+							"title": "Animations", 
+							"type": "array",
+							"default": [],
+							"items":{
+								"$id": "#root/effects/animation/animations/items", 
+								"title": "Items", 
+								"type": "object",
+								"required": [
+									"id",
+									"row",
+									"frames",
+									"fps"
+								],
+								"properties": {
+									"id": {
+										"$id": "#root/effects/animation/animations/items/id", 
+										"title": "Id", 
+										"type": "string",
+										"default": "",
+										"examples": [
+											"armed"
+										],
+										"pattern": "^.*$"
+									},
+									"row": {
+										"$id": "#root/effects/animation/animations/items/row", 
+										"title": "Row", 
+										"type": "integer",
+										"examples": [
+											0
+										],
+										"default": 0
+									},
+									"frames": {
+										"$id": "#root/effects/animation/animations/items/frames", 
+										"title": "Frames", 
+										"type": "integer",
+										"examples": [
+											1
+										],
+										"default": 0
+									},
+									"fps": {
+										"$id": "#root/effects/animation/animations/items/fps", 
+										"title": "Fps", 
+										"type": "integer",
+										"examples": [
+											1
+										],
+										"default": 0
+									}
+								}
+							}
+
+						},
+						"should_autoplay": {
+							"$id": "#root/effects/animation/should_autoplay", 
+							"title": "Should_autoplay", 
+							"type": "boolean",
+							"examples": [
+								true
+							],
+							"default": true
+						}
+					}
+				}
+
+			}
+		}
+,
+		"collider_size": {
+			"$id": "#root/collider_size", 
+			"title": "Collider_size", 
+			"type": "object",
+			"required": [
+				"x",
+				"y"
+			],
+			"properties": {
+				"x": {
+					"$id": "#root/collider_size/x", 
+					"title": "X", 
+					"type": "integer",
+					"examples": [
+						64
+					],
+					"default": 0
+				},
+				"y": {
+					"$id": "#root/collider_size/y", 
+					"title": "Y", 
+					"type": "integer",
+					"examples": [
+						24
+					],
+					"default": 0
+				}
+			}
+		}
+,
+		"animation": {
+			"$id": "#root/animation", 
+			"title": "Animation", 
+			"type": "object",
+			"required": [
+				"texture",
+				"animations"
+			],
+			"properties": {
+				"texture": {
+					"$id": "#root/animation/texture", 
+					"title": "Texture", 
+					"type": "string",
+					"default": "",
+					"examples": [
+						"cannon"
+					],
+					"pattern": "^.*$"
+				},
+				"animations": {
+					"$id": "#root/animation/animations", 
+					"title": "Animations", 
+					"type": "array",
+					"default": [],
+					"items":{
+						"$id": "#root/animation/animations/items", 
+						"title": "Items", 
+						"type": "object",
+						"required": [
+							"id",
+							"row",
+							"frames",
+							"fps"
+						],
+						"properties": {
+							"id": {
+								"$id": "#root/animation/animations/items/id", 
+								"title": "Id", 
+								"type": "string",
+								"default": "",
+								"examples": [
+									"idle"
+								],
+								"pattern": "^.*$"
+							},
+							"row": {
+								"$id": "#root/animation/animations/items/row", 
+								"title": "Row", 
+								"type": "integer",
+								"examples": [
+									0
+								],
+								"default": 0
+							},
+							"frames": {
+								"$id": "#root/animation/animations/items/frames", 
+								"title": "Frames", 
+								"type": "integer",
+								"examples": [
+									1
+								],
+								"default": 0
+							},
+							"fps": {
+								"$id": "#root/animation/animations/items/fps", 
+								"title": "Fps", 
+								"type": "integer",
+								"examples": [
+									1
+								],
+								"default": 0
+							}
+						}
+					}
+
+				}
+			}
+		}
+,
+		"effect_animation": {
+			"$id": "#root/effect_animation", 
+			"title": "Effect_animation", 
+			"type": "object",
+			"required": [
+				"texture",
+				"animations"
+			],
+			"properties": {
+				"texture": {
+					"$id": "#root/effect_animation/texture", 
+					"title": "Texture", 
+					"type": "string",
+					"default": "",
+					"examples": [
+						"cannon"
+					],
+					"pattern": "^.*$"
+				},
+				"animations": {
+					"$id": "#root/effect_animation/animations", 
+					"title": "Animations", 
+					"type": "array",
+					"default": [],
+					"items":{
+						"$id": "#root/effect_animation/animations/items", 
+						"title": "Items", 
+						"type": "object",
+						"required": [
+							"id",
+							"row",
+							"frames",
+							"fps"
+						],
+						"properties": {
+							"id": {
+								"$id": "#root/effect_animation/animations/items/id", 
+								"title": "Id", 
+								"type": "string",
+								"default": "",
+								"examples": [
+									"attack_effect"
+								],
+								"pattern": "^.*$"
+							},
+							"row": {
+								"$id": "#root/effect_animation/animations/items/row", 
+								"title": "Row", 
+								"type": "integer",
+								"examples": [
+									1
+								],
+								"default": 0
+							},
+							"frames": {
+								"$id": "#root/effect_animation/animations/items/frames", 
+								"title": "Frames", 
+								"type": "integer",
+								"examples": [
+									5
+								],
+								"default": 0
+							},
+							"fps": {
+								"$id": "#root/effect_animation/animations/items/fps", 
+								"title": "Fps", 
+								"type": "integer",
+								"examples": [
+									12
+								],
+								"default": 0
+							}
+						}
+					}
+
+				}
+			}
+		}
+
+	}
+}

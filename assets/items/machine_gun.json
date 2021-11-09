@@ -18,22 +18,20 @@
   "sound_effect": "shoot",
   "effects": {
     "type": "projectile",
-    "range": 128.0,
-    "speed": 12.0,
+    "range": 512.0,
+    "speed": 8.0,
     "spread": 5.0,
     "projectile": {
       "type": "sprite",
       "sprite": {
-        "texture": "small_projectile",
+        "texture": "machine_gun_bullet",
         "size": {
-          "x": 8,
+          "x": 7,
           "y": 4
         },
-        "tint": {
-          "r": 0.9,
-          "g": 0.75,
-          "b": 0.12,
-          "a": 1.0
+        "offset": {
+          "x": -3.5,
+          "y": -2
         }
       }
     }

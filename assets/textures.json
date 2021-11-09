@@ -314,5 +314,9 @@
   {
     "id": "musket_bullet",
     "path": "textures/items/MusketBullet(15x15).png"
+  },
+  {
+    "id": "machine_gun_bullet",
+    "path": "textures/items/MachineGunBullet(7x4).png"
   }
 ]

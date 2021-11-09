@@ -253,10 +253,10 @@
   },
   {
     "id": "sniper_rifle",
-    "path": "textures/items/SniperRifle(92x32).png",
+    "path": "textures/items/SniperRifle(112x32).png",
     "type": "spritesheet",
     "sprite_size": {
-      "x": 92,
+      "x": 112,
       "y": 32
     }
   },

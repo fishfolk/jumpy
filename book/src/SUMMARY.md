@@ -1,7 +1,7 @@
 # Summary
 
 - [Introduction](./introduction.md)
-- [Code of Conduct](./code_of_conduct.md)
+  - [Code of Conduct](./code_of_conduct.md)
 - [Gameplay](./gameplay.md)
   - [Controls](./controls.md)
   - [Items](./items.md)
@@ -9,7 +9,7 @@
 - [Mechanics](./mechanics.md)
   - [Physics](./physics.md)
   - [Environmental Weapons](./environmental_weapons.md)
-  - [Netcode](./netcode.md)
+- [Netcode](./netcode.md)
 - [Contributing](./contributing.md)
   - [Contributing Code](./contributing_code.md)
   - [Simple Gun Weapon](./simple_gun_weapon.md)

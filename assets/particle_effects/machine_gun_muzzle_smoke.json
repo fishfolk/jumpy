@@ -1,0 +1,73 @@
+{
+    "local_coords": false,
+    "emission_shape": {
+        "Sphere": {
+            "radius": 3
+        }
+    },
+    "one_shot": true,
+    "lifetime": 0.7999999,
+    "lifetime_randomness": 0,
+    "explosiveness": 1,
+    "amount": 1,
+    "shape": {
+        "Circle": {
+            "subdivisions": 16
+        }
+    },
+    "emitting": false,
+    "initial_direction": {
+        "x": 0,
+        "y": -1
+    },
+    "initial_direction_spread": 0.3,
+    "initial_velocity": 54.300003,
+    "initial_velocity_randomness": 0.4,
+    "linear_accel": -0.89999986,
+    "size": 2.9,
+    "size_randomness": 0,
+    "size_curve": {
+        "points": [
+            [
+                0,
+                0.88
+            ],
+            [
+                0.49,
+                1.88
+            ],
+            [
+                1,
+                0
+            ]
+        ],
+        "interpolation": "Linear",
+        "resolution": 30
+    },
+    "blend_mode": "Alpha",
+    "colors_curve": {
+        "start": {
+            "r": 0.29545453,
+            "g": 0.29545453,
+            "b": 0.29545453,
+            "a": 1
+        },
+        "mid": {
+            "r": 0.52272725,
+            "g": 0.52272725,
+            "b": 0.52272725,
+            "a": 1
+        },
+        "end": {
+            "r": 0.84090906,
+            "g": 0.84090906,
+            "b": 0.84090906,
+            "a": 1
+        }
+    },
+    "gravity": {
+        "x": 0,
+        "y": -54.1
+    },
+    "post_processing": {}
+}

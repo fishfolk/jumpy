@@ -28,11 +28,11 @@
         "sprite": {
           "texture": "machine_gun_bullet",
           "size": {
-            "x": 7,
+            "x": 30,
             "y": 4
           },
           "offset": {
-            "x": -3.5,
+            "x": -15,
             "y": -2
           }
         },

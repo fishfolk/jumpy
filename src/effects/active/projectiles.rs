@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use macroquad::{
     experimental::{
         collections::storage,
@@ -81,7 +83,20 @@ impl Projectiles {
             sprite = Some(Sprite::new(params));
 
             if *is_rotated {
-                sprite_draw_angle = (velocity.y).atan2(velocity.x - 1.0);
+                let mut vec = Vec2::new(0.0, 0.0);
+
+                if velocity.x < 0.0 {
+                    vec.x = 1.0;   
+                } else {
+                    vec.x = -1.0;
+                }
+
+                sprite_draw_angle = (velocity.y - vec.y).atan2(velocity.x - vec.x);
+
+                // By this, we have correct sprite rotation after flipping sprite by X
+                if velocity.x < 0.0 {
+                    sprite_draw_angle += PI;
+                }
             }
         }
 

@@ -42,7 +42,7 @@
       "type": "particle_controller",
       "id": "0",
       "particle_id": "machine_gun_muzzle_smoke",
-      "start_delay": 1,
+      "start_delay": 0.2,
       "is_can_be_interrupted": true,
       "amount": 5,
       "interval": 0.05

@@ -86,7 +86,7 @@ impl Projectiles {
                 let mut vec = Vec2::new(0.0, 0.0);
 
                 if velocity.x < 0.0 {
-                    vec.x = 1.0;   
+                    vec.x = 1.0;
                 } else {
                     vec.x = -1.0;
                 }

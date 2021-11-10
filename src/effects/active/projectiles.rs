@@ -33,6 +33,10 @@ pub enum ProjectileKind {
     Sprite {
         #[serde(rename = "sprite")]
         params: Option<SpriteParams>,
+        #[serde(default)]
+        /// If yes, the sprite would be rotated by angle between Vec2(1, 0) (most likely will be changed in the future) and velocity vector.
+        /// This, for example, used for machine gun bullets rotation.
+        is_rotated: bool,
     },
 }
 
@@ -45,6 +49,7 @@ struct Projectile {
     velocity: Vec2,
     range: f32,
     sprite: Option<Sprite>,
+    sprite_draw_angle: f32,
     particle_controller: Option<ParticleController>,
 }
 
@@ -67,12 +72,18 @@ impl Projectiles {
         range: f32,
         particle_params: Option<ParticleControllerParams>,
     ) {
-        let sprite = if let ProjectileKind::Sprite { params } = &mut kind {
+        let mut sprite = None;
+
+        let mut sprite_draw_angle = 0.0;
+
+        if let ProjectileKind::Sprite { params, is_rotated } = &mut kind {
             let params = params.take().unwrap();
-            Some(Sprite::new(params))
-        } else {
-            None
-        };
+            sprite = Some(Sprite::new(params));
+
+            if *is_rotated {
+                sprite_draw_angle = (velocity.y).atan2(velocity.x - 1.0);
+            }
+        }
 
         let particle_controller = particle_params.map(ParticleController::new);
 
@@ -84,6 +95,7 @@ impl Projectiles {
             velocity,
             range,
             sprite,
+            sprite_draw_angle,
             particle_controller,
         });
     }
@@ -192,7 +204,12 @@ impl Node for Projectiles {
                 ProjectileKind::Sprite { .. } => {
                     let sprite = projectile.sprite.as_ref().unwrap();
                     let flip_x = projectile.velocity.x < 0.0;
-                    sprite.draw(projectile.position, 0.0, flip_x, false);
+                    sprite.draw(
+                        projectile.position,
+                        projectile.sprite_draw_angle,
+                        flip_x,
+                        false,
+                    );
                 }
             }
         }

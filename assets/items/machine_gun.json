@@ -5,6 +5,7 @@
   },
   "type": "weapon",
   "cooldown": 0.15,
+  "attack_duration": 0.1,
   "recoil": 125.0,
   "uses": 24,
   "mount_offset": {

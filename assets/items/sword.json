@@ -31,13 +31,15 @@
         "id": "idle",
         "row": 0,
         "frames": 1,
-        "fps": 1
+        "fps": 1,
+        "is_looping": true
       },
       {
         "id": "attack",
         "row": 1,
         "frames": 4,
-        "fps": 15
+        "fps": 15,
+        "is_looping": true
       }
     ]
   },

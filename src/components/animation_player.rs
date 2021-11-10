@@ -17,6 +17,7 @@ pub struct Animation {
     pub row: u32,
     pub frames: u32,
     pub fps: u32,
+    pub is_looping: bool,
 }
 
 impl From<Animation> for MQAnimation {
@@ -92,6 +93,8 @@ pub struct AnimationPlayer {
     tint: Color,
     sprite: AnimatedSprite,
     animations: Vec<Animation>,
+    time: f32,
+    current_frame: u32,
     pub is_deactivated: bool,
 }
 
@@ -163,13 +166,31 @@ impl AnimationPlayer {
             sprite,
             animations,
             is_deactivated: params.is_deactivated,
+            time: 0.0,
+            current_frame: 0,
         }
     }
 
     pub fn update(&mut self) {
-        if !self.is_deactivated {
-            self.sprite.update();
+        let animation = &self.animations[self.sprite.current_animation()];
+        let is_last_frame = self.current_frame == animation.frames - 1;
+
+        if !animation.is_looping && is_last_frame {
+            self.sprite.playing = false;
+        } else {
+            self.sprite.playing = true;
         }
+
+        if self.sprite.playing {
+            self.time += get_frame_time();
+            if self.time > 1. / animation.fps as f32 {
+                self.current_frame += 1;
+                self.time = 0.0;
+            }
+        }
+
+        self.current_frame %= animation.frames;
+        self.set_frame(self.current_frame as usize);
     }
 
     pub fn draw(&self, position: Vec2, rotation: f32, flip_x: bool, flip_y: bool) {

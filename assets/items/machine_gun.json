@@ -73,7 +73,7 @@
         "id": "attack",
         "row": 1,
         "frames": 1,
-        "fps": 8
+        "fps": 8,
         "is_looping": true
       }
     ]

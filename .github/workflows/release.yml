@@ -3,9 +3,9 @@
 name: Release
 
 on:
-  create:
-    tags:
-      - 'v*'
+  push:
+    create:
+      - "v*"
 
 jobs:
   build_release:
@@ -68,10 +68,10 @@ jobs:
       - name: Cache Cargo
         uses: actions/cache@v2
         with:
-            path: |
-              ~/.cargo/registry
-              ~/.cargo/git
-            key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup Rust
         uses: actions-rs/toolchain@v1
@@ -121,7 +121,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      
+
       - name: Download Artifacts
         uses: actions/download-artifact@v2
 

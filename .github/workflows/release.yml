@@ -135,7 +135,12 @@ jobs:
         run: for file in fishfight-*/fishfight-*; do openssl dgst -sha256 -r "$file" | awk '{print $1}' > "${file}.sha256"; done
 
       - name: Publish Release
-        uses: softprops/action-gh-release@v1
+        uses: svenstaro/upload-release-action@v2
         with:
-          name: Release ${{ env.RELEASE_VERSION }}
-          files: fishfight-*/fishfight-*
+          release_name: Release ${{ env.RELEASE_VERSION }}
+          file: fishfight-*/fishfight-*
+          file_glob: true
+          overwrite: true
+          body: "FishFight v${{ env.RELEASE_VERSION }} 🐟"
+          tag: ${{ github.ref }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}

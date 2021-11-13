@@ -141,6 +141,6 @@ jobs:
           file: fishfight-*/fishfight-*
           file_glob: true
           overwrite: true
-          body: "FishFight v${{ env.RELEASE_VERSION }} 🐟"
+          body: "FishFight ${{ env.RELEASE_VERSION }} 🐟"
           tag: ${{ github.ref }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}

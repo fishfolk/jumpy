@@ -1,15 +1,11 @@
 use macroquad::{
-    experimental::collections::storage,
     prelude::*,
-    ui::{hash, Ui, widgets},
+    ui::{hash, Ui},
 };
 
-use super::{GuiResources, Panel, Menu, MenuEntry, MenuResult};
+use super::{Menu, MenuEntry, MenuResult};
 
 const MENU_WIDTH: f32 = 200.0;
-
-const MENU_BUTTON_WIDTH: f32 = MENU_WIDTH - 48.0;
-const MENU_BUTTON_HEIGHT: f32 = 42.0;
 
 pub const GAME_MENU_RESULT_MAIN_MENU: usize = 0;
 pub const GAME_MENU_RESULT_QUIT: usize = 1;
@@ -19,7 +15,10 @@ static mut GAME_MENU_INSTANCE: Option<Menu> = None;
 pub fn open_game_menu() {
     unsafe {
         if GAME_MENU_INSTANCE.is_none() {
-            let menu = Menu::new(hash!(), MENU_WIDTH, &[
+            let menu = Menu::new(
+                hash!(),
+                MENU_WIDTH,
+                &[
                     MenuEntry {
                         index: GAME_MENU_RESULT_MAIN_MENU,
                         title: "Main Menu".to_string(),
@@ -29,9 +28,10 @@ pub fn open_game_menu() {
                         index: GAME_MENU_RESULT_QUIT,
                         title: "Quit".to_string(),
                         is_pulled_down: false,
-                    }
-                ])
-                .with_cancel_button(None);
+                    },
+                ],
+            )
+            .with_cancel_button(None);
 
             GAME_MENU_INSTANCE = Some(menu);
         }

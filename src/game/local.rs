@@ -9,20 +9,17 @@ use fishsticks::{Button, GamepadContext};
 
 use macroquad::{
     experimental::{
-        scene::{self, Handle, Node, NodeWith, RefMut},
         collections::storage,
+        scene::{self, Handle, Node, NodeWith, RefMut},
     },
     ui::root_ui,
 };
 
 use crate::{
     capabilities::NetworkReplicate,
-    collect_input,
-    exit_to_main_menu,
+    collect_input, exit_to_main_menu,
     gui::{self, GAME_MENU_RESULT_MAIN_MENU, GAME_MENU_RESULT_QUIT},
-    quit_to_desktop,
-    GameInputScheme, Player,
-    is_gamepad_btn_pressed,
+    is_gamepad_btn_pressed, quit_to_desktop, GameInputScheme, Player,
 };
 
 pub struct LocalGame {
@@ -48,7 +45,7 @@ impl LocalGame {
 }
 
 impl Node for LocalGame {
-    fn fixed_update(mut node: RefMut<Self>) {
+    fn fixed_update(node: RefMut<Self>) {
         #[cfg(debug_assertions)]
         if macroquad::input::is_key_pressed(macroquad::prelude::KeyCode::U) {
             crate::debug::toggle_debug_draw();
@@ -57,7 +54,8 @@ impl Node for LocalGame {
         {
             let gamepad_context = storage::get::<GamepadContext>();
             if macroquad::input::is_key_pressed(macroquad::prelude::KeyCode::Escape)
-                || is_gamepad_btn_pressed(&gamepad_context, Button::Start) {
+                || is_gamepad_btn_pressed(&gamepad_context, Button::Start)
+            {
                 gui::toggle_game_menu();
             }
         }
@@ -72,13 +70,13 @@ impl Node for LocalGame {
         }
     }
 
-    fn draw(mut node: RefMut<Self>) {
+    fn draw(_: RefMut<Self>) {
         if gui::is_game_menu_open() {
             if let Some(res) = gui::draw_game_menu(&mut *root_ui()) {
                 match res.into_usize() {
                     GAME_MENU_RESULT_MAIN_MENU => exit_to_main_menu(),
                     GAME_MENU_RESULT_QUIT => quit_to_desktop(),
-                    _ => {},
+                    _ => {}
                 }
             }
         }

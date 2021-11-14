@@ -9,11 +9,7 @@ use macroquad::{
     ui::{widgets, Id, Ui},
 };
 
-use super::{
-    GuiResources,
-    WINDOW_MARGIN_H,
-    WINDOW_MARGIN_V,
-};
+use super::{GuiResources, WINDOW_MARGIN_H, WINDOW_MARGIN_V};
 
 pub struct Panel {
     id: Id,

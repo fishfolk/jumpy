@@ -1,12 +1,12 @@
 use macroquad::{
     experimental::collections::storage,
     prelude::*,
-    ui::{self, hash, root_ui, widgets},
+    ui::{self, hash, root_ui},
 };
 
 use fishsticks::{Button, GamepadContext};
 
-use super::{draw_main_menu_background, Menu, MenuEntry, MenuResult, GuiResources, Panel};
+use super::{draw_main_menu_background, GuiResources, Menu, MenuEntry, MenuResult, Panel};
 
 use crate::{is_gamepad_btn_pressed, EditorInputScheme, GameInputScheme};
 
@@ -24,9 +24,9 @@ pub enum MainMenuResult {
     Quit,
 }
 
-const MAIN_MENU_ID: &'static str = "main_menu";
-const LOCAL_GAME_MENU_ID: &'static str = "local_game";
-const EDITOR_MENU_ID: &'static str = "editor";
+const MAIN_MENU_ID: &str = "main_menu";
+const LOCAL_GAME_MENU_ID: &str = "local_game";
+const EDITOR_MENU_ID: &str = "editor";
 
 const MAIN_MENU_RESULT_LOCAL_GAME: usize = 0;
 const MAIN_MENU_RESULT_EDITOR: usize = 1;
@@ -36,9 +36,11 @@ const LOCAL_GAME_MENU_RESULT_SUBMIT: usize = 0;
 const EDITOR_MENU_RESULT_CREATE: usize = 0;
 const EDITOR_MENU_RESULT_LOAD: usize = 1;
 
-
 fn build_main_menu() -> Menu {
-    Menu::new(hash!(MAIN_MENU_ID), MENU_WIDTH, &[
+    Menu::new(
+        hash!(MAIN_MENU_ID),
+        MENU_WIDTH,
+        &[
             MenuEntry {
                 index: MAIN_MENU_RESULT_LOCAL_GAME,
                 title: "Local Game".to_string(),
@@ -48,23 +50,30 @@ fn build_main_menu() -> Menu {
                 index: MAIN_MENU_RESULT_EDITOR,
                 title: "Editor".to_string(),
                 is_pulled_down: false,
-            }
-        ]).with_cancel_button(Some("Quit"))
+            },
+        ],
+    )
+    .with_cancel_button(Some("Quit"))
 }
 
 fn build_editor_menu() -> Menu {
-    Menu::new(hash!(EDITOR_MENU_ID), MENU_WIDTH, &[
-        MenuEntry {
-            index: EDITOR_MENU_RESULT_CREATE,
-            title: "Create Map".to_string(),
-            is_pulled_down: false,
-        },
-        MenuEntry {
-            index: EDITOR_MENU_RESULT_LOAD,
-            title: "Load Map".to_string(),
-            is_pulled_down: false,
-        }
-    ]).with_cancel_button(Some("Cancel"))
+    Menu::new(
+        hash!(EDITOR_MENU_ID),
+        MENU_WIDTH,
+        &[
+            MenuEntry {
+                index: EDITOR_MENU_RESULT_CREATE,
+                title: "Create Map".to_string(),
+                is_pulled_down: false,
+            },
+            MenuEntry {
+                index: EDITOR_MENU_RESULT_LOAD,
+                title: "Load Map".to_string(),
+                is_pulled_down: false,
+            },
+        ],
+    )
+    .with_cancel_button(Some("Cancel"))
 }
 
 pub async fn show_main_menu() -> MainMenuResult {
@@ -76,7 +85,7 @@ pub async fn show_main_menu() -> MainMenuResult {
     loop {
         {
             let mut gamepad_context = storage::get_mut::<GamepadContext>();
-            gamepad_context.update();
+            gamepad_context.update().unwrap();
         }
 
         draw_main_menu_background();
@@ -107,7 +116,7 @@ pub async fn show_main_menu() -> MainMenuResult {
                         Menu::CANCEL_INDEX => {
                             current_menu = Some(build_main_menu());
                             current_menu_id = MAIN_MENU_ID;
-                        },
+                        }
                         _ => {}
                     }
                 }
@@ -118,19 +127,19 @@ pub async fn show_main_menu() -> MainMenuResult {
                         EDITOR_MENU_RESULT_CREATE => {
                             return MainMenuResult::Editor {
                                 input_scheme: EditorInputScheme::Keyboard,
-                                is_new_map: true
+                                is_new_map: true,
                             }
                         }
                         EDITOR_MENU_RESULT_LOAD => {
                             return MainMenuResult::Editor {
                                 input_scheme: EditorInputScheme::Keyboard,
-                                is_new_map: false
+                                is_new_map: false,
                             }
                         }
                         Menu::CANCEL_INDEX => {
                             current_menu = Some(build_main_menu());
                             current_menu_id = MAIN_MENU_ID;
-                        },
+                        }
                         _ => {}
                     }
                 }
@@ -142,10 +151,7 @@ pub async fn show_main_menu() -> MainMenuResult {
     }
 }
 
-fn local_game_ui(
-    ui: &mut ui::Ui,
-    player_input: &mut Vec<GameInputScheme>,
-) -> Option<MenuResult> {
+fn local_game_ui(ui: &mut ui::Ui, player_input: &mut Vec<GameInputScheme>) -> Option<MenuResult> {
     if player_input.len() == 2 {
         return Some(LOCAL_GAME_MENU_RESULT_SUBMIT.into());
     } else {
@@ -177,7 +183,7 @@ fn local_game_ui(
     let size = vec2(LOCAL_GAME_MENU_WIDTH, LOCAL_GAME_MENU_HEIGHT);
     let position = (vec2(screen_width(), screen_height()) - size) / 2.0;
 
-    Panel::new(hash!(), size, position).ui(ui, |ui, inner_size| {
+    Panel::new(hash!(), size, position).ui(ui, |ui, _| {
         {
             let gui_resources = storage::get::<GuiResources>();
             ui.push_skin(&gui_resources.skins.menu);

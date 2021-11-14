@@ -2,7 +2,10 @@ use std::any::TypeId;
 
 use crate::{
     exit_to_main_menu,
-    gui::{draw_game_menu, is_game_menu_open, toggle_game_menu, GAME_MENU_RESULT_MAIN_MENU, GAME_MENU_RESULT_QUIT},
+    gui::{
+        draw_game_menu, is_game_menu_open, toggle_game_menu, GAME_MENU_RESULT_MAIN_MENU,
+        GAME_MENU_RESULT_QUIT,
+    },
     quit_to_desktop,
 };
 
@@ -48,8 +51,8 @@ use macroquad::{
         collections::storage,
         scene::{Node, RefMut},
     },
-    ui::root_ui,
     prelude::*,
+    ui::root_ui,
 };
 
 use super::map::{Map, MapLayerKind};
@@ -524,7 +527,7 @@ impl Node for Editor {
                 match res.into_usize() {
                     GAME_MENU_RESULT_MAIN_MENU => exit_to_main_menu(),
                     GAME_MENU_RESULT_QUIT => quit_to_desktop(),
-                    _ => {},
+                    _ => {}
                 }
             }
         }

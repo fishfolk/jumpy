@@ -1,33 +1,16 @@
 use macroquad::{
-    ui::{
-        self,
-        Ui,
-        Id,
-        Skin,
-        widgets,
-    },
-    experimental::{
-        collections::storage,
-    },
+    experimental::collections::storage,
     prelude::*,
+    ui::{widgets, Id, Ui},
 };
 
-use fishsticks::{Button, Axis};
+use fishsticks::{Axis, Button};
 
 use super::{
-    WINDOW_MARGIN_V,
-    WINDOW_MARGIN_H,
-    BUTTON_MARGIN_V,
-    BUTTON_MARGIN_H,
-    BUTTON_FONT_SIZE,
-    Panel,
-    GuiResources,
+    GuiResources, Panel, BUTTON_FONT_SIZE, BUTTON_MARGIN_V, WINDOW_MARGIN_H, WINDOW_MARGIN_V,
 };
 
-use crate::{
-    GamepadContext,
-    is_gamepad_btn_pressed,
-};
+use crate::{is_gamepad_btn_pressed, GamepadContext};
 
 #[derive(Debug, Copy, Clone)]
 pub enum MenuPosition {
@@ -146,15 +129,14 @@ impl Menu {
         }
     }
 
+    #[allow(dead_code)]
     pub fn with_header(self, header: &str) -> Self {
         let header = Some(header.to_string());
 
-        Menu {
-            header,
-            ..self
-        }
+        Menu { header, ..self }
     }
 
+    #[allow(dead_code)]
     pub fn with_height(self, height: f32) -> Self {
         Menu {
             height: Some(height),
@@ -162,6 +144,7 @@ impl Menu {
         }
     }
 
+    #[allow(dead_code)]
     pub fn with_position<P: Into<MenuPosition>>(self, position: P) -> Self {
         Menu {
             position: position.into(),
@@ -173,7 +156,12 @@ impl Menu {
     /// if no override is specified
     pub fn with_cancel_button(self, title_override: Option<&str>) -> Self {
         for entry in &self.entries {
-            assert_ne!(entry.index, Self::CANCEL_INDEX, "Menu: MenuEntry has reserved index ({})", Self::CANCEL_INDEX);
+            assert_ne!(
+                entry.index,
+                Self::CANCEL_INDEX,
+                "Menu: MenuEntry has reserved index ({})",
+                Self::CANCEL_INDEX
+            );
         }
 
         let cancel_entry_title_override = title_override.map(|str| str.to_string());
@@ -213,9 +201,10 @@ impl Menu {
         let mut entries = self.entries.clone();
 
         if self.has_cancel_button {
-            let title = self.cancel_entry_title_override
+            let title = self
+                .cancel_entry_title_override
                 .clone()
-                .unwrap_or(Self::CANCEL_TITLE.to_string());
+                .unwrap_or_else(|| Self::CANCEL_TITLE.to_string());
 
             entries.push(MenuEntry {
                 index: Self::CANCEL_INDEX,
@@ -240,30 +229,31 @@ impl Menu {
         };
 
         let size = {
-            let mut height = header_height + if let Some(height) = self.height {
-                height
-            } else {
-                let len = entries.len();
-                let entry_margins = if len > 0 {
-                    (len as f32 * Self::ENTRY_MARGIN) - Self::ENTRY_MARGIN
+            let height = header_height
+                + if let Some(height) = self.height {
+                    height
                 } else {
-                    0.0
-                };
+                    let len = entries.len();
+                    let entry_margins = if len > 0 {
+                        (len as f32 * Self::ENTRY_MARGIN) - Self::ENTRY_MARGIN
+                    } else {
+                        0.0
+                    };
 
-                (len as f32 * Self::ENTRY_HEIGHT) + entry_margins + (WINDOW_MARGIN_V * 2.0)
-            };
+                    (len as f32 * Self::ENTRY_HEIGHT) + entry_margins + (WINDOW_MARGIN_V * 2.0)
+                };
 
             vec2(self.width, height)
         };
 
         let position = match self.position {
-            MenuPosition::Center => vec2(screen_width() - size.x,screen_height() - size.y) / 2.0,
+            MenuPosition::Center => vec2(screen_width() - size.x, screen_height() - size.y) / 2.0,
             MenuPosition::AbsoluteHorizontal(x) => vec2(x, (screen_height() - size.y) / 2.0),
             MenuPosition::AbsoluteVertical(y) => vec2((screen_width() - size.x) / 2.0, y),
             MenuPosition::Absolute(position) => position,
         };
 
-        Panel::new(self.id, size, position).ui(ui, |ui, mut inner_size| {
+        Panel::new(self.id, size, position).ui(ui, |ui, inner_size| {
             let entry_size = vec2(size.x - (WINDOW_MARGIN_H * 2.0), Self::ENTRY_HEIGHT);
 
             if let Some(header) = &self.header {
@@ -290,15 +280,16 @@ impl Menu {
             }
 
             for (i, entry) in top_entries.iter().enumerate() {
-                let entry_position = entries_position + if i > 0 {
-                    vec2(0.0, i as f32 * (entry_size.y + Self::ENTRY_MARGIN))
-                } else {
-                    vec2(0.0, 0.0)
-                };
+                let entry_position = entries_position
+                    + if i > 0 {
+                        vec2(0.0, i as f32 * (entry_size.y + Self::ENTRY_MARGIN))
+                    } else {
+                        vec2(0.0, 0.0)
+                    };
 
                 let is_selected = if let Some(current_selection) = self.current_selection {
                     current_selection == i
-                }  else {
+                } else {
                     false
                 };
 
@@ -321,7 +312,8 @@ impl Menu {
             }
 
             let bottom_y = {
-                let top_end = entries_position.y + (top_entries.len() as f32 * (entry_size.y + Self::ENTRY_MARGIN));
+                let top_end = entries_position.y
+                    + (top_entries.len() as f32 * (entry_size.y + Self::ENTRY_MARGIN));
                 let bottom_height = {
                     let len = bottom_entries.len();
 
@@ -342,7 +334,10 @@ impl Menu {
             };
 
             for (i, entry) in bottom_entries.iter().enumerate() {
-                let entry_position = vec2(0.0, bottom_y + (i as f32 * (entry_size.y + Self::ENTRY_MARGIN)));
+                let entry_position = vec2(
+                    0.0,
+                    bottom_y + (i as f32 * (entry_size.y + Self::ENTRY_MARGIN)),
+                );
 
                 let mut is_selected = false;
                 if let Some(current_selection) = self.current_selection {
@@ -393,11 +388,17 @@ impl Menu {
             let mut gamepad_down = false;
 
             for (_, gamepad) in gamepad_context.gamepads() {
-                gamepad_up = gamepad_up || gamepad.digital_inputs.activated(Button::DPadUp) || gamepad.analog_inputs.value_digital(Axis::LeftY) < 0.0;
-                gamepad_down = gamepad_down || gamepad.digital_inputs.activated(Button::DPadDown) || gamepad.analog_inputs.value_digital(Axis::LeftY) > 0.0;
+                gamepad_up = gamepad_up
+                    || gamepad.digital_inputs.activated(Button::DPadUp)
+                    || gamepad.analog_inputs.value_digital(Axis::LeftY) < 0.0;
+                gamepad_down = gamepad_down
+                    || gamepad.digital_inputs.activated(Button::DPadDown)
+                    || gamepad.analog_inputs.value_digital(Axis::LeftY) > 0.0;
             }
 
-            if self.up_grace_timer >= Self::GAMEPAD_GRACE_TIME && (gamepad_up || is_key_down(KeyCode::Up) || is_key_down(KeyCode::W)) {
+            if self.up_grace_timer >= Self::GAMEPAD_GRACE_TIME
+                && (gamepad_up || is_key_down(KeyCode::Up) || is_key_down(KeyCode::W))
+            {
                 self.up_grace_timer = 0.0;
 
                 selection = if let Some(selection) = selection {
@@ -405,7 +406,9 @@ impl Menu {
                 } else {
                     Some(0)
                 };
-            } else if self.down_grace_timer >= Self::GAMEPAD_GRACE_TIME && (gamepad_down || is_key_down(KeyCode::Down) || is_key_down(KeyCode::S)) {
+            } else if self.down_grace_timer >= Self::GAMEPAD_GRACE_TIME
+                && (gamepad_down || is_key_down(KeyCode::Down) || is_key_down(KeyCode::S))
+            {
                 self.down_grace_timer = 0.0;
 
                 selection = if let Some(selection) = selection {

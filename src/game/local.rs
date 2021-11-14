@@ -54,7 +54,7 @@ impl Node for LocalGame {
         {
             let gamepad_context = storage::get::<GamepadContext>();
             if macroquad::input::is_key_pressed(macroquad::prelude::KeyCode::Escape)
-                || is_gamepad_btn_pressed(&gamepad_context, Button::Start)
+                || is_gamepad_btn_pressed(Some(&gamepad_context), Button::Start)
             {
                 gui::toggle_game_menu();
             }

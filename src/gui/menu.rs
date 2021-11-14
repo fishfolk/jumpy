@@ -109,7 +109,7 @@ impl Menu {
     pub const ENTRY_HEIGHT: f32 = (BUTTON_MARGIN_V * 2.0) + BUTTON_FONT_SIZE;
     pub const ENTRY_MARGIN: f32 = 4.0;
 
-    const GAMEPAD_GRACE_TIME: f32 = 0.5;
+    const NAVIGATION_GRACE_TIME: f32 = 0.25;
 
     pub fn new(id: Id, width: f32, entries: &[MenuEntry]) -> Self {
         Menu {
@@ -123,8 +123,8 @@ impl Menu {
             cancel_entry_title_override: None,
             current_selection: None,
             last_mouse_position: Vec2::ZERO,
-            up_grace_timer: Self::GAMEPAD_GRACE_TIME,
-            down_grace_timer: Self::GAMEPAD_GRACE_TIME,
+            up_grace_timer: Self::NAVIGATION_GRACE_TIME,
+            down_grace_timer: Self::NAVIGATION_GRACE_TIME,
             is_first_draw: true,
         }
     }
@@ -396,7 +396,7 @@ impl Menu {
                     || gamepad.analog_inputs.value_digital(Axis::LeftY) > 0.0;
             }
 
-            if self.up_grace_timer >= Self::GAMEPAD_GRACE_TIME
+            if self.up_grace_timer >= Self::NAVIGATION_GRACE_TIME
                 && (gamepad_up || is_key_down(KeyCode::Up) || is_key_down(KeyCode::W))
             {
                 self.up_grace_timer = 0.0;
@@ -406,7 +406,7 @@ impl Menu {
                 } else {
                     Some(0)
                 };
-            } else if self.down_grace_timer >= Self::GAMEPAD_GRACE_TIME
+            } else if self.down_grace_timer >= Self::NAVIGATION_GRACE_TIME
                 && (gamepad_down || is_key_down(KeyCode::Down) || is_key_down(KeyCode::S))
             {
                 self.down_grace_timer = 0.0;
@@ -438,10 +438,10 @@ impl Menu {
                 self.current_selection = Some(selection);
             }
 
-            let should_confirm = is_gamepad_btn_pressed(&gamepad_context, Button::A)
+            let should_confirm = is_gamepad_btn_pressed(Some(&gamepad_context), Button::A)
                 || is_key_pressed(KeyCode::Enter);
 
-            let should_cancel = is_gamepad_btn_pressed(&gamepad_context, Button::B)
+            let should_cancel = is_gamepad_btn_pressed(Some(&gamepad_context), Button::B)
                 || is_key_pressed(KeyCode::Escape);
 
             (should_confirm, should_cancel)

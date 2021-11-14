@@ -30,8 +30,7 @@ pub fn open_game_menu() {
                         is_pulled_down: false,
                     },
                 ],
-            )
-            .with_cancel_button(None);
+            );
 
             GAME_MENU_INSTANCE = Some(menu);
         }
@@ -43,26 +42,15 @@ pub fn close_game_menu() {
 }
 
 pub fn draw_game_menu(ui: &mut Ui) -> Option<MenuResult> {
-    let mut res = None;
-
     let menu = unsafe {
         if GAME_MENU_INSTANCE.is_none() {
             open_game_menu();
         }
 
-        GAME_MENU_INSTANCE.as_mut()
+        GAME_MENU_INSTANCE.as_mut().unwrap()
     };
 
-    if let Some(menu) = menu {
-        res = menu.ui(ui);
-
-        if res.is_some() && res.unwrap().is_cancel() {
-            close_game_menu();
-            res = None;
-        }
-    }
-
-    res
+    menu.ui(ui)
 }
 
 pub fn is_game_menu_open() -> bool {

@@ -8,6 +8,7 @@ use fishsticks::{Button, GamepadContext};
 
 use super::{draw_main_menu_background, GuiResources, Menu, MenuEntry, MenuResult, Panel};
 
+use crate::input::update_gamepad_context;
 use crate::{is_gamepad_btn_pressed, EditorInputScheme, GameInputScheme};
 
 const MENU_WIDTH: f32 = 250.0;
@@ -83,10 +84,7 @@ pub async fn show_main_menu() -> MainMenuResult {
     let mut local_player_input = Vec::new();
 
     loop {
-        {
-            let mut gamepad_context = storage::get_mut::<GamepadContext>();
-            gamepad_context.update().unwrap();
-        }
+        update_gamepad_context(None).unwrap();
 
         draw_main_menu_background();
 
@@ -156,7 +154,9 @@ fn local_game_ui(ui: &mut ui::Ui, player_input: &mut Vec<GameInputScheme>) -> Op
         return Some(LOCAL_GAME_MENU_RESULT_SUBMIT.into());
     } else {
         let gamepad_context = storage::get::<GamepadContext>();
-        if is_key_pressed(KeyCode::Escape) || is_gamepad_btn_pressed(&gamepad_context, Button::B) {
+        if is_key_pressed(KeyCode::Escape)
+            || is_gamepad_btn_pressed(Some(&gamepad_context), Button::B)
+        {
             return Some(Menu::CANCEL_INDEX.into());
         }
     }

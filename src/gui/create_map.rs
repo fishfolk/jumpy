@@ -134,7 +134,7 @@ pub async fn show_create_map_menu() -> Result<MapResource> {
             ui.separator();
             ui.separator();
 
-            let btn_a = is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::A);
+            let btn_a = is_gamepad_btn_pressed(Some(&gamepad_system), fishsticks::Button::A);
             let enter = is_key_pressed(KeyCode::Enter);
 
             if ui.button(None, "Confirm (A) (Enter)") || btn_a || enter {

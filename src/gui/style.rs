@@ -5,10 +5,24 @@ use macroquad::{
     ui::{root_ui, Skin},
 };
 
+pub const WINDOW_MARGIN_V: f32 = 22.0;
+pub const WINDOW_MARGIN_H: f32 = 22.0;
+pub const BUTTON_MARGIN_V: f32 = 8.0;
+pub const BUTTON_MARGIN_H: f32 = 16.0;
+pub const BUTTON_FONT_SIZE: f32 = 25.0;
+
+pub const MENU_HEADER_FONT_SIZE: f32 = 25.0;
+
+const WINDOW_BG_MARGIN_V: f32 = 52.0;
+const WINDOW_BG_MARGIN_H: f32 = 52.0;
+const BUTTON_BG_MARGIN_V: f32 = 8.0;
+const BUTTON_BG_MARGIN_H: f32 = 8.0;
+
 pub struct SkinCollection {
     pub menu: Skin,
     pub panel_group: Skin,
     pub menu_header: Skin,
+    pub menu_selected: Skin,
     pub map_selection: Skin,
     pub error: Skin,
     pub cheat: Skin,
@@ -29,8 +43,18 @@ impl SkinCollection {
                     include_bytes!("../../assets/ui/window_background_2.png"),
                     None,
                 ))
-                .background_margin(RectOffset::new(52.0, 52.0, 52.0, 52.0))
-                .margin(RectOffset::new(-30.0, -30.0, -30.0, -30.0))
+                .background_margin(RectOffset::new(
+                    WINDOW_BG_MARGIN_H,
+                    WINDOW_BG_MARGIN_H,
+                    WINDOW_BG_MARGIN_V,
+                    WINDOW_BG_MARGIN_V,
+                ))
+                .margin(RectOffset::new(
+                    WINDOW_MARGIN_H - WINDOW_BG_MARGIN_H,
+                    WINDOW_MARGIN_H - WINDOW_BG_MARGIN_H,
+                    WINDOW_MARGIN_V - WINDOW_BG_MARGIN_V,
+                    WINDOW_MARGIN_V - WINDOW_BG_MARGIN_V,
+                ))
                 .build();
 
             let button_style = root_ui()
@@ -39,8 +63,18 @@ impl SkinCollection {
                     include_bytes!("../../assets/ui/button_background_2.png"),
                     None,
                 ))
-                .background_margin(RectOffset::new(8.0, 8.0, 8.0, 8.0))
-                .margin(RectOffset::new(16.0, 16.0, 8.0, 8.0))
+                .background_margin(RectOffset::new(
+                    BUTTON_BG_MARGIN_H,
+                    BUTTON_BG_MARGIN_H,
+                    BUTTON_BG_MARGIN_V,
+                    BUTTON_BG_MARGIN_V,
+                ))
+                .margin(RectOffset::new(
+                    BUTTON_MARGIN_H - BUTTON_BG_MARGIN_H,
+                    BUTTON_MARGIN_H - BUTTON_BG_MARGIN_H,
+                    BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
+                    BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
+                ))
                 .background_hovered(Image::from_file_with_format(
                     include_bytes!("../../assets/ui/button_hovered_background_2.png"),
                     None,
@@ -50,7 +84,7 @@ impl SkinCollection {
                     None,
                 ))
                 .text_color(Color::from_rgba(200, 200, 160, 255))
-                .font_size(25)
+                .font_size(BUTTON_FONT_SIZE as u16)
                 .build();
 
             let tabbar_style = root_ui()
@@ -120,6 +154,56 @@ impl SkinCollection {
             }
         };
 
+        let menu_header = {
+            let label_style = root_ui()
+                .style_builder()
+                .text_color(Color::from_rgba(255, 255, 255, 255))
+                .font_size(MENU_HEADER_FONT_SIZE as u16)
+                .build();
+
+            Skin {
+                label_style,
+                ..root_ui().default_skin()
+            }
+        };
+
+        let menu_selected = {
+            let button_style = root_ui()
+                .style_builder()
+                .background(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/button_hovered_background_2.png"),
+                    None,
+                ))
+                .background_margin(RectOffset::new(
+                    BUTTON_BG_MARGIN_H,
+                    BUTTON_BG_MARGIN_H,
+                    BUTTON_BG_MARGIN_V,
+                    BUTTON_BG_MARGIN_V,
+                ))
+                .margin(RectOffset::new(
+                    BUTTON_MARGIN_H - BUTTON_BG_MARGIN_H,
+                    BUTTON_MARGIN_H - BUTTON_BG_MARGIN_H,
+                    BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
+                    BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
+                ))
+                .background_hovered(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/button_hovered_background_2.png"),
+                    None,
+                ))
+                .background_clicked(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/button_clicked_background_2.png"),
+                    None,
+                ))
+                .text_color(Color::from_rgba(200, 200, 160, 255))
+                .font_size(BUTTON_FONT_SIZE as u16)
+                .build();
+
+            Skin {
+                button_style,
+                ..menu.clone()
+            }
+        };
+
         // Skin used in a hack to create panels.
         // Windows will not update their position if screen size changes, so in order to draw
         // windows, we will have to draw a button with a group on top.
@@ -147,19 +231,6 @@ impl SkinCollection {
             Skin {
                 group_style,
                 button_style,
-                ..root_ui().default_skin()
-            }
-        };
-
-        let menu_header = {
-            let label_style = root_ui()
-                .style_builder()
-                .text_color(Color::from_rgba(255, 255, 255, 255))
-                .font_size(160)
-                .build();
-
-            Skin {
-                label_style,
                 ..root_ui().default_skin()
             }
         };
@@ -216,8 +287,9 @@ impl SkinCollection {
 
         SkinCollection {
             menu,
-            panel_group,
             menu_header,
+            menu_selected,
+            panel_group,
             map_selection,
             error,
             cheat,

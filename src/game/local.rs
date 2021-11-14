@@ -5,13 +5,21 @@
 //! But, right now, with fixed-delay networking
 //! it is nice to run completely local, no-delay game
 
-use macroquad::experimental::scene::{self, Handle, Node, NodeWith, RefMut};
+use fishsticks::{Button, GamepadContext};
+
+use macroquad::{
+    experimental::{
+        collections::storage,
+        scene::{self, Handle, Node, NodeWith, RefMut},
+    },
+    ui::root_ui,
+};
 
 use crate::{
     capabilities::NetworkReplicate,
     collect_input, exit_to_main_menu,
-    gui::{self, GameMenuResult},
-    quit_to_desktop, GameInputScheme, Player,
+    gui::{self, GAME_MENU_RESULT_MAIN_MENU, GAME_MENU_RESULT_QUIT},
+    is_gamepad_btn_pressed, quit_to_desktop, GameInputScheme, Player,
 };
 
 pub struct LocalGame {
@@ -19,8 +27,6 @@ pub struct LocalGame {
     player1: Handle<Player>,
     player2_input: GameInputScheme,
     player2: Handle<Player>,
-
-    is_menu_open: bool,
 }
 
 impl LocalGame {
@@ -34,23 +40,27 @@ impl LocalGame {
             player2,
             player1_input: player_input[0],
             player2_input: player_input[1],
-            is_menu_open: false,
         }
     }
 }
 
 impl Node for LocalGame {
-    fn fixed_update(mut node: RefMut<Self>) {
+    fn fixed_update(node: RefMut<Self>) {
         #[cfg(debug_assertions)]
         if macroquad::input::is_key_pressed(macroquad::prelude::KeyCode::U) {
             crate::debug::toggle_debug_draw();
         }
 
-        if macroquad::input::is_key_pressed(macroquad::prelude::KeyCode::Escape) {
-            node.is_menu_open = !node.is_menu_open;
+        {
+            let gamepad_context = storage::get::<GamepadContext>();
+            if macroquad::input::is_key_pressed(macroquad::prelude::KeyCode::Escape)
+                || is_gamepad_btn_pressed(Some(&gamepad_context), Button::Start)
+            {
+                gui::toggle_game_menu();
+            }
         }
 
-        if !node.is_menu_open {
+        if !gui::is_game_menu_open() {
             scene::get_node(node.player1).apply_input(collect_input(node.player1_input));
             scene::get_node(node.player2).apply_input(collect_input(node.player2_input));
 
@@ -60,13 +70,13 @@ impl Node for LocalGame {
         }
     }
 
-    fn draw(mut node: RefMut<Self>) {
-        if node.is_menu_open {
-            if let Some(res) = gui::show_game_menu() {
-                match res {
-                    GameMenuResult::MainMenu => exit_to_main_menu(),
-                    GameMenuResult::Quit => quit_to_desktop(),
-                    GameMenuResult::Cancel => node.is_menu_open = false,
+    fn draw(_: RefMut<Self>) {
+        if gui::is_game_menu_open() {
+            if let Some(res) = gui::draw_game_menu(&mut *root_ui()) {
+                match res.into_usize() {
+                    GAME_MENU_RESULT_MAIN_MENU => exit_to_main_menu(),
+                    GAME_MENU_RESULT_QUIT => quit_to_desktop(),
+                    _ => {}
                 }
             }
         }

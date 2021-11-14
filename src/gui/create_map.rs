@@ -75,7 +75,7 @@ pub async fn show_create_map_menu() -> Result<MapResource> {
                     .join(map_name_to_filename(&name))
                     .with_extension(Resources::MAP_EXPORTS_EXTENSION);
 
-                widgets::Label::new(format!("'{}'", path_label.to_str().unwrap())).ui(ui);
+                widgets::Label::new(path_label.to_string_lossy().as_ref()).ui(ui);
             }
 
             ui.separator();
@@ -165,8 +165,8 @@ pub async fn show_create_map_menu() -> Result<MapResource> {
                 Some(description.as_str())
             };
 
-            let mut resources = storage::get_mut::<Resources>();
-            return resources.create_map(&name, description, tile_size, grid_size, true);
+            let resources = storage::get::<Resources>();
+            return resources.create_map(&name, description, tile_size, grid_size);
         }
 
         next_frame().await;

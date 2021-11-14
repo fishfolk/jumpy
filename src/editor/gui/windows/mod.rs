@@ -7,13 +7,17 @@ mod create_tileset;
 
 mod create_layer;
 mod create_object;
+mod load_map;
 mod object_properties;
+mod save_map_as;
 mod tileset_properties;
 
 pub use confirm_dialog::ConfirmDialog;
 pub use create_layer::CreateLayerWindow;
 pub use create_object::CreateObjectWindow;
+pub use load_map::LoadMapWindow;
 pub use object_properties::ObjectPropertiesWindow;
+pub use save_map_as::SaveMapAsWindow;
 
 use super::{ButtonParams, EditorAction, EditorContext, Map};
 pub use create_tileset::CreateTilesetWindow;

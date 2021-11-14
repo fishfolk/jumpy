@@ -22,12 +22,12 @@ pub fn open_game_menu() {
                     MenuEntry {
                         index: GAME_MENU_RESULT_MAIN_MENU,
                         title: "Main Menu".to_string(),
-                        is_pulled_down: false,
+                        ..Default::default()
                     },
                     MenuEntry {
                         index: GAME_MENU_RESULT_QUIT,
                         title: "Quit".to_string(),
-                        is_pulled_down: false,
+                        ..Default::default()
                     },
                 ],
             );

@@ -47,12 +47,12 @@ fn build_main_menu() -> Menu {
             MenuEntry {
                 index: MAIN_MENU_RESULT_LOCAL_GAME,
                 title: "Local Game".to_string(),
-                is_pulled_down: false,
+                ..Default::default()
             },
             MenuEntry {
                 index: MAIN_MENU_RESULT_EDITOR,
                 title: "Editor".to_string(),
-                is_pulled_down: false,
+                ..Default::default()
             },
         ],
     )
@@ -67,12 +67,12 @@ fn build_editor_menu() -> Menu {
             MenuEntry {
                 index: EDITOR_MENU_RESULT_CREATE,
                 title: "Create Map".to_string(),
-                is_pulled_down: false,
+                ..Default::default()
             },
             MenuEntry {
                 index: EDITOR_MENU_RESULT_LOAD,
                 title: "Load Map".to_string(),
-                is_pulled_down: false,
+                ..Default::default()
             },
         ],
     )

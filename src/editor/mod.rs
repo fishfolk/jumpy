@@ -1,13 +1,7 @@
 use std::any::TypeId;
+use std::path::Path;
 
-use crate::{
-    exit_to_main_menu,
-    gui::{
-        draw_game_menu, is_game_menu_open, toggle_game_menu, GAME_MENU_RESULT_MAIN_MENU,
-        GAME_MENU_RESULT_QUIT,
-    },
-    quit_to_desktop, Resources,
-};
+use crate::{exit_to_main_menu, quit_to_desktop, Resources};
 
 mod camera;
 
@@ -16,6 +10,7 @@ pub use camera::EditorCamera;
 pub mod gui;
 
 use gui::{
+    toggle_editor_menu,
     toolbars::{
         LayerListElement, ObjectListElement, TilesetDetailsElement, TilesetListElement,
         ToolSelectorElement, Toolbar, ToolbarPosition,
@@ -47,7 +42,7 @@ pub use input::EditorInputScheme;
 use input::collect_editor_input;
 
 use crate::editor::actions::UpdateObjectAction;
-use crate::editor::gui::windows::ObjectPropertiesWindow;
+use crate::editor::gui::windows::{LoadMapWindow, ObjectPropertiesWindow, SaveMapAsWindow};
 use crate::map::{MapObject, MapObjectKind};
 use macroquad::{
     color,
@@ -56,11 +51,10 @@ use macroquad::{
         scene::{Node, RefMut},
     },
     prelude::*,
-    ui::root_ui,
 };
 
 use super::map::{Map, MapLayerKind};
-use crate::resources::MapResource;
+use crate::resources::{map_name_to_filename, MapResource};
 
 #[derive(Debug, Clone)]
 pub struct EditorContext {
@@ -71,6 +65,8 @@ pub struct EditorContext {
     pub selected_object: Option<usize>,
     pub input_scheme: EditorInputScheme,
     pub cursor_position: Vec2,
+    pub is_user_map: bool,
+    pub is_tiled_map: bool,
 }
 
 impl Default for EditorContext {
@@ -83,6 +79,8 @@ impl Default for EditorContext {
             selected_object: None,
             input_scheme: EditorInputScheme::Keyboard,
             cursor_position: Vec2::ZERO,
+            is_user_map: false,
+            is_tiled_map: false,
         }
     }
 }
@@ -214,6 +212,8 @@ impl Editor {
             selected_object: self.selected_object,
             input_scheme: self.input_scheme,
             cursor_position: self.get_cursor_position(),
+            is_user_map: self.map_resource.meta.is_user_map,
+            is_tiled_map: self.map_resource.meta.is_tiled_map,
         }
     }
 
@@ -425,6 +425,71 @@ impl Editor {
                     .history
                     .apply(Box::new(action), &mut self.map_resource.map);
             }
+            EditorAction::Create { .. } => {
+                unimplemented!(
+                    "Map creation from editor is not implemented. Use main menu to create new maps"
+                );
+            }
+            EditorAction::OpenCreateMapWindow => {
+                unimplemented!(
+                    "Map creation from editor is not implemented. Use main menu to create new maps"
+                );
+            }
+            EditorAction::Open { path } => {
+                let resources = storage::get::<Resources>();
+
+                if let Some(map_resource) = resources
+                    .maps
+                    .iter()
+                    .find(|res| res.meta.path == path)
+                    .cloned()
+                {
+                    self.map_resource = map_resource;
+                    self.history.clear();
+                }
+            }
+            EditorAction::OpenLoadMapWindow => {
+                let mut gui = storage::get_mut::<EditorGui>();
+                gui.add_window(LoadMapWindow::new());
+            }
+            EditorAction::Save => {
+                let mut map_resource = self.map_resource.clone();
+
+                map_resource.meta.is_user_map = true;
+                map_resource.meta.is_tiled_map = false;
+
+                let mut resources = storage::get_mut::<Resources>();
+                if resources.save_map(&map_resource).is_ok() {
+                    self.map_resource = map_resource;
+                }
+            }
+            EditorAction::SaveAs { name } => {
+                let mut map_resource = self.map_resource.clone();
+
+                let path = Path::new(Resources::MAP_EXPORTS_DEFAULT_DIR)
+                    .join(map_name_to_filename(&name))
+                    .with_extension(Resources::MAP_EXPORTS_EXTENSION);
+
+                map_resource.meta.name = name;
+                map_resource.meta.path = path.to_string_lossy().to_string();
+                map_resource.meta.is_user_map = true;
+                map_resource.meta.is_tiled_map = false;
+
+                let mut resources = storage::get_mut::<Resources>();
+                if resources.save_map(&map_resource).is_ok() {
+                    self.map_resource = map_resource;
+                }
+            }
+            EditorAction::OpenSaveAsWindow => {
+                let mut gui = storage::get_mut::<EditorGui>();
+                gui.add_window(SaveMapAsWindow::new(&self.map_resource.meta.name));
+            }
+            EditorAction::ExitToMainMenu => {
+                exit_to_main_menu();
+            }
+            EditorAction::QuitToDesktop => {
+                quit_to_desktop();
+            }
         }
 
         if let Err(err) = res {
@@ -539,7 +604,7 @@ impl Node for Editor {
         let input = collect_editor_input(node.input_scheme);
 
         if input.toggle_menu {
-            toggle_game_menu();
+            toggle_editor_menu(&node.get_context());
         }
 
         if let Some(cursor_position) = node.cursor_position {
@@ -776,16 +841,6 @@ impl Node for Editor {
 
         if let Some(action) = res {
             node.apply_action(action);
-        }
-
-        if is_game_menu_open() {
-            if let Some(res) = draw_game_menu(&mut *root_ui()) {
-                match res.into_usize() {
-                    GAME_MENU_RESULT_MAIN_MENU => exit_to_main_menu(),
-                    GAME_MENU_RESULT_QUIT => quit_to_desktop(),
-                    _ => {}
-                }
-            }
         }
     }
 }

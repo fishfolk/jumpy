@@ -42,7 +42,7 @@ impl Window for CreateLayerWindow {
         ui: &mut Ui,
         _size: Vec2,
         _map: &Map,
-        _params: &EditorContext,
+        _ctx: &EditorContext,
     ) -> Option<EditorAction> {
         let id = hash!("create_layer_window");
 

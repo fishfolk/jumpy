@@ -52,11 +52,12 @@ impl From<Vec2> for MenuPosition {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct MenuEntry {
     pub index: usize,
     pub title: String,
     pub is_pulled_down: bool,
+    pub is_disabled: bool,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -210,6 +211,7 @@ impl Menu {
                 index: Self::CANCEL_INDEX,
                 title,
                 is_pulled_down: true,
+                is_disabled: false,
             })
         }
 
@@ -293,20 +295,24 @@ impl Menu {
                     false
                 };
 
-                if is_selected {
+                {
                     let gui_resources = storage::get::<GuiResources>();
-                    ui.push_skin(&gui_resources.skins.menu_selected);
+                    if entry.is_disabled {
+                        ui.push_skin(&gui_resources.skins.menu_disabled);
+                    } else if is_selected {
+                        ui.push_skin(&gui_resources.skins.menu_selected);
+                    }
                 }
 
                 let btn = widgets::Button::new(entry.title.as_str())
                     .size(entry_size)
                     .position(entry_position);
 
-                if btn.ui(ui) || (is_selected && should_confirm) {
+                if (btn.ui(ui) || (is_selected && should_confirm)) && !entry.is_disabled {
                     res = Some(entry.index.into());
                 }
 
-                if is_selected {
+                if entry.is_disabled || is_selected {
                     ui.pop_skin();
                 }
             }
@@ -346,20 +352,24 @@ impl Menu {
                     }
                 }
 
-                if is_selected {
+                {
                     let gui_resources = storage::get::<GuiResources>();
-                    ui.push_skin(&gui_resources.skins.menu_selected);
+                    if entry.is_disabled {
+                        ui.push_skin(&gui_resources.skins.menu_disabled);
+                    } else if is_selected {
+                        ui.push_skin(&gui_resources.skins.menu_selected);
+                    }
                 }
 
                 let btn = widgets::Button::new(entry.title.as_str())
                     .size(entry_size)
                     .position(entry_position);
 
-                if btn.ui(ui) || (is_selected && should_confirm) {
+                if (btn.ui(ui) || (is_selected && should_confirm)) && !entry.is_disabled {
                     res = Some(entry.index.into());
                 }
 
-                if is_selected {
+                if entry.is_disabled || is_selected {
                     ui.pop_skin();
                 }
             }
@@ -425,9 +435,8 @@ impl Menu {
                 }
 
                 let selection = if selection < 0 {
-                    let len = entries_cnt;
-                    if len > 0 {
-                        len - 1
+                    if entries_cnt > 0 {
+                        entries_cnt - 1
                     } else {
                         0
                     }

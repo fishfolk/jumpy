@@ -7,9 +7,17 @@ pub mod windows;
 pub mod combobox;
 pub mod skins;
 
+mod editor_menu;
+
 pub use skins::EditorSkinCollection;
 
 pub use combobox::{ComboBoxBuilder, ComboBoxValue};
+
+pub use editor_menu::{
+    close_editor_menu, draw_editor_menu, is_editor_menu_open, open_editor_menu, toggle_editor_menu,
+    EDITOR_MENU_RESULT_MAIN_MENU, EDITOR_MENU_RESULT_NEW, EDITOR_MENU_RESULT_OPEN,
+    EDITOR_MENU_RESULT_QUIT, EDITOR_MENU_RESULT_SAVE, EDITOR_MENU_RESULT_SAVE_AS,
+};
 
 use macroquad::{
     experimental::collections::storage,
@@ -290,6 +298,37 @@ impl EditorGui {
             if let Some(action) = context_menu.draw(ui) {
                 self.context_menu = None;
                 res = Some(action);
+            }
+        }
+
+        if is_editor_menu_open() {
+            if let Some(menu_res) = draw_editor_menu(ui, &ctx) {
+                close_editor_menu();
+
+                match menu_res.into_usize() {
+                    EDITOR_MENU_RESULT_NEW => todo!("implement new map menu entry"),
+                    EDITOR_MENU_RESULT_OPEN => {
+                        let action = EditorAction::OpenLoadMapWindow;
+                        res = Some(action);
+                    }
+                    EDITOR_MENU_RESULT_SAVE => {
+                        let action = EditorAction::Save;
+                        res = Some(action);
+                    }
+                    EDITOR_MENU_RESULT_SAVE_AS => {
+                        let action = EditorAction::OpenSaveAsWindow;
+                        res = Some(action);
+                    }
+                    EDITOR_MENU_RESULT_MAIN_MENU => {
+                        let action = EditorAction::ExitToMainMenu;
+                        res = Some(action);
+                    }
+                    EDITOR_MENU_RESULT_QUIT => {
+                        let action = EditorAction::QuitToDesktop;
+                        res = Some(action);
+                    }
+                    _ => {}
+                }
             }
         }
 

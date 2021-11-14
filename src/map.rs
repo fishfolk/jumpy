@@ -16,10 +16,77 @@ use crate::{
 pub type MapProperty = json::GenericParam;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MapBackgroundLayer {
+    pub texture_id: String,
+    pub depth: f32,
+    #[serde(with = "json::vec2_def")]
+    pub offset: Vec2,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MapBackground {
+    pub layers: Vec<MapBackgroundLayer>,
+}
+
+impl MapBackground {
+    pub fn new(layers: &[MapBackgroundLayer]) -> Self {
+        MapBackground {
+            layers: layers.to_vec(),
+        }
+    }
+
+    fn parallax(texture: Texture2D, depth: f32, camera_pos: Vec2) -> Rect {
+        let w = texture.width();
+        let h = texture.height();
+
+        let dest_rect = Rect::new(0., 0., w, h);
+        let parallax_w = w as f32 * 0.5;
+
+        let mut dest_rect2 = Rect::new(
+            -parallax_w,
+            -parallax_w,
+            w + parallax_w * 2.,
+            h + parallax_w * 2.,
+        );
+
+        let parallax_x = camera_pos.x / dest_rect.w - 0.3;
+        let parallax_y = camera_pos.y / dest_rect.h * 0.6 - 0.5;
+
+        dest_rect2.x += parallax_w * parallax_x * depth;
+        dest_rect2.y += parallax_w * parallax_y * depth;
+
+        dest_rect2
+    }
+
+    pub fn draw(&self) {
+        let resources = storage::get::<Resources>();
+        let position = scene::camera_pos();
+
+        for layer in &self.layers {
+            let texture_res = resources.textures.get(&layer.texture_id).unwrap();
+            let dest_rect = Self::parallax(texture_res.texture, layer.depth, position);
+
+            draw_texture_ex(
+                texture_res.texture,
+                dest_rect.x + layer.offset.x,
+                dest_rect.y + layer.offset.y,
+                WHITE,
+                DrawTextureParams {
+                    dest_size: Some(vec2(dest_rect.w, dest_rect.h)),
+                    ..Default::default()
+                },
+            );
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(into = "json::MapDef", from = "json::MapDef")]
 pub struct Map {
     #[serde(default = "Map::default_background_color", with = "json::ColorDef")]
     pub background_color: Color,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub background: Option<MapBackground>,
     #[serde(with = "json::def_vec2")]
     pub world_offset: Vec2,
     #[serde(with = "json::def_uvec2")]
@@ -44,6 +111,7 @@ impl Map {
     pub fn new(tile_size: Vec2, grid_size: UVec2) -> Self {
         Map {
             background_color: Self::default_background_color(),
+            background: None,
             world_offset: Vec2::ZERO,
             grid_size,
             tile_size,
@@ -202,6 +270,10 @@ impl Map {
 
     /// This will draw the map
     pub fn draw(&self, rect: Option<URect>) {
+        if let Some(background) = &self.background {
+            background.draw();
+        }
+
         let rect = rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.x, self.grid_size.y));
         draw_rectangle(
             self.world_offset.x + (rect.x as f32 * self.tile_size.x),

@@ -85,6 +85,21 @@ pub enum EditorAction {
         layer_id: String,
         coords: UVec2,
     },
+    Create {
+        path: String,
+    },
+    OpenCreateMapWindow,
+    Open {
+        path: String,
+    },
+    OpenLoadMapWindow,
+    Save,
+    SaveAs {
+        path: String,
+    },
+    OpenSaveAsWindow,
+    ExitToMainMenu,
+    QuitToDesktop,
 }
 
 impl EditorAction {

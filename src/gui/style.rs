@@ -23,6 +23,7 @@ pub struct SkinCollection {
     pub panel_group: Skin,
     pub menu_header: Skin,
     pub menu_selected: Skin,
+    pub menu_disabled: Skin,
     pub map_selection: Skin,
     pub error: Skin,
     pub cheat: Skin,
@@ -204,6 +205,43 @@ impl SkinCollection {
             }
         };
 
+        let menu_disabled = {
+            let button_style = root_ui()
+                .style_builder()
+                .background(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/button_disabled_background.png"),
+                    None,
+                ))
+                .background_margin(RectOffset::new(
+                    BUTTON_BG_MARGIN_H,
+                    BUTTON_BG_MARGIN_H,
+                    BUTTON_BG_MARGIN_V,
+                    BUTTON_BG_MARGIN_V,
+                ))
+                .margin(RectOffset::new(
+                    BUTTON_MARGIN_H - BUTTON_BG_MARGIN_H,
+                    BUTTON_MARGIN_H - BUTTON_BG_MARGIN_H,
+                    BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
+                    BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
+                ))
+                .background_hovered(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/button_disabled_background.png"),
+                    None,
+                ))
+                .background_clicked(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/button_disabled_background.png"),
+                    None,
+                ))
+                .text_color(Color::from_rgba(200, 200, 160, 255))
+                .font_size(BUTTON_FONT_SIZE as u16)
+                .build();
+
+            Skin {
+                button_style,
+                ..menu.clone()
+            }
+        };
+
         // Skin used in a hack to create panels.
         // Windows will not update their position if screen size changes, so in order to draw
         // windows, we will have to draw a button with a group on top.
@@ -289,6 +327,7 @@ impl SkinCollection {
             menu,
             menu_header,
             menu_selected,
+            menu_disabled,
             panel_group,
             map_selection,
             error,

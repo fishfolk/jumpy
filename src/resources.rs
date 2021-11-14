@@ -2,6 +2,7 @@ use std::{collections::HashMap, fs, path::Path};
 
 use macroquad::{
     audio::{load_sound, Sound},
+    experimental::collections::storage,
     prelude::*,
 };
 
@@ -102,6 +103,8 @@ impl Resources {
 
     pub const MAP_EXPORTS_EXTENSION: &'static str = "json";
     pub const MAP_EXPORTS_DEFAULT_DIR: &'static str = "maps";
+    pub const MAP_EXPORT_NAME_MIN_LEN: usize = 1;
+
     pub const MAP_PREVIEW_PLACEHOLDER_PATH: &'static str = "maps/no_preview.png";
     pub const MAP_PREVIEW_PLACEHOLDER_ID: &'static str = "map_preview_placeholder";
 
@@ -274,43 +277,19 @@ impl Resources {
     }
 
     pub fn create_map(
-        &mut self,
+        &self,
         name: &str,
         description: Option<&str>,
         tile_size: Vec2,
         grid_size: UVec2,
-        should_overwrite: bool,
     ) -> Result<MapResource> {
         let description = description.map(|str| str.to_string());
-
-        let assets_path = Path::new(&self.assets_dir);
 
         let map_path = Path::new(Self::MAP_EXPORTS_DEFAULT_DIR)
             .join(map_name_to_filename(name))
             .with_extension(Self::MAP_EXPORTS_EXTENSION);
 
         let path = map_path.to_string_lossy().into_owned();
-
-        if assets_path.join(&map_path).exists() {
-            let mut i = 0;
-            while i < self.maps.len() {
-                let res = &self.maps[i];
-                if res.meta.path == path {
-                    if res.meta.is_user_map && should_overwrite {
-                        self.maps.remove(i);
-                        break;
-                    } else {
-                        return Err(formaterr!(
-                            ErrorKind::General,
-                            "Resources: The path '{}' is in use and it is not possible to overwrite. Please choose a different map name",
-                            map_path.to_str().unwrap(),
-                        ));
-                    }
-                }
-
-                i += 1;
-            }
-        }
 
         let preview_path = Path::new(Self::MAP_PREVIEW_PLACEHOLDER_PATH)
             .to_string_lossy()
@@ -326,14 +305,41 @@ impl Resources {
         };
 
         let map = Map::new(tile_size, grid_size);
-        map.save(assets_path.join(map_path))?;
 
         let preview = {
             let res = self.textures.get(Self::MAP_PREVIEW_PLACEHOLDER_ID).unwrap();
             res.texture
         };
 
-        let map_resource = MapResource { map, preview, meta };
+        Ok(MapResource { map, preview, meta })
+    }
+
+    pub fn save_map(&mut self, map_resource: &MapResource) -> Result<()> {
+        let assets_path = Path::new(&self.assets_dir);
+        let export_path = assets_path.join(&map_resource.meta.path);
+
+        if export_path.exists() {
+            let mut i = 0;
+            while i < self.maps.len() {
+                let res = &self.maps[i];
+                if res.meta.path == map_resource.meta.path {
+                    if res.meta.is_user_map {
+                        self.maps.remove(i);
+                        break;
+                    } else {
+                        return Err(formaterr!(
+                            ErrorKind::General,
+                            "Resources: The path '{}' is in use and it is not possible to overwrite. Please choose a different map name",
+                            &map_resource.meta.path,
+                        ));
+                    }
+                }
+
+                i += 1;
+            }
+        }
+
+        map_resource.map.save(export_path)?;
 
         self.maps.push(map_resource.clone());
 
@@ -346,10 +352,44 @@ impl Resources {
         let str = serde_json::to_string_pretty(&metadata)?;
         fs::write(maps_file_path, &str)?;
 
-        Ok(map_resource)
+        Ok(())
     }
 }
 
 pub fn map_name_to_filename(name: &str) -> String {
     name.replace(' ', "_").replace('.', "_").to_lowercase()
+}
+
+pub fn is_valid_map_file_name(file_name: &str) -> bool {
+    if file_name.len() - Resources::MAP_EXPORTS_EXTENSION.len() > Resources::MAP_EXPORT_NAME_MIN_LEN
+    {
+        if let Some(extension) = Path::new(file_name).extension() {
+            return extension == Resources::MAP_EXPORTS_EXTENSION;
+        }
+    }
+
+    false
+}
+
+pub fn is_valid_map_export_path<P: AsRef<Path>>(path: P, should_overwrite: bool) -> bool {
+    let path = path.as_ref();
+
+    if let Some(file_name) = path.file_name() {
+        if is_valid_map_file_name(&file_name.to_string_lossy()) {
+            let resources = storage::get::<Resources>();
+
+            let res = resources
+                .maps
+                .iter()
+                .find(|res| Path::new(&res.meta.path) == path);
+
+            if let Some(res) = res {
+                return res.meta.is_user_map && should_overwrite;
+            }
+
+            return true;
+        }
+    }
+
+    false
 }

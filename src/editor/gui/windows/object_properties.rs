@@ -90,73 +90,89 @@ impl Window for ObjectPropertiesWindow {
         });
 
         {
-            {
-                let size = vec2(72.0, 28.0);
+            let size = vec2(72.0, 28.0);
 
-                let mut x_str = object.position.x.to_string();
-                let mut y_str = object.position.y.to_string();
+            let mut x_str = object.position.x.to_string();
+            let mut y_str = object.position.y.to_string();
 
-                widgets::InputText::new(hash!(id, "position_x_input"))
-                    .size(size)
-                    .ui(ui, &mut x_str);
+            widgets::InputText::new(hash!(id, "position_x_input"))
+                .size(size)
+                .ui(ui, &mut x_str);
 
-                ui.same_line(0.0);
+            ui.same_line(0.0);
 
-                ui.label(None, "x");
+            ui.label(None, "x");
 
-                ui.same_line(0.0);
+            ui.same_line(0.0);
 
-                widgets::InputText::new(hash!(id, "position_y_input"))
-                    .size(size)
-                    .ui(ui, &mut y_str);
+            widgets::InputText::new(hash!(id, "position_y_input"))
+                .size(size)
+                .ui(ui, &mut y_str);
 
-                ui.separator();
-                ui.separator();
-                ui.separator();
-                ui.separator();
+            ui.separator();
+            ui.separator();
+            ui.separator();
+            ui.separator();
 
-                let x = if let Ok(x) = x_str.parse::<f32>() {
-                    (x * 100.0).round() / 100.0
-                } else {
-                    0.0
-                };
+            let x = if let Ok(x) = x_str.parse::<f32>() {
+                (x * 100.0).round() / 100.0
+            } else {
+                0.0
+            };
 
-                let y = if let Ok(y) = y_str.parse::<f32>() {
-                    (y * 100.0).round() / 100.0
-                } else {
-                    0.0
-                };
+            let y = if let Ok(y) = y_str.parse::<f32>() {
+                (y * 100.0).round() / 100.0
+            } else {
+                0.0
+            };
 
-                object.position = vec2(x, y);
-            }
+            object.position = vec2(x, y);
+        }
 
-            ComboBoxBuilder::new(hash!(id, "type_input"))
-                .with_ratio(0.8)
-                .with_label("Type")
-                .build(ui, &mut object.kind);
+        ComboBoxBuilder::new(hash!(id, "type_input"))
+            .with_ratio(0.8)
+            .with_label("Type")
+            .build(ui, &mut object.kind);
 
-            if object.kind == MapObjectKind::Item {
-                let resources = storage::get::<Resources>();
-
-                let item_ids = resources
+        let resources = storage::get::<Resources>();
+        let item_ids = match object.kind {
+            MapObjectKind::Item => {
+                resources
                     .items
                     .values()
                     .map(|item| item.id.as_str())
-                    .collect::<Vec<&str>>();
-
-                let mut item_index = item_ids
-                    .iter()
-                    .enumerate()
-                    .find_map(|(i, id)| if id == &object.id { Some(i) } else { None })
-                    .unwrap_or(0);
-
-                widgets::ComboBox::new(hash!("id_input"), &item_ids)
-                    .ratio(0.8)
-                    .label("Item")
-                    .ui(ui, &mut item_index);
-
-                object.id = item_ids.get(item_index).map(|str| str.to_string()).unwrap();
+                    .collect::<Vec<&str>>()
             }
+            MapObjectKind::Environment => {
+                vec!("sproinger")
+            }
+            MapObjectKind::Decoration => {
+                vec!("pot", "seaweed")
+            }
+            MapObjectKind::SpawnPoint => vec!()
+        };
+
+        if item_ids.len() > 0 {
+            let resources = storage::get::<Resources>();
+
+            let item_ids = resources
+                .items
+                .values()
+                .map(|item| item.id.as_str())
+                .collect::<Vec<&str>>();
+
+            let mut item_index = item_ids
+                .iter()
+                .enumerate()
+                .find_map(|(i, id)| if id == &object.id { Some(i) } else { None })
+                .unwrap_or(0);
+
+            widgets::ComboBox::new(hash!("id_input"), &item_ids)
+                .ratio(0.8)
+                .label("Item")
+                .ui(ui, &mut item_index);
+
+            object.id = item_ids.get(item_index).map(|str| str.to_string()).unwrap();
         }
 
         self.object = Some(object);

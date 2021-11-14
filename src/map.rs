@@ -487,7 +487,7 @@ impl ComboBoxValue for MapObjectKind {
     }
 
     fn options() -> &'static [&'static str] {
-        &["Item", "Spawn point", "Environment", "Decoration"]
+        &["Item", "Spawn Point", "Environment", "Decoration"]
     }
 }
 

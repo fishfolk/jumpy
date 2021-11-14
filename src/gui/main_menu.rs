@@ -94,10 +94,17 @@ pub async fn show_main_menu() -> MainMenuResult {
             let resources = storage::get::<Resources>();
             let texture_entry = resources.textures.get(HEADER_TEXTURE_ID).unwrap();
 
-            let size = vec2(texture_entry.texture.width(), texture_entry.texture.height());
+            let size = vec2(
+                texture_entry.texture.width(),
+                texture_entry.texture.height(),
+            );
+
             let position = vec2((screen_width() - size.x) / 2.0, 35.0);
 
-            widgets::Texture::new(texture_entry.texture).position(position).size(size.x, size.y).ui(&mut *root_ui());
+            widgets::Texture::new(texture_entry.texture)
+                .position(position)
+                .size(size.x, size.y)
+                .ui(&mut *root_ui());
         }
 
         match current_menu_id {

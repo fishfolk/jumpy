@@ -6,7 +6,7 @@ use macroquad::{
 
 use crate::map::MapObject;
 use crate::{
-    editor::gui::ComboBoxBuilder,
+    editor::gui::{ComboBoxBuilder, ComboBoxValue},
     map::{Map, MapObjectKind},
     Resources,
 };
@@ -136,44 +136,40 @@ impl Window for ObjectPropertiesWindow {
 
         let resources = storage::get::<Resources>();
         let item_ids = match object.kind {
-            MapObjectKind::Item => {
-                resources
-                    .items
-                    .values()
-                    .map(|item| item.id.as_str())
-                    .collect::<Vec<&str>>()
-            }
-            MapObjectKind::Environment => {
-                vec!("sproinger")
-            }
-            MapObjectKind::Decoration => {
-                vec!("pot", "seaweed")
-            }
-            MapObjectKind::SpawnPoint => vec!()
-        };
-
-        if item_ids.len() > 0 {
-            let resources = storage::get::<Resources>();
-
-            let item_ids = resources
+            MapObjectKind::Item => resources
                 .items
                 .values()
                 .map(|item| item.id.as_str())
-                .collect::<Vec<&str>>();
+                .collect::<Vec<&str>>(),
+            MapObjectKind::Environment => {
+                vec!["sproinger"]
+            }
+            MapObjectKind::Decoration => {
+                vec!["pot", "seaweed"]
+            }
+            MapObjectKind::SpawnPoint => {
+                vec!["player_spawn"]
+            }
+        };
 
-            let mut item_index = item_ids
-                .iter()
-                .enumerate()
-                .find_map(|(i, id)| if id == &object.id { Some(i) } else { None })
-                .unwrap_or(0);
+        let mut item_index = item_ids
+            .iter()
+            .enumerate()
+            .find_map(|(i, id)| if id == &object.id { Some(i) } else { None })
+            .unwrap_or(0);
 
-            widgets::ComboBox::new(hash!("id_input"), &item_ids)
-                .ratio(0.8)
-                .label("Item")
-                .ui(ui, &mut item_index);
+        let label = {
+            let opts = MapObjectKind::options();
+            let i = object.kind.to_index();
+            opts[i]
+        };
 
-            object.id = item_ids.get(item_index).map(|str| str.to_string()).unwrap();
-        }
+        widgets::ComboBox::new(hash!("id_input"), &item_ids)
+            .ratio(0.8)
+            .label(label)
+            .ui(ui, &mut item_index);
+
+        object.id = item_ids.get(item_index).map(|str| str.to_string()).unwrap();
 
         self.object = Some(object);
 

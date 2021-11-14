@@ -7,8 +7,8 @@ mod create_tileset;
 
 mod create_layer;
 mod create_object;
-mod tileset_properties;
 mod object_properties;
+mod tileset_properties;
 
 pub use confirm_dialog::ConfirmDialog;
 pub use create_layer::CreateLayerWindow;

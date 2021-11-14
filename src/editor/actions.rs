@@ -483,12 +483,7 @@ pub struct CreateObjectAction {
 }
 
 impl CreateObjectAction {
-    pub fn new(
-        id: String,
-        kind: MapObjectKind,
-        position: Vec2,
-        layer_id: String,
-    ) -> Self {
+    pub fn new(id: String, kind: MapObjectKind, position: Vec2, layer_id: String) -> Self {
         CreateObjectAction {
             id,
             kind,
@@ -565,7 +560,6 @@ impl UndoableAction for DeleteObjectAction {
         Ok(())
     }
 }
-
 
 #[derive(Debug)]
 pub struct UpdateObjectAction {

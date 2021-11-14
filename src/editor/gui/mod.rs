@@ -33,6 +33,7 @@ pub use windows::{
     WINDOW_BUTTON_MIN_WIDTH,
 };
 
+use crate::map::MapLayerKind;
 use context_menu::{ContextMenu, ContextMenuEntry};
 
 pub const NO_COLOR: Color = Color::new(0.0, 0.0, 0.0, 0.0);
@@ -129,16 +130,26 @@ impl EditorGui {
         false
     }
 
-    pub fn open_context_menu(&mut self, position: Vec2) {
-        let menu = ContextMenu::new(
-            position,
-            &[
-                ContextMenuEntry::action("Undo", EditorAction::Undo),
-                ContextMenuEntry::action("Redo", EditorAction::Redo),
-            ],
-        );
+    pub fn open_context_menu(&mut self, position: Vec2, map: &Map, ctx: EditorContext) {
+        let mut entries = vec![
+            ContextMenuEntry::action("Undo", EditorAction::Undo),
+            ContextMenuEntry::action("Redo", EditorAction::Redo),
+        ];
 
-        self.context_menu = Some(menu);
+        if let Some(layer_id) = &ctx.selected_layer {
+            let layer = &map.layers.get(layer_id).unwrap();
+            if layer.kind == MapLayerKind::ObjectLayer {
+                entries.push(ContextMenuEntry::action(
+                    "Create Object",
+                    EditorAction::OpenCreateObjectWindow {
+                        position,
+                        layer_id: layer_id.clone(),
+                    },
+                ));
+            }
+        }
+
+        self.context_menu = Some(ContextMenu::new(position, &entries));
     }
 
     pub fn close_context_menu(&mut self) {

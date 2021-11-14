@@ -29,8 +29,8 @@
     "path": "textures/map/default_decorations.png",
     "type": "tileset",
     "sprite_size": {
-      "x": 51,
-      "y": 48
+      "x": 48,
+      "y": 51
     }
   },
   {

@@ -10,7 +10,6 @@ use crate::{
     editor::gui::combobox::ComboBoxValue,
     json::{self, TiledMap},
     math::URect,
-    text::{draw_aligned_text, HorizontalAlignment, VerticalAlignment},
     Resources,
 };
 
@@ -219,38 +218,33 @@ impl Map {
 
         for layer_id in draw_order {
             if let Some(layer) = self.layers.get(&layer_id) {
-                if layer.is_visible {
-                    if layer.kind == MapLayerKind::TileLayer {
-                        for (x, y, tile) in self.get_tiles(&layer_id, Some(rect)) {
-                            if let Some(tile) = tile {
-                                let world_position = self.world_offset
-                                    + vec2(
-                                        x as f32 * self.tile_size.x,
-                                        y as f32 * self.tile_size.y,
-                                    );
+                if layer.is_visible && layer.kind == MapLayerKind::TileLayer {
+                    for (x, y, tile) in self.get_tiles(&layer_id, Some(rect)) {
+                        if let Some(tile) = tile {
+                            let world_position = self.world_offset
+                                + vec2(x as f32 * self.tile_size.x, y as f32 * self.tile_size.y);
 
-                                let texture_entry =
-                                    resources.textures.get(&tile.texture_id).unwrap_or_else(|| {
-                                        panic!("No texture with id '{}'!", tile.texture_id)
-                                    });
+                            let texture_entry =
+                                resources.textures.get(&tile.texture_id).unwrap_or_else(|| {
+                                    panic!("No texture with id '{}'!", tile.texture_id)
+                                });
 
-                                draw_texture_ex(
-                                    texture_entry.texture,
-                                    world_position.x,
-                                    world_position.y,
-                                    color::WHITE,
-                                    DrawTextureParams {
-                                        source: Some(Rect::new(
-                                            tile.texture_coords.x, // + 0.1,
-                                            tile.texture_coords.y, // + 0.1,
-                                            self.tile_size.x,      // - 0.2,
-                                            self.tile_size.y,      // - 0.2,
-                                        )),
-                                        dest_size: Some(vec2(self.tile_size.x, self.tile_size.y)),
-                                        ..Default::default()
-                                    },
-                                );
-                            }
+                            draw_texture_ex(
+                                texture_entry.texture,
+                                world_position.x,
+                                world_position.y,
+                                color::WHITE,
+                                DrawTextureParams {
+                                    source: Some(Rect::new(
+                                        tile.texture_coords.x, // + 0.1,
+                                        tile.texture_coords.y, // + 0.1,
+                                        self.tile_size.x,      // - 0.2,
+                                        self.tile_size.y,      // - 0.2,
+                                    )),
+                                    dest_size: Some(vec2(self.tile_size.x, self.tile_size.y)),
+                                    ..Default::default()
+                                },
+                            );
                         }
                     }
                 }

@@ -1,15 +1,15 @@
 use macroquad::{
     experimental::collections::storage,
-    ui::{hash, widgets, Ui},
     prelude::*,
+    ui::{hash, widgets, Ui},
 };
 
+use crate::map::MapObject;
 use crate::{
     editor::gui::ComboBoxBuilder,
     map::{Map, MapObjectKind},
     Resources,
 };
-use crate::map::MapObject;
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 
@@ -138,7 +138,8 @@ impl Window for ObjectPropertiesWindow {
             if object.kind == MapObjectKind::Item {
                 let resources = storage::get::<Resources>();
 
-                let item_ids = resources.items
+                let item_ids = resources
+                    .items
                     .values()
                     .map(|item| item.id.as_str())
                     .collect::<Vec<&str>>();
@@ -146,11 +147,7 @@ impl Window for ObjectPropertiesWindow {
                 let mut item_index = item_ids
                     .iter()
                     .enumerate()
-                    .find_map(|(i, id)| if id == &object.id {
-                        Some(i)
-                    } else {
-                        None
-                    })
+                    .find_map(|(i, id)| if id == &object.id { Some(i) } else { None })
                     .unwrap_or(0);
 
                 widgets::ComboBox::new(hash!("id_input"), &item_ids)

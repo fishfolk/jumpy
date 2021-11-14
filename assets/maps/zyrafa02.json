@@ -101,7 +101,7 @@
                  "visible":true,
                  "width":48,
                  "x":416,
-                 "y":672
+                 "y":621
                 }, 
                 {
                  "gid":64,
@@ -113,7 +113,7 @@
                  "visible":true,
                  "width":48,
                  "x":192,
-                 "y":672
+                 "y":621
                 }, 
                 {
                  "gid":64,
@@ -125,7 +125,7 @@
                  "visible":true,
                  "width":48,
                  "x":352,
-                 "y":480
+                 "y":429
                 }, 
                 {
                  "gid":64,
@@ -137,7 +137,7 @@
                  "visible":true,
                  "width":48,
                  "x":576,
-                 "y":640
+                 "y":589
                 }, 
                 {
                  "gid":69,
@@ -149,7 +149,7 @@
                  "visible":true,
                  "width":48,
                  "x":96,
-                 "y":384
+                 "y":333
                 }],
          "opacity":1,
          "type":"objectgroup",

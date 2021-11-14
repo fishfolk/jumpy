@@ -1,7 +1,7 @@
 use macroquad::{
     experimental::collections::storage,
-    ui::{hash, widgets, Ui},
     prelude::*,
+    ui::{hash, widgets, Ui},
 };
 
 use crate::{
@@ -128,7 +128,8 @@ impl Window for CreateObjectWindow {
             if self.kind == MapObjectKind::Item {
                 let resources = storage::get::<Resources>();
 
-                let item_ids = resources.items
+                let item_ids = resources
+                    .items
                     .values()
                     .map(|item| item.id.as_str())
                     .collect::<Vec<&str>>();
@@ -138,11 +139,7 @@ impl Window for CreateObjectWindow {
                     item_index = item_ids
                         .iter()
                         .enumerate()
-                        .find_map(|(i, id)| if id == current_id {
-                            Some(i)
-                        } else {
-                            None
-                        })
+                        .find_map(|(i, id)| if id == current_id { Some(i) } else { None })
                         .unwrap_or(0);
                 }
 

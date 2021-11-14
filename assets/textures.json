@@ -54,6 +54,10 @@
     "type": "background"
   },
   {
+    "id": "main_menu_header",
+    "path": "ui/main_menu_header.png"
+  },
+  {
     "id": "player_blue",
     "path": "textures/player/Whale(76x66)(Blue).png",
     "type": "spritesheet",

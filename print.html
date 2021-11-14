@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="code_of_conduct.html"><strong aria-hidden="true">2.</strong> Code of Conduct</a></li><li class="chapter-item expanded "><a href="gameplay.html"><strong aria-hidden="true">3.</strong> Gameplay</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="controls.html"><strong aria-hidden="true">3.1.</strong> Controls</a></li><li class="chapter-item expanded "><a href="items.html"><strong aria-hidden="true">3.2.</strong> Items</a></li><li class="chapter-item expanded "><a href="multiplayer.html"><strong aria-hidden="true">3.3.</strong> Multiplayer</a></li></ol></li><li class="chapter-item expanded "><a href="mechanics.html"><strong aria-hidden="true">4.</strong> Mechanics</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="physics.html"><strong aria-hidden="true">4.1.</strong> Physics</a></li><li class="chapter-item expanded "><a href="environmental_weapons.html"><strong aria-hidden="true">4.2.</strong> Environmental Weapons</a></li><li class="chapter-item expanded "><a href="netcode.html"><strong aria-hidden="true">4.3.</strong> Netcode</a></li></ol></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">5.</strong> Contributing</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="contributing_code.html"><strong aria-hidden="true">5.1.</strong> Contributing Code</a></li><li class="chapter-item expanded "><a href="simple_gun_weapon.html"><strong aria-hidden="true">5.2.</strong> Simple Gun Weapon</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="code_of_conduct.html"><strong aria-hidden="true">2.</strong> Code of Conduct</a></li><li class="chapter-item expanded "><a href="gameplay.html"><strong aria-hidden="true">3.</strong> Gameplay</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="controls.html"><strong aria-hidden="true">3.1.</strong> Controls</a></li><li class="chapter-item expanded "><a href="items.html"><strong aria-hidden="true">3.2.</strong> Items</a></li><li class="chapter-item expanded "><a href="multiplayer.html"><strong aria-hidden="true">3.3.</strong> Multiplayer</a></li></ol></li><li class="chapter-item expanded "><a href="mechanics.html"><strong aria-hidden="true">4.</strong> Mechanics</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="physics.html"><strong aria-hidden="true">4.1.</strong> Physics</a></li><li class="chapter-item expanded "><a href="environmental_weapons.html"><strong aria-hidden="true">4.2.</strong> Environmental Weapons</a></li><li class="chapter-item expanded "><a href="netcode.html"><strong aria-hidden="true">4.3.</strong> Netcode</a></li></ol></li><li class="chapter-item expanded "><a href="editor.html"><strong aria-hidden="true">5.</strong> Editor</a></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">6.</strong> Contributing</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="contributing_code.html"><strong aria-hidden="true">6.1.</strong> Contributing Code</a></li><li class="chapter-item expanded "><a href="simple_gun_weapon.html"><strong aria-hidden="true">6.2.</strong> Simple Gun Weapon</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -639,6 +639,31 @@ enum Message {
 <hr />
 <p>This concludes part 1 of our &quot;Netcode Explained&quot; series. In part 2 we will do a code walk-through and piecemeal analysis.</p>
 <p><em>Written by Srayan “ValorZard” Jana and grufkok, with editing by Erlend</em></p>
+<h1><a class="header" href="#editor" id="editor">Editor</a></h1>
+<p>The editor is a tool for designing custom levels in Fish Fight. You can use it to examine and edit
+existing levels, and also create your own.
+This chapter will contain guides on how to use all of the features the editor has to offer and even a
+high-level overview of its API for those who are interested in contributing to its development.</p>
+<p><img src="./assets/editor.png" alt="Screenshot of the Fish Fight editor. The map area and layers toolbar are visible. Default textures for platforms occupy the map area." /></p>
+<h2><a class="header" href="#accessing-the-editor" id="accessing-the-editor">Accessing the editor</a></h2>
+<p>The editor can be accessed from the &quot;Editor&quot; tab on the main menu. Selecting this item by clicking on it, or using the right arrow key on your keyboard (or if you're using a gamepad: the &quot;right button&quot;), will present two options: &quot;Create Map&quot; and &quot;Load Map&quot;.</p>
+<p><img src="./assets/editor_menu.png" alt="Screenshot of the main menu displaying options for the editor: &quot;create map&quot;, &quot;load map&quot;, and &quot;quit&quot;." /></p>
+<h2><a class="header" href="#user-interface-overview" id="user-interface-overview">User-interface overview</a></h2>
+<p>There are 3 main areas of the UI for designing your level: the <strong>tool selector</strong>, <strong>map</strong>, and <strong>layers list</strong>. Perhaps the most important area is the map as it acts as a preview of your level. The tool selector and layers list are available as toolbars that provide a set of tools for you to edit and examine your level as needed.</p>
+<p><img src="./assets/editor_gui_highlights.png" alt="Screenshot of editor user interface with each major area highlighted." /></p>
+<p><strong>Note: Icons are not yet available for the tool selector. The first one is the tile placement tool and the second is the eraser tool.</strong></p>
+<h3><a class="header" href="#toolbars" id="toolbars">Toolbars</a></h3>
+<p>There are currently 2 primary toolbars available for the editor: the layers list and tool selector.</p>
+<h4><a class="header" href="#layers-list" id="layers-list">Layers list</a></h4>
+<p>Create or edit layers of your Fish Fight level. This toolbar provides a list of selectable layers. Selecting a layer will display another view containing a list of the components grouped under that layer. There are currently 2 types of layers: tiles and objects:</p>
+<p><strong>Tile layers</strong> contain textures that can be placed in the map area. They can be created to be collision layers as well, allowing them to behave like collidable objects.</p>
+<p><strong>Object layers</strong> are composed of game objects categorized by a <code>MapObjectKind</code>. The current types of objects available are: <code>Item</code>, <code>SpawnPoint</code>, <code>Environment,</code> and <code>Decoration</code>.</p>
+<h4><a class="header" href="#tool-selector" id="tool-selector">Tool selector</a></h4>
+<p>As the name describes: provides a set of tools for editing layers in the map area of the editor. Currently, the following tools are available:</p>
+<ul>
+<li>Tile placement</li>
+<li>Eraser</li>
+</ul>
 <h1><a class="header" href="#contributing-1" id="contributing-1">Contributing</a></h1>
 <p>Fish Fight aims to be a highly contributor-friendly game. If you haven't already please take some time to read the <a href="code_of_conduct.html">community guidelines</a>.</p>
 <p>If you're interested in making a change that will involve hacking on the game's source code, we have a quick reference on how to get started at <a href="./contributing_code.html">Contributing Code</a>!</p>

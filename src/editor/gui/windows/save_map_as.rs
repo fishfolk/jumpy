@@ -82,16 +82,14 @@ impl Window for SaveMapAsWindow {
     fn get_buttons(&self, _map: &Map, _ctx: &EditorContext) -> Vec<ButtonParams> {
         let mut res = Vec::new();
 
-        let resources = storage::get::<Resources>();
-        let path = Path::new(&resources.assets_dir)
-            .join(Resources::MAP_EXPORTS_DEFAULT_DIR)
+        let path = Path::new(Resources::MAP_EXPORTS_DEFAULT_DIR)
             .join(map_name_to_filename(&self.name))
             .with_extension(Resources::MAP_EXPORTS_EXTENSION);
 
         let mut action = None;
         if is_valid_map_export_path(&path, self.should_overwrite) {
             let batch = self.get_close_action().then(EditorAction::SaveAs {
-                path: path.to_string_lossy().to_string(),
+                name: self.name.clone(),
             });
 
             action = Some(batch);

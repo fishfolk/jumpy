@@ -95,7 +95,7 @@ pub enum EditorAction {
     OpenLoadMapWindow,
     Save,
     SaveAs {
-        path: String,
+        name: String,
     },
     OpenSaveAsWindow,
     ExitToMainMenu,

@@ -1,4 +1,5 @@
 use std::any::TypeId;
+use std::path::Path;
 
 use crate::{exit_to_main_menu, quit_to_desktop, Resources};
 
@@ -53,7 +54,7 @@ use macroquad::{
 };
 
 use super::map::{Map, MapLayerKind};
-use crate::resources::MapResource;
+use crate::resources::{map_name_to_filename, MapResource};
 
 #[derive(Debug, Clone)]
 pub struct EditorContext {
@@ -462,10 +463,15 @@ impl Editor {
                     self.map_resource = map_resource;
                 }
             }
-            EditorAction::SaveAs { path } => {
+            EditorAction::SaveAs { name } => {
                 let mut map_resource = self.map_resource.clone();
 
-                map_resource.meta.path = path;
+                let path = Path::new(Resources::MAP_EXPORTS_DEFAULT_DIR)
+                    .join(map_name_to_filename(&name))
+                    .with_extension(Resources::MAP_EXPORTS_EXTENSION);
+
+                map_resource.meta.name = name;
+                map_resource.meta.path = path.to_string_lossy().to_string();
                 map_resource.meta.is_user_map = true;
                 map_resource.meta.is_tiled_map = false;
 
@@ -476,7 +482,7 @@ impl Editor {
             }
             EditorAction::OpenSaveAsWindow => {
                 let mut gui = storage::get_mut::<EditorGui>();
-                gui.add_window(SaveMapAsWindow::new(&self.map_resource.meta.path));
+                gui.add_window(SaveMapAsWindow::new(&self.map_resource.meta.name));
             }
             EditorAction::ExitToMainMenu => {
                 exit_to_main_menu();

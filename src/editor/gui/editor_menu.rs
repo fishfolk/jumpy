@@ -27,6 +27,7 @@ pub fn open_editor_menu(ctx: &EditorContext) {
                     MenuEntry {
                         index: EDITOR_MENU_RESULT_NEW,
                         title: "New".to_string(),
+                        is_disabled: true,
                         ..Default::default()
                     },
                     MenuEntry {
@@ -37,8 +38,8 @@ pub fn open_editor_menu(ctx: &EditorContext) {
                     MenuEntry {
                         index: EDITOR_MENU_RESULT_SAVE,
                         title: "Save".to_string(),
-                        is_pulled_down: false,
                         is_disabled: !ctx.is_user_map,
+                        ..Default::default()
                     },
                     MenuEntry {
                         index: EDITOR_MENU_RESULT_SAVE_AS,
@@ -48,14 +49,12 @@ pub fn open_editor_menu(ctx: &EditorContext) {
                     MenuEntry {
                         index: EDITOR_MENU_RESULT_MAIN_MENU,
                         title: "Main Menu".to_string(),
-                        is_pulled_down: false,
-                        is_disabled: false,
+                        ..Default::default()
                     },
                     MenuEntry {
                         index: EDITOR_MENU_RESULT_QUIT,
                         title: "Quit".to_string(),
-                        is_pulled_down: false,
-                        is_disabled: false,
+                        ..Default::default()
                     },
                 ],
             );

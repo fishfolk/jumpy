@@ -1,7 +1,7 @@
 use macroquad::{
     experimental::collections::storage,
     prelude::*,
-    ui::{self, hash, root_ui},
+    ui::{self, hash, root_ui, widgets},
 };
 
 use fishsticks::{Button, GamepadContext};
@@ -9,9 +9,11 @@ use fishsticks::{Button, GamepadContext};
 use super::{draw_main_menu_background, GuiResources, Menu, MenuEntry, MenuResult, Panel};
 
 use crate::input::update_gamepad_context;
-use crate::{is_gamepad_btn_pressed, EditorInputScheme, GameInputScheme};
+use crate::{is_gamepad_btn_pressed, EditorInputScheme, GameInputScheme, Resources};
 
 const MENU_WIDTH: f32 = 250.0;
+
+const HEADER_TEXTURE_ID: &str = "main_menu_header";
 
 const LOCAL_GAME_MENU_WIDTH: f32 = 340.0;
 const LOCAL_GAME_MENU_HEIGHT: f32 = 186.0;
@@ -87,6 +89,23 @@ pub async fn show_main_menu() -> MainMenuResult {
         update_gamepad_context(None).unwrap();
 
         draw_main_menu_background();
+
+        {
+            let resources = storage::get::<Resources>();
+            let texture_entry = resources.textures.get(HEADER_TEXTURE_ID).unwrap();
+
+            let size = vec2(
+                texture_entry.texture.width(),
+                texture_entry.texture.height(),
+            );
+
+            let position = vec2((screen_width() - size.x) / 2.0, 35.0);
+
+            widgets::Texture::new(texture_entry.texture)
+                .position(position)
+                .size(size.x, size.y)
+                .ui(&mut *root_ui());
+        }
 
         match current_menu_id {
             MAIN_MENU_ID => {

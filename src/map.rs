@@ -201,10 +201,8 @@ impl Map {
         false
     }
 
-    // This will draw the map.
-    // If `should_draw_objects` is set to true, objects in object layers will also be drawn.
-    // This should only be set to true when drawing the map in the editor....
-    pub fn draw(&self, should_draw_objects: bool, rect: Option<URect>) {
+    /// This will draw the map
+    pub fn draw(&self, rect: Option<URect>) {
         let rect = rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.x, self.grid_size.y));
         draw_rectangle(
             self.world_offset.x + (rect.x as f32 * self.tile_size.x),
@@ -253,17 +251,6 @@ impl Map {
                                     },
                                 );
                             }
-                        }
-                    } else if layer.kind == MapLayerKind::TileLayer || should_draw_objects {
-                        for object in &layer.objects {
-                            // For now only a generic marker will be drawn
-                            draw_aligned_text(
-                                &object.id,
-                                object.position,
-                                HorizontalAlignment::Center,
-                                VerticalAlignment::Center,
-                                Default::default(),
-                            );
                         }
                     }
                 }
@@ -436,7 +423,7 @@ pub struct MapTile {
     pub attributes: Vec<String>,
 }
 
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum MapObjectKind {
     Item,

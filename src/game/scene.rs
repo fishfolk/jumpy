@@ -98,7 +98,7 @@ impl scene::Node for GameScene {
         }
 
         let world = storage::get::<GameWorld>();
-        world.map.draw(false, None);
+        world.map.draw(None);
     }
 }
 

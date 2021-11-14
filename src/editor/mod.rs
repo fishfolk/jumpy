@@ -54,9 +54,12 @@ use macroquad::{
     prelude::*,
     ui::root_ui,
 };
+use crate::editor::actions::UpdateObjectAction;
+use crate::editor::gui::windows::ObjectPropertiesWindow;
 
 use super::map::{Map, MapLayerKind};
 use crate::resources::MapResource;
+use crate::text::{draw_aligned_text, HorizontalAlignment, VerticalAlignment};
 
 #[derive(Debug, Clone)]
 pub struct EditorContext {
@@ -308,7 +311,10 @@ impl Editor {
                 let mut gui = storage::get_mut::<EditorGui>();
                 gui.add_window(CreateObjectWindow::new(position, layer_id))
             }
-            EditorAction::OpenObjectPropertiesWindow { .. } => {}
+            EditorAction::OpenObjectPropertiesWindow { layer_id, index } => {
+                let mut gui = storage::get_mut::<EditorGui>();
+                gui.add_window(ObjectPropertiesWindow::new(layer_id, index))
+            }
             EditorAction::CloseWindow(id) => {
                 let mut gui = storage::get_mut::<EditorGui>();
                 gui.remove_window_id(id);
@@ -373,16 +379,27 @@ impl Editor {
                 id,
                 kind,
                 position,
-                size,
                 layer_id,
             } => {
-                let action = CreateObjectAction::new(id, kind, position, size, layer_id);
+                let action = CreateObjectAction::new(id, kind, position, layer_id);
                 res = self
                     .history
                     .apply(Box::new(action), &mut self.map_resource.map);
             }
             EditorAction::DeleteObject { index, layer_id } => {
                 let action = DeleteObjectAction::new(index, layer_id);
+                res = self
+                    .history
+                    .apply(Box::new(action), &mut self.map_resource.map);
+            }
+            EditorAction::UpdateObject {
+                layer_id,
+                index,
+                id,
+                kind,
+                position,
+            } => {
+                let action = UpdateObjectAction::new(layer_id, index, id, kind, position);
                 res = self
                     .history
                     .apply(Box::new(action), &mut self.map_resource.map);
@@ -510,7 +527,22 @@ impl Node for Editor {
     }
 
     fn draw(mut node: RefMut<Self>) {
-        node.get_map_mut().draw(true, None);
+        node.get_map_mut().draw(None);
+
+        for layer in node.get_map().layers.values() {
+            if layer.kind == MapLayerKind::ObjectLayer {
+                for object in &layer.objects {
+                    // For now only a generic marker will be drawn
+                    draw_aligned_text(
+                        &object.id,
+                        object.position,
+                        HorizontalAlignment::Center,
+                        VerticalAlignment::Center,
+                        Default::default(),
+                    );
+                }
+            }
+        }
 
         let res = {
             let ctx = node.get_context();

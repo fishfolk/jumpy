@@ -9,36 +9,35 @@ use crate::{
     map::{Map, MapObjectKind},
     Resources,
 };
+use crate::map::MapObject;
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 
-pub struct CreateObjectWindow {
+pub struct ObjectPropertiesWindow {
     params: WindowParams,
-    id: Option<String>,
-    kind: MapObjectKind,
-    position: Vec2,
     layer_id: String,
+    index: usize,
+    object: Option<MapObject>,
 }
 
-impl CreateObjectWindow {
-    pub fn new(position: Vec2, layer_id: String) -> Self {
+impl ObjectPropertiesWindow {
+    pub fn new(layer_id: String, index: usize) -> Self {
         let params = WindowParams {
-            title: Some("Create Object".to_string()),
+            title: Some("Object Properties".to_string()),
             size: vec2(350.0, 350.0),
             ..Default::default()
         };
 
-        CreateObjectWindow {
+        ObjectPropertiesWindow {
             params,
-            id: None,
-            kind: MapObjectKind::Item,
-            position,
             layer_id,
+            index,
+            object: None,
         }
     }
 }
 
-impl Window for CreateObjectWindow {
+impl Window for ObjectPropertiesWindow {
     fn get_params(&self) -> &WindowParams {
         &self.params
     }
@@ -46,16 +45,17 @@ impl Window for CreateObjectWindow {
     fn get_buttons(&self, _map: &Map, _ctx: &EditorContext) -> Vec<ButtonParams> {
         let mut res = Vec::new();
 
-        if let Some(id) = self.id.clone() {
-            let action = self.get_close_action().then(EditorAction::CreateObject {
-                id,
-                kind: self.kind,
-                position: self.position,
+        if let Some(object) = &self.object {
+            let action = self.get_close_action().then(EditorAction::UpdateObject {
                 layer_id: self.layer_id.clone(),
+                index: self.index,
+                id: object.id.clone(),
+                kind: object.kind,
+                position: object.position,
             });
 
             res.push(ButtonParams {
-                label: "Create",
+                label: "Save",
                 action: Some(action),
                 ..Default::default()
             });
@@ -74,17 +74,27 @@ impl Window for CreateObjectWindow {
         &mut self,
         ui: &mut Ui,
         _size: Vec2,
-        _map: &Map,
+        map: &Map,
         _ctx: &EditorContext,
     ) -> Option<EditorAction> {
-        let id = hash!("create_object_window");
+        let id = hash!("update_object_window");
+
+        let mut object = self.object.clone().unwrap_or({
+            let mut res = None;
+
+            if let Some(layer) = map.layers.get(&self.layer_id) {
+                res = layer.objects.get(self.index);
+            }
+
+            res.cloned().unwrap()
+        });
 
         {
             {
                 let size = vec2(72.0, 28.0);
 
-                let mut x_str = self.position.x.to_string();
-                let mut y_str = self.position.y.to_string();
+                let mut x_str = object.position.x.to_string();
+                let mut y_str = object.position.y.to_string();
 
                 widgets::InputText::new(hash!(id, "position_x_input"))
                     .size(size)
@@ -117,15 +127,15 @@ impl Window for CreateObjectWindow {
                     0.0
                 };
 
-                self.position = vec2(x, y);
+                object.position = vec2(x, y);
             }
 
             ComboBoxBuilder::new(hash!(id, "type_input"))
                 .with_ratio(0.8)
                 .with_label("Type")
-                .build(ui, &mut self.kind);
+                .build(ui, &mut object.kind);
 
-            if self.kind == MapObjectKind::Item {
+            if object.kind == MapObjectKind::Item {
                 let resources = storage::get::<Resources>();
 
                 let item_ids = resources.items
@@ -133,27 +143,26 @@ impl Window for CreateObjectWindow {
                     .map(|item| item.id.as_str())
                     .collect::<Vec<&str>>();
 
-                let mut item_index = 0;
-                if let Some(current_id) = &self.id {
-                    item_index = item_ids
-                        .iter()
-                        .enumerate()
-                        .find_map(|(i, id)| if id == current_id {
-                            Some(i)
-                        } else {
-                            None
-                        })
-                        .unwrap_or(0);
-                }
+                let mut item_index = item_ids
+                    .iter()
+                    .enumerate()
+                    .find_map(|(i, id)| if id == &object.id {
+                        Some(i)
+                    } else {
+                        None
+                    })
+                    .unwrap_or(0);
 
                 widgets::ComboBox::new(hash!("id_input"), &item_ids)
                     .ratio(0.8)
                     .label("Item")
                     .ui(ui, &mut item_index);
 
-                self.id = item_ids.get(item_index).map(|str| str.to_string());
+                object.id = item_ids.get(item_index).map(|str| str.to_string()).unwrap();
             }
         }
+
+        self.object = Some(object);
 
         None
     }

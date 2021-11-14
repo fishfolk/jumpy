@@ -92,15 +92,14 @@ impl ToolbarElement for ObjectListElement {
         res
     }
 
-    fn get_buttons(&self, _map: &Map, ctx: &EditorContext) -> Vec<ButtonParams> {
+    fn get_buttons(&self, map: &Map, ctx: &EditorContext) -> Vec<ButtonParams> {
         let layer_id = ctx.selected_layer.clone().unwrap();
 
         let position = {
             let camera = scene::find_node_by_type::<EditorCamera>().unwrap();
             let view_rect = camera.get_view_rect();
-            let view_position = view_rect.point();
-            let offset = vec2(view_rect.w, view_rect.h);
-            camera.to_world_space(view_position - offset)
+            let offset = vec2(view_rect.w, view_rect.h) / 2.0;
+            (view_rect.point() + offset) - map.world_offset
         };
 
         let create_action = Some(EditorAction::OpenCreateObjectWindow {
@@ -117,7 +116,7 @@ impl ToolbarElement for ObjectListElement {
                 layer_id: layer_id.clone(),
             });
 
-            properties_action = Some(EditorAction::OpenObjectPropertiesWindow { index, layer_id });
+            properties_action = Some(EditorAction::OpenObjectPropertiesWindow { layer_id, index });
         }
 
         vec![

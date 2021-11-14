@@ -24,8 +24,8 @@ pub enum EditorAction {
         layer_id: String,
     },
     OpenObjectPropertiesWindow {
-        index: usize,
         layer_id: String,
+        index: usize,
     },
     CloseWindow(TypeId),
     SelectTile {
@@ -62,12 +62,18 @@ pub enum EditorAction {
         id: String,
         kind: MapObjectKind,
         position: Vec2,
-        size: Option<Vec2>,
         layer_id: String,
     },
     DeleteObject {
         index: usize,
         layer_id: String,
+    },
+    UpdateObject {
+        layer_id: String,
+        index: usize,
+        id: String,
+        kind: MapObjectKind,
+        position: Vec2,
     },
     PlaceTile {
         id: u32,
@@ -473,23 +479,15 @@ pub struct CreateObjectAction {
     id: String,
     kind: MapObjectKind,
     position: Vec2,
-    size: Option<Vec2>,
     layer_id: String,
 }
 
 impl CreateObjectAction {
-    pub fn new(
-        id: String,
-        kind: MapObjectKind,
-        position: Vec2,
-        size: Option<Vec2>,
-        layer_id: String,
-    ) -> Self {
+    pub fn new(id: String, kind: MapObjectKind, position: Vec2, layer_id: String) -> Self {
         CreateObjectAction {
             id,
             kind,
             position,
-            size,
             layer_id,
         }
     }
@@ -498,7 +496,7 @@ impl CreateObjectAction {
 impl UndoableAction for CreateObjectAction {
     fn apply(&mut self, map: &mut Map) -> Result {
         if let Some(layer) = map.layers.get_mut(&self.layer_id) {
-            let object = MapObject::new(&self.id, self.kind, self.position, self.size);
+            let object = MapObject::new(&self.id, self.kind, self.position, None);
 
             layer.objects.insert(0, object);
         } else {
@@ -557,6 +555,69 @@ impl UndoableAction for DeleteObjectAction {
             }
         } else {
             return Err(&"DeleteObjectAction (Undo): No object stored in action. Undo was probably called on an action that was never applied");
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Debug)]
+pub struct UpdateObjectAction {
+    layer_id: String,
+    index: usize,
+    id: String,
+    kind: MapObjectKind,
+    position: Vec2,
+    object: Option<MapObject>,
+}
+
+impl UpdateObjectAction {
+    pub fn new(
+        layer_id: String,
+        index: usize,
+        id: String,
+        kind: MapObjectKind,
+        position: Vec2,
+    ) -> Self {
+        UpdateObjectAction {
+            layer_id,
+            index,
+            id,
+            kind,
+            position,
+            object: None,
+        }
+    }
+}
+
+impl UndoableAction for UpdateObjectAction {
+    fn apply(&mut self, map: &mut Map) -> Result {
+        if let Some(layer) = map.layers.get_mut(&self.layer_id) {
+            if let Some(object) = layer.objects.get_mut(self.index) {
+                self.object = Some(object.clone());
+
+                object.id = self.id.clone();
+                object.kind = self.kind;
+                object.position = self.position;
+            } else {
+                return Err(&"UpdateObjectAction: The specified object index does not exist");
+            }
+        } else {
+            return Err(&"UpdateObjectAction: The specified layer does not exist");
+        }
+
+        Ok(())
+    }
+
+    fn undo(&mut self, map: &mut Map) -> Result {
+        if let Some(layer) = map.layers.get_mut(&self.layer_id) {
+            if let Some(object) = self.object.take() {
+                layer.objects[self.index] = object;
+            } else {
+                return Err(&"UpdateObjectAction: No object found on action. Undo was probably called on an action that was never applied");
+            }
+        } else {
+            return Err(&"UpdateObjectAction (Undo): The specified layer does not exist");
         }
 
         Ok(())

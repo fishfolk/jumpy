@@ -50,7 +50,13 @@ pub fn draw_game_menu(ui: &mut Ui) -> Option<MenuResult> {
         GAME_MENU_INSTANCE.as_mut().unwrap()
     };
 
-    menu.ui(ui)
+    let res = menu.ui(ui);
+
+    if res.is_some() {
+        close_game_menu();
+    }
+
+    res
 }
 
 pub fn is_game_menu_open() -> bool {

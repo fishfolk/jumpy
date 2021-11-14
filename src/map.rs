@@ -10,7 +10,6 @@ use crate::{
     editor::gui::combobox::ComboBoxValue,
     json::{self, TiledMap},
     math::URect,
-    text::{draw_aligned_text, HorizontalAlignment, VerticalAlignment},
     Resources,
 };
 
@@ -201,10 +200,8 @@ impl Map {
         false
     }
 
-    // This will draw the map.
-    // If `should_draw_objects` is set to true, objects in object layers will also be drawn.
-    // This should only be set to true when drawing the map in the editor....
-    pub fn draw(&self, should_draw_objects: bool, rect: Option<URect>) {
+    /// This will draw the map
+    pub fn draw(&self, rect: Option<URect>) {
         let rect = rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.x, self.grid_size.y));
         draw_rectangle(
             self.world_offset.x + (rect.x as f32 * self.tile_size.x),
@@ -221,48 +218,32 @@ impl Map {
 
         for layer_id in draw_order {
             if let Some(layer) = self.layers.get(&layer_id) {
-                if layer.is_visible {
-                    if layer.kind == MapLayerKind::TileLayer {
-                        for (x, y, tile) in self.get_tiles(&layer_id, Some(rect)) {
-                            if let Some(tile) = tile {
-                                let world_position = self.world_offset
-                                    + vec2(
-                                        x as f32 * self.tile_size.x,
-                                        y as f32 * self.tile_size.y,
-                                    );
+                if layer.is_visible && layer.kind == MapLayerKind::TileLayer {
+                    for (x, y, tile) in self.get_tiles(&layer_id, Some(rect)) {
+                        if let Some(tile) = tile {
+                            let world_position = self.world_offset
+                                + vec2(x as f32 * self.tile_size.x, y as f32 * self.tile_size.y);
 
-                                let texture_entry =
-                                    resources.textures.get(&tile.texture_id).unwrap_or_else(|| {
-                                        panic!("No texture with id '{}'!", tile.texture_id)
-                                    });
+                            let texture_entry =
+                                resources.textures.get(&tile.texture_id).unwrap_or_else(|| {
+                                    panic!("No texture with id '{}'!", tile.texture_id)
+                                });
 
-                                draw_texture_ex(
-                                    texture_entry.texture,
-                                    world_position.x,
-                                    world_position.y,
-                                    color::WHITE,
-                                    DrawTextureParams {
-                                        source: Some(Rect::new(
-                                            tile.texture_coords.x, // + 0.1,
-                                            tile.texture_coords.y, // + 0.1,
-                                            self.tile_size.x,      // - 0.2,
-                                            self.tile_size.y,      // - 0.2,
-                                        )),
-                                        dest_size: Some(vec2(self.tile_size.x, self.tile_size.y)),
-                                        ..Default::default()
-                                    },
-                                );
-                            }
-                        }
-                    } else if layer.kind == MapLayerKind::TileLayer || should_draw_objects {
-                        for object in &layer.objects {
-                            // For now only a generic marker will be drawn
-                            draw_aligned_text(
-                                &object.id,
-                                object.position,
-                                HorizontalAlignment::Center,
-                                VerticalAlignment::Center,
-                                Default::default(),
+                            draw_texture_ex(
+                                texture_entry.texture,
+                                world_position.x,
+                                world_position.y,
+                                color::WHITE,
+                                DrawTextureParams {
+                                    source: Some(Rect::new(
+                                        tile.texture_coords.x, // + 0.1,
+                                        tile.texture_coords.y, // + 0.1,
+                                        self.tile_size.x,      // - 0.2,
+                                        self.tile_size.y,      // - 0.2,
+                                    )),
+                                    dest_size: Some(vec2(self.tile_size.x, self.tile_size.y)),
+                                    ..Default::default()
+                                },
                             );
                         }
                     }
@@ -436,7 +417,7 @@ pub struct MapTile {
     pub attributes: Vec<String>,
 }
 
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum MapObjectKind {
     Item,
@@ -506,7 +487,7 @@ impl ComboBoxValue for MapObjectKind {
     }
 
     fn options() -> &'static [&'static str] {
-        &["Item", "Spawn point", "Environment", "Decoration"]
+        &["Item", "Spawn Point", "Environment", "Decoration"]
     }
 }
 

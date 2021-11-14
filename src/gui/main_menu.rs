@@ -1,24 +1,20 @@
 use macroquad::{
     experimental::collections::storage,
     prelude::*,
-    ui::{self, hash, root_ui, widgets},
+    ui::{self, hash, root_ui},
 };
 
-use fishsticks::GamepadContext;
+use fishsticks::{Button, GamepadContext};
 
-use super::{draw_main_menu_background, GuiResources, Panel};
+use super::{draw_main_menu_background, GuiResources, Menu, MenuEntry, MenuResult, Panel};
 
+use crate::input::update_gamepad_context;
 use crate::{is_gamepad_btn_pressed, EditorInputScheme, GameInputScheme};
 
-const WINDOW_MARGIN: f32 = 22.0;
+const MENU_WIDTH: f32 = 250.0;
 
-const MENU_WIDTH: f32 = 340.0;
-const MENU_HEIGHT: f32 = 282.0;
-
-const MENU_BUTTON_WIDTH: f32 = MENU_WIDTH - (WINDOW_MARGIN * 2.0);
-const MENU_BUTTON_HEIGHT: f32 = 42.0;
-
-const MODE_SELECTION_TAB_COUNT: u32 = 2;
+const LOCAL_GAME_MENU_WIDTH: f32 = 340.0;
+const LOCAL_GAME_MENU_HEIGHT: f32 = 186.0;
 
 pub enum MainMenuResult {
     LocalGame(Vec<GameInputScheme>),
@@ -29,114 +25,141 @@ pub enum MainMenuResult {
     Quit,
 }
 
-pub async fn show_main_menu() -> MainMenuResult {
-    let mut current_tab = 0;
+const MAIN_MENU_ID: &str = "main_menu";
+const LOCAL_GAME_MENU_ID: &str = "local_game";
+const EDITOR_MENU_ID: &str = "editor";
 
-    let mut player_input = Vec::new();
+const MAIN_MENU_RESULT_LOCAL_GAME: usize = 0;
+const MAIN_MENU_RESULT_EDITOR: usize = 1;
+
+const LOCAL_GAME_MENU_RESULT_SUBMIT: usize = 0;
+
+const EDITOR_MENU_RESULT_CREATE: usize = 0;
+const EDITOR_MENU_RESULT_LOAD: usize = 1;
+
+fn build_main_menu() -> Menu {
+    Menu::new(
+        hash!(MAIN_MENU_ID),
+        MENU_WIDTH,
+        &[
+            MenuEntry {
+                index: MAIN_MENU_RESULT_LOCAL_GAME,
+                title: "Local Game".to_string(),
+                is_pulled_down: false,
+            },
+            MenuEntry {
+                index: MAIN_MENU_RESULT_EDITOR,
+                title: "Editor".to_string(),
+                is_pulled_down: false,
+            },
+        ],
+    )
+    .with_cancel_button(Some("Quit"))
+}
+
+fn build_editor_menu() -> Menu {
+    Menu::new(
+        hash!(EDITOR_MENU_ID),
+        MENU_WIDTH,
+        &[
+            MenuEntry {
+                index: EDITOR_MENU_RESULT_CREATE,
+                title: "Create Map".to_string(),
+                is_pulled_down: false,
+            },
+            MenuEntry {
+                index: EDITOR_MENU_RESULT_LOAD,
+                title: "Load Map".to_string(),
+                is_pulled_down: false,
+            },
+        ],
+    )
+    .with_cancel_button(Some("Cancel"))
+}
+
+pub async fn show_main_menu() -> MainMenuResult {
+    let mut current_menu = Some(build_main_menu());
+    let mut current_menu_id = MAIN_MENU_ID;
+
+    let mut local_player_input = Vec::new();
 
     loop {
-        let mut res = None;
-
-        {
-            let mut gamepad_system = storage::get_mut::<GamepadContext>();
-
-            let _ = gamepad_system.update();
-
-            if is_key_pressed(KeyCode::Left)
-                || is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::LeftShoulder)
-            {
-                let next_tab = current_tab as i32 - 1;
-                current_tab = if next_tab < 0 {
-                    MODE_SELECTION_TAB_COUNT - 1
-                } else {
-                    next_tab as u32 % MODE_SELECTION_TAB_COUNT
-                };
-            }
-
-            if is_key_pressed(KeyCode::Right)
-                || is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::RightShoulder)
-            {
-                current_tab += 1;
-                current_tab %= MODE_SELECTION_TAB_COUNT;
-            }
-        }
+        update_gamepad_context(None).unwrap();
 
         draw_main_menu_background();
 
-        let size = vec2(MENU_WIDTH, MENU_HEIGHT);
-        let position = (vec2(screen_width(), screen_height() + 70.0) - size) / 2.0;
-
-        {
-            let gui_resources = storage::get::<GuiResources>();
-
-            root_ui().push_skin(&gui_resources.skins.menu_header);
-
-            let label = "FISH FIGHT";
-
-            let size = root_ui().calc_size(label);
-            let position = vec2((screen_width() - size.x) / 2.0, position.y - 35.0 - size.y);
-
-            widgets::Label::new(label)
-                .position(position)
-                .ui(&mut root_ui());
-
-            root_ui().pop_skin();
-
-            root_ui().push_skin(&gui_resources.skins.menu);
-        }
-
-        Panel::new(hash!(), size, position).ui(&mut root_ui(), |ui| {
-            let size = vec2(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
-
-            let tab_res = widgets::Tabbar::new(hash!(), size, &["<< LB, Local", "Editor, RB >>"])
-                .selected_tab(Some(&mut current_tab))
-                .ui(ui);
-
-            match tab_res {
-                0 => {
-                    res = local_game_ui(ui, &mut player_input);
-                }
-                1 => {
-                    res = editor_ui(ui);
-                }
-                _ => unreachable!(),
-            }
-
-            {
-                let position = vec2(
-                    0.0,
-                    MENU_HEIGHT - (WINDOW_MARGIN * 2.0) - MENU_BUTTON_HEIGHT,
-                );
-                let size = vec2(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
-
-                let is_btn_clicked = widgets::Button::new("Quit")
-                    .position(position)
-                    .size(size)
-                    .ui(ui);
-
-                if is_btn_clicked {
-                    res = Some(MainMenuResult::Quit);
+        match current_menu_id {
+            MAIN_MENU_ID => {
+                if let Some(res) = current_menu.as_mut().unwrap().ui(&mut *root_ui()) {
+                    match res.into_usize() {
+                        MAIN_MENU_RESULT_LOCAL_GAME => {
+                            current_menu = None;
+                            current_menu_id = LOCAL_GAME_MENU_ID;
+                        }
+                        MAIN_MENU_RESULT_EDITOR => {
+                            current_menu = Some(build_editor_menu());
+                            current_menu_id = EDITOR_MENU_ID;
+                        }
+                        Menu::CANCEL_INDEX => return MainMenuResult::Quit,
+                        _ => {}
+                    }
                 }
             }
-        });
-
-        root_ui().pop_skin();
-
-        if let Some(res) = res {
-            return res;
+            LOCAL_GAME_MENU_ID => {
+                if let Some(res) = local_game_ui(&mut *root_ui(), &mut local_player_input) {
+                    match res.into_usize() {
+                        LOCAL_GAME_MENU_RESULT_SUBMIT => {
+                            return MainMenuResult::LocalGame(local_player_input.clone());
+                        }
+                        Menu::CANCEL_INDEX => {
+                            current_menu = Some(build_main_menu());
+                            current_menu_id = MAIN_MENU_ID;
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            EDITOR_MENU_ID => {
+                if let Some(res) = current_menu.as_mut().unwrap().ui(&mut *root_ui()) {
+                    match res.into_usize() {
+                        EDITOR_MENU_RESULT_CREATE => {
+                            return MainMenuResult::Editor {
+                                input_scheme: EditorInputScheme::Keyboard,
+                                is_new_map: true,
+                            }
+                        }
+                        EDITOR_MENU_RESULT_LOAD => {
+                            return MainMenuResult::Editor {
+                                input_scheme: EditorInputScheme::Keyboard,
+                                is_new_map: false,
+                            }
+                        }
+                        Menu::CANCEL_INDEX => {
+                            current_menu = Some(build_main_menu());
+                            current_menu_id = MAIN_MENU_ID;
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            _ => {}
         }
 
         next_frame().await;
     }
 }
 
-fn local_game_ui(
-    ui: &mut ui::Ui,
-    player_input: &mut Vec<GameInputScheme>,
-) -> Option<MainMenuResult> {
-    let gamepad_system = storage::get_mut::<GamepadContext>();
-
-    let is_ready = player_input.len() == 2;
+fn local_game_ui(ui: &mut ui::Ui, player_input: &mut Vec<GameInputScheme>) -> Option<MenuResult> {
+    if player_input.len() == 2 {
+        return Some(LOCAL_GAME_MENU_RESULT_SUBMIT.into());
+    } else {
+        let gamepad_context = storage::get::<GamepadContext>();
+        if is_key_pressed(KeyCode::Escape)
+            || is_gamepad_btn_pressed(Some(&gamepad_context), Button::B)
+        {
+            return Some(Menu::CANCEL_INDEX.into());
+        }
+    }
 
     if player_input.len() < 2 {
         if is_key_pressed(KeyCode::Enter) {
@@ -147,7 +170,8 @@ fn local_game_ui(
             }
         }
 
-        for (ix, gamepad) in gamepad_system.gamepads() {
+        let gamepad_context = storage::get_mut::<GamepadContext>();
+        for (ix, gamepad) in gamepad_context.gamepads() {
             if gamepad.digital_inputs.activated(fishsticks::Button::Start)
                 && !player_input.contains(&GameInputScheme::Gamepad(ix))
             {
@@ -156,81 +180,43 @@ fn local_game_ui(
         }
     }
 
-    {
-        let position = vec2(12.0, 76.0);
+    let size = vec2(LOCAL_GAME_MENU_WIDTH, LOCAL_GAME_MENU_HEIGHT);
+    let position = (vec2(screen_width(), screen_height()) - size) / 2.0;
 
-        if !player_input.is_empty() {
-            ui.label(position, "Player 1: READY");
-        } else {
-            ui.label(position, "Player 1: press START or ENTER");
+    Panel::new(hash!(), size, position).ui(ui, |ui, _| {
+        {
+            let gui_resources = storage::get::<GuiResources>();
+            ui.push_skin(&gui_resources.skins.menu);
         }
-    }
 
-    {
-        let position = vec2(12.0, 108.0);
+        {
+            let position = vec2(12.0, 12.0);
 
-        if player_input.len() > 1 {
-            ui.label(position, "Player 2: READY");
-        } else {
-            ui.label(position, "Player 2: press START or ENTER");
+            if !player_input.is_empty() {
+                ui.label(position, "Player 1: READY");
+            } else {
+                ui.label(position, "Player 1: press START or ENTER");
+            }
         }
-    }
 
-    if is_ready {
-        let key_enter = is_key_pressed(KeyCode::Enter);
-        let btn_a = is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::A);
-        let btn_start = is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::Start);
+        {
+            let position = vec2(12.0, 44.0);
 
-        let position = vec2(0.0, 150.0);
-        let size = vec2(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
-
-        let is_btn_clicked = widgets::Button::new("Start Game")
-            .position(position)
-            .size(size)
-            .ui(ui);
-
-        if is_btn_clicked || key_enter || btn_a || btn_start {
-            return Some(MainMenuResult::LocalGame(player_input.clone()));
+            if player_input.len() > 1 {
+                ui.label(position, "Player 2: READY");
+            } else {
+                ui.label(position, "Player 2: press START or ENTER");
+            }
         }
-    }
 
-    None
-}
+        {
+            let position = vec2(12.0, 108.0);
 
-fn editor_ui(ui: &mut ui::Ui) -> Option<MainMenuResult> {
-    let size = vec2(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
-
-    {
-        let position = vec2(0.0, 104.0);
-
-        let is_btn_clicked = widgets::Button::new("Create Map")
-            .position(position)
-            .size(size)
-            .ui(ui);
-
-        if is_btn_clicked {
-            return Some(MainMenuResult::Editor {
-                input_scheme: EditorInputScheme::Keyboard,
-                is_new_map: true,
-            });
+            ui.label(position, "Press B or ESC to cancel");
         }
-    }
 
-    {
-        let position = vec2(0.0, 150.0);
-
-        let is_btn_clicked = widgets::Button::new("Load Map")
-            .position(position)
-            .size(size)
-            .ui(ui);
-
-        if is_btn_clicked {
-            return Some(MainMenuResult::Editor {
-                input_scheme: EditorInputScheme::Keyboard,
-                is_new_map: false,
-            });
-        }
-    }
+        ui.pop_skin();
+    });
 
     None
 }

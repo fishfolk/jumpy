@@ -2,7 +2,10 @@ use std::any::TypeId;
 
 use crate::{
     exit_to_main_menu,
-    gui::{show_game_menu, GameMenuResult},
+    gui::{
+        draw_game_menu, is_game_menu_open, toggle_game_menu, GAME_MENU_RESULT_MAIN_MENU,
+        GAME_MENU_RESULT_QUIT,
+    },
     quit_to_desktop,
 };
 
@@ -49,6 +52,7 @@ use macroquad::{
         scene::{Node, RefMut},
     },
     prelude::*,
+    ui::root_ui,
 };
 
 use super::map::{Map, MapLayerKind};
@@ -92,8 +96,6 @@ pub struct Editor {
     // the mouse cursor position, if no gamepad is used and this is set to `None`.
     cursor_position: Option<Vec2>,
     history: EditorHistory,
-    // This is `true` if the game menu is open
-    is_menu_open: bool,
 }
 
 impl Editor {
@@ -164,7 +166,6 @@ impl Editor {
             input_scheme,
             cursor_position,
             history: EditorHistory::new(),
-            is_menu_open: false,
         }
     }
 
@@ -465,7 +466,7 @@ impl Node for Editor {
         let input = collect_editor_input(node.input_scheme);
 
         if input.toggle_menu {
-            node.is_menu_open = !node.is_menu_open;
+            toggle_game_menu();
         }
 
         if let Some(cursor_position) = node.cursor_position {
@@ -521,12 +522,12 @@ impl Node for Editor {
             node.apply_action(action);
         }
 
-        if node.is_menu_open {
-            if let Some(res) = show_game_menu() {
-                match res {
-                    GameMenuResult::MainMenu => exit_to_main_menu(),
-                    GameMenuResult::Quit => quit_to_desktop(),
-                    GameMenuResult::Cancel => node.is_menu_open = false,
+        if is_game_menu_open() {
+            if let Some(res) = draw_game_menu(&mut *root_ui()) {
+                match res.into_usize() {
+                    GAME_MENU_RESULT_MAIN_MENU => exit_to_main_menu(),
+                    GAME_MENU_RESULT_QUIT => quit_to_desktop(),
+                    _ => {}
                 }
             }
         }

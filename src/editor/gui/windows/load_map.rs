@@ -1,11 +1,7 @@
 use macroquad::{
     experimental::collections::storage,
-    ui::{
-        Ui,
-        hash,
-        widgets,
-    },
     prelude::*,
+    ui::{hash, widgets, Ui},
 };
 
 use crate::gui::{GuiResources, LIST_BOX_ENTRY_HEIGHT};

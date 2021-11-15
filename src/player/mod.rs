@@ -1142,7 +1142,10 @@ impl Player {
                 let position = node.body.position;
 
                 for effect in node.passive_effects.values_mut() {
-                    let params = PlayerEventParams::Collision { is_new, collision_with };
+                    let params = PlayerEventParams::Collision {
+                        is_new,
+                        collision_with,
+                    };
                     effect.on_player_event(player_handle, position, params);
                 }
             }

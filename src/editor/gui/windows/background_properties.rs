@@ -7,7 +7,7 @@ use macroquad::{
 use crate::map::MapBackgroundLayer;
 use crate::{map::Map, Resources};
 
-use crate::gui::{GuiResources, ELEMENT_MARGIN};
+use crate::gui::{GuiResources, ELEMENT_MARGIN, LIST_BOX_ENTRY_HEIGHT};
 use crate::resources::TextureKind;
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
@@ -22,8 +22,6 @@ pub struct BackgroundPropertiesWindow {
 }
 
 impl BackgroundPropertiesWindow {
-    const LAYER_LIST_ENTRY_HEIGHT: f32 = 24.0;
-
     pub fn new(color: Color, layers: Vec<MapBackgroundLayer>) -> Self {
         let params = WindowParams {
             title: Some("Background Properties".to_string()),
@@ -127,7 +125,7 @@ impl Window for BackgroundPropertiesWindow {
             });
 
         let layer_list_size = vec2((size.x * 0.6) - ELEMENT_MARGIN, size.y * 0.5);
-        let layer_list_entry_size = vec2(layer_list_size.x, Self::LAYER_LIST_ENTRY_HEIGHT);
+        let layer_list_entry_size = vec2(layer_list_size.x, LIST_BOX_ENTRY_HEIGHT);
 
         {
             let gui_resources = storage::get::<GuiResources>();
@@ -140,7 +138,7 @@ impl Window for BackgroundPropertiesWindow {
                 let layers = self.layers.clone();
                 for (i, layer) in layers.iter().enumerate() {
                     widgets::Group::new(hash!(id, "layer_list_entry", i), layer_list_entry_size)
-                        .position(vec2(0.0, i as f32 * Self::LAYER_LIST_ENTRY_HEIGHT))
+                        .position(vec2(0.0, i as f32 * LIST_BOX_ENTRY_HEIGHT))
                         .ui(ui, |ui| {
                             let mut is_selected = false;
                             if let Some(index) = self.selected_layer {

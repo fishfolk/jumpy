@@ -27,6 +27,8 @@ pub const SELECTED_OBJECT_HIGHLIGHT_COLOR: Color = Color {
     a: 1.0,
 };
 
+pub const LIST_BOX_ENTRY_HEIGHT: f32 = 24.0;
+
 pub struct SkinCollection {
     pub default: Skin,
     pub button_disabled: Skin,

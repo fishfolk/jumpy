@@ -5,7 +5,7 @@ use macroquad::{
 
 use super::{Menu, MenuEntry, MenuResult};
 
-const MENU_WIDTH: f32 = 200.0;
+const MENU_WIDTH: f32 = 300.0;
 
 pub const GAME_MENU_RESULT_MAIN_MENU: usize = 0;
 pub const GAME_MENU_RESULT_QUIT: usize = 1;

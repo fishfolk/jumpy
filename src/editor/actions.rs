@@ -50,8 +50,12 @@ pub enum EditorAction {
     },
     DeleteLayer(String),
     SelectTileset(String),
-    OpenImportTilesetsWindow(usize),
-    ImportTilesets(Vec<MapTileset>),
+    OpenImportWindow(usize),
+    Import {
+        tilesets: Vec<MapTileset>,
+        background_color: Option<Color>,
+        background_layers: Vec<MapBackgroundLayer>,
+    },
     CreateTileset {
         id: String,
         texture_id: String,
@@ -402,17 +406,31 @@ impl UndoableAction for DeleteLayerAction {
 }
 
 #[derive(Debug)]
-pub struct ImportTilesetsAction {
+pub struct ImportAction {
     tilesets: Vec<MapTileset>,
+    background_color: Option<Color>,
+    old_background_color: Option<Color>,
+    background_layers: Vec<MapBackgroundLayer>,
+    old_background_layers: Vec<MapBackgroundLayer>,
 }
 
-impl ImportTilesetsAction {
-    pub fn new(tilesets: Vec<MapTileset>) -> Self {
-        ImportTilesetsAction { tilesets }
+impl ImportAction {
+    pub fn new(
+        tilesets: Vec<MapTileset>,
+        background_color: Option<Color>,
+        background_layers: Vec<MapBackgroundLayer>,
+    ) -> Self {
+        ImportAction {
+            tilesets,
+            background_color,
+            old_background_color: None,
+            background_layers,
+            old_background_layers: Vec::new(),
+        }
     }
 }
 
-impl UndoableAction for ImportTilesetsAction {
+impl UndoableAction for ImportAction {
     fn apply(&mut self, map: &mut Map) -> Result {
         for tileset in &self.tilesets {
             let mut first_tile_id = 1;
@@ -440,6 +458,16 @@ impl UndoableAction for ImportTilesetsAction {
             map.tilesets.insert(tileset.id.clone(), tileset);
         }
 
+        if let Some(background_color) = self.background_color {
+            self.old_background_color = Some(map.background_color);
+            map.background_color = background_color;
+        }
+
+        self.old_background_layers = map.background_layers.clone();
+
+        map.background_layers
+            .append(&mut self.background_layers.clone());
+
         Ok(())
     }
 
@@ -449,6 +477,12 @@ impl UndoableAction for ImportTilesetsAction {
                 return Err(&"ImportTilesetsAction (Undo): One of the imported tilesets could not be found in the map");
             }
         }
+
+        if let Some(background_color) = self.old_background_color.take() {
+            map.background_color = background_color;
+        }
+
+        map.background_layers = self.old_background_layers.drain(..).collect();
 
         Ok(())
     }

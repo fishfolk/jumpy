@@ -4,40 +4,46 @@ use macroquad::{
     ui::{hash, widgets, Ui},
 };
 
-use crate::gui::{GuiResources, LIST_BOX_ENTRY_HEIGHT};
+use crate::gui::{Checkbox, GuiResources, ELEMENT_MARGIN, LIST_BOX_ENTRY_HEIGHT};
 
-use crate::map::{Map, MapTileset};
+use crate::map::{Map, MapBackgroundLayer, MapTileset};
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 use crate::Resources;
 
-pub struct ImportTilesetsWindow {
+pub struct ImportWindow {
     params: WindowParams,
     map_index: usize,
     tilesets: Vec<MapTileset>,
-    selected: Vec<usize>,
+    selected_tilesets: Vec<usize>,
+    should_import_background: bool,
+    background_color: Option<Color>,
+    background_layers: Vec<MapBackgroundLayer>,
     is_loaded: bool,
 }
 
-impl ImportTilesetsWindow {
+impl ImportWindow {
     pub fn new(map_index: usize) -> Self {
         let params = WindowParams {
-            title: Some("Import Tilesets".to_string()),
+            title: Some("Import".to_string()),
             size: vec2(350.0, 350.0),
             ..Default::default()
         };
 
-        ImportTilesetsWindow {
+        ImportWindow {
             params,
             map_index,
             tilesets: Vec::new(),
-            selected: Vec::new(),
+            selected_tilesets: Vec::new(),
+            should_import_background: false,
+            background_color: None,
+            background_layers: Vec::new(),
             is_loaded: false,
         }
     }
 }
 
-impl Window for ImportTilesetsWindow {
+impl Window for ImportWindow {
     fn get_params(&self) -> &WindowParams {
         &self.params
     }
@@ -49,27 +55,31 @@ impl Window for ImportTilesetsWindow {
         _map: &Map,
         _ctx: &EditorContext,
     ) -> Option<EditorAction> {
-        let id = hash!("import_tilesets_window");
-
-        {
-            let gui_resources = storage::get::<GuiResources>();
-            ui.push_skin(&gui_resources.skins.list_box_no_bg);
-        }
+        let id = hash!("import_window");
 
         if !self.is_loaded {
             let resources = storage::get::<Resources>();
             let map_resource = resources.maps.get(self.map_index).unwrap();
             self.tilesets = map_resource.map.tilesets.values().cloned().collect();
+
+            self.background_color = Some(map_resource.map.background_color);
+            self.background_layers = map_resource.map.background_layers.clone();
+
             self.is_loaded = true;
         }
 
-        widgets::Group::new(hash!(id, "list_box"), size)
+        widgets::Group::new(hash!(id, "list_box"), vec2(size.x, size.y * 0.8))
             .position(vec2(0.0, 0.0))
             .ui(ui, |ui| {
+                {
+                    let gui_resources = storage::get::<GuiResources>();
+                    ui.push_skin(&gui_resources.skins.list_box_no_bg);
+                }
+
                 let entry_size = vec2(size.x, LIST_BOX_ENTRY_HEIGHT);
 
                 for (i, tileset) in self.tilesets.iter().enumerate() {
-                    let is_selected = self.selected.contains(&i);
+                    let is_selected = self.selected_tilesets.contains(&i);
 
                     if is_selected {
                         let gui_resources = storage::get::<GuiResources>();
@@ -84,9 +94,9 @@ impl Window for ImportTilesetsWindow {
 
                     if entry_btn.ui(ui) {
                         if is_selected {
-                            self.selected.retain(|selected| *selected != i);
+                            self.selected_tilesets.retain(|selected| *selected != i);
                         } else {
-                            self.selected.push(i);
+                            self.selected_tilesets.push(i);
                         }
                     }
 
@@ -96,9 +106,17 @@ impl Window for ImportTilesetsWindow {
                         ui.pop_skin();
                     }
                 }
+
+                ui.pop_skin();
             });
 
-        ui.pop_skin();
+        let checkbox = Checkbox::new(
+            hash!(id, "background_checkbox"),
+            vec2(0.0, (size.y * 0.8) + ELEMENT_MARGIN),
+            "Import Background",
+        );
+
+        checkbox.ui(ui, &mut self.should_import_background);
 
         None
     }
@@ -106,31 +124,36 @@ impl Window for ImportTilesetsWindow {
     fn get_buttons(&self, _map: &Map, _ctx: &EditorContext) -> Vec<ButtonParams> {
         let mut res = Vec::new();
 
-        let mut action = None;
-        if !self.selected.is_empty() {
-            let tilesets = self
-                .tilesets
-                .iter()
-                .enumerate()
-                .filter_map(|(i, tileset)| {
-                    if self.selected.contains(&i) {
-                        Some(tileset.clone())
-                    } else {
-                        None
-                    }
-                })
-                .collect();
+        let tilesets = self
+            .tilesets
+            .iter()
+            .enumerate()
+            .filter_map(|(i, tileset)| {
+                if self.selected_tilesets.contains(&i) {
+                    Some(tileset.clone())
+                } else {
+                    None
+                }
+            })
+            .collect();
 
-            let batch = self
-                .get_close_action()
-                .then(EditorAction::ImportTilesets(tilesets));
+        let mut background_color = None;
+        let mut background_layers = Vec::new();
 
-            action = Some(batch);
+        if self.should_import_background {
+            background_color = self.background_color;
+            background_layers = self.background_layers.clone();
         }
+
+        let batch = self.get_close_action().then(EditorAction::Import {
+            tilesets,
+            background_color,
+            background_layers,
+        });
 
         res.push(ButtonParams {
             label: "Import",
-            action,
+            action: Some(batch),
             ..Default::default()
         });
 

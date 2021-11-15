@@ -11,12 +11,12 @@ use super::{draw_main_menu_background, GuiResources, Menu, MenuEntry, MenuResult
 use crate::input::update_gamepad_context;
 use crate::{is_gamepad_btn_pressed, EditorInputScheme, GameInputScheme, Resources};
 
-const MENU_WIDTH: f32 = 250.0;
+const MENU_WIDTH: f32 = 300.0;
 
 const HEADER_TEXTURE_ID: &str = "main_menu_header";
 
-const LOCAL_GAME_MENU_WIDTH: f32 = 340.0;
-const LOCAL_GAME_MENU_HEIGHT: f32 = 186.0;
+const LOCAL_GAME_MENU_WIDTH: f32 = 400.0;
+const LOCAL_GAME_MENU_HEIGHT: f32 = 200.0;
 
 pub enum MainMenuResult {
     LocalGame(Vec<GameInputScheme>),

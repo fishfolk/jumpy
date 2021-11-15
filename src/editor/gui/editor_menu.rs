@@ -6,7 +6,7 @@ use macroquad::{
 
 use crate::gui::{Menu, MenuEntry, MenuResult};
 
-const MENU_WIDTH: f32 = 200.0;
+const MENU_WIDTH: f32 = 300.0;
 
 pub const EDITOR_MENU_RESULT_NEW: usize = 0;
 pub const EDITOR_MENU_RESULT_OPEN: usize = 1;

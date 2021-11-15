@@ -21,8 +21,12 @@ pub struct SpriteParams {
     /// The pivot of the sprite, relative to the position provided as an argument to the `Sprite`
     /// draw method, plus any offset.
     /// Note that this offset will not be inverted if the sprite is flipped.
-    #[serde(default, with = "json::vec2_def")]
-    pub pivot: Vec2,
+    #[serde(
+        default,
+        with = "json::vec2_opt",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub pivot: Option<Vec2>,
     /// The size of the drawn sprite. If no size is specified, the texture entry's `sprite_size`
     /// will be used, if specified, or the raw texture size, if not.
     #[serde(
@@ -49,7 +53,7 @@ impl Default for SpriteParams {
             texture_id: "".to_string(),
             index: 0,
             offset: Vec2::ZERO,
-            pivot: Vec2::ZERO,
+            pivot: None,
             size: None,
             tint: None,
             is_deactivated: false,
@@ -63,7 +67,7 @@ pub struct Sprite {
     source_rect: Rect,
     tint: Color,
     offset: Vec2,
-    pivot: Vec2,
+    pivot: Option<Vec2>,
     pub is_deactivated: bool,
 }
 
@@ -139,7 +143,7 @@ impl Sprite {
                     rotation,
                     source: Some(self.source_rect),
                     dest_size: Some(size),
-                    pivot: Some(self.pivot),
+                    pivot: self.pivot,
                 },
             )
         }

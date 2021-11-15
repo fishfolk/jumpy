@@ -6,7 +6,7 @@ use macroquad::{
 
 use super::{EditorAction, EditorContext, GuiResources, Map, ToolbarElement, ToolbarElementParams};
 
-use crate::{editor::gui::ELEMENT_MARGIN, Resources};
+use crate::{gui::ELEMENT_MARGIN, Resources};
 
 pub struct TilesetDetailsElement {
     params: ToolbarElementParams,
@@ -67,7 +67,7 @@ impl ToolbarElement for TilesetDetailsElement {
 
             {
                 let gui_resources = storage::get::<GuiResources>();
-                ui.push_skin(&gui_resources.editor_skins.tileset_grid);
+                ui.push_skin(&gui_resources.skins.tileset_grid);
             }
 
             for y in 0..tileset.grid_size.y {
@@ -82,7 +82,7 @@ impl ToolbarElement for TilesetDetailsElement {
 
                     if is_selected {
                         let gui_resources = storage::get::<GuiResources>();
-                        ui.push_skin(&gui_resources.editor_skins.tileset_grid_selected);
+                        ui.push_skin(&gui_resources.skins.tileset_grid_selected);
                     }
 
                     let position = vec2(x as f32, y as f32) * scaled_tile_size;

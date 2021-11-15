@@ -54,7 +54,7 @@ impl ToolbarElement for TilesetListElement {
                 action: delete_action,
             },
             ButtonParams {
-                label: "Properties",
+                label: "Edit",
                 width_override: Some(0.5),
                 action: properties_action,
             },
@@ -74,7 +74,7 @@ impl ToolbarElement for TilesetListElement {
         let mut position = Vec2::ZERO;
 
         let gui_resources = storage::get::<GuiResources>();
-        ui.push_skin(&gui_resources.editor_skins.menu);
+        ui.push_skin(&gui_resources.skins.list_box);
 
         for tileset_id in map.tilesets.keys() {
             let is_selected = if let Some(selected_id) = &ctx.selected_tileset {
@@ -84,7 +84,7 @@ impl ToolbarElement for TilesetListElement {
             };
 
             if is_selected {
-                ui.push_skin(&gui_resources.editor_skins.menu_selected);
+                ui.push_skin(&gui_resources.skins.list_box_selected);
             }
 
             let was_clicked = widgets::Button::new("")

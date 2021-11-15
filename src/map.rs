@@ -10,17 +10,26 @@ use crate::{
     editor::gui::combobox::ComboBoxValue,
     json::{self, TiledMap},
     math::URect,
-    text::{draw_aligned_text, HorizontalAlignment, VerticalAlignment},
     Resources,
 };
 
 pub type MapProperty = json::GenericParam;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MapBackgroundLayer {
+    pub texture_id: String,
+    pub depth: f32,
+    #[serde(with = "json::vec2_def")]
+    pub offset: Vec2,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(into = "json::MapDef", from = "json::MapDef")]
 pub struct Map {
     #[serde(default = "Map::default_background_color", with = "json::ColorDef")]
     pub background_color: Color,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub background_layers: Vec<MapBackgroundLayer>,
     #[serde(with = "json::def_vec2")]
     pub world_offset: Vec2,
     #[serde(with = "json::def_uvec2")]
@@ -45,6 +54,7 @@ impl Map {
     pub fn new(tile_size: Vec2, grid_size: UVec2) -> Self {
         Map {
             background_color: Self::default_background_color(),
+            background_layers: Vec::new(),
             world_offset: Vec2::ZERO,
             grid_size,
             tile_size,
@@ -201,10 +211,31 @@ impl Map {
         false
     }
 
-    // This will draw the map.
-    // If `should_draw_objects` is set to true, objects in object layers will also be drawn.
-    // This should only be set to true when drawing the map in the editor....
-    pub fn draw(&self, should_draw_objects: bool, rect: Option<URect>) {
+    fn background_parallax(texture: Texture2D, depth: f32, camera_pos: Vec2) -> Rect {
+        let w = texture.width();
+        let h = texture.height();
+
+        let dest_rect = Rect::new(0., 0., w, h);
+        let parallax_w = w as f32 * 0.5;
+
+        let mut dest_rect2 = Rect::new(
+            -parallax_w,
+            -parallax_w,
+            w + parallax_w * 2.,
+            h + parallax_w * 2.,
+        );
+
+        let parallax_x = camera_pos.x / dest_rect.w - 0.3;
+        let parallax_y = camera_pos.y / dest_rect.h * 0.6 - 0.5;
+
+        dest_rect2.x += parallax_w * parallax_x * depth;
+        dest_rect2.y += parallax_w * parallax_y * depth;
+
+        dest_rect2
+    }
+
+    /// This will draw the map
+    pub fn draw(&self, rect: Option<URect>) {
         let rect = rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.x, self.grid_size.y));
         draw_rectangle(
             self.world_offset.x + (rect.x as f32 * self.tile_size.x),
@@ -216,53 +247,58 @@ impl Map {
 
         let resources = storage::get::<Resources>();
 
+        {
+            let position = scene::camera_pos();
+
+            for layer in &self.background_layers {
+                let texture_res = resources.textures.get(&layer.texture_id).unwrap();
+                let dest_rect =
+                    Self::background_parallax(texture_res.texture, layer.depth, position);
+
+                draw_texture_ex(
+                    texture_res.texture,
+                    dest_rect.x + layer.offset.x,
+                    dest_rect.y + layer.offset.y,
+                    WHITE,
+                    DrawTextureParams {
+                        dest_size: Some(vec2(dest_rect.w, dest_rect.h)),
+                        ..Default::default()
+                    },
+                )
+            }
+        }
+
         let mut draw_order = self.draw_order.clone();
         draw_order.reverse();
 
         for layer_id in draw_order {
             if let Some(layer) = self.layers.get(&layer_id) {
-                if layer.is_visible {
-                    if layer.kind == MapLayerKind::TileLayer {
-                        for (x, y, tile) in self.get_tiles(&layer_id, Some(rect)) {
-                            if let Some(tile) = tile {
-                                let world_position = self.world_offset
-                                    + vec2(
-                                        x as f32 * self.tile_size.x,
-                                        y as f32 * self.tile_size.y,
-                                    );
+                if layer.is_visible && layer.kind == MapLayerKind::TileLayer {
+                    for (x, y, tile) in self.get_tiles(&layer_id, Some(rect)) {
+                        if let Some(tile) = tile {
+                            let world_position = self.world_offset
+                                + vec2(x as f32 * self.tile_size.x, y as f32 * self.tile_size.y);
 
-                                let texture_entry =
-                                    resources.textures.get(&tile.texture_id).unwrap_or_else(|| {
-                                        panic!("No texture with id '{}'!", tile.texture_id)
-                                    });
+                            let texture_entry =
+                                resources.textures.get(&tile.texture_id).unwrap_or_else(|| {
+                                    panic!("No texture with id '{}'!", tile.texture_id)
+                                });
 
-                                draw_texture_ex(
-                                    texture_entry.texture,
-                                    world_position.x,
-                                    world_position.y,
-                                    color::WHITE,
-                                    DrawTextureParams {
-                                        source: Some(Rect::new(
-                                            tile.texture_coords.x, // + 0.1,
-                                            tile.texture_coords.y, // + 0.1,
-                                            self.tile_size.x,      // - 0.2,
-                                            self.tile_size.y,      // - 0.2,
-                                        )),
-                                        dest_size: Some(vec2(self.tile_size.x, self.tile_size.y)),
-                                        ..Default::default()
-                                    },
-                                );
-                            }
-                        }
-                    } else if layer.kind == MapLayerKind::TileLayer || should_draw_objects {
-                        for object in &layer.objects {
-                            // For now only a generic marker will be drawn
-                            draw_aligned_text(
-                                &object.id,
-                                object.position,
-                                HorizontalAlignment::Center,
-                                VerticalAlignment::Center,
-                                Default::default(),
+                            draw_texture_ex(
+                                texture_entry.texture,
+                                world_position.x,
+                                world_position.y,
+                                color::WHITE,
+                                DrawTextureParams {
+                                    source: Some(Rect::new(
+                                        tile.texture_coords.x, // + 0.1,
+                                        tile.texture_coords.y, // + 0.1,
+                                        self.tile_size.x,      // - 0.2,
+                                        self.tile_size.y,      // - 0.2,
+                                    )),
+                                    dest_size: Some(vec2(self.tile_size.x, self.tile_size.y)),
+                                    ..Default::default()
+                                },
                             );
                         }
                     }
@@ -280,7 +316,7 @@ impl Map {
     }
 
     pub fn default_background_color() -> Color {
-        Color::new(0.0, 0.0, 0.0, 0.0)
+        Color::new(0.0, 0.0, 0.0, 1.0)
     }
 
     #[cfg(any(target_family = "unix", target_family = "windows"))]
@@ -436,7 +472,7 @@ pub struct MapTile {
     pub attributes: Vec<String>,
 }
 
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum MapObjectKind {
     Item,
@@ -506,7 +542,7 @@ impl ComboBoxValue for MapObjectKind {
     }
 
     fn options() -> &'static [&'static str] {
-        &["Item", "Spawn point", "Environment", "Decoration"]
+        &["Item", "Spawn Point", "Environment", "Decoration"]
     }
 }
 

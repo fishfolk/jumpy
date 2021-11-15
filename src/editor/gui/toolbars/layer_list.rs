@@ -9,8 +9,10 @@ use crate::{
     map::{Map, MapLayerKind},
 };
 
-use super::{EditorAction, EditorContext, Toolbar, ToolbarElement, ToolbarElementParams};
-use crate::editor::gui::{ButtonParams, ELEMENT_MARGIN};
+use super::{
+    ButtonParams, EditorAction, EditorContext, Toolbar, ToolbarElement, ToolbarElementParams,
+};
+use crate::gui::ELEMENT_MARGIN;
 
 pub struct LayerListElement {
     params: ToolbarElementParams,
@@ -46,7 +48,7 @@ impl ToolbarElement for LayerListElement {
         let mut position = Vec2::ZERO;
 
         let gui_resources = storage::get::<GuiResources>();
-        ui.push_skin(&gui_resources.editor_skins.menu);
+        ui.push_skin(&gui_resources.skins.list_box);
 
         for layer_id in &map.draw_order {
             let layer = map.layers.get(layer_id).unwrap();
@@ -58,7 +60,7 @@ impl ToolbarElement for LayerListElement {
             };
 
             if is_selected {
-                ui.push_skin(&gui_resources.editor_skins.menu_selected);
+                ui.push_skin(&gui_resources.skins.list_box_selected);
             }
 
             let button = widgets::Button::new("")

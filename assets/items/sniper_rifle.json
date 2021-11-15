@@ -64,7 +64,7 @@
     ]
   },
   "effect_animation": {
-    "texture": "musket",
+    "texture": "sniper_rifle",
     "animations": [
       {
         "id": "attack_effect",

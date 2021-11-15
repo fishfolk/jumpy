@@ -225,7 +225,7 @@ impl Window for BackgroundPropertiesWindow {
 
             self.layer_texture_id = texture_ids.get(texture_index).map(|str| str.to_string());
 
-            let mut depth_str = self.layer_depth.to_string();
+            let mut depth_str = format!("{:.1}", self.layer_depth);
 
             widgets::InputText::new(hash!(id, "layer_depth_input"))
                 .ratio(0.4)

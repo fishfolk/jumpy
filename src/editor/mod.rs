@@ -41,9 +41,10 @@ pub use input::EditorInputScheme;
 
 use input::collect_editor_input;
 
-use crate::editor::actions::{UpdateBackgroundAction, UpdateObjectAction};
+use crate::editor::actions::{ImportTilesetsAction, UpdateBackgroundAction, UpdateObjectAction};
 use crate::editor::gui::windows::{
-    BackgroundPropertiesWindow, LoadMapWindow, ObjectPropertiesWindow, SaveMapWindow,
+    BackgroundPropertiesWindow, ImportTilesetsWindow, LoadMapWindow, ObjectPropertiesWindow,
+    SaveMapWindow,
 };
 use crate::gui::SELECTED_OBJECT_HIGHLIGHT_COLOR;
 use crate::map::{MapObject, MapObjectKind};
@@ -439,6 +440,16 @@ impl Editor {
             }
             EditorAction::RemoveTile { layer_id, coords } => {
                 let action = RemoveTileAction::new(layer_id, coords);
+                res = self
+                    .history
+                    .apply(Box::new(action), &mut self.map_resource.map);
+            }
+            EditorAction::OpenImportTilesetsWindow(map_index) => {
+                let mut gui = storage::get_mut::<EditorGui>();
+                gui.add_window(ImportTilesetsWindow::new(map_index));
+            }
+            EditorAction::ImportTilesets(tilesets) => {
+                let action = ImportTilesetsAction::new(tilesets);
                 res = self
                     .history
                     .apply(Box::new(action), &mut self.map_resource.map);

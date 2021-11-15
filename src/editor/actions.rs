@@ -50,6 +50,8 @@ pub enum EditorAction {
     },
     DeleteLayer(String),
     SelectTileset(String),
+    OpenImportTilesetsWindow(usize),
+    ImportTilesets(Vec<MapTileset>),
     CreateTileset {
         id: String,
         texture_id: String,
@@ -400,6 +402,59 @@ impl UndoableAction for DeleteLayerAction {
 }
 
 #[derive(Debug)]
+pub struct ImportTilesetsAction {
+    tilesets: Vec<MapTileset>,
+}
+
+impl ImportTilesetsAction {
+    pub fn new(tilesets: Vec<MapTileset>) -> Self {
+        ImportTilesetsAction { tilesets }
+    }
+}
+
+impl UndoableAction for ImportTilesetsAction {
+    fn apply(&mut self, map: &mut Map) -> Result {
+        for tileset in &self.tilesets {
+            let mut first_tile_id = 1;
+            for tileset in map.tilesets.values() {
+                let next_tile_id = tileset.first_tile_id + tileset.tile_cnt;
+                if next_tile_id > first_tile_id {
+                    first_tile_id = next_tile_id;
+                }
+            }
+
+            let tileset = MapTileset {
+                id: tileset.id.clone(),
+                texture_id: tileset.texture_id.clone(),
+                texture_size: tileset.texture_size,
+                tile_size: tileset.tile_size,
+                grid_size: tileset.grid_size,
+                first_tile_id,
+                tile_cnt: tileset.tile_cnt,
+                tile_subdivisions: tileset.tile_subdivisions,
+                autotile_mask: tileset.autotile_mask.clone(),
+                tile_attributes: tileset.tile_attributes.clone(),
+                properties: tileset.properties.clone(),
+            };
+
+            map.tilesets.insert(tileset.id.clone(), tileset);
+        }
+
+        Ok(())
+    }
+
+    fn undo(&mut self, map: &mut Map) -> Result {
+        for tileset in &self.tilesets {
+            if map.tilesets.remove(&tileset.id).is_none() {
+                return Err(&"ImportTilesetsAction (Undo): One of the imported tilesets could not be found in the map");
+            }
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Debug)]
 pub struct CreateTilesetAction {
     id: String,
     texture_id: String,
@@ -419,6 +474,7 @@ impl UndoableAction for CreateTilesetAction {
                 texture_entry.texture.width() as u32,
                 texture_entry.texture.height() as u32,
             );
+
             let mut first_tile_id = 1;
             for tileset in map.tilesets.values() {
                 let next_tile_id = tileset.first_tile_id + tileset.tile_cnt;

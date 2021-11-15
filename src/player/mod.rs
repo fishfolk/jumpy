@@ -66,6 +66,9 @@ pub struct Player {
 
     pub back_armor: i32,
     pub can_head_boink: bool,
+
+    pub last_collisions: Vec<u8>,
+    pub current_collisions: Vec<u8>,
 }
 
 impl Player {
@@ -267,6 +270,8 @@ impl Player {
             is_crouched: false,
             incapacitated_timer: 0.0,
             incapacitated_duration: 0.0,
+            last_collisions: Vec::new(),
+            current_collisions: Vec::new(),
         }
     }
 
@@ -878,6 +883,21 @@ impl Player {
             node.body.update();
         }
 
+        {
+            node.last_collisions = node.current_collisions.drain(..).collect();
+
+            let collider = node.get_collider_rect();
+            for player in scene::find_nodes_by_type::<Player>() {
+                if collider.overlaps(&player.get_collider_rect()) {
+                    node.current_collisions.push(player.id);
+
+                    let is_new = !node.last_collisions.contains(&player.id);
+
+                    Player::on_collision(node.handle(), player.handle(), is_new);
+                }
+            }
+        }
+
         if node.can_head_boink && node.body.velocity.y > 0.0 {
             let hitbox = node.get_collider_rect();
             for player in scene::find_nodes_by_type::<Player>() {
@@ -1115,13 +1135,14 @@ impl Player {
     pub fn on_collision(
         player_handle: Handle<Player>,
         collision_with: Handle<Player>,
+        is_new: bool,
     ) -> Coroutine {
         let coroutine = async move {
             if let Some(mut node) = scene::try_get_node(player_handle) {
                 let position = node.body.position;
 
                 for effect in node.passive_effects.values_mut() {
-                    let params = PlayerEventParams::Collision { collision_with };
+                    let params = PlayerEventParams::Collision { is_new, collision_with };
                     effect.on_player_event(player_handle, position, params);
                 }
             }

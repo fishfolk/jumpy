@@ -103,7 +103,7 @@ impl Window for LoadMapWindow {
 
             let import_batch = self
                 .get_close_action()
-                .then(EditorAction::OpenImportTilesetsWindow(index));
+                .then(EditorAction::OpenImportWindow(index));
             import_action = Some(import_batch);
         }
 

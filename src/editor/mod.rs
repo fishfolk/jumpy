@@ -41,10 +41,9 @@ pub use input::EditorInputScheme;
 
 use input::collect_editor_input;
 
-use crate::editor::actions::{ImportTilesetsAction, UpdateBackgroundAction, UpdateObjectAction};
+use crate::editor::actions::{ImportAction, UpdateBackgroundAction, UpdateObjectAction};
 use crate::editor::gui::windows::{
-    BackgroundPropertiesWindow, ImportTilesetsWindow, LoadMapWindow, ObjectPropertiesWindow,
-    SaveMapWindow,
+    BackgroundPropertiesWindow, ImportWindow, LoadMapWindow, ObjectPropertiesWindow, SaveMapWindow,
 };
 use crate::gui::SELECTED_OBJECT_HIGHLIGHT_COLOR;
 use crate::map::{MapObject, MapObjectKind};
@@ -444,12 +443,16 @@ impl Editor {
                     .history
                     .apply(Box::new(action), &mut self.map_resource.map);
             }
-            EditorAction::OpenImportTilesetsWindow(map_index) => {
+            EditorAction::OpenImportWindow(map_index) => {
                 let mut gui = storage::get_mut::<EditorGui>();
-                gui.add_window(ImportTilesetsWindow::new(map_index));
+                gui.add_window(ImportWindow::new(map_index));
             }
-            EditorAction::ImportTilesets(tilesets) => {
-                let action = ImportTilesetsAction::new(tilesets);
+            EditorAction::Import {
+                tilesets,
+                background_color,
+                background_layers,
+            } => {
+                let action = ImportAction::new(tilesets, background_color, background_layers);
                 res = self
                     .history
                     .apply(Box::new(action), &mut self.map_resource.map);

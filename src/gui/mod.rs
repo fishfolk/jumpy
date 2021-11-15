@@ -1,4 +1,5 @@
 mod background;
+mod checkbox;
 mod create_map;
 mod game_menu;
 mod main_menu;
@@ -15,6 +16,7 @@ pub use style::{
 };
 
 pub use background::{draw_main_menu_background, Background};
+pub use checkbox::Checkbox;
 pub use create_map::show_create_map_menu;
 pub use game_menu::{
     close_game_menu, draw_game_menu, is_game_menu_open, open_game_menu, toggle_game_menu,

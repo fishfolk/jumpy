@@ -7,13 +7,16 @@ use macroquad::{
 
 use super::{ELEMENT_MARGIN, NO_COLOR};
 
+pub const FONT_SIZE: f32 = 22.0;
+
 pub const WINDOW_MARGIN_V: f32 = 22.0;
 pub const WINDOW_MARGIN_H: f32 = 22.0;
+
 pub const BUTTON_MARGIN_V: f32 = 8.0;
 pub const BUTTON_MARGIN_H: f32 = 16.0;
 pub const BUTTON_FONT_SIZE: f32 = 25.0;
 
-pub const MENU_HEADER_FONT_SIZE: f32 = 25.0;
+pub const HEADER_FONT_SIZE: f32 = 25.0;
 
 const WINDOW_BG_MARGIN_V: f32 = 52.0;
 const WINDOW_BG_MARGIN_H: f32 = 52.0;
@@ -33,6 +36,9 @@ pub struct SkinCollection {
     pub default: Skin,
     pub button_disabled: Skin,
     pub window_header: Skin,
+    pub checkbox: Skin,
+    pub checkbox_selected: Skin,
+    pub label_button: Skin,
     pub list_box: Skin,
     pub list_box_selected: Skin,
     pub list_box_no_bg: Skin,
@@ -129,7 +135,7 @@ impl SkinCollection {
                 .margin(RectOffset::new(8.0, 8.0, 4.0, 4.0))
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
                 .text_color(Color::from_rgba(200, 200, 160, 255))
-                .font_size(16)
+                .font_size(FONT_SIZE as u16)
                 .build();
 
             let editbox_style = root_ui()
@@ -145,7 +151,7 @@ impl SkinCollection {
                 .background_margin(RectOffset::new(2.0, 2.0, 2.0, 2.0))
                 .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
                 .text_color(Color::from_rgba(200, 200, 160, 255))
-                .font_size(22)
+                .font_size(FONT_SIZE as u16)
                 .build();
 
             let checkbox_style = root_ui()
@@ -173,7 +179,7 @@ impl SkinCollection {
                 .background_margin(RectOffset::new(4., 25., 6., 6.))
                 .text_color(Color::from_rgba(120, 120, 120, 255))
                 .color(Color::from_rgba(210, 210, 210, 255))
-                .font_size(22)
+                .font_size(FONT_SIZE as u16)
                 .build();
 
             let scrollbar_style = root_ui()
@@ -225,7 +231,7 @@ impl SkinCollection {
                     None,
                 ))
                 .text_color(Color::from_rgba(88, 88, 88, 255))
-                .font_size(20)
+                .font_size(BUTTON_FONT_SIZE as u16)
                 .build();
 
             Skin {
@@ -240,11 +246,110 @@ impl SkinCollection {
                 .margin(RectOffset::new(8.0, 8.0, 4.0, 16.0))
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
                 .text_color(Color::from_rgba(200, 200, 160, 255))
-                .font_size(22)
+                .font_size(HEADER_FONT_SIZE as u16)
                 .build();
 
             Skin {
                 label_style,
+                ..default.clone()
+            }
+        };
+
+        let checkbox = {
+            let button_style = root_ui()
+                .style_builder()
+                .background(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/checkbox_background.png"),
+                    None,
+                ))
+                .background_hovered(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/checkbox_hovered_background.png"),
+                    None,
+                ))
+                .background_clicked(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/checkbox_clicked_background.png"),
+                    None,
+                ))
+                .background_margin(RectOffset::new(0.0, 0.0, 4.0, 4.0))
+                .build();
+
+            let scrollbar_style = root_ui()
+                .style_builder()
+                .color(NO_COLOR)
+                .color_hovered(NO_COLOR)
+                .color_clicked(NO_COLOR)
+                .build();
+
+            let scrollbar_handle_style = root_ui()
+                .style_builder()
+                .color(NO_COLOR)
+                .color_hovered(NO_COLOR)
+                .color_clicked(NO_COLOR)
+                .build();
+
+            let group_style = root_ui()
+                .style_builder()
+                .color(NO_COLOR)
+                .color_hovered(NO_COLOR)
+                .color_clicked(NO_COLOR)
+                .build();
+
+            Skin {
+                button_style,
+                scrollbar_style,
+                scrollbar_handle_style,
+                group_style,
+                ..default.clone()
+            }
+        };
+
+        let checkbox_selected = {
+            let button_style = root_ui()
+                .style_builder()
+                .background(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/checkbox_background_selected.png"),
+                    None,
+                ))
+                .background_hovered(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/checkbox_hovered_background_selected.png"),
+                    None,
+                ))
+                .background_clicked(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/checkbox_clicked_background.png"),
+                    None,
+                ))
+                .background_margin(RectOffset::new(0.0, 0.0, 4.0, 4.0))
+                .build();
+
+            Skin {
+                button_style,
+                ..checkbox.clone()
+            }
+        };
+
+        let label_button = {
+            let button_style = root_ui()
+                .style_builder()
+                .background(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/blank_image.png"),
+                    None,
+                ))
+                .background_hovered(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/blank_image.png"),
+                    None,
+                ))
+                .background_clicked(Image::from_file_with_format(
+                    include_bytes!("../../assets/ui/blank_image.png"),
+                    None,
+                ))
+                .margin(RectOffset::new(0.0, 0.0, 4.0, 4.0))
+                .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .text_color(Color::from_rgba(200, 200, 160, 255))
+                .font_size(FONT_SIZE as u16)
+                .build();
+
+            Skin {
+                button_style,
                 ..default.clone()
             }
         };
@@ -583,7 +688,7 @@ impl SkinCollection {
             let label_style = root_ui()
                 .style_builder()
                 .text_color(Color::from_rgba(255, 255, 255, 255))
-                .font_size(MENU_HEADER_FONT_SIZE as u16)
+                .font_size(HEADER_FONT_SIZE as u16)
                 .build();
 
             Skin {
@@ -751,6 +856,9 @@ impl SkinCollection {
             default,
             button_disabled,
             window_header,
+            checkbox,
+            checkbox_selected,
+            label_button,
             list_box,
             list_box_selected,
             list_box_no_bg,

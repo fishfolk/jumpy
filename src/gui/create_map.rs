@@ -52,9 +52,6 @@ pub async fn show_create_map_menu() -> Result<MapResource> {
             ui.label(None, "New map");
 
             ui.separator();
-            ui.separator();
-            ui.separator();
-            ui.separator();
 
             {
                 let size = vec2(300.0, 25.0);
@@ -66,9 +63,6 @@ pub async fn show_create_map_menu() -> Result<MapResource> {
             }
 
             ui.separator();
-            ui.separator();
-            ui.separator();
-            ui.separator();
 
             {
                 let path_label = map_exports_path
@@ -78,9 +72,6 @@ pub async fn show_create_map_menu() -> Result<MapResource> {
                 widgets::Label::new(path_label.to_string_lossy().as_ref()).ui(ui);
             }
 
-            ui.separator();
-            ui.separator();
-            ui.separator();
             ui.separator();
 
             {
@@ -92,9 +83,6 @@ pub async fn show_create_map_menu() -> Result<MapResource> {
                     .ui(ui, &mut description);
             }
 
-            ui.separator();
-            ui.separator();
-            ui.separator();
             ui.separator();
 
             {
@@ -130,14 +118,11 @@ pub async fn show_create_map_menu() -> Result<MapResource> {
             }
 
             ui.separator();
-            ui.separator();
-            ui.separator();
-            ui.separator();
 
             let btn_a = is_gamepad_btn_pressed(Some(&gamepad_system), fishsticks::Button::A);
             let enter = is_key_pressed(KeyCode::Enter);
 
-            if ui.button(None, "Confirm (A) (Enter)") || btn_a || enter {
+            if ui.button(None, "Confirm") || btn_a || enter {
                 // TODO: Validate input
 
                 let tile_size = vec2(

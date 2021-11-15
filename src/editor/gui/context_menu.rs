@@ -4,9 +4,9 @@ use macroquad::{
     ui::{hash, widgets, Ui},
 };
 
-use crate::gui::GuiResources;
+use super::EditorAction;
 
-use super::{EditorAction, ELEMENT_MARGIN};
+use crate::gui::{GuiResources, ELEMENT_MARGIN};
 
 #[derive(Debug, Clone)]
 pub enum ContextMenuEntry {
@@ -118,7 +118,7 @@ impl ContextMenu {
 
     pub fn draw(&mut self, ui: &mut Ui) -> Option<EditorAction> {
         let gui_resources = storage::get::<GuiResources>();
-        ui.push_skin(&gui_resources.editor_skins.context_menu);
+        ui.push_skin(&gui_resources.skins.context_menu);
 
         let res = draw_entries(ui, self.position, &mut self.entries);
 

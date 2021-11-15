@@ -93,7 +93,7 @@ impl TilesetPropertiesWindow {
 
         {
             let gui_resources = storage::get::<GuiResources>();
-            ui.push_skin(&gui_resources.editor_skins.tileset_subtile_grid);
+            ui.push_skin(&gui_resources.skins.tileset_subtile_grid);
         }
 
         for y in 0..subgrid_size.y {
@@ -104,7 +104,7 @@ impl TilesetPropertiesWindow {
 
                 if is_selected {
                     let gui_resources = storage::get::<GuiResources>();
-                    ui.push_skin(&gui_resources.editor_skins.tileset_subtile_grid_selected);
+                    ui.push_skin(&gui_resources.skins.tileset_subtile_grid_selected);
                 }
 
                 let subtile_position = position + vec2(x as f32, y as f32) * scaled_subtile_size;

@@ -18,7 +18,10 @@ impl LoadMapWindow {
             ..Default::default()
         };
 
-        LoadMapWindow { params, index: None }
+        LoadMapWindow {
+            params,
+            index: None,
+        }
     }
 }
 

@@ -342,7 +342,7 @@ impl Resources {
         map_resource.map.save(export_path)?;
 
         self.maps.push(map_resource.clone());
-        self.save_maps_file();
+        self.save_maps_file()?;
 
         Ok(())
     }
@@ -350,8 +350,7 @@ impl Resources {
     pub fn delete_map(&mut self, index: usize) -> Result<()> {
         let map_resource = self.maps.remove(index);
 
-        let path = Path::new(&self.assets_dir)
-            .join(&map_resource.meta.path);
+        let path = Path::new(&self.assets_dir).join(&map_resource.meta.path);
 
         fs::remove_file(path)?;
 

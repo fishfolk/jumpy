@@ -66,7 +66,7 @@ impl ToolbarElement for ToolSelectorElement {
 
         {
             let gui_resources = storage::get::<GuiResources>();
-            ui.push_skin(&gui_resources.editor_skins.tool_selector);
+            ui.push_skin(&gui_resources.skins.tool_selector);
         }
 
         let size = vec2(size.x, size.x);
@@ -95,7 +95,7 @@ impl ToolbarElement for ToolSelectorElement {
 
             if is_selected {
                 let gui_resources = storage::get::<GuiResources>();
-                ui.push_skin(&gui_resources.editor_skins.tool_selector_selected);
+                ui.push_skin(&gui_resources.skins.tool_selector_selected);
             }
 
             let was_clicked = widgets::Button::new("")

@@ -48,7 +48,7 @@ impl ToolbarElement for ObjectListElement {
 
         {
             let gui_resources = storage::get::<GuiResources>();
-            ui.push_skin(&gui_resources.editor_skins.menu);
+            ui.push_skin(&gui_resources.skins.list_box);
         }
 
         let layer_id = ctx.selected_layer.as_ref().unwrap();
@@ -63,7 +63,7 @@ impl ToolbarElement for ObjectListElement {
 
             if is_selected {
                 let gui_resources = storage::get::<GuiResources>();
-                ui.push_skin(&gui_resources.editor_skins.menu_selected);
+                ui.push_skin(&gui_resources.skins.list_box_selected);
             }
 
             let was_clicked = widgets::Button::new("")
@@ -131,7 +131,7 @@ impl ToolbarElement for ObjectListElement {
                 action: delete_action,
             },
             ButtonParams {
-                label: "Properties",
+                label: "Edit",
                 width_override: Some(0.5),
                 action: properties_action,
             },

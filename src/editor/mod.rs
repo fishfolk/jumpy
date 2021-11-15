@@ -42,7 +42,10 @@ pub use input::EditorInputScheme;
 use input::collect_editor_input;
 
 use crate::editor::actions::{UpdateBackgroundAction, UpdateObjectAction};
-use crate::editor::gui::windows::{BackgroundPropertiesWindow, LoadMapWindow, ObjectPropertiesWindow, SaveMapWindow};
+use crate::editor::gui::windows::{
+    BackgroundPropertiesWindow, LoadMapWindow, ObjectPropertiesWindow, SaveMapWindow,
+};
+use crate::gui::SELECTED_OBJECT_HIGHLIGHT_COLOR;
 use crate::map::{MapObject, MapObjectKind};
 use macroquad::{
     color,
@@ -52,7 +55,6 @@ use macroquad::{
     },
     prelude::*,
 };
-use crate::editor::actions::EditorAction::UpdateBackground;
 
 use super::map::{Map, MapLayerKind};
 use crate::resources::{map_name_to_filename, MapResource};
@@ -300,19 +302,20 @@ impl Editor {
             EditorAction::SelectTool(index) => {
                 self.selected_tool = Some(index);
             }
-            EditorAction::UpdateBackground {
-                color,
-                layers,
-            } => {
+            EditorAction::UpdateBackground { color, layers } => {
                 let action = UpdateBackgroundAction::new(color, layers);
-                res = self.history
+                res = self
+                    .history
                     .apply(Box::new(action), &mut self.map_resource.map);
             }
             EditorAction::OpenBackgroundPropertiesWindow => {
                 let map = &self.map_resource.map;
 
                 let mut gui = storage::get_mut::<EditorGui>();
-                gui.add_window(BackgroundPropertiesWindow::new(map.background_color, map.background_layers.clone()));
+                gui.add_window(BackgroundPropertiesWindow::new(
+                    map.background_color,
+                    map.background_layers.clone(),
+                ));
             }
             EditorAction::OpenCreateLayerWindow => {
                 let mut gui = storage::get_mut::<EditorGui>();
@@ -452,10 +455,7 @@ impl Editor {
             }
             EditorAction::LoadMap(index) => {
                 let resources = storage::get::<Resources>();
-                let map_resource = resources.maps
-                    .get(index)
-                    .cloned()
-                    .unwrap();
+                let map_resource = resources.maps.get(index).cloned().unwrap();
 
                 self.map_resource = map_resource;
                 self.history.clear();
@@ -833,7 +833,7 @@ impl Node for Editor {
                                 size.x,
                                 size.y,
                                 4.0,
-                                color::YELLOW,
+                                SELECTED_OBJECT_HIGHLIGHT_COLOR,
                             );
                         }
                     }

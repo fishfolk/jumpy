@@ -6,9 +6,12 @@ use macroquad::{
     ui::{hash, widgets, Ui},
 };
 
-use crate::{gui::GuiResources, map::Map};
+use crate::{
+    gui::{GuiResources, ELEMENT_MARGIN},
+    map::Map,
+};
 
-use super::{ButtonParams, EditorAction, EditorContext, ELEMENT_MARGIN};
+use super::{ButtonParams, EditorAction, EditorContext};
 
 mod tool_selector;
 
@@ -129,7 +132,7 @@ impl Toolbar {
 
         {
             let gui_resources = storage::get::<GuiResources>();
-            ui.push_skin(&gui_resources.editor_skins.toolbar);
+            ui.push_skin(&gui_resources.skins.toolbar);
         }
 
         let mut position = Vec2::ZERO;
@@ -147,7 +150,7 @@ impl Toolbar {
 
                 {
                     let gui_resources = storage::get::<GuiResources>();
-                    ui.push_skin(&gui_resources.editor_skins.toolbar_bg);
+                    ui.push_skin(&gui_resources.skins.toolbar_bg);
                     widgets::Button::new("")
                         .position(position)
                         .size(toolbar_size)
@@ -178,7 +181,7 @@ impl Toolbar {
 
                         if let Some(header) = &params.header {
                             let gui_resources = storage::get::<GuiResources>();
-                            ui.push_skin(&gui_resources.editor_skins.toolbar_header_bg);
+                            ui.push_skin(&gui_resources.skins.toolbar_header_bg);
 
                             let header_height = ui.calc_size(header).y;
 
@@ -228,6 +231,11 @@ impl Toolbar {
                             widgets::Group::new(hash!(element_id, "menubar"), menubar_size)
                                 .position(menubar_position)
                                 .ui(ui, |ui| {
+                                    {
+                                        let gui_resources = storage::get::<GuiResources>();
+                                        ui.push_skin(&gui_resources.skins.toolbar_button);
+                                    }
+
                                     let buttons = element.get_buttons(map, ctx);
 
                                     let button_cnt = buttons.len().clamp(0, 4);
@@ -273,9 +281,7 @@ impl Toolbar {
                                             if button.action.is_none() {
                                                 let gui_resources = storage::get::<GuiResources>();
                                                 ui.push_skin(
-                                                    &gui_resources
-                                                        .editor_skins
-                                                        .toolbar_button_disabled,
+                                                    &gui_resources.skins.toolbar_button_disabled,
                                                 );
                                             }
 
@@ -301,6 +307,8 @@ impl Toolbar {
                                             }
                                         }
                                     }
+
+                                    ui.pop_skin();
                                 });
                         }
 

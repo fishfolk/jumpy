@@ -9,7 +9,8 @@ use serde::{Deserialize, Serialize};
 use crate::{
     json,
     map::{
-        Map, MapBackgroundLayer, MapLayer, MapLayerKind, MapObject, MapProperty, MapTile, MapTileset,
+        Map, MapBackgroundLayer, MapLayer, MapLayerKind, MapObject, MapProperty, MapTile,
+        MapTileset,
     },
 };
 

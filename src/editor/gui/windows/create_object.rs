@@ -82,8 +82,8 @@ impl Window for CreateObjectWindow {
         {
             let size = vec2(72.0, 28.0);
 
-            let mut x_str = self.position.x.to_string();
-            let mut y_str = self.position.y.to_string();
+            let mut x_str = format!("{:.1}", self.position.x);
+            let mut y_str = format!("{:.1}", self.position.y);
 
             widgets::InputText::new(hash!(id, "position_x_input"))
                 .size(size)

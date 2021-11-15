@@ -5,23 +5,23 @@ use macroquad::{prelude::*, ui::Ui};
 mod confirm_dialog;
 mod create_tileset;
 
+mod background_properties;
 mod create_layer;
 mod create_object;
 mod load_map;
 mod object_properties;
 mod save_map;
 mod tileset_properties;
-mod background_properties;
 
+pub use background_properties::BackgroundPropertiesWindow;
 pub use confirm_dialog::ConfirmDialog;
 pub use create_layer::CreateLayerWindow;
 pub use create_object::CreateObjectWindow;
+pub use create_tileset::CreateTilesetWindow;
 pub use load_map::LoadMapWindow;
 pub use object_properties::ObjectPropertiesWindow;
 pub use save_map::SaveMapWindow;
-pub use create_tileset::CreateTilesetWindow;
 pub use tileset_properties::TilesetPropertiesWindow;
-pub use background_properties::BackgroundPropertiesWindow;
 
 use super::{ButtonParams, EditorAction, EditorContext, Map};
 

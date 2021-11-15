@@ -252,7 +252,8 @@ impl Map {
 
             for layer in &self.background_layers {
                 let texture_res = resources.textures.get(&layer.texture_id).unwrap();
-                let dest_rect = Self::background_parallax(texture_res.texture, layer.depth, position);
+                let dest_rect =
+                    Self::background_parallax(texture_res.texture, layer.depth, position);
 
                 draw_texture_ex(
                     texture_res.texture,

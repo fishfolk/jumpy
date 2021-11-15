@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     json,
     map::{
-        Map, MapBackground, MapLayer, MapLayerKind, MapObject, MapProperty, MapTile, MapTileset,
+        Map, MapBackgroundLayer, MapLayer, MapLayerKind, MapObject, MapProperty, MapTile, MapTileset,
     },
 };
 
@@ -19,8 +19,8 @@ pub use tiled::TiledMap;
 pub(crate) struct MapDef {
     #[serde(default = "Map::default_background_color", with = "json::ColorDef")]
     pub background_color: Color,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub background: Option<MapBackground>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub background_layers: Vec<MapBackgroundLayer>,
     #[serde(with = "super::vec2_def", default)]
     pub world_offset: Vec2,
     #[serde(with = "super::uvec2_def")]
@@ -96,7 +96,7 @@ impl From<Map> for MapDef {
 
         MapDef {
             background_color: other.background_color,
-            background: other.background,
+            background_layers: other.background_layers,
             world_offset: other.world_offset,
             grid_size: other.grid_size,
             tile_size: other.tile_size,
@@ -183,7 +183,7 @@ impl From<MapDef> for Map {
 
         Map {
             background_color: def.background_color,
-            background: def.background,
+            background_layers: def.background_layers,
             world_offset: def.world_offset,
             grid_size: def.grid_size,
             tile_size: def.tile_size,

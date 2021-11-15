@@ -7,7 +7,7 @@ use crate::Resources;
 
 pub struct LoadMapWindow {
     params: WindowParams,
-    path: Option<String>,
+    index: Option<usize>,
 }
 
 impl LoadMapWindow {
@@ -18,7 +18,7 @@ impl LoadMapWindow {
             ..Default::default()
         };
 
-        LoadMapWindow { params, path: None }
+        LoadMapWindow { params, index: None }
     }
 }
 
@@ -47,8 +47,8 @@ impl Window for LoadMapWindow {
         let mut res = Vec::new();
 
         let mut action = None;
-        if let Some(path) = self.path.clone() {
-            let batch = self.get_close_action().then(EditorAction::Open { path });
+        if let Some(index) = self.index {
+            let batch = self.get_close_action().then(EditorAction::LoadMap(index));
 
             action = Some(batch);
         }

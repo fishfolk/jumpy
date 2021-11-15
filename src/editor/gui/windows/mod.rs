@@ -9,21 +9,21 @@ mod create_layer;
 mod create_object;
 mod load_map;
 mod object_properties;
-mod save_map_as;
+mod save_map;
 mod tileset_properties;
+mod background_properties;
 
 pub use confirm_dialog::ConfirmDialog;
 pub use create_layer::CreateLayerWindow;
 pub use create_object::CreateObjectWindow;
 pub use load_map::LoadMapWindow;
 pub use object_properties::ObjectPropertiesWindow;
-pub use save_map_as::SaveMapAsWindow;
-
-use super::{ButtonParams, EditorAction, EditorContext, Map};
+pub use save_map::SaveMapWindow;
 pub use create_tileset::CreateTilesetWindow;
 pub use tileset_properties::TilesetPropertiesWindow;
+pub use background_properties::BackgroundPropertiesWindow;
 
-pub const WINDOW_BUTTON_HEIGHT: f32 = 32.0;
+use super::{ButtonParams, EditorAction, EditorContext, Map};
 
 pub const WINDOW_BUTTON_MIN_WIDTH: f32 = 64.0;
 pub const WINDOW_BUTTON_MAX_WIDTH: f32 = 96.0;

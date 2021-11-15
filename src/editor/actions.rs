@@ -1,7 +1,7 @@
 use std::{any::TypeId, result};
 
 use crate::editor::gui::windows::Window;
-use crate::map::{MapObject, MapObjectKind};
+use crate::map::{MapBackgroundLayer, MapObject, MapObjectKind};
 use crate::{
     map::{Map, MapLayer, MapLayerKind, MapTile, MapTileset},
     Resources,
@@ -16,6 +16,11 @@ pub enum EditorAction {
     Undo,
     Redo,
     SelectTool(TypeId),
+    OpenBackgroundPropertiesWindow,
+    UpdateBackground {
+        color: Color,
+        layers: Vec<MapBackgroundLayer>,
+    },
     OpenCreateLayerWindow,
     OpenCreateTilesetWindow,
     OpenTilesetPropertiesWindow(String),
@@ -85,19 +90,17 @@ pub enum EditorAction {
         layer_id: String,
         coords: UVec2,
     },
-    Create {
-        path: String,
+    CreateMap {
+        name: String,
+        tile_size: UVec2,
+        grid_size: UVec2,
     },
     OpenCreateMapWindow,
-    Open {
-        path: String,
-    },
+    LoadMap(usize),
     OpenLoadMapWindow,
-    Save,
-    SaveAs {
-        name: String,
-    },
-    OpenSaveAsWindow,
+    SaveMap(Option<String>),
+    OpenSaveMapWindow,
+    DeleteMap(usize),
     ExitToMainMenu,
     QuitToDesktop,
 }
@@ -142,6 +145,55 @@ pub trait UndoableAction {
     // at a higher level
     fn is_redundant(&self, _map: &Map) -> bool {
         false
+    }
+}
+
+#[derive(Debug)]
+pub struct UpdateBackgroundAction {
+    color: Color,
+    old_color: Option<Color>,
+    layers: Vec<MapBackgroundLayer>,
+    old_layers: Option<Vec<MapBackgroundLayer>>,
+}
+
+impl UpdateBackgroundAction {
+    pub fn new(color: Color, layers: Vec<MapBackgroundLayer>) -> Self {
+        UpdateBackgroundAction {
+            color,
+            old_color: None,
+            layers,
+            old_layers: None,
+        }
+    }
+}
+
+impl UndoableAction for UpdateBackgroundAction {
+    fn apply(&mut self, map: &mut Map) -> Result {
+        self.old_color = Some(map.background_color);
+
+        map.background_color = self.color;
+
+        self.old_layers = Some(map.background_layers.clone());
+
+        map.background_layers = self.layers.clone();
+
+        Ok(())
+    }
+
+    fn undo(&mut self, map: &mut Map) -> Result {
+        if let Some(color) = self.old_color.take() {
+            map.background_color = color;
+        } else {
+            return Err(&"UpdateBackgroundPropertiesAction (Undo): No old background color was found. Undo was probably called on an action that was never applied");
+        }
+
+        if let Some(layers) = self.old_layers.take() {
+            map.background_layers = layers;
+        } else {
+            return Err(&"UpdateBackgroundPropertiesAction (Undo): No old background layers was found. Undo was probably called on an action that was never applied");
+        }
+
+        Ok(())
     }
 }
 
@@ -199,7 +251,7 @@ impl UndoableAction for SetLayerDrawOrderIndexAction {
                 map.draw_order.insert(i, self.id.clone());
             }
         } else {
-            return Err(&"SetLayerDrawOrderIndexAction (Undo): No old draw order index was found");
+            return Err(&"SetLayerDrawOrderIndexAction (Undo): No old draw order index was found. Undo was probably called on an action that was never applied");
         }
 
         Ok(())

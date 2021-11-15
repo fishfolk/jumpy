@@ -37,8 +37,7 @@ pub use toolbars::{
 
 pub use windows::{
     ConfirmDialog, CreateLayerWindow, CreateObjectWindow, CreateTilesetWindow,
-    TilesetPropertiesWindow, Window, WINDOW_BUTTON_HEIGHT, WINDOW_BUTTON_MAX_WIDTH,
-    WINDOW_BUTTON_MIN_WIDTH,
+    TilesetPropertiesWindow, Window, WINDOW_BUTTON_MAX_WIDTH, WINDOW_BUTTON_MIN_WIDTH,
 };
 
 use crate::map::MapLayerKind;
@@ -157,6 +156,8 @@ impl EditorGui {
             }
         }
 
+        entries.push(ContextMenuEntry::action("Background", EditorAction::OpenBackgroundPropertiesWindow));
+
         self.context_menu = Some(ContextMenu::new(position, &entries));
     }
 
@@ -237,7 +238,7 @@ impl EditorGui {
                     }
 
                     if params.has_buttons {
-                        content_size.y -= WINDOW_BUTTON_HEIGHT + ELEMENT_MARGIN;
+                        content_size.y -= EditorSkinCollection::BUTTON_HEIGHT + ELEMENT_MARGIN;
                     }
 
                     widgets::Group::new(hash!(id, "content"), content_size)
@@ -249,10 +250,8 @@ impl EditorGui {
                         });
 
                     if params.has_buttons {
-                        let button_area_size = vec2(content_size.x, WINDOW_BUTTON_HEIGHT);
-                        // TODO: Calculate button size and place buttons at content_size.y - said size
-                        let button_area_position =
-                            vec2(content_position.x, content_size.y + ELEMENT_MARGIN);
+                        let button_area_size = vec2(content_size.x, EditorSkinCollection::BUTTON_HEIGHT);
+                        let button_area_position = vec2(content_position.x, content_position.y + content_size.y);
 
                         widgets::Group::new(hash!(id, "buttons"), button_area_size)
                             .position(button_area_position)
@@ -266,7 +265,7 @@ impl EditorGui {
                                 let width = ((size.x - margins) / button_cnt as f32)
                                     .clamp(WINDOW_BUTTON_MIN_WIDTH, WINDOW_BUTTON_MAX_WIDTH);
 
-                                let button_size = vec2(width, WINDOW_BUTTON_HEIGHT);
+                                let button_size = vec2(width, EditorSkinCollection::BUTTON_HEIGHT);
 
                                 for button in buttons {
                                     if button.action.is_none() {
@@ -312,11 +311,11 @@ impl EditorGui {
                         res = Some(action);
                     }
                     EDITOR_MENU_RESULT_SAVE => {
-                        let action = EditorAction::Save;
+                        let action = EditorAction::SaveMap(None);
                         res = Some(action);
                     }
                     EDITOR_MENU_RESULT_SAVE_AS => {
-                        let action = EditorAction::OpenSaveAsWindow;
+                        let action = EditorAction::OpenSaveMapWindow;
                         res = Some(action);
                     }
                     EDITOR_MENU_RESULT_MAIN_MENU => {

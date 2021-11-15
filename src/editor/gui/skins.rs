@@ -25,15 +25,19 @@ pub struct EditorSkinCollection {
 }
 
 impl EditorSkinCollection {
-    pub const WINDOW_MARGIN_LEFT: f32 = 32.0;
-    pub const WINDOW_MARGIN_RIGHT: f32 = 32.0;
-    pub const WINDOW_MARGIN_TOP: f32 = 32.0;
-    pub const WINDOW_MARGIN_BOTTOM: f32 = 32.0;
+    pub const WINDOW_MARGIN_LEFT: f32 = 22.0;
+    pub const WINDOW_MARGIN_RIGHT: f32 = 22.0;
+    pub const WINDOW_MARGIN_TOP: f32 = 22.0;
+    pub const WINDOW_MARGIN_BOTTOM: f32 = 22.0;
 
-    pub const BUTTON_MARGIN_LEFT: f32 = 32.0;
-    pub const BUTTON_MARGIN_RIGHT: f32 = 32.0;
-    pub const BUTTON_MARGIN_TOP: f32 = 32.0;
-    pub const BUTTON_MARGIN_BOTTOM: f32 = 32.0;
+    pub const BUTTON_MARGIN_LEFT: f32 = 16.0;
+    pub const BUTTON_MARGIN_RIGHT: f32 = 16.0;
+    pub const BUTTON_MARGIN_TOP: f32 = 8.0;
+    pub const BUTTON_MARGIN_BOTTOM: f32 = 8.0;
+
+    pub const BUTTON_FONT_SIZE: f32 = 22.0;
+
+    pub const BUTTON_HEIGHT: f32 = Self::BUTTON_MARGIN_TOP + Self::BUTTON_FONT_SIZE + Self::BUTTON_MARGIN_BOTTOM;
 
     pub fn new() -> Self {
         let default = {
@@ -45,7 +49,7 @@ impl EditorSkinCollection {
                 Self::WINDOW_MARGIN_BOTTOM - window_background_margin.bottom,
             );
 
-            let button_background_margin = RectOffset::new(8.0, 8.0, 12.0, 12.0);
+            let button_background_margin = RectOffset::new(8.0, 8.0, 8.0, 8.0);
             let button_margins = RectOffset::new(
                 Self::BUTTON_MARGIN_LEFT - button_background_margin.left,
                 Self::BUTTON_MARGIN_RIGHT - button_background_margin.right,
@@ -101,7 +105,7 @@ impl EditorSkinCollection {
                     None,
                 ))
                 .text_color(Color::from_rgba(200, 200, 160, 255))
-                .font_size(20)
+                .font_size(Self::BUTTON_FONT_SIZE as u16)
                 .build();
 
             let editbox_style = root_ui()
@@ -114,8 +118,8 @@ impl EditorSkinCollection {
                     include_bytes!("../../../assets/ui/editbox_background.png"),
                     None,
                 ))
-                .background_margin(RectOffset::new(2., 2., 2., 2.))
-                .margin(RectOffset::new(0.0, 0.0, 4.0, 4.0))
+                .background_margin(RectOffset::new(2.0, 2.0, 2.0, 2.0))
+                .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
                 .text_color(Color::from_rgba(200, 200, 160, 255))
                 .font_size(22)
                 .build();

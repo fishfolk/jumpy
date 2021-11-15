@@ -11,21 +11,21 @@ use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 use crate::resources::{is_valid_map_export_path, map_name_to_filename};
 use crate::Resources;
 
-pub struct SaveMapAsWindow {
+pub struct SaveMapWindow {
     params: WindowParams,
     name: String,
     should_overwrite: bool,
 }
 
-impl SaveMapAsWindow {
+impl SaveMapWindow {
     pub fn new(current_name: &str) -> Self {
         let params = WindowParams {
-            title: Some("Save As".to_string()),
+            title: Some("Save Map".to_string()),
             size: vec2(350.0, 350.0),
             ..Default::default()
         };
 
-        SaveMapAsWindow {
+        SaveMapWindow {
             params,
             name: current_name.to_string(),
             should_overwrite: false,
@@ -33,7 +33,7 @@ impl SaveMapAsWindow {
     }
 }
 
-impl Window for SaveMapAsWindow {
+impl Window for SaveMapWindow {
     fn get_params(&self) -> &WindowParams {
         &self.params
     }
@@ -45,7 +45,7 @@ impl Window for SaveMapAsWindow {
         _map: &Map,
         _ctx: &EditorContext,
     ) -> Option<EditorAction> {
-        let id = hash!("save_map_as_window");
+        let id = hash!("save_map_window");
 
         {
             let size = vec2(173.0, 25.0);
@@ -88,9 +88,8 @@ impl Window for SaveMapAsWindow {
 
         let mut action = None;
         if is_valid_map_export_path(&path, self.should_overwrite) {
-            let batch = self.get_close_action().then(EditorAction::SaveAs {
-                name: self.name.clone(),
-            });
+            let save_action = EditorAction::SaveMap(Some(self.name.clone()));
+            let batch = self.get_close_action().then(save_action);
 
             action = Some(batch);
         }

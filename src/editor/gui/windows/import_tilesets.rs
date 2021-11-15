@@ -6,32 +6,38 @@ use macroquad::{
 
 use crate::gui::{GuiResources, LIST_BOX_ENTRY_HEIGHT};
 
-use crate::map::Map;
+use crate::map::{Map, MapTileset};
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 use crate::Resources;
 
-pub struct LoadMapWindow {
+pub struct ImportTilesetsWindow {
     params: WindowParams,
-    index: Option<usize>,
+    map_index: usize,
+    tilesets: Vec<MapTileset>,
+    selected: Vec<usize>,
+    is_loaded: bool,
 }
 
-impl LoadMapWindow {
-    pub fn new() -> Self {
+impl ImportTilesetsWindow {
+    pub fn new(map_index: usize) -> Self {
         let params = WindowParams {
-            title: Some("Open Map".to_string()),
+            title: Some("Import Tilesets".to_string()),
             size: vec2(350.0, 350.0),
             ..Default::default()
         };
 
-        LoadMapWindow {
+        ImportTilesetsWindow {
             params,
-            index: None,
+            map_index,
+            tilesets: Vec::new(),
+            selected: Vec::new(),
+            is_loaded: false,
         }
     }
 }
 
-impl Window for LoadMapWindow {
+impl Window for ImportTilesetsWindow {
     fn get_params(&self) -> &WindowParams {
         &self.params
     }
@@ -43,25 +49,27 @@ impl Window for LoadMapWindow {
         _map: &Map,
         _ctx: &EditorContext,
     ) -> Option<EditorAction> {
-        let id = hash!("load_map_window");
+        let id = hash!("import_tilesets_window");
 
         {
             let gui_resources = storage::get::<GuiResources>();
             ui.push_skin(&gui_resources.skins.list_box_no_bg);
         }
 
+        if !self.is_loaded {
+            let resources = storage::get::<Resources>();
+            let map_resource = resources.maps.get(self.map_index).unwrap();
+            self.tilesets = map_resource.map.tilesets.values().cloned().collect();
+            self.is_loaded = true;
+        }
+
         widgets::Group::new(hash!(id, "list_box"), size)
             .position(vec2(0.0, 0.0))
             .ui(ui, |ui| {
-                let resources = storage::get::<Resources>();
-
                 let entry_size = vec2(size.x, LIST_BOX_ENTRY_HEIGHT);
 
-                for (i, map_resource) in resources.maps.iter().enumerate() {
-                    let mut is_selected = false;
-                    if let Some(index) = self.index {
-                        is_selected = index == i;
-                    }
+                for (i, tileset) in self.tilesets.iter().enumerate() {
+                    let is_selected = self.selected.contains(&i);
 
                     if is_selected {
                         let gui_resources = storage::get::<GuiResources>();
@@ -75,10 +83,14 @@ impl Window for LoadMapWindow {
                         .position(entry_position);
 
                     if entry_btn.ui(ui) {
-                        self.index = Some(i);
+                        if is_selected {
+                            self.selected.retain(|selected| *selected != i);
+                        } else {
+                            self.selected.push(i);
+                        }
                     }
 
-                    ui.label(entry_position, &map_resource.meta.path);
+                    ui.label(entry_position, &tileset.id);
 
                     if is_selected {
                         ui.pop_skin();
@@ -94,28 +106,31 @@ impl Window for LoadMapWindow {
     fn get_buttons(&self, _map: &Map, _ctx: &EditorContext) -> Vec<ButtonParams> {
         let mut res = Vec::new();
 
-        let mut open_action = None;
-        let mut import_action = None;
+        let mut action = None;
+        if !self.selected.is_empty() {
+            let tilesets = self
+                .tilesets
+                .iter()
+                .enumerate()
+                .filter_map(|(i, tileset)| {
+                    if self.selected.contains(&i) {
+                        Some(tileset.clone())
+                    } else {
+                        None
+                    }
+                })
+                .collect();
 
-        if let Some(index) = self.index {
-            let open_batch = self.get_close_action().then(EditorAction::LoadMap(index));
-            open_action = Some(open_batch);
-
-            let import_batch = self
+            let batch = self
                 .get_close_action()
-                .then(EditorAction::OpenImportTilesetsWindow(index));
-            import_action = Some(import_batch);
+                .then(EditorAction::ImportTilesets(tilesets));
+
+            action = Some(batch);
         }
 
         res.push(ButtonParams {
-            label: "Open",
-            action: open_action,
-            ..Default::default()
-        });
-
-        res.push(ButtonParams {
             label: "Import",
-            action: import_action,
+            action,
             ..Default::default()
         });
 
@@ -126,11 +141,5 @@ impl Window for LoadMapWindow {
         });
 
         res
-    }
-}
-
-impl Default for LoadMapWindow {
-    fn default() -> Self {
-        Self::new()
     }
 }

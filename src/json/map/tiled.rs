@@ -322,7 +322,7 @@ impl TiledMap {
 
         Map {
             background_color,
-            background: None,
+            background_layers: Vec::new(),
             world_offset: Vec2::ZERO,
             grid_size,
             tile_size: vec2(self.tilewidth as f32, self.tileheight as f32),

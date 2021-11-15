@@ -5,11 +5,8 @@ pub mod toolbars;
 pub mod windows;
 
 pub mod combobox;
-pub mod skins;
 
 mod editor_menu;
-
-pub use skins::EditorSkinCollection;
 
 pub use combobox::{ComboBoxBuilder, ComboBoxValue};
 
@@ -28,7 +25,10 @@ use macroquad::{
 
 use super::{EditorAction, EditorContext};
 
-use crate::{gui::GuiResources, map::Map};
+use crate::{
+    gui::{GuiResources, ELEMENT_MARGIN},
+    map::Map,
+};
 
 pub use toolbars::{
     LayerListElement, ObjectListElement, TilesetDetailsElement, TilesetListElement,
@@ -37,16 +37,12 @@ pub use toolbars::{
 
 pub use windows::{
     ConfirmDialog, CreateLayerWindow, CreateObjectWindow, CreateTilesetWindow,
-    TilesetPropertiesWindow, Window, WINDOW_BUTTON_HEIGHT, WINDOW_BUTTON_MAX_WIDTH,
-    WINDOW_BUTTON_MIN_WIDTH,
+    TilesetPropertiesWindow, Window, WINDOW_BUTTON_MAX_WIDTH, WINDOW_BUTTON_MIN_WIDTH,
 };
 
+use crate::gui::{BUTTON_FONT_SIZE, BUTTON_MARGIN_V, WINDOW_MARGIN_H, WINDOW_MARGIN_V};
 use crate::map::MapLayerKind;
 use context_menu::{ContextMenu, ContextMenuEntry};
-
-pub const NO_COLOR: Color = Color::new(0.0, 0.0, 0.0, 0.0);
-
-pub const ELEMENT_MARGIN: f32 = 8.0;
 
 #[derive(Debug, Default, Clone)]
 pub struct ButtonParams {
@@ -157,6 +153,11 @@ impl EditorGui {
             }
         }
 
+        entries.push(ContextMenuEntry::action(
+            "Background",
+            EditorAction::OpenBackgroundPropertiesWindow,
+        ));
+
         self.context_menu = Some(ContextMenu::new(position, &entries));
     }
 
@@ -187,7 +188,7 @@ impl EditorGui {
 
         {
             let gui_resources = storage::get::<GuiResources>();
-            ui.push_skin(&gui_resources.editor_skins.default);
+            ui.push_skin(&gui_resources.skins.default);
         }
 
         if let Some(left_toolbar) = &mut self.left_toolbar {
@@ -212,19 +213,14 @@ impl EditorGui {
                 .titlebar(false)
                 .movable(!params.is_static)
                 .ui(ui, |ui| {
-                    let mut content_size = size
-                        - vec2(
-                            EditorSkinCollection::WINDOW_MARGIN_LEFT
-                                + EditorSkinCollection::WINDOW_MARGIN_RIGHT,
-                            EditorSkinCollection::WINDOW_MARGIN_TOP
-                                + EditorSkinCollection::WINDOW_MARGIN_BOTTOM,
-                        );
+                    let mut content_size =
+                        size - vec2(WINDOW_MARGIN_H * 2.0, WINDOW_MARGIN_V * 2.0);
 
                     let mut content_position = Vec2::ZERO;
 
                     if let Some(title) = &params.title {
                         let gui_resources = storage::get::<GuiResources>();
-                        ui.push_skin(&gui_resources.editor_skins.window_header);
+                        ui.push_skin(&gui_resources.skins.window_header);
 
                         ui.label(content_position, title);
 
@@ -236,8 +232,10 @@ impl EditorGui {
                         ui.pop_skin();
                     }
 
+                    let button_height = BUTTON_FONT_SIZE + (BUTTON_MARGIN_V * 2.0);
+
                     if params.has_buttons {
-                        content_size.y -= WINDOW_BUTTON_HEIGHT + ELEMENT_MARGIN;
+                        content_size.y -= button_height + ELEMENT_MARGIN;
                     }
 
                     widgets::Group::new(hash!(id, "content"), content_size)
@@ -249,10 +247,9 @@ impl EditorGui {
                         });
 
                     if params.has_buttons {
-                        let button_area_size = vec2(content_size.x, WINDOW_BUTTON_HEIGHT);
-                        // TODO: Calculate button size and place buttons at content_size.y - said size
+                        let button_area_size = vec2(content_size.x, button_height);
                         let button_area_position =
-                            vec2(content_position.x, content_size.y + ELEMENT_MARGIN);
+                            vec2(content_position.x, content_position.y + content_size.y);
 
                         widgets::Group::new(hash!(id, "buttons"), button_area_size)
                             .position(button_area_position)
@@ -266,12 +263,12 @@ impl EditorGui {
                                 let width = ((size.x - margins) / button_cnt as f32)
                                     .clamp(WINDOW_BUTTON_MIN_WIDTH, WINDOW_BUTTON_MAX_WIDTH);
 
-                                let button_size = vec2(width, WINDOW_BUTTON_HEIGHT);
+                                let button_size = vec2(width, button_height);
 
                                 for button in buttons {
                                     if button.action.is_none() {
                                         let gui_resources = storage::get::<GuiResources>();
-                                        ui.push_skin(&gui_resources.editor_skins.button_disabled);
+                                        ui.push_skin(&gui_resources.skins.button_disabled);
                                     }
 
                                     let was_clicked = widgets::Button::new(button.label)
@@ -312,11 +309,11 @@ impl EditorGui {
                         res = Some(action);
                     }
                     EDITOR_MENU_RESULT_SAVE => {
-                        let action = EditorAction::Save;
+                        let action = EditorAction::SaveMap(None);
                         res = Some(action);
                     }
                     EDITOR_MENU_RESULT_SAVE_AS => {
-                        let action = EditorAction::OpenSaveAsWindow;
+                        let action = EditorAction::OpenSaveMapWindow;
                         res = Some(action);
                     }
                     EDITOR_MENU_RESULT_MAIN_MENU => {

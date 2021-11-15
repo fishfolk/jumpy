@@ -41,8 +41,11 @@ pub use input::EditorInputScheme;
 
 use input::collect_editor_input;
 
-use crate::editor::actions::UpdateObjectAction;
-use crate::editor::gui::windows::{LoadMapWindow, ObjectPropertiesWindow, SaveMapAsWindow};
+use crate::editor::actions::{UpdateBackgroundAction, UpdateObjectAction};
+use crate::editor::gui::windows::{
+    BackgroundPropertiesWindow, LoadMapWindow, ObjectPropertiesWindow, SaveMapWindow,
+};
+use crate::gui::SELECTED_OBJECT_HIGHLIGHT_COLOR;
 use crate::map::{MapObject, MapObjectKind};
 use macroquad::{
     color,
@@ -299,6 +302,21 @@ impl Editor {
             EditorAction::SelectTool(index) => {
                 self.selected_tool = Some(index);
             }
+            EditorAction::UpdateBackground { color, layers } => {
+                let action = UpdateBackgroundAction::new(color, layers);
+                res = self
+                    .history
+                    .apply(Box::new(action), &mut self.map_resource.map);
+            }
+            EditorAction::OpenBackgroundPropertiesWindow => {
+                let map = &self.map_resource.map;
+
+                let mut gui = storage::get_mut::<EditorGui>();
+                gui.add_window(BackgroundPropertiesWindow::new(
+                    map.background_color,
+                    map.background_layers.clone(),
+                ));
+            }
             EditorAction::OpenCreateLayerWindow => {
                 let mut gui = storage::get_mut::<EditorGui>();
                 gui.add_window(CreateLayerWindow::new());
@@ -425,7 +443,7 @@ impl Editor {
                     .history
                     .apply(Box::new(action), &mut self.map_resource.map);
             }
-            EditorAction::Create { .. } => {
+            EditorAction::CreateMap { .. } => {
                 unimplemented!(
                     "Map creation from editor is not implemented. Use main menu to create new maps"
                 );
@@ -435,25 +453,28 @@ impl Editor {
                     "Map creation from editor is not implemented. Use main menu to create new maps"
                 );
             }
-            EditorAction::Open { path } => {
+            EditorAction::LoadMap(index) => {
                 let resources = storage::get::<Resources>();
+                let map_resource = resources.maps.get(index).cloned().unwrap();
 
-                if let Some(map_resource) = resources
-                    .maps
-                    .iter()
-                    .find(|res| res.meta.path == path)
-                    .cloned()
-                {
-                    self.map_resource = map_resource;
-                    self.history.clear();
-                }
+                self.map_resource = map_resource;
+                self.history.clear();
             }
             EditorAction::OpenLoadMapWindow => {
                 let mut gui = storage::get_mut::<EditorGui>();
                 gui.add_window(LoadMapWindow::new());
             }
-            EditorAction::Save => {
+            EditorAction::SaveMap(name) => {
                 let mut map_resource = self.map_resource.clone();
+
+                if let Some(name) = name {
+                    let path = Path::new(Resources::MAP_EXPORTS_DEFAULT_DIR)
+                        .join(map_name_to_filename(&name))
+                        .with_extension(Resources::MAP_EXPORTS_EXTENSION);
+
+                    map_resource.meta.name = name;
+                    map_resource.meta.path = path.to_string_lossy().to_string();
+                }
 
                 map_resource.meta.is_user_map = true;
                 map_resource.meta.is_tiled_map = false;
@@ -463,26 +484,13 @@ impl Editor {
                     self.map_resource = map_resource;
                 }
             }
-            EditorAction::SaveAs { name } => {
-                let mut map_resource = self.map_resource.clone();
-
-                let path = Path::new(Resources::MAP_EXPORTS_DEFAULT_DIR)
-                    .join(map_name_to_filename(&name))
-                    .with_extension(Resources::MAP_EXPORTS_EXTENSION);
-
-                map_resource.meta.name = name;
-                map_resource.meta.path = path.to_string_lossy().to_string();
-                map_resource.meta.is_user_map = true;
-                map_resource.meta.is_tiled_map = false;
-
-                let mut resources = storage::get_mut::<Resources>();
-                if resources.save_map(&map_resource).is_ok() {
-                    self.map_resource = map_resource;
-                }
-            }
-            EditorAction::OpenSaveAsWindow => {
+            EditorAction::OpenSaveMapWindow => {
                 let mut gui = storage::get_mut::<EditorGui>();
-                gui.add_window(SaveMapAsWindow::new(&self.map_resource.meta.name));
+                gui.add_window(SaveMapWindow::new(&self.map_resource.meta.name));
+            }
+            EditorAction::DeleteMap(index) => {
+                let mut resources = storage::get_mut::<Resources>();
+                resources.delete_map(index).unwrap();
             }
             EditorAction::ExitToMainMenu => {
                 exit_to_main_menu();
@@ -825,7 +833,7 @@ impl Node for Editor {
                                 size.x,
                                 size.y,
                                 4.0,
-                                color::YELLOW,
+                                SELECTED_OBJECT_HIGHLIGHT_COLOR,
                             );
                         }
                     }

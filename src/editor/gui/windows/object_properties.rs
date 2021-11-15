@@ -92,8 +92,8 @@ impl Window for ObjectPropertiesWindow {
         {
             let size = vec2(72.0, 28.0);
 
-            let mut x_str = object.position.x.to_string();
-            let mut y_str = object.position.y.to_string();
+            let mut x_str = format!("{:.1}", object.position.x);
+            let mut y_str = format!("{:.1}", object.position.y);
 
             widgets::InputText::new(hash!(id, "position_x_input"))
                 .size(size)

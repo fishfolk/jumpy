@@ -1,4 +1,10 @@
-use macroquad::{experimental::collections::storage, prelude::*, ui::Ui};
+use macroquad::{
+    experimental::collections::storage,
+    prelude::*,
+    ui::{hash, widgets, Ui},
+};
+
+use crate::gui::{GuiResources, LIST_BOX_ENTRY_HEIGHT};
 
 use crate::map::Map;
 
@@ -33,15 +39,54 @@ impl Window for LoadMapWindow {
     fn draw(
         &mut self,
         ui: &mut Ui,
-        _size: Vec2,
+        size: Vec2,
         _map: &Map,
         _ctx: &EditorContext,
     ) -> Option<EditorAction> {
-        let resources = storage::get::<Resources>();
+        let id = hash!("load_map_window");
 
-        for map_resource in &resources.maps {
-            ui.label(None, &map_resource.meta.path);
+        {
+            let gui_resources = storage::get::<GuiResources>();
+            ui.push_skin(&gui_resources.skins.list_box_no_bg);
         }
+
+        widgets::Group::new(hash!(id, "list_box"), size)
+            .position(vec2(0.0, 0.0))
+            .ui(ui, |ui| {
+                let resources = storage::get::<Resources>();
+
+                let entry_size = vec2(size.x, LIST_BOX_ENTRY_HEIGHT);
+
+                for (i, map_resource) in resources.maps.iter().enumerate() {
+                    let mut is_selected = false;
+                    if let Some(index) = self.index {
+                        is_selected = index == i;
+                    }
+
+                    if is_selected {
+                        let gui_resources = storage::get::<GuiResources>();
+                        ui.push_skin(&gui_resources.skins.list_box_selected);
+                    }
+
+                    let entry_position = vec2(0.0, i as f32 * entry_size.y);
+
+                    let entry_btn = widgets::Button::new("")
+                        .size(entry_size)
+                        .position(entry_position);
+
+                    if entry_btn.ui(ui) {
+                        self.index = Some(i);
+                    }
+
+                    ui.label(entry_position, &map_resource.meta.path);
+
+                    if is_selected {
+                        ui.pop_skin();
+                    }
+                }
+            });
+
+        ui.pop_skin();
 
         None
     }

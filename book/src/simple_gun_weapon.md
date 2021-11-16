@@ -401,43 +401,45 @@ You will also have to change your weapons data file, so that it references this 
 
 ### Sprite
 
-- sprites are defined in spawn function (sniper and musket)
-- tiled height and width used as grid for sprites on spritesheet
-- size of sprites can be modified as long as tiled width and height are updated as well
-- explain gunlike animation with graphic (src/components/gunlike_animation.rs)
-
-STEPS to Recreate
-
-
-
 This section will go over how to go beyond changing the hue of an existing sprite to also changing the size of your new item's sprite. For my sniper, I want to change the length of the sprite in the x direction so the sniper will look significantly longer than the musket.
 
-To start off, I'll open my existing sniper rifle texture (`assets/textures/items/SniperRifle(92x32).png`) in Aseprite. Then, to visualize the tiled sprites, I use Aseprite's grid feature (View > Grid > Settings) to draw boxes around them. The size of the sprite sheet's tiles are the x and y values defined in `assets/textures.json` or included in the name of the texture file name. The size of the sprites in the sniper rifle texture is currently 92 (x) by 32 (y).
-
-In Aseprite I can enter these dimensions in the Grid Settings dialogue box. After entering these values, a grid will appear around the sprites as shown below.
+To start off, I'll open my existing sniper rifle texture (`assets/textures/items/SniperRifle(92x32).png`) in Aseprite. Then, to visualize the tiled sprites, I use Aseprite's grid feature (View > Grid Settings) to draw boxes around them. The size of the sprite sheet's tiles are the x and y values defined in `assets/textures.json` or included in the name of the texture file name. The size of the sprites in the sniper rifle texture is currently 92 (x) by 32 (y). In Aseprite I can enter these dimensions for width and height in the Grid Settings dialogue box. After entering these values, a grid will appear around the sprites as shown below.
 
 ![sniper_grid](assets/sniper_grid.png)
 
 Next, I need to determine by how much I want to change the sprite dimensions. For my sniper rifle, I only want to change the width of the sprite so that it has a longer barrel than the musket. Arbitrarily, I chose to extend the width of the spite by 20 pixels. This will make my new sprites' tiles dimensions 112 wide by 32 tall.
 
-Now I need to do a little math to determine the size of the new spritesheet. Since the old spritesheet had 4 sprites across and 5 sprites up, the new spritesheet size will be (112 X 4) wide by (32 x 5) tall. This comes out to 448 wide by 160 tall. I'll create a new spritesheet in Aseprite with these dimensions.
+Now I need to do a little math to determine the size of the new spritesheet. Since the old spritesheet had 4 sprites across and 5 sprites up, the new spritesheet size will be (112 X 4) wide by (32 x 5) tall. This comes out to 448 wide by 160 tall. I'll create a new sprite sheet in Aseprite with these dimensions. With the new sprite sheet open in Aseprite, I'll again show the grid (View > Grid Settings), but this time with my new frame dimensions, 112 wide by 32 tall.
 
-- draw grid of new tile size (112x32)
-- add new sprites/modify existing
-- save to fishfight assets folder
-- change sniper texture file to reflect new size
-- change sprite sheet file name
+![new_sniper_grid](assets/new_sniper_grid.png)
 
-### Collider
+Next, one at a time, we can copy sprite frames from the old sprite sheet into the new one and modify them to fit the new weapon. I tried my best to match the art style of the musket and just add a 20 pixel long section of barrel to make the sniper rifle appear longer. Below is my new completed sprite sheet.
 
-- change collider width and collider height constants
-- view hitboxes?
+![new_sniper_spritesheet](assets/new_sniper_spritesheet.png)
+
+After you are done modifying the sprite sheet save the new sprite sheet as the name of your item followed by the dimensions of the each frame in the spritesheet surrounded by parentheses. I named my new sniper rifle sprite sheet `SniperRifle(112x32).png` and saved it into the the `assets/items/textures` directory.
+
+The final step is to now change `assets/textures.json` to use the new sniper rifle spritesheet. I changed the `"path"` field use the name of the new file, and I changed the `"x"` and `"y"` dimensions in the `"sprite_size"` field to the new dimensions of the sniper rifle's frames:
+
+```json
+  ...
+  {
+    "id": "sniper_rifle",
+    "path": "textures/items/SniperRifle(112x32).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 112,
+      "y": 32
+    }
+  },
+  ...
+```
 
 ## Testing
 
 The last thing we need to do is put our new weapon in the game and test it! Fish Fight's levels are defined in json files in the `assets/maps` directory. For testing items, there is a test level in the game defined in a file called `test_level.json`. Open this file.
 
-In this file you will see a long list of item entries containing data about items that are placed in the level. The easiest way to add your new weapon to this level is to replace the `name` field of one of other items currently in the level with the id of your new weapon (referred to as `your_weapon` throughout this chapter). Here is the entry for my sniper weapon.
+In this file you will see a long list of item entries containing data about items that are placed in the level. The easiest way to add your new weapon to this level is to replace the `"name"` field of one of other items currently in the level with the id of your new weapon (referred to as `your_weapon` throughout this chapter). Here is the entry for my sniper weapon.
 
 ```json
 ...
@@ -450,7 +452,7 @@ In this file you will see a long list of item entries containing data about item
         {
             "height":0,
             "id":147,
-            "name":"sniper",
+            "name":"sniper_rifle",
             "point":true,
             "rotation":0,
             "type":"item",

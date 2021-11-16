@@ -310,9 +310,9 @@
             }
           }
         ,
-          "death": {
-            "$id": "#root/items/animations/death",
-            "title": "Death",
+          "jump": {
+            "$id": "#root/items/animations/jump",
+            "title": "Jump",
             "type": "object",
             "required": [
               "id",
@@ -323,26 +323,26 @@
             ],
             "properties": {
               "id": {
-                "$id": "#root/items/animations/death/id",
+                "$id": "#root/items/animations/jump/id",
                 "title": "Id",
                 "type": "string",
                 "default": "",
                 "examples": [
-                  "death"
+                  "jump"
                 ],
                 "pattern": "^.*$"
               },
               "row": {
-                "$id": "#root/items/animations/death/row",
+                "$id": "#root/items/animations/jump/row",
                 "title": "Row",
                 "type": "integer",
                 "examples": [
-                  2
+                  4
                 ],
                 "default": 0
               },
               "frames": {
-                "$id": "#root/items/animations/death/frames",
+                "$id": "#root/items/animations/jump/frames",
                 "title": "Frames",
                 "type": "integer",
                 "examples": [
@@ -351,7 +351,7 @@
                 "default": 0
               },
               "fps": {
-                "$id": "#root/items/animations/death/fps",
+                "$id": "#root/items/animations/jump/fps",
                 "title": "Fps",
                 "type": "integer",
                 "examples": [
@@ -360,7 +360,7 @@
                 "default": 0
               },
               "is_looping": {
-                "$id": "#root/items/animations/death/is_looping",
+                "$id": "#root/items/animations/jump/is_looping",
                 "title": "Is_looping",
                 "type": "boolean",
                 "examples": [
@@ -371,9 +371,9 @@
             }
           }
         ,
-          "death_alt": {
-            "$id": "#root/items/animations/death_alt",
-            "title": "Death_alt",
+          "slide": {
+            "$id": "#root/items/animations/fall",
+            "title": "Fall",
             "type": "object",
             "required": [
               "id",
@@ -384,26 +384,26 @@
             ],
             "properties": {
               "id": {
-                "$id": "#root/items/animations/death_alt/id",
+                "$id": "#root/items/animations/fall/id",
                 "title": "Id",
                 "type": "string",
                 "default": "",
                 "examples": [
-                  "death_alt"
+                  "fall"
                 ],
                 "pattern": "^.*$"
               },
               "row": {
-                "$id": "#root/items/animations/death_alt/row",
+                "$id": "#root/items/animations/fall/row",
                 "title": "Row",
                 "type": "integer",
                 "examples": [
-                  3
+                  6
                 ],
                 "default": 0
               },
               "frames": {
-                "$id": "#root/items/animations/death_alt/frames",
+                "$id": "#root/items/animations/fall/frames",
                 "title": "Frames",
                 "type": "integer",
                 "examples": [
@@ -412,7 +412,7 @@
                 "default": 0
               },
               "fps": {
-                "$id": "#root/items/animations/death_alt/fps",
+                "$id": "#root/items/animations/fall/fps",
                 "title": "Fps",
                 "type": "integer",
                 "examples": [
@@ -421,68 +421,7 @@
                 "default": 0
               },
               "is_looping": {
-                "$id": "#root/items/animations/death_alt/is_looping",
-                "title": "Is_looping",
-                "type": "boolean",
-                "examples": [
-                  true
-                ],
-                "default": true
-              }
-            }
-          }
-        ,
-          "float": {
-            "$id": "#root/items/animations/float",
-            "title": "Float",
-            "type": "object",
-            "required": [
-              "id",
-              "row",
-              "frames",
-              "fps",
-              "is_looping"
-            ],
-            "properties": {
-              "id": {
-                "$id": "#root/items/animations/float/id",
-                "title": "Id",
-                "type": "string",
-                "default": "",
-                "examples": [
-                  "float"
-                ],
-                "pattern": "^.*$"
-              },
-              "row": {
-                "$id": "#root/items/animations/float/row",
-                "title": "Row",
-                "type": "integer",
-                "examples": [
-                  4
-                ],
-                "default": 0
-              },
-              "frames": {
-                "$id": "#root/items/animations/float/frames",
-                "title": "Frames",
-                "type": "integer",
-                "examples": [
-                  4
-                ],
-                "default": 0
-              },
-              "fps": {
-                "$id": "#root/items/animations/float/fps",
-                "title": "Fps",
-                "type": "integer",
-                "examples": [
-                  8
-                ],
-                "default": 0
-              },
-              "is_looping": {
-                "$id": "#root/items/animations/float/is_looping",
+                "$id": "#root/items/animations/fall/is_looping",
                 "title": "Is_looping",
                 "type": "boolean",
                 "examples": [
@@ -544,67 +483,6 @@
               },
               "is_looping": {
                 "$id": "#root/items/animations/crouch/is_looping",
-                "title": "Is_looping",
-                "type": "boolean",
-                "examples": [
-                  true
-                ],
-                "default": true
-              }
-            }
-          }
-        ,
-          "slide": {
-            "$id": "#root/items/animations/slide",
-            "title": "Slide",
-            "type": "object",
-            "required": [
-              "id",
-              "row",
-              "frames",
-              "fps",
-              "is_looping"
-            ],
-            "properties": {
-              "id": {
-                "$id": "#root/items/animations/slide/id",
-                "title": "Id",
-                "type": "string",
-                "default": "",
-                "examples": [
-                  "slide"
-                ],
-                "pattern": "^.*$"
-              },
-              "row": {
-                "$id": "#root/items/animations/slide/row",
-                "title": "Row",
-                "type": "integer",
-                "examples": [
-                  6
-                ],
-                "default": 0
-              },
-              "frames": {
-                "$id": "#root/items/animations/slide/frames",
-                "title": "Frames",
-                "type": "integer",
-                "examples": [
-                  4
-                ],
-                "default": 0
-              },
-              "fps": {
-                "$id": "#root/items/animations/slide/fps",
-                "title": "Fps",
-                "type": "integer",
-                "examples": [
-                  8
-                ],
-                "default": 0
-              },
-              "is_looping": {
-                "$id": "#root/items/animations/slide/is_looping",
                 "title": "Is_looping",
                 "type": "boolean",
                 "examples": [

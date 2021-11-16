@@ -1,26 +1,22 @@
 [
   {
-    "id": "blue",
-    "name": "Blue",
-    "description": "My name is 'Blue'",
-    "texture": "player_blue"
+    "id": "pescy",
+    "name": "Pescy",
+    "texture": "player_pescy"
   },
   {
-    "id": "green",
-    "name": "Green",
-    "description": "My name is 'Green'",
-    "texture": "player_green"
+    "id": "sharky",
+    "name": "Sharky",
+    "texture": "player_sharky"
   },
   {
-    "id": "orange",
-    "name": "Orange",
-    "description": "My name is 'Orange'",
-    "texture": "player_orange"
+    "id": "fishy",
+    "name": "Fishy",
+    "texture": "player_fishy"
   },
   {
-    "id": "purple",
-    "name": "Purple",
-    "description": "My name is 'Purple'",
-    "texture": "player_purple"
+    "id": "orcy",
+    "name": "Orcy",
+    "texture": "player_orcy"
   }
 ]

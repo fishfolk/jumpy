@@ -58,8 +58,8 @@
     "path": "ui/main_menu_header.png"
   },
   {
-    "id": "player_blue",
-    "path": "textures/player/PlayerBlue(64x64).png",
+    "id": "player_sharky",
+    "path": "textures/player/PlayerSharky(64x64).png",
     "type": "spritesheet",
     "sprite_size": {
       "x": 64,
@@ -67,8 +67,8 @@
     }
   },
   {
-    "id": "player_green",
-    "path": "textures/player/PlayerGreen(64x64).png",
+    "id": "player_pescy",
+    "path": "textures/player/PlayerPescy(64x64).png",
     "type": "spritesheet",
     "sprite_size": {
       "x": 64,
@@ -76,8 +76,8 @@
     }
   },
   {
-    "id": "player_orange",
-    "path": "textures/player/PlayerOrange(64x64).png",
+    "id": "player_fishy",
+    "path": "textures/player/PlayerFishy(64x64).png",
     "type": "spritesheet",
     "sprite_size": {
       "x": 64,
@@ -85,8 +85,8 @@
     }
   },
   {
-    "id": "player_purple",
-    "path": "textures/player/PlayerPurple(64x64).png",
+    "id": "player_orcy",
+    "path": "textures/player/PlayerOrcy(64x64).png",
     "type": "spritesheet",
     "sprite_size": {
       "x": 64,

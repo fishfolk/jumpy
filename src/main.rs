@@ -159,15 +159,25 @@ async fn main() -> Result<()> {
     'outer: loop {
         match gui::show_main_menu().await {
             MainMenuResult::LocalGame(player_input) => {
-                let map_resource = gui::show_select_map_menu().await;
+                let player_cnt = player_input.len();
 
                 assert_eq!(
-                    player_input.len(),
-                    2,
-                    "Local: There should be two player input schemes for this game mode"
+                    player_cnt, 2,
+                    "Local Game: There should be two player input schemes for this game mode"
                 );
 
-                let players = create_game_scene(map_resource.map, true);
+                let player_characters =
+                    gui::show_select_characters_menu(player_input.clone()).await;
+
+                assert_eq!(
+                    player_cnt,
+                    player_characters.len(),
+                    "Local Game: Amount of player character params does not match the amount of players"
+                );
+
+                let map_resource = gui::show_select_map_menu().await;
+
+                let players = create_game_scene(map_resource.map, player_characters, true);
                 scene::add_node(LocalGame::new(player_input, players[0], players[1]));
 
                 start_music("fish_tide");

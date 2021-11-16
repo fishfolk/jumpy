@@ -2,6 +2,10 @@ use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
+pub fn default_scale() -> f32 {
+    1.0
+}
+
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(remote = "Color")]
 pub struct ColorDef {

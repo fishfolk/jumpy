@@ -1,0 +1,26 @@
+[
+  {
+    "id": "blue",
+    "name": "Blue",
+    "description": "My name is 'Blue'",
+    "texture": "player_blue"
+  },
+  {
+    "id": "green",
+    "name": "Green",
+    "description": "My name is 'Green'",
+    "texture": "player_green"
+  },
+  {
+    "id": "orange",
+    "name": "Orange",
+    "description": "My name is 'Orange'",
+    "texture": "player_orange"
+  },
+  {
+    "id": "purple",
+    "name": "Purple",
+    "description": "My name is 'Purple'",
+    "texture": "player_purple"
+  }
+]

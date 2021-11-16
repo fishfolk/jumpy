@@ -18,6 +18,9 @@ use crate::{
     map::Map,
 };
 
+use crate::player::PlayerCharacterParams;
+use crate::text::ToStringHelper;
+
 #[derive(Serialize, Deserialize)]
 struct ParticleEffectMetadata {
     id: String,
@@ -89,6 +92,7 @@ pub struct Resources {
     pub textures: HashMap<String, TextureResource>,
     pub maps: Vec<MapResource>,
     pub items: HashMap<String, ItemParams>,
+    pub player_characters: HashMap<String, PlayerCharacterParams>,
 }
 
 impl Resources {
@@ -98,6 +102,7 @@ impl Resources {
     pub const TEXTURES_FILE: &'static str = "textures";
     pub const MAPS_FILE: &'static str = "maps";
     pub const ITEMS_FILE: &'static str = "items";
+    pub const PLAYER_CHARACTERS_FILE: &'static str = "player_characters";
 
     pub const RESOURCE_FILES_EXTENSION: &'static str = "json";
 
@@ -118,14 +123,14 @@ impl Resources {
                 .join(Self::PARTICLE_EFFECTS_DIR)
                 .with_extension(Self::RESOURCE_FILES_EXTENSION);
 
-            let bytes = load_file(&particle_effects_file_path.to_string_lossy()).await?;
+            let bytes = load_file(&particle_effects_file_path.to_string_helper()).await?;
             let metadata: Vec<ParticleEffectMetadata> =
                 deserialize_bytes(Self::RESOURCE_FILES_EXTENSION, &bytes)?;
 
             for meta in metadata {
                 let file_path = assets_dir_path.join(&meta.path);
 
-                let bytes = load_file(&file_path.to_string_lossy()).await?;
+                let bytes = load_file(&file_path.to_string_helper()).await?;
                 let cfg: EmitterConfig = serde_json::from_slice(&bytes)?;
 
                 particle_effects.insert(meta.id, cfg);
@@ -139,14 +144,14 @@ impl Resources {
                 .join(Self::SOUNDS_FILE)
                 .with_extension(Self::RESOURCE_FILES_EXTENSION);
 
-            let bytes = load_file(&sounds_file_path.to_string_lossy()).await?;
+            let bytes = load_file(&sounds_file_path.to_string_helper()).await?;
             let metadata: Vec<SoundMetadata> =
                 deserialize_bytes(Self::RESOURCE_FILES_EXTENSION, &bytes)?;
 
             for meta in metadata {
                 let file_path = assets_dir_path.join(meta.path);
 
-                let sound = load_sound(&file_path.to_string_lossy()).await?;
+                let sound = load_sound(&file_path.to_string_helper()).await?;
 
                 sounds.insert(meta.id, sound);
             }
@@ -159,14 +164,14 @@ impl Resources {
                 .join(Self::MUSIC_FILE)
                 .with_extension(Self::RESOURCE_FILES_EXTENSION);
 
-            let bytes = load_file(&music_file_path.to_string_lossy()).await?;
+            let bytes = load_file(&music_file_path.to_string_helper()).await?;
             let metadata: Vec<SoundMetadata> =
                 deserialize_bytes(Self::RESOURCE_FILES_EXTENSION, &bytes)?;
 
             for meta in metadata {
                 let file_path = assets_dir_path.join(meta.path);
 
-                let sound = load_sound(&file_path.to_string_lossy()).await?;
+                let sound = load_sound(&file_path.to_string_helper()).await?;
 
                 music.insert(meta.id, sound);
             }
@@ -179,14 +184,14 @@ impl Resources {
                 .join(Self::TEXTURES_FILE)
                 .with_extension(Self::RESOURCE_FILES_EXTENSION);
 
-            let bytes = load_file(&textures_file_path.to_string_lossy()).await?;
+            let bytes = load_file(&textures_file_path.to_string_helper()).await?;
             let metadata: Vec<TextureMetadata> =
                 deserialize_bytes(Self::RESOURCE_FILES_EXTENSION, &bytes)?;
 
             for meta in metadata {
                 let file_path = assets_dir_path.join(&meta.path);
 
-                let texture = load_texture(&file_path.to_string_lossy()).await?;
+                let texture = load_texture(&file_path.to_string_helper()).await?;
                 texture.set_filter(meta.filter_mode);
 
                 let sprite_size = {
@@ -218,7 +223,7 @@ impl Resources {
                 .join(Self::MAPS_FILE)
                 .with_extension(Self::RESOURCE_FILES_EXTENSION);
 
-            let bytes = load_file(&maps_file_path.to_string_lossy()).await?;
+            let bytes = load_file(&maps_file_path.to_string_helper()).await?;
             let metadata: Vec<MapMetadata> =
                 deserialize_bytes(Self::RESOURCE_FILES_EXTENSION, &bytes)?;
 
@@ -232,7 +237,7 @@ impl Resources {
                     Map::load(map_path).await?
                 };
 
-                let preview = load_texture(&preview_path.to_string_lossy()).await?;
+                let preview = load_texture(&preview_path.to_string_helper()).await?;
 
                 let res = MapResource { map, preview, meta };
 
@@ -247,7 +252,7 @@ impl Resources {
                 .join(Self::ITEMS_FILE)
                 .with_extension(Self::RESOURCE_FILES_EXTENSION);
 
-            let bytes = load_file(&items_file_path.to_string_lossy()).await?;
+            let bytes = load_file(&items_file_path.to_string_helper()).await?;
             let item_paths: Vec<String> =
                 deserialize_bytes(Self::RESOURCE_FILES_EXTENSION, &bytes)?;
 
@@ -256,11 +261,27 @@ impl Resources {
                     .join(&path)
                     .with_extension(Self::RESOURCE_FILES_EXTENSION);
 
-                let bytes = load_file(&path.to_string_lossy()).await?;
+                let bytes = load_file(&path.to_string_helper()).await?;
 
                 let params: ItemParams = deserialize_bytes(Self::RESOURCE_FILES_EXTENSION, &bytes)?;
 
                 items.insert(params.id.clone(), params);
+            }
+        }
+
+        let mut player_characters = HashMap::new();
+
+        {
+            let player_characters_file_path = assets_dir_path
+                .join(Self::PLAYER_CHARACTERS_FILE)
+                .with_extension(Self::RESOURCE_FILES_EXTENSION);
+
+            let bytes = load_file(&player_characters_file_path.to_string_helper()).await?;
+            let params_vec: Vec<PlayerCharacterParams> =
+                deserialize_bytes(Self::RESOURCE_FILES_EXTENSION, &bytes)?;
+
+            for params in params_vec {
+                player_characters.insert(params.id.clone(), params);
             }
         }
 
@@ -273,6 +294,7 @@ impl Resources {
             textures,
             maps,
             items,
+            player_characters,
         })
     }
 
@@ -289,11 +311,9 @@ impl Resources {
             .join(map_name_to_filename(name))
             .with_extension(Self::MAP_EXPORTS_EXTENSION);
 
-        let path = map_path.to_string_lossy().into_owned();
+        let path = map_path.to_string_helper();
 
-        let preview_path = Path::new(Self::MAP_PREVIEW_PLACEHOLDER_PATH)
-            .to_string_lossy()
-            .into_owned();
+        let preview_path = Path::new(Self::MAP_PREVIEW_PLACEHOLDER_PATH).to_string_helper();
 
         let meta = MapMetadata {
             name: name.to_string(),
@@ -392,7 +412,7 @@ pub fn is_valid_map_export_path<P: AsRef<Path>>(path: P, should_overwrite: bool)
     let path = path.as_ref();
 
     if let Some(file_name) = path.file_name() {
-        if is_valid_map_file_name(&file_name.to_string_lossy()) {
+        if is_valid_map_file_name(&file_name.to_string_helper()) {
             let resources = storage::get::<Resources>();
 
             let res = resources

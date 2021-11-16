@@ -5,6 +5,7 @@ mod game_menu;
 mod main_menu;
 mod menu;
 mod panel;
+mod select_character;
 mod select_map;
 mod style;
 
@@ -12,7 +13,7 @@ use macroquad::prelude::*;
 
 pub use style::{
     SkinCollection, BUTTON_FONT_SIZE, BUTTON_MARGIN_H, BUTTON_MARGIN_V, LIST_BOX_ENTRY_HEIGHT,
-    SELECTED_OBJECT_HIGHLIGHT_COLOR, WINDOW_MARGIN_H, WINDOW_MARGIN_V,
+    SELECTED_OBJECT_HIGHLIGHT_COLOR, WINDOW_BG_COLOR, WINDOW_MARGIN_H, WINDOW_MARGIN_V,
 };
 
 pub use background::{draw_main_menu_background, Background};
@@ -25,6 +26,7 @@ pub use game_menu::{
 pub use main_menu::{show_main_menu, MainMenuResult};
 pub use menu::{Menu, MenuEntry, MenuResult};
 pub use panel::Panel;
+pub use select_character::show_select_characters_menu;
 pub use select_map::show_select_map_menu;
 
 pub const NO_COLOR: Color = Color::new(0.0, 0.0, 0.0, 0.0);

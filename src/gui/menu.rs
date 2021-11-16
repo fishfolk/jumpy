@@ -281,6 +281,18 @@ impl Menu {
                 }
             }
 
+            if should_confirm && self.current_selection.is_none() {
+                let mut entry = top_entries.first();
+
+                if entry.is_none() {
+                    entry = bottom_entries.first();
+                }
+
+                if let Some(entry) = entry {
+                    res = Some(entry.index.into());
+                }
+            }
+
             for (i, entry) in top_entries.iter().enumerate() {
                 let entry_position = entries_position
                     + if i > 0 {

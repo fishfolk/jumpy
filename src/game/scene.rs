@@ -6,6 +6,7 @@ use macroquad::{
     prelude::*,
 };
 
+use crate::player::PlayerCharacterParams;
 use crate::{
     Decoration, GameCamera, GameWorld, Item, Map, MapLayerKind, MapObjectKind, ParticleControllers,
     ParticleEmitters, Player, Projectiles, Resources, Sproinger, TriggeredEffects,
@@ -27,7 +28,11 @@ impl scene::Node for GameScene {
     }
 }
 
-pub fn create_game_scene(map: Map, is_local_game: bool) -> Vec<Handle<Player>> {
+pub fn create_game_scene(
+    map: Map,
+    player_characters: Vec<PlayerCharacterParams>,
+    is_local_game: bool,
+) -> Vec<Handle<Player>> {
     let bounds = {
         let w = map.grid_size.x as f32 * map.tile_size.x;
         let h = map.grid_size.y as f32 * map.tile_size.y;
@@ -87,8 +92,8 @@ pub fn create_game_scene(map: Map, is_local_game: bool) -> Vec<Handle<Player>> {
     drop(resources);
 
     let players = vec![
-        scene::add_node(Player::new(0, 0)),
-        scene::add_node(Player::new(1, 1)),
+        scene::add_node(Player::new(0, player_characters[0].clone())),
+        scene::add_node(Player::new(1, player_characters[1].clone())),
     ];
 
     scene::add_node(TriggeredEffects::new());

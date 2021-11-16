@@ -46,7 +46,7 @@ pub async fn show_create_map_menu() -> Result<MapResource> {
     loop {
         let _ = gamepad_system.update();
 
-        draw_main_menu_background();
+        draw_main_menu_background(true);
 
         Panel::new(hash!(), size, position).ui(&mut *root_ui(), |ui, _| {
             ui.label(None, "New map");

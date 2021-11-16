@@ -88,7 +88,7 @@ pub async fn show_main_menu() -> MainMenuResult {
     loop {
         update_gamepad_context(None).unwrap();
 
-        draw_main_menu_background();
+        draw_main_menu_background(true);
 
         {
             let resources = storage::get::<Resources>();

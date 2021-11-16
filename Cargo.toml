@@ -8,7 +8,6 @@ edition = "2018"
 opt-level = 3
 
 [dependencies]
-nanoserde = "0.1.29"
 macroquad = { version = "0.3.10" }
 macroquad-platformer = "0.1"
 macroquad-profiler = "0.1"

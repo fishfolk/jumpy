@@ -10,6 +10,7 @@
   - [Physics](./physics.md)
   - [Environmental Weapons](./environmental_weapons.md)
 - [Netcode](./netcode.md)
+- [Juice](./juice.md)
 - [Editor](./editor.md)
 - [Contributing](./contributing.md)
   - [Contributing Code](./contributing_code.md)

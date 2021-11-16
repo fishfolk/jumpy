@@ -3,6 +3,7 @@ use macroquad::{
     prelude::*,
     ui::{self, hash, root_ui, widgets},
 };
+use std::borrow::BorrowMut;
 
 use fishsticks::{Button, GamepadContext};
 
@@ -27,30 +28,41 @@ pub enum MainMenuResult {
     Quit,
 }
 
-const MAIN_MENU_ID: &str = "main_menu";
-const LOCAL_GAME_MENU_ID: &str = "local_game";
-const EDITOR_MENU_ID: &str = "editor";
+#[allow(dead_code)]
+enum MainMenuState {
+    Root(Menu),
+    LocalGame,
+    NetworkGame,
+    Editor(Menu),
+}
 
-const MAIN_MENU_RESULT_LOCAL_GAME: usize = 0;
-const MAIN_MENU_RESULT_EDITOR: usize = 1;
+const ROOT_OPTION_LOCAL_GAME: usize = 0;
+const ROOT_OPTION_NETWORK_GAME: usize = 1;
+const ROOT_OPTION_EDITOR: usize = 2;
 
-const LOCAL_GAME_MENU_RESULT_SUBMIT: usize = 0;
+const LOCAL_GAME_OPTION_SUBMIT: usize = 0;
 
-const EDITOR_MENU_RESULT_CREATE: usize = 0;
-const EDITOR_MENU_RESULT_LOAD: usize = 1;
+const EDITOR_OPTION_CREATE: usize = 0;
+const EDITOR_OPTION_LOAD: usize = 1;
 
 fn build_main_menu() -> Menu {
     Menu::new(
-        hash!(MAIN_MENU_ID),
+        hash!("main_menu"),
         MENU_WIDTH,
         &[
             MenuEntry {
-                index: MAIN_MENU_RESULT_LOCAL_GAME,
+                index: ROOT_OPTION_LOCAL_GAME,
                 title: "Local Game".to_string(),
                 ..Default::default()
             },
             MenuEntry {
-                index: MAIN_MENU_RESULT_EDITOR,
+                index: ROOT_OPTION_NETWORK_GAME,
+                title: "Network Game".to_string(),
+                is_disabled: true,
+                ..Default::default()
+            },
+            MenuEntry {
+                index: ROOT_OPTION_EDITOR,
                 title: "Editor".to_string(),
                 ..Default::default()
             },
@@ -61,16 +73,16 @@ fn build_main_menu() -> Menu {
 
 fn build_editor_menu() -> Menu {
     Menu::new(
-        hash!(EDITOR_MENU_ID),
+        hash!("main_menu", "editor"),
         MENU_WIDTH,
         &[
             MenuEntry {
-                index: EDITOR_MENU_RESULT_CREATE,
+                index: EDITOR_OPTION_CREATE,
                 title: "Create Map".to_string(),
                 ..Default::default()
             },
             MenuEntry {
-                index: EDITOR_MENU_RESULT_LOAD,
+                index: EDITOR_OPTION_LOAD,
                 title: "Load Map".to_string(),
                 ..Default::default()
             },
@@ -80,8 +92,7 @@ fn build_editor_menu() -> Menu {
 }
 
 pub async fn show_main_menu() -> MainMenuResult {
-    let mut current_menu = Some(build_main_menu());
-    let mut current_menu_id = MAIN_MENU_ID;
+    let mut menu_state = MainMenuState::Root(build_main_menu());
 
     let mut local_player_input = Vec::new();
 
@@ -107,61 +118,59 @@ pub async fn show_main_menu() -> MainMenuResult {
                 .ui(&mut *root_ui());
         }
 
-        match current_menu_id {
-            MAIN_MENU_ID => {
-                if let Some(res) = current_menu.as_mut().unwrap().ui(&mut *root_ui()) {
+        match menu_state.borrow_mut() {
+            MainMenuState::Root(menu_instance) => {
+                if let Some(res) = menu_instance.ui(&mut *root_ui()) {
                     match res.into_usize() {
-                        MAIN_MENU_RESULT_LOCAL_GAME => {
-                            current_menu = None;
-                            current_menu_id = LOCAL_GAME_MENU_ID;
+                        ROOT_OPTION_LOCAL_GAME => {
+                            menu_state = MainMenuState::LocalGame;
                         }
-                        MAIN_MENU_RESULT_EDITOR => {
-                            current_menu = Some(build_editor_menu());
-                            current_menu_id = EDITOR_MENU_ID;
+                        ROOT_OPTION_EDITOR => {
+                            menu_state = MainMenuState::Editor(build_editor_menu());
                         }
                         Menu::CANCEL_INDEX => return MainMenuResult::Quit,
                         _ => {}
                     }
                 }
             }
-            LOCAL_GAME_MENU_ID => {
+            MainMenuState::LocalGame => {
                 if let Some(res) = local_game_ui(&mut *root_ui(), &mut local_player_input) {
                     match res.into_usize() {
-                        LOCAL_GAME_MENU_RESULT_SUBMIT => {
+                        LOCAL_GAME_OPTION_SUBMIT => {
                             return MainMenuResult::LocalGame(local_player_input.clone());
                         }
                         Menu::CANCEL_INDEX => {
-                            current_menu = Some(build_main_menu());
-                            current_menu_id = MAIN_MENU_ID;
+                            menu_state = MainMenuState::Root(build_editor_menu());
                         }
                         _ => {}
                     }
                 }
             }
-            EDITOR_MENU_ID => {
-                if let Some(res) = current_menu.as_mut().unwrap().ui(&mut *root_ui()) {
+            MainMenuState::NetworkGame => {
+                unreachable!("Networking is not implemented yet");
+            }
+            MainMenuState::Editor(menu_instance) => {
+                if let Some(res) = menu_instance.ui(&mut *root_ui()) {
                     match res.into_usize() {
-                        EDITOR_MENU_RESULT_CREATE => {
+                        EDITOR_OPTION_CREATE => {
                             return MainMenuResult::Editor {
                                 input_scheme: EditorInputScheme::Keyboard,
                                 is_new_map: true,
                             }
                         }
-                        EDITOR_MENU_RESULT_LOAD => {
+                        EDITOR_OPTION_LOAD => {
                             return MainMenuResult::Editor {
                                 input_scheme: EditorInputScheme::Keyboard,
                                 is_new_map: false,
                             }
                         }
                         Menu::CANCEL_INDEX => {
-                            current_menu = Some(build_main_menu());
-                            current_menu_id = MAIN_MENU_ID;
+                            menu_state = MainMenuState::Root(build_editor_menu());
                         }
                         _ => {}
                     }
                 }
             }
-            _ => {}
         }
 
         next_frame().await;
@@ -170,7 +179,7 @@ pub async fn show_main_menu() -> MainMenuResult {
 
 fn local_game_ui(ui: &mut ui::Ui, player_input: &mut Vec<GameInputScheme>) -> Option<MenuResult> {
     if player_input.len() == 2 {
-        return Some(LOCAL_GAME_MENU_RESULT_SUBMIT.into());
+        return Some(LOCAL_GAME_OPTION_SUBMIT.into());
     } else {
         let gamepad_context = storage::get::<GamepadContext>();
         if is_key_pressed(KeyCode::Escape)

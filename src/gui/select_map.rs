@@ -1,16 +1,14 @@
 use macroquad::{
     experimental::collections::storage,
     prelude::*,
-    ui::{self, root_ui},
+    ui::{self, root_ui, widgets},
 };
 
 use super::GuiResources;
 
-use crate::{
-    resources::MapResource,
-    text::{draw_aligned_text, HorizontalAlignment, VerticalAlignment},
-    GamepadContext, Resources,
-};
+use crate::{resources::MapResource, GamepadContext, Resources};
+
+use crate::gui::{draw_main_menu_background, WINDOW_MARGIN_H, WINDOW_MARGIN_V};
 
 const MAP_SELECT_SCREEN_MARGIN_FACTOR: f32 = 0.1;
 const MAP_SELECT_PREVIEW_TARGET_WIDTH: f32 = 250.0;
@@ -27,6 +25,8 @@ pub async fn show_select_map_menu() -> MapResource {
     next_frame().await;
 
     loop {
+        draw_main_menu_background(false);
+
         let gui_resources = storage::get::<GuiResources>();
         let mut gamepad_system = storage::get_mut::<GamepadContext>();
 
@@ -73,7 +73,6 @@ pub async fn show_select_map_menu() -> MapResource {
             start |= gamepad.digital_inputs.just_activated(Button::A)
                 || gamepad.digital_inputs.just_activated(Button::Start);
         }
-        clear_background(BLACK);
 
         let resources = storage::get::<Resources>();
         let map_cnt = resources.maps.len();
@@ -175,13 +174,15 @@ pub async fn show_select_map_menu() -> MapResource {
 
             {
                 if page_cnt > 1 {
-                    draw_aligned_text(
-                        &format!("page {}/{}", current_page + 1, page_cnt),
-                        screen_size - vec2(25.0, 25.0),
-                        HorizontalAlignment::Right,
-                        VerticalAlignment::Bottom,
-                        Default::default(),
-                    );
+                    let pagination_label = format!("page {}/{}", current_page + 1, page_cnt);
+
+                    let label_size = root_ui().calc_size(&pagination_label);
+                    let label_position =
+                        screen_size - vec2(WINDOW_MARGIN_H, WINDOW_MARGIN_V) - label_size;
+
+                    widgets::Label::new(&pagination_label)
+                        .position(label_position)
+                        .ui(&mut *root_ui());
                 }
 
                 let begin = (current_page as usize * entries_per_page).clamp(0, map_cnt);

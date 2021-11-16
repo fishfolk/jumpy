@@ -876,12 +876,6 @@ impl SkinCollection {
         };
 
         let map_selection = {
-            let label_style = root_ui()
-                .style_builder()
-                .text_color(Color::from_rgba(255, 255, 255, 255))
-                .font_size(130)
-                .build();
-
             let button_style = root_ui()
                 .style_builder()
                 .background(window_border.image.clone())
@@ -895,7 +889,6 @@ impl SkinCollection {
                 .build();
 
             Skin {
-                label_style,
                 button_style,
                 ..default.clone()
             }

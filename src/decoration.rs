@@ -58,7 +58,7 @@ impl scene::Node for Decoration {
         draw_texture_ex(
             texture_entry.texture,
             node.pos.x,
-            node.pos.y - 51.,
+            node.pos.y,
             WHITE,
             DrawTextureParams {
                 source: Some(node.sprite.frame().source_rect),

@@ -2,7 +2,7 @@
   "id": "sword",
   "sprite": {
     "texture": "sword",
-    "index": 8
+    "index": 0
   },
   "type": "weapon",
   "cooldown": 0.75,
@@ -29,15 +29,17 @@
     "animations": [
       {
         "id": "idle",
-        "row": 0,
+        "row": 1,
         "frames": 1,
-        "fps": 1
+        "fps": 1,
+        "is_looping": true
       },
       {
         "id": "attack",
-        "row": 1,
+        "row": 2,
         "frames": 4,
-        "fps": 15
+        "fps": 15,
+        "is_looping": true
       }
     ]
   },

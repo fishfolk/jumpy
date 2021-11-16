@@ -29,8 +29,8 @@
     "path": "textures/map/default_decorations.png",
     "type": "tileset",
     "sprite_size": {
-      "x": 51,
-      "y": 48
+      "x": 48,
+      "y": 51
     }
   },
   {
@@ -52,6 +52,10 @@
     "id": "background_04",
     "path": "textures/map/background_04.png",
     "type": "background"
+  },
+  {
+    "id": "main_menu_header",
+    "path": "ui/main_menu_header.png"
   },
   {
     "id": "player_blue",
@@ -314,5 +318,9 @@
   {
     "id": "musket_bullet",
     "path": "textures/items/MusketBullet(15x15).png"
+  },
+  {
+    "id": "machine_gun_bullet",
+    "path": "textures/items/MachineGunBullet(7x4).png"
   }
 ]

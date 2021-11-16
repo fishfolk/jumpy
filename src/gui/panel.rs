@@ -9,10 +9,7 @@ use macroquad::{
     ui::{widgets, Id, Ui},
 };
 
-use super::GuiResources;
-
-// This must be updated if the window margins are changed in the gui styles
-const WINDOW_MARGIN: f32 = 22.0;
+use super::{GuiResources, WINDOW_MARGIN_H, WINDOW_MARGIN_V};
 
 pub struct Panel {
     id: Id,
@@ -25,7 +22,10 @@ impl Panel {
         Panel { id, size, position }
     }
 
-    pub fn ui<F: FnOnce(&mut Ui)>(&self, ui: &mut Ui, f: F) {
+    /// This draws the panel. The callback provided as `f` will be called with the current `Ui` and
+    /// the inner size of the panel as arguments. The inner size will be the size of the window,
+    /// minus the window margins.
+    pub fn ui<F: FnOnce(&mut Ui, Vec2)>(&self, ui: &mut Ui, f: F) {
         {
             let gui_resources = storage::get::<GuiResources>();
             ui.push_skin(&gui_resources.skins.panel_group);
@@ -36,15 +36,15 @@ impl Panel {
             .size(self.size)
             .ui(ui);
 
-        let position = self.position + vec2(WINDOW_MARGIN, WINDOW_MARGIN);
-        let size = self.size - vec2(WINDOW_MARGIN * 2.0, WINDOW_MARGIN * 2.0);
+        let position = self.position + vec2(WINDOW_MARGIN_H, WINDOW_MARGIN_V);
+        let size = self.size - vec2(WINDOW_MARGIN_H * 2.0, WINDOW_MARGIN_V * 2.0);
 
         widgets::Group::new(self.id, size)
             .position(position)
             .ui(ui, |ui| {
                 ui.pop_skin();
 
-                f(ui)
+                f(ui, size)
             });
     }
 }

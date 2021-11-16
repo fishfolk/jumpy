@@ -1,54 +1,75 @@
 use macroquad::{
-    experimental::collections::storage,
     prelude::*,
-    ui::{hash, root_ui, widgets},
+    ui::{hash, Ui},
 };
 
-use super::{GuiResources, Panel};
+use super::{Menu, MenuEntry, MenuResult};
 
-const MENU_WIDTH: f32 = 200.0;
-const MENU_HEIGHT: f32 = 136.0;
+const MENU_WIDTH: f32 = 300.0;
 
-const MENU_BUTTON_WIDTH: f32 = MENU_WIDTH - 48.0;
-const MENU_BUTTON_HEIGHT: f32 = 42.0;
+pub const GAME_MENU_RESULT_MAIN_MENU: usize = 0;
+pub const GAME_MENU_RESULT_QUIT: usize = 1;
 
-#[allow(dead_code)]
-pub fn show_game_menu() -> Option<GameMenuResult> {
-    let gui_resources = storage::get::<GuiResources>();
+static mut GAME_MENU_INSTANCE: Option<Menu> = None;
 
-    let mut res = None;
+pub fn open_game_menu() {
+    unsafe {
+        if GAME_MENU_INSTANCE.is_none() {
+            let menu = Menu::new(
+                hash!(),
+                MENU_WIDTH,
+                &[
+                    MenuEntry {
+                        index: GAME_MENU_RESULT_MAIN_MENU,
+                        title: "Main Menu".to_string(),
+                        ..Default::default()
+                    },
+                    MenuEntry {
+                        index: GAME_MENU_RESULT_QUIT,
+                        title: "Quit".to_string(),
+                        ..Default::default()
+                    },
+                ],
+            );
 
-    root_ui().push_skin(&gui_resources.skins.menu);
+            GAME_MENU_INSTANCE = Some(menu);
+        }
+    }
+}
 
-    let size = vec2(MENU_WIDTH, MENU_HEIGHT);
-    let position = (vec2(screen_width(), screen_height()) - size) / 2.0;
+pub fn close_game_menu() {
+    unsafe { GAME_MENU_INSTANCE = None };
+}
 
-    Panel::new(hash!(), size, position).ui(&mut *root_ui(), |ui| {
-        let main_menu_btn = widgets::Button::new("Main Menu")
-            .size(vec2(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT))
-            .ui(ui);
-
-        if main_menu_btn {
-            res = Some(GameMenuResult::MainMenu);
+pub fn draw_game_menu(ui: &mut Ui) -> Option<MenuResult> {
+    let menu = unsafe {
+        if GAME_MENU_INSTANCE.is_none() {
+            open_game_menu();
         }
 
-        let quit_btn = widgets::Button::new("Quit")
-            .size(vec2(MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT))
-            .ui(ui);
+        GAME_MENU_INSTANCE.as_mut().unwrap()
+    };
 
-        if quit_btn {
-            res = Some(GameMenuResult::Quit);
-        }
-    });
+    let res = menu.ui(ui);
 
-    root_ui().pop_skin();
+    if res.is_some() {
+        close_game_menu();
+    }
 
     res
 }
 
-#[allow(dead_code)]
-pub enum GameMenuResult {
-    MainMenu,
-    Quit,
-    Cancel,
+pub fn is_game_menu_open() -> bool {
+    unsafe { GAME_MENU_INSTANCE.is_some() }
+}
+
+/// Toggle game menu and return state after toggle
+pub fn toggle_game_menu() -> bool {
+    if is_game_menu_open() {
+        close_game_menu();
+        false
+    } else {
+        open_game_menu();
+        true
+    }
 }

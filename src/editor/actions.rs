@@ -1,7 +1,7 @@
 use std::{any::TypeId, result};
 
 use crate::editor::gui::windows::Window;
-use crate::map::{MapObject, MapObjectKind};
+use crate::map::{MapBackgroundLayer, MapObject, MapObjectKind};
 use crate::{
     map::{Map, MapLayer, MapLayerKind, MapTile, MapTileset},
     Resources,
@@ -16,6 +16,11 @@ pub enum EditorAction {
     Undo,
     Redo,
     SelectTool(TypeId),
+    OpenBackgroundPropertiesWindow,
+    UpdateBackground {
+        color: Color,
+        layers: Vec<MapBackgroundLayer>,
+    },
     OpenCreateLayerWindow,
     OpenCreateTilesetWindow,
     OpenTilesetPropertiesWindow(String),
@@ -24,8 +29,8 @@ pub enum EditorAction {
         layer_id: String,
     },
     OpenObjectPropertiesWindow {
-        index: usize,
         layer_id: String,
+        index: usize,
     },
     CloseWindow(TypeId),
     SelectTile {
@@ -45,6 +50,12 @@ pub enum EditorAction {
     },
     DeleteLayer(String),
     SelectTileset(String),
+    OpenImportWindow(usize),
+    Import {
+        tilesets: Vec<MapTileset>,
+        background_color: Option<Color>,
+        background_layers: Vec<MapBackgroundLayer>,
+    },
     CreateTileset {
         id: String,
         texture_id: String,
@@ -62,12 +73,18 @@ pub enum EditorAction {
         id: String,
         kind: MapObjectKind,
         position: Vec2,
-        size: Option<Vec2>,
         layer_id: String,
     },
     DeleteObject {
         index: usize,
         layer_id: String,
+    },
+    UpdateObject {
+        layer_id: String,
+        index: usize,
+        id: String,
+        kind: MapObjectKind,
+        position: Vec2,
     },
     PlaceTile {
         id: u32,
@@ -79,6 +96,19 @@ pub enum EditorAction {
         layer_id: String,
         coords: UVec2,
     },
+    CreateMap {
+        name: String,
+        tile_size: UVec2,
+        grid_size: UVec2,
+    },
+    OpenCreateMapWindow,
+    LoadMap(usize),
+    OpenLoadMapWindow,
+    SaveMap(Option<String>),
+    OpenSaveMapWindow,
+    DeleteMap(usize),
+    ExitToMainMenu,
+    QuitToDesktop,
 }
 
 impl EditorAction {
@@ -121,6 +151,55 @@ pub trait UndoableAction {
     // at a higher level
     fn is_redundant(&self, _map: &Map) -> bool {
         false
+    }
+}
+
+#[derive(Debug)]
+pub struct UpdateBackgroundAction {
+    color: Color,
+    old_color: Option<Color>,
+    layers: Vec<MapBackgroundLayer>,
+    old_layers: Option<Vec<MapBackgroundLayer>>,
+}
+
+impl UpdateBackgroundAction {
+    pub fn new(color: Color, layers: Vec<MapBackgroundLayer>) -> Self {
+        UpdateBackgroundAction {
+            color,
+            old_color: None,
+            layers,
+            old_layers: None,
+        }
+    }
+}
+
+impl UndoableAction for UpdateBackgroundAction {
+    fn apply(&mut self, map: &mut Map) -> Result {
+        self.old_color = Some(map.background_color);
+
+        map.background_color = self.color;
+
+        self.old_layers = Some(map.background_layers.clone());
+
+        map.background_layers = self.layers.clone();
+
+        Ok(())
+    }
+
+    fn undo(&mut self, map: &mut Map) -> Result {
+        if let Some(color) = self.old_color.take() {
+            map.background_color = color;
+        } else {
+            return Err(&"UpdateBackgroundPropertiesAction (Undo): No old background color was found. Undo was probably called on an action that was never applied");
+        }
+
+        if let Some(layers) = self.old_layers.take() {
+            map.background_layers = layers;
+        } else {
+            return Err(&"UpdateBackgroundPropertiesAction (Undo): No old background layers was found. Undo was probably called on an action that was never applied");
+        }
+
+        Ok(())
     }
 }
 
@@ -178,7 +257,7 @@ impl UndoableAction for SetLayerDrawOrderIndexAction {
                 map.draw_order.insert(i, self.id.clone());
             }
         } else {
-            return Err(&"SetLayerDrawOrderIndexAction (Undo): No old draw order index was found");
+            return Err(&"SetLayerDrawOrderIndexAction (Undo): No old draw order index was found. Undo was probably called on an action that was never applied");
         }
 
         Ok(())
@@ -327,6 +406,89 @@ impl UndoableAction for DeleteLayerAction {
 }
 
 #[derive(Debug)]
+pub struct ImportAction {
+    tilesets: Vec<MapTileset>,
+    background_color: Option<Color>,
+    old_background_color: Option<Color>,
+    background_layers: Vec<MapBackgroundLayer>,
+    old_background_layers: Vec<MapBackgroundLayer>,
+}
+
+impl ImportAction {
+    pub fn new(
+        tilesets: Vec<MapTileset>,
+        background_color: Option<Color>,
+        background_layers: Vec<MapBackgroundLayer>,
+    ) -> Self {
+        ImportAction {
+            tilesets,
+            background_color,
+            old_background_color: None,
+            background_layers,
+            old_background_layers: Vec::new(),
+        }
+    }
+}
+
+impl UndoableAction for ImportAction {
+    fn apply(&mut self, map: &mut Map) -> Result {
+        for tileset in &self.tilesets {
+            let mut first_tile_id = 1;
+            for tileset in map.tilesets.values() {
+                let next_tile_id = tileset.first_tile_id + tileset.tile_cnt;
+                if next_tile_id > first_tile_id {
+                    first_tile_id = next_tile_id;
+                }
+            }
+
+            let tileset = MapTileset {
+                id: tileset.id.clone(),
+                texture_id: tileset.texture_id.clone(),
+                texture_size: tileset.texture_size,
+                tile_size: tileset.tile_size,
+                grid_size: tileset.grid_size,
+                first_tile_id,
+                tile_cnt: tileset.tile_cnt,
+                tile_subdivisions: tileset.tile_subdivisions,
+                autotile_mask: tileset.autotile_mask.clone(),
+                tile_attributes: tileset.tile_attributes.clone(),
+                properties: tileset.properties.clone(),
+            };
+
+            map.tilesets.insert(tileset.id.clone(), tileset);
+        }
+
+        if let Some(background_color) = self.background_color {
+            self.old_background_color = Some(map.background_color);
+            map.background_color = background_color;
+        }
+
+        self.old_background_layers = map.background_layers.clone();
+
+        map.background_layers
+            .append(&mut self.background_layers.clone());
+
+        Ok(())
+    }
+
+    fn undo(&mut self, map: &mut Map) -> Result {
+        for tileset in &self.tilesets {
+            if map.tilesets.remove(&tileset.id).is_none() {
+                return Err(&"ImportTilesetsAction (Undo): One of the imported tilesets could not be found in the map");
+            }
+        }
+
+        if let Some(background_color) = self.old_background_color.take() {
+            map.background_color = background_color;
+        }
+
+        map.background_layers = self.old_background_layers.drain(..).collect();
+
+        Ok(())
+    }
+}
+
+#[derive(Debug)]
 pub struct CreateTilesetAction {
     id: String,
     texture_id: String,
@@ -346,6 +508,7 @@ impl UndoableAction for CreateTilesetAction {
                 texture_entry.texture.width() as u32,
                 texture_entry.texture.height() as u32,
             );
+
             let mut first_tile_id = 1;
             for tileset in map.tilesets.values() {
                 let next_tile_id = tileset.first_tile_id + tileset.tile_cnt;
@@ -473,23 +636,15 @@ pub struct CreateObjectAction {
     id: String,
     kind: MapObjectKind,
     position: Vec2,
-    size: Option<Vec2>,
     layer_id: String,
 }
 
 impl CreateObjectAction {
-    pub fn new(
-        id: String,
-        kind: MapObjectKind,
-        position: Vec2,
-        size: Option<Vec2>,
-        layer_id: String,
-    ) -> Self {
+    pub fn new(id: String, kind: MapObjectKind, position: Vec2, layer_id: String) -> Self {
         CreateObjectAction {
             id,
             kind,
             position,
-            size,
             layer_id,
         }
     }
@@ -498,7 +653,7 @@ impl CreateObjectAction {
 impl UndoableAction for CreateObjectAction {
     fn apply(&mut self, map: &mut Map) -> Result {
         if let Some(layer) = map.layers.get_mut(&self.layer_id) {
-            let object = MapObject::new(&self.id, self.kind, self.position, self.size);
+            let object = MapObject::new(&self.id, self.kind, self.position, None);
 
             layer.objects.insert(0, object);
         } else {
@@ -557,6 +712,69 @@ impl UndoableAction for DeleteObjectAction {
             }
         } else {
             return Err(&"DeleteObjectAction (Undo): No object stored in action. Undo was probably called on an action that was never applied");
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Debug)]
+pub struct UpdateObjectAction {
+    layer_id: String,
+    index: usize,
+    id: String,
+    kind: MapObjectKind,
+    position: Vec2,
+    object: Option<MapObject>,
+}
+
+impl UpdateObjectAction {
+    pub fn new(
+        layer_id: String,
+        index: usize,
+        id: String,
+        kind: MapObjectKind,
+        position: Vec2,
+    ) -> Self {
+        UpdateObjectAction {
+            layer_id,
+            index,
+            id,
+            kind,
+            position,
+            object: None,
+        }
+    }
+}
+
+impl UndoableAction for UpdateObjectAction {
+    fn apply(&mut self, map: &mut Map) -> Result {
+        if let Some(layer) = map.layers.get_mut(&self.layer_id) {
+            if let Some(object) = layer.objects.get_mut(self.index) {
+                self.object = Some(object.clone());
+
+                object.id = self.id.clone();
+                object.kind = self.kind;
+                object.position = self.position;
+            } else {
+                return Err(&"UpdateObjectAction: The specified object index does not exist");
+            }
+        } else {
+            return Err(&"UpdateObjectAction: The specified layer does not exist");
+        }
+
+        Ok(())
+    }
+
+    fn undo(&mut self, map: &mut Map) -> Result {
+        if let Some(layer) = map.layers.get_mut(&self.layer_id) {
+            if let Some(object) = self.object.take() {
+                layer.objects[self.index] = object;
+            } else {
+                return Err(&"UpdateObjectAction: No object found on action. Undo was probably called on an action that was never applied");
+            }
+        } else {
+            return Err(&"UpdateObjectAction (Undo): The specified layer does not exist");
         }
 
         Ok(())

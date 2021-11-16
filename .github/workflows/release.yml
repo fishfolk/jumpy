@@ -3,9 +3,9 @@
 name: Release
 
 on:
-  create:
+  push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   build_release:
@@ -63,15 +63,17 @@ jobs:
       - name: Setup Dependencies
         if: matrix.os == 'ubuntu-latest'
         run: |
-          sudo apt-get install -y libasound2-dev libgl1-mesa-dev libx11-dev libxi-dev
+          sudo apt-get update
+          sudo apt-get install --allow-unauthenticated -y -qq \
+           libasound2-dev libgl1-mesa-dev libx11-dev libxi-dev
 
       - name: Cache Cargo
         uses: actions/cache@v2
         with:
-            path: |
-              ~/.cargo/registry
-              ~/.cargo/git
-            key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup Rust
         uses: actions-rs/toolchain@v1
@@ -121,7 +123,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      
+
       - name: Download Artifacts
         uses: actions/download-artifact@v2
 
@@ -133,7 +135,12 @@ jobs:
         run: for file in fishfight-*/fishfight-*; do openssl dgst -sha256 -r "$file" | awk '{print $1}' > "${file}.sha256"; done
 
       - name: Publish Release
-        uses: softprops/action-gh-release@v1
+        uses: svenstaro/upload-release-action@v2
         with:
-          name: Release ${{ env.RELEASE_VERSION }}
-          files: fishfight-*/fishfight-*
+          release_name: Release ${{ env.RELEASE_VERSION }}
+          file: fishfight-*/fishfight-*
+          file_glob: true
+          overwrite: true
+          body: "FishFight ${{ env.RELEASE_VERSION }} 🐟"
+          tag: ${{ github.ref }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}

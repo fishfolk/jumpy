@@ -50,7 +50,8 @@
           "id": "armed",
           "row": 0,
           "frames": 1,
-          "fps": 1
+          "fps": 1,
+          "is_looping": true
         }
       ],
       "should_autoplay": true
@@ -67,13 +68,15 @@
         "id": "idle",
         "row": 0,
         "frames": 1,
-        "fps": 1
+        "fps": 1,
+        "is_looping": true
       },
       {
         "id": "attack",
         "row": 0,
         "frames": 4,
-        "fps": 8
+        "fps": 8,
+        "is_looping": true
       }
     ]
   },
@@ -84,7 +87,8 @@
         "id": "attack_effect",
         "row": 1,
         "frames": 5,
-        "fps": 12
+        "fps": 12,
+        "is_looping": true
       }
     ]
   }

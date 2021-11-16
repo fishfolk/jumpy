@@ -5,6 +5,7 @@
   },
   "type": "weapon",
   "cooldown": 0.15,
+  "attack_duration": 0.1,
   "recoil": 125.0,
   "uses": 24,
   "mount_offset": {
@@ -12,32 +13,48 @@
     "y": -4
   },
   "effect_offset": {
-    "x": 56,
+    "x": 64,
     "y": 4
   },
   "sound_effect": "shoot",
-  "effects": {
-    "type": "projectile",
-    "range": 128.0,
-    "speed": 12.0,
-    "spread": 5.0,
-    "projectile": {
-      "type": "sprite",
-      "sprite": {
-        "texture": "small_projectile",
-        "size": {
-          "x": 8,
-          "y": 4
+  "effects": [
+    {
+      "type": "projectile",
+      "range": 512.0,
+      "speed": 8.0,
+      "spread": 5.0,
+      "projectile": {
+        "type": "sprite",
+        "sprite": {
+          "texture": "machine_gun_bullet",
+          "size": {
+            "x": 30,
+            "y": 4
+          },
+          "offset": {
+            "x": -15,
+            "y": -2
+          }
         },
-        "tint": {
-          "r": 0.9,
-          "g": 0.75,
-          "b": 0.12,
-          "a": 1.0
-        }
+        "is_rotated": true
       }
+    },
+    {
+      "type": "particle_controller",
+      "id": "0",
+      "particle_id": "machine_gun_muzzle_smoke",
+      "start_delay": 0.2,
+      "is_can_be_interrupted": true,
+      "amount": 5,
+      "interval": 0.05
+    },
+    {
+      "type": "particle_controller",
+      "id": "1",
+      "particle_id": "machine_gun_firing_smoke",
+      "amount": 1
     }
-  },
+  ],
   "collider_size": {
     "x": 68,
     "y": 24
@@ -49,13 +66,15 @@
         "id": "idle",
         "row": 0,
         "frames": 1,
-        "fps": 1
+        "fps": 1,
+        "is_looping": true
       },
       {
         "id": "attack",
         "row": 1,
-        "frames": 2,
-        "fps": 8
+        "frames": 1,
+        "fps": 8,
+        "is_looping": true
       }
     ]
   },

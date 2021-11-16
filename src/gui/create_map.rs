@@ -48,12 +48,9 @@ pub async fn show_create_map_menu() -> Result<MapResource> {
 
         draw_main_menu_background();
 
-        Panel::new(hash!(), size, position).ui(&mut *root_ui(), |ui| {
+        Panel::new(hash!(), size, position).ui(&mut *root_ui(), |ui, _| {
             ui.label(None, "New map");
 
-            ui.separator();
-            ui.separator();
-            ui.separator();
             ui.separator();
 
             {
@@ -66,21 +63,15 @@ pub async fn show_create_map_menu() -> Result<MapResource> {
             }
 
             ui.separator();
-            ui.separator();
-            ui.separator();
-            ui.separator();
 
             {
                 let path_label = map_exports_path
                     .join(map_name_to_filename(&name))
                     .with_extension(Resources::MAP_EXPORTS_EXTENSION);
 
-                widgets::Label::new(format!("'{}'", path_label.to_str().unwrap())).ui(ui);
+                widgets::Label::new(path_label.to_string_lossy().as_ref()).ui(ui);
             }
 
-            ui.separator();
-            ui.separator();
-            ui.separator();
             ui.separator();
 
             {
@@ -92,9 +83,6 @@ pub async fn show_create_map_menu() -> Result<MapResource> {
                     .ui(ui, &mut description);
             }
 
-            ui.separator();
-            ui.separator();
-            ui.separator();
             ui.separator();
 
             {
@@ -130,14 +118,11 @@ pub async fn show_create_map_menu() -> Result<MapResource> {
             }
 
             ui.separator();
-            ui.separator();
-            ui.separator();
-            ui.separator();
 
-            let btn_a = is_gamepad_btn_pressed(&gamepad_system, fishsticks::Button::A);
+            let btn_a = is_gamepad_btn_pressed(Some(&gamepad_system), fishsticks::Button::A);
             let enter = is_key_pressed(KeyCode::Enter);
 
-            if ui.button(None, "Confirm (A) (Enter)") || btn_a || enter {
+            if ui.button(None, "Confirm") || btn_a || enter {
                 // TODO: Validate input
 
                 let tile_size = vec2(
@@ -165,8 +150,8 @@ pub async fn show_create_map_menu() -> Result<MapResource> {
                 Some(description.as_str())
             };
 
-            let mut resources = storage::get_mut::<Resources>();
-            return resources.create_map(&name, description, tile_size, grid_size, true);
+            let resources = storage::get::<Resources>();
+            return resources.create_map(&name, description, tile_size, grid_size);
         }
 
         next_frame().await;

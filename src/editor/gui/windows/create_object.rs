@@ -1,21 +1,22 @@
 use macroquad::{
+    experimental::collections::storage,
     prelude::*,
     ui::{hash, widgets, Ui},
 };
 
 use crate::{
-    editor::gui::ComboBoxBuilder,
+    editor::gui::{ComboBoxBuilder, ComboBoxValue},
     map::{Map, MapObjectKind},
+    Resources,
 };
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 
 pub struct CreateObjectWindow {
     params: WindowParams,
-    id: String,
+    id: Option<String>,
     kind: MapObjectKind,
     position: Vec2,
-    size: Option<Vec2>,
     layer_id: String,
 }
 
@@ -29,10 +30,9 @@ impl CreateObjectWindow {
 
         CreateObjectWindow {
             params,
-            id: "".to_string(),
+            id: None,
             kind: MapObjectKind::Item,
             position,
-            size: None,
             layer_id,
         }
     }
@@ -46,19 +46,20 @@ impl Window for CreateObjectWindow {
     fn get_buttons(&self, _map: &Map, _ctx: &EditorContext) -> Vec<ButtonParams> {
         let mut res = Vec::new();
 
-        let action = self.get_close_action().then(EditorAction::CreateObject {
-            id: self.id.clone(),
-            kind: self.kind,
-            position: self.position,
-            size: self.size,
-            layer_id: self.layer_id.clone(),
-        });
+        if let Some(id) = self.id.clone() {
+            let action = self.get_close_action().then(EditorAction::CreateObject {
+                id,
+                kind: self.kind,
+                position: self.position,
+                layer_id: self.layer_id.clone(),
+            });
 
-        res.push(ButtonParams {
-            label: "Create",
-            action: Some(action),
-            ..Default::default()
-        });
+            res.push(ButtonParams {
+                label: "Create",
+                action: Some(action),
+                ..Default::default()
+            });
+        }
 
         res.push(ButtonParams {
             label: "Cancel",
@@ -79,19 +80,89 @@ impl Window for CreateObjectWindow {
         let id = hash!("create_object_window");
 
         {
-            let size = vec2(173.0, 25.0);
+            let size = vec2(72.0, 28.0);
 
-            widgets::InputText::new(hash!(id, "id_input"))
+            let mut x_str = format!("{:.1}", self.position.x);
+            let mut y_str = format!("{:.1}", self.position.y);
+
+            widgets::InputText::new(hash!(id, "position_x_input"))
                 .size(size)
-                .ratio(1.0)
-                .label("ID")
-                .ui(ui, &mut self.id);
+                .ui(ui, &mut x_str);
 
-            ComboBoxBuilder::new(hash!(id, "type_input"))
-                .with_ratio(0.8)
-                .with_label("Type")
-                .build(ui, &mut self.kind);
+            ui.same_line(0.0);
+
+            ui.label(None, "x");
+
+            ui.same_line(0.0);
+
+            widgets::InputText::new(hash!(id, "position_y_input"))
+                .size(size)
+                .ui(ui, &mut y_str);
+
+            ui.separator();
+            ui.separator();
+            ui.separator();
+            ui.separator();
+
+            let x = if let Ok(x) = x_str.parse::<f32>() {
+                (x * 100.0).round() / 100.0
+            } else {
+                0.0
+            };
+
+            let y = if let Ok(y) = y_str.parse::<f32>() {
+                (y * 100.0).round() / 100.0
+            } else {
+                0.0
+            };
+
+            self.position = vec2(x, y);
         }
+
+        ComboBoxBuilder::new(hash!(id, "type_input"))
+            .with_ratio(0.8)
+            .with_label("Type")
+            .build(ui, &mut self.kind);
+
+        let resources = storage::get::<Resources>();
+        let item_ids = match self.kind {
+            MapObjectKind::Item => resources
+                .items
+                .values()
+                .map(|item| item.id.as_str())
+                .collect::<Vec<&str>>(),
+            MapObjectKind::Environment => {
+                vec!["sproinger"]
+            }
+            MapObjectKind::Decoration => {
+                vec!["pot", "seaweed"]
+            }
+            MapObjectKind::SpawnPoint => {
+                vec!["player_spawn"]
+            }
+        };
+
+        let mut item_index = 0;
+        if let Some(current_id) = &self.id {
+            item_index = item_ids
+                .iter()
+                .enumerate()
+                .find_map(|(i, id)| if id == current_id { Some(i) } else { None })
+                .unwrap_or(0);
+        }
+
+        let label = {
+            let opts = MapObjectKind::options();
+            let i = self.kind.to_index();
+            opts[i]
+        };
+
+        widgets::ComboBox::new(hash!("id_input"), &item_ids)
+            .ratio(0.8)
+            .label(label)
+            .ui(ui, &mut item_index);
+
+        self.id = item_ids.get(item_index).map(|str| str.to_string());
 
         None
     }

@@ -66,6 +66,9 @@ pub struct Player {
 
     pub back_armor: i32,
     pub can_head_boink: bool,
+
+    pub last_collisions: Vec<u8>,
+    pub current_collisions: Vec<u8>,
 }
 
 impl Player {
@@ -192,42 +195,49 @@ impl Player {
                     row: 0,
                     frames: 7,
                     fps: 12,
+                    is_looping: true,
                 },
                 Animation {
                     id: Self::MOVE_ANIMATION_ID.to_string(),
                     row: 2,
                     frames: 6,
                     fps: 10,
+                    is_looping: true,
                 },
                 Animation {
                     id: Self::DEATH_ANIMATION_ID.to_string(),
                     row: 12,
                     frames: 3,
                     fps: 5,
+                    is_looping: true,
                 },
                 Animation {
                     id: Self::DEATH_ALT_ANIMATION_ID.to_string(),
                     row: 14,
                     frames: 4,
                     fps: 8,
+                    is_looping: true,
                 },
                 Animation {
                     id: Self::FLOAT_ANIMATION_ID.to_string(),
                     row: 6,
                     frames: 4,
                     fps: 8,
+                    is_looping: true,
                 },
                 Animation {
                     id: Self::CROUCH_ANIMATION_ID.to_string(),
                     row: 16,
                     frames: 2,
                     fps: 8,
+                    is_looping: true,
                 },
                 Animation {
                     id: Self::SLIDE_ANIMATION_ID.to_string(),
                     row: 18,
                     frames: 2,
                     fps: 8,
+                    is_looping: true,
                 },
             ],
             should_autoplay: true,
@@ -260,6 +270,8 @@ impl Player {
             is_crouched: false,
             incapacitated_timer: 0.0,
             incapacitated_duration: 0.0,
+            last_collisions: Vec::new(),
+            current_collisions: Vec::new(),
         }
     }
 
@@ -871,6 +883,21 @@ impl Player {
             node.body.update();
         }
 
+        {
+            node.last_collisions = node.current_collisions.drain(..).collect();
+
+            let collider = node.get_collider_rect();
+            for player in scene::find_nodes_by_type::<Player>() {
+                if collider.overlaps(&player.get_collider_rect()) {
+                    node.current_collisions.push(player.id);
+
+                    let is_new = !node.last_collisions.contains(&player.id);
+
+                    Player::on_collision(node.handle(), player.handle(), is_new);
+                }
+            }
+        }
+
         if node.can_head_boink && node.body.velocity.y > 0.0 {
             let hitbox = node.get_collider_rect();
             for player in scene::find_nodes_by_type::<Player>() {
@@ -1108,13 +1135,17 @@ impl Player {
     pub fn on_collision(
         player_handle: Handle<Player>,
         collision_with: Handle<Player>,
+        is_new: bool,
     ) -> Coroutine {
         let coroutine = async move {
             if let Some(mut node) = scene::try_get_node(player_handle) {
                 let position = node.body.position;
 
                 for effect in node.passive_effects.values_mut() {
-                    let params = PlayerEventParams::Collision { collision_with };
+                    let params = PlayerEventParams::Collision {
+                        is_new,
+                        collision_with,
+                    };
                     effect.on_player_event(player_handle, position, params);
                 }
             }

@@ -46,6 +46,7 @@ pub enum PlayerEventParams {
         incapacitated_by: Option<Handle<Player>>,
     },
     Collision {
+        is_new: bool,
         collision_with: Handle<Player>,
     },
 }

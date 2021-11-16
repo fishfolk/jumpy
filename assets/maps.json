@@ -2,79 +2,66 @@
   {
     "name": "lev01",
     "path": "maps/lev01.json",
-    "preview_path": "maps/lev01.png",
-    "is_tiled_map": true
+    "preview_path": "maps/lev01.png"
   },
   {
     "name": "lev02",
     "path": "maps/lev02.json",
-    "preview_path": "maps/lev02.png",
-    "is_tiled_map": true
+    "preview_path": "maps/lev02.png"
   },
   {
     "name": "lev03",
     "path": "maps/lev03.json",
-    "preview_path": "maps/lev03.png",
-    "is_tiled_map": true
+    "preview_path": "maps/lev03.png"
   },
   {
     "name": "lev04",
     "path": "maps/lev04.json",
-    "preview_path": "maps/lev04.png",
-    "is_tiled_map": true
+    "preview_path": "maps/lev04.png"
   },
   {
     "name": "lev05",
     "path": "maps/lev05.json",
-    "preview_path": "maps/lev05.png",
-    "is_tiled_map": true
+    "preview_path": "maps/lev05.png"
   },
   {
     "name": "lev06",
     "path": "maps/lev06.json",
-    "preview_path": "maps/lev06.png",
-    "is_tiled_map": true
+    "preview_path": "maps/lev06.png"
   },
   {
     "name": "zyrafa01",
     "path": "maps/zyrafa01.json",
-    "preview_path": "maps/zyrafa01.png",
-    "is_tiled_map": true
+    "preview_path": "maps/zyrafa01.png"
   },
   {
     "name": "zyrafa02",
     "path": "maps/zyrafa02.json",
-    "preview_path": "maps/zyrafa02.png",
-    "is_tiled_map": true
+    "preview_path": "maps/zyrafa02.png"
   },
   {
     "name": "zyrafa03",
     "path": "maps/zyrafa03.json",
-    "preview_path": "maps/zyrafa03.png",
-    "is_tiled_map": true
+    "preview_path": "maps/zyrafa03.png"
   },
   {
     "name": "zyrafa04",
     "path": "maps/zyrafa04.json",
-    "preview_path": "maps/zyrafa04.png",
-    "is_tiled_map": true
+    "preview_path": "maps/zyrafa04.png"
   },
   {
     "name": "zyrafa05",
     "path": "maps/zyrafa05.json",
-    "preview_path": "maps/zyrafa05.png",
-    "is_tiled_map": true
+    "preview_path": "maps/zyrafa05.png"
   },
   {
     "name": "zyrafa06",
     "path": "maps/zyrafa06.json",
-    "preview_path": "maps/zyrafa06.png",
-    "is_tiled_map": true
+    "preview_path": "maps/zyrafa06.png"
   },
   {
     "name": "test_level",
     "path": "maps/test_level.json",
-    "preview_path": "maps/test_level.png",
-    "is_tiled_map": true
+    "preview_path": "maps/test_level.png"
   }
 ]

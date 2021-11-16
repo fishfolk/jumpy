@@ -30,5 +30,13 @@
   {
     "id": "smoke",
     "path": "particle_effects/smoke.json"
+  },
+  {
+    "id": "machine_gun_muzzle_smoke",
+    "path": "particle_effects/machine_gun_muzzle_smoke.json"
+  },
+  {
+    "id": "machine_gun_firing_smoke",
+    "path": "particle_effects/machine_gun_firing_smoke.json"
   }
 ]

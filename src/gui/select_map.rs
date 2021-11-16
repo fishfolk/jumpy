@@ -6,10 +6,8 @@ use macroquad::{
 
 use super::GuiResources;
 
-use crate::{
-    resources::MapResource,
-    GamepadContext, Resources,
-};
+use crate::{resources::MapResource, GamepadContext, Resources};
+
 use crate::gui::{draw_main_menu_background, WINDOW_MARGIN_H, WINDOW_MARGIN_V};
 
 const MAP_SELECT_SCREEN_MARGIN_FACTOR: f32 = 0.1;
@@ -179,7 +177,8 @@ pub async fn show_select_map_menu() -> MapResource {
                     let pagination_label = format!("page {}/{}", current_page + 1, page_cnt);
 
                     let label_size = root_ui().calc_size(&pagination_label);
-                    let label_position = screen_size - vec2(WINDOW_MARGIN_H, WINDOW_MARGIN_V) - label_size;
+                    let label_position =
+                        screen_size - vec2(WINDOW_MARGIN_H, WINDOW_MARGIN_V) - label_size;
 
                     widgets::Label::new(&pagination_label)
                         .position(label_position)

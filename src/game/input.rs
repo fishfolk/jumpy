@@ -5,7 +5,7 @@ use macroquad::{
 
 use fishsticks::{Axis, Button};
 
-use nanoserde::{DeBin, SerBin};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum GameInputScheme {
@@ -17,7 +17,7 @@ pub enum GameInputScheme {
     Gamepad(fishsticks::GamepadId),
 }
 
-#[derive(Default, Debug, Clone, Copy, DeBin, SerBin)]
+#[derive(Default, Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct GameInput {
     pub jump: bool,
     pub pickup: bool,

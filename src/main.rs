@@ -48,7 +48,7 @@ pub use events::{dispatch_application_event, ApplicationEvent};
 
 pub use game::{
     collect_input, create_game_scene, start_music, stop_music, GameCamera, GameInput,
-    GameInputScheme, GameScene, GameWorld, LocalGame, NetworkGame, NetworkMessage,
+    GameInputScheme, GameScene, GameWorld, LocalGame,
 };
 
 pub use particles::ParticleEmitters;

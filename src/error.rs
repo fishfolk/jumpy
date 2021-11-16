@@ -1,13 +1,12 @@
+//! This implements a simple Error and Result type, inspired by `io::Error` and `io::Result`, that
+//! enables us to work seamlessly with all the different `Error` implementations from our dependencies.
+//!
+//! Just implement `From` for `Error`, for any remote implementations of `Error` you encounter, and
+//! use the `Result` type alias, from this module, as return type when it is required.
+
 use std::{error, fmt, io, result, string::FromUtf8Error};
 
 use macroquad::prelude::{FileError, FontError};
-use nanoserde::DeJsonErr;
-
-// This implements a simple Error and Result type, inspired by `io::Error` and `io::Result`, that
-// enables us to work seamlessly with all the different `Error` implementations from our dependencies.
-//
-// Just implement `From` for `Error`, for any remote implementations of `Error` you encounter, and
-// use the `Result` type alias, from this module, as return type when it is required.
 
 pub type Result<T> = result::Result<T, Error>;
 
@@ -193,16 +192,10 @@ impl From<serde_json::Error> for Error {
     }
 }
 
-impl From<nanoserde::DeJsonErr> for Error {
-    fn from(error: DeJsonErr) -> Self {
-        Error::new(ErrorKind::Parsing, error)
-    }
-}
-
-// This will create an error based on the parameters you provide.
-// It follows the same rules as `format!`, only this takes an optional `ErrorKind`, as its
-// first argument (before the format string), which will be the kind of `Error` returned.
-// If no `ErrorKind` is specified, the default variant `ErrorKind::General` will be used.
+/// This will create an error based on the parameters you provide.
+/// It follows the same rules as `format!`, only this takes an optional `ErrorKind`, as its
+/// first argument (before the format string), which will be the kind of `Error` returned.
+/// If no `ErrorKind` is specified, the default variant `ErrorKind::General` will be used.
 #[macro_export]
 macro_rules! formaterr {
     ($kind:path, $($arg:tt)*) => ({

@@ -36,6 +36,9 @@ pub struct AnimationParams {
     /// The id of the spritesheet texture that will be used
     #[serde(rename = "texture")]
     pub texture_id: String,
+    /// This is a scale factor that the frame size will be multiplied by before draw
+    #[serde(default = "json::default_scale")]
+    pub scale: f32,
     /// The offset of the drawn frame, relative to the position provided as an argument to the
     /// `AnimationPlayer` draw method.
     /// Note that this offset will not be inverted if the frame is flipped.
@@ -44,8 +47,8 @@ pub struct AnimationParams {
     /// The pivot of the frame, relative to the position provided as an argument to the
     /// `AnimationPlayer` draw method, plus any offset.
     /// Note that this offset will not be inverted if the frame is flipped.
-    #[serde(default, with = "json::vec2_def")]
-    pub pivot: Vec2,
+    #[serde(default, with = "json::vec2_opt")]
+    pub pivot: Option<Vec2>,
     /// The size of the drawn sprite. If no size is specified, the texture entry's `sprite_size`
     /// will be used.
     #[serde(
@@ -75,8 +78,9 @@ impl Default for AnimationParams {
     fn default() -> Self {
         AnimationParams {
             texture_id: "".to_string(),
+            scale: 1.0,
             offset: Vec2::ZERO,
-            pivot: Vec2::ZERO,
+            pivot: None,
             frame_size: None,
             tint: None,
             animations: vec![],
@@ -88,8 +92,9 @@ impl Default for AnimationParams {
 
 pub struct AnimationPlayer {
     texture: Texture2D,
+    scale: f32,
     offset: Vec2,
-    pivot: Vec2,
+    pivot: Option<Vec2>,
     tint: Color,
     sprite: AnimatedSprite,
     animations: Vec<Animation>,
@@ -160,6 +165,7 @@ impl AnimationPlayer {
 
         AnimationPlayer {
             texture,
+            scale: params.scale,
             offset: params.offset,
             pivot: params.pivot,
             tint,
@@ -209,7 +215,7 @@ impl AnimationPlayer {
                     rotation,
                     source: Some(source_rect),
                     dest_size: Some(size),
-                    pivot: Some(self.pivot),
+                    pivot: self.pivot,
                 },
             )
         }
@@ -231,8 +237,16 @@ impl AnimationPlayer {
         }
     }
 
+    pub fn get_texture(&self) -> Texture2D {
+        self.texture
+    }
+
     pub fn get_size(&self) -> Vec2 {
-        self.sprite.frame().dest_size
+        self.sprite.frame().dest_size * self.scale
+    }
+
+    pub fn set_scale(&mut self, scale: f32) {
+        self.scale = scale;
     }
 
     pub fn get_animation(&self, id: &str) -> Option<&Animation> {

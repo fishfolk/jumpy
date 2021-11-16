@@ -1,4 +1,5 @@
 use macroquad::{
+    color,
     experimental::collections::storage,
     prelude::*,
     ui::{root_ui, widgets, Ui},
@@ -31,9 +32,24 @@ impl Background {
                 .ui(ui);
         }
     }
+
+    pub fn draw(&self) {
+        for res in &self.textures {
+            draw_texture_ex(
+                res.texture,
+                self.position.x,
+                self.position.y,
+                color::WHITE,
+                DrawTextureParams {
+                    dest_size: Some(self.size),
+                    ..Default::default()
+                },
+            )
+        }
+    }
 }
 
-pub fn draw_main_menu_background() {
+pub fn draw_main_menu_background(is_ui: bool) {
     let resources = storage::get::<Resources>();
 
     let background_01 = resources.textures.get("background_01").cloned().unwrap();
@@ -50,5 +66,9 @@ pub fn draw_main_menu_background() {
         &[background_04, background_03, background_02, background_01],
     );
 
-    bg.ui(&mut *root_ui());
+    if is_ui {
+        bg.ui(&mut *root_ui());
+    } else {
+        bg.draw();
+    }
 }

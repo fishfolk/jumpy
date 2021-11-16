@@ -1,0 +1,271 @@
+use macroquad::experimental::collections::storage;
+use macroquad::prelude::*;
+use macroquad::ui::{root_ui, widgets};
+
+use fishsticks::{Axis, Button, GamepadContext};
+
+use crate::components::AnimationPlayer;
+use crate::gui::{
+    draw_main_menu_background, GuiResources, BUTTON_FONT_SIZE, BUTTON_MARGIN_H, WINDOW_BG_COLOR,
+    WINDOW_MARGIN_V,
+};
+use crate::input::update_gamepad_context;
+use crate::player::PlayerCharacterParams;
+use crate::{GameInputScheme, Resources};
+
+const SECTION_WIDTH: f32 = 300.0;
+const SECTION_HEIGHT: f32 = 400.0;
+const SECTION_MARGIN: f32 = 22.0;
+
+const NAVIGATION_GRACE_TIME: f32 = 0.25;
+
+const NAVIGATION_BTN_WIDTH: f32 = 64.0;
+const NAVIGATION_BTN_HEIGHT: f32 = (BUTTON_MARGIN_H * 2.0) + BUTTON_FONT_SIZE;
+
+pub async fn show_select_characters_menu(
+    player_input: Vec<GameInputScheme>,
+) -> Vec<PlayerCharacterParams> {
+    let mut selected_params = Vec::new();
+
+    let player_cnt = player_input.len();
+
+    let player_characters = {
+        let resources = storage::get::<Resources>();
+        resources
+            .player_characters
+            .iter()
+            .map(|(_, params)| params.clone())
+            .collect::<Vec<PlayerCharacterParams>>()
+    };
+
+    assert!(
+        player_characters.len() >= player_cnt,
+        "Character selection: There are more players than there are available player characters"
+    );
+
+    let mut current_selections = Vec::new();
+    let mut navigation_grace_timers = Vec::new();
+    let mut animation_players = Vec::new();
+
+    for (i, player_character) in player_characters.iter().enumerate().take(player_cnt) {
+        selected_params.push(None);
+
+        current_selections.push(i);
+        navigation_grace_timers.push(0.0);
+
+        let animation_params = player_character.animation.clone().into();
+        animation_players.push(AnimationPlayer::new(animation_params));
+    }
+
+    let section_size = vec2(SECTION_WIDTH, SECTION_HEIGHT);
+    let total_size = vec2(
+        ((section_size.x + SECTION_MARGIN) * player_cnt as f32) - SECTION_MARGIN,
+        section_size.y,
+    );
+    let first_position = (vec2(screen_width(), screen_height()) - total_size) / 2.0;
+
+    let mut is_ready = false;
+
+    while !is_ready {
+        update_gamepad_context(None).unwrap();
+
+        draw_main_menu_background(false);
+
+        {
+            let gui_resources = storage::get::<GuiResources>();
+            root_ui().push_skin(&gui_resources.skins.default);
+        }
+
+        for (i, input_scheme) in player_input.iter().enumerate() {
+            let section_position = vec2(
+                first_position.x + ((section_size.x + SECTION_MARGIN) * i as f32),
+                first_position.y,
+            );
+
+            let mut current_selection = current_selections[i] as i32;
+
+            let mut should_navigate_left = false;
+            let mut should_navigate_right = false;
+            let mut should_confirm = false;
+
+            {
+                navigation_grace_timers[i] += get_frame_time();
+
+                let can_navigate = navigation_grace_timers[i] >= NAVIGATION_GRACE_TIME;
+
+                match *input_scheme {
+                    GameInputScheme::KeyboardRight => {
+                        should_navigate_left = can_navigate && is_key_down(KeyCode::Left);
+                        should_navigate_right = can_navigate && is_key_down(KeyCode::Right);
+                        should_confirm =
+                            is_key_pressed(KeyCode::L) || is_key_pressed(KeyCode::Enter);
+                    }
+                    GameInputScheme::KeyboardLeft => {
+                        should_navigate_left = can_navigate && is_key_down(KeyCode::A);
+                        should_navigate_right = can_navigate && is_key_down(KeyCode::D);
+                        should_confirm =
+                            is_key_pressed(KeyCode::V) || is_key_pressed(KeyCode::LeftControl);
+                    }
+                    GameInputScheme::Gamepad(gamepad_id) => {
+                        let gamepad_context = storage::get::<GamepadContext>();
+                        let gamepad = gamepad_context.gamepad(gamepad_id);
+
+                        if let Some(gamepad) = gamepad {
+                            should_navigate_left = can_navigate
+                                && (gamepad.analog_inputs.value_digital(Axis::LeftX) < 0.0
+                                    || gamepad.digital_inputs.just_activated(Button::DPadLeft));
+
+                            should_navigate_right = can_navigate
+                                && (gamepad.analog_inputs.value_digital(Axis::LeftX) > 0.0
+                                    || gamepad.digital_inputs.just_activated(Button::DPadRight));
+
+                            should_confirm = gamepad.digital_inputs.just_activated(Button::A);
+                        }
+                    }
+                }
+
+                {
+                    let btn_size = vec2(NAVIGATION_BTN_WIDTH, NAVIGATION_BTN_HEIGHT);
+
+                    let btn_section = vec2(
+                        section_position.x + (section_size.x / 2.0),
+                        section_position.y + section_size.y - btn_size.y - WINDOW_MARGIN_V,
+                    );
+
+                    {
+                        let btn_position = vec2(
+                            btn_section.x - (SECTION_MARGIN / 2.0) - btn_size.x,
+                            btn_section.y,
+                        );
+
+                        should_navigate_left = widgets::Button::new("<")
+                            .size(btn_size)
+                            .position(btn_position)
+                            .ui(&mut *root_ui())
+                            || should_navigate_left;
+                    }
+
+                    {
+                        let btn_position =
+                            vec2(btn_section.x + (SECTION_MARGIN / 2.0), btn_section.y);
+
+                        should_navigate_right = widgets::Button::new(">")
+                            .size(btn_size)
+                            .position(btn_position)
+                            .ui(&mut *root_ui())
+                            || should_navigate_right;
+                    }
+                }
+
+                if selected_params[i].is_none() && (should_navigate_left || should_navigate_right) {
+                    let mut is_taken = true;
+                    while is_taken {
+                        if should_navigate_left {
+                            current_selection -= 1;
+                        } else if should_navigate_right {
+                            current_selection += 1;
+                        }
+
+                        if current_selection < 0 {
+                            current_selection = player_characters.len() as i32 - 1;
+                        } else {
+                            current_selection %= player_characters.len() as i32;
+                        }
+
+                        is_taken = current_selections
+                            .iter()
+                            .enumerate()
+                            .any(|(ii, selection)| {
+                                ii != i && *selection == current_selection as usize
+                            });
+                    }
+
+                    current_selections[i] = current_selection as usize;
+
+                    navigation_grace_timers[i] = 0.0;
+
+                    let animation_params = player_characters[current_selection as usize]
+                        .animation
+                        .clone()
+                        .into();
+                    animation_players[i] = AnimationPlayer::new(animation_params);
+                }
+
+                draw_rectangle(
+                    section_position.x,
+                    section_position.y,
+                    section_size.x,
+                    section_size.y,
+                    WINDOW_BG_COLOR,
+                );
+
+                {
+                    let gui_resources = storage::get::<GuiResources>();
+                    root_ui().push_skin(&gui_resources.skins.window_header);
+
+                    {
+                        let player_label = format!("Player {}", i + 1);
+
+                        let label_size = root_ui().calc_size(&player_label);
+                        let label_position = vec2(
+                            section_position.x + ((section_size.x - label_size.x) / 2.0),
+                            section_position.y + WINDOW_MARGIN_V,
+                        );
+
+                        widgets::Label::new(&player_label)
+                            .position(label_position)
+                            .ui(&mut *root_ui());
+                    }
+
+                    {
+                        let name_label = &player_characters[current_selection as usize].name;
+
+                        let label_size = root_ui().calc_size(name_label);
+                        let label_position = vec2(
+                            section_position.x + ((section_size.x - label_size.x) / 2.0),
+                            section_position.y + section_size.y
+                                - WINDOW_MARGIN_V
+                                - NAVIGATION_BTN_HEIGHT
+                                - SECTION_MARGIN
+                                - label_size.y,
+                        );
+
+                        widgets::Label::new(name_label)
+                            .position(label_position)
+                            .ui(&mut *root_ui());
+                    }
+
+                    root_ui().pop_skin();
+                }
+
+                {
+                    let animation_player = &mut animation_players[i];
+
+                    animation_player.update();
+
+                    // TODO: Calculate scale from a fixed target size, based on ui layout
+                    animation_player.set_scale(2.0);
+
+                    let animation_size = animation_player.get_size();
+                    let animation_position =
+                        section_position + vec2((section_size.x - animation_size.x) / 2.0, 100.0);
+
+                    animation_player.draw(animation_position, 0.0, false, false);
+                }
+
+                if should_confirm {
+                    let params = player_characters[current_selection as usize].clone();
+                    selected_params[i] = Some(params);
+                }
+            }
+
+            is_ready = !selected_params.iter().any(|params| params.is_none());
+        }
+
+        root_ui().pop_skin();
+
+        next_frame().await;
+    }
+
+    selected_params.into_iter().flatten().collect()
+}

@@ -1,0 +1,747 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/object1637075321.json",
+  "title": "Root",
+  "type": "array",
+  "default": [],
+  "items":{
+    "$id": "#root/items",
+    "title": "Items",
+    "type": "object",
+    "required": [
+      "id",
+      "name",
+      "texture"
+    ],
+    "properties": {
+      "id": {
+        "$id": "#root/items/id",
+        "title": "Id",
+        "type": "string",
+        "default": "",
+        "examples": [
+          "blue"
+        ],
+        "pattern": "^.*$"
+      },
+      "name": {
+        "$id": "#root/items/name",
+        "title": "Name",
+        "type": "string",
+        "default": "",
+        "examples": [
+          "Blue"
+        ],
+        "pattern": "^.*$"
+      },
+      "description": {
+        "$id": "#root/items/description",
+        "title": "Description",
+        "type": "string",
+        "default": "",
+        "examples": [
+          "My name is 'Blue'"
+        ],
+        "pattern": "^.*$"
+      },
+      "texture": {
+        "$id": "#root/items/texture",
+        "title": "Texture",
+        "type": "string",
+        "default": "",
+        "examples": [
+          "player_blue"
+        ],
+        "pattern": "^.*$"
+      },
+      "scale": {
+        "$id": "#root/items/scale",
+        "title": "Scale",
+        "type": "integer",
+        "examples": [
+          1
+        ],
+        "default": 0
+      },
+      "offset": {
+        "$id": "#root/items/offset",
+        "title": "Offset",
+        "type": "object",
+        "required": [
+          "x",
+          "y"
+        ],
+        "properties": {
+          "x": {
+            "$id": "#root/items/offset/x",
+            "title": "X",
+            "type": "integer",
+            "examples": [
+              0
+            ],
+            "default": 0
+          },
+          "y": {
+            "$id": "#root/items/offset/y",
+            "title": "Y",
+            "type": "integer",
+            "examples": [
+              0
+            ],
+            "default": 0
+          }
+        }
+      }
+    ,
+      "frame_size": {
+        "$id": "#root/items/frame_size",
+        "title": "Frame_size",
+        "type": "object",
+        "required": [
+          "x",
+          "y"
+        ],
+        "properties": {
+          "x": {
+            "$id": "#root/items/frame_size/x",
+            "title": "X",
+            "type": "integer",
+            "examples": [
+              50
+            ],
+            "default": 0
+          },
+          "y": {
+            "$id": "#root/items/frame_size/y",
+            "title": "Y",
+            "type": "integer",
+            "examples": [
+              100
+            ],
+            "default": 0
+          }
+        }
+      }
+    ,
+      "tint": {
+        "$id": "#root/items/tint",
+        "title": "Tint",
+        "type": "object",
+        "required": [
+          "r",
+          "g",
+          "b",
+          "a"
+        ],
+        "properties": {
+          "r": {
+            "$id": "#root/items/tint/r",
+            "title": "R",
+            "type": "integer",
+            "examples": [
+              1
+            ],
+            "default": 0
+          },
+          "g": {
+            "$id": "#root/items/tint/g",
+            "title": "G",
+            "type": "integer",
+            "examples": [
+              1
+            ],
+            "default": 0
+          },
+          "b": {
+            "$id": "#root/items/tint/b",
+            "title": "B",
+            "type": "integer",
+            "examples": [
+              1
+            ],
+            "default": 0
+          },
+          "a": {
+            "$id": "#root/items/tint/a",
+            "title": "A",
+            "type": "integer",
+            "examples": [
+              1
+            ],
+            "default": 0
+          }
+        }
+      }
+    ,
+      "animations": {
+        "$id": "#root/items/animations",
+        "title": "Animations",
+        "type": "object",
+        "required": [
+          "idle",
+          "move",
+          "death",
+          "death_alt",
+          "float",
+          "crouch",
+          "slide"
+        ],
+        "properties": {
+          "idle": {
+            "$id": "#root/items/animations/idle",
+            "title": "Idle",
+            "type": "object",
+            "required": [
+              "id",
+              "row",
+              "frames",
+              "fps",
+              "is_looping"
+            ],
+            "properties": {
+              "id": {
+                "$id": "#root/items/animations/idle/id",
+                "title": "Id",
+                "type": "string",
+                "default": "",
+                "examples": [
+                  "idle"
+                ],
+                "pattern": "^.*$"
+              },
+              "row": {
+                "$id": "#root/items/animations/idle/row",
+                "title": "Row",
+                "type": "integer",
+                "examples": [
+                  0
+                ],
+                "default": 0
+              },
+              "frames": {
+                "$id": "#root/items/animations/idle/frames",
+                "title": "Frames",
+                "type": "integer",
+                "examples": [
+                  4
+                ],
+                "default": 0
+              },
+              "fps": {
+                "$id": "#root/items/animations/idle/fps",
+                "title": "Fps",
+                "type": "integer",
+                "examples": [
+                  8
+                ],
+                "default": 0
+              },
+              "is_looping": {
+                "$id": "#root/items/animations/idle/is_looping",
+                "title": "Is_looping",
+                "type": "boolean",
+                "examples": [
+                  true
+                ],
+                "default": true
+              }
+            }
+          }
+        ,
+          "move": {
+            "$id": "#root/items/animations/move",
+            "title": "Move",
+            "type": "object",
+            "required": [
+              "id",
+              "row",
+              "frames",
+              "fps",
+              "is_looping"
+            ],
+            "properties": {
+              "id": {
+                "$id": "#root/items/animations/move/id",
+                "title": "Id",
+                "type": "string",
+                "default": "",
+                "examples": [
+                  "move"
+                ],
+                "pattern": "^.*$"
+              },
+              "row": {
+                "$id": "#root/items/animations/move/row",
+                "title": "Row",
+                "type": "integer",
+                "examples": [
+                  1
+                ],
+                "default": 0
+              },
+              "frames": {
+                "$id": "#root/items/animations/move/frames",
+                "title": "Frames",
+                "type": "integer",
+                "examples": [
+                  4
+                ],
+                "default": 0
+              },
+              "fps": {
+                "$id": "#root/items/animations/move/fps",
+                "title": "Fps",
+                "type": "integer",
+                "examples": [
+                  8
+                ],
+                "default": 0
+              },
+              "is_looping": {
+                "$id": "#root/items/animations/move/is_looping",
+                "title": "Is_looping",
+                "type": "boolean",
+                "examples": [
+                  true
+                ],
+                "default": true
+              }
+            }
+          }
+        ,
+          "death": {
+            "$id": "#root/items/animations/death",
+            "title": "Death",
+            "type": "object",
+            "required": [
+              "id",
+              "row",
+              "frames",
+              "fps",
+              "is_looping"
+            ],
+            "properties": {
+              "id": {
+                "$id": "#root/items/animations/death/id",
+                "title": "Id",
+                "type": "string",
+                "default": "",
+                "examples": [
+                  "death"
+                ],
+                "pattern": "^.*$"
+              },
+              "row": {
+                "$id": "#root/items/animations/death/row",
+                "title": "Row",
+                "type": "integer",
+                "examples": [
+                  2
+                ],
+                "default": 0
+              },
+              "frames": {
+                "$id": "#root/items/animations/death/frames",
+                "title": "Frames",
+                "type": "integer",
+                "examples": [
+                  4
+                ],
+                "default": 0
+              },
+              "fps": {
+                "$id": "#root/items/animations/death/fps",
+                "title": "Fps",
+                "type": "integer",
+                "examples": [
+                  8
+                ],
+                "default": 0
+              },
+              "is_looping": {
+                "$id": "#root/items/animations/death/is_looping",
+                "title": "Is_looping",
+                "type": "boolean",
+                "examples": [
+                  true
+                ],
+                "default": true
+              }
+            }
+          }
+        ,
+          "death_alt": {
+            "$id": "#root/items/animations/death_alt",
+            "title": "Death_alt",
+            "type": "object",
+            "required": [
+              "id",
+              "row",
+              "frames",
+              "fps",
+              "is_looping"
+            ],
+            "properties": {
+              "id": {
+                "$id": "#root/items/animations/death_alt/id",
+                "title": "Id",
+                "type": "string",
+                "default": "",
+                "examples": [
+                  "death_alt"
+                ],
+                "pattern": "^.*$"
+              },
+              "row": {
+                "$id": "#root/items/animations/death_alt/row",
+                "title": "Row",
+                "type": "integer",
+                "examples": [
+                  3
+                ],
+                "default": 0
+              },
+              "frames": {
+                "$id": "#root/items/animations/death_alt/frames",
+                "title": "Frames",
+                "type": "integer",
+                "examples": [
+                  4
+                ],
+                "default": 0
+              },
+              "fps": {
+                "$id": "#root/items/animations/death_alt/fps",
+                "title": "Fps",
+                "type": "integer",
+                "examples": [
+                  8
+                ],
+                "default": 0
+              },
+              "is_looping": {
+                "$id": "#root/items/animations/death_alt/is_looping",
+                "title": "Is_looping",
+                "type": "boolean",
+                "examples": [
+                  true
+                ],
+                "default": true
+              }
+            }
+          }
+        ,
+          "float": {
+            "$id": "#root/items/animations/float",
+            "title": "Float",
+            "type": "object",
+            "required": [
+              "id",
+              "row",
+              "frames",
+              "fps",
+              "is_looping"
+            ],
+            "properties": {
+              "id": {
+                "$id": "#root/items/animations/float/id",
+                "title": "Id",
+                "type": "string",
+                "default": "",
+                "examples": [
+                  "float"
+                ],
+                "pattern": "^.*$"
+              },
+              "row": {
+                "$id": "#root/items/animations/float/row",
+                "title": "Row",
+                "type": "integer",
+                "examples": [
+                  4
+                ],
+                "default": 0
+              },
+              "frames": {
+                "$id": "#root/items/animations/float/frames",
+                "title": "Frames",
+                "type": "integer",
+                "examples": [
+                  4
+                ],
+                "default": 0
+              },
+              "fps": {
+                "$id": "#root/items/animations/float/fps",
+                "title": "Fps",
+                "type": "integer",
+                "examples": [
+                  8
+                ],
+                "default": 0
+              },
+              "is_looping": {
+                "$id": "#root/items/animations/float/is_looping",
+                "title": "Is_looping",
+                "type": "boolean",
+                "examples": [
+                  true
+                ],
+                "default": true
+              }
+            }
+          }
+        ,
+          "crouch": {
+            "$id": "#root/items/animations/crouch",
+            "title": "Crouch",
+            "type": "object",
+            "required": [
+              "id",
+              "row",
+              "frames",
+              "fps",
+              "is_looping"
+            ],
+            "properties": {
+              "id": {
+                "$id": "#root/items/animations/crouch/id",
+                "title": "Id",
+                "type": "string",
+                "default": "",
+                "examples": [
+                  "crouch"
+                ],
+                "pattern": "^.*$"
+              },
+              "row": {
+                "$id": "#root/items/animations/crouch/row",
+                "title": "Row",
+                "type": "integer",
+                "examples": [
+                  5
+                ],
+                "default": 0
+              },
+              "frames": {
+                "$id": "#root/items/animations/crouch/frames",
+                "title": "Frames",
+                "type": "integer",
+                "examples": [
+                  4
+                ],
+                "default": 0
+              },
+              "fps": {
+                "$id": "#root/items/animations/crouch/fps",
+                "title": "Fps",
+                "type": "integer",
+                "examples": [
+                  8
+                ],
+                "default": 0
+              },
+              "is_looping": {
+                "$id": "#root/items/animations/crouch/is_looping",
+                "title": "Is_looping",
+                "type": "boolean",
+                "examples": [
+                  true
+                ],
+                "default": true
+              }
+            }
+          }
+        ,
+          "slide": {
+            "$id": "#root/items/animations/slide",
+            "title": "Slide",
+            "type": "object",
+            "required": [
+              "id",
+              "row",
+              "frames",
+              "fps",
+              "is_looping"
+            ],
+            "properties": {
+              "id": {
+                "$id": "#root/items/animations/slide/id",
+                "title": "Id",
+                "type": "string",
+                "default": "",
+                "examples": [
+                  "slide"
+                ],
+                "pattern": "^.*$"
+              },
+              "row": {
+                "$id": "#root/items/animations/slide/row",
+                "title": "Row",
+                "type": "integer",
+                "examples": [
+                  6
+                ],
+                "default": 0
+              },
+              "frames": {
+                "$id": "#root/items/animations/slide/frames",
+                "title": "Frames",
+                "type": "integer",
+                "examples": [
+                  4
+                ],
+                "default": 0
+              },
+              "fps": {
+                "$id": "#root/items/animations/slide/fps",
+                "title": "Fps",
+                "type": "integer",
+                "examples": [
+                  8
+                ],
+                "default": 0
+              },
+              "is_looping": {
+                "$id": "#root/items/animations/slide/is_looping",
+                "title": "Is_looping",
+                "type": "boolean",
+                "examples": [
+                  true
+                ],
+                "default": true
+              }
+            }
+          }
+
+        }
+      }
+    ,
+      "collider_size": {
+        "$id": "#root/items/collider_size",
+        "title": "Collider_size",
+        "type": "object",
+        "required": [
+          "x",
+          "y"
+        ],
+        "properties": {
+          "x": {
+            "$id": "#root/items/collider_size/x",
+            "title": "X",
+            "type": "integer",
+            "examples": [
+              50
+            ],
+            "default": 0
+          },
+          "y": {
+            "$id": "#root/items/collider_size/y",
+            "title": "Y",
+            "type": "integer",
+            "examples": [
+              100
+            ],
+            "default": 0
+          }
+        }
+      }
+    ,
+      "weapon_mount": {
+        "$id": "#root/items/weapon_mount",
+        "title": "Weapon_mount",
+        "type": "object",
+        "required": [
+          "x",
+          "y"
+        ],
+        "properties": {
+          "x": {
+            "$id": "#root/items/weapon_mount/x",
+            "title": "X",
+            "type": "integer",
+            "examples": [
+              25
+            ],
+            "default": 0
+          },
+          "y": {
+            "$id": "#root/items/weapon_mount/y",
+            "title": "Y",
+            "type": "integer",
+            "examples": [
+              50
+            ],
+            "default": 0
+          }
+        }
+      }
+    ,
+      "head_threshold": {
+        "$id": "#root/items/head_threshold",
+        "title": "Head_threshold",
+        "type": "integer",
+        "examples": [
+          24
+        ],
+        "default": 0
+      },
+      "legs_threshold": {
+        "$id": "#root/items/legs_threshold",
+        "title": "Legs_threshold",
+        "type": "integer",
+        "examples": [
+          48
+        ],
+        "default": 0
+      },
+      "jump_force": {
+        "$id": "#root/items/jump_force",
+        "title": "Jump_force",
+        "type": "integer",
+        "examples": [
+          500
+        ],
+        "default": 0
+      },
+      "move_speed": {
+        "$id": "#root/items/move_speed",
+        "title": "Move_speed",
+        "type": "integer",
+        "examples": [
+          250
+        ],
+        "default": 0
+      },
+      "slide_speed_factor": {
+        "$id": "#root/items/slide_speed_factor",
+        "title": "Slide_speed_factor",
+        "type": "integer",
+        "examples": [
+          2
+        ],
+        "default": 0
+      },
+      "slide_duration": {
+        "$id": "#root/items/slide_duration",
+        "title": "Slide_duration",
+        "type": "number",
+        "examples": [
+          1.5
+        ],
+        "default": 0.0
+      },
+      "float_gravity_factor": {
+        "$id": "#root/items/float_gravity_factor",
+        "title": "Float_gravity_factor",
+        "type": "number",
+        "examples": [
+          0.5
+        ],
+        "default": 0.0
+      }
+    }
+  }
+
+}

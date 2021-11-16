@@ -13,6 +13,9 @@ pub struct SpriteParams {
     /// The sprites index in the sprite sheet
     #[serde(default)]
     pub index: usize,
+    /// This is a scale factor that the sprite size will be multiplied by before draw
+    #[serde(default = "json::default_scale")]
+    pub scale: f32,
     /// The offset of the drawn sprite, relative to the position provided as an argument to the
     /// `Sprite` draw method.
     /// Note that this offset will not be inverted if the sprite is flipped.
@@ -52,6 +55,7 @@ impl Default for SpriteParams {
         SpriteParams {
             texture_id: "".to_string(),
             index: 0,
+            scale: 1.0,
             offset: Vec2::ZERO,
             pivot: None,
             size: None,
@@ -66,6 +70,7 @@ pub struct Sprite {
     texture: Texture2D,
     source_rect: Rect,
     tint: Color,
+    scale: f32,
     offset: Vec2,
     pivot: Option<Vec2>,
     pub is_deactivated: bool,
@@ -122,6 +127,7 @@ impl Sprite {
             texture: texture_res.texture,
             source_rect,
             tint,
+            scale: params.scale,
             offset: params.offset,
             pivot: params.pivot,
             is_deactivated: params.is_deactivated,
@@ -166,6 +172,10 @@ impl Sprite {
     }
 
     pub fn get_size(&self) -> Vec2 {
-        self.source_rect.size()
+        self.source_rect.size() * self.scale
+    }
+
+    pub fn set_scale(&mut self, scale: f32) {
+        self.scale = scale;
     }
 }

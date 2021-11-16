@@ -7,16 +7,26 @@ use macroquad::{
 
 use super::{ELEMENT_MARGIN, NO_COLOR};
 
-pub const FONT_SIZE: f32 = 22.0;
+pub const FONT_SIZE: f32 = 18.0;
+
+pub const HEADER_FONT_SIZE: f32 = 28.0;
 
 pub const WINDOW_MARGIN_V: f32 = 22.0;
 pub const WINDOW_MARGIN_H: f32 = 22.0;
 
+pub const WINDOW_BG_COLOR: Color = Color {
+    r: 0.15,
+    g: 0.17,
+    b: 0.27,
+    a: 1.0,
+};
+
 pub const BUTTON_MARGIN_V: f32 = 8.0;
 pub const BUTTON_MARGIN_H: f32 = 16.0;
+
 pub const BUTTON_FONT_SIZE: f32 = 25.0;
 
-pub const HEADER_FONT_SIZE: f32 = 25.0;
+pub const SMALL_BUTTON_FONT_SIZE: f32 = 18.0;
 
 const WINDOW_BG_MARGIN_V: f32 = 52.0;
 const WINDOW_BG_MARGIN_H: f32 = 52.0;
@@ -543,7 +553,7 @@ impl SkinCollection {
                     None,
                 ))
                 .text_color(Color::from_rgba(200, 200, 160, 255))
-                .font_size(18)
+                .font_size(SMALL_BUTTON_FONT_SIZE as u16)
                 .build();
 
             Skin {
@@ -570,7 +580,7 @@ impl SkinCollection {
                     None,
                 ))
                 .text_color(Color::from_rgba(200, 200, 160, 255))
-                .font_size(18)
+                .font_size(SMALL_BUTTON_FONT_SIZE as u16)
                 .build();
 
             Skin {

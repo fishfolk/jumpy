@@ -128,11 +128,6 @@ async fn main() -> Result<()> {
         }
     });
 
-    {
-        let gui_resources = gui::GuiResources::load(&assets_dir).await;
-        storage::store(gui_resources);
-    }
-
     while !resources_loading.is_done() {
         clear_background(BLACK);
         draw_text(
@@ -147,6 +142,11 @@ async fn main() -> Result<()> {
         );
 
         next_frame().await;
+    }
+
+    {
+        let gui_resources = gui::GuiResources::load(&assets_dir).await;
+        storage::store(gui_resources);
     }
 
     {

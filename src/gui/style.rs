@@ -1,15 +1,61 @@
 use macroquad::{
     color::Color,
+    experimental::collections::storage,
     math::RectOffset,
-    texture::Image,
     ui::{root_ui, Skin},
 };
+
+use crate::Resources;
 
 use super::{ELEMENT_MARGIN, NO_COLOR};
 
 pub const FONT_SIZE: f32 = 18.0;
 
+pub const TEXT_COLOR: Color = Color {
+    r: 0.78,
+    g: 0.78,
+    b: 0.62,
+    a: 1.0,
+};
+
+pub const LABEL_MARGIN_V: f32 = 4.0;
+pub const LABEL_MARGIN_H: f32 = 8.0;
+
 pub const HEADER_FONT_SIZE: f32 = 28.0;
+
+const BUTTON_BG_MARGIN_V: f32 = 8.0;
+const BUTTON_BG_MARGIN_H: f32 = 8.0;
+
+pub const BUTTON_MARGIN_V: f32 = 8.0;
+pub const BUTTON_MARGIN_H: f32 = 16.0;
+
+pub const BUTTON_FONT_SIZE: f32 = 25.0;
+
+pub const SMALL_BUTTON_FONT_SIZE: f32 = 18.0;
+
+pub const SMALL_BUTTON_MARGIN_V: f32 = 8.0;
+pub const SMALL_BUTTON_MARGIN_H: f32 = 16.0;
+
+const EDITBOX_BG_MARGIN_V: f32 = 2.0;
+const EDITBOX_BG_MARGIN_H: f32 = 2.0;
+
+pub const EDITBOX_MARGIN_V: f32 = 4.0;
+pub const EDITBOX_MARGIN_H: f32 = 8.0;
+
+const GROUP_BG_MARGIN_H: f32 = 0.0;
+const GROUP_BG_MARGIN_V: f32 = 0.0;
+
+pub const GROUP_MARGIN_H: f32 = 0.0;
+pub const GROUP_MARGIN_V: f32 = 0.0;
+
+const COMBOBOX_BG_MARGIN_H: f32 = 18.0;
+const COMBOBOX_BG_MARGIN_V: f32 = 4.0;
+
+const COMBOBOX_MARGIN_H: f32 = 8.0;
+const COMBOBOX_MARGIN_V: f32 = 4.0;
+
+const WINDOW_BG_MARGIN_V: f32 = 52.0;
+const WINDOW_BG_MARGIN_H: f32 = 52.0;
 
 pub const WINDOW_MARGIN_V: f32 = 22.0;
 pub const WINDOW_MARGIN_H: f32 = 22.0;
@@ -21,18 +67,6 @@ pub const WINDOW_BG_COLOR: Color = Color {
     a: 1.0,
 };
 
-pub const BUTTON_MARGIN_V: f32 = 8.0;
-pub const BUTTON_MARGIN_H: f32 = 16.0;
-
-pub const BUTTON_FONT_SIZE: f32 = 25.0;
-
-pub const SMALL_BUTTON_FONT_SIZE: f32 = 18.0;
-
-const WINDOW_BG_MARGIN_V: f32 = 52.0;
-const WINDOW_BG_MARGIN_H: f32 = 52.0;
-const BUTTON_BG_MARGIN_V: f32 = 8.0;
-const BUTTON_BG_MARGIN_H: f32 = 8.0;
-
 pub const SELECTED_OBJECT_HIGHLIGHT_COLOR: Color = Color {
     r: 0.23,
     g: 0.67,
@@ -41,6 +75,25 @@ pub const SELECTED_OBJECT_HIGHLIGHT_COLOR: Color = Color {
 };
 
 pub const LIST_BOX_ENTRY_HEIGHT: f32 = 24.0;
+
+const BUTTON_BACKGROUND_IMAGE_ID: &str = "button_background";
+const BUTTON_BACKGROUND_CLICKED_IMAGE_ID: &str = "button_background_clicked";
+const BUTTON_BACKGROUND_DISABLED_IMAGE_ID: &str = "button_background_disabled";
+const BUTTON_BACKGROUND_HOVERED_IMAGE_ID: &str = "button_background_hovered";
+
+const CHECKBOX_BACKGROUND_IMAGE_ID: &str = "checkbox_background";
+const CHECKBOX_BACKGROUND_CHECKED_IMAGE_ID: &str = "checkbox_background_checked";
+const CHECKBOX_BACKGROUND_CHECKED_HOVERED_IMAGE_ID: &str = "checkbox_background_checked_hovered";
+const CHECKBOX_BACKGROUND_CLICKED_IMAGE_ID: &str = "checkbox_background_clicked";
+const CHECKBOX_BACKGROUND_HOVERED_IMAGE_ID: &str = "checkbox_background_hovered";
+
+const COMBOBOX_BACKGROUND_IMAGE_ID: &str = "combobox_background";
+
+const EDITBOX_BACKGROUND_IMAGE_ID: &str = "editbox_background";
+const EDITBOX_BACKGROUND_CLICKED_IMAGE_ID: &str = "editbox_background_clicked";
+
+const WINDOW_BACKGROUND_IMAGE_ID: &str = "window_background";
+const WINDOW_BORDER_IMAGE_ID: &str = "window_border";
 
 pub struct SkinCollection {
     pub default: Skin,
@@ -70,19 +123,59 @@ pub struct SkinCollection {
     pub menu_disabled: Skin,
     pub map_selection: Skin,
     pub panel_group: Skin,
-    pub error: Skin,
-    pub cheat: Skin,
 }
 
 impl SkinCollection {
     pub fn new() -> SkinCollection {
+        let resources = storage::get::<Resources>();
+
+        let button_background = resources.images.get(BUTTON_BACKGROUND_IMAGE_ID).unwrap();
+        let button_background_clicked = resources
+            .images
+            .get(BUTTON_BACKGROUND_CLICKED_IMAGE_ID)
+            .unwrap();
+        let button_background_disabled = resources
+            .images
+            .get(BUTTON_BACKGROUND_DISABLED_IMAGE_ID)
+            .unwrap();
+        let button_background_hovered = resources
+            .images
+            .get(BUTTON_BACKGROUND_HOVERED_IMAGE_ID)
+            .unwrap();
+
+        let checkbox_background = resources.images.get(CHECKBOX_BACKGROUND_IMAGE_ID).unwrap();
+        let checkbox_background_checked = resources
+            .images
+            .get(CHECKBOX_BACKGROUND_CHECKED_IMAGE_ID)
+            .unwrap();
+        let checkbox_background_checked_hovered = resources
+            .images
+            .get(CHECKBOX_BACKGROUND_CHECKED_HOVERED_IMAGE_ID)
+            .unwrap();
+        let checkbox_background_clicked = resources
+            .images
+            .get(CHECKBOX_BACKGROUND_CLICKED_IMAGE_ID)
+            .unwrap();
+        let checkbox_background_hovered = resources
+            .images
+            .get(CHECKBOX_BACKGROUND_HOVERED_IMAGE_ID)
+            .unwrap();
+
+        let combobox_background = resources.images.get(COMBOBOX_BACKGROUND_IMAGE_ID).unwrap();
+
+        let editbox_background = resources.images.get(EDITBOX_BACKGROUND_IMAGE_ID).unwrap();
+        let editbox_background_clicked = resources
+            .images
+            .get(EDITBOX_BACKGROUND_CLICKED_IMAGE_ID)
+            .unwrap();
+
+        let window_background = resources.images.get(WINDOW_BACKGROUND_IMAGE_ID).unwrap();
+        let window_border = resources.images.get(WINDOW_BORDER_IMAGE_ID).unwrap();
+
         let default = {
             let window_style = root_ui()
                 .style_builder()
-                .background(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/window_background_2.png"),
-                    None,
-                ))
+                .background(window_background.image.clone())
                 .background_margin(RectOffset::new(
                     WINDOW_BG_MARGIN_H,
                     WINDOW_BG_MARGIN_H,
@@ -99,10 +192,9 @@ impl SkinCollection {
 
             let button_style = root_ui()
                 .style_builder()
-                .background(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/button_background_2.png"),
-                    None,
-                ))
+                .background(button_background.image.clone())
+                .background_hovered(button_background_hovered.image.clone())
+                .background_clicked(button_background_clicked.image.clone())
                 .background_margin(RectOffset::new(
                     BUTTON_BG_MARGIN_H,
                     BUTTON_BG_MARGIN_H,
@@ -115,26 +207,24 @@ impl SkinCollection {
                     BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
                     BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
                 ))
-                .background_hovered(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/button_hovered_background_2.png"),
-                    None,
-                ))
-                .background_clicked(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/button_clicked_background_2.png"),
-                    None,
-                ))
-                .text_color(Color::from_rgba(200, 200, 160, 255))
+                .text_color(TEXT_COLOR)
                 .font_size(BUTTON_FONT_SIZE as u16)
                 .build();
 
             let group_style = root_ui()
                 .style_builder()
-                .background(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/window_background_2.png"),
-                    None,
+                .margin(RectOffset::new(
+                    GROUP_MARGIN_H - GROUP_BG_MARGIN_H,
+                    GROUP_MARGIN_H - GROUP_BG_MARGIN_H,
+                    GROUP_MARGIN_V - GROUP_BG_MARGIN_V,
+                    GROUP_MARGIN_V - GROUP_BG_MARGIN_V,
                 ))
-                .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
+                .background_margin(RectOffset::new(
+                    GROUP_MARGIN_H,
+                    GROUP_MARGIN_H,
+                    GROUP_MARGIN_V,
+                    GROUP_MARGIN_V,
+                ))
                 .color(NO_COLOR)
                 .color_hovered(NO_COLOR)
                 .color_clicked(NO_COLOR)
@@ -142,51 +232,58 @@ impl SkinCollection {
 
             let label_style = root_ui()
                 .style_builder()
-                .margin(RectOffset::new(8.0, 8.0, 4.0, 4.0))
-                .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .text_color(Color::from_rgba(200, 200, 160, 255))
+                .margin(RectOffset::new(
+                    LABEL_MARGIN_H,
+                    LABEL_MARGIN_H,
+                    LABEL_MARGIN_V,
+                    LABEL_MARGIN_V,
+                ))
+                .text_color(TEXT_COLOR)
                 .font_size(FONT_SIZE as u16)
                 .build();
 
             let editbox_style = root_ui()
                 .style_builder()
-                .background(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/editbox_background2.png"),
-                    None,
+                .background(editbox_background.image.clone())
+                .background_clicked(editbox_background_clicked.image.clone())
+                .background_margin(RectOffset::new(
+                    EDITBOX_BG_MARGIN_H,
+                    EDITBOX_BG_MARGIN_H,
+                    EDITBOX_BG_MARGIN_V,
+                    EDITBOX_BG_MARGIN_V,
                 ))
-                .background_clicked(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/editbox_background.png"),
-                    None,
+                .margin(RectOffset::new(
+                    EDITBOX_MARGIN_H - EDITBOX_BG_MARGIN_H,
+                    EDITBOX_MARGIN_H - EDITBOX_BG_MARGIN_H,
+                    EDITBOX_MARGIN_V - EDITBOX_BG_MARGIN_V,
+                    EDITBOX_MARGIN_V - EDITBOX_BG_MARGIN_V,
                 ))
-                .background_margin(RectOffset::new(2.0, 2.0, 2.0, 2.0))
-                .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .text_color(Color::from_rgba(200, 200, 160, 255))
+                .text_color(TEXT_COLOR)
                 .font_size(FONT_SIZE as u16)
                 .build();
 
             let checkbox_style = root_ui()
                 .style_builder()
-                .background(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/checkbox_background.png"),
-                    None,
-                ))
-                .background_hovered(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/checkbox_hovered_background.png"),
-                    None,
-                ))
-                .background_clicked(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/checkbox_clicked_background.png"),
-                    None,
-                ))
+                .background(checkbox_background.image.clone())
+                .background_hovered(checkbox_background_hovered.image.clone())
+                .background_clicked(checkbox_background_clicked.image.clone())
                 .build();
 
             let combobox_style = root_ui()
                 .style_builder()
-                .background(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/combobox_background.png"),
-                    None,
+                .background(combobox_background.image.clone())
+                .background_margin(RectOffset::new(
+                    COMBOBOX_BG_MARGIN_H,
+                    COMBOBOX_BG_MARGIN_H,
+                    COMBOBOX_BG_MARGIN_V,
+                    COMBOBOX_BG_MARGIN_V,
                 ))
-                .background_margin(RectOffset::new(4., 25., 6., 6.))
+                .margin(RectOffset::new(
+                    COMBOBOX_MARGIN_H - COMBOBOX_BG_MARGIN_H,
+                    COMBOBOX_MARGIN_H - COMBOBOX_BG_MARGIN_H,
+                    COMBOBOX_MARGIN_V - COMBOBOX_BG_MARGIN_V,
+                    COMBOBOX_MARGIN_V - COMBOBOX_BG_MARGIN_V,
+                ))
                 .text_color(Color::from_rgba(120, 120, 120, 255))
                 .color(Color::from_rgba(210, 210, 210, 255))
                 .font_size(FONT_SIZE as u16)
@@ -226,20 +323,21 @@ impl SkinCollection {
         let button_disabled = {
             let button_style = root_ui()
                 .style_builder()
-                .background(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/button_disabled_background.png"),
-                    None,
+                .background(button_background_disabled.image.clone())
+                .background_margin(RectOffset::new(
+                    BUTTON_BG_MARGIN_H,
+                    BUTTON_BG_MARGIN_H,
+                    BUTTON_BG_MARGIN_V,
+                    BUTTON_BG_MARGIN_V,
                 ))
-                .background_margin(RectOffset::new(8.0, 8.0, 12.0, 12.0))
-                .margin(RectOffset::new(8.0, 8.0, -4.0, -4.0))
-                .background_hovered(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/button_disabled_background.png"),
-                    None,
+                .margin(RectOffset::new(
+                    BUTTON_MARGIN_H - BUTTON_BG_MARGIN_H,
+                    BUTTON_MARGIN_H - BUTTON_BG_MARGIN_H,
+                    BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
+                    BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
                 ))
-                .background_clicked(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/button_disabled_background.png"),
-                    None,
-                ))
+                .background_hovered(button_background_disabled.image.clone())
+                .background_clicked(button_background_disabled.image.clone())
                 .text_color(Color::from_rgba(88, 88, 88, 255))
                 .font_size(BUTTON_FONT_SIZE as u16)
                 .build();
@@ -255,7 +353,7 @@ impl SkinCollection {
                 .style_builder()
                 .margin(RectOffset::new(8.0, 8.0, 4.0, 16.0))
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .text_color(Color::from_rgba(200, 200, 160, 255))
+                .text_color(TEXT_COLOR)
                 .font_size(HEADER_FONT_SIZE as u16)
                 .build();
 
@@ -268,18 +366,9 @@ impl SkinCollection {
         let checkbox = {
             let button_style = root_ui()
                 .style_builder()
-                .background(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/checkbox_background.png"),
-                    None,
-                ))
-                .background_hovered(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/checkbox_hovered_background.png"),
-                    None,
-                ))
-                .background_clicked(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/checkbox_clicked_background.png"),
-                    None,
-                ))
+                .background(checkbox_background.image.clone())
+                .background_hovered(checkbox_background_hovered.image.clone())
+                .background_clicked(checkbox_background_clicked.image.clone())
                 .background_margin(RectOffset::new(0.0, 0.0, 4.0, 4.0))
                 .build();
 
@@ -316,18 +405,9 @@ impl SkinCollection {
         let checkbox_selected = {
             let button_style = root_ui()
                 .style_builder()
-                .background(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/checkbox_background_selected.png"),
-                    None,
-                ))
-                .background_hovered(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/checkbox_hovered_background_selected.png"),
-                    None,
-                ))
-                .background_clicked(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/checkbox_clicked_background.png"),
-                    None,
-                ))
+                .background(checkbox_background_checked.image.clone())
+                .background_hovered(checkbox_background_checked_hovered.image.clone())
+                .background_clicked(checkbox_background_clicked.image.clone())
                 .background_margin(RectOffset::new(0.0, 0.0, 4.0, 4.0))
                 .build();
 
@@ -340,21 +420,9 @@ impl SkinCollection {
         let label_button = {
             let button_style = root_ui()
                 .style_builder()
-                .background(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/blank_image.png"),
-                    None,
-                ))
-                .background_hovered(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/blank_image.png"),
-                    None,
-                ))
-                .background_clicked(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/blank_image.png"),
-                    None,
-                ))
                 .margin(RectOffset::new(0.0, 0.0, 4.0, 4.0))
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .text_color(Color::from_rgba(200, 200, 160, 255))
+                .text_color(TEXT_COLOR)
                 .font_size(FONT_SIZE as u16)
                 .build();
 
@@ -369,7 +437,7 @@ impl SkinCollection {
                 .style_builder()
                 .margin(RectOffset::new(8.0, 8.0, 4.0, 4.0))
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .text_color(Color::from_rgba(200, 200, 160, 255))
+                .text_color(TEXT_COLOR)
                 .font_size(16)
                 .build();
 
@@ -408,7 +476,7 @@ impl SkinCollection {
                 .style_builder()
                 .margin(RectOffset::new(8.0, 8.0, 4.0, 4.0))
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .text_color(Color::from_rgba(200, 200, 160, 255))
+                .text_color(TEXT_COLOR)
                 .font_size(16)
                 .build();
 
@@ -515,7 +583,7 @@ impl SkinCollection {
                 .style_builder()
                 .margin(RectOffset::new(8.0, 8.0, 4.0, 4.0))
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .text_color(Color::from_rgba(200, 200, 160, 255))
+                .text_color(TEXT_COLOR)
                 .font_size(18)
                 .build();
 
@@ -538,21 +606,22 @@ impl SkinCollection {
         let toolbar_button = {
             let button_style = root_ui()
                 .style_builder()
-                .background(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/button_background_2.png"),
-                    None,
+                .background(button_background.image.clone())
+                .background_hovered(button_background_hovered.image.clone())
+                .background_clicked(button_background_clicked.image.clone())
+                .background_margin(RectOffset::new(
+                    BUTTON_BG_MARGIN_H,
+                    BUTTON_BG_MARGIN_H,
+                    BUTTON_BG_MARGIN_V,
+                    BUTTON_BG_MARGIN_V,
                 ))
-                .background_margin(RectOffset::new(8.0, 8.0, 12.0, 12.0))
-                .margin(RectOffset::new(8.0, 8.0, -4.0, -4.0))
-                .background_hovered(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/button_hovered_background_2.png"),
-                    None,
+                .margin(RectOffset::new(
+                    SMALL_BUTTON_MARGIN_H - BUTTON_BG_MARGIN_H,
+                    SMALL_BUTTON_MARGIN_H - BUTTON_BG_MARGIN_H,
+                    SMALL_BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
+                    SMALL_BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
                 ))
-                .background_clicked(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/button_clicked_background_2.png"),
-                    None,
-                ))
-                .text_color(Color::from_rgba(200, 200, 160, 255))
+                .text_color(TEXT_COLOR)
                 .font_size(SMALL_BUTTON_FONT_SIZE as u16)
                 .build();
 
@@ -565,21 +634,22 @@ impl SkinCollection {
         let toolbar_button_disabled = {
             let button_style = root_ui()
                 .style_builder()
-                .background(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/button_disabled_background.png"),
-                    None,
+                .background(button_background_disabled.image.clone())
+                .background_hovered(button_background_disabled.image.clone())
+                .background_clicked(button_background_disabled.image.clone())
+                .background_margin(RectOffset::new(
+                    BUTTON_BG_MARGIN_H,
+                    BUTTON_BG_MARGIN_H,
+                    BUTTON_BG_MARGIN_V,
+                    BUTTON_BG_MARGIN_V,
                 ))
-                .background_margin(RectOffset::new(8.0, 8.0, 12.0, 12.0))
-                .margin(RectOffset::new(8.0, 8.0, -4.0, -4.0))
-                .background_hovered(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/button_disabled_background.png"),
-                    None,
+                .margin(RectOffset::new(
+                    SMALL_BUTTON_MARGIN_H - BUTTON_BG_MARGIN_H,
+                    SMALL_BUTTON_MARGIN_H - BUTTON_BG_MARGIN_H,
+                    SMALL_BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
+                    SMALL_BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
                 ))
-                .background_clicked(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/button_disabled_background.png"),
-                    None,
-                ))
-                .text_color(Color::from_rgba(200, 200, 160, 255))
+                .text_color(TEXT_COLOR)
                 .font_size(SMALL_BUTTON_FONT_SIZE as u16)
                 .build();
 
@@ -606,20 +676,11 @@ impl SkinCollection {
         let tool_selector_selected = {
             let button_style = root_ui()
                 .style_builder()
-                .background(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/button_hovered_background_2.png"),
-                    None,
-                ))
-                .background_margin(RectOffset::new(8.0, 8.0, 12.0, 12.0))
-                .margin(RectOffset::new(8.0, 8.0, -4.0, -4.0))
-                .background_hovered(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/button_hovered_background_2.png"),
-                    None,
-                ))
-                .background_clicked(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/button_hovered_background_2.png"),
-                    None,
-                ))
+                .background(button_background.image.clone())
+                .background_hovered(button_background_hovered.image.clone())
+                .background_clicked(button_background_clicked.image.clone())
+                .background_margin(RectOffset::new(2.0, 2.0, 2.0, 2.0))
+                .margin(RectOffset::new(6.0, 6.0, 6.0, 6.0))
                 .build();
 
             Skin {
@@ -697,7 +758,7 @@ impl SkinCollection {
         let menu_header = {
             let label_style = root_ui()
                 .style_builder()
-                .text_color(Color::from_rgba(255, 255, 255, 255))
+                .text_color(TEXT_COLOR)
                 .font_size(HEADER_FONT_SIZE as u16)
                 .build();
 
@@ -710,10 +771,6 @@ impl SkinCollection {
         let menu_selected = {
             let button_style = root_ui()
                 .style_builder()
-                .background(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/button_hovered_background_2.png"),
-                    None,
-                ))
                 .background_margin(RectOffset::new(
                     BUTTON_BG_MARGIN_H,
                     BUTTON_BG_MARGIN_H,
@@ -726,15 +783,10 @@ impl SkinCollection {
                     BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
                     BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
                 ))
-                .background_hovered(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/button_hovered_background_2.png"),
-                    None,
-                ))
-                .background_clicked(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/button_clicked_background_2.png"),
-                    None,
-                ))
-                .text_color(Color::from_rgba(200, 200, 160, 255))
+                .background(button_background_hovered.image.clone())
+                .background_hovered(button_background_hovered.image.clone())
+                .background_clicked(button_background_clicked.image.clone())
+                .text_color(TEXT_COLOR)
                 .font_size(BUTTON_FONT_SIZE as u16)
                 .build();
 
@@ -747,10 +799,6 @@ impl SkinCollection {
         let menu_disabled = {
             let button_style = root_ui()
                 .style_builder()
-                .background(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/button_disabled_background.png"),
-                    None,
-                ))
                 .background_margin(RectOffset::new(
                     BUTTON_BG_MARGIN_H,
                     BUTTON_BG_MARGIN_H,
@@ -763,15 +811,10 @@ impl SkinCollection {
                     BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
                     BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
                 ))
-                .background_hovered(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/button_disabled_background.png"),
-                    None,
-                ))
-                .background_clicked(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/button_disabled_background.png"),
-                    None,
-                ))
-                .text_color(Color::from_rgba(200, 200, 160, 255))
+                .background(button_background_disabled.image.clone())
+                .background_hovered(button_background_disabled.image.clone())
+                .background_clicked(button_background_disabled.image.clone())
+                .text_color(TEXT_COLOR)
                 .font_size(BUTTON_FONT_SIZE as u16)
                 .build();
 
@@ -792,16 +835,11 @@ impl SkinCollection {
                 .color_clicked(Color::new(0.0, 0.0, 0.0, 0.0))
                 .build();
 
-            let background = Image::from_file_with_format(
-                include_bytes!("../../assets/ui/window_background_2.png"),
-                None,
-            );
-
             let button_style = root_ui()
                 .style_builder()
-                .background(background.clone())
-                .background_hovered(background.clone())
-                .background_clicked(background)
+                .background(window_background.image.clone())
+                .background_hovered(window_background.image.clone())
+                .background_clicked(window_background.image.clone())
                 .background_margin(RectOffset::new(52.0, 52.0, 52.0, 52.0))
                 .build();
 
@@ -821,21 +859,12 @@ impl SkinCollection {
 
             let button_style = root_ui()
                 .style_builder()
-                .background(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/preview_background_2.png"),
-                    None,
-                ))
+                .background(window_border.image.clone())
                 .background_margin(RectOffset::new(52.0, 52.0, 52.0, 52.0))
                 .margin(RectOffset::new(-40.0, -40.0, -40.0, -40.0))
-                .background_hovered(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/preview_background_2.png"),
-                    None,
-                ))
-                .background_clicked(Image::from_file_with_format(
-                    include_bytes!("../../assets/ui/preview_background_2.png"),
-                    None,
-                ))
-                .text_color(Color::from_rgba(200, 200, 160, 255))
+                .background_hovered(window_border.image.clone())
+                .background_clicked(window_border.image.clone())
+                .text_color(TEXT_COLOR)
                 .reverse_background_z(true)
                 .font_size(45)
                 .build();
@@ -846,21 +875,6 @@ impl SkinCollection {
                 ..default.clone()
             }
         };
-
-        let error = {
-            let label_style = root_ui()
-                .style_builder()
-                .text_color(Color::from_rgba(255, 0, 0, 255))
-                .font_size(20)
-                .build();
-
-            Skin {
-                label_style,
-                ..default.clone()
-            }
-        };
-
-        let cheat = default.clone();
 
         SkinCollection {
             default,
@@ -890,8 +904,6 @@ impl SkinCollection {
             menu_disabled,
             panel_group,
             map_selection,
-            error,
-            cheat,
         }
     }
 }

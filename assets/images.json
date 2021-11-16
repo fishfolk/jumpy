@@ -1,0 +1,66 @@
+[
+  {
+    "id": "blank_image",
+    "path": "ui/blank_image.png"
+  },
+  {
+    "id": "button_background",
+    "path": "ui/button_background.png"
+  },
+  {
+    "id": "button_background_clicked",
+    "path": "ui/button_background_clicked.png"
+  },
+  {
+    "id": "button_background_disabled",
+    "path": "ui/button_background_disabled.png"
+  },
+  {
+    "id": "button_background_hovered",
+    "path": "ui/button_background_hovered.png"
+  },
+  {
+    "id": "checkbox_background",
+    "path": "ui/checkbox_background.png"
+  },
+  {
+    "id": "checkbox_background_checked",
+    "path": "ui/checkbox_background_checked.png"
+  },
+  {
+    "id": "checkbox_background_checked_hovered",
+    "path": "ui/checkbox_background_checked_hovered.png"
+  },
+  {
+    "id": "checkbox_background_clicked",
+    "path": "ui/checkbox_background_clicked.png"
+  },
+  {
+    "id": "checkbox_background_hovered",
+    "path": "ui/checkbox_background_hovered.png"
+  },
+  {
+    "id": "combobox_background",
+    "path": "ui/combobox_background.png"
+  },
+  {
+    "id": "editbox_background",
+    "path": "ui/editbox_background.png"
+  },
+  {
+    "id": "editbox_background_clicked",
+    "path": "ui/editbox_background_clicked.png"
+  },
+  {
+    "id": "main_menu_header",
+    "path": "ui/main_menu_header.png"
+  },
+  {
+    "id": "window_background",
+    "path": "ui/window_background.png"
+  },
+  {
+    "id": "window_border",
+    "path": "ui/window_border.png"
+  }
+]

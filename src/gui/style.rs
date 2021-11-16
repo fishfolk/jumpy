@@ -76,6 +76,8 @@ pub const SELECTED_OBJECT_HIGHLIGHT_COLOR: Color = Color {
 
 pub const LIST_BOX_ENTRY_HEIGHT: f32 = 24.0;
 
+const BLANK_IMAGE_ID: &str = "blank_image";
+
 const BUTTON_BACKGROUND_IMAGE_ID: &str = "button_background";
 const BUTTON_BACKGROUND_CLICKED_IMAGE_ID: &str = "button_background_clicked";
 const BUTTON_BACKGROUND_DISABLED_IMAGE_ID: &str = "button_background_disabled";
@@ -122,12 +124,15 @@ pub struct SkinCollection {
     pub menu_selected: Skin,
     pub menu_disabled: Skin,
     pub map_selection: Skin,
-    pub panel_group: Skin,
+    pub panel: Skin,
+    pub panel_no_bg: Skin,
 }
 
 impl SkinCollection {
     pub fn new() -> SkinCollection {
         let resources = storage::get::<Resources>();
+
+        let _blank_image = resources.images.get(BLANK_IMAGE_ID).unwrap();
 
         let button_background = resources.images.get(BUTTON_BACKGROUND_IMAGE_ID).unwrap();
         let button_background_clicked = resources
@@ -824,15 +829,12 @@ impl SkinCollection {
             }
         };
 
-        // Skin used in a hack to create panels.
-        // Windows will not update their position if screen size changes, so in order to draw
-        // windows, we will have to draw a button with a group on top.
-        let panel_group = {
+        let panel = {
             let group_style = root_ui()
                 .style_builder()
-                .color(Color::new(0.0, 0.0, 0.0, 0.0))
-                .color_hovered(Color::new(0.0, 0.0, 0.0, 0.0))
-                .color_clicked(Color::new(0.0, 0.0, 0.0, 0.0))
+                .color(NO_COLOR)
+                .color_hovered(NO_COLOR)
+                .color_clicked(NO_COLOR)
                 .build();
 
             let button_style = root_ui()
@@ -840,6 +842,29 @@ impl SkinCollection {
                 .background(window_background.image.clone())
                 .background_hovered(window_background.image.clone())
                 .background_clicked(window_background.image.clone())
+                .background_margin(RectOffset::new(52.0, 52.0, 52.0, 52.0))
+                .build();
+
+            Skin {
+                group_style,
+                button_style,
+                ..default.clone()
+            }
+        };
+
+        let panel_no_bg = {
+            let group_style = root_ui()
+                .style_builder()
+                .color(NO_COLOR)
+                .color_hovered(NO_COLOR)
+                .color_clicked(NO_COLOR)
+                .build();
+
+            let button_style = root_ui()
+                .style_builder()
+                .background(window_border.image.clone())
+                .background_hovered(window_border.image.clone())
+                .background_clicked(window_border.image.clone())
                 .background_margin(RectOffset::new(52.0, 52.0, 52.0, 52.0))
                 .build();
 
@@ -902,7 +927,8 @@ impl SkinCollection {
             menu_header,
             menu_selected,
             menu_disabled,
-            panel_group,
+            panel,
+            panel_no_bg,
             map_selection,
         }
     }

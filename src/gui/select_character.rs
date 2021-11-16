@@ -1,13 +1,13 @@
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
-use macroquad::ui::{root_ui, widgets};
+use macroquad::ui::{hash, root_ui, widgets};
 
 use fishsticks::{Axis, Button, GamepadContext};
 
 use crate::components::AnimationPlayer;
 use crate::gui::{
-    draw_main_menu_background, GuiResources, BUTTON_FONT_SIZE, BUTTON_MARGIN_H, WINDOW_BG_COLOR,
-    WINDOW_MARGIN_V,
+    draw_main_menu_background, GuiResources, Panel, BUTTON_FONT_SIZE, BUTTON_MARGIN_H,
+    WINDOW_BG_COLOR,
 };
 use crate::input::update_gamepad_context;
 use crate::player::PlayerCharacterParams;
@@ -15,7 +15,8 @@ use crate::{GameInputScheme, Resources};
 
 const SECTION_WIDTH: f32 = 300.0;
 const SECTION_HEIGHT: f32 = 400.0;
-const SECTION_MARGIN: f32 = 22.0;
+
+const SECTION_MARGIN: f32 = 16.0;
 
 const NAVIGATION_GRACE_TIME: f32 = 0.25;
 
@@ -57,19 +58,20 @@ pub async fn show_select_characters_menu(
         animation_players.push(AnimationPlayer::new(animation_params));
     }
 
-    let section_size = vec2(SECTION_WIDTH, SECTION_HEIGHT);
-    let total_size = vec2(
-        ((section_size.x + SECTION_MARGIN) * player_cnt as f32) - SECTION_MARGIN,
-        section_size.y,
-    );
-    let first_position = (vec2(screen_width(), screen_height()) - total_size) / 2.0;
-
     let mut is_ready = false;
 
     while !is_ready {
         update_gamepad_context(None).unwrap();
 
         draw_main_menu_background(false);
+
+        let section_size = vec2(SECTION_WIDTH, SECTION_HEIGHT);
+        let total_size = vec2(
+            ((section_size.x + SECTION_MARGIN) * player_cnt as f32) - SECTION_MARGIN,
+            section_size.y,
+        );
+
+        let first_position = (vec2(screen_width(), screen_height()) - total_size) / 2.0;
 
         {
             let gui_resources = storage::get::<GuiResources>();
@@ -124,139 +126,111 @@ pub async fn show_select_characters_menu(
                     }
                 }
 
-                {
-                    let btn_size = vec2(NAVIGATION_BTN_WIDTH, NAVIGATION_BTN_HEIGHT);
+                Panel::new(hash!("section", i), section_size, section_position)
+                    .with_title(&format!("Player {}", i + 1), true)
+                    .with_background_color(WINDOW_BG_COLOR)
+                    .ui(&mut *root_ui(), |ui, inner_size| {
+                        let animation_player = &mut animation_players[i];
 
-                    let btn_section = vec2(
-                        section_position.x + (section_size.x / 2.0),
-                        section_position.y + section_size.y - btn_size.y - WINDOW_MARGIN_V,
-                    );
+                        animation_player.update();
 
-                    {
-                        let btn_position = vec2(
-                            btn_section.x - (SECTION_MARGIN / 2.0) - btn_size.x,
-                            btn_section.y,
-                        );
+                        // TODO: Calculate scale from a fixed target size, based on ui layout
+                        animation_player.set_scale(2.0);
 
-                        should_navigate_left = widgets::Button::new("<")
-                            .size(btn_size)
-                            .position(btn_position)
-                            .ui(&mut *root_ui())
-                            || should_navigate_left;
-                    }
+                        let animation_size = animation_player.get_size();
+                        let animation_position = section_position
+                            + vec2((section_size.x - animation_size.x) / 2.0, 100.0);
 
-                    {
-                        let btn_position =
-                            vec2(btn_section.x + (SECTION_MARGIN / 2.0), btn_section.y);
+                        animation_player.draw(animation_position, 0.0, false, false);
 
-                        should_navigate_right = widgets::Button::new(">")
-                            .size(btn_size)
-                            .position(btn_position)
-                            .ui(&mut *root_ui())
-                            || should_navigate_right;
-                    }
-                }
+                        {
+                            let gui_resources = storage::get::<GuiResources>();
+                            ui.push_skin(&gui_resources.skins.window_header);
 
-                if selected_params[i].is_none() && (should_navigate_left || should_navigate_right) {
-                    let mut is_taken = true;
-                    while is_taken {
-                        if should_navigate_left {
-                            current_selection -= 1;
-                        } else if should_navigate_right {
-                            current_selection += 1;
+                            let name_label = &player_characters[current_selection as usize].name;
+
+                            let label_size = ui.calc_size(name_label);
+                            let label_position = vec2(
+                                (inner_size.x - label_size.x) / 2.0,
+                                inner_size.y
+                                    - NAVIGATION_BTN_HEIGHT
+                                    - SECTION_MARGIN
+                                    - label_size.y,
+                            );
+
+                            widgets::Label::new(name_label)
+                                .position(label_position)
+                                .ui(ui);
+
+                            ui.pop_skin();
                         }
 
-                        if current_selection < 0 {
-                            current_selection = player_characters.len() as i32 - 1;
-                        } else {
-                            current_selection %= player_characters.len() as i32;
+                        let btn_size = vec2(NAVIGATION_BTN_WIDTH, NAVIGATION_BTN_HEIGHT);
+
+                        let btn_section = vec2(inner_size.x / 2.0, inner_size.y - btn_size.y);
+
+                        {
+                            let btn_position = vec2(
+                                btn_section.x - (SECTION_MARGIN / 2.0) - btn_size.x,
+                                btn_section.y,
+                            );
+
+                            should_navigate_left = widgets::Button::new("<")
+                                .size(btn_size)
+                                .position(btn_position)
+                                .ui(ui)
+                                || should_navigate_left;
                         }
 
-                        is_taken = current_selections
-                            .iter()
-                            .enumerate()
-                            .any(|(ii, selection)| {
-                                ii != i && *selection == current_selection as usize
-                            });
-                    }
+                        {
+                            let btn_position =
+                                vec2(btn_section.x + (SECTION_MARGIN / 2.0), btn_section.y);
 
-                    current_selections[i] = current_selection as usize;
-
-                    navigation_grace_timers[i] = 0.0;
-
-                    let animation_params = player_characters[current_selection as usize]
-                        .animation
-                        .clone()
-                        .into();
-                    animation_players[i] = AnimationPlayer::new(animation_params);
-                }
-
-                draw_rectangle(
-                    section_position.x,
-                    section_position.y,
-                    section_size.x,
-                    section_size.y,
-                    WINDOW_BG_COLOR,
-                );
-
-                {
-                    let gui_resources = storage::get::<GuiResources>();
-                    root_ui().push_skin(&gui_resources.skins.window_header);
-
-                    {
-                        let player_label = format!("Player {}", i + 1);
-
-                        let label_size = root_ui().calc_size(&player_label);
-                        let label_position = vec2(
-                            section_position.x + ((section_size.x - label_size.x) / 2.0),
-                            section_position.y + WINDOW_MARGIN_V,
-                        );
-
-                        widgets::Label::new(&player_label)
-                            .position(label_position)
-                            .ui(&mut *root_ui());
-                    }
-
-                    {
-                        let name_label = &player_characters[current_selection as usize].name;
-
-                        let label_size = root_ui().calc_size(name_label);
-                        let label_position = vec2(
-                            section_position.x + ((section_size.x - label_size.x) / 2.0),
-                            section_position.y + section_size.y
-                                - WINDOW_MARGIN_V
-                                - NAVIGATION_BTN_HEIGHT
-                                - SECTION_MARGIN
-                                - label_size.y,
-                        );
-
-                        widgets::Label::new(name_label)
-                            .position(label_position)
-                            .ui(&mut *root_ui());
-                    }
-
-                    root_ui().pop_skin();
-                }
-
-                {
-                    let animation_player = &mut animation_players[i];
-
-                    animation_player.update();
-
-                    // TODO: Calculate scale from a fixed target size, based on ui layout
-                    animation_player.set_scale(2.0);
-
-                    let animation_size = animation_player.get_size();
-                    let animation_position =
-                        section_position + vec2((section_size.x - animation_size.x) / 2.0, 100.0);
-
-                    animation_player.draw(animation_position, 0.0, false, false);
-                }
+                            should_navigate_right = widgets::Button::new(">")
+                                .size(btn_size)
+                                .position(btn_position)
+                                .ui(ui)
+                                || should_navigate_right;
+                        }
+                    });
 
                 if should_confirm {
                     let params = player_characters[current_selection as usize].clone();
                     selected_params[i] = Some(params);
                 }
+            }
+
+            if selected_params[i].is_none() && (should_navigate_left || should_navigate_right) {
+                let mut is_taken = true;
+                while is_taken {
+                    if should_navigate_left {
+                        current_selection -= 1;
+                    } else if should_navigate_right {
+                        current_selection += 1;
+                    }
+
+                    if current_selection < 0 {
+                        current_selection = player_characters.len() as i32 - 1;
+                    } else {
+                        current_selection %= player_characters.len() as i32;
+                    }
+
+                    is_taken = current_selections
+                        .iter()
+                        .enumerate()
+                        .any(|(ii, selection)| ii != i && *selection == current_selection as usize);
+                }
+
+                current_selections[i] = current_selection as usize;
+
+                navigation_grace_timers[i] = 0.0;
+
+                let animation_params = player_characters[current_selection as usize]
+                    .animation
+                    .clone()
+                    .into();
+
+                animation_players[i] = AnimationPlayer::new(animation_params);
             }
 
             is_ready = !selected_params.iter().any(|params| params.is_none());

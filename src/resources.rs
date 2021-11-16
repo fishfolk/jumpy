@@ -64,6 +64,18 @@ pub struct TextureResource {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ImageMetadata {
+    pub id: String,
+    pub path: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct ImageResource {
+    pub image: Image,
+    pub meta: ImageMetadata,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MapMetadata {
     pub name: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -90,6 +102,7 @@ pub struct Resources {
     pub sounds: HashMap<String, Sound>,
     pub music: HashMap<String, Sound>,
     pub textures: HashMap<String, TextureResource>,
+    pub images: HashMap<String, ImageResource>,
     pub maps: Vec<MapResource>,
     pub items: HashMap<String, ItemParams>,
     pub player_characters: HashMap<String, PlayerCharacterParams>,
@@ -100,6 +113,7 @@ impl Resources {
     pub const SOUNDS_FILE: &'static str = "sounds";
     pub const MUSIC_FILE: &'static str = "music";
     pub const TEXTURES_FILE: &'static str = "textures";
+    pub const IMAGES_FILE: &'static str = "images";
     pub const MAPS_FILE: &'static str = "maps";
     pub const ITEMS_FILE: &'static str = "items";
     pub const PLAYER_CHARACTERS_FILE: &'static str = "player_characters";
@@ -216,6 +230,30 @@ impl Resources {
             }
         }
 
+        let mut images = HashMap::new();
+
+        {
+            let images_file_path = assets_dir_path
+                .join(Self::IMAGES_FILE)
+                .with_extension(Self::RESOURCE_FILES_EXTENSION);
+
+            let bytes = load_file(&images_file_path.to_string_helper()).await?;
+            let metadata: Vec<ImageMetadata> =
+                deserialize_bytes(Self::RESOURCE_FILES_EXTENSION, &bytes)?;
+
+            for meta in metadata {
+                let file_path = assets_dir_path.join(&meta.path);
+
+                let image = load_image(&file_path.to_string_helper()).await?;
+
+                let key = meta.id.clone();
+
+                let res = ImageResource { image, meta };
+
+                images.insert(key, res);
+            }
+        }
+
         let mut maps = Vec::new();
 
         {
@@ -292,6 +330,7 @@ impl Resources {
             sounds,
             music,
             textures,
+            images,
             maps,
             items,
             player_characters,

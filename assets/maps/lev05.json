@@ -853,7 +853,7 @@
           "kind": "decoration",
           "position": {
             "x": 1109.0,
-            "y": 74.5
+            "y": 174.5
           },
           "size": {
             "x": 48.0,
@@ -1618,13 +1618,13 @@
         false
       ],
       "tile_attributes": {
+        "60": [
+          "jumpthrough"
+        ],
         "56": [
           "jumpthrough"
         ],
         "58": [
-          "jumpthrough"
-        ],
-        "60": [
           "jumpthrough"
         ]
       }

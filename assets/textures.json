@@ -59,74 +59,38 @@
   },
   {
     "id": "player_blue",
-    "path": "textures/player/Whale(76x66)(Blue).png",
+    "path": "textures/player/PlayerBlue(64x64).png",
     "type": "spritesheet",
     "sprite_size": {
-      "x": 76,
-      "y": 66
+      "x": 64,
+      "y": 64
     }
   },
   {
     "id": "player_green",
-    "path": "textures/player/Whale(76x66)(Green).png",
+    "path": "textures/player/PlayerGreen(64x64).png",
     "type": "spritesheet",
     "sprite_size": {
-      "x": 76,
-      "y": 66
+      "x": 64,
+      "y": 64
     }
   },
   {
     "id": "player_orange",
-    "path": "textures/player/Whale(76x66)(Orange).png",
+    "path": "textures/player/PlayerOrange(64x64).png",
     "type": "spritesheet",
     "sprite_size": {
-      "x": 76,
-      "y": 66
+      "x": 64,
+      "y": 64
     }
   },
   {
     "id": "player_purple",
-    "path": "textures/player/Whale(76x66)(Purple).png",
+    "path": "textures/player/PlayerPurple(64x64).png",
     "type": "spritesheet",
     "sprite_size": {
-      "x": 76,
-      "y": 66
-    }
-  },
-  {
-    "id": "player_with_boots_blue",
-    "path": "textures/player/WhaleBoots(76x66)(Blue).png",
-    "type": "spritesheet",
-    "sprite_size": {
-      "x": 76,
-      "y": 66
-    }
-  },
-  {
-    "id": "player_with_boots_green",
-    "path": "textures/player/WhaleBoots(76x66)(Green).png",
-    "type": "spritesheet",
-    "sprite_size": {
-      "x": 76,
-      "y": 66
-    }
-  },
-  {
-    "id": "player_with_boots_orange",
-    "path": "textures/player/WhaleBoots(76x66)(Orange).png",
-    "type": "spritesheet",
-    "sprite_size": {
-      "x": 76,
-      "y": 66
-    }
-  },
-  {
-    "id": "player_with_boots_purple",
-    "path": "textures/player/WhaleBoots(76x66)(Purple).png",
-    "type": "spritesheet",
-    "sprite_size": {
-      "x": 76,
-      "y": 66
+      "x": 64,
+      "y": 64
     }
   },
   {

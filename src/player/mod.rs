@@ -105,11 +105,9 @@ impl Player {
 
     pub const IDLE_ANIMATION_ID: &'static str = "idle";
     pub const MOVE_ANIMATION_ID: &'static str = "move";
-    pub const DEATH_ANIMATION_ID: &'static str = "death";
-    pub const DEATH_ALT_ANIMATION_ID: &'static str = "death_alt";
-    pub const FLOAT_ANIMATION_ID: &'static str = "float";
+    pub const JUMP_ANIMATION_ID: &'static str = "jump";
+    pub const FALL_ANIMATION_ID: &'static str = "fall";
     pub const CROUCH_ANIMATION_ID: &'static str = "crouch";
-    pub const SLIDE_ANIMATION_ID: &'static str = "slide";
 
     pub fn new(player_id: u8, params: PlayerCharacterParams) -> Player {
         let spawn_point = {
@@ -354,8 +352,7 @@ impl Player {
         self.incapacitation_timer = 0.0;
         self.state_machine.set_state(Self::ST_INCAPACITATED);
         if should_fall {
-            self.animation_player
-                .set_animation(Self::SLIDE_ANIMATION_ID);
+            // self.animation_player.set_animation(Self::SLIDE_ANIMATION_ID);
         }
     }
 
@@ -396,8 +393,7 @@ impl Player {
                 node.body.has_gravity = true;
 
                 node.is_dead = true;
-                node.animation_player
-                    .set_animation(Self::DEATH_ANIMATION_ID);
+                //node.animation_player.set_animation(Self::DEATH_ANIMATION_ID);
 
                 // let mut score_counter = scene::get_node(node.score_counter);
                 // score_counter.count_loss(node.controller_id)
@@ -425,12 +421,11 @@ impl Player {
 
                 {
                     let mut node = scene::get_node(handle);
-                    node.animation_player
-                        .set_animation(Self::DEATH_ALT_ANIMATION_ID);
+                    //node.animation_player.set_animation(Self::DEATH_ALT_ANIMATION_ID);
                     node.body.velocity = vec2(0., 0.);
                 }
 
-                wait_seconds(0.5).await;
+                //wait_seconds(0.5).await;
             }
 
             {
@@ -444,7 +439,7 @@ impl Player {
                 particles.spawn("explosion", pos + vec2(15.0, 33.0));
             }
 
-            wait_seconds(0.5).await;
+            //wait_seconds(0.5).await;
 
             let mut node = scene::get_node(handle);
 
@@ -511,7 +506,7 @@ impl Player {
                 };
 
                 node.animation_player
-                    .set_animation(Self::SLIDE_ANIMATION_ID);
+                    .set_animation(Self::CROUCH_ANIMATION_ID);
 
                 node.slide_duration
             };
@@ -579,19 +574,21 @@ impl Player {
             }
         }
 
-        if node.floating {
-            node.animation_player
-                .set_animation(Self::FLOAT_ANIMATION_ID);
+        if !node.body.is_on_ground {
+            if (!node.body.is_upside_down && node.body.velocity.y < 0.0)
+                || (node.body.is_upside_down && node.body.velocity.y > 0.0)
+            {
+                node.animation_player.set_animation(Self::JUMP_ANIMATION_ID);
+            } else {
+                node.animation_player.set_animation(Self::FALL_ANIMATION_ID);
+            }
         } else if node.is_crouched {
             node.animation_player
                 .set_animation(Self::CROUCH_ANIMATION_ID);
+        } else if node.input.right || node.input.left {
+            node.animation_player.set_animation(Self::MOVE_ANIMATION_ID);
         } else {
-            //
-            if node.input.right || node.input.left {
-                node.animation_player.set_animation(Self::MOVE_ANIMATION_ID);
-            } else {
-                node.animation_player.set_animation(Self::IDLE_ANIMATION_ID);
-            }
+            node.animation_player.set_animation(Self::IDLE_ANIMATION_ID);
         }
 
         // if in jump and want to jump again

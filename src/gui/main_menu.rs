@@ -33,12 +33,14 @@ enum MainMenuState {
     Root(Menu),
     LocalGame,
     NetworkGame,
+    Settings,
     Editor(Menu),
 }
 
 const ROOT_OPTION_LOCAL_GAME: usize = 0;
 const ROOT_OPTION_NETWORK_GAME: usize = 1;
 const ROOT_OPTION_EDITOR: usize = 2;
+const ROOT_OPTION_SETTINGS: usize = 3;
 
 const LOCAL_GAME_OPTION_SUBMIT: usize = 0;
 
@@ -64,6 +66,12 @@ fn build_main_menu() -> Menu {
             MenuEntry {
                 index: ROOT_OPTION_EDITOR,
                 title: "Editor".to_string(),
+                ..Default::default()
+            },
+            MenuEntry {
+                index: ROOT_OPTION_SETTINGS,
+                title: "Settings".to_string(),
+                is_disabled: true,
                 ..Default::default()
             },
         ],
@@ -94,7 +102,7 @@ fn build_editor_menu() -> Menu {
 pub async fn show_main_menu() -> MainMenuResult {
     let mut menu_state = MainMenuState::Root(build_main_menu());
 
-    let mut local_player_input = Vec::new();
+    let mut player_input = Vec::new();
 
     loop {
         update_gamepad_context(None).unwrap();
@@ -134,10 +142,10 @@ pub async fn show_main_menu() -> MainMenuResult {
                 }
             }
             MainMenuState::LocalGame => {
-                if let Some(res) = local_game_ui(&mut *root_ui(), &mut local_player_input) {
+                if let Some(res) = local_game_ui(&mut *root_ui(), &mut player_input) {
                     match res.into_usize() {
                         LOCAL_GAME_OPTION_SUBMIT => {
-                            return MainMenuResult::LocalGame(local_player_input.clone());
+                            return MainMenuResult::LocalGame(player_input.clone());
                         }
                         Menu::CANCEL_INDEX => {
                             menu_state = MainMenuState::Root(build_editor_menu());
@@ -170,6 +178,9 @@ pub async fn show_main_menu() -> MainMenuResult {
                         _ => {}
                     }
                 }
+            }
+            MainMenuState::Settings => {
+                unreachable!("Settings is not implemented yet");
             }
         }
 

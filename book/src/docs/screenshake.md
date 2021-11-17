@@ -19,7 +19,7 @@ This prevents some ownership issues that would otherwise require separate scopes
 
 `frequency`: 1 is normal, 0.2 is a punch. With a frequency of 0.2 and length of 10 frames it will oscillate max twice. 0.5 is more of a rumble. Worth noting is that `shake_sinusodial` has a different base frequency.
 
-[See this](../juice.md) for more information.
+[See this](../juice.md#screen-shake-in-practice-in-fish-fight) for more information.
 
 ### Noise types
 ```rust
@@ -35,7 +35,7 @@ Like `shake_noise`, but the X and Y components of the resulting shake will be mu
 ```rust
 camera.shake_sinusoidal(magnitude: f32, length: i32, frequency:f32, angle: f32);
 ```
-Shakes the screen sinusoidally along the given angle given in radians. 
+Shakes the screen sinusoidally along the angle given in radians. 
 
 ```rust
 camera.shake_rotational(magnitude: f32, length: i32);

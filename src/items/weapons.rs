@@ -11,6 +11,7 @@ use macroquad::{
 
 use serde::{Deserialize, Serialize};
 
+use crate::components::{ParticleController, ParticleControllerParams};
 use crate::{
     components::{AnimationParams, AnimationPlayer},
     effects::{active_effect_coroutine, ActiveEffectParams},
@@ -19,7 +20,7 @@ use crate::{
 };
 
 /// This holds the parameters for the `AnimationPlayer` components of an equipped `Weapon`.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct WeaponAnimationParams {
     /// This holds the parameters of the main `AnimationPlayer` component, holding the main
     /// animations, like `"idle"` and `"attack"`.
@@ -45,8 +46,12 @@ pub struct WeaponAnimationParams {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct WeaponParams {
     /// This specifies the effects to instantiate when the weapon is used to attack. Can be either
-    /// a single `ActiveEffectParams` or a vector of `ActiveEffectParams`-
+    /// a single `ActiveEffectParams` or a vector of `ActiveEffectParams`.
+    #[serde(alias = "effect")]
     pub effects: OneOrMany<ActiveEffectParams>,
+    /// Particle effects that will be activated when using the weapon
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    particles: Vec<ParticleControllerParams>,
     /// This can specify an id of a sound effect that is played when the weapon is used to attack
     #[serde(
         default,
@@ -89,8 +94,27 @@ pub struct WeaponParams {
     pub animation: WeaponAnimationParams,
 }
 
+impl Default for WeaponParams {
+    fn default() -> Self {
+        WeaponParams {
+            effects: OneOrMany::Many(Vec::new()),
+            particles: Vec::new(),
+            sound_effect_id: None,
+            uses: None,
+            is_destroyed_on_depletion: false,
+            mount_offset: Vec2::ZERO,
+            effect_offset: Vec2::ZERO,
+            attack_duration: 0.0,
+            cooldown: 0.0,
+            recoil: 0.0,
+            animation: Default::default(),
+        }
+    }
+}
+
 pub struct Weapon {
     pub id: String,
+    pub particles: Vec<ParticleController>,
     pub sound_effect: Option<Sound>,
     pub effects: Vec<ActiveEffectParams>,
     pub cooldown: f32,
@@ -128,47 +152,29 @@ impl Weapon {
     const ATTACK_EFFECT_ANIMATION_ID: &'static str = "attack_effect";
 
     pub fn new(id: &str, params: WeaponParams) -> Self {
-        let sound_effect = if let Some(sound_effect_id) = &params.sound_effect_id {
+        let particles = params
+            .particles
+            .into_iter()
+            .map(ParticleController::new)
+            .collect();
+
+        let sound_effect = params.sound_effect_id.as_ref().map(|id| {
             let resources = storage::get::<Resources>();
-            let sound_effect = resources
-                .sounds
-                .get(sound_effect_id)
-                .copied()
-                .unwrap_or_else(|| panic!("Weapon: Invalid sound effect ID '{}'", sound_effect_id));
-            Some(sound_effect)
-        } else {
-            None
-        };
-
-        {
-            let res = params
-                .animation
-                .sprite
-                .animations
-                .iter()
-                .find(|a| a.id == Self::IDLE_ANIMATION_ID);
-
-            assert!(
-                res.is_some(),
-                "Weapon: An animation with id '{}' is required",
-                Self::IDLE_ANIMATION_ID
-            );
-        }
+            resources.sounds[id]
+        });
 
         let sprite_animation = AnimationPlayer::new(params.animation.sprite);
 
-        let mut effect_animation = None;
-        if let Some(animation_params) = params.animation.effect {
-            let animation_player = AnimationPlayer::new(AnimationParams {
+        let effect_animation = params.animation.effect.map(|params| {
+            AnimationPlayer::new(AnimationParams {
                 is_deactivated: true,
-                ..animation_params
-            });
-
-            effect_animation = Some(animation_player);
-        }
+                ..params
+            })
+        });
 
         Weapon {
             id: id.to_string(),
+            particles,
             sound_effect,
             effects: params.effects.into(),
             cooldown: params.cooldown,
@@ -189,11 +195,11 @@ impl Weapon {
         let mut offset = self.mount_offset;
 
         if flip_x {
-            offset.x *= -1.0;
+            offset.x = -offset.x;
         }
 
         if flip_y {
-            offset.y *= -1.0;
+            offset.y = -offset.y;
         }
 
         offset
@@ -217,44 +223,56 @@ impl Weapon {
         offset
     }
 
-    pub fn get_effect_position(&self, player: &Player) -> Vec2 {
-        player.get_weapon_mount_position()
-            + self.get_mount_offset(!player.body.is_facing_right, false)
-            + self.get_effect_offset(!player.body.is_facing_right, false)
-    }
-
     pub fn update(&mut self, dt: f32) {
+        self.cooldown_timer += dt;
+
         self.sprite_animation.update();
 
         if let Some(effect_animation) = &mut self.effect_animation {
             effect_animation.update();
         }
 
-        self.cooldown_timer += dt;
+        for particles in &mut self.particles {
+            particles.update(dt);
+        }
     }
 
     pub fn draw(&mut self, position: Vec2, rotation: f32, flip_x: bool, flip_y: bool) {
-        let size = self.sprite_animation.get_size();
-        let mut offset = self.get_mount_offset(flip_x, flip_y);
+        let position = position + self.get_mount_offset(flip_x, flip_y);
 
-        if flip_x {
-            offset.x -= size.x;
+        {
+            let mut offset = Vec2::ZERO;
+
+            let size = self.sprite_animation.get_size();
+
+            if flip_x {
+                offset.x -= size.x;
+            }
+
+            if flip_y {
+                offset.y -= size.y;
+            }
+
+            let position = position + offset;
+
+            self.sprite_animation
+                .draw(position, rotation, flip_x, flip_y);
+
+            if let Some(effect_animation) = &mut self.effect_animation {
+                effect_animation.draw(position, rotation, flip_x, flip_y);
+            }
+
+            #[cfg(debug_assertions)]
+            self.sprite_animation.debug_draw(position);
         }
-        if flip_y {
-            offset.y -= size.y;
+
+        {
+            let position = position + self.get_effect_offset(flip_x, flip_y);
+
+            for particles in &mut self.particles {
+                particles.draw(position, flip_x, flip_y);
+            }
         }
-
-        let position = position + offset;
-
-        self.sprite_animation
-            .draw(position, rotation, flip_x, flip_y);
-
-        if let Some(effect_animation) = &mut self.effect_animation {
-            effect_animation.draw(position, rotation, flip_x, flip_y);
-        }
-
-        #[cfg(debug_assertions)]
-        self.sprite_animation.debug_draw(position);
     }
 
     pub fn draw_hud(&self, position: Vec2) {
@@ -392,7 +410,7 @@ impl Weapon {
 
     /// This will start a `Coroutine` that performs an attack with the `Weapon` equipped by the
     /// `Player` fetched with `player_handle`, id one is equipped and ready for use.
-    pub fn use_coroutine(player_handle: Handle<Player>) -> Coroutine {
+    pub fn attack_coroutine(player_handle: Handle<Player>) -> Coroutine {
         let coroutine = async move {
             let is_ready = {
                 let player = &mut *scene::get_node(player_handle);
@@ -436,11 +454,21 @@ impl Weapon {
                 {
                     let player = &mut *scene::get_node(player_handle);
 
-                    if let Some(weapon) = &player.weapon {
-                        let effect_position = weapon.get_effect_position(player);
+                    let weapon_mount = player.get_weapon_mount_position();
+                    let (flip_x, flip_y) =
+                        (!player.body.is_facing_right, player.body.is_upside_down);
+
+                    if let Some(weapon) = &mut player.weapon {
+                        for particles in &mut weapon.particles {
+                            particles.activate();
+                        }
+
+                        let origin = weapon_mount
+                            + weapon.get_mount_offset(flip_x, flip_y)
+                            + weapon.get_effect_offset(flip_x, flip_y);
 
                         for params in weapon.effects.clone() {
-                            active_effect_coroutine(player_handle, effect_position, params);
+                            active_effect_coroutine(player_handle, origin, params);
                         }
                     }
                 }

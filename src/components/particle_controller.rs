@@ -1,96 +1,134 @@
 use macroquad::prelude::*;
 
-use crate::ParticleEmitters;
-
 use serde::{Deserialize, Serialize};
+
+use crate::json;
+use crate::math::IsZero;
+use crate::ParticleEmitters;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ParticleControllerParams {
-    /// Each `ParticleController` of one weapon should have a unique id to work properly.
-    pub id: String,
-    pub particle_id: String,
-    /// Delay before `ParticleController` starts to emit particles.
-    #[serde(default)]
-    pub start_delay: f32,
-    /// If true, `ParticleController` will be reset when player use weapon.
-    #[serde(default)]
-    pub is_can_be_interrupted: bool,
-    /// Amount of particles that will be emitted.
-    pub amount: u32,
-    /// The interval between each particle emit.
-    #[serde(default)]
+    /// The id of the particle effect.
+    #[serde(rename = "particle_effect")]
+    pub particle_effect_id: String,
+    /// The offset is added to the `position` provided when calling `draw`
+    #[serde(
+        default,
+        with = "json::vec2_def",
+        skip_serializing_if = "Vec2::is_zero"
+    )]
+    pub offset: Vec2,
+    /// Delay before emission will begin
+    #[serde(default, skip_serializing_if = "f32::is_zero")]
+    pub delay: f32,
+    /// The interval between each emission.
+    #[serde(default, skip_serializing_if = "f32::is_zero")]
     pub interval: f32,
-    /// If true, after finishing `ParticleController` will be reset and restarted automatically.
-    #[serde(default)]
-    pub is_looped: bool,
+    /// Amount of emissions per activation. If set to `None` it will emit indefinitely
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub emissions: Option<u32>,
+}
+
+impl Default for ParticleControllerParams {
+    fn default() -> Self {
+        ParticleControllerParams {
+            particle_effect_id: "".to_string(),
+            offset: Vec2::ZERO,
+            delay: 0.0,
+            emissions: None,
+            interval: 0.0,
+        }
+    }
+}
+
+impl From<ParticleControllerParams> for ParticleController {
+    fn from(params: ParticleControllerParams) -> Self {
+        ParticleController::new(params)
+    }
 }
 
 pub struct ParticleController {
-    pub params: ParticleControllerParams,
-
-    timer: f32,
-    particles_emitted: u32,
-    is_emitting_started: bool,
-    is_waiting_for_reset: bool,
+    particle_effect_id: String,
+    offset: Vec2,
+    delay: f32,
+    emissions: Option<u32>,
+    interval: f32,
+    delay_timer: f32,
+    interval_timer: f32,
+    emission_cnt: u32,
+    is_active: bool,
+    position: Option<Vec2>,
 }
 
 impl ParticleController {
     pub fn new(params: ParticleControllerParams) -> Self {
-        Self {
-            params,
-            timer: 0.0,
-            particles_emitted: 0,
-            is_emitting_started: false,
-            is_waiting_for_reset: false,
+        ParticleController {
+            particle_effect_id: params.particle_effect_id,
+            offset: params.offset,
+            delay: params.delay,
+            interval: params.interval,
+            emissions: params.emissions,
+            delay_timer: 0.0,
+            interval_timer: params.interval,
+            emission_cnt: 0,
+            is_active: false,
+            position: None,
         }
     }
 
-    fn reset(&mut self) {
-        self.is_emitting_started = false;
-        self.timer = 0.0;
-        self.particles_emitted = 0;
-        self.is_waiting_for_reset = false;
+    fn get_offset(&self, flip_x: bool, flip_y: bool) -> Vec2 {
+        let mut offset = Vec2::ZERO;
+
+        if flip_x {
+            offset.x = -self.offset.x;
+        } else {
+            offset.x = self.offset.x;
+        }
+
+        if flip_y {
+            offset.y = -self.offset.y;
+        } else {
+            offset.y = self.offset.y;
+        }
+
+        offset
     }
 
-    pub fn update(&mut self, position: Vec2, interrupt: bool) {
-        if self.is_waiting_for_reset {
-            if interrupt {
-                self.reset();
-            } else {
-                return;
+    pub fn activate(&mut self) {
+        self.delay_timer = 0.0;
+        self.interval_timer = self.interval;
+        self.emission_cnt = 0;
+        self.is_active = true;
+    }
+
+    pub fn update(&mut self, dt: f32) {
+        if self.is_active {
+            self.delay_timer += dt;
+
+            if self.delay_timer >= self.delay {
+                self.interval_timer += dt;
             }
-        }
 
-        if self.params.is_can_be_interrupted && interrupt {
-            self.reset();
-        }
+            if let Some(position) = self.position {
+                if self.delay_timer >= self.delay && self.interval_timer >= self.interval {
+                    self.interval_timer = 0.0;
 
-        self.timer += get_frame_time();
+                    {
+                        let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
+                        particles.spawn(&self.particle_effect_id, position);
+                    }
 
-        if self.is_emitting_started {
-            if self.timer >= self.params.interval {
-                self.timer = 0.0;
-                self.particles_emitted += 1;
-
-                {
-                    let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
-                    particles.spawn(&self.params.particle_id, position);
-                }
-
-                if self.particles_emitted == self.params.amount {
-                    if !self.params.is_looped {
-                        self.is_waiting_for_reset = true;
-                    } else {
-                        self.reset();
+                    if let Some(emissions) = self.emissions {
+                        self.emission_cnt += 1;
+                        self.is_active = self.emission_cnt < emissions;
                     }
                 }
             }
-        } else {
-            //
-            if self.timer >= self.params.start_delay {
-                self.is_emitting_started = true;
-                self.timer = self.params.interval;
-            }
         }
+    }
+
+    pub fn draw(&mut self, position: Vec2, flip_x: bool, flip_y: bool) {
+        let offset = self.get_offset(flip_x, flip_y);
+        self.position = Some(position + offset);
     }
 }

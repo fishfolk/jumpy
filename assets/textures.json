@@ -112,15 +112,6 @@
     }
   },
   {
-    "id": "cannon_smoke",
-    "path": "textures/items/CannonSmoke(40x48).png",
-    "type": "spritesheet",
-    "sprite_size": {
-      "x": 40,
-      "y": 48
-    }
-  },
-  {
     "id": "cannon_ball",
     "path": "textures/items/CannonBall(17x17).png",
     "type": "spritesheet",

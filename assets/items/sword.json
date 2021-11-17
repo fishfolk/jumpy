@@ -8,14 +8,16 @@
   "cooldown": 0.75,
   "attack_duration": 0.5,
   "sound_effect": "sword",
-  "effects": {
-    "type": "circle_collider",
-    "radius": 65,
-    "segment": {
-      "x": 1,
-      "y": -1
+  "effects": [
+    {
+      "type": "circle_collider",
+      "radius": 65,
+      "segment": {
+        "x": 1,
+        "y": -1
+      }
     }
-  },
+  ],
   "collider_size": {
     "x": 65,
     "y": 17

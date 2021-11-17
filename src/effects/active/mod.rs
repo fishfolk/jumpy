@@ -13,8 +13,8 @@ use serde::{Deserialize, Serialize};
 use crate::{
     components::ParticleControllerParams,
     json::{self, GenericParam},
-    math::{deg_to_rad, rotate_vector},
-    ParticleEmitters, Player,
+    math::{deg_to_rad, rotate_vector, IsZero},
+    Player,
 };
 
 use super::AnyEffectParams;
@@ -32,9 +32,6 @@ pub use coroutines::{
 
 pub use projectiles::{ProjectileKind, Projectiles};
 
-mod particle_controllers;
-pub use particle_controllers::ParticleControllers;
-
 /// This holds all the common parameters, available to all implementations, as well as specialized
 /// parameters, in the `ActiveEffectKind`.
 #[derive(Clone, Serialize, Deserialize)]
@@ -43,13 +40,6 @@ pub struct ActiveEffectParams {
     /// specified by its variant. It is flattened into this struct in JSON.
     #[serde(flatten)]
     pub kind: Box<ActiveEffectKind>,
-    /// This specifies the id of a particle effect to emit when the effect is instantiated.
-    #[serde(
-        default,
-        rename = "particle_effect",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub particle_effect_id: Option<String>,
     /// This specifies the id of a sound effect to play when the effect is instantiated.
     #[serde(
         default,
@@ -79,7 +69,6 @@ pub enum ActiveEffectKind {
     /// Custom effects are made by implementing `ActiveEffectCoroutine`, either directly in code or
     /// in scripts if/when we add a scripting API
     Custom {
-        #[serde(rename = "id")]
         id: String,
         #[serde(default, rename = "params")]
         params: HashMap<String, GenericParam>,
@@ -93,9 +82,13 @@ pub enum ActiveEffectKind {
     /// be used, and so on.
     CircleCollider {
         radius: f32,
-        #[serde(default, with = "json::ivec2_opt")]
+        #[serde(
+            default,
+            with = "json::ivec2_opt",
+            skip_serializing_if = "Option::is_none"
+        )]
         segment: Option<IVec2>,
-        #[serde(default)]
+        #[serde(default, skip_serializing_if = "json::is_false")]
         is_explosion: bool,
     },
     /// Check for hits with a `Rect` collider
@@ -112,20 +105,11 @@ pub enum ActiveEffectKind {
         kind: ProjectileKind,
         speed: f32,
         range: f32,
-        #[serde(default)]
+        #[serde(default, skip_serializing_if = "f32::is_zero")]
         spread: f32,
-        #[serde(
-            default,
-            rename = "particle_controller",
-            skip_serializing_if = "Option::is_none"
-        )]
-        particle_params: Option<ParticleControllerParams>,
-    },
-    /// Allows fine-tuning the conditions for emitting the particle.
-    /// This, for example, is used for creating a muzzle smoke effect for the musket.
-    ParticleController {
-        #[serde(flatten)]
-        particle_params: ParticleControllerParams,
+        /// Particle effects that will be attached to the projectile
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        particles: Vec<ParticleControllerParams>,
     },
 }
 
@@ -137,21 +121,10 @@ pub fn active_effect_coroutine(
     let coroutine = async move {
         wait_seconds(params.delay).await;
 
-        // ParticleController is responsible for particle emitting by itself
-        if !matches!(*params.kind, ActiveEffectKind::ParticleController { .. }) {
-            if let Some(particle_effect_id) = &params.particle_effect_id {
-                let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
-                particles.spawn(particle_effect_id, origin);
-            }
+        let mut is_facing_right = false;
+        if let Some(player) = scene::try_get_node(player_handle) {
+            is_facing_right = player.body.is_facing_right;
         }
-
-        let is_facing_right = {
-            if let Some(player) = scene::try_get_node(player_handle) {
-                player.body.is_facing_right
-            } else {
-                true
-            }
-        };
 
         match *params.kind {
             ActiveEffectKind::Custom { id, params } => {
@@ -251,7 +224,7 @@ pub fn active_effect_coroutine(
                 speed,
                 range,
                 spread,
-                particle_params,
+                particles,
             } => {
                 let rad = deg_to_rad(spread);
                 let spread = rand::gen_range(-rad, rad);
@@ -271,14 +244,8 @@ pub fn active_effect_coroutine(
                     origin,
                     rotate_vector(velocity, spread),
                     range,
-                    particle_params,
+                    particles,
                 );
-            }
-            ActiveEffectKind::ParticleController { particle_params } => {
-                let mut particle_controllers =
-                    scene::find_node_by_type::<ParticleControllers>().unwrap();
-
-                particle_controllers.spawn_or_update(player_handle, &particle_params);
             }
         }
     };

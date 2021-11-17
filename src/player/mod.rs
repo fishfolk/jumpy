@@ -471,7 +471,7 @@ impl Player {
     }
 
     fn attack_coroutine(node: &mut RefMut<Player>) -> Coroutine {
-        Weapon::use_coroutine(node.handle())
+        Weapon::attack_coroutine(node.handle())
     }
 
     fn update_incapacitated(node: &mut RefMut<Player>, dt: f32) {

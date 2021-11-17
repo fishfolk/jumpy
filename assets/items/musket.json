@@ -13,7 +13,15 @@
   "attack_duration": 0.5,
   "recoil": 250.0,
   "sound_effect": "shoot",
-  "effects": [
+  "particles": [
+    {
+      "particle_effect": "musket_muzzle_smoke",
+      "delay": 1,
+      "interval": 0.05,
+      "emissions": 6
+    }
+  ],
+  "effect": [
     {
       "type": "projectile",
       "range": 512.0,
@@ -32,22 +40,13 @@
           }
         }
       },
-      "particle_controller": {
-        "id": "0",
-        "particle_id": "musket_bullet_smoke",
-        "start_delay": 0.075,
-        "amount": 1,
-        "is_looped": true
-      }
-    },
-    {
-      "type": "particle_controller",
-      "id": "0",
-      "particle_id": "musket_muzzle_smoke",
-      "start_delay": 1,
-      "is_can_be_interrupted": true,
-      "amount": 6,
-      "interval": 0.05
+      "particles": [
+        {
+          "particle_effect": "musket_bullet_smoke",
+          "delay": 0.075,
+          "interval": 0.075
+        }
+      ]
     }
   ],
   "collider_size": {

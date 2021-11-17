@@ -7,5 +7,6 @@
   "items/sniper_rifle.json",
   "items/sword.json",
   "items/kick_bomb.json",
-  "items/turtle_shell.json"
+  "items/turtle_shell.json",
+  "items/crate.json"
 ]

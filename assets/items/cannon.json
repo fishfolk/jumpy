@@ -20,43 +20,47 @@
     "y": 12
   },
   "sound_effect": "shoot",
-  "effects": {
-    "type": "triggered_effect",
-    "trigger": [
-      "enemy",
-      "ground",
-      "explosion"
-    ],
-    "velocity": {
-      "x": 1000.0,
-      "y": -50.0
-    },
-    "size": {
-      "x": 17,
-      "y": 17
-    },
-    "timed_trigger": 1.5,
-    "effects": {
-      "type": "circle_collider",
-      "radius": 64,
-      "is_explosion": true,
-      "particle_effect": "hit",
-      "sound_effect": "explode"
-    },
-    "animation": {
-      "texture": "cannon_ball",
-      "animations": [
+  "effects": [
+    {
+      "type": "triggered_effect",
+      "trigger": [
+        "enemy",
+        "ground",
+        "explosion"
+      ],
+      "velocity": {
+        "x": 1000.0,
+        "y": -50.0
+      },
+      "size": {
+        "x": 17,
+        "y": 17
+      },
+      "timed_trigger": 1.5,
+      "effects": [
         {
-          "id": "armed",
-          "row": 0,
-          "frames": 1,
-          "fps": 1,
-          "is_looping": true
+          "type": "circle_collider",
+          "radius": 64,
+          "is_explosion": true,
+          "particle_effect": "hit",
+          "sound_effect": "explode"
         }
       ],
-      "should_autoplay": true
+      "animation": {
+        "texture": "cannon_ball",
+        "animations": [
+          {
+            "id": "armed",
+            "row": 0,
+            "frames": 1,
+            "fps": 1,
+            "is_looping": true
+          }
+        ],
+        "should_autoplay": true
+      }
     }
-  },
+  ],
   "collider_size": {
     "x": 64,
     "y": 24

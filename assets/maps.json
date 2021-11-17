@@ -62,6 +62,7 @@
   {
     "name": "test_level",
     "path": "maps/test_level.json",
-    "preview_path": "maps/test_level.png"
+    "preview_path": "maps/test_level.png",
+    "is_user_map": true
   }
 ]

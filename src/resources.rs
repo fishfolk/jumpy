@@ -105,7 +105,7 @@ pub struct Resources {
     pub images: HashMap<String, ImageResource>,
     pub maps: Vec<MapResource>,
     pub items: HashMap<String, ItemParams>,
-    pub player_characters: HashMap<String, PlayerCharacterParams>,
+    pub player_characters: Vec<PlayerCharacterParams>,
 }
 
 impl Resources {
@@ -295,9 +295,7 @@ impl Resources {
                 deserialize_bytes(Self::RESOURCE_FILES_EXTENSION, &bytes)?;
 
             for path in item_paths {
-                let path = assets_dir_path
-                    .join(&path)
-                    .with_extension(Self::RESOURCE_FILES_EXTENSION);
+                let path = assets_dir_path.join(&path);
 
                 let bytes = load_file(&path.to_string_helper()).await?;
 
@@ -307,21 +305,14 @@ impl Resources {
             }
         }
 
-        let mut player_characters = HashMap::new();
-
-        {
+        let player_characters = {
             let player_characters_file_path = assets_dir_path
                 .join(Self::PLAYER_CHARACTERS_FILE)
                 .with_extension(Self::RESOURCE_FILES_EXTENSION);
 
             let bytes = load_file(&player_characters_file_path.to_string_helper()).await?;
-            let params_vec: Vec<PlayerCharacterParams> =
-                deserialize_bytes(Self::RESOURCE_FILES_EXTENSION, &bytes)?;
-
-            for params in params_vec {
-                player_characters.insert(params.id.clone(), params);
-            }
-        }
+            deserialize_bytes(Self::RESOURCE_FILES_EXTENSION, &bytes)?
+        };
 
         #[allow(clippy::inconsistent_struct_constructor)]
         Ok(Resources {

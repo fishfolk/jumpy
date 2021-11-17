@@ -17,6 +17,7 @@ pub struct Animation {
     pub row: u32,
     pub frames: u32,
     pub fps: u32,
+    #[serde(default, skip_serializing_if = "json::is_false")]
     pub is_looping: bool,
 }
 

@@ -8,6 +8,7 @@ use macroquad::{
 
 use serde::{Deserialize, Serialize};
 
+use crate::components::{ParticleController, ParticleControllerParams};
 use crate::json::OneOrMany;
 use crate::{
     capabilities::NetworkReplicate,
@@ -104,7 +105,11 @@ impl Default for TriggeredEffectTriggerParams {
 pub struct TriggeredEffectParams {
     /// The effects to instantiate when the triggers condition is met. Can be either a single
     /// effect or a vec of effects, either passive or active
+    #[serde(alias = "effect")]
     pub effects: OneOrMany<AnyEffectParams>,
+    /// Particle effects that will be attached to the trigger
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    particles: Vec<ParticleControllerParams>,
     /// This specifies the size of the trigger.
     #[serde(with = "json::vec2_def")]
     pub size: Vec2,
@@ -120,19 +125,16 @@ pub struct TriggeredEffectParams {
     pub animation: Option<AnimationParams>,
     /// This specifies the delay between the the trigger is instantiated and when it will be
     /// possible to trigger it.
-    ///
     /// Explosions and projectiles, if in the list of valid trigger conditions, will ignore this
     /// and trigger the effect immediately.
     #[serde(default)]
     pub activation_delay: f32,
     /// This specifies the delay between the triggers conditions are met and the effect is triggered.
-    ///
     /// Explosions and projectiles, if in the list of valid trigger conditions, will ignore this
     /// and trigger the effect immediately.
     #[serde(default)]
     pub trigger_delay: f32,
     /// If a value is specified the effect will trigger automatically after `value` time has passed.
-    ///
     /// Explosions and projectiles, if in the list of valid trigger conditions, will ignore this
     /// and trigger the effect immediately.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -150,6 +152,7 @@ impl Default for TriggeredEffectParams {
     fn default() -> Self {
         TriggeredEffectParams {
             effects: OneOrMany::Many(Vec::new()),
+            particles: Vec::new(),
             size: Vec2::ONE,
             trigger: TriggeredEffectTriggerParams::Vec(Vec::new()),
             velocity: Vec2::ZERO,
@@ -167,6 +170,7 @@ struct TriggeredEffect {
     pub owner: Handle<Player>,
     pub size: Vec2,
     pub trigger: Vec<TriggeredEffectTrigger>,
+    pub particles: Vec<ParticleController>,
     pub effects: Vec<AnyEffectParams>,
     pub animation_player: Option<AnimationPlayer>,
     pub body: PhysicsBody,
@@ -223,6 +227,12 @@ impl TriggeredEffects {
     pub fn spawn(&mut self, owner: Handle<Player>, position: Vec2, params: TriggeredEffectParams) {
         let trigger = params.trigger.into();
 
+        let particles = params
+            .particles
+            .into_iter()
+            .map(ParticleController::new)
+            .collect();
+
         let mut animation_player = None;
         if let Some(animation_params) = params.animation {
             animation_player = Some(AnimationPlayer::new(animation_params));
@@ -248,6 +258,7 @@ impl TriggeredEffects {
             size: params.size,
             trigger,
             effects: params.effects.into(),
+            particles,
             animation_player,
             body,
             activation_delay: params.activation_delay,
@@ -318,13 +329,17 @@ impl TriggeredEffects {
         while i < node.active.len() {
             let trigger = &mut node.active[i];
 
+            let dt = get_frame_time();
+
+            for particles in &mut trigger.particles {
+                particles.update(dt);
+            }
+
             if !trigger.should_collide_with_platforms {
                 trigger.body.descent();
             }
 
             trigger.body.update();
-
-            let dt = get_frame_time();
 
             if let Some(timed_trigger) = trigger.timed_trigger {
                 trigger.timed_trigger_timer += dt;
@@ -454,8 +469,14 @@ impl Node for TriggeredEffects {
 
     fn draw(mut node: RefMut<Self>) {
         for trigger in &mut node.active {
+            let flip_x = trigger.body.velocity.x < 0.0;
+
             if let Some(animation_player) = &trigger.animation_player {
-                animation_player.draw(trigger.body.position, 0.0, false, false);
+                animation_player.draw(trigger.body.position, 0.0, flip_x, false);
+            }
+
+            for particles in &mut trigger.particles {
+                particles.draw(trigger.body.position, flip_x, false)
             }
 
             #[cfg(debug_assertions)]

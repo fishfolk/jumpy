@@ -61,8 +61,8 @@ pub use decoration::Decoration;
 
 use crate::effects::passive::init_passive_effects;
 pub use effects::{
-    ActiveEffectCoroutine, ActiveEffectKind, ActiveEffectParams, ParticleControllers,
-    PassiveEffectInstance, PassiveEffectParams, Projectiles, TriggeredEffects,
+    ActiveEffectCoroutine, ActiveEffectKind, ActiveEffectParams, PassiveEffectInstance,
+    PassiveEffectParams, Projectiles, TriggeredEffects,
 };
 
 pub type CollisionWorld = macroquad_platformer::World;

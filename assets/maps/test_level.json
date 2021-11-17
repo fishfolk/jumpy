@@ -810,6 +810,38 @@
       "has_collision": false,
       "objects": [
         {
+          "id": "crate",
+          "kind": "item",
+          "position": {
+            "x": 800.0,
+            "y": 670.0
+          }
+        },
+        {
+          "id": "crate",
+          "kind": "item",
+          "position": {
+            "x": 761.0,
+            "y": 670.0
+          }
+        },
+        {
+          "id": "crate",
+          "kind": "item",
+          "position": {
+            "x": 550.0,
+            "y": 670.0
+          }
+        },
+        {
+          "id": "crate",
+          "kind": "item",
+          "position": {
+            "x": 350.0,
+            "y": 670.0
+          }
+        },
+        {
           "id": "sproinger",
           "kind": "environment",
           "position": {

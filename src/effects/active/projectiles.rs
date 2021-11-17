@@ -52,7 +52,7 @@ struct Projectile {
     range: f32,
     sprite: Option<Sprite>,
     sprite_draw_angle: f32,
-    particle_controller: Option<ParticleController>,
+    particles: Vec<ParticleController>,
 }
 
 #[derive(Default)]
@@ -72,7 +72,7 @@ impl Projectiles {
         origin: Vec2,
         velocity: Vec2,
         range: f32,
-        particle_params: Option<ParticleControllerParams>,
+        particles: Vec<ParticleControllerParams>,
     ) {
         let mut sprite = None;
 
@@ -100,7 +100,7 @@ impl Projectiles {
             }
         }
 
-        let particle_controller = particle_params.map(ParticleController::new);
+        let particles = particles.into_iter().map(ParticleController::new).collect();
 
         self.active.push(Projectile {
             owner,
@@ -111,18 +111,20 @@ impl Projectiles {
             range,
             sprite,
             sprite_draw_angle,
-            particle_controller,
+            particles,
         });
     }
 
     fn network_update(mut node: RefMut<Self>) {
+        let dt = get_frame_time();
+
         let mut i = 0;
         while i < node.active.len() {
             let projectile = &mut node.active[i];
             projectile.position += projectile.velocity;
 
-            if let Some(particle_controller) = &mut projectile.particle_controller {
-                particle_controller.update(projectile.position, false);
+            for particles in &mut projectile.particles {
+                particles.update(dt);
             }
 
             let mut is_hit = false;
@@ -201,6 +203,8 @@ impl Node for Projectiles {
 
     fn draw(mut node: RefMut<Self>) {
         for projectile in &mut node.active {
+            let flip_x = projectile.velocity.x < 0.0;
+
             match projectile.kind.clone() {
                 ProjectileKind::Circle { radius, color } => {
                     draw_circle(projectile.position.x, projectile.position.y, radius, color)
@@ -218,7 +222,6 @@ impl Node for Projectiles {
                 ),
                 ProjectileKind::Sprite { .. } => {
                     let sprite = projectile.sprite.as_ref().unwrap();
-                    let flip_x = projectile.velocity.x < 0.0;
                     sprite.draw(
                         projectile.position,
                         projectile.sprite_draw_angle,
@@ -226,6 +229,10 @@ impl Node for Projectiles {
                         false,
                     );
                 }
+            }
+
+            for particles in &mut projectile.particles {
+                particles.draw(projectile.position, flip_x, false);
             }
         }
     }

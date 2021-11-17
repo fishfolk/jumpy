@@ -222,3 +222,26 @@ pub fn deg_to_rad(deg: f32) -> f32 {
 pub fn rad_to_deg(rad: f32) -> f32 {
     (rad * 180.0) / std::f32::consts::PI
 }
+
+/// Use this in serde tags to skip serialization for zero values
+pub trait IsZero {
+    fn is_zero(&self) -> bool;
+}
+
+impl IsZero for f32 {
+    fn is_zero(&self) -> bool {
+        *self == 0.0
+    }
+}
+
+impl IsZero for u32 {
+    fn is_zero(&self) -> bool {
+        *self == 0
+    }
+}
+
+impl IsZero for Vec2 {
+    fn is_zero(&self) -> bool {
+        *self == Vec2::ZERO
+    }
+}

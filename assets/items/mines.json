@@ -11,41 +11,44 @@
   "cooldown": 0.5,
   "uses": 3,
   "is_destroyed_on_depletion": true,
-  "effects": {
-    "type": "triggered_effect",
-    "trigger": "all_except_ground",
-    "size": {
-      "x": 36,
-      "y": 36
-    },
-    "activation_delay": 1.5,
-    "effects": {
-      "type": "circle_collider",
-      "radius": 64,
-      "is_explosion": true,
-      "particle_effect": "hit",
-      "sound_effect": "explode"
-    },
-    "should_collide_with_platforms": true,
-    "animation": {
-      "texture": "mines",
-      "offset": {
-        "x": 0,
-        "y": -12
+  "effects": [
+    {
+      "type": "triggered_effect",
+      "trigger": "all_except_ground",
+      "size": {
+        "x": 36,
+        "y": 36
       },
-      "animations": [
+      "activation_delay": 1.5,
+      "effects": [
         {
-          "id": "armed",
-          "row": 0,
-          "frames": 13,
-          "fps": 12,
-          "is_looping": true
+          "type": "circle_collider",
+          "radius": 64,
+          "is_explosion": true,
+          "particle_effect": "hit",
+          "sound_effect": "explode"
         }
       ],
-      "should_autoplay": true
+      "should_collide_with_platforms": true,
+      "animation": {
+        "texture": "mines",
+        "offset": {
+          "x": 0,
+          "y": -12
+        },
+        "animations": [
+          {
+            "id": "armed",
+            "row": 0,
+            "frames": 13,
+            "fps": 12,
+            "is_looping": true
+          }
+        ],
+        "should_autoplay": true
+      }
     }
-
-  },
+  ],
   "collider_size": {
     "x": 32,
     "y": 32

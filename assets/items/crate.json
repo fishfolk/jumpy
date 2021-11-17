@@ -1,0 +1,58 @@
+{
+  "id": "crate",
+  "sprite": {
+    "texture": "crate"
+  },
+  "type": "weapon",
+  "uses": 1,
+  "is_destroyed_on_depletion": true,
+  "collider_size": {
+    "x": 36,
+    "y": 31
+  },
+  "mount_offset": {
+    "x": 0,
+    "y": -16
+  },
+  "effects": [
+    {
+      "type": "triggered_effect",
+      "trigger": "all_except_player",
+      "velocity": {
+        "x": 500.0,
+        "y": -250.0
+      },
+      "size": {
+        "x": 30,
+        "y": 30
+      },
+      "effects": {
+        "type": "rect_collider",
+        "width": 36,
+        "height": 32
+      },
+      "animation": {
+        "texture": "crate",
+        "animations": [
+          {
+            "id": "idle",
+            "row": 0,
+            "frames": 1,
+            "fps": 1
+          }
+        ]
+      }
+    }
+  ],
+  "animation": {
+    "texture": "crate",
+    "animations": [
+      {
+        "id": "idle",
+        "row": 0,
+        "frames": 1,
+        "fps": 1
+      }
+    ]
+  }
+}

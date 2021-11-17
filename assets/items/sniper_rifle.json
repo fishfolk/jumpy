@@ -25,27 +25,29 @@
     "x": -12,
     "y": -12
   },
-  "effects": {
-    "type": "projectile",
-    "projectile": {
-      "type": "sprite",
-      "sprite": {
-        "texture": "small_projectile",
-        "size": {
-          "x": 8,
-          "y": 4
-        },
-        "tint": {
-          "r": 0.9,
-          "g": 0.75,
-          "b": 0.12,
-          "a": 1.0
+  "effects": [
+    {
+      "type": "projectile",
+      "projectile": {
+        "type": "sprite",
+        "sprite": {
+          "texture": "small_projectile",
+          "size": {
+            "x": 8,
+            "y": 4
+          },
+          "tint": {
+            "r": 0.9,
+            "g": 0.75,
+            "b": 0.12,
+            "a": 1.0
+          }
         }
-      }
-    },
-    "range": 600.0,
-    "speed": 25.0
-  },
+      },
+      "range": 600.0,
+      "speed": 25.0
+    }
+  ],
   "animation": {
     "texture": "sniper_rifle",
     "animations": [

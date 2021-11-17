@@ -17,7 +17,19 @@
     "y": 4
   },
   "sound_effect": "shoot",
-  "effects": [
+  "particles": [
+    {
+      "particle_effect": "machine_gun_muzzle_smoke",
+      "delay": 0.2,
+      "interval": 0.05,
+      "emissions": 5
+    },
+    {
+      "particle_effect": "machine_gun_firing_smoke",
+      "emissions": 1
+    }
+  ],
+  "effect": [
     {
       "type": "projectile",
       "range": 512.0,
@@ -38,21 +50,6 @@
         },
         "is_rotated": true
       }
-    },
-    {
-      "type": "particle_controller",
-      "id": "0",
-      "particle_id": "machine_gun_muzzle_smoke",
-      "start_delay": 0.2,
-      "is_can_be_interrupted": true,
-      "amount": 5,
-      "interval": 0.05
-    },
-    {
-      "type": "particle_controller",
-      "id": "1",
-      "particle_id": "machine_gun_firing_smoke",
-      "amount": 1
     }
   ],
   "collider_size": {

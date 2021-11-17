@@ -8,12 +8,14 @@
     "x": 32,
     "y": 32
   },
-  "effects": {
-    "id": "turtle_shell",
-    "events": "receive_damage",
-    "uses": 3,
-    "blocks_damage": true
-  },
+  "effects": [
+    {
+      "id": "turtle_shell",
+      "events": "receive_damage",
+      "uses": 3,
+      "blocks_damage": true
+    }
+  ],
   "animation": {
     "texture": "turtle_shell",
     "animations": [

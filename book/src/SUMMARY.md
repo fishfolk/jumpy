@@ -17,3 +17,4 @@
   - [Simple Gun Weapon](./simple_gun_weapon.md)
 - Documentation
   - [Screen Shake](./docs/screenshake.md)
+  - [Particles](./docs/particles.md)

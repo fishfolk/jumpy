@@ -11,7 +11,8 @@ opt-level = 3
 macroquad = { version = "0.3.10" }
 macroquad-platformer = "0.1"
 macroquad-profiler = "0.1"
-macroquad-particles = { git = "https://github.com/olefasting/macroquad_particles", features = ["serde"] }
+
+ff-particles = { version = "0.1", features = ["serde"] }
 
 fishsticks = { git = "https://github.com/PotatoTech/fishsticks", features = ["bundled-sdl2"] }
 

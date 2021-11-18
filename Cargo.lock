@@ -155,12 +155,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "ff-particles"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a099eee8a45930a4a21516cf5a036df4bdff699641780eb5616192cba2afb12d"
+dependencies = [
+ "macroquad",
+ "serde",
+]
+
+[[package]]
 name = "fishfight"
 version = "0.2.0"
 dependencies = [
+ "ff-particles",
  "fishsticks",
  "macroquad",
- "macroquad-particles",
  "macroquad-platformer",
  "macroquad-profiler",
  "serde",
@@ -286,15 +296,6 @@ dependencies = [
  "miniquad",
  "quad-rand",
  "quad-snd",
-]
-
-[[package]]
-name = "macroquad-particles"
-version = "0.1.1"
-source = "git+https://github.com/olefasting/macroquad_particles#18f8528fbd77b723fe076744f295534181de5fd1"
-dependencies = [
- "macroquad",
- "serde",
 ]
 
 [[package]]

@@ -6,7 +6,7 @@ use macroquad::{
     prelude::*,
 };
 
-use macroquad_particles::EmitterConfig;
+use ff_particles::EmitterConfig;
 
 use serde::{Deserialize, Serialize};
 

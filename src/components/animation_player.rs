@@ -71,7 +71,7 @@ pub struct AnimationParams {
     #[serde(default)]
     pub should_autoplay: bool,
     /// If this is true, the `AnimationPlayer` will not be updated or drawn.
-    #[serde(default)]
+    #[serde(default, skip)]
     pub is_deactivated: bool,
 }
 

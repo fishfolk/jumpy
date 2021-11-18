@@ -100,7 +100,12 @@ impl Projectiles {
             }
         }
 
-        let particles = particles.into_iter().map(ParticleController::new).collect();
+        let mut particles = particles
+            .into_iter()
+            .map(ParticleController::new)
+            .collect::<Vec<ParticleController>>();
+
+        particles.iter_mut().for_each(|p| p.activate());
 
         self.active.push(Projectile {
             owner,

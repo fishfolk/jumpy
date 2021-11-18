@@ -2,11 +2,11 @@ use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
-use crate::json;
+use crate::json::{self, helpers::*};
 use crate::math::IsZero;
 use crate::ParticleEmitters;
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ParticleControllerParams {
     /// The id of the particle effect.
     #[serde(rename = "particle_effect")]
@@ -27,6 +27,9 @@ pub struct ParticleControllerParams {
     /// Amount of emissions per activation. If set to `None` it will emit indefinitely
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub emissions: Option<u32>,
+    /// If this is set to `true` the `ParticleController` will start to emit automatically
+    #[serde(default, skip_serializing_if = "bool::is_false")]
+    pub should_autostart: bool,
 }
 
 impl Default for ParticleControllerParams {
@@ -37,6 +40,7 @@ impl Default for ParticleControllerParams {
             delay: 0.0,
             emissions: None,
             interval: 0.0,
+            should_autostart: false,
         }
     }
 }
@@ -47,6 +51,7 @@ impl From<ParticleControllerParams> for ParticleController {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct ParticleController {
     particle_effect_id: String,
     offset: Vec2,
@@ -71,24 +76,20 @@ impl ParticleController {
             delay_timer: 0.0,
             interval_timer: params.interval,
             emission_cnt: 0,
-            is_active: false,
+            is_active: params.should_autostart,
             position: None,
         }
     }
 
     fn get_offset(&self, flip_x: bool, flip_y: bool) -> Vec2 {
-        let mut offset = Vec2::ZERO;
+        let mut offset = self.offset;
 
         if flip_x {
-            offset.x = -self.offset.x;
-        } else {
-            offset.x = self.offset.x;
+            offset.x = -offset.x;
         }
 
         if flip_y {
-            offset.y = -self.offset.y;
-        } else {
-            offset.y = self.offset.y;
+            offset.y = -offset.y;
         }
 
         offset
@@ -120,7 +121,10 @@ impl ParticleController {
 
                     if let Some(emissions) = self.emissions {
                         self.emission_cnt += 1;
-                        self.is_active = self.emission_cnt < emissions;
+
+                        if emissions > 0 && self.emission_cnt >= emissions {
+                            self.is_active = false;
+                        }
                     }
                 }
             }

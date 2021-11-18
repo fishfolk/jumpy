@@ -235,3 +235,18 @@ impl GenericParamType for HashMap<String, GenericParam> {
         }
     }
 }
+
+pub trait BoolHelpers {
+    fn is_true(&self) -> bool;
+    fn is_false(&self) -> bool;
+}
+
+impl BoolHelpers for bool {
+    fn is_true(&self) -> bool {
+        *self
+    }
+
+    fn is_false(&self) -> bool {
+        !*self
+    }
+}

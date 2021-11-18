@@ -9,7 +9,7 @@ use macroquad::{
     telemetry,
 };
 
-use macroquad_particles::EmittersCache;
+use ff_particles::EmittersCache;
 
 use crate::Resources;
 

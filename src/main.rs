@@ -3,10 +3,7 @@ use fishsticks::GamepadContext;
 use std::env;
 use std::path::PathBuf;
 
-use macroquad::{
-    experimental::{collections::storage, coroutines::start_coroutine},
-    prelude::*,
-};
+use macroquad::{experimental::collections::storage, prelude::*};
 
 mod capabilities;
 pub mod components;
@@ -60,6 +57,7 @@ pub use player::{Player, PlayerEventParams};
 pub use decoration::Decoration;
 
 use crate::effects::passive::init_passive_effects;
+use crate::resources::load_resources;
 pub use effects::{
     ActiveEffectCoroutine, ActiveEffectKind, ActiveEffectParams, PassiveEffectInstance,
     PassiveEffectParams, Projectiles, TriggeredEffects,
@@ -116,38 +114,7 @@ async fn main() -> Result<()> {
 
     rand::srand(0);
 
-    let resources_loading = start_coroutine({
-        let assets_dir = assets_dir.clone();
-        async move {
-            let resources = match Resources::new(&assets_dir).await {
-                Ok(val) => val,
-                Err(err) => panic!("{}: {}", err.kind().as_str(), err),
-            };
-
-            storage::store(resources);
-        }
-    });
-
-    while !resources_loading.is_done() {
-        clear_background(BLACK);
-        draw_text(
-            &format!(
-                "Loading resources {}",
-                ".".repeat(((get_time() * 2.0) as usize) % 4)
-            ),
-            screen_width() / 2.0 - 160.0,
-            screen_height() / 2.0,
-            40.,
-            WHITE,
-        );
-
-        next_frame().await;
-    }
-
-    {
-        let gui_resources = gui::GuiResources::load(&assets_dir).await;
-        storage::store(gui_resources);
-    }
+    load_resources(&assets_dir).await;
 
     {
         let gamepad_system = fishsticks::GamepadContext::init().unwrap();
@@ -197,6 +164,11 @@ async fn main() -> Result<()> {
                 scene::add_node(EditorCamera::new(position));
                 scene::add_node(Editor::new(input_scheme, map_resource));
             }
+            MainMenuResult::ReloadResources => {
+                let resources = storage::get::<Resources>();
+                load_resources(&resources.assets_dir).await;
+                continue 'outer;
+            }
             MainMenuResult::Quit => {
                 quit_to_desktop();
             }
@@ -206,6 +178,10 @@ async fn main() -> Result<()> {
             #[allow(clippy::never_loop)]
             for event in iter_events() {
                 match event {
+                    ApplicationEvent::ReloadResources => {
+                        let resources = storage::get::<Resources>();
+                        load_resources(&resources.assets_dir).await;
+                    }
                     ApplicationEvent::MainMenu => break 'inner,
                     ApplicationEvent::Quit => break 'outer,
                 }

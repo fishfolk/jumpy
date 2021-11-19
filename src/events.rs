@@ -20,6 +20,8 @@ pub fn iter_events() -> ApplicationEventIterator {
 /// This holds all the event types
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum ApplicationEvent {
+    /// Reload resources
+    ReloadResources,
     /// Exit to main menu
     MainMenu,
     /// Quit to desktop

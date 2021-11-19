@@ -2,7 +2,7 @@ use std::{collections::HashMap, fs, path::Path};
 
 use macroquad::{
     audio::{load_sound, Sound},
-    experimental::collections::storage,
+    experimental::{collections::storage, coroutines::start_coroutine},
     prelude::*,
 };
 
@@ -10,6 +10,7 @@ use ff_particles::EmitterConfig;
 
 use serde::{Deserialize, Serialize};
 
+use crate::gui::GuiResources;
 use crate::{
     error::{ErrorKind, Result},
     formaterr,
@@ -459,4 +460,39 @@ pub fn is_valid_map_export_path<P: AsRef<Path>>(path: P, should_overwrite: bool)
     }
 
     false
+}
+
+pub async fn load_resources(assets_dir: &str) {
+    let resources_loading = start_coroutine({
+        let assets_dir = assets_dir.to_string();
+        async move {
+            let resources = match Resources::new(&assets_dir).await {
+                Ok(val) => val,
+                Err(err) => panic!("{}: {}", err.kind().as_str(), err),
+            };
+
+            storage::store(resources);
+        }
+    });
+
+    while !resources_loading.is_done() {
+        clear_background(BLACK);
+        draw_text(
+            &format!(
+                "Loading resources {}",
+                ".".repeat(((get_time() * 2.0) as usize) % 4)
+            ),
+            screen_width() / 2.0 - 160.0,
+            screen_height() / 2.0,
+            40.,
+            WHITE,
+        );
+
+        next_frame().await;
+    }
+
+    {
+        let gui_resources = GuiResources::load(assets_dir).await;
+        storage::store(gui_resources);
+    }
 }

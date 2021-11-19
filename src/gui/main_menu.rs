@@ -25,6 +25,7 @@ pub enum MainMenuResult {
         input_scheme: EditorInputScheme,
         is_new_map: bool,
     },
+    ReloadResources,
     Quit,
 }
 
@@ -41,6 +42,7 @@ const ROOT_OPTION_LOCAL_GAME: usize = 0;
 const ROOT_OPTION_NETWORK_GAME: usize = 1;
 const ROOT_OPTION_EDITOR: usize = 2;
 const ROOT_OPTION_SETTINGS: usize = 3;
+const ROOT_OPTION_RELOAD_RESOURCES: usize = 4;
 
 const LOCAL_GAME_OPTION_SUBMIT: usize = 0;
 
@@ -72,6 +74,11 @@ fn build_main_menu() -> Menu {
                 index: ROOT_OPTION_SETTINGS,
                 title: "Settings".to_string(),
                 is_disabled: true,
+                ..Default::default()
+            },
+            MenuEntry {
+                index: ROOT_OPTION_RELOAD_RESOURCES,
+                title: "Reload Resources".to_string(),
                 ..Default::default()
             },
         ],
@@ -136,7 +143,12 @@ pub async fn show_main_menu() -> MainMenuResult {
                         ROOT_OPTION_EDITOR => {
                             menu_state = MainMenuState::Editor(build_editor_menu());
                         }
-                        Menu::CANCEL_INDEX => return MainMenuResult::Quit,
+                        ROOT_OPTION_RELOAD_RESOURCES => {
+                            return MainMenuResult::ReloadResources;
+                        }
+                        Menu::CANCEL_INDEX => {
+                            return MainMenuResult::Quit;
+                        }
                         _ => {}
                     }
                 }

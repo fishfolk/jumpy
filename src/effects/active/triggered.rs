@@ -146,6 +146,12 @@ pub struct TriggeredEffectParams {
     /// collisions with platforms, if `ground` is selected as one of the trigger criteria
     #[serde(default)]
     pub should_collide_with_platforms: bool,
+    /// If this is `true` the triggered physic body will rotate while in the air.
+    #[serde(default)]
+    pub is_rotates: bool,
+    /// The angle of rotation with which the triggered physics body will spawn.
+    #[serde(default)]
+    pub spawn_angle: f32,
 }
 
 impl Default for TriggeredEffectParams {
@@ -162,6 +168,8 @@ impl Default for TriggeredEffectParams {
             timed_trigger: None,
             is_kickable: false,
             should_collide_with_platforms: false,
+            is_rotates: false,
+            spawn_angle: 0.0,
         }
     }
 }
@@ -189,6 +197,7 @@ struct TriggeredEffect {
     activation_timer: f32,
     trigger_delay_timer: f32,
     timed_trigger_timer: f32,
+    is_rotates: bool,
 }
 
 impl TriggeredEffect {
@@ -243,9 +252,9 @@ impl TriggeredEffects {
             PhysicsBody::new(
                 &mut game_world.collision_world,
                 position,
-                0.0,
+                params.spawn_angle,
                 params.size,
-                false,
+                params.is_rotates,
                 true,
                 None,
             )
@@ -273,6 +282,7 @@ impl TriggeredEffects {
             should_override_delay: false,
             should_collide_with_platforms: params.should_collide_with_platforms,
             triggered_by: None,
+            is_rotates: params.is_rotates,
         })
     }
 
@@ -340,6 +350,9 @@ impl TriggeredEffects {
             }
 
             trigger.body.update();
+            if trigger.is_rotates {
+                trigger.body.update_throw();
+            }
 
             if let Some(timed_trigger) = trigger.timed_trigger {
                 trigger.timed_trigger_timer += dt;
@@ -472,7 +485,7 @@ impl Node for TriggeredEffects {
             let flip_x = trigger.body.velocity.x < 0.0;
 
             if let Some(animation_player) = &trigger.animation_player {
-                animation_player.draw(trigger.body.position, 0.0, flip_x, false);
+                animation_player.draw(trigger.body.position, trigger.body.rotation, flip_x, false);
             }
 
             for particles in &mut trigger.particles {

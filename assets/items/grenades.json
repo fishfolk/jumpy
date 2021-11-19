@@ -12,9 +12,10 @@
       "type": "triggered_effect",
       "trigger": "enemy",
       "velocity": {
-        "x": 400.0,
+        "x": 600.0,
         "y": -400.0
       },
+      "is_rotates": true,
       "size": {
         "x": 24,
         "y": 24
@@ -33,7 +34,7 @@
         "texture": "grenades",
         "offset": {
           "x": 0,
-          "y": -24
+          "y": -10
         },
         "animations": [
           {
@@ -50,7 +51,7 @@
   ],
   "collider_size": {
     "x": 32,
-    "y": 48
+    "y": 34
   },
   "mount_offset": {
     "x": 0,
@@ -62,6 +63,10 @@
   },
   "animation": {
     "texture": "grenades",
+    "offset": {
+      "x": 0,
+      "y": 8
+    },
     "animations": [
       {
         "id": "idle",

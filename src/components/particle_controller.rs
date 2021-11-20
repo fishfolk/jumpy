@@ -106,6 +106,10 @@ impl ParticleController {
     }
 
     pub fn activate(&mut self) {
+        if let Some(animations) = &mut self.animations {
+            animations.play();
+        }
+
         self.delay_timer = 0.0;
         self.interval_timer = self.interval;
         self.emission_cnt = 0;

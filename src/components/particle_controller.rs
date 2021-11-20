@@ -73,8 +73,21 @@ pub struct ParticleController {
 }
 
 impl ParticleController {
+    const EFFECT_ANIMATION_ID: &'static str = "animated_effect";
+
     pub fn new(params: ParticleControllerParams) -> Self {
-        let animations = params.animations.map(|params| params.into());
+        let mut animations: Option<AnimationPlayer> = params.animations.map(|params| params.into());
+
+        if let Some(animations) = &mut animations {
+            animations.set_animation(Self::EFFECT_ANIMATION_ID);
+            animations.is_deactivated = !params.should_autostart;
+
+            if params.should_autostart {
+                animations.play();
+            } else {
+                animations.stop();
+            }
+        }
 
         ParticleController {
             particle_effect_id: params.particle_effect_id,

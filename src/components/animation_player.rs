@@ -91,6 +91,7 @@ impl Default for AnimationParams {
     }
 }
 
+#[derive(Clone)]
 pub struct AnimationPlayer {
     texture: Texture2D,
     scale: f32,
@@ -282,5 +283,11 @@ impl AnimationPlayer {
 
     pub fn is_playing(&self) -> bool {
         !self.is_deactivated && self.sprite.playing
+    }
+}
+
+impl From<AnimationParams> for AnimationPlayer {
+    fn from(params: AnimationParams) -> Self {
+        AnimationPlayer::new(params)
     }
 }

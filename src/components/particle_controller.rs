@@ -1,5 +1,6 @@
 use macroquad::prelude::*;
 
+use crate::components::{AnimationParams, AnimationPlayer};
 use serde::{Deserialize, Serialize};
 
 use crate::json::{self, helpers::*};
@@ -27,6 +28,10 @@ pub struct ParticleControllerParams {
     /// Amount of emissions per activation. If set to `None` it will emit indefinitely
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub emissions: Option<u32>,
+    /// This is a temporary hack that enables texture based effects until we add texture support
+    /// to our macroquad-particles fork
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub animations: Option<AnimationParams>,
     /// If this is set to `true` the `ParticleController` will start to emit automatically
     #[serde(default, skip_serializing_if = "bool::is_false")]
     pub should_autostart: bool,
@@ -40,6 +45,7 @@ impl Default for ParticleControllerParams {
             delay: 0.0,
             emissions: None,
             interval: 0.0,
+            animations: None,
             should_autostart: false,
         }
     }
@@ -51,13 +57,14 @@ impl From<ParticleControllerParams> for ParticleController {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct ParticleController {
     particle_effect_id: String,
     offset: Vec2,
     delay: f32,
     emissions: Option<u32>,
     interval: f32,
+    animations: Option<AnimationPlayer>,
     delay_timer: f32,
     interval_timer: f32,
     emission_cnt: u32,
@@ -67,12 +74,15 @@ pub struct ParticleController {
 
 impl ParticleController {
     pub fn new(params: ParticleControllerParams) -> Self {
+        let animations = params.animations.map(|params| params.into());
+
         ParticleController {
             particle_effect_id: params.particle_effect_id,
             offset: params.offset,
             delay: params.delay,
             interval: params.interval,
             emissions: params.emissions,
+            animations,
             delay_timer: 0.0,
             interval_timer: params.interval,
             emission_cnt: 0,
@@ -111,6 +121,10 @@ impl ParticleController {
             }
 
             if let Some(position) = self.position {
+                if let Some(animations) = &mut self.animations {
+                    animations.update();
+                }
+
                 if self.delay_timer >= self.delay && self.interval_timer >= self.interval {
                     self.interval_timer = 0.0;
 
@@ -132,7 +146,12 @@ impl ParticleController {
     }
 
     pub fn draw(&mut self, position: Vec2, flip_x: bool, flip_y: bool) {
-        let offset = self.get_offset(flip_x, flip_y);
-        self.position = Some(position + offset);
+        let position = position + self.get_offset(flip_x, flip_y);
+
+        if let Some(animations) = &mut self.animations {
+            animations.draw(position, 0.0, flip_x, flip_y);
+        }
+
+        self.position = Some(position);
     }
 }

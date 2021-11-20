@@ -120,6 +120,7 @@ impl ParticleController {
 
     pub fn activate(&mut self) {
         if let Some(animations) = &mut self.animations {
+            animations.is_deactivated = false;
             animations.play();
         }
 
@@ -155,6 +156,11 @@ impl ParticleController {
 
                         if emissions > 0 && self.emission_cnt >= emissions {
                             self.is_active = false;
+
+                            if let Some(animations) = &mut self.animations {
+                                animations.is_deactivated = true;
+                                animations.stop();
+                            }
                         }
                     }
                 }

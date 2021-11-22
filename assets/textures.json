@@ -94,6 +94,15 @@
     }
   },
   {
+    "id": "blunderbuss",
+    "path": "textures/items/Blunderbuss(65x25).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 65,
+      "y": 25
+    }
+  },
+  {
     "id": "boots",
     "path": "textures/items/Boots(32x32).png",
     "type": "spritesheet",

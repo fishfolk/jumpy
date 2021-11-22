@@ -15,15 +15,15 @@
   "sound_effect": "shoot",
   "collider_size": {
     "x": 64,
-    "y": 24
+    "y": 25
   },
   "effect_offset": {
     "x": 64,
-    "y": 16
+    "y": 25
   },
   "mount_offset": {
-    "x": -12,
-    "y": -12
+    "x": -34,
+    "y": -2
   },
   "effects": [
     {

@@ -94,6 +94,15 @@
     }
   },
   {
+    "id": "blunderbass",
+    "path": "textures/items/Blunderbass(68x24).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 68,
+      "y": 24
+    }
+  },
+  {
     "id": "blunderbuss",
     "path": "textures/items/Blunderbuss(65x25).png",
     "type": "spritesheet",

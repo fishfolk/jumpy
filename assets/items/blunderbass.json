@@ -1,15 +1,15 @@
 {
-  "id": "blunderbuss",
+  "id": "blunderbass",
   "sprite": {
-    "texture": "blunderbuss",
+    "texture": "blunderbass",
     "offset": {
       "x": 0,
       "y": -8
     }
   },
   "type": "weapon",
-  "uses": 2,
-  "cooldown": 1.25,
+  "uses": 4,
+  "cooldown": 2.0,
   "attack_duration": 1.0,
   "recoil": 550.0,
   "sound_effect": "shoot",
@@ -28,7 +28,7 @@
   "effects": [
     {
       "type": "projectile",
-      "spread": 23.0,
+      "spread": 65.0,
       "projectile": {
         "type": "sprite",
         "sprite": {
@@ -45,12 +45,12 @@
           }
         }
       },
-      "range": 280.0,
+      "range": 300.0,
       "speed": 9.0
     },
     {
       "type": "projectile",
-      "spread": 23.0,
+      "spread": 65.0,
       "projectile": {
         "type": "sprite",
         "sprite": {
@@ -67,12 +67,12 @@
           }
         }
       },
-      "range": 280.0,
+      "range": 300.0,
       "speed": 9.0
     },
     {
       "type": "projectile",
-      "spread": 23.0,
+      "spread": 65.0,
       "projectile": {
         "type": "sprite",
         "sprite": {
@@ -89,12 +89,12 @@
           }
         }
       },
-      "range": 280.0,
+      "range": 300.0,
       "speed": 9.0
     },
     {
       "type": "projectile",
-      "spread": 23.0,
+      "spread": 65.0,
       "projectile": {
         "type": "sprite",
         "sprite": {
@@ -111,12 +111,12 @@
           }
         }
       },
-      "range": 280.0,
+      "range": 300.0,
       "speed": 9.0
     },
     {
       "type": "projectile",
-      "spread": 23.0,
+      "spread": 65.0,
       "projectile": {
         "type": "sprite",
         "sprite": {
@@ -133,12 +133,100 @@
           }
         }
       },
-      "range": 280.0,
+      "range": 300.0,
+      "speed": 9.0
+    },
+    {
+      "type": "projectile",
+      "spread": 65.0,
+      "projectile": {
+        "type": "sprite",
+        "sprite": {
+          "texture": "small_projectile",
+          "size": {
+            "x": 8,
+            "y": 4
+          },
+          "tint": {
+            "r": 0.9,
+            "g": 0.75,
+            "b": 0.12,
+            "a": 1.0
+          }
+        }
+      },
+      "range": 300.0,
+      "speed": 9.0
+    },
+    {
+      "type": "projectile",
+      "spread": 65.0,
+      "projectile": {
+        "type": "sprite",
+        "sprite": {
+          "texture": "small_projectile",
+          "size": {
+            "x": 8,
+            "y": 4
+          },
+          "tint": {
+            "r": 0.9,
+            "g": 0.75,
+            "b": 0.12,
+            "a": 1.0
+          }
+        }
+      },
+      "range": 300.0,
+      "speed": 9.0
+    },
+    {
+      "type": "projectile",
+      "spread": 65.0,
+      "projectile": {
+        "type": "sprite",
+        "sprite": {
+          "texture": "small_projectile",
+          "size": {
+            "x": 8,
+            "y": 4
+          },
+          "tint": {
+            "r": 0.9,
+            "g": 0.75,
+            "b": 0.12,
+            "a": 1.0
+          }
+        }
+      },
+      "range": 300.0,
+      "speed": 9.0
+    },
+    {
+      "type": "projectile",
+      "spread": 65.0,
+      "projectile": {
+        "type": "sprite",
+        "sprite": {
+          "texture": "small_projectile",
+          "size": {
+            "x": 8,
+            "y": 4
+          },
+          "tint": {
+            "r": 0.9,
+            "g": 0.75,
+            "b": 0.12,
+            "a": 1.0
+          }
+        }
+      },
+      "range": 300.0,
       "speed": 9.0
     }
   ],
   "animation": {
-    "texture": "blunderbuss",
+    "texture": "blunderbass",
     "animations": [
       {
         "id": "idle",
@@ -157,7 +245,7 @@
     ]
   },
   "effect_animation": {
-    "texture": "blunderbuss",
+    "texture": "blunderbass",
     "animations": [
       {
         "id": "attack_effect",

@@ -14,3 +14,4 @@
 - [Contributing](./contributing.md)
   - [Contributing Code](./contributing_code.md)
   - [Simple Gun Weapon](./simple_gun_weapon.md)
+  - [Contributing Art](./contributing_art.md)

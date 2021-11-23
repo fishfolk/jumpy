@@ -19,7 +19,7 @@ struct Shake {
 #[allow(dead_code)]
 enum ShakeType {
     Noise,
-    Sinusodial,
+    Sinusoidal,
     Rotational,
 }
 
@@ -80,10 +80,10 @@ impl GameCamera {
         });
     }
 
-    pub fn shake_sinusodial(&mut self, magnitude: f32, length: i32, frequency: f32, angle: f32) {
+    pub fn shake_sinusoidal(&mut self, magnitude: f32, length: i32, frequency: f32, angle: f32) {
         self.shake.push(Shake {
             direction: (angle.cos(), angle.sin()),
-            kind: ShakeType::Sinusodial,
+            kind: ShakeType::Sinusoidal,
             magnitude,
             length: length as f32,
             age: 0.0,
@@ -130,7 +130,7 @@ impl GameCamera {
                         * strength
                         * 100.0;
                 }
-                ShakeType::Sinusodial => {
+                ShakeType::Sinusoidal => {
                     shake_offset.x += (self.noisegen_position * self.shake[i].frequency * 1.0)
                         .sin()
                         * self.shake[i].magnitude

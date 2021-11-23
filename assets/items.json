@@ -1,4 +1,6 @@
 [
+  "items/blunderbass.json",
+  "items/blunderbuss.json",
   "items/cannon.json",
   "items/grenades.json",
   "items/machine_gun.json",

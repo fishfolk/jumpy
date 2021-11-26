@@ -1,0 +1,253 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js navy">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Particles - Fish Fight Documentation</title>
+        
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "navy";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('navy')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../code_of_conduct.html"><strong aria-hidden="true">1.1.</strong> Code of Conduct</a></li></ol></li><li class="chapter-item expanded "><a href="../gameplay.html"><strong aria-hidden="true">2.</strong> Gameplay</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../controls.html"><strong aria-hidden="true">2.1.</strong> Controls</a></li><li class="chapter-item expanded "><a href="../items.html"><strong aria-hidden="true">2.2.</strong> Items</a></li><li class="chapter-item expanded "><a href="../multiplayer.html"><strong aria-hidden="true">2.3.</strong> Multiplayer</a></li></ol></li><li class="chapter-item expanded "><a href="../mechanics.html"><strong aria-hidden="true">3.</strong> Mechanics</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../physics.html"><strong aria-hidden="true">3.1.</strong> Physics</a></li><li class="chapter-item expanded "><a href="../environmental_weapons.html"><strong aria-hidden="true">3.2.</strong> Environmental Weapons</a></li></ol></li><li class="chapter-item expanded "><a href="../netcode.html"><strong aria-hidden="true">4.</strong> Netcode</a></li><li class="chapter-item expanded "><a href="../juice.html"><strong aria-hidden="true">5.</strong> Juice</a></li><li class="chapter-item expanded "><a href="../editor.html"><strong aria-hidden="true">6.</strong> Editor</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">7.</strong> Contributing</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../contributing_code.html"><strong aria-hidden="true">7.1.</strong> Contributing Code</a></li><li class="chapter-item expanded "><a href="../simple_gun_weapon.html"><strong aria-hidden="true">7.2.</strong> Simple Gun Weapon</a></li><li class="chapter-item expanded "><a href="../contributing_art.html"><strong aria-hidden="true">7.3.</strong> Contributing Art</a></li></ol></li><li class="chapter-item expanded "><a href="../documentation.html"><strong aria-hidden="true">8.</strong> Documentation</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../docs/screenshake.html"><strong aria-hidden="true">8.1.</strong> Screen Shake</a></li><li class="chapter-item expanded "><a href="../docs/particles.html" class="active"><strong aria-hidden="true">8.2.</strong> Particles</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                        
+                    </div>
+
+                    <h1 class="menu-title">Fish Fight Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        
+                        <a href="https://github.com/fishfight/FishFight" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1><a class="header" href="#particles" id="particles">Particles</a></h1>
+<p>FishFight uses macroquad's <a href="https://crates.io/crates/macroquad-particles">macroquad-particles</a> for simulating and drawing particles. While it might seem simple, it is deceptively so. With a little creativity plenty impressive effects can be created!</p>
+<p>Also see the <a href="../juice.html#particles">the particle section of the juice page.</a></p>
+<h3><a class="header" href="#the-components-of-a-particle-effect" id="the-components-of-a-particle-effect">The components of a particle effect</a></h3>
+<p>A particle effect consists of several parts that must be set up as following:</p>
+<p>First, you need to design your effect! Each effect has a <code>json</code> file that describes how the system spawns, looks, flies, brakes and fades. Check out some of the other effects  in <code>assets/particles/</code>, or easier, try <a href="https://fedorgames.itch.io/macroquad-particles">Fedor's tool</a> with previews and live tweaking to generate the file for you. </p>
+<p>Now that you got your <strong>particle system definition</strong>, give it a descriptive name and put it in <code>assets/particle_effects/</code> with the others. Then open <code>assets/particle_effects.json</code> (a file, not a directory this time) and add your particle effect to it. Preferably use the same ID as your filename, excluding the extension. This tells the game to load your effect into the <code>Resources</code> object, so you can actually access it.</p>
+<h3><a class="header" href="#spawning-a-particle" id="spawning-a-particle">Spawning a particle</a></h3>
+<p>The easiest way to use your particle is through an effect that spawns a particle system. Just supply the ID of your effect in the JSON-definition of your object and the item's code will handle the rest. It can look something like this, depending on the effect:</p>
+<pre><code class="language-json">&quot;effects&quot;: [
+	...
+	{
+		&quot;type&quot;: &quot;particle_controller&quot;,
+		&quot;id&quot;: &quot;0&quot;,
+		&quot;particle_id&quot;: &quot;musket_muzzle_smoke&quot;,
+		&quot;start_delay&quot;: 1,
+		&quot;is_can_be_interrupted&quot;: true,
+		&quot;amount&quot;: 6,
+		&quot;interval&quot;: 0.05
+	},
+	...
+]
+</code></pre>
+<h4><a class="header" href="#spawning-in-code" id="spawning-in-code">Spawning in code</a></h4>
+<p>Soon you'll probably want to trigger particle effects from your own code. You do that as following:</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>scene::find_node_by_type::&lt;ParticleEmitters&gt;().unwrap().spawn(&quot;particle_id_here&quot;, position: Vec2);
+<span class="boring">}
+</span></code></pre></pre>
+<p>If you want to spawn multiple systems, you can store a reference:</p>
+<pre><pre class="playpen"><code class="language-rust">
+<span class="boring">#![allow(unused_variables)]
+</span><span class="boring">fn main() {
+</span>let mut particles = scene::find_node_by_type::&lt;ParticleEmitters&gt;().unwrap();
+<span class="boring">}
+</span></code></pre></pre>
+<p>You can also use a <code>ParticleController</code> which manages spawning particles over time for you, useful for leaving trails (this is currently used for the smoke puffs left behind bullets). Its <code>new</code>-constructor takes a <code>ParticleControllerParameters</code>, where you can control spawn rates and such. It is documented in the code. Note that the <code>ParticleController</code> has an <code>update()</code> function that has to be called each frame to make it tick.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                            <a rel="prev" href="../docs/screenshake.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                    <a rel="prev" href="../docs/screenshake.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+        
+        
+        <script type="text/javascript">
+            window.playpen_copyable = true;
+        </script>
+        
+
+        
+
+        
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+
+    </body>
+</html>

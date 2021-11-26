@@ -15,6 +15,7 @@
 - [Contributing](./contributing.md)
   - [Contributing Code](./contributing_code.md)
   - [Simple Gun Weapon](./simple_gun_weapon.md)
-- Documentation
+  - [Contributing Art](./contributing_art.md)
+- [Documentation](./documentation.md)
   - [Screen Shake](./docs/screenshake.md)
   - [Particles](./docs/particles.md)

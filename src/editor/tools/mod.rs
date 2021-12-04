@@ -75,4 +75,8 @@ pub trait EditorTool {
     fn is_available(&self, _map: &Map, _ctx: &EditorContext) -> bool {
         true
     }
+
+    fn draw_cursor(&mut self, _map: &Map, _ctx: &EditorContext) -> Option<EditorAction> {
+        None
+    }
 }

@@ -528,6 +528,10 @@ impl Node for Editor {
 
         let input = collect_editor_input(node.input_scheme);
 
+        if input.toggle_menu {
+            toggle_editor_menu(&node.get_context());
+        }
+
         if input.undo {
             node.apply_action(EditorAction::Undo);
         } else if input.redo {
@@ -624,10 +628,6 @@ impl Node for Editor {
 
     fn fixed_update(mut node: RefMut<Self>) {
         let input = collect_editor_input(node.input_scheme);
-
-        if input.toggle_menu {
-            toggle_editor_menu(&node.get_context());
-        }
 
         if let Some(cursor_position) = node.cursor_position {
             let cursor_position = cursor_position + input.cursor_move * Self::CURSOR_MOVE_SPEED;
@@ -855,11 +855,19 @@ impl Node for Editor {
             }
         }
 
-        let res = {
+        let mut res = None;
+
+        if let Some(tool_id) = &node.selected_tool {
+            let tool = get_tool_instance_of_id(tool_id);
             let ctx = node.get_context();
-            let mut gui = storage::get_mut::<EditorGui>();
-            gui.draw(node.get_map(), ctx)
-        };
+            res = tool.draw_cursor(node.get_map(), &ctx);
+        }
+
+        let ctx = node.get_context();
+        let mut gui = storage::get_mut::<EditorGui>();
+        if let Some(action) = gui.draw(node.get_map(), ctx) {
+            res = Some(action);
+        }
 
         if let Some(action) = res {
             node.apply_action(action);

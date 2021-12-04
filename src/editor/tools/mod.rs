@@ -4,7 +4,7 @@ mod eraser;
 mod placement;
 
 pub use eraser::EraserTool;
-pub use placement::{ObjectPlacementTool, TilePlacementTool};
+pub use placement::TilePlacementTool;
 
 use macroquad::prelude::*;
 
@@ -74,5 +74,9 @@ pub trait EditorTool {
 
     fn is_available(&self, _map: &Map, _ctx: &EditorContext) -> bool {
         true
+    }
+
+    fn draw_cursor(&mut self, _map: &Map, _ctx: &EditorContext) -> Option<EditorAction> {
+        None
     }
 }

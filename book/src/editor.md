@@ -7,6 +7,16 @@ high-level overview of its API for those who are interested in contributing to i
 
 ![Screenshot of the Fish Fight editor. The map area and layers toolbar are visible. Default textures for platforms occupy the map area.](./assets/editor.png)
 
+## Keyboard shortcuts
+
+- `ctrl + S` save
+- `ctrl + shift + S` save as
+- `ctrl + L` load
+- `ctrl + Z` undo
+- `ctrl + shift + Z` redo
+- `G` toggle grid
+- `ctrl + G` toggle object snap to grid
+
 ## Accessing the editor
 
 The editor can be accessed from the "Editor" tab on the main menu. Selecting this item by clicking on it, or using the right arrow key on your keyboard (or if you're using a gamepad: the "right button"), will present two options: "Create Map" and "Load Map".

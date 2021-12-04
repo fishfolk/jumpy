@@ -32,7 +32,7 @@ mod history;
 mod tools;
 
 pub use tools::{
-    add_tool_instance, get_tool_instance, get_tool_instance_of_id, EraserTool, ObjectPlacementTool,
+    add_tool_instance, get_tool_instance, get_tool_instance_of_id, EraserTool,
     TilePlacementTool, DEFAULT_TOOL_ICON_TEXTURE_ID,
 };
 
@@ -53,10 +53,11 @@ use macroquad::{
     },
     prelude::*,
 };
-use crate::editor::input::EditorInput;
+use crate::editor::input::{collect_editor_input, EditorInput};
 
 use super::map::{Map, MapLayerKind};
 use crate::resources::{map_name_to_filename, MapResource};
+use crate::text::{draw_aligned_text, HorizontalAlignment, VerticalAlignment};
 
 #[derive(Debug, Clone)]
 pub struct EditorContext {
@@ -87,6 +88,14 @@ impl Default for EditorContext {
     }
 }
 
+struct DraggedObject {
+    id: String,
+    kind: MapObjectKind,
+    index: usize,
+    layer_id: String,
+    click_offset: Vec2,
+}
+
 pub struct Editor {
     map_resource: MapResource,
     selected_tool: Option<TypeId>,
@@ -94,16 +103,25 @@ pub struct Editor {
     selected_tileset: Option<String>,
     selected_tile: Option<u32>,
     selected_object: Option<usize>,
+
     input_scheme: EditorInputScheme,
-    // This will hold the gamepad cursor position and be `None` if not using a gamepad.
-    // Use the `get_cursor_position` method to get the actual cursor position, as that will return
-    // the mouse cursor position, if no gamepad is used and this is set to `None`.
-    cursor_position: Option<Vec2>,
+    previous_cursor_position: Vec2,
+    cursor_position: Vec2,
     history: EditorHistory,
 
+    previous_input: EditorInput,
     input: EditorInput,
 
+    info_message: Option<String>,
+
+    dragged_object: Option<DraggedObject>,
+
+    info_message_timer: f32,
+    drag_start_timer: f32,
+    double_click_timer: f32,
+
     should_draw_grid: bool,
+    should_snap_to_grid: bool,
 }
 
 impl Editor {
@@ -120,11 +138,14 @@ impl Editor {
     const OBJECT_SELECTION_RECT_PADDING: f32 = 8.0;
 
     const GRID_LINE_WIDTH: f32 = 1.0;
-    const GRID_COLOR: Color = color::WHITE;
+    const GRID_COLOR: Color = Color { r: 1.0, g: 1.0, b: 1.0, a: 0.25 };
+
+    const DOUBLE_CLICK_THRESHOLD: f32 = 0.25;
+
+    const MESSAGE_TIMEOUT: f32 = 2.5;
 
     pub fn new(input_scheme: EditorInputScheme, map_resource: MapResource) -> Self {
         add_tool_instance(TilePlacementTool::new());
-        add_tool_instance(ObjectPlacementTool::new());
         add_tool_instance(EraserTool::new());
 
         let selected_tool = None;
@@ -132,15 +153,16 @@ impl Editor {
         let selected_layer = map_resource.map.draw_order.first().cloned();
 
         let cursor_position = match input_scheme {
-            EditorInputScheme::Mouse => None,
+            EditorInputScheme::Mouse => {
+                mouse_position().into()
+            },
             EditorInputScheme::Gamepad(..) => {
-                Some(vec2(screen_width() / 2.0, screen_height() / 2.0))
+                vec2(screen_width() / 2.0, screen_height() / 2.0)
             }
         };
 
         let tool_selector_element = ToolSelectorElement::new()
             .with_tool::<TilePlacementTool>()
-            .with_tool::<ObjectPlacementTool>()
             .with_tool::<EraserTool>();
 
         let left_toolbar = Toolbar::new(ToolbarPosition::Left, EditorGui::LEFT_TOOLBAR_WIDTH)
@@ -177,23 +199,26 @@ impl Editor {
             selected_tileset: None,
             selected_tile: None,
             selected_object: None,
+
             input_scheme,
+            previous_cursor_position: cursor_position,
             cursor_position,
             history: EditorHistory::new(),
 
+            previous_input: EditorInput::default(),
             input: EditorInput::default(),
 
-            should_draw_grid: true,
-        }
-    }
+            info_message: None,
 
-    fn get_cursor_position(&self) -> Vec2 {
-        if let Some(cursor_position) = self.cursor_position {
-            return cursor_position;
-        }
+            dragged_object: None,
 
-        let (x, y) = mouse_position();
-        vec2(x, y)
+            info_message_timer: 0.0,
+            drag_start_timer: 0.0,
+            double_click_timer: Self::DOUBLE_CLICK_THRESHOLD,
+
+            should_draw_grid: false,
+            should_snap_to_grid: false,
+        }
     }
 
     #[allow(dead_code)]
@@ -224,7 +249,7 @@ impl Editor {
             selected_tile: self.selected_tile,
             selected_object: self.selected_object,
             input_scheme: self.input_scheme,
-            cursor_position: self.get_cursor_position(),
+            cursor_position: self.cursor_position,
             is_user_map: self.map_resource.meta.is_user_map,
             is_tiled_map: self.map_resource.meta.is_tiled_map,
         }
@@ -273,10 +298,6 @@ impl Editor {
                 self.selected_tool = None;
             }
         }
-    }
-
-    fn update_input(&mut self) {
-        self.input.update(self.input_scheme);
     }
 
     fn select_tileset(&mut self, tileset_id: &str, tile_id: Option<u32>) {
@@ -540,10 +561,70 @@ impl Node for Editor {
     fn update(mut node: RefMut<Self>) {
         node.update_context();
 
-        node.update_input();
+        if node.input_scheme == EditorInputScheme::Mouse {
+            node.previous_cursor_position = node.cursor_position;
+            node.cursor_position = mouse_position().into();
+        }
+
+        let dt = get_frame_time();
+
+        node.previous_input = node.input;
+        node.input = collect_editor_input(node.input_scheme);
+
+        if node.info_message.is_some() {
+            node.info_message_timer += dt;
+
+            if node.info_message_timer >= Self::MESSAGE_TIMEOUT {
+                node.info_message = None;
+                node.info_message_timer = 0.0;
+            }
+        }
+
+        if node.input.save {
+            let action = if node.map_resource.meta.is_user_map {
+                EditorAction::SaveMap(None)
+            } else {
+                EditorAction::OpenSaveMapWindow
+            };
+
+            node.apply_action(action);
+        }
+
+        if node.input.save_as {
+            let action = EditorAction::OpenSaveMapWindow;
+            node.apply_action(action);
+        }
+
+        if node.input.load {
+            let action = EditorAction::OpenLoadMapWindow;
+            node.apply_action(action);
+        }
+
+        if !node.input.action && node.double_click_timer < Self::DOUBLE_CLICK_THRESHOLD {
+            node.double_click_timer = (node.double_click_timer + dt)
+                .clamp(0.0, Self::DOUBLE_CLICK_THRESHOLD);
+        }
 
         if node.input.toggle_menu {
             toggle_editor_menu(&node.get_context());
+        }
+
+        if node.input.toggle_draw_grid {
+            node.should_draw_grid = !node.should_draw_grid;
+        }
+
+        if node.input.toggle_snap_to_grid {
+            node.should_snap_to_grid = !node.should_snap_to_grid;
+
+            node.info_message = {
+                let state = if node.should_snap_to_grid {
+                    "ON"
+                } else {
+                    "OFF"
+                };
+
+                Some(format!("Snap to grid: {}", state))
+            }
         }
 
         if node.input.undo {
@@ -552,21 +633,16 @@ impl Node for Editor {
             node.apply_action(EditorAction::Redo);
         }
 
-        let cursor_position = node.get_cursor_position();
         let cursor_world_position = scene::find_node_by_type::<EditorCamera>()
             .unwrap()
-            .to_world_space(cursor_position);
-
-        if node.input.toggle_grid {
-            node.should_draw_grid = !node.should_draw_grid;
-        }
+            .to_world_space(node.cursor_position);
 
         if node.input.action {
             let (is_cursor_over_gui, is_cursor_over_context_menu) = {
                 let gui = storage::get::<EditorGui>();
-                let is_over_gui = gui.contains(cursor_position);
+                let is_over_gui = gui.contains(node.cursor_position);
                 let mut is_over_context_menu = false;
-                if is_over_gui && gui.context_menu_contains(cursor_position) {
+                if is_over_gui && gui.context_menu_contains(node.cursor_position) {
                     is_over_context_menu = true;
                 }
 
@@ -585,7 +661,45 @@ impl Node for Editor {
                     if let Some(action) = tool.get_action(node.get_map(), &ctx) {
                         node.apply_action(action);
                     }
+                } else if node.previous_input.action {
+                    if node.cursor_position == node.previous_cursor_position && node.dragged_object.is_none() {
+                        node.drag_start_timer += dt;
+
+                        if let Some(index) = node.selected_object {
+                            let layer_id = node.selected_layer.clone().unwrap();
+                            let layer = node.get_map().layers.get(&layer_id).unwrap();
+
+                            let object = layer.objects.get(index).unwrap();
+                            let position = scene::find_node_by_type::<EditorCamera>()
+                                .unwrap()
+                                .to_screen_space(object.position);
+
+                            let size = get_object_size(object);
+                            let rect = Rect::new(position.x, position.y, size.x, size.y);
+
+                            if rect.contains(node.cursor_position) {
+                                let click_offset = node.cursor_position - position;
+
+                                node.dragged_object = Some(DraggedObject {
+                                    id: object.id.clone(),
+                                    kind: object.kind,
+                                    index,
+                                    layer_id,
+                                    click_offset,
+                                })
+                            }
+                        }
+                    }
                 } else {
+                    let mut is_double_click = false;
+
+                    if node.double_click_timer < Self::DOUBLE_CLICK_THRESHOLD {
+                        node.double_click_timer = Self::DOUBLE_CLICK_THRESHOLD;
+                        is_double_click = true;
+                    } else {
+                        node.double_click_timer = 0.0;
+                    }
+
                     let mut layer_ids = node
                         .map_resource
                         .map
@@ -609,82 +723,106 @@ impl Node for Editor {
                         }
                     }
 
-                    {
-                        let mut object_index = None;
-                        let mut layer_id = None;
+                    let mut object_index = None;
+                    let mut layer_id = None;
 
-                        'layers: for id in layer_ids {
-                            let layer = node.map_resource.map.layers.get(&id).unwrap();
-                            if layer.kind == MapLayerKind::ObjectLayer {
-                                for (i, object) in layer.objects.iter().enumerate() {
-                                    let size = get_object_size(object);
-                                    let position =
-                                        object.position + node.map_resource.map.world_offset;
+                    'layers: for id in layer_ids {
+                        let layer = node.map_resource.map.layers.get(&id).unwrap();
+                        if layer.kind == MapLayerKind::ObjectLayer {
+                            for (i, object) in layer.objects.iter().enumerate() {
+                                let size = get_object_size(object);
+                                let position =
+                                    object.position + node.map_resource.map.world_offset;
 
-                                    let rect = Rect::new(position.x, position.y, size.x, size.y);
+                                let rect = Rect::new(position.x, position.y, size.x, size.y);
 
-                                    if rect.contains(cursor_world_position) {
-                                        object_index = Some(i);
-                                        layer_id = Some(id.clone());
+                                if rect.contains(cursor_world_position) {
+                                    object_index = Some(i);
+                                    layer_id = Some(id.clone());
 
-                                        break 'layers;
-                                    }
+                                    break 'layers;
                                 }
-                            }
-                        }
-
-                        if let Some(i) = object_index {
-                            let mut should_select = true;
-
-                            if node.input.double_click {
-                                if let Some(current_index) = node.selected_object {
-                                    if current_index == i {
-                                        let layer_id = layer_id.clone().unwrap();
-
-                                        should_select = false;
-
-                                        let action = EditorAction::OpenObjectPropertiesWindow {
-                                            layer_id,
-                                            index: i,
-                                        };
-
-                                        node.apply_action(action);
-                                    }
-                                }
-                            }
-
-                            if should_select {
-                                let layer_id = layer_id.unwrap();
-
-                                let action = EditorAction::SelectObject {
-                                    index: i,
-                                    layer_id,
-                                };
-
-                                node.apply_action(action);
                             }
                         }
                     }
+
+                    let mut should_select = true;
+
+                    if let Some(i) = object_index {
+                        if is_double_click {
+                            if let Some(current_index) = node.selected_object {
+                                if current_index == i {
+                                    let layer_id = layer_id.clone().unwrap();
+
+                                    should_select = false;
+
+                                    let action = EditorAction::OpenObjectPropertiesWindow {
+                                        layer_id,
+                                        index: i,
+                                    };
+
+                                    node.apply_action(action);
+                                }
+                            }
+                        }
+
+                        if should_select {
+                            let layer_id = layer_id.unwrap();
+
+                            let action = EditorAction::SelectObject {
+                                index: i,
+                                layer_id,
+                            };
+
+                            node.apply_action(action);
+                        }
+                    }
                 }
+            }
+        } else {
+            if let Some(dragged_object) = node.dragged_object.take() {
+                let map = node.get_map();
+
+                let cursor_world_position = scene::find_node_by_type::<EditorCamera>()
+                    .unwrap()
+                    .to_world_space(node.cursor_position - dragged_object.click_offset);
+
+                let mut position = (cursor_world_position)
+                    .clamp(map.world_offset, map.world_offset + (map.grid_size.as_f32() * map.tile_size));
+
+                if node.should_snap_to_grid {
+                    let coords = map.to_coords(position);
+                    position = map.to_position(coords);
+                }
+
+                let action = EditorAction::UpdateObject {
+                    id: dragged_object.id,
+                    kind: dragged_object.kind,
+                    index: dragged_object.index,
+                    layer_id: dragged_object.layer_id,
+                    position
+                };
+
+                node.apply_action(action);
             }
         }
 
         if node.input.context_menu {
             let mut gui = storage::get_mut::<EditorGui>();
-            gui.open_context_menu(cursor_position, &node.map_resource.map, node.get_context());
+            gui.open_context_menu(node.cursor_position, &node.map_resource.map, node.get_context());
         }
     }
 
     fn fixed_update(mut node: RefMut<Self>) {
-        if let Some(cursor_position) = node.cursor_position {
-            let cursor_position = cursor_position + node.input.cursor_movement * Self::CURSOR_MOVE_SPEED;
-            node.cursor_position = Some(cursor_position);
+        if let EditorInputScheme::Gamepad { .. } = node.input_scheme {
+            node.previous_cursor_position = node.cursor_position;
+            let movement = node.input.cursor_movement * Self::CURSOR_MOVE_SPEED;
+            node.cursor_position += movement;
         }
 
-        let cursor_position = node.get_cursor_position();
         let is_cursor_over_map = {
             let gui = storage::get::<EditorGui>();
-            !gui.contains(cursor_position)
+            !gui.contains(node.cursor_position)
         };
 
         let screen_size = vec2(screen_width(), screen_height());
@@ -693,15 +831,15 @@ impl Node for Editor {
 
         let mut pan_direction = node.input.camera_pan;
 
-        if cursor_position.x <= threshold.x {
+        if node.cursor_position.x <= threshold.x {
             pan_direction.x = -1.0;
-        } else if cursor_position.x >= screen_size.x - threshold.x {
+        } else if node.cursor_position.x >= screen_size.x - threshold.x {
             pan_direction.x = 1.0;
         }
 
-        if cursor_position.y <= threshold.y {
+        if node.cursor_position.y <= threshold.y {
             pan_direction.y = -1.0;
-        } else if cursor_position.y >= screen_size.y - threshold.y {
+        } else if node.cursor_position.y >= screen_size.y - threshold.y {
             pan_direction.y = 1.0;
         }
 
@@ -786,11 +924,29 @@ impl Node for Editor {
                         let mut is_selected = false;
                         if let Some(layer_id) = &node.selected_layer {
                             if let Some(index) = node.selected_object {
-                                is_selected = layer_id == &layer.id && index == i;
+                                is_selected = *layer_id == layer.id && index == i;
                             }
                         }
 
-                        let object_position = node.map_resource.map.world_offset + object.position;
+                        let mut object_position = node.map_resource.map.world_offset + object.position;
+
+                        if let Some(dragged_object) = &node.dragged_object {
+                            if dragged_object.id == object.id {
+                                let map = node.get_map();
+
+                                let cursor_world_position = scene::find_node_by_type::<EditorCamera>()
+                                    .unwrap()
+                                    .to_world_space(node.cursor_position - dragged_object.click_offset);
+
+                                object_position = (cursor_world_position)
+                                    .clamp(map.world_offset, map.world_offset + (map.grid_size.as_f32() * map.tile_size));
+
+                                if node.should_snap_to_grid {
+                                    let coords = map.to_coords(object_position);
+                                    object_position = map.to_position(coords);
+                                }
+                            }
+                        }
 
                         match object.kind {
                             MapObjectKind::Item => {
@@ -956,6 +1112,25 @@ impl Node for Editor {
                     }
                 }
             }
+        }
+
+        if let Some(label) = &node.info_message {
+            push_camera_state();
+            set_default_camera();
+
+            let label_position = vec2(screen_width() / 2.0, 16.0);
+
+            draw_aligned_text(
+                label,
+                label_position,
+                HorizontalAlignment::Center,
+                VerticalAlignment::Bottom,
+                TextParams {
+                    ..Default::default()
+                }
+            );
+
+            pop_camera_state();
         }
 
         let mut res = None;

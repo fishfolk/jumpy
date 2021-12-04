@@ -109,6 +109,7 @@ impl EditorTool for TilePlacementTool {
     }
 }
 
+/*
 #[derive(Default)]
 pub struct ObjectPlacementTool {
     params: EditorToolParams,
@@ -151,3 +152,4 @@ impl EditorTool for ObjectPlacementTool {
         false
     }
 }
+*/

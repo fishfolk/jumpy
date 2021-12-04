@@ -36,6 +36,11 @@ impl EditorCamera {
         let rect = self.get_view_rect();
         position / self.scale + rect.point()
     }
+
+    pub fn to_screen_space(&self, position: Vec2) -> Vec2 {
+        let rect = self.get_view_rect();
+        (position - rect.point()) / self.scale
+    }
 }
 
 impl scene::Node for EditorCamera {

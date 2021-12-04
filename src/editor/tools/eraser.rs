@@ -52,6 +52,15 @@ impl EditorTool for EraserTool {
         None
     }
 
+    fn is_available(&self, map: &Map, ctx: &EditorContext) -> bool {
+        if let Some(layer_id) = &ctx.selected_layer {
+            let layer = map.layers.get(layer_id).unwrap();
+            return layer.kind == MapLayerKind::TileLayer;
+        }
+
+        false
+    }
+
     fn draw_cursor(&mut self, map: &Map, ctx: &EditorContext) -> Option<EditorAction> {
         if let Some(layer_id) = &ctx.selected_layer {
             let layer = map.layers.get(layer_id).unwrap();

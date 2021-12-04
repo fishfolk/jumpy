@@ -174,13 +174,13 @@ pub async fn show_main_menu() -> MainMenuResult {
                     match res.into_usize() {
                         EDITOR_OPTION_CREATE => {
                             return MainMenuResult::Editor {
-                                input_scheme: EditorInputScheme::Keyboard,
+                                input_scheme: EditorInputScheme::Mouse,
                                 is_new_map: true,
                             }
                         }
                         EDITOR_OPTION_LOAD => {
                             return MainMenuResult::Editor {
-                                input_scheme: EditorInputScheme::Keyboard,
+                                input_scheme: EditorInputScheme::Mouse,
                                 is_new_map: false,
                             }
                         }

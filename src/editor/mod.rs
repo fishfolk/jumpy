@@ -32,8 +32,8 @@ mod history;
 mod tools;
 
 pub use tools::{
-    add_tool_instance, get_tool_instance, get_tool_instance_of_id, EraserTool,
-    TilePlacementTool, DEFAULT_TOOL_ICON_TEXTURE_ID,
+    add_tool_instance, get_tool_instance, get_tool_instance_of_id, EraserTool, TilePlacementTool,
+    DEFAULT_TOOL_ICON_TEXTURE_ID,
 };
 
 use history::EditorHistory;
@@ -43,6 +43,7 @@ use crate::editor::actions::{ImportAction, UpdateBackgroundAction, UpdateObjectA
 use crate::editor::gui::windows::{
     BackgroundPropertiesWindow, ImportWindow, LoadMapWindow, ObjectPropertiesWindow, SaveMapWindow,
 };
+use crate::editor::input::{collect_editor_input, EditorInput};
 use crate::gui::SELECTED_OBJECT_HIGHLIGHT_COLOR;
 use crate::map::{MapObject, MapObjectKind};
 use macroquad::{
@@ -53,7 +54,6 @@ use macroquad::{
     },
     prelude::*,
 };
-use crate::editor::input::{collect_editor_input, EditorInput};
 
 use super::map::{Map, MapLayerKind};
 use crate::resources::{map_name_to_filename, MapResource};
@@ -117,7 +117,6 @@ pub struct Editor {
     dragged_object: Option<DraggedObject>,
 
     info_message_timer: f32,
-    drag_start_timer: f32,
     double_click_timer: f32,
 
     should_draw_grid: bool,
@@ -138,7 +137,12 @@ impl Editor {
     const OBJECT_SELECTION_RECT_PADDING: f32 = 8.0;
 
     const GRID_LINE_WIDTH: f32 = 1.0;
-    const GRID_COLOR: Color = Color { r: 1.0, g: 1.0, b: 1.0, a: 0.25 };
+    const GRID_COLOR: Color = Color {
+        r: 1.0,
+        g: 1.0,
+        b: 1.0,
+        a: 0.25,
+    };
 
     const DOUBLE_CLICK_THRESHOLD: f32 = 0.25;
 
@@ -153,12 +157,8 @@ impl Editor {
         let selected_layer = map_resource.map.draw_order.first().cloned();
 
         let cursor_position = match input_scheme {
-            EditorInputScheme::Mouse => {
-                mouse_position().into()
-            },
-            EditorInputScheme::Gamepad(..) => {
-                vec2(screen_width() / 2.0, screen_height() / 2.0)
-            }
+            EditorInputScheme::Mouse => mouse_position().into(),
+            EditorInputScheme::Gamepad(..) => vec2(screen_width() / 2.0, screen_height() / 2.0),
         };
 
         let tool_selector_element = ToolSelectorElement::new()
@@ -213,7 +213,6 @@ impl Editor {
             dragged_object: None,
 
             info_message_timer: 0.0,
-            drag_start_timer: 0.0,
             double_click_timer: Self::DOUBLE_CLICK_THRESHOLD,
 
             should_draw_grid: false,
@@ -601,8 +600,8 @@ impl Node for Editor {
         }
 
         if !node.input.action && node.double_click_timer < Self::DOUBLE_CLICK_THRESHOLD {
-            node.double_click_timer = (node.double_click_timer + dt)
-                .clamp(0.0, Self::DOUBLE_CLICK_THRESHOLD);
+            node.double_click_timer =
+                (node.double_click_timer + dt).clamp(0.0, Self::DOUBLE_CLICK_THRESHOLD);
         }
 
         if node.input.toggle_menu {
@@ -662,9 +661,9 @@ impl Node for Editor {
                         node.apply_action(action);
                     }
                 } else if node.previous_input.action {
-                    if node.cursor_position == node.previous_cursor_position && node.dragged_object.is_none() {
-                        node.drag_start_timer += dt;
-
+                    if node.cursor_position == node.previous_cursor_position
+                        && node.dragged_object.is_none()
+                    {
                         if let Some(index) = node.selected_object {
                             let layer_id = node.selected_layer.clone().unwrap();
                             let layer = node.get_map().layers.get(&layer_id).unwrap();
@@ -731,8 +730,7 @@ impl Node for Editor {
                         if layer.kind == MapLayerKind::ObjectLayer {
                             for (i, object) in layer.objects.iter().enumerate() {
                                 let size = get_object_size(object);
-                                let position =
-                                    object.position + node.map_resource.map.world_offset;
+                                let position = object.position + node.map_resource.map.world_offset;
 
                                 let rect = Rect::new(position.x, position.y, size.x, size.y);
 
@@ -769,47 +767,48 @@ impl Node for Editor {
                         if should_select {
                             let layer_id = layer_id.unwrap();
 
-                            let action = EditorAction::SelectObject {
-                                index: i,
-                                layer_id,
-                            };
+                            let action = EditorAction::SelectObject { index: i, layer_id };
 
                             node.apply_action(action);
                         }
                     }
                 }
             }
-        } else {
-            if let Some(dragged_object) = node.dragged_object.take() {
-                let map = node.get_map();
+        } else if let Some(dragged_object) = node.dragged_object.take() {
+            let map = node.get_map();
 
-                let cursor_world_position = scene::find_node_by_type::<EditorCamera>()
-                    .unwrap()
-                    .to_world_space(node.cursor_position - dragged_object.click_offset);
+            let cursor_world_position = scene::find_node_by_type::<EditorCamera>()
+                .unwrap()
+                .to_world_space(node.cursor_position - dragged_object.click_offset);
 
-                let mut position = (cursor_world_position)
-                    .clamp(map.world_offset, map.world_offset + (map.grid_size.as_f32() * map.tile_size));
+            let mut position = (cursor_world_position).clamp(
+                map.world_offset,
+                map.world_offset + (map.grid_size.as_f32() * map.tile_size),
+            );
 
-                if node.should_snap_to_grid {
-                    let coords = map.to_coords(position);
-                    position = map.to_position(coords);
-                }
-
-                let action = EditorAction::UpdateObject {
-                    id: dragged_object.id,
-                    kind: dragged_object.kind,
-                    index: dragged_object.index,
-                    layer_id: dragged_object.layer_id,
-                    position
-                };
-
-                node.apply_action(action);
+            if node.should_snap_to_grid {
+                let coords = map.to_coords(position);
+                position = map.to_position(coords);
             }
+
+            let action = EditorAction::UpdateObject {
+                id: dragged_object.id,
+                kind: dragged_object.kind,
+                index: dragged_object.index,
+                layer_id: dragged_object.layer_id,
+                position,
+            };
+
+            node.apply_action(action);
         }
 
         if node.input.context_menu {
             let mut gui = storage::get_mut::<EditorGui>();
-            gui.open_context_menu(node.cursor_position, &node.map_resource.map, node.get_context());
+            gui.open_context_menu(
+                node.cursor_position,
+                &node.map_resource.map,
+                node.get_context(),
+            );
         }
     }
 
@@ -928,18 +927,24 @@ impl Node for Editor {
                             }
                         }
 
-                        let mut object_position = node.map_resource.map.world_offset + object.position;
+                        let mut object_position =
+                            node.map_resource.map.world_offset + object.position;
 
                         if let Some(dragged_object) = &node.dragged_object {
                             if dragged_object.id == object.id {
                                 let map = node.get_map();
 
-                                let cursor_world_position = scene::find_node_by_type::<EditorCamera>()
-                                    .unwrap()
-                                    .to_world_space(node.cursor_position - dragged_object.click_offset);
+                                let cursor_world_position =
+                                    scene::find_node_by_type::<EditorCamera>()
+                                        .unwrap()
+                                        .to_world_space(
+                                            node.cursor_position - dragged_object.click_offset,
+                                        );
 
-                                object_position = (cursor_world_position)
-                                    .clamp(map.world_offset, map.world_offset + (map.grid_size.as_f32() * map.tile_size));
+                                object_position = (cursor_world_position).clamp(
+                                    map.world_offset,
+                                    map.world_offset + (map.grid_size.as_f32() * map.tile_size),
+                                );
 
                                 if node.should_snap_to_grid {
                                     let coords = map.to_coords(object_position);
@@ -1127,7 +1132,7 @@ impl Node for Editor {
                 VerticalAlignment::Bottom,
                 TextParams {
                     ..Default::default()
-                }
+                },
             );
 
             pop_camera_state();

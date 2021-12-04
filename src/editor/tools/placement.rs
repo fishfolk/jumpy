@@ -1,12 +1,12 @@
-use macroquad::{
-    experimental::collections::storage,
-    color,
-    prelude::*,
-};
+use macroquad::{color, experimental::collections::storage, prelude::*};
 
 use super::{EditorAction, EditorContext, EditorTool, EditorToolParams};
 
-use crate::{editor::EditorCamera, map::{Map, MapLayerKind}, Resources};
+use crate::{
+    editor::EditorCamera,
+    map::{Map, MapLayerKind},
+    Resources,
+};
 
 #[derive(Default)]
 pub struct TilePlacementTool {
@@ -87,7 +87,8 @@ impl EditorTool for TilePlacementTool {
                             texture_coords.x,
                             texture_coords.y,
                             map.tile_size.x,
-                            map.tile_size.y);
+                            map.tile_size.y,
+                        );
 
                         draw_texture_ex(
                             texture,
@@ -98,7 +99,7 @@ impl EditorTool for TilePlacementTool {
                                 dest_size: Some(map.tile_size),
                                 source: Some(source_rect),
                                 ..Default::default()
-                            }
+                            },
                         )
                     }
                 }

@@ -66,7 +66,7 @@ impl EditorTool for EraserTool {
             let layer = map.layers.get(layer_id).unwrap();
 
             if layer.kind == MapLayerKind::TileLayer {
-                let cursor_world_position= scene::find_node_by_type::<EditorCamera>()
+                let cursor_world_position = scene::find_node_by_type::<EditorCamera>()
                     .unwrap()
                     .to_world_space(ctx.cursor_position);
 

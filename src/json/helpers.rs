@@ -1,10 +1,14 @@
 use std::collections::HashMap;
+use std::path::Path;
 
 use macroquad::prelude::*;
 
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
+use super::Error;
 use crate::error::Result;
+use crate::text::ToStringHelper;
 
 pub fn is_false(val: &bool) -> bool {
     !*val
@@ -100,6 +104,25 @@ where
     Ok(res)
 }
 
+pub async fn deserialize_file<T, P: AsRef<Path>>(path: P) -> Result<T>
+where
+    T: DeserializeOwned,
+{
+    let path = path.as_ref();
+    let path_str = path.to_string_helper();
+
+    let bytes = load_file(&path_str).await?;
+    match serde_json::from_slice(&bytes) {
+        Err(err) => Err(Error::new(&path_str, err).into()),
+        Ok(res) => Ok(res),
+    }
+}
+
+/// This is used to allow values of different types for the same field in a JSON object.
+/// When an enum with only tuple-like variants, all with a single member each, is marked as untagged,
+/// serde will return the appropriate enum variant, depending on the type of the JSON value.
+/// Furthermore, you can use `GenericParam::Vec` and `GenericParam::HashMap` to allow members of
+/// different types in the same collection, in your JSON objects.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum GenericParam {

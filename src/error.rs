@@ -157,38 +157,44 @@ impl error::Error for Error {
 }
 
 impl From<fishsticks::error::Error> for Error {
-    fn from(error: fishsticks::error::Error) -> Error {
-        Error::new_message(ErrorKind::Input, &error)
+    fn from(err: fishsticks::error::Error) -> Error {
+        Error::new_message(ErrorKind::Input, &err)
     }
 }
 
 impl From<io::Error> for Error {
-    fn from(error: io::Error) -> Error {
-        Error::new(ErrorKind::File, error)
+    fn from(err: io::Error) -> Error {
+        Error::new(ErrorKind::File, err)
     }
 }
 
 impl From<FromUtf8Error> for Error {
-    fn from(error: FromUtf8Error) -> Self {
-        Error::new(ErrorKind::Parsing, error)
+    fn from(err: FromUtf8Error) -> Self {
+        Error::new(ErrorKind::Parsing, err)
     }
 }
 
 impl From<FileError> for Error {
-    fn from(error: FileError) -> Self {
-        Error::new(ErrorKind::File, error)
+    fn from(err: FileError) -> Self {
+        Error::new(ErrorKind::File, err)
     }
 }
 
 impl From<FontError> for Error {
-    fn from(error: FontError) -> Self {
-        Error::new(ErrorKind::Parsing, error)
+    fn from(err: FontError) -> Self {
+        Error::new(ErrorKind::Parsing, err)
     }
 }
 
 impl From<serde_json::Error> for Error {
-    fn from(error: serde_json::Error) -> Self {
-        Error::new(ErrorKind::Parsing, error)
+    fn from(err: serde_json::Error) -> Self {
+        Error::new(ErrorKind::Parsing, err)
+    }
+}
+
+impl From<crate::json::Error> for Error {
+    fn from(err: crate::json::Error) -> Self {
+        Error::new(ErrorKind::Parsing, err)
     }
 }
 

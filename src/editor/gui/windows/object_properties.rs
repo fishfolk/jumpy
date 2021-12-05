@@ -4,13 +4,13 @@ use macroquad::{
     ui::{hash, widgets, Ui},
 };
 
+use crate::editor::gui::combobox::ComboBoxVec;
 use crate::map::MapObject;
 use crate::{
     editor::gui::{ComboBoxBuilder, ComboBoxValue},
     map::{Map, MapObjectKind},
     Resources,
 };
-use crate::editor::gui::combobox::ComboBoxVec;
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 

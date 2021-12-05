@@ -38,10 +38,7 @@ impl Checkbox {
     }
 
     pub fn with_margin(self, margin: f32) -> Self {
-        Checkbox {
-            margin,
-            ..self
-        }
+        Checkbox { margin, ..self }
     }
 
     pub fn ui(&self, ui: &mut Ui, value: &mut bool) {

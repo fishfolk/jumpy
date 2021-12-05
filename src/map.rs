@@ -444,10 +444,7 @@ impl ComboBoxValue for MapLayerKind {
     }
 
     fn get_options(&self) -> Vec<String> {
-        Self::options()
-            .into_iter()
-            .map(|s| s.to_string())
-            .collect()
+        Self::options().iter().map(|s| s.to_string()).collect()
     }
 }
 
@@ -597,10 +594,7 @@ impl ComboBoxValue for MapObjectKind {
     }
 
     fn get_options(&self) -> Vec<String> {
-        Self::options()
-            .into_iter()
-            .map(|s| s.to_string())
-            .collect()
+        Self::options().iter().map(|s| s.to_string()).collect()
     }
 }
 

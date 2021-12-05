@@ -4,9 +4,9 @@ use macroquad::{
     ui::{hash, widgets, Ui},
 };
 
-use crate::{map::Map, Resources};
 use crate::editor::gui::combobox::ComboBoxVec;
 use crate::editor::gui::{ComboBoxBuilder, ComboBoxValue};
+use crate::{map::Map, Resources};
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 use crate::resources::TextureKind;
@@ -26,7 +26,8 @@ impl CreateTilesetWindow {
         };
 
         let resources = storage::get::<Resources>();
-        let mut textures = resources.textures
+        let mut textures = resources
+            .textures
             .iter()
             .filter_map(|(k, v)| {
                 if let Some(kind) = v.meta.kind {
@@ -44,9 +45,7 @@ impl CreateTilesetWindow {
         CreateTilesetWindow {
             params,
             tileset_id: "Unnamed Tileset".to_string(),
-            texture: textures
-                .as_slice()
-                .into(),
+            texture: textures.as_slice().into(),
         }
     }
 }

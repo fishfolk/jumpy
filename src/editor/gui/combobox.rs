@@ -25,15 +25,9 @@ pub struct ComboBoxVec {
 
 impl ComboBoxVec {
     pub fn new(index: usize, options: &[&str]) -> Self {
-        let options = options
-            .into_iter()
-            .map(|s| s.to_string())
-            .collect();
+        let options = options.iter().map(|s| s.to_string()).collect();
 
-        ComboBoxVec {
-            index,
-            options,
-        }
+        ComboBoxVec { index, options }
     }
 }
 
@@ -59,10 +53,7 @@ impl From<&[&str]> for ComboBoxVec {
 
 impl From<&[String]> for ComboBoxVec {
     fn from(slice: &[String]) -> Self {
-        let slice = slice
-            .into_iter()
-            .map(|s| s.as_str())
-            .collect::<Vec<_>>();
+        let slice = slice.iter().map(|s| s.as_str()).collect::<Vec<_>>();
 
         ComboBoxVec::new(0, &slice)
     }
@@ -107,10 +98,7 @@ impl ComboBoxBuilder {
         let mut index = value.get_index();
 
         let owned = value.get_options();
-        let options = owned
-            .iter()
-            .map(String::as_str)
-            .collect::<Vec<_>>();
+        let options = owned.iter().map(String::as_str).collect::<Vec<_>>();
 
         let mut combobox = widgets::ComboBox::new(self.id, &options);
 

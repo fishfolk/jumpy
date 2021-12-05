@@ -153,16 +153,10 @@ impl EditorGui {
             }
         }
 
-        entries.append(&mut vec!(
-            ContextMenuEntry::action(
-                "Add Layer",
-                EditorAction::OpenCreateLayerWindow,
-            ),
-            ContextMenuEntry::action(
-                "Background",
-                EditorAction::OpenBackgroundPropertiesWindow,
-            ),
-        ));
+        entries.append(&mut vec![
+            ContextMenuEntry::action("Add Layer", EditorAction::OpenCreateLayerWindow),
+            ContextMenuEntry::action("Background", EditorAction::OpenBackgroundPropertiesWindow),
+        ]);
 
         self.context_menu = Some(ContextMenu::new(position, &entries));
     }

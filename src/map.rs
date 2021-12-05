@@ -421,24 +421,33 @@ pub enum MapLayerKind {
     ObjectLayer,
 }
 
-impl ComboBoxValue for MapLayerKind {
-    fn from_index(index: usize) -> Self {
-        match index {
-            0 => Self::TileLayer,
-            1 => Self::ObjectLayer,
-            _ => unreachable!(),
-        }
+impl MapLayerKind {
+    pub fn options() -> &'static [&'static str] {
+        &["Tiles", "Objects"]
     }
+}
 
-    fn to_index(&self) -> usize {
+impl ComboBoxValue for MapLayerKind {
+    fn get_index(&self) -> usize {
         match self {
             Self::TileLayer => 0,
             Self::ObjectLayer => 1,
         }
     }
 
-    fn options() -> &'static [&'static str] {
-        &["Tiles", "Objects"]
+    fn set_index(&mut self, index: usize) {
+        *self = match index {
+            0 => Self::TileLayer,
+            1 => Self::ObjectLayer,
+            _ => unreachable!(),
+        }
+    }
+
+    fn get_options(&self) -> Vec<String> {
+        Self::options()
+            .into_iter()
+            .map(|s| s.to_string())
+            .collect()
     }
 }
 
@@ -528,6 +537,10 @@ impl MapObjectKind {
     const SPAWN_POINT: &'static str = "spawn_point";
     const ENVIRONMENT: &'static str = "environment";
     const DECORATION: &'static str = "decoration";
+
+    pub fn options() -> &'static [&'static str] {
+        &["Item", "Spawn Point", "Environment", "Decoration"]
+    }
 }
 
 impl From<String> for MapObjectKind {
@@ -564,17 +577,7 @@ impl From<MapObjectKind> for String {
 }
 
 impl ComboBoxValue for MapObjectKind {
-    fn from_index(index: usize) -> Self {
-        match index {
-            0 => Self::Item,
-            1 => Self::SpawnPoint,
-            2 => Self::Environment,
-            3 => Self::Decoration,
-            _ => unreachable!(),
-        }
-    }
-
-    fn to_index(&self) -> usize {
+    fn get_index(&self) -> usize {
         match self {
             Self::Item => 0,
             Self::SpawnPoint => 1,
@@ -583,8 +586,21 @@ impl ComboBoxValue for MapObjectKind {
         }
     }
 
-    fn options() -> &'static [&'static str] {
-        &["Item", "Spawn Point", "Environment", "Decoration"]
+    fn set_index(&mut self, index: usize) {
+        *self = match index {
+            0 => Self::Item,
+            1 => Self::SpawnPoint,
+            2 => Self::Environment,
+            3 => Self::Decoration,
+            _ => unreachable!(),
+        }
+    }
+
+    fn get_options(&self) -> Vec<String> {
+        Self::options()
+            .into_iter()
+            .map(|s| s.to_string())
+            .collect()
     }
 }
 

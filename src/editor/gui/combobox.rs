@@ -4,11 +4,74 @@ use macroquad::{
 };
 
 pub trait ComboBoxValue {
-    fn from_index(index: usize) -> Self;
+    fn get_index(&self) -> usize;
 
-    fn to_index(&self) -> usize;
+    fn get_options(&self) -> Vec<String>;
 
-    fn options() -> &'static [&'static str];
+    fn set_index(&mut self, index: usize);
+
+    fn get_value(&self) -> String {
+        self.get_options()
+            .get(self.get_index())
+            .unwrap()
+            .to_string()
+    }
+}
+
+pub struct ComboBoxVec {
+    index: usize,
+    options: Vec<String>,
+}
+
+impl ComboBoxVec {
+    pub fn new(index: usize, options: &[&str]) -> Self {
+        let options = options
+            .into_iter()
+            .map(|s| s.to_string())
+            .collect();
+
+        ComboBoxVec {
+            index,
+            options,
+        }
+    }
+}
+
+impl ComboBoxValue for ComboBoxVec {
+    fn set_index(&mut self, index: usize) {
+        self.index = index;
+    }
+
+    fn get_index(&self) -> usize {
+        self.index
+    }
+
+    fn get_options(&self) -> Vec<String> {
+        self.options.clone()
+    }
+}
+
+impl From<&[&str]> for ComboBoxVec {
+    fn from(slice: &[&str]) -> Self {
+        ComboBoxVec::new(0, slice)
+    }
+}
+
+impl From<&[String]> for ComboBoxVec {
+    fn from(slice: &[String]) -> Self {
+        let slice = slice
+            .into_iter()
+            .map(|s| s.as_str())
+            .collect::<Vec<_>>();
+
+        ComboBoxVec::new(0, &slice)
+    }
+}
+
+impl From<&ComboBoxVec> for usize {
+    fn from(v: &ComboBoxVec) -> Self {
+        v.get_index()
+    }
 }
 
 pub struct ComboBoxBuilder {
@@ -41,9 +104,15 @@ impl ComboBoxBuilder {
     }
 
     pub fn build<V: ComboBoxValue>(&self, ui: &mut Ui, value: &mut V) {
-        let mut value_index = value.to_index();
+        let mut index = value.get_index();
 
-        let mut combobox = widgets::ComboBox::new(self.id, V::options());
+        let owned = value.get_options();
+        let options = owned
+            .iter()
+            .map(String::as_str)
+            .collect::<Vec<_>>();
+
+        let mut combobox = widgets::ComboBox::new(self.id, &options);
 
         if let Some(ratio) = self.ratio {
             combobox = combobox.ratio(ratio);
@@ -53,8 +122,8 @@ impl ComboBoxBuilder {
             combobox = combobox.label(label);
         }
 
-        combobox.ui(ui, &mut value_index);
+        combobox.ui(ui, &mut index);
 
-        *value = V::from_index(value_index);
+        value.set_index(index);
     }
 }

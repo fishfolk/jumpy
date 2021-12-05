@@ -5,6 +5,8 @@ use macroquad::{
 };
 
 use crate::{map::Map, Resources};
+use crate::editor::gui::combobox::ComboBoxVec;
+use crate::editor::gui::{ComboBoxBuilder, ComboBoxValue};
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 use crate::resources::TextureKind;
@@ -12,29 +14,39 @@ use crate::resources::TextureKind;
 pub struct CreateTilesetWindow {
     params: WindowParams,
     tileset_id: String,
-    texture_id: String,
+    texture: ComboBoxVec,
 }
 
 impl CreateTilesetWindow {
     pub fn new() -> Self {
         let params = WindowParams {
             title: Some("Create Tileset".to_string()),
-            size: vec2(350.0, 350.0),
+            size: vec2(320.0, 250.0),
             ..Default::default()
         };
 
         let resources = storage::get::<Resources>();
-        let texture_id = resources
-            .textures
+        let mut textures = resources.textures
             .iter()
-            .find(|(_, v)| v.meta.kind.is_some() && v.meta.kind.unwrap() == TextureKind::Tileset)
-            .map(|(k, _)| k.clone())
-            .unwrap_or_else(|| "".to_string());
+            .filter_map(|(k, v)| {
+                if let Some(kind) = v.meta.kind {
+                    if kind == TextureKind::Tileset {
+                        return Some(k.clone());
+                    }
+                }
+
+                None
+            })
+            .collect::<Vec<String>>();
+
+        textures.sort_unstable();
 
         CreateTilesetWindow {
             params,
             tileset_id: "Unnamed Tileset".to_string(),
-            texture_id,
+            texture: textures
+                .as_slice()
+                .into(),
         }
     }
 }
@@ -53,7 +65,7 @@ impl Window for CreateTilesetWindow {
         if !is_existing_id {
             let batch = self.get_close_action().then(EditorAction::CreateTileset {
                 id: self.tileset_id.clone(),
-                texture_id: self.texture_id.clone(),
+                texture_id: self.texture.get_value(),
             });
 
             action = Some(batch);
@@ -83,59 +95,17 @@ impl Window for CreateTilesetWindow {
     ) -> Option<EditorAction> {
         let id = hash!("create_tileset_window");
 
-        let resources = storage::get::<Resources>();
-        let mut textures = resources
-            .textures
-            .iter()
-            .filter_map(|(k, v)| {
-                if let Some(kind) = v.meta.kind {
-                    if kind == TextureKind::Tileset {
-                        return Some(k.as_str());
-                    }
-                }
-
-                None
-            })
-            .collect::<Vec<&str>>();
-
-        textures.sort_unstable();
-
-        {
-            let size = vec2(173.0, 25.0);
-
-            widgets::InputText::new(hash!(id, "name_input"))
-                .size(size)
-                .ratio(1.0)
-                .label("Name")
-                .ui(ui, &mut self.tileset_id);
-        }
+        widgets::InputText::new(hash!(id, "name_input"))
+            .ratio(0.8)
+            .label("Name")
+            .ui(ui, &mut self.tileset_id);
 
         ui.separator();
-        ui.separator();
-        ui.separator();
-        ui.separator();
 
-        let mut texture_index = 0;
-        for id in &textures {
-            if *id == self.texture_id {
-                break;
-            }
-
-            texture_index += 1;
-        }
-
-        let len = textures.len();
-        if texture_index == len || len == 0 {
-            textures = vec!["No tileset textures"];
-            texture_index = 0;
-        }
-
-        widgets::ComboBox::new(hash!(id, "texture_input"), textures.as_slice())
-            .ratio(0.4)
-            .label("Texture")
-            .ui(ui, &mut texture_index);
-
-        self.texture_id = textures.get(texture_index).unwrap().to_string();
+        ComboBoxBuilder::new(hash!(id, "texture_input"))
+            .with_ratio(0.8)
+            .with_label("Texture")
+            .build(ui, &mut self.texture);
 
         None
     }

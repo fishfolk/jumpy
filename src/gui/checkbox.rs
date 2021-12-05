@@ -10,6 +10,7 @@ use crate::gui::{GuiResources, ELEMENT_MARGIN};
 
 pub struct Checkbox {
     id: Id,
+    margin: f32,
     position: Option<Vec2>,
     label: String,
     allow_click_on_label: bool,
@@ -21,6 +22,7 @@ impl Checkbox {
     pub fn new<P: Into<Option<Vec2>>>(id: Id, position: P, label: &str) -> Self {
         Checkbox {
             id,
+            margin: 0.0,
             position: position.into(),
             label: label.to_string(),
             allow_click_on_label: Self::ALLOW_CLICK_ON_LABEL,
@@ -30,10 +32,15 @@ impl Checkbox {
     #[allow(dead_code)]
     pub fn with_inactive_label(self) -> Self {
         Checkbox {
-            id: self.id,
-            position: self.position,
-            label: self.label,
             allow_click_on_label: false,
+            ..self
+        }
+    }
+
+    pub fn with_margin(self, margin: f32) -> Self {
+        Checkbox {
+            margin,
+            ..self
         }
     }
 
@@ -51,17 +58,33 @@ impl Checkbox {
         let label_size = ui.calc_size(&self.label);
         let element_height = label_size.y * 0.75;
         let checkbox_size = vec2(element_height, element_height);
-        let total_size = vec2(checkbox_size.x + (ELEMENT_MARGIN * 2.0), 0.0) + label_size;
+        let mut total_size = vec2(checkbox_size.x + ELEMENT_MARGIN, 0.0) + label_size;
+
+        let mut position = None;
+        if let Some(mut pos) = self.position {
+            pos.x += self.margin;
+            position = Some(pos);
+        } else {
+            total_size.x += self.margin;
+        }
 
         let mut group = widgets::Group::new(self.id, total_size);
 
-        if let Some(position) = &self.position {
-            group = group.position(*position);
+        if let Some(position) = position {
+            group = group.position(position);
         }
 
         group.ui(ui, |ui| {
+            let mut checkbox_position = vec2(0.0, (label_size.y - element_height) / 2.0);
+            let mut label_position = vec2(checkbox_size.x + ELEMENT_MARGIN, 0.0);
+
+            if position.is_none() {
+                checkbox_position.x += self.margin;
+                label_position.x += self.margin;
+            }
+
             let checkbox = widgets::Button::new("")
-                .position(vec2(ELEMENT_MARGIN, (label_size.y - element_height) / 2.0))
+                .position(checkbox_position)
                 .size(checkbox_size)
                 .ui(ui);
 
@@ -71,7 +94,7 @@ impl Checkbox {
 
             ui.push_skin(&gui_resources.skins.label_button);
             let label_btn = widgets::Button::new(self.label.deref())
-                .position(vec2(checkbox_size.x + (ELEMENT_MARGIN * 2.0), 0.0))
+                .position(label_position)
                 .ui(ui);
             ui.pop_skin();
 

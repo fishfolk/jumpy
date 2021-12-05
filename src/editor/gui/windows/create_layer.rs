@@ -7,6 +7,7 @@ use crate::map::{Map, MapLayerKind};
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 use crate::editor::gui::ComboBoxBuilder;
+use crate::gui::Checkbox;
 
 pub struct CreateLayerWindow {
     params: WindowParams,
@@ -19,7 +20,7 @@ impl CreateLayerWindow {
     pub fn new() -> Self {
         let params = WindowParams {
             title: Some("Create Layer".to_string()),
-            size: vec2(350.0, 350.0),
+            size: vec2(275.0, 275.0),
             ..Default::default()
         };
 
@@ -57,19 +58,16 @@ impl Window for CreateLayerWindow {
         }
 
         ui.separator();
-        ui.separator();
-        ui.separator();
-        ui.separator();
 
         ComboBoxBuilder::new(hash!(id, "type_input"))
             .with_label("Type")
-            .with_ratio(0.8)
+            .with_ratio(1.0)
             .build(ui, &mut self.kind);
 
         if self.kind == MapLayerKind::TileLayer {
-            widgets::Checkbox::new(hash!(id, "collision_input"))
-                .ratio(0.4)
-                .label("Collision")
+            ui.separator();
+
+            Checkbox::new(hash!(id, "collision_input"), None, "Collision")
                 .ui(ui, &mut self.has_collision);
         }
 

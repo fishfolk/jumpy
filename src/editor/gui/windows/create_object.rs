@@ -9,6 +9,7 @@ use crate::{
     map::{Map, MapObjectKind},
     Resources,
 };
+use crate::editor::gui::combobox::ComboBoxVec;
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 
@@ -24,7 +25,7 @@ impl CreateObjectWindow {
     pub fn new(position: Vec2, layer_id: String) -> Self {
         let params = WindowParams {
             title: Some("Create Object".to_string()),
-            size: vec2(350.0, 350.0),
+            size: vec2(300.0, 300.0),
             ..Default::default()
         };
 
@@ -142,27 +143,24 @@ impl Window for CreateObjectWindow {
             }
         };
 
-        let mut item_index = 0;
-        if let Some(current_id) = &self.id {
-            item_index = item_ids
+        let mut item_id_value = if let Some(current_id) = &self.id {
+            let index = item_ids
                 .iter()
                 .enumerate()
                 .find_map(|(i, id)| if id == current_id { Some(i) } else { None })
-                .unwrap_or(0);
-        }
+                .unwrap_or_default();
 
-        let label = {
-            let opts = MapObjectKind::options();
-            let i = self.kind.to_index();
-            opts[i]
+            ComboBoxVec::new(index, &item_ids)
+        } else {
+            ComboBoxVec::new(0, &item_ids)
         };
 
-        widgets::ComboBox::new(hash!("id_input"), &item_ids)
-            .ratio(0.8)
-            .label(label)
-            .ui(ui, &mut item_index);
+        ComboBoxBuilder::new(hash!("id_input"))
+            .with_ratio(0.8)
+            .with_label("Variant")
+            .build(ui, &mut item_id_value);
 
-        self.id = item_ids.get(item_index).map(|str| str.to_string());
+        self.id = Some(item_id_value.get_value());
 
         None
     }

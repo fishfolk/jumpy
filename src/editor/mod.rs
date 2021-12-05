@@ -1001,7 +1001,7 @@ impl Node for Editor {
                             node.map_resource.map.world_offset + object.position;
 
                         if let Some(dragged_object) = &node.dragged_object {
-                            if dragged_object.id == object.id {
+                            if layer.id == dragged_object.layer_id && dragged_object.index == i {
                                 let map = node.get_map();
 
                                 let cursor_world_position =

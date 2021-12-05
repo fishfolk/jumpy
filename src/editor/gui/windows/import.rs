@@ -110,13 +110,19 @@ impl Window for ImportWindow {
                 ui.pop_skin();
             });
 
-        let checkbox = Checkbox::new(
-            hash!(id, "background_checkbox"),
-            vec2(0.0, (size.y * 0.8) + ELEMENT_MARGIN),
-            "Import Background",
-        );
+        {
+            let position = vec2(0.0, (size.y * 0.8) + ELEMENT_MARGIN);
 
-        checkbox.ui(ui, &mut self.should_import_background);
+            let checkbox = Checkbox::new(
+                hash!(id, "background_checkbox"),
+                position,
+                "Import Background",
+            );
+
+            checkbox
+                .with_margin(ELEMENT_MARGIN)
+                .ui(ui, &mut self.should_import_background);
+        }
 
         None
     }

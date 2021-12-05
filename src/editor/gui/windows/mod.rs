@@ -7,6 +7,7 @@ mod create_tileset;
 
 mod background_properties;
 mod create_layer;
+mod create_map;
 mod create_object;
 mod import;
 mod load_map;
@@ -17,6 +18,7 @@ mod tileset_properties;
 pub use background_properties::BackgroundPropertiesWindow;
 pub use confirm_dialog::ConfirmDialog;
 pub use create_layer::CreateLayerWindow;
+pub use create_map::CreateMapWindow;
 pub use create_object::CreateObjectWindow;
 pub use create_tileset::CreateTilesetWindow;
 pub use import::ImportWindow;

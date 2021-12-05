@@ -303,7 +303,10 @@ impl EditorGui {
                 close_editor_menu();
 
                 match menu_res.into_usize() {
-                    EDITOR_MENU_RESULT_NEW => todo!("implement new map menu entry"),
+                    EDITOR_MENU_RESULT_NEW => {
+                        let action = EditorAction::OpenCreateMapWindow;
+                        res = Some(action);
+                    }
                     EDITOR_MENU_RESULT_OPEN => {
                         let action = EditorAction::OpenLoadMapWindow;
                         res = Some(action);

@@ -4,7 +4,7 @@ mod eraser;
 mod placement;
 
 pub use eraser::EraserTool;
-pub use placement::TilePlacementTool;
+pub use placement::{ObjectPlacementTool, TilePlacementTool};
 
 use macroquad::prelude::*;
 
@@ -56,6 +56,9 @@ pub const DEFAULT_TOOL_ICON_TEXTURE_ID: &str = "default_tool_icon";
 pub struct EditorToolParams {
     pub name: String,
     pub icon_texture_id: String,
+    /// Set this to `true` if the tool should be activated every update when action button is held
+    /// or `false` if it should only activate once per click
+    pub is_continuous: bool,
 }
 
 impl Default for EditorToolParams {
@@ -63,6 +66,7 @@ impl Default for EditorToolParams {
         EditorToolParams {
             name: "Unnamed Tool".to_string(),
             icon_texture_id: DEFAULT_TOOL_ICON_TEXTURE_ID.to_string(),
+            is_continuous: false,
         }
     }
 }

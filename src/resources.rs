@@ -56,6 +56,8 @@ pub struct TextureMetadata {
     pub sprite_size: Option<UVec2>,
     #[serde(default = "json::default_filter_mode", with = "json::FilterModeDef")]
     pub filter_mode: FilterMode,
+    #[serde(default, skip)]
+    pub size: Vec2,
 }
 
 #[derive(Debug, Clone)]
@@ -68,6 +70,8 @@ pub struct TextureResource {
 pub struct ImageMetadata {
     pub id: String,
     pub path: String,
+    #[serde(default, skip)]
+    pub size: Vec2,
 }
 
 #[derive(Debug, Clone)]
@@ -217,15 +221,17 @@ impl Resources {
                     Some(val)
                 };
 
+                let size = vec2(texture.width(), texture.height());
+
                 let key = meta.id.clone();
 
-                let res = TextureResource {
-                    texture,
-                    meta: TextureMetadata {
-                        sprite_size,
-                        ..meta
-                    },
+                let meta = TextureMetadata {
+                    sprite_size,
+                    size,
+                    ..meta
                 };
+
+                let res = TextureResource { texture, meta };
 
                 textures.insert(key, res);
             }
@@ -248,6 +254,11 @@ impl Resources {
                 let image = load_image(&file_path.to_string_helper()).await?;
 
                 let key = meta.id.clone();
+
+                let meta = ImageMetadata {
+                    size: vec2(image.width() as f32, image.height() as f32),
+                    ..meta
+                };
 
                 let res = ImageResource { image, meta };
 

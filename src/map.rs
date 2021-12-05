@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::Result;
 
+use crate::text::ToStringHelper;
 use crate::{
     editor::gui::combobox::ComboBoxValue,
     json::{self, TiledMap},
@@ -51,6 +52,9 @@ impl Map {
     // before collision is registered, if not.
     pub const COLLIDER_PADDING: f32 = 8.0;
 
+    const FLATTENED_BACKGROUND_PADDING_X: f32 = 100.0;
+    const FLATTENED_BACKGROUND_PADDING_Y: f32 = 100.0;
+
     pub fn new(tile_size: Vec2, grid_size: UVec2) -> Self {
         Map {
             background_color: Self::default_background_color(),
@@ -68,7 +72,7 @@ impl Map {
     pub async fn load<P: AsRef<Path>>(path: P) -> Result<Self> {
         let path = path.as_ref();
 
-        let bytes = load_file(&path.to_string_lossy()).await?;
+        let bytes = load_file(&path.to_string_helper()).await?;
         let map = serde_json::from_slice(&bytes).unwrap();
 
         Ok(map)
@@ -77,7 +81,7 @@ impl Map {
     pub async fn load_tiled<P: AsRef<Path>>(path: P, export_path: Option<P>) -> Result<Self> {
         let path = path.as_ref();
 
-        let bytes = load_file(&path.to_string_lossy()).await?;
+        let bytes = load_file(&path.to_string_helper()).await?;
         let tiled_map: TiledMap = serde_json::from_slice(&bytes).unwrap();
 
         let map = tiled_map.into_map();
@@ -94,6 +98,17 @@ impl Map {
             self.grid_size.x as f32 * self.tile_size.x,
             self.grid_size.y as f32 * self.tile_size.y,
         )
+    }
+
+    pub fn contains(&self, position: Vec2) -> bool {
+        let map_size = self.grid_size.as_f32() * self.tile_size;
+        let rect = Rect::new(
+            self.world_offset.x,
+            self.world_offset.y,
+            map_size.x,
+            map_size.y,
+        );
+        rect.contains(position)
     }
 
     pub fn to_grid(&self, rect: &Rect) -> URect {
@@ -234,12 +249,12 @@ impl Map {
         dest_rect2
     }
 
-    /// This will draw the map
-    pub fn draw(&self, rect: Option<URect>) {
+    pub fn draw_background(&self, rect: Option<URect>, is_parallax_disabled: bool) {
         let rect = rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.x, self.grid_size.y));
+
         draw_rectangle(
-            self.world_offset.x + (rect.x as f32 * self.tile_size.x),
-            self.world_offset.y + (rect.y as f32 * self.tile_size.y),
+            self.world_offset.x,
+            self.world_offset.y,
             rect.w as f32 * self.tile_size.x,
             rect.h as f32 * self.tile_size.y,
             self.background_color,
@@ -252,13 +267,30 @@ impl Map {
 
             for layer in &self.background_layers {
                 let texture_res = resources.textures.get(&layer.texture_id).unwrap();
-                let dest_rect =
-                    Self::background_parallax(texture_res.texture, layer.depth, position);
+                let dest_rect = if is_parallax_disabled {
+                    let map_size = self.grid_size.as_f32() * self.tile_size;
+
+                    let width = map_size.x + (Self::FLATTENED_BACKGROUND_PADDING_X * 2.0);
+                    let height = (width / texture_res.meta.size.x) * texture_res.meta.size.y;
+
+                    Rect::new(
+                        self.world_offset.x - Self::FLATTENED_BACKGROUND_PADDING_X,
+                        self.world_offset.y - Self::FLATTENED_BACKGROUND_PADDING_Y,
+                        width,
+                        height,
+                    )
+                } else {
+                    let mut dest_rect =
+                        Self::background_parallax(texture_res.texture, layer.depth, position);
+                    dest_rect.x += layer.offset.x;
+                    dest_rect.y += layer.offset.y;
+                    dest_rect
+                };
 
                 draw_texture_ex(
                     texture_res.texture,
-                    dest_rect.x + layer.offset.x,
-                    dest_rect.y + layer.offset.y,
+                    dest_rect.x,
+                    dest_rect.y,
                     WHITE,
                     DrawTextureParams {
                         dest_size: Some(vec2(dest_rect.w, dest_rect.h)),
@@ -267,10 +299,20 @@ impl Map {
                 )
             }
         }
+    }
+
+    /// This will draw the map
+    pub fn draw(&self, rect: Option<URect>, should_draw_background: bool) {
+        if should_draw_background {
+            self.draw_background(rect, false);
+        }
+
+        let rect = rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.x, self.grid_size.y));
 
         let mut draw_order = self.draw_order.clone();
         draw_order.reverse();
 
+        let resources = storage::get::<Resources>();
         for layer_id in draw_order {
             if let Some(layer) = self.layers.get(&layer_id) {
                 if layer.is_visible && layer.kind == MapLayerKind::TileLayer {

@@ -160,7 +160,7 @@ pub async fn show_main_menu() -> MainMenuResult {
                             return MainMenuResult::LocalGame(player_input.clone());
                         }
                         Menu::CANCEL_INDEX => {
-                            menu_state = MainMenuState::Root(build_editor_menu());
+                            menu_state = MainMenuState::Root(build_main_menu());
                         }
                         _ => {}
                     }
@@ -185,7 +185,7 @@ pub async fn show_main_menu() -> MainMenuResult {
                             }
                         }
                         Menu::CANCEL_INDEX => {
-                            menu_state = MainMenuState::Root(build_editor_menu());
+                            menu_state = MainMenuState::Root(build_main_menu());
                         }
                         _ => {}
                     }

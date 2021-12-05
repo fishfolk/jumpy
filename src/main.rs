@@ -154,7 +154,12 @@ async fn main() -> Result<()> {
                 is_new_map,
             } => {
                 let map_resource = if is_new_map {
-                    gui::show_create_map_menu().await?
+                    let res = gui::show_create_map_menu().await?;
+                    if res.is_none() {
+                        continue 'outer;
+                    }
+
+                    res.unwrap()
                 } else {
                     gui::show_select_map_menu().await
                 };

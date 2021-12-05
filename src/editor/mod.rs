@@ -32,8 +32,8 @@ mod history;
 mod tools;
 
 pub use tools::{
-    add_tool_instance, get_tool_instance, get_tool_instance_of_id, EraserTool, TilePlacementTool,
-    DEFAULT_TOOL_ICON_TEXTURE_ID,
+    add_tool_instance, get_tool_instance, get_tool_instance_of_id, EraserTool, ObjectPlacementTool,
+    TilePlacementTool, DEFAULT_TOOL_ICON_TEXTURE_ID,
 };
 
 use history::EditorHistory;
@@ -41,7 +41,8 @@ pub use input::EditorInputScheme;
 
 use crate::editor::actions::{ImportAction, UpdateBackgroundAction, UpdateObjectAction};
 use crate::editor::gui::windows::{
-    BackgroundPropertiesWindow, ImportWindow, LoadMapWindow, ObjectPropertiesWindow, SaveMapWindow,
+    BackgroundPropertiesWindow, CreateMapWindow, ImportWindow, LoadMapWindow,
+    ObjectPropertiesWindow, SaveMapWindow,
 };
 use crate::editor::input::{collect_editor_input, EditorInput};
 use crate::gui::SELECTED_OBJECT_HIGHLIGHT_COLOR;
@@ -70,6 +71,7 @@ pub struct EditorContext {
     pub cursor_position: Vec2,
     pub is_user_map: bool,
     pub is_tiled_map: bool,
+    pub should_snap_to_grid: bool,
 }
 
 impl Default for EditorContext {
@@ -84,6 +86,7 @@ impl Default for EditorContext {
             cursor_position: Vec2::ZERO,
             is_user_map: false,
             is_tiled_map: false,
+            should_snap_to_grid: false,
         }
     }
 }
@@ -111,6 +114,7 @@ pub struct Editor {
 
     previous_input: EditorInput,
     input: EditorInput,
+    mouse_movement: Vec2,
 
     info_message: Option<String>,
 
@@ -121,15 +125,16 @@ pub struct Editor {
 
     should_draw_grid: bool,
     should_snap_to_grid: bool,
+    is_parallax_disabled: bool,
 }
 
 impl Editor {
     const CAMERA_PAN_THRESHOLD: f32 = 0.025;
 
     const CAMERA_PAN_SPEED: f32 = 5.0;
-    const CAMERA_ZOOM_STEP: f32 = 0.05;
-    const CAMERA_ZOOM_MIN: f32 = 0.5;
-    const CAMERA_ZOOM_MAX: f32 = 1.5;
+    const CAMERA_ZOOM_STEP: f32 = 0.1;
+    const CAMERA_ZOOM_MIN: f32 = 0.1;
+    const CAMERA_ZOOM_MAX: f32 = 2.5;
 
     const CURSOR_MOVE_SPEED: f32 = 5.0;
 
@@ -150,6 +155,7 @@ impl Editor {
 
     pub fn new(input_scheme: EditorInputScheme, map_resource: MapResource) -> Self {
         add_tool_instance(TilePlacementTool::new());
+        add_tool_instance(ObjectPlacementTool::new());
         add_tool_instance(EraserTool::new());
 
         let selected_tool = None;
@@ -163,6 +169,7 @@ impl Editor {
 
         let tool_selector_element = ToolSelectorElement::new()
             .with_tool::<TilePlacementTool>()
+            .with_tool::<ObjectPlacementTool>()
             .with_tool::<EraserTool>();
 
         let left_toolbar = Toolbar::new(ToolbarPosition::Left, EditorGui::LEFT_TOOLBAR_WIDTH)
@@ -207,6 +214,7 @@ impl Editor {
 
             previous_input: EditorInput::default(),
             input: EditorInput::default(),
+            mouse_movement: Vec2::ZERO,
 
             info_message: None,
 
@@ -215,8 +223,9 @@ impl Editor {
             info_message_timer: 0.0,
             double_click_timer: Self::DOUBLE_CLICK_THRESHOLD,
 
-            should_draw_grid: false,
+            should_draw_grid: true,
             should_snap_to_grid: false,
+            is_parallax_disabled: false,
         }
     }
 
@@ -236,6 +245,7 @@ impl Editor {
         &self.map_resource.map
     }
 
+    #[allow(dead_code)]
     fn get_map_mut(&mut self) -> &mut Map {
         &mut self.map_resource.map
     }
@@ -251,6 +261,7 @@ impl Editor {
             cursor_position: self.cursor_position,
             is_user_map: self.map_resource.meta.is_user_map,
             is_tiled_map: self.map_resource.meta.is_tiled_map,
+            should_snap_to_grid: self.should_snap_to_grid,
         }
     }
 
@@ -299,6 +310,14 @@ impl Editor {
         }
     }
 
+    fn clear_context(&mut self) {
+        self.selected_tool = None;
+        self.selected_layer = None;
+        self.selected_tileset = None;
+        self.selected_tile = None;
+        self.selected_object = None;
+    }
+
     fn select_tileset(&mut self, tileset_id: &str, tile_id: Option<u32>) {
         if let Some(tileset) = self.map_resource.map.tilesets.get(tileset_id) {
             self.selected_tileset = Some(tileset_id.to_string());
@@ -333,8 +352,8 @@ impl Editor {
             EditorAction::Redo => {
                 res = self.history.redo(&mut self.map_resource.map);
             }
-            EditorAction::SelectTool(index) => {
-                self.selected_tool = Some(index);
+            EditorAction::SelectTool(id) => {
+                self.selected_tool = id;
             }
             EditorAction::UpdateBackground { color, layers } => {
                 let action = UpdateBackgroundAction::new(color, layers);
@@ -491,15 +510,26 @@ impl Editor {
                     .history
                     .apply(Box::new(action), &mut self.map_resource.map);
             }
-            EditorAction::CreateMap { .. } => {
-                unimplemented!(
-                    "Map creation from editor is not implemented. Use main menu to create new maps"
-                );
+            EditorAction::CreateMap {
+                name,
+                description,
+                grid_size,
+                tile_size,
+            } => {
+                let resources = storage::get::<Resources>();
+                let res = resources.create_map(&name, description.as_deref(), tile_size, grid_size);
+                match res {
+                    Err(err) => println!("Create Map: {}", err),
+                    Ok(map_resource) => {
+                        self.map_resource = map_resource;
+                        self.history.clear();
+                        self.clear_context();
+                    }
+                }
             }
             EditorAction::OpenCreateMapWindow => {
-                unimplemented!(
-                    "Map creation from editor is not implemented. Use main menu to create new maps"
-                );
+                let mut gui = storage::get_mut::<EditorGui>();
+                gui.add_window(CreateMapWindow::new());
             }
             EditorAction::LoadMap(index) => {
                 let resources = storage::get::<Resources>();
@@ -507,6 +537,7 @@ impl Editor {
 
                 self.map_resource = map_resource;
                 self.history.clear();
+                self.clear_context();
             }
             EditorAction::OpenLoadMapWindow => {
                 let mut gui = storage::get_mut::<EditorGui>();
@@ -570,6 +601,11 @@ impl Node for Editor {
         node.previous_input = node.input;
         node.input = collect_editor_input(node.input_scheme);
 
+        {
+            let movement = node.cursor_position - node.previous_cursor_position;
+            node.mouse_movement += movement;
+        }
+
         if node.info_message.is_some() {
             node.info_message_timer += dt;
 
@@ -610,6 +646,12 @@ impl Node for Editor {
 
         if node.input.toggle_draw_grid {
             node.should_draw_grid = !node.should_draw_grid;
+
+            node.info_message = {
+                let state = if node.should_draw_grid { "ON" } else { "OFF" };
+
+                Some(format!("Draw grid: {}", state))
+            }
         }
 
         if node.input.toggle_snap_to_grid {
@@ -626,6 +668,20 @@ impl Node for Editor {
             }
         }
 
+        if node.input.toggle_disable_parallax {
+            node.is_parallax_disabled = !node.is_parallax_disabled;
+
+            node.info_message = {
+                let state = if node.is_parallax_disabled {
+                    "OFF"
+                } else {
+                    "ON"
+                };
+
+                Some(format!("Parallax: {}", state))
+            }
+        }
+
         if node.input.undo {
             node.apply_action(EditorAction::Undo);
         } else if node.input.redo {
@@ -636,18 +692,18 @@ impl Node for Editor {
             .unwrap()
             .to_world_space(node.cursor_position);
 
+        let (is_cursor_over_gui, is_cursor_over_context_menu) = {
+            let gui = storage::get::<EditorGui>();
+            let is_over_gui = gui.contains(node.cursor_position);
+            let mut is_over_context_menu = false;
+            if is_over_gui && gui.context_menu_contains(node.cursor_position) {
+                is_over_context_menu = true;
+            }
+
+            (is_over_gui, is_over_context_menu)
+        };
+
         if node.input.action {
-            let (is_cursor_over_gui, is_cursor_over_context_menu) = {
-                let gui = storage::get::<EditorGui>();
-                let is_over_gui = gui.contains(node.cursor_position);
-                let mut is_over_context_menu = false;
-                if is_over_gui && gui.context_menu_contains(node.cursor_position) {
-                    is_over_context_menu = true;
-                }
-
-                (is_over_gui, is_over_context_menu)
-            };
-
             if !is_cursor_over_context_menu {
                 let mut gui = storage::get_mut::<EditorGui>();
                 gui.close_context_menu();
@@ -657,8 +713,11 @@ impl Node for Editor {
                 if let Some(id) = &node.selected_tool {
                     let ctx = node.get_context();
                     let tool = get_tool_instance_of_id(id);
-                    if let Some(action) = tool.get_action(node.get_map(), &ctx) {
-                        node.apply_action(action);
+                    let params = tool.get_params();
+                    if !node.previous_input.action || params.is_continuous {
+                        if let Some(action) = tool.get_action(node.get_map(), &ctx) {
+                            node.apply_action(action);
+                        }
                     }
                 } else if node.previous_input.action {
                     if node.cursor_position == node.previous_cursor_position
@@ -815,7 +874,7 @@ impl Node for Editor {
     fn fixed_update(mut node: RefMut<Self>) {
         if let EditorInputScheme::Gamepad { .. } = node.input_scheme {
             node.previous_cursor_position = node.cursor_position;
-            let movement = node.input.cursor_movement * Self::CURSOR_MOVE_SPEED;
+            let movement = node.input.cursor_move_direction * Self::CURSOR_MOVE_SPEED;
             node.cursor_position += movement;
         }
 
@@ -828,7 +887,7 @@ impl Node for Editor {
 
         let threshold = screen_size * Self::CAMERA_PAN_THRESHOLD;
 
-        let mut pan_direction = node.input.camera_pan;
+        let mut pan_direction = node.input.camera_move_direction;
 
         if node.cursor_position.x <= threshold.x {
             pan_direction.x = -1.0;
@@ -842,8 +901,15 @@ impl Node for Editor {
             pan_direction.y = 1.0;
         }
 
+        let mut movement = pan_direction * Self::CAMERA_PAN_SPEED;
+
         let mut camera = scene::find_node_by_type::<EditorCamera>().unwrap();
-        let movement = pan_direction * Self::CAMERA_PAN_SPEED;
+
+        if movement == Vec2::ZERO && node.input.camera_mouse_move {
+            movement = -node.mouse_movement / camera.scale;
+        }
+
+        node.mouse_movement = Vec2::ZERO;
 
         camera.position = (camera.position + movement).clamp(Vec2::ZERO, node.get_map().get_size());
 
@@ -854,7 +920,11 @@ impl Node for Editor {
     }
 
     fn draw(mut node: RefMut<Self>) {
-        node.get_map_mut().draw(None);
+        {
+            let map = node.get_map();
+            map.draw_background(None, node.is_parallax_disabled);
+            map.draw(None, false);
+        }
 
         if node.should_draw_grid {
             let map = node.get_map();

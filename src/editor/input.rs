@@ -13,14 +13,16 @@ pub struct EditorInput {
     pub action: bool,
     pub back: bool,
     pub context_menu: bool,
-    pub camera_pan: Vec2,
+    pub camera_move_direction: Vec2,
+    pub camera_mouse_move: bool,
     pub camera_zoom: f32,
-    pub cursor_movement: Vec2,
+    pub cursor_move_direction: Vec2,
     pub undo: bool,
     pub redo: bool,
     pub toggle_menu: bool,
     pub toggle_draw_grid: bool,
     pub toggle_snap_to_grid: bool,
+    pub toggle_disable_parallax: bool,
     pub save: bool,
     pub save_as: bool,
     pub load: bool,
@@ -32,7 +34,7 @@ pub fn collect_editor_input(scheme: EditorInputScheme) -> EditorInput {
     match scheme {
         EditorInputScheme::Mouse => {
             input.action = is_mouse_button_down(MouseButton::Left);
-            input.back = is_mouse_button_down(MouseButton::Middle);
+            input.camera_mouse_move = is_mouse_button_down(MouseButton::Middle);
             input.context_menu = is_mouse_button_pressed(MouseButton::Right);
 
             let (_, zoom) = mouse_wheel();
@@ -51,9 +53,7 @@ pub fn collect_editor_input(scheme: EditorInputScheme) -> EditorInput {
                     }
                 }
 
-                if is_key_pressed(KeyCode::G) {
-                    input.toggle_snap_to_grid = true;
-                }
+                input.toggle_snap_to_grid = is_key_pressed(KeyCode::G);
 
                 if is_key_pressed(KeyCode::S) {
                     if is_key_down(KeyCode::LeftShift) {
@@ -67,23 +67,26 @@ pub fn collect_editor_input(scheme: EditorInputScheme) -> EditorInput {
                     input.load = true;
                 }
             } else {
-                input.toggle_menu = is_key_pressed(KeyCode::Escape);
+                if is_key_pressed(KeyCode::Escape) {
+                    input.toggle_menu = true;
+                    input.back = true;
+                }
 
                 if is_key_down(KeyCode::Left) || is_key_down(KeyCode::A) {
-                    input.camera_pan.x = -1.0;
+                    input.camera_move_direction.x = -1.0;
                 } else if is_key_down(KeyCode::Right) || is_key_down(KeyCode::D) {
-                    input.camera_pan.x = 1.0;
+                    input.camera_move_direction.x = 1.0;
                 }
 
                 if is_key_down(KeyCode::Up) || is_key_down(KeyCode::W) {
-                    input.camera_pan.y = -1.0;
+                    input.camera_move_direction.y = -1.0;
                 } else if is_key_down(KeyCode::Down) || is_key_down(KeyCode::S) {
-                    input.camera_pan.y = 1.0;
+                    input.camera_move_direction.y = 1.0;
                 }
 
-                if is_key_pressed(KeyCode::G) {
-                    input.toggle_draw_grid = true;
-                }
+                input.toggle_draw_grid = is_key_pressed(KeyCode::G);
+
+                input.toggle_disable_parallax = is_key_pressed(KeyCode::P);
             }
         }
         EditorInputScheme::Gamepad(ix) => {
@@ -95,7 +98,7 @@ pub fn collect_editor_input(scheme: EditorInputScheme) -> EditorInput {
                 input.back = gamepad.digital_inputs.activated(Button::A);
                 input.context_menu = gamepad.digital_inputs.activated(Button::X);
 
-                input.camera_pan = {
+                input.camera_move_direction = {
                     let direction_x = gamepad.analog_inputs.value(Axis::LeftX);
                     let direction_y = gamepad.analog_inputs.value(Axis::LeftY);
 
@@ -104,7 +107,7 @@ pub fn collect_editor_input(scheme: EditorInputScheme) -> EditorInput {
                     direction.normalize_or_zero()
                 };
 
-                input.cursor_movement = {
+                input.cursor_move_direction = {
                     let direction_x = gamepad.analog_inputs.value(Axis::RightX);
                     let direction_y = gamepad.analog_inputs.value(Axis::RightY);
 

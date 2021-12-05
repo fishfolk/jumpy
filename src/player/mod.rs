@@ -779,9 +779,8 @@ impl Player {
 
         let map_bottom = {
             let world = storage::get::<GameWorld>();
-
             world.map.grid_size.y as f32 * world.map.tile_size.y
-        } as f32;
+        };
 
         if node.body.position.y > map_bottom {
             Player::on_receive_damage(node.handle(), false, None);

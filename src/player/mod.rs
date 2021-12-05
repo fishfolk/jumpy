@@ -206,6 +206,17 @@ impl Player {
         }
     }
 
+    pub fn set_animation(&mut self, id: &str) {
+        self.animation_player.set_animation(id);
+        for item in self.equipped_items.values_mut() {
+            if let Some(animation_player) = &mut item.sprite_animation {
+                if animation_player.get_animation(id).is_some() {
+                    animation_player.set_animation(id);
+                }
+            }
+        }
+    }
+
     pub fn add_passive_effect(&mut self, item_id: Option<&str>, params: PassiveEffectParams) {
         let effect = PassiveEffectInstance::new(item_id, params);
 
@@ -352,7 +363,7 @@ impl Player {
         self.incapacitation_timer = 0.0;
         self.state_machine.set_state(Self::ST_INCAPACITATED);
         if should_fall {
-            // self.animation_player.set_animation(Self::SLIDE_ANIMATION_ID);
+            // self.set_animation(Self::SLIDE_ANIMATION_ID);
         }
     }
 
@@ -393,7 +404,7 @@ impl Player {
                 node.body.has_gravity = true;
 
                 node.is_dead = true;
-                //node.animation_player.set_animation(Self::DEATH_ANIMATION_ID);
+                //node.set_animation(Self::DEATH_ANIMATION_ID);
 
                 // let mut score_counter = scene::get_node(node.score_counter);
                 // score_counter.count_loss(node.controller_id)
@@ -421,7 +432,7 @@ impl Player {
 
                 {
                     let mut node = scene::get_node(handle);
-                    //node.animation_player.set_animation(Self::DEATH_ALT_ANIMATION_ID);
+                    //node.set_animation(Self::DEATH_ALT_ANIMATION_ID);
                     node.body.velocity = vec2(0., 0.);
                 }
 
@@ -505,8 +516,7 @@ impl Player {
                     -node.move_speed * node.slide_speed_factor
                 };
 
-                node.animation_player
-                    .set_animation(Self::CROUCH_ANIMATION_ID);
+                node.set_animation(Self::CROUCH_ANIMATION_ID);
 
                 node.slide_duration
             };
@@ -578,17 +588,16 @@ impl Player {
             if (!node.body.is_upside_down && node.body.velocity.y < 0.0)
                 || (node.body.is_upside_down && node.body.velocity.y > 0.0)
             {
-                node.animation_player.set_animation(Self::JUMP_ANIMATION_ID);
+                node.set_animation(Self::JUMP_ANIMATION_ID);
             } else {
-                node.animation_player.set_animation(Self::FALL_ANIMATION_ID);
+                node.set_animation(Self::FALL_ANIMATION_ID);
             }
         } else if node.is_crouched {
-            node.animation_player
-                .set_animation(Self::CROUCH_ANIMATION_ID);
+            node.set_animation(Self::CROUCH_ANIMATION_ID);
         } else if node.input.right || node.input.left {
-            node.animation_player.set_animation(Self::MOVE_ANIMATION_ID);
+            node.set_animation(Self::MOVE_ANIMATION_ID);
         } else {
-            node.animation_player.set_animation(Self::IDLE_ANIMATION_ID);
+            node.set_animation(Self::IDLE_ANIMATION_ID);
         }
 
         // if in jump and want to jump again

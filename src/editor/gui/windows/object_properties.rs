@@ -4,6 +4,7 @@ use macroquad::{
     ui::{hash, widgets, Ui},
 };
 
+use crate::editor::gui::combobox::ComboBoxVec;
 use crate::map::MapObject;
 use crate::{
     editor::gui::{ComboBoxBuilder, ComboBoxValue},
@@ -24,7 +25,7 @@ impl ObjectPropertiesWindow {
     pub fn new(layer_id: String, index: usize) -> Self {
         let params = WindowParams {
             title: Some("Object Properties".to_string()),
-            size: vec2(350.0, 350.0),
+            size: vec2(300.0, 300.0),
             ..Default::default()
         };
 
@@ -45,8 +46,10 @@ impl Window for ObjectPropertiesWindow {
     fn get_buttons(&self, _map: &Map, _ctx: &EditorContext) -> Vec<ButtonParams> {
         let mut res = Vec::new();
 
+        let mut action = None;
+
         if let Some(object) = &self.object {
-            let action = self.get_close_action().then(EditorAction::UpdateObject {
+            let batch = self.get_close_action().then(EditorAction::UpdateObject {
                 layer_id: self.layer_id.clone(),
                 index: self.index,
                 id: object.id.clone(),
@@ -54,12 +57,14 @@ impl Window for ObjectPropertiesWindow {
                 position: object.position,
             });
 
-            res.push(ButtonParams {
-                label: "Save",
-                action: Some(action),
-                ..Default::default()
-            });
+            action = Some(batch);
         }
+
+        res.push(ButtonParams {
+            label: "Save",
+            action,
+            ..Default::default()
+        });
 
         res.push(ButtonParams {
             label: "Cancel",
@@ -152,24 +157,22 @@ impl Window for ObjectPropertiesWindow {
             }
         };
 
-        let mut item_index = item_ids
-            .iter()
-            .enumerate()
-            .find_map(|(i, id)| if id == &object.id { Some(i) } else { None })
-            .unwrap_or(0);
+        let mut item_id_value = {
+            let index = item_ids
+                .iter()
+                .enumerate()
+                .find_map(|(i, id)| if *id == object.id { Some(i) } else { None })
+                .unwrap_or_default();
 
-        let label = {
-            let opts = MapObjectKind::options();
-            let i = object.kind.to_index();
-            opts[i]
+            ComboBoxVec::new(index, &item_ids)
         };
 
-        widgets::ComboBox::new(hash!("id_input"), &item_ids)
-            .ratio(0.8)
-            .label(label)
-            .ui(ui, &mut item_index);
+        ComboBoxBuilder::new(hash!("id_input"))
+            .with_ratio(0.8)
+            .with_label("Variant")
+            .build(ui, &mut item_id_value);
 
-        object.id = item_ids.get(item_index).map(|str| str.to_string()).unwrap();
+        object.id = item_id_value.get_value();
 
         self.object = Some(object);
 

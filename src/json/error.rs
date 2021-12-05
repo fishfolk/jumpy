@@ -1,5 +1,4 @@
-use std::fmt;
-use std::fmt::{Debug, Formatter};
+use std::fmt::{self, Debug, Formatter};
 
 pub struct Error {
     pub path: String,

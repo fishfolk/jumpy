@@ -24,7 +24,7 @@ impl GameScene {
 impl scene::Node for GameScene {
     fn draw(_: RefMut<Self>) {
         let world = storage::get::<GameWorld>();
-        world.map.draw(None);
+        world.map.draw(None, true);
     }
 }
 

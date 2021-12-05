@@ -16,7 +16,8 @@ pub struct TilePlacementTool {
 impl TilePlacementTool {
     pub fn new() -> Self {
         let params = EditorToolParams {
-            name: "Tile Placement Tool".to_string(),
+            name: "Place Tiles".to_string(),
+            is_continuous: true,
             ..Default::default()
         };
 
@@ -30,20 +31,26 @@ impl EditorTool for TilePlacementTool {
     }
 
     fn get_action(&mut self, map: &Map, ctx: &EditorContext) -> Option<EditorAction> {
-        if let Some(layer_id) = &ctx.selected_layer {
-            let camera = scene::find_node_by_type::<EditorCamera>().unwrap();
-            let world_position = camera.to_world_space(ctx.cursor_position);
+        let cursor_world_position = scene::find_node_by_type::<EditorCamera>()
+            .unwrap()
+            .to_world_space(ctx.cursor_position);
 
-            if let Some(tileset_id) = &ctx.selected_tileset {
-                if let Some(tile_id) = ctx.selected_tile {
-                    let coords = map.to_coords(world_position);
+        if map.contains(cursor_world_position) {
+            if let Some(layer_id) = &ctx.selected_layer {
+                let camera = scene::find_node_by_type::<EditorCamera>().unwrap();
+                let world_position = camera.to_world_space(ctx.cursor_position);
 
-                    return Some(EditorAction::PlaceTile {
-                        id: tile_id,
-                        layer_id: layer_id.clone(),
-                        tileset_id: tileset_id.clone(),
-                        coords,
-                    });
+                if let Some(tileset_id) = &ctx.selected_tileset {
+                    if let Some(tile_id) = ctx.selected_tile {
+                        let coords = map.to_coords(world_position);
+
+                        return Some(EditorAction::PlaceTile {
+                            id: tile_id,
+                            layer_id: layer_id.clone(),
+                            tileset_id: tileset_id.clone(),
+                            coords,
+                        });
+                    }
                 }
             }
         }
@@ -61,46 +68,52 @@ impl EditorTool for TilePlacementTool {
     }
 
     fn draw_cursor(&mut self, map: &Map, ctx: &EditorContext) -> Option<EditorAction> {
-        if let Some(layer_id) = &ctx.selected_layer {
-            let layer = map.layers.get(layer_id).unwrap();
+        let cursor_world_position = scene::find_node_by_type::<EditorCamera>()
+            .unwrap()
+            .to_world_space(ctx.cursor_position);
 
-            if layer.kind == MapLayerKind::TileLayer {
-                if let Some(tileset_id) = &ctx.selected_tileset {
-                    if let Some(tile_id) = ctx.selected_tile {
-                        let tileset = map.tilesets.get(tileset_id).unwrap();
+        if map.contains(cursor_world_position) {
+            if let Some(layer_id) = &ctx.selected_layer {
+                let layer = map.layers.get(layer_id).unwrap();
 
-                        let cursor_world_position = scene::find_node_by_type::<EditorCamera>()
-                            .unwrap()
-                            .to_world_space(ctx.cursor_position);
+                if layer.kind == MapLayerKind::TileLayer {
+                    if let Some(tileset_id) = &ctx.selected_tileset {
+                        if let Some(tile_id) = ctx.selected_tile {
+                            let tileset = map.tilesets.get(tileset_id).unwrap();
 
-                        let coords = map.to_coords(cursor_world_position);
-                        let position = map.to_position(coords);
+                            let cursor_world_position = scene::find_node_by_type::<EditorCamera>()
+                                .unwrap()
+                                .to_world_space(ctx.cursor_position);
 
-                        let texture_coords = tileset.get_texture_coords(tile_id);
-                        let texture = {
-                            let resources = storage::get::<Resources>();
-                            let res = resources.textures.get(&tileset.texture_id).unwrap();
-                            res.texture
-                        };
+                            let coords = map.to_coords(cursor_world_position);
+                            let position = map.to_position(coords);
 
-                        let source_rect = Rect::new(
-                            texture_coords.x,
-                            texture_coords.y,
-                            map.tile_size.x,
-                            map.tile_size.y,
-                        );
+                            let texture_coords = tileset.get_texture_coords(tile_id);
+                            let texture = {
+                                let resources = storage::get::<Resources>();
+                                let res = resources.textures.get(&tileset.texture_id).unwrap();
+                                res.texture
+                            };
 
-                        draw_texture_ex(
-                            texture,
-                            position.x,
-                            position.y,
-                            color::WHITE,
-                            DrawTextureParams {
-                                dest_size: Some(map.tile_size),
-                                source: Some(source_rect),
-                                ..Default::default()
-                            },
-                        )
+                            let source_rect = Rect::new(
+                                texture_coords.x,
+                                texture_coords.y,
+                                map.tile_size.x,
+                                map.tile_size.y,
+                            );
+
+                            draw_texture_ex(
+                                texture,
+                                position.x,
+                                position.y,
+                                color::WHITE,
+                                DrawTextureParams {
+                                    dest_size: Some(map.tile_size),
+                                    source: Some(source_rect),
+                                    ..Default::default()
+                                },
+                            )
+                        }
                     }
                 }
             }
@@ -110,7 +123,6 @@ impl EditorTool for TilePlacementTool {
     }
 }
 
-/*
 #[derive(Default)]
 pub struct ObjectPlacementTool {
     params: EditorToolParams,
@@ -119,7 +131,7 @@ pub struct ObjectPlacementTool {
 impl ObjectPlacementTool {
     pub fn new() -> Self {
         let params = EditorToolParams {
-            name: "Object Placement Tool".to_string(),
+            name: "Place Objects".to_string(),
             ..Default::default()
         };
 
@@ -132,14 +144,40 @@ impl EditorTool for ObjectPlacementTool {
         &self.params
     }
 
-    fn get_action(&mut self, _map: &Map, _ctx: &EditorContext) -> Option<EditorAction> {
-        // if let Some(layer_id) = &ctx.selected_layer {
-        //let layer = map.layers.get(layer_id).unwrap();
-        //let camera = scene::find_node_by_type::<EditorCamera>().unwrap();
-        // let world_position = camera.to_world_space(ctx.cursor_position);
+    fn get_action(&mut self, map: &Map, ctx: &EditorContext) -> Option<EditorAction> {
+        let cursor_world_position = scene::find_node_by_type::<EditorCamera>()
+            .unwrap()
+            .to_world_space(ctx.cursor_position);
 
-        // TODO: Implement object layers
-        // }
+        if map.contains(cursor_world_position) {
+            if let Some(layer_id) = ctx.selected_layer.clone() {
+                let layer = map.layers.get(&layer_id).unwrap();
+
+                if layer.kind == MapLayerKind::ObjectLayer {
+                    let mut position = scene::find_node_by_type::<EditorCamera>()
+                        .unwrap()
+                        .to_world_space(ctx.cursor_position);
+
+                    let rect = Rect::new(
+                        map.world_offset.x,
+                        map.world_offset.y,
+                        map.grid_size.x as f32 * map.tile_size.x,
+                        map.grid_size.y as f32 * map.tile_size.y,
+                    );
+
+                    if ctx.should_snap_to_grid {
+                        let coords = map.to_coords(position);
+                        position = map.to_position(coords);
+                    }
+
+                    if rect.contains(position) {
+                        let action = EditorAction::OpenCreateObjectWindow { position, layer_id };
+
+                        return Some(action);
+                    }
+                }
+            }
+        }
 
         None
     }
@@ -153,4 +191,3 @@ impl EditorTool for ObjectPlacementTool {
         false
     }
 }
-*/

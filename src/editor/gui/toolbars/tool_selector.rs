@@ -73,24 +73,39 @@ impl ToolbarElement for ToolSelectorElement {
         let mut position = Vec2::ZERO;
 
         // TODO: Grey out inactive tools, in stead of removing them altogether
-        let available_tools = self
+        let mut available_tools = self
             .tools
             .iter()
             .filter_map(|id| {
                 let tool = get_tool_instance_of_id(id);
                 if tool.is_available(map, ctx) {
-                    return Some((*id, tool.get_params().clone()));
+                    return Some((Some(*id), tool.get_params().clone()));
                 }
 
                 None
             })
-            .collect::<Vec<(TypeId, EditorToolParams)>>();
+            .collect::<Vec<(Option<TypeId>, EditorToolParams)>>();
+
+        available_tools.insert(
+            0,
+            (
+                None,
+                EditorToolParams {
+                    name: "Cursor".to_string(),
+                    ..Default::default()
+                },
+            ),
+        );
 
         let resources = storage::get::<Resources>();
         for (id, params) in available_tools {
             let mut is_selected = false;
-            if let Some(selected_id) = ctx.selected_tool {
-                is_selected = id == selected_id;
+            if let Some(id) = id {
+                if let Some(selected_id) = ctx.selected_tool {
+                    is_selected = id == selected_id;
+                }
+            } else {
+                is_selected = ctx.selected_tool.is_none();
             }
 
             if is_selected {
@@ -113,6 +128,29 @@ impl ToolbarElement for ToolSelectorElement {
                 .position(position)
                 .size(size.x, size.y)
                 .ui(ui);
+
+            {
+                let label_size = ui.calc_size(&params.name);
+                if label_size.x + (ELEMENT_MARGIN * 2.0) > size.x {
+                    let words: Vec<_> = params.name.split(' ').collect();
+
+                    let x_center = position.x + size.x / 2.0;
+                    let mut y_offset = ELEMENT_MARGIN;
+
+                    for word in words {
+                        let label_size = ui.calc_size(word);
+
+                        if y_offset + label_size.y > size.y {
+                            break;
+                        }
+
+                        let position = vec2(x_center - label_size.x / 2.0, position.y + y_offset);
+                        widgets::Label::new(word).position(position).ui(ui);
+
+                        y_offset += label_size.y;
+                    }
+                }
+            }
 
             if was_clicked {
                 res = Some(EditorAction::SelectTool(id));

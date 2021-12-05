@@ -15,7 +15,7 @@ pub enum EditorAction {
     Batch(Vec<EditorAction>),
     Undo,
     Redo,
-    SelectTool(TypeId),
+    SelectTool(Option<TypeId>),
     OpenBackgroundPropertiesWindow,
     UpdateBackground {
         color: Color,
@@ -98,7 +98,8 @@ pub enum EditorAction {
     },
     CreateMap {
         name: String,
-        tile_size: UVec2,
+        description: Option<String>,
+        tile_size: Vec2,
         grid_size: UVec2,
     },
     OpenCreateMapWindow,

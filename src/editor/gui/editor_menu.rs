@@ -27,7 +27,6 @@ pub fn open_editor_menu(ctx: &EditorContext) {
                     MenuEntry {
                         index: EDITOR_MENU_RESULT_NEW,
                         title: "New".to_string(),
-                        is_disabled: true,
                         ..Default::default()
                     },
                     MenuEntry {

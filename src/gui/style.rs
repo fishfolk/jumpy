@@ -429,6 +429,9 @@ impl SkinCollection {
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
                 .text_color(TEXT_COLOR)
                 .font_size(FONT_SIZE as u16)
+                .color(NO_COLOR)
+                .color_hovered(NO_COLOR)
+                .color_clicked(NO_COLOR)
                 .build();
 
             Skin {
@@ -667,9 +670,9 @@ impl SkinCollection {
         let tool_selector = {
             let button_style = root_ui()
                 .style_builder()
-                .color(Color::from_rgba(0, 0, 0, 0))
-                .color_hovered(Color::from_rgba(0, 0, 0, 0))
-                .color_clicked(Color::from_rgba(0, 0, 0, 0))
+                .color(Color::from_rgba(58, 68, 68, 255))
+                .color_hovered(Color::from_rgba(58, 68, 102, 255))
+                .color_clicked(Color::from_rgba(58, 68, 68, 255))
                 .build();
 
             Skin {
@@ -681,11 +684,11 @@ impl SkinCollection {
         let tool_selector_selected = {
             let button_style = root_ui()
                 .style_builder()
-                .background(button_background.image.clone())
-                .background_hovered(button_background_hovered.image.clone())
-                .background_clicked(button_background_clicked.image.clone())
                 .background_margin(RectOffset::new(2.0, 2.0, 2.0, 2.0))
                 .margin(RectOffset::new(6.0, 6.0, 6.0, 6.0))
+                .color(Color::from_rgba(58, 68, 102, 255))
+                .color_hovered(Color::from_rgba(58, 68, 102, 255))
+                .color_clicked(Color::from_rgba(58, 68, 102, 255))
                 .build();
 
             Skin {

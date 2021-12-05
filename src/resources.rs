@@ -11,6 +11,7 @@ use ff_particles::EmitterConfig;
 use serde::{Deserialize, Serialize};
 
 use crate::gui::GuiResources;
+use crate::json::deserialize_file;
 use crate::{
     error::{ErrorKind, Result},
     formaterr,
@@ -18,7 +19,6 @@ use crate::{
     json::{self, deserialize_bytes},
     map::Map,
 };
-use crate::json::deserialize_file;
 
 use crate::player::PlayerCharacterParams;
 use crate::text::ToStringHelper;
@@ -182,8 +182,7 @@ impl Resources {
                 .join(Self::MUSIC_FILE)
                 .with_extension(Self::RESOURCE_FILES_EXTENSION);
 
-            let metadata: Vec<SoundMetadata> =
-                deserialize_file(&music_file_path).await?;
+            let metadata: Vec<SoundMetadata> = deserialize_file(&music_file_path).await?;
 
             for meta in metadata {
                 let file_path = assets_dir_path.join(meta.path);
@@ -201,8 +200,7 @@ impl Resources {
                 .join(Self::TEXTURES_FILE)
                 .with_extension(Self::RESOURCE_FILES_EXTENSION);
 
-            let metadata: Vec<TextureMetadata> =
-                deserialize_file(&textures_file_path).await?;
+            let metadata: Vec<TextureMetadata> = deserialize_file(&textures_file_path).await?;
 
             for meta in metadata {
                 let file_path = assets_dir_path.join(&meta.path);

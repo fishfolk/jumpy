@@ -3,8 +3,8 @@ use std::path::Path;
 
 use macroquad::prelude::*;
 
-use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
+use serde::{Deserialize, Serialize};
 
 use super::Error;
 use crate::error::Result;
@@ -105,19 +105,16 @@ where
 }
 
 pub async fn deserialize_file<T, P: AsRef<Path>>(path: P) -> Result<T>
-    where
-        T: DeserializeOwned, {
+where
+    T: DeserializeOwned,
+{
     let path = path.as_ref();
     let path_str = path.to_string_helper();
 
     let bytes = load_file(&path_str).await?;
     match serde_json::from_slice(&bytes) {
-        Err(err) => {
-            return Err(Error::new(&path_str, err).into());
-        }
-        Ok(res) => {
-            return Ok(res);
-        }
+        Err(err) => Err(Error::new(&path_str, err).into()),
+        Ok(res) => Ok(res),
     }
 }
 

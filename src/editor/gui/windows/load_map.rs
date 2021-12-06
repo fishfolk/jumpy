@@ -4,7 +4,7 @@ use macroquad::{
     ui::{hash, widgets, Ui},
 };
 
-use crate::gui::{ELEMENT_MARGIN, GuiResources, LIST_BOX_ENTRY_HEIGHT};
+use crate::gui::{GuiResources, ELEMENT_MARGIN, LIST_BOX_ENTRY_HEIGHT};
 
 use crate::map::Map;
 

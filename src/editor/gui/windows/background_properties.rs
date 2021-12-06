@@ -25,7 +25,7 @@ impl BackgroundPropertiesWindow {
     pub fn new(color: Color, layers: Vec<MapBackgroundLayer>) -> Self {
         let params = WindowParams {
             title: Some("Background Properties".to_string()),
-            size: vec2(350.0, 500.0),
+            size: vec2(360.0, 500.0),
             ..Default::default()
         };
 

@@ -4,7 +4,7 @@ use macroquad::{
     ui::{hash, widgets, Ui},
 };
 
-use crate::gui::{GuiResources, LIST_BOX_ENTRY_HEIGHT};
+use crate::gui::{ELEMENT_MARGIN, GuiResources, LIST_BOX_ENTRY_HEIGHT};
 
 use crate::map::Map;
 
@@ -50,8 +50,9 @@ impl Window for LoadMapWindow {
             ui.push_skin(&gui_resources.skins.list_box_no_bg);
         }
 
+        let size = vec2(size.x, size.y - ELEMENT_MARGIN);
         widgets::Group::new(hash!(id, "list_box"), size)
-            .position(vec2(0.0, 0.0))
+            .position(Vec2::ZERO)
             .ui(ui, |ui| {
                 let resources = storage::get::<Resources>();
 

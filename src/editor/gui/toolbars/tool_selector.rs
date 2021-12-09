@@ -92,6 +92,7 @@ impl ToolbarElement for ToolSelectorElement {
                 None,
                 EditorToolParams {
                     name: "Cursor".to_string(),
+                    icon_texture_id: "cursor_tool_icon".to_string(),
                     ..Default::default()
                 },
             ),
@@ -129,7 +130,7 @@ impl ToolbarElement for ToolSelectorElement {
                 .size(size.x, size.y)
                 .ui(ui);
 
-            {
+            /*{
                 let label_size = ui.calc_size(&params.name);
                 if label_size.x + (ELEMENT_MARGIN * 2.0) > size.x {
                     let words: Vec<_> = params.name.split(' ').collect();
@@ -150,7 +151,7 @@ impl ToolbarElement for ToolSelectorElement {
                         y_offset += label_size.y;
                     }
                 }
-            }
+            }*/
 
             if was_clicked {
                 res = Some(EditorAction::SelectTool(id));

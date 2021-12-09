@@ -17,8 +17,8 @@ impl TilePlacementTool {
     pub fn new() -> Self {
         let params = EditorToolParams {
             name: "Place Tiles".to_string(),
+            icon_texture_id: "tile_placement_tool_icon".to_string(),
             is_continuous: true,
-            ..Default::default()
         };
 
         TilePlacementTool { params }
@@ -132,6 +132,7 @@ impl ObjectPlacementTool {
     pub fn new() -> Self {
         let params = EditorToolParams {
             name: "Place Objects".to_string(),
+            icon_texture_id: "object_placement_tool_icon".to_string(),
             ..Default::default()
         };
 

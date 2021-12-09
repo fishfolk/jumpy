@@ -32,14 +32,18 @@ impl ToolbarElement for TilesetListElement {
     }
 
     fn get_buttons(&self, _map: &Map, ctx: &EditorContext) -> Vec<ButtonParams> {
+        // Properties are disabled until autotile is up and running
+
         let mut delete_action = None;
-        let mut properties_action = None;
+        //let mut properties_action = None;
 
         if let Some(tileset_id) = &ctx.selected_tileset {
             delete_action = Some(EditorAction::DeleteTileset(tileset_id.clone()));
+            /*
             properties_action = Some(EditorAction::OpenTilesetPropertiesWindow(
                 tileset_id.clone(),
             ));
+            */
         }
 
         vec![
@@ -56,7 +60,8 @@ impl ToolbarElement for TilesetListElement {
             ButtonParams {
                 label: "Edit",
                 width_override: Some(0.5),
-                action: properties_action,
+                //action: properties_action,
+                action: None,
             },
         ]
     }

@@ -8,8 +8,8 @@ use crate::{
 };
 use macroquad::{experimental::collections::storage, prelude::*};
 
-// These are all the actions available for the GUI and other sub-systems of the editor.
-// If you need to perform multiple actions in one call, use the `Batch` variant.
+/// These are all the actions available for the GUI and other sub-systems of the editor.
+/// If you need to perform multiple actions in one call, use the `Batch` variant.
 #[derive(Debug, Clone)]
 pub enum EditorAction {
     Batch(Vec<EditorAction>),
@@ -146,6 +146,7 @@ pub type Error = &'static &'static str;
 
 pub type Result = result::Result<(), Error>;
 
+/// All actions that modify map data should implement this trait
 pub trait UndoableAction {
     fn apply(&mut self, _map: &mut Map) -> Result;
 
@@ -155,15 +156,15 @@ pub trait UndoableAction {
         self.apply(map)
     }
 
-    // Implement this for actions that can be redundant (ie. no change will take place if it is applied).
-    // This is to avoid history being filled up with repeat actions if user is holding input down
-    // for a long time, for example.
-    // This should not be used to circumvent bugs and errors, however. It is meant to stop the same
-    // action from firing several times in a row, for example from holding mouse down on the map
-    // (placing multiple tiles, with the same id, to the same coords).
-    // Edge cases, like an action wanting to delete a layer that does not exist, should be handled
-    // with errors, in stead (basically, things like that shouldn't happen, as it should be prevented
-    // at a higher level
+    /// Implement this for actions that can be redundant (ie. no change will take place if it is applied).
+    /// This is to avoid history being filled up with repeat actions if user is holding input down
+    /// for a long time, for example.
+    /// This should not be used to circumvent bugs and errors, however. It is meant to stop the same
+    /// action from firing several times in a row, for example from holding mouse down on the map
+    /// (placing multiple tiles, with the same id, to the same coords).
+    /// Edge cases, like an action wanting to delete a layer that does not exist, should be handled
+    /// with errors, in stead (basically, things like that shouldn't happen, as it should be prevented
+    /// at a higher level)
     fn is_redundant(&self, _map: &Map) -> bool {
         false
     }

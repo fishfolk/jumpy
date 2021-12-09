@@ -26,6 +26,7 @@ pub struct EditorInput {
     pub save: bool,
     pub save_as: bool,
     pub load: bool,
+    pub delete: bool,
 }
 
 pub fn collect_editor_input(scheme: EditorInputScheme) -> EditorInput {
@@ -87,6 +88,8 @@ pub fn collect_editor_input(scheme: EditorInputScheme) -> EditorInput {
                 input.toggle_draw_grid = is_key_pressed(KeyCode::G);
 
                 input.toggle_disable_parallax = is_key_pressed(KeyCode::P);
+
+                input.delete = is_key_pressed(KeyCode::Delete);
             }
         }
         EditorInputScheme::Gamepad(ix) => {

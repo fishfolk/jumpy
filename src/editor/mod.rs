@@ -965,6 +965,26 @@ impl Node for Editor {
             node.apply_action(action);
         }
 
+        if node.input.delete {
+            if let Some(index) = node.selected_object.take() {
+                let layer_id = node.selected_layer.clone().unwrap();
+
+                let action = EditorAction::DeleteObject { index, layer_id };
+
+                node.apply_action(action);
+            } else if let Some(index) = node.selected_map_tile_index.take() {
+                let layer_id = node.selected_layer.clone().unwrap();
+                let coords = {
+                    let grid_size = node.get_map().grid_size;
+                    uvec2(index as u32 % grid_size.x, index as u32 / grid_size.x)
+                };
+
+                let action = EditorAction::RemoveTile { coords, layer_id };
+
+                node.apply_action(action);
+            }
+        }
+
         if node.input.context_menu {
             let mut gui = storage::get_mut::<EditorGui>();
             gui.open_context_menu(

@@ -157,8 +157,14 @@ existing levels, and also create your own.
 This chapter will contain guides on how to use all of the features the editor has to offer and even a
 high-level overview of its API for those who are interested in contributing to its development.</p>
 <p><img src="./assets/editor.png" alt="Screenshot of the Fish Fight editor. The map area and layers toolbar are visible. Default textures for platforms occupy the map area." /></p>
-<h2><a class="header" href="#keyboard-shortcuts" id="keyboard-shortcuts">Keyboard shortcuts</a></h2>
+<h2><a class="header" href="#controls" id="controls">Controls</a></h2>
+<p>Only mouse and keyboard is supported, for now. We will implement gamepad support for the editor in the future, however.</p>
 <ul>
+<li><code>Arrows or WASD</code> pan map</li>
+<li><code>Left Mouse Button</code> use selected tool</li>
+<li><code>Middle Mouse Button</code> hold to pan map</li>
+<li><code>Right Mouse Button</code> open context menu</li>
+<li><code>Del</code> delete selected object or tile</li>
 <li><code>ctrl + S</code> save</li>
 <li><code>ctrl + shift + S</code> save as</li>
 <li><code>ctrl + L</code> load</li>
@@ -166,7 +172,7 @@ high-level overview of its API for those who are interested in contributing to i
 <li><code>ctrl + shift + Z</code> redo</li>
 <li><code>G</code> toggle grid</li>
 <li><code>ctrl + G</code> toggle object snap to grid</li>
-<li><code>P</code> toggle parallax depth</li>
+<li><code>P</code> toggle background parallax effect</li>
 </ul>
 <h2><a class="header" href="#accessing-the-editor" id="accessing-the-editor">Accessing the editor</a></h2>
 <p>The editor can be accessed from the &quot;Editor&quot; tab on the main menu. Selecting this item by clicking on it, or using the right arrow key on your keyboard (or if you're using a gamepad: the &quot;right button&quot;), will present two options: &quot;Create Map&quot; and &quot;Load Map&quot;.</p>

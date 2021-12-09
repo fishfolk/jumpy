@@ -348,7 +348,12 @@ impl UndoableAction for UpdateTileAttributesAction {
     fn is_redundant(&self, map: &Map) -> bool {
         if let Some(layer) = map.layers.get(&self.layer_id) {
             if let Some(Some(tile)) = layer.tiles.get(self.index) {
-                let matching = tile.attributes.iter().zip(&self.attributes).filter(|&(a, b)| a == b).count();
+                let matching = tile
+                    .attributes
+                    .iter()
+                    .zip(&self.attributes)
+                    .filter(|&(a, b)| a == b)
+                    .count();
                 return matching == self.attributes.len();
             }
         }

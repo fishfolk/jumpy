@@ -969,10 +969,7 @@ impl Node for Editor {
             if let Some(index) = node.selected_object.take() {
                 let layer_id = node.selected_layer.clone().unwrap();
 
-                let action = EditorAction::DeleteObject {
-                    index,
-                    layer_id,
-                };
+                let action = EditorAction::DeleteObject { index, layer_id };
 
                 node.apply_action(action);
             } else if let Some(index) = node.selected_map_tile_index.take() {
@@ -982,10 +979,7 @@ impl Node for Editor {
                     uvec2(index as u32 % grid_size.x, index as u32 / grid_size.x)
                 };
 
-                let action = EditorAction::RemoveTile {
-                    coords,
-                    layer_id,
-                };
+                let action = EditorAction::RemoveTile { coords, layer_id };
 
                 node.apply_action(action);
             }

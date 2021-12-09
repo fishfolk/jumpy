@@ -180,8 +180,9 @@ dependencies = [
 
 [[package]]
 name = "fishsticks"
-version = "0.1.1"
-source = "git+https://github.com/PotatoTech/fishsticks#11a9fdce40580096f1d53532fde44574d163cef4"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b58c0572ea130de4f1734217e364d885237134ab934c4a6aec35f9b6d9a7613b"
 dependencies = [
  "cfg-if",
  "sdl2",

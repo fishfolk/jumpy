@@ -412,10 +412,10 @@ impl Menu {
             for (_, gamepad) in gamepad_context.gamepads() {
                 gamepad_up = gamepad_up
                     || gamepad.digital_inputs.activated(Button::DPadUp)
-                    || gamepad.analog_inputs.value_digital(Axis::LeftY) < 0.0;
+                    || gamepad.analog_inputs.digital_value(Axis::LeftY) < 0.0;
                 gamepad_down = gamepad_down
                     || gamepad.digital_inputs.activated(Button::DPadDown)
-                    || gamepad.analog_inputs.value_digital(Axis::LeftY) > 0.0;
+                    || gamepad.analog_inputs.digital_value(Axis::LeftY) > 0.0;
             }
 
             if self.up_grace_timer >= Self::NAVIGATION_GRACE_TIME

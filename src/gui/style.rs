@@ -67,7 +67,7 @@ pub const WINDOW_BG_COLOR: Color = Color {
     a: 1.0,
 };
 
-pub const SELECTED_OBJECT_HIGHLIGHT_COLOR: Color = Color {
+pub const SELECTION_HIGHLIGHT_COLOR: Color = Color {
     r: 0.23,
     g: 0.67,
     b: 0.41,

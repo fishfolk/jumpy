@@ -45,7 +45,7 @@ use crate::editor::gui::windows::{
     ObjectPropertiesWindow, SaveMapWindow,
 };
 use crate::editor::input::{collect_editor_input, EditorInput};
-use crate::gui::SELECTED_OBJECT_HIGHLIGHT_COLOR;
+use crate::gui::SELECTION_HIGHLIGHT_COLOR;
 use crate::map::{MapObject, MapObjectKind};
 use macroquad::{
     color,
@@ -104,8 +104,12 @@ pub struct Editor {
     selected_tool: Option<TypeId>,
     selected_layer: Option<String>,
     selected_tileset: Option<String>,
+    // Selected tile in tileset
     selected_tile: Option<u32>,
     selected_object: Option<usize>,
+
+    // Selected tile in map
+    selected_map_tile_index: Option<usize>,
 
     input_scheme: EditorInputScheme,
     previous_cursor_position: Vec2,
@@ -206,6 +210,8 @@ impl Editor {
             selected_tileset: None,
             selected_tile: None,
             selected_object: None,
+
+            selected_map_tile_index: None,
 
             input_scheme,
             previous_cursor_position: cursor_position,
@@ -761,6 +767,8 @@ impl Node for Editor {
                     }
                 } else {
                     let mut is_double_click = false;
+                    let mut is_selecting_object = false;
+                    let mut is_selecting_tile = false;
 
                     if node.double_click_timer < Self::DOUBLE_CLICK_THRESHOLD {
                         node.double_click_timer = Self::DOUBLE_CLICK_THRESHOLD;
@@ -795,8 +803,8 @@ impl Node for Editor {
                     let mut object_index = None;
                     let mut layer_id = None;
 
-                    'layers: for id in layer_ids {
-                        let layer = node.map_resource.map.layers.get(&id).unwrap();
+                    'layers: for id in &layer_ids {
+                        let layer = node.map_resource.map.layers.get(id).unwrap();
                         if layer.kind == MapLayerKind::ObjectLayer {
                             for (i, object) in layer.objects.iter().enumerate() {
                                 let size = get_object_size(object);
@@ -814,9 +822,9 @@ impl Node for Editor {
                         }
                     }
 
-                    let mut should_select = true;
-
                     if let Some(i) = object_index {
+                        let mut should_select = true;
+
                         if is_double_click {
                             if let Some(current_index) = node.selected_object {
                                 if current_index == i {
@@ -835,12 +843,59 @@ impl Node for Editor {
                         }
 
                         if should_select {
+                            is_selecting_object = true;
+
                             let layer_id = layer_id.unwrap();
 
                             let action = EditorAction::SelectObject { index: i, layer_id };
 
                             node.apply_action(action);
                         }
+                    } else {
+                        let mut tile_index = None;
+
+                        'tile_layers: for id in &layer_ids {
+                            let layer = node.get_map().layers.get(id).unwrap();
+                            if layer.kind == MapLayerKind::TileLayer {
+                                let world_offset = node.get_map().world_offset;
+                                let tile_size = node.get_map().tile_size;
+
+                                for (x, y, tile) in node.map_resource.map.get_tiles(id, None) {
+                                    if tile.is_some() {
+                                        let rect = Rect::new(world_offset.x + (x as f32 * tile_size.x), world_offset.y + (y as f32 * tile_size.y), tile_size.x, tile_size.y);
+                                        if rect.contains(cursor_world_position) {
+                                            let i = node.get_map().to_index(uvec2(x, y));
+                                            tile_index = Some(i);
+                                            layer_id = Some(id.clone());
+
+                                            break 'tile_layers;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if let Some(tile_index) = tile_index {
+                            let mut should_select = true;
+
+                            if let Some(selected_tile_index) = node.selected_map_tile_index {
+                                if selected_tile_index == tile_index && layer_id.as_ref().unwrap() == node.selected_layer.as_ref().unwrap() {
+                                    node.selected_map_tile_index = None;
+                                    should_select = false;
+                                }
+                            }
+
+                            if should_select {
+                                is_selecting_tile = true;
+                                node.selected_map_tile_index = Some(tile_index);
+                                node.selected_layer = layer_id;
+                            }
+                        }
+                    }
+
+                    if !is_selecting_tile && !is_selecting_object {
+                        node.selected_map_tile_index = None;
+                        node.selected_object = None;
                     }
                 }
             }
@@ -1193,13 +1248,30 @@ impl Node for Editor {
                                     size.x,
                                     size.y,
                                     4.0,
-                                    SELECTED_OBJECT_HIGHLIGHT_COLOR,
+                                    SELECTION_HIGHLIGHT_COLOR,
                                 );
                             }
                         }
                     }
                 }
             }
+        }
+
+        if let Some(tile_index) = node.selected_map_tile_index {
+            let grid_size = node.get_map().grid_size;
+            let tile_size = node.get_map().tile_size;
+
+            let coords = uvec2(tile_index as u32 % grid_size.x, tile_index as u32 / grid_size.x);
+            let position = node.get_map().to_position(coords);
+
+            draw_rectangle_lines(
+                position.x,
+                position.y,
+                tile_size.x,
+                tile_size.y,
+                5.0,
+                SELECTION_HIGHLIGHT_COLOR,
+            )
         }
 
         if let Some(label) = &node.info_message {

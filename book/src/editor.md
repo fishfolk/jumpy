@@ -7,8 +7,15 @@ high-level overview of its API for those who are interested in contributing to i
 
 ![Screenshot of the Fish Fight editor. The map area and layers toolbar are visible. Default textures for platforms occupy the map area.](./assets/editor.png)
 
-## Keyboard shortcuts
+## Controls
 
+Only mouse and keyboard is supported, for now. We will implement gamepad support for the editor in the future, however.
+
+- `Arrows or WASD` pan map
+- `Left Mouse Button` use selected tool
+- `Middle Mouse Button` hold to pan map
+- `Right Mouse Button` open context menu
+- `Del` delete selected object or tile
 - `ctrl + S` save
 - `ctrl + shift + S` save as
 - `ctrl + L` load
@@ -16,7 +23,7 @@ high-level overview of its API for those who are interested in contributing to i
 - `ctrl + shift + Z` redo
 - `G` toggle grid
 - `ctrl + G` toggle object snap to grid
-- `P` toggle parallax depth
+- `P` toggle background parallax effect
 
 ## Accessing the editor
 

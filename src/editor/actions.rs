@@ -49,6 +49,10 @@ pub enum EditorAction {
         index: Option<usize>,
     },
     DeleteLayer(String),
+    UpdateLayer {
+        id: String,
+        is_visible: bool,
+    },
     SelectTileset(String),
     OpenImportWindow(usize),
     Import {
@@ -401,6 +405,50 @@ impl UndoableAction for DeleteLayerAction {
             }
         } else {
             return Err(&"DeleteLayerAction (Undo): No layer stored in action. Undo was probably called on an action that was never applied");
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Debug)]
+pub struct UpdateLayerAction {
+    id: String,
+    is_visible: bool,
+    old_is_visible: Option<bool>,
+}
+
+impl UpdateLayerAction {
+    pub fn new(id: String, is_visible: bool) -> Self {
+        UpdateLayerAction {
+            id,
+            is_visible,
+            old_is_visible: None,
+        }
+    }
+}
+
+impl UndoableAction for UpdateLayerAction {
+    fn apply(&mut self, map: &mut Map) -> Result {
+        if let Some(layer) = map.layers.get_mut(&self.id) {
+            self.old_is_visible = Some(layer.is_visible);
+            layer.is_visible = self.is_visible;
+        } else {
+            return Err(&"UpdateLayerAction: The specified layer does not exist");
+        }
+
+        Ok(())
+    }
+
+    fn undo(&mut self, map: &mut Map) -> Result {
+        if let Some(layer) = map.layers.get_mut(&self.id) {
+            if let Some(old_is_visible) = self.old_is_visible.take() {
+                layer.is_visible = old_is_visible;
+            } else {
+                return Err(&"UpdateLayerAction (Undo): No `old_is_visible` on action. Undo was probably called on an action that was never applied");
+            }
+        } else {
+            return Err(&"UpdateLayerAction (Undo): The specified layer does not exist");
         }
 
         Ok(())

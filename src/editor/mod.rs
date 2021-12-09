@@ -39,7 +39,7 @@ pub use tools::{
 use history::EditorHistory;
 pub use input::EditorInputScheme;
 
-use crate::editor::actions::{ImportAction, UpdateBackgroundAction, UpdateObjectAction};
+use crate::editor::actions::{ImportAction, UpdateBackgroundAction, UpdateLayerAction, UpdateObjectAction};
 use crate::editor::gui::windows::{
     BackgroundPropertiesWindow, CreateMapWindow, ImportWindow, LoadMapWindow,
     ObjectPropertiesWindow, SaveMapWindow,
@@ -424,6 +424,13 @@ impl Editor {
                 res = self
                     .history
                     .apply(Box::new(action), &mut self.map_resource.map);
+            }
+            EditorAction::UpdateLayer {
+                id,
+                is_visible,
+            } => {
+                let action = UpdateLayerAction::new(id, is_visible);
+                res = self.history.apply(Box::new(action), &mut self.map_resource.map);
             }
             EditorAction::SelectTileset(id) => {
                 self.select_tileset(&id, None);
@@ -990,145 +997,102 @@ impl Node for Editor {
             let resources = storage::get::<Resources>();
 
             for layer in node.get_map().layers.values() {
-                if layer.kind == MapLayerKind::ObjectLayer {
-                    for (i, object) in layer.objects.iter().enumerate() {
-                        let mut label = None;
+                if layer.is_visible {
+                    if layer.kind == MapLayerKind::ObjectLayer {
+                        for (i, object) in layer.objects.iter().enumerate() {
+                            let mut label = None;
 
-                        let mut is_selected = false;
-                        if let Some(layer_id) = &node.selected_layer {
-                            if let Some(index) = node.selected_object {
-                                is_selected = *layer_id == layer.id && index == i;
-                            }
-                        }
-
-                        let mut object_position =
-                            node.map_resource.map.world_offset + object.position;
-
-                        if let Some(dragged_object) = &node.dragged_object {
-                            if layer.id == dragged_object.layer_id && dragged_object.index == i {
-                                let map = node.get_map();
-
-                                let cursor_world_position =
-                                    scene::find_node_by_type::<EditorCamera>()
-                                        .unwrap()
-                                        .to_world_space(
-                                            node.cursor_position - dragged_object.click_offset,
-                                        );
-
-                                object_position = (cursor_world_position).clamp(
-                                    map.world_offset,
-                                    map.world_offset + (map.grid_size.as_f32() * map.tile_size),
-                                );
-
-                                if node.should_snap_to_grid {
-                                    let coords = map.to_coords(object_position);
-                                    object_position = map.to_position(coords);
+                            let mut is_selected = false;
+                            if let Some(layer_id) = &node.selected_layer {
+                                if let Some(index) = node.selected_object {
+                                    is_selected = *layer_id == layer.id && index == i;
                                 }
                             }
-                        }
 
-                        match object.kind {
-                            MapObjectKind::Item => {
-                                if let Some(params) = resources.items.get(&object.id) {
-                                    if let Some(texture_res) =
-                                        resources.textures.get(&params.sprite.texture_id)
-                                    {
-                                        let position = object_position + params.sprite.offset;
+                            let mut object_position =
+                                node.map_resource.map.world_offset + object.position;
 
-                                        let frame_size = texture_res
-                                            .meta
-                                            .sprite_size
-                                            .map(|v| v.as_f32())
-                                            .unwrap_or_else(|| {
-                                                vec2(
-                                                    texture_res.texture.width(),
-                                                    texture_res.texture.height(),
-                                                )
-                                            });
+                            if let Some(dragged_object) = &node.dragged_object {
+                                if layer.id == dragged_object.layer_id && dragged_object.index == i {
+                                    let map = node.get_map();
 
-                                        let source_rect = {
-                                            let grid_size = vec2(
-                                                texture_res.texture.width() / frame_size.x,
-                                                texture_res.texture.height() / frame_size.y,
-                                            )
-                                            .as_u32();
+                                    let cursor_world_position =
+                                        scene::find_node_by_type::<EditorCamera>()
+                                            .unwrap()
+                                            .to_world_space(
+                                                node.cursor_position - dragged_object.click_offset,
+                                            );
 
-                                            let i = params.sprite.index as u32;
-                                            let coords = uvec2(i % grid_size.y, i / grid_size.y);
-
-                                            Rect::new(
-                                                coords.x as f32 * frame_size.x,
-                                                coords.y as f32 * frame_size.y,
-                                                frame_size.x,
-                                                frame_size.y,
-                                            )
-                                        };
-
-                                        draw_texture_ex(
-                                            texture_res.texture,
-                                            position.x,
-                                            position.y,
-                                            color::WHITE,
-                                            DrawTextureParams {
-                                                dest_size: Some(frame_size),
-                                                source: Some(source_rect),
-                                                ..Default::default()
-                                            },
-                                        );
-                                    } else {
-                                        label = Some("INVALID TEXTURE ID".to_string());
-                                    }
-                                } else {
-                                    label = Some("INVALID OBJECT ID".to_string());
-                                }
-                            }
-                            MapObjectKind::Decoration => {
-                                let texture_res =
-                                    resources.textures.get("default_decorations").unwrap();
-
-                                let frame_size = texture_res
-                                    .meta
-                                    .sprite_size
-                                    .map(|v| v.as_f32())
-                                    .unwrap_or_else(|| {
-                                        vec2(
-                                            texture_res.texture.width(),
-                                            texture_res.texture.height(),
-                                        )
-                                    });
-
-                                let mut source_rect = None;
-                                if &object.id == "pot" {
-                                    source_rect = Some(Rect::new(
-                                        0.0,
-                                        frame_size.y,
-                                        frame_size.x,
-                                        frame_size.y,
-                                    ));
-                                } else if &object.id == "seaweed" {
-                                    source_rect =
-                                        Some(Rect::new(0.0, 0.0, frame_size.x, frame_size.y));
-                                }
-
-                                if source_rect.is_some() {
-                                    draw_texture_ex(
-                                        texture_res.texture,
-                                        object_position.x,
-                                        object_position.y,
-                                        color::WHITE,
-                                        DrawTextureParams {
-                                            dest_size: Some(frame_size),
-                                            source: source_rect,
-                                            ..Default::default()
-                                        },
+                                    object_position = (cursor_world_position).clamp(
+                                        map.world_offset,
+                                        map.world_offset + (map.grid_size.as_f32() * map.tile_size),
                                     );
-                                } else {
-                                    label = Some("INVALID OBJECT ID".to_string());
+
+                                    if node.should_snap_to_grid {
+                                        let coords = map.to_coords(object_position);
+                                        object_position = map.to_position(coords);
+                                    }
                                 }
                             }
-                            MapObjectKind::Environment => {
-                                if &object.id == "sproinger" {
-                                    let texture_res = resources.textures.get("sproinger").unwrap();
+
+                            match object.kind {
+                                MapObjectKind::Item => {
+                                    if let Some(params) = resources.items.get(&object.id) {
+                                        if let Some(texture_res) =
+                                        resources.textures.get(&params.sprite.texture_id)
+                                        {
+                                            let position = object_position + params.sprite.offset;
+
+                                            let frame_size = texture_res
+                                                .meta
+                                                .sprite_size
+                                                .map(|v| v.as_f32())
+                                                .unwrap_or_else(|| {
+                                                    vec2(
+                                                        texture_res.texture.width(),
+                                                        texture_res.texture.height(),
+                                                    )
+                                                });
+
+                                            let source_rect = {
+                                                let grid_size = vec2(
+                                                    texture_res.texture.width() / frame_size.x,
+                                                    texture_res.texture.height() / frame_size.y,
+                                                )
+                                                    .as_u32();
+
+                                                let i = params.sprite.index as u32;
+                                                let coords = uvec2(i % grid_size.y, i / grid_size.y);
+
+                                                Rect::new(
+                                                    coords.x as f32 * frame_size.x,
+                                                    coords.y as f32 * frame_size.y,
+                                                    frame_size.x,
+                                                    frame_size.y,
+                                                )
+                                            };
+
+                                            draw_texture_ex(
+                                                texture_res.texture,
+                                                position.x,
+                                                position.y,
+                                                color::WHITE,
+                                                DrawTextureParams {
+                                                    dest_size: Some(frame_size),
+                                                    source: Some(source_rect),
+                                                    ..Default::default()
+                                                },
+                                            );
+                                        } else {
+                                            label = Some("INVALID TEXTURE ID".to_string());
+                                        }
+                                    } else {
+                                        label = Some("INVALID OBJECT ID".to_string());
+                                    }
+                                }
+                                MapObjectKind::Decoration => {
+                                    let texture_res =
+                                        resources.textures.get("default_decorations").unwrap();
 
                                     let frame_size = texture_res
                                         .meta
@@ -1141,52 +1105,97 @@ impl Node for Editor {
                                             )
                                         });
 
-                                    let source_rect =
-                                        Rect::new(0.0, 0.0, frame_size.x, frame_size.y);
+                                    let mut source_rect = None;
+                                    if &object.id == "pot" {
+                                        source_rect = Some(Rect::new(
+                                            0.0,
+                                            frame_size.y,
+                                            frame_size.x,
+                                            frame_size.y,
+                                        ));
+                                    } else if &object.id == "seaweed" {
+                                        source_rect =
+                                            Some(Rect::new(0.0, 0.0, frame_size.x, frame_size.y));
+                                    }
 
-                                    draw_texture_ex(
-                                        texture_res.texture,
-                                        object_position.x,
-                                        object_position.y,
-                                        color::WHITE,
-                                        DrawTextureParams {
-                                            dest_size: Some(frame_size),
-                                            source: Some(source_rect),
-                                            ..Default::default()
-                                        },
-                                    );
-                                } else {
-                                    label = Some("INVALID OBJECT ID".to_string());
+                                    if source_rect.is_some() {
+                                        draw_texture_ex(
+                                            texture_res.texture,
+                                            object_position.x,
+                                            object_position.y,
+                                            color::WHITE,
+                                            DrawTextureParams {
+                                                dest_size: Some(frame_size),
+                                                source: source_rect,
+                                                ..Default::default()
+                                            },
+                                        );
+                                    } else {
+                                        label = Some("INVALID OBJECT ID".to_string());
+                                    }
+                                }
+                                MapObjectKind::Environment => {
+                                    if &object.id == "sproinger" {
+                                        let texture_res = resources.textures.get("sproinger").unwrap();
+
+                                        let frame_size = texture_res
+                                            .meta
+                                            .sprite_size
+                                            .map(|v| v.as_f32())
+                                            .unwrap_or_else(|| {
+                                                vec2(
+                                                    texture_res.texture.width(),
+                                                    texture_res.texture.height(),
+                                                )
+                                            });
+
+                                        let source_rect =
+                                            Rect::new(0.0, 0.0, frame_size.x, frame_size.y);
+
+                                        draw_texture_ex(
+                                            texture_res.texture,
+                                            object_position.x,
+                                            object_position.y,
+                                            color::WHITE,
+                                            DrawTextureParams {
+                                                dest_size: Some(frame_size),
+                                                source: Some(source_rect),
+                                                ..Default::default()
+                                            },
+                                        );
+                                    } else {
+                                        label = Some("INVALID OBJECT ID".to_string());
+                                    }
+                                }
+                                MapObjectKind::SpawnPoint => {
+                                    label = Some("Spawn Point".to_string());
                                 }
                             }
-                            MapObjectKind::SpawnPoint => {
-                                label = Some("Spawn Point".to_string());
+
+                            let size = get_object_size(object);
+
+                            if let Some(label) = &label {
+                                let params = TextParams::default();
+
+                                draw_text_ex(
+                                    label,
+                                    object_position.x,
+                                    object_position.y + (size.y / 2.0)
+                                        - Self::OBJECT_SELECTION_RECT_PADDING,
+                                    params,
+                                );
                             }
-                        }
 
-                        let size = get_object_size(object);
-
-                        if let Some(label) = &label {
-                            let params = TextParams::default();
-
-                            draw_text_ex(
-                                label,
-                                object_position.x,
-                                object_position.y + (size.y / 2.0)
-                                    - Self::OBJECT_SELECTION_RECT_PADDING,
-                                params,
-                            );
-                        }
-
-                        if is_selected {
-                            draw_rectangle_lines(
-                                object_position.x - Self::OBJECT_SELECTION_RECT_PADDING,
-                                object_position.y - Self::OBJECT_SELECTION_RECT_PADDING,
-                                size.x,
-                                size.y,
-                                4.0,
-                                SELECTED_OBJECT_HIGHLIGHT_COLOR,
-                            );
+                            if is_selected {
+                                draw_rectangle_lines(
+                                    object_position.x - Self::OBJECT_SELECTION_RECT_PADDING,
+                                    object_position.y - Self::OBJECT_SELECTION_RECT_PADDING,
+                                    size.x,
+                                    size.y,
+                                    4.0,
+                                    SELECTED_OBJECT_HIGHLIGHT_COLOR,
+                                );
+                            }
                         }
                     }
                 }

@@ -40,8 +40,24 @@
     }
   },
   {
+    "id": "spawn_point_icon",
+    "path": "textures/ui/editor_icons/Pointer.png",
+    "sprite_size": {
+      "x": 38,
+      "y": 49
+    }
+  },
+  {
+    "id": "spawn_point_tool_icon",
+    "path": "textures/ui/editor_icons/Pointer and Map.png",
+    "sprite_size": {
+      "x": 64,
+      "y": 64
+    }
+  },
+  {
     "id": "visibility_icon",
-    "path": "textures/ui/visibility.png",
+    "path": "textures/ui/editor_icons/visibility.png",
     "sprite_size": {
       "x": 512,
       "y": 512
@@ -49,7 +65,7 @@
   },
   {
     "id": "visibility_off_icon",
-    "path": "textures/ui/visibility_off.png",
+    "path": "textures/ui/editor_icons/visibility_off.png",
     "sprite_size": {
       "x": 512,
       "y": 512

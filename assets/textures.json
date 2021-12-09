@@ -1,7 +1,7 @@
 [
   {
     "id": "default_tool_icon",
-    "path": "textures/editor_icons/no_icon.png",
+    "path": "textures/ui/editor_icons/no_icon.png",
     "sprite_size": {
       "x": 0,
       "y": 0
@@ -9,7 +9,7 @@
   },
   {
     "id": "cursor_tool_icon",
-    "path": "textures/editor_icons/Cursor.png",
+    "path": "textures/ui/editor_icons/Cursor.png",
     "sprite_size": {
       "x": 64,
       "y": 64
@@ -17,7 +17,7 @@
   },
   {
     "id": "eraser_tool_icon",
-    "path": "textures/editor_icons/Eraser.png",
+    "path": "textures/ui/editor_icons/Eraser.png",
     "sprite_size": {
       "x": 64,
       "y": 64
@@ -25,7 +25,7 @@
   },
   {
     "id": "object_placement_tool_icon",
-    "path": "textures/editor_icons/Object.png",
+    "path": "textures/ui/editor_icons/Object.png",
     "sprite_size": {
       "x": 64,
       "y": 64
@@ -33,10 +33,26 @@
   },
   {
     "id": "tile_placement_tool_icon",
-    "path": "textures/editor_icons/Tile.png",
+    "path": "textures/ui/editor_icons/Tile.png",
     "sprite_size": {
       "x": 64,
       "y": 64
+    }
+  },
+  {
+    "id": "visibility_icon",
+    "path": "textures/ui/visibility.png",
+    "sprite_size": {
+      "x": 512,
+      "y": 512
+    }
+  },
+  {
+    "id": "visibility_off_icon",
+    "path": "textures/ui/visibility_off.png",
+    "sprite_size": {
+      "x": 512,
+      "y": 512
     }
   },
   {

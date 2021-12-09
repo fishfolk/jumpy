@@ -16,8 +16,8 @@ impl EraserTool {
     pub fn new() -> Self {
         let params = EditorToolParams {
             name: "Erase Tiles".to_string(),
+            icon_texture_id: "eraser_tool_icon".to_string(),
             is_continuous: true,
-            ..Default::default()
         };
 
         EraserTool { params }

@@ -1,18 +1,22 @@
 use macroquad::{
     experimental::collections::storage,
     prelude::*,
-    ui::{widgets, Ui},
+    ui::{hash, widgets, Ui},
 };
 
+use crate::editor::gui::combobox::ComboBoxVec;
+use crate::editor::gui::{ComboBoxBuilder, ComboBoxValue};
 use crate::{gui::GuiResources, Resources};
 
 use super::{ButtonParams, EditorAction, EditorContext, Map, Window, WindowParams};
 use crate::map::MapTileset;
+use crate::resources::TextureKind;
 
 pub struct TilesetPropertiesWindow {
     params: WindowParams,
     tileset_id: String,
     autotile_mask: Vec<bool>,
+    texture: ComboBoxVec,
     has_data: bool,
 }
 
@@ -24,10 +28,28 @@ impl TilesetPropertiesWindow {
             ..Default::default()
         };
 
+        let resources = storage::get::<Resources>();
+        let texture_ids = resources
+            .textures
+            .iter()
+            .filter_map(|(k, v)| {
+                if let Some(kind) = v.meta.kind {
+                    if kind == TextureKind::Tileset {
+                        return Some(k.as_str());
+                    }
+                }
+
+                None
+            })
+            .collect::<Vec<_>>();
+
+        let texture = ComboBoxVec::new(0, &texture_ids);
+
         TilesetPropertiesWindow {
             params,
             tileset_id: tileset_id.to_string(),
             autotile_mask: Vec::new(),
+            texture,
             has_data: false,
         }
     }
@@ -36,6 +58,8 @@ impl TilesetPropertiesWindow {
         if let Some(tileset) = map.tilesets.get(&self.tileset_id) {
             let subgrid_size = tileset.grid_size * tileset.tile_subdivisions;
             let subtile_cnt = (subgrid_size.x * subgrid_size.y) as usize;
+
+            self.texture.set_value(&tileset.texture_id);
 
             self.autotile_mask = Vec::with_capacity(subtile_cnt);
             for i in 0..subtile_cnt {
@@ -50,6 +74,7 @@ impl TilesetPropertiesWindow {
         }
     }
 
+    #[allow(dead_code)]
     fn draw_autotile_settings(
         &mut self,
         ui: &mut Ui,
@@ -138,16 +163,19 @@ impl Window for TilesetPropertiesWindow {
     fn draw(
         &mut self,
         ui: &mut Ui,
-        size: Vec2,
+        _size: Vec2,
         map: &Map,
         _ctx: &EditorContext,
     ) -> Option<EditorAction> {
-        if let Some(tileset) = map.tilesets.get(&self.tileset_id) {
+        if let Some(_tileset) = map.tilesets.get(&self.tileset_id) {
+            let id = hash!("tileset_properties_window");
+
             if !self.has_data {
                 self.read_from_tileset(map);
             }
 
             if self.has_data {
+                /*
                 {
                     let size = size;
                     let position = Vec2::ZERO;
@@ -156,6 +184,16 @@ impl Window for TilesetPropertiesWindow {
                         return Some(action);
                     }
                 }
+                */
+
+                widgets::Label::new(&self.tileset_id).ui(ui);
+
+                ui.separator();
+
+                ComboBoxBuilder::new(hash!(id, "texture_input"))
+                    .with_ratio(0.8)
+                    .with_label("Texture")
+                    .build(ui, &mut self.texture);
             }
         }
 
@@ -165,12 +203,13 @@ impl Window for TilesetPropertiesWindow {
     fn get_buttons(&self, _map: &Map, _ctx: &EditorContext) -> Vec<ButtonParams> {
         let mut res = Vec::new();
 
-        let id = self.tileset_id.clone();
         let autotile_mask = self.autotile_mask.clone();
 
-        let action = self
-            .get_close_action()
-            .then(EditorAction::SetTilesetAutotileMask { id, autotile_mask });
+        let action = self.get_close_action().then(EditorAction::UpdateTileset {
+            id: self.tileset_id.clone(),
+            texture_id: self.texture.get_value(),
+            autotile_mask,
+        });
 
         res.push(ButtonParams {
             label: "Save",

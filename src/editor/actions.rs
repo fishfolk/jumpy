@@ -61,8 +61,9 @@ pub enum EditorAction {
         texture_id: String,
     },
     DeleteTileset(String),
-    SetTilesetAutotileMask {
+    UpdateTileset {
         id: String,
+        texture_id: String,
         autotile_mask: Vec<bool>,
     },
     SelectObject {
@@ -578,33 +579,40 @@ impl UndoableAction for DeleteTilesetAction {
 }
 
 #[derive(Debug)]
-pub struct SetTilesetAutotileMaskAction {
+pub struct UpdateTilesetAction {
     id: String,
+    texture_id: String,
+    old_texture_id: Option<String>,
     autotile_mask: Vec<bool>,
     old_autotile_mask: Option<Vec<bool>>,
 }
 
-impl SetTilesetAutotileMaskAction {
-    pub fn new(id: String, autotile_mask: Vec<bool>) -> Self {
-        SetTilesetAutotileMaskAction {
+impl UpdateTilesetAction {
+    pub fn new(id: String, texture_id: String, autotile_mask: Vec<bool>) -> Self {
+        UpdateTilesetAction {
             id,
+            texture_id,
+            old_texture_id: None,
             autotile_mask,
             old_autotile_mask: None,
         }
     }
 }
 
-impl UndoableAction for SetTilesetAutotileMaskAction {
+impl UndoableAction for UpdateTilesetAction {
     fn apply(&mut self, map: &mut Map) -> Result {
         if let Some(tileset) = map.tilesets.get_mut(&self.id) {
+            self.old_texture_id = Some(tileset.texture_id.clone());
+            tileset.texture_id = self.texture_id.clone();
+
             if self.autotile_mask.len() != tileset.autotile_mask.len() {
-                return Err(&"UpdateTilesetAutotileMaskAction: There is a size mismatch between the actions autotile mask vector and the one on the tileset");
+                return Err(&"UpdateTilesetAction: There is a size mismatch between the actions autotile mask vector and the one on the tileset");
             }
 
             self.old_autotile_mask = Some(tileset.autotile_mask.clone());
             tileset.autotile_mask = self.autotile_mask.clone();
         } else {
-            return Err(&"UpdateTilesetAutotileMaskAction: The specified tileset does not exist");
+            return Err(&"UpdateTilesetAction: The specified tileset does not exist");
         }
 
         Ok(())
@@ -612,20 +620,24 @@ impl UndoableAction for SetTilesetAutotileMaskAction {
 
     fn undo(&mut self, map: &mut Map) -> Result {
         if let Some(tileset) = map.tilesets.get_mut(&self.id) {
+            if let Some(old_texture_id) = &self.old_texture_id {
+                tileset.texture_id = old_texture_id.clone();
+            } else {
+                return Err(&"UpdateTilesetAction (Undo): No old texture id stored in action. Undo was probably called on an action that was never applied");
+            }
+
             if let Some(old_autotile_mask) = &self.old_autotile_mask {
                 if old_autotile_mask.len() != tileset.autotile_mask.len() {
-                    return Err(&"UpdateTilesetAutotileMaskAction (Undo): There is a size mismatch between the actions autotile mask vector and the one on the tileset");
+                    return Err(&"UpdateTilesetAction (Undo): There is a size mismatch between the actions autotile mask vector and the one on the tileset");
                 }
 
                 tileset.autotile_mask = old_autotile_mask.clone();
                 self.old_autotile_mask = None;
             } else {
-                return Err(&"UpdateTilesetAutotileMaskAction (Undo): No old autotile mask stored in action. Undo was probably called on an action that was never applied");
+                return Err(&"UpdateTilesetAction (Undo): No old autotile mask stored in action. Undo was probably called on an action that was never applied");
             }
         } else {
-            return Err(
-                &"UpdateTilesetAutotileMaskAction (Undo): The specified tileset does not exist",
-            );
+            return Err(&"UpdateTilesetAction (Undo): The specified tileset does not exist");
         }
 
         Ok(())

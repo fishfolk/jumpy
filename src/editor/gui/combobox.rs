@@ -29,6 +29,14 @@ impl ComboBoxVec {
 
         ComboBoxVec { index, options }
     }
+
+    pub fn set_value(&mut self, value: &str) {
+        for (i, v) in self.options.iter().enumerate() {
+            if *v == *value {
+                self.index = i;
+            }
+        }
+    }
 }
 
 impl ComboBoxValue for ComboBoxVec {

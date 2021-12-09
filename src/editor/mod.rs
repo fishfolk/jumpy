@@ -23,7 +23,7 @@ mod actions;
 use actions::{
     CreateLayerAction, CreateObjectAction, CreateTilesetAction, DeleteLayerAction,
     DeleteObjectAction, DeleteTilesetAction, EditorAction, PlaceTileAction, RemoveTileAction,
-    Result, SetLayerDrawOrderIndexAction, SetTilesetAutotileMaskAction, UndoableAction,
+    Result, SetLayerDrawOrderIndexAction, UndoableAction, UpdateTilesetAction,
 };
 
 mod input;
@@ -440,8 +440,12 @@ impl Editor {
                     .history
                     .apply(Box::new(action), &mut self.map_resource.map);
             }
-            EditorAction::SetTilesetAutotileMask { id, autotile_mask } => {
-                let action = SetTilesetAutotileMaskAction::new(id, autotile_mask);
+            EditorAction::UpdateTileset {
+                id,
+                texture_id,
+                autotile_mask,
+            } => {
+                let action = UpdateTilesetAction::new(id, texture_id, autotile_mask);
                 res = self
                     .history
                     .apply(Box::new(action), &mut self.map_resource.map);

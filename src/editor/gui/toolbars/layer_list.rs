@@ -88,22 +88,19 @@ impl ToolbarElement for LayerListElement {
 
             {
                 let btn_size = vec2(50.0, entry_size.y);
-                let btn_position = vec2(position.x + entry_size.x - btn_size.x - ELEMENT_MARGIN, position.y);
+                let btn_position = vec2(
+                    position.x + entry_size.x - btn_size.x - ELEMENT_MARGIN,
+                    position.y,
+                );
 
-                let label = if layer.is_visible {
-                    "[hide]"
-                } else {
-                    "[show]"
-                };
+                let label = if layer.is_visible { "[hide]" } else { "[show]" };
 
                 let visibility_btn = widgets::Button::new("")
                     .size(btn_size)
                     .position(btn_position)
                     .ui(ui);
 
-                widgets::Label::new(label)
-                    .position(btn_position)
-                    .ui(ui);
+                widgets::Label::new(label).position(btn_position).ui(ui);
 
                 if visibility_btn {
                     let action = EditorAction::UpdateLayer {

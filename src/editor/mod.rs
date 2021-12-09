@@ -39,10 +39,13 @@ pub use tools::{
 use history::EditorHistory;
 pub use input::EditorInputScheme;
 
-use crate::editor::actions::{ImportAction, UpdateBackgroundAction, UpdateLayerAction, UpdateObjectAction};
+use crate::editor::actions::{
+    ImportAction, UpdateBackgroundAction, UpdateLayerAction, UpdateObjectAction,
+    UpdateTileAttributesAction,
+};
 use crate::editor::gui::windows::{
     BackgroundPropertiesWindow, CreateMapWindow, ImportWindow, LoadMapWindow,
-    ObjectPropertiesWindow, SaveMapWindow,
+    ObjectPropertiesWindow, SaveMapWindow, TilePropertiesWindow,
 };
 use crate::editor::input::{collect_editor_input, EditorInput};
 use crate::gui::SELECTION_HIGHLIGHT_COLOR;
@@ -396,12 +399,26 @@ impl Editor {
                 let mut gui = storage::get_mut::<EditorGui>();
                 gui.add_window(ObjectPropertiesWindow::new(layer_id, index))
             }
+            EditorAction::OpenTilePropertiesWindow { layer_id, index } => {
+                let mut gui = storage::get_mut::<EditorGui>();
+                gui.add_window(TilePropertiesWindow::new(layer_id, index))
+            }
             EditorAction::CloseWindow(id) => {
                 let mut gui = storage::get_mut::<EditorGui>();
                 gui.remove_window_id(id);
             }
             EditorAction::SelectTile { id, tileset_id } => {
                 self.select_tileset(&tileset_id, Some(id));
+            }
+            EditorAction::UpdateTileAttributes {
+                index,
+                layer_id,
+                attributes,
+            } => {
+                let action = UpdateTileAttributesAction::new(index, layer_id, attributes);
+                res = self
+                    .history
+                    .apply(Box::new(action), &mut self.map_resource.map);
             }
             EditorAction::SelectLayer(id) => {
                 if self.get_map().layers.contains_key(&id) {
@@ -431,12 +448,11 @@ impl Editor {
                     .history
                     .apply(Box::new(action), &mut self.map_resource.map);
             }
-            EditorAction::UpdateLayer {
-                id,
-                is_visible,
-            } => {
+            EditorAction::UpdateLayer { id, is_visible } => {
                 let action = UpdateLayerAction::new(id, is_visible);
-                res = self.history.apply(Box::new(action), &mut self.map_resource.map);
+                res = self
+                    .history
+                    .apply(Box::new(action), &mut self.map_resource.map);
             }
             EditorAction::SelectTileset(id) => {
                 self.select_tileset(&id, None);
@@ -825,12 +841,12 @@ impl Node for Editor {
                     if let Some(i) = object_index {
                         let mut should_select = true;
 
-                        if is_double_click {
-                            if let Some(current_index) = node.selected_object {
-                                if current_index == i {
-                                    let layer_id = layer_id.clone().unwrap();
+                        if let Some(current_index) = node.selected_object {
+                            if current_index == i {
+                                should_select = false;
 
-                                    should_select = false;
+                                if is_double_click {
+                                    let layer_id = layer_id.clone().unwrap();
 
                                     let action = EditorAction::OpenObjectPropertiesWindow {
                                         layer_id,
@@ -838,6 +854,8 @@ impl Node for Editor {
                                     };
 
                                     node.apply_action(action);
+                                } else {
+                                    node.selected_object = None;
                                 }
                             }
                         }
@@ -862,7 +880,12 @@ impl Node for Editor {
 
                                 for (x, y, tile) in node.map_resource.map.get_tiles(id, None) {
                                     if tile.is_some() {
-                                        let rect = Rect::new(world_offset.x + (x as f32 * tile_size.x), world_offset.y + (y as f32 * tile_size.y), tile_size.x, tile_size.y);
+                                        let rect = Rect::new(
+                                            world_offset.x + (x as f32 * tile_size.x),
+                                            world_offset.y + (y as f32 * tile_size.y),
+                                            tile_size.x,
+                                            tile_size.y,
+                                        );
                                         if rect.contains(cursor_world_position) {
                                             let i = node.get_map().to_index(uvec2(x, y));
                                             tile_index = Some(i);
@@ -879,9 +902,24 @@ impl Node for Editor {
                             let mut should_select = true;
 
                             if let Some(selected_tile_index) = node.selected_map_tile_index {
-                                if selected_tile_index == tile_index && layer_id.as_ref().unwrap() == node.selected_layer.as_ref().unwrap() {
-                                    node.selected_map_tile_index = None;
+                                if selected_tile_index == tile_index
+                                    && layer_id.as_ref().unwrap()
+                                        == node.selected_layer.as_ref().unwrap()
+                                {
                                     should_select = false;
+
+                                    if is_double_click {
+                                        let layer_id = layer_id.clone().unwrap();
+
+                                        let action = EditorAction::OpenTilePropertiesWindow {
+                                            layer_id,
+                                            index: tile_index,
+                                        };
+
+                                        node.apply_action(action);
+                                    } else {
+                                        node.selected_map_tile_index = None;
+                                    }
                                 }
                             }
 
@@ -1052,146 +1090,50 @@ impl Node for Editor {
             let resources = storage::get::<Resources>();
 
             for layer in node.get_map().layers.values() {
-                if layer.is_visible {
-                    if layer.kind == MapLayerKind::ObjectLayer {
-                        for (i, object) in layer.objects.iter().enumerate() {
-                            let mut label = None;
+                if layer.is_visible && layer.kind == MapLayerKind::ObjectLayer {
+                    for (i, object) in layer.objects.iter().enumerate() {
+                        let mut label = None;
 
-                            let mut is_selected = false;
-                            if let Some(layer_id) = &node.selected_layer {
-                                if let Some(index) = node.selected_object {
-                                    is_selected = *layer_id == layer.id && index == i;
-                                }
+                        let mut is_selected = false;
+                        if let Some(layer_id) = &node.selected_layer {
+                            if let Some(index) = node.selected_object {
+                                is_selected = *layer_id == layer.id && index == i;
                             }
+                        }
 
-                            let mut object_position =
-                                node.map_resource.map.world_offset + object.position;
+                        let mut object_position =
+                            node.map_resource.map.world_offset + object.position;
 
-                            if let Some(dragged_object) = &node.dragged_object {
-                                if layer.id == dragged_object.layer_id && dragged_object.index == i {
-                                    let map = node.get_map();
+                        if let Some(dragged_object) = &node.dragged_object {
+                            if layer.id == dragged_object.layer_id && dragged_object.index == i {
+                                let map = node.get_map();
 
-                                    let cursor_world_position =
-                                        scene::find_node_by_type::<EditorCamera>()
-                                            .unwrap()
-                                            .to_world_space(
-                                                node.cursor_position - dragged_object.click_offset,
-                                            );
-
-                                    object_position = (cursor_world_position).clamp(
-                                        map.world_offset,
-                                        map.world_offset + (map.grid_size.as_f32() * map.tile_size),
-                                    );
-
-                                    if node.should_snap_to_grid {
-                                        let coords = map.to_coords(object_position);
-                                        object_position = map.to_position(coords);
-                                    }
-                                }
-                            }
-
-                            match object.kind {
-                                MapObjectKind::Item => {
-                                    if let Some(params) = resources.items.get(&object.id) {
-                                        if let Some(texture_res) =
-                                        resources.textures.get(&params.sprite.texture_id)
-                                        {
-                                            let position = object_position + params.sprite.offset;
-
-                                            let frame_size = texture_res
-                                                .meta
-                                                .sprite_size
-                                                .map(|v| v.as_f32())
-                                                .unwrap_or_else(|| {
-                                                    vec2(
-                                                        texture_res.texture.width(),
-                                                        texture_res.texture.height(),
-                                                    )
-                                                });
-
-                                            let source_rect = {
-                                                let grid_size = vec2(
-                                                    texture_res.texture.width() / frame_size.x,
-                                                    texture_res.texture.height() / frame_size.y,
-                                                )
-                                                    .as_u32();
-
-                                                let i = params.sprite.index as u32;
-                                                let coords = uvec2(i % grid_size.y, i / grid_size.y);
-
-                                                Rect::new(
-                                                    coords.x as f32 * frame_size.x,
-                                                    coords.y as f32 * frame_size.y,
-                                                    frame_size.x,
-                                                    frame_size.y,
-                                                )
-                                            };
-
-                                            draw_texture_ex(
-                                                texture_res.texture,
-                                                position.x,
-                                                position.y,
-                                                color::WHITE,
-                                                DrawTextureParams {
-                                                    dest_size: Some(frame_size),
-                                                    source: Some(source_rect),
-                                                    ..Default::default()
-                                                },
-                                            );
-                                        } else {
-                                            label = Some("INVALID TEXTURE ID".to_string());
-                                        }
-                                    } else {
-                                        label = Some("INVALID OBJECT ID".to_string());
-                                    }
-                                }
-                                MapObjectKind::Decoration => {
-                                    let texture_res =
-                                        resources.textures.get("default_decorations").unwrap();
-
-                                    let frame_size = texture_res
-                                        .meta
-                                        .sprite_size
-                                        .map(|v| v.as_f32())
-                                        .unwrap_or_else(|| {
-                                            vec2(
-                                                texture_res.texture.width(),
-                                                texture_res.texture.height(),
-                                            )
-                                        });
-
-                                    let mut source_rect = None;
-                                    if &object.id == "pot" {
-                                        source_rect = Some(Rect::new(
-                                            0.0,
-                                            frame_size.y,
-                                            frame_size.x,
-                                            frame_size.y,
-                                        ));
-                                    } else if &object.id == "seaweed" {
-                                        source_rect =
-                                            Some(Rect::new(0.0, 0.0, frame_size.x, frame_size.y));
-                                    }
-
-                                    if source_rect.is_some() {
-                                        draw_texture_ex(
-                                            texture_res.texture,
-                                            object_position.x,
-                                            object_position.y,
-                                            color::WHITE,
-                                            DrawTextureParams {
-                                                dest_size: Some(frame_size),
-                                                source: source_rect,
-                                                ..Default::default()
-                                            },
+                                let cursor_world_position =
+                                    scene::find_node_by_type::<EditorCamera>()
+                                        .unwrap()
+                                        .to_world_space(
+                                            node.cursor_position - dragged_object.click_offset,
                                         );
-                                    } else {
-                                        label = Some("INVALID OBJECT ID".to_string());
-                                    }
+
+                                object_position = (cursor_world_position).clamp(
+                                    map.world_offset,
+                                    map.world_offset + (map.grid_size.as_f32() * map.tile_size),
+                                );
+
+                                if node.should_snap_to_grid {
+                                    let coords = map.to_coords(object_position);
+                                    object_position = map.to_position(coords);
                                 }
-                                MapObjectKind::Environment => {
-                                    if &object.id == "sproinger" {
-                                        let texture_res = resources.textures.get("sproinger").unwrap();
+                            }
+                        }
+
+                        match object.kind {
+                            MapObjectKind::Item => {
+                                if let Some(params) = resources.items.get(&object.id) {
+                                    if let Some(texture_res) =
+                                        resources.textures.get(&params.sprite.texture_id)
+                                    {
+                                        let position = object_position + params.sprite.offset;
 
                                         let frame_size = texture_res
                                             .meta
@@ -1204,13 +1146,28 @@ impl Node for Editor {
                                                 )
                                             });
 
-                                        let source_rect =
-                                            Rect::new(0.0, 0.0, frame_size.x, frame_size.y);
+                                        let source_rect = {
+                                            let grid_size = vec2(
+                                                texture_res.texture.width() / frame_size.x,
+                                                texture_res.texture.height() / frame_size.y,
+                                            )
+                                            .as_u32();
+
+                                            let i = params.sprite.index as u32;
+                                            let coords = uvec2(i % grid_size.y, i / grid_size.y);
+
+                                            Rect::new(
+                                                coords.x as f32 * frame_size.x,
+                                                coords.y as f32 * frame_size.y,
+                                                frame_size.x,
+                                                frame_size.y,
+                                            )
+                                        };
 
                                         draw_texture_ex(
                                             texture_res.texture,
-                                            object_position.x,
-                                            object_position.y,
+                                            position.x,
+                                            position.y,
                                             color::WHITE,
                                             DrawTextureParams {
                                                 dest_size: Some(frame_size),
@@ -1219,38 +1176,117 @@ impl Node for Editor {
                                             },
                                         );
                                     } else {
-                                        label = Some("INVALID OBJECT ID".to_string());
+                                        label = Some("INVALID TEXTURE ID".to_string());
                                     }
+                                } else {
+                                    label = Some("INVALID OBJECT ID".to_string());
                                 }
-                                MapObjectKind::SpawnPoint => {
-                                    label = Some("Spawn Point".to_string());
+                            }
+                            MapObjectKind::Decoration => {
+                                let texture_res =
+                                    resources.textures.get("default_decorations").unwrap();
+
+                                let frame_size = texture_res
+                                    .meta
+                                    .sprite_size
+                                    .map(|v| v.as_f32())
+                                    .unwrap_or_else(|| {
+                                        vec2(
+                                            texture_res.texture.width(),
+                                            texture_res.texture.height(),
+                                        )
+                                    });
+
+                                let mut source_rect = None;
+                                if &object.id == "pot" {
+                                    source_rect = Some(Rect::new(
+                                        0.0,
+                                        frame_size.y,
+                                        frame_size.x,
+                                        frame_size.y,
+                                    ));
+                                } else if &object.id == "seaweed" {
+                                    source_rect =
+                                        Some(Rect::new(0.0, 0.0, frame_size.x, frame_size.y));
+                                }
+
+                                if source_rect.is_some() {
+                                    draw_texture_ex(
+                                        texture_res.texture,
+                                        object_position.x,
+                                        object_position.y,
+                                        color::WHITE,
+                                        DrawTextureParams {
+                                            dest_size: Some(frame_size),
+                                            source: source_rect,
+                                            ..Default::default()
+                                        },
+                                    );
+                                } else {
+                                    label = Some("INVALID OBJECT ID".to_string());
                                 }
                             }
+                            MapObjectKind::Environment => {
+                                if &object.id == "sproinger" {
+                                    let texture_res = resources.textures.get("sproinger").unwrap();
 
-                            let size = get_object_size(object);
+                                    let frame_size = texture_res
+                                        .meta
+                                        .sprite_size
+                                        .map(|v| v.as_f32())
+                                        .unwrap_or_else(|| {
+                                            vec2(
+                                                texture_res.texture.width(),
+                                                texture_res.texture.height(),
+                                            )
+                                        });
 
-                            if let Some(label) = &label {
-                                let params = TextParams::default();
+                                    let source_rect =
+                                        Rect::new(0.0, 0.0, frame_size.x, frame_size.y);
 
-                                draw_text_ex(
-                                    label,
-                                    object_position.x,
-                                    object_position.y + (size.y / 2.0)
-                                        - Self::OBJECT_SELECTION_RECT_PADDING,
-                                    params,
-                                );
+                                    draw_texture_ex(
+                                        texture_res.texture,
+                                        object_position.x,
+                                        object_position.y,
+                                        color::WHITE,
+                                        DrawTextureParams {
+                                            dest_size: Some(frame_size),
+                                            source: Some(source_rect),
+                                            ..Default::default()
+                                        },
+                                    );
+                                } else {
+                                    label = Some("INVALID OBJECT ID".to_string());
+                                }
                             }
-
-                            if is_selected {
-                                draw_rectangle_lines(
-                                    object_position.x - Self::OBJECT_SELECTION_RECT_PADDING,
-                                    object_position.y - Self::OBJECT_SELECTION_RECT_PADDING,
-                                    size.x,
-                                    size.y,
-                                    4.0,
-                                    SELECTION_HIGHLIGHT_COLOR,
-                                );
+                            MapObjectKind::SpawnPoint => {
+                                label = Some("Spawn Point".to_string());
                             }
+                        }
+
+                        let size = get_object_size(object);
+
+                        if let Some(label) = &label {
+                            let params = TextParams::default();
+
+                            draw_text_ex(
+                                label,
+                                object_position.x,
+                                object_position.y + (size.y / 2.0)
+                                    - Self::OBJECT_SELECTION_RECT_PADDING,
+                                params,
+                            );
+                        }
+
+                        if is_selected {
+                            draw_rectangle_lines(
+                                object_position.x - Self::OBJECT_SELECTION_RECT_PADDING,
+                                object_position.y - Self::OBJECT_SELECTION_RECT_PADDING,
+                                size.x,
+                                size.y,
+                                4.0,
+                                SELECTION_HIGHLIGHT_COLOR,
+                            );
                         }
                     }
                 }
@@ -1261,7 +1297,10 @@ impl Node for Editor {
             let grid_size = node.get_map().grid_size;
             let tile_size = node.get_map().tile_size;
 
-            let coords = uvec2(tile_index as u32 % grid_size.x, tile_index as u32 / grid_size.x);
+            let coords = uvec2(
+                tile_index as u32 % grid_size.x,
+                tile_index as u32 / grid_size.x,
+            );
             let position = node.get_map().to_position(coords);
 
             draw_rectangle_lines(

@@ -48,10 +48,8 @@ pub fn create_game_scene(
     // Objects are cloned since Item constructor requires `GameWorld` in storage
     let mut map_objects = Vec::new();
     for layer in map.layers.values() {
-        if layer.is_visible {
-            if layer.kind == MapLayerKind::ObjectLayer {
-                map_objects.append(&mut layer.objects.clone());
-            }
+        if layer.is_visible && layer.kind == MapLayerKind::ObjectLayer {
+            map_objects.append(&mut layer.objects.clone());
         }
     }
 

@@ -32,10 +32,19 @@ pub enum EditorAction {
         layer_id: String,
         index: usize,
     },
+    OpenTilePropertiesWindow {
+        layer_id: String,
+        index: usize,
+    },
     CloseWindow(TypeId),
     SelectTile {
         id: u32,
         tileset_id: String,
+    },
+    UpdateTileAttributes {
+        index: usize,
+        layer_id: String,
+        attributes: Vec<String>,
     },
     SelectLayer(String),
     SetLayerDrawOrderIndex {
@@ -278,6 +287,62 @@ impl UndoableAction for SetLayerDrawOrderIndexAction {
         }
 
         false
+    }
+}
+
+#[derive(Debug)]
+pub struct UpdateTileAttributesAction {
+    index: usize,
+    layer_id: String,
+    attributes: Vec<String>,
+    old_attributes: Option<Vec<String>>,
+}
+
+impl UpdateTileAttributesAction {
+    pub fn new(index: usize, layer_id: String, attributes: Vec<String>) -> Self {
+        UpdateTileAttributesAction {
+            index,
+            layer_id,
+            attributes,
+            old_attributes: None,
+        }
+    }
+}
+
+impl UndoableAction for UpdateTileAttributesAction {
+    fn apply(&mut self, map: &mut Map) -> Result {
+        if let Some(layer) = map.layers.get_mut(&self.layer_id) {
+            if let Some(Some(tile)) = layer.tiles.get_mut(self.index) {
+                self.old_attributes = Some(tile.attributes.clone());
+                tile.attributes = self.attributes.clone();
+            } else {
+                return Err(&"UpdateTileAttributesAction: The specified tile does not exist");
+            }
+        } else {
+            return Err(&"UpdateTileAttributesAction: The specified layer does not exist");
+        }
+
+        Ok(())
+    }
+
+    fn undo(&mut self, map: &mut Map) -> Result {
+        if let Some(layer) = map.layers.get_mut(&self.layer_id) {
+            if let Some(Some(tile)) = layer.tiles.get_mut(self.index) {
+                if let Some(old_attributes) = self.old_attributes.take() {
+                    tile.attributes = old_attributes;
+                } else {
+                    return Err(&"UpdateTileAttributesAction (Undo): No old attributes stored in action. Undo was probably called on an action that was never applied");
+                }
+            } else {
+                return Err(
+                    &"UpdateTileAttributesAction (Undo): The specified tile does not exist",
+                );
+            }
+        } else {
+            return Err(&"UpdateTileAttributesAction (Undo): The specified layer does not exist");
+        }
+
+        Ok(())
     }
 }
 

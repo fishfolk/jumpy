@@ -13,7 +13,7 @@ use macroquad::prelude::*;
 
 pub use style::{
     SkinCollection, BUTTON_FONT_SIZE, BUTTON_MARGIN_H, BUTTON_MARGIN_V, LIST_BOX_ENTRY_HEIGHT,
-    SELECTED_OBJECT_HIGHLIGHT_COLOR, WINDOW_BG_COLOR, WINDOW_MARGIN_H, WINDOW_MARGIN_V,
+    SELECTION_HIGHLIGHT_COLOR, WINDOW_BG_COLOR, WINDOW_MARGIN_H, WINDOW_MARGIN_V,
 };
 
 pub use background::{draw_main_menu_background, Background};

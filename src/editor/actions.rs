@@ -32,10 +32,19 @@ pub enum EditorAction {
         layer_id: String,
         index: usize,
     },
+    OpenTilePropertiesWindow {
+        layer_id: String,
+        index: usize,
+    },
     CloseWindow(TypeId),
     SelectTile {
         id: u32,
         tileset_id: String,
+    },
+    UpdateTileAttributes {
+        index: usize,
+        layer_id: String,
+        attributes: Vec<String>,
     },
     SelectLayer(String),
     SetLayerDrawOrderIndex {
@@ -49,6 +58,10 @@ pub enum EditorAction {
         index: Option<usize>,
     },
     DeleteLayer(String),
+    UpdateLayer {
+        id: String,
+        is_visible: bool,
+    },
     SelectTileset(String),
     OpenImportWindow(usize),
     Import {
@@ -278,6 +291,62 @@ impl UndoableAction for SetLayerDrawOrderIndexAction {
 }
 
 #[derive(Debug)]
+pub struct UpdateTileAttributesAction {
+    index: usize,
+    layer_id: String,
+    attributes: Vec<String>,
+    old_attributes: Option<Vec<String>>,
+}
+
+impl UpdateTileAttributesAction {
+    pub fn new(index: usize, layer_id: String, attributes: Vec<String>) -> Self {
+        UpdateTileAttributesAction {
+            index,
+            layer_id,
+            attributes,
+            old_attributes: None,
+        }
+    }
+}
+
+impl UndoableAction for UpdateTileAttributesAction {
+    fn apply(&mut self, map: &mut Map) -> Result {
+        if let Some(layer) = map.layers.get_mut(&self.layer_id) {
+            if let Some(Some(tile)) = layer.tiles.get_mut(self.index) {
+                self.old_attributes = Some(tile.attributes.clone());
+                tile.attributes = self.attributes.clone();
+            } else {
+                return Err(&"UpdateTileAttributesAction: The specified tile does not exist");
+            }
+        } else {
+            return Err(&"UpdateTileAttributesAction: The specified layer does not exist");
+        }
+
+        Ok(())
+    }
+
+    fn undo(&mut self, map: &mut Map) -> Result {
+        if let Some(layer) = map.layers.get_mut(&self.layer_id) {
+            if let Some(Some(tile)) = layer.tiles.get_mut(self.index) {
+                if let Some(old_attributes) = self.old_attributes.take() {
+                    tile.attributes = old_attributes;
+                } else {
+                    return Err(&"UpdateTileAttributesAction (Undo): No old attributes stored in action. Undo was probably called on an action that was never applied");
+                }
+            } else {
+                return Err(
+                    &"UpdateTileAttributesAction (Undo): The specified tile does not exist",
+                );
+            }
+        } else {
+            return Err(&"UpdateTileAttributesAction (Undo): The specified layer does not exist");
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Debug)]
 pub struct CreateLayerAction {
     id: String,
     kind: MapLayerKind,
@@ -401,6 +470,50 @@ impl UndoableAction for DeleteLayerAction {
             }
         } else {
             return Err(&"DeleteLayerAction (Undo): No layer stored in action. Undo was probably called on an action that was never applied");
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Debug)]
+pub struct UpdateLayerAction {
+    id: String,
+    is_visible: bool,
+    old_is_visible: Option<bool>,
+}
+
+impl UpdateLayerAction {
+    pub fn new(id: String, is_visible: bool) -> Self {
+        UpdateLayerAction {
+            id,
+            is_visible,
+            old_is_visible: None,
+        }
+    }
+}
+
+impl UndoableAction for UpdateLayerAction {
+    fn apply(&mut self, map: &mut Map) -> Result {
+        if let Some(layer) = map.layers.get_mut(&self.id) {
+            self.old_is_visible = Some(layer.is_visible);
+            layer.is_visible = self.is_visible;
+        } else {
+            return Err(&"UpdateLayerAction: The specified layer does not exist");
+        }
+
+        Ok(())
+    }
+
+    fn undo(&mut self, map: &mut Map) -> Result {
+        if let Some(layer) = map.layers.get_mut(&self.id) {
+            if let Some(old_is_visible) = self.old_is_visible.take() {
+                layer.is_visible = old_is_visible;
+            } else {
+                return Err(&"UpdateLayerAction (Undo): No `old_is_visible` on action. Undo was probably called on an action that was never applied");
+            }
+        } else {
+            return Err(&"UpdateLayerAction (Undo): The specified layer does not exist");
         }
 
         Ok(())

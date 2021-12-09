@@ -13,6 +13,7 @@ mod import;
 mod load_map;
 mod object_properties;
 mod save_map;
+mod tile_properties;
 mod tileset_properties;
 
 pub use background_properties::BackgroundPropertiesWindow;
@@ -25,6 +26,7 @@ pub use import::ImportWindow;
 pub use load_map::LoadMapWindow;
 pub use object_properties::ObjectPropertiesWindow;
 pub use save_map::SaveMapWindow;
+pub use tile_properties::TilePropertiesWindow;
 pub use tileset_properties::TilesetPropertiesWindow;
 
 use super::{ButtonParams, EditorAction, EditorContext, Map};

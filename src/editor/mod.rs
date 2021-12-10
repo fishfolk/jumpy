@@ -1109,7 +1109,11 @@ impl Node for Editor {
         {
             let resources = storage::get::<Resources>();
 
-            for layer in node.get_map().layers.values() {
+            let len = node.get_map().draw_order.len();
+            for i in 0..len {
+                let layer_id = node.get_map().draw_order.get(len - i - 1).unwrap();
+                let layer = node.get_map().layers.get(layer_id).unwrap();
+
                 if layer.is_visible && layer.kind == MapLayerKind::ObjectLayer {
                     for (i, object) in layer.objects.iter().enumerate() {
                         let mut label = None;

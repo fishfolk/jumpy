@@ -694,12 +694,11 @@ high-level overview of its API for those who are interested in contributing to i
 <li><code>P</code> toggle background parallax effect</li>
 </ul>
 <h2><a class="header" href="#accessing-the-editor" id="accessing-the-editor">Accessing the editor</a></h2>
-<p>The editor can be accessed from the &quot;Editor&quot; tab on the main menu. Selecting this item by clicking on it, or using the right arrow key on your keyboard (or if you're using a gamepad: the &quot;right button&quot;), will present two options: &quot;Create Map&quot; and &quot;Load Map&quot;.</p>
+<p>The editor can be accessed from the main menu by selecting the &quot;Editor&quot; option. This will then present two options: &quot;Create Map&quot; and &quot;Load Map&quot;.</p>
 <p><img src="./assets/editor_menu.png" alt="Screenshot of the main menu displaying options for the editor: &quot;create map&quot;, &quot;load map&quot;, and &quot;quit&quot;." /></p>
 <h2><a class="header" href="#user-interface-overview" id="user-interface-overview">User-interface overview</a></h2>
 <p>There are 3 main areas of the UI for designing your level: the <strong>tool selector</strong>, <strong>map</strong>, and <strong>layers list</strong>. Perhaps the most important area is the map as it acts as a preview of your level. The tool selector and layers list are available as toolbars that provide a set of tools for you to edit and examine your level as needed.</p>
 <p><img src="./assets/editor_gui_highlights.png" alt="Screenshot of editor user interface with each major area highlighted." /></p>
-<p><strong>Note: Icons are not yet available for the tool selector. The first one is the tile placement tool and the second is the eraser tool.</strong></p>
 <h3><a class="header" href="#toolbars" id="toolbars">Toolbars</a></h3>
 <p>There are currently 2 primary toolbars available for the editor: the layers list and tool selector.</p>
 <h4><a class="header" href="#layers-list" id="layers-list">Layers list</a></h4>
@@ -708,10 +707,12 @@ high-level overview of its API for those who are interested in contributing to i
 <p><strong>Object layers</strong> are composed of game objects categorized by a <code>MapObjectKind</code>. The current types of objects available are: <code>Item</code>, <code>SpawnPoint</code>, <code>Environment,</code> and <code>Decoration</code>.</p>
 <h4><a class="header" href="#tool-selector" id="tool-selector">Tool selector</a></h4>
 <p>As the name describes: provides a set of tools for editing layers in the map area of the editor. Currently, the following tools are available:</p>
-<ul>
-<li>Tile placement</li>
-<li>Eraser</li>
-</ul>
+<table><thead><tr><th align="center">Name</th><th align="center"></th><th align="center">Description</th></tr></thead><tbody>
+<tr><td align="center">Cursor</td><td align="center"><img src="assets/cursor_tool.png" alt="cursor" /></td><td align="center">Select a tile or object</td></tr>
+<tr><td align="center">Tile</td><td align="center"><img src="assets/tile_tool.png" alt="tile" /></td><td align="center">Place a tile</td></tr>
+<tr><td align="center">Object</td><td align="center"><img src="assets/object_tool.png" alt="object" /></td><td align="center">Create an object</td></tr>
+<tr><td align="center">Erasor</td><td align="center"><img src="assets/erasor_tool.png" alt="erasor" /></td><td align="center">Erase a tile or object</td></tr>
+</tbody></table>
 <h4><a class="header" href="#creating-a-new-map" id="creating-a-new-map">Creating a new map</a></h4>
 <p>A new map can be created either by loading one of the core game maps and save a copy (save as) or by creating a brand new one.
 If you choose the latter, you can import the parallax backgrounds and tilesets from an existing map, by selecting <code>Open</code> from the in-editor menu (opened by pressing <code>esc</code>), selecting a map from the list and clicking <code>Import</code>.

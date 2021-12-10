@@ -27,7 +27,7 @@ Only mouse and keyboard is supported, for now. We will implement gamepad support
 
 ## Accessing the editor
 
-The editor can be accessed from the "Editor" tab on the main menu. Selecting this item by clicking on it, or using the right arrow key on your keyboard (or if you're using a gamepad: the "right button"), will present two options: "Create Map" and "Load Map".
+The editor can be accessed from the main menu by selecting the "Editor" option. This will then present two options: "Create Map" and "Load Map".
 
 ![Screenshot of the main menu displaying options for the editor: "create map", "load map", and "quit".](./assets/editor_menu.png)
 
@@ -36,8 +36,6 @@ The editor can be accessed from the "Editor" tab on the main menu. Selecting thi
 There are 3 main areas of the UI for designing your level: the **tool selector**, **map**, and **layers list**. Perhaps the most important area is the map as it acts as a preview of your level. The tool selector and layers list are available as toolbars that provide a set of tools for you to edit and examine your level as needed.
 
 ![Screenshot of editor user interface with each major area highlighted.](./assets/editor_gui_highlights.png)
-
-**Note: Icons are not yet available for the tool selector. The first one is the tile placement tool and the second is the eraser tool.**
 
 ### Toolbars
 
@@ -55,8 +53,12 @@ Create or edit layers of your Fish Fight level. This toolbar provides a list of 
 
 As the name describes: provides a set of tools for editing layers in the map area of the editor. Currently, the following tools are available:
 
-- Tile placement
-- Eraser
+| Name | | Description |
+| :-: | :-: | :-: |
+| Cursor | ![cursor](assets/cursor_tool.png) | Select a tile or object |
+| Tile | ![tile](assets/tile_tool.png) | Place a tile |
+| Object | ![object](assets/object_tool.png) | Create an object |
+| Erasor | ![erasor](assets/erasor_tool.png) | Erase a tile or object |
 
 #### Creating a new map
 

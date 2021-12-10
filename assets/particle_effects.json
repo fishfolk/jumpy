@@ -38,5 +38,9 @@
   {
     "id": "machine_gun_firing_smoke",
     "path": "particle_effects/machine_gun_firing_smoke.json"
+  },
+  {
+    "id": "grenades_smoke",
+    "path": "particle_effects/grenades_smoke.json"
   }
 ]

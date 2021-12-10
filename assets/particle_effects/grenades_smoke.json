@@ -1,0 +1,69 @@
+{
+    "local_coords": false,
+    "emission_shape": "Point",
+    "one_shot": true,
+    "lifetime": 0.7999999,
+    "lifetime_randomness": 0,
+    "explosiveness": 1,
+    "amount": 1,
+    "shape": {
+        "Circle": {
+            "subdivisions": 8
+        }
+    },
+    "emitting": false,
+    "initial_direction": {
+        "x": 0,
+        "y": -1
+    },
+    "initial_direction_spread": 0.3,
+    "initial_velocity": 54.300003,
+    "initial_velocity_randomness": 0.4,
+    "linear_accel": -0.89999986,
+    "size": 2,
+    "size_randomness": 0,
+    "size_curve": {
+        "points": [
+            [
+                0,
+                1.72
+            ],
+            [
+                0.42,
+                0.55999994
+            ],
+            [
+                1,
+                0
+            ]
+        ],
+        "interpolation": "Linear",
+        "resolution": 30
+    },
+    "blend_mode": "Alpha",
+    "colors_curve": {
+        "start": {
+            "r": 0.18181819,
+            "g": 0.1764,
+            "b": 0.18360001,
+            "a": 1
+        },
+        "mid": {
+            "r": 0.36363637,
+            "g": 0.3582,
+            "b": 0.3582,
+            "a": 1
+        },
+        "end": {
+            "r": 0.4984091,
+            "g": 0.49528182,
+            "b": 0.4772727,
+            "a": 1
+        }
+    },
+    "gravity": {
+        "x": 0,
+        "y": -54.1
+    },
+    "post_processing": {}
+}

@@ -489,7 +489,21 @@ impl Node for TriggeredEffects {
             }
 
             for particles in &mut trigger.particles {
-                particles.draw(trigger.body.position, flip_x, false)
+                let center = trigger.body.position + trigger.body.size / 2.0;
+                let point = center + particles.get_offset(false, false);
+
+                let sin = trigger.body.rotation.sin();
+                let cos = trigger.body.rotation.cos();
+
+                let mut new_position = Vec2::new(
+                    cos * (point.x - center.x) - sin * (point.y - center.y) + center.x,
+                    sin * (point.x - center.x) + cos * (point.y - center.y) + center.y,
+                );
+
+                // Hack, because `ParticleController::draw` adds offset by itself which is already used in the code above 
+                new_position -= particles.get_offset(false, false);
+
+                particles.draw(new_position, flip_x, false)
             }
 
             #[cfg(debug_assertions)]

@@ -46,7 +46,18 @@
           }
         ],
         "should_autoplay": true
-      }
+      },
+      "particles": [
+        {
+          "particle_effect": "grenades_smoke",
+          "interval": 0.04,
+          "should_autostart": true,
+          "offset": {
+            "x": 0,
+            "y": -10
+          }
+        }
+      ]
     }
   ],
   "collider_size": {

@@ -34,7 +34,7 @@
             "x": 112,
             "y": 80
           },
-          "timed_trigger": 1,
+          "timed_trigger": 0.7,
           "effects": [],
           "particles": [
             {

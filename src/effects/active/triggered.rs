@@ -197,7 +197,6 @@ struct TriggeredEffect {
     activation_timer: f32,
     trigger_delay_timer: f32,
     timed_trigger_timer: f32,
-    is_rotates: bool,
 }
 
 impl TriggeredEffect {
@@ -282,7 +281,6 @@ impl TriggeredEffects {
             should_override_delay: false,
             should_collide_with_platforms: params.should_collide_with_platforms,
             triggered_by: None,
-            is_rotates: params.is_rotates,
         })
     }
 
@@ -350,7 +348,7 @@ impl TriggeredEffects {
             }
 
             trigger.body.update();
-            if trigger.is_rotates {
+            if trigger.body.can_rotate {
                 trigger.body.update_throw();
             }
 
@@ -489,6 +487,7 @@ impl Node for TriggeredEffects {
             }
 
             for particles in &mut trigger.particles {
+                // This section below rotate particle position (which is triggered body center + particle offset) from triggered body center by triggered body angle
                 let center = trigger.body.position + trigger.body.size / 2.0;
                 let point = center + particles.get_offset(false, false);
 
@@ -499,8 +498,7 @@ impl Node for TriggeredEffects {
                     cos * (point.x - center.x) - sin * (point.y - center.y) + center.x,
                     sin * (point.x - center.x) + cos * (point.y - center.y) + center.y,
                 );
-
-                // Hack, because `ParticleController::draw` adds offset by itself which is already used in the code above 
+                // Hack, because `ParticleController::draw` adds offset by itself which is already used in the code above
                 new_position -= particles.get_offset(false, false);
 
                 particles.draw(new_position, flip_x, false)

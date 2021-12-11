@@ -1109,6 +1109,37 @@ impl Node for Editor {
         {
             let resources = storage::get::<Resources>();
 
+            for spawn_point in &node.get_map().spawn_points {
+                let texture_res =
+                    resources.textures.get("spawn_point_icon").unwrap();
+
+                let frame_size = texture_res
+                    .meta
+                    .sprite_size
+                    .map(|v| v.as_f32())
+                    .unwrap_or_else(|| {
+                        vec2(
+                            texture_res.texture.width(),
+                            texture_res.texture.height(),
+                        )
+                    });
+
+                let source_rect =
+                    Rect::new(0.0, 0.0, frame_size.x, frame_size.y);
+
+                draw_texture_ex(
+                    texture_res.texture,
+                    spawn_point.x,
+                    spawn_point.y,
+                    color::WHITE,
+                    DrawTextureParams {
+                        dest_size: Some(frame_size),
+                        source: Some(source_rect),
+                        ..Default::default()
+                    },
+                );
+            }
+
             let len = node.get_map().draw_order.len();
             for i in 0..len {
                 let i = len as i32 - i as i32 - 1;
@@ -1288,36 +1319,6 @@ impl Node for Editor {
                                         label = Some("INVALID OBJECT ID".to_string());
                                     }
                                 }
-                                MapObjectKind::SpawnPoint => {
-                                    let texture_res =
-                                        resources.textures.get("spawn_point_icon").unwrap();
-
-                                    let frame_size = texture_res
-                                        .meta
-                                        .sprite_size
-                                        .map(|v| v.as_f32())
-                                        .unwrap_or_else(|| {
-                                            vec2(
-                                                texture_res.texture.width(),
-                                                texture_res.texture.height(),
-                                            )
-                                        });
-
-                                    let source_rect =
-                                        Rect::new(0.0, 0.0, frame_size.x, frame_size.y);
-
-                                    draw_texture_ex(
-                                        texture_res.texture,
-                                        object_position.x,
-                                        object_position.y,
-                                        color::WHITE,
-                                        DrawTextureParams {
-                                            dest_size: Some(frame_size),
-                                            source: Some(source_rect),
-                                            ..Default::default()
-                                        },
-                                    );
-                                }
                             }
 
                             let size = get_object_size(object);
@@ -1446,7 +1447,6 @@ fn get_object_size(object: &MapObject) -> Vec2 {
                 label = Some("INVALID OBJECT ID".to_string())
             }
         }
-        MapObjectKind::SpawnPoint => res = Some(vec2(38.0, 49.0)),
     }
 
     if let Some(label) = &label {

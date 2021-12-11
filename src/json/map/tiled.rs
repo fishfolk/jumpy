@@ -10,6 +10,8 @@ use crate::{
     math::color_from_hex_string,
 };
 
+const SPAWN_POINT_MAP_OBJECT_TYPE: &str = "spawn_point";
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case", tag = "type")]
 pub enum TiledProperty {
@@ -196,6 +198,7 @@ impl TiledMap {
             tilesets.insert(tiled_tileset.name, tileset);
         }
 
+        let mut spawn_points = Vec::new();
         let mut layers = HashMap::new();
         let mut draw_order = Vec::new();
         for tiled_layer in &self.layers {
@@ -240,35 +243,31 @@ impl TiledMap {
 
             let mut objects = Vec::new();
             for tiled_object in &tiled_layer.objects {
-                let position = vec2(tiled_object.x, tiled_object.y);
-                let size = {
-                    let size = vec2(tiled_object.width, tiled_object.height);
-                    if size != Vec2::ZERO {
-                        Some(size)
-                    } else {
-                        None
-                    }
-                };
+                if tiled_object.object_type == *SPAWN_POINT_MAP_OBJECT_TYPE {
+                    let position = vec2(tiled_object.x, tiled_object.y);
+                    spawn_points.push(position);
+                } else {
+                    let position = vec2(tiled_object.x, tiled_object.y);
 
-                let mut properties = HashMap::new();
-                if let Some(tiled_props) = tiled_object.properties.clone() {
-                    for tiled_prop in tiled_props {
-                        let (name, prop) = pair_from_tiled_prop(tiled_prop);
-                        properties.insert(name, prop);
+                    let mut properties = HashMap::new();
+                    if let Some(tiled_props) = tiled_object.properties.clone() {
+                        for tiled_prop in tiled_props {
+                            let (name, prop) = pair_from_tiled_prop(tiled_prop);
+                            properties.insert(name, prop);
+                        }
                     }
+
+                    let kind = MapObjectKind::from(tiled_object.object_type.clone());
+
+                    let object = MapObject {
+                        id: tiled_object.name.clone(),
+                        kind,
+                        position,
+                        properties,
+                    };
+
+                    objects.push(object);
                 }
-
-                let kind = MapObjectKind::from(tiled_object.object_type.clone());
-
-                let object = MapObject {
-                    id: tiled_object.name.clone(),
-                    kind,
-                    position,
-                    size,
-                    properties,
-                };
-
-                objects.push(object);
             }
 
             let grid_size = uvec2(self.width, self.height);
@@ -330,6 +329,7 @@ impl TiledMap {
             tilesets,
             draw_order,
             properties,
+            spawn_points,
         }
     }
 }

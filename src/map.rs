@@ -43,6 +43,8 @@ pub struct Map {
     pub draw_order: Vec<String>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub properties: HashMap<String, MapProperty>,
+    #[serde(default, with = "json::vec2_vec")]
+    pub spawn_points: Vec<Vec2>,
 }
 
 impl Map {
@@ -66,6 +68,7 @@ impl Map {
             tilesets: HashMap::new(),
             draw_order: Vec::new(),
             properties: HashMap::new(),
+            spawn_points: Vec::new(),
         }
     }
 
@@ -524,19 +527,17 @@ pub struct MapTile {
 #[serde(rename_all = "snake_case")]
 pub enum MapObjectKind {
     Item,
-    SpawnPoint,
     Environment,
     Decoration,
 }
 
 impl MapObjectKind {
     const ITEM: &'static str = "item";
-    const SPAWN_POINT: &'static str = "spawn_point";
     const ENVIRONMENT: &'static str = "environment";
     const DECORATION: &'static str = "decoration";
 
     pub fn options() -> &'static [&'static str] {
-        &["Item", "Spawn Point", "Environment", "Decoration"]
+        &["Item", "Environment", "Decoration"]
     }
 }
 
@@ -544,8 +545,6 @@ impl From<String> for MapObjectKind {
     fn from(str: String) -> Self {
         if str == Self::ITEM {
             Self::Item
-        } else if str == Self::SPAWN_POINT {
-            Self::SpawnPoint
         } else if str == Self::ENVIRONMENT {
             Self::Environment
         } else if str == Self::DECORATION {
@@ -566,7 +565,6 @@ impl From<MapObjectKind> for String {
     fn from(kind: MapObjectKind) -> String {
         match kind {
             MapObjectKind::Item => MapObjectKind::ITEM.to_string(),
-            MapObjectKind::SpawnPoint => MapObjectKind::SPAWN_POINT.to_string(),
             MapObjectKind::Environment => MapObjectKind::ENVIRONMENT.to_string(),
             MapObjectKind::Decoration => MapObjectKind::DECORATION.to_string(),
         }
@@ -577,7 +575,6 @@ impl ComboBoxValue for MapObjectKind {
     fn get_index(&self) -> usize {
         match self {
             Self::Item => 0,
-            Self::SpawnPoint => 1,
             Self::Environment => 2,
             Self::Decoration => 3,
         }
@@ -586,7 +583,6 @@ impl ComboBoxValue for MapObjectKind {
     fn set_index(&mut self, index: usize) {
         *self = match index {
             0 => Self::Item,
-            1 => Self::SpawnPoint,
             2 => Self::Environment,
             3 => Self::Decoration,
             _ => unreachable!(),
@@ -604,23 +600,16 @@ pub struct MapObject {
     pub kind: MapObjectKind,
     #[serde(with = "json::vec2_def")]
     pub position: Vec2,
-    #[serde(
-        default,
-        with = "json::vec2_opt",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub size: Option<Vec2>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub properties: HashMap<String, MapProperty>,
 }
 
 impl MapObject {
-    pub fn new(id: &str, kind: MapObjectKind, position: Vec2, size: Option<Vec2>) -> Self {
+    pub fn new(id: &str, kind: MapObjectKind, position: Vec2) -> Self {
         MapObject {
             id: id.to_string(),
             kind,
             position,
-            size,
             properties: HashMap::new(),
         }
     }

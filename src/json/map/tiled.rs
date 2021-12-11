@@ -243,12 +243,11 @@ impl TiledMap {
 
             let mut objects = Vec::new();
             for tiled_object in &tiled_layer.objects {
+                let position = vec2(tiled_object.x, tiled_object.y);
+
                 if tiled_object.object_type == *SPAWN_POINT_MAP_OBJECT_TYPE {
-                    let position = vec2(tiled_object.x, tiled_object.y);
                     spawn_points.push(position);
                 } else {
-                    let position = vec2(tiled_object.x, tiled_object.y);
-
                     let mut properties = HashMap::new();
                     if let Some(tiled_props) = tiled_object.properties.clone() {
                         for tiled_prop in tiled_props {

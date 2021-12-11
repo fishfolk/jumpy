@@ -45,12 +45,12 @@ impl Window for LoadMapWindow {
     ) -> Option<EditorAction> {
         let id = hash!("load_map_window");
 
-        if let Some(index) = self.index {
-            {
-                let gui_resources = storage::get::<GuiResources>();
-                ui.push_skin(&gui_resources.skins.list_box_no_bg);
-            }
+        {
+            let gui_resources = storage::get::<GuiResources>();
+            ui.push_skin(&gui_resources.skins.list_box_no_bg);
+        }
 
+        if let Some(index) = self.index {
             let btn_size = vec2(size.x, LIST_BOX_ENTRY_HEIGHT);
             let btn_position = vec2(0.0, 0.0);
 
@@ -89,11 +89,6 @@ impl Window for LoadMapWindow {
                     .ui(ui);
             }
         } else {
-            {
-                let gui_resources = storage::get::<GuiResources>();
-                ui.push_skin(&gui_resources.skins.list_box_no_bg);
-            }
-
             let size = vec2(size.x, size.y - ELEMENT_MARGIN);
             widgets::Group::new(hash!(id, "list_box"), size)
                 .position(Vec2::ZERO)

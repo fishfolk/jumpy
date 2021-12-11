@@ -42,5 +42,9 @@
   {
     "id": "grenades_smoke",
     "path": "particle_effects/grenades_smoke.json"
+  },
+  {
+    "id": "empty",
+    "path": "particle_effects/empty.json"
   }
 ]

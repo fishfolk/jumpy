@@ -10,7 +10,7 @@
   "effects": [
     {
       "type": "triggered_effect",
-      "trigger": "enemy",
+      "trigger": [],
       "velocity": {
         "x": 600.0,
         "y": -400.0
@@ -24,10 +24,43 @@
       "effects": [
         {
           "type": "circle_collider",
-          "radius": 64,
+          "radius": 128,
           "is_explosion": true,
-          "particle_effect": "hit",
           "sound_effect": "explode"
+        },
+        {
+          "type": "triggered_effect",
+          "size": {
+            "x": 112,
+            "y": 80
+          },
+          "timed_trigger": 1,
+          "effects": [],
+          "particles": [
+            {
+              "particle_effect": "empty",
+              "should_autostart": true,
+              "offset": {
+                "x": -99.5,
+                "y": -67
+              },
+              "animations": {
+                "texture": "small_explosions",
+                "frame_size": {
+                  "x": 112,
+                  "y": 80
+                },
+                "animations": [
+                  {
+                    "id": "animated_effect",
+                    "row": 0,
+                    "frames": 12,
+                    "fps": 24
+                  }
+                ]
+              }
+            }
+          ]
         }
       ],
       "animation": {

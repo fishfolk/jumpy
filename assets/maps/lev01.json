@@ -5,6 +5,40 @@
     "blue": 0.0,
     "alpha": 1.0
   },
+  "background_layers": [
+    {
+      "texture_id": "background_04",
+      "depth": 0.0,
+      "offset": {
+        "x": 0.0,
+        "y": 0.0
+      }
+    },
+    {
+      "texture_id": "background_03",
+      "depth": 2.0,
+      "offset": {
+        "x": 0.0,
+        "y": 0.0
+      }
+    },
+    {
+      "texture_id": "background_02",
+      "depth": 1.0,
+      "offset": {
+        "x": 0.0,
+        "y": 0.0
+      }
+    },
+    {
+      "texture_id": "background_01",
+      "depth": 0.5,
+      "offset": {
+        "x": 0.0,
+        "y": 0.0
+      }
+    }
+  ],
   "world_offset": {
     "x": 0.0,
     "y": 0.0

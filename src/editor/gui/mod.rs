@@ -12,7 +12,7 @@ pub use combobox::{ComboBoxBuilder, ComboBoxValue};
 
 pub use editor_menu::{
     close_editor_menu, draw_editor_menu, is_editor_menu_open, open_editor_menu, toggle_editor_menu,
-    EDITOR_MENU_RESULT_MAIN_MENU, EDITOR_MENU_RESULT_NEW, EDITOR_MENU_RESULT_OPEN,
+    EDITOR_MENU_RESULT_MAIN_MENU, EDITOR_MENU_RESULT_NEW, EDITOR_MENU_RESULT_OPEN_IMPORT,
     EDITOR_MENU_RESULT_QUIT, EDITOR_MENU_RESULT_SAVE, EDITOR_MENU_RESULT_SAVE_AS,
 };
 
@@ -307,7 +307,7 @@ impl EditorGui {
                         let action = EditorAction::OpenCreateMapWindow;
                         res = Some(action);
                     }
-                    EDITOR_MENU_RESULT_OPEN => {
+                    EDITOR_MENU_RESULT_OPEN_IMPORT => {
                         let action = EditorAction::OpenLoadMapWindow;
                         res = Some(action);
                     }

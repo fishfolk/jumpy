@@ -846,40 +846,7 @@
       "id": "logic",
       "kind": "object_layer",
       "has_collision": false,
-      "objects": [
-        {
-          "id": "spawn",
-          "kind": "spawn_point",
-          "position": {
-            "x": 128.0,
-            "y": 480.0
-          }
-        },
-        {
-          "id": "spawn",
-          "kind": "spawn_point",
-          "position": {
-            "x": 960.0,
-            "y": 480.0
-          }
-        },
-        {
-          "id": "spawn",
-          "kind": "spawn_point",
-          "position": {
-            "x": 896.0,
-            "y": 480.0
-          }
-        },
-        {
-          "id": "spawn",
-          "kind": "spawn_point",
-          "position": {
-            "x": 192.0,
-            "y": 480.0
-          }
-        }
-      ],
+      "objects": [],
       "is_visible": true
     },
     {
@@ -893,10 +860,6 @@
           "position": {
             "x": 448.0,
             "y": 429.0
-          },
-          "size": {
-            "x": 48.0,
-            "y": 51.0
           }
         },
         {
@@ -905,10 +868,6 @@
           "position": {
             "x": 192.0,
             "y": 593.0
-          },
-          "size": {
-            "x": 48.0,
-            "y": 51.0
           }
         },
         {
@@ -917,10 +876,6 @@
           "position": {
             "x": 416.0,
             "y": 237.0
-          },
-          "size": {
-            "x": 48.0,
-            "y": 51.0
           }
         },
         {
@@ -929,10 +884,6 @@
           "position": {
             "x": 864.0,
             "y": 493.0
-          },
-          "size": {
-            "x": 48.0,
-            "y": 51.0
           }
         },
         {
@@ -941,10 +892,6 @@
           "position": {
             "x": 928.0,
             "y": 365.0
-          },
-          "size": {
-            "x": 48.0,
-            "y": 51.0
           }
         }
       ],
@@ -1008,6 +955,120 @@
     }
   ],
   "tilesets": [
+    {
+      "id": "decorations1",
+      "texture_id": "default_decorations",
+      "texture_size": {
+        "x": 240,
+        "y": 102
+      },
+      "tile_size": {
+        "x": 48.0,
+        "y": 51.0
+      },
+      "grid_size": {
+        "x": 5,
+        "y": 2
+      },
+      "first_tile_id": 64,
+      "tile_cnt": 10,
+      "tile_subdivisions": {
+        "x": 3,
+        "y": 3
+      },
+      "autotile_mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
     {
       "id": "tileset",
       "texture_id": "default_tileset",
@@ -1599,130 +1660,34 @@
         false
       ],
       "tile_attributes": {
-        "58": [
-          "jumpthrough"
-        ],
         "60": [
           "jumpthrough"
         ],
         "56": [
           "jumpthrough"
+        ],
+        "58": [
+          "jumpthrough"
         ]
       }
+    }
+  ],
+  "spawn_points": [
+    {
+      "x": 128.0,
+      "y": 480.0
     },
     {
-      "id": "decorations1",
-      "texture_id": "default_decorations",
-      "texture_size": {
-        "x": 240,
-        "y": 102
-      },
-      "tile_size": {
-        "x": 48.0,
-        "y": 51.0
-      },
-      "grid_size": {
-        "x": 5,
-        "y": 2
-      },
-      "first_tile_id": 64,
-      "tile_cnt": 10,
-      "tile_subdivisions": {
-        "x": 3,
-        "y": 3
-      },
-      "autotile_mask": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
+      "x": 960.0,
+      "y": 480.0
+    },
+    {
+      "x": 896.0,
+      "y": 480.0
+    },
+    {
+      "x": 192.0,
+      "y": 480.0
     }
   ]
 }

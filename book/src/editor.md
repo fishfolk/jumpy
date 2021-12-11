@@ -47,7 +47,7 @@ Create or edit layers of your Fish Fight level. This toolbar provides a list of 
 
 **Tile layers** contain textures that can be placed in the map area. They can be created to be collision layers as well, allowing them to behave like collidable objects.
 
-**Object layers** are composed of game objects categorized by a `MapObjectKind`. The current types of objects available are: `Item`, `SpawnPoint`, `Environment,` and `Decoration`.
+**Object layers** are composed of game objects categorized by a `MapObjectKind`. The current types of objects available are: `Item`, `Environment,` and `Decoration`.
 
 #### Tool selector
 
@@ -58,10 +58,11 @@ As the name describes: provides a set of tools for editing layers in the map are
 | Cursor | ![cursor](assets/cursor_tool.png) | Select a tile or object |
 | Tile | ![tile](assets/tile_tool.png) | Place a tile |
 | Object | ![object](assets/object_tool.png) | Create an object |
+| Object | ![spawn_point](assets/spawn_point_tool.png) | Create a spawn point |
 | Erasor | ![erasor](assets/erasor_tool.png) | Erase a tile or object |
 
 #### Creating a new map
 
 A new map can be created either by loading one of the core game maps and save a copy (save as) or by creating a brand new one.
-If you choose the latter, you can import the parallax backgrounds and tilesets from an existing map, by selecting `Open` from the in-editor menu (opened by pressing `esc`), selecting a map from the list and clicking `Import`.
+If you choose the latter, you can import the parallax backgrounds and tilesets from an existing map, by selecting `Open/Import` from the in-editor menu (opened by pressing `esc`), selecting a map from the list and clicking `Import`.
 This will open a menu that let you select what tilesets you want to import and whether you want to import the background layers, as well.

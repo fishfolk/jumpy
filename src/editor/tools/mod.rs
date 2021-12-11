@@ -4,7 +4,7 @@ mod eraser;
 mod placement;
 
 pub use eraser::EraserTool;
-pub use placement::{ObjectPlacementTool, TilePlacementTool};
+pub use placement::{ObjectPlacementTool, SpawnPointPlacementTool, TilePlacementTool};
 
 use macroquad::prelude::*;
 

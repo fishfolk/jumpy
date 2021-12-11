@@ -152,9 +152,6 @@ impl Window for ObjectPropertiesWindow {
             MapObjectKind::Decoration => {
                 vec!["pot", "seaweed"]
             }
-            MapObjectKind::SpawnPoint => {
-                vec!["player_spawn"]
-            }
         };
 
         let mut item_id_value = {

@@ -53,7 +53,6 @@ pub fn create_game_scene(
         }
     }
 
-    let mut spawn_points = Vec::new();
     let mut items = Vec::new();
 
     for object in map_objects {
@@ -68,9 +67,6 @@ pub fn create_game_scene(
                     println!("WARNING: Invalid environment object id '{}'", &object.id);
                 }
             }
-            MapObjectKind::SpawnPoint => {
-                spawn_points.push(object.position);
-            }
             MapObjectKind::Item => {
                 if let Some(params) = resources.items.get(&object.id).cloned() {
                     if params.is_network_ready || is_local_game {
@@ -83,7 +79,7 @@ pub fn create_game_scene(
         }
     }
 
-    storage::store(GameWorld::new(map, spawn_points));
+    storage::store(GameWorld::new(map));
 
     for (position, params) in items {
         scene::add_node(Item::new(position, params));

@@ -40,14 +40,15 @@ use history::EditorHistory;
 pub use input::EditorInputScheme;
 
 use crate::editor::actions::{
-    ImportAction, UpdateBackgroundAction, UpdateLayerAction, UpdateObjectAction,
-    UpdateTileAttributesAction,
+    CreateSpawnPointAction, DeleteSpawnPointAction, ImportAction, MoveSpawnPointAction,
+    UpdateBackgroundAction, UpdateLayerAction, UpdateObjectAction, UpdateTileAttributesAction,
 };
 use crate::editor::gui::windows::{
     BackgroundPropertiesWindow, CreateMapWindow, ImportWindow, LoadMapWindow,
     ObjectPropertiesWindow, SaveMapWindow, TilePropertiesWindow,
 };
 use crate::editor::input::{collect_editor_input, EditorInput};
+use crate::editor::tools::SpawnPointPlacementTool;
 use crate::gui::SELECTION_HIGHLIGHT_COLOR;
 use crate::map::{MapObject, MapObjectKind};
 use macroquad::{
@@ -94,22 +95,34 @@ impl Default for EditorContext {
     }
 }
 
-struct DraggedObject {
-    id: String,
-    kind: MapObjectKind,
-    index: usize,
-    layer_id: String,
-    click_offset: Vec2,
+#[derive(Debug, Clone)]
+enum DraggedObject {
+    MapObject {
+        id: String,
+        kind: MapObjectKind,
+        index: usize,
+        layer_id: String,
+        click_offset: Vec2,
+    },
+    SpawnPoint {
+        index: usize,
+        click_offset: Vec2,
+    },
 }
+
+const SPAWN_POINT_COLLIDER_WIDTH: f32 = 38.0;
+const SPAWN_POINT_COLLIDER_HEIGHT: f32 = 49.0;
 
 pub struct Editor {
     map_resource: MapResource,
+
     selected_tool: Option<TypeId>,
     selected_layer: Option<String>,
     selected_tileset: Option<String>,
     // Selected tile in tileset
     selected_tile: Option<u32>,
     selected_object: Option<usize>,
+    selected_spawn_point: Option<usize>,
 
     // Selected tile in map
     selected_map_tile_index: Option<usize>,
@@ -163,6 +176,7 @@ impl Editor {
     pub fn new(input_scheme: EditorInputScheme, map_resource: MapResource) -> Self {
         add_tool_instance(TilePlacementTool::new());
         add_tool_instance(ObjectPlacementTool::new());
+        add_tool_instance(SpawnPointPlacementTool::new());
         add_tool_instance(EraserTool::new());
 
         let selected_tool = None;
@@ -177,6 +191,7 @@ impl Editor {
         let tool_selector_element = ToolSelectorElement::new()
             .with_tool::<TilePlacementTool>()
             .with_tool::<ObjectPlacementTool>()
+            .with_tool::<SpawnPointPlacementTool>()
             .with_tool::<EraserTool>();
 
         let left_toolbar = Toolbar::new(ToolbarPosition::Left, EditorGui::LEFT_TOOLBAR_WIDTH)
@@ -213,6 +228,7 @@ impl Editor {
             selected_tileset: None,
             selected_tile: None,
             selected_object: None,
+            selected_spawn_point: None,
 
             selected_map_tile_index: None,
 
@@ -512,6 +528,24 @@ impl Editor {
                     .history
                     .apply(Box::new(action), &mut self.map_resource.map);
             }
+            EditorAction::CreateSpawnPoint(position) => {
+                let action = CreateSpawnPointAction::new(position);
+                res = self
+                    .history
+                    .apply(Box::new(action), &mut self.map_resource.map);
+            }
+            EditorAction::DeleteSpawnPoint(index) => {
+                let action = DeleteSpawnPointAction::new(index);
+                res = self
+                    .history
+                    .apply(Box::new(action), &mut self.map_resource.map);
+            }
+            EditorAction::MoveSpawnPoint { index, position } => {
+                let action = MoveSpawnPointAction::new(index, position);
+                res = self
+                    .history
+                    .apply(Box::new(action), &mut self.map_resource.map);
+            }
             EditorAction::PlaceTile {
                 id,
                 layer_id,
@@ -564,7 +598,7 @@ impl Editor {
                 let mut gui = storage::get_mut::<EditorGui>();
                 gui.add_window(CreateMapWindow::new());
             }
-            EditorAction::LoadMap(index) => {
+            EditorAction::OpenMap(index) => {
                 let resources = storage::get::<Resources>();
                 let map_resource = resources.maps.get(index).cloned().unwrap();
 
@@ -771,11 +805,33 @@ impl Node for Editor {
                             if rect.contains(node.cursor_position) {
                                 let click_offset = node.cursor_position - position;
 
-                                node.dragged_object = Some(DraggedObject {
+                                node.dragged_object = Some(DraggedObject::MapObject {
                                     id: object.id.clone(),
                                     kind: object.kind,
                                     index,
                                     layer_id,
+                                    click_offset,
+                                })
+                            }
+                        } else if let Some(index) = node.selected_spawn_point {
+                            let spawn_point = node.get_map().spawn_points[index];
+
+                            let position = scene::find_node_by_type::<EditorCamera>()
+                                .unwrap()
+                                .to_screen_space(spawn_point);
+
+                            let rect = Rect::new(
+                                position.x,
+                                position.y,
+                                SPAWN_POINT_COLLIDER_WIDTH,
+                                SPAWN_POINT_COLLIDER_HEIGHT,
+                            );
+
+                            if rect.contains(node.cursor_position) {
+                                let click_offset = node.cursor_position - position;
+
+                                node.dragged_object = Some(DraggedObject::SpawnPoint {
+                                    index,
                                     click_offset,
                                 })
                             }
@@ -784,6 +840,7 @@ impl Node for Editor {
                 } else {
                     let mut is_double_click = false;
                     let mut is_selecting_object = false;
+                    let mut is_selecting_spawn_point = false;
                     let mut is_selecting_tile = false;
 
                     if node.double_click_timer < Self::DOUBLE_CLICK_THRESHOLD {
@@ -870,70 +927,105 @@ impl Node for Editor {
                             node.apply_action(action);
                         }
                     } else {
-                        let mut tile_index = None;
+                        for (i, spawn_point) in node.get_map().spawn_points.iter().enumerate() {
+                            let position = scene::find_node_by_type::<EditorCamera>()
+                                .unwrap()
+                                .to_screen_space(*spawn_point);
 
-                        'tile_layers: for id in &layer_ids {
-                            let layer = node.get_map().layers.get(id).unwrap();
-                            if layer.kind == MapLayerKind::TileLayer {
-                                let world_offset = node.get_map().world_offset;
-                                let tile_size = node.get_map().tile_size;
+                            let rect = Rect::new(
+                                position.x,
+                                position.y,
+                                SPAWN_POINT_COLLIDER_WIDTH,
+                                SPAWN_POINT_COLLIDER_HEIGHT,
+                            );
 
-                                for (x, y, tile) in node.map_resource.map.get_tiles(id, None) {
-                                    if tile.is_some() {
-                                        let rect = Rect::new(
-                                            world_offset.x + (x as f32 * tile_size.x),
-                                            world_offset.y + (y as f32 * tile_size.y),
-                                            tile_size.x,
-                                            tile_size.y,
-                                        );
-                                        if rect.contains(cursor_world_position) {
-                                            let i = node.get_map().to_index(uvec2(x, y));
-                                            tile_index = Some(i);
-                                            layer_id = Some(id.clone());
+                            if rect.contains(node.cursor_position) {
+                                is_selecting_spawn_point = true;
 
-                                            break 'tile_layers;
+                                let mut should_select = true;
+
+                                if let Some(index) = node.selected_spawn_point {
+                                    if index == i {
+                                        node.selected_spawn_point = None;
+                                        should_select = false;
+                                    }
+                                }
+
+                                if should_select {
+                                    node.selected_spawn_point = Some(i);
+                                }
+
+                                break;
+                            }
+                        }
+
+                        if !is_selecting_spawn_point {
+                            let mut tile_index = None;
+
+                            'tile_layers: for id in &layer_ids {
+                                let layer = node.get_map().layers.get(id).unwrap();
+                                if layer.kind == MapLayerKind::TileLayer {
+                                    let world_offset = node.get_map().world_offset;
+                                    let tile_size = node.get_map().tile_size;
+
+                                    for (x, y, tile) in node.map_resource.map.get_tiles(id, None) {
+                                        if tile.is_some() {
+                                            let rect = Rect::new(
+                                                world_offset.x + (x as f32 * tile_size.x),
+                                                world_offset.y + (y as f32 * tile_size.y),
+                                                tile_size.x,
+                                                tile_size.y,
+                                            );
+                                            if rect.contains(cursor_world_position) {
+                                                let i = node.get_map().to_index(uvec2(x, y));
+                                                tile_index = Some(i);
+                                                layer_id = Some(id.clone());
+
+                                                break 'tile_layers;
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
 
-                        if let Some(tile_index) = tile_index {
-                            let mut should_select = true;
+                            if let Some(tile_index) = tile_index {
+                                let mut should_select = true;
 
-                            if let Some(selected_tile_index) = node.selected_map_tile_index {
-                                if selected_tile_index == tile_index
-                                    && layer_id.as_ref().unwrap()
-                                        == node.selected_layer.as_ref().unwrap()
-                                {
-                                    should_select = false;
+                                if let Some(selected_tile_index) = node.selected_map_tile_index {
+                                    if selected_tile_index == tile_index
+                                        && layer_id.as_ref().unwrap()
+                                            == node.selected_layer.as_ref().unwrap()
+                                    {
+                                        should_select = false;
 
-                                    if is_double_click {
-                                        let layer_id = layer_id.clone().unwrap();
+                                        if is_double_click {
+                                            let layer_id = layer_id.clone().unwrap();
 
-                                        let action = EditorAction::OpenTilePropertiesWindow {
-                                            layer_id,
-                                            index: tile_index,
-                                        };
+                                            let action = EditorAction::OpenTilePropertiesWindow {
+                                                layer_id,
+                                                index: tile_index,
+                                            };
 
-                                        node.apply_action(action);
-                                    } else {
-                                        node.selected_map_tile_index = None;
+                                            node.apply_action(action);
+                                        } else {
+                                            node.selected_map_tile_index = None;
+                                        }
                                     }
                                 }
-                            }
 
-                            if should_select {
-                                is_selecting_tile = true;
-                                node.selected_map_tile_index = Some(tile_index);
-                                node.selected_layer = layer_id;
+                                if should_select {
+                                    is_selecting_tile = true;
+                                    node.selected_map_tile_index = Some(tile_index);
+                                    node.selected_layer = layer_id;
+                                }
                             }
                         }
                     }
 
-                    if !is_selecting_tile && !is_selecting_object {
+                    if !is_selecting_tile && !is_selecting_object && !is_selecting_spawn_point {
                         node.selected_map_tile_index = None;
                         node.selected_object = None;
+                        node.selected_spawn_point = None;
                     }
                 }
             }
@@ -942,7 +1034,7 @@ impl Node for Editor {
 
             let cursor_world_position = scene::find_node_by_type::<EditorCamera>()
                 .unwrap()
-                .to_world_space(node.cursor_position - dragged_object.click_offset);
+                .to_world_space(node.cursor_position);
 
             let mut position = (cursor_world_position).clamp(
                 map.world_offset,
@@ -954,15 +1046,37 @@ impl Node for Editor {
                 position = map.to_position(coords);
             }
 
-            let action = EditorAction::UpdateObject {
-                id: dragged_object.id,
-                kind: dragged_object.kind,
-                index: dragged_object.index,
-                layer_id: dragged_object.layer_id,
-                position,
-            };
+            match dragged_object {
+                DraggedObject::MapObject {
+                    id,
+                    kind,
+                    index,
+                    layer_id,
+                    click_offset,
+                } => {
+                    let position = position - click_offset;
 
-            node.apply_action(action);
+                    let action = EditorAction::UpdateObject {
+                        id,
+                        kind,
+                        index,
+                        layer_id,
+                        position,
+                    };
+
+                    node.apply_action(action);
+                }
+                DraggedObject::SpawnPoint {
+                    index,
+                    click_offset,
+                } => {
+                    let position = position - click_offset;
+
+                    let action = EditorAction::MoveSpawnPoint { index, position };
+
+                    node.apply_action(action);
+                }
+            }
         }
 
         if node.input.delete {
@@ -981,6 +1095,9 @@ impl Node for Editor {
 
                 let action = EditorAction::RemoveTile { coords, layer_id };
 
+                node.apply_action(action);
+            } else if let Some(index) = node.selected_spawn_point.take() {
+                let action = EditorAction::DeleteSpawnPoint(index);
                 node.apply_action(action);
             }
         }
@@ -1109,6 +1226,75 @@ impl Node for Editor {
         {
             let resources = storage::get::<Resources>();
 
+            for (i, spawn_point) in node.get_map().spawn_points.iter().enumerate() {
+                let mut is_selected = false;
+
+                let mut position = *spawn_point;
+
+                if let Some(DraggedObject::SpawnPoint {
+                    index,
+                    click_offset,
+                }) = node.dragged_object.clone()
+                {
+                    if index == i {
+                        let map = node.get_map();
+
+                        let cursor_world_position = scene::find_node_by_type::<EditorCamera>()
+                            .unwrap()
+                            .to_world_space(node.cursor_position - click_offset);
+
+                        position = (cursor_world_position).clamp(
+                            map.world_offset,
+                            map.world_offset + (map.grid_size.as_f32() * map.tile_size),
+                        );
+
+                        if node.should_snap_to_grid {
+                            let coords = map.to_coords(position);
+                            position = map.to_position(coords);
+                        }
+                    }
+                }
+
+                if let Some(index) = node.selected_spawn_point {
+                    is_selected = index == i;
+                }
+
+                let texture_res = resources.textures.get("spawn_point_icon").unwrap();
+
+                let frame_size = texture_res
+                    .meta
+                    .sprite_size
+                    .map(|v| v.as_f32())
+                    .unwrap_or_else(|| {
+                        vec2(texture_res.texture.width(), texture_res.texture.height())
+                    });
+
+                let source_rect = Rect::new(0.0, 0.0, frame_size.x, frame_size.y);
+
+                draw_texture_ex(
+                    texture_res.texture,
+                    position.x,
+                    position.y,
+                    color::WHITE,
+                    DrawTextureParams {
+                        dest_size: Some(frame_size),
+                        source: Some(source_rect),
+                        ..Default::default()
+                    },
+                );
+
+                if is_selected {
+                    draw_rectangle_lines(
+                        position.x,
+                        position.y,
+                        SPAWN_POINT_COLLIDER_WIDTH,
+                        SPAWN_POINT_COLLIDER_HEIGHT,
+                        4.0,
+                        SELECTION_HIGHLIGHT_COLOR,
+                    )
+                }
+            }
+
             let len = node.get_map().draw_order.len();
             for i in 0..len {
                 let i = len as i32 - i as i32 - 1;
@@ -1130,17 +1316,20 @@ impl Node for Editor {
                             let mut object_position =
                                 node.map_resource.map.world_offset + object.position;
 
-                            if let Some(dragged_object) = &node.dragged_object {
-                                if layer.id == dragged_object.layer_id && dragged_object.index == i
-                                {
+                            if let Some(DraggedObject::MapObject {
+                                layer_id,
+                                index,
+                                click_offset,
+                                ..
+                            }) = node.dragged_object.clone()
+                            {
+                                if layer.id == layer_id && index == i {
                                     let map = node.get_map();
 
                                     let cursor_world_position =
                                         scene::find_node_by_type::<EditorCamera>()
                                             .unwrap()
-                                            .to_world_space(
-                                                node.cursor_position - dragged_object.click_offset,
-                                            );
+                                            .to_world_space(node.cursor_position - click_offset);
 
                                     object_position = (cursor_world_position).clamp(
                                         map.world_offset,
@@ -1288,36 +1477,6 @@ impl Node for Editor {
                                         label = Some("INVALID OBJECT ID".to_string());
                                     }
                                 }
-                                MapObjectKind::SpawnPoint => {
-                                    let texture_res =
-                                        resources.textures.get("spawn_point_icon").unwrap();
-
-                                    let frame_size = texture_res
-                                        .meta
-                                        .sprite_size
-                                        .map(|v| v.as_f32())
-                                        .unwrap_or_else(|| {
-                                            vec2(
-                                                texture_res.texture.width(),
-                                                texture_res.texture.height(),
-                                            )
-                                        });
-
-                                    let source_rect =
-                                        Rect::new(0.0, 0.0, frame_size.x, frame_size.y);
-
-                                    draw_texture_ex(
-                                        texture_res.texture,
-                                        object_position.x,
-                                        object_position.y,
-                                        color::WHITE,
-                                        DrawTextureParams {
-                                            dest_size: Some(frame_size),
-                                            source: Some(source_rect),
-                                            ..Default::default()
-                                        },
-                                    );
-                                }
                             }
 
                             let size = get_object_size(object);
@@ -1446,7 +1605,6 @@ fn get_object_size(object: &MapObject) -> Vec2 {
                 label = Some("INVALID OBJECT ID".to_string())
             }
         }
-        MapObjectKind::SpawnPoint => res = Some(vec2(38.0, 49.0)),
     }
 
     if let Some(label) = &label {

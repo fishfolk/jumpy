@@ -6,12 +6,11 @@ use crate::Map;
 
 pub struct GameWorld {
     pub map: Map,
-    pub spawn_points: Vec<Vec2>,
     pub collision_world: CollisionWorld,
 }
 
 impl GameWorld {
-    pub fn new(map: Map, spawn_points: Vec<Vec2>) -> Self {
+    pub fn new(map: Map) -> Self {
         let tile_cnt = (map.grid_size.x * map.grid_size.y) as usize;
         let mut static_colliders = Vec::with_capacity(tile_cnt);
         for _ in 0..tile_cnt {
@@ -47,12 +46,12 @@ impl GameWorld {
 
         GameWorld {
             map,
-            spawn_points,
             collision_world,
         }
     }
 
     pub fn get_random_spawn_point(&self) -> Vec2 {
-        self.spawn_points[rand::gen_range(0, self.spawn_points.len()) as usize]
+        let i = rand::gen_range(0, self.map.spawn_points.len()) as usize;
+        self.map.spawn_points[i]
     }
 }

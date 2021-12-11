@@ -1289,40 +1289,7 @@
       "id": "logic",
       "kind": "object_layer",
       "has_collision": false,
-      "objects": [
-        {
-          "id": "spawn",
-          "kind": "spawn_point",
-          "position": {
-            "x": 255.66667,
-            "y": 736.6667
-          }
-        },
-        {
-          "id": "spawn",
-          "kind": "spawn_point",
-          "position": {
-            "x": 367.83334,
-            "y": 476.16666
-          }
-        },
-        {
-          "id": "spawn",
-          "kind": "spawn_point",
-          "position": {
-            "x": 864.6515,
-            "y": 735.8333
-          }
-        },
-        {
-          "id": "spawn",
-          "kind": "spawn_point",
-          "position": {
-            "x": 751.0,
-            "y": 479.66666
-          }
-        }
-      ],
+      "objects": [],
       "is_visible": true
     },
     {
@@ -1336,10 +1303,6 @@
           "position": {
             "x": 698.3333,
             "y": 876.9167
-          },
-          "size": {
-            "x": 48.0,
-            "y": 51.0
           }
         },
         {
@@ -1348,10 +1311,6 @@
           "position": {
             "x": 780.25,
             "y": 749.0833
-          },
-          "size": {
-            "x": 48.0,
-            "y": 51.0
           }
         },
         {
@@ -1360,10 +1319,6 @@
           "position": {
             "x": 237.25,
             "y": 621.0833
-          },
-          "size": {
-            "x": 48.0,
-            "y": 51.0
           }
         },
         {
@@ -1372,10 +1327,6 @@
           "position": {
             "x": 872.8333,
             "y": 334.16666
-          },
-          "size": {
-            "x": 48.0,
-            "y": 51.0
           }
         },
         {
@@ -1384,10 +1335,6 @@
           "position": {
             "x": 539.5,
             "y": 366.0
-          },
-          "size": {
-            "x": 48.0,
-            "y": 51.0
           }
         },
         {
@@ -1396,10 +1343,6 @@
           "position": {
             "x": 809.5,
             "y": 334.0
-          },
-          "size": {
-            "x": 48.0,
-            "y": 51.0
           }
         },
         {
@@ -1408,10 +1351,6 @@
           "position": {
             "x": 264.83334,
             "y": 334.0
-          },
-          "size": {
-            "x": 48.0,
-            "y": 51.0
           }
         },
         {
@@ -1420,10 +1359,6 @@
           "position": {
             "x": 375.66666,
             "y": 876.8333
-          },
-          "size": {
-            "x": 48.0,
-            "y": 51.0
           }
         },
         {
@@ -1432,10 +1367,6 @@
           "position": {
             "x": 365.58334,
             "y": 493.25
-          },
-          "size": {
-            "x": 48.0,
-            "y": 51.0
           }
         },
         {
@@ -1444,10 +1375,6 @@
           "position": {
             "x": 859.125,
             "y": 493.91666
-          },
-          "size": {
-            "x": 48.0,
-            "y": 51.0
           }
         },
         {
@@ -1456,10 +1383,6 @@
           "position": {
             "x": 203.45833,
             "y": 333.91666
-          },
-          "size": {
-            "x": 48.0,
-            "y": 51.0
           }
         }
       ],
@@ -1515,120 +1438,6 @@
     }
   ],
   "tilesets": [
-    {
-      "id": "decorations1",
-      "texture_id": "default_decorations",
-      "texture_size": {
-        "x": 240,
-        "y": 102
-      },
-      "tile_size": {
-        "x": 48.0,
-        "y": 51.0
-      },
-      "grid_size": {
-        "x": 5,
-        "y": 2
-      },
-      "first_tile_id": 64,
-      "tile_cnt": 10,
-      "tile_subdivisions": {
-        "x": 3,
-        "y": 3
-      },
-      "autotile_mask": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
     {
       "id": "tileset",
       "texture_id": "default_tileset",
@@ -2220,16 +2029,148 @@
         false
       ],
       "tile_attributes": {
+        "56": [
+          "jumpthrough"
+        ],
         "58": [
           "jumpthrough"
         ],
         "60": [
           "jumpthrough"
-        ],
-        "56": [
-          "jumpthrough"
         ]
       }
+    },
+    {
+      "id": "decorations1",
+      "texture_id": "default_decorations",
+      "texture_size": {
+        "x": 240,
+        "y": 102
+      },
+      "tile_size": {
+        "x": 48.0,
+        "y": 51.0
+      },
+      "grid_size": {
+        "x": 5,
+        "y": 2
+      },
+      "first_tile_id": 64,
+      "tile_cnt": 10,
+      "tile_subdivisions": {
+        "x": 3,
+        "y": 3
+      },
+      "autotile_mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  ],
+  "spawn_points": [
+    {
+      "x": 255.66667,
+      "y": 736.6667
+    },
+    {
+      "x": 367.83334,
+      "y": 476.16666
+    },
+    {
+      "x": 864.6515,
+      "y": 735.8333
+    },
+    {
+      "x": 751.0,
+      "y": 479.66666
     }
   ]
 }

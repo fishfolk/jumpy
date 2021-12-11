@@ -9,7 +9,7 @@ use crate::gui::{Menu, MenuEntry, MenuResult};
 const MENU_WIDTH: f32 = 300.0;
 
 pub const EDITOR_MENU_RESULT_NEW: usize = 0;
-pub const EDITOR_MENU_RESULT_OPEN: usize = 1;
+pub const EDITOR_MENU_RESULT_OPEN_IMPORT: usize = 1;
 pub const EDITOR_MENU_RESULT_SAVE: usize = 2;
 pub const EDITOR_MENU_RESULT_SAVE_AS: usize = 3;
 pub const EDITOR_MENU_RESULT_MAIN_MENU: usize = 4;
@@ -30,8 +30,8 @@ pub fn open_editor_menu(ctx: &EditorContext) {
                         ..Default::default()
                     },
                     MenuEntry {
-                        index: EDITOR_MENU_RESULT_OPEN,
-                        title: "Open".to_string(),
+                        index: EDITOR_MENU_RESULT_OPEN_IMPORT,
+                        title: "Open/Import".to_string(),
                         ..Default::default()
                     },
                     MenuEntry {

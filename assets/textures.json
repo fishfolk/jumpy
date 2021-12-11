@@ -48,7 +48,7 @@
     }
   },
   {
-    "id": "spawn_point_tool_icon",
+    "id": "spawn_point_placement_tool_icon",
     "path": "textures/ui/editor_icons/Pointer and Map.png",
     "sprite_size": {
       "x": 64,

@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::{any::TypeId, result};
 
 use crate::editor::gui::windows::Window;
@@ -100,6 +101,12 @@ pub enum EditorAction {
         kind: MapObjectKind,
         position: Vec2,
     },
+    CreateSpawnPoint(Vec2),
+    DeleteSpawnPoint(usize),
+    MoveSpawnPoint {
+        index: usize,
+        position: Vec2,
+    },
     PlaceTile {
         id: u32,
         layer_id: String,
@@ -117,7 +124,7 @@ pub enum EditorAction {
         grid_size: UVec2,
     },
     OpenCreateMapWindow,
-    LoadMap(usize),
+    OpenMap(usize),
     OpenLoadMapWindow,
     SaveMap(Option<String>),
     OpenSaveMapWindow,
@@ -796,7 +803,7 @@ impl CreateObjectAction {
 impl UndoableAction for CreateObjectAction {
     fn apply(&mut self, map: &mut Map) -> Result {
         if let Some(layer) = map.layers.get_mut(&self.layer_id) {
-            let object = MapObject::new(&self.id, self.kind, self.position, None);
+            let object = MapObject::new(&self.id, self.kind, self.position);
 
             layer.objects.insert(0, object);
         } else {
@@ -918,6 +925,111 @@ impl UndoableAction for UpdateObjectAction {
             }
         } else {
             return Err(&"UpdateObjectAction (Undo): The specified layer does not exist");
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Debug)]
+pub struct CreateSpawnPointAction {
+    position: Vec2,
+}
+
+impl CreateSpawnPointAction {
+    pub fn new(position: Vec2) -> Self {
+        CreateSpawnPointAction { position }
+    }
+}
+
+impl UndoableAction for CreateSpawnPointAction {
+    fn apply(&mut self, map: &mut Map) -> Result {
+        map.spawn_points.push(self.position);
+
+        Ok(())
+    }
+
+    fn undo(&mut self, map: &mut Map) -> Result {
+        map.spawn_points.pop();
+
+        Ok(())
+    }
+}
+
+#[derive(Debug)]
+pub struct DeleteSpawnPointAction {
+    index: usize,
+    spawn_point: Option<Vec2>,
+}
+
+impl DeleteSpawnPointAction {
+    pub fn new(index: usize) -> Self {
+        DeleteSpawnPointAction {
+            index,
+            spawn_point: None,
+        }
+    }
+}
+
+impl UndoableAction for DeleteSpawnPointAction {
+    fn apply(&mut self, map: &mut Map) -> Result {
+        let spawn_point = map.spawn_points.remove(self.index);
+        self.spawn_point = Some(spawn_point);
+
+        Ok(())
+    }
+
+    fn undo(&mut self, map: &mut Map) -> Result {
+        if let Some(spawn_point) = self.spawn_point.take() {
+            if self.index >= map.spawn_points.len() {
+                map.spawn_points.push(spawn_point);
+            } else {
+                map.spawn_points.insert(self.index, spawn_point);
+            }
+        } else {
+            return Err(&"DeleteSpawnPointAction (Undo): No spawn point saved in action. Undo was probably called on an action that was never applied");
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Debug)]
+pub struct MoveSpawnPointAction {
+    index: usize,
+    position: Vec2,
+    old_position: Option<Vec2>,
+}
+
+impl MoveSpawnPointAction {
+    pub fn new(index: usize, position: Vec2) -> Self {
+        MoveSpawnPointAction {
+            index,
+            position,
+            old_position: None,
+        }
+    }
+}
+
+impl UndoableAction for MoveSpawnPointAction {
+    fn apply(&mut self, map: &mut Map) -> Result {
+        let old_position = map.spawn_points.remove(self.index);
+        self.old_position = Some(old_position);
+
+        match map.spawn_points.len().cmp(&self.index) {
+            Ordering::Equal => map.spawn_points.push(self.position),
+            Ordering::Greater => map.spawn_points.insert(self.index, self.position),
+            _ => return Err(&"MoveSpawnPointAction: Index out of bounds"),
+        }
+
+        Ok(())
+    }
+
+    fn undo(&mut self, map: &mut Map) -> Result {
+        if let Some(old_position) = self.old_position {
+            map.spawn_points[self.index] = old_position;
+        } else {
+            return Err(&"MoveSpawnPointAction (Undo): No old position saved in action. Undo was probably called on an action that was never applied");
         }
 
         Ok(())

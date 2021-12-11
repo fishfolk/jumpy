@@ -32,6 +32,8 @@ pub(crate) struct MapDef {
     pub tilesets: Vec<MapTileset>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub properties: HashMap<String, MapProperty>,
+    #[serde(default, with = "super::vec2_vec")]
+    pub spawn_points: Vec<Vec2>,
 }
 
 impl From<Map> for MapDef {
@@ -104,6 +106,7 @@ impl From<Map> for MapDef {
             layers,
             tilesets,
             properties: other.properties,
+            spawn_points: other.spawn_points,
         }
     }
 }
@@ -192,6 +195,7 @@ impl From<MapDef> for Map {
             tilesets,
             draw_order,
             properties: def.properties,
+            spawn_points: def.spawn_points,
         }
     }
 }

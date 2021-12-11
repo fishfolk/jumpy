@@ -1,5 +1,11 @@
 [
   {
+    "name": "test_level",
+    "path": "maps/test_level.json",
+    "preview_path": "maps/test_level.png",
+    "is_user_map": true
+  },
+  {
     "name": "lev01",
     "path": "maps/lev01.json",
     "preview_path": "maps/lev01.png"
@@ -58,11 +64,5 @@
     "name": "zyrafa06",
     "path": "maps/zyrafa06.json",
     "preview_path": "maps/zyrafa06.png"
-  },
-  {
-    "name": "test_level",
-    "path": "maps/test_level.json",
-    "preview_path": "maps/test_level.png",
-    "is_user_map": true
   }
 ]

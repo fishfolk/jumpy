@@ -24,7 +24,7 @@
       "effects": [
         {
           "type": "circle_collider",
-          "radius": 128,
+          "radius": 52,
           "is_explosion": true,
           "sound_effect": "explode"
         },

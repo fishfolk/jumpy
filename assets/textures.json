@@ -222,11 +222,11 @@
   },
   {
     "id": "grenades",
-    "path": "textures/items/Grenades(32x48).png",
+    "path": "textures/items/Grenades(25x52).png",
     "type": "spritesheet",
     "sprite_size": {
-      "x": 32,
-      "y": 48
+      "x": 25,
+      "y": 52
     }
   },
   {
@@ -359,5 +359,9 @@
   {
     "id": "machine_gun_bullet",
     "path": "textures/items/MachineGunBullet(7x4).png"
+  },
+  {
+    "id": "small_explosions",
+    "path": "textures/explosions/Small.png"
   }
 ]

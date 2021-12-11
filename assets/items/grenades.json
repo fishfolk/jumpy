@@ -10,11 +10,12 @@
   "effects": [
     {
       "type": "triggered_effect",
-      "trigger": "enemy",
+      "trigger": [],
       "velocity": {
-        "x": 400.0,
+        "x": 600.0,
         "y": -400.0
       },
+      "is_rotates": true,
       "size": {
         "x": 24,
         "y": 24
@@ -23,17 +24,50 @@
       "effects": [
         {
           "type": "circle_collider",
-          "radius": 64,
+          "radius": 52,
           "is_explosion": true,
-          "particle_effect": "hit",
           "sound_effect": "explode"
+        },
+        {
+          "type": "triggered_effect",
+          "size": {
+            "x": 112,
+            "y": 80
+          },
+          "timed_trigger": 0.7,
+          "effects": [],
+          "particles": [
+            {
+              "particle_effect": "empty",
+              "should_autostart": true,
+              "offset": {
+                "x": -99.5,
+                "y": -67
+              },
+              "animations": {
+                "texture": "small_explosions",
+                "frame_size": {
+                  "x": 112,
+                  "y": 80
+                },
+                "animations": [
+                  {
+                    "id": "animated_effect",
+                    "row": 0,
+                    "frames": 12,
+                    "fps": 24
+                  }
+                ]
+              }
+            }
+          ]
         }
       ],
       "animation": {
         "texture": "grenades",
         "offset": {
           "x": 0,
-          "y": -24
+          "y": -10
         },
         "animations": [
           {
@@ -45,12 +79,23 @@
           }
         ],
         "should_autoplay": true
-      }
+      },
+      "particles": [
+        {
+          "particle_effect": "grenades_smoke",
+          "interval": 0.04,
+          "should_autostart": true,
+          "offset": {
+            "x": 0,
+            "y": -10
+          }
+        }
+      ]
     }
   ],
   "collider_size": {
     "x": 32,
-    "y": 48
+    "y": 34
   },
   "mount_offset": {
     "x": 0,
@@ -62,6 +107,10 @@
   },
   "animation": {
     "texture": "grenades",
+    "offset": {
+      "x": 0,
+      "y": 8
+    },
     "animations": [
       {
         "id": "idle",

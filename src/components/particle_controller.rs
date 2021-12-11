@@ -104,7 +104,7 @@ impl ParticleController {
         }
     }
 
-    fn get_offset(&self, flip_x: bool, flip_y: bool) -> Vec2 {
+    pub fn get_offset(&self, flip_x: bool, flip_y: bool) -> Vec2 {
         let mut offset = self.offset;
 
         if flip_x {

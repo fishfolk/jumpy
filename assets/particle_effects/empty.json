@@ -1,0 +1,46 @@
+{
+  "local_coords": false,
+  "emission_shape": "Point",
+  "one_shot": false,
+  "lifetime": 0,
+  "lifetime_randomness": 0,
+  "explosiveness": 0,
+  "amount": 0,
+  "shape": "Rectangle",
+  "emitting": true,
+  "initial_direction": {
+    "x": 0,
+    "y": 0
+  },
+  "initial_direction_spread": 0,
+  "initial_velocity": 0,
+  "initial_velocity_randomness": 0,
+  "linear_accel": 0,
+  "size": 0,
+  "size_randomness": 0,
+  "blend_mode": "Alpha",
+  "colors_curve": {
+    "start": {
+      "r": 1,
+      "g": 1,
+      "b": 1,
+      "a": 1
+    },
+    "mid": {
+      "r": 1,
+      "g": 1,
+      "b": 1,
+      "a": 1
+    },
+    "end": {
+      "r": 1,
+      "g": 1,
+      "b": 1,
+      "a": 1
+    }
+  },
+  "gravity": {
+    "x": 0,
+    "y": 0
+  }
+}

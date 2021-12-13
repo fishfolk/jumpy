@@ -60,6 +60,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Set the release version
+        shell: bash
+        run: echo "RELEASE_VERSION=${GITHUB_REF:10}" >> $GITHUB_ENV
+
       - name: Setup Dependencies
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -98,21 +102,23 @@ jobs:
         shell: bash
         if: matrix.os == 'windows-latest'
         run: |
-          mkdir -p release/assets
-          cp target/${{ matrix.target }}/release/fishfight.exe release/
-          strip release/fishfight.exe
-          cp -R assets/ release/assets/
-          7z a -tzip ${{ matrix.name }} release/
+          release_dir="FishFight-${{ env.RELEASE_VERSION }}"
+          mkdir -p $release_dir/assets
+          cp target/${{ matrix.target }}/release/fishfight.exe $release_dir/
+          strip $release_dir/fishfight.exe
+          cp -R assets/ $release_dir/assets/
+          7z a -tzip ${{ matrix.name }} $release_dir/
 
       - name: Prepare artifacts [Unix]
         shell: bash
         if: matrix.os != 'windows-latest'
         run: |
-          mkdir -p release/assets
-          cp target/${{ matrix.target }}/release/fishfight release/
-          strip release/fishfight || true
-          cp -R assets/ release/assets/
-          tar -czvf ${{ matrix.name }} release/
+          release_dir="FishFight-${{ env.RELEASE_VERSION }}"
+          mkdir -p $release_dir/assets
+          cp target/${{ matrix.target }}/release/fishfight $release_dir/
+          strip $release_dir/fishfight || true
+          cp -R assets/ $release_dir/assets/
+          tar -czvf ${{ matrix.name }} $release_dir/
 
       - name: Deploy | Upload artifacts
         uses: actions/upload-artifact@v2

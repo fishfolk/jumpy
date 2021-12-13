@@ -95,19 +95,24 @@ jobs:
           # use-cross: ${{ matrix.os == 'ubuntu-latest' }}
 
       - name: Prepare artifacts [Windows]
+        shell: bash
         if: matrix.os == 'windows-latest'
         run: |
-          cd target/${{ matrix.target }}/release
-          strip fishfight.exe
-          7z a ../../../${{ matrix.name }} fishfight.exe
-          cd -
+          mkdir -p release/assets
+          cp target/${{ matrix.target }}/release/fishfight.exe release/
+          strip release/fishfight.exe
+          cp -R assets/ release/assets/
+          7z a -tzip ${{ matrix.name }} release/
+
       - name: Prepare artifacts [Unix]
+        shell: bash
         if: matrix.os != 'windows-latest'
         run: |
-          cd target/${{ matrix.target }}/release
-          strip fishfight || true
-          tar czvf ../../../${{ matrix.name }} fishfight
-          cd -
+          mkdir -p release/assets
+          cp target/${{ matrix.target }}/release/fishfight release/
+          strip release/fishfight || true
+          cp -R assets/ release/assets/
+          tar -czvf ${{ matrix.name }} release/
 
       - name: Deploy | Upload artifacts
         uses: actions/upload-artifact@v2

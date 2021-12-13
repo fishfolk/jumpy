@@ -86,7 +86,7 @@ jobs:
       - name: Build
         uses: actions-rs/cargo@v1
         env:
-          SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX11.0.sdk
+          SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
           RUSTFLAGS: -L /usr/lib/x86_64-linux-gnu
         with:
           command: build

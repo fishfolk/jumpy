@@ -95,35 +95,38 @@ jobs:
           # use-cross: ${{ matrix.os == 'ubuntu-latest' }}
 
       - name: Prepare artifacts [Windows]
+        id: artifacts
         shell: bash
         if: matrix.os == 'windows-latest'
         run: |
           release_dir="fishfight-${{ env.RELEASE_VERSION }}"
+          artifact_path="fishfight-${{ env.RELEASE_VERSION }}-${{ matrix.target }}.zip"
+          echo "::set-output name=artifact_path::$artifact_path"
           mkdir $release_dir
           cp target/${{ matrix.target }}/release/fishfight.exe $release_dir/
           strip $release_dir/fishfight.exe
           cp -R assets/ $release_dir/
-          7z a -tzip \
-            fishfight-${{ env.RELEASE_VERSION }}-${{ matrix.target }}.zip \
-            $release_dir/
+          7z a -tzip $artifact_path $release_dir/
 
       - name: Prepare artifacts [Unix]
+        id: artifacts
         shell: bash
         if: matrix.os != 'windows-latest'
         run: |
           release_dir="fishfight-${{ env.RELEASE_VERSION }}"
+          artifact_path="fishfight-${{ env.RELEASE_VERSION }}-${{ matrix.target }}.tar.gz"
+          echo "::set-output name=artifact_path::$artifact_path"
           mkdir $release_dir
           cp target/${{ matrix.target }}/release/fishfight $release_dir/
           strip $release_dir/fishfight || true
           cp -R assets/ $release_dir/
-          tar -czvf \
-            fishfight-${{ env.RELEASE_VERSION }}-${{ matrix.target }}.tar.gz \
-            $release_dir/
+          tar -czvf $artifact_path $release_dir/
 
       - name: Deploy | Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          path: fishfight-${{ env.RELEASE_VERSION }}-${{ matrix.target }}*
+          name: ${{ steps.artifacts.outputs.artifact_path }}
+          path: ${{ steps.artifacts.outputs.artifact_path }}
           if-no-files-found: error
 
   publish_release:

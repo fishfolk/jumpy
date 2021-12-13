@@ -117,7 +117,7 @@ jobs:
           mkdir $release_dir
           cp target/${{ matrix.target }}/release/fishfight $release_dir/
           strip $release_dir/fishfight || true
-          cp -R assets/ $release_dir/
+          cp -R assets $release_dir
           tar -czvf $artifact_path $release_dir/
 
       - name: Deploy | Upload artifacts

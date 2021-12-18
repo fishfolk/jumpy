@@ -42,7 +42,8 @@ Before committing and opening a PR, please run the following commands and follow
 ## Install & play
 
 1. Install Rust with [Rustup.rs](https://rustup.rs/)
-2. `cargo run`
+2. Install [Cmake](https://cmake.org/download/)
+3. `cargo run`
 
 We'll start distributing executables shortly!
 

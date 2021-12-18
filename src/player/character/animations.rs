@@ -66,6 +66,10 @@ pub struct PlayerAnimations {
     pub fall: Animation,
     #[serde(default = "PlayerAnimations::default_crouch_animation")]
     pub crouch: Animation,
+    #[serde(default = "PlayerAnimations::default_death_back_animation")]
+    pub death_back: Animation,
+    #[serde(default = "PlayerAnimations::default_death_face_animation")]
+    pub death_face: Animation,
 }
 
 impl PlayerAnimations {
@@ -118,6 +122,26 @@ impl PlayerAnimations {
             is_looping: false,
         }
     }
+
+    pub fn default_death_back_animation() -> Animation {
+        Animation {
+            id: Player::DEATH_BACK_ANIMATION_ID.to_string(),
+            row: 5,
+            frames: 7,
+            fps: 10,
+            is_looping: false,
+        }
+    }
+
+    pub fn default_death_face_animation() -> Animation {
+        Animation {
+            id: Player::DEATH_FACE_ANIMATION_ID.to_string(),
+            row: 6,
+            frames: 7,
+            fps: 10,
+            is_looping: false,
+        }
+    }
 }
 
 impl Default for PlayerAnimations {
@@ -128,6 +152,8 @@ impl Default for PlayerAnimations {
             jump: Self::default_jump_animation(),
             fall: Self::default_fall_animation(),
             crouch: Self::default_crouch_animation(),
+            death_back: Self::default_death_back_animation(),
+            death_face: Self::default_death_face_animation(),
         }
     }
 }
@@ -160,6 +186,16 @@ impl From<Vec<Animation>> for PlayerAnimations {
                 .find(|anim| anim.id == Player::CROUCH_ANIMATION_ID)
                 .cloned()
                 .unwrap(),
+            death_back: vec
+                .iter()
+                .find(|anim| anim.id == Player::DEATH_BACK_ANIMATION_ID)
+                .cloned()
+                .unwrap(),
+            death_face: vec
+                .iter()
+                .find(|anim| anim.id == Player::DEATH_FACE_ANIMATION_ID)
+                .cloned()
+                .unwrap(),
         }
     }
 }
@@ -172,6 +208,8 @@ impl From<PlayerAnimations> for Vec<Animation> {
             params.jump,
             params.fall,
             params.crouch,
+            params.death_back,
+            params.death_face,
         ]
     }
 }

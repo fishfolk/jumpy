@@ -80,6 +80,8 @@ pub struct Player {
 
     pub last_collisions: Vec<u8>,
     pub current_collisions: Vec<u8>,
+
+    is_hit_from_right: bool,
 }
 
 impl Player {
@@ -108,6 +110,8 @@ impl Player {
     pub const JUMP_ANIMATION_ID: &'static str = "jump";
     pub const FALL_ANIMATION_ID: &'static str = "fall";
     pub const CROUCH_ANIMATION_ID: &'static str = "crouch";
+    pub const DEATH_BACK_ANIMATION_ID: &'static str = "death_back";
+    pub const DEATH_FACE_ANIMATION_ID: &'static str = "death_face";
 
     pub fn new(player_id: u8, params: PlayerCharacterParams) -> Player {
         let spawn_point = {
@@ -166,6 +170,8 @@ impl Player {
             )
         };
 
+        let is_hit_from_right = body.is_facing_right;
+
         let animation_player = AnimationPlayer::new(params.animation.into());
 
         Player {
@@ -203,6 +209,7 @@ impl Player {
             incapacitation_duration: 0.0,
             last_collisions: Vec::new(),
             current_collisions: Vec::new(),
+            is_hit_from_right,
         }
     }
 
@@ -321,7 +328,7 @@ impl Player {
     // blocking effect, for example. To give damage to a player, use `Player::on_receive_damage`
     pub fn kill(&mut self, is_from_right: bool) {
         if self.state_machine.state() != Self::ST_DEATH {
-            self.body.is_facing_right = is_from_right;
+            self.is_hit_from_right = is_from_right;
 
             self.drop_weapon(false);
 
@@ -399,12 +406,24 @@ impl Player {
         let coroutine = async move {
             {
                 let mut node = scene::get_node(handle);
-                node.body.velocity.x = -300. * node.body.facing_dir().x;
+                node.body.velocity.x = 300.;
+
+                if node.is_hit_from_right {
+                    node.body.velocity.x *= -1.;
+                }
+
                 node.body.velocity.y = -150.;
                 node.body.has_gravity = true;
 
                 node.is_dead = true;
-                //node.set_animation(Self::DEATH_ANIMATION_ID);
+
+                if node.body.is_facing_right && node.is_hit_from_right {
+                    node.set_animation(Self::DEATH_BACK_ANIMATION_ID);
+                } else {
+                    node.set_animation(Self::DEATH_FACE_ANIMATION_ID);
+                }
+
+                node.animation_player.restart();
 
                 // let mut score_counter = scene::get_node(node.score_counter);
                 // score_counter.count_loss(node.controller_id)
@@ -436,21 +455,17 @@ impl Player {
                     node.body.velocity = vec2(0., 0.);
                 }
 
-                //wait_seconds(0.5).await;
+                wait_seconds(0.5).await;
             }
 
             {
                 let mut node = scene::get_node(handle);
-                let pos = node.body.position;
 
-                node.animation_player.stop();
+                //node.animation_player.stop();
                 node.body.velocity = vec2(0., 0.);
-
-                let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
-                particles.spawn("explosion", pos + vec2(15.0, 33.0));
             }
 
-            //wait_seconds(0.5).await;
+            wait_seconds(0.5).await;
 
             let mut node = scene::get_node(handle);
 
@@ -464,7 +479,7 @@ impl Player {
                 world.get_random_spawn_point()
             };
 
-            node.animation_player.play();
+            // node.animation_player.play();
 
             // in deathmatch we can just get back to normal after death
             {

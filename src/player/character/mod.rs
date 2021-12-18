@@ -80,7 +80,7 @@ impl PlayerCharacterParams {
     const DEFAULT_COLLIDER_HEIGHT: f32 = 54.0;
 
     const DEFAULT_WEAPON_MOUNT_X: f32 = -8.0;
-    const DEFAULT_WEAPON_MOUNT_Y: f32 = 18.0;
+    const DEFAULT_WEAPON_MOUNT_Y: f32 = 25.75;
 
     pub fn default_head_threshold() -> f32 {
         Self::DEFAULT_HEAD_THRESHOLD

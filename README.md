@@ -9,12 +9,12 @@ Fish Fight is a tactical 2D shooter, played by up to 4 players online or on a sh
 
 ### Key Features (WIP)
 
-- 2 to 4 players in either Local Multiplayer or Online Play
-- Easy to pick up, emphasizing strategy over twitch reaction
-- Customize characters with hats, saved to your cross-platform profile
-- Create & explore user-made weapons, levels, audio and other scripted extensions
-- Smart level creation tools
-- Tournaments & matchmaking built in
+-  2 to 4 players in either Local Multiplayer or Online Play
+-  Easy to pick up, emphasizing strategy over twitch reaction
+-  Customize characters with hats, saved to your cross-platform profile
+-  Create & explore user-made weapons, levels, audio and other scripted extensions
+-  Smart level creation tools
+-  Tournaments & matchmaking built in
 
 ### Status
 
@@ -30,43 +30,49 @@ Anyone involved in the Fish Fight community must follow our [code of conduct](ht
 If you'd like to make something for Fish Fight, check out our [help-wanted](https://github.com/fishfight/FishFight/labels/help%20wanted) issues or just ask us on [Discord](https://discord.gg/4smxjcheE5). We'll soon post an updated roadmap for the next month or two of work ahead.
 
 Before committing and opening a PR, please run the following commands and follow their instructions:
+
 1. `cargo clippy -- -W clippy::correctness -D warnings`
 2. `cargo fmt`
 
 ### Learning Materials
-- https://macroquad.rs/tutorials/fish-tutorial/
-- https://not-fl3.github.io/platformer-book/intro.html
-- https://sokoban.iolivia.me/ (we do not use an ECS)
-- https://pragprog.com/titles/hwrust/hands-on-rust/
+
+-  https://macroquad.rs/tutorials/fish-tutorial/
+-  https://not-fl3.github.io/platformer-book/intro.html
+-  https://sokoban.iolivia.me/ (we do not use an ECS)
+-  https://pragprog.com/titles/hwrust/hands-on-rust/
 
 ## Install & play
 
 1. Install Rust with [Rustup.rs](https://rustup.rs/)
-2. `cargo run`
+2. Install [Cmake](https://cmake.org/download/)
+3. `cargo run`
 
 We'll start distributing executables shortly!
 
 ## Default key bindings
 
 Keyboard left:
-- movement: arrow keys `↑`, `←`, `↓`, `→`
-- pick/drop: `K`
-- attack: `L`
-- toggle AI: `0`
+
+-  movement: arrow keys `↑`, `←`, `↓`, `→`
+-  pick/drop: `K`
+-  attack: `L`
+-  toggle AI: `0`
 
 Keyboard right:
-- movement: `W`, `A`, `S`, `D` (& `Space` for jump)
-- pick/drop: `C`
-- attack: `V` & `LeftCtrl`
-- toogle AI: `1`
+
+-  movement: `W`, `A`, `S`, `D` (& `Space` for jump)
+-  pick/drop: `C`
+-  attack: `V` & `LeftCtrl`
+-  toogle AI: `1`
 
 Gamepad:
-- movement: direction axis
-- pick/drop: `X`
-- attack: `B`
-- jump: `A`
-- slide: `Down` + `Y`
+
+-  movement: direction axis
+-  pick/drop: `X`
+-  attack: `B`
+-  jump: `A`
+-  slide: `Down` + `Y`
 
 ## Credits
 
-- Input Icons: [Kadith's Icons](https://kadith.itch.io/kadiths-free-icons) by Kadith
+-  Input Icons: [Kadith's Icons](https://kadith.itch.io/kadiths-free-icons) by Kadith

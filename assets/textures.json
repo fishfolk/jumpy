@@ -126,8 +126,8 @@
     "path": "textures/player/PlayerSharky(64x64).png",
     "type": "spritesheet",
     "sprite_size": {
-      "x": 64,
-      "y": 64
+      "x": 96,
+      "y": 80
     }
   },
   {
@@ -135,8 +135,8 @@
     "path": "textures/player/PlayerPescy(64x64).png",
     "type": "spritesheet",
     "sprite_size": {
-      "x": 64,
-      "y": 64
+      "x": 96,
+      "y": 80
     }
   },
   {
@@ -144,8 +144,8 @@
     "path": "textures/player/PlayerFishy(64x64).png",
     "type": "spritesheet",
     "sprite_size": {
-      "x": 64,
-      "y": 64
+      "x": 96,
+      "y": 80
     }
   },
   {
@@ -153,8 +153,8 @@
     "path": "textures/player/PlayerOrcy(64x64).png",
     "type": "spritesheet",
     "sprite_size": {
-      "x": 64,
-      "y": 64
+      "x": 96,
+      "y": 80
     }
   },
   {

@@ -76,7 +76,7 @@
           "x": {
             "$id": "#root/items/offset/x",
             "title": "X",
-            "type": "integer",
+            "type": "number",
             "examples": [
               0
             ],
@@ -85,7 +85,7 @@
           "y": {
             "$id": "#root/items/offset/y",
             "title": "Y",
-            "type": "integer",
+            "type": "number",
             "examples": [
               0
             ],

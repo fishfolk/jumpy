@@ -284,6 +284,11 @@ impl AnimationPlayer {
     pub fn is_playing(&self) -> bool {
         !self.is_deactivated && self.sprite.playing
     }
+
+    // This function is temporary and needed for the death animations to work properly. It will be removed or changed later
+    pub fn restart(&mut self) {
+        self.current_frame = 0;
+    }
 }
 
 impl From<AnimationParams> for AnimationPlayer {

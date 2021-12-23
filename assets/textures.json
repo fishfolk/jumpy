@@ -363,5 +363,9 @@
   {
     "id": "small_explosions",
     "path": "textures/explosions/Small.png"
+  },
+  {
+    "id": "medium_explosions",
+    "path": "textures/explosions/Medium.png"
   }
 ]

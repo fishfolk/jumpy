@@ -27,6 +27,40 @@
           "is_explosion": true,
           "particle_effect": "hit",
           "sound_effect": "explode"
+        },
+        {
+          "type": "triggered_effect",
+          "size": {
+            "x": 144,
+            "y": 112
+          },
+          "timed_trigger": 0.7,
+          "effects": [],
+          "particles": [
+            {
+              "particle_effect": "empty",
+              "should_autostart": true,
+              "offset": {
+                "x": -72,
+                "y": -56
+              },
+              "animations": {
+                "texture": "medium_explosions",
+                "frame_size": {
+                  "x": 144,
+                  "y": 112
+                },
+                "animations": [
+                  {
+                    "id": "animated_effect",
+                    "row": 0,
+                    "frames": 12,
+                    "fps": 24
+                  }
+                ]
+              }
+            }
+          ]
         }
       ],
       "animation": {

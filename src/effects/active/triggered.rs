@@ -433,7 +433,11 @@ impl TriggeredEffects {
                 for params in trigger.effects.drain(0..) {
                     match params {
                         AnyEffectParams::Active(params) => {
-                            active_effect_coroutine(trigger.owner, trigger.body.position, params);
+                            active_effect_coroutine(
+                                trigger.owner,
+                                trigger.body.position + trigger.body.size / 2.0,
+                                params,
+                            );
                         }
                         AnyEffectParams::Passive(params) => {
                             if let Some(triggered_by) = trigger.triggered_by {

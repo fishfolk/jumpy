@@ -217,7 +217,7 @@ pub fn active_effect_coroutine(
                     params.velocity.x = -params.velocity.x;
                 }
 
-                triggered_effects.spawn(player_handle, origin, *params)
+                triggered_effects.spawn(player_handle, origin - params.size / 2.0, *params)
             }
             ActiveEffectKind::Projectile {
                 kind,

@@ -41,8 +41,8 @@
               "particle_effect": "empty",
               "should_autostart": true,
               "offset": {
-                "x": -99.5,
-                "y": -67
+                "x": -56,
+                "y": -40
               },
               "animations": {
                 "texture": "small_explosions",

@@ -17,8 +17,8 @@
       },
       "is_rotates": true,
       "size": {
-        "x": 24,
-        "y": 24
+        "x": 17,
+        "y": 17
       },
       "timed_trigger": 1.5,
       "effects": [
@@ -90,7 +90,7 @@
     }
   ],
   "collider_size": {
-    "x": 32,
+    "x": 25,
     "y": 34
   },
   "mount_offset": {

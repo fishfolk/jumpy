@@ -67,10 +67,6 @@
       ],
       "animation": {
         "texture": "kick_bomb",
-        "offset": {
-          "x": 0,
-          "y": -22
-        },
         "animations": [
           {
             "id": "armed",

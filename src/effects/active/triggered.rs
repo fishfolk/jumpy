@@ -402,10 +402,12 @@ impl TriggeredEffects {
                                         < player.body.position.x + player.body.size.x
                                 {
                                     trigger.body.velocity.x = -Self::KICK_FORCE;
+                                    trigger.body.velocity.y = -50.0;
                                 } else if player.body.is_facing_right
                                     && trigger.body.position.x > player.body.position.x
                                 {
                                     trigger.body.velocity.x = Self::KICK_FORCE;
+                                    trigger.body.velocity.y = -50.0;
                                 } else {
                                     trigger.is_triggered = true;
                                     trigger.triggered_by = Some(player.handle());
@@ -433,7 +435,11 @@ impl TriggeredEffects {
                 for params in trigger.effects.drain(0..) {
                     match params {
                         AnyEffectParams::Active(params) => {
-                            active_effect_coroutine(trigger.owner, trigger.body.position, params);
+                            active_effect_coroutine(
+                                trigger.owner,
+                                trigger.body.position + trigger.body.size / 2.0,
+                                params,
+                            );
                         }
                         AnyEffectParams::Passive(params) => {
                             if let Some(triggered_by) = trigger.triggered_by {
@@ -482,21 +488,30 @@ impl Node for TriggeredEffects {
         for trigger in &mut node.active {
             let flip_x = trigger.body.velocity.x < 0.0;
 
+            let trigger_center = trigger.body.position + trigger.body.size / 2.0;
+
             if let Some(animation_player) = &trigger.animation_player {
-                animation_player.draw(trigger.body.position, trigger.body.rotation, flip_x, false);
+                animation_player.draw(
+                    trigger_center - animation_player.get_size() / 2.0,
+                    trigger.body.rotation,
+                    flip_x,
+                    false,
+                );
             }
 
             for particles in &mut trigger.particles {
                 // This section below rotate particle position (which is triggered body center + particle offset) from triggered body center by triggered body angle
-                let center = trigger.body.position + trigger.body.size / 2.0;
-                let point = center + particles.get_offset(false, false);
+                let point = trigger_center + particles.get_offset(false, false);
 
                 let sin = trigger.body.rotation.sin();
                 let cos = trigger.body.rotation.cos();
 
                 let mut new_position = Vec2::new(
-                    cos * (point.x - center.x) - sin * (point.y - center.y) + center.x,
-                    sin * (point.x - center.x) + cos * (point.y - center.y) + center.y,
+                    cos * (point.x - trigger_center.x) - sin * (point.y - trigger_center.y)
+                        + trigger_center.x,
+                    sin * (point.x - trigger_center.x)
+                        + cos * (point.y - trigger_center.y)
+                        + trigger_center.y,
                 );
                 // Hack, because `ParticleController::draw` adds offset by itself which is already used in the code above
                 new_position -= particles.get_offset(false, false);

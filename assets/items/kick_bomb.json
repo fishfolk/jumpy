@@ -11,12 +11,14 @@
       "type": "triggered_effect",
       "trigger": "all_except_ground",
       "velocity": {
-        "x": 250.0,
-        "y": -125.0
+        "x": 700.0,
+        "y": -200.0
       },
+      "is_rotates": true,
+      "spawn_angle": 90.0,
       "size": {
-        "x": 24,
-        "y": 24
+        "x": 26,
+        "y": 23
       },
       "is_kickable": true,
       "timed_trigger": 1.5,
@@ -27,14 +29,44 @@
           "is_explosion": true,
           "particle_effect": "hit",
           "sound_effect": "explode"
+        },
+        {
+          "type": "triggered_effect",
+          "size": {
+            "x": 144,
+            "y": 112
+          },
+          "timed_trigger": 0.7,
+          "effects": [],
+          "particles": [
+            {
+              "particle_effect": "empty",
+              "should_autostart": true,
+              "offset": {
+                "x": -72,
+                "y": -56
+              },
+              "animations": {
+                "texture": "medium_explosions",
+                "frame_size": {
+                  "x": 144,
+                  "y": 112
+                },
+                "animations": [
+                  {
+                    "id": "animated_effect",
+                    "row": 0,
+                    "frames": 12,
+                    "fps": 24
+                  }
+                ]
+              }
+            }
+          ]
         }
       ],
       "animation": {
         "texture": "kick_bomb",
-        "offset": {
-          "x": 0,
-          "y": -24
-        },
         "animations": [
           {
             "id": "armed",
@@ -45,12 +77,23 @@
           }
         ],
         "should_autoplay": true
-      }
+      },
+      "particles": [
+        {
+          "particle_effect": "kick_bomb_smoke",
+          "interval": 0.04,
+          "should_autostart": true,
+          "offset": {
+            "x": 0,
+            "y": -16
+          }
+        }
+      ]
     }
   ],
   "collider_size": {
     "x": 32,
-    "y": 48
+    "y": 45
   },
   "mount_offset": {
     "x": 0,

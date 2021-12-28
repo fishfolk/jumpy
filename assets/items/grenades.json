@@ -17,8 +17,8 @@
       },
       "is_rotates": true,
       "size": {
-        "x": 24,
-        "y": 24
+        "x": 17,
+        "y": 17
       },
       "timed_trigger": 1.5,
       "effects": [
@@ -41,8 +41,8 @@
               "particle_effect": "empty",
               "should_autostart": true,
               "offset": {
-                "x": -99.5,
-                "y": -67
+                "x": -56,
+                "y": -40
               },
               "animations": {
                 "texture": "small_explosions",
@@ -65,10 +65,6 @@
       ],
       "animation": {
         "texture": "grenades",
-        "offset": {
-          "x": 0,
-          "y": -10
-        },
         "animations": [
           {
             "id": "armed",
@@ -94,7 +90,7 @@
     }
   ],
   "collider_size": {
-    "x": 32,
+    "x": 25,
     "y": 34
   },
   "mount_offset": {

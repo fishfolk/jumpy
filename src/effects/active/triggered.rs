@@ -402,10 +402,12 @@ impl TriggeredEffects {
                                         < player.body.position.x + player.body.size.x
                                 {
                                     trigger.body.velocity.x = -Self::KICK_FORCE;
+                                    trigger.body.velocity.y = -50.0;
                                 } else if player.body.is_facing_right
                                     && trigger.body.position.x > player.body.position.x
                                 {
                                     trigger.body.velocity.x = Self::KICK_FORCE;
+                                    trigger.body.velocity.y = -50.0;
                                 } else {
                                     trigger.is_triggered = true;
                                     trigger.triggered_by = Some(player.handle());

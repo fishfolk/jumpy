@@ -11,8 +11,8 @@
       "type": "triggered_effect",
       "trigger": "all_except_ground",
       "velocity": {
-        "x": 600.0,
-        "y": -50.0
+        "x": 700.0,
+        "y": -200.0
       },
       "is_rotates": true,
       "spawn_angle": 90.0,

@@ -54,5 +54,9 @@
   {
     "id": "sniper_rifle_muzzle_smoke",
     "path": "particle_effects/sniper_rifle_muzzle_smoke.json"
+  },
+  {
+    "id": "sniper_rifle_bullet_smoke",
+    "path": "particle_effects/sniper_rifle_bullet_smoke.json"
   }
 ]

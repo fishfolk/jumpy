@@ -50,7 +50,13 @@
         }
       },
       "range": 600.0,
-      "speed": 25.0
+      "speed": 25.0,
+      "particles": [
+        {
+          "particle_effect": "sniper_rifle_bullet_smoke",
+          "interval": 0.01
+        }
+      ]
     }
   ],
   "animation": {

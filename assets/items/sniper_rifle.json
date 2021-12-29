@@ -13,12 +13,19 @@
   "attack_duration": 1.0,
   "recoil": 1400.0,
   "sound_effect": "shoot",
+  "particles": [
+    {
+      "particle_effect": "sniper_rifle_muzzle_smoke",
+      "interval": 0.05,
+      "emissions": 12
+    }
+  ],
   "collider_size": {
     "x": 64,
     "y": 24
   },
   "effect_offset": {
-    "x": 64,
+    "x": 82,
     "y": 16
   },
   "mount_offset": {

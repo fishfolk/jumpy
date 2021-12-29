@@ -367,5 +367,9 @@
   {
     "id": "medium_explosions",
     "path": "textures/explosions/Medium.png"
+  },
+  {
+    "id": "sniper_rifle_bullet",
+    "path": "textures/items/SniperRifleBullet.png"
   }
 ]

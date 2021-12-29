@@ -8,7 +8,7 @@
     }
   },
   "type": "weapon",
-  "uses": 2,
+  "uses": 200,
   "cooldown": 1.5,
   "attack_duration": 1.0,
   "recoil": 1400.0,
@@ -31,16 +31,14 @@
       "projectile": {
         "type": "sprite",
         "sprite": {
-          "texture": "small_projectile",
+          "texture": "sniper_rifle_bullet",
           "size": {
-            "x": 8,
+            "x": 50,
             "y": 4
           },
-          "tint": {
-            "r": 0.9,
-            "g": 0.75,
-            "b": 0.12,
-            "a": 1.0
+          "offset": {
+            "x": -25,
+            "y": -2
           }
         }
       },

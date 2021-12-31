@@ -174,6 +174,12 @@ async fn main() -> Result<()> {
                 load_resources(&resources.assets_dir).await;
                 continue 'outer;
             }
+            MainMenuResult::Credits => {
+                start_music("thanks_for_all_the_fished");
+                gui::show_game_credits().await;
+                stop_music();
+                continue 'outer;
+            }
             MainMenuResult::Quit => {
                 quit_to_desktop();
             }

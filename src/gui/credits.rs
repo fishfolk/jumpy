@@ -11,7 +11,7 @@ const CREDITS_LIST: [(&str, LabelType); 31] = [
     ("Fish Fight", LabelType::MainHeader),
     ("Founding Team", LabelType::SecondaryHeader),
     ("Erlend Sogge Heggen - General Director", LabelType::Regular),
-    ("Jacob Terjesønn Rypdal- Sound Director", LabelType::Regular),
+    ("'Emerald Jak' - Sound Director", LabelType::Regular),
     (
         "Fedor Logachev - Technical Director (former)",
         LabelType::Regular,
@@ -27,7 +27,7 @@ const CREDITS_LIST: [(&str, LabelType); 31] = [
     ("Carlo Supina - Dev Advocacy", LabelType::Regular),
     ("Micah Tigley - Dev Advocacy", LabelType::Regular),
     ("Drake - Media Content", LabelType::Regular),
-    ("Zyrafa - Gameplay Design", LabelType::Regular),
+    ("Michał Grzegórzek-Kiaszewicz - Gameplay Design", LabelType::Regular),
     ("Contributors", LabelType::SecondaryHeader),
     ("Saverio Miroddi - Gameplay Code", LabelType::Regular),
     ("@grufkork - Gameplay Code", LabelType::Regular),

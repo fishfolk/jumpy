@@ -21,8 +21,8 @@
     }
   ],
   "collider_size": {
-    "x": 64,
-    "y": 24
+    "x": 84,
+    "y": 25
   },
   "effect_offset": {
     "x": 82,

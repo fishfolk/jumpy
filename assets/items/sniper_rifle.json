@@ -8,7 +8,7 @@
     }
   },
   "type": "weapon",
-  "uses": 200,
+  "uses": 2,
   "cooldown": 1.5,
   "attack_duration": 1.0,
   "recoil": 1400.0,

@@ -40,12 +40,12 @@
         "sprite": {
           "texture": "sniper_rifle_bullet",
           "size": {
-            "x": 50,
-            "y": 4
+            "x": 7,
+            "y": 7
           },
           "offset": {
-            "x": -25,
-            "y": -2
+            "x": -3.5,
+            "y": -3.5
           }
         }
       },

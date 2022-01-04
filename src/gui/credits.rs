@@ -11,7 +11,7 @@ const CREDITS_LIST: [(&str, LabelType); 31] = [
     ("Fish Fight", LabelType::MainHeader),
     ("Founding Team", LabelType::SecondaryHeader),
     ("Erlend Sogge Heggen - General Director", LabelType::Regular),
-    ("Jacob Terjesønn Rypdal 'Emerald Jak' - Sound Director", LabelType::Regular),
+    ("'Emerald Jak' - Sound Director", LabelType::Regular),
     (
         "Fedor Logachev - Technical Director (former)",
         LabelType::Regular,

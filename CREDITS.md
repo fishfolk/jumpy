@@ -6,7 +6,7 @@
 # Founding Team
 
 - Erlend Sogge Heggen, [@erlend-sh](https://github.com/erlend-sh) – General Director
-- Jacob Terjesønn Rypdal 'Emerald Jak', [etterklangstudio](https://en.etterklangstudio.no/) – Sound Director
+- 'Emerald Jak', [etterklangstudio](https://en.etterklangstudio.no/) – Sound Director
 - Fedor Logachev, [@not-fl3](https://github.com/not-fl3) – Technical Director (former: v0.0-v0.2)
 - Ole A. Sjo Fasting, [@olefasting](https://github.com/olefasting) – Technical Director (current: v0.3-v0.X)
 - Orlando Herrera, [@_pixelfrog](https://twitter.com/_pixelfrog) – Art Director

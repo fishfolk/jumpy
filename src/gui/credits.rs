@@ -2,10 +2,10 @@ use crate::is_gamepad_btn_pressed;
 use fishsticks::{Button, GamepadContext};
 use macroquad::{experimental::collections::storage, prelude::*};
 
-const TEXT_X_OFFSET: f32 = 240.0;
-const MAIN_HEADER_Y_OFFSET: f32 = 200.0;
-const SECONDARY_HEADER_Y_OFFSET: f32 = 100.0;
-const TEXT_Y_OFFSET: f32 = 40.0;
+const TEXT_X_OFFSET: f32 = 370.0;
+const MAIN_HEADER_Y_OFFSET: f32 = 300.0;
+const SECONDARY_HEADER_Y_OFFSET: f32 = 150.0;
+const TEXT_Y_OFFSET: f32 = 60.0;
 
 const CREDITS_LIST: [(&str, LabelType); 31] = [
     ("Fish Fight", LabelType::MainHeader),
@@ -52,7 +52,7 @@ struct CreditLabel {
     text: String,
     x: f32,
     y: f32,
-    font_size: f32,
+    font_size: u16,
 }
 
 #[derive(Clone, Copy)]
@@ -68,6 +68,10 @@ pub async fn show_game_credits() {
     let mut delta = 200.0;
     let credits = create_game_credits();
 
+    let font = load_ttf_font("./assets/ui/AnonymousPro-Regular.ttf")
+        .await
+        .unwrap();
+
     loop {
         if is_key_pressed(KeyCode::Escape)
             || is_gamepad_btn_pressed(Some(&gamepad_context), Button::B)
@@ -81,7 +85,17 @@ pub async fn show_game_credits() {
         for credit in &credits {
             let x = screen_width() / 2.0 - credit.x;
             let y = credit.y + delta;
-            draw_text(&credit.text, x, y, credit.font_size, WHITE)
+            draw_text_ex(
+                &credit.text,
+                x,
+                y,
+                TextParams {
+                    font,
+                    font_size: credit.font_size,
+                    color: WHITE,
+                    ..Default::default()
+                },
+            );
         }
 
         next_frame().await;
@@ -107,7 +121,7 @@ fn create_game_credits() -> Vec<CreditLabel> {
                     text: credit_label.0.to_string(),
                     x: TEXT_X_OFFSET,
                     y: screen_height() + prev_position,
-                    font_size: 100.,
+                    font_size: 100,
                 });
             }
             LabelType::SecondaryHeader => {
@@ -117,7 +131,7 @@ fn create_game_credits() -> Vec<CreditLabel> {
                     text: credit_label.0.to_string(),
                     x: TEXT_X_OFFSET,
                     y: screen_height() + prev_position,
-                    font_size: 40.,
+                    font_size: 40,
                 });
             }
             LabelType::Regular => {
@@ -127,7 +141,7 @@ fn create_game_credits() -> Vec<CreditLabel> {
                     text: credit_label.0.to_string(),
                     x: TEXT_X_OFFSET,
                     y: screen_height() + prev_position,
-                    font_size: 30.,
+                    font_size: 30,
                 });
             }
         }

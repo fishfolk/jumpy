@@ -27,7 +27,10 @@ const CREDITS_LIST: [(&str, LabelType); 31] = [
     ("Carlo Supina - Dev Advocacy", LabelType::Regular),
     ("Micah Tigley - Dev Advocacy", LabelType::Regular),
     ("Drake - Media Content", LabelType::Regular),
-    ("Michał Grzegórzek-Kiaszewicz - Gameplay Design", LabelType::Regular),
+    (
+        "Michał Grzegórzek-Kiaszewicz - Gameplay Design",
+        LabelType::Regular,
+    ),
     ("Contributors", LabelType::SecondaryHeader),
     ("Saverio Miroddi - Gameplay Code", LabelType::Regular),
     ("@grufkork - Gameplay Code", LabelType::Regular),

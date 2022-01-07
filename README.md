@@ -34,9 +34,10 @@ Before committing and opening a PR, please run the following commands and follow
 2. `cargo fmt`
 
 ### Learning Materials
-- https://macroquad.rs/tutorials/fish-tutorial/
+- https://fishfight.github.io/FishFight/
+- https://macroquad.rs/tutorials/fish-tutorial/ (outdated)
 - https://not-fl3.github.io/platformer-book/intro.html
-- https://sokoban.iolivia.me/ (we do not use an ECS)
+- https://sokoban.iolivia.me/
 - https://pragprog.com/titles/hwrust/hands-on-rust/
 
 ## Install & play

@@ -1,6 +1,7 @@
 # Fish Fight
 
-[![Github Actions](https://github.com/fishfight/fish2/workflows/Compilation%20check/badge.svg)](https://github.com/fishfight/fish2/actions?query=workflow%3A)
+[![Build Status](https://img.shields.io/github/workflow/status/fishfight/FishFight/Compilation%20check?logo=github&labelColor=242733&color=3ca8a9)](https://github.com/fishfight/FishFight/actions) [![Documentation](https://img.shields.io/badge/documentation-fishfight.github.io-green.svg?labelColor=242733&color=f3ee7a)](https://fishfight.github.io/FishFight/) [![License](https://img.shields.io/badge/License-MIT%20or%20Apache%202-green.svg?label=license&labelColor=242733&color=34925e)](./LICENSE) [![Discord](https://img.shields.io/badge/chat-on%20discord-green.svg?logo=discord&logoColor=fff&labelColor=242733&color=c67b69)](https://discord.gg/4smxjcheE5)
+
 ![fish-scene](https://user-images.githubusercontent.com/583842/132137745-ee1f4565-bd75-4d56-b040-234a259ed2b7.gif)
 
 ## Introduction
@@ -40,13 +41,33 @@ Before committing and opening a PR, please run the following commands and follow
 - https://sokoban.iolivia.me/
 - https://pragprog.com/titles/hwrust/hands-on-rust/
 
-## Install & play
+## Download & play
 
-1. Install Rust with [Rustup.rs](https://rustup.rs/)
-2. Install [Cmake](https://cmake.org/download/)
+1. Download the latest version from the [releases](https://github.com/fishfight/FishFight/releases) page.
+2. Extract the archive and run the executable. (e.g. `./fishfight` or `fishfight.exe`)
+
+### Distro Packages
+
+<details>
+  <summary>Packaging status</summary>
+
+[![Packaging status](https://repology.org/badge/vertical-allrepos/fishfight.svg)](https://repology.org/project/fishfight/versions)
+
+</details>
+
+#### Arch Linux
+
+```sh
+pacman -S fishfight
+```
+
+## Building
+
+1. Install Rust with [rustup.rs](https://rustup.rs/)
+2. Clone this repository: `git clone https://github.com/fishfight/FishFight.git`
 3. `cargo run`
 
-We'll start distributing executables shortly!
+If you get compilation errors, make sure you have [SDL2](https://www.libsdl.org/download-2.0.php) installed on your system.
 
 ## Default key bindings
 
@@ -71,4 +92,5 @@ Gamepad:
 
 ## Credits
 
+- [FishFight Credits](./CREDITS.md)
 - Input Icons: [Kadith's Icons](https://kadith.itch.io/kadiths-free-icons) by Kadith

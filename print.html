@@ -155,8 +155,8 @@
                     <main>
                         <!-- markdownlint-disable MD041 -->
 <h1><a class="header" href="#fish-fight" id="fish-fight">Fish Fight</a></h1>
-<p><a href="https://github.com/fishfight/fish2/actions?query=workflow%3A"><img src="https://github.com/fishfight/fish2/workflows/Compilation%20check/badge.svg" alt="Github Actions" /></a>
-<img src="https://user-images.githubusercontent.com/583842/132137745-ee1f4565-bd75-4d56-b040-234a259ed2b7.gif" alt="fish-scene" /></p>
+<p><a href="https://github.com/fishfight/FishFight/actions"><img src="https://img.shields.io/github/workflow/status/fishfight/FishFight/Compilation%20check?logo=github&amp;labelColor=242733&amp;color=3ca8a9" alt="Build Status" /></a> <a href="https://fishfight.github.io/FishFight/"><img src="https://img.shields.io/badge/documentation-fishfight.github.io-green.svg?labelColor=242733&amp;color=f3ee7a" alt="Documentation" /></a> <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT%20or%20Apache%202-green.svg?label=license&amp;labelColor=242733&amp;color=34925e" alt="License" /></a> <a href="https://discord.gg/4smxjcheE5"><img src="https://img.shields.io/badge/chat-on%20discord-green.svg?logo=discord&amp;logoColor=fff&amp;labelColor=242733&amp;color=c67b69" alt="Discord" /></a></p>
+<p><img src="https://user-images.githubusercontent.com/583842/132137745-ee1f4565-bd75-4d56-b040-234a259ed2b7.gif" alt="fish-scene" /></p>
 <h2><a class="header" href="#introduction" id="introduction">Introduction</a></h2>
 <p>Fish Fight is a tactical 2D shooter, played by up to 4 players online or on a shared screen. Aim either left or right; the rest is up to clever movement and positioning in this fish-on-fish brawler! For more information about our origin story (Duck Game et.al.) and big-picture plans, see our <a href="https://www.notion.so/erlendsh/Fish-Fight-1647ed74217e4e38a59bd28f4f5bc81a">design document</a>.</p>
 <h3><a class="header" href="#key-features-wip" id="key-features-wip">Key Features (WIP)</a></h3>
@@ -188,13 +188,26 @@ https://twitter.com/fishfightgame/status/1424084016467226624</p>
 <li>https://sokoban.iolivia.me/</li>
 <li>https://pragprog.com/titles/hwrust/hands-on-rust/</li>
 </ul>
-<h2><a class="header" href="#install--play" id="install--play">Install &amp; play</a></h2>
+<h2><a class="header" href="#download--play" id="download--play">Download &amp; play</a></h2>
 <ol>
-<li>Install Rust with <a href="https://rustup.rs/">Rustup.rs</a></li>
-<li>Install <a href="https://cmake.org/download/">Cmake</a></li>
+<li>Download the latest version from the <a href="https://github.com/fishfight/FishFight/releases">releases</a> page.</li>
+<li>Extract the archive and run the executable. (e.g. <code>./fishfight</code> or <code>fishfight.exe</code>)</li>
+</ol>
+<h3><a class="header" href="#distro-packages" id="distro-packages">Distro Packages</a></h3>
+<details>
+  <summary>Packaging status</summary>
+<p><a href="https://repology.org/project/fishfight/versions"><img src="https://repology.org/badge/vertical-allrepos/fishfight.svg" alt="Packaging status" /></a></p>
+</details>
+<h4><a class="header" href="#arch-linux" id="arch-linux">Arch Linux</a></h4>
+<pre><code class="language-sh">pacman -S fishfight
+</code></pre>
+<h2><a class="header" href="#building" id="building">Building</a></h2>
+<ol>
+<li>Install Rust with <a href="https://rustup.rs/">rustup.rs</a></li>
+<li>Clone this repository: <code>git clone https://github.com/fishfight/FishFight.git</code></li>
 <li><code>cargo run</code></li>
 </ol>
-<p>We'll start distributing executables shortly!</p>
+<p>If you get compilation errors, make sure you have <a href="https://www.libsdl.org/download-2.0.php">SDL2</a> installed on your system.</p>
 <h2><a class="header" href="#default-key-bindings" id="default-key-bindings">Default key bindings</a></h2>
 <p>Keyboard left:</p>
 <ul>
@@ -220,6 +233,7 @@ https://twitter.com/fishfightgame/status/1424084016467226624</p>
 </ul>
 <h2><a class="header" href="#credits" id="credits">Credits</a></h2>
 <ul>
+<li><a href="./CREDITS.html">FishFight Credits</a></li>
 <li>Input Icons: <a href="https://kadith.itch.io/kadiths-free-icons">Kadith's Icons</a> by Kadith</li>
 </ul>
 <!-- markdownlint-disable MD041 -->

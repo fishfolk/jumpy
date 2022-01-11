@@ -6,7 +6,7 @@ use hecs::{Entity, World};
 use serde::{Deserialize, Serialize};
 
 use crate::effects::active::spawn_active_effect;
-use crate::json;
+use crate::{AnimatedSpriteParams, json, PhysicsBodyParams};
 use crate::particles::{ParticleEmitter, ParticleEmitterParams};
 use crate::player::PlayerState;
 use crate::{
@@ -74,6 +74,8 @@ impl TriggeredEffect {
     }
 }
 
+const TRIGGERED_EFFECT_ANIMATION_ID: &str = "armed";
+
 pub fn spawn_triggered_effect(
     world: &mut World,
     owner: Entity,
@@ -82,12 +84,18 @@ pub fn spawn_triggered_effect(
 ) -> Result<Entity> {
     let offset = meta.size * -0.5;
 
+    let actor = {
+        let mut collision_world = storage::get_mut::<CollisionWorld>();
+        collision_world.add_actor(origin, meta.size.x as i32, meta.size.y as i32)
+    };
+
     let entity = world.spawn((
         TriggeredEffect::new(owner, meta.clone()),
         Transform::from(origin),
-        RigidBody::new(
+        PhysicsBody::new(
+            actor,
             meta.velocity,
-            RigidBodyParams {
+            PhysicsBodyParams {
                 offset,
                 size: meta.size,
                 can_rotate: meta.can_rotate,
@@ -110,11 +118,22 @@ pub fn spawn_triggered_effect(
             .map(|a| a.into())
             .collect::<Vec<_>>();
 
-        let params = meta.into();
+        let mut params: AnimatedSpriteParams = meta.into();
+
+        params.offset -= frame_size / 2.0;
+
+        let mut sprite = AnimatedSprite::new(
+            texture,
+            frame_size,
+            animations.as_slice(),
+            params,
+        );
+
+        sprite.set_animation(TRIGGERED_EFFECT_ANIMATION_ID, true);
 
         world.insert_one(
             entity,
-            AnimatedSprite::new(texture, frame_size, animations.as_slice(), params),
+            sprite,
         )?;
     }
 
@@ -147,7 +166,7 @@ pub fn update_triggered_effects(world: &mut World) {
         })
         .collect::<Vec<_>>();
 
-    for (e, (effect, transform, body)) in
+    for (entity, (effect, transform, body)) in
         world.query_mut::<(&mut TriggeredEffect, &Transform, &mut PhysicsBody)>()
     {
         if !effect.should_collide_with_platforms {
@@ -227,7 +246,7 @@ pub fn update_triggered_effects(world: &mut World) {
             && (effect.should_override_delay || effect.trigger_delay_timer >= effect.trigger_delay)
         {
             let params = (
-                e,
+                entity,
                 effect.triggered_by,
                 effect.owner,
                 transform.position,

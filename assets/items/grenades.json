@@ -41,7 +41,7 @@
                 "x": -99.5,
                 "y": -67
               },
-              "animations": {
+              "sprite": {
                 "texture": "small_explosions",
                 "frame_size": {
                   "x": 112,
@@ -60,12 +60,8 @@
           ]
         }
       ],
-      "animation": {
+      "sprite": {
         "texture": "grenades",
-        "offset": {
-          "x": 0,
-          "y": -10
-        },
         "animations": [
           {
             "id": "armed",
@@ -102,12 +98,8 @@
     "x": 0,
     "y": 24
   },
-  "animation": {
+  "sprite": {
     "texture": "grenades",
-    "offset": {
-      "x": 0,
-      "y": 8
-    },
     "animations": [
       {
         "id": "idle",

@@ -13,7 +13,7 @@
       "blocks_damage": true
     }
   ],
-  "animation": {
+  "sprite": {
     "texture": "turtle_shell",
     "animations": [
       {

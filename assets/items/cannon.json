@@ -40,7 +40,7 @@
           "sound_effect": "explode"
         }
       ],
-      "animation": {
+      "sprite": {
         "texture": "cannon_ball",
         "animations": [
           {
@@ -59,7 +59,7 @@
     "x": 64,
     "y": 24
   },
-  "animation": {
+  "sprite": {
     "texture": "cannon",
     "animations": [
       {

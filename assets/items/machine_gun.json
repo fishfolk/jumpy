@@ -49,7 +49,7 @@
     "x": 68,
     "y": 24
   },
-  "animation": {
+  "sprite": {
     "texture": "machine_gun",
     "animations": [
       {

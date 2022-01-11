@@ -130,7 +130,7 @@
       "speed": 900.0
     }
   ],
-  "animation": {
+  "sprite": {
     "texture": "blunderbuss",
     "animations": [
       {

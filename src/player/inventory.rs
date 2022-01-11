@@ -49,6 +49,7 @@ pub fn update_player_inventory(world: &mut World) {
     let mut picked_up = Vec::new();
     let mut dropped = Vec::new();
     let mut to_fire = Vec::new();
+    let mut to_destroy = Vec::new();
 
     for (entity, (transform, controller, state, inventory, body)) in world
         .query::<(
@@ -175,7 +176,29 @@ pub fn update_player_inventory(world: &mut World) {
             );
 
             if controller.should_attack {
-                to_fire.push((weapon_entity, entity));
+                let mut is_depleted = false;
+
+                if let Some(uses) = weapon.uses {
+                    if weapon.use_cnt >= uses {
+                        is_depleted = true;
+
+                        match weapon.deplete_behavior {
+                            ItemDepleteBehavior::Destroy => {
+                                to_destroy.push(weapon_entity);
+                                inventory.weapon = None;
+                            }
+                            ItemDepleteBehavior::Drop => {
+                                dropped.push(weapon_entity);
+                                inventory.weapon = None;
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+
+                if !is_depleted {
+                    to_fire.push((weapon_entity, entity));
+                }
             }
         }
 
@@ -219,6 +242,13 @@ pub fn update_player_inventory(world: &mut World) {
 
     for (entity, owner) in to_fire.drain(0..) {
         if let Err(err) = fire_weapon(world, entity, owner) {
+            #[cfg(debug_assertions)]
+            println!("WARNING: {}", err);
+        }
+    }
+
+    for entity in to_destroy {
+        if let Err(err) = world.despawn(entity) {
             #[cfg(debug_assertions)]
             println!("WARNING: {}", err);
         }

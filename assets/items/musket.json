@@ -50,7 +50,7 @@
     "x": -12,
     "y": -12
   },
-  "animation": {
+  "sprite": {
     "texture": "musket",
     "animations": [
       {

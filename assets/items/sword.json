@@ -21,7 +21,7 @@
     "x": -8,
     "y": -64
   },
-  "animation": {
+  "sprite": {
     "texture": "sword",
     "animations": [
       {

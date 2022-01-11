@@ -33,7 +33,7 @@
           "height": 32
         }
       ],
-      "animation": {
+      "sprite": {
         "texture": "crate",
         "animations": [
           {
@@ -46,7 +46,7 @@
       }
     }
   ],
-  "animation": {
+  "sprite": {
     "texture": "crate",
     "animations": [
       {

@@ -26,7 +26,7 @@ struct Custom {
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ErrorKind {
     General,
-    EcsError,
+    Ecs,
     File,
     Parsing,
     Input,
@@ -39,7 +39,7 @@ impl ErrorKind {
     pub fn as_str(&self) -> &'static str {
         match *self {
             ErrorKind::General => "General error",
-            ErrorKind::EcsError => "ECS error",
+            ErrorKind::Ecs => "ECS error",
             ErrorKind::File => "File error",
             ErrorKind::Parsing => "Parsing error",
             ErrorKind::Input => "Input error",
@@ -208,19 +208,19 @@ impl From<crate::data::Error> for Error {
 
 impl From<hecs::ComponentError> for Error {
     fn from(err: hecs::ComponentError) -> Self {
-        Error::new(ErrorKind::EcsError, err)
+        Error::new(ErrorKind::Ecs, err)
     }
 }
 
 impl From<hecs::NoSuchEntity> for Error {
     fn from(err: hecs::NoSuchEntity) -> Self {
-        Error::new(ErrorKind::EcsError, err)
+        Error::new(ErrorKind::Ecs, err)
     }
 }
 
 impl From<hecs::QueryOneError> for Error {
     fn from(err: hecs::QueryOneError) -> Self {
-        Error::new(ErrorKind::EcsError, err)
+        Error::new(ErrorKind::Ecs, err)
     }
 }
 

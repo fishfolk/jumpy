@@ -52,7 +52,7 @@
         "texture": "cannon_ball",
         "animations": [
           {
-            "id": "armed",
+            "id": "effect",
             "row": 0,
             "frames": 1,
             "fps": 1,

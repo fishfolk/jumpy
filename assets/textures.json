@@ -361,7 +361,27 @@
     "path": "textures/items/MachineGunBullet(7x4).png"
   },
   {
-    "id": "small_explosions",
-    "path": "textures/explosions/Small.png"
+    "id": "explosion_small",
+    "path": "textures/explosions/Small(112x80).png",
+    "sprite_size": {
+      "x": 112,
+      "y": 80
+    }
+  },
+  {
+    "id": "explosion_medium",
+    "path": "textures/explosions/Medium(144x112).png",
+    "sprite_size": {
+      "x": 144,
+      "y": 112
+    }
+  },
+  {
+    "id": "explosion_big",
+    "path": "textures/explosions/Big(176x144).png",
+    "sprite_size": {
+      "x": 176,
+      "y": 144
+    }
   }
 ]

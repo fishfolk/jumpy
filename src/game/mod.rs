@@ -37,6 +37,7 @@ use crate::particles::{
 };
 pub use music::{start_music, stop_music};
 use crate::effects::active::projectiles::update_projectiles;
+use crate::effects::active::triggered::update_triggered_effects;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum GameMode {
@@ -95,12 +96,13 @@ impl Game {
             .add_system(update_animated_sprite_sets)
             .add_system(update_particle_emitters)
             .add_system(update_particle_emitter_sets)
+            .add_system(update_projectiles)
+            .add_system(update_triggered_effects)
             .build();
 
         let fixed_updates = Scheduler::builder()
             .add_system(update_physics_bodies)
             .add_system(update_rigid_bodies)
-            .add_system(update_projectiles)
             .build();
 
         let draws = Scheduler::builder()

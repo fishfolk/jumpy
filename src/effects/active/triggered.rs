@@ -74,7 +74,7 @@ impl TriggeredEffect {
     }
 }
 
-const TRIGGERED_EFFECT_ANIMATION_ID: &str = "armed";
+const TRIGGERED_EFFECT_ANIMATION_ID: &str = "effect";
 
 pub fn spawn_triggered_effect(
     world: &mut World,
@@ -154,7 +154,7 @@ pub fn spawn_triggered_effect(
     Ok(entity)
 }
 
-const KICK_FORCE: f32 = 800.0;
+const KICK_FORCE: f32 = 15.0;
 const KICK_DELAY: f32 = 0.22;
 
 pub fn update_triggered_effects(world: &mut World) {

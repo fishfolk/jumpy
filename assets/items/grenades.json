@@ -32,39 +32,24 @@
             "y": 80
           },
           "timed_trigger": 0.7,
-          "effects": [],
-          "particles": [
-            {
-              "particle_effect": "empty",
-              "should_autostart": true,
-              "offset": {
-                "x": -99.5,
-                "y": -67
-              },
-              "sprite": {
-                "texture": "small_explosions",
-                "frame_size": {
-                  "x": 112,
-                  "y": 80
-                },
-                "animations": [
-                  {
-                    "id": "animated_effect",
-                    "row": 0,
-                    "frames": 12,
-                    "fps": 24
-                  }
-                ]
+          "sprite": {
+            "texture": "explosion_small",
+            "animations": [
+              {
+                "id": "effect",
+                "row": 0,
+                "frames": 12,
+                "fps": 24
               }
-            }
-          ]
+            ]
+          }
         }
       ],
       "sprite": {
         "texture": "grenades",
         "animations": [
           {
-            "id": "armed",
+            "id": "effect",
             "row": 1,
             "frames": 3,
             "fps": 12,

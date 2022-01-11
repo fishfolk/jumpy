@@ -29,6 +29,25 @@
           "is_explosion": true,
           "particle_effect": "hit",
           "sound_effect": "explode"
+        },
+        {
+          "type": "triggered_effect",
+          "size": {
+            "x": 112,
+            "y": 80
+          },
+          "timed_trigger": 0.7,
+          "sprite": {
+            "texture": "explosion_small",
+            "animations": [
+              {
+                "id": "effect",
+                "row": 0,
+                "frames": 12,
+                "fps": 24
+              }
+            ]
+          }
         }
       ],
       "sprite": {
@@ -39,7 +58,7 @@
         },
         "animations": [
           {
-            "id": "armed",
+            "id": "effect",
             "row": 1,
             "frames": 3,
             "fps": 12,

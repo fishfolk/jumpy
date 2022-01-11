@@ -5,10 +5,10 @@ use macroquad::{color, experimental::collections::storage, prelude::*};
 use serde::{Deserialize, Serialize};
 
 mod decoration;
-mod environment;
+mod sproinger;
 
 pub use decoration::*;
-pub use environment::*;
+pub use sproinger::*;
 
 use crate::error::Result;
 

@@ -19,7 +19,7 @@
   },
   "collider_offset": {
     "x": 0,
-    "y": -24
+    "y": 20
   },
   "sound_effect": "shoot",
   "effects": [

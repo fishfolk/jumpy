@@ -30,7 +30,7 @@ use crate::{
 pub use input::{collect_local_input, GameInput, GameInputScheme};
 
 use crate::items::spawn_item;
-use crate::map::spawn_decoration;
+use crate::map::{spawn_decoration, spawn_sproinger, update_sproingers};
 use crate::particles::{
     draw_particle_emitter_sets, draw_particle_emitters, update_particle_emitter_sets,
     update_particle_emitters,
@@ -96,13 +96,14 @@ impl Game {
             .add_system(update_animated_sprite_sets)
             .add_system(update_particle_emitters)
             .add_system(update_particle_emitter_sets)
-            .add_system(update_projectiles)
-            .add_system(update_triggered_effects)
             .build();
 
         let fixed_updates = Scheduler::builder()
             .add_system(update_physics_bodies)
             .add_system(update_rigid_bodies)
+            .add_system(update_projectiles)
+            .add_system(update_triggered_effects)
+            .add_system(update_sproingers)
             .build();
 
         let draws = Scheduler::builder()
@@ -231,7 +232,15 @@ pub fn spawn_map_objects(world: &mut World, map: &Map) -> Result<Vec<Entity>> {
                             println!("WARNING: Invalid item id '{}'", &map_object.id)
                         }
                     }
-                    MapObjectKind::Environment => {}
+                    MapObjectKind::Environment => {
+                        if map_object.id == "sproinger" {
+                            let sproinger = spawn_sproinger(world, map_object.position)?;
+                            objects.push(sproinger);
+                        } else {
+                            #[cfg(debug_assertions)]
+                            println!("WARNING: Invalid environment item id '{}'", &map_object.id)
+                        }
+                    }
                 }
             }
         }

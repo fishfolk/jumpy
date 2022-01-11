@@ -33,6 +33,7 @@ pub const MOVE_ANIMATION_ID: &str = "move";
 pub const JUMP_ANIMATION_ID: &str = "jump";
 pub const FALL_ANIMATION_ID: &str = "fall";
 pub const CROUCH_ANIMATION_ID: &str = "crouch";
+pub const SLIDE_ANIMATION_ID: &str = "slide";
 pub const DEATH_BACK_ANIMATION_ID: &str = "death_back";
 pub const DEATH_FORWARD_ANIMATION_ID: &str = "death_forward";
 
@@ -60,7 +61,6 @@ pub struct PlayerAttributes {
     pub jump_force: f32,
     pub move_speed: f32,
     pub slide_speed_factor: f32,
-    pub slide_duration: f32,
     pub incapacitation_duration: f32,
     pub float_gravity_factor: f32,
 }
@@ -74,7 +74,6 @@ impl From<&PlayerCharacterMetadata> for PlayerAttributes {
             jump_force: params.jump_force,
             move_speed: params.move_speed,
             slide_speed_factor: params.slide_speed_factor,
-            slide_duration: params.slide_duration,
             incapacitation_duration: params.incapacitation_duration,
             float_gravity_factor: params.float_gravity_factor,
         }

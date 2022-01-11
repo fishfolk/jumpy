@@ -9,8 +9,6 @@ use crate::player::{
 };
 use crate::{CollisionWorld, GameCamera, Map, PhysicsBody, Resources, Transform};
 
-const ATTACK_RECOIL_LERP: f32 = 0.9;
-
 pub struct PlayerState {
     pub camera_box: Rect,
     pub is_facing_left: bool,
@@ -24,7 +22,6 @@ pub struct PlayerState {
     pub pickup_grace_timer: f32,
     pub incapacitation_timer: f32,
     pub attack_timer: f32,
-    pub slide_timer: f32,
     pub respawn_timer: f32,
 }
 
@@ -45,7 +42,6 @@ impl From<Vec2> for PlayerState {
             pickup_grace_timer: 0.0,
             attack_timer: 0.0,
             incapacitation_timer: 0.0,
-            slide_timer: 0.0,
             respawn_timer: 0.0,
         }
     }
@@ -76,6 +72,7 @@ pub fn update_player_camera_box(world: &mut World) {
     }
 }
 
+const SLIDE_STOP_THRESHOLD: f32 = 196.0;
 const PLATFORM_JUMP_FORCE_MULTIPLIER: f32 = 0.2;
 
 pub fn update_player_states(world: &mut World) {
@@ -116,79 +113,89 @@ pub fn update_player_states(world: &mut World) {
                 state.is_incapacitated = false;
                 state.incapacitation_timer = 0.0;
             }
-        } else if state.is_sliding {
-            state.slide_timer += dt;
+        }
 
-            if state.slide_timer >= attributes.slide_duration {
+        if state.is_sliding {
+            if body.velocity.x.abs() <= SLIDE_STOP_THRESHOLD {
+                body.velocity.x = 0.0;
                 state.is_sliding = false;
-                state.slide_timer = 0.0;
             }
         }
 
         // Integration
-        if state.is_attacking {
-            body.velocity.x *= ATTACK_RECOIL_LERP;
-        } else if state.is_incapacitated {
-            body.velocity.x = 0.0;
-
-            state.is_crouching = false;
-            state.is_floating = false;
-            state.is_sliding = false;
-        } else if state.is_sliding {
-            unimplemented!();
+        if state.is_dead || state.is_attacking || state.is_incapacitated || state.is_sliding {
+            body.has_friction = true;
         } else {
+            body.has_friction = false;
+
             if controller.move_direction.x < 0.0 {
-                body.velocity.x = -attributes.move_speed;
                 state.is_facing_left = true;
             } else if controller.move_direction.x > 0.0 {
-                body.velocity.x = attributes.move_speed;
                 state.is_facing_left = false;
-            } else {
-                body.velocity.x = 0.0;
             }
 
             state.is_crouching = false;
 
-            if controller.should_crouch {
-                if body.is_on_ground {
-                    state.is_crouching = true;
-                    body.velocity.x = 0.0;
+            if controller.should_slide {
+                let velocity = attributes.move_speed * attributes.slide_speed_factor;
+
+                if state.is_facing_left {
+                    body.velocity.x = -velocity;
                 } else {
-                    let mut collision_world = storage::get_mut::<CollisionWorld>();
-                    collision_world.descent(body.actor);
-                }
-            }
-
-            if controller.should_jump {
-                let mut jump_force = 0.0;
-                if controller.should_crouch && body.is_on_platform {
-                    jump_force -= attributes.jump_force * PLATFORM_JUMP_FORCE_MULTIPLIER;
-                } else if body.is_on_ground {
-                    jump_force -= attributes.jump_force;
+                    body.velocity.x = velocity;
                 }
 
-                if jump_force != 0.0 {
-                    body.velocity.y = jump_force;
-
-                    let resources = storage::get::<Resources>();
-                    let sound = resources.sounds[JUMP_SOUND_ID];
-
-                    play_sound_once(sound);
-                }
-            }
-
-            if !body.is_on_ground && body.velocity.y > 0.0 {
-                state.is_floating = controller.should_float;
+                state.is_sliding = true;
             } else {
-                state.is_floating = false;
+                if controller.move_direction.x < 0.0 {
+                    body.velocity.x = -attributes.move_speed;
+                } else if controller.move_direction.x > 0.0 {
+                    body.velocity.x = attributes.move_speed;
+                } else {
+                    body.velocity.x = 0.0;
+                }
+
+                if controller.should_crouch {
+                    if body.is_on_ground {
+                        state.is_crouching = true;
+                        body.velocity.x = 0.0;
+                    } else {
+                        let mut collision_world = storage::get_mut::<CollisionWorld>();
+                        collision_world.descent(body.actor);
+                    }
+                }
+
+                if controller.should_jump {
+                    let mut jump_force = 0.0;
+                    if controller.should_crouch && body.is_on_platform {
+                        jump_force -= attributes.jump_force * PLATFORM_JUMP_FORCE_MULTIPLIER;
+                    } else if body.is_on_ground {
+                        jump_force -= attributes.jump_force;
+                    }
+
+                    if jump_force != 0.0 {
+                        body.velocity.y = jump_force;
+
+                        let resources = storage::get::<Resources>();
+                        let sound = resources.sounds[JUMP_SOUND_ID];
+
+                        play_sound_once(sound);
+                    }
+                }
+
+                if !body.is_on_ground && body.velocity.y > 0.0 {
+                    state.is_floating = controller.should_float;
+                } else {
+                    state.is_floating = false;
+                }
             }
-        }
 
-        if body.is_on_ground && !body.was_on_ground {
-            let resources = storage::get::<Resources>();
-            let sound = resources.sounds[LAND_SOUND_ID];
+            if body.is_on_ground && !body.was_on_ground {
+                let resources = storage::get::<Resources>();
+                let sound = resources.sounds[LAND_SOUND_ID];
 
-            play_sound_once(sound);
+                play_sound_once(sound);
+            }
         }
     }
 }

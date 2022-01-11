@@ -91,6 +91,7 @@ pub struct Item {
     pub drop_behavior: ItemDropBehavior,
     pub deplete_behavior: ItemDepleteBehavior,
     pub duration_timer: f32,
+    pub use_cnt: u32,
 }
 
 impl Item {
@@ -104,6 +105,7 @@ impl Item {
             drop_behavior: params.drop_behavior,
             deplete_behavior: params.deplete_behavior,
             duration_timer: 0.0,
+            use_cnt: 0,
         }
     }
 }

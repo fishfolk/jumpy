@@ -4,10 +4,7 @@ use hecs::World;
 
 use serde::{Deserialize, Serialize};
 
-use crate::player::{
-    PlayerState, CROUCH_ANIMATION_ID, DEATH_BACK_ANIMATION_ID, DEATH_FORWARD_ANIMATION_ID,
-    FALL_ANIMATION_ID, IDLE_ANIMATION_ID, JUMP_ANIMATION_ID, MOVE_ANIMATION_ID,
-};
+use crate::player::{PlayerState, CROUCH_ANIMATION_ID, DEATH_BACK_ANIMATION_ID, DEATH_FORWARD_ANIMATION_ID, FALL_ANIMATION_ID, IDLE_ANIMATION_ID, JUMP_ANIMATION_ID, MOVE_ANIMATION_ID, SLIDE_ANIMATION_ID};
 use crate::{json, PhysicsBody};
 use crate::{AnimatedSpriteMetadata, AnimatedSpriteSet, AnimationMetadata};
 
@@ -68,6 +65,8 @@ pub struct PlayerAnimations {
     pub fall: AnimationMetadata,
     #[serde(default = "PlayerAnimations::default_crouch_animation")]
     pub crouch: AnimationMetadata,
+    #[serde(default = "PlayerAnimations::default_slide_animation")]
+    pub slide: AnimationMetadata,
     #[serde(default = "PlayerAnimations::default_death_back_animation")]
     pub death_back: AnimationMetadata,
     #[serde(default = "PlayerAnimations::default_death_forward_animation")]
@@ -125,6 +124,16 @@ impl PlayerAnimations {
         }
     }
 
+    pub fn default_slide_animation() -> AnimationMetadata {
+        AnimationMetadata {
+            id: SLIDE_ANIMATION_ID.to_string(),
+            row: 5,
+            frames: 1,
+            fps: 1,
+            is_looping: false,
+        }
+    }
+
     pub fn default_death_back_animation() -> AnimationMetadata {
         AnimationMetadata {
             id: DEATH_BACK_ANIMATION_ID.to_string(),
@@ -154,6 +163,7 @@ impl Default for PlayerAnimations {
             jump: Self::default_jump_animation(),
             fall: Self::default_fall_animation(),
             crouch: Self::default_crouch_animation(),
+            slide: Self::default_slide_animation(),
             death_back: Self::default_death_back_animation(),
             death_forward: Self::default_death_forward_animation(),
         }
@@ -188,6 +198,11 @@ impl From<Vec<AnimationMetadata>> for PlayerAnimations {
                 .find(|&anim| anim.id == *CROUCH_ANIMATION_ID)
                 .cloned()
                 .unwrap(),
+            slide: vec
+                .iter()
+                .find(|&anim| anim.id == *SLIDE_ANIMATION_ID)
+                .cloned()
+                .unwrap(),
             death_back: vec
                 .iter()
                 .find(|&anim| anim.id == *DEATH_BACK_ANIMATION_ID)
@@ -204,7 +219,7 @@ impl From<Vec<AnimationMetadata>> for PlayerAnimations {
 
 impl PlayerAnimations {
     pub fn into_vec(self) -> Vec<AnimationMetadata> {
-        vec![self.idle, self.moving, self.jump, self.fall, self.crouch, self.death_back, self.death_forward]
+        vec![self.idle, self.moving, self.jump, self.fall, self.crouch, self.slide, self.death_back, self.death_forward]
     }
 
     pub fn to_vec(&self) -> Vec<AnimationMetadata> {
@@ -214,6 +229,7 @@ impl PlayerAnimations {
             self.jump.clone(),
             self.fall.clone(),
             self.crouch.clone(),
+            self.slide.clone(),
             self.death_back.clone(),
             self.death_forward.clone(),
         ]
@@ -238,8 +254,7 @@ pub fn update_player_animations(world: &mut World) {
             // TODO: implement incapacitated
             unimplemented!();
         } else if state.is_sliding {
-            // TODO: implement sliding
-            unimplemented!();
+            SLIDE_ANIMATION_ID
         } else if body.is_on_ground {
             if state.is_crouching {
                 CROUCH_ANIMATION_ID

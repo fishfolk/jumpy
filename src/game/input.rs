@@ -53,7 +53,7 @@ pub fn collect_local_input(input_scheme: GameInputScheme) -> GameInput {
             input.down = is_key_down(KeyCode::S);
             input.right = is_key_down(KeyCode::D);
 
-            input.slide = is_key_pressed(KeyCode::C);
+            input.slide = is_key_pressed(KeyCode::F);
         }
         GameInputScheme::KeyboardRight => {
             input.pickup = is_key_pressed(KeyCode::K);

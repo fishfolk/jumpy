@@ -117,7 +117,7 @@ impl From<ParticleEmitterParams> for ParticleEmitter {
     }
 }
 
-pub fn update_one_particle_emitter(position: Vec2, emitter: &mut ParticleEmitter) {
+pub fn update_one_particle_emitter(mut position: Vec2, rotation: f32, emitter: &mut ParticleEmitter) {
     let dt = get_frame_time();
 
     if emitter.is_active {
@@ -129,6 +129,23 @@ pub fn update_one_particle_emitter(position: Vec2, emitter: &mut ParticleEmitter
 
         if emitter.delay_timer >= emitter.delay && emitter.interval_timer >= emitter.interval {
             emitter.interval_timer = 0.0;
+
+            if rotation == 0.0 {
+                position += emitter.offset;
+            } else {
+                let offset_position = position + emitter.offset;
+
+                let sin = rotation.sin();
+                let cos = rotation.cos();
+
+                position = Vec2::new(
+                    cos * (offset_position.x - position.x) - sin * (offset_position.y - position.y)
+                        + position.x,
+                    sin * (offset_position.x - position.x)
+                        + cos * (offset_position.y - position.y)
+                        + position.y,
+                );
+            }
 
             emitter.cache.spawn(position);
 
@@ -149,7 +166,7 @@ pub fn draw_one_particle_emitter(emitter: &mut ParticleEmitter) {
 
 pub fn update_particle_emitters(world: &mut World) {
     for (_, (transform, emitter)) in world.query_mut::<(&Transform, &mut ParticleEmitter)>() {
-        update_one_particle_emitter(transform.position, emitter);
+        update_one_particle_emitter(transform.position, transform.rotation, emitter);
     }
 }
 
@@ -162,7 +179,7 @@ pub fn draw_particle_emitters(world: &mut World) {
 pub fn update_particle_emitter_sets(world: &mut World) {
     for (_, (transform, emitters)) in world.query_mut::<(&Transform, &mut Vec<ParticleEmitter>)>() {
         for emitter in emitters.iter_mut() {
-            update_one_particle_emitter(transform.position, emitter);
+            update_one_particle_emitter(transform.position, transform.rotation, emitter);
         }
     }
 }

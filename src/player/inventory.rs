@@ -3,7 +3,7 @@ use macroquad::audio::play_sound_once;
 
 use hecs::{Entity, With, Without, World};
 
-use crate::items::{Weapon, ATTACK_ANIMATION_ID, EFFECT_ANIMATED_SPRITE_ID, GROUND_ANIMATION_ID, SPRITE_ANIMATED_SPRITE_ID, fire_weapon, ItemDepleteBehavior};
+use crate::items::{Weapon, ATTACK_ANIMATION_ID, EFFECT_ANIMATED_SPRITE_ID, GROUND_ANIMATION_ID, SPRITE_ANIMATED_SPRITE_ID, fire_weapon, ItemDepleteBehavior, ItemDropBehavior};
 use crate::player::{PlayerController, PlayerState, IDLE_ANIMATION_ID, PICKUP_GRACE_TIME};
 use crate::{corrected_offset, AnimatedSpriteSet, Item, Owner, PhysicsBody, Transform, QueuedAnimationAction};
 use crate::effects::active::spawn_active_effect;
@@ -47,7 +47,8 @@ pub fn update_player_inventory(world: &mut World) {
         .collect::<Vec<_>>();
 
     let mut picked_up = Vec::new();
-    let mut dropped = Vec::new();
+
+    let mut to_drop = Vec::new();
     let mut to_fire = Vec::new();
     let mut to_destroy = Vec::new();
 
@@ -61,172 +62,157 @@ pub fn update_player_inventory(world: &mut World) {
         )>()
         .iter()
     {
-        let player_rect = body.as_rect(transform.position);
-
-        let mut i = 0;
-        while i < item_colliders.len() {
-            let &(item_entity, rect) = item_colliders.get(i).unwrap();
-
-            if player_rect.overlaps(&rect) {
-                picked_up.push((entity, item_entity));
-                item_colliders.remove(i);
-
-                inventory.items.push(item_entity);
-
-                let mut body = world.get_mut::<PhysicsBody>(item_entity).unwrap();
-                body.is_deactivated = true;
-
-                let mut sprite_set = world.get_mut::<AnimatedSpriteSet>(item_entity).unwrap();
-                sprite_set.set_all(IDLE_ANIMATION_ID, true);
-
-                continue;
+        if state.is_dead {
+            for item_entity in inventory.items.drain(0..) {
+                to_drop.push(item_entity);
             }
 
-            i += 1;
-        }
-
-        if controller.should_pickup {
             if let Some(weapon_entity) = inventory.weapon.take() {
-                dropped.push(weapon_entity);
-
-                let velocity = if state.is_facing_left {
-                    vec2(-THROW_FORCE, 0.0)
-                } else {
-                    vec2(THROW_FORCE, 0.0)
-                };
-
-                let mut weapon = world.get_mut::<Weapon>(weapon_entity).unwrap();
-
-                weapon.use_cnt = 0;
-                weapon.cooldown_timer = weapon.cooldown;
-
-                let mut body = world.get_mut::<PhysicsBody>(weapon_entity).unwrap();
-
-                body.velocity = velocity;
-                body.is_deactivated = false;
-
-                let mut sprite_set = world.get_mut::<AnimatedSpriteSet>(weapon_entity).unwrap();
-
-                sprite_set.restart_all();
-
-                let sprite = sprite_set.map.get_mut(SPRITE_ANIMATED_SPRITE_ID).unwrap();
-
-                if sprite
-                    .animations
-                    .iter()
-                    .any(|a| a.id == *GROUND_ANIMATION_ID)
-                {
-                    sprite.set_animation(GROUND_ANIMATION_ID, true);
-                } else {
-                    sprite.set_animation(IDLE_ANIMATION_ID, true);
-                }
-
-                if let Some(sprite) = sprite_set.map.get_mut(EFFECT_ANIMATED_SPRITE_ID) {
-                    sprite.is_deactivated = true;
-                }
-            } else if state.pickup_grace_timer >= PICKUP_GRACE_TIME {
-                for (i, &(entity, rect)) in weapon_colliders.iter().enumerate() {
-                    if player_rect.overlaps(&rect) {
-                        picked_up.push((entity, entity));
-                        weapon_colliders.remove(i);
-
-                        inventory.weapon = Some(entity);
-                        state.pickup_grace_timer = 0.0;
-
-                        let mut body = world.get_mut::<PhysicsBody>(entity).unwrap();
-                        body.is_deactivated = true;
-
-                        let mut sprite_set = world.get_mut::<AnimatedSpriteSet>(entity).unwrap();
-                        sprite_set.set_all(IDLE_ANIMATION_ID, true);
-
-                        break;
-                    }
-                }
+                to_drop.push(weapon_entity);
             }
-        }
+        } else {
+            let player_rect = body.as_rect(transform.position);
 
-        if let Some(weapon_entity) = inventory.weapon {
-            let mut weapon = world.get_mut::<Weapon>(weapon_entity).unwrap();
+            let mut i = 0;
+            while i < item_colliders.len() {
+                let &(item_entity, rect) = item_colliders.get(i).unwrap();
 
-            weapon.cooldown_timer += get_frame_time();
+                if player_rect.overlaps(&rect) {
+                    picked_up.push((entity, item_entity));
+                    item_colliders.remove(i);
 
-            let mut weapon_transform = world.get_mut::<Transform>(weapon_entity).unwrap();
+                    inventory.items.push(item_entity);
 
-            let weapon_mount = transform.position
-                + inventory.get_weapon_mount(state.is_facing_left, state.is_upside_down);
+                    let mut body = world.get_mut::<PhysicsBody>(item_entity).unwrap();
+                    body.is_deactivated = true;
 
-            weapon_transform.position = weapon_mount;
+                    let mut sprite_set = world.get_mut::<AnimatedSpriteSet>(item_entity).unwrap();
+                    sprite_set.set_all(IDLE_ANIMATION_ID, true);
 
-            let mut sprite_set = world.get_mut::<AnimatedSpriteSet>(weapon_entity).unwrap();
+                    continue;
+                }
 
-            sprite_set.flip_all_x(state.is_facing_left);
-            sprite_set.flip_all_y(state.is_upside_down);
+                i += 1;
+            }
 
-            let frame_size = sprite_set
-                .map
-                .get(SPRITE_ANIMATED_SPRITE_ID)
-                .map(|sprite| sprite.size())
-                .unwrap();
+            if controller.should_pickup {
+                if let Some(weapon_entity) = inventory.weapon.take() {
+                    to_drop.push(weapon_entity);
 
-            weapon_transform.position += corrected_offset(
-                weapon.mount_offset,
-                frame_size,
-                state.is_facing_left,
-                state.is_upside_down,
-            );
+                    let velocity = if state.is_facing_left {
+                        vec2(-THROW_FORCE, 0.0)
+                    } else {
+                        vec2(THROW_FORCE, 0.0)
+                    };
 
-            if controller.should_attack {
-                let mut is_depleted = false;
+                    let mut body = world.get_mut::<PhysicsBody>(weapon_entity).unwrap();
 
-                if let Some(uses) = weapon.uses {
-                    if weapon.use_cnt >= uses {
-                        is_depleted = true;
+                    body.velocity = velocity;
 
-                        match weapon.deplete_behavior {
-                            ItemDepleteBehavior::Destroy => {
-                                to_destroy.push(weapon_entity);
-                                inventory.weapon = None;
-                            }
-                            ItemDepleteBehavior::Drop => {
-                                dropped.push(weapon_entity);
-                                inventory.weapon = None;
-                            }
-                            _ => {}
+                } else if state.pickup_grace_timer >= PICKUP_GRACE_TIME {
+                    for (i, &(entity, rect)) in weapon_colliders.iter().enumerate() {
+                        if player_rect.overlaps(&rect) {
+                            picked_up.push((entity, entity));
+                            weapon_colliders.remove(i);
+
+                            inventory.weapon = Some(entity);
+                            state.pickup_grace_timer = 0.0;
+
+                            let mut body = world.get_mut::<PhysicsBody>(entity).unwrap();
+                            body.is_deactivated = true;
+
+                            let mut sprite_set = world.get_mut::<AnimatedSpriteSet>(entity).unwrap();
+                            sprite_set.set_all(IDLE_ANIMATION_ID, true);
+
+                            break;
                         }
                     }
                 }
+            }
 
-                if !is_depleted {
-                    to_fire.push((weapon_entity, entity));
+            if let Some(weapon_entity) = inventory.weapon {
+                let mut weapon = world.get_mut::<Weapon>(weapon_entity).unwrap();
+
+                weapon.cooldown_timer += get_frame_time();
+
+                let mut weapon_transform = world.get_mut::<Transform>(weapon_entity).unwrap();
+
+                let weapon_mount = transform.position
+                    + inventory.get_weapon_mount(state.is_facing_left, state.is_upside_down);
+
+                weapon_transform.position = weapon_mount;
+
+                let mut sprite_set = world.get_mut::<AnimatedSpriteSet>(weapon_entity).unwrap();
+
+                sprite_set.flip_all_x(state.is_facing_left);
+                sprite_set.flip_all_y(state.is_upside_down);
+
+                let frame_size = sprite_set
+                    .map
+                    .get(SPRITE_ANIMATED_SPRITE_ID)
+                    .map(|sprite| sprite.size())
+                    .unwrap();
+
+                weapon_transform.position += corrected_offset(
+                    weapon.mount_offset,
+                    frame_size,
+                    state.is_facing_left,
+                    state.is_upside_down,
+                );
+
+                if controller.should_attack {
+                    let mut is_depleted = false;
+
+                    if let Some(uses) = weapon.uses {
+                        if weapon.use_cnt >= uses {
+                            is_depleted = true;
+
+                            match weapon.deplete_behavior {
+                                ItemDepleteBehavior::Destroy => {
+                                    to_destroy.push(weapon_entity);
+                                    inventory.weapon = None;
+                                }
+                                ItemDepleteBehavior::Drop => {
+                                    to_drop.push(weapon_entity);
+                                    inventory.weapon = None;
+                                }
+                                _ => {}
+                            }
+                        }
+                    }
+
+                    if !is_depleted {
+                        to_fire.push((weapon_entity, entity));
+                    }
                 }
             }
-        }
 
-        for &entity in inventory.items.iter() {
-            let mut item = world.get_mut::<Item>(entity).unwrap();
+            for &entity in inventory.items.iter() {
+                let mut item = world.get_mut::<Item>(entity).unwrap();
 
-            item.duration_timer += get_frame_time();
+                item.duration_timer += get_frame_time();
 
-            let position = transform.position;
+                let position = transform.position;
 
-            match world.get_mut::<AnimatedSpriteSet>(entity) {
-                Ok(mut sprite_set) => {
-                    sprite_set.flip_all_x(state.is_facing_left);
-                    sprite_set.flip_all_y(state.is_upside_down);
+                match world.get_mut::<AnimatedSpriteSet>(entity) {
+                    Ok(mut sprite_set) => {
+                        sprite_set.flip_all_x(state.is_facing_left);
+                        sprite_set.flip_all_y(state.is_upside_down);
 
-                    let offset = corrected_offset(
-                        item.mount_offset,
-                        sprite_set.size(),
-                        state.is_facing_left,
-                        state.is_upside_down,
-                    );
+                        let offset = corrected_offset(
+                            item.mount_offset,
+                            sprite_set.size(),
+                            state.is_facing_left,
+                            state.is_upside_down,
+                        );
 
-                    let mut item_transform = world.get_mut::<Transform>(entity).unwrap();
-                    item_transform.position = position + offset;
-                }
-                Err(err) => {
-                    #[cfg(debug_assertions)]
-                    println!("WARNING: {}", err);
+                        let mut item_transform = world.get_mut::<Transform>(entity).unwrap();
+                        item_transform.position = position + offset;
+                    }
+                    Err(err) => {
+                        #[cfg(debug_assertions)]
+                        println!("WARNING: {}", err);
+                    }
                 }
             }
         }
@@ -236,8 +222,62 @@ pub fn update_player_inventory(world: &mut World) {
         world.insert_one(item, Owner(player)).unwrap();
     }
 
-    for item in dropped {
-        world.remove_one::<Owner>(item).unwrap();
+    for entity in to_drop {
+        world.remove_one::<Owner>(entity).unwrap();
+
+        let mut should_destroy = false;
+
+        if let Ok(mut weapon) = world.get_mut::<Weapon>(entity) {
+            match weapon.drop_behavior {
+                ItemDropBehavior::ClearState => {
+                    weapon.use_cnt = 0;
+                    weapon.cooldown_timer = weapon.cooldown;
+                }
+                ItemDropBehavior::Destroy => {
+                    should_destroy = true;
+                }
+                _ => {}
+            }
+        } else if let Ok(mut item) = world.get_mut::<Item>(entity) {
+            match item.drop_behavior {
+                ItemDropBehavior::ClearState => {
+                    item.use_cnt = 0;
+                    item.duration_timer = 0.0;
+                }
+                ItemDropBehavior::Destroy => {
+                    should_destroy = true;
+                }
+                _ => {}
+            }
+        }
+
+        if should_destroy {
+            world.despawn(entity);
+        } else {
+            let mut body = world.get_mut::<PhysicsBody>(entity).unwrap();
+
+            body.is_deactivated = false;
+
+            let mut sprite_set = world.get_mut::<AnimatedSpriteSet>(entity).unwrap();
+
+            sprite_set.restart_all();
+
+            let sprite = sprite_set.map.get_mut(SPRITE_ANIMATED_SPRITE_ID).unwrap();
+
+            if sprite
+                .animations
+                .iter()
+                .any(|a| a.id == *GROUND_ANIMATION_ID)
+            {
+                sprite.set_animation(GROUND_ANIMATION_ID, true);
+            } else {
+                sprite.set_animation(IDLE_ANIMATION_ID, true);
+            }
+
+            if let Some(sprite) = sprite_set.map.get_mut(EFFECT_ANIMATED_SPRITE_ID) {
+                sprite.is_deactivated = true;
+            }
+        }
     }
 
     for (entity, owner) in to_fire.drain(0..) {

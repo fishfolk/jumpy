@@ -11,6 +11,9 @@ use crate::json;
 use crate::physics::GRAVITY;
 use crate::Transform;
 
+const FRICTION_LERP: f32 = 0.96;
+const STOP_THRESHOLD: f32 = 1.0;
+
 #[derive(Debug, Clone)]
 pub struct PhysicsBodyParams {
     pub size: Vec2,
@@ -96,13 +99,13 @@ pub fn update_physics_bodies(world: &mut World) {
             let position = collision_world.actor_pos(body.actor);
 
             {
-                let position = position + vec2(body.size.x / 2.0, 1.0);
+                let position = position + vec2(0.0, 1.0);
 
                 body.was_on_ground = body.is_on_ground;
 
                 body.is_on_ground = collision_world.collide_check(body.actor, position);
 
-                // FIXME: Using this ti set `is_on_ground` caused weird glitching behavior when jumping up through platforms
+                // FIXME: Using this to set `is_on_ground` caused weird glitching behavior when jumping up through platforms
                 let tile = collision_world.collide_solids(position, body.size.x as i32, body.size.y as i32);
 
                 body.is_on_platform = tile == Tile::JumpThrough;
@@ -125,8 +128,8 @@ pub fn update_physics_bodies(world: &mut World) {
             }
 
             if body.is_on_ground && body.has_friction {
-                body.velocity.x *= 0.96;
-                if body.velocity.x.abs() <= 1.0 {
+                body.velocity.x *= FRICTION_LERP;
+                if body.velocity.x.abs() <= STOP_THRESHOLD {
                     body.velocity.x = 0.0;
                 }
             }

@@ -138,11 +138,15 @@ pub fn spawn_triggered_effect(
     }
 
     if !meta.effects.is_empty() {
-        let particle_emitters = meta
+        let mut particle_emitters = meta
             .particles
             .into_iter()
             .map(ParticleEmitter::new)
             .collect::<Vec<_>>();
+
+        for emitter in &mut particle_emitters {
+            emitter.activate();
+        }
 
         world.insert_one(entity, particle_emitters)?
     }
@@ -167,12 +171,14 @@ pub fn update_triggered_effects(world: &mut World) {
         .collect::<Vec<_>>();
 
     for (entity, (effect, transform, body)) in
-        world.query_mut::<(&mut TriggeredEffect, &Transform, &mut PhysicsBody)>()
+        world.query::<(&mut TriggeredEffect, &Transform, &mut PhysicsBody)>().iter()
     {
         if !effect.should_collide_with_platforms {
             let mut collision_world = storage::get_mut::<CollisionWorld>();
             collision_world.descent(body.actor);
         }
+
+        println!("update effect");
 
         effect.timed_trigger_timer += dt;
         effect.kick_delay_timer += dt;
@@ -258,10 +264,16 @@ pub fn update_triggered_effects(world: &mut World) {
 
     for (e, _, owner, origin, effects) in to_trigger.drain(0..) {
         for params in effects {
-            spawn_active_effect(world, owner, origin, params).unwrap();
+            if let Err(err) = spawn_active_effect(world, owner, origin, params) {
+                #[cfg(debug_assertions)]
+                println!("WARNING: {}", err);
+            }
         }
 
-        world.despawn(e).unwrap();
+        if let Err(err) = world.despawn(e) {
+            #[cfg(debug_assertions)]
+            println!("WARNING: {}", err);
+        }
     }
 }
 

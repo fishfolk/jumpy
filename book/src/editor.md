@@ -58,7 +58,7 @@ As the name describes: provides a set of tools for editing layers in the map are
 | Cursor | ![cursor](assets/cursor_tool.png) | Select a tile or object |
 | Tile | ![tile](assets/tile_tool.png) | Place a tile |
 | Object | ![object](assets/object_tool.png) | Create an object |
-| Object | ![spawn_point](assets/spawn_point_tool.png) | Create a spawn point |
+| Spawn | ![spawn_point](assets/spawn_point_tool.png) | Create a spawn point |
 | Erasor | ![erasor](assets/erasor_tool.png) | Erase a tile or object |
 
 #### Creating a new map

@@ -38,6 +38,7 @@ pub enum MainMenuResult {
         is_new_map: bool,
     },
     ReloadResources,
+    Credits,
     Quit,
 }
 
@@ -48,6 +49,7 @@ enum MainMenuState {
     NetworkGame,
     Settings,
     Editor(Menu),
+    Credits,
 }
 
 const ROOT_OPTION_LOCAL_GAME: usize = 0;
@@ -55,6 +57,7 @@ const ROOT_OPTION_NETWORK_GAME: usize = 1;
 const ROOT_OPTION_EDITOR: usize = 2;
 const ROOT_OPTION_SETTINGS: usize = 3;
 const ROOT_OPTION_RELOAD_RESOURCES: usize = 4;
+const ROOT_OPTION_CREDITS: usize = 5;
 
 const LOCAL_GAME_OPTION_SUBMIT: usize = 0;
 
@@ -91,6 +94,11 @@ fn build_main_menu() -> Menu {
             MenuEntry {
                 index: ROOT_OPTION_RELOAD_RESOURCES,
                 title: "Reload Resources".to_string(),
+                ..Default::default()
+            },
+            MenuEntry {
+                index: ROOT_OPTION_CREDITS,
+                title: "Credits".to_string(),
                 ..Default::default()
             },
         ],
@@ -160,6 +168,9 @@ pub async fn show_main_menu() -> MainMenuResult {
                         }
                         ROOT_OPTION_RELOAD_RESOURCES => {
                             return MainMenuResult::ReloadResources;
+                        }
+                        ROOT_OPTION_CREDITS => {
+                            menu_state = MainMenuState::Credits;
                         }
                         Menu::CANCEL_INDEX => {
                             return MainMenuResult::Quit;
@@ -242,6 +253,9 @@ pub async fn show_main_menu() -> MainMenuResult {
             }
             MainMenuState::Settings => {
                 unreachable!("Settings is not implemented yet");
+            }
+            MainMenuState::Credits => {
+                return MainMenuResult::Credits;
             }
         }
 

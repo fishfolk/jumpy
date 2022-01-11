@@ -4,3 +4,4 @@ src/.DS_Store
 /.idea/
 book/book
 config.json
+.vscode

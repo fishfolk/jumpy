@@ -14,7 +14,7 @@ macroquad-profiler = "0.1"
 
 ff-particles = { version = "0.1", features = ["serde"] }
 
-fishsticks = { version = "0.2.0", features = ["bundled-sdl2"] }
+fishsticks = "0.2.0"
 
 stunclient = { git = "https://github.com/not-fl3/rust-stunclient", default-features = false }
 

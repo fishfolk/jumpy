@@ -68,6 +68,10 @@ pub struct PlayerAnimations {
     pub fall: AnimationMetadata,
     #[serde(default = "PlayerAnimations::default_crouch_animation")]
     pub crouch: AnimationMetadata,
+    #[serde(default = "PlayerAnimations::default_death_back_animation")]
+    pub death_back: AnimationMetadata,
+    #[serde(default = "PlayerAnimations::default_death_forward_animation")]
+    pub death_forward: AnimationMetadata,
 }
 
 impl PlayerAnimations {
@@ -75,7 +79,7 @@ impl PlayerAnimations {
         AnimationMetadata {
             id: IDLE_ANIMATION_ID.to_string(),
             row: 0,
-            frames: 7,
+            frames: 14,
             fps: 12,
             is_looping: true,
         }
@@ -120,6 +124,26 @@ impl PlayerAnimations {
             is_looping: false,
         }
     }
+
+    pub fn default_death_back_animation() -> AnimationMetadata {
+        AnimationMetadata {
+            id: DEATH_BACK_ANIMATION_ID.to_string(),
+            row: 5,
+            frames: 7,
+            fps: 10,
+            is_looping: false,
+        }
+    }
+
+    pub fn default_death_forward_animation() -> AnimationMetadata {
+        AnimationMetadata {
+            id: DEATH_FORWARD_ANIMATION_ID.to_string(),
+            row: 6,
+            frames: 7,
+            fps: 10,
+            is_looping: false,
+        }
+    }
 }
 
 impl Default for PlayerAnimations {
@@ -130,6 +154,8 @@ impl Default for PlayerAnimations {
             jump: Self::default_jump_animation(),
             fall: Self::default_fall_animation(),
             crouch: Self::default_crouch_animation(),
+            death_back: Self::default_death_back_animation(),
+            death_forward: Self::default_death_forward_animation(),
         }
     }
 }
@@ -162,13 +188,23 @@ impl From<Vec<AnimationMetadata>> for PlayerAnimations {
                 .find(|&anim| anim.id == *CROUCH_ANIMATION_ID)
                 .cloned()
                 .unwrap(),
+            death_back: vec
+                .iter()
+                .find(|&anim| anim.id == *DEATH_BACK_ANIMATION_ID)
+                .cloned()
+                .unwrap(),
+            death_forward: vec
+                .iter()
+                .find(|&anim| anim.id == *DEATH_FORWARD_ANIMATION_ID)
+                .cloned()
+                .unwrap(),
         }
     }
 }
 
 impl PlayerAnimations {
     pub fn into_vec(self) -> Vec<AnimationMetadata> {
-        vec![self.idle, self.moving, self.jump, self.fall, self.crouch]
+        vec![self.idle, self.moving, self.jump, self.fall, self.crouch, self.death_back, self.death_forward]
     }
 
     pub fn to_vec(&self) -> Vec<AnimationMetadata> {
@@ -178,6 +214,8 @@ impl PlayerAnimations {
             self.jump.clone(),
             self.fall.clone(),
             self.crouch.clone(),
+            self.death_back.clone(),
+            self.death_forward.clone(),
         ]
     }
 }

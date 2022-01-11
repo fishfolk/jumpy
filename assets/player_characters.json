@@ -2,21 +2,37 @@
   {
     "id": "pescy",
     "name": "Pescy",
-    "texture": "player_pescy"
+    "texture": "player_pescy",
+    "offset": {
+      "x": 0.0,
+      "y": 16.0
+    }
   },
   {
     "id": "sharky",
     "name": "Sharky",
-    "texture": "player_sharky"
+    "texture": "player_sharky",
+    "offset": {
+      "x": 0.0,
+      "y": 16.0
+    }
   },
   {
     "id": "fishy",
     "name": "Fishy",
-    "texture": "player_fishy"
+    "texture": "player_fishy",
+    "offset": {
+      "x": 0.0,
+      "y": 16.0
+    }
   },
   {
     "id": "orcy",
     "name": "Orcy",
-    "texture": "player_orcy"
+    "texture": "player_orcy",
+    "offset": {
+      "x": 0.0,
+      "y": 16.0
+    }
   }
 ]

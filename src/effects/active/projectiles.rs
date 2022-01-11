@@ -72,6 +72,7 @@ pub fn spawn_projectile(
 
     let body_params = match kind {
         ProjectileKind::Rect { width, height, .. } => RigidBodyParams {
+            offset: vec2(-width, -height) / 2.0,
             size: vec2(width, height),
             can_rotate: false,
             ..Default::default()
@@ -81,7 +82,7 @@ pub fn spawn_projectile(
             can_rotate: false,
             ..Default::default()
         },
-        ProjectileKind::Sprite { params, can_rotate } => {
+        ProjectileKind::Sprite { mut params, can_rotate } => {
             let resources = storage::get::<Resources>();
             let texture_res = resources.textures.get(&params.texture_id).unwrap();
 
@@ -89,11 +90,15 @@ pub fn spawn_projectile(
                 .size
                 .unwrap_or_else(|| texture_res.meta.frame_size.unwrap_or(texture_res.meta.size));
 
+            params.offset.x -= size.x / 2.0;
+            params.offset.y -= size.y / 2.0;
+
             world
                 .insert_one(entity, Sprite::from(params.clone()))
                 .unwrap();
 
             RigidBodyParams {
+                offset: vec2(-size.x, -size.y) / 2.0,
                 size,
                 can_rotate,
                 ..Default::default()

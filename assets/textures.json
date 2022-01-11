@@ -123,38 +123,38 @@
   },
   {
     "id": "player_sharky",
-    "path": "textures/player/PlayerSharky(64x64).png",
+    "path": "textures/player/PlayerSharky(96x80).png",
     "type": "spritesheet",
     "sprite_size": {
-      "x": 64,
-      "y": 64
+      "x": 96,
+      "y": 80
     }
   },
   {
     "id": "player_pescy",
-    "path": "textures/player/PlayerPescy(64x64).png",
+    "path": "textures/player/PlayerPescy(96x80).png",
     "type": "spritesheet",
     "sprite_size": {
-      "x": 64,
-      "y": 64
+      "x": 96,
+      "y": 80
     }
   },
   {
     "id": "player_fishy",
-    "path": "textures/player/PlayerFishy(64x64).png",
+    "path": "textures/player/PlayerFishy(96x80).png",
     "type": "spritesheet",
     "sprite_size": {
-      "x": 64,
-      "y": 64
+      "x": 96,
+      "y": 80
     }
   },
   {
     "id": "player_orcy",
-    "path": "textures/player/PlayerOrcy(64x64).png",
+    "path": "textures/player/PlayerOrcy(96x80).png",
     "type": "spritesheet",
     "sprite_size": {
-      "x": 64,
-      "y": 64
+      "x": 96,
+      "y": 80
     }
   },
   {

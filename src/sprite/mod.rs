@@ -266,28 +266,3 @@ pub fn debug_draw_sprite_sets(world: &mut World) {
         }
     }
 }
-
-pub fn corrected_offset<S: Into<Option<Vec2>>>(
-    offset: Vec2,
-    size: S,
-    is_facing_left: bool,
-    is_upside_down: bool,
-) -> Vec2 {
-    let mut corrected = Vec2::ZERO;
-
-    let size = size.into().unwrap_or_default();
-
-    if is_facing_left {
-        corrected.x -= offset.x + size.x;
-    } else {
-        corrected.x = offset.x;
-    }
-
-    if is_upside_down {
-        corrected.y -= offset.y + size.y;
-    } else {
-        corrected.y = offset.y;
-    }
-
-    corrected
-}

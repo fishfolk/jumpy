@@ -14,6 +14,7 @@ mod weapon;
 pub use weapon::*;
 
 use crate::effects::passive::PassiveEffectParams;
+use crate::particles::ParticleEmitter;
 use crate::physics::PhysicsBodyParams;
 use crate::Result;
 
@@ -227,8 +228,6 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
             if !sprites.is_empty() {
                 world.insert_one(entity, AnimatedSpriteSet::from(sprites))?;
             }
-
-            Ok(entity)
         }
         MapItemKind::Weapon { meta } => {
             let effect_offset = meta.effect_offset;
@@ -265,6 +264,16 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
                 }
             }
 
+            let particle_emitters = meta.particles
+                .clone()
+                .into_iter()
+                .map(ParticleEmitter::new)
+                .collect::<Vec<_>>();
+
+            if !particle_emitters.is_empty() {
+                world.insert_one(entity, particle_emitters);
+            }
+
             let params = WeaponParams {
                 effects: meta.effects,
                 uses,
@@ -280,8 +289,8 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
             if !sprites.is_empty() {
                 world.insert_one(entity, AnimatedSpriteSet::from(sprites))?;
             }
-
-            Ok(entity)
         }
     }
+
+    Ok(entity)
 }

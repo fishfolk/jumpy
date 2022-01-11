@@ -9,7 +9,7 @@ use crate::{AnimatedSpriteSet, PhysicsBody, Result};
 use crate::effects::ActiveEffectMetadata;
 use crate::items::{ATTACK_ANIMATION_ID, EFFECT_ANIMATED_SPRITE_ID, ItemDepleteBehavior, ItemDropBehavior, SPRITE_ANIMATED_SPRITE_ID};
 use crate::{json, QueuedAnimationAction, Transform};
-use crate::particles::ParticleEmitterParams;
+use crate::particles::{ParticleEmitter, ParticleEmitterParams};
 use crate::AnimatedSpriteMetadata;
 use crate::effects::active::spawn_active_effect;
 use crate::player::{IDLE_ANIMATION_ID, PlayerInventory, PlayerState};
@@ -82,12 +82,7 @@ pub fn fire_weapon(world: &mut World, entity: Entity, owner: Entity) -> Result<(
     {
         let mut weapon = world.get_mut::<Weapon>(entity).unwrap();
 
-        let is_depleted = weapon
-            .uses
-            .map(|uses| weapon.use_cnt >= uses)
-            .unwrap_or_default();
-
-        if !is_depleted && weapon.cooldown_timer >= weapon.cooldown {
+        if weapon.cooldown_timer >= weapon.cooldown {
             let mut owner_state = world.get_mut::<PlayerState>(owner).unwrap();
 
             {
@@ -145,6 +140,12 @@ pub fn fire_weapon(world: &mut World, entity: Entity, owner: Entity) -> Result<(
 
                 sprite.set_animation(ATTACK_ANIMATION_ID, !is_looping);
                 sprite.queue_action(QueuedAnimationAction::Deactivate);
+            }
+
+            if let Ok(mut particle_emitters) = world.get_mut::<Vec<ParticleEmitter>>(entity) {
+                for emitter in particle_emitters.iter_mut() {
+                    emitter.activate();
+                }
             }
 
             effects = weapon.effects.clone();

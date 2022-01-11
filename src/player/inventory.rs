@@ -1,3 +1,4 @@
+use std::os::linux::raw::stat;
 use macroquad::prelude::*;
 use macroquad::audio::play_sound_once;
 
@@ -5,8 +6,9 @@ use hecs::{Entity, With, Without, World};
 
 use crate::items::{Weapon, ATTACK_ANIMATION_ID, EFFECT_ANIMATED_SPRITE_ID, GROUND_ANIMATION_ID, SPRITE_ANIMATED_SPRITE_ID, fire_weapon, ItemDepleteBehavior, ItemDropBehavior};
 use crate::player::{PlayerController, PlayerState, IDLE_ANIMATION_ID, PICKUP_GRACE_TIME};
-use crate::{corrected_offset, AnimatedSpriteSet, Item, Owner, PhysicsBody, Transform, QueuedAnimationAction};
+use crate::{AnimatedSpriteSet, Item, Owner, PhysicsBody, Transform, QueuedAnimationAction};
 use crate::effects::active::spawn_active_effect;
+use crate::particles::ParticleEmitter;
 
 const THROW_FORCE: f32 = 500.0;
 
@@ -29,7 +31,7 @@ impl From<Vec2> for PlayerInventory {
 
 impl PlayerInventory {
     pub fn get_weapon_mount(&self, is_facing_left: bool, is_upside_down: bool) -> Vec2 {
-        corrected_offset(self.weapon_mount, None, is_facing_left, is_upside_down)
+        flip_offset(self.weapon_mount, None, is_facing_left, is_upside_down)
     }
 }
 
@@ -153,37 +155,50 @@ pub fn update_player_inventory(world: &mut World) {
                     .map(|sprite| sprite.size())
                     .unwrap();
 
-                weapon_transform.position += corrected_offset(
+                let mount_offset = flip_offset(
                     weapon.mount_offset,
                     frame_size,
                     state.is_facing_left,
                     state.is_upside_down,
                 );
 
-                if controller.should_attack {
-                    let mut is_depleted = false;
+                weapon_transform.position += mount_offset;
 
-                    if let Some(uses) = weapon.uses {
-                        if weapon.use_cnt >= uses {
-                            is_depleted = true;
+                if let Ok(mut particle_emitters) = world.get_mut::<Vec<ParticleEmitter>>(weapon_entity) {
+                    let mut offset = weapon.effect_offset;
 
-                            match weapon.deplete_behavior {
-                                ItemDepleteBehavior::Destroy => {
-                                    to_destroy.push(weapon_entity);
-                                    inventory.weapon = None;
-                                }
-                                ItemDepleteBehavior::Drop => {
-                                    to_drop.push(weapon_entity);
-                                    inventory.weapon = None;
-                                }
-                                _ => {}
-                            }
+                    if state.is_facing_left {
+                        offset.x = frame_size.x - offset.x;
+                    }
+
+                    if state.is_upside_down {
+                        offset.y = frame_size.y - offset.y;
+                    }
+
+                    for emitter in particle_emitters.iter_mut() {
+                        emitter.offset = offset;
+                    }
+                }
+
+                let is_depleted = weapon
+                    .uses
+                    .map(|uses| weapon.use_cnt >= uses)
+                    .unwrap_or_default();
+
+                if is_depleted {
+                    match weapon.deplete_behavior {
+                        ItemDepleteBehavior::Destroy => {
+                            to_destroy.push(weapon_entity);
+                            inventory.weapon = None;
                         }
+                        ItemDepleteBehavior::Drop => {
+                            to_drop.push(weapon_entity);
+                            inventory.weapon = None;
+                        }
+                        _ => {}
                     }
-
-                    if !is_depleted {
-                        to_fire.push((weapon_entity, entity));
-                    }
+                } else if controller.should_attack {
+                    to_fire.push((weapon_entity, entity));
                 }
             }
 
@@ -199,7 +214,7 @@ pub fn update_player_inventory(world: &mut World) {
                         sprite_set.flip_all_x(state.is_facing_left);
                         sprite_set.flip_all_y(state.is_upside_down);
 
-                        let offset = corrected_offset(
+                        let offset = flip_offset(
                             item.mount_offset,
                             sprite_set.size(),
                             state.is_facing_left,
@@ -365,4 +380,29 @@ pub fn draw_weapons_hud(world: &mut World) {
             }
         }
     }
+}
+
+pub fn flip_offset<S: Into<Option<Vec2>>>(
+    offset: Vec2,
+    size: S,
+    is_facing_left: bool,
+    is_upside_down: bool,
+) -> Vec2 {
+    let mut corrected = Vec2::ZERO;
+
+    let size = size.into().unwrap_or_default();
+
+    if is_facing_left {
+        corrected.x -= offset.x + size.x;
+    } else {
+        corrected.x = offset.x;
+    }
+
+    if is_upside_down {
+        corrected.y -= offset.y + size.y;
+    } else {
+        corrected.y = offset.y;
+    }
+
+    corrected
 }

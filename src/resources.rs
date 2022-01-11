@@ -11,15 +11,17 @@ use ff_particles::EmitterConfig;
 use serde::{Deserialize, Serialize};
 
 use crate::gui::GuiResources;
+use crate::map::DecorationMetadata;
 use crate::{
+    data::deserialize_json_file,
     error::{ErrorKind, Result},
     formaterr,
-    items::ItemParams,
-    json::{self, deserialize_json_file},
+    items::MapItemMetadata,
+    json,
     map::Map,
 };
 
-use crate::player::PlayerCharacterParams;
+use crate::player::PlayerCharacterMetadata;
 use crate::text::ToStringHelper;
 
 #[derive(Serialize, Deserialize)]
@@ -50,10 +52,11 @@ pub struct TextureMetadata {
     pub kind: Option<TextureKind>,
     #[serde(
         default,
-        with = "json::uvec2_opt",
+        alias = "sprite_size",
+        with = "json::vec2_opt",
         skip_serializing_if = "Option::is_none"
     )]
-    pub sprite_size: Option<UVec2>,
+    pub frame_size: Option<Vec2>,
     #[serde(default = "json::default_filter_mode", with = "json::FilterModeDef")]
     pub filter_mode: FilterMode,
     #[serde(default, skip)]
@@ -64,6 +67,24 @@ pub struct TextureMetadata {
 pub struct TextureResource {
     pub texture: Texture2D,
     pub meta: TextureMetadata,
+}
+
+impl TextureResource {
+    pub fn frame_size(&self) -> Vec2 {
+        self.meta.frame_size.unwrap_or(self.meta.size)
+    }
+}
+
+impl From<&TextureResource> for Texture2D {
+    fn from(res: &TextureResource) -> Self {
+        res.texture
+    }
+}
+
+impl From<TextureResource> for Texture2D {
+    fn from(res: TextureResource) -> Self {
+        res.texture
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -109,8 +130,9 @@ pub struct Resources {
     pub textures: HashMap<String, TextureResource>,
     pub images: HashMap<String, ImageResource>,
     pub maps: Vec<MapResource>,
-    pub items: HashMap<String, ItemParams>,
-    pub player_characters: Vec<PlayerCharacterParams>,
+    pub decoration: HashMap<String, DecorationMetadata>,
+    pub items: HashMap<String, MapItemMetadata>,
+    pub player_characters: Vec<PlayerCharacterMetadata>,
 }
 
 impl Resources {
@@ -120,6 +142,7 @@ impl Resources {
     pub const TEXTURES_FILE: &'static str = "textures";
     pub const IMAGES_FILE: &'static str = "images";
     pub const MAPS_FILE: &'static str = "maps";
+    pub const DECORATION_FILE: &'static str = "decoration";
     pub const ITEMS_FILE: &'static str = "items";
     pub const PLAYER_CHARACTERS_FILE: &'static str = "player_characters";
 
@@ -205,23 +228,22 @@ impl Resources {
                 let texture = load_texture(&file_path.to_string_helper()).await?;
                 texture.set_filter(meta.filter_mode);
 
-                let sprite_size = {
-                    let val = meta
-                        .sprite_size
-                        .unwrap_or_else(|| vec2(texture.width(), texture.height()).as_u32());
-
-                    Some(val)
-                };
-
                 let size = vec2(texture.width(), texture.height());
 
                 let key = meta.id.clone();
 
-                let meta = TextureMetadata {
-                    sprite_size,
-                    size,
-                    ..meta
-                };
+                let meta = TextureMetadata { size, ..meta };
+
+                #[cfg(debug_assertions)]
+                if meta.frame_size.is_none()
+                    && meta.kind.is_some()
+                    && meta.kind.unwrap() == TextureKind::Spritesheet
+                {
+                    println!(
+                        "WARNING: The texture '{}' is a spritesheet but no frame size has been set",
+                        &meta.id
+                    );
+                }
 
                 let res = TextureResource { texture, meta };
 
@@ -283,6 +305,25 @@ impl Resources {
             }
         }
 
+        let mut decoration = HashMap::new();
+
+        {
+            let decoration_file_path = assets_dir_path
+                .join(Self::DECORATION_FILE)
+                .with_extension(Self::RESOURCE_FILES_EXTENSION);
+
+            let decoration_paths: Vec<String> =
+                deserialize_json_file(&decoration_file_path).await?;
+
+            for path in decoration_paths {
+                let path = assets_dir_path.join(&path);
+
+                let params: DecorationMetadata = deserialize_json_file(&path).await?;
+
+                decoration.insert(params.id.clone(), params);
+            }
+        }
+
         let mut items = HashMap::new();
 
         {
@@ -295,7 +336,7 @@ impl Resources {
             for path in item_paths {
                 let path = assets_dir_path.join(&path);
 
-                let params: ItemParams = deserialize_json_file(&path).await?;
+                let params: MapItemMetadata = deserialize_json_file(&path).await?;
 
                 items.insert(params.id.clone(), params);
             }
@@ -316,6 +357,7 @@ impl Resources {
             sounds,
             music,
             textures,
+            decoration,
             images,
             maps,
             items,
@@ -457,23 +499,23 @@ pub fn is_valid_map_export_path<P: AsRef<Path>>(path: P, should_overwrite: bool)
 }
 
 pub async fn load_resources(assets_dir: &str) {
-    let resources_loading = start_coroutine({
+    let assets_loading = start_coroutine({
         let assets_dir = assets_dir.to_string();
         async move {
-            let resources = match Resources::new(&assets_dir).await {
+            let assets = match Resources::new(&assets_dir).await {
                 Ok(val) => val,
                 Err(err) => panic!("{}: {}", err.kind().as_str(), err),
             };
 
-            storage::store(resources);
+            storage::store(assets);
         }
     });
 
-    while !resources_loading.is_done() {
+    while !assets_loading.is_done() {
         clear_background(BLACK);
         draw_text(
             &format!(
-                "Loading resources {}",
+                "Loading assets {}",
                 ".".repeat(((get_time() * 2.0) as usize) % 4)
             ),
             screen_width() / 2.0 - 160.0,

@@ -1,21 +1,17 @@
-use std::f32::consts::PI;
+use macroquad::experimental::collections::storage;
+use macroquad::prelude::*;
 
-use macroquad::{
-    experimental::{
-        collections::storage,
-        scene::{Handle, HandleUntyped, Node, RefMut},
-    },
-    prelude::*,
-};
+use hecs::{Entity, World};
+use macroquad_platformer::Tile;
 
 use serde::{Deserialize, Serialize};
 
-use super::{TriggeredEffectTrigger, TriggeredEffects};
-
+use crate::json;
+use crate::particles::{ParticleEmitter, ParticleEmitterParams};
+use crate::player::{Player, PlayerState};
 use crate::{
-    capabilities::NetworkReplicate,
-    components::{ParticleController, ParticleControllerParams, Sprite, SpriteParams},
-    json, GameWorld, ParticleEmitters, Player,
+    CollisionWorld, PhysicsBody, Resources, RigidBody, RigidBodyParams, Sprite, SpriteMetadata,
+    Transform,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -34,211 +30,170 @@ pub enum ProjectileKind {
     },
     Sprite {
         #[serde(rename = "sprite")]
-        params: Option<SpriteParams>,
-        #[serde(default)]
+        params: SpriteMetadata,
         /// If yes, the sprite would be rotated by angle between Vec2(1, 0) (most likely will be changed in the future) and velocity vector.
         /// This, for example, used for machine gun bullets rotation.
-        is_rotated: bool,
+        #[serde(default)]
+        can_rotate: bool,
     },
 }
 
-// TODO: Performance test this and reduce complexity as needed
-struct Projectile {
-    owner: Handle<Player>,
-    kind: ProjectileKind,
-    origin: Vec2,
-    position: Vec2,
-    velocity: Vec2,
-    range: f32,
-    sprite: Option<Sprite>,
-    sprite_draw_angle: f32,
-    particles: Vec<ParticleController>,
+pub struct Projectile {
+    pub kind: ProjectileKind,
+    pub owner: Entity,
+    pub origin: Vec2,
+    pub range: f32,
 }
 
-#[derive(Default)]
-pub struct Projectiles {
-    active: Vec<Projectile>,
-}
-
-impl Projectiles {
-    pub fn new() -> Self {
-        Projectiles { active: Vec::new() }
-    }
-
-    pub fn spawn(
-        &mut self,
-        owner: Handle<Player>,
-        mut kind: ProjectileKind,
-        origin: Vec2,
-        velocity: Vec2,
-        range: f32,
-        particles: Vec<ParticleControllerParams>,
-    ) {
-        let mut sprite = None;
-
-        let mut sprite_draw_angle = 0.0;
-
-        if let ProjectileKind::Sprite { params, is_rotated } = &mut kind {
-            let params = params.take().unwrap();
-            sprite = Some(Sprite::new(params));
-
-            if *is_rotated {
-                let mut vec = Vec2::new(0.0, 0.0);
-
-                if velocity.x < 0.0 {
-                    vec.x = 1.0;
-                } else {
-                    vec.x = -1.0;
-                }
-
-                sprite_draw_angle = (velocity.y - vec.y).atan2(velocity.x - vec.x);
-
-                // By this, we have correct sprite rotation after flipping sprite by X
-                if velocity.x < 0.0 {
-                    sprite_draw_angle += PI;
-                }
-            }
-        }
-
-        let mut particles = particles
-            .into_iter()
-            .map(ParticleController::new)
-            .collect::<Vec<ParticleController>>();
-
-        particles.iter_mut().for_each(|p| p.activate());
-
-        self.active.push(Projectile {
+impl Projectile {
+    pub fn new(owner: Entity, kind: ProjectileKind, origin: Vec2, range: f32) -> Self {
+        Projectile {
             owner,
             kind,
             origin,
-            position: origin,
-            velocity,
             range,
-            sprite,
-            sprite_draw_angle,
-            particles,
-        });
-    }
-
-    fn network_update(mut node: RefMut<Self>) {
-        let dt = get_frame_time();
-
-        let mut i = 0;
-        while i < node.active.len() {
-            let projectile = &mut node.active[i];
-            projectile.position += projectile.velocity;
-
-            for particles in &mut projectile.particles {
-                particles.update(dt);
-            }
-
-            let mut is_hit = false;
-
-            {
-                let mut triggered_effects = scene::find_node_by_type::<TriggeredEffects>().unwrap();
-                triggered_effects.check_triggers_point(
-                    TriggeredEffectTrigger::Projectile,
-                    projectile.position,
-                    None,
-                );
-            }
-
-            {
-                let distance = projectile.position.distance(projectile.origin);
-                if distance > projectile.range {
-                    is_hit = true;
-                }
-
-                if !is_hit {
-                    let world = storage::get::<GameWorld>();
-
-                    is_hit = world.collision_world.solid_at(projectile.position);
-                }
-            }
-
-            if !is_hit {
-                // Borrow owner so that it is excluded from the following iteration and hit check
-                let _player = scene::try_get_node(projectile.owner);
-
-                for player in scene::find_nodes_by_type::<Player>() {
-                    let hitbox = player.get_collider_rect();
-
-                    if hitbox.contains(projectile.position) {
-                        let mut particles = scene::find_node_by_type::<ParticleEmitters>().unwrap();
-                        particles.spawn("hit", projectile.position);
-
-                        let is_from_right = projectile.position.x > player.body.position.x;
-                        Player::on_receive_damage(
-                            player.handle(),
-                            is_from_right,
-                            Some(projectile.owner),
-                        );
-
-                        is_hit = true;
-                        break;
-                    }
-                }
-            }
-
-            if is_hit {
-                node.active.remove(i);
-                continue;
-            }
-
-            i += 1;
         }
-    }
-
-    fn network_capabilities() -> NetworkReplicate {
-        fn network_update(handle: HandleUntyped) {
-            let node = scene::get_untyped_node(handle)
-                .unwrap()
-                .to_typed::<Projectiles>();
-            Projectiles::network_update(node);
-        }
-
-        NetworkReplicate { network_update }
     }
 }
 
-impl Node for Projectiles {
-    fn ready(mut node: RefMut<Self>) {
-        node.provides(Self::network_capabilities());
+pub fn spawn_projectile(
+    world: &mut World,
+    owner: Entity,
+    kind: ProjectileKind,
+    origin: Vec2,
+    velocity: Vec2,
+    range: f32,
+    particles: Vec<ParticleEmitterParams>,
+) -> Entity {
+    let entity = world.spawn((
+        Projectile::new(owner, kind.clone(), origin, range),
+        Transform::from(origin),
+    ));
+
+    let body_params = match kind {
+        ProjectileKind::Rect { width, height, .. } => RigidBodyParams {
+            size: vec2(width, height),
+            can_rotate: false,
+            ..Default::default()
+        },
+        ProjectileKind::Circle { radius, .. } => RigidBodyParams {
+            size: vec2(radius * 2.0, radius * 2.0),
+            can_rotate: false,
+            ..Default::default()
+        },
+        ProjectileKind::Sprite { params, can_rotate } => {
+            let resources = storage::get::<Resources>();
+            let texture_res = resources.textures.get(&params.texture_id).unwrap();
+
+            let size = params
+                .size
+                .unwrap_or_else(|| texture_res.meta.frame_size.unwrap_or(texture_res.meta.size));
+
+            world
+                .insert_one(entity, Sprite::from(params.clone()))
+                .unwrap();
+
+            RigidBodyParams {
+                size,
+                can_rotate,
+                ..Default::default()
+            }
+        }
+    };
+
+    world
+        .insert_one(entity, RigidBody::new(velocity, body_params))
+        .unwrap();
+
+    let mut particle_emitters = Vec::new();
+    for params in particles {
+        let mut emitter = ParticleEmitter::from(params);
+        emitter.is_active = true;
+
+        particle_emitters.push(emitter);
     }
 
-    fn draw(mut node: RefMut<Self>) {
-        for projectile in &mut node.active {
-            let flip_x = projectile.velocity.x < 0.0;
+    if !particle_emitters.is_empty() {
+        world.insert_one(entity, particle_emitters).unwrap();
+    }
 
-            match projectile.kind.clone() {
-                ProjectileKind::Circle { radius, color } => {
-                    draw_circle(projectile.position.x, projectile.position.y, radius, color)
-                }
-                ProjectileKind::Rect {
+    entity
+}
+
+enum ProjectileCollision {
+    Player(Entity),
+    Map,
+}
+
+pub fn update_projectiles(world: &mut World) {
+    let players = world
+        .query::<(&Player, &Transform, &PhysicsBody)>()
+        .iter()
+        .map(|(e, (_, transform, body))| (e, body.as_rect(transform.position)))
+        .collect::<Vec<_>>();
+
+    let collision_world = storage::get::<CollisionWorld>();
+
+    let mut to_remove = Vec::new();
+
+    'projectiles: for (e, (projectile, transform, body)) in world
+        .query::<(&Projectile, &Transform, &RigidBody)>()
+        .iter()
+    {
+        if projectile.origin.distance(transform.position) >= projectile.range {
+            to_remove.push((e, None));
+            continue 'projectiles;
+        }
+
+        let size = body.size.as_i32();
+        let map_collision = collision_world.collide_solids(transform.position, size.x, size.y);
+        if map_collision == Tile::Solid {
+            let res = (e, Some(ProjectileCollision::Map));
+            to_remove.push(res);
+            continue 'projectiles;
+        }
+
+        let rect = body.as_rect(transform.position);
+        for (p, player_rect) in &players {
+            if rect.overlaps(player_rect) {
+                let res = (e, Some(ProjectileCollision::Player(*p)));
+                to_remove.push(res);
+                continue 'projectiles;
+            }
+        }
+    }
+
+    for (e, c) in to_remove {
+        if let Some(ProjectileCollision::Player(p)) = c {
+            let mut state = world.get_mut::<PlayerState>(p).unwrap();
+
+            state.is_dead = true;
+        }
+
+        let _ = world.despawn(e);
+    }
+}
+
+pub fn draw_projectiles(world: &mut World) {
+    for (_, (projectile, transform)) in world.query::<(&Projectile, &Transform)>().iter() {
+        match projectile.kind {
+            ProjectileKind::Rect {
+                width,
+                height,
+                color,
+            } => {
+                draw_rectangle(
+                    transform.position.x,
+                    transform.position.y,
                     width,
                     height,
                     color,
-                } => draw_rectangle(
-                    projectile.position.x,
-                    projectile.position.y,
-                    width,
-                    height,
-                    color,
-                ),
-                ProjectileKind::Sprite { .. } => {
-                    let sprite = projectile.sprite.as_ref().unwrap();
-                    sprite.draw(
-                        projectile.position,
-                        projectile.sprite_draw_angle,
-                        flip_x,
-                        false,
-                    );
-                }
+                );
             }
-
-            for particles in &mut projectile.particles {
-                particles.draw(projectile.position, flip_x, false);
+            ProjectileKind::Circle { radius, color } => {
+                draw_circle(transform.position.x, transform.position.y, radius, color);
             }
+            _ => {}
         }
     }
 }

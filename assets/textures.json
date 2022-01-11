@@ -89,8 +89,8 @@
     }
   },
   {
-    "id": "default_decorations",
-    "path": "textures/map/default_decorations.png",
+    "id": "default_decoration",
+    "path": "textures/map/default_decoration.png",
     "type": "tileset",
     "sprite_size": {
       "x": 48,

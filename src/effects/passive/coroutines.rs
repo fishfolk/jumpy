@@ -1,8 +1,9 @@
+use hecs::Entity;
 use std::collections::HashMap;
 
-use macroquad::experimental::{coroutines::Coroutine, scene::Handle};
+use macroquad::experimental::coroutines::Coroutine;
 
-use crate::{Player, PlayerEventParams};
+use crate::PlayerEventParams;
 
 static mut PASSIVE_EFFECT_COROUTINES: Option<HashMap<String, PassiveEffectCoroutine>> = None;
 
@@ -35,6 +36,6 @@ pub fn get_passive_effect_coroutine(id: &str) -> &PassiveEffectCoroutine {
 pub type PassiveEffectCoroutine = fn(
     instance_id: &str,
     item_id: Option<&str>,
-    player_handle: Handle<Player>,
+    player: Entity,
     event_params: PlayerEventParams,
 ) -> Coroutine;

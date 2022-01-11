@@ -1,8 +1,6 @@
-use macroquad::experimental::scene::Handle;
+use hecs::Entity;
 
 use serde::{Deserialize, Serialize};
-
-use crate::Player;
 
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -35,18 +33,18 @@ pub enum PlayerEventParams {
     },
     ReceiveDamage {
         is_from_right: bool,
-        damage_from: Option<Handle<Player>>,
+        damage_from: Option<Entity>,
         is_damage_blocked: bool,
     },
     GiveDamage {
-        damage_to: Handle<Player>,
+        damage_to: Entity,
         is_damage_blocked: bool,
     },
     Incapacitated {
-        incapacitated_by: Option<Handle<Player>>,
+        incapacitated_by: Option<Entity>,
     },
     Collision {
         is_new: bool,
-        collision_with: Handle<Player>,
+        collision_with: Entity,
     },
 }

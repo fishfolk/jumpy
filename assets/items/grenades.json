@@ -1,12 +1,9 @@
 {
   "id": "grenades",
-  "sprite": {
-    "texture": "grenades"
-  },
   "type": "weapon",
   "cooldown": 0.5,
   "uses": 3,
-  "is_destroyed_on_depletion": true,
+  "deplete_behavior": "destroy",
   "effects": [
     {
       "type": "triggered_effect",
@@ -15,7 +12,7 @@
         "x": 600.0,
         "y": -400.0
       },
-      "is_rotates": true,
+      "can_rotate": true,
       "size": {
         "x": 24,
         "y": 24

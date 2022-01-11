@@ -1,50 +1,172 @@
-use std::collections::HashMap;
+use hecs::{Entity, World};
+use macroquad::audio::play_sound_once;
 
-use macroquad::{
-    experimental::{
-        coroutines::{start_coroutine, wait_seconds, Coroutine},
-        scene::Handle,
-    },
-    prelude::*,
-};
+use macroquad::prelude::*;
+use macroquad::experimental::collections::storage;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    components::ParticleControllerParams,
-    json::{self, GenericParam},
-    math::{deg_to_rad, rotate_vector, IsZero},
-    Player,
-};
-
-use super::AnyEffectParams;
+use crate::{json, Resources};
+use crate::math::{deg_to_rad, rotate_vector, IsZero};
+use crate::Result;
 
 pub mod projectiles;
 pub mod triggered;
 
-pub use triggered::{TriggeredEffectParams, TriggeredEffectTrigger, TriggeredEffects};
+pub use triggered::{TriggeredEffectMetadata, TriggeredEffectTrigger};
 
-mod coroutines;
+use crate::effects::active::projectiles::spawn_projectile;
+use crate::effects::active::triggered::{spawn_triggered_effect, TriggeredEffect};
+use crate::particles::ParticleEmitterParams;
+use crate::player::PlayerState;
+use crate::{PhysicsBody, Transform};
+pub use projectiles::ProjectileKind;
 
-pub use coroutines::{
-    add_active_effect_coroutine, get_active_effect_coroutine, ActiveEffectCoroutine,
-};
+pub fn spawn_active_effect(
+    world: &mut World,
+    owner: Entity,
+    origin: Vec2,
+    params: ActiveEffectMetadata,
+) -> Result<()> {
+    let is_facing_left = {
+        let state = world.get::<PlayerState>(owner).unwrap();
+        state.is_facing_left
+    };
 
-pub use projectiles::{ProjectileKind, Projectiles};
+    if let Some(id) = &params.sound_effect_id {
+        let resources = storage::get::<Resources>();
+        let sound = resources.sounds.get(id).unwrap();
+
+        play_sound_once(*sound);
+    }
+
+    match *params.kind {
+        ActiveEffectKind::CircleCollider {
+            radius,
+            segment,
+            is_explosion,
+        } => {
+            let circle = Circle::new(origin.x, origin.y, radius);
+
+            for (e, (state, transform, body)) in
+                world.query_mut::<(&mut PlayerState, &Transform, &PhysicsBody)>()
+            {
+                if is_explosion || e != owner {
+                    let player_rect = body.as_rect(transform.position);
+                    if circle.overlaps_rect(&player_rect) {
+                        let mut is_hit = false;
+
+                        if let Some(mut segment) = segment {
+                            if is_facing_left {
+                                segment.x = -segment.x;
+                            }
+
+                            if segment.x == 1 {
+                                is_hit = player_rect.x + player_rect.w >= circle.point().x;
+                            } else if segment.x == -1 {
+                                is_hit = player_rect.x <= circle.point().x;
+                            }
+
+                            if segment.y == 1 {
+                                is_hit =
+                                    is_hit && player_rect.y + player_rect.h <= circle.point().y;
+                            } else if segment.y == -1 {
+                                is_hit = is_hit && player_rect.y >= circle.point().y;
+                            }
+                        } else {
+                            is_hit = true;
+                        }
+
+                        if is_hit {
+                            state.is_dead = true;
+                        }
+                    }
+                }
+            }
+
+            if is_explosion {
+                for (_, (effect, transform, body)) in
+                    world.query_mut::<(&mut TriggeredEffect, &Transform, &PhysicsBody)>()
+                {
+                    let trigger_rect = body.as_rect(transform.position);
+                    if circle.overlaps_rect(&trigger_rect)
+                        && effect.trigger.contains(&TriggeredEffectTrigger::Explosion)
+                    {
+                        effect.is_triggered = true;
+                        effect.should_override_delay = true;
+                    }
+                }
+            }
+        }
+        ActiveEffectKind::RectCollider { width, height } => {
+            let mut rect = Rect::new(origin.x, origin.y, width, height);
+            if is_facing_left {
+                rect.x -= rect.w;
+            }
+
+            for (_, (state, transform, body)) in
+                world.query_mut::<(&mut PlayerState, &Transform, &PhysicsBody)>()
+            {
+                let player_rect = body.as_rect(transform.position);
+                if rect.overlaps(&player_rect) {
+                    state.is_dead = true;
+                }
+            }
+        }
+        ActiveEffectKind::TriggeredEffect { mut params } => {
+            if is_facing_left {
+                params.velocity.x = -params.velocity.x;
+            }
+
+            spawn_triggered_effect(world, owner, origin, *params)?;
+        }
+        ActiveEffectKind::Projectile {
+            kind,
+            speed,
+            range,
+            spread,
+            particles,
+        } => {
+            let rad = deg_to_rad(spread);
+            let spread = rand::gen_range(-rad, rad);
+
+            let mut velocity = Vec2::ZERO;
+            if is_facing_left {
+                velocity.x = -speed
+            } else {
+                velocity.x = speed
+            }
+
+            velocity = rotate_vector(velocity, spread);
+
+            spawn_projectile(
+                world,
+                owner,
+                kind,
+                origin,
+                velocity,
+                range,
+                particles,
+            );
+        }
+    }
+
+    Ok(())
+}
 
 /// This holds all the common parameters, available to all implementations, as well as specialized
 /// parameters, in the `ActiveEffectKind`.
 #[derive(Clone, Serialize, Deserialize)]
-pub struct ActiveEffectParams {
+pub struct ActiveEffectMetadata {
     /// This holds all the specialized parameters for the effect, dependent on the implementation,
     /// specified by its variant. It is flattened into this struct in JSON.
     #[serde(flatten)]
     pub kind: Box<ActiveEffectKind>,
     /// This specifies the id of a sound effect to play when the effect is instantiated.
     #[serde(
-        default,
-        rename = "sound_effect",
-        skip_serializing_if = "Option::is_none"
+    default,
+    rename = "sound_effect",
+    skip_serializing_if = "Option::is_none"
     )]
     pub sound_effect_id: Option<String>,
     /// The delay between instantiation of the effect is requested and the actual instantiation.
@@ -56,23 +178,13 @@ pub struct ActiveEffectParams {
 }
 
 /// This should hold implementations of the commonly used weapon effects, that see usage spanning
-/// many different weapon implementations. For more specialized effects, only likely to be used
-/// for a single weapon implementation, `Custom` can be used. The main reason for adding `Custom`,
-/// however, is to accommodate an eventual integration of a scripting API, so all effects,
-/// specialized or not, can be implemented as a variant of this enum.
+/// many different weapon implementations.
 ///
 /// The effects that have the `Collider` suffix denote effects that do an immediate collider check,
 /// upon attack, using the weapons `effect_offset` as origin.
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ActiveEffectKind {
-    /// Custom effects are made by implementing `ActiveEffectCoroutine`, either directly in code or
-    /// in scripts if/when we add a scripting API
-    Custom {
-        id: String,
-        #[serde(default, rename = "params")]
-        params: HashMap<String, GenericParam>,
-    },
     /// Check for hits with a `Circle` collider.
     /// Can select a segment of the circle by setting `segment`. This can be either a quarter or a
     /// half of the circle, selected by setting `x` and `y` of `segment`.
@@ -83,9 +195,9 @@ pub enum ActiveEffectKind {
     CircleCollider {
         radius: f32,
         #[serde(
-            default,
-            with = "json::ivec2_opt",
-            skip_serializing_if = "Option::is_none"
+        default,
+        with = "json::ivec2_opt",
+        skip_serializing_if = "Option::is_none"
         )]
         segment: Option<IVec2>,
         #[serde(default, skip_serializing_if = "json::is_false")]
@@ -96,7 +208,7 @@ pub enum ActiveEffectKind {
     /// Spawn a trigger that will set of another effect if its trigger conditions are met.
     TriggeredEffect {
         #[serde(flatten)]
-        params: Box<TriggeredEffectParams>,
+        params: Box<TriggeredEffectMetadata>,
     },
     /// Spawn a projectile.
     /// This would typically be used for things like a gun.
@@ -109,146 +221,6 @@ pub enum ActiveEffectKind {
         spread: f32,
         /// Particle effects that will be attached to the projectile
         #[serde(default, skip_serializing_if = "Vec::is_empty")]
-        particles: Vec<ParticleControllerParams>,
-    },
-}
-
-pub fn active_effect_coroutine(
-    player_handle: Handle<Player>,
-    origin: Vec2,
-    params: ActiveEffectParams,
-) -> Coroutine {
-    let coroutine = async move {
-        wait_seconds(params.delay).await;
-
-        let mut is_facing_right = false;
-        if let Some(player) = scene::try_get_node(player_handle) {
-            is_facing_right = player.body.is_facing_right;
-        }
-
-        match *params.kind {
-            ActiveEffectKind::Custom { id, params } => {
-                let f = get_active_effect_coroutine(&id);
-                f(player_handle, params);
-            }
-            ActiveEffectKind::CircleCollider {
-                radius,
-                segment,
-                is_explosion,
-            } => {
-                // borrow player so that it is excluded from hit check below
-                let mut _player = None;
-                if !is_explosion {
-                    _player = scene::try_get_node(player_handle)
-                }
-
-                let circle = Circle::new(origin.x, origin.y, radius);
-                for player in scene::find_nodes_by_type::<Player>() {
-                    let collider = player.get_collider_rect();
-                    if circle.overlaps_rect(&collider) {
-                        let mut is_killed = false;
-
-                        if let Some(mut segment) = segment {
-                            if !is_facing_right {
-                                segment.x = -segment.x;
-                            }
-
-                            if segment.x == 1 {
-                                is_killed = collider.x + collider.w >= circle.point().x;
-                            } else if segment.x == -1 {
-                                is_killed = collider.x <= circle.point().x;
-                            }
-
-                            if segment.y == 1 {
-                                is_killed =
-                                    is_killed && collider.y + collider.h <= circle.point().y;
-                            } else if segment.y == -1 {
-                                is_killed = is_killed && collider.y >= circle.point().y;
-                            }
-                        } else {
-                            is_killed = true;
-                        }
-
-                        if is_killed {
-                            let is_from_right = origin.x > player.body.position.x;
-                            Player::on_receive_damage(
-                                player.handle(),
-                                is_from_right,
-                                Some(player_handle),
-                            );
-                        }
-                    }
-                }
-
-                if is_explosion {
-                    let mut triggered_effects =
-                        scene::find_node_by_type::<TriggeredEffects>().unwrap();
-                    triggered_effects.check_triggers_circle(
-                        TriggeredEffectTrigger::Explosion,
-                        &circle,
-                        None,
-                    );
-                }
-            }
-            ActiveEffectKind::RectCollider { width, height } => {
-                // borrow player so that it is excluded from hit check below
-                let _player = scene::try_get_node(player_handle);
-
-                let mut rect = Rect::new(origin.x, origin.y, width, height);
-                if !is_facing_right {
-                    rect.x -= rect.w;
-                }
-
-                for player in scene::find_nodes_by_type::<Player>() {
-                    if rect.overlaps(&player.get_collider_rect()) {
-                        let is_from_right = origin.x > player.body.position.x;
-                        Player::on_receive_damage(
-                            player.handle(),
-                            is_from_right,
-                            Some(player_handle),
-                        );
-                    }
-                }
-            }
-            ActiveEffectKind::TriggeredEffect { mut params } => {
-                let mut triggered_effects = scene::find_node_by_type::<TriggeredEffects>().unwrap();
-
-                if !is_facing_right {
-                    params.velocity.x = -params.velocity.x;
-                }
-
-                triggered_effects.spawn(player_handle, origin, *params)
-            }
-            ActiveEffectKind::Projectile {
-                kind,
-                speed,
-                range,
-                spread,
-                particles,
-            } => {
-                let rad = deg_to_rad(spread);
-                let spread = rand::gen_range(-rad, rad);
-
-                let mut velocity = Vec2::ZERO;
-                if is_facing_right {
-                    velocity.x = speed
-                } else {
-                    velocity.x = -speed
-                }
-
-                let mut projectiles = scene::find_node_by_type::<Projectiles>().unwrap();
-
-                projectiles.spawn(
-                    player_handle,
-                    kind,
-                    origin,
-                    rotate_vector(velocity, spread),
-                    range,
-                    particles,
-                );
-            }
-        }
-    };
-
-    start_coroutine(coroutine)
+        particles: Vec<ParticleEmitterParams>,
+    }
 }

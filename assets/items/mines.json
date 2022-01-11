@@ -1,12 +1,5 @@
 {
   "id": "mines",
-  "sprite": {
-    "texture": "mines",
-    "offset": {
-      "x": 0,
-      "y": -12
-    }
-  },
   "type": "weapon",
   "cooldown": 0.5,
   "uses": 3,
@@ -14,7 +7,12 @@
   "effects": [
     {
       "type": "triggered_effect",
-      "trigger": "all_except_ground",
+      "trigger": [
+        "player",
+        "enemy",
+        "explosion",
+        "projectile"
+      ],
       "size": {
         "x": 36,
         "y": 36

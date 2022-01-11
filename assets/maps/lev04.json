@@ -606,7 +606,7 @@
           }
         },
         {
-          "id": "pot",
+          "id": "anemones",
           "kind": "decoration",
           "position": {
             "x": 472.5,
@@ -614,7 +614,7 @@
           }
         },
         {
-          "id": "pot",
+          "id": "anemones",
           "kind": "decoration",
           "position": {
             "x": 979.5,
@@ -622,7 +622,7 @@
           }
         },
         {
-          "id": "pot",
+          "id": "anemones",
           "kind": "decoration",
           "position": {
             "x": 264.83334,
@@ -654,7 +654,7 @@
           }
         },
         {
-          "id": "pot",
+          "id": "anemones",
           "kind": "decoration",
           "position": {
             "x": 304.0,
@@ -662,7 +662,7 @@
           }
         },
         {
-          "id": "pot",
+          "id": "anemones",
           "kind": "decoration",
           "position": {
             "x": 945.0,
@@ -748,7 +748,7 @@
   "tilesets": [
     {
       "id": "decorations1",
-      "texture_id": "default_decorations",
+      "texture_id": "default_decoration",
       "texture_size": {
         "x": 240,
         "y": 102

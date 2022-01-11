@@ -1,11 +1,4 @@
-use macroquad::{
-    experimental::{collections::storage, scene},
-    math::vec2,
-    rand,
-    time::get_frame_time,
-};
-
-use crate::{items::Item, player::GameInput, GameWorld, Player};
+use crate::player::GameInput;
 
 pub struct Ai {
     jump_cooldown: f32,
@@ -26,14 +19,15 @@ impl Ai {
         }
     }
 
-    pub fn update(&mut self, player: &mut Player) -> GameInput {
-        let foe = scene::find_nodes_by_type::<Player>().next().unwrap();
-
-        let mut input = GameInput {
+    pub fn update(&mut self, _player: &mut OldPlayer) -> GameInput {
+        let input = GameInput {
             right: self.fix_direction == 1,
             left: self.fix_direction == -1,
             ..Default::default()
         };
+
+        /*
+        let foe = scene::find_nodes_by_type::<OldPlayer>().next().unwrap();
 
         let mut following_horiz = false;
 
@@ -106,8 +100,8 @@ impl Ai {
         if player.body.position.distance(foe.body.position) <= 100. || rand::gen_range(0, 180) == 5
         {
             //
-            if player.state_machine.state() == Player::ST_NORMAL && player.weapon.is_some() {
-                player.state_machine.set_state(Player::ST_ATTACK);
+            if player.state_machine.state() == OldPlayer::ST_NORMAL && player.weapon.is_some() {
+                player.state_machine.set_state(OldPlayer::ST_ATTACK);
             }
         }
 
@@ -123,7 +117,7 @@ impl Ai {
         }
 
         if self.throw_cooldown <= 0.0 {
-            for item in scene::find_nodes_by_type::<Item>() {
+            for item in scene::find_nodes_by_type::<MapItem>() {
                 let item_collider = item.body.get_collider_rect();
                 if item_collider.point().distance(player.body.position) <= 80. {
                     input.pickup = true;
@@ -131,6 +125,8 @@ impl Ai {
             }
             self.throw_cooldown = 1.;
         }
+
+         */
 
         input
     }

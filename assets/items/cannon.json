@@ -1,14 +1,8 @@
 {
   "id": "cannon",
-  "sprite": {
-    "texture": "cannon",
-    "offset": {
-      "x": 0,
-      "y": -22
-    }
-  },
   "type": "weapon",
-  "cooldown": 0.5,
+  "cooldown": 1.5,
+  "attack_duration": 1.0,
   "recoil": 400.0,
   "uses": 3,
   "mount_offset": {
@@ -79,20 +73,18 @@
         "id": "attack",
         "row": 0,
         "frames": 4,
-        "fps": 8,
-        "is_looping": true
+        "fps": 8
       }
     ]
   },
-  "effect_animation": {
+  "effect_sprite": {
     "texture": "cannon",
     "animations": [
       {
-        "id": "attack_effect",
+        "id": "attack",
         "row": 1,
         "frames": 5,
-        "fps": 12,
-        "is_looping": true
+        "fps": 12
       }
     ]
   }

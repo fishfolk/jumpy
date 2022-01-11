@@ -23,7 +23,7 @@ mod actions;
 use actions::{
     CreateLayerAction, CreateObjectAction, CreateTilesetAction, DeleteLayerAction,
     DeleteObjectAction, DeleteTilesetAction, EditorAction, PlaceTileAction, RemoveTileAction,
-    Result, SetLayerDrawOrderIndexAction, UndoableAction, UpdateTilesetAction,
+    SetLayerDrawOrderIndexAction, UndoableAction, UpdateTilesetAction,
 };
 
 mod input;
@@ -51,6 +51,7 @@ use crate::editor::input::{collect_editor_input, EditorInput};
 use crate::editor::tools::SpawnPointPlacementTool;
 use crate::gui::SELECTION_HIGHLIGHT_COLOR;
 use crate::map::{MapObject, MapObjectKind};
+use crate::player::IDLE_ANIMATION_ID;
 use macroquad::{
     color,
     experimental::{
@@ -1261,13 +1262,9 @@ impl Node for Editor {
 
                 let texture_res = resources.textures.get("spawn_point_icon").unwrap();
 
-                let frame_size = texture_res
-                    .meta
-                    .sprite_size
-                    .map(|v| v.as_f32())
-                    .unwrap_or_else(|| {
-                        vec2(texture_res.texture.width(), texture_res.texture.height())
-                    });
+                let frame_size = texture_res.meta.frame_size.unwrap_or_else(|| {
+                    vec2(texture_res.texture.width(), texture_res.texture.height())
+                });
 
                 let source_rect = Rect::new(0.0, 0.0, frame_size.x, frame_size.y);
 
@@ -1345,50 +1342,43 @@ impl Node for Editor {
 
                             match object.kind {
                                 MapObjectKind::Item => {
-                                    if let Some(params) = resources.items.get(&object.id) {
+                                    if let Some(meta) = resources.items.get(&object.id) {
                                         if let Some(texture_res) =
-                                            resources.textures.get(&params.sprite.texture_id)
+                                            resources.textures.get(&meta.sprite.texture_id)
                                         {
-                                            let position = object_position + params.sprite.offset;
+                                            let (texture, frame_size) =
+                                                (texture_res.texture, texture_res.frame_size());
 
-                                            let frame_size = texture_res
-                                                .meta
-                                                .sprite_size
-                                                .map(|v| v.as_f32())
-                                                .unwrap_or_else(|| {
-                                                    vec2(
-                                                        texture_res.texture.width(),
-                                                        texture_res.texture.height(),
-                                                    )
-                                                });
+                                            let row = meta
+                                                .sprite
+                                                .animations
+                                                .iter()
+                                                .find(|&a| a.id == *IDLE_ANIMATION_ID)
+                                                .map(|a| a.row)
+                                                .unwrap_or_default();
 
-                                            let source_rect = {
-                                                let grid_size = vec2(
-                                                    texture_res.texture.width() / frame_size.x,
-                                                    texture_res.texture.height() / frame_size.y,
-                                                )
-                                                .as_u32();
+                                            let position = object_position + meta.sprite.offset;
 
-                                                let i = params.sprite.index as u32;
-                                                let coords =
-                                                    uvec2(i % grid_size.y, i / grid_size.y);
+                                            let tint = meta.sprite.tint.unwrap_or(color::WHITE);
 
-                                                Rect::new(
-                                                    coords.x as f32 * frame_size.x,
-                                                    coords.y as f32 * frame_size.y,
-                                                    frame_size.x,
-                                                    frame_size.y,
-                                                )
-                                            };
+                                            let dest_size =
+                                                meta.sprite.scale.map(|s| s * frame_size);
+
+                                            let source = Some(Rect::new(
+                                                0.0,
+                                                row as f32 * frame_size.y,
+                                                frame_size.x,
+                                                frame_size.y,
+                                            ));
 
                                             draw_texture_ex(
-                                                texture_res.texture,
+                                                texture,
                                                 position.x,
                                                 position.y,
-                                                color::WHITE,
+                                                tint,
                                                 DrawTextureParams {
-                                                    dest_size: Some(frame_size),
-                                                    source: Some(source_rect),
+                                                    dest_size,
+                                                    source,
                                                     ..Default::default()
                                                 },
                                             );
@@ -1400,45 +1390,44 @@ impl Node for Editor {
                                     }
                                 }
                                 MapObjectKind::Decoration => {
-                                    let texture_res =
-                                        resources.textures.get("default_decorations").unwrap();
+                                    if let Some(params) = resources.decoration.get(&object.id) {
+                                        if let Some(texture_res) =
+                                            resources.textures.get(&params.sprite.texture_id)
+                                        {
+                                            let position = object_position + params.sprite.offset;
 
-                                    let frame_size = texture_res
-                                        .meta
-                                        .sprite_size
-                                        .map(|v| v.as_f32())
-                                        .unwrap_or_else(|| {
-                                            vec2(
-                                                texture_res.texture.width(),
-                                                texture_res.texture.height(),
-                                            )
-                                        });
+                                            let tint = params.sprite.tint.unwrap_or(color::WHITE);
 
-                                    let mut source_rect = None;
-                                    if &object.id == "pot" {
-                                        source_rect = Some(Rect::new(
-                                            0.0,
-                                            frame_size.y,
-                                            frame_size.x,
-                                            frame_size.y,
-                                        ));
-                                    } else if &object.id == "seaweed" {
-                                        source_rect =
-                                            Some(Rect::new(0.0, 0.0, frame_size.x, frame_size.y));
-                                    }
+                                            let (texture, frame_size) =
+                                                (texture_res.texture, texture_res.frame_size());
 
-                                    if source_rect.is_some() {
-                                        draw_texture_ex(
-                                            texture_res.texture,
-                                            object_position.x,
-                                            object_position.y,
-                                            color::WHITE,
-                                            DrawTextureParams {
-                                                dest_size: Some(frame_size),
-                                                source: source_rect,
-                                                ..Default::default()
-                                            },
-                                        );
+                                            let dest_size =
+                                                params.sprite.scale.map(|s| s * frame_size);
+
+                                            let source =
+                                                params.sprite.animations.first().map(|a| {
+                                                    Rect::new(
+                                                        0.0,
+                                                        a.row as f32 * frame_size.y,
+                                                        frame_size.x,
+                                                        frame_size.y,
+                                                    )
+                                                });
+
+                                            draw_texture_ex(
+                                                texture,
+                                                position.x,
+                                                position.y,
+                                                tint,
+                                                DrawTextureParams {
+                                                    dest_size,
+                                                    source,
+                                                    ..Default::default()
+                                                },
+                                            );
+                                        } else {
+                                            label = Some("INVALID TEXTURE ID".to_string());
+                                        }
                                     } else {
                                         label = Some("INVALID OBJECT ID".to_string());
                                     }
@@ -1448,11 +1437,8 @@ impl Node for Editor {
                                         let texture_res =
                                             resources.textures.get("sproinger").unwrap();
 
-                                        let frame_size = texture_res
-                                            .meta
-                                            .sprite_size
-                                            .map(|v| v.as_f32())
-                                            .unwrap_or_else(|| {
+                                        let frame_size =
+                                            texture_res.meta.frame_size.unwrap_or_else(|| {
                                                 vec2(
                                                     texture_res.texture.width(),
                                                     texture_res.texture.height(),
@@ -1579,9 +1565,9 @@ fn get_object_size(object: &MapObject) -> Vec2 {
 
     match object.kind {
         MapObjectKind::Item => {
-            if let Some(params) = resources.items.get(&object.id) {
-                if resources.textures.get(&params.sprite.texture_id).is_some() {
-                    res = Some(params.collider_size.as_f32());
+            if let Some(meta) = resources.items.get(&object.id) {
+                if resources.textures.get(&meta.sprite.texture_id).is_some() {
+                    res = Some(meta.collider_size);
                 } else {
                     label = Some("INVALID TEXTURE ID".to_string());
                 }
@@ -1590,9 +1576,12 @@ fn get_object_size(object: &MapObject) -> Vec2 {
             }
         }
         MapObjectKind::Decoration => {
-            if &object.id == "pot" || &object.id == "seaweed" {
-                let texture_res = resources.textures.get("default_decorations").unwrap();
-                res = texture_res.meta.sprite_size.map(|s| s.as_f32());
+            if let Some(meta) = resources.decoration.get(&object.id) {
+                if let Some(texture_res) = resources.textures.get(&meta.sprite.texture_id) {
+                    res = Some(texture_res.frame_size());
+                } else {
+                    label = Some("INVALID TEXTURE ID".to_string());
+                }
             } else {
                 label = Some("INVALID OBJECT ID".to_string())
             }
@@ -1600,7 +1589,7 @@ fn get_object_size(object: &MapObject) -> Vec2 {
         MapObjectKind::Environment => {
             if &object.id == "sproinger" {
                 let texture_res = resources.textures.get("sproinger").unwrap();
-                res = texture_res.meta.sprite_size.map(|s| s.as_f32());
+                res = texture_res.meta.frame_size;
             } else {
                 label = Some("INVALID OBJECT ID".to_string())
             }

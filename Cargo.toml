@@ -8,26 +8,15 @@ edition = "2018"
 opt-level = 3
 
 [dependencies]
-macroquad = { version = "0.3.10" }
+macroquad = { version = "0.3.12" }
 macroquad-platformer = "0.1"
 macroquad-profiler = "0.1"
 
 ff-particles = { version = "0.1", features = ["serde"] }
-
 fishsticks = { version = "0.2.0", features = ["bundled-sdl2"] }
-
-stunclient = { git = "https://github.com/not-fl3/rust-stunclient", default-features = false }
 
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+bincode = "1.3.3"
 
-#[patch.crates-io]
-#macroquad = { git = "https://github.com/not-fl3/macroquad" }
-
-#miniquad = { path = "../miniquad" }
-
-#macroquad = { path = "../macroquad" }
-#macroquad-particles = { path = "../macroquad/particles" }
-#macroquad-tiled = { path = "../macroquad/tiled" }
-#macroquad-platformer = { path = "../macroquad/physics-platformer" }
-#macroquad-profiler = { path = "../macroquad/profiler" }
+hecs = "0.7.1"

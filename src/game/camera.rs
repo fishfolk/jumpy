@@ -1,10 +1,7 @@
-use macroquad::{
-    experimental::scene::{self, RefMut},
-    prelude::*,
-    rand::gen_range,
-};
+use macroquad::prelude::*;
+use macroquad::rand::gen_range;
 
-use crate::{noise::NoiseGenerator, Player};
+use crate::noise::NoiseGenerator;
 
 struct Shake {
     direction: (f32, f32),
@@ -31,12 +28,15 @@ pub struct GameCamera {
     noisegen_position: f32,
 
     pub manual: Option<(Vec2, f32)>,
+    player_rects: Vec<Rect>,
 }
 
 impl GameCamera {
     const BUFFER_CAPACITY: usize = 20;
 
-    pub fn new(bounds: Rect) -> GameCamera {
+    pub fn new(map_size: Vec2) -> GameCamera {
+        let bounds = Rect::new(0.0, 0.0, map_size.x, map_size.y);
+
         GameCamera {
             bounds,
             follow_buffer: vec![],
@@ -44,7 +44,12 @@ impl GameCamera {
             manual: None,
             noisegen: NoiseGenerator::new(5),
             noisegen_position: 5.0,
+            player_rects: Vec::new(),
         }
+    }
+
+    pub fn add_player_rect(&mut self, rect: Rect) {
+        self.player_rects.push(rect);
     }
 }
 
@@ -160,76 +165,74 @@ impl GameCamera {
 
         (shake_offset, shake_rotation)
     }
-}
 
-impl scene::Node for GameCamera {
-    fn fixed_update(mut node: RefMut<Self>) {
+    pub fn update(&mut self) {
         {
-            let players = scene::find_nodes_by_type::<Player>();
             let aspect = screen_width() / screen_height();
 
-            let mut players_amount = 0;
-            let mut middle_point = vec2(0., 0.);
-            let mut min = vec2(10000., 10000.);
-            let mut max = vec2(-10000., -10000.);
+            let mut middle_point = vec2(0.0, 0.0);
+            let mut min = vec2(10000.0, 10000.0);
+            let mut max = vec2(-10000.0, -10000.0);
 
-            for player in players {
-                let camera_pox_middle = player.camera_box.point() + player.camera_box.size() / 2.;
+            let player_cnt = self.player_rects.len();
+            for rect in self.player_rects.drain(0..player_cnt) {
+                let camera_pox_middle = rect.point() + rect.size() / 2.0;
                 //let k = if player.controller_id == 1 { 0.8 } else { 0.2 };
-                players_amount += 1;
                 middle_point += camera_pox_middle; // * k;
 
                 min = min.min(camera_pox_middle);
                 max = max.max(camera_pox_middle);
             }
-            middle_point /= players_amount as f32;
 
-            let border_x = 150.;
-            let border_y = 200.;
-            let mut scale = (max - min).abs() + vec2(border_x * 2., border_y * 2.);
+            middle_point /= player_cnt as f32;
+
+            let border_x = 150.0;
+            let border_y = 200.0;
+            let mut scale = (max - min).abs() + vec2(border_x * 2.0, border_y * 2.0);
 
             if scale.x > scale.y * aspect {
                 scale.y = scale.x / aspect;
             }
+
             let mut zoom = scale.y;
 
             // bottom camera bound
-            if scale.y / 2. + middle_point.y > node.bounds.h {
-                middle_point.y = node.bounds.h - scale.y / 2.;
+            if scale.y / 2. + middle_point.y > self.bounds.h {
+                middle_point.y = self.bounds.h - scale.y / 2.0;
             }
 
-            if let Some((override_target, override_zoom)) = node.manual {
+            if let Some((override_target, override_zoom)) = self.manual {
                 middle_point = override_target;
                 zoom = override_zoom;
             }
 
-            node.follow_buffer.insert(0, (middle_point, zoom));
-            node.follow_buffer.truncate(Self::BUFFER_CAPACITY);
+            self.follow_buffer.insert(0, (middle_point, zoom));
+            self.follow_buffer.truncate(Self::BUFFER_CAPACITY);
         }
         let mut sum_pos = (0.0f64, 0.0f64);
         let mut sum_zoom = 0.0;
-        for (pos, zoom) in &node.follow_buffer {
+        for (pos, zoom) in &self.follow_buffer {
             sum_pos.0 += pos.x as f64;
             sum_pos.1 += pos.y as f64;
             sum_zoom += *zoom as f64;
         }
         let mut middle_point = vec2(
-            (sum_pos.0 / node.follow_buffer.len() as f64) as f32,
-            (sum_pos.1 / node.follow_buffer.len() as f64) as f32,
+            (sum_pos.0 / self.follow_buffer.len() as f64) as f32,
+            (sum_pos.1 / self.follow_buffer.len() as f64) as f32,
         );
-        let zoom = (sum_zoom / node.follow_buffer.len() as f64) as f32;
+        let zoom = (sum_zoom / self.follow_buffer.len() as f64) as f32;
 
-        let shake = node.get_shake();
+        let shake = self.get_shake();
         middle_point += shake.0;
         let rotation = shake.1;
 
         let aspect = screen_width() / screen_height();
 
-        // let middle_point = vec2(400., 600.);
-        // let zoom = 400.;
+        // let middle_point = vec2(400.0, 600.0);
+        // let zoom = 400.0;
         let macroquad_camera = Camera2D {
             target: middle_point,
-            zoom: vec2(1. / aspect, -1.) / zoom * 2.,
+            zoom: vec2(1. / aspect, -1.0) / zoom * 2.0,
             rotation,
             ..Camera2D::default()
         };

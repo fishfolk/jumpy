@@ -4,6 +4,12 @@ use macroquad::{color, experimental::collections::storage, prelude::*};
 
 use serde::{Deserialize, Serialize};
 
+mod decoration;
+mod environment;
+
+pub use decoration::*;
+pub use environment::*;
+
 use crate::error::Result;
 
 use crate::text::ToStringHelper;
@@ -375,6 +381,11 @@ impl Map {
     pub fn save<P: AsRef<Path>>(&self, _: P) -> Result<()> {
         Ok(())
     }
+
+    pub fn get_random_spawn_point(&self) -> Vec2 {
+        let i = rand::gen_range(0, self.spawn_points.len()) as usize;
+        self.spawn_points[i]
+    }
 }
 
 pub struct MapTileIterator<'a> {
@@ -575,16 +586,16 @@ impl ComboBoxValue for MapObjectKind {
     fn get_index(&self) -> usize {
         match self {
             Self::Item => 0,
-            Self::Environment => 2,
-            Self::Decoration => 3,
+            Self::Environment => 1,
+            Self::Decoration => 2,
         }
     }
 
     fn set_index(&mut self, index: usize) {
         *self = match index {
             0 => Self::Item,
-            2 => Self::Environment,
-            3 => Self::Decoration,
+            1 => Self::Environment,
+            2 => Self::Decoration,
             _ => unreachable!(),
         }
     }

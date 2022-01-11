@@ -1,0 +1,20 @@
+{
+  "id": "seaweed",
+  "sprite": {
+    "texture": "default_decoration",
+    "frame_size": {
+      "x": 48,
+      "y": 51
+    },
+    "animations": [
+      {
+        "id": "idle",
+        "row": 0,
+        "frames": 5,
+        "fps": 8,
+        "is_looping": true
+      }
+    ],
+    "autoplay": true
+  }
+}

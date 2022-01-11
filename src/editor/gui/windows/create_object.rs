@@ -129,15 +129,15 @@ impl Window for CreateObjectWindow {
         let item_ids = match self.kind {
             MapObjectKind::Item => resources
                 .items
-                .values()
-                .map(|item| item.id.as_str())
+                .keys()
+                .map(|k| k.as_str())
                 .collect::<Vec<&str>>(),
-            MapObjectKind::Environment => {
-                vec!["sproinger"]
-            }
-            MapObjectKind::Decoration => {
-                vec!["pot", "seaweed"]
-            }
+            MapObjectKind::Environment => vec!["sproinger"],
+            MapObjectKind::Decoration => resources
+                .decoration
+                .keys()
+                .map(|k| k.as_str())
+                .collect::<Vec<&str>>(),
         };
 
         let mut item_id_value = if let Some(current_id) = &self.id {

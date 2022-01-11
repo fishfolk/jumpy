@@ -1,8 +1,5 @@
 {
   "id": "machine_gun",
-  "sprite": {
-    "texture": "machine_gun"
-  },
   "type": "weapon",
   "cooldown": 0.15,
   "attack_duration": 0.1,
@@ -29,7 +26,7 @@
       "emissions": 1
     }
   ],
-  "effect": [
+  "effects": [
     {
       "type": "projectile",
       "range": 512.0,
@@ -48,7 +45,7 @@
             "y": -2
           }
         },
-        "is_rotated": true
+        "can_rotate": true
       }
     }
   ],
@@ -69,11 +66,10 @@
       {
         "id": "attack",
         "row": 1,
-        "frames": 1,
+        "frames": 2,
         "fps": 8,
         "is_looping": true
       }
     ]
-  },
-  "is_network_ready": false
+  }
 }

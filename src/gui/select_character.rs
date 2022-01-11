@@ -4,14 +4,16 @@ use macroquad::ui::{hash, root_ui, widgets};
 
 use fishsticks::{Axis, Button, GamepadContext};
 
-use crate::components::AnimationPlayer;
 use crate::gui::{
     draw_main_menu_background, GuiResources, Panel, BUTTON_FONT_SIZE, BUTTON_MARGIN_H,
     WINDOW_BG_COLOR,
 };
 use crate::input::update_gamepad_context;
-use crate::player::PlayerCharacterParams;
-use crate::{GameInputScheme, Resources};
+use crate::player::PlayerCharacterMetadata;
+use crate::{
+    draw_one_animated_sprite, update_one_animated_sprite, AnimatedSprite, AnimatedSpriteMetadata,
+    GameInputScheme, Resources, Transform,
+};
 
 const SECTION_WIDTH: f32 = 300.0;
 const SECTION_HEIGHT: f32 = 400.0;
@@ -24,8 +26,8 @@ const NAVIGATION_BTN_WIDTH: f32 = 64.0;
 const NAVIGATION_BTN_HEIGHT: f32 = (BUTTON_MARGIN_H * 2.0) + BUTTON_FONT_SIZE;
 
 pub async fn show_select_characters_menu(
-    player_input: Vec<GameInputScheme>,
-) -> Vec<PlayerCharacterParams> {
+    player_input: &[GameInputScheme],
+) -> Vec<PlayerCharacterMetadata> {
     let mut selected_params = Vec::new();
 
     let player_cnt = player_input.len();
@@ -42,16 +44,34 @@ pub async fn show_select_characters_menu(
 
     let mut current_selections = Vec::new();
     let mut navigation_grace_timers = Vec::new();
-    let mut animation_players = Vec::new();
+    let mut animated_sprites = Vec::new();
 
-    for (i, player_character) in player_characters.iter().enumerate().take(player_cnt) {
+    for (i, character) in player_characters.iter().enumerate().take(player_cnt) {
         selected_params.push(None);
 
         current_selections.push(i);
         navigation_grace_timers.push(0.0);
 
-        let animation_params = player_character.animation.clone().into();
-        animation_players.push(AnimationPlayer::new(animation_params));
+        let meta: AnimatedSpriteMetadata = character.sprite.clone().into();
+
+        let (texture, frame_size) = storage::get::<Resources>()
+            .textures
+            .get(&meta.texture_id)
+            .map(|t| (t.texture, t.frame_size()))
+            .unwrap();
+
+        let animations = meta
+            .animations
+            .to_vec()
+            .into_iter()
+            .map(|a| a.into())
+            .collect::<Vec<_>>();
+
+        let params = meta.into();
+
+        let sprite = AnimatedSprite::new(texture, frame_size, animations.as_slice(), params);
+
+        animated_sprites.push(sprite);
     }
 
     let mut is_ready = false;
@@ -126,18 +146,21 @@ pub async fn show_select_characters_menu(
                     .with_title(&format!("Player {}", i + 1), true)
                     .with_background_color(WINDOW_BG_COLOR)
                     .ui(&mut *root_ui(), |ui, inner_size| {
-                        let animation_player = &mut animation_players[i];
+                        let animation_player = &mut animated_sprites[i];
 
-                        animation_player.update();
+                        update_one_animated_sprite(animation_player);
 
                         // TODO: Calculate scale from a fixed target size, based on ui layout
-                        animation_player.set_scale(2.0);
+                        animation_player.scale = 2.0;
 
-                        let animation_size = animation_player.get_size();
-                        let animation_position = section_position
-                            + vec2((section_size.x - animation_size.x) / 2.0, 100.0);
+                        let animation_size = animation_player.size();
+                        let animation_transform = {
+                            let position = section_position
+                                + vec2((section_size.x - animation_size.x) / 2.0, 100.0);
+                            Transform::from(position)
+                        };
 
-                        animation_player.draw(animation_position, 0.0, false, false);
+                        draw_one_animated_sprite(&animation_transform, animation_player);
 
                         {
                             let gui_resources = storage::get::<GuiResources>();
@@ -221,12 +244,27 @@ pub async fn show_select_characters_menu(
 
                 navigation_grace_timers[i] = 0.0;
 
-                let animation_params = player_characters[current_selection as usize]
-                    .animation
-                    .clone()
-                    .into();
+                let character = player_characters.get(current_selection as usize).unwrap();
 
-                animation_players[i] = AnimationPlayer::new(animation_params);
+                let meta: AnimatedSpriteMetadata = character.sprite.clone().into();
+
+                let (texture, frame_size) = storage::get::<Resources>()
+                    .textures
+                    .get(&meta.texture_id)
+                    .map(|t| (t.texture, t.frame_size()))
+                    .unwrap();
+
+                let animations = meta
+                    .animations
+                    .to_vec()
+                    .into_iter()
+                    .map(|a| a.into())
+                    .collect::<Vec<_>>();
+
+                let params = meta.into();
+
+                animated_sprites[i] =
+                    AnimatedSprite::new(texture, frame_size, animations.as_slice(), params);
             }
 
             is_ready = !selected_params.iter().any(|params| params.is_none());

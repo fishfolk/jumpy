@@ -9,8 +9,8 @@
       "type": "triggered_effect",
       "trigger": [],
       "velocity": {
-        "x": 600.0,
-        "y": -400.0
+        "x": 6.0,
+        "y": -4.0
       },
       "can_rotate": true,
       "size": {

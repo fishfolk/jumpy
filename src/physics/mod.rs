@@ -6,7 +6,7 @@ pub use body::*;
 
 use crate::{CollisionWorld, Map};
 
-pub const GRAVITY: f32 = 1800.0;
+pub const GRAVITY: f32 = 1.5;
 
 pub fn create_collision_world(map: &Map) -> CollisionWorld {
     let tile_cnt = (map.grid_size.x * map.grid_size.y) as usize;

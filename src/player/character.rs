@@ -71,8 +71,8 @@ impl PlayerCharacterMetadata {
     const DEFAULT_HEAD_THRESHOLD: f32 = 24.0;
     const DEFAULT_LEGS_THRESHOLD: f32 = 42.0;
 
-    const DEFAULT_JUMP_FORCE: f32 = 750.0;
-    const DEFAULT_MOVE_SPEED: f32 = 250.0;
+    const DEFAULT_JUMP_FORCE: f32 = 20.0;
+    const DEFAULT_MOVE_SPEED: f32 = 5.0;
     const DEFAULT_SLIDE_SPEED_FACTOR: f32 = 3.0;
     const DEFAULT_SLIDE_DURATION: f32 = 0.1;
     const DEFAULT_INCAPACITATION_DURATION: f32 = 3.5;

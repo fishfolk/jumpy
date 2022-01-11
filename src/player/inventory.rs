@@ -10,7 +10,7 @@ use crate::{AnimatedSpriteSet, Item, Owner, PhysicsBody, Transform, QueuedAnimat
 use crate::effects::active::spawn_active_effect;
 use crate::particles::ParticleEmitter;
 
-const THROW_FORCE: f32 = 500.0;
+const THROW_FORCE: f32 = 5.0;
 
 #[derive(Default)]
 pub struct PlayerInventory {

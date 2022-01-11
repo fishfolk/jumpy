@@ -3,7 +3,7 @@
   "type": "weapon",
   "cooldown": 1.5,
   "attack_duration": 1.0,
-  "recoil": 400.0,
+  "recoil": 4.0,
   "uses": 3,
   "mount_offset": {
     "x": -16,
@@ -12,6 +12,14 @@
   "effect_offset": {
     "x": 36,
     "y": 12
+  },
+  "collider_size": {
+    "x": 64,
+    "y": 24
+  },
+  "collider_offset": {
+    "x": 0,
+    "y": -24
   },
   "sound_effect": "shoot",
   "effects": [
@@ -23,8 +31,8 @@
         "explosion"
       ],
       "velocity": {
-        "x": 1000.0,
-        "y": -50.0
+        "x": 10.0,
+        "y": -0.5
       },
       "size": {
         "x": 17,
@@ -55,10 +63,6 @@
       }
     }
   ],
-  "collider_size": {
-    "x": 64,
-    "y": 24
-  },
   "sprite": {
     "texture": "cannon",
     "animations": [

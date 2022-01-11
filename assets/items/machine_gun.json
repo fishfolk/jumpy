@@ -3,7 +3,7 @@
   "type": "weapon",
   "cooldown": 0.15,
   "attack_duration": 0.1,
-  "recoil": 125.0,
+  "recoil": 1.25,
   "uses": 24,
   "mount_offset": {
     "x": -16,
@@ -30,7 +30,7 @@
     {
       "type": "projectile",
       "range": 512.0,
-      "speed": 800.0,
+      "speed": 8.0,
       "spread": 5.0,
       "projectile": {
         "type": "sprite",

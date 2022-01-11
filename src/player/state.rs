@@ -72,7 +72,7 @@ pub fn update_player_camera_box(world: &mut World) {
     }
 }
 
-const SLIDE_STOP_THRESHOLD: f32 = 196.0;
+const SLIDE_STOP_THRESHOLD: f32 = 2.0;
 const PLATFORM_JUMP_FORCE_MULTIPLIER: f32 = 0.2;
 
 pub fn update_player_states(world: &mut World) {

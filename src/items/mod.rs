@@ -130,6 +130,8 @@ pub struct MapItemMetadata {
     pub kind: MapItemKind,
     #[serde(with = "json::vec2_def")]
     pub collider_size: Vec2,
+    #[serde(default, with = "json::vec2_def")]
+    pub collider_offset: Vec2,
     #[serde(default)]
     pub uses: Option<u32>,
     #[serde(default)]
@@ -149,6 +151,7 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
 
     let MapItemMetadata {
         collider_size,
+        collider_offset,
         drop_behavior,
         deplete_behavior,
         mount_offset,
@@ -191,6 +194,7 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
             None,
             PhysicsBodyParams {
                 size: collider_size,
+                offset: collider_offset,
                 has_mass: true,
                 has_friction: true,
                 can_rotate: false,

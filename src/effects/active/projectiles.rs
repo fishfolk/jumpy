@@ -156,9 +156,13 @@ enum ProjectileCollision {
 
 pub fn update_projectiles(world: &mut World) {
     let players = world
-        .query::<(&Player, &Transform, &PhysicsBody)>()
+        .query::<(&Transform, &PhysicsBody, &PlayerState)>()
         .iter()
-        .map(|(e, (_, transform, body))| (e, body.as_rect(transform.position)))
+        .filter_map(|(e, (transform, body, state))| if state.is_dead {
+            None
+        } else {
+            Some((e, body.as_rect(transform.position)))
+        })
         .collect::<Vec<_>>();
 
     let collision_world = storage::get::<CollisionWorld>();

@@ -88,8 +88,6 @@ impl PhysicsBody {
 }
 
 pub fn update_physics_bodies(world: &mut World) {
-    let dt = get_frame_time();
-
     let mut collision_world = storage::get_mut::<CollisionWorld>();
 
     for (_, (transform, body)) in world.query_mut::<(&mut Transform, &mut PhysicsBody)>() {
@@ -112,19 +110,19 @@ pub fn update_physics_bodies(world: &mut World) {
             }
 
             if !body.is_on_ground && body.has_mass {
-                body.velocity.y += GRAVITY * dt;
+                body.velocity.y += GRAVITY;
             }
 
-            if !collision_world.move_h(body.actor, body.velocity.x * dt) {
+            if !collision_world.move_h(body.actor, body.velocity.x) {
                 body.velocity.x *= -body.bouncyness;
             }
 
-            if !collision_world.move_v(body.actor, body.velocity.y * dt) {
+            if !collision_world.move_v(body.actor, body.velocity.y) {
                 body.velocity.y *= -body.bouncyness;
             }
 
             if body.can_rotate {
-                apply_rotation(dt, transform, &mut body.velocity, body.is_on_ground);
+                apply_rotation(transform, &mut body.velocity, body.is_on_ground);
             }
 
             if body.is_on_ground && body.has_friction {
@@ -206,13 +204,11 @@ impl RigidBody {
 }
 
 pub fn update_rigid_bodies(world: &mut World) {
-    let dt = get_frame_time();
-
     for (_, (transform, body)) in world.query_mut::<(&mut Transform, &mut RigidBody)>() {
-        transform.position += body.velocity * dt;
+        transform.position += body.velocity;
 
         if body.can_rotate {
-            apply_rotation(dt, transform, &mut body.velocity, false);
+            apply_rotation(transform, &mut body.velocity, false);
         }
     }
 }
@@ -225,11 +221,9 @@ pub fn debug_draw_rigid_bodies(world: &mut World) {
     }
 }
 
-fn apply_rotation(dt: f32, transform: &mut Transform, velocity: &mut Vec2, is_on_ground: bool) {
+fn apply_rotation(transform: &mut Transform, velocity: &mut Vec2, is_on_ground: bool) {
     if !is_on_ground {
         transform.rotation += velocity.x.abs() * 0.00045 + velocity.y.abs() * 0.00015;
-
-        velocity.y += GRAVITY * dt;
     } else {
         transform.rotation %= std::f32::consts::PI * 2.;
         let goal = if transform.rotation <= std::f32::consts::PI {

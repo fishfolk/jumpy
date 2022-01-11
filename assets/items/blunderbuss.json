@@ -4,7 +4,7 @@
   "uses": 2,
   "cooldown": 1.25,
   "attack_duration": 1.0,
-  "recoil": 550.0,
+  "recoil": 5.5,
   "sound_effect": "shoot",
   "collider_size": {
     "x": 64,
@@ -39,7 +39,7 @@
         }
       },
       "range": 280.0,
-      "speed": 900.0
+      "speed": 9.0
     },
     {
       "type": "projectile",
@@ -61,7 +61,7 @@
         }
       },
       "range": 280.0,
-      "speed": 900.0
+      "speed": 9.0
     },
     {
       "type": "projectile",
@@ -83,7 +83,7 @@
         }
       },
       "range": 280.0,
-      "speed": 900.0
+      "speed": 9.0
     },
     {
       "type": "projectile",
@@ -105,7 +105,7 @@
         }
       },
       "range": 280.0,
-      "speed": 900.0
+      "speed": 9.0
     },
     {
       "type": "projectile",
@@ -127,7 +127,7 @@
         }
       },
       "range": 280.0,
-      "speed": 900.0
+      "speed": 9.0
     }
   ],
   "sprite": {

@@ -4,7 +4,7 @@
   "uses": 3,
   "cooldown": 1.0,
   "attack_duration": 0.5,
-  "recoil": 599.0,
+  "recoil": 6.0,
   "sound_effect": "shoot",
   "particles": [
     {
@@ -18,7 +18,7 @@
     {
       "type": "projectile",
       "range": 512.0,
-      "speed": 500.0,
+      "speed": 5.0,
       "projectile": {
         "type": "sprite",
         "sprite": {

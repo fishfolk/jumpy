@@ -165,8 +165,10 @@ pub fn update_triggered_effects(world: &mut World) {
     let players = world
         .query::<(&PlayerState, &Transform, &PhysicsBody)>()
         .iter()
-        .map(|(e, (state, transform, body))| {
-            (e, state.is_facing_left, transform.position, body.size)
+        .filter_map(|(e, (state, transform, body))| if state.is_dead {
+            None
+        } else {
+            Some((e, state.is_facing_left, transform.position, body.size))
         })
         .collect::<Vec<_>>();
 
@@ -177,8 +179,6 @@ pub fn update_triggered_effects(world: &mut World) {
             let mut collision_world = storage::get_mut::<CollisionWorld>();
             collision_world.descent(body.actor);
         }
-
-        println!("update effect");
 
         effect.timed_trigger_timer += dt;
         effect.kick_delay_timer += dt;

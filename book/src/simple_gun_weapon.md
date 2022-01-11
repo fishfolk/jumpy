@@ -71,7 +71,7 @@ First we'll add any attributes for the weapon that describe it's behavior. As we
     "y": 16
   },
   "uses": 2,
-  "recoil": 1400.0,
+  "recoil": 14.0,
 }
 ```
 
@@ -89,7 +89,7 @@ Next we'll need to define more subtle values that also will effect the behavior 
     "y": 16
   },
   "uses": 2,
-  "recoil": 1400.0,
+  "recoil": 14.0,
   "cooldown": 1.5,
   "attack_duration": 1.0,
 }
@@ -106,7 +106,7 @@ Next, we can add a `sound_effect` that will played when the weapon is used. You 
     "y": 16
   },
   "uses": 2,
-  "recoil": 1400.0,
+  "recoil": 14.0,
   "cooldown": 1.5,
   "attack_duration": 1.0,
   "sound_effect": "shoot",
@@ -124,7 +124,7 @@ Next we'll define the active effects (`ActiveEffectParams`) of the weapon, or in
     "y": 16
   },
   "uses": 2,
-  "recoil": 1400.0,
+  "recoil": 14.0,
   "cooldown": 1.5,
   "attack_duration": 1.0,
   "sound_effect": "shoot",
@@ -161,7 +161,7 @@ This is the place where we can implement the remaining attributes that we outlin
     "y": 16
   },
   "uses": 2,
-  "recoil": 1400.0,
+  "recoil": 14.0,
   "cooldown": 1.5,
   "attack_duration": 1.0,
   "sound_effect": "shoot",
@@ -204,7 +204,7 @@ By default, the animation with an id of `idle` will be used when an item is on t
   "uses": 2,
   "cooldown": 1.5,
   "attack_duration": 1.0,
-  "recoil": 1400.0,
+  "recoil": 14.0,
   "sound_effect": "shoot",
   "effect_offset": {
     "x": 64,
@@ -264,7 +264,7 @@ The last thing that we need to add to the json object definition of the sniper r
   "uses": 2,
   "cooldown": 1.5,
   "attack_duration": 1.0,
-  "recoil": 1400.0,
+  "recoil": 14.0,
   "sound_effect": "shoot",
   "effect_offset": {
     "x": 64,

@@ -82,7 +82,7 @@ impl PlayerCharacterMetadata {
     const DEFAULT_COLLIDER_HEIGHT: f32 = 54.0;
 
     const DEFAULT_WEAPON_MOUNT_X: f32 = 0.0;
-    const DEFAULT_WEAPON_MOUNT_Y: f32 = 16.0;
+    const DEFAULT_WEAPON_MOUNT_Y: f32 = 26.0;
 
     pub fn default_head_threshold() -> f32 {
         Self::DEFAULT_HEAD_THRESHOLD

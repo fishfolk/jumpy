@@ -3,16 +3,19 @@ use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
-use hecs::{World, Entity};
+use hecs::{Entity, World};
 
-use crate::{AnimatedSpriteSet, PhysicsBody, Result};
-use crate::effects::ActiveEffectMetadata;
-use crate::items::{ATTACK_ANIMATION_ID, EFFECT_ANIMATED_SPRITE_ID, ItemDepleteBehavior, ItemDropBehavior, SPRITE_ANIMATED_SPRITE_ID};
-use crate::{json, QueuedAnimationAction, Transform};
-use crate::particles::{ParticleEmitter, ParticleEmitterParams};
-use crate::AnimatedSpriteMetadata;
 use crate::effects::active::spawn_active_effect;
-use crate::player::{IDLE_ANIMATION_ID, PlayerInventory, PlayerState};
+use crate::effects::ActiveEffectMetadata;
+use crate::items::{
+    ItemDepleteBehavior, ItemDropBehavior, ATTACK_ANIMATION_ID, EFFECT_ANIMATED_SPRITE_ID,
+    SPRITE_ANIMATED_SPRITE_ID,
+};
+use crate::particles::{ParticleEmitter, ParticleEmitterParams};
+use crate::player::{PlayerInventory, PlayerState, IDLE_ANIMATION_ID};
+use crate::AnimatedSpriteMetadata;
+use crate::{json, QueuedAnimationAction, Transform};
+use crate::{AnimatedSpriteSet, PhysicsBody, Result};
 
 pub struct WeaponParams {
     pub effects: Vec<ActiveEffectMetadata>,
@@ -55,7 +58,13 @@ pub struct Weapon {
 }
 
 impl Weapon {
-    pub fn new(id: &str, recoil: f32, cooldown: f32, attack_duration: f32, params: WeaponParams) -> Self {
+    pub fn new(
+        id: &str,
+        recoil: f32,
+        cooldown: f32,
+        attack_duration: f32,
+        params: WeaponParams,
+    ) -> Self {
         Weapon {
             id: id.to_string(),
             effects: params.effects,
@@ -98,7 +107,8 @@ pub fn fire_weapon(world: &mut World, entity: Entity, owner: Entity) -> Result<(
                 let owner_inventory = world.get::<PlayerInventory>(owner).unwrap();
 
                 origin = owner_transform.position
-                    + owner_inventory.get_weapon_mount(owner_state.is_facing_left, owner_state.is_upside_down);
+                    + owner_inventory
+                        .get_weapon_mount(owner_state.is_facing_left, owner_state.is_upside_down);
 
                 let mut offset = weapon.mount_offset + weapon.effect_offset;
                 if owner_state.is_facing_left {
@@ -174,9 +184,9 @@ pub struct WeaponAnimationMetadata {
     /// specified. If no animation is required, an animation with one frame can be used to just
     /// display a sprite.
     #[serde(
-    default,
-    rename = "effect_animation",
-    skip_serializing_if = "Option::is_none"
+        default,
+        rename = "effect_animation",
+        skip_serializing_if = "Option::is_none"
     )]
     pub effect: Option<AnimatedSpriteMetadata>,
 }
@@ -193,9 +203,9 @@ pub struct WeaponMetadata {
     pub particles: Vec<ParticleEmitterParams>,
     /// This can specify an id of a sound effect that is played when the weapon is used to attack
     #[serde(
-    default,
-    rename = "sound_effect",
-    skip_serializing_if = "Option::is_none"
+        default,
+        rename = "sound_effect",
+        skip_serializing_if = "Option::is_none"
     )]
     pub sound_effect_id: Option<String>,
     /// This specifies the offset between the upper left corner of the weapon's sprite to the
@@ -221,10 +231,7 @@ pub struct WeaponMetadata {
     /// animations used for effects.
     /// At a minimum, if this is specified, an animation with the id `"attack"` must be
     /// specified.
-    #[serde(
-    default,
-    skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub effect_sprite: Option<AnimatedSpriteMetadata>,
 }
 

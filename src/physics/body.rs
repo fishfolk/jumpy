@@ -104,7 +104,11 @@ pub fn update_physics_bodies(world: &mut World) {
                 body.is_on_ground = collision_world.collide_check(body.actor, position);
 
                 // FIXME: Using this to set `is_on_ground` caused weird glitching behavior when jumping up through platforms
-                let tile = collision_world.collide_solids(position, body.size.x as i32, body.size.y as i32);
+                let tile = collision_world.collide_solids(
+                    position,
+                    body.size.x as i32,
+                    body.size.y as i32,
+                );
 
                 body.is_on_platform = tile == Tile::JumpThrough;
             }

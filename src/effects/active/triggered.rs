@@ -6,15 +6,15 @@ use hecs::{Entity, World};
 use serde::{Deserialize, Serialize};
 
 use crate::effects::active::spawn_active_effect;
-use crate::{AnimatedSpriteParams, json, PhysicsBodyParams};
+use crate::math::deg_to_rad;
 use crate::particles::{ParticleEmitter, ParticleEmitterParams};
 use crate::player::PlayerState;
+use crate::{json, AnimatedSpriteParams, PhysicsBodyParams};
 use crate::{
     ActiveEffectMetadata, AnimatedSprite, AnimatedSpriteMetadata, CollisionWorld, PhysicsBody,
-    RigidBody, RigidBodyParams, Transform,
+    Transform,
 };
 use crate::{Resources, Result};
-use crate::math::deg_to_rad;
 
 /// The various collision types that can trigger a `TriggeredEffect`.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -134,19 +134,11 @@ pub fn spawn_triggered_effect(
 
         params.offset -= frame_size / 2.0;
 
-        let mut sprite = AnimatedSprite::new(
-            texture,
-            frame_size,
-            animations.as_slice(),
-            params,
-        );
+        let mut sprite = AnimatedSprite::new(texture, frame_size, animations.as_slice(), params);
 
         sprite.set_animation(TRIGGERED_EFFECT_ANIMATION_ID, true);
 
-        world.insert_one(
-            entity,
-            sprite,
-        )?;
+        world.insert_one(entity, sprite)?;
     }
 
     if !meta.effects.is_empty() {
@@ -177,15 +169,18 @@ pub fn update_triggered_effects(world: &mut World) {
     let players = world
         .query::<(&PlayerState, &Transform, &PhysicsBody)>()
         .iter()
-        .filter_map(|(e, (state, transform, body))| if state.is_dead {
-            None
-        } else {
-            Some((e, state.is_facing_left, transform.position, body.size))
+        .filter_map(|(e, (state, transform, body))| {
+            if state.is_dead {
+                None
+            } else {
+                Some((e, state.is_facing_left, transform.position, body.size))
+            }
         })
         .collect::<Vec<_>>();
 
-    for (entity, (effect, transform, body)) in
-        world.query::<(&mut TriggeredEffect, &Transform, &mut PhysicsBody)>().iter()
+    for (entity, (effect, transform, body)) in world
+        .query::<(&mut TriggeredEffect, &Transform, &mut PhysicsBody)>()
+        .iter()
     {
         if !effect.should_collide_with_platforms {
             let mut collision_world = storage::get_mut::<CollisionWorld>();

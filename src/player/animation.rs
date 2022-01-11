@@ -4,7 +4,10 @@ use hecs::World;
 
 use serde::{Deserialize, Serialize};
 
-use crate::player::{PlayerState, CROUCH_ANIMATION_ID, DEATH_BACK_ANIMATION_ID, DEATH_FORWARD_ANIMATION_ID, FALL_ANIMATION_ID, IDLE_ANIMATION_ID, JUMP_ANIMATION_ID, MOVE_ANIMATION_ID, SLIDE_ANIMATION_ID};
+use crate::player::{
+    PlayerState, CROUCH_ANIMATION_ID, DEATH_BACK_ANIMATION_ID, DEATH_FORWARD_ANIMATION_ID,
+    FALL_ANIMATION_ID, IDLE_ANIMATION_ID, JUMP_ANIMATION_ID, MOVE_ANIMATION_ID, SLIDE_ANIMATION_ID,
+};
 use crate::{json, PhysicsBody};
 use crate::{AnimatedSpriteMetadata, AnimatedSpriteSet, AnimationMetadata};
 
@@ -219,7 +222,16 @@ impl From<Vec<AnimationMetadata>> for PlayerAnimations {
 
 impl PlayerAnimations {
     pub fn into_vec(self) -> Vec<AnimationMetadata> {
-        vec![self.idle, self.moving, self.jump, self.fall, self.crouch, self.slide, self.death_back, self.death_forward]
+        vec![
+            self.idle,
+            self.moving,
+            self.jump,
+            self.fall,
+            self.crouch,
+            self.slide,
+            self.death_back,
+            self.death_forward,
+        ]
     }
 
     pub fn to_vec(&self) -> Vec<AnimationMetadata> {

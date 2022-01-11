@@ -1,14 +1,14 @@
 use hecs::{Entity, World};
 use macroquad::audio::play_sound_once;
 
-use macroquad::prelude::*;
 use macroquad::experimental::collections::storage;
+use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{json, Resources};
 use crate::math::{deg_to_rad, rotate_vector, IsZero};
 use crate::Result;
+use crate::{json, Resources};
 
 pub mod projectiles;
 pub mod triggered;
@@ -141,15 +141,7 @@ pub fn spawn_active_effect(
                 velocity = rotate_vector(velocity, spread);
             }
 
-            spawn_projectile(
-                world,
-                owner,
-                kind,
-                origin,
-                velocity,
-                range,
-                particles,
-            );
+            spawn_projectile(world, owner, kind, origin, velocity, range, particles);
         }
     }
 
@@ -166,9 +158,9 @@ pub struct ActiveEffectMetadata {
     pub kind: Box<ActiveEffectKind>,
     /// This specifies the id of a sound effect to play when the effect is instantiated.
     #[serde(
-    default,
-    rename = "sound_effect",
-    skip_serializing_if = "Option::is_none"
+        default,
+        rename = "sound_effect",
+        skip_serializing_if = "Option::is_none"
     )]
     pub sound_effect_id: Option<String>,
     /// The delay between instantiation of the effect is requested and the actual instantiation.
@@ -197,9 +189,9 @@ pub enum ActiveEffectKind {
     CircleCollider {
         radius: f32,
         #[serde(
-        default,
-        with = "json::ivec2_opt",
-        skip_serializing_if = "Option::is_none"
+            default,
+            with = "json::ivec2_opt",
+            skip_serializing_if = "Option::is_none"
         )]
         segment: Option<IVec2>,
         #[serde(default, skip_serializing_if = "json::is_false")]
@@ -224,5 +216,5 @@ pub enum ActiveEffectKind {
         /// Particle effects that will be attached to the projectile
         #[serde(default, skip_serializing_if = "Vec::is_empty")]
         particles: Vec<ParticleEmitterParams>,
-    }
+    },
 }

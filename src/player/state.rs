@@ -115,11 +115,9 @@ pub fn update_player_states(world: &mut World) {
             }
         }
 
-        if state.is_sliding {
-            if body.velocity.x.abs() <= SLIDE_STOP_THRESHOLD {
-                body.velocity.x = 0.0;
-                state.is_sliding = false;
-            }
+        if state.is_sliding && body.velocity.x.abs() <= SLIDE_STOP_THRESHOLD {
+            body.velocity.x = 0.0;
+            state.is_sliding = false;
         }
 
         // Integration

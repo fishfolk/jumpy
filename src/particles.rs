@@ -117,7 +117,11 @@ impl From<ParticleEmitterParams> for ParticleEmitter {
     }
 }
 
-pub fn update_one_particle_emitter(mut position: Vec2, rotation: f32, emitter: &mut ParticleEmitter) {
+pub fn update_one_particle_emitter(
+    mut position: Vec2,
+    rotation: f32,
+    emitter: &mut ParticleEmitter,
+) {
     let dt = get_frame_time();
 
     if emitter.is_active {

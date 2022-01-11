@@ -1,10 +1,12 @@
-use macroquad::prelude::*;
-use macroquad::experimental::collections::storage;
 use macroquad::audio::play_sound_once;
+use macroquad::experimental::collections::storage;
+use macroquad::prelude::*;
 
 use hecs::{Entity, World};
 
-use crate::{AnimatedSprite, AnimatedSpriteParams, Animation, PhysicsBody, QueuedAnimationAction, Resources, Result, Transform};
+use crate::{
+    AnimatedSprite, Animation, PhysicsBody, QueuedAnimationAction, Resources, Result, Transform,
+};
 
 const TEXTURE_ID: &str = "sproinger";
 
@@ -21,6 +23,7 @@ const TRIGGER_HEIGHT: f32 = 8.0;
 
 const FORCE: f32 = 35.0;
 
+#[derive(Default)]
 pub struct Sproinger {
     pub cooldown_timer: f32,
 }
@@ -68,7 +71,12 @@ pub fn spawn_sproinger(world: &mut World, position: Vec2) -> Result<Entity> {
     let entity = world.spawn((
         Sproinger::new(),
         Transform::from(position),
-        AnimatedSprite::new(texture_res.texture, frame_size, animations, Default::default()),
+        AnimatedSprite::new(
+            texture_res.texture,
+            frame_size,
+            animations,
+            Default::default(),
+        ),
     ));
 
     Ok(entity)
@@ -77,18 +85,23 @@ pub fn spawn_sproinger(world: &mut World, position: Vec2) -> Result<Entity> {
 pub fn update_sproingers(world: &mut World) {
     let dt = get_frame_time();
 
-    let bodies = world.query::<(&Transform, &PhysicsBody)>()
+    let bodies = world
+        .query::<(&Transform, &PhysicsBody)>()
         .iter()
-        .filter_map(|(e, (transform, body))| if !body.is_deactivated {
+        .filter_map(|(e, (transform, body))| {
+            if !body.is_deactivated {
                 Some((e, body.as_rect(transform.position)))
             } else {
                 None
-            })
+            }
+        })
         .collect::<Vec<_>>();
 
     let mut to_be_sproinged = Vec::new();
 
-    'sproingers: for (_, (sproinger, transform, sprite)) in world.query_mut::<(&mut Sproinger, &Transform, &mut AnimatedSprite)>() {
+    'sproingers: for (_, (sproinger, transform, sprite)) in
+        world.query_mut::<(&mut Sproinger, &Transform, &mut AnimatedSprite)>()
+    {
         sproinger.cooldown_timer += dt;
 
         let sound = {
@@ -104,13 +117,15 @@ pub fn update_sproingers(world: &mut World) {
             let trigger_rect = Rect::new(position.x, position.y, TRIGGER_WIDTH, TRIGGER_HEIGHT);
 
             for (e, rect) in &bodies {
-                if trigger_rect.overlaps(&rect) {
+                if trigger_rect.overlaps(rect) {
                     to_be_sproinged.push(*e);
 
                     sproinger.cooldown_timer = 0.0;
 
                     sprite.set_animation(EXPAND_ANIMATION_ID, true);
-                    sprite.queue_action(QueuedAnimationAction::Play(CONTRACT_ANIMATION_ID.to_string()));
+                    sprite.queue_action(QueuedAnimationAction::Play(
+                        CONTRACT_ANIMATION_ID.to_string(),
+                    ));
 
                     play_sound_once(sound);
 

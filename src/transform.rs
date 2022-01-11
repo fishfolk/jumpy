@@ -8,10 +8,7 @@ pub struct Transform {
 
 impl Transform {
     pub fn new(position: Vec2, rotation: f32) -> Self {
-        Transform {
-            position,
-            rotation,
-        }
+        Transform { position, rotation }
     }
 }
 

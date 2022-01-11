@@ -17,7 +17,10 @@ use crate::debug;
 use crate::ecs::Scheduler;
 use crate::gui::{self, GAME_MENU_RESULT_MAIN_MENU, GAME_MENU_RESULT_QUIT};
 use crate::physics::{debug_draw_physics_bodies, update_physics_bodies};
-use crate::player::{spawn_player, update_player_animations, update_player_camera_box, update_player_controllers, update_player_inventory, update_player_states, PlayerParams, draw_weapons_hud};
+use crate::player::{
+    draw_weapons_hud, spawn_player, update_player_animations, update_player_camera_box,
+    update_player_controllers, update_player_inventory, update_player_states, PlayerParams,
+};
 use crate::Result;
 use crate::{
     create_collision_world, debug_draw_animated_sprite_sets, debug_draw_animated_sprites,
@@ -29,6 +32,8 @@ use crate::{
 
 pub use input::{collect_local_input, GameInput, GameInputScheme};
 
+use crate::effects::active::projectiles::update_projectiles;
+use crate::effects::active::triggered::update_triggered_effects;
 use crate::items::spawn_item;
 use crate::map::{spawn_decoration, spawn_sproinger, update_sproingers};
 use crate::particles::{
@@ -36,8 +41,6 @@ use crate::particles::{
     update_particle_emitters,
 };
 pub use music::{start_music, stop_music};
-use crate::effects::active::projectiles::update_projectiles;
-use crate::effects::active::triggered::update_triggered_effects;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum GameMode {

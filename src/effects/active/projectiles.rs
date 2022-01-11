@@ -1,6 +1,6 @@
-use std::f32::consts::PI;
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
+use std::f32::consts::PI;
 
 use hecs::{Entity, World};
 use macroquad_platformer::Tile;
@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::json;
 use crate::particles::{ParticleEmitter, ParticleEmitterParams};
-use crate::player::{Player, PlayerState};
+use crate::player::PlayerState;
 use crate::{
     CollisionWorld, PhysicsBody, Resources, RigidBody, RigidBodyParams, Sprite, SpriteMetadata,
     Transform,
@@ -66,9 +66,7 @@ pub fn spawn_projectile(
     range: f32,
     particles: Vec<ParticleEmitterParams>,
 ) -> Entity {
-    let entity = world.spawn((
-        Projectile::new(owner, kind.clone(), origin, range),
-    ));
+    let entity = world.spawn((Projectile::new(owner, kind.clone(), origin, range),));
 
     let mut transform = Transform::from(origin);
 
@@ -77,7 +75,6 @@ pub fn spawn_projectile(
             offset: vec2(-width, -height) / 2.0,
             size: vec2(width, height),
             can_rotate: false,
-            ..Default::default()
         },
         ProjectileKind::Circle { radius, .. } => RigidBodyParams {
             size: vec2(radius * 2.0, radius * 2.0),
@@ -108,17 +105,14 @@ pub fn spawn_projectile(
                     direction.x = -1.0;
                 }
 
-                transform.rotation = (velocity.y - direction.y)
-                    .atan2(velocity.x - direction.x);
+                transform.rotation = (velocity.y - direction.y).atan2(velocity.x - direction.x);
 
                 if velocity.x < 0.0 {
                     transform.rotation += PI;
                 }
             }
 
-            world
-                .insert_one(entity, Sprite::from(meta))
-                .unwrap();
+            world.insert_one(entity, Sprite::from(meta)).unwrap();
 
             RigidBodyParams {
                 offset,
@@ -128,10 +122,8 @@ pub fn spawn_projectile(
         }
     };
 
-    world.insert(entity, (
-            transform,
-            RigidBody::new(velocity, body_params,
-        )))
+    world
+        .insert(entity, (transform, RigidBody::new(velocity, body_params)))
         .unwrap();
 
     let mut particle_emitters = Vec::new();
@@ -158,10 +150,12 @@ pub fn update_projectiles(world: &mut World) {
     let players = world
         .query::<(&Transform, &PhysicsBody, &PlayerState)>()
         .iter()
-        .filter_map(|(e, (transform, body, state))| if state.is_dead {
-            None
-        } else {
-            Some((e, body.as_rect(transform.position)))
+        .filter_map(|(e, (transform, body, state))| {
+            if state.is_dead {
+                None
+            } else {
+                Some((e, body.as_rect(transform.position)))
+            }
         })
         .collect::<Vec<_>>();
 

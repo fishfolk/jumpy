@@ -198,7 +198,10 @@ pub fn update_one_animated_sprite(sprite: &mut AnimatedSprite) {
     if !sprite.is_deactivated && sprite.is_playing {
         let (is_last_frame, is_looping) = {
             let animation = sprite.animations.get(sprite.current_index).unwrap();
-            (sprite.current_frame == animation.frames - 1, animation.is_looping)
+            (
+                sprite.current_frame == animation.frames - 1,
+                animation.is_looping,
+            )
         };
 
         if is_last_frame {
@@ -206,13 +209,13 @@ pub fn update_one_animated_sprite(sprite: &mut AnimatedSprite) {
                 match &action {
                     QueuedAnimationAction::Play(id) => {
                         sprite.set_animation(id, false);
-                    },
+                    }
                     QueuedAnimationAction::PlayIndex(index) => {
                         sprite.set_animation_index(*index, false);
-                    },
+                    }
                     QueuedAnimationAction::Deactivate => {
                         sprite.is_deactivated = true;
-                    },
+                    }
                 }
             } else {
                 sprite.is_playing = is_looping;

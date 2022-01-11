@@ -1,14 +1,14 @@
-use std::os::linux::raw::stat;
 use macroquad::prelude::*;
-use macroquad::audio::play_sound_once;
 
 use hecs::{Entity, With, Without, World};
 
-use crate::items::{Weapon, ATTACK_ANIMATION_ID, EFFECT_ANIMATED_SPRITE_ID, GROUND_ANIMATION_ID, SPRITE_ANIMATED_SPRITE_ID, fire_weapon, ItemDepleteBehavior, ItemDropBehavior};
-use crate::player::{PlayerController, PlayerState, IDLE_ANIMATION_ID, PICKUP_GRACE_TIME};
-use crate::{AnimatedSpriteSet, Item, Owner, PhysicsBody, Transform, QueuedAnimationAction};
-use crate::effects::active::spawn_active_effect;
+use crate::items::{
+    fire_weapon, ItemDepleteBehavior, ItemDropBehavior, Weapon, EFFECT_ANIMATED_SPRITE_ID,
+    GROUND_ANIMATION_ID, SPRITE_ANIMATED_SPRITE_ID,
+};
 use crate::particles::ParticleEmitter;
+use crate::player::{PlayerController, PlayerState, IDLE_ANIMATION_ID, PICKUP_GRACE_TIME};
+use crate::{AnimatedSpriteSet, Item, Owner, PhysicsBody, Transform};
 
 const THROW_FORCE: f32 = 5.0;
 
@@ -110,7 +110,6 @@ pub fn update_player_inventory(world: &mut World) {
                     let mut body = world.get_mut::<PhysicsBody>(weapon_entity).unwrap();
 
                     body.velocity = velocity;
-
                 } else if state.pickup_grace_timer >= PICKUP_GRACE_TIME {
                     for (i, &(entity, rect)) in weapon_colliders.iter().enumerate() {
                         if player_rect.overlaps(&rect) {
@@ -123,7 +122,8 @@ pub fn update_player_inventory(world: &mut World) {
                             let mut body = world.get_mut::<PhysicsBody>(entity).unwrap();
                             body.is_deactivated = true;
 
-                            let mut sprite_set = world.get_mut::<AnimatedSpriteSet>(entity).unwrap();
+                            let mut sprite_set =
+                                world.get_mut::<AnimatedSpriteSet>(entity).unwrap();
                             sprite_set.set_all(IDLE_ANIMATION_ID, true);
 
                             break;
@@ -164,7 +164,9 @@ pub fn update_player_inventory(world: &mut World) {
 
                 weapon_transform.position += mount_offset;
 
-                if let Ok(mut particle_emitters) = world.get_mut::<Vec<ParticleEmitter>>(weapon_entity) {
+                if let Ok(mut particle_emitters) =
+                    world.get_mut::<Vec<ParticleEmitter>>(weapon_entity)
+                {
                     let mut offset = weapon.effect_offset;
 
                     if state.is_facing_left {
@@ -267,7 +269,10 @@ pub fn update_player_inventory(world: &mut World) {
         }
 
         if should_destroy {
-            world.despawn(entity);
+            if let Err(err) = world.despawn(entity) {
+                #[cfg(debug_assertions)]
+                println!("WARNING: {}", err);
+            }
         } else {
             let mut body = world.get_mut::<PhysicsBody>(entity).unwrap();
 
@@ -333,7 +338,8 @@ pub fn draw_weapons_hud(world: &mut World) {
         if let Some(weapon_entity) = inventory.weapon {
             let weapon = world.get::<Weapon>(weapon_entity).unwrap();
             if let Some(uses) = weapon.uses {
-                let is_destroyed_on_depletion = weapon.deplete_behavior == ItemDepleteBehavior::Destroy;
+                let is_destroyed_on_depletion =
+                    weapon.deplete_behavior == ItemDepleteBehavior::Destroy;
 
                 if !is_destroyed_on_depletion || uses > 1 {
                     let remaining = uses - weapon.use_cnt;

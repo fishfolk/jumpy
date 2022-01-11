@@ -13,15 +13,28 @@
         "projectile"
       ],
       "velocity": {
-        "x": 2.5,
-        "y": -1.25
+        "x": 7.0,
+        "y": -2.0
       },
+      "rotation": 90.0,
+      "can_rotate": true,
       "size": {
         "x": 24,
         "y": 24
       },
       "is_kickable": true,
       "timed_trigger": 1.5,
+      "particles": [
+        {
+          "particle_effect": "kick_bomb_smoke",
+          "interval": 0.04,
+          "should_autostart": true,
+          "offset": {
+            "x": 0,
+            "y": -16
+          }
+        }
+      ],
       "effects": [
         {
           "type": "circle_collider",

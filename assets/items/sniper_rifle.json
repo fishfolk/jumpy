@@ -6,6 +6,13 @@
   "attack_duration": 0.5,
   "recoil": 14.0,
   "sound_effect": "shoot",
+  "particles": [
+    {
+      "particle_effect": "sniper_rifle_muzzle_smoke",
+      "interval": 0.05,
+      "emissions": 12
+    }
+  ],
   "collider_size": {
     "x": 64,
     "y": 24
@@ -24,21 +31,25 @@
       "projectile": {
         "type": "sprite",
         "sprite": {
-          "texture": "small_projectile",
+          "texture": "sniper_rifle_bullet",
           "size": {
-            "x": 8,
-            "y": 4
+            "x": 7,
+            "y": 7
           },
-          "tint": {
-            "r": 0.9,
-            "g": 0.75,
-            "b": 0.12,
-            "a": 1.0
+          "offset": {
+            "x": -3.5,
+            "y": -3.5
           }
         }
       },
       "range": 600.0,
-      "speed": 15.0
+      "speed": 25.0,
+      "particles": [
+        {
+          "particle_effect": "sniper_rifle_bullet_smoke",
+          "interval": 0.01
+        }
+      ]
     }
   ],
   "sprite": {

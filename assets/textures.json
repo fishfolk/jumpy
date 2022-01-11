@@ -361,6 +361,10 @@
     "path": "textures/items/MachineGunBullet(7x4).png"
   },
   {
+    "id": "sniper_rifle_bullet",
+    "path": "textures/items/SniperRifleBullet(7x7).png"
+  },
+  {
     "id": "explosion_small",
     "path": "textures/explosions/Small(112x80).png",
     "sprite_size": {

@@ -118,7 +118,7 @@ pub fn spawn_active_effect(
                 params.velocity.x = -params.velocity.x;
             }
 
-            spawn_triggered_effect(world, owner, origin, *params)?;
+            spawn_triggered_effect(world, owner, origin, is_facing_left, *params)?;
         }
         ActiveEffectKind::Projectile {
             kind,

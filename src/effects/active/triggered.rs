@@ -14,6 +14,7 @@ use crate::{
     RigidBody, RigidBodyParams, Transform,
 };
 use crate::{Resources, Result};
+use crate::math::deg_to_rad;
 
 /// The various collision types that can trigger a `TriggeredEffect`.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -80,6 +81,7 @@ pub fn spawn_triggered_effect(
     world: &mut World,
     owner: Entity,
     origin: Vec2,
+    is_facing_left: bool,
     meta: TriggeredEffectMetadata,
 ) -> Result<Entity> {
     let offset = meta.size * -0.5;
@@ -89,9 +91,19 @@ pub fn spawn_triggered_effect(
         collision_world.add_actor(origin, meta.size.x as i32, meta.size.y as i32)
     };
 
+    let rotation = {
+        let mut deg = meta.rotation;
+
+        if is_facing_left {
+            deg = -deg;
+        }
+
+        deg_to_rad(deg)
+    };
+
     let entity = world.spawn((
         TriggeredEffect::new(owner, meta.clone()),
-        Transform::from(origin),
+        Transform::new(origin, rotation),
         PhysicsBody::new(
             actor,
             meta.velocity,
@@ -294,6 +306,9 @@ pub struct TriggeredEffectMetadata {
     /// This specifies the velocity of the triggers body when it is instantiated.
     #[serde(default, with = "json::vec2_def")]
     pub velocity: Vec2,
+    /// This specifies the initial rotation of the sprite.
+    #[serde(default)]
+    pub rotation: f32,
     /// This can be used to add an animated sprite to the trigger. If only a sprite is desired, an
     /// animation with only one frame can be used.
     #[serde(default, alias = "animation", skip_serializing_if = "Option::is_none")]
@@ -337,6 +352,7 @@ impl Default for TriggeredEffectMetadata {
             size: vec2(6.0, 6.0),
             trigger: Vec::new(),
             velocity: Vec2::ZERO,
+            rotation: 0.0,
             sprite: None,
             activation_delay: 0.0,
             trigger_delay: 0.0,

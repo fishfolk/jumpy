@@ -81,25 +81,17 @@ pub fn spawn_triggered_effect(
     world: &mut World,
     owner: Entity,
     origin: Vec2,
-    is_facing_left: bool,
+    _is_facing_left: bool,
     meta: TriggeredEffectMetadata,
 ) -> Result<Entity> {
-    let offset = meta.size * -0.5;
+    let offset = -meta.size / 2.0;
 
     let actor = {
         let mut collision_world = storage::get_mut::<CollisionWorld>();
         collision_world.add_actor(origin, meta.size.x as i32, meta.size.y as i32)
     };
 
-    let rotation = {
-        let mut deg = meta.rotation;
-
-        if is_facing_left {
-            deg = -deg;
-        }
-
-        deg_to_rad(deg)
-    };
+    let rotation = deg_to_rad(meta.rotation);
 
     let entity = world.spawn((
         TriggeredEffect::new(owner, meta.clone()),

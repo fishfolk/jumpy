@@ -229,13 +229,9 @@ fn apply_rotation(transform: &mut Transform, velocity: &mut Vec2, is_on_ground: 
     if !is_on_ground {
         transform.rotation += velocity.x.abs() * 0.00045 + velocity.y.abs() * 0.00015;
     } else {
-        transform.rotation %= std::f32::consts::PI;
+        transform.rotation %= std::f32::consts::PI * 2.0;
 
-        let mut goal = 0.0;
-
-        if transform.rotation > std::f32::consts::PI {
-            goal = std::f32::consts::PI;
-        }
+        let goal = std::f32::consts::PI * 2.0;
 
         let rest = goal - transform.rotation;
         if rest.abs() >= 0.1 {

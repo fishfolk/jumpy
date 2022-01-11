@@ -48,52 +48,45 @@ pub fn spawn_active_effect(
         } => {
             let circle = Circle::new(origin.x, origin.y, radius);
 
-            for (e, (state, transform, body)) in
-                world.query_mut::<(&mut PlayerState, &Transform, &PhysicsBody)>()
-            {
-                if is_explosion || e != owner {
-                    let player_rect = body.as_rect(transform.position);
-                    if circle.overlaps_rect(&player_rect) {
-                        let mut is_hit = false;
+            for (e, (transform, body)) in world.query::<(&Transform, &PhysicsBody)>().iter() {
+                let mut is_hit = false;
 
-                        if let Some(mut segment) = segment {
-                            if is_facing_left {
-                                segment.x = -segment.x;
-                            }
-
-                            if segment.x == 1 {
-                                is_hit = player_rect.x + player_rect.w >= circle.point().x;
-                            } else if segment.x == -1 {
-                                is_hit = player_rect.x <= circle.point().x;
-                            }
-
-                            if segment.y == 1 {
-                                is_hit =
-                                    is_hit && player_rect.y + player_rect.h <= circle.point().y;
-                            } else if segment.y == -1 {
-                                is_hit = is_hit && player_rect.y >= circle.point().y;
-                            }
-                        } else {
-                            is_hit = true;
+                let other_rect = body.as_rect(transform.position);
+                if circle.overlaps_rect(&other_rect) {
+                    if let Some(mut segment) = segment {
+                        if is_facing_left {
+                            segment.x = -segment.x;
                         }
 
-                        if is_hit {
-                            state.is_dead = true;
+                        if segment.x == 1 {
+                            is_hit = other_rect.x + other_rect.w >= circle.point().x;
+                        } else if segment.x == -1 {
+                            is_hit = other_rect.x <= circle.point().x;
                         }
+
+                        if segment.y == 1 {
+                            is_hit = is_hit && other_rect.y + other_rect.h <= circle.point().y;
+                        } else if segment.y == -1 {
+                            is_hit = is_hit && other_rect.y >= circle.point().y;
+                        }
+                    } else {
+                        is_hit = true;
                     }
                 }
-            }
 
-            if is_explosion {
-                for (_, (effect, transform, body)) in
-                    world.query_mut::<(&mut TriggeredEffect, &Transform, &PhysicsBody)>()
-                {
-                    let trigger_rect = body.as_rect(transform.position);
-                    if circle.overlaps_rect(&trigger_rect)
-                        && effect.trigger.contains(&TriggeredEffectTrigger::Explosion)
-                    {
-                        effect.is_triggered = true;
-                        effect.should_override_delay = true;
+                if is_hit {
+                    if let Ok(mut state) = world.get_mut::<PlayerState>(e) {
+                        if is_explosion || e != owner {
+                            state.is_dead = true;
+                        }
+                    } else if is_explosion {
+                        if let Ok(mut effect) = world.get_mut::<TriggeredEffect>(e) {
+                            if effect.trigger.contains(&TriggeredEffectTrigger::Explosion) {
+                                effect.is_triggered = true;
+                                effect.triggered_by = Some(owner);
+                                effect.should_override_delay = true;
+                            }
+                        }
                     }
                 }
             }
@@ -104,12 +97,12 @@ pub fn spawn_active_effect(
                 rect.x -= rect.w;
             }
 
-            for (_, (state, transform, body)) in
-                world.query_mut::<(&mut PlayerState, &Transform, &PhysicsBody)>()
-            {
-                let player_rect = body.as_rect(transform.position);
-                if rect.overlaps(&player_rect) {
-                    state.is_dead = true;
+            for (e, (transform, body)) in world.query::<(&Transform, &PhysicsBody)>().iter() {
+                let other_rect = body.as_rect(transform.position);
+                if rect.overlaps(&other_rect) {
+                    if let Ok(mut state) = world.get_mut::<PlayerState>(e) {
+                        state.is_dead = true;
+                    }
                 }
             }
         }

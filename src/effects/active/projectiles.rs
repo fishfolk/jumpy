@@ -7,6 +7,8 @@ use macroquad_platformer::Tile;
 
 use serde::{Deserialize, Serialize};
 
+use crate::effects::active::triggered::TriggeredEffect;
+use crate::effects::TriggeredEffectTrigger;
 use crate::json;
 use crate::particles::{ParticleEmitter, ParticleEmitterParams};
 use crate::player::PlayerState;
@@ -143,61 +145,85 @@ pub fn spawn_projectile(
 
 enum ProjectileCollision {
     Player(Entity),
+    Trigger(Entity),
     Map,
 }
 
 pub fn update_projectiles(world: &mut World) {
-    let players = world
-        .query::<(&Transform, &PhysicsBody, &PlayerState)>()
+    let bodies = world
+        .query::<(&Transform, &PhysicsBody)>()
         .iter()
-        .filter_map(|(e, (transform, body, state))| {
-            if state.is_dead {
-                None
-            } else {
-                Some((e, body.as_rect(transform.position)))
-            }
-        })
+        .map(|(e, (transform, body))| (e, body.as_rect(transform.position)))
         .collect::<Vec<_>>();
 
     let collision_world = storage::get::<CollisionWorld>();
 
-    let mut to_remove = Vec::new();
+    let mut events = Vec::new();
 
     'projectiles: for (e, (projectile, transform, body)) in world
         .query::<(&Projectile, &Transform, &RigidBody)>()
         .iter()
     {
         if projectile.origin.distance(transform.position) >= projectile.range {
-            to_remove.push((e, None));
+            events.push((projectile.owner, e, None));
             continue 'projectiles;
         }
 
         let size = body.size.as_i32();
         let map_collision = collision_world.collide_solids(transform.position, size.x, size.y);
         if map_collision == Tile::Solid {
-            let res = (e, Some(ProjectileCollision::Map));
-            to_remove.push(res);
+            let res = (projectile.owner, e, Some(ProjectileCollision::Map));
+            events.push(res);
             continue 'projectiles;
         }
 
         let rect = body.as_rect(transform.position);
-        for (p, player_rect) in &players {
-            if rect.overlaps(player_rect) {
-                let res = (e, Some(ProjectileCollision::Player(*p)));
-                to_remove.push(res);
-                continue 'projectiles;
+        for (other, other_rect) in &bodies {
+            if rect.overlaps(other_rect) {
+                if let Ok(state) = world.get::<PlayerState>(*other) {
+                    if !state.is_dead {
+                        let res = (
+                            projectile.owner,
+                            e,
+                            Some(ProjectileCollision::Player(*other)),
+                        );
+                        events.push(res);
+                        continue 'projectiles;
+                    }
+                } else if let Ok(effect) = world.get::<TriggeredEffect>(*other) {
+                    if effect.trigger.contains(&TriggeredEffectTrigger::Projectile) {
+                        let res = (
+                            projectile.owner,
+                            e,
+                            Some(ProjectileCollision::Trigger(*other)),
+                        );
+                        events.push(res);
+                    }
+                }
             }
         }
     }
 
-    for (e, c) in to_remove {
-        if let Some(ProjectileCollision::Player(p)) = c {
-            let mut state = world.get_mut::<PlayerState>(p).unwrap();
-
-            state.is_dead = true;
+    for (owner_entity, projectile_entity, collision) in events {
+        if let Some(collision_kind) = collision {
+            match collision_kind {
+                ProjectileCollision::Player(player_entity) => {
+                    let mut state = world.get_mut::<PlayerState>(player_entity).unwrap();
+                    state.is_dead = true;
+                }
+                ProjectileCollision::Trigger(trigger_entity) => {
+                    let mut effect = world.get_mut::<TriggeredEffect>(trigger_entity).unwrap();
+                    if !effect.should_override_delay {
+                        effect.is_triggered = true;
+                        effect.should_override_delay = true;
+                        effect.triggered_by = Some(owner_entity);
+                    }
+                }
+                _ => {}
+            }
         }
 
-        let _ = world.despawn(e);
+        let _ = world.despawn(projectile_entity);
     }
 }
 

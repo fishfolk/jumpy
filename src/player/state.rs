@@ -183,6 +183,10 @@ pub fn update_player_states(world: &mut World) {
 
                 if !body.is_on_ground && body.velocity.y > 0.0 {
                     state.is_floating = controller.should_float;
+
+                    if state.is_floating {
+                        body.velocity.y *= attributes.float_gravity_factor;
+                    }
                 } else {
                     state.is_floating = false;
                 }

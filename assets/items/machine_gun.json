@@ -30,7 +30,7 @@
     {
       "type": "projectile",
       "range": 512.0,
-      "speed": 8.0,
+      "speed": 800.0,
       "spread": 5.0,
       "projectile": {
         "type": "sprite",
@@ -39,10 +39,6 @@
           "size": {
             "x": 30,
             "y": 4
-          },
-          "offset": {
-            "x": -15,
-            "y": -2
           }
         },
         "can_rotate": true

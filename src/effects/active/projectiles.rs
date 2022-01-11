@@ -1,3 +1,4 @@
+use std::f32::consts::PI;
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
 
@@ -67,8 +68,9 @@ pub fn spawn_projectile(
 ) -> Entity {
     let entity = world.spawn((
         Projectile::new(owner, kind.clone(), origin, range),
-        Transform::from(origin),
     ));
+
+    let mut transform = Transform::from(origin);
 
     let body_params = match kind {
         ProjectileKind::Rect { width, height, .. } => RigidBodyParams {
@@ -82,7 +84,7 @@ pub fn spawn_projectile(
             can_rotate: false,
             ..Default::default()
         },
-        ProjectileKind::Sprite { mut params, can_rotate } => {
+        ProjectileKind::Sprite { params, can_rotate } => {
             let resources = storage::get::<Resources>();
             let texture_res = resources.textures.get(&params.texture_id).unwrap();
 
@@ -90,24 +92,46 @@ pub fn spawn_projectile(
                 .size
                 .unwrap_or_else(|| texture_res.meta.frame_size.unwrap_or(texture_res.meta.size));
 
-            params.offset.x -= size.x / 2.0;
-            params.offset.y -= size.y / 2.0;
+            let offset = params.offset - (vec2(size.x, size.y) / 2.0);
+
+            let meta = SpriteMetadata {
+                offset,
+                ..params.clone()
+            };
+
+            if can_rotate {
+                let mut direction = Vec2::ZERO;
+
+                if velocity.x < 0.0 {
+                    direction.x = 1.0;
+                } else {
+                    direction.x = -1.0;
+                }
+
+                transform.rotation = (velocity.y - direction.y)
+                    .atan2(velocity.x - direction.x);
+
+                if velocity.x < 0.0 {
+                    transform.rotation += PI;
+                }
+            }
 
             world
-                .insert_one(entity, Sprite::from(params.clone()))
+                .insert_one(entity, Sprite::from(meta))
                 .unwrap();
 
             RigidBodyParams {
-                offset: vec2(-size.x, -size.y) / 2.0,
+                offset,
                 size,
-                can_rotate,
                 ..Default::default()
             }
         }
     };
 
-    world
-        .insert_one(entity, RigidBody::new(velocity, body_params))
+    world.insert(entity, (
+            transform,
+            RigidBody::new(velocity, body_params,
+        )))
         .unwrap();
 
     let mut particle_emitters = Vec::new();

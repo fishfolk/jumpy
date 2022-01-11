@@ -127,9 +127,6 @@ pub fn spawn_active_effect(
             spread,
             particles,
         } => {
-            let rad = deg_to_rad(spread);
-            let spread = rand::gen_range(-rad, rad);
-
             let mut velocity = Vec2::ZERO;
             if is_facing_left {
                 velocity.x = -speed
@@ -137,7 +134,12 @@ pub fn spawn_active_effect(
                 velocity.x = speed
             }
 
-            velocity = rotate_vector(velocity, spread);
+            if spread != 0.0 {
+                let rad = deg_to_rad(spread);
+                let spread = rand::gen_range(-rad, rad);
+
+                velocity = rotate_vector(velocity, spread);
+            }
 
             spawn_projectile(
                 world,

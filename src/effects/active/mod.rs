@@ -49,10 +49,10 @@ pub fn spawn_active_effect(
             let circle = Circle::new(origin.x, origin.y, radius);
 
             for (e, (transform, body)) in world.query::<(&Transform, &PhysicsBody)>().iter() {
-                let mut is_hit = false;
-
                 let other_rect = body.as_rect(transform.position);
                 if circle.overlaps_rect(&other_rect) {
+                    let mut is_hit = false;
+
                     if let Some(mut segment) = segment {
                         if is_facing_left {
                             segment.x = -segment.x;
@@ -72,19 +72,19 @@ pub fn spawn_active_effect(
                     } else {
                         is_hit = true;
                     }
-                }
 
-                if is_hit {
-                    if let Ok(mut state) = world.get_mut::<PlayerState>(e) {
-                        if is_explosion || e != owner {
-                            state.is_dead = true;
-                        }
-                    } else if is_explosion {
-                        if let Ok(mut effect) = world.get_mut::<TriggeredEffect>(e) {
-                            if effect.trigger.contains(&TriggeredEffectTrigger::Explosion) {
-                                effect.is_triggered = true;
-                                effect.triggered_by = Some(owner);
-                                effect.should_override_delay = true;
+                    if is_hit {
+                        if let Ok(mut state) = world.get_mut::<PlayerState>(e) {
+                            if is_explosion || e != owner {
+                                state.is_dead = true;
+                            }
+                        } else if is_explosion {
+                            if let Ok(mut effect) = world.get_mut::<TriggeredEffect>(e) {
+                                if effect.trigger.contains(&TriggeredEffectTrigger::Explosion) {
+                                    effect.is_triggered = true;
+                                    effect.triggered_by = Some(owner);
+                                    effect.should_override_delay = true;
+                                }
                             }
                         }
                     }

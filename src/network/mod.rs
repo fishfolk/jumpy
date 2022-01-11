@@ -8,6 +8,9 @@ pub use api::{Account, AccountId, Api, Lobby, LobbyId};
 
 use crate::json;
 
+//! This contains some networking prototyping that was done before the refactoring to ECS
+//! Except for the mock API, there is probably not much that can be used here, now....
+
 pub const UDP_CHUNK_SIZE: usize = 512;
 
 pub const DEFAULT_CLIENT_PORT: u16 = 6002;

@@ -182,24 +182,10 @@ that we add will be <code>items/sniper_rifle.json</code>.</p>
 }
 ...
 </code></pre>
-<p>Every item that we add will also need a set of sprite parameters (<code>SpriteParams</code>) that define the sprite that will be drawn
-when the item is on the ground, before being picked up by the player. Typically, all that is need here is the textures id,
-as attributes like sprite size will most often be defined in the texture's entry in the <code>assets/textures.json</code> file. At this point is easiest to use an existing sprite in the game as a placeholder. For now, we'll set the sprite of the sniper rifle item to be the <code>musket</code> sprite.</p>
+<p>The item will need a collider defined for it. A collider is a rectangular boundary around the position of the item that is used for checking whether a player is close enough to pick it up. We'll set the collider for the sniper rifle to be a 16 by 16 box.</p>
 <pre><code class="language-json">{
   &quot;id&quot;: &quot;sniper_rifle&quot;,
   &quot;type&quot;: &quot;weapon&quot;,
-  &quot;sprite&quot;: {
-    &quot;texture&quot;: &quot;musket&quot;
-  },
-}
-</code></pre>
-<p>The item will also need a collider defined for it. A collider is a rectangular boundary around the position of the item that is used for checking whether a player is close enough to pick it up. We'll set the collider for the sniper rifle to be a 16 by 16 box.</p>
-<pre><code class="language-json">{
-  &quot;id&quot;: &quot;sniper_rifle&quot;,
-  &quot;type&quot;: &quot;weapon&quot;,
-  &quot;sprite&quot;: {
-    &quot;texture&quot;: &quot;musket&quot;
-  },
   &quot;collider_size&quot;: {
     &quot;x&quot;: 16,
     &quot;y&quot;: 16
@@ -213,15 +199,12 @@ as attributes like sprite size will most often be defined in the texture's entry
 <pre><code class="language-json">{
   &quot;id&quot;: &quot;sniper_rifle&quot;,
   &quot;type&quot;: &quot;weapon&quot;,
-  &quot;sprite&quot;: {
-    &quot;texture&quot;: &quot;musket&quot;
-  },
   &quot;collider_size&quot;: {
     &quot;x&quot;: 16,
     &quot;y&quot;: 16
   },
   &quot;uses&quot;: 2,
-  &quot;recoil&quot;: 1400.0,
+  &quot;recoil&quot;: 14.0,
 }
 </code></pre>
 <p>Next we'll need to define more subtle values that also will effect the behavior of the sniper rifle weapon: <code>cooldown</code> and <code>attack_duration</code>. <code>cooldown</code> is a period of time that governs how frequently the weapon can be used and <code>attack_duration</code> is the amount of time the player is locked in the attack state (input blocked) when the weapon is used. For the sniper rifle we'll set <code>cooldown</code> to 1.5 and <code>attack_duration</code> to 1.0.</p>
@@ -236,7 +219,7 @@ as attributes like sprite size will most often be defined in the texture's entry
     &quot;y&quot;: 16
   },
   &quot;uses&quot;: 2,
-  &quot;recoil&quot;: 1400.0,
+  &quot;recoil&quot;: 14.0,
   &quot;cooldown&quot;: 1.5,
   &quot;attack_duration&quot;: 1.0,
 }
@@ -245,15 +228,12 @@ as attributes like sprite size will most often be defined in the texture's entry
 <pre><code class="language-json">{
   &quot;id&quot;: &quot;sniper_rifle&quot;,
   &quot;type&quot;: &quot;weapon&quot;,
-  &quot;sprite&quot;: {
-    &quot;texture&quot;: &quot;musket&quot;
-  },
   &quot;collider_size&quot;: {
     &quot;x&quot;: 16,
     &quot;y&quot;: 16
   },
   &quot;uses&quot;: 2,
-  &quot;recoil&quot;: 1400.0,
+  &quot;recoil&quot;: 14.0,
   &quot;cooldown&quot;: 1.5,
   &quot;attack_duration&quot;: 1.0,
   &quot;sound_effect&quot;: &quot;shoot&quot;,
@@ -263,15 +243,12 @@ as attributes like sprite size will most often be defined in the texture's entry
 <pre><code class="language-json">{
   &quot;id&quot;: &quot;sniper_rifle&quot;,
   &quot;type&quot;: &quot;weapon&quot;,
-  &quot;sprite&quot;: {
-    &quot;texture&quot;: &quot;musket&quot;
-  },
   &quot;collider_size&quot;: {
     &quot;x&quot;: 16,
     &quot;y&quot;: 16
   },
   &quot;uses&quot;: 2,
-  &quot;recoil&quot;: 1400.0,
+  &quot;recoil&quot;: 14.0,
   &quot;cooldown&quot;: 1.5,
   &quot;attack_duration&quot;: 1.0,
   &quot;sound_effect&quot;: &quot;shoot&quot;,
@@ -300,15 +277,12 @@ as attributes like sprite size will most often be defined in the texture's entry
 <pre><code class="language-json">{
   &quot;id&quot;: &quot;sniper_rifle&quot;,
   &quot;type&quot;: &quot;weapon&quot;,
-  &quot;sprite&quot;: {
-    &quot;texture&quot;: &quot;musket&quot;
-  },
   &quot;collider_size&quot;: {
     &quot;x&quot;: 16,
     &quot;y&quot;: 16
   },
   &quot;uses&quot;: 2,
-  &quot;recoil&quot;: 1400.0,
+  &quot;recoil&quot;: 14.0,
   &quot;cooldown&quot;: 1.5,
   &quot;attack_duration&quot;: 1.0,
   &quot;sound_effect&quot;: &quot;shoot&quot;,
@@ -336,12 +310,10 @@ as attributes like sprite size will most often be defined in the texture's entry
 }
 </code></pre>
 <p>The next step is to add the <code>animation</code> for the sniper rifle weapon to the json object. For now, we will give the sniper the same animation as the musket. We can set the <code>texture</code> of the animation to musket and define the <code>idle</code> and <code>attack</code> animation sequences by providing a <code>row</code> in the spritesheet, the amount of <code>frames</code> in the animation, and the speed (<code>fps</code>: frames per second) of the animation.</p>
+<p>By default, the animation with an id of <code>idle</code> will be used when an item is on the ground, unless overridden by adding an animation with the id <code>ground</code>.</p>
 <pre><code class="language-json">{
   &quot;id&quot;: &quot;sniper_rifle&quot;,
   &quot;type&quot;: &quot;weapon&quot;,
-  &quot;sprite&quot;: {
-    &quot;texture&quot;: &quot;musket&quot;
-  },
   &quot;collider_size&quot;: {
     &quot;x&quot;: 64,
     &quot;y&quot;: 24
@@ -349,7 +321,7 @@ as attributes like sprite size will most often be defined in the texture's entry
   &quot;uses&quot;: 2,
   &quot;cooldown&quot;: 1.5,
   &quot;attack_duration&quot;: 1.0,
-  &quot;recoil&quot;: 1400.0,
+  &quot;recoil&quot;: 14.0,
   &quot;sound_effect&quot;: &quot;shoot&quot;,
   &quot;effect_offset&quot;: {
     &quot;x&quot;: 64,
@@ -395,13 +367,10 @@ as attributes like sprite size will most often be defined in the texture's entry
   }
 }
 </code></pre>
-<p>The last thing that we need to add to the json object definition of the sniper rifle weapon is an <code>effect_animation</code>. This is a visual effect that is shown. For the sniper rifle, we want to see a &quot;blast&quot; effect from the end of the barrel of the sniper when the weapon is used (just like for the musket). To implement this we can add <code>effect_animation</code> to the json object. First, we can set the <code>texture</code> to <code>musket</code> and provide an animation called <code>attack_effect</code> with the correct <code>row</code>, <code>frames</code>, and <code>fps</code>.</p>
+<p>The last thing that we need to add to the json object definition of the sniper rifle weapon is an <code>effect_animation</code>. This is a visual effect that is shown. For the sniper rifle, we want to see a &quot;blast&quot; effect from the end of the barrel of the sniper when the weapon is used (just like for the musket). To implement this we can add <code>effect_animation</code> to the json object. First, we can set the <code>texture</code> to <code>musket</code> and provide an animation called <code>attack</code> with the correct <code>row</code>, <code>frames</code>, and <code>fps</code>.</p>
 <pre><code class="language-json">{
   &quot;id&quot;: &quot;sniper_rifle&quot;,
   &quot;type&quot;: &quot;weapon&quot;,
-  &quot;sprite&quot;: {
-    &quot;texture&quot;: &quot;musket&quot;
-  },
   &quot;collider_size&quot;: {
     &quot;x&quot;: 64,
     &quot;y&quot;: 24
@@ -409,7 +378,7 @@ as attributes like sprite size will most often be defined in the texture's entry
   &quot;uses&quot;: 2,
   &quot;cooldown&quot;: 1.5,
   &quot;attack_duration&quot;: 1.0,
-  &quot;recoil&quot;: 1400.0,
+  &quot;recoil&quot;: 14.0,
   &quot;sound_effect&quot;: &quot;shoot&quot;,
   &quot;effect_offset&quot;: {
     &quot;x&quot;: 64,
@@ -457,7 +426,7 @@ as attributes like sprite size will most often be defined in the texture's entry
     &quot;texture&quot;: &quot;musket&quot;,
     &quot;animations&quot;: [
       {
-        &quot;id&quot;: &quot;attack_effect&quot;,
+        &quot;id&quot;: &quot;attack&quot;,
         &quot;row&quot;: 2,
         &quot;frames&quot;: 4,
         &quot;fps&quot;: 12
@@ -517,32 +486,7 @@ as attributes like sprite size will most often be defined in the texture's entry
   ...
 </code></pre>
 <h2><a class="header" href="#testing" id="testing">Testing</a></h2>
-<p>The last thing we need to do is put our new weapon in the game and test it! Fish Fight's levels are defined in json files in the <code>assets/maps</code> directory. For testing items, there is a test level in the game defined in a file called <code>test_level.json</code>. Open this file.</p>
-<p>In this file you will see a long list of item entries containing data about items that are placed in the level. The easiest way to add your new weapon to this level is to replace the <code>&quot;name&quot;</code> field of one of other items currently in the level with the id of your new weapon (referred to as <code>your_weapon</code> throughout this chapter). Here is the entry for my sniper weapon.</p>
-<pre><code class="language-json">...
-{
-    &quot;draworder&quot;:&quot;topdown&quot;,
-    &quot;id&quot;:5,
-    &quot;name&quot;:&quot;items&quot;,
-    &quot;objects&quot;:[
-        ...
-        {
-            &quot;height&quot;:0,
-            &quot;id&quot;:147,
-            &quot;name&quot;:&quot;sniper_rifle&quot;,
-            &quot;point&quot;:true,
-            &quot;rotation&quot;:0,
-            &quot;type&quot;:&quot;item&quot;,
-            &quot;visible&quot;:true,
-            &quot;width&quot;:0,
-            &quot;x&quot;:400,
-            &quot;y&quot;:690
-        },
-        ...
-    ],
-    ...
-}
-</code></pre>
+<p>The last thing we need to do is put our new weapon in the game and test it! This can be achieved by opening the game and selecting <code>Editor</code> from the main menu (see editor documentation for more information)</p>
 <p>If you followed all of these steps correctly, your new weapon should be in the game. Run the game using <code>cargo run</code>, then select the test level. You should see your gun in the level and be able to try it out.</p>
 <p><img src="assets/sniper_weapon_test.gif" alt="sniper_weapon_test" /></p>
 <p>Now all you need to do is modify the values in <code>src/items/your_weapon.rs</code> until the weapon feels right to you! Then you are ready to make a pull request.</p>

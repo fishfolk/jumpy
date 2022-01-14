@@ -1,25 +1,11 @@
 {
   "id": "sniper_rifle",
-  "sprite": {
-    "texture": "sniper_rifle",
-    "offset": {
-      "x": 0,
-      "y": -8
-    }
-  },
   "type": "weapon",
   "uses": 2,
   "cooldown": 1.5,
-  "attack_duration": 1.0,
-  "recoil": 1400.0,
+  "attack_duration": 0.5,
+  "recoil": 14.0,
   "sound_effect": "shoot",
-  "particles": [
-    {
-      "particle_effect": "sniper_rifle_muzzle_smoke",
-      "interval": 0.05,
-      "emissions": 12
-    }
-  ],
   "collider_size": {
     "x": 84,
     "y": 25
@@ -29,7 +15,7 @@
     "y": 16
   },
   "mount_offset": {
-    "x": -12,
+    "x": -24,
     "y": -12
   },
   "effects": [
@@ -59,7 +45,7 @@
       ]
     }
   ],
-  "animation": {
+  "sprite": {
     "texture": "sniper_rifle",
     "animations": [
       {
@@ -73,22 +59,19 @@
         "id": "attack",
         "row": 1,
         "frames": 3,
-        "fps": 15,
-        "is_looping": true
+        "fps": 15
       }
     ]
   },
-  "effect_animation": {
+  "effect_sprite": {
     "texture": "sniper_rifle",
     "animations": [
       {
-        "id": "attack_effect",
+        "id": "attack",
         "row": 2,
         "frames": 4,
-        "fps": 12,
-        "is_looping": true
+        "fps": 12
       }
     ]
-  },
-  "is_network_ready": true
+  }
 }

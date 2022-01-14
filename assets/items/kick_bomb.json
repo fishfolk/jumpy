@@ -1,27 +1,40 @@
 {
   "id": "kick_bomb",
-  "sprite": {
-    "texture": "kick_bomb"
-  },
   "type": "weapon",
   "uses": 1,
-  "is_destroyed_on_depletion": true,
+  "deplete_behavior": "destroy",
   "effects": [
     {
       "type": "triggered_effect",
-      "trigger": "all_except_ground",
+      "trigger": [
+        "player",
+        "enemy",
+        "explosion",
+        "projectile"
+      ],
       "velocity": {
-        "x": 700.0,
-        "y": -200.0
+        "x": 7.0,
+        "y": -2.0
       },
-      "is_rotates": true,
-      "spawn_angle": 90.0,
+      "rotation": 90.0,
+      "can_rotate": true,
       "size": {
-        "x": 26,
-        "y": 23
+        "x": 24,
+        "y": 24
       },
       "is_kickable": true,
       "timed_trigger": 1.5,
+      "particles": [
+        {
+          "particle_effect": "kick_bomb_smoke",
+          "interval": 0.04,
+          "should_autostart": true,
+          "offset": {
+            "x": 0,
+            "y": -16
+          }
+        }
+      ],
       "effects": [
         {
           "type": "circle_collider",
@@ -33,43 +46,32 @@
         {
           "type": "triggered_effect",
           "size": {
-            "x": 144,
-            "y": 112
+            "x": 112,
+            "y": 80
           },
           "timed_trigger": 0.7,
-          "effects": [],
-          "particles": [
-            {
-              "particle_effect": "empty",
-              "should_autostart": true,
-              "offset": {
-                "x": -72,
-                "y": -56
-              },
-              "animations": {
-                "texture": "medium_explosions",
-                "frame_size": {
-                  "x": 144,
-                  "y": 112
-                },
-                "animations": [
-                  {
-                    "id": "animated_effect",
-                    "row": 0,
-                    "frames": 12,
-                    "fps": 24
-                  }
-                ]
+          "sprite": {
+            "texture": "explosion_small",
+            "animations": [
+              {
+                "id": "effect",
+                "row": 0,
+                "frames": 12,
+                "fps": 24
               }
-            }
-          ]
+            ]
+          }
         }
       ],
-      "animation": {
+      "sprite": {
         "texture": "kick_bomb",
+        "offset": {
+          "x": 0,
+          "y": -12
+        },
         "animations": [
           {
-            "id": "armed",
+            "id": "effect",
             "row": 1,
             "frames": 3,
             "fps": 12,
@@ -77,23 +79,12 @@
           }
         ],
         "should_autoplay": true
-      },
-      "particles": [
-        {
-          "particle_effect": "kick_bomb_smoke",
-          "interval": 0.04,
-          "should_autostart": true,
-          "offset": {
-            "x": 0,
-            "y": -16
-          }
-        }
-      ]
+      }
     }
   ],
   "collider_size": {
     "x": 32,
-    "y": 45
+    "y": 48
   },
   "mount_offset": {
     "x": 0,
@@ -103,7 +94,7 @@
     "x": 0,
     "y": 24
   },
-  "animation": {
+  "sprite": {
     "texture": "kick_bomb",
     "animations": [
       {

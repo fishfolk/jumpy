@@ -1,6 +1,6 @@
-use crate::Map;
+use crate::{Map, Result};
 
-use super::{Result, UndoableAction};
+use super::UndoableAction;
 
 pub struct EditorHistory {
     undo_stack: Vec<Box<dyn UndoableAction>>,
@@ -15,7 +15,7 @@ impl EditorHistory {
         }
     }
 
-    pub fn apply(&mut self, mut action: Box<dyn UndoableAction>, map: &mut Map) -> Result {
+    pub fn apply(&mut self, mut action: Box<dyn UndoableAction>, map: &mut Map) -> Result<()> {
         if !action.is_redundant(map) {
             action.apply(map)?;
             self.undo_stack.push(action);
@@ -25,7 +25,7 @@ impl EditorHistory {
         Ok(())
     }
 
-    pub fn undo(&mut self, map: &mut Map) -> Result {
+    pub fn undo(&mut self, map: &mut Map) -> Result<()> {
         if let Some(mut action) = self.undo_stack.pop() {
             action.undo(map)?;
             self.redo_stack.push(action);
@@ -34,7 +34,7 @@ impl EditorHistory {
         Ok(())
     }
 
-    pub fn redo(&mut self, map: &mut Map) -> Result {
+    pub fn redo(&mut self, map: &mut Map) -> Result<()> {
         if let Some(mut action) = self.redo_stack.pop() {
             action.redo(map)?;
             self.undo_stack.push(action);

@@ -6,14 +6,14 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::player::{Player, PlayerEventParams};
+use crate::player::{OldPlayer, PlayerEventParams};
 
 pub const COROUTINE_ID: &str = "turtle_shell";
 
 pub fn coroutine(
     instance_id: &str,
     item_id: Option<&str>,
-    player_handle: Handle<Player>,
+    player_handle: Handle<OldPlayer>,
     event_params: PlayerEventParams,
 ) -> Coroutine {
     let instance_id = instance_id.to_string();

@@ -1,17 +1,10 @@
 {
   "id": "blunderbass",
-  "sprite": {
-    "texture": "blunderbass",
-    "offset": {
-      "x": 0,
-      "y": -8
-    }
-  },
   "type": "weapon",
   "uses": 4,
   "cooldown": 2.0,
   "attack_duration": 1.0,
-  "recoil": 550.0,
+  "recoil": 5.5,
   "sound_effect": "shoot",
   "collider_size": {
     "x": 68,
@@ -225,7 +218,7 @@
       "speed": 9.0
     }
   ],
-  "animation": {
+  "sprite": {
     "texture": "blunderbass",
     "animations": [
       {
@@ -239,22 +232,19 @@
         "id": "attack",
         "row": 1,
         "frames": 3,
-        "fps": 15,
-        "is_looping": true
+        "fps": 15
       }
     ]
   },
-  "effect_animation": {
+  "effect_sprite": {
     "texture": "blunderbass",
     "animations": [
       {
-        "id": "attack_effect",
+        "id": "attack",
         "row": 2,
         "frames": 4,
-        "fps": 12,
-        "is_looping": true
+        "fps": 12
       }
     ]
-  },
-  "is_network_ready": true
+  }
 }

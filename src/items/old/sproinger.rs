@@ -11,75 +11,16 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::{
-    capabilities::{NetworkReplicate, PhysicsObject},
-    Resources,
-};
+use crate::Resources;
 
-use crate::capabilities::PhysicsObjectTrait;
-
-pub struct Sproinger {
-    sprite: AnimatedSprite,
-    pos: Vec2,
-    state_machine: StateMachine<Self>,
-}
+pub struct Sproinger;
 
 impl Sproinger {
     pub const OBJECT_ID: &'static str = "sproinger";
 
     pub const TRIGGER_WIDTH: f32 = 32.0;
     pub const TRIGGER_HEIGHT: f32 = 8.0;
-    pub const FORCE: f32 = 1100.0;
-
-    const ST_NORMAL: usize = 0;
-    const ST_JUMP: usize = 1;
-
-    pub fn spawn(pos: Vec2) -> HandleUntyped {
-        let sprite = AnimatedSprite::new(
-            31,
-            20,
-            &[
-                Animation {
-                    name: "idle".to_string(),
-                    row: 0,
-                    frames: 1,
-                    fps: 1,
-                },
-                Animation {
-                    name: "sproing".to_string(),
-                    row: 1,
-                    frames: 2,
-                    fps: 10,
-                },
-                Animation {
-                    name: "desproing".to_string(),
-                    row: 1,
-                    frames: 2,
-                    fps: 10,
-                },
-            ],
-            false,
-        );
-
-        let mut state_machine = StateMachine::new();
-
-        state_machine.add_state(Self::ST_NORMAL, State::new().update(Self::update_normal));
-        state_machine.add_state(
-            Self::ST_JUMP,
-            State::new()
-                .update(Self::update_jump)
-                .coroutine(Self::jump_coroutine),
-        );
-
-        scene::add_node(Sproinger {
-            sprite,
-            pos,
-            state_machine,
-        })
-        .untyped()
-    }
-
-    pub fn update_normal(node: &mut RefMut<Self>, _dt: f32) {
+    pub const FORCE: f32 = 1100.0;pub fn update_normal(node: &mut RefMut<Self>, _dt: f32) {
         let sproinger_rect = Rect::new(
             node.pos.x, // - (Self::TRIGGER_WIDTH / 2.0),
             node.pos.y + (node.sprite.frame().dest_size.y - Self::TRIGGER_HEIGHT),
@@ -151,6 +92,7 @@ impl Sproinger {
         StateMachine::update_detached(node, |node| &mut node.state_machine);
     }
 }
+
 impl scene::Node for Sproinger {
     fn ready(mut node: RefMut<Self>) {
         node.provides(Self::network_capabilities());

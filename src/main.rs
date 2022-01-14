@@ -5,10 +5,7 @@ use std::path::PathBuf;
 
 use macroquad::{experimental::collections::storage, prelude::*};
 
-mod capabilities;
-pub mod components;
 pub mod config;
-mod decoration;
 pub mod editor;
 mod gui;
 mod items;
@@ -20,47 +17,55 @@ pub mod resources;
 pub mod text;
 #[macro_use]
 pub mod error;
-#[cfg(debug_assertions)]
+pub mod data;
 pub mod debug;
+pub mod ecs;
 pub mod effects;
 pub mod events;
 pub mod game;
+pub mod input;
+pub mod network;
 pub mod particles;
+pub mod physics;
 pub mod player;
 
-pub mod input;
+mod channel;
+mod sprite;
+mod transform;
 
-pub use input::is_gamepad_btn_pressed;
+pub use input::*;
+pub use physics::*;
+pub use sprite::*;
+pub use transform::*;
 
 use editor::{Editor, EditorCamera, EditorInputScheme};
 
-pub use error::{Error, Result};
+pub use error::{Error, ErrorKind, Result};
 
 use map::{Map, MapLayerKind, MapObjectKind};
 
+pub use channel::Channel;
+
 pub use config::Config;
-pub use items::{EquippedItem, Item, Sproinger, Weapon};
+pub use items::Item;
 
 pub use events::{dispatch_application_event, ApplicationEvent};
 
 pub use game::{
-    collect_input, create_game_scene, start_music, stop_music, GameCamera, GameInput,
-    GameInputScheme, GameScene, GameWorld, LocalGame,
+    collect_local_input, start_music, stop_music, Game, GameCamera, GameInput, GameInputScheme,
 };
-
-pub use particles::ParticleEmitters;
 
 pub use resources::Resources;
 
-pub use player::{Player, PlayerEventParams};
+pub use player::PlayerEventParams;
 
-pub use decoration::Decoration;
+pub use ecs::Owner;
 
-use crate::effects::passive::init_passive_effects;
+use crate::game::GameMode;
+use crate::network::Api;
 use crate::resources::load_resources;
 pub use effects::{
-    ActiveEffectCoroutine, ActiveEffectKind, ActiveEffectParams, PassiveEffectInstance,
-    PassiveEffectParams, Projectiles, TriggeredEffects,
+    ActiveEffectKind, ActiveEffectMetadata, PassiveEffectInstance, PassiveEffectMetadata,
 };
 
 pub type CollisionWorld = macroquad_platformer::World;
@@ -121,31 +126,31 @@ async fn main() -> Result<()> {
         storage::store(gamepad_system);
     }
 
-    init_passive_effects();
-
     'outer: loop {
         match gui::show_main_menu().await {
-            MainMenuResult::LocalGame(player_input) => {
-                let player_cnt = player_input.len();
+            MainMenuResult::LocalGame { map, players } => {
+                let game = Game::new(GameMode::Local, map, &players);
+                scene::add_node(game);
 
-                assert_eq!(
-                    player_cnt, 2,
-                    "Local Game: There should be two player input schemes for this game mode"
-                );
+                start_music("fish_tide");
+            }
+            MainMenuResult::NetworkGame {
+                host_id,
+                map_resource: _,
+                players: _,
+            } => {
+                let _is_host = Api::get_instance().is_own_id(host_id)?;
 
-                let player_characters =
-                    gui::show_select_characters_menu(player_input.clone()).await;
-
-                assert_eq!(
-                    player_cnt,
-                    player_characters.len(),
-                    "Local Game: Amount of player character params does not match the amount of players"
-                );
-
-                let map_resource = gui::show_select_map_menu().await;
-
-                let players = create_game_scene(map_resource.map, player_characters, true);
-                scene::add_node(LocalGame::new(player_input, players[0], players[1]));
+                // let game = NetworkGame::new(host_id, map_resource, &players)?;
+                // scene::add_node(game);
+                //
+                // if is_host {
+                //     let server = Server::new(DEFAULT_SERVER_PORT, &players)?;
+                //     scene::add_node(server);
+                // } else {
+                //     let client = Client::new(host_id)?;
+                //     scene::add_node(client);
+                // }
 
                 start_music("fish_tide");
             }

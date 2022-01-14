@@ -640,7 +640,7 @@
       "has_collision": false,
       "objects": [
         {
-          "id": "pot",
+          "id": "anemones",
           "kind": "decoration",
           "position": {
             "x": 61.333332,
@@ -648,7 +648,7 @@
           }
         },
         {
-          "id": "pot",
+          "id": "anemones",
           "kind": "decoration",
           "position": {
             "x": 753.6591,
@@ -672,7 +672,7 @@
           }
         },
         {
-          "id": "pot",
+          "id": "anemones",
           "kind": "decoration",
           "position": {
             "x": 424.08334,
@@ -688,7 +688,7 @@
           }
         },
         {
-          "id": "pot",
+          "id": "anemones",
           "kind": "decoration",
           "position": {
             "x": 591.5,
@@ -696,7 +696,7 @@
           }
         },
         {
-          "id": "pot",
+          "id": "anemones",
           "kind": "decoration",
           "position": {
             "x": 412.83334,
@@ -704,7 +704,7 @@
           }
         },
         {
-          "id": "pot",
+          "id": "anemones",
           "kind": "decoration",
           "position": {
             "x": 226.66667,
@@ -1440,7 +1440,7 @@
     },
     {
       "id": "decorations1",
-      "texture_id": "default_decorations",
+      "texture_id": "default_decoration",
       "texture_size": {
         "x": 240,
         "y": 102

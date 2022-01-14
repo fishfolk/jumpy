@@ -549,7 +549,7 @@
       "has_collision": false,
       "objects": [
         {
-          "id": "pot",
+          "id": "anemones",
           "kind": "decoration",
           "position": {
             "x": 512.0,
@@ -597,7 +597,7 @@
           }
         },
         {
-          "id": "pot",
+          "id": "anemones",
           "kind": "decoration",
           "position": {
             "x": 896.0,
@@ -605,7 +605,7 @@
           }
         },
         {
-          "id": "pot",
+          "id": "anemones",
           "kind": "decoration",
           "position": {
             "x": 96.0,
@@ -1261,7 +1261,7 @@
     },
     {
       "id": "decorations1",
-      "texture_id": "default_decorations",
+      "texture_id": "default_decoration",
       "texture_size": {
         "x": 240,
         "y": 102

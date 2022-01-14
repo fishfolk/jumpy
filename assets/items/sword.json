@@ -1,12 +1,7 @@
 {
   "id": "sword",
-  "sprite": {
-    "texture": "sword",
-    "index": 0
-  },
   "type": "weapon",
-  "cooldown": 0.75,
-  "attack_duration": 0.5,
+  "cooldown": 1.0,
   "sound_effect": "sword",
   "effects": [
     {
@@ -23,27 +18,30 @@
     "y": 17
   },
   "mount_offset": {
-    "x": -8,
+    "x": -20,
     "y": -64
   },
-  "animation": {
+  "sprite": {
     "texture": "sword",
     "animations": [
+      {
+        "id": "ground",
+        "row": 0,
+        "frames": 1,
+        "fps": 1
+      },
       {
         "id": "idle",
         "row": 1,
         "frames": 1,
-        "fps": 1,
-        "is_looping": true
+        "fps": 1
       },
       {
         "id": "attack",
         "row": 2,
         "frames": 4,
-        "fps": 15,
-        "is_looping": true
+        "fps": 15
       }
     ]
-  },
-  "is_network_ready": true
+  }
 }

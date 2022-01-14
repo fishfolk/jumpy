@@ -1,16 +1,20 @@
+use std::borrow::BorrowMut;
+
 use macroquad::{
     experimental::collections::storage,
     prelude::*,
     ui::{self, hash, root_ui, widgets},
 };
-use std::borrow::BorrowMut;
 
 use fishsticks::{Button, GamepadContext};
 
 use super::{draw_main_menu_background, GuiResources, Menu, MenuEntry, MenuResult, Panel};
 
 use crate::input::update_gamepad_context;
-use crate::{is_gamepad_btn_pressed, EditorInputScheme, GameInputScheme, Resources};
+use crate::network::{AccountId, Lobby};
+use crate::player::{PlayerControllerKind, PlayerParams};
+use crate::resources::MapResource;
+use crate::{gui, is_gamepad_btn_pressed, Api, EditorInputScheme, GameInputScheme, Map, Resources};
 
 const MENU_WIDTH: f32 = 300.0;
 
@@ -20,7 +24,15 @@ const LOCAL_GAME_MENU_WIDTH: f32 = 400.0;
 const LOCAL_GAME_MENU_HEIGHT: f32 = 200.0;
 
 pub enum MainMenuResult {
-    LocalGame(Vec<GameInputScheme>),
+    LocalGame {
+        map: Map,
+        players: Vec<PlayerParams>,
+    },
+    NetworkGame {
+        host_id: AccountId,
+        map_resource: MapResource,
+        players: Vec<PlayerParams>,
+    },
     Editor {
         input_scheme: EditorInputScheme,
         is_new_map: bool,
@@ -65,7 +77,6 @@ fn build_main_menu() -> Menu {
             MenuEntry {
                 index: ROOT_OPTION_NETWORK_GAME,
                 title: "Network Game".to_string(),
-                is_disabled: true,
                 ..Default::default()
             },
             MenuEntry {
@@ -79,6 +90,7 @@ fn build_main_menu() -> Menu {
                 is_disabled: true,
                 ..Default::default()
             },
+            #[cfg(debug_assertions)]
             MenuEntry {
                 index: ROOT_OPTION_RELOAD_RESOURCES,
                 title: "Reload Resources".to_string(),
@@ -148,6 +160,9 @@ pub async fn show_main_menu() -> MainMenuResult {
                         ROOT_OPTION_LOCAL_GAME => {
                             menu_state = MainMenuState::LocalGame;
                         }
+                        ROOT_OPTION_NETWORK_GAME => {
+                            menu_state = MainMenuState::NetworkGame;
+                        }
                         ROOT_OPTION_EDITOR => {
                             menu_state = MainMenuState::Editor(build_editor_menu());
                         }
@@ -165,10 +180,42 @@ pub async fn show_main_menu() -> MainMenuResult {
                 }
             }
             MainMenuState::LocalGame => {
-                if let Some(res) = local_game_ui(&mut *root_ui(), &mut player_input) {
+                let res = local_game_ui(&mut *root_ui(), &mut player_input);
+                if let Some(res) = res {
                     match res.into_usize() {
                         LOCAL_GAME_OPTION_SUBMIT => {
-                            return MainMenuResult::LocalGame(player_input.clone());
+                            let player_cnt = player_input.len();
+
+                            assert_eq!(
+                                player_cnt, 2,
+                                "Local Game: There should be two player input schemes for this game mode"
+                            );
+
+                            let player_characters =
+                                gui::show_select_characters_menu(&player_input).await;
+
+                            let map_resource = gui::show_select_map_menu().await;
+
+                            let mut players = Vec::new();
+
+                            for (i, &input_scheme) in player_input.iter().enumerate() {
+                                let character = player_characters.get(i).cloned().unwrap();
+
+                                let controller = PlayerControllerKind::LocalInput(input_scheme);
+
+                                let params = PlayerParams {
+                                    index: i as u8,
+                                    controller,
+                                    character,
+                                };
+
+                                players.push(params);
+                            }
+
+                            return MainMenuResult::LocalGame {
+                                map: map_resource.map,
+                                players,
+                            };
                         }
                         Menu::CANCEL_INDEX => {
                             menu_state = MainMenuState::Root(build_main_menu());
@@ -178,7 +225,9 @@ pub async fn show_main_menu() -> MainMenuResult {
                 }
             }
             MainMenuState::NetworkGame => {
-                unreachable!("Networking is not implemented yet");
+                if let Some(res) = network_game_ui(&mut *root_ui(), &mut NetworkUiState::new()) {
+                    return res;
+                }
             }
             MainMenuState::Editor(menu_instance) => {
                 if let Some(res) = menu_instance.ui(&mut *root_ui()) {
@@ -284,6 +333,77 @@ fn local_game_ui(ui: &mut ui::Ui, player_input: &mut Vec<GameInputScheme>) -> Op
     });
 
     None
+}
+
+#[allow(dead_code)]
+struct NetworkUiState {
+    input_scheme: Option<GameInputScheme>,
+    lobbies: Vec<Lobby>,
+}
+
+impl NetworkUiState {
+    pub fn new() -> Self {
+        NetworkUiState {
+            input_scheme: None,
+            lobbies: Vec::new(),
+        }
+    }
+}
+
+fn network_game_ui(ui: &mut ui::Ui, _state: &mut NetworkUiState) -> Option<MainMenuResult> {
+    let mut res = None;
+
+    if ui.button(None, "Host") {
+        let account = Api::get_instance()
+            .sign_in("oasf@polygo.no", "secretsauce")
+            .unwrap();
+
+        let resources = storage::get::<Resources>();
+        let map_resource = resources.maps.first().cloned().unwrap();
+        res = Some(MainMenuResult::NetworkGame {
+            host_id: account.id,
+            map_resource,
+            players: vec![
+                PlayerParams {
+                    index: 0,
+                    controller: PlayerControllerKind::LocalInput(GameInputScheme::KeyboardLeft),
+                    character: resources.player_characters[0].clone(),
+                },
+                PlayerParams {
+                    index: 1,
+                    controller: PlayerControllerKind::Network(2),
+                    character: resources.player_characters[1].clone(),
+                },
+            ],
+        });
+    }
+
+    if ui.button(None, "Join") {
+        let _account = Api::get_instance()
+            .sign_in("other@polygo.no", "secretsauce")
+            .unwrap();
+
+        let resources = storage::get::<Resources>();
+        let map_resource = resources.maps.first().cloned().unwrap();
+        res = Some(MainMenuResult::NetworkGame {
+            host_id: 2,
+            map_resource,
+            players: vec![
+                PlayerParams {
+                    index: 0,
+                    controller: PlayerControllerKind::Network(1),
+                    character: resources.player_characters[0].clone(),
+                },
+                PlayerParams {
+                    index: 1,
+                    controller: PlayerControllerKind::LocalInput(GameInputScheme::KeyboardLeft),
+                    character: resources.player_characters[1].clone(),
+                },
+            ],
+        });
+    }
+
+    res
 }
 
 /*

@@ -78,18 +78,18 @@
             "title": "X",
             "type": "number",
             "examples": [
-              0
+              0.0
             ],
-            "default": 0
+            "default": 0.0
           },
           "y": {
             "$id": "#root/items/offset/y",
             "title": "Y",
             "type": "number",
             "examples": [
-              0
+              0.0
             ],
-            "default": 0
+            "default": 0.0
           }
         }
       }

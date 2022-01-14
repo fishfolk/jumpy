@@ -25,7 +25,7 @@ Usually to create a new level I click "Right Click -> Open containing folder" on
 If you do not copy an existing map, there are a few requirements for Tiled maps that need to be met, in order to make them compatible with our internal format:
 
 - Every tileset needs a `String` prop, named `texture_id`, that references a texture in `assets/textures.json`. This texture entry also needs to be of type `tilemap`.
-The default ones, used in the core maps, are `default_tileset`, for the tiles, and `default_decorations` for the decorations (decorations are objects, not tiles, though. More on that below).
+The default ones, used in the core maps, are `default_tileset`, for the tiles, and `default_decoration` for the decorations (decorations are objects, not tiles, though. More on that below).
 - Every tile layer with collisions needs a `bool` prop, named `collision`, set to true.
 - Every object needs both a `name` and a `type` set (except for spawn points, which only need a `type`). The `name` acts as an id in-game, which will reference an entry in the appropriate data file, based on the objects `type`. Available types are:
     * `item` for items such as power-ups and weapons 

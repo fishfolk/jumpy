@@ -1,17 +1,10 @@
 {
   "id": "musket",
-  "sprite": {
-    "texture": "musket",
-    "offset": {
-      "x": 0,
-      "y": -8
-    }
-  },
   "type": "weapon",
   "uses": 3,
-  "cooldown": 0.75,
+  "cooldown": 1.0,
   "attack_duration": 0.5,
-  "recoil": 250.0,
+  "recoil": 6.0,
   "sound_effect": "shoot",
   "particles": [
     {
@@ -21,7 +14,7 @@
       "emissions": 6
     }
   ],
-  "effect": [
+  "effects": [
     {
       "type": "projectile",
       "range": 512.0,
@@ -33,10 +26,6 @@
           "size": {
             "x": 15,
             "y": 15
-          },
-          "offset": {
-            "x": -7.5,
-            "y": -7.5
           }
         }
       },
@@ -58,10 +47,10 @@
     "y": 16
   },
   "mount_offset": {
-    "x": -12,
+    "x": -24,
     "y": -12
   },
-  "animation": {
+  "sprite": {
     "texture": "musket",
     "animations": [
       {
@@ -75,22 +64,19 @@
         "id": "attack",
         "row": 1,
         "frames": 3,
-        "fps": 15,
-        "is_looping": true
+        "fps": 15
       }
     ]
   },
-  "effect_animation": {
+  "effect_sprite": {
     "texture": "musket",
     "animations": [
       {
-        "id": "attack_effect",
+        "id": "attack",
         "row": 2,
         "frames": 4,
-        "fps": 12,
-        "is_looping": true
+        "fps": 12
       }
     ]
-  },
-  "is_network_ready": true
+  }
 }

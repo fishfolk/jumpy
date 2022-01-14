@@ -1,59 +1,20 @@
-use macroquad::{
-    experimental::{coroutines::Coroutine, scene::Handle},
-    prelude::*,
-};
+use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
 pub mod coroutines;
 
-mod turtle_shell;
-
 pub use coroutines::PassiveEffectCoroutine;
 
-use crate::effects::passive::coroutines::{
-    add_passive_effect_coroutine, get_passive_effect_coroutine,
-};
 use crate::json::OneOrMany;
-use crate::{player::PlayerEvent, ParticleEmitters, Player, PlayerEventParams};
+use crate::player::PlayerEvent;
 
-#[derive(Clone, Serialize, Deserialize)]
-pub struct PassiveEffectParams {
-    /// This is the id used by instances of the effect. Unless a `coroutine_id` is specified, this
-    /// will be used to retrieve the coroutine that will be called by the effect instance when
-    /// triggered by a valid event
-    pub id: String,
-    /// This map holds the id's of the coroutines that are called by the event instance, mapped
-    /// to the `PlayerEvent` they should be called on. If no `coroutine_id` is specified, the
-    /// effect instance `id` will be used.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub coroutine_id: Option<String>,
-    /// This specifies the player events that will trigger a call of the effects coroutine.
-    pub events: OneOrMany<PlayerEvent>,
-    /// This is the particle effect that will be spawned when the effect become active.
-    #[serde(
-        default,
-        rename = "particle_effect",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub particle_effect_id: Option<String>,
-    /// This is the particle effect that will be spawned, each time a player event leads to the
-    /// effect coroutine being called.
-    #[serde(
-        default,
-        rename = "event_particle_effect",
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub event_particle_effect_id: Option<String>,
-    /// If this is true damage will be blocked on a player that has the item equipped
-    #[serde(default)]
-    pub blocks_damage: bool,
-    /// This is the amount of times the coroutine can be called, before the effect is depleted
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub uses: Option<u32>,
-    /// This is the duration of the effect.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub duration: Option<f32>,
+pub struct PassiveEffectParams {}
+
+impl From<PassiveEffectMetadata> for PassiveEffectParams {
+    fn from(_: PassiveEffectMetadata) -> Self {
+        PassiveEffectParams {}
+    }
 }
 
 pub struct PassiveEffectInstance {
@@ -71,7 +32,7 @@ pub struct PassiveEffectInstance {
 }
 
 impl PassiveEffectInstance {
-    pub fn new(item_id: Option<&str>, params: PassiveEffectParams) -> Self {
+    pub fn new(item_id: Option<&str>, params: PassiveEffectMetadata) -> Self {
         PassiveEffectInstance {
             id: params.id,
             coroutine_id: params.coroutine_id,
@@ -107,9 +68,10 @@ impl PassiveEffectInstance {
         false
     }
 
+    /*
     pub fn on_player_event(
         &mut self,
-        player_handle: Handle<Player>,
+        player_handle: Handle<OldPlayer>,
         position: Vec2,
         params: PlayerEventParams,
     ) -> Option<Coroutine> {
@@ -133,14 +95,48 @@ impl PassiveEffectInstance {
 
         None
     }
+    */
 
     pub fn default_events() -> Vec<PlayerEvent> {
         vec![PlayerEvent::Update]
     }
 }
 
-/// This adds all coroutine implementations to the directory, so that they can be accessed by
-/// passive effect instances.
-pub fn init_passive_effects() {
-    add_passive_effect_coroutine(turtle_shell::COROUTINE_ID, turtle_shell::coroutine);
+#[derive(Clone, Serialize, Deserialize)]
+pub struct PassiveEffectMetadata {
+    /// This is the id used by instances of the effect. Unless a `coroutine_id` is specified, this
+    /// will be used to retrieve the coroutine that will be called by the effect instance when
+    /// triggered by a valid event
+    pub id: String,
+    /// This map holds the id's of the coroutines that are called by the event instance, mapped
+    /// to the `PlayerEvent` they should be called on. If no `coroutine_id` is specified, the
+    /// effect instance `id` will be used.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub coroutine_id: Option<String>,
+    /// This specifies the player events that will trigger a call of the effects coroutine.
+    pub events: OneOrMany<PlayerEvent>,
+    /// This is the particle effect that will be spawned when the effect become active.
+    #[serde(
+        default,
+        rename = "particle_effect",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub particle_effect_id: Option<String>,
+    /// This is the particle effect that will be spawned, each time a player event leads to the
+    /// effect coroutine being called.
+    #[serde(
+        default,
+        rename = "event_particle_effect",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub event_particle_effect_id: Option<String>,
+    /// If this is true damage will be blocked on a player that has the item equipped
+    #[serde(default)]
+    pub blocks_damage: bool,
+    /// This is the amount of times the coroutine can be called, before the effect is depleted
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uses: Option<u32>,
+    /// This is the duration of the effect.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub duration: Option<f32>,
 }

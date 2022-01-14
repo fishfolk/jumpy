@@ -95,7 +95,7 @@
                  "gid":69,
                  "height":51,
                  "id":39,
-                 "name":"pot",
+                 "name":"anemones",
                  "rotation":0,
                  "type":"decoration",
                  "visible":true,
@@ -143,7 +143,7 @@
                  "gid":69,
                  "height":51,
                  "id":81,
-                 "name":"pot",
+                 "name":"anemones",
                  "rotation":0,
                  "type":"decoration",
                  "visible":true,
@@ -294,7 +294,7 @@
         {
          "columns":5,
          "firstgid":64,
-         "image":"..\/textures\/map\/default_decorations.png",
+         "image":"..\/textures\/map\/default_decoration.png",
          "imageheight":102,
          "imagewidth":240,
          "margin":0,
@@ -303,7 +303,7 @@
                 {
                  "name":"texture_id",
                  "type":"string",
-                 "value":"default_decorations"
+                 "value":"default_decoration"
                 }],
          "spacing":0,
          "tilecount":10,

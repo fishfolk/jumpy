@@ -1,11 +1,8 @@
 {
   "id": "crate",
-  "sprite": {
-    "texture": "crate"
-  },
   "type": "weapon",
   "uses": 1,
-  "is_destroyed_on_depletion": true,
+  "deplete_behavior": "destroy",
   "collider_size": {
     "x": 36,
     "y": 31
@@ -17,21 +14,26 @@
   "effects": [
     {
       "type": "triggered_effect",
-      "trigger": "all_except_player",
+      "trigger": [
+        "enemy",
+        "ground"
+      ],
       "velocity": {
-        "x": 500.0,
-        "y": -250.0
+        "x": 5.0,
+        "y": -2.5
       },
       "size": {
         "x": 30,
         "y": 30
       },
-      "effects": {
-        "type": "rect_collider",
-        "width": 36,
-        "height": 32
-      },
-      "animation": {
+      "effects": [
+        {
+          "type": "rect_collider",
+          "width": 36,
+          "height": 32
+        }
+      ],
+      "sprite": {
         "texture": "crate",
         "animations": [
           {
@@ -44,7 +46,7 @@
       }
     }
   ],
-  "animation": {
+  "sprite": {
     "texture": "crate",
     "animations": [
       {

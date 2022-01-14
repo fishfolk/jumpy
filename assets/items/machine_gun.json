@@ -1,15 +1,12 @@
 {
   "id": "machine_gun",
-  "sprite": {
-    "texture": "machine_gun"
-  },
   "type": "weapon",
   "cooldown": 0.15,
   "attack_duration": 0.1,
-  "recoil": 125.0,
+  "recoil": 1.25,
   "uses": 24,
   "mount_offset": {
-    "x": -16,
+    "x": -38,
     "y": -4
   },
   "effect_offset": {
@@ -29,7 +26,7 @@
       "emissions": 1
     }
   ],
-  "effect": [
+  "effects": [
     {
       "type": "projectile",
       "range": 512.0,
@@ -42,13 +39,9 @@
           "size": {
             "x": 30,
             "y": 4
-          },
-          "offset": {
-            "x": -15,
-            "y": -2
           }
         },
-        "is_rotated": true
+        "can_rotate": true
       }
     }
   ],
@@ -56,7 +49,7 @@
     "x": 68,
     "y": 24
   },
-  "animation": {
+  "sprite": {
     "texture": "machine_gun",
     "animations": [
       {
@@ -69,11 +62,10 @@
       {
         "id": "attack",
         "row": 1,
-        "frames": 1,
+        "frames": 2,
         "fps": 8,
         "is_looping": true
       }
     ]
-  },
-  "is_network_ready": false
+  }
 }

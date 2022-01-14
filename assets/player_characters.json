@@ -4,8 +4,8 @@
     "name": "Pescy",
     "texture": "player_pescy",
     "offset": {
-      "x": 0,
-      "y": 15.5
+      "x": 0.0,
+      "y": 16.0
     }
   },
   {
@@ -13,8 +13,8 @@
     "name": "Sharky",
     "texture": "player_sharky",
     "offset": {
-      "x": 0,
-      "y": 15.5
+      "x": 0.0,
+      "y": 16.0
     }
   },
   {
@@ -22,8 +22,8 @@
     "name": "Fishy",
     "texture": "player_fishy",
     "offset": {
-      "x": 0,
-      "y": 15.5
+      "x": 0.0,
+      "y": 16.0
     }
   },
   {
@@ -31,8 +31,8 @@
     "name": "Orcy",
     "texture": "player_orcy",
     "offset": {
-      "x": 0,
-      "y": 15.5
+      "x": 0.0,
+      "y": 16.0
     }
   }
 ]

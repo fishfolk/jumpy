@@ -89,8 +89,8 @@
     }
   },
   {
-    "id": "default_decorations",
-    "path": "textures/map/default_decorations.png",
+    "id": "default_decoration",
+    "path": "textures/map/default_decoration.png",
     "type": "tileset",
     "sprite_size": {
       "x": 48,
@@ -123,7 +123,7 @@
   },
   {
     "id": "player_sharky",
-    "path": "textures/player/PlayerSharky(64x64).png",
+    "path": "textures/player/PlayerSharky(96x80).png",
     "type": "spritesheet",
     "sprite_size": {
       "x": 96,
@@ -132,7 +132,7 @@
   },
   {
     "id": "player_pescy",
-    "path": "textures/player/PlayerPescy(64x64).png",
+    "path": "textures/player/PlayerPescy(96x80).png",
     "type": "spritesheet",
     "sprite_size": {
       "x": 96,
@@ -141,7 +141,7 @@
   },
   {
     "id": "player_fishy",
-    "path": "textures/player/PlayerFishy(64x64).png",
+    "path": "textures/player/PlayerFishy(96x80).png",
     "type": "spritesheet",
     "sprite_size": {
       "x": 96,
@@ -150,7 +150,7 @@
   },
   {
     "id": "player_orcy",
-    "path": "textures/player/PlayerOrcy(64x64).png",
+    "path": "textures/player/PlayerOrcy(96x80).png",
     "type": "spritesheet",
     "sprite_size": {
       "x": 96,
@@ -240,11 +240,11 @@
   },
   {
     "id": "kick_bomb",
-    "path": "textures/items/KickBomb(32x64).png",
+    "path": "textures/items/KickBomb(32x62).png",
     "type": "spritesheet",
     "sprite_size": {
       "x": 32,
-      "y": 64
+      "y": 48
     }
   },
   {
@@ -361,15 +361,31 @@
     "path": "textures/items/MachineGunBullet(7x4).png"
   },
   {
-    "id": "small_explosions",
-    "path": "textures/explosions/Small.png"
-  },
-  {
-    "id": "medium_explosions",
-    "path": "textures/explosions/Medium.png"
-  },
-  {
     "id": "sniper_rifle_bullet",
-    "path": "textures/items/SniperRifleBullet.png"
+    "path": "textures/items/SniperRifleBullet(7x7).png"
+  },
+  {
+    "id": "explosion_small",
+    "path": "textures/explosions/Small(112x80).png",
+    "sprite_size": {
+      "x": 112,
+      "y": 80
+    }
+  },
+  {
+    "id": "explosion_medium",
+    "path": "textures/explosions/Medium(144x112).png",
+    "sprite_size": {
+      "x": 144,
+      "y": 112
+    }
+  },
+  {
+    "id": "explosion_big",
+    "path": "textures/explosions/Big(176x144).png",
+    "sprite_size": {
+      "x": 176,
+      "y": 144
+    }
   }
 ]

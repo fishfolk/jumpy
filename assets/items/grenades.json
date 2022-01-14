@@ -1,24 +1,21 @@
 {
   "id": "grenades",
-  "sprite": {
-    "texture": "grenades"
-  },
   "type": "weapon",
   "cooldown": 0.5,
   "uses": 3,
-  "is_destroyed_on_depletion": true,
+  "deplete_behavior": "destroy",
   "effects": [
     {
       "type": "triggered_effect",
       "trigger": [],
       "velocity": {
-        "x": 600.0,
-        "y": -400.0
+        "x": 6.0,
+        "y": -4.0
       },
-      "is_rotates": true,
+      "can_rotate": true,
       "size": {
-        "x": 17,
-        "y": 17
+        "x": 24,
+        "y": 24
       },
       "timed_trigger": 1.5,
       "effects": [
@@ -35,39 +32,24 @@
             "y": 80
           },
           "timed_trigger": 0.7,
-          "effects": [],
-          "particles": [
-            {
-              "particle_effect": "empty",
-              "should_autostart": true,
-              "offset": {
-                "x": -56,
-                "y": -40
-              },
-              "animations": {
-                "texture": "small_explosions",
-                "frame_size": {
-                  "x": 112,
-                  "y": 80
-                },
-                "animations": [
-                  {
-                    "id": "animated_effect",
-                    "row": 0,
-                    "frames": 12,
-                    "fps": 24
-                  }
-                ]
+          "sprite": {
+            "texture": "explosion_small",
+            "animations": [
+              {
+                "id": "effect",
+                "row": 0,
+                "frames": 12,
+                "fps": 24
               }
-            }
-          ]
+            ]
+          }
         }
       ],
-      "animation": {
+      "sprite": {
         "texture": "grenades",
         "animations": [
           {
-            "id": "armed",
+            "id": "effect",
             "row": 1,
             "frames": 3,
             "fps": 12,
@@ -83,7 +65,7 @@
           "should_autostart": true,
           "offset": {
             "x": 0,
-            "y": -10
+            "y": -12
           }
         }
       ]
@@ -101,12 +83,8 @@
     "x": 0,
     "y": 24
   },
-  "animation": {
+  "sprite": {
     "texture": "grenades",
-    "offset": {
-      "x": 0,
-      "y": 8
-    },
     "animations": [
       {
         "id": "idle",

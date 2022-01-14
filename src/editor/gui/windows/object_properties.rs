@@ -143,15 +143,15 @@ impl Window for ObjectPropertiesWindow {
         let item_ids = match object.kind {
             MapObjectKind::Item => resources
                 .items
-                .values()
-                .map(|item| item.id.as_str())
+                .keys()
+                .map(|k| k.as_str())
                 .collect::<Vec<&str>>(),
-            MapObjectKind::Environment => {
-                vec!["sproinger"]
-            }
-            MapObjectKind::Decoration => {
-                vec!["pot", "seaweed"]
-            }
+            MapObjectKind::Environment => vec!["sproinger"],
+            MapObjectKind::Decoration => resources
+                .decoration
+                .keys()
+                .map(|k| k.as_str())
+                .collect::<Vec<&str>>(),
         };
 
         let mut item_id_value = {

@@ -1,23 +1,25 @@
 {
   "id": "cannon",
-  "sprite": {
-    "texture": "cannon",
-    "offset": {
-      "x": 0,
-      "y": -22
-    }
-  },
   "type": "weapon",
-  "cooldown": 0.5,
-  "recoil": 400.0,
+  "cooldown": 1.5,
+  "attack_duration": 1.0,
+  "recoil": 4.0,
   "uses": 3,
   "mount_offset": {
-    "x": -16,
+    "x": -28,
     "y": -26
   },
   "effect_offset": {
     "x": 36,
     "y": 12
+  },
+  "collider_size": {
+    "x": 64,
+    "y": 24
+  },
+  "collider_offset": {
+    "x": 0,
+    "y": 20
   },
   "sound_effect": "shoot",
   "effects": [
@@ -29,8 +31,8 @@
         "explosion"
       ],
       "velocity": {
-        "x": 1000.0,
-        "y": -50.0
+        "x": 10.0,
+        "y": -0.5
       },
       "size": {
         "x": 17,
@@ -46,11 +48,11 @@
           "sound_effect": "explode"
         }
       ],
-      "animation": {
+      "sprite": {
         "texture": "cannon_ball",
         "animations": [
           {
-            "id": "armed",
+            "id": "effect",
             "row": 0,
             "frames": 1,
             "fps": 1,
@@ -61,11 +63,7 @@
       }
     }
   ],
-  "collider_size": {
-    "x": 64,
-    "y": 24
-  },
-  "animation": {
+  "sprite": {
     "texture": "cannon",
     "animations": [
       {
@@ -79,20 +77,18 @@
         "id": "attack",
         "row": 0,
         "frames": 4,
-        "fps": 8,
-        "is_looping": true
+        "fps": 8
       }
     ]
   },
-  "effect_animation": {
+  "effect_sprite": {
     "texture": "cannon",
     "animations": [
       {
-        "id": "attack_effect",
+        "id": "attack",
         "row": 1,
         "frames": 5,
-        "fps": 12,
-        "is_looping": true
+        "fps": 12
       }
     ]
   }

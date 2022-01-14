@@ -26,18 +26,26 @@ struct Custom {
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ErrorKind {
     General,
+    Ecs,
     File,
     Parsing,
     Input,
+    Network,
+    Api,
+    EditorAction,
 }
 
 impl ErrorKind {
     pub fn as_str(&self) -> &'static str {
         match *self {
             ErrorKind::General => "General error",
+            ErrorKind::Ecs => "ECS error",
             ErrorKind::File => "File error",
             ErrorKind::Parsing => "Parsing error",
             ErrorKind::Input => "Input error",
+            ErrorKind::Network => "Network error",
+            ErrorKind::Api => "Account error",
+            ErrorKind::EditorAction => "Editor action error",
         }
     }
 }
@@ -192,8 +200,32 @@ impl From<serde_json::Error> for Error {
     }
 }
 
-impl From<crate::json::Error> for Error {
-    fn from(err: crate::json::Error) -> Self {
+impl From<crate::data::Error> for Error {
+    fn from(err: crate::data::Error) -> Self {
+        Error::new(ErrorKind::Parsing, err)
+    }
+}
+
+impl From<hecs::ComponentError> for Error {
+    fn from(err: hecs::ComponentError) -> Self {
+        Error::new(ErrorKind::Ecs, err)
+    }
+}
+
+impl From<hecs::NoSuchEntity> for Error {
+    fn from(err: hecs::NoSuchEntity) -> Self {
+        Error::new(ErrorKind::Ecs, err)
+    }
+}
+
+impl From<hecs::QueryOneError> for Error {
+    fn from(err: hecs::QueryOneError) -> Self {
+        Error::new(ErrorKind::Ecs, err)
+    }
+}
+
+impl From<bincode::Error> for Error {
+    fn from(err: bincode::Error) -> Self {
         Error::new(ErrorKind::Parsing, err)
     }
 }
@@ -210,6 +242,6 @@ macro_rules! formaterr {
     });
     ($($arg:tt)*) => ({
         let res = format!($($arg)*);
-        $crate::error::Error::new_message($crate::error::ErrorKind::General, &res)
+        $crate::error::Error::new_const($crate::error::ErrorKind::General, &res)
     });
 }

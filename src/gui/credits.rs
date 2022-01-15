@@ -1,6 +1,7 @@
 use crate::is_gamepad_btn_pressed;
 use fishsticks::{Button, GamepadContext};
 use macroquad::{experimental::collections::storage, prelude::*};
+use std::path::Path;
 
 const TEXT_X_OFFSET: f32 = 370.0;
 const MAIN_HEADER_Y_OFFSET: f32 = 300.0;
@@ -65,15 +66,20 @@ enum LabelType {
     Regular,
 }
 
-pub async fn show_game_credits() {
+pub async fn show_game_credits(assets_dir: &str) {
     let gamepad_context = storage::get::<GamepadContext>();
 
     let mut delta = 200.0;
     let credits = create_game_credits();
 
-    let font = load_ttf_font("./assets/ui/AnonymousPro-Regular.ttf")
-        .await
-        .unwrap();
+    let font = load_ttf_font(
+        Path::new(assets_dir)
+            .join("ui/AnonymousPro-Regular.ttf")
+            .to_str()
+            .unwrap(),
+    )
+    .await
+    .unwrap();
 
     loop {
         if is_key_pressed(KeyCode::Escape)

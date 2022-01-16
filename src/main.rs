@@ -180,8 +180,9 @@ async fn main() -> Result<()> {
                 continue 'outer;
             }
             MainMenuResult::Credits => {
+                let resources = storage::get::<Resources>();
                 start_music("thanks_for_all_the_fished");
-                gui::show_game_credits().await;
+                gui::show_game_credits(&resources.assets_dir).await;
                 stop_music();
                 continue 'outer;
             }

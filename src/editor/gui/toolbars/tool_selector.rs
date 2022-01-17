@@ -36,6 +36,7 @@ impl ToolSelectorElement {
         }
     }
 
+    #[must_use]
     pub fn with_tool<T: EditorTool + 'static>(self) -> Self {
         let id = TypeId::of::<T>();
         let mut tools = self.tools;

@@ -9,16 +9,20 @@ use crate::player::{
 };
 use crate::{CollisionWorld, GameCamera, Map, PhysicsBody, Resources, Transform};
 
+const JUMP_FRAME_COUNT: u16 = 8;
+
 pub struct PlayerState {
     pub camera_box: Rect,
     pub is_facing_left: bool,
     pub is_upside_down: bool,
+    pub is_jumping: bool,
     pub is_floating: bool,
     pub is_sliding: bool,
     pub is_crouching: bool,
     pub is_attacking: bool,
     pub is_incapacitated: bool,
     pub is_dead: bool,
+    pub jump_frame_counter: u16,
     pub pickup_grace_timer: f32,
     pub incapacitation_timer: f32,
     pub attack_timer: f32,
@@ -33,12 +37,14 @@ impl From<Vec2> for PlayerState {
             camera_box,
             is_facing_left: false,
             is_upside_down: false,
+            is_jumping: false,
             is_floating: false,
             is_sliding: false,
             is_crouching: false,
             is_attacking: false,
             is_incapacitated: false,
             is_dead: false,
+            jump_frame_counter: 0,
             pickup_grace_timer: 0.0,
             attack_timer: 0.0,
             incapacitation_timer: 0.0,
@@ -163,21 +169,30 @@ pub fn update_player_states(world: &mut World) {
                     }
                 }
 
-                if controller.should_jump {
-                    let mut jump_force = 0.0;
-                    if controller.should_crouch && body.is_on_platform {
-                        jump_force -= attributes.jump_force * PLATFORM_JUMP_FORCE_MULTIPLIER;
-                    } else if body.is_on_ground {
-                        jump_force -= attributes.jump_force;
-                    }
+                if body.is_on_ground && controller.should_jump {
+                    let jump_force = if controller.should_crouch && body.is_on_platform {
+                        attributes.jump_force * PLATFORM_JUMP_FORCE_MULTIPLIER
+                    } else {
+                        attributes.jump_force
+                    };
 
-                    if jump_force != 0.0 {
-                        body.velocity.y = jump_force;
+                    body.velocity.y = -jump_force;
 
-                        let resources = storage::get::<Resources>();
-                        let sound = resources.sounds[JUMP_SOUND_ID];
+                    state.is_jumping = true;
 
-                        play_sound_once(sound);
+                    let resources = storage::get::<Resources>();
+                    let sound = resources.sounds[JUMP_SOUND_ID];
+
+                    play_sound_once(sound);
+                } else if state.is_jumping {
+                    state.jump_frame_counter += 1;
+
+                    if controller.should_float && state.jump_frame_counter <= JUMP_FRAME_COUNT {
+                        body.has_mass = false;
+                    } else {
+                        state.is_jumping = false;
+                        state.jump_frame_counter = 0;
+                        body.has_mass = true;
                     }
                 }
 
@@ -193,6 +208,10 @@ pub fn update_player_states(world: &mut World) {
             }
 
             if body.is_on_ground && !body.was_on_ground {
+                state.is_jumping = false;
+                state.jump_frame_counter = 0;
+                body.has_mass = true;
+
                 let resources = storage::get::<Resources>();
                 let sound = resources.sounds[LAND_SOUND_ID];
 

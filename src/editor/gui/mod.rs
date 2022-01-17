@@ -92,6 +92,7 @@ impl EditorGui {
         }
     }
 
+    #[must_use]
     pub fn with_toolbar(self, toolbar: Toolbar) -> Self {
         let mut gui = self;
         gui.add_toolbar(toolbar);

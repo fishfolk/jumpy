@@ -7,9 +7,9 @@ use hecs::World;
 
 use serde::{Deserialize, Serialize};
 
-use crate::json;
 use crate::physics::GRAVITY;
 use crate::Transform;
+use crate::{json, TERMINAL_VELOCITY};
 
 const FRICTION_LERP: f32 = 0.96;
 const STOP_THRESHOLD: f32 = 1.0;
@@ -115,6 +115,10 @@ pub fn update_physics_bodies(world: &mut World) {
 
             if !body.is_on_ground && body.has_mass {
                 body.velocity.y += GRAVITY;
+
+                if body.velocity.y > TERMINAL_VELOCITY {
+                    body.velocity.y = TERMINAL_VELOCITY;
+                }
             }
 
             if !collision_world.move_h(body.actor, body.velocity.x) {

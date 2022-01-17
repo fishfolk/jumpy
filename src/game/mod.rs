@@ -79,7 +79,7 @@ impl Game {
             index,
             controller,
             character,
-        } in player_params.to_vec()
+        } in player_params.iter().cloned()
         {
             let position = map.get_random_spawn_point();
             let player = spawn_player(&mut world, index, position, controller, character);

@@ -75,6 +75,7 @@ impl URect {
     }
 
     /// Returns a new `Rect` that includes all points of these two `Rect`s.
+    #[must_use]
     pub fn combine_with(self, other: URect) -> Self {
         let x = u32::min(self.x, other.x);
         let y = u32::min(self.y, other.y);
@@ -103,6 +104,7 @@ impl URect {
     }
 
     /// Translate rect origin be `offset` vector
+    #[must_use]
     pub fn offset(self, offset: UVec2) -> Self {
         URect::new(self.x + offset.x, self.y + offset.y, self.w, self.h)
     }

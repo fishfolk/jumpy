@@ -210,8 +210,8 @@ impl From<&[(&str, Sprite)]> for SpriteSet {
 
         let map = HashMap::from_iter(
             sprites
-                .to_vec()
-                .into_iter()
+                .iter()
+                .cloned()
                 .map(|(id, sprite)| (id.to_string(), sprite)),
         );
 

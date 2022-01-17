@@ -62,8 +62,8 @@ pub async fn show_select_characters_menu(
 
         let animations = meta
             .animations
-            .to_vec()
-            .into_iter()
+            .iter()
+            .cloned()
             .map(|a| a.into())
             .collect::<Vec<_>>();
 
@@ -256,8 +256,8 @@ pub async fn show_select_characters_menu(
 
                 let animations = meta
                     .animations
-                    .to_vec()
-                    .into_iter()
+                    .iter()
+                    .cloned()
                     .map(|a| a.into())
                     .collect::<Vec<_>>();
 

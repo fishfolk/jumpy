@@ -88,6 +88,7 @@ impl ComboBoxBuilder {
         }
     }
 
+    #[must_use]
     pub fn with_label(self, label: &str) -> Self {
         ComboBoxBuilder {
             label: Some(label.to_string()),
@@ -95,6 +96,7 @@ impl ComboBoxBuilder {
         }
     }
 
+    #[must_use]
     pub fn with_ratio(self, ratio: f32) -> Self {
         ComboBoxBuilder {
             ratio: Some(ratio),

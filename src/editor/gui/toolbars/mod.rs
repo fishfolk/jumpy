@@ -93,6 +93,7 @@ impl Toolbar {
         }
     }
 
+    #[must_use]
     pub fn with_element<E: ToolbarElement + 'static>(self, height_factor: f32, element: E) -> Self {
         let mut res = self;
         res.add_element(height_factor, element);

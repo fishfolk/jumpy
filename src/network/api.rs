@@ -236,6 +236,7 @@ pub struct Account {
 }
 
 impl Account {
+    #[must_use]
     pub fn remove_secrets(self) -> Self {
         Account {
             password_hash: None,

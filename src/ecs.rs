@@ -12,6 +12,7 @@ pub struct SchedulerBuilder {
 }
 
 impl SchedulerBuilder {
+    #[must_use]
     pub fn add_system(self, system: SystemFn) -> Self {
         let mut steps = self.steps;
         steps.push(system);
@@ -19,6 +20,7 @@ impl SchedulerBuilder {
         SchedulerBuilder { steps }
     }
 
+    #[must_use]
     pub fn add_thread_local(self, system: SystemFn) -> Self {
         let mut steps = self.steps;
         steps.push(system);

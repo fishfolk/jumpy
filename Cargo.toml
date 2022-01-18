@@ -29,7 +29,6 @@ hecs = "0.7.1"
 app_name = "Fish Fight"
 target_sdk_version = 30
 version_code = "1"
-icon = "ic_launcher"
 
 android_build_targets = ["aarch64-linux-android"]
 android_assets = "assets"

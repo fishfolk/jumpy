@@ -98,9 +98,6 @@ pub fn serialize_bin<T>(value: &T) -> Result<Vec<u8>>
 where
     T: Serialize,
 {
-    //let res = bincode::serialize(value)?;
-    //Ok(res)
-
     let res = serde_json::to_string(value)?;
     Ok(res.into_bytes())
 }
@@ -109,8 +106,6 @@ pub fn deserialize_bin<'a, T>(bytes: &'a [u8]) -> Result<T>
 where
     T: Deserialize<'a>,
 {
-    //let res = bincode::deserialize(bytes)?;
-
     let res = serde_json::from_slice(bytes)?;
     Ok(res)
 }

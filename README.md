@@ -75,13 +75,11 @@ Keyboard left:
 - movement: arrow keys `↑`, `←`, `↓`, `→`
 - pick/drop: `K`
 - attack: `L`
-- toggle AI: `0`
 
 Keyboard right:
 - movement: `W`, `A`, `S`, `D` (& `Space` for jump)
 - pick/drop: `C`
 - attack: `V` & `LeftCtrl`
-- toogle AI: `1`
 
 Gamepad:
 - movement: direction axis

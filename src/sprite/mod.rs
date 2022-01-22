@@ -16,6 +16,13 @@ mod animated;
 
 pub use animated::*;
 
+/// This is used to specify draw order on a sprite
+/// This will be used, primarily, by `Player` to draw equipped items in the right order, relative
+/// to its own sprite. This is done by multiplying the player id by ten and adding whatever offset
+/// is required to this number, to order it relative to other sprites controlled by this specific
+/// `Player` component.
+pub struct DrawOrder(pub u32);
+
 /// Parameters for `Sprite` component.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SpriteMetadata {
@@ -266,3 +273,17 @@ pub fn debug_draw_sprite_sets(world: &mut World) {
         }
     }
 }
+
+/*
+pub fn draw_sprites(world: &mut World) {
+    let ordered = world.query::<&DrawOrder>()
+
+    for (e, draw_order) in ordered {
+
+    }
+}
+
+pub fn debug_draw_sprites(world: &mut World) {
+
+}
+ */

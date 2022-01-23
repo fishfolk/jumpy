@@ -4,8 +4,8 @@ use macroquad::prelude::*;
 use hecs::{Entity, World};
 
 use crate::{
-    AnimatedSprite, AnimatedSpriteParams, AnimatedSpriteSet, CollisionWorld, PhysicsBody,
-    Resources, Transform,
+    AnimatedSprite, AnimatedSpriteParams, AnimatedSpriteSet, CollisionWorld, DrawOrder,
+    PhysicsBody, Resources, Transform,
 };
 
 mod animation;
@@ -127,6 +127,8 @@ pub fn spawn_player(
         AnimatedSprite::new(texture, frame_size, animations.as_slice(), params),
     )];
 
+    let draw_order = (index as u32 + 1) * 10;
+
     let size = character.collider_size.as_i32();
     let actor = storage::get_mut::<CollisionWorld>().add_actor(position, size.x, size.y);
 
@@ -145,6 +147,7 @@ pub fn spawn_player(
         PlayerAttributes::from(character),
         PlayerState::from(position),
         PlayerInventory::from(weapon_mount),
+        DrawOrder(draw_order),
         AnimatedSpriteSet::from(sprites),
         PhysicsBody::new(actor, None, body_params),
     ))

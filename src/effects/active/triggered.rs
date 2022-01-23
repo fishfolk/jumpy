@@ -9,12 +9,14 @@ use crate::effects::active::spawn_active_effect;
 use crate::math::deg_to_rad;
 use crate::particles::{ParticleEmitter, ParticleEmitterParams};
 use crate::player::PlayerState;
-use crate::{json, AnimatedSpriteParams, PhysicsBodyParams};
+use crate::{json, AnimatedSpriteParams, DrawOrder, PhysicsBodyParams};
 use crate::{
     ActiveEffectMetadata, AnimatedSprite, AnimatedSpriteMetadata, CollisionWorld, PhysicsBody,
     Transform,
 };
 use crate::{Resources, Result};
+
+const TRIGGERED_EFFECT_DRAW_ORDER: u32 = 5;
 
 /// The various collision types that can trigger a `TriggeredEffect`.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -106,6 +108,7 @@ pub fn spawn_triggered_effect(
                 ..Default::default()
             },
         ),
+        DrawOrder(TRIGGERED_EFFECT_DRAW_ORDER),
     ));
 
     if let Some(meta) = meta.sprite.clone() {

@@ -4,11 +4,11 @@ use hecs::{Entity, With, Without, World};
 
 use crate::items::{
     fire_weapon, ItemDepleteBehavior, ItemDropBehavior, Weapon, EFFECT_ANIMATED_SPRITE_ID,
-    GROUND_ANIMATION_ID, SPRITE_ANIMATED_SPRITE_ID,
+    GROUND_ANIMATION_ID, ITEMS_DRAW_ORDER, SPRITE_ANIMATED_SPRITE_ID,
 };
 use crate::particles::ParticleEmitter;
 use crate::player::{PlayerController, PlayerState, IDLE_ANIMATION_ID, PICKUP_GRACE_TIME};
-use crate::{AnimatedSpriteSet, Item, Owner, PhysicsBody, Transform};
+use crate::{AnimatedSpriteSet, DrawOrder, Item, Owner, PhysicsBody, Transform};
 
 const THROW_FORCE: f32 = 5.0;
 
@@ -111,19 +111,19 @@ pub fn update_player_inventory(world: &mut World) {
 
                     body.velocity = velocity;
                 } else if state.pickup_grace_timer >= PICKUP_GRACE_TIME {
-                    for (i, &(entity, rect)) in weapon_colliders.iter().enumerate() {
+                    for (i, &(weapon_entity, rect)) in weapon_colliders.iter().enumerate() {
                         if player_rect.overlaps(&rect) {
-                            picked_up.push((entity, entity));
+                            picked_up.push((entity, weapon_entity));
                             weapon_colliders.remove(i);
 
-                            inventory.weapon = Some(entity);
+                            inventory.weapon = Some(weapon_entity);
                             state.pickup_grace_timer = 0.0;
 
-                            let mut body = world.get_mut::<PhysicsBody>(entity).unwrap();
+                            let mut body = world.get_mut::<PhysicsBody>(weapon_entity).unwrap();
                             body.is_deactivated = true;
 
                             let mut sprite_set =
-                                world.get_mut::<AnimatedSpriteSet>(entity).unwrap();
+                                world.get_mut::<AnimatedSpriteSet>(weapon_entity).unwrap();
                             sprite_set.set_all(IDLE_ANIMATION_ID, true);
 
                             break;
@@ -237,6 +237,11 @@ pub fn update_player_inventory(world: &mut World) {
 
     for (player, item) in picked_up {
         world.insert_one(item, Owner(player)).unwrap();
+
+        let player_draw_order = world.get::<DrawOrder>(player).unwrap();
+
+        let mut draw_order = world.get_mut::<DrawOrder>(item).unwrap();
+        draw_order.0 = player_draw_order.0 + 1;
     }
 
     for entity in to_drop {
@@ -274,6 +279,9 @@ pub fn update_player_inventory(world: &mut World) {
                 println!("WARNING: {}", err);
             }
         } else {
+            let mut draw_order = world.get_mut::<DrawOrder>(entity).unwrap();
+            draw_order.0 = ITEMS_DRAW_ORDER;
+
             let mut body = world.get_mut::<PhysicsBody>(entity).unwrap();
 
             body.is_deactivated = false;

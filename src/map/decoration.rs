@@ -5,8 +5,10 @@ use hecs::{Entity, World};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{AnimatedSprite, AnimatedSpriteMetadata};
+use crate::{AnimatedSprite, AnimatedSpriteMetadata, DrawOrder};
 use crate::{Resources, Transform};
+
+const DECORATION_DRAW_ORDER: u32 = 0;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct DecorationMetadata {
@@ -44,6 +46,7 @@ pub fn spawn_decoration(world: &mut World, position: Vec2, meta: DecorationMetad
     world.spawn((
         Decoration::new(&meta.id),
         Transform::from(position),
+        DrawOrder(DECORATION_DRAW_ORDER),
         AnimatedSprite::new(texture, frame_size, animations.as_slice(), params),
     ))
 }

@@ -8,7 +8,7 @@ use macroquad::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    json, AnimatedSprite, AnimatedSpriteMetadata, AnimatedSpriteSet, CollisionWorld,
+    json, AnimatedSprite, AnimatedSpriteMetadata, AnimatedSpriteSet, CollisionWorld, DrawOrder,
     PassiveEffectMetadata, PhysicsBody, Resources, Transform,
 };
 
@@ -20,6 +20,8 @@ use crate::effects::passive::PassiveEffectParams;
 use crate::particles::ParticleEmitter;
 use crate::physics::PhysicsBodyParams;
 use crate::Result;
+
+pub const ITEMS_DRAW_ORDER: u32 = 1;
 
 pub const SPRITE_ANIMATED_SPRITE_ID: &str = "sprite";
 pub const EFFECT_ANIMATED_SPRITE_ID: &str = "effect";
@@ -204,6 +206,7 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
                 ..Default::default()
             },
         ),
+        DrawOrder(ITEMS_DRAW_ORDER),
     ));
 
     let uses = meta.uses;

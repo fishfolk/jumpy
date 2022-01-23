@@ -5,8 +5,11 @@ use macroquad::prelude::*;
 use hecs::{Entity, World};
 
 use crate::{
-    AnimatedSprite, Animation, PhysicsBody, QueuedAnimationAction, Resources, Result, Transform,
+    AnimatedSprite, Animation, DrawOrder, PhysicsBody, QueuedAnimationAction, Resources, Result,
+    Transform,
 };
+
+const SPROINGER_DRAW_ORDER: u32 = 2;
 
 const TEXTURE_ID: &str = "sproinger";
 
@@ -71,6 +74,7 @@ pub fn spawn_sproinger(world: &mut World, position: Vec2) -> Result<Entity> {
     let entity = world.spawn((
         Sproinger::new(),
         Transform::from(position),
+        DrawOrder(SPROINGER_DRAW_ORDER),
         AnimatedSprite::new(
             texture_res.texture,
             frame_size,

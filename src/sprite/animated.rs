@@ -182,18 +182,6 @@ pub fn update_animated_sprites(world: &mut World) {
     }
 }
 
-pub fn draw_animated_sprites(world: &mut World) {
-    for (_, (transform, sprite)) in world.query::<(&Transform, &AnimatedSprite)>().iter() {
-        draw_one_animated_sprite(transform, sprite);
-    }
-}
-
-pub fn debug_draw_animated_sprites(world: &mut World) {
-    for (_, (transform, sprite)) in world.query::<(&Transform, &AnimatedSprite)>().iter() {
-        debug_draw_one_animated_sprite(transform.position, sprite);
-    }
-}
-
 pub fn update_one_animated_sprite(sprite: &mut AnimatedSprite) {
     if !sprite.is_deactivated && sprite.is_playing {
         let (is_last_frame, is_looping) = {
@@ -393,24 +381,6 @@ pub fn update_animated_sprite_sets(world: &mut World) {
         for key in &sprite_set.draw_order {
             let sprite = sprite_set.map.get_mut(key).unwrap();
             update_one_animated_sprite(sprite);
-        }
-    }
-}
-
-pub fn draw_animated_sprite_sets(world: &mut World) {
-    for (_, (transform, sprite_set)) in world.query::<(&Transform, &AnimatedSpriteSet)>().iter() {
-        for key in &sprite_set.draw_order {
-            let sprite = sprite_set.map.get(key).unwrap();
-            draw_one_animated_sprite(transform, sprite);
-        }
-    }
-}
-
-pub fn debug_draw_animated_sprite_sets(world: &mut World) {
-    for (_, (transform, sprite_set)) in world.query::<(&Transform, &AnimatedSpriteSet)>().iter() {
-        for key in &sprite_set.draw_order {
-            let sprite = sprite_set.map.get(key).unwrap();
-            debug_draw_one_animated_sprite(transform.position, sprite);
         }
     }
 }

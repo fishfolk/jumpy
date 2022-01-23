@@ -9,13 +9,15 @@ use serde::{Deserialize, Serialize};
 
 use crate::effects::active::triggered::TriggeredEffect;
 use crate::effects::TriggeredEffectTrigger;
-use crate::json;
 use crate::particles::{ParticleEmitter, ParticleEmitterParams};
 use crate::player::PlayerState;
+use crate::{json, DrawOrder};
 use crate::{
     CollisionWorld, PhysicsBody, Resources, RigidBody, RigidBodyParams, Sprite, SpriteMetadata,
     Transform,
 };
+
+const PROJECTILE_DRAW_ORDER: u32 = 1;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
@@ -125,7 +127,14 @@ pub fn spawn_projectile(
     };
 
     world
-        .insert(entity, (transform, RigidBody::new(velocity, body_params)))
+        .insert(
+            entity,
+            (
+                transform,
+                RigidBody::new(velocity, body_params),
+                DrawOrder(PROJECTILE_DRAW_ORDER),
+            ),
+        )
         .unwrap();
 
     let mut particle_emitters = Vec::new();

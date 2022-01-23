@@ -193,18 +193,6 @@ pub fn debug_draw_one_sprite(position: Vec2, sprite: &Sprite) {
     }
 }
 
-pub fn draw_sprites(world: &mut World) {
-    for (_, (transform, sprite)) in world.query::<(&Transform, &Sprite)>().iter() {
-        draw_one_sprite(transform, sprite);
-    }
-}
-
-pub fn debug_draw_sprites(world: &mut World) {
-    for (_, (transform, sprite)) in world.query::<(&Transform, &Sprite)>().iter() {
-        debug_draw_one_sprite(transform.position, sprite);
-    }
-}
-
 #[derive(Debug)]
 pub struct SpriteSet {
     pub draw_order: Vec<String>,
@@ -256,34 +244,68 @@ impl SpriteSet {
     }
 }
 
-pub fn draw_sprite_sets(world: &mut World) {
-    for (_, (transform, sprites)) in world.query::<(&Transform, &SpriteSet)>().iter() {
-        for id in &sprites.draw_order {
-            let sprite = sprites.map.get(id).unwrap();
-            draw_one_sprite(transform, sprite);
-        }
-    }
-}
-
-pub fn debug_draw_sprite_sets(world: &mut World) {
-    for (_, (transform, sprites)) in world.query::<(&Transform, &SpriteSet)>().iter() {
-        for id in &sprites.draw_order {
-            let sprite = sprites.map.get(id).unwrap();
-            debug_draw_one_sprite(transform.position, sprite);
-        }
-    }
-}
-
-/*
 pub fn draw_sprites(world: &mut World) {
-    let ordered = world.query::<&DrawOrder>()
+    let mut ordered = world
+        .query::<&DrawOrder>()
+        .iter()
+        .map(|(e, order)| (e, order.0))
+        .collect::<Vec<_>>();
 
-    for (e, draw_order) in ordered {
+    ordered.sort_by(|&(_, a), &(_, b)| a.cmp(&b));
 
+    // This needs to be performance tested. If it causes any issues, we can work around having to
+    // do all these queries by wrapping all drawables in a `Drawable` enum type and match on that
+    // in stead.
+    for e in ordered.into_iter().map(|(e, _)| e) {
+        if let Ok(transform) = world.get::<Transform>(e) {
+            if let Ok(sprite) = world.get::<Sprite>(e) {
+                draw_one_sprite(&transform, &sprite);
+            } else if let Ok(sprite_set) = world.get::<SpriteSet>(e) {
+                for id in sprite_set.draw_order.iter() {
+                    let sprite = sprite_set.map.get(id).unwrap();
+                    draw_one_sprite(&transform, sprite);
+                }
+            } else if let Ok(sprite) = world.get::<AnimatedSprite>(e) {
+                draw_one_animated_sprite(&transform, &sprite);
+            } else if let Ok(sprite_set) = world.get::<AnimatedSpriteSet>(e) {
+                for id in sprite_set.draw_order.iter() {
+                    let sprite = sprite_set.map.get(id).unwrap();
+                    draw_one_animated_sprite(&transform, sprite);
+                }
+            }
+        }
     }
 }
 
 pub fn debug_draw_sprites(world: &mut World) {
+    let mut ordered = world
+        .query::<&DrawOrder>()
+        .iter()
+        .map(|(e, order)| (e, order.0))
+        .collect::<Vec<_>>();
 
+    ordered.sort_by(|&(_, a), &(_, b)| a.cmp(&b));
+
+    // This needs to be performance tested. If it causes any issues, we can work around having to
+    // do all these queries by wrapping all drawables in a `Drawable` enum type and match on that
+    // in stead.
+    for e in ordered.into_iter().map(|(e, _)| e) {
+        if let Ok(transform) = world.get::<Transform>(e) {
+            if let Ok(sprite) = world.get::<Sprite>(e) {
+                debug_draw_one_sprite(transform.position, &sprite);
+            } else if let Ok(sprite_set) = world.get::<SpriteSet>(e) {
+                for id in sprite_set.draw_order.iter() {
+                    let sprite = sprite_set.map.get(id).unwrap();
+                    debug_draw_one_sprite(transform.position, sprite);
+                }
+            } else if let Ok(sprite) = world.get::<AnimatedSprite>(e) {
+                debug_draw_one_animated_sprite(transform.position, &sprite);
+            } else if let Ok(sprite_set) = world.get::<AnimatedSpriteSet>(e) {
+                for id in sprite_set.draw_order.iter() {
+                    let sprite = sprite_set.map.get(id).unwrap();
+                    debug_draw_one_animated_sprite(transform.position, sprite);
+                }
+            }
+        }
+    }
 }
- */

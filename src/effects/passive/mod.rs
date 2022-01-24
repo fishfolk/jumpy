@@ -1,13 +1,36 @@
+use std::collections::HashMap;
+
 use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
-pub mod coroutines;
-
-pub use coroutines::PassiveEffectCoroutine;
+use hecs::Entity;
 
 use crate::json::OneOrMany;
 use crate::player::PlayerEvent;
+
+use crate::PlayerEventParams;
+
+static mut PASSIVE_EFFECT_FUNCS: Option<HashMap<String, PassiveEffectFn>> = None;
+
+unsafe fn get_passive_effects_map() -> &'static mut HashMap<String, PassiveEffectFn> {
+    PASSIVE_EFFECT_FUNCS.get_or_insert(HashMap::new())
+}
+
+#[allow(dead_code)]
+pub fn add_passive_effect(id: &str, f: PassiveEffectFn) {
+    unsafe { get_passive_effects_map() }.insert(id.to_string(), f);
+}
+
+pub fn try_get_passive_effect(id: &str) -> Option<&PassiveEffectFn> {
+    unsafe { get_passive_effects_map() }.get(id)
+}
+
+pub fn get_passive_effect(id: &str) -> &PassiveEffectFn {
+    try_get_passive_effect(id).unwrap()
+}
+
+pub type PassiveEffectFn = fn(player: Entity, event_params: PlayerEventParams);
 
 pub struct PassiveEffectParams {}
 

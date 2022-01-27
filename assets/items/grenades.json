@@ -1,5 +1,6 @@
 {
   "id": "grenades",
+  "name": "Grenades",
   "type": "weapon",
   "cooldown": 0.5,
   "uses": 3,

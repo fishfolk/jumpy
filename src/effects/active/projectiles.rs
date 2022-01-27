@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use crate::effects::active::triggered::TriggeredEffect;
 use crate::effects::TriggeredEffectTrigger;
 use crate::particles::{ParticleEmitter, ParticleEmitterParams};
-use crate::player::PlayerState;
+use crate::player::{on_player_damage, PlayerState};
 use crate::{json, DrawOrder};
 use crate::{
     CollisionWorld, PhysicsBody, Resources, RigidBody, RigidBodyParams, Sprite, SpriteMetadata,
@@ -213,19 +213,18 @@ pub fn update_projectiles(world: &mut World) {
         }
     }
 
-    for (owner_entity, projectile_entity, collision) in events {
+    for (damage_from_entity, projectile_entity, collision) in events {
         if let Some(collision_kind) = collision {
             match collision_kind {
-                ProjectileCollision::Player(player_entity) => {
-                    let mut state = world.get_mut::<PlayerState>(player_entity).unwrap();
-                    state.is_dead = true;
+                ProjectileCollision::Player(damage_to_entity) => {
+                    on_player_damage(world, damage_from_entity, damage_to_entity);
                 }
                 ProjectileCollision::Trigger(trigger_entity) => {
                     let mut effect = world.get_mut::<TriggeredEffect>(trigger_entity).unwrap();
                     if !effect.should_override_delay {
                         effect.is_triggered = true;
                         effect.should_override_delay = true;
-                        effect.triggered_by = Some(owner_entity);
+                        effect.triggered_by = Some(damage_from_entity);
                     }
                 }
                 _ => {}

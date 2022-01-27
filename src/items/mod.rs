@@ -16,7 +16,6 @@ mod weapon;
 
 pub use weapon::*;
 
-use crate::effects::passive::PassiveEffectParams;
 use crate::particles::ParticleEmitter;
 use crate::physics::PhysicsBodyParams;
 use crate::Result;
@@ -80,7 +79,8 @@ pub enum MapItemKind {
 }
 
 pub struct ItemParams {
-    pub effects: Vec<PassiveEffectParams>,
+    pub name: String,
+    pub effects: Vec<PassiveEffectMetadata>,
     pub uses: Option<u32>,
     pub duration: Option<f32>,
     pub mount_offset: Vec2,
@@ -90,7 +90,8 @@ pub struct ItemParams {
 
 pub struct Item {
     pub id: String,
-    pub effects: Vec<PassiveEffectParams>,
+    pub name: String,
+    pub effects: Vec<PassiveEffectMetadata>,
     pub uses: Option<u32>,
     pub duration: Option<f32>,
     pub mount_offset: Vec2,
@@ -104,6 +105,7 @@ impl Item {
     pub fn new(id: &str, params: ItemParams) -> Self {
         Item {
             id: id.to_string(),
+            name: params.name,
             effects: params.effects,
             uses: params.uses,
             duration: params.duration,
@@ -131,6 +133,7 @@ pub struct ItemMetadata {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct MapItemMetadata {
     pub id: String,
+    pub name: String,
     #[serde(flatten)]
     pub kind: MapItemKind,
     #[serde(with = "json::vec2_def")]
@@ -211,20 +214,18 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
 
     let uses = meta.uses;
 
+    let name = meta.name.clone();
+
     match meta.kind {
         MapItemKind::Item { meta } => {
-            let ItemMetadata {
-                effects: meta,
-                duration,
-            } = meta;
-
-            let effects = meta.into_iter().map(|m| m.into()).collect();
+            let ItemMetadata { effects, duration } = meta;
 
             world.insert_one(
                 entity,
                 Item::new(
                     id,
                     ItemParams {
+                        name,
                         effects,
                         uses,
                         duration,
@@ -286,6 +287,7 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
             }
 
             let params = WeaponParams {
+                name,
                 effects: meta.effects,
                 uses,
                 sound_effect,

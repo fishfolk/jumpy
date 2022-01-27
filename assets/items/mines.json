@@ -1,5 +1,6 @@
 {
   "id": "mines",
+  "name": "Mines",
   "type": "weapon",
   "cooldown": 0.5,
   "uses": 3,

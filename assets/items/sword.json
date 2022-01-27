@@ -1,5 +1,6 @@
 {
   "id": "sword",
+  "name": "Sword",
   "type": "weapon",
   "cooldown": 1.0,
   "sound_effect": "sword",

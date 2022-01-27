@@ -1,5 +1,6 @@
 {
   "id": "kick_bomb",
+  "name": "Kick Bomb",
   "type": "weapon",
   "uses": 1,
   "deplete_behavior": "destroy",

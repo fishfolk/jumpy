@@ -57,10 +57,11 @@ pub use game::{
 
 pub use resources::Resources;
 
-pub use player::PlayerEventParams;
+pub use player::PlayerEvent;
 
 pub use ecs::Owner;
 
+use crate::effects::passive::init_passive_effects;
 use crate::game::GameMode;
 use crate::network::Api;
 use crate::resources::load_resources;
@@ -125,6 +126,8 @@ async fn main() -> Result<()> {
         let gamepad_system = fishsticks::GamepadContext::init().unwrap();
         storage::store(gamepad_system);
     }
+
+    init_passive_effects();
 
     'outer: loop {
         match gui::show_main_menu().await {

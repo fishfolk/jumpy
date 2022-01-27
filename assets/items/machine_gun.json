@@ -1,5 +1,6 @@
 {
   "id": "machine_gun",
+  "name": "Machine Gun",
   "type": "weapon",
   "cooldown": 0.15,
   "attack_duration": 0.1,

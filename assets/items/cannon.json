@@ -1,5 +1,6 @@
 {
   "id": "cannon",
+  "name": "Cannon",
   "type": "weapon",
   "cooldown": 1.5,
   "attack_duration": 1.0,

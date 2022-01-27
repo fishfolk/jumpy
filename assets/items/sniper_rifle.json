@@ -1,5 +1,6 @@
 {
   "id": "sniper_rifle",
+  "name": "Sniper Rifle",
   "type": "weapon",
   "uses": 2,
   "cooldown": 1.5,

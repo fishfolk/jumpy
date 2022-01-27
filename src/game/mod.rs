@@ -19,7 +19,8 @@ use crate::gui::{self, GAME_MENU_RESULT_MAIN_MENU, GAME_MENU_RESULT_QUIT};
 use crate::physics::{debug_draw_physics_bodies, update_physics_bodies};
 use crate::player::{
     draw_weapons_hud, spawn_player, update_player_animations, update_player_camera_box,
-    update_player_controllers, update_player_inventory, update_player_states, PlayerParams,
+    update_player_controllers, update_player_events, update_player_inventory,
+    update_player_passive_effects, update_player_states, PlayerParams,
 };
 use crate::Result;
 use crate::{
@@ -92,6 +93,8 @@ impl Game {
             .add_system(update_player_camera_box)
             .add_system(update_player_states)
             .add_system(update_player_inventory)
+            .add_system(update_player_passive_effects)
+            .add_system(update_player_events)
             .add_system(update_player_animations)
             .add_system(update_animated_sprites)
             .add_system(update_animated_sprite_sets)

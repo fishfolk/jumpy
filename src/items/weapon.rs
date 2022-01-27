@@ -18,6 +18,7 @@ use crate::{json, QueuedAnimationAction, Transform};
 use crate::{AnimatedSpriteSet, PhysicsBody, Result};
 
 pub struct WeaponParams {
+    pub name: String,
     pub effects: Vec<ActiveEffectMetadata>,
     pub uses: Option<u32>,
     pub sound_effect: Option<Sound>,
@@ -30,6 +31,7 @@ pub struct WeaponParams {
 impl Default for WeaponParams {
     fn default() -> Self {
         WeaponParams {
+            name: "".to_string(),
             effects: Vec::new(),
             uses: None,
             sound_effect: None,
@@ -43,6 +45,7 @@ impl Default for WeaponParams {
 
 pub struct Weapon {
     pub id: String,
+    pub name: String,
     pub effects: Vec<ActiveEffectMetadata>,
     pub sound_effect: Option<Sound>,
     pub recoil: f32,
@@ -67,6 +70,7 @@ impl Weapon {
     ) -> Self {
         Weapon {
             id: id.to_string(),
+            name: params.name,
             effects: params.effects,
             recoil,
             cooldown,

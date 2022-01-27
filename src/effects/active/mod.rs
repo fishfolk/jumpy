@@ -18,7 +18,7 @@ pub use triggered::{TriggeredEffectMetadata, TriggeredEffectTrigger};
 use crate::effects::active::projectiles::spawn_projectile;
 use crate::effects::active::triggered::{spawn_triggered_effect, TriggeredEffect};
 use crate::particles::ParticleEmitterParams;
-use crate::player::PlayerState;
+use crate::player::{on_player_damage, PlayerState};
 use crate::{PhysicsBody, Transform};
 pub use projectiles::ProjectileKind;
 
@@ -39,6 +39,8 @@ pub fn spawn_active_effect(
 
         play_sound_once(*sound);
     }
+
+    let mut damage = Vec::new();
 
     match *params.kind {
         ActiveEffectKind::CircleCollider {
@@ -74,9 +76,9 @@ pub fn spawn_active_effect(
                     }
 
                     if is_hit {
-                        if let Ok(mut state) = world.get_mut::<PlayerState>(e) {
+                        if world.get_mut::<PlayerState>(e).is_ok() {
                             if is_explosion || e != owner {
-                                state.is_dead = true;
+                                damage.push((owner, e))
                             }
                         } else if is_explosion {
                             if let Ok(mut effect) = world.get_mut::<TriggeredEffect>(e) {
@@ -100,9 +102,7 @@ pub fn spawn_active_effect(
             for (e, (transform, body)) in world.query::<(&Transform, &PhysicsBody)>().iter() {
                 let other_rect = body.as_rect(transform.position);
                 if rect.overlaps(&other_rect) {
-                    if let Ok(mut state) = world.get_mut::<PlayerState>(e) {
-                        state.is_dead = true;
-                    }
+                    damage.push((owner, e));
                 }
             }
         }
@@ -136,6 +136,10 @@ pub fn spawn_active_effect(
 
             spawn_projectile(world, owner, kind, origin, velocity, range, particles);
         }
+    }
+
+    for (damage_from_entity, damage_to_entity) in damage.drain(0..) {
+        on_player_damage(world, damage_from_entity, damage_to_entity);
     }
 
     Ok(())

@@ -1,5 +1,6 @@
 {
   "id": "musket",
+  "name": "Musket",
   "type": "weapon",
   "uses": 3,
   "cooldown": 1.0,

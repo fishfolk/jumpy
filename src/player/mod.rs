@@ -147,6 +147,7 @@ pub fn spawn_player(
         PlayerAttributes::from(character),
         PlayerState::from(position),
         PlayerInventory::from(weapon_mount),
+        PlayerEventQueue::new(),
         DrawOrder(draw_order),
         AnimatedSpriteSet::from(sprites),
         PhysicsBody::new(actor, None, body_params),

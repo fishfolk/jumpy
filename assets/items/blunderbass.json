@@ -1,5 +1,6 @@
 {
   "id": "blunderbass",
+  "name": "Blunderbass",
   "type": "weapon",
   "uses": 4,
   "cooldown": 2.0,

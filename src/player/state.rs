@@ -2,17 +2,22 @@ use macroquad::audio::play_sound_once;
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
 
-use hecs::World;
+use hecs::{Entity, World};
 
 use crate::player::{
-    PlayerAttributes, PlayerController, JUMP_SOUND_ID, LAND_SOUND_ID, RESPAWN_DELAY,
+    PlayerAttributes, PlayerController, PlayerEventQueue, JUMP_SOUND_ID, LAND_SOUND_ID,
+    RESPAWN_DELAY,
 };
-use crate::{CollisionWorld, GameCamera, Map, PhysicsBody, Resources, Transform};
+use crate::{
+    CollisionWorld, GameCamera, Item, Map, PassiveEffectInstance, PhysicsBody, PlayerEvent,
+    Resources, Transform,
+};
 
 const JUMP_FRAME_COUNT: u16 = 8;
 
 pub struct PlayerState {
     pub camera_box: Rect,
+    pub passive_effects: Vec<PassiveEffectInstance>,
     pub is_facing_left: bool,
     pub is_upside_down: bool,
     pub is_jumping: bool,
@@ -35,6 +40,7 @@ impl From<Vec2> for PlayerState {
 
         PlayerState {
             camera_box,
+            passive_effects: Vec::new(),
             is_facing_left: false,
             is_upside_down: false,
             is_jumping: false,
@@ -218,5 +224,77 @@ pub fn update_player_states(world: &mut World) {
                 play_sound_once(sound);
             }
         }
+    }
+}
+
+pub fn update_player_passive_effects(world: &mut World) {
+    let mut function_calls = Vec::new();
+
+    for (entity, (state, events)) in world
+        .query::<(&mut PlayerState, &mut PlayerEventQueue)>()
+        .iter()
+    {
+        let dt = get_frame_time();
+
+        for effect in &mut state.passive_effects {
+            effect.duration_timer += dt;
+        }
+
+        state.passive_effects.retain(|effect| !effect.is_depleted());
+
+        events.queue.push(PlayerEvent::Update { dt });
+
+        for event in events.queue.iter() {
+            let kind = event.into();
+
+            for effect in &mut state.passive_effects {
+                if effect.activated_on.contains(&kind) {
+                    effect.use_cnt += 1;
+
+                    if let Some(item_entity) = effect.item {
+                        let mut item = world.get_mut::<Item>(item_entity).unwrap();
+
+                        item.use_cnt += 1;
+                    }
+
+                    if let Some(f) = &effect.function {
+                        function_calls.push((*f, entity, effect.item, event.clone()));
+                    }
+                }
+            }
+        }
+    }
+
+    for (f, player_entity, item_entity, event) in function_calls.drain(0..) {
+        f(world, player_entity, item_entity, event);
+    }
+}
+
+pub fn on_player_damage(world: &mut World, damage_from_entity: Entity, damage_to_entity: Entity) {
+    let mut is_from_left = false;
+
+    if let Ok(owner_transform) = world.get::<Transform>(damage_from_entity) {
+        if let Ok(target_transform) = world.get::<Transform>(damage_to_entity) {
+            is_from_left = owner_transform.position.x < target_transform.position.x;
+        }
+    }
+
+    {
+        let mut events = world
+            .get_mut::<PlayerEventQueue>(damage_from_entity)
+            .unwrap();
+
+        events.queue.push(PlayerEvent::GiveDamage {
+            damage_to: Some(damage_to_entity),
+        });
+    }
+
+    {
+        let mut events = world.get_mut::<PlayerEventQueue>(damage_to_entity).unwrap();
+
+        events.queue.push(PlayerEvent::ReceiveDamage {
+            is_from_left,
+            damage_from: Some(damage_from_entity),
+        });
     }
 }

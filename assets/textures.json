@@ -240,11 +240,11 @@
   },
   {
     "id": "kick_bomb",
-    "path": "textures/items/KickBomb(32x62).png",
+    "path": "textures/items/KickBomb(32x64).png",
     "type": "spritesheet",
     "sprite_size": {
       "x": 32,
-      "y": 48
+      "y": 64
     }
   },
   {

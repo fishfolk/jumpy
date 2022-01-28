@@ -20,8 +20,8 @@
       "rotation": 90.0,
       "can_rotate": true,
       "size": {
-        "x": 24,
-        "y": 24
+        "x": 26,
+        "y": 23
       },
       "is_kickable": true,
       "timed_trigger": 1.5,
@@ -68,7 +68,7 @@
         "texture": "kick_bomb",
         "offset": {
           "x": 0,
-          "y": -12
+          "y": 0
         },
         "animations": [
           {
@@ -85,7 +85,7 @@
   ],
   "collider_size": {
     "x": 32,
-    "y": 48
+    "y": 45
   },
   "mount_offset": {
     "x": 0,

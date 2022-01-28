@@ -11,12 +11,12 @@
       "trigger": [],
       "velocity": {
         "x": 6.0,
-        "y": -4.0
+        "y": -5.0
       },
       "can_rotate": true,
       "size": {
-        "x": 24,
-        "y": 24
+        "x": 17,
+        "y": 17
       },
       "timed_trigger": 1.5,
       "effects": [

@@ -7,6 +7,13 @@
   "attack_duration": 0.5,
   "recoil": 14.0,
   "sound_effect": "shoot",
+  "particles": [
+    {
+      "particle_effect": "sniper_rifle_muzzle_smoke",
+      "interval": 0.05,
+      "emissions": 12
+    }
+  ],
   "collider_size": {
     "x": 84,
     "y": 25

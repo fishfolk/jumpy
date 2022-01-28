@@ -35,10 +35,7 @@ use crate::effects::active::projectiles::update_projectiles;
 use crate::effects::active::triggered::update_triggered_effects;
 use crate::items::spawn_item;
 use crate::map::{spawn_decoration, spawn_sproinger, update_sproingers};
-use crate::particles::{
-    draw_particle_emitter_sets, draw_particle_emitters, update_particle_emitter_sets,
-    update_particle_emitters,
-};
+use crate::particles::{draw_particles, update_particle_emitter_sets, update_particle_emitters};
 pub use music::{start_music, stop_music};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -113,8 +110,7 @@ impl Game {
         let draws = Scheduler::builder()
             .add_thread_local(draw_sprites)
             .add_thread_local(draw_weapons_hud)
-            .add_thread_local(draw_particle_emitters)
-            .add_thread_local(draw_particle_emitter_sets)
+            .add_thread_local(draw_particles)
             .build();
 
         #[cfg(debug_assertions)]

@@ -17,7 +17,7 @@ pub use triggered::{TriggeredEffectMetadata, TriggeredEffectTrigger};
 
 use crate::effects::active::projectiles::spawn_projectile;
 use crate::effects::active::triggered::{spawn_triggered_effect, TriggeredEffect};
-use crate::particles::ParticleEmitterParams;
+use crate::particles::ParticleEmitterMetadata;
 use crate::player::{on_player_damage, PlayerState};
 use crate::{PhysicsBody, Transform};
 pub use projectiles::ProjectileKind;
@@ -212,6 +212,6 @@ pub enum ActiveEffectKind {
         spread: f32,
         /// Particle effects that will be attached to the projectile
         #[serde(default, skip_serializing_if = "Vec::is_empty")]
-        particles: Vec<ParticleEmitterParams>,
+        particles: Vec<ParticleEmitterMetadata>,
     },
 }

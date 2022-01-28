@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::effects::active::triggered::TriggeredEffect;
 use crate::effects::TriggeredEffectTrigger;
-use crate::particles::{ParticleEmitter, ParticleEmitterParams};
+use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::player::{on_player_damage, PlayerState};
 use crate::{json, DrawOrder};
 use crate::{
@@ -68,7 +68,7 @@ pub fn spawn_projectile(
     origin: Vec2,
     velocity: Vec2,
     range: f32,
-    particles: Vec<ParticleEmitterParams>,
+    particles: Vec<ParticleEmitterMetadata>,
 ) -> Entity {
     let entity = world.spawn((Projectile::new(owner, kind.clone(), origin, range),));
 

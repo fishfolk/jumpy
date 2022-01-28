@@ -100,10 +100,12 @@ pub fn spawn_projectile(
                 ..params.clone()
             };
 
+            let is_flipped_x =  velocity.x < 0.0;
+
             if can_rotate {
                 let mut direction = Vec2::ZERO;
 
-                if velocity.x < 0.0 {
+                if is_flipped_x {
                     direction.x = 1.0;
                 } else {
                     direction.x = -1.0;
@@ -111,12 +113,16 @@ pub fn spawn_projectile(
 
                 transform.rotation = (velocity.y - direction.y).atan2(velocity.x - direction.x);
 
-                if velocity.x < 0.0 {
+                if is_flipped_x {
                     transform.rotation += PI;
                 }
             }
 
-            world.insert_one(entity, Sprite::from(meta)).unwrap();
+            let mut sprite = Sprite::from(meta);
+
+            sprite.is_flipped_x = is_flipped_x;
+
+            world.insert_one(entity, sprite).unwrap();
 
             RigidBodyParams {
                 offset,

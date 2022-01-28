@@ -30,12 +30,13 @@ that we add will be `items/sniper_rifle.json`.
 ]
 ```
 
-Now, it is time to define the weapons parameters inside the `sniper_rifle.json` file. Begin by creating a new object using curly braces and adding the item's id (`sniper_rifle`) and the item's type (`weapon`):
+Now, it is time to define the weapons parameters inside the `sniper_rifle.json` file. Begin by creating a new object using curly braces and adding the item's id (`sniper_rifle`), it's display name (`Sniper Rifle`) and the item's type (`weapon`):
 
 ```json
 ...
 {
   "id": "sniper_rifle",
+  "name": "Sniper Rifle",
   "type": "weapon",
 }
 ...
@@ -46,6 +47,7 @@ The item will need a collider defined for it. A collider is a rectangular bounda
 ```json
 {
   "id": "sniper_rifle",
+  "name": "Sniper Rifle",
   "type": "weapon",
   "collider_size": {
     "x": 16,
@@ -65,6 +67,7 @@ First we'll add any attributes for the weapon that describe it's behavior. As we
 ```json
 {
   "id": "sniper_rifle",
+  "name": "Sniper Rifle",
   "type": "weapon",
   "collider_size": {
     "x": 16,
@@ -80,6 +83,7 @@ Next we'll need to define more subtle values that also will effect the behavior 
 ```json
 {
   "id": "sniper_rifle",
+  "name": "Sniper Rifle",
   "type": "weapon",
   "sprite": {
     "texture": "musket"
@@ -100,6 +104,7 @@ Next, we can add a `sound_effect` that will played when the weapon is used. You 
 ```json
 {
   "id": "sniper_rifle",
+  "name": "Sniper Rifle",
   "type": "weapon",
   "collider_size": {
     "x": 16,
@@ -118,6 +123,7 @@ Next we'll define the active effects (`ActiveEffectParams`) of the weapon, or in
 ```json
 {
   "id": "sniper_rifle",
+  "name": "Sniper Rifle",
   "type": "weapon",
   "collider_size": {
     "x": 16,
@@ -155,6 +161,7 @@ This is the place where we can implement the remaining attributes that we outlin
 ```json
 {
   "id": "sniper_rifle",
+  "name": "Sniper Rifle",
   "type": "weapon",
   "collider_size": {
     "x": 16,
@@ -196,6 +203,7 @@ By default, the animation with an id of `idle` will be used when an item is on t
 ```json
 {
   "id": "sniper_rifle",
+  "name": "Sniper Rifle",
   "type": "weapon",
   "collider_size": {
     "x": 64,
@@ -256,6 +264,7 @@ The last thing that we need to add to the json object definition of the sniper r
 ```json
 {
   "id": "sniper_rifle",
+  "name": "Sniper Rifle",
   "type": "weapon",
   "collider_size": {
     "x": 64,

@@ -100,7 +100,7 @@ pub fn spawn_projectile(
                 ..params.clone()
             };
 
-            let is_flipped_x =  velocity.x < 0.0;
+            let is_flipped_x = velocity.x < 0.0;
 
             if can_rotate {
                 let mut direction = Vec2::ZERO;

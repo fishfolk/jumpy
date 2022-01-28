@@ -15,8 +15,8 @@
         "projectile"
       ],
       "size": {
-        "x": 36,
-        "y": 36
+        "x": 33,
+        "y": 35
       },
       "activation_delay": 1.5,
       "effects": [
@@ -50,10 +50,6 @@
       "should_collide_with_platforms": true,
       "sprite": {
         "texture": "mines",
-        "offset": {
-          "x": 0,
-          "y": -6
-        },
         "animations": [
           {
             "id": "effect",
@@ -68,8 +64,8 @@
     }
   ],
   "collider_size": {
-    "x": 32,
-    "y": 32
+    "x": 33,
+    "y": 35
   },
   "mount_offset": {
     "x": 6,
@@ -81,10 +77,6 @@
   },
   "sprite": {
     "texture": "mines",
-    "offset": {
-      "x": 0,
-      "y": -12
-    },
     "animations": [
       {
         "id": "idle",

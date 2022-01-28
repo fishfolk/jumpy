@@ -16,7 +16,7 @@ use crate::{
 
 use crate::effects::active::spawn_active_effect;
 
-use crate::particles::{ParticleEmitter, ParticleEmitterParams};
+use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::physics::PhysicsBodyParams;
 use crate::player::{PlayerInventory, PlayerState, IDLE_ANIMATION_ID};
 use crate::Result;
@@ -499,7 +499,7 @@ pub struct WeaponMetadata {
     pub effects: Vec<ActiveEffectMetadata>,
     /// Particle effects that will be activated when using the weapon
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub particles: Vec<ParticleEmitterParams>,
+    pub particles: Vec<ParticleEmitterMetadata>,
     /// This can specify an id of a sound effect that is played when the weapon is used to attack
     #[serde(
         default,

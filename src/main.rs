@@ -64,6 +64,7 @@ pub use ecs::Owner;
 use crate::effects::passive::init_passive_effects;
 use crate::game::GameMode;
 use crate::network::Api;
+use crate::particles::Particles;
 use crate::resources::load_resources;
 pub use effects::{
     ActiveEffectKind, ActiveEffectMetadata, PassiveEffectInstance, PassiveEffectMetadata,
@@ -125,6 +126,11 @@ async fn main() -> Result<()> {
     {
         let gamepad_system = fishsticks::GamepadContext::init().unwrap();
         storage::store(gamepad_system);
+    }
+
+    {
+        let particles = Particles::new();
+        storage::store(particles);
     }
 
     init_passive_effects();

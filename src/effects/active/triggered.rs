@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::effects::active::spawn_active_effect;
 use crate::math::deg_to_rad;
-use crate::particles::{ParticleEmitter, ParticleEmitterParams};
+use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::player::PlayerState;
 use crate::{json, AnimatedSpriteParams, DrawOrder, PhysicsBodyParams};
 use crate::{
@@ -286,7 +286,7 @@ pub struct TriggeredEffectMetadata {
     pub effects: Vec<ActiveEffectMetadata>,
     /// Particle effects that will be attached to the trigger
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub particles: Vec<ParticleEmitterParams>,
+    pub particles: Vec<ParticleEmitterMetadata>,
     /// This specifies the size of the trigger.
     #[serde(with = "json::vec2_def")]
     pub size: Vec2,

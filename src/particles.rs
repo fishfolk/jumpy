@@ -1,5 +1,6 @@
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
+use std::collections::HashMap;
 
 use ff_particles::EmittersCache;
 
@@ -12,7 +13,7 @@ use crate::math::IsZero;
 use crate::{AnimatedSpriteMetadata, Resources, Transform};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ParticleEmitterParams {
+pub struct ParticleEmitterMetadata {
     /// The id of the particle effect.
     #[serde(rename = "particle_effect")]
     pub particle_effect_id: String,
@@ -41,9 +42,9 @@ pub struct ParticleEmitterParams {
     pub should_autostart: bool,
 }
 
-impl Default for ParticleEmitterParams {
+impl Default for ParticleEmitterMetadata {
     fn default() -> Self {
-        ParticleEmitterParams {
+        ParticleEmitterMetadata {
             particle_effect_id: "".to_string(),
             offset: Vec2::ZERO,
             delay: 0.0,
@@ -56,7 +57,7 @@ impl Default for ParticleEmitterParams {
 }
 
 pub struct ParticleEmitter {
-    pub cache: EmittersCache,
+    pub particle_effect_id: String,
     pub offset: Vec2,
     pub delay: f32,
     pub emissions: Option<u32>,
@@ -68,24 +69,17 @@ pub struct ParticleEmitter {
 }
 
 impl ParticleEmitter {
-    pub fn new(params: ParticleEmitterParams) -> Self {
-        let resources = storage::get::<Resources>();
-        let config = resources
-            .particle_effects
-            .get(&params.particle_effect_id)
-            .cloned()
-            .unwrap();
-
+    pub fn new(meta: ParticleEmitterMetadata) -> Self {
         ParticleEmitter {
-            cache: EmittersCache::new(config),
-            offset: params.offset,
-            delay: params.delay,
-            interval: params.interval,
-            emissions: params.emissions,
+            particle_effect_id: meta.particle_effect_id,
+            offset: meta.offset,
+            delay: meta.delay,
+            interval: meta.interval,
+            emissions: meta.emissions,
             emission_cnt: 0,
             delay_timer: 0.0,
-            interval_timer: params.interval,
-            is_active: params.should_autostart,
+            interval_timer: meta.interval,
+            is_active: meta.should_autostart,
         }
     }
 
@@ -111,8 +105,8 @@ impl ParticleEmitter {
     }
 }
 
-impl From<ParticleEmitterParams> for ParticleEmitter {
-    fn from(params: ParticleEmitterParams) -> Self {
+impl From<ParticleEmitterMetadata> for ParticleEmitter {
+    fn from(params: ParticleEmitterMetadata) -> Self {
         ParticleEmitter::new(params)
     }
 }
@@ -151,7 +145,13 @@ pub fn update_one_particle_emitter(
                 );
             }
 
-            emitter.cache.spawn(position);
+            let mut particles = storage::get_mut::<Particles>();
+            let cache = particles
+                .cache_map
+                .get_mut(&emitter.particle_effect_id)
+                .unwrap();
+
+            cache.spawn(position);
 
             if let Some(emissions) = emitter.emissions {
                 emitter.emission_cnt += 1;
@@ -164,19 +164,9 @@ pub fn update_one_particle_emitter(
     }
 }
 
-pub fn draw_one_particle_emitter(emitter: &mut ParticleEmitter) {
-    emitter.cache.draw();
-}
-
 pub fn update_particle_emitters(world: &mut World) {
     for (_, (transform, emitter)) in world.query_mut::<(&Transform, &mut ParticleEmitter)>() {
         update_one_particle_emitter(transform.position, transform.rotation, emitter);
-    }
-}
-
-pub fn draw_particle_emitters(world: &mut World) {
-    for (_, emitter) in world.query_mut::<&mut ParticleEmitter>() {
-        draw_one_particle_emitter(emitter);
     }
 }
 
@@ -188,10 +178,31 @@ pub fn update_particle_emitter_sets(world: &mut World) {
     }
 }
 
-pub fn draw_particle_emitter_sets(world: &mut World) {
-    for (_, emitters) in world.query_mut::<&mut Vec<ParticleEmitter>>() {
-        for emitter in emitters.iter_mut() {
-            draw_one_particle_emitter(emitter);
+pub fn draw_particles(_world: &mut World) {
+    let mut particles = storage::get_mut::<Particles>();
+
+    for cache in particles.cache_map.values_mut() {
+        cache.draw();
+    }
+}
+
+#[derive(Default)]
+pub struct Particles {
+    pub cache_map: HashMap<String, EmittersCache>,
+}
+
+impl Particles {
+    pub fn new() -> Self {
+        let mut cache_map = HashMap::new();
+
+        let resources = storage::get::<Resources>();
+
+        for id in resources.particle_effects.keys() {
+            let config = resources.particle_effects.get(id).cloned().unwrap();
+
+            cache_map.insert(id.clone(), EmittersCache::new(config));
         }
+
+        Particles { cache_map }
     }
 }

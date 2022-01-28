@@ -529,10 +529,11 @@ that we add will be <code>items/sniper_rifle.json</code>.</p>
   &quot;items/sniper_rifle.json&quot;,
 ]
 </code></pre>
-<p>Now, it is time to define the weapons parameters inside the <code>sniper_rifle.json</code> file. Begin by creating a new object using curly braces and adding the item's id (<code>sniper_rifle</code>) and the item's type (<code>weapon</code>):</p>
+<p>Now, it is time to define the weapons parameters inside the <code>sniper_rifle.json</code> file. Begin by creating a new object using curly braces and adding the item's id (<code>sniper_rifle</code>), it's display name (<code>Sniper Rifle</code>) and the item's type (<code>weapon</code>):</p>
 <pre><code class="language-json">...
 {
   &quot;id&quot;: &quot;sniper_rifle&quot;,
+  &quot;name&quot;: &quot;Sniper Rifle&quot;,
   &quot;type&quot;: &quot;weapon&quot;,
 }
 ...
@@ -540,6 +541,7 @@ that we add will be <code>items/sniper_rifle.json</code>.</p>
 <p>The item will need a collider defined for it. A collider is a rectangular boundary around the position of the item that is used for checking whether a player is close enough to pick it up. We'll set the collider for the sniper rifle to be a 16 by 16 box.</p>
 <pre><code class="language-json">{
   &quot;id&quot;: &quot;sniper_rifle&quot;,
+  &quot;name&quot;: &quot;Sniper Rifle&quot;,
   &quot;type&quot;: &quot;weapon&quot;,
   &quot;collider_size&quot;: {
     &quot;x&quot;: 16,
@@ -553,6 +555,7 @@ that we add will be <code>items/sniper_rifle.json</code>.</p>
 <p>First we'll add any attributes for the weapon that describe it's behavior. As we said at the beginning of the section, we wanted the sniper rifle to have high recoil, and 2 uses. We can add these to <code>sniper_rifle.json</code>. We'll set <code>uses</code> to 2 so that the sniper rifle can be shot twice and we'll set <code>recoil</code> to 1400 so that the player will be knocked back significantly when the gun is fired.</p>
 <pre><code class="language-json">{
   &quot;id&quot;: &quot;sniper_rifle&quot;,
+  &quot;name&quot;: &quot;Sniper Rifle&quot;,
   &quot;type&quot;: &quot;weapon&quot;,
   &quot;collider_size&quot;: {
     &quot;x&quot;: 16,
@@ -565,6 +568,7 @@ that we add will be <code>items/sniper_rifle.json</code>.</p>
 <p>Next we'll need to define more subtle values that also will effect the behavior of the sniper rifle weapon: <code>cooldown</code> and <code>attack_duration</code>. <code>cooldown</code> is a period of time that governs how frequently the weapon can be used and <code>attack_duration</code> is the amount of time the player is locked in the attack state (input blocked) when the weapon is used. For the sniper rifle we'll set <code>cooldown</code> to 1.5 and <code>attack_duration</code> to 1.0.</p>
 <pre><code class="language-json">{
   &quot;id&quot;: &quot;sniper_rifle&quot;,
+  &quot;name&quot;: &quot;Sniper Rifle&quot;,
   &quot;type&quot;: &quot;weapon&quot;,
   &quot;sprite&quot;: {
     &quot;texture&quot;: &quot;musket&quot;
@@ -582,6 +586,7 @@ that we add will be <code>items/sniper_rifle.json</code>.</p>
 <p>Next, we can add a <code>sound_effect</code> that will played when the weapon is used. You add a new sound by putting a sound file in <code>assets/sounds</code> and registering it with id in <code>assets/sounds.json</code>, but for the sniper rifle weapon, we can use the same sound effect for the musket called &quot;shoot&quot;.</p>
 <pre><code class="language-json">{
   &quot;id&quot;: &quot;sniper_rifle&quot;,
+  &quot;name&quot;: &quot;Sniper Rifle&quot;,
   &quot;type&quot;: &quot;weapon&quot;,
   &quot;collider_size&quot;: {
     &quot;x&quot;: 16,
@@ -597,6 +602,7 @@ that we add will be <code>items/sniper_rifle.json</code>.</p>
 <p>Next we'll define the active effects (<code>ActiveEffectParams</code>) of the weapon, or in other words, what happens when the weapon is used. In this case, we want the sniper rifle to shoot a projectile, so we will put <code>projectile</code> in the <code>type</code> field under <code>effects</code>. Then, also under <code>effects</code> we need to define the <code>projectile</code> effect. First we'll set the projectile's type to <code>sprite</code> and define the <code>sprite</code>  with a <code>texture</code> of the already existing <code>small_projectile</code> with a size of 8 by 4. Here, we can also give the projectile a <code>tint</code>.</p>
 <pre><code class="language-json">{
   &quot;id&quot;: &quot;sniper_rifle&quot;,
+  &quot;name&quot;: &quot;Sniper Rifle&quot;,
   &quot;type&quot;: &quot;weapon&quot;,
   &quot;collider_size&quot;: {
     &quot;x&quot;: 16,
@@ -631,6 +637,7 @@ that we add will be <code>items/sniper_rifle.json</code>.</p>
 <p>This is the place where we can implement the remaining attributes that we outlined at the top of the file: high bullet speed, and high range. We'll give the <code>projectile</code> a range of 600 and a speed of 25.</p>
 <pre><code class="language-json">{
   &quot;id&quot;: &quot;sniper_rifle&quot;,
+  &quot;name&quot;: &quot;Sniper Rifle&quot;,
   &quot;type&quot;: &quot;weapon&quot;,
   &quot;collider_size&quot;: {
     &quot;x&quot;: 16,
@@ -668,6 +675,7 @@ that we add will be <code>items/sniper_rifle.json</code>.</p>
 <p>By default, the animation with an id of <code>idle</code> will be used when an item is on the ground, unless overridden by adding an animation with the id <code>ground</code>.</p>
 <pre><code class="language-json">{
   &quot;id&quot;: &quot;sniper_rifle&quot;,
+  &quot;name&quot;: &quot;Sniper Rifle&quot;,
   &quot;type&quot;: &quot;weapon&quot;,
   &quot;collider_size&quot;: {
     &quot;x&quot;: 64,
@@ -725,6 +733,7 @@ that we add will be <code>items/sniper_rifle.json</code>.</p>
 <p>The last thing that we need to add to the json object definition of the sniper rifle weapon is an <code>effect_animation</code>. This is a visual effect that is shown. For the sniper rifle, we want to see a &quot;blast&quot; effect from the end of the barrel of the sniper when the weapon is used (just like for the musket). To implement this we can add <code>effect_animation</code> to the json object. First, we can set the <code>texture</code> to <code>musket</code> and provide an animation called <code>attack</code> with the correct <code>row</code>, <code>frames</code>, and <code>fps</code>.</p>
 <pre><code class="language-json">{
   &quot;id&quot;: &quot;sniper_rifle&quot;,
+  &quot;name&quot;: &quot;Sniper Rifle&quot;,
   &quot;type&quot;: &quot;weapon&quot;,
   &quot;collider_size&quot;: {
     &quot;x&quot;: 64,

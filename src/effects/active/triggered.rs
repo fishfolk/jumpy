@@ -66,7 +66,7 @@ impl TriggeredEffect {
             timed_trigger: meta.timed_trigger,
             is_kickable: meta.is_kickable,
             should_override_delay: false,
-            should_collide_with_platforms: false,
+            should_collide_with_platforms: meta.should_collide_with_platforms,
             is_triggered: false,
             triggered_by: None,
             kick_delay_timer: 0.0,
@@ -324,7 +324,7 @@ pub struct TriggeredEffectMetadata {
     pub is_kickable: bool,
     /// If this is `true` the effect will collide with platforms. This will also trigger it on
     /// collisions with platforms, if `ground` is selected as one of the trigger criteria
-    #[serde(default)]
+    #[serde(default, rename = "collide_with_platforms")]
     pub should_collide_with_platforms: bool,
     /// If this is `true` the triggered physics body will rotate while in the air.
     #[serde(default)]

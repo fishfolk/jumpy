@@ -258,11 +258,11 @@
   },
   {
     "id": "mines",
-    "path": "textures/items/Mines(48x48).png",
+    "path": "textures/items/Mines(33x35).png",
     "type": "spritesheet",
     "sprite_size": {
-      "x": 48,
-      "y": 48
+      "x": 33,
+      "y": 35
     }
   },
   {

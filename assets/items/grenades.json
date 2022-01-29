@@ -18,6 +18,7 @@
         "x": 17,
         "y": 17
       },
+      "collide_with_platforms": true,
       "timed_trigger": 1.5,
       "effects": [
         {

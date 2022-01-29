@@ -27,7 +27,7 @@ pub use game_menu::{
 };
 pub use main_menu::{show_main_menu, MainMenuResult};
 pub use menu::{Menu, MenuEntry, MenuResult};
-pub use panel::Panel;
+pub use panel::{NewPanel, Panel};
 pub use select_character::show_select_characters_menu;
 pub use select_map::show_select_map_menu;
 

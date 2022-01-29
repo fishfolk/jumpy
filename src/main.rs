@@ -3,7 +3,8 @@ use fishsticks::GamepadContext;
 use std::env;
 use std::path::PathBuf;
 
-use macroquad::{experimental::collections::storage, prelude::*};
+use macroquad::experimental::collections::storage;
+use macroquad::prelude::*;
 
 pub mod config;
 pub mod editor;
@@ -222,6 +223,7 @@ async fn main() -> Result<()> {
         }
 
         scene::clear();
+
         stop_music();
     }
 

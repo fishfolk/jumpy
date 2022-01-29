@@ -19,6 +19,7 @@
         "enemy",
         "ground"
       ],
+      "collide_with_platforms": true,
       "velocity": {
         "x": 5.0,
         "y": -2.5

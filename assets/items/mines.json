@@ -53,7 +53,7 @@
           }
         }
       ],
-      "should_collide_with_platforms": true,
+      "collide_with_platforms": true,
       "sprite": {
         "texture": "mines",
         "animations": [

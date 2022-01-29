@@ -19,6 +19,7 @@
       },
       "rotation": 90.0,
       "can_rotate": true,
+      "collide_with_platforms": true,
       "size": {
         "x": 26,
         "y": 23

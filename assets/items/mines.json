@@ -14,6 +14,12 @@
         "explosion",
         "projectile"
       ],
+      "can_rotate": true,
+      "rotation": 300.0,
+      "velocity": {
+        "x": 2.0,
+        "y": -4.0
+      },
       "size": {
         "x": 33,
         "y": 35
@@ -72,8 +78,8 @@
     "y": -12
   },
   "effect_offset": {
-    "x": 6,
-    "y": -12
+    "x": 32,
+    "y": 6
   },
   "sprite": {
     "texture": "mines",

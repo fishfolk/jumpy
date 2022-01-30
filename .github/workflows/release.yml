@@ -69,7 +69,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --release --locked --target ${{ matrix.config.target }}
+          args: --release --locked
 
       - name: Prepare artifacts [Windows]
         shell: bash

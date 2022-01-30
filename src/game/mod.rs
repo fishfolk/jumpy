@@ -31,6 +31,7 @@ use crate::{
 
 pub use input::{collect_local_input, GameInput, GameInputScheme};
 
+use crate::effects::active::debug_draw_active_effects;
 use crate::effects::active::projectiles::update_projectiles;
 use crate::effects::active::triggered::update_triggered_effects;
 use crate::items::spawn_item;
@@ -118,6 +119,7 @@ impl Game {
             .add_thread_local(debug_draw_sprites)
             .add_thread_local(debug_draw_physics_bodies)
             .add_thread_local(debug_draw_rigid_bodies)
+            .add_thread_local(debug_draw_active_effects)
             .build();
 
         Game {

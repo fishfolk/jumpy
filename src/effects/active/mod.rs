@@ -1,5 +1,6 @@
 use hecs::{Entity, World};
 use macroquad::audio::play_sound_once;
+use macroquad::color;
 
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
@@ -18,9 +19,37 @@ pub use triggered::{TriggeredEffectMetadata, TriggeredEffectTrigger};
 use crate::effects::active::projectiles::spawn_projectile;
 use crate::effects::active::triggered::{spawn_triggered_effect, TriggeredEffect};
 use crate::particles::ParticleEmitterMetadata;
-use crate::player::{on_player_damage, PlayerState};
+use crate::player::{on_player_damage, Player, PlayerState};
 use crate::{PhysicsBody, Transform};
 pub use projectiles::ProjectileKind;
+
+const COLLIDER_DEBUG_DRAW_FRAMES: u32 = 40;
+
+struct CircleCollider {
+    x: f32,
+    y: f32,
+    r: f32,
+    frame_counter: u32,
+}
+
+struct RectCollider {
+    x: f32,
+    y: f32,
+    w: f32,
+    h: f32,
+    frame_counter: u32,
+}
+
+static mut CIRCLE_COLLIDERS: Option<Vec<CircleCollider>> = None;
+static mut RECT_COLLIDERS: Option<Vec<RectCollider>> = None;
+
+unsafe fn get_circle_colliders() -> &'static mut Vec<CircleCollider> {
+    CIRCLE_COLLIDERS.get_or_insert_with(Vec::new)
+}
+
+unsafe fn get_rect_colliders() -> &'static mut Vec<RectCollider> {
+    RECT_COLLIDERS.get_or_insert_with(Vec::new)
+}
 
 pub fn spawn_active_effect(
     world: &mut World,
@@ -45,48 +74,32 @@ pub fn spawn_active_effect(
     match *params.kind {
         ActiveEffectKind::CircleCollider {
             radius,
-            segment,
             is_explosion,
         } => {
             let circle = Circle::new(origin.x, origin.y, radius);
 
+            unsafe {
+                get_circle_colliders().push(CircleCollider {
+                    x: origin.x,
+                    y: origin.y,
+                    r: radius,
+                    frame_counter: 0,
+                });
+            }
+
             for (e, (transform, body)) in world.query::<(&Transform, &PhysicsBody)>().iter() {
                 let other_rect = body.as_rect(transform.position);
                 if circle.overlaps_rect(&other_rect) {
-                    let mut is_hit = false;
-
-                    if let Some(mut segment) = segment {
-                        if is_facing_left {
-                            segment.x = -segment.x;
+                    if world.get_mut::<Player>(e).is_ok() {
+                        if is_explosion || e != owner {
+                            damage.push((owner, e))
                         }
-
-                        if segment.x == 1 {
-                            is_hit = other_rect.x + other_rect.w >= circle.point().x;
-                        } else if segment.x == -1 {
-                            is_hit = other_rect.x <= circle.point().x;
-                        }
-
-                        if segment.y == 1 {
-                            is_hit = is_hit && other_rect.y + other_rect.h <= circle.point().y;
-                        } else if segment.y == -1 {
-                            is_hit = is_hit && other_rect.y >= circle.point().y;
-                        }
-                    } else {
-                        is_hit = true;
-                    }
-
-                    if is_hit {
-                        if world.get_mut::<PlayerState>(e).is_ok() {
-                            if is_explosion || e != owner {
-                                damage.push((owner, e))
-                            }
-                        } else if is_explosion {
-                            if let Ok(mut effect) = world.get_mut::<TriggeredEffect>(e) {
-                                if effect.trigger.contains(&TriggeredEffectTrigger::Explosion) {
-                                    effect.is_triggered = true;
-                                    effect.triggered_by = Some(owner);
-                                    effect.should_override_delay = true;
-                                }
+                    } else if is_explosion {
+                        if let Ok(mut effect) = world.get_mut::<TriggeredEffect>(e) {
+                            if effect.trigger.contains(&TriggeredEffectTrigger::Explosion) {
+                                effect.is_triggered = true;
+                                effect.triggered_by = Some(owner);
+                                effect.should_override_delay = true;
                             }
                         }
                     }
@@ -99,10 +112,24 @@ pub fn spawn_active_effect(
                 rect.x -= rect.w;
             }
 
-            for (e, (transform, body)) in world.query::<(&Transform, &PhysicsBody)>().iter() {
-                let other_rect = body.as_rect(transform.position);
-                if rect.overlaps(&other_rect) {
-                    damage.push((owner, e));
+            unsafe {
+                get_rect_colliders().push(RectCollider {
+                    x: rect.x,
+                    y: rect.y,
+                    w: rect.w,
+                    h: rect.h,
+                    frame_counter: 0,
+                });
+            }
+
+            for (e, (_, transform, body)) in
+                world.query::<(&Player, &Transform, &PhysicsBody)>().iter()
+            {
+                if owner != e {
+                    let other_rect = body.as_rect(transform.position);
+                    if rect.overlaps(&other_rect) {
+                        damage.push((owner, e));
+                    }
                 }
             }
         }
@@ -177,20 +204,8 @@ pub struct ActiveEffectMetadata {
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ActiveEffectKind {
     /// Check for hits with a `Circle` collider.
-    /// Can select a segment of the circle by setting `segment`. This can be either a quarter or a
-    /// half of the circle, selected by setting `x` and `y` of `segment`.
-    /// If `x` is one and `y` is zero, the forward-facing half of the circle will be used, if `x` is
-    /// one and `y` is negative one, the upper forward-facing quarter of the circle will be used,
-    /// if `x` is negative one and `y` is one, the lower backward-facing quarter of the circle will
-    /// be used, and so on.
     CircleCollider {
         radius: f32,
-        #[serde(
-            default,
-            with = "json::ivec2_opt",
-            skip_serializing_if = "Option::is_none"
-        )]
-        segment: Option<IVec2>,
         #[serde(default, skip_serializing_if = "json::is_false")]
         is_explosion: bool,
     },
@@ -214,4 +229,44 @@ pub enum ActiveEffectKind {
         #[serde(default, skip_serializing_if = "Vec::is_empty")]
         particles: Vec<ParticleEmitterMetadata>,
     },
+}
+
+pub fn debug_draw_active_effects(_world: &mut World) {
+    {
+        let circle_colliders = unsafe { get_circle_colliders() };
+
+        let mut i = 0;
+        while i < circle_colliders.len() {
+            let mut circle = circle_colliders.get_mut(i).unwrap();
+
+            circle.frame_counter += 1;
+
+            draw_circle_lines(circle.x, circle.y, circle.r, 2.0, color::RED);
+
+            if circle.frame_counter >= COLLIDER_DEBUG_DRAW_FRAMES {
+                circle_colliders.remove(i);
+            } else {
+                i += 1;
+            }
+        }
+    }
+
+    {
+        let rect_colliders = unsafe { get_rect_colliders() };
+
+        let mut i = 0;
+        while i < rect_colliders.len() {
+            let mut rect = rect_colliders.get_mut(i).unwrap();
+
+            rect.frame_counter += 1;
+
+            draw_rectangle_lines(rect.x, rect.y, rect.w, rect.h, 2.0, color::RED);
+
+            if rect.frame_counter >= COLLIDER_DEBUG_DRAW_FRAMES {
+                rect_colliders.remove(i);
+            } else {
+                i += 1;
+            }
+        }
+    }
 }

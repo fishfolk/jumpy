@@ -12,7 +12,7 @@
   },
   "effect_offset": {
     "x": 36,
-    "y": 12
+    "y": 22
   },
   "collider_size": {
     "x": 64,
@@ -32,8 +32,8 @@
         "explosion"
       ],
       "velocity": {
-        "x": 10.0,
-        "y": -0.5
+        "x": 20.0,
+        "y": -2
       },
       "size": {
         "x": 17,
@@ -43,10 +43,29 @@
       "effects": [
         {
           "type": "circle_collider",
-          "radius": 64,
+          "radius": 80,
           "is_explosion": true,
           "particle_effect": "hit",
           "sound_effect": "explode"
+        },
+        {
+          "type": "triggered_effect",
+          "size": {
+            "x": 176,
+            "y": 144
+          },
+          "timed_trigger": 0.7,
+          "sprite": {
+            "texture": "explosion_big",
+            "animations": [
+              {
+                "id": "effect",
+                "row": 0,
+                "frames": 12,
+                "fps": 24
+              }
+            ]
+          }
         }
       ],
       "sprite": {

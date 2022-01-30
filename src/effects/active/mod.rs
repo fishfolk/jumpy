@@ -23,32 +23,17 @@ use crate::player::{on_player_damage, Player, PlayerState};
 use crate::{PhysicsBody, Transform};
 pub use projectiles::ProjectileKind;
 
-const COLLIDER_DEBUG_DRAW_FRAMES: u32 = 40;
+const COLLIDER_DEBUG_DRAW_TTL: f32 = 0.5;
 
 struct CircleCollider {
-    x: f32,
-    y: f32,
     r: f32,
-    frame_counter: u32,
+    ttl_timer: f32,
 }
 
 struct RectCollider {
-    x: f32,
-    y: f32,
     w: f32,
     h: f32,
-    frame_counter: u32,
-}
-
-static mut CIRCLE_COLLIDERS: Option<Vec<CircleCollider>> = None;
-static mut RECT_COLLIDERS: Option<Vec<RectCollider>> = None;
-
-unsafe fn get_circle_colliders() -> &'static mut Vec<CircleCollider> {
-    CIRCLE_COLLIDERS.get_or_insert_with(Vec::new)
-}
-
-unsafe fn get_rect_colliders() -> &'static mut Vec<RectCollider> {
-    RECT_COLLIDERS.get_or_insert_with(Vec::new)
+    ttl_timer: f32,
 }
 
 pub fn spawn_active_effect(
@@ -78,13 +63,15 @@ pub fn spawn_active_effect(
         } => {
             let circle = Circle::new(origin.x, origin.y, radius);
 
-            unsafe {
-                get_circle_colliders().push(CircleCollider {
-                    x: origin.x,
-                    y: origin.y,
-                    r: radius,
-                    frame_counter: 0,
-                });
+            #[cfg(debug_assertions)]
+            {
+                world.spawn((
+                    Transform::new(origin, 0.0),
+                    CircleCollider {
+                        r: radius,
+                        ttl_timer: 0.0,
+                    },
+                ));
             }
 
             for (e, (transform, body)) in world.query::<(&Transform, &PhysicsBody)>().iter() {
@@ -112,14 +99,16 @@ pub fn spawn_active_effect(
                 rect.x -= rect.w;
             }
 
-            unsafe {
-                get_rect_colliders().push(RectCollider {
-                    x: rect.x,
-                    y: rect.y,
-                    w: rect.w,
-                    h: rect.h,
-                    frame_counter: 0,
-                });
+            #[cfg(debug_assertions)]
+            {
+                world.spawn((
+                    Transform::new(origin, 0.0),
+                    RectCollider {
+                        w: rect.w,
+                        h: rect.h,
+                        ttl_timer: 0.0,
+                    },
+                ));
             }
 
             for (e, (_, transform, body)) in
@@ -231,42 +220,45 @@ pub enum ActiveEffectKind {
     },
 }
 
-pub fn debug_draw_active_effects(_world: &mut World) {
-    {
-        let circle_colliders = unsafe { get_circle_colliders() };
+pub fn debug_draw_active_effects(world: &mut World) {
+    let mut to_remove = Vec::new();
 
-        let mut i = 0;
-        while i < circle_colliders.len() {
-            let mut circle = circle_colliders.get_mut(i).unwrap();
+    let dt = get_frame_time();
 
-            circle.frame_counter += 1;
+    for (e, (transform, collider)) in world.query_mut::<(&Transform, &mut CircleCollider)>() {
+        collider.ttl_timer += dt;
 
-            draw_circle_lines(circle.x, circle.y, circle.r, 2.0, color::RED);
+        draw_circle_lines(
+            transform.position.x,
+            transform.position.y,
+            collider.r,
+            2.0,
+            color::RED,
+        );
 
-            if circle.frame_counter >= COLLIDER_DEBUG_DRAW_FRAMES {
-                circle_colliders.remove(i);
-            } else {
-                i += 1;
-            }
+        if collider.ttl_timer >= COLLIDER_DEBUG_DRAW_TTL {
+            to_remove.push(e);
         }
     }
 
-    {
-        let rect_colliders = unsafe { get_rect_colliders() };
+    for (e, (transform, collider)) in world.query_mut::<(&Transform, &mut RectCollider)>() {
+        collider.ttl_timer += dt;
 
-        let mut i = 0;
-        while i < rect_colliders.len() {
-            let mut rect = rect_colliders.get_mut(i).unwrap();
+        draw_rectangle_lines(
+            transform.position.x,
+            transform.position.y,
+            collider.w,
+            collider.h,
+            2.0,
+            color::RED,
+        );
 
-            rect.frame_counter += 1;
-
-            draw_rectangle_lines(rect.x, rect.y, rect.w, rect.h, 2.0, color::RED);
-
-            if rect.frame_counter >= COLLIDER_DEBUG_DRAW_FRAMES {
-                rect_colliders.remove(i);
-            } else {
-                i += 1;
-            }
+        if collider.ttl_timer >= COLLIDER_DEBUG_DRAW_TTL {
+            to_remove.push(e);
         }
+    }
+
+    for e in to_remove.drain(0..) {
+        world.despawn(e).unwrap();
     }
 }

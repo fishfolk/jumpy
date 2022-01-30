@@ -67,8 +67,6 @@ pacman -S fishfight
 2. Clone this repository: `git clone https://github.com/fishfight/FishFight.git`
 3. `cargo run`
 
-If you get compilation errors, make sure you have [SDL2](https://www.libsdl.org/download-2.0.php) installed on your system.
-
 ## Default key bindings
 
 Keyboard left:

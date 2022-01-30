@@ -35,7 +35,7 @@ jobs:
 
     steps:
       - name: Install dependencies
-        if: ${{ matrix.config.os }} == 'ubuntu-latest'
+        if: matrix.config.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install --allow-unauthenticated -y -qq \
@@ -76,7 +76,7 @@ jobs:
 
       - name: Prepare artifacts [Windows]
         shell: bash
-        if: ${{ matrix.config.os }} == 'windows-latest'
+        if: matrix.config.os == 'windows-latest'
         run: |
           release_dir="fishfight-${{ env.RELEASE_VERSION }}"
           artifact_path="fishfight-${{ env.RELEASE_VERSION }}-${{ matrix.config.target }}.zip"
@@ -89,7 +89,7 @@ jobs:
 
       - name: Prepare artifacts [Unix]
         shell: bash
-        if: ${{ matrix.config.os }} != 'windows-latest'
+        if: matrix.config.os != 'windows-latest'
         run: |
           release_dir="fishfight-${{ env.RELEASE_VERSION }}"
           artifact_path="fishfight-${{ env.RELEASE_VERSION }}-${{ matrix.config.target }}.tar.gz"

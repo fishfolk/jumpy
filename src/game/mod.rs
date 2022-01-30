@@ -24,9 +24,9 @@ use crate::player::{
 };
 use crate::Result;
 use crate::{
-    create_collision_world, debug_draw_rigid_bodies, debug_draw_sprites, draw_sprites,
-    exit_to_main_menu, is_gamepad_btn_pressed, quit_to_desktop, update_animated_sprite_sets,
-    update_animated_sprites, update_rigid_bodies, Map, MapLayerKind, MapObjectKind, Resources,
+    create_collision_world, debug_draw_drawables, debug_draw_rigid_bodies, draw_drawables,
+    exit_to_main_menu, is_gamepad_btn_pressed, quit_to_desktop, update_animated_sprites,
+    update_rigid_bodies, Map, MapLayerKind, MapObjectKind, Resources,
 };
 
 pub use input::{collect_local_input, GameInput, GameInputScheme};
@@ -95,7 +95,6 @@ impl Game {
             .add_system(update_player_events)
             .add_system(update_player_animations)
             .add_system(update_animated_sprites)
-            .add_system(update_animated_sprite_sets)
             .add_system(update_particle_emitters)
             .add_system(update_particle_emitter_sets)
             .build();
@@ -109,14 +108,14 @@ impl Game {
             .build();
 
         let draws = Scheduler::builder()
-            .add_thread_local(draw_sprites)
+            .add_thread_local(draw_drawables)
             .add_thread_local(draw_weapons_hud)
             .add_thread_local(draw_particles)
             .build();
 
         #[cfg(debug_assertions)]
         let debug_draws = Scheduler::builder()
-            .add_thread_local(debug_draw_sprites)
+            .add_thread_local(debug_draw_drawables)
             .add_thread_local(debug_draw_physics_bodies)
             .add_thread_local(debug_draw_rigid_bodies)
             .add_thread_local(debug_draw_active_effects)

@@ -221,6 +221,7 @@
   ],
   "sprite": {
     "texture": "blunderbass",
+    "autoplay_id": "idle",
     "animations": [
       {
         "id": "idle",

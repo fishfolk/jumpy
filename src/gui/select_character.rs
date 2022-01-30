@@ -54,12 +54,6 @@ pub async fn show_select_characters_menu(
 
         let meta: AnimatedSpriteMetadata = character.sprite.clone().into();
 
-        let (texture, frame_size) = storage::get::<Resources>()
-            .textures
-            .get(&meta.texture_id)
-            .map(|t| (t.texture, t.frame_size()))
-            .unwrap();
-
         let animations = meta
             .animations
             .iter()
@@ -67,9 +61,8 @@ pub async fn show_select_characters_menu(
             .map(|a| a.into())
             .collect::<Vec<_>>();
 
-        let params = meta.into();
-
-        let sprite = AnimatedSprite::new(texture, frame_size, animations.as_slice(), params);
+        let sprite =
+            AnimatedSprite::new(&meta.texture_id, animations.as_slice(), meta.clone().into());
 
         animated_sprites.push(sprite);
     }
@@ -248,12 +241,6 @@ pub async fn show_select_characters_menu(
 
                 let meta: AnimatedSpriteMetadata = character.sprite.clone().into();
 
-                let (texture, frame_size) = storage::get::<Resources>()
-                    .textures
-                    .get(&meta.texture_id)
-                    .map(|t| (t.texture, t.frame_size()))
-                    .unwrap();
-
                 let animations = meta
                     .animations
                     .iter()
@@ -261,10 +248,11 @@ pub async fn show_select_characters_menu(
                     .map(|a| a.into())
                     .collect::<Vec<_>>();
 
-                let params = meta.into();
-
-                animated_sprites[i] =
-                    AnimatedSprite::new(texture, frame_size, animations.as_slice(), params);
+                animated_sprites[i] = AnimatedSprite::new(
+                    &meta.texture_id,
+                    animations.as_slice(),
+                    meta.clone().into(),
+                );
             }
 
             is_ready = !selected_params.iter().any(|params| params.is_none());

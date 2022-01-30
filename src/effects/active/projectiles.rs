@@ -11,10 +11,9 @@ use crate::effects::active::triggered::TriggeredEffect;
 use crate::effects::TriggeredEffectTrigger;
 use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::player::{on_player_damage, PlayerState};
-use crate::{json, DrawOrder};
+use crate::{json, Drawable, SpriteParams};
 use crate::{
-    CollisionWorld, PhysicsBody, Resources, RigidBody, RigidBodyParams, Sprite, SpriteMetadata,
-    Transform,
+    CollisionWorld, PhysicsBody, Resources, RigidBody, RigidBodyParams, SpriteMetadata, Transform,
 };
 
 const PROJECTILE_DRAW_ORDER: u32 = 1;
@@ -85,20 +84,18 @@ pub fn spawn_projectile(
             can_rotate: false,
             ..Default::default()
         },
-        ProjectileKind::Sprite { params, can_rotate } => {
+        ProjectileKind::Sprite {
+            params: meta,
+            can_rotate,
+        } => {
             let resources = storage::get::<Resources>();
-            let texture_res = resources.textures.get(&params.texture_id).unwrap();
+            let texture_res = resources.textures.get(&meta.texture_id).unwrap();
 
-            let size = params
+            let size = meta
                 .size
                 .unwrap_or_else(|| texture_res.meta.frame_size.unwrap_or(texture_res.meta.size));
 
-            let offset = params.offset - (vec2(size.x, size.y) / 2.0);
-
-            let meta = SpriteMetadata {
-                offset,
-                ..params.clone()
-            };
+            let offset = meta.offset - (vec2(size.x, size.y) / 2.0);
 
             let is_flipped_x = velocity.x < 0.0;
 
@@ -118,11 +115,20 @@ pub fn spawn_projectile(
                 }
             }
 
-            let mut sprite = Sprite::from(meta);
-
-            sprite.is_flipped_x = is_flipped_x;
-
-            world.insert_one(entity, sprite).unwrap();
+            world
+                .insert_one(
+                    entity,
+                    Drawable::new_sprite(
+                        PROJECTILE_DRAW_ORDER,
+                        &meta.texture_id,
+                        SpriteParams {
+                            is_flipped_x,
+                            offset,
+                            ..meta.clone().into()
+                        },
+                    ),
+                )
+                .unwrap();
 
             RigidBodyParams {
                 offset,
@@ -133,14 +139,7 @@ pub fn spawn_projectile(
     };
 
     world
-        .insert(
-            entity,
-            (
-                transform,
-                RigidBody::new(velocity, body_params),
-                DrawOrder(PROJECTILE_DRAW_ORDER),
-            ),
-        )
+        .insert(entity, (transform, RigidBody::new(velocity, body_params)))
         .unwrap();
 
     let mut particle_emitters = Vec::new();

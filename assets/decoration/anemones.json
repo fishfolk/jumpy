@@ -2,6 +2,7 @@
   "id": "anemones",
   "sprite": {
     "texture": "default_decoration",
+    "autoplay_id": "idle",
     "frame_size": {
       "x": 48,
       "y": 51
@@ -14,7 +15,6 @@
         "fps": 6,
         "is_looping": true
       }
-    ],
-    "autoplay": true
+    ]
   }
 }

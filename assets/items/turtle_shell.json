@@ -19,6 +19,7 @@
   ],
   "sprite": {
     "texture": "turtle_shell",
+    "autoplay_id": "ground",
     "animations": [
       {
         "id": "ground",

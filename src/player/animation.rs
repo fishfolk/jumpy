@@ -1,4 +1,5 @@
 use macroquad::prelude::*;
+use std::borrow::BorrowMut;
 
 use hecs::World;
 
@@ -8,8 +9,8 @@ use crate::player::{
     PlayerState, CROUCH_ANIMATION_ID, DEATH_BACK_ANIMATION_ID, DEATH_FORWARD_ANIMATION_ID,
     FALL_ANIMATION_ID, IDLE_ANIMATION_ID, JUMP_ANIMATION_ID, MOVE_ANIMATION_ID, SLIDE_ANIMATION_ID,
 };
-use crate::{json, PhysicsBody};
-use crate::{AnimatedSpriteMetadata, AnimatedSpriteSet, AnimationMetadata};
+use crate::{json, Drawable, DrawableKind, PhysicsBody};
+use crate::{AnimatedSpriteMetadata, AnimationMetadata};
 
 /// This is used in stead of `AnimationParams`, as we have different data requirements, in the case
 /// of a player character, compared to most other use cases. We want to have a default animation
@@ -46,7 +47,7 @@ impl From<PlayerAnimationMetadata> for AnimatedSpriteMetadata {
             pivot: other.pivot,
             tint: other.tint,
             animations: other.animations.into_vec(),
-            should_autoplay: true,
+            autoplay_id: Some(IDLE_ANIMATION_ID.to_string()),
             is_deactivated: false,
         }
     }
@@ -249,38 +250,40 @@ impl PlayerAnimations {
 }
 
 pub fn update_player_animations(world: &mut World) {
-    for (_, (state, body, sprites)) in
-        world.query_mut::<(&PlayerState, &PhysicsBody, &mut AnimatedSpriteSet)>()
+    for (_, (state, body, drawable)) in
+        world.query_mut::<(&PlayerState, &PhysicsBody, &mut Drawable)>()
     {
-        sprites.flip_all_x(state.is_facing_left);
-        sprites.flip_all_y(state.is_upside_down);
+        if let DrawableKind::AnimatedSpriteSet(sprite_set) = drawable.kind.borrow_mut() {
+            sprite_set.flip_all_x(state.is_facing_left);
+            sprite_set.flip_all_y(state.is_upside_down);
 
-        #[allow(clippy::if_same_then_else)]
-        let animation_id = if state.is_dead {
-            if state.is_facing_left {
-                DEATH_FORWARD_ANIMATION_ID
+            #[allow(clippy::if_same_then_else)]
+            let animation_id = if state.is_dead {
+                if state.is_facing_left {
+                    DEATH_FORWARD_ANIMATION_ID
+                } else {
+                    DEATH_BACK_ANIMATION_ID
+                }
+            } else if state.is_incapacitated {
+                // TODO: implement incapacitated
+                unimplemented!();
+            } else if state.is_sliding {
+                SLIDE_ANIMATION_ID
+            } else if body.is_on_ground {
+                if state.is_crouching {
+                    CROUCH_ANIMATION_ID
+                } else if !state.is_attacking && body.velocity.x != 0.0 {
+                    MOVE_ANIMATION_ID
+                } else {
+                    IDLE_ANIMATION_ID
+                }
+            } else if body.velocity.y < 0.0 {
+                JUMP_ANIMATION_ID
             } else {
-                DEATH_BACK_ANIMATION_ID
-            }
-        } else if state.is_incapacitated {
-            // TODO: implement incapacitated
-            unimplemented!();
-        } else if state.is_sliding {
-            SLIDE_ANIMATION_ID
-        } else if body.is_on_ground {
-            if state.is_crouching {
-                CROUCH_ANIMATION_ID
-            } else if !state.is_attacking && body.velocity.x != 0.0 {
-                MOVE_ANIMATION_ID
-            } else {
-                IDLE_ANIMATION_ID
-            }
-        } else if body.velocity.y < 0.0 {
-            JUMP_ANIMATION_ID
-        } else {
-            FALL_ANIMATION_ID
-        };
+                FALL_ANIMATION_ID
+            };
 
-        sprites.set_all(animation_id, false);
+            sprite_set.set_all(animation_id, false);
+        }
     }
 }

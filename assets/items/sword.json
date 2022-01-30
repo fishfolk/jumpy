@@ -25,6 +25,7 @@
   },
   "sprite": {
     "texture": "sword",
+    "autoplay_id": "ground",
     "animations": [
       {
         "id": "ground",

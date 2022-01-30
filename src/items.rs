@@ -5,13 +5,13 @@ use hecs::{Entity, World};
 use macroquad::audio::{play_sound_once, Sound};
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
+use std::borrow::BorrowMut;
 
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    json, ActiveEffectMetadata, AnimatedSprite, AnimatedSpriteMetadata, AnimatedSpriteSet,
-    CollisionWorld, DrawOrder, PassiveEffectMetadata, PhysicsBody, QueuedAnimationAction,
-    Resources, Transform,
+    json, ActiveEffectMetadata, AnimatedSprite, AnimatedSpriteMetadata, CollisionWorld, Drawable,
+    DrawableKind, PassiveEffectMetadata, PhysicsBody, QueuedAnimationAction, Resources, Transform,
 };
 
 use crate::effects::active::spawn_active_effect;
@@ -173,26 +173,20 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
         collider_size.y as i32,
     );
 
-    let res = storage::get::<Resources>()
-        .textures
-        .get(&meta.sprite.texture_id)
-        .cloned();
+    let animations = meta
+        .sprite
+        .animations
+        .clone()
+        .into_iter()
+        .map(|a| a.into())
+        .collect::<Vec<_>>();
 
-    if let Some(texture_res) = res {
-        let (texture, frame_size) = (texture_res.texture, texture_res.frame_size());
-        let animations = meta
-            .sprite
-            .animations
-            .clone()
-            .into_iter()
-            .map(|a| a.into())
-            .collect::<Vec<_>>();
-
-        let params = meta.sprite.into();
-
-        let sprite = AnimatedSprite::new(texture, frame_size, animations.as_slice(), params);
-        sprites.push((SPRITE_ANIMATED_SPRITE_ID, sprite));
-    }
+    let sprite = AnimatedSprite::new(
+        &meta.sprite.texture_id,
+        animations.as_slice(),
+        meta.sprite.clone().into(),
+    );
+    sprites.push((SPRITE_ANIMATED_SPRITE_ID, sprite));
 
     let id = meta.id.as_str();
 
@@ -210,7 +204,6 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
                 ..Default::default()
             },
         ),
-        DrawOrder(ITEMS_DRAW_ORDER),
     ));
 
     let uses = meta.uses;
@@ -238,7 +231,10 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
             )?;
 
             if !sprites.is_empty() {
-                world.insert_one(entity, AnimatedSpriteSet::from(sprites))?;
+                world.insert_one(
+                    entity,
+                    Drawable::new_animated_sprite_set(ITEMS_DRAW_ORDER, sprites.as_slice()),
+                )?;
             }
         }
         MapItemKind::Weapon { meta } => {
@@ -250,30 +246,22 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
             }
 
             if let Some(effect_sprite) = meta.effect_sprite {
-                if let Some(texture_res) = storage::get::<Resources>()
-                    .textures
-                    .get(&effect_sprite.texture_id)
-                {
-                    let animations = effect_sprite
-                        .animations
-                        .clone()
-                        .into_iter()
-                        .map(|a| a.into())
-                        .collect::<Vec<_>>();
+                let animations = effect_sprite
+                    .animations
+                    .clone()
+                    .into_iter()
+                    .map(|a| a.into())
+                    .collect::<Vec<_>>();
 
-                    let params = effect_sprite.into();
+                let mut sprite = AnimatedSprite::new(
+                    &effect_sprite.texture_id,
+                    animations.as_slice(),
+                    effect_sprite.clone().into(),
+                );
 
-                    let mut sprite = AnimatedSprite::new(
-                        texture_res.texture,
-                        texture_res.frame_size(),
-                        animations.as_slice(),
-                        params,
-                    );
+                sprite.is_deactivated = true;
 
-                    sprite.is_deactivated = true;
-
-                    sprites.push((EFFECT_ANIMATED_SPRITE_ID, sprite));
-                }
+                sprites.push((EFFECT_ANIMATED_SPRITE_ID, sprite));
             }
 
             let particle_emitters = meta
@@ -304,7 +292,10 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
             )?;
 
             if !sprites.is_empty() {
-                world.insert_one(entity, AnimatedSpriteSet::from(sprites))?;
+                world.insert_one(
+                    entity,
+                    Drawable::new_animated_sprite_set(ITEMS_DRAW_ORDER, sprites.as_slice()),
+                )?;
             }
         }
     }
@@ -427,28 +418,30 @@ pub fn fire_weapon(world: &mut World, entity: Entity, owner: Entity) -> Result<(
                 play_sound_once(sound);
             }
 
-            let mut sprite_set = world.get_mut::<AnimatedSpriteSet>(entity).unwrap();
+            let mut drawable = world.get_mut::<Drawable>(entity).unwrap();
+            if let DrawableKind::AnimatedSpriteSet(sprite_set) = drawable.kind.borrow_mut() {
+                {
+                    let sprite = sprite_set.map.get_mut(SPRITE_ANIMATED_SPRITE_ID).unwrap();
+                    let is_looping = sprite
+                        .get_animation(ATTACK_ANIMATION_ID)
+                        .map(|a| a.is_looping)
+                        .unwrap_or_default();
 
-            if let Some(sprite) = sprite_set.map.get_mut(SPRITE_ANIMATED_SPRITE_ID) {
-                let is_looping = sprite
-                    .get_animation(ATTACK_ANIMATION_ID)
-                    .map(|a| a.is_looping)
-                    .unwrap_or_default();
+                    sprite.set_animation(ATTACK_ANIMATION_ID, !is_looping);
+                    sprite.queue_action(QueuedAnimationAction::Play(IDLE_ANIMATION_ID.to_string()));
+                }
 
-                sprite.set_animation(ATTACK_ANIMATION_ID, !is_looping);
-                sprite.queue_action(QueuedAnimationAction::Play(IDLE_ANIMATION_ID.to_string()));
-            }
+                if let Some(sprite) = sprite_set.map.get_mut(EFFECT_ANIMATED_SPRITE_ID) {
+                    sprite.is_deactivated = false;
 
-            if let Some(sprite) = sprite_set.map.get_mut(EFFECT_ANIMATED_SPRITE_ID) {
-                sprite.is_deactivated = false;
+                    let is_looping = sprite
+                        .get_animation(ATTACK_ANIMATION_ID)
+                        .map(|a| a.is_looping)
+                        .unwrap_or_default();
 
-                let is_looping = sprite
-                    .get_animation(ATTACK_ANIMATION_ID)
-                    .map(|a| a.is_looping)
-                    .unwrap_or_default();
-
-                sprite.set_animation(ATTACK_ANIMATION_ID, !is_looping);
-                sprite.queue_action(QueuedAnimationAction::Deactivate);
+                    sprite.set_animation(ATTACK_ANIMATION_ID, !is_looping);
+                    sprite.queue_action(QueuedAnimationAction::Deactivate);
+                }
             }
 
             if let Ok(mut particle_emitters) = world.get_mut::<Vec<ParticleEmitter>>(entity) {

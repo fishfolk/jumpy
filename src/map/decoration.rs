@@ -1,12 +1,11 @@
-use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
 
 use hecs::{Entity, World};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{AnimatedSprite, AnimatedSpriteMetadata, DrawOrder};
-use crate::{Resources, Transform};
+use crate::Transform;
+use crate::{AnimatedSpriteMetadata, Drawable};
 
 const DECORATION_DRAW_ORDER: u32 = 0;
 
@@ -27,12 +26,6 @@ impl Decoration {
 }
 
 pub fn spawn_decoration(world: &mut World, position: Vec2, meta: DecorationMetadata) -> Entity {
-    let (texture, frame_size) = storage::get::<Resources>()
-        .textures
-        .get(&meta.sprite.texture_id)
-        .map(|t| (t.texture, t.frame_size()))
-        .unwrap();
-
     let animations = meta
         .sprite
         .animations
@@ -41,12 +34,14 @@ pub fn spawn_decoration(world: &mut World, position: Vec2, meta: DecorationMetad
         .map(|m| m.into())
         .collect::<Vec<_>>();
 
-    let params = meta.sprite.into();
-
     world.spawn((
         Decoration::new(&meta.id),
         Transform::from(position),
-        DrawOrder(DECORATION_DRAW_ORDER),
-        AnimatedSprite::new(texture, frame_size, animations.as_slice(), params),
+        Drawable::new_animated_sprite(
+            DECORATION_DRAW_ORDER,
+            &meta.sprite.texture_id,
+            animations.as_slice(),
+            meta.sprite.clone().into(),
+        ),
     ))
 }

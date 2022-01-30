@@ -53,6 +53,7 @@
   },
   "sprite": {
     "texture": "musket",
+    "autoplay_id": "idle",
     "animations": [
       {
         "id": "idle",
@@ -65,7 +66,7 @@
         "id": "attack",
         "row": 1,
         "frames": 3,
-        "fps": 15
+        "fps": 14
       }
     ]
   },

@@ -1,5 +1,4 @@
 use macroquad::prelude::*;
-use std::borrow::BorrowMut;
 
 use hecs::{Entity, With, Without, World};
 
@@ -9,7 +8,7 @@ use crate::items::{
 };
 use crate::particles::ParticleEmitter;
 use crate::player::{PlayerController, PlayerState, IDLE_ANIMATION_ID, PICKUP_GRACE_TIME};
-use crate::{Drawable, DrawableKind, Item, Owner, PassiveEffectInstance, PhysicsBody, Transform};
+use crate::{Drawable, Item, Owner, PassiveEffectInstance, PhysicsBody, Transform};
 
 const THROW_FORCE: f32 = 5.0;
 
@@ -90,10 +89,8 @@ pub fn update_player_inventory(world: &mut World) {
                     body.is_deactivated = true;
 
                     let mut drawable = world.get_mut::<Drawable>(item_entity).unwrap();
-                    if let DrawableKind::AnimatedSpriteSet(sprite_set) = drawable.kind.borrow_mut()
-                    {
-                        sprite_set.set_all(IDLE_ANIMATION_ID, true);
-                    }
+                    let sprite_set = drawable.get_animated_sprite_set_mut().unwrap();
+                    sprite_set.set_all(IDLE_ANIMATION_ID, true);
 
                     continue;
                 }
@@ -127,11 +124,9 @@ pub fn update_player_inventory(world: &mut World) {
                             body.is_deactivated = true;
 
                             let mut drawable = world.get_mut::<Drawable>(weapon_entity).unwrap();
-                            if let DrawableKind::AnimatedSpriteSet(sprite_set) =
-                                drawable.kind.borrow_mut()
-                            {
-                                sprite_set.set_all(IDLE_ANIMATION_ID, true);
-                            }
+                            let sprite_set = drawable.get_animated_sprite_set_mut().unwrap();
+
+                            sprite_set.set_all(IDLE_ANIMATION_ID, true);
 
                             break;
                         }
@@ -152,18 +147,18 @@ pub fn update_player_inventory(world: &mut World) {
                 weapon_transform.position = weapon_mount;
 
                 let mut drawable = world.get_mut::<Drawable>(weapon_entity).unwrap();
-                let mut frame_size = Vec2::ZERO;
+                let frame_size = {
+                    let sprite_set = drawable.get_animated_sprite_set_mut().unwrap();
 
-                if let DrawableKind::AnimatedSpriteSet(sprite_set) = drawable.kind.borrow_mut() {
                     sprite_set.flip_all_x(state.is_facing_left);
                     sprite_set.flip_all_y(state.is_upside_down);
 
-                    frame_size = sprite_set
+                    sprite_set
                         .map
                         .get(SPRITE_ANIMATED_SPRITE_ID)
                         .map(|sprite| sprite.size())
-                        .unwrap();
-                }
+                        .unwrap()
+                };
 
                 let mount_offset = flip_offset(
                     weapon.mount_offset,
@@ -249,23 +244,21 @@ pub fn update_player_inventory(world: &mut World) {
 
                     match world.get_mut::<Drawable>(item_entity) {
                         Ok(mut drawable) => {
-                            if let DrawableKind::AnimatedSpriteSet(sprite_set) =
-                                drawable.kind.borrow_mut()
-                            {
-                                sprite_set.flip_all_x(state.is_facing_left);
-                                sprite_set.flip_all_y(state.is_upside_down);
+                            let sprite_set = drawable.get_animated_sprite_set_mut().unwrap();
 
-                                let offset = flip_offset(
-                                    item.mount_offset,
-                                    sprite_set.size(),
-                                    state.is_facing_left,
-                                    state.is_upside_down,
-                                );
+                            sprite_set.flip_all_x(state.is_facing_left);
+                            sprite_set.flip_all_y(state.is_upside_down);
 
-                                let mut item_transform =
-                                    world.get_mut::<Transform>(item_entity).unwrap();
-                                item_transform.position = position + offset;
-                            }
+                            let offset = flip_offset(
+                                item.mount_offset,
+                                sprite_set.size(),
+                                state.is_facing_left,
+                                state.is_upside_down,
+                            );
+
+                            let mut item_transform =
+                                world.get_mut::<Transform>(item_entity).unwrap();
+                            item_transform.position = position + offset;
                         }
                         Err(err) => {
                             #[cfg(debug_assertions)]
@@ -346,24 +339,24 @@ pub fn update_player_inventory(world: &mut World) {
 
             body.is_deactivated = false;
 
-            if let DrawableKind::AnimatedSpriteSet(sprite_set) = drawable.kind.borrow_mut() {
-                sprite_set.restart_all();
+            let sprite_set = drawable.get_animated_sprite_set_mut().unwrap();
 
-                let sprite = sprite_set.map.get_mut(SPRITE_ANIMATED_SPRITE_ID).unwrap();
+            sprite_set.restart_all();
 
-                if sprite
-                    .animations
-                    .iter()
-                    .any(|a| a.id == *GROUND_ANIMATION_ID)
-                {
-                    sprite.set_animation(GROUND_ANIMATION_ID, true);
-                } else {
-                    sprite.set_animation(IDLE_ANIMATION_ID, true);
-                }
+            let sprite = sprite_set.map.get_mut(SPRITE_ANIMATED_SPRITE_ID).unwrap();
 
-                if let Some(sprite) = sprite_set.map.get_mut(EFFECT_ANIMATED_SPRITE_ID) {
-                    sprite.is_deactivated = true;
-                }
+            if sprite
+                .animations
+                .iter()
+                .any(|a| a.id == *GROUND_ANIMATION_ID)
+            {
+                sprite.set_animation(GROUND_ANIMATION_ID, true);
+            } else {
+                sprite.set_animation(IDLE_ANIMATION_ID, true);
+            }
+
+            if let Some(sprite) = sprite_set.map.get_mut(EFFECT_ANIMATED_SPRITE_ID) {
+                sprite.is_deactivated = true;
             }
         }
     }

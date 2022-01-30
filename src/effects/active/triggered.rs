@@ -1,6 +1,5 @@
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
-use std::borrow::BorrowMut;
 
 use hecs::{Entity, World};
 
@@ -11,7 +10,7 @@ use crate::math::deg_to_rad;
 use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::player::PlayerState;
 use crate::Result;
-use crate::{json, Drawable, DrawableKind, PhysicsBodyParams};
+use crate::{json, Drawable, PhysicsBodyParams};
 use crate::{ActiveEffectMetadata, AnimatedSpriteMetadata, CollisionWorld, PhysicsBody, Transform};
 
 const TRIGGERED_EFFECT_DRAW_ORDER: u32 = 5;
@@ -126,7 +125,8 @@ pub fn spawn_triggered_effect(
             meta.clone().into(),
         );
 
-        if let DrawableKind::AnimatedSprite(sprite) = drawable.kind.borrow_mut() {
+        {
+            let sprite = drawable.get_animated_sprite_mut().unwrap();
             sprite.offset -= sprite.frame_size / 2.0;
         }
 

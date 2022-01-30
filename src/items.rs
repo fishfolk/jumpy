@@ -5,13 +5,12 @@ use hecs::{Entity, World};
 use macroquad::audio::{play_sound_once, Sound};
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
-use std::borrow::BorrowMut;
 
 use serde::{Deserialize, Serialize};
 
 use crate::{
     json, ActiveEffectMetadata, AnimatedSprite, AnimatedSpriteMetadata, CollisionWorld, Drawable,
-    DrawableKind, PassiveEffectMetadata, PhysicsBody, QueuedAnimationAction, Resources, Transform,
+    PassiveEffectMetadata, PhysicsBody, QueuedAnimationAction, Resources, Transform,
 };
 
 use crate::effects::active::spawn_active_effect;
@@ -419,7 +418,9 @@ pub fn fire_weapon(world: &mut World, entity: Entity, owner: Entity) -> Result<(
             }
 
             let mut drawable = world.get_mut::<Drawable>(entity).unwrap();
-            if let DrawableKind::AnimatedSpriteSet(sprite_set) = drawable.kind.borrow_mut() {
+            {
+                let sprite_set = drawable.get_animated_sprite_set_mut().unwrap();
+
                 {
                     let sprite = sprite_set.map.get_mut(SPRITE_ANIMATED_SPRITE_ID).unwrap();
                     let is_looping = sprite

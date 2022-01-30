@@ -1,13 +1,11 @@
 use macroquad::audio::play_sound_once;
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
-use std::borrow::BorrowMut;
 
 use hecs::{Entity, World};
 
 use crate::{
-    Animation, Drawable, DrawableKind, PhysicsBody, QueuedAnimationAction, Resources, Result,
-    Transform,
+    Animation, Drawable, PhysicsBody, QueuedAnimationAction, Resources, Result, Transform,
 };
 
 const SPROINGER_DRAW_ORDER: u32 = 2;
@@ -107,28 +105,27 @@ pub fn update_sproingers(world: &mut World) {
         };
 
         if sproinger.cooldown_timer >= COOLDOWN {
-            if let DrawableKind::AnimatedSprite(sprite) = drawable.kind.borrow_mut() {
-                sprite.set_animation(IDLE_ANIMATION_ID, true);
+            let sprite = drawable.get_animated_sprite_mut().unwrap();
+            sprite.set_animation(IDLE_ANIMATION_ID, true);
 
-                let position = transform.position - (sprite.frame_size / 2.0);
+            let position = transform.position - (sprite.frame_size / 2.0);
 
-                let trigger_rect = Rect::new(position.x, position.y, TRIGGER_WIDTH, TRIGGER_HEIGHT);
+            let trigger_rect = Rect::new(position.x, position.y, TRIGGER_WIDTH, TRIGGER_HEIGHT);
 
-                for (e, rect) in &bodies {
-                    if trigger_rect.overlaps(rect) {
-                        to_be_sproinged.push(*e);
+            for (e, rect) in &bodies {
+                if trigger_rect.overlaps(rect) {
+                    to_be_sproinged.push(*e);
 
-                        sproinger.cooldown_timer = 0.0;
+                    sproinger.cooldown_timer = 0.0;
 
-                        sprite.set_animation(EXPAND_ANIMATION_ID, true);
-                        sprite.queue_action(QueuedAnimationAction::Play(
-                            CONTRACT_ANIMATION_ID.to_string(),
-                        ));
+                    sprite.set_animation(EXPAND_ANIMATION_ID, true);
+                    sprite.queue_action(QueuedAnimationAction::Play(
+                        CONTRACT_ANIMATION_ID.to_string(),
+                    ));
 
-                        play_sound_once(sound);
+                    play_sound_once(sound);
 
-                        continue 'sproingers;
-                    }
+                    continue 'sproingers;
                 }
             }
         }

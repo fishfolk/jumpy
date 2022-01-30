@@ -64,6 +64,62 @@ impl Drawable {
             kind: DrawableKind::AnimatedSpriteSet(sprite_set),
         }
     }
+
+    pub fn get_sprite(&self) -> Option<&Sprite> {
+        match self.kind.borrow() {
+            DrawableKind::Sprite(sprite) => Some(sprite),
+            _ => None,
+        }
+    }
+
+    pub fn get_sprite_mut(&mut self) -> Option<&mut Sprite> {
+        match self.kind.borrow_mut() {
+            DrawableKind::Sprite(sprite) => Some(sprite),
+            _ => None,
+        }
+    }
+
+    pub fn get_sprite_set(&self) -> Option<&SpriteSet> {
+        match self.kind.borrow() {
+            DrawableKind::SpriteSet(sprite_set) => Some(sprite_set),
+            _ => None,
+        }
+    }
+
+    pub fn get_sprite_set_mut(&mut self) -> Option<&mut SpriteSet> {
+        match self.kind.borrow_mut() {
+            DrawableKind::SpriteSet(sprite_set) => Some(sprite_set),
+            _ => None,
+        }
+    }
+
+    pub fn get_animated_sprite(&self) -> Option<&AnimatedSprite> {
+        match self.kind.borrow() {
+            DrawableKind::AnimatedSprite(sprite) => Some(sprite),
+            _ => None,
+        }
+    }
+
+    pub fn get_animated_sprite_mut(&mut self) -> Option<&mut AnimatedSprite> {
+        match self.kind.borrow_mut() {
+            DrawableKind::AnimatedSprite(sprite) => Some(sprite),
+            _ => None,
+        }
+    }
+
+    pub fn get_animated_sprite_set(&self) -> Option<&AnimatedSpriteSet> {
+        match self.kind.borrow() {
+            DrawableKind::AnimatedSpriteSet(sprite_set) => Some(sprite_set),
+            _ => None,
+        }
+    }
+
+    pub fn get_animated_sprite_set_mut(&mut self) -> Option<&mut AnimatedSpriteSet> {
+        match self.kind.borrow_mut() {
+            DrawableKind::AnimatedSpriteSet(sprite_set) => Some(sprite_set),
+            _ => None,
+        }
+    }
 }
 
 pub enum DrawableKind {

@@ -1,5 +1,4 @@
 use macroquad::prelude::*;
-use std::borrow::BorrowMut;
 
 use hecs::World;
 
@@ -9,7 +8,7 @@ use crate::player::{
     PlayerState, CROUCH_ANIMATION_ID, DEATH_BACK_ANIMATION_ID, DEATH_FORWARD_ANIMATION_ID,
     FALL_ANIMATION_ID, IDLE_ANIMATION_ID, JUMP_ANIMATION_ID, MOVE_ANIMATION_ID, SLIDE_ANIMATION_ID,
 };
-use crate::{json, Drawable, DrawableKind, PhysicsBody};
+use crate::{json, Drawable, PhysicsBody};
 use crate::{AnimatedSpriteMetadata, AnimationMetadata};
 
 /// This is used in stead of `AnimationParams`, as we have different data requirements, in the case
@@ -253,37 +252,37 @@ pub fn update_player_animations(world: &mut World) {
     for (_, (state, body, drawable)) in
         world.query_mut::<(&PlayerState, &PhysicsBody, &mut Drawable)>()
     {
-        if let DrawableKind::AnimatedSpriteSet(sprite_set) = drawable.kind.borrow_mut() {
-            sprite_set.flip_all_x(state.is_facing_left);
-            sprite_set.flip_all_y(state.is_upside_down);
+        let sprite_set = drawable.get_animated_sprite_set_mut().unwrap();
 
-            #[allow(clippy::if_same_then_else)]
-            let animation_id = if state.is_dead {
-                if state.is_facing_left {
-                    DEATH_FORWARD_ANIMATION_ID
-                } else {
-                    DEATH_BACK_ANIMATION_ID
-                }
-            } else if state.is_incapacitated {
-                // TODO: implement incapacitated
-                unimplemented!();
-            } else if state.is_sliding {
-                SLIDE_ANIMATION_ID
-            } else if body.is_on_ground {
-                if state.is_crouching {
-                    CROUCH_ANIMATION_ID
-                } else if !state.is_attacking && body.velocity.x != 0.0 {
-                    MOVE_ANIMATION_ID
-                } else {
-                    IDLE_ANIMATION_ID
-                }
-            } else if body.velocity.y < 0.0 {
-                JUMP_ANIMATION_ID
+        sprite_set.flip_all_x(state.is_facing_left);
+        sprite_set.flip_all_y(state.is_upside_down);
+
+        #[allow(clippy::if_same_then_else)]
+        let animation_id = if state.is_dead {
+            if state.is_facing_left {
+                DEATH_FORWARD_ANIMATION_ID
             } else {
-                FALL_ANIMATION_ID
-            };
+                DEATH_BACK_ANIMATION_ID
+            }
+        } else if state.is_incapacitated {
+            // TODO: implement incapacitated
+            unimplemented!();
+        } else if state.is_sliding {
+            SLIDE_ANIMATION_ID
+        } else if body.is_on_ground {
+            if state.is_crouching {
+                CROUCH_ANIMATION_ID
+            } else if !state.is_attacking && body.velocity.x != 0.0 {
+                MOVE_ANIMATION_ID
+            } else {
+                IDLE_ANIMATION_ID
+            }
+        } else if body.velocity.y < 0.0 {
+            JUMP_ANIMATION_ID
+        } else {
+            FALL_ANIMATION_ID
+        };
 
-            sprite_set.set_all(animation_id, false);
-        }
+        sprite_set.set_all(animation_id, false);
     }
 }

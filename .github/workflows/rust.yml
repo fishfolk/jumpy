@@ -3,17 +3,16 @@ on:
     branches:
       - main
     paths-ignore:
-      - '**.md'
-      - '**.json'
+      - "**.md"
+      - "**.json"
   pull_request:
     paths-ignore:
-      - '**.md'
-      - '**.json'
+      - "**.md"
+      - "**.json"
 
 name: Compilation check
 
 jobs:
-
   fmt:
     runs-on: ubuntu-latest
     name: Formatting
@@ -43,12 +42,30 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - { os: ubuntu-latest, target: 'x86_64-unknown-linux-gnu' }
-          - { os: macos-latest, target: 'x86_64-apple-darwin' }
-          - { os: windows-latest, target: 'x86_64-pc-windows-msvc' }
-        profile: ['' , --release]
+          # Tier 1
+          - { os: ubuntu-latest, target: "aarch64-unknown-linux-gnu" }
+          - { os: windows-latest, target: "i686-pc-windows-gnu" }
+          - { os: windows-latest, target: "i686-pc-windows-msvc" }
+          - { os: ubuntu-latest, target: "i686-unknown-linux-gnu" }
+          - { os: macos-latest, target: "x86_64-apple-darwin" }
+          - { os: windows-latest, target: "x86_64-pc-windows-gnu" }
+          - { os: windows-latest, target: "x86_64-pc-windows-msvc" }
+          - { os: ubuntu-latest, target: "x86_64-unknown-linux-gnu" }
+          # Tier 2
+          - { os: ubuntu-latest, target: "x86_64-unknown-linux-musl" }
+          - { os: ubuntu-latest, target: "i686-unknown-linux-musl" }
+          - { os: ubuntu-latest, target: "armv5te-unknown-linux-gnueabi" }
+          - { os: ubuntu-latest, target: "armv7-unknown-linux-gnueabihf" }
+          - { os: ubuntu-latest, target: "aarch64-unknown-linux-musl" }
+        profile: ["", "--release"]
 
     steps:
+      - name: Install dependencies
+        if: matrix.config.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --allow-unauthenticated -y -qq \
+           libasound2-dev libgl1-mesa-dev libx11-dev libxi-dev
       - uses: actions/checkout@v2
       - name: Cache Cargo dependencies
         uses: actions/cache@v2
@@ -58,8 +75,13 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.config.target }}
+          override: true
+          profile: minimal
       - uses: actions-rs/cargo@v1
         with:
-          command: check
-          args: --target=${{ matrix.config.target }} ${{ matrix.profile }}
-            
+          command: build
+          args: ${{ matrix.profile }}

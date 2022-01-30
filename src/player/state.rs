@@ -135,6 +135,12 @@ pub fn update_player_states(world: &mut World) {
         // Integration
         if state.is_dead || state.is_attacking || state.is_incapacitated || state.is_sliding {
             body.has_friction = true;
+
+            if state.is_attacking {
+                state.is_jumping = false;
+                state.jump_frame_counter = 0;
+                body.has_mass = true;
+            }
         } else {
             body.has_friction = false;
 

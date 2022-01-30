@@ -1,3 +1,5 @@
+name: Continuous Integration
+
 on:
   push:
     branches:
@@ -9,8 +11,6 @@ on:
     paths-ignore:
       - "**.md"
       - "**.json"
-
-name: Compilation check
 
 jobs:
   fmt:
@@ -57,11 +57,12 @@ jobs:
           - { os: ubuntu-latest, target: "armv5te-unknown-linux-gnueabi" }
           - { os: ubuntu-latest, target: "armv7-unknown-linux-gnueabihf" }
           - { os: ubuntu-latest, target: "aarch64-unknown-linux-musl" }
+          - { os: ubuntu-latest, target: "aarch64-apple-darwin" }
         profile: ["", "--release"]
 
     steps:
       - name: Install dependencies
-        if: matrix.config.os == 'ubuntu-latest'
+        if: ${{ matrix.config.os }} == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install --allow-unauthenticated -y -qq \
@@ -75,7 +76,8 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
-      - uses: actions-rs/toolchain@v1
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           target: ${{ matrix.config.target }}
@@ -84,4 +86,4 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: build
-          args: ${{ matrix.profile }}
+          args: ${{ matrix.profile }} --locked

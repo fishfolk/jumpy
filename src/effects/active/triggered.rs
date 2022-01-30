@@ -1,5 +1,6 @@
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
+use std::borrow::BorrowMut;
 
 use hecs::{Entity, World};
 
@@ -9,12 +10,9 @@ use crate::effects::active::spawn_active_effect;
 use crate::math::deg_to_rad;
 use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::player::PlayerState;
-use crate::{json, AnimatedSpriteParams, DrawOrder, PhysicsBodyParams};
-use crate::{
-    ActiveEffectMetadata, AnimatedSprite, AnimatedSpriteMetadata, CollisionWorld, PhysicsBody,
-    Transform,
-};
-use crate::{Resources, Result};
+use crate::Result;
+use crate::{json, Drawable, DrawableKind, PhysicsBodyParams};
+use crate::{ActiveEffectMetadata, AnimatedSpriteMetadata, CollisionWorld, PhysicsBody, Transform};
 
 const TRIGGERED_EFFECT_DRAW_ORDER: u32 = 5;
 
@@ -77,15 +75,18 @@ impl TriggeredEffect {
     }
 }
 
-const TRIGGERED_EFFECT_ANIMATION_ID: &str = "effect";
-
 pub fn spawn_triggered_effect(
     world: &mut World,
     owner: Entity,
     origin: Vec2,
-    _is_facing_left: bool,
+    is_facing_left: bool,
     meta: TriggeredEffectMetadata,
 ) -> Result<Entity> {
+    let mut velocity = meta.velocity;
+    if is_facing_left {
+        velocity.x = -velocity.x;
+    }
+
     let offset = -meta.size / 2.0;
 
     let actor = {
@@ -100,7 +101,7 @@ pub fn spawn_triggered_effect(
         Transform::new(origin, rotation),
         PhysicsBody::new(
             actor,
-            meta.velocity,
+            velocity,
             PhysicsBodyParams {
                 offset,
                 size: meta.size,
@@ -108,16 +109,9 @@ pub fn spawn_triggered_effect(
                 ..Default::default()
             },
         ),
-        DrawOrder(TRIGGERED_EFFECT_DRAW_ORDER),
     ));
 
     if let Some(meta) = meta.sprite.clone() {
-        let (texture, frame_size) = storage::get::<Resources>()
-            .textures
-            .get(&meta.texture_id)
-            .map(|t| (t.texture, t.frame_size()))
-            .unwrap();
-
         let animations = meta
             .animations
             .clone()
@@ -125,15 +119,18 @@ pub fn spawn_triggered_effect(
             .map(|a| a.into())
             .collect::<Vec<_>>();
 
-        let mut params: AnimatedSpriteParams = meta.into();
+        let mut drawable = Drawable::new_animated_sprite(
+            TRIGGERED_EFFECT_DRAW_ORDER,
+            &meta.texture_id,
+            animations.as_slice(),
+            meta.clone().into(),
+        );
 
-        params.offset -= frame_size / 2.0;
+        if let DrawableKind::AnimatedSprite(sprite) = drawable.kind.borrow_mut() {
+            sprite.offset -= sprite.frame_size / 2.0;
+        }
 
-        let mut sprite = AnimatedSprite::new(texture, frame_size, animations.as_slice(), params);
-
-        sprite.set_animation(TRIGGERED_EFFECT_ANIMATION_ID, true);
-
-        world.insert_one(entity, sprite)?;
+        world.insert_one(entity, drawable)?;
     }
 
     if !meta.effects.is_empty() {

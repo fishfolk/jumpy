@@ -54,6 +54,7 @@
           "timed_trigger": 0.7,
           "sprite": {
             "texture": "explosion_small",
+            "autoplay_id": "effect",
             "animations": [
               {
                 "id": "effect",
@@ -67,6 +68,7 @@
       ],
       "sprite": {
         "texture": "kick_bomb",
+        "autoplay_id": "effect",
         "offset": {
           "x": 0,
           "y": 0
@@ -79,8 +81,7 @@
             "fps": 12,
             "is_looping": true
           }
-        ],
-        "should_autoplay": true
+        ]
       }
     }
   ],
@@ -98,6 +99,7 @@
   },
   "sprite": {
     "texture": "kick_bomb",
+    "autoplay_id": "idle",
     "animations": [
       {
         "id": "idle",

@@ -36,6 +36,7 @@
           "timed_trigger": 0.7,
           "sprite": {
             "texture": "explosion_small",
+            "autoplay_id": "effect",
             "animations": [
               {
                 "id": "effect",
@@ -49,6 +50,7 @@
       ],
       "sprite": {
         "texture": "grenades",
+        "autoplay_id": "effect",
         "animations": [
           {
             "id": "effect",
@@ -87,6 +89,7 @@
   },
   "sprite": {
     "texture": "grenades",
+    "autoplay_id": "idle",
     "animations": [
       {
         "id": "idle",

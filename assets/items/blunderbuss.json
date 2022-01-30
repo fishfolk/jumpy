@@ -133,6 +133,7 @@
   ],
   "sprite": {
     "texture": "blunderbuss",
+    "autoplay_id": "idle",
     "animations": [
       {
         "id": "idle",

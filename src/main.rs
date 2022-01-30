@@ -31,12 +31,12 @@ pub mod physics;
 pub mod player;
 
 mod channel;
-mod sprite;
+mod drawables;
 mod transform;
 
+pub use drawables::*;
 pub use input::*;
 pub use physics::*;
-pub use sprite::*;
 pub use transform::*;
 
 use editor::{Editor, EditorCamera, EditorInputScheme};

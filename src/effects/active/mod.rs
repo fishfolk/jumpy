@@ -122,12 +122,8 @@ pub fn spawn_active_effect(
                 }
             }
         }
-        ActiveEffectKind::TriggeredEffect { mut params } => {
-            if is_facing_left {
-                params.velocity.x = -params.velocity.x;
-            }
-
-            spawn_triggered_effect(world, owner, origin, is_facing_left, *params)?;
+        ActiveEffectKind::TriggeredEffect { meta } => {
+            spawn_triggered_effect(world, owner, origin, is_facing_left, *meta)?;
         }
         ActiveEffectKind::Projectile {
             kind,
@@ -203,7 +199,7 @@ pub enum ActiveEffectKind {
     /// Spawn a trigger that will set of another effect if its trigger conditions are met.
     TriggeredEffect {
         #[serde(flatten)]
-        params: Box<TriggeredEffectMetadata>,
+        meta: Box<TriggeredEffectMetadata>,
     },
     /// Spawn a projectile.
     /// This would typically be used for things like a gun.

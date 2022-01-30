@@ -50,6 +50,7 @@
   ],
   "sprite": {
     "texture": "crate",
+    "autoplay_id": "idle",
     "animations": [
       {
         "id": "idle",

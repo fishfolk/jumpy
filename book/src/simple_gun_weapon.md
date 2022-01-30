@@ -241,6 +241,7 @@ By default, the animation with an id of `idle` will be used when an item is on t
   },
   "animation": {
     "texture": "musket",
+    "autoplay_id": "idle",
     "animations": [
       {
         "id": "idle",
@@ -302,6 +303,7 @@ The last thing that we need to add to the json object definition of the sniper r
   },
   "animation": {
     "texture": "musket",
+    "autoplay_id": "idle",
     "animations": [
       {
         "id": "idle",

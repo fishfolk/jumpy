@@ -52,6 +52,7 @@
   },
   "sprite": {
     "texture": "machine_gun",
+    "autoplay_id": "idle",
     "animations": [
       {
         "id": "idle",

@@ -4,7 +4,7 @@ use macroquad::prelude::*;
 use hecs::{Entity, World};
 
 use crate::{
-    AnimatedSprite, AnimatedSpriteParams, AnimatedSpriteSet, CollisionWorld, DrawOrder,
+    AnimatedSprite, AnimatedSpriteMetadata, AnimatedSpriteParams, CollisionWorld, Drawable,
     PhysicsBody, Resources, Transform,
 };
 
@@ -99,14 +99,15 @@ pub fn spawn_player(
 ) -> Entity {
     let weapon_mount = character.weapon_mount;
 
-    let (texture, frame_size) = storage::get::<Resources>()
+    let offset = storage::get::<Resources>()
         .textures
         .get(&character.sprite.texture_id)
-        .map(|t| (t.texture, t.frame_size()))
+        .map(|t| {
+            let frame_size = t.frame_size();
+            character.sprite.offset
+                - vec2(frame_size.x / 2.0, frame_size.y - character.collider_size.y)
+        })
         .unwrap();
-
-    let offset = character.sprite.offset
-        - vec2(frame_size.x / 2.0, frame_size.y - character.collider_size.y);
 
     let animations = character
         .sprite
@@ -116,15 +117,20 @@ pub fn spawn_player(
         .map(|a| a.into())
         .collect::<Vec<_>>();
 
-    let params = AnimatedSpriteParams {
-        offset,
-        should_autoplay: true,
-        ..Default::default()
+    let texture_id = character.sprite.texture_id.clone();
+
+    let params = {
+        let meta: AnimatedSpriteMetadata = character.sprite.clone().into();
+
+        AnimatedSpriteParams {
+            offset,
+            ..meta.into()
+        }
     };
 
     let sprites = vec![(
         BODY_ANIMATED_SPRITE_ID,
-        AnimatedSprite::new(texture, frame_size, animations.as_slice(), params),
+        AnimatedSprite::new(&texture_id, animations.as_slice(), params),
     )];
 
     let draw_order = (index as u32 + 1) * 10;
@@ -144,12 +150,11 @@ pub fn spawn_player(
         Player(index),
         Transform::from(position),
         PlayerController::from(controller),
-        PlayerAttributes::from(character),
+        PlayerAttributes::from(&character),
         PlayerState::from(position),
         PlayerInventory::from(weapon_mount),
         PlayerEventQueue::new(),
-        DrawOrder(draw_order),
-        AnimatedSpriteSet::from(sprites),
+        Drawable::new_animated_sprite_set(draw_order, &sprites),
         PhysicsBody::new(actor, None, body_params),
     ))
 }

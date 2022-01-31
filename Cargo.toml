@@ -4,7 +4,7 @@ version = "0.3.0"
 description = "A tactical 2D shooter"
 authors = ["Fish Fight Contributors"]
 license = "MIT OR Apache-2.0"
-edition = "2018"
+edition = "2021"
 
 [profile.dev.package."*"]
 opt-level = 3
@@ -17,13 +17,11 @@ members = ["network-core"]
 
 [dependencies]
 network-core = { path = "./network-core" }
-
 # ultimate = { path = "../FishFight-ultimate", package = "fishfight-ultimate", optional = true }
-
+ff-particles = { version = "0.1", features = ["serde"] }
+fishsticks = { version = "0.2.0", features = ["bundled-sdl2"] }
 macroquad = { version = "0.3.10" }
 macroquad-platformer = "0.1"
-ff-particles = { version = "0.1", features = ["serde"] }
 hecs = "0.7.1"
-fishsticks = { version = "0.2.0", features = ["bundled-sdl2"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

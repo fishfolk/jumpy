@@ -1,13 +1,13 @@
 use hecs::World;
 use macroquad::prelude::*;
 
-use crate::network::AccountId;
+use crate::network::PlayerId;
 use crate::{collect_local_input, GameInput, GameInputScheme};
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub enum PlayerControllerKind {
     LocalInput(GameInputScheme),
-    Network(AccountId),
+    Network(PlayerId),
 }
 
 impl PlayerControllerKind {
@@ -82,9 +82,9 @@ impl PlayerController {
 
 pub fn update_player_controllers(world: &mut World) {
     for (_, controller) in world.query_mut::<&mut PlayerController>() {
-        match controller.kind {
+        match &controller.kind {
             PlayerControllerKind::LocalInput(input_scheme) => {
-                let input = collect_local_input(input_scheme);
+                let input = collect_local_input(*input_scheme);
                 controller.apply_input(input);
             }
             PlayerControllerKind::Network(_account_id) => {

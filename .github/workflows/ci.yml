@@ -1,0 +1,79 @@
+name: Continuous integration
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "**.md"
+      - "**.json"
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - "**.json"
+
+jobs:
+  fmt:
+    runs-on: ubuntu-latest
+    name: Formatting
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check Rust formatting
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+  clippy:
+    runs-on: ubuntu-latest
+    name: Linting
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Clippy
+        run: rustup component add clippy
+
+      - name: Run Clippy
+        run: cargo clippy -- -W clippy::correctness -D warnings
+
+  build:
+    name: Build
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - { os: ubuntu-latest, target: "x86_64-unknown-linux-gnu" }
+          - { os: macos-latest, target: "x86_64-apple-darwin" }
+          - { os: macos-latest, target: "aarch64-apple-darwin" }
+          - { os: windows-latest, target: "x86_64-pc-windows-msvc" }
+          - { os: windows-latest, target: "i686-pc-windows-msvc" }
+        profile: ["", --release]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Dependencies
+        if: matrix.config.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --allow-unauthenticated -y -qq \
+           libasound2-dev libgl1-mesa-dev libx11-dev libxi-dev
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          profile: minimal
+          target: ${{ matrix.config.target }}
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --locked --target ${{ matrix.config.target }} ${{ matrix.profile }}

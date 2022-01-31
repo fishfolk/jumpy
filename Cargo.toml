@@ -6,11 +6,11 @@ authors = ["Fish Fight Contributors"]
 license = "MIT OR Apache-2.0"
 edition = "2021"
 
-[profile.dev.package."*"]
-opt-level = 3
-
 [features]
 default = []
+
+[profile.dev.package."*"]
+opt-level = 3
 
 [workspace]
 members = ["network-core"]

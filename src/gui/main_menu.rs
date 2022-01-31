@@ -7,12 +7,11 @@ use macroquad::{
 };
 
 use fishsticks::{Button, GamepadContext};
-use network_core::Backend;
+use network_core::{Api, PlayerId};
 
 use super::{draw_main_menu_background, GuiResources, Menu, MenuEntry, MenuResult, Panel};
 
 use crate::input::update_gamepad_context;
-use crate::network::{Api, PlayerId};
 use crate::player::{PlayerControllerKind, PlayerParams};
 use crate::{gui, is_gamepad_btn_pressed, EditorInputScheme, GameInputScheme, Map, Resources};
 
@@ -350,7 +349,7 @@ fn network_game_ui(ui: &mut ui::Ui, _state: &mut NetworkUiState) -> Option<MainM
     let mut res = None;
 
     if ui.button(None, "Host") {
-        let player = Api::get_self().unwrap();
+        let player = Api::get_own_player().unwrap();
 
         let resources = storage::get::<Resources>();
         let map_resource = resources.maps.first().cloned().unwrap();

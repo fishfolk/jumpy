@@ -38,7 +38,7 @@ use crate::items::spawn_item;
 use crate::map::{fixed_update_sproingers, spawn_decoration, spawn_sproinger};
 use crate::network::{
     fixed_update_network_client, fixed_update_network_host, update_network_client,
-    update_network_host, NetworkClient, NetworkHost, PlayerId,
+    update_network_host, NetworkClient, NetworkHost, Id,
 };
 use crate::particles::{draw_particles, update_particle_emitters};
 pub use music::{start_music, stop_music};
@@ -51,7 +51,7 @@ pub enum GameMode {
     },
     NetworkClient {
         port: Option<u16>,
-        host_id: PlayerId,
+        host_id: Id,
     },
 }
 

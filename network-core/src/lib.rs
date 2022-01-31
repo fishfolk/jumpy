@@ -1,12 +1,35 @@
-mod backend;
+mod api;
 mod error;
 
 use std::net::SocketAddr;
 
-pub use backend::{Backend, MockBackend};
+pub use async_trait::async_trait;
+
+pub use api::{Api, ApiBackend, MockApiBackend};
 pub use error::{Error, Result};
 
 pub const DEFAULT_PORT: u16 = 9000;
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Id(String);
+
+impl Id {
+    pub fn as_str(&self) -> &str {
+        self.0.as_str()
+    }
+}
+
+impl From<&str> for Id {
+    fn from(s: &str) -> Self {
+        Id(s.to_string())
+    }
+}
+
+impl From<String> for Id {
+    fn from(s: String) -> Self {
+        Id(s)
+    }
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Server {
@@ -15,26 +38,7 @@ pub struct Server {
     pub tcp: SocketAddr,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct LobbyId(String);
-
-impl LobbyId {
-    pub fn as_str(&self) -> &str {
-        self.0.as_str()
-    }
-}
-
-impl From<&str> for LobbyId {
-    fn from(s: &str) -> Self {
-        LobbyId(s.to_string())
-    }
-}
-
-impl From<String> for LobbyId {
-    fn from(s: String) -> Self {
-        LobbyId(s)
-    }
-}
+pub type LobbyId = Id;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum LobbyPrivacy {
@@ -46,8 +50,8 @@ pub enum LobbyPrivacy {
 pub struct Lobby {
     pub id: LobbyId,
     pub name: String,
-    pub creator_player_id: PlayerId,
-    pub admin_player_id: PlayerId,
+    pub creator_player_id: Id,
+    pub admin_player_id: Id,
     pub player_count: i32,
     pub capacity: i32,
     pub server: Option<Server>,
@@ -59,31 +63,29 @@ pub struct Lobby {
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum LobbyState {
     NotStarted,
-    ChannelReady,
+    LobbyReady,
     Starting,
     Running,
     Ending,
     Ended,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct PlayerId(String);
+pub type PlayerId = Id;
 
-impl PlayerId {
-    pub fn as_str(&self) -> &str {
-        self.0.as_str()
-    }
+#[derive(Debug, Clone)]
+pub struct Player {
+    pub id: Id,
+    pub username: String,
+    pub state: Vec<PlayerState>,
 }
 
-impl From<&str> for PlayerId {
-    fn from(s: &str) -> Self {
-        PlayerId(s.to_string())
-    }
-}
-
-impl From<String> for PlayerId {
-    fn from(s: String) -> Self {
-        PlayerId(s)
+impl Player {
+    pub fn new(id: &Id, username: &str) -> Self {
+        Player {
+            id: id.clone(),
+            username: username.to_string(),
+            state: Vec::new(),
+        }
     }
 }
 
@@ -94,21 +96,4 @@ pub enum PlayerState {
     Playing,
     Left,
     Done,
-}
-
-#[derive(Debug, Clone)]
-pub struct Player {
-    pub id: PlayerId,
-    pub username: String,
-    pub state: Vec<PlayerState>,
-}
-
-impl Player {
-    pub fn new(id: &PlayerId, username: &str) -> Self {
-        Player {
-            id: id.clone(),
-            username: username.to_string(),
-            state: Vec::new(),
-        }
-    }
 }

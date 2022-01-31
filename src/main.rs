@@ -39,7 +39,7 @@ pub use input::*;
 pub use physics::*;
 pub use transform::*;
 
-use network_core::Backend;
+use network_core::ApiBackend;
 
 use editor::{Editor, EditorCamera, EditorInputScheme};
 

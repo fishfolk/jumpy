@@ -38,12 +38,12 @@ use crate::items::spawn_item;
 use crate::map::{fixed_update_sproingers, spawn_decoration, spawn_sproinger};
 use crate::network::{
     fixed_update_network_client, fixed_update_network_host, update_network_client,
-    update_network_host, AccountId, NetworkClient, NetworkHost,
+    update_network_host, NetworkClient, NetworkHost, PlayerId,
 };
 use crate::particles::{draw_particles, update_particle_emitters};
 pub use music::{start_music, stop_music};
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub enum GameMode {
     Local,
     NetworkHost {
@@ -51,7 +51,7 @@ pub enum GameMode {
     },
     NetworkClient {
         port: Option<u16>,
-        host_id: AccountId,
+        host_id: PlayerId,
     },
 }
 
@@ -100,7 +100,7 @@ impl Game {
         let mut fixed_updates_builder = Scheduler::builder();
 
         match mode {
-            GameMode::NetworkClient { port, host_id } => {
+            GameMode::NetworkClient { port, ref host_id } => {
                 let e = world.spawn(());
                 world.insert_one(e, NetworkClient::new(port, host_id))?;
 

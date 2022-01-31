@@ -152,7 +152,7 @@ async fn main() -> Result<()> {
                 map,
                 players,
             } => {
-                let is_host = Api::is_own_id(host_id)?;
+                let is_host = Api::is_own_id(&host_id)?;
 
                 let mode = if is_host {
                     GameMode::NetworkHost { port: None }

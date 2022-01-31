@@ -2,7 +2,7 @@
 
 use hecs::World;
 
-pub use network_core::{Account, AccountId, Backend, Lobby, LobbyId, DEFAULT_PORT};
+pub use network_core::{Backend, Lobby, LobbyId, Player, PlayerId, DEFAULT_PORT};
 
 #[cfg(feature = "ultimate")]
 pub use ultimate::UltimateBackend as Api;
@@ -13,14 +13,17 @@ pub use network_core::MockBackend as Api;
 #[allow(dead_code)]
 pub struct NetworkClient {
     port: u16,
-    host_id: AccountId,
+    host_id: PlayerId,
 }
 
 impl NetworkClient {
-    pub fn new<P: Into<Option<u16>>>(port: P, host_id: AccountId) -> Self {
+    pub fn new<P: Into<Option<u16>>>(port: P, host_id: &PlayerId) -> Self {
         let port = port.into().unwrap_or(DEFAULT_PORT);
 
-        NetworkClient { port, host_id }
+        NetworkClient {
+            port,
+            host_id: host_id.clone(),
+        }
     }
 }
 

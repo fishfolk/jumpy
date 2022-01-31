@@ -1,9 +1,9 @@
-use crate::{Account, AccountId, Lobby, Result};
+use crate::{Lobby, Player, PlayerId, Result};
 
-pub trait Backend {
-    fn get_account(id: AccountId) -> Result<Account>;
-    fn get_own_account() -> Result<Account>;
-    fn is_own_id(id: AccountId) -> Result<bool>;
+pub trait Backend<'a> {
+    fn get_player(id: &PlayerId) -> Result<&'a Player>;
+    fn get_self() -> Result<&'a Player>;
+    fn is_own_id(id: &PlayerId) -> Result<bool>;
 }
 
 static mut BACKEND_INSTANCE: Option<Box<MockBackend>> = None;
@@ -12,33 +12,25 @@ static mut BACKEND_INSTANCE: Option<Box<MockBackend>> = None;
 /// Will be removed once we have a backend that can be freely redistributed (Steam, probably)
 #[allow(dead_code)]
 pub struct MockBackend {
-    accounts: Vec<Account>,
+    players: Vec<Player>,
     lobbies: Vec<Lobby>,
 
-    own_account_id: AccountId,
+    own_player_id: PlayerId,
 }
 
 impl MockBackend {
     pub fn new() -> Self {
-        let accounts = vec![
-            Account {
-                id: 1,
-                display_name: "oasf".to_string(),
-                email: "oasf@polygo.no".to_string(),
-                password_hash: Some("secretsauce".to_string()),
-            },
-            Account {
-                id: 2,
-                display_name: "other_user".to_string(),
-                email: "other@polygo.no".to_string(),
-                password_hash: Some("secretsauce".to_string()),
-            },
+        let own_player_id = PlayerId::from("1");
+
+        let players = vec![
+            Player::new(&own_player_id, "oasf"),
+            Player::new(&PlayerId::from("2"), "other player"),
         ];
 
         MockBackend {
-            accounts,
+            players,
             lobbies: Vec::new(),
-            own_account_id: 1,
+            own_player_id,
         }
     }
 
@@ -53,25 +45,23 @@ impl Default for MockBackend {
     }
 }
 
-impl Backend for MockBackend {
-    fn get_account(id: AccountId) -> Result<Account> {
+impl<'a> Backend<'a> for MockBackend {
+    fn get_player(id: &PlayerId) -> Result<&'a Player> {
         let instance = Self::get_instance();
-        let res = instance.accounts.iter().find(|account| account.id == id);
-
-        if let Some(account) = res.cloned() {
-            Ok(account.remove_secrets())
+        if let Some(player) = instance.players.iter().find(|&account| account.id == *id) {
+            Ok(player)
         } else {
-            Err("Not found")
+            Err("not found")
         }
     }
 
-    fn get_own_account() -> Result<Account> {
+    fn get_self() -> Result<&'a Player> {
         let instance = Self::get_instance();
-        Self::get_account(instance.own_account_id)
+        Self::get_player(&instance.own_player_id)
     }
 
-    fn is_own_id(id: AccountId) -> Result<bool> {
-        let account = Self::get_own_account()?;
-        Ok(id == account.id)
+    fn is_own_id(id: &PlayerId) -> Result<bool> {
+        let player = Self::get_self()?;
+        Ok(*id == player.id)
     }
 }

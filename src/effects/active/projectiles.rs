@@ -163,7 +163,7 @@ enum ProjectileCollision {
     Map,
 }
 
-pub fn update_projectiles(world: &mut World) {
+pub fn fixed_update_projectiles(world: &mut World) {
     let bodies = world
         .query::<(&Transform, &PhysicsBody)>()
         .iter()

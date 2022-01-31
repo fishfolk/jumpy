@@ -168,9 +168,7 @@ pub fn update_particle_emitters(world: &mut World) {
     for (_, (transform, emitter)) in world.query_mut::<(&Transform, &mut ParticleEmitter)>() {
         update_one_particle_emitter(transform.position, transform.rotation, emitter);
     }
-}
 
-pub fn update_particle_emitter_sets(world: &mut World) {
     for (_, (transform, emitters)) in world.query_mut::<(&Transform, &mut Vec<ParticleEmitter>)>() {
         for emitter in emitters.iter_mut() {
             update_one_particle_emitter(transform.position, transform.rotation, emitter);

@@ -77,7 +77,7 @@ pub fn spawn_sproinger(world: &mut World, position: Vec2) -> Result<Entity> {
     Ok(entity)
 }
 
-pub fn update_sproingers(world: &mut World) {
+pub fn fixed_update_sproingers(world: &mut World) {
     let dt = get_frame_time();
 
     let bodies = world

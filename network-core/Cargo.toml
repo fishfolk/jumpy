@@ -1,0 +1,9 @@
+[package]
+name = "network-core"
+version = "0.3.0"
+authors = ["Fish Fight Contributors"]
+license = "MIT OR Apache-2.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }

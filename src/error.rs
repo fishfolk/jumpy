@@ -31,7 +31,6 @@ pub enum ErrorKind {
     Parsing,
     Input,
     Network,
-    Api,
     EditorAction,
 }
 
@@ -44,7 +43,6 @@ impl ErrorKind {
             ErrorKind::Parsing => "Parsing error",
             ErrorKind::Input => "Input error",
             ErrorKind::Network => "Network error",
-            ErrorKind::Api => "Account error",
             ErrorKind::EditorAction => "Editor action error",
         }
     }
@@ -161,6 +159,12 @@ impl error::Error for Error {
             Repr::SimpleMessage(..) => None,
             Repr::Custom(ref c) => c.error.cause(),
         }
+    }
+}
+
+impl From<network_core::Error> for Error {
+    fn from(err: network_core::Error) -> Self {
+        Error::new_message(ErrorKind::Network, err)
     }
 }
 

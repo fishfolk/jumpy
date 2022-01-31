@@ -128,7 +128,7 @@ impl PhysicsBody {
     }
 }
 
-pub fn update_physics_bodies(world: &mut World) {
+pub fn fixed_update_physics_bodies(world: &mut World) {
     let mut collision_world = storage::get_mut::<CollisionWorld>();
 
     for (_, (transform, body)) in world.query_mut::<(&mut Transform, &mut PhysicsBody)>() {
@@ -252,7 +252,7 @@ impl RigidBody {
     }
 }
 
-pub fn update_rigid_bodies(world: &mut World) {
+pub fn fixed_update_rigid_bodies(world: &mut World) {
     for (_, (transform, body)) in world.query_mut::<(&mut Transform, &mut RigidBody)>() {
         transform.position += body.velocity;
 

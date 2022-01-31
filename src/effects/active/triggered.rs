@@ -153,7 +153,7 @@ pub fn spawn_triggered_effect(
 const KICK_FORCE: f32 = 15.0;
 const KICK_DELAY: f32 = 0.22;
 
-pub fn update_triggered_effects(world: &mut World) {
+pub fn fixed_update_triggered_effects(world: &mut World) {
     let dt = get_frame_time();
 
     let mut to_trigger = Vec::new();

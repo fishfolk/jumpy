@@ -8,13 +8,14 @@ use macroquad::{
 
 use fishsticks::{Button, GamepadContext};
 
+use network_core::Backend;
+
 use super::{draw_main_menu_background, GuiResources, Menu, MenuEntry, MenuResult, Panel};
 
 use crate::input::update_gamepad_context;
-use crate::network::{AccountId, Lobby};
+use crate::network::{AccountId, Api};
 use crate::player::{PlayerControllerKind, PlayerParams};
-use crate::resources::MapResource;
-use crate::{gui, is_gamepad_btn_pressed, Api, EditorInputScheme, GameInputScheme, Map, Resources};
+use crate::{gui, is_gamepad_btn_pressed, EditorInputScheme, GameInputScheme, Map, Resources};
 
 const MENU_WIDTH: f32 = 300.0;
 
@@ -30,7 +31,7 @@ pub enum MainMenuResult {
     },
     NetworkGame {
         host_id: AccountId,
-        map_resource: MapResource,
+        map: Map,
         players: Vec<PlayerParams>,
     },
     Editor {
@@ -338,15 +339,11 @@ fn local_game_ui(ui: &mut ui::Ui, player_input: &mut Vec<GameInputScheme>) -> Op
 #[allow(dead_code)]
 struct NetworkUiState {
     input_scheme: Option<GameInputScheme>,
-    lobbies: Vec<Lobby>,
 }
 
 impl NetworkUiState {
     pub fn new() -> Self {
-        NetworkUiState {
-            input_scheme: None,
-            lobbies: Vec::new(),
-        }
+        NetworkUiState { input_scheme: None }
     }
 }
 
@@ -354,15 +351,13 @@ fn network_game_ui(ui: &mut ui::Ui, _state: &mut NetworkUiState) -> Option<MainM
     let mut res = None;
 
     if ui.button(None, "Host") {
-        let account = Api::get_instance()
-            .sign_in("oasf@polygo.no", "secretsauce")
-            .unwrap();
+        let account = Api::get_own_account().unwrap();
 
         let resources = storage::get::<Resources>();
         let map_resource = resources.maps.first().cloned().unwrap();
         res = Some(MainMenuResult::NetworkGame {
             host_id: account.id,
-            map_resource,
+            map: map_resource.map,
             players: vec![
                 PlayerParams {
                     index: 0,
@@ -379,15 +374,11 @@ fn network_game_ui(ui: &mut ui::Ui, _state: &mut NetworkUiState) -> Option<MainM
     }
 
     if ui.button(None, "Join") {
-        let _account = Api::get_instance()
-            .sign_in("other@polygo.no", "secretsauce")
-            .unwrap();
-
         let resources = storage::get::<Resources>();
         let map_resource = resources.maps.first().cloned().unwrap();
         res = Some(MainMenuResult::NetworkGame {
-            host_id: 2,
-            map_resource,
+            host_id: 1,
+            map: map_resource.map,
             players: vec![
                 PlayerParams {
                     index: 0,
@@ -405,108 +396,3 @@ fn network_game_ui(ui: &mut ui::Ui, _state: &mut NetworkUiState) -> Option<MainM
 
     res
 }
-
-/*
-struct NetworkUiState {
-    input_scheme: GameInputScheme,
-    connection_kind: NetworkConnectionKind,
-    connection: NetworkConnection,
-    custom_relay: bool,
-}
-
-fn network_game_ui(ui: &mut ui::Ui, state: &mut NetworkUiState) -> Option<MainMenuResult> {
-    let mut connection_kind_ui = state.connection_kind as usize;
-
-    widgets::ComboBox::new(hash!(), &["Lan network", "STUN server", "Relay server"])
-        .ratio(0.4)
-        .label("Connection type")
-        .ui(ui, &mut connection_kind_ui);
-
-    match connection_kind_ui {
-        x if x == NetworkConnectionKind::Stun as usize => {
-            state.connection_kind = NetworkConnectionKind::Stun;
-        }
-        x if x == NetworkConnectionKind::Lan as usize => {
-            state.connection_kind = NetworkConnectionKind::Lan;
-        }
-        x if x == NetworkConnectionKind::Relay as usize => {
-            state.connection_kind = NetworkConnectionKind::Relay;
-        }
-        _ => unreachable!(),
-    }
-
-    if state.connection_kind == NetworkConnectionKind::Relay {
-        widgets::Checkbox::new(hash!())
-            .label("Use custom relay server")
-            .ratio(0.4)
-            .ui(ui, &mut state.custom_relay);
-
-        if state.custom_relay {
-            widgets::InputText::new(hash!())
-                .ratio(0.4)
-                .label("Self addr")
-                .ui(ui, &mut state.connection.relay_addr);
-        }
-    }
-
-    let mut self_addr = state.connection.local_addr.clone();
-    widgets::InputText::new(hash!())
-        .ratio(0.4)
-        .label("Self addr")
-        .ui(ui, &mut self_addr);
-
-    widgets::InputText::new(hash!())
-        .ratio(0.4)
-        .label("Opponent addr")
-        .ui(ui, &mut state.connection.opponent_addr);
-
-    state.connection.update(state.connection_kind);
-
-    if ui.button(None, "Probe connection") {
-        state.connection.probe();
-    }
-
-    ui.label(
-        None,
-        &format!("Connection status: {:?}", state.connection.status),
-    );
-
-    if state.connection.status == NetworkConnectionStatus::Connected
-        && ui.button(None, "Connect (A) (Enter)")
-        && state.connection.connect()
-    {
-        return Some(MainMenuResult::NetworkGame {
-            socket: state.connection.socket.take().unwrap(),
-            id: if state.connection.local_addr > state.connection.opponent_addr {
-                0
-            } else {
-                1
-            },
-            input_scheme: state.input_scheme,
-        });
-    }
-
-    ui.label(
-        vec2(430., 310.),
-        &format!("Input: {:?}", state.input_scheme),
-    );
-
-    ui.label(vec2(360., 330.), "Press V/L/Start to change");
-    if is_key_pressed(KeyCode::V) {
-        state.input_scheme = GameInputScheme::KeyboardLeft;
-    }
-
-    if is_key_pressed(KeyCode::L) {
-        state.input_scheme = GameInputScheme::KeyboardRight;
-    }
-
-    let gamepad_system = storage::get_mut::<GamepadContext>();
-    for (ix, gamepad) in gamepad_system.gamepads() {
-        if gamepad.digital_inputs.activated(fishsticks::Button::Start) {
-            state.input_scheme = GameInputScheme::Gamepad(ix);
-        }
-    }
-
-    None
-}
-*/

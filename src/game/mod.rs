@@ -16,7 +16,7 @@ use hecs::{Entity, World};
 use crate::debug;
 use crate::ecs::Scheduler;
 use crate::gui::{self, GAME_MENU_RESULT_MAIN_MENU, GAME_MENU_RESULT_QUIT};
-use crate::physics::{debug_draw_physics_bodies, update_physics_bodies};
+use crate::physics::{debug_draw_physics_bodies, fixed_update_physics_bodies};
 use crate::player::{
     draw_weapons_hud, spawn_player, update_player_animations, update_player_camera_box,
     update_player_controllers, update_player_events, update_player_inventory,
@@ -25,25 +25,34 @@ use crate::player::{
 use crate::Result;
 use crate::{
     create_collision_world, debug_draw_drawables, debug_draw_rigid_bodies, draw_drawables,
-    exit_to_main_menu, is_gamepad_btn_pressed, quit_to_desktop, update_animated_sprites,
-    update_rigid_bodies, Map, MapLayerKind, MapObjectKind, Resources,
+    exit_to_main_menu, fixed_update_rigid_bodies, is_gamepad_btn_pressed, quit_to_desktop,
+    update_animated_sprites, Map, MapLayerKind, MapObjectKind, Resources,
 };
 
 pub use input::{collect_local_input, GameInput, GameInputScheme};
 
 use crate::effects::active::debug_draw_active_effects;
-use crate::effects::active::projectiles::update_projectiles;
-use crate::effects::active::triggered::update_triggered_effects;
+use crate::effects::active::projectiles::fixed_update_projectiles;
+use crate::effects::active::triggered::fixed_update_triggered_effects;
 use crate::items::spawn_item;
-use crate::map::{spawn_decoration, spawn_sproinger, update_sproingers};
-use crate::particles::{draw_particles, update_particle_emitter_sets, update_particle_emitters};
+use crate::map::{fixed_update_sproingers, spawn_decoration, spawn_sproinger};
+use crate::network::{
+    fixed_update_network_client, fixed_update_network_host, update_network_client,
+    update_network_host, AccountId, NetworkClient, NetworkHost,
+};
+use crate::particles::{draw_particles, update_particle_emitters};
 pub use music::{start_music, stop_music};
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone)]
 pub enum GameMode {
     Local,
-    NetworkHost,
-    NetworkClient,
+    NetworkHost {
+        port: Option<u16>,
+    },
+    NetworkClient {
+        port: Option<u16>,
+        host_id: AccountId,
+    },
 }
 
 pub struct Game {
@@ -58,7 +67,7 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new(_mode: GameMode, map: Map, player_params: &[PlayerParams]) -> Game {
+    pub fn new(mode: GameMode, map: Map, player_params: &[PlayerParams]) -> Result<Game> {
         let mut world = World::default();
 
         {
@@ -86,42 +95,72 @@ impl Game {
 
         storage::store(map);
 
-        let updates = Scheduler::builder()
+        let mut updates_builder = Scheduler::builder();
+
+        let mut fixed_updates_builder = Scheduler::builder();
+
+        match mode {
+            GameMode::NetworkClient { port, host_id } => {
+                let e = world.spawn(());
+                world.insert_one(e, NetworkClient::new(port, host_id))?;
+
+                updates_builder.add_system(update_network_client);
+
+                fixed_updates_builder.add_system(fixed_update_network_client);
+            }
+            GameMode::NetworkHost { port } => {
+                let e = world.spawn(());
+                world.insert_one(e, NetworkHost::new(port))?;
+
+                updates_builder.add_system(update_network_host);
+
+                fixed_updates_builder.add_system(fixed_update_network_host);
+            }
+            _ => {}
+        }
+
+        updates_builder
             .add_system(update_player_controllers)
-            .add_system(update_player_camera_box)
-            .add_system(update_player_states)
-            .add_system(update_player_inventory)
-            .add_system(update_player_passive_effects)
-            .add_system(update_player_events)
-            .add_system(update_player_animations)
-            .add_system(update_animated_sprites)
-            .add_system(update_particle_emitters)
-            .add_system(update_particle_emitter_sets)
+            .add_system(update_player_camera_box);
+
+        if matches!(mode, GameMode::Local | GameMode::NetworkHost { .. }) {
+            updates_builder
+                .add_system(update_player_states)
+                .add_system(update_player_inventory)
+                .add_system(update_player_passive_effects)
+                .add_system(update_player_events);
+
+            fixed_updates_builder
+                .add_system(fixed_update_physics_bodies)
+                .add_system(fixed_update_rigid_bodies)
+                .add_system(fixed_update_projectiles)
+                .add_system(fixed_update_triggered_effects)
+                .add_system(fixed_update_sproingers);
+        }
+
+        let updates = updates_builder
+            .with_system(update_player_animations)
+            .with_system(update_animated_sprites)
+            .with_system(update_particle_emitters)
             .build();
 
-        let fixed_updates = Scheduler::builder()
-            .add_system(update_physics_bodies)
-            .add_system(update_rigid_bodies)
-            .add_system(update_projectiles)
-            .add_system(update_triggered_effects)
-            .add_system(update_sproingers)
-            .build();
+        let fixed_updates = fixed_updates_builder.build();
 
         let draws = Scheduler::builder()
-            .add_thread_local(draw_drawables)
-            .add_thread_local(draw_weapons_hud)
-            .add_thread_local(draw_particles)
+            .with_thread_local(draw_drawables)
+            .with_thread_local(draw_weapons_hud)
+            .with_thread_local(draw_particles)
             .build();
 
         #[cfg(debug_assertions)]
         let debug_draws = Scheduler::builder()
-            .add_thread_local(debug_draw_drawables)
-            .add_thread_local(debug_draw_physics_bodies)
-            .add_thread_local(debug_draw_rigid_bodies)
-            .add_thread_local(debug_draw_active_effects)
+            .with_thread_local(debug_draw_drawables)
+            .with_thread_local(debug_draw_physics_bodies)
+            .with_thread_local(debug_draw_rigid_bodies)
+            .with_thread_local(debug_draw_active_effects)
             .build();
 
-        Game {
+        let res = Game {
             world,
             players,
             updates,
@@ -129,7 +168,9 @@ impl Game {
             draws,
             #[cfg(debug_assertions)]
             debug_draws,
-        }
+        };
+
+        Ok(res)
     }
 
     fn on_update(&mut self) {

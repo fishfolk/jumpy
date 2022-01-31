@@ -39,11 +39,15 @@ pub use input::*;
 pub use physics::*;
 pub use transform::*;
 
+use network_core::Backend;
+
 use editor::{Editor, EditorCamera, EditorInputScheme};
 
 pub use error::{Error, ErrorKind, Result};
 
 use map::{Map, MapLayerKind, MapObjectKind};
+
+use network::Api;
 
 pub use channel::Channel;
 
@@ -64,7 +68,6 @@ pub use ecs::Owner;
 
 use crate::effects::passive::init_passive_effects;
 use crate::game::GameMode;
-use crate::network::Api;
 use crate::particles::Particles;
 use crate::resources::load_resources;
 pub use effects::{
@@ -139,28 +142,29 @@ async fn main() -> Result<()> {
     'outer: loop {
         match gui::show_main_menu().await {
             MainMenuResult::LocalGame { map, players } => {
-                let game = Game::new(GameMode::Local, map, &players);
+                let game = Game::new(GameMode::Local, map, &players)?;
                 scene::add_node(game);
 
                 start_music("fish_tide");
             }
             MainMenuResult::NetworkGame {
                 host_id,
-                map_resource: _,
-                players: _,
+                map,
+                players,
             } => {
-                let _is_host = Api::get_instance().is_own_id(host_id)?;
+                let is_host = Api::is_own_id(host_id)?;
 
-                // let game = NetworkGame::new(host_id, map_resource, &players)?;
-                // scene::add_node(game);
-                //
-                // if is_host {
-                //     let server = Server::new(DEFAULT_SERVER_PORT, &players)?;
-                //     scene::add_node(server);
-                // } else {
-                //     let client = Client::new(host_id)?;
-                //     scene::add_node(client);
-                // }
+                let mode = if is_host {
+                    GameMode::NetworkHost { port: None }
+                } else {
+                    GameMode::NetworkClient {
+                        port: None,
+                        host_id,
+                    }
+                };
+
+                let game = Game::new(mode, map, &players)?;
+                scene::add_node(game);
 
                 start_music("fish_tide");
             }

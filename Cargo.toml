@@ -6,7 +6,20 @@ authors = ["Fish Fight Contributors"]
 license = "MIT OR Apache-2.0"
 edition = "2018"
 
+[profile.dev.package."*"]
+opt-level = 3
+
+[features]
+default = []
+
+[workspace]
+members = ["network-core"]
+
 [dependencies]
+network-core = { path = "./network-core" }
+
+# ultimate = { path = "../FishFight-ultimate", package = "fishfight-ultimate", optional = true }
+
 macroquad = { version = "0.3.10" }
 macroquad-platformer = "0.1"
 ff-particles = { version = "0.1", features = ["serde"] }
@@ -14,6 +27,3 @@ hecs = "0.7.1"
 fishsticks = "0.2.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-
-[profile.dev.package."*"]
-opt-level = 3

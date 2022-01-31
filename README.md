@@ -37,7 +37,8 @@ Before committing and opening a PR, please run the following commands and follow
 ### Learning Materials
 - https://fishfight.github.io/FishFight/
 - https://macroquad.rs/tutorials/fish-tutorial/ (outdated)
-- https://not-fl3.github.io/platformer-book/intro.html
+- https://not-fl3.github.io/platformer-book/intro.html (wip)
+- https://cleancut.github.io/rusty_engine/
 - https://sokoban.iolivia.me/
 - https://pragprog.com/titles/hwrust/hands-on-rust/
 

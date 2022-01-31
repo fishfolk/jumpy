@@ -50,7 +50,14 @@ jobs:
         profile: ["", --release]
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Dependencies
+        if: matrix.config.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --allow-unauthenticated -y -qq \
+           libasound2-dev libgl1-mesa-dev libx11-dev libxi-dev
       - name: Cache Cargo dependencies
         uses: actions/cache@v2
         with:
@@ -59,7 +66,14 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          profile: minimal
+          target: ${{ matrix.config.target }}
       - uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --target=${{ matrix.config.target }} ${{ matrix.profile }}
+          args: --locked --target ${{ matrix.config.target }} ${{ matrix.profile }}

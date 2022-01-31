@@ -140,7 +140,6 @@ name = "fishfight"
 version = "0.3.0"
 dependencies = [
  "ff-particles",
- "fishfight-ultimate",
  "fishsticks",
  "hecs",
  "macroquad",
@@ -148,13 +147,6 @@ dependencies = [
  "network-core",
  "serde",
  "serde_json",
-]
-
-[[package]]
-name = "fishfight-ultimate"
-version = "0.1.0"
-dependencies = [
- "network-core",
 ]
 
 [[package]]

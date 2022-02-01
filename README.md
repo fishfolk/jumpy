@@ -2,7 +2,7 @@
 
 [![Build Status](https://img.shields.io/github/workflow/status/fishfight/FishFight/Compilation%20check?logo=github&labelColor=1e1c24&color=8bcfcf)](https://github.com/fishfight/FishFight/actions) [![Documentation](https://img.shields.io/badge/documentation-fishfight.github.io-green.svg?labelColor=1e1c24&color=f3ee7a)](https://fishfight.github.io/FishFight/) [![License](https://img.shields.io/badge/License-MIT%20or%20Apache%202-green.svg?label=license&labelColor=1e1c24&color=34925e)](./LICENSE) [![Discord](https://img.shields.io/badge/chat-on%20discord-green.svg?logo=discord&logoColor=fff&labelColor=1e1c24&color=8d5b3f)](https://discord.gg/4smxjcheE5)
 
-![Fish Fight Preview](./assets/preview.gif)
+![Fish Fight Preview](https://user-images.githubusercontent.com/24392180/151969075-399e9fea-e2de-4340-96a4-0a0e5b79c281.gif)
 
 ## Introduction
 

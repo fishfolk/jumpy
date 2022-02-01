@@ -57,6 +57,7 @@
           "timed_trigger": 0.7,
           "sprite": {
             "texture": "explosion_big",
+            "autoplay_id": "effect",
             "animations": [
               {
                 "id": "effect",
@@ -70,6 +71,7 @@
       ],
       "sprite": {
         "texture": "cannon_ball",
+        "autoplay_id": "effect",
         "animations": [
           {
             "id": "effect",
@@ -78,8 +80,7 @@
             "fps": 1,
             "is_looping": true
           }
-        ],
-        "should_autoplay": true
+        ]
       },
       "particles": [
         {
@@ -92,6 +93,7 @@
   ],
   "sprite": {
     "texture": "cannon",
+    "autoplay_id": "idle",
     "animations": [
       {
         "id": "idle",

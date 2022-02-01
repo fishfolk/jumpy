@@ -1,8 +1,0 @@
-# https://github.com/rust-embedded/cross#passing-environment-variables-into-the-build-environment
-
-[build.env]
-passthrough = [
-    "RUST_BACKTRACE",
-    "RUST_LOG",
-    "RUSTFLAGS",
-]

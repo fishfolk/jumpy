@@ -7,7 +7,7 @@ use macroquad::{
 };
 
 use fishsticks::{Button, GamepadContext};
-use network_core::{Api, PlayerId};
+use network_core::Id;
 
 use super::{draw_main_menu_background, GuiResources, Menu, MenuEntry, MenuResult, Panel};
 
@@ -28,7 +28,7 @@ pub enum MainMenuResult {
         players: Vec<PlayerParams>,
     },
     NetworkGame {
-        host_id: PlayerId,
+        is_host: bool,
         map: Map,
         players: Vec<PlayerParams>,
     },
@@ -349,12 +349,10 @@ fn network_game_ui(ui: &mut ui::Ui, _state: &mut NetworkUiState) -> Option<MainM
     let mut res = None;
 
     if ui.button(None, "Host") {
-        let player = Api::get_own_player().unwrap();
-
         let resources = storage::get::<Resources>();
         let map_resource = resources.maps.first().cloned().unwrap();
         res = Some(MainMenuResult::NetworkGame {
-            host_id: player.id.clone(),
+            is_host: true,
             map: map_resource.map,
             players: vec![
                 PlayerParams {
@@ -364,7 +362,7 @@ fn network_game_ui(ui: &mut ui::Ui, _state: &mut NetworkUiState) -> Option<MainM
                 },
                 PlayerParams {
                     index: 1,
-                    controller: PlayerControllerKind::Network(PlayerId::from("2")),
+                    controller: PlayerControllerKind::Network(Id::from("2")),
                     character: resources.player_characters[1].clone(),
                 },
             ],
@@ -375,12 +373,12 @@ fn network_game_ui(ui: &mut ui::Ui, _state: &mut NetworkUiState) -> Option<MainM
         let resources = storage::get::<Resources>();
         let map_resource = resources.maps.first().cloned().unwrap();
         res = Some(MainMenuResult::NetworkGame {
-            host_id: PlayerId::from("1"),
+            is_host: false,
             map: map_resource.map,
             players: vec![
                 PlayerParams {
                     index: 0,
-                    controller: PlayerControllerKind::Network(PlayerId::from("1")),
+                    controller: PlayerControllerKind::Network(Id::from("1")),
                     character: resources.player_characters[0].clone(),
                 },
                 PlayerParams {

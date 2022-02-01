@@ -5,5 +5,10 @@ authors = ["Fish Fight Contributors"]
 license = "MIT OR Apache-2.0"
 edition = "2021"
 
+[features]
+default = []
+
 [dependencies]
 async-trait = "0.1.52"
+serde = { version = "1.0", package = "serde", features = ["derive"], optional = true }
+serde_json = { version = "1.0", optional = true }

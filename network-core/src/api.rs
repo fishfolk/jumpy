@@ -2,13 +2,12 @@ use std::collections::HashMap;
 
 use async_trait::async_trait;
 
-use crate::{Lobby, LobbyId, Player, Id, Result, PlayerId};
+use crate::{Id, Lobby, Player, RequestStatus, Result};
 
 static mut API_INSTANCE: Option<Api> = None;
 
 pub struct Api {
     backend: Box<dyn ApiBackend>,
-    own_player: Option<Player>,
 }
 
 impl Api {
@@ -21,53 +20,21 @@ impl Api {
             .unwrap_or_else(|| panic!("Api::get_instance was called before Api::init"))
     }
 
-    pub async fn init<T: 'static + ApiBackend + Default>(token: &str) -> Result<Player> {
+    pub async fn init<T: 'static + ApiBackend + Default>(token: &str) -> Result<()> {
         let backend = Box::new(T::default());
 
-        let mut api = Api {
-            backend,
-            own_player: None,
-        };
+        let mut api = Api { backend };
 
-        let res = api.backend.init(token).await;
-
-        api.own_player = res
-            .as_ref()
-            .ok()
-            .cloned();
-
-        res
+        api.backend.init(token).await
     }
 
-    pub fn is_own_id(id: &PlayerId) -> Result<bool> {
-        let api = Self::get_instance();
-
-        if let Some(player) = &api.own_player {
-            Ok(player.id == *id)
-        } else {
-            Err("unauthenticated")
-        }
-    }
-
-    pub fn get_own_player() -> Option<Player> {
-        let api = Self::get_instance();
-
-        api.own_player.clone()
-    }
-
-    pub async fn get_player(id: &PlayerId) -> Result<Player> {
+    pub async fn get_player(id: &Id) -> Result<Player> {
         let api = Self::get_instance();
 
         api.backend.get_player(id).await
     }
 
-    pub async fn list_lobbies() -> Result<&'static [Lobby]> {
-        let api = Self::get_instance();
-
-        api.backend.list_lobbies().await
-    }
-
-    pub async fn get_lobby(id: &LobbyId) -> Result<Lobby> {
+    pub async fn get_lobby(id: &Id) -> Result<Lobby> {
         let api = Self::get_instance();
 
         api.backend.get_lobby(id).await
@@ -77,14 +44,12 @@ impl Api {
 /// This trait should be implemented by all backend implementations
 #[async_trait]
 pub trait ApiBackend {
-    /// Init session and return authenticated `Player`
-    async fn init(&mut self, token: &str) -> Result<Player>;
+    /// Init backend
+    async fn init(&mut self, token: &str) -> Result<()>;
     /// Get `Player` with the specified `id`
-    async fn get_player(&self, id: &Id) -> Result<Player>;
-    /// List all available lobbies
-    async fn list_lobbies(&self) -> Result<&[Lobby]>;
+    async fn get_player(&mut self, id: &Id) -> Result<Player>;
     /// Get `Lobby` with the specified `id`
-    async fn get_lobby(&self, id: &LobbyId) -> Result<Lobby>;
+    async fn get_lobby(&mut self, id: &Id) -> Result<Lobby>;
 }
 
 /// This is used as a placeholder for when no external backend implementation is available.
@@ -93,14 +58,14 @@ pub trait ApiBackend {
 pub struct MockApiBackend {
     players: Vec<Player>,
     lobbies: Vec<Lobby>,
-    sessions: HashMap<String, PlayerId>,
+    sessions: HashMap<String, Id>,
 }
 
 impl MockApiBackend {
     pub fn new() -> Self {
         let players = vec![
-            Player::new(&PlayerId::from("1"), "oasf"),
-            Player::new(&PlayerId::from("2"), "other player"),
+            Player::new(&Id::from("1"), "oasf"),
+            Player::new(&Id::from("2"), "other player"),
         ];
 
         let mut sessions = HashMap::new();
@@ -124,31 +89,23 @@ impl Default for MockApiBackend {
 
 #[async_trait]
 impl ApiBackend for MockApiBackend {
-    async fn init(&mut self, token: &str) -> Result<Player> {
-        if let Some(player_id) = self.sessions.get(token) {
-            self.get_player(player_id).await
-        } else {
-            Err("Unauthenticated")
-        }
+    async fn init(&mut self, _token: &str) -> Result<()> {
+        Ok(())
     }
 
-    async fn get_player(&self, id: &PlayerId) -> Result<Player> {
+    async fn get_player(&mut self, id: &Id) -> Result<Player> {
         if let Some(player) = self.players.iter().find(|&player| player.id == *id) {
             Ok(player.clone())
         } else {
-            Err("not found")
+            Err(RequestStatus::NotFound.into())
         }
     }
 
-    async fn list_lobbies(&self) -> Result<&[Lobby]> {
-        Ok(self.lobbies.as_slice())
-    }
-
-    async fn get_lobby(&self, id: &LobbyId) -> Result<Lobby> {
+    async fn get_lobby(&mut self, id: &Id) -> Result<Lobby> {
         if let Some(lobby) = self.lobbies.iter().find(|&lobby| lobby.id == *id) {
             Ok(lobby.clone())
         } else {
-            Err("not found")
+            Err(RequestStatus::NotFound.into())
         }
     }
 }

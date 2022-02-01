@@ -2,28 +2,27 @@
 
 use hecs::World;
 
-pub use network_core::{Backend, Lobby, LobbyId, Player, PlayerId, DEFAULT_PORT};
+pub use network_core::{Api, Id, Lobby, Player, DEFAULT_PORT};
 
-#[cfg(feature = "ultimate")]
-pub use ultimate::UltimateBackend as Api;
+use crate::Result;
 
-#[cfg(not(feature = "ultimate"))]
-pub use network_core::MockBackend as Api;
+pub async fn init_api(token: &str) -> Result<()> {
+    #[cfg(feature = "ultimate")]
+    Api::init::<ultimate::UltimateApiBackend>(token).await?;
 
-#[allow(dead_code)]
-pub struct NetworkClient {
-    port: u16,
-    host_id: PlayerId,
+    #[cfg(not(feature = "ultimate"))]
+    Api::init::<network_core::MockApiBackend>(token).await?;
+
+    Ok(())
 }
 
-impl NetworkClient {
-    pub fn new<P: Into<Option<u16>>>(port: P, host_id: &PlayerId) -> Self {
-        let port = port.into().unwrap_or(DEFAULT_PORT);
+#[allow(dead_code)]
+#[derive(Default)]
+pub struct NetworkClient {}
 
-        NetworkClient {
-            port,
-            host_id: host_id.clone(),
-        }
+impl NetworkClient {
+    pub fn new() -> Self {
+        NetworkClient {}
     }
 }
 
@@ -32,15 +31,12 @@ pub fn update_network_client(_world: &mut World) {}
 pub fn fixed_update_network_client(_world: &mut World) {}
 
 #[allow(dead_code)]
-pub struct NetworkHost {
-    port: u16,
-}
+#[derive(Default)]
+pub struct NetworkHost {}
 
 impl NetworkHost {
-    pub fn new<P: Into<Option<u16>>>(port: P) -> Self {
-        let port = port.into().unwrap_or(DEFAULT_PORT);
-
-        NetworkHost { port }
+    pub fn new() -> Self {
+        NetworkHost {}
     }
 }
 

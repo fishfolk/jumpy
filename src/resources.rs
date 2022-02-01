@@ -498,6 +498,24 @@ pub fn is_valid_map_export_path<P: AsRef<Path>>(path: P, should_overwrite: bool)
     false
 }
 
+#[cfg(target_arch = "wasm32")]
+pub async fn load_resources(assets_dir: &str) {
+    {
+        let assets = match Resources::new(assets_dir).await {
+            Ok(val) => val,
+            Err(err) => panic!("{}: {}", err.kind().as_str(), err),
+        };
+
+        storage::store(assets);
+    }
+
+    {
+        let gui_resources = GuiResources::load(assets_dir).await;
+        storage::store(gui_resources);
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 pub async fn load_resources(assets_dir: &str) {
     let assets_loading = start_coroutine({
         let assets_dir = assets_dir.to_string();

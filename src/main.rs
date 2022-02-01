@@ -39,15 +39,11 @@ pub use input::*;
 pub use physics::*;
 pub use transform::*;
 
-use network_core::Backend;
-
 use editor::{Editor, EditorCamera, EditorInputScheme};
 
 pub use error::{Error, ErrorKind, Result};
 
 use map::{Map, MapLayerKind, MapObjectKind};
-
-use network::Api;
 
 pub use channel::Channel;
 
@@ -117,7 +113,7 @@ fn window_conf() -> Conf {
 }
 
 #[macroquad::main(window_conf)]
-async fn main() -> Result<()> {
+async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     use events::iter_events;
     use gui::MainMenuResult;
 
@@ -139,6 +135,8 @@ async fn main() -> Result<()> {
 
     init_passive_effects();
 
+    // init_api("player_one_token").await?;
+
     'outer: loop {
         match gui::show_main_menu().await {
             MainMenuResult::LocalGame { map, players } => {
@@ -148,19 +146,14 @@ async fn main() -> Result<()> {
                 start_music("fish_tide");
             }
             MainMenuResult::NetworkGame {
-                host_id,
+                is_host,
                 map,
                 players,
             } => {
-                let is_host = Api::is_own_id(&host_id)?;
-
                 let mode = if is_host {
-                    GameMode::NetworkHost { port: None }
+                    GameMode::NetworkHost
                 } else {
-                    GameMode::NetworkClient {
-                        port: None,
-                        host_id,
-                    }
+                    GameMode::NetworkClient
                 };
 
                 let game = Game::new(mode, map, &players)?;

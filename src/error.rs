@@ -8,6 +8,8 @@ use std::{error, fmt, io, result, string::FromUtf8Error};
 
 use macroquad::prelude::{FileError, FontError};
 
+pub use network_core::ErrorKind;
+
 pub type Result<T> = result::Result<T, Error>;
 
 enum Repr {
@@ -20,32 +22,7 @@ enum Repr {
 #[derive(Debug)]
 struct Custom {
     kind: ErrorKind,
-    error: Box<dyn std::error::Error + Send + Sync>,
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum ErrorKind {
-    General,
-    Ecs,
-    File,
-    Parsing,
-    Input,
-    Network,
-    EditorAction,
-}
-
-impl ErrorKind {
-    pub fn as_str(&self) -> &'static str {
-        match *self {
-            ErrorKind::General => "General error",
-            ErrorKind::Ecs => "ECS error",
-            ErrorKind::File => "File error",
-            ErrorKind::Parsing => "Parsing error",
-            ErrorKind::Input => "Input error",
-            ErrorKind::Network => "Network error",
-            ErrorKind::EditorAction => "Editor action error",
-        }
-    }
+    error: Box<dyn error::Error + Send + Sync>,
 }
 
 pub struct Error {
@@ -61,7 +38,7 @@ impl fmt::Debug for Error {
 impl Error {
     pub fn new<E>(kind: ErrorKind, error: E) -> Error
     where
-        E: Into<Box<dyn std::error::Error + Send + Sync>>,
+        E: Into<Box<dyn error::Error + Send + Sync>>,
     {
         Error {
             repr: Repr::Custom(Box::new(Custom {
@@ -140,31 +117,11 @@ impl error::Error for Error {
             Repr::Custom(ref c) => c.error.source(),
         }
     }
-
-    #[allow(deprecated, deprecated_in_future)]
-    fn description(&self) -> &str {
-        match &self.repr {
-            Repr::Simple(kind) => kind.as_str(),
-            Repr::Message(_, msg) => msg,
-            Repr::SimpleMessage(_, &msg) => msg,
-            Repr::Custom(ref c) => c.error.description(),
-        }
-    }
-
-    #[allow(deprecated)]
-    fn cause(&self) -> Option<&dyn error::Error> {
-        match self.repr {
-            Repr::Simple(..) => None,
-            Repr::Message(..) => None,
-            Repr::SimpleMessage(..) => None,
-            Repr::Custom(ref c) => c.error.cause(),
-        }
-    }
 }
 
 impl From<network_core::Error> for Error {
     fn from(err: network_core::Error) -> Self {
-        Error::new_message(ErrorKind::Network, err)
+        Error::new(err.kind(), err)
     }
 }
 

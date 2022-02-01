@@ -70,7 +70,6 @@
       ],
       "sprite": {
         "texture": "cannon_ball",
-        "autoplay_id": "effect",
         "animations": [
           {
             "id": "effect",
@@ -79,13 +78,20 @@
             "fps": 1,
             "is_looping": true
           }
-        ]
-      }
+        ],
+        "should_autoplay": true
+      },
+      "particles": [
+        {
+          "particle_effect": "cannon_cannonball_smoke",
+          "interval": 0.04,
+          "delay": 0.01
+        }
+      ]
     }
   ],
   "sprite": {
     "texture": "cannon",
-    "autoplay_id": "idle",
     "animations": [
       {
         "id": "idle",

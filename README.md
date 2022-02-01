@@ -47,6 +47,10 @@ Before committing and opening a PR, please run the following commands and follow
 1. Download the latest version from the [releases](https://github.com/fishfight/FishFight/releases) page.
 2. Extract the archive and run the executable. (e.g. `./fishfight` or `fishfight.exe`)
 
+### Launcher
+
+[A cross-platform launcher](https://github.com/fishfight/Launcher) is also available for downloading and launching the game easily.
+
 ### Distro Packages
 
 <details>

@@ -8,9 +8,43 @@ use std::{error, fmt, io, result, string::FromUtf8Error};
 
 use macroquad::prelude::{FileError, FontError};
 
-pub use network_core::ErrorKind;
-
 pub type Result<T> = result::Result<T, Error>;
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum ErrorKind {
+    General,
+    Ecs,
+    File,
+    Parsing,
+    Input,
+    Api,
+    Network,
+    EditorAction,
+}
+
+impl ErrorKind {
+    pub fn as_str(&self) -> &'static str {
+        match *self {
+            ErrorKind::General => "General error",
+            ErrorKind::Ecs => "ECS error",
+            ErrorKind::File => "File error",
+            ErrorKind::Parsing => "Parsing error",
+            ErrorKind::Input => "Input error",
+            ErrorKind::Api => "Api error",
+            ErrorKind::Network => "Network error",
+            ErrorKind::EditorAction => "Editor action error",
+        }
+    }
+}
+
+impl From<network_core::ErrorKind> for ErrorKind {
+    fn from(kind: network_core::ErrorKind) -> Self {
+        match kind {
+            network_core::ErrorKind::Api => ErrorKind::Api,
+            network_core::ErrorKind::Network => ErrorKind::Network,
+        }
+    }
+}
 
 enum Repr {
     Simple(ErrorKind),
@@ -121,7 +155,7 @@ impl error::Error for Error {
 
 impl From<network_core::Error> for Error {
     fn from(err: network_core::Error) -> Self {
-        Error::new(err.kind(), err)
+        Error::new(err.kind().into(), err)
     }
 }
 

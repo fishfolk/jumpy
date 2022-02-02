@@ -1,53 +1,16 @@
 mod api;
-mod error;
 mod status;
+
+pub use api::{Api, ApiBackend, MockApiBackend};
+pub use status::RequestStatus;
 
 use std::net::SocketAddr;
 
-pub use async_trait::async_trait;
-
-pub use api::{Api, ApiBackend, MockApiBackend};
-pub use error::{Error, ErrorKind, Result};
-pub use status::RequestStatus;
-
-#[cfg(feature = "serde")]
-pub use serde;
-
-#[cfg(feature = "serde_json")]
-pub use serde_json;
-
-#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
+use crate::Id;
+
 pub const DEFAULT_PORT: u16 = 9000;
-
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub struct Id(String);
-
-impl Id {
-    pub fn as_str(&self) -> &str {
-        self.0.as_str()
-    }
-}
-
-impl ToString for Id {
-    fn to_string(&self) -> String {
-        self.0.to_string()
-    }
-}
-
-impl From<&str> for Id {
-    fn from(s: &str) -> Self {
-        Id(s.to_string())
-    }
-}
-
-impl From<String> for Id {
-    fn from(s: String) -> Self {
-        Id(s)
-    }
-}
 
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]

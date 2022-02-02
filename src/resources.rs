@@ -10,19 +10,16 @@ use ff_particles::EmitterConfig;
 
 use serde::{Deserialize, Serialize};
 
+use core::data::deserialize_json_file;
+use core::error::ErrorKind;
+use core::text::ToStringHelper;
+use core::{formaterr, Result};
+
 use crate::gui::GuiResources;
 use crate::map::DecorationMetadata;
-use crate::{
-    data::deserialize_json_file,
-    error::{ErrorKind, Result},
-    formaterr,
-    items::MapItemMetadata,
-    json,
-    map::Map,
-};
 
 use crate::player::PlayerCharacterMetadata;
-use crate::text::ToStringHelper;
+use crate::{items::MapItemMetadata, json, map::Map};
 
 #[derive(Serialize, Deserialize)]
 struct ParticleEffectMetadata {

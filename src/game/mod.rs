@@ -13,6 +13,8 @@ use macroquad::ui::root_ui;
 
 use hecs::{Entity, World};
 
+use core::Result;
+
 use crate::debug;
 use crate::ecs::Scheduler;
 use crate::gui::{self, GAME_MENU_RESULT_MAIN_MENU, GAME_MENU_RESULT_QUIT};
@@ -22,7 +24,6 @@ use crate::player::{
     update_player_controllers, update_player_events, update_player_inventory,
     update_player_passive_effects, update_player_states, PlayerParams,
 };
-use crate::Result;
 use crate::{
     create_collision_world, debug_draw_drawables, debug_draw_rigid_bodies, draw_drawables,
     exit_to_main_menu, fixed_update_rigid_bodies, is_gamepad_btn_pressed, quit_to_desktop,

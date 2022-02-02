@@ -2,7 +2,8 @@ use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct URect {
     pub x: u32,
     pub y: u32,

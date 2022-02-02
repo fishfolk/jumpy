@@ -10,13 +10,13 @@ mod sproinger;
 pub use decoration::*;
 pub use sproinger::*;
 
-use crate::error::Result;
+use core::math::URect;
+use core::text::ToStringHelper;
+use core::Result;
 
-use crate::text::ToStringHelper;
 use crate::{
     editor::gui::combobox::ComboBoxValue,
     json::{self, TiledMap},
-    math::URect,
     Resources,
 };
 

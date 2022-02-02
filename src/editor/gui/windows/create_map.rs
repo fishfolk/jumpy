@@ -1,15 +1,17 @@
+use std::path::Path;
+
 use macroquad::{
     experimental::collections::storage,
     prelude::*,
     ui::{hash, widgets, Ui},
 };
-use std::path::Path;
 
-use crate::map::Map;
+use core::text::ToStringHelper;
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
+
+use crate::map::Map;
 use crate::resources::map_name_to_filename;
-use crate::text::ToStringHelper;
 use crate::Resources;
 
 pub struct CreateMapWindow {

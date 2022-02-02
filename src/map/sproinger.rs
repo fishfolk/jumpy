@@ -4,9 +4,9 @@ use macroquad::prelude::*;
 
 use hecs::{Entity, World};
 
-use crate::{
-    Animation, Drawable, PhysicsBody, QueuedAnimationAction, Resources, Result, Transform,
-};
+use core::Result;
+
+use crate::{Animation, Drawable, PhysicsBody, QueuedAnimationAction, Resources, Transform};
 
 const SPROINGER_DRAW_ORDER: u32 = 2;
 

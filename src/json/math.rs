@@ -336,8 +336,6 @@ pub mod ivec2_opt {
     }
 }
 
-pub use crate::math::URect;
-
 #[derive(Copy, Clone, Serialize, Deserialize)]
 #[serde(remote = "Rect")]
 pub struct RectDef {

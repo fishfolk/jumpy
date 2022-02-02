@@ -1,4 +1,6 @@
-use crate::{Map, Result};
+use core::Result;
+
+use crate::Map;
 
 use super::UndoableAction;
 

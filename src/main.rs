@@ -7,28 +7,23 @@ use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
 
 pub mod config;
-pub mod editor;
-mod gui;
-mod items;
-pub mod json;
-pub mod map;
-pub mod math;
-mod noise;
-pub mod resources;
-pub mod text;
-#[macro_use]
-pub mod error;
-pub mod data;
 pub mod debug;
 pub mod ecs;
+pub mod editor;
 pub mod effects;
 pub mod events;
 pub mod game;
+mod gui;
 pub mod input;
+mod items;
+pub mod json;
+pub mod map;
 pub mod network;
+mod noise;
 pub mod particles;
 pub mod physics;
 pub mod player;
+pub mod resources;
 
 mod channel;
 mod drawables;
@@ -40,8 +35,6 @@ pub use physics::*;
 pub use transform::*;
 
 use editor::{Editor, EditorCamera, EditorInputScheme};
-
-pub use error::{Error, ErrorKind, Result};
 
 use map::{Map, MapLayerKind, MapObjectKind};
 

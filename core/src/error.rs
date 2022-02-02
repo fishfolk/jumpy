@@ -6,7 +6,10 @@
 
 use std::{error, fmt, io, result, string::FromUtf8Error};
 
-use macroquad::prelude::{FileError, FontError};
+use macroquad::file::FileError;
+use macroquad::text::FontError;
+
+use crate::network::RequestStatus;
 
 pub type Result<T> = result::Result<T, Error>;
 
@@ -37,12 +40,12 @@ impl ErrorKind {
     }
 }
 
-impl From<network_core::ErrorKind> for ErrorKind {
-    fn from(kind: network_core::ErrorKind) -> Self {
-        match kind {
-            network_core::ErrorKind::Api => ErrorKind::Api,
-            network_core::ErrorKind::Network => ErrorKind::Network,
-        }
+impl From<RequestStatus> for Error {
+    fn from(status: RequestStatus) -> Self {
+        Error::new_message(
+            ErrorKind::Api,
+            &format!("[{}]: {}", status.as_code(), status.as_str()),
+        )
     }
 }
 
@@ -153,9 +156,9 @@ impl error::Error for Error {
     }
 }
 
-impl From<network_core::Error> for Error {
-    fn from(err: network_core::Error) -> Self {
-        Error::new(err.kind().into(), err)
+impl From<crate::data::Error> for Error {
+    fn from(err: crate::data::Error) -> Self {
+        Error::new(ErrorKind::Parsing, err)
     }
 }
 
@@ -189,18 +192,6 @@ impl From<FontError> for Error {
     }
 }
 
-impl From<serde_json::Error> for Error {
-    fn from(err: serde_json::Error) -> Self {
-        Error::new(ErrorKind::Parsing, err)
-    }
-}
-
-impl From<crate::data::Error> for Error {
-    fn from(err: crate::data::Error) -> Self {
-        Error::new(ErrorKind::Parsing, err)
-    }
-}
-
 impl From<hecs::ComponentError> for Error {
     fn from(err: hecs::ComponentError) -> Self {
         Error::new(ErrorKind::Ecs, err)
@@ -216,6 +207,12 @@ impl From<hecs::NoSuchEntity> for Error {
 impl From<hecs::QueryOneError> for Error {
     fn from(err: hecs::QueryOneError) -> Self {
         Error::new(ErrorKind::Ecs, err)
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(err: serde_json::Error) -> Self {
+        Error::new(ErrorKind::Parsing, err)
     }
 }
 

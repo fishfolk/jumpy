@@ -13,12 +13,12 @@ use crate::{
     PassiveEffectMetadata, PhysicsBody, QueuedAnimationAction, Resources, Transform,
 };
 
-use crate::effects::active::spawn_active_effect;
+use core::Result;
 
+use crate::effects::active::spawn_active_effect;
 use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::physics::PhysicsBodyParams;
 use crate::player::{Player, PlayerInventory, IDLE_ANIMATION_ID};
-use crate::Result;
 
 pub const ITEMS_DRAW_ORDER: u32 = 1;
 

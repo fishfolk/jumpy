@@ -2,7 +2,9 @@ use std::collections::HashMap;
 
 use async_trait::async_trait;
 
-use crate::{Id, Lobby, Player, RequestStatus, Result};
+use crate::Result;
+
+use super::{Id, Lobby, Player, RequestStatus};
 
 static mut API_INSTANCE: Option<Api> = None;
 

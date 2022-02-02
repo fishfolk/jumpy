@@ -4,11 +4,10 @@ use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
+use core::math::color_from_hex_string;
+
 use crate::map::MapObjectKind;
-use crate::{
-    map::{Map, MapLayer, MapLayerKind, MapObject, MapProperty, MapTile, MapTileset},
-    math::color_from_hex_string,
-};
+use crate::map::{Map, MapLayer, MapLayerKind, MapObject, MapProperty, MapTile, MapTileset};
 
 const SPAWN_POINT_MAP_OBJECT_TYPE: &str = "spawn_point";
 

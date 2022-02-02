@@ -61,9 +61,10 @@ use macroquad::{
     prelude::*,
 };
 
+use core::text::{draw_aligned_text, HorizontalAlignment, VerticalAlignment};
+
 use super::map::{Map, MapLayerKind};
 use crate::resources::{map_name_to_filename, MapResource};
-use crate::text::{draw_aligned_text, HorizontalAlignment, VerticalAlignment};
 
 #[derive(Debug, Clone)]
 pub struct EditorContext {

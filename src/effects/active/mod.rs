@@ -7,9 +7,11 @@ use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
-use crate::math::{deg_to_rad, rotate_vector, IsZero};
+use core::math::{deg_to_rad, rotate_vector, IsZero};
+use core::Result;
+
 use crate::{json, Resources};
-use crate::{PassiveEffectInstance, PassiveEffectMetadata, Result};
+use crate::{PassiveEffectInstance, PassiveEffectMetadata};
 
 pub mod projectiles;
 pub mod triggered;

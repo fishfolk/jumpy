@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use crate::effects::active::triggered::TriggeredEffect;
 use crate::effects::TriggeredEffectTrigger;
 use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
-use crate::player::{on_player_damage, PlayerState};
+use crate::player::{on_player_damage, Player, PlayerState};
 use crate::{json, Drawable, PassiveEffectInstance, PassiveEffectMetadata, SpriteParams};
 use crate::{
     CollisionWorld, PhysicsBody, Resources, RigidBody, RigidBodyParams, SpriteMetadata, Transform,
@@ -235,12 +235,12 @@ pub fn fixed_update_projectiles(world: &mut World) {
         let rect = body.as_rect(transform.position);
         for (other, other_rect) in &bodies {
             if rect.overlaps(other_rect) {
-                if let Ok(mut state) = world.get_mut::<PlayerState>(*other) {
-                    if !state.is_dead {
+                if let Ok(mut player) = world.get_mut::<Player>(*other) {
+                    if player.state != PlayerState::Dead {
                         for meta in projectile.passive_effects.clone().into_iter() {
                             let effect_instance = PassiveEffectInstance::new(None, meta);
 
-                            state.passive_effects.push(effect_instance);
+                            player.passive_effects.push(effect_instance);
                         }
 
                         if projectile.is_lethal {

@@ -5,7 +5,7 @@ use hecs::World;
 use serde::{Deserialize, Serialize};
 
 use crate::player::{
-    PlayerState, CROUCH_ANIMATION_ID, DEATH_BACK_ANIMATION_ID, DEATH_FORWARD_ANIMATION_ID,
+    Player, PlayerState, CROUCH_ANIMATION_ID, DEATH_BACK_ANIMATION_ID, DEATH_FORWARD_ANIMATION_ID,
     FALL_ANIMATION_ID, IDLE_ANIMATION_ID, JUMP_ANIMATION_ID, MOVE_ANIMATION_ID, SLIDE_ANIMATION_ID,
 };
 use crate::{json, Drawable, PhysicsBody};
@@ -249,38 +249,40 @@ impl PlayerAnimations {
 }
 
 pub fn update_player_animations(world: &mut World) {
-    for (_, (state, body, drawable)) in
-        world.query_mut::<(&PlayerState, &PhysicsBody, &mut Drawable)>()
+    for (_, (player, body, drawable)) in world.query_mut::<(&Player, &PhysicsBody, &mut Drawable)>()
     {
         let sprite_set = drawable.get_animated_sprite_set_mut().unwrap();
 
-        sprite_set.flip_all_x(state.is_facing_left);
-        sprite_set.flip_all_y(state.is_upside_down);
+        sprite_set.flip_all_x(player.is_facing_left);
+        sprite_set.flip_all_y(player.is_upside_down);
 
-        #[allow(clippy::if_same_then_else)]
-        let animation_id = if state.is_dead {
-            if state.is_facing_left {
-                DEATH_FORWARD_ANIMATION_ID
-            } else {
-                DEATH_BACK_ANIMATION_ID
+        let animation_id = match player.state {
+            PlayerState::Dead => {
+                if player.is_facing_left {
+                    DEATH_FORWARD_ANIMATION_ID
+                } else {
+                    DEATH_BACK_ANIMATION_ID
+                }
             }
-        } else if state.is_incapacitated {
-            // TODO: implement incapacitated
-            unimplemented!();
-        } else if state.is_sliding {
-            SLIDE_ANIMATION_ID
-        } else if body.is_on_ground {
-            if state.is_crouching {
-                CROUCH_ANIMATION_ID
-            } else if !state.is_attacking && body.velocity.x != 0.0 {
-                MOVE_ANIMATION_ID
-            } else {
-                IDLE_ANIMATION_ID
+            PlayerState::Incapacitated => {
+                // TODO: implement incapacitated
+                unimplemented!();
             }
-        } else if body.velocity.y < 0.0 {
-            JUMP_ANIMATION_ID
-        } else {
-            FALL_ANIMATION_ID
+            PlayerState::Sliding => SLIDE_ANIMATION_ID,
+            PlayerState::Crouching => CROUCH_ANIMATION_ID,
+            _ => {
+                if body.is_on_ground {
+                    if !player.is_attacking && body.velocity.x != 0.0 {
+                        MOVE_ANIMATION_ID
+                    } else {
+                        IDLE_ANIMATION_ID
+                    }
+                } else if body.velocity.y < 0.0 {
+                    JUMP_ANIMATION_ID
+                } else {
+                    FALL_ANIMATION_ID
+                }
+            }
         };
 
         sprite_set.set_all(animation_id, false);

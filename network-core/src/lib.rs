@@ -97,7 +97,7 @@ pub enum LobbyState {
 pub struct Player {
     pub id: Id,
     pub username: String,
-    pub state: Vec<PlayerState>,
+    pub state: Vec<ClientState>,
 }
 
 impl Player {
@@ -113,7 +113,7 @@ impl Player {
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde_json", serde(rename_all = "snake_case"))]
-pub enum PlayerState {
+pub enum ClientState {
     Joined,
     Ready,
     Playing,

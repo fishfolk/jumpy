@@ -19,7 +19,7 @@ pub use triggered::{TriggeredEffectMetadata, TriggeredEffectTrigger};
 use crate::effects::active::projectiles::{spawn_projectile, ProjectileParams};
 use crate::effects::active::triggered::{spawn_triggered_effect, TriggeredEffect};
 use crate::particles::ParticleEmitterMetadata;
-use crate::player::{on_player_damage, PlayerState};
+use crate::player::{on_player_damage, Player};
 use crate::{PhysicsBody, Transform};
 pub use projectiles::ProjectileKind;
 
@@ -43,8 +43,8 @@ pub fn spawn_active_effect(
     params: ActiveEffectMetadata,
 ) -> Result<()> {
     let is_facing_left = {
-        let state = world.get::<PlayerState>(owner).unwrap();
-        state.is_facing_left
+        let player = world.get::<Player>(owner).unwrap();
+        player.is_facing_left
     };
 
     if let Some(id) = &params.sound_effect_id {
@@ -79,7 +79,7 @@ pub fn spawn_active_effect(
             for (e, (transform, body)) in world.query::<(&Transform, &PhysicsBody)>().iter() {
                 let other_rect = body.as_rect(transform.position);
                 if circle.overlaps_rect(&other_rect) {
-                    if let Ok(mut player_state) = world.get_mut::<PlayerState>(e) {
+                    if let Ok(mut player) = world.get_mut::<Player>(e) {
                         if is_explosion || e != owner {
                             if is_lethal {
                                 damage.push((owner, e));
@@ -87,7 +87,7 @@ pub fn spawn_active_effect(
 
                             for meta in passive_effects.clone().into_iter() {
                                 let effect_instance = PassiveEffectInstance::new(None, meta);
-                                player_state.passive_effects.push(effect_instance);
+                                player.passive_effects.push(effect_instance);
                             }
                         }
                     } else if is_explosion {
@@ -125,8 +125,8 @@ pub fn spawn_active_effect(
                 ));
             }
 
-            for (e, (transform, state, body)) in
-                world.query_mut::<(&Transform, &mut PlayerState, &PhysicsBody)>()
+            for (e, (transform, player, body)) in
+                world.query_mut::<(&Transform, &mut Player, &PhysicsBody)>()
             {
                 if owner != e {
                     let other_rect = body.as_rect(transform.position);
@@ -137,7 +137,7 @@ pub fn spawn_active_effect(
 
                         for meta in passive_effects.clone().into_iter() {
                             let effect_instance = PassiveEffectInstance::new(None, meta);
-                            state.passive_effects.push(effect_instance);
+                            player.passive_effects.push(effect_instance);
                         }
                     }
                 }

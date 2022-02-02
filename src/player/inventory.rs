@@ -7,7 +7,7 @@ use crate::items::{
     GROUND_ANIMATION_ID, ITEMS_DRAW_ORDER, SPRITE_ANIMATED_SPRITE_ID,
 };
 use crate::particles::ParticleEmitter;
-use crate::player::{PlayerController, PlayerState, IDLE_ANIMATION_ID, PICKUP_GRACE_TIME};
+use crate::player::{Player, PlayerController, PlayerState, IDLE_ANIMATION_ID, PICKUP_GRACE_TIME};
 use crate::{Drawable, Item, Owner, PassiveEffectInstance, PhysicsBody, Transform};
 
 const THROW_FORCE: f32 = 5.0;
@@ -54,17 +54,17 @@ pub fn update_player_inventory(world: &mut World) {
     let mut to_fire = Vec::new();
     let mut to_destroy = Vec::new();
 
-    for (entity, (transform, controller, state, inventory, body)) in world
+    for (entity, (transform, player, controller, inventory, body)) in world
         .query::<(
             &mut Transform,
+            &mut Player,
             &PlayerController,
-            &mut PlayerState,
             &mut PlayerInventory,
             &mut PhysicsBody,
         )>()
         .iter()
     {
-        if state.is_dead {
+        if player.state == PlayerState::Dead {
             for item_entity in inventory.items.drain(0..) {
                 to_drop.push(item_entity);
             }
@@ -102,7 +102,7 @@ pub fn update_player_inventory(world: &mut World) {
                 if let Some(weapon_entity) = inventory.weapon.take() {
                     to_drop.push(weapon_entity);
 
-                    let velocity = if state.is_facing_left {
+                    let velocity = if player.is_facing_left {
                         vec2(-THROW_FORCE, 0.0)
                     } else {
                         vec2(THROW_FORCE, 0.0)
@@ -111,14 +111,14 @@ pub fn update_player_inventory(world: &mut World) {
                     let mut body = world.get_mut::<PhysicsBody>(weapon_entity).unwrap();
 
                     body.velocity = velocity;
-                } else if state.pickup_grace_timer >= PICKUP_GRACE_TIME {
+                } else if player.pickup_grace_timer >= PICKUP_GRACE_TIME {
                     for (i, &(weapon_entity, rect)) in weapon_colliders.iter().enumerate() {
                         if player_rect.overlaps(&rect) {
                             picked_up.push((entity, weapon_entity));
                             weapon_colliders.remove(i);
 
                             inventory.weapon = Some(weapon_entity);
-                            state.pickup_grace_timer = 0.0;
+                            player.pickup_grace_timer = 0.0;
 
                             let mut body = world.get_mut::<PhysicsBody>(weapon_entity).unwrap();
                             body.is_deactivated = true;
@@ -142,7 +142,7 @@ pub fn update_player_inventory(world: &mut World) {
                 let mut weapon_transform = world.get_mut::<Transform>(weapon_entity).unwrap();
 
                 let weapon_mount = transform.position
-                    + inventory.get_weapon_mount(state.is_facing_left, state.is_upside_down);
+                    + inventory.get_weapon_mount(player.is_facing_left, player.is_upside_down);
 
                 weapon_transform.position = weapon_mount;
 
@@ -150,8 +150,8 @@ pub fn update_player_inventory(world: &mut World) {
                 let frame_size = {
                     let sprite_set = drawable.get_animated_sprite_set_mut().unwrap();
 
-                    sprite_set.flip_all_x(state.is_facing_left);
-                    sprite_set.flip_all_y(state.is_upside_down);
+                    sprite_set.flip_all_x(player.is_facing_left);
+                    sprite_set.flip_all_y(player.is_upside_down);
 
                     sprite_set
                         .map
@@ -163,8 +163,8 @@ pub fn update_player_inventory(world: &mut World) {
                 let mount_offset = flip_offset(
                     weapon.mount_offset,
                     frame_size,
-                    state.is_facing_left,
-                    state.is_upside_down,
+                    player.is_facing_left,
+                    player.is_upside_down,
                 );
 
                 weapon_transform.position += mount_offset;
@@ -174,11 +174,11 @@ pub fn update_player_inventory(world: &mut World) {
                 {
                     let mut offset = weapon.effect_offset;
 
-                    if state.is_facing_left {
+                    if player.is_facing_left {
                         offset.x = frame_size.x - offset.x;
                     }
 
-                    if state.is_upside_down {
+                    if player.is_upside_down {
                         offset.y = frame_size.y - offset.y;
                     }
 
@@ -230,7 +230,7 @@ pub fn update_player_inventory(world: &mut World) {
                 if is_depleted {
                     inventory.items.remove(i);
 
-                    state.passive_effects.retain(|effect| {
+                    player.passive_effects.retain(|effect| {
                         if let Some(effect_item_entity) = effect.item {
                             effect_item_entity != item_entity
                         } else {
@@ -246,14 +246,14 @@ pub fn update_player_inventory(world: &mut World) {
                         Ok(mut drawable) => {
                             let sprite_set = drawable.get_animated_sprite_set_mut().unwrap();
 
-                            sprite_set.flip_all_x(state.is_facing_left);
-                            sprite_set.flip_all_y(state.is_upside_down);
+                            sprite_set.flip_all_x(player.is_facing_left);
+                            sprite_set.flip_all_y(player.is_upside_down);
 
                             let offset = flip_offset(
                                 item.mount_offset,
                                 sprite_set.size(),
-                                state.is_facing_left,
-                                state.is_upside_down,
+                                player.is_facing_left,
+                                player.is_upside_down,
                             );
 
                             let mut item_transform =
@@ -284,11 +284,11 @@ pub fn update_player_inventory(world: &mut World) {
         drawable.draw_order = player_draw_order + 1;
 
         if let Ok(item) = world.get::<Item>(item_entity) {
-            let mut state = world.get_mut::<PlayerState>(player_entity).unwrap();
+            let mut player = world.get_mut::<Player>(player_entity).unwrap();
 
             for meta in item.effects.clone().into_iter() {
                 let effect_instance = PassiveEffectInstance::new(Some(item_entity), meta);
-                state.passive_effects.push(effect_instance);
+                player.passive_effects.push(effect_instance);
             }
         }
     }

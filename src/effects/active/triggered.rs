@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use crate::effects::active::spawn_active_effect;
 use crate::math::deg_to_rad;
 use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
-use crate::player::PlayerState;
+use crate::player::{Player, PlayerState};
 use crate::Result;
 use crate::{json, Drawable, PhysicsBodyParams};
 use crate::{ActiveEffectMetadata, AnimatedSpriteMetadata, CollisionWorld, PhysicsBody, Transform};
@@ -159,13 +159,13 @@ pub fn fixed_update_triggered_effects(world: &mut World) {
     let mut to_trigger = Vec::new();
 
     let players = world
-        .query::<(&PlayerState, &Transform, &PhysicsBody)>()
+        .query::<(&Player, &Transform, &PhysicsBody)>()
         .iter()
-        .filter_map(|(e, (state, transform, body))| {
-            if state.is_dead {
+        .filter_map(|(e, (player, transform, body))| {
+            if player.state == PlayerState::Dead {
                 None
             } else {
-                Some((e, state.is_facing_left, transform.position, body.size))
+                Some((e, player.is_facing_left, transform.position, body.size))
             }
         })
         .collect::<Vec<_>>();

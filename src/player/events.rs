@@ -1,7 +1,7 @@
 use hecs::{Entity, World};
 use macroquad::time::get_frame_time;
 
-use crate::player::PlayerState;
+use crate::player::{Player, PlayerState};
 use serde::{Deserialize, Serialize};
 
 #[derive(Default)]
@@ -67,7 +67,7 @@ impl From<&PlayerEvent> for PlayerEventKind {
 }
 
 pub fn update_player_events(world: &mut World) {
-    for (_, (state, events)) in world.query_mut::<(&mut PlayerState, &mut PlayerEventQueue)>() {
+    for (_, (player, events)) in world.query_mut::<(&mut Player, &mut PlayerEventQueue)>() {
         let dt = get_frame_time();
 
         events.queue.push(PlayerEvent::Update { dt });
@@ -87,7 +87,7 @@ pub fn update_player_events(world: &mut World) {
                 if (is_from_left && !damage_blocked_left)
                     || (!is_from_left && !damage_blocked_right)
                 {
-                    state.is_dead = true;
+                    player.state = PlayerState::Dead;
                 }
             }
         }

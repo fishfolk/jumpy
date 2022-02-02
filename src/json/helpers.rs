@@ -4,6 +4,14 @@ use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
+pub fn default_true() -> bool {
+    true
+}
+
+pub fn is_true(val: &bool) -> bool {
+    *val
+}
+
 pub fn is_false(val: &bool) -> bool {
     !*val
 }

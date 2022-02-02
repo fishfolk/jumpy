@@ -64,12 +64,12 @@ pub use ecs::Owner;
 
 use crate::effects::passive::init_passive_effects;
 use crate::game::GameMode;
+use crate::network::init_api;
 use crate::particles::Particles;
 use crate::resources::load_resources;
 pub use effects::{
     ActiveEffectKind, ActiveEffectMetadata, PassiveEffectInstance, PassiveEffectMetadata,
 };
-use crate::network::init_api;
 
 pub type CollisionWorld = macroquad_platformer::World;
 

@@ -1,7 +1,9 @@
 mod api;
+mod event;
 mod status;
 
 pub use api::{Api, ApiBackend, MockApiBackend};
+pub use event::NetworkEvent;
 pub use status::RequestStatus;
 
 use std::net::SocketAddr;
@@ -12,6 +14,14 @@ use crate::Id;
 
 pub const DEFAULT_PORT: u16 = 9000;
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde_json", serde(rename_all = "snake_case"))]
+pub enum Protocol {
+    Udp,
+    Tcp,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Server {
@@ -20,7 +30,7 @@ pub struct Server {
     pub tcp: SocketAddr,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde_json", serde(rename_all = "snake_case"))]
 pub enum LobbyPrivacy {
@@ -45,7 +55,6 @@ pub struct Lobby {
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde_json", serde(rename_all = "snake_case"))]
 pub enum LobbyState {
     NotStarted,
     LobbyReady,
@@ -60,7 +69,7 @@ pub enum LobbyState {
 pub struct Player {
     pub id: Id,
     pub username: String,
-    pub state: Vec<ClientState>,
+    pub state: ClientState,
 }
 
 impl Player {
@@ -68,15 +77,15 @@ impl Player {
         Player {
             id: id.clone(),
             username: username.to_string(),
-            state: Vec::new(),
+            state: ClientState::None,
         }
     }
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde_json", serde(rename_all = "snake_case"))]
 pub enum ClientState {
+    None,
     Joined,
     Ready,
     Playing,

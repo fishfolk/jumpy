@@ -4,7 +4,7 @@ use async_trait::async_trait;
 
 use crate::Result;
 
-use super::{Id, Lobby, Player, RequestStatus};
+use super::{Id, Lobby, NetworkEvent, Player, RequestStatus};
 
 static mut API_INSTANCE: Option<Api> = None;
 
@@ -41,6 +41,12 @@ impl Api {
 
         api.backend.get_lobby(id).await
     }
+
+    pub fn next_event() -> Option<NetworkEvent> {
+        let api = Self::get_instance();
+
+        api.backend.next_event()
+    }
 }
 
 /// This trait should be implemented by all backend implementations
@@ -52,6 +58,8 @@ pub trait ApiBackend {
     async fn get_player(&mut self, id: &Id) -> Result<Player>;
     /// Get `Lobby` with the specified `id`
     async fn get_lobby(&mut self, id: &Id) -> Result<Lobby>;
+    /// Get the next event in the event queue
+    fn next_event(&mut self) -> Option<NetworkEvent>;
 }
 
 /// This is used as a placeholder for when no external backend implementation is available.
@@ -109,5 +117,9 @@ impl ApiBackend for MockApiBackend {
         } else {
             Err(RequestStatus::NotFound.into())
         }
+    }
+
+    fn next_event(&mut self) -> Option<NetworkEvent> {
+        None
     }
 }

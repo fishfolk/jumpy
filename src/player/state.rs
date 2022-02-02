@@ -111,6 +111,8 @@ pub fn update_player_states(world: &mut World) {
         if state.is_dead {
             state.respawn_timer += dt;
 
+            state.passive_effects.clear();
+
             if state.respawn_timer >= RESPAWN_DELAY {
                 state.is_dead = false;
                 state.respawn_timer = 0.0;

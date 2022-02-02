@@ -7,6 +7,8 @@ pub mod text;
 
 pub use error::{Error, Result};
 
+pub use async_trait::async_trait;
+
 #[cfg(feature = "serde")]
 pub use serde;
 

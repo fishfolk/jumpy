@@ -5,27 +5,15 @@ pub type Result<T> = result::Result<T, Error>;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ErrorKind {
-    General,
-    Ecs,
-    File,
-    Parsing,
-    Input,
     Api,
     Network,
-    EditorAction,
 }
 
 impl ErrorKind {
     pub fn as_str(&self) -> &'static str {
         match *self {
-            ErrorKind::General => "General error",
-            ErrorKind::Ecs => "ECS error",
-            ErrorKind::File => "File error",
-            ErrorKind::Parsing => "Parsing error",
-            ErrorKind::Input => "Input error",
             ErrorKind::Api => "Api error",
             ErrorKind::Network => "Network error",
-            ErrorKind::EditorAction => "Editor action error",
         }
     }
 }

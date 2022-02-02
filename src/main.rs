@@ -69,6 +69,7 @@ use crate::resources::load_resources;
 pub use effects::{
     ActiveEffectKind, ActiveEffectMetadata, PassiveEffectInstance, PassiveEffectMetadata,
 };
+use crate::network::init_api;
 
 pub type CollisionWorld = macroquad_platformer::World;
 
@@ -85,6 +86,11 @@ pub fn exit_to_main_menu() {
 /// Quit to desktop
 pub fn quit_to_desktop() {
     ApplicationEvent::Quit.dispatch()
+}
+
+/// Reload resources
+pub fn reload_resources() {
+    ApplicationEvent::ReloadResources.dispatch()
 }
 
 fn window_conf() -> Conf {
@@ -121,7 +127,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
     rand::srand(0);
 
-    load_resources(&assets_dir).await;
+    load_resources(&assets_dir).await?;
 
     {
         let gamepad_system = fishsticks::GamepadContext::init().unwrap();
@@ -135,7 +141,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
     init_passive_effects();
 
-    // init_api("player_one_token").await?;
+    init_api("player_one_token").await?;
 
     'outer: loop {
         match gui::show_main_menu().await {
@@ -182,8 +188,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                 scene::add_node(Editor::new(input_scheme, map_resource));
             }
             MainMenuResult::ReloadResources => {
-                let resources = storage::get::<Resources>();
-                load_resources(&resources.assets_dir).await;
+                reload_resources();
                 continue 'outer;
             }
             MainMenuResult::Credits => {
@@ -204,7 +209,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                 match event {
                     ApplicationEvent::ReloadResources => {
                         let resources = storage::get::<Resources>();
-                        load_resources(&resources.assets_dir).await;
+                        load_resources(&resources.assets_dir).await?;
                     }
                     ApplicationEvent::MainMenu => break 'inner,
                     ApplicationEvent::Quit => break 'outer,

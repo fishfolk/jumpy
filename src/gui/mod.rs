@@ -40,7 +40,7 @@ pub struct GuiResources {
 }
 
 impl GuiResources {
-    pub async fn load(_resources_dir: &str) -> GuiResources {
+    pub fn new() -> GuiResources {
         GuiResources {
             skins: SkinCollection::new(),
         }

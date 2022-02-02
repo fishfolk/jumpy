@@ -8,7 +8,7 @@ use macroquad::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::math::{deg_to_rad, rotate_vector, IsZero};
-use crate::Result;
+use crate::{PassiveEffectInstance, PassiveEffectMetadata, Result};
 use crate::{json, Resources};
 
 pub mod projectiles;
@@ -19,7 +19,7 @@ pub use triggered::{TriggeredEffectMetadata, TriggeredEffectTrigger};
 use crate::effects::active::projectiles::spawn_projectile;
 use crate::effects::active::triggered::{spawn_triggered_effect, TriggeredEffect};
 use crate::particles::ParticleEmitterMetadata;
-use crate::player::{on_player_damage, Player, PlayerState};
+use crate::player::{on_player_damage, PlayerState};
 use crate::{PhysicsBody, Transform};
 pub use projectiles::ProjectileKind;
 
@@ -59,6 +59,7 @@ pub fn spawn_active_effect(
     match *params.kind {
         ActiveEffectKind::CircleCollider {
             radius,
+            passive_effects,
             is_explosion,
         } => {
             let circle = Circle::new(origin.x, origin.y, radius);
@@ -77,9 +78,14 @@ pub fn spawn_active_effect(
             for (e, (transform, body)) in world.query::<(&Transform, &PhysicsBody)>().iter() {
                 let other_rect = body.as_rect(transform.position);
                 if circle.overlaps_rect(&other_rect) {
-                    if world.get_mut::<Player>(e).is_ok() {
+                    if let Ok(mut player_state) = world.get_mut::<PlayerState>(e) {
                         if is_explosion || e != owner {
-                            damage.push((owner, e))
+                            damage.push((owner, e));
+
+                            for meta in passive_effects.clone().into_iter() {
+                                let effect_instance = PassiveEffectInstance::new(None, meta);
+                                player_state.passive_effects.push(effect_instance);
+                            }
                         }
                     } else if is_explosion {
                         if let Ok(mut effect) = world.get_mut::<TriggeredEffect>(e) {
@@ -93,7 +99,11 @@ pub fn spawn_active_effect(
                 }
             }
         }
-        ActiveEffectKind::RectCollider { width, height } => {
+        ActiveEffectKind::RectCollider {
+            width,
+            height,
+            passive_effects,
+        } => {
             let mut rect = Rect::new(origin.x, origin.y, width, height);
             if is_facing_left {
                 rect.x -= rect.w;
@@ -111,13 +121,18 @@ pub fn spawn_active_effect(
                 ));
             }
 
-            for (e, (_, transform, body)) in
-                world.query::<(&Player, &Transform, &PhysicsBody)>().iter()
+            for (e, (transform, state, body)) in
+                world.query_mut::<(&Transform, &mut PlayerState, &PhysicsBody)>()
             {
                 if owner != e {
                     let other_rect = body.as_rect(transform.position);
                     if rect.overlaps(&other_rect) {
                         damage.push((owner, e));
+
+                        for meta in passive_effects.clone().into_iter() {
+                            let effect_instance = PassiveEffectInstance::new(None, meta);
+                            state.passive_effects.push(effect_instance);
+                        }
                     }
                 }
             }
@@ -191,11 +206,20 @@ pub enum ActiveEffectKind {
     /// Check for hits with a `Circle` collider.
     CircleCollider {
         radius: f32,
+        /// This contains any passive effects that will be spawned on collision
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        passive_effects: Vec<PassiveEffectMetadata>,
         #[serde(default, skip_serializing_if = "json::is_false")]
         is_explosion: bool,
     },
     /// Check for hits with a `Rect` collider
-    RectCollider { width: f32, height: f32 },
+    RectCollider {
+        width: f32,
+        height: f32,
+        /// This contains any passive effects that will be spawned on collision
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        passive_effects: Vec<PassiveEffectMetadata>,
+    },
     /// Spawn a trigger that will set of another effect if its trigger conditions are met.
     TriggeredEffect {
         #[serde(flatten)]

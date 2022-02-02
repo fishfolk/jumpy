@@ -17,7 +17,7 @@ members = ["network-core"]
 
 [dependencies]
 network-core = { path = "./network-core", features = ["serde", "serde_json"] }
-# ultimate = { path = "../FishFight-ultimate", package = "fishfight-ultimate", optional = true }
+ultimate = { path = "../FishFight-ultimate", package = "fishfight-ultimate", optional = true }
 ff-particles = { version = "0.1", features = ["serde"] }
 macroquad = { version = "0.3.10" }
 macroquad-platformer = "0.1"

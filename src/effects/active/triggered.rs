@@ -11,6 +11,7 @@ use core::Result;
 use crate::effects::active::spawn_active_effect;
 use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::player::{Player, PlayerState};
+use crate::{Result, physics};
 use crate::{json, Drawable, PhysicsBodyParams};
 use crate::{ActiveEffectMetadata, AnimatedSpriteMetadata, CollisionWorld, PhysicsBody, Transform};
 
@@ -106,6 +107,7 @@ pub fn spawn_triggered_effect(
                 offset,
                 size: meta.size,
                 can_rotate: meta.can_rotate,
+                gravity: meta.gravity,
                 ..Default::default()
             },
         ),
@@ -327,9 +329,8 @@ pub struct TriggeredEffectMetadata {
     /// If this is `true` the triggered physics body will rotate while in the air.
     #[serde(default)]
     pub can_rotate: bool,
-    /// The angle of rotation with which the triggered physics body will spawn.
-    #[serde(default)]
-    pub spawn_angle: f32,
+    #[serde(default = "default_physics_gravity")]
+    pub gravity: f32,
 }
 
 impl Default for TriggeredEffectMetadata {
@@ -348,7 +349,11 @@ impl Default for TriggeredEffectMetadata {
             is_kickable: false,
             should_collide_with_platforms: false,
             can_rotate: false,
-            spawn_angle: 0.0,
+            gravity: default_physics_gravity(),
         }
     }
+}
+
+fn default_physics_gravity() -> f32 {
+    physics::GRAVITY
 }

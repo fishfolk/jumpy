@@ -14,14 +14,6 @@ use crate::Id;
 
 pub const DEFAULT_PORT: u16 = 9000;
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde_json", serde(rename_all = "snake_case"))]
-pub enum Protocol {
-    Udp,
-    Tcp,
-}
-
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Server {

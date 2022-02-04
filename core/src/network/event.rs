@@ -1,7 +1,7 @@
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-use crate::network::{Lobby, Protocol};
+use crate::network::Lobby;
 use crate::Id;
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -12,18 +12,22 @@ pub enum NetworkEvent {
     LobbyChanged {
         lobby: Lobby,
     },
+    MarkPlayerReady {
+        player_id: Id,
+    },
+    MarkPlayerNotReady {
+        player_id: Id,
+    },
     PlayerJoined {
         player_id: Id,
         username: String,
         port: u16,
-        protocol: Protocol,
     },
     PlayerLeft {
         player_id: Id,
     },
     PlayerReconnecting {
         player_id: Id,
-        protocol: Protocol,
     },
     GameStarted {
         lobby_id: Id,

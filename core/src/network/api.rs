@@ -74,8 +74,8 @@ pub struct MockApiBackend {
 impl MockApiBackend {
     pub fn new() -> Self {
         let players = vec![
-            Player::new(&Id::from("1"), "oasf"),
-            Player::new(&Id::from("2"), "other player"),
+            Player::new(&Id::from("1"), "Player One"),
+            Player::new(&Id::from("2"), "Player Two"),
         ];
 
         let mut sessions = HashMap::new();

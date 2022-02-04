@@ -11,8 +11,8 @@
     "y": -26
   },
   "effect_offset": {
-    "x": 36,
-    "y": 22
+    "x": 50,
+    "y": 28
   },
   "collider_size": {
     "x": 64,
@@ -87,7 +87,7 @@
         {
           "particle_effect": "cannon_cannonball_smoke",
           "interval": 0.04,
-          "delay": 0.01
+          "delay": 0.04
         }
       ]
     }

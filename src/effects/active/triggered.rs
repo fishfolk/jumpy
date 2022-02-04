@@ -11,7 +11,7 @@ use core::Result;
 use crate::effects::active::spawn_active_effect;
 use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::player::{Player, PlayerState};
-use crate::{Result, physics};
+use crate::physics;
 use crate::{json, Drawable, PhysicsBodyParams};
 use crate::{ActiveEffectMetadata, AnimatedSpriteMetadata, CollisionWorld, PhysicsBody, Transform};
 

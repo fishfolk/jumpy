@@ -8,8 +8,9 @@ use hecs::World;
 
 use serde::{Deserialize, Serialize};
 
+use core::math::IsZero;
+
 use crate::json;
-use crate::math::IsZero;
 use crate::{AnimatedSpriteMetadata, Resources, Transform};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

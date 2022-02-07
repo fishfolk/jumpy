@@ -7,28 +7,23 @@ use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
 
 pub mod config;
-pub mod editor;
-mod gui;
-mod items;
-pub mod json;
-pub mod map;
-pub mod math;
-mod noise;
-pub mod resources;
-pub mod text;
-#[macro_use]
-pub mod error;
-pub mod data;
 pub mod debug;
 pub mod ecs;
+pub mod editor;
 pub mod effects;
 pub mod events;
 pub mod game;
+mod gui;
 pub mod input;
+mod items;
+pub mod json;
+pub mod map;
 pub mod network;
+mod noise;
 pub mod particles;
 pub mod physics;
 pub mod player;
+pub mod resources;
 
 mod channel;
 mod drawables;
@@ -40,8 +35,6 @@ pub use physics::*;
 pub use transform::*;
 
 use editor::{Editor, EditorCamera, EditorInputScheme};
-
-pub use error::{Error, ErrorKind, Result};
 
 use map::{Map, MapLayerKind, MapObjectKind};
 
@@ -64,6 +57,7 @@ pub use ecs::Owner;
 
 use crate::effects::passive::init_passive_effects;
 use crate::game::GameMode;
+use crate::network::init_api;
 use crate::particles::Particles;
 use crate::resources::load_resources;
 pub use effects::{
@@ -85,6 +79,11 @@ pub fn exit_to_main_menu() {
 /// Quit to desktop
 pub fn quit_to_desktop() {
     ApplicationEvent::Quit.dispatch()
+}
+
+/// Reload resources
+pub fn reload_resources() {
+    ApplicationEvent::ReloadResources.dispatch()
 }
 
 fn window_conf() -> Conf {
@@ -121,7 +120,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
     rand::srand(0);
 
-    load_resources(&assets_dir).await;
+    load_resources(&assets_dir).await?;
 
     {
         let gamepad_system = fishsticks::GamepadContext::init().unwrap();
@@ -135,7 +134,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
     init_passive_effects();
 
-    // init_api("player_one_token").await?;
+    init_api("player_one_token").await?;
 
     'outer: loop {
         match gui::show_main_menu().await {
@@ -182,8 +181,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                 scene::add_node(Editor::new(input_scheme, map_resource));
             }
             MainMenuResult::ReloadResources => {
-                let resources = storage::get::<Resources>();
-                load_resources(&resources.assets_dir).await;
+                reload_resources();
                 continue 'outer;
             }
             MainMenuResult::Credits => {
@@ -204,7 +202,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                 match event {
                     ApplicationEvent::ReloadResources => {
                         let resources = storage::get::<Resources>();
-                        load_resources(&resources.assets_dir).await;
+                        load_resources(&resources.assets_dir).await?;
                     }
                     ApplicationEvent::MainMenu => break 'inner,
                     ApplicationEvent::Quit => break 'outer,

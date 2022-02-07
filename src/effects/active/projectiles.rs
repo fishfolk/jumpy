@@ -10,8 +10,8 @@ use serde::{Deserialize, Serialize};
 use crate::effects::active::triggered::TriggeredEffect;
 use crate::effects::TriggeredEffectTrigger;
 use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
-use crate::player::{on_player_damage, PlayerState};
-use crate::{json, Drawable, SpriteParams};
+use crate::player::{on_player_damage, Player, PlayerState};
+use crate::{json, Drawable, PassiveEffectInstance, PassiveEffectMetadata, SpriteParams};
 use crate::{
     CollisionWorld, PhysicsBody, Resources, RigidBody, RigidBodyParams, SpriteMetadata, Transform,
 };
@@ -47,15 +47,43 @@ pub struct Projectile {
     pub owner: Entity,
     pub origin: Vec2,
     pub range: f32,
+    pub is_lethal: bool,
+    pub passive_effects: Vec<PassiveEffectMetadata>,
 }
 
 impl Projectile {
-    pub fn new(owner: Entity, kind: ProjectileKind, origin: Vec2, range: f32) -> Self {
+    pub fn new(
+        owner: Entity,
+        kind: ProjectileKind,
+        origin: Vec2,
+        range: f32,
+        is_lethal: bool,
+        passive_effects: &[PassiveEffectMetadata],
+    ) -> Self {
         Projectile {
             owner,
             kind,
             origin,
             range,
+            is_lethal,
+            passive_effects: passive_effects.to_vec(),
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct ProjectileParams {
+    pub is_lethal: bool,
+    pub passive_effects: Vec<PassiveEffectMetadata>,
+    pub particle_effects: Vec<ParticleEmitterMetadata>,
+}
+
+impl Default for ProjectileParams {
+    fn default() -> Self {
+        ProjectileParams {
+            is_lethal: true,
+            passive_effects: Vec::new(),
+            particle_effects: Vec::new(),
         }
     }
 }
@@ -67,9 +95,22 @@ pub fn spawn_projectile(
     origin: Vec2,
     velocity: Vec2,
     range: f32,
-    particles: Vec<ParticleEmitterMetadata>,
+    params: ProjectileParams,
 ) -> Entity {
-    let entity = world.spawn((Projectile::new(owner, kind.clone(), origin, range),));
+    let entity = world.spawn(());
+    world
+        .insert_one(
+            entity,
+            Projectile::new(
+                owner,
+                kind.clone(),
+                origin,
+                range,
+                params.is_lethal,
+                &params.passive_effects,
+            ),
+        )
+        .unwrap();
 
     let mut transform = Transform::from(origin);
 
@@ -143,7 +184,7 @@ pub fn spawn_projectile(
         .unwrap();
 
     let mut particle_emitters = Vec::new();
-    for params in particles {
+    for params in params.particle_effects {
         let mut emitter = ParticleEmitter::from(params);
         emitter.is_active = true;
 
@@ -194,14 +235,24 @@ pub fn fixed_update_projectiles(world: &mut World) {
         let rect = body.as_rect(transform.position);
         for (other, other_rect) in &bodies {
             if rect.overlaps(other_rect) {
-                if let Ok(state) = world.get::<PlayerState>(*other) {
-                    if !state.is_dead {
-                        let res = (
-                            projectile.owner,
-                            e,
-                            Some(ProjectileCollision::Player(*other)),
-                        );
-                        events.push(res);
+                if let Ok(mut player) = world.get_mut::<Player>(*other) {
+                    if player.state != PlayerState::Dead {
+                        for meta in projectile.passive_effects.clone().into_iter() {
+                            let effect_instance = PassiveEffectInstance::new(None, meta);
+
+                            player.passive_effects.push(effect_instance);
+                        }
+
+                        if projectile.is_lethal {
+                            let res = (
+                                projectile.owner,
+                                e,
+                                Some(ProjectileCollision::Player(*other)),
+                            );
+
+                            events.push(res);
+                        }
+
                         continue 'projectiles;
                     }
                 } else if let Ok(effect) = world.get::<TriggeredEffect>(*other) {

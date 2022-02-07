@@ -63,6 +63,7 @@ pub struct PhysicsBodyParams {
     pub has_friction: bool,
     pub can_rotate: bool,
     pub bouncyness: f32,
+    pub gravity: f32,
 }
 
 impl Default for PhysicsBodyParams {
@@ -74,6 +75,7 @@ impl Default for PhysicsBodyParams {
             has_friction: true,
             can_rotate: true,
             bouncyness: 0.0,
+            gravity: GRAVITY,
         }
     }
 }
@@ -96,6 +98,7 @@ pub struct PhysicsBody {
     pub can_rotate: bool,
     pub bouncyness: f32,
     pub is_deactivated: bool,
+    pub gravity: f32,
 }
 
 impl PhysicsBody {
@@ -119,6 +122,7 @@ impl PhysicsBody {
             can_rotate: params.can_rotate,
             bouncyness: params.bouncyness,
             is_deactivated: false,
+            gravity: params.gravity,
         }
     }
 
@@ -155,7 +159,7 @@ pub fn fixed_update_physics_bodies(world: &mut World) {
             }
 
             if !body.is_on_ground && body.has_mass {
-                body.velocity.y += GRAVITY;
+                body.velocity.y += body.gravity;
 
                 if body.velocity.y > TERMINAL_VELOCITY {
                     body.velocity.y = TERMINAL_VELOCITY;

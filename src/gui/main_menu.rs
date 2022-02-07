@@ -7,7 +7,8 @@ use macroquad::{
 };
 
 use fishsticks::{Button, GamepadContext};
-use network_core::Id;
+
+use core::Id;
 
 use super::{draw_main_menu_background, GuiResources, Menu, MenuEntry, MenuResult, Panel};
 

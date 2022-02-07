@@ -5,11 +5,13 @@ use hecs::{Entity, World};
 
 use serde::{Deserialize, Serialize};
 
+use core::math::deg_to_rad;
+use core::Result;
+
 use crate::effects::active::spawn_active_effect;
-use crate::math::deg_to_rad;
 use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
-use crate::player::PlayerState;
-use crate::Result;
+use crate::physics;
+use crate::player::{Player, PlayerState};
 use crate::{json, Drawable, PhysicsBodyParams};
 use crate::{ActiveEffectMetadata, AnimatedSpriteMetadata, CollisionWorld, PhysicsBody, Transform};
 
@@ -105,6 +107,7 @@ pub fn spawn_triggered_effect(
                 offset,
                 size: meta.size,
                 can_rotate: meta.can_rotate,
+                gravity: meta.gravity,
                 ..Default::default()
             },
         ),
@@ -159,13 +162,13 @@ pub fn fixed_update_triggered_effects(world: &mut World) {
     let mut to_trigger = Vec::new();
 
     let players = world
-        .query::<(&PlayerState, &Transform, &PhysicsBody)>()
+        .query::<(&Player, &Transform, &PhysicsBody)>()
         .iter()
-        .filter_map(|(e, (state, transform, body))| {
-            if state.is_dead {
+        .filter_map(|(e, (player, transform, body))| {
+            if player.state == PlayerState::Dead {
                 None
             } else {
-                Some((e, state.is_facing_left, transform.position, body.size))
+                Some((e, player.is_facing_left, transform.position, body.size))
             }
         })
         .collect::<Vec<_>>();
@@ -326,9 +329,8 @@ pub struct TriggeredEffectMetadata {
     /// If this is `true` the triggered physics body will rotate while in the air.
     #[serde(default)]
     pub can_rotate: bool,
-    /// The angle of rotation with which the triggered physics body will spawn.
-    #[serde(default)]
-    pub spawn_angle: f32,
+    #[serde(default = "default_physics_gravity")]
+    pub gravity: f32,
 }
 
 impl Default for TriggeredEffectMetadata {
@@ -347,7 +349,11 @@ impl Default for TriggeredEffectMetadata {
             is_kickable: false,
             should_collide_with_platforms: false,
             can_rotate: false,
-            spawn_angle: 0.0,
+            gravity: default_physics_gravity(),
         }
     }
+}
+
+fn default_physics_gravity() -> f32 {
+    physics::GRAVITY
 }

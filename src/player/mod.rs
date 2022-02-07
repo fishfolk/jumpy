@@ -5,7 +5,7 @@ use hecs::{Entity, World};
 
 use crate::{
     AnimatedSprite, AnimatedSpriteMetadata, AnimatedSpriteParams, CollisionWorld, Drawable,
-    PhysicsBody, Resources, Transform,
+    GameCamera, PassiveEffectInstance, PhysicsBody, Resources, Transform,
 };
 
 mod animation;
@@ -50,8 +50,66 @@ pub struct PlayerParams {
     pub character: PlayerCharacterMetadata,
 }
 
-#[derive(Debug, Copy, Clone)]
-pub struct Player(pub u8);
+pub struct Player {
+    pub index: u8,
+    pub state: PlayerState,
+    pub is_facing_left: bool,
+    pub is_upside_down: bool,
+    pub is_attacking: bool,
+    pub jump_frame_counter: u16,
+    pub pickup_grace_timer: f32,
+    pub incapacitation_timer: f32,
+    pub attack_timer: f32,
+    pub respawn_timer: f32,
+    pub camera_box: Rect,
+    pub passive_effects: Vec<PassiveEffectInstance>,
+}
+
+impl Player {
+    pub fn new(index: u8, position: Vec2) -> Self {
+        let camera_box = Rect::new(position.x - 30.0, position.y - 150.0, 100.0, 210.0);
+
+        Player {
+            index,
+            state: PlayerState::None,
+            is_facing_left: false,
+            is_upside_down: false,
+            is_attacking: false,
+            jump_frame_counter: 0,
+            pickup_grace_timer: 0.0,
+            attack_timer: 0.0,
+            incapacitation_timer: 0.0,
+            respawn_timer: 0.0,
+            camera_box,
+            passive_effects: Vec::new(),
+        }
+    }
+}
+
+pub fn update_player_camera_box(world: &mut World) {
+    for (_, (transform, player)) in world.query_mut::<(&Transform, &mut Player)>() {
+        let rect = Rect::new(transform.position.x, transform.position.y, 32.0, 60.0);
+
+        if rect.x < player.camera_box.x {
+            player.camera_box.x = rect.x;
+        }
+
+        if rect.x + rect.w > player.camera_box.x + player.camera_box.w {
+            player.camera_box.x = rect.x + rect.w - player.camera_box.w;
+        }
+
+        if rect.y < player.camera_box.y {
+            player.camera_box.y = rect.y;
+        }
+
+        if rect.y + rect.h > player.camera_box.y + player.camera_box.h {
+            player.camera_box.y = rect.y + rect.h - player.camera_box.h;
+        }
+
+        let mut camera = storage::get_mut::<GameCamera>();
+        camera.add_player_rect(player.camera_box);
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct PlayerAttributes {
@@ -84,10 +142,6 @@ impl From<PlayerCharacterMetadata> for PlayerAttributes {
     fn from(params: PlayerCharacterMetadata) -> Self {
         PlayerAttributes::from(&params)
     }
-}
-
-pub struct PlayerEffects {
-    pub passive_effects: Vec<Entity>,
 }
 
 pub fn spawn_player(
@@ -147,11 +201,10 @@ pub fn spawn_player(
     };
 
     world.spawn((
-        Player(index),
+        Player::new(index, position),
         Transform::from(position),
         PlayerController::from(controller),
         PlayerAttributes::from(&character),
-        PlayerState::from(position),
         PlayerInventory::from(weapon_mount),
         PlayerEventQueue::new(),
         Drawable::new_animated_sprite_set(draw_order, &sprites),

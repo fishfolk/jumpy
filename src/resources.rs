@@ -10,19 +10,16 @@ use ff_particles::EmitterConfig;
 
 use serde::{Deserialize, Serialize};
 
+use core::data::deserialize_json_file;
+use core::error::ErrorKind;
+use core::text::ToStringHelper;
+use core::{formaterr, Result};
+
 use crate::gui::GuiResources;
 use crate::map::DecorationMetadata;
-use crate::{
-    data::deserialize_json_file,
-    error::{ErrorKind, Result},
-    formaterr,
-    items::MapItemMetadata,
-    json,
-    map::Map,
-};
 
 use crate::player::PlayerCharacterMetadata;
-use crate::text::ToStringHelper;
+use crate::{items::MapItemMetadata, json, map::Map};
 
 #[derive(Serialize, Deserialize)]
 struct ParticleEffectMetadata {
@@ -499,24 +496,22 @@ pub fn is_valid_map_export_path<P: AsRef<Path>>(path: P, should_overwrite: bool)
 }
 
 #[cfg(target_arch = "wasm32")]
-pub async fn load_resources(assets_dir: &str) {
+pub async fn load_resources(assets_dir: &str) -> Result<()> {
     {
-        let assets = match Resources::new(assets_dir).await {
-            Ok(val) => val,
-            Err(err) => panic!("{}: {}", err.kind().as_str(), err),
-        };
-
+        let assets = Resources::new(assets_dir).await?;
         storage::store(assets);
     }
 
     {
-        let gui_resources = GuiResources::load(assets_dir).await;
+        let gui_resources = GuiResources::new();
         storage::store(gui_resources);
     }
+
+    Ok(())
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-pub async fn load_resources(assets_dir: &str) {
+pub async fn load_resources(assets_dir: &str) -> Result<()> {
     let assets_loading = start_coroutine({
         let assets_dir = assets_dir.to_string();
         async move {
@@ -546,7 +541,9 @@ pub async fn load_resources(assets_dir: &str) {
     }
 
     {
-        let gui_resources = GuiResources::load(assets_dir).await;
+        let gui_resources = GuiResources::new();
         storage::store(gui_resources);
     }
+
+    Ok(())
 }

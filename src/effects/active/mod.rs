@@ -7,19 +7,21 @@ use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
-use crate::math::{deg_to_rad, rotate_vector, IsZero};
-use crate::Result;
+use core::math::{deg_to_rad, rotate_vector, IsZero};
+use core::Result;
+
 use crate::{json, Resources};
+use crate::{PassiveEffectInstance, PassiveEffectMetadata};
 
 pub mod projectiles;
 pub mod triggered;
 
 pub use triggered::{TriggeredEffectMetadata, TriggeredEffectTrigger};
 
-use crate::effects::active::projectiles::spawn_projectile;
+use crate::effects::active::projectiles::{spawn_projectile, ProjectileParams};
 use crate::effects::active::triggered::{spawn_triggered_effect, TriggeredEffect};
 use crate::particles::ParticleEmitterMetadata;
-use crate::player::{on_player_damage, Player, PlayerState};
+use crate::player::{on_player_damage, Player};
 use crate::{PhysicsBody, Transform};
 pub use projectiles::ProjectileKind;
 
@@ -43,8 +45,8 @@ pub fn spawn_active_effect(
     params: ActiveEffectMetadata,
 ) -> Result<()> {
     let is_facing_left = {
-        let state = world.get::<PlayerState>(owner).unwrap();
-        state.is_facing_left
+        let player = world.get::<Player>(owner).unwrap();
+        player.is_facing_left
     };
 
     if let Some(id) = &params.sound_effect_id {
@@ -59,6 +61,8 @@ pub fn spawn_active_effect(
     match *params.kind {
         ActiveEffectKind::CircleCollider {
             radius,
+            passive_effects,
+            is_lethal,
             is_explosion,
         } => {
             let circle = Circle::new(origin.x, origin.y, radius);
@@ -77,9 +81,16 @@ pub fn spawn_active_effect(
             for (e, (transform, body)) in world.query::<(&Transform, &PhysicsBody)>().iter() {
                 let other_rect = body.as_rect(transform.position);
                 if circle.overlaps_rect(&other_rect) {
-                    if world.get_mut::<Player>(e).is_ok() {
+                    if let Ok(mut player) = world.get_mut::<Player>(e) {
                         if is_explosion || e != owner {
-                            damage.push((owner, e))
+                            if is_lethal {
+                                damage.push((owner, e));
+                            }
+
+                            for meta in passive_effects.clone().into_iter() {
+                                let effect_instance = PassiveEffectInstance::new(None, meta);
+                                player.passive_effects.push(effect_instance);
+                            }
                         }
                     } else if is_explosion {
                         if let Ok(mut effect) = world.get_mut::<TriggeredEffect>(e) {
@@ -93,7 +104,12 @@ pub fn spawn_active_effect(
                 }
             }
         }
-        ActiveEffectKind::RectCollider { width, height } => {
+        ActiveEffectKind::RectCollider {
+            width,
+            height,
+            is_lethal,
+            passive_effects,
+        } => {
             let mut rect = Rect::new(origin.x, origin.y, width, height);
             if is_facing_left {
                 rect.x -= rect.w;
@@ -111,13 +127,20 @@ pub fn spawn_active_effect(
                 ));
             }
 
-            for (e, (_, transform, body)) in
-                world.query::<(&Player, &Transform, &PhysicsBody)>().iter()
+            for (e, (transform, player, body)) in
+                world.query_mut::<(&Transform, &mut Player, &PhysicsBody)>()
             {
                 if owner != e {
                     let other_rect = body.as_rect(transform.position);
                     if rect.overlaps(&other_rect) {
-                        damage.push((owner, e));
+                        if is_lethal {
+                            damage.push((owner, e));
+                        }
+
+                        for meta in passive_effects.clone().into_iter() {
+                            let effect_instance = PassiveEffectInstance::new(None, meta);
+                            player.passive_effects.push(effect_instance);
+                        }
                     }
                 }
             }
@@ -130,6 +153,8 @@ pub fn spawn_active_effect(
             speed,
             range,
             spread,
+            is_lethal,
+            passive_effects,
             particles,
         } => {
             let mut velocity = Vec2::ZERO;
@@ -146,7 +171,19 @@ pub fn spawn_active_effect(
                 velocity = rotate_vector(velocity, spread);
             }
 
-            spawn_projectile(world, owner, kind, origin, velocity, range, particles);
+            spawn_projectile(
+                world,
+                owner,
+                kind,
+                origin,
+                velocity,
+                range,
+                ProjectileParams {
+                    is_lethal,
+                    passive_effects,
+                    particle_effects: particles,
+                },
+            );
         }
     }
 
@@ -191,11 +228,26 @@ pub enum ActiveEffectKind {
     /// Check for hits with a `Circle` collider.
     CircleCollider {
         radius: f32,
+        /// This contains any passive effects that will be spawned on collision
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        passive_effects: Vec<PassiveEffectMetadata>,
+        /// If `true` the effect will do damage to any player it hits
+        #[serde(default = "json::default_true", skip_serializing_if = "json::is_true")]
+        is_lethal: bool,
         #[serde(default, skip_serializing_if = "json::is_false")]
         is_explosion: bool,
     },
     /// Check for hits with a `Rect` collider
-    RectCollider { width: f32, height: f32 },
+    RectCollider {
+        width: f32,
+        height: f32,
+        /// If `true` the effect will do damage to any player it hits
+        #[serde(default = "json::default_true", skip_serializing_if = "json::is_true")]
+        is_lethal: bool,
+        /// This contains any passive effects that will be spawned on collision
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        passive_effects: Vec<PassiveEffectMetadata>,
+    },
     /// Spawn a trigger that will set of another effect if its trigger conditions are met.
     TriggeredEffect {
         #[serde(flatten)]
@@ -210,6 +262,12 @@ pub enum ActiveEffectKind {
         range: f32,
         #[serde(default, skip_serializing_if = "f32::is_zero")]
         spread: f32,
+        /// If `true` the effect will do damage to any player it hits
+        #[serde(default = "json::default_true", skip_serializing_if = "json::is_true")]
+        is_lethal: bool,
+        /// This contains any passive effects that will be spawned on collision
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        passive_effects: Vec<PassiveEffectMetadata>,
         /// Particle effects that will be attached to the projectile
         #[serde(default, skip_serializing_if = "Vec::is_empty")]
         particles: Vec<ParticleEmitterMetadata>,

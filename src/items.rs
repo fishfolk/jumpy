@@ -13,12 +13,12 @@ use crate::{
     PassiveEffectMetadata, PhysicsBody, QueuedAnimationAction, Resources, Transform,
 };
 
-use crate::effects::active::spawn_active_effect;
+use core::Result;
 
+use crate::effects::active::spawn_active_effect;
 use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::physics::PhysicsBodyParams;
-use crate::player::{PlayerInventory, PlayerState, IDLE_ANIMATION_ID};
-use crate::Result;
+use crate::player::{Player, PlayerInventory, IDLE_ANIMATION_ID};
 
 pub const ITEMS_DRAW_ORDER: u32 = 1;
 
@@ -381,12 +381,12 @@ pub fn fire_weapon(world: &mut World, entity: Entity, owner: Entity) -> Result<(
         let mut weapon = world.get_mut::<Weapon>(entity).unwrap();
 
         if weapon.cooldown_timer >= weapon.cooldown {
-            let mut owner_state = world.get_mut::<PlayerState>(owner).unwrap();
+            let mut player = world.get_mut::<Player>(owner).unwrap();
 
             {
                 let mut owner_body = world.get_mut::<PhysicsBody>(owner).unwrap();
 
-                if owner_state.is_facing_left {
+                if player.is_facing_left {
                     owner_body.velocity.x = weapon.recoil;
                 } else {
                     owner_body.velocity.x = -weapon.recoil;
@@ -397,17 +397,17 @@ pub fn fire_weapon(world: &mut World, entity: Entity, owner: Entity) -> Result<(
 
                 origin = owner_transform.position
                     + owner_inventory
-                        .get_weapon_mount(owner_state.is_facing_left, owner_state.is_upside_down);
+                        .get_weapon_mount(player.is_facing_left, player.is_upside_down);
 
                 let mut offset = weapon.mount_offset + weapon.effect_offset;
-                if owner_state.is_facing_left {
+                if player.is_facing_left {
                     offset.x = -offset.x;
                 }
 
                 origin += offset;
             }
 
-            owner_state.attack_timer = weapon.attack_duration;
+            player.attack_timer = weapon.attack_duration;
 
             weapon.use_cnt += 1;
 

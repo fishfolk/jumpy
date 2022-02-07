@@ -1,7 +1,8 @@
 use hecs::World;
 use macroquad::prelude::*;
 
-use crate::network::Id;
+use core::Id;
+
 use crate::{collect_local_input, GameInput, GameInputScheme};
 
 #[derive(Debug, Clone)]

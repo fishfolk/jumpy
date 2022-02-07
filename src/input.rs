@@ -1,6 +1,8 @@
 use macroquad::experimental::collections::storage;
 
-use crate::{GamepadContext, Result};
+use core::Result;
+
+use crate::GamepadContext;
 
 pub fn update_gamepad_context(context: Option<&mut GamepadContext>) -> Result<()> {
     if let Some(context) = context {

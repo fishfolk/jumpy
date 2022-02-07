@@ -188,11 +188,23 @@ name = "fishfight"
 version = "0.3.0"
 dependencies = [
  "ff-particles",
+ "fishfight-core",
  "fishsticks",
  "hecs",
  "macroquad",
  "macroquad-platformer",
- "network-core",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "fishfight-core"
+version = "0.3.0"
+dependencies = [
+ "async-trait",
+ "fishsticks",
+ "hecs",
+ "macroquad",
  "serde",
  "serde_json",
 ]
@@ -475,15 +487,6 @@ name = "ndk-sys"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e1bcdd74c20ad5d95aacd60ef9ba40fdf77f767051040541df557b7a9b2a2121"
-
-[[package]]
-name = "network-core"
-version = "0.3.0"
-dependencies = [
- "async-trait",
- "serde",
- "serde_json",
-]
 
 [[package]]
 name = "nix"

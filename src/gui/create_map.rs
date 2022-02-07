@@ -6,14 +6,13 @@ use macroquad::{
     ui::{hash, root_ui, widgets},
 };
 
+use core::Result;
+
 use super::{GuiResources, Panel};
 
 use crate::gui::draw_main_menu_background;
-use crate::{
-    is_gamepad_btn_pressed,
-    resources::{map_name_to_filename, MapResource, Resources},
-    GamepadContext, Result,
-};
+use crate::resources::{map_name_to_filename, MapResource, Resources};
+use crate::{is_gamepad_btn_pressed, GamepadContext};
 
 enum WindowState {
     None,

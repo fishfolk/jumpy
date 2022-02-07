@@ -4,13 +4,14 @@ use std::cmp::Ordering;
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
 
+use core::error::{Error, ErrorKind, Result};
+
 use crate::editor::gui::windows::Window;
 use crate::map::{MapBackgroundLayer, MapObject, MapObjectKind};
 use crate::{
     map::{Map, MapLayer, MapLayerKind, MapTile, MapTileset},
     Resources,
 };
-use crate::{Error, ErrorKind, Result};
 
 /// These are all the actions available for the GUI and other sub-systems of the editor.
 /// If you need to perform multiple actions in one call, use the `Batch` variant.

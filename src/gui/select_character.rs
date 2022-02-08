@@ -34,7 +34,11 @@ pub async fn show_select_characters_menu(
 
     let player_characters = {
         let resources = storage::get::<Resources>();
-        resources.player_characters.clone()
+        resources
+            .player_characters
+            .values()
+            .cloned()
+            .collect::<Vec<_>>()
     };
 
     assert!(

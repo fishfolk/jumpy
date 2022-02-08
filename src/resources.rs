@@ -326,21 +326,19 @@ async fn load_resources_from<P: AsRef<Path>>(path: P, resources: &mut Resources)
         }
     }
 
-    let player_characters: Vec<PlayerCharacterMetadata> = {
+    {
         let path = path
             .join(PLAYER_CHARACTERS_FILE)
             .with_extension(RESOURCE_FILES_EXTENSION);
 
         if let Ok(bytes) = load_file(&path.to_string_helper()).await {
-            deserialize_json_bytes(&bytes)?
-        } else {
-            Vec::new()
+            let metadata: Vec<PlayerCharacterMetadata> = deserialize_json_bytes(&bytes)?;
+
+            for meta in metadata {
+                resources.player_characters.insert(meta.id.clone(), meta);
+            }
         }
     };
-
-    for character in player_characters {
-        resources.player_characters.push(character);
-    }
 
     Ok(())
 }
@@ -359,7 +357,7 @@ pub struct Resources {
     pub maps: Vec<MapResource>,
     pub decoration: HashMap<String, DecorationMetadata>,
     pub items: HashMap<String, MapItemMetadata>,
-    pub player_characters: Vec<PlayerCharacterMetadata>,
+    pub player_characters: HashMap<String, PlayerCharacterMetadata>,
 }
 
 impl Resources {
@@ -379,7 +377,7 @@ impl Resources {
             images: HashMap::new(),
             maps: Vec::new(),
             items: HashMap::new(),
-            player_characters: Vec::new(),
+            player_characters: HashMap::new(),
         };
 
         load_resources_from(assets_dir, &mut resources).await?;

@@ -74,9 +74,17 @@ fn build_main_menu() -> Menu {
                 title: "Local Game".to_string(),
                 ..Default::default()
             },
+            #[cfg(debug_assertions)]
             MenuEntry {
                 index: ROOT_OPTION_NETWORK_GAME,
                 title: "Network Game".to_string(),
+                ..Default::default()
+            },
+            #[cfg(not(debug_assertions))]
+            MenuEntry {
+                index: ROOT_OPTION_NETWORK_GAME,
+                title: "Network Game".to_string(),
+                is_disabled: true,
                 ..Default::default()
             },
             MenuEntry {
@@ -359,12 +367,12 @@ fn network_game_ui(ui: &mut ui::Ui, _state: &mut NetworkUiState) -> Option<MainM
                 PlayerParams {
                     index: 0,
                     controller: PlayerControllerKind::LocalInput(GameInputScheme::KeyboardLeft),
-                    character: resources.player_characters[0].clone(),
+                    character: resources.player_characters.get("pescy").cloned().unwrap(),
                 },
                 PlayerParams {
                     index: 1,
                     controller: PlayerControllerKind::Network(Id::from("2")),
-                    character: resources.player_characters[1].clone(),
+                    character: resources.player_characters.get("sharky").cloned().unwrap(),
                 },
             ],
         });
@@ -380,12 +388,12 @@ fn network_game_ui(ui: &mut ui::Ui, _state: &mut NetworkUiState) -> Option<MainM
                 PlayerParams {
                     index: 0,
                     controller: PlayerControllerKind::Network(Id::from("1")),
-                    character: resources.player_characters[0].clone(),
+                    character: resources.player_characters.get("pescy").cloned().unwrap(),
                 },
                 PlayerParams {
                     index: 1,
                     controller: PlayerControllerKind::LocalInput(GameInputScheme::KeyboardLeft),
-                    character: resources.player_characters[1].clone(),
+                    character: resources.player_characters.get("sharky").cloned().unwrap(),
                 },
             ],
         });

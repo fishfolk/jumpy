@@ -12,10 +12,10 @@ pub enum NetworkEvent {
     LobbyChanged {
         lobby: Lobby,
     },
-    MarkPlayerReady {
+    PlayerMarkedReady {
         player_id: Id,
     },
-    MarkPlayerNotReady {
+    PlayerMarkedNotReady {
         player_id: Id,
     },
     PlayerJoined {

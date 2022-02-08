@@ -8,7 +8,9 @@ use std::path::Path;
 use crate::map::Map;
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
-use crate::resources::{is_valid_map_export_path, map_name_to_filename};
+use crate::resources::{
+    is_valid_map_export_path, map_name_to_filename, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION,
+};
 use crate::Resources;
 
 pub struct SaveMapWindow {
@@ -59,9 +61,9 @@ impl Window for SaveMapWindow {
             {
                 let resources = storage::get::<Resources>();
                 let path = Path::new(&resources.assets_dir)
-                    .join(Resources::MAP_EXPORTS_DEFAULT_DIR)
+                    .join(MAP_EXPORTS_DEFAULT_DIR)
                     .join(map_name_to_filename(&self.name))
-                    .with_extension(Resources::MAP_EXPORTS_EXTENSION);
+                    .with_extension(MAP_EXPORTS_EXTENSION);
 
                 widgets::Label::new(path.to_string_lossy().as_ref()).ui(ui);
             }
@@ -82,9 +84,9 @@ impl Window for SaveMapWindow {
     fn get_buttons(&self, _map: &Map, _ctx: &EditorContext) -> Vec<ButtonParams> {
         let mut res = Vec::new();
 
-        let path = Path::new(Resources::MAP_EXPORTS_DEFAULT_DIR)
+        let path = Path::new(MAP_EXPORTS_DEFAULT_DIR)
             .join(map_name_to_filename(&self.name))
-            .with_extension(Resources::MAP_EXPORTS_EXTENSION);
+            .with_extension(MAP_EXPORTS_EXTENSION);
 
         let mut action = None;
         if is_valid_map_export_path(&path, self.should_overwrite) {

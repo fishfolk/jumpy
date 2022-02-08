@@ -30,6 +30,12 @@ impl Api {
         api.backend.init(token).await
     }
 
+    pub async fn close() -> Result<()> {
+        let api = Self::get_instance();
+
+        api.backend.close().await
+    }
+
     pub async fn get_player(id: &Id) -> Result<Player> {
         let api = Self::get_instance();
 
@@ -42,10 +48,10 @@ impl Api {
         api.backend.get_lobby(id).await
     }
 
-    pub fn next_event() -> Option<NetworkEvent> {
+    pub fn poll_events() -> Vec<NetworkEvent> {
         let api = Self::get_instance();
 
-        api.backend.next_event()
+        api.backend.poll_events()
     }
 }
 
@@ -54,12 +60,14 @@ impl Api {
 pub trait ApiBackend {
     /// Init backend
     async fn init(&mut self, token: &str) -> Result<()>;
+    /// Close connection
+    async fn close(&mut self) -> Result<()>;
     /// Get `Player` with the specified `id`
     async fn get_player(&mut self, id: &Id) -> Result<Player>;
     /// Get `Lobby` with the specified `id`
     async fn get_lobby(&mut self, id: &Id) -> Result<Lobby>;
     /// Get the next event in the event queue
-    fn next_event(&mut self) -> Option<NetworkEvent>;
+    fn poll_events(&mut self) -> Vec<NetworkEvent>;
 }
 
 /// This is used as a placeholder for when no external backend implementation is available.
@@ -103,6 +111,10 @@ impl ApiBackend for MockApiBackend {
         Ok(())
     }
 
+    async fn close(&mut self) -> Result<()> {
+        Ok(())
+    }
+
     async fn get_player(&mut self, id: &Id) -> Result<Player> {
         if let Some(player) = self.players.iter().find(|&player| player.id == *id) {
             Ok(player.clone())
@@ -119,7 +131,7 @@ impl ApiBackend for MockApiBackend {
         }
     }
 
-    fn next_event(&mut self) -> Option<NetworkEvent> {
-        None
+    fn poll_events(&mut self) -> Vec<NetworkEvent> {
+        Vec::new()
     }
 }

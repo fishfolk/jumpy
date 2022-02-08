@@ -5,17 +5,16 @@ use hecs::World;
 use core::network::Api;
 use core::Result;
 
+#[cfg(feature = "ultimate")]
 pub async fn init_api(token: &str) -> Result<()> {
-    #[cfg(feature = "ultimate")]
-    Api::init::<ultimate::UltimateApiBackend>(token).await?;
-
-    #[cfg(not(feature = "ultimate"))]
-    Api::init::<core::network::MockApiBackend>(token).await?;
-
-    Ok(())
+    Api::init::<ultimate::UltimateApiBackend>(token).await
 }
 
-#[allow(dead_code)]
+#[cfg(not(feature = "ultimate"))]
+pub async fn init_api(token: &str) -> Result<()> {
+    Api::init::<core::network::MockApiBackend>(token).await
+}
+
 #[derive(Default)]
 pub struct NetworkClient {}
 
@@ -25,11 +24,12 @@ impl NetworkClient {
     }
 }
 
-pub fn update_network_client(_world: &mut World) {}
+pub fn update_network_client(_world: &mut World) {
+    for _event in Api::poll_events() {}
+}
 
 pub fn fixed_update_network_client(_world: &mut World) {}
 
-#[allow(dead_code)]
 #[derive(Default)]
 pub struct NetworkHost {}
 
@@ -39,6 +39,8 @@ impl NetworkHost {
     }
 }
 
-pub fn update_network_host(_world: &mut World) {}
+pub fn update_network_host(_world: &mut World) {
+    for _event in Api::poll_events() {}
+}
 
 pub fn fixed_update_network_host(_world: &mut World) {}

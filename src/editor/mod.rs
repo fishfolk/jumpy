@@ -64,7 +64,9 @@ use macroquad::{
 use core::text::{draw_aligned_text, HorizontalAlignment, VerticalAlignment};
 
 use super::map::{Map, MapLayerKind};
-use crate::resources::{map_name_to_filename, MapResource};
+use crate::resources::{
+    map_name_to_filename, MapResource, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION,
+};
 
 #[derive(Debug, Clone)]
 pub struct EditorContext {
@@ -616,9 +618,9 @@ impl Editor {
                 let mut map_resource = self.map_resource.clone();
 
                 if let Some(name) = name {
-                    let path = Path::new(Resources::MAP_EXPORTS_DEFAULT_DIR)
+                    let path = Path::new(MAP_EXPORTS_DEFAULT_DIR)
                         .join(map_name_to_filename(&name))
-                        .with_extension(Resources::MAP_EXPORTS_EXTENSION);
+                        .with_extension(MAP_EXPORTS_EXTENSION);
 
                     map_resource.meta.name = name;
                     map_resource.meta.path = path.to_string_lossy().to_string();

@@ -10,7 +10,7 @@ use ff_particles::EmitterConfig;
 
 use serde::{Deserialize, Serialize};
 
-use core::data::deserialize_json_file;
+use core::data::{deserialize_json_bytes, deserialize_json_file};
 use core::error::ErrorKind;
 use core::text::ToStringHelper;
 use core::{formaterr, Result};
@@ -20,6 +20,28 @@ use crate::map::DecorationMetadata;
 
 use crate::player::PlayerCharacterMetadata;
 use crate::{items::MapItemMetadata, json, map::Map};
+
+const PARTICLE_EFFECTS_DIR: &str = "particle_effects";
+const SOUNDS_FILE: &str = "sounds";
+const MUSIC_FILE: &str = "music";
+const TEXTURES_FILE: &str = "textures";
+const IMAGES_FILE: &str = "images";
+const MAPS_FILE: &str = "maps";
+const DECORATION_FILE: &str = "decoration";
+const ITEMS_FILE: &str = "items";
+const PLAYER_CHARACTERS_FILE: &str = "player_characters";
+
+const RESOURCE_FILES_EXTENSION: &str = "json";
+
+pub const MAP_EXPORTS_DEFAULT_DIR: &str = "maps";
+pub const MAP_EXPORTS_EXTENSION: &str = "json";
+pub const MAP_EXPORT_NAME_MIN_LEN: usize = 1;
+
+pub const MAP_PREVIEW_PLACEHOLDER_PATH: &str = "maps/no_preview.png";
+pub const MAP_PREVIEW_PLACEHOLDER_ID: &str = "map_preview_placeholder";
+
+const ACTIVE_MODS_FILE_NAME: &str = "active_mods";
+const MOD_FILE_NAME: &str = "fishfight_mod";
 
 #[derive(Serialize, Deserialize)]
 struct ParticleEffectMetadata {
@@ -118,109 +140,74 @@ pub struct MapResource {
     pub meta: MapMetadata,
 }
 
-pub struct Resources {
-    pub assets_dir: String,
+// TODO: Add an optional requirement for all resource files (for when loading games main resources)
+async fn load_resources_from<P: AsRef<Path>>(path: P, resources: &mut Resources) -> Result<()> {
+    let path = path.as_ref();
 
-    pub particle_effects: HashMap<String, EmitterConfig>,
-    pub sounds: HashMap<String, Sound>,
-    pub music: HashMap<String, Sound>,
-    pub textures: HashMap<String, TextureResource>,
-    pub images: HashMap<String, ImageResource>,
-    pub maps: Vec<MapResource>,
-    pub decoration: HashMap<String, DecorationMetadata>,
-    pub items: HashMap<String, MapItemMetadata>,
-    pub player_characters: Vec<PlayerCharacterMetadata>,
-}
+    {
+        let particle_effects_file_path = path
+            .join(PARTICLE_EFFECTS_DIR)
+            .with_extension(RESOURCE_FILES_EXTENSION);
 
-impl Resources {
-    pub const PARTICLE_EFFECTS_DIR: &'static str = "particle_effects";
-    pub const SOUNDS_FILE: &'static str = "sounds";
-    pub const MUSIC_FILE: &'static str = "music";
-    pub const TEXTURES_FILE: &'static str = "textures";
-    pub const IMAGES_FILE: &'static str = "images";
-    pub const MAPS_FILE: &'static str = "maps";
-    pub const DECORATION_FILE: &'static str = "decoration";
-    pub const ITEMS_FILE: &'static str = "items";
-    pub const PLAYER_CHARACTERS_FILE: &'static str = "player_characters";
-
-    pub const RESOURCE_FILES_EXTENSION: &'static str = "json";
-
-    pub const MAP_EXPORTS_EXTENSION: &'static str = "json";
-    pub const MAP_EXPORTS_DEFAULT_DIR: &'static str = "maps";
-    pub const MAP_EXPORT_NAME_MIN_LEN: usize = 1;
-
-    pub const MAP_PREVIEW_PLACEHOLDER_PATH: &'static str = "maps/no_preview.png";
-    pub const MAP_PREVIEW_PLACEHOLDER_ID: &'static str = "map_preview_placeholder";
-
-    pub async fn new(assets_dir: &str) -> Result<Resources> {
-        let assets_dir_path = Path::new(assets_dir);
-
-        let mut particle_effects = HashMap::new();
-
-        {
-            let particle_effects_file_path = assets_dir_path
-                .join(Self::PARTICLE_EFFECTS_DIR)
-                .with_extension(Self::RESOURCE_FILES_EXTENSION);
-
-            let metadata: Vec<ParticleEffectMetadata> =
-                deserialize_json_file(&particle_effects_file_path).await?;
+        if let Ok(bytes) = load_file(&particle_effects_file_path.to_string_helper()).await {
+            let metadata: Vec<ParticleEffectMetadata> = deserialize_json_bytes(&bytes)?;
 
             for meta in metadata {
-                let file_path = assets_dir_path.join(&meta.path);
+                let file_path = path.join(&meta.path);
 
                 let cfg: EmitterConfig = deserialize_json_file(&file_path).await?;
 
-                particle_effects.insert(meta.id, cfg);
+                resources.particle_effects.insert(meta.id, cfg);
             }
         }
+    }
 
-        let mut sounds = HashMap::new();
+    {
+        let sounds_file_path = path
+            .join(SOUNDS_FILE)
+            .with_extension(RESOURCE_FILES_EXTENSION);
 
-        {
-            let sounds_file_path = assets_dir_path
-                .join(Self::SOUNDS_FILE)
-                .with_extension(Self::RESOURCE_FILES_EXTENSION);
-
-            let metadata: Vec<SoundMetadata> = deserialize_json_file(&sounds_file_path).await?;
+        if let Ok(bytes) = load_file(&sounds_file_path.to_string_helper()).await {
+            let metadata: Vec<SoundMetadata> = deserialize_json_bytes(&bytes)?;
 
             for meta in metadata {
-                let file_path = assets_dir_path.join(meta.path);
+                let file_path = path.join(meta.path);
 
                 let sound = load_sound(&file_path.to_string_helper()).await?;
 
-                sounds.insert(meta.id, sound);
+                resources.sounds.insert(meta.id, sound);
             }
         }
+    }
 
-        let mut music = HashMap::new();
+    {
+        let music_file_path = path
+            .join(MUSIC_FILE)
+            .with_extension(RESOURCE_FILES_EXTENSION);
 
-        {
-            let music_file_path = assets_dir_path
-                .join(Self::MUSIC_FILE)
-                .with_extension(Self::RESOURCE_FILES_EXTENSION);
-
-            let metadata: Vec<SoundMetadata> = deserialize_json_file(&music_file_path).await?;
+        if let Ok(bytes) = load_file(&music_file_path.to_string_helper()).await {
+            let metadata: Vec<SoundMetadata> = deserialize_json_bytes(&bytes)?;
 
             for meta in metadata {
-                let file_path = assets_dir_path.join(meta.path);
+                let file_path = path.join(meta.path);
 
                 let sound = load_sound(&file_path.to_string_helper()).await?;
 
-                music.insert(meta.id, sound);
+                resources.music.insert(meta.id, sound);
             }
         }
+    }
 
-        let mut textures = HashMap::new();
+    {
+        let textures_file_path = path
+            .join(TEXTURES_FILE)
+            .with_extension(RESOURCE_FILES_EXTENSION);
 
-        {
-            let textures_file_path = assets_dir_path
-                .join(Self::TEXTURES_FILE)
-                .with_extension(Self::RESOURCE_FILES_EXTENSION);
-
-            let metadata: Vec<TextureMetadata> = deserialize_json_file(&textures_file_path).await?;
+        if let Ok(bytes) = load_file(&textures_file_path.to_string_helper()).await {
+            let metadata: Vec<TextureMetadata> = deserialize_json_bytes(&bytes)?;
 
             for meta in metadata {
-                let file_path = assets_dir_path.join(&meta.path);
+                let file_path = path.join(&meta.path);
 
                 let texture = load_texture(&file_path.to_string_helper()).await?;
                 texture.set_filter(meta.filter_mode);
@@ -244,21 +231,21 @@ impl Resources {
 
                 let res = TextureResource { texture, meta };
 
-                textures.insert(key, res);
+                resources.textures.insert(key, res);
             }
         }
+    }
 
-        let mut images = HashMap::new();
+    {
+        let images_file_path = path
+            .join(IMAGES_FILE)
+            .with_extension(RESOURCE_FILES_EXTENSION);
 
-        {
-            let images_file_path = assets_dir_path
-                .join(Self::IMAGES_FILE)
-                .with_extension(Self::RESOURCE_FILES_EXTENSION);
-
-            let metadata: Vec<ImageMetadata> = deserialize_json_file(&images_file_path).await?;
+        if let Ok(bytes) = load_file(&images_file_path.to_string_helper()).await {
+            let metadata: Vec<ImageMetadata> = deserialize_json_bytes(&bytes)?;
 
             for meta in metadata {
-                let file_path = assets_dir_path.join(&meta.path);
+                let file_path = path.join(&meta.path);
 
                 let image = load_image(&file_path.to_string_helper()).await?;
 
@@ -271,22 +258,22 @@ impl Resources {
 
                 let res = ImageResource { image, meta };
 
-                images.insert(key, res);
+                resources.images.insert(key, res);
             }
         }
+    }
 
-        let mut maps = Vec::new();
+    {
+        let maps_file_path = path
+            .join(MAPS_FILE)
+            .with_extension(RESOURCE_FILES_EXTENSION);
 
-        {
-            let maps_file_path = assets_dir_path
-                .join(Self::MAPS_FILE)
-                .with_extension(Self::RESOURCE_FILES_EXTENSION);
-
-            let metadata: Vec<MapMetadata> = deserialize_json_file(&maps_file_path).await?;
+        if let Ok(bytes) = load_file(&maps_file_path.to_string_helper()).await {
+            let metadata: Vec<MapMetadata> = deserialize_json_bytes(&bytes)?;
 
             for meta in metadata {
-                let map_path = assets_dir_path.join(&meta.path);
-                let preview_path = assets_dir_path.join(&meta.preview_path);
+                let map_path = path.join(&meta.path);
+                let preview_path = path.join(&meta.preview_path);
 
                 let map = if meta.is_tiled_map {
                     Map::load_tiled(map_path, None).await?
@@ -298,68 +285,108 @@ impl Resources {
 
                 let res = MapResource { map, preview, meta };
 
-                maps.push(res)
+                resources.maps.push(res)
             }
         }
+    }
 
-        let mut decoration = HashMap::new();
+    {
+        let decoration_file_path = path
+            .join(DECORATION_FILE)
+            .with_extension(RESOURCE_FILES_EXTENSION);
 
-        {
-            let decoration_file_path = assets_dir_path
-                .join(Self::DECORATION_FILE)
-                .with_extension(Self::RESOURCE_FILES_EXTENSION);
+        if let Ok(bytes) = load_file(&decoration_file_path.to_string_helper()).await {
+            let decoration_paths: Vec<String> = deserialize_json_bytes(&bytes)?;
 
-            let decoration_paths: Vec<String> =
-                deserialize_json_file(&decoration_file_path).await?;
-
-            for path in decoration_paths {
-                let path = assets_dir_path.join(&path);
+            for decoration_path in decoration_paths {
+                let path = path.join(&decoration_path);
 
                 let params: DecorationMetadata = deserialize_json_file(&path).await?;
 
-                decoration.insert(params.id.clone(), params);
+                resources.decoration.insert(params.id.clone(), params);
             }
         }
+    }
 
-        let mut items = HashMap::new();
+    {
+        let items_file_path = path
+            .join(ITEMS_FILE)
+            .with_extension(RESOURCE_FILES_EXTENSION);
 
-        {
-            let items_file_path = assets_dir_path
-                .join(Self::ITEMS_FILE)
-                .with_extension(Self::RESOURCE_FILES_EXTENSION);
+        if let Ok(bytes) = load_file(&items_file_path.to_string_helper()).await {
+            let item_paths: Vec<String> = deserialize_json_bytes(&bytes)?;
 
-            let item_paths: Vec<String> = deserialize_json_file(&items_file_path).await?;
-
-            for path in item_paths {
-                let path = assets_dir_path.join(&path);
+            for item_path in item_paths {
+                let path = path.join(&item_path);
 
                 let params: MapItemMetadata = deserialize_json_file(&path).await?;
 
-                items.insert(params.id.clone(), params);
+                resources.items.insert(params.id.clone(), params);
             }
         }
+    }
 
-        let player_characters = {
-            let path = assets_dir_path
-                .join(Self::PLAYER_CHARACTERS_FILE)
-                .with_extension(Self::RESOURCE_FILES_EXTENSION);
+    let player_characters: Vec<PlayerCharacterMetadata> = {
+        let path = path
+            .join(PLAYER_CHARACTERS_FILE)
+            .with_extension(RESOURCE_FILES_EXTENSION);
 
-            deserialize_json_file(&path).await?
+        if let Ok(bytes) = load_file(&path.to_string_helper()).await {
+            deserialize_json_bytes(&bytes)?
+        } else {
+            Vec::new()
+        }
+    };
+
+    for character in player_characters {
+        resources.player_characters.push(character);
+    }
+
+    Ok(())
+}
+
+pub struct Resources {
+    pub assets_dir: String,
+    pub mods_dir: String,
+
+    pub loaded_mods: Vec<ModMetadata>,
+
+    pub particle_effects: HashMap<String, EmitterConfig>,
+    pub sounds: HashMap<String, Sound>,
+    pub music: HashMap<String, Sound>,
+    pub textures: HashMap<String, TextureResource>,
+    pub images: HashMap<String, ImageResource>,
+    pub maps: Vec<MapResource>,
+    pub decoration: HashMap<String, DecorationMetadata>,
+    pub items: HashMap<String, MapItemMetadata>,
+    pub player_characters: Vec<PlayerCharacterMetadata>,
+}
+
+impl Resources {
+    pub async fn new<P: AsRef<Path>>(assets_dir: P, mods_dir: P) -> Result<Resources> {
+        let assets_dir = assets_dir.as_ref();
+        let mods_dir = mods_dir.as_ref();
+
+        let mut resources = Resources {
+            assets_dir: assets_dir.to_string_helper(),
+            mods_dir: mods_dir.to_string_helper(),
+            loaded_mods: Vec::new(),
+            particle_effects: HashMap::new(),
+            sounds: HashMap::new(),
+            music: HashMap::new(),
+            textures: HashMap::new(),
+            decoration: HashMap::new(),
+            images: HashMap::new(),
+            maps: Vec::new(),
+            items: HashMap::new(),
+            player_characters: Vec::new(),
         };
 
-        #[allow(clippy::inconsistent_struct_constructor)]
-        Ok(Resources {
-            assets_dir: assets_dir.to_string(),
-            particle_effects,
-            sounds,
-            music,
-            textures,
-            decoration,
-            images,
-            maps,
-            items,
-            player_characters,
-        })
+        load_resources_from(assets_dir, &mut resources).await?;
+
+        load_mods(mods_dir, &mut resources).await?;
+
+        Ok(resources)
     }
 
     pub fn create_map(
@@ -371,13 +398,13 @@ impl Resources {
     ) -> Result<MapResource> {
         let description = description.map(|str| str.to_string());
 
-        let map_path = Path::new(Self::MAP_EXPORTS_DEFAULT_DIR)
+        let map_path = Path::new(MAP_EXPORTS_DEFAULT_DIR)
             .join(map_name_to_filename(name))
-            .with_extension(Self::MAP_EXPORTS_EXTENSION);
+            .with_extension(MAP_EXPORTS_EXTENSION);
 
         let path = map_path.to_string_helper();
 
-        let preview_path = Path::new(Self::MAP_PREVIEW_PLACEHOLDER_PATH).to_string_helper();
+        let preview_path = Path::new(MAP_PREVIEW_PLACEHOLDER_PATH).to_string_helper();
 
         let meta = MapMetadata {
             name: name.to_string(),
@@ -391,7 +418,7 @@ impl Resources {
         let map = Map::new(tile_size, grid_size);
 
         let preview = {
-            let res = self.textures.get(Self::MAP_PREVIEW_PLACEHOLDER_ID).unwrap();
+            let res = self.textures.get(MAP_PREVIEW_PLACEHOLDER_ID).unwrap();
             res.texture
         };
 
@@ -445,8 +472,8 @@ impl Resources {
 
     fn save_maps_file(&self) -> Result<()> {
         let maps_file_path = Path::new(&self.assets_dir)
-            .join(Self::MAPS_FILE)
-            .with_extension(Self::RESOURCE_FILES_EXTENSION);
+            .join(MAPS_FILE)
+            .with_extension(RESOURCE_FILES_EXTENSION);
 
         let metadata: Vec<MapMetadata> = self.maps.iter().map(|res| res.meta.clone()).collect();
 
@@ -462,10 +489,9 @@ pub fn map_name_to_filename(name: &str) -> String {
 }
 
 pub fn is_valid_map_file_name(file_name: &str) -> bool {
-    if file_name.len() - Resources::MAP_EXPORTS_EXTENSION.len() > Resources::MAP_EXPORT_NAME_MIN_LEN
-    {
+    if file_name.len() - MAP_EXPORTS_EXTENSION.len() > MAP_EXPORT_NAME_MIN_LEN {
         if let Some(extension) = Path::new(file_name).extension() {
-            return extension == Resources::MAP_EXPORTS_EXTENSION;
+            return extension == MAP_EXPORTS_EXTENSION;
         }
     }
 
@@ -496,10 +522,10 @@ pub fn is_valid_map_export_path<P: AsRef<Path>>(path: P, should_overwrite: bool)
 }
 
 #[cfg(target_arch = "wasm32")]
-pub async fn load_resources(assets_dir: &str) -> Result<()> {
+pub async fn load_resources(assets_dir: &str, mods_dir: &str) -> Result<()> {
     {
-        let assets = Resources::new(assets_dir).await?;
-        storage::store(assets);
+        let resources = Resources::new(assets_dir, mods_dir).await?;
+        storage::store(resources);
     }
 
     {
@@ -511,16 +537,17 @@ pub async fn load_resources(assets_dir: &str) -> Result<()> {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-pub async fn load_resources(assets_dir: &str) -> Result<()> {
+pub async fn load_resources(assets_dir: &str, mods_dir: &str) -> Result<()> {
     let assets_loading = start_coroutine({
         let assets_dir = assets_dir.to_string();
+        let mods_dir = mods_dir.to_string();
         async move {
-            let assets = match Resources::new(&assets_dir).await {
+            let resources = match Resources::new(&assets_dir, &mods_dir).await {
                 Ok(val) => val,
                 Err(err) => panic!("{}: {}", err.kind().as_str(), err),
             };
 
-            storage::store(assets);
+            storage::store(resources);
         }
     });
 
@@ -543,6 +570,91 @@ pub async fn load_resources(assets_dir: &str) -> Result<()> {
     {
         let gui_resources = GuiResources::new();
         storage::store(gui_resources);
+    }
+
+    Ok(())
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ModMetadata {
+    pub id: String,
+    #[serde(default)]
+    pub name: String,
+    #[serde(default)]
+    pub description: String,
+    pub version: String,
+    #[serde(default)]
+    pub kind: ModKind,
+    #[serde(default)]
+    pub dependencies: Vec<DependencyMetadata>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DependencyMetadata {
+    pub id: String,
+    pub version: String,
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ModKind {
+    DataOnly,
+    Full,
+}
+
+impl Default for ModKind {
+    fn default() -> Self {
+        ModKind::Full
+    }
+}
+
+async fn load_mods<P: AsRef<Path>>(mods_dir: P, resources: &mut Resources) -> Result<()> {
+    let mods_dir = mods_dir.as_ref();
+
+    let active_mods_file_path = mods_dir
+        .join(ACTIVE_MODS_FILE_NAME)
+        .with_extension(RESOURCE_FILES_EXTENSION);
+
+    let mod_dirs: Vec<String> = deserialize_json_file(active_mods_file_path).await?;
+
+    for mod_dir in mod_dirs.iter() {
+        let mod_dir_path = mods_dir.join(mod_dir);
+
+        let mod_file_path = mod_dir_path
+            .join(MOD_FILE_NAME)
+            .with_extension(RESOURCE_FILES_EXTENSION);
+
+        let meta: ModMetadata = deserialize_json_file(mod_file_path).await?;
+
+        let mut has_unmet_dependencies = false;
+
+        for dependency in &meta.dependencies {
+            let res = resources
+                .loaded_mods
+                .iter()
+                .find(|&meta| meta.id == dependency.id && meta.version == dependency.version);
+
+            if res.is_none() {
+                has_unmet_dependencies = true;
+
+                #[cfg(debug_assertions)]
+                println!(
+                    "Loading mod {} (v{}) failed: Unmet dependency {} (v{})",
+                    &meta.id, &meta.version, &dependency.id, &dependency.version
+                );
+
+                break;
+            }
+        }
+
+        if !has_unmet_dependencies {
+            load_resources_from(mod_dir_path, resources).await?;
+
+            #[cfg(debug_assertions)]
+            println!("Loaded mod {} (v{})", &meta.id, &meta.version);
+
+            resources.loaded_mods.push(meta);
+        }
     }
 
     Ok(())

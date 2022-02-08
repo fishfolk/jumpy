@@ -4,7 +4,7 @@ use async_trait::async_trait;
 
 use crate::Result;
 
-use super::{Id, Lobby, Player, RequestStatus};
+use super::{Id, Lobby, NetworkEvent, Player, RequestStatus};
 
 static mut API_INSTANCE: Option<Api> = None;
 
@@ -30,6 +30,12 @@ impl Api {
         api.backend.init(token).await
     }
 
+    pub async fn close() -> Result<()> {
+        let api = Self::get_instance();
+
+        api.backend.close().await
+    }
+
     pub async fn get_player(id: &Id) -> Result<Player> {
         let api = Self::get_instance();
 
@@ -41,6 +47,12 @@ impl Api {
 
         api.backend.get_lobby(id).await
     }
+
+    pub fn poll_events() -> Vec<NetworkEvent> {
+        let api = Self::get_instance();
+
+        api.backend.poll_events()
+    }
 }
 
 /// This trait should be implemented by all backend implementations
@@ -48,10 +60,14 @@ impl Api {
 pub trait ApiBackend {
     /// Init backend
     async fn init(&mut self, token: &str) -> Result<()>;
+    /// Close connection
+    async fn close(&mut self) -> Result<()>;
     /// Get `Player` with the specified `id`
     async fn get_player(&mut self, id: &Id) -> Result<Player>;
     /// Get `Lobby` with the specified `id`
     async fn get_lobby(&mut self, id: &Id) -> Result<Lobby>;
+    /// Get the next event in the event queue
+    fn poll_events(&mut self) -> Vec<NetworkEvent>;
 }
 
 /// This is used as a placeholder for when no external backend implementation is available.
@@ -66,8 +82,8 @@ pub struct MockApiBackend {
 impl MockApiBackend {
     pub fn new() -> Self {
         let players = vec![
-            Player::new(&Id::from("1"), "oasf"),
-            Player::new(&Id::from("2"), "other player"),
+            Player::new(&Id::from("1"), "Player One"),
+            Player::new(&Id::from("2"), "Player Two"),
         ];
 
         let mut sessions = HashMap::new();
@@ -95,6 +111,10 @@ impl ApiBackend for MockApiBackend {
         Ok(())
     }
 
+    async fn close(&mut self) -> Result<()> {
+        Ok(())
+    }
+
     async fn get_player(&mut self, id: &Id) -> Result<Player> {
         if let Some(player) = self.players.iter().find(|&player| player.id == *id) {
             Ok(player.clone())
@@ -109,5 +129,9 @@ impl ApiBackend for MockApiBackend {
         } else {
             Err(RequestStatus::NotFound.into())
         }
+    }
+
+    fn poll_events(&mut self) -> Vec<NetworkEvent> {
+        Vec::new()
     }
 }

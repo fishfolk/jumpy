@@ -57,7 +57,6 @@ pub use ecs::Owner;
 
 use crate::effects::passive::init_passive_effects;
 use crate::game::GameMode;
-use crate::network::init_api;
 use crate::particles::Particles;
 use crate::resources::load_resources;
 pub use effects::{
@@ -66,10 +65,11 @@ pub use effects::{
 
 pub type CollisionWorld = macroquad_platformer::World;
 
-const ASSETS_DIR_ENV_VAR: &str = "FISHFIGHT_ASSETS";
 const CONFIG_FILE_ENV_VAR: &str = "FISHFIGHT_CONFIG";
+const ASSETS_DIR_ENV_VAR: &str = "FISHFIGHT_ASSETS";
+const MODS_DIR_ENV_VAR: &str = "FISHFIGHT_MODS";
 
-const WINDOW_TITLE: &str = "FishFight";
+const WINDOW_TITLE: &str = "Fish Fight";
 
 /// Exit to main menu
 pub fn exit_to_main_menu() {
@@ -117,10 +117,11 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     use gui::MainMenuResult;
 
     let assets_dir = env::var(ASSETS_DIR_ENV_VAR).unwrap_or_else(|_| "./assets".to_string());
+    let mods_dir = env::var(MODS_DIR_ENV_VAR).unwrap_or_else(|_| "./mods".to_string());
 
     rand::srand(0);
 
-    load_resources(&assets_dir).await?;
+    load_resources(&assets_dir, &mods_dir).await?;
 
     {
         let gamepad_system = fishsticks::GamepadContext::init().unwrap();
@@ -134,7 +135,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
     init_passive_effects();
 
-    init_api("player_one_token").await?;
+    // init_api("player_one_token").await?;
 
     'outer: loop {
         match gui::show_main_menu().await {
@@ -202,7 +203,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                 match event {
                     ApplicationEvent::ReloadResources => {
                         let resources = storage::get::<Resources>();
-                        load_resources(&resources.assets_dir).await?;
+                        load_resources(&resources.assets_dir, &resources.mods_dir).await?;
                     }
                     ApplicationEvent::MainMenu => break 'inner,
                     ApplicationEvent::Quit => break 'outer,
@@ -221,6 +222,8 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
         stop_music();
     }
+
+    // Api::close().await?;
 
     Ok(())
 }

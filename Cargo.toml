@@ -9,11 +9,11 @@ edition = "2021"
 [features]
 default = []
 
-[profile.dev.package."*"]
-opt-level = 3
-
 [workspace]
 members = ["core"]
+
+[profile.dev.package."*"]
+opt-level = 3
 
 [dependencies]
 core = { path = "./core", package = "fishfight-core", features = ["serde", "serde_json"] }

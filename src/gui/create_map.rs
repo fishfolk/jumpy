@@ -11,7 +11,9 @@ use core::Result;
 use super::{GuiResources, Panel};
 
 use crate::gui::draw_main_menu_background;
-use crate::resources::{map_name_to_filename, MapResource, Resources};
+use crate::resources::{
+    map_name_to_filename, MapResource, Resources, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION,
+};
 use crate::{is_gamepad_btn_pressed, GamepadContext};
 
 enum WindowState {
@@ -43,7 +45,7 @@ pub async fn show_create_map_menu() -> Result<Option<MapResource>> {
 
     let map_export_path = {
         let resources = storage::get::<Resources>();
-        Path::new(&resources.assets_dir).join(Resources::MAP_EXPORTS_DEFAULT_DIR)
+        Path::new(&resources.assets_dir).join(MAP_EXPORTS_DEFAULT_DIR)
     };
 
     let mut gamepad_system = storage::get_mut::<GamepadContext>();
@@ -70,7 +72,7 @@ pub async fn show_create_map_menu() -> Result<Option<MapResource>> {
                 {
                     let path_label = map_export_path
                         .join(map_name_to_filename(&name))
-                        .with_extension(Resources::MAP_EXPORTS_EXTENSION);
+                        .with_extension(MAP_EXPORTS_EXTENSION);
 
                     widgets::Label::new(path_label.to_string_lossy().as_ref()).ui(ui);
                 }

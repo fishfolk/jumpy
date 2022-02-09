@@ -10,7 +10,7 @@ use super::{
     GuiResources, Panel, BUTTON_FONT_SIZE, BUTTON_MARGIN_V, WINDOW_MARGIN_H, WINDOW_MARGIN_V,
 };
 
-use crate::{is_gamepad_btn_pressed, GamepadContext};
+use core::input::{is_gamepad_btn_pressed, GamepadContext};
 
 #[derive(Debug, Copy, Clone)]
 pub enum MenuPosition {

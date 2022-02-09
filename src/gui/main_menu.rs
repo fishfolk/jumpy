@@ -12,9 +12,9 @@ use core::Id;
 
 use super::{draw_main_menu_background, GuiResources, Menu, MenuEntry, MenuResult, Panel};
 
-use crate::input::update_gamepad_context;
 use crate::player::{PlayerControllerKind, PlayerParams};
-use crate::{gui, is_gamepad_btn_pressed, EditorInputScheme, GameInputScheme, Map, Resources};
+use crate::{gui, EditorInputScheme, Map, Resources};
+use core::input::{is_gamepad_btn_pressed, update_gamepad_context, GameInputScheme};
 
 const MENU_WIDTH: f32 = 300.0;
 

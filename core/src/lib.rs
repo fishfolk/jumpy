@@ -1,6 +1,8 @@
 #[macro_use]
 pub mod error;
 pub mod data;
+pub mod input;
+pub mod json;
 pub mod math;
 pub mod network;
 pub mod text;
@@ -9,17 +11,11 @@ pub use error::{Error, Result};
 
 pub use async_trait::async_trait;
 
-#[cfg(feature = "serde")]
 pub use serde;
-
-#[cfg(feature = "serde_json")]
+use serde::{Deserialize, Serialize};
 pub use serde_json;
 
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Id(String);
 
 impl Id {

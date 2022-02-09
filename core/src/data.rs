@@ -3,9 +3,7 @@ use std::path::Path;
 
 use macroquad::prelude::*;
 
-#[cfg(feature = "serde")]
 use serde::de::DeserializeOwned;
-#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 use crate::text::ToStringHelper;
@@ -44,7 +42,6 @@ impl std::error::Error for Error {}
 
 /// Serialize a value into a string of JSON.
 /// Will return a `serde_json::Error` if a parsing error is encountered.
-#[cfg(feature = "serde_json")]
 pub fn serialize_json_string<T>(value: &T) -> std::result::Result<String, serde_json::Error>
 where
     T: Serialize,
@@ -55,7 +52,6 @@ where
 
 /// Serialize a value into a slice of JSON.
 /// Will return a `serde_json::Error` if a parsing error is encountered.
-#[cfg(feature = "serde_json")]
 pub fn serialize_json_bytes<T>(value: &T) -> std::result::Result<Vec<u8>, serde_json::Error>
 where
     T: Serialize,
@@ -66,7 +62,6 @@ where
 
 /// Deserialize a slice of JSON into a value.
 /// Will return a `serde_json::Error` if a parsing error is encountered.
-#[cfg(feature = "serde_json")]
 pub fn deserialize_json_bytes<'a, T>(value: &'a [u8]) -> std::result::Result<T, serde_json::Error>
 where
     T: Deserialize<'a>,
@@ -77,7 +72,6 @@ where
 
 /// Deserialize a string of JSON into a value.
 /// Will return a `serde_json::Error` if a parsing error is encountered.
-#[cfg(feature = "serde_json")]
 pub fn deserialize_json_string<'a, T>(value: &'a str) -> std::result::Result<T, serde_json::Error>
 where
     T: Deserialize<'a>,
@@ -87,7 +81,6 @@ where
 }
 
 /// Deserialize a JSON file into a value
-#[cfg(feature = "serde_json")]
 pub async fn deserialize_json_file<T, P: AsRef<Path>>(path: P) -> Result<T>
 where
     T: DeserializeOwned,

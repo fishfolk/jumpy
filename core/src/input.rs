@@ -1,11 +1,42 @@
+use fishsticks::{Axis, Button};
 use macroquad::experimental::collections::storage;
-use macroquad::input::{is_key_down, is_key_pressed, KeyCode};
-
-use fishsticks::{Axis, Button, GamepadContext};
 
 use serde::{Deserialize, Serialize};
 
-use crate::json;
+pub use fishsticks::GamepadContext;
+use macroquad::input::{is_key_down, is_key_pressed, KeyCode};
+
+use crate::{json, Result};
+
+pub fn update_gamepad_context(context: Option<&mut GamepadContext>) -> Result<()> {
+    if let Some(context) = context {
+        context.update()?;
+    } else {
+        let mut context = storage::get_mut::<GamepadContext>();
+        context.update()?;
+    }
+
+    Ok(())
+}
+
+pub fn is_gamepad_btn_pressed(context: Option<&GamepadContext>, btn: fishsticks::Button) -> bool {
+    let check = |context: &GamepadContext| -> bool {
+        for (_, gamepad) in context.gamepads() {
+            if gamepad.digital_inputs.just_activated(btn) {
+                return true;
+            }
+        }
+
+        false
+    };
+
+    if let Some(context) = context {
+        check(context)
+    } else {
+        let context = storage::get::<GamepadContext>();
+        check(&context)
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum GameInputScheme {

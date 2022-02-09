@@ -1,10 +1,10 @@
-#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 use crate::network::Lobby;
 use crate::Id;
 
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum NetworkEvent {
     LobbyCreated {
         lobby_id: Id,

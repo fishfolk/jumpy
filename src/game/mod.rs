@@ -1,5 +1,4 @@
 mod camera;
-mod input;
 mod music;
 
 pub use camera::GameCamera;
@@ -13,6 +12,7 @@ use macroquad::ui::root_ui;
 
 use hecs::{Entity, World};
 
+use core::input::is_gamepad_btn_pressed;
 use core::Result;
 
 use crate::debug;
@@ -26,11 +26,9 @@ use crate::player::{
 };
 use crate::{
     create_collision_world, debug_draw_drawables, debug_draw_rigid_bodies, draw_drawables,
-    exit_to_main_menu, fixed_update_rigid_bodies, is_gamepad_btn_pressed, quit_to_desktop,
-    update_animated_sprites, Map, MapLayerKind, MapObjectKind, Resources,
+    exit_to_main_menu, fixed_update_rigid_bodies, quit_to_desktop, update_animated_sprites, Map,
+    MapLayerKind, MapObjectKind, Resources,
 };
-
-pub use input::{collect_local_input, GameInput, GameInputScheme};
 
 use crate::effects::active::debug_draw_active_effects;
 use crate::effects::active::projectiles::fixed_update_projectiles;

@@ -9,7 +9,7 @@ use macroquad::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    json, ActiveEffectMetadata, AnimatedSprite, AnimatedSpriteMetadata, CollisionWorld, Drawable,
+    ActiveEffectMetadata, AnimatedSprite, AnimatedSpriteMetadata, CollisionWorld, Drawable,
     PassiveEffectMetadata, PhysicsBody, QueuedAnimationAction, Resources, Transform,
 };
 
@@ -136,9 +136,9 @@ pub struct MapItemMetadata {
     pub name: String,
     #[serde(flatten)]
     pub kind: MapItemKind,
-    #[serde(with = "json::vec2_def")]
+    #[serde(with = "core::json::vec2_def")]
     pub collider_size: Vec2,
-    #[serde(default, with = "json::vec2_def")]
+    #[serde(default, with = "core::json::vec2_def")]
     pub collider_offset: Vec2,
     #[serde(default)]
     pub uses: Option<u32>,
@@ -147,7 +147,7 @@ pub struct MapItemMetadata {
     #[serde(default)]
     pub deplete_behavior: ItemDepleteBehavior,
     /// This specifies the offset from the player position to where the equipped item is drawn
-    #[serde(default, with = "json::vec2_def")]
+    #[serde(default, with = "core::json::vec2_def")]
     pub mount_offset: Vec2,
     /// The parameters for the `AnimationPlayer` that will be used to draw the item
     #[serde(alias = "animation")]
@@ -503,7 +503,7 @@ pub struct WeaponMetadata {
     pub sound_effect_id: Option<String>,
     /// This specifies the offset between the upper left corner of the weapon's sprite to the
     /// position that will serve as the origin of the weapon's effects
-    #[serde(default, with = "json::vec2_def")]
+    #[serde(default, with = "core::json::vec2_def")]
     pub effect_offset: Vec2,
     /// This can specify a maximum amount of weapon uses. If no value is specified, the weapon
     /// will have unlimited uses.

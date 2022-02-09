@@ -8,8 +8,8 @@ use crate::player::{
     Player, PlayerState, CROUCH_ANIMATION_ID, DEATH_BACK_ANIMATION_ID, DEATH_FORWARD_ANIMATION_ID,
     FALL_ANIMATION_ID, IDLE_ANIMATION_ID, JUMP_ANIMATION_ID, MOVE_ANIMATION_ID, SLIDE_ANIMATION_ID,
 };
-use crate::{json, Drawable, PhysicsBody};
 use crate::{AnimatedSpriteMetadata, AnimationMetadata};
+use crate::{Drawable, PhysicsBody};
 
 /// This is used in stead of `AnimationParams`, as we have different data requirements, in the case
 /// of a player character, compared to most other use cases. We want to have a default animation
@@ -23,13 +23,13 @@ pub struct PlayerAnimationMetadata {
     pub texture_id: String,
     #[serde(default)]
     pub scale: Option<f32>,
-    #[serde(default, with = "json::vec2_def")]
+    #[serde(default, with = "core::json::vec2_def")]
     pub offset: Vec2,
-    #[serde(default, with = "json::vec2_opt")]
+    #[serde(default, with = "core::json::vec2_opt")]
     pub pivot: Option<Vec2>,
     #[serde(
         default,
-        with = "json::color_opt",
+        with = "core::json::color_opt",
         skip_serializing_if = "Option::is_none"
     )]
     pub tint: Option<Color>,

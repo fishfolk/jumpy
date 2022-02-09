@@ -7,8 +7,6 @@ use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
-use crate::json;
-
 use crate::player::PlayerAnimationMetadata;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -30,7 +28,7 @@ pub struct PlayerCharacterMetadata {
     /// This should, in general, be smaller than the sprite size
     #[serde(
         default = "PlayerCharacterMetadata::default_collider_size",
-        with = "json::vec2_def"
+        with = "core::json::vec2_def"
     )]
     pub collider_size: Vec2,
     /// This is the offset from the position of the player to where the weapon is mounted.
@@ -38,7 +36,7 @@ pub struct PlayerCharacterMetadata {
     /// can be changed with offsets.
     #[serde(
         default = "PlayerCharacterMetadata::default_weapon_mount",
-        with = "json::vec2_def"
+        with = "core::json::vec2_def"
     )]
     pub weapon_mount: Vec2,
     /// This is the distance from the top of the collider to where the head ends

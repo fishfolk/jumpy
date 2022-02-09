@@ -10,7 +10,6 @@ use serde::{Deserialize, Serialize};
 
 use core::math::IsZero;
 
-use crate::json;
 use crate::{AnimatedSpriteMetadata, Resources, Transform};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -21,7 +20,7 @@ pub struct ParticleEmitterMetadata {
     /// The offset is added to the `position` provided when calling `draw`
     #[serde(
         default,
-        with = "json::vec2_def",
+        with = "core::json::vec2_def",
         skip_serializing_if = "Vec2::is_zero"
     )]
     pub offset: Vec2,
@@ -39,7 +38,7 @@ pub struct ParticleEmitterMetadata {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub animations: Option<AnimatedSpriteMetadata>,
     /// If this is set to `true` the `ParticleController` will start to emit automatically
-    #[serde(default, skip_serializing_if = "json::is_false")]
+    #[serde(default, skip_serializing_if = "core::json::is_false")]
     pub should_autostart: bool,
 }
 

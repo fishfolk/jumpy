@@ -76,6 +76,10 @@ pub trait EditorTool {
 
     fn get_action(&mut self, map: &Map, ctx: &EditorContext) -> Option<EditorAction>;
 
+    fn update(&mut self, _map: &Map, _ctx: &EditorContext) -> Option<EditorAction> {
+        None
+    }
+
     fn is_available(&self, _map: &Map, _ctx: &EditorContext) -> bool {
         true
     }

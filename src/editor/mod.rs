@@ -774,6 +774,20 @@ impl Node for Editor {
             (is_over_gui, is_over_context_menu)
         };
 
+        if let Some(id) = &node.selected_tool {
+            let res = {
+                let tool = get_tool_instance_of_id(id);
+                let map = node.get_map();
+                let ctx = node.get_context();
+
+                tool.update(map, &ctx)
+            };
+
+            if let Some(action) = res {
+                node.apply_action(action);
+            }
+        }
+
         if node.input.action {
             if !is_cursor_over_context_menu {
                 let mut gui = storage::get_mut::<EditorGui>();

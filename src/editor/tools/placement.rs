@@ -58,6 +58,13 @@ impl EditorTool for TilePlacementTool {
         None
     }
 
+    fn update(&mut self, _map: &Map, _ctx: &EditorContext) -> Option<EditorAction> {
+        // Do autotile resolution here and return an `EditorAction::SelectTile` if
+        // selected tile should be changed according to context
+
+        None
+    }
+
     fn is_available(&self, map: &Map, ctx: &EditorContext) -> bool {
         if let Some(layer_id) = &ctx.selected_layer {
             let layer = map.layers.get(layer_id).unwrap();

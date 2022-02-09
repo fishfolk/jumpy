@@ -27,7 +27,11 @@ impl Api {
 
         let mut api = Api { backend };
 
-        api.backend.init(token).await
+        api.backend.init(token).await?;
+
+        unsafe { API_INSTANCE = Some(api) };
+
+        Ok(())
     }
 
     pub async fn close() -> Result<()> {
@@ -58,15 +62,15 @@ impl Api {
 /// This trait should be implemented by all backend implementations
 #[async_trait]
 pub trait ApiBackend {
-    /// Init backend
+    /// Init backend connect to API
     async fn init(&mut self, token: &str) -> Result<()>;
-    /// Close connection
+    /// Close API connection
     async fn close(&mut self) -> Result<()>;
     /// Get `Player` with the specified `id`
     async fn get_player(&mut self, id: &Id) -> Result<Player>;
     /// Get `Lobby` with the specified `id`
     async fn get_lobby(&mut self, id: &Id) -> Result<Lobby>;
-    /// Get the next event in the event queue
+    /// Get all events from the event queue
     fn poll_events(&mut self) -> Vec<NetworkEvent>;
 }
 

@@ -38,6 +38,8 @@ use editor::{Editor, EditorCamera, EditorInputScheme};
 
 use map::{Map, MapLayerKind, MapObjectKind};
 
+use core::network::Api;
+
 pub use channel::Channel;
 
 pub use config::Config;
@@ -57,6 +59,7 @@ pub use ecs::Owner;
 
 use crate::effects::passive::init_passive_effects;
 use crate::game::GameMode;
+use crate::network::init_api;
 use crate::particles::Particles;
 use crate::resources::load_resources;
 pub use effects::{
@@ -135,7 +138,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
     init_passive_effects();
 
-    // init_api("player_one_token").await?;
+    init_api("player_one_token").await?;
 
     'outer: loop {
         match gui::show_main_menu().await {
@@ -223,7 +226,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         stop_music();
     }
 
-    // Api::close().await?;
+    Api::close().await?;
 
     Ok(())
 }

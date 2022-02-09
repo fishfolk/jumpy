@@ -14,7 +14,7 @@ use crate::gui::draw_main_menu_background;
 use crate::resources::{
     map_name_to_filename, MapResource, Resources, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION,
 };
-use crate::{is_gamepad_btn_pressed, GamepadContext};
+use core::input::{is_gamepad_btn_pressed, GamepadContext};
 
 enum WindowState {
     None,

@@ -10,8 +10,6 @@ use hecs::World;
 
 use crate::{CollisionWorld, Map, Transform};
 
-use crate::json;
-
 pub const GRAVITY: f32 = 2.5;
 pub const TERMINAL_VELOCITY: f32 = 10.0;
 
@@ -210,11 +208,11 @@ pub fn debug_draw_physics_bodies(world: &mut World) {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RigidBodyParams {
-    #[serde(with = "json::vec2_def")]
+    #[serde(with = "core::json::vec2_def")]
     pub offset: Vec2,
-    #[serde(with = "json::vec2_def")]
+    #[serde(with = "core::json::vec2_def")]
     pub size: Vec2,
-    #[serde(default, skip_serializing_if = "json::is_false")]
+    #[serde(default, skip_serializing_if = "core::json::is_false")]
     pub can_rotate: bool,
 }
 

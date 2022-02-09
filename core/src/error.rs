@@ -210,7 +210,6 @@ impl From<hecs::QueryOneError> for Error {
     }
 }
 
-#[cfg(feature = "serde_json")]
 impl From<serde_json::Error> for Error {
     fn from(err: serde_json::Error) -> Self {
         Error::new(ErrorKind::Parsing, err)

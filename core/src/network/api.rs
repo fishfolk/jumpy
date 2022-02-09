@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use crate::network::message::NetworkMessage;
 use async_trait::async_trait;
 
 use crate::Result;
@@ -52,6 +53,12 @@ impl Api {
         api.backend.get_lobby(id).await
     }
 
+    pub async fn dispatch_message(message: NetworkMessage) -> Result<()> {
+        let api = Self::get_instance();
+
+        api.backend.dispatch_message(message).await
+    }
+
     pub fn poll_events() -> Vec<NetworkEvent> {
         let api = Self::get_instance();
 
@@ -70,6 +77,8 @@ pub trait ApiBackend {
     async fn get_player(&mut self, id: &Id) -> Result<Player>;
     /// Get `Lobby` with the specified `id`
     async fn get_lobby(&mut self, id: &Id) -> Result<Lobby>;
+    /// Dispatch a network message
+    async fn dispatch_message(&mut self, message: NetworkMessage) -> Result<()>;
     /// Get all events from the event queue
     fn poll_events(&mut self) -> Vec<NetworkEvent>;
 }
@@ -133,6 +142,10 @@ impl ApiBackend for MockApiBackend {
         } else {
             Err(RequestStatus::NotFound.into())
         }
+    }
+
+    async fn dispatch_message(&mut self, _message: NetworkMessage) -> Result<()> {
+        Ok(())
     }
 
     fn poll_events(&mut self) -> Vec<NetworkEvent> {

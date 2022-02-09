@@ -14,7 +14,6 @@ pub mod effects;
 pub mod events;
 pub mod game;
 mod gui;
-pub mod input;
 mod items;
 pub mod json;
 pub mod map;
@@ -30,7 +29,6 @@ mod drawables;
 mod transform;
 
 pub use drawables::*;
-pub use input::*;
 pub use physics::*;
 pub use transform::*;
 
@@ -47,9 +45,7 @@ pub use items::Item;
 
 pub use events::{dispatch_application_event, ApplicationEvent};
 
-pub use game::{
-    collect_local_input, start_music, stop_music, Game, GameCamera, GameInput, GameInputScheme,
-};
+pub use game::{start_music, stop_music, Game, GameCamera};
 
 pub use resources::Resources;
 
@@ -67,6 +63,8 @@ pub use effects::{
 };
 
 pub type CollisionWorld = macroquad_platformer::World;
+
+pub const GAME_VERSION: &str = "0.4.1";
 
 const CONFIG_FILE_ENV_VAR: &str = "FISHFIGHT_CONFIG";
 const ASSETS_DIR_ENV_VAR: &str = "FISHFIGHT_ASSETS";

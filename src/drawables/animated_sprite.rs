@@ -11,7 +11,7 @@ use hecs::World;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{json, Drawable, DrawableKind, Resources, Transform};
+use crate::{Drawable, DrawableKind, Resources, Transform};
 
 #[derive(Debug, Clone)]
 pub struct Animation {
@@ -448,17 +448,17 @@ pub struct AnimatedSpriteMetadata {
     pub texture_id: String,
     #[serde(default)]
     pub scale: Option<f32>,
-    #[serde(default, with = "json::vec2_def")]
+    #[serde(default, with = "core::json::vec2_def")]
     pub offset: Vec2,
     #[serde(
         default,
-        with = "json::vec2_opt",
+        with = "core::json::vec2_opt",
         skip_serializing_if = "Option::is_none"
     )]
     pub pivot: Option<Vec2>,
     #[serde(
         default,
-        with = "json::color_opt",
+        with = "core::json::color_opt",
         skip_serializing_if = "Option::is_none"
     )]
     pub tint: Option<Color>,

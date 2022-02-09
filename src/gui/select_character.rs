@@ -8,12 +8,12 @@ use crate::gui::{
     draw_main_menu_background, GuiResources, Panel, BUTTON_FONT_SIZE, BUTTON_MARGIN_H,
     WINDOW_BG_COLOR,
 };
-use crate::input::update_gamepad_context;
 use crate::player::PlayerCharacterMetadata;
 use crate::{
     draw_one_animated_sprite, update_one_animated_sprite, AnimatedSprite, AnimatedSpriteMetadata,
-    GameInputScheme, Resources, Transform,
+    Resources, Transform,
 };
+use core::input::{update_gamepad_context, GameInputScheme};
 
 const SECTION_WIDTH: f32 = 300.0;
 const SECTION_HEIGHT: f32 = 400.0;

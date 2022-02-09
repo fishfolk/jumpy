@@ -3,7 +3,7 @@ use macroquad::prelude::*;
 
 use core::Id;
 
-use crate::{collect_local_input, GameInput, GameInputScheme};
+use core::input::{collect_local_input, GameInput, GameInputScheme};
 
 #[derive(Debug, Clone)]
 pub enum PlayerControllerKind {

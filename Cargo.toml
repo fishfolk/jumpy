@@ -16,7 +16,7 @@ members = ["core"]
 opt-level = 3
 
 [dependencies]
-core = { path = "./core", package = "fishfight-core", features = ["serde", "serde_json"] }
+core = { path = "./core", package = "fishfight-core" }
 # ultimate = { path = "../FishFight-ultimate", package = "fishfight-ultimate", optional = true }
 ff-particles = { version = "0.1", features = ["serde"] }
 macroquad = { version = "0.3.10" }

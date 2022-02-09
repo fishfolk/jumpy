@@ -11,10 +11,10 @@ use crate::effects::active::triggered::TriggeredEffect;
 use crate::effects::TriggeredEffectTrigger;
 use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::player::{on_player_damage, Player, PlayerState};
-use crate::{json, Drawable, PassiveEffectInstance, PassiveEffectMetadata, SpriteParams};
 use crate::{
     CollisionWorld, PhysicsBody, Resources, RigidBody, RigidBodyParams, SpriteMetadata, Transform,
 };
+use crate::{Drawable, PassiveEffectInstance, PassiveEffectMetadata, SpriteParams};
 
 const PROJECTILE_DRAW_ORDER: u32 = 1;
 
@@ -23,13 +23,13 @@ const PROJECTILE_DRAW_ORDER: u32 = 1;
 pub enum ProjectileKind {
     Circle {
         radius: f32,
-        #[serde(with = "json::ColorDef")]
+        #[serde(with = "core::json::ColorDef")]
         color: Color,
     },
     Rect {
         width: f32,
         height: f32,
-        #[serde(with = "json::ColorDef")]
+        #[serde(with = "core::json::ColorDef")]
         color: Color,
     },
     Sprite {

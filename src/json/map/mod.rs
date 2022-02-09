@@ -6,33 +6,32 @@ use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    json,
-    map::{
-        Map, MapBackgroundLayer, MapLayer, MapLayerKind, MapObject, MapProperty, MapTile,
-        MapTileset,
-    },
+use crate::map::{
+    Map, MapBackgroundLayer, MapLayer, MapLayerKind, MapObject, MapProperty, MapTile, MapTileset,
 };
 
 pub use tiled::TiledMap;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct MapDef {
-    #[serde(default = "Map::default_background_color", with = "json::ColorDef")]
+    #[serde(
+        default = "Map::default_background_color",
+        with = "core::json::ColorDef"
+    )]
     pub background_color: Color,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub background_layers: Vec<MapBackgroundLayer>,
-    #[serde(with = "super::vec2_def", default)]
+    #[serde(with = "core::json::vec2_def", default)]
     pub world_offset: Vec2,
-    #[serde(with = "super::uvec2_def")]
+    #[serde(with = "core::json::uvec2_def")]
     pub grid_size: UVec2,
-    #[serde(with = "super::vec2_def")]
+    #[serde(with = "core::json::vec2_def")]
     pub tile_size: Vec2,
     pub layers: Vec<MapLayerDef>,
     pub tilesets: Vec<MapTileset>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub properties: HashMap<String, MapProperty>,
-    #[serde(default, with = "super::vec2_vec")]
+    #[serde(default, with = "core::json::vec2_vec")]
     pub spawn_points: Vec<Vec2>,
 }
 

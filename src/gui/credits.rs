@@ -1,4 +1,4 @@
-use crate::is_gamepad_btn_pressed;
+use core::input::is_gamepad_btn_pressed;
 use fishsticks::{Button, GamepadContext};
 use macroquad::{experimental::collections::storage, prelude::*};
 use std::path::Path;

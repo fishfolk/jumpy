@@ -52,6 +52,10 @@ pub fn update_player_states(world: &mut World) {
 
         player.pickup_grace_timer += dt;
 
+        if player.state == PlayerState::Crouching && !controller.should_crouch {
+            player.state = PlayerState::None;
+        }
+
         if player.state == PlayerState::Dead {
             player.respawn_timer += dt;
 

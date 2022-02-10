@@ -368,7 +368,7 @@ pub fn update_one_animated_sprite(sprite: &mut AnimatedSprite) {
 
                         (frames, progress)
                     };
-
+                  
                     let factor = progress as f32 / frames as f32;
 
                     tween.current_translation = next.translation.mul(factor);

@@ -115,15 +115,15 @@ impl PlayerAnimations {
                             translation: vec2(0.0, 0.0),
                         },
                         Keyframe {
-                            frame: 4,
+                            frame: 5,
                             translation: vec2(0.0, 2.0),
                         },
                         Keyframe {
-                            frame: 7,
+                            frame: 8,
                             translation: vec2(0.0, 0.0),
                         },
                         Keyframe {
-                            frame: 10,
+                            frame: 11,
                             translation: vec2(0.0, 2.0),
                         },
                     ],

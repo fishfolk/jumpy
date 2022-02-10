@@ -195,6 +195,7 @@ dependencies = [
  "macroquad-platformer",
  "serde",
  "serde_json",
+ "wasm-bindgen",
 ]
 
 [[package]]

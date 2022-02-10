@@ -409,6 +409,7 @@ impl Menu {
             let mut gamepad_up = false;
             let mut gamepad_down = false;
 
+            #[cfg(not(target_arch = "wasm32"))]
             for (_, gamepad) in gamepad_context.gamepads() {
                 gamepad_up = gamepad_up
                     || gamepad.digital_inputs.activated(Button::DPadUp)
@@ -459,11 +460,19 @@ impl Menu {
                 self.current_selection = Some(selection);
             }
 
+            #[cfg(not(target_arch = "wasm32"))]
             let should_confirm = is_gamepad_btn_pressed(Some(&gamepad_context), Button::A)
                 || is_key_pressed(KeyCode::Enter);
 
+            #[cfg(target_arch = "wasm32")]
+            let should_confirm = is_key_pressed(KeyCode::Enter);
+
+            #[cfg(not(target_arch = "wasm32"))]
             let should_cancel = is_gamepad_btn_pressed(Some(&gamepad_context), Button::B)
                 || is_key_pressed(KeyCode::Escape);
+
+            #[cfg(target_arch = "wasm32")]
+            let should_cancel = is_key_pressed(KeyCode::Escape);
 
             (should_confirm, should_cancel)
         }

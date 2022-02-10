@@ -5,6 +5,7 @@ mod status;
 
 pub use api::{Api, ApiBackend, MockApiBackend};
 pub use event::NetworkEvent;
+pub use message::NetworkMessage;
 pub use status::RequestStatus;
 
 use std::net::SocketAddr;

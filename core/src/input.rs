@@ -102,6 +102,7 @@ pub fn collect_local_input(input_scheme: GameInputScheme) -> GameInput {
             let gamepad_context = storage::get_mut::<GamepadContext>();
             let gamepad = gamepad_context.gamepad(ix);
 
+            #[cfg(not(target_arch = "wasm32"))]
             if let Some(gamepad) = gamepad {
                 input.pickup = gamepad.digital_inputs.just_activated(Button::X);
                 input.fire = gamepad.digital_inputs.activated(Button::B);

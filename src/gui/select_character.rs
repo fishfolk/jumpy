@@ -125,6 +125,7 @@ pub async fn show_select_characters_menu(
                         let gamepad_context = storage::get::<GamepadContext>();
                         let gamepad = gamepad_context.gamepad(gamepad_id);
 
+                        #[cfg(not(target_arch = "wasm32"))]
                         if let Some(gamepad) = gamepad {
                             should_navigate_left = can_navigate
                                 && (gamepad.analog_inputs.digital_value(Axis::LeftX) < 0.0

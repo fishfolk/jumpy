@@ -276,9 +276,16 @@ fn local_game_ui(ui: &mut ui::Ui, player_input: &mut Vec<GameInputScheme>) -> Op
         return Some(LOCAL_GAME_OPTION_SUBMIT.into());
     } else {
         let gamepad_context = storage::get::<GamepadContext>();
+
+        #[cfg(not(target_arch = "wasm32"))]
         if is_key_pressed(KeyCode::Escape)
             || is_gamepad_btn_pressed(Some(&gamepad_context), Button::B)
         {
+            return Some(Menu::CANCEL_INDEX.into());
+        }
+
+        #[cfg(target_arch = "wasm32")]
+        if is_key_pressed(KeyCode::Escape) {
             return Some(Menu::CANCEL_INDEX.into());
         }
     }

@@ -96,6 +96,7 @@ pub fn collect_editor_input(scheme: EditorInputScheme) -> EditorInput {
             let gamepad_system = storage::get_mut::<fishsticks::GamepadContext>();
             let gamepad = gamepad_system.gamepad(ix);
 
+            #[cfg(not(target_arch = "wasm32"))]
             if let Some(gamepad) = gamepad {
                 input.action = gamepad.digital_inputs.activated(Button::B);
                 input.back = gamepad.digital_inputs.activated(Button::A);

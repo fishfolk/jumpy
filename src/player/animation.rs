@@ -80,6 +80,25 @@ pub struct PlayerAnimations {
 
 impl PlayerAnimations {
     pub fn default_idle_animation() -> AnimationMetadata {
+        let keyframes = vec![
+            Keyframe {
+                frame: 0,
+                translation: vec2(0.0, 0.0),
+            },
+            Keyframe {
+                frame: 5,
+                translation: vec2(0.0, 2.0),
+            },
+            Keyframe {
+                frame: 8,
+                translation: vec2(0.0, 0.0),
+            },
+            Keyframe {
+                frame: 11,
+                translation: vec2(0.0, 2.0),
+            },
+        ];
+
         AnimationMetadata {
             id: IDLE_ANIMATION_ID.to_string(),
             row: 0,
@@ -88,45 +107,11 @@ impl PlayerAnimations {
             tweens: vec![
                 TweenMetadata {
                     id: WEAPON_MOUNT_TWEEN_ID.to_string(),
-                    keyframes: vec![
-                        Keyframe {
-                            frame: 0,
-                            translation: vec2(0.0, 0.0),
-                        },
-                        Keyframe {
-                            frame: 4,
-                            translation: vec2(0.0, 2.0),
-                        },
-                        Keyframe {
-                            frame: 7,
-                            translation: vec2(0.0, 0.0),
-                        },
-                        Keyframe {
-                            frame: 10,
-                            translation: vec2(0.0, 2.0),
-                        },
-                    ],
+                    keyframes: keyframes.clone(),
                 },
                 TweenMetadata {
                     id: ITEM_MOUNT_TWEEN_ID.to_string(),
-                    keyframes: vec![
-                        Keyframe {
-                            frame: 0,
-                            translation: vec2(0.0, 0.0),
-                        },
-                        Keyframe {
-                            frame: 5,
-                            translation: vec2(0.0, 2.0),
-                        },
-                        Keyframe {
-                            frame: 8,
-                            translation: vec2(0.0, 0.0),
-                        },
-                        Keyframe {
-                            frame: 11,
-                            translation: vec2(0.0, 2.0),
-                        },
-                    ],
+                    keyframes,
                 },
             ],
             is_looping: true,
@@ -134,6 +119,21 @@ impl PlayerAnimations {
     }
 
     pub fn default_move_animation() -> AnimationMetadata {
+        let keyframes = vec![
+            Keyframe {
+                frame: 0,
+                translation: vec2(0.0, -4.0),
+            },
+            Keyframe {
+                frame: 2,
+                translation: vec2(0.0, 0.0),
+            },
+            Keyframe {
+                frame: 5,
+                translation: vec2(0.0, -4.0),
+            },
+        ];
+
         AnimationMetadata {
             id: MOVE_ANIMATION_ID.to_string(),
             row: 1,
@@ -142,37 +142,11 @@ impl PlayerAnimations {
             tweens: vec![
                 TweenMetadata {
                     id: WEAPON_MOUNT_TWEEN_ID.to_string(),
-                    keyframes: vec![
-                        Keyframe {
-                            frame: 0,
-                            translation: vec2(0.0, -4.0),
-                        },
-                        Keyframe {
-                            frame: 2,
-                            translation: vec2(0.0, 0.0),
-                        },
-                        Keyframe {
-                            frame: 5,
-                            translation: vec2(0.0, -4.0),
-                        },
-                    ],
+                    keyframes: keyframes.clone(),
                 },
                 TweenMetadata {
                     id: ITEM_MOUNT_TWEEN_ID.to_string(),
-                    keyframes: vec![
-                        Keyframe {
-                            frame: 0,
-                            translation: vec2(0.0, -4.0),
-                        },
-                        Keyframe {
-                            frame: 2,
-                            translation: vec2(0.0, 0.0),
-                        },
-                        Keyframe {
-                            frame: 5,
-                            translation: vec2(0.0, -4.0),
-                        },
-                    ],
+                    keyframes,
                 },
             ],
             is_looping: true,
@@ -202,6 +176,11 @@ impl PlayerAnimations {
     }
 
     pub fn default_crouch_animation() -> AnimationMetadata {
+        let keyframes = vec![Keyframe {
+            frame: 0,
+            translation: vec2(0.0, 4.0),
+        }];
+
         AnimationMetadata {
             id: CROUCH_ANIMATION_ID.to_string(),
             row: 4,
@@ -210,17 +189,11 @@ impl PlayerAnimations {
             tweens: vec![
                 TweenMetadata {
                     id: WEAPON_MOUNT_TWEEN_ID.to_string(),
-                    keyframes: vec![Keyframe {
-                        frame: 0,
-                        translation: vec2(0.0, 4.0),
-                    }],
+                    keyframes: keyframes.clone(),
                 },
                 TweenMetadata {
                     id: ITEM_MOUNT_TWEEN_ID.to_string(),
-                    keyframes: vec![Keyframe {
-                        frame: 0,
-                        translation: vec2(0.0, 4.0),
-                    }],
+                    keyframes,
                 },
             ],
             is_looping: false,

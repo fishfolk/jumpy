@@ -231,6 +231,7 @@ impl AnimatedSprite {
 
     pub fn set_animation_index(&mut self, index: usize, should_restart: bool) {
         if should_restart || self.current_index != index {
+            self.wait_timer = 0.0;
             self.current_index = index;
             self.current_frame = 0;
             self.frame_timer = 0.0;
@@ -352,27 +353,26 @@ pub fn update_one_animated_sprite(sprite: &mut AnimatedSprite) {
 
             if let Some(current) = current {
                 if let Some(next) = next {
-                    let (frames_total, frames_left) = if current.frame <= next.frame {
-                        (
-                            next.frame - current.frame,
-                            next.frame - sprite.current_frame,
-                        )
+                    let (frames, progress) = if current.frame <= next.frame {
+                        let frames = next.frame - current.frame + 1;
+                        let progress = sprite.current_frame - current.frame + 1;
+
+                        (frames, progress)
                     } else {
-                        let next_offset = next.frame + (frame_cnt - 1);
-                        (
-                            next_offset - current.frame,
-                            next_offset - sprite.current_frame,
-                        )
+                        let frames = frame_cnt + next.frame - current.frame;
+                        let progress = if sprite.current_frame < current.frame {
+                            frame_cnt + sprite.current_frame - current.frame
+                        } else {
+                            sprite.current_frame - current.frame + 1
+                        };
+
+                        (frames, progress)
                     };
 
-                    let factor = if frames_total > 0 {
-                        1.0 - (frames_left as f32 / frames_total as f32)
-                    } else {
-                        1.0
-                    };
+                    let factor = progress as f32 / frames as f32;
 
                     tween.current_translation =
-                        (next.translation - current.translation).mul(factor);
+                        current.translation + (next.translation - current.translation).mul(factor);
                 }
             }
         }

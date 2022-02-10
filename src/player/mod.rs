@@ -37,6 +37,9 @@ pub const SLIDE_ANIMATION_ID: &str = "slide";
 pub const DEATH_BACK_ANIMATION_ID: &str = "death_back";
 pub const DEATH_FORWARD_ANIMATION_ID: &str = "death_forward";
 
+pub const WEAPON_MOUNT_TWEEN_ID: &str = "weapon_mount";
+pub const ITEM_MOUNT_TWEEN_ID: &str = "item_mount";
+
 pub const JUMP_SOUND_ID: &str = "jump";
 pub const LAND_SOUND_ID: &str = "land";
 

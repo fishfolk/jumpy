@@ -19,19 +19,58 @@ pub struct Animation {
     pub row: u32,
     pub frames: u32,
     pub fps: u32,
+    pub tweens: HashMap<String, Tween>,
     pub is_looping: bool,
 }
 
 impl From<AnimationMetadata> for Animation {
     fn from(meta: AnimationMetadata) -> Self {
+        let tweens = HashMap::from_iter(
+            meta.tweens
+                .into_iter()
+                .map(|meta| (meta.id.clone(), meta.into())),
+        );
+
         Animation {
             id: meta.id,
             row: meta.row,
             frames: meta.frames,
             fps: meta.fps,
+            tweens,
             is_looping: meta.is_looping,
         }
     }
+}
+
+#[derive(Debug, Clone)]
+pub struct Tween {
+    pub keyframes: Vec<Keyframe>,
+    pub current_translation: Vec2,
+}
+
+impl From<TweenMetadata> for Tween {
+    fn from(meta: TweenMetadata) -> Self {
+        let mut keyframes = meta.keyframes;
+
+        keyframes.sort_by(|a, b| a.frame.cmp(&b.frame));
+
+        let current_translation = keyframes
+            .first()
+            .map(|keyframe| keyframe.translation)
+            .unwrap_or_else(|| Vec2::ZERO);
+
+        Tween {
+            keyframes,
+            current_translation,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Keyframe {
+    pub frame: u32,
+    #[serde(with = "core::json::vec2_def")]
+    pub translation: Vec2,
 }
 
 pub struct AnimatedSpriteParams {
@@ -77,7 +116,14 @@ impl From<AnimatedSpriteMetadata> for AnimatedSpriteParams {
 pub enum QueuedAnimationAction {
     Play(String),
     PlayIndex(usize),
+    WaitThen(f32, Box<QueuedAnimationAction>),
     Deactivate,
+}
+
+impl QueuedAnimationAction {
+    pub fn wait_then(delay: f32, action: QueuedAnimationAction) -> Self {
+        QueuedAnimationAction::WaitThen(delay, Box::new(action))
+    }
 }
 
 #[derive(Clone)]
@@ -97,6 +143,7 @@ pub struct AnimatedSprite {
     pub is_flipped_x: bool,
     pub is_flipped_y: bool,
     pub is_deactivated: bool,
+    pub wait_timer: f32,
 }
 
 impl AnimatedSprite {
@@ -146,6 +193,7 @@ impl AnimatedSprite {
             is_flipped_x: params.is_flipped_x,
             is_flipped_y: params.is_flipped_y,
             is_deactivated: false,
+            wait_timer: 0.0,
         }
     }
 
@@ -224,6 +272,8 @@ pub fn update_animated_sprites(world: &mut World) {
 }
 
 pub fn update_one_animated_sprite(sprite: &mut AnimatedSprite) {
+    let dt = get_frame_time();
+
     if !sprite.is_deactivated && sprite.is_playing {
         let (is_last_frame, is_looping) = {
             let animation = sprite.animations.get(sprite.current_index).unwrap();
@@ -234,16 +284,28 @@ pub fn update_one_animated_sprite(sprite: &mut AnimatedSprite) {
         };
 
         if is_last_frame {
-            if let Some(action) = sprite.queued_action.take() {
-                match &action {
+            let queued_action = sprite.queued_action.clone();
+
+            if let Some(action) = queued_action {
+                match action {
                     QueuedAnimationAction::Play(id) => {
-                        sprite.set_animation(id, false);
+                        sprite.set_animation(&id, false);
+                        sprite.queued_action = None;
                     }
                     QueuedAnimationAction::PlayIndex(index) => {
-                        sprite.set_animation_index(*index, false);
+                        sprite.set_animation_index(index, false);
+                        sprite.queued_action = None;
+                    }
+                    QueuedAnimationAction::WaitThen(delay, action) => {
+                        sprite.wait_timer += dt;
+                        if sprite.wait_timer >= delay {
+                            sprite.queued_action = Some(*action);
+                            sprite.wait_timer = 0.0;
+                        }
                     }
                     QueuedAnimationAction::Deactivate => {
                         sprite.is_deactivated = true;
+                        sprite.queued_action = None;
                     }
                 }
             } else {
@@ -251,13 +313,13 @@ pub fn update_one_animated_sprite(sprite: &mut AnimatedSprite) {
             }
         }
 
-        let (fps, frame_cnt) = {
-            let animation = sprite.animations.get(sprite.current_index).unwrap();
-            (animation.fps, animation.frames)
+        let (fps, frame_cnt, tweens) = {
+            let animation = sprite.animations.get_mut(sprite.current_index).unwrap();
+            (animation.fps, animation.frames, &mut animation.tweens)
         };
 
         if sprite.is_playing {
-            sprite.frame_timer += get_frame_time();
+            sprite.frame_timer += dt;
 
             if sprite.frame_timer > 1.0 / fps as f32 {
                 sprite.current_frame += 1;
@@ -266,6 +328,54 @@ pub fn update_one_animated_sprite(sprite: &mut AnimatedSprite) {
         }
 
         sprite.current_frame %= frame_cnt;
+
+        for tween in tweens.values_mut() {
+            let mut current = tween.keyframes.first();
+            let mut next = current;
+
+            let len = tween.keyframes.len();
+
+            if len > 0 {
+                'tweens: for i in 1..len {
+                    let keyframe = tween.keyframes.get(i).unwrap();
+
+                    if sprite.current_frame < keyframe.frame {
+                        next = Some(keyframe);
+
+                        break 'tweens;
+                    } else {
+                        current = Some(keyframe);
+                    }
+                }
+            }
+
+            if let Some(current) = current {
+                if let Some(next) = next {
+                    let (frames_total, frames_left) = if current.frame <= next.frame {
+                        (
+                            next.frame - current.frame,
+                            next.frame - sprite.current_frame,
+                        )
+                    } else {
+                        let next_offset = next.frame + frame_cnt;
+                        (
+                            next_offset - current.frame,
+                            next_offset - sprite.current_frame,
+                        )
+                    };
+
+                    let factor = if frames_total > 0 {
+                        frames_left as f32 / frames_total as f32
+                    } else {
+                        1.0
+                    };
+
+                    tween.current_translation = next.translation
+                        - (current.translation
+                            + ((next.translation - current.translation) * factor));
+                }
+            }
+        }
     }
 }
 
@@ -427,6 +537,8 @@ pub struct AnimationMetadata {
     pub row: u32,
     pub frames: u32,
     pub fps: u32,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tweens: Vec<TweenMetadata>,
     #[serde(default)]
     pub is_looping: bool,
 }
@@ -440,6 +552,12 @@ impl From<AnimationMetadata> for MQAnimation {
             fps: a.fps,
         }
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TweenMetadata {
+    pub id: String,
+    pub keyframes: Vec<Keyframe>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

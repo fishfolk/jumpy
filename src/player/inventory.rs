@@ -15,6 +15,8 @@ const THROW_FORCE: f32 = 5.0;
 #[derive(Default)]
 pub struct PlayerInventory {
     pub weapon_mount: Vec2,
+    pub weapon_mount_offset: Vec2,
+    pub item_mount_offset: Vec2,
     pub weapon: Option<Entity>,
     pub items: Vec<Entity>,
 }
@@ -23,6 +25,8 @@ impl From<Vec2> for PlayerInventory {
     fn from(weapon_mount: Vec2) -> Self {
         PlayerInventory {
             weapon_mount,
+            weapon_mount_offset: Vec2::ZERO,
+            item_mount_offset: Vec2::ZERO,
             weapon: None,
             items: Vec::new(),
         }
@@ -31,7 +35,12 @@ impl From<Vec2> for PlayerInventory {
 
 impl PlayerInventory {
     pub fn get_weapon_mount(&self, is_facing_left: bool, is_upside_down: bool) -> Vec2 {
-        flip_offset(self.weapon_mount, None, is_facing_left, is_upside_down)
+        flip_offset(
+            self.weapon_mount + self.weapon_mount_offset,
+            None,
+            is_facing_left,
+            is_upside_down,
+        )
     }
 }
 
@@ -250,7 +259,7 @@ pub fn update_player_inventory(world: &mut World) {
                             sprite_set.flip_all_y(player.is_upside_down);
 
                             let offset = flip_offset(
-                                item.mount_offset,
+                                item.mount_offset + inventory.item_mount_offset,
                                 sprite_set.size(),
                                 player.is_facing_left,
                                 player.is_upside_down,

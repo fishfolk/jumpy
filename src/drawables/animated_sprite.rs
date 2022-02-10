@@ -1,6 +1,7 @@
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::iter::FromIterator;
+use std::ops::Mul;
 
 use macroquad::color;
 use macroquad::experimental::animation::Animation as MQAnimation;
@@ -357,7 +358,7 @@ pub fn update_one_animated_sprite(sprite: &mut AnimatedSprite) {
                             next.frame - sprite.current_frame,
                         )
                     } else {
-                        let next_offset = next.frame + frame_cnt;
+                        let next_offset = next.frame + (frame_cnt - 1);
                         (
                             next_offset - current.frame,
                             next_offset - sprite.current_frame,
@@ -365,14 +366,13 @@ pub fn update_one_animated_sprite(sprite: &mut AnimatedSprite) {
                     };
 
                     let factor = if frames_total > 0 {
-                        frames_left as f32 / frames_total as f32
+                        1.0 - (frames_left as f32 / frames_total as f32)
                     } else {
                         1.0
                     };
 
-                    tween.current_translation = next.translation
-                        - (current.translation
-                            + ((next.translation - current.translation) * factor));
+                    tween.current_translation =
+                        (next.translation - current.translation).mul(factor);
                 }
             }
         }

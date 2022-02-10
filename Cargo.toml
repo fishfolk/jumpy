@@ -6,6 +6,9 @@ authors = ["Fish Fight Contributors"]
 license = "MIT OR Apache-2.0"
 edition = "2021"
 
+[target.'cfg(target_arch = "wasm32")'.lib]
+crate-type = ["cdylib"]
+
 [features]
 default = []
 
@@ -30,3 +33,4 @@ fishsticks = { version = "0.2.0", features = ["bundled-sdl2"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 fishsticks = { version = "0.2.0", default-features = false, features = ["gilrs"] }
+wasm-bindgen = "0.2.74"

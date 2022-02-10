@@ -43,6 +43,7 @@ pub async fn show_select_map_menu() -> MapResource {
             (mouse_wheel.1 > 0.0, mouse_wheel.1 < 0.0)
         };
 
+        #[cfg(not(target_arch = "wasm32"))]
         for (_, gamepad) in gamepad_system.gamepads() {
             use fishsticks::{Axis, Button};
 

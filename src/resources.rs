@@ -19,7 +19,7 @@ use crate::gui::GuiResources;
 use crate::map::DecorationMetadata;
 
 use crate::player::PlayerCharacterMetadata;
-use crate::{items::MapItemMetadata, map::Map, GAME_VERSION};
+use crate::{items::MapItemMetadata, map::Map};
 
 const PARTICLE_EFFECTS_DIR: &str = "particle_effects";
 const SOUNDS_FILE: &str = "sounds";
@@ -633,7 +633,7 @@ async fn load_mods<P: AsRef<Path>>(mods_dir: P, resources: &mut Resources) -> Re
         let mut has_game_version_mismatch = false;
 
         if let Some(req_version) = &meta.game_version {
-            if *req_version != GAME_VERSION {
+            if *req_version != env!("CARGO_PKG_VERSION") {
                 has_game_version_mismatch = true;
 
                 #[cfg(debug_assertions)]

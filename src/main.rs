@@ -64,8 +64,6 @@ pub use effects::{
 
 pub type CollisionWorld = macroquad_platformer::World;
 
-pub const GAME_VERSION: &str = "0.4.1";
-
 const CONFIG_FILE_ENV_VAR: &str = "FISHFIGHT_CONFIG";
 const ASSETS_DIR_ENV_VAR: &str = "FISHFIGHT_ASSETS";
 const MODS_DIR_ENV_VAR: &str = "FISHFIGHT_MODS";

@@ -86,6 +86,7 @@ pub struct ItemParams {
     pub mount_offset: Vec2,
     pub drop_behavior: ItemDropBehavior,
     pub deplete_behavior: ItemDepleteBehavior,
+    pub is_hat: bool,
 }
 
 pub struct Item {
@@ -97,6 +98,7 @@ pub struct Item {
     pub mount_offset: Vec2,
     pub drop_behavior: ItemDropBehavior,
     pub deplete_behavior: ItemDepleteBehavior,
+    pub is_hat: bool,
     pub duration_timer: f32,
     pub use_cnt: u32,
 }
@@ -112,6 +114,7 @@ impl Item {
             mount_offset: params.mount_offset,
             drop_behavior: params.drop_behavior,
             deplete_behavior: params.deplete_behavior,
+            is_hat: params.is_hat,
             duration_timer: 0.0,
             use_cnt: 0,
         }
@@ -128,6 +131,9 @@ pub struct ItemMetadata {
     /// passive effects that are added to the player, when equipping the item
     #[serde(default)]
     pub duration: Option<f32>,
+    /// If this is `true` the item will be treated as a hat
+    #[serde(default, rename = "hat", skip_serializing_if = "core::json::is_false")]
+    pub is_hat: bool,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -185,6 +191,7 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
         animations.as_slice(),
         meta.sprite.clone().into(),
     );
+
     sprites.push((SPRITE_ANIMATED_SPRITE_ID, sprite));
 
     let id = meta.id.as_str();
@@ -211,7 +218,11 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
 
     match meta.kind {
         MapItemKind::Item { meta } => {
-            let ItemMetadata { effects, duration } = meta;
+            let ItemMetadata {
+                effects,
+                duration,
+                is_hat,
+            } = meta;
 
             world.insert_one(
                 entity,
@@ -225,6 +236,7 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
                         mount_offset,
                         drop_behavior,
                         deplete_behavior,
+                        is_hat,
                     },
                 ),
             )?;

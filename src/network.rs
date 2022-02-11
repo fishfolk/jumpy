@@ -25,7 +25,13 @@ impl NetworkClient {
 }
 
 pub fn update_network_client(_world: &mut World) {
-    for _event in Api::poll_events() {}
+    /*
+        Api::dispatch_message(NetworkMessage::PlayerInput {
+            player_id: player_id.clone(),
+            input,
+        });
+    */
+    while let Some(_event) = Api::next_event() {}
 }
 
 pub fn fixed_update_network_client(_world: &mut World) {}
@@ -40,7 +46,7 @@ impl NetworkHost {
 }
 
 pub fn update_network_host(_world: &mut World) {
-    for _event in Api::poll_events() {}
+    while let Some(_event) = Api::next_event() {}
 }
 
 pub fn fixed_update_network_host(_world: &mut World) {}

@@ -13,11 +13,7 @@ pub enum PlayerControllerKind {
 
 impl PlayerControllerKind {
     pub fn is_local(&self) -> bool {
-        if let PlayerControllerKind::LocalInput(..) = self {
-            return true;
-        }
-
-        false
+        matches!(self, PlayerControllerKind::LocalInput(..))
     }
 }
 
@@ -88,8 +84,8 @@ pub fn update_player_controllers(world: &mut World) {
                 let input = collect_local_input(*input_scheme);
                 controller.apply_input(input);
             }
-            PlayerControllerKind::Network(_account_id) => {
-                // TODO: Network input
+            PlayerControllerKind::Network(_player_id) => {
+                // not implemented
             }
         }
     }

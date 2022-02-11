@@ -6,5 +6,5 @@ use crate::Id;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum NetworkMessage {
-    UpdatePlayerInput { player_id: Id, input: GameInput },
+    UpdatePlayerController { player_id: Id, input: GameInput },
 }

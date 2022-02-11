@@ -41,6 +41,12 @@ impl Api {
         api.backend.close().await
     }
 
+    pub fn get_player_id() -> Result<Id> {
+        let api = Self::get_instance();
+
+        api.backend.get_player_id()
+    }
+
     pub async fn get_player(id: &Id) -> Result<Player> {
         let api = Self::get_instance();
 
@@ -53,16 +59,16 @@ impl Api {
         api.backend.get_lobby(id).await
     }
 
-    pub async fn dispatch_message(message: NetworkMessage) -> Result<()> {
+    pub fn dispatch_message(message: NetworkMessage) -> Result<()> {
         let api = Self::get_instance();
 
-        api.backend.dispatch_message(message).await
+        api.backend.dispatch_message(message)
     }
 
-    pub fn poll_events() -> Vec<NetworkEvent> {
+    pub fn next_event() -> Option<NetworkEvent> {
         let api = Self::get_instance();
 
-        api.backend.poll_events()
+        api.backend.next_event()
     }
 }
 
@@ -73,20 +79,23 @@ pub trait ApiBackend {
     async fn init(&mut self, token: &str) -> Result<()>;
     /// Close API connection
     async fn close(&mut self) -> Result<()>;
+    /// Get the local players id
+    fn get_player_id(&self) -> Result<Id>;
     /// Get `Player` with the specified `id`
     async fn get_player(&mut self, id: &Id) -> Result<Player>;
     /// Get `Lobby` with the specified `id`
     async fn get_lobby(&mut self, id: &Id) -> Result<Lobby>;
     /// Dispatch a network message
-    async fn dispatch_message(&mut self, message: NetworkMessage) -> Result<()>;
-    /// Get all events from the event queue
-    fn poll_events(&mut self) -> Vec<NetworkEvent>;
+    fn dispatch_message(&mut self, message: NetworkMessage) -> Result<()>;
+    /// Get next event from the queue
+    fn next_event(&mut self) -> Option<NetworkEvent>;
 }
 
 /// This is used as a placeholder for when no external backend implementation is available.
 /// Will be removed once we have a backend that can be freely redistributed (Steam, probably)
 #[allow(dead_code)]
 pub struct MockApiBackend {
+    player_id: Id,
     players: Vec<Player>,
     lobbies: Vec<Lobby>,
     sessions: HashMap<String, Id>,
@@ -94,8 +103,10 @@ pub struct MockApiBackend {
 
 impl MockApiBackend {
     pub fn new() -> Self {
+        let player_id = Id::from("1");
+
         let players = vec![
-            Player::new(&Id::from("1"), "Player One"),
+            Player::new(&player_id, "Player One"),
             Player::new(&Id::from("2"), "Player Two"),
         ];
 
@@ -105,6 +116,7 @@ impl MockApiBackend {
         sessions.insert("player_two_token".to_string(), players[1].id.clone());
 
         MockApiBackend {
+            player_id,
             players,
             lobbies: Vec::new(),
             sessions,
@@ -128,6 +140,10 @@ impl ApiBackend for MockApiBackend {
         Ok(())
     }
 
+    fn get_player_id(&self) -> Result<Id> {
+        Ok(self.player_id.clone())
+    }
+
     async fn get_player(&mut self, id: &Id) -> Result<Player> {
         if let Some(player) = self.players.iter().find(|&player| player.id == *id) {
             Ok(player.clone())
@@ -144,11 +160,11 @@ impl ApiBackend for MockApiBackend {
         }
     }
 
-    async fn dispatch_message(&mut self, _message: NetworkMessage) -> Result<()> {
+    fn dispatch_message(&mut self, _message: NetworkMessage) -> Result<()> {
         Ok(())
     }
 
-    fn poll_events(&mut self) -> Vec<NetworkEvent> {
-        Vec::new()
+    fn next_event(&mut self) -> Option<NetworkEvent> {
+        None
     }
 }

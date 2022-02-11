@@ -6,9 +6,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::player::{
     Player, PlayerInventory, PlayerState, BODY_ANIMATED_SPRITE_ID, CROUCH_ANIMATION_ID,
-    DEATH_BACK_ANIMATION_ID, DEATH_FORWARD_ANIMATION_ID, FALL_ANIMATION_ID, IDLE_ANIMATION_ID,
-    ITEM_MOUNT_TWEEN_ID, JUMP_ANIMATION_ID, MOVE_ANIMATION_ID, SLIDE_ANIMATION_ID,
-    WEAPON_MOUNT_TWEEN_ID,
+    DEATH_BACK_ANIMATION_ID, DEATH_FORWARD_ANIMATION_ID, FALL_ANIMATION_ID, HAT_MOUNT_TWEEN_ID,
+    IDLE_ANIMATION_ID, ITEM_MOUNT_TWEEN_ID, JUMP_ANIMATION_ID, MOVE_ANIMATION_ID,
+    SLIDE_ANIMATION_ID, WEAPON_MOUNT_TWEEN_ID,
 };
 use crate::{AnimatedSpriteMetadata, AnimationMetadata, Keyframe, TweenMetadata};
 use crate::{Drawable, PhysicsBody};
@@ -111,6 +111,10 @@ impl PlayerAnimations {
                 },
                 TweenMetadata {
                     id: ITEM_MOUNT_TWEEN_ID.to_string(),
+                    keyframes: keyframes.clone(),
+                },
+                TweenMetadata {
+                    id: HAT_MOUNT_TWEEN_ID.to_string(),
                     keyframes,
                 },
             ],
@@ -147,6 +151,23 @@ impl PlayerAnimations {
                 TweenMetadata {
                     id: ITEM_MOUNT_TWEEN_ID.to_string(),
                     keyframes,
+                },
+                TweenMetadata {
+                    id: HAT_MOUNT_TWEEN_ID.to_string(),
+                    keyframes: vec![
+                        Keyframe {
+                            frame: 0,
+                            translation: vec2(4.0, -4.0),
+                        },
+                        Keyframe {
+                            frame: 2,
+                            translation: vec2(4.0, 0.0),
+                        },
+                        Keyframe {
+                            frame: 5,
+                            translation: vec2(4.0, -4.0),
+                        },
+                    ],
                 },
             ],
             is_looping: true,
@@ -193,6 +214,10 @@ impl PlayerAnimations {
                 },
                 TweenMetadata {
                     id: ITEM_MOUNT_TWEEN_ID.to_string(),
+                    keyframes: keyframes.clone(),
+                },
+                TweenMetadata {
+                    id: HAT_MOUNT_TWEEN_ID.to_string(),
                     keyframes,
                 },
             ],
@@ -366,12 +391,23 @@ pub fn update_player_animations(world: &mut World) {
 
         let sprite = sprite_set.map.get(BODY_ANIMATED_SPRITE_ID).unwrap();
         let animation = sprite.current_animation();
+
         if let Some(tween) = animation.tweens.get(WEAPON_MOUNT_TWEEN_ID) {
             inventory.weapon_mount_offset = tween.current_translation;
-            inventory.item_mount_offset = tween.current_translation;
         } else {
             inventory.weapon_mount_offset = Vec2::ZERO;
+        }
+
+        if let Some(tween) = animation.tweens.get(ITEM_MOUNT_TWEEN_ID) {
+            inventory.item_mount_offset = tween.current_translation;
+        } else {
             inventory.item_mount_offset = Vec2::ZERO;
+        }
+
+        if let Some(tween) = animation.tweens.get(HAT_MOUNT_TWEEN_ID) {
+            inventory.hat_mount_offset = tween.current_translation;
+        } else {
+            inventory.hat_mount_offset = Vec2::ZERO;
         }
     }
 }

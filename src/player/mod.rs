@@ -39,6 +39,7 @@ pub const DEATH_FORWARD_ANIMATION_ID: &str = "death_forward";
 
 pub const WEAPON_MOUNT_TWEEN_ID: &str = "weapon_mount";
 pub const ITEM_MOUNT_TWEEN_ID: &str = "item_mount";
+pub const HAT_MOUNT_TWEEN_ID: &str = "hat_mount";
 
 pub const JUMP_SOUND_ID: &str = "jump";
 pub const LAND_SOUND_ID: &str = "land";
@@ -155,6 +156,8 @@ pub fn spawn_player(
     character: PlayerCharacterMetadata,
 ) -> Entity {
     let weapon_mount = character.weapon_mount;
+    let item_mount = character.item_mount;
+    let hat_mount = character.hat_mount;
 
     let offset = storage::get::<Resources>()
         .textures
@@ -208,7 +211,7 @@ pub fn spawn_player(
         Transform::from(position),
         PlayerController::from(controller),
         PlayerAttributes::from(&character),
-        PlayerInventory::from(weapon_mount),
+        PlayerInventory::new(weapon_mount, item_mount, hat_mount),
         PlayerEventQueue::new(),
         Drawable::new_animated_sprite_set(draw_order, &sprites),
         PhysicsBody::new(actor, None, body_params),

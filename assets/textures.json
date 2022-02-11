@@ -194,6 +194,15 @@
     }
   },
   {
+    "id": "pirate_hat",
+    "path": "textures/items/hats/pirate hat.png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 51,
+      "y": 29
+    }
+  },
+  {
     "id": "blunderbass",
     "path": "textures/items/Blunderbass(68x24).png",
     "type": "spritesheet",

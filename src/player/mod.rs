@@ -57,6 +57,7 @@ pub struct PlayerParams {
 pub struct Player {
     pub index: u8,
     pub state: PlayerState,
+    pub damage_from_left: bool,
     pub is_facing_left: bool,
     pub is_upside_down: bool,
     pub is_attacking: bool,
@@ -76,6 +77,7 @@ impl Player {
         Player {
             index,
             state: PlayerState::None,
+            damage_from_left: false,
             is_facing_left: false,
             is_upside_down: false,
             is_attacking: false,

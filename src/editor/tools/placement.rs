@@ -64,7 +64,7 @@ impl EditorTool for TilePlacementTool {
 
         if self.is_available(map, ctx) {
             if let Some(tileset_id) = &ctx.selected_tileset {
-                let tileset = map.tilesets.get(tileset_id).unwrap();
+                let _tileset = map.tilesets.get(tileset_id).unwrap();
 
                 // Do autotile resolution here and set `res` to an `EditorAction::SelectTile` if
                 // selected tile should be changed according to context.
@@ -93,10 +93,8 @@ impl EditorTool for TilePlacementTool {
                 }
 
                 for (i, b) in mask.iter().enumerate() {
-                    if *b {
-                        if i != 4 {
-                            value += 2_u32.pow(i as u32);
-                        }
+                    if *b && i != 4 {
+                        value += 2_u32.pow(i as u32);
                     }
                 }
 

@@ -64,10 +64,46 @@ impl EditorTool for TilePlacementTool {
 
         if self.is_available(map, ctx) {
             if let Some(tileset_id) = &ctx.selected_tileset {
-                let _tileset = map.tilesets.get(tileset_id).unwrap();
+                let tileset = map.tilesets.get(tileset_id).unwrap();
 
                 // Do autotile resolution here and set `res` to an `EditorAction::SelectTile` if
                 // selected tile should be changed according to context.
+
+                let cursor_world_position = scene::find_node_by_type::<EditorCamera>()
+                    .unwrap()
+                    .to_world_space(ctx.cursor_position);
+                let coords = map.to_coords(cursor_world_position);
+
+                let mut value = 0;
+                let mut mask: Vec<bool> = vec![];
+
+                for y in 0..3 {
+                    for x in 0..3 {
+                        if let Some(layer) = &ctx.selected_layer {
+                            if map
+                                .get_tile(layer, coords.x - 1 + x, coords.y - 1 + y)
+                                .is_some()
+                            {
+                                mask.push(true);
+                            } else {
+                                mask.push(false);
+                            }
+                        }
+                    }
+                }
+
+                for (i, b) in mask.iter().enumerate() {
+                    if *b {
+                        if i != 4 {
+                            value += 2_u32.pow(i as u32);
+                        }
+                    }
+                }
+
+                res = Some(EditorAction::SelectTile {
+                    tileset_id: tileset_id.to_owned(),
+                    id: value,
+                });
             }
         }
 

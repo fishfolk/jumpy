@@ -26,6 +26,12 @@ Also see [macroquad#linux](https://github.com/not-fl3/macroquad#linux).
 cargo run --release --locked
 ```
 
+### Environment variables
+
+- `FISHFIGHT_CONFIG`: configuration file (default: `config.json`)
+- `FISHFIGHT_ASSETS`: assets directory (default: `assets/`)
+- `FISHFIGHT_MODS`:  mods directory (default: `mods/`)
+
 ### Package
 
 Binary will be located at `target/release/fishfight` after [build](#build). To run it, `assets` directory should be placed in the same directory or a path can be specified via `FISHFIGHT_ASSETS` environment variable.

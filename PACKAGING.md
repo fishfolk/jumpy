@@ -40,6 +40,7 @@ For example:
 
 ```sh
 export FISHFIGHT_ASSETS=/opt/fishfight/assets/
+export FISHFIGHT_MODS=/opt/fishfight/mods/
 target/release/fishfight
 ```
 

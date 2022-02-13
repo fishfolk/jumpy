@@ -360,10 +360,10 @@ pub fn update_player_animations(world: &mut World) {
 
         let animation_id = match player.state {
             PlayerState::Dead => {
-                if player.is_facing_left {
-                    DEATH_FORWARD_ANIMATION_ID
-                } else {
+                if player.is_facing_left == player.damage_from_left {
                     DEATH_BACK_ANIMATION_ID
+                } else {
+                    DEATH_FORWARD_ANIMATION_ID
                 }
             }
             PlayerState::Incapacitated => {

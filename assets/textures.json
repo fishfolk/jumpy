@@ -203,6 +203,33 @@
     }
   },
   {
+    "id": "bonnet_hat",
+    "path": "textures/items/hats/bonnet hat.png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 35,
+      "y": 25
+    }
+  },
+  {
+    "id": "bucket_hat",
+    "path": "textures/items/hats/bucket hat.png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 34,
+      "y": 33
+    }
+  },
+  {
+    "id": "chefs_hat",
+    "path": "textures/items/hats/chef's hat.png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 35,
+      "y": 28
+    }
+  },
+  {
     "id": "blunderbass",
     "path": "textures/items/Blunderbass(68x24).png",
     "type": "spritesheet",

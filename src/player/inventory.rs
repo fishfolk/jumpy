@@ -98,11 +98,19 @@ pub fn update_player_inventory(world: &mut World) {
                     let item = world.get::<Item>(item_entity).unwrap();
 
                     if item.is_hat {
+                        if player.pickup_grace_timer < PICKUP_GRACE_TIME {
+                            i += 1;
+
+                            continue;
+                        }
+
                         if let Some(hat_entity) = inventory.hat.take() {
                             to_drop.push(hat_entity);
                         }
 
                         inventory.hat = Some(item_entity);
+
+                        player.pickup_grace_timer = 0.0;
                     } else {
                         inventory.items.push(item_entity);
                     }

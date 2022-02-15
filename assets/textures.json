@@ -230,6 +230,33 @@
     }
   },
   {
+    "id": "chest_hat",
+    "path": "textures/items/hats/chest hat.png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 36,
+      "y": 31
+    }
+  },
+  {
+    "id": "cowboy_hat",
+    "path": "textures/items/hats/cowboy hat.png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 49,
+      "y": 25
+    }
+  },
+  {
+    "id": "crown_hat",
+    "path": "textures/items/hats/crown hat.png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 32,
+      "y": 28
+    }
+  },
+  {
     "id": "blunderbass",
     "path": "textures/items/Blunderbass(68x24).png",
     "type": "spritesheet",

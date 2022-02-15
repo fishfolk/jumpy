@@ -13,7 +13,7 @@
   },
   "sprite": {
     "texture": "bonnet_hat",
-    "autoplay_id": "ground",
+    "autoplay_id": "idle",
     "animations": [
       {
         "id": "idle",

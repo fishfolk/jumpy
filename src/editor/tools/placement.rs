@@ -131,7 +131,6 @@ impl EditorTool for TilePlacementTool {
                 }
 
                 for (i, tileset_bitmask) in bitmasks.iter().enumerate() {
-
                     if *tileset_bitmask == bitmask && bitmask != 0 {
                         res = Some(EditorAction::SelectTile {
                             tileset_id: tileset_id.to_owned(),

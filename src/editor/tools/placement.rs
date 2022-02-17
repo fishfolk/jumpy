@@ -64,7 +64,7 @@ impl EditorTool for TilePlacementTool {
 
         if self.is_available(map, ctx) {
             if let Some(tileset_id) = &ctx.selected_tileset {
-                let _tileset = map.tilesets.get(tileset_id).unwrap();
+                let tileset = map.tilesets.get(tileset_id).unwrap();
 
                 // Do autotile resolution here and set `res` to an `EditorAction::SelectTile` if
                 // selected tile should be changed according to context.
@@ -74,9 +74,7 @@ impl EditorTool for TilePlacementTool {
                     .to_world_space(ctx.cursor_position);
                 let coords = map.to_coords(cursor_world_position);
 
-                let mut value = 0;
-                let mut mask: Vec<bool> = vec![];
-
+                let mut surrounding_tiles: Vec<bool> = vec![];
                 for y in 0..3 {
                     for x in 0..3 {
                         if let Some(layer) = &ctx.selected_layer {
@@ -84,24 +82,63 @@ impl EditorTool for TilePlacementTool {
                                 .get_tile(layer, coords.x - 1 + x, coords.y - 1 + y)
                                 .is_some()
                             {
-                                mask.push(true);
+                                surrounding_tiles.push(true);
                             } else {
-                                mask.push(false);
+                                surrounding_tiles.push(false);
                             }
                         }
                     }
                 }
 
-                for (i, b) in mask.iter().enumerate() {
-                    if *b && i != 4 {
-                        value += 2_u32.pow(i as u32);
+                let mut bitmask = 0;
+                for (i, b) in surrounding_tiles.iter().enumerate() {
+                    if *b && i < 4 {
+                        bitmask += 2_u32.pow(i as u32);
+                    } else if *b && i > 4 {
+                        bitmask += 2_u32.pow(i as u32 - 1);
                     }
                 }
 
-                res = Some(EditorAction::SelectTile {
-                    tileset_id: tileset_id.to_owned(),
-                    id: value,
-                });
+                let mut bitmasks: Vec<u32> = vec![0; tileset.autotile_mask.len() / 9];
+
+                let atmsk_width = (tileset.grid_size.x * tileset.tile_subdivisions.x) as usize;
+                let mut bitmasks_vec: Vec<Vec<bool>> =
+                    vec![vec![]; tileset.autotile_mask.len() / 9];
+
+                let mut trow_off = 0;
+                for i in 0..tileset.autotile_mask.len() / atmsk_width {
+                    if i != 0 && i % 3 == 0 {
+                        trow_off += atmsk_width / 3;
+                    }
+                    let row = tileset.autotile_mask[i * atmsk_width..i * atmsk_width + atmsk_width]
+                        .to_vec();
+
+                    for y in 0..row.len() / 3 {
+                        let tile_row = row[y * 3..y * 3 + 3].to_vec();
+
+                        bitmasks_vec[y + trow_off].extend(tile_row);
+                    }
+                }
+
+                for (n, surrounding_tiles) in bitmasks_vec.iter().enumerate() {
+                    for (i, b) in surrounding_tiles.iter().enumerate() {
+                        if *b && i < 4 {
+                            bitmasks[n] += 2_u32.pow(i as u32);
+                        } else if *b && i > 4 {
+                            bitmasks[n] += 2_u32.pow(i as u32 - 1);
+                        }
+                    }
+                }
+
+                for (i, tileset_bitmask) in bitmasks.iter().enumerate() {
+
+                    if *tileset_bitmask == bitmask && bitmask != 0 {
+                        res = Some(EditorAction::SelectTile {
+                            tileset_id: tileset_id.to_owned(),
+                            id: i as u32,
+                        });
+                    }
+                }
             }
         }
 

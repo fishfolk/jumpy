@@ -1,4 +1,4 @@
-use macroquad::input::{is_key_down, is_key_pressed};
+use fishsticks::GamepadId;
 
 use serde::{Deserialize, Serialize};
 
@@ -466,103 +466,68 @@ pub struct KeyMapping {
     secondary: Option<KeyCode>,
 }
 
-impl KeyMapping {
-    pub fn is_down(&self) -> bool {
-        if is_key_down(self.primary.into()) {
-            return true;
-        } else if let Some(keyode) = self.secondary {
-            if is_key_down(keyode.into()) {
-                return true;
-            }
-        }
-
-        false
-    }
-
-    pub fn is_pressed(&self) -> bool {
-        if is_key_pressed(self.primary.into()) {
-            return true;
-        } else if let Some(keyode) = self.secondary {
-            if is_key_pressed(keyode.into()) {
-                return true;
-            }
-        }
-
-        false
-    }
-}
-
-impl From<KeyCode> for KeyMapping {
-    fn from(keycode: KeyCode) -> Self {
-        KeyMapping {
-            primary: keycode,
-            secondary: None,
-        }
-    }
-}
-
-impl From<(KeyCode, KeyCode)> for KeyMapping {
-    fn from(keycodes: (KeyCode, KeyCode)) -> Self {
-        KeyMapping {
-            primary: keycodes.0,
-            secondary: Some(keycodes.1),
-        }
-    }
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct KeyboardMapping {
-    pub left: KeyMapping,
-    pub right: KeyMapping,
-    pub fire: KeyMapping,
-    pub jump: KeyMapping,
-    pub pickup: KeyMapping,
-    pub crouch: KeyMapping,
-    pub slide: KeyMapping,
+    pub left: KeyCode,
+    pub right: KeyCode,
+    pub fire: KeyCode,
+    pub jump: KeyCode,
+    pub pickup: KeyCode,
+    pub crouch: KeyCode,
+    pub slide: KeyCode,
 }
 
 impl KeyboardMapping {
     pub fn default_primary() -> KeyboardMapping {
         KeyboardMapping {
-            left: KeyCode::Left.into(),
-            right: KeyCode::Right.into(),
-            fire: KeyCode::L.into(),
-            jump: KeyCode::Up.into(),
-            pickup: KeyCode::K.into(),
-            crouch: KeyCode::Down.into(),
-            slide: KeyCode::RightControl.into(),
+            left: KeyCode::Left,
+            right: KeyCode::Right,
+            fire: KeyCode::L,
+            jump: KeyCode::Up,
+            pickup: KeyCode::K,
+            crouch: KeyCode::Down,
+            slide: KeyCode::RightControl,
         }
     }
 
     pub fn default_secondary() -> KeyboardMapping {
         KeyboardMapping {
-            left: KeyCode::A.into(),
-            right: KeyCode::D.into(),
-            fire: (KeyCode::V, KeyCode::LeftControl).into(),
-            jump: (KeyCode::W, KeyCode::Space).into(),
-            pickup: KeyCode::C.into(),
-            crouch: KeyCode::S.into(),
-            slide: KeyCode::F.into(),
+            left: KeyCode::A,
+            right: KeyCode::D,
+            fire: KeyCode::V,
+            jump: KeyCode::W,
+            pickup: KeyCode::C,
+            crouch: KeyCode::S,
+            slide: KeyCode::F,
         }
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GamepadMapping {
+    pub id: usize,
     pub fire: Button,
     pub jump: Button,
     pub pickup: Button,
     pub slide: Button,
 }
 
-impl Default for GamepadMapping {
-    fn default() -> Self {
+impl From<usize> for GamepadMapping {
+    fn from(id: usize) -> Self {
         GamepadMapping {
+            id,
             fire: Button::B,
             jump: Button::A,
             pickup: Button::X,
             slide: Button::Y,
         }
+    }
+}
+
+impl From<&GamepadId> for GamepadMapping {
+    fn from(id: &GamepadId) -> Self {
+        let id: usize = id.into();
+        id.into()
     }
 }
 
@@ -577,46 +542,63 @@ pub struct InputMapping {
 }
 
 impl InputMapping {
-    pub fn get_gamepad_mapping(&self, index: usize) -> Option<GamepadMapping> {
-        self.gamepads.get(index).cloned()
+    pub fn get_gamepad_mapping(&self, id: usize) -> Option<GamepadMapping> {
+        self.gamepads.iter().find_map(|gamepad| {
+            if gamepad.id == id {
+                Some(gamepad.clone())
+            } else {
+                None
+            }
+        })
     }
 
     pub fn verify(&mut self) -> Result<()> {
-        let mut used_keys = Vec::new();
+        {
+            let mut used_keys = Vec::new();
 
-        let keyboards = [&self.keyboard_primary, &self.keyboard_secondary];
+            let keyboards = [&self.keyboard_primary, &self.keyboard_secondary];
 
-        for keyboard in keyboards {
-            let actions = [
-                &keyboard.left,
-                &keyboard.right,
-                &keyboard.fire,
-                &keyboard.jump,
-                &keyboard.pickup,
-                &keyboard.crouch,
-                &keyboard.slide,
-            ];
+            for keyboard in keyboards {
+                let actions = [
+                    keyboard.left,
+                    keyboard.right,
+                    keyboard.fire,
+                    keyboard.jump,
+                    keyboard.pickup,
+                    keyboard.crouch,
+                    keyboard.slide,
+                ];
 
-            for mapping in actions {
-                if used_keys.contains(&mapping.primary) {
-                    return Err(formaterr!(
-                        ErrorKind::Config,
-                        "Key '{:?}' is mapped twice!",
-                        &mapping.primary
-                    ));
-                } else {
-                    used_keys.push(mapping.primary);
-                }
-
-                if let Some(key) = mapping.secondary {
-                    if used_keys.contains(&key) {
+                for keycode in actions {
+                    if used_keys.contains(&keycode) {
                         return Err(formaterr!(
                             ErrorKind::Config,
                             "Key '{:?}' is mapped twice!",
-                            &key
+                            keycode
                         ));
                     } else {
-                        used_keys.push(key);
+                        used_keys.push(keycode);
+                    }
+                }
+            }
+        }
+
+        {
+            let mut used_buttons = Vec::new();
+
+            for gamepad in &self.gamepads {
+                let actions = [gamepad.fire, gamepad.jump, gamepad.pickup, gamepad.slide];
+
+                for button in actions {
+                    if used_buttons.contains(&button) {
+                        return Err(formaterr!(
+                            ErrorKind::Config,
+                            "Button '{:?}' on gamepad '{}' is mapped twice!",
+                            button,
+                            gamepad.id,
+                        ));
+                    } else {
+                        used_buttons.push(button);
                     }
                 }
             }

@@ -78,7 +78,7 @@ pub fn collect_local_input(input_scheme: GameInputScheme) -> PlayerInput {
                 config
                     .input_mapping
                     .get_gamepad_mapping(ix.into())
-                    .unwrap_or_default()
+                    .unwrap_or_else(|| ix.into())
             };
 
             input.left = gamepad.digital_inputs.activated(Button::DPadLeft.into())
@@ -116,14 +116,14 @@ pub fn collect_local_input(input_scheme: GameInputScheme) -> PlayerInput {
             }
         };
 
-        input.left = input_mapping.left.is_down();
-        input.right = input_mapping.right.is_down();
-        input.fire = input_mapping.fire.is_down();
-        input.jump = input_mapping.jump.is_pressed();
-        input.pickup = input_mapping.pickup.is_pressed();
-        input.float = input_mapping.jump.is_down();
-        input.crouch = input_mapping.crouch.is_down();
-        input.slide = input.crouch && input_mapping.slide.is_pressed();
+        input.left = is_key_down(input_mapping.left.into());
+        input.right = is_key_down(input_mapping.right.into());
+        input.fire = is_key_down(input_mapping.fire.into());
+        input.jump = is_key_pressed(input_mapping.jump.into());
+        input.pickup = is_key_pressed(input_mapping.pickup.into());
+        input.float = is_key_down(input_mapping.jump.into());
+        input.crouch = is_key_down(input_mapping.crouch.into());
+        input.slide = input.crouch && is_key_pressed(input_mapping.slide.into());
     }
 
     input

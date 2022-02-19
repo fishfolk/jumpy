@@ -4,18 +4,20 @@
 //! Just implement `From` for `Error`, for any remote implementations of `Error` you encounter, and
 //! use the `Result` type alias, from this module, as return type when it is required.
 
+use std::sync::mpsc::SendError;
 use std::{error, fmt, io, result, string::FromUtf8Error};
 
 use macroquad::file::FileError;
 use macroquad::text::FontError;
 
-use crate::network::RequestStatus;
+use crate::network::{NetworkMessage, RequestStatus};
 
 pub type Result<T> = result::Result<T, Error>;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ErrorKind {
     General,
+    Config,
     Ecs,
     File,
     Parsing,
@@ -29,6 +31,7 @@ impl ErrorKind {
     pub fn as_str(&self) -> &'static str {
         match *self {
             ErrorKind::General => "General error",
+            ErrorKind::Config => "Config error",
             ErrorKind::Ecs => "ECS error",
             ErrorKind::File => "File error",
             ErrorKind::Parsing => "Parsing error",
@@ -174,6 +177,12 @@ impl From<io::Error> for Error {
     }
 }
 
+impl From<SendError<NetworkMessage>> for Error {
+    fn from(err: SendError<NetworkMessage>) -> Self {
+        Error::new(ErrorKind::Network, err)
+    }
+}
+
 impl From<FromUtf8Error> for Error {
     fn from(err: FromUtf8Error) -> Self {
         Error::new(ErrorKind::Parsing, err)
@@ -210,9 +219,20 @@ impl From<hecs::QueryOneError> for Error {
     }
 }
 
-#[cfg(feature = "serde_json")]
 impl From<serde_json::Error> for Error {
     fn from(err: serde_json::Error) -> Self {
+        Error::new(ErrorKind::Parsing, err)
+    }
+}
+
+impl From<toml::ser::Error> for Error {
+    fn from(err: toml::ser::Error) -> Self {
+        Error::new(ErrorKind::Parsing, err)
+    }
+}
+
+impl From<toml::de::Error> for Error {
+    fn from(err: toml::de::Error) -> Self {
         Error::new(ErrorKind::Parsing, err)
     }
 }

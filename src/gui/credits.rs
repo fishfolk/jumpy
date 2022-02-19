@@ -1,4 +1,4 @@
-use crate::is_gamepad_btn_pressed;
+use core::input::is_gamepad_btn_pressed;
 use fishsticks::{Button, GamepadContext};
 use macroquad::{experimental::collections::storage, prelude::*};
 use std::path::Path;
@@ -83,7 +83,7 @@ pub async fn show_game_credits(assets_dir: &str) {
 
     loop {
         if is_key_pressed(KeyCode::Escape)
-            || is_gamepad_btn_pressed(Some(&gamepad_context), Button::B)
+            || is_gamepad_btn_pressed(Some(&gamepad_context), Button::East)
         {
             break;
         }

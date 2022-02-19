@@ -19,7 +19,7 @@ use crate::gui::GuiResources;
 use crate::map::DecorationMetadata;
 
 use crate::player::PlayerCharacterMetadata;
-use crate::{items::MapItemMetadata, json, map::Map};
+use crate::{items::MapItemMetadata, map::Map};
 
 const PARTICLE_EFFECTS_DIR: &str = "particle_effects";
 const SOUNDS_FILE: &str = "sounds";
@@ -72,11 +72,14 @@ pub struct TextureMetadata {
     #[serde(
         default,
         alias = "sprite_size",
-        with = "json::vec2_opt",
+        with = "core::json::vec2_opt",
         skip_serializing_if = "Option::is_none"
     )]
     pub frame_size: Option<Vec2>,
-    #[serde(default = "json::default_filter_mode", with = "json::FilterModeDef")]
+    #[serde(
+        default = "core::json::default_filter_mode",
+        with = "core::json::FilterModeDef"
+    )]
     pub filter_mode: FilterMode,
     #[serde(default, skip)]
     pub size: Vec2,
@@ -127,9 +130,9 @@ pub struct MapMetadata {
     pub description: Option<String>,
     pub path: String,
     pub preview_path: String,
-    #[serde(default, skip_serializing_if = "json::is_false")]
+    #[serde(default, skip_serializing_if = "core::json::is_false")]
     pub is_tiled_map: bool,
-    #[serde(default, skip_serializing_if = "json::is_false")]
+    #[serde(default, skip_serializing_if = "core::json::is_false")]
     pub is_user_map: bool,
 }
 
@@ -585,6 +588,8 @@ pub struct ModMetadata {
     pub kind: ModKind,
     #[serde(default)]
     pub dependencies: Vec<DependencyMetadata>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub game_version: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -606,6 +611,7 @@ impl Default for ModKind {
     }
 }
 
+// TODO: Better version checks
 async fn load_mods<P: AsRef<Path>>(mods_dir: P, resources: &mut Resources) -> Result<()> {
     let mods_dir = mods_dir.as_ref();
 
@@ -624,34 +630,50 @@ async fn load_mods<P: AsRef<Path>>(mods_dir: P, resources: &mut Resources) -> Re
 
         let meta: ModMetadata = deserialize_json_file(mod_file_path).await?;
 
-        let mut has_unmet_dependencies = false;
+        let mut has_game_version_mismatch = false;
 
-        for dependency in &meta.dependencies {
-            let res = resources
-                .loaded_mods
-                .iter()
-                .find(|&meta| meta.id == dependency.id && meta.version == dependency.version);
-
-            if res.is_none() {
-                has_unmet_dependencies = true;
+        if let Some(req_version) = &meta.game_version {
+            if *req_version != env!("CARGO_PKG_VERSION") {
+                has_game_version_mismatch = true;
 
                 #[cfg(debug_assertions)]
                 println!(
-                    "Loading mod {} (v{}) failed: Unmet dependency {} (v{})",
-                    &meta.id, &meta.version, &dependency.id, &dependency.version
+                    "Loading mod {} (v{}) failed: Game version requirement mismatch (v{})",
+                    &meta.id, &meta.version, req_version
                 );
-
-                break;
             }
         }
 
-        if !has_unmet_dependencies {
-            load_resources_from(mod_dir_path, resources).await?;
+        if !has_game_version_mismatch {
+            let mut has_unmet_dependencies = false;
 
-            #[cfg(debug_assertions)]
-            println!("Loaded mod {} (v{})", &meta.id, &meta.version);
+            for dependency in &meta.dependencies {
+                let res = resources
+                    .loaded_mods
+                    .iter()
+                    .find(|&meta| meta.id == dependency.id && meta.version == dependency.version);
 
-            resources.loaded_mods.push(meta);
+                if res.is_none() {
+                    has_unmet_dependencies = true;
+
+                    #[cfg(debug_assertions)]
+                    println!(
+                        "Loading mod {} (v{}) failed: Unmet dependency {} (v{})",
+                        &meta.id, &meta.version, &dependency.id, &dependency.version
+                    );
+
+                    break;
+                }
+            }
+
+            if !has_unmet_dependencies {
+                load_resources_from(mod_dir_path, resources).await?;
+
+                #[cfg(debug_assertions)]
+                println!("Loaded mod {} (v{})", &meta.id, &meta.version);
+
+                resources.loaded_mods.push(meta);
+            }
         }
     }
 

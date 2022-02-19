@@ -2,45 +2,22 @@
 
 use hecs::World;
 
-use core::network::Api;
-use core::Result;
-
-#[cfg(feature = "ultimate")]
-pub async fn init_api(token: &str) -> Result<()> {
-    Api::init::<ultimate::UltimateApiBackend>(token).await
+pub fn update_network_client(world: &mut World) {
+    update_network_common(world);
 }
 
-#[cfg(not(feature = "ultimate"))]
-pub async fn init_api(token: &str) -> Result<()> {
-    Api::init::<core::network::MockApiBackend>(token).await
+pub fn fixed_update_network_client(world: &mut World) {
+    fixed_update_network_common(world);
 }
 
-#[derive(Default)]
-pub struct NetworkClient {}
-
-impl NetworkClient {
-    pub fn new() -> Self {
-        NetworkClient {}
-    }
+pub fn update_network_host(world: &mut World) {
+    update_network_common(world);
 }
 
-pub fn update_network_client(_world: &mut World) {
-    for _event in Api::poll_events() {}
+pub fn fixed_update_network_host(world: &mut World) {
+    fixed_update_network_common(world);
 }
 
-pub fn fixed_update_network_client(_world: &mut World) {}
+fn update_network_common(_world: &mut World) {}
 
-#[derive(Default)]
-pub struct NetworkHost {}
-
-impl NetworkHost {
-    pub fn new() -> Self {
-        NetworkHost {}
-    }
-}
-
-pub fn update_network_host(_world: &mut World) {
-    for _event in Api::poll_events() {}
-}
-
-pub fn fixed_update_network_host(_world: &mut World) {}
+fn fixed_update_network_common(_world: &mut World) {}

@@ -2,36 +2,53 @@ use macroquad::prelude::*;
 
 use hecs::{Entity, With, Without, World};
 
+use core::Transform;
+
 use crate::items::{
     fire_weapon, ItemDepleteBehavior, ItemDropBehavior, Weapon, EFFECT_ANIMATED_SPRITE_ID,
     GROUND_ANIMATION_ID, ITEMS_DRAW_ORDER, SPRITE_ANIMATED_SPRITE_ID,
 };
 use crate::particles::ParticleEmitter;
 use crate::player::{Player, PlayerController, PlayerState, IDLE_ANIMATION_ID, PICKUP_GRACE_TIME};
-use crate::{Drawable, Item, Owner, PassiveEffectInstance, PhysicsBody, Transform};
+use crate::{Drawable, Item, Owner, PassiveEffectInstance, PhysicsBody};
 
 const THROW_FORCE: f32 = 5.0;
 
 #[derive(Default)]
 pub struct PlayerInventory {
     pub weapon_mount: Vec2,
+    pub weapon_mount_offset: Vec2,
+    pub item_mount: Vec2,
+    pub item_mount_offset: Vec2,
+    pub hat_mount: Vec2,
+    pub hat_mount_offset: Vec2,
     pub weapon: Option<Entity>,
     pub items: Vec<Entity>,
-}
-
-impl From<Vec2> for PlayerInventory {
-    fn from(weapon_mount: Vec2) -> Self {
-        PlayerInventory {
-            weapon_mount,
-            weapon: None,
-            items: Vec::new(),
-        }
-    }
+    pub hat: Option<Entity>,
 }
 
 impl PlayerInventory {
+    pub fn new(weapon_mount: Vec2, item_mount: Vec2, hat_mount: Vec2) -> Self {
+        PlayerInventory {
+            weapon_mount,
+            weapon_mount_offset: Vec2::ZERO,
+            item_mount,
+            item_mount_offset: Vec2::ZERO,
+            hat_mount,
+            hat_mount_offset: Vec2::ZERO,
+            weapon: None,
+            items: Vec::new(),
+            hat: None,
+        }
+    }
+
     pub fn get_weapon_mount(&self, is_facing_left: bool, is_upside_down: bool) -> Vec2 {
-        flip_offset(self.weapon_mount, None, is_facing_left, is_upside_down)
+        flip_offset(
+            self.weapon_mount + self.weapon_mount_offset,
+            None,
+            is_facing_left,
+            is_upside_down,
+        )
     }
 }
 
@@ -80,10 +97,28 @@ pub fn update_player_inventory(world: &mut World) {
                 let &(item_entity, rect) = item_colliders.get(i).unwrap();
 
                 if player_rect.overlaps(&rect) {
+                    let item = world.get::<Item>(item_entity).unwrap();
+
+                    if item.is_hat {
+                        if player.pickup_grace_timer < PICKUP_GRACE_TIME {
+                            i += 1;
+
+                            continue;
+                        }
+
+                        if let Some(hat_entity) = inventory.hat.take() {
+                            to_drop.push(hat_entity);
+                        }
+
+                        inventory.hat = Some(item_entity);
+
+                        player.pickup_grace_timer = 0.0;
+                    } else {
+                        inventory.items.push(item_entity);
+                    }
+
                     picked_up.push((entity, item_entity));
                     item_colliders.remove(i);
-
-                    inventory.items.push(item_entity);
 
                     let mut body = world.get_mut::<PhysicsBody>(item_entity).unwrap();
                     body.is_deactivated = true;
@@ -209,9 +244,8 @@ pub fn update_player_inventory(world: &mut World) {
                 }
             }
 
-            let mut i = 0;
-            while i < inventory.items.len() {
-                let item_entity = *inventory.items.get(i).unwrap();
+            let mut handle_item = |item_entity| -> bool {
+                let mut res = false;
 
                 let mut item = world.get_mut::<Item>(item_entity).unwrap();
 
@@ -228,7 +262,7 @@ pub fn update_player_inventory(world: &mut World) {
                 }
 
                 if is_depleted {
-                    inventory.items.remove(i);
+                    res = true;
 
                     player.passive_effects.retain(|effect| {
                         if let Some(effect_item_entity) = effect.item {
@@ -237,8 +271,6 @@ pub fn update_player_inventory(world: &mut World) {
                             true
                         }
                     });
-
-                    to_drop.push(item_entity);
                 } else {
                     let position = transform.position;
 
@@ -249,8 +281,18 @@ pub fn update_player_inventory(world: &mut World) {
                             sprite_set.flip_all_x(player.is_facing_left);
                             sprite_set.flip_all_y(player.is_upside_down);
 
+                            let mount_offset = if item.is_hat {
+                                let size = sprite_set.size();
+
+                                vec2(-size.x / 2.0, size.y)
+                                    + inventory.hat_mount
+                                    + inventory.hat_mount_offset
+                            } else {
+                                inventory.item_mount + inventory.item_mount_offset
+                            };
+
                             let offset = flip_offset(
-                                item.mount_offset,
+                                item.mount_offset + mount_offset,
                                 sprite_set.size(),
                                 player.is_facing_left,
                                 player.is_upside_down,
@@ -265,7 +307,27 @@ pub fn update_player_inventory(world: &mut World) {
                             println!("WARNING: {}", err);
                         }
                     }
+                }
 
+                res
+            };
+
+            if let Some(hat_entity) = inventory.hat.take() {
+                if handle_item(hat_entity) {
+                    to_drop.push(hat_entity);
+                } else {
+                    inventory.hat = Some(hat_entity);
+                }
+            }
+
+            let mut i = 0;
+            while i < inventory.items.len() {
+                let item_entity = *inventory.items.get(i).unwrap();
+
+                if handle_item(item_entity) {
+                    inventory.items.remove(i);
+                    to_drop.push(item_entity);
+                } else {
                     i += 1;
                 }
             }

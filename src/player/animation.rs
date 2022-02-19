@@ -5,11 +5,13 @@ use hecs::World;
 use serde::{Deserialize, Serialize};
 
 use crate::player::{
-    Player, PlayerState, CROUCH_ANIMATION_ID, DEATH_BACK_ANIMATION_ID, DEATH_FORWARD_ANIMATION_ID,
-    FALL_ANIMATION_ID, IDLE_ANIMATION_ID, JUMP_ANIMATION_ID, MOVE_ANIMATION_ID, SLIDE_ANIMATION_ID,
+    Player, PlayerInventory, PlayerState, BODY_ANIMATED_SPRITE_ID, CROUCH_ANIMATION_ID,
+    DEATH_BACK_ANIMATION_ID, DEATH_FORWARD_ANIMATION_ID, FALL_ANIMATION_ID, HAT_MOUNT_TWEEN_ID,
+    IDLE_ANIMATION_ID, ITEM_MOUNT_TWEEN_ID, JUMP_ANIMATION_ID, MOVE_ANIMATION_ID,
+    SLIDE_ANIMATION_ID, WEAPON_MOUNT_TWEEN_ID,
 };
-use crate::{json, Drawable, PhysicsBody};
-use crate::{AnimatedSpriteMetadata, AnimationMetadata};
+use crate::{AnimatedSpriteMetadata, AnimationMetadata, Keyframe, TweenMetadata};
+use crate::{Drawable, PhysicsBody};
 
 /// This is used in stead of `AnimationParams`, as we have different data requirements, in the case
 /// of a player character, compared to most other use cases. We want to have a default animation
@@ -23,13 +25,13 @@ pub struct PlayerAnimationMetadata {
     pub texture_id: String,
     #[serde(default)]
     pub scale: Option<f32>,
-    #[serde(default, with = "json::vec2_def")]
+    #[serde(default, with = "core::json::vec2_def")]
     pub offset: Vec2,
-    #[serde(default, with = "json::vec2_opt")]
+    #[serde(default, with = "core::json::vec2_opt")]
     pub pivot: Option<Vec2>,
     #[serde(
         default,
-        with = "json::color_opt",
+        with = "core::json::color_opt",
         skip_serializing_if = "Option::is_none"
     )]
     pub tint: Option<Color>,
@@ -78,21 +80,96 @@ pub struct PlayerAnimations {
 
 impl PlayerAnimations {
     pub fn default_idle_animation() -> AnimationMetadata {
+        let keyframes = vec![
+            Keyframe {
+                frame: 0,
+                translation: vec2(0.0, 0.0),
+            },
+            Keyframe {
+                frame: 5,
+                translation: vec2(0.0, 2.0),
+            },
+            Keyframe {
+                frame: 8,
+                translation: vec2(0.0, 0.0),
+            },
+            Keyframe {
+                frame: 11,
+                translation: vec2(0.0, 2.0),
+            },
+        ];
+
         AnimationMetadata {
             id: IDLE_ANIMATION_ID.to_string(),
             row: 0,
             frames: 14,
             fps: 12,
+            tweens: vec![
+                TweenMetadata {
+                    id: WEAPON_MOUNT_TWEEN_ID.to_string(),
+                    keyframes: keyframes.clone(),
+                },
+                TweenMetadata {
+                    id: ITEM_MOUNT_TWEEN_ID.to_string(),
+                    keyframes: keyframes.clone(),
+                },
+                TweenMetadata {
+                    id: HAT_MOUNT_TWEEN_ID.to_string(),
+                    keyframes,
+                },
+            ],
             is_looping: true,
         }
     }
 
     pub fn default_move_animation() -> AnimationMetadata {
+        let keyframes = vec![
+            Keyframe {
+                frame: 0,
+                translation: vec2(0.0, -4.0),
+            },
+            Keyframe {
+                frame: 2,
+                translation: vec2(0.0, 0.0),
+            },
+            Keyframe {
+                frame: 5,
+                translation: vec2(0.0, -4.0),
+            },
+        ];
+
         AnimationMetadata {
             id: MOVE_ANIMATION_ID.to_string(),
             row: 1,
             frames: 6,
             fps: 10,
+            tweens: vec![
+                TweenMetadata {
+                    id: WEAPON_MOUNT_TWEEN_ID.to_string(),
+                    keyframes: keyframes.clone(),
+                },
+                TweenMetadata {
+                    id: ITEM_MOUNT_TWEEN_ID.to_string(),
+                    keyframes,
+                },
+                TweenMetadata {
+                    id: HAT_MOUNT_TWEEN_ID.to_string(),
+                    keyframes: vec![
+                        Keyframe {
+                            frame: 0,
+                            translation: vec2(4.0, -4.0),
+                        },
+                        Keyframe {
+                            frame: 2,
+                            translation: vec2(4.0, 0.0),
+                        },
+                        Keyframe {
+                            frame: 5,
+                            translation: vec2(4.0, -4.0),
+                        },
+                    ],
+                },
+            ],
             is_looping: true,
         }
     }
@@ -103,6 +180,7 @@ impl PlayerAnimations {
             row: 2,
             frames: 1,
             fps: 5,
+            tweens: Vec::new(),
             is_looping: false,
         }
     }
@@ -113,16 +191,36 @@ impl PlayerAnimations {
             row: 3,
             frames: 1,
             fps: 8,
+            tweens: Vec::new(),
             is_looping: true,
         }
     }
 
     pub fn default_crouch_animation() -> AnimationMetadata {
+        let keyframes = vec![Keyframe {
+            frame: 0,
+            translation: vec2(0.0, 4.0),
+        }];
+
         AnimationMetadata {
             id: CROUCH_ANIMATION_ID.to_string(),
             row: 4,
             frames: 1,
             fps: 8,
+            tweens: vec![
+                TweenMetadata {
+                    id: WEAPON_MOUNT_TWEEN_ID.to_string(),
+                    keyframes: keyframes.clone(),
+                },
+                TweenMetadata {
+                    id: ITEM_MOUNT_TWEEN_ID.to_string(),
+                    keyframes: keyframes.clone(),
+                },
+                TweenMetadata {
+                    id: HAT_MOUNT_TWEEN_ID.to_string(),
+                    keyframes,
+                },
+            ],
             is_looping: false,
         }
     }
@@ -133,6 +231,7 @@ impl PlayerAnimations {
             row: 5,
             frames: 1,
             fps: 1,
+            tweens: Vec::new(),
             is_looping: false,
         }
     }
@@ -143,6 +242,7 @@ impl PlayerAnimations {
             row: 5,
             frames: 7,
             fps: 10,
+            tweens: Vec::new(),
             is_looping: false,
         }
     }
@@ -153,6 +253,7 @@ impl PlayerAnimations {
             row: 6,
             frames: 7,
             fps: 10,
+            tweens: Vec::new(),
             is_looping: false,
         }
     }
@@ -249,7 +350,8 @@ impl PlayerAnimations {
 }
 
 pub fn update_player_animations(world: &mut World) {
-    for (_, (player, body, drawable)) in world.query_mut::<(&Player, &PhysicsBody, &mut Drawable)>()
+    for (_, (player, inventory, body, drawable)) in
+        world.query_mut::<(&Player, &mut PlayerInventory, &PhysicsBody, &mut Drawable)>()
     {
         let sprite_set = drawable.get_animated_sprite_set_mut().unwrap();
 
@@ -258,10 +360,10 @@ pub fn update_player_animations(world: &mut World) {
 
         let animation_id = match player.state {
             PlayerState::Dead => {
-                if player.is_facing_left {
-                    DEATH_FORWARD_ANIMATION_ID
-                } else {
+                if player.is_facing_left == player.damage_from_left {
                     DEATH_BACK_ANIMATION_ID
+                } else {
+                    DEATH_FORWARD_ANIMATION_ID
                 }
             }
             PlayerState::Incapacitated => {
@@ -286,5 +388,26 @@ pub fn update_player_animations(world: &mut World) {
         };
 
         sprite_set.set_all(animation_id, false);
+
+        let sprite = sprite_set.map.get(BODY_ANIMATED_SPRITE_ID).unwrap();
+        let animation = sprite.current_animation();
+
+        if let Some(tween) = animation.tweens.get(WEAPON_MOUNT_TWEEN_ID) {
+            inventory.weapon_mount_offset = tween.current_translation;
+        } else {
+            inventory.weapon_mount_offset = Vec2::ZERO;
+        }
+
+        if let Some(tween) = animation.tweens.get(ITEM_MOUNT_TWEEN_ID) {
+            inventory.item_mount_offset = tween.current_translation;
+        } else {
+            inventory.item_mount_offset = Vec2::ZERO;
+        }
+
+        if let Some(tween) = animation.tweens.get(HAT_MOUNT_TWEEN_ID) {
+            inventory.hat_mount_offset = tween.current_translation;
+        } else {
+            inventory.hat_mount_offset = Vec2::ZERO;
+        }
     }
 }

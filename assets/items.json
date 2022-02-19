@@ -10,5 +10,12 @@
   "items/sword.json",
   "items/kick_bomb.json",
   "items/turtle_shell.json",
-  "items/crate.json"
+  "items/crate.json",
+  "items/pirate_hat.json",
+  "items/bonnet_hat.json",
+  "items/bucket_hat.json",
+  "items/chefs_hat.json",
+  "items/chest_hat.json",
+  "items/cowboy_hat.json",
+  "items/crown_hat.json"
 ]

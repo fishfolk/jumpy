@@ -74,15 +74,17 @@ pacman -S fishfight
 
 ## Default key bindings
 
-Keyboard left:
+Keyboard right:
 - movement: arrow keys `↑`, `←`, `↓`, `→`
 - pick/drop: `K`
 - attack: `L`
+- slide: `↓` + `RightCtrl`
 
-Keyboard right:
+Keyboard left:
 - movement: `W`, `A`, `S`, `D` (& `Space` for jump)
 - pick/drop: `C`
 - attack: `V` & `LeftCtrl`
+- slide: `A` + `F`
 
 Gamepad:
 - movement: direction axis

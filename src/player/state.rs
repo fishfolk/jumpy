@@ -4,11 +4,13 @@ use macroquad::prelude::*;
 
 use hecs::{Entity, World};
 
+use core::Transform;
+
 use crate::player::{
     Player, PlayerAttributes, PlayerController, PlayerEventQueue, JUMP_SOUND_ID, LAND_SOUND_ID,
     RESPAWN_DELAY,
 };
-use crate::{CollisionWorld, Item, Map, PhysicsBody, PlayerEvent, Resources, Transform};
+use crate::{CollisionWorld, Item, Map, PhysicsBody, PlayerEvent, Resources};
 
 const SLIDE_STOP_THRESHOLD: f32 = 2.0;
 const JUMP_FRAME_COUNT: u16 = 8;
@@ -51,6 +53,10 @@ pub fn update_player_states(world: &mut World) {
         player.is_attacking = player.attack_timer > 0.0;
 
         player.pickup_grace_timer += dt;
+
+        if player.state == PlayerState::Crouching && !controller.should_crouch {
+            player.state = PlayerState::None;
+        }
 
         if player.state == PlayerState::Dead {
             player.respawn_timer += dt;

@@ -1,12 +1,14 @@
 use macroquad::audio::play_sound_once;
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
+use std::collections::HashMap;
 
 use hecs::{Entity, World};
 
 use core::Result;
+use core::Transform;
 
-use crate::{Animation, Drawable, PhysicsBody, QueuedAnimationAction, Resources, Transform};
+use crate::{Animation, Drawable, PhysicsBody, QueuedAnimationAction, Resources};
 
 const SPROINGER_DRAW_ORDER: u32 = 2;
 
@@ -45,6 +47,7 @@ pub fn spawn_sproinger(world: &mut World, position: Vec2) -> Result<Entity> {
             row: 0,
             frames: 1,
             fps: 1,
+            tweens: HashMap::new(),
             is_looping: false,
         },
         Animation {
@@ -52,6 +55,7 @@ pub fn spawn_sproinger(world: &mut World, position: Vec2) -> Result<Entity> {
             row: 1,
             frames: 2,
             fps: 8,
+            tweens: HashMap::new(),
             is_looping: false,
         },
         Animation {
@@ -59,6 +63,7 @@ pub fn spawn_sproinger(world: &mut World, position: Vec2) -> Result<Entity> {
             row: 2,
             frames: 2,
             fps: 4,
+            tweens: HashMap::new(),
             is_looping: false,
         },
     ];

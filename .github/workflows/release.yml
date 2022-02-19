@@ -30,12 +30,17 @@ jobs:
         shell: bash
         run: echo "RELEASE_VERSION=${GITHUB_REF:10}" >> $GITHUB_ENV
 
-      - name: Setup Dependencies
+      - name: Install dependencies
         if: matrix.config.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install --allow-unauthenticated -y -qq \
-           libasound2-dev libgl1-mesa-dev libx11-dev libxi-dev
+          sudo apt-get install \
+            --allow-unauthenticated -y -qq \
+              libasound2-dev \
+              libgl1-mesa-dev \
+              libx11-dev \
+              libxi-dev \
+              libudev-dev
 
       - name: Cache Cargo
         uses: actions/cache@v2

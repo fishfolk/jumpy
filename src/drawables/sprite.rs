@@ -8,7 +8,9 @@ use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{json, Resources, Transform};
+use core::Transform;
+
+use crate::Resources;
 
 /// Parameters for `Sprite` component.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -25,14 +27,14 @@ pub struct SpriteMetadata {
     /// The offset of the drawn sprite, relative to the position provided as an argument to the
     /// `Sprite` draw method.
     /// Note that this offset will not be inverted if the sprite is flipped.
-    #[serde(default, with = "json::vec2_def")]
+    #[serde(default, with = "core::json::vec2_def")]
     pub offset: Vec2,
     /// The pivot of the sprite, relative to the position provided as an argument to the `Sprite`
     /// draw method, plus any offset.
     /// Note that this offset will not be inverted if the sprite is flipped.
     #[serde(
         default,
-        with = "json::vec2_opt",
+        with = "core::json::vec2_opt",
         skip_serializing_if = "Option::is_none"
     )]
     pub pivot: Option<Vec2>,
@@ -40,14 +42,14 @@ pub struct SpriteMetadata {
     /// will be used, if specified, or the raw texture size, if not.
     #[serde(
         default,
-        with = "json::vec2_opt",
+        with = "core::json::vec2_opt",
         skip_serializing_if = "Option::is_none"
     )]
     pub size: Option<Vec2>,
     /// An optional color to blend with the texture color
     #[serde(
         default,
-        with = "json::color_opt",
+        with = "core::json::color_opt",
         skip_serializing_if = "Option::is_none"
     )]
     pub tint: Option<Color>,

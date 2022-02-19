@@ -6,7 +6,6 @@ use std::path::PathBuf;
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
 
-pub mod config;
 pub mod debug;
 pub mod ecs;
 pub mod editor;
@@ -14,42 +13,33 @@ pub mod effects;
 pub mod events;
 pub mod game;
 mod gui;
-pub mod input;
 mod items;
 pub mod json;
 pub mod map;
 pub mod network;
-mod noise;
 pub mod particles;
 pub mod physics;
 pub mod player;
 pub mod resources;
 
-mod channel;
-mod drawables;
-mod transform;
+pub mod drawables;
 
 pub use drawables::*;
-pub use input::*;
 pub use physics::*;
-pub use transform::*;
 
 use editor::{Editor, EditorCamera, EditorInputScheme};
 
 use map::{Map, MapLayerKind, MapObjectKind};
 
 use core::network::Api;
+use core::Result;
 
-pub use channel::Channel;
-
-pub use config::Config;
+pub use core::Config;
 pub use items::Item;
 
 pub use events::{dispatch_application_event, ApplicationEvent};
 
-pub use game::{
-    collect_local_input, start_music, stop_music, Game, GameCamera, GameInput, GameInputScheme,
-};
+pub use game::{start_music, stop_music, Game, GameCamera};
 
 pub use resources::Resources;
 
@@ -59,7 +49,6 @@ pub use ecs::Owner;
 
 use crate::effects::passive::init_passive_effects;
 use crate::game::GameMode;
-use crate::network::init_api;
 use crate::particles::Particles;
 use crate::resources::load_resources;
 pub use effects::{
@@ -90,34 +79,128 @@ pub fn reload_resources() {
 }
 
 fn window_conf() -> Conf {
-    let config = Config::load(
-        env::var(CONFIG_FILE_ENV_VAR)
-            .map(PathBuf::from)
-            .unwrap_or_else(|_| {
-                #[cfg(debug_assertions)]
-                return PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("config.json");
-                #[cfg(not(debug_assertions))]
-                return PathBuf::from("./config.json");
-            }),
-    )
-    .unwrap();
+    let path = env::var(CONFIG_FILE_ENV_VAR)
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| {
+            #[cfg(debug_assertions)]
+            return PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("config.toml");
+            #[cfg(not(debug_assertions))]
+            return PathBuf::from("./config.toml");
+        });
+
+    let config = Config::load(&path).unwrap();
 
     storage::store(config.clone());
 
     Conf {
         window_title: WINDOW_TITLE.to_owned(),
-        high_dpi: config.high_dpi,
-        fullscreen: config.fullscreen,
-        window_width: config.resolution.width,
-        window_height: config.resolution.height,
+        high_dpi: config.window.is_high_dpi,
+        fullscreen: config.window.is_fullscreen,
+        window_width: config.window.width as i32,
+        window_height: config.window.height as i32,
         ..Default::default()
     }
+}
+
+/// Returns `true` if the outer game loop should continue;
+#[cfg(not(feature = "ultimate"))]
+async fn init_game() -> Result<bool> {
+    use gui::MainMenuResult;
+
+    match gui::show_main_menu().await {
+        MainMenuResult::LocalGame { map, players } => {
+            let game = Game::new(GameMode::Local, *map, &players)?;
+            scene::add_node(game);
+
+            start_music("fish_tide");
+        }
+        MainMenuResult::Editor {
+            input_scheme,
+            is_new_map,
+        } => {
+            let map_resource = if is_new_map {
+                let res = gui::show_create_map_menu().await?;
+                if res.is_none() {
+                    return Ok(true);
+                }
+
+                res.unwrap()
+            } else {
+                gui::show_select_map_menu().await
+            };
+
+            let position = map_resource.map.get_size() * 0.5;
+
+            scene::add_node(EditorCamera::new(position));
+            scene::add_node(Editor::new(input_scheme, map_resource));
+        }
+        MainMenuResult::ReloadResources => {
+            reload_resources();
+            return Ok(true);
+        }
+        MainMenuResult::Credits => {
+            let resources = storage::get::<Resources>();
+            start_music("thanks_for_all_the_fished");
+            gui::show_game_credits(&resources.assets_dir).await;
+            stop_music();
+            return Ok(true);
+        }
+        MainMenuResult::Quit => {
+            quit_to_desktop();
+        }
+    };
+
+    Ok(false)
+}
+
+#[cfg(feature = "ultimate")]
+async fn init_game() -> Result<bool> {
+    use core::input::GameInputScheme;
+    use core::network::Api;
+
+    use crate::player::{PlayerControllerKind, PlayerParams};
+
+    let player_ids = vec!["1".to_string(), "2".to_string()];
+
+    Api::init::<ultimate::UltimateApiBackend>(&player_ids[0], true).await?;
+
+    let (map, mut characters) = {
+        let resources = storage::get::<Resources>();
+
+        let map = resources.maps.first().map(|res| res.map.clone()).unwrap();
+
+        let characters = vec![
+            resources.player_characters.get("pescy").cloned().unwrap(),
+            resources.player_characters.get("sharky").cloned().unwrap(),
+        ];
+
+        (map, characters)
+    };
+
+    let players = vec![
+        PlayerParams {
+            index: 0,
+            controller: PlayerControllerKind::LocalInput(GameInputScheme::KeyboardLeft).into(),
+            character: characters.pop().unwrap(),
+        },
+        PlayerParams {
+            index: 1,
+            controller: PlayerControllerKind::Network(player_ids[1].clone()).into(),
+            character: characters.pop().unwrap(),
+        },
+    ];
+
+    let game = Game::new(GameMode::NetworkHost, map, &players)?;
+    scene::add_node(game);
+
+    start_music("fish_tide");
+
+    Ok(false)
 }
 
 #[macroquad::main(window_conf)]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     use events::iter_events;
-    use gui::MainMenuResult;
 
     let assets_dir = env::var(ASSETS_DIR_ENV_VAR).unwrap_or_else(|_| "./assets".to_string());
     let mods_dir = env::var(MODS_DIR_ENV_VAR).unwrap_or_else(|_| "./mods".to_string());
@@ -127,8 +210,8 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     load_resources(&assets_dir, &mods_dir).await?;
 
     {
-        let gamepad_system = fishsticks::GamepadContext::init().unwrap();
-        storage::store(gamepad_system);
+        let gamepad_context = fishsticks::GamepadContext::init().unwrap();
+        storage::store(gamepad_context);
     }
 
     {
@@ -138,75 +221,17 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
     init_passive_effects();
 
-    init_api("player_one_token").await?;
-
     'outer: loop {
-        match gui::show_main_menu().await {
-            MainMenuResult::LocalGame { map, players } => {
-                let game = Game::new(GameMode::Local, map, &players)?;
-                scene::add_node(game);
-
-                start_music("fish_tide");
-            }
-            MainMenuResult::NetworkGame {
-                is_host,
-                map,
-                players,
-            } => {
-                let mode = if is_host {
-                    GameMode::NetworkHost
-                } else {
-                    GameMode::NetworkClient
-                };
-
-                let game = Game::new(mode, map, &players)?;
-                scene::add_node(game);
-
-                start_music("fish_tide");
-            }
-            MainMenuResult::Editor {
-                input_scheme,
-                is_new_map,
-            } => {
-                let map_resource = if is_new_map {
-                    let res = gui::show_create_map_menu().await?;
-                    if res.is_none() {
-                        continue 'outer;
-                    }
-
-                    res.unwrap()
-                } else {
-                    gui::show_select_map_menu().await
-                };
-
-                let position = map_resource.map.get_size() * 0.5;
-
-                scene::add_node(EditorCamera::new(position));
-                scene::add_node(Editor::new(input_scheme, map_resource));
-            }
-            MainMenuResult::ReloadResources => {
-                reload_resources();
-                continue 'outer;
-            }
-            MainMenuResult::Credits => {
-                let resources = storage::get::<Resources>();
-                start_music("thanks_for_all_the_fished");
-                gui::show_game_credits(&resources.assets_dir).await;
-                stop_music();
-                continue 'outer;
-            }
-            MainMenuResult::Quit => {
-                quit_to_desktop();
-            }
-        };
+        if init_game().await? {
+            continue 'outer;
+        }
 
         'inner: loop {
             #[allow(clippy::never_loop)]
             for event in iter_events() {
                 match event {
                     ApplicationEvent::ReloadResources => {
-                        let resources = storage::get::<Resources>();
-                        load_resources(&resources.assets_dir, &resources.mods_dir).await?;
+                        load_resources(&assets_dir, &mods_dir).await?;
                     }
                     ApplicationEvent::MainMenu => break 'inner,
                     ApplicationEvent::Quit => break 'outer,
@@ -214,8 +239,8 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             }
 
             {
-                let mut gamepad_system = storage::get_mut::<GamepadContext>();
-                gamepad_system.update()?;
+                let mut gamepad_context = storage::get_mut::<GamepadContext>();
+                gamepad_context.update()?;
             }
 
             next_frame().await;

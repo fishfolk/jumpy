@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use core::math::{deg_to_rad, rotate_vector, IsZero};
 use core::Result;
 
-use crate::{json, Resources};
+use crate::Resources;
 use crate::{PassiveEffectInstance, PassiveEffectMetadata};
 
 pub mod projectiles;
@@ -22,7 +22,8 @@ use crate::effects::active::projectiles::{spawn_projectile, ProjectileParams};
 use crate::effects::active::triggered::{spawn_triggered_effect, TriggeredEffect};
 use crate::particles::ParticleEmitterMetadata;
 use crate::player::{on_player_damage, Player};
-use crate::{PhysicsBody, Transform};
+use crate::PhysicsBody;
+use core::Transform;
 pub use projectiles::ProjectileKind;
 
 const COLLIDER_DEBUG_DRAW_TTL: f32 = 0.5;
@@ -232,9 +233,12 @@ pub enum ActiveEffectKind {
         #[serde(default, skip_serializing_if = "Vec::is_empty")]
         passive_effects: Vec<PassiveEffectMetadata>,
         /// If `true` the effect will do damage to any player it hits
-        #[serde(default = "json::default_true", skip_serializing_if = "json::is_true")]
+        #[serde(
+            default = "core::json::default_true",
+            skip_serializing_if = "core::json::is_true"
+        )]
         is_lethal: bool,
-        #[serde(default, skip_serializing_if = "json::is_false")]
+        #[serde(default, skip_serializing_if = "core::json::is_false")]
         is_explosion: bool,
     },
     /// Check for hits with a `Rect` collider
@@ -242,7 +246,10 @@ pub enum ActiveEffectKind {
         width: f32,
         height: f32,
         /// If `true` the effect will do damage to any player it hits
-        #[serde(default = "json::default_true", skip_serializing_if = "json::is_true")]
+        #[serde(
+            default = "core::json::default_true",
+            skip_serializing_if = "core::json::is_true"
+        )]
         is_lethal: bool,
         /// This contains any passive effects that will be spawned on collision
         #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -263,7 +270,10 @@ pub enum ActiveEffectKind {
         #[serde(default, skip_serializing_if = "f32::is_zero")]
         spread: f32,
         /// If `true` the effect will do damage to any player it hits
-        #[serde(default = "json::default_true", skip_serializing_if = "json::is_true")]
+        #[serde(
+            default = "core::json::default_true",
+            skip_serializing_if = "core::json::is_true"
+        )]
         is_lethal: bool,
         /// This contains any passive effects that will be spawned on collision
         #[serde(default, skip_serializing_if = "Vec::is_empty")]

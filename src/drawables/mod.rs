@@ -9,7 +9,7 @@ use macroquad::prelude::*;
 
 use hecs::World;
 
-use crate::Transform;
+use core::Transform;
 
 /// This is a wrapper type for all the different types of drawable sprites, used so that we can
 /// access them all in one query and draw them, ordered, in one pass, according to `draw_order`.

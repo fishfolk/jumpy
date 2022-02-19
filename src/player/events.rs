@@ -88,6 +88,7 @@ pub fn update_player_events(world: &mut World) {
                     || (!is_from_left && !damage_blocked_right)
                 {
                     player.state = PlayerState::Dead;
+                    player.damage_from_left = is_from_left;
                 }
             }
         }

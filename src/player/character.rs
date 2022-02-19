@@ -7,8 +7,6 @@ use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
-use crate::json;
-
 use crate::player::PlayerAnimationMetadata;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -30,7 +28,7 @@ pub struct PlayerCharacterMetadata {
     /// This should, in general, be smaller than the sprite size
     #[serde(
         default = "PlayerCharacterMetadata::default_collider_size",
-        with = "json::vec2_def"
+        with = "core::json::vec2_def"
     )]
     pub collider_size: Vec2,
     /// This is the offset from the position of the player to where the weapon is mounted.
@@ -38,9 +36,21 @@ pub struct PlayerCharacterMetadata {
     /// can be changed with offsets.
     #[serde(
         default = "PlayerCharacterMetadata::default_weapon_mount",
-        with = "json::vec2_def"
+        with = "core::json::vec2_def"
     )]
     pub weapon_mount: Vec2,
+    /// This is the offset from the position of the player to where items are mounted
+    #[serde(
+        default = "PlayerCharacterMetadata::default_item_mount",
+        with = "core::json::vec2_def"
+    )]
+    pub item_mount: Vec2,
+    /// This is the offset from the position of the player to where the hat is mounted
+    #[serde(
+        default = "PlayerCharacterMetadata::default_hat_mount",
+        with = "core::json::vec2_def"
+    )]
+    pub hat_mount: Vec2,
     /// This is the distance from the top of the collider to where the head ends
     #[serde(default = "PlayerCharacterMetadata::default_head_threshold")]
     pub head_threshold: f32,
@@ -83,6 +93,10 @@ impl PlayerCharacterMetadata {
 
     const DEFAULT_WEAPON_MOUNT_X: f32 = 0.0;
     const DEFAULT_WEAPON_MOUNT_Y: f32 = 26.0;
+    const DEFAULT_ITEM_MOUNT_X: f32 = 0.0;
+    const DEFAULT_ITEM_MOUNT_Y: f32 = 0.0;
+    const DEFAULT_HAT_MOUNT_X: f32 = 0.0;
+    const DEFAULT_HAT_MOUNT_Y: f32 = -54.0;
 
     pub fn default_head_threshold() -> f32 {
         Self::DEFAULT_HEAD_THRESHOLD
@@ -122,5 +136,13 @@ impl PlayerCharacterMetadata {
 
     pub fn default_weapon_mount() -> Vec2 {
         vec2(Self::DEFAULT_WEAPON_MOUNT_X, Self::DEFAULT_WEAPON_MOUNT_Y)
+    }
+
+    pub fn default_item_mount() -> Vec2 {
+        vec2(Self::DEFAULT_ITEM_MOUNT_X, Self::DEFAULT_ITEM_MOUNT_Y)
+    }
+
+    pub fn default_hat_mount() -> Vec2 {
+        vec2(Self::DEFAULT_HAT_MOUNT_X, Self::DEFAULT_HAT_MOUNT_Y)
     }
 }

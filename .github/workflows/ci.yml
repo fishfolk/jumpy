@@ -29,6 +29,16 @@ jobs:
     name: Linting
     steps:
       - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install \
+            --allow-unauthenticated -y -qq \
+              libasound2-dev \
+              libgl1-mesa-dev \
+              libx11-dev \
+              libxi-dev \
+              libudev-dev
       - name: Install Clippy
         run: rustup component add clippy
 
@@ -52,12 +62,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Setup Dependencies
+      - name: Install dependencies
         if: matrix.config.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install --allow-unauthenticated -y -qq \
-           libasound2-dev libgl1-mesa-dev libx11-dev libxi-dev
+          sudo apt-get install \
+            --allow-unauthenticated -y -qq \
+              libasound2-dev \
+              libgl1-mesa-dev \
+              libx11-dev \
+              libxi-dev \
+              libudev-dev
       - name: Cache Cargo dependencies
         uses: actions/cache@v2
         with:

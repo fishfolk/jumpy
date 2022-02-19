@@ -9,11 +9,11 @@ use macroquad::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    json, ActiveEffectMetadata, AnimatedSprite, AnimatedSpriteMetadata, CollisionWorld, Drawable,
-    PassiveEffectMetadata, PhysicsBody, QueuedAnimationAction, Resources, Transform,
+    ActiveEffectMetadata, AnimatedSprite, AnimatedSpriteMetadata, CollisionWorld, Drawable,
+    PassiveEffectMetadata, PhysicsBody, QueuedAnimationAction, Resources,
 };
 
-use core::Result;
+use core::{Result, Transform};
 
 use crate::effects::active::spawn_active_effect;
 use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
@@ -86,6 +86,7 @@ pub struct ItemParams {
     pub mount_offset: Vec2,
     pub drop_behavior: ItemDropBehavior,
     pub deplete_behavior: ItemDepleteBehavior,
+    pub is_hat: bool,
 }
 
 pub struct Item {
@@ -97,6 +98,7 @@ pub struct Item {
     pub mount_offset: Vec2,
     pub drop_behavior: ItemDropBehavior,
     pub deplete_behavior: ItemDepleteBehavior,
+    pub is_hat: bool,
     pub duration_timer: f32,
     pub use_cnt: u32,
 }
@@ -112,6 +114,7 @@ impl Item {
             mount_offset: params.mount_offset,
             drop_behavior: params.drop_behavior,
             deplete_behavior: params.deplete_behavior,
+            is_hat: params.is_hat,
             duration_timer: 0.0,
             use_cnt: 0,
         }
@@ -128,6 +131,9 @@ pub struct ItemMetadata {
     /// passive effects that are added to the player, when equipping the item
     #[serde(default)]
     pub duration: Option<f32>,
+    /// If this is `true` the item will be treated as a hat
+    #[serde(default, rename = "hat", skip_serializing_if = "core::json::is_false")]
+    pub is_hat: bool,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -136,9 +142,9 @@ pub struct MapItemMetadata {
     pub name: String,
     #[serde(flatten)]
     pub kind: MapItemKind,
-    #[serde(with = "json::vec2_def")]
+    #[serde(with = "core::json::vec2_def")]
     pub collider_size: Vec2,
-    #[serde(default, with = "json::vec2_def")]
+    #[serde(default, with = "core::json::vec2_def")]
     pub collider_offset: Vec2,
     #[serde(default)]
     pub uses: Option<u32>,
@@ -147,7 +153,7 @@ pub struct MapItemMetadata {
     #[serde(default)]
     pub deplete_behavior: ItemDepleteBehavior,
     /// This specifies the offset from the player position to where the equipped item is drawn
-    #[serde(default, with = "json::vec2_def")]
+    #[serde(default, with = "core::json::vec2_def")]
     pub mount_offset: Vec2,
     /// The parameters for the `AnimationPlayer` that will be used to draw the item
     #[serde(alias = "animation")]
@@ -185,6 +191,7 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
         animations.as_slice(),
         meta.sprite.clone().into(),
     );
+
     sprites.push((SPRITE_ANIMATED_SPRITE_ID, sprite));
 
     let id = meta.id.as_str();
@@ -211,7 +218,11 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
 
     match meta.kind {
         MapItemKind::Item { meta } => {
-            let ItemMetadata { effects, duration } = meta;
+            let ItemMetadata {
+                effects,
+                duration,
+                is_hat,
+            } = meta;
 
             world.insert_one(
                 entity,
@@ -225,6 +236,7 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
                         mount_offset,
                         drop_behavior,
                         deplete_behavior,
+                        is_hat,
                     },
                 ),
             )?;
@@ -503,7 +515,7 @@ pub struct WeaponMetadata {
     pub sound_effect_id: Option<String>,
     /// This specifies the offset between the upper left corner of the weapon's sprite to the
     /// position that will serve as the origin of the weapon's effects
-    #[serde(default, with = "json::vec2_def")]
+    #[serde(default, with = "core::json::vec2_def")]
     pub effect_offset: Vec2,
     /// This can specify a maximum amount of weapon uses. If no value is specified, the weapon
     /// will have unlimited uses.

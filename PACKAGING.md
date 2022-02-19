@@ -5,12 +5,9 @@
 #### Build dependencies
 
 - [Rust](https://www.rust-lang.org/tools/install) (`1.53.0+`)
-- [CMake](https://cmake.org/download/) (only needed if `bundled-sdl2` feature is **enabled** in [Cargo.toml](./Cargo.toml))
-- [SDL2](https://www.libsdl.org/download-2.0.php) (only needed if `bundled-sdl2` feature is **disabled** in [Cargo.toml](./Cargo.toml))
+- [libudev](https://www.freedesktop.org/software/systemd/man/libudev.html)
 
 #### Runtime dependencies
-
-##### Linux
 
 - [libX11](https://gitlab.freedesktop.org/xorg/lib/libx11)
 - [libXi](https://gitlab.freedesktop.org/xorg/lib/libxi)
@@ -26,6 +23,12 @@ Also see [macroquad#linux](https://github.com/not-fl3/macroquad#linux).
 cargo run --release --locked
 ```
 
+### Environment variables
+
+- `FISHFIGHT_CONFIG`: configuration file (default: `config.json`)
+- `FISHFIGHT_ASSETS`: assets directory (default: `assets/`)
+- `FISHFIGHT_MODS`: mods directory (default: `mods/`)
+
 ### Package
 
 Binary will be located at `target/release/fishfight` after [build](#build). To run it, `assets` directory should be placed in the same directory or a path can be specified via `FISHFIGHT_ASSETS` environment variable.
@@ -34,6 +37,7 @@ For example:
 
 ```sh
 export FISHFIGHT_ASSETS=/opt/fishfight/assets/
+export FISHFIGHT_MODS=/opt/fishfight/mods/
 target/release/fishfight
 ```
 

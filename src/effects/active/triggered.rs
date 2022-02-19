@@ -6,14 +6,14 @@ use hecs::{Entity, World};
 use serde::{Deserialize, Serialize};
 
 use core::math::deg_to_rad;
-use core::Result;
+use core::{Result, Transform};
 
 use crate::effects::active::spawn_active_effect;
 use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::physics;
 use crate::player::{Player, PlayerState};
-use crate::{json, Drawable, PhysicsBodyParams};
-use crate::{ActiveEffectMetadata, AnimatedSpriteMetadata, CollisionWorld, PhysicsBody, Transform};
+use crate::{ActiveEffectMetadata, AnimatedSpriteMetadata, CollisionWorld, PhysicsBody};
+use crate::{Drawable, PhysicsBodyParams};
 
 const TRIGGERED_EFFECT_DRAW_ORDER: u32 = 5;
 
@@ -288,13 +288,13 @@ pub struct TriggeredEffectMetadata {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub particles: Vec<ParticleEmitterMetadata>,
     /// This specifies the size of the trigger.
-    #[serde(with = "json::vec2_def")]
+    #[serde(with = "core::json::vec2_def")]
     pub size: Vec2,
     /// This specifies the valid trigger conditions for the trigger.
     #[serde(default)]
     pub trigger: Vec<TriggeredEffectTrigger>,
     /// This specifies the velocity of the triggers body when it is instantiated.
-    #[serde(default, with = "json::vec2_def")]
+    #[serde(default, with = "core::json::vec2_def")]
     pub velocity: Vec2,
     /// This specifies the initial rotation of the sprite.
     #[serde(default)]

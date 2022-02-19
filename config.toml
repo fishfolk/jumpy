@@ -1,0 +1,31 @@
+fullscreen = false
+high_dpi = false
+
+[resolution]
+width = 955
+height = 600
+
+[input_mapping.keyboard_primary]
+left = 'Left'
+right = 'Right'
+fire = 'L'
+jump = 'Up'
+pickup = 'K'
+crouch = 'Down'
+slide = 'RightControl'
+
+[input_mapping.keyboard_secondary]
+left = 'A'
+right = 'D'
+fire = 'V'
+jump = 'W'
+pickup = 'C'
+crouch = 'S'
+slide = 'F'
+
+[[input_mapping.gamepads]]
+id = 0
+fire = 'A'
+jump = 'X'
+pickup = 'B'
+slide = 'Y'

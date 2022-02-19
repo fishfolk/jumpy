@@ -225,6 +225,18 @@ impl From<serde_json::Error> for Error {
     }
 }
 
+impl From<toml::ser::Error> for Error {
+    fn from(err: toml::ser::Error) -> Self {
+        Error::new(ErrorKind::Parsing, err)
+    }
+}
+
+impl From<toml::de::Error> for Error {
+    fn from(err: toml::de::Error) -> Self {
+        Error::new(ErrorKind::Parsing, err)
+    }
+}
+
 /// This will create an error based on the parameters you provide.
 /// It follows the same rules as `format!`, only this takes an optional `ErrorKind`, as its
 /// first argument (before the format string), which will be the kind of `Error` returned.

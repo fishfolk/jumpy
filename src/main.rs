@@ -79,17 +79,16 @@ pub fn reload_resources() {
 }
 
 fn window_conf() -> Conf {
-    let config = Config::load(
-        env::var(CONFIG_FILE_ENV_VAR)
-            .map(PathBuf::from)
-            .unwrap_or_else(|_| {
-                #[cfg(debug_assertions)]
-                return PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("config.json");
-                #[cfg(not(debug_assertions))]
-                return PathBuf::from("./config.json");
-            }),
-    )
-    .unwrap();
+    let path = env::var(CONFIG_FILE_ENV_VAR)
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| {
+            #[cfg(debug_assertions)]
+            return PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("config.toml");
+            #[cfg(not(debug_assertions))]
+            return PathBuf::from("./config.toml");
+        });
+
+    let config = Config::load(&path).unwrap();
 
     storage::store(config.clone());
 

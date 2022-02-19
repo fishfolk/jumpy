@@ -11,7 +11,7 @@ macroquad = { version = "0.3.10" }
 hecs = "0.7.1"
 serde = { version = "1.0", package = "serde", features = ["derive"] }
 serde_json = { version = "1.0" }
-toml = "0.5.8"
+toml = "0.5"
 async-trait = "0.1.52"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]

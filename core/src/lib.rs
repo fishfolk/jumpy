@@ -13,7 +13,7 @@ mod channel;
 mod transform;
 
 pub use channel::Channel;
-pub use config::{Config, Resolution};
+pub use config::{Config, WindowConfig};
 pub use error::{Error, Result};
 pub use transform::Transform;
 

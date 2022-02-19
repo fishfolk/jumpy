@@ -76,7 +76,7 @@ pub fn collect_local_input(input_scheme: GameInputScheme) -> PlayerInput {
             let input_mapping = {
                 let config = storage::get::<Config>();
                 config
-                    .input_mapping
+                    .input
                     .get_gamepad_mapping(ix.into())
                     .unwrap_or_else(|| ix.into())
             };
@@ -110,9 +110,9 @@ pub fn collect_local_input(input_scheme: GameInputScheme) -> PlayerInput {
             let config = storage::get::<Config>();
 
             if matches!(input_scheme, GameInputScheme::KeyboardRight) {
-                config.input_mapping.keyboard_primary.clone()
+                config.input.keyboard_primary.clone()
             } else {
-                config.input_mapping.keyboard_secondary.clone()
+                config.input.keyboard_secondary.clone()
             }
         };
 

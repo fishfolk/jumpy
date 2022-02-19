@@ -94,10 +94,10 @@ fn window_conf() -> Conf {
 
     Conf {
         window_title: WINDOW_TITLE.to_owned(),
-        high_dpi: config.high_dpi,
-        fullscreen: config.fullscreen,
-        window_width: config.resolution.width,
-        window_height: config.resolution.height,
+        high_dpi: config.window.is_high_dpi,
+        fullscreen: config.window.is_fullscreen,
+        window_width: config.window.width as i32,
+        window_height: config.window.height as i32,
         ..Default::default()
     }
 }

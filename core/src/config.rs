@@ -9,13 +9,9 @@ use crate::Result;
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     #[serde(default)]
-    pub fullscreen: bool,
+    pub window: WindowConfig,
     #[serde(default)]
-    pub high_dpi: bool,
-    #[serde(default)]
-    pub resolution: Resolution,
-    #[serde(default)]
-    pub input_mapping: InputMapping,
+    pub input: InputMapping,
 }
 
 impl Config {
@@ -23,29 +19,35 @@ impl Config {
         let path = path.as_ref();
 
         let mut res = if path.exists() {
-            let file_contents = fs::read_to_string(path)?;
-            serde_json::from_str(&file_contents)?
+            let bytes = fs::read(path)?;
+            toml::from_slice(&bytes)?
         } else {
             Config::default()
         };
 
-        res.input_mapping.verify()?;
+        res.input.verify()?;
 
         Ok(res)
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Resolution {
-    pub width: i32,
-    pub height: i32,
+pub struct WindowConfig {
+    pub width: u32,
+    pub height: u32,
+    #[serde(default, rename = "fullscreen")]
+    pub is_fullscreen: bool,
+    #[serde(default, rename = "high-dpi")]
+    pub is_high_dpi: bool,
 }
 
-impl Default for Resolution {
+impl Default for WindowConfig {
     fn default() -> Self {
-        Resolution {
+        WindowConfig {
             width: 955,
             height: 600,
+            is_fullscreen: false,
+            is_high_dpi: false,
         }
     }
 }

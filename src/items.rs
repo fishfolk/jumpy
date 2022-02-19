@@ -10,10 +10,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     ActiveEffectMetadata, AnimatedSprite, AnimatedSpriteMetadata, CollisionWorld, Drawable,
-    PassiveEffectMetadata, PhysicsBody, QueuedAnimationAction, Resources, Transform,
+    PassiveEffectMetadata, PhysicsBody, QueuedAnimationAction, Resources,
 };
 
-use core::Result;
+use core::{Result, Transform};
 
 use crate::effects::active::spawn_active_effect;
 use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};

@@ -12,7 +12,9 @@ use hecs::World;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{Drawable, DrawableKind, Resources, Transform};
+use core::Transform;
+
+use crate::{Drawable, DrawableKind, Resources};
 
 #[derive(Debug, Clone)]
 pub struct Animation {

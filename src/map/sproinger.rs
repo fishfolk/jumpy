@@ -6,8 +6,9 @@ use std::collections::HashMap;
 use hecs::{Entity, World};
 
 use core::Result;
+use core::Transform;
 
-use crate::{Animation, Drawable, PhysicsBody, QueuedAnimationAction, Resources, Transform};
+use crate::{Animation, Drawable, PhysicsBody, QueuedAnimationAction, Resources};
 
 const SPROINGER_DRAW_ORDER: u32 = 2;
 

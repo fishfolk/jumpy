@@ -11,10 +11,9 @@ use crate::effects::active::triggered::TriggeredEffect;
 use crate::effects::TriggeredEffectTrigger;
 use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::player::{on_player_damage, Player, PlayerState};
-use crate::{
-    CollisionWorld, PhysicsBody, Resources, RigidBody, RigidBodyParams, SpriteMetadata, Transform,
-};
+use crate::{CollisionWorld, PhysicsBody, Resources, RigidBody, RigidBodyParams, SpriteMetadata};
 use crate::{Drawable, PassiveEffectInstance, PassiveEffectMetadata, SpriteParams};
+use core::Transform;
 
 const PROJECTILE_DRAW_ORDER: u32 = 1;
 

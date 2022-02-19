@@ -1,10 +1,14 @@
 use serde::{Deserialize, Serialize};
 
-use crate::input::GameInput;
-use crate::Id;
+use crate::input::PlayerInput;
+
+use super::PlayerId;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum NetworkMessage {
-    UpdatePlayerController { player_id: Id, input: GameInput },
+    UpdatePlayerInput {
+        player_id: PlayerId,
+        input: PlayerInput,
+    },
 }

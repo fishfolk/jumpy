@@ -37,7 +37,7 @@ use crate::items::spawn_item;
 use crate::map::{fixed_update_sproingers, spawn_decoration, spawn_sproinger};
 use crate::network::{
     fixed_update_network_client, fixed_update_network_host, update_network_client,
-    update_network_host, NetworkClient, NetworkHost,
+    update_network_host,
 };
 use crate::particles::{draw_particles, update_particle_emitters};
 pub use music::{start_music, stop_music};
@@ -74,18 +74,20 @@ impl Game {
 
         spawn_map_objects(&mut world, &map).unwrap();
 
-        let mut players = Vec::new();
-        for PlayerParams {
-            index,
-            controller,
-            character,
-        } in player_params.iter().cloned()
-        {
-            let position = map.get_random_spawn_point();
-            let player = spawn_player(&mut world, index, position, controller, character);
-
-            players.push(player);
-        }
+        let players = player_params
+            .iter()
+            .cloned()
+            .map(|params| {
+                let position = map.get_random_spawn_point();
+                spawn_player(
+                    &mut world,
+                    params.index,
+                    position,
+                    params.controller,
+                    params.character,
+                )
+            })
+            .collect();
 
         storage::store(map);
 
@@ -94,18 +96,12 @@ impl Game {
         let mut fixed_updates_builder = Scheduler::builder();
 
         match mode {
-            GameMode::NetworkClient { .. } => {
-                let e = world.spawn(());
-                world.insert_one(e, NetworkClient::new())?;
-
+            GameMode::NetworkClient => {
                 updates_builder.add_system(update_network_client);
 
                 fixed_updates_builder.add_system(fixed_update_network_client);
             }
-            GameMode::NetworkHost { .. } => {
-                let e = world.spawn(());
-                world.insert_one(e, NetworkHost::new())?;
-
+            GameMode::NetworkHost => {
                 updates_builder.add_system(update_network_host);
 
                 fixed_updates_builder.add_system(fixed_update_network_host);
@@ -117,7 +113,7 @@ impl Game {
             .add_system(update_player_controllers)
             .add_system(update_player_camera_box);
 
-        if matches!(mode, GameMode::Local | GameMode::NetworkHost { .. }) {
+        if matches!(mode, GameMode::Local | GameMode::NetworkHost) {
             updates_builder
                 .add_system(update_player_states)
                 .add_system(update_player_inventory)

@@ -9,8 +9,9 @@ use hecs::World;
 use serde::{Deserialize, Serialize};
 
 use core::math::IsZero;
+use core::Transform;
 
-use crate::{AnimatedSpriteMetadata, Resources, Transform};
+use crate::{AnimatedSpriteMetadata, Resources};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ParticleEmitterMetadata {

@@ -3,9 +3,11 @@ use macroquad::prelude::*;
 
 use hecs::{Entity, World};
 
+use core::Transform;
+
 use crate::{
     AnimatedSprite, AnimatedSpriteMetadata, AnimatedSpriteParams, CollisionWorld, Drawable,
-    GameCamera, PassiveEffectInstance, PhysicsBody, Resources, Transform,
+    GameCamera, PassiveEffectInstance, PhysicsBody, Resources,
 };
 
 mod animation;

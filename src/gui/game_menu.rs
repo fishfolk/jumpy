@@ -19,6 +19,7 @@ pub fn open_game_menu() {
                 hash!(),
                 MENU_WIDTH,
                 &[
+                    #[cfg(not(feature = "ultimate"))]
                     MenuEntry {
                         index: GAME_MENU_RESULT_MAIN_MENU,
                         title: "Main Menu".to_string(),

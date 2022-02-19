@@ -11,9 +11,10 @@ use crate::gui::{
 use crate::player::PlayerCharacterMetadata;
 use crate::{
     draw_one_animated_sprite, update_one_animated_sprite, AnimatedSprite, AnimatedSpriteMetadata,
-    Resources, Transform,
+    Resources,
 };
 use core::input::{update_gamepad_context, GameInputScheme};
+use core::Transform;
 
 const SECTION_WIDTH: f32 = 300.0;
 const SECTION_HEIGHT: f32 = 400.0;
@@ -125,17 +126,16 @@ pub async fn show_select_characters_menu(
                         let gamepad_context = storage::get::<GamepadContext>();
                         let gamepad = gamepad_context.gamepad(gamepad_id);
 
-                        #[cfg(not(target_arch = "wasm32"))]
                         if let Some(gamepad) = gamepad {
                             should_navigate_left = can_navigate
-                                && (gamepad.analog_inputs.digital_value(Axis::LeftX) < 0.0
+                                && (gamepad.analog_inputs.digital_value(Axis::LeftStickX) < 0.0
                                     || gamepad.digital_inputs.just_activated(Button::DPadLeft));
 
                             should_navigate_right = can_navigate
-                                && (gamepad.analog_inputs.digital_value(Axis::LeftX) > 0.0
+                                && (gamepad.analog_inputs.digital_value(Axis::LeftStickX) > 0.0
                                     || gamepad.digital_inputs.just_activated(Button::DPadRight));
 
-                            should_confirm = gamepad.digital_inputs.just_activated(Button::A);
+                            should_confirm = gamepad.digital_inputs.just_activated(Button::South);
                         }
                     }
                 }

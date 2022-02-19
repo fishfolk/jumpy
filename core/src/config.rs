@@ -3,25 +3,33 @@ use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 
-use core::Error;
+use crate::input::mapping::InputMapping;
+use crate::Result;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
+    #[serde(default)]
     pub fullscreen: bool,
+    #[serde(default)]
     pub high_dpi: bool,
+    #[serde(default)]
     pub resolution: Resolution,
+    #[serde(default)]
+    pub input_mapping: InputMapping,
 }
 
 impl Config {
-    pub fn load<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
+    pub fn load<P: AsRef<Path>>(path: P) -> Result<Self> {
         let path = path.as_ref();
 
-        let res = if path.exists() {
+        let mut res = if path.exists() {
             let file_contents = fs::read_to_string(path)?;
             serde_json::from_str(&file_contents)?
         } else {
             Config::default()
         };
+
+        res.input_mapping.verify()?;
 
         Ok(res)
     }

@@ -6,13 +6,13 @@ use hecs::{Entity, World};
 use serde::{Deserialize, Serialize};
 
 use core::math::deg_to_rad;
-use core::Result;
+use core::{Result, Transform};
 
 use crate::effects::active::spawn_active_effect;
 use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::physics;
 use crate::player::{Player, PlayerState};
-use crate::{ActiveEffectMetadata, AnimatedSpriteMetadata, CollisionWorld, PhysicsBody, Transform};
+use crate::{ActiveEffectMetadata, AnimatedSpriteMetadata, CollisionWorld, PhysicsBody};
 use crate::{Drawable, PhysicsBodyParams};
 
 const TRIGGERED_EFFECT_DRAW_ORDER: u32 = 5;

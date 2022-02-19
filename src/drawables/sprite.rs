@@ -8,7 +8,9 @@ use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{Resources, Transform};
+use core::Transform;
+
+use crate::Resources;
 
 /// Parameters for `Sprite` component.
 #[derive(Debug, Clone, Serialize, Deserialize)]

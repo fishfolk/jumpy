@@ -126,11 +126,8 @@ pub async fn show_create_map_menu() -> Result<Option<MapResource>> {
                 ui.separator();
                 ui.separator();
 
-                #[cfg(not(target_arch = "wasm32"))]
-                let btn_a = is_gamepad_btn_pressed(Some(&gamepad_system), fishsticks::Button::A);
-
-                #[cfg(target_arch = "wasm32")]
-                let btn_a = false;
+                let btn_a =
+                    is_gamepad_btn_pressed(Some(&gamepad_system), fishsticks::Button::South);
 
                 let enter = is_key_pressed(KeyCode::Enter);
 
@@ -157,11 +154,7 @@ pub async fn show_create_map_menu() -> Result<Option<MapResource>> {
 
                 ui.same_line(0.0);
 
-                #[cfg(not(target_arch = "wasm32"))]
-                let btn_b = is_gamepad_btn_pressed(Some(&gamepad_system), fishsticks::Button::B);
-
-                #[cfg(target_arch = "wasm32")]
-                let btn_b = false;
+                let btn_b = is_gamepad_btn_pressed(Some(&gamepad_system), fishsticks::Button::East);
 
                 let escape = is_key_pressed(KeyCode::Escape);
 

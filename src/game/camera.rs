@@ -1,7 +1,7 @@
 use macroquad::prelude::*;
 use macroquad::rand::gen_range;
 
-use crate::noise::NoiseGenerator;
+use core::noise::NoiseGenerator;
 
 struct Shake {
     direction: (f32, f32),

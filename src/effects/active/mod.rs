@@ -22,7 +22,8 @@ use crate::effects::active::projectiles::{spawn_projectile, ProjectileParams};
 use crate::effects::active::triggered::{spawn_triggered_effect, TriggeredEffect};
 use crate::particles::ParticleEmitterMetadata;
 use crate::player::{on_player_damage, Player};
-use crate::{PhysicsBody, Transform};
+use crate::PhysicsBody;
+use core::Transform;
 pub use projectiles::ProjectileKind;
 
 const COLLIDER_DEBUG_DRAW_TTL: f32 = 0.5;

@@ -1,11 +1,10 @@
-fullscreen = false
-high_dpi = false
-
-[resolution]
+[window]
 width = 955
 height = 600
+fullscreen = false
+high-dpi = false
 
-[input_mapping.keyboard_primary]
+[input.keyboard-primary]
 left = 'Left'
 right = 'Right'
 fire = 'L'
@@ -14,7 +13,7 @@ pickup = 'K'
 crouch = 'Down'
 slide = 'RightControl'
 
-[input_mapping.keyboard_secondary]
+[input.keyboard-secondary]
 left = 'A'
 right = 'D'
 fire = 'V'
@@ -23,7 +22,7 @@ pickup = 'C'
 crouch = 'S'
 slide = 'F'
 
-[[input_mapping.gamepads]]
+[[input.gamepads]]
 id = 0
 fire = 'A'
 jump = 'X'

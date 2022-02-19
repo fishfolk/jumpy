@@ -533,9 +533,15 @@ impl From<&GamepadId> for GamepadMapping {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InputMapping {
-    #[serde(default = "KeyboardMapping::default_primary")]
+    #[serde(
+        default = "KeyboardMapping::default_primary",
+        rename = "keyboard-primary"
+    )]
     pub keyboard_primary: KeyboardMapping,
-    #[serde(default = "KeyboardMapping::default_secondary")]
+    #[serde(
+        default = "KeyboardMapping::default_secondary",
+        rename = "keyboard-secondary"
+    )]
     pub keyboard_secondary: KeyboardMapping,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub gamepads: Vec<GamepadMapping>,

@@ -6,14 +6,13 @@ license = "MIT OR Apache-2.0"
 edition = "2021"
 
 [dependencies]
+fishsticks = { git = "https://github.com/fishfight/fishsticks", default-features = false, features = ["gilrs"] }
 macroquad = { version = "0.3.10" }
 hecs = "0.7.1"
 serde = { version = "1.0", package = "serde", features = ["derive"] }
 serde_json = { version = "1.0" }
 async-trait = "0.1.52"
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-fishsticks = { version = "0.2.0", features = ["bundled-sdl2"] }
-
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-fishsticks = { version = "0.2.0", default-features = false, features = ["gilrs"] }
+getrandom = { version = "0.2", features = ["js"] }
+wasm-bindgen = "0.2.74"

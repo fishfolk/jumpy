@@ -8,7 +8,8 @@ use serde::{Deserialize, Serialize};
 
 use hecs::World;
 
-use crate::{CollisionWorld, Map, Transform};
+use crate::{CollisionWorld, Map};
+use core::Transform;
 
 pub const GRAVITY: f32 = 2.5;
 pub const TERMINAL_VELOCITY: f32 = 10.0;

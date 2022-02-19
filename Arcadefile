@@ -1,0 +1,35 @@
+id: fish-fight
+name: Fish Fight
+logoUrl: /static/images/ship/original.png
+coverImage:
+  original: /static/images/cover/original.jpg
+marketingAssets:
+  - url: /static/images/cover/original.jpg
+    type: Image
+    title: cover
+    description: Cover image
+description: |
+  Fish Fight is a tactical 2D shooter, played online or on a shared screen.
+  Aim either left or right; the rest is up to clever movement and positioning in this fish-on-fish brawler!
+admins:
+  - fllr
+gameplay:
+  rejection: Spectate
+  players:
+    min: 2
+    recommended: 4
+    max: 8
+source:
+  assets: ./game/src/resources/
+  backend:
+    type: Docker
+    dockerfile: ./runner/Dockerfile
+  frontend:
+    type: Unknown
+    pkg: ./client/pkg
+    executable: client
+  sidecar:
+    version: 0.1.0
+fleet:
+  - version: 0.1.0
+    status: public

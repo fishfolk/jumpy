@@ -1,14 +1,15 @@
 use hecs::World;
+
 use macroquad::prelude::*;
 
-use core::Id;
+use core::network::PlayerId;
 
-use core::input::{collect_local_input, GameInput, GameInputScheme};
+use core::input::{collect_local_input, GameInputScheme, PlayerInput};
 
 #[derive(Debug, Clone)]
 pub enum PlayerControllerKind {
     LocalInput(GameInputScheme),
-    Network(Id),
+    Network(PlayerId),
 }
 
 impl PlayerControllerKind {
@@ -57,7 +58,7 @@ impl PlayerController {
         self.should_slide = false;
     }
 
-    pub fn apply_input(&mut self, input: GameInput) {
+    pub fn apply_input(&mut self, input: PlayerInput) {
         self.clear();
 
         if input.left {
@@ -68,7 +69,7 @@ impl PlayerController {
             self.move_direction.x += 1.0;
         }
 
-        self.should_crouch = input.down;
+        self.should_crouch = input.crouch;
         self.should_jump = input.jump;
         self.should_float = input.float;
         self.should_pickup = input.pickup;
@@ -79,14 +80,11 @@ impl PlayerController {
 
 pub fn update_player_controllers(world: &mut World) {
     for (_, controller) in world.query_mut::<&mut PlayerController>() {
-        match &controller.kind {
-            PlayerControllerKind::LocalInput(input_scheme) => {
-                let input = collect_local_input(*input_scheme);
-                controller.apply_input(input);
-            }
-            PlayerControllerKind::Network(_player_id) => {
-                // not implemented
-            }
-        }
+        let input = match &controller.kind {
+            PlayerControllerKind::LocalInput(input_scheme) => collect_local_input(*input_scheme),
+            PlayerControllerKind::Network(_player_id) => PlayerInput::default(),
+        };
+
+        controller.apply_input(input);
     }
 }

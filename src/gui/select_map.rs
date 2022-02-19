@@ -43,35 +43,34 @@ pub async fn show_select_map_menu() -> MapResource {
             (mouse_wheel.1 > 0.0, mouse_wheel.1 < 0.0)
         };
 
-        #[cfg(not(target_arch = "wasm32"))]
         for (_, gamepad) in gamepad_system.gamepads() {
             use fishsticks::{Axis, Button};
 
             up |= gamepad.digital_inputs.just_activated(Button::DPadUp)
                 || matches!(
-                    gamepad.analog_inputs.just_activated_digital(Axis::LeftY),
+                    gamepad.analog_inputs.just_activated_digital(Axis::LeftStickY),
                     Some(value) if value < 0.0
                 );
 
             down |= gamepad.digital_inputs.just_activated(Button::DPadDown)
                 || matches!(
-                    gamepad.analog_inputs.just_activated_digital(Axis::LeftY),
+                    gamepad.analog_inputs.just_activated_digital(Axis::LeftStickY),
                     Some(value) if value > 0.0
                 );
 
             left |= gamepad.digital_inputs.just_activated(Button::DPadLeft)
                 || matches!(
-                    gamepad.analog_inputs.just_activated_digital(Axis::LeftX),
+                    gamepad.analog_inputs.just_activated_digital(Axis::LeftStickX),
                     Some(value) if value < 0.0
                 );
 
             right |= gamepad.digital_inputs.just_activated(Button::DPadRight)
                 || matches!(
-                    gamepad.analog_inputs.just_activated_digital(Axis::LeftX),
+                    gamepad.analog_inputs.just_activated_digital(Axis::LeftStickX),
                     Some(value) if value > 0.0
                 );
 
-            start |= gamepad.digital_inputs.just_activated(Button::A)
+            start |= gamepad.digital_inputs.just_activated(Button::South)
                 || gamepad.digital_inputs.just_activated(Button::Start);
         }
 

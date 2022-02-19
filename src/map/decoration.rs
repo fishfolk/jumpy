@@ -4,8 +4,8 @@ use hecs::{Entity, World};
 
 use serde::{Deserialize, Serialize};
 
-use crate::Transform;
 use crate::{AnimatedSpriteMetadata, Drawable};
+use core::Transform;
 
 const DECORATION_DRAW_ORDER: u32 = 0;
 

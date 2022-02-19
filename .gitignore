@@ -5,5 +5,4 @@ src/.DS_Store
 .DS_Store
 /.idea/
 book/book
-config.json
 .vscode

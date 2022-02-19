@@ -22,15 +22,13 @@ opt-level = 3
 core = { path = "./core", package = "fishfight-core" }
 # ultimate = { path = "../FishFight-ultimate", package = "fishfight-ultimate", optional = true }
 ff-particles = { version = "0.1", features = ["serde"] }
+fishsticks = { git = "https://github.com/fishfight/fishsticks", default-features = false, features = ["gilrs"] }
 macroquad = { version = "0.3.10" }
 macroquad-platformer = "0.1"
 hecs = "0.7.1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-fishsticks = { version = "0.2.0", features = ["bundled-sdl2"] }
-
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-fishsticks = { version = "0.2.0", default-features = false, features = ["gilrs"] }
 wasm-bindgen = "0.2.74"
+

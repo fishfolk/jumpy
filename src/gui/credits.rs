@@ -82,15 +82,9 @@ pub async fn show_game_credits(assets_dir: &str) {
     .unwrap();
 
     loop {
-        #[cfg(not(target_arch = "wasm32"))]
         if is_key_pressed(KeyCode::Escape)
-            || is_gamepad_btn_pressed(Some(&gamepad_context), Button::B)
+            || is_gamepad_btn_pressed(Some(&gamepad_context), Button::East)
         {
-            break;
-        }
-
-        #[cfg(target_arch = "wasm32")]
-        if is_key_pressed(KeyCode::Escape) {
             break;
         }
 

@@ -8,8 +8,6 @@ use macroquad::{
 
 use fishsticks::{Button, GamepadContext};
 
-use core::Id;
-
 use super::{draw_main_menu_background, GuiResources, Menu, MenuEntry, MenuResult, Panel};
 
 use crate::player::{PlayerControllerKind, PlayerParams};
@@ -25,12 +23,7 @@ const LOCAL_GAME_MENU_HEIGHT: f32 = 200.0;
 
 pub enum MainMenuResult {
     LocalGame {
-        map: Map,
-        players: Vec<PlayerParams>,
-    },
-    NetworkGame {
-        is_host: bool,
-        map: Map,
+        map: Box<Map>,
         players: Vec<PlayerParams>,
     },
     Editor {
@@ -46,18 +39,16 @@ pub enum MainMenuResult {
 enum MainMenuState {
     Root(Menu),
     LocalGame,
-    NetworkGame,
     Settings,
     Editor(Menu),
     Credits,
 }
 
 const ROOT_OPTION_LOCAL_GAME: usize = 0;
-const ROOT_OPTION_NETWORK_GAME: usize = 1;
-const ROOT_OPTION_EDITOR: usize = 2;
-const ROOT_OPTION_SETTINGS: usize = 3;
-const ROOT_OPTION_RELOAD_RESOURCES: usize = 4;
-const ROOT_OPTION_CREDITS: usize = 5;
+const ROOT_OPTION_EDITOR: usize = 1;
+const ROOT_OPTION_SETTINGS: usize = 2;
+const ROOT_OPTION_RELOAD_RESOURCES: usize = 3;
+const ROOT_OPTION_CREDITS: usize = 4;
 
 const LOCAL_GAME_OPTION_SUBMIT: usize = 0;
 
@@ -72,19 +63,6 @@ fn build_main_menu() -> Menu {
             MenuEntry {
                 index: ROOT_OPTION_LOCAL_GAME,
                 title: "Local Game".to_string(),
-                ..Default::default()
-            },
-            #[cfg(debug_assertions)]
-            MenuEntry {
-                index: ROOT_OPTION_NETWORK_GAME,
-                title: "Network Game".to_string(),
-                ..Default::default()
-            },
-            #[cfg(not(debug_assertions))]
-            MenuEntry {
-                index: ROOT_OPTION_NETWORK_GAME,
-                title: "Network Game".to_string(),
-                is_disabled: true,
                 ..Default::default()
             },
             MenuEntry {
@@ -168,9 +146,6 @@ pub async fn show_main_menu() -> MainMenuResult {
                         ROOT_OPTION_LOCAL_GAME => {
                             menu_state = MainMenuState::LocalGame;
                         }
-                        ROOT_OPTION_NETWORK_GAME => {
-                            menu_state = MainMenuState::NetworkGame;
-                        }
                         ROOT_OPTION_EDITOR => {
                             menu_state = MainMenuState::Editor(build_editor_menu());
                         }
@@ -221,7 +196,7 @@ pub async fn show_main_menu() -> MainMenuResult {
                             }
 
                             return MainMenuResult::LocalGame {
-                                map: map_resource.map,
+                                map: Box::new(map_resource.map),
                                 players,
                             };
                         }
@@ -230,11 +205,6 @@ pub async fn show_main_menu() -> MainMenuResult {
                         }
                         _ => {}
                     }
-                }
-            }
-            MainMenuState::NetworkGame => {
-                if let Some(res) = network_game_ui(&mut *root_ui(), &mut NetworkUiState::new()) {
-                    return res;
                 }
             }
             MainMenuState::Editor(menu_instance) => {
@@ -277,15 +247,9 @@ fn local_game_ui(ui: &mut ui::Ui, player_input: &mut Vec<GameInputScheme>) -> Op
     } else {
         let gamepad_context = storage::get::<GamepadContext>();
 
-        #[cfg(not(target_arch = "wasm32"))]
         if is_key_pressed(KeyCode::Escape)
-            || is_gamepad_btn_pressed(Some(&gamepad_context), Button::B)
+            || is_gamepad_btn_pressed(Some(&gamepad_context), Button::East)
         {
-            return Some(Menu::CANCEL_INDEX.into());
-        }
-
-        #[cfg(target_arch = "wasm32")]
-        if is_key_pressed(KeyCode::Escape) {
             return Some(Menu::CANCEL_INDEX.into());
         }
     }
@@ -348,63 +312,4 @@ fn local_game_ui(ui: &mut ui::Ui, player_input: &mut Vec<GameInputScheme>) -> Op
     });
 
     None
-}
-
-#[allow(dead_code)]
-struct NetworkUiState {
-    input_scheme: Option<GameInputScheme>,
-}
-
-impl NetworkUiState {
-    pub fn new() -> Self {
-        NetworkUiState { input_scheme: None }
-    }
-}
-
-fn network_game_ui(ui: &mut ui::Ui, _state: &mut NetworkUiState) -> Option<MainMenuResult> {
-    let mut res = None;
-
-    if ui.button(None, "Host") {
-        let resources = storage::get::<Resources>();
-        let map_resource = resources.maps.first().cloned().unwrap();
-        res = Some(MainMenuResult::NetworkGame {
-            is_host: true,
-            map: map_resource.map,
-            players: vec![
-                PlayerParams {
-                    index: 0,
-                    controller: PlayerControllerKind::LocalInput(GameInputScheme::KeyboardLeft),
-                    character: resources.player_characters.get("pescy").cloned().unwrap(),
-                },
-                PlayerParams {
-                    index: 1,
-                    controller: PlayerControllerKind::Network(Id::from("2")),
-                    character: resources.player_characters.get("sharky").cloned().unwrap(),
-                },
-            ],
-        });
-    }
-
-    if ui.button(None, "Join") {
-        let resources = storage::get::<Resources>();
-        let map_resource = resources.maps.first().cloned().unwrap();
-        res = Some(MainMenuResult::NetworkGame {
-            is_host: false,
-            map: map_resource.map,
-            players: vec![
-                PlayerParams {
-                    index: 0,
-                    controller: PlayerControllerKind::Network(Id::from("1")),
-                    character: resources.player_characters.get("pescy").cloned().unwrap(),
-                },
-                PlayerParams {
-                    index: 1,
-                    controller: PlayerControllerKind::LocalInput(GameInputScheme::KeyboardLeft),
-                    character: resources.player_characters.get("sharky").cloned().unwrap(),
-                },
-            ],
-        });
-    }
-
-    res
 }

@@ -2,13 +2,15 @@ use macroquad::prelude::*;
 
 use hecs::{Entity, With, Without, World};
 
+use core::Transform;
+
 use crate::items::{
     fire_weapon, ItemDepleteBehavior, ItemDropBehavior, Weapon, EFFECT_ANIMATED_SPRITE_ID,
     GROUND_ANIMATION_ID, ITEMS_DRAW_ORDER, SPRITE_ANIMATED_SPRITE_ID,
 };
 use crate::particles::ParticleEmitter;
 use crate::player::{Player, PlayerController, PlayerState, IDLE_ANIMATION_ID, PICKUP_GRACE_TIME};
-use crate::{Drawable, Item, Owner, PassiveEffectInstance, PhysicsBody, Transform};
+use crate::{Drawable, Item, Owner, PassiveEffectInstance, PhysicsBody};
 
 const THROW_FORCE: f32 = 5.0;
 

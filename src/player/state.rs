@@ -4,11 +4,13 @@ use macroquad::prelude::*;
 
 use hecs::{Entity, World};
 
+use core::Transform;
+
 use crate::player::{
     Player, PlayerAttributes, PlayerController, PlayerEventQueue, JUMP_SOUND_ID, LAND_SOUND_ID,
     RESPAWN_DELAY,
 };
-use crate::{CollisionWorld, Item, Map, PhysicsBody, PlayerEvent, Resources, Transform};
+use crate::{CollisionWorld, Item, Map, PhysicsBody, PlayerEvent, Resources};
 
 const SLIDE_STOP_THRESHOLD: f32 = 2.0;
 const JUMP_FRAME_COUNT: u16 = 8;

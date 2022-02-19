@@ -3,7 +3,7 @@
 set -e
 
 HELP_STRING=$(cat <<- END
-	usage: build_wasm.sh PROJECT_NAME [--release]
+	usage: build_wasm.sh PROJECT_NAME [--release] [--ultimate]
 
 	Build script for combining a Macroquad project with wasm-bindgen,
 	allowing integration with the greater wasm-ecosystem.
@@ -24,6 +24,7 @@ HELP_STRING=$(cat <<- END
 	Arguments:
 
 	    --release               Build in release mode
+	    --ultimate              Build with ultimate integration
 
 
 	Author: Tom Solberg <me@sbg.dev>
@@ -42,6 +43,7 @@ die () {
 
 # Storage
 RELEASE=no
+ULTIMATE=no
 POSITIONAL=()
 
 # Parse primary commands
@@ -51,6 +53,11 @@ do
     case $key in
         --release)
             RELEASE=yes
+            shift
+            ;;
+
+        --ultimate)
+            ULTIMATE=yes
             shift
             ;;
 
@@ -81,6 +88,10 @@ if [ "$RELEASE" == "yes" ]; then
     TARGET_DIR="$TARGET_DIR/release"
 else
     TARGET_DIR="$TARGET_DIR/debug"
+fi
+
+if [ "$ULTIMATE" == "yes" ]; then
+    EXTRA_ARGS="$EXTRA_ARGS --features ultimate"
 fi
 
 HTML=$(cat <<- END

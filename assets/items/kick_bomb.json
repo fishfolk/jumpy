@@ -51,6 +51,7 @@
             "x": 112,
             "y": 80
           },
+          "collide_with_platforms": true,
           "timed_trigger": 0.7,
           "sprite": {
             "texture": "explosion_small",

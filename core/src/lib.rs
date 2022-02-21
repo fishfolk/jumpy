@@ -7,6 +7,7 @@ pub mod json;
 pub mod math;
 pub mod network;
 pub mod noise;
+pub mod query_builder;
 pub mod text;
 
 mod channel;

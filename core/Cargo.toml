@@ -1,19 +1,20 @@
 [package]
+authors = ["Fish Fight Contributors"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
 name = "fishfight-core"
 version = "0.4.2"
-authors = ["Fish Fight Contributors"]
-license = "MIT OR Apache-2.0"
-edition = "2021"
 
 [dependencies]
-fishsticks = { git = "https://github.com/fishfight/fishsticks", default-features = false, features = ["gilrs"] }
-macroquad = { version = "0.3.10" }
-hecs = "0.7.1"
-serde = { version = "1.0", package = "serde", features = ["derive"] }
-serde_json = { version = "1.0" }
-toml = "0.5"
 async-trait = "0.1.52"
+fishsticks = {git = "https://github.com/fishfight/fishsticks", default-features = false, features = ["gilrs"]}
+hecs = "0.7.1"
+macroquad = {version = "0.3.10"}
+serde = {version = "1.0", package = "serde", features = ["derive"]}
+serde_json = {version = "1.0"}
+tealr = {version = "0.8.2", features = ["mlua", "mlua_vendored", "mlua_luajit", "mlua_serialize", "derive"]}
+toml = "0.5"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-getrandom = { version = "0.2", features = ["js"] }
+getrandom = {version = "0.2", features = ["js"]}
 wasm-bindgen = "0.2.74"

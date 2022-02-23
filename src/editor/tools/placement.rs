@@ -74,6 +74,7 @@ impl EditorTool for TilePlacementTool {
                     .to_world_space(ctx.cursor_position);
                 let coords = map.to_coords(cursor_world_position);
 
+                //Get self surrounding tiles
                 let mut surrounding_tiles: Vec<bool> = vec![];
                 for y in 0..3 {
                     for x in 0..3 {
@@ -90,6 +91,7 @@ impl EditorTool for TilePlacementTool {
                     }
                 }
 
+                //Get bitmask value from self surrounding tiles
                 let mut bitmask = 0;
                 for (i, b) in surrounding_tiles.iter().enumerate() {
                     if *b && i < 4 {
@@ -99,43 +101,14 @@ impl EditorTool for TilePlacementTool {
                     }
                 }
 
-                let mut bitmasks: Vec<u32> = vec![0; tileset.autotile_mask.len() / 9];
-
-                let atmsk_width = (tileset.grid_size.x * tileset.tile_subdivisions.x) as usize;
-                let mut bitmasks_vec: Vec<Vec<bool>> =
-                    vec![vec![]; tileset.autotile_mask.len() / 9];
-
-                let mut trow_off = 0;
-                for i in 0..tileset.autotile_mask.len() / atmsk_width {
-                    if i != 0 && i % 3 == 0 {
-                        trow_off += atmsk_width / 3;
-                    }
-                    let row = tileset.autotile_mask[i * atmsk_width..i * atmsk_width + atmsk_width]
-                        .to_vec();
-
-                    for y in 0..row.len() / 3 {
-                        let tile_row = row[y * 3..y * 3 + 3].to_vec();
-
-                        bitmasks_vec[y + trow_off].extend(tile_row);
-                    }
-                }
-
-                for (n, surrounding_tiles) in bitmasks_vec.iter().enumerate() {
-                    for (i, b) in surrounding_tiles.iter().enumerate() {
-                        if *b && i < 4 {
-                            bitmasks[n] += 2_u32.pow(i as u32);
-                        } else if *b && i > 4 {
-                            bitmasks[n] += 2_u32.pow(i as u32 - 1);
+                if let Some(bitmasks) = &tileset.bitmasks {
+                    for (i, tileset_bitmask) in bitmasks.iter().enumerate() {
+                        if *tileset_bitmask == bitmask && bitmask != 0 {
+                            res = Some(EditorAction::SelectTile {
+                                tileset_id: tileset_id.to_owned(),
+                                id: i as u32,
+                            });
                         }
-                    }
-                }
-
-                for (i, tileset_bitmask) in bitmasks.iter().enumerate() {
-                    if *tileset_bitmask == bitmask && bitmask != 0 {
-                        res = Some(EditorAction::SelectTile {
-                            tileset_id: tileset_id.to_owned(),
-                            id: i as u32,
-                        });
                     }
                 }
             }

@@ -79,14 +79,10 @@ impl EditorTool for TilePlacementTool {
                 for y in 0..3 {
                     for x in 0..3 {
                         if let Some(layer) = &ctx.selected_layer {
-                            if map
-                                .get_tile(layer, coords.x - 1 + x, coords.y - 1 + y)
-                                .is_some()
-                            {
-                                surrounding_tiles.push(true);
-                            } else {
-                                surrounding_tiles.push(false);
-                            }
+                            let is_some = map
+                                .get_tile(layer, coords.x + x - 1, coords.y + y - 1)
+                                .is_some();
+                            surrounding_tiles.push(is_some);
                         }
                     }
                 }
@@ -101,15 +97,20 @@ impl EditorTool for TilePlacementTool {
                     }
                 }
 
+                let mut tile_ids = Vec::new();
                 if let Some(bitmasks) = &tileset.bitmasks {
                     for (i, tileset_bitmask) in bitmasks.iter().enumerate() {
                         if *tileset_bitmask == bitmask && bitmask != 0 {
-                            res = Some(EditorAction::SelectTile {
-                                tileset_id: tileset_id.to_owned(),
-                                id: i as u32,
-                            });
+                            tile_ids.push(i as u32);
                         }
                     }
+                }
+
+                if !tile_ids.is_empty() {
+                    res = Some(EditorAction::SelectTile {
+                        tileset_id: tileset_id.to_owned(),
+                        id: tile_ids[tile_ids.len() - 1],
+                    });
                 }
             }
         }

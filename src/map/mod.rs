@@ -707,12 +707,11 @@ impl MapTileset {
         //Get autotile mask bitmasks
         let tsub_x = self.tile_subdivisions.x as usize;
         let tsub_y = self.tile_subdivisions.y as usize;
-
         let atmsk_width = self.grid_size.x as usize * tsub_x;
 
-        let mut bitmasks: Vec<u32> = vec![0; self.autotile_mask.len() / (tsub_x * tsub_y)];
         let mut bitmasks_vec: Vec<Vec<bool>> =
             vec![vec![]; self.autotile_mask.len() / (tsub_x * tsub_y)];
+        let mut bitmasks: Vec<u32> = vec![0; self.autotile_mask.len() / (tsub_x * tsub_y)];
 
         let mut trow_off = 0;
         for i in 0..self.autotile_mask.len() / atmsk_width {

@@ -78,7 +78,7 @@ jobs:
           cp target/${{ matrix.config.target }}/release/fishfight.exe $release_dir/
           strip $release_dir/fishfight.exe
           find assets -name "*.schema.json" -exec rm -f {} \;
-          cp -R assets/ mods/ $release_dir/
+          cp -R assets/ mods/ licenses/ $release_dir/
           7z a -tzip $artifact_path $release_dir/
 
       - name: Prepare artifacts [Unix]
@@ -92,7 +92,7 @@ jobs:
           cp target/${{ matrix.config.target }}/release/fishfight $release_dir/
           strip $release_dir/fishfight || true
           find assets -name "*.schema.json" -exec rm -f {} \;
-          cp -R assets mods $release_dir
+          cp -R assets mods licenses $release_dir
           tar -czvf $artifact_path $release_dir/
 
       - name: Deploy | Upload artifacts

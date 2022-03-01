@@ -1,6 +1,105 @@
-use macroquad::prelude::*;
-
+use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
+
+pub use num_traits::*;
+
+pub use crate::backend_impl::math::*;
+
+use crate::color::Color;
+use crate::video::VideoMode;
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub struct Size<T: Num> {
+    pub width: T,
+    pub height: T,
+}
+
+impl<T> Size<T> where T: Num {
+    pub fn new(width: T, height: T) -> Self {
+        Size {
+            width,
+            height,
+        }
+    }
+}
+
+impl<T> From<(T, T)> for Size<T> where T: Num + Copy {
+    fn from(tpl: (T, T)) -> Self {
+        Size::new(tpl.0, tpl.1)
+    }
+}
+
+impl<T> From<Size<T>> for (T, T) where T: Num + Copy {
+    fn from(size: Size<T>) -> Self {
+        (size.width, size.height)
+    }
+}
+
+impl<T> From<&[T; 2]> for Size<T> where T: Num + Copy {
+    fn from(slice: &[T; 2]) -> Self {
+    Size::new(slice[0], slice[1])
+}
+}
+
+
+impl<T> From<&Size<T>> for [T; 2] where T: Num + Copy {
+    fn from(size: &Size<T>) -> Self {
+        [size.width, size.height]
+    }
+}
+
+impl From<IVec2> for Size<i32> {
+    fn from(vec: IVec2) -> Self {
+        Size::new(vec.x, vec.y)
+    }
+}
+
+impl From<UVec2> for Size<u32> {
+    fn from(vec: UVec2) -> Self {
+        Size::new(vec.x, vec.y)
+    }
+}
+
+impl From<Vec2> for Size<f32> {
+    fn from(vec: Vec2) -> Self {
+        Size::new(vec.x, vec.y)
+    }
+}
+
+impl From<Size<i32>> for IVec2 {
+    fn from(size: Size<i32>) -> Self {
+        ivec2(size.width, size.height)
+    }
+}
+
+impl From<Size<u32>> for UVec2 {
+    fn from(size: Size<u32>) -> Self {
+        uvec2(size.width, size.height)
+    }
+}
+
+impl From<Size<f32>> for Vec2 {
+    fn from(size: Size<f32>) -> Self {
+        vec2(size.width, size.height)
+    }
+}
+
+cfg_if! {
+    if #[cfg(feature = "internal-backend")] {
+        impl<T> From<winit::dpi::PhysicalSize<T>> for Size<T> where T: Num {
+            fn from(size: winit::dpi::PhysicalSize<T>) -> Self {
+                Size::new(size.width, size.height)
+            }
+        }
+
+        impl<T> From<Size<T>> for winit::dpi::PhysicalSize<T> where T: Num {
+            fn from(size: Size<T>) -> Self {
+                winit::dpi::PhysicalSize::new(size.width, size.height)
+            }
+        }
+    }
+}
+
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct URect {
@@ -143,74 +242,6 @@ impl From<URect> for Rect {
     }
 }
 
-pub fn color_from_hex_string(str: &str) -> Color {
-    let str = if str.starts_with('#') {
-        str[1..str.len()].to_string()
-    } else {
-        str.to_string()
-    };
-
-    let r = u8::from_str_radix(&str[0..2], 16).unwrap();
-    let g = u8::from_str_radix(&str[2..4], 16).unwrap();
-    let b = u8::from_str_radix(&str[4..6], 16).unwrap();
-    let a = if str.len() > 6 {
-        u8::from_str_radix(&str[6..8], 16).unwrap()
-    } else {
-        255
-    };
-
-    Color::new(
-        r as f32 / 255.0,
-        g as f32 / 255.0,
-        b as f32 / 255.0,
-        a as f32 / 255.0,
-    )
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_color_from_hex_string_no_hash() {
-        assert_eq!(
-            color_from_hex_string("12ab6f"),
-            Color::new(
-                18 as f32 / 255.0,
-                171 as f32 / 255.0,
-                111 as f32 / 255.0,
-                255 as f32 / 255.0,
-            )
-        );
-    }
-
-    #[test]
-    fn test_color_from_hex_string_hash() {
-        assert_eq!(
-            color_from_hex_string("#12ab6f"),
-            Color::new(
-                18 as f32 / 255.0,
-                171 as f32 / 255.0,
-                111 as f32 / 255.0,
-                255 as f32 / 255.0,
-            )
-        );
-    }
-
-    #[test]
-    fn test_color_from_hex_string_alpha() {
-        assert_eq!(
-            color_from_hex_string("12ab6fb2"),
-            Color::new(
-                18 as f32 / 255.0,
-                171 as f32 / 255.0,
-                111 as f32 / 255.0,
-                178 as f32 / 255.0,
-            )
-        );
-    }
-}
-
 pub fn rotate_vector(vec: Vec2, rad: f32) -> Vec2 {
     let sa = rad.sin();
     let ca = rad.cos();
@@ -223,27 +254,4 @@ pub fn deg_to_rad(deg: f32) -> f32 {
 
 pub fn rad_to_deg(rad: f32) -> f32 {
     (rad * 180.0) / std::f32::consts::PI
-}
-
-/// Use this in serde tags to skip serialization for zero values
-pub trait IsZero {
-    fn is_zero(&self) -> bool;
-}
-
-impl IsZero for f32 {
-    fn is_zero(&self) -> bool {
-        *self == 0.0
-    }
-}
-
-impl IsZero for u32 {
-    fn is_zero(&self) -> bool {
-        *self == 0
-    }
-}
-
-impl IsZero for Vec2 {
-    fn is_zero(&self) -> bool {
-        *self == Vec2::ZERO
-    }
 }

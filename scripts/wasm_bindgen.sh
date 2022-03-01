@@ -2,36 +2,20 @@
 
 set -e
 
+PROJECT_NAME="fishfight"
+
 HELP_STRING=$(cat <<- END
-	usage: build_wasm.sh PROJECT_NAME [--release] [--ultimate]
+	usage: build_wasm.sh [--release]
 
-	Build script for combining a Macroquad project with wasm-bindgen,
-	allowing integration with the greater wasm-ecosystem.
-
-	example: build_wasm.sh flappy-bird
-
-	This'll go through the following steps:
-
-	    1. Build as target 'wasm32-unknown-unknown'
-	    2. Create the directory 'wbindgen' if it doesn't already exist
-	    3. Run wasm-bindgen with output into the wbindgen directory
-	    4. Apply patches to the output js file (detailed here: https://github.com/not-fl3/macroquad/issues/212#issuecomment-835276147)
-
-	Required arguments:
-
-	    PROJECT_NAME            The name of the artifact/target/project
+	    Run this to run wasm-bindgen and needed fixes on the Macroquad wasm build output
 
 	Arguments:
 
 	    --release               Build in release mode
-	    --ultimate              Build with ultimate integration
 
-
-	Author: Tom Solberg <me@sbg.dev>
-	Version: 0.1
+	Based on the work of Tom Solberg <me@sbg.dev>
 END
 )
-
 
 die () {
     echo >&2 "usage: build_wasm.sh PROJECT_NAME [--release]"
@@ -43,7 +27,6 @@ die () {
 
 # Storage
 RELEASE=no
-ULTIMATE=no
 POSITIONAL=()
 
 # Parse primary commands
@@ -53,11 +36,6 @@ do
     case $key in
         --release)
             RELEASE=yes
-            shift
-            ;;
-
-        --ultimate)
-            ULTIMATE=yes
             shift
             ;;
 
@@ -88,10 +66,6 @@ if [ "$RELEASE" == "yes" ]; then
     TARGET_DIR="$TARGET_DIR/release"
 else
     TARGET_DIR="$TARGET_DIR/debug"
-fi
-
-if [ "$ULTIMATE" == "yes" ]; then
-    EXTRA_ARGS="$EXTRA_ARGS --features ultimate"
 fi
 
 HTML=$(cat <<- END
@@ -135,9 +109,6 @@ HTML=$(cat <<- END
 </html>
 END
 )
-
-# Build
-cargo build --target wasm32-unknown-unknown $EXTRA_ARGS
 
 # Generate bindgen outputs
 mkdir -p web

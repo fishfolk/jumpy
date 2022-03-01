@@ -1,7 +1,4 @@
-use macroquad::{
-    prelude::*,
-    ui::{widgets, Id, Ui},
-};
+use core::prelude::*;
 
 pub trait ComboBoxValue {
     fn get_index(&self) -> usize;

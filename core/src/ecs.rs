@@ -44,6 +44,7 @@ impl SchedulerBuilder {
 }
 
 /// Placeholder until we implement threading
+#[derive(Default, Clone)]
 pub struct Scheduler {
     steps: Vec<SystemFn>,
 }

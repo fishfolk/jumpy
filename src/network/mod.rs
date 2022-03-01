@@ -1,6 +1,8 @@
-//! This module holds the networking core, used
-
 use hecs::World;
+
+pub mod api {
+    pub use ultimate::UltimateApi as Api;
+}
 
 pub fn update_network_client(world: &mut World) {
     update_network_common(world);

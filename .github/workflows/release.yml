@@ -79,6 +79,7 @@ jobs:
           strip $release_dir/fishfight.exe
           find assets -name "*.schema.json" -exec rm -f {} \;
           cp -R assets/ mods/ licenses/ $release_dir/
+          cp LICENSE $release_dir/licenses/
           7z a -tzip $artifact_path $release_dir/
 
       - name: Prepare artifacts [Unix]
@@ -93,6 +94,7 @@ jobs:
           strip $release_dir/fishfight || true
           find assets -name "*.schema.json" -exec rm -f {} \;
           cp -R assets mods licenses $release_dir
+          cp LICENSE $release_dir/licenses
           tar -czvf $artifact_path $release_dir/
 
       - name: Deploy | Upload artifacts

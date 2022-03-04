@@ -1,6 +1,6 @@
 [package]
 name = "fishfight"
-version = "0.4.1"
+version = "0.4.2"
 description = "A tactical 2D shooter"
 authors = ["Fish Fight Contributors"]
 license = "MIT OR Apache-2.0"

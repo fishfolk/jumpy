@@ -176,7 +176,7 @@ dependencies = [
 
 [[package]]
 name = "fishfight"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "ff-particles",
  "fishfight-core",
@@ -191,7 +191,7 @@ dependencies = [
 
 [[package]]
 name = "fishfight-core"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "async-trait",
  "fishsticks",

@@ -194,6 +194,15 @@
     }
   },
   {
+    "id": "player_lionfishy",
+    "path": "textures/player/PlayerLionfishy(96x80).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 96,
+      "y": 80
+    }
+  },
+  {
     "id": "pirate_hat",
     "path": "textures/items/hats/pirate hat.png",
     "type": "spritesheet",

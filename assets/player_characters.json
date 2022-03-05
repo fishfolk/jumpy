@@ -43,5 +43,14 @@
       "x": 0.0,
       "y": 16.0
     }
+  },
+  {
+    "id": "catsharky",
+    "name": "Catsharky",
+    "texture": "player_catsharky",
+    "offset": {
+      "x": 0.0,
+      "y": 16.0
+    }
   }
 ]

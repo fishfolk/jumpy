@@ -203,6 +203,15 @@
     }
   },
   {
+    "id": "player_catty",
+    "path": "textures/player/PlayerCatty(96x80).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 96,
+      "y": 80
+    }
+  },
+  {
     "id": "pirate_hat",
     "path": "textures/items/hats/pirate hat.png",
     "type": "spritesheet",

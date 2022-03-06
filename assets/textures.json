@@ -203,8 +203,8 @@
     }
   },
   {
-    "id": "player_catsharky",
-    "path": "textures/player/PlayerCatSharky(96x80).png",
+    "id": "player_catty",
+    "path": "textures/player/PlayerCatty(96x80).png",
     "type": "spritesheet",
     "sprite_size": {
       "x": 96,

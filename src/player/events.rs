@@ -67,12 +67,7 @@ impl From<&PlayerEvent> for PlayerEventKind {
 }
 
 pub fn update_player_events(world: &mut World) {
-    let query = core::query_builder::BuildStart::new()
-        .with::<&mut Player>()
-        .with::<&mut PlayerEventQueue>()
-        .query_mut(world);
-    for (_, (player, events)) in query {
-        // world.query_mut::<(&mut Player, &mut PlayerEventQueue)>() {
+    for (_, (player, events)) in world.query_mut::<(&mut Player, &mut PlayerEventQueue)>() {
         let dt = get_frame_time();
 
         events.queue.push(PlayerEvent::Update { dt });

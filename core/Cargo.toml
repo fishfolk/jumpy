@@ -8,11 +8,14 @@ version = "0.4.2"
 [dependencies]
 async-trait = "0.1.52"
 fishsticks = {git = "https://github.com/fishfight/fishsticks", default-features = false, features = ["gilrs"]}
-hecs = "0.7.1"
+hecs = {path = "../../hv-dev/hv-ecs"}
+hv-alchemy = {path = "../../hv-dev/hv/crates/hv-alchemy"}
+hv-cell = {path = "../../hv-dev/hv/crates/hv-cell"}
+hv-lua = {path = "../../hv-dev/hv-lua"}#imported so its macro's work
 macroquad = {version = "0.3.10"}
 serde = {version = "1.0", package = "serde", features = ["derive"]}
 serde_json = {version = "1.0"}
-tealr = {version = "0.8.2", features = ["mlua", "mlua_vendored", "mlua_luajit", "mlua_serialize", "derive"]}
+tealr = {path = "../../tealr/tealr", features = ["mlua", "hv_lua", "mlua_macros", "mlua_vendored", "mlua_luajit", "mlua_serialize", "derive"]}
 toml = "0.5"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]

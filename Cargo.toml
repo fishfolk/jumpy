@@ -23,12 +23,13 @@ core = {path = "./core", package = "fishfight-core"}
 # ultimate = { path = "../FishFight-ultimate", package = "fishfight-ultimate", optional = true }
 ff-particles = {version = "0.1", features = ["serde"]}
 fishsticks = {git = "https://github.com/fishfight/fishsticks", default-features = false, features = ["gilrs"]}
-hecs = "0.7.1"
+hecs = {path = "../hv-dev/hv-ecs"}
+hv-lua = {path = "../hv-dev/hv-lua"}#imported so its macro's work
 macroquad = {version = "0.3.10"}
 macroquad-platformer = "0.1"
 serde = {version = "1.0", features = ["derive"]}
 serde_json = "1.0"
-tealr = {version = "0.8.2", features = ["mlua", "mlua_vendored", "mlua_luajit", "mlua_serialize", "derive"]}
+tealr = {path = "../tealr/tealr", features = ["mlua", "hv_lua", "mlua_vendored", "mlua_luajit", "mlua_serialize", "mlua_send", "derive"]}
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "0.2.74"

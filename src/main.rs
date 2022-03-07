@@ -24,6 +24,8 @@ pub mod resources;
 
 pub mod drawables;
 
+mod lua;
+
 pub use drawables::*;
 pub use physics::*;
 
@@ -200,6 +202,9 @@ async fn init_game() -> Result<bool> {
 
 #[macroquad::main(window_conf)]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
+    // println!("Starting embedded lua test");
+    // core::test::test()?;
+    // println!("Ended embedded lua test");
     use events::iter_events;
 
     let assets_dir = env::var(ASSETS_DIR_ENV_VAR).unwrap_or_else(|_| "./assets".to_string());

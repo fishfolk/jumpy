@@ -11,6 +11,7 @@ use macroquad::prelude::*;
 use macroquad::ui::root_ui;
 
 use hecs::{Entity, World};
+use tealr::mlu::mlua::Lua;
 
 use core::input::is_gamepad_btn_pressed;
 use core::Result;
@@ -63,7 +64,6 @@ pub struct Game {
 impl Game {
     pub fn new(mode: GameMode, map: Map, player_params: &[PlayerParams]) -> Result<Game> {
         let mut world = World::default();
-
         {
             let camera = GameCamera::new(map.get_size());
             storage::store(camera);

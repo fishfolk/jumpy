@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use hecs::World;
 
-use crate::{CollisionWorld, Map};
+use crate::{lua::run_event, CollisionWorld, Map, Resources};
 use core::Transform;
 
 pub const GRAVITY: f32 = 2.5;
@@ -187,6 +187,8 @@ pub fn fixed_update_physics_bodies(world: &mut World) {
             transform.position = collision_world.actor_pos(body.actor) - body.offset;
         }
     }
+    let _ = run_event("fixed_update_physics_bodies")
+        .map_err(|v| eprintln!("Ran into an error:\n{}", v));
 }
 
 pub fn debug_draw_physics_bodies(world: &mut World) {

@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fs, path::Path};
+use std::{collections::HashMap, fs, os::unix::prelude::OsStrExt, path::Path};
 
 use macroquad::{
     audio::{load_sound, Sound},
@@ -15,8 +15,8 @@ use core::error::ErrorKind;
 use core::text::ToStringHelper;
 use core::{formaterr, Result};
 
-use crate::gui::GuiResources;
-use crate::map::DecorationMetadata;
+use crate::{gui::GuiResources, lua::init_lua};
+use crate::{lua::load_lua, map::DecorationMetadata};
 
 use crate::player::PlayerCharacterMetadata;
 use crate::{items::MapItemMetadata, map::Map};
@@ -361,13 +361,14 @@ pub struct Resources {
     pub decoration: HashMap<String, DecorationMetadata>,
     pub items: HashMap<String, MapItemMetadata>,
     pub player_characters: HashMap<String, PlayerCharacterMetadata>,
+    pub lua: hv_lua::Lua,
 }
 
 impl Resources {
     pub async fn new<P: AsRef<Path>>(assets_dir: P, mods_dir: P) -> Result<Resources> {
         let assets_dir = assets_dir.as_ref();
         let mods_dir = mods_dir.as_ref();
-
+        let lua = init_lua(mods_dir).unwrap();
         let mut resources = Resources {
             assets_dir: assets_dir.to_string_helper(),
             mods_dir: mods_dir.to_string_helper(),
@@ -381,6 +382,7 @@ impl Resources {
             maps: Vec::new(),
             items: HashMap::new(),
             player_characters: HashMap::new(),
+            lua,
         };
 
         load_resources_from(assets_dir, &mut resources).await?;
@@ -667,8 +669,11 @@ async fn load_mods<P: AsRef<Path>>(mods_dir: P, resources: &mut Resources) -> Re
             }
 
             if !has_unmet_dependencies {
+                let name = mod_dir_path.file_name().unwrap().as_bytes().to_owned();
                 load_resources_from(mod_dir_path, resources).await?;
-
+                if meta.kind == ModKind::Full {
+                    load_lua(name, &resources.lua).unwrap();
+                }
                 #[cfg(debug_assertions)]
                 println!("Loaded mod {} (v{})", &meta.id, &meta.version);
 

@@ -460,6 +460,7 @@ dependencies = [
 [[package]]
 name = "hecs"
 version = "0.7.1"
+source = "git+https://github.com/sdleffler/hv-dev#1ee2ef316a34e5561ace279ec9ca4b5c00621053"
 dependencies = [
  "hashbrown 0.11.2",
  "spin 0.9.2",
@@ -474,6 +475,7 @@ checksum = "8a164bb2ceaeff4f42542bdb847c41517c78a60f5649671b2a07312b6e117549"
 [[package]]
 name = "hv-alchemy"
 version = "0.1.0"
+source = "git+https://github.com/sdleffler/hv-dev#1ee2ef316a34e5561ace279ec9ca4b5c00621053"
 dependencies = [
  "hashbrown 0.11.2",
  "hv-atom",
@@ -486,10 +488,12 @@ dependencies = [
 [[package]]
 name = "hv-atom"
 version = "0.1.0"
+source = "git+https://github.com/sdleffler/hv-dev#1ee2ef316a34e5561ace279ec9ca4b5c00621053"
 
 [[package]]
 name = "hv-cell"
 version = "0.1.0"
+source = "git+https://github.com/sdleffler/hv-dev#1ee2ef316a34e5561ace279ec9ca4b5c00621053"
 dependencies = [
  "hv-guarded-borrow",
 ]
@@ -497,6 +501,7 @@ dependencies = [
 [[package]]
 name = "hv-elastic"
 version = "0.4.1"
+source = "git+https://github.com/sdleffler/hv-dev#1ee2ef316a34e5561ace279ec9ca4b5c00621053"
 dependencies = [
  "hecs",
  "hv-cell",
@@ -509,6 +514,7 @@ dependencies = [
 [[package]]
 name = "hv-guarded-borrow"
 version = "0.1.1"
+source = "git+https://github.com/sdleffler/hv-dev#1ee2ef316a34e5561ace279ec9ca4b5c00621053"
 dependencies = [
  "hecs",
 ]
@@ -516,6 +522,7 @@ dependencies = [
 [[package]]
 name = "hv-lua"
 version = "0.6.6"
+source = "git+https://github.com/sdleffler/hv-dev#1ee2ef316a34e5561ace279ec9ca4b5c00621053"
 dependencies = [
  "bstr",
  "cc",
@@ -542,6 +549,7 @@ dependencies = [
 [[package]]
 name = "hv-lua-derive"
 version = "0.6.0"
+source = "git+https://github.com/sdleffler/hv-dev#1ee2ef316a34e5561ace279ec9ca4b5c00621053"
 dependencies = [
  "itertools",
  "once_cell",
@@ -555,6 +563,7 @@ dependencies = [
 [[package]]
 name = "hv-math"
 version = "0.1.0"
+source = "git+https://github.com/sdleffler/hv-dev#1ee2ef316a34e5561ace279ec9ca4b5c00621053"
 dependencies = [
  "approx",
  "hv-alchemy",
@@ -566,6 +575,7 @@ dependencies = [
 [[package]]
 name = "hv-stampede"
 version = "0.2.1"
+source = "git+https://github.com/sdleffler/hv-dev#1ee2ef316a34e5561ace279ec9ca4b5c00621053"
 dependencies = [
  "bumpalo",
  "spin 0.9.2",
@@ -1546,6 +1556,7 @@ dependencies = [
 [[package]]
 name = "tealr"
 version = "0.8.2"
+source = "git+https://github.com/lenscas/tealr?branch=temporary/feature/add_support_for_hv_lua#5ef6ba2d98b5ca93f1ef5a4d809bc1ad10d1273b"
 dependencies = [
  "bstr",
  "hv-lua",
@@ -1557,6 +1568,7 @@ dependencies = [
 [[package]]
 name = "tealr_derive"
 version = "0.8.2"
+source = "git+https://github.com/lenscas/tealr?branch=temporary/feature/add_support_for_hv_lua#5ef6ba2d98b5ca93f1ef5a4d809bc1ad10d1273b"
 dependencies = [
  "proc-macro2",
  "quote",

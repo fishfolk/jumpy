@@ -1,10 +1,6 @@
-use macroquad::audio::play_sound_once;
-use macroquad::experimental::collections::storage;
-use macroquad::prelude::*;
-
 use hecs::{Entity, World};
 
-use core::Transform;
+use core::prelude::*;
 
 use crate::player::{
     Player, PlayerAttributes, PlayerController, PlayerEventQueue, JUMP_SOUND_ID, LAND_SOUND_ID,
@@ -33,7 +29,7 @@ impl Default for PlayerState {
     }
 }
 
-pub fn update_player_states(world: &mut World) {
+pub fn update_player_states(world: &mut World, delta_time: f32) {
     let query = world.query_mut::<(
         &mut Transform,
         &mut Player,
@@ -43,23 +39,22 @@ pub fn update_player_states(world: &mut World) {
     )>();
     for (_, (transform, player, controller, attributes, body)) in query {
         // Timers
-        let dt = get_frame_time();
+        player.attack_timer -= delta_time;
 
-        player.attack_timer -= dt;
         if player.attack_timer <= 0.0 {
             player.attack_timer = 0.0;
         }
 
         player.is_attacking = player.attack_timer > 0.0;
 
-        player.pickup_grace_timer += dt;
+        player.pickup_grace_timer += delta_time;
 
         if player.state == PlayerState::Crouching && !controller.should_crouch {
             player.state = PlayerState::None;
         }
 
         if player.state == PlayerState::Dead {
-            player.respawn_timer += dt;
+            player.respawn_timer += delta_time;
 
             player.passive_effects.clear();
 
@@ -71,7 +66,7 @@ pub fn update_player_states(world: &mut World) {
                 transform.position = map.get_random_spawn_point();
             }
         } else if player.state == PlayerState::Incapacitated {
-            player.incapacitation_timer += dt;
+            player.incapacitation_timer += delta_time;
 
             if player.incapacitation_timer >= attributes.incapacitation_duration {
                 player.state = PlayerState::None;
@@ -144,10 +139,12 @@ pub fn update_player_states(world: &mut World) {
 
                     player.state = PlayerState::Jumping;
 
-                    let resources = storage::get::<Resources>();
-                    let sound = resources.sounds[JUMP_SOUND_ID];
+                    {
+                        let mut resources = storage::get_mut::<Resources>();
+                        let mut sound = resources.sounds.get_mut(JUMP_SOUND_ID).unwrap();
 
-                    play_sound_once(sound);
+                        play_sound(sound, false);
+                    }
                 } else if player.state == PlayerState::Jumping {
                     player.jump_frame_counter += 1;
 
@@ -181,30 +178,30 @@ pub fn update_player_states(world: &mut World) {
                 player.jump_frame_counter = 0;
                 body.has_mass = true;
 
-                let resources = storage::get::<Resources>();
-                let sound = resources.sounds[LAND_SOUND_ID];
+                {
+                    let mut resources = storage::get_mut::<Resources>();
+                    let mut sound = resources.sounds.get_mut(LAND_SOUND_ID).unwrap();
 
-                play_sound_once(sound);
+                    play_sound(sound, false);
+                }
             }
         }
     }
 }
 
-pub fn update_player_passive_effects(world: &mut World) {
+pub fn update_player_passive_effects(world: &mut World, delta_time: f32) {
     let mut function_calls = Vec::new();
 
     for (entity, (player, events)) in world.query::<(&mut Player, &mut PlayerEventQueue)>().iter() {
-        let dt = get_frame_time();
-
         for effect in &mut player.passive_effects {
-            effect.duration_timer += dt;
+            effect.duration_timer += delta_time;
         }
 
         player
             .passive_effects
             .retain(|effect| !effect.is_depleted());
 
-        events.queue.push(PlayerEvent::Update { dt });
+        events.queue.push(PlayerEvent::Update { dt: delta_time });
 
         for event in events.queue.iter() {
             let kind = event.into();

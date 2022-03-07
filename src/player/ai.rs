@@ -106,14 +106,14 @@ impl Ai {
         }
 
         if self.jump_cooldown >= 0. {
-            self.jump_cooldown -= get_frame_time();
+            self.jump_cooldown -= get_delta_time();
         }
         if self.throw_cooldown >= 0. {
-            self.throw_cooldown -= get_frame_time();
+            self.throw_cooldown -= get_delta_time();
         }
 
         if self.keep_direction_timeout >= 0. {
-            self.keep_direction_timeout -= get_frame_time();
+            self.keep_direction_timeout -= get_delta_time();
         }
 
         if self.throw_cooldown <= 0.0 {

@@ -1,4 +1,8 @@
-use macroquad::{experimental::scene::RefMut, prelude::*};
+use hecs::World;
+use core::prelude::*;
+
+use core::macroquad::experimental::scene::{self, Node, RefMut};
+use core::macroquad::camera::Camera2D;
 
 pub struct EditorCamera {
     pub position: Vec2,
@@ -17,7 +21,8 @@ impl EditorCamera {
     }
 
     pub fn get_view_rect(&self) -> Rect {
-        let size = vec2(screen_width() / self.scale, screen_height() / self.scale);
+        let viewport = get_viewport();
+        let size = vec2(viewport.width / self.scale, viewport.height / self.scale);
         let position = self.position - size / 2.0;
 
         Rect::new(position.x, position.y, size.x, size.y)
@@ -43,12 +48,14 @@ impl EditorCamera {
     }
 }
 
-impl scene::Node for EditorCamera {
-    fn fixed_update(node: RefMut<Self>) {
+impl Node for EditorCamera {
+    fn fixed_update(mut node: RefMut<Self>) {
+        let viewport = get_viewport();
+
         let camera = Some(Camera2D {
             offset: vec2(0.0, 0.0),
             target: vec2(node.position.x.round(), node.position.y.round()),
-            zoom: vec2(node.scale / screen_width(), -node.scale / screen_height()) * 2.0,
+            zoom: vec2(node.scale / viewport.width, -node.scale / viewport.height) * 2.0,
             ..Camera2D::default()
         });
 

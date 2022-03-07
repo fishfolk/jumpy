@@ -1,8 +1,4 @@
-use macroquad::{
-    experimental::collections::storage,
-    prelude::*,
-    ui::{widgets, Ui},
-};
+use core::prelude::*;
 
 use crate::{
     gui::GuiResources,
@@ -14,6 +10,7 @@ use super::{
     ButtonParams, EditorAction, EditorContext, Toolbar, ToolbarElement, ToolbarElementParams,
 };
 use crate::gui::ELEMENT_MARGIN;
+use crate::macroquad::ui::{Ui, widgets};
 
 pub struct LayerListElement {
     params: ToolbarElementParams,
@@ -121,7 +118,7 @@ impl ToolbarElement for LayerListElement {
                     let texture_position =
                         vec2(btn_position.x + half_margin, btn_position.y + half_margin);
 
-                    widgets::Texture::new(texture)
+                    widgets::Texture::new(texture.into())
                         .size(texture_size.x, texture_size.y)
                         .position(texture_position)
                         .ui(ui);

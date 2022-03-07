@@ -1,9 +1,6 @@
-use macroquad::{
-    color::Color,
-    experimental::collections::storage,
-    math::RectOffset,
-    ui::{root_ui, Skin},
-};
+use core::prelude::*;
+use crate::macroquad::color_u8;
+use crate::macroquad::ui::{root_ui, Skin};
 
 use crate::Resources;
 
@@ -212,7 +209,7 @@ impl SkinCollection {
                     BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
                     BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
                 ))
-                .text_color(TEXT_COLOR)
+                .text_color(TEXT_COLOR.into())
                 .font_size(BUTTON_FONT_SIZE as u16)
                 .build();
 
@@ -230,9 +227,9 @@ impl SkinCollection {
                     GROUP_MARGIN_V,
                     GROUP_MARGIN_V,
                 ))
-                .color(NO_COLOR)
-                .color_hovered(NO_COLOR)
-                .color_clicked(NO_COLOR)
+                .color(NO_COLOR.into())
+                .color_hovered(NO_COLOR.into())
+                .color_clicked(NO_COLOR.into())
                 .build();
 
             let label_style = root_ui()
@@ -243,7 +240,7 @@ impl SkinCollection {
                     LABEL_MARGIN_V,
                     LABEL_MARGIN_V,
                 ))
-                .text_color(TEXT_COLOR)
+                .text_color(TEXT_COLOR.into())
                 .font_size(FONT_SIZE as u16)
                 .build();
 
@@ -263,7 +260,7 @@ impl SkinCollection {
                     EDITBOX_MARGIN_V - EDITBOX_BG_MARGIN_V,
                     EDITBOX_MARGIN_V - EDITBOX_BG_MARGIN_V,
                 ))
-                .text_color(TEXT_COLOR)
+                .text_color(TEXT_COLOR.into())
                 .font_size(FONT_SIZE as u16)
                 .build();
 
@@ -289,21 +286,21 @@ impl SkinCollection {
                     COMBOBOX_MARGIN_V - COMBOBOX_BG_MARGIN_V,
                     COMBOBOX_MARGIN_V - COMBOBOX_BG_MARGIN_V,
                 ))
-                .text_color(Color::from_rgba(120, 120, 120, 255))
-                .color(Color::from_rgba(210, 210, 210, 255))
+                .text_color(color_u8!(120, 120, 120, 255).into())
+                .color(color_u8!(210, 210, 210, 255).into())
                 .font_size(FONT_SIZE as u16)
                 .build();
 
             let scrollbar_style = root_ui()
                 .style_builder()
-                .color(Color::from_rgba(38, 43, 68, 255))
+                .color(color_u8!(38, 43, 68, 255).into())
                 .build();
 
             let scrollbar_handle_style = root_ui()
                 .style_builder()
-                .color(Color::from_rgba(38, 43, 68, 255))
-                .color_hovered(Color::from_rgba(58, 68, 102, 255))
-                .color_clicked(Color::from_rgba(38, 43, 68, 255))
+                .color(color_u8!(38, 43, 68, 255).into())
+                .color_hovered(color_u8!(58, 68, 102, 255).into())
+                .color_clicked(color_u8!(38, 43, 68, 255).into())
                 .build();
 
             let scroll_multiplier = 10.0;
@@ -343,7 +340,7 @@ impl SkinCollection {
                 ))
                 .background_hovered(button_background_disabled.image.clone())
                 .background_clicked(button_background_disabled.image.clone())
-                .text_color(Color::from_rgba(88, 88, 88, 255))
+                .text_color(color_u8!(88, 88, 88, 255).into())
                 .font_size(BUTTON_FONT_SIZE as u16)
                 .build();
 
@@ -358,7 +355,7 @@ impl SkinCollection {
                 .style_builder()
                 .margin(RectOffset::new(8.0, 8.0, 4.0, 16.0))
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .text_color(TEXT_COLOR)
+                .text_color(TEXT_COLOR.into())
                 .font_size(HEADER_FONT_SIZE as u16)
                 .build();
 
@@ -379,23 +376,23 @@ impl SkinCollection {
 
             let scrollbar_style = root_ui()
                 .style_builder()
-                .color(NO_COLOR)
-                .color_hovered(NO_COLOR)
-                .color_clicked(NO_COLOR)
+                .color(NO_COLOR.into())
+                .color_hovered(NO_COLOR.into())
+                .color_clicked(NO_COLOR.into())
                 .build();
 
             let scrollbar_handle_style = root_ui()
                 .style_builder()
-                .color(NO_COLOR)
-                .color_hovered(NO_COLOR)
-                .color_clicked(NO_COLOR)
+                .color(NO_COLOR.into())
+                .color_hovered(NO_COLOR.into())
+                .color_clicked(NO_COLOR.into())
                 .build();
 
             let group_style = root_ui()
                 .style_builder()
-                .color(NO_COLOR)
-                .color_hovered(NO_COLOR)
-                .color_clicked(NO_COLOR)
+                .color(NO_COLOR.into())
+                .color_hovered(NO_COLOR.into())
+                .color_clicked(NO_COLOR.into())
                 .build();
 
             Skin {
@@ -427,11 +424,11 @@ impl SkinCollection {
                 .style_builder()
                 .margin(RectOffset::new(0.0, 0.0, 4.0, 4.0))
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .text_color(TEXT_COLOR)
+                .text_color(TEXT_COLOR.into())
                 .font_size(FONT_SIZE as u16)
-                .color(NO_COLOR)
-                .color_hovered(NO_COLOR)
-                .color_clicked(NO_COLOR)
+                .color(NO_COLOR.into())
+                .color_hovered(NO_COLOR.into())
+                .color_clicked(NO_COLOR.into())
                 .build();
 
             Skin {
@@ -445,7 +442,7 @@ impl SkinCollection {
                 .style_builder()
                 .margin(RectOffset::new(8.0, 8.0, 4.0, 4.0))
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .text_color(TEXT_COLOR)
+                .text_color(TEXT_COLOR.into())
                 .font_size(16)
                 .build();
 
@@ -453,21 +450,21 @@ impl SkinCollection {
                 .style_builder()
                 .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .color(Color::from_rgba(58, 68, 68, 255))
-                .color_hovered(Color::from_rgba(58, 68, 102, 255))
-                .color_clicked(Color::from_rgba(58, 68, 68, 255))
+                .color(color_u8!(58, 68, 68, 255).into())
+                .color_hovered(color_u8!(58, 68, 102, 255).into())
+                .color_clicked(color_u8!(58, 68, 68, 255).into())
                 .build();
 
             let scrollbar_style = root_ui()
                 .style_builder()
-                .color(Color::from_rgba(38, 43, 68, 255))
+                .color(color_u8!(38, 43, 68, 255).into())
                 .build();
 
             let scrollbar_handle_style = root_ui()
                 .style_builder()
-                .color(Color::from_rgba(38, 43, 68, 255))
-                .color_hovered(Color::from_rgba(58, 68, 102, 255))
-                .color_clicked(Color::from_rgba(38, 43, 68, 255))
+                .color(color_u8!(38, 43, 68, 255).into())
+                .color_hovered(color_u8!(58, 68, 102, 255).into())
+                .color_clicked(color_u8!(38, 43, 68, 255).into())
                 .build();
 
             Skin {
@@ -484,7 +481,7 @@ impl SkinCollection {
                 .style_builder()
                 .margin(RectOffset::new(8.0, 8.0, 4.0, 4.0))
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .text_color(TEXT_COLOR)
+                .text_color(TEXT_COLOR.into())
                 .font_size(16)
                 .build();
 
@@ -492,9 +489,9 @@ impl SkinCollection {
                 .style_builder()
                 .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .color(Color::from_rgba(58, 68, 102, 255))
-                .color_hovered(Color::from_rgba(58, 68, 102, 255))
-                .color_clicked(Color::from_rgba(58, 68, 102, 255))
+                .color(color_u8!(58, 68, 102, 255).into())
+                .color_hovered(color_u8!(58, 68, 102, 255).into())
+                .color_clicked(color_u8!(58, 68, 102, 255).into())
                 .build();
 
             Skin {
@@ -509,9 +506,9 @@ impl SkinCollection {
                 .style_builder()
                 .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .color(Color::from_rgba(0, 0, 0, 0))
-                .color_hovered(Color::from_rgba(58, 68, 102, 255))
-                .color_clicked(Color::from_rgba(58, 68, 68, 255))
+                .color(color_u8!(0, 0, 0, 0).into())
+                .color_hovered(color_u8!(58, 68, 102, 255).into())
+                .color_clicked(color_u8!(58, 68, 68, 255).into())
                 .build();
 
             Skin {
@@ -525,21 +522,21 @@ impl SkinCollection {
                 .style_builder()
                 .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .color(Color::from_rgba(38, 43, 68, 255))
-                .color_hovered(Color::from_rgba(38, 43, 102, 255))
-                .color_clicked(Color::from_rgba(38, 43, 68, 255))
+                .color(color_u8!(38, 43, 68, 255).into())
+                .color_hovered(color_u8!(38, 43, 102, 255).into())
+                .color_clicked(color_u8!(38, 43, 68, 255).into())
                 .build();
 
             let scrollbar_style = root_ui()
                 .style_builder()
-                .color(Color::from_rgba(0, 0, 0, 0))
+                .color(color_u8!(0, 0, 0, 0).into())
                 .build();
 
             let scrollbar_handle_style = root_ui()
                 .style_builder()
-                .color(Color::from_rgba(0, 0, 0, 0))
-                .color_hovered(Color::from_rgba(0, 0, 0, 0))
-                .color_clicked(Color::from_rgba(0, 0, 0, 0))
+                .color(color_u8!(0, 0, 0, 0).into())
+                .color_hovered(color_u8!(0, 0, 0, 0).into())
+                .color_clicked(color_u8!(0, 0, 0, 0).into())
                 .build();
 
             Skin {
@@ -553,14 +550,14 @@ impl SkinCollection {
         let toolbar = {
             let scrollbar_style = root_ui()
                 .style_builder()
-                .color(Color::from_rgba(38, 43, 68, 255))
+                .color(color_u8!(38, 43, 68, 255).into())
                 .build();
 
             let scrollbar_handle_style = root_ui()
                 .style_builder()
-                .color(Color::from_rgba(58, 68, 68, 255))
-                .color_hovered(Color::from_rgba(58, 68, 102, 255))
-                .color_clicked(Color::from_rgba(58, 68, 68, 255))
+                .color(color_u8!(58, 68, 68, 255).into())
+                .color_hovered(color_u8!(58, 68, 102, 255).into())
+                .color_clicked(color_u8!(58, 68, 68, 255).into())
                 .build();
 
             Skin {
@@ -575,9 +572,9 @@ impl SkinCollection {
                 .style_builder()
                 .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .color(Color::from_rgba(58, 68, 68, 255))
-                .color_hovered(Color::from_rgba(58, 68, 68, 255))
-                .color_clicked(Color::from_rgba(58, 68, 68, 255))
+                .color(color_u8!(58, 68, 68, 255).into())
+                .color_hovered(color_u8!(58, 68, 68, 255).into())
+                .color_clicked(color_u8!(58, 68, 68, 255).into())
                 .build();
 
             Skin {
@@ -591,7 +588,7 @@ impl SkinCollection {
                 .style_builder()
                 .margin(RectOffset::new(8.0, 8.0, 4.0, 4.0))
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .text_color(TEXT_COLOR)
+                .text_color(TEXT_COLOR.into())
                 .font_size(18)
                 .build();
 
@@ -599,9 +596,9 @@ impl SkinCollection {
                 .style_builder()
                 .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .color(Color::from_rgba(38, 43, 68, 255))
-                .color_hovered(Color::from_rgba(38, 43, 68, 255))
-                .color_clicked(Color::from_rgba(38, 43, 68, 255))
+                .color(color_u8!(38, 43, 68, 255).into())
+                .color_hovered(color_u8!(38, 43, 68, 255).into())
+                .color_clicked(color_u8!(38, 43, 68, 255).into())
                 .build();
 
             Skin {
@@ -629,7 +626,7 @@ impl SkinCollection {
                     SMALL_BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
                     SMALL_BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
                 ))
-                .text_color(TEXT_COLOR)
+                .text_color(TEXT_COLOR.into())
                 .font_size(SMALL_BUTTON_FONT_SIZE as u16)
                 .build();
 
@@ -657,7 +654,7 @@ impl SkinCollection {
                     SMALL_BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
                     SMALL_BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
                 ))
-                .text_color(TEXT_COLOR)
+                .text_color(TEXT_COLOR.into())
                 .font_size(SMALL_BUTTON_FONT_SIZE as u16)
                 .build();
 
@@ -670,9 +667,9 @@ impl SkinCollection {
         let tool_selector = {
             let button_style = root_ui()
                 .style_builder()
-                .color(Color::from_rgba(58, 68, 68, 255))
-                .color_hovered(Color::from_rgba(58, 68, 102, 255))
-                .color_clicked(Color::from_rgba(58, 68, 68, 255))
+                .color(color_u8!(58, 68, 68, 255).into())
+                .color_hovered(color_u8!(58, 68, 102, 255).into())
+                .color_clicked(color_u8!(58, 68, 68, 255).into())
                 .build();
 
             Skin {
@@ -686,9 +683,9 @@ impl SkinCollection {
                 .style_builder()
                 .background_margin(RectOffset::new(2.0, 2.0, 2.0, 2.0))
                 .margin(RectOffset::new(6.0, 6.0, 6.0, 6.0))
-                .color(Color::from_rgba(58, 68, 102, 255))
-                .color_hovered(Color::from_rgba(58, 68, 102, 255))
-                .color_clicked(Color::from_rgba(58, 68, 102, 255))
+                .color(color_u8!(58, 68, 102, 255).into())
+                .color_hovered(color_u8!(58, 68, 102, 255).into())
+                .color_clicked(color_u8!(58, 68, 102, 255).into())
                 .build();
 
             Skin {
@@ -702,9 +699,9 @@ impl SkinCollection {
                 .style_builder()
                 .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .color(Color::from_rgba(0, 0, 0, 0))
-                .color_hovered(Color::from_rgba(38, 43, 102, 180))
-                .color_clicked(Color::from_rgba(0, 0, 0, 0))
+                .color(color_u8!(0, 0, 0, 0).into())
+                .color_hovered(color_u8!(38, 43, 102, 180).into())
+                .color_clicked(color_u8!(0, 0, 0, 0).into())
                 .build();
 
             Skin {
@@ -718,9 +715,9 @@ impl SkinCollection {
                 .style_builder()
                 .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .color(Color::from_rgba(38, 43, 68, 180))
-                .color_hovered(Color::from_rgba(38, 43, 68, 180))
-                .color_clicked(Color::from_rgba(38, 43, 68, 180))
+                .color(color_u8!(38, 43, 68, 180).into())
+                .color_hovered(color_u8!(38, 43, 68, 180).into())
+                .color_clicked(color_u8!(38, 43, 68, 180).into())
                 .build();
 
             Skin {
@@ -734,9 +731,9 @@ impl SkinCollection {
                 .style_builder()
                 .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .color(Color::from_rgba(0, 0, 0, 0))
-                .color_hovered(Color::from_rgba(98, 43, 38, 200))
-                .color_clicked(Color::from_rgba(0, 0, 0, 0))
+                .color(color_u8!(0, 0, 0, 0).into())
+                .color_hovered(color_u8!(98, 43, 38, 200).into())
+                .color_clicked(color_u8!(0, 0, 0, 0).into())
                 .build();
 
             Skin {
@@ -750,9 +747,9 @@ impl SkinCollection {
                 .style_builder()
                 .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
-                .color(Color::from_rgba(98, 43, 38, 200))
-                .color_hovered(Color::from_rgba(98, 43, 38, 200))
-                .color_clicked(Color::from_rgba(98, 43, 38, 200))
+                .color(color_u8!(98, 43, 38, 200).into())
+                .color_hovered(color_u8!(98, 43, 38, 200).into())
+                .color_clicked(color_u8!(98, 43, 38, 200).into())
                 .build();
 
             Skin {
@@ -766,7 +763,7 @@ impl SkinCollection {
         let menu_header = {
             let label_style = root_ui()
                 .style_builder()
-                .text_color(TEXT_COLOR)
+                .text_color(TEXT_COLOR.into())
                 .font_size(HEADER_FONT_SIZE as u16)
                 .build();
 
@@ -794,7 +791,7 @@ impl SkinCollection {
                 .background(button_background_hovered.image.clone())
                 .background_hovered(button_background_hovered.image.clone())
                 .background_clicked(button_background_clicked.image.clone())
-                .text_color(TEXT_COLOR)
+                .text_color(TEXT_COLOR.into())
                 .font_size(BUTTON_FONT_SIZE as u16)
                 .build();
 
@@ -822,7 +819,7 @@ impl SkinCollection {
                 .background(button_background_disabled.image.clone())
                 .background_hovered(button_background_disabled.image.clone())
                 .background_clicked(button_background_disabled.image.clone())
-                .text_color(TEXT_COLOR)
+                .text_color(TEXT_COLOR.into())
                 .font_size(BUTTON_FONT_SIZE as u16)
                 .build();
 
@@ -835,9 +832,9 @@ impl SkinCollection {
         let panel = {
             let group_style = root_ui()
                 .style_builder()
-                .color(NO_COLOR)
-                .color_hovered(NO_COLOR)
-                .color_clicked(NO_COLOR)
+                .color(NO_COLOR.into())
+                .color_hovered(NO_COLOR.into())
+                .color_clicked(NO_COLOR.into())
                 .build();
 
             let button_style = root_ui()
@@ -858,9 +855,9 @@ impl SkinCollection {
         let panel_no_bg = {
             let group_style = root_ui()
                 .style_builder()
-                .color(NO_COLOR)
-                .color_hovered(NO_COLOR)
-                .color_clicked(NO_COLOR)
+                .color(NO_COLOR.into())
+                .color_hovered(NO_COLOR.into())
+                .color_clicked(NO_COLOR.into())
                 .build();
 
             let button_style = root_ui()
@@ -886,7 +883,7 @@ impl SkinCollection {
                 .margin(RectOffset::new(-40.0, -40.0, -40.0, -40.0))
                 .background_hovered(window_border.image.clone())
                 .background_clicked(window_border.image.clone())
-                .text_color(TEXT_COLOR)
+                .text_color(TEXT_COLOR.into())
                 .reverse_background_z(true)
                 .font_size(45)
                 .build();

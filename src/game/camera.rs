@@ -1,6 +1,4 @@
-use macroquad::prelude::*;
-use macroquad::rand::gen_range;
-
+use core::prelude::*;
 use core::noise::NoiseGenerator;
 
 struct Shake {
@@ -62,7 +60,7 @@ impl GameCamera {
             magnitude,
             length: length as f32,
             age: 0.0,
-            random_offset: rand::gen_range(1.0, 100.0),
+            random_offset: core::rand::gen_range(1.0, 100.0),
             frequency,
         });
     }
@@ -80,7 +78,7 @@ impl GameCamera {
             magnitude,
             length: length as f32,
             age: 0.0,
-            random_offset: rand::gen_range(1.0, 100.0),
+            random_offset: core::rand::gen_range(1.0, 100.0),
             frequency,
         });
     }
@@ -101,7 +99,7 @@ impl GameCamera {
         self.shake.push(Shake {
             direction: (1.0, 1.0),
             kind: ShakeType::Rotational,
-            magnitude: magnitude * (gen_range(0, 2) as f32 - 0.5) * 2.0,
+            magnitude: magnitude * (core::rand::gen_range(0, 2) as f32 - 0.5) * 2.0,
             length: length as f32,
             age: 0.0,
             random_offset: 0.0,
@@ -168,7 +166,7 @@ impl GameCamera {
 
     pub fn update(&mut self) {
         {
-            let aspect = screen_width() / screen_height();
+            let aspect = get_viewport().aspect_ratio();
 
             let mut middle_point = vec2(0.0, 0.0);
             let mut min = vec2(10000.0, 10000.0);
@@ -226,17 +224,26 @@ impl GameCamera {
         middle_point += shake.0;
         let rotation = shake.1;
 
-        let aspect = screen_width() / screen_height();
+        let aspect = get_viewport().aspect_ratio();
 
-        // let middle_point = vec2(400.0, 600.0);
-        // let zoom = 400.0;
-        let macroquad_camera = Camera2D {
-            target: middle_point,
-            zoom: vec2(1. / aspect, -1.0) / zoom * 2.0,
-            rotation,
-            ..Camera2D::default()
-        };
+        cfg_if! {
+            if #[cfg(feature = "ultimate")] {
+                unimplemented!("Camera not implemented!")
+            } else {
+                use crate::macroquad::camera::Camera2D;
+                use crate::macroquad::experimental::scene;
 
-        scene::set_camera(0, Some(macroquad_camera));
+                // let middle_point = vec2(400.0, 600.0);
+                // let zoom = 400.0;
+                let macroquad_camera = Camera2D {
+                    target: middle_point,
+                    zoom: vec2(1. / aspect, -1.0) / zoom * 2.0,
+                    rotation,
+                    ..Camera2D::default()
+                };
+
+                scene::set_camera(0, Some(macroquad_camera));
+            }
+        }
     }
 }

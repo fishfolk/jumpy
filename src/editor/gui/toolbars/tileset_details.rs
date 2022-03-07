@@ -1,12 +1,9 @@
-use macroquad::{
-    experimental::collections::storage,
-    prelude::*,
-    ui::{widgets, Ui},
-};
+use core::prelude::*;
 
 use super::{EditorAction, EditorContext, GuiResources, Map, ToolbarElement, ToolbarElementParams};
 
 use crate::{gui::ELEMENT_MARGIN, Resources};
+use crate::macroquad::ui::{Ui, widgets};
 
 pub struct TilesetDetailsElement {
     params: ToolbarElementParams,
@@ -55,12 +52,14 @@ impl ToolbarElement for TilesetDetailsElement {
             let grid_size = vec2(tileset.grid_size.x as f32, tileset.grid_size.y as f32);
 
             let scaled_width = size.x;
+            let texture_size = texture_entry.texture.size();
+
             let scaled_height =
-                (scaled_width / texture_entry.texture.width()) * texture_entry.texture.height();
+                (scaled_width / texture_size.width) * texture_size.height;
 
             let scaled_tile_size = vec2(scaled_width / grid_size.x, scaled_height / grid_size.y);
 
-            widgets::Texture::new(texture_entry.texture)
+            widgets::Texture::new(texture_entry.texture.into())
                 .position(position)
                 .size(scaled_width, scaled_height)
                 .ui(ui);

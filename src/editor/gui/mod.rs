@@ -4,11 +4,9 @@ pub mod context_menu;
 pub mod toolbars;
 pub mod windows;
 
-pub mod combobox;
-
 mod editor_menu;
 
-pub use combobox::{ComboBoxBuilder, ComboBoxValue};
+pub use crate::gui::combobox::{ComboBoxBuilder, ComboBoxValue};
 
 pub use editor_menu::{
     close_editor_menu, draw_editor_menu, is_editor_menu_open, open_editor_menu, toggle_editor_menu,
@@ -16,12 +14,7 @@ pub use editor_menu::{
     EDITOR_MENU_RESULT_QUIT, EDITOR_MENU_RESULT_SAVE, EDITOR_MENU_RESULT_SAVE_AS,
 };
 
-use macroquad::{
-    experimental::collections::storage,
-    hash,
-    prelude::*,
-    ui::{root_ui, widgets},
-};
+use core::prelude::*;
 
 use super::{EditorAction, EditorContext};
 
@@ -43,6 +36,8 @@ pub use windows::{
 use crate::gui::{BUTTON_FONT_SIZE, BUTTON_MARGIN_V, WINDOW_MARGIN_H, WINDOW_MARGIN_V};
 use crate::map::MapLayerKind;
 use context_menu::{ContextMenu, ContextMenuEntry};
+use crate::macroquad::hash;
+use crate::macroquad::ui::{root_ui, widgets};
 
 #[derive(Debug, Default, Clone)]
 pub struct ButtonParams {

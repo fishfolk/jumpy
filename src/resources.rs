@@ -1,21 +1,19 @@
 use std::{collections::HashMap, fs, path::Path};
 
-use macroquad::{
-    audio::{load_sound, Sound},
-    experimental::{collections::storage, coroutines::start_coroutine},
-    prelude::*,
-};
-
-use ff_particles::EmitterConfig;
+use core::particles::EmitterConfig;
 
 use serde::{Deserialize, Serialize};
 
-use core::data::{deserialize_json_bytes, deserialize_json_file};
-use core::error::ErrorKind;
-use core::text::ToStringHelper;
-use core::{formaterr, Result};
+use core::prelude::*;
+use core::audio::load_sound_file;
+use core::parsing::{deserialize_json_bytes, load_json_file};
+use core::error::{Result, ErrorKind};
+use core::texture::{Texture2D, TextureFilterMode, load_texture_file};
+use core::formaterr;
 
+#[cfg(not(feature = "ultimate"))]
 use crate::gui::GuiResources;
+
 use crate::map::DecorationMetadata;
 
 use crate::player::PlayerCharacterMetadata;
@@ -76,13 +74,10 @@ pub struct TextureMetadata {
         skip_serializing_if = "Option::is_none"
     )]
     pub frame_size: Option<Vec2>,
-    #[serde(
-        default = "core::json::default_filter_mode",
-        with = "core::json::FilterModeDef"
-    )]
-    pub filter_mode: FilterMode,
-    #[serde(default, skip)]
-    pub size: Vec2,
+    #[serde(default = "TextureFilterMode::default")]
+    pub filter_mode: TextureFilterMode,
+    #[serde(default = "TextureFormat::default")]
+    pub format: TextureFormat,
 }
 
 #[derive(Debug, Clone)]
@@ -93,19 +88,7 @@ pub struct TextureResource {
 
 impl TextureResource {
     pub fn frame_size(&self) -> Vec2 {
-        self.meta.frame_size.unwrap_or(self.meta.size)
-    }
-}
-
-impl From<&TextureResource> for Texture2D {
-    fn from(res: &TextureResource) -> Self {
-        res.texture
-    }
-}
-
-impl From<TextureResource> for Texture2D {
-    fn from(res: TextureResource) -> Self {
-        res.texture
+        self.meta.frame_size.unwrap_or_else(|| self.texture.size().into())
     }
 }
 
@@ -117,9 +100,10 @@ pub struct ImageMetadata {
     pub size: Vec2,
 }
 
+#[cfg(not(feature = "ultimate"))]
 #[derive(Debug, Clone)]
 pub struct ImageResource {
-    pub image: Image,
+    pub image: crate::macroquad::texture::Image,
     pub meta: ImageMetadata,
 }
 
@@ -152,13 +136,13 @@ async fn load_resources_from<P: AsRef<Path>>(path: P, resources: &mut Resources)
             .join(PARTICLE_EFFECTS_DIR)
             .with_extension(RESOURCE_FILES_EXTENSION);
 
-        if let Ok(bytes) = load_file(&particle_effects_file_path.to_string_helper()).await {
+        if let Ok(bytes) = load_file(&particle_effects_file_path).await {
             let metadata: Vec<ParticleEffectMetadata> = deserialize_json_bytes(&bytes)?;
 
             for meta in metadata {
                 let file_path = path.join(&meta.path);
 
-                let cfg: EmitterConfig = deserialize_json_file(&file_path).await?;
+                let cfg: EmitterConfig = load_json_file(&file_path).await?;
 
                 resources.particle_effects.insert(meta.id, cfg);
             }
@@ -170,13 +154,13 @@ async fn load_resources_from<P: AsRef<Path>>(path: P, resources: &mut Resources)
             .join(SOUNDS_FILE)
             .with_extension(RESOURCE_FILES_EXTENSION);
 
-        if let Ok(bytes) = load_file(&sounds_file_path.to_string_helper()).await {
+        if let Ok(bytes) = load_file(&sounds_file_path).await {
             let metadata: Vec<SoundMetadata> = deserialize_json_bytes(&bytes)?;
 
             for meta in metadata {
                 let file_path = path.join(meta.path);
 
-                let sound = load_sound(&file_path.to_string_helper()).await?;
+                let sound = load_sound_file(&file_path).await?;
 
                 resources.sounds.insert(meta.id, sound);
             }
@@ -188,13 +172,13 @@ async fn load_resources_from<P: AsRef<Path>>(path: P, resources: &mut Resources)
             .join(MUSIC_FILE)
             .with_extension(RESOURCE_FILES_EXTENSION);
 
-        if let Ok(bytes) = load_file(&music_file_path.to_string_helper()).await {
+        if let Ok(bytes) = load_file(&music_file_path).await {
             let metadata: Vec<SoundMetadata> = deserialize_json_bytes(&bytes)?;
 
             for meta in metadata {
                 let file_path = path.join(meta.path);
 
-                let sound = load_sound(&file_path.to_string_helper()).await?;
+                let sound = load_sound_file(&file_path).await?;
 
                 resources.music.insert(meta.id, sound);
             }
@@ -206,20 +190,15 @@ async fn load_resources_from<P: AsRef<Path>>(path: P, resources: &mut Resources)
             .join(TEXTURES_FILE)
             .with_extension(RESOURCE_FILES_EXTENSION);
 
-        if let Ok(bytes) = load_file(&textures_file_path.to_string_helper()).await {
+        if let Ok(bytes) = load_file(&textures_file_path).await {
             let metadata: Vec<TextureMetadata> = deserialize_json_bytes(&bytes)?;
 
             for meta in metadata {
                 let file_path = path.join(&meta.path);
 
-                let texture = load_texture(&file_path.to_string_helper()).await?;
-                texture.set_filter(meta.filter_mode);
-
-                let size = vec2(texture.width(), texture.height());
+                let texture = load_texture_file(&file_path, meta.format, meta.filter_mode).await?;
 
                 let key = meta.id.clone();
-
-                let meta = TextureMetadata { size, ..meta };
 
                 #[cfg(debug_assertions)]
                 if meta.frame_size.is_none()
@@ -232,25 +211,29 @@ async fn load_resources_from<P: AsRef<Path>>(path: P, resources: &mut Resources)
                     );
                 }
 
-                let res = TextureResource { texture, meta };
+                let res = TextureResource {
+                    texture,
+                    meta,
+                };
 
                 resources.textures.insert(key, res);
             }
         }
     }
 
+    #[cfg(not(feature = "ultimate"))]
     {
         let images_file_path = path
             .join(IMAGES_FILE)
             .with_extension(RESOURCE_FILES_EXTENSION);
 
-        if let Ok(bytes) = load_file(&images_file_path.to_string_helper()).await {
+        if let Ok(bytes) = load_file(&images_file_path).await {
             let metadata: Vec<ImageMetadata> = deserialize_json_bytes(&bytes)?;
 
             for meta in metadata {
                 let file_path = path.join(&meta.path);
 
-                let image = load_image(&file_path.to_string_helper()).await?;
+                let image = core::macroquad::texture::load_image(&file_path.to_string_lossy()).await?;
 
                 let key = meta.id.clone();
 
@@ -271,7 +254,7 @@ async fn load_resources_from<P: AsRef<Path>>(path: P, resources: &mut Resources)
             .join(MAPS_FILE)
             .with_extension(RESOURCE_FILES_EXTENSION);
 
-        if let Ok(bytes) = load_file(&maps_file_path.to_string_helper()).await {
+        if let Ok(bytes) = load_file(&maps_file_path).await {
             let metadata: Vec<MapMetadata> = deserialize_json_bytes(&bytes)?;
 
             for meta in metadata {
@@ -284,7 +267,7 @@ async fn load_resources_from<P: AsRef<Path>>(path: P, resources: &mut Resources)
                     Map::load(map_path).await?
                 };
 
-                let preview = load_texture(&preview_path.to_string_helper()).await?;
+                let preview = load_texture_file(&preview_path, TextureFormat::Png, TextureFilterMode::Nearest).await?;
 
                 let res = MapResource { map, preview, meta };
 
@@ -298,13 +281,13 @@ async fn load_resources_from<P: AsRef<Path>>(path: P, resources: &mut Resources)
             .join(DECORATION_FILE)
             .with_extension(RESOURCE_FILES_EXTENSION);
 
-        if let Ok(bytes) = load_file(&decoration_file_path.to_string_helper()).await {
+        if let Ok(bytes) = load_file(&decoration_file_path).await {
             let decoration_paths: Vec<String> = deserialize_json_bytes(&bytes)?;
 
             for decoration_path in decoration_paths {
                 let path = path.join(&decoration_path);
 
-                let params: DecorationMetadata = deserialize_json_file(&path).await?;
+                let params: DecorationMetadata = load_json_file(&path).await?;
 
                 resources.decoration.insert(params.id.clone(), params);
             }
@@ -316,13 +299,13 @@ async fn load_resources_from<P: AsRef<Path>>(path: P, resources: &mut Resources)
             .join(ITEMS_FILE)
             .with_extension(RESOURCE_FILES_EXTENSION);
 
-        if let Ok(bytes) = load_file(&items_file_path.to_string_helper()).await {
+        if let Ok(bytes) = load_file(&items_file_path).await {
             let item_paths: Vec<String> = deserialize_json_bytes(&bytes)?;
 
             for item_path in item_paths {
                 let path = path.join(&item_path);
 
-                let params: MapItemMetadata = deserialize_json_file(&path).await?;
+                let params: MapItemMetadata = load_json_file(&path).await?;
 
                 resources.items.insert(params.id.clone(), params);
             }
@@ -334,7 +317,7 @@ async fn load_resources_from<P: AsRef<Path>>(path: P, resources: &mut Resources)
             .join(PLAYER_CHARACTERS_FILE)
             .with_extension(RESOURCE_FILES_EXTENSION);
 
-        if let Ok(bytes) = load_file(&path.to_string_helper()).await {
+        if let Ok(bytes) = load_file(&path).await {
             let metadata: Vec<PlayerCharacterMetadata> = deserialize_json_bytes(&bytes)?;
 
             for meta in metadata {
@@ -356,6 +339,7 @@ pub struct Resources {
     pub sounds: HashMap<String, Sound>,
     pub music: HashMap<String, Sound>,
     pub textures: HashMap<String, TextureResource>,
+    #[cfg(not(feature = "ultimate"))]
     pub images: HashMap<String, ImageResource>,
     pub maps: Vec<MapResource>,
     pub decoration: HashMap<String, DecorationMetadata>,
@@ -369,14 +353,15 @@ impl Resources {
         let mods_dir = mods_dir.as_ref();
 
         let mut resources = Resources {
-            assets_dir: assets_dir.to_string_helper(),
-            mods_dir: mods_dir.to_string_helper(),
+            assets_dir: assets_dir.to_string_lossy().to_string(),
+            mods_dir: mods_dir.to_string_lossy().to_string(),
             loaded_mods: Vec::new(),
             particle_effects: HashMap::new(),
             sounds: HashMap::new(),
             music: HashMap::new(),
             textures: HashMap::new(),
             decoration: HashMap::new(),
+            #[cfg(not(feature = "ultimate"))]
             images: HashMap::new(),
             maps: Vec::new(),
             items: HashMap::new(),
@@ -403,15 +388,13 @@ impl Resources {
             .join(map_name_to_filename(name))
             .with_extension(MAP_EXPORTS_EXTENSION);
 
-        let path = map_path.to_string_helper();
-
-        let preview_path = Path::new(MAP_PREVIEW_PLACEHOLDER_PATH).to_string_helper();
+        let preview_path = Path::new(MAP_PREVIEW_PLACEHOLDER_PATH);
 
         let meta = MapMetadata {
             name: name.to_string(),
             description,
-            path,
-            preview_path,
+            path: map_path.to_string_lossy().to_string(),
+            preview_path: preview_path.to_string_lossy().to_string(),
             is_tiled_map: false,
             is_user_map: true,
         };
@@ -503,7 +486,7 @@ pub fn is_valid_map_export_path<P: AsRef<Path>>(path: P, should_overwrite: bool)
     let path = path.as_ref();
 
     if let Some(file_name) = path.file_name() {
-        if is_valid_map_file_name(&file_name.to_string_helper()) {
+        if is_valid_map_file_name(&file_name.to_string_lossy().to_string()) {
             let resources = storage::get::<Resources>();
 
             let res = resources
@@ -522,52 +505,13 @@ pub fn is_valid_map_export_path<P: AsRef<Path>>(path: P, should_overwrite: bool)
     false
 }
 
-#[cfg(target_arch = "wasm32")]
 pub async fn load_resources(assets_dir: &str, mods_dir: &str) -> Result<()> {
     {
         let resources = Resources::new(assets_dir, mods_dir).await?;
         storage::store(resources);
     }
 
-    {
-        let gui_resources = GuiResources::new();
-        storage::store(gui_resources);
-    }
-
-    Ok(())
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-pub async fn load_resources(assets_dir: &str, mods_dir: &str) -> Result<()> {
-    let assets_loading = start_coroutine({
-        let assets_dir = assets_dir.to_string();
-        let mods_dir = mods_dir.to_string();
-        async move {
-            let resources = match Resources::new(&assets_dir, &mods_dir).await {
-                Ok(val) => val,
-                Err(err) => panic!("{}: {}", err.kind().as_str(), err),
-            };
-
-            storage::store(resources);
-        }
-    });
-
-    while !assets_loading.is_done() {
-        clear_background(BLACK);
-        draw_text(
-            &format!(
-                "Loading assets {}",
-                ".".repeat(((get_time() * 2.0) as usize) % 4)
-            ),
-            screen_width() / 2.0 - 160.0,
-            screen_height() / 2.0,
-            40.,
-            WHITE,
-        );
-
-        next_frame().await;
-    }
-
+    #[cfg(not(feature = "ultimate"))]
     {
         let gui_resources = GuiResources::new();
         storage::store(gui_resources);
@@ -619,7 +563,7 @@ async fn load_mods<P: AsRef<Path>>(mods_dir: P, resources: &mut Resources) -> Re
         .join(ACTIVE_MODS_FILE_NAME)
         .with_extension(RESOURCE_FILES_EXTENSION);
 
-    let mod_dirs: Vec<String> = deserialize_json_file(active_mods_file_path).await?;
+    let mod_dirs: Vec<String> = load_json_file(active_mods_file_path).await?;
 
     for mod_dir in mod_dirs.iter() {
         let mod_dir_path = mods_dir.join(mod_dir);
@@ -628,7 +572,7 @@ async fn load_mods<P: AsRef<Path>>(mods_dir: P, resources: &mut Resources) -> Re
             .join(MOD_FILE_NAME)
             .with_extension(RESOURCE_FILES_EXTENSION);
 
-        let meta: ModMetadata = deserialize_json_file(mod_file_path).await?;
+        let meta: ModMetadata = load_json_file(mod_file_path).await?;
 
         let mut has_game_version_mismatch = false;
 

@@ -1,10 +1,10 @@
+use core::prelude::*;
+
 use crate::editor::EditorContext;
-use macroquad::{
-    prelude::*,
-    ui::{hash, Ui},
-};
 
 use crate::gui::{Menu, MenuEntry, MenuResult};
+use crate::macroquad::hash;
+use crate::macroquad::ui::Ui;
 
 const MENU_WIDTH: f32 = 300.0;
 

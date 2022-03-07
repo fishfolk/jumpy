@@ -1,10 +1,8 @@
 use std::ops::Deref;
 
-use macroquad::{
-    experimental::collections::storage,
-    prelude::*,
-    ui::{widgets, Id, Ui},
-};
+use core::prelude::*;
+
+use core::macroquad::ui::{Id, Ui, widgets};
 
 use crate::gui::{GuiResources, ELEMENT_MARGIN};
 

@@ -1,6 +1,6 @@
 use std::any::TypeId;
 
-use macroquad::{prelude::*, ui::Ui};
+use core::prelude::*;
 
 mod confirm_dialog;
 mod create_tileset;
@@ -28,6 +28,7 @@ pub use object_properties::ObjectPropertiesWindow;
 pub use save_map::SaveMapWindow;
 pub use tile_properties::TilePropertiesWindow;
 pub use tileset_properties::TilesetPropertiesWindow;
+use crate::macroquad::ui::Ui;
 
 use super::{ButtonParams, EditorAction, EditorContext, Map};
 
@@ -44,7 +45,8 @@ impl WindowPosition {
     pub fn to_absolute(&self, size: Vec2) -> Vec2 {
         match self {
             WindowPosition::Centered => {
-                let screen_size = vec2(screen_width(), screen_height());
+                let viewport = get_viewport();
+                let screen_size = vec2(viewport.width, viewport.height);
                 (screen_size - size) / 2.0
             }
             WindowPosition::Absolute(position) => *position,

@@ -1,13 +1,11 @@
-use macroquad::{
-    experimental::collections::storage,
-    prelude::*,
-    ui::{hash, widgets, Ui},
-};
+use core::prelude::*;
 
 use crate::map::MapBackgroundLayer;
 use crate::{map::Map, Resources};
 
 use crate::gui::{GuiResources, ELEMENT_MARGIN, LIST_BOX_ENTRY_HEIGHT};
+use crate::macroquad::hash;
+use crate::macroquad::ui::{Ui, widgets};
 use crate::resources::TextureKind;
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};

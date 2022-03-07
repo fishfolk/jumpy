@@ -5,15 +5,31 @@ authors = ["Fish Fight Contributors"]
 license = "MIT OR Apache-2.0"
 edition = "2021"
 
+[features]
+default = ["macroquad-backend"]
+macroquad-backend = ["macroquad", "ff-particles"]
+internal-backend = ["winit"]
+
 [dependencies]
-fishsticks = { git = "https://github.com/fishfight/fishsticks", default-features = false, features = ["gilrs"] }
-macroquad = { version = "0.3.10" }
+fishsticks = { version = "0.2.0", default-features = false, features = ["gilrs"] }
+macroquad = { version = "0.3.13", optional = true }
+ff-particles = { version = "0.1", features = ["serde"], optional = true }
+winit = { version = "0.26.1", optional = true }
+glam = { version = "0.20.2", features = ["scalar-math", "serde"] }
+quad-rand = "0.2.1"
+quad-snd = "0.2"
 hecs = "0.7.1"
-serde = { version = "1.0", package = "serde", features = ["derive"] }
-serde_json = { version = "1.0" }
-toml = "0.5"
-async-trait = "0.1.52"
+serde = { version = "1.0.136", package = "serde", features = ["derive"] }
+serde_json = { version = "1.0.79" }
+toml = "0.5.8"
+cfg-if = "1.0.0"
+num-traits = "0.2.14"
+tokio = { version = "1.17.0", features = ["macros", "sync", "rt"], optional = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-getrandom = { version = "0.2", features = ["js"] }
-wasm-bindgen = "0.2.74"
+getrandom = { version = "0.2.5", features = ["js"] }
+wasm-bindgen = { version = "0.2.79", default-features = false, features = ["serde-serialize"] }
+js-sys = { version = "0.3.56", default-features = false }
+
+[patch.crates-io]
+fishsticks = { git = "https://github.com/fishfight/fishsticks", branch = "main", default-features = false, features = ["gilrs"] }

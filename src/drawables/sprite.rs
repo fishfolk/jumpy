@@ -2,13 +2,9 @@ use std::collections::HashMap;
 use std::iter::FromIterator;
 use std::ops::Div;
 
-use macroquad::color;
-use macroquad::experimental::collections::storage;
-use macroquad::prelude::*;
-
 use serde::{Deserialize, Serialize};
 
-use core::Transform;
+use core::prelude::*;
 
 use crate::Resources;
 
@@ -49,7 +45,6 @@ pub struct SpriteMetadata {
     /// An optional color to blend with the texture color
     #[serde(
         default,
-        with = "core::json::color_opt",
         skip_serializing_if = "Option::is_none"
     )]
     pub tint: Option<Color>,
@@ -102,7 +97,10 @@ impl Sprite {
             .unwrap_or_else(|| texture_res.frame_size());
 
         let source_rect = {
-            let grid_size = texture_res.meta.size.div(sprite_size).as_u32();
+            #[cfg(feature = "ultimate")]
+                let grid_size: UVec2 = Vec2::from(texture_res.texture.size()).as_uvec2() / sprite_size.as_uvec2();
+            #[cfg(not(feature = "ultimate"))]
+            let grid_size: UVec2 = Vec2::from(texture_res.texture.size()).as_u32() / sprite_size.as_u32();
 
             {
                 let frame_cnt = (grid_size.x * grid_size.y) as usize;
@@ -122,7 +120,7 @@ impl Sprite {
             Rect::new(position.x, position.y, sprite_size.x, sprite_size.y)
         };
 
-        let tint = params.tint.unwrap_or(color::WHITE);
+        let tint = params.tint.unwrap_or(colors::WHITE);
 
         Sprite {
             texture: texture_res.texture,
@@ -196,11 +194,10 @@ pub fn draw_one_sprite(transform: &Transform, sprite: &Sprite) {
     if !sprite.is_deactivated {
         let size = sprite.size();
 
-        draw_texture_ex(
-            sprite.texture,
+        draw_texture(
             transform.position.x + sprite.offset.x,
             transform.position.y + sprite.offset.y,
-            sprite.tint,
+            sprite.texture,
             DrawTextureParams {
                 flip_x: sprite.is_flipped_x,
                 flip_y: sprite.is_flipped_y,
@@ -208,6 +205,7 @@ pub fn draw_one_sprite(transform: &Transform, sprite: &Sprite) {
                 source: Some(sprite.source_rect),
                 dest_size: Some(size),
                 pivot: sprite.pivot,
+                tint: Some(sprite.tint),
             },
         );
     }
@@ -217,13 +215,13 @@ pub fn debug_draw_one_sprite(position: Vec2, sprite: &Sprite) {
     if !sprite.is_deactivated {
         let size = sprite.size();
 
-        draw_rectangle_lines(
+        draw_rectangle_outline(
             position.x + sprite.offset.x,
             position.y + sprite.offset.y,
             size.x,
             size.y,
             2.0,
-            color::BLUE,
+            colors::BLUE,
         )
     }
 }

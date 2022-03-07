@@ -2,7 +2,7 @@ pub mod tiled;
 
 use std::{collections::HashMap, iter::FromIterator};
 
-use macroquad::prelude::*;
+use core::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
@@ -16,7 +16,6 @@ pub use tiled::TiledMap;
 pub(crate) struct MapDef {
     #[serde(
         default = "Map::default_background_color",
-        with = "core::json::ColorDef"
     )]
     pub background_color: Color,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]

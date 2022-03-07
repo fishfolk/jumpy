@@ -1,4 +1,6 @@
-use glam::*;
+use serde::{Serialize, Deserialize};
+
+use super::{Vec2, vec2, UVec2, uvec2};
 
 /// A 2D rectangle, defined by its top-left corner, width and height.
 #[derive(Clone, Copy, Debug, Default, PartialEq)]

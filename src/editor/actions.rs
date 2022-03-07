@@ -1,10 +1,8 @@
 use std::any::TypeId;
 use std::cmp::Ordering;
 
-use macroquad::experimental::collections::storage;
-use macroquad::prelude::*;
-
 use core::error::{Error, ErrorKind, Result};
+use core::prelude::*;
 
 use crate::editor::gui::windows::Window;
 use crate::map::{MapBackgroundLayer, MapObject, MapObjectKind};
@@ -665,10 +663,7 @@ impl UndoableAction for CreateTilesetAction {
     fn apply(&mut self, map: &mut Map) -> Result<()> {
         let resources = storage::get::<Resources>();
         if let Some(texture_entry) = resources.textures.get(&self.texture_id).cloned() {
-            let texture_size = uvec2(
-                texture_entry.texture.width() as u32,
-                texture_entry.texture.height() as u32,
-            );
+            let texture_size: Vec2 = texture_entry.texture.size().into();
 
             let mut first_tile_id = 1;
             for tileset in map.tilesets.values() {
@@ -681,7 +676,7 @@ impl UndoableAction for CreateTilesetAction {
             let tileset = MapTileset::new(
                 &self.id,
                 &self.texture_id,
-                texture_size,
+                texture_size.as_u32(),
                 map.tile_size,
                 first_tile_id,
             );

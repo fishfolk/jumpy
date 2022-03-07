@@ -1,4 +1,4 @@
-use macroquad::{color, experimental::collections::storage, prelude::*};
+use core::prelude::*;
 
 use super::{EditorAction, EditorContext, EditorTool, EditorToolParams};
 
@@ -7,6 +7,7 @@ use crate::{
     map::{Map, MapLayerKind},
     Resources,
 };
+use crate::macroquad::experimental::scene;
 
 #[derive(Default)]
 pub struct TilePlacementTool {
@@ -118,11 +119,10 @@ impl EditorTool for TilePlacementTool {
                                 map.tile_size.y,
                             );
 
-                            draw_texture_ex(
-                                texture,
+                            draw_texture(
                                 position.x,
                                 position.y,
-                                color::WHITE,
+                                texture,
                                 DrawTextureParams {
                                     dest_size: Some(map.tile_size),
                                     source: Some(source_rect),
@@ -239,9 +239,10 @@ impl EditorTool for SpawnPointPlacementTool {
 
         let resources = storage::get::<Resources>();
         let texture_res = resources.textures.get("spawn_point_icon").unwrap();
+        let texture_size = texture_res.texture.size();
         let offset = vec2(
-            texture_res.texture.width() / 2.0,
-            texture_res.texture.height(),
+            texture_size.width / 2.0,
+            texture_size.height,
         );
 
         let action = EditorAction::CreateSpawnPoint(cursor_world_position - offset);

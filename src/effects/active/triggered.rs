@@ -1,12 +1,11 @@
-use macroquad::experimental::collections::storage;
-use macroquad::prelude::*;
+use core::prelude::*;
 
 use hecs::{Entity, World};
 
 use serde::{Deserialize, Serialize};
 
-use core::math::deg_to_rad;
-use core::{Result, Transform};
+use core::Result;
+use core::prelude::*;
 
 use crate::effects::active::spawn_active_effect;
 use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
@@ -156,9 +155,7 @@ pub fn spawn_triggered_effect(
 const KICK_FORCE: f32 = 15.0;
 const KICK_DELAY: f32 = 0.22;
 
-pub fn fixed_update_triggered_effects(world: &mut World) {
-    let dt = get_frame_time();
-
+pub fn fixed_update_triggered_effects(world: &mut World, delta_time: f32, integration_factor: f32) {
     let mut to_trigger = Vec::new();
 
     let players = world
@@ -182,9 +179,9 @@ pub fn fixed_update_triggered_effects(world: &mut World) {
             collision_world.descent(body.actor);
         }
 
-        effect.timed_trigger_timer += dt;
-        effect.kick_delay_timer += dt;
-        effect.activation_timer += dt;
+        effect.timed_trigger_timer += delta_time;
+        effect.kick_delay_timer += delta_time;
+        effect.activation_timer += delta_time;
 
         if let Some(timed_trigger) = effect.timed_trigger {
             if effect.timed_trigger_timer >= timed_trigger {
@@ -193,7 +190,7 @@ pub fn fixed_update_triggered_effects(world: &mut World) {
         }
 
         if effect.is_triggered {
-            effect.trigger_delay_timer += dt;
+            effect.trigger_delay_timer += delta_time;
         }
 
         if !effect.is_triggered && effect.activation_timer >= effect.activation_delay {

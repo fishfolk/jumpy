@@ -1,17 +1,19 @@
-pub mod mapping;
+pub mod keyboard;
+pub mod mouse;
 
-pub use mapping::{Button, KeyCode};
+pub use keyboard::{Button, KeyCode};
+pub use mouse::MouseButton;
 
 use fishsticks::Axis;
-
-use macroquad::experimental::collections::storage;
-use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
 pub use fishsticks::GamepadContext;
 
+use crate::storage;
 use crate::{Config, Result};
+
+pub use crate::backend_impl::input::*;
 
 #[derive(Default, Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct PlayerInput {

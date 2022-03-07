@@ -2,9 +2,6 @@
 //! Proto-mods, eventually some of the items will move to some sort of a wasm runtime
 
 use hecs::{Entity, World};
-use macroquad::audio::{play_sound_once, Sound};
-use macroquad::experimental::collections::storage;
-use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
@@ -13,7 +10,8 @@ use crate::{
     PassiveEffectMetadata, PhysicsBody, QueuedAnimationAction, Resources,
 };
 
-use core::{Result, Transform};
+use core::Result;
+use core::prelude::*;
 
 use crate::effects::active::spawn_active_effect;
 use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
@@ -186,8 +184,14 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
         .map(|a| a.into())
         .collect::<Vec<_>>();
 
+    let texture = {
+        let resources = storage::get::<Resources>();
+        let res = resources.textures.get(&meta.sprite.texture_id).unwrap();
+        res.texture
+    };
+
     let sprite = AnimatedSprite::new(
-        &meta.sprite.texture_id,
+        texture,
         animations.as_slice(),
         meta.sprite.clone().into(),
     );
@@ -251,11 +255,6 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
         MapItemKind::Weapon { meta } => {
             let effect_offset = meta.effect_offset;
 
-            let mut sound_effect = None;
-            if let Some(id) = meta.sound_effect_id.as_ref() {
-                sound_effect = storage::get::<Resources>().sounds.get(id).copied();
-            }
-
             if let Some(effect_sprite) = meta.effect_sprite {
                 let animations = effect_sprite
                     .animations
@@ -264,8 +263,14 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
                     .map(|a| a.into())
                     .collect::<Vec<_>>();
 
+                let texture = {
+                    let resources = storage::get::<Resources>();
+                    let res = resources.textures.get(&effect_sprite.texture_id).unwrap();
+                    res.texture
+                };
+
                 let mut sprite = AnimatedSprite::new(
-                    &effect_sprite.texture_id,
+                    texture,
                     animations.as_slice(),
                     effect_sprite.clone().into(),
                 );
@@ -286,11 +291,13 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
                 world.insert_one(entity, particle_emitters).unwrap();
             }
 
+            let sound_effect_id = meta.sound_effect_id;
+
             let params = WeaponParams {
                 name,
                 effects: meta.effects,
                 uses,
-                sound_effect,
+                sound_effect_id,
                 mount_offset,
                 effect_offset,
                 drop_behavior,
@@ -318,7 +325,7 @@ pub struct WeaponParams {
     pub name: String,
     pub effects: Vec<ActiveEffectMetadata>,
     pub uses: Option<u32>,
-    pub sound_effect: Option<Sound>,
+    pub sound_effect_id: Option<String>,
     pub mount_offset: Vec2,
     pub effect_offset: Vec2,
     pub drop_behavior: ItemDropBehavior,
@@ -331,7 +338,7 @@ impl Default for WeaponParams {
             name: "".to_string(),
             effects: Vec::new(),
             uses: None,
-            sound_effect: None,
+            sound_effect_id: None,
             mount_offset: Vec2::ZERO,
             effect_offset: Vec2::ZERO,
             drop_behavior: Default::default(),
@@ -344,7 +351,7 @@ pub struct Weapon {
     pub id: String,
     pub name: String,
     pub effects: Vec<ActiveEffectMetadata>,
-    pub sound_effect: Option<Sound>,
+    pub sound_effect_id: Option<String>,
     pub recoil: f32,
     pub cooldown: f32,
     pub attack_duration: f32,
@@ -373,7 +380,7 @@ impl Weapon {
             cooldown,
             uses: params.uses,
             attack_duration,
-            sound_effect: params.sound_effect,
+            sound_effect_id: params.sound_effect_id,
             mount_offset: params.mount_offset,
             effect_offset: params.effect_offset,
             drop_behavior: params.drop_behavior,
@@ -425,8 +432,11 @@ pub fn fire_weapon(world: &mut World, entity: Entity, owner: Entity) -> Result<(
 
             weapon.cooldown_timer = 0.0;
 
-            if let Some(sound) = weapon.sound_effect {
-                play_sound_once(sound);
+            if let Some(id) = &weapon.sound_effect_id {
+                let mut resources = storage::get_mut::<Resources>();
+                let mut sound = resources.sounds.get_mut(id).unwrap();
+
+                play_sound(sound, false);
             }
 
             let mut drawable = world.get_mut::<Drawable>(entity).unwrap();

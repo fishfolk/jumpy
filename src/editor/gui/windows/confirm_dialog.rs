@@ -1,7 +1,8 @@
-use macroquad::{prelude::*, ui::Ui};
+use core::prelude::*;
 
 use super::{EditorAction, EditorContext, Map, Window, WindowParams};
 use crate::editor::gui::windows::ButtonParams;
+use crate::macroquad::ui::Ui;
 
 pub struct ConfirmDialog {
     params: WindowParams,

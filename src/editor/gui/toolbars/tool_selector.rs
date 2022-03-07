@@ -1,10 +1,6 @@
 use std::any::TypeId;
 
-use macroquad::{
-    experimental::collections::storage,
-    prelude::*,
-    ui::{widgets, Ui},
-};
+use core::prelude::*;
 
 use super::{
     EditorAction, EditorContext, Map, ToolbarElement, ToolbarElementParams, ELEMENT_MARGIN,
@@ -16,6 +12,7 @@ use crate::{
     gui::GuiResources,
     Resources,
 };
+use crate::macroquad::ui::{Ui, widgets};
 
 pub struct ToolSelectorElement {
     params: ToolbarElementParams,
@@ -126,7 +123,7 @@ impl ToolbarElement for ToolSelectorElement {
                 .cloned()
                 .unwrap();
 
-            widgets::Texture::new(texture_entry.texture)
+            widgets::Texture::new(texture_entry.texture.into())
                 .position(position)
                 .size(size.x, size.y)
                 .ui(ui);

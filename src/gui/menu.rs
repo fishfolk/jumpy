@@ -1,16 +1,17 @@
-use macroquad::{
-    experimental::collections::storage,
-    prelude::*,
-    ui::{widgets, Id, Ui},
-};
+use core::prelude::*;
 
 use fishsticks::{Axis, Button};
+
+use core::prelude::*;
 
 use super::{
     GuiResources, Panel, BUTTON_FONT_SIZE, BUTTON_MARGIN_V, WINDOW_MARGIN_H, WINDOW_MARGIN_V,
 };
 
 use core::input::{is_gamepad_btn_pressed, GamepadContext};
+
+use core::macroquad::ui::{Id, Ui, widgets};
+use crate::macroquad::time::get_frame_time;
 
 #[derive(Debug, Copy, Clone)]
 pub enum MenuPosition {
@@ -188,10 +189,7 @@ impl Menu {
             ui.push_skin(&gui_resources.skins.menu);
         }
 
-        let mouse_position = {
-            let (x, y) = mouse_position();
-            vec2(x, y)
-        };
+        let mouse_position = get_mouse_position();
 
         if mouse_position != self.last_mouse_position {
             self.current_selection = None;
@@ -248,10 +246,12 @@ impl Menu {
             vec2(self.width, height)
         };
 
+        let viewport = get_viewport();
+
         let position = match self.position {
-            MenuPosition::Center => vec2(screen_width() - size.x, screen_height() - size.y) / 2.0,
-            MenuPosition::AbsoluteHorizontal(x) => vec2(x, (screen_height() - size.y) / 2.0),
-            MenuPosition::AbsoluteVertical(y) => vec2((screen_width() - size.x) / 2.0, y),
+            MenuPosition::Center => vec2(viewport.width - size.x, viewport.height - size.y) / 2.0,
+            MenuPosition::AbsoluteHorizontal(x) => vec2(x, (viewport.height - size.y) / 2.0),
+            MenuPosition::AbsoluteVertical(y) => vec2((viewport.width - size.x) / 2.0, y),
             MenuPosition::Absolute(position) => position,
         };
 

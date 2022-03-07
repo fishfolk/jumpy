@@ -1,18 +1,17 @@
 use std::borrow::BorrowMut;
 
-use macroquad::{
-    experimental::collections::storage,
-    prelude::*,
-    ui::{self, hash, root_ui, widgets},
-};
+use core::prelude::*;
 
 use fishsticks::{Button, GamepadContext};
 
 use super::{draw_main_menu_background, GuiResources, Menu, MenuEntry, MenuResult, Panel};
 
 use crate::player::{PlayerControllerKind, PlayerParams};
-use crate::{gui, EditorInputScheme, Map, Resources};
+use crate::{gui, Map, Resources};
 use core::input::{is_gamepad_btn_pressed, update_gamepad_context, GameInputScheme};
+use crate::macroquad::{hash, ui};
+use crate::macroquad::ui::{root_ui, widgets};
+use crate::macroquad::window::next_frame;
 
 const MENU_WIDTH: f32 = 300.0;
 
@@ -27,7 +26,6 @@ pub enum MainMenuResult {
         players: Vec<PlayerParams>,
     },
     Editor {
-        input_scheme: EditorInputScheme,
         is_new_map: bool,
     },
     ReloadResources,
@@ -126,16 +124,14 @@ pub async fn show_main_menu() -> MainMenuResult {
             let resources = storage::get::<Resources>();
             let texture_entry = resources.textures.get(HEADER_TEXTURE_ID).unwrap();
 
-            let size = vec2(
-                texture_entry.texture.width(),
-                texture_entry.texture.height(),
-            );
+            let size = texture_entry.texture.size();
 
-            let position = vec2((screen_width() - size.x) / 2.0, 35.0);
+            let viewport = get_viewport();
+            let position = vec2((viewport.width - size.width) / 2.0, 35.0);
 
-            widgets::Texture::new(texture_entry.texture)
+            widgets::Texture::new(texture_entry.texture.into())
                 .position(position)
-                .size(size.x, size.y)
+                .size(size.width, size.height)
                 .ui(&mut *root_ui());
         }
 
@@ -212,13 +208,11 @@ pub async fn show_main_menu() -> MainMenuResult {
                     match res.into_usize() {
                         EDITOR_OPTION_CREATE => {
                             return MainMenuResult::Editor {
-                                input_scheme: EditorInputScheme::Mouse,
                                 is_new_map: true,
                             }
                         }
                         EDITOR_OPTION_LOAD => {
                             return MainMenuResult::Editor {
-                                input_scheme: EditorInputScheme::Mouse,
                                 is_new_map: false,
                             }
                         }
@@ -274,7 +268,10 @@ fn local_game_ui(ui: &mut ui::Ui, player_input: &mut Vec<GameInputScheme>) -> Op
     }
 
     let size = vec2(LOCAL_GAME_MENU_WIDTH, LOCAL_GAME_MENU_HEIGHT);
-    let position = (vec2(screen_width(), screen_height()) - size) / 2.0;
+
+    let viewport = get_viewport();
+
+    let position = (vec2(viewport.width, viewport.height) - size) / 2.0;
 
     Panel::new(hash!(), size, position).ui(ui, |ui, _| {
         {

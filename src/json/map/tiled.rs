@@ -1,10 +1,8 @@
 use std::collections::HashMap;
 
-use macroquad::prelude::*;
-
 use serde::{Deserialize, Serialize};
 
-use core::math::color_from_hex_string;
+use core::prelude::*;
 
 use crate::map::MapObjectKind;
 use crate::map::{Map, MapLayer, MapLayerKind, MapObject, MapProperty, MapTile, MapTileset};
@@ -116,7 +114,7 @@ impl TiledMap {
 
     pub fn into_map(self) -> Map {
         let background_color = if let Some(background_color) = self.backgroundcolor {
-            color_from_hex_string(&background_color)
+            Color::from_hex(&background_color)
         } else {
             Map::default_background_color()
         };
@@ -339,7 +337,7 @@ fn pair_from_tiled_prop(tiled_prop: TiledProperty) -> (String, MapProperty) {
         TiledProperty::Int { name, value } => (name, MapProperty::Int(value)),
         TiledProperty::String { name, value } => (name, MapProperty::String(value)),
         TiledProperty::Color { name, value } => {
-            let color = color_from_hex_string(&value);
+            let color = Color::from_hex(&value);
             (name, MapProperty::Color(color))
         }
         TiledProperty::Object { name, value } => (name, MapProperty::Int(value)),

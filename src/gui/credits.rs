@@ -1,7 +1,10 @@
-use core::input::is_gamepad_btn_pressed;
-use fishsticks::{Button, GamepadContext};
-use macroquad::{experimental::collections::storage, prelude::*};
 use std::path::Path;
+
+use fishsticks::{Button, GamepadContext};
+
+use core::prelude::*;
+use core::text::{load_ttf_font, draw_text, TextParams};
+use crate::macroquad::window::{clear_background, next_frame};
 
 const TEXT_X_OFFSET: f32 = 370.0;
 const MAIN_HEADER_Y_OFFSET: f32 = 300.0;
@@ -74,9 +77,7 @@ pub async fn show_game_credits(assets_dir: &str) {
 
     let font = load_ttf_font(
         Path::new(assets_dir)
-            .join("ui/AnonymousPro-Regular.ttf")
-            .to_str()
-            .unwrap(),
+            .join("ui/AnonymousPro-Regular.ttf"),
     )
     .await
     .unwrap();
@@ -88,20 +89,20 @@ pub async fn show_game_credits(assets_dir: &str) {
             break;
         }
 
-        clear_background(BLACK);
+        clear_background(colors::BLACK.into());
         delta -= 0.5;
 
         for credit in &credits {
-            let x = screen_width() / 2.0 - credit.x;
+            let x = get_viewport().width / 2.0 - credit.x;
             let y = credit.y + delta;
-            draw_text_ex(
+            draw_text(
                 &credit.text,
                 x,
                 y,
                 TextParams {
                     font,
                     font_size: credit.font_size,
-                    color: WHITE,
+                    color: colors::WHITE.into(),
                     ..Default::default()
                 },
             );
@@ -129,7 +130,7 @@ fn create_game_credits() -> Vec<CreditLabel> {
                 game_credits.push(CreditLabel {
                     text: credit_label.0.to_string(),
                     x: TEXT_X_OFFSET,
-                    y: screen_height() + prev_position,
+                    y: get_viewport().height + prev_position,
                     font_size: 100,
                 });
             }
@@ -139,7 +140,7 @@ fn create_game_credits() -> Vec<CreditLabel> {
                 game_credits.push(CreditLabel {
                     text: credit_label.0.to_string(),
                     x: TEXT_X_OFFSET,
-                    y: screen_height() + prev_position,
+                    y: get_viewport().height + prev_position,
                     font_size: 40,
                 });
             }
@@ -149,7 +150,7 @@ fn create_game_credits() -> Vec<CreditLabel> {
                 game_credits.push(CreditLabel {
                     text: credit_label.0.to_string(),
                     x: TEXT_X_OFFSET,
-                    y: screen_height() + prev_position,
+                    y: get_viewport().height + prev_position,
                     font_size: 30,
                 });
             }

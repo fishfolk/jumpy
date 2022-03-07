@@ -3,9 +3,9 @@
 //! which texture to use and how to animate it and should not be confused with `Player`, which is
 //! the actual implementation of the player actor.
 
-use macroquad::prelude::*;
-
 use serde::{Deserialize, Serialize};
+
+use core::prelude::*;
 
 use crate::player::PlayerAnimationMetadata;
 

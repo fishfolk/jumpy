@@ -1,11 +1,10 @@
-use macroquad::{
-    prelude::*,
-    ui::{hash, Ui},
-};
+use core::prelude::*;
 
 use crate::map::Map;
 
 use crate::gui::Checkbox;
+use crate::macroquad::hash;
+use crate::macroquad::ui::Ui;
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 

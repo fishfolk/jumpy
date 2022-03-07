@@ -1,9 +1,6 @@
-use macroquad::experimental::collections::storage;
-use macroquad::prelude::*;
-
 use hecs::{Entity, World};
 
-use core::Transform;
+use core::prelude::*;
 
 use crate::{
     AnimatedSprite, AnimatedSpriteMetadata, AnimatedSpriteParams, CollisionWorld, Drawable,
@@ -94,7 +91,7 @@ impl Player {
     }
 }
 
-pub fn update_player_camera_box(world: &mut World) {
+pub fn update_player_camera_box(world: &mut World, delta_time: f32) {
     for (_, (transform, player)) in world.query_mut::<(&Transform, &mut Player)>() {
         let rect = Rect::new(transform.position.x, transform.position.y, 32.0, 60.0);
 
@@ -163,15 +160,17 @@ pub fn spawn_player(
     let item_mount = character.item_mount;
     let hat_mount = character.hat_mount;
 
-    let offset = storage::get::<Resources>()
+    let texture_res = storage::get::<Resources>()
         .textures
         .get(&character.sprite.texture_id)
-        .map(|t| {
-            let frame_size = t.frame_size();
-            character.sprite.offset
-                - vec2(frame_size.x / 2.0, frame_size.y - character.collider_size.y)
-        })
+        .cloned()
         .unwrap();
+
+    let offset = {
+        let frame_size = texture_res.meta.frame_size.unwrap_or(texture_res.texture.size().into());
+        character.sprite.offset
+            - vec2(frame_size.x / 2.0, frame_size.y - character.collider_size.y)
+    };
 
     let animations = character
         .sprite
@@ -180,8 +179,6 @@ pub fn spawn_player(
         .into_iter()
         .map(|a| a.into())
         .collect::<Vec<_>>();
-
-    let texture_id = character.sprite.texture_id.clone();
 
     let params = {
         let meta: AnimatedSpriteMetadata = character.sprite.clone().into();
@@ -194,11 +191,14 @@ pub fn spawn_player(
 
     let sprites = vec![(
         BODY_ANIMATED_SPRITE_ID,
-        AnimatedSprite::new(&texture_id, animations.as_slice(), params),
+        AnimatedSprite::new(texture_res.texture, animations.as_slice(), params),
     )];
 
     let draw_order = (index as u32 + 1) * 10;
 
+    #[cfg(feature = "ultimate")]
+    let size = character.collider_size.as_ivec2();
+    #[cfg(not(feature = "ultimate"))]
     let size = character.collider_size.as_i32();
     let actor = storage::get_mut::<CollisionWorld>().add_actor(position, size.x, size.y);
 

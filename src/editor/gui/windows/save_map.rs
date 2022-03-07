@@ -1,9 +1,8 @@
-use macroquad::{
-    experimental::collections::storage,
-    prelude::*,
-    ui::{hash, widgets, Ui},
-};
 use std::path::Path;
+
+use core::prelude::*;
+use crate::macroquad::hash;
+use crate::macroquad::ui::{Ui, widgets};
 
 use crate::map::Map;
 

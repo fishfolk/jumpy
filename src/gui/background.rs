@@ -1,9 +1,5 @@
-use macroquad::{
-    color,
-    experimental::collections::storage,
-    prelude::*,
-    ui::{root_ui, widgets, Ui},
-};
+use core::prelude::*;
+use crate::macroquad::ui::{root_ui, Ui, widgets};
 
 use crate::resources::{Resources, TextureResource};
 
@@ -24,9 +20,10 @@ impl Background {
         }
     }
 
+    #[cfg(not(feature = "ultimate"))]
     pub fn ui(&self, ui: &mut Ui) {
         for res in &self.textures {
-            widgets::Texture::new(res.texture)
+            widgets::Texture::new(res.texture.into())
                 .size(self.size.x, self.size.y)
                 .position(self.position)
                 .ui(ui);
@@ -34,12 +31,11 @@ impl Background {
     }
 
     pub fn draw(&self) {
-        for res in &self.textures {
-            draw_texture_ex(
-                res.texture,
+        for texture_res in &self.textures {
+            draw_texture(
                 self.position.x,
                 self.position.y,
-                color::WHITE,
+                texture_res.texture,
                 DrawTextureParams {
                     dest_size: Some(self.size),
                     ..Default::default()
@@ -57,8 +53,10 @@ pub fn draw_main_menu_background(is_ui: bool) {
     let background_03 = resources.textures.get("background_03").cloned().unwrap();
     let background_04 = resources.textures.get("background_04").cloned().unwrap();
 
-    let height = screen_height();
-    let width = (height / background_01.texture.height()) * background_01.texture.width();
+    let size = background_01.texture.size();
+
+    let height = get_viewport().height;
+    let width = (height / size.height) * size.width;
 
     let bg = Background::new(
         vec2(width, height),
@@ -67,6 +65,7 @@ pub fn draw_main_menu_background(is_ui: bool) {
     );
 
     if is_ui {
+        #[cfg(not(feature = "ultimate"))]
         bg.ui(&mut *root_ui());
     } else {
         bg.draw();

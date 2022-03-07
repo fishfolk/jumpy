@@ -1,25 +1,23 @@
 use hecs::World;
 
-pub mod api {
-    pub use ultimate::UltimateApi as Api;
+pub mod api;
+
+pub fn update_network_client(world: &mut World, delta_time: f32) {
+    update_network_common(world, delta_time);
 }
 
-pub fn update_network_client(world: &mut World) {
-    update_network_common(world);
+pub fn fixed_update_network_client(world: &mut World, delta_time: f32, integration_factor: f32) {
+    fixed_update_network_common(world, delta_time, integration_factor);
 }
 
-pub fn fixed_update_network_client(world: &mut World) {
-    fixed_update_network_common(world);
+pub fn update_network_host(world: &mut World, delta_time: f32) {
+    update_network_common(world, delta_time);
 }
 
-pub fn update_network_host(world: &mut World) {
-    update_network_common(world);
+pub fn fixed_update_network_host(world: &mut World, delta_time: f32, integration_factor: f32) {
+    fixed_update_network_common(world, delta_time, integration_factor);
 }
 
-pub fn fixed_update_network_host(world: &mut World) {
-    fixed_update_network_common(world);
-}
+fn update_network_common(_world: &mut World, delta_time: f32) {}
 
-fn update_network_common(_world: &mut World) {}
-
-fn fixed_update_network_common(_world: &mut World) {}
+fn fixed_update_network_common(_world: &mut World, delta_time: f32, integration_factor: f32) {}

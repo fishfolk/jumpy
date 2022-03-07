@@ -1,30 +1,33 @@
+[rendering]
+max-fps = 120
+high-dpi = false
+
 [window]
 width = 955
 height = 600
-fullscreen = false
-high-dpi = false
+mode = "borderless"
 
 [input.keyboard-primary]
-left = 'Left'
-right = 'Right'
-fire = 'L'
-jump = 'Up'
-pickup = 'K'
-crouch = 'Down'
-slide = 'RightControl'
+left = "Left"
+right = "Right"
+fire = "L"
+jump = "Up"
+pickup = "K"
+crouch = "Down"
+slide = "RightControl"
 
 [input.keyboard-secondary]
-left = 'A'
-right = 'D'
-fire = 'V'
-jump = 'W'
-pickup = 'C'
-crouch = 'S'
-slide = 'F'
+left = "A"
+right = "D"
+fire = "V"
+jump = "W"
+pickup = "C"
+crouch = "S"
+slide = "F"
 
 [[input.gamepads]]
 id = 0
-fire = 'A'
-jump = 'X'
-pickup = 'B'
-slide = 'Y'
+fire = "A"
+jump = "X"
+pickup = "B"
+slide = "Y"

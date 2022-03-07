@@ -3,51 +3,49 @@ use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 
-use crate::input::mapping::InputMapping;
-use crate::Result;
+use crate::parsing::load_toml_file;
+use crate::input::keyboard::InputMapping;
+use crate::error::Result;
+use crate::video::RenderingConfig;
+use crate::window::WindowConfig;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
+    #[serde(default)]
+    pub rendering: RenderingConfig,
     #[serde(default)]
     pub window: WindowConfig,
     #[serde(default)]
     pub input: InputMapping,
 }
 
-impl Config {
-    pub fn load<P: AsRef<Path>>(path: P) -> Result<Self> {
-        let path = path.as_ref();
+#[cfg(not(target_arch = "wasm32"))]
+pub fn load_config_file_sync<P: AsRef<Path>>(path: P) -> Result<Config> {
+    let path = path.as_ref();
 
-        let mut res = if path.exists() {
-            let bytes = fs::read(path)?;
-            toml::from_slice(&bytes)?
-        } else {
-            Config::default()
-        };
+    let mut res = if path.exists() {
+        let bytes = fs::read(path)?;
+        toml::from_slice(&bytes)?
+    } else {
+        Config::default()
+    };
 
-        res.input.verify()?;
+    res.input.verify()?;
 
-        Ok(res)
-    }
+    Ok(res)
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct WindowConfig {
-    pub width: u32,
-    pub height: u32,
-    #[serde(default, rename = "fullscreen")]
-    pub is_fullscreen: bool,
-    #[serde(default, rename = "high-dpi")]
-    pub is_high_dpi: bool,
+pub async fn load_config_file<P: AsRef<Path>>(path: P) -> Result<Config> {
+    let path = path.as_ref();
+
+    let mut config = if path.exists() {
+        load_toml_file(path).await?
+    } else {
+        Config::default()
+    };
+
+    config.input.verify()?;
+
+    Ok(config)
 }
 
-impl Default for WindowConfig {
-    fn default() -> Self {
-        WindowConfig {
-            width: 955,
-            height: 600,
-            is_fullscreen: false,
-            is_high_dpi: false,
-        }
-    }
-}

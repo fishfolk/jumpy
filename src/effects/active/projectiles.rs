@@ -1,9 +1,8 @@
-use macroquad::experimental::collections::storage;
-use macroquad::prelude::*;
 use std::f32::consts::PI;
 
-use hecs::{Entity, World};
 use macroquad_platformer::Tile;
+
+use hecs::{Entity, World};
 
 use serde::{Deserialize, Serialize};
 
@@ -13,7 +12,8 @@ use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::player::{on_player_damage, Player, PlayerState};
 use crate::{CollisionWorld, PhysicsBody, Resources, RigidBody, RigidBodyParams, SpriteMetadata};
 use crate::{Drawable, PassiveEffectInstance, PassiveEffectMetadata, SpriteParams};
-use core::Transform;
+
+use core::prelude::*;
 
 const PROJECTILE_DRAW_ORDER: u32 = 1;
 
@@ -22,13 +22,11 @@ const PROJECTILE_DRAW_ORDER: u32 = 1;
 pub enum ProjectileKind {
     Circle {
         radius: f32,
-        #[serde(with = "core::json::ColorDef")]
         color: Color,
     },
     Rect {
         width: f32,
         height: f32,
-        #[serde(with = "core::json::ColorDef")]
         color: Color,
     },
     Sprite {
@@ -133,7 +131,7 @@ pub fn spawn_projectile(
 
             let size = meta
                 .size
-                .unwrap_or_else(|| texture_res.meta.frame_size.unwrap_or(texture_res.meta.size));
+                .unwrap_or_else(|| texture_res.meta.frame_size.unwrap_or(texture_res.texture.size().into()));
 
             let offset = meta.offset - (vec2(size.x, size.y) / 2.0);
 
@@ -203,7 +201,7 @@ enum ProjectileCollision {
     Map,
 }
 
-pub fn fixed_update_projectiles(world: &mut World) {
+pub fn fixed_update_projectiles(world: &mut World, delta_time: f32, integration_factor: f32) {
     let bodies = world
         .query::<(&Transform, &PhysicsBody)>()
         .iter()
@@ -223,6 +221,9 @@ pub fn fixed_update_projectiles(world: &mut World) {
             continue 'projectiles;
         }
 
+        #[cfg(feature = "ultimate")]
+        let size = body.size.as_ivec2();
+        #[cfg(not(feature = "ultimate"))]
         let size = body.size.as_i32();
         let map_collision = collision_world.collide_solids(transform.position, size.x, size.y);
         if map_collision == Tile::Solid {

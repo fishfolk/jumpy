@@ -1,11 +1,12 @@
-use macroquad::prelude::*;
+use core::prelude::*;
 
 use hecs::{Entity, World};
 
 use serde::{Deserialize, Serialize};
 
 use crate::{AnimatedSpriteMetadata, Drawable};
-use core::Transform;
+
+use core::prelude::*;
 
 const DECORATION_DRAW_ORDER: u32 = 0;
 

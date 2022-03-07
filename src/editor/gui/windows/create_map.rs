@@ -1,12 +1,8 @@
 use std::path::Path;
 
-use macroquad::{
-    experimental::collections::storage,
-    prelude::*,
-    ui::{hash, widgets, Ui},
-};
-
-use core::text::ToStringHelper;
+use core::prelude::*;
+use crate::macroquad::hash;
+use crate::macroquad::ui::{Ui, widgets};
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 
@@ -42,7 +38,7 @@ impl CreateMapWindow {
             description: "".to_string(),
             grid_size: uvec2(100, 75),
             tile_size: vec2(16.0, 16.0),
-            map_export_path: map_export_path.to_string_helper(),
+            map_export_path: map_export_path.to_string_lossy().to_string(),
         }
     }
 }

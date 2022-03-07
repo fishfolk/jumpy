@@ -3,51 +3,61 @@
 //! jumping between game modes, for example, like starting a test game with a map we are editing
 //! in the editor, without having to exit to main menu, select game mode, select map, etc.
 
-static mut APPLICATION_EVENTS: Option<Vec<ApplicationEvent>> = None;
+use std::sync::{Arc, Mutex};
 
-unsafe fn get_event_queue() -> &'static mut Vec<ApplicationEvent> {
-    APPLICATION_EVENTS.get_or_insert(Vec::new())
+static mut APPLICATION_EVENTS: Option<Arc<Mutex<Vec<GameEvent>>>> = None;
+
+fn get_event_queue() -> Arc<Mutex<Vec<GameEvent>>> {
+    unsafe {
+        APPLICATION_EVENTS.get_or_insert(Arc::new(Mutex::new(Vec::new())))
+    }.clone()
 }
 
-pub fn dispatch_application_event(event: ApplicationEvent) {
-    unsafe { get_event_queue() }.push(event);
+pub fn dispatch_game_event(event: GameEvent) {
+    unsafe { get_event_queue() }
+        .lock()
+        .unwrap()
+        .push(event);
 }
 
-pub fn iter_events() -> ApplicationEventIterator {
-    ApplicationEventIterator::new()
+pub fn iter_events() -> GameEventIterator {
+    GameEventIterator::new()
 }
 
 /// This holds all the event types
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum ApplicationEvent {
-    /// Reload resources
-    ReloadResources,
-    /// Exit to main menu
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum GameEvent {
+    /// Change game mode
+    ModeTransition(String),
+    /// Used for main menu transition until mode transitions are done
     MainMenu,
     /// Quit to desktop
     Quit,
 }
 
-impl ApplicationEvent {
+impl GameEvent {
     pub fn dispatch(self) {
-        dispatch_application_event(self);
+        dispatch_game_event(self);
     }
 }
 
 /// This iterates over all the events in the event queue
 #[derive(Default)]
-pub struct ApplicationEventIterator {}
+pub struct GameEventIterator {}
 
-impl ApplicationEventIterator {
+impl GameEventIterator {
     pub fn new() -> Self {
-        ApplicationEventIterator {}
+        GameEventIterator {}
     }
 }
 
-impl Iterator for ApplicationEventIterator {
-    type Item = ApplicationEvent;
+impl Iterator for GameEventIterator {
+    type Item = GameEvent;
 
     fn next(&mut self) -> Option<Self::Item> {
-        unsafe { get_event_queue() }.pop()
+        get_event_queue()
+            .lock()
+            .unwrap()
+            .pop()
     }
 }

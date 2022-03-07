@@ -1,10 +1,8 @@
-use macroquad::{
-    experimental::collections::storage,
-    prelude::*,
-    ui::{hash, widgets, Ui},
-};
+use core::prelude::*;
 
 use crate::gui::{GuiResources, ELEMENT_MARGIN, LIST_BOX_ENTRY_HEIGHT};
+use crate::macroquad::hash;
+use crate::macroquad::ui::{Ui, widgets};
 
 use crate::map::Map;
 
@@ -70,20 +68,23 @@ impl Window for LoadMapWindow {
                 let resources = storage::get::<Resources>();
                 let map_resource = resources.maps.get(index).unwrap();
 
+                let preview_size = map_resource.preview.size();
+
                 let mut width = size.x;
                 let mut height =
-                    (width / map_resource.preview.width()) * map_resource.preview.height();
+                    (width / preview_size.width) * preview_size.height;
 
                 let max_height = size.y - LIST_BOX_ENTRY_HEIGHT - (ELEMENT_MARGIN * 2.0);
 
                 if height > max_height {
+                    let preview_size = map_resource.preview.size();
                     height = max_height;
-                    width = (height / map_resource.preview.height()) * map_resource.preview.width();
+                    width = (height / preview_size.height) * preview_size.width;
                 }
 
                 let preview_position = vec2((size.x - width) / 2.0, btn_size.y + ELEMENT_MARGIN);
 
-                widgets::Texture::new(map_resource.preview)
+                widgets::Texture::new(map_resource.preview.into())
                     .size(width, height)
                     .position(preview_position)
                     .ui(ui);

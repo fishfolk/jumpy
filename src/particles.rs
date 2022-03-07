@@ -1,15 +1,12 @@
-use macroquad::experimental::collections::storage;
-use macroquad::prelude::*;
 use std::collections::HashMap;
 
-use ff_particles::EmittersCache;
+use core::particles::EmittersCache;
 
 use hecs::World;
 
 use serde::{Deserialize, Serialize};
 
-use core::math::IsZero;
-use core::Transform;
+use core::prelude::*;
 
 use crate::{AnimatedSpriteMetadata, Resources};
 
@@ -21,8 +18,7 @@ pub struct ParticleEmitterMetadata {
     /// The offset is added to the `position` provided when calling `draw`
     #[serde(
         default,
-        with = "core::json::vec2_def",
-        skip_serializing_if = "Vec2::is_zero"
+        with = "core::json::vec2_def"
     )]
     pub offset: Vec2,
     /// Delay before emission will begin
@@ -113,17 +109,16 @@ impl From<ParticleEmitterMetadata> for ParticleEmitter {
 }
 
 pub fn update_one_particle_emitter(
+    delta_time: f32,
     mut position: Vec2,
     rotation: f32,
     emitter: &mut ParticleEmitter,
 ) {
-    let dt = get_frame_time();
-
     if emitter.is_active {
-        emitter.delay_timer += dt;
+        emitter.delay_timer += delta_time;
 
         if emitter.delay_timer >= emitter.delay {
-            emitter.interval_timer += dt;
+            emitter.interval_timer += delta_time;
         }
 
         if emitter.delay_timer >= emitter.delay && emitter.interval_timer >= emitter.interval {
@@ -165,14 +160,14 @@ pub fn update_one_particle_emitter(
     }
 }
 
-pub fn update_particle_emitters(world: &mut World) {
+pub fn update_particle_emitters(world: &mut World, delta_time: f32) {
     for (_, (transform, emitter)) in world.query_mut::<(&Transform, &mut ParticleEmitter)>() {
-        update_one_particle_emitter(transform.position, transform.rotation, emitter);
+        update_one_particle_emitter(delta_time, transform.position, transform.rotation, emitter);
     }
 
     for (_, (transform, emitters)) in world.query_mut::<(&Transform, &mut Vec<ParticleEmitter>)>() {
         for emitter in emitters.iter_mut() {
-            update_one_particle_emitter(transform.position, transform.rotation, emitter);
+            update_one_particle_emitter(delta_time, transform.position, transform.rotation, emitter);
         }
     }
 }

@@ -1,13 +1,10 @@
 use hecs::{Entity, World};
-use macroquad::audio::play_sound_once;
-use macroquad::color;
 
-use macroquad::experimental::collections::storage;
-use macroquad::prelude::*;
+use core::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
-use core::math::{deg_to_rad, rotate_vector, IsZero};
+use core::prelude::*;
 use core::Result;
 
 use crate::Resources;
@@ -23,20 +20,22 @@ use crate::effects::active::triggered::{spawn_triggered_effect, TriggeredEffect}
 use crate::particles::ParticleEmitterMetadata;
 use crate::player::{on_player_damage, Player};
 use crate::PhysicsBody;
-use core::Transform;
+
+use core::prelude::*;
+
 pub use projectiles::ProjectileKind;
 
-const COLLIDER_DEBUG_DRAW_TTL: f32 = 0.5;
+const COLLIDER_DEBUG_DRAW_FRAMES: u32 = 120;
 
 struct CircleCollider {
     r: f32,
-    ttl_timer: f32,
+    frame_cnt: u32,
 }
 
 struct RectCollider {
     w: f32,
     h: f32,
-    ttl_timer: f32,
+    frame_cnt: u32,
 }
 
 pub fn spawn_active_effect(
@@ -51,10 +50,10 @@ pub fn spawn_active_effect(
     };
 
     if let Some(id) = &params.sound_effect_id {
-        let resources = storage::get::<Resources>();
-        let sound = resources.sounds.get(id).unwrap();
+        let mut resources = storage::get_mut::<Resources>();
+        let mut sound = resources.sounds.get_mut(id).unwrap();
 
-        play_sound_once(*sound);
+        play_sound(sound, false);
     }
 
     let mut damage = Vec::new();
@@ -74,7 +73,7 @@ pub fn spawn_active_effect(
                     Transform::new(origin, 0.0),
                     CircleCollider {
                         r: radius,
-                        ttl_timer: 0.0,
+                        frame_cnt: 0,
                     },
                 ));
             }
@@ -123,7 +122,7 @@ pub fn spawn_active_effect(
                     RectCollider {
                         w: rect.w,
                         h: rect.h,
-                        ttl_timer: 0.0,
+                        frame_cnt: 0,
                     },
                 ));
             }
@@ -167,7 +166,7 @@ pub fn spawn_active_effect(
 
             if spread != 0.0 {
                 let rad = deg_to_rad(spread);
-                let spread = rand::gen_range(-rad, rad);
+                let spread = core::rand::gen_range(-rad, rad);
 
                 velocity = rotate_vector(velocity, spread);
             }
@@ -287,37 +286,35 @@ pub enum ActiveEffectKind {
 pub fn debug_draw_active_effects(world: &mut World) {
     let mut to_remove = Vec::new();
 
-    let dt = get_frame_time();
-
     for (e, (transform, collider)) in world.query_mut::<(&Transform, &mut CircleCollider)>() {
-        collider.ttl_timer += dt;
+        collider.frame_cnt += 1;
 
-        draw_circle_lines(
+        draw_circle_outline(
             transform.position.x,
             transform.position.y,
             collider.r,
             2.0,
-            color::RED,
+            colors::RED,
         );
 
-        if collider.ttl_timer >= COLLIDER_DEBUG_DRAW_TTL {
+        if collider.frame_cnt >= COLLIDER_DEBUG_DRAW_FRAMES {
             to_remove.push(e);
         }
     }
 
     for (e, (transform, collider)) in world.query_mut::<(&Transform, &mut RectCollider)>() {
-        collider.ttl_timer += dt;
+        collider.frame_cnt += 1;
 
-        draw_rectangle_lines(
+        draw_rectangle_outline(
             transform.position.x,
             transform.position.y,
             collider.w,
             collider.h,
             2.0,
-            color::RED,
+            colors::RED,
         );
 
-        if collider.ttl_timer >= COLLIDER_DEBUG_DRAW_TTL {
+        if collider.frame_cnt >= COLLIDER_DEBUG_DRAW_FRAMES {
             to_remove.push(e);
         }
     }

@@ -1,14 +1,13 @@
-use macroquad::{
-    experimental::collections::storage,
-    prelude::*,
-    ui::{self, root_ui, widgets},
-};
+use core::prelude::*;
 
 use super::GuiResources;
 
 use crate::{resources::MapResource, GamepadContext, Resources};
 
 use crate::gui::{draw_main_menu_background, WINDOW_MARGIN_H, WINDOW_MARGIN_V};
+
+use crate::macroquad::ui::{root_ui, widgets};
+use crate::macroquad::window::next_frame;
 
 const MAP_SELECT_SCREEN_MARGIN_FACTOR: f32 = 0.1;
 const MAP_SELECT_PREVIEW_TARGET_WIDTH: f32 = 250.0;
@@ -19,7 +18,7 @@ pub async fn show_select_map_menu() -> MapResource {
     let mut current_page: i32;
     let mut hovered: i32 = 0;
 
-    let mut old_mouse_position = mouse_position();
+    let mut old_mouse_position = get_mouse_position();
 
     // skip a frame to let Enter be unpressed from the previous screen
     next_frame().await;
@@ -39,8 +38,8 @@ pub async fn show_select_map_menu() -> MapResource {
         let mut start = is_key_pressed(KeyCode::Enter);
 
         let (page_up, page_down) = {
-            let mouse_wheel = mouse_wheel();
-            (mouse_wheel.1 > 0.0, mouse_wheel.1 < 0.0)
+            let mouse_wheel = get_mouse_wheel_values();
+            (mouse_wheel.y > 0.0, mouse_wheel.y < 0.0)
         };
 
         for (_, gamepad) in gamepad_system.gamepads() {
@@ -79,14 +78,14 @@ pub async fn show_select_map_menu() -> MapResource {
 
         root_ui().push_skin(&gui_resources.skins.map_selection);
 
-        let screen_size = vec2(screen_width(), screen_height());
+        let viewport = get_viewport();
         let screen_margins = vec2(
-            screen_size.x * MAP_SELECT_SCREEN_MARGIN_FACTOR,
-            screen_size.y * MAP_SELECT_SCREEN_MARGIN_FACTOR,
+            viewport.width * MAP_SELECT_SCREEN_MARGIN_FACTOR,
+            viewport.height * MAP_SELECT_SCREEN_MARGIN_FACTOR,
         );
         let content_size = vec2(
-            screen_size.x - (screen_margins.x * 2.0),
-            screen_size.y - (screen_margins.y * 2.0),
+            viewport.width - (screen_margins.x * 2.0),
+            viewport.height - (screen_margins.y * 2.0),
         );
 
         let entries_per_row = (content_size.x / MAP_SELECT_PREVIEW_TARGET_WIDTH).round() as usize;
@@ -178,7 +177,7 @@ pub async fn show_select_map_menu() -> MapResource {
 
                     let label_size = root_ui().calc_size(&pagination_label);
                     let label_position =
-                        screen_size - vec2(WINDOW_MARGIN_H, WINDOW_MARGIN_V) - label_size;
+                        viewport.as_vec2() - vec2(WINDOW_MARGIN_H, WINDOW_MARGIN_V) - label_size;
 
                     widgets::Label::new(&pagination_label)
                         .position(label_position)
@@ -210,13 +209,17 @@ pub async fn show_select_map_menu() -> MapResource {
                         rect.h = h;
                     }
 
-                    if old_mouse_position != mouse_position()
-                        && rect.contains(mouse_position().into())
+                    let mouse_position = get_mouse_position();
+
+                    if old_mouse_position != mouse_position
+                        && rect.contains(mouse_position.into())
                     {
                         hovered = i as _;
                     }
 
-                    if ui::widgets::Button::new(map_entry.preview)
+                    let texture: core::macroquad::texture::Texture2D = map_entry.preview.into();
+
+                    if widgets::Button::new(texture)
                         .size(rect.size())
                         .position(rect.point())
                         .ui(&mut *root_ui())
@@ -232,7 +235,7 @@ pub async fn show_select_map_menu() -> MapResource {
 
         root_ui().pop_skin();
 
-        old_mouse_position = mouse_position();
+        old_mouse_position = get_mouse_position();
 
         next_frame().await;
     }

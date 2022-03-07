@@ -1,9 +1,7 @@
 use hecs::World;
 
-use macroquad::prelude::*;
-
+use core::prelude::*;
 use core::network::PlayerId;
-
 use core::input::{collect_local_input, GameInputScheme, PlayerInput};
 
 #[derive(Debug, Clone)]
@@ -78,7 +76,7 @@ impl PlayerController {
     }
 }
 
-pub fn update_player_controllers(world: &mut World) {
+pub fn update_player_controllers(world: &mut World, delta_time: f32) {
     for (_, controller) in world.query_mut::<&mut PlayerController>() {
         let input = match &controller.kind {
             PlayerControllerKind::LocalInput(input_scheme) => collect_local_input(*input_scheme),

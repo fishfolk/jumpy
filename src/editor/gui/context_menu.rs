@@ -1,12 +1,10 @@
-use macroquad::{
-    experimental::collections::storage,
-    prelude::*,
-    ui::{hash, widgets, Ui},
-};
+use core::prelude::*;
 
 use super::EditorAction;
 
 use crate::gui::{GuiResources, ELEMENT_MARGIN};
+use crate::macroquad::hash;
+use crate::macroquad::ui::{Ui, widgets};
 
 #[derive(Debug, Clone)]
 pub enum ContextMenuEntry {
@@ -135,20 +133,19 @@ fn get_corrected_position(position: Vec2, entries: &[ContextMenuEntry], is_root:
         height += entry.get_height();
     }
 
-    let screen_width = screen_width();
-    let screen_height = screen_height();
+    let viewport = get_viewport();
 
     let x = if is_root {
         position
             .x
-            .clamp(0.0, screen_width - ContextMenuEntry::WIDTH)
-    } else if position.x + ContextMenuEntry::WIDTH > screen_width {
+            .clamp(0.0, viewport.width - ContextMenuEntry::WIDTH)
+    } else if position.x + ContextMenuEntry::WIDTH > viewport.width {
         position.x - ContextMenuEntry::WIDTH * 2.0
     } else {
         position.x
     };
 
-    let y = position.y.clamp(0.0, screen_height - height);
+    let y = position.y.clamp(0.0, viewport.height - height);
 
     vec2(x, y)
 }

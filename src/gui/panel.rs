@@ -2,15 +2,13 @@
 //! The stock MQ windows do not update their position when screen size changes, even when they
 //! are not movable, so we solve this by drawing a non-interactive button, to draw the background,
 //! and a group, on top of that, to hold the layout.
+use core::prelude::*;
 
 use crate::Resources;
-use macroquad::{
-    experimental::collections::storage,
-    prelude::*,
-    ui::{widgets, Id, Ui},
-};
 
 use super::{GuiResources, WINDOW_MARGIN_H, WINDOW_MARGIN_V};
+
+use core::macroquad::ui::{Id, Ui, widgets};
 
 pub struct Panel {
     id: Id,
@@ -193,47 +191,47 @@ impl NewPanel {
                     let offset = vec2(x as f32 * Self::TEXTURE_SIZE, y as f32 * Self::TEXTURE_SIZE);
 
                     if x == 0 && y == 0 {
-                        widgets::Texture::new(upper_lh_corner.texture)
+                        widgets::Texture::new(upper_lh_corner.texture.into())
                             .position(self.position + offset)
                             .size(Self::TEXTURE_SIZE, Self::TEXTURE_SIZE)
                             .ui(ui);
                     } else if x == 0 && y == self.size.y - 1 {
-                        widgets::Texture::new(lower_lh_corner.texture)
+                        widgets::Texture::new(lower_lh_corner.texture.into())
                             .position(self.position + offset)
                             .size(Self::TEXTURE_SIZE, Self::TEXTURE_SIZE)
                             .ui(ui);
                     } else if x == self.size.x - 1 && y == 0 {
-                        widgets::Texture::new(upper_rh_corner.texture)
+                        widgets::Texture::new(upper_rh_corner.texture.into())
                             .position(self.position + offset)
                             .size(Self::TEXTURE_SIZE, Self::TEXTURE_SIZE)
                             .ui(ui);
                     } else if x == self.size.x - 1 && y == self.size.y - 1 {
-                        widgets::Texture::new(lower_rh_corner.texture)
+                        widgets::Texture::new(lower_rh_corner.texture.into())
                             .position(self.position + offset)
                             .size(Self::TEXTURE_SIZE, Self::TEXTURE_SIZE)
                             .ui(ui);
                     } else if x == 0 {
-                        widgets::Texture::new(lh_side.texture)
+                        widgets::Texture::new(lh_side.texture.into())
                             .position(self.position + offset)
                             .size(Self::TEXTURE_SIZE, Self::TEXTURE_SIZE)
                             .ui(ui);
                     } else if x == self.size.x - 1 {
-                        widgets::Texture::new(rh_side.texture)
+                        widgets::Texture::new(rh_side.texture.into())
                             .position(self.position + offset)
                             .size(Self::TEXTURE_SIZE, Self::TEXTURE_SIZE)
                             .ui(ui);
                     } else if y == 0 {
-                        widgets::Texture::new(top.texture)
+                        widgets::Texture::new(top.texture.into())
                             .position(self.position + offset)
                             .size(Self::TEXTURE_SIZE, Self::TEXTURE_SIZE)
                             .ui(ui);
                     } else if y == self.size.y - 1 {
-                        widgets::Texture::new(bottom.texture)
+                        widgets::Texture::new(bottom.texture.into())
                             .position(self.position + offset)
                             .size(Self::TEXTURE_SIZE, Self::TEXTURE_SIZE)
                             .ui(ui);
                     } else {
-                        widgets::Texture::new(bg.texture)
+                        widgets::Texture::new(bg.texture.into())
                             .position(self.position + offset)
                             .size(Self::TEXTURE_SIZE, Self::TEXTURE_SIZE)
                             .ui(ui);

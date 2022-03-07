@@ -1,5 +1,7 @@
 use core::prelude::*;
 
+use crate::macroquad::ui::widgets;
+
 pub trait ComboBoxValue {
     fn get_index(&self) -> usize;
 
@@ -70,55 +72,61 @@ impl From<&ComboBoxVec> for usize {
     }
 }
 
-pub struct ComboBoxBuilder {
-    id: Id,
-    label: Option<String>,
-    ratio: Option<f32>,
-}
+cfg_if! {
+    if #[cfg(not(feature = "ultimate"))] {
+        use core::macroquad::ui::{Ui, Id};
 
-impl ComboBoxBuilder {
-    pub fn new(id: Id) -> Self {
-        ComboBoxBuilder {
-            id,
-            label: None,
-            ratio: None,
-        }
-    }
-
-    #[must_use]
-    pub fn with_label(self, label: &str) -> Self {
-        ComboBoxBuilder {
-            label: Some(label.to_string()),
-            ..self
-        }
-    }
-
-    #[must_use]
-    pub fn with_ratio(self, ratio: f32) -> Self {
-        ComboBoxBuilder {
-            ratio: Some(ratio),
-            ..self
-        }
-    }
-
-    pub fn build<V: ComboBoxValue>(&self, ui: &mut Ui, value: &mut V) {
-        let mut index = value.get_index();
-
-        let owned = value.get_options();
-        let options = owned.iter().map(String::as_str).collect::<Vec<_>>();
-
-        let mut combobox = widgets::ComboBox::new(self.id, &options);
-
-        if let Some(ratio) = self.ratio {
-            combobox = combobox.ratio(ratio);
+        pub struct ComboBoxBuilder {
+            id: Id,
+            label: Option<String>,
+            ratio: Option<f32>,
         }
 
-        if let Some(label) = &self.label {
-            combobox = combobox.label(label);
+        impl ComboBoxBuilder {
+            pub fn new(id: Id) -> Self {
+                ComboBoxBuilder {
+                    id,
+                    label: None,
+                    ratio: None,
+                }
+            }
+
+            #[must_use]
+            pub fn with_label(self, label: &str) -> Self {
+                ComboBoxBuilder {
+                    label: Some(label.to_string()),
+                    ..self
+                }
+            }
+
+            #[must_use]
+            pub fn with_ratio(self, ratio: f32) -> Self {
+                ComboBoxBuilder {
+                    ratio: Some(ratio),
+                    ..self
+                }
+            }
+
+            pub fn build<V: ComboBoxValue>(&self, ui: &mut Ui, value: &mut V) {
+                let mut index = value.get_index();
+
+                let owned = value.get_options();
+                let options = owned.iter().map(String::as_str).collect::<Vec<_>>();
+
+                let mut combobox = widgets::ComboBox::new(self.id, &options);
+
+                if let Some(ratio) = self.ratio {
+                    combobox = combobox.ratio(ratio);
+                }
+
+                if let Some(label) = &self.label {
+                    combobox = combobox.label(label);
+                }
+
+                combobox.ui(ui, &mut index);
+
+                value.set_index(index);
+            }
         }
-
-        combobox.ui(ui, &mut index);
-
-        value.set_index(index);
     }
 }

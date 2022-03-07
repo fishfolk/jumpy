@@ -1,8 +1,10 @@
 use hecs::{Entity, World};
-use macroquad::time::get_frame_time;
+
+use serde::{Deserialize, Serialize};
+
+use core::prelude::*;
 
 use crate::player::{Player, PlayerState};
-use serde::{Deserialize, Serialize};
 
 #[derive(Default)]
 pub struct PlayerEventQueue {
@@ -66,11 +68,9 @@ impl From<&PlayerEvent> for PlayerEventKind {
     }
 }
 
-pub fn update_player_events(world: &mut World) {
+pub fn update_player_events(world: &mut World, delta_time: f32) {
     for (_, (player, events)) in world.query_mut::<(&mut Player, &mut PlayerEventQueue)>() {
-        let dt = get_frame_time();
-
-        events.queue.push(PlayerEvent::Update { dt });
+        events.queue.push(PlayerEvent::Update { dt: delta_time });
 
         let mut damage_blocked_left = false;
         let mut damage_blocked_right = false;

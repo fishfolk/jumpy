@@ -3,16 +3,11 @@ use std::collections::HashMap;
 use std::iter::FromIterator;
 use std::ops::Mul;
 
-use macroquad::color;
-use macroquad::experimental::animation::Animation as MQAnimation;
-use macroquad::experimental::collections::storage;
-use macroquad::prelude::*;
-
 use hecs::World;
 
 use serde::{Deserialize, Serialize};
 
-use core::Transform;
+use core::prelude::*;
 
 use crate::{Drawable, DrawableKind, Resources};
 
@@ -94,7 +89,7 @@ impl Default for AnimatedSpriteParams {
             scale: 1.0,
             offset: Vec2::ZERO,
             pivot: None,
-            tint: color::WHITE,
+            tint: colors::WHITE,
             is_flipped_x: false,
             is_flipped_y: false,
             autoplay_id: None,
@@ -108,7 +103,7 @@ impl From<AnimatedSpriteMetadata> for AnimatedSpriteParams {
             scale: meta.scale.unwrap_or(1.0),
             offset: meta.offset,
             pivot: meta.pivot,
-            tint: meta.tint.unwrap_or(color::WHITE),
+            tint: meta.tint.unwrap_or(colors::WHITE),
             autoplay_id: meta.autoplay_id,
             ..Default::default()
         }
@@ -150,17 +145,8 @@ pub struct AnimatedSprite {
 }
 
 impl AnimatedSprite {
-    pub fn new(texture_id: &str, animations: &[Animation], params: AnimatedSpriteParams) -> Self {
+    pub fn new(texture: Texture2D, animations: &[Animation], params: AnimatedSpriteParams) -> Self {
         let animations = animations.to_vec();
-
-        let texture_res = {
-            let resources = storage::get::<Resources>();
-            resources
-                .textures
-                .get(texture_id)
-                .cloned()
-                .unwrap_or_else(|| panic!("AnimatedSprite: Invalid texture ID '{}'", texture_id))
-        };
 
         let mut is_playing = false;
         let mut current_index = 0;
@@ -178,10 +164,10 @@ impl AnimatedSprite {
 
         let frame_size = params
             .frame_size
-            .unwrap_or_else(|| texture_res.frame_size());
+            .unwrap_or_else(|| texture.size().into());
 
         AnimatedSprite {
-            texture: texture_res.texture,
+            texture,
             frame_size,
             animations,
             scale: params.scale,
@@ -258,16 +244,16 @@ impl AnimatedSprite {
     }
 }
 
-pub fn update_animated_sprites(world: &mut World) {
+pub fn update_animated_sprites(world: &mut World, delta_time: f32) {
     for (_, drawable) in world.query_mut::<&mut Drawable>() {
         match drawable.kind.borrow_mut() {
             DrawableKind::AnimatedSprite(sprite) => {
-                update_one_animated_sprite(sprite);
+                update_one_animated_sprite(delta_time, sprite);
             }
             DrawableKind::AnimatedSpriteSet(sprite_set) => {
                 for key in &sprite_set.draw_order {
                     let sprite = sprite_set.map.get_mut(key).unwrap();
-                    update_one_animated_sprite(sprite);
+                    update_one_animated_sprite(delta_time, sprite);
                 }
             }
             _ => {}
@@ -275,9 +261,7 @@ pub fn update_animated_sprites(world: &mut World) {
     }
 }
 
-pub fn update_one_animated_sprite(sprite: &mut AnimatedSprite) {
-    let dt = get_frame_time();
-
+pub fn update_one_animated_sprite(delta_time: f32, sprite: &mut AnimatedSprite) {
     if !sprite.is_deactivated && sprite.is_playing {
         let (is_last_frame, is_looping) = {
             let animation = sprite.animations.get(sprite.current_index).unwrap();
@@ -301,7 +285,7 @@ pub fn update_one_animated_sprite(sprite: &mut AnimatedSprite) {
                         sprite.queued_action = None;
                     }
                     QueuedAnimationAction::WaitThen(delay, action) => {
-                        sprite.wait_timer += dt;
+                        sprite.wait_timer += delta_time;
                         if sprite.wait_timer >= delay {
                             sprite.queued_action = Some(*action);
                             sprite.wait_timer = 0.0;
@@ -323,7 +307,7 @@ pub fn update_one_animated_sprite(sprite: &mut AnimatedSprite) {
         };
 
         if sprite.is_playing {
-            sprite.frame_timer += dt;
+            sprite.frame_timer += delta_time;
 
             if sprite.frame_timer > 1.0 / fps as f32 {
                 sprite.current_frame += 1;
@@ -385,11 +369,10 @@ pub fn draw_one_animated_sprite(transform: &Transform, sprite: &AnimatedSprite) 
     if !sprite.is_deactivated {
         let position = transform.position + sprite.offset;
 
-        draw_texture_ex(
-            sprite.texture,
+        draw_texture(
             position.x,
             position.y,
-            sprite.tint,
+            sprite.texture,
             DrawTextureParams {
                 flip_x: sprite.is_flipped_x,
                 flip_y: sprite.is_flipped_y,
@@ -397,6 +380,7 @@ pub fn draw_one_animated_sprite(transform: &Transform, sprite: &AnimatedSprite) 
                 source: Some(sprite.source_rect()),
                 dest_size: Some(sprite.size()),
                 pivot: sprite.pivot,
+                tint: Some(sprite.tint),
             },
         )
     }
@@ -407,7 +391,7 @@ pub fn debug_draw_one_animated_sprite(position: Vec2, sprite: &AnimatedSprite) {
         let position = position + sprite.offset;
         let size = sprite.size();
 
-        draw_rectangle_lines(position.x, position.y, size.x, size.y, 2.0, color::BLUE)
+        draw_rectangle_outline(position.x, position.y, size.x, size.y, 2.0, colors::BLUE)
     }
 }
 
@@ -545,9 +529,10 @@ pub struct AnimationMetadata {
     pub is_looping: bool,
 }
 
-impl From<AnimationMetadata> for MQAnimation {
+#[cfg(not(feature = "ultimate"))]
+impl From<AnimationMetadata> for core::macroquad::experimental::animation::Animation {
     fn from(a: AnimationMetadata) -> Self {
-        MQAnimation {
+        core::macroquad::experimental::animation::Animation {
             name: a.id,
             row: a.row,
             frames: a.frames,
@@ -578,7 +563,6 @@ pub struct AnimatedSpriteMetadata {
     pub pivot: Option<Vec2>,
     #[serde(
         default,
-        with = "core::json::color_opt",
         skip_serializing_if = "Option::is_none"
     )]
     pub tint: Option<Color>,

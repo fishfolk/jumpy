@@ -1,10 +1,8 @@
-use macroquad::{
-    experimental::collections::storage,
-    prelude::*,
-    ui::{hash, widgets, Ui},
-};
+use core::prelude::*;
 
 use crate::gui::{Checkbox, GuiResources, ELEMENT_MARGIN, LIST_BOX_ENTRY_HEIGHT};
+use crate::macroquad::hash;
+use crate::macroquad::ui::{Ui, widgets};
 
 use crate::map::{Map, MapBackgroundLayer, MapTileset};
 

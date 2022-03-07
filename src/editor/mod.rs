@@ -1,13 +1,15 @@
 use std::any::TypeId;
 use std::path::Path;
 
-use crate::{exit_to_main_menu, quit_to_desktop, Resources};
+use crate::Resources;
 
 mod camera;
 
 pub use camera::EditorCamera;
 
 pub mod gui;
+
+use core::prelude::*;
 
 use gui::{
     toggle_editor_menu,
@@ -37,7 +39,6 @@ pub use tools::{
 };
 
 use history::EditorHistory;
-pub use input::EditorInputScheme;
 
 use crate::editor::actions::{
     CreateSpawnPointAction, DeleteSpawnPointAction, ImportAction, MoveSpawnPointAction,
@@ -52,16 +53,14 @@ use crate::editor::tools::SpawnPointPlacementTool;
 use crate::gui::SELECTION_HIGHLIGHT_COLOR;
 use crate::map::{MapObject, MapObjectKind};
 use crate::player::IDLE_ANIMATION_ID;
-use macroquad::{
-    color,
-    experimental::{
-        collections::storage,
-        scene::{Node, RefMut},
-    },
-    prelude::*,
-};
 
-use core::text::{draw_aligned_text, HorizontalAlignment, VerticalAlignment};
+use core::prelude::*;
+use core::text::{draw_aligned_text, draw_text, measure_text, HorizontalAlignment, VerticalAlignment, TextParams};
+
+use crate::macroquad::camera::{pop_camera_state, push_camera_state, set_default_camera};
+use crate::macroquad::experimental::scene;
+use crate::macroquad::experimental::scene::RefMut;
+use crate::macroquad::prelude::scene::Node;
 
 use super::map::{Map, MapLayerKind};
 use crate::resources::{
@@ -75,7 +74,6 @@ pub struct EditorContext {
     pub selected_tileset: Option<String>,
     pub selected_tile: Option<u32>,
     pub selected_object: Option<usize>,
-    pub input_scheme: EditorInputScheme,
     pub cursor_position: Vec2,
     pub is_user_map: bool,
     pub is_tiled_map: bool,
@@ -90,7 +88,6 @@ impl Default for EditorContext {
             selected_tileset: None,
             selected_tile: None,
             selected_object: None,
-            input_scheme: EditorInputScheme::Mouse,
             cursor_position: Vec2::ZERO,
             is_user_map: false,
             is_tiled_map: false,
@@ -131,7 +128,6 @@ pub struct Editor {
     // Selected tile in map
     selected_map_tile_index: Option<usize>,
 
-    input_scheme: EditorInputScheme,
     previous_cursor_position: Vec2,
     cursor_position: Vec2,
     history: EditorHistory,
@@ -177,7 +173,7 @@ impl Editor {
 
     const MESSAGE_TIMEOUT: f32 = 2.5;
 
-    pub fn new(input_scheme: EditorInputScheme, map_resource: MapResource) -> Self {
+    pub fn new(map_resource: MapResource) -> Self {
         add_tool_instance(TilePlacementTool::new());
         add_tool_instance(ObjectPlacementTool::new());
         add_tool_instance(SpawnPointPlacementTool::new());
@@ -187,10 +183,8 @@ impl Editor {
 
         let selected_layer = map_resource.map.draw_order.first().cloned();
 
-        let cursor_position = match input_scheme {
-            EditorInputScheme::Mouse => mouse_position().into(),
-            EditorInputScheme::Gamepad(..) => vec2(screen_width() / 2.0, screen_height() / 2.0),
-        };
+        let viewport = get_viewport();
+        let cursor_position = vec2(viewport.width / 2.0, viewport.height / 2.0);
 
         let tool_selector_element = ToolSelectorElement::new()
             .with_tool::<TilePlacementTool>()
@@ -236,7 +230,6 @@ impl Editor {
 
             selected_map_tile_index: None,
 
-            input_scheme,
             previous_cursor_position: cursor_position,
             cursor_position,
             history: EditorHistory::new(),
@@ -286,7 +279,6 @@ impl Editor {
             selected_tileset: self.selected_tileset.clone(),
             selected_tile: self.selected_tile,
             selected_object: self.selected_object,
-            input_scheme: self.input_scheme,
             cursor_position: self.cursor_position,
             is_user_map: self.map_resource.meta.is_user_map,
             is_tiled_map: self.map_resource.meta.is_tiled_map,
@@ -643,10 +635,10 @@ impl Editor {
                 resources.delete_map(index).unwrap();
             }
             EditorAction::ExitToMainMenu => {
-                exit_to_main_menu();
+
             }
             EditorAction::QuitToDesktop => {
-                quit_to_desktop();
+
             }
         }
 
@@ -662,15 +654,13 @@ impl Node for Editor {
     fn update(mut node: RefMut<Self>) {
         node.update_context();
 
-        if node.input_scheme == EditorInputScheme::Mouse {
-            node.previous_cursor_position = node.cursor_position;
-            node.cursor_position = mouse_position().into();
-        }
+        node.previous_cursor_position = node.cursor_position;
+        node.cursor_position = get_mouse_position().into();
 
-        let dt = get_frame_time();
+        let dt = core::macroquad::prelude::get_frame_time();
 
         node.previous_input = node.input;
-        node.input = collect_editor_input(node.input_scheme);
+        node.input = collect_editor_input();
 
         {
             let movement = node.cursor_position - node.previous_cursor_position;
@@ -1131,32 +1121,34 @@ impl Node for Editor {
     }
 
     fn fixed_update(mut node: RefMut<Self>) {
+        /*
         if let EditorInputScheme::Gamepad { .. } = node.input_scheme {
             node.previous_cursor_position = node.cursor_position;
             let movement = node.input.cursor_move_direction * Self::CURSOR_MOVE_SPEED;
             node.cursor_position += movement;
         }
+         */
 
         let is_cursor_over_map = {
             let gui = storage::get::<EditorGui>();
             !gui.contains(node.cursor_position)
         };
 
-        let screen_size = vec2(screen_width(), screen_height());
+        let viewport = get_viewport();
 
-        let threshold = screen_size * Self::CAMERA_PAN_THRESHOLD;
+        let threshold = viewport.as_vec2() * Self::CAMERA_PAN_THRESHOLD;
 
         let mut pan_direction = node.input.camera_move_direction;
 
         if node.cursor_position.x <= threshold.x {
             pan_direction.x = -1.0;
-        } else if node.cursor_position.x >= screen_size.x - threshold.x {
+        } else if node.cursor_position.x >= viewport.width - threshold.x {
             pan_direction.x = 1.0;
         }
 
         if node.cursor_position.y <= threshold.y {
             pan_direction.y = -1.0;
-        } else if node.cursor_position.y >= screen_size.y - threshold.y {
+        } else if node.cursor_position.y >= viewport.height - threshold.y {
             pan_direction.y = 1.0;
         }
 
@@ -1180,8 +1172,10 @@ impl Node for Editor {
 
     fn draw(mut node: RefMut<Self>) {
         {
+            let camera = storage::get::<EditorCamera>();
+
             let map = node.get_map();
-            map.draw_background(None, node.is_parallax_disabled);
+            map.draw_background(None, camera.position, node.is_parallax_disabled);
             map.draw(None, false);
         }
 
@@ -1189,7 +1183,7 @@ impl Node for Editor {
             let map = node.get_map();
             let map_size = map.grid_size.as_f32() * map.tile_size;
 
-            draw_rectangle_lines(
+            draw_rectangle_outline(
                 map.world_offset.x,
                 map.world_offset.y,
                 map_size.x,
@@ -1280,16 +1274,16 @@ impl Node for Editor {
                 let texture_res = resources.textures.get("spawn_point_icon").unwrap();
 
                 let frame_size = texture_res.meta.frame_size.unwrap_or_else(|| {
-                    vec2(texture_res.texture.width(), texture_res.texture.height())
+                    let texture_size = texture_res.texture.size();
+                    vec2(texture_size.width, texture_size.height)
                 });
 
                 let source_rect = Rect::new(0.0, 0.0, frame_size.x, frame_size.y);
 
-                draw_texture_ex(
-                    texture_res.texture,
+                draw_texture(
                     position.x,
                     position.y,
-                    color::WHITE,
+                    texture_res.texture,
                     DrawTextureParams {
                         dest_size: Some(frame_size),
                         source: Some(source_rect),
@@ -1298,7 +1292,7 @@ impl Node for Editor {
                 );
 
                 if is_selected {
-                    draw_rectangle_lines(
+                    draw_rectangle_outline(
                         position.x,
                         position.y,
                         SPAWN_POINT_COLLIDER_WIDTH,
@@ -1376,7 +1370,7 @@ impl Node for Editor {
 
                                             let position = object_position + meta.sprite.offset;
 
-                                            let tint = meta.sprite.tint.unwrap_or(color::WHITE);
+                                            let tint = meta.sprite.tint.unwrap_or(colors::WHITE);
 
                                             let dest_size =
                                                 meta.sprite.scale.map(|s| s * frame_size);
@@ -1388,14 +1382,14 @@ impl Node for Editor {
                                                 frame_size.y,
                                             ));
 
-                                            draw_texture_ex(
-                                                texture,
+                                            draw_texture(
                                                 position.x,
                                                 position.y,
-                                                tint,
+                                                texture,
                                                 DrawTextureParams {
                                                     dest_size,
                                                     source,
+                                                    tint: tint.into(),
                                                     ..Default::default()
                                                 },
                                             );
@@ -1413,7 +1407,7 @@ impl Node for Editor {
                                         {
                                             let position = object_position + params.sprite.offset;
 
-                                            let tint = params.sprite.tint.unwrap_or(color::WHITE);
+                                            let tint = params.sprite.tint.unwrap_or(colors::WHITE);
 
                                             let (texture, frame_size) =
                                                 (texture_res.texture, texture_res.frame_size());
@@ -1431,14 +1425,14 @@ impl Node for Editor {
                                                     )
                                                 });
 
-                                            draw_texture_ex(
-                                                texture,
+                                            draw_texture(
                                                 position.x,
                                                 position.y,
-                                                tint,
+                                                texture,
                                                 DrawTextureParams {
                                                     dest_size,
                                                     source,
+                                                    tint: tint.into(),
                                                     ..Default::default()
                                                 },
                                             );
@@ -1456,20 +1450,16 @@ impl Node for Editor {
 
                                         let frame_size =
                                             texture_res.meta.frame_size.unwrap_or_else(|| {
-                                                vec2(
-                                                    texture_res.texture.width(),
-                                                    texture_res.texture.height(),
-                                                )
+                                                texture_res.texture.size().into()
                                             });
 
                                         let source_rect =
                                             Rect::new(0.0, 0.0, frame_size.x, frame_size.y);
 
-                                        draw_texture_ex(
-                                            texture_res.texture,
+                                        draw_texture(
                                             object_position.x,
                                             object_position.y,
-                                            color::WHITE,
+                                            texture_res.texture,
                                             DrawTextureParams {
                                                 dest_size: Some(frame_size),
                                                 source: Some(source_rect),
@@ -1487,7 +1477,7 @@ impl Node for Editor {
                             if let Some(label) = &label {
                                 let params = TextParams::default();
 
-                                draw_text_ex(
+                                draw_text(
                                     label,
                                     object_position.x,
                                     object_position.y + (size.y / 2.0)
@@ -1497,7 +1487,7 @@ impl Node for Editor {
                             }
 
                             if is_selected {
-                                draw_rectangle_lines(
+                                draw_rectangle_outline(
                                     object_position.x - Self::OBJECT_SELECTION_RECT_PADDING,
                                     object_position.y - Self::OBJECT_SELECTION_RECT_PADDING,
                                     size.x,
@@ -1522,7 +1512,7 @@ impl Node for Editor {
             );
             let position = node.get_map().to_position(coords);
 
-            draw_rectangle_lines(
+            draw_rectangle_outline(
                 position.x,
                 position.y,
                 tile_size.x,
@@ -1536,7 +1526,8 @@ impl Node for Editor {
             push_camera_state();
             set_default_camera();
 
-            let label_position = vec2(screen_width() / 2.0, 16.0);
+            let viewport = get_viewport();
+            let label_position = vec2(viewport.width / 2.0, 16.0);
 
             draw_aligned_text(
                 label,

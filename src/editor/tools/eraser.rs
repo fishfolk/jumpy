@@ -1,4 +1,4 @@
-use macroquad::{color, prelude::*};
+use core::prelude::*;
 
 use super::{EditorAction, EditorContext, EditorTool, EditorToolParams};
 
@@ -6,6 +6,7 @@ use crate::{
     editor::EditorCamera,
     map::{Map, MapLayerKind},
 };
+use crate::macroquad::experimental::scene;
 
 #[derive(Default)]
 pub struct EraserTool {
@@ -82,12 +83,12 @@ impl EditorTool for EraserTool {
                     let position = map.to_position(coords);
 
                     let outline_color = if layer.tiles[map.to_index(coords)].is_some() {
-                        color::YELLOW
+                        colors::YELLOW
                     } else {
-                        color::RED
+                        colors::RED
                     };
 
-                    draw_rectangle_lines(
+                    draw_rectangle_outline(
                         position.x,
                         position.y,
                         map.tile_size.x,

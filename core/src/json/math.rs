@@ -1,6 +1,6 @@
-use macroquad::prelude::*;
-
 use serde::{Deserialize, Serialize};
+
+use crate::math::{Rect, UVec2, uvec2, Vec2, vec2, IVec2, ivec2};
 
 pub mod vec2_def {
     use super::{vec2, Vec2};

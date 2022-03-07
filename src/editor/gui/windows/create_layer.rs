@@ -1,13 +1,12 @@
-use macroquad::{
-    prelude::*,
-    ui::{hash, widgets, Ui},
-};
+use core::prelude::*;
 
 use crate::map::{Map, MapLayerKind};
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 use crate::editor::gui::ComboBoxBuilder;
 use crate::gui::Checkbox;
+use crate::macroquad::hash;
+use crate::macroquad::ui::{Ui, widgets};
 
 pub struct CreateLayerWindow {
     params: WindowParams,

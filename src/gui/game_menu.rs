@@ -1,7 +1,6 @@
-use macroquad::{
-    prelude::*,
-    ui::{hash, Ui},
-};
+use core::prelude::*;
+use crate::macroquad::hash;
+use crate::macroquad::ui::Ui;
 
 use super::{Menu, MenuEntry, MenuResult};
 

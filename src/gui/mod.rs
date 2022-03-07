@@ -1,5 +1,6 @@
 mod background;
-mod checkbox;
+pub mod combobox;
+pub mod checkbox;
 mod create_map;
 mod credits;
 mod game_menu;
@@ -10,7 +11,7 @@ mod select_character;
 mod select_map;
 mod style;
 
-use macroquad::prelude::*;
+use core::prelude::*;
 
 pub use style::{
     SkinCollection, BUTTON_FONT_SIZE, BUTTON_MARGIN_H, BUTTON_MARGIN_V, LIST_BOX_ENTRY_HEIGHT,
@@ -19,6 +20,7 @@ pub use style::{
 
 pub use background::{draw_main_menu_background, Background};
 pub use checkbox::Checkbox;
+pub use combobox::{ComboBoxBuilder, ComboBoxVec, ComboBoxValue};
 pub use create_map::show_create_map_menu;
 pub use credits::show_game_credits;
 pub use game_menu::{

@@ -1,12 +1,9 @@
-use macroquad::audio::play_sound_once;
-use macroquad::experimental::collections::storage;
-use macroquad::prelude::*;
 use std::collections::HashMap;
 
 use hecs::{Entity, World};
 
 use core::Result;
-use core::Transform;
+use core::prelude::*;
 
 use crate::{Animation, Drawable, PhysicsBody, QueuedAnimationAction, Resources};
 
@@ -82,9 +79,7 @@ pub fn spawn_sproinger(world: &mut World, position: Vec2) -> Result<Entity> {
     Ok(entity)
 }
 
-pub fn fixed_update_sproingers(world: &mut World) {
-    let dt = get_frame_time();
-
+pub fn fixed_update_sproingers(world: &mut World, delta_time: f32, integration_factor: f32) {
     let bodies = world
         .query::<(&Transform, &PhysicsBody)>()
         .iter()
@@ -102,12 +97,7 @@ pub fn fixed_update_sproingers(world: &mut World) {
     'sproingers: for (_, (sproinger, transform, drawable)) in
         world.query_mut::<(&mut Sproinger, &Transform, &mut Drawable)>()
     {
-        sproinger.cooldown_timer += dt;
-
-        let sound = {
-            let resources = storage::get::<Resources>();
-            resources.sounds[SOUND_EFFECT_ID]
-        };
+        sproinger.cooldown_timer += delta_time;
 
         if sproinger.cooldown_timer >= COOLDOWN {
             let sprite = drawable.get_animated_sprite_mut().unwrap();
@@ -128,7 +118,12 @@ pub fn fixed_update_sproingers(world: &mut World) {
                         CONTRACT_ANIMATION_ID.to_string(),
                     ));
 
-                    play_sound_once(sound);
+                    {
+                        let mut resources = storage::get_mut::<Resources>();
+                        let mut sound = resources.sounds.get_mut(SOUND_EFFECT_ID).unwrap();
+
+                        play_sound(sound, false);
+                    }
 
                     continue 'sproingers;
                 }

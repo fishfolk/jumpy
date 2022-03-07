@@ -1,10 +1,6 @@
 use std::path::Path;
 
-use macroquad::{
-    experimental::collections::storage,
-    prelude::*,
-    ui::{hash, root_ui, widgets},
-};
+use core::prelude::*;
 
 use core::Result;
 
@@ -15,6 +11,9 @@ use crate::resources::{
     map_name_to_filename, MapResource, Resources, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION,
 };
 use core::input::{is_gamepad_btn_pressed, GamepadContext};
+use crate::macroquad::hash;
+use crate::macroquad::ui::{root_ui, widgets};
+use crate::macroquad::window::next_frame;
 
 enum WindowState {
     None,
@@ -25,10 +24,13 @@ enum WindowState {
 pub async fn show_create_map_menu() -> Result<Option<MapResource>> {
     let mut res = WindowState::None;
 
+    let viewport = get_viewport();
+
     let size = vec2(350.0, 425.0);
+
     let position = vec2(
-        (screen_width() - size.x) / 2.0,
-        (screen_height() - size.y) / 2.0,
+        (viewport.width - size.x) / 2.0,
+        (viewport.height - size.y) / 2.0,
     );
 
     next_frame().await;

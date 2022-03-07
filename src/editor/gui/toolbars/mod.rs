@@ -1,10 +1,6 @@
 use std::{any::TypeId, collections::HashMap};
 
-use macroquad::{
-    experimental::collections::storage,
-    prelude::*,
-    ui::{hash, widgets, Ui},
-};
+use core::prelude::*;
 
 use crate::{
     gui::{GuiResources, ELEMENT_MARGIN},
@@ -32,6 +28,8 @@ pub use tileset_details::TilesetDetailsElement;
 mod object_list;
 
 pub use object_list::ObjectListElement;
+use crate::macroquad::hash;
+use crate::macroquad::ui::{Ui, widgets};
 
 #[derive(Debug, Default, Clone)]
 pub struct ToolbarElementParams {
@@ -116,11 +114,14 @@ impl Toolbar {
 
     pub fn get_rect(&self) -> Rect {
         let mut offset = 0.0;
+
+        let viewport = get_viewport();
+
         if self.position == ToolbarPosition::Right {
-            offset += screen_width() - self.width;
+            offset += viewport.width - self.width;
         }
 
-        Rect::new(offset, 0.0, self.width, screen_height())
+        Rect::new(offset, 0.0, self.width, viewport.height)
     }
 
     pub fn contains(&self, point: Vec2) -> bool {
@@ -136,13 +137,15 @@ impl Toolbar {
             ui.push_skin(&gui_resources.skins.toolbar);
         }
 
+        let viewport = get_viewport();
+
         let mut position = Vec2::ZERO;
         if self.position == ToolbarPosition::Right {
-            position.x += screen_width() - self.width;
+            position.x += viewport.width - self.width;
         }
 
         let toolbar_id = hash!(self.position);
-        let toolbar_size = vec2(self.width, screen_height());
+        let toolbar_size = vec2(self.width, viewport.height);
 
         widgets::Group::new(toolbar_id, toolbar_size)
             .position(position)
@@ -172,7 +175,8 @@ impl Toolbar {
                         let element_id = hash!(toolbar_id, element_id);
 
                         let element_size = {
-                            let height = screen_height() * height_factor;
+                            let viewport = get_viewport();
+                            let height = viewport.height * height_factor;
                             vec2(self.width, height)
                         };
 

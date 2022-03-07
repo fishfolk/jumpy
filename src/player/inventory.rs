@@ -1,8 +1,6 @@
-use macroquad::prelude::*;
-
 use hecs::{Entity, With, Without, World};
 
-use core::Transform;
+use core::prelude::*;
 
 use crate::items::{
     fire_weapon, ItemDepleteBehavior, ItemDropBehavior, Weapon, EFFECT_ANIMATED_SPRITE_ID,
@@ -10,7 +8,7 @@ use crate::items::{
 };
 use crate::particles::ParticleEmitter;
 use crate::player::{Player, PlayerController, PlayerState, IDLE_ANIMATION_ID, PICKUP_GRACE_TIME};
-use crate::{Drawable, Item, Owner, PassiveEffectInstance, PhysicsBody};
+use crate::{Drawable, Item, PassiveEffectInstance, PhysicsBody};
 
 const THROW_FORCE: f32 = 5.0;
 
@@ -52,7 +50,7 @@ impl PlayerInventory {
     }
 }
 
-pub fn update_player_inventory(world: &mut World) {
+pub fn update_player_inventory(world: &mut World, delta_time: f32) {
     let mut item_colliders = world
         .query::<With<Item, Without<Owner, (&Transform, &PhysicsBody)>>>()
         .iter()
@@ -172,7 +170,7 @@ pub fn update_player_inventory(world: &mut World) {
             if let Some(weapon_entity) = inventory.weapon {
                 let mut weapon = world.get_mut::<Weapon>(weapon_entity).unwrap();
 
-                weapon.cooldown_timer += get_frame_time();
+                weapon.cooldown_timer += delta_time;
 
                 let mut weapon_transform = world.get_mut::<Transform>(weapon_entity).unwrap();
 
@@ -249,7 +247,7 @@ pub fn update_player_inventory(world: &mut World) {
 
                 let mut item = world.get_mut::<Item>(item_entity).unwrap();
 
-                item.duration_timer += get_frame_time();
+                item.duration_timer += delta_time;
 
                 let mut is_depleted = false;
 
@@ -493,7 +491,7 @@ pub fn draw_weapons_hud(world: &mut World) {
                             let x = x + 14.0 * i as f32;
 
                             if i >= remaining {
-                                draw_circle_lines(
+                                draw_circle_outline(
                                     x,
                                     position.y - 4.0,
                                     4.0,

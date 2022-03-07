@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 
-use macroquad::prelude::*;
-
 use serde::{Deserialize, Serialize};
+
+use crate::color::Color;
+use crate::math::{Vec2, IVec2, UVec2};
 
 pub fn default_true() -> bool {
     true
@@ -62,7 +63,7 @@ pub enum GenericParam {
     UInt(u32),
     Float(f32),
     String(String),
-    Color(#[serde(with = "super::ColorDef")] Color),
+    Color(Color),
     Vec2(#[serde(with = "super::vec2_def")] Vec2),
     IVec2(#[serde(with = "super::ivec2_def")] IVec2),
     UVec2(#[serde(with = "super::uvec2_def")] UVec2),

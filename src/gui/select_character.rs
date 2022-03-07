@@ -1,6 +1,4 @@
-use macroquad::experimental::collections::storage;
-use macroquad::prelude::*;
-use macroquad::ui::{hash, root_ui, widgets};
+use core::prelude::*;
 
 use fishsticks::{Axis, Button, GamepadContext};
 
@@ -13,8 +11,13 @@ use crate::{
     draw_one_animated_sprite, update_one_animated_sprite, AnimatedSprite, AnimatedSpriteMetadata,
     Resources,
 };
+
 use core::input::{update_gamepad_context, GameInputScheme};
-use core::Transform;
+use core::prelude::*;
+use crate::macroquad::hash;
+use crate::macroquad::time::get_frame_time;
+use crate::macroquad::ui::{root_ui, widgets};
+use crate::macroquad::window::next_frame;
 
 const SECTION_WIDTH: f32 = 300.0;
 const SECTION_HEIGHT: f32 = 400.0;
@@ -59,6 +62,12 @@ pub async fn show_select_characters_menu(
 
         let meta: AnimatedSpriteMetadata = character.sprite.clone().into();
 
+        let texture = storage::get::<Resources>()
+            .textures
+            .get(&meta.texture_id)
+            .unwrap()
+            .texture;
+
         let animations = meta
             .animations
             .iter()
@@ -67,7 +76,7 @@ pub async fn show_select_characters_menu(
             .collect::<Vec<_>>();
 
         let sprite =
-            AnimatedSprite::new(&meta.texture_id, animations.as_slice(), meta.clone().into());
+            AnimatedSprite::new(texture, animations.as_slice(), meta.clone().into());
 
         animated_sprites.push(sprite);
     }
@@ -85,7 +94,9 @@ pub async fn show_select_characters_menu(
             section_size.y,
         );
 
-        let first_position = (vec2(screen_width(), screen_height()) - total_size) / 2.0;
+        let viewport = get_viewport();
+
+        let first_position = (vec2(viewport.width, viewport.height) - total_size) / 2.0;
 
         {
             let gui_resources = storage::get::<GuiResources>();
@@ -144,9 +155,11 @@ pub async fn show_select_characters_menu(
                     .with_title(&format!("Player {}", i + 1), true)
                     .with_background_color(WINDOW_BG_COLOR)
                     .ui(&mut *root_ui(), |ui, inner_size| {
+                        let delta_time = get_frame_time();
+
                         let animation_player = &mut animated_sprites[i];
 
-                        update_one_animated_sprite(animation_player);
+                        update_one_animated_sprite(delta_time, animation_player);
 
                         // TODO: Calculate scale from a fixed target size, based on ui layout
                         animation_player.scale = 2.0;
@@ -246,6 +259,12 @@ pub async fn show_select_characters_menu(
 
                 let meta: AnimatedSpriteMetadata = character.sprite.clone().into();
 
+                let texture = storage::get::<Resources>()
+                    .textures
+                    .get(&meta.texture_id)
+                    .unwrap()
+                    .texture;
+
                 let animations = meta
                     .animations
                     .iter()
@@ -254,7 +273,7 @@ pub async fn show_select_characters_menu(
                     .collect::<Vec<_>>();
 
                 animated_sprites[i] = AnimatedSprite::new(
-                    &meta.texture_id,
+                    texture,
                     animations.as_slice(),
                     meta.clone().into(),
                 );

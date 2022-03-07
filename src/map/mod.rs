@@ -1,7 +1,5 @@
 use std::{collections::HashMap, path::Path};
 
-use macroquad::{color, experimental::collections::storage, prelude::*};
-
 use serde::{Deserialize, Serialize};
 
 mod decoration;
@@ -10,12 +8,13 @@ mod sproinger;
 pub use decoration::*;
 pub use sproinger::*;
 
-use core::math::URect;
-use core::text::ToStringHelper;
+use core::prelude::*;
 use core::Result;
 
+#[cfg(not(feature = "ultimate"))]
+use crate::gui::combobox::ComboBoxValue;
+
 use crate::{
-    editor::gui::combobox::ComboBoxValue,
     json::{self, TiledMap},
     Resources,
 };
@@ -82,18 +81,14 @@ impl Map {
     }
 
     pub async fn load<P: AsRef<Path>>(path: P) -> Result<Self> {
-        let path = path.as_ref();
-
-        let bytes = load_file(&path.to_string_helper()).await?;
+        let bytes = load_file(path).await?;
         let map = serde_json::from_slice(&bytes).unwrap();
 
         Ok(map)
     }
 
     pub async fn load_tiled<P: AsRef<Path>>(path: P, export_path: Option<P>) -> Result<Self> {
-        let path = path.as_ref();
-
-        let bytes = load_file(&path.to_string_helper()).await?;
+        let bytes = load_file(path).await?;
         let tiled_map: TiledMap = serde_json::from_slice(&bytes).unwrap();
 
         let map = tiled_map.into_map();
@@ -113,6 +108,9 @@ impl Map {
     }
 
     pub fn contains(&self, position: Vec2) -> bool {
+        #[cfg(feature = "ultimate")]
+        let map_size = self.grid_size.as_vec2() * self.tile_size;
+        #[cfg(not(feature = "ultimate"))]
         let map_size = self.grid_size.as_f32() * self.tile_size;
         let rect = Rect::new(
             self.world_offset.x,
@@ -238,22 +236,21 @@ impl Map {
         false
     }
 
-    fn background_parallax(texture: Texture2D, depth: f32, camera_pos: Vec2) -> Rect {
-        let w = texture.width();
-        let h = texture.height();
+    fn background_parallax(texture: Texture2D, depth: f32, camera_position: Vec2) -> Rect {
+        let size = texture.size();
 
-        let dest_rect = Rect::new(0., 0., w, h);
-        let parallax_w = w as f32 * 0.5;
+        let dest_rect = Rect::new(0., 0., size.width, size.height);
+        let parallax_w = size.width * 0.5;
 
         let mut dest_rect2 = Rect::new(
             -parallax_w,
             -parallax_w,
-            w + parallax_w * 2.,
-            h + parallax_w * 2.,
+            size.width + parallax_w * 2.,
+            size.height + parallax_w * 2.,
         );
 
-        let parallax_x = camera_pos.x / dest_rect.w - 0.3;
-        let parallax_y = camera_pos.y / dest_rect.h * 0.6 - 0.5;
+        let parallax_x = camera_position.x / dest_rect.w - 0.3;
+        let parallax_y = camera_position.y / dest_rect.h * 0.6 - 0.5;
 
         dest_rect2.x += parallax_w * parallax_x * depth;
         dest_rect2.y += parallax_w * parallax_y * depth;
@@ -261,7 +258,7 @@ impl Map {
         dest_rect2
     }
 
-    pub fn draw_background(&self, rect: Option<URect>, is_parallax_disabled: bool) {
+    pub fn draw_background(&self, rect: Option<URect>, camera_position: Vec2, is_parallax_disabled: bool) {
         let rect = rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.x, self.grid_size.y));
 
         draw_rectangle(
@@ -275,15 +272,18 @@ impl Map {
         let resources = storage::get::<Resources>();
 
         {
-            let position = scene::camera_pos();
-
             for layer in &self.background_layers {
                 let texture_res = resources.textures.get(&layer.texture_id).unwrap();
                 let dest_rect = if is_parallax_disabled {
+                    #[cfg(feature = "ultimate")]
+                    let map_size = self.grid_size.as_vec2() * self.tile_size;
+                    #[cfg(not(feature = "ultimate"))]
                     let map_size = self.grid_size.as_f32() * self.tile_size;
 
+                    let size = texture_res.texture.size();
+
                     let width = map_size.x + (Self::FLATTENED_BACKGROUND_PADDING_X * 2.0);
-                    let height = (width / texture_res.meta.size.x) * texture_res.meta.size.y;
+                    let height = (width / size.width) * size.height;
 
                     Rect::new(
                         self.world_offset.x - Self::FLATTENED_BACKGROUND_PADDING_X,
@@ -293,17 +293,16 @@ impl Map {
                     )
                 } else {
                     let mut dest_rect =
-                        Self::background_parallax(texture_res.texture, layer.depth, position);
+                        Self::background_parallax(texture_res.texture, layer.depth, camera_position);
                     dest_rect.x += layer.offset.x;
                     dest_rect.y += layer.offset.y;
                     dest_rect
                 };
 
-                draw_texture_ex(
-                    texture_res.texture,
+                draw_texture(
                     dest_rect.x,
                     dest_rect.y,
-                    WHITE,
+                    texture_res.texture,
                     DrawTextureParams {
                         dest_size: Some(vec2(dest_rect.w, dest_rect.h)),
                         ..Default::default()
@@ -316,7 +315,8 @@ impl Map {
     /// This will draw the map
     pub fn draw(&self, rect: Option<URect>, should_draw_background: bool) {
         if should_draw_background {
-            self.draw_background(rect, false);
+            unimplemented!("Fix backgrounds camera pos!");
+            self.draw_background(rect, Vec2::ZERO, false);
         }
 
         let rect = rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.x, self.grid_size.y));
@@ -338,11 +338,10 @@ impl Map {
                                     panic!("No texture with id '{}'!", tile.texture_id)
                                 });
 
-                            draw_texture_ex(
-                                texture_entry.texture,
+                            draw_texture(
                                 world_position.x,
                                 world_position.y,
-                                color::WHITE,
+                                texture_entry.texture,
                                 DrawTextureParams {
                                     source: Some(Rect::new(
                                         tile.texture_coords.x, // + 0.1,
@@ -386,7 +385,7 @@ impl Map {
     }
 
     pub fn get_random_spawn_point(&self) -> Vec2 {
-        let i = rand::gen_range(0, self.spawn_points.len()) as usize;
+        let i = core::rand::gen_range(0, self.spawn_points.len()) as usize;
         self.spawn_points[i]
     }
 }
@@ -444,6 +443,7 @@ impl MapLayerKind {
     }
 }
 
+#[cfg(not(feature = "ultimate"))]
 impl ComboBoxValue for MapLayerKind {
     fn get_index(&self) -> usize {
         match self {
@@ -585,6 +585,7 @@ impl From<MapObjectKind> for String {
     }
 }
 
+#[cfg(not(feature = "ultimate"))]
 impl ComboBoxValue for MapObjectKind {
     fn get_index(&self) -> usize {
         match self {

@@ -2,12 +2,24 @@ use cfg_if::cfg_if;
 
 use serde::{Serialize, Deserialize};
 
-cfg_if! {
-    if #[cfg(feature = "internal-backend")] {
+use crate::Result;
+use crate::video::Resolution;
+
+pub use crate::backend_impl::window::*;
+
+pub struct Window(pub(crate) WindowImpl);
+
+impl From<WindowImpl> for Window {
+    fn from(inner: WindowImpl) -> Self {
+        Window(inner)
     }
 }
 
-use crate::{Resolution, Result, VideoMode, WindowConfig};
+impl From<Window> for WindowImpl {
+    fn from(window: Window) -> Self {
+        window.0
+    }
+}
 
 const DEFAULT_WINDOW_WIDTH: u32 = 955;
 const DEFAULT_WINDOW_HEIGHT: u32 = 600;

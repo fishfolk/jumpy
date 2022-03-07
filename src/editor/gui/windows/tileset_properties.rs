@@ -1,12 +1,10 @@
-use macroquad::{
-    experimental::collections::storage,
-    prelude::*,
-    ui::{hash, widgets, Ui},
-};
+use core::prelude::*;
 
-use crate::editor::gui::combobox::ComboBoxVec;
-use crate::editor::gui::{ComboBoxBuilder, ComboBoxValue};
+use crate::gui::combobox::ComboBoxVec;
+use crate::gui::{ComboBoxBuilder, ComboBoxValue};
 use crate::{gui::GuiResources, Resources};
+use crate::macroquad::hash;
+use crate::macroquad::ui::{Ui, widgets};
 
 use super::{ButtonParams, EditorAction, EditorContext, Map, Window, WindowParams};
 use crate::map::MapTileset;
@@ -91,9 +89,10 @@ impl TilesetPropertiesWindow {
                 .unwrap()
         };
 
+        let texture_size = texture_entry.texture.size();
         let tileset_texture_size = vec2(
-            texture_entry.texture.width(),
-            texture_entry.texture.height(),
+            texture_size.width,
+            texture_size.height,
         );
 
         let mut scaled_width = size.x;
@@ -111,7 +110,7 @@ impl TilesetPropertiesWindow {
             scaled_height / subgrid_size.y as f32,
         );
 
-        widgets::Texture::new(texture_entry.texture)
+        widgets::Texture::new(texture_entry.texture.into())
             .size(scaled_width, scaled_height)
             .position(position)
             .ui(ui);

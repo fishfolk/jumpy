@@ -1,15 +1,26 @@
-use winit::event_loop::EventLoopWindowTarget;
+use winit::event_loop::{EventLoop, EventLoopWindowTarget};
 use winit::dpi::{PhysicalSize, Size};
 use winit::monitor::MonitorHandle;
-use winit::window::WindowBuilder;
+use winit::window::{WindowBuilder};
 use winit::window::Fullscreen;
 
-pub use winit::window::Window;
+use crate::Result;
+use crate::video::Display;
+use crate::window::{Window, WindowConfig, WindowMode};
 
-pub fn create_window<M: Into<Option<MonitorHandle>>>(window_target: &EventLoopWindowTarget<()>, monitor_handle: M, title: &str, config: &WindowConfig) -> Result<crate::context::Context> {
-    let monitor_handle = match monitor_handle.into() {
-        Some(monitor_handle) => Some(monitor_handle),
-        None => window_target.primary_monitor(),
+pub(crate) struct WindowImpl {
+    event_loop: EventLoop<()>,
+    window: winit::window::Window,
+}
+
+pub fn create_window<D: Into<Option<Display>>>(title: &str, display: D, config: &WindowConfig) -> Result<Window> {
+    let event_loop = EventLoop::new();
+
+    let display = match display.into() {
+        Some(display) => Some(display),
+        None => event_loop
+            .primary_monitor()
+            .map(|handle| handle.into()),
     };
 
     let mut window_builder = WindowBuilder::new()
@@ -26,7 +37,7 @@ pub fn create_window<M: Into<Option<MonitorHandle>>>(window_target: &EventLoopWi
             None
         }
         WindowMode::Borderless => {
-            Some(Fullscreen::Borderless(monitor_handle))
+            Some(Fullscreen::Borderless(None))
         }
         /*
         WindowMode::Fullscreen {
@@ -41,10 +52,16 @@ pub fn create_window<M: Into<Option<MonitorHandle>>>(window_target: &EventLoopWi
          */
     };
 
+    let window_impl = {
+        let window = window_builder
+            .with_fullscreen(fullscreen)
+            .build(&event_loop)?;
 
-    let window = window_builder
-        .with_fullscreen(fullscreen)
-        .build(window_target)?;
+        WindowImpl {
+            event_loop,
+            window,
+        }
+    };
 
-    Ok(window)
+    Ok(window_impl.into())
 }

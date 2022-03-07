@@ -1,8 +1,8 @@
-use macroquad::prelude::*;
-
 use hecs::World;
 
 use serde::{Deserialize, Serialize};
+
+use core::prelude::*;
 
 use crate::player::{
     Player, PlayerInventory, PlayerState, BODY_ANIMATED_SPRITE_ID, CROUCH_ANIMATION_ID,
@@ -31,7 +31,6 @@ pub struct PlayerAnimationMetadata {
     pub pivot: Option<Vec2>,
     #[serde(
         default,
-        with = "core::json::color_opt",
         skip_serializing_if = "Option::is_none"
     )]
     pub tint: Option<Color>,
@@ -349,7 +348,7 @@ impl PlayerAnimations {
     }
 }
 
-pub fn update_player_animations(world: &mut World) {
+pub fn update_player_animations(world: &mut World, delta_time: f32) {
     for (_, (player, inventory, body, drawable)) in
         world.query_mut::<(&Player, &mut PlayerInventory, &PhysicsBody, &mut Drawable)>()
     {

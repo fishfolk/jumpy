@@ -7,10 +7,7 @@
 use std::sync::mpsc::SendError;
 use std::{error, fmt, io, result, string::FromUtf8Error};
 
-use macroquad::file::FileError;
-use macroquad::text::FontError;
-
-use crate::network::{NetworkMessage, RequestStatus};
+use cfg_if::cfg_if;
 
 pub type Result<T> = result::Result<T, Error>;
 
@@ -18,6 +15,7 @@ pub type Result<T> = result::Result<T, Error>;
 pub enum ErrorKind {
     General,
     Config,
+    Context,
     Ecs,
     File,
     Parsing,
@@ -32,6 +30,7 @@ impl ErrorKind {
         match *self {
             ErrorKind::General => "General error",
             ErrorKind::Config => "Config error",
+            ErrorKind::Context => "Context error",
             ErrorKind::Ecs => "ECS error",
             ErrorKind::File => "File error",
             ErrorKind::Parsing => "Parsing error",
@@ -40,15 +39,6 @@ impl ErrorKind {
             ErrorKind::Network => "Network error",
             ErrorKind::EditorAction => "Editor action error",
         }
-    }
-}
-
-impl From<RequestStatus> for Error {
-    fn from(status: RequestStatus) -> Self {
-        Error::new_message(
-            ErrorKind::Api,
-            &format!("[{}]: {}", status.as_code(), status.as_str()),
-        )
     }
 }
 
@@ -159,9 +149,9 @@ impl error::Error for Error {
     }
 }
 
-impl From<crate::data::Error> for Error {
-    fn from(err: crate::data::Error) -> Self {
-        Error::new(ErrorKind::Parsing, err)
+impl From<crate::file::Error> for Error {
+    fn from(err: crate::file::Error) -> Self {
+        Error::new(ErrorKind::File, err)
     }
 }
 
@@ -177,26 +167,8 @@ impl From<io::Error> for Error {
     }
 }
 
-impl From<SendError<NetworkMessage>> for Error {
-    fn from(err: SendError<NetworkMessage>) -> Self {
-        Error::new(ErrorKind::Network, err)
-    }
-}
-
 impl From<FromUtf8Error> for Error {
     fn from(err: FromUtf8Error) -> Self {
-        Error::new(ErrorKind::Parsing, err)
-    }
-}
-
-impl From<FileError> for Error {
-    fn from(err: FileError) -> Self {
-        Error::new(ErrorKind::File, err)
-    }
-}
-
-impl From<FontError> for Error {
-    fn from(err: FontError) -> Self {
         Error::new(ErrorKind::Parsing, err)
     }
 }
@@ -234,6 +206,40 @@ impl From<toml::ser::Error> for Error {
 impl From<toml::de::Error> for Error {
     fn from(err: toml::de::Error) -> Self {
         Error::new(ErrorKind::Parsing, err)
+    }
+}
+
+cfg_if! {
+    if #[cfg(feature = "internal-backend")] {
+        impl From<winit::error::OsError> for Error {
+            fn from(err: winit::error::OsError) -> Self {
+                Error::new(ErrorKind::Context, err)
+            }
+        }
+
+        impl From<winit::error::ExternalError> for Error {
+            fn from(err: winit::error::ExternalError) -> Self {
+                Error::new(ErrorKind::Context, err)
+            }
+        }
+
+        impl From<winit::error::NotSupportedError> for Error {
+            fn from(err: winit::error::NotSupportedError) -> Self {
+                Error::new(ErrorKind::Context, err)
+            }
+        }
+    } else if #[cfg(feature = "macroquad-backend")] {
+        impl From<macroquad::file::FileError> for Error {
+            fn from(err: macroquad::file::FileError) -> Self {
+                Error::new(ErrorKind::File, err)
+            }
+        }
+
+        impl From<macroquad::text::FontError> for Error {
+            fn from(err: macroquad::text::FontError) -> Self {
+                Error::new(ErrorKind::Parsing, err)
+            }
+        }
     }
 }
 

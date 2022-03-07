@@ -5,7 +5,6 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
 use crate::file::{load_file, Error};
-use crate::text::ToStringHelper;
 use crate::Result;
 
 /// Serialize a value into a string of JSON.

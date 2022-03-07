@@ -5,19 +5,12 @@ pub use camera::GameCamera;
 
 use fishsticks::{Button, GamepadContext};
 
-use macroquad::experimental::collections::storage;
-use macroquad::experimental::scene::{Node, RefMut};
-use macroquad::prelude::*;
-use macroquad::ui::root_ui;
-
 use hecs::{Entity, World};
 
-use core::input::is_gamepad_btn_pressed;
+use core::prelude::*;
 use core::Result;
 
-use crate::debug;
-use crate::ecs::Scheduler;
-use crate::gui::{self, GAME_MENU_RESULT_MAIN_MENU, GAME_MENU_RESULT_QUIT};
+use crate::{debug, macroquad, PlayerControllerKind};
 use crate::physics::{debug_draw_physics_bodies, fixed_update_physics_bodies};
 use crate::player::{
     draw_weapons_hud, spawn_player, update_player_animations, update_player_camera_box,
@@ -26,7 +19,7 @@ use crate::player::{
 };
 use crate::{
     create_collision_world, debug_draw_drawables, debug_draw_rigid_bodies, draw_drawables,
-    exit_to_main_menu, fixed_update_rigid_bodies, quit_to_desktop, update_animated_sprites, Map,
+    fixed_update_rigid_bodies, update_animated_sprites, Map,
     MapLayerKind, MapObjectKind, Resources,
 };
 
@@ -41,6 +34,7 @@ use crate::network::{
 };
 use crate::particles::{draw_particles, update_particle_emitters};
 pub use music::{start_music, stop_music};
+use crate::macroquad::time::get_frame_time;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum GameMode {
@@ -49,182 +43,105 @@ pub enum GameMode {
     NetworkClient,
 }
 
-pub struct Game {
-    world: World,
-    #[allow(dead_code)]
-    players: Vec<Entity>,
-    updates: Scheduler,
-    fixed_updates: Scheduler,
-    draws: Scheduler,
-    #[cfg(debug_assertions)]
-    debug_draws: Scheduler,
-}
+pub fn create_main_game_state(game_mode: GameMode) -> Box<dyn GameState> {
+    let mut state_builder = GameStateBuilder::new()
+        .with_constructor(|world| {
+            let player_ids = vec!["1".to_string(), "2".to_string()];
 
-impl Game {
-    pub fn new(mode: GameMode, map: Map, player_params: &[PlayerParams]) -> Result<Game> {
-        let mut world = World::default();
+            let (map, mut characters) = {
+                let resources = storage::get::<Resources>();
 
-        {
-            let camera = GameCamera::new(map.get_size());
-            storage::store(camera);
+                let map = resources.maps.first().map(|res| res.map.clone()).unwrap();
 
-            let collision_world = create_collision_world(&map);
-            storage::store(collision_world);
-        }
+                let characters = vec![
+                    resources.player_characters.get("pescy").cloned().unwrap(),
+                    resources.player_characters.get("sharky").cloned().unwrap(),
+                ];
 
-        spawn_map_objects(&mut world, &map).unwrap();
+                (map, characters)
+            };
 
-        let players = player_params
-            .iter()
-            .cloned()
-            .map(|params| {
+            let player_params = vec![
+                PlayerParams {
+                    index: 0,
+                    controller: PlayerControllerKind::LocalInput(GameInputScheme::KeyboardLeft).into(),
+                    character: characters.pop().unwrap(),
+                },
+                PlayerParams {
+                    index: 1,
+                    controller: PlayerControllerKind::Network(player_ids[1].clone().into()),
+                    character: characters.pop().unwrap(),
+                },
+            ];
+
+            {
+                let camera = GameCamera::new(map.get_size());
+                storage::store(camera);
+
+                let collision_world = create_collision_world(&map);
+                storage::store(collision_world);
+            }
+
+            spawn_map_objects(world, &map).unwrap();
+
+            for params in player_params {
                 let position = map.get_random_spawn_point();
+
                 spawn_player(
-                    &mut world,
+                    world,
                     params.index,
                     position,
                     params.controller,
                     params.character,
-                )
-            })
-            .collect();
-
-        storage::store(map);
-
-        let mut updates_builder = Scheduler::builder();
-
-        let mut fixed_updates_builder = Scheduler::builder();
-
-        match mode {
-            GameMode::NetworkClient => {
-                updates_builder.add_system(update_network_client);
-
-                fixed_updates_builder.add_system(fixed_update_network_client);
+                );
             }
-            GameMode::NetworkHost => {
-                updates_builder.add_system(update_network_host);
 
-                fixed_updates_builder.add_system(fixed_update_network_host);
-            }
-            _ => {}
-        }
+            storage::store(map);
+        });
 
-        updates_builder
-            .add_system(update_player_controllers)
-            .add_system(update_player_camera_box);
-
-        if matches!(mode, GameMode::Local | GameMode::NetworkHost) {
-            updates_builder
-                .add_system(update_player_states)
-                .add_system(update_player_inventory)
-                .add_system(update_player_passive_effects)
-                .add_system(update_player_events);
-
-            fixed_updates_builder
-                .add_system(fixed_update_physics_bodies)
-                .add_system(fixed_update_rigid_bodies)
-                .add_system(fixed_update_projectiles)
-                .add_system(fixed_update_triggered_effects)
-                .add_system(fixed_update_sproingers);
-        }
-
-        let updates = updates_builder
-            .with_system(update_player_animations)
-            .with_system(update_animated_sprites)
-            .with_system(update_particle_emitters)
-            .build();
-
-        let fixed_updates = fixed_updates_builder.build();
-
-        let draws = Scheduler::builder()
-            .with_thread_local(draw_drawables)
-            .with_thread_local(draw_weapons_hud)
-            .with_thread_local(draw_particles)
-            .build();
-
-        #[cfg(debug_assertions)]
-        let debug_draws = Scheduler::builder()
-            .with_thread_local(debug_draw_drawables)
-            .with_thread_local(debug_draw_physics_bodies)
-            .with_thread_local(debug_draw_rigid_bodies)
-            .with_thread_local(debug_draw_active_effects)
-            .build();
-
-        let res = Game {
-            world,
-            players,
-            updates,
-            fixed_updates,
-            draws,
-            #[cfg(debug_assertions)]
-            debug_draws,
-        };
-
-        Ok(res)
+    if matches!(game_mode, GameMode::NetworkClient) {
+        state_builder.add_update(update_network_client);
+        state_builder.add_fixed_update(fixed_update_network_client);
+    } else if matches!(game_mode, GameMode::NetworkHost) {
+        state_builder.add_update(update_network_host);
+        state_builder.add_fixed_update(fixed_update_network_host);
     }
 
-    fn on_update(&mut self) {
-        self.updates.execute(&mut self.world);
+    state_builder
+        .add_update(update_player_controllers)
+        .add_update(update_player_camera_box)
+        .add_update(update_player_animations)
+        .add_update(update_animated_sprites)
+        .add_update(update_particle_emitters);
 
-        #[cfg(debug_assertions)]
-        if is_key_pressed(macroquad::prelude::KeyCode::U) {
-            crate::debug::toggle_debug_draw();
-        }
+    if matches!(game_mode, GameMode::Local | GameMode::NetworkHost) {
+        state_builder
+            .add_update(update_player_states)
+            .add_update(update_player_inventory)
+            .add_update(update_player_passive_effects)
+            .add_update(update_player_events);
 
-        {
-            let gamepad_context = storage::get::<GamepadContext>();
-            if is_key_pressed(macroquad::prelude::KeyCode::Escape)
-                || is_gamepad_btn_pressed(Some(&gamepad_context), Button::Start)
-            {
-                gui::toggle_game_menu();
-            }
-        }
+        state_builder
+            .add_fixed_update(fixed_update_physics_bodies)
+            .add_fixed_update(fixed_update_rigid_bodies)
+            .add_fixed_update(fixed_update_projectiles)
+            .add_fixed_update(fixed_update_triggered_effects)
+            .add_fixed_update(fixed_update_sproingers);
     }
 
-    fn on_fixed_update(&mut self) {
-        self.fixed_updates.execute(&mut self.world);
-    }
+    state_builder
+        .add_draw(draw_drawables)
+        .add_draw(draw_weapons_hud)
+        .add_draw(draw_particles);
 
-    fn on_draw(&mut self) {
-        let mut camera = storage::get_mut::<GameCamera>();
-        camera.update();
+    #[cfg(debug_assertions)]
+    state_builder
+        .add_draw(debug_draw_drawables)
+        .add_draw(debug_draw_physics_bodies)
+        .add_draw(debug_draw_rigid_bodies)
+        .add_draw(debug_draw_active_effects);
 
-        {
-            let map = storage::get::<Map>();
-            map.draw(None, true);
-        }
-
-        self.draws.execute(&mut self.world);
-
-        #[cfg(debug_assertions)]
-        if debug::is_debug_draw_enabled() {
-            self.debug_draws.execute(&mut self.world);
-        }
-
-        if gui::is_game_menu_open() {
-            if let Some(res) = gui::draw_game_menu(&mut *root_ui()) {
-                match res.into_usize() {
-                    GAME_MENU_RESULT_MAIN_MENU => exit_to_main_menu(),
-                    GAME_MENU_RESULT_QUIT => quit_to_desktop(),
-                    _ => {}
-                }
-            }
-        }
-    }
-}
-
-impl Node for Game {
-    fn update(mut node: RefMut<Self>) {
-        node.on_update();
-    }
-
-    fn fixed_update(mut node: RefMut<Self>) {
-        node.on_fixed_update();
-    }
-
-    fn draw(mut node: RefMut<Self>) {
-        node.on_draw();
-    }
+    Box::new(state_builder.build())
 }
 
 pub fn spawn_map_objects(world: &mut World, map: &Map) -> Result<Vec<Entity>> {
@@ -273,4 +190,38 @@ pub fn spawn_map_objects(world: &mut World, map: &Map) -> Result<Vec<Entity>> {
     }
 
     Ok(objects)
+}
+
+cfg_if! {
+    if #[cfg(not(feature = "ultimate"))] {
+        use macroquad::prelude::scene::{self, Node, RefMut};
+
+        pub struct Game {
+            state: Box<dyn GameState>,
+        }
+
+        impl Game {
+            pub fn new(mode: GameMode, map: Map, players: &[PlayerParams]) -> Self {
+                let state = create_main_game_state(mode);
+
+                Game {
+                    state,
+                }
+            }
+        }
+
+        impl Node for Game {
+            fn update(mut node: RefMut<Self>) where Self: Sized {
+                node.state.update(get_frame_time());
+            }
+
+            fn fixed_update(mut node: RefMut<Self>) where Self: Sized {
+                node.state.fixed_update(get_frame_time(), 1.0);
+            }
+
+            fn draw(mut node: RefMut<Self>) where Self: Sized {
+                node.state.draw()
+            }
+        }
+    }
 }

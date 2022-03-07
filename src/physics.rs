@@ -1,6 +1,3 @@
-use macroquad::color;
-use macroquad::experimental::collections::storage;
-use macroquad::prelude::*;
 
 use macroquad_platformer::{Actor, Tile};
 
@@ -9,7 +6,8 @@ use serde::{Deserialize, Serialize};
 use hecs::World;
 
 use crate::{CollisionWorld, Map};
-use core::Transform;
+
+use core::prelude::*;
 
 pub const GRAVITY: f32 = 2.5;
 pub const TERMINAL_VELOCITY: f32 = 10.0;
@@ -131,7 +129,7 @@ impl PhysicsBody {
     }
 }
 
-pub fn fixed_update_physics_bodies(world: &mut World) {
+pub fn fixed_update_physics_bodies(world: &mut World, delta_time: f32, integration_factor: f32) {
     let mut collision_world = storage::get_mut::<CollisionWorld>();
 
     for (_, (transform, body)) in world.query_mut::<(&mut Transform, &mut PhysicsBody)>() {
@@ -195,14 +193,14 @@ pub fn debug_draw_physics_bodies(world: &mut World) {
             let rect = body.as_rect(transform.position);
 
             let color = if body.is_on_platform {
-                color::YELLOW
+                colors::YELLOW
             } else if body.is_on_ground {
-                color::RED
+                colors::RED
             } else {
-                color::GREEN
+                colors::GREEN
             };
 
-            draw_rectangle_lines(rect.x, rect.y, rect.w, rect.h, 2.0, color);
+            draw_rectangle_outline(rect.x, rect.y, rect.w, rect.h, 2.0, color);
         }
     }
 }
@@ -255,7 +253,7 @@ impl RigidBody {
     }
 }
 
-pub fn fixed_update_rigid_bodies(world: &mut World) {
+pub fn fixed_update_rigid_bodies(world: &mut World, delta_time: f32, integration_factor: f32) {
     for (_, (transform, body)) in world.query_mut::<(&mut Transform, &mut RigidBody)>() {
         transform.position += body.velocity;
 
@@ -269,7 +267,7 @@ pub fn debug_draw_rigid_bodies(world: &mut World) {
     for (_, (transform, body)) in world.query::<(&Transform, &RigidBody)>().iter() {
         let rect = body.as_rect(transform.position);
 
-        draw_rectangle_lines(rect.x, rect.y, rect.w, rect.h, 2.0, color::RED)
+        draw_rectangle_outline(rect.x, rect.y, rect.w, rect.h, 2.0, colors::RED)
     }
 }
 

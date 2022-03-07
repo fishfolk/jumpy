@@ -1,12 +1,10 @@
-use macroquad::{
-    experimental::collections::storage,
-    prelude::*,
-    ui::{hash, widgets, Ui},
-};
+use core::prelude::*;
 
-use crate::editor::gui::combobox::ComboBoxVec;
-use crate::editor::gui::{ComboBoxBuilder, ComboBoxValue};
+use crate::gui::combobox::ComboBoxVec;
+use crate::gui::{ComboBoxBuilder, ComboBoxValue};
 use crate::{map::Map, Resources};
+use crate::macroquad::hash;
+use crate::macroquad::ui::{Ui, widgets};
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 use crate::resources::TextureKind;

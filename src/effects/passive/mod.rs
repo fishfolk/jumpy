@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use macroquad::prelude::*;
+use core::prelude::*;
 
 use serde::{Deserialize, Serialize};
 

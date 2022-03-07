@@ -3,13 +3,13 @@ mod sprite;
 
 pub use animated_sprite::*;
 pub use sprite::*;
-use std::borrow::{Borrow, BorrowMut};
 
-use macroquad::prelude::*;
+use std::borrow::{Borrow, BorrowMut};
 
 use hecs::World;
 
-use core::Transform;
+use core::prelude::*;
+use crate::Resources;
 
 /// This is a wrapper type for all the different types of drawable sprites, used so that we can
 /// access them all in one query and draw them, ordered, in one pass, according to `draw_order`.
@@ -48,7 +48,13 @@ impl Drawable {
         animations: &[Animation],
         params: AnimatedSpriteParams,
     ) -> Self {
-        let sprite = AnimatedSprite::new(texture_id, animations, params);
+        let texture = storage::get::<Resources>()
+            .textures
+            .get(texture_id)
+            .unwrap()
+            .texture;
+
+        let sprite = AnimatedSprite::new(texture, animations, params);
 
         Drawable {
             draw_order,

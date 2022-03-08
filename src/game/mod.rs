@@ -10,7 +10,7 @@ use hecs::{Entity, World};
 use core::prelude::*;
 use core::Result;
 
-use crate::{debug, macroquad, PlayerControllerKind};
+use crate::{debug, gui, macroquad, PlayerControllerKind};
 use crate::physics::{debug_draw_physics_bodies, fixed_update_physics_bodies};
 use crate::player::{
     draw_weapons_hud, spawn_player, update_player_animations, update_player_camera_box,
@@ -35,6 +35,7 @@ use crate::network::{
 use crate::particles::{draw_particles, update_particle_emitters};
 pub use music::{start_music, stop_music};
 use crate::macroquad::time::get_frame_time;
+use crate::macroquad::ui::root_ui;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum GameMode {
@@ -146,6 +147,7 @@ cfg_if! {
         pub struct Game {
             world: Option<World>,
             state: Box<dyn GameState>,
+            should_show_game_menu: bool,
         }
 
         impl Game {
@@ -181,6 +183,7 @@ cfg_if! {
                 Game {
                     world: Some(world),
                     state,
+                    should_show_game_menu: false,
                 }
             }
         }
@@ -192,6 +195,10 @@ cfg_if! {
             }
 
             fn update(mut node: RefMut<Self>) where Self: Sized {
+                if is_key_pressed(KeyCode::Escape) {
+                    node.should_show_game_menu = !node.should_show_game_menu;
+                }
+
                 node.state.update(get_frame_time());
 
                 let mut camera = storage::get_mut::<GameCamera>();
@@ -213,7 +220,19 @@ cfg_if! {
                     map.draw(None, camera_position);
                 }
 
-                node.state.draw()
+                node.state.draw();
+
+                if node.should_show_game_menu {
+                    if let Some(res) = gui::draw_game_menu(&mut *root_ui()) {
+                        use gui::{GAME_MENU_RESULT_MAIN_MENU, GAME_MENU_RESULT_QUIT};
+
+                        match res.into_usize() {
+                            GAME_MENU_RESULT_MAIN_MENU => GameEvent::MainMenu.dispatch(),
+                            GAME_MENU_RESULT_QUIT => GameEvent::Quit.dispatch(),
+                            _ => {},
+                        }
+                    }
+                }
             }
         }
     }

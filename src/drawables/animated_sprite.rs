@@ -189,7 +189,7 @@ impl AnimatedSprite {
     }
 
     pub fn size(&self) -> Size<f32> {
-        (Vec2::from(self.frame_size) * self.scale).into()
+        self.frame_size.with_scale(self.scale)
     }
 
     pub fn source_rect(&self) -> Rect {
@@ -372,7 +372,7 @@ pub fn draw_one_animated_sprite(transform: &Transform, sprite: &AnimatedSprite) 
                 flip_y: sprite.is_flipped_y,
                 rotation: transform.rotation,
                 source: Some(sprite.source_rect()),
-                dest_size: Some(sprite.frame_size.into()),
+                dest_size: Some(sprite.frame_size.with_scale(sprite.scale)),
                 pivot: sprite.pivot,
                 tint: Some(sprite.tint),
             },

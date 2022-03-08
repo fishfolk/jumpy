@@ -25,6 +25,15 @@ impl<T> Size<T> where T: Num + Copy {
     }
 }
 
+impl Size<f32> {
+    pub fn with_scale(self, scale: f32) -> Self {
+        let mut res = self;
+        res.width *= scale;
+        res.height *= scale;
+        res
+    }
+}
+
 impl<T> Default for Size<T> where T: Num + Copy {
     fn default() -> Self {
         Size::new(T::zero(), T::zero())

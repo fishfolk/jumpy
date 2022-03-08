@@ -1,6 +1,7 @@
+use hv_cell::AtomicRefCell;
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use ff_particles::EmittersCache;
 
@@ -165,7 +166,8 @@ pub fn update_one_particle_emitter(
     }
 }
 
-pub fn update_particle_emitters(world: &mut World) {
+pub fn update_particle_emitters(world: Arc<AtomicRefCell<World>>) {
+    let mut world = AtomicRefCell::borrow_mut(world.as_ref());
     for (_, (transform, emitter)) in world.query_mut::<(&Transform, &mut ParticleEmitter)>() {
         update_one_particle_emitter(transform.position, transform.rotation, emitter);
     }
@@ -177,7 +179,7 @@ pub fn update_particle_emitters(world: &mut World) {
     }
 }
 
-pub fn draw_particles(_world: &mut World) {
+pub fn draw_particles(_world: Arc<AtomicRefCell<World>>) {
     let mut particles = storage::get_mut::<Particles>();
 
     for cache in particles.cache_map.values_mut() {

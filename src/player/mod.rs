@@ -1,9 +1,11 @@
+use hv_cell::AtomicRefCell;
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
 
 use hecs::{Entity, World};
 
 use core::Transform;
+use std::sync::Arc;
 
 use crate::{
     AnimatedSprite, AnimatedSpriteMetadata, AnimatedSpriteParams, CollisionWorld, Drawable,
@@ -94,7 +96,8 @@ impl Player {
     }
 }
 
-pub fn update_player_camera_box(world: &mut World) {
+pub fn update_player_camera_box(world: Arc<AtomicRefCell<World>>) {
+    let mut world = AtomicRefCell::borrow_mut(world.as_ref());
     for (_, (transform, player)) in world.query_mut::<(&Transform, &mut Player)>() {
         let rect = Rect::new(transform.position.x, transform.position.y, 32.0, 60.0);
 

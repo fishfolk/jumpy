@@ -311,6 +311,7 @@ dependencies = [
  "fishfight-core",
  "fishsticks",
  "hecs",
+ "hv-cell",
  "hv-lua",
  "macroquad",
  "macroquad-platformer",

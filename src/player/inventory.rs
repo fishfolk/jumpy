@@ -1,8 +1,10 @@
+use hv_cell::AtomicRefCell;
 use macroquad::prelude::*;
 
 use hecs::{Entity, With, Without, World};
 
 use core::Transform;
+use std::sync::Arc;
 
 use crate::items::{
     fire_weapon, ItemDepleteBehavior, ItemDropBehavior, Weapon, EFFECT_ANIMATED_SPRITE_ID,
@@ -52,7 +54,8 @@ impl PlayerInventory {
     }
 }
 
-pub fn update_player_inventory(world: &mut World) {
+pub fn update_player_inventory(world: Arc<AtomicRefCell<World>>) {
+    let mut world = AtomicRefCell::borrow_mut(world.as_ref());
     let mut item_colliders = world
         .query::<With<Item, Without<Owner, (&Transform, &PhysicsBody)>>>()
         .iter()
@@ -424,7 +427,7 @@ pub fn update_player_inventory(world: &mut World) {
     }
 
     for (entity, owner) in to_fire.drain(0..) {
-        if let Err(err) = fire_weapon(world, entity, owner) {
+        if let Err(err) = fire_weapon(&mut world, entity, owner) {
             #[cfg(debug_assertions)]
             println!("WARNING: {}", err);
         }
@@ -456,7 +459,8 @@ const HUD_USE_COUNT_COLOR_EMPTY: Color = Color {
     a: 0.8,
 };
 
-pub fn draw_weapons_hud(world: &mut World) {
+pub fn draw_weapons_hud(world: Arc<AtomicRefCell<World>>) {
+    let world = AtomicRefCell::borrow(world.as_ref());
     for (_, (transform, inventory)) in world.query::<(&Transform, &PlayerInventory)>().iter() {
         if let Some(weapon_entity) = inventory.weapon {
             let weapon = world.get::<Weapon>(weapon_entity).unwrap();

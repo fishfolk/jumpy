@@ -2,8 +2,12 @@ mod animated_sprite;
 mod sprite;
 
 pub use animated_sprite::*;
+use hv_cell::AtomicRefCell;
 pub use sprite::*;
-use std::borrow::{Borrow, BorrowMut};
+use std::{
+    borrow::{Borrow, BorrowMut},
+    sync::Arc,
+};
 
 use macroquad::prelude::*;
 
@@ -129,7 +133,8 @@ pub enum DrawableKind {
     AnimatedSpriteSet(AnimatedSpriteSet),
 }
 
-pub fn draw_drawables(world: &mut World) {
+pub fn draw_drawables(world: Arc<AtomicRefCell<World>>) {
+    let mut world = AtomicRefCell::borrow_mut(world.as_ref());
     let mut ordered = world
         .query_mut::<&Drawable>()
         .into_iter()
@@ -165,7 +170,8 @@ pub fn draw_drawables(world: &mut World) {
     }
 }
 
-pub fn debug_draw_drawables(world: &mut World) {
+pub fn debug_draw_drawables(world: Arc<AtomicRefCell<World>>) {
+    let mut world = AtomicRefCell::borrow_mut(world.as_ref());
     let mut ordered = world
         .query_mut::<&Drawable>()
         .into_iter()

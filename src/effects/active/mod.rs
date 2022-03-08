@@ -1,4 +1,5 @@
 use hecs::{Entity, World};
+use hv_cell::AtomicRefCell;
 use macroquad::audio::play_sound_once;
 use macroquad::color;
 
@@ -9,6 +10,7 @@ use serde::{Deserialize, Serialize};
 
 use core::math::{deg_to_rad, rotate_vector, IsZero};
 use core::Result;
+use std::sync::Arc;
 
 use crate::Resources;
 use crate::{PassiveEffectInstance, PassiveEffectMetadata};
@@ -284,7 +286,8 @@ pub enum ActiveEffectKind {
     },
 }
 
-pub fn debug_draw_active_effects(world: &mut World) {
+pub fn debug_draw_active_effects(world: Arc<AtomicRefCell<World>>) {
+    let mut world = AtomicRefCell::borrow_mut(world.as_ref());
     let mut to_remove = Vec::new();
 
     let dt = get_frame_time();

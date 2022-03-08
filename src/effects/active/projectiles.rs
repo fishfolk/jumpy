@@ -1,6 +1,8 @@
+use hv_cell::AtomicRefCell;
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
 use std::f32::consts::PI;
+use std::sync::Arc;
 
 use hecs::{Entity, World};
 use macroquad_platformer::Tile;
@@ -203,7 +205,8 @@ enum ProjectileCollision {
     Map,
 }
 
-pub fn fixed_update_projectiles(world: &mut World) {
+pub fn fixed_update_projectiles(world: Arc<AtomicRefCell<World>>) {
+    let mut world = AtomicRefCell::borrow_mut(world.as_ref());
     let bodies = world
         .query::<(&Transform, &PhysicsBody)>()
         .iter()
@@ -272,7 +275,7 @@ pub fn fixed_update_projectiles(world: &mut World) {
         if let Some(collision_kind) = collision {
             match collision_kind {
                 ProjectileCollision::Player(damage_to_entity) => {
-                    on_player_damage(world, damage_from_entity, damage_to_entity);
+                    on_player_damage(&mut world, damage_from_entity, damage_to_entity);
                 }
                 ProjectileCollision::Trigger(trigger_entity) => {
                     let mut effect = world.get_mut::<TriggeredEffect>(trigger_entity).unwrap();

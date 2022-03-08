@@ -10,7 +10,7 @@ use tealr::mlu::mlua::{
 };
 
 #[derive(Debug, Clone, Copy)]
-struct I32Component(i32);
+pub struct I32Component(i32);
 impl UserData for I32Component {
     #[allow(clippy::unit_arg)]
     fn add_fields<'lua, F: UserDataFields<'lua, Self>>(fields: &mut F) {
@@ -37,7 +37,7 @@ impl UserData for I32Component {
     }
 }
 #[derive(Debug, Clone, Copy)]
-struct BoolComponent(bool);
+pub struct BoolComponent(bool);
 impl UserData for BoolComponent {
     #[allow(clippy::unit_arg)]
     fn add_fields<'lua, F: UserDataFields<'lua, Self>>(fields: &mut F) {

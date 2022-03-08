@@ -1,3 +1,4 @@
+use hv_cell::AtomicRefCell;
 use macroquad::audio::play_sound_once;
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
@@ -5,6 +6,7 @@ use macroquad::prelude::*;
 use hecs::{Entity, World};
 
 use core::Transform;
+use std::sync::Arc;
 
 use crate::player::{
     Player, PlayerAttributes, PlayerController, PlayerEventQueue, JUMP_SOUND_ID, LAND_SOUND_ID,
@@ -33,7 +35,8 @@ impl Default for PlayerState {
     }
 }
 
-pub fn update_player_states(world: &mut World) {
+pub fn update_player_states(world: Arc<AtomicRefCell<World>>) {
+    let mut world = AtomicRefCell::borrow_mut(world.as_ref());
     let query = world.query_mut::<(
         &mut Transform,
         &mut Player,
@@ -190,9 +193,9 @@ pub fn update_player_states(world: &mut World) {
     }
 }
 
-pub fn update_player_passive_effects(world: &mut World) {
+pub fn update_player_passive_effects(world: Arc<AtomicRefCell<World>>) {
     let mut function_calls = Vec::new();
-
+    let mut world = AtomicRefCell::borrow_mut(world.as_ref());
     for (entity, (player, events)) in world.query::<(&mut Player, &mut PlayerEventQueue)>().iter() {
         let dt = get_frame_time();
 
@@ -228,7 +231,7 @@ pub fn update_player_passive_effects(world: &mut World) {
     }
 
     for (f, player_entity, item_entity, event) in function_calls.drain(0..) {
-        f(world, player_entity, item_entity, event);
+        f(&mut world, player_entity, item_entity, event);
     }
 }
 

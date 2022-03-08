@@ -1,6 +1,9 @@
-use hecs::{Entity, World};
+use std::sync::Arc;
 
-pub type SystemFn = fn(&mut World);
+use hecs::{Entity, World};
+use hv_cell::AtomicRefCell;
+
+pub type SystemFn = fn(Arc<AtomicRefCell<World>>);
 
 /// This is used as a component to signify ownership
 pub struct Owner(pub Entity);
@@ -53,9 +56,9 @@ impl Scheduler {
         SchedulerBuilder::default()
     }
 
-    pub fn execute(&mut self, world: &mut World) {
+    pub fn execute(&mut self, world: Arc<AtomicRefCell<World>>) {
         for f in &mut self.steps {
-            f(world);
+            f(world.clone());
         }
     }
 }

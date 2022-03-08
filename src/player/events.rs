@@ -1,4 +1,7 @@
+use std::sync::Arc;
+
 use hecs::{Entity, World};
+use hv_cell::AtomicRefCell;
 use macroquad::time::get_frame_time;
 
 use crate::player::{Player, PlayerState};
@@ -66,7 +69,8 @@ impl From<&PlayerEvent> for PlayerEventKind {
     }
 }
 
-pub fn update_player_events(world: &mut World) {
+pub fn update_player_events(world: Arc<AtomicRefCell<World>>) {
+    let mut world = AtomicRefCell::borrow_mut(world.as_ref());
     for (_, (player, events)) in world.query_mut::<(&mut Player, &mut PlayerEventQueue)>() {
         let dt = get_frame_time();
 

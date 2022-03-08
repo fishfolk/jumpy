@@ -1,3 +1,4 @@
+use hv_cell::AtomicRefCell;
 use macroquad::color;
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
@@ -8,8 +9,9 @@ use serde::{Deserialize, Serialize};
 
 use hecs::World;
 
-use crate::{lua::run_event, CollisionWorld, Map, Resources};
+use crate::{lua::run_event, CollisionWorld, Map};
 use core::Transform;
+use std::sync::Arc;
 
 pub const GRAVITY: f32 = 2.5;
 pub const TERMINAL_VELOCITY: f32 = 10.0;
@@ -131,67 +133,71 @@ impl PhysicsBody {
     }
 }
 
-pub fn fixed_update_physics_bodies(world: &mut World) {
-    let mut collision_world = storage::get_mut::<CollisionWorld>();
+pub fn fixed_update_physics_bodies(world: Arc<AtomicRefCell<World>>) {
+    {
+        let mut world = AtomicRefCell::borrow_mut(world.as_ref());
+        let mut collision_world = storage::get_mut::<CollisionWorld>();
 
-    for (_, (transform, body)) in world.query_mut::<(&mut Transform, &mut PhysicsBody)>() {
-        collision_world.set_actor_position(body.actor, transform.position + body.offset);
+        for (_, (transform, body)) in world.query_mut::<(&mut Transform, &mut PhysicsBody)>() {
+            collision_world.set_actor_position(body.actor, transform.position + body.offset);
 
-        if !body.is_deactivated {
-            let position = collision_world.actor_pos(body.actor);
+            if !body.is_deactivated {
+                let position = collision_world.actor_pos(body.actor);
 
-            {
-                let position = position + vec2(0.0, 1.0);
+                {
+                    let position = position + vec2(0.0, 1.0);
 
-                body.was_on_ground = body.is_on_ground;
+                    body.was_on_ground = body.is_on_ground;
 
-                body.is_on_ground = collision_world.collide_check(body.actor, position);
+                    body.is_on_ground = collision_world.collide_check(body.actor, position);
 
-                // FIXME: Using this to set `is_on_ground` caused weird glitching behavior when jumping up through platforms
-                let tile = collision_world.collide_solids(
-                    position,
-                    body.size.x as i32,
-                    body.size.y as i32,
-                );
+                    // FIXME: Using this to set `is_on_ground` caused weird glitching behavior when jumping up through platforms
+                    let tile = collision_world.collide_solids(
+                        position,
+                        body.size.x as i32,
+                        body.size.y as i32,
+                    );
 
-                body.is_on_platform = tile == Tile::JumpThrough;
-            }
-
-            if !body.is_on_ground && body.has_mass {
-                body.velocity.y += body.gravity;
-
-                if body.velocity.y > TERMINAL_VELOCITY {
-                    body.velocity.y = TERMINAL_VELOCITY;
+                    body.is_on_platform = tile == Tile::JumpThrough;
                 }
-            }
 
-            if !collision_world.move_h(body.actor, body.velocity.x) {
-                body.velocity.x *= -body.bouncyness;
-            }
+                if !body.is_on_ground && body.has_mass {
+                    body.velocity.y += body.gravity;
 
-            if !collision_world.move_v(body.actor, body.velocity.y) {
-                body.velocity.y *= -body.bouncyness;
-            }
-
-            if body.can_rotate {
-                apply_rotation(transform, &mut body.velocity, body.is_on_ground);
-            }
-
-            if body.is_on_ground && body.has_friction {
-                body.velocity.x *= FRICTION_LERP;
-                if body.velocity.x.abs() <= STOP_THRESHOLD {
-                    body.velocity.x = 0.0;
+                    if body.velocity.y > TERMINAL_VELOCITY {
+                        body.velocity.y = TERMINAL_VELOCITY;
+                    }
                 }
-            }
 
-            transform.position = collision_world.actor_pos(body.actor) - body.offset;
+                if !collision_world.move_h(body.actor, body.velocity.x) {
+                    body.velocity.x *= -body.bouncyness;
+                }
+
+                if !collision_world.move_v(body.actor, body.velocity.y) {
+                    body.velocity.y *= -body.bouncyness;
+                }
+
+                if body.can_rotate {
+                    apply_rotation(transform, &mut body.velocity, body.is_on_ground);
+                }
+
+                if body.is_on_ground && body.has_friction {
+                    body.velocity.x *= FRICTION_LERP;
+                    if body.velocity.x.abs() <= STOP_THRESHOLD {
+                        body.velocity.x = 0.0;
+                    }
+                }
+
+                transform.position = collision_world.actor_pos(body.actor) - body.offset;
+            }
         }
     }
-    let _ = run_event("fixed_update_physics_bodies")
+    let _ = run_event("fixed_update_physics_bodies", world)
         .map_err(|v| eprintln!("Ran into an error:\n{}", v));
 }
 
-pub fn debug_draw_physics_bodies(world: &mut World) {
+pub fn debug_draw_physics_bodies(world: Arc<AtomicRefCell<World>>) {
+    let world = AtomicRefCell::borrow(world.as_ref());
     for (_, (transform, body)) in world.query::<(&Transform, &PhysicsBody)>().iter() {
         if !body.is_deactivated {
             let rect = body.as_rect(transform.position);
@@ -257,7 +263,8 @@ impl RigidBody {
     }
 }
 
-pub fn fixed_update_rigid_bodies(world: &mut World) {
+pub fn fixed_update_rigid_bodies(world: Arc<AtomicRefCell<World>>) {
+    let mut world = AtomicRefCell::borrow_mut(world.as_ref());
     for (_, (transform, body)) in world.query_mut::<(&mut Transform, &mut RigidBody)>() {
         transform.position += body.velocity;
 
@@ -267,7 +274,8 @@ pub fn fixed_update_rigid_bodies(world: &mut World) {
     }
 }
 
-pub fn debug_draw_rigid_bodies(world: &mut World) {
+pub fn debug_draw_rigid_bodies(world: Arc<AtomicRefCell<World>>) {
+    let world = AtomicRefCell::borrow(world.as_ref());
     for (_, (transform, body)) in world.query::<(&Transform, &RigidBody)>().iter() {
         let rect = body.as_rect(transform.position);
 

@@ -1,8 +1,9 @@
-use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::iter::FromIterator;
 use std::ops::Mul;
+use std::{borrow::BorrowMut, sync::Arc};
 
+use hv_cell::AtomicRefCell;
 use macroquad::color;
 use macroquad::experimental::animation::Animation as MQAnimation;
 use macroquad::experimental::collections::storage;
@@ -258,7 +259,8 @@ impl AnimatedSprite {
     }
 }
 
-pub fn update_animated_sprites(world: &mut World) {
+pub fn update_animated_sprites(world: Arc<AtomicRefCell<World>>) {
+    let mut world = AtomicRefCell::borrow_mut(world.as_ref());
     for (_, drawable) in world.query_mut::<&mut Drawable>() {
         match drawable.kind.borrow_mut() {
             DrawableKind::AnimatedSprite(sprite) => {

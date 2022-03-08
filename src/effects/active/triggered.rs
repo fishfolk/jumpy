@@ -1,3 +1,4 @@
+use hv_cell::AtomicRefCell;
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
 
@@ -7,6 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use core::math::deg_to_rad;
 use core::{Result, Transform};
+use std::sync::Arc;
 
 use crate::effects::active::spawn_active_effect;
 use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
@@ -156,7 +158,8 @@ pub fn spawn_triggered_effect(
 const KICK_FORCE: f32 = 15.0;
 const KICK_DELAY: f32 = 0.22;
 
-pub fn fixed_update_triggered_effects(world: &mut World) {
+pub fn fixed_update_triggered_effects(world: Arc<AtomicRefCell<World>>) {
+    let mut world = AtomicRefCell::borrow_mut(world.as_ref());
     let dt = get_frame_time();
 
     let mut to_trigger = Vec::new();
@@ -266,7 +269,7 @@ pub fn fixed_update_triggered_effects(world: &mut World) {
 
     for (e, _, owner, origin, effects) in to_trigger.drain(0..) {
         for params in effects {
-            if let Err(err) = spawn_active_effect(world, owner, origin, params) {
+            if let Err(err) = spawn_active_effect(&mut world, owner, origin, params) {
                 #[cfg(debug_assertions)]
                 println!("WARNING: {}", err);
             }

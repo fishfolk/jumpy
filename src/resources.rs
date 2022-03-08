@@ -669,10 +669,10 @@ async fn load_mods<P: AsRef<Path>>(mods_dir: P, resources: &mut Resources) -> Re
             }
 
             if !has_unmet_dependencies {
-                let name = mod_dir_path.file_name().unwrap().as_bytes().to_owned();
+                let path = mod_dir_path.file_name().unwrap().as_bytes().to_owned();
                 load_resources_from(mod_dir_path, resources).await?;
                 if meta.kind == ModKind::Full {
-                    load_lua(name, &resources.lua).unwrap();
+                    load_lua(meta.id.to_owned(), path, &resources.lua).unwrap();
                 }
                 #[cfg(debug_assertions)]
                 println!("Loaded mod {} (v{})", &meta.id, &meta.version);

@@ -105,7 +105,9 @@ use crate::player::{draw_weapons_hud, PlayerControllerKind, PlayerParams, spawn_
 cfg_if! {
     if #[cfg(not(feature = "ultimate"))] {
         use core::macroquad;
-        use core::macroquad::prelude::scene;
+
+        use core::scene;
+
         use macroquad::window::{Conf, next_frame};
 
         use crate::game::Game;
@@ -173,7 +175,7 @@ cfg_if! {
                             gui::show_select_map_menu().await
                         };
 
-                        let position = map_resource.map.get_size() * 0.5;
+                        let position = Vec2::from(map_resource.map.get_size()) * 0.5;
 
                         scene::add_node(EditorCamera::new(position));
                         scene::add_node(Editor::new(map_resource));
@@ -184,10 +186,12 @@ cfg_if! {
                         continue 'outer;
                     }
                     MainMenuResult::Credits => {
-                        let resources = storage::get::<Resources>();
                         start_music("thanks_for_all_the_fished");
-                        gui::show_game_credits(&resources.assets_dir).await;
+
+                        gui::show_game_credits(&assets_dir).await;
+
                         stop_music();
+
                         continue 'outer;
                     }
                     MainMenuResult::Quit => {

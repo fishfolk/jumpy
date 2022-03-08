@@ -44,60 +44,7 @@ pub enum GameMode {
 }
 
 pub fn create_main_game_state(game_mode: GameMode) -> Box<dyn GameState> {
-    let mut state_builder = GameStateBuilder::new()
-        .with_constructor(|world| {
-            let player_ids = vec!["1".to_string(), "2".to_string()];
-
-            let (map, mut characters) = {
-                let resources = storage::get::<Resources>();
-
-                let map = resources.maps.first().map(|res| res.map.clone()).unwrap();
-
-                let characters = vec![
-                    resources.player_characters.get("pescy").cloned().unwrap(),
-                    resources.player_characters.get("sharky").cloned().unwrap(),
-                ];
-
-                (map, characters)
-            };
-
-            let player_params = vec![
-                PlayerParams {
-                    index: 0,
-                    controller: PlayerControllerKind::LocalInput(GameInputScheme::KeyboardLeft).into(),
-                    character: characters.pop().unwrap(),
-                },
-                PlayerParams {
-                    index: 1,
-                    controller: PlayerControllerKind::Network(player_ids[1].clone().into()),
-                    character: characters.pop().unwrap(),
-                },
-            ];
-
-            {
-                let camera = GameCamera::new(map.get_size());
-                storage::store(camera);
-
-                let collision_world = create_collision_world(&map);
-                storage::store(collision_world);
-            }
-
-            spawn_map_objects(world, &map).unwrap();
-
-            for params in player_params {
-                let position = map.get_random_spawn_point();
-
-                spawn_player(
-                    world,
-                    params.index,
-                    position,
-                    params.controller,
-                    params.character,
-                );
-            }
-
-            storage::store(map);
-        });
+    let mut state_builder = GameStateBuilder::new();
 
     if matches!(game_mode, GameMode::NetworkClient) {
         state_builder.add_update(update_network_client);
@@ -197,6 +144,7 @@ cfg_if! {
         use macroquad::prelude::scene::{self, Node, RefMut};
 
         pub struct Game {
+            world: Option<World>,
             state: Box<dyn GameState>,
         }
 
@@ -204,15 +152,50 @@ cfg_if! {
             pub fn new(mode: GameMode, map: Map, players: &[PlayerParams]) -> Self {
                 let state = create_main_game_state(mode);
 
+                let mut world = World::new();
+
+                {
+                    let camera = GameCamera::new(map.get_size());
+                    storage::store(camera);
+
+                    let collision_world = create_collision_world(&map);
+                    storage::store(collision_world);
+                }
+
+                spawn_map_objects(&mut world, &map).unwrap();
+
+                for params in players {
+                    let position = map.get_random_spawn_point();
+
+                    spawn_player(
+                        &mut world,
+                        params.index,
+                        position,
+                        params.controller.clone(),
+                        params.character.clone(),
+                    );
+                }
+
+                storage::store(map);
+
                 Game {
+                    world: Some(world),
                     state,
                 }
             }
         }
 
         impl Node for Game {
+            fn ready(mut node: RefMut<Self>) where Self: Sized {
+                let world = node.world.take();
+                node.state.begin(world);
+            }
+
             fn update(mut node: RefMut<Self>) where Self: Sized {
                 node.state.update(get_frame_time());
+
+                let mut camera = storage::get_mut::<GameCamera>();
+                camera.update();
             }
 
             fn fixed_update(mut node: RefMut<Self>) where Self: Sized {
@@ -220,6 +203,16 @@ cfg_if! {
             }
 
             fn draw(mut node: RefMut<Self>) where Self: Sized {
+                let camera_position = {
+                    let camera = storage::get::<GameCamera>();
+                    camera.bounds.point() + (camera.bounds.size() / 2.0)
+                };
+
+                {
+                    let map = storage::get::<Map>();
+                    map.draw(None, camera_position);
+                }
+
                 node.state.draw()
             }
         }

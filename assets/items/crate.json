@@ -5,8 +5,8 @@
   "uses": 1,
   "deplete_behavior": "destroy",
   "collider_size": {
-    "x": 36,
-    "y": 31
+    "width": 36,
+    "height": 31
   },
   "mount_offset": {
     "x": 0,
@@ -25,8 +25,8 @@
         "y": -2.5
       },
       "size": {
-        "x": 30,
-        "y": 30
+        "width": 30,
+        "height": 30
       },
       "effects": [
         {

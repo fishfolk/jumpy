@@ -19,7 +19,7 @@ enum ShakeType {
 }
 
 pub struct GameCamera {
-    bounds: Rect,
+    pub bounds: Rect,
     follow_buffer: Vec<(Vec2, f32)>,
     shake: Vec<Shake>,
     noisegen: NoiseGenerator,
@@ -32,8 +32,8 @@ pub struct GameCamera {
 impl GameCamera {
     const BUFFER_CAPACITY: usize = 20;
 
-    pub fn new(map_size: Vec2) -> GameCamera {
-        let bounds = Rect::new(0.0, 0.0, map_size.x, map_size.y);
+    pub fn new(map_size: Size<f32>) -> GameCamera {
+        let bounds = Rect::new(0.0, 0.0, map_size.width, map_size.height);
 
         GameCamera {
             bounds,

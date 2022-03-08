@@ -2,7 +2,7 @@ use std::ops::Deref;
 
 use core::prelude::*;
 
-use core::macroquad::ui::{Id, Ui, widgets};
+use core::ui::{Id, Ui, widgets};
 
 use crate::gui::{GuiResources, ELEMENT_MARGIN};
 

@@ -38,10 +38,9 @@ pub struct SpriteMetadata {
     /// will be used, if specified, or the raw texture size, if not.
     #[serde(
         default,
-        with = "core::json::vec2_opt",
         skip_serializing_if = "Option::is_none"
     )]
-    pub size: Option<Vec2>,
+    pub size: Option<Size<f32>>,
     /// An optional color to blend with the texture color
     #[serde(
         default,
@@ -100,10 +99,10 @@ impl Sprite {
             #[cfg(feature = "ultimate")]
                 let grid_size: UVec2 = Vec2::from(texture_res.texture.size()).as_uvec2() / sprite_size.as_uvec2();
             #[cfg(not(feature = "ultimate"))]
-            let grid_size: UVec2 = Vec2::from(texture_res.texture.size()).as_u32() / sprite_size.as_u32();
+            let grid_size = Size::from(Vec2::from(texture_res.texture.size()).as_u32() / Vec2::from(sprite_size).as_u32());
 
             {
-                let frame_cnt = (grid_size.x * grid_size.y) as usize;
+                let frame_cnt = (grid_size.width * grid_size.height) as usize;
                 assert!(
                     params.index < frame_cnt,
                     "Sprite: index '{}' exceeds total frame count '{}'",
@@ -113,11 +112,11 @@ impl Sprite {
             }
 
             let position = vec2(
-                (params.index as u32 % grid_size.x) as f32 * sprite_size.x,
-                (params.index as u32 / grid_size.x) as f32 * sprite_size.y,
+                (params.index as u32 % grid_size.width) as f32 * sprite_size.width,
+                (params.index as u32 / grid_size.width) as f32 * sprite_size.height,
             );
 
-            Rect::new(position.x, position.y, sprite_size.x, sprite_size.y)
+            Rect::new(position.x, position.y, sprite_size.width, sprite_size.height)
         };
 
         let tint = params.tint.unwrap_or(colors::WHITE);
@@ -135,8 +134,8 @@ impl Sprite {
         }
     }
 
-    pub fn size(&self) -> Vec2 {
-        self.source_rect.size() * self.scale
+    pub fn size(&self) -> Size<f32> {
+        (self.source_rect.size() * self.scale).into()
     }
 
     pub fn set_scale(&mut self, scale: f32) {
@@ -146,12 +145,12 @@ impl Sprite {
 
 #[derive(Clone)]
 pub struct SpriteParams {
-    pub sprite_size: Option<Vec2>,
+    pub sprite_size: Option<Size<f32>>,
     pub index: usize,
     pub scale: f32,
     pub offset: Vec2,
     pub pivot: Option<Vec2>,
-    pub size: Option<Vec2>,
+    pub size: Option<Size<f32>>,
     pub tint: Option<Color>,
     pub is_flipped_x: bool,
     pub is_flipped_y: bool,
@@ -218,8 +217,8 @@ pub fn debug_draw_one_sprite(position: Vec2, sprite: &Sprite) {
         draw_rectangle_outline(
             position.x + sprite.offset.x,
             position.y + sprite.offset.y,
-            size.x,
-            size.y,
+            size.width,
+            size.height,
             2.0,
             colors::BLUE,
         )

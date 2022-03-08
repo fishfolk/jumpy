@@ -140,8 +140,7 @@ pub struct MapItemMetadata {
     pub name: String,
     #[serde(flatten)]
     pub kind: MapItemKind,
-    #[serde(with = "core::json::vec2_def")]
-    pub collider_size: Vec2,
+    pub collider_size: Size<f32>,
     #[serde(default, with = "core::json::vec2_def")]
     pub collider_offset: Vec2,
     #[serde(default)]
@@ -172,8 +171,8 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
 
     let actor = storage::get_mut::<CollisionWorld>().add_actor(
         position,
-        collider_size.x as i32,
-        collider_size.y as i32,
+        collider_size.width as i32,
+        collider_size.height as i32,
     );
 
     let animations = meta
@@ -184,14 +183,15 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
         .map(|a| a.into())
         .collect::<Vec<_>>();
 
-    let texture = {
-        let resources = storage::get::<Resources>();
-        let res = resources.textures.get(&meta.sprite.texture_id).unwrap();
-        res.texture
-    };
+    let texture_res = storage::get::<Resources>()
+        .textures
+        .get(&meta.sprite.texture_id)
+        .cloned()
+        .unwrap();
 
     let sprite = AnimatedSprite::new(
-        texture,
+        texture_res.texture,
+        texture_res.frame_size(),
         animations.as_slice(),
         meta.sprite.clone().into(),
     );
@@ -263,14 +263,15 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
                     .map(|a| a.into())
                     .collect::<Vec<_>>();
 
-                let texture = {
-                    let resources = storage::get::<Resources>();
-                    let res = resources.textures.get(&effect_sprite.texture_id).unwrap();
-                    res.texture
-                };
+                let texture_res = storage::get::<Resources>()
+                    .textures
+                    .get(&effect_sprite.texture_id)
+                    .cloned()
+                    .unwrap();
 
                 let mut sprite = AnimatedSprite::new(
-                    texture,
+                    texture_res.texture,
+                    texture_res.frame_size(),
                     animations.as_slice(),
                     effect_sprite.clone().into(),
                 );

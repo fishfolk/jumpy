@@ -4,8 +4,8 @@
   "type": "item",
   "hat": true,
   "collider_size": {
-    "x": 36,
-    "y": 31
+    "width": 36,
+    "height": 31
   },
   "mount_offset": {
     "x": 0,

@@ -5,12 +5,12 @@ use crate::resources::{Resources, TextureResource};
 
 pub struct Background {
     textures: Vec<TextureResource>,
-    size: Vec2,
+    size: Size<f32>,
     position: Vec2,
 }
 
 impl Background {
-    pub fn new(size: Vec2, position: Vec2, textures: &[TextureResource]) -> Self {
+    pub fn new(size: Size<f32>, position: Vec2, textures: &[TextureResource]) -> Self {
         let textures = textures.to_vec();
 
         Background {
@@ -24,7 +24,7 @@ impl Background {
     pub fn ui(&self, ui: &mut Ui) {
         for res in &self.textures {
             widgets::Texture::new(res.texture.into())
-                .size(self.size.x, self.size.y)
+                .size(self.size.width, self.size.height)
                 .position(self.position)
                 .ui(ui);
         }
@@ -59,7 +59,7 @@ pub fn draw_main_menu_background(is_ui: bool) {
     let width = (height / size.height) * size.width;
 
     let bg = Background::new(
-        vec2(width, height),
+        Size::new(width, height),
         Vec2::ZERO,
         &[background_04, background_03, background_02, background_01],
     );

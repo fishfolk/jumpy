@@ -62,11 +62,11 @@ pub async fn show_select_characters_menu(
 
         let meta: AnimatedSpriteMetadata = character.sprite.clone().into();
 
-        let texture = storage::get::<Resources>()
+        let texture_res = storage::get::<Resources>()
             .textures
             .get(&meta.texture_id)
-            .unwrap()
-            .texture;
+            .cloned()
+            .unwrap();
 
         let animations = meta
             .animations
@@ -76,7 +76,7 @@ pub async fn show_select_characters_menu(
             .collect::<Vec<_>>();
 
         let sprite =
-            AnimatedSprite::new(texture, animations.as_slice(), meta.clone().into());
+            AnimatedSprite::new(texture_res.texture, texture_res.frame_size(), animations.as_slice(), meta.clone().into());
 
         animated_sprites.push(sprite);
     }
@@ -167,7 +167,7 @@ pub async fn show_select_characters_menu(
                         let animation_size = animation_player.size();
                         let animation_transform = {
                             let position = section_position
-                                + vec2((section_size.x - animation_size.x) / 2.0, 100.0);
+                                + vec2((section_size.x - animation_size.width) / 2.0, 100.0);
                             Transform::from(position)
                         };
 
@@ -259,11 +259,11 @@ pub async fn show_select_characters_menu(
 
                 let meta: AnimatedSpriteMetadata = character.sprite.clone().into();
 
-                let texture = storage::get::<Resources>()
+                let texture_res = storage::get::<Resources>()
                     .textures
                     .get(&meta.texture_id)
-                    .unwrap()
-                    .texture;
+                    .cloned()
+                    .unwrap();
 
                 let animations = meta
                     .animations
@@ -273,7 +273,8 @@ pub async fn show_select_characters_menu(
                     .collect::<Vec<_>>();
 
                 animated_sprites[i] = AnimatedSprite::new(
-                    texture,
+                    texture_res.texture,
+                    texture_res.frame_size(),
                     animations.as_slice(),
                     meta.clone().into(),
                 );

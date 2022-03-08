@@ -49,7 +49,7 @@ impl ToolbarElement for TilesetDetailsElement {
                     .unwrap()
             };
 
-            let grid_size = vec2(tileset.grid_size.x as f32, tileset.grid_size.y as f32);
+            let grid_size = Size::new(tileset.grid_size.width as f32, tileset.grid_size.height as f32);
 
             let scaled_width = size.x;
             let texture_size = texture_entry.texture.size();
@@ -57,7 +57,7 @@ impl ToolbarElement for TilesetDetailsElement {
             let scaled_height =
                 (scaled_width / texture_size.width) * texture_size.height;
 
-            let scaled_tile_size = vec2(scaled_width / grid_size.x, scaled_height / grid_size.y);
+            let scaled_tile_size = Size::new(scaled_width / grid_size.width, scaled_height / grid_size.height);
 
             widgets::Texture::new(texture_entry.texture.into())
                 .position(position)
@@ -69,9 +69,9 @@ impl ToolbarElement for TilesetDetailsElement {
                 ui.push_skin(&gui_resources.skins.tileset_grid);
             }
 
-            for y in 0..tileset.grid_size.y {
-                for x in 0..tileset.grid_size.x {
-                    let tile_id = y * tileset.grid_size.x + x;
+            for y in 0..tileset.grid_size.height {
+                for x in 0..tileset.grid_size.width {
+                    let tile_id = y * tileset.grid_size.width + x;
 
                     let is_selected = if let Some(selected) = ctx.selected_tile {
                         selected == tile_id
@@ -84,10 +84,10 @@ impl ToolbarElement for TilesetDetailsElement {
                         ui.push_skin(&gui_resources.skins.tileset_grid_selected);
                     }
 
-                    let position = vec2(x as f32, y as f32) * scaled_tile_size;
+                    let position: Vec2 = vec2(x as f32, y as f32) * Vec2::from(scaled_tile_size);
 
                     let button = widgets::Button::new("")
-                        .size(scaled_tile_size)
+                        .size(scaled_tile_size.into())
                         .position(position)
                         .ui(ui);
 

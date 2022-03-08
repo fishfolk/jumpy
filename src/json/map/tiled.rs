@@ -121,17 +121,17 @@ impl TiledMap {
 
         let mut tilesets = HashMap::new();
         for tiled_tileset in self.tilesets {
-            let texture_size = uvec2(
+            let texture_size = Size::new(
                 tiled_tileset.imagewidth as u32,
                 tiled_tileset.imageheight as u32,
             );
 
-            let tile_size = vec2(
+            let tile_size = Size::new(
                 tiled_tileset.tilewidth as f32,
                 tiled_tileset.tileheight as f32,
             );
 
-            let grid_size = uvec2(
+            let grid_size = Size::new(
                 tiled_tileset.columns as u32,
                 tiled_tileset.tilecount as u32 / tiled_tileset.columns as u32,
             );
@@ -172,7 +172,7 @@ impl TiledMap {
             });
 
             let tile_subdivisions = MapTileset::default_tile_subdivisions();
-            let subdivision_grid_size = grid_size * tile_subdivisions;
+            let subdivision_grid_size = UVec2::from(grid_size) * tile_subdivisions;
 
             let subtile_cnt = (subdivision_grid_size.x * subdivision_grid_size.y) as usize;
             let mut autotile_mask = vec![];
@@ -266,7 +266,7 @@ impl TiledMap {
                 }
             }
 
-            let grid_size = uvec2(self.width, self.height);
+            let grid_size = Size::new(self.width, self.height);
 
             let mut has_collision = false;
             let mut properties = HashMap::new();
@@ -305,8 +305,6 @@ impl TiledMap {
             layers.insert(layer.id.clone(), layer);
         }
 
-        let grid_size = uvec2(self.width, self.height);
-
         let mut properties = HashMap::new();
         if let Some(tiled_props) = self.properties {
             for tiled_prop in tiled_props {
@@ -319,8 +317,8 @@ impl TiledMap {
             background_color,
             background_layers: Vec::new(),
             world_offset: Vec2::ZERO,
-            grid_size,
-            tile_size: vec2(self.tilewidth as f32, self.tileheight as f32),
+            grid_size: Size::new(self.width, self.height),
+            tile_size: Size::new(self.tilewidth as f32, self.tileheight as f32),
             layers,
             tilesets,
             draw_order,

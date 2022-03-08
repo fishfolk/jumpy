@@ -22,10 +22,8 @@ pub(crate) struct MapDef {
     pub background_layers: Vec<MapBackgroundLayer>,
     #[serde(with = "core::json::vec2_def", default)]
     pub world_offset: Vec2,
-    #[serde(with = "core::json::uvec2_def")]
-    pub grid_size: UVec2,
-    #[serde(with = "core::json::vec2_def")]
-    pub tile_size: Vec2,
+    pub grid_size: Size<u32>,
+    pub tile_size: Size<f32>,
     pub layers: Vec<MapLayerDef>,
     pub tilesets: Vec<MapTileset>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]

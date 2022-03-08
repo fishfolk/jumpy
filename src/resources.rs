@@ -70,10 +70,9 @@ pub struct TextureMetadata {
     #[serde(
         default,
         alias = "sprite_size",
-        with = "core::json::vec2_opt",
         skip_serializing_if = "Option::is_none"
     )]
-    pub frame_size: Option<Vec2>,
+    pub frame_size: Option<Size<f32>>,
     #[serde(default = "TextureFilterMode::default")]
     pub filter_mode: TextureFilterMode,
     #[serde(default = "TextureFormat::default")]
@@ -87,8 +86,8 @@ pub struct TextureResource {
 }
 
 impl TextureResource {
-    pub fn frame_size(&self) -> Vec2 {
-        self.meta.frame_size.unwrap_or_else(|| self.texture.size().into())
+    pub fn frame_size(&self) -> Size<f32> {
+        self.meta.frame_size.unwrap_or_else(|| self.texture.size())
     }
 }
 

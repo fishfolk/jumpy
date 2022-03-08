@@ -15,8 +15,8 @@
     }
   ],
   "collider_size": {
-    "x": 84,
-    "y": 25
+    "width": 84,
+    "height": 25
   },
   "effect_offset": {
     "x": 82,
@@ -34,8 +34,8 @@
         "sprite": {
           "texture": "sniper_rifle_bullet",
           "size": {
-            "x": 7,
-            "y": 7
+            "width": 7,
+            "height": 7
           },
           "offset": {
             "x": -3.5,

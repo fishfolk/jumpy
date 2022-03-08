@@ -1,8 +1,8 @@
 use hecs::World;
 use core::prelude::*;
 
-use core::macroquad::experimental::scene::{self, Node, RefMut};
-use core::macroquad::camera::Camera2D;
+use core::scene::{self, Node, RefMut};
+use core::camera::Camera2D;
 
 pub struct EditorCamera {
     pub position: Vec2,

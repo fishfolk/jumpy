@@ -8,8 +8,8 @@
   "recoil": 5.5,
   "sound_effect": "shoot",
   "collider_size": {
-    "x": 64,
-    "y": 25
+    "width": 64,
+    "height": 25
   },
   "effect_offset": {
     "x": 64,
@@ -28,8 +28,8 @@
         "sprite": {
           "texture": "small_projectile",
           "size": {
-            "x": 8,
-            "y": 4
+            "width": 8,
+            "height": 4
           },
           "tint": {
             "r": 0.9,
@@ -50,8 +50,8 @@
         "sprite": {
           "texture": "small_projectile",
           "size": {
-            "x": 8,
-            "y": 4
+            "width": 8,
+            "height": 4
           },
           "tint": {
             "r": 0.9,
@@ -72,8 +72,8 @@
         "sprite": {
           "texture": "small_projectile",
           "size": {
-            "x": 8,
-            "y": 4
+            "width": 8,
+            "height": 4
           },
           "tint": {
             "r": 0.9,
@@ -94,8 +94,8 @@
         "sprite": {
           "texture": "small_projectile",
           "size": {
-            "x": 8,
-            "y": 4
+            "width": 8,
+            "height": 4
           },
           "tint": {
             "r": 0.9,
@@ -116,8 +116,8 @@
         "sprite": {
           "texture": "small_projectile",
           "size": {
-            "x": 8,
-            "y": 4
+            "width": 8,
+            "height": 4
           },
           "tint": {
             "r": 0.9,

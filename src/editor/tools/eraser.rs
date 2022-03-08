@@ -91,8 +91,8 @@ impl EditorTool for EraserTool {
                     draw_rectangle_outline(
                         position.x,
                         position.y,
-                        map.tile_size.x,
-                        map.tile_size.y,
+                        map.tile_size.width,
+                        map.tile_size.height,
                         2.0,
                         outline_color,
                     );

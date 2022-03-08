@@ -169,7 +169,7 @@ pub fn spawn_player(
     let offset = {
         let frame_size = texture_res.meta.frame_size.unwrap_or(texture_res.texture.size().into());
         character.sprite.offset
-            - vec2(frame_size.x / 2.0, frame_size.y - character.collider_size.y)
+            - vec2(frame_size.width / 2.0, frame_size.height - character.collider_size.height)
     };
 
     let animations = character
@@ -191,7 +191,7 @@ pub fn spawn_player(
 
     let sprites = vec![(
         BODY_ANIMATED_SPRITE_ID,
-        AnimatedSprite::new(texture_res.texture, animations.as_slice(), params),
+        AnimatedSprite::new(texture_res.texture, texture_res.frame_size(), animations.as_slice(), params),
     )];
 
     let draw_order = (index as u32 + 1) * 10;
@@ -199,11 +199,11 @@ pub fn spawn_player(
     #[cfg(feature = "ultimate")]
     let size = character.collider_size.as_ivec2();
     #[cfg(not(feature = "ultimate"))]
-    let size = character.collider_size.as_i32();
-    let actor = storage::get_mut::<CollisionWorld>().add_actor(position, size.x, size.y);
+    let size: Size<i32> = Vec2::from(character.collider_size).as_i32().into();
+    let actor = storage::get_mut::<CollisionWorld>().add_actor(position, size.width, size.height);
 
     let body_params = PhysicsBodyParams {
-        offset: vec2(-character.collider_size.x / 2.0, 0.0),
+        offset: vec2(-character.collider_size.width / 2.0, 0.0),
         size: character.collider_size,
         has_friction: false,
         can_rotate: false,

@@ -74,7 +74,7 @@ impl From<&ComboBoxVec> for usize {
 
 cfg_if! {
     if #[cfg(not(feature = "ultimate"))] {
-        use core::macroquad::ui::{Ui, Id};
+        use core::ui::{Ui, Id};
 
         pub struct ComboBoxBuilder {
             id: Id,

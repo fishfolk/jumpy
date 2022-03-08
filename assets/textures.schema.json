@@ -31,18 +31,18 @@
         "$id": "#root/items/sprite_size",
         "title": "Sprite_size",
         "type": "object",
-        "required": ["x", "y"],
+        "required": ["width", "height"],
         "properties": {
           "x": {
-            "$id": "#root/items/sprite_size/x",
-            "title": "X",
+            "$id": "#root/items/sprite_size/width",
+            "title": "Width",
             "type": "integer",
             "examples": [0],
             "default": 0
           },
           "y": {
-            "$id": "#root/items/sprite_size/y",
-            "title": "Y",
+            "$id": "#root/items/sprite_size/height",
+            "title": "Height",
             "type": "integer",
             "examples": [0],
             "default": 0

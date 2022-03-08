@@ -1,13 +1,13 @@
 pub use crate::backend_impl::rendering::*;
 
 use crate::color::Color;
-use crate::math::{Vec2, Rect};
+use crate::math::{Vec2, Rect, Size};
 
 #[derive(Debug, Default, Clone)]
 pub struct DrawTextureParams {
     pub tint: Option<Color>,
 
-    pub dest_size: Option<Vec2>,
+    pub dest_size: Option<Size<f32>>,
 
     /// Part of texture to draw. If None - draw the whole texture.
     /// Good use example: drawing an image from texture atlas.

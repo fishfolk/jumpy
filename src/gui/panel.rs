@@ -8,7 +8,7 @@ use crate::Resources;
 
 use super::{GuiResources, WINDOW_MARGIN_H, WINDOW_MARGIN_V};
 
-use core::macroquad::ui::{Id, Ui, widgets};
+use core::ui::{Id, Ui, widgets};
 
 pub struct Panel {
     id: Id,

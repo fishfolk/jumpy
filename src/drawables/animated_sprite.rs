@@ -72,7 +72,6 @@ pub struct Keyframe {
 }
 
 pub struct AnimatedSpriteParams {
-    pub frame_size: Option<Vec2>,
     pub scale: f32,
     pub offset: Vec2,
     pub pivot: Option<Vec2>,
@@ -85,7 +84,6 @@ pub struct AnimatedSpriteParams {
 impl Default for AnimatedSpriteParams {
     fn default() -> Self {
         AnimatedSpriteParams {
-            frame_size: None,
             scale: 1.0,
             offset: Vec2::ZERO,
             pivot: None,
@@ -127,7 +125,7 @@ impl QueuedAnimationAction {
 #[derive(Clone)]
 pub struct AnimatedSprite {
     pub texture: Texture2D,
-    pub frame_size: Vec2,
+    pub frame_size: Size<f32>,
     pub scale: f32,
     pub offset: Vec2,
     pub pivot: Option<Vec2>,
@@ -145,7 +143,7 @@ pub struct AnimatedSprite {
 }
 
 impl AnimatedSprite {
-    pub fn new(texture: Texture2D, animations: &[Animation], params: AnimatedSpriteParams) -> Self {
+    pub fn new(texture: Texture2D, frame_size: Size<f32>, animations: &[Animation], params: AnimatedSpriteParams) -> Self {
         let animations = animations.to_vec();
 
         let mut is_playing = false;
@@ -161,10 +159,6 @@ impl AnimatedSprite {
                 }
             }
         }
-
-        let frame_size = params
-            .frame_size
-            .unwrap_or_else(|| texture.size().into());
 
         AnimatedSprite {
             texture,
@@ -194,18 +188,18 @@ impl AnimatedSprite {
         self.animations.get(self.current_index).unwrap()
     }
 
-    pub fn size(&self) -> Vec2 {
-        self.frame_size * self.scale
+    pub fn size(&self) -> Size<f32> {
+        (Vec2::from(self.frame_size) * self.scale).into()
     }
 
     pub fn source_rect(&self) -> Rect {
         let animation = self.animations.get(self.current_index).unwrap();
 
         Rect::new(
-            self.current_frame as f32 * self.frame_size.x,
-            animation.row as f32 * self.frame_size.y,
-            self.frame_size.x,
-            self.frame_size.y,
+            self.current_frame as f32 * self.frame_size.width,
+            animation.row as f32 * self.frame_size.height,
+            self.frame_size.width,
+            self.frame_size.height,
         )
     }
 
@@ -378,7 +372,7 @@ pub fn draw_one_animated_sprite(transform: &Transform, sprite: &AnimatedSprite) 
                 flip_y: sprite.is_flipped_y,
                 rotation: transform.rotation,
                 source: Some(sprite.source_rect()),
-                dest_size: Some(sprite.size()),
+                dest_size: Some(sprite.frame_size.into()),
                 pivot: sprite.pivot,
                 tint: Some(sprite.tint),
             },
@@ -391,7 +385,7 @@ pub fn debug_draw_one_animated_sprite(position: Vec2, sprite: &AnimatedSprite) {
         let position = position + sprite.offset;
         let size = sprite.size();
 
-        draw_rectangle_outline(position.x, position.y, size.x, size.y, 2.0, colors::BLUE)
+        draw_rectangle_outline(position.x, position.y, size.width, size.height, 2.0, colors::BLUE)
     }
 }
 
@@ -406,18 +400,18 @@ impl AnimatedSpriteSet {
         self.draw_order.is_empty()
     }
 
-    pub fn size(&self) -> Vec2 {
-        let mut size = Vec2::ZERO;
+    pub fn size(&self) -> Size<f32> {
+        let mut size = Size::zero();
 
         for sprite in self.map.values() {
             let sprite_size = sprite.size();
 
-            if sprite_size.x > size.x {
-                size.x = sprite_size.x;
+            if sprite_size.width > size.width {
+                size.width = sprite_size.width;
             }
 
-            if sprite_size.y > size.y {
-                size.y = sprite_size.y;
+            if sprite_size.height > size.height {
+                size.height = sprite_size.height;
             }
         }
 

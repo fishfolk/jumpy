@@ -21,8 +21,8 @@
       "can_rotate": true,
       "collide_with_platforms": true,
       "size": {
-        "x": 26,
-        "y": 23
+        "width": 26,
+        "height": 23
       },
       "is_kickable": true,
       "timed_trigger": 1.5,
@@ -48,8 +48,8 @@
         {
           "type": "triggered_effect",
           "size": {
-            "x": 112,
-            "y": 80
+            "width": 112,
+            "height": 80
           },
           "collide_with_platforms": true,
           "timed_trigger": 0.7,
@@ -87,8 +87,8 @@
     }
   ],
   "collider_size": {
-    "x": 32,
-    "y": 45
+    "width": 32,
+    "height": 45
   },
   "mount_offset": {
     "x": 0,

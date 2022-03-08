@@ -114,11 +114,11 @@ pub fn spawn_projectile(
     let body_params = match kind {
         ProjectileKind::Rect { width, height, .. } => RigidBodyParams {
             offset: vec2(-width, -height) / 2.0,
-            size: vec2(width, height),
+            size: Size::new(width, height),
             can_rotate: false,
         },
         ProjectileKind::Circle { radius, .. } => RigidBodyParams {
-            size: vec2(radius * 2.0, radius * 2.0),
+            size: Size::new(radius * 2.0, radius * 2.0),
             can_rotate: false,
             ..Default::default()
         },
@@ -131,9 +131,9 @@ pub fn spawn_projectile(
 
             let size = meta
                 .size
-                .unwrap_or_else(|| texture_res.meta.frame_size.unwrap_or(texture_res.texture.size().into()));
+                .unwrap_or_else(|| texture_res.meta.frame_size.unwrap_or(texture_res.texture.size()));
 
-            let offset = meta.offset - (vec2(size.x, size.y) / 2.0);
+            let offset = meta.offset - (vec2(size.width, size.height) / 2.0);
 
             let is_flipped_x = velocity.x < 0.0;
 
@@ -224,8 +224,8 @@ pub fn fixed_update_projectiles(world: &mut World, delta_time: f32, integration_
         #[cfg(feature = "ultimate")]
         let size = body.size.as_ivec2();
         #[cfg(not(feature = "ultimate"))]
-        let size = body.size.as_i32();
-        let map_collision = collision_world.collide_solids(transform.position, size.x, size.y);
+        let size: Size<i32> = Vec2::from(body.size).as_i32().into();
+        let map_collision = collision_world.collide_solids(transform.position, size.width, size.height);
         if map_collision == Tile::Solid {
             let res = (projectile.owner, e, Some(ProjectileCollision::Map));
             events.push(res);

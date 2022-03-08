@@ -8,8 +8,8 @@
   "recoil": 5.5,
   "sound_effect": "shoot",
   "collider_size": {
-    "x": 68,
-    "y": 24
+    "width": 68,
+    "height": 24
   },
   "effect_offset": {
     "x": 68,
@@ -50,8 +50,8 @@
         "sprite": {
           "texture": "small_projectile",
           "size": {
-            "x": 8,
-            "y": 4
+            "width": 8,
+            "height": 4
           },
           "tint": {
             "r": 0.9,
@@ -72,8 +72,8 @@
         "sprite": {
           "texture": "small_projectile",
           "size": {
-            "x": 8,
-            "y": 4
+            "width": 8,
+            "height": 4
           },
           "tint": {
             "r": 0.9,
@@ -94,8 +94,8 @@
         "sprite": {
           "texture": "small_projectile",
           "size": {
-            "x": 8,
-            "y": 4
+            "width": 8,
+            "height": 4
           },
           "tint": {
             "r": 0.9,
@@ -116,8 +116,8 @@
         "sprite": {
           "texture": "small_projectile",
           "size": {
-            "x": 8,
-            "y": 4
+            "width": 8,
+            "height": 4
           },
           "tint": {
             "r": 0.9,
@@ -138,8 +138,8 @@
         "sprite": {
           "texture": "small_projectile",
           "size": {
-            "x": 8,
-            "y": 4
+            "width": 8,
+            "height": 4
           },
           "tint": {
             "r": 0.9,
@@ -160,8 +160,8 @@
         "sprite": {
           "texture": "small_projectile",
           "size": {
-            "x": 8,
-            "y": 4
+            "width": 8,
+            "height": 4
           },
           "tint": {
             "r": 0.9,
@@ -182,8 +182,8 @@
         "sprite": {
           "texture": "small_projectile",
           "size": {
-            "x": 8,
-            "y": 4
+            "width": 8,
+            "height": 4
           },
           "tint": {
             "r": 0.9,
@@ -204,8 +204,8 @@
         "sprite": {
           "texture": "small_projectile",
           "size": {
-            "x": 8,
-            "y": 4
+            "width": 8,
+            "height": 4
           },
           "tint": {
             "r": 0.9,

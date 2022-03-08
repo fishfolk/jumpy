@@ -87,11 +87,11 @@ pub fn spawn_triggered_effect(
         velocity.x = -velocity.x;
     }
 
-    let offset = -meta.size / 2.0;
+    let offset = -Vec2::from(meta.size) / 2.0;
 
     let actor = {
         let mut collision_world = storage::get_mut::<CollisionWorld>();
-        collision_world.add_actor(origin, meta.size.x as i32, meta.size.y as i32)
+        collision_world.add_actor(origin, meta.size.width as i32, meta.size.height as i32)
     };
 
     let rotation = deg_to_rad(meta.rotation);
@@ -129,7 +129,7 @@ pub fn spawn_triggered_effect(
 
         {
             let sprite = drawable.get_animated_sprite_mut().unwrap();
-            sprite.offset -= sprite.frame_size / 2.0;
+            sprite.offset -= Vec2::from(sprite.frame_size) / 2.0;
         }
 
         world.insert_one(entity, drawable)?;
@@ -197,8 +197,8 @@ pub fn fixed_update_triggered_effects(world: &mut World, delta_time: f32, integr
             let collider = Rect::new(
                 transform.position.x,
                 transform.position.y,
-                body.size.x,
-                body.size.y,
+                body.size.width,
+                body.size.height,
             );
 
             let can_be_triggered_by_player =
@@ -214,13 +214,13 @@ pub fn fixed_update_triggered_effects(world: &mut World, delta_time: f32, integr
 
                 'players: for (pe, is_facing_left, position, size) in players.clone() {
                     if !should_exclude_owner || pe != effect.owner {
-                        let player_collider = Rect::new(position.x, position.y, size.x, size.y);
+                        let player_collider = Rect::new(position.x, position.y, size.width, size.height);
 
                         if collider.overlaps(&player_collider) {
                             let mut should_trigger = false;
 
                             if effect.is_kickable && effect.kick_delay_timer >= KICK_DELAY {
-                                if is_facing_left && transform.position.x < position.x + size.x {
+                                if is_facing_left && transform.position.x < position.x + size.width {
                                     body.velocity.x = -KICK_FORCE;
                                 } else if !is_facing_left && transform.position.x > position.x {
                                     body.velocity.x = KICK_FORCE;
@@ -285,8 +285,7 @@ pub struct TriggeredEffectMetadata {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub particles: Vec<ParticleEmitterMetadata>,
     /// This specifies the size of the trigger.
-    #[serde(with = "core::json::vec2_def")]
-    pub size: Vec2,
+    pub size: Size<f32>,
     /// This specifies the valid trigger conditions for the trigger.
     #[serde(default)]
     pub trigger: Vec<TriggeredEffectTrigger>,
@@ -335,7 +334,7 @@ impl Default for TriggeredEffectMetadata {
         TriggeredEffectMetadata {
             effects: Vec::new(),
             particles: Vec::new(),
-            size: vec2(6.0, 6.0),
+            size: Size::new(6.0, 6.0),
             trigger: Vec::new(),
             velocity: Vec2::ZERO,
             rotation: 0.0,

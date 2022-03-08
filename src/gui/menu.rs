@@ -10,7 +10,7 @@ use super::{
 
 use core::input::{is_gamepad_btn_pressed, GamepadContext};
 
-use core::macroquad::ui::{Id, Ui, widgets};
+use core::ui::{Id, Ui, widgets};
 use crate::macroquad::time::get_frame_time;
 
 #[derive(Debug, Copy, Clone)]

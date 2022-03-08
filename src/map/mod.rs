@@ -41,10 +41,8 @@ pub struct Map {
     pub background_layers: Vec<MapBackgroundLayer>,
     #[serde(with = "core::json::def_vec2")]
     pub world_offset: Vec2,
-    #[serde(with = "core::json::def_uvec2")]
-    pub grid_size: UVec2,
-    #[serde(with = "core::json::def_vec2")]
-    pub tile_size: Vec2,
+    pub grid_size: Size<u32>,
+    pub tile_size: Size<f32>,
     pub layers: HashMap<String, MapLayer>,
     pub tilesets: HashMap<String, MapTileset>,
     #[serde(skip)]
@@ -70,8 +68,8 @@ impl Map {
             background_color: Self::default_background_color(),
             background_layers: Vec::new(),
             world_offset: Vec2::ZERO,
-            grid_size,
-            tile_size,
+            grid_size: grid_size.into(),
+            tile_size: tile_size.into(),
             layers: HashMap::new(),
             tilesets: HashMap::new(),
             draw_order: Vec::new(),
@@ -100,10 +98,10 @@ impl Map {
         Ok(map)
     }
 
-    pub fn get_size(&self) -> Vec2 {
-        vec2(
-            self.grid_size.x as f32 * self.tile_size.x,
-            self.grid_size.y as f32 * self.tile_size.y,
+    pub fn get_size(&self) -> Size<f32> {
+        Size::new(
+            self.grid_size.width as f32 * self.tile_size.width,
+            self.grid_size.height as f32 * self.tile_size.height,
         )
     }
 
@@ -111,39 +109,39 @@ impl Map {
         #[cfg(feature = "ultimate")]
         let map_size = self.grid_size.as_vec2() * self.tile_size;
         #[cfg(not(feature = "ultimate"))]
-        let map_size = self.grid_size.as_f32() * self.tile_size;
+        let map_size = Size::from(UVec2::from(self.grid_size).as_f32()) * self.tile_size;
         let rect = Rect::new(
             self.world_offset.x,
             self.world_offset.y,
-            map_size.x,
-            map_size.y,
+            map_size.width,
+            map_size.height,
         );
         rect.contains(position)
     }
 
     pub fn to_grid(&self, rect: &Rect) -> URect {
         let p = self.to_coords(rect.point());
-        let w = ((rect.w / self.tile_size.x) as u32).clamp(0, self.grid_size.x - p.x - 1);
-        let h = ((rect.h / self.tile_size.y) as u32).clamp(0, self.grid_size.y - p.y - 1);
+        let w = ((rect.w / self.tile_size.width) as u32).clamp(0, self.grid_size.width - p.x - 1);
+        let h = ((rect.h / self.tile_size.height) as u32).clamp(0, self.grid_size.height - p.y - 1);
         URect::new(p.x, p.y, w, h)
     }
 
     pub fn to_coords(&self, position: Vec2) -> UVec2 {
-        let x = (((position.x - self.world_offset.x) / self.tile_size.x) as u32)
-            .clamp(0, self.grid_size.x - 1);
-        let y = (((position.y - self.world_offset.y) / self.tile_size.y) as u32)
-            .clamp(0, self.grid_size.y - 1);
+        let x = (((position.x - self.world_offset.x) / self.tile_size.width) as u32)
+            .clamp(0, self.grid_size.width - 1);
+        let y = (((position.y - self.world_offset.y) / self.tile_size.height) as u32)
+            .clamp(0, self.grid_size.height - 1);
         uvec2(x, y)
     }
 
     pub fn to_index(&self, coords: UVec2) -> usize {
-        ((coords.y * self.grid_size.x) + coords.x) as usize
+        ((coords.y * self.grid_size.width) + coords.x) as usize
     }
 
     pub fn to_position(&self, point: UVec2) -> Vec2 {
         vec2(
-            (point.x as f32 * self.tile_size.x) + self.world_offset.x,
-            (point.y as f32 * self.tile_size.y) + self.world_offset.y,
+            (point.x as f32 * self.tile_size.width) + self.world_offset.x,
+            (point.y as f32 * self.tile_size.height) + self.world_offset.y,
         )
     }
 
@@ -153,16 +151,16 @@ impl Map {
             .get(layer_id)
             .unwrap_or_else(|| panic!("No layer with id '{}'!", layer_id));
 
-        if x >= self.grid_size.x || y >= self.grid_size.y {
+        if x >= self.grid_size.width || y >= self.grid_size.height {
             return &None;
         };
 
-        let i = (y * self.grid_size.x + x) as usize;
+        let i = (y * self.grid_size.width + x) as usize;
         &layer.tiles[i]
     }
 
     pub fn get_tiles(&self, layer_id: &str, rect: Option<URect>) -> MapTileIterator {
-        let rect = rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.x, self.grid_size.y));
+        let rect = rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.width, self.grid_size.height));
         let layer = self
             .layers
             .get(layer_id)
@@ -180,10 +178,10 @@ impl Map {
         );
 
         let grid = self.to_grid(&Rect::new(
-            collider.x - self.tile_size.x,
-            collider.y - self.tile_size.y,
-            collider.w + self.tile_size.x * 2.0,
-            collider.h + self.tile_size.y * 2.0,
+            collider.x - self.tile_size.width,
+            collider.y - self.tile_size.height,
+            collider.w + self.tile_size.width * 2.0,
+            collider.h + self.tile_size.height * 2.0,
         ));
 
         let mut collisions = Vec::new();
@@ -200,8 +198,8 @@ impl Map {
                             let tile_rect = Rect::new(
                                 tile_position.x,
                                 tile_position.y,
-                                self.tile_size.x,
-                                self.tile_size.y,
+                                self.tile_size.width,
+                                self.tile_size.height,
                             );
 
                             if tile_rect.overlaps(&collider) {
@@ -259,13 +257,13 @@ impl Map {
     }
 
     pub fn draw_background(&self, rect: Option<URect>, camera_position: Vec2, is_parallax_disabled: bool) {
-        let rect = rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.x, self.grid_size.y));
+        let rect = rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.width, self.grid_size.height));
 
         draw_rectangle(
             self.world_offset.x,
             self.world_offset.y,
-            rect.w as f32 * self.tile_size.x,
-            rect.h as f32 * self.tile_size.y,
+            rect.w as f32 * self.tile_size.width,
+            rect.h as f32 * self.tile_size.height,
             self.background_color,
         );
 
@@ -278,11 +276,11 @@ impl Map {
                     #[cfg(feature = "ultimate")]
                     let map_size = self.grid_size.as_vec2() * self.tile_size;
                     #[cfg(not(feature = "ultimate"))]
-                    let map_size = self.grid_size.as_f32() * self.tile_size;
+                    let map_size = Size::from(UVec2::from(self.grid_size).as_f32()) * self.tile_size;
 
                     let size = texture_res.texture.size();
 
-                    let width = map_size.x + (Self::FLATTENED_BACKGROUND_PADDING_X * 2.0);
+                    let width = map_size.width + (Self::FLATTENED_BACKGROUND_PADDING_X * 2.0);
                     let height = (width / size.width) * size.height;
 
                     Rect::new(
@@ -304,7 +302,7 @@ impl Map {
                     dest_rect.y,
                     texture_res.texture,
                     DrawTextureParams {
-                        dest_size: Some(vec2(dest_rect.w, dest_rect.h)),
+                        dest_size: Some(Size::new(dest_rect.w, dest_rect.h)),
                         ..Default::default()
                     },
                 )
@@ -313,13 +311,12 @@ impl Map {
     }
 
     /// This will draw the map
-    pub fn draw(&self, rect: Option<URect>, should_draw_background: bool) {
-        if should_draw_background {
-            unimplemented!("Fix backgrounds camera pos!");
-            self.draw_background(rect, Vec2::ZERO, false);
+    pub fn draw<P: Into<Option<Vec2>>>(&self, rect: Option<URect>, camera_position: P) {
+        if let Some(camera_position) = camera_position.into() {
+            self.draw_background(rect, camera_position, false);
         }
 
-        let rect = rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.x, self.grid_size.y));
+        let rect = rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.width, self.grid_size.height));
 
         let mut draw_order = self.draw_order.clone();
         draw_order.reverse();
@@ -331,7 +328,7 @@ impl Map {
                     for (x, y, tile) in self.get_tiles(&layer_id, Some(rect)) {
                         if let Some(tile) = tile {
                             let world_position = self.world_offset
-                                + vec2(x as f32 * self.tile_size.x, y as f32 * self.tile_size.y);
+                                + vec2(x as f32 * self.tile_size.width, y as f32 * self.tile_size.height);
 
                             let texture_entry =
                                 resources.textures.get(&tile.texture_id).unwrap_or_else(|| {
@@ -346,10 +343,10 @@ impl Map {
                                     source: Some(Rect::new(
                                         tile.texture_coords.x, // + 0.1,
                                         tile.texture_coords.y, // + 0.1,
-                                        self.tile_size.x,      // - 0.2,
-                                        self.tile_size.y,      // - 0.2,
+                                        self.tile_size.width,      // - 0.2,
+                                        self.tile_size.height,      // - 0.2,
                                     )),
-                                    dest_size: Some(vec2(self.tile_size.x, self.tile_size.y)),
+                                    dest_size: Some(self.tile_size),
                                     ..Default::default()
                                 },
                             );
@@ -417,7 +414,7 @@ impl<'a> Iterator for MapTileIterator<'a> {
             (self.current.0 + 1, self.current.1)
         };
 
-        let i = (self.current.1 * self.layer.grid_size.x + self.current.0) as usize;
+        let i = (self.current.1 * self.layer.grid_size.width + self.current.0) as usize;
         if self.current.1 >= self.rect.y + self.rect.h || i >= self.layer.tiles.len() {
             return None;
         }
@@ -477,8 +474,7 @@ pub struct MapLayer {
     pub kind: MapLayerKind,
     #[serde(default)]
     pub has_collision: bool,
-    #[serde(with = "core::json::uvec2_def")]
-    pub grid_size: UVec2,
+    pub grid_size: Size<u32>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub tiles: Vec<Option<MapTile>>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -490,7 +486,7 @@ pub struct MapLayer {
 }
 
 impl MapLayer {
-    pub fn new(id: &str, kind: MapLayerKind, has_collision: bool, grid_size: UVec2) -> Self {
+    pub fn new(id: &str, kind: MapLayerKind, has_collision: bool, grid_size: Size<u32>) -> Self {
         let has_collision = if kind == MapLayerKind::TileLayer {
             has_collision
         } else {
@@ -498,7 +494,7 @@ impl MapLayer {
         };
 
         let mut tiles = Vec::new();
-        tiles.resize((grid_size.x * grid_size.y) as usize, None);
+        tiles.resize((grid_size.width * grid_size.height) as usize, None);
 
         MapLayer {
             id: id.to_string(),
@@ -517,7 +513,7 @@ impl Default for MapLayer {
             id: "".to_string(),
             has_collision: false,
             kind: MapLayerKind::TileLayer,
-            grid_size: UVec2::ZERO,
+            grid_size: Size::zero(),
             tiles: Vec::new(),
             objects: Vec::new(),
             is_visible: true,
@@ -634,12 +630,9 @@ impl MapObject {
 pub struct MapTileset {
     pub id: String,
     pub texture_id: String,
-    #[serde(with = "core::json::uvec2_def")]
-    pub texture_size: UVec2,
-    #[serde(with = "core::json::vec2_def")]
-    pub tile_size: Vec2,
-    #[serde(with = "core::json::uvec2_def")]
-    pub grid_size: UVec2,
+    pub texture_size: Size<u32>,
+    pub tile_size: Size<f32>,
+    pub grid_size: Size<u32>,
     pub first_tile_id: u32,
     pub tile_cnt: u32,
     #[serde(
@@ -658,20 +651,20 @@ impl MapTileset {
     pub fn new(
         id: &str,
         texture_id: &str,
-        texture_size: UVec2,
-        tile_size: Vec2,
+        texture_size: Size<u32>,
+        tile_size: Size<f32>,
         first_tile_id: u32,
     ) -> Self {
-        let grid_size = uvec2(
-            texture_size.x / tile_size.x as u32,
-            texture_size.y / tile_size.y as u32,
+        let grid_size = Size::new(
+            texture_size.width / tile_size.width as u32,
+            texture_size.height / tile_size.height as u32,
         );
 
         let tile_subdivisions = Self::default_tile_subdivisions();
 
-        let subtile_grid_size = grid_size * tile_subdivisions;
+        let subtile_grid_size: Size<u32> = grid_size * tile_subdivisions.into();
 
-        let subtile_cnt = (subtile_grid_size.x * subtile_grid_size.y) as usize;
+        let subtile_cnt = (subtile_grid_size.width * subtile_grid_size.height) as usize;
 
         let mut autotile_mask = vec![];
         autotile_mask.resize(subtile_cnt, false);
@@ -683,7 +676,7 @@ impl MapTileset {
             tile_size,
             grid_size,
             first_tile_id,
-            tile_cnt: grid_size.x * grid_size.y,
+            tile_cnt: grid_size.width * grid_size.height,
             tile_subdivisions,
             autotile_mask,
             tile_attributes: HashMap::new(),
@@ -692,8 +685,8 @@ impl MapTileset {
     }
 
     pub fn get_texture_coords(&self, tile_id: u32) -> Vec2 {
-        let x = (tile_id % self.grid_size.x) as f32 * self.tile_size.x;
-        let y = (tile_id / self.grid_size.x) as f32 * self.tile_size.y;
+        let x = (tile_id % self.grid_size.width) as f32 * self.tile_size.width;
+        let y = (tile_id / self.grid_size.width) as f32 * self.tile_size.height;
         vec2(x, y)
     }
 

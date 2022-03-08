@@ -54,8 +54,8 @@ impl TilesetPropertiesWindow {
 
     pub fn read_from_tileset(&mut self, map: &Map) {
         if let Some(tileset) = map.tilesets.get(&self.tileset_id) {
-            let subgrid_size = tileset.grid_size * tileset.tile_subdivisions;
-            let subtile_cnt = (subgrid_size.x * subgrid_size.y) as usize;
+            let subgrid_size = tileset.grid_size * tileset.tile_subdivisions.into();
+            let subtile_cnt = (subgrid_size.width * subgrid_size.height) as usize;
 
             self.texture.set_value(&tileset.texture_id);
 
@@ -103,11 +103,11 @@ impl TilesetPropertiesWindow {
             scaled_width = (scaled_height / tileset_texture_size.y) * tileset_texture_size.x;
         }
 
-        let subgrid_size = tileset.grid_size * tileset.tile_subdivisions;
+        let subgrid_size = tileset.grid_size * tileset.tile_subdivisions.into();
 
-        let scaled_subtile_size = vec2(
-            scaled_width / subgrid_size.x as f32,
-            scaled_height / subgrid_size.y as f32,
+        let scaled_subtile_size = Size::new(
+            scaled_width / subgrid_size.width as f32,
+            scaled_height / subgrid_size.height as f32,
         );
 
         widgets::Texture::new(texture_entry.texture.into())
@@ -120,9 +120,9 @@ impl TilesetPropertiesWindow {
             ui.push_skin(&gui_resources.skins.tileset_subtile_grid);
         }
 
-        for y in 0..subgrid_size.y {
-            for x in 0..subgrid_size.x {
-                let i = (y * subgrid_size.x + x) as usize;
+        for y in 0..subgrid_size.height {
+            for x in 0..subgrid_size.width {
+                let i = (y * subgrid_size.width + x) as usize;
 
                 let is_selected = self.autotile_mask[i];
 
@@ -131,10 +131,10 @@ impl TilesetPropertiesWindow {
                     ui.push_skin(&gui_resources.skins.tileset_subtile_grid_selected);
                 }
 
-                let subtile_position = position + vec2(x as f32, y as f32) * scaled_subtile_size;
+                let subtile_position = position + vec2(x as f32, y as f32) * Vec2::from(scaled_subtile_size);
 
                 let was_clicked = widgets::Button::new("")
-                    .size(scaled_subtile_size)
+                    .size(scaled_subtile_size.into())
                     .position(subtile_position)
                     .ui(ui);
 

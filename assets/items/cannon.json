@@ -15,8 +15,8 @@
     "y": 28
   },
   "collider_size": {
-    "x": 64,
-    "y": 24
+    "width": 64,
+    "height": 24
   },
   "collider_offset": {
     "x": 0,
@@ -37,8 +37,8 @@
         "y": -2
       },
       "size": {
-        "x": 17,
-        "y": 17
+        "width": 17,
+        "height": 17
       },
       "timed_trigger": 1.5,
       "effects": [
@@ -52,8 +52,8 @@
         {
           "type": "triggered_effect",
           "size": {
-            "x": 176,
-            "y": 144
+            "width": 176,
+            "height": 144
           },
           "collide_with_platforms": true,
           "timed_trigger": 0.7,

@@ -12,8 +12,8 @@
     }
   ],
   "collider_size": {
-    "x": 65,
-    "y": 17
+    "width": 65,
+    "height": 17
   },
   "mount_offset": {
     "x": -20,

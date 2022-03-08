@@ -48,13 +48,13 @@ impl Drawable {
         animations: &[Animation],
         params: AnimatedSpriteParams,
     ) -> Self {
-        let texture = storage::get::<Resources>()
+        let texture_res = storage::get::<Resources>()
             .textures
             .get(texture_id)
-            .unwrap()
-            .texture;
+            .cloned()
+            .unwrap();
 
-        let sprite = AnimatedSprite::new(texture, animations, params);
+        let sprite = AnimatedSprite::new(texture_res.texture, texture_res.frame_size(), animations, params);
 
         Drawable {
             draw_order,

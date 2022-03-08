@@ -38,8 +38,11 @@ cfg_if::cfg_if! {
         #[path = "backend_impl/macroquad.rs"]
         pub(crate) mod backend_impl;
 
-        pub use macroquad;
         pub use ff_particles as particles;
+        pub use macroquad;
+        pub use macroquad::ui;
+        pub use macroquad::experimental::scene;
+        pub use macroquad::camera;
     }
 }
 

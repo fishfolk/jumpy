@@ -25,3 +25,9 @@ pub mod viewport;
 pub mod video {}
 
 pub use macroquad::math;
+
+pub use macroquad::ui;
+
+pub use macroquad::experimental::scene;
+
+pub use macroquad::camera;

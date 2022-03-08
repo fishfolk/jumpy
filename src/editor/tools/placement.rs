@@ -115,8 +115,8 @@ impl EditorTool for TilePlacementTool {
                             let source_rect = Rect::new(
                                 texture_coords.x,
                                 texture_coords.y,
-                                map.tile_size.x,
-                                map.tile_size.y,
+                                map.tile_size.width,
+                                map.tile_size.height,
                             );
 
                             draw_texture(
@@ -178,8 +178,8 @@ impl EditorTool for ObjectPlacementTool {
                     let rect = Rect::new(
                         map.world_offset.x,
                         map.world_offset.y,
-                        map.grid_size.x as f32 * map.tile_size.x,
-                        map.grid_size.y as f32 * map.tile_size.y,
+                        map.grid_size.width as f32 * map.tile_size.width,
+                        map.grid_size.height as f32 * map.tile_size.height,
                     );
 
                     if ctx.should_snap_to_grid {

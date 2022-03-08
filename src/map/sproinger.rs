@@ -103,7 +103,7 @@ pub fn fixed_update_sproingers(world: &mut World, delta_time: f32, integration_f
             let sprite = drawable.get_animated_sprite_mut().unwrap();
             sprite.set_animation(IDLE_ANIMATION_ID, true);
 
-            let position = transform.position - (sprite.frame_size / 2.0);
+            let position = transform.position - (Vec2::from(sprite.frame_size) / 2.0);
 
             let trigger_rect = Rect::new(position.x, position.y, TRIGGER_WIDTH, TRIGGER_HEIGHT);
 

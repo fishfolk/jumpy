@@ -676,7 +676,7 @@ impl UndoableAction for CreateTilesetAction {
             let tileset = MapTileset::new(
                 &self.id,
                 &self.texture_id,
-                texture_size.as_u32(),
+                Size::from(texture_size.as_u32()),
                 map.tile_size,
                 first_tile_id,
             );

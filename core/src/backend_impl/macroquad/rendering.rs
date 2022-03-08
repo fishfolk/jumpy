@@ -15,7 +15,7 @@ pub fn draw_texture(x: f32, y: f32, texture: Texture2D, params: DrawTextureParam
 impl From<DrawTextureParams> for macroquad::texture::DrawTextureParams {
     fn from(params: DrawTextureParams) -> Self {
         macroquad::texture::DrawTextureParams {
-            dest_size: params.dest_size,
+            dest_size: params.dest_size.map(|s | Vec2::from(s)),
             source: params.source,
             rotation: params.rotation,
             flip_x: params.flip_x,

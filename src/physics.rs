@@ -13,7 +13,7 @@ pub const GRAVITY: f32 = 2.5;
 pub const TERMINAL_VELOCITY: f32 = 10.0;
 
 pub fn create_collision_world(map: &Map) -> CollisionWorld {
-    let tile_cnt = (map.grid_size.x * map.grid_size.y) as usize;
+    let tile_cnt = (map.grid_size.width * map.grid_size.height) as usize;
     let mut static_colliders = Vec::with_capacity(tile_cnt);
     for _ in 0..tile_cnt {
         static_colliders.push(Tile::Empty);
@@ -40,9 +40,9 @@ pub fn create_collision_world(map: &Map) -> CollisionWorld {
     let mut collision_world = CollisionWorld::new();
     collision_world.add_static_tiled_layer(
         static_colliders,
-        map.tile_size.x,
-        map.tile_size.y,
-        map.grid_size.x as usize,
+        map.tile_size.width,
+        map.tile_size.height,
+        map.grid_size.width as usize,
         1,
     );
 
@@ -54,7 +54,7 @@ const STOP_THRESHOLD: f32 = 1.0;
 
 #[derive(Debug, Clone)]
 pub struct PhysicsBodyParams {
-    pub size: Vec2,
+    pub size: Size<f32>,
     pub offset: Vec2,
     pub has_mass: bool,
     pub has_friction: bool,
@@ -66,7 +66,7 @@ pub struct PhysicsBodyParams {
 impl Default for PhysicsBodyParams {
     fn default() -> Self {
         PhysicsBodyParams {
-            size: vec2(16.0, 16.0),
+            size: Size::new(16.0, 16.0),
             offset: Vec2::ZERO,
             has_mass: true,
             has_friction: true,
@@ -83,7 +83,7 @@ impl Default for PhysicsBodyParams {
 pub struct PhysicsBody {
     pub actor: Actor,
     pub offset: Vec2,
-    pub size: Vec2,
+    pub size: Size<f32>,
     pub velocity: Vec2,
     pub is_on_ground: bool,
     pub was_on_ground: bool,
@@ -125,7 +125,7 @@ impl PhysicsBody {
 
     pub fn as_rect(&self, position: Vec2) -> Rect {
         let position = position + self.offset;
-        Rect::new(position.x, position.y, self.size.x, self.size.y)
+        Rect::new(position.x, position.y, self.size.width, self.size.height)
     }
 }
 
@@ -148,8 +148,8 @@ pub fn fixed_update_physics_bodies(world: &mut World, delta_time: f32, integrati
                 // FIXME: Using this to set `is_on_ground` caused weird glitching behavior when jumping up through platforms
                 let tile = collision_world.collide_solids(
                     position,
-                    body.size.x as i32,
-                    body.size.y as i32,
+                    body.size.width as i32,
+                    body.size.height as i32,
                 );
 
                 body.is_on_platform = tile == Tile::JumpThrough;
@@ -209,8 +209,7 @@ pub fn debug_draw_physics_bodies(world: &mut World) {
 pub struct RigidBodyParams {
     #[serde(with = "core::json::vec2_def")]
     pub offset: Vec2,
-    #[serde(with = "core::json::vec2_def")]
-    pub size: Vec2,
+    pub size: Size<f32>,
     #[serde(default, skip_serializing_if = "core::json::is_false")]
     pub can_rotate: bool,
 }
@@ -219,7 +218,7 @@ impl Default for RigidBodyParams {
     fn default() -> Self {
         RigidBodyParams {
             offset: Vec2::ZERO,
-            size: vec2(16.0, 16.0),
+            size: Size::new(16.0, 16.0),
             can_rotate: false,
         }
     }
@@ -230,7 +229,7 @@ impl Default for RigidBodyParams {
 /// are axis-aligned and will not be affected by rotation.
 pub struct RigidBody {
     pub offset: Vec2,
-    pub size: Vec2,
+    pub size: Size<f32>,
     pub velocity: Vec2,
     pub can_rotate: bool,
 }
@@ -249,7 +248,7 @@ impl RigidBody {
 
     pub fn as_rect(&self, position: Vec2) -> Rect {
         let position = position + self.offset;
-        Rect::new(position.x, position.y, self.size.x, self.size.y)
+        Rect::new(position.x, position.y, self.size.width, self.size.height)
     }
 }
 

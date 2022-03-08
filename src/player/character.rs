@@ -28,9 +28,8 @@ pub struct PlayerCharacterMetadata {
     /// This should, in general, be smaller than the sprite size
     #[serde(
         default = "PlayerCharacterMetadata::default_collider_size",
-        with = "core::json::vec2_def"
     )]
-    pub collider_size: Vec2,
+    pub collider_size: Size<f32>,
     /// This is the offset from the position of the player to where the weapon is mounted.
     /// The position of the player will, typically, be the center bottom of the sprite but this
     /// can be changed with offsets.
@@ -130,8 +129,8 @@ impl PlayerCharacterMetadata {
         Self::DEFAULT_FLOAT_GRAVITY_FACTOR
     }
 
-    pub fn default_collider_size() -> Vec2 {
-        vec2(Self::DEFAULT_COLLIDER_WIDTH, Self::DEFAULT_COLLIDER_HEIGHT)
+    pub fn default_collider_size() -> Size<f32> {
+        Size::new(Self::DEFAULT_COLLIDER_WIDTH, Self::DEFAULT_COLLIDER_HEIGHT)
     }
 
     pub fn default_weapon_mount() -> Vec2 {

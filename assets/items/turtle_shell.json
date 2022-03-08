@@ -4,8 +4,8 @@
   "type": "item",
   "uses": 3,
   "collider_size": {
-    "x": 32,
-    "y": 32
+    "width": 32,
+    "height": 32
   },
   "effects": [
     {

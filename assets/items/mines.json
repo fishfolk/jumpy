@@ -21,8 +21,8 @@
         "y": -4.0
       },
       "size": {
-        "x": 33,
-        "y": 35
+        "width": 33,
+        "height": 35
       },
       "activation_delay": 1.5,
       "effects": [
@@ -36,8 +36,8 @@
         {
           "type": "triggered_effect",
           "size": {
-            "x": 112,
-            "y": 80
+            "width": 112,
+            "height": 80
           },
           "collide_with_platforms": true,
           "timed_trigger": 0.7,
@@ -72,8 +72,8 @@
     }
   ],
   "collider_size": {
-    "x": 33,
-    "y": 35
+    "width": 33,
+    "height": 35
   },
   "mount_offset": {
     "x": 6,

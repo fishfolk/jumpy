@@ -635,10 +635,10 @@ impl Editor {
                 resources.delete_map(index).unwrap();
             }
             EditorAction::ExitToMainMenu => {
-
+                GameEvent::MainMenu.dispatch();
             }
             EditorAction::QuitToDesktop => {
-
+                GameEvent::Quit.dispatch();
             }
         }
 
@@ -808,7 +808,7 @@ impl Node for Editor {
                                 .to_screen_space(object.position);
 
                             let size = get_object_size(object);
-                            let rect = Rect::new(position.x, position.y, size.x, size.y);
+                            let rect = Rect::new(position.x, position.y, size.width, size.height);
 
                             if rect.contains(node.cursor_position) {
                                 let click_offset = node.cursor_position - position;
@@ -891,7 +891,7 @@ impl Node for Editor {
                                 let size = get_object_size(object);
                                 let position = object.position + node.map_resource.map.world_offset;
 
-                                let rect = Rect::new(position.x, position.y, size.x, size.y);
+                                let rect = Rect::new(position.x, position.y, size.width, size.height);
 
                                 if rect.contains(cursor_world_position) {
                                     object_index = Some(i);
@@ -979,10 +979,10 @@ impl Node for Editor {
                                     for (x, y, tile) in node.map_resource.map.get_tiles(id, None) {
                                         if tile.is_some() {
                                             let rect = Rect::new(
-                                                world_offset.x + (x as f32 * tile_size.x),
-                                                world_offset.y + (y as f32 * tile_size.y),
-                                                tile_size.x,
-                                                tile_size.y,
+                                                world_offset.x + (x as f32 * tile_size.width),
+                                                world_offset.y + (y as f32 * tile_size.height),
+                                                tile_size.width,
+                                                tile_size.height,
                                             );
                                             if rect.contains(cursor_world_position) {
                                                 let i = node.get_map().to_index(uvec2(x, y));
@@ -1046,7 +1046,7 @@ impl Node for Editor {
 
             let mut position = (cursor_world_position).clamp(
                 map.world_offset,
-                map.world_offset + (map.grid_size.as_f32() * map.tile_size),
+                map.world_offset + (UVec2::from(map.grid_size).as_f32() * Vec2::from(map.tile_size)),
             );
 
             if node.should_snap_to_grid {
@@ -1098,7 +1098,7 @@ impl Node for Editor {
                 let layer_id = node.selected_layer.clone().unwrap();
                 let coords = {
                     let grid_size = node.get_map().grid_size;
-                    uvec2(index as u32 % grid_size.x, index as u32 / grid_size.x)
+                    uvec2(index as u32 % grid_size.width, index as u32 / grid_size.width)
                 };
 
                 let action = EditorAction::RemoveTile { coords, layer_id };
@@ -1162,7 +1162,7 @@ impl Node for Editor {
 
         node.mouse_movement = Vec2::ZERO;
 
-        camera.position = (camera.position + movement).clamp(Vec2::ZERO, node.get_map().get_size());
+        camera.position = (camera.position + movement).clamp(Vec2::ZERO, node.get_map().get_size().into());
 
         if is_cursor_over_map {
             camera.scale = (camera.scale + node.input.camera_zoom * Self::CAMERA_ZOOM_STEP)
@@ -1172,35 +1172,35 @@ impl Node for Editor {
 
     fn draw(mut node: RefMut<Self>) {
         {
-            let camera = storage::get::<EditorCamera>();
+            let camera = scene::find_node_by_type::<EditorCamera>().unwrap();
 
             let map = node.get_map();
             map.draw_background(None, camera.position, node.is_parallax_disabled);
-            map.draw(None, false);
+            map.draw(None, None);
         }
 
         if node.should_draw_grid {
             let map = node.get_map();
-            let map_size = map.grid_size.as_f32() * map.tile_size;
+            let map_size: Size<f32> = Size::from(UVec2::from(map.grid_size).as_f32()) * map.tile_size;
 
             draw_rectangle_outline(
                 map.world_offset.x,
                 map.world_offset.y,
-                map_size.x,
-                map_size.y,
+                map_size.width,
+                map_size.height,
                 Self::GRID_LINE_WIDTH,
                 Self::GRID_COLOR,
             );
 
-            for x in 0..map.grid_size.x {
+            for x in 0..map.grid_size.width {
                 let begin = vec2(
-                    map.world_offset.x + (x as f32 * map.tile_size.x),
+                    map.world_offset.x + (x as f32 * map.tile_size.width),
                     map.world_offset.y,
                 );
 
                 let end = vec2(
                     begin.x,
-                    begin.y + (map.grid_size.y as f32 * map.tile_size.y),
+                    begin.y + (map.grid_size.height as f32 * map.tile_size.height),
                 );
 
                 draw_line(
@@ -1213,14 +1213,14 @@ impl Node for Editor {
                 )
             }
 
-            for y in 0..map.grid_size.y {
+            for y in 0..map.grid_size.height {
                 let begin = vec2(
                     map.world_offset.x,
-                    map.world_offset.y + (y as f32 * map.tile_size.y),
+                    map.world_offset.y + (y as f32 * map.tile_size.height),
                 );
 
                 let end = vec2(
-                    begin.x + (map.grid_size.x as f32 * map.tile_size.x),
+                    begin.x + (map.grid_size.width as f32 * map.tile_size.width),
                     begin.y,
                 );
 
@@ -1257,7 +1257,7 @@ impl Node for Editor {
 
                         position = (cursor_world_position).clamp(
                             map.world_offset,
-                            map.world_offset + (map.grid_size.as_f32() * map.tile_size),
+                            map.world_offset + (Size::from(UVec2::from(map.grid_size).as_f32()) * map.tile_size).into(),
                         );
 
                         if node.should_snap_to_grid {
@@ -1273,19 +1273,16 @@ impl Node for Editor {
 
                 let texture_res = resources.textures.get("spawn_point_icon").unwrap();
 
-                let frame_size = texture_res.meta.frame_size.unwrap_or_else(|| {
-                    let texture_size = texture_res.texture.size();
-                    vec2(texture_size.width, texture_size.height)
-                });
+                let frame_size = texture_res.meta.frame_size.unwrap_or_else(|| texture_res.texture.size());
 
-                let source_rect = Rect::new(0.0, 0.0, frame_size.x, frame_size.y);
+                let source_rect = Rect::new(0.0, 0.0, frame_size.width, frame_size.height);
 
                 draw_texture(
                     position.x,
                     position.y,
                     texture_res.texture,
                     DrawTextureParams {
-                        dest_size: Some(frame_size),
+                        dest_size: Some(frame_size.into()),
                         source: Some(source_rect),
                         ..Default::default()
                     },
@@ -1341,7 +1338,7 @@ impl Node for Editor {
 
                                     object_position = (cursor_world_position).clamp(
                                         map.world_offset,
-                                        map.world_offset + (map.grid_size.as_f32() * map.tile_size),
+                                        map.world_offset + (Size::from(UVec2::from(map.grid_size).as_f32()) * map.tile_size).into(),
                                     );
 
                                     if node.should_snap_to_grid {
@@ -1373,13 +1370,13 @@ impl Node for Editor {
                                             let tint = meta.sprite.tint.unwrap_or(colors::WHITE);
 
                                             let dest_size =
-                                                meta.sprite.scale.map(|s| s * frame_size);
+                                                meta.sprite.scale.map(|s| Size::new(s, s) * frame_size);
 
                                             let source = Some(Rect::new(
                                                 0.0,
-                                                row as f32 * frame_size.y,
-                                                frame_size.x,
-                                                frame_size.y,
+                                                row as f32 * frame_size.height,
+                                                frame_size.width,
+                                                frame_size.height,
                                             ));
 
                                             draw_texture(
@@ -1413,15 +1410,15 @@ impl Node for Editor {
                                                 (texture_res.texture, texture_res.frame_size());
 
                                             let dest_size =
-                                                params.sprite.scale.map(|s| s * frame_size);
+                                                params.sprite.scale.map(|s| Size::new(s, s) * frame_size);
 
                                             let source =
                                                 params.sprite.animations.first().map(|a| {
                                                     Rect::new(
                                                         0.0,
-                                                        a.row as f32 * frame_size.y,
-                                                        frame_size.x,
-                                                        frame_size.y,
+                                                        a.row as f32 * frame_size.height,
+                                                        frame_size.width,
+                                                        frame_size.height,
                                                     )
                                                 });
 
@@ -1454,14 +1451,14 @@ impl Node for Editor {
                                             });
 
                                         let source_rect =
-                                            Rect::new(0.0, 0.0, frame_size.x, frame_size.y);
+                                            Rect::new(0.0, 0.0, frame_size.width, frame_size.height);
 
                                         draw_texture(
                                             object_position.x,
                                             object_position.y,
                                             texture_res.texture,
                                             DrawTextureParams {
-                                                dest_size: Some(frame_size),
+                                                dest_size: Some(frame_size.into()),
                                                 source: Some(source_rect),
                                                 ..Default::default()
                                             },
@@ -1480,7 +1477,7 @@ impl Node for Editor {
                                 draw_text(
                                     label,
                                     object_position.x,
-                                    object_position.y + (size.y / 2.0)
+                                    object_position.y + (size.height / 2.0)
                                         - Self::OBJECT_SELECTION_RECT_PADDING,
                                     params,
                                 );
@@ -1490,8 +1487,8 @@ impl Node for Editor {
                                 draw_rectangle_outline(
                                     object_position.x - Self::OBJECT_SELECTION_RECT_PADDING,
                                     object_position.y - Self::OBJECT_SELECTION_RECT_PADDING,
-                                    size.x,
-                                    size.y,
+                                    size.width,
+                                    size.height,
                                     4.0,
                                     SELECTION_HIGHLIGHT_COLOR,
                                 );
@@ -1507,16 +1504,16 @@ impl Node for Editor {
             let tile_size = node.get_map().tile_size;
 
             let coords = uvec2(
-                tile_index as u32 % grid_size.x,
-                tile_index as u32 / grid_size.x,
+                tile_index as u32 % grid_size.width,
+                tile_index as u32 / grid_size.width,
             );
             let position = node.get_map().to_position(coords);
 
             draw_rectangle_outline(
                 position.x,
                 position.y,
-                tile_size.x,
-                tile_size.y,
+                tile_size.width,
+                tile_size.height,
                 5.0,
                 SELECTION_HIGHLIGHT_COLOR,
             )
@@ -1564,7 +1561,7 @@ impl Node for Editor {
     }
 }
 
-fn get_object_size(object: &MapObject) -> Vec2 {
+fn get_object_size(object: &MapObject) -> Size<f32> {
     let mut res = None;
 
     let mut label = None;
@@ -1597,7 +1594,7 @@ fn get_object_size(object: &MapObject) -> Vec2 {
         MapObjectKind::Environment => {
             if &object.id == "sproinger" {
                 let texture_res = resources.textures.get("sproinger").unwrap();
-                res = texture_res.meta.frame_size;
+                res = Some(texture_res.frame_size());
             } else {
                 label = Some("INVALID OBJECT ID".to_string())
             }
@@ -1612,16 +1609,16 @@ fn get_object_size(object: &MapObject) -> Vec2 {
             params.font_size,
             params.font_scale,
         );
-        res = Some(vec2(measure.width, measure.height));
+        res = Some(Size::new(measure.width, measure.height));
     }
 
     res.unwrap_or_else(|| {
-        vec2(
+        Size::new(
             Editor::OBJECT_SELECTION_RECT_SIZE,
             Editor::OBJECT_SELECTION_RECT_SIZE,
         )
-    }) + (vec2(
+    }) + (Size::new(
         Editor::OBJECT_SELECTION_RECT_PADDING,
         Editor::OBJECT_SELECTION_RECT_PADDING,
-    ) * 2.0)
+    ) * Size::new(2.0, 2.0))
 }

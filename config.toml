@@ -3,9 +3,9 @@ max-fps = 120
 high-dpi = false
 
 [window]
+mode = "windowed"
 width = 955
 height = 600
-mode = "borderless"
 
 [input.keyboard-primary]
 left = "Left"
@@ -19,7 +19,7 @@ slide = "RightControl"
 [input.keyboard-secondary]
 left = "A"
 right = "D"
-fire = "V"
+fire = "LeftControl"
 jump = "W"
 pickup = "C"
 crouch = "S"

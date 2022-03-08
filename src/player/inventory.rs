@@ -208,11 +208,11 @@ pub fn update_player_inventory(world: &mut World, delta_time: f32) {
                     let mut offset = weapon.effect_offset;
 
                     if player.is_facing_left {
-                        offset.x = frame_size.x - offset.x;
+                        offset.x = frame_size.width - offset.x;
                     }
 
                     if player.is_upside_down {
-                        offset.y = frame_size.y - offset.y;
+                        offset.y = frame_size.height - offset.y;
                     }
 
                     for emitter in particle_emitters.iter_mut() {
@@ -282,7 +282,7 @@ pub fn update_player_inventory(world: &mut World, delta_time: f32) {
                             let mount_offset = if item.is_hat {
                                 let size = sprite_set.size();
 
-                                vec2(-size.x / 2.0, size.y)
+                                vec2(-size.width / 2.0, size.height)
                                     + inventory.hat_mount
                                     + inventory.hat_mount_offset
                             } else {
@@ -509,7 +509,7 @@ pub fn draw_weapons_hud(world: &mut World) {
     }
 }
 
-pub fn flip_offset<S: Into<Option<Vec2>>>(
+pub fn flip_offset<S: Into<Option<Size<f32>>>>(
     offset: Vec2,
     size: S,
     is_facing_left: bool,
@@ -520,13 +520,13 @@ pub fn flip_offset<S: Into<Option<Vec2>>>(
     let size = size.into().unwrap_or_default();
 
     if is_facing_left {
-        corrected.x -= offset.x + size.x;
+        corrected.x -= offset.x + size.width;
     } else {
         corrected.x = offset.x;
     }
 
     if is_upside_down {
-        corrected.y -= offset.y + size.y;
+        corrected.y -= offset.y + size.height;
     } else {
         corrected.y = offset.y;
     }

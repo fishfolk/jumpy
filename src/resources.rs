@@ -10,13 +10,16 @@ use ff_particles::EmitterConfig;
 
 use serde::{Deserialize, Serialize};
 
-use core::data::{deserialize_json_bytes, deserialize_json_file};
-use core::error::ErrorKind;
 use core::text::ToStringHelper;
+use core::{
+    data::{deserialize_json_bytes, deserialize_json_file},
+    lua::init_lua,
+};
+use core::{error::ErrorKind, lua::load_lua};
 use core::{formaterr, Result};
 
-use crate::{gui::GuiResources, lua::init_lua};
-use crate::{lua::load_lua, map::DecorationMetadata};
+use crate::map::DecorationMetadata;
+use crate::{gui::GuiResources, lua::register_types};
 
 use crate::player::PlayerCharacterMetadata;
 use crate::{items::MapItemMetadata, map::Map};
@@ -368,7 +371,7 @@ impl Resources {
     pub async fn new<P: AsRef<Path>>(assets_dir: P, mods_dir: P) -> Result<Resources> {
         let assets_dir = assets_dir.as_ref();
         let mods_dir = mods_dir.as_ref();
-        let lua = init_lua(mods_dir).unwrap();
+        let lua = init_lua(mods_dir, register_types).unwrap();
         let mut resources = Resources {
             assets_dir: assets_dir.to_string_helper(),
             mods_dir: mods_dir.to_string_helper(),

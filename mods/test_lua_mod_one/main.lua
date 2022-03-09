@@ -4,10 +4,14 @@ local entity;
 return {
     init = function(world)
         print "Run init"
+        local I32 = type_components.I32
+        local Bool = type_components.Bool
         entity = world:spawn { I32.new(5), Bool.new(true) }
     end,
     fixed_update_physics_bodies = function(world)
         local Query = hv.ecs.Query
+        local I32 = type_components.I32
+        local Bool = type_components.Bool
         local query = Query.new { Query.write(I32), Query.read(Bool) }
         world:query_one(query, entity, function(item)
             print("Got item:",item)

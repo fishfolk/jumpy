@@ -207,6 +207,7 @@ pub fn spawn_player(
         size: character.collider_size,
         has_friction: false,
         can_rotate: false,
+        gravity: character.gravity,
         ..Default::default()
     };
 

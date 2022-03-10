@@ -1,7 +1,11 @@
 use hv_cell::AtomicRefCell;
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
-use std::{collections::HashMap, sync::Arc};
+use mlua::{ToLua, UserData, UserDataMethods};
+use std::{borrow::Cow, collections::HashMap, sync::Arc};
+use tealr::mlu::UserDataWrapper;
+use tealr::TypeName;
+use tealr::{mlu::TealData, TypeBody};
 
 use ff_particles::EmittersCache;
 
@@ -9,12 +13,12 @@ use hecs::World;
 
 use serde::{Deserialize, Serialize};
 
-use core::math::IsZero;
 use core::Transform;
+use core::{lua::wrapped_types::Vec2Lua, math::IsZero};
 
 use crate::{AnimatedSpriteMetadata, Resources};
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, tealr::TypeName)]
 pub struct ParticleEmitterMetadata {
     /// The id of the particle effect.
     #[serde(rename = "particle_effect")]
@@ -43,7 +47,26 @@ pub struct ParticleEmitterMetadata {
     #[serde(default, skip_serializing_if = "core::json::is_false")]
     pub should_autostart: bool,
 }
-
+impl TypeBody for ParticleEmitterMetadata {
+    fn get_type_body(gen: &mut tealr::TypeGenerator) {
+        gen.fields
+            .push((Cow::Borrowed("particle_effect"), Cow::Borrowed("String")));
+        gen.fields
+            .push((Cow::Borrowed("offset"), Cow::Borrowed("Vec2")));
+        gen.fields
+            .push((Cow::Borrowed("delay"), Cow::Borrowed("number")));
+        gen.fields
+            .push((Cow::Borrowed("interval"), Cow::Borrowed("number")));
+        gen.fields
+            .push((Cow::Borrowed("emissions"), Cow::Borrowed("integer")));
+        gen.fields.push((
+            Cow::Borrowed("animations"),
+            Cow::Borrowed("AnimatedSpriteMetaData"),
+        ));
+        gen.fields
+            .push((Cow::Borrowed("should_autostart"), Cow::Borrowed("boolean")));
+    }
+}
 impl Default for ParticleEmitterMetadata {
     fn default() -> Self {
         ParticleEmitterMetadata {
@@ -57,7 +80,9 @@ impl Default for ParticleEmitterMetadata {
         }
     }
 }
+use hv_lua as mlua;
 
+#[derive(Clone, tealr::TypeName)]
 pub struct ParticleEmitter {
     pub particle_effect_id: String,
     pub offset: Vec2,
@@ -104,6 +129,120 @@ impl ParticleEmitter {
         self.interval_timer = self.interval;
         self.emission_cnt = 0;
         self.is_active = true;
+    }
+}
+
+impl UserData for ParticleEmitter {
+    fn add_fields<'lua, F: mlua::UserDataFields<'lua, Self>>(fields: &mut F) {
+        fields.add_field_method_get("particle_effect_id", |lua, this| {
+            this.particle_effect_id.clone().to_lua(lua)
+        });
+        fields.add_field_method_get("offset", |lua, this| Vec2Lua::from(this.offset).to_lua(lua));
+        fields.add_field_method_get("delay", |lua, this| this.delay.to_lua(lua));
+        fields.add_field_method_get("emissions", |lua, this| this.emissions.to_lua(lua));
+        fields.add_field_method_get("interval", |lua, this| this.interval.to_lua(lua));
+        fields.add_field_method_get("emission_cnt", |lua, this| this.emission_cnt.to_lua(lua));
+        fields.add_field_method_get("delay_timer", |lua, this| this.delay_timer.to_lua(lua));
+        fields.add_field_method_get("interval_timer", |lua, this| {
+            this.interval_timer.to_lua(lua)
+        });
+        fields.add_field_method_get("is_active", |lua, this| this.is_active.to_lua(lua));
+
+        fields.add_field_method_set("particle_effect_id", |_, this, value| {
+            this.particle_effect_id = value;
+            Ok(())
+        });
+        fields.add_field_method_set("offset", |_, this, value: Vec2Lua| {
+            this.offset = value.into();
+            Ok(())
+        });
+        fields.add_field_method_set("delay", |_, this, value| {
+            this.delay = value;
+            Ok(())
+        });
+        fields.add_field_method_set("emissions", |_, this, value| {
+            this.emissions = value;
+            Ok(())
+        });
+        fields.add_field_method_set("interval", |_, this, value| {
+            this.interval = value;
+            Ok(())
+        });
+        fields.add_field_method_set("emission_cnt", |_, this, value| {
+            this.emission_cnt = value;
+            Ok(())
+        });
+        fields.add_field_method_set("delay_timer", |_, this, value| {
+            this.delay_timer = value;
+            Ok(())
+        });
+        fields.add_field_method_set("interval_timer", |_, this, value| {
+            this.interval_timer = value;
+            Ok(())
+        });
+        fields.add_field_method_set("is_active", |_, this, value| {
+            this.is_active = value;
+            Ok(())
+        });
+    }
+
+    fn add_methods<'lua, T: UserDataMethods<'lua, Self>>(methods: &mut T) {
+        let mut wrapper = UserDataWrapper::from_user_data_methods(methods);
+        <Self as TealData>::add_methods(&mut wrapper)
+    }
+}
+impl TypeBody for ParticleEmitter {
+    fn get_type_body(gen: &mut tealr::TypeGenerator) {
+        gen.is_user_data = true;
+        <Self as TealData>::add_methods(gen);
+        gen.fields.push((
+            Cow::Borrowed("particle_effect_id"),
+            tealr::type_parts_to_str(String::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("offset"),
+            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("delay"),
+            tealr::type_parts_to_str(f32::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("emissions"),
+            tealr::type_parts_to_str(Option::<u32>::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("interval"),
+            tealr::type_parts_to_str(f32::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("emission_cnt"),
+            tealr::type_parts_to_str(u32::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("delay_timer"),
+            tealr::type_parts_to_str(f32::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("interval_timer"),
+            tealr::type_parts_to_str(f32::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("is_active"),
+            tealr::type_parts_to_str(bool::get_type_parts()),
+        ));
+    }
+}
+
+impl TealData for ParticleEmitter {
+    fn add_methods<'lua, T: tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
+        methods.add_method("get_offset", |lua, this, (flip_x, flip_y): (bool, bool)| {
+            Vec2Lua::from(this.get_offset(flip_x, flip_y)).to_lua(lua)
+        });
+        methods.add_method_mut("activate", |_, this, ()| {
+            this.activate();
+            Ok(())
+        })
     }
 }
 

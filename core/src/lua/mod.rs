@@ -1,4 +1,5 @@
 mod create_component;
+pub mod wrapped_types;
 pub use create_component::{CloneComponent, Component, CopyComponent};
 
 use std::{error::Error, os::unix::prelude::OsStrExt, path::Path};
@@ -109,4 +110,15 @@ pub fn load_lua<P: AsRef<[u8]>>(
         .exec()?;
 
     Ok(())
+}
+
+pub fn get_table(value: hv_lua::Value) -> Result<Table, hv_lua::Error> {
+    match value {
+        hv_lua::Value::Table(x) => Ok(x),
+        v => Err(hv_lua::Error::FromLuaConversionError {
+            from: v.type_name(),
+            to: "table",
+            message: None,
+        }),
+    }
 }

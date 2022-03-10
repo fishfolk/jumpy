@@ -4,6 +4,9 @@ use hecs::World;
 use hv_cell::AtomicRefCell;
 use hv_lua::{chunk, Lua, Value};
 use macroquad::prelude::collections::storage;
+use macroquad_platformer::Actor;
+use tealr::mlu::TealData;
+use tealr::TypeName;
 
 use crate::Resources;
 
@@ -45,4 +48,26 @@ create_type_component_container!(
 pub(crate) fn register_types(lua: &Lua) -> Result<Value, Box<dyn Error>> {
     use hv_lua::ToLua;
     Ok(TypeComponentContainer::new(lua)?.to_lua(lua)?)
+}
+
+use hv_lua as mlua;
+
+#[derive(Clone, Copy, tealr::MluaUserData)]
+pub struct ActorLua(Actor);
+impl TypeName for ActorLua {
+    fn get_type_parts() -> std::borrow::Cow<'static, [tealr::NamePart]> {
+        tealr::new_type!(Actor, External)
+    }
+}
+impl TealData for ActorLua {}
+
+impl From<ActorLua> for Actor {
+    fn from(a: ActorLua) -> Self {
+        a.0
+    }
+}
+impl From<Actor> for ActorLua {
+    fn from(a: Actor) -> Self {
+        Self(a)
+    }
 }

@@ -1,4 +1,5 @@
 use hv_cell::AtomicRefCell;
+use hv_lua::{FromLua, ToLua};
 use macroquad::color;
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
@@ -8,10 +9,17 @@ use macroquad_platformer::{Actor, Tile};
 use serde::{Deserialize, Serialize};
 
 use hecs::World;
+use tealr::{TypeBody, TypeName};
 
-use crate::{lua::run_event, CollisionWorld, Map};
-use core::Transform;
-use std::sync::Arc;
+use crate::{
+    lua::{run_event, ActorLua},
+    CollisionWorld, Map,
+};
+use core::{
+    lua::{get_table, wrapped_types::Vec2Lua},
+    Transform,
+};
+use std::{borrow::Cow, sync::Arc};
 
 pub const GRAVITY: f32 = 2.5;
 pub const TERMINAL_VELOCITY: f32 = 10.0;
@@ -56,7 +64,7 @@ pub fn create_collision_world(map: &Map) -> CollisionWorld {
 const FRICTION_LERP: f32 = 0.96;
 const STOP_THRESHOLD: f32 = 1.0;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, TypeName)]
 pub struct PhysicsBodyParams {
     pub size: Vec2,
     pub offset: Vec2,
@@ -81,9 +89,79 @@ impl Default for PhysicsBodyParams {
     }
 }
 
+impl<'lua> FromLua<'lua> for PhysicsBodyParams {
+    fn from_lua(lua_value: hv_lua::Value<'lua>, _: &'lua hv_lua::Lua) -> hv_lua::Result<Self> {
+        let table = match lua_value {
+            hv_lua::Value::Table(x) => x,
+            x => {
+                return Err(hv_lua::Error::FromLuaConversionError {
+                    from: x.type_name(),
+                    to: "table",
+                    message: None,
+                })
+            }
+        };
+        Ok(Self {
+            size: table.get::<_, Vec2Lua>("size")?.into(),
+            offset: table.get::<_, Vec2Lua>("offset")?.into(),
+            has_mass: table.get("has_mass")?,
+            has_friction: table.get("has_friction")?,
+            can_rotate: table.get("can_rotate")?,
+            bouncyness: table.get("bouncyness")?,
+            gravity: table.get("gravity")?,
+        })
+    }
+}
+impl<'lua> ToLua<'lua> for PhysicsBodyParams {
+    fn to_lua(self, lua: &'lua hv_lua::Lua) -> hv_lua::Result<hv_lua::Value<'lua>> {
+        let table = lua.create_table()?;
+        table.set("size", Vec2Lua::from(self.size))?;
+        table.set("offset", Vec2Lua::from(self.offset))?;
+        table.set("has_mass", self.has_mass)?;
+        table.set("has_friction", self.has_friction)?;
+        table.set("can_rotate", self.can_rotate)?;
+        table.set("bouncyness", self.bouncyness)?;
+        table.set("gravity", self.gravity)?;
+        lua.pack(table)
+    }
+}
+impl TypeBody for PhysicsBodyParams {
+    fn get_type_body(gen: &mut tealr::TypeGenerator) {
+        gen.fields.push((
+            Cow::Borrowed("size"),
+            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("offset"),
+            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("has_mass"),
+            tealr::type_parts_to_str(bool::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("has_friction"),
+            tealr::type_parts_to_str(bool::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("can_rotate"),
+            tealr::type_parts_to_str(bool::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("bouncyness"),
+            tealr::type_parts_to_str(f32::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("gravity"),
+            tealr::type_parts_to_str(f32::get_type_parts()),
+        ));
+    }
+}
+
 /// Regular simulated physics bodies.
 /// Note that rotation is abstract, only set on the transform to be used for draws. The colliders
 /// are axis-aligned and will not be affected by rotation.
+#[derive(Clone, tealr::TypeName)]
 pub struct PhysicsBody {
     pub actor: Actor,
     pub offset: Vec2,
@@ -100,6 +178,110 @@ pub struct PhysicsBody {
     pub bouncyness: f32,
     pub is_deactivated: bool,
     pub gravity: f32,
+}
+impl<'lua> FromLua<'lua> for PhysicsBody {
+    fn from_lua(lua_value: hv_lua::Value<'lua>, _: &'lua hv_lua::Lua) -> hv_lua::Result<Self> {
+        let table = match lua_value {
+            hv_lua::Value::Table(x) => x,
+            x => {
+                return Err(hv_lua::Error::FromLuaConversionError {
+                    from: x.type_name(),
+                    to: "table",
+                    message: None,
+                })
+            }
+        };
+        Ok(Self {
+            actor: table.get::<_, ActorLua>("actor")?.into(),
+            offset: table.get::<_, Vec2Lua>("offset")?.into(),
+            size: table.get::<_, Vec2Lua>("size")?.into(),
+            velocity: table.get::<_, Vec2Lua>("velocity")?.into(),
+            is_on_ground: table.get("is_on_ground")?,
+            was_on_ground: table.get("was_on_ground")?,
+            is_on_platform: table.get("is_on_platform")?,
+            has_mass: table.get("has_mass")?,
+            has_friction: table.get("has_friction")?,
+            can_rotate: table.get("can_rotate")?,
+            bouncyness: table.get("bouncyness")?,
+            is_deactivated: table.get("is_deactivated")?,
+            gravity: table.get("gravity")?,
+        })
+    }
+}
+impl TypeBody for PhysicsBody {
+    fn get_type_body(gen: &mut tealr::TypeGenerator) {
+        gen.fields.push((
+            Cow::Borrowed("actor"),
+            tealr::type_parts_to_str(ActorLua::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("offset"),
+            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("size"),
+            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("velocity"),
+            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("is_on_ground"),
+            tealr::type_parts_to_str(bool::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("was_on_ground"),
+            tealr::type_parts_to_str(bool::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("is_on_platform"),
+            tealr::type_parts_to_str(bool::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("has_mass"),
+            tealr::type_parts_to_str(bool::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("has_friction"),
+            tealr::type_parts_to_str(bool::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("can_rotate"),
+            tealr::type_parts_to_str(bool::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("bouncyness"),
+            tealr::type_parts_to_str(f32::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("is_deactivated"),
+            tealr::type_parts_to_str(bool::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("gravity"),
+            tealr::type_parts_to_str(f32::get_type_parts()),
+        ));
+    }
+}
+impl<'lua> ToLua<'lua> for PhysicsBody {
+    fn to_lua(self, lua: &'lua hv_lua::Lua) -> hv_lua::Result<hv_lua::Value<'lua>> {
+        let table = lua.create_table()?;
+        table.set("actor", ActorLua::from(self.actor))?;
+        table.set("offset", Vec2Lua::from(self.offset))?;
+        table.set("size", Vec2Lua::from(self.size))?;
+        table.set("velocity", Vec2Lua::from(self.velocity))?;
+        table.set("is_on_ground", self.is_on_ground)?;
+        table.set("was_on_ground", self.was_on_ground)?;
+        table.set("is_on_platform", self.is_on_platform)?;
+        table.set("has_mass", self.has_mass)?;
+        table.set("has_friction", self.has_friction)?;
+        table.set("can_rotate", self.can_rotate)?;
+        table.set("bouncyness", self.bouncyness)?;
+        table.set("is_deactivated", self.is_deactivated)?;
+        table.set("gravity", self.gravity)?;
+        lua.pack(table)
+    }
 }
 
 impl PhysicsBody {
@@ -215,7 +397,7 @@ pub fn debug_draw_physics_bodies(world: Arc<AtomicRefCell<World>>) {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TypeName)]
 pub struct RigidBodyParams {
     #[serde(with = "core::json::vec2_def")]
     pub offset: Vec2,
@@ -235,14 +417,75 @@ impl Default for RigidBodyParams {
     }
 }
 
+impl TypeBody for RigidBodyParams {
+    fn get_type_body(gen: &mut tealr::TypeGenerator) {
+        gen.fields.push((
+            Cow::Borrowed("offset"),
+            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("size"),
+            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("can_rotate"),
+            tealr::type_parts_to_str(bool::get_type_parts()),
+        ));
+    }
+}
+
 /// Simple physics bodies that has a velocity and optional rotation.
 /// Note that rotation is abstract, only set on the transform to be used for draws. The colliders
 /// are axis-aligned and will not be affected by rotation.
+#[derive(Clone, TypeName)]
 pub struct RigidBody {
     pub offset: Vec2,
     pub size: Vec2,
     pub velocity: Vec2,
     pub can_rotate: bool,
+}
+
+impl<'lua> FromLua<'lua> for RigidBody {
+    fn from_lua(lua_value: hv_lua::Value<'lua>, _: &'lua hv_lua::Lua) -> hv_lua::Result<Self> {
+        let table = get_table(lua_value)?;
+        Ok(Self {
+            offset: table.get::<_, Vec2Lua>("offset")?.into(),
+            size: table.get::<_, Vec2Lua>("size")?.into(),
+            velocity: table.get::<_, Vec2Lua>("velocity")?.into(),
+            can_rotate: table.get("can_rotate")?,
+        })
+    }
+}
+impl<'lua> ToLua<'lua> for RigidBody {
+    fn to_lua(self, lua: &'lua hv_lua::Lua) -> hv_lua::Result<hv_lua::Value<'lua>> {
+        let table = lua.create_table()?;
+        table.set("offset", Vec2Lua::from(self.offset))?;
+        table.set("size", Vec2Lua::from(self.size))?;
+        table.set("velocity", Vec2Lua::from(self.velocity))?;
+        table.set("can_rotate", self.can_rotate)?;
+        lua.pack(table)
+    }
+}
+
+impl TypeBody for RigidBody {
+    fn get_type_body(gen: &mut tealr::TypeGenerator) {
+        gen.fields.push((
+            Cow::Borrowed("offset"),
+            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("size"),
+            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("velocity"),
+            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("can_rotate"),
+            tealr::type_parts_to_str(bool::get_type_parts()),
+        ));
+    }
 }
 
 impl RigidBody {

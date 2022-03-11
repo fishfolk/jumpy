@@ -1,8 +1,14 @@
+use core::lua::get_table;
+use core::lua::wrapped_types::{ColorLua, Vec2Lua};
 use hv_cell::AtomicRefCell;
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
+use mlua::{FromLua, ToLua};
+use std::borrow::Cow;
 use std::f32::consts::PI;
 use std::sync::Arc;
+use tealr::mlu::TealData;
+use tealr::{MluaTealDerive, TypeBody, TypeName};
 
 use hecs::{Entity, World};
 use macroquad_platformer::Tile;
@@ -19,7 +25,58 @@ use core::Transform;
 
 const PROJECTILE_DRAW_ORDER: u32 = 1;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+use hv_lua as mlua;
+
+#[derive(Clone, MluaTealDerive)]
+struct Circle {
+    radius: f32,
+    color: ColorLua,
+}
+impl TealData for Circle {
+    fn add_methods<'lua, T: tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
+        methods.add_method("to_projectile_kind", |_, this, ()| {
+            Ok(ProjectileKind::Circle {
+                radius: this.radius,
+                color: this.color.to_owned().into(),
+            })
+        })
+    }
+}
+
+#[derive(Clone, MluaTealDerive)]
+struct Rectangle {
+    width: f32,
+    height: f32,
+    color: ColorLua,
+}
+impl TealData for Rectangle {
+    fn add_methods<'lua, T: tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
+        methods.add_method("to_projectile_kind", |_, this, ()| {
+            Ok(ProjectileKind::Rect {
+                width: this.width,
+                height: this.height,
+                color: this.color.to_owned().into(),
+            })
+        })
+    }
+}
+#[derive(Clone, MluaTealDerive)]
+struct Sprite {
+    params: SpriteMetadata,
+    can_rotate: bool,
+}
+impl TealData for Sprite {
+    fn add_methods<'lua, T: tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
+        methods.add_method("to_projectile_kind", |_, this, ()| {
+            Ok(ProjectileKind::Sprite {
+                params: this.params.to_owned(),
+                can_rotate: this.can_rotate,
+            })
+        })
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, MluaTealDerive)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ProjectileKind {
     Circle {
@@ -42,7 +99,57 @@ pub enum ProjectileKind {
         can_rotate: bool,
     },
 }
+impl TealData for ProjectileKind {
+    fn add_methods<'lua, T: tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
+        methods.add_method("try_get_circle", |_, this, ()| {
+            if let ProjectileKind::Circle { radius, color } = this {
+                Ok((
+                    true,
+                    Some(Circle {
+                        radius: radius.to_owned(),
+                        color: color.to_owned().into(),
+                    }),
+                ))
+            } else {
+                Ok((false, None))
+            }
+        });
+        methods.add_method("try_get_rect", |_, this, ()| {
+            if let ProjectileKind::Rect {
+                width,
+                height,
+                color,
+            } = this
+            {
+                Ok((
+                    true,
+                    Some(Rectangle {
+                        width: *width,
+                        height: *height,
+                        color: color.to_owned().into(),
+                    }),
+                ))
+            } else {
+                Ok((false, None))
+            }
+        });
+        methods.add_method("try_get_sprite", |_, this, ()| {
+            if let ProjectileKind::Sprite { can_rotate, params } = this {
+                Ok((
+                    true,
+                    Some(Sprite {
+                        can_rotate: *can_rotate,
+                        params: params.to_owned(),
+                    }),
+                ))
+            } else {
+                Ok((false, None))
+            }
+        });
+    }
+}
 
+#[derive(Clone, TypeName)]
 pub struct Projectile {
     pub kind: ProjectileKind,
     pub owner: Entity,
@@ -50,6 +157,61 @@ pub struct Projectile {
     pub range: f32,
     pub is_lethal: bool,
     pub passive_effects: Vec<PassiveEffectMetadata>,
+}
+
+impl<'lua> FromLua<'lua> for Projectile {
+    fn from_lua(lua_value: mlua::Value<'lua>, _: &'lua mlua::Lua) -> mlua::Result<Self> {
+        let table = get_table(lua_value)?;
+        Ok(Self {
+            kind: table.get("kind")?,
+            owner: table.get("owner")?,
+            origin: table.get::<_, Vec2Lua>("origin")?.into(),
+            range: table.get("range")?,
+            is_lethal: table.get("is_lethal")?,
+            passive_effects: table.get("passive_effects")?,
+        })
+    }
+}
+impl<'lua> ToLua<'lua> for Projectile {
+    fn to_lua(self, lua: &'lua mlua::Lua) -> mlua::Result<mlua::Value<'lua>> {
+        let table = lua.create_table()?;
+        table.set("kind", self.kind)?;
+        table.set("owner", self.owner)?;
+        table.set("origin", Vec2Lua::from(self.origin))?;
+        table.set("range", self.range)?;
+        table.set("is_lethal", self.is_lethal)?;
+        table.set("passive_effects", self.passive_effects)?;
+        lua.pack(table)
+    }
+}
+
+impl TypeBody for Projectile {
+    fn get_type_body(gen: &mut tealr::TypeGenerator) {
+        gen.fields.push((
+            Cow::Borrowed("kind"),
+            tealr::type_parts_to_str(ProjectileKind::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("owner"),
+            tealr::type_parts_to_str(Entity::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("origin"),
+            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("range"),
+            tealr::type_parts_to_str(f32::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("is_lethal"),
+            tealr::type_parts_to_str(bool::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("passive_effects"),
+            tealr::type_parts_to_str(Vec::<PassiveEffectMetadata>::get_type_parts()),
+        ));
+    }
 }
 
 impl Projectile {

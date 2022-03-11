@@ -1,10 +1,10 @@
 use std::borrow::Cow;
 
 use hv_lua::{FromLua, ToLua, UserData, Value};
-use macroquad::prelude::{Color, Rect, Vec2};
+use macroquad::prelude::{Color, Rect, Texture2D, Vec2};
 use tealr::{
     mlu::{TealData, UserDataWrapper},
-    TypeBody, TypeName,
+    new_type, TypeBody, TypeName,
 };
 
 #[derive(Clone)]
@@ -237,5 +237,28 @@ impl TypeBody for RectLua {
             Cow::Borrowed("x"),
             tealr::type_parts_to_str(f32::get_type_parts()),
         ));
+    }
+}
+
+#[derive(Clone)]
+pub struct Texture2DLua(Texture2D);
+impl TypeName for Texture2DLua {
+    fn get_type_parts() -> Cow<'static, [tealr::NamePart]> {
+        new_type!(Texture2D, External)
+    }
+}
+impl UserData for Texture2DLua {}
+impl TypeBody for Texture2DLua {
+    fn get_type_body(_: &mut tealr::TypeGenerator) {}
+}
+
+impl From<Texture2DLua> for Texture2D {
+    fn from(x: Texture2DLua) -> Self {
+        x.0
+    }
+}
+impl From<Texture2D> for Texture2DLua {
+    fn from(x: Texture2D) -> Self {
+        Self(x)
     }
 }

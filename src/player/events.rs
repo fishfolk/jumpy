@@ -3,6 +3,7 @@ use std::sync::Arc;
 use hecs::{Entity, World};
 use hv_cell::AtomicRefCell;
 use macroquad::time::get_frame_time;
+use tealr::{TypeBody, TypeName};
 
 use crate::player::{Player, PlayerState};
 use serde::{Deserialize, Serialize};
@@ -43,7 +44,7 @@ pub enum PlayerEvent {
 }
 
 /// This is used in JSON to specify which event types an effect should apply to
-#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize, TypeName)]
 #[serde(rename_all = "snake_case")]
 pub enum PlayerEventKind {
     Update,
@@ -52,6 +53,10 @@ pub enum PlayerEventKind {
     DamageBlocked,
     Incapacitated,
     Collision,
+}
+
+impl TypeBody for PlayerEventKind {
+    fn get_type_body(gen: &mut tealr::TypeGenerator) {}
 }
 
 impl From<&PlayerEvent> for PlayerEventKind {

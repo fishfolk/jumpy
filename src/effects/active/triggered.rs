@@ -1,11 +1,14 @@
 use hv_cell::AtomicRefCell;
+use hv_lua::{FromLua, ToLua};
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
 
 use hecs::{Entity, World};
 
 use serde::{Deserialize, Serialize};
+use tealr::{TypeBody, TypeName};
 
+use core::lua::get_table;
 use core::math::deg_to_rad;
 use core::{Result, Transform};
 use std::sync::Arc;
@@ -20,7 +23,7 @@ use crate::{Drawable, PhysicsBodyParams};
 const TRIGGERED_EFFECT_DRAW_ORDER: u32 = 5;
 
 /// The various collision types that can trigger a `TriggeredEffect`.
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize, TypeName)]
 #[serde(rename_all = "snake_case")]
 pub enum TriggeredEffectTrigger {
     /// The player that deployed the effect
@@ -34,7 +37,21 @@ pub enum TriggeredEffectTrigger {
     /// Projectile hit
     Projectile,
 }
+impl<'lua> FromLua<'lua> for TriggeredEffectTrigger {
+    fn from_lua(lua_value: hv_lua::Value<'lua>, lua: &'lua hv_lua::Lua) -> hv_lua::Result<Self> {
+        hv_lua::LuaSerdeExt::from_value(lua, lua_value)
+    }
+}
+impl<'lua> ToLua<'lua> for TriggeredEffectTrigger {
+    fn to_lua(self, lua: &'lua hv_lua::Lua) -> hv_lua::Result<hv_lua::Value<'lua>> {
+        hv_lua::LuaSerdeExt::to_value(lua, &self)
+    }
+}
+impl TypeBody for TriggeredEffectTrigger {
+    fn get_type_body(_: &mut tealr::TypeGenerator) {}
+}
 
+#[derive(Clone, TypeName)]
 pub struct TriggeredEffect {
     pub owner: Entity,
     pub trigger: Vec<TriggeredEffectTrigger>,
@@ -54,6 +71,29 @@ pub struct TriggeredEffect {
     pub activation_timer: f32,
     pub trigger_delay_timer: f32,
     pub timed_trigger_timer: f32,
+}
+
+impl<'lua> FromLua<'lua> for TriggeredEffect {
+    fn from_lua(lua_value: hv_lua::Value<'lua>, lua: &'lua hv_lua::Lua) -> hv_lua::Result<Self> {
+        let table = get_table(lua_value)?;
+        Ok(Self {
+            owner: table.get("owner")?,
+            trigger: table.get("trigger")?,
+            effects: table.get("effects")?,
+            activation_delay: table.get("activation_delay")?,
+            trigger_delay: table.get("trigger_delay")?,
+            timed_trigger: table.get("timed_trigger")?,
+            is_kickable: table.get("is_kickable")?,
+            should_override_delay: table.get("should_override_delay")?,
+            should_collide_with_platforms: table.get("should_collide_with_platforms")?,
+            is_triggered: table.get("is_triggered")?,
+            triggered_by: table.get("triggered_by")?,
+            kick_delay_timer: table.get("kick_delay_timer")?,
+            activation_timer: table.get("activation_timer")?,
+            trigger_delay_timer: table.get("trigger_delay_timer")?,
+            timed_trigger_timer: table.get("timed_trigger_timer")?,
+        })
+    }
 }
 
 impl TriggeredEffect {

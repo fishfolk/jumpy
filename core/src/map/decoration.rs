@@ -1,12 +1,12 @@
-use core::prelude::*;
+use crate::prelude::*;
 
 use hecs::{Entity, World};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{AnimatedSpriteMetadata, Drawable};
+use crate::drawables::Drawable;
 
-use core::prelude::*;
+use crate::prelude::*;
 
 const DECORATION_DRAW_ORDER: u32 = 0;
 
@@ -27,6 +27,8 @@ impl Decoration {
 }
 
 pub fn spawn_decoration(world: &mut World, position: Vec2, meta: DecorationMetadata) -> Entity {
+    let texture_res = get_texture(&meta.sprite.texture_id);
+
     let animations = meta
         .sprite
         .animations
@@ -40,7 +42,8 @@ pub fn spawn_decoration(world: &mut World, position: Vec2, meta: DecorationMetad
         Transform::from(position),
         Drawable::new_animated_sprite(
             DECORATION_DRAW_ORDER,
-            &meta.sprite.texture_id,
+            texture_res.texture,
+            texture_res.frame_size(),
             animations.as_slice(),
             meta.sprite.clone().into(),
         ),

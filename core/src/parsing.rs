@@ -1,4 +1,7 @@
+use std::any::Any;
+use std::collections::HashMap;
 use std::fmt::{self, Debug, Formatter};
+use std::ops::Deref;
 use std::path::Path;
 
 use serde::de::DeserializeOwned;
@@ -6,6 +9,38 @@ use serde::{Deserialize, Serialize};
 
 use crate::file::{load_file, Error};
 use crate::Result;
+
+pub fn deserialize_bytes_by_extension<'a, T>(ext: &str, bytes: &'a [u8]) -> Result<T> where T: Deserialize<'a> {
+    let res = match ext {
+        "json" => deserialize_json_bytes(bytes)?,
+        "toml" => deserialize_toml_bytes(bytes)?,
+        _ => panic!("Invalid file extension '{}'", &ext)
+    };
+
+    Ok(res)
+}
+
+pub async fn deserialize_file_by_extension<T, P: AsRef<Path>>(path: P) -> Result<T> where T: DeserializeOwned {
+    let path = path.as_ref();
+
+    let ext = path
+        .extension()
+        .unwrap_or_else(|| panic!("Unable to determine the extension of file '{:?}'", &path));
+
+    let ext_str = ext
+        .to_str()
+        .unwrap_or_else(|| panic!("Unable to convert extension from OsStr for file '{:?}'", &path))
+        .to_lowercase();
+
+    let bytes = load_file(&path).await?;
+
+    let res = deserialize_bytes_by_extension(&ext_str, &bytes);
+
+    match res {
+        Err(err) => Err(Error::new(path, err).into()),
+        Ok(res) => Ok(res),
+    }
+}
 
 /// Serialize a value into a string of JSON.
 /// Will return a `serde_json::Error` if a parsing error is encountered.

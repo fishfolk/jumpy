@@ -1,17 +1,14 @@
-use core::prelude::*;
+use fishsticks::{Axis, Button, GamepadContext};
 
-use fishsticks::{Axis, Button};
+use crate::gui::{Panel, BUTTON_FONT_SIZE, BUTTON_MARGIN_V, WINDOW_MARGIN_H, WINDOW_MARGIN_V, GuiTheme};
 
-use core::prelude::*;
+use crate::input::{is_gamepad_btn_pressed, get_mouse_position, is_key_down, KeyCode, is_key_pressed};
 
-use super::{
-    GuiResources, Panel, BUTTON_FONT_SIZE, BUTTON_MARGIN_V, WINDOW_MARGIN_H, WINDOW_MARGIN_V,
-};
-
-use core::input::{is_gamepad_btn_pressed, GamepadContext};
-
-use core::ui::{Id, Ui, widgets};
+use crate::storage;
+use crate::gui::{Id, Ui, widgets};
 use crate::macroquad::time::get_frame_time;
+use crate::math::{Vec2, vec2};
+use crate::viewport::get_viewport;
 
 #[derive(Debug, Copy, Clone)]
 pub enum MenuPosition {
@@ -185,8 +182,8 @@ impl Menu {
         }
 
         {
-            let gui_resources = storage::get::<GuiResources>();
-            ui.push_skin(&gui_resources.skins.menu);
+            let gui_theme = storage::get::<GuiTheme>();
+            ui.push_skin(&gui_theme.menu);
         }
 
         let mouse_position = get_mouse_position();
@@ -216,8 +213,8 @@ impl Menu {
         let (should_confirm, should_cancel) = self.update_input();
 
         let header_height = if let Some(header) = &self.header {
-            let gui_resources = storage::get::<GuiResources>();
-            ui.push_skin(&gui_resources.skins.menu_header);
+            let gui_theme = storage::get::<GuiTheme>();
+            ui.push_skin(&gui_theme.menu_header);
 
             let header_size = ui.calc_size(header);
 
@@ -259,9 +256,9 @@ impl Menu {
             let entry_size = vec2(size.x - (WINDOW_MARGIN_H * 2.0), Self::ENTRY_HEIGHT);
 
             if let Some(header) = &self.header {
-                let gui_resources = storage::get::<GuiResources>();
+                let gui_theme = storage::get::<GuiTheme>();
 
-                ui.push_skin(&gui_resources.skins.menu_header);
+                ui.push_skin(&gui_theme.menu_header);
 
                 ui.label(vec2(0.0, 0.0), header);
 
@@ -308,11 +305,11 @@ impl Menu {
                 };
 
                 {
-                    let gui_resources = storage::get::<GuiResources>();
+                    let gui_theme = storage::get::<GuiTheme>();
                     if entry.is_disabled {
-                        ui.push_skin(&gui_resources.skins.menu_disabled);
+                        ui.push_skin(&gui_theme.menu_disabled);
                     } else if is_selected {
-                        ui.push_skin(&gui_resources.skins.menu_selected);
+                        ui.push_skin(&gui_theme.menu_selected);
                     }
                 }
 
@@ -365,11 +362,11 @@ impl Menu {
                 }
 
                 {
-                    let gui_resources = storage::get::<GuiResources>();
+                    let gui_theme = storage::get::<GuiTheme>();
                     if entry.is_disabled {
-                        ui.push_skin(&gui_resources.skins.menu_disabled);
+                        ui.push_skin(&gui_theme.menu_disabled);
                     } else if is_selected {
-                        ui.push_skin(&gui_resources.skins.menu_selected);
+                        ui.push_skin(&gui_theme.menu_selected);
                     }
                 }
 

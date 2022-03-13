@@ -7,7 +7,6 @@ use serde::{Deserialize, Serialize};
 use core::prelude::*;
 use core::Result;
 
-use crate::Resources;
 use crate::{PassiveEffectInstance, PassiveEffectMetadata};
 
 pub mod projectiles;
@@ -15,9 +14,9 @@ pub mod triggered;
 
 pub use triggered::{TriggeredEffectMetadata, TriggeredEffectTrigger};
 
+use core::particles::ParticleEmitterMetadata;
 use crate::effects::active::projectiles::{spawn_projectile, ProjectileParams};
 use crate::effects::active::triggered::{spawn_triggered_effect, TriggeredEffect};
-use crate::particles::ParticleEmitterMetadata;
 use crate::player::{on_player_damage, Player};
 use crate::PhysicsBody;
 
@@ -50,8 +49,7 @@ pub fn spawn_active_effect(
     };
 
     if let Some(id) = &params.sound_effect_id {
-        let mut resources = storage::get_mut::<Resources>();
-        let mut sound = resources.sounds.get_mut(id).unwrap();
+        let mut sound = get_sound(id);
 
         play_sound(sound, false);
     }

@@ -2,10 +2,10 @@ use core::prelude::*;
 
 use super::{EditorAction, EditorContext, EditorTool, EditorToolParams};
 
-use crate::{
-    editor::EditorCamera,
+use crate::editor::EditorCamera;
+
+use core::{
     map::{Map, MapLayerKind},
-    Resources,
 };
 use crate::macroquad::experimental::scene;
 
@@ -106,11 +106,7 @@ impl EditorTool for TilePlacementTool {
                             let position = map.to_position(coords);
 
                             let texture_coords = tileset.get_texture_coords(tile_id);
-                            let texture = {
-                                let resources = storage::get::<Resources>();
-                                let res = resources.textures.get(&tileset.texture_id).unwrap();
-                                res.texture
-                            };
+                            let texture = get_texture(&tileset.texture_id).texture;
 
                             let source_rect = Rect::new(
                                 texture_coords.x,
@@ -237,8 +233,7 @@ impl EditorTool for SpawnPointPlacementTool {
             .unwrap()
             .to_world_space(ctx.cursor_position);
 
-        let resources = storage::get::<Resources>();
-        let texture_res = resources.textures.get("spawn_point_icon").unwrap();
+        let texture_res = get_texture("spawn_point_icon");
         let texture_size = texture_res.texture.size();
         let offset = vec2(
             texture_size.width / 2.0,

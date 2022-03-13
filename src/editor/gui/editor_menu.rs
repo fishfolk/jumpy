@@ -2,7 +2,7 @@ use core::prelude::*;
 
 use crate::editor::EditorContext;
 
-use crate::gui::{Menu, MenuEntry, MenuResult};
+use core::gui::{Menu, MenuEntry, MenuResult};
 use crate::macroquad::hash;
 use crate::macroquad::ui::Ui;
 

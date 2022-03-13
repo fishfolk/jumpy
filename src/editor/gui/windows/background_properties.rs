@@ -1,12 +1,13 @@
 use core::prelude::*;
 
-use crate::map::MapBackgroundLayer;
-use crate::{map::Map, Resources};
+use core::map::MapBackgroundLayer;
+use core::map::Map;
+use core::gui::{ELEMENT_MARGIN, theme::LIST_BOX_ENTRY_HEIGHT};
+use core::gui::GuiTheme;
+use core::resources::TextureKind;
 
-use crate::gui::{GuiResources, ELEMENT_MARGIN, LIST_BOX_ENTRY_HEIGHT};
 use crate::macroquad::hash;
 use crate::macroquad::ui::{Ui, widgets};
-use crate::resources::TextureKind;
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 
@@ -126,8 +127,8 @@ impl Window for BackgroundPropertiesWindow {
         let layer_list_entry_size = vec2(layer_list_size.x, LIST_BOX_ENTRY_HEIGHT);
 
         {
-            let gui_resources = storage::get::<GuiResources>();
-            ui.push_skin(&gui_resources.skins.list_box_no_bg);
+            let gui_theme = storage::get::<GuiTheme>();
+            ui.push_skin(&gui_theme.list_box_no_bg);
         }
 
         widgets::Group::new(hash!(id, "layer_list"), layer_list_size)
@@ -144,8 +145,8 @@ impl Window for BackgroundPropertiesWindow {
                             }
 
                             if is_selected {
-                                let gui_resources = storage::get::<GuiResources>();
-                                ui.push_skin(&gui_resources.skins.list_box_selected);
+                                let gui_theme = storage::get::<GuiTheme>();
+                                ui.push_skin(&gui_theme.list_box_selected);
                             }
 
                             let entry_btn = widgets::Button::new("")
@@ -181,11 +182,8 @@ impl Window for BackgroundPropertiesWindow {
         )
         .position(vec2(0.0, (size.y * 0.5) + ELEMENT_MARGIN))
         .ui(ui, |ui| {
-            let resources = storage::get::<Resources>();
-            let mut texture_ids = resources
-                .textures
-                .values()
-                .filter_map(|texture_res| {
+            let mut texture_ids = iter_textures()
+                .filter_map(|(_, texture_res)| {
                     let mut res = None;
 
                     if let Some(kind) = texture_res.meta.kind {

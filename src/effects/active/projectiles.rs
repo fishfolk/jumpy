@@ -8,9 +8,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::effects::active::triggered::TriggeredEffect;
 use crate::effects::TriggeredEffectTrigger;
-use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
+use core::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::player::{on_player_damage, Player, PlayerState};
-use crate::{CollisionWorld, PhysicsBody, Resources, RigidBody, RigidBodyParams, SpriteMetadata};
+use crate::{CollisionWorld, PhysicsBody, RigidBody, RigidBodyParams, SpriteMetadata};
 use crate::{Drawable, PassiveEffectInstance, PassiveEffectMetadata, SpriteParams};
 
 use core::prelude::*;
@@ -126,8 +126,7 @@ pub fn spawn_projectile(
             params: meta,
             can_rotate,
         } => {
-            let resources = storage::get::<Resources>();
-            let texture_res = resources.textures.get(&meta.texture_id).unwrap();
+            let texture_res = get_texture(&meta.texture_id);
 
             let size = meta
                 .size
@@ -158,7 +157,7 @@ pub fn spawn_projectile(
                     entity,
                     Drawable::new_sprite(
                         PROJECTILE_DRAW_ORDER,
-                        &meta.texture_id,
+                        texture_res.texture,
                         SpriteParams {
                             is_flipped_x,
                             offset,

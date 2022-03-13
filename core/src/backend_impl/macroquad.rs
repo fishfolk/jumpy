@@ -1,8 +1,8 @@
+#[path = "macroquad/config.rs"]
+pub mod config;
+
 #[path = "macroquad/text.rs"]
 pub mod text;
-
-#[path = "macroquad/window.rs"]
-pub mod window;
 
 #[path = "macroquad/texture.rs"]
 pub mod texture;
@@ -22,7 +22,14 @@ pub mod rendering;
 #[path = "macroquad/viewport.rs"]
 pub mod viewport;
 
+#[path = "macroquad/window.rs"]
+pub mod window;
+
 pub mod video {}
+
+pub mod gui {
+    pub use macroquad::ui::*;
+}
 
 pub use macroquad::math;
 
@@ -31,3 +38,5 @@ pub use macroquad::ui;
 pub use macroquad::experimental::scene;
 
 pub use macroquad::camera;
+
+pub use ff_particles as particles;

@@ -1,7 +1,10 @@
-use core::prelude::*;
 use crate::macroquad::ui::{root_ui, Ui, widgets};
+use crate::math::{Size, Vec2};
+use crate::prelude::{draw_texture, get_texture, get_viewport};
+use crate::rendering::DrawTextureParams;
 
-use crate::resources::{Resources, TextureResource};
+use crate::resources::TextureResource;
+use crate::storage;
 
 pub struct Background {
     textures: Vec<TextureResource>,
@@ -20,7 +23,7 @@ impl Background {
         }
     }
 
-    #[cfg(not(feature = "ultimate"))]
+    #[cfg(feature = "macroquad-backend")]
     pub fn ui(&self, ui: &mut Ui) {
         for res in &self.textures {
             widgets::Texture::new(res.texture.into())
@@ -46,14 +49,14 @@ impl Background {
 }
 
 pub fn draw_main_menu_background(is_ui: bool) {
-    let resources = storage::get::<Resources>();
+    let backgrounds = [
+        get_texture("background_01"),
+        get_texture("background_02"),
+        get_texture("background_03"),
+        get_texture("background_04"),
+    ];
 
-    let background_01 = resources.textures.get("background_01").cloned().unwrap();
-    let background_02 = resources.textures.get("background_02").cloned().unwrap();
-    let background_03 = resources.textures.get("background_03").cloned().unwrap();
-    let background_04 = resources.textures.get("background_04").cloned().unwrap();
-
-    let size = background_01.texture.size();
+    let size = backgrounds[0].texture.size();
 
     let height = get_viewport().height;
     let width = (height / size.height) * size.width;
@@ -61,11 +64,11 @@ pub fn draw_main_menu_background(is_ui: bool) {
     let bg = Background::new(
         Size::new(width, height),
         Vec2::ZERO,
-        &[background_04, background_03, background_02, background_01],
+        &[backgrounds[3].clone(), backgrounds[2].clone(), backgrounds[1].clone(), backgrounds[0].clone()],
     );
 
     if is_ui {
-        #[cfg(not(feature = "ultimate"))]
+        #[cfg(feature = "macroquad-backend")]
         bg.ui(&mut *root_ui());
     } else {
         bg.draw();

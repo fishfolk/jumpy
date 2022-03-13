@@ -392,6 +392,7 @@ version = "0.4.1"
 dependencies = [
  "cfg-if 1.0.0",
  "ff-particles",
+ "fishfight-core-macros",
  "fishsticks",
  "getrandom",
  "glam 0.20.2",
@@ -407,6 +408,15 @@ dependencies = [
  "toml",
  "wasm-bindgen",
  "winit",
+]
+
+[[package]]
+name = "fishfight-core-macros"
+version = "0.4.1"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

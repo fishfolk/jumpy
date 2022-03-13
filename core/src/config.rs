@@ -1,13 +1,16 @@
 use std::fs;
 use std::path::Path;
+use std::sync::{Arc, Mutex};
 
 use serde::{Deserialize, Serialize};
 
 use crate::parsing::load_toml_file;
-use crate::input::keyboard::InputMapping;
+use crate::input::InputMapping;
 use crate::error::Result;
 use crate::video::RenderingConfig;
 use crate::window::WindowConfig;
+
+pub use crate::backend_impl::config::*;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
@@ -19,33 +22,4 @@ pub struct Config {
     pub input: InputMapping,
 }
 
-#[cfg(not(target_arch = "wasm32"))]
-pub fn load_config_file_sync<P: AsRef<Path>>(path: P) -> Result<Config> {
-    let path = path.as_ref();
-
-    let mut res = if path.exists() {
-        let bytes = fs::read(path)?;
-        toml::from_slice(&bytes)?
-    } else {
-        Config::default()
-    };
-
-    res.input.verify()?;
-
-    Ok(res)
-}
-
-pub async fn load_config_file<P: AsRef<Path>>(path: P) -> Result<Config> {
-    let path = path.as_ref();
-
-    let mut config = if path.exists() {
-        load_toml_file(path).await?
-    } else {
-        Config::default()
-    };
-
-    config.input.verify()?;
-
-    Ok(config)
-}
 

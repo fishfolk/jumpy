@@ -7,20 +7,6 @@ use crate::video::Resolution;
 
 pub use crate::backend_impl::window::*;
 
-pub struct Window(pub(crate) WindowImpl);
-
-impl From<WindowImpl> for Window {
-    fn from(inner: WindowImpl) -> Self {
-        Window(inner)
-    }
-}
-
-impl From<Window> for WindowImpl {
-    fn from(window: Window) -> Self {
-        window.0
-    }
-}
-
 const DEFAULT_WINDOW_WIDTH: u32 = 955;
 const DEFAULT_WINDOW_HEIGHT: u32 = 600;
 

@@ -6,9 +6,8 @@ use crate::macroquad::ui::{Ui, widgets};
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 
-use crate::map::Map;
-use crate::resources::{map_name_to_filename, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION};
-use crate::Resources;
+use core::map::Map;
+use core::resources::{map_name_to_filename, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION};
 
 pub struct CreateMapWindow {
     params: WindowParams,
@@ -28,8 +27,7 @@ impl CreateMapWindow {
         };
 
         let map_export_path = {
-            let resources = storage::get::<Resources>();
-            Path::new(&resources.assets_dir).join(MAP_EXPORTS_DEFAULT_DIR)
+            Path::new(assets_dir()).join(MAP_EXPORTS_DEFAULT_DIR)
         };
 
         CreateMapWindow {

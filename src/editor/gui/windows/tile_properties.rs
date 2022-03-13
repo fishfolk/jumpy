@@ -1,8 +1,8 @@
 use core::prelude::*;
 
-use crate::map::Map;
+use core::map::Map;
 
-use crate::gui::Checkbox;
+use core::gui::Checkbox;
 use crate::macroquad::hash;
 use crate::macroquad::ui::Ui;
 

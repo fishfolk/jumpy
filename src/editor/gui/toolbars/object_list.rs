@@ -1,13 +1,13 @@
 use core::prelude::*;
 
 use super::{
-    EditorAction, EditorContext, GuiResources, Map, Toolbar, ToolbarElement, ToolbarElementParams,
+    EditorAction, EditorContext, Map, Toolbar, ToolbarElement, ToolbarElementParams,
 };
 
-use crate::{
-    editor::{gui::ButtonParams, EditorCamera},
-    map::MapLayerKind,
-};
+use core::map::MapLayerKind;
+
+use crate::editor::{gui::ButtonParams, EditorCamera};
+use crate::GuiTheme;
 use crate::macroquad::prelude::scene;
 use crate::macroquad::ui::{Ui, widgets};
 
@@ -45,8 +45,8 @@ impl ToolbarElement for ObjectListElement {
         let mut position = Vec2::ZERO;
 
         {
-            let gui_resources = storage::get::<GuiResources>();
-            ui.push_skin(&gui_resources.skins.list_box);
+            let gui_theme = storage::get::<GuiTheme>();
+            ui.push_skin(&gui_theme.list_box);
         }
 
         let layer_id = ctx.selected_layer.as_ref().unwrap();
@@ -60,8 +60,8 @@ impl ToolbarElement for ObjectListElement {
             };
 
             if is_selected {
-                let gui_resources = storage::get::<GuiResources>();
-                ui.push_skin(&gui_resources.skins.list_box_selected);
+                let gui_theme = storage::get::<GuiTheme>();
+                ui.push_skin(&gui_theme.list_box_selected);
             }
 
             let was_clicked = widgets::Button::new("")

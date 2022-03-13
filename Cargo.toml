@@ -10,15 +10,14 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [workspace]
-members = ["core", "physics-platformer"]
+members = ["core", "core/macros", "physics-platformer"]
 
 [profile.dev.package."*"]
 opt-level = 3
 
 [dependencies]
-# core = { version = "0.4.1", package = "fishfight-core", default-features = false, features = ["internal-backend"] }
-# core = { path = "./core", package = "fishfight-core", default-features = false, features = ["internal-backend"] }
-core = { path = "./core", package = "fishfight-core", default-features = false, features = ["macroquad-backend"] }
+# core = { path = "./core", version = "0.4.1", package = "fishfight-core", default-features = false, features = ["macros", "internal-backend"] }
+core = { path = "./core", version = "0.4.1", package = "fishfight-core", default-features = false, features = ["macros", "macroquad-backend"] }
 # ultimate = { path = "../FishFight-ultimate/client", package = "fishfight-ultimate-client", optional = true }
 fishsticks = { version = "0.2.0", default-features = false, features = ["gilrs"] }
 macroquad-platformer = { path = "physics-platformer" }

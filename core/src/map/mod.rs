@@ -3,29 +3,29 @@ use std::{collections::HashMap, path::Path};
 use serde::{Deserialize, Serialize};
 
 mod decoration;
-mod sproinger;
 
 pub use decoration::*;
-pub use sproinger::*;
 
-use core::prelude::*;
-use core::Result;
+use crate::prelude::*;
+use crate::Result;
+use crate::resources;
 
-#[cfg(not(feature = "ultimate"))]
+#[cfg(feature = "macroquad-backend")]
 use crate::gui::combobox::ComboBoxValue;
 
 use crate::{
     json::{self, TiledMap},
-    Resources,
 };
 
-pub type MapProperty = core::json::GenericParam;
+use crate::resources::TextureResource;
+
+pub type MapProperty = crate::json::GenericParam;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MapBackgroundLayer {
     pub texture_id: String,
     pub depth: f32,
-    #[serde(with = "core::json::vec2_def")]
+    #[serde(with = "crate::json::vec2_def")]
     pub offset: Vec2,
 }
 
@@ -34,12 +34,12 @@ pub struct MapBackgroundLayer {
 pub struct Map {
     #[serde(
         default = "Map::default_background_color",
-        with = "core::json::ColorDef"
+        with = "crate::json::ColorDef"
     )]
     pub background_color: Color,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub background_layers: Vec<MapBackgroundLayer>,
-    #[serde(with = "core::json::def_vec2")]
+    #[serde(with = "crate::json::def_vec2")]
     pub world_offset: Vec2,
     pub grid_size: Size<u32>,
     pub tile_size: Size<f32>,
@@ -49,7 +49,7 @@ pub struct Map {
     pub draw_order: Vec<String>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub properties: HashMap<String, MapProperty>,
-    #[serde(default, with = "core::json::vec2_vec")]
+    #[serde(default, with = "crate::json::vec2_vec")]
     pub spawn_points: Vec<Vec2>,
 }
 
@@ -106,9 +106,9 @@ impl Map {
     }
 
     pub fn contains(&self, position: Vec2) -> bool {
-        #[cfg(feature = "ultimate")]
+        #[cfg(not(feature = "macroquad-backend"))]
         let map_size = self.grid_size.as_vec2() * self.tile_size;
-        #[cfg(not(feature = "ultimate"))]
+        #[cfg(feature = "macroquad-backend")]
         let map_size = Size::from(UVec2::from(self.grid_size).as_f32()) * self.tile_size;
         let rect = Rect::new(
             self.world_offset.x,
@@ -267,15 +267,14 @@ impl Map {
             self.background_color,
         );
 
-        let resources = storage::get::<Resources>();
-
         {
             for layer in &self.background_layers {
-                let texture_res = resources.textures.get(&layer.texture_id).unwrap();
+                let texture_res = get_texture(&layer.texture_id);
+
                 let dest_rect = if is_parallax_disabled {
-                    #[cfg(feature = "ultimate")]
+                    #[cfg(not(feature = "macroquad-backend"))]
                     let map_size = self.grid_size.as_vec2() * self.tile_size;
-                    #[cfg(not(feature = "ultimate"))]
+                    #[cfg(feature = "macroquad-backend")]
                     let map_size = Size::from(UVec2::from(self.grid_size).as_f32()) * self.tile_size;
 
                     let size = texture_res.texture.size();
@@ -321,7 +320,6 @@ impl Map {
         let mut draw_order = self.draw_order.clone();
         draw_order.reverse();
 
-        let resources = storage::get::<Resources>();
         for layer_id in draw_order {
             if let Some(layer) = self.layers.get(&layer_id) {
                 if layer.is_visible && layer.kind == MapLayerKind::TileLayer {
@@ -330,15 +328,20 @@ impl Map {
                             let world_position = self.world_offset
                                 + vec2(x as f32 * self.tile_size.width, y as f32 * self.tile_size.height);
 
-                            let texture_entry =
-                                resources.textures.get(&tile.texture_id).unwrap_or_else(|| {
-                                    panic!("No texture with id '{}'!", tile.texture_id)
-                                });
+                            let texture = if let Some(texture) = tile.texture {
+                                texture
+                            } else {
+                                let tileset = self.tilesets
+                                    .get(&tile.tileset_id)
+                                    .unwrap();
+
+                                get_texture(&tileset.texture_id).texture
+                            };
 
                             draw_texture(
                                 world_position.x,
                                 world_position.y,
-                                texture_entry.texture,
+                                texture,
                                 DrawTextureParams {
                                     source: Some(Rect::new(
                                         tile.texture_coords.x, // + 0.1,
@@ -382,7 +385,7 @@ impl Map {
     }
 
     pub fn get_random_spawn_point(&self) -> Vec2 {
-        let i = core::rand::gen_range(0, self.spawn_points.len()) as usize;
+        let i = crate::rand::gen_range(0, self.spawn_points.len()) as usize;
         self.spawn_points[i]
     }
 }
@@ -440,7 +443,7 @@ impl MapLayerKind {
     }
 }
 
-#[cfg(not(feature = "ultimate"))]
+#[cfg(feature = "macroquad-backend")]
 impl ComboBoxValue for MapLayerKind {
     fn get_index(&self) -> usize {
         match self {
@@ -527,7 +530,9 @@ pub struct MapTile {
     pub tile_id: u32,
     pub tileset_id: String,
     pub texture_id: String,
-    #[serde(with = "core::json::vec2_def")]
+    #[serde(skip)]
+    pub texture: Option<Texture2D>,
+    #[serde(with = "crate::json::vec2_def")]
     pub texture_coords: Vec2,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub attributes: Vec<String>,
@@ -581,7 +586,7 @@ impl From<MapObjectKind> for String {
     }
 }
 
-#[cfg(not(feature = "ultimate"))]
+#[cfg(feature = "macroquad-backend")]
 impl ComboBoxValue for MapObjectKind {
     fn get_index(&self) -> usize {
         match self {
@@ -609,7 +614,7 @@ impl ComboBoxValue for MapObjectKind {
 pub struct MapObject {
     pub id: String,
     pub kind: MapObjectKind,
-    #[serde(with = "core::json::vec2_def")]
+    #[serde(with = "crate::json::vec2_def")]
     pub position: Vec2,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub properties: HashMap<String, MapProperty>,
@@ -637,7 +642,7 @@ pub struct MapTileset {
     pub tile_cnt: u32,
     #[serde(
         default = "MapTileset::default_tile_subdivisions",
-        with = "core::json::uvec2_def"
+        with = "crate::json::uvec2_def"
     )]
     pub tile_subdivisions: UVec2,
     pub autotile_mask: Vec<bool>,

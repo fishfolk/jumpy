@@ -1,18 +1,38 @@
-//! This implements `PlayerCharacterMetadata`, which is a declaration of a playable character, loaded
+//! This implements `CharacterMetadata`, which is a declaration of a playable character, loaded
 //! from the `player_characters.json` file. This holds information like its name, its description,
 //! which texture to use and how to animate it and should not be confused with `Player`, which is
 //! the actual implementation of the player actor.
 
+use std::borrow::{Borrow, BorrowMut};
 use serde::{Deserialize, Serialize};
 
 use core::prelude::*;
 
 use crate::player::PlayerAnimationMetadata;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PlayerCharacterMetadata {
+static mut CHARACTERS: Vec<CharacterMetadata> = Vec::new();
+
+pub fn try_get_character(index: usize) -> Option<&'static CharacterMetadata> {
+    unsafe { CHARACTERS.get(index) }
+}
+
+pub fn get_character(index: usize) -> &'static CharacterMetadata {
+    try_get_character(index).unwrap()
+}
+
+pub fn characters() -> &'static Vec<CharacterMetadata> {
+    unsafe { CHARACTERS.borrow() }
+}
+
+pub fn characters_mut() -> &'static mut Vec<CharacterMetadata> {
+    unsafe { CHARACTERS.borrow_mut() }
+}
+
+#[derive(CustomResource, Debug, Clone, Serialize, Deserialize)]
+pub struct CharacterMetadata {
     /// This is the id of the player character. This should be unique, or it will either overwrite
     /// or be overwritten, depending on load order, if not.
+    #[resource_id]
     pub id: String,
     /// This is the name of the player character, as shown in character selection
     pub name: String,
@@ -21,62 +41,62 @@ pub struct PlayerCharacterMetadata {
     pub description: String,
     /// This holds the animation and sprite parameters for the player character. This is flattened,
     /// meaning that, in JSON, you will declare the members of this struct directly in the
-    /// `PlayerCharacterMetadata` entry.
+    /// `CharacterMetadata` entry.
     #[serde(flatten, alias = "animation")]
     pub sprite: PlayerAnimationMetadata,
     /// The size of the players collider.
     /// This should, in general, be smaller than the sprite size
     #[serde(
-        default = "PlayerCharacterMetadata::default_collider_size",
+        default = "CharacterMetadata::default_collider_size",
     )]
     pub collider_size: Size<f32>,
     /// This is the offset from the position of the player to where the weapon is mounted.
     /// The position of the player will, typically, be the center bottom of the sprite but this
     /// can be changed with offsets.
     #[serde(
-        default = "PlayerCharacterMetadata::default_weapon_mount",
+        default = "CharacterMetadata::default_weapon_mount",
         with = "core::json::vec2_def"
     )]
     pub weapon_mount: Vec2,
     /// This is the offset from the position of the player to where items are mounted
     #[serde(
-        default = "PlayerCharacterMetadata::default_item_mount",
+        default = "CharacterMetadata::default_item_mount",
         with = "core::json::vec2_def"
     )]
     pub item_mount: Vec2,
     /// This is the offset from the position of the player to where the hat is mounted
     #[serde(
-        default = "PlayerCharacterMetadata::default_hat_mount",
+        default = "CharacterMetadata::default_hat_mount",
         with = "core::json::vec2_def"
     )]
     pub hat_mount: Vec2,
     /// This is the distance from the top of the collider to where the head ends
-    #[serde(default = "PlayerCharacterMetadata::default_head_threshold")]
+    #[serde(default = "CharacterMetadata::default_head_threshold")]
     pub head_threshold: f32,
     /// This is the distance from the top of the collider to where the legs begin
-    #[serde(default = "PlayerCharacterMetadata::default_legs_threshold")]
+    #[serde(default = "CharacterMetadata::default_legs_threshold")]
     pub legs_threshold: f32,
     /// This is the upwards force applied to the player character when it jumps
-    #[serde(default = "PlayerCharacterMetadata::default_jump_force")]
+    #[serde(default = "CharacterMetadata::default_jump_force")]
     pub jump_force: f32,
     /// This is the movement speed of the player character
-    #[serde(default = "PlayerCharacterMetadata::default_move_speed")]
+    #[serde(default = "CharacterMetadata::default_move_speed")]
     pub move_speed: f32,
     /// This is the slide speed factor of the player character
-    #[serde(default = "PlayerCharacterMetadata::default_slide_speed_factor")]
+    #[serde(default = "CharacterMetadata::default_slide_speed_factor")]
     pub slide_speed_factor: f32,
     /// This is the slide duration of the player character
-    #[serde(default = "PlayerCharacterMetadata::default_slide_duration")]
+    #[serde(default = "CharacterMetadata::default_slide_duration")]
     pub slide_duration: f32,
     /// This is the amount of time this character will stay incapacitated
-    #[serde(default = "PlayerCharacterMetadata::default_incapacitation_duration")]
+    #[serde(default = "CharacterMetadata::default_incapacitation_duration")]
     pub incapacitation_duration: f32,
     /// This is the float gravity factor of the player character
-    #[serde(default = "PlayerCharacterMetadata::default_float_gravity_factor")]
+    #[serde(default = "CharacterMetadata::default_float_gravity_factor")]
     pub float_gravity_factor: f32,
 }
 
-impl PlayerCharacterMetadata {
+impl CharacterMetadata {
     const DEFAULT_HEAD_THRESHOLD: f32 = 24.0;
     const DEFAULT_LEGS_THRESHOLD: f32 = 42.0;
 

@@ -2,10 +2,11 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use core::prelude::*;
+use crate::prelude::*;
 
 use crate::map::MapObjectKind;
 use crate::map::{Map, MapLayer, MapLayerKind, MapObject, MapProperty, MapTile, MapTileset};
+use crate::resources::TextureResource;
 
 const SPAWN_POINT_MAP_OBJECT_TYPE: &str = "spawn_point";
 
@@ -226,6 +227,7 @@ impl TiledMap {
                         tile_id,
                         tileset_id: tileset.id.clone(),
                         texture_id: tileset.texture_id.clone(),
+                        texture: None,
                         texture_coords: tileset.get_texture_coords(tile_id),
                         attributes,
                     };

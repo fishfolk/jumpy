@@ -1,8 +1,13 @@
-use core::prelude::*;
+use std::collections::HashMap;
+
 use crate::macroquad::color_u8;
+use crate::macroquad::prelude::Image;
 use crate::macroquad::ui::{root_ui, Skin};
 
-use crate::Resources;
+use crate::color::Color;
+
+use crate::resources::{get_image, ImageResource};
+use crate::math::RectOffset;
 
 use super::{ELEMENT_MARGIN, NO_COLOR};
 
@@ -94,7 +99,7 @@ const EDITBOX_BACKGROUND_CLICKED_IMAGE_ID: &str = "editbox_background_clicked";
 const WINDOW_BACKGROUND_IMAGE_ID: &str = "window_background";
 const WINDOW_BORDER_IMAGE_ID: &str = "window_border";
 
-pub struct SkinCollection {
+pub struct GuiTheme {
     pub default: Skin,
     pub button_disabled: Skin,
     pub window_header: Skin,
@@ -125,54 +130,28 @@ pub struct SkinCollection {
     pub panel_no_bg: Skin,
 }
 
-impl SkinCollection {
-    pub fn new() -> SkinCollection {
-        let resources = storage::get::<Resources>();
+impl GuiTheme {
+    pub fn new() -> GuiTheme {
+        let _blank_image = get_image(BLANK_IMAGE_ID);
 
-        let _blank_image = resources.images.get(BLANK_IMAGE_ID).unwrap();
+        let button_background = get_image(BUTTON_BACKGROUND_IMAGE_ID);
+        let button_background_clicked = get_image(BUTTON_BACKGROUND_CLICKED_IMAGE_ID);
+        let button_background_disabled = get_image(BUTTON_BACKGROUND_DISABLED_IMAGE_ID);
+        let button_background_hovered = get_image(BUTTON_BACKGROUND_HOVERED_IMAGE_ID);
 
-        let button_background = resources.images.get(BUTTON_BACKGROUND_IMAGE_ID).unwrap();
-        let button_background_clicked = resources
-            .images
-            .get(BUTTON_BACKGROUND_CLICKED_IMAGE_ID)
-            .unwrap();
-        let button_background_disabled = resources
-            .images
-            .get(BUTTON_BACKGROUND_DISABLED_IMAGE_ID)
-            .unwrap();
-        let button_background_hovered = resources
-            .images
-            .get(BUTTON_BACKGROUND_HOVERED_IMAGE_ID)
-            .unwrap();
+        let checkbox_background = get_image(CHECKBOX_BACKGROUND_IMAGE_ID);
+        let checkbox_background_checked = get_image(CHECKBOX_BACKGROUND_CHECKED_IMAGE_ID);
+        let checkbox_background_checked_hovered = get_image(CHECKBOX_BACKGROUND_CHECKED_HOVERED_IMAGE_ID);
+        let checkbox_background_clicked = get_image(CHECKBOX_BACKGROUND_CLICKED_IMAGE_ID);
+        let checkbox_background_hovered = get_image(CHECKBOX_BACKGROUND_HOVERED_IMAGE_ID);
 
-        let checkbox_background = resources.images.get(CHECKBOX_BACKGROUND_IMAGE_ID).unwrap();
-        let checkbox_background_checked = resources
-            .images
-            .get(CHECKBOX_BACKGROUND_CHECKED_IMAGE_ID)
-            .unwrap();
-        let checkbox_background_checked_hovered = resources
-            .images
-            .get(CHECKBOX_BACKGROUND_CHECKED_HOVERED_IMAGE_ID)
-            .unwrap();
-        let checkbox_background_clicked = resources
-            .images
-            .get(CHECKBOX_BACKGROUND_CLICKED_IMAGE_ID)
-            .unwrap();
-        let checkbox_background_hovered = resources
-            .images
-            .get(CHECKBOX_BACKGROUND_HOVERED_IMAGE_ID)
-            .unwrap();
+        let combobox_background = get_image(COMBOBOX_BACKGROUND_IMAGE_ID);
 
-        let combobox_background = resources.images.get(COMBOBOX_BACKGROUND_IMAGE_ID).unwrap();
+        let editbox_background = get_image(EDITBOX_BACKGROUND_IMAGE_ID);
+        let editbox_background_clicked = get_image(EDITBOX_BACKGROUND_CLICKED_IMAGE_ID);
 
-        let editbox_background = resources.images.get(EDITBOX_BACKGROUND_IMAGE_ID).unwrap();
-        let editbox_background_clicked = resources
-            .images
-            .get(EDITBOX_BACKGROUND_CLICKED_IMAGE_ID)
-            .unwrap();
-
-        let window_background = resources.images.get(WINDOW_BACKGROUND_IMAGE_ID).unwrap();
-        let window_border = resources.images.get(WINDOW_BORDER_IMAGE_ID).unwrap();
+        let window_background = get_image(WINDOW_BACKGROUND_IMAGE_ID);
+        let window_border = get_image(WINDOW_BORDER_IMAGE_ID);
 
         let default = {
             let window_style = root_ui()
@@ -894,7 +873,7 @@ impl SkinCollection {
             }
         };
 
-        SkinCollection {
+        GuiTheme {
             default,
             button_disabled,
             window_header,

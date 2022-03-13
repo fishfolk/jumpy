@@ -1,14 +1,14 @@
 use core::prelude::*;
 
-use crate::gui::combobox::ComboBoxVec;
-use crate::gui::{ComboBoxBuilder, ComboBoxValue};
-use crate::{gui::GuiResources, Resources};
+use core::gui::combobox::ComboBoxVec;
+use core::gui::combobox::{ComboBoxBuilder, ComboBoxValue};
 use crate::macroquad::hash;
 use crate::macroquad::ui::{Ui, widgets};
 
 use super::{ButtonParams, EditorAction, EditorContext, Map, Window, WindowParams};
-use crate::map::MapTileset;
-use crate::resources::TextureKind;
+use core::map::MapTileset;
+use core::resources::TextureKind;
+use crate::GuiTheme;
 
 pub struct TilesetPropertiesWindow {
     params: WindowParams,
@@ -26,10 +26,7 @@ impl TilesetPropertiesWindow {
             ..Default::default()
         };
 
-        let resources = storage::get::<Resources>();
-        let texture_ids = resources
-            .textures
-            .iter()
+        let texture_ids = iter_textures()
             .filter_map(|(k, v)| {
                 if let Some(kind) = v.meta.kind {
                     if kind == TextureKind::Tileset {
@@ -80,16 +77,9 @@ impl TilesetPropertiesWindow {
         size: Vec2,
         tileset: &MapTileset,
     ) -> Option<EditorAction> {
-        let texture_entry = {
-            let resources = storage::get::<Resources>();
-            resources
-                .textures
-                .get(&tileset.texture_id)
-                .cloned()
-                .unwrap()
-        };
+        let texture_res = get_texture(&tileset.texture_id);
 
-        let texture_size = texture_entry.texture.size();
+        let texture_size = texture_res.texture.size();
         let tileset_texture_size = vec2(
             texture_size.width,
             texture_size.height,
@@ -110,14 +100,14 @@ impl TilesetPropertiesWindow {
             scaled_height / subgrid_size.height as f32,
         );
 
-        widgets::Texture::new(texture_entry.texture.into())
+        widgets::Texture::new(texture_res.texture.into())
             .size(scaled_width, scaled_height)
             .position(position)
             .ui(ui);
 
         {
-            let gui_resources = storage::get::<GuiResources>();
-            ui.push_skin(&gui_resources.skins.tileset_subtile_grid);
+            let gui_theme = storage::get::<GuiTheme>();
+            ui.push_skin(&gui_theme.tileset_subtile_grid);
         }
 
         for y in 0..subgrid_size.height {
@@ -127,8 +117,8 @@ impl TilesetPropertiesWindow {
                 let is_selected = self.autotile_mask[i];
 
                 if is_selected {
-                    let gui_resources = storage::get::<GuiResources>();
-                    ui.push_skin(&gui_resources.skins.tileset_subtile_grid_selected);
+                    let gui_theme = storage::get::<GuiTheme>();
+                    ui.push_skin(&gui_theme.tileset_subtile_grid_selected);
                 }
 
                 let subtile_position = position + vec2(x as f32, y as f32) * Vec2::from(scaled_subtile_size);

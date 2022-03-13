@@ -2,10 +2,7 @@ use std::{any::TypeId, collections::HashMap};
 
 use core::prelude::*;
 
-use crate::{
-    gui::{GuiResources, ELEMENT_MARGIN},
-    map::Map,
-};
+use core::{gui::ELEMENT_MARGIN, map::Map};
 
 use super::{ButtonParams, EditorAction, EditorContext};
 
@@ -28,6 +25,7 @@ pub use tileset_details::TilesetDetailsElement;
 mod object_list;
 
 pub use object_list::ObjectListElement;
+use crate::GuiTheme;
 use crate::macroquad::hash;
 use crate::macroquad::ui::{Ui, widgets};
 
@@ -133,8 +131,8 @@ impl Toolbar {
         let mut res = None;
 
         {
-            let gui_resources = storage::get::<GuiResources>();
-            ui.push_skin(&gui_resources.skins.toolbar);
+            let gui_theme = storage::get::<GuiTheme>();
+            ui.push_skin(&gui_theme.toolbar);
         }
 
         let viewport = get_viewport();
@@ -153,8 +151,8 @@ impl Toolbar {
                 let mut position = Vec2::ZERO;
 
                 {
-                    let gui_resources = storage::get::<GuiResources>();
-                    ui.push_skin(&gui_resources.skins.toolbar_bg);
+                    let gui_theme = storage::get::<GuiTheme>();
+                    ui.push_skin(&gui_theme.toolbar_bg);
                     widgets::Button::new("")
                         .position(position)
                         .size(toolbar_size)
@@ -185,8 +183,8 @@ impl Toolbar {
                         let mut content_size = element_size;
 
                         if let Some(header) = &params.header {
-                            let gui_resources = storage::get::<GuiResources>();
-                            ui.push_skin(&gui_resources.skins.toolbar_header_bg);
+                            let gui_theme = storage::get::<GuiTheme>();
+                            ui.push_skin(&gui_theme.toolbar_header_bg);
 
                             let header_height = ui.calc_size(header).y;
 
@@ -237,8 +235,8 @@ impl Toolbar {
                                 .position(menubar_position)
                                 .ui(ui, |ui| {
                                     {
-                                        let gui_resources = storage::get::<GuiResources>();
-                                        ui.push_skin(&gui_resources.skins.toolbar_button);
+                                        let gui_theme = storage::get::<GuiTheme>();
+                                        ui.push_skin(&gui_theme.toolbar_button);
                                     }
 
                                     let buttons = element.get_buttons(map, ctx);
@@ -284,9 +282,9 @@ impl Toolbar {
                                             }
 
                                             if button.action.is_none() {
-                                                let gui_resources = storage::get::<GuiResources>();
+                                                let gui_theme = storage::get::<GuiTheme>();
                                                 ui.push_skin(
-                                                    &gui_resources.skins.toolbar_button_disabled,
+                                                    &gui_theme.toolbar_button_disabled,
                                                 );
                                             }
 

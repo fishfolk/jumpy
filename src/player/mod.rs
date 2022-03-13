@@ -4,7 +4,7 @@ use core::prelude::*;
 
 use crate::{
     AnimatedSprite, AnimatedSpriteMetadata, AnimatedSpriteParams, CollisionWorld, Drawable,
-    GameCamera, PassiveEffectInstance, PhysicsBody, Resources,
+    GameCamera, PassiveEffectInstance, PhysicsBody,
 };
 
 mod animation;
@@ -50,7 +50,7 @@ pub const PICKUP_GRACE_TIME: f32 = 0.25;
 pub struct PlayerParams {
     pub index: u8,
     pub controller: PlayerControllerKind,
-    pub character: PlayerCharacterMetadata,
+    pub character: CharacterMetadata,
 }
 
 pub struct Player {
@@ -128,8 +128,8 @@ pub struct PlayerAttributes {
     pub float_gravity_factor: f32,
 }
 
-impl From<&PlayerCharacterMetadata> for PlayerAttributes {
-    fn from(params: &PlayerCharacterMetadata) -> Self {
+impl From<&CharacterMetadata> for PlayerAttributes {
+    fn from(params: &CharacterMetadata) -> Self {
         PlayerAttributes {
             head_threshold: params.head_threshold,
             legs_threshold: params.legs_threshold,
@@ -143,8 +143,8 @@ impl From<&PlayerCharacterMetadata> for PlayerAttributes {
     }
 }
 
-impl From<PlayerCharacterMetadata> for PlayerAttributes {
-    fn from(params: PlayerCharacterMetadata) -> Self {
+impl From<CharacterMetadata> for PlayerAttributes {
+    fn from(params: CharacterMetadata) -> Self {
         PlayerAttributes::from(&params)
     }
 }
@@ -154,17 +154,13 @@ pub fn spawn_player(
     index: u8,
     position: Vec2,
     controller: PlayerControllerKind,
-    character: PlayerCharacterMetadata,
+    character: CharacterMetadata,
 ) -> Entity {
     let weapon_mount = character.weapon_mount;
     let item_mount = character.item_mount;
     let hat_mount = character.hat_mount;
 
-    let texture_res = storage::get::<Resources>()
-        .textures
-        .get(&character.sprite.texture_id)
-        .cloned()
-        .unwrap();
+    let texture_res = get_texture(&character.sprite.texture_id);
 
     let offset = {
         let frame_size = texture_res.meta.frame_size.unwrap_or(texture_res.texture.size().into());

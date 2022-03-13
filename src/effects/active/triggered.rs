@@ -7,8 +7,8 @@ use serde::{Deserialize, Serialize};
 use core::Result;
 use core::prelude::*;
 
+use core::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::effects::active::spawn_active_effect;
-use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::physics;
 use crate::player::{Player, PlayerState};
 use crate::{ActiveEffectMetadata, AnimatedSpriteMetadata, CollisionWorld, PhysicsBody};
@@ -120,9 +120,12 @@ pub fn spawn_triggered_effect(
             .map(|a| a.into())
             .collect::<Vec<_>>();
 
+        let texture_res = get_texture(&meta.texture_id);
+
         let mut drawable = Drawable::new_animated_sprite(
             TRIGGERED_EFFECT_DRAW_ORDER,
-            &meta.texture_id,
+            texture_res.texture,
+            texture_res.frame_size(),
             animations.as_slice(),
             meta.clone().into(),
         );

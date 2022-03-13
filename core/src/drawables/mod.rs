@@ -7,9 +7,11 @@ pub use sprite::*;
 use std::borrow::{Borrow, BorrowMut};
 
 use hecs::World;
+use crate::math::Size;
 
-use core::prelude::*;
-use crate::Resources;
+use crate::transform::Transform;
+use crate::storage;
+use crate::texture::Texture2D;
 
 /// This is a wrapper type for all the different types of drawable sprites, used so that we can
 /// access them all in one query and draw them, ordered, in one pass, according to `draw_order`.
@@ -24,8 +26,8 @@ pub struct Drawable {
 }
 
 impl Drawable {
-    pub fn new_sprite(draw_order: u32, texture_id: &str, params: SpriteParams) -> Self {
-        let sprite = Sprite::new(texture_id, params);
+    pub fn new_sprite(draw_order: u32, texture: Texture2D, params: SpriteParams) -> Self {
+        let sprite = Sprite::new(texture, params);
 
         Drawable {
             draw_order,
@@ -44,17 +46,12 @@ impl Drawable {
 
     pub fn new_animated_sprite(
         draw_order: u32,
-        texture_id: &str,
+        texture: Texture2D,
+        frame_size: Size<f32>,
         animations: &[Animation],
         params: AnimatedSpriteParams,
     ) -> Self {
-        let texture_res = storage::get::<Resources>()
-            .textures
-            .get(texture_id)
-            .cloned()
-            .unwrap();
-
-        let sprite = AnimatedSprite::new(texture_res.texture, texture_res.frame_size(), animations, params);
+        let sprite = AnimatedSprite::new(texture, frame_size, animations, params);
 
         Drawable {
             draw_order,

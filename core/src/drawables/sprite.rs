@@ -5,8 +5,12 @@ use std::ops::Div;
 use serde::{Deserialize, Serialize};
 
 use core::prelude::*;
-
-use crate::Resources;
+use crate::color::{Color, colors};
+use crate::math::{Size, Vec2, Rect, vec2};
+use crate::rendering::{draw_rectangle_outline, draw_texture, DrawTextureParams};
+use crate::storage;
+use crate::texture::Texture2D;
+use crate::transform::Transform;
 
 /// Parameters for `Sprite` component.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -23,14 +27,14 @@ pub struct SpriteMetadata {
     /// The offset of the drawn sprite, relative to the position provided as an argument to the
     /// `Sprite` draw method.
     /// Note that this offset will not be inverted if the sprite is flipped.
-    #[serde(default, with = "core::json::vec2_def")]
+    #[serde(default, with = "crate::json::vec2_def")]
     pub offset: Vec2,
     /// The pivot of the sprite, relative to the position provided as an argument to the `Sprite`
     /// draw method, plus any offset.
     /// Note that this offset will not be inverted if the sprite is flipped.
     #[serde(
         default,
-        with = "core::json::vec2_opt",
+        with = "crate::json::vec2_opt",
         skip_serializing_if = "Option::is_none"
     )]
     pub pivot: Option<Vec2>,
@@ -81,25 +85,14 @@ pub struct Sprite {
 }
 
 impl Sprite {
-    pub fn new(texture_id: &str, params: SpriteParams) -> Self {
-        let texture_res = {
-            let resources = storage::get::<Resources>();
-            resources
-                .textures
-                .get(texture_id)
-                .cloned()
-                .unwrap_or_else(|| panic!("Sprite: Invalid texture ID '{}'", texture_id))
-        };
-
-        let sprite_size = params
-            .sprite_size
-            .unwrap_or_else(|| texture_res.frame_size());
-
+    pub fn new(texture: Texture2D, params: SpriteParams) -> Self {
         let source_rect = {
-            #[cfg(feature = "ultimate")]
-                let grid_size: UVec2 = Vec2::from(texture_res.texture.size()).as_uvec2() / sprite_size.as_uvec2();
-            #[cfg(not(feature = "ultimate"))]
-            let grid_size = Size::from(Vec2::from(texture_res.texture.size()).as_u32() / Vec2::from(sprite_size).as_u32());
+            let sprite_size = params.sprite_size.unwrap_or_else(|| texture.size());
+
+            #[cfg(not(feature = "macroquad-backend"))]
+            let grid_size: UVec2 = Vec2::from(texture.size()).as_uvec2() / sprite_size.as_uvec2();
+            #[cfg(feature = "macroquad-backend")]
+            let grid_size = Size::from(Vec2::from(texture.size()).as_u32() / Vec2::from(sprite_size).as_u32());
 
             {
                 let frame_cnt = (grid_size.width * grid_size.height) as usize;
@@ -122,7 +115,7 @@ impl Sprite {
         let tint = params.tint.unwrap_or(colors::WHITE);
 
         Sprite {
-            texture: texture_res.texture,
+            texture,
             source_rect,
             tint,
             scale: params.scale,

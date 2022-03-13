@@ -1,6 +1,9 @@
 #[path = "internal/text.rs"]
 pub mod text;
 
+#[path = "internal/window.rs"]
+pub mod window;
+
 #[path = "internal/input.rs"]
 pub mod input;
 
@@ -9,9 +12,6 @@ pub mod file;
 
 #[path = "internal/video.rs"]
 pub mod video;
-
-#[path = "internal/window.rs"]
-pub mod window;
 
 #[path = "internal/texture.rs"]
 pub mod texture;
@@ -28,4 +28,8 @@ pub mod particles;
 #[path = "internal/math/mod.rs"]
 pub mod math;
 
+pub mod gui {}
+
 pub mod color {}
+
+pub mod config {}

@@ -1,13 +1,14 @@
 use core::prelude::*;
 
-use crate::gui::{Checkbox, GuiResources, ELEMENT_MARGIN, LIST_BOX_ENTRY_HEIGHT};
+use core::gui::{checkbox::Checkbox, ELEMENT_MARGIN, theme::LIST_BOX_ENTRY_HEIGHT};
+
 use crate::macroquad::hash;
 use crate::macroquad::ui::{Ui, widgets};
 
-use crate::map::{Map, MapBackgroundLayer, MapTileset};
+use core::map::{Map, MapBackgroundLayer, MapTileset};
+use crate::GuiTheme;
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
-use crate::Resources;
 
 pub struct ImportWindow {
     params: WindowParams,
@@ -56,8 +57,7 @@ impl Window for ImportWindow {
         let id = hash!("import_window");
 
         if !self.is_loaded {
-            let resources = storage::get::<Resources>();
-            let map_resource = resources.maps.get(self.map_index).unwrap();
+            let map_resource = get_map(self.map_index);
             self.tilesets = map_resource.map.tilesets.values().cloned().collect();
 
             self.background_color = Some(map_resource.map.background_color);
@@ -70,8 +70,8 @@ impl Window for ImportWindow {
             .position(vec2(0.0, 0.0))
             .ui(ui, |ui| {
                 {
-                    let gui_resources = storage::get::<GuiResources>();
-                    ui.push_skin(&gui_resources.skins.list_box_no_bg);
+                    let gui_theme = storage::get::<GuiTheme>();
+                    ui.push_skin(&gui_theme.list_box_no_bg);
                 }
 
                 let entry_size = vec2(size.x, LIST_BOX_ENTRY_HEIGHT);
@@ -80,8 +80,8 @@ impl Window for ImportWindow {
                     let is_selected = self.selected_tilesets.contains(&i);
 
                     if is_selected {
-                        let gui_resources = storage::get::<GuiResources>();
-                        ui.push_skin(&gui_resources.skins.list_box_selected);
+                        let gui_theme = storage::get::<GuiTheme>();
+                        ui.push_skin(&gui_theme.list_box_selected);
                     }
 
                     let entry_position = vec2(0.0, i as f32 * entry_size.y);

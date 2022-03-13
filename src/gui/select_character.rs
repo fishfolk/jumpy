@@ -2,15 +2,13 @@ use core::prelude::*;
 
 use fishsticks::{Axis, Button, GamepadContext};
 
-use crate::gui::{
-    draw_main_menu_background, GuiResources, Panel, BUTTON_FONT_SIZE, BUTTON_MARGIN_H,
+use core::gui::background::draw_main_menu_background;
+use core::gui::{
+    Panel, BUTTON_FONT_SIZE, BUTTON_MARGIN_H,
     WINDOW_BG_COLOR,
 };
-use crate::player::PlayerCharacterMetadata;
-use crate::{
-    draw_one_animated_sprite, update_one_animated_sprite, AnimatedSprite, AnimatedSpriteMetadata,
-    Resources,
-};
+use crate::player::{CharacterMetadata, characters};
+use crate::{draw_one_animated_sprite, update_one_animated_sprite, AnimatedSprite, AnimatedSpriteMetadata, GuiTheme};
 
 use core::input::{update_gamepad_context, GameInputScheme};
 use core::prelude::*;
@@ -31,19 +29,12 @@ const NAVIGATION_BTN_HEIGHT: f32 = (BUTTON_MARGIN_H * 2.0) + BUTTON_FONT_SIZE;
 
 pub async fn show_select_characters_menu(
     player_input: &[GameInputScheme],
-) -> Vec<PlayerCharacterMetadata> {
+) -> Vec<CharacterMetadata> {
     let mut selected_params = Vec::new();
 
     let player_cnt = player_input.len();
 
-    let player_characters = {
-        let resources = storage::get::<Resources>();
-        resources
-            .player_characters
-            .values()
-            .cloned()
-            .collect::<Vec<_>>()
-    };
+    let player_characters = characters();
 
     assert!(
         player_characters.len() >= player_cnt,
@@ -62,11 +53,7 @@ pub async fn show_select_characters_menu(
 
         let meta: AnimatedSpriteMetadata = character.sprite.clone().into();
 
-        let texture_res = storage::get::<Resources>()
-            .textures
-            .get(&meta.texture_id)
-            .cloned()
-            .unwrap();
+        let texture_res = get_texture(&meta.texture_id);
 
         let animations = meta
             .animations
@@ -99,8 +86,8 @@ pub async fn show_select_characters_menu(
         let first_position = (vec2(viewport.width, viewport.height) - total_size) / 2.0;
 
         {
-            let gui_resources = storage::get::<GuiResources>();
-            root_ui().push_skin(&gui_resources.skins.default);
+            let gui_theme = storage::get::<GuiTheme>();
+            root_ui().push_skin(&gui_theme.default);
         }
 
         for (i, input_scheme) in player_input.iter().enumerate() {
@@ -174,8 +161,8 @@ pub async fn show_select_characters_menu(
                         draw_one_animated_sprite(&animation_transform, animation_player);
 
                         {
-                            let gui_resources = storage::get::<GuiResources>();
-                            ui.push_skin(&gui_resources.skins.window_header);
+                            let gui_theme = storage::get::<GuiTheme>();
+                            ui.push_skin(&gui_theme.window_header);
 
                             let name_label = &player_characters[current_selection as usize].name;
 
@@ -259,11 +246,7 @@ pub async fn show_select_characters_menu(
 
                 let meta: AnimatedSpriteMetadata = character.sprite.clone().into();
 
-                let texture_res = storage::get::<Resources>()
-                    .textures
-                    .get(&meta.texture_id)
-                    .cloned()
-                    .unwrap();
+                let texture_res = get_texture(&meta.texture_id);
 
                 let animations = meta
                     .animations

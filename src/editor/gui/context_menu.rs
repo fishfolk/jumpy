@@ -2,7 +2,9 @@ use core::prelude::*;
 
 use super::EditorAction;
 
-use crate::gui::{GuiResources, ELEMENT_MARGIN};
+use core::gui::ELEMENT_MARGIN;
+use crate::GuiTheme;
+
 use crate::macroquad::hash;
 use crate::macroquad::ui::{Ui, widgets};
 
@@ -115,8 +117,8 @@ impl ContextMenu {
     }
 
     pub fn draw(&mut self, ui: &mut Ui) -> Option<EditorAction> {
-        let gui_resources = storage::get::<GuiResources>();
-        ui.push_skin(&gui_resources.skins.context_menu);
+        let gui_theme = storage::get::<GuiTheme>();
+        ui.push_skin(&gui_theme.context_menu);
 
         let res = draw_entries(ui, self.position, &mut self.entries);
 

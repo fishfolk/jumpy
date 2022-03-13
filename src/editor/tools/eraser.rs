@@ -1,10 +1,9 @@
 use core::prelude::*;
 
 use super::{EditorAction, EditorContext, EditorTool, EditorToolParams};
-
+use core::map::{Map, MapLayerKind};
 use crate::{
     editor::EditorCamera,
-    map::{Map, MapLayerKind},
 };
 use crate::macroquad::experimental::scene;
 

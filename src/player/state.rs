@@ -6,7 +6,7 @@ use crate::player::{
     Player, PlayerAttributes, PlayerController, PlayerEventQueue, JUMP_SOUND_ID, LAND_SOUND_ID,
     RESPAWN_DELAY,
 };
-use crate::{CollisionWorld, Item, Map, PhysicsBody, PlayerEvent, Resources};
+use crate::{CollisionWorld, Item, Map, PhysicsBody, PlayerEvent};
 
 const SLIDE_STOP_THRESHOLD: f32 = 2.0;
 const JUMP_FRAME_COUNT: u16 = 8;
@@ -140,8 +140,7 @@ pub fn update_player_states(world: &mut World, delta_time: f32) {
                     player.state = PlayerState::Jumping;
 
                     {
-                        let mut resources = storage::get_mut::<Resources>();
-                        let mut sound = resources.sounds.get_mut(JUMP_SOUND_ID).unwrap();
+                        let mut sound = get_sound(JUMP_SOUND_ID);
 
                         play_sound(sound, false);
                     }
@@ -179,8 +178,7 @@ pub fn update_player_states(world: &mut World, delta_time: f32) {
                 body.has_mass = true;
 
                 {
-                    let mut resources = storage::get_mut::<Resources>();
-                    let mut sound = resources.sounds.get_mut(LAND_SOUND_ID).unwrap();
+                    let mut sound = get_sound(LAND_SOUND_ID);
 
                     play_sound(sound, false);
                 }

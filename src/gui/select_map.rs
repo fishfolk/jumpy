@@ -1,10 +1,9 @@
+use fishsticks::GamepadContext;
 use core::prelude::*;
 
-use super::GuiResources;
-
-use crate::{resources::MapResource, GamepadContext, Resources};
-
-use crate::gui::{draw_main_menu_background, WINDOW_MARGIN_H, WINDOW_MARGIN_V};
+use core::gui::{WINDOW_MARGIN_H, WINDOW_MARGIN_V};
+use core::gui::background::draw_main_menu_background;
+use crate::GuiTheme;
 
 use crate::macroquad::ui::{root_ui, widgets};
 use crate::macroquad::window::next_frame;
@@ -26,10 +25,9 @@ pub async fn show_select_map_menu() -> MapResource {
     loop {
         draw_main_menu_background(false);
 
-        let gui_resources = storage::get::<GuiResources>();
-        let mut gamepad_system = storage::get_mut::<GamepadContext>();
+        let mut gamepad_ctx = storage::get_mut::<GamepadContext>();
 
-        let _ = gamepad_system.update();
+        let _ = gamepad_ctx.update();
 
         let mut up = is_key_pressed(KeyCode::Up) || is_key_pressed(KeyCode::W);
         let mut down = is_key_pressed(KeyCode::Down) || is_key_pressed(KeyCode::S);
@@ -42,7 +40,7 @@ pub async fn show_select_map_menu() -> MapResource {
             (mouse_wheel.y > 0.0, mouse_wheel.y < 0.0)
         };
 
-        for (_, gamepad) in gamepad_system.gamepads() {
+        for (_, gamepad) in gamepad_ctx.gamepads() {
             use fishsticks::{Axis, Button};
 
             up |= gamepad.digital_inputs.just_activated(Button::DPadUp)
@@ -73,10 +71,10 @@ pub async fn show_select_map_menu() -> MapResource {
                 || gamepad.digital_inputs.just_activated(Button::Start);
         }
 
-        let resources = storage::get::<Resources>();
-        let map_cnt = resources.maps.len();
+        let map_cnt = iter_maps().len();
 
-        root_ui().push_skin(&gui_resources.skins.map_selection);
+        let gui_theme = storage::get::<GuiTheme>();
+        root_ui().push_skin(&gui_theme.map_selection);
 
         let viewport = get_viewport();
         let screen_margins = vec2(
@@ -188,7 +186,7 @@ pub async fn show_select_map_menu() -> MapResource {
                 let end = (begin as usize + entries_per_page).clamp(begin, map_cnt);
 
                 for (pi, i) in (begin..end).enumerate() {
-                    let map_entry = resources.maps.get(i).unwrap();
+                    let map_entry = get_map(i);
                     let is_hovered = hovered == i as i32;
 
                     let mut rect = Rect::new(
@@ -226,7 +224,7 @@ pub async fn show_select_map_menu() -> MapResource {
                         || start
                     {
                         root_ui().pop_skin();
-                        let res = resources.maps.get(hovered as usize).cloned().unwrap();
+                        let res = get_map(hovered as usize).clone();
                         return res;
                     }
                 }

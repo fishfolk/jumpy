@@ -1,13 +1,13 @@
 use core::prelude::*;
 
-use crate::gui::{GuiResources, ELEMENT_MARGIN, LIST_BOX_ENTRY_HEIGHT};
+use core::gui::{ELEMENT_MARGIN, theme::LIST_BOX_ENTRY_HEIGHT};
 use crate::macroquad::hash;
 use crate::macroquad::ui::{Ui, widgets};
 
-use crate::map::Map;
+use core::map::Map;
+use crate::GuiTheme;
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
-use crate::Resources;
 
 pub struct LoadMapWindow {
     params: WindowParams,
@@ -44,8 +44,8 @@ impl Window for LoadMapWindow {
         let id = hash!("load_map_window");
 
         {
-            let gui_resources = storage::get::<GuiResources>();
-            ui.push_skin(&gui_resources.skins.list_box_no_bg);
+            let gui_theme = storage::get::<GuiTheme>();
+            ui.push_skin(&gui_theme.list_box_no_bg);
         }
 
         if let Some(index) = self.index {
@@ -65,8 +65,7 @@ impl Window for LoadMapWindow {
             ui.pop_skin();
 
             {
-                let resources = storage::get::<Resources>();
-                let map_resource = resources.maps.get(index).unwrap();
+                let map_resource = get_map(index);
 
                 let preview_size = map_resource.preview.size();
 
@@ -94,19 +93,17 @@ impl Window for LoadMapWindow {
             widgets::Group::new(hash!(id, "list_box"), size)
                 .position(Vec2::ZERO)
                 .ui(ui, |ui| {
-                    let resources = storage::get::<Resources>();
-
                     let entry_size = vec2(size.x, LIST_BOX_ENTRY_HEIGHT);
 
-                    for (i, map_resource) in resources.maps.iter().enumerate() {
+                    for (i, map_resource) in iter_maps().enumerate() {
                         let mut is_selected = false;
                         if let Some(index) = self.index {
                             is_selected = index == i;
                         }
 
                         if is_selected {
-                            let gui_resources = storage::get::<GuiResources>();
-                            ui.push_skin(&gui_resources.skins.list_box_selected);
+                            let gui_theme = storage::get::<GuiTheme>();
+                            ui.push_skin(&gui_theme.list_box_selected);
                         }
 
                         let entry_position = vec2(0.0, i as f32 * entry_size.y);

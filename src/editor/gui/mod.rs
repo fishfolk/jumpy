@@ -6,7 +6,7 @@ pub mod windows;
 
 mod editor_menu;
 
-pub use crate::gui::combobox::{ComboBoxBuilder, ComboBoxValue};
+pub use core::gui::combobox::{ComboBoxBuilder, ComboBoxValue};
 
 pub use editor_menu::{
     close_editor_menu, draw_editor_menu, is_editor_menu_open, open_editor_menu, toggle_editor_menu,
@@ -18,10 +18,7 @@ use core::prelude::*;
 
 use super::{EditorAction, EditorContext};
 
-use crate::{
-    gui::{GuiResources, ELEMENT_MARGIN},
-    map::Map,
-};
+use core::{gui::ELEMENT_MARGIN, map::Map};
 
 pub use toolbars::{
     LayerListElement, ObjectListElement, TilesetDetailsElement, TilesetListElement,
@@ -33,9 +30,10 @@ pub use windows::{
     TilesetPropertiesWindow, Window, WINDOW_BUTTON_MAX_WIDTH, WINDOW_BUTTON_MIN_WIDTH,
 };
 
-use crate::gui::{BUTTON_FONT_SIZE, BUTTON_MARGIN_V, WINDOW_MARGIN_H, WINDOW_MARGIN_V};
-use crate::map::MapLayerKind;
+use core::gui::{BUTTON_FONT_SIZE, BUTTON_MARGIN_V, WINDOW_MARGIN_H, WINDOW_MARGIN_V};
+use core::map::MapLayerKind;
 use context_menu::{ContextMenu, ContextMenuEntry};
+use crate::GuiTheme;
 use crate::macroquad::hash;
 use crate::macroquad::ui::{root_ui, widgets};
 
@@ -183,8 +181,8 @@ impl EditorGui {
         let ui = &mut root_ui();
 
         {
-            let gui_resources = storage::get::<GuiResources>();
-            ui.push_skin(&gui_resources.skins.default);
+            let gui_theme = storage::get::<GuiTheme>();
+            ui.push_skin(&gui_theme.default);
         }
 
         if let Some(left_toolbar) = &mut self.left_toolbar {
@@ -215,8 +213,8 @@ impl EditorGui {
                     let mut content_position = Vec2::ZERO;
 
                     if let Some(title) = &params.title {
-                        let gui_resources = storage::get::<GuiResources>();
-                        ui.push_skin(&gui_resources.skins.window_header);
+                        let gui_theme = storage::get::<GuiTheme>();
+                        ui.push_skin(&gui_theme.window_header);
 
                         ui.label(content_position, title);
 
@@ -263,8 +261,8 @@ impl EditorGui {
 
                                 for button in buttons {
                                     if button.action.is_none() {
-                                        let gui_resources = storage::get::<GuiResources>();
-                                        ui.push_skin(&gui_resources.skins.button_disabled);
+                                        let gui_theme = storage::get::<GuiTheme>();
+                                        ui.push_skin(&gui_theme.button_disabled);
                                     }
 
                                     let was_clicked = widgets::Button::new(button.label)

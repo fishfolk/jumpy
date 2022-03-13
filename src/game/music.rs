@@ -1,14 +1,11 @@
 use core::prelude::*;
 
-use crate::Resources;
-
 static mut CURRENTLY_PLAYING: Option<String> = None;
 
 pub fn start_music(id: &str) {
     stop_music();
 
-    let mut resources = storage::get_mut::<Resources>();
-    let mut sound = resources.music.get_mut(id).unwrap();
+    let mut sound = get_music(id);
 
     play_sound(sound, true);
 
@@ -17,8 +14,7 @@ pub fn start_music(id: &str) {
 
 pub fn stop_music() {
     if let Some(id) = unsafe { CURRENTLY_PLAYING.as_ref() } {
-        let mut resources = storage::get_mut::<Resources>();
-        let mut sound = resources.music.get_mut(id).unwrap();
+        let mut sound = get_sound(id);
 
         stop_sound(sound);
     }

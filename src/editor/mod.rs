@@ -1,8 +1,6 @@
 use std::any::TypeId;
 use std::path::Path;
 
-use crate::Resources;
-
 mod camera;
 
 pub use camera::EditorCamera;
@@ -48,10 +46,11 @@ use crate::editor::gui::windows::{
     BackgroundPropertiesWindow, CreateMapWindow, ImportWindow, LoadMapWindow,
     ObjectPropertiesWindow, SaveMapWindow, TilePropertiesWindow,
 };
+use core::gui::SELECTION_HIGHLIGHT_COLOR;
+use core::map::{Map, MapObject, MapObjectKind, MapLayerKind};
+
 use crate::editor::input::{collect_editor_input, EditorInput};
 use crate::editor::tools::SpawnPointPlacementTool;
-use crate::gui::SELECTION_HIGHLIGHT_COLOR;
-use crate::map::{MapObject, MapObjectKind};
 use crate::player::IDLE_ANIMATION_ID;
 
 use core::prelude::*;
@@ -62,10 +61,10 @@ use crate::macroquad::experimental::scene;
 use crate::macroquad::experimental::scene::RefMut;
 use crate::macroquad::prelude::scene::Node;
 
-use super::map::{Map, MapLayerKind};
-use crate::resources::{
+use core::resources::{
     map_name_to_filename, MapResource, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION,
 };
+use crate::items::{get_item, try_get_item};
 
 #[derive(Debug, Clone)]
 pub struct EditorContext {
@@ -579,8 +578,7 @@ impl Editor {
                 grid_size,
                 tile_size,
             } => {
-                let resources = storage::get::<Resources>();
-                let res = resources.create_map(&name, description.as_deref(), tile_size, grid_size);
+                let res = create_map(&name, description.as_deref(), tile_size, grid_size);
                 match res {
                     Err(err) => println!("Create Map: {}", err),
                     Ok(map_resource) => {
@@ -595,10 +593,7 @@ impl Editor {
                 gui.add_window(CreateMapWindow::new());
             }
             EditorAction::OpenMap(index) => {
-                let resources = storage::get::<Resources>();
-                let map_resource = resources.maps.get(index).cloned().unwrap();
-
-                self.map_resource = map_resource;
+                self.map_resource = get_map(index).clone();
                 self.history.clear();
                 self.clear_context();
             }
@@ -621,8 +616,7 @@ impl Editor {
                 map_resource.meta.is_user_map = true;
                 map_resource.meta.is_tiled_map = false;
 
-                let mut resources = storage::get_mut::<Resources>();
-                if resources.save_map(&map_resource).is_ok() {
+                if save_map(&map_resource).is_ok() {
                     self.map_resource = map_resource;
                 }
             }
@@ -631,8 +625,7 @@ impl Editor {
                 gui.add_window(SaveMapWindow::new(&self.map_resource.meta.name));
             }
             EditorAction::DeleteMap(index) => {
-                let mut resources = storage::get_mut::<Resources>();
-                resources.delete_map(index).unwrap();
+                delete_map(index).unwrap();
             }
             EditorAction::ExitToMainMenu => {
                 GameEvent::MainMenu.dispatch();
@@ -1236,8 +1229,6 @@ impl Node for Editor {
         }
 
         {
-            let resources = storage::get::<Resources>();
-
             for (i, spawn_point) in node.get_map().spawn_points.iter().enumerate() {
                 let mut is_selected = false;
 
@@ -1271,7 +1262,7 @@ impl Node for Editor {
                     is_selected = index == i;
                 }
 
-                let texture_res = resources.textures.get("spawn_point_icon").unwrap();
+                let texture_res = get_texture("spawn_point_icon");
 
                 let frame_size = texture_res.meta.frame_size.unwrap_or_else(|| texture_res.texture.size());
 
@@ -1350,9 +1341,9 @@ impl Node for Editor {
 
                             match object.kind {
                                 MapObjectKind::Item => {
-                                    if let Some(meta) = resources.items.get(&object.id) {
+                                    if let Some(meta) = try_get_item(&object.id) {
                                         if let Some(texture_res) =
-                                            resources.textures.get(&meta.sprite.texture_id)
+                                            try_get_texture(&meta.sprite.texture_id)
                                         {
                                             let (texture, frame_size) =
                                                 (texture_res.texture, texture_res.frame_size());
@@ -1398,9 +1389,9 @@ impl Node for Editor {
                                     }
                                 }
                                 MapObjectKind::Decoration => {
-                                    if let Some(params) = resources.decoration.get(&object.id) {
+                                    if let Some(params) = try_get_decoration(&object.id) {
                                         if let Some(texture_res) =
-                                            resources.textures.get(&params.sprite.texture_id)
+                                            try_get_texture(&params.sprite.texture_id)
                                         {
                                             let position = object_position + params.sprite.offset;
 
@@ -1443,7 +1434,7 @@ impl Node for Editor {
                                 MapObjectKind::Environment => {
                                     if &object.id == "sproinger" {
                                         let texture_res =
-                                            resources.textures.get("sproinger").unwrap();
+                                            get_texture("sproinger");
 
                                         let frame_size =
                                             texture_res.meta.frame_size.unwrap_or_else(|| {
@@ -1566,12 +1557,10 @@ fn get_object_size(object: &MapObject) -> Size<f32> {
 
     let mut label = None;
 
-    let resources = storage::get::<Resources>();
-
     match object.kind {
         MapObjectKind::Item => {
-            if let Some(meta) = resources.items.get(&object.id) {
-                if resources.textures.get(&meta.sprite.texture_id).is_some() {
+            if let Some(meta) = try_get_item(&object.id) {
+                if try_get_texture(&meta.sprite.texture_id).is_some() {
                     res = Some(meta.collider_size);
                 } else {
                     label = Some("INVALID TEXTURE ID".to_string());
@@ -1581,8 +1570,8 @@ fn get_object_size(object: &MapObject) -> Size<f32> {
             }
         }
         MapObjectKind::Decoration => {
-            if let Some(meta) = resources.decoration.get(&object.id) {
-                if let Some(texture_res) = resources.textures.get(&meta.sprite.texture_id) {
+            if let Some(meta) = try_get_decoration(&object.id) {
+                if let Some(texture_res) = try_get_texture(&meta.sprite.texture_id) {
                     res = Some(texture_res.frame_size());
                 } else {
                     label = Some("INVALID TEXTURE ID".to_string());
@@ -1593,7 +1582,7 @@ fn get_object_size(object: &MapObject) -> Size<f32> {
         }
         MapObjectKind::Environment => {
             if &object.id == "sproinger" {
-                let texture_res = resources.textures.get("sproinger").unwrap();
+                let texture_res = get_texture("sproinger");
                 res = Some(texture_res.frame_size());
             } else {
                 label = Some("INVALID OBJECT ID".to_string())

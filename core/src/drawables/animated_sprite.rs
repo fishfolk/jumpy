@@ -4,12 +4,16 @@ use std::iter::FromIterator;
 use std::ops::Mul;
 
 use hecs::World;
+use macroquad::math::Rect;
 
 use serde::{Deserialize, Serialize};
+use crate::color::{Color, colors};
+use crate::math::{Size, Vec2};
+use crate::rendering::{draw_rectangle_outline, draw_texture, DrawTextureParams};
+use crate::texture::Texture2D;
+use crate::transform::Transform;
 
-use core::prelude::*;
-
-use crate::{Drawable, DrawableKind, Resources};
+use super::{Drawable, DrawableKind};
 
 #[derive(Debug, Clone)]
 pub struct Animation {
@@ -67,7 +71,7 @@ impl From<TweenMetadata> for Tween {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Keyframe {
     pub frame: u32,
-    #[serde(with = "core::json::vec2_def")]
+    #[serde(with = "crate::json::vec2_def")]
     pub translation: Vec2,
 }
 
@@ -523,10 +527,10 @@ pub struct AnimationMetadata {
     pub is_looping: bool,
 }
 
-#[cfg(not(feature = "ultimate"))]
-impl From<AnimationMetadata> for core::macroquad::experimental::animation::Animation {
+#[cfg(feature = "macroquad-backend")]
+impl From<AnimationMetadata> for macroquad::experimental::animation::Animation {
     fn from(a: AnimationMetadata) -> Self {
-        core::macroquad::experimental::animation::Animation {
+        macroquad::experimental::animation::Animation {
             name: a.id,
             row: a.row,
             frames: a.frames,
@@ -547,11 +551,11 @@ pub struct AnimatedSpriteMetadata {
     pub texture_id: String,
     #[serde(default)]
     pub scale: Option<f32>,
-    #[serde(default, with = "core::json::vec2_def")]
+    #[serde(default, with = "crate::json::vec2_def")]
     pub offset: Vec2,
     #[serde(
         default,
-        with = "core::json::vec2_opt",
+        with = "crate::json::vec2_opt",
         skip_serializing_if = "Option::is_none"
     )]
     pub pivot: Option<Vec2>,

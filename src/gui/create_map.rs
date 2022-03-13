@@ -1,16 +1,18 @@
 use std::path::Path;
+use fishsticks::GamepadContext;
 
 use core::prelude::*;
 
 use core::Result;
 
-use super::{GuiResources, Panel};
+use core::gui::Panel;
 
-use crate::gui::draw_main_menu_background;
-use crate::resources::{
-    map_name_to_filename, MapResource, Resources, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION,
+use core::gui::background::draw_main_menu_background;
+use core::resources::{
+    map_name_to_filename, MapResource, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION,
 };
-use core::input::{is_gamepad_btn_pressed, GamepadContext};
+use core::input::is_gamepad_btn_pressed;
+use crate::GuiTheme;
 use crate::macroquad::hash;
 use crate::macroquad::ui::{root_ui, widgets};
 use crate::macroquad::window::next_frame;
@@ -35,8 +37,8 @@ pub async fn show_create_map_menu() -> Result<Option<MapResource>> {
 
     next_frame().await;
 
-    let gui_resources = storage::get::<GuiResources>();
-    root_ui().push_skin(&gui_resources.skins.menu);
+    let gui_theme = storage::get::<GuiTheme>();
+    root_ui().push_skin(&gui_theme.menu);
 
     let mut name = "Unnamed Map".to_string();
     let mut description = "".to_string();
@@ -46,8 +48,7 @@ pub async fn show_create_map_menu() -> Result<Option<MapResource>> {
     let mut tile_height = "32".to_string();
 
     let map_export_path = {
-        let resources = storage::get::<Resources>();
-        Path::new(&resources.assets_dir).join(MAP_EXPORTS_DEFAULT_DIR)
+        Path::new(assets_dir()).join(MAP_EXPORTS_DEFAULT_DIR)
     };
 
     let mut gamepad_system = storage::get_mut::<GamepadContext>();
@@ -175,10 +176,7 @@ pub async fn show_create_map_menu() -> Result<Option<MapResource>> {
                     Some(description.as_str())
                 };
 
-                let resources = storage::get::<Resources>();
-                return resources
-                    .create_map(&name, description, tile_size, grid_size)
-                    .map(Some);
+                return create_map(&name, description, tile_size, grid_size).map(Some);
             }
             WindowState::Cancel => {
                 return Ok(None);

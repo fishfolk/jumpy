@@ -5,7 +5,7 @@ use hecs::{Entity, World};
 use core::Result;
 use core::prelude::*;
 
-use crate::{Animation, Drawable, PhysicsBody, QueuedAnimationAction, Resources};
+use crate::{Animation, Drawable, PhysicsBody, QueuedAnimationAction};
 
 const SPROINGER_DRAW_ORDER: u32 = 2;
 
@@ -65,12 +65,15 @@ pub fn spawn_sproinger(world: &mut World, position: Vec2) -> Result<Entity> {
         },
     ];
 
+    let texture_res = get_texture(TEXTURE_ID);
+
     let entity = world.spawn((
         Sproinger::new(),
         Transform::from(position),
         Drawable::new_animated_sprite(
             SPROINGER_DRAW_ORDER,
-            TEXTURE_ID,
+            texture_res.texture,
+            texture_res.frame_size(),
             animations,
             Default::default(),
         ),
@@ -119,8 +122,7 @@ pub fn fixed_update_sproingers(world: &mut World, delta_time: f32, integration_f
                     ));
 
                     {
-                        let mut resources = storage::get_mut::<Resources>();
-                        let mut sound = resources.sounds.get_mut(SOUND_EFFECT_ID).unwrap();
+                        let mut sound = get_sound(SOUND_EFFECT_ID);
 
                         play_sound(sound, false);
                     }

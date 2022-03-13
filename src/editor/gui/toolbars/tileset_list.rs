@@ -1,10 +1,12 @@
 use core::prelude::*;
 
 use super::{
-    EditorAction, EditorContext, GuiResources, Map, Toolbar, ToolbarElement, ToolbarElementParams,
+    EditorAction, EditorContext, Map, Toolbar, ToolbarElement, ToolbarElementParams,
 };
 
-use crate::{editor::gui::ButtonParams, map::MapLayerKind};
+use core::map::MapLayerKind;
+use crate::editor::gui::ButtonParams;
+use crate::GuiTheme;
 use crate::macroquad::ui::{Ui, widgets};
 
 pub struct TilesetListElement {
@@ -75,8 +77,8 @@ impl ToolbarElement for TilesetListElement {
         let entry_size = vec2(size.x, Toolbar::LIST_ENTRY_HEIGHT);
         let mut position = Vec2::ZERO;
 
-        let gui_resources = storage::get::<GuiResources>();
-        ui.push_skin(&gui_resources.skins.list_box);
+        let gui_theme = storage::get::<GuiTheme>();
+        ui.push_skin(&gui_theme.list_box);
 
         for tileset_id in map.tilesets.keys() {
             let is_selected = if let Some(selected_id) = &ctx.selected_tileset {
@@ -86,7 +88,8 @@ impl ToolbarElement for TilesetListElement {
             };
 
             if is_selected {
-                ui.push_skin(&gui_resources.skins.list_box_selected);
+                let gui_theme = storage::get::<GuiTheme>();
+                ui.push_skin(&gui_theme.list_box_selected);
             }
 
             let was_clicked = widgets::Button::new("")

@@ -5,11 +5,11 @@ use core::error::{Error, ErrorKind, Result};
 use core::prelude::*;
 
 use crate::editor::gui::windows::Window;
-use crate::map::{MapBackgroundLayer, MapObject, MapObjectKind};
-use crate::{
+use core::map::{MapBackgroundLayer, MapObject, MapObjectKind};
+use core::{
     map::{Map, MapLayer, MapLayerKind, MapTile, MapTileset},
-    Resources,
 };
+use crate::GuiTheme;
 
 /// These are all the actions available for the GUI and other sub-systems of the editor.
 /// If you need to perform multiple actions in one call, use the `Batch` variant.
@@ -661,8 +661,7 @@ impl CreateTilesetAction {
 
 impl UndoableAction for CreateTilesetAction {
     fn apply(&mut self, map: &mut Map) -> Result<()> {
-        let resources = storage::get::<Resources>();
-        if let Some(texture_entry) = resources.textures.get(&self.texture_id).cloned() {
+        if let Some(texture_entry) = try_get_texture(&self.texture_id).cloned() {
             let texture_size: Vec2 = texture_entry.texture.size().into();
 
             let mut first_tile_id = 1;
@@ -1128,6 +1127,7 @@ impl UndoableAction for PlaceTileAction {
                         tile_id: self.id,
                         tileset_id: self.tileset_id.clone(),
                         texture_id,
+                        texture: None,
                         texture_coords,
                         attributes: vec![],
                     };

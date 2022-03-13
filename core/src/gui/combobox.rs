@@ -1,4 +1,5 @@
 use core::prelude::*;
+use cfg_if::cfg_if;
 
 use crate::macroquad::ui::widgets;
 
@@ -73,8 +74,8 @@ impl From<&ComboBoxVec> for usize {
 }
 
 cfg_if! {
-    if #[cfg(not(feature = "ultimate"))] {
-        use core::ui::{Ui, Id};
+    if #[cfg(feature = "macroquad-backend")] {
+        use crate::gui::{Ui, Id};
 
         pub struct ComboBoxBuilder {
             id: Id,

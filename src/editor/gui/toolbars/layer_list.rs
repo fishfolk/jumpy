@@ -1,15 +1,12 @@
 use core::prelude::*;
 
-use crate::{
-    gui::GuiResources,
-    map::{Map, MapLayerKind},
-    Resources,
-};
+use core::map::{Map, MapLayerKind};
 
 use super::{
     ButtonParams, EditorAction, EditorContext, Toolbar, ToolbarElement, ToolbarElementParams,
 };
-use crate::gui::ELEMENT_MARGIN;
+use core::gui::ELEMENT_MARGIN;
+use crate::GuiTheme;
 use crate::macroquad::ui::{Ui, widgets};
 
 pub struct LayerListElement {
@@ -45,8 +42,8 @@ impl ToolbarElement for LayerListElement {
         let entry_size = vec2(size.x, Toolbar::LIST_ENTRY_HEIGHT);
         let mut position = Vec2::ZERO;
 
-        let gui_resources = storage::get::<GuiResources>();
-        ui.push_skin(&gui_resources.skins.list_box);
+        let gui_theme = storage::get::<GuiTheme>();
+        ui.push_skin(&gui_theme.list_box);
 
         for layer_id in &map.draw_order {
             let layer = map.layers.get(layer_id).unwrap();
@@ -58,7 +55,8 @@ impl ToolbarElement for LayerListElement {
             };
 
             if is_selected {
-                ui.push_skin(&gui_resources.skins.list_box_selected);
+                let gui_theme = storage::get::<GuiTheme>();
+                ui.push_skin(&gui_theme.list_box_selected);
             }
 
             let layer_btn = widgets::Button::new("")
@@ -82,19 +80,17 @@ impl ToolbarElement for LayerListElement {
                 ui.pop_skin();
             }
 
-            ui.push_skin(&gui_resources.skins.list_box_no_bg);
+            {
+                let gui_theme = storage::get::<GuiTheme>();
+                ui.push_skin(&gui_theme.list_box_no_bg);
+            }
 
             {
                 let texture = {
-                    let resources = storage::get::<Resources>();
                     if layer.is_visible {
-                        resources.textures.get("visibility_icon").unwrap().texture
+                        get_texture("visibility_icon").texture
                     } else {
-                        resources
-                            .textures
-                            .get("visibility_off_icon")
-                            .unwrap()
-                            .texture
+                        get_texture("visibility_off_icon").texture
                     }
                 };
 

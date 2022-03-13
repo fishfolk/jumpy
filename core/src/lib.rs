@@ -2,7 +2,6 @@
 pub mod error;
 pub mod config;
 pub mod parsing;
-pub mod input;
 pub mod json;
 pub mod math;
 pub mod noise;
@@ -11,7 +10,6 @@ pub mod network;
 pub mod channel;
 pub mod transform;
 pub mod events;
-pub mod window;
 pub mod video;
 pub mod file;
 pub mod color;
@@ -23,9 +21,19 @@ pub mod rendering;
 pub mod viewport;
 pub mod storage;
 pub mod game;
+pub mod input;
+pub mod window;
+pub mod resources;
+pub mod particles;
+pub mod map;
+pub mod gui;
+pub mod drawables;
 
 pub use error::{Error, Result};
 pub use config::Config;
+
+#[cfg(feature = "macros")]
+pub use macros::*;
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "internal-backend")] {
@@ -33,14 +41,11 @@ cfg_if::cfg_if! {
         pub(crate) mod backend_impl;
 
         pub use winit;
-        pub use backend_impl::particles;
     } else if #[cfg(feature = "macroquad-backend")] {
         #[path = "backend_impl/macroquad.rs"]
         pub(crate) mod backend_impl;
 
-        pub use ff_particles as particles;
         pub use macroquad;
-        pub use macroquad::ui;
         pub use macroquad::experimental::scene;
         pub use macroquad::camera;
     }

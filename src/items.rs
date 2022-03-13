@@ -1,20 +1,21 @@
 //! Things available to spawn from the level editor
 //! Proto-mods, eventually some of the items will move to some sort of a wasm runtime
 
+use std::collections::HashMap;
 use hecs::{Entity, World};
 
 use serde::{Deserialize, Serialize};
 
 use crate::{
     ActiveEffectMetadata, AnimatedSprite, AnimatedSpriteMetadata, CollisionWorld, Drawable,
-    PassiveEffectMetadata, PhysicsBody, QueuedAnimationAction, Resources,
+    PassiveEffectMetadata, PhysicsBody, QueuedAnimationAction,
 };
 
 use core::Result;
 use core::prelude::*;
 
+use core::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::effects::active::spawn_active_effect;
-use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::physics::PhysicsBodyParams;
 use crate::player::{Player, PlayerInventory, IDLE_ANIMATION_ID};
 
@@ -25,6 +26,33 @@ pub const EFFECT_ANIMATED_SPRITE_ID: &str = "effect";
 
 pub const GROUND_ANIMATION_ID: &str = "ground";
 pub const ATTACK_ANIMATION_ID: &str = "attack";
+
+static mut ITEMS: Option<HashMap<String, MapItemMetadata>> = None;
+
+pub fn try_get_item(id: &str) -> Option<&MapItemMetadata> {
+    unsafe { ITEMS
+        .as_ref()
+        .unwrap_or_else(|| panic!("Attempted to load an item resource but resources has not been initialized"))
+        .get(id) }
+}
+
+pub fn get_item(id: &str) -> &MapItemMetadata {
+    try_get_item(id).unwrap()
+}
+
+pub fn items() -> &'static HashMap<String, MapItemMetadata> {
+    unsafe { ITEMS.as_ref().unwrap() }
+}
+
+pub fn items_mut() -> &'static mut HashMap<String, MapItemMetadata> {
+    unsafe {
+        if ITEMS.is_none() {
+            ITEMS = Some(HashMap::new());
+        }
+
+        ITEMS.as_mut().unwrap()
+    }
+}
 
 /// This dictates what happens to an item when it is dropped, either manually or on death.
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -134,8 +162,9 @@ pub struct ItemMetadata {
     pub is_hat: bool,
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(CustomResource, Clone, Serialize, Deserialize)]
 pub struct MapItemMetadata {
+    #[resource_id]
     pub id: String,
     pub name: String,
     #[serde(flatten)]
@@ -183,11 +212,7 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
         .map(|a| a.into())
         .collect::<Vec<_>>();
 
-    let texture_res = storage::get::<Resources>()
-        .textures
-        .get(&meta.sprite.texture_id)
-        .cloned()
-        .unwrap();
+    let texture_res = get_texture(&meta.sprite.texture_id);
 
     let sprite = AnimatedSprite::new(
         texture_res.texture,
@@ -263,11 +288,7 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
                     .map(|a| a.into())
                     .collect::<Vec<_>>();
 
-                let texture_res = storage::get::<Resources>()
-                    .textures
-                    .get(&effect_sprite.texture_id)
-                    .cloned()
-                    .unwrap();
+                let texture_res = get_texture(&effect_sprite.texture_id);
 
                 let mut sprite = AnimatedSprite::new(
                     texture_res.texture,
@@ -434,8 +455,7 @@ pub fn fire_weapon(world: &mut World, entity: Entity, owner: Entity) -> Result<(
             weapon.cooldown_timer = 0.0;
 
             if let Some(id) = &weapon.sound_effect_id {
-                let mut resources = storage::get_mut::<Resources>();
-                let mut sound = resources.sounds.get_mut(id).unwrap();
+                let mut sound = get_sound(id);
 
                 play_sound(sound, false);
             }

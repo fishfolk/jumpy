@@ -4,13 +4,12 @@ use core::prelude::*;
 use crate::macroquad::hash;
 use crate::macroquad::ui::{Ui, widgets};
 
-use crate::map::Map;
+use core::map::Map;
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
-use crate::resources::{
-    is_valid_map_export_path, map_name_to_filename, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION,
+use core::resources::{
+    map_name_to_filename, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION,
 };
-use crate::Resources;
 
 pub struct SaveMapWindow {
     params: WindowParams,
@@ -58,8 +57,7 @@ impl Window for SaveMapWindow {
                 .ui(ui, &mut self.name);
 
             {
-                let resources = storage::get::<Resources>();
-                let path = Path::new(&resources.assets_dir)
+                let path = Path::new(assets_dir())
                     .join(MAP_EXPORTS_DEFAULT_DIR)
                     .join(map_name_to_filename(&self.name))
                     .with_extension(MAP_EXPORTS_EXTENSION);

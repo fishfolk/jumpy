@@ -17,6 +17,11 @@ pub use crate::window::*;
 pub use crate::texture::*;
 pub use crate::color::*;
 pub use crate::game::*;
+pub use crate::drawables::*;
+pub use crate::particles::*;
+
+pub use macros::*;
+pub use crate::resources::*;
 
 pub use crate::rand;
 pub use crate::storage;

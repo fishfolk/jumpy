@@ -2,13 +2,16 @@
 //! The stock MQ windows do not update their position when screen size changes, even when they
 //! are not movable, so we solve this by drawing a non-interactive button, to draw the background,
 //! and a group, on top of that, to hold the layout.
-use core::prelude::*;
 
-use crate::Resources;
+use crate::color::Color;
+use crate::storage;
 
-use super::{GuiResources, WINDOW_MARGIN_H, WINDOW_MARGIN_V};
+use super::{WINDOW_MARGIN_H, WINDOW_MARGIN_V};
 
-use core::ui::{Id, Ui, widgets};
+use crate::gui::{GuiTheme, Id, Ui, widgets};
+use crate::math::{UVec2, Vec2, vec2};
+use crate::rendering::draw_rectangle;
+use crate::resources::get_texture;
 
 pub struct Panel {
     id: Id,
@@ -54,10 +57,10 @@ impl Panel {
     /// minus the window margins.
     pub fn ui<F: FnOnce(&mut Ui, Vec2)>(&self, ui: &mut Ui, f: F) {
         {
-            let gui_resources = storage::get::<GuiResources>();
+            let gui_themes = storage::get::<GuiTheme>();
 
             if let Some(background_color) = self.background_color {
-                ui.push_skin(&gui_resources.skins.panel_no_bg);
+                ui.push_skin(&gui_themes.panel_no_bg);
 
                 draw_rectangle(
                     self.position.x + Self::BG_OFFSET,
@@ -67,7 +70,7 @@ impl Panel {
                     background_color,
                 );
             } else {
-                ui.push_skin(&gui_resources.skins.panel);
+                ui.push_skin(&gui_themes.panel);
             }
         }
 
@@ -82,8 +85,8 @@ impl Panel {
         let mut content_size = self.size - (window_margins * 2.0);
 
         if let Some(title) = &self.title {
-            let gui_resources = storage::get::<GuiResources>();
-            ui.push_skin(&gui_resources.skins.window_header);
+            let gui_themes = storage::get::<GuiTheme>();
+            ui.push_skin(&gui_themes.window_header);
 
             let label_size = ui.calc_size(title);
             let mut label_position = content_position;
@@ -154,37 +157,15 @@ impl NewPanel {
         let window_margins = vec2(WINDOW_MARGIN_H, WINDOW_MARGIN_V);
 
         {
-            let resources = storage::get::<Resources>();
-
-            let upper_lh_corner = resources
-                .textures
-                .get("yellow_board_upper_lh_corner")
-                .unwrap();
-
-            let top = resources.textures.get("yellow_board_top").unwrap();
-
-            let upper_rh_corner = resources
-                .textures
-                .get("yellow_board_upper_rh_corner")
-                .unwrap();
-
-            let bottom = resources.textures.get("yellow_board_bottom").unwrap();
-
-            let bg = resources.textures.get("yellow_board_bg").unwrap();
-
-            let lh_side = resources.textures.get("yellow_board_lh_side").unwrap();
-
-            let rh_side = resources.textures.get("yellow_board_rh_side").unwrap();
-
-            let lower_lh_corner = resources
-                .textures
-                .get("yellow_board_lower_lh_corner")
-                .unwrap();
-
-            let lower_rh_corner = resources
-                .textures
-                .get("yellow_board_lower_rh_corner")
-                .unwrap();
+            let upper_lh_corner = get_texture("yellow_board_upper_lh_corner");
+            let top = get_texture("yellow_board_top");
+            let upper_rh_corner = get_texture("yellow_board_upper_rh_corner");
+            let bottom = get_texture("yellow_board_bottom");
+            let bg = get_texture("yellow_board_bg");
+            let lh_side = get_texture("yellow_board_lh_side");
+            let rh_side = get_texture("yellow_board_rh_side");
+            let lower_lh_corner = get_texture("yellow_board_lower_lh_corner");
+            let lower_rh_corner = get_texture("yellow_board_lower_rh_corner");
 
             for x in 0..self.size.x {
                 for y in 0..self.size.y {
@@ -244,8 +225,8 @@ impl NewPanel {
         let mut content_size = full_size - (window_margins * 2.0);
 
         if let Some(title) = &self.title {
-            let gui_resources = storage::get::<GuiResources>();
-            ui.push_skin(&gui_resources.skins.window_header);
+            let gui_themes = storage::get::<GuiTheme>();
+            ui.push_skin(&gui_themes.window_header);
 
             let label_size = ui.calc_size(title);
             let mut label_position = content_position;

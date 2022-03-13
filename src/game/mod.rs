@@ -20,14 +20,15 @@ use crate::player::{
 use crate::{
     create_collision_world, debug_draw_drawables, debug_draw_rigid_bodies, draw_drawables,
     fixed_update_rigid_bodies, update_animated_sprites, Map,
-    MapLayerKind, MapObjectKind, Resources,
+    MapLayerKind, MapObjectKind,
 };
 
 use crate::effects::active::debug_draw_active_effects;
 use crate::effects::active::projectiles::fixed_update_projectiles;
 use crate::effects::active::triggered::fixed_update_triggered_effects;
-use crate::items::spawn_item;
-use crate::map::{fixed_update_sproingers, spawn_decoration, spawn_sproinger};
+use crate::items::{get_item, spawn_item, try_get_item};
+use core::map::spawn_decoration;
+use crate::sproinger::{fixed_update_sproingers, spawn_sproinger};
 use crate::network::{
     fixed_update_network_client, fixed_update_network_host, update_network_client,
     update_network_host,
@@ -92,54 +93,6 @@ pub fn create_main_game_state(game_mode: GameMode) -> Box<dyn GameState> {
     Box::new(state_builder.build())
 }
 
-pub fn spawn_map_objects(world: &mut World, map: &Map) -> Result<Vec<Entity>> {
-    let mut objects = Vec::new();
-
-    for layer in map.layers.values() {
-        if layer.is_visible && layer.kind == MapLayerKind::ObjectLayer {
-            for map_object in &layer.objects {
-                match map_object.kind {
-                    MapObjectKind::Decoration => {
-                        let resources = storage::get::<Resources>();
-                        let res = resources.decoration.get(&map_object.id).cloned();
-
-                        if let Some(params) = res {
-                            let decoration = spawn_decoration(world, map_object.position, params);
-                            objects.push(decoration);
-                        } else {
-                            #[cfg(debug_assertions)]
-                            println!("WARNING: Invalid decoration id '{}'", &map_object.id)
-                        }
-                    }
-                    MapObjectKind::Item => {
-                        let resources = storage::get::<Resources>();
-                        let res = resources.items.get(&map_object.id).cloned();
-
-                        if let Some(params) = res {
-                            let item = spawn_item(world, map_object.position, params)?;
-                            objects.push(item);
-                        } else {
-                            #[cfg(debug_assertions)]
-                            println!("WARNING: Invalid item id '{}'", &map_object.id)
-                        }
-                    }
-                    MapObjectKind::Environment => {
-                        if map_object.id == "sproinger" {
-                            let sproinger = spawn_sproinger(world, map_object.position)?;
-                            objects.push(sproinger);
-                        } else {
-                            #[cfg(debug_assertions)]
-                            println!("WARNING: Invalid environment item id '{}'", &map_object.id)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    Ok(objects)
-}
-
 cfg_if! {
     if #[cfg(not(feature = "ultimate"))] {
         use macroquad::prelude::scene::{self, Node, RefMut};
@@ -195,6 +148,9 @@ cfg_if! {
             }
 
             fn update(mut node: RefMut<Self>) where Self: Sized {
+                let mut gamepad_ctx = storage::get_mut::<GamepadContext>();
+                gamepad_ctx.update();
+
                 if is_key_pressed(KeyCode::Escape) {
                     node.should_show_game_menu = !node.should_show_game_menu;
                 }
@@ -236,4 +192,50 @@ cfg_if! {
             }
         }
     }
+}
+
+pub fn spawn_map_objects(world: &mut World, map: &Map) -> Result<Vec<Entity>> {
+    let mut objects = Vec::new();
+
+    for layer in map.layers.values() {
+        if layer.is_visible && layer.kind == MapLayerKind::ObjectLayer {
+            for map_object in &layer.objects {
+                match map_object.kind {
+                    MapObjectKind::Decoration => {
+                        let res = try_get_decoration(&map_object.id);
+
+                        if let Some(params) = res.cloned() {
+                            let decoration = spawn_decoration(world, map_object.position, params);
+                            objects.push(decoration);
+                        } else {
+                            #[cfg(debug_assertions)]
+                            println!("WARNING: Invalid decoration id '{}'", &map_object.id)
+                        }
+                    }
+                    MapObjectKind::Item => {
+                        let res = try_get_item(&map_object.id);
+
+                        if let Some(params) = res.cloned() {
+                            let item = spawn_item(world, map_object.position, params)?;
+                            objects.push(item);
+                        } else {
+                            #[cfg(debug_assertions)]
+                            println!("WARNING: Invalid item id '{}'", &map_object.id)
+                        }
+                    }
+                    MapObjectKind::Environment => {
+                        if map_object.id == "sproinger" {
+                            let sproinger = spawn_sproinger(world, map_object.position)?;
+                            objects.push(sproinger);
+                        } else {
+                            #[cfg(debug_assertions)]
+                            println!("WARNING: Invalid environment item id '{}'", &map_object.id)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(objects)
 }

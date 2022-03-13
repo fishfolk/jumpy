@@ -1,10 +1,11 @@
 use std::ops::Deref;
 
-use core::prelude::*;
+use crate::gui::{Id, Ui, widgets};
+use crate::math::{Vec2, vec2};
 
-use core::ui::{Id, Ui, widgets};
-
-use crate::gui::{GuiResources, ELEMENT_MARGIN};
+use crate::gui::ELEMENT_MARGIN;
+use crate::gui::theme::GuiTheme;
+use crate::storage;
 
 pub struct Checkbox {
     id: Id,
@@ -40,12 +41,12 @@ impl Checkbox {
     }
 
     pub fn ui(&self, ui: &mut Ui, value: &mut bool) {
-        let gui_resources = storage::get::<GuiResources>();
+        let gui_theme = storage::get::<GuiTheme>();
 
         if *value {
-            ui.push_skin(&gui_resources.skins.checkbox_selected);
+            ui.push_skin(&gui_theme.checkbox_selected);
         } else {
-            ui.push_skin(&gui_resources.skins.checkbox);
+            ui.push_skin(&gui_theme.checkbox);
         }
 
         ui.separator();
@@ -87,7 +88,7 @@ impl Checkbox {
                 *value = !*value;
             }
 
-            ui.push_skin(&gui_resources.skins.label_button);
+            ui.push_skin(&gui_theme.label_button);
             let label_btn = widgets::Button::new(self.label.deref())
                 .position(label_position)
                 .ui(ui);

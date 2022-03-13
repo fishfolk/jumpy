@@ -6,15 +6,22 @@ pub use crate::backend_impl::video::*;
 use crate::math::{Size, UVec2, IVec2, Vec2, ivec2, Zero};
 use crate::Result;
 
+pub const DEFAULT_MSAA_SAMPLES: Option<u16> = Some(1);
 pub const DEFAULT_MAX_FPS: Option<u16> = Some(120);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RenderingConfig {
+    #[serde(default = "RenderingConfig::default_msaa_samples", rename = "msaa-samples", skip_serializing_if = "Option::is_none")]
+    pub msaa_samples: Option<u16>,
     #[serde(default = "RenderingConfig::default_max_fps", rename = "max-fps", skip_serializing_if = "Option::is_none")]
     pub max_fps: Option<u16>,
 }
 
 impl RenderingConfig {
+    pub(crate) fn default_msaa_samples() -> Option<u16> {
+        DEFAULT_MSAA_SAMPLES
+    }
+
     pub(crate) fn default_max_fps() -> Option<u16> {
         DEFAULT_MAX_FPS
     }
@@ -23,6 +30,7 @@ impl RenderingConfig {
 impl Default for RenderingConfig {
     fn default() -> Self {
         RenderingConfig {
+            msaa_samples: DEFAULT_MSAA_SAMPLES,
             max_fps: DEFAULT_MAX_FPS,
         }
     }

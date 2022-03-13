@@ -7,11 +7,7 @@ use super::{
 };
 
 use crate::editor::tools::EditorTool;
-use crate::{
-    editor::tools::{get_tool_instance_of_id, EditorToolParams},
-    gui::GuiResources,
-    Resources,
-};
+use crate::{editor::tools::{get_tool_instance_of_id, EditorToolParams}, GuiTheme};
 use crate::macroquad::ui::{Ui, widgets};
 
 pub struct ToolSelectorElement {
@@ -63,8 +59,8 @@ impl ToolbarElement for ToolSelectorElement {
         let mut res = None;
 
         {
-            let gui_resources = storage::get::<GuiResources>();
-            ui.push_skin(&gui_resources.skins.tool_selector);
+            let gui_theme = storage::get::<GuiTheme>();
+            ui.push_skin(&gui_theme.tool_selector);
         }
 
         let size = vec2(size.x, size.x);
@@ -96,7 +92,6 @@ impl ToolbarElement for ToolSelectorElement {
             ),
         );
 
-        let resources = storage::get::<Resources>();
         for (id, params) in available_tools {
             let mut is_selected = false;
             if let Some(id) = id {
@@ -108,8 +103,8 @@ impl ToolbarElement for ToolSelectorElement {
             }
 
             if is_selected {
-                let gui_resources = storage::get::<GuiResources>();
-                ui.push_skin(&gui_resources.skins.tool_selector_selected);
+                let gui_theme = storage::get::<GuiTheme>();
+                ui.push_skin(&gui_theme.tool_selector_selected);
             }
 
             let was_clicked = widgets::Button::new("")
@@ -117,11 +112,7 @@ impl ToolbarElement for ToolSelectorElement {
                 .size(size)
                 .ui(ui);
 
-            let texture_entry = resources
-                .textures
-                .get(&params.icon_texture_id)
-                .cloned()
-                .unwrap();
+            let texture_entry = get_texture(&params.icon_texture_id);
 
             widgets::Texture::new(texture_entry.texture.into())
                 .position(position)

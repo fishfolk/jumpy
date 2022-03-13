@@ -1,10 +1,10 @@
 use core::prelude::*;
 
-use crate::map::{Map, MapLayerKind};
+use core::map::{Map, MapLayerKind};
+use core::gui::Checkbox;
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 use crate::editor::gui::ComboBoxBuilder;
-use crate::gui::Checkbox;
 use crate::macroquad::hash;
 use crate::macroquad::ui::{Ui, widgets};
 

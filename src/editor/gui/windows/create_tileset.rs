@@ -1,13 +1,12 @@
 use core::prelude::*;
+use core::resources::TextureKind;
+use core::gui::combobox::{ComboBoxBuilder, ComboBoxValue, ComboBoxVec};
+use core::map::Map;
 
-use crate::gui::combobox::ComboBoxVec;
-use crate::gui::{ComboBoxBuilder, ComboBoxValue};
-use crate::{map::Map, Resources};
 use crate::macroquad::hash;
 use crate::macroquad::ui::{Ui, widgets};
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
-use crate::resources::TextureKind;
 
 pub struct CreateTilesetWindow {
     params: WindowParams,
@@ -23,10 +22,7 @@ impl CreateTilesetWindow {
             ..Default::default()
         };
 
-        let resources = storage::get::<Resources>();
-        let mut textures = resources
-            .textures
-            .iter()
+        let mut textures = iter_textures()
             .filter_map(|(k, v)| {
                 if let Some(kind) = v.meta.kind {
                     if kind == TextureKind::Tileset {

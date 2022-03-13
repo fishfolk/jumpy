@@ -1,12 +1,12 @@
 use core::prelude::*;
 
-use crate::gui::combobox::ComboBoxVec;
-use crate::map::MapObject;
-use crate::{
+use core::gui::combobox::ComboBoxVec;
+use core::map::MapObject;
+use core::{
     gui::{ComboBoxBuilder, ComboBoxValue},
     map::{Map, MapObjectKind},
-    Resources,
 };
+use crate::items::items;
 use crate::macroquad::hash;
 use crate::macroquad::ui::{Ui, widgets};
 
@@ -137,18 +137,14 @@ impl Window for ObjectPropertiesWindow {
             .with_label("Type")
             .build(ui, &mut object.kind);
 
-        let resources = storage::get::<Resources>();
         let item_ids = match object.kind {
-            MapObjectKind::Item => resources
-                .items
+            MapObjectKind::Item => items()
                 .keys()
                 .map(|k| k.as_str())
                 .collect::<Vec<&str>>(),
             MapObjectKind::Environment => vec!["sproinger"],
-            MapObjectKind::Decoration => resources
-                .decoration
-                .keys()
-                .map(|k| k.as_str())
+            MapObjectKind::Decoration => iter_decoration()
+                .map(|(k, _)| k.as_str())
                 .collect::<Vec<&str>>(),
         };
 

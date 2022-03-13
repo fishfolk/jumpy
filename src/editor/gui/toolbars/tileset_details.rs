@@ -1,8 +1,9 @@
 use core::prelude::*;
 
-use super::{EditorAction, EditorContext, GuiResources, Map, ToolbarElement, ToolbarElementParams};
+use super::{EditorAction, EditorContext, Map, ToolbarElement, ToolbarElementParams};
 
-use crate::{gui::ELEMENT_MARGIN, Resources};
+use core::gui::ELEMENT_MARGIN;
+use crate::GuiTheme;
 use crate::macroquad::ui::{Ui, widgets};
 
 pub struct TilesetDetailsElement {
@@ -40,14 +41,7 @@ impl ToolbarElement for TilesetDetailsElement {
         if let Some(tileset_id) = &ctx.selected_tileset {
             let tileset = map.tilesets.get(tileset_id).unwrap();
 
-            let texture_entry = {
-                let resources = storage::get::<Resources>();
-                resources
-                    .textures
-                    .get(&tileset.texture_id)
-                    .cloned()
-                    .unwrap()
-            };
+            let texture_entry = get_texture(&tileset.texture_id);
 
             let grid_size = Size::new(tileset.grid_size.width as f32, tileset.grid_size.height as f32);
 
@@ -65,8 +59,8 @@ impl ToolbarElement for TilesetDetailsElement {
                 .ui(ui);
 
             {
-                let gui_resources = storage::get::<GuiResources>();
-                ui.push_skin(&gui_resources.skins.tileset_grid);
+                let gui_theme = storage::get::<GuiTheme>();
+                ui.push_skin(&gui_theme.tileset_grid);
             }
 
             for y in 0..tileset.grid_size.height {
@@ -80,8 +74,8 @@ impl ToolbarElement for TilesetDetailsElement {
                     };
 
                     if is_selected {
-                        let gui_resources = storage::get::<GuiResources>();
-                        ui.push_skin(&gui_resources.skins.tileset_grid_selected);
+                        let gui_theme = storage::get::<GuiTheme>();
+                        ui.push_skin(&gui_theme.tileset_grid_selected);
                     }
 
                     let position: Vec2 = vec2(x as f32, y as f32) * Vec2::from(scaled_tile_size);

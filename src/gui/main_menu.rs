@@ -4,10 +4,11 @@ use core::prelude::*;
 
 use fishsticks::{Button, GamepadContext};
 
-use super::{draw_main_menu_background, GuiResources, Menu, MenuEntry, MenuResult, Panel};
+use core::gui::background::draw_main_menu_background;
+use core::gui::{Menu, MenuEntry, MenuResult, Panel};
 
 use crate::player::{PlayerControllerKind, PlayerParams};
-use crate::{gui, Map, Resources};
+use crate::{gui, GuiTheme, Map};
 use core::input::{is_gamepad_btn_pressed, update_gamepad_context, GameInputScheme};
 use crate::macroquad::{hash, ui};
 use crate::macroquad::ui::{root_ui, widgets};
@@ -121,8 +122,7 @@ pub async fn show_main_menu() -> MainMenuResult {
         draw_main_menu_background(true);
 
         {
-            let resources = storage::get::<Resources>();
-            let texture_entry = resources.textures.get(HEADER_TEXTURE_ID).unwrap();
+            let texture_entry = get_texture(HEADER_TEXTURE_ID);
 
             let size = texture_entry.texture.size();
 
@@ -275,8 +275,8 @@ fn local_game_ui(ui: &mut ui::Ui, player_input: &mut Vec<GameInputScheme>) -> Op
 
     Panel::new(hash!(), size, position).ui(ui, |ui, _| {
         {
-            let gui_resources = storage::get::<GuiResources>();
-            ui.push_skin(&gui_resources.skins.menu);
+            let gui_theme = storage::get::<GuiTheme>();
+            ui.push_skin(&gui_theme.menu);
         }
 
         {

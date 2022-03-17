@@ -1,7 +1,10 @@
 use std::borrow::Cow;
 
 use hv_lua::{FromLua, ToLua, UserData, Value};
-use macroquad::prelude::{Color, Rect, Texture2D, Vec2};
+use macroquad::{
+    audio::Sound,
+    prelude::{Color, Rect, Texture2D, Vec2},
+};
 use tealr::{
     mlu::{TealData, UserDataWrapper},
     new_type, TypeBody, TypeName,
@@ -260,5 +263,29 @@ impl From<Texture2DLua> for Texture2D {
 impl From<Texture2D> for Texture2DLua {
     fn from(x: Texture2D) -> Self {
         Self(x)
+    }
+}
+
+#[derive(Clone)]
+pub struct SoundLua(Sound);
+impl TypeName for SoundLua {
+    fn get_type_parts() -> Cow<'static, [tealr::NamePart]> {
+        new_type!(Sound, External)
+    }
+}
+impl UserData for SoundLua {}
+impl TealData for SoundLua {}
+impl TypeBody for SoundLua {
+    fn get_type_body(_: &mut tealr::TypeGenerator) {}
+}
+
+impl From<Sound> for SoundLua {
+    fn from(s: Sound) -> Self {
+        Self(s)
+    }
+}
+impl From<SoundLua> for Sound {
+    fn from(x: SoundLua) -> Self {
+        x.0
     }
 }

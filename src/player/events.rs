@@ -3,23 +3,46 @@ use std::sync::Arc;
 use hecs::{Entity, World};
 use hv_cell::AtomicRefCell;
 use macroquad::time::get_frame_time;
-use tealr::{TypeBody, TypeName};
+use mlua::{FromLua, ToLua, UserData};
+use tealr::{mlu::TealData, TypeBody, TypeName};
 
 use crate::player::{Player, PlayerState};
 use serde::{Deserialize, Serialize};
 
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct PlayerEventQueue {
     pub queue: Vec<PlayerEvent>,
 }
 
+impl TypeName for PlayerEventQueue {
+    fn get_type_parts() -> std::borrow::Cow<'static, [tealr::NamePart]> {
+        Vec::<PlayerEventQueue>::get_type_parts()
+    }
+}
+
+impl<'lua> FromLua<'lua> for PlayerEventQueue {
+    fn from_lua(lua_value: mlua::Value<'lua>, lua: &'lua mlua::Lua) -> mlua::Result<Self> {
+        Ok(Self {
+            queue: <_>::from_lua(lua_value, lua)?,
+        })
+    }
+}
+
+impl<'lua> ToLua<'lua> for PlayerEventQueue {
+    fn to_lua(self, lua: &'lua mlua::Lua) -> mlua::Result<mlua::Value<'lua>> {
+        self.queue.to_lua(lua)
+    }
+}
 impl PlayerEventQueue {
     pub fn new() -> Self {
         PlayerEventQueue { queue: Vec::new() }
     }
 }
+use hv_lua as mlua;
 
-#[derive(Clone)]
+use tealr::MluaTealDerive;
+
+#[derive(Clone, MluaTealDerive)]
 pub enum PlayerEvent {
     Update {
         dt: f32,
@@ -42,6 +65,7 @@ pub enum PlayerEvent {
         collision_with: Entity,
     },
 }
+impl TealData for PlayerEvent {}
 
 /// This is used in JSON to specify which event types an effect should apply to
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize, TypeName)]
@@ -55,8 +79,11 @@ pub enum PlayerEventKind {
     Collision,
 }
 
+impl UserData for PlayerEventKind {}
+impl TealData for PlayerEventKind {}
+
 impl TypeBody for PlayerEventKind {
-    fn get_type_body(gen: &mut tealr::TypeGenerator) {}
+    fn get_type_body(_: &mut tealr::TypeGenerator) {}
 }
 
 impl From<&PlayerEvent> for PlayerEventKind {

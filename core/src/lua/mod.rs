@@ -1,6 +1,6 @@
 mod create_component;
 pub mod wrapped_types;
-pub use create_component::{CloneComponent, Component, CopyComponent};
+pub use create_component::{CloneComponent, CopyComponent};
 
 use std::{error::Error, os::unix::prelude::OsStrExt, path::Path};
 

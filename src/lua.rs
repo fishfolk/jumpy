@@ -8,7 +8,10 @@ use macroquad_platformer::Actor;
 use tealr::mlu::TealData;
 use tealr::TypeName;
 
-use crate::Resources;
+use crate::effects::active::projectiles::Projectile;
+use crate::effects::active::triggered::TriggeredEffect;
+use crate::player::{Player, PlayerEventQueue, PlayerInventory};
+use crate::{Item, Owner, PhysicsBody, Resources, RigidBody};
 
 pub(crate) fn run_event(
     event_name: &'static str,
@@ -36,13 +39,24 @@ pub(crate) fn run_event(
     lua.load(chunk).set_name(&thread_name)?.exec()?;
     Ok(())
 }
-use core::lua::CopyComponent;
+use core::lua::{CloneComponent, CopyComponent};
 
-use core::create_type_component_container;
+use core::{create_type_component_container, Transform};
 create_type_component_container!(
     TypeComponentContainer with
     I32 of CopyComponent<i32>,
     Bool of CopyComponent<bool>,
+    Transform of CloneComponent<Transform>,
+    PhysicsBody of CloneComponent<PhysicsBody>,
+    RigidBody of CloneComponent<RigidBody>,
+    Projectile of CloneComponent<Projectile>,
+    TriggeredEffect of CloneComponent<TriggeredEffect>,
+    Item of CloneComponent<Item>,
+    Owner of Owner,
+    PlayerInventory of CloneComponent<PlayerInventory>,
+    PlayerEventQueue of CloneComponent<PlayerEventQueue>,
+    Player of CloneComponent<Player>,
+
 );
 
 pub(crate) fn register_types(lua: &Lua) -> Result<Value, Box<dyn Error>> {

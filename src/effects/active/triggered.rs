@@ -11,6 +11,7 @@ use tealr::{TypeBody, TypeName};
 use core::lua::get_table;
 use core::math::deg_to_rad;
 use core::{Result, Transform};
+use std::borrow::Cow;
 use std::sync::Arc;
 
 use crate::effects::active::spawn_active_effect;
@@ -74,7 +75,7 @@ pub struct TriggeredEffect {
 }
 
 impl<'lua> FromLua<'lua> for TriggeredEffect {
-    fn from_lua(lua_value: hv_lua::Value<'lua>, lua: &'lua hv_lua::Lua) -> hv_lua::Result<Self> {
+    fn from_lua(lua_value: hv_lua::Value<'lua>, _: &'lua hv_lua::Lua) -> hv_lua::Result<Self> {
         let table = get_table(lua_value)?;
         Ok(Self {
             owner: table.get("owner")?,
@@ -93,6 +94,96 @@ impl<'lua> FromLua<'lua> for TriggeredEffect {
             trigger_delay_timer: table.get("trigger_delay_timer")?,
             timed_trigger_timer: table.get("timed_trigger_timer")?,
         })
+    }
+}
+
+impl<'lua> ToLua<'lua> for TriggeredEffect {
+    fn to_lua(self, lua: &'lua hv_lua::Lua) -> hv_lua::Result<hv_lua::Value<'lua>> {
+        let table = lua.create_table()?;
+        table.set("owner", self.owner)?;
+        table.set("trigger", self.trigger)?;
+        table.set("effects", self.effects)?;
+        table.set("activation_delay", self.activation_delay)?;
+        table.set("trigger_delay", self.trigger_delay)?;
+        table.set("timed_trigger", self.timed_trigger)?;
+        table.set("is_kickable", self.is_kickable)?;
+        table.set("should_override_delay", self.should_override_delay)?;
+        table.set(
+            "should_collide_with_platforms",
+            self.should_collide_with_platforms,
+        )?;
+        table.set("is_triggered", self.is_triggered)?;
+        table.set("triggered_by", self.triggered_by)?;
+        table.set("kick_delay_timer", self.kick_delay_timer)?;
+        table.set("activation_timer", self.activation_timer)?;
+        table.set("trigger_delay_timer", self.trigger_delay_timer)?;
+        table.set("timed_trigger_timer", self.timed_trigger_timer)?;
+        lua.pack(table)
+    }
+}
+
+impl TypeBody for TriggeredEffect {
+    fn get_type_body(gen: &mut tealr::TypeGenerator) {
+        gen.fields.push((
+            Cow::Borrowed("owner"),
+            tealr::type_parts_to_str(Entity::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("trigger"),
+            tealr::type_parts_to_str(Vec::<TriggeredEffectTrigger>::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("effects"),
+            tealr::type_parts_to_str(Vec::<ActiveEffectMetadata>::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("activation_delay"),
+            tealr::type_parts_to_str(f32::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("trigger_delay"),
+            tealr::type_parts_to_str(f32::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("timed_trigger"),
+            tealr::type_parts_to_str(Option::<f32>::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("is_kickable"),
+            tealr::type_parts_to_str(bool::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("should_override_delay"),
+            tealr::type_parts_to_str(bool::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("should_collide_with_platforms"),
+            tealr::type_parts_to_str(bool::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("is_triggered"),
+            tealr::type_parts_to_str(bool::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("triggered_by"),
+            tealr::type_parts_to_str(Option::<Entity>::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("kick_delay_timer"),
+            tealr::type_parts_to_str(f32::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("activation_timer"),
+            tealr::type_parts_to_str(f32::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("trigger_delay_timer"),
+            tealr::type_parts_to_str(f32::get_type_parts()),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("timed_trigger_timer"),
+            tealr::type_parts_to_str(f32::get_type_parts()),
+        ));
     }
 }
 

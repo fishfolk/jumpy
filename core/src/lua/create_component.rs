@@ -3,15 +3,8 @@ use std::borrow::Cow;
 use hv_lua::{FromLua, ToLua};
 use tealr::{NamePart, TealType, TypeName};
 
-///This trait is used to limit what types can be set in the create_type_component_container macro
-///It doesn't really have a use outside of that.
-pub trait Component {
-    fn is_component() {}
-}
-
 #[derive(Debug, Clone, Copy)]
 pub struct CopyComponent<T>(T);
-impl<T> Component for CopyComponent<T> {}
 impl<T: Send + Sync + 'static + Clone + Copy> hv_lua::UserData for CopyComponent<T>
 where
     T: for<'a> ToLua<'a> + for<'a> FromLua<'a>,
@@ -56,7 +49,6 @@ impl<T: TypeName> tealr::TypeBody for CopyComponent<T> {
 
 #[derive(Debug, Clone, Copy)]
 pub struct CloneComponent<T>(T);
-impl<T> Component for CloneComponent<T> {}
 impl<T: Send + Sync + 'static + Clone> hv_lua::UserData for CloneComponent<T>
 where
     T: for<'a> ToLua<'a> + for<'a> FromLua<'a>,
@@ -138,7 +130,6 @@ macro_rules! create_type_component_container {
         impl<'lua> tealr::TypeBody for $name<'lua> {
             fn get_type_body(gen: &mut tealr::TypeGenerator) {
                 $(
-                    <$type_name as $crate::lua::Component>::is_component();
                     gen.fields.push(
                         (
                             std::borrow::Cow::Borrowed(
@@ -156,9 +147,7 @@ macro_rules! create_type_component_container {
         impl<'lua> $name<'lua> {
             pub fn new(lua: &'lua hv_lua::Lua) -> Result<Self, Box<dyn std::error::Error>> {
                 let table = lua.create_table()?;
-                use $crate::lua::Component;
                 $(
-                    <$type_name as Component>::is_component();
                     table.set(stringify!($field_name),lua.create_userdata_type::<$type_name>()?)?;
                 )*
                 Ok(Self(table))

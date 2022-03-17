@@ -2,12 +2,20 @@ use std::sync::Arc;
 
 use hecs::{Entity, World};
 use hv_cell::AtomicRefCell;
+use hv_lua::UserData;
+use tealr::{mlu::TealData, TypeBody, TypeName};
 
 pub type SystemFn = fn(Arc<AtomicRefCell<World>>);
 
 /// This is used as a component to signify ownership
+#[derive(Clone, TypeName)]
 pub struct Owner(pub Entity);
 
+impl UserData for Owner {}
+impl TealData for Owner {}
+impl TypeBody for Owner {
+    fn get_type_body(_: &mut tealr::TypeGenerator) {}
+}
 /// Placeholder until we implement threading
 #[derive(Default)]
 pub struct SchedulerBuilder {

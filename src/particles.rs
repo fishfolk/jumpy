@@ -1,7 +1,7 @@
 use hv_cell::AtomicRefCell;
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
-use mlua::{ToLua, UserData, UserDataMethods};
+use mlua::{FromLua, ToLua, UserData, UserDataMethods};
 use std::{borrow::Cow, collections::HashMap, sync::Arc};
 use tealr::mlu::UserDataWrapper;
 use tealr::TypeName;
@@ -67,6 +67,19 @@ impl TypeBody for ParticleEmitterMetadata {
             .push((Cow::Borrowed("should_autostart"), Cow::Borrowed("boolean")));
     }
 }
+
+impl<'lua> FromLua<'lua> for ParticleEmitterMetadata {
+    fn from_lua(lua_value: mlua::Value<'lua>, lua: &'lua mlua::Lua) -> mlua::Result<Self> {
+        mlua::LuaSerdeExt::from_value(lua, lua_value)
+    }
+}
+
+impl<'lua> ToLua<'lua> for ParticleEmitterMetadata {
+    fn to_lua(self, lua: &'lua mlua::Lua) -> mlua::Result<mlua::Value<'lua>> {
+        mlua::LuaSerdeExt::to_value(lua, &self)
+    }
+}
+
 impl Default for ParticleEmitterMetadata {
     fn default() -> Self {
         ParticleEmitterMetadata {

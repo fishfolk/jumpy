@@ -17,7 +17,7 @@ use crate::{
     json::{self, TiledMap},
 };
 
-use crate::resources::TextureResource;
+use crate::resources::{get_texture, TextureResource};
 
 pub type MapProperty = crate::json::GenericParam;
 
@@ -79,15 +79,24 @@ impl Map {
     }
 
     pub async fn load<P: AsRef<Path>>(path: P) -> Result<Self> {
-        let bytes = load_file(path).await?;
-        let map = serde_json::from_slice(&bytes).unwrap();
+        let extension = path
+            .as_ref()
+            .extension()
+            .unwrap()
+            .to_str()
+            .unwrap();
+
+        let bytes = load_file(&path).await?;
+
+        let map = deserialize_bytes_by_extension(extension, &bytes).unwrap();
 
         Ok(map)
     }
 
     pub async fn load_tiled<P: AsRef<Path>>(path: P, export_path: Option<P>) -> Result<Self> {
         let bytes = load_file(path).await?;
-        let tiled_map: TiledMap = serde_json::from_slice(&bytes).unwrap();
+
+        let tiled_map: TiledMap = deserialize_json_bytes(&bytes).unwrap();
 
         let map = tiled_map.into_map();
 
@@ -106,10 +115,7 @@ impl Map {
     }
 
     pub fn contains(&self, position: Vec2) -> bool {
-        #[cfg(not(feature = "macroquad-backend"))]
-        let map_size = self.grid_size.as_vec2() * self.tile_size;
-        #[cfg(feature = "macroquad-backend")]
-        let map_size = Size::from(UVec2::from(self.grid_size).as_f32()) * self.tile_size;
+        let map_size = Size::from(self.grid_size.as_uvec2().as_vec2() * self.tile_size.as_vec2());
         let rect = Rect::new(
             self.world_offset.x,
             self.world_offset.y,
@@ -272,10 +278,7 @@ impl Map {
                 let texture_res = get_texture(&layer.texture_id);
 
                 let dest_rect = if is_parallax_disabled {
-                    #[cfg(not(feature = "macroquad-backend"))]
-                    let map_size = self.grid_size.as_vec2() * self.tile_size;
-                    #[cfg(feature = "macroquad-backend")]
-                    let map_size = Size::from(UVec2::from(self.grid_size).as_f32()) * self.tile_size;
+                    let map_size = Size::from(self.grid_size.as_uvec2().as_vec2()) * self.tile_size;
 
                     let size = texture_res.texture.size();
 

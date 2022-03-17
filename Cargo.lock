@@ -26,6 +26,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-trait"
+version = "0.1.52"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "061a7acccaa286c011ddc30970520b98fa40e00c9d644633fb26b5fc63a265e3"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "audir-sles"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -382,7 +393,6 @@ dependencies = [
  "macroquad-platformer",
  "serde",
  "serde_json",
- "tokio",
  "wasm-bindgen",
 ]
 
@@ -390,6 +400,7 @@ dependencies = [
 name = "fishfight-core"
 version = "0.4.1"
 dependencies = [
+ "async-trait",
  "cfg-if 1.0.0",
  "ff-particles",
  "fishfight-core-macros",
@@ -407,6 +418,7 @@ dependencies = [
  "tokio",
  "toml",
  "wasm-bindgen",
+ "wasm-bindgen-futures",
  "winit",
 ]
 
@@ -414,6 +426,7 @@ dependencies = [
 name = "fishfight-core-macros"
 version = "0.4.1"
 dependencies = [
+ "darling",
  "proc-macro2",
  "quote",
  "syn",
@@ -1502,6 +1515,18 @@ dependencies = [
  "quote",
  "syn",
  "wasm-bindgen-shared",
+]
+
+[[package]]
+name = "wasm-bindgen-futures"
+version = "0.4.29"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2eb6ec270a31b1d3c7e266b999739109abce8b6c87e4b31fcfcd788b65267395"
+dependencies = [
+ "cfg-if 1.0.0",
+ "js-sys",
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]

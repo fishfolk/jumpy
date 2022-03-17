@@ -1,8 +1,6 @@
 use core::prelude::*;
 use cfg_if::cfg_if;
 
-use crate::macroquad::ui::widgets;
-
 pub trait ComboBoxValue {
     fn get_index(&self) -> usize;
 
@@ -75,7 +73,7 @@ impl From<&ComboBoxVec> for usize {
 
 cfg_if! {
     if #[cfg(feature = "macroquad-backend")] {
-        use crate::gui::{Ui, Id};
+        use crate::gui::{Ui, Id, widgets};
 
         pub struct ComboBoxBuilder {
             id: Id,

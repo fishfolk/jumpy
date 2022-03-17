@@ -1,6 +1,6 @@
 use std::any::TypeId;
 
-use core::prelude::*;
+use ff_core::prelude::*;
 
 mod confirm_dialog;
 mod create_tileset;
@@ -28,7 +28,7 @@ pub use object_properties::ObjectPropertiesWindow;
 pub use save_map::SaveMapWindow;
 pub use tile_properties::TilePropertiesWindow;
 pub use tileset_properties::TilesetPropertiesWindow;
-use crate::macroquad::ui::Ui;
+use ff_core::macroquad::ui::Ui;
 
 use super::{ButtonParams, EditorAction, EditorContext, Map};
 

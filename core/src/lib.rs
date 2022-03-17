@@ -3,7 +3,6 @@ pub mod error;
 pub mod config;
 pub mod parsing;
 pub mod json;
-pub mod math;
 pub mod noise;
 pub mod text;
 pub mod network;
@@ -28,19 +27,26 @@ pub mod particles;
 pub mod map;
 pub mod gui;
 pub mod drawables;
+pub mod math;
 
 pub use error::{Error, Result};
 pub use config::Config;
 
-#[cfg(feature = "macros")]
 pub use macros::*;
 
-cfg_if::cfg_if! {
+cfg_if! {
     if #[cfg(feature = "internal-backend")] {
         #[path = "backend_impl/internal.rs"]
         pub(crate) mod backend_impl;
 
+        #[cfg(feature = "winit")]
         pub use winit;
+
+        #[cfg(target_arch = "wasm32")]
+        pub use wasm_bindgen;
+
+        #[cfg(not(target_arch = "wasm32"))]
+        pub use tokio;
     } else if #[cfg(feature = "macroquad-backend")] {
         #[path = "backend_impl/macroquad.rs"]
         pub(crate) mod backend_impl;
@@ -51,7 +57,7 @@ cfg_if::cfg_if! {
     }
 }
 
-pub use cfg_if::cfg_if;
-pub use serde;
-pub use serde_json;
 pub use quad_rand as rand;
+
+pub use async_trait::async_trait;
+use cfg_if::cfg_if;

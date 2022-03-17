@@ -1,6 +1,6 @@
 use hecs::{Entity, World};
 
-use core::prelude::*;
+use ff_core::prelude::*;
 
 use crate::player::{
     Player, PlayerAttributes, PlayerController, PlayerEventQueue, JUMP_SOUND_ID, LAND_SOUND_ID,
@@ -139,11 +139,7 @@ pub fn update_player_states(world: &mut World, delta_time: f32) {
 
                     player.state = PlayerState::Jumping;
 
-                    {
-                        let mut sound = get_sound(JUMP_SOUND_ID);
-
-                        play_sound(sound, false);
-                    }
+                    play_sound(JUMP_SOUND_ID, false);
                 } else if player.state == PlayerState::Jumping {
                     player.jump_frame_counter += 1;
 
@@ -177,11 +173,7 @@ pub fn update_player_states(world: &mut World, delta_time: f32) {
                 player.jump_frame_counter = 0;
                 body.has_mass = true;
 
-                {
-                    let mut sound = get_sound(LAND_SOUND_ID);
-
-                    play_sound(sound, false);
-                }
+                play_sound(LAND_SOUND_ID, false);
             }
         }
     }

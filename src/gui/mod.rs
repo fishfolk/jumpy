@@ -5,7 +5,7 @@ mod main_menu;
 mod select_character;
 mod select_map;
 
-use core::prelude::*;
+use ff_core::prelude::*;
 pub use create_map::show_create_map_menu;
 pub use credits::show_game_credits;
 pub use game_menu::{

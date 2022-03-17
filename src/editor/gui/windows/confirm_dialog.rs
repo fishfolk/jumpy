@@ -1,8 +1,8 @@
-use core::prelude::*;
+use ff_core::prelude::*;
 
 use super::{EditorAction, EditorContext, Map, Window, WindowParams};
 use crate::editor::gui::windows::ButtonParams;
-use crate::macroquad::ui::Ui;
+use ff_core::macroquad::ui::Ui;
 
 pub struct ConfirmDialog {
     params: WindowParams,

@@ -1,10 +1,10 @@
-use core::prelude::*;
+use ff_core::prelude::*;
 
-use core::gui::{ELEMENT_MARGIN, theme::LIST_BOX_ENTRY_HEIGHT};
-use crate::macroquad::hash;
-use crate::macroquad::ui::{Ui, widgets};
+use ff_core::gui::{get_gui_theme, ELEMENT_MARGIN, theme::LIST_BOX_ENTRY_HEIGHT};
+use ff_core::macroquad::hash;
+use ff_core::macroquad::ui::{Ui, widgets};
 
-use core::map::Map;
+use ff_core::map::Map;
 use crate::GuiTheme;
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
@@ -44,7 +44,7 @@ impl Window for LoadMapWindow {
         let id = hash!("load_map_window");
 
         {
-            let gui_theme = storage::get::<GuiTheme>();
+            let gui_theme = get_gui_theme();
             ui.push_skin(&gui_theme.list_box_no_bg);
         }
 
@@ -102,7 +102,7 @@ impl Window for LoadMapWindow {
                         }
 
                         if is_selected {
-                            let gui_theme = storage::get::<GuiTheme>();
+                            let gui_theme = get_gui_theme();
                             ui.push_skin(&gui_theme.list_box_selected);
                         }
 

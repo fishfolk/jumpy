@@ -2,7 +2,7 @@ use hecs::World;
 
 use serde::{Deserialize, Serialize};
 
-use core::prelude::*;
+use ff_core::prelude::*;
 
 use crate::player::{
     Player, PlayerInventory, PlayerState, BODY_ANIMATED_SPRITE_ID, CROUCH_ANIMATION_ID,
@@ -25,9 +25,9 @@ pub struct PlayerAnimationMetadata {
     pub texture_id: String,
     #[serde(default)]
     pub scale: Option<f32>,
-    #[serde(default, with = "core::json::vec2_def")]
+    #[serde(default, with = "ff_core::json::vec2_def")]
     pub offset: Vec2,
-    #[serde(default, with = "core::json::vec2_opt")]
+    #[serde(default, with = "ff_core::json::vec2_opt")]
     pub pivot: Option<Vec2>,
     #[serde(
         default,

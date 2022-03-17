@@ -1,9 +1,9 @@
-use core::prelude::*;
+use ff_core::prelude::*;
 
-use crate::macroquad::hash;
-use crate::macroquad::ui::Ui;
+use ff_core::macroquad::hash;
+use ff_core::macroquad::ui::Ui;
 
-use core::gui::{Menu, MenuEntry, MenuResult};
+use ff_core::gui::{Menu, MenuEntry, MenuResult};
 
 const MENU_WIDTH: f32 = 300.0;
 

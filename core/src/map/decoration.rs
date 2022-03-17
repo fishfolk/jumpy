@@ -1,12 +1,11 @@
-use crate::prelude::*;
-
 use hecs::{Entity, World};
 
 use serde::{Deserialize, Serialize};
 
-use crate::drawables::Drawable;
-
-use crate::prelude::*;
+use crate::drawables::{AnimatedSpriteMetadata, Drawable};
+use crate::math::Vec2;
+use crate::resources::get_texture;
+use crate::transform::Transform;
 
 const DECORATION_DRAW_ORDER: u32 = 0;
 

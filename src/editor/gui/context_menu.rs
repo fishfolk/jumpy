@@ -1,12 +1,11 @@
-use core::prelude::*;
+use ff_core::prelude::*;
 
 use super::EditorAction;
 
-use core::gui::ELEMENT_MARGIN;
-use crate::GuiTheme;
+use ff_core::gui::{ELEMENT_MARGIN, get_gui_theme};
 
-use crate::macroquad::hash;
-use crate::macroquad::ui::{Ui, widgets};
+use ff_core::macroquad::hash;
+use ff_core::macroquad::ui::{Ui, widgets};
 
 #[derive(Debug, Clone)]
 pub enum ContextMenuEntry {
@@ -117,7 +116,7 @@ impl ContextMenu {
     }
 
     pub fn draw(&mut self, ui: &mut Ui) -> Option<EditorAction> {
-        let gui_theme = storage::get::<GuiTheme>();
+        let gui_theme = get_gui_theme();
         ui.push_skin(&gui_theme.context_menu);
 
         let res = draw_entries(ui, self.position, &mut self.entries);

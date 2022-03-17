@@ -58,3 +58,7 @@ impl Default for WindowMode {
         WindowMode::Borderless
     }
 }
+
+pub fn default_window_icon() -> Option<Icon> {
+    None
+}

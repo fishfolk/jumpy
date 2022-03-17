@@ -7,7 +7,7 @@ pub use camera::EditorCamera;
 
 pub mod gui;
 
-use core::prelude::*;
+use ff_core::prelude::*;
 
 use gui::{
     toggle_editor_menu,
@@ -46,25 +46,23 @@ use crate::editor::gui::windows::{
     BackgroundPropertiesWindow, CreateMapWindow, ImportWindow, LoadMapWindow,
     ObjectPropertiesWindow, SaveMapWindow, TilePropertiesWindow,
 };
-use core::gui::SELECTION_HIGHLIGHT_COLOR;
-use core::map::{Map, MapObject, MapObjectKind, MapLayerKind};
+use ff_core::gui::SELECTION_HIGHLIGHT_COLOR;
+use ff_core::map::{Map, MapObject, MapObjectKind, MapLayerKind};
 
 use crate::editor::input::{collect_editor_input, EditorInput};
 use crate::editor::tools::SpawnPointPlacementTool;
 use crate::player::IDLE_ANIMATION_ID;
+use crate::items::try_get_item;
 
-use core::prelude::*;
-use core::text::{draw_aligned_text, draw_text, measure_text, HorizontalAlignment, VerticalAlignment, TextParams};
+use ff_core::prelude::*;
+use ff_core::text::{draw_aligned_text, draw_text, measure_text, HorizontalAlignment, VerticalAlignment, TextParams};
 
-use crate::macroquad::camera::{pop_camera_state, push_camera_state, set_default_camera};
-use crate::macroquad::experimental::scene;
-use crate::macroquad::experimental::scene::RefMut;
-use crate::macroquad::prelude::scene::Node;
+use ff_core::macroquad::camera::{pop_camera_state, push_camera_state, set_default_camera};
+use ff_core::macroquad::experimental::scene;
+use ff_core::macroquad::experimental::scene::RefMut;
+use ff_core::macroquad::prelude::scene::Node;
 
-use core::resources::{
-    map_name_to_filename, MapResource, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION,
-};
-use crate::items::{get_item, try_get_item};
+use ff_core::resources::{map_name_to_filename, MapResource, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION, create_map, save_map, delete_map};
 
 #[derive(Debug, Clone)]
 pub struct EditorContext {
@@ -650,7 +648,7 @@ impl Node for Editor {
         node.previous_cursor_position = node.cursor_position;
         node.cursor_position = get_mouse_position().into();
 
-        let dt = core::macroquad::prelude::get_frame_time();
+        let dt = ff_core::macroquad::prelude::get_frame_time();
 
         node.previous_input = node.input;
         node.input = collect_editor_input();

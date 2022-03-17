@@ -1,5 +1,4 @@
 mod camera;
-mod music;
 
 pub use camera::GameCamera;
 
@@ -7,10 +6,10 @@ use fishsticks::{Button, GamepadContext};
 
 use hecs::{Entity, World};
 
-use core::prelude::*;
-use core::Result;
+use ff_core::prelude::*;
+use ff_core::Result;
 
-use crate::{debug, gui, macroquad, PlayerControllerKind};
+use crate::{debug, gui, PlayerControllerKind};
 use crate::physics::{debug_draw_physics_bodies, fixed_update_physics_bodies};
 use crate::player::{
     draw_weapons_hud, spawn_player, update_player_animations, update_player_camera_box,
@@ -22,21 +21,21 @@ use crate::{
     fixed_update_rigid_bodies, update_animated_sprites, Map,
     MapLayerKind, MapObjectKind,
 };
+use crate::items::try_get_item;
 
 use crate::effects::active::debug_draw_active_effects;
 use crate::effects::active::projectiles::fixed_update_projectiles;
 use crate::effects::active::triggered::fixed_update_triggered_effects;
-use crate::items::{get_item, spawn_item, try_get_item};
-use core::map::spawn_decoration;
+use crate::items::spawn_item;
+use ff_core::map::spawn_decoration;
 use crate::sproinger::{fixed_update_sproingers, spawn_sproinger};
 use crate::network::{
     fixed_update_network_client, fixed_update_network_host, update_network_client,
     update_network_host,
 };
-use crate::particles::{draw_particles, update_particle_emitters};
-pub use music::{start_music, stop_music};
-use crate::macroquad::time::get_frame_time;
-use crate::macroquad::ui::root_ui;
+use ff_core::particles::{draw_particles, update_particle_emitters};
+use ff_core::macroquad::time::get_frame_time;
+use ff_core::macroquad::ui::root_ui;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum GameMode {
@@ -95,7 +94,7 @@ pub fn create_main_game_state(game_mode: GameMode) -> Box<dyn GameState> {
 
 cfg_if! {
     if #[cfg(not(feature = "ultimate"))] {
-        use macroquad::prelude::scene::{self, Node, RefMut};
+        use ff_core::macroquad::prelude::scene::{self, Node, RefMut};
 
         pub struct Game {
             world: Option<World>,
@@ -148,8 +147,7 @@ cfg_if! {
             }
 
             fn update(mut node: RefMut<Self>) where Self: Sized {
-                let mut gamepad_ctx = storage::get_mut::<GamepadContext>();
-                gamepad_ctx.update();
+                update_gamepad_context().unwrap();
 
                 if is_key_pressed(KeyCode::Escape) {
                     node.should_show_game_menu = !node.should_show_game_menu;

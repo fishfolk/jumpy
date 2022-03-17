@@ -1,10 +1,10 @@
-use core::prelude::*;
+use ff_core::prelude::*;
 
-use core::map::Map;
+use ff_core::map::Map;
 
-use core::gui::Checkbox;
-use crate::macroquad::hash;
-use crate::macroquad::ui::Ui;
+use ff_core::gui::Checkbox;
+use ff_core::macroquad::hash;
+use ff_core::macroquad::ui::Ui;
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 

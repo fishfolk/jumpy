@@ -1,13 +1,14 @@
-use core::prelude::*;
+use ff_core::prelude::*;
 
-use core::map::{Map, MapLayerKind};
+use ff_core::map::{Map, MapLayerKind};
+use ff_core::gui::get_gui_theme;
 
 use super::{
     ButtonParams, EditorAction, EditorContext, Toolbar, ToolbarElement, ToolbarElementParams,
 };
-use core::gui::ELEMENT_MARGIN;
+use ff_core::gui::ELEMENT_MARGIN;
 use crate::GuiTheme;
-use crate::macroquad::ui::{Ui, widgets};
+use ff_core::macroquad::ui::{Ui, widgets};
 
 pub struct LayerListElement {
     params: ToolbarElementParams,
@@ -42,7 +43,7 @@ impl ToolbarElement for LayerListElement {
         let entry_size = vec2(size.x, Toolbar::LIST_ENTRY_HEIGHT);
         let mut position = Vec2::ZERO;
 
-        let gui_theme = storage::get::<GuiTheme>();
+        let gui_theme = get_gui_theme();
         ui.push_skin(&gui_theme.list_box);
 
         for layer_id in &map.draw_order {
@@ -55,7 +56,7 @@ impl ToolbarElement for LayerListElement {
             };
 
             if is_selected {
-                let gui_theme = storage::get::<GuiTheme>();
+                let gui_theme = get_gui_theme();
                 ui.push_skin(&gui_theme.list_box_selected);
             }
 
@@ -81,7 +82,7 @@ impl ToolbarElement for LayerListElement {
             }
 
             {
-                let gui_theme = storage::get::<GuiTheme>();
+                let gui_theme = get_gui_theme();
                 ui.push_skin(&gui_theme.list_box_no_bg);
             }
 

@@ -1,10 +1,11 @@
-use core::prelude::*;
+use ff_core::prelude::*;
 
 use super::{EditorAction, EditorContext, Map, ToolbarElement, ToolbarElementParams};
 
-use core::gui::ELEMENT_MARGIN;
+use ff_core::gui::ELEMENT_MARGIN;
 use crate::GuiTheme;
-use crate::macroquad::ui::{Ui, widgets};
+use ff_core::macroquad::ui::{Ui, widgets};
+use ff_core::gui::get_gui_theme;
 
 pub struct TilesetDetailsElement {
     params: ToolbarElementParams,
@@ -59,7 +60,7 @@ impl ToolbarElement for TilesetDetailsElement {
                 .ui(ui);
 
             {
-                let gui_theme = storage::get::<GuiTheme>();
+                let gui_theme = get_gui_theme();
                 ui.push_skin(&gui_theme.tileset_grid);
             }
 
@@ -74,7 +75,7 @@ impl ToolbarElement for TilesetDetailsElement {
                     };
 
                     if is_selected {
-                        let gui_theme = storage::get::<GuiTheme>();
+                        let gui_theme = get_gui_theme();
                         ui.push_skin(&gui_theme.tileset_grid_selected);
                     }
 

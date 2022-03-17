@@ -1,8 +1,8 @@
 use hecs::World;
-use core::prelude::*;
+use ff_core::prelude::*;
 
-use core::scene::{self, Node, RefMut};
-use core::camera::Camera2D;
+use ff_core::scene::{self, Node, RefMut};
+use ff_core::camera::Camera2D;
 
 pub struct EditorCamera {
     pub position: Vec2,

@@ -1,11 +1,11 @@
-use core::prelude::*;
+use ff_core::prelude::*;
 
 use super::{EditorAction, EditorContext, EditorTool, EditorToolParams};
-use core::map::{Map, MapLayerKind};
+use ff_core::map::{Map, MapLayerKind};
 use crate::{
     editor::EditorCamera,
 };
-use crate::macroquad::experimental::scene;
+use ff_core::macroquad::experimental::scene;
 
 #[derive(Default)]
 pub struct EraserTool {

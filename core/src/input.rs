@@ -6,6 +6,7 @@ use crate::error::ErrorKind;
 use crate::{Config, Result, storage};
 
 pub use crate::backend_impl::input::*;
+use crate::prelude::get_config;
 
 #[derive(Default, Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct PlayerInput {
@@ -29,46 +30,56 @@ pub enum GameInputScheme {
     Gamepad(fishsticks::GamepadId),
 }
 
-pub fn update_gamepad_context(context: Option<&mut GamepadContext>) -> Result<()> {
-    if let Some(context) = context {
-        context.update()?;
-    } else {
-        let mut context = storage::get_mut::<GamepadContext>();
-        context.update()?;
-    }
+static mut GAMEPAD_CONTEXT: Option<GamepadContext> = None;
 
+pub async fn init_gamepad_context() -> Result<()> {
+    let ctx = GamepadContext::init()?;
+    unsafe { GAMEPAD_CONTEXT = Some(ctx) }
     Ok(())
 }
 
-pub fn is_gamepad_btn_pressed(context: Option<&GamepadContext>, btn: fishsticks::Button) -> bool {
-    let check = |context: &GamepadContext| -> bool {
-        for (_, gamepad) in context.gamepads() {
-            if gamepad.digital_inputs.just_activated(btn) {
-                return true;
-            }
-        }
-
-        false
-    };
-
-    if let Some(context) = context {
-        check(context)
-    } else {
-        let context = storage::get::<GamepadContext>();
-        check(&context)
+pub fn get_gamepad_context() -> &'static GamepadContext {
+    unsafe {
+        GAMEPAD_CONTEXT
+            .as_ref()
+            .unwrap_or_else(|| panic!("Attempted to get gamepad context but it has not been initialized yet!"))
     }
+}
+
+pub fn get_gamepad_context_mut() -> &'static mut GamepadContext {
+    unsafe {
+        GAMEPAD_CONTEXT
+            .as_mut()
+            .unwrap_or_else(|| panic!("Attempted to get gamepad context but it has not been initialized yet!"))
+    }
+}
+
+pub fn update_gamepad_context() -> Result<()> {
+    get_gamepad_context_mut().update()?;
+    Ok(())
+}
+
+pub fn is_gamepad_btn_pressed(btn: fishsticks::Button) -> bool {
+    let ctx = get_gamepad_context();
+    for (_, gamepad) in ctx.gamepads() {
+        if gamepad.digital_inputs.just_activated(btn) {
+            return true;
+        }
+    }
+
+    false
 }
 
 pub fn collect_local_input(input_scheme: GameInputScheme) -> PlayerInput {
     let mut input = PlayerInput::default();
 
     if let GameInputScheme::Gamepad(ix) = &input_scheme {
-        let gamepad_context = storage::get_mut::<GamepadContext>();
-        let gamepad = gamepad_context.gamepad(*ix);
+        let gamepad_ctx = get_gamepad_context();
+        let gamepad = gamepad_ctx.gamepad(*ix);
 
         if let Some(gamepad) = gamepad {
             let input_mapping = {
-                let config = storage::get::<Config>();
+                let config = get_config();
                 config
                     .input
                     .get_gamepad_mapping(ix.into())
@@ -101,7 +112,7 @@ pub fn collect_local_input(input_scheme: GameInputScheme) -> PlayerInput {
         }
     } else {
         let input_mapping = {
-            let config = storage::get::<Config>();
+            let config = get_config();
 
             if matches!(input_scheme, GameInputScheme::KeyboardRight) {
                 config.input.keyboard_primary.clone()

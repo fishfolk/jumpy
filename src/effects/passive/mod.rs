@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use core::prelude::*;
+use ff_core::prelude::*;
 
 use serde::{Deserialize, Serialize};
 

@@ -25,13 +25,14 @@ pub mod viewport;
 #[path = "macroquad/window.rs"]
 pub mod window;
 
+#[path = "macroquad/math.rs"]
+pub mod math;
+
 pub mod video {}
 
 pub mod gui {
     pub use macroquad::ui::*;
 }
-
-pub use macroquad::math;
 
 pub use macroquad::ui;
 

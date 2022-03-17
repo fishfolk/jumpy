@@ -1,18 +1,18 @@
 use std::borrow::BorrowMut;
 
-use core::prelude::*;
+use ff_core::prelude::*;
 
 use fishsticks::{Button, GamepadContext};
 
-use core::gui::background::draw_main_menu_background;
-use core::gui::{Menu, MenuEntry, MenuResult, Panel};
+use ff_core::gui::background::draw_main_menu_background;
+use ff_core::gui::{Menu, MenuEntry, MenuResult, Panel, get_gui_theme};
 
 use crate::player::{PlayerControllerKind, PlayerParams};
 use crate::{gui, GuiTheme, Map};
-use core::input::{is_gamepad_btn_pressed, update_gamepad_context, GameInputScheme};
-use crate::macroquad::{hash, ui};
-use crate::macroquad::ui::{root_ui, widgets};
-use crate::macroquad::window::next_frame;
+use ff_core::input::{is_gamepad_btn_pressed, GameInputScheme};
+use ff_core::macroquad::{hash, ui};
+use ff_core::macroquad::ui::{root_ui, widgets};
+use ff_core::macroquad::window::next_frame;
 
 const MENU_WIDTH: f32 = 300.0;
 
@@ -117,7 +117,7 @@ pub async fn show_main_menu() -> MainMenuResult {
     let mut player_input = Vec::new();
 
     loop {
-        update_gamepad_context(None).unwrap();
+        update_gamepad_context().unwrap();
 
         draw_main_menu_background(true);
 
@@ -239,10 +239,8 @@ fn local_game_ui(ui: &mut ui::Ui, player_input: &mut Vec<GameInputScheme>) -> Op
     if player_input.len() == 2 {
         return Some(LOCAL_GAME_OPTION_SUBMIT.into());
     } else {
-        let gamepad_context = storage::get::<GamepadContext>();
-
         if is_key_pressed(KeyCode::Escape)
-            || is_gamepad_btn_pressed(Some(&gamepad_context), Button::East)
+            || is_gamepad_btn_pressed(Button::East)
         {
             return Some(Menu::CANCEL_INDEX.into());
         }
@@ -257,8 +255,8 @@ fn local_game_ui(ui: &mut ui::Ui, player_input: &mut Vec<GameInputScheme>) -> Op
             }
         }
 
-        let gamepad_context = storage::get_mut::<GamepadContext>();
-        for (ix, gamepad) in gamepad_context.gamepads() {
+        let gamepad_ctx = get_gamepad_context();
+        for (ix, gamepad) in gamepad_ctx.gamepads() {
             if gamepad.digital_inputs.activated(fishsticks::Button::Start)
                 && !player_input.contains(&GameInputScheme::Gamepad(ix))
             {
@@ -275,7 +273,7 @@ fn local_game_ui(ui: &mut ui::Ui, player_input: &mut Vec<GameInputScheme>) -> Op
 
     Panel::new(hash!(), size, position).ui(ui, |ui, _| {
         {
-            let gui_theme = storage::get::<GuiTheme>();
+            let gui_theme = get_gui_theme();
             ui.push_skin(&gui_theme.menu);
         }
 

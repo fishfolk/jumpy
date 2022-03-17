@@ -4,9 +4,9 @@ use std::iter::FromIterator;
 use std::ops::Mul;
 
 use hecs::World;
-use macroquad::math::Rect;
-
 use serde::{Deserialize, Serialize};
+
+use crate::math::Rect;
 use crate::color::{Color, colors};
 use crate::math::{Size, Vec2};
 use crate::rendering::{draw_rectangle_outline, draw_texture, DrawTextureParams};

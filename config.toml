@@ -7,6 +7,11 @@ mode = "windowed"
 width = 955
 height = 600
 
+[audio]
+master-volume = 100
+sound-effect-volume = 100
+music-volume = 100
+
 [input.keyboard-primary]
 left = "Left"
 right = "Right"

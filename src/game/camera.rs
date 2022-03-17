@@ -1,5 +1,5 @@
-use core::prelude::*;
-use core::noise::NoiseGenerator;
+use ff_core::prelude::*;
+use ff_core::noise::NoiseGenerator;
 
 struct Shake {
     direction: (f32, f32),
@@ -60,7 +60,7 @@ impl GameCamera {
             magnitude,
             length: length as f32,
             age: 0.0,
-            random_offset: core::rand::gen_range(1.0, 100.0),
+            random_offset: ff_core::rand::gen_range(1.0, 100.0),
             frequency,
         });
     }
@@ -78,7 +78,7 @@ impl GameCamera {
             magnitude,
             length: length as f32,
             age: 0.0,
-            random_offset: core::rand::gen_range(1.0, 100.0),
+            random_offset: ff_core::rand::gen_range(1.0, 100.0),
             frequency,
         });
     }
@@ -99,7 +99,7 @@ impl GameCamera {
         self.shake.push(Shake {
             direction: (1.0, 1.0),
             kind: ShakeType::Rotational,
-            magnitude: magnitude * (core::rand::gen_range(0, 2) as f32 - 0.5) * 2.0,
+            magnitude: magnitude * (ff_core::rand::gen_range(0, 2) as f32 - 0.5) * 2.0,
             length: length as f32,
             age: 0.0,
             random_offset: 0.0,
@@ -230,8 +230,8 @@ impl GameCamera {
             if #[cfg(feature = "ultimate")] {
                 unimplemented!("Camera not implemented!")
             } else {
-                use crate::macroquad::camera::Camera2D;
-                use crate::macroquad::experimental::scene;
+                use ff_core::macroquad::camera::Camera2D;
+                use ff_core::macroquad::experimental::scene;
 
                 // let middle_point = vec2(400.0, 600.0);
                 // let zoom = 400.0;

@@ -2,7 +2,7 @@ use hecs::{Entity, World};
 
 use serde::{Deserialize, Serialize};
 
-use core::prelude::*;
+use ff_core::prelude::*;
 
 use crate::player::{Player, PlayerState};
 

@@ -1,4 +1,4 @@
-use core::prelude::*;
+use ff_core::prelude::*;
 
 use fishsticks::{Axis, Button};
 

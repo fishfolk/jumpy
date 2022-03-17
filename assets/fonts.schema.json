@@ -1,0 +1,32 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/object1636321952.json",
+  "title": "Root",
+  "type": "array",
+  "default": [],
+  "items": {
+    "$id": "#root/items",
+    "title": "Items",
+    "type": "object",
+    "required": ["id", "path"],
+    "properties": {
+      "id": {
+        "$id": "#root/items/id",
+        "title": "Id",
+        "type": "string",
+        "default": "",
+        "examples": ["anonymous_pro_regular"],
+        "pattern": "^.*$"
+      },
+      "path": {
+        "$id": "#root/items/path",
+        "title": "Path",
+        "type": "string",
+        "default": "",
+        "examples": ["ui/AnonymousPro-Regular.ttf"],
+        "pattern": "^.*$"
+      }
+    }
+  }
+}

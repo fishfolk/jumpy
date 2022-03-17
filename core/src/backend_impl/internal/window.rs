@@ -6,9 +6,9 @@ use winit::window::Fullscreen;
 
 use crate::Result;
 use crate::video::Display;
-use crate::window::{Window, WindowConfig, WindowMode};
+use crate::window::{WindowConfig, WindowMode};
 
-pub(crate) struct WindowImpl {
+pub struct Window {
     event_loop: EventLoop<()>,
     window: winit::window::Window,
 }
@@ -52,16 +52,19 @@ pub fn create_window<D: Into<Option<Display>>>(title: &str, display: D, config: 
          */
     };
 
-    let window_impl = {
-        let window = window_builder
-            .with_fullscreen(fullscreen)
-            .build(&event_loop)?;
+    let window = window_builder
+        .with_fullscreen(fullscreen)
+        .build(&event_loop)?;
 
-        WindowImpl {
-            event_loop,
-            window,
-        }
-    };
+    Ok(Window {
+        event_loop,
+        window,
+    })
+}
 
-    Ok(window_impl.into())
+#[derive(Clone)]
+pub struct Icon {
+    pub small: [u8; 16 * 16 * 4],
+    pub medium: [u8; 32 * 32 * 4],
+    pub big: [u8; 64 * 64 * 4],
 }

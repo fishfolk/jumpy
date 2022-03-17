@@ -1,12 +1,12 @@
 use std::any::TypeId;
 use std::cmp::Ordering;
 
-use core::error::{Error, ErrorKind, Result};
-use core::prelude::*;
+use ff_core::error::{Error, ErrorKind, Result};
+use ff_core::prelude::*;
 
 use crate::editor::gui::windows::Window;
-use core::map::{MapBackgroundLayer, MapObject, MapObjectKind};
-use core::{
+use ff_core::map::{MapBackgroundLayer, MapObject, MapObjectKind};
+use ff_core::{
     map::{Map, MapLayer, MapLayerKind, MapTile, MapTileset},
 };
 use crate::GuiTheme;

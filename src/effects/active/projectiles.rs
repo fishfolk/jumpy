@@ -8,12 +8,12 @@ use serde::{Deserialize, Serialize};
 
 use crate::effects::active::triggered::TriggeredEffect;
 use crate::effects::TriggeredEffectTrigger;
-use core::particles::{ParticleEmitter, ParticleEmitterMetadata};
+use ff_core::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::player::{on_player_damage, Player, PlayerState};
 use crate::{CollisionWorld, PhysicsBody, RigidBody, RigidBodyParams, SpriteMetadata};
 use crate::{Drawable, PassiveEffectInstance, PassiveEffectMetadata, SpriteParams};
 
-use core::prelude::*;
+use ff_core::prelude::*;
 
 const PROJECTILE_DRAW_ORDER: u32 = 1;
 

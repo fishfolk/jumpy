@@ -14,6 +14,18 @@ pub use urect::*;
 use crate::color::Color;
 use crate::video::VideoMode;
 
+pub trait AsVec2 {
+    fn as_vec2(&self) -> Vec2;
+}
+
+pub trait AsIVec2 {
+    fn as_ivec2(&self) -> IVec2;
+}
+
+pub trait AsUVec2 {
+    fn as_uvec2(&self) -> UVec2;
+}
+
 pub fn polar_to_cartesian(rho: f32, theta: f32) -> Vec2 {
     vec2(rho * theta.cos(), rho * theta.sin())
 }

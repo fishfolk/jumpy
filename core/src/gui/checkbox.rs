@@ -1,10 +1,11 @@
 use std::ops::Deref;
 
 use crate::gui::{Id, Ui, widgets};
+
 use crate::math::{Vec2, vec2};
 
 use crate::gui::ELEMENT_MARGIN;
-use crate::gui::theme::GuiTheme;
+use crate::gui::theme::{get_gui_theme, GuiTheme};
 use crate::storage;
 
 pub struct Checkbox {
@@ -41,7 +42,7 @@ impl Checkbox {
     }
 
     pub fn ui(&self, ui: &mut Ui, value: &mut bool) {
-        let gui_theme = storage::get::<GuiTheme>();
+        let gui_theme = get_gui_theme();
 
         if *value {
             ui.push_skin(&gui_theme.checkbox_selected);

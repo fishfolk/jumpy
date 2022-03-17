@@ -1,13 +1,13 @@
 use std::path::Path;
 
-use core::prelude::*;
-use crate::macroquad::hash;
-use crate::macroquad::ui::{Ui, widgets};
+use ff_core::prelude::*;
+use ff_core::macroquad::hash;
+use ff_core::macroquad::ui::{Ui, widgets};
 
-use core::map::Map;
+use ff_core::map::Map;
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
-use core::resources::{
+use ff_core::resources::{
     map_name_to_filename, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION,
 };
 
@@ -86,7 +86,7 @@ impl Window for SaveMapWindow {
             .with_extension(MAP_EXPORTS_EXTENSION);
 
         let mut action = None;
-        if is_valid_map_export_path(&path, self.should_overwrite) {
+        if ff_core::resources::is_valid_map_export_path(&path, self.should_overwrite) {
             let save_action = EditorAction::SaveMap(Some(self.name.clone()));
             let batch = self.get_close_action().then(save_action);
 

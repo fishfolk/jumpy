@@ -1,21 +1,24 @@
-use core::prelude::*;
+use ff_core::prelude::*;
 
 use fishsticks::{Axis, Button, GamepadContext};
 
-use core::gui::background::draw_main_menu_background;
-use core::gui::{
+use ff_core::gui::background::draw_main_menu_background;
+use ff_core::gui::{
+    get_gui_theme,
     Panel, BUTTON_FONT_SIZE, BUTTON_MARGIN_H,
     WINDOW_BG_COLOR,
 };
-use crate::player::{CharacterMetadata, characters};
+use crate::player::CharacterMetadata;
 use crate::{draw_one_animated_sprite, update_one_animated_sprite, AnimatedSprite, AnimatedSpriteMetadata, GuiTheme};
 
-use core::input::{update_gamepad_context, GameInputScheme};
-use core::prelude::*;
-use crate::macroquad::hash;
-use crate::macroquad::time::get_frame_time;
-use crate::macroquad::ui::{root_ui, widgets};
-use crate::macroquad::window::next_frame;
+use crate::player::character::iter_characters;
+
+use ff_core::input::GameInputScheme;
+use ff_core::prelude::*;
+use ff_core::macroquad::hash;
+use ff_core::macroquad::time::get_frame_time;
+use ff_core::macroquad::ui::{root_ui, widgets};
+use ff_core::macroquad::window::next_frame;
 
 const SECTION_WIDTH: f32 = 300.0;
 const SECTION_HEIGHT: f32 = 400.0;
@@ -34,7 +37,7 @@ pub async fn show_select_characters_menu(
 
     let player_cnt = player_input.len();
 
-    let player_characters = characters();
+    let player_characters = iter_characters().cloned().collect::<Vec<_>>();
 
     assert!(
         player_characters.len() >= player_cnt,
@@ -71,7 +74,7 @@ pub async fn show_select_characters_menu(
     let mut is_ready = false;
 
     while !is_ready {
-        update_gamepad_context(None).unwrap();
+        update_gamepad_context().unwrap();
 
         draw_main_menu_background(false);
 
@@ -86,7 +89,7 @@ pub async fn show_select_characters_menu(
         let first_position = (vec2(viewport.width, viewport.height) - total_size) / 2.0;
 
         {
-            let gui_theme = storage::get::<GuiTheme>();
+            let gui_theme = get_gui_theme();
             root_ui().push_skin(&gui_theme.default);
         }
 
@@ -121,7 +124,7 @@ pub async fn show_select_characters_menu(
                             is_key_pressed(KeyCode::V) || is_key_pressed(KeyCode::LeftControl);
                     }
                     GameInputScheme::Gamepad(gamepad_id) => {
-                        let gamepad_context = storage::get::<GamepadContext>();
+                        let gamepad_context = get_gamepad_context();
                         let gamepad = gamepad_context.gamepad(gamepad_id);
 
                         if let Some(gamepad) = gamepad {
@@ -161,7 +164,7 @@ pub async fn show_select_characters_menu(
                         draw_one_animated_sprite(&animation_transform, animation_player);
 
                         {
-                            let gui_theme = storage::get::<GuiTheme>();
+                            let gui_theme = get_gui_theme();
                             ui.push_skin(&gui_theme.window_header);
 
                             let name_label = &player_characters[current_selection as usize].name;

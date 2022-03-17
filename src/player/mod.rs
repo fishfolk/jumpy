@@ -1,6 +1,6 @@
 use hecs::{Entity, World};
 
-use core::prelude::*;
+use ff_core::prelude::*;
 
 use crate::{
     AnimatedSprite, AnimatedSpriteMetadata, AnimatedSpriteParams, CollisionWorld, Drawable,
@@ -8,7 +8,7 @@ use crate::{
 };
 
 mod animation;
-mod character;
+pub mod character;
 mod controller;
 mod events;
 mod inventory;

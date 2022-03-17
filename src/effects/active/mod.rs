@@ -1,11 +1,11 @@
 use hecs::{Entity, World};
 
-use core::prelude::*;
+use ff_core::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
-use core::prelude::*;
-use core::Result;
+use ff_core::prelude::*;
+use ff_core::Result;
 
 use crate::{PassiveEffectInstance, PassiveEffectMetadata};
 
@@ -14,13 +14,13 @@ pub mod triggered;
 
 pub use triggered::{TriggeredEffectMetadata, TriggeredEffectTrigger};
 
-use core::particles::ParticleEmitterMetadata;
+use ff_core::particles::ParticleEmitterMetadata;
 use crate::effects::active::projectiles::{spawn_projectile, ProjectileParams};
 use crate::effects::active::triggered::{spawn_triggered_effect, TriggeredEffect};
 use crate::player::{on_player_damage, Player};
 use crate::PhysicsBody;
 
-use core::prelude::*;
+use ff_core::prelude::*;
 
 pub use projectiles::ProjectileKind;
 
@@ -49,9 +49,7 @@ pub fn spawn_active_effect(
     };
 
     if let Some(id) = &params.sound_effect_id {
-        let mut sound = get_sound(id);
-
-        play_sound(sound, false);
+        play_sound(id, false);
     }
 
     let mut damage = Vec::new();
@@ -164,7 +162,7 @@ pub fn spawn_active_effect(
 
             if spread != 0.0 {
                 let rad = deg_to_rad(spread);
-                let spread = core::rand::gen_range(-rad, rad);
+                let spread = ff_core::rand::gen_range(-rad, rad);
 
                 velocity = rotate_vector(velocity, spread);
             }
@@ -231,11 +229,11 @@ pub enum ActiveEffectKind {
         passive_effects: Vec<PassiveEffectMetadata>,
         /// If `true` the effect will do damage to any player it hits
         #[serde(
-            default = "core::json::default_true",
-            skip_serializing_if = "core::json::is_true"
+            default = "ff_core::json::default_true",
+            skip_serializing_if = "ff_core::json::is_true"
         )]
         is_lethal: bool,
-        #[serde(default, skip_serializing_if = "core::json::is_false")]
+        #[serde(default, skip_serializing_if = "ff_core::json::is_false")]
         is_explosion: bool,
     },
     /// Check for hits with a `Rect` collider
@@ -244,8 +242,8 @@ pub enum ActiveEffectKind {
         height: f32,
         /// If `true` the effect will do damage to any player it hits
         #[serde(
-            default = "core::json::default_true",
-            skip_serializing_if = "core::json::is_true"
+            default = "ff_core::json::default_true",
+            skip_serializing_if = "ff_core::json::is_true"
         )]
         is_lethal: bool,
         /// This contains any passive effects that will be spawned on collision
@@ -268,8 +266,8 @@ pub enum ActiveEffectKind {
         spread: f32,
         /// If `true` the effect will do damage to any player it hits
         #[serde(
-            default = "core::json::default_true",
-            skip_serializing_if = "core::json::is_true"
+            default = "ff_core::json::default_true",
+            skip_serializing_if = "ff_core::json::is_true"
         )]
         is_lethal: bool,
         /// This contains any passive effects that will be spawned on collision

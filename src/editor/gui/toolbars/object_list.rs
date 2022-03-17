@@ -1,15 +1,15 @@
-use core::prelude::*;
+use ff_core::prelude::*;
 
 use super::{
     EditorAction, EditorContext, Map, Toolbar, ToolbarElement, ToolbarElementParams,
 };
 
-use core::map::MapLayerKind;
+use ff_core::map::MapLayerKind;
 
 use crate::editor::{gui::ButtonParams, EditorCamera};
-use crate::GuiTheme;
-use crate::macroquad::prelude::scene;
-use crate::macroquad::ui::{Ui, widgets};
+use ff_core::gui::get_gui_theme;
+use ff_core::macroquad::prelude::scene;
+use ff_core::macroquad::ui::{Ui, widgets};
 
 pub struct ObjectListElement {
     params: ToolbarElementParams,
@@ -45,7 +45,7 @@ impl ToolbarElement for ObjectListElement {
         let mut position = Vec2::ZERO;
 
         {
-            let gui_theme = storage::get::<GuiTheme>();
+            let gui_theme = get_gui_theme();
             ui.push_skin(&gui_theme.list_box);
         }
 
@@ -60,7 +60,7 @@ impl ToolbarElement for ObjectListElement {
             };
 
             if is_selected {
-                let gui_theme = storage::get::<GuiTheme>();
+                let gui_theme = get_gui_theme();
                 ui.push_skin(&gui_theme.list_box_selected);
             }
 

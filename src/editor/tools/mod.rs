@@ -6,7 +6,7 @@ mod placement;
 pub use eraser::EraserTool;
 pub use placement::{ObjectPlacementTool, SpawnPointPlacementTool, TilePlacementTool};
 
-use core::prelude::*;
+use ff_core::prelude::*;
 
 use super::{EditorAction, EditorContext, Map};
 

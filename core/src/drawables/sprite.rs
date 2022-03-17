@@ -4,9 +4,8 @@ use std::ops::Div;
 
 use serde::{Deserialize, Serialize};
 
-use core::prelude::*;
 use crate::color::{Color, colors};
-use crate::math::{Size, Vec2, Rect, vec2};
+use crate::math::{Size, UVec2, Vec2, Rect, vec2, AsVec2, AsUVec2};
 use crate::rendering::{draw_rectangle_outline, draw_texture, DrawTextureParams};
 use crate::storage;
 use crate::texture::Texture2D;
@@ -89,10 +88,7 @@ impl Sprite {
         let source_rect = {
             let sprite_size = params.sprite_size.unwrap_or_else(|| texture.size());
 
-            #[cfg(not(feature = "macroquad-backend"))]
-            let grid_size: UVec2 = Vec2::from(texture.size()).as_uvec2() / sprite_size.as_uvec2();
-            #[cfg(feature = "macroquad-backend")]
-            let grid_size = Size::from(Vec2::from(texture.size()).as_u32() / Vec2::from(sprite_size).as_u32());
+            let grid_size = Size::from(texture.size().as_vec2().as_uvec2() / sprite_size.as_vec2().as_uvec2());
 
             {
                 let frame_cnt = (grid_size.width * grid_size.height) as usize;

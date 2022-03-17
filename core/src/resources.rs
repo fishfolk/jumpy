@@ -2,11 +2,17 @@ use std::{collections::HashMap, fs, path::Path};
 use std::any::{Any, TypeId};
 use std::borrow::BorrowMut;
 use std::hash::Hash;
-use std::slice::Iter;
+use std::slice::{Iter, IterMut};
 use std::collections::hash_map::Iter as HashMapIter;
+use std::future::Future;
+use std::ops::DerefMut;
+use std::path::PathBuf;
+use std::pin::Pin;
+
+use async_trait::async_trait;
 
 use crate::particles::EmitterConfig;
-use crate::text::Font;
+use crate::text::{Font, load_ttf_font};
 
 use serde::{Deserialize, Serialize};
 
@@ -19,21 +25,20 @@ use crate::error::{Result, ErrorKind};
 use crate::texture::{Texture2D, TextureFilterMode, load_texture_file};
 use crate::map::DecorationMetadata;
 use crate::formaterr;
-use crate::gui::theme::GuiTheme;
+use crate::gui::rebuild_gui_theme;
 
 use crate::map::Map;
 
-const PARTICLE_EFFECTS_DIR: &str = "particle_effects";
-const SOUNDS_FILE: &str = "sounds";
+const PARTICLE_EFFECTS_FILE: &str = "particle_effects";
+const AUDIO_FILE: &str = "audio";
 const MUSIC_FILE: &str = "music";
 const TEXTURES_FILE: &str = "textures";
 const IMAGES_FILE: &str = "images";
+const FONTS_FILE: &str = "fonts";
 const MAPS_FILE: &str = "maps";
 const DECORATION_FILE: &str = "decoration";
-const ITEMS_FILE: &str = "items";
-const CHARACTERS_FILE: &str = "characters";
 
-const DEFAULT_RESOURCE_FILES_EXTENSION: &str = "json";
+pub const DEFAULT_RESOURCE_FILE_EXTENSION: &str = "json";
 
 pub const MAP_EXPORTS_DEFAULT_DIR: &str = "maps";
 pub const MAP_EXPORTS_EXTENSION: &str = "json";
@@ -45,7 +50,87 @@ pub const MAP_PREVIEW_PLACEHOLDER_ID: &str = "map_preview_placeholder";
 const ACTIVE_MODS_FILE_NAME: &str = "active_mods";
 const MOD_FILE_NAME: &str = "fishfight_mod";
 
+pub trait Resource: Clone + DeserializeOwned {}
+
+pub trait ResourceId: Resource {
+    fn id(&self) -> String;
+}
+
+#[async_trait]
+pub trait ResourceMap: ResourceId {
+    fn storage() -> &'static HashMap<String, Self>;
+
+    async fn load<P: AsRef<Path> + Send, E: Into<Option<&'static str>> + Send>(path: P, ext: E, is_required: bool, should_overwrite: bool) -> Result<()>;
+
+    fn iter() -> std::collections::hash_map::Iter<'static, String, Self> {
+        Self::storage().iter()
+    }
+
+    fn try_get(id: &str) -> Option<&'static Self> {
+        Self::storage().get(id)
+    }
+
+    fn get(id: &str) -> &'static Self {
+        Self::try_get(id).unwrap()
+    }
+}
+
+pub trait ResourceMapMut: ResourceMap {
+    fn storage_mut() -> &'static mut HashMap<String, Self>;
+
+    fn iter_mut() -> std::collections::hash_map::IterMut<'static, String, Self> {
+        Self::storage_mut().iter_mut()
+    }
+
+    fn try_get_mut(id: &str) -> Option<&'static mut Self> {
+        Self::storage_mut().get_mut(id)
+    }
+
+    fn get_mut(id: &str) -> &'static mut Self {
+        Self::try_get_mut(id).unwrap()
+    }
+}
+
+#[async_trait]
+pub trait ResourceVec: Resource {
+    fn storage() -> &'static Vec<Self>;
+
+    async fn load<P: AsRef<Path> + Send, E: Into<Option<&'static str>> + Send>(path: P, ext: E, is_required: bool, should_overwrite: bool) -> Result<()>;
+
+    fn iter() -> Iter<'static, Self> {
+        Self::storage().iter()
+    }
+
+    fn try_get(index: usize) -> Option<&'static Self> {
+        Self::storage().get(index)
+    }
+
+    fn get(index: usize) -> &'static Self {
+        Self::try_get(index).unwrap()
+    }
+}
+
+pub trait ResourceVecMut: ResourceVec {
+    fn storage_mut() -> &'static mut Vec<Self>;
+
+    fn iter_mut() -> IterMut<'static, Self> {
+        Self::storage_mut().iter_mut()
+    }
+
+    fn try_get_mut(index: usize) -> Option<&'static mut Self> {
+        Self::storage_mut().get_mut(index)
+    }
+
+    fn get_mut(index: usize) -> &'static mut Self {
+        Self::try_get_mut(index).unwrap()
+    }
+}
+
 static mut ASSETS_DIR: Option<String> = None;
+
+pub fn set_assets_dir<P: AsRef<Path>>(path: P) {
+    unsafe { ASSETS_DIR = Some(path.as_ref().to_str().unwrap().to_string()); }
+}
 
 pub fn assets_dir() -> &'static str {
     unsafe { ASSETS_DIR.as_ref().unwrap() }
@@ -53,22 +138,29 @@ pub fn assets_dir() -> &'static str {
 
 static mut MODS_DIR: Option<String> = None;
 
+pub fn set_mods_dir<P: AsRef<Path>>(path: P) {
+    unsafe { MODS_DIR = Some(path.as_ref().to_str().unwrap().to_string()); }
+}
+
 pub fn mods_dir() -> &'static str {
     unsafe { MODS_DIR.as_ref().unwrap() }
 }
 
 static mut LOADED_MODS: Vec<ModMetadata> = Vec::new();
 
-pub fn loaded_mods() -> Vec<ModMetadata> {
-    unsafe { LOADED_MODS.clone() }
+pub fn loaded_mods() -> &'static [ModMetadata] {
+    unsafe { LOADED_MODS.as_slice() }
+}
+
+pub(crate) fn loaded_mods_mut() -> &'static mut Vec<ModMetadata> {
+    unsafe { LOADED_MODS.as_mut() }
 }
 
 static mut PARTICLE_EFFECTS: Option<HashMap<String, EmitterConfig>> = None;
 
 pub fn try_get_particle_effect(id: &str) -> Option<&EmitterConfig> {
     unsafe { PARTICLE_EFFECTS
-        .as_ref()
-        .unwrap_or_else(|| panic!("Attempted to load a particle effect resource but resources has not been initialized"))
+        .get_or_insert_with(HashMap::new)
         .get(id) }
 }
 
@@ -78,43 +170,27 @@ pub fn get_particle_effect(id: &str) -> &EmitterConfig {
 
 pub fn iter_particle_effects() -> HashMapIter<'static, String, EmitterConfig> {
     unsafe { PARTICLE_EFFECTS
-        .as_ref()
-        .unwrap_or_else(|| panic!("Attempted to iter particle effect resources but resources has not been initialized"))
+        .get_or_insert_with(HashMap::new)
         .iter() }
 }
 
-static mut SOUNDS: Option<HashMap<String, Sound>> = None;
+static mut AUDIO: Option<HashMap<String, Sound>> = None;
 
-pub fn try_get_sound(id: &str) -> Option<&mut Sound> {
-    unsafe { SOUNDS
-        .as_mut()
-        .unwrap_or_else(|| panic!("Attempted to load a sound resource but resources has not been initialized"))
-        .get_mut(id) }
+pub fn try_get_sound(id: &str) -> Option<&Sound> {
+    unsafe { AUDIO
+        .get_or_insert_with(HashMap::new)
+        .get(id) }
 }
 
-pub fn get_sound(id: &str) -> &mut Sound {
+pub fn get_sound(id: &str) -> &Sound {
     try_get_sound(id).unwrap()
-}
-
-static mut MUSIC: Option<HashMap<String, Sound>> = None;
-
-pub fn try_get_music(id: &str) -> Option<&mut Sound> {
-    unsafe { MUSIC
-        .as_mut()
-        .unwrap_or_else(|| panic!("Attempted to load a music resource but resources has not been initialized"))
-        .get_mut(id) }
-}
-
-pub fn get_music(id: &str) -> &mut Sound {
-    try_get_music(id).unwrap()
 }
 
 static mut TEXTURES: Option<HashMap<String, TextureResource>> = None;
 
 pub fn try_get_texture(id: &str) -> Option<&TextureResource> {
     unsafe { TEXTURES
-        .as_ref()
-        .unwrap_or_else(|| panic!("Attempted to load a texture resource but resources has not been initialized"))
+        .get_or_insert_with(HashMap::new)
         .get(id) }
 }
 
@@ -124,21 +200,20 @@ pub fn get_texture(id: &str) -> &TextureResource {
 
 pub fn iter_textures() -> HashMapIter<'static, String, TextureResource> {
     unsafe { TEXTURES
-        .as_ref()
-        .unwrap_or_else(|| panic!("Attempted to iter texture resources but resources has not been initialized"))
+        .get_or_insert_with(HashMap::new)
         .iter() }
 }
 
 static mut FONTS: Option<HashMap<String, Font>> = None;
 
-pub fn try_get_font(id: &str) -> Option<&Font> {
+pub fn try_get_font(id: &str) -> Option<Font> {
     unsafe { FONTS
-        .as_ref()
-        .unwrap_or_else(|| panic!("Attempted to load a font resource but resources has not been initialized"))
-        .get(id) }
+        .get_or_insert_with(HashMap::new)
+        .get(id)
+        .copied() }
 }
 
-pub fn get_font(id: &str) -> &Font {
+pub fn get_font(id: &str) -> Font {
     try_get_font(id).unwrap()
 }
 
@@ -160,8 +235,7 @@ static mut DECORATION: Option<HashMap<String, DecorationMetadata>> = None;
 
 pub fn try_get_decoration(id: &str) -> Option<&DecorationMetadata> {
     unsafe { DECORATION
-        .as_ref()
-        .unwrap_or_else(|| panic!("Attempted to load a decoration resource but resources has not been initialized"))
+        .get_or_insert_with(HashMap::new)
         .get(id) }
 }
 
@@ -171,8 +245,7 @@ pub fn get_decoration(id: &str) -> &DecorationMetadata {
 
 pub fn iter_decoration() -> HashMapIter<'static, String, DecorationMetadata> {
     unsafe { DECORATION
-        .as_ref()
-        .unwrap_or_else(|| panic!("Attempted to iter decoration resources but resources has not been initialized"))
+        .get_or_insert_with(HashMap::new)
         .iter() }
 }
 
@@ -182,8 +255,7 @@ static mut IMAGES: Option<HashMap<String, ImageResource>> = None;
 #[cfg(feature = "macroquad-backend")]
 pub fn try_get_image(id: &str) -> Option<&ImageResource> {
     unsafe { IMAGES
-        .as_ref()
-        .unwrap_or_else(|| panic!("Attempted to load an image resource but resources has not been initialized"))
+        .get_or_insert_with(HashMap::new)
         .get(id) }
 }
 
@@ -195,56 +267,56 @@ pub fn get_image(id: &str) -> &ImageResource {
 #[cfg(feature = "macroquad-backend")]
 pub fn iter_images() -> HashMapIter<'static, String, ImageResource> {
     unsafe { IMAGES
-        .as_ref()
-        .unwrap_or_else(|| panic!("Attempted to iter image resources but resources has not been initialized"))
+        .get_or_insert_with(HashMap::new)
         .iter() }
 }
 
-// TODO: Cleaner handling of custom resources
-pub async fn load_resources<P, C, I>(path: P, characters: &mut Vec<C>, items: &mut HashMap<String, I>, should_overwrite: bool) -> Result<()>
-    where P: AsRef<Path>, C: Clone + DeserializeOwned, I: Clone + CustomResource + DeserializeOwned {
-    let path = path.as_ref();
-
-    unsafe { ASSETS_DIR = Some(path.to_string_lossy().to_string()) };
-
-    load_particle_effects(&path,  should_overwrite).await?;
-    load_sounds(&path,  should_overwrite).await?;
-    load_music(&path,  should_overwrite).await?;
-    load_textures(&path,  should_overwrite).await?;
-    load_decoration(&path,  should_overwrite).await?;
-    load_maps(&path,  should_overwrite).await?;
-
-    #[cfg(feature = "macroquad-backend")]
-    load_images(&path,  should_overwrite).await?;
-
-    load_characters(&path, characters, should_overwrite).await?;
-    load_items(&path, items, should_overwrite).await?;
-
-    Ok(())
+pub struct ModLoadingIterator {
+    extension: &'static str,
+    active_mods: Vec<String>,
+    next_i: usize,
 }
 
-pub async fn load_mods<P, C, I>(path: P, characters: &mut Vec<C>, items: &mut HashMap<String, I>) -> Result<()>
-    where P: AsRef<Path>, C: Clone + DeserializeOwned, I: Clone + CustomResource + DeserializeOwned {
-    let path = path.as_ref();
+impl ModLoadingIterator {
+    pub async fn new<P: AsRef<Path>, E: Into<Option<&'static str>>>(path: P, ext: E) -> Result<Self> {
+        let path = path.as_ref();
 
-    unsafe { MODS_DIR = Some(path.to_string_lossy().to_string()) };
+        set_mods_dir(path);
 
-    let active_mods_file_path = path
-        .join(ACTIVE_MODS_FILE_NAME)
-        .with_extension(DEFAULT_RESOURCE_FILES_EXTENSION);
+        let ext = ext.into().unwrap_or(DEFAULT_RESOURCE_FILE_EXTENSION);
 
-    let loaded_mods: &mut Vec<ModMetadata> = unsafe { LOADED_MODS.as_mut() };
+        let active_mods_file_path = path
+            .join(ACTIVE_MODS_FILE_NAME)
+            .with_extension(ext);
 
-    let mod_dirs: Vec<String> = load_json_file(active_mods_file_path).await?;
+        let bytes = load_file(active_mods_file_path).await?;
 
-    for mod_dir in mod_dirs.iter() {
-        let mod_dir_path = path.join(mod_dir);
+        let active_mods: Vec<String> = deserialize_bytes_by_extension(ext, &bytes)?;
 
-        let mod_file_path = mod_dir_path
+        Ok(ModLoadingIterator {
+            extension: ext,
+            active_mods,
+            next_i: 0,
+        })
+    }
+
+    pub async fn next(&mut self) -> Result<Option<(String, ModMetadata)>> {
+        if self.next_i >= self.active_mods.len() {
+            return Ok(None);
+        }
+
+        let current_mod = &self.active_mods[self.next_i];
+
+        let mod_path = Path::new(&mods_dir())
+            .join(current_mod);
+
+        let mod_file_path = mod_path
             .join(MOD_FILE_NAME)
-            .with_extension(DEFAULT_RESOURCE_FILES_EXTENSION);
+            .with_extension(self.extension);
 
-        let meta: ModMetadata = load_json_file(mod_file_path).await?;
+        let bytes = load_file(mod_file_path).await?;
+
+        let meta: ModMetadata = deserialize_bytes_by_extension(self.extension, &bytes)?;
 
         let mut has_game_version_mismatch = false;
 
@@ -254,7 +326,7 @@ pub async fn load_mods<P, C, I>(path: P, characters: &mut Vec<C>, items: &mut Ha
 
                 #[cfg(debug_assertions)]
                 println!(
-                    "Loading mod {} (v{}) failed: Game version requirement mismatch (v{})",
+                    "WARNING: Loading mod {} (v{}) failed: Game version requirement mismatch (v{})",
                     &meta.id, &meta.version, req_version
                 );
             }
@@ -264,7 +336,7 @@ pub async fn load_mods<P, C, I>(path: P, characters: &mut Vec<C>, items: &mut Ha
             let mut has_unmet_dependencies = false;
 
             for dependency in &meta.dependencies {
-                let res = loaded_mods
+                let res = loaded_mods()
                     .iter()
                     .find(|&meta| meta.id == dependency.id && meta.version == dependency.version);
 
@@ -273,7 +345,7 @@ pub async fn load_mods<P, C, I>(path: P, characters: &mut Vec<C>, items: &mut Ha
 
                     #[cfg(debug_assertions)]
                     println!(
-                        "Loading mod {} (v{}) failed: Unmet dependency {} (v{})",
+                        "WARNING: Loading mod {} (v{}) failed: Unmet dependency {} (v{})",
                         &meta.id, &meta.version, &dependency.id, &dependency.version
                     );
 
@@ -282,27 +354,20 @@ pub async fn load_mods<P, C, I>(path: P, characters: &mut Vec<C>, items: &mut Ha
             }
 
             if !has_unmet_dependencies {
-                load_resources(mod_dir_path, characters, items, false).await?;
+                loaded_mods_mut().push(meta.clone());
 
-                #[cfg(debug_assertions)]
-                println!("Loaded mod {} (v{})", &meta.id, &meta.version);
+                self.next_i += 1;
 
-                loaded_mods.push(meta);
+                return Ok(Some((mod_path.to_string_lossy().to_string(), meta)))
             }
         }
-    }
 
-    Ok(())
+        Ok(None)
+    }
 }
 
-async fn load_particle_effects<P: AsRef<Path>>(path: P, should_overwrite: bool) -> Result<()> {
-    if unsafe { PARTICLE_EFFECTS.is_none() } {
-        unsafe { PARTICLE_EFFECTS = Some(HashMap::new()) }
-    }
-
-    let particle_effects = unsafe { PARTICLE_EFFECTS
-        .as_mut()
-        .unwrap() };
+pub async fn load_particle_effects<P: AsRef<Path>>(path: P, ext: &str, is_required: bool, should_overwrite: bool) -> Result<()> {
+    let particle_effects = unsafe { PARTICLE_EFFECTS.get_or_insert_with(HashMap::new) };
 
     if should_overwrite {
         particle_effects.clear();
@@ -310,92 +375,76 @@ async fn load_particle_effects<P: AsRef<Path>>(path: P, should_overwrite: bool) 
 
     let particle_effects_file_path = path
         .as_ref()
-        .join(PARTICLE_EFFECTS_DIR)
-        .with_extension(DEFAULT_RESOURCE_FILES_EXTENSION);
+        .join(PARTICLE_EFFECTS_FILE)
+        .with_extension(ext);
 
-    if let Ok(bytes) = load_file(&particle_effects_file_path).await {
-        let metadata: Vec<ParticleEffectMetadata> = deserialize_json_bytes(&bytes)?;
+    match load_file(&particle_effects_file_path).await {
+        Err(err) => if is_required {
+            return Err(err.into());
+        }
+        Ok(bytes) => {
+            let metadata: Vec<ParticleEffectMetadata> = deserialize_bytes_by_extension(ext, &bytes)?;
 
-        for meta in metadata {
-            let file_path = path.as_ref().join(&meta.path);
+            for meta in metadata {
+                let file_path = path.as_ref().join(&meta.path);
 
-            let cfg: EmitterConfig = load_json_file(&file_path).await?;
+                let extension = file_path
+                    .extension()
+                    .unwrap()
+                    .to_str()
+                    .unwrap();
 
-            particle_effects.insert(meta.id, cfg);
+                let bytes = load_file(&file_path).await?;
+
+                let cfg: EmitterConfig = deserialize_bytes_by_extension(extension, &bytes)?;
+
+                particle_effects.insert(meta.id, cfg);
+            }
         }
     }
 
     Ok(())
 }
 
-async fn load_sounds<P: AsRef<Path>>(path: P, should_overwrite: bool) -> Result<()> {
-    if unsafe { SOUNDS.is_none() } {
-        unsafe { SOUNDS = Some(HashMap::new()) }
-    }
-
-    let sounds = unsafe { SOUNDS.as_mut().unwrap() };
+pub async fn load_audio<P: AsRef<Path>>(path: P, ext: &str, is_required: bool, should_overwrite: bool) -> Result<()> {
+    let sounds = unsafe { AUDIO.get_or_insert_with(HashMap::new) };
 
     if should_overwrite {
         sounds.clear();
     }
 
-    let sounds_file_path = path
+    let audio_file_path = path
         .as_ref()
-        .join(SOUNDS_FILE)
-        .with_extension(DEFAULT_RESOURCE_FILES_EXTENSION);
+        .join(AUDIO_FILE)
+        .with_extension(ext);
 
-    if let Ok(bytes) = load_file(&sounds_file_path).await {
-        let metadata: Vec<SoundMetadata> = deserialize_json_bytes(&bytes)?;
+    match load_file(&audio_file_path).await {
+        Err(err) => if is_required {
+            return Err(err.into());
+        }
+        Ok(bytes) => {
+            let metadata: Vec<SoundMetadata> = deserialize_bytes_by_extension(ext, &bytes)?;
 
-        for meta in metadata {
-            let file_path = path.as_ref().join(meta.path);
+            for meta in metadata {
+                let file_path = path.as_ref().join(meta.path);
 
-            let sound = load_sound_file(&file_path).await?;
+                let kind = meta.kind.map(AudioKind::from).unwrap_or_default();
+                let mut sound = load_sound_file(&file_path, kind).await?;
 
-            sounds.insert(meta.id, sound);
+                if let Some(volume) = meta.volume_modifier {
+                    sound.set_volume_modifier(volume);
+                }
+
+                sounds.insert(meta.id, sound);
+            }
         }
     }
 
     Ok(())
 }
 
-async fn load_music<P: AsRef<Path>>(path: P, should_overwrite: bool) -> Result<()> {
-    if unsafe { MUSIC.is_none() } {
-        unsafe { MUSIC = Some(HashMap::new()) }
-    }
-
-    let music = unsafe { MUSIC.as_mut().unwrap() };
-
-    if should_overwrite {
-        music.clear();
-    }
-
-    let music_file_path = path
-        .as_ref()
-        .join(MUSIC_FILE)
-        .with_extension(DEFAULT_RESOURCE_FILES_EXTENSION);
-
-    if let Ok(bytes) = load_file(&music_file_path).await {
-        let metadata: Vec<SoundMetadata> = deserialize_json_bytes(&bytes)?;
-
-        for meta in metadata {
-            let file_path = path.as_ref().join(meta.path);
-
-            let sound = load_sound_file(&file_path).await?;
-
-            music.insert(meta.id, sound);
-        }
-    }
-
-    Ok(())
-}
-
-async fn load_textures<P: AsRef<Path>>(path: P, should_overwrite: bool) -> Result<()> {
-    if unsafe { TEXTURES.is_none() } {
-        unsafe { TEXTURES = Some(HashMap::new()) }
-    }
-
-    let textures = unsafe { TEXTURES.as_mut().unwrap() };
+pub async fn load_textures<P: AsRef<Path>>(path: P, ext: &str, is_required: bool, should_overwrite: bool) -> Result<()> {
+    let textures = unsafe { TEXTURES.get_or_insert_with(HashMap::new) };
 
     if should_overwrite {
         textures.clear();
@@ -404,42 +453,47 @@ async fn load_textures<P: AsRef<Path>>(path: P, should_overwrite: bool) -> Resul
     let textures_file_path = path
         .as_ref()
         .join(TEXTURES_FILE)
-        .with_extension(DEFAULT_RESOURCE_FILES_EXTENSION);
+        .with_extension(ext);
 
-    if let Ok(bytes) = load_file(&textures_file_path).await {
-        let metadata: Vec<TextureMetadata> = deserialize_json_bytes(&bytes)?;
+    match load_file(&textures_file_path).await {
+        Err(err) => if is_required {
+            return Err(err.into());
+        }
+        Ok(bytes) => {
+            let metadata: Vec<TextureMetadata> = deserialize_bytes_by_extension(ext, &bytes)?;
 
-        for meta in metadata {
-            let file_path = path.as_ref().join(&meta.path);
+            for meta in metadata {
+                let file_path = path.as_ref().join(&meta.path);
 
-            let texture = load_texture_file(&file_path, meta.format, meta.filter_mode).await?;
+                let texture = load_texture_file(&file_path, meta.format, meta.filter_mode).await?;
 
-            let key = meta.id.clone();
+                let key = meta.id.clone();
 
-            #[cfg(debug_assertions)]
-            if meta.frame_size.is_none()
-                && meta.kind.is_some()
-                && meta.kind.unwrap() == TextureKind::Spritesheet
-            {
-                println!(
-                    "WARNING: The texture '{}' is a spritesheet but no frame size has been set",
-                    &meta.id
-                );
+                #[cfg(debug_assertions)]
+                if meta.frame_size.is_none()
+                    && meta.kind.is_some()
+                    && meta.kind.unwrap() == TextureKind::Spritesheet
+                {
+                    println!(
+                        "WARNING: The texture '{}' is a spritesheet but no frame size has been set",
+                        &meta.id
+                    );
+                }
+
+                let res = TextureResource {
+                    texture,
+                    meta,
+                };
+
+                textures.insert(key, res);
             }
-
-            let res = TextureResource {
-                texture,
-                meta,
-            };
-
-            textures.insert(key, res);
         }
     }
 
     Ok(())
 }
 
-async fn load_maps<P: AsRef<Path>>(path: P, should_overwrite: bool) -> Result<()> {
+pub async fn load_maps<P: AsRef<Path>>(path: P, ext: &str, is_required: bool, should_overwrite: bool) -> Result<()> {
     let maps: &mut Vec<MapResource> = unsafe { MAPS.borrow_mut() };
 
     if should_overwrite {
@@ -449,38 +503,39 @@ async fn load_maps<P: AsRef<Path>>(path: P, should_overwrite: bool) -> Result<()
     let maps_file_path = path
         .as_ref()
         .join(MAPS_FILE)
-        .with_extension(DEFAULT_RESOURCE_FILES_EXTENSION);
+        .with_extension(ext);
 
-    if let Ok(bytes) = load_file(&maps_file_path).await {
-        let metadata: Vec<MapMetadata> = deserialize_json_bytes(&bytes)?;
+    match load_file(&maps_file_path).await {
+        Err(err) => if is_required {
+            return Err(err.into())
+        }
+        Ok(bytes) => {
+            let metadata: Vec<MapMetadata> = deserialize_bytes_by_extension(ext, &bytes)?;
 
-        for meta in metadata {
-            let map_path = path.as_ref().join(&meta.path);
-            let preview_path = path.as_ref().join(&meta.preview_path);
+            for meta in metadata {
+                let map_path = path.as_ref().join(&meta.path);
+                let preview_path = path.as_ref().join(&meta.preview_path);
 
-            let map = if meta.is_tiled_map {
-                Map::load_tiled(map_path, None).await?
-            } else {
-                Map::load(map_path).await?
-            };
+                let map = if meta.is_tiled_map {
+                    Map::load_tiled(map_path, None).await?
+                } else {
+                    Map::load(map_path).await?
+                };
 
-            let preview = load_texture_file(&preview_path, TextureFormat::Png, TextureFilterMode::Nearest).await?;
+                let preview = load_texture_file(&preview_path, TextureFormat::Png, TextureFilterMode::Nearest).await?;
 
-            let res = MapResource { map, preview, meta };
+                let res = MapResource { map, preview, meta };
 
-            maps.push(res)
+                maps.push(res)
+            }
         }
     }
 
     Ok(())
 }
 
-async fn load_decoration<P: AsRef<Path>>(path: P, should_overwrite: bool) -> Result<()> {
-    if unsafe { DECORATION.is_none() } {
-        unsafe { DECORATION = Some(HashMap::new()) }
-    }
-
-    let decoration = unsafe { DECORATION.as_mut().unwrap() };
+pub async fn load_decoration<P: AsRef<Path>>(path: P, ext: &str, is_required: bool, should_overwrite: bool) -> Result<()> {
+    let decoration = unsafe { DECORATION.get_or_insert_with(HashMap::new) };
 
     if should_overwrite {
         decoration.clear();
@@ -489,17 +544,30 @@ async fn load_decoration<P: AsRef<Path>>(path: P, should_overwrite: bool) -> Res
     let decoration_file_path = path
         .as_ref()
         .join(DECORATION_FILE)
-        .with_extension(DEFAULT_RESOURCE_FILES_EXTENSION);
+        .with_extension(ext);
 
-    if let Ok(bytes) = load_file(&decoration_file_path).await {
-        let decoration_paths: Vec<String> = deserialize_json_bytes(&bytes)?;
+    match load_file(&decoration_file_path).await {
+        Err(err) => if is_required {
+            return Err(err.into());
+        }
+        Ok(bytes) => {
+            let decoration_paths: Vec<String> = deserialize_bytes_by_extension(ext, &bytes)?;
 
-        for decoration_path in decoration_paths {
-            let path = path.as_ref().join(&decoration_path);
+            for decoration_path in decoration_paths {
+                let path = path.as_ref().join(&decoration_path);
 
-            let params: DecorationMetadata = load_json_file(&path).await?;
+                let extension = path
+                    .extension()
+                    .unwrap()
+                    .to_str()
+                    .unwrap();
 
-            decoration.insert(params.id.clone(), params);
+                let bytes = load_file(&path).await?;
+
+                let params: DecorationMetadata = deserialize_bytes_by_extension(extension, &bytes)?;
+
+                decoration.insert(params.id.clone(), params);
+            }
         }
     }
 
@@ -507,12 +575,8 @@ async fn load_decoration<P: AsRef<Path>>(path: P, should_overwrite: bool) -> Res
 }
 
 #[cfg(feature = "macroquad-backend")]
-async fn load_images<P: AsRef<Path>>(path: P, should_overwrite: bool) -> Result<()> {
-    if unsafe { IMAGES.is_none() } {
-        unsafe { IMAGES = Some(HashMap::new()) }
-    }
-
-    let images = unsafe { IMAGES.as_mut().unwrap() };
+pub async fn load_images<P: AsRef<Path>>(path: P, ext: &str, is_required: bool, should_overwrite: bool) -> Result<()> {
+    let images = unsafe { IMAGES.get_or_insert_with(HashMap::new) };
 
     if should_overwrite {
         images.clear();
@@ -521,77 +585,73 @@ async fn load_images<P: AsRef<Path>>(path: P, should_overwrite: bool) -> Result<
     let images_file_path = path
         .as_ref()
         .join(IMAGES_FILE)
-        .with_extension(DEFAULT_RESOURCE_FILES_EXTENSION);
+        .with_extension(ext);
 
-    if let Ok(bytes) = load_file(&images_file_path).await {
-        let metadata: Vec<ImageMetadata> = deserialize_json_bytes(&bytes)?;
+    match load_file(&images_file_path).await {
+        Err(err) => if is_required {
+            return Err(err.into());
+        }
+        Ok(bytes) => {
+            let metadata: Vec<ImageMetadata> = deserialize_bytes_by_extension(ext, &bytes)?;
 
-        for meta in metadata {
-            let file_path = path.as_ref().join(&meta.path);
+            for meta in metadata {
+                let file_path = path.as_ref().join(&meta.path);
 
-            let image = crate::macroquad::texture::load_image(&file_path.to_string_lossy()).await?;
+                let image = crate::macroquad::texture::load_image(&file_path.to_string_lossy()).await?;
 
-            let key = meta.id.clone();
+                let key = meta.id.clone();
 
-            let meta = ImageMetadata {
-                size: vec2(image.width() as f32, image.height() as f32),
-                ..meta
-            };
+                let meta = ImageMetadata {
+                    size: vec2(image.width() as f32, image.height() as f32),
+                    ..meta
+                };
 
-            let res = ImageResource { image, meta };
+                let res = ImageResource { image, meta };
 
-            images.insert(key, res);
+                images.insert(key, res);
+            }
         }
     }
 
-    Ok(())
-}
-
-async fn load_characters<P: AsRef<Path>, C: Clone + DeserializeOwned>(path: P, characters: &mut Vec<C>, should_overwrite: bool) -> Result<()> {
-    if should_overwrite {
-        characters.clear();
-    }
-
-    let characters_file_path = path
-        .as_ref()
-        .join(CHARACTERS_FILE)
-        .with_extension(DEFAULT_RESOURCE_FILES_EXTENSION);
-
-    if let Ok(bytes) = load_file(&characters_file_path).await {
-        let mut meta: Vec<C> = deserialize_json_bytes(&bytes)?;
-        characters.append(&mut meta);
-    }
+    rebuild_gui_theme();
 
     Ok(())
 }
 
-async fn load_items<P: AsRef<Path>, I: Clone + CustomResource + DeserializeOwned>(path: P, items: &mut HashMap<String, I>, should_overwrite: bool) -> Result<()> {
+pub async fn load_fonts<P: AsRef<Path>>(path: P, ext: &str, is_required: bool, should_overwrite: bool) -> Result<()> {
+    let fonts = unsafe { FONTS.get_or_insert_with(HashMap::new) };
+
     if should_overwrite {
-        items.clear();
+        fonts.clear();
     }
 
-    let items_file_path = path
+    let fonts_file_path = path
         .as_ref()
-        .join(ITEMS_FILE)
-        .with_extension(DEFAULT_RESOURCE_FILES_EXTENSION);
+        .join(FONTS_FILE)
+        .with_extension(ext);
 
-    if let Ok(bytes) = load_file(&items_file_path).await {
-        let items_paths: Vec<String> = deserialize_json_bytes(&bytes)?;
+    match load_file(&fonts_file_path).await {
+        Err(err) => if is_required {
+            return Err(err.into());
+        }
+        Ok(bytes) => {
+            let metadata: Vec<FontMetadata> = deserialize_bytes_by_extension(ext, &bytes)?;
 
-        for item_path in items_paths {
-            let path = path.as_ref().join(&item_path);
+            for meta in metadata {
+                let file_path = path.as_ref().join(&meta.path);
 
-            let params: I = load_json_file(&path).await?;
+                let font = load_ttf_font(&file_path).await?;
 
-            items.insert(params.id(), params);
+                let key = meta.id.clone();
+
+                fonts.insert(key, font);
+            }
         }
     }
 
-    Ok(())
-}
+    rebuild_gui_theme();
 
-pub trait CustomResource {
-    fn id(&self) -> String;
+    Ok(())
 }
 
 #[derive(Serialize, Deserialize)]
@@ -603,6 +663,14 @@ struct ParticleEffectMetadata {
 #[derive(Serialize, Deserialize)]
 struct SoundMetadata {
     id: String,
+    /// This determines what volume that will be applied to this sound resource.
+    #[serde(default, rename = "type", skip_serializing_if = "Option::is_none")]
+    kind: Option<String>,
+    /// This can be used to modify the volume of this individual sound resource.
+    /// It should be a value between 0.0 and 1.0.
+    /// Master volume and the volume setting for this particular sound type will still be applied.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    volume_modifier: Option<f32>,
     path: String,
 }
 
@@ -660,6 +728,12 @@ pub struct ImageResource {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FontMetadata {
+    pub id: String,
+    pub path: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MapMetadata {
     pub name: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -713,13 +787,13 @@ pub fn create_map(
 }
 
 pub fn save_map(map_resource: &MapResource) -> Result<()> {
-    let assets_path = Path::new(assets_dir());
-    let export_path = assets_path.join(&map_resource.meta.path);
+    let assets_dir = Path::new(assets_dir());
+    let export_dir = assets_dir.join(&map_resource.meta.path);
 
     {
         let maps: &mut Vec<MapResource> = unsafe { MAPS.borrow_mut() };
 
-        if export_path.exists() {
+        if export_dir.exists() {
             let mut i = 0;
             while i < maps.len() {
                 let res = &maps[i];
@@ -740,7 +814,7 @@ pub fn save_map(map_resource: &MapResource) -> Result<()> {
             }
         }
 
-        map_resource.map.save(export_path)?;
+        map_resource.map.save(export_dir)?;
 
         maps.push(map_resource.clone());
     }
@@ -766,7 +840,7 @@ pub fn delete_map(index: usize) -> Result<()> {
 fn save_maps_file() -> Result<()> {
     let maps_file_path = Path::new(assets_dir())
         .join(MAPS_FILE)
-        .with_extension(DEFAULT_RESOURCE_FILES_EXTENSION);
+        .with_extension(DEFAULT_RESOURCE_FILE_EXTENSION);
 
     let metadata: Vec<MapMetadata> = iter_maps().map(|res| res.meta.clone()).collect();
 

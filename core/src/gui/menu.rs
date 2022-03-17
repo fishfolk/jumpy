@@ -2,10 +2,11 @@ use fishsticks::{Axis, Button, GamepadContext};
 
 use crate::gui::{Panel, BUTTON_FONT_SIZE, BUTTON_MARGIN_V, WINDOW_MARGIN_H, WINDOW_MARGIN_V, GuiTheme};
 
-use crate::input::{is_gamepad_btn_pressed, get_mouse_position, is_key_down, KeyCode, is_key_pressed};
+use crate::input::{is_gamepad_btn_pressed, get_mouse_position, is_key_down, KeyCode, is_key_pressed, get_gamepad_context};
 
 use crate::storage;
 use crate::gui::{Id, Ui, widgets};
+use crate::gui::theme::get_gui_theme;
 use crate::macroquad::time::get_frame_time;
 use crate::math::{Vec2, vec2};
 use crate::viewport::get_viewport;
@@ -182,7 +183,7 @@ impl Menu {
         }
 
         {
-            let gui_theme = storage::get::<GuiTheme>();
+            let gui_theme = get_gui_theme();
             ui.push_skin(&gui_theme.menu);
         }
 
@@ -213,7 +214,7 @@ impl Menu {
         let (should_confirm, should_cancel) = self.update_input();
 
         let header_height = if let Some(header) = &self.header {
-            let gui_theme = storage::get::<GuiTheme>();
+            let gui_theme = get_gui_theme();
             ui.push_skin(&gui_theme.menu_header);
 
             let header_size = ui.calc_size(header);
@@ -256,7 +257,7 @@ impl Menu {
             let entry_size = vec2(size.x - (WINDOW_MARGIN_H * 2.0), Self::ENTRY_HEIGHT);
 
             if let Some(header) = &self.header {
-                let gui_theme = storage::get::<GuiTheme>();
+                let gui_theme = get_gui_theme();
 
                 ui.push_skin(&gui_theme.menu_header);
 
@@ -305,7 +306,7 @@ impl Menu {
                 };
 
                 {
-                    let gui_theme = storage::get::<GuiTheme>();
+                    let gui_theme = get_gui_theme();
                     if entry.is_disabled {
                         ui.push_skin(&gui_theme.menu_disabled);
                     } else if is_selected {
@@ -362,7 +363,7 @@ impl Menu {
                 }
 
                 {
-                    let gui_theme = storage::get::<GuiTheme>();
+                    let gui_theme = get_gui_theme();
                     if entry.is_disabled {
                         ui.push_skin(&gui_theme.menu_disabled);
                     } else if is_selected {
@@ -399,14 +400,14 @@ impl Menu {
         if self.is_first_draw {
             (false, false)
         } else {
-            let gamepad_context = storage::get::<GamepadContext>();
+            let gamepad_ctx = get_gamepad_context();
 
             let mut selection = self.current_selection.map(|s| s as i32);
 
             let mut gamepad_up = false;
             let mut gamepad_down = false;
 
-            for (_, gamepad) in gamepad_context.gamepads() {
+            for (_, gamepad) in gamepad_ctx.gamepads() {
                 gamepad_up = gamepad_up
                     || gamepad.digital_inputs.activated(Button::DPadUp)
                     || gamepad.analog_inputs.digital_value(Axis::LeftStickY) < 0.0;
@@ -456,10 +457,10 @@ impl Menu {
                 self.current_selection = Some(selection);
             }
 
-            let should_confirm = is_gamepad_btn_pressed(Some(&gamepad_context), Button::South)
+            let should_confirm = is_gamepad_btn_pressed(Button::South)
                 || is_key_pressed(KeyCode::Enter);
 
-            let should_cancel = is_gamepad_btn_pressed(Some(&gamepad_context), Button::East)
+            let should_cancel = is_gamepad_btn_pressed(Button::East)
                 || is_key_pressed(KeyCode::Escape);
 
             (should_confirm, should_cancel)

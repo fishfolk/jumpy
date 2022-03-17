@@ -1,6 +1,6 @@
 use std::any::TypeId;
 
-use core::prelude::*;
+use ff_core::prelude::*;
 
 use super::{
     EditorAction, EditorContext, Map, ToolbarElement, ToolbarElementParams, ELEMENT_MARGIN,
@@ -8,7 +8,9 @@ use super::{
 
 use crate::editor::tools::EditorTool;
 use crate::{editor::tools::{get_tool_instance_of_id, EditorToolParams}, GuiTheme};
-use crate::macroquad::ui::{Ui, widgets};
+
+use ff_core::gui::get_gui_theme;
+use ff_core::macroquad::ui::{Ui, widgets};
 
 pub struct ToolSelectorElement {
     params: ToolbarElementParams,
@@ -59,7 +61,7 @@ impl ToolbarElement for ToolSelectorElement {
         let mut res = None;
 
         {
-            let gui_theme = storage::get::<GuiTheme>();
+            let gui_theme = get_gui_theme();
             ui.push_skin(&gui_theme.tool_selector);
         }
 
@@ -103,7 +105,7 @@ impl ToolbarElement for ToolSelectorElement {
             }
 
             if is_selected {
-                let gui_theme = storage::get::<GuiTheme>();
+                let gui_theme = get_gui_theme();
                 ui.push_skin(&gui_theme.tool_selector_selected);
             }
 

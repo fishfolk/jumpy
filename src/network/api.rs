@@ -5,7 +5,7 @@
 pub use mocked::MockApi as Api;
 
 mod mocked {
-    use core::Result;
+    use ff_core::Result;
 
     pub struct MockApi {}
 

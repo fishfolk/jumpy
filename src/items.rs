@@ -11,10 +11,10 @@ use crate::{
     PassiveEffectMetadata, PhysicsBody, QueuedAnimationAction,
 };
 
-use core::Result;
-use core::prelude::*;
+use ff_core::Result;
+use ff_core::prelude::*;
 
-use core::particles::{ParticleEmitter, ParticleEmitterMetadata};
+use ff_core::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::effects::active::spawn_active_effect;
 use crate::physics::PhysicsBodyParams;
 use crate::player::{Player, PlayerInventory, IDLE_ANIMATION_ID};
@@ -26,33 +26,6 @@ pub const EFFECT_ANIMATED_SPRITE_ID: &str = "effect";
 
 pub const GROUND_ANIMATION_ID: &str = "ground";
 pub const ATTACK_ANIMATION_ID: &str = "attack";
-
-static mut ITEMS: Option<HashMap<String, MapItemMetadata>> = None;
-
-pub fn try_get_item(id: &str) -> Option<&MapItemMetadata> {
-    unsafe { ITEMS
-        .as_ref()
-        .unwrap_or_else(|| panic!("Attempted to load an item resource but resources has not been initialized"))
-        .get(id) }
-}
-
-pub fn get_item(id: &str) -> &MapItemMetadata {
-    try_get_item(id).unwrap()
-}
-
-pub fn items() -> &'static HashMap<String, MapItemMetadata> {
-    unsafe { ITEMS.as_ref().unwrap() }
-}
-
-pub fn items_mut() -> &'static mut HashMap<String, MapItemMetadata> {
-    unsafe {
-        if ITEMS.is_none() {
-            ITEMS = Some(HashMap::new());
-        }
-
-        ITEMS.as_mut().unwrap()
-    }
-}
 
 /// This dictates what happens to an item when it is dropped, either manually or on death.
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -158,19 +131,20 @@ pub struct ItemMetadata {
     #[serde(default)]
     pub duration: Option<f32>,
     /// If this is `true` the item will be treated as a hat
-    #[serde(default, rename = "hat", skip_serializing_if = "core::json::is_false")]
+    #[serde(default, rename = "hat", skip_serializing_if = "ff_core::json::is_false")]
     pub is_hat: bool,
 }
 
-#[derive(CustomResource, Clone, Serialize, Deserialize)]
+#[derive(Resource, Clone, Serialize, Deserialize)]
+#[resource(name = "item", path_index = true, crate_name = "ff_core")]
 pub struct MapItemMetadata {
-    #[resource_id]
+    #[resource(id)]
     pub id: String,
     pub name: String,
     #[serde(flatten)]
     pub kind: MapItemKind,
     pub collider_size: Size<f32>,
-    #[serde(default, with = "core::json::vec2_def")]
+    #[serde(default, with = "ff_core::json::vec2_def")]
     pub collider_offset: Vec2,
     #[serde(default)]
     pub uses: Option<u32>,
@@ -179,7 +153,7 @@ pub struct MapItemMetadata {
     #[serde(default)]
     pub deplete_behavior: ItemDepleteBehavior,
     /// This specifies the offset from the player position to where the equipped item is drawn
-    #[serde(default, with = "core::json::vec2_def")]
+    #[serde(default, with = "ff_core::json::vec2_def")]
     pub mount_offset: Vec2,
     /// The parameters for the `AnimationPlayer` that will be used to draw the item
     #[serde(alias = "animation")]
@@ -455,9 +429,7 @@ pub fn fire_weapon(world: &mut World, entity: Entity, owner: Entity) -> Result<(
             weapon.cooldown_timer = 0.0;
 
             if let Some(id) = &weapon.sound_effect_id {
-                let mut sound = get_sound(id);
-
-                play_sound(sound, false);
+                play_sound(id, false);
             }
 
             let mut drawable = world.get_mut::<Drawable>(entity).unwrap();
@@ -546,7 +518,7 @@ pub struct WeaponMetadata {
     pub sound_effect_id: Option<String>,
     /// This specifies the offset between the upper left corner of the weapon's sprite to the
     /// position that will serve as the origin of the weapon's effects
-    #[serde(default, with = "core::json::vec2_def")]
+    #[serde(default, with = "ff_core::json::vec2_def")]
     pub effect_offset: Vec2,
     /// This can specify a maximum amount of weapon uses. If no value is specified, the weapon
     /// will have unlimited uses.

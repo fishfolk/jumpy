@@ -1,12 +1,13 @@
 use fishsticks::GamepadContext;
-use core::prelude::*;
+use ff_core::prelude::*;
 
-use core::gui::{WINDOW_MARGIN_H, WINDOW_MARGIN_V};
-use core::gui::background::draw_main_menu_background;
+use ff_core::gui::{get_gui_theme, WINDOW_MARGIN_H, WINDOW_MARGIN_V};
+use ff_core::gui::background::draw_main_menu_background;
 use crate::GuiTheme;
 
-use crate::macroquad::ui::{root_ui, widgets};
-use crate::macroquad::window::next_frame;
+use ff_core::macroquad::ui::{root_ui, widgets};
+use ff_core::macroquad::window::next_frame;
+use ff_core::resources::MapResource;
 
 const MAP_SELECT_SCREEN_MARGIN_FACTOR: f32 = 0.1;
 const MAP_SELECT_PREVIEW_TARGET_WIDTH: f32 = 250.0;
@@ -25,9 +26,9 @@ pub async fn show_select_map_menu() -> MapResource {
     loop {
         draw_main_menu_background(false);
 
-        let mut gamepad_ctx = storage::get_mut::<GamepadContext>();
+        update_gamepad_context().unwrap();
 
-        let _ = gamepad_ctx.update();
+        let gamepad_ctx = get_gamepad_context();
 
         let mut up = is_key_pressed(KeyCode::Up) || is_key_pressed(KeyCode::W);
         let mut down = is_key_pressed(KeyCode::Down) || is_key_pressed(KeyCode::S);
@@ -73,7 +74,7 @@ pub async fn show_select_map_menu() -> MapResource {
 
         let map_cnt = iter_maps().len();
 
-        let gui_theme = storage::get::<GuiTheme>();
+        let gui_theme = get_gui_theme();
         root_ui().push_skin(&gui_theme.map_selection);
 
         let viewport = get_viewport();
@@ -215,7 +216,7 @@ pub async fn show_select_map_menu() -> MapResource {
                         hovered = i as _;
                     }
 
-                    let texture: core::macroquad::texture::Texture2D = map_entry.preview.into();
+                    let texture: ff_core::macroquad::texture::Texture2D = map_entry.preview.into();
 
                     if widgets::Button::new(texture)
                         .size(rect.size())

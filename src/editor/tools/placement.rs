@@ -1,13 +1,13 @@
-use core::prelude::*;
+use ff_core::prelude::*;
 
 use super::{EditorAction, EditorContext, EditorTool, EditorToolParams};
 
 use crate::editor::EditorCamera;
 
-use core::{
+use ff_core::{
     map::{Map, MapLayerKind},
 };
-use crate::macroquad::experimental::scene;
+use ff_core::macroquad::experimental::scene;
 
 #[derive(Default)]
 pub struct TilePlacementTool {

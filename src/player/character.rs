@@ -6,33 +6,15 @@
 use std::borrow::{Borrow, BorrowMut};
 use serde::{Deserialize, Serialize};
 
-use core::prelude::*;
+use ff_core::prelude::*;
 
 use crate::player::PlayerAnimationMetadata;
 
-static mut CHARACTERS: Vec<CharacterMetadata> = Vec::new();
-
-pub fn try_get_character(index: usize) -> Option<&'static CharacterMetadata> {
-    unsafe { CHARACTERS.get(index) }
-}
-
-pub fn get_character(index: usize) -> &'static CharacterMetadata {
-    try_get_character(index).unwrap()
-}
-
-pub fn characters() -> &'static Vec<CharacterMetadata> {
-    unsafe { CHARACTERS.borrow() }
-}
-
-pub fn characters_mut() -> &'static mut Vec<CharacterMetadata> {
-    unsafe { CHARACTERS.borrow_mut() }
-}
-
-#[derive(CustomResource, Debug, Clone, Serialize, Deserialize)]
+#[derive(Resource, Debug, Clone, Serialize, Deserialize)]
+#[resource(name = "character", iter_only = true, crate_name = "ff_core")]
 pub struct CharacterMetadata {
     /// This is the id of the player character. This should be unique, or it will either overwrite
     /// or be overwritten, depending on load order, if not.
-    #[resource_id]
     pub id: String,
     /// This is the name of the player character, as shown in character selection
     pub name: String,
@@ -55,19 +37,19 @@ pub struct CharacterMetadata {
     /// can be changed with offsets.
     #[serde(
         default = "CharacterMetadata::default_weapon_mount",
-        with = "core::json::vec2_def"
+        with = "ff_core::json::vec2_def"
     )]
     pub weapon_mount: Vec2,
     /// This is the offset from the position of the player to where items are mounted
     #[serde(
         default = "CharacterMetadata::default_item_mount",
-        with = "core::json::vec2_def"
+        with = "ff_core::json::vec2_def"
     )]
     pub item_mount: Vec2,
     /// This is the offset from the position of the player to where the hat is mounted
     #[serde(
         default = "CharacterMetadata::default_hat_mount",
-        with = "core::json::vec2_def"
+        with = "ff_core::json::vec2_def"
     )]
     pub hat_mount: Vec2,
     /// This is the distance from the top of the collider to where the head ends

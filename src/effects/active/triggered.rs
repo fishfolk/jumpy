@@ -1,13 +1,13 @@
-use core::prelude::*;
+use ff_core::prelude::*;
 
 use hecs::{Entity, World};
 
 use serde::{Deserialize, Serialize};
 
-use core::Result;
-use core::prelude::*;
+use ff_core::Result;
+use ff_core::prelude::*;
 
-use core::particles::{ParticleEmitter, ParticleEmitterMetadata};
+use ff_core::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::effects::active::spawn_active_effect;
 use crate::physics;
 use crate::player::{Player, PlayerState};
@@ -293,7 +293,7 @@ pub struct TriggeredEffectMetadata {
     #[serde(default)]
     pub trigger: Vec<TriggeredEffectTrigger>,
     /// This specifies the velocity of the triggers body when it is instantiated.
-    #[serde(default, with = "core::json::vec2_def")]
+    #[serde(default, with = "ff_core::json::vec2_def")]
     pub velocity: Vec2,
     /// This specifies the initial rotation of the sprite.
     #[serde(default)]

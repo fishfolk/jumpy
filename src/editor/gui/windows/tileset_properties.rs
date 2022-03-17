@@ -1,13 +1,13 @@
-use core::prelude::*;
+use ff_core::prelude::*;
 
-use core::gui::combobox::ComboBoxVec;
-use core::gui::combobox::{ComboBoxBuilder, ComboBoxValue};
-use crate::macroquad::hash;
-use crate::macroquad::ui::{Ui, widgets};
+use ff_core::gui::get_gui_theme;
+use ff_core::gui::combobox::{ComboBoxVec, ComboBoxBuilder, ComboBoxValue};
+use ff_core::macroquad::hash;
+use ff_core::macroquad::ui::{Ui, widgets};
 
 use super::{ButtonParams, EditorAction, EditorContext, Map, Window, WindowParams};
-use core::map::MapTileset;
-use core::resources::TextureKind;
+use ff_core::map::MapTileset;
+use ff_core::resources::TextureKind;
 use crate::GuiTheme;
 
 pub struct TilesetPropertiesWindow {
@@ -106,7 +106,7 @@ impl TilesetPropertiesWindow {
             .ui(ui);
 
         {
-            let gui_theme = storage::get::<GuiTheme>();
+            let gui_theme = get_gui_theme();
             ui.push_skin(&gui_theme.tileset_subtile_grid);
         }
 
@@ -117,7 +117,7 @@ impl TilesetPropertiesWindow {
                 let is_selected = self.autotile_mask[i];
 
                 if is_selected {
-                    let gui_theme = storage::get::<GuiTheme>();
+                    let gui_theme = get_gui_theme();
                     ui.push_skin(&gui_theme.tileset_subtile_grid_selected);
                 }
 

@@ -1,7 +1,8 @@
 use crate::macroquad::ui::{root_ui, Ui, widgets};
 use crate::math::{Size, Vec2};
-use crate::prelude::{draw_texture, get_texture, get_viewport};
+use crate::prelude::{draw_texture, get_viewport};
 use crate::rendering::DrawTextureParams;
+use crate::resources::get_texture;
 
 use crate::resources::TextureResource;
 use crate::storage;

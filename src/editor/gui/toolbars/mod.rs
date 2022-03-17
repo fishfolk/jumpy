@@ -1,8 +1,9 @@
 use std::{any::TypeId, collections::HashMap};
 
-use core::prelude::*;
+use ff_core::prelude::*;
 
-use core::{gui::ELEMENT_MARGIN, map::Map};
+use ff_core::gui::{ELEMENT_MARGIN, get_gui_theme};
+use ff_core::map::Map;
 
 use super::{ButtonParams, EditorAction, EditorContext};
 
@@ -26,8 +27,8 @@ mod object_list;
 
 pub use object_list::ObjectListElement;
 use crate::GuiTheme;
-use crate::macroquad::hash;
-use crate::macroquad::ui::{Ui, widgets};
+use ff_core::macroquad::hash;
+use ff_core::macroquad::ui::{Ui, widgets};
 
 #[derive(Debug, Default, Clone)]
 pub struct ToolbarElementParams {
@@ -131,7 +132,7 @@ impl Toolbar {
         let mut res = None;
 
         {
-            let gui_theme = storage::get::<GuiTheme>();
+            let gui_theme = get_gui_theme();
             ui.push_skin(&gui_theme.toolbar);
         }
 
@@ -151,7 +152,7 @@ impl Toolbar {
                 let mut position = Vec2::ZERO;
 
                 {
-                    let gui_theme = storage::get::<GuiTheme>();
+                    let gui_theme = get_gui_theme();
                     ui.push_skin(&gui_theme.toolbar_bg);
                     widgets::Button::new("")
                         .position(position)
@@ -183,7 +184,7 @@ impl Toolbar {
                         let mut content_size = element_size;
 
                         if let Some(header) = &params.header {
-                            let gui_theme = storage::get::<GuiTheme>();
+                            let gui_theme = get_gui_theme();
                             ui.push_skin(&gui_theme.toolbar_header_bg);
 
                             let header_height = ui.calc_size(header).y;
@@ -235,7 +236,7 @@ impl Toolbar {
                                 .position(menubar_position)
                                 .ui(ui, |ui| {
                                     {
-                                        let gui_theme = storage::get::<GuiTheme>();
+                                        let gui_theme = get_gui_theme();
                                         ui.push_skin(&gui_theme.toolbar_button);
                                     }
 
@@ -282,7 +283,7 @@ impl Toolbar {
                                             }
 
                                             if button.action.is_none() {
-                                                let gui_theme = storage::get::<GuiTheme>();
+                                                let gui_theme = get_gui_theme();
                                                 ui.push_skin(
                                                     &gui_theme.toolbar_button_disabled,
                                                 );

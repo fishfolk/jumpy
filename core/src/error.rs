@@ -251,10 +251,10 @@ cfg_if! {
 macro_rules! formaterr {
     ($kind:path, $($arg:tt)*) => ({
         let res = format!($($arg)*);
-        $crate::error::Error::new_message($kind, &res)
+        $crate::Error::new_message($kind, &res)
     });
     ($($arg:tt)*) => ({
         let res = format!($($arg)*);
-        $crate::error::Error::new_const($crate::error::ErrorKind::General, &res)
+        $crate::Error::new_const($crate::error::ErrorKind::General, &res)
     });
 }

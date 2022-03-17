@@ -1,12 +1,12 @@
 use hecs::{Entity, With, Without, World};
 
-use core::prelude::*;
+use ff_core::prelude::*;
 
 use crate::items::{
     fire_weapon, ItemDepleteBehavior, ItemDropBehavior, Weapon, EFFECT_ANIMATED_SPRITE_ID,
     GROUND_ANIMATION_ID, ITEMS_DRAW_ORDER, SPRITE_ANIMATED_SPRITE_ID,
 };
-use core::particles::ParticleEmitter;
+use ff_core::particles::ParticleEmitter;
 use crate::player::{Player, PlayerController, PlayerState, IDLE_ANIMATION_ID, PICKUP_GRACE_TIME};
 use crate::{Drawable, Item, PassiveEffectInstance, PhysicsBody};
 

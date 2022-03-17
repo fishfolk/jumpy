@@ -1,13 +1,12 @@
-use core::prelude::*;
+use ff_core::prelude::*;
 
-use core::map::MapBackgroundLayer;
-use core::map::Map;
-use core::gui::{ELEMENT_MARGIN, theme::LIST_BOX_ENTRY_HEIGHT};
-use core::gui::GuiTheme;
-use core::resources::TextureKind;
+use ff_core::map::MapBackgroundLayer;
+use ff_core::map::Map;
+use ff_core::gui::{ELEMENT_MARGIN, get_gui_theme, theme::LIST_BOX_ENTRY_HEIGHT};
+use ff_core::resources::TextureKind;
 
-use crate::macroquad::hash;
-use crate::macroquad::ui::{Ui, widgets};
+use ff_core::macroquad::hash;
+use ff_core::macroquad::ui::{Ui, widgets};
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 
@@ -127,7 +126,7 @@ impl Window for BackgroundPropertiesWindow {
         let layer_list_entry_size = vec2(layer_list_size.x, LIST_BOX_ENTRY_HEIGHT);
 
         {
-            let gui_theme = storage::get::<GuiTheme>();
+            let gui_theme = get_gui_theme();
             ui.push_skin(&gui_theme.list_box_no_bg);
         }
 
@@ -145,7 +144,7 @@ impl Window for BackgroundPropertiesWindow {
                             }
 
                             if is_selected {
-                                let gui_theme = storage::get::<GuiTheme>();
+                                let gui_theme = get_gui_theme();
                                 ui.push_skin(&gui_theme.list_box_selected);
                             }
 

@@ -9,6 +9,7 @@ use crate::storage;
 use super::{WINDOW_MARGIN_H, WINDOW_MARGIN_V};
 
 use crate::gui::{GuiTheme, Id, Ui, widgets};
+use crate::gui::theme::get_gui_theme;
 use crate::math::{UVec2, Vec2, vec2};
 use crate::rendering::draw_rectangle;
 use crate::resources::get_texture;
@@ -57,10 +58,10 @@ impl Panel {
     /// minus the window margins.
     pub fn ui<F: FnOnce(&mut Ui, Vec2)>(&self, ui: &mut Ui, f: F) {
         {
-            let gui_themes = storage::get::<GuiTheme>();
+            let gui_theme = get_gui_theme();
 
             if let Some(background_color) = self.background_color {
-                ui.push_skin(&gui_themes.panel_no_bg);
+                ui.push_skin(&gui_theme.panel_no_bg);
 
                 draw_rectangle(
                     self.position.x + Self::BG_OFFSET,
@@ -70,7 +71,7 @@ impl Panel {
                     background_color,
                 );
             } else {
-                ui.push_skin(&gui_themes.panel);
+                ui.push_skin(&gui_theme.panel);
             }
         }
 
@@ -85,8 +86,8 @@ impl Panel {
         let mut content_size = self.size - (window_margins * 2.0);
 
         if let Some(title) = &self.title {
-            let gui_themes = storage::get::<GuiTheme>();
-            ui.push_skin(&gui_themes.window_header);
+            let gui_theme = get_gui_theme();
+            ui.push_skin(&gui_theme.window_header);
 
             let label_size = ui.calc_size(title);
             let mut label_position = content_position;
@@ -225,8 +226,8 @@ impl NewPanel {
         let mut content_size = full_size - (window_margins * 2.0);
 
         if let Some(title) = &self.title {
-            let gui_themes = storage::get::<GuiTheme>();
-            ui.push_skin(&gui_themes.window_header);
+            let gui_theme = get_gui_theme();
+            ui.push_skin(&gui_theme.window_header);
 
             let label_size = ui.calc_size(title);
             let mut label_position = content_position;

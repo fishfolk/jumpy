@@ -1,14 +1,15 @@
-use core::prelude::*;
+use ff_core::prelude::*;
 
-use core::gui::combobox::ComboBoxVec;
-use core::map::MapObject;
-use core::{
+use ff_core::gui::combobox::ComboBoxVec;
+use ff_core::map::MapObject;
+use ff_core::{
     gui::{ComboBoxBuilder, ComboBoxValue},
     map::{Map, MapObjectKind},
 };
-use crate::items::items;
-use crate::macroquad::hash;
-use crate::macroquad::ui::{Ui, widgets};
+use ff_core::macroquad::hash;
+use ff_core::macroquad::ui::{Ui, widgets};
+
+use crate::items::iter_items;
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 
@@ -138,9 +139,8 @@ impl Window for ObjectPropertiesWindow {
             .build(ui, &mut object.kind);
 
         let item_ids = match object.kind {
-            MapObjectKind::Item => items()
-                .keys()
-                .map(|k| k.as_str())
+            MapObjectKind::Item => iter_items()
+                .map(|(k, _)| k.as_str())
                 .collect::<Vec<&str>>(),
             MapObjectKind::Environment => vec!["sproinger"],
             MapObjectKind::Decoration => iter_decoration()

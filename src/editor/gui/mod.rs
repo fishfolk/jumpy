@@ -6,7 +6,8 @@ pub mod windows;
 
 mod editor_menu;
 
-pub use core::gui::combobox::{ComboBoxBuilder, ComboBoxValue};
+use ff_core::gui::get_gui_theme;
+pub use ff_core::gui::combobox::{ComboBoxBuilder, ComboBoxValue};
 
 pub use editor_menu::{
     close_editor_menu, draw_editor_menu, is_editor_menu_open, open_editor_menu, toggle_editor_menu,
@@ -14,11 +15,11 @@ pub use editor_menu::{
     EDITOR_MENU_RESULT_QUIT, EDITOR_MENU_RESULT_SAVE, EDITOR_MENU_RESULT_SAVE_AS,
 };
 
-use core::prelude::*;
+use ff_core::prelude::*;
 
 use super::{EditorAction, EditorContext};
 
-use core::{gui::ELEMENT_MARGIN, map::Map};
+use ff_core::{gui::ELEMENT_MARGIN, map::Map};
 
 pub use toolbars::{
     LayerListElement, ObjectListElement, TilesetDetailsElement, TilesetListElement,
@@ -30,12 +31,12 @@ pub use windows::{
     TilesetPropertiesWindow, Window, WINDOW_BUTTON_MAX_WIDTH, WINDOW_BUTTON_MIN_WIDTH,
 };
 
-use core::gui::{BUTTON_FONT_SIZE, BUTTON_MARGIN_V, WINDOW_MARGIN_H, WINDOW_MARGIN_V};
-use core::map::MapLayerKind;
+use ff_core::gui::{BUTTON_FONT_SIZE, BUTTON_MARGIN_V, WINDOW_MARGIN_H, WINDOW_MARGIN_V};
+use ff_core::map::MapLayerKind;
 use context_menu::{ContextMenu, ContextMenuEntry};
 use crate::GuiTheme;
-use crate::macroquad::hash;
-use crate::macroquad::ui::{root_ui, widgets};
+use ff_core::macroquad::hash;
+use ff_core::macroquad::ui::{root_ui, widgets};
 
 #[derive(Debug, Default, Clone)]
 pub struct ButtonParams {
@@ -181,7 +182,7 @@ impl EditorGui {
         let ui = &mut root_ui();
 
         {
-            let gui_theme = storage::get::<GuiTheme>();
+            let gui_theme = get_gui_theme();
             ui.push_skin(&gui_theme.default);
         }
 
@@ -213,7 +214,7 @@ impl EditorGui {
                     let mut content_position = Vec2::ZERO;
 
                     if let Some(title) = &params.title {
-                        let gui_theme = storage::get::<GuiTheme>();
+                        let gui_theme = get_gui_theme();
                         ui.push_skin(&gui_theme.window_header);
 
                         ui.label(content_position, title);
@@ -261,7 +262,7 @@ impl EditorGui {
 
                                 for button in buttons {
                                     if button.action.is_none() {
-                                        let gui_theme = storage::get::<GuiTheme>();
+                                        let gui_theme = get_gui_theme();
                                         ui.push_skin(&gui_theme.button_disabled);
                                     }
 

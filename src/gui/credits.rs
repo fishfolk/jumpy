@@ -2,9 +2,9 @@ use std::path::Path;
 
 use fishsticks::{Button, GamepadContext};
 
-use core::prelude::*;
-use core::text::{load_ttf_font, draw_text, TextParams};
-use crate::macroquad::window::{clear_background, next_frame};
+use ff_core::prelude::*;
+use ff_core::text::{load_ttf_font, draw_text, TextParams};
+use ff_core::macroquad::window::{clear_background, next_frame};
 
 const TEXT_X_OFFSET: f32 = 370.0;
 const MAIN_HEADER_Y_OFFSET: f32 = 300.0;
@@ -70,21 +70,14 @@ enum LabelType {
 }
 
 pub async fn show_game_credits(assets_dir: &str) {
-    let gamepad_context = storage::get::<GamepadContext>();
-
     let mut delta = 200.0;
     let credits = create_game_credits();
 
-    let font = load_ttf_font(
-        Path::new(assets_dir)
-            .join("ui/AnonymousPro-Regular.ttf"),
-    )
-    .await
-    .unwrap();
+    let font = get_font("anonymous_pro_regular");
 
     loop {
         if is_key_pressed(KeyCode::Escape)
-            || is_gamepad_btn_pressed(Some(&gamepad_context), Button::East)
+            || is_gamepad_btn_pressed( Button::East)
         {
             break;
         }

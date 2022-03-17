@@ -1,13 +1,23 @@
 use std::collections::HashMap;
 
-use crate::macroquad::color_u8;
-use crate::macroquad::prelude::Image;
-use crate::macroquad::ui::{root_ui, Skin};
+use macroquad::color_u8;
+use macroquad::prelude::Image;
+use macroquad::ui::{root_ui, Skin};
 
 use crate::color::Color;
 
 use crate::resources::{get_image, ImageResource};
 use crate::math::RectOffset;
+
+static mut GUI_THEME: Option<GuiTheme> = None;
+
+pub fn rebuild_gui_theme() {
+    unsafe { GUI_THEME = Some(GuiTheme::new()) }
+}
+
+pub fn get_gui_theme() -> &'static GuiTheme {
+    unsafe { GUI_THEME.get_or_insert_with(GuiTheme::new) }
+}
 
 use super::{ELEMENT_MARGIN, NO_COLOR};
 

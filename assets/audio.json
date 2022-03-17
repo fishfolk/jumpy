@@ -1,0 +1,92 @@
+[
+  {
+    "id": "across_the_pond",
+    "path": "music/across_the_pond.ogg",
+    "type": "music"
+  },
+  {
+    "id": "ahoy",
+    "path": "music/ahoy!.ogg",
+    "type": "music"
+  },
+  {
+    "id": "bait_the_hook",
+    "path": "music/bait_the_hook.ogg",
+    "type": "music"
+  },
+  {
+    "id": "fish_and_ships",
+    "path": "music/fish_and_ships.ogg",
+    "type": "music"
+  },
+  {
+    "id": "fish_bowl",
+    "path": "music/fish_bowl.ogg",
+    "type": "music"
+  },
+  {
+    "id": "fish_tide",
+    "path": "music/fish_tide.ogg",
+    "type": "music"
+  },
+  {
+    "id": "fishsticks",
+    "path": "music/fishsticks.ogg",
+    "type": "music"
+  },
+  {
+    "id": "krill_or_be_krilled",
+    "path": "music/krill_or_be_krilled.ogg",
+    "type": "music"
+  },
+  {
+    "id": "whale_theme",
+    "path": "music/whale_theme.ogg",
+    "type": "music"
+  },
+  {
+    "id": "thanks_for_all_the_fished",
+    "path": "music/thanks_for_all_the_fished.ogg",
+    "type": "music"
+  },
+  {
+    "id": "jump",
+    "path": "sounds/jump.wav"
+  },
+  {
+    "id": "pickup",
+    "path": "sounds/pickup.wav"
+  },
+  {
+    "id": "land",
+    "path": "sounds/land.wav"
+  },
+  {
+    "id": "slip",
+    "path": "sounds/slip.wav"
+  },
+  {
+    "id": "throw",
+    "path": "sounds/throw.wav"
+  },
+  {
+    "id": "death",
+    "path": "sounds/fish_fillet.wav"
+  },
+  {
+    "id": "shoot",
+    "path": "sounds/shoot.ogg"
+  },
+  {
+    "id": "swing",
+    "path": "sounds/swing.wav"
+  },
+  {
+    "id": "sword",
+    "path": "sounds/sword.wav"
+  },
+  {
+    "id": "explode",
+    "path": "sounds/explode_m.wav"
+  }
+]

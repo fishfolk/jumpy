@@ -1,13 +1,13 @@
-use core::prelude::*;
+use ff_core::prelude::*;
 
 use super::{
     EditorAction, EditorContext, Map, Toolbar, ToolbarElement, ToolbarElementParams,
 };
 
-use core::map::MapLayerKind;
+use ff_core::map::MapLayerKind;
 use crate::editor::gui::ButtonParams;
-use crate::GuiTheme;
-use crate::macroquad::ui::{Ui, widgets};
+use ff_core::macroquad::ui::{Ui, widgets};
+use ff_core::gui::get_gui_theme;
 
 pub struct TilesetListElement {
     params: ToolbarElementParams,
@@ -77,7 +77,7 @@ impl ToolbarElement for TilesetListElement {
         let entry_size = vec2(size.x, Toolbar::LIST_ENTRY_HEIGHT);
         let mut position = Vec2::ZERO;
 
-        let gui_theme = storage::get::<GuiTheme>();
+        let gui_theme = get_gui_theme();
         ui.push_skin(&gui_theme.list_box);
 
         for tileset_id in map.tilesets.keys() {
@@ -88,7 +88,7 @@ impl ToolbarElement for TilesetListElement {
             };
 
             if is_selected {
-                let gui_theme = storage::get::<GuiTheme>();
+                let gui_theme = get_gui_theme();
                 ui.push_skin(&gui_theme.list_box_selected);
             }
 

@@ -1,21 +1,19 @@
 use std::path::Path;
 use fishsticks::GamepadContext;
 
-use core::prelude::*;
+use ff_core::prelude::*;
 
-use core::Result;
+use ff_core::Result;
 
-use core::gui::Panel;
+use ff_core::gui::{Panel, get_gui_theme};
 
-use core::gui::background::draw_main_menu_background;
-use core::resources::{
-    map_name_to_filename, MapResource, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION,
-};
-use core::input::is_gamepad_btn_pressed;
+use ff_core::gui::background::draw_main_menu_background;
+use ff_core::resources::{map_name_to_filename, MapResource, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION, create_map};
+use ff_core::input::is_gamepad_btn_pressed;
 use crate::GuiTheme;
-use crate::macroquad::hash;
-use crate::macroquad::ui::{root_ui, widgets};
-use crate::macroquad::window::next_frame;
+use ff_core::macroquad::hash;
+use ff_core::macroquad::ui::{root_ui, widgets};
+use ff_core::macroquad::window::next_frame;
 
 enum WindowState {
     None,
@@ -37,7 +35,7 @@ pub async fn show_create_map_menu() -> Result<Option<MapResource>> {
 
     next_frame().await;
 
-    let gui_theme = storage::get::<GuiTheme>();
+    let gui_theme = get_gui_theme();
     root_ui().push_skin(&gui_theme.menu);
 
     let mut name = "Unnamed Map".to_string();
@@ -51,11 +49,8 @@ pub async fn show_create_map_menu() -> Result<Option<MapResource>> {
         Path::new(assets_dir()).join(MAP_EXPORTS_DEFAULT_DIR)
     };
 
-    let mut gamepad_system = storage::get_mut::<GamepadContext>();
-
     loop {
-        let _ = gamepad_system.update();
-
+        update_gamepad_context().unwrap();
         draw_main_menu_background(true);
 
         Panel::new(hash!(), size, position)
@@ -130,7 +125,7 @@ pub async fn show_create_map_menu() -> Result<Option<MapResource>> {
                 ui.separator();
 
                 let btn_a =
-                    is_gamepad_btn_pressed(Some(&gamepad_system), fishsticks::Button::South);
+                    is_gamepad_btn_pressed(fishsticks::Button::South);
 
                 let enter = is_key_pressed(KeyCode::Enter);
 
@@ -157,7 +152,7 @@ pub async fn show_create_map_menu() -> Result<Option<MapResource>> {
 
                 ui.same_line(0.0);
 
-                let btn_b = is_gamepad_btn_pressed(Some(&gamepad_system), fishsticks::Button::East);
+                let btn_b = is_gamepad_btn_pressed(fishsticks::Button::East);
 
                 let escape = is_key_pressed(KeyCode::Escape);
 

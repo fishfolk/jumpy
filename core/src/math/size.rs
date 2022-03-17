@@ -1,6 +1,7 @@
 use std::ops;
 
 use serde::{Serialize, Deserialize};
+use crate::math::{AsIVec2, AsUVec2, AsVec2};
 
 use super::{Num, Vec2, vec2, UVec2, uvec2, IVec2, ivec2, cfg_if};
 
@@ -100,6 +101,24 @@ impl<T> ops::DivAssign for Size<T> where T: Num + Copy + ops::DivAssign {
     }
 }
 
+impl AsVec2 for Size<f32> {
+    fn as_vec2(&self) -> Vec2 {
+        vec2(self.width, self.height)
+    }
+}
+
+impl AsIVec2 for Size<i32> {
+    fn as_ivec2(&self) -> IVec2 {
+        ivec2(self.width, self.height)
+    }
+}
+
+impl AsUVec2 for Size<u32> {
+    fn as_uvec2(&self) -> UVec2 {
+        uvec2(self.width, self.height)
+    }
+}
+
 impl<T> From<(T, T)> for Size<T> where T: Num + Copy {
     fn from(tpl: (T, T)) -> Self {
         Size::new(tpl.0, tpl.1)
@@ -117,7 +136,6 @@ impl<T> From<&[T; 2]> for Size<T> where T: Num + Copy {
         Size::new(slice[0], slice[1])
     }
 }
-
 
 impl<T> From<&Size<T>> for [T; 2] where T: Num + Copy {
     fn from(size: &Size<T>) -> Self {
@@ -163,13 +181,13 @@ impl From<Size<f32>> for Vec2 {
 
 cfg_if! {
     if #[cfg(feature = "winit")] {
-        impl<T> From<winit::dpi::PhysicalSize<T>> for Size<T> where T: Num {
+        impl<T> From<winit::dpi::PhysicalSize<T>> for Size<T> where T: Num + Copy {
             fn from(size: winit::dpi::PhysicalSize<T>) -> Self {
                 Size::new(size.width, size.height)
             }
         }
 
-        impl<T> From<Size<T>> for winit::dpi::PhysicalSize<T> where T: Num {
+        impl<T> From<Size<T>> for winit::dpi::PhysicalSize<T> where T: Num + Copy {
             fn from(size: Size<T>) -> Self {
                 winit::dpi::PhysicalSize::new(size.width, size.height)
             }

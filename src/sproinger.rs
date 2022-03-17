@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use hecs::{Entity, World};
 
-use core::Result;
-use core::prelude::*;
+use ff_core::Result;
+use ff_core::prelude::*;
 
 use crate::{Animation, Drawable, PhysicsBody, QueuedAnimationAction};
 
@@ -121,11 +121,7 @@ pub fn fixed_update_sproingers(world: &mut World, delta_time: f32, integration_f
                         CONTRACT_ANIMATION_ID.to_string(),
                     ));
 
-                    {
-                        let mut sound = get_sound(SOUND_EFFECT_ID);
-
-                        play_sound(sound, false);
-                    }
+                    play_sound(SOUND_EFFECT_ID, false);
 
                     continue 'sproingers;
                 }

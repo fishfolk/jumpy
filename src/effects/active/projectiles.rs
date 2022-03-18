@@ -61,11 +61,11 @@ impl TealData for Rectangle {
     }
 }
 #[derive(Clone, MluaTealDerive)]
-pub struct Sprite {
+pub struct SpriteProjectile {
     params: SpriteMetadata,
     can_rotate: bool,
 }
-impl TealData for Sprite {
+impl TealData for SpriteProjectile {
     fn add_methods<'lua, T: tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
         methods.add_method("to_projectile_kind", |_, this, ()| {
             Ok(ProjectileKind::Sprite {
@@ -137,7 +137,7 @@ impl TealData for ProjectileKind {
             if let ProjectileKind::Sprite { can_rotate, params } = this {
                 Ok((
                     true,
-                    Some(Sprite {
+                    Some(SpriteProjectile {
                         can_rotate: *can_rotate,
                         params: params.to_owned(),
                     }),

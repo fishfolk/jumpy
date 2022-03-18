@@ -137,7 +137,7 @@ macro_rules! create_type_component_container {
                             std::borrow::Cow::Borrowed(
                                 stringify!($field_name)
                             ),
-                            <$type_name as tealr::TypeName>::get_type_parts()
+                            <$type_name as tealr::TypeName>::get_marker_type_parts()
 
                         )
                     );

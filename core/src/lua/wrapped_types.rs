@@ -6,7 +6,7 @@ use macroquad::{
     prelude::{Color, Rect, Texture2D, Vec2},
 };
 use tealr::{
-    mlu::{TealData, UserDataWrapper},
+    mlu::{MaybeSend, TealData, UserDataWrapper},
     new_type, TypeBody, TypeName,
 };
 
@@ -183,8 +183,25 @@ impl UserData for RectLua {
         let mut wrapper = UserDataWrapper::from_user_data_methods(methods);
         <Self as TealData>::add_methods(&mut wrapper)
     }
+    fn add_type_methods<'lua, M: hv_lua::UserDataMethods<'lua, hv_alchemy::Type<Self>>>(
+        methods: &mut M,
+    ) where
+        Self: 'static + MaybeSend,
+    {
+        let mut wrapper = UserDataWrapper::from_user_data_methods(methods);
+        <Self as TealData>::add_type_methods(&mut wrapper)
+    }
 }
 impl TealData for RectLua {
+    fn add_type_methods<'lua, M: tealr::mlu::TealDataMethods<'lua, hv_alchemy::Type<Self>>>(
+        methods: &mut M,
+    ) where
+        Self: 'static + MaybeSend,
+    {
+        methods.add_function("new", |_, (x, y, w, h)| {
+            Ok(RectLua::from(Rect::new(x, y, w, h)))
+        })
+    }
     fn add_methods<'lua, T: tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
         methods.add_method("point", |lua, this, ()| {
             Vec2Lua::from(this.0.point()).to_lua(lua)
@@ -232,6 +249,10 @@ impl TypeBody for RectLua {
         gen.fields.push((Cow::Borrowed("y"), f32::get_type_parts()));
         gen.fields.push((Cow::Borrowed("w"), f32::get_type_parts()));
         gen.fields.push((Cow::Borrowed("h"), f32::get_type_parts()));
+    }
+    fn get_type_body_marker(gen: &mut tealr::TypeGenerator) {
+        gen.is_user_data = true;
+        <Self as TealData>::add_type_methods(gen);
     }
 }
 

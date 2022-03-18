@@ -1,9 +1,10 @@
+use hv_alchemy::Type;
 use hv_cell::AtomicRefCell;
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
 use mlua::{FromLua, ToLua, UserData, UserDataMethods};
 use std::{borrow::Cow, collections::HashMap, sync::Arc};
-use tealr::mlu::UserDataWrapper;
+use tealr::mlu::{MaybeSend, UserDataWrapper};
 use tealr::TypeName;
 use tealr::{mlu::TealData, TypeBody};
 
@@ -203,6 +204,13 @@ impl UserData for ParticleEmitter {
         let mut wrapper = UserDataWrapper::from_user_data_methods(methods);
         <Self as TealData>::add_methods(&mut wrapper)
     }
+    fn add_type_methods<'lua, M: UserDataMethods<'lua, Type<Self>>>(methods: &mut M)
+    where
+        Self: 'static + MaybeSend,
+    {
+        let mut wrapper = UserDataWrapper::from_user_data_methods(methods);
+        <Self as TealData>::add_type_methods(&mut wrapper)
+    }
 }
 impl TypeBody for ParticleEmitter {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
@@ -229,6 +237,10 @@ impl TypeBody for ParticleEmitter {
         gen.fields
             .push((Cow::Borrowed("is_active"), bool::get_type_parts()));
     }
+    fn get_type_body_marker(gen: &mut tealr::TypeGenerator) {
+        gen.is_user_data = true;
+        <Self as TealData>::add_type_methods(gen);
+    }
 }
 
 impl TealData for ParticleEmitter {
@@ -240,6 +252,12 @@ impl TealData for ParticleEmitter {
             this.activate();
             Ok(())
         })
+    }
+    fn add_type_methods<'lua, M: tealr::mlu::TealDataMethods<'lua, Type<Self>>>(methods: &mut M)
+    where
+        Self: 'static + tealr::mlu::MaybeSend,
+    {
+        methods.add_function("new", |_, meta| Ok(ParticleEmitter::new(meta)))
     }
 }
 

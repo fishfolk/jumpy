@@ -10,7 +10,7 @@ use std::{
     sync::Arc,
 };
 use tealr::{
-    mlu::{TealData, UserDataWrapper},
+    mlu::{MaybeSend, TealData, UserDataWrapper},
     TypeBody, TypeName,
 };
 
@@ -170,6 +170,14 @@ impl UserData for DrawableKind {
         let mut wrapper = UserDataWrapper::from_user_data_methods(methods);
         <Self as TealData>::add_methods(&mut wrapper)
     }
+    fn add_type_methods<'lua, M: hv_lua::UserDataMethods<'lua, hv_alchemy::Type<Self>>>(
+        methods: &mut M,
+    ) where
+        Self: 'static + MaybeSend,
+    {
+        let mut wrapper = UserDataWrapper::from_user_data_methods(methods);
+        <Self as TealData>::add_type_methods(&mut wrapper)
+    }
 }
 impl TealData for DrawableKind {
     fn add_methods<'lua, T: tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
@@ -201,6 +209,26 @@ impl TealData for DrawableKind {
                 Ok((false, None))
             }
         });
+    }
+    fn add_type_methods<'lua, M: tealr::mlu::TealDataMethods<'lua, hv_alchemy::Type<Self>>>(
+        methods: &mut M,
+    ) where
+        Self: 'static + tealr::mlu::MaybeSend,
+    {
+        methods.add_function("new_sprite", |_, v| Ok(Self::Sprite(v)));
+        methods.add_function("new_sprite", |_, v| Ok(Self::AnimatedSprite(v)));
+        methods.add_function("new_sprite", |_, v| Ok(Self::AnimatedSpriteSet(v)));
+        methods.add_function("new_sprite", |_, v| Ok(Self::SpriteSet(v)));
+    }
+}
+impl TypeBody for DrawableKind {
+    fn get_type_body(gen: &mut tealr::TypeGenerator) {
+        gen.is_user_data = true;
+        <Self as TealData>::add_methods(gen);
+    }
+    fn get_type_body_marker(gen: &mut tealr::TypeGenerator) {
+        gen.is_user_data = true;
+        <Self as TealData>::add_type_methods(gen);
     }
 }
 

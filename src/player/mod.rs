@@ -78,7 +78,7 @@ pub struct Player {
 }
 
 impl<'lua> FromLua<'lua> for Player {
-    fn from_lua(lua_value: hv_lua::Value<'lua>, lua: &'lua hv_lua::Lua) -> hv_lua::Result<Self> {
+    fn from_lua(lua_value: hv_lua::Value<'lua>, _: &'lua hv_lua::Lua) -> hv_lua::Result<Self> {
         let table = core::lua::get_table(lua_value)?;
         Ok(Self {
             index: table.get("index")?,

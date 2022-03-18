@@ -1,3 +1,4 @@
+use core::lua::wrapped_types::RectLua;
 use std::{error::Error, sync::Arc};
 
 use hecs::World;
@@ -10,8 +11,12 @@ use tealr::TypeName;
 
 use crate::effects::active::projectiles::Projectile;
 use crate::effects::active::triggered::TriggeredEffect;
+use crate::particles::ParticleEmitter;
 use crate::player::{Player, PlayerEventQueue, PlayerInventory};
-use crate::{Item, Owner, PhysicsBody, Resources, RigidBody};
+use crate::{
+    AnimatedSprite, AnimatedSpriteSet, DrawableKind, Item, Owner, PhysicsBody, Resources,
+    RigidBody, Sprite,
+};
 
 pub(crate) fn run_event(
     event_name: &'static str,
@@ -56,6 +61,12 @@ create_type_component_container!(
     PlayerInventory of CloneComponent<PlayerInventory>,
     PlayerEventQueue of CloneComponent<PlayerEventQueue>,
     Player of CloneComponent<Player>,
+    RectLua of RectLua,
+    ParticleEmitter of ParticleEmitter,
+    AnimatedSprite of AnimatedSprite,
+    AnimatedSpriteSet of AnimatedSpriteSet,
+    DrawableKind of DrawableKind,
+    Sprite of Sprite,
 
 );
 
@@ -63,8 +74,6 @@ pub(crate) fn register_types(lua: &Lua) -> Result<Value, Box<dyn Error>> {
     use hv_lua::ToLua;
     Ok(TypeComponentContainer::new(lua)?.to_lua(lua)?)
 }
-
-use hv_lua as mlua;
 
 #[derive(Clone, Copy, tealr::MluaUserData)]
 pub struct ActorLua(Actor);

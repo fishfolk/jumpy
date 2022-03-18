@@ -24,6 +24,7 @@ core = {path = "./core", package = "fishfight-core"}
 ff-particles = {version = "0.1", features = ["serde"]}
 fishsticks = {git = "https://github.com/fishfight/fishsticks", default-features = false, features = ["gilrs"]}
 hecs = {git = "https://github.com/sdleffler/hv-dev"}
+hv-alchemy = {git = "https://github.com/sdleffler/hv-dev"}
 hv-cell = {git = "https://github.com/sdleffler/hv-dev"}
 hv-lua = {git = "https://github.com/sdleffler/hv-dev"}#imported so its macro's work
 macroquad = {version = "0.3.10"}

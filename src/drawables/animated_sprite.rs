@@ -16,7 +16,7 @@ use macroquad::prelude::*;
 use hecs::World;
 
 use serde::{Deserialize, Serialize};
-use tealr::mlu::{TealData, UserDataWrapper};
+use tealr::mlu::{MaybeSend, TealData, UserDataWrapper};
 use tealr::{TypeBody, TypeName};
 
 use core::{lua::wrapped_types::Vec2Lua, Transform};
@@ -394,6 +394,14 @@ impl UserData for AnimatedSprite {
         let mut wrapper = UserDataWrapper::from_user_data_methods(methods);
         <Self as TealData>::add_methods(&mut wrapper)
     }
+    fn add_type_methods<'lua, M: hv_lua::UserDataMethods<'lua, hv_alchemy::Type<Self>>>(
+        methods: &mut M,
+    ) where
+        Self: 'static + MaybeSend,
+    {
+        let mut wrapper = UserDataWrapper::from_user_data_methods(methods);
+        <Self as TealData>::add_type_methods(&mut wrapper)
+    }
 }
 impl TealData for AnimatedSprite {
     fn add_methods<'lua, T: tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
@@ -429,6 +437,15 @@ impl TealData for AnimatedSprite {
             this.restart();
             Ok(())
         });
+    }
+    fn add_type_methods<'lua, M: tealr::mlu::TealDataMethods<'lua, hv_alchemy::Type<Self>>>(
+        methods: &mut M,
+    ) where
+        Self: 'static + tealr::mlu::MaybeSend,
+    {
+        methods.add_function("new",|_,(texture_id, animations,params): (String, Vec<Animation>, AnimatedSpriteParams)|{
+            Ok(AnimatedSprite::new(&texture_id, &animations, params))
+        })
     }
 }
 impl TypeBody for AnimatedSprite {
@@ -471,6 +488,10 @@ impl TypeBody for AnimatedSprite {
             .push((Cow::Borrowed("is_deactivated"), bool::get_type_parts()));
         gen.fields
             .push((Cow::Borrowed("wait_timer"), f32::get_type_parts()));
+    }
+    fn get_type_body_marker(gen: &mut tealr::TypeGenerator) {
+        gen.is_user_data = true;
+        <Self as TealData>::add_type_methods(gen);
     }
 }
 
@@ -820,6 +841,13 @@ impl TealData for AnimatedSpriteSet {
             Ok(())
         });
     }
+    fn add_type_methods<'lua, M: tealr::mlu::TealDataMethods<'lua, hv_alchemy::Type<Self>>>(
+        methods: &mut M,
+    ) where
+        Self: 'static + MaybeSend,
+    {
+        methods.add_function("new_default", |_, ()| Ok(Self::default()))
+    }
 }
 impl TypeBody for AnimatedSpriteSet {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
@@ -831,6 +859,10 @@ impl TypeBody for AnimatedSpriteSet {
             Cow::Borrowed("map"),
             HashMap::<String, AnimatedSprite>::get_type_parts(),
         ));
+    }
+    fn get_type_body_marker(gen: &mut tealr::TypeGenerator) {
+        gen.is_user_data = true;
+        <Self as TealData>::add_type_methods(gen);
     }
 }
 impl AnimatedSpriteSet {
@@ -996,6 +1028,18 @@ pub struct TweenMetadata {
     pub id: String,
     pub keyframes: Vec<Keyframe>,
 }
+
+impl<'lua> FromLua<'lua> for TweenMetadata {
+    fn from_lua(lua_value: Value<'lua>, lua: &'lua hv_lua::Lua) -> hv_lua::Result<Self> {
+        LuaSerdeExt::from_value(lua, lua_value)
+    }
+}
+impl<'lua> ToLua<'lua> for TweenMetadata {
+    fn to_lua(self, lua: &'lua hv_lua::Lua) -> hv_lua::Result<Value<'lua>> {
+        LuaSerdeExt::to_value(lua, &self)
+    }
+}
+
 impl TypeBody for TweenMetadata {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
         gen.fields

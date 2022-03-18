@@ -63,8 +63,8 @@ use crate::effects::TriggeredEffectTrigger;
 use crate::game::GameMode;
 use crate::items::{ItemDepleteBehavior, ItemDropBehavior, ItemMetadata, Weapon};
 use crate::lua::ActorLua;
-use crate::particles::Particles;
-use crate::player::{Player, PlayerEventKind, PlayerEventQueue, PlayerInventory, PlayerState};
+use crate::particles::{ParticleEmitter, ParticleEmitterMetadata, Particles};
+use crate::player::{Player, PlayerEventKind, PlayerInventory, PlayerState};
 use crate::resources::load_resources;
 pub use effects::{
     ActiveEffectKind, ActiveEffectMetadata, PassiveEffectInstance, PassiveEffectMetadata,
@@ -217,6 +217,7 @@ async fn init_game() -> Result<bool> {
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     let types = tealr::TypeWalker::new()
         .process_type::<World>()
+        .process_type::<ParticleEmitterMetadata>()
         .process_type::<PassiveEffectMetadata>()
         .process_type::<PlayerEventKind>()
         .process_type::<Vec2Lua>()
@@ -247,19 +248,40 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         .process_type::<Animation>()
         .process_type::<Keyframe>()
         .process_type::<AnimatedSpriteParams>()
+        .process_type::<AnimatedSprite>()
         .process_type::<QueuedAnimationAction>()
         .process_type::<Tween>()
         .process_type::<DynamicQuery>()
+        .process_type::<ParticleEmitter>()
         .process_type::<ActiveEffectKind>()
         .process_type::<effects::active::projectiles::Circle>()
         .process_type::<Rectangle>()
-        .process_type::<effects::active::projectiles::Sprite>()
+        .process_type::<effects::active::projectiles::SpriteProjectile>()
         .process_type::<ActiveEffectKindCircleCollider>()
         .process_type::<ActiveEffectKindRectCollider>()
         .process_type::<ActiveEffectKindTriggeredEffect>()
         .process_type::<ActiveEffectKindProjectile>()
         .process_type::<SoundLua>()
-        .process_type::<CloneComponent<tealr::mlu::generics::X>>();
+        .process_type::<AnimationMetadata>()
+        .process_type::<AnimatedSpriteMetadata>()
+        .process_type::<CloneComponent<tealr::mlu::generics::X>>()
+        .process_type::<TweenMetadata>()
+        .process_type::<Drawable>()
+        .process_type::<SpriteSet>()
+        .process_type::<Sprite>()
+        .process_type::<SpriteParams>()
+        .process_type::<crate::drawables::DrawableKind>()
+        .process_type::<AnimatedSpriteSet>()
+        .process_type::<crate::lua::TypeComponentContainer>()
+        .process_type_as_marker::<CloneComponent<tealr::mlu::generics::X>>()
+        .process_type_as_marker::<Owner>()
+        .process_type_as_marker::<ParticleEmitter>()
+        .process_type_as_marker::<RectLua>()
+        .process_type_as_marker::<Animation>()
+        .process_type_as_marker::<AnimatedSprite>()
+        .process_type_as_marker::<crate::drawables::DrawableKind>()
+        .process_type_as_marker::<AnimatedSpriteSet>()
+        .process_type_as_marker::<Sprite>();
     println!("time to generate the json files");
     std::fs::write("./test.json", serde_json::to_string_pretty(&types).unwrap()).unwrap();
     std::fs::write("./test.d.tl", types.generate_global("test").unwrap()).unwrap();

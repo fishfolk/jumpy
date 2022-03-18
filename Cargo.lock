@@ -1557,7 +1557,7 @@ dependencies = [
 [[package]]
 name = "tealr"
 version = "0.8.2"
-source = "git+https://github.com/lenscas/tealr?branch=temporary/feature/add_support_for_hv_lua#e0a96b3a6862ae55cb9fa93b6e93e4764987ade3"
+source = "git+https://github.com/lenscas/tealr?branch=temporary/feature/add_support_for_hv_lua#d706d1918a4efb77d6693d416af20da04f473055"
 dependencies = [
  "bstr",
  "hecs",
@@ -1573,7 +1573,7 @@ dependencies = [
 [[package]]
 name = "tealr_derive"
 version = "0.8.2"
-source = "git+https://github.com/lenscas/tealr?branch=temporary/feature/add_support_for_hv_lua#e0a96b3a6862ae55cb9fa93b6e93e4764987ade3"
+source = "git+https://github.com/lenscas/tealr?branch=temporary/feature/add_support_for_hv_lua#d706d1918a4efb77d6693d416af20da04f473055"
 dependencies = [
  "proc-macro2",
  "quote",

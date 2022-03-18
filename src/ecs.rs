@@ -14,7 +14,9 @@ pub struct Owner(pub Entity);
 impl UserData for Owner {}
 impl TealData for Owner {}
 impl TypeBody for Owner {
-    fn get_type_body(_: &mut tealr::TypeGenerator) {}
+    fn get_type_body(gen: &mut tealr::TypeGenerator) {
+        gen.is_user_data = true;
+    }
 }
 /// Placeholder until we implement threading
 #[derive(Default)]

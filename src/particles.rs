@@ -50,21 +50,21 @@ pub struct ParticleEmitterMetadata {
 impl TypeBody for ParticleEmitterMetadata {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
         gen.fields
-            .push((Cow::Borrowed("particle_effect"), Cow::Borrowed("String")));
+            .push((Cow::Borrowed("particle_effect"), String::get_type_parts()));
         gen.fields
-            .push((Cow::Borrowed("offset"), Cow::Borrowed("Vec2")));
+            .push((Cow::Borrowed("offset"), Vec2Lua::get_type_parts()));
         gen.fields
-            .push((Cow::Borrowed("delay"), Cow::Borrowed("number")));
+            .push((Cow::Borrowed("delay"), f32::get_type_parts()));
         gen.fields
-            .push((Cow::Borrowed("interval"), Cow::Borrowed("number")));
+            .push((Cow::Borrowed("interval"), f32::get_type_parts()));
         gen.fields
-            .push((Cow::Borrowed("emissions"), Cow::Borrowed("integer")));
+            .push((Cow::Borrowed("emissions"), Option::<u32>::get_type_parts()));
         gen.fields.push((
             Cow::Borrowed("animations"),
-            Cow::Borrowed("AnimatedSpriteMetaData"),
+            Option::<AnimatedSpriteMetadata>::get_type_parts(),
         ));
         gen.fields
-            .push((Cow::Borrowed("should_autostart"), Cow::Borrowed("boolean")));
+            .push((Cow::Borrowed("should_autostart"), bool::get_type_parts()));
     }
 }
 
@@ -210,40 +210,24 @@ impl TypeBody for ParticleEmitter {
         <Self as TealData>::add_methods(gen);
         gen.fields.push((
             Cow::Borrowed("particle_effect_id"),
-            tealr::type_parts_to_str(String::get_type_parts()),
+            String::get_type_parts(),
         ));
-        gen.fields.push((
-            Cow::Borrowed("offset"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("delay"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("emissions"),
-            tealr::type_parts_to_str(Option::<u32>::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("interval"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("emission_cnt"),
-            tealr::type_parts_to_str(u32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("delay_timer"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("interval_timer"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("is_active"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("offset"), Vec2Lua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("delay"), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("emissions"), Option::<u32>::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("interval"), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("emission_cnt"), u32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("delay_timer"), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("interval_timer"), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("is_active"), bool::get_type_parts()));
     }
 }
 

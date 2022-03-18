@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use hv_lua::{FromLua, ToLua};
 use macroquad::prelude::*;
-use tealr::TypeBody;
+use tealr::{TypeBody, TypeName};
 
 use crate::lua::wrapped_types::Vec2Lua;
 #[derive(Debug, Default, tealr::TypeName, Clone)]
@@ -59,8 +59,8 @@ impl<'lua> FromLua<'lua> for Transform {
 impl TypeBody for Transform {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
         gen.fields
-            .push((Cow::Borrowed("position"), Cow::Borrowed("Vec2")));
+            .push((Cow::Borrowed("position"), Vec2Lua::get_type_parts()));
         gen.fields
-            .push((Cow::Borrowed("rotation"), Cow::Borrowed("number")));
+            .push((Cow::Borrowed("rotation"), f32::get_type_parts()));
     }
 }

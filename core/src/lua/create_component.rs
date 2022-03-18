@@ -43,6 +43,7 @@ impl<T: tealr::TypeName> tealr::TypeName for CopyComponent<T> {
 }
 impl<T: TypeName> tealr::TypeBody for CopyComponent<T> {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
+        gen.is_user_data = true;
         get_type_body_component::<T, Self>(gen)
     }
 }
@@ -104,7 +105,7 @@ fn get_type_body_component<T: TypeName, SelfType: TypeName>(gen: &mut tealr::Typ
     });
     gen.fields.push((
         Cow::Borrowed("value"),
-        tealr::type_parts_to_str(<T as tealr::TypeName>::get_type_parts()),
+        <T as tealr::TypeName>::get_type_parts(),
     ));
 }
 
@@ -130,14 +131,14 @@ macro_rules! create_type_component_container {
         impl<'lua> tealr::TypeBody for $name<'lua> {
             fn get_type_body(gen: &mut tealr::TypeGenerator) {
                 $(
+                    println!("pushing field: {}",stringify!($type_name));
                     gen.fields.push(
                         (
                             std::borrow::Cow::Borrowed(
                                 stringify!($field_name)
                             ),
-                            tealr::type_parts_to_str(
-                                <$type_name as tealr::TypeName>::get_type_parts()
-                            )
+                            <$type_name as tealr::TypeName>::get_type_parts()
+
                         )
                     );
                 )*

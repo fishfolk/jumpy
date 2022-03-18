@@ -12,6 +12,7 @@ use tealr::mlu::TealData;
 
 use core::math::{deg_to_rad, rotate_vector, IsZero};
 use core::Result;
+use std::borrow::Cow;
 use std::sync::Arc;
 
 use crate::Resources;
@@ -33,7 +34,7 @@ pub use projectiles::ProjectileKind;
 const COLLIDER_DEBUG_DRAW_TTL: f32 = 0.5;
 
 use hv_lua as mlua;
-use tealr::{MluaTealDerive, TypeName};
+use tealr::{MluaTealDerive, TypeBody, TypeName};
 #[derive(Clone, MluaTealDerive)]
 struct CircleCollider {
     r: f32,
@@ -230,6 +231,19 @@ pub struct ActiveEffectMetadata {
     pub delay: f32,
 }
 
+impl TypeBody for ActiveEffectMetadata {
+    fn get_type_body(gen: &mut tealr::TypeGenerator) {
+        gen.fields
+            .push((Cow::Borrowed("kind"), ActiveEffectKind::get_type_parts()));
+        gen.fields.push((
+            Cow::Borrowed("sound_effect_id"),
+            Option::<String>::get_type_parts(),
+        ));
+        gen.fields
+            .push((Cow::Borrowed("delay"), f32::get_type_parts()));
+    }
+}
+
 impl<'lua> FromLua<'lua> for ActiveEffectMetadata {
     fn from_lua(lua_value: mlua::Value<'lua>, _: &'lua mlua::Lua) -> mlua::Result<Self> {
         let table = core::lua::get_table(lua_value)?;
@@ -252,7 +266,7 @@ impl<'lua> ToLua<'lua> for ActiveEffectMetadata {
 }
 
 #[derive(Clone, MluaTealDerive)]
-struct ActiveEffectKindCircleCollider {
+pub struct ActiveEffectKindCircleCollider {
     radius: f32,
     passive_effects: Vec<PassiveEffectMetadata>,
     is_lethal: bool,
@@ -272,7 +286,7 @@ impl TealData for ActiveEffectKindCircleCollider {
 }
 
 #[derive(Clone, MluaTealDerive)]
-struct ActiveEffectKindRectCollider {
+pub struct ActiveEffectKindRectCollider {
     width: f32,
     height: f32,
     /// If `true` the effect will do damage to any player it hits
@@ -294,7 +308,7 @@ impl TealData for ActiveEffectKindRectCollider {
     }
 }
 #[derive(Clone, MluaTealDerive)]
-struct ActiveEffectKindTriggeredEffect {
+pub struct ActiveEffectKindTriggeredEffect {
     meta: Box<TriggeredEffectMetadata>,
 }
 impl TealData for ActiveEffectKindTriggeredEffect {
@@ -308,7 +322,7 @@ impl TealData for ActiveEffectKindTriggeredEffect {
 }
 
 #[derive(Clone, MluaTealDerive)]
-struct ActiveEffectKindProjectile {
+pub struct ActiveEffectKindProjectile {
     kind: ProjectileKind,
     speed: f32,
     range: f32,

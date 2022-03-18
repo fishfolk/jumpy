@@ -178,50 +178,34 @@ impl<'lua> ToLua<'lua> for Item {
 
 impl TypeBody for Item {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
-        gen.fields.push((
-            Cow::Borrowed("id"),
-            tealr::type_parts_to_str(String::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("name"),
-            tealr::type_parts_to_str(String::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("id"), String::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("name"), String::get_type_parts()));
         gen.fields.push((
             Cow::Borrowed("effects"),
-            tealr::type_parts_to_str(Vec::<PassiveEffectMetadata>::get_type_parts()),
+            Vec::<PassiveEffectMetadata>::get_type_parts(),
         ));
-        gen.fields.push((
-            Cow::Borrowed("uses"),
-            tealr::type_parts_to_str(Option::<u32>::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("duration"),
-            tealr::type_parts_to_str(Option::<f32>::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("mount_offset"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("uses"), Option::<u32>::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("duration"), Option::<f32>::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("mount_offset"), Vec2Lua::get_type_parts()));
         gen.fields.push((
             Cow::Borrowed("drop_behavior"),
-            tealr::type_parts_to_str(ItemDropBehavior::get_type_parts()),
+            ItemDropBehavior::get_type_parts(),
         ));
         gen.fields.push((
             Cow::Borrowed("deplete_behavior"),
-            tealr::type_parts_to_str(ItemDepleteBehavior::get_type_parts()),
+            ItemDepleteBehavior::get_type_parts(),
         ));
-        gen.fields.push((
-            Cow::Borrowed("is_hat"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("duration_timer"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("use_cnt"),
-            tealr::type_parts_to_str(u32::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("is_hat"), bool::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("duration_timer"), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("use_cnt"), u32::get_type_parts()));
     }
 }
 
@@ -244,7 +228,7 @@ impl Item {
 }
 
 /// This holds the parameters used when constructing an `Equipment`
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, TypeName)]
 pub struct ItemMetadata {
     /// The effects that will be instantiated when the item is equipped
     #[serde(default)]
@@ -273,16 +257,12 @@ impl TypeBody for ItemMetadata {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
         gen.fields.push((
             Cow::Borrowed("effects"),
-            tealr::type_parts_to_str(Vec::<PassiveEffectMetadata>::get_type_parts()),
+            Vec::<PassiveEffectMetadata>::get_type_parts(),
         ));
-        gen.fields.push((
-            Cow::Borrowed("duration"),
-            tealr::type_parts_to_str(Option::<f32>::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("is_hat"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("duration"), Option::<f32>::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("is_hat"), bool::get_type_parts()));
     }
 }
 
@@ -555,62 +535,42 @@ impl<'lua> ToLua<'lua> for Weapon {
 
 impl TypeBody for Weapon {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
-        gen.fields.push((
-            Cow::Borrowed("id"),
-            tealr::type_parts_to_str(String::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("name"),
-            tealr::type_parts_to_str(String::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("id"), String::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("name"), String::get_type_parts()));
         gen.fields.push((
             Cow::Borrowed("effects"),
-            tealr::type_parts_to_str(Vec::<ActiveEffectMetadata>::get_type_parts()),
+            Vec::<ActiveEffectMetadata>::get_type_parts(),
         ));
         gen.fields.push((
             Cow::Borrowed("sound_effect"),
-            tealr::type_parts_to_str(Option::<SoundLua>::get_type_parts()),
+            Option::<SoundLua>::get_type_parts(),
         ));
-        gen.fields.push((
-            Cow::Borrowed("recoil"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("cooldown"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("attack_duration"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("uses"),
-            tealr::type_parts_to_str(Option::<u32>::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("mount_offset"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("effect_offset"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("recoil"), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("cooldown"), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("attack_duration"), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("uses"), Option::<u32>::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("mount_offset"), Vec2Lua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("effect_offset"), Vec2Lua::get_type_parts()));
         gen.fields.push((
             Cow::Borrowed("drop_behavior"),
-            tealr::type_parts_to_str(ItemDropBehavior::get_type_parts()),
+            ItemDropBehavior::get_type_parts(),
         ));
         gen.fields.push((
             Cow::Borrowed("deplete_behavior"),
-            tealr::type_parts_to_str(ItemDepleteBehavior::get_type_parts()),
+            ItemDepleteBehavior::get_type_parts(),
         ));
-        gen.fields.push((
-            Cow::Borrowed("cooldown_timer"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("use_cnt"),
-            tealr::type_parts_to_str(u32::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("cooldown_timer"), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("use_cnt"), u32::get_type_parts()));
     }
 }
 
@@ -813,39 +773,29 @@ impl TypeBody for WeaponMetadata {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
         gen.fields.push((
             Cow::Borrowed("effects"),
-            tealr::type_parts_to_str(Vec::<ActiveEffectMetadata>::get_type_parts()),
+            Vec::<ActiveEffectMetadata>::get_type_parts(),
         ));
         gen.fields.push((
             Cow::Borrowed("particles"),
-            tealr::type_parts_to_str(Vec::<ParticleEmitterMetadata>::get_type_parts()),
+            Vec::<ParticleEmitterMetadata>::get_type_parts(),
         ));
         gen.fields.push((
             Cow::Borrowed("sound_effect_id"),
-            tealr::type_parts_to_str(Option::<String>::get_type_parts()),
+            Option::<String>::get_type_parts(),
         ));
-        gen.fields.push((
-            Cow::Borrowed("effect_offset"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("uses"),
-            tealr::type_parts_to_str(Option::<u32>::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("cooldown"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("attack_duration"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("recoil"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("effect_offset"), Vec2Lua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("uses"), Option::<u32>::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("cooldown"), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("attack_duration"), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("recoil"), f32::get_type_parts()));
         gen.fields.push((
             Cow::Borrowed("effect_sprite"),
-            tealr::type_parts_to_str(Option::<AnimatedSpriteMetadata>::get_type_parts()),
+            Option::<AnimatedSpriteMetadata>::get_type_parts(),
         ));
     }
 }

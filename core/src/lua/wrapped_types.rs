@@ -54,15 +54,13 @@ impl<'lua> FromLua<'lua> for Vec2Lua {
 
 impl TypeName for Vec2Lua {
     fn get_type_parts() -> Cow<'static, [tealr::NamePart]> {
-        tealr::new_type!(Vec, External)
+        tealr::new_type!(Vec2, External)
     }
 }
 impl TypeBody for Vec2Lua {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
-        gen.fields
-            .push((Cow::Borrowed("x"), Cow::Borrowed("number")));
-        gen.fields
-            .push((Cow::Borrowed("y"), Cow::Borrowed("number")));
+        gen.fields.push((Cow::Borrowed("x"), f32::get_type_parts()));
+        gen.fields.push((Cow::Borrowed("y"), f32::get_type_parts()));
     }
 }
 
@@ -73,6 +71,16 @@ pub struct ColorLua {
     pub b: f32,
     pub a: f32,
 }
+
+impl TypeBody for ColorLua {
+    fn get_type_body(gen: &mut tealr::TypeGenerator) {
+        gen.fields.push((Cow::Borrowed("r"), f32::get_type_parts()));
+        gen.fields.push((Cow::Borrowed("g"), f32::get_type_parts()));
+        gen.fields.push((Cow::Borrowed("b"), f32::get_type_parts()));
+        gen.fields.push((Cow::Borrowed("a"), f32::get_type_parts()));
+    }
+}
+
 impl TypeName for ColorLua {
     fn get_type_parts() -> Cow<'static, [tealr::NamePart]> {
         tealr::new_type!(Color, External)
@@ -220,26 +228,10 @@ impl TypeBody for RectLua {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
         gen.is_user_data = true;
         <Self as TealData>::add_methods(gen);
-        gen.fields.push((
-            Cow::Borrowed("x"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("y"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("w"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("h"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("x"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
+        gen.fields.push((Cow::Borrowed("x"), f32::get_type_parts()));
+        gen.fields.push((Cow::Borrowed("y"), f32::get_type_parts()));
+        gen.fields.push((Cow::Borrowed("w"), f32::get_type_parts()));
+        gen.fields.push((Cow::Borrowed("h"), f32::get_type_parts()));
     }
 }
 
@@ -276,7 +268,9 @@ impl TypeName for SoundLua {
 impl UserData for SoundLua {}
 impl TealData for SoundLua {}
 impl TypeBody for SoundLua {
-    fn get_type_body(_: &mut tealr::TypeGenerator) {}
+    fn get_type_body(gen: &mut tealr::TypeGenerator) {
+        gen.is_user_data = true;
+    }
 }
 
 impl From<Sound> for SoundLua {

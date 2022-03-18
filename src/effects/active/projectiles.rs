@@ -28,7 +28,7 @@ const PROJECTILE_DRAW_ORDER: u32 = 1;
 use hv_lua as mlua;
 
 #[derive(Clone, MluaTealDerive)]
-struct Circle {
+pub struct Circle {
     radius: f32,
     color: ColorLua,
 }
@@ -44,7 +44,7 @@ impl TealData for Circle {
 }
 
 #[derive(Clone, MluaTealDerive)]
-struct Rectangle {
+pub struct Rectangle {
     width: f32,
     height: f32,
     color: ColorLua,
@@ -61,7 +61,7 @@ impl TealData for Rectangle {
     }
 }
 #[derive(Clone, MluaTealDerive)]
-struct Sprite {
+pub struct Sprite {
     params: SpriteMetadata,
     can_rotate: bool,
 }
@@ -187,29 +187,19 @@ impl<'lua> ToLua<'lua> for Projectile {
 
 impl TypeBody for Projectile {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
-        gen.fields.push((
-            Cow::Borrowed("kind"),
-            tealr::type_parts_to_str(ProjectileKind::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("owner"),
-            tealr::type_parts_to_str(Entity::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("origin"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("range"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("is_lethal"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("kind"), ProjectileKind::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("owner"), Entity::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("origin"), Vec2Lua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("range"), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("is_lethal"), bool::get_type_parts()));
         gen.fields.push((
             Cow::Borrowed("passive_effects"),
-            tealr::type_parts_to_str(Vec::<PassiveEffectMetadata>::get_type_parts()),
+            Vec::<PassiveEffectMetadata>::get_type_parts(),
         ));
     }
 }

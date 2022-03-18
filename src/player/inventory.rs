@@ -71,42 +71,28 @@ impl<'lua> ToLua<'lua> for PlayerInventory {
 
 impl TypeBody for PlayerInventory {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
-        gen.fields.push((
-            Cow::Borrowed("weapon_mount"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("weapon_mount"), Vec2Lua::get_type_parts()));
         gen.fields.push((
             Cow::Borrowed("weapon_mount_offset"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
+            Vec2Lua::get_type_parts(),
         ));
-        gen.fields.push((
-            Cow::Borrowed("item_mount"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("item_mount"), Vec2Lua::get_type_parts()));
         gen.fields.push((
             Cow::Borrowed("item_mount_offset"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
+            Vec2Lua::get_type_parts(),
         ));
-        gen.fields.push((
-            Cow::Borrowed("hat_mount"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("hat_mount_offset"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("weapon"),
-            tealr::type_parts_to_str(Option::<Entity>::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("items"),
-            tealr::type_parts_to_str(Vec::<Entity>::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("hat"),
-            tealr::type_parts_to_str(Option::<Entity>::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("hat_mount"), Vec2Lua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("hat_mount_offset"), Vec2Lua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("weapon"), Option::<Entity>::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("items"), Vec::<Entity>::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("hat"), Option::<Entity>::get_type_parts()));
     }
 }
 

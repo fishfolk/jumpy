@@ -6,7 +6,7 @@ use macroquad::prelude::*;
 
 use hecs::{Entity, World};
 use tealr::mlu::TealData;
-use tealr::TypeName;
+use tealr::{TypeBody, TypeName};
 
 use core::Transform;
 use std::sync::Arc;
@@ -34,6 +34,11 @@ pub enum PlayerState {
 
 impl UserData for PlayerState {}
 impl TealData for PlayerState {}
+impl TypeBody for PlayerState {
+    fn get_type_body(gen: &mut tealr::TypeGenerator) {
+        gen.is_user_data = true;
+    }
+}
 
 impl Default for PlayerState {
     fn default() -> Self {

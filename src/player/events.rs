@@ -16,7 +16,7 @@ pub struct PlayerEventQueue {
 
 impl TypeName for PlayerEventQueue {
     fn get_type_parts() -> std::borrow::Cow<'static, [tealr::NamePart]> {
-        Vec::<PlayerEventQueue>::get_type_parts()
+        Vec::<PlayerEvent>::get_type_parts()
     }
 }
 

@@ -127,34 +127,20 @@ impl<'lua> ToLua<'lua> for PhysicsBodyParams {
 }
 impl TypeBody for PhysicsBodyParams {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
-        gen.fields.push((
-            Cow::Borrowed("size"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("offset"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("has_mass"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("has_friction"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("can_rotate"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("bouncyness"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("gravity"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("size"), Vec2Lua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("offset"), Vec2Lua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("has_mass"), bool::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("has_friction"), bool::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("can_rotate"), bool::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("bouncyness"), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("gravity"), f32::get_type_parts()));
     }
 }
 
@@ -210,58 +196,32 @@ impl<'lua> FromLua<'lua> for PhysicsBody {
 }
 impl TypeBody for PhysicsBody {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
-        gen.fields.push((
-            Cow::Borrowed("actor"),
-            tealr::type_parts_to_str(ActorLua::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("offset"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("size"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("velocity"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("is_on_ground"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("was_on_ground"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("is_on_platform"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("has_mass"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("has_friction"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("can_rotate"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("bouncyness"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("is_deactivated"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("gravity"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("actor"), ActorLua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("offset"), Vec2Lua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("size"), Vec2Lua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("velocity"), Vec2Lua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("is_on_ground"), bool::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("was_on_ground"), bool::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("is_on_platform"), bool::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("has_mass"), bool::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("has_friction"), bool::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("can_rotate"), bool::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("bouncyness"), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("is_deactivated"), bool::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("gravity"), f32::get_type_parts()));
     }
 }
 impl<'lua> ToLua<'lua> for PhysicsBody {
@@ -419,18 +379,12 @@ impl Default for RigidBodyParams {
 
 impl TypeBody for RigidBodyParams {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
-        gen.fields.push((
-            Cow::Borrowed("offset"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("size"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("can_rotate"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("offset"), Vec2Lua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("size"), Vec2Lua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("can_rotate"), bool::get_type_parts()));
     }
 }
 
@@ -469,22 +423,14 @@ impl<'lua> ToLua<'lua> for RigidBody {
 
 impl TypeBody for RigidBody {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
-        gen.fields.push((
-            Cow::Borrowed("offset"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("size"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("velocity"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("can_rotate"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("offset"), Vec2Lua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("size"), Vec2Lua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("velocity"), Vec2Lua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("can_rotate"), bool::get_type_parts()));
     }
 }
 

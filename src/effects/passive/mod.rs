@@ -246,50 +246,36 @@ impl TypeBody for PassiveEffectInstance {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
         gen.is_user_data = true;
         <Self as TealData>::add_methods(gen);
-        gen.fields.push((
-            Cow::Borrowed("name"),
-            tealr::type_parts_to_str(String::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("name"), String::get_type_parts()));
         gen.fields.push((
             Cow::Borrowed("function"),
-            tealr::type_parts_to_str(Option::<PassiveEffectFnContainer>::get_type_parts()),
+            Option::<PassiveEffectFnContainer>::get_type_parts(),
         ));
         gen.fields.push((
             Cow::Borrowed("activated_on"),
-            tealr::type_parts_to_str(Vec::<PlayerEventKind>::get_type_parts()),
+            Vec::<PlayerEventKind>::get_type_parts(),
         ));
         gen.fields.push((
             Cow::Borrowed("particle_effect_id"),
-            tealr::type_parts_to_str(Option::<String>::get_type_parts()),
+            Option::<String>::get_type_parts(),
         ));
         gen.fields.push((
             Cow::Borrowed("event_particle_effect_id"),
-            tealr::type_parts_to_str(Option::<String>::get_type_parts()),
+            Option::<String>::get_type_parts(),
         ));
-        gen.fields.push((
-            Cow::Borrowed("blocks_damage"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("uses"),
-            tealr::type_parts_to_str(Option::<u32>::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("item"),
-            tealr::type_parts_to_str(Option::<Entity>::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("use_cnt"),
-            tealr::type_parts_to_str(u32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("duration"),
-            tealr::type_parts_to_str(Option::<f32>::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("duration_timer"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("blocks_damage"), bool::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("uses"), Option::<u32>::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("item"), Option::<Entity>::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("use_cnt"), u32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("duration"), Option::<f32>::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("duration_timer"), f32::get_type_parts()));
     }
 }
 
@@ -379,37 +365,29 @@ impl<'lua> ToLua<'lua> for PassiveEffectMetadata {
 
 impl TypeBody for PassiveEffectMetadata {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
-        gen.fields.push((
-            Cow::Borrowed("name"),
-            tealr::type_parts_to_str(String::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("name"), String::get_type_parts()));
         gen.fields.push((
             Cow::Borrowed("function_id"),
-            tealr::type_parts_to_str(Option::<String>::get_type_parts()),
+            Option::<String>::get_type_parts(),
         ));
         gen.fields.push((
             Cow::Borrowed("activated_on"),
-            tealr::type_parts_to_str(Vec::<PlayerEventKind>::get_type_parts()),
+            Vec::<PlayerEventKind>::get_type_parts(),
         ));
         gen.fields.push((
             Cow::Borrowed("particle_effect"),
-            tealr::type_parts_to_str(Option::<String>::get_type_parts()),
+            Option::<String>::get_type_parts(),
         ));
         gen.fields.push((
             Cow::Borrowed("event_particle_effect"),
-            tealr::type_parts_to_str(Option::<String>::get_type_parts()),
+            Option::<String>::get_type_parts(),
         ));
-        gen.fields.push((
-            Cow::Borrowed("blocks_damage"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("uses"),
-            tealr::type_parts_to_str(Option::<u32>::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("duration"),
-            tealr::type_parts_to_str(Option::<f32>::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("blocks_damage"), bool::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("uses"), Option::<u32>::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("duration"), Option::<f32>::get_type_parts()));
     }
 }

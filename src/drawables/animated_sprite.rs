@@ -60,30 +60,20 @@ impl<'lua> ToLua<'lua> for Animation {
 }
 impl TypeBody for Animation {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
-        gen.fields.push((
-            Cow::Borrowed("id"),
-            tealr::type_parts_to_str(String::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("row"),
-            tealr::type_parts_to_str(u32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("frames"),
-            tealr::type_parts_to_str(u32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("fps"),
-            tealr::type_parts_to_str(u32::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("id"), String::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("row"), u32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("frames"), u32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("fps"), u32::get_type_parts()));
         gen.fields.push((
             Cow::Borrowed("tweens"),
-            tealr::type_parts_to_str(HashMap::<String, Tween>::get_type_parts()),
+            HashMap::<String, Tween>::get_type_parts(),
         ));
-        gen.fields.push((
-            Cow::Borrowed("is_looping"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("is_looping"), bool::get_type_parts()));
     }
 }
 
@@ -138,11 +128,11 @@ impl TypeBody for Tween {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
         gen.fields.push((
             Cow::Borrowed("keyframes"),
-            tealr::type_parts_to_str(Vec::<Keyframe>::get_type_parts()),
+            Vec::<Keyframe>::get_type_parts(),
         ));
         gen.fields.push((
             Cow::Borrowed("current_translation"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
+            Vec2Lua::get_type_parts(),
         ));
     }
 }
@@ -173,14 +163,10 @@ pub struct Keyframe {
 }
 impl TypeBody for Keyframe {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
-        gen.fields.push((
-            Cow::Borrowed("frame"),
-            tealr::type_parts_to_str(u32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("translation"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("frame"), u32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("translation"), Vec2Lua::get_type_parts()));
     }
 }
 
@@ -233,35 +219,23 @@ impl TypeBody for AnimatedSpriteParams {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
         gen.fields.push((
             Cow::Borrowed("frame_size"),
-            tealr::type_parts_to_str(Option::<Vec2Lua>::get_type_parts()),
+            Option::<Vec2Lua>::get_type_parts(),
         ));
-        gen.fields.push((
-            Cow::Borrowed("scale"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("offset"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("pivot"),
-            tealr::type_parts_to_str(Option::<Vec2Lua>::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("tint"),
-            tealr::type_parts_to_str(ColorLua::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("is_flipped_x"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("is_flipped_y"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("scale"), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("offset"), Vec2Lua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("pivot"), Option::<Vec2Lua>::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("tint"), ColorLua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("is_flipped_x"), bool::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("is_flipped_y"), bool::get_type_parts()));
         gen.fields.push((
             Cow::Borrowed("autoplay_id"),
-            tealr::type_parts_to_str(Option::<String>::get_type_parts()),
+            Option::<String>::get_type_parts(),
         ));
     }
 }
@@ -461,70 +435,42 @@ impl TypeBody for AnimatedSprite {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
         gen.is_user_data = true;
         <Self as TealData>::add_methods(gen);
-        gen.fields.push((
-            Cow::Borrowed("texture"),
-            tealr::type_parts_to_str(Texture2DLua::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("frame_size"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("scale"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("offset"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("pivot"),
-            tealr::type_parts_to_str(Option::<Vec2Lua>::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("tint"),
-            tealr::type_parts_to_str(ColorLua::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("texture"), Texture2DLua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("frame_size"), Vec2Lua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("scale"), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("offset"), Vec2Lua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("pivot"), Option::<Vec2Lua>::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("tint"), ColorLua::get_type_parts()));
         gen.fields.push((
             Cow::Borrowed("animations"),
-            tealr::type_parts_to_str(Vec::<Animation>::get_type_parts()),
+            Vec::<Animation>::get_type_parts(),
         ));
-        gen.fields.push((
-            Cow::Borrowed("current_index"),
-            tealr::type_parts_to_str(usize::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("current_index"), usize::get_type_parts()));
         gen.fields.push((
             Cow::Borrowed("queued_action"),
-            tealr::type_parts_to_str(Option::<QueuedAnimationAction>::get_type_parts()),
+            Option::<QueuedAnimationAction>::get_type_parts(),
         ));
-        gen.fields.push((
-            Cow::Borrowed("current_frame"),
-            tealr::type_parts_to_str(u32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("frame_timer"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("is_playing"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("is_flipped_x"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("is_flipped_y"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("is_deactivated"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("wait_timer"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("current_frame"), u32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("frame_timer"), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("is_playing"), bool::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("is_flipped_x"), bool::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("is_flipped_y"), bool::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("is_deactivated"), bool::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("wait_timer"), f32::get_type_parts()));
     }
 }
 
@@ -879,13 +825,11 @@ impl TypeBody for AnimatedSpriteSet {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
         gen.is_user_data = true;
         <Self as TealData>::add_methods(gen);
-        gen.fields.push((
-            Cow::Borrowed("draw_order"),
-            tealr::type_parts_to_str(Vec::<String>::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("draw_order"), Vec::<String>::get_type_parts()));
         gen.fields.push((
             Cow::Borrowed("map"),
-            tealr::type_parts_to_str(HashMap::<String, AnimatedSprite>::get_type_parts()),
+            HashMap::<String, AnimatedSprite>::get_type_parts(),
         ));
     }
 }
@@ -1019,30 +963,20 @@ pub struct AnimationMetadata {
 
 impl TypeBody for AnimationMetadata {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
-        gen.fields.push((
-            Cow::Borrowed("id"),
-            tealr::type_parts_to_str(String::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("row"),
-            tealr::type_parts_to_str(u32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("frames"),
-            tealr::type_parts_to_str(u32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("fps"),
-            tealr::type_parts_to_str(u32::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("id"), String::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("row"), u32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("frames"), u32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("fps"), u32::get_type_parts()));
         gen.fields.push((
             Cow::Borrowed("tweens"),
-            tealr::type_parts_to_str(Vec::<TweenMetadata>::get_type_parts()),
+            Vec::<TweenMetadata>::get_type_parts(),
         ));
-        gen.fields.push((
-            Cow::Borrowed("is_looping"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("is_looping"), bool::get_type_parts()));
     }
 }
 
@@ -1064,13 +998,11 @@ pub struct TweenMetadata {
 }
 impl TypeBody for TweenMetadata {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
-        gen.fields.push((
-            Cow::Borrowed("id"),
-            tealr::type_parts_to_str(String::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("id"), String::get_type_parts()));
         gen.fields.push((
             Cow::Borrowed("keyframes"),
-            tealr::type_parts_to_str(Vec::<Keyframe>::get_type_parts()),
+            Vec::<Keyframe>::get_type_parts(),
         ));
     }
 }
@@ -1103,37 +1035,25 @@ pub struct AnimatedSpriteMetadata {
 }
 impl TypeBody for AnimatedSpriteMetadata {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
-        gen.fields.push((
-            Cow::Borrowed("texture_id"),
-            tealr::type_parts_to_str(String::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("scale"),
-            tealr::type_parts_to_str(Option::<f32>::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("offset"),
-            tealr::type_parts_to_str(Vec2Lua::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("pivot"),
-            tealr::type_parts_to_str(Option::<Vec2Lua>::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("tint"),
-            tealr::type_parts_to_str(Option::<ColorLua>::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("texture_id"), String::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("scale"), Option::<f32>::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("offset"), Vec2Lua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("pivot"), Option::<Vec2Lua>::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("tint"), Option::<ColorLua>::get_type_parts()));
         gen.fields.push((
             Cow::Borrowed("animations"),
-            tealr::type_parts_to_str(Vec::<AnimationMetadata>::get_type_parts()),
+            Vec::<AnimationMetadata>::get_type_parts(),
         ));
         gen.fields.push((
             Cow::Borrowed("autoplay_id"),
-            tealr::type_parts_to_str(Option::<String>::get_type_parts()),
+            Option::<String>::get_type_parts(),
         ));
-        gen.fields.push((
-            Cow::Borrowed("is_deactivated"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("is_deactivated"), bool::get_type_parts()));
     }
 }

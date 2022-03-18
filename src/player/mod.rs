@@ -120,57 +120,33 @@ impl<'lua> ToLua<'lua> for Player {
 
 impl TypeBody for Player {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
-        gen.fields.push((
-            Cow::Borrowed("index"),
-            tealr::type_parts_to_str(u8::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("state"),
-            tealr::type_parts_to_str(PlayerState::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("damage_from_left"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("is_facing_left"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("is_upside_down"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("is_attacking"),
-            tealr::type_parts_to_str(bool::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("jump_frame_counter"),
-            tealr::type_parts_to_str(u16::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("pickup_grace_timer"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("incapacitation_timer"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("attack_timer"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("respawn_timer"),
-            tealr::type_parts_to_str(f32::get_type_parts()),
-        ));
-        gen.fields.push((
-            Cow::Borrowed("camera_box"),
-            tealr::type_parts_to_str(RectLua::get_type_parts()),
-        ));
+        gen.fields
+            .push((Cow::Borrowed("index"), u8::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("state"), PlayerState::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("damage_from_left"), bool::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("is_facing_left"), bool::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("is_upside_down"), bool::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("is_attacking"), bool::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("jump_frame_counter"), u16::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("pickup_grace_timer"), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("incapacitation_timer"), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("attack_timer"), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("respawn_timer"), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("camera_box"), RectLua::get_type_parts()));
         gen.fields.push((
             Cow::Borrowed("passive_effects"),
-            tealr::type_parts_to_str(Vec::<PassiveEffectInstance>::get_type_parts()),
+            Vec::<PassiveEffectInstance>::get_type_parts(),
         ));
     }
 }

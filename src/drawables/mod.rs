@@ -53,9 +53,9 @@ impl<'lua> ToLua<'lua> for Drawable {
 impl TypeBody for Drawable {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
         gen.fields
-            .push((Cow::Borrowed("draw_order"), u32::get_type_parts()));
+            .push((Cow::Borrowed("draw_order").into(), u32::get_type_parts()));
         gen.fields
-            .push((Cow::Borrowed("kind"), DrawableKind::get_type_parts()));
+            .push((Cow::Borrowed("kind").into(), DrawableKind::get_type_parts()));
     }
 }
 

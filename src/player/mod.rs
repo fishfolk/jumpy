@@ -121,31 +121,45 @@ impl<'lua> ToLua<'lua> for Player {
 impl TypeBody for Player {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
         gen.fields
-            .push((Cow::Borrowed("index"), u8::get_type_parts()));
+            .push((Cow::Borrowed("index").into(), u8::get_type_parts()));
         gen.fields
-            .push((Cow::Borrowed("state"), PlayerState::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("damage_from_left"), bool::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("is_facing_left"), bool::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("is_upside_down"), bool::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("is_attacking"), bool::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("jump_frame_counter"), u16::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("pickup_grace_timer"), f32::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("incapacitation_timer"), f32::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("attack_timer"), f32::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("respawn_timer"), f32::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("camera_box"), RectLua::get_type_parts()));
+            .push((Cow::Borrowed("state").into(), PlayerState::get_type_parts()));
         gen.fields.push((
-            Cow::Borrowed("passive_effects"),
+            Cow::Borrowed("damage_from_left").into(),
+            bool::get_type_parts(),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("is_facing_left").into(),
+            bool::get_type_parts(),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("is_upside_down").into(),
+            bool::get_type_parts(),
+        ));
+        gen.fields
+            .push((Cow::Borrowed("is_attacking").into(), bool::get_type_parts()));
+        gen.fields.push((
+            Cow::Borrowed("jump_frame_counter").into(),
+            u16::get_type_parts(),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("pickup_grace_timer").into(),
+            f32::get_type_parts(),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("incapacitation_timer").into(),
+            f32::get_type_parts(),
+        ));
+        gen.fields
+            .push((Cow::Borrowed("attack_timer").into(), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("respawn_timer").into(), f32::get_type_parts()));
+        gen.fields.push((
+            Cow::Borrowed("camera_box").into(),
+            RectLua::get_type_parts(),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("passive_effects").into(),
             Vec::<PassiveEffectInstance>::get_type_parts(),
         ));
     }

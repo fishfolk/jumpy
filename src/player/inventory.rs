@@ -71,28 +71,40 @@ impl<'lua> ToLua<'lua> for PlayerInventory {
 
 impl TypeBody for PlayerInventory {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
-        gen.fields
-            .push((Cow::Borrowed("weapon_mount"), Vec2Lua::get_type_parts()));
         gen.fields.push((
-            Cow::Borrowed("weapon_mount_offset"),
+            Cow::Borrowed("weapon_mount").into(),
+            Vec2Lua::get_type_parts(),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("weapon_mount_offset").into(),
+            Vec2Lua::get_type_parts(),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("item_mount").into(),
+            Vec2Lua::get_type_parts(),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("item_mount_offset").into(),
             Vec2Lua::get_type_parts(),
         ));
         gen.fields
-            .push((Cow::Borrowed("item_mount"), Vec2Lua::get_type_parts()));
+            .push((Cow::Borrowed("hat_mount").into(), Vec2Lua::get_type_parts()));
         gen.fields.push((
-            Cow::Borrowed("item_mount_offset"),
+            Cow::Borrowed("hat_mount_offset").into(),
             Vec2Lua::get_type_parts(),
         ));
-        gen.fields
-            .push((Cow::Borrowed("hat_mount"), Vec2Lua::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("hat_mount_offset"), Vec2Lua::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("weapon"), Option::<Entity>::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("items"), Vec::<Entity>::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("hat"), Option::<Entity>::get_type_parts()));
+        gen.fields.push((
+            Cow::Borrowed("weapon").into(),
+            Option::<Entity>::get_type_parts(),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("items").into(),
+            Vec::<Entity>::get_type_parts(),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("hat").into(),
+            Option::<Entity>::get_type_parts(),
+        ));
     }
 }
 

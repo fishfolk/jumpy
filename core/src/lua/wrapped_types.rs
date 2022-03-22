@@ -59,8 +59,10 @@ impl TypeName for Vec2Lua {
 }
 impl TypeBody for Vec2Lua {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
-        gen.fields.push((Cow::Borrowed("x"), f32::get_type_parts()));
-        gen.fields.push((Cow::Borrowed("y"), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("x").into(), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("y").into(), f32::get_type_parts()));
     }
 }
 
@@ -74,10 +76,14 @@ pub struct ColorLua {
 
 impl TypeBody for ColorLua {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
-        gen.fields.push((Cow::Borrowed("r"), f32::get_type_parts()));
-        gen.fields.push((Cow::Borrowed("g"), f32::get_type_parts()));
-        gen.fields.push((Cow::Borrowed("b"), f32::get_type_parts()));
-        gen.fields.push((Cow::Borrowed("a"), f32::get_type_parts()));
+        gen.fields
+            .push(("r".as_bytes().to_vec().into(), f32::get_type_parts()));
+        gen.fields
+            .push(("g".as_bytes().to_vec().into(), f32::get_type_parts()));
+        gen.fields
+            .push(("b".as_bytes().to_vec().into(), f32::get_type_parts()));
+        gen.fields
+            .push(("a".as_bytes().to_vec().into(), f32::get_type_parts()));
     }
 }
 
@@ -157,26 +163,8 @@ impl TypeName for RectLua {
 }
 impl UserData for RectLua {
     fn add_fields<'lua, F: hv_lua::UserDataFields<'lua, Self>>(fields: &mut F) {
-        fields.add_field_method_get("x", |lua, this| this.0.x.to_lua(lua));
-        fields.add_field_method_get("y", |lua, this| this.0.y.to_lua(lua));
-        fields.add_field_method_get("w", |lua, this| this.0.w.to_lua(lua));
-        fields.add_field_method_get("h", |lua, this| this.0.h.to_lua(lua));
-        fields.add_field_method_set("x", |_, this, value| {
-            this.0.x = value;
-            Ok(())
-        });
-        fields.add_field_method_set("y", |_, this, value| {
-            this.0.y = value;
-            Ok(())
-        });
-        fields.add_field_method_set("w", |_, this, value| {
-            this.0.w = value;
-            Ok(())
-        });
-        fields.add_field_method_set("h", |_, this, value| {
-            this.0.h = value;
-            Ok(())
-        });
+        let mut wrapper = UserDataWrapper::from_user_data_fields(fields);
+        <Self as TealData>::add_fields(&mut wrapper)
     }
 
     fn add_methods<'lua, M: hv_lua::UserDataMethods<'lua, Self>>(methods: &mut M) {
@@ -203,16 +191,12 @@ impl TealData for RectLua {
         })
     }
     fn add_methods<'lua, T: tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
-        methods.add_method("point", |lua, this, ()| {
-            Vec2Lua::from(this.0.point()).to_lua(lua)
-        });
-        methods.add_method("size", |lua, this, ()| {
-            Vec2Lua::from(this.0.size()).to_lua(lua)
-        });
-        methods.add_method("left", |lua, this, ()| this.0.left().to_lua(lua));
-        methods.add_method("right", |lua, this, ()| this.0.right().to_lua(lua));
-        methods.add_method("top", |lua, this, ()| this.0.top().to_lua(lua));
-        methods.add_method("bottom", |lua, this, ()| this.0.bottom().to_lua(lua));
+        methods.add_method("point", |lua, this, ()| Ok(Vec2Lua::from(this.0.point())));
+        methods.add_method("size", |lua, this, ()| Ok(Vec2Lua::from(this.0.size())));
+        methods.add_method("left", |lua, this, ()| Ok(this.0.left()));
+        methods.add_method("right", |lua, this, ()| Ok(this.0.right()));
+        methods.add_method("top", |lua, this, ()| Ok(this.0.top()));
+        methods.add_method("bottom", |lua, this, ()| Ok(this.0.bottom()));
         methods.add_method_mut("move_to", |_, this, vec: Vec2Lua| {
             this.0.move_to(vec.into());
             Ok(())
@@ -222,33 +206,49 @@ impl TealData for RectLua {
             Ok(())
         });
         methods.add_method("contains", |lua, this, point: Vec2Lua| {
-            this.0.contains(point.into()).to_lua(lua)
+            Ok(this.0.contains(point.into()))
         });
         methods.add_method("overlaps", |lua, this, other: RectLua| {
-            this.0.overlaps(&other.into()).to_lua(lua)
+            Ok(this.0.overlaps(&other.into()))
         });
         methods.add_method("combine_with", |lua, this, other: RectLua| {
-            RectLua::from(this.0.combine_with(other.into())).to_lua(lua)
+            Ok(RectLua::from(this.0.combine_with(other.into())))
         });
         methods.add_method("intersect", |lua, this, other: RectLua| {
-            this.0
-                .intersect(other.into())
-                .map(RectLua::from)
-                .to_lua(lua)
+            Ok(this.0.intersect(other.into()).map(RectLua::from))
         });
         methods.add_method("offset", |lua, this, offset: Vec2Lua| {
-            RectLua::from(this.0.offset(offset.into())).to_lua(lua)
+            Ok(RectLua::from(this.0.offset(offset.into())))
+        });
+    }
+    fn add_fields<'lua, F: tealr::mlu::TealDataFields<'lua, Self>>(fields: &mut F) {
+        fields.add_field_method_get("x", |lua, this| Ok(this.0.x));
+        fields.add_field_method_get("y", |lua, this| Ok(this.0.y));
+        fields.add_field_method_get("w", |lua, this| Ok(this.0.w));
+        fields.add_field_method_get("h", |lua, this| Ok(this.0.h));
+        fields.add_field_method_set("x", |_, this, value| {
+            this.0.x = value;
+            Ok(())
+        });
+        fields.add_field_method_set("y", |_, this, value| {
+            this.0.y = value;
+            Ok(())
+        });
+        fields.add_field_method_set("w", |_, this, value| {
+            this.0.w = value;
+            Ok(())
+        });
+        fields.add_field_method_set("h", |_, this, value| {
+            this.0.h = value;
+            Ok(())
         });
     }
 }
 impl TypeBody for RectLua {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
         gen.is_user_data = true;
+        <Self as TealData>::add_fields(gen);
         <Self as TealData>::add_methods(gen);
-        gen.fields.push((Cow::Borrowed("x"), f32::get_type_parts()));
-        gen.fields.push((Cow::Borrowed("y"), f32::get_type_parts()));
-        gen.fields.push((Cow::Borrowed("w"), f32::get_type_parts()));
-        gen.fields.push((Cow::Borrowed("h"), f32::get_type_parts()));
     }
     fn get_type_body_marker(gen: &mut tealr::TypeGenerator) {
         gen.is_user_data = true;

@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use hv_lua::{FromLua, ToLua};
-use tealr::{NamePart, TealType, TypeName};
+use tealr::{NameContainer, NamePart, TealType, TypeName};
 
 #[derive(Debug, Clone, Copy)]
 pub struct CopyComponent<T>(T);
@@ -44,7 +44,12 @@ impl<T: tealr::TypeName> tealr::TypeName for CopyComponent<T> {
 impl<T: TypeName> tealr::TypeBody for CopyComponent<T> {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
         gen.is_user_data = true;
-        get_type_body_component::<T, Self>(gen)
+        get_body_component::<T, Self>(gen);
+        //dbg!(gen);
+    }
+    fn get_type_body_marker(gen: &mut tealr::TypeGenerator) {
+        gen.is_user_data = true;
+        get_type_body_component::<T, Self>(gen);
     }
 }
 
@@ -88,8 +93,18 @@ impl<T: tealr::TypeName> tealr::TypeName for CloneComponent<T> {
 }
 impl<T: TypeName> tealr::TypeBody for CloneComponent<T> {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
-        get_type_body_component::<T, Self>(gen)
+        get_body_component::<T, Self>(gen);
     }
+    fn get_type_body_marker(gen: &mut tealr::TypeGenerator) {
+        get_type_body_component::<T, Self>(gen);
+    }
+}
+
+fn get_body_component<T: TypeName, SelfType: TypeName>(gen: &mut tealr::TypeGenerator) {
+    gen.fields.push((
+        "value".as_bytes().to_vec().into(),
+        <T as tealr::TypeName>::get_type_parts(),
+    ));
 }
 
 fn get_type_body_component<T: TypeName, SelfType: TypeName>(gen: &mut tealr::TypeGenerator) {
@@ -97,18 +112,12 @@ fn get_type_body_component<T: TypeName, SelfType: TypeName>(gen: &mut tealr::Typ
     signature.append(&mut T::get_type_parts().into_owned());
     signature.push(NamePart::Symbol(Cow::Borrowed("):")));
     signature.append(&mut SelfType::get_type_parts().into_owned());
-
     gen.methods.push(tealr::ExportedFunction {
         name: Cow::Borrowed("new").into(),
         signature: Cow::Owned(signature),
         is_meta_method: false,
     });
-    gen.fields.push((
-        Cow::Borrowed("value"),
-        <T as tealr::TypeName>::get_type_parts(),
-    ));
 }
-
 #[macro_export]
 macro_rules! create_type_component_container {
     ($name:ident with $($field_name:ident of $type_name:ty,)+) => {
@@ -134,9 +143,8 @@ macro_rules! create_type_component_container {
                     println!("pushing field: {}",stringify!($type_name));
                     gen.fields.push(
                         (
-                            std::borrow::Cow::Borrowed(
-                                stringify!($field_name)
-                            ),
+
+                            stringify!($field_name).as_bytes().to_vec().into(),
                             <$type_name as tealr::TypeName>::get_marker_type_parts()
 
                         )

@@ -66,21 +66,31 @@ pub struct SpriteMetadata {
 impl TypeBody for SpriteMetadata {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
         gen.fields
-            .push((Cow::Borrowed("texture"), String::get_type_parts()));
+            .push((Cow::Borrowed("texture").into(), String::get_type_parts()));
         gen.fields
-            .push((Cow::Borrowed("index"), usize::get_type_parts()));
+            .push((Cow::Borrowed("index").into(), usize::get_type_parts()));
+        gen.fields.push((
+            Cow::Borrowed("scale").into(),
+            Option::<f32>::get_type_parts(),
+        ));
         gen.fields
-            .push((Cow::Borrowed("scale"), Option::<f32>::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("offset"), Vec2Lua::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("pivot"), Option::<Vec2Lua>::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("size"), Option::<Vec2Lua>::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("tint"), Option::<ColorLua>::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("is_deactivated"), bool::get_type_parts()));
+            .push((Cow::Borrowed("offset").into(), Vec2Lua::get_type_parts()));
+        gen.fields.push((
+            Cow::Borrowed("pivot").into(),
+            Option::<Vec2Lua>::get_type_parts(),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("size").into(),
+            Option::<Vec2Lua>::get_type_parts(),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("tint").into(),
+            Option::<ColorLua>::get_type_parts(),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("is_deactivated").into(),
+            bool::get_type_parts(),
+        ));
     }
 }
 
@@ -114,15 +124,8 @@ pub struct Sprite {
 
 impl UserData for Sprite {
     fn add_fields<'lua, F: hv_lua::UserDataFields<'lua, Self>>(fields: &mut F) {
-        fields.add_field_method_get("texture", |_, this| Ok(Texture2DLua::from(this.texture)));
-        fields.add_field_method_get("source_rect", |_, this| Ok(RectLua::from(this.source_rect)));
-        fields.add_field_method_get("tint", |_, this| Ok(ColorLua::from(this.tint)));
-        fields.add_field_method_get("scale", |_, this| Ok(this.scale));
-        fields.add_field_method_get("offset", |_, this| Ok(Vec2Lua::from(this.offset)));
-        fields.add_field_method_get("pivot", |_, this| Ok(this.pivot.map(Vec2Lua::from)));
-        fields.add_field_method_get("is_flipped_x", |_, this| Ok(this.is_flipped_x));
-        fields.add_field_method_get("is_flipped_y", |_, this| Ok(this.is_flipped_y));
-        fields.add_field_method_get("is_deactivated", |_, this| Ok(this.is_deactivated));
+        let mut wrapper = UserDataWrapper::from_user_data_fields(fields);
+        <Self as TealData>::add_fields(&mut wrapper)
     }
     fn add_methods<'lua, M: hv_lua::UserDataMethods<'lua, Self>>(methods: &mut M) {
         let mut wrapper = UserDataWrapper::from_user_data_methods(methods);
@@ -138,6 +141,17 @@ impl UserData for Sprite {
     }
 }
 impl TealData for Sprite {
+    fn add_fields<'lua, F: tealr::mlu::TealDataFields<'lua, Self>>(fields: &mut F) {
+        fields.add_field_method_get("texture", |_, this| Ok(Texture2DLua::from(this.texture)));
+        fields.add_field_method_get("source_rect", |_, this| Ok(RectLua::from(this.source_rect)));
+        fields.add_field_method_get("tint", |_, this| Ok(ColorLua::from(this.tint)));
+        fields.add_field_method_get("scale", |_, this| Ok(this.scale));
+        fields.add_field_method_get("offset", |_, this| Ok(Vec2Lua::from(this.offset)));
+        fields.add_field_method_get("pivot", |_, this| Ok(this.pivot.map(Vec2Lua::from)));
+        fields.add_field_method_get("is_flipped_x", |_, this| Ok(this.is_flipped_x));
+        fields.add_field_method_get("is_flipped_y", |_, this| Ok(this.is_flipped_y));
+        fields.add_field_method_get("is_deactivated", |_, this| Ok(this.is_deactivated));
+    }
     fn add_methods<'lua, T: tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
         methods.add_method("size", |_, this, ()| Ok(Vec2Lua::from(this.size())));
         methods.add_method_mut("set_scale", |_, this, scale| {
@@ -159,25 +173,8 @@ impl TealData for Sprite {
 impl TypeBody for Sprite {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
         gen.is_user_data = true;
+        <Self as TealData>::add_fields(gen);
         <Self as TealData>::add_methods(gen);
-        gen.fields
-            .push((Cow::Borrowed("texture"), Texture2DLua::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("source_rect"), RectLua::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("tint"), ColorLua::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("scale"), f32::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("offset"), Vec2Lua::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("pivot"), Option::<Vec2Lua>::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("is_flipped_x"), bool::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("is_flipped_y"), bool::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("is_deactivated"), bool::get_type_parts()));
     }
 
     fn get_type_body_marker(gen: &mut tealr::TypeGenerator) {
@@ -299,27 +296,35 @@ impl<'lua> ToLua<'lua> for SpriteParams {
 impl TypeBody for SpriteParams {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
         gen.fields.push((
-            Cow::Borrowed("sprite_size"),
+            Cow::Borrowed("sprite_size").into(),
             Option::<Vec2Lua>::get_type_parts(),
         ));
         gen.fields
-            .push((Cow::Borrowed("index"), usize::get_type_parts()));
+            .push((Cow::Borrowed("index").into(), usize::get_type_parts()));
         gen.fields
-            .push((Cow::Borrowed("scale"), f32::get_type_parts()));
+            .push((Cow::Borrowed("scale").into(), f32::get_type_parts()));
         gen.fields
-            .push((Cow::Borrowed("offset"), Vec2Lua::get_type_parts()));
+            .push((Cow::Borrowed("offset").into(), Vec2Lua::get_type_parts()));
+        gen.fields.push((
+            Cow::Borrowed("pivot").into(),
+            Option::<Vec2Lua>::get_type_parts(),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("size").into(),
+            Option::<Vec2Lua>::get_type_parts(),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("tint").into(),
+            Option::<ColorLua>::get_type_parts(),
+        ));
         gen.fields
-            .push((Cow::Borrowed("pivot"), Option::<Vec2Lua>::get_type_parts()));
+            .push((Cow::Borrowed("is_flipped_x").into(), bool::get_type_parts()));
         gen.fields
-            .push((Cow::Borrowed("size"), Option::<Vec2Lua>::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("tint"), Option::<ColorLua>::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("is_flipped_x"), bool::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("is_flipped_y"), bool::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("is_deactivated"), bool::get_type_parts()));
+            .push((Cow::Borrowed("is_flipped_y").into(), bool::get_type_parts()));
+        gen.fields.push((
+            Cow::Borrowed("is_deactivated").into(),
+            bool::get_type_parts(),
+        ));
     }
 }
 

@@ -59,8 +59,8 @@ impl<'lua> FromLua<'lua> for Transform {
 impl TypeBody for Transform {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
         gen.fields
-            .push((Cow::Borrowed("position"), Vec2Lua::get_type_parts()));
+            .push((Cow::Borrowed("position").into(), Vec2Lua::get_type_parts()));
         gen.fields
-            .push((Cow::Borrowed("rotation"), f32::get_type_parts()));
+            .push((Cow::Borrowed("rotation").into(), f32::get_type_parts()));
     }
 }

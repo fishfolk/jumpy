@@ -233,14 +233,16 @@ pub struct ActiveEffectMetadata {
 
 impl TypeBody for ActiveEffectMetadata {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
-        gen.fields
-            .push((Cow::Borrowed("kind"), ActiveEffectKind::get_type_parts()));
         gen.fields.push((
-            Cow::Borrowed("sound_effect_id"),
+            Cow::Borrowed("kind").into(),
+            ActiveEffectKind::get_type_parts(),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("sound_effect_id").into(),
             Option::<String>::get_type_parts(),
         ));
         gen.fields
-            .push((Cow::Borrowed("delay"), f32::get_type_parts()));
+            .push((Cow::Borrowed("delay").into(), f32::get_type_parts()));
     }
 }
 

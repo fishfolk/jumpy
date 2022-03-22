@@ -187,18 +187,20 @@ impl<'lua> ToLua<'lua> for Projectile {
 
 impl TypeBody for Projectile {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
-        gen.fields
-            .push((Cow::Borrowed("kind"), ProjectileKind::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("owner"), Entity::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("origin"), Vec2Lua::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("range"), f32::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("is_lethal"), bool::get_type_parts()));
         gen.fields.push((
-            Cow::Borrowed("passive_effects"),
+            Cow::Borrowed("kind").into(),
+            ProjectileKind::get_type_parts(),
+        ));
+        gen.fields
+            .push((Cow::Borrowed("owner").into(), Entity::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("origin").into(), Vec2Lua::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("range").into(), f32::get_type_parts()));
+        gen.fields
+            .push((Cow::Borrowed("is_lethal").into(), bool::get_type_parts()));
+        gen.fields.push((
+            Cow::Borrowed("passive_effects").into(),
             Vec::<PassiveEffectMetadata>::get_type_parts(),
         ));
     }

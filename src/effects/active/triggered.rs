@@ -125,47 +125,57 @@ impl<'lua> ToLua<'lua> for TriggeredEffect {
 impl TypeBody for TriggeredEffect {
     fn get_type_body(gen: &mut tealr::TypeGenerator) {
         gen.fields
-            .push((Cow::Borrowed("owner"), Entity::get_type_parts()));
+            .push((Cow::Borrowed("owner").into(), Entity::get_type_parts()));
         gen.fields.push((
-            Cow::Borrowed("trigger"),
+            Cow::Borrowed("trigger").into(),
             Vec::<TriggeredEffectTrigger>::get_type_parts(),
         ));
         gen.fields.push((
-            Cow::Borrowed("effects"),
+            Cow::Borrowed("effects").into(),
             Vec::<ActiveEffectMetadata>::get_type_parts(),
         ));
-        gen.fields
-            .push((Cow::Borrowed("activation_delay"), f32::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("trigger_delay"), f32::get_type_parts()));
         gen.fields.push((
-            Cow::Borrowed("timed_trigger"),
+            Cow::Borrowed("activation_delay").into(),
+            f32::get_type_parts(),
+        ));
+        gen.fields
+            .push((Cow::Borrowed("trigger_delay").into(), f32::get_type_parts()));
+        gen.fields.push((
+            Cow::Borrowed("timed_trigger").into(),
             Option::<f32>::get_type_parts(),
         ));
         gen.fields
-            .push((Cow::Borrowed("is_kickable"), bool::get_type_parts()));
+            .push((Cow::Borrowed("is_kickable").into(), bool::get_type_parts()));
         gen.fields.push((
-            Cow::Borrowed("should_override_delay"),
+            Cow::Borrowed("should_override_delay").into(),
             bool::get_type_parts(),
         ));
         gen.fields.push((
-            Cow::Borrowed("should_collide_with_platforms"),
+            Cow::Borrowed("should_collide_with_platforms").into(),
             bool::get_type_parts(),
         ));
         gen.fields
-            .push((Cow::Borrowed("is_triggered"), bool::get_type_parts()));
+            .push((Cow::Borrowed("is_triggered").into(), bool::get_type_parts()));
         gen.fields.push((
-            Cow::Borrowed("triggered_by"),
+            Cow::Borrowed("triggered_by").into(),
             Option::<Entity>::get_type_parts(),
         ));
-        gen.fields
-            .push((Cow::Borrowed("kick_delay_timer"), f32::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("activation_timer"), f32::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("trigger_delay_timer"), f32::get_type_parts()));
-        gen.fields
-            .push((Cow::Borrowed("timed_trigger_timer"), f32::get_type_parts()));
+        gen.fields.push((
+            Cow::Borrowed("kick_delay_timer").into(),
+            f32::get_type_parts(),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("activation_timer").into(),
+            f32::get_type_parts(),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("trigger_delay_timer").into(),
+            f32::get_type_parts(),
+        ));
+        gen.fields.push((
+            Cow::Borrowed("timed_trigger_timer").into(),
+            f32::get_type_parts(),
+        ));
     }
 }
 

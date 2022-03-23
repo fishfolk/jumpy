@@ -504,5 +504,14 @@
       "x": 176,
       "y": 144
     }
+  },
+  {
+    "id": "crate_breaking",
+    "path": "textures/particles/CrateBreaking(128x128).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 128,
+      "y": 128
+    }
   }
 ]

@@ -1017,7 +1017,7 @@
           }
         },
         {
-          "id": "kick_bomb",
+          "id": "crate",
           "kind": "item",
           "position": {
             "x": 271.9712,

@@ -1561,11 +1561,56 @@ impl Node for Editor {
 
         {
             egui_macroquad::ui(|egui_ctx| {
-                egui::SidePanel::new(egui::containers::panel::Side::Right, "Test").show(egui_ctx, |ui| {
-                    ui.label("Hello World!");
+                egui::SidePanel::new(egui::containers::panel::Side::Left, "Tools").show(
+                    egui_ctx,
+                    |ui| {
+                        ui.selectable_value(&mut 0, 0, "Cursor");
+                        ui.selectable_value(&mut 0, 1, "Tiles");
+                        ui.selectable_value(&mut 0, 2, "Spawnpoints");
+                        ui.selectable_value(&mut 0, 3, "Eraser");
+                    },
+                );
+                egui::SidePanel::new(egui::containers::panel::Side::Right, "Layers").show(
+                    egui_ctx,
+                    |ui| {
+                        ui.heading("Layers");
+                        for layer in ["Unnamed Layer"] {
+                            ui.horizontal(|ui| {
+                                ui.label(layer);
+                                ui.button("Visible");
+                            });
+                        }
+                        ui.horizontal(|ui| {
+                            ui.button("+");
+                            ui.button("-");
+                            ui.button("Up");
+                            ui.button("Down");
+                        });
+                        ui.separator();
+                        ui.heading("Tilesets");
+                        ui.horizontal(|ui| {
+                            ui.button("+");
+                            ui.button("-");
+                            ui.button("Edit");
+                        });
+                    },
+                );
+
+                let mut selected = 0;
+                egui::Window::new("Create Layer").show(egui_ctx, |ui| {
+                    ui.text_edit_singleline(&mut "Unnamed Layer");
+                    egui::ComboBox::new("layer type", "Type").show_ui(ui, |ui| {
+                        ui.selectable_value(&mut selected, 0, "Tiles");
+                        ui.selectable_value(&mut selected, 0, "Objects");
+                    });
+                    ui.checkbox(&mut false, "Collision");
+                    ui.horizontal(|ui| {
+                        ui.button("Create");
+                        ui.button("Cancel");
+                    })
                 });
             });
-    
+
             egui_macroquad::draw();
         }
 

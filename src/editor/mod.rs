@@ -1560,11 +1560,13 @@ impl Node for Editor {
         }
 
         {
-            let ctx = node.get_context();
-            let mut gui = storage::get_mut::<EditorGui>();
-            if let Some(action) = gui.draw(node.get_map(), ctx) {
-                res = Some(action);
-            }
+            egui_macroquad::ui(|egui_ctx| {
+                egui::Window::new("Test").show(egui_ctx, |ui| {
+                    ui.label("Hello World!");
+                });
+            });
+    
+            egui_macroquad::draw();
         }
 
         if let Some(action) = res {

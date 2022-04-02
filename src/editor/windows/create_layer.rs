@@ -41,7 +41,9 @@ impl CreateLayerWindow {
                     ui.selectable_value(&mut self.layer_kind, MapLayerKind::TileLayer, "Tiles");
                     ui.selectable_value(&mut self.layer_kind, MapLayerKind::ObjectLayer, "Objects");
                 });
-            ui.checkbox(&mut self.has_collision, "Collision");
+            if self.layer_kind == MapLayerKind::TileLayer {
+                ui.checkbox(&mut self.has_collision, "Collision");
+            }
             ui.horizontal(|ui| {
                 if ui.button("Create").clicked() {
                     action = ControlFlow::Break(CreateLayerResult::Create {

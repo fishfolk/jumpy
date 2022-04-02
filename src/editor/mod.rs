@@ -1,8 +1,4 @@
-use std::any::TypeId;
 use std::ops::ControlFlow;
-use std::path::Path;
-
-use crate::{exit_to_main_menu, quit_to_desktop, Resources};
 
 mod camera;
 mod windows;
@@ -12,9 +8,8 @@ pub use camera::EditorCamera;
 mod actions;
 
 use actions::{
-    CreateLayerAction, CreateObjectAction, CreateTilesetAction, DeleteLayerAction,
-    DeleteObjectAction, DeleteTilesetAction, EditorAction, PlaceTileAction, RemoveTileAction,
-    SetLayerDrawOrderIndexAction, UndoableAction, UpdateTilesetAction,
+    CreateLayerAction, DeleteLayerAction, EditorAction, SetLayerDrawOrderIndexAction,
+    UndoableAction,
 };
 
 mod input;
@@ -24,31 +19,19 @@ mod history;
 use history::EditorHistory;
 pub use input::EditorInputScheme;
 
-use crate::editor::actions::{
-    CreateSpawnPointAction, DeleteSpawnPointAction, ImportAction, MoveSpawnPointAction,
-    UpdateBackgroundAction, UpdateLayerAction, UpdateObjectAction, UpdateTileAttributesAction,
-};
-use crate::editor::input::{collect_editor_input, EditorInput};
-use crate::gui::SELECTION_HIGHLIGHT_COLOR;
-use crate::map::{MapObject, MapObjectKind};
-use crate::player::IDLE_ANIMATION_ID;
+use crate::editor::actions::UpdateLayerAction;
+
+use crate::map::MapObjectKind;
+
 use macroquad::{
-    color,
-    experimental::{
-        collections::storage,
-        scene::{Node, RefMut},
-    },
+    experimental::scene::{Node, RefMut},
     prelude::*,
 };
 
-use core::text::{draw_aligned_text, HorizontalAlignment, VerticalAlignment};
-
 use self::windows::CreateLayerResult;
 
-use super::map::{Map, MapLayerKind};
-use crate::resources::{
-    map_name_to_filename, MapResource, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION,
-};
+use super::map::MapLayerKind;
+use crate::resources::MapResource;
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum EditorTool {

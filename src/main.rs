@@ -117,7 +117,7 @@ async fn init_game() -> Result<bool> {
             start_music("fish_tide");
         }
         MainMenuResult::Editor {
-            input_scheme,
+            input_scheme: _,
             is_new_map,
         } => {
             let map_resource = if is_new_map {

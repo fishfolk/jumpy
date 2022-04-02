@@ -1561,7 +1561,7 @@ impl Node for Editor {
 
         {
             egui_macroquad::ui(|egui_ctx| {
-                egui::Window::new("Test").show(egui_ctx, |ui| {
+                egui::SidePanel::new(egui::containers::panel::Side::Right, "Test").show(egui_ctx, |ui| {
                     ui.label("Hello World!");
                 });
             });

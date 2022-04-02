@@ -17,10 +17,14 @@ impl EditorHistory {
         }
     }
 
-    pub fn apply(&mut self, mut action: Box<dyn UndoableAction>, map: &mut Map) -> Result<()> {
+    pub fn apply(
+        &mut self,
+        mut action: impl UndoableAction + 'static,
+        map: &mut Map,
+    ) -> Result<()> {
         if !action.is_redundant(map) {
             action.apply(map)?;
-            self.undo_stack.push(action);
+            self.undo_stack.push(Box::new(action));
             self.redo_stack.clear();
         }
 

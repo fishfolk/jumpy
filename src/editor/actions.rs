@@ -6,12 +6,13 @@ use macroquad::prelude::*;
 
 use core::error::{Error, ErrorKind, Result};
 
-use crate::editor::gui::windows::Window;
 use crate::map::{MapBackgroundLayer, MapObject, MapObjectKind};
 use crate::{
     map::{Map, MapLayer, MapLayerKind, MapTile, MapTileset},
     Resources,
 };
+
+use super::EditorTool;
 
 /// These are all the actions available for the GUI and other sub-systems of the editor.
 /// If you need to perform multiple actions in one call, use the `Batch` variant.
@@ -20,7 +21,7 @@ pub enum EditorAction {
     Batch(Vec<EditorAction>),
     Undo,
     Redo,
-    SelectTool(Option<TypeId>),
+    SelectTool(EditorTool),
     OpenBackgroundPropertiesWindow,
     UpdateBackground {
         color: Color,
@@ -142,13 +143,14 @@ impl EditorAction {
         Self::Batch(actions.to_vec())
     }
 
-    pub fn close_window<T: Window + ?Sized + 'static>() -> Self {
-        let id = TypeId::of::<T>();
-        EditorAction::CloseWindow(id)
-    }
-
-    pub fn then(self, action: EditorAction) -> Self {
-        Self::batch(&[self, action])
+    pub fn then(mut self, action: EditorAction) -> Self {
+        match &mut self {
+            EditorAction::Batch(batch) => {
+                batch.push(action);
+                self
+            }
+            _ => Self::batch(&[self, action]),
+        }
     }
 }
 

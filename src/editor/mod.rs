@@ -60,7 +60,7 @@ impl Editor {
     }
 
     pub fn apply_action(&mut self, action: UiAction) {
-        dbg!("Applying action:", &action);
+        dbg!(&action);
 
         match action {
             UiAction::Batch(batch) => batch
@@ -97,6 +97,13 @@ impl Editor {
                     .unwrap();
                 self.ctx.selected_layer = None;
             }
+            UiAction::DeleteTileset(id) => {
+                let action = actions::DeleteTileset::new(id);
+                self.history
+                    .apply(action, &mut self.ctx.map_resource.map)
+                    .unwrap();
+                self.ctx.selected_tileset = None;
+            }
             UiAction::UpdateLayer { id, is_visible } => {
                 let action = actions::UpdateLayer::new(id, is_visible);
                 self.history
@@ -111,6 +118,9 @@ impl Editor {
             }
             UiAction::SelectLayer(id) => {
                 self.ctx.selected_layer = Some(id);
+            }
+            UiAction::SelectTileset(id) => {
+                self.ctx.selected_tileset = Some(id);
             }
 
             _ => todo!(),

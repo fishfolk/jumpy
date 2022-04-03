@@ -1,4 +1,10 @@
-use crate::{map::MapLayerKind, resources::MapResource};
+use macroquad::prelude::collections::storage;
+
+use crate::{
+    map::MapLayerKind,
+    resources::{MapResource, TextureResource},
+    Resources,
+};
 
 use super::actions::{UiAction, UiActionExt};
 
@@ -199,16 +205,9 @@ impl EditorData {
 
     fn draw_tileset_info(&self, ui: &mut egui::Ui) -> Option<UiAction> {
         ui.heading("Tilesets");
-        let mut action = self.draw_tileset_list(ui);
-        ui.horizontal(|ui| {
-            if ui.button("+").clicked() {
-                action.then_do_some(UiAction::OpenCreateTilesetWindow);
-            }
-            ui.button("-");
-            ui.button("Edit");
-        });
-
-        action
+        self.draw_tileset_list(ui) // Draw tileset list
+            .then(self.draw_tileset_utils(ui)) // Draw tileset utils
+            .then(self.draw_tileset_image(ui)) // Draw tileset image
     }
 
     fn draw_tileset_list(&self, ui: &mut egui::Ui) -> Option<UiAction> {
@@ -225,5 +224,48 @@ impl EditorData {
         });
 
         action
+    }
+
+    fn draw_tileset_utils(&self, ui: &mut egui::Ui) -> Option<UiAction> {
+        let mut action = None;
+
+        ui.horizontal(|ui| {
+            if ui.button("+").clicked() {
+                action.then_do_some(UiAction::OpenCreateTilesetWindow);
+            }
+            ui.add_enabled_ui(self.selected_tileset.is_some(), |ui| {
+                if ui.button("-").clicked() {
+                    action.then_do_some(UiAction::DeleteTileset(
+                        self.selected_tileset.as_ref().unwrap().clone(),
+                    ));
+                }
+                ui.button("Edit").on_hover_text("Does not do anything yet");
+            })
+        });
+
+        action
+    }
+
+    fn draw_tileset_image(&self, ui: &mut egui::Ui) -> Option<UiAction> {
+        if let Some(tileset) = self
+            .selected_tileset
+            .as_ref()
+            .and_then(|selected_tileset| self.map_resource.map.tilesets.get(selected_tileset))
+        {
+            let tileset_texture: &TextureResource =
+                &storage::get::<Resources>().textures[&tileset.texture_id];
+            let texture_size = tileset_texture.meta.size;
+
+            ui.image(
+                egui::TextureId::User(
+                    tileset_texture
+                        .texture
+                        .raw_miniquad_texture_handle()
+                        .gl_internal_id() as u64,
+                ),
+                egui::Vec2::new(texture_size.x, texture_size.y),
+            );
+        }
+        None
     }
 }

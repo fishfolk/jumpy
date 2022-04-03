@@ -2,7 +2,7 @@ use core::Result;
 
 use crate::Map;
 
-use super::UndoableAction;
+use super::actions::UndoableAction;
 
 pub struct ActionHistory {
     undo_stack: Vec<Box<dyn UndoableAction>>,

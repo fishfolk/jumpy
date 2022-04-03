@@ -8,10 +8,7 @@ pub use data::*;
 pub use camera::EditorCamera;
 
 mod actions;
-
-use actions::{
-    CreateLayerAction, DeleteLayerAction, SetLayerDrawOrderIndexAction, UiAction, UndoableAction,
-};
+use actions::{UiAction, UiActionExt};
 
 mod input;
 
@@ -19,8 +16,6 @@ mod history;
 
 use history::ActionHistory;
 pub use input::EditorInputScheme;
-
-use crate::editor::actions::UpdateLayerAction;
 
 use crate::map::MapObjectKind;
 
@@ -79,26 +74,26 @@ impl Editor {
                 has_collision,
                 index,
             } => {
-                let action = CreateLayerAction::new(id, kind, has_collision, index);
+                let action = actions::CreateLayer::new(id, kind, has_collision, index);
                 self.history
                     .apply(action, &mut self.ctx.map_resource.map)
                     .unwrap();
             }
             UiAction::DeleteLayer(id) => {
-                let action = DeleteLayerAction::new(id);
+                let action = actions::DeleteLayer::new(id);
                 self.history
                     .apply(action, &mut self.ctx.map_resource.map)
                     .unwrap();
                 self.ctx.selected_layer = None;
             }
             UiAction::UpdateLayer { id, is_visible } => {
-                let action = UpdateLayerAction::new(id, is_visible);
+                let action = actions::UpdateLayer::new(id, is_visible);
                 self.history
                     .apply(action, &mut self.ctx.map_resource.map)
                     .unwrap();
             }
             UiAction::SetLayerDrawOrderIndex { id, index } => {
-                let action = SetLayerDrawOrderIndexAction::new(id, index);
+                let action = actions::SetLayerDrawOrderIndex::new(id, index);
                 self.history
                     .apply(action, &mut self.ctx.map_resource.map)
                     .unwrap();

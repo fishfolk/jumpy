@@ -50,11 +50,73 @@ impl EditorData {
 /// UI-related functions
 impl EditorData {
     pub fn ui(&self, egui_ctx: &egui::Context) -> Option<UiAction> {
-        // Draw toolbar
-        let mut action = self.draw_toolbar(egui_ctx);
-        // Draw side panel
-        action.then_do(self.draw_side_panel(egui_ctx));
+        self.draw_toolbar(egui_ctx)
+            .then(self.draw_side_panel(egui_ctx))
+            .then(self.draw_level(egui_ctx))
+    }
 
+    fn draw_level(&self, egui_ctx: &egui::Context) -> Option<UiAction> {
+        let mut action = None;
+        egui::CentralPanel::default().show(egui_ctx, |ui| {
+            egui::plot::Plot::new("level_plot")
+                .data_aspect(1.0)
+                .y_axis_formatter(|y, _| format!("{}", -y))
+                .allow_boxed_zoom(false)
+                .show(ui, |plot_ui| {
+                    for (layer_name, layer) in self.map_resource.map.layers.iter() {
+                        match layer.kind {
+                            MapLayerKind::TileLayer => {
+                                for (tile_idx, tile) in layer.tiles.iter().enumerate() {
+                                    if let Some(tile) = tile {
+                                        let tileset =
+                                            &self.map_resource.map.tilesets[&tile.tileset_id];
+                                        let x =
+                                            tile_idx % self.map_resource.map.grid_size.x as usize;
+                                        let y =
+                                            tile_idx / self.map_resource.map.grid_size.x as usize;
+                                        let tileset_texture: &TextureResource =
+                                            &storage::get::<Resources>().textures[&tile.texture_id];
+                                        let texture_id = egui::TextureId::User(
+                                            tileset_texture
+                                                .texture
+                                                .raw_miniquad_texture_handle()
+                                                .gl_internal_id()
+                                                as u64,
+                                        );
+                                        let tileset_uv_tile_size = egui::Vec2 {
+                                            x: 1. / tileset.grid_size.x as f32,
+                                            y: 1. / tileset.grid_size.y as f32,
+                                        };
+                                        let tileset_x = (tile.tile_id % tileset.grid_size.x) as f32
+                                            * tileset_uv_tile_size.x;
+                                        let tileset_y = (tile.tile_id / tileset.grid_size.x) as f32
+                                            * tileset_uv_tile_size.y;
+
+                                        let tile_image = egui::plot::PlotImage::new(
+                                            texture_id,
+                                            egui::plot::Value::new(
+                                                x as f32 + 0.5,
+                                                -(y as f32) - 0.5,
+                                            ),
+                                            egui::Vec2::new(1., 1.),
+                                        )
+                                        .uv(egui::Rect::from_min_size(
+                                            egui::Pos2 {
+                                                x: tileset_x,
+                                                y: tileset_y,
+                                            },
+                                            tileset_uv_tile_size,
+                                        ));
+
+                                        plot_ui.image(tile_image)
+                                    }
+                                }
+                            }
+                            MapLayerKind::ObjectLayer => (),
+                        }
+                    }
+                })
+        });
         action
     }
 

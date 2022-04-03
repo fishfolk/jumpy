@@ -1,6 +1,6 @@
 use crate::{map::MapLayerKind, resources::MapResource};
 
-use super::actions::{EditorAction, EditorActionExt};
+use super::actions::{UiAction, UiActionExt};
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum EditorTool {
@@ -38,7 +38,7 @@ impl EditorData {
 
 /// UI-related functions
 impl EditorData {
-    pub fn ui(&self, egui_ctx: &egui::Context) -> Option<EditorAction> {
+    pub fn ui(&self, egui_ctx: &egui::Context) -> Option<UiAction> {
         // Draw toolbar
         let mut action = self.draw_toolbar(egui_ctx);
         // Draw side panel
@@ -47,7 +47,7 @@ impl EditorData {
         action
     }
 
-    fn draw_toolbar(&self, egui_ctx: &egui::Context) -> Option<EditorAction> {
+    fn draw_toolbar(&self, egui_ctx: &egui::Context) -> Option<UiAction> {
         let mut action = None;
 
         egui::SidePanel::new(egui::containers::panel::Side::Left, "Tools").show(egui_ctx, |ui| {
@@ -58,7 +58,7 @@ impl EditorData {
                     .add(egui::SelectableLabel::new(tool == &tool_variant, tool_name))
                     .clicked()
                 {
-                    action.then_do_some(EditorAction::SelectTool(tool_variant));
+                    action.then_do_some(UiAction::SelectTool(tool_variant));
                 }
             };
 
@@ -76,7 +76,7 @@ impl EditorData {
         action
     }
 
-    fn draw_side_panel(&self, egui_ctx: &egui::Context) -> Option<EditorAction> {
+    fn draw_side_panel(&self, egui_ctx: &egui::Context) -> Option<UiAction> {
         let mut action = None;
 
         egui::SidePanel::new(egui::containers::panel::Side::Right, "Side panel").show(
@@ -99,13 +99,13 @@ impl EditorData {
         action
     }
 
-    fn draw_layer_info(&self, ui: &mut egui::Ui) -> Option<EditorAction> {
+    fn draw_layer_info(&self, ui: &mut egui::Ui) -> Option<UiAction> {
         ui.heading("Layers");
         self.draw_layer_list(ui) // Draw layer list
             .then(self.draw_layer_utils(ui)) // Draw layer util buttons (+ - Up Down)
     }
 
-    fn draw_layer_list(&self, ui: &mut egui::Ui) -> Option<EditorAction> {
+    fn draw_layer_list(&self, ui: &mut egui::Ui) -> Option<UiAction> {
         let mut action = None;
         let map = &self.map_resource.map;
 
@@ -126,11 +126,11 @@ impl EditorData {
                         )
                         .clicked()
                     {
-                        action.then_do_some(EditorAction::SelectLayer(layer_name.clone()));
+                        action.then_do_some(UiAction::SelectLayer(layer_name.clone()));
                     }
                     let mut is_visible = layer.is_visible;
                     if ui.checkbox(&mut is_visible, "Visible").clicked() {
-                        action.then_do_some(EditorAction::UpdateLayer {
+                        action.then_do_some(UiAction::UpdateLayer {
                             id: layer_name.clone(),
                             is_visible,
                         });
@@ -142,18 +142,18 @@ impl EditorData {
         action
     }
 
-    fn draw_layer_utils(&self, ui: &mut egui::Ui) -> Option<EditorAction> {
+    fn draw_layer_utils(&self, ui: &mut egui::Ui) -> Option<UiAction> {
         let mut action = None;
         let map = &self.map_resource.map;
 
         ui.horizontal(|ui| {
             if ui.button("+").clicked() {
-                action.then_do_some(EditorAction::OpenCreateLayerWindow);
+                action.then_do_some(UiAction::OpenCreateLayerWindow);
             }
 
             ui.add_enabled_ui(self.selected_layer.is_some(), |ui| {
                 if ui.button("-").clicked() {
-                    action.then_do_some(EditorAction::DeleteLayer(
+                    action.then_do_some(UiAction::DeleteLayer(
                         self.selected_layer.as_ref().unwrap().clone(),
                     ));
                 }
@@ -173,7 +173,7 @@ impl EditorData {
                     .add_enabled(selected_layer_idx > 0, egui::Button::new("Up"))
                     .clicked()
                 {
-                    action.then_do_some(EditorAction::SetLayerDrawOrderIndex {
+                    action.then_do_some(UiAction::SetLayerDrawOrderIndex {
                         id: self.selected_layer.as_ref().unwrap().clone(),
                         index: selected_layer_idx - 1,
                     });
@@ -186,7 +186,7 @@ impl EditorData {
                     )
                     .clicked()
                 {
-                    action.then_do_some(EditorAction::SetLayerDrawOrderIndex {
+                    action.then_do_some(UiAction::SetLayerDrawOrderIndex {
                         id: self.selected_layer.as_ref().unwrap().clone(),
                         index: selected_layer_idx + 1,
                     });
@@ -197,7 +197,7 @@ impl EditorData {
         action
     }
 
-    fn draw_tileset_info(&self, ui: &mut egui::Ui) -> Option<EditorAction> {
+    fn draw_tileset_info(&self, ui: &mut egui::Ui) -> Option<UiAction> {
         let mut action = None;
 
         ui.heading("Tilesets");
@@ -206,7 +206,7 @@ impl EditorData {
                 let is_selected = self.selected_tileset.as_ref() == Some(tileset_name);
 
                 if ui.selectable_label(is_selected, tileset_name).clicked() {
-                    action.then_do_some(EditorAction::SelectTileset(tileset_name.clone()));
+                    action.then_do_some(UiAction::SelectTileset(tileset_name.clone()));
                 }
             }
         });

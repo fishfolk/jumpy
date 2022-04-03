@@ -16,8 +16,8 @@ use super::EditorTool;
 /// These are all the actions available for the GUI and other sub-systems of the editor.
 /// If you need to perform multiple actions in one call, use the `Batch` variant.
 #[derive(Debug, Clone)]
-pub enum EditorAction {
-    Batch(Vec<EditorAction>),
+pub enum UiAction {
+    Batch(Vec<UiAction>),
     Undo,
     Redo,
     SelectTool(EditorTool),
@@ -136,14 +136,14 @@ pub enum EditorAction {
     QuitToDesktop,
 }
 
-impl EditorAction {
-    pub fn batch(actions: &[EditorAction]) -> Self {
+impl UiAction {
+    pub fn batch(actions: &[UiAction]) -> Self {
         Self::Batch(actions.to_vec())
     }
 
-    pub fn then(mut self, action: EditorAction) -> Self {
+    pub fn then(mut self, action: UiAction) -> Self {
         match &mut self {
-            EditorAction::Batch(batch) => {
+            UiAction::Batch(batch) => {
                 batch.push(action);
                 self
             }
@@ -151,9 +151,9 @@ impl EditorAction {
         }
     }
 
-    pub fn then_do(&mut self, action: EditorAction) {
+    pub fn then_do(&mut self, action: UiAction) {
         match self {
-            EditorAction::Batch(batch) => {
+            UiAction::Batch(batch) => {
                 batch.push(action);
             }
             _ => {
@@ -166,36 +166,36 @@ impl EditorAction {
     }
 }
 
-pub trait EditorActionExt {
-    fn then(self, action: Option<EditorAction>) -> Option<EditorAction>;
-    fn then_some(self, action: EditorAction) -> Option<EditorAction>;
-    fn then_do(&mut self, action: Option<EditorAction>);
-    fn then_do_some(&mut self, action: EditorAction);
+pub trait UiActionExt {
+    fn then(self, action: Option<UiAction>) -> Option<UiAction>;
+    fn then_some(self, action: UiAction) -> Option<UiAction>;
+    fn then_do(&mut self, action: Option<UiAction>);
+    fn then_do_some(&mut self, action: UiAction);
 }
 
-impl EditorActionExt for Option<EditorAction> {
-    fn then(self, action: Option<EditorAction>) -> Option<EditorAction> {
+impl UiActionExt for Option<UiAction> {
+    fn then(self, action: Option<UiAction>) -> Option<UiAction> {
         match action {
             Some(action) => self.then_some(action),
             None => self,
         }
     }
 
-    fn then_some(self, action: EditorAction) -> Option<EditorAction> {
+    fn then_some(self, action: UiAction) -> Option<UiAction> {
         match self {
             Some(self_action) => Some(self_action.then(action)),
             None => Some(action),
         }
     }
 
-    fn then_do(&mut self, action: Option<EditorAction>) {
+    fn then_do(&mut self, action: Option<UiAction>) {
         match action {
             Some(action) => self.then_do_some(action),
             None => (),
         }
     }
 
-    fn then_do_some(&mut self, action: EditorAction) {
+    fn then_do_some(&mut self, action: UiAction) {
         match self {
             Some(self_action) => self_action.then_do(action),
             None => *self = Some(action),

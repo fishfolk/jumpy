@@ -10,15 +10,14 @@ pub use camera::EditorCamera;
 mod actions;
 
 use actions::{
-    CreateLayerAction, DeleteLayerAction, EditorAction, SetLayerDrawOrderIndexAction,
-    UndoableAction,
+    CreateLayerAction, DeleteLayerAction, SetLayerDrawOrderIndexAction, UiAction, UndoableAction,
 };
 
 mod input;
 
 mod history;
 
-use history::EditorHistory;
+use history::ActionHistory;
 pub use input::EditorInputScheme;
 
 use crate::editor::actions::UpdateLayerAction;
@@ -37,7 +36,7 @@ use crate::resources::MapResource;
 pub struct Editor {
     ctx: EditorData,
 
-    history: EditorHistory,
+    history: ActionHistory,
 
     create_layer_window: Option<windows::CreateLayerWindow>,
 }
@@ -58,25 +57,23 @@ impl Editor {
     pub fn new(map_resource: MapResource) -> Self {
         Self {
             ctx: EditorData::new(map_resource),
-            history: EditorHistory::new(),
+            history: ActionHistory::new(),
             create_layer_window: None,
         }
     }
 
-    pub fn apply_action(&mut self, action: EditorAction) {
+    pub fn apply_action(&mut self, action: UiAction) {
         dbg!("Applying action:", &action);
 
         match action {
-            EditorAction::Batch(batch) => batch
+            UiAction::Batch(batch) => batch
                 .into_iter()
                 .for_each(|action| self.apply_action(action)),
-            EditorAction::Undo => self.history.undo(&mut self.ctx.map_resource.map).unwrap(),
-            EditorAction::Redo => self.history.redo(&mut self.ctx.map_resource.map).unwrap(),
-            EditorAction::SelectTool(tool) => self.ctx.selected_tool = tool,
-            EditorAction::OpenCreateLayerWindow => {
-                self.create_layer_window = Some(Default::default())
-            }
-            EditorAction::CreateLayer {
+            UiAction::Undo => self.history.undo(&mut self.ctx.map_resource.map).unwrap(),
+            UiAction::Redo => self.history.redo(&mut self.ctx.map_resource.map).unwrap(),
+            UiAction::SelectTool(tool) => self.ctx.selected_tool = tool,
+            UiAction::OpenCreateLayerWindow => self.create_layer_window = Some(Default::default()),
+            UiAction::CreateLayer {
                 id,
                 kind,
                 has_collision,
@@ -87,26 +84,26 @@ impl Editor {
                     .apply(action, &mut self.ctx.map_resource.map)
                     .unwrap();
             }
-            EditorAction::DeleteLayer(id) => {
+            UiAction::DeleteLayer(id) => {
                 let action = DeleteLayerAction::new(id);
                 self.history
                     .apply(action, &mut self.ctx.map_resource.map)
                     .unwrap();
                 self.ctx.selected_layer = None;
             }
-            EditorAction::UpdateLayer { id, is_visible } => {
+            UiAction::UpdateLayer { id, is_visible } => {
                 let action = UpdateLayerAction::new(id, is_visible);
                 self.history
                     .apply(action, &mut self.ctx.map_resource.map)
                     .unwrap();
             }
-            EditorAction::SetLayerDrawOrderIndex { id, index } => {
+            UiAction::SetLayerDrawOrderIndex { id, index } => {
                 let action = SetLayerDrawOrderIndexAction::new(id, index);
                 self.history
                     .apply(action, &mut self.ctx.map_resource.map)
                     .unwrap();
             }
-            EditorAction::SelectLayer(id) => {
+            UiAction::SelectLayer(id) => {
                 self.ctx.selected_layer = Some(id);
             }
 
@@ -127,7 +124,7 @@ impl Editor {
                     layer_kind,
                     layer_name,
                 }) => {
-                    self.apply_action(EditorAction::CreateLayer {
+                    self.apply_action(UiAction::CreateLayer {
                         has_collision,
                         kind: layer_kind,
                         index: None,

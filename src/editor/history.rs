@@ -4,14 +4,14 @@ use crate::Map;
 
 use super::UndoableAction;
 
-pub struct EditorHistory {
+pub struct ActionHistory {
     undo_stack: Vec<Box<dyn UndoableAction>>,
     redo_stack: Vec<Box<dyn UndoableAction>>,
 }
 
-impl EditorHistory {
+impl ActionHistory {
     pub fn new() -> Self {
-        EditorHistory {
+        ActionHistory {
             undo_stack: Vec::new(),
             redo_stack: Vec::new(),
         }

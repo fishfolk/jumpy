@@ -2,7 +2,7 @@ use macroquad::prelude::collections::storage;
 
 use crate::{
     map::MapLayerKind,
-    resources::{MapResource, TextureResource, TextureKind},
+    resources::{MapResource, TextureKind, TextureResource},
     Resources,
 };
 
@@ -11,17 +11,22 @@ use super::actions::{UiAction, UiActionExt};
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum EditorTool {
     Cursor,
-    TilePlacer { tile_id: u32 },
+    TilePlacer,
     ObjectPlacer,
     SpawnPointPlacer,
     Eraser,
+}
+
+pub struct TileSelection {
+    pub tileset: String,
+    pub tile_id: u32,
 }
 
 pub struct EditorData {
     pub selected_tool: EditorTool,
     pub map_resource: MapResource,
     pub selected_layer: Option<String>,
-    pub selected_tileset: Option<String>,
+    pub selected_tile: Option<TileSelection>,
 }
 
 impl EditorData {
@@ -30,7 +35,7 @@ impl EditorData {
             map_resource,
             selected_tool: EditorTool::Cursor,
             selected_layer: None,
-            selected_tileset: None,
+            selected_tile: None,
         }
     }
 
@@ -215,7 +220,11 @@ impl EditorData {
 
         ui.group(|ui| {
             for (tileset_name, _tileset) in self.map_resource.map.tilesets.iter() {
-                let is_selected = self.selected_tileset.as_ref() == Some(tileset_name);
+                let is_selected = self
+                    .selected_tile
+                    .as_ref()
+                    .map(|s| &s.tileset == tileset_name)
+                    .unwrap_or(false);
 
                 if ui.selectable_label(is_selected, tileset_name).clicked() {
                     action.then_do_some(UiAction::SelectTileset(tileset_name.clone()));
@@ -233,10 +242,10 @@ impl EditorData {
             if ui.button("+").clicked() {
                 action.then_do_some(UiAction::OpenCreateTilesetWindow);
             }
-            ui.add_enabled_ui(self.selected_tileset.is_some(), |ui| {
+            ui.add_enabled_ui(self.selected_tile.is_some(), |ui| {
                 if ui.button("-").clicked() {
                     action.then_do_some(UiAction::DeleteTileset(
-                        self.selected_tileset.as_ref().unwrap().clone(),
+                        self.selected_tile.as_ref().unwrap().tileset.clone(),
                     ));
                 }
                 ui.button("Edit").on_hover_text("Does not do anything yet");
@@ -247,36 +256,72 @@ impl EditorData {
     }
 
     fn draw_tileset_image(&self, ui: &mut egui::Ui) -> Option<UiAction> {
-        if let Some(tileset) = self
-            .selected_tileset
-            .as_ref()
-            .and_then(|selected_tileset| self.map_resource.map.tilesets.get(selected_tileset))
-        {
-            let tileset_texture: &TextureResource =
-                &storage::get::<Resources>().textures[&tileset.texture_id];
-            let texture_id = egui::TextureId::User(
-                tileset_texture
-                    .texture
-                    .raw_miniquad_texture_handle()
-                    .gl_internal_id() as u64,
-            );
-            let texture_size = tileset_texture.meta.size;
-            let tile_size = tileset.tile_size
+        let mut action = None;
 
-            let image =
-                egui::Image::new(texture_id, egui::Vec2::new(texture_size.x, texture_size.y))
-                    .sense(egui::Sense::click());
-            let image_response = ui.add(image);
-            let image_bounds = image_response.rect;
+        if let Some(selection) = &self.selected_tile {
+            if let Some(tileset) = self.map_resource.map.tilesets.get(&selection.tileset) {
+                let tileset_texture: &TextureResource =
+                    &storage::get::<Resources>().textures[&tileset.texture_id];
+                let texture_id = egui::TextureId::User(
+                    tileset_texture
+                        .texture
+                        .raw_miniquad_texture_handle()
+                        .gl_internal_id() as u64,
+                );
+                let texture_size = tileset_texture.meta.size;
+                let tile_size = egui::Vec2 {
+                    x: tileset.tile_size.x,
+                    y: tileset.tile_size.y,
+                };
+                let tileset_size = egui::Vec2 {
+                    x: tileset.grid_size.x as f32,
+                    y: tileset.grid_size.y as f32,
+                };
 
-            if image_response.clicked() {
-                let mouse_pos = ui.input().pointer.interact_pos().unwrap() - image_bounds.min;
-            }
+                let image =
+                    egui::Image::new(texture_id, egui::Vec2::new(texture_size.x, texture_size.y))
+                        .sense(egui::Sense::click());
+                let image_response = ui.add(image);
+                let image_bounds = image_response.rect;
 
-            if let EditorTool::TilePlacer { tile_id } = self.selected_tool {
-                let painter = ui.painter_at(image_bounds);
+                if image_response.clicked() {
+                    let mouse_pos = ui.input().pointer.interact_pos().unwrap() - image_bounds.min;
+                    let tile_pos = (mouse_pos / tile_size).floor();
+                    dbg!(&tile_pos);
+                    if tile_pos.x < tileset_size.x
+                        && tile_pos.y < tileset_size.y
+                        && tile_pos.x >= 0.
+                        && tile_pos.y >= 0.
+                    {
+                        let tile_id = tile_pos.x as u32 + tile_pos.y as u32 * tileset_size.x as u32;
+
+                        action.then_do_some(UiAction::SelectTile {
+                            id: tile_id,
+                            tileset_id: selection.tileset.clone(),
+                        });
+                    }
+                }
+
+                if let EditorTool::TilePlacer = self.selected_tool {
+                    let painter = ui.painter_at(image_bounds);
+                    let tile_rect = egui::Rect::from_min_size(
+                        image_bounds.min
+                            + tile_size
+                                * egui::Vec2::new(
+                                    (selection.tile_id % tileset_size.x as u32) as f32,
+                                    (selection.tile_id / tileset_size.x as u32) as f32,
+                                ),
+                        tile_size,
+                    );
+                    painter.rect_filled(
+                        tile_rect,
+                        egui::Rounding::none(),
+                        egui::Color32::BLUE.linear_multiply(0.3),
+                    );
+                }
             }
         }
-        None
+
+        action
     }
 }

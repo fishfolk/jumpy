@@ -102,7 +102,7 @@ impl Editor {
                 self.history
                     .apply(action, &mut self.ctx.map_resource.map)
                     .unwrap();
-                self.ctx.selected_tileset = None;
+                self.ctx.selected_tile = None;
             }
             UiAction::UpdateLayer { id, is_visible } => {
                 let action = actions::UpdateLayer::new(id, is_visible);
@@ -120,7 +120,17 @@ impl Editor {
                 self.ctx.selected_layer = Some(id);
             }
             UiAction::SelectTileset(id) => {
-                self.ctx.selected_tileset = Some(id);
+                self.ctx.selected_tile = Some(TileSelection {
+                    tileset: id,
+                    tile_id: 0,
+                });
+            }
+            UiAction::SelectTile { id, tileset_id } => {
+                self.ctx.selected_tile = Some(TileSelection {
+                    tileset: tileset_id,
+                    tile_id: id,
+                });
+                self.ctx.selected_tool = EditorTool::TilePlacer;
             }
 
             _ => todo!(),

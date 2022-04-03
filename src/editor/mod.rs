@@ -17,14 +17,14 @@ mod history;
 use history::ActionHistory;
 pub use input::EditorInputScheme;
 
-use crate::map::MapObjectKind;
+use crate::{editor::windows::CreateTilesetWindow, map::MapObjectKind, Resources};
 
 use macroquad::{
     experimental::scene::{Node, RefMut},
     prelude::*,
 };
 
-use self::windows::CreateLayerResult;
+use self::windows::{CreateLayerResult, CreateTilesetResult};
 
 use crate::resources::MapResource;
 
@@ -34,6 +34,7 @@ pub struct Editor {
     history: ActionHistory,
 
     create_layer_window: Option<windows::CreateLayerWindow>,
+    create_tileset_window: Option<windows::CreateTilesetWindow>,
 }
 
 /// Used to interface with macroquad. Necessary because using `node: RefMut<Self>` really limits
@@ -54,6 +55,7 @@ impl Editor {
             ctx: EditorData::new(map_resource),
             history: ActionHistory::new(),
             create_layer_window: None,
+            create_tileset_window: None,
         }
     }
 
@@ -68,6 +70,9 @@ impl Editor {
             UiAction::Redo => self.history.redo(&mut self.ctx.map_resource.map).unwrap(),
             UiAction::SelectTool(tool) => self.ctx.selected_tool = tool,
             UiAction::OpenCreateLayerWindow => self.create_layer_window = Some(Default::default()),
+            UiAction::OpenCreateTilesetWindow => {
+                self.create_tileset_window = Some(CreateTilesetWindow::new())
+            }
             UiAction::CreateLayer {
                 id,
                 kind,
@@ -75,6 +80,12 @@ impl Editor {
                 index,
             } => {
                 let action = actions::CreateLayer::new(id, kind, has_collision, index);
+                self.history
+                    .apply(action, &mut self.ctx.map_resource.map)
+                    .unwrap();
+            }
+            UiAction::CreateTileset { id, texture_id } => {
+                let action = actions::CreateTileset::new(id, texture_id);
                 self.history
                     .apply(action, &mut self.ctx.map_resource.map)
                     .unwrap();
@@ -129,6 +140,25 @@ impl Editor {
                 }
                 ControlFlow::Break(CreateLayerResult::Close) => {
                     self.create_layer_window = None;
+                }
+            }
+        }
+
+        if let Some(window) = &mut self.create_tileset_window {
+            match window.ui(egui_ctx, &self.ctx.map_resource.map) {
+                ControlFlow::Continue(()) => (),
+                ControlFlow::Break(CreateTilesetResult::Create {
+                    tileset_name,
+                    texture,
+                }) => {
+                    self.apply_action(UiAction::CreateTileset {
+                        id: tileset_name,
+                        texture_id: texture,
+                    });
+                    self.create_tileset_window = None;
+                }
+                ControlFlow::Break(CreateTilesetResult::Close) => {
+                    self.create_tileset_window = None;
                 }
             }
         }

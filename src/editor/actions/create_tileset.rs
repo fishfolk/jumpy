@@ -16,18 +16,18 @@ use crate::map::Map;
 use super::UndoableAction;
 
 #[derive(Debug)]
-pub struct CreateTilesetAction {
+pub struct CreateTileset {
     id: String,
     texture_id: String,
 }
 
-impl CreateTilesetAction {
+impl CreateTileset {
     pub fn new(id: String, texture_id: String) -> Self {
-        CreateTilesetAction { id, texture_id }
+        CreateTileset { id, texture_id }
     }
 }
 
-impl UndoableAction for CreateTilesetAction {
+impl UndoableAction for CreateTileset {
     fn apply(&mut self, map: &mut Map) -> Result<()> {
         let resources = storage::get::<Resources>();
         if let Some(texture_entry) = resources.textures.get(&self.texture_id).cloned() {
@@ -56,7 +56,7 @@ impl UndoableAction for CreateTilesetAction {
         } else {
             return Err(Error::new_const(
                 ErrorKind::EditorAction,
-                &"CreateTilesetAction: The specified texture does not exist",
+                &"CreateTileset: The specified texture does not exist",
             ));
         }
 
@@ -65,7 +65,7 @@ impl UndoableAction for CreateTilesetAction {
 
     fn undo(&mut self, map: &mut Map) -> Result<()> {
         if map.tilesets.remove(&self.id).is_none() {
-            return Err(Error::new_const(ErrorKind::EditorAction, &"CreateTilesetAction (Undo): The specified tileset does not exist. Undo was probably called on an action that was never applied"));
+            return Err(Error::new_const(ErrorKind::EditorAction, &"CreateTileset (Undo): The specified tileset does not exist. Undo was probably called on an action that was never applied"));
         }
 
         Ok(())

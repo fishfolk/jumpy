@@ -198,9 +198,22 @@ impl EditorData {
     }
 
     fn draw_tileset_info(&self, ui: &mut egui::Ui) -> Option<UiAction> {
+        ui.heading("Tilesets");
+        let mut action = self.draw_tileset_list(ui);
+        ui.horizontal(|ui| {
+            if ui.button("+").clicked() {
+                action.then_do_some(UiAction::OpenCreateTilesetWindow);
+            }
+            ui.button("-");
+            ui.button("Edit");
+        });
+
+        action
+    }
+
+    fn draw_tileset_list(&self, ui: &mut egui::Ui) -> Option<UiAction> {
         let mut action = None;
 
-        ui.heading("Tilesets");
         ui.group(|ui| {
             for (tileset_name, _tileset) in self.map_resource.map.tilesets.iter() {
                 let is_selected = self.selected_tileset.as_ref() == Some(tileset_name);
@@ -209,11 +222,6 @@ impl EditorData {
                     action.then_do_some(UiAction::SelectTileset(tileset_name.clone()));
                 }
             }
-        });
-        ui.horizontal(|ui| {
-            ui.button("+");
-            ui.button("-");
-            ui.button("Edit");
         });
 
         action

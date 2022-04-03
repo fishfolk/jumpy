@@ -1,6 +1,6 @@
 use std::ops::ControlFlow;
 
-use crate::map::MapLayerKind;
+use crate::map::{Map, MapLayerKind};
 
 pub struct CreateLayerWindow {
     layer_name: String,
@@ -27,7 +27,7 @@ impl Default for CreateLayerWindow {
 }
 
 impl CreateLayerWindow {
-    pub fn ui(&mut self, egui_ctx: &egui::Context) -> ControlFlow<CreateLayerResult> {
+    pub fn ui(&mut self, egui_ctx: &egui::Context, map: &Map) -> ControlFlow<CreateLayerResult> {
         let mut action = ControlFlow::Continue(());
 
         egui::Window::new("Create Layer").show(egui_ctx, |ui| {
@@ -44,8 +44,17 @@ impl CreateLayerWindow {
             if self.layer_kind == MapLayerKind::TileLayer {
                 ui.checkbox(&mut self.has_collision, "Collision");
             }
+            let can_create_map = !map.layers.contains_key(&self.layer_name);
+            if !can_create_map {
+                ui.label(
+                    egui::RichText::new("Layer names must be unique").color(egui::Color32::RED),
+                );
+            }
             ui.horizontal(|ui| {
-                if ui.button("Create").clicked() {
+                if ui
+                    .add_enabled(can_create_map, egui::Button::new("Create"))
+                    .clicked()
+                {
                     action = ControlFlow::Break(CreateLayerResult::Create {
                         layer_name: self.layer_name.clone(),
                         has_collision: self.has_collision,

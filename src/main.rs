@@ -107,7 +107,7 @@ fn window_conf() -> Conf {
 async fn init_game() -> Result<bool> {
     use gui::MainMenuResult;
 
-    use crate::editor::Editor;
+    use crate::editor::{Editor, EditorNode};
 
     match gui::show_main_menu().await {
         MainMenuResult::LocalGame { map, players } => {
@@ -134,7 +134,7 @@ async fn init_game() -> Result<bool> {
             let position = map_resource.map.get_size() * 0.5;
 
             scene::add_node(EditorCamera::new(position));
-            scene::add_node(Editor::new(map_resource));
+            scene::add_node(EditorNode::new(Editor::new(map_resource)));
         }
         MainMenuResult::ReloadResources => {
             reload_resources();

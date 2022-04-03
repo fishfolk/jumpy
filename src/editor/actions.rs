@@ -1,4 +1,3 @@
-use std::any::TypeId;
 use std::cmp::Ordering;
 
 use macroquad::experimental::collections::storage;
@@ -42,7 +41,6 @@ pub enum EditorAction {
         layer_id: String,
         index: usize,
     },
-    CloseWindow(TypeId),
     SelectTile {
         id: u32,
         tileset_id: String,
@@ -150,6 +148,57 @@ impl EditorAction {
                 self
             }
             _ => Self::batch(&[self, action]),
+        }
+    }
+
+    pub fn then_do(&mut self, action: EditorAction) {
+        match self {
+            EditorAction::Batch(batch) => {
+                batch.push(action);
+            }
+            _ => {
+                let mut temp = Self::Batch(Vec::with_capacity(2));
+                std::mem::swap(&mut temp, self);
+                self.then_do(temp);
+                self.then_do(action);
+            }
+        }
+    }
+}
+
+pub trait EditorActionExt {
+    fn then(self, action: Option<EditorAction>) -> Option<EditorAction>;
+    fn then_some(self, action: EditorAction) -> Option<EditorAction>;
+    fn then_do(&mut self, action: Option<EditorAction>);
+    fn then_do_some(&mut self, action: EditorAction);
+}
+
+impl EditorActionExt for Option<EditorAction> {
+    fn then(self, action: Option<EditorAction>) -> Option<EditorAction> {
+        match action {
+            Some(action) => self.then_some(action),
+            None => self,
+        }
+    }
+
+    fn then_some(self, action: EditorAction) -> Option<EditorAction> {
+        match self {
+            Some(self_action) => Some(self_action.then(action)),
+            None => Some(action),
+        }
+    }
+
+    fn then_do(&mut self, action: Option<EditorAction>) {
+        match action {
+            Some(action) => self.then_do_some(action),
+            None => (),
+        }
+    }
+
+    fn then_do_some(&mut self, action: EditorAction) {
+        match self {
+            Some(self_action) => self_action.then_do(action),
+            None => *self = Some(action),
         }
     }
 }

@@ -185,18 +185,3 @@ impl Node for EditorNode {
         egui_macroquad::draw();
     }
 }
-
-#[derive(Debug, Clone)]
-enum DraggedObject {
-    MapObject {
-        id: String,
-        kind: MapObjectKind,
-        index: usize,
-        layer_id: String,
-        click_offset: Vec2,
-    },
-    SpawnPoint {
-        index: usize,
-        click_offset: Vec2,
-    },
-}

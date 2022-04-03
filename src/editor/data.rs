@@ -2,7 +2,7 @@ use macroquad::prelude::collections::storage;
 
 use crate::{
     map::MapLayerKind,
-    resources::{MapResource, TextureResource},
+    resources::{MapResource, TextureResource, TextureKind},
     Resources,
 };
 
@@ -11,7 +11,7 @@ use super::actions::{UiAction, UiActionExt};
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum EditorTool {
     Cursor,
-    TilePlacer,
+    TilePlacer { tile_id: u32 },
     ObjectPlacer,
     SpawnPointPlacer,
     Eraser,
@@ -254,17 +254,28 @@ impl EditorData {
         {
             let tileset_texture: &TextureResource =
                 &storage::get::<Resources>().textures[&tileset.texture_id];
-            let texture_size = tileset_texture.meta.size;
-
-            ui.image(
-                egui::TextureId::User(
-                    tileset_texture
-                        .texture
-                        .raw_miniquad_texture_handle()
-                        .gl_internal_id() as u64,
-                ),
-                egui::Vec2::new(texture_size.x, texture_size.y),
+            let texture_id = egui::TextureId::User(
+                tileset_texture
+                    .texture
+                    .raw_miniquad_texture_handle()
+                    .gl_internal_id() as u64,
             );
+            let texture_size = tileset_texture.meta.size;
+            let tile_size = tileset.tile_size
+
+            let image =
+                egui::Image::new(texture_id, egui::Vec2::new(texture_size.x, texture_size.y))
+                    .sense(egui::Sense::click());
+            let image_response = ui.add(image);
+            let image_bounds = image_response.rect;
+
+            if image_response.clicked() {
+                let mouse_pos = ui.input().pointer.interact_pos().unwrap() - image_bounds.min;
+            }
+
+            if let EditorTool::TilePlacer { tile_id } = self.selected_tool {
+                let painter = ui.painter_at(image_bounds);
+            }
         }
         None
     }

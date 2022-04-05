@@ -437,6 +437,15 @@
     }
   },
   {
+    "id": "trident",
+    "path": "textures/items/Trident(288x96).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 96,
+      "y": 32
+    }
+  },
+  {
     "id": "turtle_shell",
     "path": "textures/items/TurtleShell(32x32).png",
     "type": "spritesheet",

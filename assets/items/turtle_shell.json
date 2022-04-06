@@ -10,11 +10,7 @@
   "effects": [
     {
       "name": "Turtle Shell",
-      "function_id": "turtle_shell",
-      "activated_on": [
-        "receive_damage"
-      ],
-      "blocks_damage": true
+      "type": "turtle_shell"
     }
   ],
   "sprite": {

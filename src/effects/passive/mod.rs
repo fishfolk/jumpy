@@ -1,54 +1,19 @@
-use std::collections::HashMap;
-
 use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
 use hecs::{Entity, World};
 
-mod turtle_shell;
-
-use crate::player::PlayerEventKind;
-use crate::PlayerEvent;
-
-static mut PASSIVE_EFFECT_FUNCS: Option<HashMap<String, PassiveEffectFn>> = None;
-
-unsafe fn get_passive_effects_map() -> &'static mut HashMap<String, PassiveEffectFn> {
-    PASSIVE_EFFECT_FUNCS.get_or_insert(HashMap::new())
-}
-
-#[allow(dead_code)]
-pub fn add_passive_effect(id: &str, f: PassiveEffectFn) {
-    unsafe { get_passive_effects_map() }.insert(id.to_string(), f);
-}
-
-pub fn try_get_passive_effect(id: &str) -> Option<&PassiveEffectFn> {
-    unsafe { get_passive_effects_map() }.get(id)
-}
-
-pub fn get_passive_effect(id: &str) -> &PassiveEffectFn {
-    try_get_passive_effect(id).unwrap()
-}
-
-pub type PassiveEffectFn =
-    fn(world: &mut World, player_entity: Entity, item_entity: Option<Entity>, event: PlayerEvent);
-
-pub fn init_passive_effects() {
-    let effects = unsafe { get_passive_effects_map() };
-
-    effects.insert(
-        turtle_shell::EFFECT_FUNCTION_ID.to_string(),
-        turtle_shell::effect_function,
-    );
-}
+use crate::{
+    player::{Player, PlayerEventQueue},
+    PlayerEvent,
+};
 
 pub struct PassiveEffectInstance {
     pub name: String,
-    pub function: Option<PassiveEffectFn>,
-    pub activated_on: Vec<PlayerEventKind>,
+    pub kind: Option<PassiveEffectKind>,
     pub particle_effect_id: Option<String>,
     pub event_particle_effect_id: Option<String>,
-    pub blocks_damage: bool,
     pub uses: Option<u32>,
     pub item: Option<Entity>,
     pub use_cnt: u32,
@@ -58,15 +23,11 @@ pub struct PassiveEffectInstance {
 
 impl PassiveEffectInstance {
     pub fn new(item: Option<Entity>, meta: PassiveEffectMetadata) -> Self {
-        let function = meta.function_id.map(|id| *get_passive_effect(&id));
-
         PassiveEffectInstance {
             name: meta.name,
-            function,
-            activated_on: meta.activated_on,
+            kind: meta.kind,
             particle_effect_id: meta.particle_effect_id,
             event_particle_effect_id: meta.event_particle_effect_id,
-            blocks_damage: meta.blocks_damage,
             uses: meta.uses,
             item,
             use_cnt: 0,
@@ -97,12 +58,50 @@ impl PassiveEffectInstance {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum PassiveEffectKind {
+    TurtleShell,
+}
+
+impl PassiveEffectKind {
+    /// Returns true if this passive effect is activated on the given player event
+    pub fn activated_on(&self, event: &PlayerEvent) -> bool {
+        match self {
+            PassiveEffectKind::TurtleShell => matches!(event, PlayerEvent::ReceiveDamage { .. }),
+        }
+    }
+
+    /// Returns a funciton pointer to the player event handler for the this passive effect kind
+    pub fn player_event_handler(&self) -> fn(&mut World, Entity, Option<Entity>, PlayerEvent) {
+        match self {
+            PassiveEffectKind::TurtleShell => Self::handle_turtle_shell_player_event,
+        }
+    }
+
+    fn handle_turtle_shell_player_event(
+        world: &mut World,
+        player_entity: Entity,
+        _item_entity: Option<Entity>,
+        event: PlayerEvent,
+    ) {
+        if let PlayerEvent::ReceiveDamage { is_from_left, .. } = event {
+            let player = world.get::<Player>(player_entity).unwrap();
+            let mut events = world.get_mut::<PlayerEventQueue>(player_entity).unwrap();
+
+            if player.is_facing_left != is_from_left {
+                events
+                    .queue
+                    .push(PlayerEvent::DamageBlocked { is_from_left });
+            }
+        }
+    }
+}
+
+#[derive(Clone, Serialize, Deserialize)]
 pub struct PassiveEffectMetadata {
     pub name: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub function_id: Option<String>,
-    /// This specifies the player events that will trigger an activation of the event
-    pub activated_on: Vec<PlayerEventKind>,
+    #[serde(default, flatten, skip_serializing_if = "Option::is_none")]
+    pub kind: Option<PassiveEffectKind>,
     /// This is the particle effect that will be spawned when the effect become active.
     #[serde(
         default,

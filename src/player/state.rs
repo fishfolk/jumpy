@@ -207,10 +207,12 @@ pub fn update_player_passive_effects(world: &mut World) {
         events.queue.push(PlayerEvent::Update { dt });
 
         for event in events.queue.iter() {
-            let kind = event.into();
-
             for effect in &mut player.passive_effects {
-                if effect.activated_on.contains(&kind) {
+                if let Some(effect_kind) = effect.kind.clone() {
+                    if !effect_kind.activated_on(event) {
+                        continue;
+                    }
+
                     effect.use_cnt += 1;
 
                     if let Some(item_entity) = effect.item {
@@ -219,9 +221,12 @@ pub fn update_player_passive_effects(world: &mut World) {
                         item.use_cnt += 1;
                     }
 
-                    if let Some(f) = &effect.function {
-                        function_calls.push((*f, entity, effect.item, event.clone()));
-                    }
+                    function_calls.push((
+                        effect_kind.player_event_handler(),
+                        entity,
+                        effect.item,
+                        event.clone(),
+                    ));
                 }
             }
         }

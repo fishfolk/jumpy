@@ -47,7 +47,6 @@ pub use player::PlayerEvent;
 
 pub use ecs::Owner;
 
-use crate::effects::passive::init_passive_effects;
 use crate::game::GameMode;
 use crate::particles::Particles;
 use crate::resources::load_resources;
@@ -218,8 +217,6 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         let particles = Particles::new();
         storage::store(particles);
     }
-
-    init_passive_effects();
 
     'outer: loop {
         if init_game().await? {

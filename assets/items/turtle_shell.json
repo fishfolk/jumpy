@@ -10,7 +10,9 @@
   "effects": [
     {
       "name": "Turtle Shell",
-      "type": "turtle_shell"
+      "type": "shield",
+      "back": true,
+      "front": false
     }
   ],
   "sprite": {

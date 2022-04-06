@@ -60,25 +60,67 @@ impl PassiveEffectInstance {
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum PassiveEffectKind {
-    TurtleShell,
+    Shield(ShieldEffectOptions),
+    MovementMultiplier(MovementMultiplierEffectOptions),
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(default)]
+pub struct ShieldEffectOptions {
+    pub front: bool,
+    pub back: bool,
+}
+
+impl Default for ShieldEffectOptions {
+    fn default() -> Self {
+        Self {
+            front: true,
+            back: true,
+        }
+    }
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(default)]
+pub struct MovementMultiplierEffectOptions {
+    pub x: f32,
+    pub y: f32,
+}
+
+impl Default for MovementMultiplierEffectOptions {
+    fn default() -> Self {
+        Self { x: 1.0, y: 1.0 }
+    }
 }
 
 impl PassiveEffectKind {
     /// Returns true if this passive effect is activated on the given player event
     pub fn activated_on(&self, event: &PlayerEvent) -> bool {
         match self {
-            PassiveEffectKind::TurtleShell => matches!(event, PlayerEvent::ReceiveDamage { .. }),
+            PassiveEffectKind::Shield(_) => matches!(event, PlayerEvent::ReceiveDamage { .. }),
+            PassiveEffectKind::MovementMultiplier(_) => false,
         }
     }
 
     /// Returns a funciton pointer to the player event handler for the this passive effect kind
-    pub fn player_event_handler(&self) -> fn(&mut World, Entity, Option<Entity>, PlayerEvent) {
+    pub fn handle_player_event(
+        &self,
+        world: &mut World,
+        player_entity: Entity,
+        item_entity: Option<Entity>,
+        event: PlayerEvent,
+    ) {
         match self {
-            PassiveEffectKind::TurtleShell => Self::handle_turtle_shell_player_event,
+            PassiveEffectKind::Shield(opts) => {
+                self.handle_shield(opts, world, player_entity, item_entity, event)
+            }
+            PassiveEffectKind::MovementMultiplier(_) => (),
         }
     }
 
-    fn handle_turtle_shell_player_event(
+    fn handle_shield(
+        &self,
+        opts: &ShieldEffectOptions,
         world: &mut World,
         player_entity: Entity,
         _item_entity: Option<Entity>,
@@ -88,7 +130,10 @@ impl PassiveEffectKind {
             let player = world.get::<Player>(player_entity).unwrap();
             let mut events = world.get_mut::<PlayerEventQueue>(player_entity).unwrap();
 
-            if player.is_facing_left != is_from_left {
+            let damage_is_from_front = player.is_facing_left == is_from_left;
+            let damage_is_from_back = !damage_is_from_front;
+
+            if damage_is_from_front && opts.front || damage_is_from_back && opts.back {
                 events
                     .queue
                     .push(PlayerEvent::DamageBlocked { is_from_left });
@@ -109,18 +154,21 @@ pub struct PassiveEffectMetadata {
         skip_serializing_if = "Option::is_none"
     )]
     pub particle_effect_id: Option<String>,
-    /// This is the particle effect that will be spawned, each time a player event leads to the
-    /// effect coroutine being called.
+    /// This is the particle effect that will be spawned, each time a player event triggers the
+    /// effect action ( if any ).
+    /// 
+    /// For instance, the shield effect is triggered every time it blocks an attack.
     #[serde(
         default,
         rename = "event_particle_effect",
         skip_serializing_if = "Option::is_none"
     )]
     pub event_particle_effect_id: Option<String>,
-    /// If this is true damage will be blocked on a player that has the item equipped
-    #[serde(default)]
-    pub blocks_damage: bool,
-    /// This is the amount of times the coroutine can be called, before the effect is depleted
+    /// This is the amount of times the effect action ( if any ) can be triggered, before the effect
+    /// is depleted.
+    /// 
+    /// For instance, the shield effect is triggered every time it blocks an attack, and setting a
+    /// use-limit will expire the effect after it has blocked that many attacks.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub uses: Option<u32>,
     /// This is the duration of the effect.

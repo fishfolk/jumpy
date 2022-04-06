@@ -76,7 +76,7 @@ pub fn update_player_events(world: &mut World) {
         let mut damage_blocked_right = false;
 
         for event in events.queue.iter() {
-            if let &PlayerEvent::DamageBlocked { is_from_left } = event {
+            if let PlayerEvent::DamageBlocked { is_from_left } = *event {
                 damage_blocked_left = damage_blocked_left || is_from_left;
                 damage_blocked_right = damage_blocked_right || !is_from_left;
             }

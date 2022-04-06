@@ -6,6 +6,7 @@ use hecs::{Entity, World};
 
 use core::Transform;
 
+use crate::effects::passive::PassiveEffectKind;
 use crate::player::{
     Player, PlayerAttributes, PlayerController, PlayerEventQueue, JUMP_SOUND_ID, LAND_SOUND_ID,
     RESPAWN_DELAY,
@@ -115,6 +116,20 @@ pub fn update_player_states(world: &mut World) {
 
                 player.state = PlayerState::Sliding;
             } else {
+                let mut x_move_multiplier = 1.0;
+                let mut y_move_multiplier = 1.0;
+
+                for multiplier in player.passive_effects.iter().filter_map(|x| {
+                    if let Some(PassiveEffectKind::MovementMultiplier(opts)) = &x.kind {
+                        Some(opts)
+                    } else {
+                        None
+                    }
+                }) {
+                    x_move_multiplier *= multiplier.x;
+                    y_move_multiplier *= multiplier.y;
+                }
+
                 if controller.move_direction.x < 0.0 {
                     body.velocity.x = -attributes.move_speed;
                 } else if controller.move_direction.x > 0.0 {
@@ -122,6 +137,8 @@ pub fn update_player_states(world: &mut World) {
                 } else {
                     body.velocity.x = 0.0;
                 }
+
+                body.velocity.x *= x_move_multiplier;
 
                 if controller.should_crouch {
                     if body.is_on_ground {
@@ -140,7 +157,7 @@ pub fn update_player_states(world: &mut World) {
                         attributes.jump_force
                     };
 
-                    body.velocity.y = -jump_force;
+                    body.velocity.y = -jump_force * y_move_multiplier;
 
                     player.state = PlayerState::Jumping;
 
@@ -221,19 +238,14 @@ pub fn update_player_passive_effects(world: &mut World) {
                         item.use_cnt += 1;
                     }
 
-                    function_calls.push((
-                        effect_kind.player_event_handler(),
-                        entity,
-                        effect.item,
-                        event.clone(),
-                    ));
+                    function_calls.push((effect_kind, entity, effect.item, event.clone()));
                 }
             }
         }
     }
 
-    for (f, player_entity, item_entity, event) in function_calls.drain(0..) {
-        f(world, player_entity, item_entity, event);
+    for (effect_kind, player_entity, item_entity, event) in function_calls.drain(0..) {
+        effect_kind.handle_player_event(world, player_entity, item_entity, event);
     }
 }
 

@@ -1,0 +1,50 @@
+{
+  "id": "trident",
+  "name": "Trident",
+  "type": "weapon",
+  "cooldown": 0.5,
+  "sound_effect": "sword",
+  "effects": [
+    {
+      "type": "rect_collider",
+      "width": 40,
+      "height": 35
+    }
+  ],
+  "collider_size": {
+    "x": 60,
+    "y": 20
+  },
+  "mount_offset": {
+    "x": -35,
+    "y": -5
+  },
+  "effect_offset": {
+    "x": 55,
+    "y": 0
+  },
+  "sprite": {
+    "texture": "trident",
+    "autoplay_id": "ground",
+    "animations": [
+      {
+        "id": "ground",
+        "row": 2,
+        "frames": 1,
+        "fps": 1
+      },
+      {
+        "id": "idle",
+        "row": 0,
+        "frames": 1,
+        "fps": 1
+      },
+      {
+        "id": "attack",
+        "row": 1,
+        "frames": 3,
+        "fps": 15
+      }
+    ]
+  }
+}

@@ -793,6 +793,14 @@
       "has_collision": false,
       "objects": [
         {
+          "id": "trident",
+          "kind": "item",
+          "position": {
+            "x": 786.3906,
+            "y": 677.3542
+          }
+        },
+        {
           "id": "crown_hat",
           "kind": "item",
           "position": {
@@ -812,7 +820,7 @@
           "id": "chest_hat",
           "kind": "item",
           "position": {
-            "x": 423.5,
+            "x": 421.5,
             "y": 372.0
           }
         },
@@ -1029,6 +1037,120 @@
     }
   ],
   "tilesets": [
+    {
+      "id": "decorations1",
+      "texture_id": "default_decoration",
+      "texture_size": {
+        "x": 240,
+        "y": 102
+      },
+      "tile_size": {
+        "x": 48.0,
+        "y": 51.0
+      },
+      "grid_size": {
+        "x": 5,
+        "y": 2
+      },
+      "first_tile_id": 64,
+      "tile_cnt": 10,
+      "tile_subdivisions": {
+        "x": 3,
+        "y": 3
+      },
+      "autotile_mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
     {
       "id": "tileset",
       "texture_id": "default_tileset",
@@ -1620,130 +1742,16 @@
         false
       ],
       "tile_attributes": {
+        "56": [
+          "jumpthrough"
+        ],
         "60": [
           "jumpthrough"
         ],
         "58": [
           "jumpthrough"
-        ],
-        "56": [
-          "jumpthrough"
         ]
       }
-    },
-    {
-      "id": "decorations1",
-      "texture_id": "default_decoration",
-      "texture_size": {
-        "x": 240,
-        "y": 102
-      },
-      "tile_size": {
-        "x": 48.0,
-        "y": 51.0
-      },
-      "grid_size": {
-        "x": 5,
-        "y": 2
-      },
-      "first_tile_id": 64,
-      "tile_cnt": 10,
-      "tile_subdivisions": {
-        "x": 3,
-        "y": 3
-      },
-      "autotile_mask": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
     }
   ],
   "spawn_points": [

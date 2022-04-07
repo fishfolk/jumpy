@@ -10,10 +10,10 @@ use core::{Result, Transform};
 
 use crate::effects::active::spawn_active_effect;
 use crate::particles::{ParticleEmitter, ParticleEmitterMetadata};
-use crate::physics;
 use crate::player::{Player, PlayerState};
+use crate::{physics};
 use crate::{ActiveEffectMetadata, AnimatedSpriteMetadata, CollisionWorld, PhysicsBody};
-use crate::{Drawable, PhysicsBodyParams};
+use crate::{Drawable, DrawableKind, PhysicsBodyParams};
 
 const TRIGGERED_EFFECT_DRAW_ORDER: u32 = 5;
 
@@ -114,19 +114,12 @@ pub fn spawn_triggered_effect(
     ));
 
     if let Some(meta) = meta.sprite.clone() {
-        let animations = meta
-            .animations
-            .clone()
-            .into_iter()
-            .map(|a| a.into())
-            .collect::<Vec<_>>();
+        let animated_sprite = meta.into();
 
-        let mut drawable = Drawable::new_animated_sprite(
-            TRIGGERED_EFFECT_DRAW_ORDER,
-            &meta.texture_id,
-            animations.as_slice(),
-            meta.clone().into(),
-        );
+        let mut drawable = Drawable {
+            draw_order: TRIGGERED_EFFECT_DRAW_ORDER,
+            kind: DrawableKind::AnimatedSprite(animated_sprite),
+        };
 
         {
             let sprite = drawable.get_animated_sprite_mut().unwrap();

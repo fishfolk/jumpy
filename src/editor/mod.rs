@@ -19,7 +19,10 @@ pub use input::EditorInputScheme;
 
 use crate::{editor::windows::CreateTilesetWindow, map::Map};
 
-use macroquad::experimental::scene::{Node, RefMut};
+use macroquad::{
+    experimental::scene::{Node, RefMut},
+    prelude::{collections::storage, render_target, RenderTarget},
+};
 
 use self::windows::{CreateLayerResult, CreateTilesetResult};
 
@@ -28,32 +31,70 @@ use crate::resources::MapResource;
 pub struct Editor {
     state: EditorState,
 
+    camera_pos: macroquad::prelude::Vec2,
+    camera_scale: f32,
+
     history: ActionHistory,
 
     create_layer_window: Option<windows::CreateLayerWindow>,
     create_tileset_window: Option<windows::CreateTilesetWindow>,
+
+    level_render_target: RenderTarget,
 }
 
 /// Used to interface with macroquad. Necessary because using `node: RefMut<Self>` really limits
 /// what can be done in regards to borrowing.
 pub struct EditorNode {
     editor: Editor,
+
+    accept_mouse_input: bool,
+    input_scheme: EditorInputScheme,
 }
 
 impl EditorNode {
-    pub fn new(editor: Editor) -> Self {
-        Self { editor }
+    const CAMERA_PAN_SPEED: f32 = 5.0;
+
+    pub fn new(editor: Editor, input_scheme: EditorInputScheme) -> Self {
+        Self {
+            editor,
+            accept_mouse_input: true,
+            input_scheme,
+        }
     }
 }
 
 impl Node for EditorNode {
+    fn fixed_update(mut node: RefMut<Self>) {
+        use macroquad::prelude::*;
+
+        let input = node.input_scheme.collect_input();
+
+        node.editor.camera_pos += input.camera_move_direction * Self::CAMERA_PAN_SPEED;
+
+        let camera = Some(Camera2D {
+            offset: vec2(0.0, 0.0),
+            target: node.editor.camera_pos,
+            zoom: vec2(
+                node.editor.camera_scale / node.editor.level_render_target.texture.width(),
+                node.editor.camera_scale / node.editor.level_render_target.texture.height(),
+            ) * 2.0,
+            render_target: Some(node.editor.level_render_target),
+            ..Camera2D::default()
+        });
+
+        scene::set_camera(0, camera);
+    }
+
     fn draw(mut node: RefMut<Self>)
     where
         Self: Sized,
     {
         node.editor.draw();
 
-        egui_macroquad::ui(|egui_ctx| node.editor.ui(egui_ctx));
+        egui_macroquad::ui(|egui_ctx| {
+            node.editor.ui(egui_ctx);
+            node.accept_mouse_input = !egui_ctx.wants_pointer_input()
+        });
 
         egui_macroquad::draw();
     }
@@ -62,7 +103,6 @@ impl Node for EditorNode {
 impl Editor {
     const CAMERA_PAN_THRESHOLD: f32 = 0.025;
 
-    const CAMERA_PAN_SPEED: f32 = 5.0;
     const CAMERA_ZOOM_STEP: f32 = 0.1;
     const CAMERA_ZOOM_MIN: f32 = 0.1;
     const CAMERA_ZOOM_MAX: f32 = 2.5;
@@ -82,6 +122,9 @@ impl Editor {
             history: ActionHistory::new(),
             create_layer_window: None,
             create_tileset_window: None,
+            camera_pos: Default::default(),
+            camera_scale: 1.,
+            level_render_target: render_target(1, 1),
         }
     }
 
@@ -164,7 +207,7 @@ impl Editor {
     }
 
     pub fn ui(&mut self, egui_ctx: &egui::Context) {
-        if let Some(action) = self.state.ui(egui_ctx) {
+        if let Some(action) = self.state.ui(egui_ctx, &mut self.level_render_target) {
             self.apply_action(action);
         }
 
@@ -211,6 +254,8 @@ impl Editor {
     }
 
     pub fn draw(&self) {
+        use macroquad::prelude::*;
+
         let map = &self.state.map_resource.map;
         {
             map.draw_background(None, !self.state.is_parallax_enabled);

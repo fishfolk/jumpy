@@ -1,4 +1,4 @@
-use macroquad::prelude::collections::storage;
+use macroquad::prelude::{collections::storage, render_target, RenderTarget};
 
 use crate::{
     map::MapLayerKind,
@@ -75,9 +75,41 @@ impl EditorState {
 
 /// UI-related functions
 impl EditorState {
-    pub fn ui(&self, egui_ctx: &egui::Context) -> Option<UiAction> {
+    pub fn ui(
+        &self,
+        egui_ctx: &egui::Context,
+        level_render_target: &mut RenderTarget,
+    ) -> Option<UiAction> {
         self.draw_toolbar(egui_ctx)
             .then(self.draw_side_panel(egui_ctx))
+            .then(self.draw_level(egui_ctx, level_render_target))
+    }
+
+    fn draw_level(
+        &self,
+        egui_ctx: &egui::Context,
+        level_render_target: &mut RenderTarget,
+    ) -> Option<UiAction> {
+        egui::CentralPanel::default()
+            .frame(egui::Frame::none())
+            .show(egui_ctx, |ui| {
+                let (width, height) = (ui.available_width() as u32, ui.available_height() as u32);
+                let texture_id = egui::TextureId::User(
+                    level_render_target
+                        .texture
+                        .raw_miniquad_texture_handle()
+                        .gl_internal_id() as u64,
+                );
+                ui.image(texture_id, ui.available_size());
+                if width != level_render_target.texture.width() as u32
+                    || height != level_render_target.texture.height() as u32
+                {
+                    level_render_target.delete();
+                    *level_render_target = render_target(width, height);
+                    dbg!("Remade level render target");
+                }
+            });
+        None
     }
 
     fn draw_toolbar(&self, egui_ctx: &egui::Context) -> Option<UiAction> {

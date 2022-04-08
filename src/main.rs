@@ -117,7 +117,7 @@ async fn init_game() -> Result<bool> {
             start_music("fish_tide");
         }
         MainMenuResult::Editor {
-            input_scheme: _,
+            input_scheme,
             is_new_map,
         } => {
             let map_resource = if is_new_map {
@@ -134,7 +134,7 @@ async fn init_game() -> Result<bool> {
             let position = map_resource.map.get_size() * 0.5;
 
             scene::add_node(EditorCamera::new(position));
-            scene::add_node(EditorNode::new(Editor::new(map_resource)));
+            scene::add_node(EditorNode::new(Editor::new(map_resource), input_scheme));
         }
         MainMenuResult::ReloadResources => {
             reload_resources();

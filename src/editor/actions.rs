@@ -5,7 +5,7 @@ use core::error::Result;
 use crate::map::{Map, MapLayerKind, MapTileset};
 use crate::map::{MapBackgroundLayer, MapObjectKind};
 
-use super::EditorTool;
+use super::state::EditorTool;
 
 /// These are all the actions available for the GUI and other sub-systems of the editor.
 /// If you need to perform multiple actions in one call, use the `Batch` variant.

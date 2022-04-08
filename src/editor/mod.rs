@@ -1,14 +1,14 @@
 use std::ops::ControlFlow;
 
 mod camera;
-pub mod data;
+pub mod state;
 mod windows;
-pub use data::*;
+pub use state::*;
 
 pub use camera::EditorCamera;
 
 mod actions;
-use actions::{UiAction, UiActionExt};
+use actions::UiAction;
 
 mod input;
 
@@ -17,19 +17,16 @@ mod history;
 use history::ActionHistory;
 pub use input::EditorInputScheme;
 
-use crate::{editor::windows::CreateTilesetWindow, map::MapObjectKind, Resources};
+use crate::{editor::windows::CreateTilesetWindow, map::Map};
 
-use macroquad::{
-    experimental::scene::{Node, RefMut},
-    prelude::*,
-};
+use macroquad::experimental::scene::{Node, RefMut};
 
 use self::windows::{CreateLayerResult, CreateTilesetResult};
 
 use crate::resources::MapResource;
 
 pub struct Editor {
-    ctx: EditorData,
+    state: EditorState,
 
     history: ActionHistory,
 
@@ -49,10 +46,39 @@ impl EditorNode {
     }
 }
 
+impl Node for EditorNode {
+    fn draw(mut node: RefMut<Self>)
+    where
+        Self: Sized,
+    {
+        node.editor.draw();
+
+        egui_macroquad::ui(|egui_ctx| node.editor.ui(egui_ctx));
+
+        egui_macroquad::draw();
+    }
+}
+
 impl Editor {
+    const CAMERA_PAN_THRESHOLD: f32 = 0.025;
+
+    const CAMERA_PAN_SPEED: f32 = 5.0;
+    const CAMERA_ZOOM_STEP: f32 = 0.1;
+    const CAMERA_ZOOM_MIN: f32 = 0.1;
+    const CAMERA_ZOOM_MAX: f32 = 2.5;
+
+    const CURSOR_MOVE_SPEED: f32 = 5.0;
+
+    const OBJECT_SELECTION_RECT_SIZE: f32 = 75.0;
+    const OBJECT_SELECTION_RECT_PADDING: f32 = 8.0;
+
+    const DOUBLE_CLICK_THRESHOLD: f32 = 0.25;
+
+    const MESSAGE_TIMEOUT: f32 = 2.5;
+
     pub fn new(map_resource: MapResource) -> Self {
         Self {
-            ctx: EditorData::new(map_resource),
+            state: EditorState::new(map_resource),
             history: ActionHistory::new(),
             create_layer_window: None,
             create_tileset_window: None,
@@ -66,9 +92,9 @@ impl Editor {
             UiAction::Batch(batch) => batch
                 .into_iter()
                 .for_each(|action| self.apply_action(action)),
-            UiAction::Undo => self.history.undo(&mut self.ctx.map_resource.map).unwrap(),
-            UiAction::Redo => self.history.redo(&mut self.ctx.map_resource.map).unwrap(),
-            UiAction::SelectTool(tool) => self.ctx.selected_tool = tool,
+            UiAction::Undo => self.history.undo(&mut self.state.map_resource.map).unwrap(),
+            UiAction::Redo => self.history.redo(&mut self.state.map_resource.map).unwrap(),
+            UiAction::SelectTool(tool) => self.state.selected_tool = tool,
             UiAction::OpenCreateLayerWindow => self.create_layer_window = Some(Default::default()),
             UiAction::OpenCreateTilesetWindow => {
                 self.create_tileset_window = Some(CreateTilesetWindow::new())
@@ -81,56 +107,56 @@ impl Editor {
             } => {
                 let action = actions::CreateLayer::new(id, kind, has_collision, index);
                 self.history
-                    .apply(action, &mut self.ctx.map_resource.map)
+                    .apply(action, &mut self.state.map_resource.map)
                     .unwrap();
             }
             UiAction::CreateTileset { id, texture_id } => {
                 let action = actions::CreateTileset::new(id, texture_id);
                 self.history
-                    .apply(action, &mut self.ctx.map_resource.map)
+                    .apply(action, &mut self.state.map_resource.map)
                     .unwrap();
             }
             UiAction::DeleteLayer(id) => {
                 let action = actions::DeleteLayer::new(id);
                 self.history
-                    .apply(action, &mut self.ctx.map_resource.map)
+                    .apply(action, &mut self.state.map_resource.map)
                     .unwrap();
-                self.ctx.selected_layer = None;
+                self.state.selected_layer = None;
             }
             UiAction::DeleteTileset(id) => {
                 let action = actions::DeleteTileset::new(id);
                 self.history
-                    .apply(action, &mut self.ctx.map_resource.map)
+                    .apply(action, &mut self.state.map_resource.map)
                     .unwrap();
-                self.ctx.selected_tile = None;
+                self.state.selected_tile = None;
             }
             UiAction::UpdateLayer { id, is_visible } => {
                 let action = actions::UpdateLayer::new(id, is_visible);
                 self.history
-                    .apply(action, &mut self.ctx.map_resource.map)
+                    .apply(action, &mut self.state.map_resource.map)
                     .unwrap();
             }
             UiAction::SetLayerDrawOrderIndex { id, index } => {
                 let action = actions::SetLayerDrawOrderIndex::new(id, index);
                 self.history
-                    .apply(action, &mut self.ctx.map_resource.map)
+                    .apply(action, &mut self.state.map_resource.map)
                     .unwrap();
             }
             UiAction::SelectLayer(id) => {
-                self.ctx.selected_layer = Some(id);
+                self.state.selected_layer = Some(id);
             }
             UiAction::SelectTileset(id) => {
-                self.ctx.selected_tile = Some(TileSelection {
+                self.state.selected_tile = Some(TileSelection {
                     tileset: id,
                     tile_id: 0,
                 });
             }
             UiAction::SelectTile { id, tileset_id } => {
-                self.ctx.selected_tile = Some(TileSelection {
+                self.state.selected_tile = Some(TileSelection {
                     tileset: tileset_id,
                     tile_id: id,
                 });
-                self.ctx.selected_tool = EditorTool::TilePlacer;
+                self.state.selected_tool = EditorTool::TilePlacer;
             }
 
             _ => todo!(),
@@ -138,12 +164,12 @@ impl Editor {
     }
 
     pub fn ui(&mut self, egui_ctx: &egui::Context) {
-        if let Some(action) = self.ctx.ui(egui_ctx) {
+        if let Some(action) = self.state.ui(egui_ctx) {
             self.apply_action(action);
         }
 
         if let Some(window) = &mut self.create_layer_window {
-            match window.ui(egui_ctx, &self.ctx.map_resource.map) {
+            match window.ui(egui_ctx, &self.state.map_resource.map) {
                 ControlFlow::Continue(()) => (),
                 ControlFlow::Break(CreateLayerResult::Create {
                     has_collision,
@@ -165,7 +191,7 @@ impl Editor {
         }
 
         if let Some(window) = &mut self.create_tileset_window {
-            match window.ui(egui_ctx, &self.ctx.map_resource.map) {
+            match window.ui(egui_ctx, &self.state.map_resource.map) {
                 ControlFlow::Continue(()) => (),
                 ControlFlow::Break(CreateTilesetResult::Create {
                     tileset_name,
@@ -183,15 +209,67 @@ impl Editor {
             }
         }
     }
+
+    pub fn draw(&self) {
+        let map = &self.state.map_resource.map;
+        {
+            map.draw_background(None, !self.state.is_parallax_enabled);
+            map.draw(None, false);
+        }
+
+        if self.state.should_draw_grid {
+            self::draw_grid(map);
+        }
+    }
 }
 
-impl Node for EditorNode {
-    fn draw(mut node: RefMut<Self>)
-    where
-        Self: Sized,
-    {
-        egui_macroquad::ui(|egui_ctx| node.editor.ui(egui_ctx));
+fn draw_grid(map: &Map) {
+    const GRID_LINE_WIDTH: f32 = 1.0;
+    const GRID_COLOR: macroquad::prelude::Color = macroquad::prelude::Color {
+        r: 1.0,
+        g: 1.0,
+        b: 1.0,
+        a: 0.25,
+    };
 
-        egui_macroquad::draw();
+    use macroquad::prelude::*;
+
+    let map_size = map.grid_size.as_f32() * map.tile_size;
+
+    draw_rectangle_lines(
+        map.world_offset.x,
+        map.world_offset.y,
+        map_size.x,
+        map_size.y,
+        GRID_LINE_WIDTH,
+        GRID_COLOR,
+    );
+
+    for x in 0..map.grid_size.x {
+        let begin = vec2(
+            map.world_offset.x + (x as f32 * map.tile_size.x),
+            map.world_offset.y,
+        );
+
+        let end = vec2(
+            begin.x,
+            begin.y + (map.grid_size.y as f32 * map.tile_size.y),
+        );
+
+        draw_line(begin.x, begin.y, end.x, end.y, GRID_LINE_WIDTH, GRID_COLOR)
+    }
+
+    for y in 0..map.grid_size.y {
+        let begin = vec2(
+            map.world_offset.x,
+            map.world_offset.y + (y as f32 * map.tile_size.y),
+        );
+
+        let end = vec2(
+            begin.x + (map.grid_size.x as f32 * map.tile_size.x),
+            begin.y,
+        );
+
+        draw_line(begin.x, begin.y, end.x, end.y, GRID_LINE_WIDTH, GRID_COLOR)
     }
 }

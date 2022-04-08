@@ -2,11 +2,7 @@ use std::ops::ControlFlow;
 
 use macroquad::prelude::collections::storage;
 
-use crate::{
-    map::{Map, MapLayerKind},
-    resources::TextureKind,
-    Resources,
-};
+use crate::{map::Map, resources::TextureKind, Resources};
 
 pub struct CreateTilesetWindow {
     tileset_name: String,

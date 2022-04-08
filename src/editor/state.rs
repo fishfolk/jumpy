@@ -42,24 +42,26 @@ pub struct TileSelection {
     pub tile_id: u32,
 }
 
-pub struct EditorData {
+/// Contains the editor state, i.e. the data whose change is tracked by the [`ActionHistory`] of the
+/// editor.
+pub struct EditorState {
     pub selected_tool: EditorTool,
     pub map_resource: MapResource,
     pub selected_layer: Option<String>,
     pub selected_tile: Option<TileSelection>,
-    pub view_top_left: egui::Pos2,
-    pub view_scale: f32,
+    pub is_parallax_enabled: bool,
+    pub should_draw_grid: bool,
 }
 
-impl EditorData {
+impl EditorState {
     pub fn new(map_resource: MapResource) -> Self {
         Self {
             map_resource,
             selected_tool: EditorTool::Cursor,
             selected_layer: None,
             selected_tile: None,
-            view_top_left: egui::Pos2::ZERO,
-            view_scale: 32.,
+            is_parallax_enabled: true,
+            should_draw_grid: true,
         }
     }
 
@@ -72,78 +74,10 @@ impl EditorData {
 }
 
 /// UI-related functions
-impl EditorData {
+impl EditorState {
     pub fn ui(&self, egui_ctx: &egui::Context) -> Option<UiAction> {
         self.draw_toolbar(egui_ctx)
             .then(self.draw_side_panel(egui_ctx))
-            .then(self.draw_level(egui_ctx))
-    }
-
-    fn draw_level(&self, egui_ctx: &egui::Context) -> Option<UiAction> {
-        let mut action = None;
-        egui::CentralPanel::default()
-            .frame(
-                egui::Frame::dark_canvas(&egui_ctx.style())
-                    .margin(egui::style::Margin::symmetric(0., 0.)),
-            )
-            .show(egui_ctx, |ui| {
-                let level_view = egui::Rect::from_min_size(
-                    self.view_top_left,
-                    ui.available_size() / self.view_scale,
-                );
-                let (res, painter) =
-                    ui.allocate_painter(ui.available_size(), egui::Sense::click_and_drag());
-                let target_view = res.rect;
-                for (layer_name, layer) in self.map_resource.map.layers.iter() {
-                    match layer.kind {
-                        MapLayerKind::TileLayer => {
-                            for (tile_idx, tile) in layer.tiles.iter().enumerate() {
-                                if let Some(tile) = tile {
-                                    let tileset = &self.map_resource.map.tilesets[&tile.tileset_id];
-                                    let x = tile_idx % self.map_resource.map.grid_size.x as usize;
-                                    let y = tile_idx / self.map_resource.map.grid_size.x as usize;
-                                    let tileset_texture: &TextureResource =
-                                        &storage::get::<Resources>().textures[&tile.texture_id];
-                                    let texture_id = egui::TextureId::User(
-                                        tileset_texture
-                                            .texture
-                                            .raw_miniquad_texture_handle()
-                                            .gl_internal_id()
-                                            as u64,
-                                    );
-                                    let tileset_uv_tile_size = egui::Vec2 {
-                                        x: 1. / tileset.grid_size.x as f32,
-                                        y: 1. / tileset.grid_size.y as f32,
-                                    };
-                                    let tileset_x = (tile.tile_id % tileset.grid_size.x) as f32
-                                        * tileset_uv_tile_size.x;
-                                    let tileset_y = (tile.tile_id / tileset.grid_size.x) as f32
-                                        * tileset_uv_tile_size.y;
-                                    let target_rect = egui::Rect::from_min_size(
-                                        egui::pos2(x as f32, y as f32),
-                                        egui::vec2(1., 1.),
-                                    )
-                                    .map(level_view, target_view);
-                                    let uv = egui::Rect::from_min_size(
-                                        egui::Pos2 {
-                                            x: tileset_x,
-                                            y: tileset_y,
-                                        },
-                                        tileset_uv_tile_size,
-                                    );
-
-                                    let mut mesh = egui::Mesh::with_texture(texture_id);
-                                    mesh.add_rect_with_uv(target_rect, uv, egui::Color32::WHITE);
-
-                                    painter.add(egui::Shape::mesh(mesh));
-                                }
-                            }
-                        }
-                        MapLayerKind::ObjectLayer => (),
-                    }
-                }
-            });
-        action
     }
 
     fn draw_toolbar(&self, egui_ctx: &egui::Context) -> Option<UiAction> {

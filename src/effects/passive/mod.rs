@@ -6,11 +6,13 @@ use hecs::{Entity, World};
 
 use crate::{
     player::{Player, PlayerEventQueue},
-    PlayerEvent,
+    AnimatedSprite, AnimatedSpriteMetadata, PlayerEvent,
 };
 
 pub struct PassiveEffectInstance {
     pub name: String,
+    pub sprite: Option<AnimatedSprite>,
+    pub sprite_entity: Option<Entity>,
     pub kind: Option<PassiveEffectKind>,
     pub particle_effect_id: Option<String>,
     pub event_particle_effect_id: Option<String>,
@@ -26,6 +28,8 @@ impl PassiveEffectInstance {
         PassiveEffectInstance {
             name: meta.name,
             kind: meta.kind,
+            sprite: meta.sprite.map(Into::into),
+            sprite_entity: None,
             particle_effect_id: meta.particle_effect_id,
             event_particle_effect_id: meta.event_particle_effect_id,
             uses: meta.uses,
@@ -156,7 +160,7 @@ pub struct PassiveEffectMetadata {
     pub particle_effect_id: Option<String>,
     /// This is the particle effect that will be spawned, each time a player event triggers the
     /// effect action ( if any ).
-    /// 
+    ///
     /// For instance, the shield effect is triggered every time it blocks an attack.
     #[serde(
         default,
@@ -166,7 +170,7 @@ pub struct PassiveEffectMetadata {
     pub event_particle_effect_id: Option<String>,
     /// This is the amount of times the effect action ( if any ) can be triggered, before the effect
     /// is depleted.
-    /// 
+    ///
     /// For instance, the shield effect is triggered every time it blocks an attack, and setting a
     /// use-limit will expire the effect after it has blocked that many attacks.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -174,4 +178,8 @@ pub struct PassiveEffectMetadata {
     /// This is the duration of the effect.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub duration: Option<f32>,
+
+    /// An optional sprite to add to the player along with the effect
+    #[serde(alias = "animation")]
+    pub sprite: Option<AnimatedSpriteMetadata>,
 }

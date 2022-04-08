@@ -8,6 +8,26 @@ use crate::{
 
 use super::actions::{UiAction, UiActionExt};
 
+trait RectMap {
+    fn map(self, from: egui::Rect, to: egui::Rect) -> egui::Rect;
+}
+
+impl RectMap for egui::Rect {
+    fn map(self, from: egui::Rect, to: egui::Rect) -> egui::Rect {
+        let min_origin_offset = from.min.to_vec2();
+        let max_origin_offset = from.max.to_vec2();
+        let min_target_offset = to.min.to_vec2();
+        let max_target_offset = to.max.to_vec2();
+
+        let min =
+            (self.min - min_origin_offset).to_vec2() / from.size() * to.size() + min_target_offset;
+        let max =
+            (self.max - max_origin_offset).to_vec2() / from.size() * to.size() + max_target_offset;
+
+        egui::Rect::from_min_max(min.to_pos2(), max.to_pos2())
+    }
+}
+
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum EditorTool {
     Cursor,
@@ -27,6 +47,8 @@ pub struct EditorData {
     pub map_resource: MapResource,
     pub selected_layer: Option<String>,
     pub selected_tile: Option<TileSelection>,
+    pub view_top_left: egui::Pos2,
+    pub view_scale: f32,
 }
 
 impl EditorData {
@@ -36,6 +58,8 @@ impl EditorData {
             selected_tool: EditorTool::Cursor,
             selected_layer: None,
             selected_tile: None,
+            view_top_left: egui::Pos2::ZERO,
+            view_scale: 32.,
         }
     }
 
@@ -57,66 +81,68 @@ impl EditorData {
 
     fn draw_level(&self, egui_ctx: &egui::Context) -> Option<UiAction> {
         let mut action = None;
-        egui::CentralPanel::default().show(egui_ctx, |ui| {
-            egui::plot::Plot::new("level_plot")
-                .data_aspect(1.0)
-                .y_axis_formatter(|y, _| format!("{}", -y))
-                .allow_boxed_zoom(false)
-                .show(ui, |plot_ui| {
-                    for (layer_name, layer) in self.map_resource.map.layers.iter() {
-                        match layer.kind {
-                            MapLayerKind::TileLayer => {
-                                for (tile_idx, tile) in layer.tiles.iter().enumerate() {
-                                    if let Some(tile) = tile {
-                                        let tileset =
-                                            &self.map_resource.map.tilesets[&tile.tileset_id];
-                                        let x =
-                                            tile_idx % self.map_resource.map.grid_size.x as usize;
-                                        let y =
-                                            tile_idx / self.map_resource.map.grid_size.x as usize;
-                                        let tileset_texture: &TextureResource =
-                                            &storage::get::<Resources>().textures[&tile.texture_id];
-                                        let texture_id = egui::TextureId::User(
-                                            tileset_texture
-                                                .texture
-                                                .raw_miniquad_texture_handle()
-                                                .gl_internal_id()
-                                                as u64,
-                                        );
-                                        let tileset_uv_tile_size = egui::Vec2 {
-                                            x: 1. / tileset.grid_size.x as f32,
-                                            y: 1. / tileset.grid_size.y as f32,
-                                        };
-                                        let tileset_x = (tile.tile_id % tileset.grid_size.x) as f32
-                                            * tileset_uv_tile_size.x;
-                                        let tileset_y = (tile.tile_id / tileset.grid_size.x) as f32
-                                            * tileset_uv_tile_size.y;
+        egui::CentralPanel::default()
+            .frame(
+                egui::Frame::dark_canvas(&egui_ctx.style())
+                    .margin(egui::style::Margin::symmetric(0., 0.)),
+            )
+            .show(egui_ctx, |ui| {
+                let level_view = egui::Rect::from_min_size(
+                    self.view_top_left,
+                    ui.available_size() / self.view_scale,
+                );
+                let (res, painter) =
+                    ui.allocate_painter(ui.available_size(), egui::Sense::click_and_drag());
+                let target_view = res.rect;
+                for (layer_name, layer) in self.map_resource.map.layers.iter() {
+                    match layer.kind {
+                        MapLayerKind::TileLayer => {
+                            for (tile_idx, tile) in layer.tiles.iter().enumerate() {
+                                if let Some(tile) = tile {
+                                    let tileset = &self.map_resource.map.tilesets[&tile.tileset_id];
+                                    let x = tile_idx % self.map_resource.map.grid_size.x as usize;
+                                    let y = tile_idx / self.map_resource.map.grid_size.x as usize;
+                                    let tileset_texture: &TextureResource =
+                                        &storage::get::<Resources>().textures[&tile.texture_id];
+                                    let texture_id = egui::TextureId::User(
+                                        tileset_texture
+                                            .texture
+                                            .raw_miniquad_texture_handle()
+                                            .gl_internal_id()
+                                            as u64,
+                                    );
+                                    let tileset_uv_tile_size = egui::Vec2 {
+                                        x: 1. / tileset.grid_size.x as f32,
+                                        y: 1. / tileset.grid_size.y as f32,
+                                    };
+                                    let tileset_x = (tile.tile_id % tileset.grid_size.x) as f32
+                                        * tileset_uv_tile_size.x;
+                                    let tileset_y = (tile.tile_id / tileset.grid_size.x) as f32
+                                        * tileset_uv_tile_size.y;
+                                    let target_rect = egui::Rect::from_min_size(
+                                        egui::pos2(x as f32, y as f32),
+                                        egui::vec2(1., 1.),
+                                    )
+                                    .map(level_view, target_view);
+                                    let uv = egui::Rect::from_min_size(
+                                        egui::Pos2 {
+                                            x: tileset_x,
+                                            y: tileset_y,
+                                        },
+                                        tileset_uv_tile_size,
+                                    );
 
-                                        let tile_image = egui::plot::PlotImage::new(
-                                            texture_id,
-                                            egui::plot::Value::new(
-                                                x as f32 + 0.5,
-                                                -(y as f32) - 0.5,
-                                            ),
-                                            egui::Vec2::new(1., 1.),
-                                        )
-                                        .uv(egui::Rect::from_min_size(
-                                            egui::Pos2 {
-                                                x: tileset_x,
-                                                y: tileset_y,
-                                            },
-                                            tileset_uv_tile_size,
-                                        ));
+                                    let mut mesh = egui::Mesh::with_texture(texture_id);
+                                    mesh.add_rect_with_uv(target_rect, uv, egui::Color32::WHITE);
 
-                                        plot_ui.image(tile_image)
-                                    }
+                                    painter.add(egui::Shape::mesh(mesh));
                                 }
                             }
-                            MapLayerKind::ObjectLayer => (),
                         }
+                        MapLayerKind::ObjectLayer => (),
                     }
-                })
-        });
+                }
+            });
         action
     }
 

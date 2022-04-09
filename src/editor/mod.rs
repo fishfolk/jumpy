@@ -334,8 +334,6 @@ impl Editor {
     }
 
     pub fn draw(&self) {
-        use macroquad::prelude::*;
-
         let map = &self.state.map_resource.map;
         {
             map.draw_background(None, !self.state.is_parallax_enabled);

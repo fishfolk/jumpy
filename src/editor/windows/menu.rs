@@ -1,9 +1,5 @@
 use std::ops::ControlFlow;
 
-use macroquad::prelude::collections::storage;
-
-use crate::{map::Map, resources::TextureKind, Resources};
-
 pub struct MenuWindow {
     can_save: bool,
 }

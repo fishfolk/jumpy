@@ -13,33 +13,31 @@ use crate::resources;
 #[cfg(feature = "macroquad-backend")]
 use crate::gui::combobox::ComboBoxValue;
 
-use crate::{
-    json::{self, TiledMap},
-};
+use crate::parsing::{self, TiledMap};
 
 use crate::resources::{get_texture, TextureResource};
 
-pub type MapProperty = crate::json::GenericParam;
+pub type MapProperty = crate::parsing::GenericParam;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MapBackgroundLayer {
     pub texture_id: String,
     pub depth: f32,
-    #[serde(with = "crate::json::vec2_def")]
+    #[serde(with = "crate::parsing::vec2_def")]
     pub offset: Vec2,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(into = "json::MapDef", from = "json::MapDef")]
+#[serde(into = "parsing::MapDef", from = "parsing::MapDef")]
 pub struct Map {
     #[serde(
         default = "Map::default_background_color",
-        with = "crate::json::ColorDef"
+        with = "crate::parsing::ColorDef"
     )]
     pub background_color: Color,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub background_layers: Vec<MapBackgroundLayer>,
-    #[serde(with = "crate::json::def_vec2")]
+    #[serde(with = "crate::parsing::def_vec2")]
     pub world_offset: Vec2,
     pub grid_size: Size<u32>,
     pub tile_size: Size<f32>,
@@ -49,7 +47,7 @@ pub struct Map {
     pub draw_order: Vec<String>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub properties: HashMap<String, MapProperty>,
-    #[serde(default, with = "crate::json::vec2_vec")]
+    #[serde(default, with = "crate::parsing::vec2_vec")]
     pub spawn_points: Vec<Vec2>,
 }
 
@@ -535,7 +533,7 @@ pub struct MapTile {
     pub texture_id: String,
     #[serde(skip)]
     pub texture: Option<Texture2D>,
-    #[serde(with = "crate::json::vec2_def")]
+    #[serde(with = "crate::parsing::vec2_def")]
     pub texture_coords: Vec2,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub attributes: Vec<String>,
@@ -617,7 +615,7 @@ impl ComboBoxValue for MapObjectKind {
 pub struct MapObject {
     pub id: String,
     pub kind: MapObjectKind,
-    #[serde(with = "crate::json::vec2_def")]
+    #[serde(with = "crate::parsing::vec2_def")]
     pub position: Vec2,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub properties: HashMap<String, MapProperty>,
@@ -645,7 +643,7 @@ pub struct MapTileset {
     pub tile_cnt: u32,
     #[serde(
         default = "MapTileset::default_tile_subdivisions",
-        with = "crate::json::uvec2_def"
+        with = "crate::parsing::uvec2_def"
     )]
     pub tile_subdivisions: UVec2,
     pub autotile_mask: Vec<bool>,

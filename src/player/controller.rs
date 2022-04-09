@@ -1,8 +1,9 @@
 use hecs::World;
 
-use ff_core::prelude::*;
-use ff_core::network::PlayerId;
 use ff_core::input::{collect_local_input, GameInputScheme, PlayerInput};
+use ff_core::network::PlayerId;
+use ff_core::prelude::*;
+use ff_core::Result;
 
 #[derive(Debug, Clone)]
 pub enum PlayerControllerKind {
@@ -76,7 +77,7 @@ impl PlayerController {
     }
 }
 
-pub fn update_player_controllers(world: &mut World, delta_time: f32) {
+pub fn update_player_controllers(world: &mut World, delta_time: f32) -> Result<()> {
     for (_, controller) in world.query_mut::<&mut PlayerController>() {
         let input = match &controller.kind {
             PlayerControllerKind::LocalInput(input_scheme) => collect_local_input(*input_scheme),
@@ -85,4 +86,6 @@ pub fn update_player_controllers(world: &mut World, delta_time: f32) {
 
         controller.apply_input(input);
     }
+
+    Ok(())
 }

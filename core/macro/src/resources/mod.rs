@@ -1,5 +1,5 @@
 mod derive;
-mod load;
+mod init;
 
 pub(crate) use derive::*;
-pub(crate) use load::*;
+pub(crate) use init::*;

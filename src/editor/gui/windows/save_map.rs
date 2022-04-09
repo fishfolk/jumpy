@@ -57,7 +57,8 @@ impl Window for SaveMapWindow {
                 .ui(ui, &mut self.name);
 
             {
-                let path = Path::new(assets_dir())
+                let assets_dir = assets_dir();
+                let path = Path::new(&assets_dir)
                     .join(MAP_EXPORTS_DEFAULT_DIR)
                     .join(map_name_to_filename(&self.name))
                     .with_extension(MAP_EXPORTS_EXTENSION);

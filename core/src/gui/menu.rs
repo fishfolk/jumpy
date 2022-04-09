@@ -1,15 +1,23 @@
 use fishsticks::{Axis, Button, GamepadContext};
+use macroquad::hash;
+use std::collections::HashMap;
 
-use crate::gui::{Panel, BUTTON_FONT_SIZE, BUTTON_MARGIN_V, WINDOW_MARGIN_H, WINDOW_MARGIN_V, GuiTheme};
+use crate::gui::{
+    GuiTheme, Panel, BUTTON_FONT_SIZE, BUTTON_MARGIN_V, WINDOW_MARGIN_H, WINDOW_MARGIN_V,
+};
 
-use crate::input::{is_gamepad_btn_pressed, get_mouse_position, is_key_down, KeyCode, is_key_pressed, get_gamepad_context};
+use crate::input::{
+    get_gamepad_context, get_mouse_position, is_gamepad_button_pressed, is_key_down,
+    is_key_pressed, KeyCode,
+};
 
-use crate::storage;
-use crate::gui::{Id, Ui, widgets};
 use crate::gui::theme::get_gui_theme;
+use crate::gui::{widgets, Id, Ui};
 use crate::macroquad::time::get_frame_time;
-use crate::math::{Vec2, vec2};
+use crate::math::{vec2, Vec2};
+use crate::storage;
 use crate::viewport::get_viewport;
+use crate::Result;
 
 #[derive(Debug, Copy, Clone)]
 pub enum MenuPosition {
@@ -57,12 +65,17 @@ pub struct MenuEntry {
     pub title: String,
     pub is_pulled_down: bool,
     pub is_disabled: bool,
+    pub action: Option<MenuActionFn>,
 }
 
 #[derive(Debug, Copy, Clone)]
 pub struct MenuResult(usize);
 
 impl MenuResult {
+    pub fn is_confirm(self) -> bool {
+        self.0 == Menu::CONFIRM_INDEX
+    }
+
     pub fn is_cancel(self) -> bool {
         self.0 == Menu::CANCEL_INDEX
     }
@@ -84,6 +97,9 @@ impl From<MenuResult> for usize {
     }
 }
 
+pub type MenuActionFn = fn();
+
+#[derive(Clone)]
 pub struct Menu {
     id: Id,
     header: Option<String>,
@@ -91,6 +107,9 @@ pub struct Menu {
     height: Option<f32>,
     position: MenuPosition,
     entries: Vec<MenuEntry>,
+    actions: HashMap<usize, MenuActionFn>,
+    has_confirm_button: bool,
+    confirm_entry_title_override: Option<String>,
     has_cancel_button: bool,
     cancel_entry_title_override: Option<String>,
     current_selection: Option<usize>,
@@ -101,9 +120,11 @@ pub struct Menu {
 }
 
 impl Menu {
+    pub const CONFIRM_INDEX: usize = 99998;
     pub const CANCEL_INDEX: usize = 99999;
 
     const HEADER_MARGIN: f32 = 16.0;
+    const CONFIRM_TITLE: &'static str = "Confirm";
     const CANCEL_TITLE: &'static str = "Cancel";
 
     pub const ENTRY_HEIGHT: f32 = (BUTTON_MARGIN_V * 2.0) + BUTTON_FONT_SIZE;
@@ -112,13 +133,25 @@ impl Menu {
     const NAVIGATION_GRACE_TIME: f32 = 0.25;
 
     pub fn new(id: Id, width: f32, entries: &[MenuEntry]) -> Self {
+        let entries = entries.to_vec();
+        let actions = HashMap::from_iter(entries.iter().filter_map(|e| {
+            if let Some(a) = e.action {
+                Some((e.index, a))
+            } else {
+                None
+            }
+        }));
+
         Menu {
             id,
             header: None,
             width,
             height: None,
             position: MenuPosition::default(),
-            entries: entries.to_vec(),
+            entries,
+            actions,
+            has_confirm_button: false,
+            confirm_entry_title_override: None,
             has_cancel_button: false,
             cancel_entry_title_override: None,
             current_selection: None,
@@ -148,6 +181,27 @@ impl Menu {
     pub fn with_position<P: Into<MenuPosition>>(self, position: P) -> Self {
         Menu {
             position: position.into(),
+            ..self
+        }
+    }
+
+    /// This adds a confirm entry to the menu. The title of this entry will be `Self::CONFIRM_TITLE`
+    /// if no override is specified
+    pub fn with_confirm_button(self, title_override: Option<&str>) -> Self {
+        for entry in &self.entries {
+            assert_ne!(
+                entry.index,
+                Self::CANCEL_INDEX,
+                "Menu: MenuEntry has reserved index ({})",
+                Self::CANCEL_INDEX
+            );
+        }
+
+        let confirm_entry_title_override = title_override.map(|str| str.to_string());
+
+        Menu {
+            has_confirm_button: true,
+            confirm_entry_title_override,
             ..self
         }
     }
@@ -197,6 +251,21 @@ impl Menu {
 
         let mut entries = self.entries.clone();
 
+        if self.has_confirm_button {
+            let title = self
+                .confirm_entry_title_override
+                .clone()
+                .unwrap_or_else(|| Self::CONFIRM_TITLE.to_string());
+
+            entries.push(MenuEntry {
+                index: Self::CONFIRM_INDEX,
+                title,
+                is_pulled_down: true,
+                is_disabled: false,
+                action: None,
+            })
+        }
+
         if self.has_cancel_button {
             let title = self
                 .cancel_entry_title_override
@@ -208,6 +277,7 @@ impl Menu {
                 title,
                 is_pulled_down: true,
                 is_disabled: false,
+                action: None,
             })
         }
 
@@ -393,6 +463,8 @@ impl Menu {
 
         self.is_first_draw = false;
 
+        if let Some(res) = res {}
+
         res
     }
 
@@ -457,11 +529,11 @@ impl Menu {
                 self.current_selection = Some(selection);
             }
 
-            let should_confirm = is_gamepad_btn_pressed(Button::South)
-                || is_key_pressed(KeyCode::Enter);
+            let should_confirm =
+                is_gamepad_button_pressed(Button::South) || is_key_pressed(KeyCode::Enter);
 
-            let should_cancel = is_gamepad_btn_pressed(Button::East)
-                || is_key_pressed(KeyCode::Escape);
+            let should_cancel =
+                is_gamepad_button_pressed(Button::East) || is_key_pressed(KeyCode::Escape);
 
             (should_confirm, should_cancel)
         }

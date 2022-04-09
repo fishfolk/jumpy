@@ -1,6 +1,6 @@
-use std::collections::HashMap;
 use hecs::World;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 use num_traits::*;
 
@@ -10,6 +10,7 @@ pub use crate::backend_impl::particles::*;
 use crate::drawables::AnimatedSpriteMetadata;
 use crate::resources::iter_particle_effects;
 use crate::transform::Transform;
+use crate::Result;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ParticleEmitterMetadata {
@@ -17,10 +18,7 @@ pub struct ParticleEmitterMetadata {
     #[serde(rename = "particle_effect")]
     pub particle_effect_id: String,
     /// The offset is added to the `position` provided when calling `draw`
-    #[serde(
-    default,
-    with = "crate::json::vec2_def"
-    )]
+    #[serde(default, with = "crate::parsing::vec2_def")]
     pub offset: Vec2,
     /// Delay before emission will begin
     #[serde(default, skip_serializing_if = "f32::is_zero")]
@@ -36,7 +34,7 @@ pub struct ParticleEmitterMetadata {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub animations: Option<AnimatedSpriteMetadata>,
     /// If this is set to `true` the `ParticleController` will start to emit automatically
-    #[serde(default, skip_serializing_if = "crate::json::is_false")]
+    #[serde(default, skip_serializing_if = "crate::parsing::is_false")]
     pub should_autostart: bool,
 }
 
@@ -137,7 +135,7 @@ fn update_one_particle_emitter(
     mut position: Vec2,
     rotation: f32,
     emitter: &mut ParticleEmitter,
-) {
+) -> Result<()> {
     if emitter.is_active {
         emitter.delay_timer += delta_time;
 
@@ -182,24 +180,35 @@ fn update_one_particle_emitter(
             }
         }
     }
+
+    Ok(())
 }
 
-pub fn update_particle_emitters(world: &mut World, delta_time: f32) {
+pub fn update_particle_emitters(world: &mut World, delta_time: f32) -> Result<()> {
     for (_, (transform, emitter)) in world.query_mut::<(&Transform, &mut ParticleEmitter)>() {
-        update_one_particle_emitter(delta_time, transform.position, transform.rotation, emitter);
+        update_one_particle_emitter(delta_time, transform.position, transform.rotation, emitter)?;
     }
 
     for (_, (transform, emitters)) in world.query_mut::<(&Transform, &mut Vec<ParticleEmitter>)>() {
         for emitter in emitters.iter_mut() {
-            update_one_particle_emitter(delta_time, transform.position, transform.rotation, emitter);
+            update_one_particle_emitter(
+                delta_time,
+                transform.position,
+                transform.rotation,
+                emitter,
+            )?;
         }
     }
+
+    Ok(())
 }
 
-pub fn draw_particles(_world: &mut World) {
+pub fn draw_particles(_world: &mut World) -> Result<()> {
     let mut particles = get_particle_emitter_cache();
 
     for cache in particles.cache_map.values_mut() {
         cache.draw();
     }
+
+    Ok(())
 }

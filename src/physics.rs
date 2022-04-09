@@ -1,4 +1,3 @@
-
 use macroquad_platformer::{Actor, Tile};
 
 use serde::{Deserialize, Serialize};
@@ -8,6 +7,8 @@ use hecs::World;
 use crate::{CollisionWorld, Map};
 
 use ff_core::prelude::*;
+
+use crate::Result;
 
 pub const GRAVITY: f32 = 2.5;
 pub const TERMINAL_VELOCITY: f32 = 10.0;
@@ -129,7 +130,11 @@ impl PhysicsBody {
     }
 }
 
-pub fn fixed_update_physics_bodies(world: &mut World, delta_time: f32, integration_factor: f32) {
+pub fn fixed_update_physics_bodies(
+    world: &mut World,
+    delta_time: f32,
+    integration_factor: f32,
+) -> Result<()> {
     let mut collision_world = storage::get_mut::<CollisionWorld>();
 
     for (_, (transform, body)) in world.query_mut::<(&mut Transform, &mut PhysicsBody)>() {
@@ -185,9 +190,11 @@ pub fn fixed_update_physics_bodies(world: &mut World, delta_time: f32, integrati
             transform.position = collision_world.actor_pos(body.actor) - body.offset;
         }
     }
+
+    Ok(())
 }
 
-pub fn debug_draw_physics_bodies(world: &mut World) {
+pub fn debug_draw_physics_bodies(world: &mut World) -> Result<()> {
     for (_, (transform, body)) in world.query::<(&Transform, &PhysicsBody)>().iter() {
         if !body.is_deactivated {
             let rect = body.as_rect(transform.position);
@@ -203,14 +210,16 @@ pub fn debug_draw_physics_bodies(world: &mut World) {
             draw_rectangle_outline(rect.x, rect.y, rect.w, rect.h, 2.0, color);
         }
     }
+
+    Ok(())
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RigidBodyParams {
-    #[serde(with = "ff_core::json::vec2_def")]
+    #[serde(with = "ff_core::parsing::vec2_def")]
     pub offset: Vec2,
     pub size: Size<f32>,
-    #[serde(default, skip_serializing_if = "ff_core::json::is_false")]
+    #[serde(default, skip_serializing_if = "ff_core::parsing::is_false")]
     pub can_rotate: bool,
 }
 
@@ -252,7 +261,11 @@ impl RigidBody {
     }
 }
 
-pub fn fixed_update_rigid_bodies(world: &mut World, delta_time: f32, integration_factor: f32) {
+pub fn fixed_update_rigid_bodies(
+    world: &mut World,
+    delta_time: f32,
+    integration_factor: f32,
+) -> Result<()> {
     for (_, (transform, body)) in world.query_mut::<(&mut Transform, &mut RigidBody)>() {
         transform.position += body.velocity;
 
@@ -260,14 +273,18 @@ pub fn fixed_update_rigid_bodies(world: &mut World, delta_time: f32, integration
             apply_rotation(transform, &mut body.velocity, false);
         }
     }
+
+    Ok(())
 }
 
-pub fn debug_draw_rigid_bodies(world: &mut World) {
+pub fn debug_draw_rigid_bodies(world: &mut World) -> Result<()> {
     for (_, (transform, body)) in world.query::<(&Transform, &RigidBody)>().iter() {
         let rect = body.as_rect(transform.position);
 
         draw_rectangle_outline(rect.x, rect.y, rect.w, rect.h, 2.0, colors::RED)
     }
+
+    Ok(())
 }
 
 fn apply_rotation(transform: &mut Transform, velocity: &mut Vec2, is_on_ground: bool) {

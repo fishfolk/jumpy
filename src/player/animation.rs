@@ -5,10 +5,10 @@ use serde::{Deserialize, Serialize};
 use ff_core::prelude::*;
 
 use crate::player::{
-    Player, PlayerInventory, PlayerState, BODY_ANIMATED_SPRITE_ID, CROUCH_ANIMATION_ID,
-    DEATH_BACK_ANIMATION_ID, DEATH_FORWARD_ANIMATION_ID, FALL_ANIMATION_ID, HAT_MOUNT_TWEEN_ID,
-    IDLE_ANIMATION_ID, ITEM_MOUNT_TWEEN_ID, JUMP_ANIMATION_ID, MOVE_ANIMATION_ID,
-    SLIDE_ANIMATION_ID, WEAPON_MOUNT_TWEEN_ID,
+    DamageDirection, Player, PlayerInventory, PlayerState, BODY_ANIMATED_SPRITE_ID,
+    CROUCH_ANIMATION_ID, DEATH_BACK_ANIMATION_ID, DEATH_FORWARD_ANIMATION_ID, FALL_ANIMATION_ID,
+    HAT_MOUNT_TWEEN_ID, IDLE_ANIMATION_ID, ITEM_MOUNT_TWEEN_ID, JUMP_ANIMATION_ID,
+    MOVE_ANIMATION_ID, SLIDE_ANIMATION_ID, WEAPON_MOUNT_TWEEN_ID,
 };
 use crate::{AnimatedSpriteMetadata, AnimationMetadata, Keyframe, TweenMetadata};
 use crate::{Drawable, PhysicsBody};
@@ -25,14 +25,11 @@ pub struct PlayerAnimationMetadata {
     pub texture_id: String,
     #[serde(default)]
     pub scale: Option<f32>,
-    #[serde(default, with = "ff_core::json::vec2_def")]
+    #[serde(default, with = "ff_core::parsing::vec2_def")]
     pub offset: Vec2,
-    #[serde(default, with = "ff_core::json::vec2_opt")]
+    #[serde(default, with = "ff_core::parsing::vec2_opt")]
     pub pivot: Option<Vec2>,
-    #[serde(
-        default,
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tint: Option<Color>,
     #[serde(default)]
     pub animations: PlayerAnimations,
@@ -348,7 +345,7 @@ impl PlayerAnimations {
     }
 }
 
-pub fn update_player_animations(world: &mut World, delta_time: f32) {
+pub fn update_player_animations(world: &mut World, delta_time: f32) -> Result<()> {
     for (_, (player, inventory, body, drawable)) in
         world.query_mut::<(&Player, &mut PlayerInventory, &PhysicsBody, &mut Drawable)>()
     {
@@ -358,13 +355,10 @@ pub fn update_player_animations(world: &mut World, delta_time: f32) {
         sprite_set.flip_all_y(player.is_upside_down);
 
         let animation_id = match player.state {
-            PlayerState::Dead => {
-                if player.is_facing_left == player.damage_from_left {
-                    DEATH_BACK_ANIMATION_ID
-                } else {
-                    DEATH_FORWARD_ANIMATION_ID
-                }
-            }
+            PlayerState::Dead => match player.damage_from.unwrap_or_default() {
+                DamageDirection::Front => DEATH_BACK_ANIMATION_ID,
+                DamageDirection::Back => DEATH_FORWARD_ANIMATION_ID,
+            },
             PlayerState::Incapacitated => {
                 // TODO: implement incapacitated
                 unimplemented!();
@@ -409,4 +403,6 @@ pub fn update_player_animations(world: &mut World, delta_time: f32) {
             inventory.hat_mount_offset = Vec2::ZERO;
         }
     }
+
+    Ok(())
 }

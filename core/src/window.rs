@@ -14,7 +14,7 @@ const DEFAULT_WINDOW_HEIGHT: u32 = 600;
 pub struct WindowConfig {
     #[serde(default, flatten)]
     pub mode: WindowMode,
-    #[serde(default, rename = "high-dpi", skip_serializing_if = "crate::json::is_false")]
+    #[serde(default, rename = "high-dpi", skip_serializing_if = "crate::parsing::is_false")]
     pub is_high_dpi: bool,
 }
 

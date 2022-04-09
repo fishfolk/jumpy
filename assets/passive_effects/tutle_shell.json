@@ -1,0 +1,9 @@
+{
+  "id": "turtle_shell",
+  "name": "Turtle Shell",
+  "uses": 3,
+  "damage_block": {
+    "kind": "increment_uses",
+    "direction": "back"
+  }
+}

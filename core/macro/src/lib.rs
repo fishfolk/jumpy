@@ -1,7 +1,6 @@
 use crate::async_main::async_main_impl;
 use crate::resources::{derive_resource_impl, init_resources_impl};
 
-#[macro_use]
 mod resources;
 mod async_main;
 

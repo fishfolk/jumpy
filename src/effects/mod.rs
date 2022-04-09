@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 pub mod active;
 pub mod passive;
 
-pub use passive::{PassiveEffectInstance, PassiveEffectMetadata};
+pub use passive::{PassiveEffect, PassiveEffectMetadata};
 
 pub use active::{ActiveEffectKind, ActiveEffectMetadata, TriggeredEffectTrigger};
 

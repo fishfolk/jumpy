@@ -3,8 +3,8 @@ use hecs::{Entity, World};
 use ff_core::prelude::*;
 
 use crate::player::{
-    Player, PlayerAttributes, PlayerController, PlayerEventQueue, JUMP_SOUND_ID, LAND_SOUND_ID,
-    RESPAWN_DELAY,
+    Player, PlayerAttributes, PlayerController, PlayerEventKind, PlayerEventQueue, JUMP_SOUND_ID,
+    LAND_SOUND_ID, RESPAWN_DELAY,
 };
 use crate::{CollisionWorld, Item, Map, PhysicsBody, PlayerEvent};
 
@@ -29,7 +29,7 @@ impl Default for PlayerState {
     }
 }
 
-pub fn update_player_states(world: &mut World, delta_time: f32) {
+pub fn update_player_states(world: &mut World, delta_time: f32) -> Result<()> {
     let query = world.query_mut::<(
         &mut Transform,
         &mut Player,
@@ -56,7 +56,9 @@ pub fn update_player_states(world: &mut World, delta_time: f32) {
         if player.state == PlayerState::Dead {
             player.respawn_timer += delta_time;
 
-            player.passive_effects.clear();
+            for effect in &mut player.passive_effects {
+                effect.should_end = true;
+            }
 
             if player.respawn_timer >= RESPAWN_DELAY {
                 player.state = PlayerState::None;
@@ -68,7 +70,7 @@ pub fn update_player_states(world: &mut World, delta_time: f32) {
         } else if player.state == PlayerState::Incapacitated {
             player.incapacitation_timer += delta_time;
 
-            if player.incapacitation_timer >= attributes.incapacitation_duration {
+            if player.incapacitation_timer >= attributes.base_incapacitation_duration {
                 player.state = PlayerState::None;
                 player.incapacitation_timer = 0.0;
             }
@@ -100,7 +102,7 @@ pub fn update_player_states(world: &mut World, delta_time: f32) {
             }
 
             if controller.should_slide {
-                let velocity = attributes.move_speed * attributes.slide_speed_factor;
+                let velocity = attributes.slide_speed;
 
                 if player.is_facing_left {
                     body.velocity.x = -velocity;
@@ -157,7 +159,7 @@ pub fn update_player_states(world: &mut World, delta_time: f32) {
 
                 if !body.is_on_ground && body.velocity.y > 0.0 {
                     if controller.should_float {
-                        body.velocity.y *= attributes.float_gravity_factor;
+                        body.velocity.y = attributes.apply_float_gravity_factor(body.velocity.y);
                         player.state = PlayerState::Floating;
                     }
                 } else if player.state == PlayerState::Floating {
@@ -177,46 +179,49 @@ pub fn update_player_states(world: &mut World, delta_time: f32) {
             }
         }
     }
+
+    Ok(())
 }
 
-pub fn update_player_passive_effects(world: &mut World, delta_time: f32) {
+pub fn update_player_passive_effects(world: &mut World, delta_time: f32) -> Result<()> {
     let mut function_calls = Vec::new();
 
-    for (entity, (player, events)) in world.query::<(&mut Player, &mut PlayerEventQueue)>().iter() {
-        for effect in &mut player.passive_effects {
-            effect.duration_timer += delta_time;
-        }
+    for (entity, (player, attributes, events)) in world
+        .query::<(&mut Player, &mut PlayerAttributes, &mut PlayerEventQueue)>()
+        .iter()
+    {
+        attributes.clear_mods();
 
         player
             .passive_effects
-            .retain(|effect| !effect.is_depleted());
+            .retain(|effect| !effect.should_remove);
 
-        events.queue.push(PlayerEvent::Update { dt: delta_time });
+        for effect in &mut player.passive_effects {
+            if effect.should_begin {
+                if let Some(f) = effect.on_begin_fn {
+                    function_calls.push((f, entity, effect.item, None));
+                }
+            } else {
+                effect.duration_timer += delta_time;
 
-        for event in events.queue.iter() {
-            let kind = event.into();
-
-            for effect in &mut player.passive_effects {
-                if effect.activated_on.contains(&kind) {
-                    effect.use_cnt += 1;
-
-                    if let Some(item_entity) = effect.item {
-                        let mut item = world.get_mut::<Item>(item_entity).unwrap();
-
-                        item.use_cnt += 1;
+                if effect.should_end || effect.is_depleted() {
+                    if let Some(f) = effect.on_end_fn {
+                        function_calls.push((f, entity, effect.item, None));
                     }
 
-                    if let Some(f) = &effect.function {
-                        function_calls.push((*f, entity, effect.item, event.clone()));
-                    }
+                    effect.should_remove = true;
+                } else {
+                    attributes.apply_mods(effect);
                 }
             }
         }
     }
 
-    for (f, player_entity, item_entity, event) in function_calls.drain(0..) {
+    for (f, player_entity, item_entity, event) in function_calls {
         f(world, player_entity, item_entity, event);
     }
+
+    Ok(())
 }
 
 pub fn on_player_damage(world: &mut World, damage_from_entity: Entity, damage_to_entity: Entity) {

@@ -2,7 +2,6 @@
 pub mod error;
 pub mod config;
 pub mod parsing;
-pub mod json;
 pub mod noise;
 pub mod text;
 pub mod network;
@@ -19,7 +18,7 @@ pub mod ecs;
 pub mod rendering;
 pub mod viewport;
 pub mod storage;
-pub mod game;
+pub mod state;
 pub mod input;
 pub mod window;
 pub mod resources;

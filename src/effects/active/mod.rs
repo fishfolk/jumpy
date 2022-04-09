@@ -7,18 +7,18 @@ use serde::{Deserialize, Serialize};
 use ff_core::prelude::*;
 use ff_core::Result;
 
-use crate::{PassiveEffectInstance, PassiveEffectMetadata};
+use crate::{PassiveEffect, PassiveEffectMetadata};
 
 pub mod projectiles;
 pub mod triggered;
 
 pub use triggered::{TriggeredEffectMetadata, TriggeredEffectTrigger};
 
-use ff_core::particles::ParticleEmitterMetadata;
 use crate::effects::active::projectiles::{spawn_projectile, ProjectileParams};
 use crate::effects::active::triggered::{spawn_triggered_effect, TriggeredEffect};
 use crate::player::{on_player_damage, Player};
 use crate::PhysicsBody;
+use ff_core::particles::ParticleEmitterMetadata;
 
 use ff_core::prelude::*;
 
@@ -84,8 +84,8 @@ pub fn spawn_active_effect(
                             }
 
                             for meta in passive_effects.clone().into_iter() {
-                                let effect_instance = PassiveEffectInstance::new(None, meta);
-                                player.passive_effects.push(effect_instance);
+                                let effect = PassiveEffect::new(None, meta);
+                                player.passive_effects.push(effect);
                             }
                         }
                     } else if is_explosion {
@@ -134,8 +134,8 @@ pub fn spawn_active_effect(
                         }
 
                         for meta in passive_effects.clone().into_iter() {
-                            let effect_instance = PassiveEffectInstance::new(None, meta);
-                            player.passive_effects.push(effect_instance);
+                            let effect = PassiveEffect::new(None, meta);
+                            player.passive_effects.push(effect);
                         }
                     }
                 }
@@ -229,11 +229,11 @@ pub enum ActiveEffectKind {
         passive_effects: Vec<PassiveEffectMetadata>,
         /// If `true` the effect will do damage to any player it hits
         #[serde(
-            default = "ff_core::json::default_true",
-            skip_serializing_if = "ff_core::json::is_true"
+            default = "ff_core::parsing::default_true",
+            skip_serializing_if = "ff_core::parsing::is_true"
         )]
         is_lethal: bool,
-        #[serde(default, skip_serializing_if = "ff_core::json::is_false")]
+        #[serde(default, skip_serializing_if = "ff_core::parsing::is_false")]
         is_explosion: bool,
     },
     /// Check for hits with a `Rect` collider
@@ -242,8 +242,8 @@ pub enum ActiveEffectKind {
         height: f32,
         /// If `true` the effect will do damage to any player it hits
         #[serde(
-            default = "ff_core::json::default_true",
-            skip_serializing_if = "ff_core::json::is_true"
+            default = "ff_core::parsing::default_true",
+            skip_serializing_if = "ff_core::parsing::is_true"
         )]
         is_lethal: bool,
         /// This contains any passive effects that will be spawned on collision
@@ -266,8 +266,8 @@ pub enum ActiveEffectKind {
         spread: f32,
         /// If `true` the effect will do damage to any player it hits
         #[serde(
-            default = "ff_core::json::default_true",
-            skip_serializing_if = "ff_core::json::is_true"
+            default = "ff_core::parsing::default_true",
+            skip_serializing_if = "ff_core::parsing::is_true"
         )]
         is_lethal: bool,
         /// This contains any passive effects that will be spawned on collision
@@ -279,7 +279,7 @@ pub enum ActiveEffectKind {
     },
 }
 
-pub fn debug_draw_active_effects(world: &mut World) {
+pub fn debug_draw_active_effects(world: &mut World) -> Result<()> {
     let mut to_remove = Vec::new();
 
     for (e, (transform, collider)) in world.query_mut::<(&Transform, &mut CircleCollider)>() {
@@ -318,4 +318,6 @@ pub fn debug_draw_active_effects(world: &mut World) {
     for e in to_remove.drain(0..) {
         world.despawn(e).unwrap();
     }
+
+    Ok(())
 }

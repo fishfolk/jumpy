@@ -16,8 +16,8 @@ members = ["core", "core/macro", "physics-platformer"]
 opt-level = 3
 
 [dependencies]
-# ff_core = { path = "./core", version = "0.4.1", package = "fishfight-core", default-features = false, features = ["macros", "internal-backend"] }
-ff_core = { path = "./core", version = "0.4.1", package = "fishfight-core" }
+ff_core = { path = "./core", version = "0.4.1", package = "fishfight-core", default-features = false, features = ["internal-backend"] }
+# ff_core = { path = "./core", version = "0.4.1", package = "fishfight-core" }
 # ultimate = { path = "../FishFight-ultimate/client", package = "fishfight-ultimate-client", optional = true }
 fishsticks = { version = "0.2.0", default-features = false, features = ["gilrs"] }
 macroquad-platformer = { path = "physics-platformer" }

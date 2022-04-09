@@ -4,12 +4,13 @@ use std::ops::Div;
 
 use serde::{Deserialize, Serialize};
 
-use crate::color::{Color, colors};
-use crate::math::{Size, UVec2, Vec2, Rect, vec2, AsVec2, AsUVec2};
+use crate::color::{colors, Color};
+use crate::math::{vec2, AsUVec2, AsVec2, Rect, Size, UVec2, Vec2};
 use crate::rendering::{draw_rectangle_outline, draw_texture, DrawTextureParams};
 use crate::storage;
 use crate::texture::Texture2D;
 use crate::transform::Transform;
+use crate::Result;
 
 /// Parameters for `Sprite` component.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -26,29 +27,23 @@ pub struct SpriteMetadata {
     /// The offset of the drawn sprite, relative to the position provided as an argument to the
     /// `Sprite` draw method.
     /// Note that this offset will not be inverted if the sprite is flipped.
-    #[serde(default, with = "crate::json::vec2_def")]
+    #[serde(default, with = "crate::parsing::vec2_def")]
     pub offset: Vec2,
     /// The pivot of the sprite, relative to the position provided as an argument to the `Sprite`
     /// draw method, plus any offset.
     /// Note that this offset will not be inverted if the sprite is flipped.
     #[serde(
         default,
-        with = "crate::json::vec2_opt",
+        with = "crate::parsing::vec2_opt",
         skip_serializing_if = "Option::is_none"
     )]
     pub pivot: Option<Vec2>,
     /// The size of the drawn sprite. If no size is specified, the texture entry's `sprite_size`
     /// will be used, if specified, or the raw texture size, if not.
-    #[serde(
-        default,
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub size: Option<Size<f32>>,
     /// An optional color to blend with the texture color
-    #[serde(
-        default,
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tint: Option<Color>,
     /// If this is true, the sprite will not be drawn.
     #[serde(default)]
@@ -88,7 +83,8 @@ impl Sprite {
         let source_rect = {
             let sprite_size = params.sprite_size.unwrap_or_else(|| texture.size());
 
-            let grid_size = Size::from(texture.size().as_vec2().as_uvec2() / sprite_size.as_vec2().as_uvec2());
+            let grid_size =
+                Size::from(texture.size().as_vec2().as_uvec2() / sprite_size.as_vec2().as_uvec2());
 
             {
                 let frame_cnt = (grid_size.width * grid_size.height) as usize;
@@ -105,7 +101,12 @@ impl Sprite {
                 (params.index as u32 / grid_size.width) as f32 * sprite_size.height,
             );
 
-            Rect::new(position.x, position.y, sprite_size.width, sprite_size.height)
+            Rect::new(
+                position.x,
+                position.y,
+                sprite_size.width,
+                sprite_size.height,
+            )
         };
 
         let tint = params.tint.unwrap_or(colors::WHITE);
@@ -178,7 +179,7 @@ impl From<SpriteMetadata> for SpriteParams {
     }
 }
 
-pub fn draw_one_sprite(transform: &Transform, sprite: &Sprite) {
+pub fn draw_one_sprite(transform: &Transform, sprite: &Sprite) -> Result<()> {
     if !sprite.is_deactivated {
         let size = sprite.size();
 
@@ -197,9 +198,11 @@ pub fn draw_one_sprite(transform: &Transform, sprite: &Sprite) {
             },
         );
     }
+
+    Ok(())
 }
 
-pub fn debug_draw_one_sprite(position: Vec2, sprite: &Sprite) {
+pub fn debug_draw_one_sprite(position: Vec2, sprite: &Sprite) -> Result<()> {
     if !sprite.is_deactivated {
         let size = sprite.size();
 
@@ -212,6 +215,8 @@ pub fn debug_draw_one_sprite(position: Vec2, sprite: &Sprite) {
             colors::BLUE,
         )
     }
+
+    Ok(())
 }
 
 #[derive(Debug)]

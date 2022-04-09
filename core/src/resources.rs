@@ -129,21 +129,23 @@ pub trait ResourceVecMut: ResourceVec {
 static mut ASSETS_DIR: Option<String> = None;
 
 pub fn set_assets_dir<P: AsRef<Path>>(path: P) {
-    unsafe { ASSETS_DIR = Some(path.as_ref().to_str().unwrap().to_string()); }
+    let str = path.as_ref().to_string_lossy().to_string();
+    unsafe { ASSETS_DIR = Some(str); }
 }
 
-pub fn assets_dir() -> &'static str {
-    unsafe { ASSETS_DIR.as_ref().unwrap() }
+pub fn assets_dir() -> String {
+    unsafe { ASSETS_DIR.as_ref().unwrap().clone() }
 }
 
 static mut MODS_DIR: Option<String> = None;
 
 pub fn set_mods_dir<P: AsRef<Path>>(path: P) {
-    unsafe { MODS_DIR = Some(path.as_ref().to_str().unwrap().to_string()); }
+    let str = path.as_ref().to_string_lossy().to_string();
+    unsafe { MODS_DIR = Some(str); }
 }
 
-pub fn mods_dir() -> &'static str {
-    unsafe { MODS_DIR.as_ref().unwrap() }
+pub fn mods_dir() -> String {
+    unsafe { MODS_DIR.as_ref().unwrap().clone() }
 }
 
 static mut LOADED_MODS: Vec<ModMetadata> = Vec::new();
@@ -740,9 +742,9 @@ pub struct MapMetadata {
     pub description: Option<String>,
     pub path: String,
     pub preview_path: String,
-    #[serde(default, skip_serializing_if = "crate::json::is_false")]
+    #[serde(default, skip_serializing_if = "crate::parsing::is_false")]
     pub is_tiled_map: bool,
-    #[serde(default, skip_serializing_if = "crate::json::is_false")]
+    #[serde(default, skip_serializing_if = "crate::parsing::is_false")]
     pub is_user_map: bool,
 }
 
@@ -787,8 +789,8 @@ pub fn create_map(
 }
 
 pub fn save_map(map_resource: &MapResource) -> Result<()> {
-    let assets_dir = Path::new(assets_dir());
-    let export_dir = assets_dir.join(&map_resource.meta.path);
+    let assets_dir = assets_dir();
+    let export_dir = Path::new(&assets_dir).join(&map_resource.meta.path);
 
     {
         let maps: &mut Vec<MapResource> = unsafe { MAPS.borrow_mut() };
@@ -827,7 +829,8 @@ pub fn save_map(map_resource: &MapResource) -> Result<()> {
 pub fn delete_map(index: usize) -> Result<()> {
     let map_resource = unsafe { MAPS.remove(index) };
 
-    let path = Path::new(assets_dir()).join(&map_resource.meta.path);
+    let assets_dir = assets_dir();
+    let path = Path::new(&assets_dir).join(&map_resource.meta.path);
 
     fs::remove_file(path)?;
 
@@ -838,7 +841,8 @@ pub fn delete_map(index: usize) -> Result<()> {
 
 #[cfg(not(target_arch = "wasm32"))]
 fn save_maps_file() -> Result<()> {
-    let maps_file_path = Path::new(assets_dir())
+    let assets_dir = assets_dir();
+    let maps_file_path = Path::new(&assets_dir)
         .join(MAPS_FILE)
         .with_extension(DEFAULT_RESOURCE_FILE_EXTENSION);
 

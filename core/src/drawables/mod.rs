@@ -6,12 +6,13 @@ pub use sprite::*;
 
 use std::borrow::{Borrow, BorrowMut};
 
-use hecs::World;
 use crate::math::Size;
+use hecs::World;
 
-use crate::transform::Transform;
 use crate::storage;
 use crate::texture::Texture2D;
+use crate::transform::Transform;
+use crate::Result;
 
 /// This is a wrapper type for all the different types of drawable sprites, used so that we can
 /// access them all in one query and draw them, ordered, in one pass, according to `draw_order`.
@@ -132,7 +133,7 @@ pub enum DrawableKind {
     AnimatedSpriteSet(AnimatedSpriteSet),
 }
 
-pub fn draw_drawables(world: &mut World) {
+pub fn draw_drawables(world: &mut World) -> Result<()> {
     let mut ordered = world
         .query_mut::<&Drawable>()
         .into_iter()
@@ -147,28 +148,30 @@ pub fn draw_drawables(world: &mut World) {
 
         match drawable.kind.borrow_mut() {
             DrawableKind::Sprite(sprite) => {
-                draw_one_sprite(&transform, sprite);
+                draw_one_sprite(&transform, sprite)?;
             }
             DrawableKind::SpriteSet(sprite_set) => {
                 for id in sprite_set.draw_order.iter() {
                     let sprite = sprite_set.map.get(id).unwrap();
-                    draw_one_sprite(&transform, sprite);
+                    draw_one_sprite(&transform, sprite)?;
                 }
             }
             DrawableKind::AnimatedSprite(sprite) => {
-                draw_one_animated_sprite(&transform, sprite);
+                draw_one_animated_sprite(&transform, sprite)?;
             }
             DrawableKind::AnimatedSpriteSet(sprite_set) => {
                 for id in sprite_set.draw_order.iter() {
                     let sprite = sprite_set.map.get(id).unwrap();
-                    draw_one_animated_sprite(&transform, sprite);
+                    draw_one_animated_sprite(&transform, sprite)?;
                 }
             }
         }
     }
+
+    Ok(())
 }
 
-pub fn debug_draw_drawables(world: &mut World) {
+pub fn debug_draw_drawables(world: &mut World) -> Result<()> {
     let mut ordered = world
         .query_mut::<&Drawable>()
         .into_iter()
@@ -184,23 +187,25 @@ pub fn debug_draw_drawables(world: &mut World) {
 
         match drawable.kind.borrow() {
             DrawableKind::Sprite(sprite) => {
-                debug_draw_one_sprite(position, sprite);
+                debug_draw_one_sprite(position, sprite)?;
             }
             DrawableKind::SpriteSet(sprite_set) => {
                 for id in sprite_set.draw_order.iter() {
                     let sprite = sprite_set.map.get(id).unwrap();
-                    debug_draw_one_sprite(position, sprite);
+                    debug_draw_one_sprite(position, sprite)?;
                 }
             }
             DrawableKind::AnimatedSprite(sprite) => {
-                debug_draw_one_animated_sprite(position, sprite);
+                debug_draw_one_animated_sprite(position, sprite)?;
             }
             DrawableKind::AnimatedSpriteSet(sprite_set) => {
                 for id in sprite_set.draw_order.iter() {
                     let sprite = sprite_set.map.get(id).unwrap();
-                    debug_draw_one_animated_sprite(position, sprite);
+                    debug_draw_one_animated_sprite(position, sprite)?;
                 }
             }
         }
     }
+
+    Ok(())
 }

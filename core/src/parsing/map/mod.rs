@@ -20,7 +20,7 @@ pub(crate) struct MapDef {
     pub background_color: Color,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub background_layers: Vec<MapBackgroundLayer>,
-    #[serde(with = "crate::json::vec2_def", default)]
+    #[serde(with = "crate::parsing::vec2_def", default)]
     pub world_offset: Vec2,
     pub grid_size: Size<u32>,
     pub tile_size: Size<f32>,
@@ -28,7 +28,7 @@ pub(crate) struct MapDef {
     pub tilesets: Vec<MapTileset>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub properties: HashMap<String, MapProperty>,
-    #[serde(default, with = "crate::json::vec2_vec")]
+    #[serde(default, with = "crate::parsing::vec2_vec")]
     pub spawn_points: Vec<Vec2>,
 }
 

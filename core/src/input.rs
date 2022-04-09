@@ -3,7 +3,7 @@ use fishsticks::{Axis, GamepadContext, GamepadId};
 use serde::{Deserialize, Serialize};
 
 use crate::error::ErrorKind;
-use crate::{Config, Result, storage};
+use crate::{storage, Config, Result};
 
 pub use crate::backend_impl::input::*;
 use crate::prelude::get_config;
@@ -40,17 +40,17 @@ pub async fn init_gamepad_context() -> Result<()> {
 
 pub fn get_gamepad_context() -> &'static GamepadContext {
     unsafe {
-        GAMEPAD_CONTEXT
-            .as_ref()
-            .unwrap_or_else(|| panic!("Attempted to get gamepad context but it has not been initialized yet!"))
+        GAMEPAD_CONTEXT.as_ref().unwrap_or_else(|| {
+            panic!("Attempted to get gamepad context but it has not been initialized yet!")
+        })
     }
 }
 
 pub fn get_gamepad_context_mut() -> &'static mut GamepadContext {
     unsafe {
-        GAMEPAD_CONTEXT
-            .as_mut()
-            .unwrap_or_else(|| panic!("Attempted to get gamepad context but it has not been initialized yet!"))
+        GAMEPAD_CONTEXT.as_mut().unwrap_or_else(|| {
+            panic!("Attempted to get gamepad context but it has not been initialized yet!")
+        })
     }
 }
 
@@ -59,10 +59,10 @@ pub fn update_gamepad_context() -> Result<()> {
     Ok(())
 }
 
-pub fn is_gamepad_btn_pressed(btn: fishsticks::Button) -> bool {
+pub fn is_gamepad_button_pressed(btn: Button) -> bool {
     let ctx = get_gamepad_context();
     for (_, gamepad) in ctx.gamepads() {
-        if gamepad.digital_inputs.just_activated(btn) {
+        if gamepad.digital_inputs.just_activated(btn.into()) {
             return true;
         }
     }
@@ -107,8 +107,8 @@ pub fn collect_local_input(input_scheme: GameInputScheme) -> PlayerInput {
 
             input.slide = input.crouch
                 && gamepad
-                .digital_inputs
-                .just_activated(input_mapping.slide.into());
+                    .digital_inputs
+                    .just_activated(input_mapping.slide.into());
         }
     } else {
         let input_mapping = {

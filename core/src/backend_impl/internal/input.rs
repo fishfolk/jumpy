@@ -1,4 +1,4 @@
-use crate::input::{KeyCode, MouseButton};
+use crate::input::{Button, KeyCode, MouseButton};
 use crate::math::Vec2;
 
 pub fn is_key_down(key_code: KeyCode) -> bool {

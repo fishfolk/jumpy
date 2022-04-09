@@ -6,8 +6,8 @@ license = "MIT OR Apache-2.0"
 edition = "2021"
 
 [features]
-default = ["macroquad-backend"]
-macroquad-backend = ["macroquad", "ff-particles"]
+# default = ["macroquad-backend"]
+# macroquad-backend = ["macroquad", "ff-particles"]
 internal-backend = ["winit", "tokio", "glam"]
 
 [dependencies]

@@ -6,9 +6,10 @@ use crate::items::{
     fire_weapon, ItemDepleteBehavior, ItemDropBehavior, Weapon, EFFECT_ANIMATED_SPRITE_ID,
     GROUND_ANIMATION_ID, ITEMS_DRAW_ORDER, SPRITE_ANIMATED_SPRITE_ID,
 };
-use ff_core::particles::ParticleEmitter;
 use crate::player::{Player, PlayerController, PlayerState, IDLE_ANIMATION_ID, PICKUP_GRACE_TIME};
-use crate::{Drawable, Item, PassiveEffectInstance, PhysicsBody};
+use crate::{Drawable, Item, PassiveEffect, PhysicsBody};
+use ff_core::particles::ParticleEmitter;
+use ff_core::Result;
 
 const THROW_FORCE: f32 = 5.0;
 
@@ -50,7 +51,7 @@ impl PlayerInventory {
     }
 }
 
-pub fn update_player_inventory(world: &mut World, delta_time: f32) {
+pub fn update_player_inventory(world: &mut World, delta_time: f32) -> Result<()> {
     let mut item_colliders = world
         .query::<With<Item, Without<Owner, (&Transform, &PhysicsBody)>>>()
         .iter()
@@ -262,13 +263,13 @@ pub fn update_player_inventory(world: &mut World, delta_time: f32) {
                 if is_depleted {
                     res = true;
 
-                    player.passive_effects.retain(|effect| {
+                    for effect in &mut player.passive_effects {
                         if let Some(effect_item_entity) = effect.item {
-                            effect_item_entity != item_entity
-                        } else {
-                            true
+                            if effect_item_entity == item_entity {
+                                effect.should_end = true;
+                            }
                         }
-                    });
+                    }
                 } else {
                     let position = transform.position;
 
@@ -347,7 +348,7 @@ pub fn update_player_inventory(world: &mut World, delta_time: f32) {
             let mut player = world.get_mut::<Player>(player_entity).unwrap();
 
             for meta in item.effects.clone().into_iter() {
-                let effect_instance = PassiveEffectInstance::new(Some(item_entity), meta);
+                let effect_instance = PassiveEffect::new(Some(item_entity), meta);
                 player.passive_effects.push(effect_instance);
             }
         }
@@ -434,6 +435,8 @@ pub fn update_player_inventory(world: &mut World, delta_time: f32) {
             println!("WARNING: {}", err);
         }
     }
+
+    Ok(())
 }
 
 const HUD_OFFSET_Y: f32 = 16.0;
@@ -454,7 +457,7 @@ const HUD_USE_COUNT_COLOR_EMPTY: Color = Color {
     a: 0.8,
 };
 
-pub fn draw_weapons_hud(world: &mut World) {
+pub fn draw_weapons_hud(world: &mut World) -> Result<()> {
     for (_, (transform, inventory)) in world.query::<(&Transform, &PlayerInventory)>().iter() {
         if let Some(weapon_entity) = inventory.weapon {
             let weapon = world.get::<Weapon>(weapon_entity).unwrap();
@@ -507,6 +510,8 @@ pub fn draw_weapons_hud(world: &mut World) {
             }
         }
     }
+
+    Ok(())
 }
 
 pub fn flip_offset<S: Into<Option<Size<f32>>>>(

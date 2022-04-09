@@ -1,19 +1,21 @@
-use std::path::Path;
 use fishsticks::GamepadContext;
+use std::path::Path;
 
 use ff_core::prelude::*;
 
 use ff_core::Result;
 
-use ff_core::gui::{Panel, get_gui_theme};
+use ff_core::gui::{get_gui_theme, Panel};
 
-use ff_core::gui::background::draw_main_menu_background;
-use ff_core::resources::{map_name_to_filename, MapResource, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION, create_map};
-use ff_core::input::is_gamepad_btn_pressed;
 use crate::GuiTheme;
+use ff_core::gui::background::draw_main_menu_background;
+use ff_core::input::is_gamepad_button_pressed;
 use ff_core::macroquad::hash;
 use ff_core::macroquad::ui::{root_ui, widgets};
 use ff_core::macroquad::window::next_frame;
+use ff_core::resources::{
+    create_map, map_name_to_filename, MapResource, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION,
+};
 
 enum WindowState {
     None,
@@ -46,7 +48,8 @@ pub async fn show_create_map_menu() -> Result<Option<MapResource>> {
     let mut tile_height = "32".to_string();
 
     let map_export_path = {
-        Path::new(assets_dir()).join(MAP_EXPORTS_DEFAULT_DIR)
+        let assets_dir = assets_dir();
+        Path::new(&assets_dir).join(MAP_EXPORTS_DEFAULT_DIR)
     };
 
     loop {
@@ -124,8 +127,7 @@ pub async fn show_create_map_menu() -> Result<Option<MapResource>> {
                 ui.separator();
                 ui.separator();
 
-                let btn_a =
-                    is_gamepad_btn_pressed(fishsticks::Button::South);
+                let btn_a = is_gamepad_button_pressed(fishsticks::Button::South);
 
                 let enter = is_key_pressed(KeyCode::Enter);
 
@@ -152,7 +154,7 @@ pub async fn show_create_map_menu() -> Result<Option<MapResource>> {
 
                 ui.same_line(0.0);
 
-                let btn_b = is_gamepad_btn_pressed(fishsticks::Button::East);
+                let btn_b = is_gamepad_button_pressed(fishsticks::Button::East);
 
                 let escape = is_key_pressed(KeyCode::Escape);
 

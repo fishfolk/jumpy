@@ -4,7 +4,7 @@ use ff_core::prelude::*;
 
 use crate::{
     AnimatedSprite, AnimatedSpriteMetadata, AnimatedSpriteParams, CollisionWorld, Drawable,
-    GameCamera, PassiveEffectInstance, PhysicsBody,
+    GameCamera, PassiveEffect, PhysicsBody,
 };
 
 mod animation;
@@ -56,7 +56,7 @@ pub struct PlayerParams {
 pub struct Player {
     pub index: u8,
     pub state: PlayerState,
-    pub damage_from_left: bool,
+    pub damage_from: Option<DamageDirection>,
     pub is_facing_left: bool,
     pub is_upside_down: bool,
     pub is_attacking: bool,
@@ -66,7 +66,7 @@ pub struct Player {
     pub attack_timer: f32,
     pub respawn_timer: f32,
     pub camera_box: Rect,
-    pub passive_effects: Vec<PassiveEffectInstance>,
+    pub passive_effects: Vec<PassiveEffect>,
 }
 
 impl Player {
@@ -76,7 +76,7 @@ impl Player {
         Player {
             index,
             state: PlayerState::None,
-            damage_from_left: false,
+            damage_from: None,
             is_facing_left: false,
             is_upside_down: false,
             is_attacking: false,
@@ -91,7 +91,7 @@ impl Player {
     }
 }
 
-pub fn update_player_camera_box(world: &mut World, delta_time: f32) {
+pub fn update_player_camera_box(world: &mut World, delta_time: f32) -> Result<()> {
     for (_, (transform, player)) in world.query_mut::<(&Transform, &mut Player)>() {
         let rect = Rect::new(transform.position.x, transform.position.y, 32.0, 60.0);
 
@@ -114,6 +114,8 @@ pub fn update_player_camera_box(world: &mut World, delta_time: f32) {
         let mut camera = storage::get_mut::<GameCamera>();
         camera.add_player_rect(player.camera_box);
     }
+
+    Ok(())
 }
 
 #[derive(Debug, Clone)]
@@ -123,9 +125,40 @@ pub struct PlayerAttributes {
     pub weapon_mount: Vec2,
     pub jump_force: f32,
     pub move_speed: f32,
-    pub slide_speed_factor: f32,
+    pub slide_speed: f32,
     pub incapacitation_duration: f32,
     pub float_gravity_factor: f32,
+    base_jump_force: f32,
+    base_move_speed: f32,
+    slide_speed_factor: f32,
+}
+
+impl PlayerAttributes {
+    pub fn clear_mods(&mut self) {
+        self.jump_force = self.base_jump_force;
+        self.move_speed = self.base_move_speed;
+        self.slide_speed = self.move_speed * self.base_slide_speed_factor;
+    }
+
+    pub fn apply_mods(&mut self, effect: &PassiveEffect) {
+        if let Some(factor) = effect.move_speed_factor {
+            self.move_speed *= factor;
+        }
+        if let Some(factor) = effect.jump_force_factor {
+            self.jump_force *= factor;
+        }
+        if let Some(factor) = effect.slide_speed_factor {
+            self.slide_speed *= factor;
+        }
+    }
+
+    pub fn apply_float_gravity_factor(&self, mut value: f32) -> f32 {
+        for &factor in &self.float_gravity_factors {
+            value *= factor
+        }
+
+        value
+    }
 }
 
 impl From<&CharacterMetadata> for PlayerAttributes {
@@ -134,11 +167,14 @@ impl From<&CharacterMetadata> for PlayerAttributes {
             head_threshold: params.head_threshold,
             legs_threshold: params.legs_threshold,
             weapon_mount: params.weapon_mount,
+            base_jump_force: params.jump_force,
             jump_force: params.jump_force,
+            base_move_speed: params.move_speed,
             move_speed: params.move_speed,
-            slide_speed_factor: params.slide_speed_factor,
+            slide_speed: params.move_speed * params.slide_speed_factor,
             incapacitation_duration: params.incapacitation_duration,
             float_gravity_factor: params.float_gravity_factor,
+            slide_speed_factor: params.slide_speed_factor,
         }
     }
 }
@@ -163,9 +199,15 @@ pub fn spawn_player(
     let texture_res = get_texture(&character.sprite.texture_id);
 
     let offset = {
-        let frame_size = texture_res.meta.frame_size.unwrap_or(texture_res.texture.size().into());
+        let frame_size = texture_res
+            .meta
+            .frame_size
+            .unwrap_or(texture_res.texture.size().into());
         character.sprite.offset
-            - vec2(frame_size.width / 2.0, frame_size.height - character.collider_size.height)
+            - vec2(
+                frame_size.width / 2.0,
+                frame_size.height - character.collider_size.height,
+            )
     };
 
     let animations = character
@@ -187,7 +229,12 @@ pub fn spawn_player(
 
     let sprites = vec![(
         BODY_ANIMATED_SPRITE_ID,
-        AnimatedSprite::new(texture_res.texture, texture_res.frame_size(), animations.as_slice(), params),
+        AnimatedSprite::new(
+            texture_res.texture,
+            texture_res.frame_size(),
+            animations.as_slice(),
+            params,
+        ),
     )];
 
     let draw_order = (index as u32 + 1) * 10;

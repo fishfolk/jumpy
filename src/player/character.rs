@@ -37,19 +37,19 @@ pub struct CharacterMetadata {
     /// can be changed with offsets.
     #[serde(
         default = "CharacterMetadata::default_weapon_mount",
-        with = "ff_core::json::vec2_def"
+        with = "ff_core::parsing::vec2_def"
     )]
     pub weapon_mount: Vec2,
     /// This is the offset from the position of the player to where items are mounted
     #[serde(
         default = "CharacterMetadata::default_item_mount",
-        with = "ff_core::json::vec2_def"
+        with = "ff_core::parsing::vec2_def"
     )]
     pub item_mount: Vec2,
     /// This is the offset from the position of the player to where the hat is mounted
     #[serde(
         default = "CharacterMetadata::default_hat_mount",
-        with = "ff_core::json::vec2_def"
+        with = "ff_core::parsing::vec2_def"
     )]
     pub hat_mount: Vec2,
     /// This is the distance from the top of the collider to where the head ends

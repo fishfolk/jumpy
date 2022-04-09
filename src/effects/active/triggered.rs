@@ -4,15 +4,15 @@ use hecs::{Entity, World};
 
 use serde::{Deserialize, Serialize};
 
-use ff_core::Result;
 use ff_core::prelude::*;
+use ff_core::Result;
 
-use ff_core::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::effects::active::spawn_active_effect;
 use crate::physics;
 use crate::player::{Player, PlayerState};
 use crate::{ActiveEffectMetadata, AnimatedSpriteMetadata, CollisionWorld, PhysicsBody};
 use crate::{Drawable, PhysicsBodyParams};
+use ff_core::particles::{ParticleEmitter, ParticleEmitterMetadata};
 
 const TRIGGERED_EFFECT_DRAW_ORDER: u32 = 5;
 
@@ -158,7 +158,11 @@ pub fn spawn_triggered_effect(
 const KICK_FORCE: f32 = 15.0;
 const KICK_DELAY: f32 = 0.22;
 
-pub fn fixed_update_triggered_effects(world: &mut World, delta_time: f32, integration_factor: f32) {
+pub fn fixed_update_triggered_effects(
+    world: &mut World,
+    delta_time: f32,
+    integration_factor: f32,
+) -> Result<()> {
     let mut to_trigger = Vec::new();
 
     let players = world
@@ -217,13 +221,15 @@ pub fn fixed_update_triggered_effects(world: &mut World, delta_time: f32, integr
 
                 'players: for (pe, is_facing_left, position, size) in players.clone() {
                     if !should_exclude_owner || pe != effect.owner {
-                        let player_collider = Rect::new(position.x, position.y, size.width, size.height);
+                        let player_collider =
+                            Rect::new(position.x, position.y, size.width, size.height);
 
                         if collider.overlaps(&player_collider) {
                             let mut should_trigger = false;
 
                             if effect.is_kickable && effect.kick_delay_timer >= KICK_DELAY {
-                                if is_facing_left && transform.position.x < position.x + size.width {
+                                if is_facing_left && transform.position.x < position.x + size.width
+                                {
                                     body.velocity.x = -KICK_FORCE;
                                 } else if !is_facing_left && transform.position.x > position.x {
                                     body.velocity.x = KICK_FORCE;
@@ -277,6 +283,8 @@ pub fn fixed_update_triggered_effects(world: &mut World, delta_time: f32, integr
             println!("WARNING: {}", err);
         }
     }
+
+    Ok(())
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -293,7 +301,7 @@ pub struct TriggeredEffectMetadata {
     #[serde(default)]
     pub trigger: Vec<TriggeredEffectTrigger>,
     /// This specifies the velocity of the triggers body when it is instantiated.
-    #[serde(default, with = "ff_core::json::vec2_def")]
+    #[serde(default, with = "ff_core::parsing::vec2_def")]
     pub velocity: Vec2,
     /// This specifies the initial rotation of the sprite.
     #[serde(default)]

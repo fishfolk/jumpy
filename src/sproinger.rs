@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use hecs::{Entity, World};
 
-use ff_core::Result;
 use ff_core::prelude::*;
+use ff_core::Result;
 
 use crate::{Animation, Drawable, PhysicsBody, QueuedAnimationAction};
 
@@ -82,7 +82,11 @@ pub fn spawn_sproinger(world: &mut World, position: Vec2) -> Result<Entity> {
     Ok(entity)
 }
 
-pub fn fixed_update_sproingers(world: &mut World, delta_time: f32, integration_factor: f32) {
+pub fn fixed_update_sproingers(
+    world: &mut World,
+    delta_time: f32,
+    integration_factor: f32,
+) -> Result<()> {
     let bodies = world
         .query::<(&Transform, &PhysicsBody)>()
         .iter()
@@ -134,4 +138,6 @@ pub fn fixed_update_sproingers(world: &mut World, delta_time: f32, integration_f
             body.velocity.y = -FORCE;
         }
     }
+
+    Ok(())
 }

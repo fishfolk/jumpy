@@ -47,22 +47,28 @@ use crate::editor::gui::windows::{
     ObjectPropertiesWindow, SaveMapWindow, TilePropertiesWindow,
 };
 use ff_core::gui::SELECTION_HIGHLIGHT_COLOR;
-use ff_core::map::{Map, MapObject, MapObjectKind, MapLayerKind};
+use ff_core::map::{Map, MapLayerKind, MapObject, MapObjectKind};
 
 use crate::editor::input::{collect_editor_input, EditorInput};
 use crate::editor::tools::SpawnPointPlacementTool;
-use crate::player::IDLE_ANIMATION_ID;
 use crate::items::try_get_item;
+use crate::player::IDLE_ANIMATION_ID;
 
 use ff_core::prelude::*;
-use ff_core::text::{draw_aligned_text, draw_text, measure_text, HorizontalAlignment, VerticalAlignment, TextParams};
+use ff_core::text::{
+    draw_aligned_text, draw_text, measure_text, HorizontalAlignment, TextParams, VerticalAlignment,
+};
 
 use ff_core::macroquad::camera::{pop_camera_state, push_camera_state, set_default_camera};
 use ff_core::macroquad::experimental::scene;
 use ff_core::macroquad::experimental::scene::RefMut;
 use ff_core::macroquad::prelude::scene::Node;
 
-use ff_core::resources::{map_name_to_filename, MapResource, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION, create_map, save_map, delete_map};
+use crate::gui::MainMenuState;
+use ff_core::resources::{
+    create_map, delete_map, map_name_to_filename, save_map, MapResource, MAP_EXPORTS_DEFAULT_DIR,
+    MAP_EXPORTS_EXTENSION,
+};
 
 #[derive(Debug, Clone)]
 pub struct EditorContext {
@@ -626,7 +632,8 @@ impl Editor {
                 delete_map(index).unwrap();
             }
             EditorAction::ExitToMainMenu => {
-                GameEvent::MainMenu.dispatch();
+                let state = MainMenuState::new();
+                GameEvent::StateTransition(Box::new(state)).dispatch();
             }
             EditorAction::QuitToDesktop => {
                 GameEvent::Quit.dispatch();
@@ -882,7 +889,8 @@ impl Node for Editor {
                                 let size = get_object_size(object);
                                 let position = object.position + node.map_resource.map.world_offset;
 
-                                let rect = Rect::new(position.x, position.y, size.width, size.height);
+                                let rect =
+                                    Rect::new(position.x, position.y, size.width, size.height);
 
                                 if rect.contains(cursor_world_position) {
                                     object_index = Some(i);
@@ -1037,7 +1045,8 @@ impl Node for Editor {
 
             let mut position = (cursor_world_position).clamp(
                 map.world_offset,
-                map.world_offset + (UVec2::from(map.grid_size).as_f32() * Vec2::from(map.tile_size)),
+                map.world_offset
+                    + (UVec2::from(map.grid_size).as_f32() * Vec2::from(map.tile_size)),
             );
 
             if node.should_snap_to_grid {
@@ -1089,7 +1098,10 @@ impl Node for Editor {
                 let layer_id = node.selected_layer.clone().unwrap();
                 let coords = {
                     let grid_size = node.get_map().grid_size;
-                    uvec2(index as u32 % grid_size.width, index as u32 / grid_size.width)
+                    uvec2(
+                        index as u32 % grid_size.width,
+                        index as u32 / grid_size.width,
+                    )
                 };
 
                 let action = EditorAction::RemoveTile { coords, layer_id };
@@ -1153,7 +1165,8 @@ impl Node for Editor {
 
         node.mouse_movement = Vec2::ZERO;
 
-        camera.position = (camera.position + movement).clamp(Vec2::ZERO, node.get_map().get_size().into());
+        camera.position =
+            (camera.position + movement).clamp(Vec2::ZERO, node.get_map().get_size().into());
 
         if is_cursor_over_map {
             camera.scale = (camera.scale + node.input.camera_zoom * Self::CAMERA_ZOOM_STEP)
@@ -1172,7 +1185,8 @@ impl Node for Editor {
 
         if node.should_draw_grid {
             let map = node.get_map();
-            let map_size: Size<f32> = Size::from(UVec2::from(map.grid_size).as_f32()) * map.tile_size;
+            let map_size: Size<f32> =
+                Size::from(UVec2::from(map.grid_size).as_f32()) * map.tile_size;
 
             draw_rectangle_outline(
                 map.world_offset.x,
@@ -1246,7 +1260,9 @@ impl Node for Editor {
 
                         position = (cursor_world_position).clamp(
                             map.world_offset,
-                            map.world_offset + (Size::from(UVec2::from(map.grid_size).as_f32()) * map.tile_size).into(),
+                            map.world_offset
+                                + (Size::from(UVec2::from(map.grid_size).as_f32()) * map.tile_size)
+                                    .into(),
                         );
 
                         if node.should_snap_to_grid {
@@ -1262,7 +1278,10 @@ impl Node for Editor {
 
                 let texture_res = get_texture("spawn_point_icon");
 
-                let frame_size = texture_res.meta.frame_size.unwrap_or_else(|| texture_res.texture.size());
+                let frame_size = texture_res
+                    .meta
+                    .frame_size
+                    .unwrap_or_else(|| texture_res.texture.size());
 
                 let source_rect = Rect::new(0.0, 0.0, frame_size.width, frame_size.height);
 
@@ -1327,7 +1346,10 @@ impl Node for Editor {
 
                                     object_position = (cursor_world_position).clamp(
                                         map.world_offset,
-                                        map.world_offset + (Size::from(UVec2::from(map.grid_size).as_f32()) * map.tile_size).into(),
+                                        map.world_offset
+                                            + (Size::from(UVec2::from(map.grid_size).as_f32())
+                                                * map.tile_size)
+                                                .into(),
                                     );
 
                                     if node.should_snap_to_grid {
@@ -1358,8 +1380,10 @@ impl Node for Editor {
 
                                             let tint = meta.sprite.tint.unwrap_or(colors::WHITE);
 
-                                            let dest_size =
-                                                meta.sprite.scale.map(|s| Size::new(s, s) * frame_size);
+                                            let dest_size = meta
+                                                .sprite
+                                                .scale
+                                                .map(|s| Size::new(s, s) * frame_size);
 
                                             let source = Some(Rect::new(
                                                 0.0,
@@ -1398,8 +1422,10 @@ impl Node for Editor {
                                             let (texture, frame_size) =
                                                 (texture_res.texture, texture_res.frame_size());
 
-                                            let dest_size =
-                                                params.sprite.scale.map(|s| Size::new(s, s) * frame_size);
+                                            let dest_size = params
+                                                .sprite
+                                                .scale
+                                                .map(|s| Size::new(s, s) * frame_size);
 
                                             let source =
                                                 params.sprite.animations.first().map(|a| {
@@ -1431,16 +1457,19 @@ impl Node for Editor {
                                 }
                                 MapObjectKind::Environment => {
                                     if &object.id == "sproinger" {
-                                        let texture_res =
-                                            get_texture("sproinger");
+                                        let texture_res = get_texture("sproinger");
 
-                                        let frame_size =
-                                            texture_res.meta.frame_size.unwrap_or_else(|| {
-                                                texture_res.texture.size().into()
-                                            });
+                                        let frame_size = texture_res
+                                            .meta
+                                            .frame_size
+                                            .unwrap_or_else(|| texture_res.texture.size().into());
 
-                                        let source_rect =
-                                            Rect::new(0.0, 0.0, frame_size.width, frame_size.height);
+                                        let source_rect = Rect::new(
+                                            0.0,
+                                            0.0,
+                                            frame_size.width,
+                                            frame_size.height,
+                                        );
 
                                         draw_texture(
                                             object_position.x,

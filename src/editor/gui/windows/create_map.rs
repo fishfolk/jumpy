@@ -27,7 +27,8 @@ impl CreateMapWindow {
         };
 
         let map_export_path = {
-            Path::new(assets_dir()).join(MAP_EXPORTS_DEFAULT_DIR)
+            let assets_dir = assets_dir();
+            Path::new(&assets_dir).join(MAP_EXPORTS_DEFAULT_DIR)
         };
 
         CreateMapWindow {

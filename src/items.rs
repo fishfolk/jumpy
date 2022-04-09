@@ -1,8 +1,8 @@
 //! Things available to spawn from the level editor
 //! Proto-mods, eventually some of the items will move to some sort of a wasm runtime
 
-use std::collections::HashMap;
 use hecs::{Entity, World};
+use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
@@ -11,13 +11,15 @@ use crate::{
     PassiveEffectMetadata, PhysicsBody, QueuedAnimationAction,
 };
 
-use ff_core::Result;
-use ff_core::prelude::*;
+use crate::effects::passive::get_passive_effect;
 
-use ff_core::particles::{ParticleEmitter, ParticleEmitterMetadata};
+use ff_core::prelude::*;
+use ff_core::Result;
+
 use crate::effects::active::spawn_active_effect;
 use crate::physics::PhysicsBodyParams;
 use crate::player::{Player, PlayerInventory, IDLE_ANIMATION_ID};
+use ff_core::particles::{ParticleEmitter, ParticleEmitterMetadata};
 
 pub const ITEMS_DRAW_ORDER: u32 = 1;
 
@@ -124,14 +126,18 @@ impl Item {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ItemMetadata {
     /// The effects that will be instantiated when the item is equipped
-    #[serde(default)]
-    pub effects: Vec<PassiveEffectMetadata>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub effects: Vec<String>,
     /// The items duration, after being equipped. This will also be the default duration of
     /// passive effects that are added to the player, when equipping the item
     #[serde(default)]
     pub duration: Option<f32>,
     /// If this is `true` the item will be treated as a hat
-    #[serde(default, rename = "hat", skip_serializing_if = "ff_core::json::is_false")]
+    #[serde(
+        default,
+        rename = "hat",
+        skip_serializing_if = "ff_core::parsing::is_false"
+    )]
     pub is_hat: bool,
 }
 
@@ -144,7 +150,7 @@ pub struct MapItemMetadata {
     #[serde(flatten)]
     pub kind: MapItemKind,
     pub collider_size: Size<f32>,
-    #[serde(default, with = "ff_core::json::vec2_def")]
+    #[serde(default, with = "ff_core::parsing::vec2_def")]
     pub collider_offset: Vec2,
     #[serde(default)]
     pub uses: Option<u32>,
@@ -153,7 +159,7 @@ pub struct MapItemMetadata {
     #[serde(default)]
     pub deplete_behavior: ItemDepleteBehavior,
     /// This specifies the offset from the player position to where the equipped item is drawn
-    #[serde(default, with = "ff_core::json::vec2_def")]
+    #[serde(default, with = "ff_core::parsing::vec2_def")]
     pub mount_offset: Vec2,
     /// The parameters for the `AnimationPlayer` that will be used to draw the item
     #[serde(alias = "animation")]
@@ -226,6 +232,11 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
                 duration,
                 is_hat,
             } = meta;
+
+            let effects = effects
+                .into_iter()
+                .map(|id| get_passive_effect(&id).clone())
+                .collect();
 
             world.insert_one(
                 entity,
@@ -518,7 +529,7 @@ pub struct WeaponMetadata {
     pub sound_effect_id: Option<String>,
     /// This specifies the offset between the upper left corner of the weapon's sprite to the
     /// position that will serve as the origin of the weapon's effects
-    #[serde(default, with = "ff_core::json::vec2_def")]
+    #[serde(default, with = "ff_core::parsing::vec2_def")]
     pub effect_offset: Vec2,
     /// This can specify a maximum amount of weapon uses. If no value is specified, the weapon
     /// will have unlimited uses.

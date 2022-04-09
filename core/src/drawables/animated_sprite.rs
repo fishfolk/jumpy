@@ -6,12 +6,13 @@ use std::ops::Mul;
 use hecs::World;
 use serde::{Deserialize, Serialize};
 
+use crate::color::{colors, Color};
 use crate::math::Rect;
-use crate::color::{Color, colors};
 use crate::math::{Size, Vec2};
 use crate::rendering::{draw_rectangle_outline, draw_texture, DrawTextureParams};
 use crate::texture::Texture2D;
 use crate::transform::Transform;
+use crate::Result;
 
 use super::{Drawable, DrawableKind};
 
@@ -71,7 +72,7 @@ impl From<TweenMetadata> for Tween {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Keyframe {
     pub frame: u32,
-    #[serde(with = "crate::json::vec2_def")]
+    #[serde(with = "crate::parsing::vec2_def")]
     pub translation: Vec2,
 }
 
@@ -147,7 +148,12 @@ pub struct AnimatedSprite {
 }
 
 impl AnimatedSprite {
-    pub fn new(texture: Texture2D, frame_size: Size<f32>, animations: &[Animation], params: AnimatedSpriteParams) -> Self {
+    pub fn new(
+        texture: Texture2D,
+        frame_size: Size<f32>,
+        animations: &[Animation],
+        params: AnimatedSpriteParams,
+    ) -> Self {
         let animations = animations.to_vec();
 
         let mut is_playing = false;
@@ -242,24 +248,26 @@ impl AnimatedSprite {
     }
 }
 
-pub fn update_animated_sprites(world: &mut World, delta_time: f32) {
+pub fn update_animated_sprites(world: &mut World, delta_time: f32) -> Result<()> {
     for (_, drawable) in world.query_mut::<&mut Drawable>() {
         match drawable.kind.borrow_mut() {
             DrawableKind::AnimatedSprite(sprite) => {
-                update_one_animated_sprite(delta_time, sprite);
+                update_one_animated_sprite(delta_time, sprite)?;
             }
             DrawableKind::AnimatedSpriteSet(sprite_set) => {
                 for key in &sprite_set.draw_order {
                     let sprite = sprite_set.map.get_mut(key).unwrap();
-                    update_one_animated_sprite(delta_time, sprite);
+                    update_one_animated_sprite(delta_time, sprite)?;
                 }
             }
             _ => {}
         }
     }
+
+    Ok(())
 }
 
-pub fn update_one_animated_sprite(delta_time: f32, sprite: &mut AnimatedSprite) {
+pub fn update_one_animated_sprite(delta_time: f32, sprite: &mut AnimatedSprite) -> Result<()> {
     if !sprite.is_deactivated && sprite.is_playing {
         let (is_last_frame, is_looping) = {
             let animation = sprite.animations.get(sprite.current_index).unwrap();
@@ -361,9 +369,11 @@ pub fn update_one_animated_sprite(delta_time: f32, sprite: &mut AnimatedSprite) 
             }
         }
     }
+
+    Ok(())
 }
 
-pub fn draw_one_animated_sprite(transform: &Transform, sprite: &AnimatedSprite) {
+pub fn draw_one_animated_sprite(transform: &Transform, sprite: &AnimatedSprite) -> Result<()> {
     if !sprite.is_deactivated {
         let position = transform.position + sprite.offset;
 
@@ -382,15 +392,26 @@ pub fn draw_one_animated_sprite(transform: &Transform, sprite: &AnimatedSprite) 
             },
         )
     }
+
+    Ok(())
 }
 
-pub fn debug_draw_one_animated_sprite(position: Vec2, sprite: &AnimatedSprite) {
+pub fn debug_draw_one_animated_sprite(position: Vec2, sprite: &AnimatedSprite) -> Result<()> {
     if !sprite.is_deactivated {
         let position = position + sprite.offset;
         let size = sprite.size();
 
-        draw_rectangle_outline(position.x, position.y, size.width, size.height, 2.0, colors::BLUE)
+        draw_rectangle_outline(
+            position.x,
+            position.y,
+            size.width,
+            size.height,
+            2.0,
+            colors::BLUE,
+        )
     }
+
+    Ok(())
 }
 
 #[derive(Default)]
@@ -551,18 +572,15 @@ pub struct AnimatedSpriteMetadata {
     pub texture_id: String,
     #[serde(default)]
     pub scale: Option<f32>,
-    #[serde(default, with = "crate::json::vec2_def")]
+    #[serde(default, with = "crate::parsing::vec2_def")]
     pub offset: Vec2,
     #[serde(
         default,
-        with = "crate::json::vec2_opt",
+        with = "crate::parsing::vec2_opt",
         skip_serializing_if = "Option::is_none"
     )]
     pub pivot: Option<Vec2>,
-    #[serde(
-        default,
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tint: Option<Color>,
     pub animations: Vec<AnimationMetadata>,
     #[serde(default)]

@@ -16,7 +16,7 @@ pub fn open_game_menu() {
     unsafe {
         if GAME_MENU_INSTANCE.is_none() {
             let menu = Menu::new(
-                hash!(),
+                hash!("game_menu"),
                 MENU_WIDTH,
                 &[
                     #[cfg(not(feature = "ultimate"))]

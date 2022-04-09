@@ -8,14 +8,7 @@
     "height": 32
   },
   "effects": [
-    {
-      "name": "Turtle Shell",
-      "function_id": "turtle_shell",
-      "activated_on": [
-        "receive_damage"
-      ],
-      "blocks_damage": true
-    }
+    "turtle_shell"
   ],
   "sprite": {
     "texture": "turtle_shell",

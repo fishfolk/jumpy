@@ -8,10 +8,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::effects::active::triggered::TriggeredEffect;
 use crate::effects::TriggeredEffectTrigger;
-use ff_core::particles::{ParticleEmitter, ParticleEmitterMetadata};
 use crate::player::{on_player_damage, Player, PlayerState};
 use crate::{CollisionWorld, PhysicsBody, RigidBody, RigidBodyParams, SpriteMetadata};
-use crate::{Drawable, PassiveEffectInstance, PassiveEffectMetadata, SpriteParams};
+use crate::{Drawable, PassiveEffect, PassiveEffectMetadata, SpriteParams};
+use ff_core::particles::{ParticleEmitter, ParticleEmitterMetadata};
 
 use ff_core::prelude::*;
 
@@ -128,9 +128,12 @@ pub fn spawn_projectile(
         } => {
             let texture_res = get_texture(&meta.texture_id);
 
-            let size = meta
-                .size
-                .unwrap_or_else(|| texture_res.meta.frame_size.unwrap_or(texture_res.texture.size()));
+            let size = meta.size.unwrap_or_else(|| {
+                texture_res
+                    .meta
+                    .frame_size
+                    .unwrap_or(texture_res.texture.size())
+            });
 
             let offset = meta.offset - (vec2(size.width, size.height) / 2.0);
 
@@ -200,7 +203,11 @@ enum ProjectileCollision {
     Map,
 }
 
-pub fn fixed_update_projectiles(world: &mut World, delta_time: f32, integration_factor: f32) {
+pub fn fixed_update_projectiles(
+    world: &mut World,
+    delta_time: f32,
+    integration_factor: f32,
+) -> Result<()> {
     let bodies = world
         .query::<(&Transform, &PhysicsBody)>()
         .iter()
@@ -224,7 +231,8 @@ pub fn fixed_update_projectiles(world: &mut World, delta_time: f32, integration_
         let size = body.size.as_ivec2();
         #[cfg(not(feature = "ultimate"))]
         let size: Size<i32> = Vec2::from(body.size).as_i32().into();
-        let map_collision = collision_world.collide_solids(transform.position, size.width, size.height);
+        let map_collision =
+            collision_world.collide_solids(transform.position, size.width, size.height);
         if map_collision == Tile::Solid {
             let res = (projectile.owner, e, Some(ProjectileCollision::Map));
             events.push(res);
@@ -237,7 +245,7 @@ pub fn fixed_update_projectiles(world: &mut World, delta_time: f32, integration_
                 if let Ok(mut player) = world.get_mut::<Player>(*other) {
                     if player.state != PlayerState::Dead {
                         for meta in projectile.passive_effects.clone().into_iter() {
-                            let effect_instance = PassiveEffectInstance::new(None, meta);
+                            let effect_instance = PassiveEffect::new(None, meta);
 
                             player.passive_effects.push(effect_instance);
                         }
@@ -288,9 +296,11 @@ pub fn fixed_update_projectiles(world: &mut World, delta_time: f32, integration_
 
         let _ = world.despawn(projectile_entity);
     }
+
+    Ok(())
 }
 
-pub fn draw_projectiles(world: &mut World) {
+pub fn draw_projectiles(world: &mut World) -> Result<()> {
     for (_, (projectile, transform)) in world.query::<(&Projectile, &Transform)>().iter() {
         match projectile.kind {
             ProjectileKind::Rect {
@@ -312,4 +322,6 @@ pub fn draw_projectiles(world: &mut World) {
             _ => {}
         }
     }
+
+    Ok(())
 }

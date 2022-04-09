@@ -1,3 +1,11 @@
+pub mod helpers;
+mod math;
+mod map;
+
+pub use map::*;
+pub use helpers::*;
+pub use math::*;
+
 use std::any::Any;
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Formatter};
@@ -45,8 +53,8 @@ pub async fn deserialize_file_by_extension<T, P: AsRef<Path>>(path: P) -> Result
 /// Serialize a value into a string of JSON.
 /// Will return a `serde_json::Error` if a parsing error is encountered.
 pub fn serialize_json_string<T>(value: &T) -> std::result::Result<String, serde_json::Error>
-where
-    T: Serialize,
+    where
+        T: Serialize,
 {
     let res = serde_json::to_string_pretty(value)?;
     Ok(res)
@@ -55,8 +63,8 @@ where
 /// Serialize a value into a slice of JSON.
 /// Will return a `serde_json::Error` if a parsing error is encountered.
 pub fn serialize_json_bytes<T>(value: &T) -> std::result::Result<Vec<u8>, serde_json::Error>
-where
-    T: Serialize,
+    where
+        T: Serialize,
 {
     let res = serde_json::to_string_pretty(value)?;
     Ok(res.into_bytes())
@@ -65,8 +73,8 @@ where
 /// Deserialize a slice of JSON into a value.
 /// Will return a `serde_json::Error` if a parsing error is encountered.
 pub fn deserialize_json_bytes<'a, T>(value: &'a [u8]) -> std::result::Result<T, serde_json::Error>
-where
-    T: Deserialize<'a>,
+    where
+        T: Deserialize<'a>,
 {
     let res = serde_json::from_slice(value)?;
     Ok(res)
@@ -75,8 +83,8 @@ where
 /// Deserialize a string of JSON into a value.
 /// Will return a `serde_json::Error` if a parsing error is encountered.
 pub fn deserialize_json_string<'a, T>(value: &'a str) -> std::result::Result<T, serde_json::Error>
-where
-    T: Deserialize<'a>,
+    where
+        T: Deserialize<'a>,
 {
     let res = serde_json::from_str(value)?;
     Ok(res)
@@ -84,8 +92,8 @@ where
 
 /// Load and deserialize a JSON file into a value
 pub async fn load_json_file<T, P: AsRef<Path>>(path: P) -> Result<T>
-where
-    T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
 {
     let bytes = load_file(&path).await?;
     match serde_json::from_slice(&bytes) {
@@ -97,8 +105,8 @@ where
 /// Serialize a value into a string of TOML.
 /// Will return a `toml::ser::Error` if a parsing error is encountered.
 pub fn serialize_toml_string<T>(value: &T) -> std::result::Result<String, toml::ser::Error>
-where
-    T: Serialize,
+    where
+        T: Serialize,
 {
     let res = toml::to_string_pretty(value)?;
     Ok(res)
@@ -107,8 +115,8 @@ where
 /// Serialize a value into a slice of TOML.
 /// Will return a `toml::ser::Error` if a parsing error is encountered.
 pub fn serialize_toml_bytes<T>(value: &T) -> std::result::Result<Vec<u8>, toml::ser::Error>
-where
-    T: Serialize,
+    where
+        T: Serialize,
 {
     let res = toml::to_string_pretty(value)?;
     Ok(res.into_bytes())
@@ -117,8 +125,8 @@ where
 /// Deserialize a slice of TOML into a value.
 /// Will return a `toml::de::Error` if a parsing error is encountered.
 pub fn deserialize_toml_bytes<'a, T>(value: &'a [u8]) -> std::result::Result<T, toml::de::Error>
-where
-    T: Deserialize<'a>,
+    where
+        T: Deserialize<'a>,
 {
     let res = toml::from_slice(value)?;
     Ok(res)
@@ -127,8 +135,8 @@ where
 /// Deserialize a string of TOML into a value.
 /// Will return a `toml::de::Error` if a parsing error is encountered.
 pub fn deserialize_toml_string<'a, T>(value: &'a str) -> std::result::Result<T, toml::de::Error>
-where
-    T: Deserialize<'a>,
+    where
+        T: Deserialize<'a>,
 {
     let res = toml::from_str(value)?;
     Ok(res)
@@ -136,8 +144,8 @@ where
 
 /// Load and deserialize a TOML file into a value
 pub async fn load_toml_file<T, P: AsRef<Path>>(path: P) -> Result<T>
-where
-    T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
 {
     let bytes = load_file(&path).await?;
     match toml::from_slice(&bytes) {

@@ -21,7 +21,7 @@ pub fn open_editor_menu(ctx: &EditorContext) {
     unsafe {
         if EDITOR_MENU_INSTANCE.is_none() {
             let menu = Menu::new(
-                hash!(),
+                hash!("editor_menu"),
                 MENU_WIDTH,
                 &[
                     MenuEntry {

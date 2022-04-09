@@ -2,9 +2,9 @@ use std::path::Path;
 
 use fishsticks::{Button, GamepadContext};
 
-use ff_core::prelude::*;
-use ff_core::text::{load_ttf_font, draw_text, TextParams};
 use ff_core::macroquad::window::{clear_background, next_frame};
+use ff_core::prelude::*;
+use ff_core::text::{draw_text, load_ttf_font, TextParams};
 
 const TEXT_X_OFFSET: f32 = 370.0;
 const MAIN_HEADER_Y_OFFSET: f32 = 300.0;
@@ -70,15 +70,15 @@ enum LabelType {
 }
 
 pub async fn show_game_credits(assets_dir: &str) {
+    play_sound("thanks_for_all_the_fished", true);
+
     let mut delta = 200.0;
     let credits = create_game_credits();
 
     let font = get_font("anonymous_pro_regular");
 
     loop {
-        if is_key_pressed(KeyCode::Escape)
-            || is_gamepad_btn_pressed( Button::East)
-        {
+        if is_key_pressed(KeyCode::Escape) || is_gamepad_button_pressed(Button::East) {
             break;
         }
 
@@ -103,6 +103,8 @@ pub async fn show_game_credits(assets_dir: &str) {
 
         next_frame().await;
     }
+
+    stop_music();
 }
 
 fn create_game_credits() -> Vec<CreditLabel> {

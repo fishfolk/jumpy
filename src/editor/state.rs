@@ -8,6 +8,10 @@ use crate::{
 
 use super::actions::{UiAction, UiActionExt};
 
+fn macroquad_to_egui_vec2(v: macroquad::prelude::Vec2) -> egui::Vec2 {
+    egui::vec2(v.x, v.y)
+}
+
 trait RectMap {
     fn map(self, from: egui::Rect, to: egui::Rect) -> egui::Rect;
 }
@@ -76,7 +80,9 @@ impl EditorState {
 // FIXME: This is very ugly, and shouldn't be passed into the editor state as parameter. Is there some
 // better way to do this?
 pub struct LevelView {
+    /// The view offset in pixels.
     pub position: macroquad::prelude::Vec2,
+    /// The scale the level is viewed with. 1.0 == 1:1, bigger numbers mean bigger tiles.
     pub scale: f32,
 }
 
@@ -99,6 +105,8 @@ impl EditorState {
         level_render_target: &mut RenderTarget,
         level_view: &LevelView,
     ) -> Option<UiAction> {
+        let mut action = None;
+
         egui::CentralPanel::default()
             .frame(egui::Frame::none())
             .show(egui_ctx, |ui| {
@@ -108,29 +116,153 @@ impl EditorState {
                         .raw_miniquad_texture_handle()
                         .gl_internal_id() as u64,
                 );
-                let image =
-                    egui::Image::new(texture_id, ui.available_size()).sense(egui::Sense::click());
-                let response = ui.add(image);
-                if response.clicked() {
-                    let cursor_pos = ui.input().pointer.interact_pos().unwrap();
-                    let tile_size = egui::vec2(
-                        self.map_resource.map.tile_size.x,
-                        self.map_resource.map.tile_size.y,
-                    );
-                    let tile_pos =
-                        (cursor_pos - response.rect.min) / tile_size + level_view.position;
-                }
+                let level_img = egui::Image::new(texture_id, ui.available_size())
+                    .sense(egui::Sense::click_and_drag());
+                let response = ui.add(level_img);
+                let cursor_position = if response.hovered() {
+                    let map = &self.map_resource.map;
+                    let tile_size = macroquad_to_egui_vec2(map.tile_size);
+                    let level_view_pos = macroquad_to_egui_vec2(level_view.position);
+                    let screen_to_world = |pos: egui::Pos2| -> egui::Pos2 {
+                        pos - response.rect.min.to_vec2() + level_view_pos
+                    };
+                    let world_to_screen = |pos: egui::Pos2| -> egui::Pos2 {
+                        pos + response.rect.min.to_vec2() - level_view_pos
+                    };
 
-                let (width, height) = (ui.available_width() as u32, ui.available_height() as u32);
+                    let cursor_screen_pos = ui.input().pointer.interact_pos().unwrap();
+                    let cursor_px_pos = screen_to_world(cursor_screen_pos);
+                    let cursor_tile_pos = (cursor_px_pos.to_vec2() / tile_size).floor();
+
+                    if self.selected_tool == EditorTool::TilePlacer
+                        && cursor_tile_pos.x >= 0.
+                        && cursor_tile_pos.y >= 0.
+                    {
+                        match (&self.selected_tile, &self.selected_layer) {
+                            (Some(selected_tile), Some(selected_layer)) => {
+                                egui::containers::Area::new("selected tile overlay")
+                                    .order(egui::Order::Background)
+                                    .interactable(false)
+                                    .fixed_pos(world_to_screen(
+                                        (cursor_tile_pos * tile_size).to_pos2(),
+                                    ))
+                                    .show(egui_ctx, |ui| {
+                                        let tileset = &map.tilesets[&selected_tile.tileset];
+                                        let texture_id = egui::TextureId::User(
+                                            storage::get::<Resources>().textures
+                                                [&tileset.texture_id]
+                                                .texture
+                                                .raw_miniquad_texture_handle()
+                                                .gl_internal_id()
+                                                as u64,
+                                        );
+                                        let tileset_uv_tile_size = egui::Vec2::splat(1.)
+                                            / egui::vec2(
+                                                tileset.grid_size.x as f32,
+                                                tileset.grid_size.y as f32,
+                                            );
+                                        let tileset_x =
+                                            (selected_tile.tile_id % tileset.grid_size.x) as f32
+                                                * tileset_uv_tile_size.x;
+                                        let tileset_y =
+                                            (selected_tile.tile_id / tileset.grid_size.x) as f32
+                                                * tileset_uv_tile_size.y;
+                                        let uv = egui::Rect::from_min_size(
+                                            egui::Pos2 {
+                                                x: tileset_x,
+                                                y: tileset_y,
+                                            },
+                                            tileset_uv_tile_size,
+                                        );
+                                        let (response, painter) =
+                                            ui.allocate_painter(tile_size, egui::Sense::hover());
+                                        let mut tile_mesh = egui::Mesh::with_texture(texture_id);
+                                        tile_mesh.add_rect_with_uv(
+                                            response.rect,
+                                            uv,
+                                            egui::Color32::from_rgba_unmultiplied(
+                                                0xff, 0xff, 0xff, 200,
+                                            ),
+                                        );
+
+                                        painter.add(egui::Shape::mesh(tile_mesh));
+                                    });
+
+                                if response.clicked() || response.dragged() {
+                                    if ui.input().pointer.button_down(egui::PointerButton::Primary)
+                                    {
+                                        action.then_do_some(UiAction::PlaceTile {
+                                            id: selected_tile.tile_id,
+                                            layer_id: selected_layer.clone(),
+                                            tileset_id: selected_tile.tileset.clone(),
+                                            coords: macroquad::math::UVec2::new(
+                                                cursor_tile_pos.x as u32,
+                                                cursor_tile_pos.y as u32,
+                                            ),
+                                        });
+                                    } else if ui
+                                        .input()
+                                        .pointer
+                                        .button_down(egui::PointerButton::Secondary)
+                                    {
+                                        action.then_do_some(UiAction::RemoveTile {
+                                            layer_id: selected_layer.clone(),
+                                            coords: macroquad::math::UVec2::new(
+                                                cursor_tile_pos.x as u32,
+                                                cursor_tile_pos.y as u32,
+                                            ),
+                                        });
+                                    }
+                                }
+                            }
+
+                            _ => (),
+                        }
+                    }
+
+                    Some((cursor_px_pos, cursor_tile_pos))
+                } else {
+                    None
+                };
+
+                let (width, height) = (response.rect.width() as u32, response.rect.height() as u32);
                 if width != level_render_target.texture.width() as u32
                     || height != level_render_target.texture.height() as u32
                 {
                     level_render_target.delete();
                     *level_render_target = render_target(width, height);
-                    dbg!("Remade level render target");
+                    println!("Remade level render target, size: ({}, {})", width, height);
+                }
+
+                if let Some((cursor_px_pos, cursor_tile_pos)) = cursor_position {
+                    egui::containers::Area::new("pointer pos overlay")
+                        .order(egui::Order::Tooltip)
+                        .fixed_pos(
+                            response.rect.min
+                                + egui::vec2(
+                                    ui.spacing().window_margin.left,
+                                    ui.spacing().window_margin.top,
+                                ),
+                        )
+                        .interactable(false)
+                        .drag_bounds(egui::Rect::EVERYTHING) // disable clip rect
+                        .show(egui_ctx, |ui| {
+                            egui::Frame::popup(&egui_ctx.style())
+                                .show(ui, |ui| {
+                                    ui.label(format!(
+                                        "Cursor position: ({}, {}) in pixels: ({:.2}, {:.2})",
+                                        cursor_tile_pos.x,
+                                        cursor_tile_pos.y,
+                                        cursor_px_pos.x,
+                                        cursor_px_pos.y,
+                                    ))
+                                })
+                                .inner
+                        });
                 }
             });
-        None
+
+        action
     }
 
     fn draw_toolbar(&self, egui_ctx: &egui::Context) -> Option<UiAction> {

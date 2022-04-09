@@ -17,7 +17,10 @@ mod history;
 use history::ActionHistory;
 pub use input::EditorInputScheme;
 
-use crate::{editor::windows::CreateTilesetWindow, map::Map};
+use crate::{
+    editor::windows::CreateTilesetWindow,
+    map::{Map, MapLayerKind},
+};
 
 use macroquad::{
     experimental::scene::{Node, RefMut},
@@ -70,13 +73,18 @@ impl Node for EditorNode {
 
         node.editor.level_view.position += input.camera_move_direction * Self::CAMERA_PAN_SPEED;
 
+        let target_size = vec2(
+            node.editor.level_render_target.texture.width(),
+            node.editor.level_render_target.texture.height(),
+        );
+        let zoom = vec2(
+            node.editor.level_view.scale / target_size.x,
+            node.editor.level_view.scale / target_size.y,
+        ) * 2.;
         let camera = Some(Camera2D {
-            offset: vec2(0.0, 0.0),
+            offset: vec2(-1., -1.),
             target: node.editor.level_view.position,
-            zoom: vec2(
-                node.editor.level_view.scale / node.editor.level_render_target.texture.width(),
-                node.editor.level_view.scale / node.editor.level_render_target.texture.height(),
-            ),
+            zoom,
             render_target: Some(node.editor.level_render_target),
             ..Camera2D::default()
         });
@@ -187,6 +195,11 @@ impl Editor {
                     .unwrap();
             }
             UiAction::SelectLayer(id) => {
+                if self.state.map_resource.map.layers[&id].kind == MapLayerKind::ObjectLayer
+                    && self.state.selected_tool == EditorTool::TilePlacer
+                {
+                    self.state.selected_tool = EditorTool::Cursor;
+                }
                 self.state.selected_layer = Some(id);
             }
             UiAction::SelectTileset(id) => {
@@ -201,6 +214,23 @@ impl Editor {
                     tile_id: id,
                 });
                 self.state.selected_tool = EditorTool::TilePlacer;
+            }
+            UiAction::PlaceTile {
+                id,
+                coords,
+                layer_id,
+                tileset_id,
+            } => {
+                let action = actions::PlaceTile::new(id, layer_id, tileset_id, coords);
+                self.history
+                    .apply(action, &mut self.state.map_resource.map)
+                    .unwrap();
+            }
+            UiAction::RemoveTile { coords, layer_id } => {
+                let action = actions::RemoveTile::new(layer_id, coords);
+                self.history
+                    .apply(action, &mut self.state.map_resource.map)
+                    .unwrap();
             }
 
             _ => todo!(),

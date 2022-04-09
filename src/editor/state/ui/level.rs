@@ -7,6 +7,7 @@ use crate::{
         util::{EguiCompatibleVec, EguiTextureHandler, Resizable},
         view::LevelView,
     },
+    map::MapObjectKind,
     Resources,
 };
 
@@ -29,6 +30,19 @@ impl State {
                     .sense(egui::Sense::click_and_drag());
 
                 let response = ui.add(level_img);
+
+                let resources = storage::get::<Resources>();
+                for (_layer_name, layer) in self.map_resource.map.layers.iter() {
+                    for object in layer.objects.iter() {
+                        match object.kind {
+                            MapObjectKind::Decoration => {
+                                let sprite = &resources.decoration[&object.id].sprite;
+                            }
+                            MapObjectKind::Item => (),
+                            MapObjectKind::Environment => (),
+                        }
+                    }
+                }
 
                 action.then_do(self.draw_level_overlays(egui_ctx, ui, &response, level_view));
 
@@ -89,15 +103,36 @@ impl State {
         cursor_tile_pos: egui::Pos2,
         level_view: &LevelView,
     ) -> Option<UiAction> {
+        let action;
+
+        action = match self.selected_tool {
+            EditorTool::TilePlacer => self.draw_level_tile_placement_overlay(
+                egui_ctx,
+                level_response,
+                cursor_tile_pos,
+                level_view,
+            ),
+            // TODO: Spawnpoint placement overlay
+            // TODO: Object placement overlay
+            _ => None,
+        };
+
+        action
+    }
+
+    fn draw_level_tile_placement_overlay(
+        &self,
+        egui_ctx: &egui::Context,
+        level_response: &egui::Response,
+        cursor_tile_pos: egui::Pos2,
+        level_view: &LevelView,
+    ) -> Option<UiAction> {
         let mut action = None;
         let map = &self.map_resource.map;
         let tile_size = map.tile_size.to_egui();
         let level_top_left = level_response.rect.min.to_vec2();
 
-        if self.selected_tool == EditorTool::TilePlacer
-            && cursor_tile_pos.x >= 0.
-            && cursor_tile_pos.y >= 0.
-        {
+        if cursor_tile_pos.x >= 0. && cursor_tile_pos.y >= 0. {
             if let (Some(selected_tile), Some(selected_layer)) =
                 (&self.selected_tile, &self.selected_layer)
             {
@@ -163,6 +198,7 @@ impl State {
                 }
             }
         }
+
         action
     }
 

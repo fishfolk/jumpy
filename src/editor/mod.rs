@@ -18,7 +18,7 @@ pub use input::EditorInputScheme;
 use crate::{
     editor::{
         state::{EditorTool, TileSelection},
-        windows::CreateTilesetWindow,
+        windows::{CreateTilesetWindow, MenuWindow},
     },
     map::{Map, MapLayerKind},
 };
@@ -31,7 +31,7 @@ use macroquad::{
 use self::{
     state::State,
     view::LevelView,
-    windows::{CreateLayerResult, CreateTilesetResult},
+    windows::{CreateLayerResult, CreateTilesetResult, MenuResult},
 };
 
 use crate::resources::MapResource;
@@ -45,6 +45,7 @@ pub struct Editor {
 
     create_layer_window: Option<windows::CreateLayerWindow>,
     create_tileset_window: Option<windows::CreateTilesetWindow>,
+    menu_window: Option<windows::MenuWindow>,
 
     level_render_target: RenderTarget,
 }
@@ -74,7 +75,6 @@ impl Node for EditorNode {
     fn fixed_update(mut node: RefMut<Self>) {
         use macroquad::prelude::*;
 
-        // TODO: Move into Editor::draw
         let input = node.input_scheme.collect_input();
 
         node.editor.level_view.position += input.camera_move_direction * Self::CAMERA_PAN_SPEED;
@@ -96,6 +96,16 @@ impl Node for EditorNode {
         });
 
         scene::set_camera(0, camera);
+
+        if input.toggle_menu {
+            node.editor.menu_window = if node.editor.menu_window.is_some() {
+                None
+            } else {
+                Some(MenuWindow::new(
+                    node.editor.state.map_resource.meta.is_user_map,
+                ))
+            };
+        }
     }
 
     fn draw(mut node: RefMut<Self>)
@@ -131,13 +141,15 @@ impl Editor {
         Self {
             state: State::new(map_resource),
             history: ActionHistory::new(),
-            create_layer_window: None,
-            create_tileset_window: None,
             level_view: LevelView {
                 position: Default::default(),
                 scale: 1.,
             },
             level_render_target: render_target(1, 1),
+
+            create_layer_window: None,
+            create_tileset_window: None,
+            menu_window: None,
         }
     }
 
@@ -236,6 +248,12 @@ impl Editor {
                     .apply(action, &mut self.state.map_resource.map)
                     .unwrap();
             }
+            UiAction::ExitToMainMenu => {
+                crate::exit_to_main_menu();
+            }
+            UiAction::QuitToDesktop => {
+                crate::quit_to_desktop();
+            }
 
             _ => todo!(),
         }
@@ -286,6 +304,30 @@ impl Editor {
                 }
                 ControlFlow::Break(CreateTilesetResult::Close) => {
                     self.create_tileset_window = None;
+                }
+            }
+        }
+
+        if let Some(window) = &mut self.menu_window {
+            match window.ui(egui_ctx) {
+                ControlFlow::Continue(()) => (),
+                ControlFlow::Break(MenuResult::OpenCreateMapWindow) => {
+                    self.apply_action(UiAction::OpenCreateMapWindow)
+                }
+                ControlFlow::Break(MenuResult::OpenLoadMapWindow) => {
+                    self.apply_action(UiAction::OpenLoadMapWindow)
+                }
+                ControlFlow::Break(MenuResult::OpenSaveMapWindow) => {
+                    self.apply_action(UiAction::OpenSaveMapWindow)
+                }
+                ControlFlow::Break(MenuResult::SaveMap) => {
+                    self.apply_action(UiAction::SaveMap(None))
+                }
+                ControlFlow::Break(MenuResult::ExitToMainMenu) => {
+                    self.apply_action(UiAction::ExitToMainMenu)
+                }
+                ControlFlow::Break(MenuResult::QuitToDesktop) => {
+                    self.apply_action(UiAction::QuitToDesktop)
                 }
             }
         }

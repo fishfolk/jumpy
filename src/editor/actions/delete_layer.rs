@@ -28,7 +28,7 @@ impl DeleteLayer {
 }
 
 impl UndoableAction for DeleteLayer {
-    fn apply(&mut self, map: &mut Map) -> Result<()> {
+    fn apply_to(&mut self, map: &mut Map) -> Result<()> {
         if let Some(layer) = map.layers.remove(&self.id) {
             self.layer = Some(layer);
         } else {

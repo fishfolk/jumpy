@@ -34,7 +34,7 @@ impl CreateObject {
 }
 
 impl UndoableAction for CreateObject {
-    fn apply(&mut self, map: &mut Map) -> Result<()> {
+    fn apply_to(&mut self, map: &mut Map) -> Result<()> {
         if let Some(layer) = map.layers.get_mut(&self.layer_id) {
             let object = MapObject::new(&self.id, self.kind, self.position);
 

@@ -28,7 +28,7 @@ impl UpdateTileAttributes {
 }
 
 impl UndoableAction for UpdateTileAttributes {
-    fn apply(&mut self, map: &mut Map) -> Result<()> {
+    fn apply_to(&mut self, map: &mut Map) -> Result<()> {
         if let Some(layer) = map.layers.get_mut(&self.layer_id) {
             if let Some(Some(tile)) = layer.tiles.get_mut(self.index) {
                 self.old_attributes = Some(tile.attributes.clone());

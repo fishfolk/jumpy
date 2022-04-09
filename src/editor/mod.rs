@@ -1,12 +1,9 @@
 use std::ops::ControlFlow;
 
-mod camera;
-pub mod state;
+mod state;
 mod util;
+mod view;
 mod windows;
-pub use state::*;
-
-pub use camera::EditorCamera;
 
 mod actions;
 use actions::UiAction;
@@ -19,7 +16,10 @@ use history::ActionHistory;
 pub use input::EditorInputScheme;
 
 use crate::{
-    editor::windows::CreateTilesetWindow,
+    editor::{
+        state::{EditorTool, TileSelection},
+        windows::CreateTilesetWindow,
+    },
     map::{Map, MapLayerKind},
 };
 
@@ -28,12 +28,16 @@ use macroquad::{
     prelude::{render_target, RenderTarget},
 };
 
-use self::windows::{CreateLayerResult, CreateTilesetResult};
+use self::{
+    state::State,
+    view::LevelView,
+    windows::{CreateLayerResult, CreateTilesetResult},
+};
 
 use crate::resources::MapResource;
 
 pub struct Editor {
-    state: EditorState,
+    state: State,
 
     level_view: LevelView,
 
@@ -124,7 +128,7 @@ impl Editor {
 
     pub fn new(map_resource: MapResource) -> Self {
         Self {
-            state: EditorState::new(map_resource),
+            state: State::new(map_resource),
             history: ActionHistory::new(),
             create_layer_window: None,
             create_tileset_window: None,

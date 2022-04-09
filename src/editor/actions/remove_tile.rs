@@ -32,7 +32,7 @@ impl RemoveTile {
 }
 
 impl UndoableAction for RemoveTile {
-    fn apply(&mut self, map: &mut Map) -> Result<()> {
+    fn apply_to(&mut self, map: &mut Map) -> Result<()> {
         let i = map.to_index(self.coords);
 
         if let Some(layer) = map.layers.get_mut(&self.layer_id) {

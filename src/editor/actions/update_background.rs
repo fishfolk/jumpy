@@ -32,7 +32,7 @@ impl UpdateBackground {
 }
 
 impl UndoableAction for UpdateBackground {
-    fn apply(&mut self, map: &mut Map) -> Result<()> {
+    fn apply_to(&mut self, map: &mut Map) -> Result<()> {
         self.old_color = Some(map.background_color);
 
         map.background_color = self.color;

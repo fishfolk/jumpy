@@ -26,7 +26,7 @@ impl SetLayerDrawOrderIndex {
 }
 
 impl UndoableAction for SetLayerDrawOrderIndex {
-    fn apply(&mut self, map: &mut Map) -> Result<()> {
+    fn apply_to(&mut self, map: &mut Map) -> Result<()> {
         for i in 0..map.draw_order.len() {
             let id = map.draw_order.get(i).unwrap();
             if id == &self.id {

@@ -23,7 +23,7 @@ impl DeleteTileset {
 }
 
 impl UndoableAction for DeleteTileset {
-    fn apply(&mut self, map: &mut Map) -> Result<()> {
+    fn apply_to(&mut self, map: &mut Map) -> Result<()> {
         if let Some(tileset) = map.tilesets.remove(&self.id) {
             self.tileset = Some(tileset);
         } else {

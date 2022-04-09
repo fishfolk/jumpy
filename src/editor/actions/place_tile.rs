@@ -36,7 +36,7 @@ impl PlaceTile {
 }
 
 impl UndoableAction for PlaceTile {
-    fn apply(&mut self, map: &mut Map) -> Result<()> {
+    fn apply_to(&mut self, map: &mut Map) -> Result<()> {
         if let Some(tileset) = map.tilesets.get(&self.tileset_id) {
             let texture_id = tileset.texture_id.clone();
             let texture_coords = tileset.get_texture_coords(self.id);

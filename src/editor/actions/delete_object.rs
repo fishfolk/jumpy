@@ -28,7 +28,7 @@ impl DeleteObject {
 }
 
 impl UndoableAction for DeleteObject {
-    fn apply(&mut self, map: &mut Map) -> Result<()> {
+    fn apply_to(&mut self, map: &mut Map) -> Result<()> {
         if let Some(layer) = map.layers.get_mut(&self.layer_id) {
             let object = layer.objects.remove(self.index);
             self.object = Some(object);

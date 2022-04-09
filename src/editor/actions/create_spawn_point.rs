@@ -18,7 +18,7 @@ impl CreateSpawnPoint {
 }
 
 impl UndoableAction for CreateSpawnPoint {
-    fn apply(&mut self, map: &mut Map) -> Result<()> {
+    fn apply_to(&mut self, map: &mut Map) -> Result<()> {
         map.spawn_points.push(self.position);
 
         Ok(())

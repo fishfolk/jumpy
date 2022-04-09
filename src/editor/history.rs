@@ -23,7 +23,7 @@ impl ActionHistory {
         map: &mut Map,
     ) -> Result<()> {
         if !action.is_redundant(map) {
-            action.apply(map)?;
+            action.apply_to(map)?;
             self.undo_stack.push(Box::new(action));
             self.redo_stack.clear();
         }
@@ -42,7 +42,7 @@ impl ActionHistory {
 
     pub fn redo(&mut self, map: &mut Map) -> Result<()> {
         if let Some(mut action) = self.redo_stack.pop() {
-            action.redo(map)?;
+            action.apply_to(map)?;
             self.undo_stack.push(action);
         }
 

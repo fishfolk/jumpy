@@ -26,7 +26,7 @@ impl UpdateLayer {
 }
 
 impl UndoableAction for UpdateLayer {
-    fn apply(&mut self, map: &mut Map) -> Result<()> {
+    fn apply_to(&mut self, map: &mut Map) -> Result<()> {
         if let Some(layer) = map.layers.get_mut(&self.id) {
             self.old_is_visible = Some(layer.is_visible);
             layer.is_visible = self.is_visible;

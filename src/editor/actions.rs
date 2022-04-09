@@ -199,13 +199,9 @@ impl UiActionExt for Option<UiAction> {
 
 /// All actions that modify map data should implement this trait
 pub trait UndoableAction {
-    fn apply(&mut self, _map: &mut Map) -> Result<()>;
+    fn apply_to(&mut self, _map: &mut Map) -> Result<()>;
 
     fn undo(&mut self, _map: &mut Map) -> Result<()>;
-
-    fn redo(&mut self, map: &mut Map) -> Result<()> {
-        self.apply(map)
-    }
 
     /// Implement this for actions that can be redundant (ie. no change will take place if it is applied).
     /// This is to avoid history being filled up with repeat actions if user is holding input down

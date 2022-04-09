@@ -30,7 +30,7 @@ impl MoveSpawnPoint {
 }
 
 impl UndoableAction for MoveSpawnPoint {
-    fn apply(&mut self, map: &mut Map) -> Result<()> {
+    fn apply_to(&mut self, map: &mut Map) -> Result<()> {
         let old_position = map.spawn_points.remove(self.index);
         self.old_position = Some(old_position);
 

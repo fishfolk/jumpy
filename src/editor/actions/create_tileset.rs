@@ -28,7 +28,7 @@ impl CreateTileset {
 }
 
 impl UndoableAction for CreateTileset {
-    fn apply(&mut self, map: &mut Map) -> Result<()> {
+    fn apply_to(&mut self, map: &mut Map) -> Result<()> {
         let resources = storage::get::<Resources>();
         if let Some(texture_entry) = resources.textures.get(&self.texture_id).cloned() {
             let texture_size = uvec2(

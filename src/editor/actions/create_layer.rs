@@ -32,7 +32,7 @@ impl CreateLayer {
 }
 
 impl UndoableAction for CreateLayer {
-    fn apply(&mut self, map: &mut Map) -> Result<()> {
+    fn apply_to(&mut self, map: &mut Map) -> Result<()> {
         if map.layers.contains_key(&self.id) {
             let len = map.draw_order.len();
             for i in 0..len {

@@ -9,6 +9,7 @@ use crate::{
 use super::{
     actions::{UiAction, UiActionExt},
     util::{EguiCompatibleVec, EguiTextureHandler, Resizable},
+    view::LevelView,
 };
 
 // TODO: Factor in level view scale
@@ -44,7 +45,7 @@ pub struct TileSelection {
 
 /// Contains the editor state, i.e. the data whose change is tracked by the [`ActionHistory`] of the
 /// editor.
-pub struct EditorState {
+pub struct State {
     pub selected_tool: EditorTool,
     pub map_resource: MapResource,
     pub selected_layer: Option<String>,
@@ -53,7 +54,7 @@ pub struct EditorState {
     pub should_draw_grid: bool,
 }
 
-impl EditorState {
+impl State {
     pub fn new(map_resource: MapResource) -> Self {
         Self {
             map_resource,
@@ -73,17 +74,8 @@ impl EditorState {
     }
 }
 
-// FIXME: This is very ugly, and shouldn't be passed into the editor state as parameter. Is there some
-// better way to do this?
-pub struct LevelView {
-    /// The view offset in pixels.
-    pub position: macroquad::prelude::Vec2,
-    /// The scale the level is viewed with. 1.0 == 1:1, bigger numbers mean bigger tiles.
-    pub scale: f32,
-}
-
 /// UI-related functions
-impl EditorState {
+impl State {
     pub fn ui(
         &self,
         egui_ctx: &egui::Context,

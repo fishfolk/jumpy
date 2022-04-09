@@ -30,7 +30,7 @@ impl UpdateTileset {
 }
 
 impl UndoableAction for UpdateTileset {
-    fn apply(&mut self, map: &mut Map) -> Result<()> {
+    fn apply_to(&mut self, map: &mut Map) -> Result<()> {
         if let Some(tileset) = map.tilesets.get_mut(&self.id) {
             self.old_texture_id = Some(tileset.texture_id.clone());
             tileset.texture_id = self.texture_id.clone();

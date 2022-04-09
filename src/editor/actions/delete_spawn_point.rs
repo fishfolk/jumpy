@@ -26,7 +26,7 @@ impl DeleteSpawnPoint {
 }
 
 impl UndoableAction for DeleteSpawnPoint {
-    fn apply(&mut self, map: &mut Map) -> Result<()> {
+    fn apply_to(&mut self, map: &mut Map) -> Result<()> {
         let spawn_point = map.spawn_points.remove(self.index);
         self.spawn_point = Some(spawn_point);
 

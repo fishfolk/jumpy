@@ -183,9 +183,8 @@ impl UiActionExt for Option<UiAction> {
     }
 
     fn then_do(&mut self, action: Option<UiAction>) {
-        match action {
-            Some(action) => self.then_do_some(action),
-            None => (),
+        if let Some(action) = action {
+            self.then_do_some(action);
         }
     }
 

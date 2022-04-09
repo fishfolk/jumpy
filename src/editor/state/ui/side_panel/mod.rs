@@ -1,7 +1,10 @@
 mod layers;
 mod tileset;
 
-use crate::{editor::actions::UiAction, map::MapLayerKind};
+use crate::{
+    editor::actions::{UiAction, UiActionExt},
+    map::MapLayerKind,
+};
 
 use super::super::State;
 
@@ -16,7 +19,7 @@ impl State {
                 ui.separator();
                 match self.selected_layer_type() {
                     Some(MapLayerKind::TileLayer) => {
-                        self.draw_tileset_info(ui).map(|act| action = Some(act));
+                        action.then_do(self.draw_tileset_info(ui));
                     }
                     Some(MapLayerKind::ObjectLayer) => {
                         // TODO

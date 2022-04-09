@@ -2,6 +2,7 @@ use std::ops::ControlFlow;
 
 mod camera;
 pub mod state;
+mod util;
 mod windows;
 pub use state::*;
 
@@ -24,7 +25,7 @@ use crate::{
 
 use macroquad::{
     experimental::scene::{Node, RefMut},
-    prelude::{collections::storage, render_target, RenderTarget},
+    prelude::{render_target, RenderTarget},
 };
 
 use self::windows::{CreateLayerResult, CreateTilesetResult};
@@ -118,8 +119,6 @@ impl Editor {
 
     const OBJECT_SELECTION_RECT_SIZE: f32 = 75.0;
     const OBJECT_SELECTION_RECT_PADDING: f32 = 8.0;
-
-    const DOUBLE_CLICK_THRESHOLD: f32 = 0.25;
 
     const MESSAGE_TIMEOUT: f32 = 2.5;
 

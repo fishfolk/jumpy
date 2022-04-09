@@ -73,34 +73,55 @@ impl EditorState {
     }
 }
 
+// FIXME: This is very ugly, and shouldn't be passed into the editor state as parameter. Is there some
+// better way to do this?
+pub struct LevelView {
+    pub position: macroquad::prelude::Vec2,
+    pub scale: f32,
+}
+
 /// UI-related functions
 impl EditorState {
     pub fn ui(
         &self,
         egui_ctx: &egui::Context,
         level_render_target: &mut RenderTarget,
+        level_view: &LevelView,
     ) -> Option<UiAction> {
         self.draw_toolbar(egui_ctx)
             .then(self.draw_side_panel(egui_ctx))
-            .then(self.draw_level(egui_ctx, level_render_target))
+            .then(self.draw_level(egui_ctx, level_render_target, level_view))
     }
 
     fn draw_level(
         &self,
         egui_ctx: &egui::Context,
         level_render_target: &mut RenderTarget,
+        level_view: &LevelView,
     ) -> Option<UiAction> {
         egui::CentralPanel::default()
             .frame(egui::Frame::none())
             .show(egui_ctx, |ui| {
-                let (width, height) = (ui.available_width() as u32, ui.available_height() as u32);
                 let texture_id = egui::TextureId::User(
                     level_render_target
                         .texture
                         .raw_miniquad_texture_handle()
                         .gl_internal_id() as u64,
                 );
-                ui.image(texture_id, ui.available_size());
+                let image =
+                    egui::Image::new(texture_id, ui.available_size()).sense(egui::Sense::click());
+                let response = ui.add(image);
+                if response.clicked() {
+                    let cursor_pos = ui.input().pointer.interact_pos().unwrap();
+                    let tile_size = egui::vec2(
+                        self.map_resource.map.tile_size.x,
+                        self.map_resource.map.tile_size.y,
+                    );
+                    let tile_pos =
+                        (cursor_pos - response.rect.min) / tile_size + level_view.position;
+                }
+
+                let (width, height) = (ui.available_width() as u32, ui.available_height() as u32);
                 if width != level_render_target.texture.width() as u32
                     || height != level_render_target.texture.height() as u32
                 {

@@ -31,8 +31,7 @@ use crate::resources::MapResource;
 pub struct Editor {
     state: EditorState,
 
-    camera_pos: macroquad::prelude::Vec2,
-    camera_scale: f32,
+    level_view: LevelView,
 
     history: ActionHistory,
 
@@ -69,15 +68,15 @@ impl Node for EditorNode {
 
         let input = node.input_scheme.collect_input();
 
-        node.editor.camera_pos += input.camera_move_direction * Self::CAMERA_PAN_SPEED;
+        node.editor.level_view.position += input.camera_move_direction * Self::CAMERA_PAN_SPEED;
 
         let camera = Some(Camera2D {
             offset: vec2(0.0, 0.0),
-            target: node.editor.camera_pos,
+            target: node.editor.level_view.position,
             zoom: vec2(
-                node.editor.camera_scale / node.editor.level_render_target.texture.width(),
-                node.editor.camera_scale / node.editor.level_render_target.texture.height(),
-            ) * 2.0,
+                node.editor.level_view.scale / node.editor.level_render_target.texture.width(),
+                node.editor.level_view.scale / node.editor.level_render_target.texture.height(),
+            ),
             render_target: Some(node.editor.level_render_target),
             ..Camera2D::default()
         });
@@ -122,8 +121,10 @@ impl Editor {
             history: ActionHistory::new(),
             create_layer_window: None,
             create_tileset_window: None,
-            camera_pos: Default::default(),
-            camera_scale: 1.,
+            level_view: LevelView {
+                position: Default::default(),
+                scale: 1.,
+            },
             level_render_target: render_target(1, 1),
         }
     }
@@ -207,7 +208,10 @@ impl Editor {
     }
 
     pub fn ui(&mut self, egui_ctx: &egui::Context) {
-        if let Some(action) = self.state.ui(egui_ctx, &mut self.level_render_target) {
+        if let Some(action) =
+            self.state
+                .ui(egui_ctx, &mut self.level_render_target, &self.level_view)
+        {
             self.apply_action(action);
         }
 

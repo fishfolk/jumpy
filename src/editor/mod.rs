@@ -74,6 +74,7 @@ impl Node for EditorNode {
     fn fixed_update(mut node: RefMut<Self>) {
         use macroquad::prelude::*;
 
+        // TODO: Move into Editor::draw
         let input = node.input_scheme.collect_input();
 
         node.editor.level_view.position += input.camera_move_direction * Self::CAMERA_PAN_SPEED;

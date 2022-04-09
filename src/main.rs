@@ -27,7 +27,7 @@ pub mod drawables;
 pub use drawables::*;
 pub use physics::*;
 
-use editor::{EditorCamera, EditorInputScheme};
+use editor::EditorInputScheme;
 
 use map::{Map, MapLayerKind, MapObjectKind};
 
@@ -131,9 +131,6 @@ async fn init_game() -> Result<bool> {
                 gui::show_select_map_menu().await
             };
 
-            let position = map_resource.map.get_size() * 0.5;
-
-            scene::add_node(EditorCamera::new(position));
             scene::add_node(EditorNode::new(Editor::new(map_resource), input_scheme));
         }
         MainMenuResult::ReloadResources => {

@@ -428,6 +428,15 @@
     }
   },
   {
+    "id": "crab",
+    "path": "textures/items/Crab(15x8).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 15,
+      "y": 8
+    }
+  },
+  {
     "id": "sword",
     "path": "textures/items/Sword(65x93).png",
     "type": "spritesheet",

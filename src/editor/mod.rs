@@ -1,7 +1,7 @@
 use std::any::TypeId;
 use std::path::Path;
 
-use crate::{exit_to_main_menu, quit_to_desktop, Resources};
+use crate::{exit_to_main_menu, map::CRAB_TEXTURE_ID, quit_to_desktop, Resources};
 
 mod camera;
 
@@ -1449,8 +1449,8 @@ impl Node for Editor {
                                         label = Some("INVALID OBJECT ID".to_string());
                                     }
                                 }
-                                MapObjectKind::Environment => {
-                                    if &object.id == "sproinger" {
+                                MapObjectKind::Environment => match object.id.as_str() {
+                                    "sproinger" => {
                                         let texture_res =
                                             resources.textures.get("sproinger").unwrap();
 
@@ -1476,10 +1476,22 @@ impl Node for Editor {
                                                 ..Default::default()
                                             },
                                         );
-                                    } else {
+                                    }
+                                    "crab" => {
+                                        let texture_res =
+                                            resources.textures.get(CRAB_TEXTURE_ID).unwrap();
+
+                                        draw_texture(
+                                            texture_res.texture,
+                                            object_position.x,
+                                            object_position.y,
+                                            color::WHITE,
+                                        );
+                                    }
+                                    _ => {
                                         label = Some("INVALID OBJECT ID".to_string());
                                     }
-                                }
+                                },
                             }
 
                             let size = get_object_size(object);
@@ -1603,14 +1615,17 @@ fn get_object_size(object: &MapObject) -> Vec2 {
                 label = Some("INVALID OBJECT ID".to_string())
             }
         }
-        MapObjectKind::Environment => {
-            if &object.id == "sproinger" {
+        MapObjectKind::Environment => match object.id.as_str() {
+            "sproinger" => {
                 let texture_res = resources.textures.get("sproinger").unwrap();
                 res = texture_res.meta.frame_size;
-            } else {
-                label = Some("INVALID OBJECT ID".to_string())
             }
-        }
+            "crab" => {
+                let texture_res = resources.textures.get(CRAB_TEXTURE_ID).unwrap();
+                res = texture_res.meta.frame_size;
+            }
+            _ => label = Some("INVALID OBJECT ID".to_string()),
+        },
     }
 
     if let Some(label) = &label {

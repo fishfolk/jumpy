@@ -4,9 +4,11 @@ use macroquad::{color, experimental::collections::storage, prelude::*};
 
 use serde::{Deserialize, Serialize};
 
+mod crab;
 mod decoration;
 mod sproinger;
 
+pub use crab::*;
 pub use decoration::*;
 pub use sproinger::*;
 

@@ -523,6 +523,16 @@ pub enum MapObjectKind {
     Decoration,
 }
 
+impl std::fmt::Display for MapObjectKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            MapObjectKind::Item => f.write_str("Item"),
+            MapObjectKind::Environment => f.write_str("Environment"),
+            MapObjectKind::Decoration => f.write_str("Decoration"),
+        }
+    }
+}
+
 impl MapObjectKind {
     const ITEM: &'static str = "item";
     const ENVIRONMENT: &'static str = "environment";

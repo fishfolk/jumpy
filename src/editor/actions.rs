@@ -80,6 +80,7 @@ pub enum UiAction {
     SelectObject {
         index: usize,
         layer_id: String,
+        cursor_offset: egui::Vec2,
     },
     CreateObject {
         id: String,

@@ -17,7 +17,7 @@ pub use input::EditorInputScheme;
 
 use crate::{
     editor::{
-        state::{EditorTool, TileSelection},
+        state::{EditorTool, SelectableEntity, TileSelection},
         windows::{CreateTilesetWindow, MenuWindow},
     },
     map::{Map, MapLayerKind},
@@ -253,6 +253,16 @@ impl Editor {
             }
             UiAction::QuitToDesktop => {
                 crate::quit_to_desktop();
+            }
+            UiAction::SelectObject {
+                layer_id,
+                index,
+                cursor_offset,
+            } => {
+                self.state.selected_entity = Some(SelectableEntity {
+                    click_offset: cursor_offset,
+                    kind: state::SelectableEntityKind::Object { index, layer_id },
+                })
             }
 
             _ => todo!(),

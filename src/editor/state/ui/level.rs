@@ -7,7 +7,7 @@ use crate::{
         util::{EguiCompatibleVec, EguiTextureHandler, Resizable},
         view::LevelView,
     },
-    map::MapObjectKind,
+    map::{MapObject, MapObjectKind},
     AnimatedSpriteMetadata, Resources, Sprite,
 };
 
@@ -25,8 +25,6 @@ impl State {
         egui::CentralPanel::default()
             .frame(egui::Frame::none())
             .show(egui_ctx, |ui| {
-                const FULL_UV: egui::Rect =
-                    egui::Rect::from_min_max(egui::pos2(0., 0.), egui::pos2(1., 1.));
                 let texture_id = level_render_target.texture.egui_id();
 
                 let (response, painter) =
@@ -39,197 +37,7 @@ impl State {
                 );
                 painter.add(egui::Shape::mesh(level_mesh));
 
-                let resources = storage::get::<Resources>();
-                for layer_idx in self.map_resource.map.draw_order.iter() {
-                    let layer = if let Some(layer) = self.map_resource.map.layers.get(layer_idx) {
-                        layer
-                    } else {
-                        continue;
-                    };
-                    for object in layer.objects.iter() {
-                        let draw_object =
-                            |texture_id: egui::TextureId,
-                             offset: macroquad::math::Vec2,
-                             dest_size: egui::Vec2,
-                             uv: egui::Rect,
-                             tint: egui::Color32| {
-                                let position_in_lvl =
-                                    (object.position + offset).into_egui().to_pos2();
-
-                                let target = egui::Rect::from_min_size(
-                                    world_to_screen_pos(
-                                        position_in_lvl,
-                                        response.rect.min,
-                                        level_view,
-                                    ),
-                                    dest_size,
-                                );
-
-                                let mut mesh = egui::Mesh::with_texture(texture_id);
-                                mesh.add_rect_with_uv(target, uv, tint);
-                                painter.add(egui::Shape::mesh(mesh));
-                            };
-
-                        let draw_invalid_object = || {
-                            let texture_id = resources
-                                .textures
-                                .get("object_error_icon")
-                                .unwrap()
-                                .texture
-                                .egui_id();
-                            let dest_size = egui::vec2(32., 32.);
-                            let uv =
-                                egui::Rect::from_min_max(egui::pos2(0., 0.), egui::pos2(1., 1.));
-
-                            draw_object(
-                                texture_id,
-                                (0., 0.).into(),
-                                dest_size,
-                                uv,
-                                egui::Color32::WHITE,
-                            );
-                        };
-
-                        let draw_animated_sprite =
-                            |sprite: &AnimatedSpriteMetadata, row: Option<u32>| {
-                                if let Some(texture_res) =
-                                    resources.textures.get(&sprite.texture_id)
-                                {
-                                    let tint = sprite
-                                        .tint
-                                        .map(|color| {
-                                            let [r, g, b, a]: [u8; 4] = color.into();
-                                            egui::Color32::from_rgba_unmultiplied(r, g, b, a)
-                                        })
-                                        .unwrap_or(egui::Color32::WHITE);
-
-                                    let texture_id = texture_res.texture.egui_id();
-                                    let texture_size = egui::vec2(
-                                        texture_res.texture.width(),
-                                        texture_res.texture.height(),
-                                    );
-                                    let frame_size = texture_res.frame_size().into_egui();
-
-                                    let dest_size =
-                                        sprite.scale.map(|s| s * frame_size).unwrap_or(frame_size);
-
-                                    let uv = row
-                                        .map(|row| {
-                                            egui::Rect::from_min_size(
-                                                (egui::vec2(0.0, row as f32 * frame_size.y)
-                                                    / texture_size)
-                                                    .to_pos2(),
-                                                frame_size / texture_size,
-                                            )
-                                        })
-                                        .unwrap_or(FULL_UV);
-
-                                    draw_object(texture_id, sprite.offset, dest_size, uv, tint);
-                                } else {
-                                    // Invalid texture ID
-                                    draw_invalid_object();
-                                }
-                            };
-
-                        match object.kind {
-                            MapObjectKind::Decoration => {
-                                if let Some(meta) = resources.decoration.get(&object.id) {
-                                    draw_animated_sprite(
-                                        &meta.sprite,
-                                        meta.sprite.animations.first().map(|a| a.row),
-                                    );
-                                } else {
-                                    // Invalid object ID
-                                    draw_invalid_object();
-                                }
-
-                                /*
-                                if response.hovered() {
-                                    if target.contains(ui.input().pointer.hover_pos().unwrap()) {
-                                        painter.add(egui::Shape::rect_stroke(
-                                            target,
-                                            egui::Rounding::none(),
-                                            egui::Stroke::new(2., egui::Color32::GRAY),
-                                        ));
-                                        egui::containers::show_tooltip_at_pointer(
-                                            egui_ctx,
-                                            egui::Id::new("object info"),
-                                            |ui| {
-                                                ui.centered_and_justified(|ui| {
-                                                    ui.heading(&object.id);
-                                                    ui.label(
-                                                        egui::RichText::new("Decoration").small(),
-                                                    );
-                                                });
-                                                ui.separator();
-                                                ui.label(egui::RichText::new("Position: ").weak());
-                                                ui.label(
-                                                    egui::RichText::new(format!(
-                                                        "({}, {})",
-                                                        object.position.x, object.position.y
-                                                    ))
-                                                    .monospace(),
-                                                );
-                                            },
-                                        );
-                                    }
-                                }*/
-                            }
-
-                            MapObjectKind::Item => {
-                                if let Some(meta) = resources.items.get(&object.id) {
-                                    draw_animated_sprite(
-                                        &meta.sprite,
-                                        Some(
-                                            meta.sprite
-                                                .animations
-                                                .iter()
-                                                .find(|&a| {
-                                                    a.id == *crate::player::IDLE_ANIMATION_ID
-                                                })
-                                                .map(|a| a.row)
-                                                .unwrap_or_default(),
-                                        ),
-                                    );
-                                } else {
-                                    // Invalid object ID
-                                    draw_invalid_object();
-                                }
-                            }
-                            MapObjectKind::Environment => {
-                                if &object.id == "sproinger" {
-                                    let texture_res = resources.textures.get("sproinger").unwrap();
-
-                                    let texture_id = texture_res.texture.egui_id();
-                                    let texture_size = egui::vec2(
-                                        texture_res.texture.width(),
-                                        texture_res.texture.height(),
-                                    );
-                                    let dest_size = texture_res
-                                        .meta
-                                        .frame_size
-                                        .map(macroquad::math::Vec2::into_egui)
-                                        .unwrap_or_else(|| texture_size);
-                                    let uv = egui::Rect::from_min_size(
-                                        egui::Vec2::ZERO.to_pos2(),
-                                        texture_res.frame_size().into_egui() / texture_size,
-                                    );
-
-                                    draw_object(
-                                        texture_id,
-                                        (0., 0.).into(),
-                                        dest_size,
-                                        uv,
-                                        egui::Color32::WHITE,
-                                    );
-                                } else {
-                                    // Invalid object ID
-                                    draw_invalid_object();
-                                }
-                            }
-                        };
-                    }
-                }
+                self.draw_objects(egui_ctx, ui, &response, &painter, level_view);
 
                 action.then_do(
                     self.draw_level_overlays(egui_ctx, ui, &response, &painter, level_view),
@@ -240,6 +48,234 @@ impl State {
             });
 
         action
+    }
+
+    fn draw_objects(
+        &self,
+        egui_ctx: &egui::Context,
+        ui: &mut egui::Ui,
+        response: &egui::Response,
+        painter: &egui::Painter,
+        level_view: &LevelView,
+    ) -> Option<UiAction> {
+        const FULL_UV: egui::Rect =
+            egui::Rect::from_min_max(egui::pos2(0., 0.), egui::pos2(1., 1.));
+        let mut action = None;
+
+        let resources = storage::get::<Resources>();
+        for layer_idx in self.map_resource.map.draw_order.iter() {
+            let layer = if let Some(layer) = self.map_resource.map.layers.get(layer_idx) {
+                layer
+            } else {
+                continue;
+            };
+            for (object_idx, object) in layer.objects.iter().enumerate() {
+                let draw_object = |texture_id: egui::TextureId,
+                                   offset: macroquad::math::Vec2,
+                                   dest_size: egui::Vec2,
+                                   uv: egui::Rect,
+                                   tint: egui::Color32|
+                 -> egui::Rect {
+                    let position_in_lvl = (object.position + offset).into_egui().to_pos2();
+
+                    let dest = egui::Rect::from_min_size(
+                        world_to_screen_pos(position_in_lvl, response.rect.min, level_view),
+                        dest_size,
+                    );
+
+                    let mut mesh = egui::Mesh::with_texture(texture_id);
+                    mesh.add_rect_with_uv(dest, uv, tint);
+                    painter.add(egui::Shape::mesh(mesh));
+                    dest
+                };
+
+                let draw_invalid_object = || -> egui::Rect {
+                    let texture_id = resources
+                        .textures
+                        .get("object_error_icon")
+                        .unwrap()
+                        .texture
+                        .egui_id();
+                    let dest_size = egui::vec2(32., 32.);
+                    let uv = egui::Rect::from_min_max(egui::pos2(0., 0.), egui::pos2(1., 1.));
+
+                    draw_object(
+                        texture_id,
+                        (0., 0.).into(),
+                        dest_size,
+                        uv,
+                        egui::Color32::WHITE,
+                    )
+                };
+
+                let draw_animated_sprite = |sprite: &AnimatedSpriteMetadata,
+                                            row: Option<u32>|
+                 -> egui::Rect {
+                    if let Some(texture_res) = resources.textures.get(&sprite.texture_id) {
+                        let tint = sprite
+                            .tint
+                            .map(|color| {
+                                let [r, g, b, a]: [u8; 4] = color.into();
+                                egui::Color32::from_rgba_unmultiplied(r, g, b, a)
+                            })
+                            .unwrap_or(egui::Color32::WHITE);
+
+                        let texture_id = texture_res.texture.egui_id();
+                        let texture_size =
+                            egui::vec2(texture_res.texture.width(), texture_res.texture.height());
+                        let frame_size = texture_res.frame_size().into_egui();
+
+                        let dest_size = sprite.scale.map(|s| s * frame_size).unwrap_or(frame_size);
+
+                        let uv = row
+                            .map(|row| {
+                                egui::Rect::from_min_size(
+                                    (egui::vec2(0.0, row as f32 * frame_size.y) / texture_size)
+                                        .to_pos2(),
+                                    frame_size / texture_size,
+                                )
+                            })
+                            .unwrap_or(FULL_UV);
+
+                        draw_object(texture_id, sprite.offset, dest_size, uv, tint)
+                    } else {
+                        // Invalid texture ID
+                        draw_invalid_object()
+                    }
+                };
+
+                let dest;
+                let is_valid;
+                match object.kind {
+                    MapObjectKind::Decoration => {
+                        if let Some(meta) = resources.decoration.get(&object.id) {
+                            dest = draw_animated_sprite(
+                                &meta.sprite,
+                                meta.sprite.animations.first().map(|a| a.row),
+                            );
+                            is_valid = true;
+                        } else {
+                            // Invalid object ID
+                            dest = draw_invalid_object();
+                            is_valid = false;
+                        }
+                    }
+
+                    MapObjectKind::Item => {
+                        if let Some(meta) = resources.items.get(&object.id) {
+                            dest = draw_animated_sprite(
+                                &meta.sprite,
+                                Some(
+                                    meta.sprite
+                                        .animations
+                                        .iter()
+                                        .find(|&a| a.id == *crate::player::IDLE_ANIMATION_ID)
+                                        .map(|a| a.row)
+                                        .unwrap_or_default(),
+                                ),
+                            );
+                            is_valid = true;
+                        } else {
+                            // Invalid object ID
+                            dest = draw_invalid_object();
+                            is_valid = false;
+                        }
+                    }
+                    MapObjectKind::Environment => {
+                        if &object.id == "sproinger" {
+                            let texture_res = resources.textures.get("sproinger").unwrap();
+
+                            let texture_id = texture_res.texture.egui_id();
+                            let texture_size = egui::vec2(
+                                texture_res.texture.width(),
+                                texture_res.texture.height(),
+                            );
+                            let dest_size = texture_res
+                                .meta
+                                .frame_size
+                                .map(macroquad::math::Vec2::into_egui)
+                                .unwrap_or_else(|| texture_size);
+                            let uv = egui::Rect::from_min_size(
+                                egui::Vec2::ZERO.to_pos2(),
+                                texture_res.frame_size().into_egui() / texture_size,
+                            );
+
+                            dest = draw_object(
+                                texture_id,
+                                (0., 0.).into(),
+                                dest_size,
+                                uv,
+                                egui::Color32::WHITE,
+                            );
+                            is_valid = true;
+                        } else {
+                            // Invalid object ID
+                            dest = draw_invalid_object();
+                            is_valid = false;
+                        }
+                    }
+                };
+
+                if self.selected_tool == EditorTool::Cursor
+                    && ui
+                        .input()
+                        .pointer
+                        .hover_pos()
+                        .map(|hover_pos| dest.contains(hover_pos))
+                        .unwrap_or(false)
+                {
+                    if response.hovered() {
+                        painter.add(egui::Shape::rect_stroke(
+                            dest,
+                            egui::Rounding::none(),
+                            egui::Stroke::new(2., egui::Color32::GRAY),
+                        ));
+                        self.show_object_info_tooltip(egui_ctx, object, is_valid);
+                    }
+                    if response.clicked() {
+                        let click_pos = ui.input().pointer.interact_pos().unwrap();
+                        action.then_do_some(UiAction::SelectObject {
+                            index: object_idx,
+                            layer_id: layer.id.clone(),
+                            cursor_offset: dest.min - click_pos,
+                        });
+                    }
+                }
+            }
+        }
+
+        action
+    }
+
+    fn show_object_info_tooltip(
+        &self,
+        egui_ctx: &egui::Context,
+        object: &MapObject,
+        is_valid: bool,
+    ) {
+        egui::containers::show_tooltip_at_pointer(egui_ctx, egui::Id::new("object info"), |ui| {
+            ui.set_max_width(200.);
+            ui.vertical_centered(|ui| {
+                ui.heading(&object.id);
+                ui.label(egui::RichText::new(format!("{}", object.kind)).small());
+            });
+            ui.separator();
+            ui.horizontal_top(|ui| {
+                ui.label(egui::RichText::new("Position: ").weak());
+                ui.label(
+                    egui::RichText::new(format!("({}, {})", object.position.x, object.position.y))
+                        .monospace(),
+                );
+            });
+            if !is_valid {
+                ui.label(
+                    egui::RichText::new(
+                        "Object is not valid (i.e. has no valid object or texture ID)",
+                    )
+                    .color(egui::Color32::RED),
+                );
+            }
+        });
     }
 
     fn draw_level_overlays(
@@ -361,6 +397,8 @@ impl State {
                     uv,
                     egui::Color32::from_rgba_unmultiplied(0xff, 0xff, 0xff, 200),
                 );
+
+                painter.add(egui::Shape::mesh(tile_mesh));
 
                 if level_response.clicked() || level_response.dragged() {
                     let input = egui_ctx.input();

@@ -132,7 +132,7 @@ impl Window for CreateObjectWindow {
                 .keys()
                 .map(|k| k.as_str())
                 .collect::<Vec<&str>>(),
-            MapObjectKind::Environment => vec!["sproinger"],
+            MapObjectKind::Environment => vec!["sproinger", "crab"],
             MapObjectKind::Decoration => resources
                 .decoration
                 .keys()

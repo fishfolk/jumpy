@@ -21,6 +21,7 @@ pub mod particles;
 pub mod physics;
 pub mod player;
 pub mod resources;
+pub mod utils;
 
 pub mod drawables;
 

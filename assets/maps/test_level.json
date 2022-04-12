@@ -784,7 +784,24 @@
       "id": "decorations",
       "kind": "object_layer",
       "has_collision": false,
-      "objects": [],
+      "objects": [
+        {
+          "id": "anemones",
+          "kind": "decoration",
+          "position": {
+            "x": 313.01,
+            "y": 269.10092
+          }
+        },
+        {
+          "id": "seaweed",
+          "kind": "decoration",
+          "position": {
+            "x": 637.80585,
+            "y": 269.37476
+          }
+        }
+      ],
       "is_visible": true
     },
     {
@@ -792,6 +809,46 @@
       "kind": "object_layer",
       "has_collision": false,
       "objects": [
+        {
+          "id": "crab",
+          "kind": "environment",
+          "position": {
+            "x": 486.8546,
+            "y": 178.04547
+          }
+        },
+        {
+          "id": "crab",
+          "kind": "environment",
+          "position": {
+            "x": 640.52356,
+            "y": 432.3415
+          }
+        },
+        {
+          "id": "crab",
+          "kind": "environment",
+          "position": {
+            "x": 414.69,
+            "y": 305.67166
+          }
+        },
+        {
+          "id": "crab",
+          "kind": "environment",
+          "position": {
+            "x": 610.0421,
+            "y": 302.41638
+          }
+        },
+        {
+          "id": "crab",
+          "kind": "environment",
+          "position": {
+            "x": 530.3602,
+            "y": 677.60126
+          }
+        },
         {
           "id": "trident",
           "kind": "item",
@@ -804,8 +861,8 @@
           "id": "crown_hat",
           "kind": "item",
           "position": {
-            "x": 524.5,
-            "y": 408.0
+            "x": 519.0186,
+            "y": 405.68817
           }
         },
         {
@@ -892,8 +949,8 @@
           "id": "jellyfish",
           "kind": "item",
           "position": {
-            "x": 700.0,
-            "y": 650.0
+            "x": 696.2978,
+            "y": 647.9329
           }
         },
         {
@@ -1742,13 +1799,13 @@
         false
       ],
       "tile_attributes": {
+        "58": [
+          "jumpthrough"
+        ],
         "56": [
           "jumpthrough"
         ],
         "60": [
-          "jumpthrough"
-        ],
-        "58": [
           "jumpthrough"
         ]
       }

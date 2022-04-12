@@ -1,9 +1,9 @@
 pub trait EguiCompatibleVec {
-    fn to_egui(self) -> egui::Vec2;
+    fn into_egui(self) -> egui::Vec2;
 }
 
 impl EguiCompatibleVec for macroquad::math::Vec2 {
-    fn to_egui(self) -> egui::Vec2 {
+    fn into_egui(self) -> egui::Vec2 {
         egui::vec2(self.x, self.y)
     }
 }

@@ -16,6 +16,16 @@ pub struct TileSelection {
     pub tile_id: u32,
 }
 
+pub enum DraggableEntityKind {
+    Object { layer_id: String, index: usize },
+    SpawnPoint { index: usize },
+}
+
+pub struct DraggableEntity {
+    kind: DraggableEntityKind,
+    click_offset: egui::Vec2,
+}
+
 /// Contains the editor state, i.e. the data whose change is tracked by the [`ActionHistory`] of the
 /// editor.
 pub struct State {
@@ -25,6 +35,7 @@ pub struct State {
     pub selected_tile: Option<TileSelection>,
     pub is_parallax_enabled: bool,
     pub should_draw_grid: bool,
+    pub entity_being_dragged: Option<DraggableEntity>,
 }
 
 impl State {
@@ -36,6 +47,7 @@ impl State {
             selected_tile: None,
             is_parallax_enabled: true,
             should_draw_grid: true,
+            entity_being_dragged: None,
         }
     }
 

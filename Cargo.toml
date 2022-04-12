@@ -33,4 +33,3 @@ egui-macroquad = "0.9.0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "0.2.74"
-

@@ -255,14 +255,12 @@ impl Editor {
                     .apply(action, &mut self.state.map_resource.map)
                     .unwrap();
             }
-            UiAction::UpdateObject {
-                id,
+            UiAction::MoveObject {
                 index,
-                kind,
                 layer_id,
                 position,
             } => {
-                let action = actions::UpdateObject::new(layer_id, index, id, kind, position);
+                let action = actions::MoveObject::new(layer_id, index, position);
                 self.history
                     .apply(action, &mut self.state.map_resource.map)
                     .unwrap();

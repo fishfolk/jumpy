@@ -98,6 +98,10 @@ pub enum UiAction {
         index: usize,
         id: String,
         kind: MapObjectKind,
+    },
+    MoveObject {
+        layer_id: String,
+        index: usize,
         position: Vec2,
     },
     CreateSpawnPoint(Vec2),
@@ -256,6 +260,9 @@ pub use delete_object::*;
 
 mod update_object;
 pub use update_object::*;
+
+mod move_object;
+pub use move_object::*;
 
 mod create_spawn_point;
 pub use create_spawn_point::*;

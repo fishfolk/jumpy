@@ -15,44 +15,41 @@ use crate::map::MapObject;
 use crate::map::MapObjectKind;
 
 #[derive(Debug)]
-pub struct UpdateObject {
+pub struct MoveObject {
     layer_id: String,
     index: usize,
-    id: String,
-    kind: MapObjectKind,
-    object: Option<MapObject>,
+    position: Vec2,
+    old_position: Option<Vec2>,
 }
 
-impl UpdateObject {
-    pub fn new(layer_id: String, index: usize, id: String, kind: MapObjectKind) -> Self {
-        UpdateObject {
+impl MoveObject {
+    pub fn new(layer_id: String, index: usize, position: Vec2) -> Self {
+        MoveObject {
             layer_id,
             index,
-            id,
-            kind,
-            object: None,
+            position,
+            old_position: None,
         }
     }
 }
 
-impl UndoableAction for UpdateObject {
+impl UndoableAction for MoveObject {
     fn apply_to(&mut self, map: &mut Map) -> Result<()> {
         if let Some(layer) = map.layers.get_mut(&self.layer_id) {
             if let Some(object) = layer.objects.get_mut(self.index) {
-                self.object = Some(object.clone());
+                self.old_position = Some(object.position);
 
-                object.id = self.id.clone();
-                object.kind = self.kind;
+                object.position = self.position;
             } else {
                 return Err(Error::new_const(
                     ErrorKind::EditorAction,
-                    &"UpdateObject: The specified object index does not exist",
+                    &"MoveObject: The specified object index does not exist",
                 ));
             }
         } else {
             return Err(Error::new_const(
                 ErrorKind::EditorAction,
-                &"UpdateObject: The specified layer does not exist",
+                &"MoveObject: The specified layer does not exist",
             ));
         }
 
@@ -61,15 +58,15 @@ impl UndoableAction for UpdateObject {
 
     fn undo(&mut self, map: &mut Map) -> Result<()> {
         if let Some(layer) = map.layers.get_mut(&self.layer_id) {
-            if let Some(object) = self.object.take() {
-                layer.objects[self.index] = object;
+            if let Some(object) = self.old_position.take() {
+                layer.objects[self.index].position = object;
             } else {
-                return Err(Error::new_const(ErrorKind::EditorAction, &"UpdateObject: No object found on action. Undo was probably called on an action that was never applied"));
+                return Err(Error::new_const(ErrorKind::EditorAction, &"MoveObject: No old position found on action. Undo was probably called on an action that was never applied"));
             }
         } else {
             return Err(Error::new_const(
                 ErrorKind::EditorAction,
-                &"UpdateObject (Undo): The specified layer does not exist",
+                &"MoveObject (Undo): The specified layer does not exist",
             ));
         }
 

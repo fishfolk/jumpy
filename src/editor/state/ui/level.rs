@@ -234,10 +234,8 @@ impl State {
                             response.rect.min.to_vec2(),
                             level_view,
                         );
-                        action.then_do_some(UiAction::UpdateObject {
-                            id: object.id.clone(),
+                        action.then_do_some(UiAction::MoveObject {
                             index: object_idx,
-                            kind: object.kind,
                             layer_id: layer.id.clone(),
                             position: macroquad::math::Vec2::new(
                                 cursor_level_pos.x,

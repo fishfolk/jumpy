@@ -10,7 +10,9 @@ use crate::player::{
     Player, PlayerAttributes, PlayerController, PlayerEventQueue, JUMP_SOUND_ID, LAND_SOUND_ID,
     RESPAWN_DELAY,
 };
-use crate::{CollisionWorld, Item, Map, PhysicsBody, PlayerEvent, Resources};
+use crate::{
+    CollisionWorld, Drawable, DrawableKind, Item, Map, PhysicsBody, PlayerEvent, Resources,
+};
 
 const SLIDE_STOP_THRESHOLD: f32 = 2.0;
 const JUMP_FRAME_COUNT: u16 = 8;
@@ -193,16 +195,50 @@ pub fn update_player_states(world: &mut World) {
 pub fn update_player_passive_effects(world: &mut World) {
     let mut function_calls = Vec::new();
 
-    for (entity, (player, events)) in world.query::<(&mut Player, &mut PlayerEventQueue)>().iter() {
+    let mut sprites_to_spawn = Vec::new();
+    let mut sprites_to_despawn = Vec::new();
+
+    for (entity, (player, player_transform, player_drawable, events)) in world
+        .query::<(&mut Player, &Transform, &Drawable, &mut PlayerEventQueue)>()
+        .iter()
+    {
         let dt = get_frame_time();
 
         for effect in &mut player.passive_effects {
             effect.duration_timer += dt;
+
+            // Move the sprite to follow the player
+            if let Some(sprite_entity) = effect.sprite_entity {
+                let mut transform = world.get_mut::<Transform>(sprite_entity).unwrap();
+                transform.position = player_transform.position;
+            }
+
+            // Spawn the effect sprite if it hasn't been spawned yet
+            if let Some(sprite) = effect.sprite.take() {
+                let sprite_entity = world.reserve_entity();
+
+                let drawable = Drawable {
+                    draw_order: player_drawable.draw_order + 1,
+                    kind: DrawableKind::AnimatedSprite(sprite),
+                };
+
+                sprites_to_spawn.push((sprite_entity, drawable, player_transform.position));
+
+                effect.sprite_entity = Some(sprite_entity);
+            }
         }
 
-        player
-            .passive_effects
-            .retain(|effect| !effect.is_depleted());
+        player.passive_effects.retain(|effect| {
+            if effect.is_depleted() {
+                if let Some(sprite_entity) = effect.sprite_entity {
+                    sprites_to_despawn.push(sprite_entity);
+                }
+
+                false
+            } else {
+                true
+            }
+        });
 
         events.queue.push(PlayerEvent::Update { dt });
 
@@ -229,6 +265,16 @@ pub fn update_player_passive_effects(world: &mut World) {
 
     for (f, player_entity, item_entity, event) in function_calls.drain(0..) {
         f(world, player_entity, item_entity, event);
+    }
+
+    for (sprite_entity, drawable, position) in sprites_to_spawn {
+        world
+            .insert(sprite_entity, (Transform::from(position), drawable))
+            .unwrap();
+    }
+
+    for entity in sprites_to_despawn {
+        world.despawn(entity).unwrap();
     }
 }
 

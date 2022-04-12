@@ -12,5 +12,5 @@ pub use active::{ActiveEffectKind, ActiveEffectMetadata, TriggeredEffectTrigger}
 #[serde(untagged)]
 pub enum AnyEffectParams {
     Active(ActiveEffectMetadata),
-    Passive(PassiveEffectMetadata),
+    Passive(Box<PassiveEffectMetadata>),
 }

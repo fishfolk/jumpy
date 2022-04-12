@@ -149,6 +149,27 @@ pub struct AnimatedSprite {
     pub wait_timer: f32,
 }
 
+impl From<AnimatedSpriteMetadata> for AnimatedSprite {
+    fn from(meta: AnimatedSpriteMetadata) -> Self {
+        let animations = meta
+            .animations
+            .into_iter()
+            .map(Into::into)
+            .collect::<Vec<_>>();
+
+        let params = AnimatedSpriteParams {
+            scale: meta.scale.unwrap_or(1.0),
+            offset: meta.offset,
+            pivot: meta.pivot,
+            tint: meta.tint.unwrap_or(color::WHITE),
+            autoplay_id: meta.autoplay_id,
+            ..Default::default()
+        };
+
+        AnimatedSprite::new(&meta.texture_id, animations.as_slice(), params)
+    }
+}
+
 impl AnimatedSprite {
     pub fn new(texture_id: &str, animations: &[Animation], params: AnimatedSpriteParams) -> Self {
         let animations = animations.to_vec();

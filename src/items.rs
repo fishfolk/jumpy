@@ -9,8 +9,8 @@ use macroquad::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    ActiveEffectMetadata, AnimatedSprite, AnimatedSpriteMetadata, CollisionWorld, Drawable,
-    PassiveEffectMetadata, PhysicsBody, QueuedAnimationAction, Resources,
+    ActiveEffectMetadata, AnimatedSpriteMetadata, CollisionWorld, Drawable, PassiveEffectMetadata,
+    PhysicsBody, QueuedAnimationAction, Resources,
 };
 
 use core::{Result, Transform};
@@ -178,19 +178,7 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
         collider_size.y as i32,
     );
 
-    let animations = meta
-        .sprite
-        .animations
-        .clone()
-        .into_iter()
-        .map(|a| a.into())
-        .collect::<Vec<_>>();
-
-    let sprite = AnimatedSprite::new(
-        &meta.sprite.texture_id,
-        animations.as_slice(),
-        meta.sprite.clone().into(),
-    );
+    let sprite = meta.sprite.into();
 
     sprites.push((SPRITE_ANIMATED_SPRITE_ID, sprite));
 
@@ -257,20 +245,7 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
             }
 
             if let Some(effect_sprite) = meta.effect_sprite {
-                let animations = effect_sprite
-                    .animations
-                    .clone()
-                    .into_iter()
-                    .map(|a| a.into())
-                    .collect::<Vec<_>>();
-
-                let mut sprite = AnimatedSprite::new(
-                    &effect_sprite.texture_id,
-                    animations.as_slice(),
-                    effect_sprite.clone().into(),
-                );
-
-                sprite.is_deactivated = true;
+                let sprite = effect_sprite.into();
 
                 sprites.push((EFFECT_ANIMATED_SPRITE_ID, sprite));
             }

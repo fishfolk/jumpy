@@ -106,6 +106,13 @@ impl Node for EditorNode {
                 ))
             };
         }
+
+        if input.undo {
+            node.editor.apply_action(UiAction::Undo);
+        }
+        if input.redo {
+            node.editor.apply_action(UiAction::Redo);
+        }
     }
 
     fn draw(mut node: RefMut<Self>)

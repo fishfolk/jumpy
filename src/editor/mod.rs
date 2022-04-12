@@ -248,6 +248,18 @@ impl Editor {
                     .apply(action, &mut self.state.map_resource.map)
                     .unwrap();
             }
+            UiAction::UpdateObject {
+                id,
+                index,
+                kind,
+                layer_id,
+                position,
+            } => {
+                let action = actions::UpdateObject::new(layer_id, index, id, kind, position);
+                self.history
+                    .apply(action, &mut self.state.map_resource.map)
+                    .unwrap();
+            }
             UiAction::ExitToMainMenu => {
                 crate::exit_to_main_menu();
             }
@@ -264,6 +276,7 @@ impl Editor {
                     kind: state::SelectableEntityKind::Object { index, layer_id },
                 })
             }
+            UiAction::DeselectObject => self.state.selected_entity = None,
 
             _ => todo!(),
         }

@@ -26,6 +26,18 @@ pub struct SelectableEntity {
     pub click_offset: egui::Vec2,
 }
 
+impl SelectableEntityKind {
+    pub fn is_object(&self, layer_id: &str, index: usize) -> bool {
+        match self {
+            SelectableEntityKind::Object {
+                layer_id: l,
+                index: i,
+            } => l == layer_id && i == &index,
+            SelectableEntityKind::SpawnPoint { .. } => false,
+        }
+    }
+}
+
 /// Contains the editor state, i.e. the data whose change is tracked by the [`ActionHistory`] of the
 /// editor.
 pub struct State {

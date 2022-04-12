@@ -82,6 +82,7 @@ pub enum UiAction {
         layer_id: String,
         cursor_offset: egui::Vec2,
     },
+    DeselectObject,
     CreateObject {
         id: String,
         kind: MapObjectKind,

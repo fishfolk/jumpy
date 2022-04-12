@@ -37,7 +37,7 @@ impl State {
                 );
                 painter.add(egui::Shape::mesh(level_mesh));
 
-                self.draw_objects(egui_ctx, ui, &response, &painter, level_view);
+                action.then_do(self.draw_objects(egui_ctx, ui, &response, &painter, level_view));
 
                 action.then_do(
                     self.draw_level_overlays(egui_ctx, ui, &response, &painter, level_view),
@@ -216,7 +216,38 @@ impl State {
                     }
                 };
 
-                if self.selected_tool == EditorTool::Cursor
+                if self
+                    .selected_entity
+                    .as_ref()
+                    .map(|selection| selection.kind.is_object(&layer.id, object_idx))
+                    .unwrap_or(false)
+                {
+                    if response.dragged() {
+                        painter.add(egui::Shape::rect_stroke(
+                            dest,
+                            egui::Rounding::none(),
+                            egui::Stroke::new(2., egui::Color32::WHITE),
+                        ));
+                        let cursor_offset = self.selected_entity.as_ref().unwrap().click_offset;
+                        let cursor_level_pos = screen_to_world_pos(
+                            ui.input().pointer.interact_pos().unwrap() + cursor_offset,
+                            response.rect.min.to_vec2(),
+                            level_view,
+                        );
+                        action.then_do_some(UiAction::UpdateObject {
+                            id: object.id.clone(),
+                            index: object_idx,
+                            kind: object.kind,
+                            layer_id: layer.id.clone(),
+                            position: macroquad::math::Vec2::new(
+                                cursor_level_pos.x,
+                                cursor_level_pos.y,
+                            ),
+                        });
+                    } else if response.drag_released() {
+                        action.then_do_some(UiAction::DeselectObject);
+                    }
+                } else if self.selected_tool == EditorTool::Cursor
                     && ui
                         .input()
                         .pointer
@@ -232,7 +263,7 @@ impl State {
                         ));
                         self.show_object_info_tooltip(egui_ctx, object, is_valid);
                     }
-                    if response.clicked() {
+                    if response.drag_started() {
                         let click_pos = ui.input().pointer.interact_pos().unwrap();
                         action.then_do_some(UiAction::SelectObject {
                             index: object_idx,

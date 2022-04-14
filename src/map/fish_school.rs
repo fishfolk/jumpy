@@ -10,16 +10,25 @@ use macroquad::{
 use crate::{
     player::Player,
     utils::{ease::Ease, timer::Timer},
-    Drawable, PhysicsBody, Resources, RigidBody, SpriteParams,
+    AnimatedSpriteParams, Animation, Drawable, PhysicsBody, Resources, RigidBody,
 };
 
 /// The texture of the fish school icon ( used in the editor to represent a school of fish )
 pub const FISH_SCHOOL_ICON_TEXTURE_ID: &str = "fish_school_icon";
 
 /// List of fish textures
-const FISH_TEXTURE_IDS: &[&str] = &["small_fish1", "small_fish2", "small_fish3"];
+const FISH_TEXTURE_IDS: &[&str] = &[
+    "blue_tang",
+    "royal_gramma",
+    "arabian_angelfish",
+    "blue_green_chromis",
+    "banded_butterfly_fish",
+    // "small_fish1",
+    // "small_fish2",
+    // "small_fish3",
+];
 /// The default and most-likely to ocurr number of fish in a school
-const FISH_COUNT_BASE: u32 = 5;
+const FISH_COUNT_BASE: u32 = 3;
 /// The ammount greater or less than the base number of fish that may spawn
 const FISH_COUNT_RANGE: u32 = 2;
 /// The distance from the spawn point on each axis that the individual fish in the school will be
@@ -65,6 +74,10 @@ pub enum FishState {
 }
 
 pub fn spawn_fish_school(world: &mut World, spawn_position: Vec2) -> Result<Entity> {
+    let resources = storage::get::<Resources>();
+    let fish_school_icon_sprite = resources.textures.get(FISH_SCHOOL_ICON_TEXTURE_ID).unwrap();
+    let fish_school_icon_sprite_size = fish_school_icon_sprite.meta.frame_size.unwrap();
+
     let rand_bool = || rand::gen_range(0u8, 2) == 0;
 
     let mut fish_count = FISH_COUNT_BASE as i32;
@@ -78,7 +91,7 @@ pub fn spawn_fish_school(world: &mut World, spawn_position: Vec2) -> Result<Enti
     }
 
     let mut fish_school = FishSchool {
-        spawn_pos: spawn_position,
+        spawn_pos: spawn_position + fish_school_icon_sprite_size / 2.0,
         fish_entities: Vec::with_capacity(fish_count as usize),
     };
     let fish_school_entity = world.reserve_entity();
@@ -104,10 +117,18 @@ pub fn spawn_fish_school(world: &mut World, spawn_position: Vec2) -> Result<Enti
                 state_timer: Timer::new(rand::gen_range(0.2, 1.0)),
             },
             Transform::from(spawn_point),
-            Drawable::new_sprite(
+            Drawable::new_animated_sprite(
                 rand::gen_range(DRAW_ORDER_MIN, DRAW_ORDER_MAX + 1),
                 texture_id,
-                SpriteParams {
+                &[Animation {
+                    id: "default".to_string(),
+                    row: 0,
+                    frames: 4,
+                    fps: 3,
+                    tweens: Default::default(),
+                    is_looping: true,
+                }],
+                AnimatedSpriteParams {
                     is_flipped_x: rand_bool(),
                     ..Default::default()
                 },
@@ -128,7 +149,7 @@ pub fn update_fish_schools(world: &mut World) {
     for (_, school) in world.query::<&FishSchool>().iter() {
         let school: &FishSchool = school;
 
-        let school_info = if let Some(info) = get_school_info(world, &school) {
+        let school_info = if let Some(info) = get_school_info(world, school) {
             info
         } else {
             continue;
@@ -158,7 +179,7 @@ pub fn update_fish_schools(world: &mut World) {
             let (mut fish, drawable, transform) = world
                 .query_one_mut::<(&mut Fish, &mut Drawable, &mut Transform)>(*fish_entity)
                 .unwrap();
-            let sprite = drawable.get_sprite_mut().unwrap();
+            let sprite = drawable.get_animated_sprite_mut().unwrap();
             let pos: &mut Vec2 = &mut transform.position;
             let padding = 20.0;
             let rect = Rect::new(
@@ -176,7 +197,7 @@ pub fn update_fish_schools(world: &mut World) {
                 }
             }
 
-            let rand_bool = |true_bias: u8| rand::gen_range(0u8, 2 + true_bias) > 0;
+            let rand_bool = || rand::gen_range(0u8, 2) > 0;
             let rand_delay = |min, max| Timer::new(rand::gen_range(min, max));
 
             let pick_next_move = || {
@@ -190,7 +211,7 @@ pub fn update_fish_schools(world: &mut World) {
                         },
                         rand_delay(0.2, 0.7),
                     )
-                } else if rand_bool(0) {
+                } else if rand_bool() {
                     let target_point = vec2(
                         pos.x + rand::gen_range(-20.0, 20.0),
                         pos.y + rand::gen_range(-20.0, 20.0),
@@ -247,6 +268,8 @@ pub fn update_fish_schools(world: &mut World) {
                     .output();
 
                     sprite.is_flipped_x = from.x > to.x;
+                    sprite.current_frame =
+                        (sprite.animations[0].frames as f32 * lerp_progress).floor() as u32;
 
                     *pos = from.lerp(*to, lerp_progress);
                 }

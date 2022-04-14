@@ -437,6 +437,51 @@
     }
   },
   {
+    "id": "blue_tang",
+    "path": "textures/items/BlueTang(19x9).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 19,
+      "y": 9
+    }
+  },
+  {
+    "id": "royal_gramma",
+    "path": "textures/items/RoyalGramma(25x11).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 25,
+      "y": 11
+    }
+  },
+  {
+    "id": "arabian_angelfish",
+    "path": "textures/items/ArabianAngelfish(19x12).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 19,
+      "y": 12
+    }
+  },
+  {
+    "id": "blue_green_chromis",
+    "path": "textures/items/BlueGreenChromis(22x11).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 22,
+      "y": 11
+    }
+  },
+  {
+    "id": "banded_butterfly_fish",
+    "path": "textures/items/BandedButterflyFish(19x11).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 19,
+      "y": 11
+    }
+  },
+  {
     "id": "small_fish1",
     "path": "textures/items/SmallFish1(13x9).png",
     "type": "spritesheet",

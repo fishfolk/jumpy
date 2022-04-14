@@ -429,11 +429,11 @@
   },
   {
     "id": "crab",
-    "path": "textures/items/Crab(15x8).png",
+    "path": "textures/items/Crab(17x12).png",
     "type": "spritesheet",
     "sprite_size": {
-      "x": 15,
-      "y": 8
+      "x": 17,
+      "y": 12
     }
   },
   {

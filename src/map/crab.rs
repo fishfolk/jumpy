@@ -8,8 +8,8 @@ use macroquad::{
 };
 
 use crate::{
-    player::Player, utils::timer::Timer, CollisionWorld, Drawable, PhysicsBody, PhysicsBodyParams,
-    Resources,
+    player::Player, utils::timer::Timer, Animation, CollisionWorld, Drawable, PhysicsBody,
+    PhysicsBodyParams, Resources,
 };
 
 pub const CRAB_TEXTURE_ID: &str = "crab";
@@ -69,6 +69,15 @@ pub fn spawn_crab(world: &mut World, spawn_position: Vec2) -> Result<Entity> {
         size.y as i32,
     );
 
+    let crab_animations = &[Animation {
+        id: "idle".to_string(),
+        row: 0,
+        frames: 2,
+        fps: 2,
+        tweens: Default::default(),
+        is_looping: true,
+    }];
+
     Ok(world.spawn((
         Crab {
             spawn_position,
@@ -76,7 +85,12 @@ pub fn spawn_crab(world: &mut World, spawn_position: Vec2) -> Result<Entity> {
             state_timer: Timer::new(1.0),
         },
         Transform::from(spawn_position),
-        Drawable::new_sprite(DRAW_ORDER, CRAB_TEXTURE_ID, Default::default()),
+        Drawable::new_animated_sprite(
+            DRAW_ORDER,
+            CRAB_TEXTURE_ID,
+            crab_animations,
+            Default::default(),
+        ),
         PhysicsBody::new(
             actor,
             None,
@@ -169,15 +183,24 @@ pub fn update_crabs(world: &mut World) {
         }
 
         // Apply any component modifications for the current state
+        let sprite = drawable.get_animated_sprite_mut().unwrap();
         match &crab.state {
-            CrabState::Paused => body.velocity.x = 0.0,
+            CrabState::Paused => {
+                sprite.is_playing = true;
+
+                body.velocity.x = 0.0;
+            }
             CrabState::Walking { left } => {
-                drawable.get_sprite_mut().unwrap().is_flipped_x = *left;
+                sprite.is_flipped_x = *left;
+                sprite.is_playing = false;
+
                 let direction = if *left { -1.0 } else { 1.0 };
                 let speed = direction * WALK_SPEED;
                 body.velocity.x = speed;
             }
             CrabState::Running { scared_of } => {
+                sprite.is_playing = true;
+
                 let scary_pos = world.get::<Transform>(*scared_of).unwrap().position;
 
                 let direction = (pos.x - scary_pos.x).signum();

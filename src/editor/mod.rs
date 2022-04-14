@@ -1454,9 +1454,15 @@ impl Node for Editor {
                                     }
                                 }
                                 MapObjectKind::Environment => match object.id.as_str() {
-                                    "sproinger" => {
+                                    "sproinger" | "crab" | "fish_school" => {
+                                        let texture_id = match object.id.as_str() {
+                                            "sproinger" => "sproinger",
+                                            "crab" => CRAB_TEXTURE_ID,
+                                            "fish_school" => FISH_SCHOOL_ICON_TEXTURE_ID,
+                                            _ => unreachable!(),
+                                        };
                                         let texture_res =
-                                            resources.textures.get("sproinger").unwrap();
+                                            resources.textures.get(texture_id).unwrap();
 
                                         let frame_size =
                                             texture_res.meta.frame_size.unwrap_or_else(|| {
@@ -1479,30 +1485,6 @@ impl Node for Editor {
                                                 source: Some(source_rect),
                                                 ..Default::default()
                                             },
-                                        );
-                                    }
-                                    "crab" => {
-                                        let texture_res =
-                                            resources.textures.get(CRAB_TEXTURE_ID).unwrap();
-
-                                        draw_texture(
-                                            texture_res.texture,
-                                            object_position.x,
-                                            object_position.y,
-                                            color::WHITE,
-                                        );
-                                    }
-                                    "fish_school" => {
-                                        let texture_res = resources
-                                            .textures
-                                            .get(FISH_SCHOOL_ICON_TEXTURE_ID)
-                                            .unwrap();
-
-                                        draw_texture(
-                                            texture_res.texture,
-                                            object_position.x,
-                                            object_position.y,
-                                            color::WHITE,
                                         );
                                     }
                                     _ => {

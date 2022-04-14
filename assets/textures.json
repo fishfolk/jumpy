@@ -437,6 +437,51 @@
     }
   },
   {
+    "id": "small_fish1",
+    "path": "textures/items/SmallFish1(13x9).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 13,
+      "y": 9
+    }
+  },
+  {
+    "id": "small_fish1",
+    "path": "textures/items/SmallFish1(13x9).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 13,
+      "y": 9
+    }
+  },
+  {
+    "id": "small_fish2",
+    "path": "textures/items/SmallFish3(13x9).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 13,
+      "y": 9
+    }
+  },
+  {
+    "id": "small_fish3",
+    "path": "textures/items/SmallFish2(13x9).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 13,
+      "y": 9
+    }
+  },
+  {
+    "id": "fish_school_icon",
+    "path": "textures/items/FishSchoolIcon(64x64).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 64,
+      "y": 64
+    }
+  },
+  {
     "id": "sword",
     "path": "textures/items/Sword(65x93).png",
     "type": "spritesheet",

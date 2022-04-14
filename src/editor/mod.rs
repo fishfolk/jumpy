@@ -1,7 +1,11 @@
 use std::any::TypeId;
 use std::path::Path;
 
-use crate::{exit_to_main_menu, map::CRAB_TEXTURE_ID, quit_to_desktop, Resources};
+use crate::{
+    exit_to_main_menu,
+    map::{CRAB_TEXTURE_ID, FISH_SCHOOL_ICON_TEXTURE_ID},
+    quit_to_desktop, Resources,
+};
 
 mod camera;
 
@@ -1488,6 +1492,19 @@ impl Node for Editor {
                                             color::WHITE,
                                         );
                                     }
+                                    "fish_school" => {
+                                        let texture_res = resources
+                                            .textures
+                                            .get(FISH_SCHOOL_ICON_TEXTURE_ID)
+                                            .unwrap();
+
+                                        draw_texture(
+                                            texture_res.texture,
+                                            object_position.x,
+                                            object_position.y,
+                                            color::WHITE,
+                                        );
+                                    }
                                     _ => {
                                         label = Some("INVALID OBJECT ID".to_string());
                                     }
@@ -1622,6 +1639,10 @@ fn get_object_size(object: &MapObject) -> Vec2 {
             }
             "crab" => {
                 let texture_res = resources.textures.get(CRAB_TEXTURE_ID).unwrap();
+                res = texture_res.meta.frame_size;
+            }
+            "fish_school" => {
+                let texture_res = resources.textures.get(FISH_SCHOOL_ICON_TEXTURE_ID).unwrap();
                 res = texture_res.meta.frame_size;
             }
             _ => label = Some("INVALID OBJECT ID".to_string()),

@@ -810,6 +810,30 @@
       "has_collision": false,
       "objects": [
         {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 312.14642,
+            "y": 615.9121
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 466.00787,
+            "y": 497.32727
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 622.8744,
+            "y": 246.50894
+          }
+        },
+        {
           "id": "crab",
           "kind": "environment",
           "position": {
@@ -853,8 +877,8 @@
           "id": "trident",
           "kind": "item",
           "position": {
-            "x": 786.3906,
-            "y": 677.3542
+            "x": 702.3754,
+            "y": 287.63873
           }
         },
         {
@@ -946,38 +970,6 @@
           }
         },
         {
-          "id": "jellyfish",
-          "kind": "item",
-          "position": {
-            "x": 696.2978,
-            "y": 647.9329
-          }
-        },
-        {
-          "id": "galleon",
-          "kind": "item",
-          "position": {
-            "x": 500.0,
-            "y": 650.0
-          }
-        },
-        {
-          "id": "volcano",
-          "kind": "item",
-          "position": {
-            "x": 350.0,
-            "y": 650.0
-          }
-        },
-        {
-          "id": "shark_rain",
-          "kind": "item",
-          "position": {
-            "x": 300.0,
-            "y": 50.0
-          }
-        },
-        {
           "id": "grenades",
           "kind": "item",
           "position": {
@@ -999,22 +991,6 @@
           "position": {
             "x": 185.0,
             "y": 388.0
-          }
-        },
-        {
-          "id": "shoes",
-          "kind": "item",
-          "position": {
-            "x": 770.0,
-            "y": 147.0
-          }
-        },
-        {
-          "id": "curse",
-          "kind": "item",
-          "position": {
-            "x": 772.0,
-            "y": 266.0
           }
         },
         {
@@ -1047,22 +1023,6 @@
           "position": {
             "x": 769.3333,
             "y": 552.0
-          }
-        },
-        {
-          "id": "life_ring",
-          "kind": "item",
-          "position": {
-            "x": 435.33334,
-            "y": 547.3333
-          }
-        },
-        {
-          "id": "flippers",
-          "kind": "item",
-          "position": {
-            "x": 500.0,
-            "y": 650.0
           }
         },
         {
@@ -1802,10 +1762,10 @@
         "58": [
           "jumpthrough"
         ],
-        "56": [
+        "60": [
           "jumpthrough"
         ],
-        "60": [
+        "56": [
           "jumpthrough"
         ]
       }

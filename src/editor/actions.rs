@@ -129,7 +129,9 @@ pub enum UiAction {
     OpenCreateMapWindow,
     OpenMap(usize),
     OpenLoadMapWindow,
-    SaveMap(Option<String>),
+    SaveMap {
+        name: Option<String>,
+    },
     OpenSaveMapWindow,
     DeleteMap(usize),
     ExitToMainMenu,

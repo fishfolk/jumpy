@@ -4,8 +4,6 @@ use core::error::Error;
 
 use core::error::Result;
 
-use macroquad::prelude::Vec2;
-
 use crate::map::Map;
 
 use super::UndoableAction;

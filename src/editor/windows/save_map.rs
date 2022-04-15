@@ -1,14 +1,10 @@
-use std::{
-    ops::ControlFlow,
-    path::{Path, PathBuf},
-};
+use std::{ops::ControlFlow, path::Path};
 
 use macroquad::prelude::collections::storage;
 
 use crate::{
-    map::Map,
     resources::{
-        is_valid_map_export_path, map_name_to_filename, TextureKind, MAP_EXPORTS_DEFAULT_DIR,
+        is_valid_map_export_path, map_name_to_filename, MAP_EXPORTS_DEFAULT_DIR,
         MAP_EXPORTS_EXTENSION,
     },
     Resources,

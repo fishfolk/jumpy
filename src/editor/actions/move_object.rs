@@ -10,10 +10,6 @@ use crate::map::Map;
 
 use super::UndoableAction;
 
-use crate::map::MapObject;
-
-use crate::map::MapObjectKind;
-
 #[derive(Debug)]
 pub struct MoveObject {
     layer_id: String,

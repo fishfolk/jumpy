@@ -8,7 +8,7 @@ use crate::{
         view::LevelView,
     },
     map::{MapObject, MapObjectKind},
-    AnimatedSpriteMetadata, Resources, Sprite,
+    AnimatedSpriteMetadata, Resources,
 };
 
 use super::super::State;

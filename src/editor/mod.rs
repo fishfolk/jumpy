@@ -293,7 +293,7 @@ impl Editor {
                 })
             }
             UiAction::DeselectObject => self.state.selected_entity = None,
-            UiAction::SaveMap(name) => {
+            UiAction::SaveMap { name } => {
                 let mut map_resource = self.state.map_resource.clone();
 
                 if let Some(name) = name {
@@ -352,7 +352,7 @@ impl Editor {
             match window.ui(egui_ctx) {
                 ControlFlow::Continue(()) => (),
                 ControlFlow::Break(SaveMapResult::Save { name }) => {
-                    self.apply_action(UiAction::SaveMap(Some(name)));
+                    self.apply_action(UiAction::SaveMap { name: Some(name) });
                     self.save_map_window = None;
                 }
                 ControlFlow::Break(SaveMapResult::Close) => {
@@ -389,7 +389,7 @@ impl Editor {
                     self.apply_action(UiAction::OpenSaveMapWindow)
                 }
                 ControlFlow::Break(MenuResult::SaveMap) => {
-                    self.apply_action(UiAction::SaveMap(None))
+                    self.apply_action(UiAction::SaveMap { name: None })
                 }
                 ControlFlow::Break(MenuResult::ExitToMainMenu) => {
                     self.apply_action(UiAction::ExitToMainMenu)

@@ -1,4 +1,4 @@
-use std::ops::ControlFlow;
+use std::{ops::ControlFlow, path::Path};
 
 mod state;
 mod util;
@@ -17,27 +17,28 @@ pub use input::EditorInputScheme;
 
 use crate::{
     editor::{
-        state::{EditorTool, SelectableEntity, TileSelection},
+        state::{EditorTool, TileSelection},
         windows::{CreateTilesetWindow, MenuWindow},
     },
     map::{Map, MapLayerKind},
+    resources::{map_name_to_filename, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION},
+    Resources,
 };
 
 use macroquad::{
     experimental::scene::{Node, RefMut},
-    prelude::{render_target, RenderTarget},
+    prelude::{collections::storage, render_target, RenderTarget},
 };
 
 use self::{
-    state::State,
     view::LevelView,
-    windows::{CreateLayerResult, CreateTilesetResult, MenuResult},
+    windows::{CreateLayerResult, CreateTilesetResult, MenuResult, SaveMapResult},
 };
 
 use crate::resources::MapResource;
 
 pub struct Editor {
-    state: State,
+    state: state::State,
 
     level_view: LevelView,
 
@@ -46,6 +47,7 @@ pub struct Editor {
     create_layer_window: Option<windows::CreateLayerWindow>,
     create_tileset_window: Option<windows::CreateTilesetWindow>,
     menu_window: Option<windows::MenuWindow>,
+    save_map_window: Option<windows::SaveMapWindow>,
 
     level_render_target: RenderTarget,
 }
@@ -56,6 +58,7 @@ pub struct EditorNode {
     editor: Editor,
 
     accept_mouse_input: bool,
+    accept_kb_input: bool,
     input_scheme: EditorInputScheme,
 }
 
@@ -66,6 +69,7 @@ impl EditorNode {
         Self {
             editor,
             accept_mouse_input: true,
+            accept_kb_input: true,
             input_scheme,
         }
     }
@@ -75,7 +79,9 @@ impl Node for EditorNode {
     fn fixed_update(mut node: RefMut<Self>) {
         use macroquad::prelude::*;
 
-        let input = node.input_scheme.collect_input();
+        let input = node
+            .input_scheme
+            .collect_input(node.accept_kb_input, node.accept_mouse_input);
 
         node.editor.level_view.position += input.camera_move_direction * Self::CAMERA_PAN_SPEED;
 
@@ -123,7 +129,8 @@ impl Node for EditorNode {
 
         egui_macroquad::ui(|egui_ctx| {
             node.editor.ui(egui_ctx);
-            node.accept_mouse_input = !egui_ctx.wants_pointer_input()
+            node.accept_mouse_input = !egui_ctx.wants_pointer_input();
+            node.accept_kb_input = !egui_ctx.wants_keyboard_input();
         });
 
         egui_macroquad::draw();
@@ -146,7 +153,7 @@ impl Editor {
 
     pub fn new(map_resource: MapResource) -> Self {
         Self {
-            state: State::new(map_resource),
+            state: state::State::new(map_resource),
             history: ActionHistory::new(),
             level_view: LevelView {
                 position: Default::default(),
@@ -157,6 +164,7 @@ impl Editor {
             create_layer_window: None,
             create_tileset_window: None,
             menu_window: None,
+            save_map_window: None,
         }
     }
 
@@ -172,7 +180,10 @@ impl Editor {
             UiAction::SelectTool(tool) => self.state.selected_tool = tool,
             UiAction::OpenCreateLayerWindow => self.create_layer_window = Some(Default::default()),
             UiAction::OpenCreateTilesetWindow => {
-                self.create_tileset_window = Some(CreateTilesetWindow::new())
+                self.create_tileset_window = Some(CreateTilesetWindow::new());
+            }
+            UiAction::OpenSaveMapWindow => {
+                self.save_map_window = Some(windows::SaveMapWindow::new());
             }
             UiAction::CreateLayer {
                 id,
@@ -276,12 +287,32 @@ impl Editor {
                 index,
                 cursor_offset,
             } => {
-                self.state.selected_entity = Some(SelectableEntity {
+                self.state.selected_entity = Some(state::SelectableEntity {
                     click_offset: cursor_offset,
                     kind: state::SelectableEntityKind::Object { index, layer_id },
                 })
             }
             UiAction::DeselectObject => self.state.selected_entity = None,
+            UiAction::SaveMap(name) => {
+                let mut map_resource = self.state.map_resource.clone();
+
+                if let Some(name) = name {
+                    let path = Path::new(MAP_EXPORTS_DEFAULT_DIR)
+                        .join(map_name_to_filename(&name))
+                        .with_extension(MAP_EXPORTS_EXTENSION);
+
+                    map_resource.meta.name = name;
+                    map_resource.meta.path = path.to_string_lossy().to_string();
+                }
+
+                map_resource.meta.is_user_map = true;
+                map_resource.meta.is_tiled_map = false;
+
+                let mut resources = storage::get_mut::<Resources>();
+                if resources.save_map(&map_resource).is_ok() {
+                    self.state.map_resource = map_resource;
+                }
+            }
 
             _ => todo!(),
         }
@@ -317,7 +348,18 @@ impl Editor {
             }
         }
 
-        if let Some(window) = &mut self.create_tileset_window {
+        if let Some(window) = &mut self.save_map_window {
+            match window.ui(egui_ctx) {
+                ControlFlow::Continue(()) => (),
+                ControlFlow::Break(SaveMapResult::Save { name }) => {
+                    self.apply_action(UiAction::SaveMap(Some(name)));
+                    self.save_map_window = None;
+                }
+                ControlFlow::Break(SaveMapResult::Close) => {
+                    self.save_map_window = None;
+                }
+            }
+        } else if let Some(window) = &mut self.create_tileset_window {
             match window.ui(egui_ctx, &self.state.map_resource.map) {
                 ControlFlow::Continue(()) => (),
                 ControlFlow::Break(CreateTilesetResult::Create {
@@ -334,9 +376,7 @@ impl Editor {
                     self.create_tileset_window = None;
                 }
             }
-        }
-
-        if let Some(window) = &mut self.menu_window {
+        } else if let Some(window) = &mut self.menu_window {
             match window.ui(egui_ctx) {
                 ControlFlow::Continue(()) => (),
                 ControlFlow::Break(MenuResult::OpenCreateMapWindow) => {

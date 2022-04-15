@@ -30,67 +30,71 @@ pub struct EditorInput {
 }
 
 impl EditorInputScheme {
-    pub fn collect_input(&self) -> EditorInput {
+    pub fn collect_input(&self, keyboard_enabled: bool, mouse_enabled: bool) -> EditorInput {
         let mut input = EditorInput::default();
 
         match self {
             EditorInputScheme::Mouse => {
-                input.action = is_mouse_button_down(MouseButton::Left);
-                input.camera_mouse_move = is_mouse_button_down(MouseButton::Middle);
-                input.context_menu = is_mouse_button_pressed(MouseButton::Right);
+                if mouse_enabled {
+                    input.action = is_mouse_button_down(MouseButton::Left);
+                    input.camera_mouse_move = is_mouse_button_down(MouseButton::Middle);
+                    input.context_menu = is_mouse_button_pressed(MouseButton::Right);
 
-                let (_, zoom) = mouse_wheel();
-                if zoom < 0.0 {
-                    input.camera_zoom = -1.0;
-                } else if zoom > 0.0 {
-                    input.camera_zoom = 1.0;
+                    let zoom = mouse_wheel().1;
+                    if zoom < 0.0 {
+                        input.camera_zoom = -1.0;
+                    } else if zoom > 0.0 {
+                        input.camera_zoom = 1.0;
+                    }
                 }
 
-                if is_key_down(KeyCode::LeftControl) {
-                    if is_key_pressed(KeyCode::Z) {
-                        if is_key_down(KeyCode::LeftShift) {
-                            input.redo = true;
-                        } else {
-                            input.undo = true;
+                if keyboard_enabled {
+                    if is_key_down(KeyCode::LeftControl) {
+                        if is_key_pressed(KeyCode::Z) {
+                            if is_key_down(KeyCode::LeftShift) {
+                                input.redo = true;
+                            } else {
+                                input.undo = true;
+                            }
                         }
-                    }
 
-                    input.toggle_snap_to_grid = is_key_pressed(KeyCode::G);
+                        input.toggle_snap_to_grid = is_key_pressed(KeyCode::G);
 
-                    if is_key_pressed(KeyCode::S) {
-                        if is_key_down(KeyCode::LeftShift) {
-                            input.save_as = true;
-                        } else {
-                            input.save = true;
+                        if is_key_pressed(KeyCode::S) {
+                            if is_key_down(KeyCode::LeftShift) {
+                                input.save_as = true;
+                            } else {
+                                input.save = true;
+                            }
                         }
+
+                        if is_key_pressed(KeyCode::L) {
+                            input.load = true;
+                        }
+                    } else {
+                        if is_key_pressed(KeyCode::Escape) {
+                            input.toggle_menu = true;
+                            input.back = true;
+                        }
+
+                        if is_key_down(KeyCode::Left) || is_key_down(KeyCode::A) {
+                            input.camera_move_direction.x = -1.0;
+                        } else if is_key_down(KeyCode::Right) || is_key_down(KeyCode::D) {
+                            input.camera_move_direction.x = 1.0;
+                        }
+
+                        if is_key_down(KeyCode::Up) || is_key_down(KeyCode::W) {
+                            input.camera_move_direction.y = -1.0;
+                        } else if is_key_down(KeyCode::Down) || is_key_down(KeyCode::S) {
+                            input.camera_move_direction.y = 1.0;
+                        }
+
+                        input.toggle_draw_grid = is_key_pressed(KeyCode::G);
+
+                        input.toggle_disable_parallax = is_key_pressed(KeyCode::P);
+
+                        input.delete = is_key_pressed(KeyCode::Delete);
                     }
-
-                    if is_key_pressed(KeyCode::L) {
-                        input.load = true;
-                    }
-                } else {
-                    if is_key_pressed(KeyCode::Escape) {
-                        input.toggle_menu = true;
-                        input.back = true;
-                    }
-
-                    if is_key_down(KeyCode::Left) || is_key_down(KeyCode::A) {
-                        input.camera_move_direction.x = -1.0;
-                    } else if is_key_down(KeyCode::Right) || is_key_down(KeyCode::D) {
-                        input.camera_move_direction.x = 1.0;
-                    }
-
-                    if is_key_down(KeyCode::Up) || is_key_down(KeyCode::W) {
-                        input.camera_move_direction.y = -1.0;
-                    } else if is_key_down(KeyCode::Down) || is_key_down(KeyCode::S) {
-                        input.camera_move_direction.y = 1.0;
-                    }
-
-                    input.toggle_draw_grid = is_key_pressed(KeyCode::G);
-
-                    input.toggle_disable_parallax = is_key_pressed(KeyCode::P);
-
-                    input.delete = is_key_pressed(KeyCode::Delete);
                 }
             }
             EditorInputScheme::Gamepad(ix) => {

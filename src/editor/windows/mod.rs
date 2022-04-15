@@ -6,3 +6,6 @@ pub use create_tileset::*;
 
 mod menu;
 pub use menu::*;
+
+mod save_map;
+pub use save_map::*;

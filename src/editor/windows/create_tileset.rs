@@ -4,22 +4,14 @@ use macroquad::prelude::collections::storage;
 
 use crate::{map::Map, resources::TextureKind, Resources};
 
-#[derive(Default)]
 pub struct CreateTilesetWindow {
     tileset_name: String,
     texture_options: Vec<String>,
     texture_idx: usize,
 }
-pub enum CreateTilesetResult {
-    Create {
-        tileset_name: String,
-        texture: String,
-    },
-    Close,
-}
 
-impl CreateTilesetWindow {
-    pub fn new() -> Self {
+impl Default for CreateTilesetWindow {
+    fn default() -> Self {
         Self {
             tileset_name: "Unnamed Tileset".to_owned(),
             texture_options: storage::get::<Resources>()
@@ -32,7 +24,16 @@ impl CreateTilesetWindow {
             texture_idx: 0,
         }
     }
+}
+pub enum CreateTilesetResult {
+    Create {
+        tileset_name: String,
+        texture: String,
+    },
+    Close,
+}
 
+impl CreateTilesetWindow {
     pub fn ui(&mut self, egui_ctx: &egui::Context, map: &Map) -> ControlFlow<CreateTilesetResult> {
         let mut action = ControlFlow::Continue(());
 

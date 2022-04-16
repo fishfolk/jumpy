@@ -259,8 +259,7 @@ dependencies = [
 [[package]]
 name = "egui-macroquad"
 version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a600e32edf2775b3ff8017eac144f954c2db04a2d8c0eeda703f58f147c4380a"
+source = "git+https://github.com/aleokdev/egui-macroquad#d202b747954541e11bc67b15052a67d630e93801"
 dependencies = [
  "egui",
  "egui-miniquad",
@@ -270,8 +269,7 @@ dependencies = [
 [[package]]
 name = "egui-miniquad"
 version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d8f1c9544e632b65e1adb64cf01e8844c8d228d1179d18dc5525dba6718990e1"
+source = "git+https://github.com/not-fl3/egui-miniquad/?rev=8f493a03b98faf976374f8aea7d2448ffa4d115c#8f493a03b98faf976374f8aea7d2448ffa4d115c"
 dependencies = [
  "bytemuck",
  "copypasta",
@@ -522,9 +520,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.122"
+version = "0.2.123"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec647867e2bf0772e28c8bcde4f0d19a9216916e890543b5a03ed8ef27b8f259"
+checksum = "cb691a747a7ab48abc15c5b42066eaafde10dc427e3b6ee2a1cf43db04c763bd"
 
 [[package]]
 name = "libloading"
@@ -566,9 +564,9 @@ dependencies = [
 
 [[package]]
 name = "macroquad"
-version = "0.3.10"
+version = "0.3.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d54a31d3996831b27b429f8e9d7b948aa589d3571305eba39f57b4600bd2cd01"
+checksum = "e69f39283065a2ebea3ae41294a44a9d61951d255917bdcc9ada0ec97612499f"
 dependencies = [
  "bumpalo",
  "fontdue",
@@ -642,9 +640,9 @@ checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
 
 [[package]]
 name = "miniquad"
-version = "0.3.0-alpha.43"
+version = "0.3.0-alpha.45"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4b1edf0ba64f267a4cc0ba453d95da072bfa078d755917e1411e4dc20b729da8"
+checksum = "a5b39924083bf7da876e2d7125487eef77ea30f0c36a58fdfd04cb436eafaf5e"
 dependencies = [
  "sapp-android",
  "sapp-darwin",
@@ -927,9 +925,9 @@ dependencies = [
 
 [[package]]
 name = "sapp-darwin"
-version = "0.1.7"
+version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd874867dc35d9a42bba830cee0210702438082c7d6a39132ab420e6c20a5809"
+checksum = "f1282369f486bc334efa2d76fa4d54c20b37664d83da14fc60afbe941814e374"
 dependencies = [
  "cc",
 ]
@@ -960,9 +958,9 @@ checksum = "bb8ababa867431fa6c0a178248bfe7e77b5d1de357c9848883ba8e3946bb21d4"
 
 [[package]]
 name = "sapp-linux"
-version = "0.1.13"
+version = "0.1.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bbdb2f8011955c62544d9e626a58333e788810d00bd7411d52b81611b92af142"
+checksum = "dc71510a7781d8f31d58046a9117682c8e8546ad43f52c0e31275db214495c3d"
 dependencies = [
  "libc",
 ]
@@ -1162,9 +1160,9 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "0.5.8"
+version = "0.5.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a31142970826733df8241ef35dc040ef98c679ab14d7c3e54d827099b3acecaa"
+checksum = "8d82e1a7758622a465f8cee077614c73484dac5b836c02ff6a40d5d1010324d7"
 dependencies = [
  "serde",
 ]

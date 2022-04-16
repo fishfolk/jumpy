@@ -10,6 +10,7 @@ use crate::{
     Resources,
 };
 
+#[derive(Default)]
 pub struct SaveMapWindow {
     map_name: String,
     overwrite_existing: bool,

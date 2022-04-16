@@ -7,7 +7,7 @@ use crate::map::{MapBackgroundLayer, MapObjectKind};
 
 use super::state::EditorTool;
 
-/// These are all the actions available for the GUI and other sub-systems of the editor.
+/// An enum describing a set of undoable actions done within the level editor.
 /// If you need to perform multiple actions in one call, use the `Batch` variant.
 #[derive(Debug, Clone)]
 pub enum UiAction {

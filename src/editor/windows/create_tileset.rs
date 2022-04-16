@@ -4,6 +4,7 @@ use macroquad::prelude::collections::storage;
 
 use crate::{map::Map, resources::TextureKind, Resources};
 
+#[derive(Default)]
 pub struct CreateTilesetWindow {
     tileset_name: String,
     texture_options: Vec<String>,

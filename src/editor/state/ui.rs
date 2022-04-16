@@ -1,6 +1,7 @@
 mod level;
 mod side_panel;
 mod toolbar;
+mod windows;
 
 use macroquad::prelude::RenderTarget;
 
@@ -19,5 +20,6 @@ impl super::State {
         self.draw_toolbar(egui_ctx)
             .then(self.draw_side_panel(egui_ctx))
             .then(self.draw_level(egui_ctx, level_render_target, level_view))
+            .then(self.draw_windows(egui_ctx))
     }
 }

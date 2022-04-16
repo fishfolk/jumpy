@@ -1,8 +1,9 @@
 use std::ops::ControlFlow;
 
-pub struct MenuWindow {
-    can_save: bool,
-}
+use crate::map::Map;
+
+#[derive(Default)]
+pub struct MenuWindow;
 
 pub enum MenuResult {
     OpenCreateMapWindow,
@@ -14,11 +15,7 @@ pub enum MenuResult {
 }
 
 impl MenuWindow {
-    pub fn new(can_save: bool) -> Self {
-        Self { can_save }
-    }
-
-    pub fn ui(&mut self, egui_ctx: &egui::Context) -> ControlFlow<MenuResult> {
+    pub fn ui(&mut self, egui_ctx: &egui::Context, is_user_map: bool) -> ControlFlow<MenuResult> {
         let mut action = ControlFlow::Continue(());
 
         egui::Window::new("Pause")
@@ -35,7 +32,7 @@ impl MenuWindow {
                     if ui.button("Open/Import").clicked() {
                         action = ControlFlow::Break(MenuResult::OpenLoadMapWindow);
                     }
-                    ui.add_enabled_ui(self.can_save, |ui| {
+                    ui.add_enabled_ui(is_user_map, |ui| {
                         if ui.button("Save").clicked() {
                             action = ControlFlow::Break(MenuResult::SaveMap);
                         }

@@ -1,12 +1,12 @@
 use crate::{
     editor::{
         actions::{UiAction, UiActionExt},
-        state::State,
+        state::Editor,
     },
     map::MapLayerKind,
 };
 
-impl State {
+impl Editor {
     pub(super) fn draw_layer_info(&mut self, ui: &mut egui::Ui) {
         ui.heading("Layers");
         self.draw_layer_list(ui); // Draw layer list

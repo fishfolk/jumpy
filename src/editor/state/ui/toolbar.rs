@@ -3,9 +3,9 @@ use crate::{
     map::MapLayerKind,
 };
 
-use super::super::State;
+use super::super::Editor;
 
-impl State {
+impl Editor {
     pub(super) fn draw_toolbar(&mut self, egui_ctx: &egui::Context) {
         egui::SidePanel::new(egui::containers::panel::Side::Left, "Tools").show(egui_ctx, |ui| {
             let selected_layer_type = self.selected_layer_type();

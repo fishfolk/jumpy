@@ -10,9 +10,9 @@ use crate::{
     Resources,
 };
 
-use super::State;
+use super::Editor;
 
-impl State {
+impl Editor {
     pub(super) fn draw_tileset_info(&mut self, ui: &mut egui::Ui) {
         ui.heading("Tilesets");
         self.draw_tileset_list(ui); // Draw tileset list

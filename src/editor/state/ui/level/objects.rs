@@ -7,7 +7,7 @@ use crate::{
         actions::{UiAction, UiActionExt},
         state::{
             ui::level::{screen_to_world_pos, world_to_screen_pos},
-            EditorTool, ObjectSettings, State,
+            Editor, EditorTool, ObjectSettings,
         },
         util::{EguiCompatibleVec, EguiTextureHandler, MqCompatibleVec},
         view::LevelView,
@@ -16,7 +16,7 @@ use crate::{
     AnimatedSpriteMetadata, Resources,
 };
 
-impl State {
+impl Editor {
     pub(super) fn draw_level_object_placement_overlay(
         &mut self,
         egui_ctx: &egui::Context,

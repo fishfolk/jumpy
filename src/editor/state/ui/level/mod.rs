@@ -12,9 +12,9 @@ use crate::{
     Resources,
 };
 
-use super::super::State;
+use super::super::Editor;
 
-impl State {
+impl Editor {
     pub(super) fn draw_level(&mut self, egui_ctx: &egui::Context) {
         egui::CentralPanel::default()
             .frame(egui::Frame::none())

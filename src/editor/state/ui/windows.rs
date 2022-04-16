@@ -2,11 +2,11 @@ use std::ops::ControlFlow;
 
 use crate::editor::{
     actions::UiAction,
-    state::State,
+    state::Editor,
     windows::{CreateLayerResult, CreateTilesetResult, MenuResult, SaveMapResult},
 };
 
-impl State {
+impl Editor {
     pub(super) fn draw_windows(&mut self, egui_ctx: &egui::Context) {
         if let Some(window) = &mut self.create_layer_window {
             match window.ui(egui_ctx, &self.map_resource.map) {

@@ -6,7 +6,7 @@ use macroquad::prelude::{collections::storage, RenderTarget};
 
 use crate::{
     editor::actions,
-    map::{MapLayerKind, MapObjectKind},
+    map::{Map, MapLayerKind, MapObjectKind},
     resources::{
         map_name_to_filename, MapResource, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION,
     },
@@ -58,7 +58,7 @@ pub struct ObjectSettings {
     pub id: Option<String>,
 }
 
-pub struct State {
+pub struct Editor {
     pub selected_tool: EditorTool,
     pub map_resource: MapResource,
     pub selected_layer: Option<String>,
@@ -80,7 +80,7 @@ pub struct State {
     pub level_render_target: RenderTarget,
 }
 
-impl State {
+impl Editor {
     pub fn new(map_resource: MapResource) -> Self {
         Self {
             map_resource,
@@ -261,5 +261,68 @@ impl State {
 
             _ => todo!(),
         }
+    }
+
+    pub fn draw(&self) {
+        let map = &self.map_resource.map;
+        {
+            map.draw_background(None, !self.is_parallax_enabled);
+            map.draw(None, false);
+        }
+
+        if self.should_draw_grid {
+            self::draw_grid(map);
+        }
+    }
+}
+
+fn draw_grid(map: &Map) {
+    const GRID_LINE_WIDTH: f32 = 1.0;
+    const GRID_COLOR: macroquad::prelude::Color = macroquad::prelude::Color {
+        r: 1.0,
+        g: 1.0,
+        b: 1.0,
+        a: 0.25,
+    };
+
+    use macroquad::prelude::*;
+
+    let map_size = map.grid_size.as_f32() * map.tile_size;
+
+    draw_rectangle_lines(
+        map.world_offset.x,
+        map.world_offset.y,
+        map_size.x,
+        map_size.y,
+        GRID_LINE_WIDTH,
+        GRID_COLOR,
+    );
+
+    for x in 0..map.grid_size.x {
+        let begin = vec2(
+            map.world_offset.x + (x as f32 * map.tile_size.x),
+            map.world_offset.y,
+        );
+
+        let end = vec2(
+            begin.x,
+            begin.y + (map.grid_size.y as f32 * map.tile_size.y),
+        );
+
+        draw_line(begin.x, begin.y, end.x, end.y, GRID_LINE_WIDTH, GRID_COLOR)
+    }
+
+    for y in 0..map.grid_size.y {
+        let begin = vec2(
+            map.world_offset.x,
+            map.world_offset.y + (y as f32 * map.tile_size.y),
+        );
+
+        let end = vec2(
+            begin.x + (map.grid_size.x as f32 * map.tile_size.x),
+            begin.y,
+        );
+
+        draw_line(begin.x, begin.y, end.x, end.y, GRID_LINE_WIDTH, GRID_COLOR)
     }
 }

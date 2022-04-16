@@ -3,9 +3,9 @@ mod tileset;
 
 use crate::map::MapLayerKind;
 
-use super::super::State;
+use super::super::Editor;
 
-impl State {
+impl Editor {
     pub(super) fn draw_side_panel(&mut self, egui_ctx: &egui::Context) {
         egui::SidePanel::new(egui::containers::panel::Side::Right, "Side panel").show(
             egui_ctx,

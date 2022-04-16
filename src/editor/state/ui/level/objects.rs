@@ -214,7 +214,7 @@ impl State {
             }
 
             if is_this_object_selected {
-                if response.dragged() {
+                if response.dragged_by(egui::PointerButton::Primary) {
                     let cursor_offset = self.selected_map_entity.as_ref().unwrap().click_offset;
                     let cursor_level_pos = screen_to_world_pos(
                         ui.input().pointer.interact_pos().unwrap() + cursor_offset,
@@ -235,7 +235,7 @@ impl State {
             } else if can_select_object {
                 self.show_object_info_tooltip(egui_ctx, object, is_valid);
 
-                if response.drag_started() {
+                if response.drag_started() && ui.input().pointer.primary_down() {
                     let click_pos = ui.input().pointer.interact_pos().unwrap();
                     action = Some(UiAction::SelectObject {
                         index: object_idx,

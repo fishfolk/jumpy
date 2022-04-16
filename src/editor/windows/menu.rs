@@ -1,7 +1,5 @@
 use std::ops::ControlFlow;
 
-use crate::map::Map;
-
 #[derive(Default)]
 pub struct MenuWindow;
 

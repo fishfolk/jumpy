@@ -1,5 +1,3 @@
-use std::{ops::ControlFlow, path::Path};
-
 mod state;
 mod util;
 mod view;
@@ -12,28 +10,11 @@ mod input;
 
 mod history;
 
-use history::ActionHistory;
 pub use input::EditorInputScheme;
 
-use crate::{
-    editor::{
-        state::{EditorTool, TileSelection},
-        windows::{CreateTilesetWindow, MenuWindow},
-    },
-    map::{Map, MapLayerKind},
-    resources::{map_name_to_filename, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION},
-    Resources,
-};
+use crate::map::Map;
 
-use macroquad::{
-    experimental::scene::{Node, RefMut},
-    prelude::{collections::storage, render_target, RenderTarget},
-};
-
-use self::{
-    view::LevelView,
-    windows::{CreateLayerResult, CreateTilesetResult, MenuResult, SaveMapResult},
-};
+use macroquad::experimental::scene::{Node, RefMut};
 
 use crate::resources::MapResource;
 

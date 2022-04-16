@@ -1,7 +1,7 @@
 use std::ops::ControlFlow;
 
 use crate::editor::{
-    actions::{UiAction, UiActionExt},
+    actions::UiAction,
     state::State,
     windows::{CreateLayerResult, CreateTilesetResult, MenuResult, SaveMapResult},
 };

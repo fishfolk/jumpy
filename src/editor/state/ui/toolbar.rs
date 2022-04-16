@@ -1,8 +1,5 @@
 use crate::{
-    editor::{
-        actions::{UiAction, UiActionExt},
-        state::EditorTool,
-    },
+    editor::{actions::UiAction, state::EditorTool},
     map::MapLayerKind,
 };
 

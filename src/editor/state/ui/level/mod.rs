@@ -1,10 +1,10 @@
 mod objects;
 
-use macroquad::prelude::{collections::storage, RenderTarget};
+use macroquad::prelude::collections::storage;
 
 use crate::{
     editor::{
-        actions::{UiAction, UiActionExt},
+        actions::UiAction,
         state::EditorTool,
         util::{EguiCompatibleVec, EguiTextureHandler, Resizable},
         view::LevelView,

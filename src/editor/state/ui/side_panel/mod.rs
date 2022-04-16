@@ -1,10 +1,7 @@
 mod layers;
 mod tileset;
 
-use crate::{
-    editor::actions::{UiAction, UiActionExt},
-    map::MapLayerKind,
-};
+use crate::map::MapLayerKind;
 
 use super::super::State;
 

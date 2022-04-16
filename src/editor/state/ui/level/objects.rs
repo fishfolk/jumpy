@@ -21,8 +21,8 @@ impl State {
         &mut self,
         egui_ctx: &egui::Context,
         level_response: &egui::Response,
-        painter: &egui::Painter,
-        cursor_tile_pos: egui::Pos2,
+        _painter: &egui::Painter,
+        _cursor_tile_pos: egui::Pos2,
     ) {
         if let Some(settings) = &mut self.object_being_placed {
             let position =

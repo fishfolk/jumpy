@@ -21,13 +21,6 @@ pub enum SaveMapResult {
 }
 
 impl SaveMapWindow {
-    pub fn new() -> Self {
-        Self {
-            map_name: String::new(),
-            overwrite_existing: false,
-        }
-    }
-
     pub fn ui(&mut self, egui_ctx: &egui::Context) -> ControlFlow<SaveMapResult> {
         let mut action = ControlFlow::Continue(());
         let resources = storage::get::<Resources>();

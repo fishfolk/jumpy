@@ -13,11 +13,7 @@ mod history;
 pub use input::EditorInputScheme;
 pub use state::Editor;
 
-use crate::map::Map;
-
 use macroquad::experimental::scene::{Node, RefMut};
-
-use crate::resources::MapResource;
 
 /// Used to interface with macroquad. Necessary because using `node: RefMut<Self>` really limits
 /// what can be done in regards to borrowing.

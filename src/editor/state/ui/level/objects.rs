@@ -32,7 +32,7 @@ impl Editor {
                 Create,
                 Close,
                 Noop,
-            };
+            }
 
             let response = egui::Window::new("Placing object")
                 .fixed_pos(position)

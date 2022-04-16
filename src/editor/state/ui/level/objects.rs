@@ -124,22 +124,30 @@ impl Editor {
                 }
                 PlaceObjectResult::Noop => (),
             }
-        } else {
-            if self.selected_tool == EditorTool::ObjectPlacer
-                && level_response.clicked_by(egui::PointerButton::Primary)
-            {
-                let position = screen_to_world_pos(
-                    egui_ctx.input().pointer.interact_pos().unwrap(),
-                    level_response.rect.min.to_vec2(),
-                    &self.level_view,
-                );
+        }
 
-                self.object_being_placed = Some(ObjectSettings {
+        if self.selected_tool == EditorTool::ObjectPlacer
+            && (level_response.clicked_by(egui::PointerButton::Primary)
+                || level_response.dragged_by(egui::PointerButton::Primary))
+        {
+            let position = screen_to_world_pos(
+                egui_ctx.input().pointer.interact_pos().unwrap(),
+                level_response.rect.min.to_vec2(),
+                &self.level_view,
+            );
+
+            self.object_being_placed = if let Some(settings) = self.object_being_placed.take() {
+                Some(ObjectSettings {
+                    position,
+                    ..settings
+                })
+            } else {
+                Some(ObjectSettings {
                     position,
                     kind: MapObjectKind::Item,
                     id: None,
-                });
-            }
+                })
+            };
         }
     }
 

@@ -2,7 +2,7 @@ mod ui;
 
 use std::path::Path;
 
-use macroquad::prelude::collections::storage;
+use macroquad::prelude::{collections::storage, RenderTarget};
 
 use crate::{
     editor::actions,
@@ -13,7 +13,7 @@ use crate::{
     Resources,
 };
 
-use super::{actions::UiAction, history::ActionHistory, windows};
+use super::{actions::UiAction, history::ActionHistory, view::LevelView, windows};
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum EditorTool {
@@ -58,8 +58,6 @@ pub struct ObjectSettings {
     pub id: Option<String>,
 }
 
-/// Contains the editor state, i.e. the data whose change is tracked by the [`ActionHistory`] of the
-/// editor.
 pub struct State {
     pub selected_tool: EditorTool,
     pub map_resource: MapResource,
@@ -76,6 +74,10 @@ pub struct State {
     save_map_window: Option<windows::SaveMapWindow>,
 
     history: ActionHistory,
+
+    pub level_view: LevelView,
+
+    pub level_render_target: RenderTarget,
 }
 
 impl State {
@@ -96,6 +98,13 @@ impl State {
             save_map_window: None,
 
             history: ActionHistory::new(),
+
+            level_view: LevelView {
+                position: Default::default(),
+                scale: 1.,
+            },
+
+            level_render_target: macroquad::prelude::render_target(1, 1),
         }
     }
 

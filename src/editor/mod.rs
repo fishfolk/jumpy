@@ -39,10 +39,6 @@ use crate::resources::MapResource;
 
 pub struct Editor {
     state: state::State,
-
-    level_view: LevelView,
-
-    level_render_target: RenderTarget,
 }
 
 /// Used to interface with macroquad. Necessary because using `node: RefMut<Self>` really limits
@@ -76,21 +72,22 @@ impl Node for EditorNode {
             .input_scheme
             .collect_input(node.accept_kb_input, node.accept_mouse_input);
 
-        node.editor.level_view.position += input.camera_move_direction * Self::CAMERA_PAN_SPEED;
+        node.editor.state.level_view.position +=
+            input.camera_move_direction * Self::CAMERA_PAN_SPEED;
 
         let target_size = vec2(
-            node.editor.level_render_target.texture.width(),
-            node.editor.level_render_target.texture.height(),
+            node.editor.state.level_render_target.texture.width(),
+            node.editor.state.level_render_target.texture.height(),
         );
         let zoom = vec2(
-            node.editor.level_view.scale / target_size.x,
-            node.editor.level_view.scale / target_size.y,
+            node.editor.state.level_view.scale / target_size.x,
+            node.editor.state.level_view.scale / target_size.y,
         ) * 2.;
         let camera = Some(Camera2D {
             offset: vec2(-1., -1.),
-            target: node.editor.level_view.position,
+            target: node.editor.state.level_view.position,
             zoom,
-            render_target: Some(node.editor.level_render_target),
+            render_target: Some(node.editor.state.level_render_target),
             ..Camera2D::default()
         });
 
@@ -145,19 +142,11 @@ impl Editor {
     pub fn new(map_resource: MapResource) -> Self {
         Self {
             state: state::State::new(map_resource),
-            level_view: LevelView {
-                position: Default::default(),
-                scale: 1.,
-            },
-            level_render_target: render_target(1, 1),
         }
     }
 
     pub fn ui(&mut self, egui_ctx: &egui::Context) {
-        if let Some(action) =
-            self.state
-                .ui(egui_ctx, &mut self.level_render_target, &self.level_view)
-        {
+        if let Some(action) = self.state.ui(egui_ctx) {
             self.state.apply_action(action);
         }
     }

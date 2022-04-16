@@ -23,12 +23,11 @@ impl State {
         level_response: &egui::Response,
         painter: &egui::Painter,
         cursor_tile_pos: egui::Pos2,
-        level_view: &LevelView,
     ) -> Option<UiAction> {
         let mut action = None;
         if let Some(settings) = &mut self.object_being_placed {
             let position =
-                world_to_screen_pos(settings.position, level_response.rect.min, level_view);
+                world_to_screen_pos(settings.position, level_response.rect.min, &self.level_view);
 
             let mut closed_window = false;
 
@@ -114,7 +113,7 @@ impl State {
                 let position = screen_to_world_pos(
                     egui_ctx.input().pointer.interact_pos().unwrap(),
                     level_response.rect.min.to_vec2(),
-                    level_view,
+                    &self.level_view,
                 );
 
                 self.object_being_placed = Some(ObjectSettings {
@@ -133,7 +132,6 @@ impl State {
         ui: &mut egui::Ui,
         response: &egui::Response,
         painter: &egui::Painter,
-        level_view: &LevelView,
     ) -> Option<UiAction> {
         let mut action = None;
 
@@ -143,9 +141,7 @@ impl State {
             .iter()
             .filter_map(|layer_idx| self.map_resource.map.layers.get(layer_idx))
             .for_each(|layer| {
-                action.then_do(
-                    self.draw_object_layer(layer, response, painter, ui, level_view, egui_ctx),
-                );
+                action.then_do(self.draw_object_layer(layer, response, painter, ui, egui_ctx));
             });
 
         action
@@ -157,14 +153,14 @@ impl State {
         response: &egui::Response,
         painter: &egui::Painter,
         ui: &mut egui::Ui,
-        level_view: &LevelView,
         egui_ctx: &egui::Context,
     ) -> Option<UiAction> {
         let mut action = None;
         let resources = storage::get::<Resources>();
 
         for (object_idx, object) in layer.objects.iter().enumerate() {
-            let (dest, is_valid) = draw_object(object, response, level_view, painter, &resources);
+            let (dest, is_valid) =
+                draw_object(object, response, &self.level_view, painter, &resources);
 
             let is_this_object_selected;
             let can_select_object;
@@ -204,7 +200,7 @@ impl State {
                     let cursor_level_pos = screen_to_world_pos(
                         ui.input().pointer.interact_pos().unwrap() + cursor_offset,
                         response.rect.min.to_vec2(),
-                        level_view,
+                        &self.level_view,
                     );
                     action.then_do_some(UiAction::MoveObject {
                         index: object_idx,

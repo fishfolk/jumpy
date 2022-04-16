@@ -9,3 +9,10 @@ they are actions: `editor::actions::CreateLayerAction`. So instead of importing 
 the editor and directly calling them with their names, I just import the actions module and refer to
 them as `actions::CreateLayer` for instance. I think this is less redundant and also eliminates the
 need to import all used actions, as their names are shorter.
+- First, I tried to make the `ui` method in the editor state be immutable, sending *all* actions
+through `UiAction`s being returned from the function. After a lot of work, I decided against making
+it immutable. The reasoning behind this change is that passing all changes through the `UiAction`
+enum is tiring and mechanical work that doesn't always have benefits, as there are some changes
+that are *not* kept track of, such as opening windows, closing them, changing data within these
+windows, etc. As of now, changes that do not require keeping track of are performed immediately,
+while actions that do go through the history are sent through `apply_action` immediately.

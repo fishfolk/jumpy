@@ -15,18 +15,13 @@ use crate::{
 use super::super::State;
 
 impl State {
-    pub(super) fn draw_level(
-        &mut self,
-        egui_ctx: &egui::Context,
-        level_render_target: &mut RenderTarget,
-        level_view: &LevelView,
-    ) -> Option<UiAction> {
+    pub(super) fn draw_level(&mut self, egui_ctx: &egui::Context) -> Option<UiAction> {
         let mut action = None;
 
         egui::CentralPanel::default()
             .frame(egui::Frame::none())
             .show(egui_ctx, |ui| {
-                let texture_id = level_render_target.texture.egui_id();
+                let texture_id = self.level_render_target.texture.egui_id();
 
                 let (response, painter) =
                     ui.allocate_painter(ui.available_size(), egui::Sense::click_and_drag());
@@ -38,14 +33,12 @@ impl State {
                 );
                 painter.add(egui::Shape::mesh(level_mesh));
 
-                action.then_do(self.draw_objects(egui_ctx, ui, &response, &painter, level_view));
+                action.then_do(self.draw_objects(egui_ctx, ui, &response, &painter));
 
-                action.then_do(
-                    self.draw_level_overlays(egui_ctx, ui, &response, &painter, level_view),
-                );
+                action.then_do(self.draw_level_overlays(egui_ctx, ui, &response, &painter));
 
                 let (width, height) = (response.rect.width() as u32, response.rect.height() as u32);
-                level_render_target.resize_if_appropiate(width, height);
+                self.level_render_target.resize_if_appropiate(width, height);
             });
 
         action
@@ -57,7 +50,6 @@ impl State {
         ui: &mut egui::Ui,
         level_response: &egui::Response,
         painter: &egui::Painter,
-        level_view: &LevelView,
     ) -> Option<UiAction> {
         let mut action = None;
 
@@ -76,7 +68,7 @@ impl State {
             let cursor_px_pos = screen_to_world_pos(
                 cursor_screen_pos,
                 level_response.rect.min.to_vec2(),
-                level_view,
+                &self.level_view,
             );
             let cursor_tile_pos = (cursor_px_pos.to_vec2() / tile_size).floor().to_pos2();
 
@@ -85,7 +77,7 @@ impl State {
                 level_response,
                 painter,
                 cursor_tile_pos,
-                level_view,
+                &self.level_view,
             ));
 
             let level_top_left = level_response.rect.min;
@@ -102,7 +94,6 @@ impl State {
                 level_response,
                 painter,
                 cursor_tile_pos,
-                level_view,
             ));
         } else {
             action = None;

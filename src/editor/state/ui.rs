@@ -11,7 +11,7 @@ use crate::editor::{
 
 impl super::State {
     pub fn ui(
-        &self,
+        &mut self,
         egui_ctx: &egui::Context,
         level_render_target: &mut RenderTarget,
         level_view: &LevelView,

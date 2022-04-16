@@ -16,7 +16,7 @@ use super::super::State;
 
 impl State {
     pub(super) fn draw_level(
-        &self,
+        &mut self,
         egui_ctx: &egui::Context,
         level_render_target: &mut RenderTarget,
         level_view: &LevelView,
@@ -52,16 +52,23 @@ impl State {
     }
 
     fn draw_level_overlays(
-        &self,
+        &mut self,
         egui_ctx: &egui::Context,
         ui: &mut egui::Ui,
         level_response: &egui::Response,
         painter: &egui::Painter,
         level_view: &LevelView,
     ) -> Option<UiAction> {
-        let action;
+        let mut action = None;
 
-        if level_response.hovered() {
+        let level_contains_cursor = ui
+            .input()
+            .pointer
+            .hover_pos()
+            .map(|pos| level_response.rect.contains(pos))
+            .unwrap_or(false);
+
+        if level_contains_cursor {
             let map = &self.map_resource.map;
             let tile_size = map.tile_size.into_egui();
 
@@ -73,13 +80,13 @@ impl State {
             );
             let cursor_tile_pos = (cursor_px_pos.to_vec2() / tile_size).floor().to_pos2();
 
-            action = self.draw_level_placement_overlay(
+            action.then_do(self.draw_level_placement_overlay(
                 egui_ctx,
                 level_response,
                 painter,
                 cursor_tile_pos,
                 level_view,
-            );
+            ));
 
             let level_top_left = level_response.rect.min;
             self.draw_level_pointer_pos_overlay(
@@ -89,6 +96,14 @@ impl State {
                 cursor_px_pos,
                 cursor_tile_pos,
             );
+
+            action.then_do(self.draw_level_object_placement_overlay(
+                egui_ctx,
+                level_response,
+                painter,
+                cursor_tile_pos,
+                level_view,
+            ));
         } else {
             action = None;
         }

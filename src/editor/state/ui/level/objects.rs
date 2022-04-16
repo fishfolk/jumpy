@@ -7,9 +7,9 @@ use crate::{
         actions::{UiAction, UiActionExt},
         state::{
             ui::level::{screen_to_world_pos, world_to_screen_pos},
-            EditorTool, State,
+            EditorTool, ObjectSettings, State,
         },
-        util::{EguiCompatibleVec, EguiTextureHandler},
+        util::{EguiCompatibleVec, EguiTextureHandler, MqCompatibleVec},
         view::LevelView,
     },
     map::{MapObject, MapObjectKind},
@@ -17,6 +17,116 @@ use crate::{
 };
 
 impl State {
+    pub(super) fn draw_level_object_placement_overlay(
+        &mut self,
+        egui_ctx: &egui::Context,
+        level_response: &egui::Response,
+        painter: &egui::Painter,
+        cursor_tile_pos: egui::Pos2,
+        level_view: &LevelView,
+    ) -> Option<UiAction> {
+        let mut action = None;
+        if let Some(settings) = &mut self.object_being_placed {
+            let position =
+                world_to_screen_pos(settings.position, level_response.rect.min, level_view);
+
+            let mut closed_window = false;
+
+            egui::Window::new("Placing object")
+                .fixed_pos(position)
+                .collapsible(false)
+                .resizable(false)
+                .show(egui_ctx, |ui| {
+                    egui::ComboBox::new("object_kind", "Kind")
+                        .selected_text(format!("{}", settings.kind))
+                        .show_ui(ui, |ui| {
+                            ui.selectable_value(
+                                &mut settings.kind,
+                                MapObjectKind::Decoration,
+                                "Decoration",
+                            )
+                            .clicked()
+                            .then(|| settings.id = None);
+                            ui.selectable_value(
+                                &mut settings.kind,
+                                MapObjectKind::Environment,
+                                "Environment",
+                            )
+                            .clicked()
+                            .then(|| settings.id = None);
+                            ui.selectable_value(&mut settings.kind, MapObjectKind::Item, "Item")
+                                .clicked()
+                                .then(|| settings.id = None);
+                        });
+                    egui::ComboBox::new("object_id", "Id")
+                        .selected_text(settings.id.as_deref().unwrap_or("Pick one"))
+                        .show_ui(ui, |ui| {
+                            let resources = storage::get::<Resources>();
+
+                            match settings.kind {
+                                MapObjectKind::Item => resources.items.keys().for_each(|id| {
+                                    ui.selectable_value(&mut settings.id, Some(id.clone()), id);
+                                }),
+                                MapObjectKind::Environment => {
+                                    ["sproinger", "crab"].into_iter().for_each(|id| {
+                                        ui.selectable_value(
+                                            &mut settings.id,
+                                            Some(id.to_owned()),
+                                            id,
+                                        );
+                                    })
+                                }
+                                MapObjectKind::Decoration => {
+                                    resources.decoration.keys().for_each(|id| {
+                                        ui.selectable_value(&mut settings.id, Some(id.clone()), id);
+                                    })
+                                }
+                            }
+                        });
+
+                    ui.horizontal(|ui| {
+                        let create_button =
+                            ui.add_enabled(settings.id.is_some(), egui::Button::new("Create"));
+                        if create_button.clicked() {
+                            action = Some(UiAction::CreateObject {
+                                id: settings.id.as_ref().unwrap().clone(),
+                                kind: settings.kind.clone(),
+                                position: settings.position.into_macroquad(),
+                                // TODO: Include layer id in object settings
+                                layer_id: self.selected_layer.as_ref().unwrap().clone(),
+                            });
+
+                            closed_window = true;
+                        }
+                        if ui.button("Cancel").clicked() {
+                            closed_window = true;
+                        }
+                    });
+                });
+
+            if closed_window {
+                self.object_being_placed = None;
+            }
+        } else {
+            if self.selected_tool == EditorTool::ObjectPlacer
+                && level_response.clicked_by(egui::PointerButton::Primary)
+            {
+                let position = screen_to_world_pos(
+                    egui_ctx.input().pointer.interact_pos().unwrap(),
+                    level_response.rect.min.to_vec2(),
+                    level_view,
+                );
+
+                self.object_being_placed = Some(ObjectSettings {
+                    position,
+                    kind: MapObjectKind::Item,
+                    id: None,
+                });
+            }
+        }
+        action
+    }
+
     pub(super) fn draw_objects(
         &self,
         egui_ctx: &egui::Context,
@@ -58,7 +168,7 @@ impl State {
 
             let is_this_object_selected;
             let can_select_object;
-            if let Some(selected_entity) = &self.selected_entity {
+            if let Some(selected_entity) = &self.selected_map_entity {
                 is_this_object_selected = selected_entity.kind.is_object(&layer.id, object_idx);
                 can_select_object = false;
             } else {
@@ -90,7 +200,7 @@ impl State {
 
             if is_this_object_selected {
                 if response.dragged() {
-                    let cursor_offset = self.selected_entity.as_ref().unwrap().click_offset;
+                    let cursor_offset = self.selected_map_entity.as_ref().unwrap().click_offset;
                     let cursor_level_pos = screen_to_world_pos(
                         ui.input().pointer.interact_pos().unwrap() + cursor_offset,
                         response.rect.min.to_vec2(),

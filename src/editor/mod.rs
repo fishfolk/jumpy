@@ -287,12 +287,12 @@ impl Editor {
                 index,
                 cursor_offset,
             } => {
-                self.state.selected_entity = Some(state::SelectableEntity {
+                self.state.selected_map_entity = Some(state::SelectableEntity {
                     click_offset: cursor_offset,
                     kind: state::SelectableEntityKind::Object { index, layer_id },
                 })
             }
-            UiAction::DeselectObject => self.state.selected_entity = None,
+            UiAction::DeselectObject => self.state.selected_map_entity = None,
             UiAction::SaveMap { name } => {
                 let mut map_resource = self.state.map_resource.clone();
 
@@ -312,6 +312,17 @@ impl Editor {
                 if resources.save_map(&map_resource).is_ok() {
                     self.state.map_resource = map_resource;
                 }
+            }
+            UiAction::CreateObject {
+                id,
+                kind,
+                layer_id,
+                position,
+            } => {
+                let action = actions::CreateObject::new(id, kind, position, layer_id);
+                self.history
+                    .apply(action, &mut self.state.map_resource.map)
+                    .unwrap();
             }
 
             _ => todo!(),

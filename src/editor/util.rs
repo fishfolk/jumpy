@@ -8,6 +8,22 @@ impl EguiCompatibleVec for macroquad::math::Vec2 {
     }
 }
 
+pub trait MqCompatibleVec {
+    fn into_macroquad(self) -> macroquad::math::Vec2;
+}
+
+impl MqCompatibleVec for egui::Vec2 {
+    fn into_macroquad(self) -> macroquad::math::Vec2 {
+        macroquad::math::vec2(self.x, self.y)
+    }
+}
+
+impl MqCompatibleVec for egui::Pos2 {
+    fn into_macroquad(self) -> macroquad::math::Vec2 {
+        macroquad::math::vec2(self.x, self.y)
+    }
+}
+
 pub trait EguiTextureHandler {
     fn egui_id(&self) -> egui::TextureId;
 }

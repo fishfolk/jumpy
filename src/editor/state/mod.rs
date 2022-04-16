@@ -1,6 +1,9 @@
 mod ui;
 
-use crate::{map::MapLayerKind, resources::MapResource};
+use crate::{
+    map::{MapLayerKind, MapObjectKind},
+    resources::MapResource,
+};
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum EditorTool {
@@ -38,6 +41,13 @@ impl SelectableEntityKind {
     }
 }
 
+#[derive(Debug)]
+pub struct ObjectSettings {
+    pub position: egui::Pos2,
+    pub kind: MapObjectKind,
+    pub id: Option<String>,
+}
+
 /// Contains the editor state, i.e. the data whose change is tracked by the [`ActionHistory`] of the
 /// editor.
 pub struct State {
@@ -47,7 +57,8 @@ pub struct State {
     pub selected_tile: Option<TileSelection>,
     pub is_parallax_enabled: bool,
     pub should_draw_grid: bool,
-    pub selected_entity: Option<SelectableEntity>,
+    pub selected_map_entity: Option<SelectableEntity>,
+    pub object_being_placed: Option<ObjectSettings>,
 }
 
 impl State {
@@ -55,11 +66,12 @@ impl State {
         Self {
             map_resource,
             selected_tool: EditorTool::Cursor,
-            selected_layer: None,
-            selected_tile: None,
             is_parallax_enabled: true,
             should_draw_grid: true,
-            selected_entity: None,
+            selected_layer: None,
+            selected_tile: None,
+            selected_map_entity: None,
+            object_being_placed: None,
         }
     }
 

@@ -15,9 +15,7 @@ use crate::{
 use super::super::State;
 
 impl State {
-    pub(super) fn draw_level(&mut self, egui_ctx: &egui::Context) -> Option<UiAction> {
-        let mut action = None;
-
+    pub(super) fn draw_level(&mut self, egui_ctx: &egui::Context) {
         egui::CentralPanel::default()
             .frame(egui::Frame::none())
             .show(egui_ctx, |ui| {
@@ -33,15 +31,12 @@ impl State {
                 );
                 painter.add(egui::Shape::mesh(level_mesh));
 
-                action.then_do(self.draw_objects(egui_ctx, ui, &response, &painter));
-
-                action.then_do(self.draw_level_overlays(egui_ctx, ui, &response, &painter));
+                self.draw_objects(egui_ctx, ui, &response, &painter);
+                self.draw_level_overlays(egui_ctx, ui, &response, &painter);
 
                 let (width, height) = (response.rect.width() as u32, response.rect.height() as u32);
                 self.level_render_target.resize_if_appropiate(width, height);
             });
-
-        action
     }
 
     fn draw_level_overlays(
@@ -50,9 +45,7 @@ impl State {
         ui: &mut egui::Ui,
         level_response: &egui::Response,
         painter: &egui::Painter,
-    ) -> Option<UiAction> {
-        let mut action = None;
-
+    ) {
         let level_contains_cursor = ui
             .input()
             .pointer
@@ -61,8 +54,7 @@ impl State {
             .unwrap_or(false);
 
         if level_contains_cursor {
-            let map = &self.map_resource.map;
-            let tile_size = map.tile_size.into_egui();
+            let tile_size = self.map_resource.map.tile_size.into_egui();
 
             let cursor_screen_pos = ui.input().pointer.interact_pos().unwrap();
             let cursor_px_pos = screen_to_world_pos(
@@ -72,13 +64,7 @@ impl State {
             );
             let cursor_tile_pos = (cursor_px_pos.to_vec2() / tile_size).floor().to_pos2();
 
-            action.then_do(self.draw_level_placement_overlay(
-                egui_ctx,
-                level_response,
-                painter,
-                cursor_tile_pos,
-                &self.level_view,
-            ));
+            self.draw_level_placement_overlay(egui_ctx, level_response, painter, cursor_tile_pos);
 
             let level_top_left = level_response.rect.min;
             self.draw_level_pointer_pos_overlay(
@@ -89,63 +75,50 @@ impl State {
                 cursor_tile_pos,
             );
 
-            action.then_do(self.draw_level_object_placement_overlay(
+            self.draw_level_object_placement_overlay(
                 egui_ctx,
                 level_response,
                 painter,
                 cursor_tile_pos,
-            ));
-        } else {
-            action = None;
+            );
         }
-
-        action
     }
 
     fn draw_level_placement_overlay(
-        &self,
+        &mut self,
         egui_ctx: &egui::Context,
         level_response: &egui::Response,
         painter: &egui::Painter,
         cursor_tile_pos: egui::Pos2,
-        level_view: &LevelView,
-    ) -> Option<UiAction> {
-        let action;
-
-        action = match self.selected_tool {
+    ) {
+        match self.selected_tool {
             EditorTool::TilePlacer => self.draw_level_tile_placement_overlay(
                 egui_ctx,
                 level_response,
                 painter,
                 cursor_tile_pos,
-                level_view,
             ),
             // TODO: Spawnpoint placement overlay
             // TODO: Object placement overlay
-            _ => None,
+            _ => (),
         };
-
-        action
     }
 
     fn draw_level_tile_placement_overlay(
-        &self,
+        &mut self,
         egui_ctx: &egui::Context,
         level_response: &egui::Response,
         painter: &egui::Painter,
         cursor_tile_pos: egui::Pos2,
-        level_view: &LevelView,
-    ) -> Option<UiAction> {
-        let mut action = None;
-        let map = &self.map_resource.map;
-        let tile_size = map.tile_size.into_egui();
+    ) {
+        let tile_size = self.map_resource.map.tile_size.into_egui();
         let level_top_left = level_response.rect.min;
 
         if cursor_tile_pos.x >= 0. && cursor_tile_pos.y >= 0. {
             if let (Some(selected_tile), Some(selected_layer)) =
                 (&self.selected_tile, &self.selected_layer)
             {
-                let tileset = &map.tilesets[&selected_tile.tileset];
+                let tileset = &self.map_resource.map.tilesets[&selected_tile.tileset];
                 let texture_id = storage::get::<Resources>().textures[&tileset.texture_id]
                     .texture
                     .egui_id();
@@ -169,7 +142,7 @@ impl State {
                         world_to_screen_pos(
                             (cursor_tile_pos.to_vec2() * tile_size).to_pos2(),
                             level_top_left,
-                            level_view,
+                            &self.level_view,
                         ),
                         tile_size,
                     ),
@@ -182,18 +155,22 @@ impl State {
                 if level_response.clicked() || level_response.dragged() {
                     let input = egui_ctx.input();
                     if input.pointer.button_down(egui::PointerButton::Primary) {
-                        action.then_do_some(UiAction::PlaceTile {
-                            id: selected_tile.tile_id,
-                            layer_id: selected_layer.clone(),
-                            tileset_id: selected_tile.tileset.clone(),
+                        let id = selected_tile.tile_id;
+                        let layer_id = selected_layer.clone();
+                        let tileset_id = selected_tile.tileset.clone();
+                        self.apply_action(UiAction::PlaceTile {
+                            id,
+                            layer_id,
+                            tileset_id,
                             coords: macroquad::math::UVec2::new(
                                 cursor_tile_pos.x as u32,
                                 cursor_tile_pos.y as u32,
                             ),
                         });
                     } else if input.pointer.button_down(egui::PointerButton::Secondary) {
-                        action.then_do_some(UiAction::RemoveTile {
-                            layer_id: selected_layer.clone(),
+                        let layer_id = selected_layer.clone();
+                        self.apply_action(UiAction::RemoveTile {
+                            layer_id,
                             coords: macroquad::math::UVec2::new(
                                 cursor_tile_pos.x as u32,
                                 cursor_tile_pos.y as u32,
@@ -203,8 +180,6 @@ impl State {
                 }
             }
         }
-
-        action
     }
 
     fn draw_level_pointer_pos_overlay(

@@ -9,23 +9,23 @@ use crate::{
 use super::super::State;
 
 impl State {
-    pub(super) fn draw_toolbar(&self, egui_ctx: &egui::Context) -> Option<UiAction> {
-        let mut action = None;
-
+    pub(super) fn draw_toolbar(&mut self, egui_ctx: &egui::Context) {
         egui::SidePanel::new(egui::containers::panel::Side::Left, "Tools").show(egui_ctx, |ui| {
-            let tool = &self.selected_tool;
-
+            let selected_layer_type = self.selected_layer_type();
             let mut add_tool = |tool_name, tool_variant| {
                 if ui
-                    .add(egui::SelectableLabel::new(tool == &tool_variant, tool_name))
+                    .add(egui::SelectableLabel::new(
+                        self.selected_tool == tool_variant,
+                        tool_name,
+                    ))
                     .clicked()
                 {
-                    action.then_do_some(UiAction::SelectTool(tool_variant));
+                    self.apply_action(UiAction::SelectTool(tool_variant));
                 }
             };
 
             add_tool("Cursor", EditorTool::Cursor);
-            match self.selected_layer_type() {
+            match selected_layer_type {
                 Some(MapLayerKind::TileLayer) => {
                     add_tool("Tiles", EditorTool::TilePlacer);
                     add_tool("Eraser", EditorTool::Eraser);
@@ -34,7 +34,5 @@ impl State {
                 None => (),
             }
         });
-
-        action
     }
 }

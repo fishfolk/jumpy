@@ -7,9 +7,7 @@ use crate::editor::{
 };
 
 impl State {
-    pub(super) fn draw_windows(&mut self, egui_ctx: &egui::Context) -> Option<UiAction> {
-        let mut action = None;
-
+    pub(super) fn draw_windows(&mut self, egui_ctx: &egui::Context) {
         if let Some(window) = &mut self.create_layer_window {
             match window.ui(egui_ctx, &self.map_resource.map) {
                 ControlFlow::Continue(()) => (),
@@ -18,7 +16,7 @@ impl State {
                     layer_kind,
                     layer_name,
                 }) => {
-                    action.then_do_some(UiAction::CreateLayer {
+                    self.apply_action(UiAction::CreateLayer {
                         has_collision,
                         kind: layer_kind,
                         index: None,
@@ -36,7 +34,7 @@ impl State {
             match window.ui(egui_ctx) {
                 ControlFlow::Continue(()) => (),
                 ControlFlow::Break(SaveMapResult::Save { name }) => {
-                    action.then_do_some(UiAction::SaveMap { name: Some(name) });
+                    self.apply_action(UiAction::SaveMap { name: Some(name) });
                     self.save_map_window = None;
                 }
                 ControlFlow::Break(SaveMapResult::Close) => {
@@ -50,7 +48,7 @@ impl State {
                     tileset_name,
                     texture,
                 }) => {
-                    action.then_do_some(UiAction::CreateTileset {
+                    self.apply_action(UiAction::CreateTileset {
                         id: tileset_name,
                         texture_id: texture,
                     });
@@ -64,26 +62,24 @@ impl State {
             match window.ui(egui_ctx, self.map_resource.meta.is_user_map) {
                 ControlFlow::Continue(()) => (),
                 ControlFlow::Break(MenuResult::OpenCreateMapWindow) => {
-                    action.then_do_some(UiAction::OpenCreateMapWindow);
+                    todo!("Create map window");
                 }
                 ControlFlow::Break(MenuResult::OpenLoadMapWindow) => {
-                    action.then_do_some(UiAction::OpenLoadMapWindow);
+                    todo!("Open/load map window")
                 }
                 ControlFlow::Break(MenuResult::OpenSaveMapWindow) => {
-                    action.then_do_some(UiAction::OpenSaveMapWindow);
+                    self.save_map_window = Some(Default::default());
                 }
                 ControlFlow::Break(MenuResult::SaveMap) => {
-                    action.then_do_some(UiAction::SaveMap { name: None });
+                    self.apply_action(UiAction::SaveMap { name: None });
                 }
                 ControlFlow::Break(MenuResult::ExitToMainMenu) => {
-                    action.then_do_some(UiAction::ExitToMainMenu);
+                    crate::exit_to_main_menu();
                 }
                 ControlFlow::Break(MenuResult::QuitToDesktop) => {
-                    action.then_do_some(UiAction::QuitToDesktop);
+                    crate::quit_to_desktop();
                 }
             }
         }
-
-        action
     }
 }

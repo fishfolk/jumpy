@@ -13,14 +13,14 @@ use crate::{
 use super::State;
 
 impl State {
-    pub(super) fn draw_tileset_info(&self, ui: &mut egui::Ui) -> Option<UiAction> {
+    pub(super) fn draw_tileset_info(&mut self, ui: &mut egui::Ui) {
         ui.heading("Tilesets");
-        self.draw_tileset_list(ui) // Draw tileset list
-            .then(self.draw_tileset_utils(ui)) // Draw tileset utils
-            .then(self.draw_tileset_image(ui)) // Draw tileset image
+        self.draw_tileset_list(ui); // Draw tileset list
+        self.draw_tileset_utils(ui); // Draw tileset utils
+        self.draw_tileset_image(ui); // Draw tileset image
     }
 
-    fn draw_tileset_list(&self, ui: &mut egui::Ui) -> Option<UiAction> {
+    fn draw_tileset_list(&mut self, ui: &mut egui::Ui) {
         let mut action = None;
 
         ui.group(|ui| {
@@ -37,32 +37,27 @@ impl State {
             }
         });
 
-        action
+        if let Some(action) = action {
+            self.apply_action(action);
+        }
     }
 
-    fn draw_tileset_utils(&self, ui: &mut egui::Ui) -> Option<UiAction> {
-        let mut action = None;
-
+    fn draw_tileset_utils(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             if ui.button("+").clicked() {
-                action.then_do_some(UiAction::OpenCreateTilesetWindow);
+                self.create_tileset_window = Some(Default::default());
             }
             ui.add_enabled_ui(self.selected_tile.is_some(), |ui| {
                 if ui.button("-").clicked() {
-                    action.then_do_some(UiAction::DeleteTileset(
-                        self.selected_tile.as_ref().unwrap().tileset.clone(),
-                    ));
+                    let selected_tileset = self.selected_tile.as_ref().unwrap().tileset.clone();
+                    self.apply_action(UiAction::DeleteTileset(selected_tileset));
                 }
                 ui.button("Edit").on_hover_text("Does not do anything yet");
             })
         });
-
-        action
     }
 
-    fn draw_tileset_image(&self, ui: &mut egui::Ui) -> Option<UiAction> {
-        let mut action = None;
-
+    fn draw_tileset_image(&mut self, ui: &mut egui::Ui) {
         if let Some(selection) = &self.selected_tile {
             if let Some(tileset) = self.map_resource.map.tilesets.get(&selection.tileset) {
                 let tileset_texture: &TextureResource =
@@ -84,24 +79,6 @@ impl State {
                 let image_response = ui.add(image);
                 let image_bounds = image_response.rect;
 
-                if image_response.clicked() {
-                    let mouse_pos = ui.input().pointer.interact_pos().unwrap() - image_bounds.min;
-                    let tile_pos = (mouse_pos / tile_size).floor();
-                    dbg!(&tile_pos);
-                    if tile_pos.x < tileset_size.x
-                        && tile_pos.y < tileset_size.y
-                        && tile_pos.x >= 0.
-                        && tile_pos.y >= 0.
-                    {
-                        let tile_id = tile_pos.x as u32 + tile_pos.y as u32 * tileset_size.x as u32;
-
-                        action.then_do_some(UiAction::SelectTile {
-                            id: tile_id,
-                            tileset_id: selection.tileset.clone(),
-                        });
-                    }
-                }
-
                 if let EditorTool::TilePlacer = self.selected_tool {
                     let painter = ui.painter_at(image_bounds);
                     let tile_rect = egui::Rect::from_min_size(
@@ -119,9 +96,27 @@ impl State {
                         egui::Color32::BLUE.linear_multiply(0.3),
                     );
                 }
+
+                if image_response.clicked() {
+                    let mouse_pos = ui.input().pointer.interact_pos().unwrap() - image_bounds.min;
+                    let tile_pos = (mouse_pos / tile_size).floor();
+                    dbg!(&tile_pos);
+                    if tile_pos.x < tileset_size.x
+                        && tile_pos.y < tileset_size.y
+                        && tile_pos.x >= 0.
+                        && tile_pos.y >= 0.
+                    {
+                        let tile_id = tile_pos.x as u32 + tile_pos.y as u32 * tileset_size.x as u32;
+
+                        let selection_tileset = selection.tileset.clone();
+
+                        self.apply_action(UiAction::SelectTile {
+                            id: tile_id,
+                            tileset_id: selection_tileset,
+                        });
+                    }
+                }
             }
         }
-
-        action
     }
 }

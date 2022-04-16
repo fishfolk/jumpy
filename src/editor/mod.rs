@@ -146,9 +146,7 @@ impl Editor {
     }
 
     pub fn ui(&mut self, egui_ctx: &egui::Context) {
-        if let Some(action) = self.state.ui(egui_ctx) {
-            self.state.apply_action(action);
-        }
+        self.state.ui(egui_ctx);
     }
 
     pub fn draw(&self) {

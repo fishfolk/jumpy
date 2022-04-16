@@ -51,7 +51,7 @@ impl SelectableEntityKind {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ObjectSettings {
     pub position: egui::Pos2,
     pub kind: MapObjectKind,
@@ -108,6 +108,13 @@ impl State {
         }
     }
 
+    pub fn selected_layer_type(&self) -> Option<MapLayerKind> {
+        self.selected_layer
+            .as_ref()
+            .and_then(|id| self.map_resource.map.layers.get(id))
+            .map(|layer| layer.kind)
+    }
+
     pub fn apply_action(&mut self, action: UiAction) {
         dbg!(&action);
 
@@ -118,13 +125,6 @@ impl State {
             UiAction::Undo => self.history.undo(&mut self.map_resource.map).unwrap(),
             UiAction::Redo => self.history.redo(&mut self.map_resource.map).unwrap(),
             UiAction::SelectTool(tool) => self.selected_tool = tool,
-            UiAction::OpenCreateLayerWindow => self.create_layer_window = Some(Default::default()),
-            UiAction::OpenCreateTilesetWindow => {
-                self.create_tileset_window = Some(Default::default());
-            }
-            UiAction::OpenSaveMapWindow => {
-                self.save_map_window = Some(Default::default());
-            }
             UiAction::CreateLayer {
                 id,
                 kind,
@@ -216,12 +216,6 @@ impl State {
                     .apply(action, &mut self.map_resource.map)
                     .unwrap();
             }
-            UiAction::ExitToMainMenu => {
-                crate::exit_to_main_menu();
-            }
-            UiAction::QuitToDesktop => {
-                crate::quit_to_desktop();
-            }
             UiAction::SelectObject {
                 layer_id,
                 index,
@@ -267,12 +261,5 @@ impl State {
 
             _ => todo!(),
         }
-    }
-
-    pub fn selected_layer_type(&self) -> Option<MapLayerKind> {
-        self.selected_layer
-            .as_ref()
-            .and_then(|id| self.map_resource.map.layers.get(id))
-            .map(|layer| layer.kind)
     }
 }

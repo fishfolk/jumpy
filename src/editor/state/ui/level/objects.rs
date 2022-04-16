@@ -12,7 +12,7 @@ use crate::{
         util::{EguiCompatibleVec, EguiTextureHandler, MqCompatibleVec},
         view::LevelView,
     },
-    map::{MapObject, MapObjectKind},
+    map::{MapLayer, MapObject, MapObjectKind},
     AnimatedSpriteMetadata, Resources,
 };
 
@@ -23,15 +23,18 @@ impl State {
         level_response: &egui::Response,
         painter: &egui::Painter,
         cursor_tile_pos: egui::Pos2,
-    ) -> Option<UiAction> {
-        let mut action = None;
+    ) {
         if let Some(settings) = &mut self.object_being_placed {
             let position =
                 world_to_screen_pos(settings.position, level_response.rect.min, &self.level_view);
 
-            let mut closed_window = false;
+            enum PlaceObjectResult {
+                Create,
+                Close,
+                Noop,
+            };
 
-            egui::Window::new("Placing object")
+            let response = egui::Window::new("Placing object")
                 .fixed_pos(position)
                 .collapsible(false)
                 .resizable(false)
@@ -87,24 +90,39 @@ impl State {
                         let create_button =
                             ui.add_enabled(settings.id.is_some(), egui::Button::new("Create"));
                         if create_button.clicked() {
-                            action = Some(UiAction::CreateObject {
-                                id: settings.id.as_ref().unwrap().clone(),
-                                kind: settings.kind.clone(),
-                                position: settings.position.into_macroquad(),
-                                // TODO: Include layer id in object settings
-                                layer_id: self.selected_layer.as_ref().unwrap().clone(),
-                            });
-
-                            closed_window = true;
+                            return PlaceObjectResult::Create;
                         }
                         if ui.button("Cancel").clicked() {
-                            closed_window = true;
+                            return PlaceObjectResult::Close;
                         }
-                    });
+
+                        PlaceObjectResult::Noop
+                    })
                 });
 
-            if closed_window {
-                self.object_being_placed = None;
+            let result = response
+                .and_then(|r| r.inner.map(|r| r.inner))
+                .unwrap_or(PlaceObjectResult::Noop);
+
+            match result {
+                PlaceObjectResult::Create => {
+                    let id = settings.id.as_ref().unwrap().clone();
+                    let kind = settings.kind.clone();
+                    let position = settings.position.into_macroquad();
+                    // TODO: Include layer id in object settings & render it in window as well
+                    let layer_id = self.selected_layer.as_ref().unwrap().clone();
+                    self.apply_action(UiAction::CreateObject {
+                        id,
+                        kind,
+                        position,
+                        layer_id,
+                    });
+                    self.object_being_placed = None;
+                }
+                PlaceObjectResult::Close => {
+                    self.object_being_placed = None;
+                }
+                PlaceObjectResult::Noop => (),
             }
         } else {
             if self.selected_tool == EditorTool::ObjectPlacer
@@ -123,40 +141,41 @@ impl State {
                 });
             }
         }
-        action
     }
 
     pub(super) fn draw_objects(
-        &self,
+        &mut self,
         egui_ctx: &egui::Context,
         ui: &mut egui::Ui,
         response: &egui::Response,
         painter: &egui::Painter,
-    ) -> Option<UiAction> {
+    ) {
         let mut action = None;
-
-        self.map_resource
+        for layer in self
+            .map_resource
             .map
             .draw_order
             .iter()
-            .filter_map(|layer_idx| self.map_resource.map.layers.get(layer_idx))
-            .for_each(|layer| {
-                action.then_do(self.draw_object_layer(layer, response, painter, ui, egui_ctx));
-            });
+            .filter_map(|layer_id| self.map_resource.map.layers.get(layer_id))
+        {
+            action.then_do(self.draw_object_layer(layer, response, painter, ui, egui_ctx));
+        }
 
-        action
+        if let Some(action) = action {
+            self.apply_action(action);
+        }
     }
 
     fn draw_object_layer(
         &self,
-        layer: &crate::map::MapLayer,
+        layer: &MapLayer,
         response: &egui::Response,
         painter: &egui::Painter,
         ui: &mut egui::Ui,
         egui_ctx: &egui::Context,
     ) -> Option<UiAction> {
-        let mut action = None;
         let resources = storage::get::<Resources>();
+        let mut action = None;
 
         for (object_idx, object) in layer.objects.iter().enumerate() {
             let (dest, is_valid) =
@@ -202,7 +221,7 @@ impl State {
                         response.rect.min.to_vec2(),
                         &self.level_view,
                     );
-                    action.then_do_some(UiAction::MoveObject {
+                    action = Some(UiAction::MoveObject {
                         index: object_idx,
                         layer_id: layer.id.clone(),
                         position: macroquad::math::Vec2::new(
@@ -211,14 +230,14 @@ impl State {
                         ),
                     });
                 } else if response.drag_released() {
-                    action.then_do_some(UiAction::DeselectObject);
+                    action = Some(UiAction::DeselectObject);
                 }
             } else if can_select_object {
                 self.show_object_info_tooltip(egui_ctx, object, is_valid);
 
                 if response.drag_started() {
                     let click_pos = ui.input().pointer.interact_pos().unwrap();
-                    action.then_do_some(UiAction::SelectObject {
+                    action = Some(UiAction::SelectObject {
                         index: object_idx,
                         layer_id: layer.id.clone(),
                         cursor_offset: dest.min - click_pos,
@@ -226,7 +245,6 @@ impl State {
                 }
             }
         }
-
         action
     }
 

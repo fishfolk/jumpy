@@ -15,25 +15,9 @@ pub enum UiAction {
     Undo,
     Redo,
     SelectTool(EditorTool),
-    OpenBackgroundPropertiesWindow,
     UpdateBackground {
         color: Color,
         layers: Vec<MapBackgroundLayer>,
-    },
-    OpenCreateLayerWindow,
-    OpenCreateTilesetWindow,
-    OpenTilesetPropertiesWindow(String),
-    OpenCreateObjectWindow {
-        position: Vec2,
-        layer_id: String,
-    },
-    OpenObjectPropertiesWindow {
-        layer_id: String,
-        index: usize,
-    },
-    OpenTilePropertiesWindow {
-        layer_id: String,
-        index: usize,
     },
     SelectTile {
         id: u32,
@@ -61,7 +45,6 @@ pub enum UiAction {
         is_visible: bool,
     },
     SelectTileset(String),
-    OpenImportWindow(usize),
     Import {
         tilesets: Vec<MapTileset>,
         background_color: Option<Color>,
@@ -126,16 +109,11 @@ pub enum UiAction {
         tile_size: Vec2,
         grid_size: UVec2,
     },
-    OpenCreateMapWindow,
     OpenMap(usize),
-    OpenLoadMapWindow,
     SaveMap {
         name: Option<String>,
     },
-    OpenSaveMapWindow,
     DeleteMap(usize),
-    ExitToMainMenu,
-    QuitToDesktop,
 }
 
 impl UiAction {

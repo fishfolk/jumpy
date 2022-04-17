@@ -1,8 +1,8 @@
-use crate::events::Event;
+use crate::event::Event;
 
-static mut EVENTS: Vec<Event> = Vec::new();
+static mut EVENTS: Vec<Event<()>> = Vec::new();
 
-pub fn dispatch_event(event: Event) {
+pub fn dispatch_event(event: Event<()>) {
     unsafe {
         EVENTS.push(event);
     }
@@ -23,7 +23,7 @@ impl EventIterator {
 }
 
 impl Iterator for EventIterator {
-    type Item = Event;
+    type Item = Event<()>;
 
     fn next(&mut self) -> Option<Self::Item> {
         unsafe { EVENTS.pop() }

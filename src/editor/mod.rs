@@ -632,8 +632,8 @@ impl Editor {
                 delete_map(index).unwrap();
             }
             EditorAction::ExitToMainMenu => {
-                let state = MainMenuState::new();
-                dispatch_event(Event::StateTransition(Box::new(state)));
+                let state = Box::new(MainMenuState::new());
+                dispatch_event(Event::StateTransition(state));
             }
             EditorAction::QuitToDesktop => {
                 dispatch_event(Event::Quit);

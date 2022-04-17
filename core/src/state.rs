@@ -58,8 +58,6 @@ pub type GameStateDestructorFn<P: Clone> =
 
 pub type GameStateBuilderFn = fn() -> Box<dyn GameState>;
 
-const GAME_MENU_FLAG: &str = "__SHOW_GAME_MENU__";
-
 pub struct DefaultGameState<P: Clone> {
     id: String,
     world: Option<World>,
@@ -72,7 +70,7 @@ pub struct DefaultGameState<P: Clone> {
     payload: Option<P>,
     #[cfg(feature = "macroquad-backend")]
     menu: Option<Menu>,
-    builder: DefaultGameStateBuilder<P>,
+    should_draw_menu: bool,
 }
 
 impl<P: Clone> DefaultGameState<P> {
@@ -112,7 +110,7 @@ impl<P: Clone> GameState for DefaultGameState<P> {
         if self.menu.is_some()
             && (is_key_pressed(KeyCode::Escape) || is_gamepad_button_pressed(None, Button::Start))
         {
-            self.toggle_flag(GAME_MENU_FLAG);
+            self.should_draw_menu = !self.should_draw_menu;
         }
 
         for f in &mut self.updates {
@@ -136,7 +134,7 @@ impl<P: Clone> GameState for DefaultGameState<P> {
         }
 
         #[cfg(feature = "macroquad-backend")]
-        if self.has_flag(GAME_MENU_FLAG) {
+        if self.should_draw_menu {
             if let Some(menu) = &mut self.menu {
                 use macroquad::ui::root_ui;
 
@@ -302,7 +300,7 @@ impl<P: Clone> DefaultGameStateBuilder<P> {
             payload: self.payload.clone(),
             #[cfg(feature = "macroquad-backend")]
             menu: self.menu.clone(),
-            builder: self,
+            should_draw_menu: false,
         }
     }
 }

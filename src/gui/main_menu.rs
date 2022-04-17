@@ -909,11 +909,12 @@ impl GameState for MainMenuState {
         Ok(())
     }
 
-    fn draw(&mut self) -> Result<()> {
+    fn draw(&mut self, _delta_time: f32) -> Result<()> {
         if let Some(res) = self.draw_current() {
             match res {
                 MainMenuResult::LocalGame { map, players } => {
                     let state = build_state_for_game_mode(GameMode::Local, map, &players).unwrap();
+
                     dispatch_event(Event::StateTransition(Box::new(state)));
                 }
                 MainMenuResult::Editor { map: _ } => {

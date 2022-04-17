@@ -39,7 +39,16 @@ pub struct CameraImpl {
 impl CameraImpl {
     const BUFFER_CAPACITY: usize = 20;
 
-    pub fn new<P: Into<Option<Vec2>>>(_position: P, bounds: Size<u32>) -> CameraImpl {
+    pub fn new<P: Into<Option<Vec2>>>(position: P, size: Size<u32>) -> CameraImpl {
+        let position = position.into().unwrap_or(Vec2::ZERO);
+
+        let bounds = Rect::new(
+            position.x,
+            position.y,
+            size.width as f32,
+            size.height as f32,
+        );
+
         CameraImpl {
             bounds,
             follow_buffer: vec![],
@@ -53,7 +62,7 @@ impl CameraImpl {
 
 impl Default for CameraImpl {
     fn default() -> Self {
-        Self::new()
+        Self::new(None, window_size())
     }
 }
 

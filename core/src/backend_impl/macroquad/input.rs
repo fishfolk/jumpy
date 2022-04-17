@@ -1,8 +1,10 @@
-use crate::input::{KeyCode, MouseButton};
+use crate::config::config;
+use crate::input::{InputMapping, KeyCode, MouseButton};
 use crate::math::{vec2, Vec2};
+use std::borrow::Borrow;
 
-pub(crate) fn input_mapping() -> &InputMapping {
-    config().input.as_ref()
+pub(crate) fn input_mapping() -> &'static InputMapping {
+    config().input.borrow()
 }
 
 pub fn is_key_down(key_code: KeyCode) -> bool {
@@ -301,7 +303,7 @@ impl From<MouseButton> for macroquad::input::MouseButton {
             MouseButton::Left => macroquad::input::MouseButton::Left,
             MouseButton::Middle => macroquad::input::MouseButton::Middle,
             MouseButton::Right => macroquad::input::MouseButton::Right,
-            MouseButton::Unknown => macroquad::input::MouseButton::Unknown,
+            MouseButton::Unknown(..) => macroquad::input::MouseButton::Unknown,
         }
     }
 }
@@ -312,7 +314,7 @@ impl From<macroquad::input::MouseButton> for MouseButton {
             macroquad::input::MouseButton::Left => MouseButton::Left,
             macroquad::input::MouseButton::Middle => MouseButton::Middle,
             macroquad::input::MouseButton::Right => MouseButton::Right,
-            macroquad::input::MouseButton::Unknown => MouseButton::Unknown,
+            macroquad::input::MouseButton::Unknown => MouseButton::Unknown(255),
         }
     }
 }

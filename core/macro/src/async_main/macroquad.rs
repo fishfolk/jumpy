@@ -18,9 +18,9 @@ pub(crate) fn macroquad_main(
             let config = #core_crate::config::load_config_sync(&path)
                 .unwrap_or_else(|err| panic!("Error: {}", &path));
 
-            let mq = config.to_macroquad(#window_title, #core_impl::window_icon(), true):
+            let mq = config.to_macroquad(#window_title, #core_impl::window_icon(), true);
 
-            set_config(config);
+            #core_crate::config::set_config(config);
 
             mq
         }

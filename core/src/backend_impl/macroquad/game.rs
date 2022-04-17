@@ -2,41 +2,29 @@ use hecs::World;
 use macroquad::math::Rect;
 use macroquad::prelude::scene::{self, Node, RefMut};
 use macroquad::time::get_frame_time;
+use std::collections::HashMap;
 
 use crate::camera::{camera_position, Camera};
-use crate::events::Event;
+use crate::event::Event;
 use crate::map::Map;
 use crate::prelude::Transform;
-use crate::state::GameState;
+use crate::state::{GameState, GameStateBuilderFn};
 use crate::{storage, Result};
 
 pub struct Game {
     event_queue: Vec<Event<()>>,
-    states: HashMap<String, Box<dyn GameState>>,
-    current_state_id: String,
+    state: Box<dyn GameState>,
 }
 
 impl Game {
-    pub fn new(state_id: &str) -> Result<Self> {
+    pub fn new<S: 'static + GameState>(state: S) -> Result<Self> {
         Ok(Game {
             event_queue: Vec::new(),
-            states: HashMap::new(),
-            current_state_id: state_id.to_string(),
+            state: Box::new(state),
         })
     }
 
-    fn with_state<S: 'static + GameState>(self, state: S) -> Self {
-        let mut states = self.states;
-        states.insert(state.id(), state);
-
-        Game { states, ..self }
-    }
-
-    fn current_state(&mut self) -> &mut Box<dyn GameState> {
-        self.states.get()
-    }
-
-    pub fn set_state(&mut self, state_id: &str) -> Result<()> {
+    pub fn set_state(&mut self, state: Box<dyn GameState>) -> Result<()> {
         let world = self.state.end()?;
 
         self.state = state;
@@ -73,6 +61,6 @@ impl Node for Game {
     where
         Self: Sized,
     {
-        node.state.draw().unwrap();
+        node.state.draw(0.0).unwrap();
     }
 }

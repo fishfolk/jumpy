@@ -95,9 +95,8 @@ pub fn config_path() -> String {
     core_rename = "ff_core",
     window_title = "Fish Fight",
     config_path_fn = "config_path",
-    event_type = "()",
     custom_resources = "[items::MapItemMetadata, player::CharacterMetadata]",
-    backend = "internal"
+    backend = "macroquad"
 )]
 async fn main() -> Result<()> {
     let assets_dir = env::var(ASSETS_DIR_ENV_VAR).unwrap_or_else(|_| "assets/".to_string());
@@ -192,9 +191,9 @@ async fn macroquad_main() -> Result<()> {
     use gui::MainMenuState;
 
     {
-        let _camera = Camera::new();
+        let _camera = Camera::new(None, window_size());
 
-        let game = Game::new(state)?;
+        let game = Game::new(MainMenuState::new())?;
 
         scene::add_node(game);
     }
@@ -208,6 +207,7 @@ async fn macroquad_main() -> Result<()> {
                     game.set_state(state)?;
                 }
                 Event::Quit => break 'outer,
+                _ => {}
             }
         }
 

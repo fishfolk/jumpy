@@ -17,7 +17,7 @@ pub enum Event<T: 'static + Debug> {
     /// Config changed
     ConfigChanged(Config),
     /// Change game state
-    StateTransition(String, GameStateBuilderFn),
+    StateTransition(Box<dyn GameState>),
     /// Quit to desktop
     Quit,
 }
@@ -27,7 +27,7 @@ impl<T: 'static + Debug> Debug for Event<T> {
         match self {
             Event::Custom(event) => format!("Event::Custom({:?})", &event).fmt(f),
             Event::ConfigChanged(..) => format!("Event::ConfigChanged(Config)").fmt(f),
-            Event::StateTransition(id, ..) => format!("Event::StateTransition({}, fn)", id).fmt(f),
+            Event::StateTransition(..) => format!("Event::StateTransition").fmt(f),
             Event::Quit => format!("Event::Quit").fmt(f),
         }
     }

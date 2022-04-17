@@ -24,6 +24,11 @@ impl Timer {
         self.elapsed
     }
 
+    /// Return the percentage completion of the timer as a number between 0 and 1
+    pub fn progress(&self) -> f32 {
+        self.elapsed / self.duration
+    }
+
     /// Get whether or not the timer has finished
     pub fn has_finished(&self) -> bool {
         self.elapsed > self.duration

@@ -6,10 +6,12 @@ use serde::{Deserialize, Serialize};
 
 mod crab;
 mod decoration;
+mod fish_school;
 mod sproinger;
 
 pub use crab::*;
 pub use decoration::*;
+pub use fish_school::*;
 pub use sproinger::*;
 
 use core::math::URect;

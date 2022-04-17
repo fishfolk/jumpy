@@ -1,4 +1,4 @@
-use hecs::{Entity, World};
+use ff_core::ecs::{Entity, World};
 
 use ff_core::prelude::*;
 
@@ -279,7 +279,7 @@ pub enum ActiveEffectKind {
     },
 }
 
-pub fn debug_draw_active_effects(world: &mut World) -> Result<()> {
+pub fn debug_draw_active_effects(world: &mut World, _delta_time: f32) -> Result<()> {
     let mut to_remove = Vec::new();
 
     for (e, (transform, collider)) in world.query_mut::<(&Transform, &mut CircleCollider)>() {

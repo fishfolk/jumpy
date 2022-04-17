@@ -1,11 +1,11 @@
-use proc_macro2::TokenStream;
-use darling::{ast, util, FromMeta, FromAttributes, FromDeriveInput, FromField};
 use darling::ast::Data;
+use darling::{ast, util, FromAttributes, FromDeriveInput, FromField, FromMeta};
 use proc_macro2::Span;
+use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Attribute, AttributeArgs, AttrStyle, DeriveInput, Ident, parse_macro_input, Type};
+use syn::{parse_macro_input, AttrStyle, Attribute, AttributeArgs, DeriveInput, Ident, Type};
 
-use crate::CRATE_NAME;
+use crate::CORE_CRATE_NAME;
 
 const RESOURCE_ATTR: &str = "resource";
 
@@ -52,12 +52,16 @@ pub(crate) fn derive_resource_impl(input: proc_macro::TokenStream) -> proc_macro
 
     let attr_args: ResourceDeriveArgs = match ResourceDeriveArgs::from_derive_input(&input) {
         Ok(v) => v,
-        Err(e) => { return proc_macro::TokenStream::from(e.write_errors()); }
+        Err(e) => {
+            return proc_macro::TokenStream::from(e.write_errors());
+        }
     };
 
-    let crate_name_str = attr_args.crate_name.unwrap_or(CRATE_NAME.to_string());
+    let crate_name_str = attr_args.crate_name.unwrap_or(CORE_CRATE_NAME.to_string());
     let name_str = attr_args.name;
-    let name_plural_str = attr_args.name_plural.unwrap_or_else(|| format!("{}s", &name_str));
+    let name_plural_str = attr_args
+        .name_plural
+        .unwrap_or_else(|| format!("{}s", &name_str));
     let storage_name_str = name_plural_str.to_uppercase();
 
     let is_path_index = attr_args.path_index;
@@ -101,7 +105,7 @@ pub(crate) fn derive_resource_impl(input: proc_macro::TokenStream) -> proc_macro
 
     res.extend(common);
 
-     if let Some(id_name) = id_name {
+    if let Some(id_name) = id_name {
         let base = quote! {
             impl #crate_name::resources::ResourceId for #type_name {
                 fn id(&self) -> String {

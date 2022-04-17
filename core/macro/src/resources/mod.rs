@@ -1,5 +1,7 @@
+mod custom;
 mod derive;
-mod init;
 
+pub(crate) use custom::*;
 pub(crate) use derive::*;
-pub(crate) use init::*;
+
+pub(crate) const DEFAULT_EXTENSION: &str = "json";

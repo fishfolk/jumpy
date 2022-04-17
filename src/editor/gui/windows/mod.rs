@@ -22,13 +22,13 @@ pub use create_layer::CreateLayerWindow;
 pub use create_map::CreateMapWindow;
 pub use create_object::CreateObjectWindow;
 pub use create_tileset::CreateTilesetWindow;
+use ff_core::macroquad::ui::Ui;
 pub use import::ImportWindow;
 pub use load_map::LoadMapWindow;
 pub use object_properties::ObjectPropertiesWindow;
 pub use save_map::SaveMapWindow;
 pub use tile_properties::TilePropertiesWindow;
 pub use tileset_properties::TilesetPropertiesWindow;
-use ff_core::macroquad::ui::Ui;
 
 use super::{ButtonParams, EditorAction, EditorContext, Map};
 
@@ -45,8 +45,8 @@ impl WindowPosition {
     pub fn to_absolute(&self, size: Vec2) -> Vec2 {
         match self {
             WindowPosition::Centered => {
-                let viewport = get_viewport();
-                let screen_size = vec2(viewport.width, viewport.height);
+                let viewport_size = viewport_size().as_f32();
+                let screen_size = vec2(viewport_size.width, viewport_size.height);
                 (screen_size - size) / 2.0
             }
             WindowPosition::Absolute(position) => *position,

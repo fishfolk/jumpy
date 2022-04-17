@@ -5,20 +5,21 @@ use std::path::{Path, PathBuf};
 use std::time::Instant;
 use std::{env, fs};
 
-use fishsticks::GamepadContext;
+use ff_core::input::GamepadContext;
 
 //use ultimate::UltimateApi;
 
 use ff_core::prelude::*;
 
-#[cfg(not(feature = "ultimate"))]
+#[cfg(feature = "macroquad")]
 pub mod editor;
-#[cfg(not(feature = "ultimate"))]
+#[cfg(feature = "macroquad")]
 mod gui;
 
-#[cfg(not(feature = "ultimate"))]
+#[cfg(feature = "macroquad")]
 use ff_core::gui::GuiTheme;
 
+pub mod camera;
 pub mod debug;
 pub mod effects;
 pub mod game;
@@ -33,20 +34,19 @@ pub use physics::*;
 
 // use network::api::Api;
 
-#[cfg(not(feature = "ultimate"))]
+#[cfg(feature = "macroquad")]
 use editor::{Editor, EditorCamera};
 
 use ff_core::map::{Map, MapLayerKind, MapObjectKind};
-
-use ff_core::Result;
 
 pub use ff_core::Config;
 pub use items::Item;
 
 pub use ff_core::prelude::*;
 
-pub use game::GameCamera;
+pub use game::Camera;
 
+pub use player::character::get_character;
 pub use player::PlayerEvent;
 
 use crate::effects::passive::init_passive_effects;
@@ -56,8 +56,6 @@ use crate::game::{
 };
 pub use effects::{ActiveEffectKind, ActiveEffectMetadata, PassiveEffect, PassiveEffectMetadata};
 use ff_core::particles::{draw_particles, update_particle_emitters};
-
-pub type CollisionWorld = macroquad_platformer::World;
 
 const CONFIG_FILE_ENV_VAR: &str = "FISHFIGHT_CONFIG";
 const ASSETS_DIR_ENV_VAR: &str = "FISHFIGHT_ASSETS";
@@ -74,14 +72,13 @@ use crate::network::{
     update_network_host,
 };
 use crate::player::{
-    draw_weapons_hud, spawn_player, update_player_animations, update_player_camera_box,
-    update_player_controllers, update_player_events, update_player_inventory,
-    update_player_passive_effects, update_player_states, CharacterMetadata, PlayerControllerKind,
-    PlayerParams,
+    draw_weapons_hud, spawn_player, update_player_animations, update_player_controllers,
+    update_player_events, update_player_inventory, update_player_passive_effects,
+    update_player_states, CharacterMetadata, PlayerControllerKind, PlayerParams,
 };
 use crate::sproinger::fixed_update_sproingers;
 
-fn config_path() -> String {
+pub fn config_path() -> String {
     let path = env::var(CONFIG_FILE_ENV_VAR)
         .map(PathBuf::from)
         .unwrap_or_else(|_| {
@@ -94,53 +91,111 @@ fn config_path() -> String {
     path.to_string_lossy().to_string()
 }
 
-init_resources!(
-    "ff_core",
-    "json",
-    [items::MapItemMetadata, player::CharacterMetadata,]
-);
-
-#[ff_core::main(
-    crate_name = "ff_core",
+#[ff_core::async_main(
+    core_rename = "ff_core",
     window_title = "Fish Fight",
     config_path_fn = "config_path",
-    backend = "macroquad"
+    event_type = "()",
+    custom_resources = "[items::MapItemMetadata, player::CharacterMetadata]",
+    backend = "internal"
 )]
 async fn main() -> Result<()> {
-    let assets_dir = env::var(ASSETS_DIR_ENV_VAR).unwrap_or_else(|_| "./assets".to_string());
-    let mods_dir = env::var(MODS_DIR_ENV_VAR).unwrap_or_else(|_| "./mods".to_string());
+    let assets_dir = env::var(ASSETS_DIR_ENV_VAR).unwrap_or_else(|_| "assets/".to_string());
+    let mods_dir = env::var(MODS_DIR_ENV_VAR).unwrap_or_else(|_| "mods/".to_string());
 
-    ff_core::rand::srand(0);
+    init_core(0, assets_dir.as_str(), mods_dir.as_str()).await?;
 
-    load_resources(&assets_dir, &mods_dir).await?;
+    load_resources().await?;
 
     init_passive_effects();
 
-    init_gamepad_context().await?;
+    init_gamepad_context().await.unwrap();
 
-    #[cfg(feature = "ultimate")]
-    ultimate_main().await?;
-    #[cfg(not(feature = "ultimate"))]
-    macroquad_main().await?;
+    ff_core::cfg_if! {
+        if #[cfg(feature = "macroquad")] {
+            macroquad_main().await?;
+        } else  if #[cfg(feature = "ultimate")] {
+            ultimate_main().await?;
+        } else {
+            internal_main().await?;
+        }
+    }
 
     Ok(())
 }
 
-#[cfg(not(feature = "ultimate"))]
+#[cfg(not(any(feature = "macroquad", feature = "ultimate")))]
+async fn internal_main() -> Result<()> {
+    let map_resource = get_map(0).clone();
+    let players = &[
+        PlayerParams {
+            index: 0,
+            controller: PlayerControllerKind::LocalInput(GameInputScheme::KeyboardLeft),
+            character: get_character(0).clone(),
+        },
+        PlayerParams {
+            index: 1,
+            controller: PlayerControllerKind::LocalInput(GameInputScheme::KeyboardLeft),
+            character: get_character(1).clone(),
+        },
+    ];
+
+    let config = load_config(config_path()).await?;
+
+    let state = build_state_for_game_mode(GameMode::Local, map_resource.map, players)?;
+
+    let mut game = Game::new(WINDOW_TITLE, &config, state);
+
+    game.run(new_event_loop(), DefaultEventHandler).await?;
+
+    Ok(())
+}
+
+#[cfg(feature = "ultimate")]
+async fn ultimate_main() -> Result<()> {
+    #[cfg(target_arch = "wasm32")]
+    console_error_panic_hook::set_once();
+
+    // let mut api = UltimateApi::init().await.unwrap();
+
+    let map_resource = get_map(0).clone();
+    let players = &[
+        PlayerParams {
+            index: 0,
+            controller: PlayerControllerKind::LocalInput(GameInputScheme::KeyboardLeft),
+            character: get_character(0).clone(),
+        },
+        PlayerParams {
+            index: 1,
+            controller: PlayerControllerKind::LocalInput(GameInputScheme::KeyboardLeft),
+            character: get_character(1).clone(),
+        },
+    ];
+
+    let state = build_state_for_game_mode(GameMode::Local, map_resource.map, players)?;
+
+    let mut game = Game::new(WINDOW_TITLE);
+
+    game.run(state)?;
+
+    Ok(())
+}
+
+#[cfg(feature = "macroquad")]
 async fn macroquad_main() -> Result<()> {
+    use ff_core::macroquad::experimental::scene;
     use ff_core::macroquad::window::clear_background;
     use ff_core::macroquad::window::next_frame;
-    use ff_core::scene;
 
-    use crate::game::Game;
-
-    use ff_core::events::iter_events;
+    use ff_core::event::iter_events;
 
     use gui::MainMenuState;
 
     {
-        let state = MainMenuState::new();
-        let game = Game::new(None, Box::new(state))?;
+        let _camera = Camera::new();
+
+        let game = Game::new(state)?;
+
         scene::add_node(game);
     }
 
@@ -148,14 +203,11 @@ async fn macroquad_main() -> Result<()> {
         #[allow(clippy::never_loop)]
         for event in iter_events() {
             match event {
-                GameEvent::StateTransition(state) => {
+                Event::StateTransition(state) => {
                     let mut game = scene::find_node_by_type::<Game>().unwrap();
                     game.set_state(state)?;
                 }
-                GameEvent::ReloadResources => {
-                    reload_resources().await?;
-                }
-                GameEvent::Quit => break 'outer,
+                Event::Quit => break 'outer,
             }
         }
 
@@ -167,114 +219,6 @@ async fn macroquad_main() -> Result<()> {
     scene::clear();
 
     stop_music();
-
-    Ok(())
-}
-
-#[cfg(feature = "ultimate")]
-async fn ultimate_main() -> Result<()> {
-    #[cfg(target_arch = "wasm32")]
-    console_error_panic_hook::set_once();
-
-    const FIXED_DELTA_TIME: f32 = 1.0 / 120.0;
-
-    let draw_delta_time = 1.0 / config.rendering.max_fps.unwrap_or(0) as f32;
-
-    let mut window = create_window(WINDOW_TITLE, None, &config.window)?;
-
-    // let mut api = UltimateApi::init().await.unwrap();
-
-    let map_resource = get_map(0).clone();
-    let players = &[
-        PlayerParams {
-            index: 0,
-            controller: PlayerControllerKind::LocalInput(GameInputScheme::KeyboardLeft),
-            character: get_character(0),
-        },
-        PlayerParams {
-            index: 1,
-            controller: PlayerControllerKind::LocalInput(GameInputScheme::KeyboardLeft),
-            character: get_character(1),
-        },
-    ];
-
-    let mut game_state = Box::new(build_state_for_game_mode(
-        GameMode::Local,
-        map_resource.map,
-        players,
-    ));
-
-    'outer: loop {
-        let mut last_update = Instant::now();
-        let mut last_fixed_update = Instant::now();
-        let mut last_draw = Instant::now();
-
-        let mut fixed_accumulator = 0.0;
-
-        'inner: loop {
-            let now = Instant::now();
-
-            #[allow(clippy::never_loop)]
-            for event in iter_events() {
-                match event {
-                    GameEvent::StateTransition(state) => {
-                        let world = game_state.end()?;
-
-                        game_state = state;
-                        game_state.begin(world)?;
-
-                        break 'inner;
-                    }
-                    GameEvent::ReloadResources => reload_resources().await,
-                    GameEvent::Quit => break 'outer,
-                }
-            }
-
-            update_gamepad_context()?;
-
-            let delta_time = now.duration_since(last_update).as_secs_f32();
-
-            game_state.update(delta_time);
-
-            last_update = now;
-
-            fixed_accumulator += delta_time;
-
-            while fixed_accumulator >= FIXED_DELTA_TIME {
-                fixed_accumulator -= FIXED_DELTA_TIME;
-
-                let integration_factor = if fixed_accumulator >= FIXED_DELTA_TIME {
-                    1.0
-                } else {
-                    fixed_accumulator / FIXED_DELTA_TIME
-                };
-
-                game_state.fixed_update(FIXED_DELTA_TIME, integration_factor);
-
-                last_fixed_update = now;
-            }
-
-            {
-                let draw_dt = now.duration_since(last_draw).as_secs_f32();
-
-                if draw_dt >= draw_delta_time {
-                    let mut camera = storage::get_mut::<GameCamera>();
-                    camera.update();
-
-                    {
-                        let map = storage::get::<Map>();
-                        map.draw(None, true);
-                    }
-
-                    game_state.draw();
-
-                    last_draw = now;
-                }
-            }
-        }
-
-        stop_music();
-    }
 
     Ok(())
 }

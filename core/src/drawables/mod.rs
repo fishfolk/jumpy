@@ -133,7 +133,7 @@ pub enum DrawableKind {
     AnimatedSpriteSet(AnimatedSpriteSet),
 }
 
-pub fn draw_drawables(world: &mut World) -> Result<()> {
+pub fn draw_drawables(world: &mut World, _delta_time: f32) -> Result<()> {
     let mut ordered = world
         .query_mut::<&Drawable>()
         .into_iter()
@@ -148,21 +148,21 @@ pub fn draw_drawables(world: &mut World) -> Result<()> {
 
         match drawable.kind.borrow_mut() {
             DrawableKind::Sprite(sprite) => {
-                draw_one_sprite(&transform, sprite)?;
+                draw_one_sprite(&transform, sprite);
             }
             DrawableKind::SpriteSet(sprite_set) => {
                 for id in sprite_set.draw_order.iter() {
                     let sprite = sprite_set.map.get(id).unwrap();
-                    draw_one_sprite(&transform, sprite)?;
+                    draw_one_sprite(&transform, sprite);
                 }
             }
             DrawableKind::AnimatedSprite(sprite) => {
-                draw_one_animated_sprite(&transform, sprite)?;
+                draw_one_animated_sprite(&transform, sprite);
             }
             DrawableKind::AnimatedSpriteSet(sprite_set) => {
                 for id in sprite_set.draw_order.iter() {
                     let sprite = sprite_set.map.get(id).unwrap();
-                    draw_one_animated_sprite(&transform, sprite)?;
+                    draw_one_animated_sprite(&transform, sprite);
                 }
             }
         }
@@ -171,7 +171,7 @@ pub fn draw_drawables(world: &mut World) -> Result<()> {
     Ok(())
 }
 
-pub fn debug_draw_drawables(world: &mut World) -> Result<()> {
+pub fn debug_draw_drawables(world: &mut World, _delta_time: f32) -> Result<()> {
     let mut ordered = world
         .query_mut::<&Drawable>()
         .into_iter()
@@ -187,21 +187,21 @@ pub fn debug_draw_drawables(world: &mut World) -> Result<()> {
 
         match drawable.kind.borrow() {
             DrawableKind::Sprite(sprite) => {
-                debug_draw_one_sprite(position, sprite)?;
+                debug_draw_one_sprite(position, sprite);
             }
             DrawableKind::SpriteSet(sprite_set) => {
                 for id in sprite_set.draw_order.iter() {
                     let sprite = sprite_set.map.get(id).unwrap();
-                    debug_draw_one_sprite(position, sprite)?;
+                    debug_draw_one_sprite(position, sprite);
                 }
             }
             DrawableKind::AnimatedSprite(sprite) => {
-                debug_draw_one_animated_sprite(position, sprite)?;
+                debug_draw_one_animated_sprite(position, sprite);
             }
             DrawableKind::AnimatedSpriteSet(sprite_set) => {
                 for id in sprite_set.draw_order.iter() {
                     let sprite = sprite_set.map.get(id).unwrap();
-                    debug_draw_one_animated_sprite(position, sprite)?;
+                    debug_draw_one_animated_sprite(position, sprite);
                 }
             }
         }

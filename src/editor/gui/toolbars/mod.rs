@@ -2,7 +2,7 @@ use std::{any::TypeId, collections::HashMap};
 
 use ff_core::prelude::*;
 
-use ff_core::gui::{ELEMENT_MARGIN, get_gui_theme};
+use ff_core::gui::{get_gui_theme, ELEMENT_MARGIN};
 use ff_core::map::Map;
 
 use super::{ButtonParams, EditorAction, EditorContext};
@@ -25,10 +25,10 @@ pub use tileset_details::TilesetDetailsElement;
 
 mod object_list;
 
-pub use object_list::ObjectListElement;
 use crate::GuiTheme;
 use ff_core::macroquad::hash;
-use ff_core::macroquad::ui::{Ui, widgets};
+use ff_core::macroquad::ui::{widgets, Ui};
+pub use object_list::ObjectListElement;
 
 #[derive(Debug, Default, Clone)]
 pub struct ToolbarElementParams {
@@ -114,13 +114,13 @@ impl Toolbar {
     pub fn get_rect(&self) -> Rect {
         let mut offset = 0.0;
 
-        let viewport = get_viewport();
+        let viewport_size = viewport_size().as_f32();
 
         if self.position == ToolbarPosition::Right {
-            offset += viewport.width - self.width;
+            offset += viewport_size.width - self.width;
         }
 
-        Rect::new(offset, 0.0, self.width, viewport.height)
+        Rect::new(offset, 0.0, self.width, viewport_size.height)
     }
 
     pub fn contains(&self, point: Vec2) -> bool {
@@ -136,15 +136,15 @@ impl Toolbar {
             ui.push_skin(&gui_theme.toolbar);
         }
 
-        let viewport = get_viewport();
+        let viewport_size = viewport_size().as_f32();
 
         let mut position = Vec2::ZERO;
         if self.position == ToolbarPosition::Right {
-            position.x += viewport.width - self.width;
+            position.x += viewport_size.width - self.width;
         }
 
         let toolbar_id = hash!(self.position);
-        let toolbar_size = vec2(self.width, viewport.height);
+        let toolbar_size = vec2(self.width, viewport_size.height);
 
         widgets::Group::new(toolbar_id, toolbar_size)
             .position(position)
@@ -174,8 +174,7 @@ impl Toolbar {
                         let element_id = hash!(toolbar_id, element_id);
 
                         let element_size = {
-                            let viewport = get_viewport();
-                            let height = viewport.height * height_factor;
+                            let height = viewport_size.height * height_factor;
                             vec2(self.width, height)
                         };
 
@@ -284,9 +283,7 @@ impl Toolbar {
 
                                             if button.action.is_none() {
                                                 let gui_theme = get_gui_theme();
-                                                ui.push_skin(
-                                                    &gui_theme.toolbar_button_disabled,
-                                                );
+                                                ui.push_skin(&gui_theme.toolbar_button_disabled);
                                             }
 
                                             let was_clicked = widgets::Button::new(button.label)

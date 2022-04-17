@@ -2,16 +2,15 @@ use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use std::path::Path;
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use quad_snd::{AudioContext as QuadAudioContext, PlaySoundParams, Sound as QuadSound};
 
 use crate::audio::AudioKind::Other;
-use crate::config::get_config;
 
-use crate::Result;
 use crate::file::load_file;
 use crate::resources::get_sound;
+use crate::{Config, Result};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum AudioKind {
@@ -71,17 +70,23 @@ impl From<String> for AudioKind {
 
 impl From<usize> for AudioKind {
     fn from(id: usize) -> Self {
-        let ctx = get_audio_context();
+        let ctx = audio_context();
         ctx.audio_kind_map
             .iter()
-            .find_map(|(key, value)| if *key == id { Some(value.clone()) } else { None })
+            .find_map(|(key, value)| {
+                if *key == id {
+                    Some(value.clone())
+                } else {
+                    None
+                }
+            })
             .unwrap_or_else(|| panic!("Attempted to get audio kind from unknown id '{}'", &id))
     }
 }
 
 impl From<&AudioKind> for usize {
     fn from(kind: &AudioKind) -> Self {
-        let ctx = get_audio_context();
+        let ctx = audio_context();
         ctx.audio_kind_map
             .iter()
             .find_map(|(key, value)| if *kind == *value { Some(*key) } else { None })
@@ -110,17 +115,17 @@ pub struct Sound {
 
 impl Sound {
     pub fn kind(&self) -> &AudioKind {
-        let ctx = get_audio_context();
+        let ctx = audio_context();
         ctx.audio_kind_map.get(&self.kind).unwrap()
     }
 
     pub fn play(&self, should_loop: bool) {
-        let ctx = get_audio_context();
+        let ctx = audio_context();
         ctx.play(self, should_loop);
     }
 
     pub fn stop(&self) {
-        let ctx = get_audio_context();
+        let ctx = audio_context();
         ctx.stop(self)
     }
 
@@ -147,7 +152,10 @@ fn byte_from_volume(volume: f32) -> u8 {
 pub struct AudioConfig {
     #[serde(rename = "master-volume", default = "AudioConfig::default_volume")]
     pub master_volume: u8,
-    #[serde(rename = "sound-effect-volume", default = "AudioConfig::default_volume")]
+    #[serde(
+        rename = "sound-effect-volume",
+        default = "AudioConfig::default_volume"
+    )]
     pub sound_effect_volume: u8,
     #[serde(rename = "music-volume", default = "AudioConfig::default_volume")]
     pub music_volume: u8,
@@ -182,8 +190,14 @@ struct AudioContext {
     volumes: HashMap<AudioKind, f32>,
 }
 
+impl Default for AudioContext {
+    fn default() -> Self {
+        Self::new(&AudioConfig::default())
+    }
+}
+
 impl AudioContext {
-    fn new() -> Self {
+    fn new(config: &AudioConfig) -> Self {
         let mut ctx = AudioContext {
             next_id: 0,
             quad_ctx: QuadAudioContext::new(),
@@ -194,16 +208,13 @@ impl AudioContext {
             volumes: HashMap::new(),
         };
 
-        let config = get_config();
-        ctx.apply_config(&config.audio);
+        ctx.apply_config(config);
+
         ctx
     }
 
     fn volume_for(&self, kind: &AudioKind) -> f32 {
-        self.volumes
-            .get(kind)
-            .copied()
-            .unwrap_or(1.0)
+        self.volumes.get(kind).copied().unwrap_or(1.0)
     }
 
     fn set_master_volume(&mut self, volume: f32) {
@@ -226,10 +237,13 @@ impl AudioContext {
         let volume = sound.volume_modifier * self.volume_for(sound.kind()) * self.master_volume;
 
         let quad_sound = self.quad_sounds.get_mut(&sound.id).unwrap();
-        quad_sound.play(&mut self.quad_ctx, PlaySoundParams {
-            volume,
-            looped: should_loop,
-        })
+        quad_sound.play(
+            &mut self.quad_ctx,
+            PlaySoundParams {
+                volume,
+                looped: should_loop,
+            },
+        )
     }
 
     fn stop(&mut self, sound: &Sound) {
@@ -259,15 +273,21 @@ impl AudioContext {
         self.volumes.clear();
 
         self.audio_kind_map.insert(0, AudioKind::SoundEffect);
-        self.volumes.insert(AudioKind::SoundEffect, volume_from_byte(config.sound_effect_volume));
+        self.volumes.insert(
+            AudioKind::SoundEffect,
+            volume_from_byte(config.sound_effect_volume),
+        );
 
         self.audio_kind_map.insert(1, AudioKind::Music);
-        self.volumes.insert(AudioKind::Music, volume_from_byte(config.music_volume));
+        self.volumes
+            .insert(AudioKind::Music, volume_from_byte(config.music_volume));
 
         let mut next_id = 2;
         for (key, &value) in &config.other_volumes {
-            self.audio_kind_map.insert(next_id, AudioKind::Other(key.clone()));
-            self.volumes.insert(AudioKind::Other(key.clone()), volume_from_byte(value));
+            self.audio_kind_map
+                .insert(next_id, AudioKind::Other(key.clone()));
+            self.volumes
+                .insert(AudioKind::Other(key.clone()), volume_from_byte(value));
             next_id += 1;
         }
     }
@@ -277,7 +297,8 @@ impl AudioContext {
             master_volume: byte_from_volume(self.master_volume),
             sound_effect_volume: byte_from_volume(self.volume_for(&AudioKind::SoundEffect)),
             music_volume: byte_from_volume(self.volume_for(&AudioKind::Music)),
-            other_volumes: self.volumes
+            other_volumes: self
+                .volumes
                 .iter()
                 .filter_map(|(k, &v)| match k {
                     AudioKind::Other(str) => Some((str.clone(), byte_from_volume(v))),
@@ -290,17 +311,21 @@ impl AudioContext {
 
 static mut AUDIO_CONTEXT: Option<AudioContext> = None;
 
-fn get_audio_context() -> &'static mut AudioContext {
-    unsafe { AUDIO_CONTEXT.get_or_insert_with(AudioContext::new) }
+fn audio_context() -> &'static mut AudioContext {
+    unsafe { AUDIO_CONTEXT.get_or_insert_with(AudioContext::default) }
+}
+
+pub(crate) fn apply_audio_config(config: &AudioConfig) {
+    audio_context().apply_config(config);
 }
 
 pub fn set_master_volume(volume: f32) {
-    let ctx = get_audio_context();
+    let ctx = audio_context();
     ctx.set_master_volume(volume);
 }
 
 pub fn set_volume_for(kind: &AudioKind, volume: f32) {
-    let ctx = get_audio_context();
+    let ctx = audio_context();
     ctx.set_volume_for(kind, volume);
 }
 
@@ -315,12 +340,12 @@ pub fn stop_sound(id: &str) {
 }
 
 pub fn stop_music() {
-    let ctx = get_audio_context();
+    let ctx = audio_context();
     ctx.stop_music();
 }
 
 pub fn load_sound_bytes<K: Into<Option<AudioKind>>>(bytes: &[u8], kind: K) -> Sound {
-    let ctx = get_audio_context();
+    let ctx = audio_context();
     let quad_sound = QuadSound::load(&mut ctx.quad_ctx, bytes);
 
     #[cfg(target_arch = "wasm32")]
@@ -333,10 +358,7 @@ pub fn load_sound_bytes<K: Into<Option<AudioKind>>>(bytes: &[u8], kind: K) -> So
 
     ctx.quad_sounds.insert(id, quad_sound);
 
-    let kind = kind
-        .into()
-        .unwrap_or_default()
-        .into();
+    let kind = kind.into().unwrap_or_default().into();
 
     Sound {
         id,
@@ -345,7 +367,10 @@ pub fn load_sound_bytes<K: Into<Option<AudioKind>>>(bytes: &[u8], kind: K) -> So
     }
 }
 
-pub async fn load_sound_file<P: AsRef<Path>, K: Into<Option<AudioKind>>>(path: P, kind: K) -> Result<Sound> {
+pub async fn load_sound_file<P: AsRef<Path>, K: Into<Option<AudioKind>>>(
+    path: P,
+    kind: K,
+) -> Result<Sound> {
     let bytes = load_file(path).await?;
     let sound = load_sound_bytes(&bytes, kind);
     Ok(sound)

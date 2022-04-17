@@ -1,8 +1,8 @@
 use macroquad::shapes::{draw_circle_lines, draw_rectangle_lines};
 use macroquad::texture::draw_texture_ex;
 
-use crate::color::{Color, colors};
-use crate::math::{Vec2, Rect, Circle};
+use crate::color::{colors, Color};
+use crate::math::{Circle, Rect, Vec2};
 use crate::rendering::DrawTextureParams;
 use crate::texture::Texture2D;
 
@@ -15,7 +15,7 @@ pub fn draw_texture(x: f32, y: f32, texture: Texture2D, params: DrawTextureParam
 impl From<DrawTextureParams> for macroquad::texture::DrawTextureParams {
     fn from(params: DrawTextureParams) -> Self {
         macroquad::texture::DrawTextureParams {
-            dest_size: params.dest_size.map(|s | Vec2::from(s)),
+            dest_size: params.dest_size.map(|s| Vec2::from(s)),
             source: params.source,
             rotation: params.rotation,
             flip_x: params.flip_x,

@@ -1,4 +1,4 @@
-use hecs::{Entity, World};
+use ff_core::ecs::{Entity, World};
 
 use serde::{Deserialize, Serialize};
 

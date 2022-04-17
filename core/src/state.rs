@@ -1,19 +1,30 @@
 use cfg_if::cfg_if;
-use fishsticks::Button;
 use hecs::World;
-use std::borrow::BorrowMut;
-use std::collections::HashMap;
+
+use std::any::{Any, TypeId};
+use std::borrow::{Borrow, BorrowMut};
+use std::collections::HashSet;
+use std::hash::Hash;
+use std::ops::{Deref, DerefMut};
+use std::process::Output;
+use std::rc::Rc;
+use std::slice::{Iter, IterMut};
 
 use serde::{Deserialize, Serialize};
 
-use crate::ecs::{DrawSystemFn, FixedUpdateSystemFn, UpdateSystemFn};
-use crate::events::GameEvent;
-use crate::input::{is_gamepad_button_pressed, is_key_pressed, update_gamepad_context, KeyCode};
+use crate::camera::camera_position;
+
+use crate::ecs::{DrawFn, FixedUpdateFn, UpdateFn};
+use crate::event::Event;
+use crate::input::{
+    is_gamepad_button_pressed, is_key_pressed, update_gamepad_context, Button, KeyCode,
+};
 use crate::math::*;
 use crate::Result;
 
 #[cfg(feature = "macroquad-backend")]
 use crate::gui::{Menu, MenuResult};
+use crate::map::Map;
 
 pub trait GameState {
     fn id(&self) -> String;
@@ -30,7 +41,7 @@ pub trait GameState {
         Ok(())
     }
 
-    fn draw(&mut self) -> Result<()> {
+    fn draw(&mut self, _delta_time: f32) -> Result<()> {
         Ok(())
     }
 
@@ -39,74 +50,69 @@ pub trait GameState {
     }
 }
 
-pub type GameStateConstructorFn<P> = fn(&mut World, Option<&mut P>) -> Result<()>;
+pub type GameStateConstructorFn<P: Clone> =
+    fn(Option<&mut World>, Option<&Map>, Option<&P>) -> Result<()>;
 
-pub type GameStateDestructorFn<P> = fn(World, Option<P>) -> Result<Option<World>>;
+pub type GameStateDestructorFn<P: Clone> =
+    fn(Option<&mut World>, Option<&Map>, Option<&P>) -> Result<()>;
 
-#[cfg(feature = "macroquad-backend")]
-const MENU_FLAG: &str = "__SHOW_MENU__";
+pub type GameStateBuilderFn = fn() -> Box<dyn GameState>;
 
-pub struct DefaultGameState<P> {
+const GAME_MENU_FLAG: &str = "__SHOW_GAME_MENU__";
+
+pub struct DefaultGameState<P: Clone> {
     id: String,
     world: Option<World>,
     constructor: GameStateConstructorFn<P>,
-    updates: Vec<UpdateSystemFn>,
-    fixed_updates: Vec<FixedUpdateSystemFn>,
-    draws: Vec<DrawSystemFn>,
+    updates: Vec<UpdateFn>,
+    fixed_updates: Vec<FixedUpdateFn>,
+    draws: Vec<DrawFn>,
     destructor: GameStateDestructorFn<P>,
-    flags: HashMap<String, ()>,
+    map: Option<Map>,
     payload: Option<P>,
     #[cfg(feature = "macroquad-backend")]
     menu: Option<Menu>,
+    builder: DefaultGameStateBuilder<P>,
 }
 
-impl<P> DefaultGameState<P> {
-    pub fn builder(id: &str) -> GameStateBuilder<P> {
-        GameStateBuilder::new(id)
-    }
-
-    pub fn set_flag(&mut self, flag: &str) {
-        self.flags.insert(flag.to_string(), ());
-    }
-
-    /// Returns `true` if the flag was actually set before unset
-    pub fn unset_flag(&mut self, flag: &str) -> bool {
-        self.flags.remove(flag).is_some()
-    }
-
-    pub fn has_flag(&self, flag: &str) -> bool {
-        self.flags.contains_key(flag)
-    }
-
-    /// Returns the new state of the flag
-    pub fn toggle_flag(&mut self, flag: &str) -> bool {
-        if self.flags.get(flag).is_some() {
-            self.flags.remove(flag);
-            true
-        } else {
-            self.flags.insert(flag.to_string(), ());
-            false
-        }
+impl<P: Clone> DefaultGameState<P> {
+    pub fn builder(id: &str) -> DefaultGameStateBuilder<P> {
+        DefaultGameStateBuilder::new(id)
     }
 }
 
-impl<P> GameState for DefaultGameState<P> {
+impl<P: Clone> GameState for DefaultGameState<P> {
     fn id(&self) -> String {
         self.id.clone()
     }
 
     fn begin(&mut self, world: Option<World>) -> Result<()> {
-        self.world = world.unwrap_or_else(World::new).into();
+        if let Some(world) = world {
+            self.world = Some(world);
+        }
 
-        (self.constructor)(self.world.as_mut().unwrap(), self.payload.as_mut())
+        (self.constructor)(
+            self.world.as_mut(),
+            self.map.as_ref(),
+            self.payload.as_ref(),
+        )?;
+
+        if let Some(world) = self.world.as_mut() {
+            if let Some(map) = self.map.take() {
+                let entity = world.spawn(());
+                world.insert_one(entity, map).unwrap();
+            }
+        }
+
+        Ok(())
     }
 
     fn update(&mut self, delta_time: f32) -> Result<()> {
-        #[cfg(feature = "macroquad-backend")]
+        #[cfg(feature = "macroquad")]
         if self.menu.is_some()
-            && (is_key_pressed(KeyCode::Escape) || is_gamepad_button_pressed(Button::Start))
+            && (is_key_pressed(KeyCode::Escape) || is_gamepad_button_pressed(None, Button::Start))
         {
-            self.toggle_flag(MENU_FLAG);
+            self.toggle_flag(GAME_MENU_FLAG);
         }
 
         for f in &mut self.updates {
@@ -124,13 +130,13 @@ impl<P> GameState for DefaultGameState<P> {
         Ok(())
     }
 
-    fn draw(&mut self) -> Result<()> {
+    fn draw(&mut self, delta_time: f32) -> Result<()> {
         for f in &mut self.draws {
-            f(self.world.as_mut().unwrap())?;
+            f(self.world.as_mut().unwrap(), delta_time)?;
         }
 
         #[cfg(feature = "macroquad-backend")]
-        if self.has_flag(MENU_FLAG) {
+        if self.has_flag(GAME_MENU_FLAG) {
             if let Some(menu) = &mut self.menu {
                 use macroquad::ui::root_ui;
 
@@ -142,102 +148,126 @@ impl<P> GameState for DefaultGameState<P> {
     }
 
     fn end(&mut self) -> Result<Option<World>> {
-        let world = self.world.take().unwrap();
+        (self.destructor)(
+            self.world.as_mut(),
+            self.map.as_ref(),
+            self.payload.as_ref(),
+        )?;
 
-        (self.destructor)(world, self.payload.take())?;
-
-        Ok(None)
+        Ok(self.world.take())
     }
 }
 
-pub struct GameStateBuilder<P> {
+#[derive(Clone)]
+pub struct DefaultGameStateBuilder<P: Clone> {
     id: String,
     constructor: GameStateConstructorFn<P>,
-    updates: Vec<UpdateSystemFn>,
-    fixed_updates: Vec<FixedUpdateSystemFn>,
-    draws: Vec<DrawSystemFn>,
+    updates: Vec<UpdateFn>,
+    fixed_updates: Vec<FixedUpdateFn>,
+    draws: Vec<DrawFn>,
     destructor: GameStateDestructorFn<P>,
-    flags: HashMap<String, ()>,
+    map: Option<Map>,
+    has_world: bool,
     payload: Option<P>,
     #[cfg(feature = "macroquad-backend")]
     menu: Option<Menu>,
 }
 
-impl<P> GameStateBuilder<P> {
+impl<P: Clone> DefaultGameStateBuilder<P> {
     pub fn new(id: &str) -> Self {
-        GameStateBuilder {
+        DefaultGameStateBuilder {
             id: id.to_string(),
-            constructor: |_: &mut World, _: Option<&mut P>| Ok(()),
+            constructor: |_: Option<&mut World>, _: Option<&Map>, _: Option<&P>| Ok(()),
             updates: Vec::new(),
             fixed_updates: Vec::new(),
             draws: Vec::new(),
-            destructor: |world: World, _: Option<P>| Ok(Some(world)),
-            flags: HashMap::new(),
+            destructor: |_: Option<&mut World>, _: Option<&Map>, _: Option<&P>| Ok(()),
+            map: None,
+            has_world: false,
             payload: None,
             #[cfg(feature = "macroquad-backend")]
             menu: None,
         }
     }
 
-    pub fn add_update(&mut self, f: UpdateSystemFn) -> &mut Self {
+    pub fn add_update(&mut self, f: UpdateFn) -> &mut Self {
         self.updates.push(f);
         self
     }
 
-    pub fn with_update(self, f: UpdateSystemFn) -> Self {
+    pub fn with_update(self, f: UpdateFn) -> Self {
         let mut builder = self;
         builder.add_update(f);
         builder
     }
 
-    pub fn add_fixed_update(&mut self, f: FixedUpdateSystemFn) -> &mut Self {
+    pub fn add_fixed_update(&mut self, f: FixedUpdateFn) -> &mut Self {
         self.fixed_updates.push(f);
         self
     }
 
-    pub fn with_fixed_update(self, f: FixedUpdateSystemFn) -> Self {
+    pub fn with_fixed_update(self, f: FixedUpdateFn) -> Self {
         let mut builder = self;
         builder.add_fixed_update(f);
         builder
     }
 
-    pub fn add_draw(&mut self, f: DrawSystemFn) -> &mut Self {
+    pub fn add_draw(&mut self, f: DrawFn) -> &mut Self {
         self.draws.push(f);
         self
     }
 
-    pub fn with_draw(self, f: DrawSystemFn) -> Self {
+    pub fn with_draw(self, f: DrawFn) -> Self {
         let mut builder = self;
         builder.add_draw(f);
         builder
     }
 
     pub fn with_constructor(self, f: GameStateConstructorFn<P>) -> Self {
-        GameStateBuilder {
+        DefaultGameStateBuilder {
             constructor: f,
             ..self
         }
     }
 
     pub fn with_destructor(self, f: GameStateDestructorFn<P>) -> Self {
-        GameStateBuilder {
+        DefaultGameStateBuilder {
             destructor: f,
             ..self
         }
     }
 
-    pub fn with_flag(self, flag: &str) -> Self {
-        let mut flags = self.flags;
-        flags.insert(flag.to_string(), ());
+    pub fn with_map(self, map: Map) -> Self {
+        let mut moved = self;
+        moved.add_map(map);
+        moved
+    }
 
-        GameStateBuilder { flags, ..self }
+    pub fn add_map(&mut self, map: Map) -> &mut Self {
+        self.map = Some(map);
+        self
+    }
+
+    pub fn with_empty_world(self) -> Self {
+        let mut moved = self;
+        moved.has_world = true;
+        moved
+    }
+
+    pub fn add_empty_world(&mut self) -> &mut Self {
+        self.has_world = true;
+        self
     }
 
     pub fn with_payload(self, payload: P) -> Self {
-        GameStateBuilder {
-            payload: Some(payload),
-            ..self
-        }
+        let mut moved = self;
+        moved.add_payload(payload);
+        moved
+    }
+
+    pub fn add_payload(&mut self, payload: P) -> &mut Self {
+        self.payload = Some(payload);
+        self
     }
 
     #[cfg(feature = "macroquad-backend")]
@@ -253,38 +283,26 @@ impl<P> GameStateBuilder<P> {
         self
     }
 
-    pub fn build(&self) -> DefaultGameState<P>
-    where
-        P: Clone,
-    {
+    pub fn build(self) -> DefaultGameState<P> {
+        let world = if self.has_world {
+            Some(World::new())
+        } else {
+            None
+        };
+
         DefaultGameState {
             id: self.id.clone(),
-            world: None,
+            world,
             constructor: self.constructor,
             updates: self.updates.clone(),
             fixed_updates: self.fixed_updates.clone(),
             draws: self.draws.clone(),
             destructor: self.destructor,
-            flags: self.flags.clone(),
+            map: self.map.clone(),
             payload: self.payload.clone(),
             #[cfg(feature = "macroquad-backend")]
             menu: self.menu.clone(),
-        }
-    }
-
-    pub fn build_to(self) -> DefaultGameState<P> {
-        DefaultGameState {
-            id: self.id,
-            world: None,
-            constructor: self.constructor,
-            updates: self.updates,
-            fixed_updates: self.fixed_updates,
-            draws: self.draws,
-            destructor: self.destructor,
-            flags: self.flags,
-            payload: self.payload,
-            #[cfg(feature = "macroquad-backend")]
-            menu: self.menu,
+            builder: self,
         }
     }
 }

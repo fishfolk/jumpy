@@ -3,8 +3,8 @@
 //! which texture to use and how to animate it and should not be confused with `Player`, which is
 //! the actual implementation of the player actor.
 
-use std::borrow::{Borrow, BorrowMut};
 use serde::{Deserialize, Serialize};
+use std::borrow::{Borrow, BorrowMut};
 
 use ff_core::prelude::*;
 
@@ -28,9 +28,7 @@ pub struct CharacterMetadata {
     pub sprite: PlayerAnimationMetadata,
     /// The size of the players collider.
     /// This should, in general, be smaller than the sprite size
-    #[serde(
-        default = "CharacterMetadata::default_collider_size",
-    )]
+    #[serde(default = "CharacterMetadata::default_collider_size")]
     pub collider_size: Size<f32>,
     /// This is the offset from the position of the player to where the weapon is mounted.
     /// The position of the player will, typically, be the center bottom of the sprite but this

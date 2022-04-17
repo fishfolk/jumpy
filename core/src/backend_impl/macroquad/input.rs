@@ -1,6 +1,9 @@
-use macroquad::input::{mouse_position, mouse_wheel};
 use crate::input::{KeyCode, MouseButton};
-use crate::math::{Vec2, vec2};
+use crate::math::{vec2, Vec2};
+
+pub(crate) fn input_mapping() -> &InputMapping {
+    config().input.as_ref()
+}
 
 pub fn is_key_down(key_code: KeyCode) -> bool {
     macroquad::input::is_key_down(key_code.into())
@@ -26,13 +29,13 @@ pub fn is_mouse_button_released(button: MouseButton) -> bool {
     macroquad::input::is_mouse_button_released(button.into())
 }
 
-pub fn get_mouse_position() -> Vec2 {
-    let (x, y) = mouse_position();
+pub fn mouse_position() -> Vec2 {
+    let (x, y) = macroquad::input::mouse_position();
     vec2(x, y)
 }
 
-pub fn get_mouse_wheel_values() -> Vec2 {
-    let (x, y) = mouse_wheel();
+pub fn mouse_wheel() -> Vec2 {
+    let (x, y) = macroquad::input::mouse_wheel();
     vec2(x, y)
 }
 

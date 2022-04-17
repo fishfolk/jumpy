@@ -1,17 +1,16 @@
 use std::f32::consts::PI;
 
-use macroquad_platformer::Tile;
-
-use hecs::{Entity, World};
+use ff_core::ecs::{Entity, World};
 
 use serde::{Deserialize, Serialize};
 
 use crate::effects::active::triggered::TriggeredEffect;
 use crate::effects::TriggeredEffectTrigger;
 use crate::player::{on_player_damage, Player, PlayerState};
-use crate::{CollisionWorld, PhysicsBody, RigidBody, RigidBodyParams, SpriteMetadata};
 use crate::{Drawable, PassiveEffect, PassiveEffectMetadata, SpriteParams};
+use crate::{PhysicsBody, RigidBody, RigidBodyParams, SpriteMetadata};
 use ff_core::particles::{ParticleEmitter, ParticleEmitterMetadata};
+use ff_core::physics::ColliderKind;
 
 use ff_core::prelude::*;
 
@@ -205,8 +204,8 @@ enum ProjectileCollision {
 
 pub fn fixed_update_projectiles(
     world: &mut World,
-    delta_time: f32,
-    integration_factor: f32,
+    _delta_time: f32,
+    _integration_factor: f32,
 ) -> Result<()> {
     let bodies = world
         .query::<(&Transform, &PhysicsBody)>()
@@ -214,7 +213,7 @@ pub fn fixed_update_projectiles(
         .map(|(e, (transform, body))| (e, body.as_rect(transform.position)))
         .collect::<Vec<_>>();
 
-    let collision_world = storage::get::<CollisionWorld>();
+    let mut physics = physics_world();
 
     let mut events = Vec::new();
 
@@ -227,13 +226,10 @@ pub fn fixed_update_projectiles(
             continue 'projectiles;
         }
 
-        #[cfg(feature = "ultimate")]
-        let size = body.size.as_ivec2();
-        #[cfg(not(feature = "ultimate"))]
+        #[cfg(feature = "macroquad")]
         let size: Size<i32> = Vec2::from(body.size).as_i32().into();
-        let map_collision =
-            collision_world.collide_solids(transform.position, size.width, size.height);
-        if map_collision == Tile::Solid {
+        let map_collision = physics.collide_solids_at(transform.position, body.size);
+        if map_collision == ColliderKind::Solid {
             let res = (projectile.owner, e, Some(ProjectileCollision::Map));
             events.push(res);
             continue 'projectiles;

@@ -10,6 +10,9 @@ pub mod input;
 #[path = "internal/file.rs"]
 pub mod file;
 
+#[path = "internal/error.rs"]
+pub mod error;
+
 #[path = "internal/video.rs"]
 pub mod video;
 
@@ -19,6 +22,9 @@ pub mod texture;
 #[path = "internal/rendering.rs"]
 pub mod rendering;
 
+#[path = "internal/camera.rs"]
+pub mod camera;
+
 #[path = "internal/viewport.rs"]
 pub mod viewport;
 
@@ -27,6 +33,12 @@ pub mod particles;
 
 #[path = "internal/math/mod.rs"]
 pub mod math;
+
+#[path = "internal/event.rs"]
+pub mod event;
+
+#[path = "internal/game.rs"]
+pub mod game;
 
 pub mod gui {}
 

@@ -1,14 +1,14 @@
 //! Things available to spawn from the level editor
 //! Proto-mods, eventually some of the items will move to some sort of a wasm runtime
 
-use hecs::{Entity, World};
+use ff_core::ecs::{Entity, World};
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    ActiveEffectMetadata, AnimatedSprite, AnimatedSpriteMetadata, CollisionWorld, Drawable,
-    PassiveEffectMetadata, PhysicsBody, QueuedAnimationAction,
+    ActiveEffectMetadata, AnimatedSprite, AnimatedSpriteMetadata, Drawable, PassiveEffectMetadata,
+    PhysicsBody, QueuedAnimationAction,
 };
 
 use crate::effects::passive::get_passive_effect;
@@ -178,11 +178,7 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
         ..
     } = meta;
 
-    let actor = storage::get_mut::<CollisionWorld>().add_actor(
-        position,
-        collider_size.width as i32,
-        collider_size.height as i32,
-    );
+    let actor = physics_world().add_actor(position, collider_size);
 
     let animations = meta
         .sprite

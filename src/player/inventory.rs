@@ -1,4 +1,4 @@
-use hecs::{Entity, With, Without, World};
+use ff_core::ecs::{Entity, Owner, With, Without, World};
 
 use ff_core::prelude::*;
 
@@ -457,7 +457,7 @@ const HUD_USE_COUNT_COLOR_EMPTY: Color = Color {
     a: 0.8,
 };
 
-pub fn draw_weapons_hud(world: &mut World) -> Result<()> {
+pub fn draw_weapons_hud(world: &mut World, _delta_time: f32) -> Result<()> {
     for (_, (transform, inventory)) in world.query::<(&Transform, &PlayerInventory)>().iter() {
         if let Some(weapon_entity) = inventory.weapon {
             let weapon = world.get::<Weapon>(weapon_entity).unwrap();

@@ -1,4 +1,4 @@
-use hecs::World;
+use ff_core::ecs::World;
 
 use serde::{Deserialize, Serialize};
 

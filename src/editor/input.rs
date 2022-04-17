@@ -1,7 +1,5 @@
 use ff_core::prelude::*;
 
-use fishsticks::{Axis, Button};
-
 #[derive(Debug, Default, Clone, Copy)]
 pub struct EditorInput {
     pub action: bool,
@@ -30,7 +28,7 @@ pub fn collect_editor_input() -> EditorInput {
     input.camera_mouse_move = is_mouse_button_down(MouseButton::Middle);
     input.context_menu = is_mouse_button_pressed(MouseButton::Right);
 
-    let mouse_wheel = get_mouse_wheel_values();
+    let mouse_wheel = mouse_wheel();
     if mouse_wheel.y < 0.0 {
         input.camera_zoom = -1.0;
     } else if mouse_wheel.y > 0.0 {

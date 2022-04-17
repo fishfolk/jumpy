@@ -4,7 +4,7 @@ use ff_core::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
-use hecs::{Entity, World};
+use ff_core::ecs::{Entity, World};
 
 use crate::player::{DamageDirection, PlayerEventKind};
 use crate::PlayerEvent;

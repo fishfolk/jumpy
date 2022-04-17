@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use hecs::{Entity, World};
+use ff_core::ecs::{Entity, World};
 
 use ff_core::prelude::*;
 use ff_core::Result;

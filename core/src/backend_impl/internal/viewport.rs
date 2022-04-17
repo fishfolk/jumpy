@@ -1,9 +1,7 @@
+use crate::camera::active_camera;
 use crate::math::Size;
 use crate::viewport::Viewport;
 
-pub fn get_viewport() -> Viewport {
-    Viewport {
-        width: 800.0,
-        height: 600.0,
-    }
+pub fn viewport() -> Viewport {
+    active_camera().viewport()
 }

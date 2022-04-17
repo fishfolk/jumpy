@@ -1,4 +1,4 @@
-use hecs::{Entity, World};
+use ff_core::ecs::{Entity, World};
 
 use ff_core::prelude::*;
 
@@ -6,7 +6,7 @@ use crate::player::{
     Player, PlayerAttributes, PlayerController, PlayerEventKind, PlayerEventQueue, JUMP_SOUND_ID,
     LAND_SOUND_ID, RESPAWN_DELAY,
 };
-use crate::{CollisionWorld, Item, Map, PhysicsBody, PlayerEvent};
+use crate::{Item, Map, PhysicsBody, PlayerEvent};
 
 const SLIDE_STOP_THRESHOLD: f32 = 2.0;
 const JUMP_FRAME_COUNT: u16 = 8;
@@ -30,14 +30,21 @@ impl Default for PlayerState {
 }
 
 pub fn update_player_states(world: &mut World, delta_time: f32) -> Result<()> {
-    let query = world.query_mut::<(
+    let (map_entity, _) = world
+        .query_mut::<&Map>()
+        .into_iter()
+        .next()
+        .unwrap_or_else(|| panic!("Unable to find map entity!"));
+
+    let mut query = world.query::<(
         &mut Transform,
         &mut Player,
         &PlayerController,
         &PlayerAttributes,
         &mut PhysicsBody,
     )>();
-    for (_, (transform, player, controller, attributes, body)) in query {
+
+    for (_, (transform, player, controller, attributes, body)) in query.iter() {
         // Timers
         player.attack_timer -= delta_time;
 
@@ -64,13 +71,13 @@ pub fn update_player_states(world: &mut World, delta_time: f32) -> Result<()> {
                 player.state = PlayerState::None;
                 player.respawn_timer = 0.0;
 
-                let map = storage::get::<Map>();
-                transform.position = map.get_random_spawn_point();
+                let mut map = world.query_one::<&Map>(map_entity).unwrap();
+                transform.position = map.get().unwrap().get_random_spawn_point();
             }
         } else if player.state == PlayerState::Incapacitated {
             player.incapacitation_timer += delta_time;
 
-            if player.incapacitation_timer >= attributes.base_incapacitation_duration {
+            if player.incapacitation_timer >= attributes.incapacitation_duration {
                 player.state = PlayerState::None;
                 player.incapacitation_timer = 0.0;
             }
@@ -125,8 +132,8 @@ pub fn update_player_states(world: &mut World, delta_time: f32) -> Result<()> {
                         body.velocity.x = 0.0;
                         player.state = PlayerState::Crouching;
                     } else {
-                        let mut collision_world = storage::get_mut::<CollisionWorld>();
-                        collision_world.descent(body.actor);
+                        let mut physics = physics_world();
+                        physics.descend(body.actor);
                     }
                 }
 
@@ -159,7 +166,7 @@ pub fn update_player_states(world: &mut World, delta_time: f32) -> Result<()> {
 
                 if !body.is_on_ground && body.velocity.y > 0.0 {
                     if controller.should_float {
-                        body.velocity.y = attributes.apply_float_gravity_factor(body.velocity.y);
+                        body.velocity.y *= attributes.float_gravity_factor;
                         player.state = PlayerState::Floating;
                     }
                 } else if player.state == PlayerState::Floating {

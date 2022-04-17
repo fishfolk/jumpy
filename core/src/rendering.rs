@@ -1,7 +1,7 @@
 pub use crate::backend_impl::rendering::*;
 
 use crate::color::Color;
-use crate::math::{Vec2, Rect, Size};
+use crate::math::{Rect, Size, Vec2};
 
 #[derive(Debug, Default, Clone)]
 pub struct DrawTextureParams {

@@ -1,10 +1,10 @@
-use hecs::{Entity, World};
+use ff_core::ecs::{Entity, World};
 
 use ff_core::prelude::*;
 
 use crate::{
-    AnimatedSprite, AnimatedSpriteMetadata, AnimatedSpriteParams, CollisionWorld, Drawable,
-    GameCamera, PassiveEffect, PhysicsBody,
+    AnimatedSprite, AnimatedSpriteMetadata, AnimatedSpriteParams, Camera, Drawable, PassiveEffect,
+    PhysicsBody,
 };
 
 mod animation;
@@ -91,33 +91,6 @@ impl Player {
     }
 }
 
-pub fn update_player_camera_box(world: &mut World, delta_time: f32) -> Result<()> {
-    for (_, (transform, player)) in world.query_mut::<(&Transform, &mut Player)>() {
-        let rect = Rect::new(transform.position.x, transform.position.y, 32.0, 60.0);
-
-        if rect.x < player.camera_box.x {
-            player.camera_box.x = rect.x;
-        }
-
-        if rect.x + rect.w > player.camera_box.x + player.camera_box.w {
-            player.camera_box.x = rect.x + rect.w - player.camera_box.w;
-        }
-
-        if rect.y < player.camera_box.y {
-            player.camera_box.y = rect.y;
-        }
-
-        if rect.y + rect.h > player.camera_box.y + player.camera_box.h {
-            player.camera_box.y = rect.y + rect.h - player.camera_box.h;
-        }
-
-        let mut camera = storage::get_mut::<GameCamera>();
-        camera.add_player_rect(player.camera_box);
-    }
-
-    Ok(())
-}
-
 #[derive(Debug, Clone)]
 pub struct PlayerAttributes {
     pub head_threshold: f32,
@@ -137,7 +110,7 @@ impl PlayerAttributes {
     pub fn clear_mods(&mut self) {
         self.jump_force = self.base_jump_force;
         self.move_speed = self.base_move_speed;
-        self.slide_speed = self.move_speed * self.base_slide_speed_factor;
+        self.slide_speed = self.move_speed * self.slide_speed_factor;
     }
 
     pub fn apply_mods(&mut self, effect: &PassiveEffect) {
@@ -150,14 +123,6 @@ impl PlayerAttributes {
         if let Some(factor) = effect.slide_speed_factor {
             self.slide_speed *= factor;
         }
-    }
-
-    pub fn apply_float_gravity_factor(&self, mut value: f32) -> f32 {
-        for &factor in &self.float_gravity_factors {
-            value *= factor
-        }
-
-        value
     }
 }
 
@@ -239,11 +204,7 @@ pub fn spawn_player(
 
     let draw_order = (index as u32 + 1) * 10;
 
-    #[cfg(feature = "ultimate")]
-    let size = character.collider_size.as_ivec2();
-    #[cfg(not(feature = "ultimate"))]
-    let size: Size<i32> = Vec2::from(character.collider_size).as_i32().into();
-    let actor = storage::get_mut::<CollisionWorld>().add_actor(position, size.width, size.height);
+    let actor = physics_world().add_actor(position, character.collider_size);
 
     let body_params = PhysicsBodyParams {
         offset: vec2(-character.collider_size.width / 2.0, 0.0),

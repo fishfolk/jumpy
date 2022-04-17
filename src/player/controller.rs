@@ -1,4 +1,4 @@
-use hecs::World;
+use ff_core::ecs::World;
 
 use ff_core::input::{collect_local_input, GameInputScheme, PlayerInput};
 use ff_core::network::PlayerId;

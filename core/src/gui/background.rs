@@ -1,11 +1,12 @@
-use crate::macroquad::ui::{root_ui, Ui, widgets};
+use crate::macroquad::ui::{root_ui, widgets, Ui};
 use crate::math::{Size, Vec2};
-use crate::prelude::{draw_texture, get_viewport};
+use crate::prelude::{draw_texture, viewport};
 use crate::rendering::DrawTextureParams;
 use crate::resources::get_texture;
 
 use crate::resources::TextureResource;
 use crate::storage;
+use crate::window::window_size;
 
 pub struct Background {
     textures: Vec<TextureResource>,
@@ -59,13 +60,18 @@ pub fn draw_main_menu_background(is_ui: bool) {
 
     let size = backgrounds[0].texture.size();
 
-    let height = get_viewport().height;
+    let height = viewport().height as f32;
     let width = (height / size.height) * size.width;
 
     let bg = Background::new(
         Size::new(width, height),
         Vec2::ZERO,
-        &[backgrounds[3].clone(), backgrounds[2].clone(), backgrounds[1].clone(), backgrounds[0].clone()],
+        &[
+            backgrounds[3].clone(),
+            backgrounds[2].clone(),
+            backgrounds[1].clone(),
+            backgrounds[0].clone(),
+        ],
     );
 
     if is_ui {

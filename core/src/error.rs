@@ -4,6 +4,8 @@
 //! Just implement `From` for `Error`, for any remote implementations of `Error` you encounter, and
 //! use the `Result` type alias, from this module, as return type when it is required.
 
+pub use crate::backend_impl::error::*;
+
 use std::sync::mpsc::SendError;
 use std::{error, fmt, io, result, string::FromUtf8Error};
 
@@ -23,11 +25,12 @@ pub enum ErrorKind {
     Api,
     Network,
     EditorAction,
+    Physics,
 }
 
 impl ErrorKind {
     pub fn as_str(&self) -> &'static str {
-        match *self {
+        match self {
             ErrorKind::General => "General error",
             ErrorKind::Config => "Config error",
             ErrorKind::Context => "Context error",
@@ -38,6 +41,7 @@ impl ErrorKind {
             ErrorKind::Api => "Api error",
             ErrorKind::Network => "Network error",
             ErrorKind::EditorAction => "Editor action error",
+            ErrorKind::Physics => "Physics error",
         }
     }
 }
@@ -206,40 +210,6 @@ impl From<toml::ser::Error> for Error {
 impl From<toml::de::Error> for Error {
     fn from(err: toml::de::Error) -> Self {
         Error::new(ErrorKind::Parsing, err)
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "internal-backend")] {
-        impl From<winit::error::OsError> for Error {
-            fn from(err: winit::error::OsError) -> Self {
-                Error::new(ErrorKind::Context, err)
-            }
-        }
-
-        impl From<winit::error::ExternalError> for Error {
-            fn from(err: winit::error::ExternalError) -> Self {
-                Error::new(ErrorKind::Context, err)
-            }
-        }
-
-        impl From<winit::error::NotSupportedError> for Error {
-            fn from(err: winit::error::NotSupportedError) -> Self {
-                Error::new(ErrorKind::Context, err)
-            }
-        }
-    } else if #[cfg(feature = "macroquad-backend")] {
-        impl From<macroquad::file::FileError> for Error {
-            fn from(err: macroquad::file::FileError) -> Self {
-                Error::new(ErrorKind::File, err)
-            }
-        }
-
-        impl From<macroquad::text::FontError> for Error {
-            fn from(err: macroquad::text::FontError) -> Self {
-                Error::new(ErrorKind::Parsing, err)
-            }
-        }
     }
 }
 

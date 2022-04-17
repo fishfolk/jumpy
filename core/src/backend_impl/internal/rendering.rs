@@ -1,5 +1,5 @@
 use crate::color::Color;
-use crate::math::{Vec2, Rect, Circle};
+use crate::math::{Circle, Rect, Vec2};
 use crate::rendering::DrawTextureParams;
 use crate::texture::Texture2D;
 

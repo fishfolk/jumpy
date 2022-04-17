@@ -1,19 +1,49 @@
 use macroquad::miniquad::conf::Icon;
 use macroquad::window::Conf;
 
-use crate::Config;
 use crate::math::Size;
-use crate::video::{RenderingConfig, Resolution};
 use crate::video::resolutions::HD720;
+use crate::video::{RenderingConfig, Resolution};
 use crate::window::{WindowConfig, WindowMode};
+use crate::Config;
 
 const DEFAULT_BORDERLESS_RESOLUTION: Resolution = HD720;
 
+static mut CONFIG: Option<Config> = None;
+
+pub fn config() -> &'static Config {
+    unsafe { CONFIG.get_or_insert_with(Config::default) }
+}
+
+pub fn config_mut() -> &'static mut Config {
+    unsafe { CONFIG.get_or_insert_with(Config::default) }
+}
+
+pub fn set_config(config: Config) {
+    unsafe { CONFIG = Some(config) };
+}
+
 impl Config {
-    pub fn as_macroquad_window_conf<I: Into<Option<Icon>>>(&self, title: &str, icon: I, is_resizable_window: bool) -> Conf {
+    pub fn to_macroquad<I: Into<Option<Icon>>>(
+        &self,
+        title: &str,
+        icon: I,
+        is_resizable_window: bool,
+    ) -> Conf {
         let (is_fullscreen, width, height) = match self.window.mode {
-            WindowMode::Windowed { size: Size { width, height } } => (false, width, height),
-            WindowMode::Borderless => (true, DEFAULT_BORDERLESS_RESOLUTION.width, DEFAULT_BORDERLESS_RESOLUTION.height),
+            WindowMode::Windowed {
+                size: Size { width, height },
+            } => (false, width, height),
+            WindowMode::Borderless => (
+                true,
+                DEFAULT_BORDERLESS_RESOLUTION.width,
+                DEFAULT_BORDERLESS_RESOLUTION.height,
+            ),
+            WindowMode::Fullscreen { .. } => (
+                true,
+                DEFAULT_BORDERLESS_RESOLUTION.width,
+                DEFAULT_BORDERLESS_RESOLUTION.height,
+            ),
         };
 
         Conf {

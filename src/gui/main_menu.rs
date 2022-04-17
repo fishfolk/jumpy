@@ -2,8 +2,8 @@ use std::borrow::BorrowMut;
 
 use ff_core::prelude::*;
 
-use fishsticks::{Axis, Button, GamepadContext};
-use hecs::World;
+use ff_core::ecs::World;
+use ff_core::input::{Axis, GamepadContext};
 
 use ff_core::gui::background::draw_main_menu_background;
 use ff_core::gui::{
@@ -249,11 +249,11 @@ impl MainMenuState {
         let player_cnt = self.local_input.len();
 
         if player_cnt > 1
-            && (is_key_pressed(KeyCode::Enter) || is_gamepad_button_pressed(Button::Start))
+            && (is_key_pressed(KeyCode::Enter) || is_gamepad_button_pressed(None, Button::Start))
         {
             self.character_select_state = CharacterSelectState::new(player_cnt);
             self.set_level(MainMenuLevel::CharacterSelect);
-        } else if is_key_pressed(KeyCode::Escape) || is_gamepad_button_pressed(Button::East) {
+        } else if is_key_pressed(KeyCode::Escape) || is_gamepad_button_pressed(None, Button::B) {
             self.set_level(MainMenuLevel::Root);
         } else if player_cnt < MAX_PLAYERS {
             if is_key_pressed(KeyCode::Enter) {
@@ -264,9 +264,9 @@ impl MainMenuState {
                 }
             }
 
-            let gamepad_ctx = get_gamepad_context();
+            let gamepad_ctx = gamepad_context();
             for (ix, gamepad) in gamepad_ctx.gamepads() {
-                if gamepad.digital_inputs.activated(fishsticks::Button::Start)
+                if gamepad.digital_inputs.activated(Button::Start.into())
                     && !self.local_input.contains(&GameInputScheme::Gamepad(ix))
                 {
                     self.local_input.push(GameInputScheme::Gamepad(ix));
@@ -274,11 +274,11 @@ impl MainMenuState {
             }
         }
 
-        let viewport = get_viewport();
+        let viewport_size = viewport_size().as_f32();
 
         let size = vec2(LOCAL_GAME_MENU_WIDTH, LOCAL_GAME_MENU_HEIGHT);
 
-        let position = vec2(viewport.width - size.x, viewport.height - size.y) / 2.0;
+        let position = vec2(viewport_size.width - size.x, viewport_size.height - size.y) / 2.0;
 
         Panel::new(hash!(), size, position).ui(&mut *root_ui(), |ui, _| {
             {
@@ -321,7 +321,7 @@ impl MainMenuState {
         });
 
         if player_cnt > 1
-            && (is_key_pressed(KeyCode::Enter) || is_gamepad_button_pressed(Button::Start))
+            && (is_key_pressed(KeyCode::Enter) || is_gamepad_button_pressed(None, Button::Start))
         {
             self.character_select_state = CharacterSelectState::new(player_cnt);
             self.player_cnt = player_cnt;
@@ -340,9 +340,9 @@ impl MainMenuState {
             section_size.y,
         );
 
-        let viewport = get_viewport();
+        let viewport_size = viewport_size().as_f32();
 
-        let first_position = (vec2(viewport.width, viewport.height) - total_size) / 2.0;
+        let first_position = (vec2(viewport_size.width, viewport_size.height) - total_size) / 2.0;
 
         {
             let gui_theme = get_gui_theme();
@@ -379,19 +379,24 @@ impl MainMenuState {
                             is_key_pressed(KeyCode::V) || is_key_pressed(KeyCode::LeftControl);
                     }
                     GameInputScheme::Gamepad(gamepad_id) => {
-                        let gamepad_context = get_gamepad_context();
+                        let gamepad_context = gamepad_context();
                         let gamepad = gamepad_context.gamepad(gamepad_id);
 
                         if let Some(gamepad) = gamepad {
                             should_navigate_left = can_navigate
                                 && (gamepad.analog_inputs.digital_value(Axis::LeftStickX) < 0.0
-                                    || gamepad.digital_inputs.just_activated(Button::DPadLeft));
+                                    || gamepad
+                                        .digital_inputs
+                                        .just_activated(Button::DPadLeft.into()));
 
                             should_navigate_right = can_navigate
                                 && (gamepad.analog_inputs.digital_value(Axis::LeftStickX) > 0.0
-                                    || gamepad.digital_inputs.just_activated(Button::DPadRight));
+                                    || gamepad
+                                        .digital_inputs
+                                        .just_activated(Button::DPadRight.into()));
 
-                            should_confirm = gamepad.digital_inputs.just_activated(Button::South);
+                            should_confirm =
+                                gamepad.digital_inputs.just_activated(Button::B.into());
                         }
                     }
                 }
@@ -543,39 +548,45 @@ impl MainMenuState {
         let mut start = is_key_pressed(KeyCode::Enter);
 
         let (page_up, page_down) = {
-            let mouse_wheel = get_mouse_wheel_values();
+            let mouse_wheel = mouse_wheel();
             (mouse_wheel.y > 0.0, mouse_wheel.y < 0.0)
         };
 
-        for (_, gamepad) in get_gamepad_context().gamepads() {
-            use fishsticks::{Axis, Button};
+        for (_, gamepad) in gamepad_context().gamepads() {
+            use ff_core::input::{Axis, Button};
 
-            up |= gamepad.digital_inputs.just_activated(Button::DPadUp)
+            up |= gamepad.digital_inputs.just_activated(Button::DPadUp.into())
                 || matches!(
                     gamepad.analog_inputs.just_activated_digital(Axis::LeftStickY),
                     Some(value) if value < 0.0
                 );
 
-            down |= gamepad.digital_inputs.just_activated(Button::DPadDown)
+            down |= gamepad
+                .digital_inputs
+                .just_activated(Button::DPadDown.into())
                 || matches!(
                     gamepad.analog_inputs.just_activated_digital(Axis::LeftStickY),
                     Some(value) if value > 0.0
                 );
 
-            left |= gamepad.digital_inputs.just_activated(Button::DPadLeft)
+            left |= gamepad
+                .digital_inputs
+                .just_activated(Button::DPadLeft.into())
                 || matches!(
                     gamepad.analog_inputs.just_activated_digital(Axis::LeftStickX),
                     Some(value) if value < 0.0
                 );
 
-            right |= gamepad.digital_inputs.just_activated(Button::DPadRight)
+            right |= gamepad
+                .digital_inputs
+                .just_activated(Button::DPadRight.into())
                 || matches!(
                     gamepad.analog_inputs.just_activated_digital(Axis::LeftStickX),
                     Some(value) if value > 0.0
                 );
 
-            start |= gamepad.digital_inputs.just_activated(Button::South)
-                || gamepad.digital_inputs.just_activated(Button::Start);
+            start |= gamepad.digital_inputs.just_activated(Button::A.into())
+                || gamepad.digital_inputs.just_activated(Button::Start.into());
         }
 
         let map_cnt = iter_maps().len();
@@ -583,14 +594,14 @@ impl MainMenuState {
         let gui_theme = get_gui_theme();
         root_ui().push_skin(&gui_theme.map_selection);
 
-        let viewport = get_viewport();
+        let viewport_size = viewport_size().as_f32();
         let screen_margins = vec2(
-            viewport.width * MAP_SELECT_SCREEN_MARGIN_FACTOR,
-            viewport.height * MAP_SELECT_SCREEN_MARGIN_FACTOR,
+            viewport_size.width * MAP_SELECT_SCREEN_MARGIN_FACTOR,
+            viewport_size.height * MAP_SELECT_SCREEN_MARGIN_FACTOR,
         );
         let content_size = vec2(
-            viewport.width - (screen_margins.x * 2.0),
-            viewport.height - (screen_margins.y * 2.0),
+            viewport_size.width - (screen_margins.x * 2.0),
+            viewport_size.height - (screen_margins.y * 2.0),
         );
 
         let entries_per_row = (content_size.x / MAP_SELECT_PREVIEW_TARGET_WIDTH).round() as usize;
@@ -690,8 +701,9 @@ impl MainMenuState {
                     );
 
                     let label_size = root_ui().calc_size(&pagination_label);
-                    let label_position =
-                        viewport.as_vec2() - vec2(WINDOW_MARGIN_H, WINDOW_MARGIN_V) - label_size;
+                    let label_position = viewport_size.as_vec2()
+                        - vec2(WINDOW_MARGIN_H, WINDOW_MARGIN_V)
+                        - label_size;
 
                     widgets::Label::new(&pagination_label)
                         .position(label_position)
@@ -724,7 +736,7 @@ impl MainMenuState {
                         rect.h = h;
                     }
 
-                    let mouse_position = get_mouse_position();
+                    let mouse_position = mouse_position();
 
                     if self.map_select_state.mouse_position != mouse_position
                         && rect.contains(mouse_position.into())
@@ -751,7 +763,7 @@ impl MainMenuState {
 
         root_ui().pop_skin();
 
-        self.map_select_state.mouse_position = get_mouse_position();
+        self.map_select_state.mouse_position = mouse_position();
 
         None
     }
@@ -770,8 +782,8 @@ impl MainMenuState {
 
                 let size = texture.size();
 
-                let viewport = get_viewport();
-                let position = vec2((viewport.width - size.width) / 2.0, 35.0);
+                let viewport_size = viewport_size().as_f32();
+                let position = vec2((viewport_size.width - size.width) / 2.0, 35.0);
 
                 widgets::Texture::new(texture.into())
                     .position(position)
@@ -886,14 +898,12 @@ impl GameState for MainMenuState {
     }
 
     fn update(&mut self, delta_time: f32) -> Result<()> {
-        update_gamepad_context().unwrap();
-
         for sprite in &mut self.character_select_state.sprites {
             for t in &mut self.character_select_state.navigation_grace_timers {
                 *t += delta_time;
             }
 
-            update_one_animated_sprite(delta_time, sprite)?;
+            update_one_animated_sprite(delta_time, sprite);
         }
 
         Ok(())
@@ -903,18 +913,18 @@ impl GameState for MainMenuState {
         if let Some(res) = self.draw_current() {
             match res {
                 MainMenuResult::LocalGame { map, players } => {
-                    let state = build_state_for_game_mode(GameMode::Local, map, &players);
-                    dispatch_event(GameEvent::StateTransition(Box::new(state)));
+                    let state = build_state_for_game_mode(GameMode::Local, map, &players).unwrap();
+                    dispatch_event(Event::StateTransition(Box::new(state)));
                 }
-                MainMenuResult::Editor { map } => {
+                MainMenuResult::Editor { map: _ } => {
                     // let state = build_editor_state(map);
                     // dispatch_event(GameEvent::StateTransition(Box::new(state)));
                 }
                 MainMenuResult::ReloadResources => {
-                    dispatch_event(GameEvent::ReloadResources);
+                    // dispatch_event(Event::ReloadResources);
                 }
                 MainMenuResult::Quit => {
-                    dispatch_event(GameEvent::Quit);
+                    dispatch_event(Event::Quit);
                 }
             }
         }

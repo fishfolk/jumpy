@@ -1,7 +1,6 @@
-#[cfg(feature = "ultimate")]
+#[cfg(not(feature = "macroquad"))]
 // pub use ultimate::UltimateApi as Api;
-
-#[cfg(not(feature = "ultimate"))]
+#[cfg(feature = "macroquad")]
 pub use mocked::MockApi as Api;
 
 mod mocked {

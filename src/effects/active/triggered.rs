@@ -1,6 +1,6 @@
 use ff_core::prelude::*;
 
-use hecs::{Entity, World};
+use ff_core::ecs::{Entity, World};
 
 use serde::{Deserialize, Serialize};
 
@@ -10,7 +10,7 @@ use ff_core::Result;
 use crate::effects::active::spawn_active_effect;
 use crate::physics;
 use crate::player::{Player, PlayerState};
-use crate::{ActiveEffectMetadata, AnimatedSpriteMetadata, CollisionWorld, PhysicsBody};
+use crate::{ActiveEffectMetadata, AnimatedSpriteMetadata, PhysicsBody};
 use crate::{Drawable, PhysicsBodyParams};
 use ff_core::particles::{ParticleEmitter, ParticleEmitterMetadata};
 
@@ -90,8 +90,8 @@ pub fn spawn_triggered_effect(
     let offset = -Vec2::from(meta.size) / 2.0;
 
     let actor = {
-        let mut collision_world = storage::get_mut::<CollisionWorld>();
-        collision_world.add_actor(origin, meta.size.width as i32, meta.size.height as i32)
+        let mut physics = physics_world();
+        physics.add_actor(origin, meta.size)
     };
 
     let rotation = deg_to_rad(meta.rotation);
@@ -182,8 +182,8 @@ pub fn fixed_update_triggered_effects(
         .iter()
     {
         if !effect.should_collide_with_platforms {
-            let mut collision_world = storage::get_mut::<CollisionWorld>();
-            collision_world.descent(body.actor);
+            let mut physics = physics_world();
+            physics.descend(body.actor);
         }
 
         effect.timed_trigger_timer += delta_time;

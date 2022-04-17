@@ -1,10 +1,8 @@
-use macroquad_platformer::{Actor, Tile};
-
 use serde::{Deserialize, Serialize};
 
-use hecs::World;
+use ff_core::ecs::World;
 
-use crate::{CollisionWorld, Map};
+use crate::Map;
 
 use ff_core::prelude::*;
 
@@ -12,43 +10,6 @@ use crate::Result;
 
 pub const GRAVITY: f32 = 2.5;
 pub const TERMINAL_VELOCITY: f32 = 10.0;
-
-pub fn create_collision_world(map: &Map) -> CollisionWorld {
-    let tile_cnt = (map.grid_size.width * map.grid_size.height) as usize;
-    let mut static_colliders = Vec::with_capacity(tile_cnt);
-    for _ in 0..tile_cnt {
-        static_colliders.push(Tile::Empty);
-    }
-
-    for layer_id in &map.draw_order {
-        let layer = map.layers.get(layer_id).unwrap();
-        if layer.has_collision {
-            for (i, (_, _, tile)) in map.get_tiles(layer_id, None).enumerate() {
-                if let Some(tile) = tile {
-                    if tile
-                        .attributes
-                        .contains(&Map::PLATFORM_TILE_ATTRIBUTE.to_string())
-                    {
-                        static_colliders[i] = Tile::JumpThrough;
-                    } else {
-                        static_colliders[i] = Tile::Solid;
-                    }
-                }
-            }
-        }
-    }
-
-    let mut collision_world = CollisionWorld::new();
-    collision_world.add_static_tiled_layer(
-        static_colliders,
-        map.tile_size.width,
-        map.tile_size.height,
-        map.grid_size.width as usize,
-        1,
-    );
-
-    collision_world
-}
 
 const FRICTION_LERP: f32 = 0.96;
 const STOP_THRESHOLD: f32 = 1.0;
@@ -132,32 +93,28 @@ impl PhysicsBody {
 
 pub fn fixed_update_physics_bodies(
     world: &mut World,
-    delta_time: f32,
-    integration_factor: f32,
+    _delta_time: f32,
+    _integration_factor: f32,
 ) -> Result<()> {
-    let mut collision_world = storage::get_mut::<CollisionWorld>();
+    let mut physics = physics_world();
 
     for (_, (transform, body)) in world.query_mut::<(&mut Transform, &mut PhysicsBody)>() {
-        collision_world.set_actor_position(body.actor, transform.position + body.offset);
+        physics.set_actor_position(body.actor, transform.position + body.offset);
 
         if !body.is_deactivated {
-            let position = collision_world.actor_pos(body.actor);
+            let position = physics.actor_position(body.actor);
 
             {
                 let position = position + vec2(0.0, 1.0);
 
                 body.was_on_ground = body.is_on_ground;
 
-                body.is_on_ground = collision_world.collide_check(body.actor, position);
+                body.is_on_ground = physics.collide_at(body.actor, position);
 
                 // FIXME: Using this to set `is_on_ground` caused weird glitching behavior when jumping up through platforms
-                let tile = collision_world.collide_solids(
-                    position,
-                    body.size.width as i32,
-                    body.size.height as i32,
-                );
+                let tile = physics.collide_solids_at(position, body.size);
 
-                body.is_on_platform = tile == Tile::JumpThrough;
+                body.is_on_platform = tile == ColliderKind::Platform;
             }
 
             if !body.is_on_ground && body.has_mass {
@@ -168,11 +125,11 @@ pub fn fixed_update_physics_bodies(
                 }
             }
 
-            if !collision_world.move_h(body.actor, body.velocity.x) {
+            if !physics.move_actor_x(body.actor, body.velocity.x) {
                 body.velocity.x *= -body.bouncyness;
             }
 
-            if !collision_world.move_v(body.actor, body.velocity.y) {
+            if !physics.move_actor_y(body.actor, body.velocity.y) {
                 body.velocity.y *= -body.bouncyness;
             }
 
@@ -187,14 +144,14 @@ pub fn fixed_update_physics_bodies(
                 }
             }
 
-            transform.position = collision_world.actor_pos(body.actor) - body.offset;
+            transform.position = physics.actor_position(body.actor) - body.offset;
         }
     }
 
     Ok(())
 }
 
-pub fn debug_draw_physics_bodies(world: &mut World) -> Result<()> {
+pub fn debug_draw_physics_bodies(world: &mut World, _delta_time: f32) -> Result<()> {
     for (_, (transform, body)) in world.query::<(&Transform, &PhysicsBody)>().iter() {
         if !body.is_deactivated {
             let rect = body.as_rect(transform.position);
@@ -263,8 +220,8 @@ impl RigidBody {
 
 pub fn fixed_update_rigid_bodies(
     world: &mut World,
-    delta_time: f32,
-    integration_factor: f32,
+    _delta_time: f32,
+    _integration_factor: f32,
 ) -> Result<()> {
     for (_, (transform, body)) in world.query_mut::<(&mut Transform, &mut RigidBody)>() {
         transform.position += body.velocity;
@@ -277,7 +234,7 @@ pub fn fixed_update_rigid_bodies(
     Ok(())
 }
 
-pub fn debug_draw_rigid_bodies(world: &mut World) -> Result<()> {
+pub fn debug_draw_rigid_bodies(world: &mut World, _delta_time: f32) -> Result<()> {
     for (_, (transform, body)) in world.query::<(&Transform, &RigidBody)>().iter() {
         let rect = body.as_rect(transform.position);
 

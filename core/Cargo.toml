@@ -6,17 +6,20 @@ license = "MIT OR Apache-2.0"
 edition = "2021"
 
 [features]
-# default = ["macroquad-backend"]
-# macroquad-backend = ["macroquad", "ff-particles"]
-internal-backend = ["winit", "tokio", "glam"]
+default = ["internal-backend", "platformer-physics"]
+internal-backend = ["winit", "winit_input_helper", "tokio", "glam"]
+macroquad-backend = ["macroquad", "ff-particles"]
+platformer-physics = []
 
 [dependencies]
 macros = { path = "./macro", version = "0.4.1", package = "fishfight-core-macros" }
-fishsticks = { version = "0.2.0", default-features = false, features = ["gilrs"] }
+fishsticks = { version = "0.2", default-features = false, features = ["gilrs"] }
 macroquad = { version = "0.3.13", optional = true }
 ff-particles = { version = "0.1", features = ["serde"], optional = true }
-winit = { version = "0.26.1", optional = true }
-tokio = { version = "1.17.0", features = ["macros", "sync", "rt"], optional = true }
+winit = { version = "0.26.1", features = ["serde"], optional = true }
+winit_input_helper = { version = "0.11.1", optional = true }
+# tokio = { version = "1.17.0", features = ["macros", "sync", "rt"], optional = true }
+tokio = { version = "1.17.0", features = ["sync", "macros", "rt-multi-thread"], optional = true }
 glam = { version = "0.20.2", features = ["scalar-math", "serde"], optional = true }
 quad-rand = "0.2.1"
 quad-snd = "0.2"

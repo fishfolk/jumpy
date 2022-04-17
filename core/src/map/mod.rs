@@ -7,8 +7,8 @@ mod decoration;
 pub use decoration::*;
 
 use crate::prelude::*;
-use crate::Result;
 use crate::resources;
+use crate::Result;
 
 #[cfg(feature = "macroquad-backend")]
 use crate::gui::combobox::ComboBoxValue;
@@ -77,12 +77,7 @@ impl Map {
     }
 
     pub async fn load<P: AsRef<Path>>(path: P) -> Result<Self> {
-        let extension = path
-            .as_ref()
-            .extension()
-            .unwrap()
-            .to_str()
-            .unwrap();
+        let extension = path.as_ref().extension().unwrap().to_str().unwrap();
 
         let bytes = load_file(&path).await?;
 
@@ -164,7 +159,8 @@ impl Map {
     }
 
     pub fn get_tiles(&self, layer_id: &str, rect: Option<URect>) -> MapTileIterator {
-        let rect = rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.width, self.grid_size.height));
+        let rect =
+            rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.width, self.grid_size.height));
         let layer = self
             .layers
             .get(layer_id)
@@ -260,8 +256,14 @@ impl Map {
         dest_rect2
     }
 
-    pub fn draw_background(&self, rect: Option<URect>, camera_position: Vec2, is_parallax_disabled: bool) {
-        let rect = rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.width, self.grid_size.height));
+    pub fn draw_background(
+        &self,
+        rect: Option<URect>,
+        camera_position: Vec2,
+        is_parallax_disabled: bool,
+    ) {
+        let rect =
+            rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.width, self.grid_size.height));
 
         draw_rectangle(
             self.world_offset.x,
@@ -290,8 +292,11 @@ impl Map {
                         height,
                     )
                 } else {
-                    let mut dest_rect =
-                        Self::background_parallax(texture_res.texture, layer.depth, camera_position);
+                    let mut dest_rect = Self::background_parallax(
+                        texture_res.texture,
+                        layer.depth,
+                        camera_position,
+                    );
                     dest_rect.x += layer.offset.x;
                     dest_rect.y += layer.offset.y;
                     dest_rect
@@ -316,7 +321,8 @@ impl Map {
             self.draw_background(rect, camera_position, false);
         }
 
-        let rect = rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.width, self.grid_size.height));
+        let rect =
+            rect.unwrap_or_else(|| URect::new(0, 0, self.grid_size.width, self.grid_size.height));
 
         let mut draw_order = self.draw_order.clone();
         draw_order.reverse();
@@ -327,14 +333,15 @@ impl Map {
                     for (x, y, tile) in self.get_tiles(&layer_id, Some(rect)) {
                         if let Some(tile) = tile {
                             let world_position = self.world_offset
-                                + vec2(x as f32 * self.tile_size.width, y as f32 * self.tile_size.height);
+                                + vec2(
+                                    x as f32 * self.tile_size.width,
+                                    y as f32 * self.tile_size.height,
+                                );
 
                             let texture = if let Some(texture) = tile.texture {
                                 texture
                             } else {
-                                let tileset = self.tilesets
-                                    .get(&tile.tileset_id)
-                                    .unwrap();
+                                let tileset = self.tilesets.get(&tile.tileset_id).unwrap();
 
                                 get_texture(&tileset.texture_id).texture
                             };
@@ -347,8 +354,8 @@ impl Map {
                                     source: Some(Rect::new(
                                         tile.texture_coords.x, // + 0.1,
                                         tile.texture_coords.y, // + 0.1,
-                                        self.tile_size.width,      // - 0.2,
-                                        self.tile_size.height,      // - 0.2,
+                                        self.tile_size.width,  // - 0.2,
+                                        self.tile_size.height, // - 0.2,
                                     )),
                                     dest_size: Some(self.tile_size),
                                     ..Default::default()
@@ -699,4 +706,14 @@ impl MapTileset {
     pub fn default_tile_subdivisions() -> UVec2 {
         uvec2(3, 3)
     }
+}
+
+pub fn draw_map(world: &mut World, _delta_time: f32) -> Result<()> {
+    let camera_position = camera_position();
+
+    for (_, map) in world.query_mut::<&Map>() {
+        map.draw(None, camera_position);
+    }
+
+    Ok(())
 }

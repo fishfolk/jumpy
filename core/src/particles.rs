@@ -135,7 +135,7 @@ fn update_one_particle_emitter(
     mut position: Vec2,
     rotation: f32,
     emitter: &mut ParticleEmitter,
-) -> Result<()> {
+) {
     if emitter.is_active {
         emitter.delay_timer += delta_time;
 
@@ -180,13 +180,11 @@ fn update_one_particle_emitter(
             }
         }
     }
-
-    Ok(())
 }
 
 pub fn update_particle_emitters(world: &mut World, delta_time: f32) -> Result<()> {
     for (_, (transform, emitter)) in world.query_mut::<(&Transform, &mut ParticleEmitter)>() {
-        update_one_particle_emitter(delta_time, transform.position, transform.rotation, emitter)?;
+        update_one_particle_emitter(delta_time, transform.position, transform.rotation, emitter);
     }
 
     for (_, (transform, emitters)) in world.query_mut::<(&Transform, &mut Vec<ParticleEmitter>)>() {
@@ -196,14 +194,14 @@ pub fn update_particle_emitters(world: &mut World, delta_time: f32) -> Result<()
                 transform.position,
                 transform.rotation,
                 emitter,
-            )?;
+            );
         }
     }
 
     Ok(())
 }
 
-pub fn draw_particles(_world: &mut World) -> Result<()> {
+pub fn draw_particles(_world: &mut World, _delta_time: f32) -> Result<()> {
     let mut particles = get_particle_emitter_cache();
 
     for cache in particles.cache_map.values_mut() {

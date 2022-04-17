@@ -7,16 +7,17 @@ use crate::gui::{
 };
 
 use crate::input::{
-    get_gamepad_context, get_mouse_position, is_gamepad_button_pressed, is_key_down,
-    is_key_pressed, KeyCode,
+    gamepad_context, is_gamepad_button_pressed, is_key_down, is_key_pressed, mouse_position,
+    KeyCode,
 };
 
 use crate::gui::theme::get_gui_theme;
 use crate::gui::{widgets, Id, Ui};
 use crate::macroquad::time::get_frame_time;
-use crate::math::{vec2, Vec2};
+use crate::math::{vec2, AsVec2, Vec2};
 use crate::storage;
-use crate::viewport::get_viewport;
+use crate::viewport::{viewport, viewport_size};
+use crate::window::window_size;
 use crate::Result;
 
 #[derive(Debug, Copy, Clone)]
@@ -241,7 +242,7 @@ impl Menu {
             ui.push_skin(&gui_theme.menu);
         }
 
-        let mouse_position = get_mouse_position();
+        let mouse_position = mouse_position();
 
         if mouse_position != self.last_mouse_position {
             self.current_selection = None;
@@ -314,12 +315,14 @@ impl Menu {
             vec2(self.width, height)
         };
 
-        let viewport = get_viewport();
+        let viewport_size = viewport_size().as_f32();
 
         let position = match self.position {
-            MenuPosition::Center => vec2(viewport.width - size.x, viewport.height - size.y) / 2.0,
-            MenuPosition::AbsoluteHorizontal(x) => vec2(x, (viewport.height - size.y) / 2.0),
-            MenuPosition::AbsoluteVertical(y) => vec2((viewport.width - size.x) / 2.0, y),
+            MenuPosition::Center => {
+                vec2(viewport_size.width - size.x, viewport_size.height - size.y) / 2.0
+            }
+            MenuPosition::AbsoluteHorizontal(x) => vec2(x, (viewport_size.height - size.y) / 2.0),
+            MenuPosition::AbsoluteVertical(y) => vec2((viewport_size.width - size.x) / 2.0, y),
             MenuPosition::Absolute(position) => position,
         };
 
@@ -472,7 +475,7 @@ impl Menu {
         if self.is_first_draw {
             (false, false)
         } else {
-            let gamepad_ctx = get_gamepad_context();
+            let gamepad_ctx = gamepad_context();
 
             let mut selection = self.current_selection.map(|s| s as i32);
 
@@ -529,11 +532,11 @@ impl Menu {
                 self.current_selection = Some(selection);
             }
 
-            let should_confirm =
-                is_gamepad_button_pressed(Button::South) || is_key_pressed(KeyCode::Enter);
+            let should_confirm = is_gamepad_button_pressed(None, crate::input::Button::A)
+                || is_key_pressed(KeyCode::Enter);
 
-            let should_cancel =
-                is_gamepad_button_pressed(Button::East) || is_key_pressed(KeyCode::Escape);
+            let should_cancel = is_gamepad_button_pressed(None, crate::input::Button::X)
+                || is_key_pressed(KeyCode::Escape);
 
             (should_confirm, should_cancel)
         }

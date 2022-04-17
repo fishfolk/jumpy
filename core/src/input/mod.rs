@@ -1,4 +1,6 @@
-use fishsticks::{Axis, GamepadContext, GamepadId};
+mod gamepad;
+
+pub use gamepad::*;
 
 use serde::{Deserialize, Serialize};
 
@@ -6,7 +8,6 @@ use crate::error::ErrorKind;
 use crate::{storage, Config, Result};
 
 pub use crate::backend_impl::input::*;
-use crate::prelude::get_config;
 
 #[derive(Default, Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct PlayerInput {
@@ -30,95 +31,35 @@ pub enum GameInputScheme {
     Gamepad(fishsticks::GamepadId),
 }
 
-static mut GAMEPAD_CONTEXT: Option<GamepadContext> = None;
-
-pub async fn init_gamepad_context() -> Result<()> {
-    let ctx = GamepadContext::init()?;
-    unsafe { GAMEPAD_CONTEXT = Some(ctx) }
-    Ok(())
-}
-
-pub fn get_gamepad_context() -> &'static GamepadContext {
-    unsafe {
-        GAMEPAD_CONTEXT.as_ref().unwrap_or_else(|| {
-            panic!("Attempted to get gamepad context but it has not been initialized yet!")
-        })
-    }
-}
-
-pub fn get_gamepad_context_mut() -> &'static mut GamepadContext {
-    unsafe {
-        GAMEPAD_CONTEXT.as_mut().unwrap_or_else(|| {
-            panic!("Attempted to get gamepad context but it has not been initialized yet!")
-        })
-    }
-}
-
-pub fn update_gamepad_context() -> Result<()> {
-    get_gamepad_context_mut().update()?;
-    Ok(())
-}
-
-pub fn is_gamepad_button_pressed(btn: Button) -> bool {
-    let ctx = get_gamepad_context();
-    for (_, gamepad) in ctx.gamepads() {
-        if gamepad.digital_inputs.just_activated(btn.into()) {
-            return true;
-        }
-    }
-
-    false
-}
-
 pub fn collect_local_input(input_scheme: GameInputScheme) -> PlayerInput {
     let mut input = PlayerInput::default();
 
-    if let GameInputScheme::Gamepad(ix) = &input_scheme {
-        let gamepad_ctx = get_gamepad_context();
-        let gamepad = gamepad_ctx.gamepad(*ix);
+    if let GameInputScheme::Gamepad(gamepad_id) = input_scheme {
+        let input_mapping = input_mapping()
+            .get_gamepad_mapping(gamepad_id.into())
+            .unwrap_or_else(|| gamepad_id.into());
 
-        if let Some(gamepad) = gamepad {
-            let input_mapping = {
-                let config = get_config();
-                config
-                    .input
-                    .get_gamepad_mapping(ix.into())
-                    .unwrap_or_else(|| ix.into())
-            };
+        input.left = is_gamepad_button_down(gamepad_id, Button::DPadLeft)
+            || gamepad_axis(gamepad_id, Axis::LeftStickX) < 0.0;
 
-            input.left = gamepad.digital_inputs.activated(Button::DPadLeft.into())
-                || gamepad.analog_inputs.digital_value(Axis::LeftStickX) < 0.0;
+        input.right = is_gamepad_button_down(gamepad_id, Button::DPadRight)
+            || gamepad_axis(gamepad_id, Axis::LeftStickX) > 0.0;
 
-            input.right = gamepad.digital_inputs.activated(Button::DPadRight.into())
-                || gamepad.analog_inputs.digital_value(Axis::LeftStickX) > 0.0;
+        input.fire = is_gamepad_button_down(gamepad_id, input_mapping.fire);
 
-            input.fire = gamepad.digital_inputs.activated(input_mapping.fire.into());
+        input.jump = is_gamepad_button_pressed(gamepad_id, input_mapping.jump);
 
-            input.jump = gamepad
-                .digital_inputs
-                .just_activated(input_mapping.jump.into());
+        input.pickup = is_gamepad_button_pressed(gamepad_id, input_mapping.pickup);
 
-            input.pickup = gamepad
-                .digital_inputs
-                .just_activated(input_mapping.pickup.into());
+        input.crouch = is_gamepad_button_down(gamepad_id, Button::DPadDown)
+            || gamepad_axis(gamepad_id, Axis::LeftStickY) > 0.0;
 
-            input.crouch = gamepad.digital_inputs.activated(Button::DPadDown.into())
-                || gamepad.analog_inputs.digital_value(Axis::LeftStickY) > 0.0;
-
-            input.slide = input.crouch
-                && gamepad
-                    .digital_inputs
-                    .just_activated(input_mapping.slide.into());
-        }
+        input.slide = is_gamepad_button_pressed(gamepad_id, input_mapping.slide);
     } else {
-        let input_mapping = {
-            let config = get_config();
-
-            if matches!(input_scheme, GameInputScheme::KeyboardRight) {
-                config.input.keyboard_primary.clone()
-            } else {
-                config.input.keyboard_secondary.clone()
-            }
+        let input_mapping = if matches!(input_scheme, GameInputScheme::KeyboardRight) {
+            input_mapping().keyboard_primary.clone()
+        } else {
+            input_mapping().keyboard_secondary.clone()
         };
 
         input.left = is_key_down(input_mapping.left.into());
@@ -259,79 +200,6 @@ pub enum KeyCode {
     Unknown,
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
-pub enum Button {
-    A,
-    B,
-    X,
-    Y,
-    Back,
-    Guide,
-    Start,
-    LeftStick,
-    RightStick,
-    LeftShoulder,
-    RightShoulder,
-    LeftTrigger,
-    RightTrigger,
-    DPadUp,
-    DPadDown,
-    DPadLeft,
-    DPadRight,
-    #[serde(skip)]
-    Unknown,
-}
-
-impl From<fishsticks::Button> for Button {
-    fn from(button: fishsticks::Button) -> Self {
-        match button {
-            fishsticks::Button::South => Self::A,
-            fishsticks::Button::East => Self::B,
-            fishsticks::Button::West => Self::X,
-            fishsticks::Button::North => Self::Y,
-            fishsticks::Button::Select => Self::Back,
-            fishsticks::Button::Mode => Self::Guide,
-            fishsticks::Button::Start => Self::Start,
-            fishsticks::Button::LeftThumb => Self::LeftStick,
-            fishsticks::Button::RightThumb => Self::RightStick,
-            fishsticks::Button::LeftTrigger => Self::LeftTrigger,
-            fishsticks::Button::RightTrigger => Self::RightTrigger,
-            fishsticks::Button::LeftTrigger2 => Self::LeftShoulder,
-            fishsticks::Button::RightTrigger2 => Self::RightShoulder,
-            fishsticks::Button::DPadUp => Self::DPadUp,
-            fishsticks::Button::DPadDown => Self::DPadDown,
-            fishsticks::Button::DPadLeft => Self::DPadLeft,
-            fishsticks::Button::DPadRight => Self::DPadRight,
-            _ => Self::Unknown,
-        }
-    }
-}
-
-impl From<Button> for fishsticks::Button {
-    fn from(button: Button) -> Self {
-        match button {
-            Button::A => Self::South,
-            Button::B => Self::East,
-            Button::X => Self::West,
-            Button::Y => Self::North,
-            Button::Back => Self::Select,
-            Button::Guide => Self::Mode,
-            Button::Start => Self::Start,
-            Button::LeftStick => Self::LeftThumb,
-            Button::RightStick => Self::RightThumb,
-            Button::LeftTrigger => Self::LeftTrigger,
-            Button::RightTrigger => Self::RightTrigger,
-            Button::LeftShoulder => Self::LeftTrigger2,
-            Button::RightShoulder => Self::RightTrigger2,
-            Button::DPadUp => Self::DPadUp,
-            Button::DPadDown => Self::DPadDown,
-            Button::DPadLeft => Self::DPadLeft,
-            Button::DPadRight => Self::DPadRight,
-            Button::Unknown => Self::Unknown,
-        }
-    }
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct KeyMapping {
     primary: KeyCode,
@@ -397,8 +265,8 @@ impl From<usize> for GamepadMapping {
     }
 }
 
-impl From<&GamepadId> for GamepadMapping {
-    fn from(id: &GamepadId) -> Self {
+impl From<GamepadId> for GamepadMapping {
+    fn from(id: GamepadId) -> Self {
         let id: usize = id.into();
         id.into()
     }
@@ -499,8 +367,8 @@ impl Default for InputMapping {
 
 #[derive(Debug, Copy, Clone, PartialEq, Hash, Eq)]
 pub enum MouseButton {
-    Right,
     Left,
     Middle,
-    Unknown,
+    Right,
+    Unknown(usize),
 }

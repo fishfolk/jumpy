@@ -1,35 +1,38 @@
 #[macro_use]
 pub mod error;
-pub mod config;
-pub mod parsing;
-pub mod noise;
-pub mod text;
-pub mod network;
-pub mod channel;
-pub mod transform;
-pub mod events;
-pub mod video;
-pub mod file;
-pub mod color;
 pub mod audio;
-pub mod prelude;
-pub mod texture;
-pub mod ecs;
-pub mod rendering;
-pub mod viewport;
-pub mod storage;
-pub mod state;
-pub mod input;
-pub mod window;
-pub mod resources;
-pub mod particles;
-pub mod map;
-pub mod gui;
+pub mod camera;
+pub mod channel;
+pub mod color;
+pub mod config;
 pub mod drawables;
+pub mod ecs;
+pub mod event;
+pub mod file;
+pub mod game;
+pub mod gui;
+pub mod input;
+pub mod map;
 pub mod math;
+pub mod network;
+pub mod noise;
+pub mod parsing;
+pub mod particles;
+pub mod physics;
+pub mod prelude;
+pub mod rendering;
+pub mod resources;
+pub mod state;
+pub mod storage;
+pub mod text;
+pub mod texture;
+pub mod transform;
+pub mod video;
+pub mod viewport;
+pub mod window;
 
-pub use error::{Error, Result};
 pub use config::Config;
+pub use error::{Error, Result};
 
 pub use macros::*;
 
@@ -51,12 +54,43 @@ cfg_if! {
         pub(crate) mod backend_impl;
 
         pub use macroquad;
-        pub use macroquad::experimental::scene;
-        pub use macroquad::camera;
+    } else {
+        panic!("No backend has been selected");
+    }
+}
+
+cfg_if! {
+    if #[cfg(feature = "platformer-physics")] {
+        #[path = "physics_impl/platformer.rs"]
+        pub(crate) mod physics_impl;
+    } else {
+        pub(crate) mod physics_impl {}
     }
 }
 
 pub use quad_rand as rand;
 
 pub use async_trait::async_trait;
-use cfg_if::cfg_if;
+pub use cfg_if::cfg_if;
+pub use serde;
+pub use serde_json;
+
+pub async fn init<'a, P: Into<Option<&'a str>>>(
+    seed: u64,
+    assets_dir: P,
+    mods_dir: P,
+) -> Result<()> {
+    if let Some(assets_dir) = assets_dir.into() {
+        resources::set_assets_dir(assets_dir);
+    }
+
+    if let Some(mods_dir) = mods_dir.into() {
+        resources::set_mods_dir(mods_dir);
+    }
+
+    rand::srand(seed);
+
+    input::init_gamepad_context().await?;
+
+    Ok(())
+}

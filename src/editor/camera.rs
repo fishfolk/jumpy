@@ -1,8 +1,8 @@
-use hecs::World;
-use ff_core::prelude::*;
+use ff_core::macroquad::camera::Camera2D;
+use ff_core::macroquad::experimental::scene;
+use ff_core::macroquad::experimental::scene::{Node, RefMut};
 
-use ff_core::scene::{self, Node, RefMut};
-use ff_core::camera::Camera2D;
+use ff_core::prelude::*;
 
 pub struct EditorCamera {
     pub position: Vec2,
@@ -21,8 +21,12 @@ impl EditorCamera {
     }
 
     pub fn get_view_rect(&self) -> Rect {
-        let viewport = get_viewport();
-        let size = vec2(viewport.width / self.scale, viewport.height / self.scale);
+        let window_size = window_size();
+        let size = vec2(
+            window_size.width as f32 / self.scale,
+            window_size.height as f32 / self.scale,
+        );
+
         let position = self.position - size / 2.0;
 
         Rect::new(position.x, position.y, size.x, size.y)
@@ -50,12 +54,15 @@ impl EditorCamera {
 
 impl Node for EditorCamera {
     fn fixed_update(mut node: RefMut<Self>) {
-        let viewport = get_viewport();
+        let viewport_size = viewport_size().as_f32();
 
         let camera = Some(Camera2D {
             offset: vec2(0.0, 0.0),
             target: vec2(node.position.x.round(), node.position.y.round()),
-            zoom: vec2(node.scale / viewport.width, -node.scale / viewport.height) * 2.0,
+            zoom: vec2(
+                node.scale / viewport_size.width,
+                -node.scale / viewport_size.height,
+            ) * 2.0,
             ..Camera2D::default()
         });
 

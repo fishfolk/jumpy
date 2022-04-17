@@ -1,5 +1,13 @@
-use ff_core::prelude::*;
-use ff_core::noise::NoiseGenerator;
+use macroquad::experimental::scene::camera_pos;
+
+use crate::math::Vec2;
+
+pub fn camera_position() -> Vec2 {
+    camera_pos()
+}
+
+use crate::noise::NoiseGenerator;
+use crate::prelude::*;
 
 struct Shake {
     direction: (f32, f32),
@@ -18,7 +26,7 @@ enum ShakeType {
     Rotational,
 }
 
-pub struct GameCamera {
+pub struct CameraImpl {
     pub bounds: Rect,
     follow_buffer: Vec<(Vec2, f32)>,
     shake: Vec<Shake>,
@@ -26,33 +34,31 @@ pub struct GameCamera {
     noisegen_position: f32,
 
     pub manual: Option<(Vec2, f32)>,
-    player_rects: Vec<Rect>,
 }
 
-impl GameCamera {
+impl CameraImpl {
     const BUFFER_CAPACITY: usize = 20;
 
-    pub fn new(map_size: Size<f32>) -> GameCamera {
-        let bounds = Rect::new(0.0, 0.0, map_size.width, map_size.height);
-
-        GameCamera {
+    pub fn new<P: Into<Option<Vec2>>>(_position: P, bounds: Size<u32>) -> CameraImpl {
+        CameraImpl {
             bounds,
             follow_buffer: vec![],
             shake: vec![],
             manual: None,
             noisegen: NoiseGenerator::new(5),
             noisegen_position: 5.0,
-            player_rects: Vec::new(),
         }
     }
+}
 
-    pub fn add_player_rect(&mut self, rect: Rect) {
-        self.player_rects.push(rect);
+impl Default for CameraImpl {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
 #[allow(dead_code)]
-impl GameCamera {
+impl CameraImpl {
     pub fn shake_noise(&mut self, magnitude: f32, length: i32, frequency: f32) {
         self.shake.push(Shake {
             direction: (1.0, 1.0),
@@ -60,7 +66,7 @@ impl GameCamera {
             magnitude,
             length: length as f32,
             age: 0.0,
-            random_offset: ff_core::rand::gen_range(1.0, 100.0),
+            random_offset: rand::gen_range(1.0, 100.0),
             frequency,
         });
     }
@@ -78,7 +84,7 @@ impl GameCamera {
             magnitude,
             length: length as f32,
             age: 0.0,
-            random_offset: ff_core::rand::gen_range(1.0, 100.0),
+            random_offset: rand::gen_range(1.0, 100.0),
             frequency,
         });
     }
@@ -99,7 +105,7 @@ impl GameCamera {
         self.shake.push(Shake {
             direction: (1.0, 1.0),
             kind: ShakeType::Rotational,
-            magnitude: magnitude * (ff_core::rand::gen_range(0, 2) as f32 - 0.5) * 2.0,
+            magnitude: magnitude * (rand::gen_range(0, 2) as f32 - 0.5) * 2.0,
             length: length as f32,
             age: 0.0,
             random_offset: 0.0,
@@ -164,16 +170,16 @@ impl GameCamera {
         (shake_offset, shake_rotation)
     }
 
-    pub fn update(&mut self) {
-        {
-            let aspect = get_viewport().aspect_ratio();
+    pub fn update(&mut self, player_rects: &[Rect]) {
+        let aspect = viewport().aspect_ratio();
 
+        {
             let mut middle_point = vec2(0.0, 0.0);
             let mut min = vec2(10000.0, 10000.0);
             let mut max = vec2(-10000.0, -10000.0);
 
-            let player_cnt = self.player_rects.len();
-            for rect in self.player_rects.drain(0..player_cnt) {
+            let player_cnt = player_rects.len();
+            for rect in player_rects {
                 let camera_pox_middle = rect.point() + rect.size() / 2.0;
                 //let k = if player.controller_id == 1 { 0.8 } else { 0.2 };
                 middle_point += camera_pox_middle; // * k;
@@ -207,6 +213,7 @@ impl GameCamera {
             self.follow_buffer.insert(0, (middle_point, zoom));
             self.follow_buffer.truncate(Self::BUFFER_CAPACITY);
         }
+
         let mut sum_pos = (0.0f64, 0.0f64);
         let mut sum_zoom = 0.0;
         for (pos, zoom) in &self.follow_buffer {
@@ -224,26 +231,18 @@ impl GameCamera {
         middle_point += shake.0;
         let rotation = shake.1;
 
-        let aspect = get_viewport().aspect_ratio();
+        use macroquad::camera::Camera2D;
+        use macroquad::experimental::scene;
 
-        cfg_if! {
-            if #[cfg(feature = "ultimate")] {
-                unimplemented!("Camera not implemented!")
-            } else {
-                use ff_core::macroquad::camera::Camera2D;
-                use ff_core::macroquad::experimental::scene;
+        // let middle_point = vec2(400.0, 600.0);
+        // let zoom = 400.0;
+        let macroquad_camera = Camera2D {
+            target: middle_point,
+            zoom: vec2(1. / aspect, -1.0) / zoom * 2.0,
+            rotation,
+            ..Camera2D::default()
+        };
 
-                // let middle_point = vec2(400.0, 600.0);
-                // let zoom = 400.0;
-                let macroquad_camera = Camera2D {
-                    target: middle_point,
-                    zoom: vec2(1. / aspect, -1.0) / zoom * 2.0,
-                    rotation,
-                    ..Camera2D::default()
-                };
-
-                scene::set_camera(0, Some(macroquad_camera));
-            }
-        }
+        scene::set_camera(0, Some(macroquad_camera));
     }
 }

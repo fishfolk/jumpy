@@ -199,7 +199,7 @@ impl AnimatedSprite {
     }
 
     pub fn size(&self) -> Size<f32> {
-        self.frame_size.with_scale(self.scale)
+        self.frame_size.to_scaled(self.scale)
     }
 
     pub fn source_rect(&self) -> Rect {
@@ -252,12 +252,12 @@ pub fn update_animated_sprites(world: &mut World, delta_time: f32) -> Result<()>
     for (_, drawable) in world.query_mut::<&mut Drawable>() {
         match drawable.kind.borrow_mut() {
             DrawableKind::AnimatedSprite(sprite) => {
-                update_one_animated_sprite(delta_time, sprite)?;
+                update_one_animated_sprite(delta_time, sprite);
             }
             DrawableKind::AnimatedSpriteSet(sprite_set) => {
                 for key in &sprite_set.draw_order {
                     let sprite = sprite_set.map.get_mut(key).unwrap();
-                    update_one_animated_sprite(delta_time, sprite)?;
+                    update_one_animated_sprite(delta_time, sprite);
                 }
             }
             _ => {}
@@ -267,7 +267,7 @@ pub fn update_animated_sprites(world: &mut World, delta_time: f32) -> Result<()>
     Ok(())
 }
 
-pub fn update_one_animated_sprite(delta_time: f32, sprite: &mut AnimatedSprite) -> Result<()> {
+pub fn update_one_animated_sprite(delta_time: f32, sprite: &mut AnimatedSprite) {
     if !sprite.is_deactivated && sprite.is_playing {
         let (is_last_frame, is_looping) = {
             let animation = sprite.animations.get(sprite.current_index).unwrap();
@@ -369,11 +369,9 @@ pub fn update_one_animated_sprite(delta_time: f32, sprite: &mut AnimatedSprite) 
             }
         }
     }
-
-    Ok(())
 }
 
-pub fn draw_one_animated_sprite(transform: &Transform, sprite: &AnimatedSprite) -> Result<()> {
+pub fn draw_one_animated_sprite(transform: &Transform, sprite: &AnimatedSprite) {
     if !sprite.is_deactivated {
         let position = transform.position + sprite.offset;
 
@@ -386,17 +384,15 @@ pub fn draw_one_animated_sprite(transform: &Transform, sprite: &AnimatedSprite) 
                 flip_y: sprite.is_flipped_y,
                 rotation: transform.rotation,
                 source: Some(sprite.source_rect()),
-                dest_size: Some(sprite.frame_size.with_scale(sprite.scale)),
+                dest_size: Some(sprite.frame_size.to_scaled(sprite.scale)),
                 pivot: sprite.pivot,
                 tint: Some(sprite.tint),
             },
         )
     }
-
-    Ok(())
 }
 
-pub fn debug_draw_one_animated_sprite(position: Vec2, sprite: &AnimatedSprite) -> Result<()> {
+pub fn debug_draw_one_animated_sprite(position: Vec2, sprite: &AnimatedSprite) {
     if !sprite.is_deactivated {
         let position = position + sprite.offset;
         let size = sprite.size();
@@ -410,8 +406,6 @@ pub fn debug_draw_one_animated_sprite(position: Vec2, sprite: &AnimatedSprite) -
             colors::BLUE,
         )
     }
-
-    Ok(())
 }
 
 #[derive(Default)]

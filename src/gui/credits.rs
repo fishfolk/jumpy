@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use fishsticks::{Button, GamepadContext};
+use ff_core::input::{Button, GamepadContext};
 
 use ff_core::macroquad::window::{clear_background, next_frame};
 use ff_core::prelude::*;
@@ -78,7 +78,7 @@ pub async fn show_game_credits(assets_dir: &str) {
     let font = get_font("anonymous_pro_regular");
 
     loop {
-        if is_key_pressed(KeyCode::Escape) || is_gamepad_button_pressed(Button::East) {
+        if is_key_pressed(KeyCode::Escape) || is_gamepad_button_pressed(None, Button::B) {
             break;
         }
 
@@ -86,7 +86,7 @@ pub async fn show_game_credits(assets_dir: &str) {
         delta -= 0.5;
 
         for credit in &credits {
-            let x = get_viewport().width / 2.0 - credit.x;
+            let x = viewport().width as f32 / 2.0 - credit.x;
             let y = credit.y + delta;
             draw_text(
                 &credit.text,
@@ -125,7 +125,7 @@ fn create_game_credits() -> Vec<CreditLabel> {
                 game_credits.push(CreditLabel {
                     text: credit_label.0.to_string(),
                     x: TEXT_X_OFFSET,
-                    y: get_viewport().height + prev_position,
+                    y: viewport_size().height as f32 + prev_position,
                     font_size: 100,
                 });
             }
@@ -135,7 +135,7 @@ fn create_game_credits() -> Vec<CreditLabel> {
                 game_credits.push(CreditLabel {
                     text: credit_label.0.to_string(),
                     x: TEXT_X_OFFSET,
-                    y: get_viewport().height + prev_position,
+                    y: viewport_size().height as f32 + prev_position,
                     font_size: 40,
                 });
             }
@@ -145,7 +145,7 @@ fn create_game_credits() -> Vec<CreditLabel> {
                 game_credits.push(CreditLabel {
                     text: credit_label.0.to_string(),
                     x: TEXT_X_OFFSET,
-                    y: get_viewport().height + prev_position,
+                    y: viewport_size().height as f32 + prev_position,
                     font_size: 30,
                 });
             }

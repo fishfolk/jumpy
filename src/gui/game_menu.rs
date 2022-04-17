@@ -19,7 +19,7 @@ pub fn open_game_menu() {
                 hash!("game_menu"),
                 MENU_WIDTH,
                 &[
-                    #[cfg(not(feature = "ultimate"))]
+                    #[cfg(feature = "macroquad")]
                     MenuEntry {
                         index: GAME_MENU_RESULT_MAIN_MENU,
                         title: "Main Menu".to_string(),

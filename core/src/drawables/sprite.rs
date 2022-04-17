@@ -83,8 +83,7 @@ impl Sprite {
         let source_rect = {
             let sprite_size = params.sprite_size.unwrap_or_else(|| texture.size());
 
-            let grid_size =
-                Size::from(texture.size().as_vec2().as_uvec2() / sprite_size.as_vec2().as_uvec2());
+            let grid_size = Size::from(texture.size().as_uvec2() / sprite_size.as_uvec2());
 
             {
                 let frame_cnt = (grid_size.width * grid_size.height) as usize;

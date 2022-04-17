@@ -2,10 +2,12 @@ use ff_core::prelude::*;
 
 use super::EditorAction;
 
-use ff_core::gui::{ELEMENT_MARGIN, get_gui_theme};
+#[cfg(feature = "macroquad")]
+use ff_core::gui::get_gui_theme;
+use ff_core::gui::ELEMENT_MARGIN;
 
 use ff_core::macroquad::hash;
-use ff_core::macroquad::ui::{Ui, widgets};
+use ff_core::macroquad::ui::{widgets, Ui};
 
 #[derive(Debug, Clone)]
 pub enum ContextMenuEntry {
@@ -134,19 +136,19 @@ fn get_corrected_position(position: Vec2, entries: &[ContextMenuEntry], is_root:
         height += entry.get_height();
     }
 
-    let viewport = get_viewport();
+    let viewport_size = viewport_size().as_f32();
 
     let x = if is_root {
         position
             .x
-            .clamp(0.0, viewport.width - ContextMenuEntry::WIDTH)
-    } else if position.x + ContextMenuEntry::WIDTH > viewport.width {
+            .clamp(0.0, viewport_size.width - ContextMenuEntry::WIDTH)
+    } else if position.x + ContextMenuEntry::WIDTH > viewport_size.width {
         position.x - ContextMenuEntry::WIDTH * 2.0
     } else {
         position.x
     };
 
-    let y = position.y.clamp(0.0, viewport.height - height);
+    let y = position.y.clamp(0.0, viewport_size.height - height);
 
     vec2(x, y)
 }

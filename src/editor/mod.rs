@@ -186,8 +186,8 @@ impl Editor {
 
         let selected_layer = map_resource.map.draw_order.first().cloned();
 
-        let viewport = get_viewport();
-        let cursor_position = vec2(viewport.width / 2.0, viewport.height / 2.0);
+        let viewport_size = viewport_size().as_f32();
+        let cursor_position = vec2(viewport_size.width / 2.0, viewport_size.height / 2.0);
 
         let tool_selector_element = ToolSelectorElement::new()
             .with_tool::<TilePlacementTool>()
@@ -633,10 +633,10 @@ impl Editor {
             }
             EditorAction::ExitToMainMenu => {
                 let state = MainMenuState::new();
-                GameEvent::StateTransition(Box::new(state)).dispatch();
+                dispatch_event(Event::StateTransition(Box::new(state)));
             }
             EditorAction::QuitToDesktop => {
-                GameEvent::Quit.dispatch();
+                dispatch_event(Event::Quit);
             }
         }
 
@@ -653,7 +653,7 @@ impl Node for Editor {
         node.update_context();
 
         node.previous_cursor_position = node.cursor_position;
-        node.cursor_position = get_mouse_position().into();
+        node.cursor_position = mouse_position().into();
 
         let dt = ff_core::macroquad::prelude::get_frame_time();
 
@@ -1137,21 +1137,21 @@ impl Node for Editor {
             !gui.contains(node.cursor_position)
         };
 
-        let viewport = get_viewport();
+        let viewport_size = viewport_size().as_f32();
 
-        let threshold = viewport.as_vec2() * Self::CAMERA_PAN_THRESHOLD;
+        let threshold = viewport_size.as_vec2() * Self::CAMERA_PAN_THRESHOLD;
 
         let mut pan_direction = node.input.camera_move_direction;
 
         if node.cursor_position.x <= threshold.x {
             pan_direction.x = -1.0;
-        } else if node.cursor_position.x >= viewport.width - threshold.x {
+        } else if node.cursor_position.x >= viewport_size.width - threshold.x {
             pan_direction.x = 1.0;
         }
 
         if node.cursor_position.y <= threshold.y {
             pan_direction.y = -1.0;
-        } else if node.cursor_position.y >= viewport.height - threshold.y {
+        } else if node.cursor_position.y >= viewport_size.height - threshold.y {
             pan_direction.y = 1.0;
         }
 
@@ -1541,8 +1541,8 @@ impl Node for Editor {
             push_camera_state();
             set_default_camera();
 
-            let viewport = get_viewport();
-            let label_position = vec2(viewport.width / 2.0, 16.0);
+            let viewport_size = viewport_size().as_f32();
+            let label_position = vec2(viewport_size.width / 2.0, 16.0);
 
             draw_aligned_text(
                 label,

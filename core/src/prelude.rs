@@ -1,18 +1,21 @@
 pub use cfg_if::cfg_if;
 
 pub use crate::file::load_file;
+pub use crate::init as init_core;
 
 pub use crate::audio::*;
+pub use crate::camera::*;
 pub use crate::channel::*;
 pub use crate::color::*;
 pub use crate::config::*;
 pub use crate::drawables::*;
-pub use crate::ecs::*;
-pub use crate::events::*;
+pub use crate::event::*;
+pub use crate::game::*;
 pub use crate::input::*;
 pub use crate::math::*;
 pub use crate::parsing::*;
 pub use crate::particles::*;
+pub use crate::physics::*;
 pub use crate::rendering::*;
 pub use crate::state::*;
 pub use crate::texture::*;
@@ -20,6 +23,8 @@ pub use crate::transform::*;
 pub use crate::viewport::*;
 pub use crate::window::*;
 pub use crate::Result;
+
+pub use crate::ecs::{DrawFn, Entity, FixedUpdateFn, UpdateFn, World};
 
 pub use crate::resources::{
     assets_dir, get_decoration, get_font, get_map, get_particle_effect, get_sound, get_texture,

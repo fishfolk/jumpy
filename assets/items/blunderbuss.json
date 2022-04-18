@@ -7,6 +7,13 @@
   "attack_duration": 1.0,
   "recoil": 5.5,
   "sound_effect": "shoot",
+  "particles": [
+    {
+      "particle_effect": "blunderbuss_muzzle_smoke",
+      "interval": 0.04,
+      "emissions": 6
+    }
+  ],
   "collider_size": {
     "x": 64,
     "y": 25
@@ -26,19 +33,19 @@
       "projectile": {
         "type": "sprite",
         "sprite": {
-          "texture": "small_projectile",
+          "texture": "blunderbuss_bullet",
           "size": {
-            "x": 8,
-            "y": 4
-          },
-          "tint": {
-            "r": 0.9,
-            "g": 0.75,
-            "b": 0.12,
-            "a": 1.0
+            "x": 6,
+            "y": 6
           }
         }
       },
+      "particles": [
+        {
+          "particle_effect": "blunderbuss_bullet_smoke",
+          "interval": 0.01
+        }
+      ],
       "range": 280.0,
       "speed": 9.0
     },
@@ -48,19 +55,19 @@
       "projectile": {
         "type": "sprite",
         "sprite": {
-          "texture": "small_projectile",
+          "texture": "blunderbuss_bullet",
           "size": {
-            "x": 8,
-            "y": 4
-          },
-          "tint": {
-            "r": 0.9,
-            "g": 0.75,
-            "b": 0.12,
-            "a": 1.0
+            "x": 6,
+            "y": 6
           }
         }
       },
+      "particles": [
+        {
+          "particle_effect": "blunderbuss_bullet_smoke",
+          "interval": 0.01
+        }
+      ],
       "range": 280.0,
       "speed": 9.0
     },
@@ -70,19 +77,19 @@
       "projectile": {
         "type": "sprite",
         "sprite": {
-          "texture": "small_projectile",
+          "texture": "blunderbuss_bullet",
           "size": {
-            "x": 8,
-            "y": 4
-          },
-          "tint": {
-            "r": 0.9,
-            "g": 0.75,
-            "b": 0.12,
-            "a": 1.0
+            "x": 6,
+            "y": 6
           }
         }
       },
+      "particles": [
+        {
+          "particle_effect": "blunderbuss_bullet_smoke",
+          "interval": 0.01
+        }
+      ],
       "range": 280.0,
       "speed": 9.0
     },
@@ -92,19 +99,19 @@
       "projectile": {
         "type": "sprite",
         "sprite": {
-          "texture": "small_projectile",
+          "texture": "blunderbuss_bullet",
           "size": {
-            "x": 8,
-            "y": 4
-          },
-          "tint": {
-            "r": 0.9,
-            "g": 0.75,
-            "b": 0.12,
-            "a": 1.0
+            "x": 6,
+            "y": 6
           }
         }
       },
+      "particles": [
+        {
+          "particle_effect": "blunderbuss_bullet_smoke",
+          "interval": 0.01
+        }
+      ],
       "range": 280.0,
       "speed": 9.0
     },
@@ -114,19 +121,19 @@
       "projectile": {
         "type": "sprite",
         "sprite": {
-          "texture": "small_projectile",
+          "texture": "blunderbuss_bullet",
           "size": {
-            "x": 8,
-            "y": 4
-          },
-          "tint": {
-            "r": 0.9,
-            "g": 0.75,
-            "b": 0.12,
-            "a": 1.0
+            "x": 6,
+            "y": 6
           }
         }
       },
+      "particles": [
+        {
+          "particle_effect": "blunderbuss_bullet_smoke",
+          "interval": 0.01
+        }
+      ],
       "range": 280.0,
       "speed": 9.0
     }

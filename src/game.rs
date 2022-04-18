@@ -113,7 +113,7 @@ pub fn build_state_for_game_mode(
                 title: "Main Menu".to_string(),
                 action: || {
                     let state = MainMenuState::new();
-                    dispatch_event(Event::StateTransition(Box::new(state)));
+                    dispatch_event(Event::state_transition(state));
                 },
                 ..Default::default()
             },

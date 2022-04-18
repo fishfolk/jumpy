@@ -19,7 +19,7 @@ const DEFAULT_CONFIG_PATH: &str = "config.toml";
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, FromMeta)]
 #[darling(default)]
-pub(crate) enum Backend {
+pub enum Backend {
     Internal,
     Macroquad,
 }
@@ -109,18 +109,6 @@ pub(crate) fn async_main_impl(
         })
     });
 
-    let event_type = Type::from_string(
-        &args
-            .event_type
-            .unwrap_or_else(|| format!("{}::event::DefaultCustomEvent", core_crate)),
-    )
-    .unwrap_or_else(|err| {
-        panic!(
-            "{}::async_main: Error when building event_type path: {}",
-            core_crate, err
-        )
-    });
-
     let custom_resources = args
         .custom_resources
         .map(|mut s| {
@@ -130,7 +118,7 @@ pub(crate) fn async_main_impl(
             s.split(',')
                 .into_iter()
                 .map(|s| s.trim().to_string())
-                .map(|s| Path::from_string(&prepend_crate(s))
+                .map(|s| Type::from_string(&prepend_crate(s))
                     .unwrap_or_else(|err| panic!(
                         "{}::async_main: Error when building custom_resources paths: {}",
                         core_crate, err
@@ -195,6 +183,19 @@ pub(crate) fn async_main_impl(
 
     let main_impl = match args.backend {
         Backend::Internal => {
+            let event_type = Type::from_string(
+                &args
+                    .event_type
+                    .map(|s| prepend_crate(s))
+                    .unwrap_or_else(|| format!("{}::event::DefaultCustomEvent", core_crate)),
+            )
+            .unwrap_or_else(|err| {
+                panic!(
+                    "{}::async_main: Error when building event_type path: {}",
+                    core_crate, err
+                )
+            });
+
             let events = TokenStream::from(custom_events(&core_crate, event_type));
 
             context.extend(events);
@@ -207,7 +208,11 @@ pub(crate) fn async_main_impl(
 
             internal_main(&core_crate, &core_impl, &error_type)
         }
-        Backend::Macroquad => macroquad_main(&core_crate, &core_impl, window_title, &error_type),
+        Backend::Macroquad => {
+            println!("WARNING: {}::async_main: An event type was specified but this is not supported when using the Macroquad backend!", core_crate);
+
+            macroquad_main(&core_crate, &core_impl, window_title, &error_type)
+        }
     };
 
     let impl_module = quote! {

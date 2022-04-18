@@ -5,7 +5,7 @@ use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
 use syn::{
     bracketed, parse_quote, token, Block, ExprBlock, Ident, ItemFn, Lit, LitBool, LitStr, Path,
-    Stmt, Token,
+    Stmt, Token, Type,
 };
 
 use crate::resources::DEFAULT_EXTENSION;
@@ -13,7 +13,7 @@ use crate::resources::DEFAULT_EXTENSION;
 struct Signature {
     core_crate: Ident,
     extension: String,
-    types: Vec<Path>,
+    types: Vec<Type>,
 }
 
 struct Syntax {
@@ -22,7 +22,7 @@ struct Syntax {
     extension: LitStr,
     _comma_2: Token![,],
     _bracket: token::Bracket,
-    types: Punctuated<Path, Token![,]>,
+    types: Punctuated<Type, Token![,]>,
 }
 
 impl Parse for Signature {
@@ -37,7 +37,7 @@ impl Parse for Signature {
                 extension: stream.parse()?,
                 _comma_2: stream.parse()?,
                 _bracket: bracketed!(content in stream),
-                types: content.parse_terminated(Path::parse)?,
+                types: content.parse_terminated(Type::parse)?,
             };
 
             Ok(Signature {
@@ -62,7 +62,7 @@ pub(crate) fn setup_resources_impl(input: proc_macro::TokenStream) -> proc_macro
 pub(crate) fn resource_loading(
     core_crate: &Ident,
     extension: Option<String>,
-    custom_resources: &[Path],
+    custom_resources: &[Type],
 ) -> proc_macro::TokenStream {
     let mut extension = extension.unwrap_or_else(|| DEFAULT_EXTENSION.to_string());
 

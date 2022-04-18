@@ -204,7 +204,7 @@ async fn macroquad_main() -> Result<()> {
             match event {
                 Event::StateTransition(state) => {
                     let mut game = scene::find_node_by_type::<Game>().unwrap();
-                    game.set_state(state)?;
+                    game.change_state(state)?;
                 }
                 Event::Quit => break 'outer,
                 _ => {}

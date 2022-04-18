@@ -1,5 +1,5 @@
 use std::borrow::BorrowMut;
-use std::cell::{Ref, RefCell};
+use std::cell::{Ref, RefCell, RefMut};
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::ops::Deref;
@@ -31,7 +31,7 @@ use crate::state::{GameState, GameStateBuilderFn};
 pub struct Game {
     window_title: String,
     config: Config,
-    state: Box<dyn GameState>,
+    state: Rc<RefCell<dyn GameState>>,
     fixed_draw_delta_time: Option<Duration>,
     last_update: Instant,
     last_draw: Instant,
@@ -48,7 +48,7 @@ impl Game {
         Game {
             window_title: window_title.to_string(),
             config: config.clone(),
-            state: Box::new(state),
+            state: Rc::new(RefCell::new(state)),
             fixed_draw_delta_time,
             last_update: Instant::now(),
             last_draw: Instant::now(),
@@ -56,21 +56,21 @@ impl Game {
         }
     }
 
-    fn change_state(&mut self, id: &str, builder: GameStateBuilderFn) -> Result<()> {
+    pub fn change_state(&mut self, state: Rc<RefCell<dyn GameState>>) -> Result<()> {
         stop_music();
 
         physics_world().clear();
 
-        let world = self.state.end()?;
+        let world = self.get_state().end()?;
 
-        self.state = builder();
+        self.state = state;
 
-        self.state.begin(world)?;
+        self.get_state().begin(world)?;
 
         Ok(())
     }
 
-    fn apply_config(&mut self, config: &Config) {
+    pub fn apply_config(&mut self, config: &Config) {
         self.config = config.clone();
 
         self.fixed_draw_delta_time = config
@@ -83,6 +83,14 @@ impl Game {
         apply_audio_config(&config.audio);
 
         apply_input_config(&config.input);
+    }
+
+    pub fn try_get_state(&mut self) -> Option<&mut (dyn GameState + 'static)> {
+        Rc::get_mut(&mut self.state).map(|rc| rc.get_mut())
+    }
+
+    pub fn get_state(&mut self) -> &mut (dyn GameState + 'static) {
+        self.try_get_state().unwrap()
     }
 
     pub async fn run<E, H>(self, event_loop: EventLoop<Event<E>>, event_handler: H) -> Result<()>
@@ -103,7 +111,7 @@ impl Game {
                 winit::event::Event::NewEvents(cause) => {
                     match cause {
                         StartCause::Init => {
-                            game.state.begin(None);
+                            game.get_state().begin(None);
                         }
                         _ => {}
                     }
@@ -120,8 +128,8 @@ impl Game {
                 winit::event::Event::UserEvent(event) => match event {
                     Event::Custom(event) => event_handler.handle_custom(event, control_flow),
                     Event::ConfigChanged(config) => game.apply_config(config),
-                    Event::StateTransition(id, builder) => game
-                        .change_state(id, *builder)
+                    Event::StateTransition(state) => game
+                        .change_state(state.clone())
                         .unwrap_or_else(|err| panic!("Error when changing state: {}", err)),
                     Event::Quit => {
                         *control_flow = ControlFlow::Exit;
@@ -152,7 +160,7 @@ impl Game {
 
                     let delta_time = now.duration_since(game.last_update);
 
-                    game.state
+                    game.get_state()
                         .update(delta_time.as_secs_f32())
                         .unwrap_or_else(|err| panic!("Error in game state update: {}", err));
 
@@ -172,7 +180,7 @@ impl Game {
                                 game.fixed_update_accumulator / fixed_delta_time
                             };
 
-                        game.state
+                        game.get_state()
                             .fixed_update(fixed_delta_time, integration_factor)
                             .unwrap_or_else(|err| {
                                 panic!("Error in game state fixed update: {}", err)
@@ -186,7 +194,7 @@ impl Game {
                         let draw_delta_time = now.duration_since(game.last_draw);
 
                         if draw_delta_time >= fixed_draw_delta_time {
-                            game.state
+                            game.get_state()
                                 .draw(draw_delta_time.as_secs_f32())
                                 .unwrap_or_else(|err| {
                                     panic!("Error in game state fixed draw: {}", err)
@@ -198,7 +206,7 @@ impl Game {
                 } else {
                     stop_music();
 
-                    game.state.end();
+                    game.get_state().end();
 
                     return;
                 }

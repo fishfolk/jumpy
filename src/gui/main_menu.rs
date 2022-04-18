@@ -914,12 +914,11 @@ impl GameState for MainMenuState {
             match res {
                 MainMenuResult::LocalGame { map, players } => {
                     let state = build_state_for_game_mode(GameMode::Local, map, &players).unwrap();
-
-                    dispatch_event(Event::StateTransition(Box::new(state)));
+                    dispatch_event(Event::state_transition(state));
                 }
                 MainMenuResult::Editor { map: _ } => {
                     // let state = build_editor_state(map);
-                    // dispatch_event(GameEvent::StateTransition(Box::new(state)));
+                    // dispatch_event(GameEvent::state_transition(state));
                 }
                 MainMenuResult::ReloadResources => {
                     // dispatch_event(Event::ReloadResources);

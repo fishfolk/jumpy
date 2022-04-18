@@ -24,7 +24,7 @@ impl Game {
         })
     }
 
-    pub fn set_state(&mut self, state: Box<dyn GameState>) -> Result<()> {
+    pub fn change_state(&mut self, state: Box<dyn GameState>) -> Result<()> {
         let world = self.state.end()?;
 
         self.state = state;

@@ -13,7 +13,7 @@
   },
   "effect_offset": {
     "x": 64,
-    "y": 25
+    "y": 8
   },
   "mount_offset": {
     "x": -34,
@@ -141,12 +141,6 @@
         "frames": 1,
         "fps": 1,
         "is_looping": true
-      },
-      {
-        "id": "attack",
-        "row": 1,
-        "frames": 3,
-        "fps": 15
       }
     ]
   },
@@ -155,9 +149,9 @@
     "animations": [
       {
         "id": "attack",
-        "row": 2,
-        "frames": 4,
-        "fps": 12
+        "row": 0,
+        "frames": 1,
+        "fps": 1
       }
     ]
   }

@@ -2,7 +2,7 @@
   "local_coords": false,
   "emission_shape": "Point",
   "one_shot": true,
-  "lifetime": 0.8,
+  "lifetime": 0.5,
   "lifetime_randomness": 0,
   "explosiveness": 1,
   "amount": 1,
@@ -20,7 +20,7 @@
   "initial_velocity": 54.300003,
   "initial_velocity_randomness": 0.4,
   "linear_accel": -0.89999986,
-  "size": 4.5,
+  "size": 4.0,
   "size_randomness": 0,
   "size_curve": {
     "points": [

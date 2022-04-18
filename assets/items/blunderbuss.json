@@ -10,8 +10,8 @@
   "particles": [
     {
       "particle_effect": "blunderbuss_muzzle_smoke",
-      "interval": 0.04,
-      "emissions": 6
+      "interval": 0.01,
+      "emissions": 16
     }
   ],
   "collider_size": {

@@ -20,8 +20,8 @@ default = ["macroquad"]
 macroquad = []
 
 [dependencies]
-# ff_core = { path = "./core", version = "0.4.1", package = "fishfight-core" }
-ff_core = { path = "./core", version = "0.4.1", package = "fishfight-core", default-features = false, features = ["macroquad-backend", "platformer-physics"] }
+ff_core = { path = "./core", version = "0.4.1", package = "fishfight-core" }
+# ff_core = { path = "./core", version = "0.4.1", package = "fishfight-core", default-features = false, features = ["macroquad-backend", "platformer-physics"] }
 # ultimate = { path = "../FishFight-ultimate/client", package = "fishfight-ultimate-client", optional = true }
 serde = { version = "1.0.136", package = "serde", features = ["derive"] }
 

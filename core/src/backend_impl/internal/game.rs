@@ -23,36 +23,71 @@ use crate::input::{
 use crate::math::Size;
 use crate::physics::{fixed_delta_time, physics_world};
 use crate::prelude::{input_event_handler, DefaultEventHandler};
-use crate::window::{active_window, apply_window_config, create_window, WindowMode};
+use crate::window::{
+    active_window, apply_window_config, create_window, WindowMode, DEFAULT_WINDOW_TITLE,
+};
 use crate::{Config, Result};
 
 use crate::state::{GameState, GameStateBuilderFn};
 
-pub struct Game {
+pub struct Game<E: 'static + Debug> {
     window_title: String,
     config: Config,
     state: Rc<RefCell<dyn GameState>>,
+    event_loop: Option<EventLoop<Event<E>>>,
+    event_handler: Option<Box<dyn EventHandler<E>>>,
     fixed_draw_delta_time: Option<Duration>,
     last_update: Instant,
     last_draw: Instant,
     fixed_update_accumulator: f32,
 }
 
-impl Game {
-    pub fn new<S: 'static + GameState>(window_title: &str, config: &Config, state: S) -> Self {
+impl<E: 'static + Debug> Game<E> {
+    pub fn new<S: 'static + GameState>(state: S) -> Self {
+        let config = Config::default();
+
         let fixed_draw_delta_time = config
             .rendering
             .max_fps
             .map(|max_fps| Duration::from_secs_f32(1.0 / max_fps as f32));
 
         Game {
-            window_title: window_title.to_string(),
-            config: config.clone(),
+            window_title: DEFAULT_WINDOW_TITLE.to_string(),
+            config,
             state: Rc::new(RefCell::new(state)),
+            event_loop: None,
+            event_handler: None,
             fixed_draw_delta_time,
             last_update: Instant::now(),
             last_draw: Instant::now(),
             fixed_update_accumulator: 0.0,
+        }
+    }
+
+    pub fn with_window_title(self, window_title: &str) -> Self {
+        Game {
+            window_title: window_title.to_string(),
+            ..self
+        }
+    }
+
+    pub fn with_config(self, config: Config) -> Self {
+        let mut res = self;
+        res.apply_config(&config);
+        res
+    }
+
+    pub fn with_event_loop(self, event_loop: EventLoop<Event<E>>) -> Self {
+        Game {
+            event_loop: Some(event_loop),
+            ..self
+        }
+    }
+
+    pub fn with_event_handler<H: 'static + EventHandler<E>>(self, event_handler: H) -> Self {
+        Game {
+            event_handler: Some(Box::new(event_handler)),
+            ..self
         }
     }
 
@@ -93,14 +128,18 @@ impl Game {
         self.try_get_state().unwrap()
     }
 
-    pub async fn run<E, H>(self, event_loop: EventLoop<Event<E>>, event_handler: H) -> Result<()>
-    where
-        E: 'static + Debug,
-        H: 'static + EventHandler<E>,
-    {
+    pub async fn run(self) -> Result<()> {
         let mut game = self;
 
-        let mut event_handler = event_handler;
+        let event_loop = game
+            .event_loop
+            .take()
+            .unwrap_or_else(|| EventLoop::<Event<E>>::with_user_event());
+
+        let mut event_handler = game
+            .event_handler
+            .take()
+            .unwrap_or_else(|| Box::new(DefaultEventHandler));
 
         let _window = create_window(&game.window_title, &event_loop, &game.config.window)?;
 

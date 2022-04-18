@@ -91,12 +91,23 @@ pub fn config_path() -> String {
     path.to_string_lossy().to_string()
 }
 
-#[ff_core::async_main(
-    core_rename = "ff_core",
-    window_title = "Fish Fight",
-    config_path_fn = "config_path",
-    custom_resources = "[items::MapItemMetadata, player::CharacterMetadata]",
-    backend = "macroquad"
+#[cfg_attr(
+    feature = "macroquad",
+    ff_core::async_main(
+        core_rename = "ff_core",
+        window_title = "Fish Fight",
+        config_path_fn = "config_path",
+        custom_resources = "[items::MapItemMetadata, player::CharacterMetadata]",
+        backend = "macroquad"
+    )
+)]
+#[cfg_attr(
+    not(feature = "macroquad"),
+    ff_core::async_main(
+        core_rename = "ff_core",
+        custom_resources = "[items::MapItemMetadata, player::CharacterMetadata]",
+        backend = "internal"
+    )
 )]
 async fn main() -> Result<()> {
     let assets_dir = env::var(ASSETS_DIR_ENV_VAR).unwrap_or_else(|_| "assets/".to_string());
@@ -113,7 +124,7 @@ async fn main() -> Result<()> {
     ff_core::cfg_if! {
         if #[cfg(feature = "macroquad")] {
             macroquad_main().await?;
-        } else  if #[cfg(feature = "ultimate")] {
+        } else if #[cfg(feature = "ultimate")] {
             ultimate_main().await?;
         } else {
             internal_main().await?;
@@ -141,11 +152,15 @@ async fn internal_main() -> Result<()> {
 
     let config = load_config(config_path()).await?;
 
-    let state = build_state_for_game_mode(GameMode::Local, map_resource.map, players)?;
+    let initial_state = build_state_for_game_mode(GameMode::Local, map_resource.map, players)?;
 
-    let mut game = Game::new(WINDOW_TITLE, &config, state);
-
-    game.run(new_event_loop(), DefaultEventHandler).await?;
+    Game::new(initial_state)
+        .with_window_title(WINDOW_TITLE)
+        .with_config(config)
+        .with_event_loop(new_event_loop())
+        .with_event_handler(DefaultEventHandler)
+        .run()
+        .await?;
 
     Ok(())
 }

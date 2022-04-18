@@ -7,6 +7,8 @@ use crate::Result;
 
 pub use crate::backend_impl::window::*;
 
+pub const DEFAULT_WINDOW_TITLE: &str = "Game Window";
+
 const DEFAULT_WINDOW_WIDTH: u32 = 955;
 const DEFAULT_WINDOW_HEIGHT: u32 = 600;
 

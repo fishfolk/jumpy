@@ -3,8 +3,8 @@ use std::fmt::Debug;
 use std::ops::{Deref, DerefMut};
 use winit::event_loop::EventLoop;
 
-use winit::window::Window as WinitWindow;
 use winit::window::{Fullscreen, WindowBuilder};
+use winit::window::{Window as WinitWindow, WindowId};
 
 use crate::event::Event;
 use crate::math::Size;
@@ -12,41 +12,40 @@ use crate::video::Display;
 use crate::window::{WindowConfig, WindowMode};
 use crate::Result;
 
-static mut LAST_WINDOW_ID: usize = 0;
+static mut WINDOWS: Option<HashMap<WindowId, WinitWindow>> = None;
 
-fn window_id() -> usize {
-    unsafe {
-        LAST_WINDOW_ID += 1;
-        LAST_WINDOW_ID
-    }
-}
-
-static mut WINDOWS: Option<HashMap<usize, WinitWindow>> = None;
-
-fn windows() -> &'static mut HashMap<usize, WinitWindow> {
+fn windows() -> &'static mut HashMap<WindowId, WinitWindow> {
     unsafe { WINDOWS.get_or_insert_with(HashMap::new) }
 }
 
-static mut ACTIVE_WINDOW: Option<usize> = None;
+static mut PRIMARY_WINDOW: Option<WindowId> = None;
 
-pub fn is_active_window_set() -> bool {
-    unsafe { ACTIVE_WINDOW.is_some() }
+pub fn primary_window() -> Window {
+    unsafe {
+        PRIMARY_WINDOW
+            .unwrap_or_else(|| {
+                panic!("Attempted to get primary window but none exist! Have you created a window?")
+            })
+            .into()
+    }
 }
 
-pub fn active_window() -> Window {
-    let id = unsafe {
-        ACTIVE_WINDOW
-            .unwrap_or_else(|| panic!("Attempted to get active window but none has been set!"))
-    };
-
-    Window(id)
+pub fn set_primary_window<W: Into<Window>>(window: W) {
+    unsafe { PRIMARY_WINDOW = Some(window.into().id()) }
 }
 
-pub fn set_active_window(window: &Window) {
-    unsafe { ACTIVE_WINDOW = Some(window.0) }
+fn has_primary_window() -> bool {
+    unsafe { PRIMARY_WINDOW.is_some() }
 }
 
-pub struct Window(usize);
+#[derive(Copy, Clone)]
+pub struct Window(WindowId);
+
+impl From<WindowId> for Window {
+    fn from(id: WindowId) -> Self {
+        Window(id)
+    }
+}
 
 impl Deref for Window {
     type Target = WinitWindow;
@@ -61,6 +60,20 @@ impl DerefMut for Window {
         windows().get_mut(&self.0).unwrap()
     }
 }
+
+impl PartialEq<WindowId> for Window {
+    fn eq(&self, other: &WindowId) -> bool {
+        self.0 == other
+    }
+}
+
+impl PartialEq<Window> for Window {
+    fn eq(&self, other: &Window) -> bool {
+        self.0 == other.0
+    }
+}
+
+impl Eq for Window {}
 
 pub fn window_size() -> Size<u32> {
     let size = active_window().inner_size();
@@ -116,14 +129,16 @@ pub fn create_window<E: 'static + Debug>(
 
     let window = window_builder.build(event_loop)?;
 
-    let id = window_id();
+    let id = window.id();
 
     windows().insert(id, window);
 
+    if !has_primary_window() {
+        set_primary_window(id);
+    }
+
     Ok(Window(id))
 }
-
-pub struct WindowIcon {}
 
 pub(crate) fn apply_window_config(config: &WindowConfig) {
     match config.mode {
@@ -162,3 +177,5 @@ pub(crate) fn apply_window_config(config: &WindowConfig) {
         }
     }
 }
+
+pub struct WindowIcon {}

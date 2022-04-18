@@ -15,6 +15,7 @@ use crate::math::Vec2;
 
 use crate::audio::{apply_audio_config, stop_music};
 
+use crate::backend_impl::context::gl_context;
 use crate::event::{Event, EventHandler};
 use crate::input::{
     apply_input_config, is_key_pressed, is_key_released, mouse_movement, mouse_position,
@@ -141,7 +142,8 @@ impl<E: 'static + Debug> Game<E> {
             .take()
             .unwrap_or_else(|| Box::new(DefaultEventHandler));
 
-        let _window = create_window(&game.window_title, &event_loop, &game.config.window)?;
+        let window = create_window(&game.window_title, &event_loop, &game.config.window)?;
+        let gl = gl_context(window);
 
         event_loop.run(move |event, _, control_flow| {
             event_handler.handle(&event, control_flow);
@@ -164,6 +166,7 @@ impl<E: 'static + Debug> Game<E> {
                     }
                     _ => {}
                 },
+                winit::event::Event::RedrawRequested(..) => {}
                 winit::event::Event::UserEvent(event) => match event {
                     Event::Custom(event) => event_handler.handle_custom(event, control_flow),
                     Event::ConfigChanged(config) => game.apply_config(config),

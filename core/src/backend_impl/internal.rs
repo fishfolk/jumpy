@@ -16,6 +16,9 @@ pub mod error;
 #[path = "internal/video.rs"]
 pub mod video;
 
+#[path = "internal/context.rs"]
+pub mod context;
+
 #[path = "internal/texture.rs"]
 pub mod texture;
 

@@ -6,6 +6,14 @@ use crate::math::{Circle, Rect, Vec2};
 use crate::rendering::DrawTextureParams;
 use crate::texture::Texture2D;
 
+pub fn clear_screen<C: Into<Option<Color>>>(color: C) {
+    macroquad::clear_background(color.into().unwrap_or_else(colors::BLACK));
+}
+
+pub async fn end_frame() {
+    macroquad::end_frame().await;
+}
+
 pub fn draw_texture(x: f32, y: f32, texture: Texture2D, params: DrawTextureParams) {
     let color = params.tint.unwrap_or(colors::WHITE).into();
 

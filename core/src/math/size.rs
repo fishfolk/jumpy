@@ -282,16 +282,16 @@ impl From<Size<f32>> for Vec2 {
 }
 
 cfg_if! {
-    if #[cfg(feature = "winit")] {
-        impl<T> From<winit::dpi::PhysicalSize<T>> for Size<T> where T: Num + Copy {
-            fn from(size: winit::dpi::PhysicalSize<T>) -> Self {
+    if #[cfg(feature = "glutin")] {
+        impl<T> From<glutin::dpi::PhysicalSize<T>> for Size<T> where T: Num + Copy {
+            fn from(size: glutin::dpi::PhysicalSize<T>) -> Self {
                 Size::new(size.width, size.height)
             }
         }
 
-        impl<T> From<Size<T>> for winit::dpi::PhysicalSize<T> where T: Num + Copy {
+        impl<T> From<Size<T>> for glutin::dpi::PhysicalSize<T> where T: Num + Copy {
             fn from(size: Size<T>) -> Self {
-                winit::dpi::PhysicalSize::new(size.width, size.height)
+                glutin::dpi::PhysicalSize::new(size.width, size.height)
             }
         }
     }

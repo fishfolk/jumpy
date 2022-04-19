@@ -1,6 +1,7 @@
-[rendering]
+[video]
 max-fps = 120
 high-dpi = false
+vsync = true
 
 [window]
 mode = "windowed"

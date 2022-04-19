@@ -1,5 +1,5 @@
+use glutin::event::{MouseScrollDelta, VirtualKeyCode};
 use std::fmt::Debug;
-use winit::event::{MouseScrollDelta, VirtualKeyCode};
 use winit_input_helper::WinitInputHelper;
 
 use crate::event::Event;
@@ -32,11 +32,11 @@ const SCROLL_LINE_HEIGHT: u32 = 8;
 
 static mut MOUSE_WHEEL: Vec2 = Vec2::ZERO;
 
-pub fn input_event_handler<E: 'static + Debug>(event: &winit::event::Event<Event<E>>) -> bool {
+pub fn input_event_handler<E: 'static + Debug>(event: &glutin::event::Event<Event<E>>) -> bool {
     match event {
-        winit::event::Event::NewEvents(..) => unsafe { MOUSE_WHEEL = Vec2::ZERO },
-        winit::event::Event::WindowEvent { event, .. } => {
-            if let winit::event::WindowEvent::MouseWheel { delta, .. } = event {
+        glutin::event::Event::NewEvents(..) => unsafe { MOUSE_WHEEL = Vec2::ZERO },
+        glutin::event::Event::WindowEvent { event, .. } => {
+            if let glutin::event::WindowEvent::MouseWheel { delta, .. } = event {
                 match *delta {
                     MouseScrollDelta::LineDelta(x, y) => unsafe {
                         MOUSE_WHEEL.x = x;

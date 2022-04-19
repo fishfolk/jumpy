@@ -1,82 +1,35 @@
+use glow::Context;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::ops::{Deref, DerefMut};
-use winit::event_loop::EventLoop;
 
-use winit::window::{Fullscreen, WindowBuilder};
-use winit::window::{Window as WinitWindow, WindowId};
+use glutin::event_loop::EventLoop;
+use glutin::window::{Fullscreen, Window, WindowBuilder};
+use glutin::window::{Window as GlutinWindow, WindowId};
+use glutin::ContextBuilder;
 
 use crate::event::Event;
 use crate::math::Size;
 use crate::video::Display;
 use crate::window::{WindowConfig, WindowMode};
-use crate::Result;
+use crate::{Config, Result};
 
-static mut WINDOWS: Option<HashMap<WindowId, WinitWindow>> = None;
+static mut CONTEXT_WRAPPER: Option<glutin::ContextWrapper<glutin::PossiblyCurrent, Window>> = None;
 
-fn windows() -> &'static mut HashMap<WindowId, WinitWindow> {
-    unsafe { WINDOWS.get_or_insert_with(HashMap::new) }
-}
-
-static mut PRIMARY_WINDOW: Option<WindowId> = None;
-
-pub fn primary_window() -> Window {
+pub fn context_wrapper() -> &'static glutin::ContextWrapper<glutin::PossiblyCurrent, Window> {
     unsafe {
-        PRIMARY_WINDOW
-            .unwrap_or_else(|| {
-                panic!("Attempted to get primary window but none exist! Have you created a window?")
-            })
-            .into()
+        CONTEXT_WRAPPER
+            .as_ref()
+            .unwrap_or_else(|| panic!("ERROR: Attempted to get window but none has been created!"))
     }
 }
 
-pub fn set_primary_window<W: Into<Window>>(window: W) {
-    unsafe { PRIMARY_WINDOW = Some(window.into().id()) }
+pub fn window() -> &'static Window {
+    context_wrapper().window()
 }
-
-fn has_primary_window() -> bool {
-    unsafe { PRIMARY_WINDOW.is_some() }
-}
-
-#[derive(Copy, Clone)]
-pub struct Window(WindowId);
-
-impl From<WindowId> for Window {
-    fn from(id: WindowId) -> Self {
-        Window(id)
-    }
-}
-
-impl Deref for Window {
-    type Target = WinitWindow;
-
-    fn deref(&self) -> &Self::Target {
-        windows().get(&self.0).unwrap()
-    }
-}
-
-impl DerefMut for Window {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        windows().get_mut(&self.0).unwrap()
-    }
-}
-
-impl PartialEq<WindowId> for Window {
-    fn eq(&self, other: &WindowId) -> bool {
-        self.0 == other
-    }
-}
-
-impl PartialEq<Window> for Window {
-    fn eq(&self, other: &Window) -> bool {
-        self.0 == other.0
-    }
-}
-
-impl Eq for Window {}
 
 pub fn window_size() -> Size<u32> {
-    let size = active_window().inner_size();
+    let size = window().inner_size();
 
     Size {
         width: size.width,
@@ -87,8 +40,8 @@ pub fn window_size() -> Size<u32> {
 pub fn create_window<E: 'static + Debug>(
     title: &str,
     event_loop: &EventLoop<Event<E>>,
-    config: &WindowConfig,
-) -> Result<Window> {
+    config: &Config,
+) -> Result<&'static glutin::ContextWrapper<glutin::PossiblyCurrent, Window>> {
     let mut window_builder = WindowBuilder::new().with_title(title);
 
     /*
@@ -98,9 +51,9 @@ pub fn create_window<E: 'static + Debug>(
     };
     */
 
-    window_builder = match config.mode {
+    window_builder = match config.window.mode {
         WindowMode::Windowed { size } => {
-            let size = winit::dpi::Size::Physical(size.into());
+            let size = glutin::dpi::Size::Physical(size.into());
 
             window_builder
                 .with_fullscreen(None)
@@ -127,25 +80,25 @@ pub fn create_window<E: 'static + Debug>(
         }
     };
 
-    let window = window_builder.build(event_loop)?;
+    unsafe {
+        let wrapper = ContextBuilder::new()
+            .with_vsync(config.video.is_vsync_enabled)
+            .with_multisampling(config.video.msaa_samples.unwrap_or(0))
+            .build_windowed(window_builder, event_loop)?
+            .make_current()?;
 
-    let id = window.id();
+        CONTEXT_WRAPPER = Some(wrapper);
+    };
 
-    windows().insert(id, window);
-
-    if !has_primary_window() {
-        set_primary_window(id);
-    }
-
-    Ok(Window(id))
+    Ok(context_wrapper())
 }
 
 pub(crate) fn apply_window_config(config: &WindowConfig) {
     match config.mode {
         WindowMode::Windowed { size } => {
-            let size = winit::dpi::Size::Physical(size.into());
+            let size = glutin::dpi::Size::Physical(size.into());
 
-            let window = active_window();
+            let window = window();
 
             window.set_fullscreen(None);
             window.set_inner_size(size);
@@ -154,7 +107,7 @@ pub(crate) fn apply_window_config(config: &WindowConfig) {
         WindowMode::Borderless => {
             let fullscreen = Fullscreen::Borderless(None);
 
-            let window = active_window();
+            let window = window();
 
             window.set_fullscreen(Some(fullscreen));
             window.set_resizable(false);
@@ -170,7 +123,7 @@ pub(crate) fn apply_window_config(config: &WindowConfig) {
 
             let fullscreen = Fullscreen::Borderless(None);
 
-            let window = active_window();
+            let window = window();
 
             window.set_fullscreen(Some(fullscreen));
             window.set_resizable(false);

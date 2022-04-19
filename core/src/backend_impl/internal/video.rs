@@ -2,8 +2,8 @@ use crate::math::vec2;
 
 use crate::video::*;
 
-impl From<winit::monitor::VideoMode> for VideoMode {
-    fn from(mode: winit::monitor::VideoMode) -> Self {
+impl From<glutin::monitor::VideoMode> for VideoMode {
+    fn from(mode: glutin::monitor::VideoMode) -> Self {
         VideoMode {
             resolution: mode.size().into(),
             bit_depth: mode.bit_depth(),
@@ -13,8 +13,8 @@ impl From<winit::monitor::VideoMode> for VideoMode {
     }
 }
 
-impl From<winit::monitor::MonitorHandle> for Display {
-    fn from(handle: winit::monitor::MonitorHandle) -> Self {
+impl From<glutin::monitor::MonitorHandle> for Display {
+    fn from(handle: glutin::monitor::MonitorHandle) -> Self {
         let position = handle.position();
 
         Display {

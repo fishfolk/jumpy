@@ -40,9 +40,9 @@ pub mod game;
 #[path = "macroquad/event.rs"]
 pub mod event;
 
-pub mod context {}
-
 pub mod video {}
+
+pub mod gl {}
 
 pub mod gui {
     pub use macroquad::ui::*;

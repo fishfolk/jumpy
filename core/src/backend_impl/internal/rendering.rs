@@ -1,7 +1,28 @@
+use glow::HasContext;
+
 use crate::color::Color;
+use crate::gl::gl_context;
 use crate::math::{Circle, Rect, Vec2};
 use crate::rendering::DrawTextureParams;
 use crate::texture::Texture2D;
+use crate::window::context_wrapper;
+use crate::Result;
+
+pub fn clear_screen<C: Into<Option<Color>>>(color: C) {
+    let gl = gl_context();
+    unsafe {
+        if let Some(color) = color.into() {
+            gl.clear_color(color.r, color.g, color.b, color.a);
+        } else {
+            gl.clear(glow::COLOR_BUFFER_BIT);
+        }
+    };
+}
+
+pub fn end_frame() -> Result<()> {
+    context_wrapper().swap_buffers()?;
+    Ok(())
+}
 
 pub fn draw_texture(x: f32, y: f32, texture: Texture2D, params: DrawTextureParams) {
     unimplemented!("Draw calls are not implemented")

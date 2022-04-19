@@ -1,23 +1,33 @@
-use serde::{Serialize, Deserialize};
 use serde::de::Expected;
+use serde::{Deserialize, Serialize};
 
 pub use crate::backend_impl::video::*;
 
-use crate::math::{Size, UVec2, IVec2, Vec2, ivec2, Zero};
+use crate::math::{ivec2, IVec2, Size, UVec2, Vec2, Zero};
 use crate::Result;
 
 pub const DEFAULT_MSAA_SAMPLES: Option<u16> = Some(1);
 pub const DEFAULT_MAX_FPS: Option<u16> = Some(120);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RenderingConfig {
-    #[serde(default = "RenderingConfig::default_msaa_samples", rename = "msaa-samples", skip_serializing_if = "Option::is_none")]
+pub struct VideoConfig {
+    #[serde(
+        default = "VideoConfig::default_msaa_samples",
+        rename = "msaa-samples",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub msaa_samples: Option<u16>,
-    #[serde(default = "RenderingConfig::default_max_fps", rename = "max-fps", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default = "VideoConfig::default_max_fps",
+        rename = "max-fps",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub max_fps: Option<u16>,
+    #[serde(default, rename = "vsync")]
+    pub is_vsync_enabled: bool,
 }
 
-impl RenderingConfig {
+impl VideoConfig {
     pub(crate) fn default_msaa_samples() -> Option<u16> {
         DEFAULT_MSAA_SAMPLES
     }
@@ -27,11 +37,12 @@ impl RenderingConfig {
     }
 }
 
-impl Default for RenderingConfig {
+impl Default for VideoConfig {
     fn default() -> Self {
-        RenderingConfig {
+        VideoConfig {
             msaa_samples: DEFAULT_MSAA_SAMPLES,
             max_fps: DEFAULT_MAX_FPS,
+            is_vsync_enabled: false,
         }
     }
 }
@@ -53,7 +64,11 @@ impl Default for AspectRatio {
 
 impl From<f32> for AspectRatio {
     fn from(ratio: f32) -> Self {
-        assert!(ratio > 0.0, "Aspect ratio must be a positive number (is '{}')!", ratio);
+        assert!(
+            ratio > 0.0,
+            "Aspect ratio must be a positive number (is '{}')!",
+            ratio
+        );
 
         AspectRatio(ratio)
     }
@@ -63,7 +78,11 @@ impl From<AspectRatio> for f32 {
     fn from(ratio: AspectRatio) -> Self {
         let ratio = ratio.0;
 
-        assert!(ratio > 0.0, "Aspect ratio must be a positive number (is '{}')!", ratio);
+        assert!(
+            ratio > 0.0,
+            "Aspect ratio must be a positive number (is '{}')!",
+            ratio
+        );
 
         ratio
     }
@@ -74,7 +93,10 @@ pub type Resolution = Size<u32>;
 impl Resolution {
     /// This will set height to be width divided by `ratio`
     pub fn height_to_ratio<R: Into<AspectRatio>>(&mut self, ratio: R) {
-        assert_ne!(self.width, 0, "Unable to set height of resolution from ratio when width is 0!");
+        assert_ne!(
+            self.width, 0,
+            "Unable to set height of resolution from ratio when width is 0!"
+        );
 
         let ratio = ratio.into();
 
@@ -83,7 +105,10 @@ impl Resolution {
 
     /// This will set width to be height multiplied with `ratio`
     pub fn width_to_ratio<R: Into<AspectRatio>>(&mut self, ratio: R) {
-        assert_ne!(self.height, 0, "Unable to set height of resolution from ratio when height is 0!");
+        assert_ne!(
+            self.height, 0,
+            "Unable to set height of resolution from ratio when height is 0!"
+        );
 
         let ratio = ratio.into();
 
@@ -92,8 +117,14 @@ impl Resolution {
 
     /// This returns the aspect ratio (`width` divided by `height`)
     pub fn aspect_ratio(&self) -> f32 {
-        assert_ne!(self.width, 0, "Unable to calculate aspect ratio of resolution when width is 0");
-        assert_ne!(self.height, 0, "Unable to calculate aspect ratio of resolution when height is 0");
+        assert_ne!(
+            self.width, 0,
+            "Unable to calculate aspect ratio of resolution when width is 0"
+        );
+        assert_ne!(
+            self.height, 0,
+            "Unable to calculate aspect ratio of resolution when height is 0"
+        );
 
         self.width as f32 / self.height as f32
     }
@@ -112,10 +143,7 @@ impl std::fmt::Display for VideoMode {
         write!(
             f,
             "{}x{} @ {} Hz ({} bpp)",
-            self.resolution.width,
-            self.resolution.height,
-            self.refresh_rate,
-            self.bit_depth,
+            self.resolution.width, self.resolution.height, self.refresh_rate, self.bit_depth,
         )
     }
 }

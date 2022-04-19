@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use crate::error::Result;
 use crate::input::InputMapping;
 use crate::parsing::{deserialize_toml_bytes, load_toml_file};
-use crate::video::RenderingConfig;
+use crate::video::VideoConfig;
 use crate::window::WindowConfig;
 
 pub use crate::backend_impl::config::*;
@@ -18,7 +18,7 @@ pub use crate::backend_impl::config::*;
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     #[serde(default)]
-    pub rendering: RenderingConfig,
+    pub video: VideoConfig,
     #[serde(default)]
     pub window: WindowConfig,
     #[serde(default)]

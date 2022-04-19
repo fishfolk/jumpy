@@ -21,7 +21,7 @@ pub fn fixed_update_network_client(
 }
 
 pub fn update_network_host(world: &mut World, delta_time: f32) -> Result<()> {
-    update_network_common(world, delta_time);
+    update_network_common(world, delta_time)?;
 
     Ok(())
 }

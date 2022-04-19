@@ -6,17 +6,18 @@ use std::ops::Deref;
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 
+use glutin::event::{StartCause, VirtualKeyCode, WindowEvent};
+use glutin::event_loop::{ControlFlow, EventLoop};
+use glutin::window::{Fullscreen, WindowBuilder};
 use hecs::World;
-use winit::event::{StartCause, VirtualKeyCode, WindowEvent};
-use winit::event_loop::{ControlFlow, EventLoop};
-use winit::window::{Fullscreen, WindowBuilder};
 
 use crate::math::Vec2;
 
 use crate::audio::{apply_audio_config, stop_music};
 
-use crate::backend_impl::context::gl_context;
+use crate::color::colors;
 use crate::event::{Event, EventHandler};
+use crate::gl::create_gl_context;
 use crate::input::{
     apply_input_config, is_key_pressed, is_key_released, mouse_movement, mouse_position,
     update_gamepad_context, KeyCode,
@@ -24,9 +25,8 @@ use crate::input::{
 use crate::math::Size;
 use crate::physics::{fixed_delta_time, physics_world};
 use crate::prelude::{input_event_handler, DefaultEventHandler};
-use crate::window::{
-    active_window, apply_window_config, create_window, WindowMode, DEFAULT_WINDOW_TITLE,
-};
+use crate::rendering::{clear_screen, end_frame};
+use crate::window::{apply_window_config, create_window, WindowMode, DEFAULT_WINDOW_TITLE};
 use crate::{Config, Result};
 
 use crate::state::{GameState, GameStateBuilderFn};
@@ -48,7 +48,7 @@ impl<E: 'static + Debug> Game<E> {
         let config = Config::default();
 
         let fixed_draw_delta_time = config
-            .rendering
+            .video
             .max_fps
             .map(|max_fps| Duration::from_secs_f32(1.0 / max_fps as f32));
 
@@ -110,7 +110,7 @@ impl<E: 'static + Debug> Game<E> {
         self.config = config.clone();
 
         self.fixed_draw_delta_time = config
-            .rendering
+            .video
             .max_fps
             .map(|max_fps| Duration::from_secs_f32(1.0 / max_fps as f32));
 
@@ -142,14 +142,16 @@ impl<E: 'static + Debug> Game<E> {
             .take()
             .unwrap_or_else(|| Box::new(DefaultEventHandler));
 
-        let window = create_window(&game.window_title, &event_loop, &game.config.window)?;
-        let gl = gl_context(window);
+        {
+            let window = create_window(&game.window_title, &event_loop, &game.config)?;
+            let _ = create_gl_context(window);
+        }
 
         event_loop.run(move |event, _, control_flow| {
             event_handler.handle(&event, control_flow);
 
             match &event {
-                winit::event::Event::NewEvents(cause) => {
+                glutin::event::Event::NewEvents(cause) => {
                     match cause {
                         StartCause::Init => {
                             game.get_state().begin(None);
@@ -160,14 +162,18 @@ impl<E: 'static + Debug> Game<E> {
                     update_gamepad_context()
                         .unwrap_or_else(|err| panic!("Error in gamepad context update: {}", err));
                 }
-                winit::event::Event::WindowEvent { event, .. } => match event {
+                glutin::event::Event::WindowEvent { event, .. } => match event {
                     WindowEvent::CloseRequested | WindowEvent::Destroyed => {
                         *control_flow = ControlFlow::Exit;
                     }
                     _ => {}
                 },
-                winit::event::Event::RedrawRequested(..) => {}
-                winit::event::Event::UserEvent(event) => match event {
+                glutin::event::Event::RedrawRequested(..) => {
+                    clear_screen(colors::BLACK);
+
+                    end_frame().unwrap_or_else(|err| panic!("ERROR: Rendering error: {}", err));
+                }
+                glutin::event::Event::UserEvent(event) => match event {
                     Event::Custom(event) => event_handler.handle_custom(event, control_flow),
                     Event::ConfigChanged(config) => game.apply_config(config),
                     Event::StateTransition(state) => game

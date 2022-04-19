@@ -38,17 +38,18 @@ pub use macros::*;
 
 cfg_if! {
     if #[cfg(feature = "internal-backend")] {
-        #[path = "backend_impl/internal.rs"]
-        pub(crate) mod backend_impl;
-
-        #[cfg(feature = "winit")]
-        pub use winit;
+        pub use glutin;
 
         #[cfg(target_arch = "wasm32")]
         pub use wasm_bindgen;
 
         #[cfg(not(target_arch = "wasm32"))]
         pub use tokio;
+
+        #[path = "backend_impl/internal.rs"]
+        pub(crate) mod backend_impl;
+
+        pub use backend_impl::gl;
     } else if #[cfg(feature = "macroquad-backend")] {
         #[path = "backend_impl/macroquad.rs"]
         pub(crate) mod backend_impl;

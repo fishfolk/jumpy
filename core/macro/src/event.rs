@@ -46,8 +46,8 @@ pub(crate) fn setup_events_impl(input: proc_macro::TokenStream) -> proc_macro::T
 
 pub(crate) fn custom_events(core_crate: &Ident, event_type: Type) -> proc_macro::TokenStream {
     let res = quote! {
-        use #core_crate::winit::event_loop::EventLoop;
-        use #core_crate::winit::event_loop::EventLoopProxy;
+        use #core_crate::glutin::event_loop::EventLoop;
+        use #core_crate::glutin::event_loop::EventLoopProxy;
 
         pub type Event = #core_crate::event::Event<#event_type>;
 

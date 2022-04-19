@@ -1034,7 +1034,7 @@
           }
         },
         {
-          "id": "kick_bomb",
+          "id": "blunderbuss",
           "kind": "item",
           "position": {
             "x": 176.682,

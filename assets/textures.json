@@ -621,5 +621,14 @@
       "x": 128,
       "y": 128
     }
+  },
+  {
+    "id": "blunderbuss_bullet",
+    "path": "textures/items/BlunderbussBullet.png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 6,
+      "y": 6
+    }
   }
 ]

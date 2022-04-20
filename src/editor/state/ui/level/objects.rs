@@ -166,7 +166,9 @@ impl Editor {
             .iter()
             .filter_map(|layer_id| self.map_resource.map.layers.get(layer_id))
         {
-            action.then_do(self.draw_object_layer(layer, response, painter, ui, egui_ctx));
+            if layer.is_visible {
+                action.then_do(self.draw_object_layer(layer, response, painter, ui, egui_ctx));
+            }
         }
 
         if let Some(action) = action {

@@ -18,7 +18,7 @@ macroquad = { version = "0.3.13", optional = true }
 ff-particles = { version = "0.1", features = ["serde"], optional = true }
 glow = { version = "0.11.2", optional = true }
 glutin = { version = "0.28.0", optional = true }
-winit_input_helper = { path = "../../winit_input_helper", default-features = false, features = ["glutin"], optional = true }
+winit_input_helper = { git = "https://github.com/olefasting/winit_input_helper.git", branch = "glutin_support", default-features = false, features = ["glutin"], optional = true }
 # tokio = { version = "1.17.0", features = ["macros", "sync", "rt"], optional = true }
 tokio = { version = "1.17.0", features = ["sync", "macros", "rt-multi-thread"], optional = true }
 glam = { version = "0.20.2", features = ["scalar-math", "serde"], optional = true }
@@ -37,6 +37,3 @@ getrandom = { version = "0.2.5", features = ["js"] }
 wasm-bindgen = { version = "0.2.79", default-features = false, features = ["serde-serialize"] }
 wasm-bindgen-futures = "0.4.29"
 js-sys = { version = "0.3.56", default-features = false }
-
-[patch.crates-io]
-fishsticks = { git = "https://github.com/fishfight/fishsticks", branch = "main", default-features = false, features = ["gilrs"] }

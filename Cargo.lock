@@ -448,7 +448,8 @@ dependencies = [
 [[package]]
 name = "fishsticks"
 version = "0.2.1"
-source = "git+https://github.com/fishfight/fishsticks?branch=main#ffd11a5b48abecadf8cd47033b1b26fff74b5557"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4a569ae59609e417c5bc5ecfeb48336fc8b175967a2c734c098896e0d775ed39"
 dependencies = [
  "cfg-if 1.0.0",
  "gilrs",
@@ -1871,6 +1872,7 @@ dependencies = [
 [[package]]
 name = "winit_input_helper"
 version = "0.12.0"
+source = "git+https://github.com/olefasting/winit_input_helper.git?branch=glutin_support#fdb59e2dad884ac916b92eb56da49952d72d0953"
 dependencies = [
  "glutin",
 ]

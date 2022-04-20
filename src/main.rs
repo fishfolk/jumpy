@@ -228,7 +228,9 @@ async fn macroquad_main() -> Result<()> {
 
         update_gamepad_context()?;
 
-        next_frame().await;
+        clear_screen(None);
+
+        end_frame().await;
     }
 
     scene::clear();

@@ -1,5 +1,6 @@
 use macroquad::shapes::{draw_circle_lines, draw_rectangle_lines};
 use macroquad::texture::draw_texture_ex;
+use macroquad::window::{clear_background, next_frame};
 
 use crate::color::{colors, Color};
 use crate::math::{Circle, Rect, Vec2};
@@ -7,11 +8,11 @@ use crate::rendering::DrawTextureParams;
 use crate::texture::Texture2D;
 
 pub fn clear_screen<C: Into<Option<Color>>>(color: C) {
-    macroquad::clear_background(color.into().unwrap_or_else(colors::BLACK));
+    clear_background(color.into().unwrap_or(colors::BLACK).into());
 }
 
 pub async fn end_frame() {
-    macroquad::end_frame().await;
+    next_frame().await;
 }
 
 pub fn draw_texture(x: f32, y: f32, texture: Texture2D, params: DrawTextureParams) {

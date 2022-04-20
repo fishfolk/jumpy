@@ -3,7 +3,7 @@ use macroquad::window::Conf;
 
 use crate::math::Size;
 use crate::video::resolutions::HD720;
-use crate::video::{RenderingConfig, Resolution};
+use crate::video::{Resolution, VideoConfig};
 use crate::window::{WindowConfig, WindowMode};
 use crate::Config;
 
@@ -53,7 +53,7 @@ impl Config {
             window_width: width as i32,
             window_height: height as i32,
             window_resizable: is_resizable_window,
-            sample_count: self.rendering.msaa_samples.unwrap_or(1) as i32,
+            sample_count: self.video.msaa_samples.unwrap_or(1) as i32,
             icon: icon.into(),
         }
     }

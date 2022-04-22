@@ -1,0 +1,7 @@
+- [ ] Object list
+- [ ] Spawnpoint placement
+- [ ] Object placement via rightclick context menu
+- [ ] Open/Import window
+- [ ] New map window
+- [ ] Theme support
+- [ ] Gamepad support

@@ -13,7 +13,9 @@ use crate::{
     Resources,
 };
 
-use super::{actions::UiAction, history::ActionHistory, view::LevelView, windows};
+use super::{
+    actions::UiAction, history::ActionHistory, input::EditorInput, view::LevelView, windows,
+};
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub enum EditorTool {
@@ -29,11 +31,13 @@ pub struct TileSelection {
     pub tile_id: u32,
 }
 
+#[derive(Debug, Clone)]
 pub enum SelectableEntityKind {
     Object { layer_id: String, index: usize },
     SpawnPoint { index: usize },
 }
 
+#[derive(Debug, Clone)]
 pub struct SelectableEntity {
     pub kind: SelectableEntityKind,
     pub click_offset: egui::Vec2,
@@ -65,13 +69,14 @@ pub struct Editor {
     pub selected_tile: Option<TileSelection>,
     pub is_parallax_enabled: bool,
     pub should_draw_grid: bool,
-    pub selected_map_entity: Option<SelectableEntity>,
     pub object_being_placed: Option<ObjectSettings>,
 
     create_layer_window: Option<windows::CreateLayerWindow>,
     create_tileset_window: Option<windows::CreateTilesetWindow>,
     pub menu_window: Option<windows::MenuWindow>,
     save_map_window: Option<windows::SaveMapWindow>,
+
+    pub selection: Option<SelectableEntity>,
 
     history: ActionHistory,
 
@@ -89,13 +94,14 @@ impl Editor {
             should_draw_grid: true,
             selected_layer: None,
             selected_tile: None,
-            selected_map_entity: None,
             object_being_placed: None,
 
             create_layer_window: None,
             create_tileset_window: None,
             menu_window: None,
             save_map_window: None,
+
+            selection: None,
 
             history: ActionHistory::new(),
 
@@ -216,17 +222,7 @@ impl Editor {
                     .apply(action, &mut self.map_resource.map)
                     .unwrap();
             }
-            UiAction::SelectObject {
-                layer_id,
-                index,
-                cursor_offset,
-            } => {
-                self.selected_map_entity = Some(SelectableEntity {
-                    click_offset: cursor_offset,
-                    kind: SelectableEntityKind::Object { index, layer_id },
-                })
-            }
-            UiAction::DeselectObject => self.selected_map_entity = None,
+            UiAction::SelectEntity(selection) => self.selection = Some(selection),
             UiAction::SaveMap { name } => {
                 let mut map_resource = self.map_resource.clone();
 
@@ -258,6 +254,13 @@ impl Editor {
                     .apply(action, &mut self.map_resource.map)
                     .unwrap();
             }
+            UiAction::DeleteObject { index, layer_id } => {
+                let action = actions::DeleteObject::new(index, layer_id);
+
+                self.history
+                    .apply(action, &mut self.map_resource.map)
+                    .unwrap();
+            }
 
             _ => todo!(),
         }
@@ -272,6 +275,49 @@ impl Editor {
 
         if self.should_draw_grid {
             self::draw_grid(map);
+        }
+    }
+
+    pub fn process_input(&mut self, input: &EditorInput) {
+        const CAMERA_PAN_SPEED: f32 = 5.0;
+
+        // Move camera
+        self.level_view.position += input.camera_move_direction * CAMERA_PAN_SPEED;
+
+        // Undo/redo
+        if input.undo {
+            self.apply_action(UiAction::Undo);
+        }
+        if input.redo {
+            self.apply_action(UiAction::Redo);
+        }
+
+        // Toggle menu
+        if input.toggle_menu {
+            self.menu_window = if self.menu_window.is_some() {
+                None
+            } else {
+                Some(Default::default())
+            };
+        }
+
+        // Delete selected object
+        if input.delete {
+            if let Some(entity) = &self.selection {
+                match &entity.kind {
+                    SelectableEntityKind::Object { layer_id, index } => {
+                        let layer_id = layer_id.clone();
+                        let index = *index;
+                        self.apply_action(UiAction::DeleteObject { layer_id, index });
+                        self.selection = None;
+                    }
+                    SelectableEntityKind::SpawnPoint { index } => {
+                        let index = *index;
+                        self.apply_action(UiAction::DeleteSpawnPoint(index));
+                        self.selection = None;
+                    }
+                }
+            }
         }
     }
 }

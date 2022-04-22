@@ -5,7 +5,7 @@ use core::error::Result;
 use crate::map::{Map, MapLayerKind, MapTileset};
 use crate::map::{MapBackgroundLayer, MapObjectKind};
 
-use super::state::EditorTool;
+use super::state::{EditorTool, SelectableEntity};
 
 /// An enum describing a set of undoable actions done within the level editor.
 /// If you need to perform multiple actions in one call, use the `Batch` variant.
@@ -60,11 +60,7 @@ pub enum UiAction {
         texture_id: String,
         autotile_mask: Vec<bool>,
     },
-    SelectObject {
-        index: usize,
-        layer_id: String,
-        cursor_offset: egui::Vec2,
-    },
+    SelectEntity(SelectableEntity),
     DeselectObject,
     CreateObject {
         id: String,

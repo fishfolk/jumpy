@@ -7,7 +7,7 @@ use crate::{
         actions::{UiAction, UiActionExt},
         state::{
             ui::level::{screen_to_world_pos, world_to_screen_pos},
-            Editor, EditorTool, ObjectSettings,
+            Editor, EditorTool, ObjectSettings, SelectableEntity, SelectableEntityKind,
         },
         util::{EguiCompatibleVec, EguiTextureHandler, MqCompatibleVec},
         view::LevelView,
@@ -176,6 +176,30 @@ impl Editor {
         }
     }
 
+    pub(super) fn drag_selected_object(&mut self, response: &egui::Response, ui: &egui::Ui) {
+        if response.dragged_by(egui::PointerButton::Primary) {
+            if let Some(SelectableEntity {
+                kind: SelectableEntityKind::Object { index, layer_id },
+                click_offset: drag_offset,
+                ..
+            }) = &self.selection
+            {
+                let cursor_level_pos = screen_to_world_pos(
+                    ui.input().pointer.interact_pos().unwrap() + *drag_offset,
+                    response.rect.min.to_vec2(),
+                    &self.level_view,
+                );
+                let index = *index;
+                let layer_id = layer_id.clone();
+                self.apply_action(UiAction::MoveObject {
+                    index,
+                    layer_id,
+                    position: macroquad::math::Vec2::new(cursor_level_pos.x, cursor_level_pos.y),
+                });
+            }
+        }
+    }
+
     fn draw_object_layer(
         &self,
         layer: &MapLayer,
@@ -185,36 +209,54 @@ impl Editor {
         egui_ctx: &egui::Context,
     ) -> Option<UiAction> {
         let resources = storage::get::<Resources>();
-        let mut action = None;
+        let mut to_select = None;
+        let is_layer_selected = self
+            .selected_layer
+            .as_ref()
+            .map(|id| &layer.id == id)
+            .unwrap_or(false);
 
         for (object_idx, object) in layer.objects.iter().enumerate() {
             let (dest, is_valid) =
                 draw_object(object, response, &self.level_view, painter, &resources);
 
-            let is_this_object_selected;
-            let can_select_object;
-            if let Some(selected_entity) = &self.selected_map_entity {
-                is_this_object_selected = selected_entity.kind.is_object(&layer.id, object_idx);
-                can_select_object = false;
-            } else {
-                is_this_object_selected = false;
-                can_select_object = self.selected_tool == EditorTool::Cursor
-                    && response.hovered()
-                    && ui
-                        .input()
-                        .pointer
-                        .hover_pos()
-                        .map(|hover_pos| dest.contains(hover_pos))
-                        .unwrap_or(false);
-            }
+            let is_hovered = is_layer_selected
+                && response.hovered()
+                && ui
+                    .input()
+                    .pointer
+                    .hover_pos()
+                    .map(|hover_pos| dest.contains(hover_pos))
+                    .unwrap_or(false);
 
-            if can_select_object || is_this_object_selected {
+            if is_hovered {
+                if (response.drag_started() || response.clicked()) && is_hovered {
+                    let click_pos = ui.input().pointer.interact_pos().unwrap();
+
+                    to_select = Some(SelectableEntity {
+                        click_offset: dest.min - click_pos,
+                        kind: SelectableEntityKind::Object {
+                            index: object_idx,
+                            layer_id: layer.id.clone(),
+                        },
+                    });
+                }
+
+                let is_selected = matches!(
+                    &self.selection,
+                    Some(SelectableEntity {
+                        kind: SelectableEntityKind::Object { index, layer_id },
+                        click_offset,
+                        ..
+                    }) if index == &object_idx && layer_id == &layer.id
+                );
+
                 painter.add(egui::Shape::rect_stroke(
                     dest,
                     egui::Rounding::none(),
                     egui::Stroke::new(
                         1.,
-                        if is_this_object_selected {
+                        if is_selected {
                             egui::Color32::WHITE
                         } else {
                             egui::Color32::GRAY
@@ -222,40 +264,19 @@ impl Editor {
                     ),
                 ));
             }
-
-            if is_this_object_selected {
-                if response.dragged_by(egui::PointerButton::Primary) {
-                    let cursor_offset = self.selected_map_entity.as_ref().unwrap().click_offset;
-                    let cursor_level_pos = screen_to_world_pos(
-                        ui.input().pointer.interact_pos().unwrap() + cursor_offset,
-                        response.rect.min.to_vec2(),
-                        &self.level_view,
-                    );
-                    action = Some(UiAction::MoveObject {
-                        index: object_idx,
-                        layer_id: layer.id.clone(),
-                        position: macroquad::math::Vec2::new(
-                            cursor_level_pos.x,
-                            cursor_level_pos.y,
-                        ),
-                    });
-                } else if response.drag_released() {
-                    action = Some(UiAction::DeselectObject);
-                }
-            } else if can_select_object {
-                self.show_object_info_tooltip(egui_ctx, object, is_valid);
-
-                if response.drag_started() && ui.input().pointer.primary_down() {
-                    let click_pos = ui.input().pointer.interact_pos().unwrap();
-                    action = Some(UiAction::SelectObject {
-                        index: object_idx,
-                        layer_id: layer.id.clone(),
-                        cursor_offset: dest.min - click_pos,
-                    });
-                }
-            }
         }
-        action
+
+        if is_layer_selected {
+            if let Some(to_select) = to_select {
+                Some(UiAction::SelectEntity(to_select))
+            } else if ui.input().pointer.any_down() {
+                Some(UiAction::DeselectObject)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
     }
 
     fn show_object_info_tooltip(

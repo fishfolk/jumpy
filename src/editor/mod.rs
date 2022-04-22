@@ -26,8 +26,6 @@ pub struct EditorNode {
 }
 
 impl EditorNode {
-    const CAMERA_PAN_SPEED: f32 = 5.0;
-
     pub fn new(editor: Editor, input_scheme: EditorInputScheme) -> Self {
         Self {
             editor,
@@ -46,8 +44,6 @@ impl Node for EditorNode {
             .input_scheme
             .collect_input(node.accept_kb_input, node.accept_mouse_input);
 
-        node.editor.level_view.position += input.camera_move_direction * Self::CAMERA_PAN_SPEED;
-
         let target_size = vec2(
             node.editor.level_render_target.texture.width(),
             node.editor.level_render_target.texture.height(),
@@ -64,22 +60,9 @@ impl Node for EditorNode {
             ..Camera2D::default()
         });
 
+        node.editor.process_input(&input);
+
         scene::set_camera(0, camera);
-
-        if input.toggle_menu {
-            node.editor.menu_window = if node.editor.menu_window.is_some() {
-                None
-            } else {
-                Some(Default::default())
-            };
-        }
-
-        if input.undo {
-            node.editor.apply_action(UiAction::Undo);
-        }
-        if input.redo {
-            node.editor.apply_action(UiAction::Redo);
-        }
     }
 
     fn draw(mut node: RefMut<Self>)

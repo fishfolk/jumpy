@@ -5,7 +5,7 @@ use macroquad::prelude::collections::storage;
 use crate::{
     editor::{
         actions::UiAction,
-        state::EditorTool,
+        state::{EditorTool, SelectableEntity, SelectableEntityKind},
         util::{EguiCompatibleVec, EguiTextureHandler, Resizable},
         view::LevelView,
     },
@@ -33,6 +33,9 @@ impl Editor {
 
                 self.draw_objects(egui_ctx, ui, &response, &painter);
                 self.draw_level_overlays(egui_ctx, ui, &response, &painter);
+
+                // Drag selected object
+                self.drag_selected_object(&response, ui);
 
                 let (width, height) = (response.rect.width() as u32, response.rect.height() as u32);
                 self.level_render_target.resize_if_appropiate(width, height);

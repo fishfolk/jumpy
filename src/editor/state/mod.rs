@@ -261,6 +261,9 @@ impl Editor {
                     .apply(action, &mut self.map_resource.map)
                     .unwrap();
             }
+            UiAction::DeselectObject => {
+                self.selection = None;
+            }
 
             _ => todo!(),
         }

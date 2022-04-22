@@ -4,7 +4,6 @@ mod view;
 mod windows;
 
 mod actions;
-use actions::UiAction;
 
 mod input;
 

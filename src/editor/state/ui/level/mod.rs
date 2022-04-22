@@ -5,7 +5,7 @@ use macroquad::prelude::collections::storage;
 use crate::{
     editor::{
         actions::UiAction,
-        state::{EditorTool, SelectableEntity, SelectableEntityKind},
+        state::EditorTool,
         util::{EguiCompatibleVec, EguiTextureHandler, Resizable},
         view::LevelView,
     },
@@ -31,8 +31,8 @@ impl Editor {
                 );
                 painter.add(egui::Shape::mesh(level_mesh));
 
-                self.draw_objects(egui_ctx, ui, &response, &painter);
-                self.draw_level_overlays(egui_ctx, ui, &response, &painter);
+                self.handle_objects(egui_ctx, ui, &response, &painter);
+                self.draw_level_overlays(ui, &response, &painter);
 
                 // Drag selected object
                 self.drag_selected_object(&response, ui);
@@ -44,7 +44,6 @@ impl Editor {
 
     fn draw_level_overlays(
         &mut self,
-        egui_ctx: &egui::Context,
         ui: &mut egui::Ui,
         level_response: &egui::Response,
         painter: &egui::Painter,
@@ -67,19 +66,13 @@ impl Editor {
             );
             let cursor_tile_pos = (cursor_px_pos.to_vec2() / tile_size).floor().to_pos2();
 
-            self.draw_level_placement_overlay(egui_ctx, level_response, painter, cursor_tile_pos);
+            self.draw_level_placement_overlay(ui.ctx(), level_response, painter, cursor_tile_pos);
 
             let level_top_left = level_response.rect.min;
-            self.draw_level_pointer_pos_overlay(
-                egui_ctx,
-                ui,
-                level_top_left,
-                cursor_px_pos,
-                cursor_tile_pos,
-            );
+            self.draw_level_pointer_pos_overlay(ui, level_top_left, cursor_px_pos, cursor_tile_pos);
 
             self.draw_level_object_placement_overlay(
-                egui_ctx,
+                ui.ctx(),
                 level_response,
                 painter,
                 cursor_tile_pos,
@@ -187,7 +180,6 @@ impl Editor {
 
     fn draw_level_pointer_pos_overlay(
         &self,
-        egui_ctx: &egui::Context,
         ui: &mut egui::Ui,
         level_top_left: egui::Pos2,
         cursor_px_pos: egui::Pos2,
@@ -204,8 +196,8 @@ impl Editor {
             )
             .interactable(false)
             .drag_bounds(egui::Rect::EVERYTHING) // disable clip rect
-            .show(egui_ctx, |ui| {
-                egui::Frame::popup(&egui_ctx.style())
+            .show(ui.ctx(), |ui| {
+                egui::Frame::popup(&ui.ctx().style())
                     .show(ui, |ui| {
                         ui.label(format!(
                             "Cursor position: ({}, {}) in pixels: ({:.2}, {:.2})",

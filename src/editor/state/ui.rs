@@ -1,5 +1,3 @@
-use crate::editor::input::EditorInput;
-
 mod level;
 mod side_panel;
 mod toolbar;

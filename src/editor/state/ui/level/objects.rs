@@ -4,7 +4,7 @@ use macroquad::prelude::collections::storage;
 
 use crate::{
     editor::{
-        actions::{UiAction, UiActionExt},
+        actions::UiAction,
         state::{
             ui::level::{screen_to_world_pos, world_to_screen_pos},
             Editor, EditorTool, ObjectSettings, SelectableEntity, SelectableEntityKind,
@@ -151,14 +151,14 @@ impl Editor {
         }
     }
 
-    pub(super) fn draw_objects(
+    pub(super) fn handle_objects(
         &mut self,
         egui_ctx: &egui::Context,
         ui: &mut egui::Ui,
         response: &egui::Response,
         painter: &egui::Painter,
     ) {
-        let mut action = None;
+        let mut to_select = None;
         for layer in self
             .map_resource
             .map
@@ -167,12 +167,15 @@ impl Editor {
             .filter_map(|layer_id| self.map_resource.map.layers.get(layer_id))
         {
             if layer.is_visible {
-                action.then_do(self.draw_object_layer(layer, response, painter, ui, egui_ctx));
+                to_select =
+                    to_select.or(self.handle_object_layer(layer, response, painter, ui, egui_ctx));
             }
         }
 
-        if let Some(action) = action {
-            self.apply_action(action);
+        if let Some(to_select) = to_select {
+            self.apply_action(UiAction::SelectEntity(to_select));
+        } else if ui.input().pointer.any_pressed() {
+            self.apply_action(UiAction::DeselectObject);
         }
     }
 
@@ -200,14 +203,14 @@ impl Editor {
         }
     }
 
-    fn draw_object_layer(
+    fn handle_object_layer(
         &self,
         layer: &MapLayer,
         response: &egui::Response,
         painter: &egui::Painter,
         ui: &mut egui::Ui,
         egui_ctx: &egui::Context,
-    ) -> Option<UiAction> {
+    ) -> Option<SelectableEntity> {
         let resources = storage::get::<Resources>();
         let mut to_select = None;
         let is_layer_selected = self
@@ -230,7 +233,9 @@ impl Editor {
                     .unwrap_or(false);
 
             if is_hovered {
-                if (response.drag_started() || response.clicked()) && is_hovered {
+                self.show_object_info_tooltip(egui_ctx, &object, is_valid);
+
+                if response.drag_started() || response.clicked() {
                     let click_pos = ui.input().pointer.interact_pos().unwrap();
 
                     to_select = Some(SelectableEntity {
@@ -241,16 +246,17 @@ impl Editor {
                         },
                     });
                 }
+            }
 
-                let is_selected = matches!(
-                    &self.selection,
-                    Some(SelectableEntity {
-                        kind: SelectableEntityKind::Object { index, layer_id },
-                        click_offset,
-                        ..
-                    }) if index == &object_idx && layer_id == &layer.id
-                );
+            let is_selected = matches!(
+                &self.selection,
+                Some(SelectableEntity {
+                    kind: SelectableEntityKind::Object { index, layer_id },
+                    ..
+                }) if index == &object_idx && layer_id == &layer.id
+            );
 
+            if is_hovered || is_selected {
                 painter.add(egui::Shape::rect_stroke(
                     dest,
                     egui::Rounding::none(),
@@ -266,17 +272,7 @@ impl Editor {
             }
         }
 
-        if is_layer_selected {
-            if let Some(to_select) = to_select {
-                Some(UiAction::SelectEntity(to_select))
-            } else if ui.input().pointer.any_down() {
-                Some(UiAction::DeselectObject)
-            } else {
-                None
-            }
-        } else {
-            None
-        }
+        to_select
     }
 
     fn show_object_info_tooltip(

@@ -6,6 +6,7 @@ use crate::{
 use super::super::Editor;
 
 impl Editor {
+    /// Draw the sidebar placed on the left showcasing all available [`EditorTool`]s.
     pub(super) fn draw_toolbar(&mut self, egui_ctx: &egui::Context) {
         egui::SidePanel::new(egui::containers::panel::Side::Left, "Tools").show(egui_ctx, |ui| {
             let selected_layer_type = self.selected_layer_type();

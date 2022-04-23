@@ -37,8 +37,6 @@ impl EditorNode {
 
 impl Node for EditorNode {
     fn fixed_update(mut node: RefMut<Self>) {
-        use macroquad::prelude::*;
-
         let input = node
             .input_scheme
             .collect_input(node.accept_kb_input, node.accept_mouse_input);

@@ -6,11 +6,10 @@ use crate::{
     editor::{
         actions::UiAction,
         state::{
-            ui::level::{screen_to_world_pos, world_to_screen_pos},
             DragData, Editor, EditorTool, ObjectSettings, SelectableEntity, SelectableEntityKind,
         },
         util::{EguiCompatibleVec, EguiTextureHandler, MqCompatibleVec},
-        view::LevelView,
+        view::UiLevelView,
     },
     map::{MapLayer, MapObject, MapObjectKind},
     AnimatedSpriteMetadata, Resources,
@@ -20,11 +19,10 @@ impl Editor {
     pub(super) fn draw_level_object_placement_overlay(
         &mut self,
         egui_ctx: &egui::Context,
-        level_response: &egui::Response,
+        view: &UiLevelView,
     ) {
         if let Some(settings) = &mut self.object_being_placed {
-            let position =
-                world_to_screen_pos(settings.position, level_response.rect.min, &self.level_view);
+            let position = view.world_to_screen_pos(settings.position);
 
             enum PlaceObjectResult {
                 Create,
@@ -125,14 +123,11 @@ impl Editor {
         }
 
         if self.selected_tool == EditorTool::ObjectPlacer
-            && (level_response.clicked_by(egui::PointerButton::Primary)
-                || level_response.dragged_by(egui::PointerButton::Primary))
+            && (view.response().clicked_by(egui::PointerButton::Primary)
+                || view.response().dragged_by(egui::PointerButton::Primary))
         {
-            let position = screen_to_world_pos(
-                egui_ctx.input().pointer.interact_pos().unwrap(),
-                level_response.rect.min.to_vec2(),
-                &self.level_view,
-            );
+            let position =
+                view.screen_to_world_pos(egui_ctx.input().pointer.interact_pos().unwrap());
 
             self.object_being_placed = if let Some(settings) = self.object_being_placed.take() {
                 Some(ObjectSettings {
@@ -149,12 +144,7 @@ impl Editor {
         }
     }
 
-    pub(super) fn handle_objects(
-        &mut self,
-        ui: &mut egui::Ui,
-        response: &egui::Response,
-        painter: &egui::Painter,
-    ) {
+    pub(super) fn handle_objects(&mut self, ui: &mut egui::Ui, view: &UiLevelView) {
         let mut to_select = None;
         for layer in self
             .map_resource
@@ -164,7 +154,7 @@ impl Editor {
             .filter_map(|layer_id| self.map_resource.map.layers.get(layer_id))
         {
             if layer.is_visible {
-                to_select = to_select.or(self.handle_object_layer(layer, response, painter, ui));
+                to_select = to_select.or(self.handle_object_layer(layer, view, ui));
             }
         }
 
@@ -190,21 +180,12 @@ impl Editor {
                 cursor_offset,
             }) = drag_data
             {
-                draw_object(
-                    object,
-                    new_pos,
-                    response,
-                    &self.level_view,
-                    painter,
-                    &resources,
-                    1.,
-                );
+                draw_object(object, new_pos, view, &resources, 1.);
+                let response = view.response();
 
                 if response.dragged_by(egui::PointerButton::Primary) {
-                    let cursor_level_pos = screen_to_world_pos(
+                    let cursor_level_pos = view.screen_to_world_pos(
                         ui.input().pointer.interact_pos().unwrap() + cursor_offset,
-                        response.rect.min.to_vec2(),
-                        &self.level_view,
                     );
 
                     self.selection = Some(SelectableEntity {
@@ -235,17 +216,15 @@ impl Editor {
                 is_being_dragged = false;
             }
 
-            let (dest, is_valid) = draw_object(
+            let (dest, _is_valid) = draw_object(
                 object,
                 object.position.into_egui().to_pos2(),
-                response,
-                &self.level_view,
-                painter,
+                view,
                 &resources,
                 if is_being_dragged { 0.5 } else { 1.0 },
             );
 
-            painter.add(egui::Shape::rect_stroke(
+            view.painter().add(egui::Shape::rect_stroke(
                 dest,
                 egui::Rounding::none(),
                 egui::Stroke::new(1., egui::Color32::WHITE),
@@ -260,8 +239,7 @@ impl Editor {
     fn handle_object_layer(
         &self,
         layer: &MapLayer,
-        response: &egui::Response,
-        painter: &egui::Painter,
+        view: &UiLevelView,
         ui: &mut egui::Ui,
     ) -> Option<SelectableEntity> {
         let resources = storage::get::<Resources>();
@@ -284,13 +262,12 @@ impl Editor {
             let (dest, is_valid) = draw_object(
                 object,
                 object.position.into_egui().to_pos2(),
-                response,
-                &self.level_view,
-                painter,
+                view,
                 &resources,
                 1.,
             );
 
+            let response = view.response();
             let is_hovered = response.hovered()
                 && ui
                     .input()
@@ -323,7 +300,7 @@ impl Editor {
                         }),
                     });
                 }
-                painter.add(egui::Shape::rect_stroke(
+                view.painter().add(egui::Shape::rect_stroke(
                     dest,
                     egui::Rounding::none(),
                     egui::Stroke::new(1., egui::Color32::GRAY),
@@ -369,9 +346,7 @@ impl Editor {
 fn draw_object(
     object: &crate::map::MapObject,
     position: egui::Pos2,
-    response: &egui::Response,
-    level_view: &LevelView,
-    painter: &egui::Painter,
+    view: &UiLevelView,
     resources: &impl Deref<Target = Resources>,
     opacity: f32,
 ) -> (egui::Rect, bool) {
@@ -385,14 +360,11 @@ fn draw_object(
      -> egui::Rect {
         let position_in_lvl = position + offset.into_egui();
 
-        let dest = egui::Rect::from_min_size(
-            world_to_screen_pos(position_in_lvl, response.rect.min, level_view),
-            dest_size,
-        );
+        let dest = egui::Rect::from_min_size(view.world_to_screen_pos(position_in_lvl), dest_size);
 
         let mut mesh = egui::Mesh::with_texture(texture_id);
         mesh.add_rect_with_uv(dest, uv, tint);
-        painter.add(egui::Shape::mesh(mesh));
+        view.painter().add(egui::Shape::mesh(mesh));
         dest
     };
 

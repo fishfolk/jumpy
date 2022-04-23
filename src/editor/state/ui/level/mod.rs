@@ -7,7 +7,7 @@ use crate::{
         actions::UiAction,
         state::EditorTool,
         util::{EguiCompatibleVec, EguiTextureHandler, Resizable},
-        view::LevelView,
+        view::UiLevelView,
     },
     Resources,
 };
@@ -15,92 +15,83 @@ use crate::{
 use super::super::Editor;
 
 impl Editor {
-    pub(super) fn draw_level(&mut self, egui_ctx: &egui::Context) {
+    pub(super) fn handle_level_view(&mut self, egui_ctx: &egui::Context) {
         egui::CentralPanel::default()
             .frame(egui::Frame::none())
             .show(egui_ctx, |ui| {
-                let texture_id = self.level_render_target.texture.egui_id();
+                let view = self.draw_level_tiles(ui);
 
-                let (response, painter) =
-                    ui.allocate_painter(ui.available_size(), egui::Sense::click_and_drag());
-                let mut level_mesh = egui::Mesh::with_texture(texture_id);
-                level_mesh.add_rect_with_uv(
-                    response.rect,
-                    egui::Rect::from_min_max(egui::pos2(0., 0.), egui::pos2(1., 1.)),
-                    egui::Color32::WHITE,
+                self.handle_objects(ui, &view);
+                self.draw_level_overlays(ui, &view);
+
+                let (width, height) = (
+                    view.response().rect.width() as u32,
+                    view.response().rect.height() as u32,
                 );
-                painter.add(egui::Shape::mesh(level_mesh));
-
-                self.handle_objects(ui, &response, &painter);
-                self.draw_level_overlays(ui, &response, &painter);
-
-                let (width, height) = (response.rect.width() as u32, response.rect.height() as u32);
                 self.level_render_target.resize_if_appropiate(width, height);
             });
     }
 
-    fn draw_level_overlays(
-        &mut self,
-        ui: &mut egui::Ui,
-        level_response: &egui::Response,
-        painter: &egui::Painter,
-    ) {
+    fn draw_level_tiles(&self, ui: &mut egui::Ui) -> UiLevelView {
+        let texture_id = self.level_render_target.texture.egui_id();
+
+        let (response, painter) =
+            ui.allocate_painter(ui.available_size(), egui::Sense::click_and_drag());
+        let mut level_mesh = egui::Mesh::with_texture(texture_id);
+        level_mesh.add_rect_with_uv(
+            response.rect,
+            egui::Rect::from_min_max(egui::pos2(0., 0.), egui::pos2(1., 1.)),
+            egui::Color32::WHITE,
+        );
+        painter.add(egui::Shape::mesh(level_mesh));
+
+        UiLevelView::new(self.level_view, response, painter)
+    }
+
+    fn draw_level_overlays(&mut self, ui: &mut egui::Ui, view: &UiLevelView) {
         let level_contains_cursor = ui
             .input()
             .pointer
             .hover_pos()
-            .map(|pos| level_response.rect.contains(pos))
+            .map(|pos| view.response().rect.contains(pos))
             .unwrap_or(false);
 
         if level_contains_cursor {
             let tile_size = self.map_resource.map.tile_size.into_egui();
 
             let cursor_screen_pos = ui.input().pointer.interact_pos().unwrap();
-            let cursor_px_pos = screen_to_world_pos(
-                cursor_screen_pos,
-                level_response.rect.min.to_vec2(),
-                &self.level_view,
-            );
+            let cursor_px_pos = view.screen_to_world_pos(cursor_screen_pos);
             let cursor_tile_pos = (cursor_px_pos.to_vec2() / tile_size).floor().to_pos2();
 
-            self.draw_level_placement_overlay(ui.ctx(), level_response, painter, cursor_tile_pos);
+            self.handle_placement(ui.ctx(), view, cursor_tile_pos);
 
-            let level_top_left = level_response.rect.min;
-            self.draw_level_pointer_pos_overlay(ui, level_top_left, cursor_px_pos, cursor_tile_pos);
+            self.draw_level_pointer_pos_overlay(ui, view, cursor_px_pos, cursor_tile_pos);
 
-            self.draw_level_object_placement_overlay(ui.ctx(), level_response);
+            self.draw_level_object_placement_overlay(ui.ctx(), view);
         }
     }
 
-    fn draw_level_placement_overlay(
+    fn handle_placement(
         &mut self,
         egui_ctx: &egui::Context,
-        level_response: &egui::Response,
-        painter: &egui::Painter,
+        view: &UiLevelView,
         cursor_tile_pos: egui::Pos2,
     ) {
         match self.selected_tool {
-            EditorTool::TilePlacer => self.draw_level_tile_placement_overlay(
-                egui_ctx,
-                level_response,
-                painter,
-                cursor_tile_pos,
-            ),
+            EditorTool::TilePlacer => self.handle_tile_placement(egui_ctx, view, cursor_tile_pos),
             // TODO: Spawnpoint placement overlay
             // TODO: Object placement overlay
             _ => (),
         };
     }
 
-    fn draw_level_tile_placement_overlay(
+    fn handle_tile_placement(
         &mut self,
         egui_ctx: &egui::Context,
-        level_response: &egui::Response,
-        painter: &egui::Painter,
+        view: &UiLevelView,
         cursor_tile_pos: egui::Pos2,
     ) {
         let tile_size = self.map_resource.map.tile_size.into_egui();
-        let level_top_left = level_response.rect.min;
 
         if cursor_tile_pos.x >= 0. && cursor_tile_pos.y >= 0. {
             if let (Some(selected_tile), Some(selected_layer)) =
@@ -127,20 +118,16 @@ impl Editor {
                 let mut tile_mesh = egui::Mesh::with_texture(texture_id);
                 tile_mesh.add_rect_with_uv(
                     egui::Rect::from_min_size(
-                        world_to_screen_pos(
-                            (cursor_tile_pos.to_vec2() * tile_size).to_pos2(),
-                            level_top_left,
-                            &self.level_view,
-                        ),
+                        view.world_to_screen_pos((cursor_tile_pos.to_vec2() * tile_size).to_pos2()),
                         tile_size,
                     ),
                     uv,
                     egui::Color32::from_rgba_unmultiplied(0xff, 0xff, 0xff, 200),
                 );
 
-                painter.add(egui::Shape::mesh(tile_mesh));
+                view.painter().add(egui::Shape::mesh(tile_mesh));
 
-                if level_response.clicked() || level_response.dragged() {
+                if view.response().clicked() || view.response().dragged() {
                     let input = egui_ctx.input();
                     if input.pointer.button_down(egui::PointerButton::Primary) {
                         let id = selected_tile.tile_id;
@@ -173,14 +160,14 @@ impl Editor {
     fn draw_level_pointer_pos_overlay(
         &self,
         ui: &mut egui::Ui,
-        level_top_left: egui::Pos2,
+        view: &UiLevelView,
         cursor_px_pos: egui::Pos2,
         cursor_tile_pos: egui::Pos2,
     ) {
         egui::containers::Area::new("pointer pos overlay")
             .order(egui::Order::Tooltip)
             .fixed_pos(
-                level_top_left
+                view.level_top_left()
                     + egui::vec2(
                         ui.spacing().window_margin.left,
                         ui.spacing().window_margin.top,
@@ -199,21 +186,4 @@ impl Editor {
                     .inner
             });
     }
-}
-
-// TODO: Factor in level view scale
-fn screen_to_world_pos(
-    p: egui::Pos2,
-    level_top_left: egui::Vec2,
-    level_view: &LevelView,
-) -> egui::Pos2 {
-    p - level_top_left + level_view.position.into_egui()
-}
-
-fn world_to_screen_pos(
-    p: egui::Pos2,
-    level_top_left: egui::Pos2,
-    level_view: &LevelView,
-) -> egui::Pos2 {
-    p + level_top_left.to_vec2() - level_view.position.into_egui()
 }

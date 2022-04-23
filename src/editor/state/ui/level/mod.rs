@@ -94,7 +94,7 @@ impl Editor {
             let cursor_tile_pos = (cursor_px_pos.to_vec2() / tile_size).floor().to_pos2();
 
             // TODO: Move outside
-            self.handle_tool(&view, cursor_tile_pos);
+            self.handle_tool(view, cursor_tile_pos);
 
             self.draw_level_pointer_pos_overlay(ui, view, cursor_px_pos, cursor_tile_pos);
 

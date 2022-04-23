@@ -99,7 +99,7 @@ impl Editor {
             match result {
                 PlaceObjectResult::Create => {
                     let id = settings.id.as_ref().unwrap().clone();
-                    let kind = settings.kind.clone();
+                    let kind = settings.kind;
                     let position = settings.position.into_macroquad();
                     // TODO: Include layer id in object settings & render it in window as well
                     let layer_id = self.selected_layer.as_ref().unwrap().clone();
@@ -150,7 +150,8 @@ impl Editor {
             .filter_map(|layer_id| self.map_resource.map.layers.get(layer_id))
         {
             if layer.is_visible {
-                to_select = to_select.or(self.handle_object_layer(layer, view, ui));
+                let selected_on_this_layer = self.handle_object_layer(layer, view, ui);
+                to_select = to_select.or(selected_on_this_layer);
             }
         }
 
@@ -280,7 +281,7 @@ impl Editor {
                 );
 
             if is_hovered {
-                self.show_object_info_tooltip(ui.ctx(), &object, is_valid);
+                self.show_object_info_tooltip(ui.ctx(), object, is_valid);
 
                 if response.drag_started() || response.clicked() {
                     let click_pos = ui.input().pointer.interact_pos().unwrap();

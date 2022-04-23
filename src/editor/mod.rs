@@ -43,25 +43,7 @@ impl Node for EditorNode {
             .input_scheme
             .collect_input(node.accept_kb_input, node.accept_mouse_input);
 
-        let target_size = vec2(
-            node.editor.level_render_target.texture.width(),
-            node.editor.level_render_target.texture.height(),
-        );
-        let zoom = vec2(
-            node.editor.level_view.scale / target_size.x,
-            node.editor.level_view.scale / target_size.y,
-        ) * 2.;
-        let camera = Some(Camera2D {
-            offset: vec2(-1., -1.),
-            target: node.editor.level_view.position,
-            zoom,
-            render_target: Some(node.editor.level_render_target),
-            ..Camera2D::default()
-        });
-
         node.editor.process_input(&input);
-
-        scene::set_camera(0, camera);
     }
 
     fn draw(mut node: RefMut<Self>)

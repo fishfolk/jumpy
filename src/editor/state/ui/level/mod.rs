@@ -31,11 +31,8 @@ impl Editor {
                 );
                 painter.add(egui::Shape::mesh(level_mesh));
 
-                self.handle_objects(egui_ctx, ui, &response, &painter);
+                self.handle_objects(ui, &response, &painter);
                 self.draw_level_overlays(ui, &response, &painter);
-
-                // Drag selected object
-                self.drag_selected_object(&response, ui);
 
                 let (width, height) = (response.rect.width() as u32, response.rect.height() as u32);
                 self.level_render_target.resize_if_appropiate(width, height);
@@ -71,12 +68,7 @@ impl Editor {
             let level_top_left = level_response.rect.min;
             self.draw_level_pointer_pos_overlay(ui, level_top_left, cursor_px_pos, cursor_tile_pos);
 
-            self.draw_level_object_placement_overlay(
-                ui.ctx(),
-                level_response,
-                painter,
-                cursor_tile_pos,
-            );
+            self.draw_level_object_placement_overlay(ui.ctx(), level_response);
         }
     }
 

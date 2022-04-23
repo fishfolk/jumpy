@@ -37,10 +37,16 @@ pub enum SelectableEntityKind {
     SpawnPoint { index: usize },
 }
 
+#[derive(Debug, Clone, Copy)]
+pub struct DragData {
+    pub cursor_offset: egui::Vec2,
+    pub new_pos: egui::Pos2,
+}
+
 #[derive(Debug, Clone)]
 pub struct SelectableEntity {
     pub kind: SelectableEntityKind,
-    pub click_offset: egui::Vec2,
+    pub drag_data: Option<DragData>,
 }
 
 impl SelectableEntityKind {
@@ -222,7 +228,16 @@ impl Editor {
                     .apply(action, &mut self.map_resource.map)
                     .unwrap();
             }
-            UiAction::SelectEntity(selection) => self.selection = Some(selection),
+            UiAction::SelectEntity(selection) => {
+                if let SelectableEntity {
+                    kind: SelectableEntityKind::Object { layer_id, .. },
+                    ..
+                } = &selection
+                {
+                    self.selected_layer = Some(layer_id.clone());
+                }
+                self.selection = Some(selection);
+            }
             UiAction::SaveMap { name } => {
                 let mut map_resource = self.map_resource.clone();
 
@@ -285,7 +300,27 @@ impl Editor {
         const CAMERA_PAN_SPEED: f32 = 5.0;
 
         // Move camera
-        self.level_view.position += input.camera_move_direction * CAMERA_PAN_SPEED;
+        {
+            use macroquad::prelude::*;
+            let target_size = vec2(
+                self.level_render_target.texture.width(),
+                self.level_render_target.texture.height(),
+            );
+            let zoom = vec2(
+                self.level_view.scale / target_size.x,
+                self.level_view.scale / target_size.y,
+            ) * 2.;
+            self.level_view.position += input.camera_move_direction * CAMERA_PAN_SPEED;
+            let camera = Some(Camera2D {
+                offset: vec2(-1., -1.),
+                target: self.level_view.position,
+                zoom,
+                render_target: Some(self.level_render_target),
+                ..Camera2D::default()
+            });
+
+            scene::set_camera(0, camera);
+        }
 
         // Undo/redo
         if input.undo {

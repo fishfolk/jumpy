@@ -1,5 +1,3 @@
-// FIXME: This is very ugly, and shouldn't be passed into the editor state as parameter. Is there some
-// better way to do this?
 pub struct LevelView {
     /// The view offset in pixels.
     pub position: macroquad::prelude::Vec2,

@@ -123,8 +123,8 @@ impl Editor {
         }
 
         if self.selected_tool == EditorTool::ObjectPlacer
-            && (view.response().clicked_by(egui::PointerButton::Primary)
-                || view.response().dragged_by(egui::PointerButton::Primary))
+            && (view.response.clicked_by(egui::PointerButton::Primary)
+                || view.response.dragged_by(egui::PointerButton::Primary))
         {
             let position =
                 view.screen_to_world_pos(egui_ctx.input().pointer.interact_pos().unwrap());
@@ -181,7 +181,7 @@ impl Editor {
             }) = drag_data
             {
                 draw_object(object, new_pos, view, &resources, 1.);
-                let response = view.response();
+                let response = &view.response;
 
                 if response.dragged_by(egui::PointerButton::Primary) {
                     let cursor_level_pos = view.screen_to_world_pos(
@@ -267,7 +267,7 @@ impl Editor {
                 1.,
             );
 
-            let response = view.response();
+            let response = &view.response;
             let is_hovered = response.hovered()
                 && ui
                     .input()

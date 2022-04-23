@@ -9,6 +9,7 @@ use crate::{
         util::{EguiCompatibleVec, EguiTextureHandler, Resizable},
         view::UiLevelView,
     },
+    map::MapLayerKind,
     Resources,
 };
 
@@ -19,14 +20,46 @@ impl Editor {
         egui::CentralPanel::default()
             .frame(egui::Frame::none())
             .show(egui_ctx, |ui| {
-                let view = self.draw_level_tiles(ui);
+                let mut view = self.draw_level_tiles(ui);
+
+                view.response = view.response.context_menu(|ui| {
+                    ui.menu_button("Select tool", |ui| {
+                        if ui.button("Cursor").clicked() {
+                            self.selected_tool = EditorTool::Cursor;
+                            ui.close_menu()
+                        }
+                        if ui.button("Spawnpoint Placer").clicked() {
+                            self.selected_tool = EditorTool::SpawnPointPlacer;
+                            ui.close_menu()
+                        }
+                        match self.selected_layer_type() {
+                            Some(MapLayerKind::TileLayer) => {
+                                if ui.button("Tile Placer").clicked() {
+                                    self.selected_tool = EditorTool::TilePlacer;
+                                    ui.close_menu()
+                                }
+                                if ui.button("Eraser").clicked() {
+                                    self.selected_tool = EditorTool::Eraser;
+                                    ui.close_menu()
+                                }
+                            }
+                            Some(MapLayerKind::ObjectLayer) => {
+                                if ui.button("Object Placer").clicked() {
+                                    self.selected_tool = EditorTool::ObjectPlacer;
+                                    ui.close_menu()
+                                }
+                            }
+                            None => (),
+                        }
+                    });
+                });
 
                 self.handle_objects(ui, &view);
                 self.draw_level_overlays(ui, &view);
 
                 let (width, height) = (
-                    view.response().rect.width() as u32,
-                    view.response().rect.height() as u32,
+                    view.response.rect.width() as u32,
+                    view.response.rect.height() as u32,
                 );
                 self.level_render_target.resize_if_appropiate(width, height);
             });
@@ -53,7 +86,7 @@ impl Editor {
             .input()
             .pointer
             .hover_pos()
-            .map(|pos| view.response().rect.contains(pos))
+            .map(|pos| view.response.rect.contains(pos))
             .unwrap_or(false);
 
         if level_contains_cursor {
@@ -63,7 +96,7 @@ impl Editor {
             let cursor_px_pos = view.screen_to_world_pos(cursor_screen_pos);
             let cursor_tile_pos = (cursor_px_pos.to_vec2() / tile_size).floor().to_pos2();
 
-            self.handle_placement(ui.ctx(), view, cursor_tile_pos);
+            self.handle_tool(ui.ctx(), view, cursor_tile_pos);
 
             self.draw_level_pointer_pos_overlay(ui, view, cursor_px_pos, cursor_tile_pos);
 
@@ -71,7 +104,7 @@ impl Editor {
         }
     }
 
-    fn handle_placement(
+    fn handle_tool(
         &mut self,
         egui_ctx: &egui::Context,
         view: &UiLevelView,
@@ -127,7 +160,7 @@ impl Editor {
 
                 view.painter().add(egui::Shape::mesh(tile_mesh));
 
-                if view.response().clicked() || view.response().dragged() {
+                if view.response.clicked() || view.response.dragged() {
                     let input = egui_ctx.input();
                     if input.pointer.button_down(egui::PointerButton::Primary) {
                         let id = selected_tile.tile_id;

@@ -31,7 +31,7 @@ impl LevelView {
 #[derive(Clone)]
 pub struct UiLevelView {
     view: LevelView,
-    response: egui::Response,
+    pub response: egui::Response,
     painter: egui::Painter,
 }
 
@@ -44,14 +44,13 @@ impl UiLevelView {
         }
     }
 
-    /// Get a reference to the ui level view's response.
-    pub fn response(&self) -> &egui::Response {
-        &self.response
-    }
-
     /// Get a reference to the ui level view's painter.
     pub fn painter(&self) -> &egui::Painter {
         &self.painter
+    }
+
+    pub fn ctx(&self) -> &egui::Context {
+        self.painter.ctx()
     }
 
     /// Returns the top left pixel of the level rect in screen coordinates.

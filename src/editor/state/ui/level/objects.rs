@@ -16,11 +16,7 @@ use crate::{
 };
 
 impl Editor {
-    pub(super) fn draw_level_object_placement_overlay(
-        &mut self,
-        egui_ctx: &egui::Context,
-        view: &UiLevelView,
-    ) {
+    pub(super) fn draw_level_object_placement_overlay(&mut self, view: &UiLevelView) {
         if let Some(settings) = &mut self.object_being_placed {
             let position = view.world_to_screen_pos(settings.position);
 
@@ -34,7 +30,7 @@ impl Editor {
                 .fixed_pos(position)
                 .collapsible(false)
                 .resizable(false)
-                .show(egui_ctx, |ui| {
+                .show(view.ctx(), |ui| {
                     egui::ComboBox::new("object_kind", "Kind")
                         .selected_text(format!("{}", settings.kind))
                         .show_ui(ui, |ui| {
@@ -127,7 +123,7 @@ impl Editor {
                 || view.response.dragged_by(egui::PointerButton::Primary))
         {
             let position =
-                view.screen_to_world_pos(egui_ctx.input().pointer.interact_pos().unwrap());
+                view.screen_to_world_pos(view.ctx().input().pointer.interact_pos().unwrap());
 
             self.object_being_placed = if let Some(settings) = self.object_being_placed.take() {
                 Some(ObjectSettings {

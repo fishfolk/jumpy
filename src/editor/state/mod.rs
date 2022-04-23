@@ -347,14 +347,13 @@ impl Editor {
                         let layer_id = layer_id.clone();
                         let index = *index;
                         self.apply_action(UiAction::DeleteObject { layer_id, index });
-                        self.selection = None;
                     }
                     SelectableEntityKind::SpawnPoint { index } => {
                         let index = *index;
                         self.apply_action(UiAction::DeleteSpawnPoint(index));
-                        self.selection = None;
                     }
                 }
+                self.selection = None;
             }
         }
     }

@@ -1,9 +1,13 @@
 use glow::HasContext;
 
-mod renderer;
-mod shader;
+pub mod buffer;
+pub mod renderer;
+pub mod shader;
+pub mod vertex;
 
-pub use shader::*;
+pub use buffer::Buffer;
+pub use shader::Shader;
+pub use vertex::Vertex;
 
 use crate::color::Color;
 use crate::rendering::DrawTextureParams;

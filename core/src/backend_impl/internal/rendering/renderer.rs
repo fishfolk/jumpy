@@ -1,24 +1,19 @@
-use glow::{Context, HasContext, NativeBuffer, NativeTexture, NativeVertexArray};
+use glow::{Context, HasContext, NativeTexture, NativeVertexArray};
 
 use crate::color::{colors, Color};
 use crate::gl::gl_context;
 use crate::math::{vec2, Rect, Size, Vec2};
-use crate::rendering::DrawTextureParams;
+use crate::rendering::vertex::Index;
+use crate::rendering::{Buffer, DrawTextureParams, Vertex};
 use crate::text::draw_queued_text;
 use crate::texture::Texture2D;
 use crate::window::{get_context_wrapper, get_window};
 use crate::Result;
 
-pub struct Vertex {
-    position: Vec2,
-    color: Color,
-    texture_coords: Vec2,
-}
-
 const BATCH_SIZE: usize = 128;
 
-const MAX_TEXTURE_WIDTH: u32 = 2048;
-const MAX_TEXTURE_HEIGHT: u32 = 2048;
+const QUAD_VERTEX_CNT: usize = 4;
+const QUAD_INDEX_CNT: usize = 6;
 
 const VERTEX_SHADER_SRC: &str = "
 layout(location = 0) in vec3 vertex_position;
@@ -38,8 +33,8 @@ pub struct Renderer {
     batched: Vec<Vertex>,
     batched_cnt: usize,
     indices: Vec<u32>,
-    vertex_buffer: NativeBuffer,
-    index_buffer: NativeBuffer,
+    vertex_buffer: Buffer<Vertex>,
+    index_buffer: Buffer<Index>,
     vertex_array: NativeVertexArray,
 }
 
@@ -47,15 +42,12 @@ impl Renderer {
     pub fn new() -> Result<Self> {
         let gl = gl_context();
 
-        let (vertex_buffer, index_buffer, vertex_array) = unsafe {
-            let vertex_buffer = gl.create_buffer()?;
-            let index_buffer = gl.create_buffer()?;
-            let vertex_array = gl.create_vertex_array()?;
+        let vertex_buffer = Buffer::new_vertex()?;
+        let index_buffer = Buffer::new_element()?;
 
-            (vertex_buffer, index_buffer, vertex_array)
-        };
+        let vertex_array = unsafe { gl.create_vertex_array() }?;
 
-        let mut indices = Vec::with_capacity(BATCH_SIZE * 6);
+        let mut indices = Vec::with_capacity(BATCH_SIZE * QUAD_INDEX_CNT);
         for i in 0..BATCH_SIZE {
             let offset = i as u32 * 3;
 
@@ -69,7 +61,7 @@ impl Renderer {
 
         Ok(Renderer {
             current_texture: None,
-            batched: Vec::with_capacity(BATCH_SIZE * 4),
+            batched: Vec::with_capacity(BATCH_SIZE * QUAD_VERTEX_CNT),
             batched_cnt: 0,
             indices,
             vertex_buffer,
@@ -90,26 +82,17 @@ impl Renderer {
     }
 
     fn draw_batched(&mut self) {
+        self.vertex_buffer.bind();
+        self.vertex_buffer.set_data(&self.batched);
+
+        let index_cnt = self.batched_cnt * QUAD_INDEX_CNT;
+
+        self.index_buffer.bind();
+        self.index_buffer.set_data(&self.indices[0..index_cnt]);
+
         let gl = gl_context();
-
         unsafe {
-            gl.bind_buffer(glow::ARRAY_BUFFER, Some(self.vertex_buffer));
-
-            let vertices_slice: &[u8] = core::slice::from_raw_parts(
-                self.batched.as_ptr() as *const u8,
-                self.batched.len() * core::mem::size_of::<Vertex>(),
-            );
-
-            gl.buffer_data_u8_slice(glow::ARRAY_BUFFER, vertices_slice, glow::STATIC_DRAW);
-
-            gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, Some(self.index_buffer));
-
-            let indices_slice: &[u8] = core::slice::from_raw_parts(
-                self.indices.as_ptr() as *const u8,
-                self.indices.len() * core::mem::size_of::<u32>(),
-            );
-
-            gl.buffer_data_u8_slice(glow::ELEMENT_ARRAY_BUFFER, indices_slice, glow::STATIC_DRAW);
+            gl.bind_texture(glow::TEXTURE_2D, self.current_texture);
 
             gl.draw_elements(
                 glow::TRIANGLES,
@@ -118,9 +101,11 @@ impl Renderer {
                 0,
             );
 
-            gl.bind_buffer(glow::ARRAY_BUFFER, None);
-            gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, None);
+            gl.bind_texture(glow::TEXTURE_2D, None);
         }
+
+        self.vertex_buffer.unbind();
+        self.index_buffer.unbind();
 
         self.batched.clear();
         self.batched_cnt = 0;
@@ -134,7 +119,7 @@ impl Renderer {
             }
         }
 
-        if self.batched_cnt > BATCH_SIZE {
+        if self.batched_cnt >= BATCH_SIZE {
             self.draw_batched();
         }
 

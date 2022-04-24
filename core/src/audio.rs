@@ -8,7 +8,7 @@ use quad_snd::{AudioContext as QuadAudioContext, PlaySoundParams, Sound as QuadS
 
 use crate::audio::AudioKind::Other;
 
-use crate::file::load_file;
+use crate::file::read_from_file;
 use crate::resources::get_sound;
 use crate::{Config, Result};
 
@@ -371,7 +371,7 @@ pub async fn load_sound_file<P: AsRef<Path>, K: Into<Option<AudioKind>>>(
     path: P,
     kind: K,
 ) -> Result<Sound> {
-    let bytes = load_file(path).await?;
+    let bytes = read_from_file(path).await?;
     let sound = load_sound_bytes(&bytes, kind);
     Ok(sound)
 }

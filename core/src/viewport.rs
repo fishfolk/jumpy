@@ -5,8 +5,8 @@ use crate::math::{vec2, Size, UVec2, Vec2};
 #[derive(Debug, Clone)]
 pub struct Viewport {
     pub position: Vec2,
-    pub width: u32,
-    pub height: u32,
+    pub width: f32,
+    pub height: f32,
 }
 
 impl Viewport {
@@ -14,7 +14,7 @@ impl Viewport {
         self.width as f32 / self.height as f32
     }
 
-    pub fn size(&self) -> Size<u32> {
+    pub fn size(&self) -> Size<f32> {
         Size {
             width: self.width,
             height: self.height,
@@ -22,8 +22,8 @@ impl Viewport {
     }
 }
 
-impl From<Size<u32>> for Viewport {
-    fn from(size: Size<u32>) -> Self {
+impl From<Size<f32>> for Viewport {
+    fn from(size: Size<f32>) -> Self {
         Viewport {
             position: Vec2::ZERO,
             width: size.width,
@@ -32,8 +32,8 @@ impl From<Size<u32>> for Viewport {
     }
 }
 
-impl From<(Vec2, Size<u32>)> for Viewport {
-    fn from((position, size): (Vec2, Size<u32>)) -> Self {
+impl From<(Vec2, Size<f32>)> for Viewport {
+    fn from((position, size): (Vec2, Size<f32>)) -> Self {
         Viewport {
             position,
             width: size.width,
@@ -42,8 +42,8 @@ impl From<(Vec2, Size<u32>)> for Viewport {
     }
 }
 
-impl From<UVec2> for Viewport {
-    fn from(vec: UVec2) -> Self {
+impl From<Vec2> for Viewport {
+    fn from(vec: Vec2) -> Self {
         Viewport {
             position: Vec2::ZERO,
             width: vec.x,
@@ -52,8 +52,8 @@ impl From<UVec2> for Viewport {
     }
 }
 
-impl From<(Vec2, UVec2)> for Viewport {
-    fn from((position, size): (Vec2, UVec2)) -> Self {
+impl From<(Vec2, Vec2)> for Viewport {
+    fn from((position, size): (Vec2, Vec2)) -> Self {
         Viewport {
             position,
             width: size.x,
@@ -62,6 +62,6 @@ impl From<(Vec2, UVec2)> for Viewport {
     }
 }
 
-pub fn viewport_size() -> Size<u32> {
+pub fn viewport_size() -> Size<f32> {
     viewport().size()
 }

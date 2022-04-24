@@ -1,12 +1,12 @@
 use ff_core::prelude::*;
 
-use ff_core::map::MapBackgroundLayer;
+use ff_core::gui::{get_gui_theme, theme::LIST_BOX_ENTRY_HEIGHT, ELEMENT_MARGIN};
 use ff_core::map::Map;
-use ff_core::gui::{ELEMENT_MARGIN, get_gui_theme, theme::LIST_BOX_ENTRY_HEIGHT};
+use ff_core::map::MapBackgroundLayer;
 use ff_core::resources::TextureKind;
 
 use ff_core::macroquad::hash;
-use ff_core::macroquad::ui::{Ui, widgets};
+use ff_core::macroquad::ui::{widgets, Ui};
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 
@@ -80,10 +80,10 @@ impl Window for BackgroundPropertiesWindow {
         widgets::Group::new(hash!(id, "color_group"), vec2(size.x * 0.4, size.y * 0.5))
             .position(vec2(0.0, 0.0))
             .ui(ui, |ui| {
-                let mut r_str = format!("{:.1}", self.color.r);
-                let mut g_str = format!("{:.1}", self.color.g);
-                let mut b_str = format!("{:.1}", self.color.b);
-                let mut a_str = format!("{:.1}", self.color.a);
+                let mut r_str = format!("{:.1}", self.color.red);
+                let mut g_str = format!("{:.1}", self.color.green);
+                let mut b_str = format!("{:.1}", self.color.blue);
+                let mut a_str = format!("{:.1}", self.color.alpha);
 
                 widgets::InputText::new(hash!(id, "color_r_input"))
                     .ratio(1.0)
@@ -106,19 +106,19 @@ impl Window for BackgroundPropertiesWindow {
                     .ui(ui, &mut a_str);
 
                 if let Ok(r) = r_str.parse::<f32>() {
-                    self.color.r = r;
+                    self.color.red = r;
                 }
 
                 if let Ok(g) = g_str.parse::<f32>() {
-                    self.color.g = g;
+                    self.color.green = g;
                 }
 
                 if let Ok(b) = b_str.parse::<f32>() {
-                    self.color.b = b;
+                    self.color.blue = b;
                 }
 
                 if let Ok(a) = a_str.parse::<f32>() {
-                    self.color.a = a;
+                    self.color.alpha = a;
                 }
             });
 

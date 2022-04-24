@@ -13,16 +13,16 @@ pub fn update_camera(world: &mut World, _delta_time: f32) -> Result<()> {
             player.camera_box.x = rect.x;
         }
 
-        if rect.x + rect.w > player.camera_box.x + player.camera_box.w {
-            player.camera_box.x = rect.x + rect.w - player.camera_box.w;
+        if rect.x + rect.width > player.camera_box.x + player.camera_box.width {
+            player.camera_box.x = rect.x + rect.width - player.camera_box.width;
         }
 
         if rect.y < player.camera_box.y {
             player.camera_box.y = rect.y;
         }
 
-        if rect.y + rect.h > player.camera_box.y + player.camera_box.h {
-            player.camera_box.y = rect.y + rect.h - player.camera_box.h;
+        if rect.y + rect.height > player.camera_box.y + player.camera_box.height {
+            player.camera_box.y = rect.y + rect.height - player.camera_box.height;
         }
 
         player_rects.push(rect);

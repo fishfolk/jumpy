@@ -444,17 +444,17 @@ const HUD_OFFSET_Y: f32 = 16.0;
 const HUD_CONDENSED_USE_COUNT_THRESHOLD: u32 = 12;
 
 const HUD_USE_COUNT_COLOR_FULL: Color = Color {
-    r: 0.8,
-    g: 0.9,
-    b: 1.0,
-    a: 1.0,
+    red: 0.8,
+    green: 0.9,
+    blue: 1.0,
+    alpha: 1.0,
 };
 
 const HUD_USE_COUNT_COLOR_EMPTY: Color = Color {
-    r: 0.8,
-    g: 0.9,
-    b: 1.0,
-    a: 0.8,
+    red: 0.8,
+    green: 0.9,
+    blue: 1.0,
+    alpha: 0.8,
 };
 
 pub fn draw_weapons_hud(world: &mut World, _delta_time: f32) -> Result<()> {

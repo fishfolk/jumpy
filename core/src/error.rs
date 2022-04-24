@@ -26,6 +26,8 @@ pub enum ErrorKind {
     Network,
     EditorAction,
     Physics,
+    Image,
+    Font,
 }
 
 impl ErrorKind {
@@ -42,6 +44,8 @@ impl ErrorKind {
             ErrorKind::Network => "Network error",
             ErrorKind::EditorAction => "Editor action error",
             ErrorKind::Physics => "Physics error",
+            ErrorKind::Image => "Image error",
+            ErrorKind::Font => "Font error",
         }
     }
 }

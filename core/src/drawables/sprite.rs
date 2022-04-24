@@ -5,7 +5,7 @@ use std::ops::Div;
 use serde::{Deserialize, Serialize};
 
 use crate::color::{colors, Color};
-use crate::math::{vec2, AsUVec2, AsVec2, Rect, Size, UVec2, Vec2};
+use crate::math::{uvec2, vec2, AsUVec2, AsVec2, Rect, Size, URect, UVec2, Vec2};
 use crate::rendering::{draw_rectangle_outline, draw_texture, DrawTextureParams};
 use crate::storage;
 use crate::texture::Texture2D;
@@ -124,7 +124,8 @@ impl Sprite {
     }
 
     pub fn size(&self) -> Size<f32> {
-        (self.source_rect.size() * self.scale).into()
+        let vec = self.source_rect.size() * self.scale;
+        Size::new(vec.x, vec.y)
     }
 
     pub fn set_scale(&mut self, scale: f32) {
@@ -208,8 +209,8 @@ pub fn debug_draw_one_sprite(position: Vec2, sprite: &Sprite) -> Result<()> {
         draw_rectangle_outline(
             position.x + sprite.offset.x,
             position.y + sprite.offset.y,
-            size.width,
-            size.height,
+            size.width as f32,
+            size.height as f32,
             2.0,
             colors::BLUE,
         )

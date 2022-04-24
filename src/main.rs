@@ -115,12 +115,6 @@ async fn main() -> Result<()> {
 
     init_core(0, assets_dir.as_str(), mods_dir.as_str()).await?;
 
-    load_resources().await?;
-
-    init_passive_effects();
-
-    init_gamepad_context().await.unwrap();
-
     ff_core::cfg_if! {
         if #[cfg(feature = "macroquad")] {
             macroquad_main().await?;
@@ -136,6 +130,24 @@ async fn main() -> Result<()> {
 
 #[cfg(not(any(feature = "macroquad", feature = "ultimate")))]
 async fn internal_main() -> Result<()> {
+    use ff_core::gl::create_gl_context;
+    use ff_core::glutin::event_loop;
+
+    let config = load_config(config_path()).await?;
+
+    let event_loop = new_event_loop();
+
+    {
+        let window = create_window(&WINDOW_TITLE, &event_loop, &config)?;
+        let _ = create_gl_context(window);
+    }
+
+    load_resources().await?;
+
+    init_passive_effects();
+
+    init_gamepad_context().await?;
+
     let map_resource = get_map(0).clone();
     let players = &[
         PlayerParams {
@@ -150,14 +162,11 @@ async fn internal_main() -> Result<()> {
         },
     ];
 
-    let config = load_config(config_path()).await?;
-
     let initial_state = build_state_for_game_mode(GameMode::Local, map_resource.map, players)?;
 
     Game::new(initial_state)
-        .with_window_title(WINDOW_TITLE)
         .with_config(config)
-        .with_event_loop(new_event_loop())
+        .with_event_loop(event_loop)
         .with_event_handler(DefaultEventHandler)
         .run()
         .await?;
@@ -167,6 +176,24 @@ async fn internal_main() -> Result<()> {
 
 #[cfg(feature = "ultimate")]
 async fn ultimate_main() -> Result<()> {
+    use ff_core::gl::create_gl_context;
+    use ff_core::glutin::event_loop;
+
+    let config = load_config(config_path()).await?;
+
+    let event_loop = new_event_loop();
+
+    {
+        let window = create_window(&game.window_title, &event_loop, &game.config)?;
+        let _ = create_gl_context(window);
+    }
+
+    load_resources().await?;
+
+    init_passive_effects();
+
+    init_gamepad_context().await?;
+
     #[cfg(target_arch = "wasm32")]
     console_error_panic_hook::set_once();
 
@@ -186,17 +213,26 @@ async fn ultimate_main() -> Result<()> {
         },
     ];
 
-    let state = build_state_for_game_mode(GameMode::Local, map_resource.map, players)?;
+    let initial_state = build_state_for_game_mode(GameMode::Local, map_resource.map, players)?;
 
-    let mut game = Game::new(WINDOW_TITLE);
-
-    game.run(state)?;
+    Game::new(initial_state)
+        .with_config(config)
+        .with_event_loop(event_loop)
+        .with_event_handler(DefaultEventHandler)
+        .run()
+        .await?;
 
     Ok(())
 }
 
 #[cfg(feature = "macroquad")]
 async fn macroquad_main() -> Result<()> {
+    load_resources().await?;
+
+    init_passive_effects();
+
+    init_gamepad_context().await?;
+
     use ff_core::macroquad::experimental::scene;
     use ff_core::macroquad::window::clear_background;
     use ff_core::macroquad::window::next_frame;

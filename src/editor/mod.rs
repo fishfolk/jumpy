@@ -55,9 +55,7 @@ use crate::items::try_get_item;
 use crate::player::IDLE_ANIMATION_ID;
 
 use ff_core::prelude::*;
-use ff_core::text::{
-    draw_aligned_text, draw_text, measure_text, HorizontalAlignment, TextParams, VerticalAlignment,
-};
+use ff_core::text::{draw_text, HorizontalAlignment, TextParams, VerticalAlignment};
 
 use ff_core::macroquad::camera::{pop_camera_state, push_camera_state, set_default_camera};
 use ff_core::macroquad::experimental::scene;
@@ -166,10 +164,10 @@ impl Editor {
 
     const GRID_LINE_WIDTH: f32 = 1.0;
     const GRID_COLOR: Color = Color {
-        r: 1.0,
-        g: 1.0,
-        b: 1.0,
-        a: 0.25,
+        red: 1.0,
+        green: 1.0,
+        blue: 1.0,
+        alpha: 0.25,
     };
 
     const DOUBLE_CLICK_THRESHOLD: f32 = 0.25;
@@ -186,7 +184,7 @@ impl Editor {
 
         let selected_layer = map_resource.map.draw_order.first().cloned();
 
-        let viewport_size = viewport_size().as_f32();
+        let viewport_size = viewport_size();
         let cursor_position = vec2(viewport_size.width / 2.0, viewport_size.height / 2.0);
 
         let tool_selector_element = ToolSelectorElement::new()
@@ -1137,7 +1135,7 @@ impl Node for Editor {
             !gui.contains(node.cursor_position)
         };
 
-        let viewport_size = viewport_size().as_f32();
+        let viewport_size = viewport_size();
 
         let threshold = viewport_size.as_vec2() * Self::CAMERA_PAN_THRESHOLD;
 
@@ -1541,15 +1539,16 @@ impl Node for Editor {
             push_camera_state();
             set_default_camera();
 
-            let viewport_size = viewport_size().as_f32();
+            let viewport_size = viewport_size();
             let label_position = vec2(viewport_size.width / 2.0, 16.0);
 
-            draw_aligned_text(
+            draw_text(
                 label,
-                label_position,
-                HorizontalAlignment::Center,
-                VerticalAlignment::Bottom,
+                label_position.x,
+                label_position.y,
                 TextParams {
+                    horizontal_align: HorizontalAlignment::Center,
+                    vertical_align: VerticalAlignment::Normal,
                     ..Default::default()
                 },
             );
@@ -1617,6 +1616,7 @@ fn get_object_size(object: &MapObject) -> Size<f32> {
         }
     }
 
+    /*
     if let Some(label) = &label {
         let params = TextParams::default();
         let measure = measure_text(
@@ -1627,6 +1627,7 @@ fn get_object_size(object: &MapObject) -> Size<f32> {
         );
         res = Some(Size::new(measure.width, measure.height));
     }
+     */
 
     res.unwrap_or_else(|| {
         Size::new(

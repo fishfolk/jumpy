@@ -8,6 +8,6 @@ impl From<macroquad::file::FileError> for Error {
 
 impl From<macroquad::text::FontError> for Error {
     fn from(err: macroquad::text::FontError) -> Self {
-        Error::new(ErrorKind::Parsing, err)
+        Error::new(ErrorKind::Font, err)
     }
 }

@@ -79,7 +79,7 @@ impl Map {
     pub async fn load<P: AsRef<Path>>(path: P) -> Result<Self> {
         let extension = path.as_ref().extension().unwrap().to_str().unwrap();
 
-        let bytes = load_file(&path).await?;
+        let bytes = read_from_file(&path).await?;
 
         let map = deserialize_bytes_by_extension(extension, &bytes).unwrap();
 
@@ -87,7 +87,7 @@ impl Map {
     }
 
     pub async fn load_tiled<P: AsRef<Path>>(path: P, export_path: Option<P>) -> Result<Self> {
-        let bytes = load_file(path).await?;
+        let bytes = read_from_file(path).await?;
 
         let tiled_map: TiledMap = deserialize_json_bytes(&bytes).unwrap();
 
@@ -120,8 +120,10 @@ impl Map {
 
     pub fn to_grid(&self, rect: &Rect) -> URect {
         let p = self.to_coords(rect.point());
-        let w = ((rect.w / self.tile_size.width) as u32).clamp(0, self.grid_size.width - p.x - 1);
-        let h = ((rect.h / self.tile_size.height) as u32).clamp(0, self.grid_size.height - p.y - 1);
+        let w =
+            ((rect.width / self.tile_size.width) as u32).clamp(0, self.grid_size.width - p.x - 1);
+        let h = ((rect.height / self.tile_size.height) as u32)
+            .clamp(0, self.grid_size.height - p.y - 1);
         URect::new(p.x, p.y, w, h)
     }
 
@@ -173,15 +175,15 @@ impl Map {
         let collider = Rect::new(
             collider.x - Self::COLLIDER_PADDING,
             collider.y - Self::COLLIDER_PADDING,
-            collider.w + Self::COLLIDER_PADDING * 2.0,
-            collider.h + Self::COLLIDER_PADDING * 2.0,
+            collider.width + Self::COLLIDER_PADDING * 2.0,
+            collider.height + Self::COLLIDER_PADDING * 2.0,
         );
 
         let grid = self.to_grid(&Rect::new(
             collider.x - self.tile_size.width,
             collider.y - self.tile_size.height,
-            collider.w + self.tile_size.width * 2.0,
-            collider.h + self.tile_size.height * 2.0,
+            collider.width + self.tile_size.width * 2.0,
+            collider.height + self.tile_size.height * 2.0,
         ));
 
         let mut collisions = Vec::new();
@@ -237,7 +239,7 @@ impl Map {
     fn background_parallax(texture: Texture2D, depth: f32, camera_position: Vec2) -> Rect {
         let size = texture.size();
 
-        let dest_rect = Rect::new(0., 0., size.width, size.height);
+        let dest_rect = Rect::new(0.0, 0.0, size.width, size.height);
         let parallax_w = size.width * 0.5;
 
         let mut dest_rect2 = Rect::new(
@@ -247,8 +249,8 @@ impl Map {
             size.height + parallax_w * 2.,
         );
 
-        let parallax_x = camera_position.x / dest_rect.w - 0.3;
-        let parallax_y = camera_position.y / dest_rect.h * 0.6 - 0.5;
+        let parallax_x = camera_position.x / dest_rect.width - 0.3;
+        let parallax_y = camera_position.y / dest_rect.height * 0.6 - 0.5;
 
         dest_rect2.x += parallax_w * parallax_x * depth;
         dest_rect2.y += parallax_w * parallax_y * depth;
@@ -268,8 +270,8 @@ impl Map {
         draw_rectangle(
             self.world_offset.x,
             self.world_offset.y,
-            rect.w as f32 * self.tile_size.width,
-            rect.h as f32 * self.tile_size.height,
+            rect.width as f32 * self.tile_size.width,
+            rect.height as f32 * self.tile_size.height,
             self.background_color,
         );
 
@@ -307,7 +309,7 @@ impl Map {
                     dest_rect.y,
                     texture_res.texture,
                     DrawTextureParams {
-                        dest_size: Some(Size::new(dest_rect.w, dest_rect.h)),
+                        dest_size: Some(Size::new(dest_rect.width, dest_rect.height)),
                         ..Default::default()
                     },
                 )
@@ -419,14 +421,14 @@ impl<'a> Iterator for MapTileIterator<'a> {
     type Item = (u32, u32, &'a Option<MapTile>);
 
     fn next(&mut self) -> Option<Self::Item> {
-        let next = if self.current.0 + 1 >= self.rect.x + self.rect.w {
+        let next = if self.current.0 + 1 >= self.rect.x + self.rect.width {
             (self.rect.x, self.current.1 + 1)
         } else {
             (self.current.0 + 1, self.current.1)
         };
 
         let i = (self.current.1 * self.layer.grid_size.width + self.current.0) as usize;
-        if self.current.1 >= self.rect.y + self.rect.h || i >= self.layer.tiles.len() {
+        if self.current.1 >= self.rect.y + self.rect.height || i >= self.layer.tiles.len() {
             return None;
         }
 

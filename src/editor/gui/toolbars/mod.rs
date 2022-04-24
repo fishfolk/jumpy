@@ -114,7 +114,7 @@ impl Toolbar {
     pub fn get_rect(&self) -> Rect {
         let mut offset = 0.0;
 
-        let viewport_size = viewport_size().as_f32();
+        let viewport_size = viewport_size();
 
         if self.position == ToolbarPosition::Right {
             offset += viewport_size.width - self.width;
@@ -136,7 +136,7 @@ impl Toolbar {
             ui.push_skin(&gui_theme.toolbar);
         }
 
-        let viewport_size = viewport_size().as_f32();
+        let viewport_size = viewport_size();
 
         let mut position = Vec2::ZERO;
         if self.position == ToolbarPosition::Right {

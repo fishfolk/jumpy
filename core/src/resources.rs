@@ -12,7 +12,7 @@ use std::{collections::HashMap, fs, path::Path};
 use async_trait::async_trait;
 
 use crate::particles::EmitterConfig;
-use crate::text::{load_ttf_font, Font};
+use crate::text::{load_font, Font};
 
 use serde::{Deserialize, Serialize};
 
@@ -225,7 +225,7 @@ pub fn iter_textures() -> HashMapIter<'static, String, TextureResource> {
 static mut FONTS: Option<HashMap<String, Font>> = None;
 
 pub fn try_get_font(id: &str) -> Option<Font> {
-    unsafe { FONTS.get_or_insert_with(HashMap::new).get(id).copied() }
+    unsafe { FONTS.get_or_insert_with(HashMap::new).get(id).cloned() }
 }
 
 pub fn get_font(id: &str) -> Font {
@@ -297,7 +297,7 @@ impl ModLoadingIterator {
 
         let active_mods_file_path = path.join(ACTIVE_MODS_FILE_NAME).with_extension(ext);
 
-        let bytes = load_file(active_mods_file_path).await?;
+        let bytes = read_from_file(active_mods_file_path).await?;
 
         let active_mods: Vec<String> = deserialize_bytes_by_extension(ext, &bytes)?;
 
@@ -319,7 +319,7 @@ impl ModLoadingIterator {
 
         let mod_file_path = mod_path.join(MOD_FILE_NAME).with_extension(self.extension);
 
-        let bytes = load_file(mod_file_path).await?;
+        let bytes = read_from_file(mod_file_path).await?;
 
         let meta: ModMetadata = deserialize_bytes_by_extension(self.extension, &bytes)?;
 
@@ -388,7 +388,7 @@ pub async fn load_particle_effects<P: AsRef<Path>>(
         .join(PARTICLE_EFFECTS_FILE)
         .with_extension(ext);
 
-    match load_file(&particle_effects_file_path).await {
+    match read_from_file(&particle_effects_file_path).await {
         Err(err) => {
             if is_required {
                 return Err(err.into());
@@ -403,7 +403,7 @@ pub async fn load_particle_effects<P: AsRef<Path>>(
 
                 let extension = file_path.extension().unwrap().to_str().unwrap();
 
-                let bytes = load_file(&file_path).await?;
+                let bytes = read_from_file(&file_path).await?;
 
                 let cfg: EmitterConfig = deserialize_bytes_by_extension(extension, &bytes)?;
 
@@ -429,7 +429,7 @@ pub async fn load_audio<P: AsRef<Path>>(
 
     let audio_file_path = path.as_ref().join(AUDIO_FILE).with_extension(ext);
 
-    match load_file(&audio_file_path).await {
+    match read_from_file(&audio_file_path).await {
         Err(err) => {
             if is_required {
                 return Err(err.into());
@@ -470,7 +470,7 @@ pub async fn load_textures<P: AsRef<Path>>(
 
     let textures_file_path = path.as_ref().join(TEXTURES_FILE).with_extension(ext);
 
-    match load_file(&textures_file_path).await {
+    match read_from_file(&textures_file_path).await {
         Err(err) => {
             if is_required {
                 return Err(err.into());
@@ -482,7 +482,7 @@ pub async fn load_textures<P: AsRef<Path>>(
             for meta in metadata {
                 let file_path = path.as_ref().join(&meta.path);
 
-                let texture = load_texture_file(&file_path, meta.format, meta.filter_mode).await?;
+                let texture = load_texture_file(&file_path, meta.filter_mode).await?;
 
                 let key = meta.id.clone();
 
@@ -521,7 +521,7 @@ pub async fn load_maps<P: AsRef<Path>>(
 
     let maps_file_path = path.as_ref().join(MAPS_FILE).with_extension(ext);
 
-    match load_file(&maps_file_path).await {
+    match read_from_file(&maps_file_path).await {
         Err(err) => {
             if is_required {
                 return Err(err.into());
@@ -540,12 +540,7 @@ pub async fn load_maps<P: AsRef<Path>>(
                     Map::load(map_path).await?
                 };
 
-                let preview = load_texture_file(
-                    &preview_path,
-                    TextureFormat::Png,
-                    TextureFilterMode::Nearest,
-                )
-                .await?;
+                let preview = load_texture_file(&preview_path, TextureFilterMode::Nearest).await?;
 
                 let res = MapResource { map, preview, meta };
 
@@ -571,7 +566,7 @@ pub async fn load_decoration<P: AsRef<Path>>(
 
     let decoration_file_path = path.as_ref().join(DECORATION_FILE).with_extension(ext);
 
-    match load_file(&decoration_file_path).await {
+    match read_from_file(&decoration_file_path).await {
         Err(err) => {
             if is_required {
                 return Err(err.into());
@@ -585,7 +580,7 @@ pub async fn load_decoration<P: AsRef<Path>>(
 
                 let extension = path.extension().unwrap().to_str().unwrap();
 
-                let bytes = load_file(&path).await?;
+                let bytes = read_from_file(&path).await?;
 
                 let params: DecorationMetadata = deserialize_bytes_by_extension(extension, &bytes)?;
 
@@ -622,7 +617,7 @@ pub async fn load_images<P: AsRef<Path>>(
 
     let images_file_path = path.as_ref().join(IMAGES_FILE).with_extension(ext);
 
-    match load_file(&images_file_path).await {
+    match read_from_file(&images_file_path).await {
         Err(err) => {
             if is_required {
                 return Err(err.into());
@@ -670,7 +665,7 @@ pub async fn load_fonts<P: AsRef<Path>>(
 
     let fonts_file_path = path.as_ref().join(FONTS_FILE).with_extension(ext);
 
-    match load_file(&fonts_file_path).await {
+    match read_from_file(&fonts_file_path).await {
         Err(err) => {
             if is_required {
                 return Err(err.into());
@@ -682,7 +677,7 @@ pub async fn load_fonts<P: AsRef<Path>>(
             for meta in metadata {
                 let file_path = path.as_ref().join(&meta.path);
 
-                let font = load_ttf_font(&file_path).await?;
+                let font = load_font(&file_path).await?;
 
                 let key = meta.id.clone();
 
@@ -738,8 +733,6 @@ pub struct TextureMetadata {
     pub frame_size: Option<Size<f32>>,
     #[serde(default = "TextureFilterMode::default")]
     pub filter_mode: TextureFilterMode,
-    #[serde(default = "TextureFormat::default")]
-    pub format: TextureFormat,
 }
 
 #[derive(Debug, Clone)]

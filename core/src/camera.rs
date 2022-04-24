@@ -4,46 +4,22 @@ use crate::prelude::window_size;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 
-static mut LAST_CAMERA_ID: usize = 0;
+static mut NEXT_CAMERA_INDEX: usize = 0;
 
-fn camera_id() -> usize {
+fn camera_index() -> usize {
     unsafe {
-        LAST_CAMERA_ID += 1;
-        LAST_CAMERA_ID
+        let index = NEXT_CAMERA_INDEX;
+        NEXT_CAMERA_INDEX += 1;
+        index
     }
 }
 
-static mut CAMERAS: Option<HashMap<usize, CameraImpl>> = None;
-
-fn cameras() -> &'static mut HashMap<usize, CameraImpl> {
-    unsafe { CAMERAS.get_or_insert_with(HashMap::new) }
-}
-
-static mut ACTIVE_CAMERA: Option<usize> = None;
-
-pub fn is_active_camera_set() -> bool {
-    unsafe { ACTIVE_CAMERA.is_some() }
-}
-
-pub fn active_camera() -> Camera {
-    let id = unsafe {
-        ACTIVE_CAMERA
-            .unwrap_or_else(|| panic!("Attempted to get active camera but none has been set!"))
-    };
-
-    Camera(id)
-}
-
-pub fn set_active_camera(camera: Camera) {
-    unsafe { ACTIVE_CAMERA = Some(camera.0) }
-}
-
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq)]
 pub struct Camera(usize);
 
 impl Camera {
-    pub fn new<P: Into<Option<Vec2>>>(position: P, bounds: Size<u32>) -> Self {
-        let id = unsafe { camera_id() };
+    pub fn new<P: Into<Option<Vec2>>>(position: P, bounds: Size<f32>) -> Self {
+        let id = unsafe { camera_index() };
 
         cameras().insert(id, CameraImpl::new(position, bounds));
 
@@ -58,10 +34,16 @@ impl Camera {
 
     pub fn delete(self) {
         if is_active_camera_set() && active_camera().0 == self.0 {
-            unsafe { ACTIVE_CAMERA = None };
+            unsafe { CAMERA = None };
         }
 
         cameras().remove(&self.0);
+    }
+}
+
+impl Default for Camera {
+    fn default() -> Self {
+        Camera::new(None, window_size())
     }
 }
 
@@ -77,4 +59,25 @@ impl DerefMut for Camera {
     fn deref_mut(&mut self) -> &mut Self::Target {
         cameras().get_mut(&self.0).unwrap()
     }
+}
+
+static mut CAMERAS: Option<HashMap<usize, CameraImpl>> = None;
+
+fn cameras() -> &'static mut HashMap<usize, CameraImpl> {
+    unsafe { CAMERAS.get_or_insert_with(HashMap::new) }
+}
+
+static mut CAMERA: Option<usize> = None;
+
+pub fn active_camera() -> Camera {
+    let id = unsafe { CAMERA.get_or_insert_with(|| Camera::default().0) };
+    Camera(*id)
+}
+
+pub fn is_active_camera_set() -> bool {
+    unsafe { CAMERA.is_some() }
+}
+
+pub fn set_active_camera(camera: Camera) {
+    unsafe { CAMERA = Some(camera.0) }
 }

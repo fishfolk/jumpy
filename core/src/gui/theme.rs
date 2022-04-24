@@ -6,8 +6,8 @@ use macroquad::ui::{root_ui, Skin};
 
 use crate::color::Color;
 
-use crate::resources::{get_image, ImageResource};
 use crate::math::RectOffset;
+use crate::resources::{get_image, ImageResource};
 
 static mut GUI_THEME: Option<GuiTheme> = None;
 
@@ -24,10 +24,10 @@ use super::{ELEMENT_MARGIN, NO_COLOR};
 pub const FONT_SIZE: f32 = 18.0;
 
 pub const TEXT_COLOR: Color = Color {
-    r: 0.78,
-    g: 0.78,
-    b: 0.62,
-    a: 1.0,
+    red: 0.78,
+    green: 0.78,
+    blue: 0.62,
+    alpha: 1.0,
 };
 
 pub const LABEL_MARGIN_V: f32 = 4.0;
@@ -73,17 +73,17 @@ pub const WINDOW_MARGIN_V: f32 = 22.0;
 pub const WINDOW_MARGIN_H: f32 = 22.0;
 
 pub const WINDOW_BG_COLOR: Color = Color {
-    r: 0.15,
-    g: 0.17,
-    b: 0.27,
-    a: 1.0,
+    red: 0.15,
+    green: 0.17,
+    blue: 0.27,
+    alpha: 1.0,
 };
 
 pub const SELECTION_HIGHLIGHT_COLOR: Color = Color {
-    r: 0.23,
-    g: 0.67,
-    b: 0.41,
-    a: 1.0,
+    red: 0.23,
+    green: 0.67,
+    blue: 0.41,
+    alpha: 1.0,
 };
 
 pub const LIST_BOX_ENTRY_HEIGHT: f32 = 24.0;
@@ -151,7 +151,8 @@ impl GuiTheme {
 
         let checkbox_background = get_image(CHECKBOX_BACKGROUND_IMAGE_ID);
         let checkbox_background_checked = get_image(CHECKBOX_BACKGROUND_CHECKED_IMAGE_ID);
-        let checkbox_background_checked_hovered = get_image(CHECKBOX_BACKGROUND_CHECKED_HOVERED_IMAGE_ID);
+        let checkbox_background_checked_hovered =
+            get_image(CHECKBOX_BACKGROUND_CHECKED_HOVERED_IMAGE_ID);
         let checkbox_background_clicked = get_image(CHECKBOX_BACKGROUND_CLICKED_IMAGE_ID);
         let checkbox_background_hovered = get_image(CHECKBOX_BACKGROUND_HOVERED_IMAGE_ID);
 

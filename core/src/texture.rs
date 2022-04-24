@@ -1,17 +1,24 @@
 use std::path::Path;
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-use crate::Result;
 use crate::math::Vec2;
+use crate::Result;
 
 pub use crate::backend_impl::texture::*;
-use crate::file::load_file;
+use crate::file::read_from_file;
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum TextureFormat {
     Png,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ColorFormat {
+    Rgb,
+    Rgba,
 }
 
 impl ToString for TextureFormat {
@@ -39,9 +46,4 @@ impl Default for TextureFilterMode {
     fn default() -> Self {
         TextureFilterMode::Nearest
     }
-}
-
-pub async fn load_texture_file<P: AsRef<Path>, F: Into<Option<TextureFilterMode>>>(path: P, format: TextureFormat, filter_mode: F) -> Result<Texture2D> {
-    let bytes = load_file(path).await?;
-    load_texture_bytes(&bytes, format, filter_mode)
 }

@@ -15,7 +15,7 @@ use crate::math::Vec2;
 
 use crate::audio::{apply_audio_config, stop_music};
 
-use crate::color::colors;
+use crate::color::{colors, Color};
 use crate::event::{Event, EventHandler};
 use crate::gl::create_gl_context;
 use crate::input::{
@@ -26,17 +26,19 @@ use crate::math::Size;
 use crate::physics::{fixed_delta_time, physics_world};
 use crate::prelude::{input_event_handler, DefaultEventHandler};
 use crate::rendering::{clear_screen, end_frame};
-use crate::window::{apply_window_config, create_window, WindowMode, DEFAULT_WINDOW_TITLE};
+use crate::window::{
+    apply_window_config, create_window, get_window, WindowMode, DEFAULT_WINDOW_TITLE,
+};
 use crate::{Config, Result};
 
 use crate::state::{GameState, GameStateBuilderFn};
 
 pub struct Game<E: 'static + Debug> {
-    window_title: String,
     config: Config,
     state: Rc<RefCell<dyn GameState>>,
     event_loop: Option<EventLoop<Event<E>>>,
     event_handler: Option<Box<dyn EventHandler<E>>>,
+    clear_color: Option<Color>,
     fixed_draw_delta_time: Option<Duration>,
     last_update: Instant,
     last_draw: Instant,
@@ -45,37 +47,24 @@ pub struct Game<E: 'static + Debug> {
 
 impl<E: 'static + Debug> Game<E> {
     pub fn new<S: 'static + GameState>(state: S) -> Self {
-        let config = Config::default();
-
-        let fixed_draw_delta_time = config
-            .video
-            .max_fps
-            .map(|max_fps| Duration::from_secs_f32(1.0 / max_fps as f32));
-
         Game {
-            window_title: DEFAULT_WINDOW_TITLE.to_string(),
-            config,
+            config: Config::default(),
             state: Rc::new(RefCell::new(state)),
             event_loop: None,
             event_handler: None,
-            fixed_draw_delta_time,
+            clear_color: None,
+            fixed_draw_delta_time: None,
             last_update: Instant::now(),
             last_draw: Instant::now(),
             fixed_update_accumulator: 0.0,
         }
     }
 
-    pub fn with_window_title(self, window_title: &str) -> Self {
+    pub fn with_config(self, config: &Config) -> Self {
         Game {
-            window_title: window_title.to_string(),
+            config: config.clone(),
             ..self
         }
-    }
-
-    pub fn with_config(self, config: Config) -> Self {
-        let mut res = self;
-        res.apply_config(&config);
-        res
     }
 
     pub fn with_event_loop(self, event_loop: EventLoop<Event<E>>) -> Self {
@@ -88,6 +77,13 @@ impl<E: 'static + Debug> Game<E> {
     pub fn with_event_handler<H: 'static + EventHandler<E>>(self, event_handler: H) -> Self {
         Game {
             event_handler: Some(Box::new(event_handler)),
+            ..self
+        }
+    }
+
+    pub fn with_clear_color(self, color: Color) -> Self {
+        Game {
+            clear_color: Some(color),
             ..self
         }
     }
@@ -106,9 +102,7 @@ impl<E: 'static + Debug> Game<E> {
         Ok(())
     }
 
-    pub fn apply_config(&mut self, config: &Config) {
-        self.config = config.clone();
-
+    fn apply_current_config(&mut self) {
         self.fixed_draw_delta_time = config
             .video
             .max_fps
@@ -119,6 +113,12 @@ impl<E: 'static + Debug> Game<E> {
         apply_audio_config(&config.audio);
 
         apply_input_config(&config.input);
+    }
+
+    fn apply_config(&mut self, config: &Config) {
+        self.config = config.clone();
+
+        self.apply_current_config();
     }
 
     pub fn try_get_state(&mut self) -> Option<&mut (dyn GameState + 'static)> {
@@ -132,6 +132,8 @@ impl<E: 'static + Debug> Game<E> {
     pub async fn run(self) -> Result<()> {
         let mut game = self;
 
+        game.apply_current_config();
+
         let event_loop = game
             .event_loop
             .take()
@@ -141,11 +143,6 @@ impl<E: 'static + Debug> Game<E> {
             .event_handler
             .take()
             .unwrap_or_else(|| Box::new(DefaultEventHandler));
-
-        {
-            let window = create_window(&game.window_title, &event_loop, &game.config)?;
-            let _ = create_gl_context(window);
-        }
 
         event_loop.run(move |event, _, control_flow| {
             event_handler.handle(&event, control_flow);
@@ -168,11 +165,7 @@ impl<E: 'static + Debug> Game<E> {
                     }
                     _ => {}
                 },
-                glutin::event::Event::RedrawRequested(..) => {
-                    clear_screen(colors::BLACK);
-
-                    end_frame().unwrap_or_else(|err| panic!("ERROR: Rendering error: {}", err));
-                }
+                glutin::event::Event::RedrawRequested(..) => {}
                 glutin::event::Event::UserEvent(event) => match event {
                     Event::Custom(event) => event_handler.handle_custom(event, control_flow),
                     Event::ConfigChanged(config) => game.apply_config(config),
@@ -188,22 +181,13 @@ impl<E: 'static + Debug> Game<E> {
             }
 
             if input_event_handler(&event) {
-                if is_key_pressed(KeyCode::A) {
-                    println!("The 'A' key was pressed on the keyboard");
-                }
-
-                if is_key_released(KeyCode::Q) {
-                    *control_flow = ControlFlow::Exit;
-                }
-
-                // query the change in mouse this update
-                let mouse_diff = mouse_movement();
-                if mouse_diff != Vec2::ZERO {
-                    println!("The mouse diff is: {:?}", mouse_diff);
-                    println!("The mouse position is: {:?}", mouse_position());
-                }
-
                 if *control_flow == ControlFlow::Exit {
+                    stop_music();
+
+                    game.get_state().end();
+
+                    return;
+                } else {
                     let now = Instant::now();
 
                     let delta_time = now.duration_since(game.last_update);
@@ -242,21 +226,19 @@ impl<E: 'static + Debug> Game<E> {
                         let draw_delta_time = now.duration_since(game.last_draw);
 
                         if draw_delta_time >= fixed_draw_delta_time {
+                            clear_screen(self.clear_color.into());
+
                             game.get_state()
                                 .draw(draw_delta_time.as_secs_f32())
                                 .unwrap_or_else(|err| {
                                     panic!("Error in game state fixed draw: {}", err)
                                 });
 
+                            end_frame();
+
                             game.last_draw = now;
                         }
                     }
-                } else {
-                    stop_music();
-
-                    game.get_state().end();
-
-                    return;
                 }
             }
         });

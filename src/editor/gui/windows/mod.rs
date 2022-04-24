@@ -45,7 +45,7 @@ impl WindowPosition {
     pub fn to_absolute(&self, size: Vec2) -> Vec2 {
         match self {
             WindowPosition::Centered => {
-                let viewport_size = viewport_size().as_f32();
+                let viewport_size = viewport_size();
                 let screen_size = vec2(viewport_size.width, viewport_size.height);
                 (screen_size - size) / 2.0
             }

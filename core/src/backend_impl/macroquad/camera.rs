@@ -39,15 +39,10 @@ pub struct CameraImpl {
 impl CameraImpl {
     const BUFFER_CAPACITY: usize = 20;
 
-    pub fn new<P: Into<Option<Vec2>>>(position: P, size: Size<u32>) -> CameraImpl {
+    pub fn new<P: Into<Option<Vec2>>>(position: P, size: Size<f32>) -> CameraImpl {
         let position = position.into().unwrap_or(Vec2::ZERO);
 
-        let bounds = Rect::new(
-            position.x,
-            position.y,
-            size.width as f32,
-            size.height as f32,
-        );
+        let bounds = Rect::new(position.x, position.y, size.width, size.height);
 
         CameraImpl {
             bounds,
@@ -210,8 +205,8 @@ impl CameraImpl {
             let mut zoom = scale.y;
 
             // bottom camera bound
-            if scale.y / 2. + middle_point.y > self.bounds.h {
-                middle_point.y = self.bounds.h - scale.y / 2.0;
+            if scale.y / 2. + middle_point.y > self.bounds.height {
+                middle_point.y = self.bounds.height - scale.y / 2.0;
             }
 
             if let Some((override_target, override_zoom)) = self.manual {

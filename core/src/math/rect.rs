@@ -1,14 +1,17 @@
-use serde::{Serialize, Deserialize};
+use crate::math::URect;
+use serde::{Deserialize, Serialize};
 
-use super::{Vec2, vec2, UVec2, uvec2};
+use super::{uvec2, vec2, UVec2, Vec2};
 
 /// A 2D rectangle, defined by its top-left corner, width and height.
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Rect {
     pub x: f32,
     pub y: f32,
-    pub w: f32,
-    pub h: f32,
+    #[serde(alias = "w")]
+    pub width: f32,
+    #[serde(alias = "h")]
+    pub height: f32,
 }
 
 impl Rect {
@@ -19,8 +22,13 @@ impl Rect {
     ///   * `y` - y-coordinate of the top-left corner.
     ///   * `w` - width of the `Rect`, going to the right.
     ///   * `h` - height of the `Rect`, going down.
-    pub fn new(x: f32, y: f32, w: f32, h: f32) -> Rect {
-        Rect { x, y, w, h }
+    pub fn new(x: f32, y: f32, width: f32, height: f32) -> Rect {
+        Rect {
+            x,
+            y,
+            width,
+            height,
+        }
     }
 
     /// Returns the top-left corner of the `Rect`.
@@ -30,7 +38,7 @@ impl Rect {
 
     /// Returns the size (width and height) of the `Rect`.
     pub fn size(&self) -> Vec2 {
-        vec2(self.w, self.h)
+        vec2(self.width, self.height)
     }
 
     /// Returns the left edge of the `Rect`
@@ -40,7 +48,7 @@ impl Rect {
 
     /// Returns the right edge of the `Rect`
     pub fn right(&self) -> f32 {
-        self.x + self.w
+        self.x + self.width
     }
 
     /// Returns the top edge of the `Rect`
@@ -50,7 +58,7 @@ impl Rect {
 
     /// Returns the bottom edge of the `Rect`
     pub fn bottom(&self) -> f32 {
-        self.y + self.h
+        self.y + self.height
     }
 
     /// Moves the `Rect`'s origin to (x, y)
@@ -62,8 +70,8 @@ impl Rect {
     /// Scales the `Rect` by a factor of (sx, sy),
     /// growing towards the bottom-left
     pub fn scale(&mut self, sx: f32, sy: f32) {
-        self.w *= sx;
-        self.h *= sy;
+        self.width *= sx;
+        self.height *= sy;
     }
 
     /// Checks whether the `Rect` contains a `Point`
@@ -88,7 +96,12 @@ impl Rect {
         let y = f32::min(self.y, other.y);
         let w = f32::max(self.right(), other.right()) - x;
         let h = f32::max(self.bottom(), other.bottom()) - y;
-        Rect { x, y, w, h }
+        Rect {
+            x,
+            y,
+            width: w,
+            height: h,
+        }
     }
 
     /// Returns an intersection rect there is any intersection
@@ -105,32 +118,29 @@ impl Rect {
         Some(Rect {
             x: left,
             y: top,
-            w: right - left,
-            h: bottom - top,
+            width: right - left,
+            height: bottom - top,
         })
     }
 
     /// Translate rect origin be `offset` vector
     pub fn offset(self, offset: Vec2) -> Rect {
-        Rect::new(self.x + offset.x, self.y + offset.y, self.w, self.h)
+        Rect::new(
+            self.x + offset.x,
+            self.y + offset.y,
+            self.width,
+            self.height,
+        )
     }
 }
 
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
-pub struct RectOffset {
-    pub left: f32,
-    pub right: f32,
-    pub bottom: f32,
-    pub top: f32,
-}
-
-impl RectOffset {
-    pub fn new(left: f32, right: f32, top: f32, bottom: f32) -> RectOffset {
-        RectOffset {
-            left,
-            right,
-            top,
-            bottom,
+impl From<URect> for Rect {
+    fn from(urect: URect) -> Self {
+        Rect {
+            x: urect.x as f32,
+            y: urect.y as f32,
+            width: urect.width as f32,
+            height: urect.height as f32,
         }
     }
 }

@@ -164,7 +164,7 @@ pub fn debug_draw_physics_bodies(world: &mut World, _delta_time: f32) -> Result<
                 colors::GREEN
             };
 
-            draw_rectangle_outline(rect.x, rect.y, rect.w, rect.h, 2.0, color);
+            draw_rectangle_outline(rect.x, rect.y, rect.width, rect.height, 2.0, color);
         }
     }
 
@@ -238,7 +238,7 @@ pub fn debug_draw_rigid_bodies(world: &mut World, _delta_time: f32) -> Result<()
     for (_, (transform, body)) in world.query::<(&Transform, &RigidBody)>().iter() {
         let rect = body.as_rect(transform.position);
 
-        draw_rectangle_outline(rect.x, rect.y, rect.w, rect.h, 2.0, colors::RED)
+        draw_rectangle_outline(rect.x, rect.y, rect.width, rect.height, 2.0, colors::RED)
     }
 
     Ok(())

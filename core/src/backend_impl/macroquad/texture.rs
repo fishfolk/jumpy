@@ -1,10 +1,11 @@
 use std::path::Path;
 
+use crate::file::read_from_file;
 use macroquad::texture::load_texture;
 
-use crate::Result;
+use crate::math::{vec2, Size, Vec2};
 use crate::texture::{TextureFilterMode, TextureFormat};
-use crate::math::{Size, Vec2, vec2};
+use crate::Result;
 
 impl From<macroquad::texture::FilterMode> for TextureFilterMode {
     fn from(mode: macroquad::texture::FilterMode) -> Self {
@@ -53,13 +54,22 @@ impl From<Texture2D> for macroquad::texture::Texture2D {
     }
 }
 
-pub fn load_texture_bytes<F: Into<Option<TextureFilterMode>>>(bytes: &[u8], format: TextureFormat, filter_mode: F) -> Result<Texture2D> {
-    assert_eq!(format, TextureFormat::Png, "Only png textures are supported when using the macroquad backend (is '{}')!", format.to_string());
-
+pub fn load_texture_bytes<F: Into<Option<TextureFilterMode>>>(
+    bytes: &[u8],
+    filter_mode: F,
+) -> Result<Texture2D> {
     let texture = macroquad::texture::Texture2D::from_file_with_format(bytes, None);
 
     let filter_mode = filter_mode.into().unwrap_or_default();
     texture.set_filter(filter_mode.into());
 
     Ok(texture.into())
+}
+
+pub async fn load_texture_file<P: AsRef<Path>, F: Into<Option<TextureFilterMode>>>(
+    path: P,
+    filter_mode: F,
+) -> Result<Texture2D> {
+    let bytes = read_from_file(path).await?;
+    load_texture_bytes(&bytes, filter_mode)
 }

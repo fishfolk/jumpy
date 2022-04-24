@@ -1,20 +1,25 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-use super::{UVec2, uvec2, Rect};
+use super::{uvec2, Rect, UVec2};
 
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct URect {
     pub x: u32,
     pub y: u32,
-    #[serde(rename = "width", alias = "w")]
-    pub w: u32,
-    #[serde(rename = "height", alias = "h")]
-    pub h: u32,
+    #[serde(alias = "w")]
+    pub width: u32,
+    #[serde(alias = "h")]
+    pub height: u32,
 }
 
 impl URect {
-    pub fn new(x: u32, y: u32, w: u32, h: u32) -> Self {
-        URect { x, y, w, h }
+    pub fn new(x: u32, y: u32, width: u32, height: u32) -> Self {
+        URect {
+            x,
+            y,
+            width,
+            height,
+        }
     }
 
     pub fn point(&self) -> UVec2 {
@@ -22,7 +27,7 @@ impl URect {
     }
 
     pub fn size(&self) -> UVec2 {
-        uvec2(self.w, self.h)
+        uvec2(self.width, self.height)
     }
 
     /// Returns the left edge of the `Rect`
@@ -32,7 +37,7 @@ impl URect {
 
     /// Returns the right edge of the `Rect`
     pub fn right(&self) -> u32 {
-        self.x + self.w
+        self.x + self.width
     }
 
     /// Returns the top edge of the `Rect`
@@ -42,7 +47,7 @@ impl URect {
 
     /// Returns the bottom edge of the `Rect`
     pub fn bottom(&self) -> u32 {
-        self.y + self.h
+        self.y + self.height
     }
 
     /// Moves the `Rect`'s origin to (x, y)
@@ -54,8 +59,8 @@ impl URect {
     /// Scales the `Rect` by a factor of (sx, sy),
     /// growing towards the bottom-left
     pub fn scale(&mut self, sx: u32, sy: u32) {
-        self.w *= sx;
-        self.h *= sy;
+        self.width *= sx;
+        self.height *= sy;
     }
 
     /// Checks whether the `Rect` contains a `Point`
@@ -81,7 +86,12 @@ impl URect {
         let y = u32::min(self.y, other.y);
         let w = u32::max(self.right(), other.right()) - x;
         let h = u32::max(self.bottom(), other.bottom()) - y;
-        URect { x, y, w, h }
+        URect {
+            x,
+            y,
+            width: w,
+            height: h,
+        }
     }
 
     /// Returns an intersection rect there is any intersection
@@ -98,15 +108,20 @@ impl URect {
         Some(URect {
             x: left,
             y: top,
-            w: right - left,
-            h: bottom - top,
+            width: right - left,
+            height: bottom - top,
         })
     }
 
     /// Translate rect origin be `offset` vector
     #[must_use]
     pub fn offset(self, offset: UVec2) -> Self {
-        URect::new(self.x + offset.x, self.y + offset.y, self.w, self.h)
+        URect::new(
+            self.x + offset.x,
+            self.y + offset.y,
+            self.width,
+            self.height,
+        )
     }
 }
 
@@ -115,8 +130,8 @@ impl From<Rect> for URect {
         URect {
             x: rect.x as u32,
             y: rect.y as u32,
-            w: rect.w as u32,
-            h: rect.h as u32,
+            width: rect.width as u32,
+            height: rect.height as u32,
         }
     }
 }
@@ -126,19 +141,8 @@ impl From<(UVec2, UVec2)> for URect {
         URect {
             x: position.x,
             y: position.y,
-            w: size.x,
-            h: size.y,
-        }
-    }
-}
-
-impl From<URect> for Rect {
-    fn from(other: URect) -> Rect {
-        Rect {
-            x: other.x as f32,
-            y: other.y as f32,
-            w: other.w as f32,
-            h: other.h as f32,
+            width: size.x,
+            height: size.y,
         }
     }
 }

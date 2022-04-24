@@ -136,7 +136,7 @@ fn get_corrected_position(position: Vec2, entries: &[ContextMenuEntry], is_root:
         height += entry.get_height();
     }
 
-    let viewport_size = viewport_size().as_f32();
+    let viewport_size = viewport_size();
 
     let x = if is_root {
         position

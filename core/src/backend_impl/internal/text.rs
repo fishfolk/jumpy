@@ -1,65 +1,81 @@
+use glow_glyph::ab_glyph::FontArc;
+use glow_glyph::{FontId, GlyphBrush, GlyphBrushBuilder, Section, Text};
+use std::collections::HashMap;
 use std::path::Path;
+
 use crate::color::{colors, Color};
+use crate::gl::gl_context;
+use crate::math::Size;
+use crate::text::TextParams;
+use crate::viewport::viewport_size;
 use crate::Result;
 
-/// TTF font loaded to GPU
-#[derive(Default, Clone, Copy, Debug, PartialEq)]
+#[derive(Default, Copy, Clone, Debug, Eq, PartialEq)]
 pub struct Font(usize);
 
-pub fn load_ttf_font_bytes(bytes: &[u8]) -> Result<Font> {
-    unimplemented!("Font loading is not implemented")
+static mut FONTS: Option<Vec<FontArc>> = None;
+
+fn fonts() -> &'static mut Vec<FontArc> {
+    unsafe {
+        FONTS.get_or_insert_with(|| {
+            let default =
+                FontArc::try_from_slice(include_bytes!("../../../assets/AnonymousPro-Regular.ttf"))
+                    .unwrap_or_else(|err| panic!("ERROR: Unable to load default font: {}", err));
+            vec![default]
+        })
+    }
 }
 
-/// Arguments for "draw_text_ex" function such as font, font_size etc
-#[derive(Debug, Clone, Copy)]
-pub struct TextParams {
-    pub font: Font,
-    /// Base size for character height. The size in pixel used during font rasterizing.
-    pub font_size: u16,
-    /// The glyphs sizes actually drawn on the screen will be font_size * font_scale
-    /// However with font_scale too different from 1.0 letters may be blurry
-    pub font_scale: f32,
-    /// Font X axis would be scaled by font_scale * font_scale_aspect
-    /// and Y axis would be scaled by font_scale
-    /// Default is 1.0
-    pub font_scale_aspect: f32,
-    pub color: Color,
+pub fn load_font_bytes(bytes: &[u8]) -> Result<Font> {
+    let font = FontArc::try_from_vec(bytes.to_vec())?;
+    fonts().push(font);
+    Ok(Font(fonts().len() - 1))
 }
 
-impl Default for TextParams {
-    fn default() -> TextParams {
-        TextParams {
-            font: Font(0),
-            font_size: 20,
-            font_scale: 1.0,
-            font_scale_aspect: 1.0,
-            color: colors::WHITE,
-        }
+pub fn default_font() -> Font {
+    let _ = fonts();
+    Font(0)
+}
+
+static mut BRUSH: Option<GlyphBrush> = None;
+
+fn brush() -> &'static mut GlyphBrush {
+    unsafe {
+        BRUSH.get_or_insert_with(|| {
+            let fonts = fonts().clone();
+            GlyphBrushBuilder::using_fonts(fonts).build(gl_context())
+        })
     }
 }
 
 pub fn draw_text(text: &str, x: f32, y: f32, params: TextParams) {
-    unimplemented!("Text draw is not implemented")
+    let font = params.font.unwrap_or_else(|| default_font());
+
+    let bounds = params.bounds.unwrap_or_else(|| {
+        let viewport_size = viewport_size();
+        Size::new(viewport_size.width - x, viewport_size.height - y)
+    });
+
+    let font_size = (params.font_size as f32 * params.font_scale).round();
+
+    brush().queue(Section {
+        screen_position: (x, y),
+        bounds: (bounds.width, bounds.height),
+        text: vec![Text::default()
+            .with_text(text)
+            .with_font_id(FontId(font.0))
+            .with_color(params.color.to_array())
+            .with_scale(font_size)],
+        ..Section::default()
+    })
 }
 
-/// World space dimensions of the text, measured by "measure_text" function
-#[derive(Default)]
-pub struct TextDimensions {
-    /// Distance from very left to very right of the rasterized text
-    pub width: f32,
-    /// Distance from the bottom to the top of the text.
-    pub height: f32,
-    /// Height offset from the baseline of the text.
-    /// "draw_text(.., X, Y, ..)" will be rendered in a "Rect::new(X, Y - dimensions.offset_y, dimensions.width, dimensions.height)"
-    /// For reference check "text_dimensions" example.
-    pub offset_y: f32,
-}
-
-pub fn measure_text(
-    text: &str,
-    font: Option<Font>,
-    font_size: u16,
-    font_scale: f32,
-) -> TextDimensions {
-    unimplemented!("Text measuring is not implemented")
+pub fn draw_queued_text() -> Result<()> {
+    let viewport_size = viewport_size();
+    brush().draw_queued(
+        gl_context(),
+        viewport_size.width as u32,
+        viewport_size.height as u32,
+    )?;
+    Ok(())
 }

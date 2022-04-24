@@ -315,7 +315,7 @@ impl Menu {
             vec2(self.width, height)
         };
 
-        let viewport_size = viewport_size().as_f32();
+        let viewport_size = viewport_size();
 
         let position = match self.position {
             MenuPosition::Center => {

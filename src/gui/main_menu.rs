@@ -274,7 +274,7 @@ impl MainMenuState {
             }
         }
 
-        let viewport_size = viewport_size().as_f32();
+        let viewport_size = viewport_size();
 
         let size = vec2(LOCAL_GAME_MENU_WIDTH, LOCAL_GAME_MENU_HEIGHT);
 
@@ -340,7 +340,7 @@ impl MainMenuState {
             section_size.y,
         );
 
-        let viewport_size = viewport_size().as_f32();
+        let viewport_size = viewport_size();
 
         let first_position = (vec2(viewport_size.width, viewport_size.height) - total_size) / 2.0;
 
@@ -594,7 +594,7 @@ impl MainMenuState {
         let gui_theme = get_gui_theme();
         root_ui().push_skin(&gui_theme.map_selection);
 
-        let viewport_size = viewport_size().as_f32();
+        let viewport_size = viewport_size();
         let screen_margins = vec2(
             viewport_size.width * MAP_SELECT_SCREEN_MARGIN_FACTOR,
             viewport_size.height * MAP_SELECT_SCREEN_MARGIN_FACTOR,
@@ -726,14 +726,14 @@ impl MainMenuState {
                     );
 
                     if !is_hovered {
-                        let w = rect.w * MAP_SELECT_PREVIEW_SHRINK_FACTOR;
-                        let h = rect.h * MAP_SELECT_PREVIEW_SHRINK_FACTOR;
+                        let w = rect.width * MAP_SELECT_PREVIEW_SHRINK_FACTOR;
+                        let h = rect.height * MAP_SELECT_PREVIEW_SHRINK_FACTOR;
 
-                        rect.x += (rect.w - w) / 2.0;
-                        rect.y += (rect.h - h) / 2.0;
+                        rect.x += (rect.width - w) / 2.0;
+                        rect.y += (rect.height - h) / 2.0;
 
-                        rect.w = w;
-                        rect.h = h;
+                        rect.width = w;
+                        rect.height = h;
                     }
 
                     let mouse_position = mouse_position();
@@ -782,7 +782,7 @@ impl MainMenuState {
 
                 let size = texture.size();
 
-                let viewport_size = viewport_size().as_f32();
+                let viewport_size = viewport_size();
                 let position = vec2((viewport_size.width - size.width) / 2.0, 35.0);
 
                 widgets::Texture::new(texture.into())

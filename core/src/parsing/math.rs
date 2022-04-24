@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::math::{Rect, UVec2, uvec2, Vec2, vec2, IVec2, ivec2};
+use crate::math::{ivec2, uvec2, vec2, IVec2, Rect, UVec2, Vec2};
 
 pub mod vec2_def {
     use super::{vec2, Vec2};
@@ -330,65 +330,6 @@ pub mod ivec2_opt {
     {
         #[derive(Deserialize)]
         struct Helper(#[serde(with = "super::ivec2_def")] IVec2);
-
-        let helper = Option::deserialize(deserializer)?;
-        Ok(helper.map(|Helper(external)| external))
-    }
-}
-
-#[derive(Copy, Clone, Serialize, Deserialize)]
-#[serde(remote = "Rect")]
-pub struct RectDef {
-    x: f32,
-    y: f32,
-    #[serde(rename = "width", alias = "w")]
-    w: f32,
-    #[serde(rename = "height", alias = "h")]
-    h: f32,
-}
-
-impl From<Rect> for RectDef {
-    fn from(other: Rect) -> Self {
-        RectDef {
-            x: other.x,
-            y: other.y,
-            w: other.w,
-            h: other.h,
-        }
-    }
-}
-
-impl From<RectDef> for Rect {
-    fn from(other: RectDef) -> Self {
-        Rect {
-            x: other.x,
-            y: other.y,
-            w: other.w,
-            h: other.h,
-        }
-    }
-}
-
-pub mod rect_opt {
-    use super::{Rect, RectDef};
-    use serde::{Deserialize, Deserializer, Serialize, Serializer};
-
-    pub fn serialize<S>(value: &Option<Rect>, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        #[derive(Serialize)]
-        struct Helper<'a>(#[serde(with = "RectDef")] &'a Rect);
-
-        value.as_ref().map(Helper).serialize(serializer)
-    }
-
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Rect>, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        #[derive(Deserialize)]
-        struct Helper(#[serde(with = "RectDef")] Rect);
 
         let helper = Option::deserialize(deserializer)?;
         Ok(helper.map(|Helper(external)| external))

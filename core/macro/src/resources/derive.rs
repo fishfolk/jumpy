@@ -114,8 +114,7 @@ pub(crate) fn derive_resource_impl(input: proc_macro::TokenStream) -> proc_macro
             }
 
             pub(crate) mod resource_impl {
-                use super::bool;
-                use super::#type_name;
+                use super::*;
                 use #crate_name::resources::ResourceId;
 
                 static mut #storage_name: Option<std::collections::HashMap<String, #type_name>> = None;
@@ -155,7 +154,7 @@ pub(crate) fn derive_resource_impl(input: proc_macro::TokenStream) -> proc_macro
                         .join(#name_plural_str)
                         .with_extension(ext);
 
-                    match #crate_name::file::load_file(&file_path).await {
+                    match #crate_name::file::read_from_file(&file_path).await {
                         Err(err) => if is_required {
                             return Err(err.into());
                         }
@@ -173,7 +172,7 @@ pub(crate) fn derive_resource_impl(input: proc_macro::TokenStream) -> proc_macro
                                         .to_str()
                                         .unwrap();
 
-                                    let bytes = #crate_name::file::load_file(&resource_path).await?;
+                                    let bytes = #crate_name::file::read_from_file(&resource_path).await?;
 
                                     let resource: #type_name = #crate_name::parsing::deserialize_bytes_by_extension(ext, &bytes)?;
 
@@ -255,7 +254,7 @@ pub(crate) fn derive_resource_impl(input: proc_macro::TokenStream) -> proc_macro
     } else {
         let base = quote! {
             pub(crate) mod resource_impl {
-                use super::bool;
+                use super::*;
                 use super::#type_name;
 
                 static mut #storage_name: Vec<#type_name> = Vec::new();
@@ -311,7 +310,7 @@ pub(crate) fn derive_resource_impl(input: proc_macro::TokenStream) -> proc_macro
                         .join(#name_plural_str)
                         .with_extension(ext);
 
-                    match #crate_name::file::load_file(&file_path).await {
+                    match #crate_name::file::read_from_file(&file_path).await {
                         Err(err) => if is_required {
                             return Err(err.into());
                         }
@@ -329,7 +328,7 @@ pub(crate) fn derive_resource_impl(input: proc_macro::TokenStream) -> proc_macro
                                         .to_str()
                                         .unwrap();
 
-                                    let bytes = #crate_name::file::load_file(&resource_path).await?;
+                                    let bytes = #crate_name::file::read_from_file(&resource_path).await?;
 
                                     let resource: #type_name = #crate_name::parsing::deserialize_bytes_by_extension(ext, &bytes)?;
 

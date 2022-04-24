@@ -7,7 +7,7 @@ use hecs::World;
 use serde::{Deserialize, Serialize};
 
 use crate::color::{colors, Color};
-use crate::math::Rect;
+use crate::math::{Rect, URect};
 use crate::math::{Size, Vec2};
 use crate::rendering::{draw_rectangle_outline, draw_texture, DrawTextureParams};
 use crate::texture::Texture2D;
@@ -400,8 +400,8 @@ pub fn debug_draw_one_animated_sprite(position: Vec2, sprite: &AnimatedSprite) {
         draw_rectangle_outline(
             position.x,
             position.y,
-            size.width,
-            size.height,
+            size.width as f32,
+            size.height as f32,
             2.0,
             colors::BLUE,
         )

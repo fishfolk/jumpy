@@ -22,7 +22,7 @@ pub mod gl;
 #[path = "internal/texture.rs"]
 pub mod texture;
 
-#[path = "internal/rendering.rs"]
+#[path = "internal/rendering/mod.rs"]
 pub mod rendering;
 
 #[path = "internal/camera.rs"]
@@ -34,7 +34,7 @@ pub mod viewport;
 #[path = "internal/particles.rs"]
 pub mod particles;
 
-#[path = "internal/math/mod.rs"]
+#[path = "internal/math.rs"]
 pub mod math;
 
 #[path = "internal/event.rs"]

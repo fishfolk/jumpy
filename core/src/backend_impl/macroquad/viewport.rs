@@ -9,7 +9,7 @@ pub fn viewport() -> Viewport {
 
     Viewport {
         position,
-        width: screen_width() as u32,
-        height: screen_height() as u32,
+        width: screen_width(),
+        height: screen_height(),
     }
 }

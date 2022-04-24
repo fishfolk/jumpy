@@ -1,6 +1,6 @@
 pub use cfg_if::cfg_if;
 
-pub use crate::file::load_file;
+pub use crate::file::read_from_file;
 pub use crate::init as init_core;
 
 pub use crate::audio::*;

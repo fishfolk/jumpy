@@ -9,11 +9,11 @@ use crate::window::window_size;
 
 pub struct CameraImpl {
     pub position: Vec2,
-    pub bounds: Size<u32>,
+    pub bounds: Size<f32>,
 }
 
 impl CameraImpl {
-    pub fn new<P: Into<Option<Vec2>>>(position: P, bounds: Size<u32>) -> Self {
+    pub fn new<P: Into<Option<Vec2>>>(position: P, bounds: Size<f32>) -> Self {
         let position = position.into().unwrap_or(Vec2::ZERO);
 
         CameraImpl { position, bounds }

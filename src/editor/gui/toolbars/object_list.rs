@@ -1,15 +1,13 @@
 use ff_core::prelude::*;
 
-use super::{
-    EditorAction, EditorContext, Map, Toolbar, ToolbarElement, ToolbarElementParams,
-};
+use super::{EditorAction, EditorContext, Map, Toolbar, ToolbarElement, ToolbarElementParams};
 
 use ff_core::map::MapLayerKind;
 
 use crate::editor::{gui::ButtonParams, EditorCamera};
 use ff_core::gui::get_gui_theme;
 use ff_core::macroquad::prelude::scene;
-use ff_core::macroquad::ui::{Ui, widgets};
+use ff_core::macroquad::ui::{widgets, Ui};
 
 pub struct ObjectListElement {
     params: ToolbarElementParams,
@@ -96,7 +94,7 @@ impl ToolbarElement for ObjectListElement {
         let position = {
             let camera = scene::find_node_by_type::<EditorCamera>().unwrap();
             let view_rect = camera.get_view_rect();
-            let offset = vec2(view_rect.w, view_rect.h) / 2.0;
+            let offset = vec2(view_rect.width, view_rect.height) / 2.0;
             (view_rect.point() + offset) - map.world_offset
         };
 

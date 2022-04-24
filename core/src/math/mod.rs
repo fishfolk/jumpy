@@ -5,9 +5,13 @@ pub use num_traits::*;
 
 pub use crate::backend_impl::math::*;
 
+pub mod circle;
+pub mod rect;
 pub mod size;
 pub mod urect;
 
+pub use circle::*;
+pub use rect::*;
 pub use size::*;
 pub use urect::*;
 

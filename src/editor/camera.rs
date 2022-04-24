@@ -36,8 +36,8 @@ impl EditorCamera {
     pub fn get_padded_frustum(&self) -> Rect {
         let mut res = self.get_view_rect();
         res.move_to(res.point() - vec2(Self::FRUSTUM_PADDING, Self::FRUSTUM_PADDING));
-        res.w += Self::FRUSTUM_PADDING * 2.0;
-        res.h += Self::FRUSTUM_PADDING * 2.0;
+        res.width += Self::FRUSTUM_PADDING * 2.0;
+        res.height += Self::FRUSTUM_PADDING * 2.0;
         res
     }
 
@@ -54,7 +54,7 @@ impl EditorCamera {
 
 impl Node for EditorCamera {
     fn fixed_update(mut node: RefMut<Self>) {
-        let viewport_size = viewport_size().as_f32();
+        let viewport_size = viewport_size();
 
         let camera = Some(Camera2D {
             offset: vec2(0.0, 0.0),

@@ -108,7 +108,7 @@ pub fn spawn_active_effect(
         } => {
             let mut rect = Rect::new(origin.x, origin.y, width, height);
             if is_facing_left {
-                rect.x -= rect.w;
+                rect.x -= rect.width;
             }
 
             #[cfg(debug_assertions)]
@@ -116,8 +116,8 @@ pub fn spawn_active_effect(
                 world.spawn((
                     Transform::new(origin, 0.0),
                     RectCollider {
-                        w: rect.w,
-                        h: rect.h,
+                        w: rect.width,
+                        h: rect.height,
                         frame_cnt: 0,
                     },
                 ));

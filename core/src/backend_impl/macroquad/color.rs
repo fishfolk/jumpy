@@ -8,6 +8,6 @@ impl From<Color> for crate::color::Color {
 
 impl From<crate::color::Color> for Color {
     fn from(color: crate::color::Color) -> Self {
-        Color::new(color.r, color.g, color.b, color.a)
+        Color::new(color.red, color.green, color.blue, color.alpha)
     }
 }

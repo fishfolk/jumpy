@@ -3,15 +3,42 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
+use crate::file::read_from_file;
+use crate::math::{Size, Vec2};
 use crate::Result;
-use crate::math::Vec2;
-use crate::file::load_file;
 
 pub use crate::backend_impl::text::*;
+use crate::color::{colors, Color};
 
-pub async fn load_ttf_font<P: AsRef<Path>>(path: P) -> Result<Font> {
-    let bytes = load_file(path).await?;
-    load_ttf_font_bytes(&bytes)
+pub async fn load_font<P: AsRef<Path>>(path: P) -> Result<Font> {
+    let bytes = read_from_file(path).await?;
+    load_font_bytes(&bytes)
+}
+
+/// Arguments for "draw_text_ex" function such as font, font_size etc
+#[derive(Debug, Clone)]
+pub struct TextParams {
+    pub font: Option<Font>,
+    pub bounds: Option<Size<f32>>,
+    pub horizontal_align: HorizontalAlignment,
+    pub vertical_align: VerticalAlignment,
+    pub font_size: u16,
+    pub font_scale: f32,
+    pub color: Color,
+}
+
+impl Default for TextParams {
+    fn default() -> TextParams {
+        TextParams {
+            font: None,
+            bounds: None,
+            horizontal_align: HorizontalAlignment::default(),
+            vertical_align: VerticalAlignment::default(),
+            font_size: 20,
+            font_scale: 1.0,
+            color: colors::WHITE,
+        }
+    }
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -22,39 +49,21 @@ pub enum HorizontalAlignment {
     Center,
 }
 
+impl Default for HorizontalAlignment {
+    fn default() -> Self {
+        Self::Left
+    }
+}
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum VerticalAlignment {
-    Top,
+    Normal,
     Center,
-    Bottom,
 }
 
-pub fn draw_aligned_text(
-    text: &str,
-    position: Vec2,
-    ha: HorizontalAlignment,
-    va: VerticalAlignment,
-    params: TextParams,
-) {
-    let measure = measure_text(text, Some(params.font), params.font_size, params.font_scale);
-
-    let x = match ha {
-        HorizontalAlignment::Left => position.x,
-        _ => {
-            if ha == HorizontalAlignment::Center {
-                position.x - (measure.width / 2.0)
-            } else {
-                position.x - measure.width
-            }
-        }
-    };
-
-    let y = match va {
-        VerticalAlignment::Top => position.y + measure.height,
-        VerticalAlignment::Center => position.y + measure.height / 2.0,
-        _ => position.y,
-    };
-
-    draw_text(text, x, y, params);
+impl Default for VerticalAlignment {
+    fn default() -> Self {
+        Self::Normal
+    }
 }

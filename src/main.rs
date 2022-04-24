@@ -168,6 +168,7 @@ async fn internal_main() -> Result<()> {
         .with_config(config)
         .with_event_loop(event_loop)
         .with_event_handler(DefaultEventHandler)
+        .with_clear_color(colors::BLACK)
         .run()
         .await?;
 

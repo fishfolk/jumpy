@@ -48,10 +48,6 @@ impl Renderer {
         let gl = gl_context();
 
         let (vertex_buffer, index_buffer, vertex_array) = unsafe {
-            gl.enable(glow::FRAMEBUFFER_SRGB);
-            gl.enable(glow::BLEND);
-            gl.blend_func(glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA);
-
             let vertex_buffer = gl.create_buffer()?;
             let index_buffer = gl.create_buffer()?;
             let vertex_array = gl.create_vertex_array()?;
@@ -87,9 +83,9 @@ impl Renderer {
         unsafe {
             if let Some(color) = color.into() {
                 gl.clear_color(color.red, color.green, color.blue, color.alpha);
-            } else {
-                gl.clear(glow::COLOR_BUFFER_BIT);
             }
+
+            gl.clear(glow::COLOR_BUFFER_BIT);
         };
     }
 

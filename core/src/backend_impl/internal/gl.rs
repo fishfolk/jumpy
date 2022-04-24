@@ -1,4 +1,4 @@
-use glow::Context;
+use glow::{Context, HasContext};
 use glutin::window::Window;
 use glutin::PossiblyCurrent;
 
@@ -14,8 +14,22 @@ pub fn create_gl_context(
     window: &glutin::ContextWrapper<PossiblyCurrent, Window>,
 ) -> &'static Context {
     unsafe {
-        let context = Context::from_loader_function(|s| window.get_proc_address(s));
-        GL_CONTEXT = Some(context);
+        let gl = Context::from_loader_function(|addr| window.get_proc_address(addr) as *const _);
+
+        gl.enable(glow::FRAMEBUFFER_SRGB);
+        gl.enable(glow::BLEND);
+        gl.blend_func(glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA);
+
+        #[cfg(debug_assertions)]
+        {
+            let version = gl.version();
+            println!(
+                "OpenGL: {}.{} {}, is_embedded: {}",
+                version.major, version.minor, version.vendor_info, version.is_embedded
+            );
+        }
+
+        GL_CONTEXT = Some(gl);
     };
 
     gl_context()

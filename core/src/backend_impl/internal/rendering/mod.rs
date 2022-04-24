@@ -16,8 +16,9 @@ pub fn clear_screen<C: Into<Option<Color>>>(color: C) {
     renderer().clear_screen(color);
 }
 
-pub fn end_frame() {
-    renderer().end_frame();
+pub fn end_frame() -> Result<()> {
+    renderer().end_frame()?;
+    Ok(())
 }
 
 pub fn draw_texture(x: f32, y: f32, texture: Texture2D, params: DrawTextureParams) {

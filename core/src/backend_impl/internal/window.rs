@@ -1,8 +1,8 @@
-use glow::Context;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::ops::{Deref, DerefMut};
 
+use glow::Context;
 use glutin::event_loop::EventLoop;
 use glutin::window::{Fullscreen, Window, WindowBuilder};
 use glutin::window::{Window as GlutinWindow, WindowId};

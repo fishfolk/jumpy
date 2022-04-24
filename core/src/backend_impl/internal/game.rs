@@ -27,7 +27,8 @@ use crate::physics::{fixed_delta_time, physics_world};
 use crate::prelude::{input_event_handler, DefaultEventHandler};
 use crate::rendering::{clear_screen, end_frame};
 use crate::window::{
-    apply_window_config, create_window, get_window, WindowMode, DEFAULT_WINDOW_TITLE,
+    apply_window_config, create_window, get_context_wrapper, get_window, WindowMode,
+    DEFAULT_WINDOW_TITLE,
 };
 use crate::{Config, Result};
 
@@ -60,11 +61,8 @@ impl<E: 'static + Debug> Game<E> {
         }
     }
 
-    pub fn with_config(self, config: &Config) -> Self {
-        Game {
-            config: config.clone(),
-            ..self
-        }
+    pub fn with_config(self, config: Config) -> Self {
+        Game { config, ..self }
     }
 
     pub fn with_event_loop(self, event_loop: EventLoop<Event<E>>) -> Self {
@@ -103,20 +101,21 @@ impl<E: 'static + Debug> Game<E> {
     }
 
     fn apply_current_config(&mut self) {
-        self.fixed_draw_delta_time = config
+        self.fixed_draw_delta_time = self
+            .config
             .video
             .max_fps
             .map(|max_fps| Duration::from_secs_f32(1.0 / max_fps as f32));
 
-        apply_window_config(&config.window);
+        apply_window_config(&self.config.window);
 
-        apply_audio_config(&config.audio);
+        apply_audio_config(&self.config.audio);
 
-        apply_input_config(&config.input);
+        apply_input_config(&self.config.input);
     }
 
-    fn apply_config(&mut self, config: &Config) {
-        self.config = config.clone();
+    fn apply_config(&mut self, config: Config) {
+        self.config = config;
 
         self.apply_current_config();
     }
@@ -148,6 +147,9 @@ impl<E: 'static + Debug> Game<E> {
             event_handler.handle(&event, control_flow);
 
             match &event {
+                glutin::event::Event::LoopDestroyed => {
+                    return;
+                }
                 glutin::event::Event::NewEvents(cause) => {
                     match cause {
                         StartCause::Init => {
@@ -163,12 +165,16 @@ impl<E: 'static + Debug> Game<E> {
                     WindowEvent::CloseRequested | WindowEvent::Destroyed => {
                         *control_flow = ControlFlow::Exit;
                     }
+                    WindowEvent::Resized(physical_size) => {
+                        get_context_wrapper().resize(*physical_size);
+                    }
                     _ => {}
                 },
+                glutin::event::Event::MainEventsCleared => {}
                 glutin::event::Event::RedrawRequested(..) => {}
                 glutin::event::Event::UserEvent(event) => match event {
                     Event::Custom(event) => event_handler.handle_custom(event, control_flow),
-                    Event::ConfigChanged(config) => game.apply_config(config),
+                    Event::ConfigChanged(config) => game.apply_config(config.clone()),
                     Event::StateTransition(state) => game
                         .change_state(state.clone())
                         .unwrap_or_else(|err| panic!("Error when changing state: {}", err)),
@@ -226,15 +232,14 @@ impl<E: 'static + Debug> Game<E> {
                         let draw_delta_time = now.duration_since(game.last_draw);
 
                         if draw_delta_time >= fixed_draw_delta_time {
-                            clear_screen(self.clear_color.into());
-
                             game.get_state()
                                 .draw(draw_delta_time.as_secs_f32())
                                 .unwrap_or_else(|err| {
                                     panic!("Error in game state fixed draw: {}", err)
                                 });
 
-                            end_frame();
+                            clear_screen(game.clear_color);
+                            end_frame().unwrap();
 
                             game.last_draw = now;
                         }

@@ -2,27 +2,67 @@ use crate::gl::gl_context;
 use glow::{HasContext, NativeTexture};
 use image::codecs::png::PngDecoder;
 use image::{DynamicImage, ImageBuffer, ImageDecoder};
+use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 use std::path::Path;
 
 use crate::math::{vec2, Size, Vec2};
+use crate::rendering::renderer::Renderer;
 use crate::texture::{ColorFormat, TextureFilterMode, TextureFormat};
 use crate::Result;
 
-#[derive(Clone, Copy, Debug)]
-pub struct Texture2D {
-    id: NativeTexture,
+pub struct Texture2DImpl {
+    gl_texture: NativeTexture,
     filter_mode: TextureFilterMode,
     size: Size<f32>,
 }
 
-impl PartialEq for Texture2D {
+impl PartialEq for Texture2DImpl {
     fn eq(&self, other: &Self) -> bool {
-        self.id == other.id
+        self.gl_texture == other.gl_texture
     }
 }
 
-impl Eq for Texture2D {}
+impl PartialEq<NativeTexture> for Texture2DImpl {
+    fn eq(&self, other: &NativeTexture) -> bool {
+        self.gl_texture == *other
+    }
+}
+
+impl Eq for Texture2DImpl {}
+
+impl Texture2DImpl {
+    pub fn size(&self) -> Size<f32> {
+        self.size
+    }
+
+    pub fn set_filter_mode(&mut self, filter_mode: TextureFilterMode) {
+        self.filter_mode = filter_mode;
+    }
+
+    pub fn gl_texture(&self) -> NativeTexture {
+        self.gl_texture
+    }
+}
+
+impl Drop for Texture2DImpl {
+    fn drop(&mut self) {
+        let gl = gl_context();
+        unsafe {
+            gl.delete_texture(self.gl_texture);
+        }
+    }
+}
+
+static mut NEXT_TEXTURE_INDEX: usize = 0;
+static mut TEXTURES: Option<HashMap<usize, Texture2DImpl>> = None;
+
+fn texture_map() -> &'static mut HashMap<usize, Texture2DImpl> {
+    unsafe { TEXTURES.get_or_insert_with(HashMap::new) }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct Texture2D(usize);
 
 impl Texture2D {
     pub fn from_dynamic_image<F: Into<Option<TextureFilterMode>>>(
@@ -34,10 +74,10 @@ impl Texture2D {
 
         let gl = gl_context();
 
-        let id = unsafe {
-            let id = gl.create_texture()?;
+        let gl_texture = unsafe {
+            let texture = gl.create_texture()?;
 
-            gl.bind_texture(glow::TEXTURE_2D, Some(id));
+            gl.bind_texture(glow::TEXTURE_2D, Some(texture));
 
             gl.tex_image_2d(
                 glow::TEXTURE_2D,
@@ -53,28 +93,41 @@ impl Texture2D {
 
             gl.bind_texture(glow::TEXTURE_2D, None);
 
-            id
+            texture
         };
 
         let filter_mode = filter_mode.into().unwrap_or_default();
 
-        Ok(Texture2D {
-            id,
-            filter_mode,
-            size,
-        })
-    }
+        let index = unsafe {
+            let index = NEXT_TEXTURE_INDEX;
+            NEXT_TEXTURE_INDEX += 1;
+            index
+        };
 
-    pub fn size(&self) -> Size<f32> {
-        self.size
-    }
+        texture_map().insert(
+            index,
+            Texture2DImpl {
+                gl_texture,
+                filter_mode,
+                size,
+            },
+        );
 
-    pub fn gl_texture(&self) -> NativeTexture {
-        self.id
+        Ok(Texture2D(index))
     }
+}
 
-    pub fn set_filter_mode(&mut self, filter_mode: TextureFilterMode) {
-        self.filter_mode = filter_mode;
+impl Deref for Texture2D {
+    type Target = Texture2DImpl;
+
+    fn deref(&self) -> &Self::Target {
+        texture_map().get(&self.0).unwrap()
+    }
+}
+
+impl DerefMut for Texture2D {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        texture_map().get_mut(&self.0).unwrap()
     }
 }
 

@@ -1,11 +1,14 @@
 use glow::{HasContext, NativeProgram, NativeShader};
+use std::collections::HashMap;
 use std::io::Read;
+use std::ops::{Deref, DerefMut};
 
 use serde::{Deserialize, Serialize};
 
 use crate::error::ErrorKind;
 use crate::gl::gl_context;
 use crate::prelude::renderer::renderer;
+use crate::rendering::renderer::Renderer;
 use crate::Result;
 
 #[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -88,18 +91,57 @@ impl Drop for Shader {
     }
 }
 
-pub struct ShaderProgram {
+pub struct ShaderProgramImpl {
     gl_program: NativeProgram,
 }
 
+impl ShaderProgramImpl {
+    pub fn gl_program(&self) -> NativeProgram {
+        self.gl_program
+    }
+}
+
+impl PartialEq for ShaderProgramImpl {
+    fn eq(&self, other: &Self) -> bool {
+        self.gl_program == other.gl_program
+    }
+}
+
+impl PartialEq<NativeProgram> for ShaderProgramImpl {
+    fn eq(&self, other: &NativeProgram) -> bool {
+        self.gl_program == *other
+    }
+}
+
+impl Eq for ShaderProgramImpl {}
+
+impl Drop for ShaderProgramImpl {
+    fn drop(&mut self) {
+        let gl = gl_context();
+        unsafe {
+            gl.delete_program(self.gl_program);
+        }
+    }
+}
+
+static mut NEXT_SHADER_INDEX: usize = 0;
+static mut SHADERS: Option<HashMap<usize, ShaderProgramImpl>> = None;
+
+fn shader_map() -> &'static mut HashMap<usize, ShaderProgramImpl> {
+    unsafe { SHADERS.get_or_insert_with(HashMap::new) }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub struct ShaderProgram(usize);
+
 impl ShaderProgram {
-    pub fn new(&self, shaders: &[Shader]) -> Result<Self> {
+    pub fn new(shaders: &[Shader]) -> Result<Self> {
         let gl = gl_context();
         let gl_program = unsafe {
             let program = gl.create_program()?;
 
             for shader in shaders {
-                gl.attach_shader(self.gl_program, shader.gl_shader);
+                gl.attach_shader(program, shader.gl_shader);
             }
 
             gl.link_program(program);
@@ -113,57 +155,34 @@ impl ShaderProgram {
             }
 
             for shader in shaders {
-                gl.detach_shader(self.gl_program, shader.gl_shader);
+                gl.detach_shader(program, shader.gl_shader);
             }
 
             program
         };
 
-        Ok(ShaderProgram { gl_program })
-    }
+        let index = unsafe {
+            let index = NEXT_SHADER_INDEX;
+            NEXT_SHADER_INDEX += 1;
+            index
+        };
 
-    pub fn set_active(&self) {
-        let renderer = renderer();
-        if renderer.current_program.is_none() || renderer.current_program.unwrap() != self {
-            renderer.current_program = Some(self.gl_program);
+        shader_map().insert(index, ShaderProgramImpl { gl_program });
 
-            renderer.draw_batch();
-
-            let gl = gl_context();
-            unsafe { gl.use_program(Some(self.gl_program)) }
-        }
+        Ok(ShaderProgram(index))
     }
 }
 
-impl PartialEq for ShaderProgram {
-    fn eq(&self, other: &Self) -> bool {
-        self.gl_program == other.gl_program
+impl Deref for ShaderProgram {
+    type Target = ShaderProgramImpl;
+
+    fn deref(&self) -> &Self::Target {
+        shader_map().get(&self.0).unwrap()
     }
 }
 
-impl PartialEq<NativeProgram> for ShaderProgram {
-    fn eq(&self, other: &NativeProgram) -> bool {
-        self.gl_program == other
-    }
-}
-
-impl Eq for ShaderProgram {}
-
-impl Drop for ShaderProgram {
-    fn drop(&mut self) {
-        let gl = gl_context();
-        unsafe {
-            let renderer = renderer();
-            if let Some(program) = renderer.current_program {
-                if program == self {
-                    renderer.draw_batch();
-
-                    renderer.current_program = None;
-                    gl.use_program(None);
-                }
-            }
-
-            gl.delete_program(self.gl_program);
-        }
+impl DerefMut for ShaderProgram {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        shader_map().get_mut(&self.0).unwrap()
     }
 }

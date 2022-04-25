@@ -735,7 +735,7 @@ pub struct TextureMetadata {
     pub filter_mode: TextureFilterMode,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct TextureResource {
     pub texture: Texture2D,
     pub meta: TextureMetadata,
@@ -781,7 +781,7 @@ pub struct MapMetadata {
     pub is_user_map: bool,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct MapResource {
     pub map: Map,
     pub preview: Texture2D,

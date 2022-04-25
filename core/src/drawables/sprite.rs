@@ -65,7 +65,7 @@ impl Default for SpriteMetadata {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Sprite {
     pub texture: Texture2D,
     pub source_rect: Rect,
@@ -219,7 +219,6 @@ pub fn debug_draw_one_sprite(position: Vec2, sprite: &Sprite) -> Result<()> {
     Ok(())
 }
 
-#[derive(Debug)]
 pub struct SpriteSet {
     pub draw_order: Vec<String>,
     pub map: HashMap<String, Sprite>,

@@ -27,7 +27,7 @@ pub struct MapBackgroundLayer {
     pub offset: Vec2,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 #[serde(into = "parsing::MapDef", from = "parsing::MapDef")]
 pub struct Map {
     #[serde(
@@ -481,7 +481,7 @@ impl Default for MapLayerKind {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct MapLayer {
     pub id: String,
     pub kind: MapLayerKind,
@@ -535,7 +535,7 @@ impl Default for MapLayer {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct MapTile {
     pub tile_id: u32,
     pub tileset_id: String,

@@ -5,17 +5,6 @@ pub use crate::backend_impl::rendering::*;
 use crate::color::Color;
 use crate::math::{Rect, Size, URect, Vec2};
 
-#[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum ShaderKind {
-    Vertex,
-    TesselationControl,
-    TesselationEval,
-    Geometry,
-    Fragment,
-    Compute,
-}
-
 #[derive(Debug, Default, Clone)]
 pub struct DrawTextureParams {
     pub tint: Option<Color>,

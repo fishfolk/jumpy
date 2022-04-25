@@ -6,8 +6,8 @@ pub mod shader;
 pub mod vertex;
 
 pub use buffer::Buffer;
-pub use shader::Shader;
-pub use vertex::Vertex;
+pub use shader::{Shader, ShaderProgram};
+pub use vertex::{Index, Vertex};
 
 use crate::color::Color;
 use crate::rendering::DrawTextureParams;

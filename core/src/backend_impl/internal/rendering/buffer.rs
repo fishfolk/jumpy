@@ -25,7 +25,7 @@ impl From<u32> for BufferKind {
         match target {
             glow::ARRAY_BUFFER => Self::Vertex,
             glow::ELEMENT_ARRAY_BUFFER => Self::Element,
-            _ => unreachable!("Invalid buffer target '{}'!", target),
+            _ => panic!("Invalid buffer target '{}'!", target),
         }
     }
 }

@@ -28,6 +28,7 @@ pub enum ErrorKind {
     Physics,
     Image,
     Font,
+    Shader,
 }
 
 impl ErrorKind {
@@ -46,6 +47,7 @@ impl ErrorKind {
             ErrorKind::Physics => "Physics error",
             ErrorKind::Image => "Image error",
             ErrorKind::Font => "Font error",
+            ErrorKind::Shader => "Shader error",
         }
     }
 }

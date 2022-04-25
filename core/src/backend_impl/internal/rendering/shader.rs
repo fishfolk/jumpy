@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::ErrorKind;
 use crate::gl::gl_context;
+use crate::prelude::renderer::renderer;
 use crate::Result;
 
 #[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -120,12 +121,48 @@ impl ShaderProgram {
 
         Ok(ShaderProgram { gl_program })
     }
+
+    pub fn set_active(&self) {
+        let renderer = renderer();
+        if renderer.current_program.is_none() || renderer.current_program.unwrap() != self {
+            renderer.current_program = Some(self.gl_program);
+
+            renderer.draw_batch();
+
+            let gl = gl_context();
+            unsafe { gl.use_program(Some(self.gl_program)) }
+        }
+    }
 }
+
+impl PartialEq for ShaderProgram {
+    fn eq(&self, other: &Self) -> bool {
+        self.gl_program == other.gl_program
+    }
+}
+
+impl PartialEq<NativeProgram> for ShaderProgram {
+    fn eq(&self, other: &NativeProgram) -> bool {
+        self.gl_program == other
+    }
+}
+
+impl Eq for ShaderProgram {}
 
 impl Drop for ShaderProgram {
     fn drop(&mut self) {
         let gl = gl_context();
         unsafe {
+            let renderer = renderer();
+            if let Some(program) = renderer.current_program {
+                if program == self {
+                    renderer.draw_batch();
+
+                    renderer.current_program = None;
+                    gl.use_program(None);
+                }
+            }
+
             gl.delete_program(self.gl_program);
         }
     }

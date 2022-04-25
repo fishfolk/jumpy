@@ -1,4 +1,4 @@
-use glow::{Context, HasContext, NativeTexture, NativeVertexArray};
+use glow::{Context, HasContext, NativeProgram, NativeTexture, NativeVertexArray};
 
 use crate::color::{colors, Color};
 use crate::gl::gl_context;
@@ -42,7 +42,8 @@ void main() {
 ";
 
 pub struct Renderer {
-    current_texture: Option<NativeTexture>,
+    pub(crate) current_texture: Option<NativeTexture>,
+    pub(crate) current_program: Option<NativeProgram>,
     batched: Vec<Vertex>,
     batched_cnt: usize,
     indices: Vec<u32>,
@@ -94,7 +95,7 @@ impl Renderer {
         };
     }
 
-    fn draw_batched(&mut self) {
+    pub fn draw_batch(&mut self) {
         self.vertex_buffer.bind();
         self.vertex_buffer.set_data(&self.batched);
 
@@ -127,13 +128,13 @@ impl Renderer {
     pub fn draw_texture(&mut self, x: f32, y: f32, texture: Texture2D, params: DrawTextureParams) {
         if let Some(current_texture) = self.current_texture {
             if current_texture != texture.gl_texture() {
-                self.draw_batched();
+                self.draw_batch();
                 self.current_texture = Some(texture.gl_texture());
             }
         }
 
         if self.batched_cnt >= BATCH_SIZE {
-            self.draw_batched();
+            self.draw_batch();
         }
 
         let texture_rect = params.source.map(|urect| urect.into()).unwrap_or_else(|| {
@@ -176,7 +177,7 @@ impl Renderer {
     }
 
     pub fn end_frame(&mut self) -> Result<()> {
-        self.draw_batched();
+        self.draw_batch();
 
         draw_queued_text()?;
 

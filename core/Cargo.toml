@@ -6,7 +6,7 @@ license = "MIT OR Apache-2.0"
 edition = "2021"
 
 [dependencies]
-fishsticks = { git = "https://github.com/fishfight/fishsticks", default-features = false, features = ["gilrs"] }
+fishsticks = { version = "0.2.1", git = "https://github.com/fishfight/fishsticks", default-features = false, features = ["gilrs"] }
 macroquad = { version = "0.3.10" }
 hecs = "0.7.1"
 serde = { version = "1.0", package = "serde", features = ["derive"] }

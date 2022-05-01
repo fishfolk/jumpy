@@ -77,7 +77,7 @@ pub fn collect_local_input(input_scheme: GameInputScheme) -> PlayerInput {
                 let config = storage::get::<Config>();
                 config
                     .input
-                    .get_gamepad_mapping(ix.into())
+                    .get_gamepad_mapping((*ix).into())
                     .unwrap_or_else(|| ix.into())
             };
 

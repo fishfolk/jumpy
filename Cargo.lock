@@ -206,8 +206,8 @@ dependencies = [
 
 [[package]]
 name = "fishsticks"
-version = "0.2.0"
-source = "git+https://github.com/fishfight/fishsticks#95b45b717e427fb5fa1671f3bdf686d7270ad8a1"
+version = "0.2.1"
+source = "git+https://github.com/fishfight/fishsticks#ffd11a5b48abecadf8cd47033b1b26fff74b5557"
 dependencies = [
  "cfg-if",
  "gilrs",

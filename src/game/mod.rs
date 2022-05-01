@@ -34,7 +34,10 @@ use crate::effects::active::debug_draw_active_effects;
 use crate::effects::active::projectiles::fixed_update_projectiles;
 use crate::effects::active::triggered::fixed_update_triggered_effects;
 use crate::items::spawn_item;
-use crate::map::{fixed_update_sproingers, spawn_decoration, spawn_sproinger};
+use crate::map::{
+    debug_draw_fish_schools, fixed_update_sproingers, spawn_crab, spawn_decoration,
+    spawn_fish_school, spawn_sproinger, update_crabs, update_fish_schools,
+};
 use crate::network::{
     fixed_update_network_client, fixed_update_network_host, update_network_client,
     update_network_host,
@@ -118,7 +121,9 @@ impl Game {
                 .add_system(update_player_states)
                 .add_system(update_player_inventory)
                 .add_system(update_player_passive_effects)
-                .add_system(update_player_events);
+                .add_system(update_player_events)
+                .add_system(update_fish_schools)
+                .add_system(update_crabs);
 
             fixed_updates_builder
                 .add_system(fixed_update_physics_bodies)
@@ -148,6 +153,7 @@ impl Game {
             .with_thread_local(debug_draw_physics_bodies)
             .with_thread_local(debug_draw_rigid_bodies)
             .with_thread_local(debug_draw_active_effects)
+            .with_thread_local(debug_draw_fish_schools)
             .build();
 
         let res = Game {
@@ -258,15 +264,24 @@ pub fn spawn_map_objects(world: &mut World, map: &Map) -> Result<Vec<Entity>> {
                             println!("WARNING: Invalid item id '{}'", &map_object.id)
                         }
                     }
-                    MapObjectKind::Environment => {
-                        if map_object.id == "sproinger" {
+                    MapObjectKind::Environment => match map_object.id.as_str() {
+                        "sproinger" => {
                             let sproinger = spawn_sproinger(world, map_object.position)?;
                             objects.push(sproinger);
-                        } else {
+                        }
+                        "crab" => {
+                            let crab = spawn_crab(world, map_object.position)?;
+                            objects.push(crab);
+                        }
+                        "fish_school" => {
+                            let fish_school = spawn_fish_school(world, map_object.position)?;
+                            objects.push(fish_school);
+                        }
+                        _ => {
                             #[cfg(debug_assertions)]
                             println!("WARNING: Invalid environment item id '{}'", &map_object.id)
                         }
-                    }
+                    },
                 }
             }
         }

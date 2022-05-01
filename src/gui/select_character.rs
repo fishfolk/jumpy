@@ -10,8 +10,7 @@ use crate::gui::{
 };
 use crate::player::PlayerCharacterMetadata;
 use crate::{
-    draw_one_animated_sprite, update_one_animated_sprite, AnimatedSprite, AnimatedSpriteMetadata,
-    Resources,
+    draw_one_animated_sprite, update_one_animated_sprite, AnimatedSpriteMetadata, Resources,
 };
 use core::input::{update_gamepad_context, GameInputScheme};
 use core::Transform;
@@ -59,17 +58,7 @@ pub async fn show_select_characters_menu(
 
         let meta: AnimatedSpriteMetadata = character.sprite.clone().into();
 
-        let animations = meta
-            .animations
-            .iter()
-            .cloned()
-            .map(|a| a.into())
-            .collect::<Vec<_>>();
-
-        let sprite =
-            AnimatedSprite::new(&meta.texture_id, animations.as_slice(), meta.clone().into());
-
-        animated_sprites.push(sprite);
+        animated_sprites.push(meta.into());
     }
 
     let mut is_ready = false;
@@ -246,18 +235,7 @@ pub async fn show_select_characters_menu(
 
                 let meta: AnimatedSpriteMetadata = character.sprite.clone().into();
 
-                let animations = meta
-                    .animations
-                    .iter()
-                    .cloned()
-                    .map(|a| a.into())
-                    .collect::<Vec<_>>();
-
-                animated_sprites[i] = AnimatedSprite::new(
-                    &meta.texture_id,
-                    animations.as_slice(),
-                    meta.clone().into(),
-                );
+                animated_sprites[i] = meta.into();
             }
 
             is_ready = !selected_params.iter().any(|params| params.is_none());

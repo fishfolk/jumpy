@@ -436,12 +436,120 @@
     }
   },
   {
+    "id": "crab",
+    "path": "textures/items/Crab(17x12).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 17,
+      "y": 12
+    }
+  },
+  {
+    "id": "blue_tang",
+    "path": "textures/items/BlueTang(19x9).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 19,
+      "y": 9
+    }
+  },
+  {
+    "id": "royal_gramma",
+    "path": "textures/items/RoyalGramma(25x11).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 25,
+      "y": 11
+    }
+  },
+  {
+    "id": "arabian_angelfish",
+    "path": "textures/items/ArabianAngelfish(19x12).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 19,
+      "y": 12
+    }
+  },
+  {
+    "id": "blue_green_chromis",
+    "path": "textures/items/BlueGreenChromis(22x11).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 22,
+      "y": 11
+    }
+  },
+  {
+    "id": "banded_butterfly_fish",
+    "path": "textures/items/BandedButterflyFish(19x11).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 19,
+      "y": 11
+    }
+  },
+  {
+    "id": "small_fish1",
+    "path": "textures/items/SmallFish1(13x9).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 13,
+      "y": 9
+    }
+  },
+  {
+    "id": "small_fish1",
+    "path": "textures/items/SmallFish1(13x9).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 13,
+      "y": 9
+    }
+  },
+  {
+    "id": "small_fish2",
+    "path": "textures/items/SmallFish3(13x9).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 13,
+      "y": 9
+    }
+  },
+  {
+    "id": "small_fish3",
+    "path": "textures/items/SmallFish2(13x9).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 13,
+      "y": 9
+    }
+  },
+  {
+    "id": "fish_school_icon",
+    "path": "textures/items/FishSchoolIcon(64x64).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 64,
+      "y": 64
+    }
+  },
+  {
     "id": "sword",
     "path": "textures/items/Sword(65x93).png",
     "type": "spritesheet",
     "sprite_size": {
       "x": 65,
       "y": 93
+    }
+  },
+  {
+    "id": "trident",
+    "path": "textures/items/Trident(288x96).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 96,
+      "y": 32
     }
   },
   {
@@ -520,6 +628,15 @@
     "sprite_size": {
       "x": 128,
       "y": 128
+    }
+  },
+  {
+    "id": "blunderbuss_bullet",
+    "path": "textures/items/BlunderbussBullet.png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 6,
+      "y": 6
     }
   }
 ]

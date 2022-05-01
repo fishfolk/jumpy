@@ -26,7 +26,7 @@ impl Editor {
         ui.group(|ui| {
             for (tileset_name, _tileset) in self.map_resource.map.tilesets.iter() {
                 let is_selected = self
-                    .selected_tile
+                    .tile_palette
                     .as_ref()
                     .map(|s| &s.tileset == tileset_name)
                     .unwrap_or(false);
@@ -47,9 +47,9 @@ impl Editor {
             if ui.button("+").clicked() {
                 self.create_tileset_window = Some(Default::default());
             }
-            ui.add_enabled_ui(self.selected_tile.is_some(), |ui| {
+            ui.add_enabled_ui(self.tile_palette.is_some(), |ui| {
                 if ui.button("-").clicked() {
-                    let selected_tileset = self.selected_tile.as_ref().unwrap().tileset.clone();
+                    let selected_tileset = self.tile_palette.as_ref().unwrap().tileset.clone();
                     self.apply_action(UiAction::DeleteTileset(selected_tileset));
                 }
                 ui.button("Edit").on_hover_text("Does not do anything yet");
@@ -58,7 +58,7 @@ impl Editor {
     }
 
     fn draw_tileset_image(&mut self, ui: &mut egui::Ui) {
-        if let Some(selection) = &self.selected_tile {
+        if let Some(selection) = &self.tile_palette {
             if let Some(tileset) = self.map_resource.map.tilesets.get(&selection.tileset) {
                 let tileset_texture: &TextureResource =
                     &storage::get::<Resources>().textures[&tileset.texture_id];

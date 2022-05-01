@@ -288,15 +288,27 @@ impl Editor {
     }
 
     pub fn draw_level(&self) {
-        let camera = Some(Camera2D {
-            offset: vec2(-1., -1.),
-            target: self.level_view.position,
-            zoom,
-            render_target: Some(self.level_render_target),
-            ..Camera2D::default()
-        });
+        let camera = {
+            use macroquad::prelude::*;
+            let target_size = vec2(
+                self.level_render_target.texture.width(),
+                self.level_render_target.texture.height(),
+            );
+            let zoom = vec2(
+                self.level_view.scale / target_size.x,
+                self.level_view.scale / target_size.y,
+            ) * 2.;
 
-        scene::set_camera(0, camera);
+            Camera2D {
+                offset: vec2(-1., -1.),
+                target: self.level_view.position,
+                zoom,
+                render_target: Some(self.level_render_target),
+                ..Camera2D::default()
+            }
+        };
+
+        macroquad::experimental::scene::set_camera(0, Some(camera));
 
         let map = &self.map_resource.map;
         {
@@ -313,18 +325,7 @@ impl Editor {
         const CAMERA_PAN_SPEED: f32 = 5.0;
 
         // Move camera
-        {
-            use macroquad::prelude::*;
-            let target_size = vec2(
-                self.level_render_target.texture.width(),
-                self.level_render_target.texture.height(),
-            );
-            let zoom = vec2(
-                self.level_view.scale / target_size.x,
-                self.level_view.scale / target_size.y,
-            ) * 2.;
-            self.level_view.position += input.camera_move_direction * CAMERA_PAN_SPEED;
-        }
+        self.level_view.position += input.camera_move_direction * CAMERA_PAN_SPEED;
 
         // Undo/redo
         if input.undo {

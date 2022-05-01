@@ -48,7 +48,7 @@ impl Node for EditorNode {
     where
         Self: Sized,
     {
-        node.editor.draw();
+        node.editor.draw_level();
 
         egui_macroquad::ui(|egui_ctx| {
             node.editor.ui(egui_ctx);

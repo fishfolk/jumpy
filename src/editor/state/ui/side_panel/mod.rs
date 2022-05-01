@@ -1,4 +1,5 @@
 mod layers;
+mod objects;
 mod tileset;
 
 use crate::map::MapLayerKind;
@@ -11,13 +12,15 @@ impl Editor {
             egui_ctx,
             |ui| {
                 self.draw_layer_info(ui);
+
                 ui.separator();
+
                 match self.selected_layer_type() {
                     Some(MapLayerKind::TileLayer) => {
                         self.draw_tileset_info(ui);
                     }
                     Some(MapLayerKind::ObjectLayer) => {
-                        // TODO
+                        self.draw_object_info(ui);
                     }
                     None => (),
                 }

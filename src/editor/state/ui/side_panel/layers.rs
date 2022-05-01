@@ -1,3 +1,5 @@
+use egui_extras::Size;
+
 use crate::{
     editor::{
         actions::{UiAction, UiActionExt},
@@ -17,32 +19,65 @@ impl Editor {
         let mut action = None;
 
         ui.group(|ui| {
-            let map = &self.map_resource.map;
-            for (layer_name, layer) in map.draw_order.iter().map(|id| (id, &map.layers[id])) {
-                ui.horizontal(|ui| {
-                    let layer_label = ui.selectable_label(
-                        self.selected_layer.as_ref() == Some(layer_name),
-                        format!(
-                            "({}) {}",
-                            match layer.kind {
-                                MapLayerKind::TileLayer => "T",
-                                MapLayerKind::ObjectLayer => "O",
-                            },
-                            layer_name
-                        ),
+            egui_extras::TableBuilder::new(ui)
+                .column(Size::exact(40.0))
+                .column(Size::remainder().at_least(100.0))
+                .column(Size::exact(70.0))
+                .striped(true)
+                .sense(egui::Sense::click())
+                .header(20.0, |mut header| {
+                    header.col(|ui| {
+                        ui.heading("Type");
+                    });
+                    header.col(|ui| {
+                        ui.heading("Name");
+                    });
+                    header.col(|ui| {
+                        ui.heading("Visibility");
+                    });
+                })
+                .body(|body| {
+                    let row_height = 18.0;
+                    body.rows(
+                        row_height,
+                        self.map_resource.map.draw_order.len(),
+                        |row_index, mut row| {
+                            let layer_name = &self.map_resource.map.draw_order[row_index];
+                            let layer = &self.map_resource.map.layers[layer_name];
+                            let mut clicked = false;
+
+                            clicked |= row
+                                .col(|ui| {
+                                    ui.label(match layer.kind {
+                                        MapLayerKind::TileLayer => "T",
+                                        MapLayerKind::ObjectLayer => "O",
+                                    });
+                                })
+                                .clicked();
+                            clicked |= row
+                                .col(|ui| {
+                                    ui.label(layer_name);
+                                })
+                                .clicked();
+                            let mut is_visible = layer.is_visible;
+                            clicked |= row
+                                .col(|ui| {
+                                    if ui.checkbox(&mut is_visible, "Visible").clicked() {
+                                        action.then_do_some(UiAction::UpdateLayer {
+                                            id: layer_name.clone(),
+                                            is_visible,
+                                        });
+                                    }
+                                })
+                                .clicked();
+
+                            if clicked {
+                                let layer_name = layer_name.clone();
+                                self.apply_action(UiAction::SelectLayer(layer_name));
+                            }
+                        },
                     );
-                    if layer_label.clicked() {
-                        action.then_do_some(UiAction::SelectLayer(layer_name.clone()));
-                    }
-                    let mut is_visible = layer.is_visible;
-                    if ui.checkbox(&mut is_visible, "Visible").clicked() {
-                        action.then_do_some(UiAction::UpdateLayer {
-                            id: layer_name.clone(),
-                            is_visible,
-                        });
-                    }
                 });
-            }
         });
 
         if let Some(action) = action {

@@ -15,14 +15,17 @@ impl Editor {
 
                 ui.separator();
 
-                match self.selected_layer_type() {
-                    Some(MapLayerKind::TileLayer) => {
-                        self.draw_tileset_info(ui);
+                if let Some(selected_layer_id) = self.selected_layer.as_ref() {
+                    if let Some(layer) = self.map_resource.map.layers.get(selected_layer_id) {
+                        match layer.kind {
+                            MapLayerKind::TileLayer => {
+                                self.draw_tileset_info(ui);
+                            }
+                            MapLayerKind::ObjectLayer => {
+                                self.draw_object_info(ui);
+                            }
+                        }
                     }
-                    Some(MapLayerKind::ObjectLayer) => {
-                        self.draw_object_info(ui);
-                    }
-                    None => (),
                 }
             },
         );

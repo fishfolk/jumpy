@@ -28,7 +28,7 @@ pub fn update_camera(world: &mut World, _delta_time: f32) -> Result<()> {
         player_rects.push(rect);
     }
 
-    let mut camera = active_camera();
+    let mut camera = main_camera();
     camera.update(&player_rects);
 
     Ok(())

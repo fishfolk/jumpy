@@ -2,6 +2,7 @@
 max-fps = 120
 high-dpi = false
 vsync = false
+show-fps = true
 
 [window]
 mode = "windowed"

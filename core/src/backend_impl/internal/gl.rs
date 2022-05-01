@@ -10,7 +10,7 @@ pub fn gl_context() -> &'static Context {
     }
 }
 
-pub fn create_gl_context(
+pub fn init_gl_context(
     window: &glutin::ContextWrapper<PossiblyCurrent, Window>,
 ) -> &'static Context {
     unsafe {

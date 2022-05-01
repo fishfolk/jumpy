@@ -130,23 +130,18 @@ async fn main() -> Result<()> {
 
 #[cfg(not(any(feature = "macroquad", feature = "ultimate")))]
 async fn internal_main() -> Result<()> {
-    use ff_core::gl::create_gl_context;
+    use ff_core::gl::init_gl_context;
     use ff_core::glutin::event_loop;
 
     let config = load_config(config_path()).await?;
 
     let event_loop = new_event_loop();
 
-    {
-        let window = create_window(&WINDOW_TITLE, &event_loop, &config)?;
-        let _ = create_gl_context(window);
-    }
+    init_context(WINDOW_TITLE, &event_loop, &config).await?;
 
     load_resources().await?;
 
     init_passive_effects();
-
-    init_gamepad_context().await?;
 
     let map_resource = get_map(0).clone();
     let players = &[
@@ -177,7 +172,7 @@ async fn internal_main() -> Result<()> {
 
 #[cfg(feature = "ultimate")]
 async fn ultimate_main() -> Result<()> {
-    use ff_core::gl::create_gl_context;
+    use ff_core::gl::init_gl_context;
     use ff_core::glutin::event_loop;
 
     let config = load_config(config_path()).await?;
@@ -186,7 +181,7 @@ async fn ultimate_main() -> Result<()> {
 
     {
         let window = create_window(&game.window_title, &event_loop, &game.config)?;
-        let _ = create_gl_context(window);
+        let _ = init_gl_context(window);
     }
 
     load_resources().await?;

@@ -25,6 +25,8 @@ pub struct VideoConfig {
     pub max_fps: Option<u16>,
     #[serde(default, rename = "vsync")]
     pub is_vsync_enabled: bool,
+    #[serde(default, rename = "show-fps")]
+    pub should_show_fps: bool,
 }
 
 impl VideoConfig {
@@ -43,6 +45,7 @@ impl Default for VideoConfig {
             msaa_samples: DEFAULT_MSAA_SAMPLES,
             max_fps: DEFAULT_MAX_FPS,
             is_vsync_enabled: false,
+            should_show_fps: false,
         }
     }
 }

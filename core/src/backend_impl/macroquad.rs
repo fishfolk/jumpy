@@ -42,6 +42,8 @@ pub mod event;
 
 pub mod video {}
 
+pub mod context {}
+
 pub mod gl {}
 
 pub mod gui {

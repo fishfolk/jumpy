@@ -43,6 +43,9 @@ pub mod event;
 #[path = "internal/game.rs"]
 pub mod game;
 
+#[path = "internal/context.rs"]
+pub mod context;
+
 pub mod gui {}
 
 pub mod color {}

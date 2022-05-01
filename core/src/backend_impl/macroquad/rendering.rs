@@ -53,3 +53,7 @@ pub fn draw_circle_outline(x: f32, y: f32, radius: f32, weight: f32, color: Colo
 pub fn draw_line(x: f32, y: f32, end_x: f32, end_y: f32, weight: f32, color: Color) {
     macroquad::shapes::draw_line(x, y, end_x, end_y, weight, color.into())
 }
+
+pub fn fps() -> u32 {
+    macroquad::get_fps() as u32
+}

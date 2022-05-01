@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::math::Vec2;
+use glam::{vec2, vec3, vec4, Mat4, Vec2, Vec3, Vec4};
 
 pub struct EmittersCache {}
 

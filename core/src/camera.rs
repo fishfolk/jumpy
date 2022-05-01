@@ -1,6 +1,7 @@
 pub use crate::backend_impl::camera::*;
-use crate::math::{Size, Vec2};
-use crate::prelude::window_size;
+use crate::math::{Mat4, Size, Vec2};
+use crate::prelude::{window_size, RenderTarget};
+use glam::vec3;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 
@@ -18,32 +19,39 @@ fn camera_index() -> usize {
 pub struct Camera(usize);
 
 impl Camera {
-    pub fn new<P: Into<Option<Vec2>>>(position: P, bounds: Size<f32>) -> Self {
+    pub fn new<P, B>(position: P, bounds: B) -> Self
+    where
+        P: Into<Option<Vec2>>,
+        B: Into<Option<Size<f32>>>,
+    {
         let id = unsafe { camera_index() };
 
         cameras().insert(id, CameraImpl::new(position, bounds));
 
         let camera = Camera(id);
 
-        if !is_active_camera_set() {
-            set_active_camera(camera);
+        if !is_main_camera_set() {
+            set_main_camera(camera);
         }
 
         camera
     }
 
-    pub fn delete(self) {
-        if is_active_camera_set() && active_camera().0 == self.0 {
+    pub fn destroy(self) {
+        if is_main_camera_set() && main_camera().0 == self.0 {
             unsafe { CAMERA = None };
         }
 
         cameras().remove(&self.0);
     }
-}
 
-impl Default for Camera {
-    fn default() -> Self {
-        Camera::new(None, window_size())
+    pub fn projection(&self) -> Mat4 {
+        let origin = Mat4::from_translation(vec3(-self.position.x, -self.position.y, 0.0));
+        let rotation = Mat4::from_axis_angle(vec3(0.0, 0.0, 1.0), self.rotation.to_radians());
+        let scale = Mat4::from_scale(vec3(self.zoom.x, self.zoom.y, 1.0));
+        let offset = Mat4::from_translation(vec3(-0.0, -0.0, 0.0));
+
+        offset * ((scale * rotation) * origin)
     }
 }
 
@@ -63,21 +71,33 @@ impl DerefMut for Camera {
 
 static mut CAMERAS: Option<HashMap<usize, CameraImpl>> = None;
 
-fn cameras() -> &'static mut HashMap<usize, CameraImpl> {
+pub fn cameras() -> &'static mut HashMap<usize, CameraImpl> {
     unsafe { CAMERAS.get_or_insert_with(HashMap::new) }
 }
 
 static mut CAMERA: Option<usize> = None;
 
-pub fn active_camera() -> Camera {
-    let id = unsafe { CAMERA.get_or_insert_with(|| Camera::default().0) };
+pub fn main_camera() -> Camera {
+    let id = unsafe {
+        CAMERA.get_or_insert_with(|| {
+            let mut camera = Camera::new(None, None);
+            camera.render_target = Some(RenderTarget::Context);
+            camera.0
+        })
+    };
     Camera(*id)
 }
 
-pub fn is_active_camera_set() -> bool {
+pub fn is_main_camera_set() -> bool {
     unsafe { CAMERA.is_some() }
 }
 
-pub fn set_active_camera(camera: Camera) {
-    unsafe { CAMERA = Some(camera.0) }
+pub fn set_main_camera<C: Into<Option<Camera>>>(camera: C) {
+    unsafe {
+        if let Some(camera) = camera.into() {
+            CAMERA = Some(camera.0);
+        } else {
+            CAMERA = None;
+        }
+    }
 }

@@ -1,8 +1,10 @@
+use std::collections::HashMap;
+use std::time::Duration;
+
 use hecs::World;
 use macroquad::math::Rect;
 use macroquad::prelude::scene::{self, Node, RefMut};
 use macroquad::time::get_frame_time;
-use std::collections::HashMap;
 
 use crate::camera::{camera_position, Camera};
 use crate::event::Event;
@@ -10,6 +12,10 @@ use crate::map::Map;
 use crate::prelude::Transform;
 use crate::state::{GameState, GameStateBuilderFn};
 use crate::{storage, Result};
+
+pub fn delta_time() -> Duration {
+    Duration::from_secs_f32(get_frame_time())
+}
 
 pub struct Game {
     event_queue: Vec<Event<()>>,
@@ -47,7 +53,7 @@ impl Node for Game {
     where
         Self: Sized,
     {
-        node.state.update(get_frame_time()).unwrap();
+        node.state.update(delta_time()).unwrap();
     }
 
     fn fixed_update(mut node: RefMut<Self>)

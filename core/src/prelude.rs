@@ -8,6 +8,7 @@ pub use crate::camera::*;
 pub use crate::channel::*;
 pub use crate::color::*;
 pub use crate::config::*;
+pub use crate::context::*;
 pub use crate::drawables::*;
 pub use crate::event::*;
 pub use crate::game::*;

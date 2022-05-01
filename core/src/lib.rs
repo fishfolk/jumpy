@@ -5,6 +5,7 @@ pub mod camera;
 pub mod channel;
 pub mod color;
 pub mod config;
+pub mod context;
 pub mod drawables;
 pub mod ecs;
 pub mod event;
@@ -35,6 +36,9 @@ pub use config::Config;
 pub use error::{Error, Result};
 
 pub use macros::*;
+
+pub(crate) const INT_SIZE: usize = 4;
+pub(crate) const FLOAT_SIZE: usize = 4;
 
 cfg_if! {
     if #[cfg(feature = "internal-backend")] {

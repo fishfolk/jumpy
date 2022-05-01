@@ -15,24 +15,48 @@ use crate::math::Vec2;
 
 use crate::audio::{apply_audio_config, stop_music};
 
+use crate::camera::{main_camera, Camera};
 use crate::color::{colors, Color};
 use crate::event::{Event, EventHandler};
-use crate::gl::create_gl_context;
+use crate::gl::init_gl_context;
 use crate::input::{
     apply_input_config, is_key_pressed, is_key_released, mouse_movement, mouse_position,
     update_gamepad_context, KeyCode,
 };
 use crate::math::Size;
 use crate::physics::{fixed_delta_time, physics_world};
+use crate::prelude::renderer::renderer;
 use crate::prelude::{input_event_handler, DefaultEventHandler};
-use crate::rendering::{clear_screen, end_frame};
+use crate::rendering::{apply_video_config, clear_screen, end_frame};
 use crate::window::{
-    apply_window_config, create_window, get_context_wrapper, get_window, WindowMode,
+    apply_window_config, create_window, get_context_wrapper, get_window, window_size, WindowMode,
     DEFAULT_WINDOW_TITLE,
 };
 use crate::{Config, Result};
 
 use crate::state::{GameState, GameStateBuilderFn};
+use crate::text::{draw_text, TextParams};
+use crate::viewport::{viewport, viewport_size};
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum FramePhase {
+    Update,
+    FixedUpdate,
+    Draw,
+}
+
+static mut FRAME_PHASE: FramePhase = FramePhase::Update;
+
+static mut DELTA_TIME: Duration = Duration::ZERO;
+static mut DRAW_DELTA_TIME: Duration = Duration::ZERO;
+
+pub fn delta_time() -> Duration {
+    unsafe { DELTA_TIME }
+}
+
+pub fn draw_delta_time() -> Duration {
+    unsafe { DRAW_DELTA_TIME }
+}
 
 pub struct Game<E: 'static + Debug> {
     config: Config,
@@ -108,6 +132,8 @@ impl<E: 'static + Debug> Game<E> {
             .map(|max_fps| Duration::from_secs_f32(1.0 / max_fps as f32));
 
         apply_window_config(&self.config.window);
+
+        apply_video_config(&self.config.video);
 
         apply_audio_config(&self.config.audio);
 
@@ -198,18 +224,29 @@ impl<E: 'static + Debug> Game<E> {
 
                     let delta_time = now.duration_since(game.last_update);
 
+                    unsafe {
+                        FRAME_PHASE = FramePhase::Update;
+                        DELTA_TIME = delta_time;
+                    };
+
+                    let delta_time_secs = delta_time.as_secs_f32();
+
                     game.get_state()
-                        .update(delta_time.as_secs_f32())
+                        .update(delta_time_secs)
                         .unwrap_or_else(|err| panic!("Error in game state update: {}", err));
 
                     game.last_update = now;
 
-                    game.fixed_update_accumulator += delta_time.as_secs_f32();
+                    game.fixed_update_accumulator += delta_time_secs;
 
                     let fixed_delta_time = fixed_delta_time().as_secs_f32();
 
                     while game.fixed_update_accumulator >= fixed_delta_time {
                         game.fixed_update_accumulator -= fixed_delta_time;
+
+                        unsafe {
+                            FRAME_PHASE = FramePhase::FixedUpdate;
+                        }
 
                         let integration_factor =
                             if game.fixed_update_accumulator >= fixed_delta_time {
@@ -232,6 +269,11 @@ impl<E: 'static + Debug> Game<E> {
                         let draw_delta_time = now.duration_since(game.last_draw);
 
                         if draw_delta_time >= fixed_draw_delta_time {
+                            unsafe {
+                                FRAME_PHASE = FramePhase::Draw;
+                                DRAW_DELTA_TIME = draw_delta_time;
+                            }
+
                             game.get_state()
                                 .draw(draw_delta_time.as_secs_f32())
                                 .unwrap_or_else(|err| {
@@ -239,6 +281,7 @@ impl<E: 'static + Debug> Game<E> {
                                 });
 
                             clear_screen(game.clear_color);
+
                             end_frame().unwrap();
 
                             game.last_draw = now;

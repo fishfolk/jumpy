@@ -2,7 +2,7 @@ use glow::{HasContext, NativeBuffer};
 
 use crate::gl::gl_context;
 use crate::prelude::Vertex;
-use crate::rendering::vertex::Index;
+use crate::rendering::vertex::{Index, VertexImpl};
 use crate::Result;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -38,7 +38,7 @@ pub struct Buffer<T> {
     _p: core::marker::PhantomData<T>,
 }
 
-impl Buffer<Vertex> {
+impl<V: VertexImpl> Buffer<V> {
     pub fn new_vertex() -> Result<Self> {
         let gl = gl_context();
         let gl_buffer = unsafe { gl.create_buffer()? };
@@ -61,7 +61,7 @@ impl Buffer<Index> {
 impl<T> Buffer<T> {
     pub fn new(kind: BufferKind) -> Result<Self> {
         let gl = gl_context();
-        let gl_buffer = unsafe { gl.create_buffer()? };
+        let gl_buffer = unsafe { gl.create_buffer() }?;
 
         Ok(Buffer {
             gl_buffer,
@@ -75,13 +75,6 @@ impl<T> Buffer<T> {
         let gl = gl_context();
         unsafe {
             gl.bind_buffer(self.kind.into(), Some(self.gl_buffer));
-        }
-    }
-
-    pub fn unbind(&self) {
-        let gl = gl_context();
-        unsafe {
-            gl.bind_buffer(self.kind.into(), None);
         }
     }
 

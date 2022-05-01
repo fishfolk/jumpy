@@ -82,6 +82,9 @@ pub fn create_window<E: 'static + Debug>(
 
     unsafe {
         let wrapper = ContextBuilder::new()
+            .with_depth_buffer(0)
+            .with_srgb(true)
+            .with_stencil_buffer(0)
             .with_vsync(config.video.is_vsync_enabled)
             .with_multisampling(config.video.msaa_samples.unwrap_or(0))
             .build_windowed(window_builder, event_loop)?

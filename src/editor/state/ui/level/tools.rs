@@ -26,7 +26,7 @@ impl Editor {
 
         if cursor_tile_pos.x >= 0. && cursor_tile_pos.y >= 0. {
             if let (Some(selected_tile), Some(selected_layer)) =
-                (&self.selected_tile, &self.selected_layer)
+                (&self.tile_palette, &self.selected_layer)
             {
                 let tileset = &self.map_resource.map.tilesets[&selected_tile.tileset];
                 let texture_id = storage::get::<Resources>().textures[&tileset.texture_id]

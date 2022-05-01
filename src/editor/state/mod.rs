@@ -69,37 +69,43 @@ pub struct ObjectSettings {
 }
 
 pub struct Editor {
-    pub selected_tool: EditorTool,
-    pub map_resource: MapResource,
-    pub selected_layer: Option<String>,
-    pub selected_tile: Option<TileSelection>,
-    pub is_parallax_enabled: bool,
-    pub should_draw_grid: bool,
-    pub object_being_placed: Option<ObjectSettings>,
+    map_resource: MapResource,
+
+    selected_tool: EditorTool,
+
+    is_parallax_enabled: bool,
+    should_draw_grid: bool,
+
+    selected_layer: Option<String>,
+    tile_palette: Option<TileSelection>,
+    object_being_placed: Option<ObjectSettings>,
 
     create_layer_window: Option<windows::CreateLayerWindow>,
     create_tileset_window: Option<windows::CreateTilesetWindow>,
-    pub menu_window: Option<windows::MenuWindow>,
+    menu_window: Option<windows::MenuWindow>,
     save_map_window: Option<windows::SaveMapWindow>,
 
-    pub selection: Option<SelectableEntity>,
+    selection: Option<SelectableEntity>,
 
     history: ActionHistory,
 
-    pub level_view: LevelView,
+    level_view: LevelView,
 
-    pub level_render_target: RenderTarget,
+    level_render_target: RenderTarget,
 }
 
 impl Editor {
     pub fn new(map_resource: MapResource) -> Self {
         Self {
             map_resource,
+
             selected_tool: EditorTool::Cursor,
+
             is_parallax_enabled: true,
             should_draw_grid: true,
+
             selected_layer: None,
-            selected_tile: None,
+            tile_palette: None,
             object_being_placed: None,
 
             create_layer_window: None,
@@ -109,12 +115,9 @@ impl Editor {
 
             selection: None,
 
-            history: ActionHistory::new(),
+            history: Default::default(),
 
-            level_view: LevelView {
-                position: Default::default(),
-                scale: 1.,
-            },
+            level_view: Default::default(),
 
             level_render_target: macroquad::prelude::render_target(1, 1),
         }
@@ -166,7 +169,7 @@ impl Editor {
                 self.history
                     .apply(action, &mut self.map_resource.map)
                     .unwrap();
-                self.selected_tile = None;
+                self.tile_palette = None;
             }
             UiAction::UpdateLayer { id, is_visible } => {
                 let action = actions::UpdateLayer::new(id, is_visible);
@@ -189,13 +192,13 @@ impl Editor {
                 self.selected_layer = Some(id);
             }
             UiAction::SelectTileset(id) => {
-                self.selected_tile = Some(TileSelection {
+                self.tile_palette = Some(TileSelection {
                     tileset: id,
                     tile_id: 0,
                 });
             }
             UiAction::SelectTile { id, tileset_id } => {
-                self.selected_tile = Some(TileSelection {
+                self.tile_palette = Some(TileSelection {
                     tileset: tileset_id,
                     tile_id: id,
                 });
@@ -284,7 +287,17 @@ impl Editor {
         }
     }
 
-    pub fn draw(&self) {
+    pub fn draw_level(&self) {
+        let camera = Some(Camera2D {
+            offset: vec2(-1., -1.),
+            target: self.level_view.position,
+            zoom,
+            render_target: Some(self.level_render_target),
+            ..Camera2D::default()
+        });
+
+        scene::set_camera(0, camera);
+
         let map = &self.map_resource.map;
         {
             map.draw_background(None, !self.is_parallax_enabled);
@@ -311,15 +324,6 @@ impl Editor {
                 self.level_view.scale / target_size.y,
             ) * 2.;
             self.level_view.position += input.camera_move_direction * CAMERA_PAN_SPEED;
-            let camera = Some(Camera2D {
-                offset: vec2(-1., -1.),
-                target: self.level_view.position,
-                zoom,
-                render_target: Some(self.level_render_target),
-                ..Camera2D::default()
-            });
-
-            scene::set_camera(0, camera);
         }
 
         // Undo/redo

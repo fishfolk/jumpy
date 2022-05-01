@@ -55,3 +55,9 @@ impl ActionHistory {
         self.redo_stack.clear();
     }
 }
+
+impl Default for ActionHistory {
+    fn default() -> Self {
+        Self::new()
+    }
+}

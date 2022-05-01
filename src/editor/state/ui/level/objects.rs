@@ -117,27 +117,6 @@ impl Editor {
                 PlaceObjectResult::Noop => (),
             }
         }
-
-        if self.selected_tool == EditorTool::ObjectPlacer
-            && (view.response.clicked_by(egui::PointerButton::Primary)
-                || view.response.dragged_by(egui::PointerButton::Primary))
-        {
-            let position =
-                view.screen_to_world_pos(view.ctx().input().pointer.interact_pos().unwrap());
-
-            self.object_being_placed = if let Some(settings) = self.object_being_placed.take() {
-                Some(ObjectSettings {
-                    position,
-                    ..settings
-                })
-            } else {
-                Some(ObjectSettings {
-                    position,
-                    kind: MapObjectKind::Item,
-                    id: None,
-                })
-            };
-        }
     }
 
     pub(super) fn handle_objects(&mut self, ui: &mut egui::Ui, view: &UiLevelView) {

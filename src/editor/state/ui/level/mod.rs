@@ -3,11 +3,11 @@ mod tools;
 
 use crate::{
     editor::{
-        state::EditorTool,
+        state::{EditorTool, ObjectSettings},
         util::{EguiCompatibleVec, EguiTextureHandler, Resizable},
         view::UiLevelView,
     },
-    map::MapLayerKind,
+    map::{MapLayerKind, MapObjectKind},
 };
 
 use super::super::Editor;
@@ -18,6 +18,7 @@ impl Editor {
             .frame(egui::Frame::none())
             .show(egui_ctx, |ui| {
                 let mut view = self.draw_level_tiles(ui);
+                let mut clicked_add_object = false;
 
                 view.response = view.response.context_menu(|ui| {
                     ui.menu_button("Select tool", |ui| {
@@ -40,16 +41,35 @@ impl Editor {
                                     ui.close_menu()
                                 }
                             }
-                            Some(MapLayerKind::ObjectLayer) => {
-                                if ui.button("Object Placer").clicked() {
-                                    self.selected_tool = EditorTool::ObjectPlacer;
-                                    ui.close_menu()
-                                }
-                            }
-                            None => (),
+                            _ => (),
                         }
                     });
+                    if let Some(MapLayerKind::ObjectLayer) = self.selected_layer_type() {
+                        if ui.button("Add object").clicked() {
+                            clicked_add_object = true;
+                            ui.close_menu()
+                        }
+                    }
                 });
+
+                if clicked_add_object {
+                    let position = view
+                        .screen_to_world_pos(view.ctx().input().pointer.interact_pos().unwrap());
+
+                    self.object_being_placed =
+                        if let Some(settings) = self.object_being_placed.take() {
+                            Some(ObjectSettings {
+                                position,
+                                ..settings
+                            })
+                        } else {
+                            Some(ObjectSettings {
+                                position,
+                                kind: MapObjectKind::Item,
+                                id: None,
+                            })
+                        };
+                }
 
                 self.handle_objects(ui, &view);
                 self.draw_level_overlays(ui, &view);

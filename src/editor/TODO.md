@@ -1,6 +1,6 @@
 - [ ] Object list
 - [ ] Spawnpoint placement
-- [ ] Object placement via rightclick context menu
+- [X] Object placement via rightclick context menu
 - [ ] Open/Import window
 - [ ] New map window
 - [ ] Theme support

@@ -21,7 +21,6 @@ use super::{
 pub enum EditorTool {
     Cursor,
     TilePlacer,
-    ObjectPlacer,
     SpawnPointPlacer,
     Eraser,
 }

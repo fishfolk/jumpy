@@ -28,8 +28,7 @@ impl Editor {
                     add_tool("Tiles", EditorTool::TilePlacer);
                     add_tool("Eraser", EditorTool::Eraser);
                 }
-                Some(MapLayerKind::ObjectLayer) => add_tool("Objects", EditorTool::ObjectPlacer),
-                None => (),
+                _ => (),
             }
         });
     }

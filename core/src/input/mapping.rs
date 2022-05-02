@@ -526,7 +526,7 @@ impl From<usize> for GamepadMapping {
 
 impl From<&GamepadId> for GamepadMapping {
     fn from(id: &GamepadId) -> Self {
-        let id: usize = id.into();
+        let id: usize = (*id).into();
         id.into()
     }
 }

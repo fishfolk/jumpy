@@ -160,7 +160,7 @@ impl Editor {
         // Draw selection last (Special case)
         if let Some(SelectableEntity {
             kind: SelectableEntityKind::Object { index, layer_id },
-            drag_data,
+            mut drag_data,
         }) = self.selection.take()
         {
             let resources = storage::get::<Resources>();
@@ -171,7 +171,7 @@ impl Editor {
             if let Some(DragData {
                 new_pos,
                 cursor_offset,
-            }) = drag_data
+            }) = drag_data.take()
             {
                 draw_object(object, new_pos, view, &resources, 1.);
                 let response = &view.response;
@@ -181,15 +181,9 @@ impl Editor {
                         ui.input().pointer.interact_pos().unwrap() + cursor_offset,
                     );
 
-                    self.selection = Some(SelectableEntity {
-                        drag_data: Some(DragData {
-                            new_pos: cursor_level_pos,
-                            cursor_offset,
-                        }),
-                        kind: SelectableEntityKind::Object {
-                            index,
-                            layer_id: layer_id.clone(),
-                        },
+                    drag_data = Some(DragData {
+                        new_pos: cursor_level_pos,
+                        cursor_offset,
                     });
                 }
                 if response.drag_released() {
@@ -198,16 +192,17 @@ impl Editor {
                         layer_id: layer_id.clone(),
                         position: macroquad::math::vec2(new_pos.x, new_pos.y),
                     });
-                    self.selection = Some(SelectableEntity {
-                        drag_data: None,
-                        kind: SelectableEntityKind::Object { index, layer_id },
-                    });
                 }
 
                 is_being_dragged = true;
             } else {
                 is_being_dragged = false;
             }
+
+            self.selection = Some(SelectableEntity {
+                drag_data,
+                kind: SelectableEntityKind::Object { index, layer_id },
+            });
 
             let (dest, _is_valid) = draw_object(
                 object,

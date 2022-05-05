@@ -8,6 +8,8 @@ use crate::{
     map::MapLayerKind,
 };
 
+use super::TABLE_ROW_HEIGHT;
+
 impl Editor {
     pub(super) fn draw_layer_info(&mut self, ui: &mut egui::Ui) {
         ui.heading("Layers");
@@ -37,9 +39,8 @@ impl Editor {
                     });
                 })
                 .body(|body| {
-                    let row_height = 18.0;
                     body.rows(
-                        row_height,
+                        TABLE_ROW_HEIGHT,
                         self.map_resource.map.draw_order.len(),
                         |row_index, mut row| {
                             let layer_name = &self.map_resource.map.draw_order[row_index];

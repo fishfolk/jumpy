@@ -1,4 +1,4 @@
-- [ ] Object list
+- [X] Object list
 - [ ] Spawnpoint placement
 - [X] Object placement via rightclick context menu
 - [ ] Moving camera via middle click

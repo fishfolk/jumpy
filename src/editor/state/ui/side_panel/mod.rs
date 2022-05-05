@@ -6,6 +6,8 @@ use crate::map::MapLayerKind;
 
 use super::super::Editor;
 
+pub const TABLE_ROW_HEIGHT: f32 = 18.0;
+
 impl Editor {
     pub(super) fn draw_side_panel(&mut self, egui_ctx: &egui::Context) {
         egui::SidePanel::new(egui::containers::panel::Side::Right, "Side panel").show(
@@ -22,7 +24,7 @@ impl Editor {
                                 self.draw_tileset_info(ui);
                             }
                             MapLayerKind::ObjectLayer => {
-                                self.draw_object_info(ui);
+                                self.draw_object_info(ui, layer);
                             }
                         }
                     }

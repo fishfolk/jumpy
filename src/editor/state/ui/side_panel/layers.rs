@@ -56,7 +56,11 @@ impl Editor {
                                 .clicked();
                             clicked |= row
                                 .col(|ui| {
-                                    ui.label(layer_name);
+                                    if self.selected_layer.as_ref() == Some(layer_name) {
+                                        ui.label(format!("[selected] {}", layer_name));
+                                    } else {
+                                        ui.label(layer_name);
+                                    }
                                 })
                                 .clicked();
                             let mut is_visible = layer.is_visible;

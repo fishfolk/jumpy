@@ -248,7 +248,7 @@ checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 [[package]]
 name = "egui"
 version = "0.18.1"
-source = "git+https://github.com/aleokdev/egui#57bbde4460106f819044f4a2507caa6c0b9eccaa"
+source = "git+https://github.com/aleokdev/egui#3c39b807317e640a5437b6e0280b4dccea0e431d"
 dependencies = [
  "ahash 0.7.6",
  "epaint",
@@ -280,7 +280,7 @@ dependencies = [
 [[package]]
 name = "egui_extras"
 version = "0.18.0"
-source = "git+https://github.com/aleokdev/egui#57bbde4460106f819044f4a2507caa6c0b9eccaa"
+source = "git+https://github.com/aleokdev/egui#3c39b807317e640a5437b6e0280b4dccea0e431d"
 dependencies = [
  "egui",
 ]
@@ -288,7 +288,7 @@ dependencies = [
 [[package]]
 name = "emath"
 version = "0.18.0"
-source = "git+https://github.com/aleokdev/egui#57bbde4460106f819044f4a2507caa6c0b9eccaa"
+source = "git+https://github.com/aleokdev/egui#3c39b807317e640a5437b6e0280b4dccea0e431d"
 dependencies = [
  "bytemuck",
 ]
@@ -296,7 +296,7 @@ dependencies = [
 [[package]]
 name = "epaint"
 version = "0.18.1"
-source = "git+https://github.com/aleokdev/egui#57bbde4460106f819044f4a2507caa6c0b9eccaa"
+source = "git+https://github.com/aleokdev/egui#3c39b807317e640a5437b6e0280b4dccea0e431d"
 dependencies = [
  "ab_glyph",
  "ahash 0.7.6",
@@ -439,9 +439,9 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
-version = "0.12.0"
+version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c21d40587b92fa6a6c6e3c1bdbf87d75511db5672f9c93175574b3a00df1758"
+checksum = "db0d4cf898abf0081f964436dc980e96670a0f36863e4b83aaacdb65c9d7ccc3"
 dependencies = [
  "ahash 0.7.6",
 ]
@@ -452,7 +452,7 @@ version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8d4e8eb4d5dd2ea100ffbb4eb6814f4294a7362fcafbc5c1c4c015b41d16f424"
 dependencies = [
- "hashbrown 0.12.0",
+ "hashbrown 0.12.1",
  "spin",
 ]
 
@@ -563,9 +563,9 @@ dependencies = [
 
 [[package]]
 name = "log"
-version = "0.4.16"
+version = "0.4.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6389c490849ff5bc16be905ae24bc913a9c8892e19b2341dbc175e14c341c2b8"
+checksum = "abb12e687cfb44aa40f41fc3978ef76448f9b6038cad6aef4259d3c095a2382e"
 dependencies = [
  "cfg-if",
 ]
@@ -761,9 +761,9 @@ dependencies = [
 
 [[package]]
 name = "num-traits"
-version = "0.2.14"
+version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9a64b1ec5cda2586e284722486d802acf1f7dbdc623e2bfc57e65ca1cd099290"
+checksum = "578ede34cf02f8924ab9447f50c28075b4d3e5b269972345e7e0372b38c6cdcd"
 dependencies = [
  "autocfg",
 ]
@@ -1078,9 +1078,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.80"
+version = "1.0.81"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f972498cf015f7c0746cac89ebe1d6ef10c293b94175a243a2d9442c163d9944"
+checksum = "9b7ce2b32a1aed03c558dc61a5cd328f15aff2dbc17daad8fb8af04d2100e15c"
 dependencies = [
  "itoa",
  "ryu",
@@ -1236,9 +1236,9 @@ checksum = "c74c96594835e10fa545e2a51e8709f30b173a092bfd6036ef2cec53376244f3"
 
 [[package]]
 name = "unicode-xid"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8ccb82d61f80a663efe1f787a51b16b5a51e3314d6ac365b08639f52387b33f3"
+checksum = "957e51f3646910546462e67d5f7599b9e4fb8acdd304b087a6494730f9eebf04"
 
 [[package]]
 name = "uuid"

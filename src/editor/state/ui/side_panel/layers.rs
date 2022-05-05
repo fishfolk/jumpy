@@ -46,28 +46,43 @@ impl Editor {
                             let layer_name = &self.map_resource.map.draw_order[row_index];
                             let layer = &self.map_resource.map.layers[layer_name];
                             let mut clicked = false;
+                            let is_selected = self.selected_layer.as_ref() == Some(layer_name);
 
                             clicked |= row
                                 .col(|ui| {
-                                    ui.label(match layer.kind {
+                                    let mut label = egui::RichText::new(match layer.kind {
                                         MapLayerKind::TileLayer => "T",
                                         MapLayerKind::ObjectLayer => "O",
                                     });
+
+                                    if is_selected {
+                                        label = label.strong();
+                                    }
+
+                                    ui.label(label);
                                 })
                                 .clicked();
                             clicked |= row
                                 .col(|ui| {
-                                    if self.selected_layer.as_ref() == Some(layer_name) {
-                                        ui.label(format!("[selected] {}", layer_name));
-                                    } else {
-                                        ui.label(layer_name);
+                                    let mut label = egui::RichText::new(layer_name);
+
+                                    if is_selected {
+                                        label = label.strong();
                                     }
+
+                                    ui.label(label);
                                 })
                                 .clicked();
                             let mut is_visible = layer.is_visible;
                             clicked |= row
                                 .col(|ui| {
-                                    if ui.checkbox(&mut is_visible, "Visible").clicked() {
+                                    let mut label = egui::RichText::new("Visible");
+
+                                    if is_selected {
+                                        label = label.strong();
+                                    }
+
+                                    if ui.checkbox(&mut is_visible, label).clicked() {
                                         action.then_do_some(UiAction::UpdateLayer {
                                             id: layer_name.clone(),
                                             is_visible,

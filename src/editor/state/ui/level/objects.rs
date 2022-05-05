@@ -151,11 +151,7 @@ impl Editor {
             }
         }
 
-        if let Some(to_select) = to_select {
-            self.apply_action(UiAction::SelectEntity(to_select));
-        } else if ui.input().pointer.any_pressed() {
-            self.apply_action(UiAction::DeselectObject);
-        }
+        let mut selection_dest = None;
 
         // Draw selection last (Special case)
         if let Some(SelectableEntity {
@@ -211,6 +207,7 @@ impl Editor {
                 &resources,
                 if is_being_dragged { 0.5 } else { 1.0 },
             );
+            selection_dest = Some(dest);
 
             view.painter().add(egui::Shape::rect_stroke(
                 dest,
@@ -221,6 +218,16 @@ impl Editor {
             if let Some(action) = action_to_apply {
                 self.apply_action(action);
             }
+        }
+
+        if let Some(to_select) = to_select {
+            self.apply_action(UiAction::SelectEntity(to_select));
+        } else if view.response.clicked()
+            && !selection_dest
+                .map(|d| d.contains(ui.input().pointer.interact_pos().unwrap()))
+                .unwrap_or(false)
+        {
+            self.apply_action(UiAction::DeselectObject);
         }
     }
 

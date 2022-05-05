@@ -27,7 +27,7 @@ impl Editor {
             }
 
             let response = egui::Window::new("Placing object")
-                .fixed_pos(position)
+                .current_pos(position)
                 .collapsible(false)
                 .resizable(false)
                 .show(view.ctx(), |ui| {
@@ -107,7 +107,11 @@ impl Editor {
                 });
 
             let result = response
-                .and_then(|r| r.inner.map(|r| r.inner))
+                .and_then(|r| {
+                    settings.position = view.screen_to_world_pos(r.response.rect.min);
+
+                    r.inner.map(|r| r.inner)
+                })
                 .unwrap_or(PlaceObjectResult::Noop);
 
             match result {

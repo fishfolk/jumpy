@@ -11,7 +11,7 @@ use crate::{
         util::{EguiCompatibleVec, EguiTextureHandler, MqCompatibleVec},
         view::UiLevelView,
     },
-    map::{MapLayer, MapObject, MapObjectKind},
+    map::{MapLayer, MapLayerKind, MapObject, MapObjectKind},
     AnimatedSpriteMetadata, Resources,
 };
 
@@ -31,6 +31,18 @@ impl Editor {
                 .collapsible(false)
                 .resizable(false)
                 .show(view.ctx(), |ui| {
+                    let target_layer = self
+                        .selected_layer
+                        .as_ref()
+                        .and_then(|id| self.map_resource.map.layers.get(id))
+                        .filter(|layer| layer.kind == MapLayerKind::ObjectLayer);
+
+                    if let Some(target) = target_layer {
+                        ui.label(format!("Within layer selection: {}", target.id));
+                    } else {
+                        ui.label(format!("Select an object layer"));
+                    }
+
                     egui::ComboBox::new("object_kind", "Kind")
                         .selected_text(format!("{}", settings.kind))
                         .show_ui(ui, |ui| {
@@ -79,8 +91,10 @@ impl Editor {
                         });
 
                     ui.horizontal(|ui| {
-                        let create_button =
-                            ui.add_enabled(settings.id.is_some(), egui::Button::new("Create"));
+                        let create_button = ui.add_enabled(
+                            settings.id.is_some() && target_layer.is_some(),
+                            egui::Button::new("Create"),
+                        );
                         if create_button.clicked() {
                             return PlaceObjectResult::Create;
                         }
@@ -101,7 +115,6 @@ impl Editor {
                     let id = settings.id.as_ref().unwrap().clone();
                     let kind = settings.kind;
                     let position = settings.position.into_macroquad();
-                    // TODO: Include layer id in object settings & render it in window as well
                     let layer_id = self.selected_layer.as_ref().unwrap().clone();
                     self.apply_action(UiAction::CreateObject {
                         id,

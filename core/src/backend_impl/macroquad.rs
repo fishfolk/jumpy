@@ -22,11 +22,8 @@ pub mod error;
 #[path = "macroquad/color.rs"]
 pub mod color;
 
-#[path = "macroquad/rendering.rs"]
-pub mod rendering;
-
-#[path = "macroquad/viewport.rs"]
-pub mod viewport;
+#[path = "macroquad/render.rs"]
+pub mod render;
 
 #[path = "macroquad/camera.rs"]
 pub mod camera;

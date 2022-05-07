@@ -1,10 +1,11 @@
 use ff_core::prelude::*;
+use std::ops::Deref;
 
-use ff_core::gui::{get_gui_theme, ELEMENT_MARGIN, theme::LIST_BOX_ENTRY_HEIGHT};
+use ff_core::gui::{get_gui_theme, theme::LIST_BOX_ENTRY_HEIGHT, ELEMENT_MARGIN};
 use ff_core::macroquad::hash;
-use ff_core::macroquad::ui::{Ui, widgets};
+use ff_core::macroquad::ui::{widgets, Ui};
+use ff_core::map::{get_map, iter_maps, Map};
 
-use ff_core::map::Map;
 use crate::GuiTheme;
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
@@ -70,8 +71,7 @@ impl Window for LoadMapWindow {
                 let preview_size = map_resource.preview.size();
 
                 let mut width = size.x;
-                let mut height =
-                    (width / preview_size.width) * preview_size.height;
+                let mut height = (width / preview_size.width) * preview_size.height;
 
                 let max_height = size.y - LIST_BOX_ENTRY_HEIGHT - (ELEMENT_MARGIN * 2.0);
 
@@ -83,7 +83,7 @@ impl Window for LoadMapWindow {
 
                 let preview_position = vec2((size.x - width) / 2.0, btn_size.y + ELEMENT_MARGIN);
 
-                widgets::Texture::new(map_resource.preview.into())
+                widgets::Texture::new(map_resource.preview.deref().into())
                     .size(width, height)
                     .position(preview_position)
                     .ui(ui);

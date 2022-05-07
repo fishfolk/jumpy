@@ -1,4 +1,5 @@
 use std::ops;
+use std::ops::{Div, DivAssign, Mul, MulAssign};
 
 use crate::math::{AsIVec2, AsUVec2, AsVec2};
 use serde::{Deserialize, Serialize};
@@ -29,6 +30,186 @@ impl Size<f32> {
         res.width *= scale;
         res.height *= scale;
         res
+    }
+}
+
+impl Mul<f32> for Size<f32> {
+    type Output = Size<f32>;
+
+    fn mul(self, rhs: f32) -> Self::Output {
+        Size::new(self.width * rhs, self.height * rhs)
+    }
+}
+
+impl MulAssign<f32> for Size<f32> {
+    fn mul_assign(&mut self, rhs: f32) {
+        self.width *= rhs;
+        self.height *= rhs;
+    }
+}
+
+impl Div<f32> for Size<f32> {
+    type Output = Size<f32>;
+
+    fn div(self, rhs: f32) -> Self::Output {
+        Size::new(self.width / rhs, self.height / rhs)
+    }
+}
+
+impl DivAssign<f32> for Size<f32> {
+    fn div_assign(&mut self, rhs: f32) {
+        self.width /= rhs;
+        self.height /= rhs;
+    }
+}
+
+impl Mul<u32> for Size<u32> {
+    type Output = Size<u32>;
+
+    fn mul(self, rhs: u32) -> Self::Output {
+        Size::new(self.width * rhs, self.height * rhs)
+    }
+}
+
+impl MulAssign<u32> for Size<u32> {
+    fn mul_assign(&mut self, rhs: u32) {
+        self.width *= rhs;
+        self.height *= rhs;
+    }
+}
+
+impl Div<u32> for Size<u32> {
+    type Output = Size<u32>;
+
+    fn div(self, rhs: u32) -> Self::Output {
+        Size::new(self.width / rhs, self.height / rhs)
+    }
+}
+
+impl DivAssign<i32> for Size<i32> {
+    fn div_assign(&mut self, rhs: i32) {
+        self.width /= rhs;
+        self.height /= rhs;
+    }
+}
+
+impl Mul<i32> for Size<i32> {
+    type Output = Size<i32>;
+
+    fn mul(self, rhs: i32) -> Self::Output {
+        Size::new(self.width * rhs, self.height * rhs)
+    }
+}
+
+impl MulAssign<i32> for Size<i32> {
+    fn mul_assign(&mut self, rhs: i32) {
+        self.width *= rhs;
+        self.height *= rhs;
+    }
+}
+
+impl Div<i32> for Size<i32> {
+    type Output = Size<i32>;
+
+    fn div(self, rhs: i32) -> Self::Output {
+        Size::new(self.width / rhs, self.height / rhs)
+    }
+}
+
+impl DivAssign<u32> for Size<u32> {
+    fn div_assign(&mut self, rhs: u32) {
+        self.width /= rhs;
+        self.height /= rhs;
+    }
+}
+
+impl Mul<Vec2> for Size<f32> {
+    type Output = Size<f32>;
+
+    fn mul(self, rhs: Vec2) -> Self::Output {
+        Size::new(self.width * rhs.x, self.height * rhs.y)
+    }
+}
+
+impl MulAssign<Vec2> for Size<f32> {
+    fn mul_assign(&mut self, rhs: Vec2) {
+        self.width *= rhs.x;
+        self.height *= rhs.y;
+    }
+}
+
+impl Div<Vec2> for Size<f32> {
+    type Output = Size<f32>;
+
+    fn div(self, rhs: Vec2) -> Self::Output {
+        Size::new(self.width / rhs.x, self.height / rhs.y)
+    }
+}
+
+impl DivAssign<Vec2> for Size<f32> {
+    fn div_assign(&mut self, rhs: Vec2) {
+        self.width /= rhs.x;
+        self.height /= rhs.y;
+    }
+}
+
+impl Mul<IVec2> for Size<i32> {
+    type Output = Size<i32>;
+
+    fn mul(self, rhs: IVec2) -> Self::Output {
+        Size::new(self.width * rhs.x, self.height * rhs.y)
+    }
+}
+
+impl MulAssign<IVec2> for Size<i32> {
+    fn mul_assign(&mut self, rhs: IVec2) {
+        self.width *= rhs.x;
+        self.height *= rhs.y;
+    }
+}
+
+impl Div<IVec2> for Size<i32> {
+    type Output = Size<i32>;
+
+    fn div(self, rhs: IVec2) -> Self::Output {
+        Size::new(self.width / rhs.x, self.height / rhs.y)
+    }
+}
+
+impl DivAssign<IVec2> for Size<i32> {
+    fn div_assign(&mut self, rhs: IVec2) {
+        self.width /= rhs.x;
+        self.height /= rhs.y;
+    }
+}
+
+impl Mul<UVec2> for Size<u32> {
+    type Output = Size<u32>;
+
+    fn mul(self, rhs: UVec2) -> Self::Output {
+        Size::new(self.width * rhs.x, self.height * rhs.y)
+    }
+}
+
+impl MulAssign<UVec2> for Size<u32> {
+    fn mul_assign(&mut self, rhs: UVec2) {
+        self.width *= rhs.x;
+        self.height *= rhs.y;
+    }
+}
+
+impl Div<UVec2> for Size<u32> {
+    type Output = Size<u32>;
+
+    fn div(self, rhs: UVec2) -> Self::Output {
+        Size::new(self.width / rhs.x, self.height / rhs.y)
+    }
+}
+
+impl DivAssign<UVec2> for Size<u32> {
+    fn div_assign(&mut self, rhs: UVec2) {
+        self.width /= rhs.x;
+        self.height /= rhs.y;
     }
 }
 

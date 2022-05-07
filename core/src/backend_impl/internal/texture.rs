@@ -9,7 +9,7 @@ pub use crate::image::ImageFormat as TextureFormat;
 
 use crate::gl::gl_context;
 use crate::math::{vec2, Size, Vec2};
-use crate::rendering::renderer::Renderer;
+use crate::render::renderer::Renderer;
 use crate::result::Result;
 use crate::texture::{ColorFormat, TextureFilterMode, TextureKind};
 

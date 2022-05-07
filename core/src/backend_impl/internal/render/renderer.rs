@@ -12,9 +12,9 @@ use crate::math::{vec2, Rect, Size, Vec2};
 use crate::prelude::shader::ShaderKind;
 use crate::prelude::vertex::VertexLayout;
 use crate::prelude::viewport_size;
-use crate::rendering::shader::{Uniform, UniformType};
-use crate::rendering::vertex::{Index, VertexImpl};
-use crate::rendering::{
+use crate::render::shader::{Uniform, UniformType};
+use crate::render::vertex::{Index, VertexImpl};
+use crate::render::{
     Buffer, DrawTextureParams, RenderTarget, Shader, ShaderProgram, Vertex, VertexArray,
 };
 use crate::result::Result;

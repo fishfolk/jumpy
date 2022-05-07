@@ -5,14 +5,15 @@
 
 use crate::color::Color;
 use crate::storage;
+use std::ops::Deref;
 
 use super::{WINDOW_MARGIN_H, WINDOW_MARGIN_V};
 
-use crate::gui::{GuiTheme, Id, Ui, widgets};
 use crate::gui::theme::get_gui_theme;
-use crate::math::{UVec2, Vec2, vec2};
-use crate::rendering::draw_rectangle;
-use crate::resources::get_texture;
+use crate::gui::{widgets, GuiTheme, Id, Ui};
+use crate::math::{vec2, UVec2, Vec2};
+use crate::render::draw_rectangle;
+use crate::texture::get_texture;
 
 pub struct Panel {
     id: Id,
@@ -173,47 +174,47 @@ impl NewPanel {
                     let offset = vec2(x as f32 * Self::TEXTURE_SIZE, y as f32 * Self::TEXTURE_SIZE);
 
                     if x == 0 && y == 0 {
-                        widgets::Texture::new(upper_lh_corner.texture.into())
+                        widgets::Texture::new(upper_lh_corner.deref().into())
                             .position(self.position + offset)
                             .size(Self::TEXTURE_SIZE, Self::TEXTURE_SIZE)
                             .ui(ui);
                     } else if x == 0 && y == self.size.y - 1 {
-                        widgets::Texture::new(lower_lh_corner.texture.into())
+                        widgets::Texture::new(lower_lh_corner.deref().into())
                             .position(self.position + offset)
                             .size(Self::TEXTURE_SIZE, Self::TEXTURE_SIZE)
                             .ui(ui);
                     } else if x == self.size.x - 1 && y == 0 {
-                        widgets::Texture::new(upper_rh_corner.texture.into())
+                        widgets::Texture::new(upper_rh_corner.deref().into())
                             .position(self.position + offset)
                             .size(Self::TEXTURE_SIZE, Self::TEXTURE_SIZE)
                             .ui(ui);
                     } else if x == self.size.x - 1 && y == self.size.y - 1 {
-                        widgets::Texture::new(lower_rh_corner.texture.into())
+                        widgets::Texture::new(lower_rh_corner.deref().into())
                             .position(self.position + offset)
                             .size(Self::TEXTURE_SIZE, Self::TEXTURE_SIZE)
                             .ui(ui);
                     } else if x == 0 {
-                        widgets::Texture::new(lh_side.texture.into())
+                        widgets::Texture::new(lh_side.deref().into())
                             .position(self.position + offset)
                             .size(Self::TEXTURE_SIZE, Self::TEXTURE_SIZE)
                             .ui(ui);
                     } else if x == self.size.x - 1 {
-                        widgets::Texture::new(rh_side.texture.into())
+                        widgets::Texture::new(rh_side.deref().into())
                             .position(self.position + offset)
                             .size(Self::TEXTURE_SIZE, Self::TEXTURE_SIZE)
                             .ui(ui);
                     } else if y == 0 {
-                        widgets::Texture::new(top.texture.into())
+                        widgets::Texture::new(top.deref().into())
                             .position(self.position + offset)
                             .size(Self::TEXTURE_SIZE, Self::TEXTURE_SIZE)
                             .ui(ui);
                     } else if y == self.size.y - 1 {
-                        widgets::Texture::new(bottom.texture.into())
+                        widgets::Texture::new(bottom.deref().into())
                             .position(self.position + offset)
                             .size(Self::TEXTURE_SIZE, Self::TEXTURE_SIZE)
                             .ui(ui);
                     } else {
-                        widgets::Texture::new(bg.texture.into())
+                        widgets::Texture::new(bg.deref().into())
                             .position(self.position + offset)
                             .size(Self::TEXTURE_SIZE, Self::TEXTURE_SIZE)
                             .ui(ui);

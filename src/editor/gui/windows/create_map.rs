@@ -1,13 +1,12 @@
 use std::path::Path;
 
-use ff_core::prelude::*;
 use ff_core::macroquad::hash;
-use ff_core::macroquad::ui::{Ui, widgets};
+use ff_core::macroquad::ui::{widgets, Ui};
+use ff_core::prelude::*;
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 
-use ff_core::map::Map;
-use ff_core::resources::{map_name_to_filename, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION};
+use ff_core::map::{map_name_to_filename, Map, MAP_EXPORTS_DEFAULT_DIR, MAP_EXPORTS_EXTENSION};
 
 pub struct CreateMapWindow {
     params: WindowParams,

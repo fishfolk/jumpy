@@ -1,6 +1,6 @@
 use std::path::Path;
 
-pub use macroquad::prelude::ImageFormat as TextureFormat;
+pub use crate::image::ImageFormat as TextureFormat;
 
 use macroquad::texture::load_texture;
 
@@ -29,7 +29,7 @@ impl From<TextureFilterMode> for macroquad::texture::FilterMode {
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Texture2DImpl {
-    texture_impl: macroquad::texture::Texture2D,
+    mq_texture: macroquad::texture::Texture2D,
     pub kind: TextureKind,
     pub filter_mode: TextureFilterMode,
     frame_size: Option<Size<f32>>,
@@ -58,22 +58,30 @@ impl Texture2DImpl {
         texture_impl.set_filter(filter_mode.into());
 
         Ok(Texture2DImpl {
-            texture_impl,
+            mq_texture: texture_impl,
             kind,
             filter_mode,
             frame_size,
         })
     }
 
-    pub fn mq_texture(&self) -> macroquad::texture::Texture2D {
-        self.texture_impl
-    }
-
     pub fn size(&self) -> Size<f32> {
-        self.texture_impl.size()
+        Size::new(self.mq_texture.width(), self.mq_texture.height())
     }
 
     pub fn frame_size(&self) -> Size<f32> {
-        self.frame_size.unwrap_or(self.size())
+        self.frame_size.unwrap_or_else(|| self.size())
+    }
+}
+
+impl From<Texture2DImpl> for macroquad::texture::Texture2D {
+    fn from(texture: Texture2DImpl) -> Self {
+        texture.mq_texture
+    }
+}
+
+impl From<&Texture2DImpl> for macroquad::texture::Texture2D {
+    fn from(texture: &Texture2DImpl) -> Self {
+        texture.mq_texture
     }
 }

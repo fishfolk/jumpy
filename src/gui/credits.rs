@@ -4,7 +4,7 @@ use ff_core::input::{Button, GamepadContext};
 
 use ff_core::macroquad::window::{clear_background, next_frame};
 use ff_core::prelude::*;
-use ff_core::text::{draw_text, load_font, TextParams};
+use ff_core::text::{draw_text, get_font, TextParams};
 
 const TEXT_X_OFFSET: f32 = 370.0;
 const MAIN_HEADER_Y_OFFSET: f32 = 300.0;

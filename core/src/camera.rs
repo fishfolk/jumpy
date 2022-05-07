@@ -1,9 +1,12 @@
-pub use crate::backend_impl::camera::*;
-use crate::math::{Mat4, Size, Vec2};
-use crate::prelude::{window_size, RenderTarget};
-use glam::vec3;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
+
+pub use crate::backend_impl::camera::*;
+
+use crate::math::{vec2, vec3, Mat4, Size, Vec2};
+use crate::render::RenderTarget;
+use crate::viewport::Viewport;
+use crate::window::window_size;
 
 static mut NEXT_CAMERA_INDEX: usize = 0;
 
@@ -19,14 +22,17 @@ fn camera_index() -> usize {
 pub struct Camera(usize);
 
 impl Camera {
-    pub fn new<P, B>(position: P, bounds: B) -> Self
+    pub fn new<P, Z, R>(position: P, zoom: Z, render_target: R) -> Self
     where
         P: Into<Option<Vec2>>,
-        B: Into<Option<Size<f32>>>,
+        Z: Into<Option<f32>>,
+        R: Into<Option<RenderTarget>>,
     {
         let id = unsafe { camera_index() };
+        let position = position.into().unwrap_or(Vec2::ZERO);
+        let zoom = zoom.into().unwrap_or(1.0);
 
-        cameras().insert(id, CameraImpl::new(position, bounds));
+        cameras().insert(id, CameraImpl::new(position, zoom, render_target));
 
         let camera = Camera(id);
 
@@ -44,15 +50,6 @@ impl Camera {
 
         cameras().remove(&self.0);
     }
-
-    pub fn projection(&self) -> Mat4 {
-        let origin = Mat4::from_translation(vec3(-self.position.x, -self.position.y, 0.0));
-        let rotation = Mat4::from_axis_angle(vec3(0.0, 0.0, 1.0), self.rotation.to_radians());
-        let scale = Mat4::from_scale(vec3(self.zoom.x, self.zoom.y, 1.0));
-        let offset = Mat4::from_translation(vec3(-0.0, -0.0, 0.0));
-
-        offset * ((scale * rotation) * origin)
-    }
 }
 
 impl Deref for Camera {
@@ -69,6 +66,12 @@ impl DerefMut for Camera {
     }
 }
 
+impl Default for Camera {
+    fn default() -> Self {
+        Self::new(None, None, RenderTarget::Context)
+    }
+}
+
 static mut CAMERAS: Option<HashMap<usize, CameraImpl>> = None;
 
 pub fn cameras() -> &'static mut HashMap<usize, CameraImpl> {
@@ -80,8 +83,7 @@ static mut CAMERA: Option<usize> = None;
 pub fn main_camera() -> Camera {
     let id = unsafe {
         CAMERA.get_or_insert_with(|| {
-            let mut camera = Camera::new(None, None);
-            camera.render_target = Some(RenderTarget::Context);
+            let mut camera = Camera::new(None, None, RenderTarget::Context);
             camera.0
         })
     };
@@ -100,4 +102,8 @@ pub fn set_main_camera<C: Into<Option<Camera>>>(camera: C) {
             CAMERA = None;
         }
     }
+}
+
+pub fn camera_position() -> Vec2 {
+    main_camera().position
 }

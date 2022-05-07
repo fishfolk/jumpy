@@ -1,11 +1,12 @@
 use ff_core::prelude::*;
+use std::ops::Deref;
 
 use super::{EditorAction, EditorContext, Map, ToolbarElement, ToolbarElementParams};
 
-use ff_core::gui::ELEMENT_MARGIN;
 use crate::GuiTheme;
-use ff_core::macroquad::ui::{Ui, widgets};
 use ff_core::gui::get_gui_theme;
+use ff_core::gui::ELEMENT_MARGIN;
+use ff_core::macroquad::ui::{widgets, Ui};
 
 pub struct TilesetDetailsElement {
     params: ToolbarElementParams,
@@ -42,19 +43,24 @@ impl ToolbarElement for TilesetDetailsElement {
         if let Some(tileset_id) = &ctx.selected_tileset {
             let tileset = map.tilesets.get(tileset_id).unwrap();
 
-            let texture_entry = get_texture(&tileset.texture_id);
+            let texture = get_texture(&tileset.texture_id);
 
-            let grid_size = Size::new(tileset.grid_size.width as f32, tileset.grid_size.height as f32);
+            let grid_size = Size::new(
+                tileset.grid_size.width as f32,
+                tileset.grid_size.height as f32,
+            );
 
             let scaled_width = size.x;
-            let texture_size = texture_entry.texture.size();
+            let texture_size = texture.size();
 
-            let scaled_height =
-                (scaled_width / texture_size.width) * texture_size.height;
+            let scaled_height = (scaled_width / texture_size.width) * texture_size.height;
 
-            let scaled_tile_size = Size::new(scaled_width / grid_size.width, scaled_height / grid_size.height);
+            let scaled_tile_size = Size::new(
+                scaled_width / grid_size.width,
+                scaled_height / grid_size.height,
+            );
 
-            widgets::Texture::new(texture_entry.texture.into())
+            widgets::Texture::new(texture.deref().into())
                 .position(position)
                 .size(scaled_width, scaled_height)
                 .ui(ui);

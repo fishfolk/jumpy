@@ -1,3 +1,5 @@
+extern crate core;
+
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::future::Future;
@@ -239,7 +241,7 @@ async fn macroquad_main() -> Result<()> {
     use gui::MainMenuState;
 
     {
-        let _camera = Camera::new(None, window_size());
+        let _camera = Camera::default();
 
         let game = Game::new(MainMenuState::new())?;
 

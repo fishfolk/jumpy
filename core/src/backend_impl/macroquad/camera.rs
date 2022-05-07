@@ -1,13 +1,9 @@
 use macroquad::experimental::scene::camera_pos;
 
 use crate::math::Vec2;
-
-pub fn camera_position() -> Vec2 {
-    camera_pos()
-}
-
 use crate::noise::NoiseGenerator;
 use crate::prelude::*;
+use crate::render::RenderTarget;
 
 struct Shake {
     direction: (f32, f32),
@@ -27,42 +23,53 @@ enum ShakeType {
 }
 
 pub struct CameraImpl {
-    pub bounds: Rect,
+    pub position: Vec2,
+    pub zoom: f32,
+    pub rotation: f32,
+    pub render_target: Option<RenderTarget>,
     follow_buffer: Vec<(Vec2, f32)>,
     shake: Vec<Shake>,
     noisegen: NoiseGenerator,
     noisegen_position: f32,
-
-    pub manual: Option<(Vec2, f32)>,
+    position_override: Option<Vec2>,
+    zoom_override: Option<f32>,
 }
 
 impl CameraImpl {
     const BUFFER_CAPACITY: usize = 20;
 
-    pub fn new<P: Into<Option<Vec2>>>(position: P, size: Size<f32>) -> CameraImpl {
+    pub fn new<P, Z, R>(position: P, zoom: Z, render_target: R) -> CameraImpl
+    where
+        P: Into<Option<Vec2>>,
+        Z: Into<Option<f32>>,
+        R: Into<Option<RenderTarget>>,
+    {
         let position = position.into().unwrap_or(Vec2::ZERO);
-
-        let bounds = Rect::new(position.x, position.y, size.width, size.height);
+        let zoom = zoom.into().unwrap_or(1.0);
 
         CameraImpl {
-            bounds,
+            position,
+            zoom,
+            rotation: 0.0,
+            render_target: render_target.into(),
             follow_buffer: vec![],
             shake: vec![],
-            manual: None,
+            position_override: None,
+            zoom_override: None,
             noisegen: NoiseGenerator::new(5),
             noisegen_position: 5.0,
         }
     }
-}
 
-impl Default for CameraImpl {
-    fn default() -> Self {
-        Self::new(None, window_size())
+    pub fn set_overrides<P, Z>(&mut self, position: P, zoom: Z)
+    where
+        P: Into<Option<Vec2>>,
+        Z: Into<Option<f32>>,
+    {
+        self.position_override = position.into();
+        self.zoom_override = zoom.into();
     }
-}
 
-#[allow(dead_code)]
-impl CameraImpl {
     pub fn shake_noise(&mut self, magnitude: f32, length: i32, frequency: f32) {
         self.shake.push(Shake {
             direction: (1.0, 1.0),
@@ -204,14 +211,19 @@ impl CameraImpl {
 
             let mut zoom = scale.y;
 
+            let viewport_size = self.viewport_size();
+
             // bottom camera bound
-            if scale.y / 2. + middle_point.y > self.bounds.height {
-                middle_point.y = self.bounds.height - scale.y / 2.0;
+            if scale.y / 2. + middle_point.y > viewport_size.height {
+                middle_point.y = viewport_size.height - scale.y / 2.0;
             }
 
-            if let Some((override_target, override_zoom)) = self.manual {
-                middle_point = override_target;
-                zoom = override_zoom;
+            if let Some(override_position) = self.position_override {
+                middle_point = override_position;
+            }
+
+            if let Some(zoom_override) = self.zoom_override {
+                zoom = zoom_override;
             }
 
             self.follow_buffer.insert(0, (middle_point, zoom));
@@ -229,11 +241,11 @@ impl CameraImpl {
             (sum_pos.0 / self.follow_buffer.len() as f64) as f32,
             (sum_pos.1 / self.follow_buffer.len() as f64) as f32,
         );
-        let zoom = (sum_zoom / self.follow_buffer.len() as f64) as f32;
+        self.zoom = (sum_zoom / self.follow_buffer.len() as f64) as f32;
 
         let shake = self.get_shake();
         middle_point += shake.0;
-        let rotation = shake.1;
+        self.rotation = shake.1;
 
         use macroquad::camera::Camera2D;
         use macroquad::experimental::scene;
@@ -242,11 +254,28 @@ impl CameraImpl {
         // let zoom = 400.0;
         let macroquad_camera = Camera2D {
             target: middle_point,
-            zoom: vec2(1. / aspect, -1.0) / zoom * 2.0,
-            rotation,
+            zoom: vec2(1.0 / aspect, -1.0) / self.zoom * 2.0,
+            rotation: self.rotation,
             ..Camera2D::default()
         };
 
         scene::set_camera(0, Some(macroquad_camera));
+
+        self.position = camera_pos();
+    }
+
+    pub fn viewport(&self) -> Viewport {
+        let size = self.viewport_size();
+        Viewport::new(self.position.x, self.position.y, size.width, size.height)
+    }
+
+    pub fn viewport_size(&self) -> Size<f32> {
+        window_size() * self.zoom
+    }
+}
+
+impl Default for CameraImpl {
+    fn default() -> Self {
+        CameraImpl::new(None, None, RenderTarget::Context)
     }
 }

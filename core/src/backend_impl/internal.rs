@@ -25,14 +25,11 @@ pub mod texture;
 #[path = "internal/image.rs"]
 pub mod image;
 
-#[path = "internal/rendering/mod.rs"]
-pub mod rendering;
+#[path = "internal/render/mod.rs"]
+pub mod render;
 
 #[path = "internal/camera.rs"]
 pub mod camera;
-
-#[path = "internal/viewport.rs"]
-pub mod viewport;
 
 #[path = "internal/particles.rs"]
 pub mod particles;

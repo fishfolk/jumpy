@@ -1,15 +1,12 @@
 use std::any::TypeId;
 use std::cmp::Ordering;
 
-use ff_core::error::{Error, ErrorKind, Result};
 use ff_core::prelude::*;
 
 use crate::editor::gui::windows::Window;
-use ff_core::map::{MapBackgroundLayer, MapObject, MapObjectKind};
-use ff_core::{
-    map::{Map, MapLayer, MapLayerKind, MapTile, MapTileset},
-};
 use crate::GuiTheme;
+use ff_core::map::{Map, MapLayer, MapLayerKind, MapTile, MapTileset};
+use ff_core::map::{MapBackgroundLayer, MapObject, MapObjectKind};
 
 /// These are all the actions available for the GUI and other sub-systems of the editor.
 /// If you need to perform multiple actions in one call, use the `Batch` variant.
@@ -446,7 +443,6 @@ impl UndoableAction for CreateLayerAction {
     }
 }
 
-#[derive(Debug)]
 pub struct DeleteLayerAction {
     id: String,
     layer: Option<MapLayer>,
@@ -661,8 +657,8 @@ impl CreateTilesetAction {
 
 impl UndoableAction for CreateTilesetAction {
     fn apply(&mut self, map: &mut Map) -> Result<()> {
-        if let Some(texture_entry) = try_get_texture(&self.texture_id).cloned() {
-            let texture_size: Vec2 = texture_entry.texture.size().into();
+        if let Some(texture) = try_get_texture(&self.texture_id) {
+            let texture_size: Vec2 = texture.size().into();
 
             let mut first_tile_id = 1;
             for tileset in map.tilesets.values() {
@@ -1090,7 +1086,6 @@ impl UndoableAction for MoveSpawnPointAction {
     }
 }
 
-#[derive(Debug)]
 pub struct PlaceTileAction {
     id: u32,
     layer_id: String,
@@ -1197,7 +1192,6 @@ impl UndoableAction for PlaceTileAction {
     }
 }
 
-#[derive(Debug)]
 pub struct RemoveTileAction {
     layer_id: String,
     coords: UVec2,

@@ -1,11 +1,11 @@
 use ff_core::prelude::*;
 
-use ff_core::gui::{ComboBoxBuilder, ComboBoxValue};
 use ff_core::gui::combobox::ComboBoxVec;
+use ff_core::gui::{ComboBoxBuilder, ComboBoxValue};
 
-use ff_core::map::{Map, MapObjectKind};
 use ff_core::macroquad::hash;
-use ff_core::macroquad::ui::{Ui, widgets};
+use ff_core::macroquad::ui::{widgets, Ui};
+use ff_core::map::{iter_decoration, Map, MapObjectKind};
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 use crate::items::iter_items;
@@ -123,9 +123,7 @@ impl Window for CreateObjectWindow {
             .build(ui, &mut self.kind);
 
         let item_ids = match self.kind {
-            MapObjectKind::Item => iter_items()
-                .map(|(k, _)| k.as_str())
-                .collect::<Vec<&str>>(),
+            MapObjectKind::Item => iter_items().map(|(k, _)| k.as_str()).collect::<Vec<&str>>(),
             MapObjectKind::Environment => vec!["sproinger"],
             MapObjectKind::Decoration => iter_decoration()
                 .map(|(k, _)| k.as_str())

@@ -1,9 +1,11 @@
+pub mod render_target;
+
 use serde::{Deserialize, Serialize};
 
-pub use crate::backend_impl::rendering::*;
-
+pub use crate::backend_impl::render::*;
 use crate::color::Color;
 use crate::math::{Rect, Size, URect, Vec2};
+pub use render_target::RenderTarget;
 
 #[derive(Debug, Default, Clone)]
 pub struct DrawTextureParams {

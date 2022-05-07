@@ -1,3 +1,4 @@
+use std::ffi::OsStr;
 use std::ops::{Deref, DerefMut};
 
 pub use macroquad::texture::Image as MQImage;
@@ -27,11 +28,11 @@ impl ImageFormat {
         }
     }
 
-    pub fn from_extension(ext: S) -> Option<Self>
+    pub fn from_extension<S>(ext: S) -> Option<Self>
     where
         S: AsRef<OsStr>,
     {
-        image::ImageFormat::from_extension(ext)
+        macroquad::prelude::ImageFormat::from_extension(ext)
             .map(|f| Self::from_crate(f))
             .flatten()
     }
@@ -62,7 +63,8 @@ impl ImageImpl {
     where
         T: Into<Option<ImageFormat>>,
     {
-        let mq_image = macroquad::texture::Image::from_file_with_format(bytes, format)?;
+        let format = format.into().map(|f| f.into());
+        let mq_image = macroquad::texture::Image::from_file_with_format(bytes, format);
         Ok(ImageImpl(mq_image))
     }
 }

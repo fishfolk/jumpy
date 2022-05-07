@@ -9,9 +9,11 @@ use macroquad::time::get_frame_time;
 use crate::camera::{camera_position, Camera};
 use crate::event::Event;
 use crate::map::Map;
+use crate::physics::fixed_delta_time;
 use crate::prelude::Transform;
+use crate::result::Result;
 use crate::state::{GameState, GameStateBuilderFn};
-use crate::{storage, Result};
+use crate::storage;
 
 pub fn delta_time() -> Duration {
     Duration::from_secs_f32(get_frame_time())
@@ -53,7 +55,7 @@ impl Node for Game {
     where
         Self: Sized,
     {
-        node.state.update(delta_time()).unwrap();
+        node.state.update(get_frame_time()).unwrap();
     }
 
     fn fixed_update(mut node: RefMut<Self>)
@@ -67,6 +69,6 @@ impl Node for Game {
     where
         Self: Sized,
     {
-        node.state.draw(0.0).unwrap();
+        node.state.draw(get_frame_time()).unwrap();
     }
 }

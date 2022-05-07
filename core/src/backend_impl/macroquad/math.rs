@@ -1,4 +1,7 @@
-pub use macroquad::math::{ivec2, uvec2, vec2, IVec2, RectOffset, UVec2, Vec2};
+pub use macroquad::math::{
+    ivec2, ivec3, ivec4, uvec2, uvec3, uvec4, vec2, vec3, vec4, IVec2, IVec3, IVec4, Mat2, Mat3,
+    Mat4, RectOffset, UVec2, UVec3, UVec4, Vec2, Vec3, Vec4,
+};
 
 use crate::math::{AsIVec2, AsUVec2, AsVec2, Circle, Rect};
 

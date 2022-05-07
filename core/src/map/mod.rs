@@ -679,7 +679,7 @@ impl MapTileset {
 
         let tile_subdivisions = Self::default_tile_subdivisions();
 
-        let subtile_grid_size: Size<u32> = grid_size * tile_subdivisions.into();
+        let subtile_grid_size = grid_size * tile_subdivisions;
 
         let subtile_cnt = (subtile_grid_size.width * subtile_grid_size.height) as usize;
 

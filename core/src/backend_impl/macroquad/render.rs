@@ -1,10 +1,11 @@
 use macroquad::shapes::{draw_circle_lines, draw_rectangle_lines};
 use macroquad::texture::draw_texture_ex;
 use macroquad::window::{clear_background, next_frame};
+use std::ops::Deref;
 
 use crate::color::{colors, Color};
 use crate::math::{Circle, Rect, Vec2};
-use crate::rendering::DrawTextureParams;
+use crate::render::DrawTextureParams;
 use crate::texture::Texture2D;
 
 pub fn clear_screen<C: Into<Option<Color>>>(color: C) {
@@ -18,7 +19,7 @@ pub async fn end_frame() {
 pub fn draw_texture(x: f32, y: f32, texture: Texture2D, params: DrawTextureParams) {
     let color = params.tint.unwrap_or(colors::WHITE).into();
 
-    draw_texture_ex(texture.mq_texture(), x, y, color, params.into());
+    draw_texture_ex(texture.deref().into(), x, y, color, params.into());
 }
 
 impl From<DrawTextureParams> for macroquad::texture::DrawTextureParams {
@@ -55,5 +56,5 @@ pub fn draw_line(x: f32, y: f32, end_x: f32, end_y: f32, weight: f32, color: Col
 }
 
 pub fn fps() -> u32 {
-    macroquad::get_fps() as u32
+    macroquad::time::get_fps() as u32
 }

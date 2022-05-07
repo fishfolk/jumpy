@@ -1,4 +1,5 @@
 use ff_core::prelude::*;
+use std::ops::Deref;
 
 use ff_core::gui::combobox::{ComboBoxBuilder, ComboBoxValue, ComboBoxVec};
 use ff_core::gui::get_gui_theme;
@@ -8,7 +9,6 @@ use ff_core::macroquad::ui::{widgets, Ui};
 use super::{ButtonParams, EditorAction, EditorContext, Map, Window, WindowParams};
 use crate::GuiTheme;
 use ff_core::map::MapTileset;
-use ff_core::resources::TextureKind;
 
 pub struct TilesetPropertiesWindow {
     params: WindowParams,
@@ -26,20 +26,20 @@ impl TilesetPropertiesWindow {
             ..Default::default()
         };
 
-        let textures = iter_texture_ids_of_kind(TextureKind::Tileset).as_slice();
+        let textures = iter_texture_ids_of_kind(TextureKind::Tileset).collect::<Vec<_>>();
 
         TilesetPropertiesWindow {
             params,
             tileset_id: tileset_id.to_string(),
             autotile_mask: Vec::new(),
-            texture: textures.into(),
+            texture: textures.as_slice().into(),
             has_data: false,
         }
     }
 
     pub fn read_from_tileset(&mut self, map: &Map) {
         if let Some(tileset) = map.tilesets.get(&self.tileset_id) {
-            let subgrid_size = tileset.grid_size * tileset.tile_subdivisions.into();
+            let subgrid_size = tileset.grid_size * tileset.tile_subdivisions;
             let subtile_cnt = (subgrid_size.width * subgrid_size.height) as usize;
 
             self.texture.set_value(&tileset.texture_id);
@@ -62,31 +62,29 @@ impl TilesetPropertiesWindow {
         &mut self,
         ui: &mut Ui,
         position: Vec2,
-        size: Vec2,
+        size: Size<f32>,
         tileset: &MapTileset,
     ) -> Option<EditorAction> {
         let texture = get_texture(&tileset.texture_id);
 
         let texture_size = texture.size();
-        let tileset_texture_size = vec2(texture_size.width, texture_size.height);
 
-        let mut scaled_width = size.x;
-        let mut scaled_height = (scaled_width / tileset_texture_size.x) * tileset_texture_size.y;
-
-        if scaled_height > size.y {
-            scaled_height = size.y;
-            scaled_width = (scaled_height / tileset_texture_size.y) * tileset_texture_size.x;
-        }
-
-        let subgrid_size = tileset.grid_size * tileset.tile_subdivisions.into();
-
-        let scaled_subtile_size = Size::new(
-            scaled_width / subgrid_size.width as f32,
-            scaled_height / subgrid_size.height as f32,
+        let mut scaled_size = Size::new(
+            size.width,
+            (size.width / texture_size.width) * texture_size.height,
         );
 
-        widgets::Texture::new(texture.into())
-            .size(scaled_width, scaled_height)
+        if scaled_size.height > size.height {
+            scaled_size.height = size.height;
+            scaled_size.width = (scaled_size.height / texture_size.height) * texture_size.width;
+        }
+
+        let subgrid_size = (tileset.grid_size * tileset.tile_subdivisions);
+
+        let scaled_subtile_size = scaled_size / subgrid_size.as_f32();
+
+        widgets::Texture::new(texture.deref().into())
+            .size(scaled_size.width, scaled_size.height)
             .position(position)
             .ui(ui);
 

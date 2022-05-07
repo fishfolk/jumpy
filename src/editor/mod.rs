@@ -7,6 +7,7 @@ pub use camera::EditorCamera;
 
 pub mod gui;
 
+use ff_core::map::get_map;
 use ff_core::prelude::*;
 
 use gui::{
@@ -47,7 +48,7 @@ use crate::editor::gui::windows::{
     ObjectPropertiesWindow, SaveMapWindow, TilePropertiesWindow,
 };
 use ff_core::gui::SELECTION_HIGHLIGHT_COLOR;
-use ff_core::map::{Map, MapLayerKind, MapObject, MapObjectKind};
+use ff_core::map::{try_get_decoration, Map, MapLayerKind, MapObject, MapObjectKind};
 
 use crate::editor::input::{collect_editor_input, EditorInput};
 use crate::editor::tools::SpawnPointPlacementTool;
@@ -63,7 +64,7 @@ use ff_core::macroquad::experimental::scene::RefMut;
 use ff_core::macroquad::prelude::scene::Node;
 
 use crate::gui::MainMenuState;
-use ff_core::resources::{
+use ff_core::map::{
     create_map, delete_map, map_name_to_filename, save_map, MapResource, MAP_EXPORTS_DEFAULT_DIR,
     MAP_EXPORTS_EXTENSION,
 };

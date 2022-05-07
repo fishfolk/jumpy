@@ -1,20 +1,18 @@
 use glow::HasContext;
 
 pub mod buffer;
-pub mod render_target;
 pub mod renderer;
 pub mod shader;
 pub mod vertex;
 pub mod vertex_array;
 
 pub use buffer::Buffer;
-pub use render_target::RenderTarget;
 pub use shader::{Shader, ShaderProgram};
 pub use vertex::{Index, Vertex};
 pub use vertex_array::VertexArray;
 
 use crate::color::Color;
-use crate::rendering::DrawTextureParams;
+use crate::render::DrawTextureParams;
 use crate::result::Result;
 use crate::texture::Texture2D;
 

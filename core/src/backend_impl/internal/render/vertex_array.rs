@@ -1,7 +1,7 @@
 use glow::{HasContext, NativeVertexArray};
 
 use crate::gl::gl_context;
-use crate::rendering::vertex::{VertexImpl, VertexLayout};
+use crate::render::vertex::{VertexImpl, VertexLayout};
 use crate::result::Result;
 use crate::FLOAT_SIZE;
 

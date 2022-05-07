@@ -1,14 +1,15 @@
 use ff_core::prelude::*;
+use std::ops::Deref;
 
-use ff_core::map::{Map, MapLayerKind};
 use ff_core::gui::get_gui_theme;
+use ff_core::map::{Map, MapLayerKind};
 
 use super::{
     ButtonParams, EditorAction, EditorContext, Toolbar, ToolbarElement, ToolbarElementParams,
 };
-use ff_core::gui::ELEMENT_MARGIN;
 use crate::GuiTheme;
-use ff_core::macroquad::ui::{Ui, widgets};
+use ff_core::gui::ELEMENT_MARGIN;
+use ff_core::macroquad::ui::{widgets, Ui};
 
 pub struct LayerListElement {
     params: ToolbarElementParams,
@@ -89,9 +90,9 @@ impl ToolbarElement for LayerListElement {
             {
                 let texture = {
                     if layer.is_visible {
-                        get_texture("visibility_icon").texture
+                        get_texture("visibility_icon")
                     } else {
-                        get_texture("visibility_off_icon").texture
+                        get_texture("visibility_off_icon")
                     }
                 };
 
@@ -115,7 +116,7 @@ impl ToolbarElement for LayerListElement {
                     let texture_position =
                         vec2(btn_position.x + half_margin, btn_position.y + half_margin);
 
-                    widgets::Texture::new(texture.into())
+                    widgets::Texture::new(texture.deref().into())
                         .size(texture_size.x, texture_size.y)
                         .position(texture_position)
                         .ui(ui);

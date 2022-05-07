@@ -14,7 +14,7 @@ pub use uniform::*;
 use crate::error::ErrorKind;
 use crate::gl::gl_context;
 use crate::prelude::renderer::renderer;
-use crate::rendering::renderer::Renderer;
+use crate::render::renderer::Renderer;
 use crate::result::Result;
 use crate::texture::{Texture2D, TextureUnit};
 

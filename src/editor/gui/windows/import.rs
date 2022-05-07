@@ -1,12 +1,14 @@
 use ff_core::prelude::*;
 
-use ff_core::gui::{checkbox::Checkbox, get_gui_theme, ELEMENT_MARGIN, theme::LIST_BOX_ENTRY_HEIGHT};
+use ff_core::gui::{
+    checkbox::Checkbox, get_gui_theme, theme::LIST_BOX_ENTRY_HEIGHT, ELEMENT_MARGIN,
+};
 
 use ff_core::macroquad::hash;
-use ff_core::macroquad::ui::{Ui, widgets};
+use ff_core::macroquad::ui::{widgets, Ui};
 
-use ff_core::map::{Map, MapBackgroundLayer, MapTileset};
 use crate::GuiTheme;
+use ff_core::map::{get_map, Map, MapBackgroundLayer, MapTileset};
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 

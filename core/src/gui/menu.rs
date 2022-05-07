@@ -1,5 +1,6 @@
 use fishsticks::{Axis, Button, GamepadContext};
 use macroquad::hash;
+use macroquad::time::get_frame_time;
 use std::collections::HashMap;
 
 use crate::gui::{

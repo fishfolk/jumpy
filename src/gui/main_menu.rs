@@ -1,4 +1,5 @@
 use std::borrow::BorrowMut;
+use std::ops::Deref;
 
 use ff_core::prelude::*;
 
@@ -10,15 +11,15 @@ use ff_core::gui::{
     get_gui_theme, Menu, MenuEntry, MenuResult, Panel, WINDOW_BG_COLOR, WINDOW_MARGIN_H,
     WINDOW_MARGIN_V,
 };
-use ff_core::result::Result;
+use ff_core::map::{get_map, iter_maps, MapResource};
 
 use crate::player::{PlayerAnimations, PlayerControllerKind, PlayerParams};
 use crate::{build_state_for_game_mode, gui, GameMode, GuiTheme, Map};
+
 use ff_core::input::{is_gamepad_button_pressed, GameInputScheme};
 use ff_core::macroquad::ui::{root_ui, widgets};
 use ff_core::macroquad::window::next_frame;
 use ff_core::macroquad::{hash, ui};
-use ff_core::resources::MapResource;
 
 use crate::player::character::{get_character, iter_characters};
 
@@ -186,7 +187,7 @@ impl CharacterSelectState {
                         .map(|meta| meta.clone().into())
                         .collect::<Vec<_>>();
                     let params = meta.into();
-                    AnimatedSprite::new(texture, texture_res.frame_size(), &animations, params)
+                    AnimatedSprite::new(texture, texture.frame_size(), &animations, params)
                 })
                 .collect(),
             navigation_grace_timers: (0..player_cnt).map(|_| 0.0).collect(),
@@ -739,7 +740,8 @@ impl MainMenuState {
                         self.map_select_state.hovered = i as _;
                     }
 
-                    let texture: ff_core::macroquad::texture::Texture2D = map_entry.preview.into();
+                    let texture: ff_core::macroquad::texture::Texture2D =
+                        map_entry.preview.deref().into();
 
                     if widgets::Button::new(texture)
                         .size(rect.size())
@@ -780,7 +782,7 @@ impl MainMenuState {
                 let viewport_size = viewport_size();
                 let position = vec2((viewport_size.width - size.width) / 2.0, 35.0);
 
-                widgets::Texture::new(texture.into())
+                widgets::Texture::new(texture.deref().into())
                     .position(position)
                     .size(size.width, size.height)
                     .ui(&mut *root_ui());
@@ -885,7 +887,7 @@ impl GameState for MainMenuState {
     }
 
     fn begin(&mut self, _world: Option<World>) -> Result<()> {
-        self.header_texture = try_get_texture(HEADER_TEXTURE_ID).map(|res| res.texture);
+        self.header_texture = try_get_texture(HEADER_TEXTURE_ID);
 
         self.set_level(MainMenuLevel::Root);
 

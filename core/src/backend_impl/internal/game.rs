@@ -28,7 +28,7 @@ use crate::math::Size;
 use crate::physics::{fixed_delta_time, physics_world};
 use crate::prelude::renderer::renderer;
 use crate::prelude::{input_event_handler, DefaultEventHandler};
-use crate::rendering::{apply_video_config, clear_screen, end_frame};
+use crate::render::{apply_video_config, clear_screen, end_frame};
 use crate::result::Result;
 use crate::window::{
     apply_window_config, create_window, get_context_wrapper, get_window, window_size, WindowMode,

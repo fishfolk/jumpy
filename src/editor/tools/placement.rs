@@ -104,7 +104,7 @@ impl EditorTool for TilePlacementTool {
                             let position = map.to_position(coords);
 
                             let texture_coords = tileset.get_texture_coords(tile_id);
-                            let texture = get_texture(&tileset.texture_id).texture;
+                            let texture = get_texture(&tileset.texture_id);
 
                             let source_rect = Rect::new(
                                 texture_coords.x,

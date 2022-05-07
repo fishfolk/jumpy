@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::color::{colors, Color};
 use crate::math::{uvec2, vec2, AsUVec2, AsVec2, Rect, Size, URect, UVec2, Vec2};
-use crate::rendering::{draw_rectangle_outline, draw_texture, DrawTextureParams};
+use crate::render::{draw_rectangle_outline, draw_texture, DrawTextureParams};
 use crate::result::Result;
 use crate::storage;
 use crate::texture::Texture2D;

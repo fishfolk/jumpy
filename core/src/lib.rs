@@ -22,7 +22,7 @@ pub mod parsing;
 pub mod particles;
 pub mod physics;
 pub mod prelude;
-pub mod rendering;
+pub mod render;
 pub mod resources;
 pub mod result;
 pub mod state;

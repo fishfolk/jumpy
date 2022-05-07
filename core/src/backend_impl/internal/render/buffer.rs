@@ -2,7 +2,7 @@ use glow::{HasContext, NativeBuffer};
 
 use crate::gl::gl_context;
 use crate::prelude::Vertex;
-use crate::rendering::vertex::{Index, VertexImpl};
+use crate::render::vertex::{Index, VertexImpl};
 use crate::result::Result;
 use crate::FLOAT_SIZE;
 

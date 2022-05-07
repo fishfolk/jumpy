@@ -1,9 +1,7 @@
 use ff_core::prelude::*;
 
 use ff_core::gui::{get_gui_theme, theme::LIST_BOX_ENTRY_HEIGHT, ELEMENT_MARGIN};
-use ff_core::map::Map;
-use ff_core::map::MapBackgroundLayer;
-use ff_core::resources::TextureKind;
+use ff_core::map::{Map, MapBackgroundLayer};
 
 use ff_core::macroquad::hash;
 use ff_core::macroquad::ui::{widgets, Ui};
@@ -181,13 +179,15 @@ impl Window for BackgroundPropertiesWindow {
         )
         .position(vec2(0.0, (size.y * 0.5) + ELEMENT_MARGIN))
         .ui(ui, |ui| {
-            let mut textures = iter_texture_ids_of_kind(TextureKind::Background);
+            let mut textures =
+                iter_texture_ids_of_kind(TextureKind::Background).collect::<Vec<_>>();
 
             textures.sort_unstable();
 
             let mut texture_index = textures
+                .iter()
                 .enumerate()
-                .find_map(|(i, &id)| {
+                .find_map(|(i, id)| {
                     if let Some(texture_id) = &self.layer_texture_id {
                         if *id == *texture_id {
                             return Some(i);
@@ -197,6 +197,8 @@ impl Window for BackgroundPropertiesWindow {
                     None
                 })
                 .unwrap_or(0);
+
+            let texture_ids = textures.iter().map(|str| str.as_str()).collect::<Vec<_>>();
 
             widgets::ComboBox::new(hash!(id, "layer_texture_input"), &texture_ids)
                 .ratio(0.8)

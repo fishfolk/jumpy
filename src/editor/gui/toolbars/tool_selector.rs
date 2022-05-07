@@ -1,4 +1,5 @@
 use std::any::TypeId;
+use std::ops::Deref;
 
 use ff_core::prelude::*;
 
@@ -7,10 +8,13 @@ use super::{
 };
 
 use crate::editor::tools::EditorTool;
-use crate::{editor::tools::{get_tool_instance_of_id, EditorToolParams}, GuiTheme};
+use crate::{
+    editor::tools::{get_tool_instance_of_id, EditorToolParams},
+    GuiTheme,
+};
 
 use ff_core::gui::get_gui_theme;
-use ff_core::macroquad::ui::{Ui, widgets};
+use ff_core::macroquad::ui::{widgets, Ui};
 
 pub struct ToolSelectorElement {
     params: ToolbarElementParams,
@@ -114,9 +118,9 @@ impl ToolbarElement for ToolSelectorElement {
                 .size(size)
                 .ui(ui);
 
-            let texture_entry = get_texture(&params.icon_texture_id);
+            let texture = get_texture(&params.icon_texture_id);
 
-            widgets::Texture::new(texture_entry.texture.into())
+            widgets::Texture::new(texture.deref().into())
                 .position(position)
                 .size(size.x, size.y)
                 .ui(ui);

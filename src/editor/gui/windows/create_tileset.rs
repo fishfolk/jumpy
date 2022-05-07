@@ -1,7 +1,6 @@
 use ff_core::gui::combobox::{ComboBoxBuilder, ComboBoxValue, ComboBoxVec};
 use ff_core::map::Map;
 use ff_core::prelude::*;
-use ff_core::resources::TextureKind;
 
 use ff_core::macroquad::hash;
 use ff_core::macroquad::ui::{widgets, Ui};
@@ -22,14 +21,14 @@ impl CreateTilesetWindow {
             ..Default::default()
         };
 
-        let mut textures = iter_texture_ids_of_kind(TextureKind::Tileset).as_slice();
+        let mut textures = iter_texture_ids_of_kind(TextureKind::Tileset).collect::<Vec<_>>();
 
         textures.sort_unstable();
 
         CreateTilesetWindow {
             params,
             tileset_id: "Unnamed Tileset".to_string(),
-            texture: textures.into(),
+            texture: textures.as_slice().into(),
         }
     }
 }

@@ -166,6 +166,14 @@ pub fn iter_textures_with_ids() -> std::collections::hash_map::IntoIter<String, 
         .into_iter()
 }
 
+pub fn iter_texture_ids() -> IntoIter<String> {
+    unsafe { TEXTURE_IDS.get_or_insert_with(HashMap::new) }
+        .keys()
+        .cloned()
+        .collect::<Vec<_>>()
+        .into_iter()
+}
+
 pub fn iter_texture_ids_of_kind(kind: TextureKind) -> IntoIter<String> {
     iter_textures_with_ids()
         .filter_map(|(id, texture)| {

@@ -1,11 +1,11 @@
 use macroquad::miniquad::conf::Icon;
 use macroquad::window::Conf;
 
+use crate::config::Config;
 use crate::math::Size;
 use crate::video::resolutions::HD720;
 use crate::video::{Resolution, VideoConfig};
 use crate::window::{WindowConfig, WindowMode};
-use crate::Config;
 
 const DEFAULT_BORDERLESS_RESOLUTION: Resolution = HD720;
 

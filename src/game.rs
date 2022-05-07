@@ -41,8 +41,6 @@ use ff_core::particles::{draw_particles, update_particle_emitters};
 
 use crate::camera::update_camera;
 #[cfg(feature = "macroquad")]
-use ff_core::macroquad::time::delta_time;
-#[cfg(feature = "macroquad")]
 use ff_core::macroquad::ui::root_ui;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]

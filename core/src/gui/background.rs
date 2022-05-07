@@ -1,8 +1,9 @@
 use crate::macroquad::ui::{root_ui, widgets, Ui};
 use crate::math::{Size, Vec2};
 use crate::prelude::{draw_texture, viewport};
-use crate::rendering::DrawTextureParams;
-use crate::resources::get_texture;
+use crate::render::DrawTextureParams;
+use crate::texture::get_texture;
+use std::ops::Deref;
 
 use crate::storage;
 use crate::texture::Texture2D;
@@ -15,11 +16,9 @@ pub struct Background {
 }
 
 impl Background {
-    pub fn new(size: Size<f32>, position: Vec2, textures: &[TextureResource]) -> Self {
-        let textures = textures.to_vec();
-
+    pub fn new(size: Size<f32>, position: Vec2, textures: &[Texture2D]) -> Self {
         Background {
-            textures,
+            textures: textures.to_vec(),
             size,
             position,
         }
@@ -28,7 +27,7 @@ impl Background {
     #[cfg(feature = "macroquad-backend")]
     pub fn ui(&self, ui: &mut Ui) {
         for texture in &self.textures {
-            widgets::Texture::new(texture.into())
+            widgets::Texture::new(texture.deref().into())
                 .size(self.size.width, self.size.height)
                 .position(self.position)
                 .ui(ui);
@@ -40,7 +39,7 @@ impl Background {
             draw_texture(
                 self.position.x,
                 self.position.y,
-                texture,
+                *texture,
                 DrawTextureParams {
                     dest_size: Some(self.size),
                     ..Default::default()
@@ -58,7 +57,7 @@ pub fn draw_main_menu_background(is_ui: bool) {
         get_texture("background_04"),
     ];
 
-    let size = backgrounds[0].texture.size();
+    let size = backgrounds[0].size();
 
     let height = viewport().height as f32;
     let width = (height / size.height) * size.width;

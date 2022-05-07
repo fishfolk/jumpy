@@ -3,7 +3,8 @@ use glow::{HasContext, NativeBuffer};
 use crate::gl::gl_context;
 use crate::prelude::Vertex;
 use crate::rendering::vertex::{Index, VertexImpl};
-use crate::Result;
+use crate::result::Result;
+use crate::FLOAT_SIZE;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum BufferKind {
@@ -83,52 +84,32 @@ impl<T> Buffer<T> {
         self.length
     }
 
-    /// Set buffer data, resizing the buffer if necessary
-    pub fn set_data(&mut self, data: &[T]) {
+    /// Set buffer sub data, resizing the buffer if necessary
+    pub fn set_data(&mut self, offset: usize, data: &[T]) {
         self.bind();
 
         let target = self.kind.into();
 
         let gl = gl_context();
         unsafe {
-            let data: &[u8] = core::slice::from_raw_parts(
+            let data_len = data.len();
+
+            let bytes: &[u8] = core::slice::from_raw_parts(
                 data.as_ptr() as *const u8,
-                data.len() * core::mem::size_of::<T>(),
+                data_len * core::mem::size_of::<T>(),
             );
 
-            let data_length = data.len();
-
-            if data_length >= self.length {
-                gl.buffer_data_size(target, data_length as i32, glow::STREAM_DRAW);
-                self.length = data_length;
+            if data_len >= self.length {
+                gl.buffer_data_size(target, bytes.len() as i32 * 2, glow::STREAM_DRAW);
+                self.length = data_len;
             }
 
-            gl.buffer_sub_data_u8_slice(target, 0, data)
+            gl.buffer_sub_data_u8_slice(target, offset as i32, bytes)
         }
     }
 
-    /// Set buffer sub data, resizing the buffer if necessary
-    pub fn set_sub_data(&mut self, offset: usize, data: &[T]) {
-        self.bind();
-
-        let target = self.kind.into();
-
-        let gl = gl_context();
-        unsafe {
-            let data: &[u8] = core::slice::from_raw_parts(
-                data.as_ptr() as *const u8,
-                data.len() * core::mem::size_of::<T>(),
-            );
-
-            let data_length = offset + data.len();
-
-            if data_length >= self.length {
-                gl.buffer_data_size(target, data_length as i32, glow::STREAM_DRAW);
-                self.length = data_length;
-            }
-
-            gl.buffer_sub_data_u8_slice(target, offset as i32, data)
-        }
+    pub fn gl_buffer(&self) -> NativeBuffer {
+        self.gl_buffer
     }
 }
 

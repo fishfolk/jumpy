@@ -5,7 +5,6 @@ use ff_core::ecs::{Entity, World};
 use serde::{Deserialize, Serialize};
 
 use ff_core::prelude::*;
-use ff_core::Result;
 
 use crate::effects::active::spawn_active_effect;
 use crate::physics;
@@ -120,12 +119,12 @@ pub fn spawn_triggered_effect(
             .map(|a| a.into())
             .collect::<Vec<_>>();
 
-        let texture_res = get_texture(&meta.texture_id);
+        let texture = get_texture(&meta.texture_id);
 
         let mut drawable = Drawable::new_animated_sprite(
             TRIGGERED_EFFECT_DRAW_ORDER,
-            texture_res.texture,
-            texture_res.frame_size(),
+            texture,
+            texture.frame_size(),
             animations.as_slice(),
             meta.clone().into(),
         );

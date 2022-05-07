@@ -1274,19 +1274,16 @@ impl Node for Editor {
                     is_selected = index == i;
                 }
 
-                let texture_res = get_texture("spawn_point_icon");
+                let texture = get_texture("spawn_point_icon");
 
-                let frame_size = texture_res
-                    .meta
-                    .frame_size
-                    .unwrap_or_else(|| texture_res.texture.size());
+                let frame_size = texture.frame_size();
 
                 let source_rect = Rect::new(0.0, 0.0, frame_size.width, frame_size.height);
 
                 draw_texture(
                     position.x,
                     position.y,
-                    texture_res.texture,
+                    texture,
                     DrawTextureParams {
                         dest_size: Some(frame_size.into()),
                         source: Some(source_rect),
@@ -1360,11 +1357,10 @@ impl Node for Editor {
                             match object.kind {
                                 MapObjectKind::Item => {
                                     if let Some(meta) = try_get_item(&object.id) {
-                                        if let Some(texture_res) =
+                                        if let Some(texture) =
                                             try_get_texture(&meta.sprite.texture_id)
                                         {
-                                            let (texture, frame_size) =
-                                                (texture_res.texture, texture_res.frame_size());
+                                            let frame_size = texture.frame_size();
 
                                             let row = meta
                                                 .sprite
@@ -1410,15 +1406,14 @@ impl Node for Editor {
                                 }
                                 MapObjectKind::Decoration => {
                                     if let Some(params) = try_get_decoration(&object.id) {
-                                        if let Some(texture_res) =
+                                        if let Some(texture) =
                                             try_get_texture(&params.sprite.texture_id)
                                         {
                                             let position = object_position + params.sprite.offset;
 
                                             let tint = params.sprite.tint.unwrap_or(colors::WHITE);
 
-                                            let (texture, frame_size) =
-                                                (texture_res.texture, texture_res.frame_size());
+                                            let frame_size = texture.frame_size();
 
                                             let dest_size = params
                                                 .sprite
@@ -1455,12 +1450,9 @@ impl Node for Editor {
                                 }
                                 MapObjectKind::Environment => {
                                     if &object.id == "sproinger" {
-                                        let texture_res = get_texture("sproinger");
+                                        let texture = get_texture("sproinger");
 
-                                        let frame_size = texture_res
-                                            .meta
-                                            .frame_size
-                                            .unwrap_or_else(|| texture_res.texture.size().into());
+                                        let frame_size = texture.frame_size();
 
                                         let source_rect = Rect::new(
                                             0.0,
@@ -1472,7 +1464,7 @@ impl Node for Editor {
                                         draw_texture(
                                             object_position.x,
                                             object_position.y,
-                                            texture_res.texture,
+                                            texture,
                                             DrawTextureParams {
                                                 dest_size: Some(frame_size.into()),
                                                 source: Some(source_rect),
@@ -1597,8 +1589,8 @@ fn get_object_size(object: &MapObject) -> Size<f32> {
         }
         MapObjectKind::Decoration => {
             if let Some(meta) = try_get_decoration(&object.id) {
-                if let Some(texture_res) = try_get_texture(&meta.sprite.texture_id) {
-                    res = Some(texture_res.frame_size());
+                if let Some(texture) = try_get_texture(&meta.sprite.texture_id) {
+                    res = Some(texture.frame_size());
                 } else {
                     label = Some("INVALID TEXTURE ID".to_string());
                 }
@@ -1608,8 +1600,8 @@ fn get_object_size(object: &MapObject) -> Size<f32> {
         }
         MapObjectKind::Environment => {
             if &object.id == "sproinger" {
-                let texture_res = get_texture("sproinger");
-                res = Some(texture_res.frame_size());
+                let texture = get_texture("sproinger");
+                res = Some(texture.frame_size());
             } else {
                 label = Some("INVALID OBJECT ID".to_string())
             }

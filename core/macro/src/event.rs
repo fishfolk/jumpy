@@ -66,7 +66,7 @@ pub(crate) fn custom_events(core_crate: &Ident, event_type: Type) -> proc_macro:
             event_loop
         }
 
-        pub fn try_dispatch_event<E: Into<Event>>(event: E) -> #core_crate::Result<()> {
+        pub fn try_dispatch_event<E: Into<Event>>(event: E) -> #core_crate::result::Result<()> {
             let event = event.into();
             event_loop_proxy().send_event(event)?;
 

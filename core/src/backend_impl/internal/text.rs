@@ -6,9 +6,9 @@ use std::path::Path;
 use crate::color::{colors, Color};
 use crate::gl::gl_context;
 use crate::math::Size;
+use crate::result::Result;
 use crate::text::TextParams;
 use crate::viewport::viewport_size;
-use crate::Result;
 
 #[derive(Default, Copy, Clone, Debug, Eq, PartialEq)]
 pub struct Font(usize);

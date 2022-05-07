@@ -3,7 +3,7 @@ use std::time::Duration;
 
 use crate::map::{Map, MapLayer};
 use crate::math::{ivec2, vec2, Rect, Size, Vec2};
-use crate::Result;
+use crate::result::Result;
 
 const DEFAULT_PHYSICS_RESOLUTION: u32 = 120;
 

@@ -5,7 +5,6 @@ use ff_core::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use ff_core::prelude::*;
-use ff_core::Result;
 
 use crate::{PassiveEffect, PassiveEffectMetadata};
 

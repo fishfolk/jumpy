@@ -17,6 +17,7 @@ use crate::audio::{apply_audio_config, stop_music};
 
 use crate::camera::{main_camera, Camera};
 use crate::color::{colors, Color};
+use crate::config::Config;
 use crate::event::{Event, EventHandler};
 use crate::gl::init_gl_context;
 use crate::input::{
@@ -28,11 +29,11 @@ use crate::physics::{fixed_delta_time, physics_world};
 use crate::prelude::renderer::renderer;
 use crate::prelude::{input_event_handler, DefaultEventHandler};
 use crate::rendering::{apply_video_config, clear_screen, end_frame};
+use crate::result::Result;
 use crate::window::{
     apply_window_config, create_window, get_context_wrapper, get_window, window_size, WindowMode,
     DEFAULT_WINDOW_TITLE,
 };
-use crate::{Config, Result};
 
 use crate::state::{GameState, GameStateBuilderFn};
 use crate::text::{draw_text, TextParams};
@@ -274,13 +275,11 @@ impl<E: 'static + Debug> Game<E> {
                                 DRAW_DELTA_TIME = draw_delta_time;
                             }
 
+                            clear_screen(game.clear_color);
+
                             game.get_state()
                                 .draw(draw_delta_time.as_secs_f32())
-                                .unwrap_or_else(|err| {
-                                    panic!("Error in game state fixed draw: {}", err)
-                                });
-
-                            clear_screen(game.clear_color);
+                                .unwrap_or_else(|err| panic!("Error in game state draw: {}", err));
 
                             end_frame().unwrap();
 

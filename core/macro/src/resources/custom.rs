@@ -72,7 +72,7 @@ pub(crate) fn resource_loading(
 
     let mut load_resources_from = {
         let tokens = proc_macro::TokenStream::from(quote! {
-            async fn load_resources_from<P: AsRef<std::path::Path>>(path: P, is_required: bool, should_overwrite: bool) -> #core_crate::Result<()> {
+            async fn load_resources_from<P: AsRef<std::path::Path>>(path: P, is_required: bool, should_overwrite: bool) -> #core_crate::result::Result<()> {
                 Ok(())
             }
         });
@@ -82,13 +82,13 @@ pub(crate) fn resource_loading(
 
     let mut stmts: Vec<Stmt> = vec![
         parse_quote! { let path = path.as_ref(); },
-        parse_quote! { #core_crate::resources::load_particle_effects(&path, #extension, is_required, should_overwrite).await?; },
-        parse_quote! { #core_crate::resources::load_audio(&path, #extension, is_required, should_overwrite).await?; },
-        parse_quote! { #core_crate::resources::load_textures(&path, #extension, is_required, should_overwrite).await?; },
-        parse_quote! { #core_crate::resources::load_decoration(&path, #extension, is_required, should_overwrite).await?; },
-        parse_quote! { #core_crate::resources::load_maps(&path, #extension, is_required, should_overwrite).await?; },
-        parse_quote! { #core_crate::resources::load_images(&path, #extension, is_required, should_overwrite).await?; },
-        parse_quote! { #core_crate::resources::load_fonts(&path, #extension, is_required, should_overwrite).await?; },
+        parse_quote! { #core_crate::particles::load_particle_effects(&path, #extension, is_required, should_overwrite).await?; },
+        parse_quote! { #core_crate::audio::load_audio(&path, #extension, is_required, should_overwrite).await?; },
+        parse_quote! { #core_crate::texture::load_textures(&path, #extension, is_required, should_overwrite).await?; },
+        parse_quote! { #core_crate::map::load_decoration(&path, #extension, is_required, should_overwrite).await?; },
+        parse_quote! { #core_crate::map::load_maps(&path, #extension, is_required, should_overwrite).await?; },
+        parse_quote! { #core_crate::image::load_images(&path, #extension, is_required, should_overwrite).await?; },
+        parse_quote! { #core_crate::text::load_fonts(&path, #extension, is_required, should_overwrite).await?; },
         parse_quote! { use #core_crate::resources::{ResourceVec, ResourceMap}; },
         parse_quote! { let path = path.to_str().unwrap().to_string(); },
     ];
@@ -104,7 +104,7 @@ pub(crate) fn resource_loading(
     let mut res = load_resources_from.to_token_stream();
 
     let load_mods_from = quote! {
-        async fn load_mods_from<P: AsRef<std::path::Path>>(path: P) -> #core_crate::Result<()> {
+        async fn load_mods_from<P: AsRef<std::path::Path>>(path: P) -> #core_crate::result::Result<()> {
             let mut iter = #core_crate::resources::ModLoadingIterator::new(path, #extension).await?;
             while let Some((mod_path, _meta)) = iter.next().await? {
                 load_resources_from(&mod_path, false, false).await?;
@@ -117,7 +117,7 @@ pub(crate) fn resource_loading(
     res.extend(load_mods_from);
 
     let load = quote! {
-        pub async fn load_resources() -> #core_crate::Result<()> {
+        pub async fn load_resources() -> #core_crate::result::Result<()> {
             let assets_dir = #core_crate::resources::assets_dir();
             let mods_dir = #core_crate::resources::mods_dir();
 
@@ -134,7 +134,7 @@ pub(crate) fn resource_loading(
     res.extend(load);
 
     let reload = quote! {
-        pub async fn reload_resources() -> #core_crate::Result<()> {
+        pub async fn reload_resources() -> #core_crate::result::Result<()> {
             let assets_dir = #core_crate::resources::assets_dir();
             let mods_dir = #core_crate::resources::mods_dir();
 

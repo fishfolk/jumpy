@@ -6,10 +6,11 @@ license = "MIT OR Apache-2.0"
 edition = "2021"
 
 [features]
-default = ["internal-backend", "platformer-physics"]
+default = ["internal-backend", "2d-renderer", "platformer-physics"]
 internal-backend = ["glutin", "winit_input_helper", "tokio", "glam", "glow", "glow_glyph", "image", "egui_glow"]
 macroquad-backend = ["macroquad", "ff-particles"]
 platformer-physics = []
+2d-renderer = []
 
 [dependencies]
 macros = { path = "./macro", version = "0.4.1", package = "fishfight-core-macros" }

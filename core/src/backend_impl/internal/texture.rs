@@ -1,4 +1,3 @@
-use crate::gl::gl_context;
 use glow::{HasContext, NativeTexture};
 use image::codecs::png::PngDecoder;
 use image::{DynamicImage, ImageBuffer, ImageDecoder};
@@ -6,15 +5,20 @@ use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 use std::path::Path;
 
+pub use crate::image::ImageFormat as TextureFormat;
+
+use crate::gl::gl_context;
 use crate::math::{vec2, Size, Vec2};
 use crate::rendering::renderer::Renderer;
-use crate::texture::{ColorFormat, TextureFilterMode, TextureFormat};
-use crate::Result;
+use crate::result::Result;
+use crate::texture::{ColorFormat, TextureFilterMode, TextureKind};
 
 pub struct Texture2DImpl {
     gl_texture: NativeTexture,
+    pub kind: TextureKind,
     pub filter_mode: TextureFilterMode,
     size: Size<f32>,
+    frame_size: Option<Size<f32>>,
 }
 
 impl PartialEq for Texture2DImpl {
@@ -32,41 +36,21 @@ impl PartialEq<NativeTexture> for Texture2DImpl {
 impl Eq for Texture2DImpl {}
 
 impl Texture2DImpl {
-    pub fn size(&self) -> Size<f32> {
-        self.size
-    }
-
-    pub fn gl_texture(&self) -> NativeTexture {
-        self.gl_texture
-    }
-}
-
-impl Drop for Texture2DImpl {
-    fn drop(&mut self) {
-        let gl = gl_context();
-        unsafe {
-            gl.delete_texture(self.gl_texture);
-        }
-    }
-}
-
-static mut NEXT_TEXTURE_INDEX: usize = 0;
-static mut TEXTURES: Option<HashMap<usize, Texture2DImpl>> = None;
-
-fn texture_map() -> &'static mut HashMap<usize, Texture2DImpl> {
-    unsafe { TEXTURES.get_or_insert_with(HashMap::new) }
-}
-
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub struct Texture2D(usize);
-
-impl Texture2D {
-    pub fn from_dynamic_image<F: Into<Option<TextureFilterMode>>>(
+    pub(crate) fn from_dynamic_image<K, F, S>(
         image: DynamicImage,
+        kind: K,
         filter_mode: F,
-    ) -> Result<Self> {
+        frame_size: S,
+    ) -> Result<Self>
+    where
+        K: Into<Option<TextureKind>>,
+        F: Into<Option<TextureFilterMode>>,
+        S: Into<Option<Size<f32>>>,
+    {
         let image = image.into_rgba8();
+        let kind = kind.into().unwrap_or_default();
         let size = Size::new(image.width(), image.height()).as_f32();
+        let frame_size = frame_size.into();
 
         let gl = gl_context();
 
@@ -94,22 +78,39 @@ impl Texture2D {
 
         let filter_mode = filter_mode.into().unwrap_or_default();
 
-        let index = unsafe {
-            let index = NEXT_TEXTURE_INDEX;
-            NEXT_TEXTURE_INDEX += 1;
-            index
+        Ok(Texture2DImpl {
+            gl_texture,
+            kind,
+            filter_mode,
+            size,
+            frame_size,
+        })
+    }
+
+    pub(crate) fn from_bytes<T, K, F, S>(
+        bytes: &[u8],
+        format: T,
+        kind: K,
+        filter_mode: F,
+        frame_size: S,
+    ) -> Result<Self>
+    where
+        T: Into<Option<TextureFormat>>,
+        K: Into<Option<TextureKind>>,
+        F: Into<Option<TextureFilterMode>>,
+        S: Into<Option<Size<f32>>>,
+    {
+        let image = if let Some(format) = format.into() {
+            image::load_from_memory_with_format(bytes, format.into())?
+        } else {
+            image::load_from_memory(bytes)?
         };
 
-        texture_map().insert(
-            index,
-            Texture2DImpl {
-                gl_texture,
-                filter_mode,
-                size,
-            },
-        );
+        Self::from_dynamic_image(image, kind, filter_mode, frame_size)
+    }
 
-        Ok(Texture2D(index))
+    pub fn gl_texture(&self) -> NativeTexture {
+        self.gl_texture
     }
 
     pub fn bind(&self, texture_unit: TextureUnit) {
@@ -127,38 +128,23 @@ impl Texture2D {
             gl.tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_MAG_FILTER, mode);
         }
     }
-}
 
-impl Deref for Texture2D {
-    type Target = Texture2DImpl;
+    pub fn size(&self) -> Size<f32> {
+        self.size
+    }
 
-    fn deref(&self) -> &Self::Target {
-        texture_map().get(&self.0).unwrap()
+    pub fn frame_size(&self) -> Size<f32> {
+        self.frame_size.unwrap_or(self.size)
     }
 }
 
-impl DerefMut for Texture2D {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        texture_map().get_mut(&self.0).unwrap()
+impl Drop for Texture2DImpl {
+    fn drop(&mut self) {
+        let gl = gl_context();
+        unsafe {
+            gl.delete_texture(self.gl_texture);
+        }
     }
-}
-
-pub fn load_texture_bytes<F: Into<Option<TextureFilterMode>>>(
-    bytes: &[u8],
-    filter_mode: F,
-) -> Result<Texture2D> {
-    let image = image::load_from_memory(bytes)?;
-
-    Texture2D::from_dynamic_image(image, filter_mode)
-}
-
-pub async fn load_texture_file<P: AsRef<Path>, F: Into<Option<TextureFilterMode>>>(
-    path: P,
-    filter_mode: F,
-) -> Result<Texture2D> {
-    let image = image::open(&path)?;
-
-    Texture2D::from_dynamic_image(image, filter_mode)
 }
 
 pub enum TextureUnit {

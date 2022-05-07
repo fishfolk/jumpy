@@ -13,7 +13,6 @@ use ff_core::gui::{Menu, MenuEntry};
 use ff_core::ecs::{Entity, World};
 
 use ff_core::prelude::*;
-use ff_core::Result;
 
 use crate::items::try_get_item;
 use crate::physics::{debug_draw_physics_bodies, fixed_update_physics_bodies};
@@ -37,7 +36,7 @@ use crate::network::{
     update_network_host,
 };
 use crate::sproinger::{fixed_update_sproingers, spawn_sproinger};
-use ff_core::map::{draw_map, spawn_decoration};
+use ff_core::map::{draw_map, spawn_decoration, try_get_decoration};
 use ff_core::particles::{draw_particles, update_particle_emitters};
 
 use crate::camera::update_camera;

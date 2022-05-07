@@ -161,13 +161,10 @@ pub fn spawn_player(
     let item_mount = character.item_mount;
     let hat_mount = character.hat_mount;
 
-    let texture_res = get_texture(&character.sprite.texture_id);
+    let texture = get_texture(&character.sprite.texture_id);
 
     let offset = {
-        let frame_size = texture_res
-            .meta
-            .frame_size
-            .unwrap_or(texture_res.texture.size().into());
+        let frame_size = texture.frame_size();
         character.sprite.offset
             - vec2(
                 frame_size.width / 2.0,
@@ -194,12 +191,7 @@ pub fn spawn_player(
 
     let sprites = vec![(
         BODY_ANIMATED_SPRITE_ID,
-        AnimatedSprite::new(
-            texture_res.texture,
-            texture_res.frame_size(),
-            animations.as_slice(),
-            params,
-        ),
+        AnimatedSprite::new(texture, texture.frame_size(), animations.as_slice(), params),
     )];
 
     let draw_order = (index as u32 + 1) * 10;

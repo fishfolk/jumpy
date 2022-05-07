@@ -9,10 +9,10 @@ use std::borrow::{Borrow, BorrowMut};
 use crate::math::Size;
 use hecs::World;
 
+use crate::result::Result;
 use crate::storage;
 use crate::texture::Texture2D;
 use crate::transform::Transform;
-use crate::Result;
 
 /// This is a wrapper type for all the different types of drawable sprites, used so that we can
 /// access them all in one query and draw them, ordered, in one pass, according to `draw_order`.

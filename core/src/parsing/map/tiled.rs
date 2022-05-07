@@ -6,7 +6,6 @@ use crate::prelude::*;
 
 use crate::map::MapObjectKind;
 use crate::map::{Map, MapLayer, MapLayerKind, MapObject, MapProperty, MapTile, MapTileset};
-use crate::resources::TextureResource;
 
 const SPAWN_POINT_MAP_OBJECT_TYPE: &str = "spawn_point";
 

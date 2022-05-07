@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::color::{colors, Color};
 use crate::gl::gl_context;
 use crate::math::Vec2;
-use crate::Result;
+use crate::result::Result;
 use crate::FLOAT_SIZE;
 
 #[derive(Debug, Copy, Clone)]
@@ -13,6 +13,20 @@ pub struct Vertex {
     pub position: Vec2,
     pub color: Color,
     pub texture_coords: Vec2,
+}
+
+impl Vertex {
+    pub fn new<C, T>(position: Vec2, color: C, texture_coords: T) -> Self
+    where
+        C: Into<Option<Color>>,
+        T: Into<Option<Vec2>>,
+    {
+        Vertex {
+            position,
+            color: color.into().unwrap_or_else(|| colors::WHITE),
+            texture_coords: texture_coords.into().unwrap_or_else(|| Vec2::ZERO),
+        }
+    }
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -56,27 +70,10 @@ impl VertexLayoutEntry {
 }
 
 pub trait VertexImpl {
-    fn new<C, T>(position: Vec3, color: C, texture_coords: T) -> Self
-    where
-        C: Into<Option<Color>>,
-        T: Into<Option<Vec2>>;
-
     fn layout() -> VertexLayout;
 }
 
 impl VertexImpl for Vertex {
-    fn new<C, T>(position: Vec3, color: C, texture_coords: T) -> Self
-    where
-        C: Into<Option<Color>>,
-        T: Into<Option<Vec2>>,
-    {
-        Vertex {
-            position: vec2(position.x, position.y),
-            color: color.into().unwrap_or_else(|| colors::WHITE),
-            texture_coords: texture_coords.into().unwrap_or_else(|| Vec2::ZERO),
-        }
-    }
-
     fn layout() -> VertexLayout {
         VertexLayout::new(&[
             VertexLayoutEntry::new("vertex_position", 2),

@@ -8,11 +8,12 @@ use glutin::window::{Fullscreen, Window, WindowBuilder};
 use glutin::window::{Window as GlutinWindow, WindowId};
 use glutin::ContextBuilder;
 
+use crate::config::Config;
 use crate::event::Event;
 use crate::math::Size;
+use crate::result::Result;
 use crate::video::Display;
 use crate::window::{WindowConfig, WindowMode};
-use crate::{Config, Result};
 
 static mut CONTEXT_WRAPPER: Option<glutin::ContextWrapper<glutin::PossiblyCurrent, Window>> = None;
 

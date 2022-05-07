@@ -6,8 +6,6 @@ use crate::Map;
 
 use ff_core::prelude::*;
 
-use crate::Result;
-
 pub const GRAVITY: f32 = 2.5;
 pub const TERMINAL_VELOCITY: f32 = 10.0;
 

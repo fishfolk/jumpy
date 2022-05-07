@@ -125,14 +125,9 @@ pub fn spawn_projectile(
             params: meta,
             can_rotate,
         } => {
-            let texture_res = get_texture(&meta.texture_id);
+            let texture = get_texture(&meta.texture_id);
 
-            let size = meta.size.unwrap_or_else(|| {
-                texture_res
-                    .meta
-                    .frame_size
-                    .unwrap_or(texture_res.texture.size())
-            });
+            let size = texture.frame_size();
 
             let offset = meta.offset - (vec2(size.width, size.height) / 2.0);
 
@@ -159,7 +154,7 @@ pub fn spawn_projectile(
                     entity,
                     Drawable::new_sprite(
                         PROJECTILE_DRAW_ORDER,
-                        texture_res.texture,
+                        texture,
                         SpriteParams {
                             is_flipped_x,
                             offset,

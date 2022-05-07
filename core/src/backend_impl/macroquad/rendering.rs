@@ -18,7 +18,7 @@ pub async fn end_frame() {
 pub fn draw_texture(x: f32, y: f32, texture: Texture2D, params: DrawTextureParams) {
     let color = params.tint.unwrap_or(colors::WHITE).into();
 
-    draw_texture_ex(texture.into(), x, y, color, params.into());
+    draw_texture_ex(texture.mq_texture(), x, y, color, params.into());
 }
 
 impl From<DrawTextureParams> for macroquad::texture::DrawTextureParams {

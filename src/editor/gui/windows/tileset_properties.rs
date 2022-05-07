@@ -1,14 +1,14 @@
 use ff_core::prelude::*;
 
+use ff_core::gui::combobox::{ComboBoxBuilder, ComboBoxValue, ComboBoxVec};
 use ff_core::gui::get_gui_theme;
-use ff_core::gui::combobox::{ComboBoxVec, ComboBoxBuilder, ComboBoxValue};
 use ff_core::macroquad::hash;
-use ff_core::macroquad::ui::{Ui, widgets};
+use ff_core::macroquad::ui::{widgets, Ui};
 
 use super::{ButtonParams, EditorAction, EditorContext, Map, Window, WindowParams};
+use crate::GuiTheme;
 use ff_core::map::MapTileset;
 use ff_core::resources::TextureKind;
-use crate::GuiTheme;
 
 pub struct TilesetPropertiesWindow {
     params: WindowParams,
@@ -26,25 +26,13 @@ impl TilesetPropertiesWindow {
             ..Default::default()
         };
 
-        let texture_ids = iter_textures()
-            .filter_map(|(k, v)| {
-                if let Some(kind) = v.meta.kind {
-                    if kind == TextureKind::Tileset {
-                        return Some(k.as_str());
-                    }
-                }
-
-                None
-            })
-            .collect::<Vec<_>>();
-
-        let texture = ComboBoxVec::new(0, &texture_ids);
+        let textures = iter_texture_ids_of_kind(TextureKind::Tileset).as_slice();
 
         TilesetPropertiesWindow {
             params,
             tileset_id: tileset_id.to_string(),
             autotile_mask: Vec::new(),
-            texture,
+            texture: textures.into(),
             has_data: false,
         }
     }
@@ -77,13 +65,10 @@ impl TilesetPropertiesWindow {
         size: Vec2,
         tileset: &MapTileset,
     ) -> Option<EditorAction> {
-        let texture_res = get_texture(&tileset.texture_id);
+        let texture = get_texture(&tileset.texture_id);
 
-        let texture_size = texture_res.texture.size();
-        let tileset_texture_size = vec2(
-            texture_size.width,
-            texture_size.height,
-        );
+        let texture_size = texture.size();
+        let tileset_texture_size = vec2(texture_size.width, texture_size.height);
 
         let mut scaled_width = size.x;
         let mut scaled_height = (scaled_width / tileset_texture_size.x) * tileset_texture_size.y;
@@ -100,7 +85,7 @@ impl TilesetPropertiesWindow {
             scaled_height / subgrid_size.height as f32,
         );
 
-        widgets::Texture::new(texture_res.texture.into())
+        widgets::Texture::new(texture.into())
             .size(scaled_width, scaled_height)
             .position(position)
             .ui(ui);
@@ -121,7 +106,8 @@ impl TilesetPropertiesWindow {
                     ui.push_skin(&gui_theme.tileset_subtile_grid_selected);
                 }
 
-                let subtile_position = position + vec2(x as f32, y as f32) * Vec2::from(scaled_subtile_size);
+                let subtile_position =
+                    position + vec2(x as f32, y as f32) * Vec2::from(scaled_subtile_size);
 
                 let was_clicked = widgets::Button::new("")
                     .size(scaled_subtile_size.into())

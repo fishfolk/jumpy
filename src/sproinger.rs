@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use ff_core::ecs::{Entity, World};
 
 use ff_core::prelude::*;
-use ff_core::Result;
+use ff_core::result::Result;
 
 use crate::{Animation, Drawable, PhysicsBody, QueuedAnimationAction};
 
@@ -65,15 +65,15 @@ pub fn spawn_sproinger(world: &mut World, position: Vec2) -> Result<Entity> {
         },
     ];
 
-    let texture_res = get_texture(TEXTURE_ID);
+    let texture = get_texture(TEXTURE_ID);
 
     let entity = world.spawn((
         Sproinger::new(),
         Transform::from(position),
         Drawable::new_animated_sprite(
             SPROINGER_DRAW_ORDER,
-            texture_res.texture,
-            texture_res.frame_size(),
+            texture,
+            texture.frame_size(),
             animations,
             Default::default(),
         ),

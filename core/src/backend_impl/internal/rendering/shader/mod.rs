@@ -15,8 +15,8 @@ use crate::error::ErrorKind;
 use crate::gl::gl_context;
 use crate::prelude::renderer::renderer;
 use crate::rendering::renderer::Renderer;
+use crate::result::Result;
 use crate::texture::{Texture2D, TextureUnit};
-use crate::Result;
 
 #[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -337,24 +337,6 @@ impl ShaderProgramImpl {
         unsafe {
             gl.uniform_matrix_4_f32_slice(Some(&location), should_transpose, &values);
         }
-    }
-
-    pub fn set_uniform_sampler_2d(&self, name: &str, texture_unit: TextureUnit) {
-        let uniform = self
-            .uniforms
-            .get(name)
-            .unwrap_or_else(|| panic!("ERROR: No uniform named '{}' exist!", name));
-
-        assert!(
-            uniform.value_type.is_sampler_2d(),
-            "ERROR: Uniform '{}' is not a sampler 2d!",
-            name
-        );
-
-        let location = uniform.location.unwrap();
-
-        let gl = gl_context();
-        unsafe { gl.uniform_1_i32(Some(&location), texture_unit.into()) }
     }
 }
 

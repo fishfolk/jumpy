@@ -1,3 +1,6 @@
+use std::borrow::BorrowMut;
+use std::fs;
+use std::slice::Iter;
 use std::{collections::HashMap, path::Path};
 
 use serde::{Deserialize, Serialize};
@@ -6,16 +9,18 @@ mod decoration;
 
 pub use decoration::*;
 
+use crate::error::{Error, ErrorKind};
 use crate::prelude::*;
 use crate::resources;
-use crate::Result;
+use crate::result::Result;
 
 #[cfg(feature = "macroquad-backend")]
 use crate::gui::combobox::ComboBoxValue;
 
 use crate::parsing::{self, TiledMap};
+use crate::resources::DEFAULT_RESOURCE_FILE_EXTENSION;
 
-use crate::resources::{get_texture, TextureResource};
+use crate::texture::get_texture;
 
 pub type MapProperty = crate::parsing::GenericParam;
 
@@ -277,12 +282,12 @@ impl Map {
 
         {
             for layer in &self.background_layers {
-                let texture_res = get_texture(&layer.texture_id);
+                let texture = get_texture(&layer.texture_id);
 
                 let dest_rect = if is_parallax_disabled {
                     let map_size = Size::from(self.grid_size.as_uvec2().as_vec2()) * self.tile_size;
 
-                    let size = texture_res.texture.size();
+                    let size = texture.size();
 
                     let width = map_size.width + (Self::FLATTENED_BACKGROUND_PADDING_X * 2.0);
                     let height = (width / size.width) * size.height;
@@ -294,11 +299,8 @@ impl Map {
                         height,
                     )
                 } else {
-                    let mut dest_rect = Self::background_parallax(
-                        texture_res.texture,
-                        layer.depth,
-                        camera_position,
-                    );
+                    let mut dest_rect =
+                        Self::background_parallax(texture, layer.depth, camera_position);
                     dest_rect.x += layer.offset.x;
                     dest_rect.y += layer.offset.y;
                     dest_rect
@@ -307,7 +309,7 @@ impl Map {
                 draw_texture(
                     dest_rect.x,
                     dest_rect.y,
-                    texture_res.texture,
+                    texture,
                     DrawTextureParams {
                         dest_size: Some(Size::new(dest_rect.width, dest_rect.height)),
                         ..Default::default()
@@ -345,7 +347,7 @@ impl Map {
                             } else {
                                 let tileset = self.tilesets.get(&tile.tileset_id).unwrap();
 
-                                get_texture(&tileset.texture_id).texture
+                                get_texture(&tileset.texture_id)
                             };
 
                             draw_texture(
@@ -715,6 +717,232 @@ pub fn draw_map(world: &mut World, _delta_time: f32) -> Result<()> {
 
     for (_, map) in world.query_mut::<&Map>() {
         map.draw(None, camera_position);
+    }
+
+    Ok(())
+}
+
+static mut MAPS: Vec<MapResource> = Vec::new();
+
+pub fn iter_maps() -> Iter<'static, MapResource> {
+    unsafe { MAPS.iter() }
+}
+
+pub fn try_get_map(index: usize) -> Option<&'static MapResource> {
+    unsafe { MAPS.get(index) }
+}
+
+pub fn get_map(index: usize) -> &'static MapResource {
+    try_get_map(index).unwrap()
+}
+
+const MAP_RESOURCES_FILE: &str = "maps";
+
+pub const MAP_EXPORTS_DEFAULT_DIR: &str = "maps";
+pub const MAP_EXPORTS_EXTENSION: &str = "json";
+pub const MAP_EXPORT_NAME_MIN_LEN: usize = 1;
+
+pub const MAP_PREVIEW_PLACEHOLDER_PATH: &str = "maps/no_preview.png";
+pub const MAP_PREVIEW_PLACEHOLDER_ID: &str = "map_preview_placeholder";
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MapMetadata {
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    pub path: String,
+    pub preview_path: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub preview_format: Option<TextureFormat>,
+    #[serde(default, skip_serializing_if = "crate::parsing::is_false")]
+    pub is_tiled_map: bool,
+    #[serde(default, skip_serializing_if = "crate::parsing::is_false")]
+    pub is_user_map: bool,
+}
+
+#[derive(Clone)]
+pub struct MapResource {
+    pub map: Map,
+    pub preview: Texture2D,
+    pub meta: MapMetadata,
+}
+
+pub fn create_map(
+    name: &str,
+    description: Option<&str>,
+    tile_size: Vec2,
+    grid_size: UVec2,
+) -> Result<MapResource> {
+    let description = description.map(|str| str.to_string());
+
+    let map_path = Path::new(MAP_EXPORTS_DEFAULT_DIR)
+        .join(map_name_to_filename(name))
+        .with_extension(MAP_EXPORTS_EXTENSION);
+
+    let preview_path = Path::new(MAP_PREVIEW_PLACEHOLDER_PATH);
+
+    let meta = MapMetadata {
+        name: name.to_string(),
+        description,
+        path: map_path.to_string_lossy().to_string(),
+        preview_path: preview_path.to_string_lossy().to_string(),
+        preview_format: None,
+        is_tiled_map: false,
+        is_user_map: true,
+    };
+
+    let map = Map::new(tile_size, grid_size);
+
+    let preview = get_texture(MAP_PREVIEW_PLACEHOLDER_ID);
+
+    Ok(MapResource { map, preview, meta })
+}
+
+pub fn save_map(map_resource: &MapResource) -> Result<()> {
+    let assets_dir = assets_dir();
+    let export_dir = Path::new(&assets_dir).join(&map_resource.meta.path);
+
+    {
+        let maps: &mut Vec<MapResource> = unsafe { MAPS.borrow_mut() };
+
+        if export_dir.exists() {
+            let mut i = 0;
+            while i < maps.len() {
+                let res = &maps[i];
+                if res.meta.path == map_resource.meta.path {
+                    if res.meta.is_user_map {
+                        maps.remove(i);
+                        break;
+                    } else {
+                        return Err(formaterr!(
+                                ErrorKind::General,
+                                "Resources: The path '{}' is in use and it is not possible to overwrite. Please choose a different map name",
+                                &map_resource.meta.path,
+                            ));
+                    }
+                }
+
+                i += 1;
+            }
+        }
+
+        map_resource.map.save(export_dir)?;
+
+        maps.push(map_resource.clone());
+    }
+
+    save_maps_file()?;
+
+    Ok(())
+}
+
+pub fn delete_map(index: usize) -> Result<()> {
+    let map_resource = unsafe { MAPS.remove(index) };
+
+    let assets_dir = assets_dir();
+    let path = Path::new(&assets_dir).join(&map_resource.meta.path);
+
+    fs::remove_file(path)?;
+
+    save_maps_file()?;
+
+    Ok(())
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn save_maps_file() -> Result<()> {
+    let assets_dir = assets_dir();
+    let maps_file_path = Path::new(&assets_dir)
+        .join(MAP_RESOURCES_FILE)
+        .with_extension(DEFAULT_RESOURCE_FILE_EXTENSION);
+
+    let metadata: Vec<MapMetadata> = iter_maps().map(|res| res.meta.clone()).collect();
+
+    let str = serde_json::to_string_pretty(&metadata)?;
+    fs::write(maps_file_path, &str)?;
+
+    Ok(())
+}
+
+pub fn is_valid_map_export_path<P: AsRef<Path>>(path: P, should_overwrite: bool) -> bool {
+    let path = path.as_ref();
+
+    if let Some(file_name) = path.file_name() {
+        if is_valid_map_file_name(&file_name.to_string_lossy().to_string()) {
+            let res = iter_maps().find(|res| Path::new(&res.meta.path) == path);
+
+            if let Some(res) = res {
+                return res.meta.is_user_map && should_overwrite;
+            }
+
+            return true;
+        }
+    }
+
+    false
+}
+
+pub fn map_name_to_filename(name: &str) -> String {
+    name.replace(' ', "_").replace('.', "_").to_lowercase()
+}
+
+pub fn is_valid_map_file_name(file_name: &str) -> bool {
+    if file_name.len() - MAP_EXPORTS_EXTENSION.len() > MAP_EXPORT_NAME_MIN_LEN {
+        if let Some(extension) = Path::new(file_name).extension() {
+            return extension == MAP_EXPORTS_EXTENSION;
+        }
+    }
+
+    false
+}
+
+pub async fn load_maps<P: AsRef<Path>>(
+    path: P,
+    ext: &str,
+    is_required: bool,
+    should_overwrite: bool,
+) -> Result<()> {
+    let maps: &mut Vec<MapResource> = unsafe { MAPS.borrow_mut() };
+
+    if should_overwrite {
+        maps.clear();
+    }
+
+    let maps_file_path = path.as_ref().join(MAP_RESOURCES_FILE).with_extension(ext);
+
+    match read_from_file(&maps_file_path).await {
+        Err(err) => {
+            if is_required {
+                return Err(err.into());
+            }
+        }
+        Ok(bytes) => {
+            let metadata: Vec<MapMetadata> = deserialize_bytes_by_extension(ext, &bytes)?;
+
+            for meta in metadata {
+                let map_path = path.as_ref().join(&meta.path);
+                let preview_path = path.as_ref().join(&meta.preview_path);
+
+                let map = if meta.is_tiled_map {
+                    Map::load_tiled(map_path, None).await?
+                } else {
+                    Map::load(map_path).await?
+                };
+
+                let preview = load_texture_file(
+                    &preview_path,
+                    meta.preview_format,
+                    None,
+                    TextureFilterMode::Nearest,
+                    None,
+                )
+                .await?;
+
+                let res = MapResource { map, preview, meta };
+
+                maps.push(res)
+            }
+        }
     }
 
     Ok(())

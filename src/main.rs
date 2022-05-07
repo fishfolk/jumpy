@@ -6,6 +6,7 @@ use std::time::Instant;
 use std::{env, fs};
 
 use ff_core::input::GamepadContext;
+use ff_core::map::get_map;
 
 //use ultimate::UltimateApi;
 
@@ -39,7 +40,7 @@ use editor::{Editor, EditorCamera};
 
 use ff_core::map::{Map, MapLayerKind, MapObjectKind};
 
-pub use ff_core::Config;
+pub use ff_core::config::Config;
 pub use items::Item;
 
 pub use ff_core::prelude::*;

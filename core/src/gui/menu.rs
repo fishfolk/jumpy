@@ -14,10 +14,10 @@ use crate::input::{
 use crate::gui::theme::get_gui_theme;
 use crate::gui::{widgets, Id, Ui};
 use crate::math::{vec2, AsVec2, Vec2};
+use crate::result::Result;
 use crate::storage;
 use crate::viewport::{viewport, viewport_size};
 use crate::window::window_size;
-use crate::Result;
 
 #[derive(Debug, Copy, Clone)]
 pub enum MenuPosition {

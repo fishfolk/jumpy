@@ -1,6 +1,8 @@
 use hecs::World;
 use serde::{Deserialize, Serialize};
+use std::collections::hash_map::Iter;
 use std::collections::HashMap;
+use std::path::Path;
 
 use num_traits::*;
 
@@ -8,9 +10,10 @@ use crate::math::Vec2;
 
 pub use crate::backend_impl::particles::*;
 use crate::drawables::AnimatedSpriteMetadata;
-use crate::resources::iter_particle_effects;
+use crate::file::read_from_file;
+use crate::parsing::deserialize_bytes_by_extension;
+use crate::result::Result;
 use crate::transform::Transform;
-use crate::Result;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ParticleEmitterMetadata {
@@ -206,6 +209,72 @@ pub fn draw_particles(_world: &mut World, _delta_time: f32) -> Result<()> {
 
     for cache in particles.cache_map.values_mut() {
         cache.draw();
+    }
+
+    Ok(())
+}
+
+const PARTICLE_EFFECT_RESOURCES_FILE: &str = "particle_effects";
+
+static mut PARTICLE_EFFECTS: Option<HashMap<String, EmitterConfig>> = None;
+
+pub fn try_get_particle_effect(id: &str) -> Option<&EmitterConfig> {
+    unsafe { PARTICLE_EFFECTS.get_or_insert_with(HashMap::new).get(id) }
+}
+
+pub fn get_particle_effect(id: &str) -> &EmitterConfig {
+    try_get_particle_effect(id).unwrap()
+}
+
+pub fn iter_particle_effects() -> Iter<'static, String, EmitterConfig> {
+    unsafe { PARTICLE_EFFECTS.get_or_insert_with(HashMap::new) }.iter()
+}
+
+#[derive(Serialize, Deserialize)]
+struct ParticleEffectMetadata {
+    id: String,
+    path: String,
+}
+
+pub async fn load_particle_effects<P: AsRef<Path>>(
+    path: P,
+    ext: &str,
+    is_required: bool,
+    should_overwrite: bool,
+) -> Result<()> {
+    let particle_effects = unsafe { PARTICLE_EFFECTS.get_or_insert_with(HashMap::new) };
+
+    if should_overwrite {
+        particle_effects.clear();
+    }
+
+    let particle_effects_file_path = path
+        .as_ref()
+        .join(PARTICLE_EFFECT_RESOURCES_FILE)
+        .with_extension(ext);
+
+    match read_from_file(&particle_effects_file_path).await {
+        Err(err) => {
+            if is_required {
+                return Err(err.into());
+            }
+        }
+        Ok(bytes) => {
+            let metadata: Vec<ParticleEffectMetadata> =
+                deserialize_bytes_by_extension(ext, &bytes)?;
+
+            for meta in metadata {
+                let file_path = path.as_ref().join(&meta.path);
+
+                let extension = file_path.extension().unwrap().to_str().unwrap();
+
+                let bytes = read_from_file(&file_path).await?;
+
+                let cfg: EmitterConfig = deserialize_bytes_by_extension(extension, &bytes)?;
+
+                particle_effects.insert(meta.id, cfg);
+            }
+        }
     }
 
     Ok(())

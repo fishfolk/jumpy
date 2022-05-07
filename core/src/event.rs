@@ -3,17 +3,21 @@ pub use crate::backend_impl::event::*;
 use std::any::{Any, TypeId};
 use std::cell::RefCell;
 use std::fmt::{Debug, Formatter, Write};
+use std::hash::{Hash, Hasher};
 use std::rc::Rc;
 
-use crate::error::ErrorKind;
+use crate::config::Config;
+use crate::error::{Error, ErrorKind};
 use crate::prelude::GameState;
+use crate::result::Result;
 use crate::state::GameStateBuilderFn;
-use crate::{Config, Error, Result};
+
+pub type DefaultCustomEvent = ();
 
 /// This holds all the event types
-pub enum Event<T: 'static + Debug> {
+pub enum Event<E: 'static + Debug> {
     /// Custom event
-    Custom(T),
+    Custom(E),
     /// Config changed
     ConfigChanged(Config),
     /// Change game state
@@ -25,7 +29,7 @@ pub enum Event<T: 'static + Debug> {
     Quit,
 }
 
-impl<T: 'static + Debug> Event<T> {
+impl<E: 'static + Debug> Event<E> {
     /// This allow construction of state transition events without worrying about the different
     /// types used by the two backends
     pub fn state_transition<S: 'static + GameState>(state: S) -> Self {
@@ -46,7 +50,7 @@ impl<T: 'static + Debug> Debug for Event<T> {
 
 /// This allow construction of state transition events without worrying about the different
 /// types used by the two backends
-pub fn state_transition<T: 'static + Debug, S: 'static + GameState>(state: S) -> Event<T> {
+pub fn state_transition<E: 'static + Debug, S: 'static + GameState>(state: S) -> Event<E> {
     #[cfg(not(feature = "macroquad-backend"))]
     return Event::StateTransition(Rc::new(RefCell::new(state)));
     #[cfg(feature = "macroquad-backend")]

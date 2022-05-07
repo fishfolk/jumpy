@@ -135,7 +135,7 @@ pub(crate) fn derive_resource_impl(input: proc_macro::TokenStream) -> proc_macro
                     #try_get_name(id).unwrap()
                 }
 
-                pub async fn #load_name<P, E>(path: P, ext: E, is_required: bool, should_overwrite: bool) -> #crate_name::Result<()>
+                pub async fn #load_name<P, E>(path: P, ext: E, is_required: bool, should_overwrite: bool) -> #crate_name::result::Result<()>
                     where
                         P: AsRef<std::path::Path>,
                         E: Into<Option<&'static str>>,
@@ -206,7 +206,7 @@ pub(crate) fn derive_resource_impl(input: proc_macro::TokenStream) -> proc_macro
                     #resource_name()
                 }
 
-                async fn load<P, E>(path: P, ext: E, is_required: bool, should_overwrite: bool) -> #crate_name::Result<()>
+                async fn load<P, E>(path: P, ext: E, is_required: bool, should_overwrite: bool) -> #crate_name::result::Result<()>
                     where
                         P: AsRef<std::path::Path> + Send,
                         E: Into<Option<&'static str>> + Send,
@@ -291,7 +291,7 @@ pub(crate) fn derive_resource_impl(input: proc_macro::TokenStream) -> proc_macro
                     #try_get_mut_name(index).unwrap()
                 }
 
-                pub async fn #load_name<P, E>(path: P, ext: E, is_required: bool, should_overwrite: bool) -> #crate_name::Result<()>
+                pub async fn #load_name<P, E>(path: P, ext: E, is_required: bool, should_overwrite: bool) -> #crate_name::result::Result<()>
                     where
                         P: AsRef<std::path::Path>,
                         E: Into<Option<&'static str>>,
@@ -360,7 +360,7 @@ pub(crate) fn derive_resource_impl(input: proc_macro::TokenStream) -> proc_macro
                     #resource_name()
                 }
 
-                async fn load<P, E>(path: P, ext: E, is_required: bool, should_overwrite: bool) -> #crate_name::Result<()>
+                async fn load<P, E>(path: P, ext: E, is_required: bool, should_overwrite: bool) -> #crate_name::result::Result<()>
                     where
                         P: AsRef<std::path::Path> + Send,
                         E: Into<Option<&'static str>> + Send,

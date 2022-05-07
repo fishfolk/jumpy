@@ -6,8 +6,6 @@ use crate::event::Event;
 
 pub struct DefaultEventHandler;
 
-pub type DefaultCustomEvent = ();
-
 impl<E: 'static + Debug> EventHandler<E> for DefaultEventHandler {}
 
 pub trait EventHandler<E: 'static + Debug> {

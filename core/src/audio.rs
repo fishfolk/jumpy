@@ -8,9 +8,10 @@ use quad_snd::{AudioContext as QuadAudioContext, PlaySoundParams, Sound as QuadS
 
 use crate::audio::AudioKind::Other;
 
+use crate::config::Config;
 use crate::file::read_from_file;
-use crate::resources::get_sound;
-use crate::{Config, Result};
+use crate::parsing::deserialize_bytes_by_extension;
+use crate::result::Result;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum AudioKind {
@@ -105,6 +106,9 @@ impl ToString for AudioKind {
         self.as_str().to_string()
     }
 }
+
+const AUDIO_RESOURCES_FILE: &str = "audio";
+const MUSIC_RESOURCES_FILE: &str = "music";
 
 #[derive(Clone)]
 pub struct Sound {
@@ -374,4 +378,69 @@ pub async fn load_sound_file<P: AsRef<Path>, K: Into<Option<AudioKind>>>(
     let bytes = read_from_file(path).await?;
     let sound = load_sound_bytes(&bytes, kind);
     Ok(sound)
+}
+
+static mut AUDIO: Option<HashMap<String, Sound>> = None;
+
+pub fn try_get_sound(id: &str) -> Option<&Sound> {
+    unsafe { AUDIO.get_or_insert_with(HashMap::new).get(id) }
+}
+
+pub fn get_sound(id: &str) -> &Sound {
+    try_get_sound(id).unwrap()
+}
+
+#[derive(Serialize, Deserialize)]
+struct SoundMetadata {
+    id: String,
+    /// This determines what volume that will be applied to this sound resource.
+    #[serde(default, rename = "type", skip_serializing_if = "Option::is_none")]
+    kind: Option<String>,
+    /// This can be used to modify the volume of this individual sound resource.
+    /// It should be a value between 0.0 and 1.0.
+    /// Master volume and the volume setting for this particular sound type will still be applied.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    volume_modifier: Option<f32>,
+    path: String,
+}
+
+pub async fn load_audio<P: AsRef<Path>>(
+    path: P,
+    ext: &str,
+    is_required: bool,
+    should_overwrite: bool,
+) -> Result<()> {
+    let sounds = unsafe { AUDIO.get_or_insert_with(HashMap::new) };
+
+    if should_overwrite {
+        sounds.clear();
+    }
+
+    let audio_file_path = path.as_ref().join(AUDIO_RESOURCES_FILE).with_extension(ext);
+
+    match read_from_file(&audio_file_path).await {
+        Err(err) => {
+            if is_required {
+                return Err(err.into());
+            }
+        }
+        Ok(bytes) => {
+            let metadata: Vec<SoundMetadata> = deserialize_bytes_by_extension(ext, &bytes)?;
+
+            for meta in metadata {
+                let file_path = path.as_ref().join(meta.path);
+
+                let kind = meta.kind.map(AudioKind::from).unwrap_or_default();
+                let mut sound = load_sound_file(&file_path, kind).await?;
+
+                if let Some(volume) = meta.volume_modifier {
+                    sound.set_volume_modifier(volume);
+                }
+
+                sounds.insert(meta.id, sound);
+            }
+        }
+    }
+
+    Ok(())
 }

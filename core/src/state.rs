@@ -20,7 +20,7 @@ use crate::input::{
     is_gamepad_button_pressed, is_key_pressed, update_gamepad_context, Button, KeyCode,
 };
 use crate::math::*;
-use crate::Result;
+use crate::result::Result;
 
 #[cfg(feature = "macroquad-backend")]
 use crate::gui::{Menu, MenuResult};

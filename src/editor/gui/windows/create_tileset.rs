@@ -1,10 +1,10 @@
-use ff_core::prelude::*;
-use ff_core::resources::TextureKind;
 use ff_core::gui::combobox::{ComboBoxBuilder, ComboBoxValue, ComboBoxVec};
 use ff_core::map::Map;
+use ff_core::prelude::*;
+use ff_core::resources::TextureKind;
 
 use ff_core::macroquad::hash;
-use ff_core::macroquad::ui::{Ui, widgets};
+use ff_core::macroquad::ui::{widgets, Ui};
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 
@@ -22,24 +22,14 @@ impl CreateTilesetWindow {
             ..Default::default()
         };
 
-        let mut textures = iter_textures()
-            .filter_map(|(k, v)| {
-                if let Some(kind) = v.meta.kind {
-                    if kind == TextureKind::Tileset {
-                        return Some(k.clone());
-                    }
-                }
-
-                None
-            })
-            .collect::<Vec<String>>();
+        let mut textures = iter_texture_ids_of_kind(TextureKind::Tileset).as_slice();
 
         textures.sort_unstable();
 
         CreateTilesetWindow {
             params,
             tileset_id: "Unnamed Tileset".to_string(),
-            texture: textures.as_slice().into(),
+            texture: textures.into(),
         }
     }
 }

@@ -12,6 +12,7 @@ pub mod event;
 pub mod file;
 pub mod game;
 pub mod gui;
+pub mod image;
 pub mod input;
 pub mod map;
 pub mod math;
@@ -23,6 +24,7 @@ pub mod physics;
 pub mod prelude;
 pub mod rendering;
 pub mod resources;
+pub mod result;
 pub mod state;
 pub mod storage;
 pub mod text;
@@ -31,9 +33,6 @@ pub mod transform;
 pub mod video;
 pub mod viewport;
 pub mod window;
-
-pub use config::Config;
-pub use error::{Error, Result};
 
 pub use macros::*;
 
@@ -84,7 +83,7 @@ pub async fn init<'a, P: Into<Option<&'a str>>>(
     seed: u64,
     assets_dir: P,
     mods_dir: P,
-) -> Result<()> {
+) -> result::Result<()> {
     if let Some(assets_dir) = assets_dir.into() {
         resources::set_assets_dir(assets_dir);
     }

@@ -10,9 +10,9 @@ use crate::color::{colors, Color};
 use crate::math::{Rect, URect};
 use crate::math::{Size, Vec2};
 use crate::rendering::{draw_rectangle_outline, draw_texture, DrawTextureParams};
+use crate::result::Result;
 use crate::texture::Texture2D;
 use crate::transform::Transform;
-use crate::Result;
 
 use super::{Drawable, DrawableKind};
 

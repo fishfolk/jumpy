@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 pub use crate::backend_impl::video::*;
 
 use crate::math::{ivec2, IVec2, Size, UVec2, Vec2, Zero};
-use crate::Result;
+use crate::result::Result;
 
 pub const DEFAULT_MSAA_SAMPLES: Option<u16> = Some(1);
 pub const DEFAULT_MAX_FPS: Option<u16> = Some(120);

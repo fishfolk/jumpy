@@ -15,18 +15,14 @@ pub use vertex_array::VertexArray;
 
 use crate::color::Color;
 use crate::rendering::DrawTextureParams;
+use crate::result::Result;
 use crate::texture::Texture2D;
-use crate::Result;
 
 use crate::video::VideoConfig;
 use renderer::*;
 
 pub fn clear_screen<C: Into<Option<Color>>>(clear_color: C) {
-    if let Some(clear_color) = clear_color.into() {
-        set_clear_color(clear_color);
-    }
-
-    renderer().clear_screen();
+    renderer().clear_screen(clear_color);
 }
 
 pub fn set_clear_color(clear_color: Color) {

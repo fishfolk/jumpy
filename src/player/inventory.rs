@@ -9,7 +9,7 @@ use crate::items::{
 use crate::player::{Player, PlayerController, PlayerState, IDLE_ANIMATION_ID, PICKUP_GRACE_TIME};
 use crate::{Drawable, Item, PassiveEffect, PhysicsBody};
 use ff_core::particles::ParticleEmitter;
-use ff_core::Result;
+use ff_core::result::Result;
 
 const THROW_FORCE: f32 = 5.0;
 

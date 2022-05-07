@@ -5,6 +5,7 @@ use std::any::Any;
 use std::time::Duration;
 
 use crate::color::{colors, Color};
+use crate::config::Config;
 use crate::game::draw_delta_time;
 use crate::gl::gl_context;
 use crate::math::{vec2, Rect, Size, Vec2};
@@ -16,11 +17,11 @@ use crate::rendering::vertex::{Index, VertexImpl};
 use crate::rendering::{
     Buffer, DrawTextureParams, RenderTarget, Shader, ShaderProgram, Vertex, VertexArray,
 };
+use crate::result::Result;
 use crate::text::{draw_queued_text, draw_text, HorizontalAlignment, TextParams};
 use crate::texture::{Texture2D, TextureFilterMode, TextureUnit};
 use crate::video::VideoConfig;
 use crate::window::{get_context_wrapper, get_window};
-use crate::Result;
 
 const BATCH_SIZE: usize = 128;
 
@@ -30,14 +31,13 @@ const QUAD_VERTEX_CNT: usize = 4;
 const QUAD_INDEX_CNT: usize = 6;
 
 const VERTEX_SHADER_SRC: &str = "
-#version 410
+#version 420
 
 layout(location = 0) in vec2 vertex_position;
 layout(location = 1) in vec4 vertex_color;
 layout(location = 2) in vec2 texture_coords;
 
-uniform mat4 projection;
-uniform mat4 model;
+uniform mat4 mvp;
 
 out vec4 color;
 out vec2 uv;
@@ -45,80 +45,55 @@ out vec2 uv;
 void main() {
   color = vertex_color;
   uv = texture_coords;
-  gl_Position = projection * model * vec4(vertex_position, 1.0, 1.0);
+
+  gl_Position = vec4(vertex_position, 0.0, 0.0) * mvp;
 }
 ";
 
 const FRAGMENT_SHADER_SRC: &str = "
-#version 410
+#version 420
+layout(binding = 0) uniform sampler2D texture_sampler;
 
 in vec4 color;
 in vec2 uv;
 
-uniform sampler2D base_texture;
+out vec4 frag_color;
 
 void main() {
-  gl_FragColor = texture(base_texture, uv) * color;
+  frag_color = texture(texture_sampler, uv) * color;
 }
 ";
 
-#[derive(Clone)]
-pub struct RenderStats {
-    pub fps: u32,
-    pub frame_time: Vec<Duration>,
-    pub quads: u32,
-    pub draws: u32,
-}
-
-pub trait Renderer {
-    fn use_program(&mut self, program: ShaderProgram);
-    fn set_clear_color(&mut self, clear_color: Color);
-    fn clear_screen(&self);
-    fn draw_texture(&mut self, x: f32, y: f32, texture: Texture2D, params: DrawTextureParams);
-    fn end_frame(&mut self) -> Result<()>;
-    fn apply_config(&mut self, config: &VideoConfig);
-    fn frame_time(&self) -> &[Duration];
-
-    fn fps(&self) -> u32 {
-        let mut total = 0.0;
-        for t in self.frame_time() {
-            total += t.as_secs_f32();
-        }
-
-        (1.0 / (total / self.frame_time().len() as f32)).round() as u32
-    }
-}
-
-pub struct DefaultRenderer<V: VertexImpl> {
+pub struct Renderer {
     clear_color: Option<Color>,
     current_texture: Option<Texture2D>,
     current_program: Option<ShaderProgram>,
     should_show_fps: bool,
     draws: u32,
     quads: u32,
-    frame_time: Vec<Duration>,
-    batched: Vec<V>,
+    frame_history: Vec<Duration>,
+    batched: Vec<Vertex>,
     batched_cnt: usize,
     indices: Vec<u32>,
-    vertex_buffer: Buffer<V>,
+    vertex_buffer: Buffer<Vertex>,
     index_buffer: Buffer<Index>,
     vertex_array: VertexArray,
 }
 
-impl<V: VertexImpl> DefaultRenderer<V> {
+impl Renderer {
     pub fn new(config: &VideoConfig) -> Result<Self> {
         let vertex_buffer = Buffer::new_vertex()?;
         let index_buffer = Buffer::new_element()?;
 
         let mut indices = Vec::with_capacity(BATCH_SIZE * QUAD_INDEX_CNT);
         for i in 0..BATCH_SIZE {
-            let offset = i as u32 * 3;
+            let offset = i as u32 * 4;
 
             indices.push(0 + offset);
             indices.push(1 + offset);
             indices.push(2 + offset);
+            indices.push(0 + offset);
             indices.push(2 + offset);
-            indices.push(1 + offset);
             indices.push(3 + offset);
         }
 
@@ -127,21 +102,23 @@ impl<V: VertexImpl> DefaultRenderer<V> {
                 Shader::new(ShaderKind::Vertex, VERTEX_SHADER_SRC.as_bytes())?,
                 Shader::new(ShaderKind::Fragment, FRAGMENT_SHADER_SRC.as_bytes())?,
             ],
-            &[
-                ("projection", UniformType::Mat4),
-                ("model", UniformType::Mat4),
-                ("base_texture", UniformType::Sampler2D),
-            ],
+            &[("mvp", UniformType::Mat4)],
         )?;
 
-        let vertex_array = VertexArray::new::<V>()?;
+        let vertex_array = VertexArray::new::<Vertex>()?;
 
-        Ok(DefaultRenderer {
+        let gl = gl_context();
+        unsafe {
+            gl.enable(glow::DEPTH_TEST);
+            gl.depth_func(glow::LESS);
+        }
+
+        Ok(Renderer {
             clear_color: None,
             should_show_fps: config.should_show_fps,
             draws: 0,
             quads: 0,
-            frame_time: Vec::with_capacity(FPS_FRAME_HISTORY_CNT),
+            frame_history: Vec::with_capacity(FPS_FRAME_HISTORY_CNT),
             current_texture: None,
             current_program: Some(program),
             batched: Vec::with_capacity(BATCH_SIZE * QUAD_VERTEX_CNT),
@@ -164,21 +141,19 @@ impl<V: VertexImpl> DefaultRenderer<V> {
 
             program.activate();
 
-            let projection = camera.projection();
-            program.set_uniform_mat4("projection", false, projection);
-
-            let model = Mat4::IDENTITY;
-            program.set_uniform_mat4("model", false, model);
-
             self.vertex_array.bind();
 
-            self.vertex_buffer.bind();
-            self.vertex_buffer.set_data(&self.batched);
+            self.vertex_buffer.set_data(0, &self.batched);
 
             let index_cnt = self.batched_cnt * QUAD_INDEX_CNT;
 
-            self.index_buffer.bind();
-            self.index_buffer.set_data(&self.indices[0..index_cnt]);
+            self.index_buffer.set_data(0, &self.indices[0..index_cnt]);
+
+            self.vertex_array.apply_layout();
+
+            let projection = camera.projection();
+            let model = Mat4::IDENTITY;
+            program.set_uniform_mat4("mvp", false, model * projection);
 
             let texture = &self
                 .current_texture
@@ -186,26 +161,15 @@ impl<V: VertexImpl> DefaultRenderer<V> {
 
             texture.bind(TextureUnit::Texture0);
 
-            program.set_uniform_sampler_2d("base_texture", TextureUnit::Texture0);
-
             let gl = gl_context();
             unsafe {
-                /*
-                gl.draw_elements(
-                    glow::TRIANGLES,
-                    self.batched_cnt as i32,
-                    glow::UNSIGNED_INT,
-                    0,
-                );
-                */
-
-                gl.draw_arrays(glow::TRIANGLES, 0, self.batched_cnt as i32);
+                gl.draw_elements(glow::QUADS, self.batched_cnt as i32, glow::UNSIGNED_INT, 0);
 
                 gl.bind_texture(glow::TEXTURE_2D, None);
 
-                for i in 0..self.vertex_array.attr_cnt() {
-                    gl.disable_vertex_attrib_array(i as u32);
-                }
+                // for i in 0..self.vertex_array.attr_cnt() {
+                //     gl.disable_vertex_attrib_array(i as u32);
+                // }
 
                 gl.bind_vertex_array(None);
 
@@ -222,10 +186,8 @@ impl<V: VertexImpl> DefaultRenderer<V> {
             self.batched_cnt = 0;
         }
     }
-}
 
-impl<V: VertexImpl> Renderer for DefaultRenderer<V> {
-    fn use_program(&mut self, mut program: ShaderProgram) {
+    pub fn use_program(&mut self, mut program: ShaderProgram) {
         if self.current_program.is_none() || self.current_program.unwrap() != program {
             self.draw_batch();
 
@@ -235,7 +197,7 @@ impl<V: VertexImpl> Renderer for DefaultRenderer<V> {
         }
     }
 
-    fn set_clear_color(&mut self, clear_color: Color) {
+    pub fn set_clear_color(&mut self, clear_color: Color) {
         self.clear_color = Some(clear_color);
 
         let gl = gl_context();
@@ -249,14 +211,18 @@ impl<V: VertexImpl> Renderer for DefaultRenderer<V> {
         }
     }
 
-    fn clear_screen(&self) {
+    pub fn clear_screen<C: Into<Option<Color>>>(&mut self, clear_color: C) {
+        if let Some(clear_color) = clear_color.into() {
+            self.set_clear_color(clear_color);
+        }
+
         let gl = gl_context();
         unsafe {
             gl.clear(glow::COLOR_BUFFER_BIT | glow::DEPTH_BUFFER_BIT);
         };
     }
 
-    fn draw_texture(&mut self, x: f32, y: f32, texture: Texture2D, params: DrawTextureParams) {
+    pub fn draw_texture(&mut self, x: f32, y: f32, texture: Texture2D, params: DrawTextureParams) {
         if let Some(current_texture) = self.current_texture {
             if current_texture != texture {
                 self.current_texture = Some(texture);
@@ -277,44 +243,42 @@ impl<V: VertexImpl> Renderer for DefaultRenderer<V> {
 
         let size = params.dest_size.unwrap_or_else(|| texture.size());
 
-        let color = params.tint.unwrap_or_else(|| colors::WHITE);
-
-        self.batched.push(V::new(
-            vec3(x, y, 1.0),
-            color,
+        self.batched.push(Vertex::new(
+            vec2(x, y),
+            params.tint,
             vec2(texture_rect.x, texture_rect.y),
         ));
 
-        self.batched.push(V::new(
-            vec3(x + size.width, y, 1.0),
-            color,
-            vec2(texture_rect.x + texture_rect.width, texture_rect.y),
-        ));
-
-        self.batched.push(V::new(
-            vec3(x, y + size.height, 1.0),
-            color,
+        self.batched.push(Vertex::new(
+            vec2(x, y + size.height),
+            params.tint,
             vec2(texture_rect.x, texture_rect.y + texture_rect.height),
         ));
 
-        self.batched.push(V::new(
-            vec3(x + size.width, y + size.height, 1.0),
-            color,
+        self.batched.push(Vertex::new(
+            vec2(x + size.width, y + size.height),
+            params.tint,
             vec2(
                 texture_rect.x + texture_rect.width,
                 texture_rect.y + texture_rect.height,
             ),
         ));
 
+        self.batched.push(Vertex::new(
+            vec2(x + size.width, y),
+            params.tint,
+            vec2(texture_rect.x + texture_rect.width, texture_rect.y),
+        ));
+
         self.batched_cnt += 1;
     }
 
-    fn end_frame(&mut self) -> Result<()> {
-        while self.frame_time.len() >= FPS_FRAME_HISTORY_CNT - 1 {
-            self.frame_time.remove(0);
+    pub fn end_frame(&mut self) -> Result<()> {
+        while self.frame_history.len() >= FPS_FRAME_HISTORY_CNT - 1 {
+            self.frame_history.remove(0);
         }
 
-        self.frame_time.push(draw_delta_time());
+        self.frame_history.push(draw_delta_time());
 
         self.draw_batch();
 
@@ -381,24 +345,32 @@ impl<V: VertexImpl> Renderer for DefaultRenderer<V> {
         Ok(())
     }
 
-    fn apply_config(&mut self, config: &VideoConfig) {
-        self.should_show_fps = config.should_show_fps;
+    pub fn fps(&self) -> u32 {
+        let mut total = 0.0;
+        for t in &self.frame_history {
+            total += t.as_secs_f32();
+        }
+
+        (1.0 / (total / self.frame_history.len() as f32)).round() as u32
     }
 
-    fn frame_time(&self) -> &[Duration] {
-        &self.frame_time
+    pub fn apply_config(&mut self, config: &VideoConfig) {
+        self.should_show_fps = config.should_show_fps;
     }
 }
 
-static mut RENDERER: Option<Box<dyn Renderer>> = None;
+#[cfg(feature = "2d-renderer")]
+static mut RENDERER: Option<Renderer> = None;
 
-pub fn init_renderer<V: 'static + VertexImpl>(config: &VideoConfig) -> Result<()> {
-    let renderer = DefaultRenderer::<V>::new(config)?;
-    unsafe { RENDERER = Some(Box::new(renderer)) }
+#[cfg(feature = "2d-renderer")]
+pub fn init_renderer(config: &VideoConfig) -> Result<()> {
+    let renderer = Renderer::new(config)?;
+    unsafe { RENDERER = Some(renderer) }
     Ok(())
 }
 
-pub fn renderer() -> &'static mut Box<dyn Renderer> {
+#[cfg(feature = "2d-renderer")]
+pub fn renderer() -> &'static mut Renderer {
     unsafe {
         RENDERER.as_mut().unwrap_or_else(|| {
             panic!("ERROR: Attempted to access renderer but it has not been initialized yet!")

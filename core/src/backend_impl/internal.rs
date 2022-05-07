@@ -22,6 +22,9 @@ pub mod gl;
 #[path = "internal/texture.rs"]
 pub mod texture;
 
+#[path = "internal/image.rs"]
+pub mod image;
+
 #[path = "internal/rendering/mod.rs"]
 pub mod rendering;
 

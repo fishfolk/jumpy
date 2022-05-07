@@ -4,6 +4,9 @@ pub mod config;
 #[path = "macroquad/text.rs"]
 pub mod text;
 
+#[path = "macroquad/image.rs"]
+pub mod image;
+
 #[path = "macroquad/texture.rs"]
 pub mod texture;
 

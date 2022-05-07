@@ -3,7 +3,7 @@ use ff_core::ecs::World;
 use ff_core::input::{collect_local_input, GameInputScheme, PlayerInput};
 use ff_core::network::PlayerId;
 use ff_core::prelude::*;
-use ff_core::Result;
+use ff_core::result::Result;
 
 #[derive(Debug, Clone)]
 pub enum PlayerControllerKind {

@@ -4,12 +4,12 @@ use crate::prelude::{draw_texture, viewport};
 use crate::rendering::DrawTextureParams;
 use crate::resources::get_texture;
 
-use crate::resources::TextureResource;
 use crate::storage;
+use crate::texture::Texture2D;
 use crate::window::window_size;
 
 pub struct Background {
-    textures: Vec<TextureResource>,
+    textures: Vec<Texture2D>,
     size: Size<f32>,
     position: Vec2,
 }
@@ -27,8 +27,8 @@ impl Background {
 
     #[cfg(feature = "macroquad-backend")]
     pub fn ui(&self, ui: &mut Ui) {
-        for res in &self.textures {
-            widgets::Texture::new(res.texture.into())
+        for texture in &self.textures {
+            widgets::Texture::new(texture.into())
                 .size(self.size.width, self.size.height)
                 .position(self.position)
                 .ui(ui);
@@ -36,11 +36,11 @@ impl Background {
     }
 
     pub fn draw(&self) {
-        for texture_res in &self.textures {
+        for texture in &self.textures {
             draw_texture(
                 self.position.x,
                 self.position.y,
-                texture_res.texture,
+                texture,
                 DrawTextureParams {
                     dest_size: Some(self.size),
                     ..Default::default()

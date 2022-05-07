@@ -11,8 +11,6 @@ use std::{error, fmt, io, result, string::FromUtf8Error};
 
 use cfg_if::cfg_if;
 
-pub type Result<T> = result::Result<T, Error>;
-
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ErrorKind {
     General,
@@ -227,10 +225,10 @@ impl From<toml::de::Error> for Error {
 macro_rules! formaterr {
     ($kind:path, $($arg:tt)*) => ({
         let res = format!($($arg)*);
-        $crate::Error::new_message($kind, &res)
+        $crate::error::Error::new_message($kind, &res)
     });
     ($($arg:tt)*) => ({
         let res = format!($($arg)*);
-        $crate::Error::new_const($crate::error::ErrorKind::General, &res)
+        $crate::error::Error::new_const($crate::error::ErrorKind::General, &res)
     });
 }

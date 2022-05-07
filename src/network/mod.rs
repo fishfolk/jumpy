@@ -2,7 +2,7 @@ use ff_core::ecs::World;
 
 pub mod api;
 
-use ff_core::Result;
+use ff_core::result::Result;
 
 pub fn update_network_client(world: &mut World, delta_time: f32) -> Result<()> {
     update_network_common(world, delta_time)?;

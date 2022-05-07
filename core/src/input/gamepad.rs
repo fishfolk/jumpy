@@ -3,7 +3,7 @@ use std::ops::Deref;
 
 use serde::{Deserialize, Serialize};
 
-use crate::Result;
+use crate::result::Result;
 
 static mut GAMEPAD_CONTEXT: Option<GamepadContext> = None;
 

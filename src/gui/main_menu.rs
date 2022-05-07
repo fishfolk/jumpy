@@ -10,7 +10,7 @@ use ff_core::gui::{
     get_gui_theme, Menu, MenuEntry, MenuResult, Panel, WINDOW_BG_COLOR, WINDOW_MARGIN_H,
     WINDOW_MARGIN_V,
 };
-use ff_core::Result;
+use ff_core::result::Result;
 
 use crate::player::{PlayerAnimations, PlayerControllerKind, PlayerParams};
 use crate::{build_state_for_game_mode, gui, GameMode, GuiTheme, Map};
@@ -178,7 +178,7 @@ impl CharacterSelectState {
             sprites: (0..player_cnt)
                 .map(|i| {
                     let character = get_character(i);
-                    let texture_res = get_texture(&character.sprite.texture_id);
+                    let texture = get_texture(&character.sprite.texture_id);
                     let meta: AnimatedSpriteMetadata = character.sprite.clone().into();
                     let animations = meta
                         .animations
@@ -186,12 +186,7 @@ impl CharacterSelectState {
                         .map(|meta| meta.clone().into())
                         .collect::<Vec<_>>();
                     let params = meta.into();
-                    AnimatedSprite::new(
-                        texture_res.texture,
-                        texture_res.frame_size(),
-                        &animations,
-                        params,
-                    )
+                    AnimatedSprite::new(texture, texture_res.frame_size(), &animations, params)
                 })
                 .collect(),
             navigation_grace_timers: (0..player_cnt).map(|_| 0.0).collect(),
@@ -511,7 +506,7 @@ impl MainMenuState {
 
                 let meta: AnimatedSpriteMetadata = character.sprite.clone().into();
 
-                let texture_res = get_texture(&meta.texture_id);
+                let texture = get_texture(&meta.texture_id);
 
                 let animations = meta
                     .animations
@@ -521,8 +516,8 @@ impl MainMenuState {
                     .collect::<Vec<_>>();
 
                 self.character_select_state.sprites[i] = AnimatedSprite::new(
-                    texture_res.texture,
-                    texture_res.frame_size(),
+                    texture,
+                    texture.frame_size(),
                     animations.as_slice(),
                     meta.clone().into(),
                 );

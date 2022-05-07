@@ -181,28 +181,15 @@ impl Window for BackgroundPropertiesWindow {
         )
         .position(vec2(0.0, (size.y * 0.5) + ELEMENT_MARGIN))
         .ui(ui, |ui| {
-            let mut texture_ids = iter_textures()
-                .filter_map(|(_, texture_res)| {
-                    let mut res = None;
+            let mut textures = iter_texture_ids_of_kind(TextureKind::Background);
 
-                    if let Some(kind) = texture_res.meta.kind {
-                        if kind == TextureKind::Background {
-                            res = Some(texture_res.meta.id.as_str());
-                        }
-                    }
+            textures.sort_unstable();
 
-                    res
-                })
-                .collect::<Vec<&str>>();
-
-            texture_ids.sort_unstable();
-
-            let mut texture_index = texture_ids
-                .iter()
+            let mut texture_index = textures
                 .enumerate()
-                .find_map(|(i, id)| {
+                .find_map(|(i, &id)| {
                     if let Some(texture_id) = &self.layer_texture_id {
-                        if *id == texture_id {
+                        if *id == *texture_id {
                             return Some(i);
                         }
                     }

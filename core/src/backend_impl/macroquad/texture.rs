@@ -1,11 +1,13 @@
 use std::path::Path;
 
-use crate::file::read_from_file;
+pub use macroquad::prelude::ImageFormat as TextureFormat;
+
 use macroquad::texture::load_texture;
 
+use crate::file::read_from_file;
 use crate::math::{vec2, Size, Vec2};
-use crate::texture::{TextureFilterMode, TextureFormat};
-use crate::Result;
+use crate::result::Result;
+use crate::texture::{TextureFilterMode, TextureKind};
 
 impl From<macroquad::texture::FilterMode> for TextureFilterMode {
     fn from(mode: macroquad::texture::FilterMode) -> Self {
@@ -26,50 +28,52 @@ impl From<TextureFilterMode> for macroquad::texture::FilterMode {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Texture2D(macroquad::texture::Texture2D);
+pub struct Texture2DImpl {
+    texture_impl: macroquad::texture::Texture2D,
+    pub kind: TextureKind,
+    pub filter_mode: TextureFilterMode,
+    frame_size: Option<Size<f32>>,
+}
 
-impl Texture2D {
+impl Texture2DImpl {
+    pub(crate) fn from_bytes<T, K, F, S>(
+        bytes: &[u8],
+        format: T,
+        kind: K,
+        filter_mode: F,
+        frame_size: S,
+    ) -> Result<Self>
+    where
+        T: Into<Option<TextureFormat>>,
+        K: Into<Option<TextureKind>>,
+        F: Into<Option<TextureFilterMode>>,
+        S: Into<Option<Size<f32>>>,
+    {
+        let format = format.into().map(|f| f.into());
+        let kind = kind.into().unwrap_or_default();
+        let filter_mode = filter_mode.into().unwrap_or_default();
+        let frame_size = frame_size.into();
+
+        let texture_impl = macroquad::texture::Texture2D::from_file_with_format(bytes, format);
+        texture_impl.set_filter(filter_mode.into());
+
+        Ok(Texture2DImpl {
+            texture_impl,
+            kind,
+            filter_mode,
+            frame_size,
+        })
+    }
+
+    pub fn mq_texture(&self) -> macroquad::texture::Texture2D {
+        self.texture_impl
+    }
+
     pub fn size(&self) -> Size<f32> {
-        Size::new(self.0.width(), self.0.height())
+        self.texture_impl.size()
     }
 
-    pub fn format(&self) -> TextureFormat {
-        TextureFormat::Png
+    pub fn frame_size(&self) -> Size<f32> {
+        self.frame_size.unwrap_or(self.size())
     }
-
-    pub fn set_filter_mode(&mut self, filter_mode: TextureFilterMode) {
-        self.0.set_filter(filter_mode.into())
-    }
-}
-
-impl From<macroquad::texture::Texture2D> for Texture2D {
-    fn from(texture: macroquad::texture::Texture2D) -> Self {
-        Texture2D(texture)
-    }
-}
-
-impl From<Texture2D> for macroquad::texture::Texture2D {
-    fn from(texture: Texture2D) -> Self {
-        texture.0
-    }
-}
-
-pub fn load_texture_bytes<F: Into<Option<TextureFilterMode>>>(
-    bytes: &[u8],
-    filter_mode: F,
-) -> Result<Texture2D> {
-    let texture = macroquad::texture::Texture2D::from_file_with_format(bytes, None);
-
-    let filter_mode = filter_mode.into().unwrap_or_default();
-    texture.set_filter(filter_mode.into());
-
-    Ok(texture.into())
-}
-
-pub async fn load_texture_file<P: AsRef<Path>, F: Into<Option<TextureFilterMode>>>(
-    path: P,
-    filter_mode: F,
-) -> Result<Texture2D> {
-    let bytes = read_from_file(path).await?;
-    load_texture_bytes(&bytes, filter_mode)
 }

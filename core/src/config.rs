@@ -4,12 +4,12 @@ use std::slice::{Iter, IterMut};
 use std::sync::{Arc, Mutex};
 use std::{env, fs};
 
-use crate::audio::AudioConfig;
 use serde::{Deserialize, Serialize};
 
-use crate::error::Result;
+use crate::audio::AudioConfig;
 use crate::input::InputMapping;
 use crate::parsing::{deserialize_toml_bytes, load_toml_file};
+use crate::result::Result;
 use crate::video::VideoConfig;
 use crate::window::WindowConfig;
 

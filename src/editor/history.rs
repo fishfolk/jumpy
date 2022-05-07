@@ -1,4 +1,4 @@
-use ff_core::Result;
+use ff_core::result::Result;
 
 use crate::Map;
 

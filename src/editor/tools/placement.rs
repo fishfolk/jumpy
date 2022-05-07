@@ -4,10 +4,8 @@ use super::{EditorAction, EditorContext, EditorTool, EditorToolParams};
 
 use crate::editor::EditorCamera;
 
-use ff_core::{
-    map::{Map, MapLayerKind},
-};
 use ff_core::macroquad::experimental::scene;
+use ff_core::map::{Map, MapLayerKind};
 
 #[derive(Default)]
 pub struct TilePlacementTool {
@@ -233,12 +231,9 @@ impl EditorTool for SpawnPointPlacementTool {
             .unwrap()
             .to_world_space(ctx.cursor_position);
 
-        let texture_res = get_texture("spawn_point_icon");
-        let texture_size = texture_res.texture.size();
-        let offset = vec2(
-            texture_size.width / 2.0,
-            texture_size.height,
-        );
+        let texture = get_texture("spawn_point_icon");
+        let texture_size = texture.size();
+        let offset = vec2(texture_size.width / 2.0, texture_size.height);
 
         let action = EditorAction::CreateSpawnPoint(cursor_world_position - offset);
 

@@ -4,8 +4,11 @@ pub use gamepad::*;
 
 use serde::{Deserialize, Serialize};
 
+use crate::config::Config;
 use crate::error::ErrorKind;
-use crate::{storage, Config, Result};
+use crate::formaterr;
+use crate::result::Result;
+use crate::storage;
 
 pub use crate::backend_impl::input::*;
 

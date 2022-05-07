@@ -2,8 +2,8 @@ use cfg_if::cfg_if;
 
 use serde::{Deserialize, Serialize};
 
+use crate::result::Result;
 use crate::video::Resolution;
-use crate::Result;
 
 pub use crate::backend_impl::window::*;
 

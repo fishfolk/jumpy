@@ -1,6 +1,6 @@
 pub use hecs::*;
 
-use crate::Result;
+use crate::result::Result;
 
 pub type UpdateFn = fn(world: &mut World, delta_time: f32) -> Result<()>;
 

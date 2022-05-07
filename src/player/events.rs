@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::effects::passive::PassiveEffectDamageBlockKind;
 use crate::Item;
 use ff_core::prelude::*;
-use ff_core::Result;
+use ff_core::result::Result;
 
 use crate::player::{Player, PlayerState};
 

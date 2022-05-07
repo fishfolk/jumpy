@@ -14,7 +14,6 @@ use crate::{
 use crate::effects::passive::get_passive_effect;
 
 use ff_core::prelude::*;
-use ff_core::Result;
 
 use crate::effects::active::spawn_active_effect;
 use crate::physics::PhysicsBodyParams;
@@ -188,11 +187,11 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
         .map(|a| a.into())
         .collect::<Vec<_>>();
 
-    let texture_res = get_texture(&meta.sprite.texture_id);
+    let texture = get_texture(&meta.sprite.texture_id);
 
     let sprite = AnimatedSprite::new(
-        texture_res.texture,
-        texture_res.frame_size(),
+        texture,
+        texture.frame_size(),
         animations.as_slice(),
         meta.sprite.clone().into(),
     );
@@ -269,11 +268,11 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
                     .map(|a| a.into())
                     .collect::<Vec<_>>();
 
-                let texture_res = get_texture(&effect_sprite.texture_id);
+                let texture = get_texture(&effect_sprite.texture_id);
 
                 let mut sprite = AnimatedSprite::new(
-                    texture_res.texture,
-                    texture_res.frame_size(),
+                    texture,
+                    texture.frame_size(),
                     animations.as_slice(),
                     effect_sprite.clone().into(),
                 );

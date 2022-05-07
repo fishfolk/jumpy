@@ -16,7 +16,7 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
 use crate::file::{read_from_file, Error};
-use crate::Result;
+use crate::result::Result;
 
 pub fn deserialize_bytes_by_extension<'a, T>(extension: &str, bytes: &'a [u8]) -> Result<T>
 where

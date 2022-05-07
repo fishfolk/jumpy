@@ -116,6 +116,7 @@ impl Renderer {
             gl.depth_func(glow::LESS);
             gl.enable(glow::BLEND);
             gl.blend_func(glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA);
+            gl.enable(glow::FRAMEBUFFER_SRGB);
         }
 
         Ok(Renderer {

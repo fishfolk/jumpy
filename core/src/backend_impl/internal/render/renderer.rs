@@ -244,7 +244,6 @@ impl Renderer {
     pub fn draw_texture(&mut self, x: f32, y: f32, texture: Texture2D, params: DrawTextureParams) {
         if let Some(current_texture) = self.current_texture {
             if current_texture != texture {
-                self.current_texture = Some(texture);
                 self.draw_batch();
             }
         }

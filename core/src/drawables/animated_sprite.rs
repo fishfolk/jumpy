@@ -323,48 +323,50 @@ pub fn update_one_animated_sprite(delta_time: f32, sprite: &mut AnimatedSprite) 
 
         sprite.current_frame %= frame_cnt;
 
-        for tween in tweens.values_mut() {
-            let mut current = tween.keyframes.first();
-            let mut next = current;
+        if sprite.is_playing {
+            for tween in tweens.values_mut() {
+                let mut current = tween.keyframes.first();
+                let mut next = current;
 
-            let len = tween.keyframes.len();
+                let len = tween.keyframes.len();
 
-            if len > 0 {
-                'tweens: for i in 1..len {
-                    let keyframe = tween.keyframes.get(i).unwrap();
+                if len > 0 {
+                    'tweens: for i in 1..len {
+                        let keyframe = tween.keyframes.get(i).unwrap();
 
-                    if sprite.current_frame < keyframe.frame {
-                        next = Some(keyframe);
+                        if sprite.current_frame < keyframe.frame {
+                            next = Some(keyframe);
 
-                        break 'tweens;
-                    } else {
-                        current = Some(keyframe);
+                            break 'tweens;
+                        } else {
+                            current = Some(keyframe);
+                        }
                     }
                 }
-            }
 
-            if let Some(current) = current {
-                if let Some(next) = next {
-                    let (frames, progress) = if current.frame <= next.frame {
-                        let frames = next.frame - current.frame + 1;
-                        let progress = sprite.current_frame - current.frame + 1;
+                if let Some(current) = current {
+                    if let Some(next) = next {
+                        let (frames, progress) = if current.frame <= next.frame {
+                            let frames = next.frame - current.frame + 1;
+                            let progress = sprite.current_frame - current.frame + 1;
 
-                        (frames, progress)
-                    } else {
-                        let frames = frame_cnt + next.frame - current.frame;
-                        let progress = if sprite.current_frame < current.frame {
-                            frame_cnt + sprite.current_frame - current.frame
+                            (frames, progress)
                         } else {
-                            sprite.current_frame - current.frame + 1
+                            let frames = frame_cnt + next.frame - current.frame;
+                            let progress = if sprite.current_frame < current.frame {
+                                frame_cnt + sprite.current_frame - current.frame
+                            } else {
+                                sprite.current_frame - current.frame + 1
+                            };
+
+                            (frames, progress)
                         };
 
-                        (frames, progress)
-                    };
+                        let factor = progress as f32 / frames as f32;
 
-                    let factor = progress as f32 / frames as f32;
-
-                    tween.current_translation =
-                        current.translation + (next.translation - current.translation).mul(factor);
+                        tween.current_translation = current.translation
+                            + (next.translation - current.translation).mul(factor);
+                    }
                 }
             }
         }

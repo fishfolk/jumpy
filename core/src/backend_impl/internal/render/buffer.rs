@@ -4,7 +4,6 @@ use crate::gl::gl_context;
 use crate::prelude::Vertex;
 use crate::render::vertex::{Index, VertexImpl};
 use crate::result::Result;
-use crate::FLOAT_SIZE;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum BufferKind {
@@ -40,33 +39,38 @@ pub struct Buffer<T> {
 }
 
 impl<V: VertexImpl> Buffer<V> {
-    pub fn new_vertex() -> Result<Self> {
-        let gl = gl_context();
-        let gl_buffer = unsafe { gl.create_buffer()? };
-
-        Ok(Buffer {
-            gl_buffer,
-            length: 0,
-            kind: BufferKind::Vertex,
-            _p: core::marker::PhantomData,
-        })
+    pub fn new_vertex(length: usize) -> Result<Self> {
+        Self::new(BufferKind::Vertex, length)
     }
 }
 
 impl Buffer<Index> {
-    pub fn new_element() -> Result<Self> {
-        Self::new(BufferKind::Element)
+    pub fn new_element(length: usize) -> Result<Self> {
+        Self::new(BufferKind::Element, length)
     }
 }
 
 impl<T> Buffer<T> {
-    pub fn new(kind: BufferKind) -> Result<Self> {
+    pub fn new(kind: BufferKind, length: usize) -> Result<Self> {
+        let target = kind.into();
+
         let gl = gl_context();
-        let gl_buffer = unsafe { gl.create_buffer() }?;
+        let gl_buffer = unsafe {
+            let buffer = gl.create_buffer()?;
+
+            gl.bind_buffer(target, Some(buffer));
+            gl.buffer_data_size(
+                target,
+                length as i32 * core::mem::size_of::<T>() as i32,
+                glow::STREAM_DRAW,
+            );
+
+            buffer
+        };
 
         Ok(Buffer {
             gl_buffer,
-            length: 0,
+            length,
             kind,
             _p: core::marker::PhantomData,
         })
@@ -100,7 +104,7 @@ impl<T> Buffer<T> {
             );
 
             if data_len >= self.length {
-                gl.buffer_data_size(target, bytes.len() as i32 * 2, glow::STREAM_DRAW);
+                gl.buffer_data_size(target, bytes.len() as i32, glow::STREAM_DRAW);
                 self.length = data_len;
             }
 

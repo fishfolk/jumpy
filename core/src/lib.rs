@@ -36,9 +36,6 @@ pub mod window;
 
 pub use macros::*;
 
-pub(crate) const INT_SIZE: usize = 4;
-pub(crate) const FLOAT_SIZE: usize = 4;
-
 cfg_if! {
     if #[cfg(feature = "internal-backend")] {
         pub use glutin;

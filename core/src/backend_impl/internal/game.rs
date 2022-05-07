@@ -37,7 +37,7 @@ use crate::window::{
 
 use crate::state::{GameState, GameStateBuilderFn};
 use crate::text::{draw_text, TextParams};
-use crate::viewport::{viewport, viewport_size};
+use crate::viewport::{resize_viewport, viewport, viewport_size};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum FramePhase {
@@ -194,6 +194,9 @@ impl<E: 'static + Debug> Game<E> {
                     }
                     WindowEvent::Resized(physical_size) => {
                         get_context_wrapper().resize(*physical_size);
+
+                        let size = Size::from(*physical_size).as_f32();
+                        resize_viewport(size.width, size.height);
                     }
                     _ => {}
                 },

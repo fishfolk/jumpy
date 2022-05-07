@@ -69,6 +69,11 @@ impl Node for Game {
     where
         Self: Sized,
     {
+        let viewport_size = viewport_size();
+        if viewport_size != window_size() {
+            resize_viewport(physical_size.width as f32, physical_size.height as f32);
+        }
+
         node.state.draw(get_frame_time()).unwrap();
     }
 }

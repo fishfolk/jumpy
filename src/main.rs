@@ -155,7 +155,7 @@ async fn internal_main() -> Result<()> {
         },
         PlayerParams {
             index: 1,
-            controller: PlayerControllerKind::LocalInput(GameInputScheme::KeyboardLeft),
+            controller: PlayerControllerKind::LocalInput(GameInputScheme::KeyboardRight),
             character: get_character(1).clone(),
         },
     ];

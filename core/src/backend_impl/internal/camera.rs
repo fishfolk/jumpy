@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
-use crate::camera::set_main_camera;
-use glam::Vec2;
 use hecs::Entity;
 
-use crate::math::Size;
+use crate::camera::set_main_camera;
+
+use crate::math::{vec3, Mat4, Size, Vec2};
 use crate::render::RenderTarget;
 use crate::viewport::Viewport;
 use crate::window::window_size;
@@ -12,25 +12,30 @@ use crate::window::window_size;
 pub struct CameraImpl {
     pub position: Vec2,
     pub zoom: f32,
+    pub bounds: Size<f32>,
     pub rotation: f32,
-    pub render_target: Option<RenderTarget>,
+    pub render_target: RenderTarget,
 }
 
 impl CameraImpl {
-    pub fn new<P, C, Z, R>(position: P, zoom: Z, render_target: R) -> CameraImpl
+    pub fn new<P, B, Z, R>(position: P, bounds: B, zoom: Z, render_target: R) -> CameraImpl
     where
         P: Into<Option<Vec2>>,
+        B: Into<Option<Size<f32>>>,
         Z: Into<Option<f32>>,
         R: Into<Option<RenderTarget>>,
     {
         let position = position.into().unwrap_or(Vec2::ZERO);
         let zoom = zoom.into().unwrap_or(1.0);
+        let bounds = bounds.into().unwrap_or_else(|| window_size());
+        let render_target = render_target.into().unwrap_or_default();
 
         CameraImpl {
             position,
             zoom,
+            bounds,
             rotation: 0.0,
-            render_target: render_target.into(),
+            render_target,
         }
     }
 
@@ -42,15 +47,6 @@ impl CameraImpl {
 
         offset * ((scale * rotation) * origin)
     }
-
-    pub fn viewport(&self) -> Viewport {
-        let size = self.viewport_size();
-        Viewport::new(self.position.x, self.position.y, size.width, size.height)
-    }
-
-    pub fn viewport_size(&self) -> Size<f32> {
-        window_size() * self.zoom
-    }
 }
 
 impl Default for CameraImpl {
@@ -58,8 +54,9 @@ impl Default for CameraImpl {
         CameraImpl {
             position: Vec2::ZERO,
             zoom: 1.0,
+            bounds: window_size(),
             rotation: 0.0,
-            render_target: RenderTarget::Context,
+            render_target: RenderTarget::default(),
         }
     }
 }

@@ -1,5 +1,4 @@
 use crate::gl::gl_context;
-use crate::{FLOAT_SIZE, INT_SIZE};
 use glow::{HasContext, NativeUniformLocation};
 use num_traits::Num;
 

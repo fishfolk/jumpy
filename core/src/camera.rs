@@ -1,9 +1,11 @@
+use hecs::World;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 
 pub use crate::backend_impl::camera::*;
 
-use crate::math::{vec2, vec3, Mat4, Size, Vec2};
+use crate::math::{vec2, vec3, Mat4, Rect, Size, Vec2};
+use crate::prelude::Transform;
 use crate::render::RenderTarget;
 use crate::viewport::Viewport;
 use crate::window::window_size;
@@ -22,17 +24,16 @@ fn camera_index() -> usize {
 pub struct Camera(usize);
 
 impl Camera {
-    pub fn new<P, Z, R>(position: P, zoom: Z, render_target: R) -> Self
+    pub fn new<P, B, Z, R>(position: P, bounds: B, zoom: Z, render_target: R) -> Self
     where
         P: Into<Option<Vec2>>,
+        B: Into<Option<Size<f32>>>,
         Z: Into<Option<f32>>,
         R: Into<Option<RenderTarget>>,
     {
         let id = unsafe { camera_index() };
-        let position = position.into().unwrap_or(Vec2::ZERO);
-        let zoom = zoom.into().unwrap_or(1.0);
 
-        cameras().insert(id, CameraImpl::new(position, zoom, render_target));
+        cameras().insert(id, CameraImpl::new(position, bounds, zoom, render_target));
 
         let camera = Camera(id);
 
@@ -41,6 +42,14 @@ impl Camera {
         }
 
         camera
+    }
+
+    pub fn aspect_ratio(&self) -> f32 {
+        self.bounds.width / self.bounds.height
+    }
+
+    pub fn world_bounds(&self) -> Size<f32> {
+        self.bounds * (1.0 / self.zoom)
     }
 
     pub fn destroy(self) {
@@ -68,7 +77,7 @@ impl DerefMut for Camera {
 
 impl Default for Camera {
     fn default() -> Self {
-        Self::new(None, None, RenderTarget::Context)
+        Camera::new(None, None, 1.0, RenderTarget::default())
     }
 }
 
@@ -83,7 +92,7 @@ static mut CAMERA: Option<usize> = None;
 pub fn main_camera() -> Camera {
     let id = unsafe {
         CAMERA.get_or_insert_with(|| {
-            let mut camera = Camera::new(None, None, RenderTarget::Context);
+            let mut camera = Camera::default();
             camera.0
         })
     };
@@ -106,4 +115,32 @@ pub fn set_main_camera<C: Into<Option<Camera>>>(camera: C) {
 
 pub fn camera_position() -> Vec2 {
     main_camera().position
+}
+
+pub struct CameraController {
+    pub camera: Option<Camera>,
+    pub offset: Vec2,
+}
+
+impl CameraController {
+    pub fn new<C, O>(camera: C, offset: O) -> Self
+    where
+        C: Into<Option<Camera>>,
+        O: Into<Option<Vec2>>,
+    {
+        CameraController {
+            camera: camera.into(),
+            offset: offset.into().unwrap_or_default(),
+        }
+    }
+}
+
+pub fn update_camera_controllers(world: &mut World, delta_time: f32) {
+    for (e, (transform, camera_controller)) in
+        world.query_mut::<(&mut Transform, &mut CameraController)>()
+    {
+        if let Some(camera) = camera_controller.camera.as_deref_mut() {
+            camera.position = transform.position + camera_controller.offset;
+        }
+    }
 }

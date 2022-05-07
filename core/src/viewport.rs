@@ -1,8 +1,9 @@
 use crate::camera::main_camera;
 
 use crate::math::{vec2, Size, UVec2, Vec2};
+use crate::window::window_size;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct Viewport {
     pub x: f32,
     pub y: f32,
@@ -36,43 +37,29 @@ impl Viewport {
     }
 }
 
-impl From<Size<f32>> for Viewport {
-    fn from(size: Size<f32>) -> Self {
-        Viewport {
-            x: 0.0,
-            y: 0.0,
-            width: size.width,
-            height: size.height,
-        }
+impl Default for Viewport {
+    fn default() -> Self {
+        let window_size = window_size();
+        Viewport::new(0.0, 0.0, window_size.width, window_size.height)
     }
 }
 
-impl From<(Vec2, Size<f32>)> for Viewport {
-    fn from((position, size): (Vec2, Size<f32>)) -> Self {
-        Viewport {
-            x: position.x,
-            y: position.y,
-            width: size.width,
-            height: size.height,
-        }
-    }
-}
-
-impl From<(Vec2, Vec2)> for Viewport {
-    fn from((position, size): (Vec2, Vec2)) -> Self {
-        Viewport {
-            x: position.x,
-            y: position.y,
-            width: size.x,
-            height: size.y,
-        }
-    }
-}
+static mut VIEWPORT: Option<Viewport> = None;
 
 pub fn viewport() -> Viewport {
-    main_camera().viewport()
+    *unsafe { VIEWPORT.get_or_insert_with(|| Viewport::default()) }
+}
+
+pub(crate) fn viewport_mut() -> &'static mut Viewport {
+    unsafe { VIEWPORT.get_or_insert_with(|| Viewport::default()) }
 }
 
 pub fn viewport_size() -> Size<f32> {
-    main_camera().viewport_size()
+    viewport().size()
+}
+
+pub fn resize_viewport(width: f32, height: f32) {
+    let viewport = viewport_mut();
+    viewport.width = width;
+    viewport.height = height;
 }

@@ -21,6 +21,7 @@ use crate::result::Result;
 use crate::text::{draw_queued_text, draw_text, HorizontalAlignment, TextParams};
 use crate::texture::{Texture2D, TextureFilterMode, TextureUnit};
 use crate::video::VideoConfig;
+use crate::viewport::viewport;
 use crate::window::{get_context_wrapper, get_window};
 
 const BATCH_SIZE: usize = 128;
@@ -46,7 +47,7 @@ void main() {
   color = vertex_color;
   uv = texture_coords;
 
-  gl_Position = vec4(vertex_position, 0.0, 0.0) * mvp;
+  gl_Position = mvp * vec4(vertex_position, 0.0, 1.0);
 }
 ";
 
@@ -70,7 +71,7 @@ pub struct Renderer {
     current_program: Option<ShaderProgram>,
     should_show_fps: bool,
     draws: u32,
-    quads: u32,
+    polygons: u32,
     frame_history: Vec<Duration>,
     batched: Vec<Vertex>,
     batched_cnt: usize,
@@ -82,20 +83,24 @@ pub struct Renderer {
 
 impl Renderer {
     pub fn new(config: &VideoConfig) -> Result<Self> {
-        let vertex_buffer = Buffer::new_vertex()?;
-        let index_buffer = Buffer::new_element()?;
+        let vertex_array = VertexArray::new::<Vertex>()?;
+
+        let vertex_buffer = Buffer::new_vertex(BATCH_SIZE * QUAD_VERTEX_CNT)?;
+        let index_buffer = Buffer::new_element(BATCH_SIZE * QUAD_INDEX_CNT)?;
 
         let mut indices = Vec::with_capacity(BATCH_SIZE * QUAD_INDEX_CNT);
         for i in 0..BATCH_SIZE {
-            let offset = i as u32 * 4;
+            let offset = i * QUAD_VERTEX_CNT;
 
-            indices.push(0 + offset);
-            indices.push(1 + offset);
-            indices.push(2 + offset);
-            indices.push(0 + offset);
-            indices.push(2 + offset);
-            indices.push(3 + offset);
+            indices.push(0 + offset as u32);
+            indices.push(1 + offset as u32);
+            indices.push(2 + offset as u32);
+            indices.push(2 + offset as u32);
+            indices.push(1 + offset as u32);
+            indices.push(3 + offset as u32);
         }
+
+        vertex_array.enable_layout();
 
         let program = ShaderProgram::new(
             &[
@@ -105,19 +110,19 @@ impl Renderer {
             &[("mvp", UniformType::Mat4)],
         )?;
 
-        let vertex_array = VertexArray::new::<Vertex>()?;
-
         let gl = gl_context();
         unsafe {
             gl.enable(glow::DEPTH_TEST);
             gl.depth_func(glow::LESS);
+            gl.enable(glow::BLEND);
+            gl.blend_func(glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA);
         }
 
         Ok(Renderer {
             clear_color: None,
             should_show_fps: config.should_show_fps,
             draws: 0,
-            quads: 0,
+            polygons: 0,
             frame_history: Vec::with_capacity(FPS_FRAME_HISTORY_CNT),
             current_texture: None,
             current_program: Some(program),
@@ -132,7 +137,7 @@ impl Renderer {
 
     pub fn draw_batch(&mut self) {
         if !self.batched.is_empty() {
-            let camera = main_camera();
+            let mut camera = main_camera();
 
             let program = self
                 .current_program
@@ -141,46 +146,60 @@ impl Renderer {
 
             program.activate();
 
-            self.vertex_array.bind();
-
-            self.vertex_buffer.set_data(0, &self.batched);
-
-            let index_cnt = self.batched_cnt * QUAD_INDEX_CNT;
-
-            self.index_buffer.set_data(0, &self.indices[0..index_cnt]);
-
-            self.vertex_array.apply_layout();
-
-            let projection = camera.projection();
-            let model = Mat4::IDENTITY;
-            program.set_uniform_mat4("mvp", false, model * projection);
-
             let texture = &self
                 .current_texture
                 .unwrap_or_else(|| panic!("ERROR: No texture set on renderer!"));
 
             texture.bind(TextureUnit::Texture0);
 
+            let index_cnt = self.batched_cnt * QUAD_INDEX_CNT;
+
+            self.index_buffer.set_data(0, &self.indices[0..index_cnt]);
+
+            let model = Mat4::IDENTITY;
+
+            let viewport = viewport();
+            let view =
+                Mat4::orthographic_rh_gl(0.0, viewport.width, viewport.height, 0.0, -1.0, 1.0);
+
+            let projection = camera.projection();
+
+            program.set_uniform_mat4("mvp", false, model * view * projection);
+
+            self.vertex_buffer.set_data(0, &self.batched);
+
+            self.vertex_array.bind();
+
             let gl = gl_context();
             unsafe {
-                gl.draw_elements(glow::QUADS, self.batched_cnt as i32, glow::UNSIGNED_INT, 0);
+                gl.viewport(
+                    viewport.x as i32,
+                    viewport.y as i32,
+                    viewport.width as i32,
+                    viewport.height as i32,
+                );
+
+                gl.draw_elements(
+                    glow::TRIANGLES,
+                    self.batched_cnt as i32 * QUAD_INDEX_CNT as i32,
+                    glow::UNSIGNED_INT,
+                    0,
+                );
+
+                // gl.draw_arrays(glow::TRIANGLES, 0, self.batched_cnt as i32);
 
                 gl.bind_texture(glow::TEXTURE_2D, None);
 
-                // for i in 0..self.vertex_array.attr_cnt() {
-                //     gl.disable_vertex_attrib_array(i as u32);
-                // }
-
                 gl.bind_vertex_array(None);
 
-                gl.bind_buffer(glow::ARRAY_BUFFER, None);
-                gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, None);
+                // gl.bind_buffer(glow::ARRAY_BUFFER, None);
+                // gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, None);
 
                 gl.use_program(None);
             }
 
             self.draws += 1;
-            self.quads += self.batched_cnt as u32;
+            self.polygons += self.batched_cnt as u32 * 2;
 
             self.batched.clear();
             self.batched_cnt = 0;
@@ -236,38 +255,55 @@ impl Renderer {
             self.draw_batch();
         }
 
-        let texture_rect = params.source.unwrap_or_else(|| {
-            let size = texture.size();
-            Rect::new(0.0, 0.0, size.width as f32, size.height as f32)
-        });
+        let texture_size = texture.size();
 
-        let size = params.dest_size.unwrap_or_else(|| texture.size());
+        let source_rect = params
+            .source
+            .unwrap_or_else(|| Rect::new(0.0, 0.0, texture_size.width, texture_size.height));
+
+        let size = params
+            .dest_size
+            .unwrap_or_else(|| source_rect.size().into());
+
+        let mut uv_rect = Rect::new(
+            source_rect.x / texture_size.width,
+            source_rect.y / texture_size.height,
+            source_rect.width / texture_size.width,
+            source_rect.height / texture_size.height,
+        );
+
+        if params.flip_x {
+            uv_rect.x += uv_rect.width;
+            uv_rect.width = -uv_rect.width;
+        }
+
+        if params.flip_y {
+            uv_rect.y += uv_rect.height;
+            uv_rect.height = -uv_rect.height;
+        }
 
         self.batched.push(Vertex::new(
             vec2(x, y),
             params.tint,
-            vec2(texture_rect.x, texture_rect.y),
-        ));
-
-        self.batched.push(Vertex::new(
-            vec2(x, y + size.height),
-            params.tint,
-            vec2(texture_rect.x, texture_rect.y + texture_rect.height),
-        ));
-
-        self.batched.push(Vertex::new(
-            vec2(x + size.width, y + size.height),
-            params.tint,
-            vec2(
-                texture_rect.x + texture_rect.width,
-                texture_rect.y + texture_rect.height,
-            ),
+            vec2(uv_rect.x, uv_rect.y),
         ));
 
         self.batched.push(Vertex::new(
             vec2(x + size.width, y),
             params.tint,
-            vec2(texture_rect.x + texture_rect.width, texture_rect.y),
+            vec2(uv_rect.x + uv_rect.width, uv_rect.y),
+        ));
+
+        self.batched.push(Vertex::new(
+            vec2(x, y + size.height),
+            params.tint,
+            vec2(uv_rect.x, uv_rect.y + uv_rect.height),
+        ));
+
+        self.batched.push(Vertex::new(
+            vec2(x + size.width, y + size.height),
+            params.tint,
+            vec2(uv_rect.x + uv_rect.width, uv_rect.y + uv_rect.height),
         ));
 
         self.batched_cnt += 1;
@@ -289,8 +325,8 @@ impl Renderer {
         #[cfg(debug_assertions)]
         {
             draw_text(
-                "quads:\ndraws:",
-                viewport_size.width - 150.0,
+                "polygons:\ndraws:",
+                viewport_size.width - 175.0,
                 70.0,
                 TextParams {
                     bounds: Some(Size::new(75.0, 100.0)),
@@ -299,7 +335,7 @@ impl Renderer {
             );
 
             draw_text(
-                &format!("{}\n{}", self.quads, self.draws),
+                &format!("{}\n{}", self.polygons, self.draws),
                 viewport_size.width - 75.0,
                 70.0,
                 TextParams {
@@ -314,7 +350,7 @@ impl Renderer {
         if should_show_fps {
             draw_text(
                 "FPS:",
-                viewport_size.width - 150.0,
+                viewport_size.width - 175.0,
                 50.0,
                 TextParams {
                     bounds: Some(Size::new(75.0, 100.0)),
@@ -339,7 +375,7 @@ impl Renderer {
 
         get_window().request_redraw();
 
-        self.quads = 0;
+        self.polygons = 0;
         self.draws = 0;
 
         Ok(())

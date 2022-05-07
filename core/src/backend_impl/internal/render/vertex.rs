@@ -6,7 +6,6 @@ use crate::color::{colors, Color};
 use crate::gl::gl_context;
 use crate::math::Vec2;
 use crate::result::Result;
-use crate::FLOAT_SIZE;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Vertex {
@@ -36,36 +35,26 @@ pub struct VertexLayout {
 
 impl VertexLayout {
     pub fn new(entries: &[VertexLayoutEntry]) -> Self {
-        let mut entries = entries.to_vec();
-
-        let mut offset = 0;
-        for entry in &mut entries {
-            entry.offset = offset;
-            offset += entry.size * FLOAT_SIZE;
+        VertexLayout {
+            entries: entries.to_vec(),
         }
-
-        VertexLayout { entries }
     }
 }
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct VertexLayoutEntry {
     pub name: String,
-    pub size: usize,
-    pub offset: usize,
+    pub length: usize,
+    pub stride: usize,
 }
 
 impl VertexLayoutEntry {
-    pub fn new(name: &str, size: usize) -> Self {
+    pub fn new(name: &str, length: usize, stride: usize) -> Self {
         VertexLayoutEntry {
             name: name.to_string(),
-            size,
-            offset: 0,
+            length,
+            stride,
         }
-    }
-
-    pub(crate) fn with_offset(self, offset: usize) -> Self {
-        VertexLayoutEntry { offset, ..self }
     }
 }
 
@@ -75,10 +64,12 @@ pub trait VertexImpl {
 
 impl VertexImpl for Vertex {
     fn layout() -> VertexLayout {
+        let stride = unsafe { core::mem::size_of::<Vertex>() };
+
         VertexLayout::new(&[
-            VertexLayoutEntry::new("vertex_position", 2),
-            VertexLayoutEntry::new("vertex_color", 4),
-            VertexLayoutEntry::new("texture_coords", 2),
+            VertexLayoutEntry::new("vertex_position", 2, stride),
+            VertexLayoutEntry::new("vertex_color", 4, stride),
+            VertexLayoutEntry::new("texture_coords", 2, stride),
         ])
     }
 }

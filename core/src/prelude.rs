@@ -24,6 +24,7 @@ pub use crate::state::*;
 pub use crate::texture::*;
 pub use crate::transform::*;
 pub use crate::viewport::*;
+pub use crate::viewport::*;
 pub use crate::window::*;
 
 pub use crate::ecs::{DrawFn, Entity, FixedUpdateFn, UpdateFn, World};

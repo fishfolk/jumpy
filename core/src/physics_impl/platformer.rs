@@ -5,7 +5,7 @@ use crate::map::{Map, MapLayer};
 use crate::math::{ivec2, vec2, Rect, Size, Vec2};
 use crate::result::Result;
 
-const DEFAULT_PHYSICS_RESOLUTION: u32 = 120;
+const DEFAULT_PHYSICS_RESOLUTION: u32 = 60;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 pub struct Actor(pub(crate) usize);

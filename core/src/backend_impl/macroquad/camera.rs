@@ -25,8 +25,9 @@ enum ShakeType {
 pub struct CameraImpl {
     pub position: Vec2,
     pub zoom: f32,
+    pub bounds: Size<f32>,
     pub rotation: f32,
-    pub render_target: Option<RenderTarget>,
+    pub render_target: RenderTarget,
     follow_buffer: Vec<(Vec2, f32)>,
     shake: Vec<Shake>,
     noisegen: NoiseGenerator,
@@ -38,20 +39,24 @@ pub struct CameraImpl {
 impl CameraImpl {
     const BUFFER_CAPACITY: usize = 20;
 
-    pub fn new<P, Z, R>(position: P, zoom: Z, render_target: R) -> CameraImpl
+    pub fn new<P, B, Z, R>(position: P, bounds: B, zoom: Z, render_target: R) -> CameraImpl
     where
         P: Into<Option<Vec2>>,
+        B: Into<Option<Size<f32>>>,
         Z: Into<Option<f32>>,
         R: Into<Option<RenderTarget>>,
     {
         let position = position.into().unwrap_or(Vec2::ZERO);
         let zoom = zoom.into().unwrap_or(1.0);
+        let bounds = bounds.into().unwrap_or_else(|| window_size());
+        let render_target = render_target.into().unwrap_or_default();
 
         CameraImpl {
             position,
             zoom,
+            bounds,
             rotation: 0.0,
-            render_target: render_target.into(),
+            render_target,
             follow_buffer: vec![],
             shake: vec![],
             position_override: None,
@@ -211,11 +216,11 @@ impl CameraImpl {
 
             let mut zoom = scale.y;
 
-            let viewport_size = self.viewport_size();
+            let bounds = self.bounds;
 
             // bottom camera bound
-            if scale.y / 2. + middle_point.y > viewport_size.height {
-                middle_point.y = viewport_size.height - scale.y / 2.0;
+            if scale.y / 2. + middle_point.y > bounds.height {
+                middle_point.y = bounds.height - scale.y / 2.0;
             }
 
             if let Some(override_position) = self.position_override {
@@ -263,19 +268,10 @@ impl CameraImpl {
 
         self.position = camera_pos();
     }
-
-    pub fn viewport(&self) -> Viewport {
-        let size = self.viewport_size();
-        Viewport::new(self.position.x, self.position.y, size.width, size.height)
-    }
-
-    pub fn viewport_size(&self) -> Size<f32> {
-        window_size() * self.zoom
-    }
 }
 
 impl Default for CameraImpl {
     fn default() -> Self {
-        CameraImpl::new(None, None, RenderTarget::Context)
+        CameraImpl::new(None, None, None, RenderTarget::default())
     }
 }

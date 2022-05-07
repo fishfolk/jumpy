@@ -181,8 +181,6 @@ pub fn update_player_states(world: &mut World, delta_time: f32) -> Result<()> {
 
                 player.jump_frame_counter = 0;
                 body.has_mass = true;
-
-                play_sound(LAND_SOUND_ID, false);
             }
         }
     }

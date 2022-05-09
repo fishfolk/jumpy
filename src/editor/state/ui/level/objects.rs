@@ -136,8 +136,12 @@ impl Editor {
         }
     }
 
-    pub(super) fn handle_objects(&mut self, ui: &mut egui::Ui, view: &UiLevelView) {
-        let mut to_select = None;
+    pub(super) fn handle_objects(
+        &mut self,
+        ui: &mut egui::Ui,
+        view: &UiLevelView,
+        to_select: &mut Option<SelectableEntity>,
+    ) {
         for layer in self
             .map_resource
             .map
@@ -146,88 +150,8 @@ impl Editor {
             .filter_map(|layer_id| self.map_resource.map.layers.get(layer_id))
         {
             if layer.is_visible {
-                let selected_on_this_layer = self.handle_object_layer(layer, view, ui);
-                to_select = to_select.or(selected_on_this_layer);
+                self.handle_object_layer(layer, view, ui, to_select);
             }
-        }
-
-        let mut selection_dest = None;
-
-        // Draw selection last (Special case)
-        if let Some(SelectableEntity {
-            kind: SelectableEntityKind::Object { index, layer_id },
-            mut drag_data,
-        }) = self.selection.take()
-        {
-            let resources = storage::get::<Resources>();
-            let object = &self.map_resource.map.layers[&layer_id].objects[index];
-            let is_being_dragged;
-            let mut action_to_apply = None;
-
-            if let Some(DragData {
-                new_pos,
-                cursor_offset,
-            }) = drag_data.take()
-            {
-                draw_object(object, new_pos, view, &resources, 1.);
-                let response = &view.response;
-
-                if response.dragged_by(egui::PointerButton::Primary) {
-                    let cursor_level_pos = view.screen_to_world_pos(
-                        ui.input().pointer.interact_pos().unwrap() + cursor_offset,
-                    );
-
-                    drag_data = Some(DragData {
-                        new_pos: cursor_level_pos,
-                        cursor_offset,
-                    });
-                }
-                if response.drag_released() {
-                    action_to_apply = Some(UiAction::MoveObject {
-                        index,
-                        layer_id: layer_id.clone(),
-                        position: macroquad::math::vec2(new_pos.x, new_pos.y),
-                    });
-                }
-
-                is_being_dragged = true;
-            } else {
-                is_being_dragged = false;
-            }
-
-            self.selection = Some(SelectableEntity {
-                drag_data,
-                kind: SelectableEntityKind::Object { index, layer_id },
-            });
-
-            let (dest, _is_valid) = draw_object(
-                object,
-                object.position.into_egui().to_pos2(),
-                view,
-                &resources,
-                if is_being_dragged { 0.5 } else { 1.0 },
-            );
-            selection_dest = Some(dest);
-
-            view.painter().add(egui::Shape::rect_stroke(
-                dest,
-                egui::Rounding::none(),
-                egui::Stroke::new(1., egui::Color32::WHITE),
-            ));
-
-            if let Some(action) = action_to_apply {
-                self.apply_action(action);
-            }
-        }
-
-        if let Some(to_select) = to_select {
-            self.apply_action(UiAction::SelectEntity(to_select));
-        } else if view.response.clicked()
-            && !selection_dest
-                .map(|d| d.contains(ui.input().pointer.interact_pos().unwrap()))
-                .unwrap_or(false)
-        {
-            self.apply_action(UiAction::DeselectObject);
         }
     }
 
@@ -236,9 +160,17 @@ impl Editor {
         layer: &MapLayer,
         view: &UiLevelView,
         ui: &mut egui::Ui,
-    ) -> Option<SelectableEntity> {
+        to_select: &mut Option<SelectableEntity>,
+    ) {
         let resources = storage::get::<Resources>();
-        let mut to_select = None;
+
+        let is_selection_being_dragged = matches!(
+            &self.selection,
+            Some(SelectableEntity {
+                drag_data: Some(_),
+                ..
+            })
+        );
 
         for (object_idx, object) in layer.objects.iter().enumerate().filter(|(idx, _)| {
             let is_selection = matches!(
@@ -252,7 +184,7 @@ impl Editor {
                 }) if index == idx && layer_id == &layer.id
             );
 
-            !is_selection
+            !(is_selection && is_selection_being_dragged)
         }) {
             let (dest, is_valid) = draw_object(
                 object,
@@ -269,22 +201,15 @@ impl Editor {
                     .pointer
                     .hover_pos()
                     .map(|hover_pos| dest.contains(hover_pos))
-                    .unwrap_or(false)
-                && !matches!(
-                    &self.selection,
-                    Some(SelectableEntity {
-                        drag_data: Some(_),
-                        ..
-                    })
-                );
+                    .unwrap_or(false);
 
-            if is_hovered {
+            if is_hovered && !is_selection_being_dragged {
                 self.show_object_info_tooltip(ui.ctx(), object, is_valid);
 
                 if response.drag_started() || response.clicked() {
                     let click_pos = ui.input().pointer.interact_pos().unwrap();
 
-                    to_select = Some(SelectableEntity {
+                    *to_select = Some(SelectableEntity {
                         kind: SelectableEntityKind::Object {
                             index: object_idx,
                             layer_id: layer.id.clone(),
@@ -294,6 +219,7 @@ impl Editor {
                             new_pos: object.position.into_egui().to_pos2(),
                         }),
                     });
+                    dbg!("Selected object");
                 }
                 view.painter().add(egui::Shape::rect_stroke(
                     dest,
@@ -302,8 +228,6 @@ impl Editor {
                 ));
             }
         }
-
-        to_select
     }
 
     fn show_object_info_tooltip(
@@ -338,7 +262,7 @@ impl Editor {
     }
 }
 
-fn draw_object(
+pub fn draw_object(
     object: &crate::map::MapObject,
     position: egui::Pos2,
     view: &UiLevelView,

@@ -6,13 +6,15 @@ use macroquad::prelude::collections::storage;
 use crate::{
     editor::{
         actions::UiAction,
-        state::{EditorTool, ObjectSettings},
+        state::{DragData, EditorTool, ObjectSettings, SelectableEntity, SelectableEntityKind},
         util::{EguiCompatibleVec, EguiTextureHandler, MqCompatibleVec, Resizable},
         view::UiLevelView,
     },
     map::{MapLayerKind, MapObjectKind},
     Resources,
 };
+
+use self::objects::draw_object;
 
 use super::super::Editor;
 
@@ -82,9 +84,12 @@ impl Editor {
                         };
                 }
 
-                self.handle_objects(ui, &view);
-                self.handle_spawnpoints(&view);
+                let mut to_select = None;
+                self.handle_objects(ui, &view, &mut to_select);
+                self.handle_spawnpoints(&view, &mut to_select);
                 self.draw_level_overlays(ui, &view);
+                // Draw selection last (Special case)
+                self.handle_selection(&view, to_select);
 
                 let (width, height) = (
                     view.response.rect.width() as u32,
@@ -94,12 +99,222 @@ impl Editor {
             });
     }
 
-    fn handle_spawnpoints(&mut self, view: &UiLevelView) {
+    fn handle_selection(&mut self, view: &UiLevelView, to_select: Option<SelectableEntity>) {
+        let mut selection_dest = None;
+
+        let selected_anything = to_select.is_some();
+
+        if let Some(to_select) = to_select {
+            if let SelectableEntity {
+                kind: SelectableEntityKind::Object { layer_id, .. },
+                ..
+            } = &to_select
+            {
+                self.selected_layer = Some(layer_id.clone());
+            }
+
+            self.selection = Some(to_select);
+            dbg!("Selection set: ", &self.selection);
+        }
+
+        match self.selection.take() {
+            Some(SelectableEntity {
+                kind: SelectableEntityKind::Object { index, layer_id },
+                mut drag_data,
+            }) => {
+                let resources = storage::get::<Resources>();
+                let object = &self.map_resource.map.layers[&layer_id].objects[index];
+                let is_being_dragged;
+                let mut action_to_apply = None;
+
+                if let Some(DragData {
+                    new_pos,
+                    cursor_offset,
+                }) = drag_data.take()
+                {
+                    draw_object(object, new_pos, &view, &resources, 1.);
+                    let response = &view.response;
+
+                    if response.dragged_by(egui::PointerButton::Primary) {
+                        let cursor_level_pos = view.screen_to_world_pos(
+                            view.ctx().input().pointer.interact_pos().unwrap() + cursor_offset,
+                        );
+
+                        drag_data = Some(DragData {
+                            new_pos: cursor_level_pos,
+                            cursor_offset,
+                        });
+                    }
+                    if response.drag_released() {
+                        action_to_apply = Some(UiAction::MoveObject {
+                            index,
+                            layer_id: layer_id.clone(),
+                            position: macroquad::math::vec2(new_pos.x, new_pos.y),
+                        });
+                    }
+
+                    is_being_dragged = true;
+                } else {
+                    is_being_dragged = false;
+                }
+
+                self.selection = Some(SelectableEntity {
+                    drag_data,
+                    kind: SelectableEntityKind::Object { index, layer_id },
+                });
+
+                let (dest, _is_valid) = draw_object(
+                    object,
+                    object.position.into_egui().to_pos2(),
+                    &view,
+                    &resources,
+                    if is_being_dragged { 0.5 } else { 1.0 },
+                );
+                selection_dest = Some(dest);
+
+                view.painter().add(egui::Shape::rect_stroke(
+                    dest,
+                    egui::Rounding::none(),
+                    egui::Stroke::new(1., egui::Color32::WHITE),
+                ));
+
+                if let Some(action) = action_to_apply {
+                    self.apply_action(action);
+                }
+            }
+
+            Some(SelectableEntity {
+                kind: SelectableEntityKind::SpawnPoint { index },
+                mut drag_data,
+            }) => {
+                let resources = storage::get::<Resources>();
+                let texture = &storage::get::<Resources>().textures["spawn_point_icon"];
+                let texture_id = texture.texture.egui_id();
+                let texture_size = texture.meta.size.into_egui();
+                let position = self.map_resource.map.spawn_points[index];
+                let is_being_dragged;
+                let mut action_to_apply = None;
+
+                if let Some(DragData {
+                    new_pos,
+                    cursor_offset,
+                }) = drag_data.take()
+                {
+                    let dest = egui::Rect::from_min_size(
+                        view.world_to_screen_pos(
+                            new_pos - egui::vec2(texture_size.x / 2., texture_size.y),
+                        ),
+                        texture_size,
+                    );
+                    let mut mesh = egui::Mesh::with_texture(texture_id);
+                    mesh.add_rect_with_uv(
+                        dest,
+                        egui::Rect::from_min_max(egui::pos2(0., 0.), egui::pos2(1., 1.)),
+                        egui::Color32::WHITE,
+                    );
+                    view.painter().add(egui::Shape::mesh(mesh));
+                    let response = &view.response;
+
+                    if response.dragged_by(egui::PointerButton::Primary) {
+                        let cursor_level_pos = view.screen_to_world_pos(
+                            view.ctx().input().pointer.interact_pos().unwrap() + cursor_offset,
+                        );
+
+                        drag_data = Some(DragData {
+                            new_pos: cursor_level_pos,
+                            cursor_offset,
+                        });
+                    }
+                    if response.drag_released() {
+                        action_to_apply = Some(UiAction::MoveSpawnPoint {
+                            index,
+                            position: macroquad::math::vec2(new_pos.x, new_pos.y),
+                        });
+                    }
+
+                    is_being_dragged = true;
+                } else {
+                    is_being_dragged = false;
+                }
+
+                self.selection = Some(SelectableEntity {
+                    drag_data,
+                    kind: SelectableEntityKind::SpawnPoint { index },
+                });
+
+                let dest = egui::Rect::from_min_size(
+                    view.world_to_screen_pos(
+                        position.into_egui().to_pos2()
+                            - egui::vec2(texture_size.x / 2., texture_size.y),
+                    ),
+                    texture_size,
+                );
+                let mut mesh = egui::Mesh::with_texture(texture_id);
+                mesh.add_rect_with_uv(
+                    dest,
+                    egui::Rect::from_min_max(egui::pos2(0., 0.), egui::pos2(1., 1.)),
+                    egui::Color32::WHITE.linear_multiply(if is_being_dragged { 0.5 } else { 1.0 }),
+                );
+                view.painter().add(egui::Shape::mesh(mesh));
+                selection_dest = Some(dest);
+
+                view.painter().add(egui::Shape::rect_stroke(
+                    dest,
+                    egui::Rounding::none(),
+                    egui::Stroke::new(1., egui::Color32::WHITE),
+                ));
+
+                if let Some(action) = action_to_apply {
+                    self.apply_action(action);
+                }
+            }
+
+            _ => (),
+        }
+
+        if !selected_anything
+            && view.response.clicked()
+            && !selection_dest.map_or(false, |d| {
+                d.contains(view.ctx().input().pointer.interact_pos().unwrap())
+            })
+        {
+            self.selection = None;
+            dbg!("Selection unset");
+        }
+    }
+
+    fn handle_spawnpoints(&mut self, view: &UiLevelView, to_select: &mut Option<SelectableEntity>) {
         let texture = &storage::get::<Resources>().textures["spawn_point_icon"];
         let texture_id = texture.texture.egui_id();
         let texture_size = texture.meta.size.into_egui();
+        let is_selection_being_dragged = matches!(
+            &self.selection,
+            Some(SelectableEntity {
+                drag_data: Some(_),
+                ..
+            })
+        );
 
-        for spawnpoint in self.map_resource.map.spawn_points.iter() {
+        for (idx, spawnpoint) in self
+            .map_resource
+            .map
+            .spawn_points
+            .iter()
+            .enumerate()
+            .filter(|(idx, _)| {
+                let is_selection = matches!(
+                    &self.selection,
+                    Some(SelectableEntity {
+                        kind: SelectableEntityKind::SpawnPoint {
+                            index
+                        },
+                        ..
+                    }) if index == idx
+                );
+
+                !(is_selection && is_selection_being_dragged)
+            })
+        {
             // This position is the bottom midpoint of the destination rect
             let pos = view.world_to_screen_pos(spawnpoint.into_egui().to_pos2());
 
@@ -108,6 +323,20 @@ impl Editor {
                 texture_size,
             );
 
+            if view.response.drag_started() || view.response.clicked() {
+                let click_pos = view.ctx().input().pointer.interact_pos().unwrap();
+
+                if dest.contains(click_pos) {
+                    *to_select = Some(SelectableEntity {
+                        kind: SelectableEntityKind::SpawnPoint { index: idx },
+                        drag_data: view.response.drag_started().then(|| DragData {
+                            cursor_offset: pos - click_pos,
+                            new_pos: spawnpoint.into_egui().to_pos2(),
+                        }),
+                    });
+                }
+            }
+
             let mut mesh = egui::Mesh::with_texture(texture_id);
             mesh.add_rect_with_uv(
                 dest,
@@ -115,6 +344,22 @@ impl Editor {
                 egui::Color32::WHITE,
             );
             view.painter().add(egui::Shape::mesh(mesh));
+
+            let is_hovered = view.response.hovered()
+                && view
+                    .ctx()
+                    .input()
+                    .pointer
+                    .hover_pos()
+                    .map_or(false, |hover_pos| dest.contains(hover_pos));
+
+            if is_hovered && !is_selection_being_dragged {
+                view.painter().add(egui::Shape::rect_stroke(
+                    dest,
+                    egui::Rounding::none(),
+                    egui::Stroke::new(1., egui::Color32::GRAY),
+                ));
+            }
         }
 
         if self.selected_tool == EditorTool::SpawnPointPlacer && view.response.clicked() {

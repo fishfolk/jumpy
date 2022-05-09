@@ -230,16 +230,6 @@ impl Editor {
                     .apply(action, &mut self.map_resource.map)
                     .unwrap();
             }
-            UiAction::SelectEntity(selection) => {
-                if let SelectableEntity {
-                    kind: SelectableEntityKind::Object { layer_id, .. },
-                    ..
-                } = &selection
-                {
-                    self.selected_layer = Some(layer_id.clone());
-                }
-                self.selection = Some(selection);
-            }
             UiAction::SaveMap { name } => {
                 let mut map_resource = self.map_resource.clone();
 
@@ -278,11 +268,22 @@ impl Editor {
                     .apply(action, &mut self.map_resource.map)
                     .unwrap();
             }
-            UiAction::DeselectObject => {
-                self.selection = None;
-            }
             UiAction::CreateSpawnPoint(pos) => {
                 let action = actions::CreateSpawnPoint::new(pos);
+
+                self.history
+                    .apply(action, &mut self.map_resource.map)
+                    .unwrap();
+            }
+            UiAction::MoveSpawnPoint { index, position } => {
+                let action = actions::MoveSpawnPoint::new(index, position);
+
+                self.history
+                    .apply(action, &mut self.map_resource.map)
+                    .unwrap();
+            }
+            UiAction::DeleteSpawnPoint(index) => {
+                let action = actions::DeleteSpawnPoint::new(index);
 
                 self.history
                     .apply(action, &mut self.map_resource.map)

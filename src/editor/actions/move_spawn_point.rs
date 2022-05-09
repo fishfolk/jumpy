@@ -2,8 +2,6 @@ use core::error::ErrorKind;
 
 use core::error::Error;
 
-use std::cmp::Ordering;
-
 use core::error::Result;
 
 use macroquad::prelude::Vec2;
@@ -31,19 +29,9 @@ impl MoveSpawnPoint {
 
 impl UndoableAction for MoveSpawnPoint {
     fn apply_to(&mut self, map: &mut Map) -> Result<()> {
-        let old_position = map.spawn_points.remove(self.index);
-        self.old_position = Some(old_position);
+        self.old_position = Some(map.spawn_points[self.index]);
 
-        match map.spawn_points.len().cmp(&self.index) {
-            Ordering::Equal => map.spawn_points.push(self.position),
-            Ordering::Greater => map.spawn_points.insert(self.index, self.position),
-            _ => {
-                return Err(Error::new_const(
-                    ErrorKind::EditorAction,
-                    &"MoveSpawnPoint: Index out of bounds",
-                ))
-            }
-        }
+        map.spawn_points[self.index] = self.position;
 
         Ok(())
     }

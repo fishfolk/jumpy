@@ -60,8 +60,6 @@ pub enum UiAction {
         texture_id: String,
         autotile_mask: Vec<bool>,
     },
-    SelectEntity(SelectableEntity),
-    DeselectObject,
     CreateObject {
         id: String,
         kind: MapObjectKind,

@@ -1,6 +1,6 @@
 - [X] Object list
 - [X] Spawnpoint placement
-- [ ] Spawnpoint selection & movement
+- [X] Spawnpoint selection & movement
 - [X] Object placement via rightclick context menu
 - [ ] Re-add object placement tool
 - [X] Moving camera via middle click

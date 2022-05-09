@@ -1,6 +1,8 @@
 mod objects;
 mod tools;
 
+use macroquad::prelude::collections::storage;
+
 use crate::{
     editor::{
         state::{EditorTool, ObjectSettings},
@@ -8,6 +10,7 @@ use crate::{
         view::UiLevelView,
     },
     map::{MapLayerKind, MapObjectKind},
+    Resources,
 };
 
 use super::super::Editor;
@@ -72,6 +75,7 @@ impl Editor {
                 }
 
                 self.handle_objects(ui, &view);
+                self.handle_spawnpoints(&view);
                 self.draw_level_overlays(ui, &view);
 
                 let (width, height) = (
@@ -80,6 +84,30 @@ impl Editor {
                 );
                 self.level_render_target.resize_if_appropiate(width, height);
             });
+    }
+
+    fn handle_spawnpoints(&self, view: &UiLevelView) {
+        let texture = &storage::get::<Resources>().textures["spawn_point_icon"];
+        let texture_id = texture.texture.egui_id();
+        let texture_size = texture.meta.size.into_egui();
+
+        for spawnpoint in self.map_resource.map.spawn_points.iter() {
+            // This position is the bottom midpoint of the destination rect
+            let pos = view.world_to_screen_pos(spawnpoint.into_egui().to_pos2());
+
+            let dest = egui::Rect::from_min_size(
+                pos - egui::vec2(texture_size.x / 2., texture_size.y),
+                texture_size,
+            );
+
+            let mut mesh = egui::Mesh::with_texture(texture_id);
+            mesh.add_rect_with_uv(
+                dest,
+                egui::Rect::from_min_max(egui::pos2(0., 0.), egui::pos2(1., 1.)),
+                egui::Color32::WHITE,
+            );
+            view.painter().add(egui::Shape::mesh(mesh));
+        }
     }
 
     fn draw_level_tiles(&self, ui: &mut egui::Ui) -> UiLevelView {

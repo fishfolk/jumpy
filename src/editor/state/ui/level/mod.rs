@@ -56,6 +56,13 @@ impl Editor {
                     }
                 });
 
+                if view.response.dragged_by(egui::PointerButton::Middle) {
+                    let drag_delta = egui_ctx.input().pointer.delta();
+
+                    // TODO: take level scale/"tiles per pixel" into account
+                    self.level_view.position -= drag_delta.into_macroquad();
+                }
+
                 if clicked_add_object {
                     let position = view
                         .screen_to_world_pos(view.ctx().input().pointer.interact_pos().unwrap());

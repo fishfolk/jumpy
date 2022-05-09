@@ -3,7 +3,7 @@
 - [ ] Spawnpoint selection & movement
 - [X] Object placement via rightclick context menu
 - [ ] Re-add object placement tool
-- [ ] Moving camera via middle click
+- [X] Moving camera via middle click
 - [ ] Open/Import window
 - [ ] New map window
 - [ ] Theme support

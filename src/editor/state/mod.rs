@@ -281,6 +281,13 @@ impl Editor {
             UiAction::DeselectObject => {
                 self.selection = None;
             }
+            UiAction::CreateSpawnPoint(pos) => {
+                let action = actions::CreateSpawnPoint::new(pos);
+
+                self.history
+                    .apply(action, &mut self.map_resource.map)
+                    .unwrap();
+            }
 
             _ => todo!(),
         }

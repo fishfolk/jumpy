@@ -23,6 +23,7 @@ impl Editor {
             };
 
             add_tool("Cursor", EditorTool::Cursor);
+            add_tool("Spawn Point Placer", EditorTool::SpawnPointPlacer);
             match selected_layer_type {
                 Some(MapLayerKind::TileLayer) => {
                     add_tool("Tiles", EditorTool::TilePlacer);

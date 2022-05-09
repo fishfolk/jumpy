@@ -5,8 +5,9 @@ use macroquad::prelude::collections::storage;
 
 use crate::{
     editor::{
+        actions::UiAction,
         state::{EditorTool, ObjectSettings},
-        util::{EguiCompatibleVec, EguiTextureHandler, Resizable},
+        util::{EguiCompatibleVec, EguiTextureHandler, MqCompatibleVec, Resizable},
         view::UiLevelView,
     },
     map::{MapLayerKind, MapObjectKind},
@@ -86,7 +87,7 @@ impl Editor {
             });
     }
 
-    fn handle_spawnpoints(&self, view: &UiLevelView) {
+    fn handle_spawnpoints(&mut self, view: &UiLevelView) {
         let texture = &storage::get::<Resources>().textures["spawn_point_icon"];
         let texture_id = texture.texture.egui_id();
         let texture_size = texture.meta.size.into_egui();
@@ -107,6 +108,14 @@ impl Editor {
                 egui::Color32::WHITE,
             );
             view.painter().add(egui::Shape::mesh(mesh));
+        }
+
+        if self.selected_tool == EditorTool::SpawnPointPlacer && view.response.clicked() {
+            let pos = view
+                .screen_to_world_pos(view.ctx().input().pointer.interact_pos().unwrap())
+                .to_vec2()
+                .into_macroquad();
+            self.apply_action(UiAction::CreateSpawnPoint(pos));
         }
     }
 

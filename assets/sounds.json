@@ -38,5 +38,9 @@
   {
     "id": "explode",
     "path": "sounds/explode_m.wav"
+  },
+  {
+    "id": "bullet_hit_dull",
+    "path": "sounds/bullet_hit_dull.wav"
   }
 ]

@@ -142,6 +142,8 @@ pub struct MapItemMetadata {
     pub name: String,
     #[serde(flatten)]
     pub kind: MapItemKind,
+    #[serde(default)]
+    pub can_rotate: bool,
     #[serde(with = "core::json::vec2_def")]
     pub collider_size: Vec2,
     #[serde(default, with = "core::json::vec2_def")]
@@ -194,7 +196,7 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
                 offset: collider_offset,
                 has_mass: true,
                 has_friction: true,
-                can_rotate: false,
+                can_rotate: meta.can_rotate,
                 ..Default::default()
             },
         ),
@@ -443,7 +445,7 @@ pub fn fire_weapon(world: &mut World, entity: Entity, owner: Entity) -> Result<(
     }
 
     for params in effects {
-        spawn_active_effect(world, owner, origin, params)?;
+        spawn_active_effect(world, owner, entity, origin, params)?;
     }
 
     Ok(())

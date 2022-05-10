@@ -18,6 +18,7 @@ impl PlayerControllerKind {
     }
 }
 
+#[derive(Clone)]
 pub struct PlayerController {
     pub kind: PlayerControllerKind,
 

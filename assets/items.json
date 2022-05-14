@@ -5,6 +5,8 @@
   "items/grenades.json",
   "items/machine_gun.json",
   "items/mines.json",
+  "items/starfish.json",
+  "items/starfish_launcher.json",
   "items/musket.json",
   "items/sniper_rifle.json",
   "items/sword.json",

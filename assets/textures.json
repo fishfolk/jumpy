@@ -518,6 +518,24 @@
     }
   },
   {
+    "id": "starfish",
+    "path": "textures/items/StarFish(19x18).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 19,
+      "y": 18
+    }
+  },
+  {
+    "id": "starfish_launcher",
+    "path": "textures/items/StarfishLauncher(37x20).png",
+    "type": "spritesheet",
+    "sprite_size": {
+      "x": 37,
+      "y": 20
+    }
+  },
+  {
     "id": "fish_school_icon",
     "path": "textures/items/FishSchoolIcon(64x64).png",
     "type": "spritesheet",

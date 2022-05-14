@@ -9,7 +9,10 @@ use serde::{Deserialize, Serialize};
 use hecs::World;
 
 use crate::{CollisionWorld, Map};
-use core::Transform;
+use core::{
+    math::{deg_to_rad, IsZero},
+    Transform,
+};
 
 pub const GRAVITY: f32 = 2.5;
 pub const TERMINAL_VELOCITY: f32 = 10.0;
@@ -61,6 +64,7 @@ pub struct PhysicsBodyParams {
     pub has_mass: bool,
     pub has_friction: bool,
     pub can_rotate: bool,
+    pub angular_velocity: f32,
     pub bouncyness: f32,
     pub gravity: f32,
 }
@@ -73,6 +77,7 @@ impl Default for PhysicsBodyParams {
             has_mass: true,
             has_friction: true,
             can_rotate: true,
+            angular_velocity: 0.0,
             bouncyness: 0.0,
             gravity: GRAVITY,
         }
@@ -87,6 +92,8 @@ pub struct PhysicsBody {
     pub offset: Vec2,
     pub size: Vec2,
     pub velocity: Vec2,
+    /// Angular velocity in degrees per second
+    pub angular_velocity: f32,
     pub is_on_ground: bool,
     pub was_on_ground: bool,
     /// Will be `true` if the body is currently on top of a platform/jumpthrough tile
@@ -113,6 +120,7 @@ impl PhysicsBody {
             offset: params.offset,
             size: params.size,
             velocity,
+            angular_velocity: params.angular_velocity,
             is_on_ground: false,
             was_on_ground: false,
             is_on_platform: false,
@@ -174,7 +182,12 @@ pub fn fixed_update_physics_bodies(world: &mut World) {
             }
 
             if body.can_rotate {
-                apply_rotation(transform, &mut body.velocity, body.is_on_ground);
+                apply_rotation(
+                    transform,
+                    &mut body.velocity,
+                    body.angular_velocity,
+                    body.is_on_ground,
+                );
             }
 
             if body.is_on_ground && body.has_friction {
@@ -260,7 +273,7 @@ pub fn fixed_update_rigid_bodies(world: &mut World) {
         transform.position += body.velocity;
 
         if body.can_rotate {
-            apply_rotation(transform, &mut body.velocity, false);
+            apply_rotation(transform, &mut body.velocity, 0.0, false);
         }
     }
 }
@@ -273,8 +286,15 @@ pub fn debug_draw_rigid_bodies(world: &mut World) {
     }
 }
 
-fn apply_rotation(transform: &mut Transform, velocity: &mut Vec2, is_on_ground: bool) {
-    if !is_on_ground {
+fn apply_rotation(
+    transform: &mut Transform,
+    velocity: &mut Vec2,
+    angular_velocity: f32,
+    is_on_ground: bool,
+) {
+    if !angular_velocity.is_zero() {
+        transform.rotation += deg_to_rad(angular_velocity * get_frame_time());
+    } else if !is_on_ground {
         transform.rotation += velocity.x.abs() * 0.00045 + velocity.y.abs() * 0.00015;
     } else {
         transform.rotation %= std::f32::consts::PI * 2.0;

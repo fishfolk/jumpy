@@ -32,7 +32,7 @@ use crate::{
 
 use crate::effects::active::debug_draw_active_effects;
 use crate::effects::active::projectiles::fixed_update_projectiles;
-use crate::effects::active::triggered::fixed_update_triggered_effects;
+use crate::effects::active::triggered::{fixed_update_triggered_effects, update_triggered_effects};
 use crate::items::spawn_item;
 use crate::map::{
     debug_draw_fish_schools, fixed_update_sproingers, spawn_crab, spawn_decoration,
@@ -122,6 +122,7 @@ impl Game {
                 .add_system(update_player_inventory)
                 .add_system(update_player_passive_effects)
                 .add_system(update_player_events)
+                .add_system(update_triggered_effects)
                 .add_system(update_fish_schools)
                 .add_system(update_crabs);
 

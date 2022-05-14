@@ -1,12 +1,17 @@
 use std::ops::ControlFlow;
 
-use crate::editor::{
-    actions::UiAction,
-    state::Editor,
-    windows::{
-        CreateLayerResult, CreateMapResult, CreateTilesetResult, MenuResult, OpenMapResult,
-        SaveMapResult,
+use macroquad::prelude::collections::storage;
+
+use crate::{
+    editor::{
+        actions::UiAction,
+        state::Editor,
+        windows::{
+            CreateLayerResult, CreateMapResult, CreateTilesetResult, ImportResult, ImportWindow,
+            MenuResult, OpenMapResult, SaveMapResult,
+        },
     },
+    Resources,
 };
 
 impl Editor {
@@ -96,10 +101,32 @@ impl Editor {
                     self.open_map_window = None;
                 }
                 ControlFlow::Break(OpenMapResult::Import { map_index }) => {
+                    self.import_window = Some(ImportWindow::new(
+                        storage::get::<Resources>().maps[map_index].map.clone(),
+                    ));
                     self.open_map_window = None;
                 }
                 ControlFlow::Break(OpenMapResult::Close) => {
                     self.open_map_window = None;
+                }
+            }
+        } else if let Some(window) = &mut self.import_window {
+            match window.ui(egui_ctx) {
+                ControlFlow::Continue(()) => (),
+                ControlFlow::Break(ImportResult::Import {
+                    background_color,
+                    background_layers,
+                    tilesets,
+                }) => {
+                    self.apply_action(UiAction::Import {
+                        background_color,
+                        background_layers,
+                        tilesets,
+                    });
+                    self.import_window = None;
+                }
+                ControlFlow::Break(ImportResult::Close) => {
+                    self.import_window = None;
                 }
             }
         } else if let Some(window) = &mut self.menu_window {

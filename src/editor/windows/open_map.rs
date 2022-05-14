@@ -24,6 +24,7 @@ impl OpenMapWindow {
 
         egui::Window::new("Open/Import Map")
             .resizable(false)
+            .collapsible(false)
             .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
             .show(egui_ctx, |ui| {
                 let resources = storage::get::<Resources>();

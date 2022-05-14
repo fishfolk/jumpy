@@ -40,6 +40,7 @@ impl CreateMapWindow {
 
         egui::Window::new("Create Map")
             .resizable(false)
+            .collapsible(false)
             .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
             .show(egui_ctx, |ui| {
                 ui.text_edit_singleline(&mut self.name);

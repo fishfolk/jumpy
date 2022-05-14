@@ -85,6 +85,7 @@ pub struct Editor {
     menu_window: Option<windows::MenuWindow>,
     save_map_window: Option<windows::SaveMapWindow>,
     open_map_window: Option<windows::OpenMapWindow>,
+    import_window: Option<windows::ImportWindow>,
 
     selection: Option<SelectableEntity>,
 
@@ -115,6 +116,7 @@ impl Editor {
             menu_window: None,
             save_map_window: None,
             open_map_window: None,
+            import_window: None,
 
             selection: None,
 
@@ -315,6 +317,18 @@ impl Editor {
 
                 self.map_resource = map_resource;
                 self.clear_context();
+            }
+
+            UiAction::Import {
+                tilesets,
+                background_color,
+                background_layers,
+            } => {
+                let action = actions::Import::new(tilesets, background_color, background_layers);
+
+                self.history
+                    .apply(action, &mut self.map_resource.map)
+                    .unwrap();
             }
 
             _ => todo!(),

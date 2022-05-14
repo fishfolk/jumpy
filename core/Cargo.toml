@@ -7,7 +7,7 @@ edition = "2021"
 
 [features]
 default = ["internal-backend", "2d-renderer", "platformer-physics"]
-internal-backend = ["glutin", "winit_input_helper", "tokio", "glam", "glow", "glow_glyph", "image", "egui_glow"]
+internal-backend = ["glutin", "winit_input_helper", "tokio", "glam", "glow", "glow_glyph", "image", "egui", "egui_glow"]
 macroquad-backend = ["macroquad", "ff-particles"]
 platformer-physics = []
 2d-renderer = []
@@ -20,8 +20,9 @@ ff-particles = { version = "0.1", features = ["serde"], optional = true }
 glow = { version = "0.11.2", optional = true }
 glow_glyph = { version = "0.5.0", optional = true }
 glutin = { version = "0.28.0", optional = true }
-egui_glow = { version = "0.18.0", optional = true }
-winit_input_helper = { git = "https://github.com/olefasting/winit_input_helper.git", branch = "glutin_support", default-features = false, features = ["glutin"], optional = true }
+egui = { version = "0.18.1", optional = true }
+egui_glow = { version = "0.18.1", features = ["winit", "egui-winit"], optional = true }
+winit_input_helper = { version = "0.12.0", optional = true }
 image = { version = "0.24.1", optional = true }
 # tokio = { version = "1.17.0", features = ["macros", "sync", "rt"], optional = true }
 tokio = { version = "1.17.0", features = ["sync", "macros", "rt-multi-thread"], optional = true }

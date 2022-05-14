@@ -8,6 +8,7 @@ use std::path::Path;
 pub use crate::image::ImageFormat as TextureFormat;
 
 use crate::gl::gl_context;
+use crate::image::{Image, ImageImpl};
 use crate::math::{vec2, Size, Vec2};
 use crate::render::renderer::Renderer;
 use crate::result::Result;
@@ -36,8 +37,8 @@ impl PartialEq<NativeTexture> for Texture2DImpl {
 impl Eq for Texture2DImpl {}
 
 impl Texture2DImpl {
-    pub(crate) fn from_dynamic_image<K, F, S>(
-        image: DynamicImage,
+    pub(crate) fn from_image<K, F, S>(
+        image: Image,
         kind: K,
         filter_mode: F,
         frame_size: S,
@@ -47,9 +48,8 @@ impl Texture2DImpl {
         F: Into<Option<TextureFilterMode>>,
         S: Into<Option<Size<f32>>>,
     {
-        let image = image.into_rgba8();
         let kind = kind.into().unwrap_or_default();
-        let size = Size::new(image.width(), image.height()).as_f32();
+        let size = image.size();
         let frame_size = frame_size.into();
 
         let gl = gl_context();
@@ -68,7 +68,7 @@ impl Texture2DImpl {
                 0,
                 glow::RGBA,
                 glow::UNSIGNED_BYTE,
-                Some(&image.into_raw()),
+                Some(image.as_raw()),
             );
 
             gl.bind_texture(glow::TEXTURE_2D, None);
@@ -100,13 +100,8 @@ impl Texture2DImpl {
         F: Into<Option<TextureFilterMode>>,
         S: Into<Option<Size<f32>>>,
     {
-        let image = if let Some(format) = format.into() {
-            image::load_from_memory_with_format(bytes, format.into())?
-        } else {
-            image::load_from_memory(bytes)?
-        };
-
-        Self::from_dynamic_image(image, kind, filter_mode, frame_size)
+        let image = Image::from_bytes(bytes, format)?;
+        Self::from_image(image, kind, filter_mode, frame_size)
     }
 
     pub fn gl_texture(&self) -> NativeTexture {
@@ -159,6 +154,7 @@ impl Drop for Texture2DImpl {
     }
 }
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub enum TextureUnit {
     Texture0,
     Texture1,

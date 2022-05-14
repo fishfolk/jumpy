@@ -25,9 +25,6 @@ pub mod color;
 #[path = "macroquad/render.rs"]
 pub mod render;
 
-#[path = "macroquad/camera.rs"]
-pub mod camera;
-
 #[path = "macroquad/window.rs"]
 pub mod window;
 
@@ -48,6 +45,8 @@ pub mod gl {}
 
 pub mod gui {
     pub use macroquad::ui::*;
+
+    pub fn destroy_gui() {}
 }
 
 pub use macroquad::ui;

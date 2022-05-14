@@ -8,6 +8,7 @@ use crate::color::{colors, Color};
 use crate::config::Config;
 use crate::game::draw_delta_time;
 use crate::gl::gl_context;
+use crate::gui::draw_gui;
 use crate::math::{vec2, Rect, Size, Vec2};
 use crate::prelude::shader::ShaderKind;
 use crate::prelude::vertex::VertexLayout;
@@ -22,7 +23,7 @@ use crate::text::{draw_queued_text, draw_text, HorizontalAlignment, TextParams};
 use crate::texture::{Texture2D, TextureFilterMode, TextureUnit};
 use crate::video::VideoConfig;
 use crate::viewport::viewport;
-use crate::window::{get_context_wrapper, get_window};
+use crate::window::{context_wrapper, window};
 
 const BATCH_SIZE: usize = 128;
 
@@ -110,15 +111,6 @@ impl Renderer {
             &[("mvp", UniformType::Mat4)],
         )?;
 
-        let gl = gl_context();
-        unsafe {
-            gl.enable(glow::DEPTH_TEST);
-            gl.depth_func(glow::LESS);
-            gl.enable(glow::BLEND);
-            gl.blend_func(glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA);
-            gl.enable(glow::FRAMEBUFFER_SRGB);
-        }
-
         Ok(Renderer {
             clear_color: None,
             should_show_fps: config.should_show_fps,
@@ -157,15 +149,10 @@ impl Renderer {
 
             self.index_buffer.set_data(0, &self.indices[0..index_cnt]);
 
+            let projection = camera.projection();
             let model = Mat4::IDENTITY;
 
-            let viewport = viewport();
-            let view =
-                Mat4::orthographic_rh_gl(0.0, viewport.width, viewport.height, 0.0, -1.0, 1.0);
-
-            let projection = camera.projection();
-
-            program.set_uniform_mat4("mvp", false, model * view * projection);
+            program.set_uniform_mat4("mvp", false, projection * model);
 
             self.vertex_buffer.set_data(0, &self.batched);
 
@@ -173,6 +160,8 @@ impl Renderer {
 
             let gl = gl_context();
             unsafe {
+                let viewport = viewport();
+
                 gl.viewport(
                     viewport.x as i32,
                     viewport.y as i32,
@@ -187,14 +176,12 @@ impl Renderer {
                     0,
                 );
 
-                // gl.draw_arrays(glow::TRIANGLES, 0, self.batched_cnt as i32);
-
                 gl.bind_texture(glow::TEXTURE_2D, None);
 
                 gl.bind_vertex_array(None);
 
-                // gl.bind_buffer(glow::ARRAY_BUFFER, None);
-                // gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, None);
+                gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, None);
+                gl.bind_buffer(glow::ARRAY_BUFFER, None);
 
                 gl.use_program(None);
             }
@@ -371,9 +358,11 @@ impl Renderer {
 
         draw_queued_text()?;
 
-        get_context_wrapper().swap_buffers()?;
+        draw_gui();
 
-        get_window().request_redraw();
+        context_wrapper().swap_buffers()?;
+
+        window().request_redraw();
 
         self.polygons = 0;
         self.draws = 0;

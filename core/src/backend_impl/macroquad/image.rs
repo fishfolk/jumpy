@@ -3,10 +3,9 @@ use std::ops::{Deref, DerefMut};
 
 pub use macroquad::texture::Image as MQImage;
 
-use crate::image::{ImageFormat, ImagePixelFormat};
+use crate::image::ImageFormat;
+use crate::math::Size;
 use crate::result::Result;
-
-pub struct ImageImpl(macroquad::texture::Image);
 
 impl ImageFormat {
     fn from_crate(format: macroquad::prelude::ImageFormat) -> Option<Self> {
@@ -58,6 +57,9 @@ impl From<ImageFormat> for macroquad::prelude::ImageFormat {
     }
 }
 
+#[derive(Clone)]
+pub struct ImageImpl(macroquad::texture::Image);
+
 impl ImageImpl {
     pub(crate) fn from_bytes<T>(bytes: &[u8], format: T) -> Result<Self>
     where
@@ -66,6 +68,10 @@ impl ImageImpl {
         let format = format.into().map(|f| f.into());
         let mq_image = macroquad::texture::Image::from_file_with_format(bytes, format);
         Ok(ImageImpl(mq_image))
+    }
+
+    pub fn size(&self) -> Size<f32> {
+        Size::new(self.0.width() as f32, self.0.height() as f32)
     }
 }
 

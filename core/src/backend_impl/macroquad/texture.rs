@@ -1,3 +1,4 @@
+use std::ops::Deref;
 use std::path::Path;
 
 pub use crate::image::ImageFormat as TextureFormat;
@@ -5,6 +6,7 @@ pub use crate::image::ImageFormat as TextureFormat;
 use macroquad::texture::load_texture;
 
 use crate::file::read_from_file;
+use crate::image::Image;
 use crate::math::{vec2, Size, Vec2};
 use crate::result::Result;
 use crate::texture::{TextureFilterMode, TextureKind};
@@ -36,6 +38,32 @@ pub struct Texture2DImpl {
 }
 
 impl Texture2DImpl {
+    pub(crate) fn from_image<K, F, S>(
+        image: Image,
+        kind: K,
+        filter_mode: F,
+        frame_size: S,
+    ) -> Result<Self>
+    where
+        K: Into<Option<TextureKind>>,
+        F: Into<Option<TextureFilterMode>>,
+        S: Into<Option<Size<f32>>>,
+    {
+        let kind = kind.into().unwrap_or_default();
+        let filter_mode = filter_mode.into().unwrap_or_default();
+        let frame_size = frame_size.into();
+
+        let texture_impl = macroquad::texture::Texture2D::from_image(image.deref());
+        texture_impl.set_filter(filter_mode.into());
+
+        Ok(Texture2DImpl {
+            mq_texture: texture_impl,
+            kind,
+            filter_mode,
+            frame_size,
+        })
+    }
+
     pub(crate) fn from_bytes<T, K, F, S>(
         bytes: &[u8],
         format: T,

@@ -58,6 +58,7 @@ use crate::game::{
     NETWORK_GAME_CLIENT_STATE_ID, NETWORK_GAME_HOST_STATE_ID,
 };
 pub use effects::{ActiveEffectKind, ActiveEffectMetadata, PassiveEffect, PassiveEffectMetadata};
+use ff_core::gui::destroy_gui;
 use ff_core::particles::{draw_particles, update_particle_emitters};
 
 const CONFIG_FILE_ENV_VAR: &str = "FISHFIGHT_CONFIG";
@@ -169,6 +170,8 @@ async fn internal_main() -> Result<()> {
         .with_clear_color(colors::BLACK)
         .run()
         .await?;
+
+    destroy_gui();
 
     Ok(())
 }

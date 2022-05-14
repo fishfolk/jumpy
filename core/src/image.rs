@@ -1,4 +1,4 @@
-use std::collections::hash_map::IntoIter;
+use std::collections::hash_map::{IntoIter, Iter};
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 use std::path::Path;
@@ -34,22 +34,8 @@ pub enum ImageFormat {
     Avif,
 }
 
-#[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum ImagePixelFormat {
-    Luma8,
-    Lumaa8,
-    Rgb8,
-    Rgba8,
-    Luma16,
-    Lumaa16,
-    Rgb16,
-    Rgba16,
-    Rgb32f,
-    Rgba32f,
-}
-
-pub struct Image(usize);
+#[derive(Clone)]
+pub struct Image(ImageImpl);
 
 impl Image {
     pub fn from_bytes<T>(bytes: &[u8], format: T) -> Result<Self>
@@ -57,7 +43,7 @@ impl Image {
         T: Into<Option<ImageFormat>>,
     {
         let image_impl = ImageImpl::from_bytes(bytes, format)?;
-        Ok(add_image_to_map(image_impl))
+        Ok(Image(image_impl))
     }
 
     pub async fn from_file<P, T>(path: P, format: T) -> Result<Self>
@@ -70,61 +56,40 @@ impl Image {
     }
 
     pub(crate) fn set_id(&self, id: &str) {
-        unsafe { IMAGE_IDS.get_or_insert_with(HashMap::new) }.insert(id.to_string(), self.0);
+        image_map().insert(id.to_string(), self.clone());
     }
 }
 
-static mut NEXT_IMAGE_INDEX: usize = 0;
-static mut IMAGES: Option<HashMap<usize, ImageImpl>> = None;
+static mut IMAGES: Option<HashMap<String, Image>> = None;
 
-fn image_map() -> &'static mut HashMap<usize, ImageImpl> {
+fn image_map() -> &'static mut HashMap<String, Image> {
     unsafe { IMAGES.get_or_insert_with(HashMap::new) }
-}
-
-fn add_image_to_map(image_impl: ImageImpl) -> Image {
-    let index = unsafe { NEXT_IMAGE_INDEX };
-    image_map().insert(index, image_impl);
-    unsafe { NEXT_IMAGE_INDEX += 1 };
-    Image(index)
 }
 
 impl Deref for Image {
     type Target = ImageImpl;
 
     fn deref(&self) -> &Self::Target {
-        image_map().get(&self.0).unwrap()
+        &self.0
     }
 }
 
 impl DerefMut for Image {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        image_map().get_mut(&self.0).unwrap()
+        &mut self.0
     }
 }
 
-static mut IMAGE_IDS: Option<HashMap<String, usize>> = None;
-
 pub fn try_get_image(id: &str) -> Option<Image> {
-    if let Some(index) = unsafe { IMAGE_IDS.get_or_insert_with(HashMap::new) }.get(id) {
-        Some(Image(*index))
-    } else {
-        None
-    }
+    image_map().get(id).cloned()
 }
 
 pub fn get_image(id: &str) -> Image {
     try_get_image(id).unwrap()
 }
 
-pub fn iter_images() -> IntoIter<String, Image> {
-    unsafe {
-        IMAGE_IDS
-            .get_or_insert_with(HashMap::new)
-            .iter()
-            .map(|(k, v)| (k.to_string(), Image(*v)))
-            .collect::<HashMap<_, _>>()
-            .into_iter()
-    }
+pub fn iter_images() -> Iter<'static, String, Image> {
+    image_map().iter()
 }
 
 pub fn load_image_bytes<T>(bytes: &[u8], format: T) -> Result<Image>
@@ -160,7 +125,7 @@ pub async fn load_images<P: AsRef<Path>>(
     is_required: bool,
     should_overwrite: bool,
 ) -> Result<()> {
-    let images = unsafe { IMAGES.get_or_insert_with(HashMap::new) };
+    let images = image_map();
 
     if should_overwrite {
         images.clear();

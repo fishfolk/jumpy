@@ -499,23 +499,37 @@ checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 
 [[package]]
 name = "egui"
-version = "0.18.0"
+version = "0.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c4be5abc5b868ade7db0caf8e96f2c3ddccb243f7e93d382cf5d0e43f85ae86"
+checksum = "eb095a8b9feb9b7ff8f00b6776dffcef059538a3f4a91238e03c900e9c9ad9a2"
 dependencies = [
  "ahash 0.7.6",
  "epaint",
  "nohash-hasher",
+ "tracing",
+]
+
+[[package]]
+name = "egui-winit"
+version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b040afd583fd95a9b9578d4399214a13d948ed26bc0ff7cc0104502501f34e68"
+dependencies = [
+ "egui",
+ "instant",
+ "tracing",
+ "winit",
 ]
 
 [[package]]
 name = "egui_glow"
-version = "0.18.0"
+version = "0.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "54cbe18dacf32b29a015d1d2eaa0ee803f1a5468def004f956864a4b89e7d1e5"
+checksum = "af43ed7ec7199907ab5853c3bb3883ae1e741ab540aa127a798a60b7bdb906f1"
 dependencies = [
  "bytemuck",
  "egui",
+ "egui-winit",
  "glow",
  "memoffset",
  "tracing",
@@ -540,9 +554,9 @@ dependencies = [
 
 [[package]]
 name = "epaint"
-version = "0.18.0"
+version = "0.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4dfd8ef097bd349762fcf1c7a5ef2f0e686f9919253b7a298827d6ff9d401dee"
+checksum = "0c29567088888e8ac3e8f61bbb2ddc820207ebb8d69eefde5bcefa06d65e4e89"
 dependencies = [
  "ab_glyph",
  "ahash 0.7.6",
@@ -596,6 +610,7 @@ version = "0.4.1"
 dependencies = [
  "async-trait",
  "cfg-if 1.0.0",
+ "egui",
  "egui_glow",
  "ff-particles",
  "fishfight-core-macros",
@@ -2519,9 +2534,10 @@ dependencies = [
 [[package]]
 name = "winit_input_helper"
 version = "0.12.0"
-source = "git+https://github.com/olefasting/winit_input_helper.git?branch=glutin_support#fdb59e2dad884ac916b92eb56da49952d72d0953"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f114b4fe1f38c80027543eb8a0711634fb9136a5cd18e8e990122aaea21f9302"
 dependencies = [
- "glutin",
+ "winit",
 ]
 
 [[package]]

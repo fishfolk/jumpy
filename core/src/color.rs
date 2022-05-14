@@ -172,6 +172,18 @@ impl Default for Color {
     }
 }
 
+impl From<[f32; 3]> for Color {
+    fn from(color: [f32; 3]) -> Self {
+        Color::new(color[0], color[1], color[2], 1.0)
+    }
+}
+
+impl From<[f32; 4]> for Color {
+    fn from(color: [f32; 4]) -> Self {
+        Color::new(color[0], color[1], color[2], color[3])
+    }
+}
+
 /// Build a color from 4 components of 0..255 values
 /// This is a temporary solution and going to be replaced with const fn,
 /// waiting for https://github.com/rust-lang/rust/issues/57241

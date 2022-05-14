@@ -39,7 +39,7 @@ use crate::sproinger::{fixed_update_sproingers, spawn_sproinger};
 use ff_core::map::{draw_map, spawn_decoration, try_get_decoration};
 use ff_core::particles::{draw_particles, update_particle_emitters};
 
-use crate::camera::update_camera;
+use crate::camera::{update_camera, CameraController};
 #[cfg(feature = "macroquad")]
 use ff_core::macroquad::ui::root_ui;
 
@@ -208,6 +208,8 @@ pub fn init_game_world(world: &mut World, map: Map, players: &[PlayerParams]) ->
             params.character.clone(),
         );
     }
+
+    world.spawn((Transform::new(Vec2::ZERO, 0.0), CameraController::new()));
 
     Ok(())
 }

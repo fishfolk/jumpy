@@ -19,6 +19,9 @@ pub mod video;
 #[path = "internal/gl.rs"]
 pub mod gl;
 
+#[path = "internal/gui.rs"]
+pub mod gui;
+
 #[path = "internal/texture.rs"]
 pub mod texture;
 
@@ -27,9 +30,6 @@ pub mod image;
 
 #[path = "internal/render/mod.rs"]
 pub mod render;
-
-#[path = "internal/camera.rs"]
-pub mod camera;
 
 #[path = "internal/particles.rs"]
 pub mod particles;
@@ -45,8 +45,6 @@ pub mod game;
 
 #[path = "internal/context.rs"]
 pub mod context;
-
-pub mod gui {}
 
 pub mod color {}
 

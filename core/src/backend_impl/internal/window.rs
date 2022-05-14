@@ -17,7 +17,7 @@ use crate::window::{WindowConfig, WindowMode};
 
 static mut CONTEXT_WRAPPER: Option<glutin::ContextWrapper<glutin::PossiblyCurrent, Window>> = None;
 
-pub fn get_context_wrapper() -> &'static glutin::ContextWrapper<glutin::PossiblyCurrent, Window> {
+pub fn context_wrapper() -> &'static glutin::ContextWrapper<glutin::PossiblyCurrent, Window> {
     unsafe {
         CONTEXT_WRAPPER
             .as_ref()
@@ -25,12 +25,12 @@ pub fn get_context_wrapper() -> &'static glutin::ContextWrapper<glutin::Possibly
     }
 }
 
-pub fn get_window() -> &'static Window {
-    get_context_wrapper().window()
+pub fn window() -> &'static Window {
+    context_wrapper().window()
 }
 
 pub fn window_size() -> Size<f32> {
-    let size = get_window().inner_size();
+    let size = window().inner_size();
 
     Size {
         width: size.width as f32,
@@ -94,7 +94,7 @@ pub fn create_window<E: 'static + Debug>(
         CONTEXT_WRAPPER = Some(wrapper);
     };
 
-    Ok(get_context_wrapper())
+    Ok(context_wrapper())
 }
 
 pub(crate) fn apply_window_config(config: &WindowConfig) {
@@ -102,7 +102,7 @@ pub(crate) fn apply_window_config(config: &WindowConfig) {
         WindowMode::Windowed { size } => {
             let size = glutin::dpi::Size::Physical(size.into());
 
-            let window = get_window();
+            let window = window();
 
             window.set_fullscreen(None);
             window.set_inner_size(size);
@@ -111,7 +111,7 @@ pub(crate) fn apply_window_config(config: &WindowConfig) {
         WindowMode::Borderless => {
             let fullscreen = Fullscreen::Borderless(None);
 
-            let window = get_window();
+            let window = window();
 
             window.set_fullscreen(Some(fullscreen));
             window.set_resizable(false);
@@ -127,7 +127,7 @@ pub(crate) fn apply_window_config(config: &WindowConfig) {
 
             let fullscreen = Fullscreen::Borderless(None);
 
-            let window = get_window();
+            let window = window();
 
             window.set_fullscreen(Some(fullscreen));
             window.set_resizable(false);

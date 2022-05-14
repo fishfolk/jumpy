@@ -12,6 +12,7 @@ use crate::result::Result;
 pub use crate::backend_impl::texture::*;
 
 use crate::file::read_from_file;
+use crate::image::Image;
 use crate::parsing::deserialize_bytes_by_extension;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -53,6 +54,21 @@ impl Default for TextureFilterMode {
 pub struct Texture2D(usize);
 
 impl Texture2D {
+    pub fn from_image<K, F, S>(
+        image: Image,
+        kind: K,
+        filter_mode: F,
+        frame_size: S,
+    ) -> Result<Texture2D>
+    where
+        K: Into<Option<TextureKind>>,
+        F: Into<Option<TextureFilterMode>>,
+        S: Into<Option<Size<f32>>>,
+    {
+        let texture_impl = Texture2DImpl::from_image(image, kind, filter_mode, frame_size)?;
+        Ok(add_texture_to_map(texture_impl))
+    }
+
     pub fn from_bytes<T, K, F, S>(
         bytes: &[u8],
         format: T,

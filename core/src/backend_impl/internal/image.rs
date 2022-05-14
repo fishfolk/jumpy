@@ -3,7 +3,8 @@ use std::ffi::OsStr;
 use std::ops::{Deref, DerefMut};
 use std::path::Path;
 
-use crate::image::{ImageFormat, ImagePixelFormat};
+use crate::image::ImageFormat;
+use crate::math::Size;
 use image::DynamicImage;
 
 use crate::result::Result;
@@ -58,27 +59,37 @@ impl ImageFormat {
     }
 }
 
-pub struct ImageImpl(DynamicImage);
+#[derive(Clone)]
+pub struct ImageImpl {
+    size: Size<f32>,
+    bytes: Vec<u8>,
+}
 
 impl ImageImpl {
     pub(crate) fn from_bytes<T>(bytes: &[u8], format: T) -> Result<Self>
     where
         T: Into<Option<ImageFormat>>,
     {
-        let mut dyn_image = if let Some(format) = format.into() {
+        let image = if let Some(format) = format.into() {
             image::load_from_memory_with_format(bytes, format.into())?
         } else {
             image::load_from_memory(bytes)?
-        };
+        }
+        .to_rgba8();
 
-        Ok(ImageImpl(dyn_image))
+        let size = Size::new(image.width() as f32, image.height() as f32);
+
+        Ok(ImageImpl {
+            size,
+            bytes: image.into_raw(),
+        })
     }
 
-    pub fn as_dyn(&self) -> &DynamicImage {
-        &self.0
+    pub fn size(&self) -> Size<f32> {
+        self.size
     }
 
-    pub fn as_dyn_mut(&mut self) -> &mut DynamicImage {
-        &mut self.0
+    pub fn as_raw(&self) -> &[u8] {
+        &self.bytes
     }
 }

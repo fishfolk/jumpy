@@ -20,6 +20,7 @@ use crate::color::{colors, Color};
 use crate::config::Config;
 use crate::event::{Event, EventHandler};
 use crate::gl::init_gl_context;
+use crate::gui::gui_context;
 use crate::input::{
     apply_input_config, is_key_pressed, is_key_released, mouse_movement, mouse_position,
     update_gamepad_context, KeyCode,
@@ -28,10 +29,10 @@ use crate::math::Size;
 use crate::physics::{fixed_delta_time, physics_world};
 use crate::prelude::renderer::renderer;
 use crate::prelude::{input_event_handler, DefaultEventHandler};
-use crate::render::{apply_video_config, clear_screen, end_frame};
+use crate::render::{apply_video_config, clear_screen, end_frame, set_clear_color};
 use crate::result::Result;
 use crate::window::{
-    apply_window_config, create_window, get_context_wrapper, get_window, window_size, WindowMode,
+    apply_window_config, context_wrapper, create_window, window, window_size, WindowMode,
     DEFAULT_WINDOW_TITLE,
 };
 
@@ -116,11 +117,11 @@ impl<E: 'static + Debug> Game<E> {
 
         physics_world().clear();
 
-        let world = self.get_state().end()?;
+        let world = self.state().end()?;
 
         self.state = state;
 
-        self.get_state().begin(world)?;
+        self.state().begin(world)?;
 
         Ok(())
     }
@@ -147,12 +148,8 @@ impl<E: 'static + Debug> Game<E> {
         self.apply_current_config();
     }
 
-    pub fn try_get_state(&mut self) -> Option<&mut (dyn GameState + 'static)> {
-        Rc::get_mut(&mut self.state).map(|rc| rc.get_mut())
-    }
-
-    pub fn get_state(&mut self) -> &mut (dyn GameState + 'static) {
-        self.try_get_state().unwrap()
+    pub fn state(&mut self) -> &mut (dyn GameState + 'static) {
+        Rc::get_mut(&mut self.state).map(|rc| rc.get_mut()).unwrap()
     }
 
     pub async fn run(self) -> Result<()> {
@@ -171,56 +168,61 @@ impl<E: 'static + Debug> Game<E> {
             .unwrap_or_else(|| Box::new(DefaultEventHandler));
 
         event_loop.run(move |event, _, control_flow| {
-            event_handler.handle(&event, control_flow);
+            if !event_handler.handle(&event, control_flow) {
+                match &event {
+                    glutin::event::Event::LoopDestroyed => {
+                        return;
+                    }
+                    glutin::event::Event::NewEvents(cause) => {
+                        match cause {
+                            StartCause::Init => {
+                                game.state().begin(None);
+                            }
+                            _ => {}
+                        }
 
-            match &event {
-                glutin::event::Event::LoopDestroyed => {
-                    return;
-                }
-                glutin::event::Event::NewEvents(cause) => {
-                    match cause {
-                        StartCause::Init => {
-                            game.get_state().begin(None);
+                        update_gamepad_context().unwrap_or_else(|err| {
+                            panic!("Error in gamepad context update: {}", err)
+                        });
+                    }
+                    glutin::event::Event::WindowEvent { event, .. } => {
+                        if !gui_context().on_event(event) {
+                            match event {
+                                WindowEvent::CloseRequested | WindowEvent::Destroyed => {
+                                    *control_flow = ControlFlow::Exit;
+                                }
+                                WindowEvent::Resized(physical_size) => {
+                                    context_wrapper().resize(*physical_size);
+
+                                    let size = Size::from(*physical_size).as_f32();
+                                    resize_viewport(size.width, size.height);
+                                }
+                                _ => {}
+                            }
+                        }
+                    }
+                    glutin::event::Event::MainEventsCleared => {}
+                    glutin::event::Event::RedrawRequested(..) => {}
+                    glutin::event::Event::UserEvent(event) => match event {
+                        Event::Custom(event) => event_handler.handle_custom(event, control_flow),
+                        Event::ConfigChanged(config) => game.apply_config(config.clone()),
+                        Event::StateTransition(state) => game
+                            .change_state(state.clone())
+                            .unwrap_or_else(|err| panic!("Error when changing state: {}", err)),
+                        Event::Quit => {
+                            *control_flow = ControlFlow::Exit;
                         }
                         _ => {}
-                    }
-
-                    update_gamepad_context()
-                        .unwrap_or_else(|err| panic!("Error in gamepad context update: {}", err));
+                    },
+                    _ => {}
                 }
-                glutin::event::Event::WindowEvent { event, .. } => match event {
-                    WindowEvent::CloseRequested | WindowEvent::Destroyed => {
-                        *control_flow = ControlFlow::Exit;
-                    }
-                    WindowEvent::Resized(physical_size) => {
-                        get_context_wrapper().resize(*physical_size);
-
-                        let size = Size::from(*physical_size).as_f32();
-                        resize_viewport(size.width, size.height);
-                    }
-                    _ => {}
-                },
-                glutin::event::Event::MainEventsCleared => {}
-                glutin::event::Event::RedrawRequested(..) => {}
-                glutin::event::Event::UserEvent(event) => match event {
-                    Event::Custom(event) => event_handler.handle_custom(event, control_flow),
-                    Event::ConfigChanged(config) => game.apply_config(config.clone()),
-                    Event::StateTransition(state) => game
-                        .change_state(state.clone())
-                        .unwrap_or_else(|err| panic!("Error when changing state: {}", err)),
-                    Event::Quit => {
-                        *control_flow = ControlFlow::Exit;
-                    }
-                    _ => {}
-                },
-                _ => {}
             }
 
             if input_event_handler(&event) {
                 if *control_flow == ControlFlow::Exit {
                     stop_music();
 
-                    game.get_state().end();
+                    game.state().end();
 
                     return;
                 } else {
@@ -235,7 +237,7 @@ impl<E: 'static + Debug> Game<E> {
 
                     let delta_time_secs = delta_time.as_secs_f32();
 
-                    game.get_state()
+                    game.state()
                         .update(delta_time_secs)
                         .unwrap_or_else(|err| panic!("Error in game state update: {}", err));
 
@@ -259,7 +261,7 @@ impl<E: 'static + Debug> Game<E> {
                                 game.fixed_update_accumulator / fixed_delta_time
                             };
 
-                        game.get_state()
+                        game.state()
                             .fixed_update(fixed_delta_time, integration_factor)
                             .unwrap_or_else(|err| {
                                 panic!("Error in game state fixed update: {}", err)
@@ -280,7 +282,18 @@ impl<E: 'static + Debug> Game<E> {
 
                             clear_screen(game.clear_color);
 
-                            game.get_state()
+                            let needs_repaint = gui_context().run(window(), |egui_ctx| {
+                                /*
+                                egui::SidePanel::left("my_side_panel").show(egui_ctx, |ui| {
+                                    ui.heading("Hello World!");
+                                    if ui.button("Quit").clicked() {
+                                        *control_flow = ControlFlow::Exit;
+                                    }
+                                });
+                                 */
+                            });
+
+                            game.state()
                                 .draw(draw_delta_time.as_secs_f32())
                                 .unwrap_or_else(|err| panic!("Error in game state draw: {}", err));
 

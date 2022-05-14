@@ -14,6 +14,8 @@ use crate::prelude::Transform;
 use crate::result::Result;
 use crate::state::{GameState, GameStateBuilderFn};
 use crate::storage;
+use crate::viewport::{resize_viewport, viewport_size};
+use crate::window::window_size;
 
 pub fn delta_time() -> Duration {
     Duration::from_secs_f32(get_frame_time())
@@ -69,9 +71,10 @@ impl Node for Game {
     where
         Self: Sized,
     {
+        let window_size = window_size();
         let viewport_size = viewport_size();
-        if viewport_size != window_size() {
-            resize_viewport(physical_size.width as f32, physical_size.height as f32);
+        if viewport_size != window_size {
+            resize_viewport(window_size.width, window_size.height);
         }
 
         node.state.draw(get_frame_time()).unwrap();

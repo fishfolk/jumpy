@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::ops::Deref;
 
 use macroquad::color_u8;
 use macroquad::ui::{root_ui, Skin};
@@ -166,7 +167,7 @@ impl GuiTheme {
         let default = {
             let window_style = root_ui()
                 .style_builder()
-                .background(window_background.clone())
+                .background(window_background.deref().deref().clone())
                 .background_margin(RectOffset::new(
                     WINDOW_BG_MARGIN_H,
                     WINDOW_BG_MARGIN_H,
@@ -183,9 +184,9 @@ impl GuiTheme {
 
             let button_style = root_ui()
                 .style_builder()
-                .background(button_background.clone())
-                .background_hovered(button_background_hovered.clone())
-                .background_clicked(button_background_clicked.clone())
+                .background(button_background.deref().deref().clone())
+                .background_hovered(button_background_hovered.deref().deref().clone())
+                .background_clicked(button_background_clicked.deref().deref().clone())
                 .background_margin(RectOffset::new(
                     BUTTON_BG_MARGIN_H,
                     BUTTON_BG_MARGIN_H,
@@ -235,8 +236,8 @@ impl GuiTheme {
 
             let editbox_style = root_ui()
                 .style_builder()
-                .background(editbox_background.clone())
-                .background_clicked(editbox_background_clicked.clone())
+                .background(editbox_background.deref().deref().clone())
+                .background_clicked(editbox_background_clicked.deref().deref().clone())
                 .background_margin(RectOffset::new(
                     EDITBOX_BG_MARGIN_H,
                     EDITBOX_BG_MARGIN_H,
@@ -255,14 +256,14 @@ impl GuiTheme {
 
             let checkbox_style = root_ui()
                 .style_builder()
-                .background(checkbox_background.clone())
-                .background_hovered(checkbox_background_hovered.clone())
-                .background_clicked(checkbox_background_clicked.clone())
+                .background(checkbox_background.deref().deref().clone())
+                .background_hovered(checkbox_background_hovered.deref().deref().clone())
+                .background_clicked(checkbox_background_clicked.deref().deref().clone())
                 .build();
 
             let combobox_style = root_ui()
                 .style_builder()
-                .background(combobox_background.clone())
+                .background(combobox_background.deref().deref().clone())
                 .background_margin(RectOffset::new(
                     COMBOBOX_BG_MARGIN_H,
                     COMBOBOX_BG_MARGIN_H,
@@ -314,7 +315,7 @@ impl GuiTheme {
         let button_disabled = {
             let button_style = root_ui()
                 .style_builder()
-                .background(button_background_disabled.clone())
+                .background(button_background_disabled.deref().deref().clone())
                 .background_margin(RectOffset::new(
                     BUTTON_BG_MARGIN_H,
                     BUTTON_BG_MARGIN_H,
@@ -327,8 +328,8 @@ impl GuiTheme {
                     BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
                     BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
                 ))
-                .background_hovered(button_background_disabled.clone())
-                .background_clicked(button_background_disabled.clone())
+                .background_hovered(button_background_disabled.deref().deref().clone())
+                .background_clicked(button_background_disabled.deref().deref().clone())
                 .text_color(color_u8!(88, 88, 88, 255).into())
                 .font_size(BUTTON_FONT_SIZE as u16)
                 .build();
@@ -357,9 +358,9 @@ impl GuiTheme {
         let checkbox = {
             let button_style = root_ui()
                 .style_builder()
-                .background(checkbox_background.clone())
-                .background_hovered(checkbox_background_hovered.clone())
-                .background_clicked(checkbox_background_clicked.clone())
+                .background(checkbox_background.deref().deref().clone())
+                .background_hovered(checkbox_background_hovered.deref().deref().clone())
+                .background_clicked(checkbox_background_clicked.deref().deref().clone())
                 .background_margin(RectOffset::new(0.0, 0.0, 4.0, 4.0))
                 .build();
 
@@ -396,9 +397,9 @@ impl GuiTheme {
         let checkbox_selected = {
             let button_style = root_ui()
                 .style_builder()
-                .background(checkbox_background_checked.clone())
-                .background_hovered(checkbox_background_checked_hovered.clone())
-                .background_clicked(checkbox_background_clicked.clone())
+                .background(checkbox_background_checked.deref().deref().clone())
+                .background_hovered(checkbox_background_checked_hovered.deref().deref().clone())
+                .background_clicked(checkbox_background_clicked.deref().deref().clone())
                 .background_margin(RectOffset::new(0.0, 0.0, 4.0, 4.0))
                 .build();
 
@@ -600,9 +601,9 @@ impl GuiTheme {
         let toolbar_button = {
             let button_style = root_ui()
                 .style_builder()
-                .background(button_background.clone())
-                .background_hovered(button_background_hovered.clone())
-                .background_clicked(button_background_clicked.clone())
+                .background(button_background.deref().deref().clone())
+                .background_hovered(button_background_hovered.deref().deref().clone())
+                .background_clicked(button_background_clicked.deref().deref().clone())
                 .background_margin(RectOffset::new(
                     BUTTON_BG_MARGIN_H,
                     BUTTON_BG_MARGIN_H,
@@ -628,9 +629,9 @@ impl GuiTheme {
         let toolbar_button_disabled = {
             let button_style = root_ui()
                 .style_builder()
-                .background(button_background_disabled.clone())
-                .background_hovered(button_background_disabled.clone())
-                .background_clicked(button_background_disabled.clone())
+                .background(button_background_disabled.deref().deref().clone())
+                .background_hovered(button_background_disabled.deref().deref().clone())
+                .background_clicked(button_background_disabled.deref().deref().clone())
                 .background_margin(RectOffset::new(
                     BUTTON_BG_MARGIN_H,
                     BUTTON_BG_MARGIN_H,
@@ -777,9 +778,9 @@ impl GuiTheme {
                     BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
                     BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
                 ))
-                .background(button_background_hovered.clone())
-                .background_hovered(button_background_hovered.clone())
-                .background_clicked(button_background_clicked.clone())
+                .background(button_background_hovered.deref().deref().clone())
+                .background_hovered(button_background_hovered.deref().deref().clone())
+                .background_clicked(button_background_clicked.deref().deref().clone())
                 .text_color(TEXT_COLOR.into())
                 .font_size(BUTTON_FONT_SIZE as u16)
                 .build();
@@ -805,9 +806,9 @@ impl GuiTheme {
                     BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
                     BUTTON_MARGIN_V - BUTTON_BG_MARGIN_V,
                 ))
-                .background(button_background_disabled.clone())
-                .background_hovered(button_background_disabled.clone())
-                .background_clicked(button_background_disabled.clone())
+                .background(button_background_disabled.deref().deref().clone())
+                .background_hovered(button_background_disabled.deref().deref().clone())
+                .background_clicked(button_background_disabled.deref().deref().clone())
                 .text_color(TEXT_COLOR.into())
                 .font_size(BUTTON_FONT_SIZE as u16)
                 .build();
@@ -828,9 +829,9 @@ impl GuiTheme {
 
             let button_style = root_ui()
                 .style_builder()
-                .background(window_background.clone())
-                .background_hovered(window_background.clone())
-                .background_clicked(window_background.clone())
+                .background(window_background.deref().deref().clone())
+                .background_hovered(window_background.deref().deref().clone())
+                .background_clicked(window_background.deref().deref().clone())
                 .background_margin(RectOffset::new(52.0, 52.0, 52.0, 52.0))
                 .build();
 
@@ -851,9 +852,9 @@ impl GuiTheme {
 
             let button_style = root_ui()
                 .style_builder()
-                .background(window_border.clone())
-                .background_hovered(window_border.clone())
-                .background_clicked(window_border.clone())
+                .background(window_border.deref().deref().clone())
+                .background_hovered(window_border.deref().deref().clone())
+                .background_clicked(window_border.deref().deref().clone())
                 .background_margin(RectOffset::new(52.0, 52.0, 52.0, 52.0))
                 .build();
 
@@ -867,11 +868,11 @@ impl GuiTheme {
         let map_selection = {
             let button_style = root_ui()
                 .style_builder()
-                .background(window_border.clone())
+                .background(window_border.deref().deref().clone())
                 .background_margin(RectOffset::new(52.0, 52.0, 52.0, 52.0))
                 .margin(RectOffset::new(-40.0, -40.0, -40.0, -40.0))
-                .background_hovered(window_border.clone())
-                .background_clicked(window_border.clone())
+                .background_hovered(window_border.deref().deref().clone())
+                .background_clicked(window_border.deref().deref().clone())
                 .text_color(TEXT_COLOR.into())
                 .reverse_background_z(true)
                 .font_size(45)

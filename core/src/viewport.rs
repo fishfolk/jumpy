@@ -1,6 +1,6 @@
 use crate::camera::main_camera;
 
-use crate::math::{vec2, Size, UVec2, Vec2};
+use crate::math::{vec2, Mat4, Size, UVec2, Vec2};
 use crate::window::window_size;
 
 #[derive(Debug, Copy, Clone)]
@@ -34,6 +34,10 @@ impl Viewport {
 
     pub fn aspect_ratio(&self) -> f32 {
         self.width as f32 / self.height as f32
+    }
+
+    pub fn view_matrix(&self) -> Mat4 {
+        Mat4::orthographic_rh_gl(0.0, self.width, self.height, 0.0, -1.0, 1.0)
     }
 }
 

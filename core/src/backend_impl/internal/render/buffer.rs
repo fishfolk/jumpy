@@ -62,7 +62,7 @@ impl<T> Buffer<T> {
             gl.buffer_data_size(
                 target,
                 length as i32 * core::mem::size_of::<T>() as i32,
-                glow::STREAM_DRAW,
+                glow::DYNAMIC_DRAW,
             );
 
             buffer
@@ -104,7 +104,7 @@ impl<T> Buffer<T> {
             );
 
             if data_len >= self.length {
-                gl.buffer_data_size(target, bytes.len() as i32, glow::STREAM_DRAW);
+                gl.buffer_data_size(target, bytes.len() as i32, glow::DYNAMIC_DRAW);
                 self.length = data_len;
             }
 

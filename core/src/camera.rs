@@ -2,8 +2,6 @@ use hecs::World;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 
-pub use crate::backend_impl::camera::*;
-
 use crate::math::{vec2, vec3, Mat4, Rect, Size, Vec2};
 use crate::prelude::Transform;
 use crate::render::RenderTarget;
@@ -20,6 +18,61 @@ fn camera_index() -> usize {
     }
 }
 
+pub struct CameraImpl {
+    pub target: Vec2,
+    pub zoom: Vec2,
+    pub bounds: Size<f32>,
+    pub rotation: f32,
+    pub offset: Vec2,
+    pub render_target: Option<RenderTarget>,
+}
+
+impl CameraImpl {
+    pub fn new<P, B, Z, R>(position: P, bounds: B, zoom: Z, render_target: R) -> CameraImpl
+    where
+        P: Into<Option<Vec2>>,
+        B: Into<Option<Size<f32>>>,
+        Z: Into<Option<Vec2>>,
+        R: Into<Option<RenderTarget>>,
+    {
+        let position = position.into().unwrap_or(Vec2::ZERO);
+        let zoom = zoom.into().unwrap_or(Vec2::ONE);
+        let bounds = bounds.into().unwrap_or_else(|| window_size());
+        let render_target = render_target.into();
+
+        CameraImpl {
+            target: position,
+            zoom,
+            bounds,
+            rotation: 0.0,
+            offset: Vec2::ZERO,
+            render_target,
+        }
+    }
+
+    pub fn projection(&self) -> Mat4 {
+        let origin = Mat4::from_translation(vec3(-self.target.x, -self.target.y, 0.0));
+        let rotation = Mat4::from_axis_angle(vec3(0.0, 0.0, 1.0), self.rotation.to_radians());
+        let scale = Mat4::from_scale(vec3(self.zoom.x, self.zoom.y, 1.0));
+        let offset = Mat4::from_translation(vec3(-self.offset.x, -self.offset.y, 0.0));
+
+        offset * ((scale * rotation) * origin)
+    }
+}
+
+impl Default for CameraImpl {
+    fn default() -> Self {
+        CameraImpl {
+            target: Vec2::ZERO,
+            zoom: Vec2::ONE,
+            bounds: window_size(),
+            rotation: 0.0,
+            offset: Vec2::ZERO,
+            render_target: None,
+        }
+    }
+}
+
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub struct Camera(usize);
 
@@ -28,7 +81,7 @@ impl Camera {
     where
         P: Into<Option<Vec2>>,
         B: Into<Option<Size<f32>>>,
-        Z: Into<Option<f32>>,
+        Z: Into<Option<Vec2>>,
         R: Into<Option<RenderTarget>>,
     {
         let id = unsafe { camera_index() };
@@ -77,7 +130,7 @@ impl DerefMut for Camera {
 
 impl Default for Camera {
     fn default() -> Self {
-        Camera::new(None, None, 1.0, RenderTarget::default())
+        Camera::new(None, None, Vec2::ONE, None)
     }
 }
 
@@ -114,33 +167,5 @@ pub fn set_main_camera<C: Into<Option<Camera>>>(camera: C) {
 }
 
 pub fn camera_position() -> Vec2 {
-    main_camera().position
-}
-
-pub struct CameraController {
-    pub camera: Option<Camera>,
-    pub offset: Vec2,
-}
-
-impl CameraController {
-    pub fn new<C, O>(camera: C, offset: O) -> Self
-    where
-        C: Into<Option<Camera>>,
-        O: Into<Option<Vec2>>,
-    {
-        CameraController {
-            camera: camera.into(),
-            offset: offset.into().unwrap_or_default(),
-        }
-    }
-}
-
-pub fn update_camera_controllers(world: &mut World, delta_time: f32) {
-    for (e, (transform, camera_controller)) in
-        world.query_mut::<(&mut Transform, &mut CameraController)>()
-    {
-        if let Some(camera) = camera_controller.camera.as_deref_mut() {
-            camera.position = transform.position + camera_controller.offset;
-        }
-    }
+    main_camera().target
 }

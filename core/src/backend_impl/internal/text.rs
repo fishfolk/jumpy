@@ -43,7 +43,7 @@ fn brush() -> &'static mut GlyphBrush {
     unsafe {
         BRUSH.get_or_insert_with(|| {
             let fonts = fonts().clone();
-            GlyphBrushBuilder::using_fonts(fonts).build(gl_context())
+            GlyphBrushBuilder::using_fonts(fonts).build(&gl_context())
         })
     }
 }
@@ -73,7 +73,7 @@ pub fn draw_text(text: &str, x: f32, y: f32, params: TextParams) {
 pub fn draw_queued_text() -> Result<()> {
     let viewport_size = viewport_size();
     brush().draw_queued(
-        gl_context(),
+        &gl_context(),
         viewport_size.width as u32,
         viewport_size.height as u32,
     )?;

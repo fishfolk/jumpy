@@ -111,6 +111,7 @@ impl Editor {
             } = &to_select
             {
                 self.selected_layer = Some(layer_id.clone());
+                self.selected_tool = EditorTool::Cursor;
             }
 
             self.selection = Some(to_select);
@@ -323,20 +324,6 @@ impl Editor {
                 texture_size,
             );
 
-            if view.response.drag_started() || view.response.clicked() {
-                let click_pos = view.ctx().input().pointer.interact_pos().unwrap();
-
-                if dest.contains(click_pos) {
-                    *to_select = Some(SelectableEntity {
-                        kind: SelectableEntityKind::SpawnPoint { index: idx },
-                        drag_data: view.response.drag_started().then(|| DragData {
-                            cursor_offset: pos - click_pos,
-                            new_pos: spawnpoint.into_egui().to_pos2(),
-                        }),
-                    });
-                }
-            }
-
             let mut mesh = egui::Mesh::with_texture(texture_id);
             mesh.add_rect_with_uv(
                 dest,
@@ -351,7 +338,8 @@ impl Editor {
                     .input()
                     .pointer
                     .hover_pos()
-                    .map_or(false, |hover_pos| dest.contains(hover_pos));
+                    .map_or(false, |hover_pos| dest.contains(hover_pos))
+                && self.selected_tool == EditorTool::Cursor;
 
             if is_hovered && !is_selection_being_dragged {
                 view.painter().add(egui::Shape::rect_stroke(
@@ -359,6 +347,18 @@ impl Editor {
                     egui::Rounding::none(),
                     egui::Stroke::new(1., egui::Color32::GRAY),
                 ));
+
+                if view.response.drag_started() || view.response.clicked() {
+                    let click_pos = view.ctx().input().pointer.interact_pos().unwrap();
+
+                    *to_select = Some(SelectableEntity {
+                        kind: SelectableEntityKind::SpawnPoint { index: idx },
+                        drag_data: view.response.drag_started().then(|| DragData {
+                            cursor_offset: pos - click_pos,
+                            new_pos: spawnpoint.into_egui().to_pos2(),
+                        }),
+                    });
+                }
             }
         }
 

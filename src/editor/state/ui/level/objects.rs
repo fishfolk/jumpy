@@ -201,7 +201,8 @@ impl Editor {
                     .pointer
                     .hover_pos()
                     .map(|hover_pos| dest.contains(hover_pos))
-                    .unwrap_or(false);
+                    .unwrap_or(false)
+                && self.selected_tool == EditorTool::Cursor;
 
             if is_hovered && !is_selection_being_dragged {
                 self.show_object_info_tooltip(ui.ctx(), object, is_valid);

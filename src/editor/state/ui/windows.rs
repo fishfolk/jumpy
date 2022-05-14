@@ -3,7 +3,7 @@ use std::ops::ControlFlow;
 use crate::editor::{
     actions::UiAction,
     state::Editor,
-    windows::{CreateLayerResult, CreateTilesetResult, MenuResult, SaveMapResult},
+    windows::{CreateLayerResult, CreateMapResult, CreateTilesetResult, MenuResult, SaveMapResult},
 };
 
 impl Editor {
@@ -41,6 +41,28 @@ impl Editor {
                     self.save_map_window = None;
                 }
             }
+        } else if let Some(window) = &mut self.create_map_window {
+            match window.ui(egui_ctx) {
+                ControlFlow::Continue(()) => (),
+                ControlFlow::Break(CreateMapResult::Create {
+                    name,
+                    description,
+                    tile_size,
+                    grid_size,
+                }) => self.apply_action(UiAction::CreateMap {
+                    name,
+                    description: if description.is_empty() {
+                        None
+                    } else {
+                        Some(description)
+                    },
+                    tile_size: tile_size.as_f32(),
+                    grid_size,
+                }),
+                ControlFlow::Break(CreateMapResult::Close) => {
+                    self.create_map_window = None;
+                }
+            }
         } else if let Some(window) = &mut self.create_tileset_window {
             match window.ui(egui_ctx, &self.map_resource.map) {
                 ControlFlow::Continue(()) => (),
@@ -62,7 +84,7 @@ impl Editor {
             match window.ui(egui_ctx, self.map_resource.meta.is_user_map) {
                 ControlFlow::Continue(()) => (),
                 ControlFlow::Break(MenuResult::OpenCreateMapWindow) => {
-                    todo!("Create map window");
+                    self.create_map_window = Some(Default::default());
                 }
                 ControlFlow::Break(MenuResult::OpenLoadMapWindow) => {
                     todo!("Open/load map window")

@@ -79,6 +79,7 @@ pub struct Editor {
     tile_palette: Option<TileSelection>,
     object_being_placed: Option<ObjectSettings>,
 
+    create_map_window: Option<windows::CreateMapWindow>,
     create_layer_window: Option<windows::CreateLayerWindow>,
     create_tileset_window: Option<windows::CreateTilesetWindow>,
     menu_window: Option<windows::MenuWindow>,
@@ -107,6 +108,7 @@ impl Editor {
             tile_palette: None,
             object_being_placed: None,
 
+            create_map_window: None,
             create_layer_window: None,
             create_tileset_window: None,
             menu_window: None,
@@ -289,9 +291,35 @@ impl Editor {
                     .apply(action, &mut self.map_resource.map)
                     .unwrap();
             }
+            UiAction::CreateMap {
+                name,
+                description,
+                grid_size,
+                tile_size,
+            } => {
+                let resources = storage::get::<Resources>();
+                let res = resources.create_map(&name, description.as_deref(), tile_size, grid_size);
+                match res {
+                    Err(err) => println!("Create Map: {}", err),
+                    Ok(map_resource) => {
+                        self.map_resource = map_resource;
+                        self.clear_context();
+                    }
+                }
+            }
 
             _ => todo!(),
         }
+    }
+
+    fn clear_context(&mut self) {
+        self.selected_tool = EditorTool::Cursor;
+        self.selected_layer = None;
+        self.tile_palette = None;
+        self.object_being_placed = None;
+        self.selection = None;
+        self.history.clear();
+        self.level_view = Default::default();
     }
 
     pub fn draw_level(&self) {

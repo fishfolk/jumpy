@@ -5,6 +5,6 @@
 - [ ] Re-add object placement tool
 - [X] Moving camera via middle click
 - [ ] Open/Import window
-- [ ] New map window
+- [X] New map window
 - [ ] Theme support
 - [ ] Gamepad support

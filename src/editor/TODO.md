@@ -4,7 +4,9 @@
 - [X] Object placement via rightclick context menu
 - [ ] Re-add object placement tool
 - [X] Moving camera via middle click
-- [ ] Open/Import window
+- [X] Open map window
+- [ ] Import map window
 - [X] New map window
+- [ ] Background edit window
 - [ ] Theme support
 - [ ] Gamepad support

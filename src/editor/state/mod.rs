@@ -84,6 +84,7 @@ pub struct Editor {
     create_tileset_window: Option<windows::CreateTilesetWindow>,
     menu_window: Option<windows::MenuWindow>,
     save_map_window: Option<windows::SaveMapWindow>,
+    open_map_window: Option<windows::OpenMapWindow>,
 
     selection: Option<SelectableEntity>,
 
@@ -113,6 +114,7 @@ impl Editor {
             create_tileset_window: None,
             menu_window: None,
             save_map_window: None,
+            open_map_window: None,
 
             selection: None,
 
@@ -306,6 +308,13 @@ impl Editor {
                         self.clear_context();
                     }
                 }
+            }
+            UiAction::OpenMap(index) => {
+                let resources = storage::get::<Resources>();
+                let map_resource = resources.maps.get(index).cloned().unwrap();
+
+                self.map_resource = map_resource;
+                self.clear_context();
             }
 
             _ => todo!(),

@@ -3,7 +3,10 @@ use std::ops::ControlFlow;
 use crate::editor::{
     actions::UiAction,
     state::Editor,
-    windows::{CreateLayerResult, CreateMapResult, CreateTilesetResult, MenuResult, SaveMapResult},
+    windows::{
+        CreateLayerResult, CreateMapResult, CreateTilesetResult, MenuResult, OpenMapResult,
+        SaveMapResult,
+    },
 };
 
 impl Editor {
@@ -30,6 +33,25 @@ impl Editor {
             }
         }
 
+        if let Some(window) = &mut self.create_tileset_window {
+            match window.ui(egui_ctx, &self.map_resource.map) {
+                ControlFlow::Continue(()) => (),
+                ControlFlow::Break(CreateTilesetResult::Create {
+                    tileset_name,
+                    texture,
+                }) => {
+                    self.apply_action(UiAction::CreateTileset {
+                        id: tileset_name,
+                        texture_id: texture,
+                    });
+                    self.create_tileset_window = None;
+                }
+                ControlFlow::Break(CreateTilesetResult::Close) => {
+                    self.create_tileset_window = None;
+                }
+            }
+        }
+
         if let Some(window) = &mut self.save_map_window {
             match window.ui(egui_ctx) {
                 ControlFlow::Continue(()) => (),
@@ -49,35 +71,35 @@ impl Editor {
                     description,
                     tile_size,
                     grid_size,
-                }) => self.apply_action(UiAction::CreateMap {
-                    name,
-                    description: if description.is_empty() {
-                        None
-                    } else {
-                        Some(description)
-                    },
-                    tile_size: tile_size.as_f32(),
-                    grid_size,
-                }),
+                }) => {
+                    self.apply_action(UiAction::CreateMap {
+                        name,
+                        description: if description.is_empty() {
+                            None
+                        } else {
+                            Some(description)
+                        },
+                        tile_size: tile_size.as_f32(),
+                        grid_size,
+                    });
+                    self.create_map_window = None;
+                }
                 ControlFlow::Break(CreateMapResult::Close) => {
                     self.create_map_window = None;
                 }
             }
-        } else if let Some(window) = &mut self.create_tileset_window {
-            match window.ui(egui_ctx, &self.map_resource.map) {
+        } else if let Some(window) = &mut self.open_map_window {
+            match window.ui(egui_ctx) {
                 ControlFlow::Continue(()) => (),
-                ControlFlow::Break(CreateTilesetResult::Create {
-                    tileset_name,
-                    texture,
-                }) => {
-                    self.apply_action(UiAction::CreateTileset {
-                        id: tileset_name,
-                        texture_id: texture,
-                    });
-                    self.create_tileset_window = None;
+                ControlFlow::Break(OpenMapResult::Open { map_index }) => {
+                    self.apply_action(UiAction::OpenMap(map_index));
+                    self.open_map_window = None;
                 }
-                ControlFlow::Break(CreateTilesetResult::Close) => {
-                    self.create_tileset_window = None;
+                ControlFlow::Break(OpenMapResult::Import { map_index }) => {
+                    self.open_map_window = None;
+                }
+                ControlFlow::Break(OpenMapResult::Close) => {
+                    self.open_map_window = None;
                 }
             }
         } else if let Some(window) = &mut self.menu_window {
@@ -85,12 +107,15 @@ impl Editor {
                 ControlFlow::Continue(()) => (),
                 ControlFlow::Break(MenuResult::OpenCreateMapWindow) => {
                     self.create_map_window = Some(Default::default());
+                    self.menu_window = None;
                 }
                 ControlFlow::Break(MenuResult::OpenLoadMapWindow) => {
-                    todo!("Open/load map window")
+                    self.open_map_window = Some(Default::default());
+                    self.menu_window = None;
                 }
                 ControlFlow::Break(MenuResult::OpenSaveMapWindow) => {
                     self.save_map_window = Some(Default::default());
+                    self.menu_window = None;
                 }
                 ControlFlow::Break(MenuResult::SaveMap) => {
                     self.apply_action(UiAction::SaveMap { name: None });

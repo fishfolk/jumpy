@@ -22,7 +22,7 @@ const COOLDOWN: f32 = 0.75;
 const TRIGGER_WIDTH: f32 = 32.0;
 const TRIGGER_HEIGHT: f32 = 8.0;
 
-const FORCE: f32 = 35.0;
+const FORCE: f32 = 25.0;
 
 #[derive(Default)]
 pub struct Sproinger {

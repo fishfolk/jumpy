@@ -1,0 +1,84 @@
+{
+  "id": "starfish_launcher",
+  "name": "Starfish Launcher",
+  "type": "weapon",
+  "cooldown": 0.75,
+  "uses": 4,
+  "effects": [
+    {
+      "type": "triggered_effect",
+      "trigger": ["player", "enemy", "explosion", "projectile"],
+      "expire_time": 3.0,
+      "can_rotate": true,
+      "angular_velocity": -620,
+      "velocity": {
+        "x": 12.0,
+        "y": 0.0
+      },
+      "spread": 30,
+      "gravity": 0.01,
+      "bouncyness": 1.0,
+      "size": {
+        "x": 19,
+        "y": 18
+      },
+      "activation_delay": 0.1,
+      "grab_options": {
+        "zone_size": {
+          "x": 50,
+          "y": 18
+        },
+        "zone_offset": {
+          "x": 0,
+          "y": -9
+        },
+        "equips_item": "starfish"
+      },
+      "effects": [
+        {
+          "type": "circle_collider",
+          "radius": 25,
+          "is_explosion": true,
+          "sound_effect": "bullet_hit_dull"
+        }
+      ],
+      "collide_with_platforms": true,
+      "sprite": {
+        "texture": "starfish",
+        "autoplay_id": "effect",
+        "animations": [
+          {
+            "id": "effect",
+            "row": 0,
+            "frames": 1,
+            "fps": 1
+          }
+        ]
+      }
+    }
+  ],
+  "collider_size": {
+    "x": 37,
+    "y": 20
+  },
+  "mount_offset": {
+    "x": -17,
+    "y": -5
+  },
+  "effect_offset": {
+    "x": 10,
+    "y": 9
+  },
+  "sprite": {
+    "texture": "starfish_launcher",
+    "autoplay_id": "idle",
+    "animations": [
+      {
+        "id": "idle",
+        "row": 0,
+        "frames": 1,
+        "fps": 1
+      }
+    ]
+  }
+}

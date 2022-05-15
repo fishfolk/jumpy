@@ -16,9 +16,7 @@ use crate::effects::passive::get_passive_effect;
 use ff_core::prelude::*;
 
 use crate::effects::active::spawn_active_effect;
-use crate::physics::PhysicsBodyParams;
 use crate::player::{Player, PlayerInventory, IDLE_ANIMATION_ID};
-use ff_core::particles::{ParticleEmitter, ParticleEmitterMetadata};
 
 pub const ITEMS_DRAW_ORDER: u32 = 1;
 
@@ -477,7 +475,7 @@ pub fn fire_weapon(world: &mut World, entity: Entity, owner: Entity) -> Result<(
     }
 
     for params in effects {
-        spawn_active_effect(world, owner, origin, params)?;
+        spawn_active_effect(world, owner, entity, origin, params)?;
     }
 
     Ok(())

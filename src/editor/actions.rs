@@ -608,6 +608,7 @@ impl UndoableAction for ImportAction {
                 autotile_mask: tileset.autotile_mask.clone(),
                 tile_attributes: tileset.tile_attributes.clone(),
                 properties: tileset.properties.clone(),
+                bitmasks: None,
             };
 
             map.tilesets.insert(tileset.id.clone(), tileset);
@@ -766,6 +767,8 @@ impl UndoableAction for UpdateTilesetAction {
 
             self.old_autotile_mask = Some(tileset.autotile_mask.clone());
             tileset.autotile_mask = self.autotile_mask.clone();
+
+            tileset.bitmasks = tileset.get_bitmasks();
         } else {
             return Err(Error::new_const(
                 ErrorKind::EditorAction,
@@ -794,6 +797,8 @@ impl UndoableAction for UpdateTilesetAction {
             } else {
                 return Err(Error::new_const(ErrorKind::EditorAction, &"UpdateTilesetAction (Undo): No old autotile mask stored in action. Undo was probably called on an action that was never applied"));
             }
+
+            tileset.bitmasks = tileset.get_bitmasks();
         } else {
             return Err(Error::new_const(
                 ErrorKind::EditorAction,

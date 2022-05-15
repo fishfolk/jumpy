@@ -15,7 +15,6 @@ use ff_core::ecs::{Entity, World};
 use ff_core::prelude::*;
 
 use crate::items::try_get_item;
-use crate::physics::{debug_draw_physics_bodies, fixed_update_physics_bodies};
 use crate::player::{
     draw_weapons_hud, spawn_player, update_player_animations, update_player_controllers,
     update_player_events, update_player_inventory, update_player_passive_effects,
@@ -94,6 +93,7 @@ pub fn build_state_for_game_mode(
     players: &[PlayerParams],
 ) -> Result<DefaultGameState<StatePayload>> {
     let mut builder = DefaultGameStateBuilder::new(game_mode.into())
+        .with_default_systems()
         .with_map(map)
         .with_empty_world()
         .with_payload(StatePayload {
@@ -137,8 +137,6 @@ pub fn build_state_for_game_mode(
     builder
         .add_update(update_player_controllers)
         .add_update(update_player_animations)
-        .add_update(update_animated_sprites)
-        .add_update(update_particle_emitters)
         .add_update(update_camera);
 
     if matches!(game_mode, GameMode::Local | GameMode::NetworkHost) {
@@ -149,25 +147,15 @@ pub fn build_state_for_game_mode(
             .add_update(update_player_passive_effects);
 
         builder
-            .add_fixed_update(fixed_update_physics_bodies)
-            .add_fixed_update(fixed_update_rigid_bodies)
             .add_fixed_update(fixed_update_projectiles)
             .add_fixed_update(fixed_update_triggered_effects)
             .add_fixed_update(fixed_update_sproingers);
     }
 
-    builder
-        .add_draw(draw_map)
-        .add_draw(draw_drawables)
-        .add_draw(draw_weapons_hud)
-        .add_draw(draw_particles);
+    builder.add_draw(draw_weapons_hud);
 
     #[cfg(debug_assertions)]
-    builder
-        .add_draw(debug_draw_drawables)
-        .add_draw(debug_draw_physics_bodies)
-        .add_draw(debug_draw_rigid_bodies)
-        .add_draw(debug_draw_active_effects);
+    builder.add_draw(debug_draw_active_effects);
 
     let res = builder
         .with_constructor(|world, map, payload| -> Result<()> {

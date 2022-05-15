@@ -45,8 +45,6 @@ pub mod gl {}
 
 pub mod gui {
     pub use macroquad::ui::*;
-
-    pub fn destroy_gui() {}
 }
 
 pub use macroquad::ui;

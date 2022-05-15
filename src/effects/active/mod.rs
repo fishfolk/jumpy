@@ -6,7 +6,10 @@ use serde::{Deserialize, Serialize};
 
 use ff_core::prelude::*;
 
-use crate::{PassiveEffect, PassiveEffectMetadata};
+use crate::items::get_item;
+use crate::items::spawn_item;
+use crate::PassiveEffect;
+use crate::PassiveEffectMetadata;
 
 pub mod projectiles;
 pub mod triggered;
@@ -39,6 +42,7 @@ struct RectCollider {
 pub fn spawn_active_effect(
     world: &mut World,
     owner: Entity,
+    spawner: Entity,
     origin: Vec2,
     params: ActiveEffectMetadata,
 ) -> Result<()> {
@@ -180,6 +184,33 @@ pub fn spawn_active_effect(
                 },
             );
         }
+        ActiveEffectKind::SpawnItem {
+            item,
+            offset,
+            inherit_spawner_velocity,
+        } => {
+            let item_meta = get_item(&item);
+
+            match spawn_item(world, origin + offset, item_meta.clone()) {
+                Ok(entity) => {
+                    if inherit_spawner_velocity {
+                        let spawner_velocity = {
+                            let mut spawner_body_query =
+                                world.query_one::<&PhysicsBody>(spawner).unwrap();
+                            let spawner_body = spawner_body_query.get().unwrap();
+                            spawner_body.velocity
+                        };
+
+                        let mut entity_body =
+                            world.query_one_mut::<&mut PhysicsBody>(entity).unwrap();
+                        entity_body.velocity = spawner_velocity;
+                    }
+                }
+                Err(e) => {
+                    println!("WARNING: {:?}", e);
+                }
+            }
+        }
     }
 
     for (damage_from_entity, damage_to_entity) in damage.drain(0..) {
@@ -276,6 +307,13 @@ pub enum ActiveEffectKind {
         #[serde(default, skip_serializing_if = "Vec::is_empty")]
         particles: Vec<ParticleEmitterMetadata>,
     },
+    SpawnItem {
+        item: String,
+        #[serde(default, with = "ff_core::parsing::vec2_def")]
+        offset: Vec2,
+        #[serde(default)]
+        inherit_spawner_velocity: bool,
+    },
 }
 
 pub fn debug_draw_active_effects(world: &mut World, _delta_time: f32) -> Result<()> {
@@ -311,6 +349,15 @@ pub fn debug_draw_active_effects(world: &mut World, _delta_time: f32) -> Result<
 
         if collider.frame_cnt >= COLLIDER_DEBUG_DRAW_FRAMES {
             to_remove.push(e);
+        }
+    }
+
+    for (_, (transform, body, effect)) in
+        world.query_mut::<(&Transform, &PhysicsBody, &TriggeredEffect)>()
+    {
+        if let Some(opts) = &effect.grab_options {
+            let rect = opts.get_collider_rect(transform.position, body.velocity);
+            draw_rectangle_outline(rect.x, rect.y, rect.width, rect.height, 2.0, colors::ORANGE);
         }
     }
 

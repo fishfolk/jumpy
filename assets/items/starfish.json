@@ -1,0 +1,105 @@
+{
+  "id": "starfish",
+  "name": "Starfish",
+  "type": "weapon",
+  "can_rotate": true,
+  "cooldown": 0.5,
+  "uses": 1,
+  "deplete_behavior": "destroy",
+  "effects": [
+    {
+      "type": "triggered_effect",
+      "trigger": ["player", "enemy", "explosion", "projectile"],
+      "expire_time": 3.0,
+      "expire_effects": [
+        {
+          "type": "spawn_item",
+          "item": "starfish",
+          "offset": {
+            "x": 0,
+            "y": -10
+          },
+          "inherit_spawner_velocity": true
+        }
+      ],
+      "can_rotate": true,
+      "angular_velocity": -620,
+      "velocity": {
+        "x": 12.0,
+        "y": 0.0
+      },
+      "gravity": 0.01,
+      "bouncyness": 1.0,
+      "size": {
+        "x": 19,
+        "y": 18
+      },
+      "activation_delay": 0.1,
+      "grab_options": {
+        "zone_size": {
+          "x": 60,
+          "y": 18
+        },
+        "zone_offset": {
+          "x": 0,
+          "y": -9
+        },
+        "equips_item": "starfish"
+      },
+      "effects": [
+        {
+          "type": "circle_collider",
+          "radius": 25,
+          "is_explosion": true,
+          "sound_effect": "bullet_hit_dull"
+        },
+        {
+          "type": "spawn_item",
+          "item": "starfish",
+          "offset": {
+            "x": 20,
+            "y": -10
+          },
+          "inherit_spawner_velocity": true
+        }
+      ],
+      "collide_with_platforms": true,
+      "sprite": {
+        "texture": "starfish",
+        "autoplay_id": "effect",
+        "animations": [
+          {
+            "id": "effect",
+            "row": 0,
+            "frames": 1,
+            "fps": 1
+          }
+        ]
+      }
+    }
+  ],
+  "collider_size": {
+    "x": 19,
+    "y": 18
+  },
+  "mount_offset": {
+    "x": -25,
+    "y": 5
+  },
+  "effect_offset": {
+    "x": 10,
+    "y": 9
+  },
+  "sprite": {
+    "texture": "starfish",
+    "autoplay_id": "idle",
+    "animations": [
+      {
+        "id": "idle",
+        "row": 0,
+        "frames": 1,
+        "fps": 1
+      }
+    ]
+  }
+}

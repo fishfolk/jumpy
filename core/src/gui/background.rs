@@ -1,7 +1,7 @@
 #[cfg(feature = "macroquad-backend")]
 use crate::macroquad::ui::{root_ui, widgets, Ui};
 
-use crate::math::{Size, Vec2};
+use crate::math::{vec2, Size, Vec2};
 use crate::prelude::{draw_texture, viewport};
 use crate::render::DrawTextureParams;
 use crate::texture::get_texture;
@@ -9,6 +9,7 @@ use std::ops::Deref;
 
 use crate::storage;
 use crate::texture::Texture2D;
+use crate::viewport::viewport_size;
 use crate::window::window_size;
 
 pub struct Background {
@@ -75,5 +76,9 @@ pub fn draw_main_menu_background() {
         ],
     );
 
+    #[cfg(feature = "macroquad-backend")]
+    bg.ui(&mut *root_ui());
+
+    #[cfg(not(feature = "macroquad-backend"))]
     bg.draw();
 }

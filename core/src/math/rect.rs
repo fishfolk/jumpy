@@ -22,7 +22,7 @@ impl Rect {
     ///   * `y` - y-coordinate of the top-left corner.
     ///   * `w` - width of the `Rect`, going to the right.
     ///   * `h` - height of the `Rect`, going down.
-    pub fn new(x: f32, y: f32, width: f32, height: f32) -> Rect {
+    pub const fn new(x: f32, y: f32, width: f32, height: f32) -> Rect {
         Rect {
             x,
             y,

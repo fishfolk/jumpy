@@ -1,4 +1,4 @@
-use ff_core::prelude::*;
+use ff_core::macroquad::{color, experimental::collections::storage};
 
 use super::{EditorAction, EditorContext, EditorTool, EditorToolParams};
 
@@ -6,10 +6,13 @@ use crate::editor::EditorCamera;
 
 use ff_core::macroquad::experimental::scene;
 use ff_core::map::{Map, MapLayerKind};
+use ff_core::prelude::*;
+use ff_core::rand::ChooseRandom;
 
 #[derive(Default)]
 pub struct TilePlacementTool {
     params: EditorToolParams,
+    coords: Option<UVec2>,
 }
 
 impl TilePlacementTool {
@@ -20,7 +23,10 @@ impl TilePlacementTool {
             is_continuous: true,
         };
 
-        TilePlacementTool { params }
+        TilePlacementTool {
+            params,
+            coords: None,
+        }
     }
 }
 
@@ -63,10 +69,62 @@ impl EditorTool for TilePlacementTool {
 
         if self.is_available(map, ctx) {
             if let Some(tileset_id) = &ctx.selected_tileset {
-                let _tileset = map.tilesets.get(tileset_id).unwrap();
+                let cursor_world_position = scene::find_node_by_type::<EditorCamera>()
+                    .unwrap()
+                    .to_world_space(ctx.cursor_position);
+                let coords = map.to_coords(cursor_world_position);
 
-                // Do autotile resolution here and set `res` to an `EditorAction::SelectTile` if
-                // selected tile should be changed according to context.
+                if self.coords != Some(coords) {
+                    let tileset = map.tilesets.get(tileset_id).unwrap();
+
+                    // Do autotile resolution here and set `res` to an `EditorAction::SelectTile` if
+                    // selected tile should be changed according to context.
+
+                    //Get self surrounding tiles
+                    let mut surrounding_tiles: Vec<bool> = vec![];
+                    for y in 0..3 {
+                        for x in 0..3 {
+                            if let Some(layer) = &ctx.selected_layer {
+                                let is_some = map
+                                    .get_tile(
+                                        layer,
+                                        (coords.x + x).saturating_sub(1),
+                                        (coords.y + y).saturating_sub(1),
+                                    )
+                                    .is_some();
+                                surrounding_tiles.push(is_some);
+                            }
+                        }
+                    }
+
+                    //Get bitmask value from self surrounding tiles
+                    let mut bitmask = 0;
+                    for (i, b) in surrounding_tiles.iter().enumerate() {
+                        if *b && i < 4 {
+                            bitmask += 2_u32.pow(i as u32);
+                        } else if *b && i > 4 {
+                            bitmask += 2_u32.pow(i as u32 - 1);
+                        }
+                    }
+
+                    let mut tile_ids = Vec::new();
+                    if let Some(bitmasks) = &tileset.bitmasks {
+                        for (i, tileset_bitmask) in bitmasks.iter().enumerate() {
+                            if *tileset_bitmask == bitmask && bitmask != 0 {
+                                tile_ids.push(i as u32);
+                            }
+                        }
+                    }
+
+                    if let Some(id) = tile_ids.choose() {
+                        res = Some(EditorAction::SelectTile {
+                            tileset_id: tileset_id.to_owned(),
+                            id: *id,
+                        });
+                    }
+                }
+
+                self.coords = Some(coords);
             }
         }
 

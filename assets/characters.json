@@ -34,5 +34,23 @@
       "x": 0.0,
       "y": 16.0
     }
+  },
+  {
+    "id": "lionfishy",
+    "name": "Lionfishy",
+    "texture": "player_lionfishy",
+    "offset": {
+      "x": 0.0,
+      "y": 16.0
+    }
+  },
+  {
+    "id": "catty",
+    "name": "Catty",
+    "texture": "player_catty",
+    "offset": {
+      "x": 0.0,
+      "y": 16.0
+    }
   }
 ]

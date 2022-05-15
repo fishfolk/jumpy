@@ -15,7 +15,7 @@ pub struct Size<T: Num + Copy> {
 }
 
 impl<T: Num + Copy> Size<T> {
-    pub fn new(width: T, height: T) -> Self {
+    pub const fn new(width: T, height: T) -> Self {
         Size { width, height }
     }
 

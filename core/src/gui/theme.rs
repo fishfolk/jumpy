@@ -16,10 +16,16 @@ pub fn rebuild_gui_theme() {
 }
 
 pub fn get_gui_theme() -> &'static GuiTheme {
-    unsafe { GUI_THEME.get_or_insert_with(GuiTheme::new) }
+    unsafe {
+        GUI_THEME.as_ref().unwrap_or_else(|| {
+            panic!(
+                "ERROR: Attempting to get GUI theme but none exists (have you created gui context?)"
+            )
+        })
+    }
 }
 
-use super::{colors::NONE, ELEMENT_MARGIN};
+use super::ELEMENT_MARGIN;
 
 pub const FONT_SIZE: f32 = 18.0;
 

@@ -17,35 +17,20 @@ use ff_core::prelude::*;
 #[cfg(feature = "macroquad")]
 pub mod editor;
 
-#[cfg(feature = "macroquad")]
-#[path = "gui_impl/macroquad"]
-mod gui_impl;
-
-#[cfg(not(feature = "macroquad"))]
-#[path = "gui_impl/internal.rs"]
-mod gui_impl;
-
-pub mod gui {
-    pub use ff_core::gui::*;
-
-    pub use super::gui_impl::*;
-}
+pub mod gui;
 
 #[cfg(feature = "macroquad")]
 use ff_core::gui::GuiTheme;
 
 pub mod camera;
+pub mod critters;
 pub mod debug;
 pub mod effects;
 pub mod game;
 pub mod items;
 pub mod network;
-pub mod particles;
-pub mod physics;
 pub mod player;
 pub mod sproinger;
-
-pub use physics::*;
 
 // use network::api::Api;
 
@@ -70,6 +55,7 @@ use crate::game::{
     NETWORK_GAME_CLIENT_STATE_ID, NETWORK_GAME_HOST_STATE_ID,
 };
 pub use effects::{ActiveEffectKind, ActiveEffectMetadata, PassiveEffect, PassiveEffectMetadata};
+use ff_core::gui::rebuild_gui_theme;
 use ff_core::particles::{draw_particles, update_particle_emitters};
 
 const CONFIG_FILE_ENV_VAR: &str = "FISHFIGHT_CONFIG";
@@ -243,6 +229,8 @@ async fn ultimate_main() -> Result<()> {
 #[cfg(feature = "macroquad")]
 async fn macroquad_main() -> Result<()> {
     load_resources().await?;
+
+    rebuild_gui_theme();
 
     init_passive_effects();
 

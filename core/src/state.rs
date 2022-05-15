@@ -13,6 +13,7 @@ use std::slice::{Iter, IterMut};
 use serde::{Deserialize, Serialize};
 
 use crate::camera::camera_position;
+use crate::drawables::{debug_draw_drawables, draw_drawables, update_animated_sprites};
 
 use crate::ecs::{DrawFn, FixedUpdateFn, UpdateFn};
 use crate::event::Event;
@@ -24,7 +25,13 @@ use crate::result::Result;
 
 #[cfg(feature = "macroquad-backend")]
 use crate::gui::{Menu, MenuResult};
-use crate::map::Map;
+use crate::map::{draw_map, Map};
+use crate::particles::{draw_particles, update_particle_emitters};
+use crate::physics::{
+    debug_draw_physics_bodies, debug_draw_rigid_bodies, fixed_update_physics_bodies,
+    fixed_update_rigid_bodies,
+};
+use crate::timer::update_timers;
 
 pub trait GameState {
     fn id(&self) -> String;
@@ -202,6 +209,32 @@ impl<P: Clone> DefaultGameStateBuilder<P> {
             #[cfg(feature = "macroquad-backend")]
             menu: None,
         }
+    }
+
+    pub fn add_default_systems(&mut self) -> &mut Self {
+        self.add_update(update_timers)
+            .add_update(update_animated_sprites)
+            .add_update(update_particle_emitters);
+
+        self.add_fixed_update(fixed_update_physics_bodies)
+            .add_fixed_update(fixed_update_rigid_bodies);
+
+        self.add_draw(draw_map)
+            .add_draw(draw_drawables)
+            .add_draw(draw_particles);
+
+        #[cfg(debug_assertions)]
+        self.add_draw(debug_draw_drawables)
+            .add_draw(debug_draw_physics_bodies)
+            .add_draw(debug_draw_rigid_bodies);
+
+        self
+    }
+
+    pub fn with_default_systems(self) -> Self {
+        let mut builder = self;
+        builder.add_default_systems();
+        builder
     }
 
     pub fn add_update(&mut self, f: UpdateFn) -> &mut Self {

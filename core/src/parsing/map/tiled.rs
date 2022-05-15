@@ -190,6 +190,7 @@ impl TiledMap {
                 autotile_mask,
                 tile_attributes,
                 properties,
+                bitmasks: None,
             };
 
             tilesets.insert(tiled_tileset.name, tileset);

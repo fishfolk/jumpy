@@ -21,8 +21,6 @@ pub use events::*;
 pub use inventory::*;
 pub use state::*;
 
-use crate::physics::PhysicsBodyParams;
-
 pub const BODY_ANIMATED_SPRITE_ID: &str = "body";
 pub const LEFT_FIN_ANIMATED_SPRITE_ID: &str = "left_fin";
 pub const RIGHT_FIN_ANIMATED_SPRITE_ID: &str = "right_fin";
@@ -203,6 +201,7 @@ pub fn spawn_player(
         size: character.collider_size,
         has_friction: false,
         can_rotate: false,
+        gravity: character.gravity,
         ..Default::default()
     };
 

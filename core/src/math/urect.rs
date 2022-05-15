@@ -13,7 +13,7 @@ pub struct URect {
 }
 
 impl URect {
-    pub fn new(x: u32, y: u32, width: u32, height: u32) -> Self {
+    pub const fn new(x: u32, y: u32, width: u32, height: u32) -> Self {
         URect {
             x,
             y,

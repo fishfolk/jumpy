@@ -662,6 +662,8 @@ pub struct MapTileset {
     pub tile_attributes: HashMap<u32, Vec<String>>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub properties: HashMap<String, MapProperty>,
+    #[serde(skip)]
+    pub bitmasks: Option<Vec<u32>>,
 }
 
 impl MapTileset {
@@ -698,6 +700,7 @@ impl MapTileset {
             autotile_mask,
             tile_attributes: HashMap::new(),
             properties: HashMap::new(),
+            bitmasks: None,
         }
     }
 
@@ -709,6 +712,42 @@ impl MapTileset {
 
     pub fn default_tile_subdivisions() -> UVec2 {
         uvec2(3, 3)
+    }
+
+    pub fn get_bitmasks(&self) -> Option<Vec<u32>> {
+        //Get autotile mask bitmasks
+        let tsub_x = self.tile_subdivisions.x as usize;
+        let tsub_y = self.tile_subdivisions.y as usize;
+        let atmsk_width = self.grid_size.width as usize * tsub_x;
+
+        let mut bitmasks_vec: Vec<Vec<bool>> =
+            vec![vec![]; self.autotile_mask.len() / (tsub_x * tsub_y)];
+        let mut bitmasks: Vec<u32> = vec![0; self.autotile_mask.len() / (tsub_x * tsub_y)];
+
+        let mut trow_off = 0;
+        for i in 0..self.autotile_mask.len() / atmsk_width {
+            if i != 0 && i % tsub_y == 0 {
+                trow_off += atmsk_width / tsub_x;
+            }
+            let row = self.autotile_mask[i * atmsk_width..i * atmsk_width + atmsk_width].to_vec();
+
+            for x in 0..row.len() / tsub_x {
+                let tile_row = row[x * tsub_x..x * tsub_x + tsub_x].to_vec();
+
+                bitmasks_vec[x + trow_off].extend(tile_row);
+            }
+        }
+
+        for (n, surrounding_tiles) in bitmasks_vec.iter().enumerate() {
+            for (i, b) in surrounding_tiles.iter().enumerate() {
+                if *b && i < 4 {
+                    bitmasks[n] += 2_u32.pow(i as u32);
+                } else if *b && i > 4 {
+                    bitmasks[n] += 2_u32.pow(i as u32 - 1);
+                }
+            }
+        }
+        Some(bitmasks)
     }
 }
 

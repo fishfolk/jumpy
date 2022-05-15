@@ -24,6 +24,9 @@ pub struct PlayerInventory {
     pub weapon: Option<Entity>,
     pub items: Vec<Entity>,
     pub hat: Option<Entity>,
+    /// Systems can set this to Some(entity) in order to schedule a replacement of the player's
+    /// current weapon ( if any ) with the specified weapon.
+    pub pending_weapon_replacement: Option<Entity>,
 }
 
 impl PlayerInventory {
@@ -38,6 +41,7 @@ impl PlayerInventory {
             weapon: None,
             items: Vec::new(),
             hat: None,
+            pending_weapon_replacement: None,
         }
     }
 
@@ -132,7 +136,15 @@ pub fn update_player_inventory(world: &mut World, delta_time: f32) -> Result<()>
                 i += 1;
             }
 
-            if controller.should_pickup {
+            let mut weapon_entity_to_pick_up = None;
+
+            if let Some(we) = inventory.pending_weapon_replacement.take() {
+                if let Some(weapon_entity) = inventory.weapon.take() {
+                    to_drop.push(weapon_entity);
+                }
+
+                weapon_entity_to_pick_up = Some(we);
+            } else if controller.should_pickup {
                 if let Some(weapon_entity) = inventory.weapon.take() {
                     to_drop.push(weapon_entity);
 
@@ -146,26 +158,29 @@ pub fn update_player_inventory(world: &mut World, delta_time: f32) -> Result<()>
 
                     body.velocity = velocity;
                 } else if player.pickup_grace_timer >= PICKUP_GRACE_TIME {
-                    for (i, &(weapon_entity, rect)) in weapon_colliders.iter().enumerate() {
+                    for (i, &(we, rect)) in weapon_colliders.iter().enumerate() {
                         if player_rect.overlaps(&rect) {
-                            picked_up.push((entity, weapon_entity));
                             weapon_colliders.remove(i);
-
-                            inventory.weapon = Some(weapon_entity);
-                            player.pickup_grace_timer = 0.0;
-
-                            let mut body = world.get_mut::<PhysicsBody>(weapon_entity).unwrap();
-                            body.is_deactivated = true;
-
-                            let mut drawable = world.get_mut::<Drawable>(weapon_entity).unwrap();
-                            let sprite_set = drawable.get_animated_sprite_set_mut().unwrap();
-
-                            sprite_set.set_all(IDLE_ANIMATION_ID, true);
-
+                            weapon_entity_to_pick_up = Some(we);
                             break;
                         }
                     }
                 }
+            }
+
+            if let Some(weapon_entity) = weapon_entity_to_pick_up {
+                picked_up.push((entity, weapon_entity));
+
+                inventory.weapon = Some(weapon_entity);
+                player.pickup_grace_timer = 0.0;
+
+                let mut body = world.get_mut::<PhysicsBody>(weapon_entity).unwrap();
+                body.is_deactivated = true;
+
+                let mut drawable = world.get_mut::<Drawable>(weapon_entity).unwrap();
+                let sprite_set = drawable.get_animated_sprite_set_mut().unwrap();
+
+                sprite_set.set_all(IDLE_ANIMATION_ID, true);
             }
 
             if let Some(weapon_entity) = inventory.weapon {

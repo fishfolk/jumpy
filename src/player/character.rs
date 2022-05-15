@@ -74,13 +74,18 @@ pub struct CharacterMetadata {
     /// This is the float gravity factor of the player character
     #[serde(default = "CharacterMetadata::default_float_gravity_factor")]
     pub float_gravity_factor: f32,
+    /// This is the gravity of the player character
+    #[serde(default = "CharacterMetadata::default_gravity")]
+    pub gravity: f32,
 }
 
 impl CharacterMetadata {
     const DEFAULT_HEAD_THRESHOLD: f32 = 24.0;
     const DEFAULT_LEGS_THRESHOLD: f32 = 42.0;
 
-    const DEFAULT_JUMP_FORCE: f32 = 15.0;
+    const DEFAULT_GRAVITY: f32 = 1.0;
+
+    const DEFAULT_JUMP_FORCE: f32 = 9.5;
     const DEFAULT_MOVE_SPEED: f32 = 5.0;
     const DEFAULT_SLIDE_SPEED_FACTOR: f32 = 3.0;
     const DEFAULT_SLIDE_DURATION: f32 = 0.1;
@@ -143,5 +148,9 @@ impl CharacterMetadata {
 
     pub fn default_hat_mount() -> Vec2 {
         vec2(Self::DEFAULT_HAT_MOUNT_X, Self::DEFAULT_HAT_MOUNT_Y)
+    }
+
+    pub fn default_gravity() -> f32 {
+        Self::DEFAULT_GRAVITY
     }
 }

@@ -32,6 +32,7 @@ use crate::sproinger::{fixed_update_sproingers, spawn_sproinger};
 use ff_core::map::{spawn_decoration, try_get_decoration};
 
 use crate::camera::{update_camera, CameraController};
+use crate::critters::{spawn_crab, spawn_fish_school};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum GameMode {
@@ -223,15 +224,24 @@ pub fn spawn_map_objects(world: &mut World, map: &Map) -> Result<Vec<Entity>> {
                             println!("WARNING: Invalid item id '{}'", &map_object.id)
                         }
                     }
-                    MapObjectKind::Environment => {
-                        if map_object.id == "sproinger" {
+                    MapObjectKind::Environment => match map_object.id.as_str() {
+                        "sproinger" => {
                             let sproinger = spawn_sproinger(world, map_object.position)?;
                             objects.push(sproinger);
-                        } else {
+                        }
+                        "crab" => {
+                            let crab = spawn_crab(world, map_object.position)?;
+                            objects.push(crab);
+                        }
+                        "fish_school" => {
+                            let fish_school = spawn_fish_school(world, map_object.position)?;
+                            objects.push(fish_school);
+                        }
+                        _ => {
                             #[cfg(debug_assertions)]
                             println!("WARNING: Invalid environment item id '{}'", &map_object.id)
                         }
-                    }
+                    },
                 }
             }
         }

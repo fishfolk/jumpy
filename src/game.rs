@@ -1,7 +1,5 @@
 pub use ff_core::camera::Camera;
 
-use ff_core::input::{Button, GamepadContext};
-
 #[cfg(feature = "macroquad-backend")]
 const GAME_MENU_OPTION_MAIN_MENU: usize = 10;
 #[cfg(feature = "macroquad-backend")]
@@ -20,11 +18,7 @@ use crate::player::{
     update_player_events, update_player_inventory, update_player_passive_effects,
     update_player_states, PlayerParams,
 };
-use crate::{debug, PlayerControllerKind};
-use crate::{
-    debug_draw_drawables, debug_draw_rigid_bodies, draw_drawables, fixed_update_rigid_bodies,
-    update_animated_sprites, Map, MapLayerKind, MapObjectKind,
-};
+use crate::{Map, MapLayerKind, MapObjectKind};
 
 use crate::effects::active::debug_draw_active_effects;
 use crate::effects::active::projectiles::fixed_update_projectiles;
@@ -35,12 +29,9 @@ use crate::network::{
     update_network_host,
 };
 use crate::sproinger::{fixed_update_sproingers, spawn_sproinger};
-use ff_core::map::{draw_map, spawn_decoration, try_get_decoration};
-use ff_core::particles::{draw_particles, update_particle_emitters};
+use ff_core::map::{spawn_decoration, try_get_decoration};
 
 use crate::camera::{update_camera, CameraController};
-#[cfg(feature = "macroquad")]
-use ff_core::macroquad::ui::root_ui;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum GameMode {
@@ -85,6 +76,7 @@ pub struct StatePayload {
     players: Vec<PlayerParams>,
 }
 
+#[allow(dead_code)]
 const GAME_MENU_ID: &str = "game_menu";
 
 pub fn build_state_for_game_mode(
@@ -177,7 +169,7 @@ pub fn build_state_for_game_mode(
 }
 
 pub fn init_game_world(world: &mut World, map: Map, players: &[PlayerParams]) -> Result<()> {
-    let mut physics_world = physics_world();
+    let physics_world = physics_world();
 
     physics_world.clear();
 

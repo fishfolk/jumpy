@@ -55,7 +55,6 @@ use crate::editor::tools::SpawnPointPlacementTool;
 use crate::items::try_get_item;
 use crate::player::IDLE_ANIMATION_ID;
 
-use ff_core::prelude::*;
 use ff_core::text::{draw_text, HorizontalAlignment, TextParams, VerticalAlignment};
 
 use ff_core::macroquad::camera::{pop_camera_state, push_camera_state, set_default_camera};
@@ -158,6 +157,7 @@ impl Editor {
     const CAMERA_ZOOM_MIN: f32 = 0.1;
     const CAMERA_ZOOM_MAX: f32 = 2.5;
 
+    #[allow(dead_code)]
     const CURSOR_MOVE_SPEED: f32 = 5.0;
 
     const OBJECT_SELECTION_RECT_SIZE: f32 = 75.0;
@@ -652,7 +652,7 @@ impl Node for Editor {
         node.update_context();
 
         node.previous_cursor_position = node.cursor_position;
-        node.cursor_position = mouse_position().into();
+        node.cursor_position = mouse_position();
 
         let dt = ff_core::macroquad::prelude::get_frame_time();
 
@@ -1286,7 +1286,7 @@ impl Node for Editor {
                     position.y,
                     texture,
                     DrawTextureParams {
-                        dest_size: Some(frame_size.into()),
+                        dest_size: Some(frame_size),
                         source: Some(source_rect),
                         ..Default::default()
                     },
@@ -1467,7 +1467,7 @@ impl Node for Editor {
                                             object_position.y,
                                             texture,
                                             DrawTextureParams {
-                                                dest_size: Some(frame_size.into()),
+                                                dest_size: Some(frame_size),
                                                 source: Some(source_rect),
                                                 ..Default::default()
                                             },
@@ -1571,9 +1571,10 @@ impl Node for Editor {
     }
 }
 
-fn get_object_size(object: &MapObject) -> Size<f32> {
-    let mut res = None;
+fn get_object_size(_object: &MapObject) -> Size<f32> {
+    let res = None;
 
+    /*
     let mut label = None;
 
     match object.kind {
@@ -1609,7 +1610,6 @@ fn get_object_size(object: &MapObject) -> Size<f32> {
         }
     }
 
-    /*
     if let Some(label) = &label {
         let params = TextParams::default();
         let measure = measure_text(

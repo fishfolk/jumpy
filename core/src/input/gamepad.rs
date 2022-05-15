@@ -1,5 +1,4 @@
 pub use fishsticks::{Axis, GamepadContext, GamepadId};
-use std::ops::Deref;
 
 use serde::{Deserialize, Serialize};
 

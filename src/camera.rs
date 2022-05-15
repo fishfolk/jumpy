@@ -163,6 +163,12 @@ impl CameraController {
     }
 }
 
+impl Default for CameraController {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub fn update_camera(world: &mut World, _delta_time: f32) -> Result<()> {
     let mut player_rects = Vec::new();
 

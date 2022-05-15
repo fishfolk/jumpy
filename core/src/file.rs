@@ -11,8 +11,8 @@ pub struct Error {
 
 impl Error {
     pub fn new<P: AsRef<Path>, E>(path: P, err: E) -> Self
-        where
-            E: Into<Box<dyn std::error::Error + Send + Sync>>,
+    where
+        E: Into<Box<dyn std::error::Error + Send + Sync>>,
     {
         let path = path.as_ref();
 

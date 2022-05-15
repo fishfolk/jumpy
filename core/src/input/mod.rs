@@ -4,11 +4,9 @@ pub use gamepad::*;
 
 use serde::{Deserialize, Serialize};
 
-use crate::config::Config;
 use crate::error::ErrorKind;
 use crate::formaterr;
 use crate::result::Result;
-use crate::storage;
 
 pub use crate::backend_impl::input::*;
 
@@ -65,14 +63,17 @@ pub fn collect_local_input(input_scheme: GameInputScheme) -> PlayerInput {
             input_mapping().keyboard_secondary.clone()
         };
 
-        input.left = is_key_down(input_mapping.left.into());
-        input.right = is_key_down(input_mapping.right.into());
-        input.fire = is_key_down(input_mapping.fire.into());
-        input.jump = is_key_pressed(input_mapping.jump.into());
-        input.pickup = is_key_pressed(input_mapping.pickup.into());
-        input.float = is_key_down(input_mapping.jump.into());
-        input.crouch = is_key_down(input_mapping.crouch.into());
-        input.slide = input.crouch && is_key_pressed(input_mapping.slide.into());
+        #[allow(clippy::useless_conversion)]
+        {
+            input.left = is_key_down(input_mapping.left.into());
+            input.right = is_key_down(input_mapping.right.into());
+            input.fire = is_key_down(input_mapping.fire.into());
+            input.jump = is_key_pressed(input_mapping.jump.into());
+            input.pickup = is_key_pressed(input_mapping.pickup.into());
+            input.float = is_key_down(input_mapping.jump.into());
+            input.crouch = is_key_down(input_mapping.crouch.into());
+            input.slide = input.crouch && is_key_pressed(input_mapping.slide.into());
+        }
     }
 
     input

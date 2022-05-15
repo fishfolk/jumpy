@@ -1,13 +1,9 @@
 use std::ops::Deref;
-use std::path::Path;
 
 pub use crate::image::ImageFormat as TextureFormat;
 
-use macroquad::texture::load_texture;
-
-use crate::file::read_from_file;
 use crate::image::Image;
-use crate::math::{vec2, Size, Vec2};
+use crate::math::Size;
 use crate::result::Result;
 use crate::texture::{TextureFilterMode, TextureKind};
 

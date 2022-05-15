@@ -3,7 +3,6 @@ use std::ops::Deref;
 
 use super::{EditorAction, EditorContext, Map, ToolbarElement, ToolbarElementParams};
 
-use crate::GuiTheme;
 use ff_core::gui::get_gui_theme;
 use ff_core::gui::ELEMENT_MARGIN;
 use ff_core::macroquad::ui::{widgets, Ui};

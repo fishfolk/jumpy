@@ -4,7 +4,6 @@ use std::cmp::Ordering;
 use ff_core::prelude::*;
 
 use crate::editor::gui::windows::Window;
-use crate::GuiTheme;
 use ff_core::map::{Map, MapLayer, MapLayerKind, MapTile, MapTileset};
 use ff_core::map::{MapBackgroundLayer, MapObject, MapObjectKind};
 

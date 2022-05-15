@@ -10,7 +10,6 @@ use crate::math::Size;
 use hecs::World;
 
 use crate::result::Result;
-use crate::storage;
 use crate::texture::Texture2D;
 use crate::transform::Transform;
 

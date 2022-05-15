@@ -1,13 +1,11 @@
 use ff_core::prelude::*;
 
-use super::{
-    EditorAction, EditorContext, Map, Toolbar, ToolbarElement, ToolbarElementParams,
-};
+use super::{EditorAction, EditorContext, Map, Toolbar, ToolbarElement, ToolbarElementParams};
 
-use ff_core::map::MapLayerKind;
 use crate::editor::gui::ButtonParams;
-use ff_core::macroquad::ui::{Ui, widgets};
 use ff_core::gui::get_gui_theme;
+use ff_core::macroquad::ui::{widgets, Ui};
+use ff_core::map::MapLayerKind;
 
 pub struct TilesetListElement {
     params: ToolbarElementParams,

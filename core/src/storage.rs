@@ -56,10 +56,10 @@ pub fn try_get<T: Any>() -> Option<impl Deref<Target = T>> {
 
         STORAGE.as_mut().unwrap().get(&TypeId::of::<T>()).as_ref()
     }
-        .and_then(|data| {
-            data.downcast_ref::<Rc<RefCell<T>>>()
-                .map(|data| data.borrow())
-        })
+    .and_then(|data| {
+        data.downcast_ref::<Rc<RefCell<T>>>()
+            .map(|data| data.borrow())
+    })
 }
 
 /// Get mutable reference to data from global storage.
@@ -72,10 +72,10 @@ pub fn try_get_mut<T: Any>() -> Option<impl DerefMut<Target = T>> {
 
         STORAGE.as_mut().unwrap().get(&TypeId::of::<T>()).as_ref()
     }
-        .and_then(|data| {
-            data.downcast_ref::<Rc<RefCell<T>>>()
-                .map(|data| data.borrow_mut())
-        })
+    .and_then(|data| {
+        data.downcast_ref::<Rc<RefCell<T>>>()
+            .map(|data| data.borrow_mut())
+    })
 }
 
 /// Get mutable reference to data from global storage.

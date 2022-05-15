@@ -3,14 +3,14 @@
 //! are not movable, so we solve this by drawing a non-interactive button, to draw the background,
 //! and a group, on top of that, to hold the layout.
 
-use crate::color::Color;
-use crate::storage;
 use std::ops::Deref;
+
+use crate::color::Color;
 
 use super::{WINDOW_MARGIN_H, WINDOW_MARGIN_V};
 
 use crate::gui::theme::get_gui_theme;
-use crate::gui::{widgets, GuiTheme, Id, Ui};
+use crate::gui::{widgets, Id, Ui};
 use crate::math::{vec2, UVec2, Vec2};
 use crate::render::draw_rectangle;
 use crate::texture::get_texture;

@@ -1,9 +1,8 @@
-use crate::util::prepend_crate;
 use darling::FromMeta;
-use proc_macro2::{Ident, TokenStream};
+use proc_macro2::Ident;
 use quote::quote;
 use syn::parse::{Parse, ParseStream};
-use syn::{Lit, LitStr, Path, Token, Type};
+use syn::{Lit, LitStr, Token, Type};
 
 struct Signature {
     core_crate: Ident,

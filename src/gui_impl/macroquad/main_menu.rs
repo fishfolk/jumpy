@@ -1,25 +1,22 @@
-use std::borrow::BorrowMut;
 use std::ops::Deref;
 
 use ff_core::prelude::*;
 
 use ff_core::ecs::World;
-use ff_core::input::{Axis, GamepadContext};
+use ff_core::input::Axis;
 
 use ff_core::gui::background::draw_main_menu_background;
 use ff_core::gui::{
-    get_gui_theme, Menu, MenuEntry, MenuResult, Panel, WINDOW_BG_COLOR, WINDOW_MARGIN_H,
-    WINDOW_MARGIN_V,
+    get_gui_theme, Menu, MenuEntry, Panel, WINDOW_BG_COLOR, WINDOW_MARGIN_H, WINDOW_MARGIN_V,
 };
-use ff_core::map::{get_map, iter_maps, MapResource};
+use ff_core::map::{get_map, iter_maps};
 
-use crate::player::{PlayerAnimations, PlayerControllerKind, PlayerParams};
-use crate::{build_state_for_game_mode, gui, GameMode, GuiTheme, Map};
+use crate::player::{PlayerControllerKind, PlayerParams};
+use crate::{build_state_for_game_mode, GameMode, Map};
 
 use ff_core::input::{is_gamepad_button_pressed, GameInputScheme};
+use ff_core::macroquad::hash;
 use ff_core::macroquad::ui::{root_ui, widgets};
-use ff_core::macroquad::window::next_frame;
-use ff_core::macroquad::{hash, ui};
 
 use crate::player::character::{get_character, iter_characters};
 
@@ -41,8 +38,10 @@ enum MainMenuResult {
         players: Vec<PlayerParams>,
     },
     Editor {
+        #[allow(dead_code)]
         map: Option<Map>,
     },
+    #[allow(dead_code)]
     ReloadResources,
     Quit,
 }
@@ -78,6 +77,7 @@ const ROOT_OPTION_SETTINGS: usize = 2;
 const ROOT_OPTION_RELOAD_RESOURCES: usize = 3;
 const ROOT_OPTION_CREDITS: usize = 4;
 
+#[allow(dead_code)]
 const LOCAL_GAME_OPTION_SUBMIT: usize = 0;
 
 const SETTINGS_OPTION_TEST: usize = 0;
@@ -175,7 +175,7 @@ struct MapSelectState {
 impl CharacterSelectState {
     pub fn new(player_cnt: usize) -> Self {
         CharacterSelectState {
-            selections: (0..player_cnt).map(|i| i).collect(),
+            selections: (0..player_cnt).collect(),
             sprites: (0..player_cnt)
                 .map(|i| {
                     let character = get_character(i);
@@ -549,8 +549,6 @@ impl MainMenuState {
         };
 
         for (_, gamepad) in gamepad_context().gamepads() {
-            use ff_core::input::{Axis, Button};
-
             up |= gamepad.digital_inputs.just_activated(Button::DPadUp.into())
                 || matches!(
                     gamepad.analog_inputs.just_activated_digital(Axis::LeftStickY),
@@ -735,7 +733,7 @@ impl MainMenuState {
                     let mouse_position = mouse_position();
 
                     if self.map_select_state.mouse_position != mouse_position
-                        && rect.contains(mouse_position.into())
+                        && rect.contains(mouse_position)
                     {
                         self.map_select_state.hovered = i as _;
                     }
@@ -829,15 +827,8 @@ impl MainMenuState {
                         }
                     }
                     MainMenuLevel::Settings => {
-                        if res.is_confirm() {
+                        if res.is_confirm() || res.is_cancel() {
                             self.set_level(MainMenuLevel::Root);
-                        } else if res.is_cancel() {
-                            self.set_level(MainMenuLevel::Root);
-                        } else {
-                            match res.into_usize() {
-                                SETTINGS_OPTION_TEST => {}
-                                _ => {}
-                            }
                         }
                     }
                     _ => {}

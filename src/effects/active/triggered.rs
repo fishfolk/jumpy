@@ -4,8 +4,6 @@ use ff_core::ecs::{Entity, World};
 
 use serde::{Deserialize, Serialize};
 
-use ff_core::prelude::*;
-
 use crate::effects::active::spawn_active_effect;
 use crate::items::get_item;
 use crate::items::spawn_item;
@@ -91,7 +89,6 @@ pub fn spawn_triggered_effect(
         velocity.x = -velocity.x;
     }
 
-    let offset = -Vec2::from(meta.size) / 2.0;
     if meta.spread != 0.0 {
         let rad = deg_to_rad(meta.spread);
         let spread = rand::gen_range(-rad, rad);
@@ -102,7 +99,7 @@ pub fn spawn_triggered_effect(
     let offset = -meta.size.as_vec2() / 2.0;
 
     let actor = {
-        let mut physics = physics_world();
+        let physics = physics_world();
         physics.add_actor(origin, meta.size)
     };
 
@@ -141,7 +138,7 @@ pub fn spawn_triggered_effect(
             texture,
             texture.frame_size(),
             animations.as_slice(),
-            meta.clone().into(),
+            meta.into(),
         );
 
         {
@@ -175,7 +172,7 @@ const KICK_DELAY: f32 = 0.22;
 pub fn fixed_update_triggered_effects(
     world: &mut World,
     delta_time: f32,
-    integration_factor: f32,
+    _integration_factor: f32,
 ) -> Result<()> {
     let mut to_trigger = Vec::new();
 
@@ -196,7 +193,7 @@ pub fn fixed_update_triggered_effects(
         .iter()
     {
         if !effect.should_collide_with_platforms {
-            let mut physics = physics_world();
+            let physics = physics_world();
             physics.descend(body.actor);
         }
 

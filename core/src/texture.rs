@@ -1,12 +1,11 @@
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 use std::path::Path;
-use std::slice::Iter;
 use std::vec::IntoIter;
 
 use serde::{Deserialize, Serialize};
 
-use crate::math::{Size, Vec2};
+use crate::math::Size;
 use crate::result::Result;
 
 pub use crate::backend_impl::texture::*;
@@ -167,11 +166,7 @@ pub(crate) fn texture_ids() -> &'static mut HashMap<String, usize> {
 }
 
 pub fn try_get_texture(id: &str) -> Option<Texture2D> {
-    if let Some(index) = texture_ids().get(id) {
-        Some(Texture2D(*index))
-    } else {
-        None
-    }
+    texture_ids().get(id).map(|index| Texture2D(*index))
 }
 
 pub fn get_texture(id: &str) -> Texture2D {
@@ -196,13 +191,15 @@ pub fn iter_texture_ids() -> IntoIter<String> {
 
 pub fn iter_texture_ids_of_kind(kind: TextureKind) -> IntoIter<String> {
     iter_textures_with_ids()
-        .filter_map(|(id, texture)| {
-            if texture.kind == kind {
-                Some(id.to_string())
-            } else {
-                None
-            }
-        })
+        .filter_map(
+            |(id, texture)| {
+                if texture.kind == kind {
+                    Some(id)
+                } else {
+                    None
+                }
+            },
+        )
         .collect::<Vec<_>>()
         .into_iter()
 }

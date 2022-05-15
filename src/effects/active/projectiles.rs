@@ -158,7 +158,7 @@ pub fn spawn_projectile(
                         SpriteParams {
                             is_flipped_x,
                             offset,
-                            ..meta.clone().into()
+                            ..meta.into()
                         },
                     ),
                 )
@@ -208,7 +208,7 @@ pub fn fixed_update_projectiles(
         .map(|(e, (transform, body))| (e, body.as_rect(transform.position)))
         .collect::<Vec<_>>();
 
-    let mut physics = physics_world();
+    let physics = physics_world();
 
     let mut events = Vec::new();
 
@@ -222,7 +222,6 @@ pub fn fixed_update_projectiles(
         }
 
         #[cfg(feature = "macroquad")]
-        let size: Size<i32> = Vec2::from(body.size).as_i32().into();
         let map_collision = physics.collide_solids_at(transform.position, body.size);
         if map_collision == ColliderKind::Solid {
             let res = (projectile.owner, e, Some(ProjectileCollision::Map));

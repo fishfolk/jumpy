@@ -31,9 +31,7 @@ impl ImageFormat {
     where
         S: AsRef<OsStr>,
     {
-        macroquad::prelude::ImageFormat::from_extension(ext)
-            .map(|f| Self::from_crate(f))
-            .flatten()
+        macroquad::prelude::ImageFormat::from_extension(ext).and_then(Self::from_crate)
     }
 }
 

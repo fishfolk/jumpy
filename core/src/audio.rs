@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::hash::{Hash, Hasher};
+use std::hash::Hash;
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
@@ -8,26 +8,15 @@ use quad_snd::{AudioContext as QuadAudioContext, PlaySoundParams, Sound as QuadS
 
 use crate::audio::AudioKind::Other;
 
-use crate::config::Config;
 use crate::file::read_from_file;
 use crate::parsing::deserialize_bytes_by_extension;
 use crate::result::Result;
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Hash, Eq, PartialEq)]
 pub enum AudioKind {
     SoundEffect,
     Music,
     Other(String),
-}
-
-impl Hash for AudioKind {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        match self {
-            Self::SoundEffect => state.write(b"sound_effect"),
-            Self::Music => state.write(b"music"),
-            Self::Other(str) => str.hash(state),
-        }
-    }
 }
 
 impl AudioKind {
@@ -108,7 +97,6 @@ impl ToString for AudioKind {
 }
 
 const AUDIO_RESOURCES_FILE: &str = "audio";
-const MUSIC_RESOURCES_FILE: &str = "music";
 
 #[derive(Clone)]
 pub struct Sound {
@@ -148,6 +136,7 @@ fn volume_from_byte(byte: u8) -> f32 {
     byte.clamp(0, 100) as f32 / 100.0
 }
 
+#[allow(dead_code)]
 fn byte_from_volume(volume: f32) -> u8 {
     (volume.clamp(0.0, 1.0) * 255.0) as u8
 }
@@ -296,6 +285,7 @@ impl AudioContext {
         }
     }
 
+    #[allow(dead_code)]
     fn config(&self) -> AudioConfig {
         AudioConfig {
             master_volume: byte_from_volume(self.master_volume),
@@ -328,6 +318,7 @@ pub fn destroy_audio_context() {
     unsafe { AUDIO_CONTEXT = None };
 }
 
+#[allow(dead_code)]
 pub(crate) fn apply_audio_config(config: &AudioConfig) {
     audio_context().apply_config(config);
 }

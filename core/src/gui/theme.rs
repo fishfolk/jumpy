@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::ops::Deref;
 
 use macroquad::color_u8;
@@ -6,7 +5,7 @@ use macroquad::ui::{root_ui, Skin};
 
 use crate::color::{colors, Color};
 
-use crate::image::{get_image, Image};
+use crate::image::get_image;
 use crate::math::RectOffset;
 
 static mut GUI_THEME: Option<GuiTheme> = None;
@@ -920,5 +919,11 @@ impl GuiTheme {
             panel_no_bg,
             map_selection,
         }
+    }
+}
+
+impl Default for GuiTheme {
+    fn default() -> Self {
+        Self::new()
     }
 }

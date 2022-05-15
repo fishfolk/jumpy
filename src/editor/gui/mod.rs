@@ -6,8 +6,8 @@ pub mod windows;
 
 mod editor_menu;
 
-use ff_core::gui::get_gui_theme;
 pub use ff_core::gui::combobox::{ComboBoxBuilder, ComboBoxValue};
+use ff_core::gui::get_gui_theme;
 
 pub use editor_menu::{
     close_editor_menu, draw_editor_menu, is_editor_menu_open, open_editor_menu, toggle_editor_menu,
@@ -31,12 +31,11 @@ pub use windows::{
     TilesetPropertiesWindow, Window, WINDOW_BUTTON_MAX_WIDTH, WINDOW_BUTTON_MIN_WIDTH,
 };
 
-use ff_core::gui::{BUTTON_FONT_SIZE, BUTTON_MARGIN_V, WINDOW_MARGIN_H, WINDOW_MARGIN_V};
-use ff_core::map::MapLayerKind;
 use context_menu::{ContextMenu, ContextMenuEntry};
-use crate::GuiTheme;
+use ff_core::gui::{BUTTON_FONT_SIZE, BUTTON_MARGIN_V, WINDOW_MARGIN_H, WINDOW_MARGIN_V};
 use ff_core::macroquad::hash;
 use ff_core::macroquad::ui::{root_ui, widgets};
+use ff_core::map::MapLayerKind;
 
 #[derive(Debug, Default, Clone)]
 pub struct ButtonParams {

@@ -1,11 +1,10 @@
 use std::collections::HashMap;
-use std::ffi::{OsStr, OsString};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 
 use crate::file::read_from_file;
-use crate::math::{Size, Vec2};
+use crate::math::Size;
 use crate::result::Result;
 
 pub use crate::backend_impl::text::*;

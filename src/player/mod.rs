@@ -3,7 +3,7 @@ use ff_core::ecs::{Entity, World};
 use ff_core::prelude::*;
 
 use crate::{
-    AnimatedSprite, AnimatedSpriteMetadata, AnimatedSpriteParams, Camera, Drawable, PassiveEffect,
+    AnimatedSprite, AnimatedSpriteMetadata, AnimatedSpriteParams, Drawable, PassiveEffect,
     PhysicsBody,
 };
 

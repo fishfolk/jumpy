@@ -3,6 +3,7 @@
 #[cfg(feature = "macroquad")]
 pub use mocked::MockApi as Api;
 
+#[allow(dead_code)]
 mod mocked {
     use ff_core::result::Result;
 

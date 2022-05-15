@@ -129,7 +129,7 @@ impl ParticleEmitterCache {
 
 static mut PARTICLE_EMITTER_CACHE: Option<ParticleEmitterCache> = None;
 
-fn get_particle_emitter_cache() -> &'static mut ParticleEmitterCache {
+fn particle_emitter_cache() -> &'static mut ParticleEmitterCache {
     unsafe { PARTICLE_EMITTER_CACHE.get_or_insert_with(ParticleEmitterCache::new) }
 }
 
@@ -166,7 +166,7 @@ fn update_one_particle_emitter(
                 );
             }
 
-            let mut particles = get_particle_emitter_cache();
+            let particles = particle_emitter_cache();
             let cache = particles
                 .cache_map
                 .get_mut(&emitter.particle_effect_id)
@@ -205,7 +205,7 @@ pub fn update_particle_emitters(world: &mut World, delta_time: f32) -> Result<()
 }
 
 pub fn draw_particles(_world: &mut World, _delta_time: f32) -> Result<()> {
-    let mut particles = get_particle_emitter_cache();
+    let particles = particle_emitter_cache();
 
     for cache in particles.cache_map.values_mut() {
         cache.draw();

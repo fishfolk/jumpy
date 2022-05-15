@@ -1,12 +1,11 @@
 use std::ops::Deref;
 
-use crate::gui::{Id, Ui, widgets};
+use crate::gui::{widgets, Id, Ui};
 
-use crate::math::{Vec2, vec2};
+use crate::math::{vec2, Vec2};
 
+use crate::gui::theme::get_gui_theme;
 use crate::gui::ELEMENT_MARGIN;
-use crate::gui::theme::{get_gui_theme, GuiTheme};
-use crate::storage;
 
 pub struct Checkbox {
     id: Id,

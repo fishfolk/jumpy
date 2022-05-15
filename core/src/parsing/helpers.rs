@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::color::Color;
-use crate::math::{Vec2, IVec2, UVec2};
+use crate::math::{IVec2, UVec2, Vec2};
 
 pub fn default_true() -> bool {
     true

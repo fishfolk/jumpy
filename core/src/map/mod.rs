@@ -9,9 +9,8 @@ mod decoration;
 
 pub use decoration::*;
 
-use crate::error::{Error, ErrorKind};
+use crate::error::ErrorKind;
 use crate::prelude::*;
-use crate::resources;
 use crate::result::Result;
 
 #[cfg(feature = "macroquad-backend")]

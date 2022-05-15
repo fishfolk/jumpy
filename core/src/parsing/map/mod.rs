@@ -14,9 +14,7 @@ pub use tiled::TiledMap;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct MapDef {
-    #[serde(
-        default = "Map::default_background_color",
-    )]
+    #[serde(default = "Map::default_background_color")]
     pub background_color: Color,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub background_layers: Vec<MapBackgroundLayer>,

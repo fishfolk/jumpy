@@ -1,6 +1,4 @@
-use std::path::Path;
-
-use ff_core::input::{Button, GamepadContext};
+use ff_core::input::Button;
 
 use ff_core::macroquad::window::{clear_background, next_frame};
 use ff_core::prelude::*;
@@ -69,7 +67,7 @@ enum LabelType {
     Regular,
 }
 
-pub async fn show_game_credits(assets_dir: &str) {
+pub async fn show_game_credits() {
     play_sound("thanks_for_all_the_fished", true);
 
     let mut delta = 200.0;
@@ -95,7 +93,7 @@ pub async fn show_game_credits(assets_dir: &str) {
                 TextParams {
                     font: Some(font),
                     font_size: credit.font_size,
-                    color: colors::WHITE.into(),
+                    color: colors::WHITE,
                     ..Default::default()
                 },
             );

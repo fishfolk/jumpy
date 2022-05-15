@@ -1,6 +1,4 @@
-use crate::camera::main_camera;
-
-use crate::math::{vec2, Mat4, Size, UVec2, Vec2};
+use crate::math::{vec2, Mat4, Size, Vec2};
 use crate::window::window_size;
 
 #[derive(Debug, Copy, Clone)]
@@ -51,11 +49,11 @@ impl Default for Viewport {
 static mut VIEWPORT: Option<Viewport> = None;
 
 pub fn viewport() -> Viewport {
-    *unsafe { VIEWPORT.get_or_insert_with(|| Viewport::default()) }
+    *unsafe { VIEWPORT.get_or_insert_with(Viewport::default) }
 }
 
 pub(crate) fn viewport_mut() -> &'static mut Viewport {
-    unsafe { VIEWPORT.get_or_insert_with(|| Viewport::default()) }
+    unsafe { VIEWPORT.get_or_insert_with(Viewport::default) }
 }
 
 pub fn viewport_size() -> Size<f32> {

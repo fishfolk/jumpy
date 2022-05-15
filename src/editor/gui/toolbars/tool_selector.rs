@@ -8,10 +8,7 @@ use super::{
 };
 
 use crate::editor::tools::EditorTool;
-use crate::{
-    editor::tools::{get_tool_instance_of_id, EditorToolParams},
-    GuiTheme,
-};
+use crate::editor::tools::{get_tool_instance_of_id, EditorToolParams};
 
 use ff_core::gui::get_gui_theme;
 use ff_core::macroquad::ui::{widgets, Ui};

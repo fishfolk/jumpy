@@ -1,26 +1,20 @@
 extern crate core;
 
-use std::borrow::BorrowMut;
-use std::collections::HashMap;
-use std::future::Future;
-use std::path::{Path, PathBuf};
-use std::time::Instant;
-use std::{env, fs};
+use std::env;
+use std::path::PathBuf;
 
-use ff_core::input::GamepadContext;
+#[cfg(not(feature = "macroquad"))]
 use ff_core::map::get_map;
 
 //use ultimate::UltimateApi;
 
+#[cfg(not(feature = "macroquad"))]
 use ff_core::prelude::*;
 
 #[cfg(feature = "macroquad")]
 pub mod editor;
 
 pub mod gui;
-
-#[cfg(feature = "macroquad")]
-use ff_core::gui::GuiTheme;
 
 pub mod camera;
 pub mod critters;
@@ -33,9 +27,6 @@ pub mod player;
 pub mod sproinger;
 
 // use network::api::Api;
-
-#[cfg(feature = "macroquad")]
-use editor::{Editor, EditorCamera};
 
 use ff_core::map::{Map, MapLayerKind, MapObjectKind};
 
@@ -50,36 +41,16 @@ pub use player::character::get_character;
 pub use player::PlayerEvent;
 
 use crate::effects::passive::init_passive_effects;
-use crate::game::{
-    build_state_for_game_mode, spawn_map_objects, GameMode, LOCAL_GAME_STATE_ID,
-    NETWORK_GAME_CLIENT_STATE_ID, NETWORK_GAME_HOST_STATE_ID,
-};
+use crate::game::{build_state_for_game_mode, GameMode};
 pub use effects::{ActiveEffectKind, ActiveEffectMetadata, PassiveEffect, PassiveEffectMetadata};
 use ff_core::gui::rebuild_gui_theme;
-use ff_core::particles::{draw_particles, update_particle_emitters};
 
 const CONFIG_FILE_ENV_VAR: &str = "FISHFIGHT_CONFIG";
 const ASSETS_DIR_ENV_VAR: &str = "FISHFIGHT_ASSETS";
 const MODS_DIR_ENV_VAR: &str = "FISHFIGHT_MODS";
 
+#[allow(dead_code)]
 const WINDOW_TITLE: &str = "Fish Fight";
-
-use crate::effects::active::debug_draw_active_effects;
-use crate::effects::active::projectiles::fixed_update_projectiles;
-use crate::effects::active::triggered::fixed_update_triggered_effects;
-#[cfg(feature = "macroquad")]
-use crate::gui::MainMenuState;
-use crate::items::MapItemMetadata;
-use crate::network::{
-    fixed_update_network_client, fixed_update_network_host, update_network_client,
-    update_network_host,
-};
-use crate::player::{
-    draw_weapons_hud, spawn_player, update_player_animations, update_player_controllers,
-    update_player_events, update_player_inventory, update_player_passive_effects,
-    update_player_states, CharacterMetadata, PlayerControllerKind, PlayerParams,
-};
-use crate::sproinger::fixed_update_sproingers;
 
 pub fn config_path() -> String {
     let path = env::var(CONFIG_FILE_ENV_VAR)
@@ -237,10 +208,6 @@ async fn macroquad_main() -> Result<()> {
     init_gamepad_context().await?;
 
     use ff_core::macroquad::experimental::scene;
-    use ff_core::macroquad::window::clear_background;
-    use ff_core::macroquad::window::next_frame;
-
-    use ff_core::event::iter_events;
 
     use gui::MainMenuState;
 

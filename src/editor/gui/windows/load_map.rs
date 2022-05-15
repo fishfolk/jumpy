@@ -6,8 +6,6 @@ use ff_core::macroquad::hash;
 use ff_core::macroquad::ui::{widgets, Ui};
 use ff_core::map::{get_map, iter_maps, Map};
 
-use crate::GuiTheme;
-
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 
 pub struct LoadMapWindow {

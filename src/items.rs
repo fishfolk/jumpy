@@ -2,7 +2,6 @@
 //! Proto-mods, eventually some of the items will move to some sort of a wasm runtime
 
 use ff_core::ecs::{Entity, World};
-use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
@@ -272,7 +271,7 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
                     texture,
                     texture.frame_size(),
                     animations.as_slice(),
-                    effect_sprite.clone().into(),
+                    effect_sprite.into(),
                 );
 
                 sprite.is_deactivated = true;

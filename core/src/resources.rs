@@ -1,30 +1,14 @@
-use std::any::{Any, TypeId};
-use std::borrow::BorrowMut;
-use std::collections::hash_map::Iter as HashMapIter;
-use std::future::Future;
-use std::hash::Hash;
-use std::ops::DerefMut;
-use std::path::PathBuf;
-use std::pin::Pin;
 use std::slice::{Iter, IterMut};
-use std::{collections::HashMap, fs, path::Path};
+use std::{collections::HashMap, path::Path};
 
 use async_trait::async_trait;
-
-use crate::particles::EmitterConfig;
-use crate::text::{load_font, Font};
 
 use serde::{Deserialize, Serialize};
 
 use serde::de::DeserializeOwned;
 
-use crate::error::ErrorKind;
-use crate::formaterr;
-use crate::parsing::{deserialize_json_bytes, load_json_file};
 use crate::prelude::*;
 use crate::result::Result;
-
-use crate::map::Map;
 
 pub const DEFAULT_RESOURCE_FILE_EXTENSION: &str = "json";
 

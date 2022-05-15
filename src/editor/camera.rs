@@ -53,7 +53,7 @@ impl EditorCamera {
 }
 
 impl Node for EditorCamera {
-    fn fixed_update(mut node: RefMut<Self>) {
+    fn fixed_update(node: RefMut<Self>) {
         let viewport_size = viewport_size();
 
         let camera = Some(Camera2D {

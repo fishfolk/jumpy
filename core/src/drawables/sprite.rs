@@ -1,14 +1,11 @@
 use std::collections::HashMap;
 use std::iter::FromIterator;
-use std::ops::Div;
 
 use serde::{Deserialize, Serialize};
 
 use crate::color::{colors, Color};
-use crate::math::{uvec2, vec2, AsUVec2, AsVec2, Rect, Size, URect, UVec2, Vec2};
+use crate::math::{vec2, Rect, Size, Vec2};
 use crate::render::{draw_rectangle_outline, draw_texture, DrawTextureParams};
-use crate::result::Result;
-use crate::storage;
 use crate::texture::Texture2D;
 use crate::transform::Transform;
 
@@ -179,7 +176,7 @@ impl From<SpriteMetadata> for SpriteParams {
     }
 }
 
-pub fn draw_one_sprite(transform: &Transform, sprite: &Sprite) -> Result<()> {
+pub fn draw_one_sprite(transform: &Transform, sprite: &Sprite) {
     if !sprite.is_deactivated {
         let size = sprite.size();
 
@@ -198,11 +195,9 @@ pub fn draw_one_sprite(transform: &Transform, sprite: &Sprite) -> Result<()> {
             },
         );
     }
-
-    Ok(())
 }
 
-pub fn debug_draw_one_sprite(position: Vec2, sprite: &Sprite) -> Result<()> {
+pub fn debug_draw_one_sprite(position: Vec2, sprite: &Sprite) {
     if !sprite.is_deactivated {
         let size = sprite.size();
 
@@ -215,8 +210,6 @@ pub fn debug_draw_one_sprite(position: Vec2, sprite: &Sprite) -> Result<()> {
             colors::BLUE,
         )
     }
-
-    Ok(())
 }
 
 pub struct SpriteSet {

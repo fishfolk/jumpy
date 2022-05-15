@@ -1,11 +1,8 @@
-use hecs::World;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 
-use crate::math::{vec2, vec3, Mat4, Rect, Size, Vec2};
-use crate::prelude::Transform;
+use crate::math::{vec3, Mat4, Size, Vec2};
 use crate::render::RenderTarget;
-use crate::viewport::Viewport;
 use crate::window::window_size;
 
 static mut NEXT_CAMERA_INDEX: usize = 0;
@@ -37,7 +34,7 @@ impl CameraImpl {
     {
         let position = position.into().unwrap_or(Vec2::ZERO);
         let zoom = zoom.into().unwrap_or(Vec2::ONE);
-        let bounds = bounds.into().unwrap_or_else(|| window_size());
+        let bounds = bounds.into().unwrap_or_else(window_size);
         let render_target = render_target.into();
 
         CameraImpl {
@@ -84,11 +81,14 @@ impl Camera {
         Z: Into<Option<Vec2>>,
         R: Into<Option<RenderTarget>>,
     {
-        let id = unsafe { camera_index() };
+        let index = camera_index();
 
-        cameras().insert(id, CameraImpl::new(position, bounds, zoom, render_target));
+        cameras().insert(
+            index,
+            CameraImpl::new(position, bounds, zoom, render_target),
+        );
 
-        let camera = Camera(id);
+        let camera = Camera(index);
 
         if !is_main_camera_set() {
             set_main_camera(camera);
@@ -145,7 +145,7 @@ static mut CAMERA: Option<usize> = None;
 pub fn main_camera() -> Camera {
     let id = unsafe {
         CAMERA.get_or_insert_with(|| {
-            let mut camera = Camera::default();
+            let camera = Camera::default();
             camera.0
         })
     };

@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 use std::time::Duration;
 
-use crate::game::delta_time;
 use crate::result::Result;
 
 /// A simple timer implementation

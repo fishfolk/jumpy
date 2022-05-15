@@ -1,5 +1,4 @@
 use cfg_if::cfg_if;
-use serde::{Deserialize, Serialize};
 
 pub use num_traits::*;
 
@@ -14,9 +13,6 @@ pub use circle::*;
 pub use rect::*;
 pub use size::*;
 pub use urect::*;
-
-use crate::color::Color;
-use crate::video::VideoMode;
 
 pub trait AsVec2 {
     fn as_vec2(&self) -> Vec2;

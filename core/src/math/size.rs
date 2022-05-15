@@ -1,7 +1,6 @@
 use std::ops;
 use std::ops::{Div, DivAssign, Mul, MulAssign};
 
-use crate::math::{AsIVec2, AsUVec2, AsVec2};
 use serde::{Deserialize, Serialize};
 
 use super::{cfg_if, ivec2, uvec2, vec2, IVec2, Num, UVec2, Vec2};

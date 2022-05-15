@@ -1,9 +1,8 @@
-use crate::prelude::viewport;
 use crate::texture::Texture2D;
-use crate::viewport::Viewport;
 
 #[derive(Clone)]
 pub struct RenderTarget {
+    #[allow(dead_code)]
     texture: Texture2D,
 }
 

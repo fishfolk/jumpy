@@ -73,10 +73,6 @@ impl Color {
     }
 
     pub fn to_hsl(self) -> (f32, f32, f32) {
-        let mut h: f32;
-        let s: f32;
-        let l: f32;
-
         let r = self.red;
         let g = self.green;
         let b = self.blue;
@@ -85,7 +81,7 @@ impl Color {
         let max = r.max(g).max(b);
 
         // Luminosity is the average of the max and min rgb color intensities.
-        l = (max + min) / 2.0;
+        let l = (max + min) / 2.0;
 
         // Saturation
         let delta: f32 = max - min;
@@ -95,27 +91,27 @@ impl Color {
         }
 
         // it's not gray
-        if l < 0.5 {
-            s = delta / (max + min);
+        let s = if l < 0.5 {
+            delta / (max + min)
         } else {
-            s = delta / (2.0 - max - min);
-        }
+            delta / (2.0 - max - min)
+        };
 
         // Hue
         let r2 = (((max - r) / 6.0) + (delta / 2.0)) / delta;
         let g2 = (((max - g) / 6.0) + (delta / 2.0)) / delta;
         let b2 = (((max - b) / 6.0) + (delta / 2.0)) / delta;
 
-        h = match max {
+        let mut h = match max {
             x if x == r => b2 - g2,
             x if x == g => (1.0 / 3.0) + r2 - b2,
             _ => (2.0 / 3.0) + g2 - r2,
         };
 
         // Fix wraparounds
-        if h < 0 as f32 {
+        if h < 0.0 {
             h += 1.0;
-        } else if h > 1 as f32 {
+        } else if h > 1.0 {
             h -= 1.0;
         }
 

@@ -4,7 +4,7 @@ use macroquad::window::{clear_background, next_frame};
 use std::ops::Deref;
 
 use crate::color::{colors, Color};
-use crate::math::{Circle, Rect, Vec2};
+use crate::math::Vec2;
 use crate::render::DrawTextureParams;
 use crate::texture::Texture2D;
 
@@ -25,7 +25,7 @@ pub fn draw_texture(x: f32, y: f32, texture: Texture2D, params: DrawTextureParam
 impl From<DrawTextureParams> for macroquad::texture::DrawTextureParams {
     fn from(params: DrawTextureParams) -> Self {
         macroquad::texture::DrawTextureParams {
-            dest_size: params.dest_size.map(|s| Vec2::from(s)),
+            dest_size: params.dest_size.map(Vec2::from),
             source: params.source.map(|rect| rect.into()),
             rotation: params.rotation,
             flip_x: params.flip_x,

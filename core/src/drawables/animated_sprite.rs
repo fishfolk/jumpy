@@ -7,7 +7,7 @@ use hecs::World;
 use serde::{Deserialize, Serialize};
 
 use crate::color::{colors, Color};
-use crate::math::{Rect, URect};
+use crate::math::Rect;
 use crate::math::{Size, Vec2};
 use crate::render::{draw_rectangle_outline, draw_texture, DrawTextureParams};
 use crate::result::Result;

@@ -1,11 +1,8 @@
-use fishsticks::{Axis, Button, GamepadContext};
-use macroquad::hash;
+use fishsticks::{Axis, Button};
 use macroquad::time::get_frame_time;
 use std::collections::HashMap;
 
-use crate::gui::{
-    GuiTheme, Panel, BUTTON_FONT_SIZE, BUTTON_MARGIN_V, WINDOW_MARGIN_H, WINDOW_MARGIN_V,
-};
+use crate::gui::{Panel, BUTTON_FONT_SIZE, BUTTON_MARGIN_V, WINDOW_MARGIN_H, WINDOW_MARGIN_V};
 
 use crate::input::{
     gamepad_context, is_gamepad_button_pressed, is_key_down, is_key_pressed, mouse_position,
@@ -14,11 +11,8 @@ use crate::input::{
 
 use crate::gui::theme::get_gui_theme;
 use crate::gui::{widgets, Id, Ui};
-use crate::math::{vec2, AsVec2, Vec2};
-use crate::result::Result;
-use crate::storage;
-use crate::viewport::{viewport, viewport_size};
-use crate::window::window_size;
+use crate::math::{vec2, Vec2};
+use crate::viewport::viewport_size;
 
 #[derive(Debug, Copy, Clone)]
 pub enum MenuPosition {
@@ -108,6 +102,7 @@ pub struct Menu {
     height: Option<f32>,
     position: MenuPosition,
     entries: Vec<MenuEntry>,
+    #[allow(dead_code)]
     actions: HashMap<usize, MenuActionFn>,
     has_confirm_button: bool,
     confirm_entry_title_override: Option<String>,
@@ -135,13 +130,11 @@ impl Menu {
 
     pub fn new(id: Id, width: f32, entries: &[MenuEntry]) -> Self {
         let entries = entries.to_vec();
-        let actions = HashMap::from_iter(entries.iter().filter_map(|e| {
-            if let Some(a) = e.action {
-                Some((e.index, a))
-            } else {
-                None
-            }
-        }));
+        let actions = HashMap::from_iter(
+            entries
+                .iter()
+                .filter_map(|e| e.action.map(|a| (e.index, a))),
+        );
 
         Menu {
             id,
@@ -465,8 +458,6 @@ impl Menu {
         }
 
         self.is_first_draw = false;
-
-        if let Some(res) = res {}
 
         res
     }

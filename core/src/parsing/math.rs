@@ -1,6 +1,4 @@
-use serde::{Deserialize, Serialize};
-
-use crate::math::{ivec2, uvec2, vec2, IVec2, Rect, UVec2, Vec2};
+use crate::math::{ivec2, uvec2, vec2, IVec2, UVec2, Vec2};
 
 pub mod vec2_def {
     use super::{vec2, Vec2};

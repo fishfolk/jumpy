@@ -6,10 +6,7 @@
 
 pub use crate::backend_impl::error::*;
 
-use std::sync::mpsc::SendError;
-use std::{error, fmt, io, result, string::FromUtf8Error};
-
-use cfg_if::cfg_if;
+use std::{error, fmt, io, string::FromUtf8Error};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ErrorKind {

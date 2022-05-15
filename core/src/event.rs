@@ -1,16 +1,9 @@
 pub use crate::backend_impl::event::*;
 
-use std::any::{Any, TypeId};
-use std::cell::RefCell;
-use std::fmt::{Debug, Formatter, Write};
-use std::hash::{Hash, Hasher};
-use std::rc::Rc;
+use std::fmt::{Debug, Formatter};
 
 use crate::config::Config;
-use crate::error::{Error, ErrorKind};
 use crate::prelude::GameState;
-use crate::result::Result;
-use crate::state::GameStateBuilderFn;
 
 pub type DefaultCustomEvent = ();
 
@@ -41,9 +34,9 @@ impl<T: 'static + Debug> Debug for Event<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Event::Custom(event) => format!("Event::Custom({:?})", &event).fmt(f),
-            Event::ConfigChanged(..) => format!("Event::ConfigChanged(Config)").fmt(f),
-            Event::StateTransition(..) => format!("Event::StateTransition").fmt(f),
-            Event::Quit => format!("Event::Quit").fmt(f),
+            Event::ConfigChanged(..) => "Event::ConfigChanged(Config)".to_string().fmt(f),
+            Event::StateTransition(..) => "Event::StateTransition".to_string().fmt(f),
+            Event::Quit => "Event::Quit".to_string().fmt(f),
         }
     }
 }

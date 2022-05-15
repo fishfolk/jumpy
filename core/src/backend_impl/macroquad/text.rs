@@ -1,9 +1,7 @@
-use std::path::Path;
-
 use macroquad::text::measure_text;
 pub use macroquad::text::Font;
 
-use crate::math::{vec2, Size, Vec2};
+use crate::math::Size;
 use crate::result::Result;
 use crate::text::{HorizontalAlignment, TextParams, VerticalAlignment};
 use crate::viewport::viewport_size;

@@ -7,7 +7,6 @@ use ff_core::map::{Map, MapLayerKind};
 use super::{
     ButtonParams, EditorAction, EditorContext, Toolbar, ToolbarElement, ToolbarElementParams,
 };
-use crate::GuiTheme;
 use ff_core::gui::ELEMENT_MARGIN;
 use ff_core::macroquad::ui::{widgets, Ui};
 

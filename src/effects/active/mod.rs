@@ -4,8 +4,6 @@ use ff_core::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
-use ff_core::prelude::*;
-
 use crate::items::get_item;
 use crate::items::spawn_item;
 use crate::PassiveEffect;
@@ -21,8 +19,6 @@ use crate::effects::active::triggered::{spawn_triggered_effect, TriggeredEffect}
 use crate::player::{on_player_damage, Player};
 use crate::PhysicsBody;
 use ff_core::particles::ParticleEmitterMetadata;
-
-use ff_core::prelude::*;
 
 pub use projectiles::ProjectileKind;
 

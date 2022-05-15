@@ -1,4 +1,3 @@
-use core::prelude::*;
 use cfg_if::cfg_if;
 
 pub trait ComboBoxValue {

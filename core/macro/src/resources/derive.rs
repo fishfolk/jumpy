@@ -1,26 +1,16 @@
 use darling::ast::Data;
-use darling::{ast, util, FromAttributes, FromDeriveInput, FromField, FromMeta};
-use proc_macro2::Span;
+use darling::{ast, util, FromDeriveInput, FromField, FromMeta};
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, AttrStyle, Attribute, AttributeArgs, DeriveInput, Ident, Type};
+use syn::{parse_macro_input, DeriveInput, Ident, Type};
 
 use crate::CORE_CRATE_NAME;
-
-const RESOURCE_ATTR: &str = "resource";
-
-const RESOURCE_ID_HELPER_ATTR: &str = "resource_id";
-
-const PATH_INDEX_ATTR: &str = "path_index";
-
-const CRATE_NAME_ATTR: &str = "crate_name";
-
-const DEFAULT_RESOURCE_ID_IDENT: &str = "id";
 
 #[derive(Debug, FromField)]
 #[darling(attributes(resource))]
 pub struct ResourceField {
     ident: Option<Ident>,
+    #[allow(dead_code)]
     ty: Type,
     #[darling(default)]
     id: bool,
@@ -29,9 +19,10 @@ pub struct ResourceField {
 #[derive(Debug, FromDeriveInput)]
 #[darling(attributes(resource), forward_attrs(resource), supports(struct_named))]
 pub struct ResourceDeriveArgs {
+    #[allow(dead_code)]
     ident: Ident,
     data: ast::Data<util::Ignored, ResourceField>,
-    attrs: Vec<Attribute>,
+    //attrs: Vec<Attribute>,
     name: String,
     #[darling(default)]
     name_plural: Option<String>,
@@ -57,7 +48,9 @@ pub(crate) fn derive_resource_impl(input: proc_macro::TokenStream) -> proc_macro
         }
     };
 
-    let crate_name_str = attr_args.crate_name.unwrap_or(CORE_CRATE_NAME.to_string());
+    let crate_name_str = attr_args
+        .crate_name
+        .unwrap_or_else(|| CORE_CRATE_NAME.to_string());
     let name_str = attr_args.name;
     let name_plural_str = attr_args
         .name_plural

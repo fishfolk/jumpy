@@ -1,5 +1,3 @@
-use ff_core::prelude::*;
-
 use crate::editor::EditorContext;
 
 use ff_core::gui::{Menu, MenuEntry, MenuResult};

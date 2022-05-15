@@ -18,16 +18,6 @@ pub mod background;
 pub mod panel;
 
 #[cfg(feature = "macroquad-backend")]
-use std::collections::HashMap;
-
-#[cfg(feature = "macroquad-backend")]
-use macroquad::prelude::Image;
-
-use serde::{Deserialize, Serialize};
-
-use crate::color::Color;
-
-#[cfg(feature = "macroquad-backend")]
 pub use theme::{
     get_gui_theme, rebuild_gui_theme, GuiTheme, BUTTON_FONT_SIZE, BUTTON_MARGIN_H, BUTTON_MARGIN_V,
     LIST_BOX_ENTRY_HEIGHT, SELECTION_HIGHLIGHT_COLOR, WINDOW_BG_COLOR, WINDOW_MARGIN_H,

@@ -1,7 +1,7 @@
 use darling::FromMeta;
 use proc_macro2::{Ident, TokenStream};
 use quote::{quote, ToTokens};
-use syn::{parse_macro_input, token, AttributeArgs, ItemFn, ItemMod, Path, Type};
+use syn::{parse_macro_input, AttributeArgs, ItemFn, Path, Type};
 
 use crate::async_main::internal::internal_main;
 use crate::async_main::macroquad::macroquad_main;
@@ -72,13 +72,17 @@ pub(crate) fn async_main_impl(
 
     main_inner.sig.ident = Ident::from_string("main_inner").unwrap();
 
-    let core_crate = Ident::from_string(&args.core_rename.unwrap_or(CORE_CRATE_NAME.to_string()))
-        .unwrap_or_else(|err| {
-            panic!(
-                "{}::async_main: Error when building core_crate ident: {}",
-                CORE_CRATE_NAME, err
-            )
-        });
+    let core_crate = Ident::from_string(
+        &args
+            .core_rename
+            .unwrap_or_else(|| CORE_CRATE_NAME.to_string()),
+    )
+    .unwrap_or_else(|err| {
+        panic!(
+            "{}::async_main: Error when building core_crate ident: {}",
+            CORE_CRATE_NAME, err
+        )
+    });
 
     let core_impl = Ident::from_string(&format!("{}_impl", &core_crate)).unwrap_or_else(|err| {
         panic!(
@@ -129,7 +133,7 @@ pub(crate) fn async_main_impl(
     let error_type = Path::from_string(
         &args
             .error_type
-            .map(|s| prepend_crate(s))
+            .map(prepend_crate)
             .unwrap_or_else(|| format!("{}::error::Error", &core_crate)),
     )
     .unwrap_or_else(|err| {
@@ -186,7 +190,7 @@ pub(crate) fn async_main_impl(
             let event_type = Type::from_string(
                 &args
                     .event_type
-                    .map(|s| prepend_crate(s))
+                    .map(prepend_crate)
                     .unwrap_or_else(|| format!("{}::event::DefaultCustomEvent", core_crate)),
             )
             .unwrap_or_else(|err| {

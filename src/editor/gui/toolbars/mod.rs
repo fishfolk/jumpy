@@ -25,7 +25,6 @@ pub use tileset_details::TilesetDetailsElement;
 
 mod object_list;
 
-use crate::GuiTheme;
 use ff_core::macroquad::hash;
 use ff_core::macroquad::ui::{widgets, Ui};
 pub use object_list::ObjectListElement;

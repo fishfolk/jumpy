@@ -345,7 +345,7 @@ impl PlayerAnimations {
     }
 }
 
-pub fn update_player_animations(world: &mut World, delta_time: f32) -> Result<()> {
+pub fn update_player_animations(world: &mut World, _delta_time: f32) -> Result<()> {
     for (_, (player, inventory, body, drawable)) in
         world.query_mut::<(&Player, &mut PlayerInventory, &PhysicsBody, &mut Drawable)>()
     {

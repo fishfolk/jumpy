@@ -1,12 +1,8 @@
 use darling::FromMeta;
-use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
-use syn::{
-    bracketed, parse_quote, token, Block, ExprBlock, Ident, ItemFn, Lit, LitBool, LitStr, Path,
-    Stmt, Token, Type,
-};
+use syn::{bracketed, parse_quote, token, Ident, ItemFn, Lit, LitStr, Stmt, Token, Type};
 
 use crate::resources::DEFAULT_EXTENSION;
 
@@ -31,6 +27,8 @@ impl Parse for Signature {
             panic!("The init_resources macro requires three arguments!");
         } else {
             let content;
+
+            #[allow(clippy::eval_order_dependence)]
             let syntax = Syntax {
                 core_crate: stream.parse()?,
                 _comma_1: stream.parse()?,

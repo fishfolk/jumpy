@@ -1,7 +1,7 @@
 use crate::math::{Size, URect};
 use serde::{Deserialize, Serialize};
 
-use super::{uvec2, vec2, UVec2, Vec2};
+use super::{vec2, Vec2};
 
 /// A 2D rectangle, defined by its top-left corner, width and height.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]

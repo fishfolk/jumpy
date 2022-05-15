@@ -1,10 +1,8 @@
-use serde::de::Expected;
 use serde::{Deserialize, Serialize};
 
 pub use crate::backend_impl::video::*;
 
-use crate::math::{ivec2, IVec2, Size, UVec2, Vec2, Zero};
-use crate::result::Result;
+use crate::math::{Size, Vec2};
 
 pub const DEFAULT_MSAA_SAMPLES: Option<u16> = Some(1);
 pub const DEFAULT_MAX_FPS: Option<u16> = Some(120);
@@ -161,7 +159,7 @@ pub struct Display {
 }
 
 pub mod aspect_ratios {
-    pub const SQUARE_1_1: f32 = 1.0 / 1.0;
+    pub const SQUARE_1_1: f32 = 1.0;
     pub const SQUARE: f32 = SQUARE_1_1;
 
     pub const STANDARD_4_3: f32 = 4.0 / 3.0;

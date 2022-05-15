@@ -1,12 +1,12 @@
 use ff_core::prelude::*;
 
-use ff_core::map::{Map, MapLayerKind};
 use ff_core::gui::Checkbox;
+use ff_core::map::{Map, MapLayerKind};
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};
 use crate::editor::gui::ComboBoxBuilder;
 use ff_core::macroquad::hash;
-use ff_core::macroquad::ui::{Ui, widgets};
+use ff_core::macroquad::ui::{widgets, Ui};
 
 pub struct CreateLayerWindow {
     params: WindowParams,

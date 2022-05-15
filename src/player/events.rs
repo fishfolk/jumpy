@@ -4,7 +4,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::effects::passive::PassiveEffectDamageBlockKind;
 use crate::Item;
-use ff_core::prelude::*;
 use ff_core::result::Result;
 
 use crate::player::{Player, PlayerState};
@@ -140,7 +139,7 @@ pub fn update_player_events(world: &mut World, delta_time: f32) -> Result<()> {
 
         while let Some(event) = events.queue.pop() {
             match event {
-                PlayerEvent::Update { delta_time } => {}
+                PlayerEvent::Update { delta_time: _ } => {}
                 PlayerEvent::ReceiveDamage {
                     damage_from,
                     is_from_left,
@@ -164,8 +163,8 @@ pub fn update_player_events(world: &mut World, delta_time: f32) -> Result<()> {
                     incapacitated_by: _,
                 } => {}
                 PlayerEvent::Collision {
-                    collision_with,
-                    is_new,
+                    collision_with: _,
+                    is_new: _,
                 } => {}
             }
 

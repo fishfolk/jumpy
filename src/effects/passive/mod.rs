@@ -92,7 +92,7 @@ pub type PassiveEffectFn = fn(
 );
 
 pub fn init_passive_effects() {
-    let effects = unsafe { get_passive_effect_fn_map() };
+    let _effects = unsafe { get_passive_effect_fn_map() };
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]

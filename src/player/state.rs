@@ -3,10 +3,9 @@ use ff_core::ecs::{Entity, World};
 use ff_core::prelude::*;
 
 use crate::player::{
-    Player, PlayerAttributes, PlayerController, PlayerEventKind, PlayerEventQueue, JUMP_SOUND_ID,
-    LAND_SOUND_ID, RESPAWN_DELAY,
+    Player, PlayerAttributes, PlayerController, PlayerEventQueue, JUMP_SOUND_ID, RESPAWN_DELAY,
 };
-use crate::{Item, Map, PhysicsBody, PlayerEvent};
+use crate::{Map, PhysicsBody, PlayerEvent};
 
 const SLIDE_STOP_THRESHOLD: f32 = 2.0;
 const JUMP_FRAME_COUNT: u16 = 8;
@@ -132,7 +131,7 @@ pub fn update_player_states(world: &mut World, delta_time: f32) -> Result<()> {
                         body.velocity.x = 0.0;
                         player.state = PlayerState::Crouching;
                     } else {
-                        let mut physics = physics_world();
+                        let physics = physics_world();
                         physics.descend(body.actor);
                     }
                 }
@@ -191,7 +190,7 @@ pub fn update_player_states(world: &mut World, delta_time: f32) -> Result<()> {
 pub fn update_player_passive_effects(world: &mut World, delta_time: f32) -> Result<()> {
     let mut function_calls = Vec::new();
 
-    for (entity, (player, attributes, events)) in world
+    for (entity, (player, attributes, _events)) in world
         .query::<(&mut Player, &mut PlayerAttributes, &mut PlayerEventQueue)>()
         .iter()
     {

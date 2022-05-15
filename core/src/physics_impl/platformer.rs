@@ -3,7 +3,6 @@ use std::time::Duration;
 
 use crate::map::{Map, MapLayer};
 use crate::math::{ivec2, vec2, Rect, Size, Vec2};
-use crate::result::Result;
 
 const DEFAULT_PHYSICS_RESOLUTION: u32 = 60;
 
@@ -280,15 +279,13 @@ impl PhysicsWorld {
 
             if riding_rect.overlaps(&rider_rect) {
                 riding_actors.push(*actor);
-            } else if pushing_rect.overlaps(&actor_collider.rect())
-                && actor_collider.is_squished == false
-            {
+            } else if pushing_rect.overlaps(&actor_collider.rect()) && !actor_collider.is_squished {
                 pushing_actors.push(*actor);
             }
 
-            if pushing_rect.overlaps(&actor_collider.rect()) == false {
+            if !pushing_rect.overlaps(&actor_collider.rect()) {
                 actor_collider.squished_by.remove(&solid);
-                if actor_collider.squished_by.len() == 0 {
+                if actor_collider.squished_by.is_empty() {
                     actor_collider.is_squished = false;
                 }
             }
@@ -377,7 +374,7 @@ impl PhysicsWorld {
                 {
                     return layer.tiles[ix as usize];
                 }
-                return ColliderKind::Empty;
+                ColliderKind::Empty
             };
 
             let tile = check(position)
@@ -422,7 +419,7 @@ impl PhysicsWorld {
             }
         }
 
-        return ColliderKind::Empty;
+        ColliderKind::Empty
     }
 
     pub fn is_squished(&self, actor: Actor) -> bool {

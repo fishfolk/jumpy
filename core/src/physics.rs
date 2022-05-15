@@ -1,7 +1,5 @@
 pub use crate::physics_impl::*;
 
-use std::borrow::{Borrow, BorrowMut};
-use std::ops::{Deref, DerefMut};
 use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
@@ -125,7 +123,7 @@ pub fn fixed_update_physics_bodies(
     delta_time: f32,
     _integration_factor: f32,
 ) -> Result<()> {
-    let mut physics = physics_world();
+    let physics = physics_world();
 
     for (_, (transform, body)) in world.query_mut::<(&mut Transform, &mut PhysicsBody)>() {
         physics.set_actor_position(body.actor, transform.position + body.offset);

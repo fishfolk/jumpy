@@ -6,8 +6,6 @@ mod placement;
 pub use eraser::EraserTool;
 pub use placement::{ObjectPlacementTool, SpawnPointPlacementTool, TilePlacementTool};
 
-use ff_core::prelude::*;
-
 use super::{EditorAction, EditorContext, Map};
 
 static mut TOOL_INSTANCES: Option<HashMap<TypeId, Box<dyn EditorTool>>> = None;

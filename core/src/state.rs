@@ -1,30 +1,13 @@
-use cfg_if::cfg_if;
 use hecs::World;
 
-use std::any::{Any, TypeId};
-use std::borrow::{Borrow, BorrowMut};
-use std::collections::HashSet;
-use std::hash::Hash;
-use std::ops::{Deref, DerefMut};
-use std::process::Output;
-use std::rc::Rc;
-use std::slice::{Iter, IterMut};
-
-use serde::{Deserialize, Serialize};
-
-use crate::camera::camera_position;
 use crate::drawables::{debug_draw_drawables, draw_drawables, update_animated_sprites};
 
 use crate::ecs::{DrawFn, FixedUpdateFn, UpdateFn};
-use crate::event::Event;
-use crate::input::{
-    is_gamepad_button_pressed, is_key_pressed, update_gamepad_context, Button, KeyCode,
-};
-use crate::math::*;
+use crate::input::{is_gamepad_button_pressed, is_key_pressed, Button, KeyCode};
 use crate::result::Result;
 
 #[cfg(feature = "macroquad-backend")]
-use crate::gui::{Menu, MenuResult};
+use crate::gui::Menu;
 use crate::map::{draw_map, Map};
 use crate::particles::{draw_particles, update_particle_emitters};
 use crate::physics::{
@@ -57,11 +40,9 @@ pub trait GameState {
     }
 }
 
-pub type GameStateConstructorFn<P: Clone> =
-    fn(Option<&mut World>, Option<&Map>, Option<&P>) -> Result<()>;
+pub type GameStateConstructorFn<P> = fn(Option<&mut World>, Option<&Map>, Option<&P>) -> Result<()>;
 
-pub type GameStateDestructorFn<P: Clone> =
-    fn(Option<&mut World>, Option<&Map>, Option<&P>) -> Result<()>;
+pub type GameStateDestructorFn<P> = fn(Option<&mut World>, Option<&Map>, Option<&P>) -> Result<()>;
 
 pub type GameStateBuilderFn = fn() -> Box<dyn GameState>;
 
@@ -156,7 +137,9 @@ impl<P: Clone> GameState for DefaultGameState<P> {
                 if let Some(menu) = &mut self.menu {
                     use macroquad::ui::root_ui;
 
-                    if let Some(res) = menu.ui(&mut *root_ui()) {}
+                    if let Some(_res) = menu.ui(&mut *root_ui()) {
+                        // TODO: Add game menu
+                    }
                 }
             }
         }

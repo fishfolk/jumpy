@@ -1,5 +1,3 @@
-use ff_core::macroquad::{color, experimental::collections::storage};
-
 use super::{EditorAction, EditorContext, EditorTool, EditorToolParams};
 
 use crate::editor::EditorCamera;

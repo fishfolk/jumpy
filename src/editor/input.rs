@@ -22,11 +22,12 @@ pub struct EditorInput {
 }
 
 pub fn collect_editor_input() -> EditorInput {
-    let mut input = EditorInput::default();
-
-    input.action = is_mouse_button_down(MouseButton::Left);
-    input.camera_mouse_move = is_mouse_button_down(MouseButton::Middle);
-    input.context_menu = is_mouse_button_pressed(MouseButton::Right);
+    let mut input = EditorInput {
+        action: is_mouse_button_down(MouseButton::Left),
+        camera_mouse_move: is_mouse_button_down(MouseButton::Middle),
+        context_menu: is_mouse_button_pressed(MouseButton::Right),
+        ..Default::default()
+    };
 
     let mouse_wheel = mouse_wheel();
     if mouse_wheel.y < 0.0 {

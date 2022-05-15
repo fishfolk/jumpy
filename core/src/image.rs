@@ -1,4 +1,4 @@
-use std::collections::hash_map::{IntoIter, Iter};
+use std::collections::hash_map::Iter;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 use std::path::Path;
@@ -10,7 +10,6 @@ pub use crate::backend_impl::image::*;
 use crate::file::read_from_file;
 use crate::parsing::deserialize_bytes_by_extension;
 
-use crate::math::vec2;
 use crate::result::Result;
 
 pub const IMAGE_RESOURCES_FILE: &str = "images";

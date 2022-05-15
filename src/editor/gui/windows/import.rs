@@ -7,7 +7,6 @@ use ff_core::gui::{
 use ff_core::macroquad::hash;
 use ff_core::macroquad::ui::{widgets, Ui};
 
-use crate::GuiTheme;
 use ff_core::map::{get_map, Map, MapBackgroundLayer, MapTileset};
 
 use super::{ButtonParams, EditorAction, EditorContext, Window, WindowParams};

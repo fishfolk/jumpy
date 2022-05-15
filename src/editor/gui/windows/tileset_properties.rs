@@ -7,7 +7,6 @@ use ff_core::macroquad::hash;
 use ff_core::macroquad::ui::{widgets, Ui};
 
 use super::{ButtonParams, EditorAction, EditorContext, Map, Window, WindowParams};
-use crate::GuiTheme;
 use ff_core::map::MapTileset;
 
 pub struct TilesetPropertiesWindow {
@@ -79,7 +78,7 @@ impl TilesetPropertiesWindow {
             scaled_size.width = (scaled_size.height / texture_size.height) * texture_size.width;
         }
 
-        let subgrid_size = (tileset.grid_size * tileset.tile_subdivisions);
+        let subgrid_size = tileset.grid_size * tileset.tile_subdivisions;
 
         let scaled_subtile_size = scaled_size / subgrid_size.as_f32();
 

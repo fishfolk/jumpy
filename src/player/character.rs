@@ -4,7 +4,6 @@
 //! the actual implementation of the player actor.
 
 use serde::{Deserialize, Serialize};
-use std::borrow::{Borrow, BorrowMut};
 
 use ff_core::prelude::*;
 

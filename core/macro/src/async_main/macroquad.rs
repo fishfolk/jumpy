@@ -1,7 +1,6 @@
-use darling::FromMeta;
-use proc_macro2::{Span, TokenStream};
-use quote::{quote, ToTokens};
-use syn::{parse_macro_input, AttributeArgs, Expr, ExprCall, Ident, ItemFn, LitStr, Path};
+use proc_macro2::TokenStream;
+use quote::quote;
+use syn::{Ident, Path};
 
 pub(crate) fn macroquad_main(
     core_crate: &Ident,

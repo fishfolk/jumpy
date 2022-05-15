@@ -1,0 +1,15 @@
+[package]
+name = "fishfight-core-macros"
+version = "0.4.2"
+authors = ["Fish Fight Contributors"]
+license = "MIT OR Apache-2.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0.36"
+quote = "1.0.15"
+syn = { version = "1.0.86", features = ["full", "parsing", "derive", "extra-traits", "proc-macro", "quote"] }
+darling = { version = "0.13.1" }

@@ -12,7 +12,7 @@ macroquad-backend = ["macroquad", "ff-particles"]
 platformer-physics = []
 
 [dependencies]
-macros = { path = "./macro", version = "0.4.1", package = "fishfight-core-macros" }
+macros = { path = "./macro", version = "0.4.2", package = "fishfight-core-macros" }
 fishsticks = { version = "0.2", default-features = false, features = ["gilrs"] }
 macroquad = { version = "0.3.13", optional = true }
 ff-particles = { version = "0.1", features = ["serde"], optional = true }

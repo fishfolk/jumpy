@@ -213,7 +213,7 @@ pub(crate) fn async_main_impl(
             internal_main(&core_crate, &core_impl, &error_type)
         }
         Backend::Macroquad => {
-            if args.error_type.is_some() {
+            if args.event_type.is_some() {
                 println!("WARNING: {}::async_main: An event type was specified but this is not supported when using the Macroquad backend!", core_crate);
             }
 

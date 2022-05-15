@@ -16,7 +16,10 @@ use crate::render::DrawTextureParams;
 use crate::result::Result;
 use crate::texture::Texture2D;
 
+use crate::gui::draw_gui;
+use crate::text::draw_queued_text;
 use crate::video::VideoConfig;
+use crate::window::{context_wrapper, window};
 use renderer::*;
 
 pub fn clear_screen<C: Into<Option<Color>>>(clear_color: C) {
@@ -49,8 +52,76 @@ pub fn fps() -> u32 {
     renderer().fps()
 }
 
+pub fn begin_frame() {
+    renderer().reset_stats();
+
+    clear_screen(None);
+}
+
 pub fn end_frame() -> Result<()> {
-    renderer().end_frame()?;
+    renderer().draw_batch();
+
+    /*
+    let viewport_size = viewport_size();
+
+    let mut should_show_fps = self.should_show_fps;
+
+    #[cfg(debug_assertions)]
+    {
+        draw_text(
+            "polygons:\ndraws:",
+            viewport_size.width - 175.0,
+            70.0,
+            TextParams {
+                bounds: Some(Size::new(75.0, 100.0)),
+                ..Default::default()
+            },
+        );
+
+        draw_text(
+            &format!("{}\n{}", self.polygons, self.draws),
+            viewport_size.width - 75.0,
+            70.0,
+            TextParams {
+                bounds: Some(Size::new(75.0, 100.0)),
+                ..Default::default()
+            },
+        );
+
+        should_show_fps = true;
+    }
+
+    if should_show_fps {
+        draw_text(
+            "FPS:",
+            viewport_size.width - 175.0,
+            50.0,
+            TextParams {
+                bounds: Some(Size::new(75.0, 100.0)),
+                ..Default::default()
+            },
+        );
+
+        draw_text(
+            &format!("{}", self.fps()),
+            viewport_size.width - 75.0,
+            50.0,
+            TextParams {
+                bounds: Some(Size::new(75.0, 100.0)),
+                ..Default::default()
+            },
+        );
+    }
+    */
+
+    draw_queued_text()?;
+
+    draw_gui();
+
+    context_wrapper().swap_buffers()?;
+
+    window().request_redraw();
+
     Ok(())
 }
 

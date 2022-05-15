@@ -11,25 +11,25 @@ use glutin::event_loop::{ControlFlow, EventLoop};
 use glutin::window::{Fullscreen, WindowBuilder};
 use hecs::World;
 
-use crate::math::Vec2;
-
 use crate::audio::{apply_audio_config, stop_music};
-
 use crate::camera::{main_camera, Camera};
 use crate::color::{colors, Color};
 use crate::config::Config;
+use crate::context::destroy_context;
 use crate::event::{Event, EventHandler};
 use crate::gl::init_gl_context;
-use crate::gui::gui_context;
+use crate::gui::SidePanel;
+use crate::gui::{build_gui, gui_context};
 use crate::input::{
     apply_input_config, is_key_pressed, is_key_released, mouse_movement, mouse_position,
     update_gamepad_context, KeyCode,
 };
 use crate::math::Size;
+use crate::math::Vec2;
 use crate::physics::{fixed_delta_time, physics_world};
 use crate::prelude::renderer::renderer;
 use crate::prelude::{input_event_handler, DefaultEventHandler};
-use crate::render::{apply_video_config, clear_screen, end_frame, set_clear_color};
+use crate::render::{apply_video_config, begin_frame, clear_screen, end_frame, set_clear_color};
 use crate::result::Result;
 use crate::window::{
     apply_window_config, context_wrapper, create_window, window, window_size, WindowMode,
@@ -70,6 +70,7 @@ pub struct Game<E: 'static + Debug> {
     last_update: Instant,
     last_draw: Instant,
     fixed_update_accumulator: f32,
+    is_context_destroyed: bool,
 }
 
 impl<E: 'static + Debug> Game<E> {
@@ -84,6 +85,7 @@ impl<E: 'static + Debug> Game<E> {
             last_update: Instant::now(),
             last_draw: Instant::now(),
             fixed_update_accumulator: 0.0,
+            is_context_destroyed: false,
         }
     }
 
@@ -155,6 +157,10 @@ impl<E: 'static + Debug> Game<E> {
     pub async fn run(self) -> Result<()> {
         let mut game = self;
 
+        if let Some(clear_color) = game.clear_color {
+            set_clear_color(clear_color);
+        }
+
         game.apply_current_config();
 
         let event_loop = game
@@ -186,7 +192,7 @@ impl<E: 'static + Debug> Game<E> {
                         });
                     }
                     glutin::event::Event::WindowEvent { event, .. } => {
-                        if !gui_context().on_event(event) {
+                        if !gui_context().handle(event) {
                             match event {
                                 WindowEvent::CloseRequested | WindowEvent::Destroyed => {
                                     *control_flow = ControlFlow::Exit;
@@ -211,6 +217,10 @@ impl<E: 'static + Debug> Game<E> {
                             .unwrap_or_else(|err| panic!("Error when changing state: {}", err)),
                         Event::Quit => {
                             *control_flow = ControlFlow::Exit;
+
+                            game.state().end();
+
+                            return;
                         }
                         _ => {}
                     },
@@ -219,90 +229,82 @@ impl<E: 'static + Debug> Game<E> {
             }
 
             if input_event_handler(&event) {
-                if *control_flow == ControlFlow::Exit {
-                    stop_music();
+                let now = Instant::now();
 
-                    game.state().end();
+                let delta_time = now.duration_since(game.last_update);
 
-                    return;
-                } else {
-                    let now = Instant::now();
+                unsafe {
+                    FRAME_PHASE = FramePhase::Update;
+                    DELTA_TIME = delta_time;
+                };
 
-                    let delta_time = now.duration_since(game.last_update);
+                let delta_time_secs = delta_time.as_secs_f32();
+
+                game.state()
+                    .update(delta_time_secs)
+                    .unwrap_or_else(|err| panic!("Error in game state update: {}", err));
+
+                game.last_update = now;
+
+                game.fixed_update_accumulator += delta_time_secs;
+
+                let fixed_delta_time = fixed_delta_time().as_secs_f32();
+
+                while game.fixed_update_accumulator >= fixed_delta_time {
+                    game.fixed_update_accumulator -= fixed_delta_time;
 
                     unsafe {
-                        FRAME_PHASE = FramePhase::Update;
-                        DELTA_TIME = delta_time;
+                        FRAME_PHASE = FramePhase::FixedUpdate;
+                    }
+
+                    let integration_factor = if game.fixed_update_accumulator >= fixed_delta_time {
+                        1.0
+                    } else {
+                        game.fixed_update_accumulator / fixed_delta_time
                     };
 
-                    let delta_time_secs = delta_time.as_secs_f32();
-
                     game.state()
-                        .update(delta_time_secs)
-                        .unwrap_or_else(|err| panic!("Error in game state update: {}", err));
+                        .fixed_update(fixed_delta_time, integration_factor)
+                        .unwrap_or_else(|err| panic!("Error in game state fixed update: {}", err));
+                }
 
-                    game.last_update = now;
+                {
+                    let fixed_draw_delta_time =
+                        game.fixed_draw_delta_time.unwrap_or(Duration::ZERO);
 
-                    game.fixed_update_accumulator += delta_time_secs;
+                    let draw_delta_time = now.duration_since(game.last_draw);
 
-                    let fixed_delta_time = fixed_delta_time().as_secs_f32();
-
-                    while game.fixed_update_accumulator >= fixed_delta_time {
-                        game.fixed_update_accumulator -= fixed_delta_time;
-
+                    if draw_delta_time >= fixed_draw_delta_time {
                         unsafe {
-                            FRAME_PHASE = FramePhase::FixedUpdate;
+                            FRAME_PHASE = FramePhase::Draw;
+                            DRAW_DELTA_TIME = draw_delta_time;
                         }
 
-                        let integration_factor =
-                            if game.fixed_update_accumulator >= fixed_delta_time {
-                                1.0
-                            } else {
-                                game.fixed_update_accumulator / fixed_delta_time
-                            };
+                        begin_frame();
 
                         game.state()
-                            .fixed_update(fixed_delta_time, integration_factor)
-                            .unwrap_or_else(|err| {
-                                panic!("Error in game state fixed update: {}", err)
+                            .draw(draw_delta_time.as_secs_f32())
+                            .unwrap_or_else(|err| panic!("Error in game state draw: {}", err));
+
+                        build_gui(|ctx| {
+                            SidePanel::left("my_side_panel").show(ctx, |ui| {
+                                ui.heading("Hello World!");
+                                if ui.button("Quit").clicked() {
+                                    *control_flow = ControlFlow::Exit;
+                                }
                             });
-                    }
+                        });
 
-                    {
-                        let fixed_draw_delta_time =
-                            game.fixed_draw_delta_time.unwrap_or(Duration::ZERO);
+                        end_frame().unwrap();
 
-                        let draw_delta_time = now.duration_since(game.last_draw);
-
-                        if draw_delta_time >= fixed_draw_delta_time {
-                            unsafe {
-                                FRAME_PHASE = FramePhase::Draw;
-                                DRAW_DELTA_TIME = draw_delta_time;
-                            }
-
-                            clear_screen(game.clear_color);
-
-                            let needs_repaint = gui_context().run(window(), |egui_ctx| {
-                                /*
-                                egui::SidePanel::left("my_side_panel").show(egui_ctx, |ui| {
-                                    ui.heading("Hello World!");
-                                    if ui.button("Quit").clicked() {
-                                        *control_flow = ControlFlow::Exit;
-                                    }
-                                });
-                                 */
-                            });
-
-                            game.state()
-                                .draw(draw_delta_time.as_secs_f32())
-                                .unwrap_or_else(|err| panic!("Error in game state draw: {}", err));
-
-                            end_frame().unwrap();
-
-                            game.last_draw = now;
-                        }
+                        game.last_draw = now;
                     }
                 }
+            }
+
+            if *control_flow == ControlFlow::Exit && !game.is_context_destroyed {
+                destroy_context();
+                game.is_context_destroyed = true;
             }
         });
 

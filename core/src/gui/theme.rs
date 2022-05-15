@@ -4,7 +4,7 @@ use std::ops::Deref;
 use macroquad::color_u8;
 use macroquad::ui::{root_ui, Skin};
 
-use crate::color::Color;
+use crate::color::{colors, Color};
 
 use crate::image::{get_image, Image};
 use crate::math::RectOffset;
@@ -19,7 +19,7 @@ pub fn get_gui_theme() -> &'static GuiTheme {
     unsafe { GUI_THEME.get_or_insert_with(GuiTheme::new) }
 }
 
-use super::{ELEMENT_MARGIN, NO_COLOR};
+use super::{colors::NONE, ELEMENT_MARGIN};
 
 pub const FONT_SIZE: f32 = 18.0;
 
@@ -217,9 +217,9 @@ impl GuiTheme {
                     GROUP_MARGIN_V,
                     GROUP_MARGIN_V,
                 ))
-                .color(NO_COLOR.into())
-                .color_hovered(NO_COLOR.into())
-                .color_clicked(NO_COLOR.into())
+                .color(colors::NONE.into())
+                .color_hovered(colors::NONE.into())
+                .color_clicked(colors::NONE.into())
                 .build();
 
             let label_style = root_ui()
@@ -366,23 +366,23 @@ impl GuiTheme {
 
             let scrollbar_style = root_ui()
                 .style_builder()
-                .color(NO_COLOR.into())
-                .color_hovered(NO_COLOR.into())
-                .color_clicked(NO_COLOR.into())
+                .color(colors::NONE.into())
+                .color_hovered(colors::NONE.into())
+                .color_clicked(colors::NONE.into())
                 .build();
 
             let scrollbar_handle_style = root_ui()
                 .style_builder()
-                .color(NO_COLOR.into())
-                .color_hovered(NO_COLOR.into())
-                .color_clicked(NO_COLOR.into())
+                .color(colors::NONE.into())
+                .color_hovered(colors::NONE.into())
+                .color_clicked(colors::NONE.into())
                 .build();
 
             let group_style = root_ui()
                 .style_builder()
-                .color(NO_COLOR.into())
-                .color_hovered(NO_COLOR.into())
-                .color_clicked(NO_COLOR.into())
+                .color(colors::NONE.into())
+                .color_hovered(colors::NONE.into())
+                .color_clicked(colors::NONE.into())
                 .build();
 
             Skin {
@@ -416,9 +416,9 @@ impl GuiTheme {
                 .background_margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
                 .text_color(TEXT_COLOR.into())
                 .font_size(FONT_SIZE as u16)
-                .color(NO_COLOR.into())
-                .color_hovered(NO_COLOR.into())
-                .color_clicked(NO_COLOR.into())
+                .color(colors::NONE.into())
+                .color_hovered(colors::NONE.into())
+                .color_clicked(colors::NONE.into())
                 .build();
 
             Skin {
@@ -822,9 +822,9 @@ impl GuiTheme {
         let panel = {
             let group_style = root_ui()
                 .style_builder()
-                .color(NO_COLOR.into())
-                .color_hovered(NO_COLOR.into())
-                .color_clicked(NO_COLOR.into())
+                .color(colors::NONE.into())
+                .color_hovered(colors::NONE.into())
+                .color_clicked(colors::NONE.into())
                 .build();
 
             let button_style = root_ui()
@@ -845,9 +845,9 @@ impl GuiTheme {
         let panel_no_bg = {
             let group_style = root_ui()
                 .style_builder()
-                .color(NO_COLOR.into())
-                .color_hovered(NO_COLOR.into())
-                .color_clicked(NO_COLOR.into())
+                .color(colors::NONE.into())
+                .color_hovered(colors::NONE.into())
+                .color_clicked(colors::NONE.into())
                 .build();
 
             let button_style = root_ui()

@@ -10,7 +10,6 @@ use crate::result::Result;
 
 pub use crate::backend_impl::text::*;
 use crate::color::{colors, Color};
-use crate::gui::rebuild_gui_theme;
 use crate::parsing::deserialize_bytes_by_extension;
 
 pub async fn load_font<P: AsRef<Path>>(path: P) -> Result<Font> {
@@ -123,8 +122,6 @@ pub async fn load_fonts<P: AsRef<Path>>(
             }
         }
     }
-
-    rebuild_gui_theme();
 
     Ok(())
 }

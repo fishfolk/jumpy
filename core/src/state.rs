@@ -71,6 +71,7 @@ pub struct DefaultGameState<P: Clone> {
     #[cfg(feature = "macroquad-backend")]
     menu: Option<Menu>,
     should_draw_menu: bool,
+    is_active: bool,
 }
 
 impl<P: Clone> DefaultGameState<P> {
@@ -85,60 +86,71 @@ impl<P: Clone> GameState for DefaultGameState<P> {
     }
 
     fn begin(&mut self, world: Option<World>) -> Result<()> {
-        if let Some(world) = world {
-            self.world = Some(world);
-        }
-
-        (self.constructor)(
-            self.world.as_mut(),
-            self.map.as_ref(),
-            self.payload.as_ref(),
-        )?;
-
-        if let Some(world) = self.world.as_mut() {
-            if let Some(map) = self.map.take() {
-                let entity = world.spawn(());
-                world.insert_one(entity, map).unwrap();
+        if !self.is_active {
+            if let Some(world) = world {
+                self.world = Some(world);
             }
+
+            (self.constructor)(
+                self.world.as_mut(),
+                self.map.as_ref(),
+                self.payload.as_ref(),
+            )?;
+
+            if let Some(world) = self.world.as_mut() {
+                if let Some(map) = self.map.take() {
+                    let entity = world.spawn(());
+                    world.insert_one(entity, map).unwrap();
+                }
+            }
+
+            self.is_active = true;
         }
 
         Ok(())
     }
 
     fn update(&mut self, delta_time: f32) -> Result<()> {
-        #[cfg(feature = "macroquad")]
-        if self.menu.is_some()
-            && (is_key_pressed(KeyCode::Escape) || is_gamepad_button_pressed(None, Button::Start))
-        {
-            self.should_draw_menu = !self.should_draw_menu;
-        }
+        if self.is_active {
+            #[cfg(feature = "macroquad")]
+            if self.menu.is_some()
+                && (is_key_pressed(KeyCode::Escape)
+                    || is_gamepad_button_pressed(None, Button::Start))
+            {
+                self.should_draw_menu = !self.should_draw_menu;
+            }
 
-        for f in &mut self.updates {
-            f(self.world.as_mut().unwrap(), delta_time)?;
+            for f in &mut self.updates {
+                f(self.world.as_mut().unwrap(), delta_time)?;
+            }
         }
 
         Ok(())
     }
 
     fn fixed_update(&mut self, delta_time: f32, integration_factor: f32) -> Result<()> {
-        for f in &mut self.fixed_updates {
-            f(self.world.as_mut().unwrap(), delta_time, integration_factor)?;
+        if self.is_active {
+            for f in &mut self.fixed_updates {
+                f(self.world.as_mut().unwrap(), delta_time, integration_factor)?;
+            }
         }
 
         Ok(())
     }
 
     fn draw(&mut self, delta_time: f32) -> Result<()> {
-        for f in &mut self.draws {
-            f(self.world.as_mut().unwrap(), delta_time)?;
-        }
+        if self.is_active {
+            for f in &mut self.draws {
+                f(self.world.as_mut().unwrap(), delta_time)?;
+            }
 
-        #[cfg(feature = "macroquad-backend")]
-        if self.should_draw_menu {
-            if let Some(menu) = &mut self.menu {
-                use macroquad::ui::root_ui;
+            #[cfg(feature = "macroquad-backend")]
+            if self.should_draw_menu {
+                if let Some(menu) = &mut self.menu {
+                    use macroquad::ui::root_ui;
 
-                if let Some(res) = menu.ui(&mut *root_ui()) {}
+                    if let Some(res) = menu.ui(&mut *root_ui()) {}
+                }
             }
         }
 
@@ -146,11 +158,15 @@ impl<P: Clone> GameState for DefaultGameState<P> {
     }
 
     fn end(&mut self) -> Result<Option<World>> {
-        (self.destructor)(
-            self.world.as_mut(),
-            self.map.as_ref(),
-            self.payload.as_ref(),
-        )?;
+        if self.is_active {
+            (self.destructor)(
+                self.world.as_mut(),
+                self.map.as_ref(),
+                self.payload.as_ref(),
+            )?;
+
+            self.is_active = false;
+        }
 
         Ok(self.world.take())
     }
@@ -301,6 +317,7 @@ impl<P: Clone> DefaultGameStateBuilder<P> {
             #[cfg(feature = "macroquad-backend")]
             menu: self.menu.clone(),
             should_draw_menu: false,
+            is_active: false,
         }
     }
 }

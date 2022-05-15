@@ -126,7 +126,7 @@ impl DerefMut for Texture2D {
 static mut NEXT_TEXTURE_INDEX: usize = 0;
 static mut TEXTURES: Option<HashMap<usize, Texture2DImpl>> = None;
 
-fn texture_map() -> &'static mut HashMap<usize, Texture2DImpl> {
+pub(crate) fn texture_map() -> &'static mut HashMap<usize, Texture2DImpl> {
     unsafe { TEXTURES.get_or_insert_with(HashMap::new) }
 }
 
@@ -162,8 +162,12 @@ pub fn iter_textures_of_kind(kind: TextureKind) -> IntoIter<Texture2D> {
 
 static mut TEXTURE_IDS: Option<HashMap<String, usize>> = None;
 
+pub(crate) fn texture_ids() -> &'static mut HashMap<String, usize> {
+    unsafe { TEXTURE_IDS.get_or_insert_with(HashMap::new) }
+}
+
 pub fn try_get_texture(id: &str) -> Option<Texture2D> {
-    if let Some(index) = unsafe { TEXTURE_IDS.get_or_insert_with(HashMap::new) }.get(id) {
+    if let Some(index) = texture_ids().get(id) {
         Some(Texture2D(*index))
     } else {
         None
@@ -175,7 +179,7 @@ pub fn get_texture(id: &str) -> Texture2D {
 }
 
 pub fn iter_textures_with_ids() -> std::collections::hash_map::IntoIter<String, Texture2D> {
-    unsafe { TEXTURE_IDS.get_or_insert_with(HashMap::new) }
+    texture_ids()
         .iter()
         .map(|(k, v)| (k.to_string(), Texture2D(*v)))
         .collect::<HashMap<_, _>>()
@@ -183,7 +187,7 @@ pub fn iter_textures_with_ids() -> std::collections::hash_map::IntoIter<String, 
 }
 
 pub fn iter_texture_ids() -> IntoIter<String> {
-    unsafe { TEXTURE_IDS.get_or_insert_with(HashMap::new) }
+    texture_ids()
         .keys()
         .cloned()
         .collect::<Vec<_>>()

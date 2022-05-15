@@ -370,7 +370,7 @@ fn shader_map() -> &'static mut HashMap<usize, ShaderProgramImpl> {
     unsafe { SHADERS.get_or_insert_with(HashMap::new) }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Eq, PartialEq)]
 pub struct ShaderProgram(usize);
 
 impl ShaderProgram {
@@ -423,5 +423,12 @@ impl Deref for ShaderProgram {
 impl DerefMut for ShaderProgram {
     fn deref_mut(&mut self) -> &mut Self::Target {
         shader_map().get_mut(&self.0).unwrap()
+    }
+}
+
+impl Drop for ShaderProgram {
+    fn drop(&mut self) {
+        let gl = gl_context();
+        unsafe { gl.delete_program(self.gl_program) }
     }
 }

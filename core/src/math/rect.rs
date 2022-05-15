@@ -1,4 +1,4 @@
-use crate::math::URect;
+use crate::math::{Size, URect};
 use serde::{Deserialize, Serialize};
 
 use super::{uvec2, vec2, UVec2, Vec2};
@@ -142,5 +142,11 @@ impl From<URect> for Rect {
             width: urect.width as f32,
             height: urect.height as f32,
         }
+    }
+}
+
+impl From<(Vec2, Size<f32>)> for Rect {
+    fn from((pos, size): (Vec2, Size<f32>)) -> Self {
+        Rect::new(pos.x, pos.y, size.width, size.height)
     }
 }

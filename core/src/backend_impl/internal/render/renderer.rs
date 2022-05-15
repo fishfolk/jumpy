@@ -27,10 +27,17 @@ use crate::window::{context_wrapper, window};
 
 const BATCH_SIZE: usize = 128;
 
-const FPS_FRAME_HISTORY_CNT: usize = 32;
+const FRAME_HISTORY_LENGTH: usize = 32;
 
 const QUAD_VERTEX_CNT: usize = 4;
 const QUAD_INDEX_CNT: usize = 6;
+
+#[derive(Copy, Clone, Default)]
+pub struct FrameStats {
+    pub draw_delta_time: Duration,
+    pub polygons: u32,
+    pub draws: u32,
+}
 
 const VERTEX_SHADER_SRC: &str = "
 #version 420
@@ -71,9 +78,8 @@ pub struct Renderer {
     current_texture: Option<Texture2D>,
     current_program: Option<ShaderProgram>,
     should_show_fps: bool,
-    draws: u32,
-    polygons: u32,
-    frame_history: Vec<Duration>,
+    stats: Option<FrameStats>,
+    frame_history: Vec<FrameStats>,
     batched: Vec<Vertex>,
     batched_cnt: usize,
     indices: Vec<u32>,
@@ -114,9 +120,8 @@ impl Renderer {
         Ok(Renderer {
             clear_color: None,
             should_show_fps: config.should_show_fps,
-            draws: 0,
-            polygons: 0,
-            frame_history: Vec::with_capacity(FPS_FRAME_HISTORY_CNT),
+            stats: None,
+            frame_history: Vec::with_capacity(FRAME_HISTORY_LENGTH),
             current_texture: None,
             current_program: Some(program),
             batched: Vec::with_capacity(BATCH_SIZE * QUAD_VERTEX_CNT),
@@ -126,6 +131,16 @@ impl Renderer {
             index_buffer,
             vertex_array,
         })
+    }
+
+    pub fn stats(&self) -> FrameStats {
+        if let Some(stats) = self.stats {
+            stats
+        } else if let Some(stats) = self.frame_history.first() {
+            *stats
+        } else {
+            FrameStats::default()
+        }
     }
 
     pub fn draw_batch(&mut self) {
@@ -186,8 +201,9 @@ impl Renderer {
                 gl.use_program(None);
             }
 
-            self.draws += 1;
-            self.polygons += self.batched_cnt as u32 * 2;
+            let stats = self.stats.get_or_insert_with(FrameStats::default);
+            stats.draws += 1;
+            stats.polygons += self.batched_cnt as u32 * 2;
 
             self.batched.clear();
             self.batched_cnt = 0;
@@ -195,7 +211,7 @@ impl Renderer {
     }
 
     pub fn use_program(&mut self, mut program: ShaderProgram) {
-        if self.current_program.is_none() || self.current_program.unwrap() != program {
+        if self.current_program.is_none() || *self.current_program.as_ref().unwrap() != program {
             self.draw_batch();
 
             program.activate();
@@ -296,84 +312,24 @@ impl Renderer {
         self.batched_cnt += 1;
     }
 
-    pub fn end_frame(&mut self) -> Result<()> {
-        while self.frame_history.len() >= FPS_FRAME_HISTORY_CNT - 1 {
-            self.frame_history.remove(0);
-        }
+    pub fn reset_stats(&mut self) {
+        self.stats
+            .get_or_insert_with(FrameStats::default)
+            .draw_delta_time = draw_delta_time();
 
-        self.frame_history.push(draw_delta_time());
-
-        self.draw_batch();
-
-        let viewport_size = viewport_size();
-
-        let mut should_show_fps = self.should_show_fps;
-
-        #[cfg(debug_assertions)]
-        {
-            draw_text(
-                "polygons:\ndraws:",
-                viewport_size.width - 175.0,
-                70.0,
-                TextParams {
-                    bounds: Some(Size::new(75.0, 100.0)),
-                    ..Default::default()
-                },
-            );
-
-            draw_text(
-                &format!("{}\n{}", self.polygons, self.draws),
-                viewport_size.width - 75.0,
-                70.0,
-                TextParams {
-                    bounds: Some(Size::new(75.0, 100.0)),
-                    ..Default::default()
-                },
-            );
-
-            should_show_fps = true;
-        }
-
-        if should_show_fps {
-            draw_text(
-                "FPS:",
-                viewport_size.width - 175.0,
-                50.0,
-                TextParams {
-                    bounds: Some(Size::new(75.0, 100.0)),
-                    ..Default::default()
-                },
-            );
-
-            draw_text(
-                &format!("{}", self.fps()),
-                viewport_size.width - 75.0,
-                50.0,
-                TextParams {
-                    bounds: Some(Size::new(75.0, 100.0)),
-                    ..Default::default()
-                },
-            );
-        }
-
-        draw_queued_text()?;
-
-        draw_gui();
-
-        context_wrapper().swap_buffers()?;
-
-        window().request_redraw();
-
-        self.polygons = 0;
-        self.draws = 0;
-
-        Ok(())
+        self.frame_history.truncate(FRAME_HISTORY_LENGTH);
+        self.frame_history.insert(
+            0,
+            self.stats.take().unwrap_or_else(|| {
+                panic!("ERROR: Unable archive frame stats. Did you call begin_frame?")
+            }),
+        );
     }
 
     pub fn fps(&self) -> u32 {
         let mut total = 0.0;
-        for t in &self.frame_history {
-            total += t.as_secs_f32();
+        for stats in &self.frame_history {
+            total += stats.draw_delta_time.as_secs_f32();
         }
 
         (1.0 / (total / self.frame_history.len() as f32)).round() as u32
@@ -382,23 +338,35 @@ impl Renderer {
     pub fn apply_config(&mut self, config: &VideoConfig) {
         self.should_show_fps = config.should_show_fps;
     }
+
+    pub fn destroy(&mut self) {
+        let gl = gl_context();
+        unsafe {
+            gl.delete_buffer(self.vertex_buffer.gl_buffer());
+            gl.delete_buffer(self.index_buffer.gl_buffer());
+        }
+
+        self.current_program = None;
+        self.current_texture = None;
+    }
 }
 
-#[cfg(feature = "2d-renderer")]
 static mut RENDERER: Option<Renderer> = None;
 
-#[cfg(feature = "2d-renderer")]
-pub fn init_renderer(config: &VideoConfig) -> Result<()> {
+pub fn create_renderer(config: &VideoConfig) -> Result<()> {
     let renderer = Renderer::new(config)?;
     unsafe { RENDERER = Some(renderer) }
     Ok(())
 }
 
-#[cfg(feature = "2d-renderer")]
 pub fn renderer() -> &'static mut Renderer {
     unsafe {
         RENDERER.as_mut().unwrap_or_else(|| {
             panic!("ERROR: Attempted to access renderer but it has not been initialized yet!")
         })
     }
+}
+
+pub fn destroy_renderer() {
+    renderer().destroy();
 }

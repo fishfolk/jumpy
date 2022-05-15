@@ -10,9 +10,10 @@ pub use crate::image::ImageFormat as TextureFormat;
 use crate::gl::gl_context;
 use crate::image::{Image, ImageImpl};
 use crate::math::{vec2, Size, Vec2};
+use crate::prelude::iter_textures;
 use crate::render::renderer::Renderer;
 use crate::result::Result;
-use crate::texture::{ColorFormat, TextureFilterMode, TextureKind};
+use crate::texture::{texture_ids, texture_map, ColorFormat, TextureFilterMode, TextureKind};
 
 pub struct Texture2DImpl {
     gl_texture: NativeTexture,
@@ -152,6 +153,11 @@ impl Drop for Texture2DImpl {
             gl.delete_texture(self.gl_texture);
         }
     }
+}
+
+pub fn destroy_textures() {
+    texture_map().clear();
+    texture_ids().clear();
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]

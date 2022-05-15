@@ -16,8 +16,20 @@ use ff_core::prelude::*;
 
 #[cfg(feature = "macroquad")]
 pub mod editor;
+
 #[cfg(feature = "macroquad")]
-mod gui;
+#[path = "gui_impl/macroquad"]
+mod gui_impl;
+
+#[cfg(not(feature = "macroquad"))]
+#[path = "gui_impl/internal.rs"]
+mod gui_impl;
+
+pub mod gui {
+    pub use ff_core::gui::*;
+
+    pub use super::gui_impl::*;
+}
 
 #[cfg(feature = "macroquad")]
 use ff_core::gui::GuiTheme;
@@ -58,7 +70,6 @@ use crate::game::{
     NETWORK_GAME_CLIENT_STATE_ID, NETWORK_GAME_HOST_STATE_ID,
 };
 pub use effects::{ActiveEffectKind, ActiveEffectMetadata, PassiveEffect, PassiveEffectMetadata};
-use ff_core::gui::destroy_gui;
 use ff_core::particles::{draw_particles, update_particle_emitters};
 
 const CONFIG_FILE_ENV_VAR: &str = "FISHFIGHT_CONFIG";
@@ -70,6 +81,8 @@ const WINDOW_TITLE: &str = "Fish Fight";
 use crate::effects::active::debug_draw_active_effects;
 use crate::effects::active::projectiles::fixed_update_projectiles;
 use crate::effects::active::triggered::fixed_update_triggered_effects;
+#[cfg(feature = "macroquad")]
+use crate::gui::MainMenuState;
 use crate::items::MapItemMetadata;
 use crate::network::{
     fixed_update_network_client, fixed_update_network_host, update_network_client,
@@ -141,7 +154,7 @@ async fn internal_main() -> Result<()> {
 
     let event_loop = new_event_loop();
 
-    init_context(WINDOW_TITLE, &event_loop, &config).await?;
+    create_context(WINDOW_TITLE, &event_loop, &config).await?;
 
     load_resources().await?;
 
@@ -163,6 +176,8 @@ async fn internal_main() -> Result<()> {
 
     let initial_state = build_state_for_game_mode(GameMode::Local, map_resource.map, players)?;
 
+    //let initial_state = MainMenuState::new();
+
     Game::new(initial_state)
         .with_config(config)
         .with_event_loop(event_loop)
@@ -170,8 +185,6 @@ async fn internal_main() -> Result<()> {
         .with_clear_color(colors::BLACK)
         .run()
         .await?;
-
-    destroy_gui();
 
     Ok(())
 }

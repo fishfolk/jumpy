@@ -319,6 +319,15 @@ fn audio_context() -> &'static mut AudioContext {
     unsafe { AUDIO_CONTEXT.get_or_insert_with(AudioContext::default) }
 }
 
+pub fn create_audio_context() {
+    unsafe { AUDIO_CONTEXT = Some(AudioContext::default()) };
+}
+
+pub fn destroy_audio_context() {
+    audio_context().stop_music();
+    unsafe { AUDIO_CONTEXT = None };
+}
+
 pub(crate) fn apply_audio_config(config: &AudioConfig) {
     audio_context().apply_config(config);
 }

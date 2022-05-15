@@ -107,7 +107,6 @@ impl CameraController {
     }
 
     pub fn get_shake(&mut self) -> (Vec2, f32) {
-        //(x translate, y translate, rotation)
         self.noisegen_position += 0.5;
         let mut shake_offset = vec2(0.0, 0.0);
         let mut shake_rotation = 0.0;

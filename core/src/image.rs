@@ -8,7 +8,6 @@ use serde::{Deserialize, Serialize};
 pub use crate::backend_impl::image::*;
 
 use crate::file::read_from_file;
-use crate::gui::rebuild_gui_theme;
 use crate::parsing::deserialize_bytes_by_extension;
 
 use crate::math::vec2;
@@ -151,8 +150,6 @@ pub async fn load_images<P: AsRef<Path>>(
             }
         }
     }
-
-    rebuild_gui_theme();
 
     Ok(())
 }

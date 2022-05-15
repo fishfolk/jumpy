@@ -15,9 +15,9 @@ pub fn init_gl_context(window: &glutin::ContextWrapper<PossiblyCurrent, Window>)
     unsafe {
         let gl = Context::from_loader_function(|addr| window.get_proc_address(addr) as *const _);
 
-        gl.enable(glow::FRAMEBUFFER_SRGB);
-        gl.enable(glow::BLEND);
-        gl.blend_func(glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA);
+        //gl.enable(glow::FRAMEBUFFER_SRGB);
+        //gl.enable(glow::BLEND);
+        //gl.blend_func(glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA);
 
         #[cfg(debug_assertions)]
         {

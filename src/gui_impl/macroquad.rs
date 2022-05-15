@@ -1,5 +1,10 @@
+#[path = "macroquad/credits.rs"]
 mod credits;
+
+#[path = "macroquad/game_menu.rs"]
 mod game_menu;
+
+#[path = "macroquad/main_menu.rs"]
 mod main_menu;
 
 pub use credits::show_game_credits;

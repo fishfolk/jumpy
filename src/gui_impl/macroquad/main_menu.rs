@@ -775,7 +775,7 @@ impl MainMenuState {
             MainMenuLevel::GameMapSelect | MainMenuLevel::EditorMapSelect
         ) {
             if let Some(texture) = self.header_texture {
-                draw_main_menu_background(true);
+                draw_main_menu_background();
 
                 let size = texture.size();
 

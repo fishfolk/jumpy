@@ -1,4 +1,6 @@
+#[cfg(feature = "macroquad-backend")]
 use crate::macroquad::ui::{root_ui, widgets, Ui};
+
 use crate::math::{Size, Vec2};
 use crate::prelude::{draw_texture, viewport};
 use crate::render::DrawTextureParams;
@@ -49,7 +51,7 @@ impl Background {
     }
 }
 
-pub fn draw_main_menu_background(is_ui: bool) {
+pub fn draw_main_menu_background() {
     let backgrounds = [
         get_texture("background_01"),
         get_texture("background_02"),
@@ -73,10 +75,5 @@ pub fn draw_main_menu_background(is_ui: bool) {
         ],
     );
 
-    if is_ui {
-        #[cfg(feature = "macroquad-backend")]
-        bg.ui(&mut *root_ui());
-    } else {
-        bg.draw();
-    }
+    bg.draw();
 }

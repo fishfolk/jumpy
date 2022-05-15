@@ -42,7 +42,7 @@ impl GuiContext {
         #[cfg(debug_assertions)]
         if !self.should_redraw {
             println!(
-                "WARN: Attempting too build an UI when the previous one has not yet been drawn!"
+                "WARNING: Attempting to build an UI when the previous one has not yet been drawn!"
             )
         }
 

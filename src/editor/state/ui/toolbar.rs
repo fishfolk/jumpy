@@ -29,6 +29,9 @@ impl Editor {
                     add_tool("Tiles", EditorTool::TilePlacer);
                     add_tool("Eraser", EditorTool::Eraser);
                 }
+                Some(MapLayerKind::ObjectLayer) => {
+                    add_tool("Object Placer", EditorTool::ObjectPlacer);
+                }
                 _ => (),
             }
         });

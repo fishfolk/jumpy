@@ -27,29 +27,6 @@ impl Editor {
                 let mut clicked_add_object = false;
 
                 view.response = view.response.context_menu(|ui| {
-                    ui.menu_button("Select tool", |ui| {
-                        if ui.button("Cursor").clicked() {
-                            self.selected_tool = EditorTool::Cursor;
-                            ui.close_menu()
-                        }
-                        if ui.button("Spawnpoint Placer").clicked() {
-                            self.selected_tool = EditorTool::SpawnPointPlacer;
-                            ui.close_menu()
-                        }
-                        match self.selected_layer_type() {
-                            Some(MapLayerKind::TileLayer) => {
-                                if ui.button("Tile Placer").clicked() {
-                                    self.selected_tool = EditorTool::TilePlacer;
-                                    ui.close_menu()
-                                }
-                                if ui.button("Eraser").clicked() {
-                                    self.selected_tool = EditorTool::Eraser;
-                                    ui.close_menu()
-                                }
-                            }
-                            _ => (),
-                        }
-                    });
                     if let Some(MapLayerKind::ObjectLayer) = self.selected_layer_type() {
                         if ui.button("Add object").clicked() {
                             clicked_add_object = true;
@@ -65,7 +42,9 @@ impl Editor {
                     self.level_view.position -= drag_delta.into_macroquad();
                 }
 
-                if clicked_add_object {
+                if clicked_add_object
+                    || (view.response.clicked() && self.selected_tool == EditorTool::ObjectPlacer)
+                {
                     let position = view
                         .screen_to_world_pos(view.ctx().input().pointer.interact_pos().unwrap());
 

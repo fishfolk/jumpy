@@ -23,6 +23,7 @@ pub enum EditorTool {
     TilePlacer,
     SpawnPointPlacer,
     Eraser,
+    ObjectPlacer,
 }
 
 pub struct TileSelection {

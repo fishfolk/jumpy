@@ -8,7 +8,7 @@ use crate::{
         actions::UiAction,
         state::{DragData, EditorTool, ObjectSettings, SelectableEntity, SelectableEntityKind},
         util::{EguiCompatibleVec, EguiTextureHandler, MqCompatibleVec, Resizable},
-        view::UiLevelView,
+        view::UiLevelView, windows::BackgroundPropertiesWindow,
     },
     map::{MapLayerKind, MapObjectKind},
     Resources,
@@ -26,14 +26,18 @@ impl Editor {
                 let mut view = self.draw_level_tiles(ui);
                 let mut clicked_add_object = false;
 
-                if let Some(MapLayerKind::ObjectLayer) = self.selected_layer_type() {
-                    view.response = view.response.context_menu(|ui| {
+                view.response = view.response.context_menu(|ui| {
+                    if let Some(MapLayerKind::ObjectLayer) = self.selected_layer_type() {
                         if ui.button("Add object").clicked() {
                             clicked_add_object = true;
                             ui.close_menu()
                         }
-                    });
-                }
+                    }
+                    if ui.button("Edit background").clicked() {
+                        self.background_properties_window = Some(Default::default());
+                        ui.close_menu();
+                    }
+                });
 
                 if view.response.dragged_by(egui::PointerButton::Middle) {
                     let drag_delta = egui_ctx.input().pointer.delta();

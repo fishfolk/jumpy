@@ -82,6 +82,7 @@ pub struct Editor {
 
     create_map_window: Option<windows::CreateMapWindow>,
     create_layer_window: Option<windows::CreateLayerWindow>,
+    background_properties_window: Option<windows::BackgroundPropertiesWindow>,
     create_tileset_window: Option<windows::CreateTilesetWindow>,
     menu_window: Option<windows::MenuWindow>,
     save_map_window: Option<windows::SaveMapWindow>,
@@ -116,6 +117,7 @@ impl Editor {
             object_being_placed: None,
 
             create_map_window: None,
+            background_properties_window: None,
             create_layer_window: None,
             create_tileset_window: None,
             menu_window: None,
@@ -331,6 +333,13 @@ impl Editor {
             } => {
                 let action = actions::Import::new(tilesets, background_color, background_layers);
 
+                self.history
+                    .apply(action, &mut self.map_resource.map)
+                    .unwrap();
+            }
+
+            UiAction::UpdateBackground { color, layers } => {
+                let action = actions::UpdateBackground::new(color, layers);
                 self.history
                     .apply(action, &mut self.map_resource.map)
                     .unwrap();

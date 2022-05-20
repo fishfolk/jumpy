@@ -1,3 +1,6 @@
+mod background_properties;
+pub use background_properties::*;
+
 mod create_map;
 pub use create_map::*;
 

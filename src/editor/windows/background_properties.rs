@@ -1,64 +1,149 @@
 use std::ops::ControlFlow;
 
-use crate::map::{Map, MapLayerKind};
+use macroquad::prelude::{collections::storage, Color};
+
+use crate::{
+    editor::actions::{UiAction, UiActionExt},
+    map::{Map, MapBackgroundLayer, MapLayerKind},
+    resources::TextureKind,
+    Resources,
+};
 
 pub struct BackgroundPropertiesWindow {
-    color: Color,
-    layers: Vec<MapBackgroundLayer>,
-    layer_texture_id: Option<String>,
+    valid_layer_texture_ids: Vec<String>,
     layer_depth: f32,
     selected_layer: Option<usize>,
 }
 
-impl BackgroundPropertiesWindow {
-    pub fn new(color: Color, layers: Vec<MapBackgroundLayer>) -> Self {
+impl Default for BackgroundPropertiesWindow {
+    fn default() -> Self {
+        let resources = storage::get::<Resources>();
         Self {
-            color,
-            layers,
-            layer_texture_id: None,
-            layer_depth: 0.0,
-            selected_layer: None,
+            valid_layer_texture_ids: resources
+                .textures
+                .values()
+                .filter_map(|texture_res| {
+                    let mut res = None;
+
+                    if let Some(kind) = texture_res.meta.kind {
+                        if kind == TextureKind::Background {
+                            res = Some(texture_res.meta.id.clone());
+                        }
+                    }
+
+                    res
+                })
+                .collect(),
+            layer_depth: Default::default(),
+            selected_layer: Default::default(),
         }
     }
+}
 
-    pub fn ui(&mut self, egui_ctx: &egui::Context, map: &Map) -> ControlFlow<CreateLayerResult> {
-        let mut action = ControlFlow::Continue(());
+impl BackgroundPropertiesWindow {
+    pub fn ui(&mut self, egui_ctx: &egui::Context, map: &Map) -> Option<UiAction> {
+        let mut action = None;
 
-        egui::Window::new("Create Layer").show(egui_ctx, |ui| {
-            ui.text_edit_singleline(&mut self.layer_name).changed();
-            egui::ComboBox::new("layer type", "Type")
-                .selected_text(match self.layer_kind {
-                    MapLayerKind::TileLayer => "Tiles",
-                    MapLayerKind::ObjectLayer => "Objects",
-                })
-                .show_ui(ui, |ui| {
-                    ui.selectable_value(&mut self.layer_kind, MapLayerKind::TileLayer, "Tiles");
-                    ui.selectable_value(&mut self.layer_kind, MapLayerKind::ObjectLayer, "Objects");
-                });
-            if self.layer_kind == MapLayerKind::TileLayer {
-                ui.checkbox(&mut self.has_collision, "Collision");
-            }
-            let can_create_map = !map.layers.contains_key(&self.layer_name);
-            if !can_create_map {
-                ui.label(
-                    egui::RichText::new("Layer names must be unique").color(egui::Color32::RED),
-                );
-            }
+        egui::Window::new("Background Properties").show(egui_ctx, |ui| {
+            let color = map.background_color;
+
+            let mut color = egui::Rgba::from_rgba_premultiplied(color.r, color.g, color.b, color.a);
+
             ui.horizontal(|ui| {
-                if ui
-                    .add_enabled(can_create_map, egui::Button::new("Create"))
-                    .clicked()
-                {
-                    action = ControlFlow::Break(CreateLayerResult::Create {
-                        layer_name: self.layer_name.clone(),
-                        has_collision: self.has_collision,
-                        layer_kind: self.layer_kind,
+                ui.label("Color: ");
+                egui::color_picker::color_edit_button_rgba(
+                    ui,
+                    &mut color,
+                    egui::color_picker::Alpha::OnlyBlend,
+                );
+            });
+
+            let color = Color::new(color.r(), color.g(), color.b(), color.a());
+
+            if color != map.background_color {
+                action = Some(UiAction::UpdateBackground {
+                    color,
+                    layers: map.background_layers.clone(),
+                });
+            }
+
+            ui.separator();
+
+            ui.horizontal(|ui| {
+                egui_extras::TableBuilder::new(ui)
+                    .striped(true)
+                    .column(egui_extras::Size::exact(175.))
+                    .body(|body| {
+                        body.rows(16., map.background_layers.len(), |idx, mut row| {
+                            row.col(|ui| {
+                                let response = ui.selectable_label(
+                                    self.selected_layer == Some(idx),
+                                    format!(
+                                        "Layer {} ({})",
+                                        idx, map.background_layers[idx].texture_id
+                                    ),
+                                );
+
+                                if response.clicked() {
+                                    self.selected_layer = Some(idx);
+                                }
+                            });
+                        })
                     });
+
+                if let Some(selected_layer_idx) = self.selected_layer {
+                    let selected_layer = &map.background_layers[selected_layer_idx];
+                    ui.vertical(|ui| {
+                        let mut idx_selected = self
+                            .valid_layer_texture_ids
+                            .iter()
+                            .enumerate()
+                            .find(|(_, x)| x == &&selected_layer.texture_id)
+                            .map(|(i, _)| i)
+                            .unwrap();
+
+                        if egui::ComboBox::new("texture", "Texture")
+                            .show_index(
+                                ui,
+                                &mut idx_selected,
+                                self.valid_layer_texture_ids.len(),
+                                |i| self.valid_layer_texture_ids[i].to_owned(),
+                            )
+                            .changed()
+                        {
+                            let mut layers = map.background_layers.clone();
+                            layers[selected_layer_idx].texture_id =
+                                self.valid_layer_texture_ids[idx_selected].clone();
+                            action = Some(UiAction::UpdateBackground {
+                                color: map.background_color,
+                                layers,
+                            });
+                        }
+
+                        let mut depth = selected_layer.depth;
+                        if ui
+                            .horizontal(|ui| {
+                                ui.label("Depth: ");
+                                ui.add(egui::DragValue::new(&mut depth))
+                            })
+                            .response
+                            .changed()
+                        {
+                            // FIXME This does not set the depth (maybe doesn't get run)
+                            let mut layers = map.background_layers.clone();
+                            layers[selected_layer_idx].depth = depth;
+                            action = Some(UiAction::UpdateBackground {
+                                color: map.background_color,
+                                layers,
+                            });
+                        }
+
+                        // TODO: Delete/Up/Down
+                    });
+                } else {
+                    ui.label("Select a layer on the left");
                 }
-                if ui.button("Cancel").clicked() {
-                    action = ControlFlow::Break(CreateLayerResult::Close)
-                }
-            })
+            });
         });
 
         action

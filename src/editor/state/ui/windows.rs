@@ -16,6 +16,12 @@ use crate::{
 
 impl Editor {
     pub(super) fn draw_windows(&mut self, egui_ctx: &egui::Context) {
+        if let Some(window) = &mut self.background_properties_window {
+            if let Some(action) = window.ui(egui_ctx, &self.map_resource.map) {
+                self.apply_action(action);
+            }
+        }
+
         if let Some(window) = &mut self.create_layer_window {
             match window.ui(egui_ctx, &self.map_resource.map) {
                 ControlFlow::Continue(()) => (),

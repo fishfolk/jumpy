@@ -7,7 +7,7 @@
 - [X] Open map window
 - [X] Import map window
 - [X] New map window
-- [ ] Background edit window
+- [X] Background edit window
 - [X] Map zoom
 - [ ] Theme support
 - [ ] Gamepad support

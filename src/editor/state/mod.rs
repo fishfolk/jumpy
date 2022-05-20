@@ -98,6 +98,10 @@ pub struct Editor {
 }
 
 impl Editor {
+    const CAMERA_ZOOM_STEP: f32 = 0.1;
+    const CAMERA_ZOOM_MIN: f32 = 0.1;
+    const CAMERA_ZOOM_MAX: f32 = 2.5;
+
     pub fn new(map_resource: MapResource) -> Self {
         Self {
             map_resource,
@@ -385,6 +389,11 @@ impl Editor {
 
         // Move camera
         self.level_view.position += input.camera_move_direction * CAMERA_PAN_SPEED;
+
+        // Scale camera
+        self.level_view.scale = (self.level_view.scale
+            + input.camera_zoom * Self::CAMERA_ZOOM_STEP)
+            .clamp(Self::CAMERA_ZOOM_MIN, Self::CAMERA_ZOOM_MAX);
 
         // Undo/redo
         if input.undo {

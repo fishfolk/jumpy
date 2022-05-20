@@ -40,7 +40,7 @@ impl Node for EditorNode {
 
         egui_macroquad::ui(|egui_ctx| {
             node.editor.ui(egui_ctx);
-            node.accept_mouse_input = !egui_ctx.wants_pointer_input();
+            //node.accept_mouse_input = !egui_ctx.wants_pointer_input();
             node.accept_kb_input = !egui_ctx.wants_keyboard_input();
         });
 

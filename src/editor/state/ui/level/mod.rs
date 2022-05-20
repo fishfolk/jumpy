@@ -26,20 +26,19 @@ impl Editor {
                 let mut view = self.draw_level_tiles(ui);
                 let mut clicked_add_object = false;
 
-                view.response = view.response.context_menu(|ui| {
-                    if let Some(MapLayerKind::ObjectLayer) = self.selected_layer_type() {
+                if let Some(MapLayerKind::ObjectLayer) = self.selected_layer_type() {
+                    view.response = view.response.context_menu(|ui| {
                         if ui.button("Add object").clicked() {
                             clicked_add_object = true;
                             ui.close_menu()
                         }
-                    }
-                });
+                    });
+                }
 
                 if view.response.dragged_by(egui::PointerButton::Middle) {
                     let drag_delta = egui_ctx.input().pointer.delta();
 
-                    // TODO: take level scale/"tiles per pixel" into account
-                    self.level_view.position -= drag_delta.into_macroquad();
+                    self.level_view.position -= drag_delta.into_macroquad() / view.view.scale;
                 }
 
                 if clicked_add_object

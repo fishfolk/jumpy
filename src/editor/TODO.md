@@ -8,6 +8,6 @@
 - [X] Import map window
 - [X] New map window
 - [ ] Background edit window
-- [ ] Map zoom
+- [X] Map zoom
 - [ ] Theme support
 - [ ] Gamepad support

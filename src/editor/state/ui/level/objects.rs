@@ -280,7 +280,10 @@ pub fn draw_object(
      -> egui::Rect {
         let position_in_lvl = position + offset.into_egui();
 
-        let dest = egui::Rect::from_min_size(view.world_to_screen_pos(position_in_lvl), dest_size);
+        let dest = egui::Rect::from_min_size(
+            view.world_to_screen_pos(position_in_lvl),
+            dest_size * view.view.scale,
+        );
 
         let mut mesh = egui::Mesh::with_texture(texture_id);
         mesh.add_rect_with_uv(dest, uv, tint);

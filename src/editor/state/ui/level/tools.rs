@@ -50,7 +50,7 @@ impl Editor {
                 tile_mesh.add_rect_with_uv(
                     egui::Rect::from_min_size(
                         view.world_to_screen_pos((cursor_tile_pos.to_vec2() * tile_size).to_pos2()),
-                        tile_size,
+                        tile_size * view.view.scale,
                     ),
                     uv,
                     egui::Color32::from_rgba_unmultiplied(0xff, 0xff, 0xff, 200),

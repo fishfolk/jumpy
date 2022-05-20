@@ -20,17 +20,17 @@ impl Default for LevelView {
 impl LevelView {
     // TODO: Factor in level view scale
     pub fn screen_to_world_pos(&self, p: egui::Pos2) -> egui::Pos2 {
-        p + self.position.into_egui()
+        (p.to_vec2() / self.scale + self.position.into_egui()).to_pos2()
     }
 
     pub fn world_to_screen_pos(&self, p: egui::Pos2) -> egui::Pos2 {
-        p - self.position.into_egui()
+        ((p.to_vec2() - self.position.into_egui()) * self.scale).to_pos2()
     }
 }
 
 #[derive(Clone)]
 pub struct UiLevelView {
-    view: LevelView,
+    pub view: LevelView,
     pub response: egui::Response,
     painter: egui::Painter,
 }
@@ -60,7 +60,8 @@ impl UiLevelView {
 
     // TODO: Factor in level view scale
     pub fn screen_to_world_pos(&self, p: egui::Pos2) -> egui::Pos2 {
-        self.view.screen_to_world_pos(p) - self.level_top_left().to_vec2()
+        self.view
+            .screen_to_world_pos(p - self.level_top_left().to_vec2())
     }
 
     pub fn world_to_screen_pos(&self, p: egui::Pos2) -> egui::Pos2 {

@@ -1,7 +1,10 @@
+use macroquad::prelude::collections::storage;
 use macroquad::prelude::*;
 use macroquad::rand::gen_range;
 
 use core::noise::NoiseGenerator;
+
+use crate::map::Map;
 
 struct Shake {
     direction: (f32, f32),
@@ -49,7 +52,25 @@ impl GameCamera {
     }
 
     pub fn add_player_rect(&mut self, rect: Rect) {
-        self.player_rects.push(rect);
+        let map = storage::get::<Map>();
+        let playable = map.get_playable_area();
+        if playable.overlaps(&rect) {
+            self.player_rects.push(rect);
+
+        // We don't want to try to follow the player out of the playable area, so set the
+        // effective player rect to the closest spot to the player that is still touching the
+        // playable area.
+        } else {
+            let min = Vec2::new(playable.x, playable.y);
+            let max = min + Vec2::new(playable.w, playable.h);
+
+            self.player_rects.push(Rect::new(
+                rect.x.max(min.x).min(max.x),
+                rect.y.max(min.y).min(max.y),
+                rect.w,
+                rect.h,
+            ));
+        }
     }
 }
 

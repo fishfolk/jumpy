@@ -7,11 +7,13 @@ use serde::{Deserialize, Serialize};
 mod crab;
 mod decoration;
 mod fish_school;
+mod player_interaction;
 mod sproinger;
 
 pub use crab::*;
 pub use decoration::*;
 pub use fish_school::*;
+pub use player_interaction::*;
 pub use sproinger::*;
 
 use core::math::URect;
@@ -23,6 +25,10 @@ use crate::{
     json::{self, TiledMap},
     Resources,
 };
+
+/// The ammount of space above the map that the player can be without being killed
+const EXTRA_PLAYABLE_SKY: f32 = 200.0;
+const EXTRA_PLAYABLE_WIDTH: f32 = 400.0;
 
 pub type MapProperty = core::json::GenericParam;
 
@@ -113,6 +119,19 @@ impl Map {
         vec2(
             self.grid_size.x as f32 * self.tile_size.x,
             self.grid_size.y as f32 * self.tile_size.y,
+        )
+    }
+
+    /// Get the playable map area.
+    ///
+    /// Any player that doesn't overlap the play area will be killed.
+    pub fn get_playable_area(&self) -> Rect {
+        let size = self.get_size();
+        Rect::new(
+            self.world_offset.x - EXTRA_PLAYABLE_WIDTH / 2.0,
+            self.world_offset.y - EXTRA_PLAYABLE_SKY,
+            size.x + EXTRA_PLAYABLE_WIDTH,
+            size.y + EXTRA_PLAYABLE_SKY,
         )
     }
 

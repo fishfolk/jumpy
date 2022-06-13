@@ -130,7 +130,10 @@ pub enum EditorAction {
     OpenCreateMapWindow,
     OpenMap(usize),
     OpenLoadMapWindow,
-    SaveMap(Option<String>),
+    SaveMap {
+        name: Option<String>,
+        is_user_map: Option<bool>,
+    },
     OpenSaveMapWindow,
     DeleteMap(usize),
     ExitToMainMenu,

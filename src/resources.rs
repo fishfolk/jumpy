@@ -430,13 +430,15 @@ impl Resources {
         let assets_path = Path::new(&self.assets_dir);
         let export_path = assets_path.join(&map_resource.meta.path);
 
+        let mut map_already_existed = false;
         if export_path.exists() {
             let mut i = 0;
             while i < self.maps.len() {
                 let res = &self.maps[i];
                 if res.meta.path == map_resource.meta.path {
-                    if res.meta.is_user_map {
-                        self.maps.remove(i);
+                    if res.meta.is_user_map || cfg!(debug_assertions) {
+                        map_already_existed = true;
+                        self.maps[i] = map_resource.clone();
                         break;
                     } else {
                         return Err(formaterr!(
@@ -453,7 +455,9 @@ impl Resources {
 
         map_resource.map.save(export_path)?;
 
-        self.maps.push(map_resource.clone());
+        if !map_already_existed {
+            self.maps.push(map_resource.clone());
+        }
         self.save_maps_file()?;
 
         Ok(())

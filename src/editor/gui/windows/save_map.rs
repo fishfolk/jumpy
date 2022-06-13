@@ -90,7 +90,10 @@ impl Window for SaveMapWindow {
 
         let mut action = None;
         if is_valid_map_export_path(&path, self.should_overwrite) {
-            let save_action = EditorAction::SaveMap(Some(self.name.clone()));
+            let save_action = EditorAction::SaveMap {
+                name: Some(self.name.clone()),
+                is_user_map: Some(true),
+            };
             let batch = self.get_close_action().then(save_action);
 
             action = Some(batch);

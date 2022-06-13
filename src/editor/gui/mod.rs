@@ -313,7 +313,10 @@ impl EditorGui {
                         res = Some(action);
                     }
                     EDITOR_MENU_RESULT_SAVE => {
-                        let action = EditorAction::SaveMap(None);
+                        let action = EditorAction::SaveMap {
+                            name: None,
+                            is_user_map: None,
+                        };
                         res = Some(action);
                     }
                     EDITOR_MENU_RESULT_SAVE_AS => {

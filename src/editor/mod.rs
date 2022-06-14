@@ -618,7 +618,7 @@ impl Editor {
                 let mut gui = storage::get_mut::<EditorGui>();
                 gui.add_window(LoadMapWindow::new());
             }
-            EditorAction::SaveMap(name) => {
+            EditorAction::SaveMap { name, is_user_map } => {
                 let mut map_resource = self.map_resource.clone();
 
                 if let Some(name) = name {
@@ -630,7 +630,9 @@ impl Editor {
                     map_resource.meta.path = path.to_string_lossy().to_string();
                 }
 
-                map_resource.meta.is_user_map = true;
+                if let Some(is_user_map) = is_user_map {
+                    map_resource.meta.is_user_map = is_user_map;
+                }
                 map_resource.meta.is_tiled_map = false;
 
                 let mut resources = storage::get_mut::<Resources>();
@@ -692,7 +694,10 @@ impl Node for Editor {
 
         if node.input.save {
             let action = if node.map_resource.meta.is_user_map {
-                EditorAction::SaveMap(None)
+                EditorAction::SaveMap {
+                    name: None,
+                    is_user_map: None,
+                }
             } else {
                 EditorAction::OpenSaveMapWindow
             };

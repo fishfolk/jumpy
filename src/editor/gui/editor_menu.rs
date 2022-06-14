@@ -37,7 +37,7 @@ pub fn open_editor_menu(ctx: &EditorContext) {
                     MenuEntry {
                         index: EDITOR_MENU_RESULT_SAVE,
                         title: "Save".to_string(),
-                        is_disabled: !ctx.is_user_map,
+                        is_disabled: !ctx.is_user_map && !cfg!(debug_assertions),
                         ..Default::default()
                     },
                     MenuEntry {

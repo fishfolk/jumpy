@@ -1059,9 +1059,14 @@ impl Node for Editor {
         } else if let Some(dragged_object) = node.dragged_object.take() {
             let map = node.get_map();
 
+            let click_offset = match dragged_object {
+                DraggedObject::MapObject { click_offset, .. }
+                | DraggedObject::SpawnPoint { click_offset, .. } => click_offset,
+            };
+
             let cursor_world_position = scene::find_node_by_type::<EditorCamera>()
                 .unwrap()
-                .to_world_space(node.cursor_position);
+                .to_world_space(node.cursor_position - click_offset);
 
             let mut position = (cursor_world_position).clamp(
                 map.world_offset,
@@ -1079,10 +1084,8 @@ impl Node for Editor {
                     kind,
                     index,
                     layer_id,
-                    click_offset,
+                    ..
                 } => {
-                    let position = position - click_offset;
-
                     let action = EditorAction::UpdateObject {
                         id,
                         kind,
@@ -1093,12 +1096,7 @@ impl Node for Editor {
 
                     node.apply_action(action);
                 }
-                DraggedObject::SpawnPoint {
-                    index,
-                    click_offset,
-                } => {
-                    let position = position - click_offset;
-
+                DraggedObject::SpawnPoint { index, .. } => {
                     let action = EditorAction::MoveSpawnPoint { index, position };
 
                     node.apply_action(action);

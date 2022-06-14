@@ -157,7 +157,7 @@ pub struct Editor {
 }
 
 impl Editor {
-    const CAMERA_PAN_THRESHOLD: f32 = 0.025;
+    const CAMERA_PAN_THRESHOLD: f32 = 0.005;
 
     const CAMERA_PAN_SPEED: f32 = 5.0;
     const CAMERA_ZOOM_STEP: f32 = 0.1;

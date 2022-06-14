@@ -667,6 +667,14 @@
       "has_collision": false,
       "objects": [
         {
+          "id": "sproinger",
+          "kind": "environment",
+          "position": {
+            "x": 32.0,
+            "y": 461.0
+          }
+        },
+        {
           "id": "anemones",
           "kind": "decoration",
           "position": {
@@ -731,6 +739,54 @@
       "has_collision": false,
       "objects": [
         {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 575.9231,
+            "y": 196.76924
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 284.90906,
+            "y": 194.54543
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 507.72723,
+            "y": 506.1818
+          }
+        },
+        {
+          "id": "sproinger",
+          "kind": "environment",
+          "position": {
+            "x": 383.70593,
+            "y": 556.70593
+          }
+        },
+        {
+          "id": "sproinger",
+          "kind": "environment",
+          "position": {
+            "x": 448.14288,
+            "y": 557.1429
+          }
+        },
+        {
+          "id": "sproinger",
+          "kind": "environment",
+          "position": {
+            "x": 801.16675,
+            "y": 460.05554
+          }
+        },
+        {
           "id": "musket",
           "kind": "item",
           "position": {
@@ -742,24 +798,24 @@
           "id": "musket",
           "kind": "item",
           "position": {
-            "x": 320.0,
-            "y": 544.0
+            "x": 266.25003,
+            "y": 544.7352
           }
         },
         {
           "id": "sword",
           "kind": "item",
           "position": {
-            "x": 464.0,
-            "y": 320.0
+            "x": 403.375,
+            "y": 326.875
           }
         },
         {
           "id": "sword",
           "kind": "item",
           "position": {
-            "x": 608.0,
-            "y": 224.0
+            "x": 566.125,
+            "y": 227.75
           }
         },
         {

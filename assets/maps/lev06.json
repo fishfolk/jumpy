@@ -391,13 +391,13 @@
         0,
         0,
         0,
+        57,
+        61,
         0,
         0,
         0,
-        0,
-        0,
-        0,
-        0,
+        57,
+        61,
         0,
         0,
         0,
@@ -584,8 +584,8 @@
           "id": "anemones",
           "kind": "decoration",
           "position": {
-            "x": 560.8333,
-            "y": 174.0
+            "x": 556.6228,
+            "y": 173.47368
           }
         },
         {
@@ -645,59 +645,123 @@
       "has_collision": false,
       "objects": [
         {
-          "id": "sword",
-          "kind": "item",
+          "id": "sproinger",
+          "kind": "environment",
           "position": {
-            "x": 782.6667,
-            "y": 5.3333335
-          }
-        },
-        {
-          "id": "musket",
-          "kind": "item",
-          "position": {
-            "x": 420.66666,
-            "y": 243.33333
-          }
-        },
-        {
-          "id": "sword",
-          "kind": "item",
-          "position": {
-            "x": 79.083336,
-            "y": 6.25
-          }
-        },
-        {
-          "id": "sword",
-          "kind": "item",
-          "position": {
-            "x": 754.0,
-            "y": 435.0
-          }
-        },
-        {
-          "id": "sword",
-          "kind": "item",
-          "position": {
-            "x": 111.333336,
-            "y": 433.33334
-          }
-        },
-        {
-          "id": "mines",
-          "kind": "item",
-          "position": {
-            "x": 432.0,
-            "y": 40.0
+            "x": 159.52945,
+            "y": 204.47061
           }
         },
         {
           "id": "sproinger",
           "kind": "environment",
           "position": {
-            "x": 384.0,
-            "y": 592.0
+            "x": 609.2202,
+            "y": 204.23442
+          }
+        },
+        {
+          "id": "musket",
+          "kind": "item",
+          "position": {
+            "x": 567.6667,
+            "y": 318.49997
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 373.5,
+            "y": 227.33334
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 171.00003,
+            "y": 35.5
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 643.00006,
+            "y": 419.0
+          }
+        },
+        {
+          "id": "crab",
+          "kind": "environment",
+          "position": {
+            "x": 263.00006,
+            "y": 80.153854
+          }
+        },
+        {
+          "id": "crab",
+          "kind": "environment",
+          "position": {
+            "x": 543.36365,
+            "y": 78.90906
+          }
+        },
+        {
+          "id": "sword",
+          "kind": "item",
+          "position": {
+            "x": 724.00006,
+            "y": 36.0
+          }
+        },
+        {
+          "id": "musket",
+          "kind": "item",
+          "position": {
+            "x": 221.78943,
+            "y": 192.63158
+          }
+        },
+        {
+          "id": "sword",
+          "kind": "item",
+          "position": {
+            "x": 45.75,
+            "y": 37.583336
+          }
+        },
+        {
+          "id": "sword",
+          "kind": "item",
+          "position": {
+            "x": 688.0,
+            "y": 452.33328
+          }
+        },
+        {
+          "id": "sword",
+          "kind": "item",
+          "position": {
+            "x": 134.00003,
+            "y": 452.66666
+          }
+        },
+        {
+          "id": "mines",
+          "kind": "item",
+          "position": {
+            "x": 446.6667,
+            "y": 29.333336
+          }
+        },
+        {
+          "id": "sproinger",
+          "kind": "environment",
+          "position": {
+            "x": 382.82352,
+            "y": 588.4706
           }
         }
       ],

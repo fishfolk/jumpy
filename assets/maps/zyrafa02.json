@@ -719,43 +719,75 @@
       "has_collision": false,
       "objects": [
         {
-          "id": "musket",
-          "kind": "item",
+          "id": "crab",
+          "kind": "environment",
           "position": {
-            "x": 320.0,
-            "y": 256.0
+            "x": 416.4546,
+            "y": 465.9091
+          }
+        },
+        {
+          "id": "crab",
+          "kind": "environment",
+          "position": {
+            "x": 352.66663,
+            "y": 308.1515
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 350.99994,
+            "y": 407.5
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 188.24997,
+            "y": 603.6665
           }
         },
         {
           "id": "musket",
           "kind": "item",
           "position": {
-            "x": 448.0,
-            "y": 256.0
+            "x": 241.66666,
+            "y": 286.55557
           }
         },
         {
           "id": "musket",
           "kind": "item",
           "position": {
-            "x": 288.0,
-            "y": 448.0
+            "x": 423.5556,
+            "y": 286.0
           }
         },
         {
           "id": "musket",
           "kind": "item",
           "position": {
-            "x": 480.0,
-            "y": 448.0
+            "x": 204.11111,
+            "y": 448.55554
+          }
+        },
+        {
+          "id": "musket",
+          "kind": "item",
+          "position": {
+            "x": 465.0,
+            "y": 444.6667
           }
         },
         {
           "id": "sword",
           "kind": "item",
           "position": {
-            "x": 400.0,
-            "y": 640.0
+            "x": 338.88892,
+            "y": 646.6666
           }
         }
       ],

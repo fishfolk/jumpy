@@ -1394,6 +1394,78 @@
       "has_collision": false,
       "objects": [
         {
+          "id": "sproinger",
+          "kind": "environment",
+          "position": {
+            "x": 230.25632,
+            "y": 780.5556
+          }
+        },
+        {
+          "id": "sproinger",
+          "kind": "environment",
+          "position": {
+            "x": 859.55554,
+            "y": 779.0
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 353.16675,
+            "y": 456.16672
+          }
+        },
+        {
+          "id": "crab",
+          "kind": "environment",
+          "position": {
+            "x": 795.4643,
+            "y": 530.2143
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 232.0,
+            "y": 616.0
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 220.63892,
+            "y": 295.95834
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 838.77277,
+            "y": 300.51138
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 768.89795,
+            "y": 717.31824
+          }
+        },
+        {
+          "id": "crab",
+          "kind": "environment",
+          "position": {
+            "x": 521.8443,
+            "y": 403.16885
+          }
+        },
+        {
           "id": "musket",
           "kind": "item",
           "position": {

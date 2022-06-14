@@ -86,7 +86,7 @@ impl PlayerCharacterMetadata {
 
     const DEFAULT_GRAVITY: f32 = 1.0;
 
-    const DEFAULT_JUMP_FORCE: f32 = 9.5;
+    const DEFAULT_JUMP_FORCE: f32 = 11.5;
     const DEFAULT_MOVE_SPEED: f32 = 5.0;
     const DEFAULT_SLIDE_SPEED_FACTOR: f32 = 3.0;
     const DEFAULT_SLIDE_DURATION: f32 = 0.1;

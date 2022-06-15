@@ -46,7 +46,8 @@ enum MainMenuState {
 
 const ROOT_OPTION_LOCAL_GAME: usize = 0;
 const ROOT_OPTION_EDITOR: usize = 1;
-const ROOT_OPTION_SETTINGS: usize = 2;
+// Settings haven't been implemented yet
+// const ROOT_OPTION_SETTINGS: usize = 2;
 const ROOT_OPTION_RELOAD_RESOURCES: usize = 3;
 const ROOT_OPTION_CREDITS: usize = 4;
 
@@ -70,12 +71,13 @@ fn build_main_menu() -> Menu {
                 title: "Editor".to_string(),
                 ..Default::default()
             },
-            MenuEntry {
-                index: ROOT_OPTION_SETTINGS,
-                title: "Settings".to_string(),
-                is_disabled: true,
-                ..Default::default()
-            },
+            // Settings haven't been implemented yet
+            // MenuEntry {
+            //     index: ROOT_OPTION_SETTINGS,
+            //     title: "Settings".to_string(),
+            //     is_disabled: true,
+            //     ..Default::default()
+            // },
             #[cfg(debug_assertions)]
             MenuEntry {
                 index: ROOT_OPTION_RELOAD_RESOURCES,

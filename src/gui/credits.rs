@@ -8,7 +8,7 @@ const MAIN_HEADER_Y_OFFSET: f32 = 300.0;
 const SECONDARY_HEADER_Y_OFFSET: f32 = 150.0;
 const TEXT_Y_OFFSET: f32 = 60.0;
 
-const CREDITS_LIST: [(&str, LabelType); 31] = [
+const CREDITS_LIST: [(&str, LabelType); 32] = [
     ("Fish Fight", LabelType::MainHeader),
     ("Founding Team", LabelType::SecondaryHeader),
     ("Erlend Sogge Heggen - General Director", LabelType::Regular),
@@ -45,6 +45,7 @@ const CREDITS_LIST: [(&str, LabelType); 31] = [
     ("Srayan Jana - Dev Advocacy", LabelType::Regular),
     ("Alve Larsson - Website", LabelType::Regular),
     ("William Batista - Gameplay Code", LabelType::Regular),
+    ("@zicklag - Gameplay Code", LabelType::Regular),
     ("Tech Foundations", LabelType::SecondaryHeader),
     ("macroquad.rs", LabelType::Regular),
     ("rust-lang.org", LabelType::Regular),

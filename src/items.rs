@@ -9,8 +9,8 @@ use macroquad::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    ActiveEffectMetadata, AnimatedSpriteMetadata, CollisionWorld, Drawable, PassiveEffectMetadata,
-    PhysicsBody, QueuedAnimationAction, Resources,
+    ActiveEffectMetadata, AnimatedSprite, AnimatedSpriteMetadata, CollisionWorld, Drawable,
+    PassiveEffectMetadata, PhysicsBody, QueuedAnimationAction, Resources,
 };
 
 use core::{Result, Transform};
@@ -247,7 +247,8 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
             }
 
             if let Some(effect_sprite) = meta.effect_sprite {
-                let sprite = effect_sprite.into();
+                let mut sprite: AnimatedSprite = effect_sprite.into();
+                sprite.is_deactivated = true;
 
                 sprites.push((EFFECT_ANIMATED_SPRITE_ID, sprite));
             }

@@ -425,9 +425,9 @@ dependencies = [
 
 [[package]]
 name = "macroquad-platformer"
-version = "0.1.2"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a912b373a1edc678242e262010d58e3e7e7977bf00227d5343dd9e641d52fa2"
+checksum = "927301bceb8c2781043a18611304b7b0a9d034b402321d4e099ef01c58ac0793"
 dependencies = [
  "macroquad",
 ]

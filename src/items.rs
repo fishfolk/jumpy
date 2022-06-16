@@ -9,8 +9,9 @@ use macroquad::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::game::sound::SOUND_EFFECT_VOLUME;
+use crate::utils::timer::Timer;
 use crate::{
-    ActiveEffectMetadata, AnimatedSprite, AnimatedSpriteMetadata, CollisionWorld, Drawable,
+    ActiveEffectMetadata, AnimatedSprite, AnimatedSpriteMetadata, CollisionWorld, Drawable, Owner,
     PassiveEffectMetadata, PhysicsBody, QueuedAnimationAction, Resources,
 };
 
@@ -89,8 +90,10 @@ pub struct ItemParams {
     pub drop_behavior: ItemDropBehavior,
     pub deplete_behavior: ItemDepleteBehavior,
     pub is_hat: bool,
+    pub respawn_info: Option<RespawnInfo>,
 }
 
+#[derive(Clone)]
 pub struct Item {
     pub id: String,
     pub name: String,
@@ -103,6 +106,7 @@ pub struct Item {
     pub is_hat: bool,
     pub duration_timer: f32,
     pub use_cnt: u32,
+    pub respawn_info: Option<RespawnInfo>,
 }
 
 impl Item {
@@ -116,6 +120,7 @@ impl Item {
             mount_offset: params.mount_offset,
             drop_behavior: params.drop_behavior,
             deplete_behavior: params.deplete_behavior,
+            respawn_info: params.respawn_info,
             is_hat: params.is_hat,
             duration_timer: 0.0,
             use_cnt: 0,
@@ -158,12 +163,20 @@ pub struct MapItemMetadata {
     pub drop_behavior: ItemDropBehavior,
     #[serde(default)]
     pub deplete_behavior: ItemDepleteBehavior,
+    /// If specified, the item will be respawned if it is depleted or falls off the map, after the
+    /// specified delay in seconds.
+    #[serde(default = "default_respawn_delay")]
+    pub respawn_delay: Option<f32>,
     /// This specifies the offset from the player position to where the equipped item is drawn
     #[serde(default, with = "core::json::vec2_def")]
     pub mount_offset: Vec2,
     /// The parameters for the `AnimationPlayer` that will be used to draw the item
     #[serde(alias = "animation")]
     pub sprite: AnimatedSpriteMetadata,
+}
+
+fn default_respawn_delay() -> Option<f32> {
+    Some(3.0)
 }
 
 pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> Result<Entity> {
@@ -207,6 +220,10 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
     ));
 
     let uses = meta.uses;
+    let respawn_info = meta.respawn_delay.map(|respawn_delay| RespawnInfo {
+        position,
+        respawn_delay,
+    });
 
     let name = meta.name.clone();
 
@@ -231,6 +248,7 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
                         drop_behavior,
                         deplete_behavior,
                         is_hat,
+                        respawn_info,
                     },
                 ),
             )?;
@@ -277,6 +295,7 @@ pub fn spawn_item(world: &mut World, position: Vec2, meta: MapItemMetadata) -> R
                 effect_offset,
                 drop_behavior,
                 deplete_behavior,
+                respawn_info,
             };
 
             world.insert_one(
@@ -305,6 +324,7 @@ pub struct WeaponParams {
     pub effect_offset: Vec2,
     pub drop_behavior: ItemDropBehavior,
     pub deplete_behavior: ItemDepleteBehavior,
+    pub respawn_info: Option<RespawnInfo>,
 }
 
 impl Default for WeaponParams {
@@ -318,10 +338,12 @@ impl Default for WeaponParams {
             effect_offset: Vec2::ZERO,
             drop_behavior: Default::default(),
             deplete_behavior: Default::default(),
+            respawn_info: None,
         }
     }
 }
 
+#[derive(Clone)]
 pub struct Weapon {
     pub id: String,
     pub name: String,
@@ -337,6 +359,7 @@ pub struct Weapon {
     pub deplete_behavior: ItemDepleteBehavior,
     pub cooldown_timer: f32,
     pub use_cnt: u32,
+    pub respawn_info: Option<RespawnInfo>,
 }
 
 impl Weapon {
@@ -360,6 +383,7 @@ impl Weapon {
             effect_offset: params.effect_offset,
             drop_behavior: params.drop_behavior,
             deplete_behavior: params.deplete_behavior,
+            respawn_info: params.respawn_info,
             cooldown_timer: cooldown,
             use_cnt: 0,
         }
@@ -542,5 +566,91 @@ impl Default for WeaponMetadata {
             recoil: 0.0,
             effect_sprite: None,
         }
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct RespawnInfo {
+    pub position: Vec2,
+    pub respawn_delay: f32,
+}
+
+/// An item that has been destroyed somehow that should respawn
+#[derive(Clone)]
+pub struct RespawningItem {
+    pub timer: Timer,
+    pub info: RespawnInfo,
+    pub kind: RespawningItemKind,
+}
+
+#[derive(Clone)]
+pub enum RespawningItemKind {
+    Weapon(Weapon),
+    Item(Item),
+}
+
+pub fn update_respawning_items(world: &mut World) {
+    let mut to_spawn = Vec::new();
+
+    for (respawning_item_entity, (respawning_item, transform, body, drawable)) in world
+        .query_mut::<(
+            &mut RespawningItem,
+            &mut Transform,
+            &mut PhysicsBody,
+            &mut Drawable,
+        )>()
+    {
+        let respawning_item: &mut RespawningItem = respawning_item;
+        let transform: &mut Transform = transform;
+        let body: &mut PhysicsBody = body;
+        let drawable: &mut Drawable = drawable;
+
+        respawning_item.timer.tick_frame_time();
+
+        if respawning_item.timer.has_finished() {
+            transform.position = respawning_item.info.position;
+            body.velocity = Vec2::ZERO;
+            body.is_deactivated = false;
+            match &mut drawable.kind {
+                crate::DrawableKind::Sprite(s) => s.is_deactivated = false,
+                crate::DrawableKind::SpriteSet(s) => {
+                    if let Some(sprite) = s.map.get_mut(SPRITE_ANIMATED_SPRITE_ID) {
+                        sprite.is_deactivated = false;
+                    }
+                }
+                crate::DrawableKind::AnimatedSprite(s) => s.is_deactivated = false,
+                crate::DrawableKind::AnimatedSpriteSet(s) => {
+                    if let Some(sprite) = s.map.get_mut(SPRITE_ANIMATED_SPRITE_ID) {
+                        sprite.is_deactivated = false;
+                    }
+                }
+            }
+            to_spawn.push(respawning_item_entity);
+        } else {
+            match &mut drawable.kind {
+                crate::DrawableKind::Sprite(s) => s.is_deactivated = true,
+                crate::DrawableKind::SpriteSet(s) => s.deactivate_all(),
+                crate::DrawableKind::AnimatedSprite(s) => s.is_deactivated = true,
+                crate::DrawableKind::AnimatedSpriteSet(s) => s.deactivate_all(),
+            }
+        }
+    }
+
+    for entity in to_spawn {
+        let respawning_item = world.remove_one::<RespawningItem>(entity).unwrap();
+        world.remove_one::<Owner>(entity).ok();
+
+        match respawning_item.kind {
+            RespawningItemKind::Weapon(mut weapon) => {
+                weapon.use_cnt = 0;
+                world.insert_one(entity, weapon)
+            }
+            RespawningItemKind::Item(mut item) => {
+                item.use_cnt = 0;
+                item.duration_timer = 0.0;
+                world.insert_one(entity, item)
+            }
+        }
+        .unwrap();
     }
 }

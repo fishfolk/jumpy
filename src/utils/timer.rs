@@ -1,5 +1,5 @@
 /// A simple timer utility
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Timer {
     duration: f32,
     elapsed: f32,

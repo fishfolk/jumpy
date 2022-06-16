@@ -726,6 +726,54 @@
       "has_collision": false,
       "objects": [
         {
+          "id": "crate",
+          "kind": "item",
+          "position": {
+            "x": 92.20001,
+            "y": 325.08463
+          }
+        },
+        {
+          "id": "crate",
+          "kind": "item",
+          "position": {
+            "x": 1002.99225,
+            "y": 324.26926
+          }
+        },
+        {
+          "id": "crate",
+          "kind": "item",
+          "position": {
+            "x": 79.70007,
+            "y": 118.27142
+          }
+        },
+        {
+          "id": "crate",
+          "kind": "item",
+          "position": {
+            "x": 1013.9857,
+            "y": 124.75714
+          }
+        },
+        {
+          "id": "crate",
+          "kind": "item",
+          "position": {
+            "x": 368.078,
+            "y": 28.023087
+          }
+        },
+        {
+          "id": "crate",
+          "kind": "item",
+          "position": {
+            "x": 646.6118,
+            "y": 24.362648
+          }
+        },
+        {
           "id": "musket",
           "kind": "item",
           "position": {
@@ -745,8 +793,8 @@
           "id": "sword",
           "kind": "item",
           "position": {
-            "x": 382.66666,
-            "y": 7.6666665
+            "x": 518.0513,
+            "y": 35.35897
           }
         },
         {
@@ -786,120 +834,6 @@
     }
   ],
   "tilesets": [
-    {
-      "id": "decorations1",
-      "texture_id": "default_decoration",
-      "texture_size": {
-        "x": 240,
-        "y": 102
-      },
-      "tile_size": {
-        "x": 48.0,
-        "y": 51.0
-      },
-      "grid_size": {
-        "x": 5,
-        "y": 2
-      },
-      "first_tile_id": 64,
-      "tile_cnt": 10,
-      "tile_subdivisions": {
-        "x": 3,
-        "y": 3
-      },
-      "autotile_mask": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
     {
       "id": "tileset",
       "texture_id": "default_tileset",
@@ -1491,16 +1425,130 @@
         false
       ],
       "tile_attributes": {
-        "58": [
-          "jumpthrough"
-        ],
         "56": [
           "jumpthrough"
         ],
         "60": [
           "jumpthrough"
+        ],
+        "58": [
+          "jumpthrough"
         ]
       }
+    },
+    {
+      "id": "decorations1",
+      "texture_id": "default_decoration",
+      "texture_size": {
+        "x": 240,
+        "y": 102
+      },
+      "tile_size": {
+        "x": 48.0,
+        "y": 51.0
+      },
+      "grid_size": {
+        "x": 5,
+        "y": 2
+      },
+      "first_tile_id": 64,
+      "tile_cnt": 10,
+      "tile_subdivisions": {
+        "x": 3,
+        "y": 3
+      },
+      "autotile_mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
     }
   ],
   "spawn_points": [

@@ -20,6 +20,7 @@ use crate::{Drawable, PhysicsBody};
 ///
 /// Refer to `crate::components::animation_player::AnimationParams` for detailed documentation
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PlayerAnimationMetadata {
     #[serde(rename = "texture")]
     pub texture_id: String,
@@ -55,6 +56,7 @@ impl From<PlayerAnimationMetadata> for AnimatedSpriteMetadata {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PlayerAnimations {
     #[serde(default = "PlayerAnimations::default_idle_animation")]
     pub idle: AnimationMetadata,

@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 use crate::player::PlayerAnimationMetadata;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PlayerCharacterMetadata {
     /// This is the id of the player character. This should be unique, or it will either overwrite
     /// or be overwritten, depending on load order, if not.

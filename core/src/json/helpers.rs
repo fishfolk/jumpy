@@ -19,6 +19,7 @@ pub fn is_false(val: &bool) -> bool {
 /// This can be used to wrap types in order to make serde accept both a value and a vector of
 /// values for a field, when deserializing.
 #[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(untagged)]
 pub enum OneOrMany<T: Clone> {
     One(T),
@@ -55,6 +56,7 @@ impl<T: Clone> From<OneOrMany<T>> for Vec<T> {
 /// Furthermore, you can use `GenericParam::Vec` and `GenericParam::HashMap` to allow members of
 /// different types in the same collection, in your JSON objects.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(untagged)]
 pub enum GenericParam {
     Bool(bool),

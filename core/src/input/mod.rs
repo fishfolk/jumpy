@@ -14,6 +14,7 @@ pub use fishsticks::GamepadContext;
 use crate::{Config, Result};
 
 #[derive(Default, Debug, Clone, Copy, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PlayerInput {
     pub left: bool,
     pub right: bool,

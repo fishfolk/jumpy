@@ -44,18 +44,21 @@ const ACTIVE_MODS_FILE_NAME: &str = "active_mods";
 const MOD_FILE_NAME: &str = "fishfight_mod";
 
 #[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct ParticleEffectMetadata {
     id: String,
     path: String,
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct SoundMetadata {
     id: String,
     path: String,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(rename_all = "snake_case")]
 pub enum TextureKind {
     Background,
@@ -64,6 +67,7 @@ pub enum TextureKind {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct TextureMetadata {
     pub id: String,
     pub path: String,
@@ -110,6 +114,7 @@ impl From<TextureResource> for Texture2D {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ImageMetadata {
     pub id: String,
     pub path: String,
@@ -124,6 +129,7 @@ pub struct ImageResource {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct MapMetadata {
     pub name: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -581,6 +587,7 @@ pub async fn load_resources(assets_dir: &str, mods_dir: &str) -> Result<()> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ModMetadata {
     pub id: String,
     #[serde(default)]
@@ -597,12 +604,14 @@ pub struct ModMetadata {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct DependencyMetadata {
     pub id: String,
     pub version: String,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(rename_all = "snake_case")]
 pub enum ModKind {
     DataOnly,

@@ -221,6 +221,7 @@ pub fn debug_draw_physics_bodies(world: &mut World) {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct RigidBodyParams {
     #[serde(with = "core::json::vec2_def")]
     pub offset: Vec2,

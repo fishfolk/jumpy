@@ -18,6 +18,7 @@ use core::Transform;
 const PROJECTILE_DRAW_ORDER: u32 = 1;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ProjectileKind {
     Circle {

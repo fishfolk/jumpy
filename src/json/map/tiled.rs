@@ -12,6 +12,7 @@ use crate::map::{Map, MapLayer, MapLayerKind, MapObject, MapProperty, MapTile, M
 const SPAWN_POINT_MAP_OBJECT_TYPE: &str = "spawn_point";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(rename_all = "snake_case", tag = "type")]
 pub enum TiledProperty {
     Bool { name: String, value: bool },
@@ -24,6 +25,7 @@ pub enum TiledProperty {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct TiledObject {
     pub id: u32,
     pub name: String,
@@ -41,6 +43,7 @@ pub struct TiledObject {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct TiledTileAttribute {
     pub id: u32,
     #[serde(rename = "type")]
@@ -48,12 +51,14 @@ pub struct TiledTileAttribute {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct TiledPolyPoint {
     pub x: f32,
     pub y: f32,
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct TiledTileset {
     pub columns: i32,
     pub image: String,
@@ -73,6 +78,7 @@ pub struct TiledTileset {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct TiledLayer {
     pub name: String,
     pub visible: bool,
@@ -87,6 +93,7 @@ pub struct TiledLayer {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct TiledMap {
     // Optional background color
     pub backgroundcolor: Option<String>,

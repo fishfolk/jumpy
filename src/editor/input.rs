@@ -2,7 +2,7 @@ use macroquad::{experimental::collections::storage, prelude::*};
 
 use fishsticks::{Axis, Button};
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EditorInputScheme {
     Mouse,
     Gamepad(fishsticks::GamepadId),

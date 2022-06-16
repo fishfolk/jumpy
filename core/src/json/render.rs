@@ -67,7 +67,7 @@ pub mod color_opt {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(remote = "FilterMode")]
 pub enum FilterModeDef {
     #[serde(rename = "linear")]

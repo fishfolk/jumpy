@@ -170,7 +170,10 @@ pub fn update_player_states(world: &mut World) {
                 }
             }
 
-            if body.is_on_ground && !body.was_on_ground {
+            // Note we can't use `body.was_on_ground` because it is only updated on fixed update,
+            // and this function may run multiple times in one fixed update, resulting in the
+            // landing sound being played more than once.
+            if body.is_on_ground && !player.was_on_ground {
                 if matches!(player.state, PlayerState::Jumping | PlayerState::Floating) {
                     player.state = PlayerState::None;
                 }

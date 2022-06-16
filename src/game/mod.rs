@@ -33,7 +33,7 @@ use crate::{
 use crate::effects::active::debug_draw_active_effects;
 use crate::effects::active::projectiles::fixed_update_projectiles;
 use crate::effects::active::triggered::{fixed_update_triggered_effects, update_triggered_effects};
-use crate::items::spawn_item;
+use crate::items::{spawn_item, update_respawning_items};
 use crate::map::{
     debug_draw_fish_schools, fixed_update_sproingers, spawn_crab, spawn_decoration,
     spawn_fish_school, spawn_sproinger, update_crabs, update_fish_schools, update_map_kill_zone,
@@ -118,6 +118,7 @@ impl Game {
 
         if matches!(mode, GameMode::Local | GameMode::NetworkHost) {
             updates_builder
+                .add_system(update_respawning_items)
                 .add_system(update_map_kill_zone)
                 .add_system(update_player_states)
                 .add_system(update_player_inventory)

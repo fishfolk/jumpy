@@ -5,11 +5,13 @@ use hecs::{Entity, With, Without, World};
 use core::Transform;
 
 use crate::items::{
-    fire_weapon, ItemDepleteBehavior, ItemDropBehavior, Weapon, EFFECT_ANIMATED_SPRITE_ID,
-    GROUND_ANIMATION_ID, ITEMS_DRAW_ORDER, SPRITE_ANIMATED_SPRITE_ID,
+    fire_weapon, ItemDepleteBehavior, ItemDropBehavior, RespawnInfo, RespawningItem,
+    RespawningItemKind, Weapon, EFFECT_ANIMATED_SPRITE_ID, GROUND_ANIMATION_ID, ITEMS_DRAW_ORDER,
+    SPRITE_ANIMATED_SPRITE_ID,
 };
 use crate::particles::ParticleEmitter;
 use crate::player::{Player, PlayerController, PlayerState, IDLE_ANIMATION_ID, PICKUP_GRACE_TIME};
+use crate::utils::timer::Timer;
 use crate::{Drawable, Item, Owner, PassiveEffectInstance, PhysicsBody};
 
 const THROW_FORCE: f32 = 5.0;
@@ -73,6 +75,10 @@ pub fn update_player_inventory(world: &mut World) {
 
     let mut to_drop = Vec::new();
     let mut to_fire = Vec::new();
+    struct ToDestroy {
+        entity: Entity,
+        respawn_info: Option<RespawnInfo>,
+    }
     let mut to_destroy = Vec::new();
 
     for (entity, (transform, player, controller, inventory, body)) in world
@@ -245,7 +251,10 @@ pub fn update_player_inventory(world: &mut World) {
                 if is_depleted {
                     match weapon.deplete_behavior {
                         ItemDepleteBehavior::Destroy => {
-                            to_destroy.push(weapon_entity);
+                            to_destroy.push(ToDestroy {
+                                entity: weapon_entity,
+                                respawn_info: weapon.respawn_info,
+                            });
                             inventory.weapon = None;
                         }
                         ItemDepleteBehavior::Drop => {
@@ -373,7 +382,7 @@ pub fn update_player_inventory(world: &mut World) {
     for entity in to_drop {
         world.remove_one::<Owner>(entity).unwrap();
 
-        let mut should_destroy = false;
+        let mut should_destroy = None;
 
         if let Ok(mut weapon) = world.get_mut::<Weapon>(entity) {
             match weapon.drop_behavior {
@@ -382,7 +391,10 @@ pub fn update_player_inventory(world: &mut World) {
                     weapon.cooldown_timer = weapon.cooldown;
                 }
                 ItemDropBehavior::Destroy => {
-                    should_destroy = true;
+                    should_destroy = Some(ToDestroy {
+                        entity,
+                        respawn_info: weapon.respawn_info,
+                    });
                 }
                 _ => {}
             }
@@ -394,17 +406,51 @@ pub fn update_player_inventory(world: &mut World) {
                 }
                 ItemDropBehavior::PersistState => {
                     if let Some(uses) = item.uses {
-                        should_destroy = item.use_cnt >= uses;
+                        should_destroy = if item.use_cnt >= uses {
+                            Some(ToDestroy {
+                                entity,
+                                respawn_info: item.respawn_info,
+                            })
+                        } else {
+                            None
+                        };
                     }
                 }
                 ItemDropBehavior::Destroy => {
-                    should_destroy = true;
+                    should_destroy = Some(ToDestroy {
+                        entity,
+                        respawn_info: item.respawn_info,
+                    });
                 }
             }
         }
 
-        if should_destroy {
-            if let Err(err) = world.despawn(entity) {
+        if let Some(to_destroy) = should_destroy {
+            if let Some(respawn_info) = to_destroy.respawn_info {
+                if let Ok(weapon) = world.remove_one::<Weapon>(entity) {
+                    world
+                        .insert_one(
+                            entity,
+                            RespawningItem {
+                                timer: Timer::new(respawn_info.respawn_delay),
+                                info: respawn_info,
+                                kind: RespawningItemKind::Weapon(weapon),
+                            },
+                        )
+                        .unwrap();
+                } else if let Ok(item) = world.remove_one::<Item>(entity) {
+                    world
+                        .insert_one(
+                            entity,
+                            RespawningItem {
+                                timer: Timer::new(respawn_info.respawn_delay),
+                                info: respawn_info,
+                                kind: RespawningItemKind::Item(item),
+                            },
+                        )
+                        .unwrap();
+                }
+            } else if let Err(err) = world.despawn(entity) {
                 #[cfg(debug_assertions)]
                 println!("WARNING: {}", err);
             }
@@ -445,8 +491,34 @@ pub fn update_player_inventory(world: &mut World) {
         }
     }
 
-    for entity in to_destroy {
-        if let Err(err) = world.despawn(entity) {
+    for to_destroy in to_destroy {
+        let entity = to_destroy.entity;
+        let to_destroy: ToDestroy = to_destroy;
+        if let Some(respawn_info) = to_destroy.respawn_info {
+            if let Ok(weapon) = world.remove_one::<Weapon>(to_destroy.entity) {
+                world
+                    .insert_one(
+                        entity,
+                        RespawningItem {
+                            timer: Timer::new(respawn_info.respawn_delay),
+                            info: respawn_info,
+                            kind: RespawningItemKind::Weapon(weapon),
+                        },
+                    )
+                    .unwrap();
+            } else if let Ok(item) = world.remove_one::<Item>(to_destroy.entity) {
+                world
+                    .insert_one(
+                        entity,
+                        RespawningItem {
+                            timer: Timer::new(respawn_info.respawn_delay),
+                            info: respawn_info,
+                            kind: RespawningItemKind::Item(item),
+                        },
+                    )
+                    .unwrap();
+            }
+        } else if let Err(err) = world.despawn(to_destroy.entity) {
             #[cfg(debug_assertions)]
             println!("WARNING: {}", err);
         }

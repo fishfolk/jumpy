@@ -1,5 +1,4 @@
 use hecs::{Entity, World};
-use macroquad::audio::play_sound_once;
 use macroquad::color;
 
 use macroquad::experimental::collections::storage;
@@ -10,6 +9,7 @@ use serde::{Deserialize, Serialize};
 use core::math::{deg_to_rad, rotate_vector, IsZero};
 use core::Result;
 
+use crate::game::play_sound_effect;
 use crate::items::spawn_item;
 use crate::Resources;
 use crate::{PassiveEffectInstance, PassiveEffectMetadata};
@@ -53,10 +53,7 @@ pub fn spawn_active_effect(
     };
 
     if let Some(id) = &params.sound_effect_id {
-        let resources = storage::get::<Resources>();
-        let sound = resources.sounds.get(id).unwrap();
-
-        play_sound_once(*sound);
+        play_sound_effect(id, 1.0);
     }
 
     let mut damage = Vec::new();

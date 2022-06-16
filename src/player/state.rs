@@ -1,4 +1,3 @@
-use macroquad::audio::play_sound_once;
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
 
@@ -6,13 +5,12 @@ use hecs::{Entity, World};
 
 use core::Transform;
 
+use crate::game::play_sound_effect;
 use crate::player::{
     Player, PlayerAttributes, PlayerController, PlayerEventQueue, JUMP_SOUND_ID, LAND_SOUND_ID,
     RESPAWN_DELAY,
 };
-use crate::{
-    CollisionWorld, Drawable, DrawableKind, Item, Map, PhysicsBody, PlayerEvent, Resources,
-};
+use crate::{CollisionWorld, Drawable, DrawableKind, Item, Map, PhysicsBody, PlayerEvent};
 
 const SLIDE_STOP_THRESHOLD: f32 = 2.0;
 const JUMP_FRAME_COUNT: u16 = 8;
@@ -146,10 +144,7 @@ pub fn update_player_states(world: &mut World) {
 
                     player.state = PlayerState::Jumping;
 
-                    let resources = storage::get::<Resources>();
-                    let sound = resources.sounds[JUMP_SOUND_ID];
-
-                    play_sound_once(sound);
+                    play_sound_effect(JUMP_SOUND_ID, 0.4);
                 } else if player.state == PlayerState::Jumping {
                     player.jump_frame_counter += 1;
 
@@ -180,15 +175,14 @@ pub fn update_player_states(world: &mut World) {
                     player.state = PlayerState::None;
                 }
 
+                play_sound_effect(LAND_SOUND_ID, 0.4);
+
                 player.jump_frame_counter = 0;
                 body.has_mass = true;
-
-                let resources = storage::get::<Resources>();
-                let sound = resources.sounds[LAND_SOUND_ID];
-
-                play_sound_once(sound);
             }
         }
+
+        player.was_on_ground = body.is_on_ground;
     }
 }
 

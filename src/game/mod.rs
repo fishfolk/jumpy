@@ -1,5 +1,6 @@
 mod camera;
 mod music;
+pub mod sound;
 
 pub use camera::GameCamera;
 
@@ -44,6 +45,7 @@ use crate::network::{
 };
 use crate::particles::{draw_particles, update_particle_emitters};
 pub use music::{start_music, stop_music};
+pub use sound::play_sound_effect;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum GameMode {

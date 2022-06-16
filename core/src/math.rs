@@ -3,6 +3,7 @@ use macroquad::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct URect {
     pub x: u32,
     pub y: u32,

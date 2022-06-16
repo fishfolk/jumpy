@@ -224,6 +224,8 @@ pub fn spawn_active_effect(
 
 /// This holds all the common parameters, available to all implementations, as well as specialized
 /// parameters, in the `ActiveEffectKind`.
+// NOTE: We would prefer to `serde(deny_unknown_fields)` here, but we are blocked by this issue:
+// https://github.com/serde-rs/serde/issues/1358
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ActiveEffectMetadata {
     /// This holds all the specialized parameters for the effect, dependent on the implementation,
@@ -251,6 +253,7 @@ pub struct ActiveEffectMetadata {
 /// The effects that have the `Collider` suffix denote effects that do an immediate collider check,
 /// upon attack, using the weapons `effect_offset` as origin.
 #[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ActiveEffectKind {
     /// Check for hits with a `Circle` collider.

@@ -14,6 +14,7 @@ use core::Transform;
 use crate::{AnimatedSpriteMetadata, Resources};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ParticleEmitterMetadata {
     /// The id of the particle effect.
     #[serde(rename = "particle_effect")]

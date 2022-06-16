@@ -67,6 +67,7 @@ impl Default for ItemDepleteBehavior {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum MapItemKind {
     Weapon {
@@ -137,6 +138,8 @@ pub struct ItemMetadata {
     pub is_hat: bool,
 }
 
+// NOTE: We would prefer to `serde(deny_unknown_fields)` here, but we are blocked by this issue:
+// https://github.com/serde-rs/serde/issues/1358
 #[derive(Clone, Serialize, Deserialize)]
 pub struct MapItemMetadata {
     pub id: String,
@@ -484,6 +487,7 @@ pub struct WeaponAnimationMetadata {
 /// This holds parameters specific to the `Weapon` variant of `ItemKind`, used to instantiate a
 /// `Weapon` struct instance, when an `Item` of type `Weapon` is picked up.
 #[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct WeaponMetadata {
     /// This specifies the effects to instantiate when the weapon is used to attack
     #[serde(default)]

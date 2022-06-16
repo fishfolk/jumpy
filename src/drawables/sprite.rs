@@ -14,6 +14,7 @@ use crate::Resources;
 
 /// Parameters for `Sprite` component.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct SpriteMetadata {
     /// The id of the texture that will be used
     #[serde(rename = "texture")]

@@ -33,6 +33,7 @@ const EXTRA_PLAYABLE_WIDTH: f32 = 400.0;
 pub type MapProperty = core::json::GenericParam;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct MapBackgroundLayer {
     pub texture_id: String,
     pub depth: f32,
@@ -41,6 +42,7 @@ pub struct MapBackgroundLayer {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(into = "json::MapDef", from = "json::MapDef")]
 pub struct Map {
     #[serde(
@@ -455,6 +457,7 @@ impl<'a> Iterator for MapTileIterator<'a> {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(rename_all = "snake_case")]
 pub enum MapLayerKind {
     TileLayer,
@@ -495,6 +498,7 @@ impl Default for MapLayerKind {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct MapLayer {
     pub id: String,
     pub kind: MapLayerKind,
@@ -550,6 +554,7 @@ impl Default for MapLayer {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct MapTile {
     pub tile_id: u32,
     pub tileset_id: String,
@@ -561,6 +566,7 @@ pub struct MapTile {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(rename_all = "snake_case")]
 pub enum MapObjectKind {
     Item,
@@ -632,6 +638,7 @@ impl ComboBoxValue for MapObjectKind {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct MapObject {
     pub id: String,
     pub kind: MapObjectKind,
@@ -653,6 +660,7 @@ impl MapObject {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct MapTileset {
     pub id: String,
     pub texture_id: String,

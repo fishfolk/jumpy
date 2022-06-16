@@ -26,6 +26,7 @@ pub mod vec2_def {
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
         #[serde(field_identifier, rename_all = "snake_case")]
         enum Field {
             X,
@@ -102,6 +103,7 @@ pub mod uvec2_def {
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
         #[serde(field_identifier, rename_all = "snake_case")]
         enum Field {
             X,
@@ -178,6 +180,7 @@ pub mod ivec2_def {
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
         #[serde(field_identifier, rename_all = "snake_case")]
         enum Field {
             X,
@@ -237,6 +240,7 @@ pub mod vec2_opt {
         S: Serializer,
     {
         #[derive(Serialize)]
+        #[serde(deny_unknown_fields)]
         struct Helper<'a>(#[serde(with = "super::vec2_def")] &'a Vec2);
 
         value.as_ref().map(Helper).serialize(serializer)
@@ -247,6 +251,7 @@ pub mod vec2_opt {
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
         struct Helper(#[serde(with = "super::vec2_def")] Vec2);
 
         let helper = Option::deserialize(deserializer)?;
@@ -263,6 +268,7 @@ pub mod vec2_vec {
         S: Serializer,
     {
         #[derive(Serialize)]
+        #[serde(deny_unknown_fields)]
         struct Helper<'a>(#[serde(with = "super::vec2_def")] &'a Vec2);
 
         let helper: Vec<Helper> = value.iter().map(Helper).collect();
@@ -274,6 +280,7 @@ pub mod vec2_vec {
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
         struct Helper(#[serde(with = "super::vec2_def")] Vec2);
 
         let helper = Vec::deserialize(deserializer)?;
@@ -293,6 +300,7 @@ pub mod uvec2_opt {
         S: Serializer,
     {
         #[derive(Serialize)]
+        #[serde(deny_unknown_fields)]
         struct Helper<'a>(#[serde(with = "super::uvec2_def")] &'a UVec2);
 
         value.as_ref().map(Helper).serialize(serializer)
@@ -303,6 +311,7 @@ pub mod uvec2_opt {
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
         struct Helper(#[serde(with = "super::uvec2_def")] UVec2);
 
         let helper = Option::deserialize(deserializer)?;
@@ -319,6 +328,7 @@ pub mod ivec2_opt {
         S: Serializer,
     {
         #[derive(Serialize)]
+        #[serde(deny_unknown_fields)]
         struct Helper<'a>(#[serde(with = "super::ivec2_def")] &'a IVec2);
 
         value.as_ref().map(Helper).serialize(serializer)
@@ -329,6 +339,7 @@ pub mod ivec2_opt {
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
         struct Helper(#[serde(with = "super::ivec2_def")] IVec2);
 
         let helper = Option::deserialize(deserializer)?;
@@ -337,6 +348,7 @@ pub mod ivec2_opt {
 }
 
 #[derive(Copy, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(remote = "Rect")]
 pub struct RectDef {
     x: f32,
@@ -378,6 +390,7 @@ pub mod rect_opt {
         S: Serializer,
     {
         #[derive(Serialize)]
+        #[serde(deny_unknown_fields)]
         struct Helper<'a>(#[serde(with = "RectDef")] &'a Rect);
 
         value.as_ref().map(Helper).serialize(serializer)
@@ -388,6 +401,7 @@ pub mod rect_opt {
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
         struct Helper(#[serde(with = "RectDef")] Rect);
 
         let helper = Option::deserialize(deserializer)?;

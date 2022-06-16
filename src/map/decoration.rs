@@ -10,6 +10,7 @@ use core::Transform;
 const DECORATION_DRAW_ORDER: u32 = 0;
 
 #[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct DecorationMetadata {
     pub id: String,
     pub sprite: AnimatedSpriteMetadata,

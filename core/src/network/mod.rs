@@ -16,6 +16,7 @@ pub type LobbyId = String;
 pub type PlayerId = String;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Server {
     pub http: SocketAddr,
     pub udp: SocketAddr,
@@ -23,6 +24,7 @@ pub struct Server {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(rename_all = "snake_case")]
 pub enum LobbyPrivacy {
     Public,
@@ -30,6 +32,7 @@ pub enum LobbyPrivacy {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Lobby {
     pub id: LobbyId,
     pub name: String,
@@ -44,6 +47,7 @@ pub struct Lobby {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub enum LobbyState {
     NotStarted,
     Ready,
@@ -54,6 +58,7 @@ pub enum LobbyState {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Player {
     pub id: PlayerId,
     pub username: String,
@@ -71,6 +76,7 @@ impl Player {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub enum ClientState {
     Unknown,
     Joined,

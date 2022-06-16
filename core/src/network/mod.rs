@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 pub type LobbyId = String;
 pub type PlayerId = String;
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Server {
     pub http: SocketAddr,
     pub udp: SocketAddr,

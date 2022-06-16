@@ -25,7 +25,7 @@ pub struct PlayerInput {
     pub slide: bool,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GameInputScheme {
     /// Left side of the keyboard, around WASD
     KeyboardRight,

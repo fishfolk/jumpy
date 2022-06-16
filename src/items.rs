@@ -2,12 +2,13 @@
 //! Proto-mods, eventually some of the items will move to some sort of a wasm runtime
 
 use hecs::{Entity, World};
-use macroquad::audio::{play_sound_once, Sound};
+use macroquad::audio::{play_sound, PlaySoundParams, Sound};
 use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
+use crate::game::sound::SOUND_EFFECT_VOLUME;
 use crate::{
     ActiveEffectMetadata, AnimatedSpriteMetadata, CollisionWorld, Drawable, PassiveEffectMetadata,
     PhysicsBody, QueuedAnimationAction, Resources,
@@ -403,7 +404,13 @@ pub fn fire_weapon(world: &mut World, entity: Entity, owner: Entity) -> Result<(
             weapon.cooldown_timer = 0.0;
 
             if let Some(sound) = weapon.sound_effect {
-                play_sound_once(sound);
+                play_sound(
+                    sound,
+                    PlaySoundParams {
+                        looped: false,
+                        volume: SOUND_EFFECT_VOLUME,
+                    },
+                );
             }
 
             let mut drawable = world.get_mut::<Drawable>(entity).unwrap();

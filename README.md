@@ -72,26 +72,9 @@ pacman -S fishfight
 2. Clone this repository: `git clone https://github.com/fishfight/FishFight.git`
 3. `cargo run`
 
-## Default key bindings
+## Default Keybindings
 
-Keyboard right:
-- movement: arrow keys `↑`, `←`, `↓`, `→`
-- pick/drop: `K`
-- attack: `L`
-- slide: `↓` + `RightCtrl`
-
-Keyboard left:
-- movement: `W`, `A`, `S`, `D` (& `Space` for jump)
-- pick/drop: `C`
-- attack: `V` & `LeftCtrl`
-- slide: `A` + `F`
-
-Gamepad:
-- movement: direction axis
-- pick/drop: `X`
-- attack: `B`
-- jump: `A`
-- slide: `Down` + `Y`
+You can view and modify the default keybindings in [config.toml](./config.toml).
 
 ## Credits
 

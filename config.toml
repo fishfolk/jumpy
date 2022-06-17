@@ -24,7 +24,7 @@ slide = 'F'
 
 [[input.gamepads]]
 id = 0
-fire = 'A'
-jump = 'X'
+fire = 'X'
+jump = 'A'
 pickup = 'B'
 slide = 'Y'

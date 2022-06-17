@@ -94,6 +94,8 @@ pub fn collect_local_input(input_scheme: GameInputScheme) -> PlayerInput {
                 .digital_inputs
                 .just_activated(input_mapping.jump.into());
 
+            input.float = gamepad.digital_inputs.activated(input_mapping.jump.into());
+
             input.pickup = gamepad
                 .digital_inputs
                 .just_activated(input_mapping.pickup.into());

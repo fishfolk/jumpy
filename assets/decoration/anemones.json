@@ -3,10 +3,6 @@
   "sprite": {
     "texture": "default_decoration",
     "autoplay_id": "idle",
-    "frame_size": {
-      "x": 48,
-      "y": 51
-    },
     "animations": [
       {
         "id": "idle",

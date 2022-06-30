@@ -1,5 +1,4 @@
 use hecs::{Entity, World};
-use macroquad::audio::play_sound_once;
 use macroquad::color;
 
 use macroquad::experimental::collections::storage;
@@ -10,6 +9,7 @@ use serde::{Deserialize, Serialize};
 use core::math::{deg_to_rad, rotate_vector, IsZero};
 use core::Result;
 
+use crate::game::play_sound_effect;
 use crate::items::spawn_item;
 use crate::Resources;
 use crate::{PassiveEffectInstance, PassiveEffectMetadata};
@@ -53,10 +53,7 @@ pub fn spawn_active_effect(
     };
 
     if let Some(id) = &params.sound_effect_id {
-        let resources = storage::get::<Resources>();
-        let sound = resources.sounds.get(id).unwrap();
-
-        play_sound_once(*sound);
+        play_sound_effect(id, 1.0);
     }
 
     let mut damage = Vec::new();
@@ -227,6 +224,8 @@ pub fn spawn_active_effect(
 
 /// This holds all the common parameters, available to all implementations, as well as specialized
 /// parameters, in the `ActiveEffectKind`.
+// NOTE: We would prefer to `serde(deny_unknown_fields)` here, but we are blocked by this issue:
+// https://github.com/serde-rs/serde/issues/1358
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ActiveEffectMetadata {
     /// This holds all the specialized parameters for the effect, dependent on the implementation,
@@ -254,6 +253,7 @@ pub struct ActiveEffectMetadata {
 /// The effects that have the `Collider` suffix denote effects that do an immediate collider check,
 /// upon attack, using the weapons `effect_offset` as origin.
 #[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ActiveEffectKind {
     /// Check for hits with a `Circle` collider.

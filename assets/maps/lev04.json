@@ -199,9 +199,6 @@
         9,
         9,
         21,
-        23,
-        23,
-        24,
         0,
         0,
         0,
@@ -227,13 +224,19 @@
         0,
         0,
         0,
-        22,
-        23,
-        23,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
         14,
         9,
         9,
         10,
+        59,
+        59,
+        61,
         0,
         0,
         0,
@@ -259,12 +262,9 @@
         0,
         0,
         0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
+        57,
+        59,
+        59,
         8,
         9,
         9,
@@ -598,6 +598,54 @@
       "has_collision": false,
       "objects": [
         {
+          "id": "sniper_rifle",
+          "kind": "item",
+          "position": {
+            "x": 956.28564,
+            "y": 217.14284
+          }
+        },
+        {
+          "id": "blunderbass",
+          "kind": "item",
+          "position": {
+            "x": 77.7143,
+            "y": 231.42854
+          }
+        },
+        {
+          "id": "crab",
+          "kind": "environment",
+          "position": {
+            "x": 549.5714,
+            "y": 208.1429
+          }
+        },
+        {
+          "id": "crab",
+          "kind": "environment",
+          "position": {
+            "x": 468.71423,
+            "y": 49.571457
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 867.2858,
+            "y": 323.14285
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 65.7143,
+            "y": 102.14285
+          }
+        },
+        {
           "id": "seaweed",
           "kind": "decoration",
           "position": {
@@ -610,7 +658,7 @@
           "kind": "decoration",
           "position": {
             "x": 472.5,
-            "y": 334.0
+            "y": 334.00003
           }
         },
         {
@@ -641,16 +689,16 @@
           "id": "seaweed",
           "kind": "decoration",
           "position": {
-            "x": 710.0,
-            "y": 16.5
+            "x": 708.1818,
+            "y": 12.863632
           }
         },
         {
           "id": "seaweed",
           "kind": "decoration",
           "position": {
-            "x": 83.0,
-            "y": 67.5
+            "x": 73.45456,
+            "y": 110.35715
           }
         },
         {
@@ -678,11 +726,59 @@
       "has_collision": false,
       "objects": [
         {
+          "id": "crate",
+          "kind": "item",
+          "position": {
+            "x": 92.20001,
+            "y": 325.08463
+          }
+        },
+        {
+          "id": "crate",
+          "kind": "item",
+          "position": {
+            "x": 1002.99225,
+            "y": 324.26926
+          }
+        },
+        {
+          "id": "crate",
+          "kind": "item",
+          "position": {
+            "x": 79.70007,
+            "y": 118.27142
+          }
+        },
+        {
+          "id": "crate",
+          "kind": "item",
+          "position": {
+            "x": 1013.9857,
+            "y": 124.75714
+          }
+        },
+        {
+          "id": "crate",
+          "kind": "item",
+          "position": {
+            "x": 368.078,
+            "y": 28.023087
+          }
+        },
+        {
+          "id": "crate",
+          "kind": "item",
+          "position": {
+            "x": 646.6118,
+            "y": 24.362648
+          }
+        },
+        {
           "id": "musket",
           "kind": "item",
           "position": {
-            "x": 589.0,
-            "y": 330.83334
+            "x": 595.79486,
+            "y": 352.79916
           }
         },
         {
@@ -697,8 +793,8 @@
           "id": "sword",
           "kind": "item",
           "position": {
-            "x": 382.66666,
-            "y": 7.6666665
+            "x": 518.0513,
+            "y": 35.35897
           }
         },
         {
@@ -713,32 +809,24 @@
           "id": "sword",
           "kind": "item",
           "position": {
-            "x": 309.0,
-            "y": 327.0
+            "x": 256.85715,
+            "y": 354.85715
           }
         },
         {
           "id": "mines",
           "kind": "item",
           "position": {
-            "x": 635.5905,
-            "y": 41.094215
+            "x": 778.05804,
+            "y": 29.276031
           }
         },
         {
           "id": "sproinger",
           "kind": "environment",
           "position": {
-            "x": 499.48517,
-            "y": 367.1083
-          }
-        },
-        {
-          "id": "sproinger",
-          "kind": "environment",
-          "position": {
-            "x": 586.8749,
-            "y": 366.11847
+            "x": 544.4851,
+            "y": 364.33054
           }
         }
       ],
@@ -746,120 +834,6 @@
     }
   ],
   "tilesets": [
-    {
-      "id": "decorations1",
-      "texture_id": "default_decoration",
-      "texture_size": {
-        "x": 240,
-        "y": 102
-      },
-      "tile_size": {
-        "x": 48.0,
-        "y": 51.0
-      },
-      "grid_size": {
-        "x": 5,
-        "y": 2
-      },
-      "first_tile_id": 64,
-      "tile_cnt": 10,
-      "tile_subdivisions": {
-        "x": 3,
-        "y": 3
-      },
-      "autotile_mask": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
     {
       "id": "tileset",
       "texture_id": "default_tileset",
@@ -1451,16 +1425,130 @@
         false
       ],
       "tile_attributes": {
-        "58": [
+        "56": [
           "jumpthrough"
         ],
         "60": [
           "jumpthrough"
         ],
-        "56": [
+        "58": [
           "jumpthrough"
         ]
       }
+    },
+    {
+      "id": "decorations1",
+      "texture_id": "default_decoration",
+      "texture_size": {
+        "x": 240,
+        "y": 102
+      },
+      "tile_size": {
+        "x": 48.0,
+        "y": 51.0
+      },
+      "grid_size": {
+        "x": 5,
+        "y": 2
+      },
+      "first_tile_id": 64,
+      "tile_cnt": 10,
+      "tile_subdivisions": {
+        "x": 3,
+        "y": 3
+      },
+      "autotile_mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
     }
   ],
   "spawn_points": [
@@ -1473,12 +1561,12 @@
       "y": 328.66666
     },
     {
-      "x": 141.0,
-      "y": 72.0
+      "x": 137.42857,
+      "y": 101.28572
     },
     {
-      "x": 976.0,
-      "y": 73.0
+      "x": 973.857,
+      "y": 100.14285
     }
   ]
 }

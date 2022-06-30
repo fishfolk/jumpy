@@ -13,6 +13,7 @@ use crate::map::{
 pub use tiled::TiledMap;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct MapDef {
     #[serde(
         default = "Map::default_background_color",
@@ -200,6 +201,7 @@ impl From<MapDef> for Map {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct MapLayerDef {
     pub id: String,
     pub kind: MapLayerKind,

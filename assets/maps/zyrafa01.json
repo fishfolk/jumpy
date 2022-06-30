@@ -688,51 +688,107 @@
       "has_collision": false,
       "objects": [
         {
+          "id": "grenades",
+          "kind": "item",
+          "position": {
+            "x": 706.4,
+            "y": 313.525
+          }
+        },
+        {
+          "id": "kick_bomb",
+          "kind": "item",
+          "position": {
+            "x": 68.5,
+            "y": 301.0
+          }
+        },
+        {
+          "id": "crab",
+          "kind": "environment",
+          "position": {
+            "x": 437.15137,
+            "y": 454.3866
+          }
+        },
+        {
+          "id": "crab",
+          "kind": "environment",
+          "position": {
+            "x": 426.4284,
+            "y": 305.14282
+          }
+        },
+        {
+          "id": "crab",
+          "kind": "environment",
+          "position": {
+            "x": 767.923,
+            "y": 323.23077
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 632.07684,
+            "y": 437.76926
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 124.46149,
+            "y": 282.15387
+          }
+        },
+        {
           "id": "sword",
           "kind": "item",
           "position": {
-            "x": 640.0,
-            "y": 256.0
+            "x": 690.7143,
+            "y": 323.14285
           }
         },
         {
           "id": "mines",
           "kind": "item",
           "position": {
-            "x": 224.0,
-            "y": 480.0
+            "x": 239.88235,
+            "y": 252.94118
           }
         },
         {
           "id": "sword",
           "kind": "item",
           "position": {
-            "x": 288.0,
-            "y": 256.0
+            "x": 73.71431,
+            "y": 326.0
           }
         },
         {
-          "id": "sword",
+          "id": "blunderbass",
           "kind": "item",
           "position": {
-            "x": 464.0,
-            "y": 384.0
+            "x": 410.4353,
+            "y": 484.04706
           }
         },
         {
           "id": "mines",
           "kind": "item",
           "position": {
-            "x": 704.0,
-            "y": 480.0
+            "x": 592.2353,
+            "y": 252.94118
           }
         },
         {
           "id": "musket",
           "kind": "item",
           "position": {
-            "x": 464.0,
-            "y": 480.0
+            "x": 407.52942,
+            "y": 287.05884
           }
         }
       ],
@@ -1331,13 +1387,13 @@
         false
       ],
       "tile_attributes": {
-        "58": [
+        "56": [
           "jumpthrough"
         ],
         "60": [
           "jumpthrough"
         ],
-        "56": [
+        "58": [
           "jumpthrough"
         ]
       }

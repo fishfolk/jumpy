@@ -7,6 +7,7 @@ use crate::input::mapping::InputMapping;
 use crate::Result;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Config {
     #[serde(default)]
     pub window: WindowConfig,
@@ -32,6 +33,7 @@ impl Config {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct WindowConfig {
     pub width: u32,
     pub height: u32,

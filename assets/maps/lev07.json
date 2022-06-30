@@ -747,6 +747,22 @@
       "has_collision": false,
       "objects": [
         {
+          "id": "grenades",
+          "kind": "item",
+          "position": {
+            "x": 36.699997,
+            "y": 217.32353
+          }
+        },
+        {
+          "id": "grenades",
+          "kind": "item",
+          "position": {
+            "x": 802.0353,
+            "y": 218.47058
+          }
+        },
+        {
           "id": "crab",
           "kind": "environment",
           "position": {
@@ -1438,13 +1454,13 @@
         false
       ],
       "tile_attributes": {
-        "58": [
+        "60": [
           "jumpthrough"
         ],
         "56": [
           "jumpthrough"
         ],
-        "60": [
+        "58": [
           "jumpthrough"
         ]
       }

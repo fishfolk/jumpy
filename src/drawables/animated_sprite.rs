@@ -70,6 +70,7 @@ impl From<TweenMetadata> for Tween {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Keyframe {
     pub frame: u32,
     #[serde(with = "core::json::vec2_def")]
@@ -555,6 +556,7 @@ impl From<&[(&str, AnimatedSprite)]> for AnimatedSpriteSet {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct AnimationMetadata {
     pub id: String,
     pub row: u32,
@@ -578,12 +580,14 @@ impl From<AnimationMetadata> for MQAnimation {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct TweenMetadata {
     pub id: String,
     pub keyframes: Vec<Keyframe>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct AnimatedSpriteMetadata {
     #[serde(rename = "texture")]
     pub texture_id: String,

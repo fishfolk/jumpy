@@ -60,8 +60,7 @@
             "fps": 12,
             "is_looping": true
           }
-        ],
-        "should_autoplay": true
+        ]
       },
       "particles": [
         {

@@ -20,6 +20,7 @@ const TRIGGERED_EFFECT_DRAW_ORDER: u32 = 5;
 
 /// The various collision types that can trigger a `TriggeredEffect`.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(rename_all = "snake_case")]
 pub enum TriggeredEffectTrigger {
     /// The player that deployed the effect
@@ -379,6 +380,7 @@ pub fn update_triggered_effects(world: &mut World) {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct TriggeredEffectMetadata {
     /// The effects to instantiate when the triggers condition is met
     #[serde(default, alias = "effect")]
@@ -477,6 +479,7 @@ impl Default for TriggeredEffectMetadata {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct TriggeredEffectGrabOptions {
     /// The size of the grab-zone
     #[serde(with = "core::json::vec2_def")]

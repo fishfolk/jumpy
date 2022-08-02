@@ -1,4 +1,4 @@
-# Fish Fight: Jumpy
+# Fish Folk: Jumpy
 
 [![Build Status](https://img.shields.io/github/workflow/status/fishfight/jumpy/Continuous%20integration?logo=github&labelColor=1e1c24&color=8bcfcf)](https://github.com/fishfight/jumpy/actions) [![Documentation](https://img.shields.io/badge/documentation-fishfight.github.io-green.svg?labelColor=1e1c24&color=f3ee7a)](https://fishfight.github.io/FishFight/) [![License](https://img.shields.io/badge/License-MIT%20or%20Apache%202-green.svg?label=license&labelColor=1e1c24&color=34925e)](./LICENSE) [![Discord](https://img.shields.io/badge/chat-on%20discord-green.svg?logo=discord&logoColor=fff&labelColor=1e1c24&color=8d5b3f)](https://discord.gg/4smxjcheE5)
 
@@ -6,7 +6,7 @@
 
 ## Introduction
 
-Fish Fight: Jumpy is a tactical 2D shooter, played by up to 4 players online or on a shared screen. Aim either left or right; the rest is up to clever movement and positioning in this fish-on-fish brawler! For more information about our origin story (Duck Game et.al.) and big-picture plans, see our [design document](https://www.notion.so/erlendsh/Fish-Fight-1647ed74217e4e38a59bd28f4f5bc81a).
+Fish Folk: Jumpy is a tactical 2D shooter, played by up to 4 players online or on a shared screen. Aim either left or right; the rest is up to clever movement and positioning in this fish-on-fish brawler! For more information about our origin story (Duck Game et.al.) and big-picture plans, see our [design document](https://www.notion.so/erlendsh/Fish-Fight-1647ed74217e4e38a59bd28f4f5bc81a).
 
 ### Key Features (WIP)
 
@@ -26,9 +26,9 @@ https://twitter.com/fishfightgame/status/1424084016467226624
 
 ### Contributing
 
-Anyone involved in the Fish Fight community must follow our [code of conduct](https://github.com/fishfight/jumpy/blob/main/CODE_OF_CONDUCT.md).
+Anyone involved in the Fish Folk community must follow our [code of conduct](https://github.com/fishfight/jumpy/blob/main/CODE_OF_CONDUCT.md).
 
-If you'd like to make something for Fish Fight, check out our [help-wanted](https://github.com/fishfight/jumpy/labels/help%20wanted) issues or just ask us on [Discord](https://discord.gg/4smxjcheE5). We'll soon post an updated roadmap for the next month or two of work ahead.
+If you'd like to make something for Fish Figh: Jumpy check out our [help-wanted](https://github.com/fishfolis/jumpy/labels/help%20wanted) issues or just ask us on [Discord](https://discord.gg/4smxjcheE5). We'll soon post an updated roadmap for the next month or two of work ahead.
 
 Before committing and opening a PR, please run the following commands and follow their instructions:
 1. `cargo clippy -- -W clippy::correctness -D warnings`
@@ -71,5 +71,5 @@ You can view and modify the default keybindings in [config.toml](./config.toml).
 
 ## Credits
 
-- [Fish Fight: Jumpy Credits](./CREDITS.md)
+- [Fish Folk: Jumpy Credits](./CREDITS.md)
 - Input Icons: [Kadith's Icons](https://kadith.itch.io/kadiths-free-icons) by Kadith

@@ -1,8 +1,8 @@
 [package]
-name = "fishfight"
-version = "0.4.2"
+name = "jumpy"
+version = "0.4.3"
 description = "A tactical 2D shooter"
-authors = ["Fish Fight Contributors"]
+authors = ["The Fish Fight Game & Spicy Lobster Developers"]
 license = "MIT OR Apache-2.0"
 edition = "2021"
 
@@ -19,8 +19,7 @@ members = ["core"]
 opt-level = 3
 
 [dependencies]
-core = { path = "./core", package = "fishfight-core" }
-# ultimate = { path = "../FishFight-ultimate", package = "fishfight-ultimate", optional = true }
+core = { path = "./core", package = "jumpy-core" }
 ff-particles = { version = "0.1", features = ["serde"] }
 fishsticks = { git = "https://github.com/fishfight/fishsticks", default-features = false, features = ["gilrs"] }
 macroquad = { version = "=0.3.16" } # Newer versions break is_key_pressed detection

@@ -163,36 +163,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "fishfight"
-version = "0.4.2"
-dependencies = [
- "ff-particles",
- "fishfight-core",
- "fishsticks",
- "hecs",
- "macroquad",
- "macroquad-platformer",
- "serde",
- "serde_json",
- "wasm-bindgen",
-]
-
-[[package]]
-name = "fishfight-core"
-version = "0.4.2"
-dependencies = [
- "async-trait",
- "fishsticks",
- "getrandom",
- "hecs",
- "macroquad",
- "serde",
- "serde_json",
- "toml",
- "wasm-bindgen",
-]
-
-[[package]]
 name = "fishsticks"
 version = "0.2.3"
 source = "git+https://github.com/fishfight/fishsticks#25bd7676c85064ad976c449317f30b623f5e7515"
@@ -341,6 +311,36 @@ version = "0.3.58"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c3fac17f7123a73ca62df411b1bf727ccc805daa070338fda671c86dac1bdc27"
 dependencies = [
+ "wasm-bindgen",
+]
+
+[[package]]
+name = "jumpy"
+version = "0.4.3"
+dependencies = [
+ "ff-particles",
+ "fishsticks",
+ "hecs",
+ "jumpy-core",
+ "macroquad",
+ "macroquad-platformer",
+ "serde",
+ "serde_json",
+ "wasm-bindgen",
+]
+
+[[package]]
+name = "jumpy-core"
+version = "0.4.3"
+dependencies = [
+ "async-trait",
+ "fishsticks",
+ "getrandom",
+ "hecs",
+ "macroquad",
+ "serde",
+ "serde_json",
+ "toml",
  "wasm-bindgen",
 ]
 

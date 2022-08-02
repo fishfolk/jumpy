@@ -41,7 +41,7 @@ pub const MAP_PREVIEW_PLACEHOLDER_PATH: &str = "maps/no_preview.png";
 pub const MAP_PREVIEW_PLACEHOLDER_ID: &str = "map_preview_placeholder";
 
 const ACTIVE_MODS_FILE_NAME: &str = "active_mods";
-const MOD_FILE_NAME: &str = "fishfight_mod";
+const MOD_FILE_NAME: &str = "jumpy_mod";
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]

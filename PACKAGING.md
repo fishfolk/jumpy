@@ -1,4 +1,4 @@
-## Packaging Fish Fight
+## Packaging Fish Fight: Jumpy
 
 ### Dependencies
 
@@ -25,28 +25,28 @@ cargo run --release --locked
 
 ### Environment variables
 
-- `FISHFIGHT_CONFIG`: configuration file (default: `config.json`)
-- `FISHFIGHT_ASSETS`: assets directory (default: `assets/`)
-- `FISHFIGHT_MODS`: mods directory (default: `mods/`)
+- `JUMPY_CONFIG`: configuration file (default: `config.json`)
+- `JUMPY_ASSETS`: assets directory (default: `assets/`)
+- `JUMPY_MODS`: mods directory (default: `mods/`)
 
 ### Package
 
-Binary will be located at `target/release/fishfight` after [build](#build). To run it, `assets` directory should be placed in the same directory or a path can be specified via `FISHFIGHT_ASSETS` environment variable.
+Binary will be located at `target/release/jumpy` after [build](#build). To run it, `assets` directory should be placed in the same directory or a path can be specified via `JUMPY_ASSETS` environment variable.
 
 For example:
 
 ```sh
-export FISHFIGHT_ASSETS=/opt/fishfight/assets/
-export FISHFIGHT_MODS=/opt/fishfight/mods/
-target/release/fishfight
+export JUMPY_ASSETS=/opt/jumpy/assets/
+export JUMPY_MODS=/opt/jumpy/mods/
+target/release/jumpy
 ```
 
 Also see [README.md#distro-packages](./README.md#distro-packages)
 
 ### Binary releases
 
-Binary releases are automated via [Continuous Deployment](./.github/workflows/release.yml) workflow and they can be downloaded from the [releases](https://github.com/fishfight/FishFight/releases) page. Release artifacts are named in the following format:
+Binary releases are automated via [Continuous Deployment](./.github/workflows/release.yml) workflow and they can be downloaded from the [releases](https://github.com/fishfight/jumpy/releases) page. Release artifacts are named in the following format:
 
-- `fishfight-<version>-<target>.<ext>`
+- `jumpy-<version>-<target>.<ext>`
 
-A single archive includes the `fishfight` binary and `assets` directory. It can be verified by using a SHA256 hash file that has the same name as the artifact except it ends with ".sha256". Release artifacts are not signed at this time.
+A single archive includes the `jumpy` binary and `assets` directory. It can be verified by using a SHA256 hash file that has the same name as the artifact except it ends with ".sha256". Release artifacts are not signed at this time.

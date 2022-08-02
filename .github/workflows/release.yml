@@ -71,12 +71,12 @@ jobs:
         shell: bash
         if: matrix.config.os == 'windows-latest'
         run: |
-          release_dir="fishfight-${{ env.RELEASE_VERSION }}"
-          artifact_path="fishfight-${{ env.RELEASE_VERSION }}-${{ matrix.config.target }}.zip"
+          release_dir="jumpy-${{ env.RELEASE_VERSION }}"
+          artifact_path="jumpy-${{ env.RELEASE_VERSION }}-${{ matrix.config.target }}.zip"
           echo "ARTIFACT_PATH=$artifact_path" >> $GITHUB_ENV
           mkdir $release_dir
-          cp target/${{ matrix.config.target }}/release/fishfight.exe $release_dir/
-          strip $release_dir/fishfight.exe
+          cp target/${{ matrix.config.target }}/release/jumpy.exe $release_dir/
+          strip $release_dir/jumpy.exe
           find assets -name "*.schema.json" -exec rm -f {} \;
           cp -R assets/ mods/ licenses/ $release_dir/
           cp LICENSE $release_dir/licenses/
@@ -86,12 +86,12 @@ jobs:
         shell: bash
         if: matrix.config.os != 'windows-latest'
         run: |
-          release_dir="fishfight-${{ env.RELEASE_VERSION }}"
-          artifact_path="fishfight-${{ env.RELEASE_VERSION }}-${{ matrix.config.target }}.tar.gz"
+          release_dir="jumpy-${{ env.RELEASE_VERSION }}"
+          artifact_path="jumpy-${{ env.RELEASE_VERSION }}-${{ matrix.config.target }}.tar.gz"
           echo "ARTIFACT_PATH=$artifact_path" >> $GITHUB_ENV
           mkdir $release_dir
-          cp target/${{ matrix.config.target }}/release/fishfight $release_dir/
-          strip $release_dir/fishfight || true
+          cp target/${{ matrix.config.target }}/release/jumpy $release_dir/
+          strip $release_dir/jumpy || true
           find assets -name "*.schema.json" -exec rm -f {} \;
           cp -R assets mods licenses $release_dir
           cp LICENSE $release_dir/licenses
@@ -121,15 +121,15 @@ jobs:
         run: echo "RELEASE_VERSION=${GITHUB_REF:10}" >> $GITHUB_ENV
 
       - name: Generate Checksums
-        run: for file in fishfight-*/fishfight-*; do openssl dgst -sha256 -r "$file" | awk '{print $1}' > "${file}.sha256"; done
+        run: for file in jumpy-*/jumpy-*; do openssl dgst -sha256 -r "$file" | awk '{print $1}' > "${file}.sha256"; done
 
       - name: Publish Release
         uses: svenstaro/upload-release-action@v2
         with:
           release_name: Release ${{ env.RELEASE_VERSION }}
-          file: fishfight-*/fishfight-*
+          file: jumpy-*/jumpy-*
           file_glob: true
           overwrite: true
-          body: "FishFight ${{ env.RELEASE_VERSION }} 🐟"
+          body: "FishFight: Jumpy ${{ env.RELEASE_VERSION }} 🐟"
           tag: ${{ github.ref }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}

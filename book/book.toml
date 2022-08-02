@@ -7,5 +7,5 @@ title = "Fish Fight Documentation"
 
 [output.html]
 default-theme = "navy"
-git-repository-url = "https://github.com/fishfight/FishFight"
+git-repository-url = "https://github.com/fishfight/jumpy"
 git-repository-icon = "fa-github"

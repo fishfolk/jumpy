@@ -44,18 +44,21 @@ const ACTIVE_MODS_FILE_NAME: &str = "active_mods";
 const MOD_FILE_NAME: &str = "jumpy_mod";
 
 #[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct ParticleEffectMetadata {
     id: String,
     path: String,
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct SoundMetadata {
     id: String,
     path: String,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(rename_all = "snake_case")]
 pub enum TextureKind {
     Background,
@@ -64,6 +67,7 @@ pub enum TextureKind {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct TextureMetadata {
     pub id: String,
     pub path: String,
@@ -110,6 +114,7 @@ impl From<TextureResource> for Texture2D {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ImageMetadata {
     pub id: String,
     pub path: String,
@@ -124,6 +129,7 @@ pub struct ImageResource {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct MapMetadata {
     pub name: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -430,13 +436,15 @@ impl Resources {
         let assets_path = Path::new(&self.assets_dir);
         let export_path = assets_path.join(&map_resource.meta.path);
 
+        let mut map_already_existed = false;
         if export_path.exists() {
             let mut i = 0;
             while i < self.maps.len() {
                 let res = &self.maps[i];
                 if res.meta.path == map_resource.meta.path {
-                    if res.meta.is_user_map {
-                        self.maps.remove(i);
+                    if res.meta.is_user_map || cfg!(debug_assertions) {
+                        map_already_existed = true;
+                        self.maps[i] = map_resource.clone();
                         break;
                     } else {
                         return Err(formaterr!(
@@ -453,7 +461,9 @@ impl Resources {
 
         map_resource.map.save(export_path)?;
 
-        self.maps.push(map_resource.clone());
+        if !map_already_existed {
+            self.maps.push(map_resource.clone());
+        }
         self.save_maps_file()?;
 
         Ok(())
@@ -577,6 +587,7 @@ pub async fn load_resources(assets_dir: &str, mods_dir: &str) -> Result<()> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ModMetadata {
     pub id: String,
     #[serde(default)]
@@ -593,12 +604,14 @@ pub struct ModMetadata {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct DependencyMetadata {
     pub id: String,
     pub version: String,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(rename_all = "snake_case")]
 pub enum ModKind {
     DataOnly,

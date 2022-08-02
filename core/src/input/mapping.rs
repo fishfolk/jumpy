@@ -6,6 +6,7 @@ use crate::error::ErrorKind;
 use crate::Result;
 
 #[derive(Debug, Copy, Clone, PartialEq, Hash, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub enum KeyCode {
     Space,
     Apostrophe,
@@ -387,6 +388,7 @@ impl From<KeyCode> for macroquad::input::KeyCode {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub enum Button {
     A,
     B,
@@ -460,6 +462,7 @@ impl From<Button> for fishsticks::Button {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct KeyMapping {
     primary: KeyCode,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -467,6 +470,7 @@ pub struct KeyMapping {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct KeyboardMapping {
     pub left: KeyCode,
     pub right: KeyCode,
@@ -504,6 +508,7 @@ impl KeyboardMapping {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct GamepadMapping {
     pub id: usize,
     pub fire: Button,
@@ -526,12 +531,13 @@ impl From<usize> for GamepadMapping {
 
 impl From<&GamepadId> for GamepadMapping {
     fn from(id: &GamepadId) -> Self {
-        let id: usize = id.into();
+        let id: usize = (*id).into();
         id.into()
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct InputMapping {
     #[serde(
         default = "KeyboardMapping::default_primary",

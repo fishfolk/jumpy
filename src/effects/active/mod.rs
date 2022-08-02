@@ -1,5 +1,4 @@
 use hecs::{Entity, World};
-use macroquad::audio::play_sound_once;
 use macroquad::color;
 
 use macroquad::experimental::collections::storage;
@@ -10,6 +9,8 @@ use serde::{Deserialize, Serialize};
 use core::math::{deg_to_rad, rotate_vector, IsZero};
 use core::Result;
 
+use crate::game::play_sound_effect;
+use crate::items::spawn_item;
 use crate::Resources;
 use crate::{PassiveEffectInstance, PassiveEffectMetadata};
 
@@ -42,6 +43,7 @@ struct RectCollider {
 pub fn spawn_active_effect(
     world: &mut World,
     owner: Entity,
+    spawner: Entity,
     origin: Vec2,
     params: ActiveEffectMetadata,
 ) -> Result<()> {
@@ -51,10 +53,7 @@ pub fn spawn_active_effect(
     };
 
     if let Some(id) = &params.sound_effect_id {
-        let resources = storage::get::<Resources>();
-        let sound = resources.sounds.get(id).unwrap();
-
-        play_sound_once(*sound);
+        play_sound_effect(id, 1.0);
     }
 
     let mut damage = Vec::new();
@@ -186,6 +185,34 @@ pub fn spawn_active_effect(
                 },
             );
         }
+        ActiveEffectKind::SpawnItem {
+            item,
+            offset,
+            inherit_spawner_velocity,
+        } => {
+            let resources = storage::get::<Resources>();
+            let item_meta = resources.items.get(&item).expect("Item doesn't exist");
+
+            match spawn_item(world, origin + offset, item_meta.clone()) {
+                Ok(entity) => {
+                    if inherit_spawner_velocity {
+                        let spawner_velocity = {
+                            let mut spawner_body_query =
+                                world.query_one::<&PhysicsBody>(spawner).unwrap();
+                            let spawner_body = spawner_body_query.get().unwrap();
+                            spawner_body.velocity
+                        };
+
+                        let mut entity_body =
+                            world.query_one_mut::<&mut PhysicsBody>(entity).unwrap();
+                        entity_body.velocity = spawner_velocity;
+                    }
+                }
+                Err(e) => {
+                    println!("WARNING: {:?}", e);
+                }
+            }
+        }
     }
 
     for (damage_from_entity, damage_to_entity) in damage.drain(0..) {
@@ -197,6 +224,8 @@ pub fn spawn_active_effect(
 
 /// This holds all the common parameters, available to all implementations, as well as specialized
 /// parameters, in the `ActiveEffectKind`.
+// NOTE: We would prefer to `serde(deny_unknown_fields)` here, but we are blocked by this issue:
+// https://github.com/serde-rs/serde/issues/1358
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ActiveEffectMetadata {
     /// This holds all the specialized parameters for the effect, dependent on the implementation,
@@ -224,6 +253,7 @@ pub struct ActiveEffectMetadata {
 /// The effects that have the `Collider` suffix denote effects that do an immediate collider check,
 /// upon attack, using the weapons `effect_offset` as origin.
 #[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ActiveEffectKind {
     /// Check for hits with a `Circle` collider.
@@ -282,6 +312,13 @@ pub enum ActiveEffectKind {
         #[serde(default, skip_serializing_if = "Vec::is_empty")]
         particles: Vec<ParticleEmitterMetadata>,
     },
+    SpawnItem {
+        item: String,
+        #[serde(default, with = "core::json::vec2_def")]
+        offset: Vec2,
+        #[serde(default)]
+        inherit_spawner_velocity: bool,
+    },
 }
 
 pub fn debug_draw_active_effects(world: &mut World) {
@@ -319,6 +356,15 @@ pub fn debug_draw_active_effects(world: &mut World) {
 
         if collider.ttl_timer >= COLLIDER_DEBUG_DRAW_TTL {
             to_remove.push(e);
+        }
+    }
+
+    for (_, (transform, body, effect)) in
+        world.query_mut::<(&Transform, &PhysicsBody, &TriggeredEffect)>()
+    {
+        if let Some(opts) = &effect.grab_options {
+            let rect = opts.get_collider_rect(transform.position, body.velocity);
+            draw_rectangle_lines(rect.x, rect.y, rect.w, rect.h, 2.0, color::ORANGE);
         }
     }
 

@@ -21,6 +21,7 @@ pub mod particles;
 pub mod physics;
 pub mod player;
 pub mod resources;
+pub mod utils;
 
 pub mod drawables;
 
@@ -136,7 +137,6 @@ async fn init_game() -> Result<bool> {
         }
         MainMenuResult::ReloadResources => {
             reload_resources();
-            return Ok(true);
         }
         MainMenuResult::Credits => {
             let resources = storage::get::<Resources>();
@@ -232,6 +232,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                 match event {
                     ApplicationEvent::ReloadResources => {
                         load_resources(&assets_dir, &mods_dir).await?;
+                        break 'inner;
                     }
                     ApplicationEvent::MainMenu => break 'inner,
                     ApplicationEvent::Quit => break 'outer,

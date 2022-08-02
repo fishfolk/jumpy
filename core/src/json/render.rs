@@ -7,6 +7,7 @@ pub fn default_scale() -> f32 {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(remote = "Color")]
 pub struct ColorDef {
     #[serde(rename = "red", alias = "r")]
@@ -50,6 +51,7 @@ pub mod color_opt {
         S: Serializer,
     {
         #[derive(Serialize)]
+        #[serde(deny_unknown_fields)]
         struct Helper<'a>(#[serde(with = "super::ColorDef")] &'a Color);
 
         value.as_ref().map(Helper).serialize(serializer)
@@ -60,6 +62,7 @@ pub mod color_opt {
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
         struct Helper(#[serde(with = "super::ColorDef")] Color);
 
         let helper = Option::deserialize(deserializer)?;
@@ -67,7 +70,8 @@ pub mod color_opt {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(remote = "FilterMode")]
 pub enum FilterModeDef {
     #[serde(rename = "linear")]

@@ -9,7 +9,7 @@ use hecs::{Entity, World};
 mod turtle_shell;
 
 use crate::player::PlayerEventKind;
-use crate::PlayerEvent;
+use crate::{AnimatedSprite, AnimatedSpriteMetadata, PlayerEvent};
 
 static mut PASSIVE_EFFECT_FUNCS: Option<HashMap<String, PassiveEffectFn>> = None;
 
@@ -46,6 +46,8 @@ pub struct PassiveEffectInstance {
     pub name: String,
     pub function: Option<PassiveEffectFn>,
     pub activated_on: Vec<PlayerEventKind>,
+    pub sprite: Option<AnimatedSprite>,
+    pub sprite_entity: Option<Entity>,
     pub particle_effect_id: Option<String>,
     pub event_particle_effect_id: Option<String>,
     pub blocks_damage: bool,
@@ -64,6 +66,8 @@ impl PassiveEffectInstance {
             name: meta.name,
             function,
             activated_on: meta.activated_on,
+            sprite: meta.sprite.map(Into::into),
+            sprite_entity: None,
             particle_effect_id: meta.particle_effect_id,
             event_particle_effect_id: meta.event_particle_effect_id,
             blocks_damage: meta.blocks_damage,
@@ -97,6 +101,7 @@ impl PassiveEffectInstance {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PassiveEffectMetadata {
     pub name: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -127,4 +132,8 @@ pub struct PassiveEffectMetadata {
     /// This is the duration of the effect.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub duration: Option<f32>,
+
+    /// An optional sprite to add to the player along with the effect
+    #[serde(alias = "animation")]
+    pub sprite: Option<AnimatedSpriteMetadata>,
 }

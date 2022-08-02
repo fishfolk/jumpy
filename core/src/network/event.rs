@@ -4,6 +4,7 @@ use super::PlayerId;
 use crate::network::Lobby;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(rename_all = "snake_case")]
 pub enum NetworkEvent {
     LobbyCreated {

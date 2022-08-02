@@ -42,7 +42,6 @@
           "type": "circle_collider",
           "radius": 64,
           "is_explosion": true,
-          "particle_effect": "hit",
           "sound_effect": "explode"
         },
         {

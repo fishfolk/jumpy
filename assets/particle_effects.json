@@ -62,5 +62,13 @@
   {
     "id": "cannon_cannonball_smoke",
     "path": "particle_effects/cannon_cannonball_smoke.json"
+  },
+  {
+    "id": "blunderbuss_muzzle_smoke",
+    "path": "particle_effects/blunderbuss_muzzle_smoke.json"
+  },
+  {
+    "id": "blunderbuss_bullet_smoke",
+    "path": "particle_effects/blunderbuss_bullet_smoke.json"
   }
 ]

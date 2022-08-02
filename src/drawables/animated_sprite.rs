@@ -70,6 +70,7 @@ impl From<TweenMetadata> for Tween {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Keyframe {
     pub frame: u32,
     #[serde(with = "core::json::vec2_def")]
@@ -147,6 +148,27 @@ pub struct AnimatedSprite {
     pub is_flipped_y: bool,
     pub is_deactivated: bool,
     pub wait_timer: f32,
+}
+
+impl From<AnimatedSpriteMetadata> for AnimatedSprite {
+    fn from(meta: AnimatedSpriteMetadata) -> Self {
+        let animations = meta
+            .animations
+            .into_iter()
+            .map(Into::into)
+            .collect::<Vec<_>>();
+
+        let params = AnimatedSpriteParams {
+            scale: meta.scale.unwrap_or(1.0),
+            offset: meta.offset,
+            pivot: meta.pivot,
+            tint: meta.tint.unwrap_or(color::WHITE),
+            autoplay_id: meta.autoplay_id,
+            ..Default::default()
+        };
+
+        AnimatedSprite::new(&meta.texture_id, animations.as_slice(), params)
+    }
 }
 
 impl AnimatedSprite {
@@ -534,6 +556,7 @@ impl From<&[(&str, AnimatedSprite)]> for AnimatedSpriteSet {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct AnimationMetadata {
     pub id: String,
     pub row: u32,
@@ -557,12 +580,14 @@ impl From<AnimationMetadata> for MQAnimation {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct TweenMetadata {
     pub id: String,
     pub keyframes: Vec<Keyframe>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct AnimatedSpriteMetadata {
     #[serde(rename = "texture")]
     pub texture_id: String,

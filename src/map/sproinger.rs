@@ -1,5 +1,3 @@
-use macroquad::audio::play_sound_once;
-use macroquad::experimental::collections::storage;
 use macroquad::prelude::*;
 use std::collections::HashMap;
 
@@ -8,7 +6,8 @@ use hecs::{Entity, World};
 use core::Result;
 use core::Transform;
 
-use crate::{Animation, Drawable, PhysicsBody, QueuedAnimationAction, Resources};
+use crate::game::play_sound_effect;
+use crate::{Animation, Drawable, PhysicsBody, QueuedAnimationAction};
 
 const SPROINGER_DRAW_ORDER: u32 = 2;
 
@@ -25,7 +24,7 @@ const COOLDOWN: f32 = 0.75;
 const TRIGGER_WIDTH: f32 = 32.0;
 const TRIGGER_HEIGHT: f32 = 8.0;
 
-const FORCE: f32 = 35.0;
+const FORCE: f32 = 25.0;
 
 #[derive(Default)]
 pub struct Sproinger {
@@ -104,11 +103,6 @@ pub fn fixed_update_sproingers(world: &mut World) {
     {
         sproinger.cooldown_timer += dt;
 
-        let sound = {
-            let resources = storage::get::<Resources>();
-            resources.sounds[SOUND_EFFECT_ID]
-        };
-
         if sproinger.cooldown_timer >= COOLDOWN {
             let sprite = drawable.get_animated_sprite_mut().unwrap();
             sprite.set_animation(IDLE_ANIMATION_ID, true);
@@ -128,7 +122,7 @@ pub fn fixed_update_sproingers(world: &mut World) {
                         CONTRACT_ANIMATION_ID.to_string(),
                     ));
 
-                    play_sound_once(sound);
+                    play_sound_effect(SOUND_EFFECT_ID, 1.0);
 
                     continue 'sproingers;
                 }

@@ -1,7 +1,11 @@
 use std::any::TypeId;
 use std::path::Path;
 
-use crate::{exit_to_main_menu, quit_to_desktop, Resources};
+use crate::{
+    exit_to_main_menu,
+    map::{CRAB_TEXTURE_ID, FISH_SCHOOL_ICON_TEXTURE_ID},
+    quit_to_desktop, Resources,
+};
 
 mod camera;
 
@@ -153,7 +157,7 @@ pub struct Editor {
 }
 
 impl Editor {
-    const CAMERA_PAN_THRESHOLD: f32 = 0.025;
+    const CAMERA_PAN_THRESHOLD: f32 = 0.005;
 
     const CAMERA_PAN_SPEED: f32 = 5.0;
     const CAMERA_ZOOM_STEP: f32 = 0.1;
@@ -614,7 +618,7 @@ impl Editor {
                 let mut gui = storage::get_mut::<EditorGui>();
                 gui.add_window(LoadMapWindow::new());
             }
-            EditorAction::SaveMap(name) => {
+            EditorAction::SaveMap { name, is_user_map } => {
                 let mut map_resource = self.map_resource.clone();
 
                 if let Some(name) = name {
@@ -626,7 +630,9 @@ impl Editor {
                     map_resource.meta.path = path.to_string_lossy().to_string();
                 }
 
-                map_resource.meta.is_user_map = true;
+                if let Some(is_user_map) = is_user_map {
+                    map_resource.meta.is_user_map = is_user_map;
+                }
                 map_resource.meta.is_tiled_map = false;
 
                 let mut resources = storage::get_mut::<Resources>();
@@ -688,7 +694,10 @@ impl Node for Editor {
 
         if node.input.save {
             let action = if node.map_resource.meta.is_user_map {
-                EditorAction::SaveMap(None)
+                EditorAction::SaveMap {
+                    name: None,
+                    is_user_map: None,
+                }
             } else {
                 EditorAction::OpenSaveMapWindow
             };
@@ -1050,9 +1059,14 @@ impl Node for Editor {
         } else if let Some(dragged_object) = node.dragged_object.take() {
             let map = node.get_map();
 
+            let click_offset = match dragged_object {
+                DraggedObject::MapObject { click_offset, .. }
+                | DraggedObject::SpawnPoint { click_offset, .. } => click_offset,
+            };
+
             let cursor_world_position = scene::find_node_by_type::<EditorCamera>()
                 .unwrap()
-                .to_world_space(node.cursor_position);
+                .to_world_space(node.cursor_position - click_offset);
 
             let mut position = (cursor_world_position).clamp(
                 map.world_offset,
@@ -1070,10 +1084,8 @@ impl Node for Editor {
                     kind,
                     index,
                     layer_id,
-                    click_offset,
+                    ..
                 } => {
-                    let position = position - click_offset;
-
                     let action = EditorAction::UpdateObject {
                         id,
                         kind,
@@ -1084,12 +1096,7 @@ impl Node for Editor {
 
                     node.apply_action(action);
                 }
-                DraggedObject::SpawnPoint {
-                    index,
-                    click_offset,
-                } => {
-                    let position = position - click_offset;
-
+                DraggedObject::SpawnPoint { index, .. } => {
                     let action = EditorAction::MoveSpawnPoint { index, position };
 
                     node.apply_action(action);
@@ -1449,10 +1456,16 @@ impl Node for Editor {
                                         label = Some("INVALID OBJECT ID".to_string());
                                     }
                                 }
-                                MapObjectKind::Environment => {
-                                    if &object.id == "sproinger" {
+                                MapObjectKind::Environment => match object.id.as_str() {
+                                    "sproinger" | "crab" | "fish_school" => {
+                                        let texture_id = match object.id.as_str() {
+                                            "sproinger" => "sproinger",
+                                            "crab" => CRAB_TEXTURE_ID,
+                                            "fish_school" => FISH_SCHOOL_ICON_TEXTURE_ID,
+                                            _ => unreachable!(),
+                                        };
                                         let texture_res =
-                                            resources.textures.get("sproinger").unwrap();
+                                            resources.textures.get(texture_id).unwrap();
 
                                         let frame_size =
                                             texture_res.meta.frame_size.unwrap_or_else(|| {
@@ -1476,10 +1489,11 @@ impl Node for Editor {
                                                 ..Default::default()
                                             },
                                         );
-                                    } else {
+                                    }
+                                    _ => {
                                         label = Some("INVALID OBJECT ID".to_string());
                                     }
-                                }
+                                },
                             }
 
                             let size = get_object_size(object);
@@ -1603,14 +1617,21 @@ fn get_object_size(object: &MapObject) -> Vec2 {
                 label = Some("INVALID OBJECT ID".to_string())
             }
         }
-        MapObjectKind::Environment => {
-            if &object.id == "sproinger" {
+        MapObjectKind::Environment => match object.id.as_str() {
+            "sproinger" => {
                 let texture_res = resources.textures.get("sproinger").unwrap();
                 res = texture_res.meta.frame_size;
-            } else {
-                label = Some("INVALID OBJECT ID".to_string())
             }
-        }
+            "crab" => {
+                let texture_res = resources.textures.get(CRAB_TEXTURE_ID).unwrap();
+                res = texture_res.meta.frame_size;
+            }
+            "fish_school" => {
+                let texture_res = resources.textures.get(FISH_SCHOOL_ICON_TEXTURE_ID).unwrap();
+                res = texture_res.meta.frame_size;
+            }
+            _ => label = Some("INVALID OBJECT ID".to_string()),
+        },
     }
 
     if let Some(label) = &label {

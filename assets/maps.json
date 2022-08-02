@@ -30,6 +30,11 @@
     "preview_path": "maps/lev06.png"
   },
   {
+    "name": "lev07",
+    "path": "maps/lev07.json",
+    "preview_path": "maps/lev07.png"
+  },
+  {
     "name": "zyrafa01",
     "path": "maps/zyrafa01.json",
     "preview_path": "maps/zyrafa01.png"

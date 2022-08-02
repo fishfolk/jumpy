@@ -23,7 +23,7 @@ use macroquad::{
     ui::{root_ui, widgets},
 };
 
-use super::{EditorAction, EditorContext};
+use super::{EditorAction, EditorCamera, EditorContext};
 
 use crate::{
     gui::{GuiResources, ELEMENT_MARGIN},
@@ -141,13 +141,17 @@ impl EditorGui {
             ContextMenuEntry::action("Redo", EditorAction::Redo),
         ];
 
+        let object_world_position = scene::find_node_by_type::<EditorCamera>()
+            .unwrap()
+            .to_world_space(position);
+
         if let Some(layer_id) = &ctx.selected_layer {
             let layer = &map.layers.get(layer_id).unwrap();
             if layer.kind == MapLayerKind::ObjectLayer {
                 entries.push(ContextMenuEntry::action(
                     "Create Object",
                     EditorAction::OpenCreateObjectWindow {
-                        position,
+                        position: object_world_position,
                         layer_id: layer_id.clone(),
                     },
                 ));
@@ -313,7 +317,10 @@ impl EditorGui {
                         res = Some(action);
                     }
                     EDITOR_MENU_RESULT_SAVE => {
-                        let action = EditorAction::SaveMap(None);
+                        let action = EditorAction::SaveMap {
+                            name: None,
+                            is_user_map: None,
+                        };
                         res = Some(action);
                     }
                     EDITOR_MENU_RESULT_SAVE_AS => {

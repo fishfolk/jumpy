@@ -5,11 +5,13 @@ use hecs::{Entity, With, Without, World};
 use core::Transform;
 
 use crate::items::{
-    fire_weapon, ItemDepleteBehavior, ItemDropBehavior, Weapon, EFFECT_ANIMATED_SPRITE_ID,
-    GROUND_ANIMATION_ID, ITEMS_DRAW_ORDER, SPRITE_ANIMATED_SPRITE_ID,
+    fire_weapon, ItemDepleteBehavior, ItemDropBehavior, RespawnInfo, RespawningItem,
+    RespawningItemKind, Weapon, EFFECT_ANIMATED_SPRITE_ID, GROUND_ANIMATION_ID, ITEMS_DRAW_ORDER,
+    SPRITE_ANIMATED_SPRITE_ID,
 };
 use crate::particles::ParticleEmitter;
 use crate::player::{Player, PlayerController, PlayerState, IDLE_ANIMATION_ID, PICKUP_GRACE_TIME};
+use crate::utils::timer::Timer;
 use crate::{Drawable, Item, Owner, PassiveEffectInstance, PhysicsBody};
 
 const THROW_FORCE: f32 = 5.0;
@@ -25,6 +27,9 @@ pub struct PlayerInventory {
     pub weapon: Option<Entity>,
     pub items: Vec<Entity>,
     pub hat: Option<Entity>,
+    /// Systems can set this to Some(entity) in order to schedule a replacement of the player's
+    /// current weapon ( if any ) with the specified weapon.
+    pub pending_weapon_replacement: Option<Entity>,
 }
 
 impl PlayerInventory {
@@ -39,6 +44,7 @@ impl PlayerInventory {
             weapon: None,
             items: Vec::new(),
             hat: None,
+            pending_weapon_replacement: None,
         }
     }
 
@@ -69,6 +75,10 @@ pub fn update_player_inventory(world: &mut World) {
 
     let mut to_drop = Vec::new();
     let mut to_fire = Vec::new();
+    struct ToDestroy {
+        entity: Entity,
+        respawn_info: Option<RespawnInfo>,
+    }
     let mut to_destroy = Vec::new();
 
     for (entity, (transform, player, controller, inventory, body)) in world
@@ -133,7 +143,15 @@ pub fn update_player_inventory(world: &mut World) {
                 i += 1;
             }
 
-            if controller.should_pickup {
+            let mut weapon_entity_to_pick_up = None;
+
+            if let Some(we) = inventory.pending_weapon_replacement.take() {
+                if let Some(weapon_entity) = inventory.weapon.take() {
+                    to_drop.push(weapon_entity);
+                }
+
+                weapon_entity_to_pick_up = Some(we);
+            } else if controller.should_pickup {
                 if let Some(weapon_entity) = inventory.weapon.take() {
                     to_drop.push(weapon_entity);
 
@@ -147,31 +165,36 @@ pub fn update_player_inventory(world: &mut World) {
 
                     body.velocity = velocity;
                 } else if player.pickup_grace_timer >= PICKUP_GRACE_TIME {
-                    for (i, &(weapon_entity, rect)) in weapon_colliders.iter().enumerate() {
+                    for (i, &(we, rect)) in weapon_colliders.iter().enumerate() {
                         if player_rect.overlaps(&rect) {
-                            picked_up.push((entity, weapon_entity));
                             weapon_colliders.remove(i);
-
-                            inventory.weapon = Some(weapon_entity);
-                            player.pickup_grace_timer = 0.0;
-
-                            let mut body = world.get_mut::<PhysicsBody>(weapon_entity).unwrap();
-                            body.is_deactivated = true;
-
-                            let mut drawable = world.get_mut::<Drawable>(weapon_entity).unwrap();
-                            let sprite_set = drawable.get_animated_sprite_set_mut().unwrap();
-
-                            sprite_set.set_all(IDLE_ANIMATION_ID, true);
-
+                            weapon_entity_to_pick_up = Some(we);
                             break;
                         }
                     }
                 }
             }
 
-            if let Some(weapon_entity) = inventory.weapon {
-                let mut weapon = world.get_mut::<Weapon>(weapon_entity).unwrap();
+            if let Some(weapon_entity) = weapon_entity_to_pick_up {
+                picked_up.push((entity, weapon_entity));
 
+                inventory.weapon = Some(weapon_entity);
+                player.pickup_grace_timer = 0.0;
+
+                let mut body = world.get_mut::<PhysicsBody>(weapon_entity).unwrap();
+                body.is_deactivated = true;
+
+                let mut drawable = world.get_mut::<Drawable>(weapon_entity).unwrap();
+                let sprite_set = drawable.get_animated_sprite_set_mut().unwrap();
+
+                sprite_set.set_all(IDLE_ANIMATION_ID, true);
+            }
+
+            if let Some(Ok((weapon_entity, mut weapon))) = inventory.weapon.map(|entity| {
+                world
+                    .get_mut::<Weapon>(entity)
+                    .map(|weapon| (entity, weapon))
+            }) {
                 weapon.cooldown_timer += get_frame_time();
 
                 let mut weapon_transform = world.get_mut::<Transform>(weapon_entity).unwrap();
@@ -230,7 +253,10 @@ pub fn update_player_inventory(world: &mut World) {
                 if is_depleted {
                     match weapon.deplete_behavior {
                         ItemDepleteBehavior::Destroy => {
-                            to_destroy.push(weapon_entity);
+                            to_destroy.push(ToDestroy {
+                                entity: weapon_entity,
+                                respawn_info: weapon.respawn_info,
+                            });
                             inventory.weapon = None;
                         }
                         ItemDepleteBehavior::Drop => {
@@ -358,7 +384,7 @@ pub fn update_player_inventory(world: &mut World) {
     for entity in to_drop {
         world.remove_one::<Owner>(entity).unwrap();
 
-        let mut should_destroy = false;
+        let mut should_destroy = None;
 
         if let Ok(mut weapon) = world.get_mut::<Weapon>(entity) {
             match weapon.drop_behavior {
@@ -367,7 +393,10 @@ pub fn update_player_inventory(world: &mut World) {
                     weapon.cooldown_timer = weapon.cooldown;
                 }
                 ItemDropBehavior::Destroy => {
-                    should_destroy = true;
+                    should_destroy = Some(ToDestroy {
+                        entity,
+                        respawn_info: weapon.respawn_info,
+                    });
                 }
                 _ => {}
             }
@@ -379,17 +408,51 @@ pub fn update_player_inventory(world: &mut World) {
                 }
                 ItemDropBehavior::PersistState => {
                     if let Some(uses) = item.uses {
-                        should_destroy = item.use_cnt >= uses;
+                        should_destroy = if item.use_cnt >= uses {
+                            Some(ToDestroy {
+                                entity,
+                                respawn_info: item.respawn_info,
+                            })
+                        } else {
+                            None
+                        };
                     }
                 }
                 ItemDropBehavior::Destroy => {
-                    should_destroy = true;
+                    should_destroy = Some(ToDestroy {
+                        entity,
+                        respawn_info: item.respawn_info,
+                    });
                 }
             }
         }
 
-        if should_destroy {
-            if let Err(err) = world.despawn(entity) {
+        if let Some(to_destroy) = should_destroy {
+            if let Some(respawn_info) = to_destroy.respawn_info {
+                if let Ok(weapon) = world.remove_one::<Weapon>(entity) {
+                    world
+                        .insert_one(
+                            entity,
+                            RespawningItem {
+                                timer: Timer::new(respawn_info.respawn_delay),
+                                info: respawn_info,
+                                kind: RespawningItemKind::Weapon(weapon),
+                            },
+                        )
+                        .unwrap();
+                } else if let Ok(item) = world.remove_one::<Item>(entity) {
+                    world
+                        .insert_one(
+                            entity,
+                            RespawningItem {
+                                timer: Timer::new(respawn_info.respawn_delay),
+                                info: respawn_info,
+                                kind: RespawningItemKind::Item(item),
+                            },
+                        )
+                        .unwrap();
+                }
+            } else if let Err(err) = world.despawn(entity) {
                 #[cfg(debug_assertions)]
                 println!("WARNING: {}", err);
             }
@@ -430,8 +493,34 @@ pub fn update_player_inventory(world: &mut World) {
         }
     }
 
-    for entity in to_destroy {
-        if let Err(err) = world.despawn(entity) {
+    for to_destroy in to_destroy {
+        let entity = to_destroy.entity;
+        let to_destroy: ToDestroy = to_destroy;
+        if let Some(respawn_info) = to_destroy.respawn_info {
+            if let Ok(weapon) = world.remove_one::<Weapon>(to_destroy.entity) {
+                world
+                    .insert_one(
+                        entity,
+                        RespawningItem {
+                            timer: Timer::new(respawn_info.respawn_delay),
+                            info: respawn_info,
+                            kind: RespawningItemKind::Weapon(weapon),
+                        },
+                    )
+                    .unwrap();
+            } else if let Ok(item) = world.remove_one::<Item>(to_destroy.entity) {
+                world
+                    .insert_one(
+                        entity,
+                        RespawningItem {
+                            timer: Timer::new(respawn_info.respawn_delay),
+                            info: respawn_info,
+                            kind: RespawningItemKind::Item(item),
+                        },
+                    )
+                    .unwrap();
+            }
+        } else if let Err(err) = world.despawn(to_destroy.entity) {
             #[cfg(debug_assertions)]
             println!("WARNING: {}", err);
         }
@@ -458,8 +547,7 @@ const HUD_USE_COUNT_COLOR_EMPTY: Color = Color {
 
 pub fn draw_weapons_hud(world: &mut World) {
     for (_, (transform, inventory)) in world.query::<(&Transform, &PlayerInventory)>().iter() {
-        if let Some(weapon_entity) = inventory.weapon {
-            let weapon = world.get::<Weapon>(weapon_entity).unwrap();
+        if let Some(Ok(weapon)) = inventory.weapon.map(|entity| world.get::<Weapon>(entity)) {
             if let Some(uses) = weapon.uses {
                 let is_destroyed_on_depletion =
                     weapon.deplete_behavior == ItemDepleteBehavior::Destroy;

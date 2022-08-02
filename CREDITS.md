@@ -34,6 +34,7 @@
 - Srayan Jana, [@ValorZard](https://github.com/ValorZard) – Dev Advocacy
 - Alve Larsson, [@AlveLarsson](https://github.com/AlveLarsson) – Website
 - William Batista, [@billyb2](https://github.com/billyb2) – Gameplay Code
+- [@zicklag](https://github.com/zicklag) — Gameplay Code
 
 # Tech Foundations
 

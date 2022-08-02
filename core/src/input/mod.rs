@@ -14,6 +14,7 @@ pub use fishsticks::GamepadContext;
 use crate::{Config, Result};
 
 #[derive(Default, Debug, Clone, Copy, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PlayerInput {
     pub left: bool,
     pub right: bool,
@@ -25,7 +26,7 @@ pub struct PlayerInput {
     pub slide: bool,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GameInputScheme {
     /// Left side of the keyboard, around WASD
     KeyboardRight,
@@ -77,7 +78,7 @@ pub fn collect_local_input(input_scheme: GameInputScheme) -> PlayerInput {
                 let config = storage::get::<Config>();
                 config
                     .input
-                    .get_gamepad_mapping(ix.into())
+                    .get_gamepad_mapping((*ix).into())
                     .unwrap_or_else(|| ix.into())
             };
 
@@ -92,6 +93,8 @@ pub fn collect_local_input(input_scheme: GameInputScheme) -> PlayerInput {
             input.jump = gamepad
                 .digital_inputs
                 .just_activated(input_mapping.jump.into());
+
+            input.float = gamepad.digital_inputs.activated(input_mapping.jump.into());
 
             input.pickup = gamepad
                 .digital_inputs

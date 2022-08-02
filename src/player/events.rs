@@ -41,6 +41,7 @@ pub enum PlayerEvent {
 
 /// This is used in JSON to specify which event types an effect should apply to
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(rename_all = "snake_case")]
 pub enum PlayerEventKind {
     Update,

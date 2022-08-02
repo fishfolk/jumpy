@@ -70,6 +70,7 @@ pub struct Player {
     pub respawn_timer: f32,
     pub camera_box: Rect,
     pub passive_effects: Vec<PassiveEffectInstance>,
+    pub was_on_ground: bool,
 }
 
 impl Player {
@@ -83,6 +84,7 @@ impl Player {
             is_facing_left: false,
             is_upside_down: false,
             is_attacking: false,
+            was_on_ground: false,
             jump_frame_counter: 0,
             pickup_grace_timer: 0.0,
             attack_timer: 0.0,
@@ -207,6 +209,7 @@ pub fn spawn_player(
         size: character.collider_size,
         has_friction: false,
         can_rotate: false,
+        gravity: character.gravity,
         ..Default::default()
     };
 

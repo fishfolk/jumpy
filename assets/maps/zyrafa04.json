@@ -866,16 +866,16 @@
           "id": "seaweed",
           "kind": "decoration",
           "position": {
-            "x": 192.0,
-            "y": 593.0
+            "x": 146.16666,
+            "y": 493.0
           }
         },
         {
           "id": "seaweed",
           "kind": "decoration",
           "position": {
-            "x": 416.0,
-            "y": 237.0
+            "x": 417.6667,
+            "y": 238.66667
           }
         },
         {
@@ -903,26 +903,82 @@
       "has_collision": false,
       "objects": [
         {
-          "id": "grenades",
-          "kind": "item",
+          "id": "sproinger",
+          "kind": "environment",
           "position": {
-            "x": 224.0,
-            "y": 384.0
-          }
-        },
-        {
-          "id": "musket",
-          "kind": "item",
-          "position": {
-            "x": 544.0,
-            "y": 256.0
+            "x": 96.143555,
+            "y": 524.88995
           }
         },
         {
           "id": "sproinger",
           "kind": "environment",
           "position": {
-            "x": 531.0,
+            "x": 961.0,
+            "y": 524.3334
+          }
+        },
+        {
+          "id": "sword",
+          "kind": "item",
+          "position": {
+            "x": 595.4545,
+            "y": 261.0909
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 142.91943,
+            "y": 483.826
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 858.0,
+            "y": 474.83337
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 410.00006,
+            "y": 230.0
+          }
+        },
+        {
+          "id": "musket",
+          "kind": "item",
+          "position": {
+            "x": 870.3333,
+            "y": 384.16666
+          }
+        },
+        {
+          "id": "grenades",
+          "kind": "item",
+          "position": {
+            "x": 221.50003,
+            "y": 503.16666
+          }
+        },
+        {
+          "id": "musket",
+          "kind": "item",
+          "position": {
+            "x": 125.66667,
+            "y": 376.0
+          }
+        },
+        {
+          "id": "sproinger",
+          "kind": "environment",
+          "position": {
+            "x": 528.1428,
             "y": 461.5
           }
         },
@@ -930,24 +986,24 @@
           "id": "grenades",
           "kind": "item",
           "position": {
-            "x": 960.0,
-            "y": 384.0
+            "x": 840.83344,
+            "y": 504.0
           }
         },
         {
           "id": "grenades",
           "kind": "item",
           "position": {
-            "x": 640.0,
-            "y": 448.0
+            "x": 595.7143,
+            "y": 443.0
           }
         },
         {
           "id": "grenades",
           "kind": "item",
           "position": {
-            "x": 512.0,
-            "y": 448.0
+            "x": 466.52383,
+            "y": 440.9762
           }
         }
       ],
@@ -1660,10 +1716,10 @@
         false
       ],
       "tile_attributes": {
-        "60": [
+        "56": [
           "jumpthrough"
         ],
-        "56": [
+        "60": [
           "jumpthrough"
         ],
         "58": [
@@ -1674,12 +1730,12 @@
   ],
   "spawn_points": [
     {
-      "x": 128.0,
-      "y": 480.0
+      "x": 126.57143,
+      "y": 355.7143
     },
     {
-      "x": 960.0,
-      "y": 480.0
+      "x": 959.2857,
+      "y": 350.71432
     },
     {
       "x": 896.0,

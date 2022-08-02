@@ -784,7 +784,24 @@
       "id": "decorations",
       "kind": "object_layer",
       "has_collision": false,
-      "objects": [],
+      "objects": [
+        {
+          "id": "anemones",
+          "kind": "decoration",
+          "position": {
+            "x": 313.01,
+            "y": 269.10092
+          }
+        },
+        {
+          "id": "seaweed",
+          "kind": "decoration",
+          "position": {
+            "x": 637.80585,
+            "y": 269.37476
+          }
+        }
+      ],
       "is_visible": true
     },
     {
@@ -793,11 +810,91 @@
       "has_collision": false,
       "objects": [
         {
+          "id": "starfish_launcher",
+          "kind": "item",
+          "position": {
+            "x": 782.8819,
+            "y": 675.5
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 312.14642,
+            "y": 615.9121
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 466.00787,
+            "y": 497.32727
+          }
+        },
+        {
+          "id": "fish_school",
+          "kind": "environment",
+          "position": {
+            "x": 622.8744,
+            "y": 246.50894
+          }
+        },
+        {
+          "id": "crab",
+          "kind": "environment",
+          "position": {
+            "x": 486.8546,
+            "y": 178.04547
+          }
+        },
+        {
+          "id": "crab",
+          "kind": "environment",
+          "position": {
+            "x": 640.52356,
+            "y": 432.3415
+          }
+        },
+        {
+          "id": "crab",
+          "kind": "environment",
+          "position": {
+            "x": 414.69,
+            "y": 305.67166
+          }
+        },
+        {
+          "id": "crab",
+          "kind": "environment",
+          "position": {
+            "x": 610.0421,
+            "y": 302.41638
+          }
+        },
+        {
+          "id": "crab",
+          "kind": "environment",
+          "position": {
+            "x": 530.3602,
+            "y": 677.60126
+          }
+        },
+        {
+          "id": "trident",
+          "kind": "item",
+          "position": {
+            "x": 702.3754,
+            "y": 287.63873
+          }
+        },
+        {
           "id": "crown_hat",
           "kind": "item",
           "position": {
-            "x": 524.5,
-            "y": 408.0
+            "x": 519.0186,
+            "y": 405.68817
           }
         },
         {
@@ -812,7 +909,7 @@
           "id": "chest_hat",
           "kind": "item",
           "position": {
-            "x": 423.5,
+            "x": 421.5,
             "y": 372.0
           }
         },
@@ -881,38 +978,6 @@
           }
         },
         {
-          "id": "jellyfish",
-          "kind": "item",
-          "position": {
-            "x": 700.0,
-            "y": 650.0
-          }
-        },
-        {
-          "id": "galleon",
-          "kind": "item",
-          "position": {
-            "x": 500.0,
-            "y": 650.0
-          }
-        },
-        {
-          "id": "volcano",
-          "kind": "item",
-          "position": {
-            "x": 350.0,
-            "y": 650.0
-          }
-        },
-        {
-          "id": "shark_rain",
-          "kind": "item",
-          "position": {
-            "x": 300.0,
-            "y": 50.0
-          }
-        },
-        {
           "id": "grenades",
           "kind": "item",
           "position": {
@@ -934,22 +999,6 @@
           "position": {
             "x": 185.0,
             "y": 388.0
-          }
-        },
-        {
-          "id": "shoes",
-          "kind": "item",
-          "position": {
-            "x": 770.0,
-            "y": 147.0
-          }
-        },
-        {
-          "id": "curse",
-          "kind": "item",
-          "position": {
-            "x": 772.0,
-            "y": 266.0
           }
         },
         {
@@ -985,22 +1034,6 @@
           }
         },
         {
-          "id": "life_ring",
-          "kind": "item",
-          "position": {
-            "x": 435.33334,
-            "y": 547.3333
-          }
-        },
-        {
-          "id": "flippers",
-          "kind": "item",
-          "position": {
-            "x": 500.0,
-            "y": 650.0
-          }
-        },
-        {
           "id": "kick_bomb",
           "kind": "item",
           "position": {
@@ -1009,7 +1042,7 @@
           }
         },
         {
-          "id": "kick_bomb",
+          "id": "blunderbuss",
           "kind": "item",
           "position": {
             "x": 176.682,
@@ -1017,7 +1050,7 @@
           }
         },
         {
-          "id": "kick_bomb",
+          "id": "crate",
           "kind": "item",
           "position": {
             "x": 271.9712,
@@ -1620,13 +1653,13 @@
         false
       ],
       "tile_attributes": {
+        "56": [
+          "jumpthrough"
+        ],
         "60": [
           "jumpthrough"
         ],
         "58": [
-          "jumpthrough"
-        ],
-        "56": [
           "jumpthrough"
         ]
       }

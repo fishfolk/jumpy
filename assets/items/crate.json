@@ -12,6 +12,10 @@
     "x": 0,
     "y": -16
   },
+  "effect_offset": {
+    "x": 0,
+    "y": 22
+  },
   "effects": [
     {
       "type": "triggered_effect",
@@ -21,9 +25,11 @@
       ],
       "collide_with_platforms": true,
       "velocity": {
-        "x": 5.0,
-        "y": -2.5
+        "x": 10.0,
+        "y": -4.0
       },
+      "gravity": 0.5,
+      "can_rotate": true,
       "size": {
         "x": 30,
         "y": 30
@@ -33,6 +39,27 @@
           "type": "rect_collider",
           "width": 36,
           "height": 32
+        },
+        {
+          "type": "triggered_effect",
+          "size": {
+            "x": 128,
+            "y": 128
+          },
+          "collide_with_platforms": true,
+          "timed_trigger": 0.7,
+          "sprite": {
+            "texture": "crate_breaking",
+            "autoplay_id": "effect",
+            "animations": [
+              {
+                "id": "effect",
+                "row": 0,
+                "frames": 24,
+                "fps": 60
+              }
+            ]
+          }
         }
       ],
       "sprite": {

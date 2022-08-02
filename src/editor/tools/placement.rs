@@ -86,7 +86,11 @@ impl EditorTool for TilePlacementTool {
                         for x in 0..3 {
                             if let Some(layer) = &ctx.selected_layer {
                                 let is_some = map
-                                    .get_tile(layer, coords.x + x - 1, coords.y + y - 1)
+                                    .get_tile(
+                                        layer,
+                                        (coords.x + x).saturating_sub(1),
+                                        (coords.y + y).saturating_sub(1),
+                                    )
                                     .is_some();
                                 surrounding_tiles.push(is_some);
                             }

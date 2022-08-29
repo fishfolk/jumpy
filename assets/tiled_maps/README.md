@@ -1,4 +1,4 @@
-# How to add a level to the FishFight
+# How to add a level to the Fish Folk: Jumpy
 
 Tiled: https://www.mapeditor.org/, also in most distros is available as `tiled` package. 
 1.7+ version is required, or you will have to open your `json` map file in a text editor and change the maps `version`

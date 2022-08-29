@@ -9,7 +9,7 @@ const SECONDARY_HEADER_Y_OFFSET: f32 = 150.0;
 const TEXT_Y_OFFSET: f32 = 60.0;
 
 const CREDITS_LIST: [(&str, LabelType); 32] = [
-    ("Fish Fight: Jumpy", LabelType::MainHeader),
+    ("Fish Folk: Jumpy", LabelType::MainHeader),
     ("Founding Team", LabelType::SecondaryHeader),
     ("Erlend Sogge Heggen - General Director", LabelType::Regular),
     ("'Emerald Jak' - Sound Director", LabelType::Regular),
@@ -120,7 +120,7 @@ fn create_game_credits() -> Vec<CreditLabel> {
         let credit_label = credit;
         match credit_label.1 {
             LabelType::MainHeader => {
-                if credit.0 == "Fish Fight: Jumpy" {
+                if credit.0 == "Fish Folk: Jumpy" {
                     prev_position -= MAIN_HEADER_Y_OFFSET;
                 } else {
                     prev_position -= -MAIN_HEADER_Y_OFFSET;

@@ -1,4 +1,4 @@
-id: fish-fight-jumpy
+id: fish-folk-jumpy
 name: jumpy
 logoUrl: /static/images/ship/original.png
 coverImage:
@@ -9,7 +9,7 @@ marketingAssets:
     title: cover
     description: Cover image
 description: |
-  Fish Fight: Jumpy is a tactical 2D shooter, played online or on a shared screen.
+  Fish Folk: Jumpy is a tactical 2D shooter, played online or on a shared screen.
   Aim either left or right; the rest is up to clever movement and positioning in this fish-on-fish brawler!
 admins:
   - fllr

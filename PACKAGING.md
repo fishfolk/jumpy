@@ -1,4 +1,4 @@
-## Packaging Fish Fight: Jumpy
+## Packaging Fish Folk: Jumpy
 
 ### Dependencies
 
@@ -45,7 +45,7 @@ Also see [README.md#distro-packages](./README.md#distro-packages)
 
 ### Binary releases
 
-Binary releases are automated via [Continuous Deployment](./.github/workflows/release.yml) workflow and they can be downloaded from the [releases](https://github.com/fishfight/jumpy/releases) page. Release artifacts are named in the following format:
+Binary releases are automated via [Continuous Deployment](./.github/workflows/release.yml) workflow and they can be downloaded from the [releases](https://github.com/fishfolks/jumpy/releases) page. Release artifacts are named in the following format:
 
 - `jumpy-<version>-<target>.<ext>`
 

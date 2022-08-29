@@ -62,7 +62,7 @@ const CONFIG_FILE_ENV_VAR: &str = "JUMPY_CONFIG";
 const ASSETS_DIR_ENV_VAR: &str = "JUMPY_ASSETS";
 const MODS_DIR_ENV_VAR: &str = "JUMPY_MODS";
 
-const WINDOW_TITLE: &str = "Fish Fight: Jumpy";
+const WINDOW_TITLE: &str = "Fish Folk: Jumpy";
 
 /// Exit to main menu
 pub fn exit_to_main_menu() {

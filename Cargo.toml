@@ -21,7 +21,7 @@ opt-level = 3
 [dependencies]
 core = { path = "./core", package = "jumpy-core" }
 ff-particles = { version = "0.1", features = ["serde"] }
-fishsticks = { git = "https://github.com/fishfight/fishsticks", default-features = false, features = ["gilrs"] }
+fishsticks = { git = "https://github.com/fishfolks/fishsticks", default-features = false, features = ["gilrs"] }
 macroquad = { version = "=0.3.16" } # Newer versions break is_key_pressed detection
 macroquad-platformer = "0.1.3"
 hecs = "0.7.1"

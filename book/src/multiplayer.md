@@ -1,7 +1,7 @@
 # Multiplayer
 
 Connection process in the FishFight is extremely low-level right now.  
-We do not have matchmaking server and we want to collect data and network setups and possible problems before doing the process fully automatic.
+We do not have a matchmaking server and we want to collect data and network setups and possible problems before doing the process fully automatic.
 
 ![image](https://user-images.githubusercontent.com/910977/133952684-19e7f10a-ed80-49e6-8a31-205f28a78c39.png)
 
@@ -24,7 +24,7 @@ Idea is exactly the same as with LAN: copy-paste your own "Self addr" over disco
 
 ### Relay
 
-When both players are on remote computers over internet, but STUN connection did not worked and router reconfiguration is not an option - there is a relay server available.
+When both players are on remote computers over internet, but STUN connection did not work and router reconfiguration is not an option - there is a relay server available.
 
 Relay server will introduce additional LAG - each packet will be forwarded through a server.
 
@@ -34,6 +34,6 @@ Connection idea is still the same, but instead of IP "Self addr" will be an ID o
 
 When STUN server failed, but Relay is too slow - there is a way to improve gameplay experience. Go to router settings and forward ports 3400, 3401, 3402, 3403 to computer with the FishFight.
 
-It still may depend on the internet provider, maybe the router itself is behind some global, provider NAT or something.
+It still may depend on the internet provider, maybe the router itself is behind some global provider NAT or something.
 
 TODO: Make a better "Router configuration" section here.

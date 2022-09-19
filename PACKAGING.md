@@ -41,6 +41,8 @@ export JUMPY_MODS=/opt/jumpy/mods/
 target/release/jumpy
 ```
 
+The desktop file in the contrib/ directory can be installed to allow running the game from your desktop's app launcher.
+
 Also see [README.md#distro-packages](./README.md#distro-packages)
 
 ### Binary releases

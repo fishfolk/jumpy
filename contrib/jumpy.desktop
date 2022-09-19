@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Jumpy
+Comment=Tactical 2D shooter in fishy pixels style
+Exec=jumpy
+Terminal=false
+Type=Application
+Categories=Game;ActionGame;Shooter;

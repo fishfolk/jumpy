@@ -1,7 +1,0 @@
-{
-  "id": "test_mod_one",
-  "name": "Test Mod One",
-  "description": "This is a mod meant for testing",
-  "version": "0.1.0",
-  "kind": "data_only"
-}

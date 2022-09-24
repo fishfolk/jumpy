@@ -1,33 +1,15 @@
-[package]
-name = "jumpy"
-version = "0.4.3"
-description = "A tactical 2D shooter"
-authors = ["The Fish Fight Game & Spicy Lobster Developers"]
-license = "MIT OR Apache-2.0"
-edition = "2021"
-
-[target.'cfg(target_arch = "wasm32")'.lib]
-crate-type = ["cdylib"]
-
-[features]
-default = []
-
 [workspace]
-members = ["core"]
+resolver = "2"
+members = [
+    "crates/jumpy",
+    "crates/bevy-has-load-progress",
+    "crates/bevy-has-load-progress/macros",
+]
 
 [profile.dev.package."*"]
-opt-level = 3
+opt-level = 1 # Set this to 3 if the game becomes slow to respond during gameplay
+debug = false
 
-[dependencies]
-core = { path = "./core", package = "jumpy-core" }
-ff-particles = { version = "0.1", features = ["serde"] }
-fishsticks = { git = "https://github.com/fishfolks/fishsticks", default-features = false, features = ["gilrs"] }
-macroquad = { version = "=0.3.16" } # Newer versions break is_key_pressed detection
-macroquad-platformer = "0.1.3"
-hecs = "0.7.1"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-wasm-bindgen = "0.2.74"
-
+[profile.release]
+lto = true
+codegen-units = 1 # Improves physics performance for release builds

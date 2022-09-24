@@ -27,4 +27,4 @@ rm -rf $dist_dir
 mkdir -p $dist_dir
 wasm-bindgen --out-dir $dist_dir --target web --no-typescript $target_dir/$target/$build_kind/jumpy.wasm
 cp wasm_resources/index.html $dist_dir/index.html
-cp -r assets $dist_dir
+cp -r crates/jumpy/assets $dist_dir

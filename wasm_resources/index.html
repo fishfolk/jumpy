@@ -1,0 +1,143 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      body {
+        margin: 0;
+        background-color: black;
+      }
+      canvas {
+        background-color: black;
+        /*
+          This is a workaround for high DPI screens which winit or something
+          has an issue with where it will resize the canvas to smaller than
+          the full width of the screen.
+        */
+        width: 100vw !important;
+        height: 100vh !important;
+      }
+    </style>
+    <!-- Nifty spinner from: https://github.com/loadingio/css-spinner/blob/088aefa790d015e9c7df664d426374952e65124a/dist/dual-ring.html#L1 -->
+    <style type="text/css">
+      .lds-dual-ring {
+        width: 80px;
+        height: 80px;
+      }
+      .lds-dual-ring:after {
+        content: " ";
+        display: block;
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        border: 6px solid #fff;
+        border-color: #fff transparent #fff transparent;
+        animation: lds-dual-ring 1.2s linear infinite;
+      }
+      @keyframes lds-dual-ring {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .loading-container {
+        z-index: -1;
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        color: white;
+      }
+
+      .loading-container > div {
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+        color: white;
+        align-items: center;
+      }
+
+      .loading-text {
+        font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+        margin-top: 2em;
+        font-size: 1.2em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="loading-container">
+      <div>
+        <div class="lds-dual-ring"></div>
+        <div class="loading-text">Loading game...</div>
+      </div>
+    </div>
+    <script>
+      // Insert hack to make sound autoplay on Chrome as soon as the user interacts with the tab:
+      // https://developers.google.com/web/updates/2018/11/web-audio-autoplay#moving-forward
+      (function () {
+        // An array of all contexts to resume on the page
+        const audioContextList = [];
+
+        // An array of various user interaction events we should listen for
+        const userInputEventNames = [
+          "click",
+          "contextmenu",
+          "auxclick",
+          "dblclick",
+          "mousedown",
+          "mouseup",
+          "pointerup",
+          "touchend",
+          "keydown",
+          "keyup",
+        ];
+
+        // A proxy object to intercept AudioContexts and
+        // add them to the array for tracking and resuming later
+        self.AudioContext = new Proxy(self.AudioContext, {
+          construct(target, args) {
+            const result = new target(...args);
+            audioContextList.push(result);
+            return result;
+          },
+        });
+
+        // To resume all AudioContexts being tracked
+        function resumeAllContexts(event) {
+          let count = 0;
+
+          audioContextList.forEach((context) => {
+            if (context.state !== "running") {
+              context.resume();
+            } else {
+              count++;
+            }
+          });
+
+          // If all the AudioContexts have now resumed then we
+          // unbind all the event listeners from the page to prevent
+          // unnecessary resume attempts
+          if (count && count == audioContextList.length) {
+            userInputEventNames.forEach((eventName) => {
+              document.removeEventListener(eventName, resumeAllContexts);
+            });
+          }
+        }
+
+        // We bind the resume function for each user interaction
+        // event on the page
+        userInputEventNames.forEach((eventName) => {
+          document.addEventListener(eventName, resumeAllContexts);
+        });
+      })();
+    </script>
+    <script type="module">
+      import init from "./jumpy.js";
+      init();
+    </script>
+  </body>
+</html>

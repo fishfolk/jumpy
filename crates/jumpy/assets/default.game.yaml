@@ -1,0 +1,8 @@
+camera_height: 448
+translations:
+  # This is the locale that we will fallback to if the selected locale doesn't have
+  # translation for a certain message.
+  default_locale: en-US
+  locales:
+    - locales/en-US/en-US.ftl.yml
+    - locales/fr-FR/fr-FR.ftl.yml

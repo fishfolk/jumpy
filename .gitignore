@@ -1,5 +1,6 @@
 /web
 /target
+/web-target
 Cargo.toml
 src/.DS_Store
 .DS_Store

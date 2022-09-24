@@ -1,94 +1,61 @@
-name: Continuous integration
+name: CI
 
 on:
   push:
     branches:
-      - main
-    paths-ignore:
-      - "**.md"
-      - "**.json"
+      - master
+      - staging
+      - trying
   pull_request:
-    paths-ignore:
-      - "**.md"
-      - "**.json"
 
 jobs:
-  fmt:
+  check_formatting:
     runs-on: ubuntu-latest
-    name: Formatting
+    name: Check Rust formatting
     steps:
-      - uses: actions/checkout@v2
-      - name: Check Rust formatting
-        uses: actions-rs/cargo@v1
+      - uses: actions/checkout@v3
+      - uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --all -- --check
 
-  clippy:
+  clippy_correctness_checks:
     runs-on: ubuntu-latest
-    name: Linting
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install \
-            --allow-unauthenticated -y -qq \
-              libasound2-dev \
-              libgl1-mesa-dev \
-              libx11-dev \
-              libxi-dev \
-              libudev-dev
-      - name: Install Clippy
-        run: rustup component add clippy
-
-      - name: Run Clippy
-        run: cargo clippy -- -W clippy::correctness -D warnings
-
-  build:
-    name: Build
-    runs-on: ${{ matrix.config.os }}
+    name: Clippy correctness checks
     strategy:
       fail-fast: false
       matrix:
         config:
-          - { os: ubuntu-latest, target: "x86_64-unknown-linux-gnu" }
-          - { os: macos-latest, target: "x86_64-apple-darwin" }
-          - { os: macos-latest, target: "aarch64-apple-darwin" }
-          - { os: windows-latest, target: "x86_64-pc-windows-msvc" }
-          - { os: windows-latest, target: "i686-pc-windows-msvc" }
-        profile: ["--release"]
-
+          - { target: 'x86_64-unknown-linux-gnu', target_dir: 'target' }
+          - { target: 'wasm32-unknown-unknown', target_dir: 'web-target' }
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
       - name: Install dependencies
-        if: matrix.config.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install \
-            --allow-unauthenticated -y -qq \
+          sudo apt-get install -y -q \
               libasound2-dev \
-              libgl1-mesa-dev \
-              libx11-dev \
-              libxi-dev \
               libudev-dev
-      - name: Cache Cargo dependencies
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
-      - name: Setup Rust
+      - uses: actions/checkout@v3
+      - name: Install WASM Target
+        if: matrix.config.target == 'wasm32-unknown-unknown'
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          override: true
-          profile: minimal
           target: ${{ matrix.config.target }}
-      - uses: actions-rs/cargo@v1
+          components: clippy
+      - uses: actions/cache@v3
         with:
-          command: build
-          args: --locked --target ${{ matrix.config.target }} ${{ matrix.profile }}
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+            web-target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - uses: actions-rs/cargo@v1
+        env:
+          CARGO_TARGET_DIR: ${{ matrix.config.target_dir }}
+        with:
+          command: clippy
+          args: --target ${{ matrix.config.target }} -- -W clippy::correctness -D warnings

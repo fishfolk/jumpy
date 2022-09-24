@@ -1,5 +1,5 @@
 //! Loading progress helper for Bevy
-//! 
+//!
 //! This crate exposes a trait [`HasLoadProgress`] that may be derived on structs that contain Bevy
 //! asset [`Handle`]s. The idea is that you may have a struct with asset handles contained somewhere
 //! inside, maybe deeply nested or stored in vectors, etc., and you need to be able to get the load
@@ -92,16 +92,7 @@ macro_rules! impl_default_load_progress {
         )*
     };
 }
-impl_default_load_progress!(
-    String,
-    f32,
-    usize,
-    u32,
-    Vec2,
-    Vec3,
-    UVec2,
-    bool
-);
+impl_default_load_progress!(String, f32, usize, u32, Vec2, Vec3, UVec2, bool);
 
 // Implement `HasLoadProgress` for container types
 impl<T: HasLoadProgress> HasLoadProgress for Option<T> {

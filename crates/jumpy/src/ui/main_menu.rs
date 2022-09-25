@@ -34,24 +34,49 @@ pub fn spawn_main_menu_background(mut commands: Commands, game: Res<GameMeta>) {
     let width = height * ratio;
     commands
         .spawn_bundle(SpriteBundle {
-            texture: bg_handle,
+            texture: bg_handle.clone(),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(width, height)),
+                ..default()
+            },
+            transform: Transform::from_translation(Vec3::new(-width, 0.0, 0.0)),
+            ..default()
+        })
+        .insert(Name::new("Main Menu Background Left"))
+        .insert(MainMenuBackground);
+    commands
+        .spawn_bundle(SpriteBundle {
+            texture: bg_handle.clone(),
             sprite: Sprite {
                 custom_size: Some(Vec2::new(width, height)),
                 ..default()
             },
             ..default()
         })
-        .insert(Name::new("Main Menu Background"))
+        .insert(Name::new("Main Menu Background Middle"))
+        .insert(MainMenuBackground);
+    commands
+        .spawn_bundle(SpriteBundle {
+            texture: bg_handle,
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(width, height)),
+                ..default()
+            },
+            transform: Transform::from_translation(Vec3::new(width, 0.0, 0.0)),
+            ..default()
+        })
+        .insert(Name::new("Main Menu Background Right"))
         .insert(MainMenuBackground);
 }
 
 /// Despawns the background image for the main menu
 pub fn despawn_main_menu_background(
     mut commands: Commands,
-    background: Query<Entity, With<MainMenuBackground>>,
+    backgrounds: Query<Entity, With<MainMenuBackground>>,
 ) {
-    let bg = background.single();
-    commands.entity(bg).despawn();
+    for bg in &backgrounds {
+        commands.entity(bg).despawn();
+    }
 }
 
 /// Which page of the menu we are on

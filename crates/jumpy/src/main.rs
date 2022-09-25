@@ -14,10 +14,13 @@ mod metadata;
 mod platform;
 mod prelude;
 mod scripting;
+mod ui;
+mod utils;
 
 use crate::{
-    assets::AssetPlugin, loading::LoadingPlugin, localization::LocalizationPlugin,
-    metadata::GameMeta, platform::PlatformPlugin, prelude::*, scripting::ScriptingPlugin,
+    assets::AssetPlugin, input::InputPlugin, loading::LoadingPlugin,
+    localization::LocalizationPlugin, metadata::GameMeta, platform::PlatformPlugin, prelude::*,
+    scripting::ScriptingPlugin, ui::UiPlugin,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -26,6 +29,7 @@ enum GameState {
     LoadingGame,
     MainMenu,
     InGame,
+    Paused,
 }
 
 pub fn main() {
@@ -35,7 +39,7 @@ pub fn main() {
 
     let mut app = App::new();
     app.insert_resource(WindowDescriptor {
-        title: "Fish Folk Jumpy".to_string(),
+        title: "Fish Folk: Jumpy".to_string(),
         scale_factor_override: Some(1.0),
         ..default()
     })
@@ -70,6 +74,8 @@ pub fn main() {
         .add_plugin(LoadingPlugin)
         .add_plugin(AssetPlugin)
         .add_plugin(LocalizationPlugin)
+        .add_plugin(InputPlugin)
+        .add_plugin(UiPlugin)
         .add_plugin(ScriptingPlugin);
 
     debug!(?engine_config, "Starting game");

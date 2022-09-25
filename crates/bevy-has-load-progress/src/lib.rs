@@ -94,6 +94,9 @@ macro_rules! impl_default_load_progress {
 }
 impl_default_load_progress!(String, f32, usize, u32, Vec2, Vec3, UVec2, bool);
 
+#[cfg(feature = "bevy_egui")]
+impl_default_load_progress!(bevy_egui::egui::TextureId);
+
 // Implement `HasLoadProgress` for container types
 impl<T: HasLoadProgress> HasLoadProgress for Option<T> {
     fn load_progress(&self, loading_resources: &LoadingResources) -> LoadProgress {

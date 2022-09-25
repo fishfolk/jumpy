@@ -2,15 +2,20 @@
 title =
     Fish Folk
 subtitle = Jumpy
-start-game = Start Game
+local-game = Local Game
 settings = Settings
 quit = Quit
 cancel = Cancel
 save = Save
+continue = Continue
+back = Back
+
+# Player Select Menu
+player-select-title = Player Select
+press-to-join = Press a Button to Join
 
 # Pause Menu
 paused = Paused
-continue = Continue
 main-menu = Main Menu
 
 # Settings Menu
@@ -20,6 +25,7 @@ reset = Reset
 
 # Controls
 action = Action
+keyboard = Keyboard
 keyboard-1 = Keyboard 1
 keyboard-2 = Keyboard 2
 gamepad = Gamepad

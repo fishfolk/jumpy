@@ -3,15 +3,7 @@ use bevy_egui::*;
 use bevy_fluent::Localization;
 use iyes_loopless::state::NextState;
 
-use crate::{
-    localization::LocalizationExt,
-    metadata::{
-        ui::{ButtonStyle, FontStyle},
-        GameMeta,
-    },
-    utils::ResetController,
-    GameState,
-};
+use crate::{localization::LocalizationExt, metadata::GameMeta, utils::ResetController, GameState};
 
 use super::{
     widgets::{bordered_button::BorderedButton, bordered_frame::BorderedFrame, EguiUIExt},
@@ -44,8 +36,7 @@ pub fn pause_menu(
 
                     let heading_font = ui_theme
                         .font_styles
-                        .get(&FontStyle::Heading)
-                        .expect("Missing 'heading' font style")
+                        .heading
                         .colored(ui_theme.panel.font_color);
 
                     ui.vertical_centered(|ui| {
@@ -56,8 +47,7 @@ pub fn pause_menu(
                         let width = ui.available_width();
 
                         let continue_button = BorderedButton::themed(
-                            ui_theme,
-                            &ButtonStyle::Normal,
+                            &ui_theme.button_styles.normal,
                             &localization.get("continue"),
                         )
                         .min_size(egui::vec2(width, 0.0))
@@ -73,8 +63,7 @@ pub fn pause_menu(
                         }
 
                         if BorderedButton::themed(
-                            ui_theme,
-                            &ButtonStyle::Normal,
+                            &ui_theme.button_styles.normal,
                             &localization.get("main-menu"),
                         )
                         .min_size(egui::vec2(width, 0.0))

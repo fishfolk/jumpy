@@ -30,7 +30,7 @@ thiserror = "1.0.31"
 structopt = "0.3.26"
 rand = "0.8.5"
 getrandom = { version = "0.2", features = ["js"] }
-bevy-has-load-progress = { path = "../bevy-has-load-progress" }
+bevy-has-load-progress = { path = "../bevy-has-load-progress", features = ["bevy_egui"] }
 leafwing-input-manager = { version = "0.5.2", default-features = false }
 unic-langid = "0.9.0"
 bevy_fluent = "0.4.0"

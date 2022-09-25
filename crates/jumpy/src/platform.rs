@@ -1,7 +1,5 @@
 //! Systems and utilities related to specific platform support or platform abstractions
 
-#![allow(dead_code)] // TODO: Remove this once we actually use the storage abstraction.
-
 use async_channel::{Receiver, Sender};
 use bevy::{prelude::*, tasks::IoTaskPool, utils::HashMap};
 use iyes_loopless::prelude::*;
@@ -261,6 +259,7 @@ pub struct SaveTask(Receiver<()>);
 
 impl SaveTask {
     /// Get whether or not saving has been completed.
+    #[allow(unused)] // TODO: Remove when we use it
     pub fn is_complete(&mut self) -> bool {
         !self.0.is_empty()
     }

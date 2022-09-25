@@ -12,3 +12,4 @@ features = [
 
 [dependencies]
 macros = { package = "bevy-has-load-progress-macros", path = "./macros" }
+bevy_egui = { version = "0.16.1", optional = true }

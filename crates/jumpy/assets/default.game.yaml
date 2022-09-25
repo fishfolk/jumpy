@@ -1,4 +1,218 @@
 camera_height: 448
+# clear_color: [126, 168, 166]
+clear_color: [39, 35, 59]
+
+main_menu:
+  title_font:
+    family: fairfax
+    color: [255, 255, 255]
+    size: 70
+  subtitle_font:
+    family: fairfax
+    color: [255, 255, 255]
+    size: 50
+
+  background_image:
+    image: ui/menu-background.png
+    image_size: [896, 480]
+
+default_settings:
+  player_controls:
+    # Gamepad controls
+    gamepad:
+      movement:
+        up: !SingleAxis
+          axis_type: !Gamepad LeftStickY
+          positive_low: 0.1
+          negative_low: -1.0
+
+        left: !SingleAxis
+          axis_type: !Gamepad LeftStickX
+          positive_low: 1.0
+          negative_low: -0.1
+
+        down: !SingleAxis
+          axis_type: !Gamepad LeftStickY
+          positive_low: 1.0
+          negative_low: -0.1
+
+        right: !SingleAxis
+          axis_type: !Gamepad LeftStickX
+          positive_low: 0.1
+          negative_low: -1.0
+      flop_attack: !GamepadButton South
+      shoot: !GamepadButton East
+      throw: !GamepadButton West
+
+    # Controls for the first keyboard player ( left side )
+    keyboard1:
+      movement:
+        up: !Keyboard W
+        down: !Keyboard S
+        left: !Keyboard A
+        right: !Keyboard D
+      flop_attack: !Keyboard Space
+      shoot: !Keyboard V
+      throw: !Keyboard C
+
+    # Controls for the second keyboard player ( right side )
+    keyboard2:
+      movement:
+        up: !Keyboard Up
+        down: !Keyboard Down
+        left: !Keyboard Left
+        right: !Keyboard Right
+      flop_attack: !Keyboard Comma
+      shoot: !Keyboard RShift
+      throw: !Keyboard Period
+
+ui_theme:
+  font_families:
+    fairfax: ui/FairfaxSM.ttf
+    ark: ui/ark-pixel-16px-latin.ttf
+
+  font_styles:
+    heading:
+      family: ark
+      size: 30
+      color: [255, 255, 255]
+    bigger:
+      family: ark
+      size: 20
+      color: [255, 255, 255]
+    normal:
+      family: ark
+      size: 15
+      color: [255, 255, 255]
+
+  hud:
+    font:
+      family: ark
+      size: 15
+      color: [255, 255, 255]
+
+    player_hud_width: 165
+
+    portrait_frame:
+      image: ui/panel.png
+      image_size: [32, 32]
+      border_size:
+        top: 8
+        left: 8
+        right: 8
+        bottom: 8
+
+    lifebar:
+      height: 16
+      background_image:
+        image: ui/lifebar.png
+        image_size: [19, 7]
+        border_size:
+          left: 3
+          right: 3
+          top: 3
+          bottom: 3
+        scale: 2
+      progress_image:
+        image: ui/lifebar-progress.png
+        image_size: [1, 1]
+
+  panel:
+    font_color: [255, 255, 255]
+    padding:
+      top: 20
+      bottom: 20
+      left: 20
+      right: 20
+    border:
+      image: ui/panel.png
+      image_size: [38, 34]
+      border_size:
+        top: 11
+        bottom: 11
+        left: 12
+        right: 21
+      scale: 3
+
+  button_styles:
+    normal:
+      font:
+        family: ark
+        color: [255, 255, 255]
+        size: 15
+      padding:
+        top: 6
+        left: 6
+        right: 6
+        bottom: 9
+      borders:
+        default:
+          image: ui/button.png
+          image_size: [14, 14]
+          border_size:
+            top: 5
+            bottom: 5
+            right: 5
+            left: 5
+          scale: 2
+        focused:
+          image: ui/button-focused.png
+          image_size: [14, 14]
+          border_size:
+            top: 5
+            bottom: 5
+            right: 5
+            left: 5
+          scale: 2
+        clicked:
+          image: ui/button-down.png
+          image_size: [14, 14]
+          border_size:
+            top: 5
+            bottom: 5
+            right: 5
+            left: 5
+          scale: 2
+
+    small:
+      font:
+        family: ark
+        color: [255, 255, 255]
+        size: 14
+      padding:
+        top: 4
+        left: 4
+        right: 4
+        bottom: 6
+      borders:
+        default:
+          image: ui/button.png
+          image_size: [14, 14]
+          border_size:
+            top: 5
+            bottom: 5
+            right: 5
+            left: 5
+          scale: 2
+        focused:
+          image: ui/button-focused.png
+          image_size: [14, 14]
+          border_size:
+            top: 5
+            bottom: 5
+            right: 5
+            left: 5
+          scale: 2
+        clicked:
+          image: ui/button-down.png
+          image_size: [14, 14]
+          border_size:
+            top: 5
+            bottom: 5
+            right: 5
+            left: 5
+          scale: 2
+
 translations:
   # This is the locale that we will fallback to if the selected locale doesn't have
   # translation for a certain message.

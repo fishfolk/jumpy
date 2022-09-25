@@ -1,4 +1,5 @@
 use bevy::{ecs::system::SystemParam, render::camera::ScalingMode};
+use bevy_egui::{egui, EguiContext};
 use bevy_fluent::Locale;
 use bevy_has_load_progress::{HasLoadProgress, LoadingResources};
 use bevy_mod_js_scripting::ActiveScripts;
@@ -9,7 +10,13 @@ use leafwing_input_manager::{
     InputManagerBundle,
 };
 
-use crate::{config::ENGINE_CONFIG, input::MenuAction, metadata::GameMeta, prelude::*, GameState};
+use crate::{
+    config::ENGINE_CONFIG,
+    input::MenuAction,
+    metadata::{ui::BorderImageMeta, GameMeta},
+    prelude::*,
+    GameState,
+};
 
 pub struct LoadingPlugin;
 
@@ -67,8 +74,9 @@ pub struct GameLoader<'w, 's> {
     camera: Query<'w, 's, Entity, With<Camera>>,
     commands: Commands<'w, 's>,
     game_handle: Res<'w, Handle<GameMeta>>,
+    clear_color: ResMut<'w, ClearColor>,
     assets: ResMut<'w, Assets<GameMeta>>,
-    // egui_ctx: ResMut<'w, EguiContext>,
+    egui_ctx: ResMut<'w, EguiContext>,
     events: EventReader<'w, 's, AssetEvent<GameMeta>>,
     active_scripts: ResMut<'w, ActiveScripts>,
 }
@@ -92,8 +100,9 @@ impl<'w, 's> GameLoader<'w, 's> {
             mut commands,
             game_handle,
             mut assets,
-            // mut egui_ctx,
+            mut egui_ctx,
             mut active_scripts,
+            mut clear_color,
             ..
         } = self;
 
@@ -114,20 +123,23 @@ impl<'w, 's> GameLoader<'w, 's> {
 
                 // One-time initialization
             } else {
-                // // Initialize empty fonts for all game fonts.
-                // //
-                // // This makes sure Egui will not panic if we try to use a font that is still loading.
-                // let mut egui_fonts = egui::FontDefinitions::default();
-                // for font_name in game.ui_theme.font_families.keys() {
-                //     let font_family = egui::FontFamily::Name(font_name.clone().into());
-                //     egui_fonts.families.insert(font_family, vec![]);
-                // }
-                // egui_ctx.ctx_mut().set_fonts(egui_fonts.clone());
-                // commands.insert_resource(egui_fonts);
+                // Initialize empty fonts for all game fonts.
+                //
+                // This makes sure Egui will not panic if we try to use a font that is still loading.
+                let mut egui_fonts = egui::FontDefinitions::default();
+                for font_name in game.ui_theme.font_families.keys() {
+                    let font_family = egui::FontFamily::Name(font_name.clone().into());
+                    egui_fonts.families.insert(font_family, vec![]);
+                }
+                egui_ctx.ctx_mut().set_fonts(egui_fonts.clone());
+                commands.insert_resource(egui_fonts);
 
                 // Transition to the main menu when we are done
                 commands.insert_resource(NextState(GameState::MainMenu));
             }
+
+            // set the clear color
+            clear_color.0 = game.clear_color.into();
 
             // Set the locale resource
             let translations = &game.translations;
@@ -150,25 +162,25 @@ impl<'w, 's> GameLoader<'w, 's> {
                     ..default()
                 });
 
-            // // Helper to load border images
-            // let mut load_border_image = |border: &mut BorderImageMeta| {
-            //     border.egui_texture = egui_ctx.add_image(border.handle.clone_weak());
-            // };
+            // Helper to load border images
+            let mut load_border_image = |border: &mut BorderImageMeta| {
+                border.egui_texture = egui_ctx.add_image(border.handle.clone_weak());
+            };
 
-            // // Add Border images to egui context
-            // load_border_image(&mut game.ui_theme.hud.portrait_frame);
-            // load_border_image(&mut game.ui_theme.panel.border);
-            // load_border_image(&mut game.ui_theme.hud.lifebar.background_image);
-            // load_border_image(&mut game.ui_theme.hud.lifebar.progress_image);
-            // for button in game.ui_theme.button_styles.values_mut() {
-            //     load_border_image(&mut button.borders.default);
-            //     if let Some(border) = &mut button.borders.clicked {
-            //         load_border_image(border);
-            //     }
-            //     if let Some(border) = &mut button.borders.focused {
-            //         load_border_image(border);
-            //     }
-            // }
+            // Add Border images to egui context
+            load_border_image(&mut game.ui_theme.hud.portrait_frame);
+            load_border_image(&mut game.ui_theme.panel.border);
+            load_border_image(&mut game.ui_theme.hud.lifebar.background_image);
+            load_border_image(&mut game.ui_theme.hud.lifebar.progress_image);
+            for button in game.ui_theme.button_styles.values_mut() {
+                load_border_image(&mut button.borders.default);
+                if let Some(border) = &mut button.borders.clicked {
+                    load_border_image(border);
+                }
+                if let Some(border) = &mut button.borders.focused {
+                    load_border_image(border);
+                }
+            }
 
             // Set the active scripts
             for script_handle in &game.script_handles {

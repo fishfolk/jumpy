@@ -13,35 +13,31 @@ pub struct UIThemeMeta {
     pub font_families: HashMap<String, String>,
     #[serde(skip)]
     pub font_handles: HashMap<String, Handle<EguiFont>>,
-    pub font_styles: HashMap<FontStyle, FontMeta>,
-    // pub font_sizes: HashMap<FontSize, f32>,
+    pub font_styles: FontStylesMeta,
+    pub button_styles: ButtonStylesMeta,
     pub hud: HudThemeMeta,
     pub panel: PanelThemeMeta,
-    pub button_styles: HashMap<ButtonStyle, ButtonThemeMeta>,
 }
 
-#[derive(Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(HasLoadProgress, Deserialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
-#[serde(try_from = "String")]
-pub enum FontStyle {
-    Heading,
-    Normal,
-    Bigger,
+pub struct FontStylesMeta {
+    pub normal: FontMeta,
+    pub heading: FontMeta,
+    pub bigger: FontMeta,
+    pub smaller: FontMeta,
 }
 
-impl TryFrom<String> for FontStyle {
-    type Error = &'static str;
+#[derive(HasLoadProgress, Deserialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+pub struct ButtonStylesMeta {
+    pub normal: ButtonThemeMeta,
+    pub small: ButtonThemeMeta,
+}
 
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        use FontStyle::*;
-        Ok(match value.as_str() {
-            "heading" => Heading,
-            "bigger" => Bigger,
-            "normal" => Normal,
-            _ => {
-                return Err("Invalid font style");
-            }
-        })
+impl ButtonStylesMeta {
+    pub fn as_list(&mut self) -> [&mut ButtonThemeMeta; 2] {
+        [&mut self.normal, &mut self.small]
     }
 }
 
@@ -78,29 +74,6 @@ impl FontMeta {
             size: self.size,
             family: egui::FontFamily::Name(self.family.0.clone()),
         }
-    }
-}
-
-#[derive(Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash)]
-#[serde(deny_unknown_fields)]
-#[serde(try_from = "String")]
-pub enum ButtonStyle {
-    Normal,
-    Small,
-}
-
-impl TryFrom<String> for ButtonStyle {
-    type Error = &'static str;
-
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        use ButtonStyle::*;
-        Ok(match value.as_str() {
-            "normal" => Normal,
-            "small" => Small,
-            _ => {
-                return Err("Invalid button style");
-            }
-        })
     }
 }
 

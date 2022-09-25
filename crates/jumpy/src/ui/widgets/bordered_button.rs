@@ -5,7 +5,7 @@
 /// Adapted from <https://docs.rs/egui/0.18.1/src/egui/widgets/button.rs.html>
 use bevy_egui::egui::{self, *};
 
-use crate::metadata::ui::{BorderImageMeta, ButtonStyle, UIThemeMeta};
+use crate::metadata::ui::{BorderImageMeta, ButtonThemeMeta};
 
 use super::bordered_frame::BorderedFrame;
 
@@ -41,25 +41,19 @@ impl<'a> BorderedButton<'a> {
 
     #[must_use = "You must call .show() to render the button"]
     pub fn themed(
-        ui_theme: &'a UIThemeMeta,
-        button_style: &'a ButtonStyle,
+        button_theme: &'a ButtonThemeMeta,
         label: impl Into<RichText>,
     ) -> BorderedButton<'a> {
-        let style = ui_theme
-            .button_styles
-            .get(button_style)
-            .expect("Missing button theme");
-
         BorderedButton::new(
             label
                 .into()
-                .font(style.font.font_id())
-                .color(style.font.color),
+                .font(button_theme.font.font_id())
+                .color(button_theme.font.color),
         )
-        .border(&style.borders.default)
-        .on_click_border(style.borders.clicked.as_ref())
-        .on_focus_border(style.borders.focused.as_ref())
-        .padding(style.padding.into())
+        .border(&button_theme.borders.default)
+        .on_click_border(button_theme.borders.clicked.as_ref())
+        .on_focus_border(button_theme.borders.focused.as_ref())
+        .padding(button_theme.padding.into())
     }
 
     /// If `true`, the text will wrap to stay within the max width of the [`Ui`].

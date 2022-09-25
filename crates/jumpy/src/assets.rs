@@ -105,7 +105,7 @@ impl AssetLoader for GameMetaLoader {
             load_border_image(&mut meta.ui_theme.panel.border);
             load_border_image(&mut meta.ui_theme.hud.lifebar.background_image);
             load_border_image(&mut meta.ui_theme.hud.lifebar.progress_image);
-            for button in meta.ui_theme.button_styles.values_mut() {
+            for button in meta.ui_theme.button_styles.as_list() {
                 load_border_image(&mut button.borders.default);
                 if let Some(border) = &mut button.borders.clicked {
                     load_border_image(border);

@@ -17,6 +17,7 @@ use super::{
     EguiContextExt, EguiResponseExt, WidgetAdjacencies,
 };
 
+mod map_select;
 mod player_select;
 mod settings;
 
@@ -83,6 +84,7 @@ pub enum MenuPage {
     Main,
     Settings { tab: SettingsTab },
     PlayerSelect,
+    MapSelect,
 }
 
 /// Which settings tab we are on
@@ -133,13 +135,17 @@ pub fn main_menu_system(mut params: MenuSystemParams, mut egui_context: ResMut<E
     let menu_input = params.menu_input.single();
 
     // Go to previous menu if back button is pressed
-    if menu_input.pressed(MenuAction::Back) {
+    if menu_input.just_pressed(MenuAction::Back) {
         match *params.menu_page {
             MenuPage::Settings { .. } | MenuPage::PlayerSelect => {
                 *params.menu_page = MenuPage::Main;
                 egui_context.ctx_mut().clear_focus();
             }
-            _ => (),
+            MenuPage::MapSelect => {
+                *params.menu_page = MenuPage::PlayerSelect;
+                egui_context.ctx_mut().clear_focus();
+            }
+            MenuPage::Main => (),
         }
     }
 
@@ -150,6 +156,7 @@ pub fn main_menu_system(mut params: MenuSystemParams, mut egui_context: ResMut<E
             match *params.menu_page {
                 MenuPage::Main => main_menu_ui(&mut params, ui),
                 MenuPage::PlayerSelect => player_select::player_select_ui(&mut params, ui),
+                MenuPage::MapSelect => map_select::map_select_ui(&mut params, ui),
                 MenuPage::Settings { tab } => settings::settings_menu_ui(&mut params, ui, tab),
             }
         });

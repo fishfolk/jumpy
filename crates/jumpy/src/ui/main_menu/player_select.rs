@@ -58,7 +58,7 @@ pub fn player_select_ui(params: &mut MenuSystemParams, ui: &mut egui::Ui) {
                 .show(ui);
 
                 if continue_button.clicked() {
-                    unimplemented!()
+                    *params.menu_page = MenuPage::MapSelect;
                 }
             });
 

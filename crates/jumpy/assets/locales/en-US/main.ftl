@@ -14,6 +14,9 @@ back = Back
 player-select-title = Player Select
 press-to-join = Press a Button to Join
 
+# Map Select Menu
+map-select-title = Map Select
+
 # Pause Menu
 paused = Paused
 main-menu = Main Menu

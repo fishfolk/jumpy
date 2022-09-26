@@ -162,6 +162,12 @@ impl<'w, 's> GameLoader<'w, 's> {
                     ..default()
                 });
 
+            let mut visuals = egui::Visuals::dark();
+            visuals.widgets.inactive.rounding = egui::Rounding::same(0.0);
+            visuals.widgets.active.rounding = egui::Rounding::same(0.0);
+            visuals.widgets.hovered.rounding = egui::Rounding::same(0.0);
+            egui_ctx.ctx_mut().set_visuals(visuals);
+
             // Helper to load border images
             let mut load_border_image = |border: &mut BorderImageMeta| {
                 border.egui_texture = egui_ctx.add_image(border.handle.clone_weak());

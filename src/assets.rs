@@ -152,7 +152,7 @@ impl AssetLoader for GameMetaLoader {
     }
 
     fn extensions(&self) -> &[&str] {
-        &["game.yml", "game.yaml"]
+        &["game.yml", "game.yaml", "game.json"]
     }
 }
 
@@ -191,7 +191,7 @@ impl AssetLoader for PlayerMetaLoader {
     }
 
     fn extensions(&self) -> &[&str] {
-        &["player.yml", "player.yaml"]
+        &["player.yml", "player.yaml", "player.json"]
     }
 }
 

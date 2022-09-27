@@ -1,0 +1,13 @@
+name: Catty
+
+spritesheet:
+  image: catty.png
+  tile_size: [96, 80]
+  columns: 14
+  rows: 7
+
+  animation_fps: 0.12
+  animations:
+    idle:
+      frames: [0, 13]
+      repeat: true

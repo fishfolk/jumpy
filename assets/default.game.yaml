@@ -2,6 +2,14 @@ camera_height: 448
 # clear_color: [126, 168, 166]
 clear_color: [39, 35, 59]
 
+players:
+  - players/catty/catty.player.yaml
+  - players/fishy/fishy.player.yaml
+  - players/lionfishy/lionfishy.player.yaml
+  - players/orcy/orcy.player.yaml
+  - players/pescy/pescy.player.yaml
+  - players/sharky/sharky.player.yaml
+
 main_menu:
   title_font:
     family: fairfax
@@ -40,9 +48,9 @@ default_settings:
           axis_type: !Gamepad LeftStickX
           positive_low: 0.1
           negative_low: -1.0
-      flop_attack: !GamepadButton South
-      shoot: !GamepadButton East
-      throw: !GamepadButton West
+      jump: !GamepadButton South
+      grab: !GamepadButton East
+      shoot: !GamepadButton West
 
     # Controls for the first keyboard player ( left side )
     keyboard1:
@@ -51,9 +59,9 @@ default_settings:
         down: !Keyboard S
         left: !Keyboard A
         right: !Keyboard D
-      flop_attack: !Keyboard Space
-      shoot: !Keyboard V
-      throw: !Keyboard C
+      jump: !Keyboard Space
+      grab: !Keyboard V
+      shoot: !Keyboard C
 
     # Controls for the second keyboard player ( right side )
     keyboard2:
@@ -62,11 +70,14 @@ default_settings:
         down: !Keyboard Down
         left: !Keyboard Left
         right: !Keyboard Right
-      flop_attack: !Keyboard Comma
-      shoot: !Keyboard RShift
-      throw: !Keyboard Period
+      jump: !Keyboard Comma
+      grab: !Keyboard RShift
+      shoot: !Keyboard Period
 
 ui_theme:
+  colors:
+    positive: [62, 199, 97]
+
   font_families:
     fairfax: ui/FairfaxSM.ttf
     ark: ui/ark-pixel-16px-latin.ttf

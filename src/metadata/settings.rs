@@ -38,9 +38,9 @@ impl PlayerControlMethods {
 
         let mut add_controls = |ctrls: &PlayerControls| {
             input_map.insert(ctrls.movement.clone(), PlayerAction::Move);
-            input_map.insert(ctrls.flop_attack, PlayerAction::Attack);
+            input_map.insert(ctrls.jump, PlayerAction::Jump);
+            input_map.insert(ctrls.grab, PlayerAction::Grab);
             input_map.insert(ctrls.shoot, PlayerAction::Shoot);
-            input_map.insert(ctrls.throw, PlayerAction::Throw);
         };
 
         add_controls(&self.gamepad);
@@ -59,7 +59,7 @@ impl PlayerControlMethods {
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct PlayerControls {
     pub movement: VirtualDPad,
-    pub flop_attack: InputKind,
-    pub throw: InputKind,
+    pub jump: InputKind,
+    pub grab: InputKind,
     pub shoot: InputKind,
 }

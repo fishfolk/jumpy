@@ -13,7 +13,9 @@ use leafwing_input_manager::{
 use crate::{
     config::ENGINE_CONFIG,
     input::MenuAction,
-    metadata::{ui::BorderImageMeta, GameMeta},
+    metadata::{settings::Settings, ui::BorderImageMeta, GameMeta, PlayerMeta},
+    platform::Storage,
+    player::{PlayerIdx, MAX_PLAYERS},
     prelude::*,
     GameState,
 };
@@ -75,10 +77,13 @@ pub struct GameLoader<'w, 's> {
     commands: Commands<'w, 's>,
     game_handle: Res<'w, Handle<GameMeta>>,
     clear_color: ResMut<'w, ClearColor>,
-    assets: ResMut<'w, Assets<GameMeta>>,
+    game_assets: ResMut<'w, Assets<GameMeta>>,
     egui_ctx: ResMut<'w, EguiContext>,
     events: EventReader<'w, 's, AssetEvent<GameMeta>>,
     active_scripts: ResMut<'w, ActiveScripts>,
+    storage: ResMut<'w, Storage>,
+    player_assets: ResMut<'w, Assets<PlayerMeta>>,
+    texture_atlas_assets: Res<'w, Assets<TextureAtlas>>,
 }
 
 impl<'w, 's> GameLoader<'w, 's> {
@@ -99,14 +104,17 @@ impl<'w, 's> GameLoader<'w, 's> {
             camera,
             mut commands,
             game_handle,
-            mut assets,
+            mut game_assets,
             mut egui_ctx,
             mut active_scripts,
             mut clear_color,
+            mut storage,
+            mut player_assets,
+            texture_atlas_assets,
             ..
         } = self;
 
-        if let Some(game) = assets.get_mut(&game_handle) {
+        if let Some(game) = game_assets.get_mut(&game_handle) {
             // Hot reload preparation
             if is_hot_reload {
                 // Despawn previous camera
@@ -186,6 +194,30 @@ impl<'w, 's> GameLoader<'w, 's> {
                 if let Some(border) = &mut button.borders.focused {
                     load_border_image(border);
                 }
+            }
+
+            // Add player sprite sheets to egui context
+            for player_handle in &game.player_handles {
+                let player_meta = player_assets.get_mut(player_handle).unwrap();
+                let atlas = texture_atlas_assets
+                    .get(&player_meta.spritesheet.atlas_handle)
+                    .unwrap();
+                player_meta.spritesheet.egui_texture_id =
+                    egui_ctx.add_image(atlas.texture.clone_weak());
+            }
+
+            // Spawn players. These aren't really playable players yet, but we spawn them now so
+            // that we can attatch input listeners to them for use in the player select screen.
+            let settings = storage.get(Settings::STORAGE_KEY);
+            let settings = settings.as_ref().unwrap_or(&game.default_settings);
+            for player in 0..MAX_PLAYERS {
+                commands
+                    .spawn()
+                    .insert(PlayerIdx(player))
+                    .insert_bundle(InputManagerBundle {
+                        input_map: settings.player_controls.get_input_map(player),
+                        ..default()
+                    });
             }
 
             // Set the active scripts

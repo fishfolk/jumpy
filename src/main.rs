@@ -5,6 +5,7 @@
 use bevy::{asset::AssetServerSettings, log::LogSettings, render::texture::ImageSettings};
 use bevy_parallax::ParallaxResource;
 
+mod animation;
 mod assets;
 mod config;
 mod input;
@@ -12,15 +13,16 @@ mod loading;
 mod localization;
 mod metadata;
 mod platform;
+mod player;
 mod prelude;
 mod scripting;
 mod ui;
 mod utils;
 
 use crate::{
-    assets::AssetPlugin, input::InputPlugin, loading::LoadingPlugin,
-    localization::LocalizationPlugin, metadata::GameMeta, platform::PlatformPlugin, prelude::*,
-    scripting::ScriptingPlugin, ui::UiPlugin,
+    animation::AnimationPlugin, assets::AssetPlugin, input::InputPlugin, loading::LoadingPlugin,
+    localization::LocalizationPlugin, metadata::GameMeta, platform::PlatformPlugin,
+    player::PlayerPlugin, prelude::*, scripting::ScriptingPlugin, ui::UiPlugin,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -75,7 +77,9 @@ pub fn main() {
         .add_plugin(AssetPlugin)
         .add_plugin(LocalizationPlugin)
         .add_plugin(InputPlugin)
+        .add_plugin(AnimationPlugin)
         .add_plugin(UiPlugin)
+        .add_plugin(PlayerPlugin)
         .add_plugin(ScriptingPlugin);
 
     debug!(?engine_config, "Starting game");

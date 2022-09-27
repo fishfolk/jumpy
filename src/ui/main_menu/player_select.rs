@@ -1,10 +1,35 @@
 use leafwing_input_manager::user_input::{InputKind, UserInput};
 
-use crate::input::PlayerAction;
+use crate::{input::PlayerAction, metadata::PlayerMeta, player::MAX_PLAYERS};
 
 use super::*;
 
+#[derive(Default)]
+pub struct PlayerSelectState {
+    player_slots: [Option<PlayerSlot>; MAX_PLAYERS],
+}
+
+struct PlayerSlot {
+    player_handle: Handle<PlayerMeta>,
+    confirmed: bool,
+}
+
 pub fn player_select_ui(params: &mut MenuSystemParams, ui: &mut egui::Ui) {
+    // Whether or not the continue button should be enabled
+    let mut ready_players = 0;
+    for slot in &params.player_select_state.player_slots {
+        if matches!(
+            slot,
+            Some(PlayerSlot {
+                confirmed: true,
+                ..
+            })
+        ) {
+            ready_players += 1;
+        }
+    }
+    let may_continue = ready_players >= 2;
+
     ui.vertical_centered(|ui| {
         let bigger_text_style = &params.game.ui_theme.font_styles.bigger;
         let heading_text_style = &params.game.ui_theme.font_styles.heading;
@@ -50,12 +75,18 @@ pub fn player_select_ui(params: &mut MenuSystemParams, ui: &mut egui::Ui) {
                 ui.add_space(button_spacing);
 
                 // Continue button
-                let continue_button = BorderedButton::themed(
-                    &params.game.ui_theme.button_styles.normal,
-                    &params.localization.get("continue"),
-                )
-                .min_size(button_min_size)
-                .show(ui);
+                let continue_button = ui
+                    .scope(|ui| {
+                        ui.set_enabled(may_continue);
+
+                        BorderedButton::themed(
+                            &params.game.ui_theme.button_styles.normal,
+                            &params.localization.get("continue"),
+                        )
+                        .min_size(button_min_size)
+                        .show(ui)
+                    })
+                    .response;
 
                 if continue_button.clicked() {
                     *params.menu_page = MenuPage::MapSelect;
@@ -68,7 +99,7 @@ pub fn player_select_ui(params: &mut MenuSystemParams, ui: &mut egui::Ui) {
                 let normal_button_style = &params.game.ui_theme.button_styles.normal;
 
                 ui.set_width(ui.available_width() - normal_button_style.font.size * 2.0);
-                ui.columns(4, |columns| {
+                ui.columns(MAX_PLAYERS, |columns| {
                     for (i, ui) in columns.iter_mut().enumerate() {
                         player_select_panel(i, params, ui);
                     }
@@ -79,6 +110,72 @@ pub fn player_select_ui(params: &mut MenuSystemParams, ui: &mut egui::Ui) {
 }
 
 fn player_select_panel(idx: usize, params: &mut MenuSystemParams, ui: &mut egui::Ui) {
+    let (_, player_actions): (_, &ActionState<PlayerAction>) = params
+        .players
+        .iter()
+        .filter(|(player_idx, _)| player_idx.0 == idx)
+        .next()
+        .unwrap();
+
+    let player_slot = &mut params.player_select_state.player_slots[idx];
+
+    if let Some(slot) = player_slot {
+        if player_actions.just_pressed(PlayerAction::Jump) {
+            slot.confirmed = true;
+        } else if player_actions.just_pressed(PlayerAction::Grab) {
+            if slot.confirmed {
+                slot.confirmed = false;
+            } else {
+                *player_slot = None;
+            }
+        } else if player_actions.just_pressed(PlayerAction::Move) && !slot.confirmed {
+            let direction = player_actions
+                .clamped_axis_pair(PlayerAction::Move)
+                .unwrap();
+
+            let (current_player_handle_idx, _) = params
+                .game
+                .player_handles
+                .iter()
+                .enumerate()
+                .find(|(_, handle)| *handle == &slot.player_handle)
+                .unwrap();
+
+            if direction.x() > 0.0 {
+                slot.player_handle = params
+                    .game
+                    .player_handles
+                    .get(current_player_handle_idx + 1)
+                    .map(|x| x.clone_weak())
+                    .unwrap_or(params.game.player_handles[0].clone_weak());
+            } else if direction.x() <= 0.0 {
+                if current_player_handle_idx > 0 {
+                    slot.player_handle = params
+                        .game
+                        .player_handles
+                        .get(current_player_handle_idx - 1)
+                        .map(|x| x.clone_weak())
+                        .unwrap();
+                } else {
+                    slot.player_handle = params
+                        .game
+                        .player_handles
+                        .iter()
+                        .last()
+                        .unwrap()
+                        .clone_weak();
+                }
+            }
+        }
+    } else {
+        if player_actions.just_pressed(PlayerAction::Jump) {
+            *player_slot = Some(PlayerSlot {
+                player_handle: params.game.player_handles[0].clone_weak(),
+                confirmed: false,
+            });
+        }
+    }
+
     BorderedFrame::new(&params.game.ui_theme.panel.border)
         .padding(params.game.ui_theme.panel.padding.into())
         .show(ui, |ui| {
@@ -90,35 +187,119 @@ fn player_select_panel(idx: usize, params: &mut MenuSystemParams, ui: &mut egui:
                 let settings = settings.as_ref().unwrap_or(&params.game.default_settings);
                 let input_map = settings.player_controls.get_input_map(idx);
 
-                ui.themed_label(
-                    &params.game.ui_theme.font_styles.normal,
-                    &params.localization.get(&format!("press-to-join")),
-                );
+                if let Some(slot) = player_slot {
+                    let player_meta = params.player_meta_assets.get(&slot.player_handle).unwrap();
 
-                ui.add_space(params.game.ui_theme.button_styles.normal.font.size);
+                    ui.themed_label(
+                        &params.game.ui_theme.font_styles.normal,
+                        &params.localization.get("pick-a-fish"),
+                    );
 
-                input_map
-                    .get(PlayerAction::Attack)
-                    .iter()
-                    .map(|x| match x {
-                        UserInput::Single(input) => match &input {
-                            InputKind::GamepadButton(btn) => {
-                                format!(
-                                    "{gamepad} {btn:?}",
-                                    gamepad = params.localization.get("gamepad")
-                                )
-                            }
-                            InputKind::Keyboard(btn) => format!(
-                                "{keyboard} {btn:?}",
-                                keyboard = params.localization.get("keyboard")
-                            ),
-                            i => unimplemented!("Display input kind: {i:?}"),
-                        },
-                        _ => unimplemented!("Display non-single input type"),
-                    })
-                    .for_each(|btn| {
-                        ui.themed_label(&params.game.ui_theme.font_styles.smaller, &btn);
+                    ui.vertical_centered(|ui| {
+                        ui.set_height(params.game.ui_theme.font_styles.heading.size * 1.5);
+
+                        if slot.confirmed {
+                            ui.themed_label(
+                                &params
+                                    .game
+                                    .ui_theme
+                                    .font_styles
+                                    .heading
+                                    .colored(params.game.ui_theme.colors.positive),
+                                &params.localization.get("player-select-ready"),
+                            );
+                        }
                     });
+
+                    ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
+                        let name_with_arrows = format!("<  {}  >", player_meta.name);
+                        ui.themed_label(
+                            &params.game.ui_theme.font_styles.normal,
+                            if slot.confirmed {
+                                &player_meta.name
+                            } else {
+                                &name_with_arrows
+                            },
+                        );
+
+                        player_image(ui, player_meta);
+                    });
+                } else {
+                    ui.themed_label(
+                        &params.game.ui_theme.font_styles.normal,
+                        &params.localization.get(&format!("press-to-join")),
+                    );
+
+                    ui.add_space(params.game.ui_theme.button_styles.normal.font.size);
+
+                    input_map
+                        .get(PlayerAction::Jump)
+                        .iter()
+                        .map(|x| match x {
+                            UserInput::Single(input) => match &input {
+                                InputKind::GamepadButton(btn) => {
+                                    format!(
+                                        "{gamepad} {btn:?}",
+                                        gamepad = params.localization.get("gamepad")
+                                    )
+                                }
+                                InputKind::Keyboard(btn) => format!(
+                                    "{keyboard} {btn:?}",
+                                    keyboard = params.localization.get("keyboard")
+                                ),
+                                i => unimplemented!("Display input kind: {i:?}"),
+                            },
+                            _ => unimplemented!("Display non-single input type"),
+                        })
+                        .for_each(|btn| {
+                            ui.themed_label(&params.game.ui_theme.font_styles.smaller, &btn);
+                        });
+                }
             });
         });
+}
+
+fn player_image(ui: &mut egui::Ui, player_meta: &PlayerMeta) {
+    let time = ui.ctx().input().time;
+    let spritesheet = &player_meta.spritesheet;
+    let tile_size = spritesheet.tile_size.as_vec2();
+    let spritesheet_size =
+        tile_size * Vec2::new(spritesheet.columns as f32, spritesheet.rows as f32);
+    let sprite_aspect = tile_size.y / tile_size.x;
+    let width = ui.available_width();
+    let height = sprite_aspect * width;
+    let available_height = ui.available_height();
+    let y_offset = -(available_height - height) / 2.0;
+    let (rect, _) = ui.allocate_exact_size(egui::vec2(width, height), egui::Sense::hover());
+
+    let fps = spritesheet.animation_fps as f64;
+    let anim_clip = spritesheet
+        .animations
+        .get("idle")
+        .expect("Missing `idle` animation");
+    let frame_in_time_idx = (time / fps).round() as usize;
+    let frame_in_clip_idx = frame_in_time_idx % anim_clip.frames.len();
+    let frame_in_sheet_idx = anim_clip.frames.clone().nth(frame_in_clip_idx).unwrap();
+    let x_in_sheet_idx = frame_in_sheet_idx % spritesheet.columns;
+    let y_in_sheet_idx = frame_in_sheet_idx / spritesheet.columns;
+
+    let uv = egui::Rect::from_min_size(
+        egui::pos2(
+            x_in_sheet_idx as f32 * tile_size.x / spritesheet_size.x,
+            y_in_sheet_idx as f32 * tile_size.y / spritesheet_size.y,
+        ),
+        egui::vec2(
+            1.0 / spritesheet.columns as f32,
+            1.0 / spritesheet.rows as f32,
+        ),
+    );
+
+    let mut mesh = egui::Mesh::default();
+    mesh.texture_id = spritesheet.egui_texture_id;
+
+    mesh.add_rect_with_uv(rect, uv, egui::Color32::WHITE);
+
+    mesh.translate(egui::vec2(0.0, y_offset));
+
+    ui.painter().add(mesh);
 }

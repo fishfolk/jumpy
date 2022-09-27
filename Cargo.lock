@@ -489,6 +489,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_ecs_tilemap"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5ef56c77808aa1fc7379ce538bd9a1e4048794203b4f591f2d06131fc613a1cc"
+dependencies = [
+ "bevy",
+ "log",
+ "regex",
+]
+
+[[package]]
 name = "bevy_egui"
 version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2576,6 +2587,7 @@ dependencies = [
  "bevy-inspector-egui",
  "bevy-inspector-egui-rapier",
  "bevy-parallax",
+ "bevy_ecs_tilemap",
  "bevy_egui",
  "bevy_fluent",
  "bevy_kira_audio",

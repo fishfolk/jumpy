@@ -9,6 +9,7 @@ cancel = Cancel
 save = Save
 continue = Continue
 back = Back
+editor = Map Editor
 
 # Player Select Menu
 player-select-title = Player Select

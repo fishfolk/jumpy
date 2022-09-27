@@ -1,0 +1,9 @@
+grid_size: [27, 21]
+tile_size: [32, 32]
+layers:
+  - name: Background
+    kind: !Tiles
+      tilemap: ./resoures/default_tileset.png
+      tiles:
+        - pos: [0, 0]
+          idx: 0

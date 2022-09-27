@@ -17,18 +17,19 @@ struct PlayerSlot {
 pub fn player_select_ui(params: &mut MenuSystemParams, ui: &mut egui::Ui) {
     // Whether or not the continue button should be enabled
     let mut ready_players = 0;
+    let mut unconfirmed_players = 0;
+
+    #[allow(clippy::manual_flatten)] // False alarm
     for slot in &params.player_select_state.player_slots {
-        if matches!(
-            slot,
-            Some(PlayerSlot {
-                confirmed: true,
-                ..
-            })
-        ) {
-            ready_players += 1;
+        if let Some(PlayerSlot { confirmed, .. }) = slot {
+            if *confirmed {
+                ready_players += 1;
+            } else {
+                unconfirmed_players += 1;
+            }
         }
     }
-    let may_continue = ready_players >= 2;
+    let may_continue = ready_players >= 1 && unconfirmed_players == 0;
 
     ui.vertical_centered(|ui| {
         let bigger_text_style = &params.game.ui_theme.font_styles.bigger;

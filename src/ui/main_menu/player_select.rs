@@ -86,7 +86,7 @@ pub fn player_select_ui(params: &mut MenuSystemParams, ui: &mut egui::Ui) {
                         .min_size(button_min_size)
                         .show(ui)
                     })
-                    .response;
+                    .inner;
 
                 if continue_button.clicked() {
                     *params.menu_page = MenuPage::MapSelect;

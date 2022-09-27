@@ -158,7 +158,6 @@ impl<'w, 's> GameLoader<'w, 's> {
 
             // Spawn the camera
             let mut camera_bundle = Camera2dBundle::default();
-            // camera_bundle.orthographic_projection.depth_calculation = DepthCalculation::Distance;
             camera_bundle.projection.scaling_mode =
                 ScalingMode::FixedVertical(game.camera_height as f32);
             commands

@@ -134,7 +134,6 @@ pub struct MenuSystemParams<'w, 's> {
     control_inputs: ControlInputBindingEvents<'w, 's>,
     keyboard_input: Res<'w, Input<KeyCode>>,
     player_meta_assets: Res<'w, Assets<PlayerMeta>>,
-    texture_atlas_assets: Res<'w, Assets<TextureAtlas>>,
 }
 
 /// Render the main menu UI

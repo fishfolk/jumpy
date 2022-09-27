@@ -2,7 +2,7 @@
 
 use bevy_egui::egui;
 
-use crate::metadata::ui::ProgressBarMeta;
+use crate::metadata::ProgressBarMeta;
 
 use super::bordered_frame::BorderedFrame;
 

@@ -13,7 +13,7 @@ use leafwing_input_manager::{
 use crate::{
     config::ENGINE_CONFIG,
     input::MenuAction,
-    metadata::{settings::Settings, ui::BorderImageMeta, GameMeta, PlayerMeta},
+    metadata::{BorderImageMeta, GameMeta, PlayerMeta, Settings},
     platform::Storage,
     player::{PlayerIdx, MAX_PLAYERS},
     prelude::*,

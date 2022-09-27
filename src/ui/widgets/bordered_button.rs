@@ -5,7 +5,7 @@
 /// Adapted from <https://docs.rs/egui/0.18.1/src/egui/widgets/button.rs.html>
 use bevy_egui::egui::{self, *};
 
-use crate::metadata::ui::{BorderImageMeta, ButtonThemeMeta};
+use crate::metadata::{BorderImageMeta, ButtonThemeMeta};
 
 use super::bordered_frame::BorderedFrame;
 

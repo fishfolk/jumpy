@@ -1,6 +1,6 @@
 use bevy_egui::egui;
 
-use crate::metadata::ui::FontMeta;
+use crate::metadata::FontMeta;
 
 pub mod bordered_button;
 pub mod bordered_frame;

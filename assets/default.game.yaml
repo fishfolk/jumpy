@@ -1,5 +1,4 @@
 camera_height: 448
-# clear_color: [126, 168, 166]
 clear_color: [39, 35, 59]
 
 players:
@@ -9,6 +8,9 @@ players:
   - players/orcy/orcy.player.yaml
   - players/pescy/pescy.player.yaml
   - players/sharky/sharky.player.yaml
+
+maps:
+  - maps/level1.map.yaml
 
 main_menu:
   title_font:

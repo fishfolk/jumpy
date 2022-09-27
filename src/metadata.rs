@@ -1,14 +1,22 @@
+//! Data structures for things like assets and settings that can be serialized and deserialized.
+
+use crate::prelude::*;
+
 use bevy::{reflect::TypeUuid, utils::HashMap};
 use bevy_has_load_progress::HasLoadProgress;
 use bevy_mod_js_scripting::JsScript;
 
-use crate::{animation::Clip, prelude::*};
+mod localization;
+mod map;
+mod player;
+mod settings;
+mod ui;
 
-use self::ui::FontMeta;
-
-pub mod localization;
-pub mod settings;
-pub mod ui;
+pub use localization::*;
+pub use map::*;
+pub use player::*;
+pub use settings::*;
+pub use ui::*;
 
 #[derive(HasLoadProgress, TypeUuid, Deserialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
@@ -16,7 +24,10 @@ pub mod ui;
 pub struct GameMeta {
     pub players: Vec<String>,
     #[serde(skip)]
-    pub player_handles: Vec<Handle<PlayerMeta>>,
+    pub player_handles: Vec<Handle<player::PlayerMeta>>,
+    pub maps: Vec<String>,
+    #[serde(skip)]
+    pub map_handles: Vec<Handle<map::MapMeta>>,
     pub clear_color: ui::ColorMeta,
     pub camera_height: u32,
     pub translations: localization::TranslationsMeta,
@@ -48,27 +59,4 @@ pub struct ImageMeta {
     pub image_size: Vec2,
     #[serde(skip)]
     pub image_handle: Handle<Image>,
-}
-
-#[derive(TypeUuid, Deserialize, Clone, Debug, Component)]
-#[serde(deny_unknown_fields)]
-#[uuid = "a939278b-901a-47d4-8ee8-6ac97881cf4d"]
-pub struct PlayerMeta {
-    pub name: String,
-    pub spritesheet: PlayerSpritesheetMeta,
-}
-
-#[derive(Deserialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
-pub struct PlayerSpritesheetMeta {
-    pub image: String,
-    #[serde(skip)]
-    pub atlas_handle: Handle<TextureAtlas>,
-    #[serde(skip)]
-    pub egui_texture_id: bevy_egui::egui::TextureId,
-    pub tile_size: UVec2,
-    pub columns: usize,
-    pub rows: usize,
-    pub animation_fps: f32,
-    pub animations: HashMap<String, Clip>,
 }

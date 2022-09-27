@@ -7,7 +7,7 @@ use bevy::{
 use bevy_egui::egui;
 
 use crate::{
-    metadata::{ui::BorderImageMeta, GameMeta, PlayerMeta},
+    metadata::{BorderImageMeta, GameMeta, MapMeta, PlayerMeta},
     prelude::*,
 };
 
@@ -17,10 +17,12 @@ impl Plugin for AssetPlugin {
     fn build(&self, app: &mut App) {
         app.add_asset::<GameMeta>()
             .add_asset_loader(GameMetaLoader)
-            .add_asset::<EguiFont>()
-            .add_asset_loader(EguiFontLoader)
             .add_asset::<PlayerMeta>()
-            .add_asset_loader(PlayerMetaLoader);
+            .add_asset_loader(PlayerMetaLoader)
+            .add_asset::<MapMeta>()
+            .add_asset_loader(MapMetaLoader)
+            .add_asset::<EguiFont>()
+            .add_asset_loader(EguiFontLoader);
     }
 }
 
@@ -125,6 +127,15 @@ impl AssetLoader for GameMetaLoader {
                 dependencies.push(path);
             }
 
+            // Load map handles
+            for map_relative_path in &meta.maps {
+                let (path, handle) =
+                    get_relative_asset(load_context, self_path, map_relative_path);
+
+                meta.map_handles.push(handle);
+                dependencies.push(path);
+            }
+
             // Load UI fonts
             for (font_name, font_relative_path) in &meta.ui_theme.font_families {
                 let (font_path, font_handle) =
@@ -192,6 +203,30 @@ impl AssetLoader for PlayerMetaLoader {
 
     fn extensions(&self) -> &[&str] {
         &["player.yml", "player.yaml", "player.json"]
+    }
+}
+
+pub struct MapMetaLoader;
+
+impl AssetLoader for MapMetaLoader {
+    fn load<'a>(
+        &'a self,
+        bytes: &'a [u8],
+        load_context: &'a mut bevy::asset::LoadContext,
+    ) -> bevy::utils::BoxedFuture<'a, Result<(), anyhow::Error>> {
+        Box::pin(async move {
+            let path = load_context.path();
+            let meta: MapMeta = serde_yaml::from_reader(bytes)?;
+            trace!(?path, ?meta, "Loaded map asset");
+
+            load_context.set_default_asset(LoadedAsset::new(meta));
+
+            Ok(())
+        })
+    }
+
+    fn extensions(&self) -> &[&str] {
+        &["map.yml", "map.yaml", "map.json"]
     }
 }
 

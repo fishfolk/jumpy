@@ -6,7 +6,7 @@ use leafwing_input_manager::prelude::ActionState;
 use crate::{
     input::{MenuAction, PlayerAction},
     localization::LocalizationExt,
-    metadata::{settings::Settings, GameMeta, PlayerMeta},
+    metadata::{GameMeta, PlayerMeta, Settings},
     platform::Storage,
     player::PlayerIdx,
 };

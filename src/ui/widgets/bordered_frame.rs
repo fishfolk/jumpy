@@ -1,6 +1,6 @@
 use bevy_egui::egui;
 
-use crate::metadata::ui::BorderImageMeta;
+use crate::metadata::BorderImageMeta;
 
 /// A 9-patch style bordered frame.
 ///

@@ -27,6 +27,7 @@ impl Plugin for UiPlugin {
                 CoreStage::PreUpdate,
                 handle_menu_input
                     .run_if_resource_exists::<GameMeta>()
+                    .after(InputManagerSystem::Update)
                     .after(EguiSystem::ProcessInput)
                     .before(EguiSystem::BeginFrame),
             )

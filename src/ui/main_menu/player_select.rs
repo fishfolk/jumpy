@@ -113,8 +113,7 @@ fn player_select_panel(idx: usize, params: &mut MenuSystemParams, ui: &mut egui:
     let (_, player_actions): (_, &ActionState<PlayerAction>) = params
         .players
         .iter()
-        .filter(|(player_idx, _)| player_idx.0 == idx)
-        .next()
+        .find(|(player_idx, _)| player_idx.0 == idx)
         .unwrap();
 
     let player_slot = &mut params.player_select_state.player_slots[idx];
@@ -147,7 +146,7 @@ fn player_select_panel(idx: usize, params: &mut MenuSystemParams, ui: &mut egui:
                     .player_handles
                     .get(current_player_handle_idx + 1)
                     .map(|x| x.clone_weak())
-                    .unwrap_or(params.game.player_handles[0].clone_weak());
+                    .unwrap_or_else(|| params.game.player_handles[0].clone_weak());
             } else if direction.x() <= 0.0 {
                 if current_player_handle_idx > 0 {
                     slot.player_handle = params
@@ -167,13 +166,11 @@ fn player_select_panel(idx: usize, params: &mut MenuSystemParams, ui: &mut egui:
                 }
             }
         }
-    } else {
-        if player_actions.just_pressed(PlayerAction::Jump) {
-            *player_slot = Some(PlayerSlot {
-                player_handle: params.game.player_handles[0].clone_weak(),
-                confirmed: false,
-            });
-        }
+    } else if player_actions.just_pressed(PlayerAction::Jump) {
+        *player_slot = Some(PlayerSlot {
+            player_handle: params.game.player_handles[0].clone_weak(),
+            confirmed: false,
+        });
     }
 
     BorderedFrame::new(&params.game.ui_theme.panel.border)
@@ -227,7 +224,7 @@ fn player_select_panel(idx: usize, params: &mut MenuSystemParams, ui: &mut egui:
                 } else {
                     ui.themed_label(
                         &params.game.ui_theme.font_styles.normal,
-                        &params.localization.get(&format!("press-to-join")),
+                        &params.localization.get(&"press-to-join".to_string()),
                     );
 
                     ui.add_space(params.game.ui_theme.button_styles.normal.font.size);
@@ -294,8 +291,10 @@ fn player_image(ui: &mut egui::Ui, player_meta: &PlayerMeta) {
         ),
     );
 
-    let mut mesh = egui::Mesh::default();
-    mesh.texture_id = spritesheet.egui_texture_id;
+    let mut mesh = egui::Mesh {
+        texture_id: spritesheet.egui_texture_id,
+        ..default()
+    };
 
     mesh.add_rect_with_uv(rect, uv, egui::Color32::WHITE);
 

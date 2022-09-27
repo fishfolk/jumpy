@@ -35,7 +35,7 @@ pub(crate) fn map_select_ui(params: &mut MenuSystemParams, ui: &mut egui::Ui) {
                         ui.set_height(tile_size.y);
                         let idx = row + col;
 
-                        if let Some(_) = dummy_map_list.get(idx) {
+                        if dummy_map_list.get(idx).is_some() {
                             // let padding = &params.game.ui_theme.panel.padding;
                             BorderedFrame::new(&params.game.ui_theme.panel.border)
                                 .margin(egui::style::Margin {

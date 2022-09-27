@@ -274,16 +274,16 @@ fn controls_settings_ui(
         .column(Size::remainder())
         .header(bigger_font.size * 1.5, |mut row| {
             row.col(|ui| {
-                ui.themed_label(&bigger_font, &params.localization.get("action"));
+                ui.themed_label(bigger_font, &params.localization.get("action"));
             });
             row.col(|ui| {
-                ui.themed_label(&bigger_font, &params.localization.get("keyboard-1"));
+                ui.themed_label(bigger_font, &params.localization.get("keyboard-1"));
             });
             row.col(|ui| {
-                ui.themed_label(&bigger_font, &params.localization.get("keyboard-2"));
+                ui.themed_label(bigger_font, &params.localization.get("keyboard-2"));
             });
             row.col(|ui| {
-                ui.themed_label(&bigger_font, &params.localization.get("gamepad"));
+                ui.themed_label(bigger_font, &params.localization.get("gamepad"));
             });
         })
         .body(|mut body| {
@@ -295,7 +295,7 @@ fn controls_settings_ui(
                 body.row(row_height, |mut row| {
                     // Add row label
                     row.col(|ui| {
-                        ui.themed_label(&label_font, title);
+                        ui.themed_label(label_font, title);
                     });
 
                     // Add buttons for each kind of input

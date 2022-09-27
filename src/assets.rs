@@ -82,7 +82,7 @@ impl AssetLoader for GameMetaLoader {
 
             // Get locale handles
             for locale in &meta.translations.locales {
-                let (path, handle) = get_relative_asset(load_context, &self_path, locale);
+                let (path, handle) = get_relative_asset(load_context, self_path, locale);
                 dependencies.push(path);
                 meta.translations.locale_handles.push(handle);
             }
@@ -90,7 +90,7 @@ impl AssetLoader for GameMetaLoader {
             // Load the main menu background
             let (main_menu_background_path, main_menu_background) = get_relative_asset(
                 load_context,
-                &self_path,
+                self_path,
                 &meta.main_menu.background_image.image,
             );
             meta.main_menu.background_image.image_handle = main_menu_background;
@@ -98,7 +98,7 @@ impl AssetLoader for GameMetaLoader {
 
             // Load UI border images
             let mut load_border_image = |border: &mut BorderImageMeta| {
-                let (path, handle) = get_relative_asset(load_context, &self_path, &border.image);
+                let (path, handle) = get_relative_asset(load_context, self_path, &border.image);
                 dependencies.push(path);
                 border.handle = handle;
             };
@@ -119,7 +119,7 @@ impl AssetLoader for GameMetaLoader {
             // Load player handles
             for player_relative_path in &meta.players {
                 let (path, handle) =
-                    get_relative_asset(load_context, &self_path, player_relative_path);
+                    get_relative_asset(load_context, self_path, player_relative_path);
 
                 meta.player_handles.push(handle);
                 dependencies.push(path);
@@ -128,7 +128,7 @@ impl AssetLoader for GameMetaLoader {
             // Load UI fonts
             for (font_name, font_relative_path) in &meta.ui_theme.font_families {
                 let (font_path, font_handle) =
-                    get_relative_asset(load_context, &self_path, font_relative_path);
+                    get_relative_asset(load_context, self_path, font_relative_path);
 
                 dependencies.push(font_path);
 
@@ -140,7 +140,7 @@ impl AssetLoader for GameMetaLoader {
             // Load the script handles
             for script_relative_path in &meta.scripts {
                 let (script_path, script_handle) =
-                    get_relative_asset(load_context, &self_path, script_relative_path);
+                    get_relative_asset(load_context, self_path, script_relative_path);
                 dependencies.push(script_path);
                 meta.script_handles.push(script_handle);
             }

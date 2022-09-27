@@ -7,7 +7,7 @@ use bevy::{
 use bevy_egui::egui;
 
 use crate::{
-    metadata::{ui::BorderImageMeta, GameMeta},
+    metadata::{ui::BorderImageMeta, GameMeta, PlayerMeta},
     prelude::*,
 };
 
@@ -18,7 +18,9 @@ impl Plugin for AssetPlugin {
         app.add_asset::<GameMeta>()
             .add_asset_loader(GameMetaLoader)
             .add_asset::<EguiFont>()
-            .add_asset_loader(EguiFontLoader);
+            .add_asset_loader(EguiFontLoader)
+            .add_asset::<PlayerMeta>()
+            .add_asset_loader(PlayerMetaLoader);
     }
 }
 
@@ -60,10 +62,9 @@ impl AssetLoader for GameMetaLoader {
         load_context: &'a mut bevy::asset::LoadContext,
     ) -> bevy::utils::BoxedFuture<'a, Result<(), anyhow::Error>> {
         Box::pin(async move {
+            let self_path = load_context.path();
             let mut meta: GameMeta = serde_yaml::from_slice(bytes)?;
-            trace!(?meta, "Loaded game asset");
-
-            let self_path = load_context.path().to_owned();
+            trace!(path=?self_path, ?meta, "Loaded game asset");
 
             // Detect the system locale
             let locale = sys_locale::get_locale().unwrap_or_else(|| "en-US".to_string());
@@ -77,7 +78,7 @@ impl AssetLoader for GameMetaLoader {
             debug!("Detected system locale: {}", locale);
             meta.translations.detected_locale = locale;
 
-            let mut dependencies = vec![];
+            let mut dependencies = Vec::new();
 
             // Get locale handles
             for locale in &meta.translations.locales {
@@ -115,6 +116,15 @@ impl AssetLoader for GameMetaLoader {
                 }
             }
 
+            // Load player handles
+            for player_relative_path in &meta.players {
+                let (path, handle) =
+                    get_relative_asset(load_context, &self_path, player_relative_path);
+
+                meta.player_handles.push(handle);
+                dependencies.push(path);
+            }
+
             // Load UI fonts
             for (font_name, font_relative_path) in &meta.ui_theme.font_families {
                 let (font_path, font_handle) =
@@ -143,6 +153,45 @@ impl AssetLoader for GameMetaLoader {
 
     fn extensions(&self) -> &[&str] {
         &["game.yml", "game.yaml"]
+    }
+}
+
+pub struct PlayerMetaLoader;
+
+impl AssetLoader for PlayerMetaLoader {
+    fn load<'a>(
+        &'a self,
+        bytes: &'a [u8],
+        load_context: &'a mut bevy::asset::LoadContext,
+    ) -> bevy::utils::BoxedFuture<'a, Result<(), anyhow::Error>> {
+        Box::pin(async move {
+            let path = load_context.path();
+            let mut meta: PlayerMeta = serde_yaml::from_reader(bytes)?;
+            trace!(?path, ?meta, "Loaded player asset");
+
+            let (atlas_path, atlas_handle) =
+                get_relative_asset(load_context, load_context.path(), &meta.spritesheet.image);
+
+            let atlas_handle = load_context.set_labeled_asset(
+                "atlas",
+                LoadedAsset::new(TextureAtlas::from_grid(
+                    atlas_handle,
+                    meta.spritesheet.tile_size.as_vec2(),
+                    meta.spritesheet.columns,
+                    meta.spritesheet.rows,
+                ))
+                .with_dependency(atlas_path),
+            );
+            meta.spritesheet.atlas_handle = atlas_handle;
+
+            load_context.set_default_asset(LoadedAsset::new(meta));
+
+            Ok(())
+        })
+    }
+
+    fn extensions(&self) -> &[&str] {
+        &["player.yml", "player.yaml"]
     }
 }
 

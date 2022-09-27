@@ -13,6 +13,8 @@ back = Back
 # Player Select Menu
 player-select-title = Player Select
 press-to-join = Press a Button to Join
+pick-a-fish = Pick a Fish
+player-select-ready = Ready!
 
 # Map Select Menu
 map-select-title = Map Select

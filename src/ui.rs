@@ -1,5 +1,5 @@
 use bevy::{prelude::*, utils::HashMap, window::WindowId};
-use bevy_egui::{egui, EguiContext, EguiInput, EguiPlugin, EguiSettings};
+use bevy_egui::{egui, EguiContext, EguiInput, EguiPlugin, EguiSettings, EguiSystem};
 use iyes_loopless::prelude::*;
 use leafwing_input_manager::prelude::ActionState;
 
@@ -21,8 +21,15 @@ pub struct UiPlugin;
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<WidgetAdjacencies>()
+            .init_resource::<DisableMenuInput>()
             .add_plugin(EguiPlugin)
-            .add_system(handle_menu_input.run_if_resource_exists::<GameMeta>())
+            .add_system_to_stage(
+                CoreStage::PreUpdate,
+                handle_menu_input
+                    .run_if_resource_exists::<GameMeta>()
+                    .after(EguiSystem::ProcessInput)
+                    .before(EguiSystem::BeginFrame),
+            )
             .add_enter_system(GameState::MainMenu, main_menu::spawn_main_menu_background)
             .add_exit_system(GameState::MainMenu, main_menu::despawn_main_menu_background)
             .add_system(update_egui_fonts)
@@ -141,7 +148,11 @@ impl<'a> WidgetAdjacencyEntry<'a> {
     }
 }
 
+#[derive(Default, Deref, DerefMut)]
+pub struct DisableMenuInput(pub bool);
+
 fn handle_menu_input(
+    disable_menu_input: Res<DisableMenuInput>,
     mut windows: ResMut<Windows>,
     input: Query<&ActionState<MenuAction>>,
     mut egui_inputs: ResMut<HashMap<WindowId, EguiInput>>,
@@ -166,6 +177,14 @@ fn handle_menu_input(
         .unwrap()
         .raw_input
         .events;
+
+    if **disable_menu_input {
+        events.retain(|event| match event {
+            egui::Event::Key { key, .. } => key == &egui::Key::Escape,
+            _ => true,
+        });
+        return;
+    }
 
     if input.just_pressed(MenuAction::Confirm) {
         events.push(egui::Event::Key {

@@ -17,6 +17,13 @@ pub struct UIThemeMeta {
     pub button_styles: ButtonStylesMeta,
     pub hud: HudThemeMeta,
     pub panel: PanelThemeMeta,
+    pub colors: UiThemeColors,
+}
+
+#[derive(HasLoadProgress, Deserialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+pub struct UiThemeColors {
+    pub positive: ColorMeta,
 }
 
 #[derive(HasLoadProgress, Deserialize, Clone, Debug)]

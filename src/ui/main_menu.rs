@@ -4,17 +4,18 @@ use bevy_fluent::Localization;
 use leafwing_input_manager::prelude::ActionState;
 
 use crate::{
-    input::MenuAction,
+    input::{MenuAction, PlayerAction},
     localization::LocalizationExt,
-    metadata::{settings::Settings, GameMeta},
+    metadata::{settings::Settings, GameMeta, PlayerMeta},
     platform::Storage,
+    player::PlayerIdx,
 };
 
 use self::settings::ControlInputBindingEvents;
 
 use super::{
     widgets::{bordered_button::BorderedButton, bordered_frame::BorderedFrame, EguiUIExt},
-    EguiContextExt, EguiResponseExt, WidgetAdjacencies,
+    DisableMenuInput, EguiContextExt, EguiResponseExt, WidgetAdjacencies,
 };
 
 mod map_select;
@@ -119,6 +120,9 @@ impl SettingsTab {
 #[derive(SystemParam)]
 pub struct MenuSystemParams<'w, 's> {
     menu_page: Local<'s, MenuPage>,
+    disable_menu_input: ResMut<'w, DisableMenuInput>,
+    player_select_state: Local<'s, player_select::PlayerSelectState>,
+    players: Query<'w, 's, (&'static PlayerIdx, &'static ActionState<PlayerAction>)>,
     modified_settings: Local<'s, Option<Settings>>,
     currently_binding_input_idx: Local<'s, Option<usize>>,
     game: Res<'w, GameMeta>,
@@ -128,14 +132,22 @@ pub struct MenuSystemParams<'w, 's> {
     storage: ResMut<'w, Storage>,
     adjacencies: ResMut<'w, WidgetAdjacencies>,
     control_inputs: ControlInputBindingEvents<'w, 's>,
+    keyboard_input: Res<'w, Input<KeyCode>>,
+    player_meta_assets: Res<'w, Assets<PlayerMeta>>,
+    texture_atlas_assets: Res<'w, Assets<TextureAtlas>>,
 }
 
 /// Render the main menu UI
 pub fn main_menu_system(mut params: MenuSystemParams, mut egui_context: ResMut<EguiContext>) {
     let menu_input = params.menu_input.single();
 
+    // Disable menu input handling on player select page, so each player can control their own
+    // player selection independently.
+    let is_player_select = matches!(*params.menu_page, MenuPage::PlayerSelect);
+    **params.disable_menu_input = is_player_select;
+
     // Go to previous menu if back button is pressed
-    if menu_input.just_pressed(MenuAction::Back) {
+    if menu_input.just_pressed(MenuAction::Back) && !is_player_select {
         match *params.menu_page {
             MenuPage::Settings { .. } | MenuPage::PlayerSelect => {
                 *params.menu_page = MenuPage::Main;
@@ -147,6 +159,14 @@ pub fn main_menu_system(mut params: MenuSystemParams, mut egui_context: ResMut<E
             }
             MenuPage::Main => (),
         }
+    } else if is_player_select && params.keyboard_input.just_pressed(KeyCode::Escape) {
+        *params.menu_page = MenuPage::Main;
+        egui_context.ctx_mut().clear_focus();
+    }
+
+    // Clear the player selection whenever we go to the main menu
+    if matches!(*params.menu_page, MenuPage::Main) {
+        *params.player_select_state = default();
     }
 
     egui::CentralPanel::default()

@@ -235,11 +235,19 @@ fn controls_settings_ui(
             ],
         ),
         (
-            &params.localization.get("flop-attack"),
+            &params.localization.get("jump"),
             [
-                &mut controls.keyboard1.flop_attack,
-                &mut controls.keyboard2.flop_attack,
-                &mut controls.gamepad.flop_attack,
+                &mut controls.keyboard1.jump,
+                &mut controls.keyboard2.jump,
+                &mut controls.gamepad.jump,
+            ],
+        ),
+        (
+            &params.localization.get("grab-drop"),
+            [
+                &mut controls.keyboard1.grab,
+                &mut controls.keyboard2.grab,
+                &mut controls.gamepad.grab,
             ],
         ),
         (
@@ -248,14 +256,6 @@ fn controls_settings_ui(
                 &mut controls.keyboard1.shoot,
                 &mut controls.keyboard2.shoot,
                 &mut controls.gamepad.shoot,
-            ],
-        ),
-        (
-            &params.localization.get("throwgrab"),
-            [
-                &mut controls.keyboard1.throw,
-                &mut controls.keyboard2.throw,
-                &mut controls.gamepad.throw,
             ],
         ),
     ];

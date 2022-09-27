@@ -12,10 +12,9 @@ impl Plugin for InputPlugin {
 #[derive(Debug, Copy, Clone, Actionlike, Deserialize, Eq, PartialEq, Hash)]
 pub enum PlayerAction {
     Move,
-    // Attacks
-    Attack,
-    Throw,
     Shoot,
+    Grab,
+    Jump,
 }
 
 #[derive(Debug, Copy, Clone, Actionlike, Deserialize, Eq, PartialEq, Hash)]

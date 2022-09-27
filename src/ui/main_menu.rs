@@ -232,6 +232,18 @@ fn main_menu_ui(params: &mut MenuSystemParams, ui: &mut egui::Ui) {
                     **menu_page = MenuPage::PlayerSelect;
                 }
 
+                // Map editor
+                if BorderedButton::themed(
+                    &ui_theme.button_styles.normal,
+                    &localization.get("editor"),
+                )
+                .min_size(min_button_size)
+                .show(ui)
+                .clicked()
+                {
+                    todo!("Add map editor menu");
+                }
+
                 // Settings button
                 if BorderedButton::themed(
                     &ui_theme.button_styles.normal,

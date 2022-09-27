@@ -2,12 +2,19 @@ use bevy_parallax::{LayerData as ParallaxLayerData, ParallaxResource};
 
 use super::*;
 
-#[derive(HasLoadProgress, TypeUuid, Deserialize, Clone, Debug)]
-// #[serde(deny_unknown_fields)]
+#[derive(HasLoadProgress, TypeUuid, Deserialize, Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
 #[uuid = "8ede98c2-4f17-46f2-bcc5-ae0dc63b2137"]
 pub struct MapMeta {
+    /// The parallax background layers
     #[serde(default)]
     pub background_layers: Vec<ParallaxLayerMeta>,
+    /// Size of the map in tiles
+    pub grid_size: UVec2,
+    /// The size of the tiles in pixels
+    pub tile_size: UVec2,
+    /// The layers of the map
+    pub layers: Vec<MapLayerMeta>,
 }
 
 impl MapMeta {
@@ -23,7 +30,46 @@ impl MapMeta {
     }
 }
 
-#[derive(HasLoadProgress, Deserialize, Clone, Debug)]
+#[derive(HasLoadProgress, Deserialize, Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+pub struct MapLayerMeta {
+    pub name: String,
+    pub kind: MapLayerKindMeta,
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+pub enum MapLayerKindMeta {
+    Tiles {
+        tilemap: String,
+        #[serde(skip)]
+        tilemap_handle: Handle<Image>,
+        tiles: Vec<MapTileMeta>,
+    },
+    Decorations {
+        decorations: Vec<MapDecorationMeta>,
+    },
+}
+
+impl HasLoadProgress for MapLayerKindMeta {}
+
+#[derive(HasLoadProgress, Deserialize, Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+pub struct MapTileMeta {
+    pos: UVec2,
+    idx: u32,
+}
+
+#[derive(HasLoadProgress, Deserialize, Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+pub struct MapDecorationMeta {
+    pos: UVec2,
+    image: String,
+    #[serde(skip)]
+    image_handle: Handle<Image>,
+}
+
+#[derive(HasLoadProgress, Deserialize, Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct ParallaxLayerMeta {
     pub speed: f32,

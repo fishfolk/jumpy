@@ -52,7 +52,7 @@ pub struct MainMenuMeta {
     // pub music_handle: Handle<AudioSource>,
 }
 
-#[derive(HasLoadProgress, Deserialize, Clone, Debug)]
+#[derive(HasLoadProgress, Deserialize, Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct ImageMeta {
     pub image: String,

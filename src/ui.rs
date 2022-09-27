@@ -1,7 +1,7 @@
 use bevy::{prelude::*, utils::HashMap, window::WindowId};
 use bevy_egui::{egui, EguiContext, EguiInput, EguiPlugin, EguiSettings, EguiSystem};
 use iyes_loopless::prelude::*;
-use leafwing_input_manager::prelude::ActionState;
+use leafwing_input_manager::{plugin::InputManagerSystem, prelude::ActionState};
 
 use crate::{
     assets::EguiFont, config::ENGINE_CONFIG, input::MenuAction, metadata::GameMeta, GameState,

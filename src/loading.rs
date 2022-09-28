@@ -26,7 +26,7 @@ impl Plugin for LoadingPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(
             load_game
-                .run_in_state(GameState::LoadingGame)
+                .run_in_state(GameState::LoadingGameData)
                 .run_if(game_assets_loaded),
         );
 
@@ -170,9 +170,7 @@ impl<'w, 's> GameLoader<'w, 's> {
                 });
 
             let mut visuals = egui::Visuals::dark();
-            visuals.widgets.inactive.rounding = egui::Rounding::same(0.0);
-            visuals.widgets.active.rounding = egui::Rounding::same(0.0);
-            visuals.widgets.hovered.rounding = egui::Rounding::same(0.0);
+            visuals.widgets = game.ui_theme.widgets.get_egui_widget_style();
             egui_ctx.ctx_mut().set_visuals(visuals);
 
             // Helper to load border images

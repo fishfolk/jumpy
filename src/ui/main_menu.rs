@@ -1,7 +1,6 @@
-use bevy::{app::AppExit, ecs::system::SystemParam, prelude::*};
+use bevy::{app::AppExit, ecs::system::SystemParam};
 use bevy_egui::*;
 use bevy_fluent::Localization;
-use leafwing_input_manager::prelude::ActionState;
 
 use crate::{
     input::{MenuAction, PlayerAction},
@@ -9,6 +8,7 @@ use crate::{
     metadata::{GameMeta, PlayerMeta, Settings},
     platform::Storage,
     player::PlayerIdx,
+    prelude::*,
 };
 
 use self::settings::ControlInputBindingEvents;
@@ -21,6 +21,16 @@ use super::{
 mod map_select;
 mod player_select;
 mod settings;
+
+pub struct MainMenuPlugin;
+
+impl Plugin for MainMenuPlugin {
+    fn build(&self, app: &mut App) {
+        app.register_type::<MainMenuBackground>()
+            .add_enter_system(GameState::MainMenu, spawn_main_menu_background)
+            .add_exit_system(GameState::MainMenu, despawn_main_menu_background);
+    }
+}
 
 #[derive(Component, Reflect)]
 pub struct MainMenuBackground;
@@ -79,7 +89,7 @@ pub fn despawn_main_menu_background(
     backgrounds: Query<Entity, With<MainMenuBackground>>,
 ) {
     for bg in &backgrounds {
-        commands.entity(bg).despawn();
+        commands.entity(bg).despawn_recursive();
     }
 }
 
@@ -123,6 +133,7 @@ impl SettingsTab {
 /// Group of parameters needed by the main menu system
 #[derive(SystemParam)]
 pub struct MenuSystemParams<'w, 's> {
+    commands: Commands<'w, 's>,
     menu_page: Local<'s, MenuPage>,
     disable_menu_input: ResMut<'w, DisableMenuInput>,
     player_select_state: Local<'s, player_select::PlayerSelectState>,
@@ -194,6 +205,7 @@ fn main_menu_ui(params: &mut MenuSystemParams, ui: &mut egui::Ui) {
         localization,
         app_exit,
         storage,
+        commands,
         ..
     } = params;
 
@@ -245,7 +257,8 @@ fn main_menu_ui(params: &mut MenuSystemParams, ui: &mut egui::Ui) {
                 .show(ui)
                 .clicked()
                 {
-                    todo!("Add map editor menu");
+                    commands.insert_resource(NextState(InGameState::Editing));
+                    commands.insert_resource(NextState(GameState::InGame));
                 }
 
                 // Settings button

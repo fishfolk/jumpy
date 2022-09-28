@@ -1,5 +1,5 @@
 camera_height: 448
-clear_color: [39, 35, 59]
+clear_color: [39, 35, 59, 255]
 
 players:
   - players/catty/catty.player.yaml
@@ -18,11 +18,11 @@ scripts:
 main_menu:
   title_font:
     family: fairfax
-    color: [255, 255, 255]
+    color: [255, 255, 255, 255]
     size: 70
   subtitle_font:
     family: fairfax
-    color: [255, 255, 255]
+    color: [255, 255, 255, 255]
     size: 50
 
   background_image:
@@ -80,8 +80,28 @@ default_settings:
       shoot: !Keyboard Period
 
 ui_theme:
+  scale: 0.8
   colors:
-    positive: [62, 199, 97]
+    positive: [62, 199, 97, 255]
+  widgets:
+    border_radius: 2.0
+    default: &default
+      bg_fill: [58, 68, 68, 255]
+      bg_stroke: [24, 20, 68, 255]
+      text: [255, 255, 255, 255]
+    hovered:
+      bg_fill: [86, 99, 99, 255]
+      bg_stroke: [24, 20, 68, 255]
+      text: [255, 255, 255, 255]
+    disabled:
+      bg_fill: [36, 43, 43, 255]
+      bg_stroke: [24, 20, 68, 255]
+      text: [255, 255, 255, 255]
+    noninteractive:
+      bg_fill: [38, 43, 68, 255]
+      bg_stroke: [24, 20, 37, 255]
+      text: [255, 255, 255, 255]
+    menu: *default
 
   font_families:
     fairfax: ui/FairfaxSM.ttf
@@ -91,25 +111,25 @@ ui_theme:
     heading:
       family: ark
       size: 30
-      color: [255, 255, 255]
+      color: [255, 255, 255, 255]
     bigger:
       family: ark
       size: 20
-      color: [255, 255, 255]
+      color: [255, 255, 255, 255]
     normal:
       family: ark
       size: 15
-      color: [255, 255, 255]
+      color: [255, 255, 255, 255]
     smaller:
       family: ark
       size: 12
-      color: [255, 255, 255]
+      color: [255, 255, 255, 255]
 
   hud:
     font:
       family: ark
       size: 15
-      color: [255, 255, 255]
+      color: [255, 255, 255, 255]
 
     player_hud_width: 165
 
@@ -138,7 +158,7 @@ ui_theme:
         image_size: [1, 1]
 
   panel:
-    font_color: [255, 255, 255]
+    font_color: [255, 255, 255, 255]
     padding:
       top: 20
       bottom: 20
@@ -158,7 +178,7 @@ ui_theme:
     normal:
       font:
         family: ark
-        color: [255, 255, 255]
+        color: [255, 255, 255, 255]
         size: 15
       padding:
         top: 6
@@ -197,7 +217,7 @@ ui_theme:
     small:
       font:
         family: ark
-        color: [255, 255, 255]
+        color: [255, 255, 255, 255]
         size: 14
       padding:
         top: 4

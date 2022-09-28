@@ -129,8 +129,7 @@ impl AssetLoader for GameMetaLoader {
 
             // Load map handles
             for map_relative_path in &meta.maps {
-                let (path, handle) =
-                    get_relative_asset(load_context, self_path, map_relative_path);
+                let (path, handle) = get_relative_asset(load_context, self_path, map_relative_path);
 
                 meta.map_handles.push(handle);
                 dependencies.push(path);

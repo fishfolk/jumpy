@@ -5,11 +5,13 @@ use leafwing_input_manager::{plugin::InputManagerSystem, prelude::ActionState};
 
 use crate::{
     assets::EguiFont, config::ENGINE_CONFIG, input::MenuAction, metadata::GameMeta, GameState,
+    InGameState,
 };
 
 pub mod widgets;
 
 pub mod debug_tools;
+pub mod editor;
 pub mod main_menu;
 pub mod pause_menu;
 
@@ -20,10 +22,11 @@ pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<WidgetAdjacencies>()
+        app.add_plugin(EguiPlugin)
+            .init_resource::<WidgetAdjacencies>()
             .init_resource::<DisableMenuInput>()
-            .register_type::<main_menu::MainMenuBackground>()
-            .add_plugin(EguiPlugin)
+            .add_plugin(main_menu::MainMenuPlugin)
+            .add_plugin(editor::EditorPlugin)
             .add_system_to_stage(
                 CoreStage::PreUpdate,
                 handle_menu_input
@@ -32,8 +35,6 @@ impl Plugin for UiPlugin {
                     .after(EguiSystem::ProcessInput)
                     .before(EguiSystem::BeginFrame),
             )
-            .add_enter_system(GameState::MainMenu, main_menu::spawn_main_menu_background)
-            .add_exit_system(GameState::MainMenu, main_menu::despawn_main_menu_background)
             .add_system(update_egui_fonts)
             .add_system(update_ui_scale.run_if_resource_exists::<GameMeta>())
             .add_system_set(
@@ -42,16 +43,22 @@ impl Plugin for UiPlugin {
                     .with_system(main_menu::main_menu_system)
                     .into(),
             )
-            .add_system(unpause.run_in_state(GameState::Paused))
+            .add_system(
+                unpause
+                    .run_in_state(GameState::InGame)
+                    .run_in_state(InGameState::Paused),
+            )
             .add_system_set(
                 ConditionSet::new()
                     .run_in_state(GameState::InGame)
+                    .run_in_state(InGameState::Playing)
                     .with_system(pause)
                     .into(),
             )
             .add_system_set(
                 ConditionSet::new()
-                    .run_in_state(GameState::Paused)
+                    .run_in_state(GameState::InGame)
+                    .run_in_state(InGameState::Paused)
                     .with_system(pause_menu::pause_menu)
                     .into(),
             );
@@ -67,7 +74,7 @@ impl Plugin for UiPlugin {
 fn pause(mut commands: Commands, input: Query<&ActionState<MenuAction>>) {
     let input = input.single();
     if input.just_pressed(MenuAction::Pause) {
-        commands.insert_resource(NextState(GameState::Paused));
+        commands.insert_resource(NextState(InGameState::Paused));
     }
 }
 
@@ -75,7 +82,7 @@ fn pause(mut commands: Commands, input: Query<&ActionState<MenuAction>>) {
 fn unpause(mut commands: Commands, input: Query<&ActionState<MenuAction>>) {
     let input = input.single();
     if input.just_pressed(MenuAction::Pause) {
-        commands.insert_resource(NextState(GameState::InGame));
+        commands.insert_resource(NextState(InGameState::Playing));
     }
 }
 
@@ -305,6 +312,7 @@ fn update_egui_fonts(
 /// This system makes sure that the UI scale of Egui matches our game scale so that a pixel in egui
 /// will be the same size as a pixel in our sprites.
 fn update_ui_scale(
+    game_meta: Res<GameMeta>,
     mut egui_settings: ResMut<EguiSettings>,
     windows: Res<Windows>,
     projection: Query<&OrthographicProjection, With<Camera>>,
@@ -315,12 +323,12 @@ fn update_ui_scale(
                 bevy::render::camera::ScalingMode::FixedVertical(height) => {
                     let window_height = window.height();
                     let scale = window_height / height;
-                    egui_settings.scale_factor = scale as f64;
+                    egui_settings.scale_factor = (scale * game_meta.ui_theme.scale) as f64;
                 }
                 bevy::render::camera::ScalingMode::FixedHorizontal(width) => {
                     let window_width = window.width();
                     let scale = window_width / width;
-                    egui_settings.scale_factor = scale as f64;
+                    egui_settings.scale_factor = (scale * game_meta.ui_theme.scale) as f64;
                 }
                 bevy::render::camera::ScalingMode::Auto { .. } => (),
                 bevy::render::camera::ScalingMode::None => (),

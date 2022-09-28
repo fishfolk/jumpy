@@ -26,11 +26,17 @@ use crate::{
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-enum GameState {
+pub enum GameState {
     LoadingPlatformStorage,
-    LoadingGame,
+    LoadingGameData,
     MainMenu,
     InGame,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum InGameState {
+    Playing,
+    Editing,
     Paused,
 }
 
@@ -68,7 +74,8 @@ pub fn main() {
         .init_resource::<ParallaxResource>();
 
     // Set initial game state
-    app.add_loopless_state(GameState::LoadingPlatformStorage);
+    app.add_loopless_state(GameState::LoadingPlatformStorage)
+        .add_loopless_state(InGameState::Playing);
 
     // Install game plugins
     app.add_plugins(DefaultPlugins)

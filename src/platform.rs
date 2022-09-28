@@ -5,13 +5,13 @@ use bevy::{prelude::*, tasks::IoTaskPool, utils::HashMap};
 use iyes_loopless::prelude::*;
 use serde::{de::DeserializeOwned, Serialize};
 
+use crate::prelude::*;
+
 #[cfg(not(target_arch = "wasm32"))]
 use native as backend;
 
 #[cfg(target_arch = "wasm32")]
 use wasm as backend;
-
-use crate::GameState;
 
 pub struct PlatformPlugin;
 
@@ -45,7 +45,7 @@ pub fn load_storage(
     } else if storage.is_loaded() {
         debug!("Done loading platform storage");
         // Load game
-        commands.insert_resource(NextState(GameState::LoadingGame));
+        commands.insert_resource(NextState(GameState::LoadingGameData));
     }
 }
 

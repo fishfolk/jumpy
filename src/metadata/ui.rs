@@ -10,6 +10,7 @@ use super::*;
 #[derive(HasLoadProgress, Deserialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct UIThemeMeta {
+    pub scale: f32,
     pub font_families: HashMap<String, String>,
     #[serde(skip)]
     pub font_handles: HashMap<String, Handle<EguiFont>>,
@@ -18,12 +19,69 @@ pub struct UIThemeMeta {
     pub hud: HudThemeMeta,
     pub panel: PanelThemeMeta,
     pub colors: UiThemeColors,
+    pub widgets: UiThemeWidgets,
 }
 
 #[derive(HasLoadProgress, Deserialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct UiThemeColors {
     pub positive: ColorMeta,
+}
+
+#[derive(HasLoadProgress, Deserialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+pub struct UiThemeWidgets {
+    pub border_radius: f32,
+
+    pub default: WidgetColors,
+    pub disabled: WidgetColors,
+    pub hovered: WidgetColors,
+    pub noninteractive: WidgetColors,
+    pub menu: WidgetColors,
+}
+
+impl UiThemeWidgets {
+    pub fn get_egui_widget_style(&self) -> egui::style::Widgets {
+        egui::style::Widgets {
+            noninteractive: self
+                .noninteractive
+                .get_egui_widget_visuals(self.border_radius, 0.0),
+            inactive: self
+                .disabled
+                .get_egui_widget_visuals(self.border_radius, 0.0),
+            hovered: self
+                .hovered
+                .get_egui_widget_visuals(self.border_radius, 1.0),
+            active: self
+                .default
+                .get_egui_widget_visuals(self.border_radius, 1.0),
+            open: self.menu.get_egui_widget_visuals(self.border_radius, 0.0),
+        }
+    }
+}
+
+#[derive(HasLoadProgress, Deserialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+pub struct WidgetColors {
+    bg_fill: ColorMeta,
+    bg_stroke: ColorMeta,
+    text: ColorMeta,
+}
+
+impl WidgetColors {
+    pub fn get_egui_widget_visuals(
+        &self,
+        border_radius: f32,
+        expansion: f32,
+    ) -> egui::style::WidgetVisuals {
+        egui::style::WidgetVisuals {
+            bg_fill: self.bg_fill.into(),
+            bg_stroke: egui::Stroke::new(2.0, self.bg_stroke),
+            fg_stroke: egui::Stroke::new(2.0, self.text),
+            rounding: egui::Rounding::same(border_radius),
+            expansion,
+        }
+    }
 }
 
 #[derive(HasLoadProgress, Deserialize, Clone, Debug)]
@@ -153,19 +211,19 @@ pub struct ButtonBordersMeta {
 #[derive(HasLoadProgress, Default, Deserialize, Clone, Copy, Debug)]
 #[serde(deny_unknown_fields)]
 #[has_load_progress(none)]
-pub struct ColorMeta([u8; 3]);
+pub struct ColorMeta([u8; 4]);
 
 impl From<ColorMeta> for egui::Color32 {
     fn from(c: ColorMeta) -> Self {
-        let [r, g, b] = c.0;
-        egui::Color32::from_rgb(r, g, b)
+        let [r, g, b, a] = c.0;
+        egui::Color32::from_rgba_premultiplied(r, g, b, a)
     }
 }
 
 impl From<ColorMeta> for Color {
     fn from(c: ColorMeta) -> Self {
-        let [r, g, b] = c.0;
-        Color::rgb_u8(r, g, b)
+        let [r, g, b, a] = c.0;
+        Color::rgba_u8(r, g, b, a)
     }
 }
 

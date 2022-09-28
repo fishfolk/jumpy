@@ -4,6 +4,8 @@ use bevy::{
     prelude::{Camera, Commands, Entity, Query, Transform, With, Without},
 };
 
+use crate::player::PlayerIdx;
+
 /// System parameter that can be used to reset the game world.
 ///
 /// Currently this just means de-spawning all of the entities other than the camera and resetting
@@ -13,14 +15,14 @@ use bevy::{
 pub struct ResetController<'w, 's> {
     commands: Commands<'w, 's>,
     camera_transform: Query<'w, 's, &'static mut Transform, With<Camera>>,
-    entities_to_despawn: Query<'w, 's, Entity, Without<Camera>>,
+    entities_to_despawn: Query<'w, 's, Entity, (Without<Camera>, Without<PlayerIdx>)>,
 }
 
 impl<'w, 's> ResetController<'w, 's> {
     /// Clean up the game world, despawning all the gameplay entities, but leaving necessary
     /// entities like camera.
     pub fn reset_world(mut self) {
-        // Clean up all entities other than the camera
+        // Clean up all entities other than the camera and the player entities
         for entity in self.entities_to_despawn.iter() {
             self.commands.entity(entity).despawn_recursive();
         }

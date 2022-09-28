@@ -203,6 +203,11 @@ impl<'w, 's> GameLoader<'w, 's> {
                     egui_ctx.add_image(atlas.texture.clone_weak());
             }
 
+            // Add editor icons to egui context
+            for icon in game.ui_theme.editor.icons.as_mut_list() {
+                icon.egui_texture_id = egui_ctx.add_image(icon.image_handle.clone_weak());
+            }
+
             // Spawn players. These aren't really playable players yet, but we spawn them now so
             // that we can attatch input listeners to them for use in the player select screen.
             let settings = storage.get(Settings::STORAGE_KEY);

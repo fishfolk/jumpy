@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "rootDir": "./assets",
+        "target": "es6",
+        "lib": [
+            "es2015"
+        ]
+    },
+    "include": [
+        "./assets/**/*",
+        "./lib.bevy.d.ts",
+        "./lib.bevy.types.ts",
+        "./lib.punchy.d.ts"
+    ],
+}

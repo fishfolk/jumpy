@@ -10,6 +10,7 @@ impl Plugin for ScriptingPlugin {
         let custom_ops = ops::get_ops();
 
         app.insert_non_send_resource(JsRuntimeConfig { custom_ops })
-            .add_plugin(JsScriptingPlugin);
+            .add_plugin(JsScriptingPlugin)
+            .register_type::<Time>();
     }
 }

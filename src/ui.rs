@@ -22,6 +22,7 @@ impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<WidgetAdjacencies>()
             .init_resource::<DisableMenuInput>()
+            .register_type::<main_menu::MainMenuBackground>()
             .add_plugin(EguiPlugin)
             .add_system_to_stage(
                 CoreStage::PreUpdate,

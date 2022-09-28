@@ -22,7 +22,7 @@ mod map_select;
 mod player_select;
 mod settings;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
 pub struct MainMenuBackground;
 
 /// Spawns the background image for the main menu
@@ -33,40 +33,44 @@ pub fn spawn_main_menu_background(mut commands: Commands, game: Res<GameMeta>) {
     let height = game.camera_height as f32;
     let width = height * ratio;
     commands
-        .spawn_bundle(SpriteBundle {
-            texture: bg_handle.clone(),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(width, height)),
-                ..default()
-            },
-            transform: Transform::from_translation(Vec3::new(-width, 0.0, 0.0)),
-            ..default()
-        })
-        .insert(Name::new("Main Menu Background Left"))
-        .insert(MainMenuBackground);
-    commands
-        .spawn_bundle(SpriteBundle {
-            texture: bg_handle.clone(),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(width, height)),
-                ..default()
-            },
-            ..default()
-        })
-        .insert(Name::new("Main Menu Background Middle"))
-        .insert(MainMenuBackground);
-    commands
-        .spawn_bundle(SpriteBundle {
-            texture: bg_handle,
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(width, height)),
-                ..default()
-            },
-            transform: Transform::from_translation(Vec3::new(width, 0.0, 0.0)),
-            ..default()
-        })
-        .insert(Name::new("Main Menu Background Right"))
-        .insert(MainMenuBackground);
+        .spawn()
+        .insert_bundle(VisibilityBundle::default())
+        .insert_bundle(TransformBundle::default())
+        .insert(MainMenuBackground)
+        .with_children(|parent| {
+            parent
+                .spawn_bundle(SpriteBundle {
+                    texture: bg_handle.clone(),
+                    sprite: Sprite {
+                        custom_size: Some(Vec2::new(width, height)),
+                        ..default()
+                    },
+                    transform: Transform::from_translation(Vec3::new(-width, 0.0, 0.0)),
+                    ..default()
+                })
+                .insert(Name::new("Main Menu Background Left"));
+            parent
+                .spawn_bundle(SpriteBundle {
+                    texture: bg_handle.clone(),
+                    sprite: Sprite {
+                        custom_size: Some(Vec2::new(width, height)),
+                        ..default()
+                    },
+                    ..default()
+                })
+                .insert(Name::new("Main Menu Background Middle"));
+            parent
+                .spawn_bundle(SpriteBundle {
+                    texture: bg_handle,
+                    sprite: Sprite {
+                        custom_size: Some(Vec2::new(width, height)),
+                        ..default()
+                    },
+                    transform: Transform::from_translation(Vec3::new(width, 0.0, 0.0)),
+                    ..default()
+                })
+                .insert(Name::new("Main Menu Background Right"));
+        });
 }
 
 /// Despawns the background image for the main menu

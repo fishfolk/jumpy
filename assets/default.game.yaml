@@ -12,6 +12,9 @@ players:
 maps:
   - maps/level1.map.yaml
 
+scripts:
+  - ui/menu-background-zoom.ts
+
 main_menu:
   title_font:
     family: fairfax

@@ -20,6 +20,33 @@ pub struct UIThemeMeta {
     pub panel: PanelThemeMeta,
     pub colors: UiThemeColors,
     pub widgets: UiThemeWidgets,
+    pub editor: UiThemeEditor,
+}
+
+#[derive(HasLoadProgress, Deserialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+pub struct UiThemeEditor {
+    pub icons: UiThemeEditorIcons,
+}
+
+#[derive(HasLoadProgress, Deserialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+pub struct UiThemeEditorIcons {
+    pub select: ImageMeta,
+    pub spawn: ImageMeta,
+    pub tile: ImageMeta,
+    pub erase: ImageMeta,
+}
+
+impl UiThemeEditorIcons {
+    pub fn as_mut_list(&mut self) -> [&mut ImageMeta; 4] {
+        [
+            &mut self.select,
+            &mut self.spawn,
+            &mut self.tile,
+            &mut self.erase,
+        ]
+    }
 }
 
 #[derive(HasLoadProgress, Deserialize, Clone, Debug)]
@@ -33,11 +60,11 @@ pub struct UiThemeColors {
 pub struct UiThemeWidgets {
     pub border_radius: f32,
 
-    pub default: WidgetColors,
-    pub disabled: WidgetColors,
-    pub hovered: WidgetColors,
-    pub noninteractive: WidgetColors,
-    pub menu: WidgetColors,
+    pub active: WidgetStyle,
+    pub default: WidgetStyle,
+    pub hovered: WidgetStyle,
+    pub noninteractive: WidgetStyle,
+    pub menu: WidgetStyle,
 }
 
 impl UiThemeWidgets {
@@ -45,41 +72,33 @@ impl UiThemeWidgets {
         egui::style::Widgets {
             noninteractive: self
                 .noninteractive
-                .get_egui_widget_visuals(self.border_radius, 0.0),
-            inactive: self
-                .disabled
-                .get_egui_widget_visuals(self.border_radius, 0.0),
-            hovered: self
-                .hovered
-                .get_egui_widget_visuals(self.border_radius, 1.0),
-            active: self
-                .default
-                .get_egui_widget_visuals(self.border_radius, 1.0),
-            open: self.menu.get_egui_widget_visuals(self.border_radius, 0.0),
+                .get_egui_widget_visuals(self.border_radius),
+            inactive: self.default.get_egui_widget_visuals(self.border_radius),
+            hovered: self.hovered.get_egui_widget_visuals(self.border_radius),
+            active: self.active.get_egui_widget_visuals(self.border_radius),
+            open: self.menu.get_egui_widget_visuals(self.border_radius),
         }
     }
 }
 
 #[derive(HasLoadProgress, Deserialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
-pub struct WidgetColors {
-    bg_fill: ColorMeta,
-    bg_stroke: ColorMeta,
-    text: ColorMeta,
+pub struct WidgetStyle {
+    pub bg_fill: ColorMeta,
+    pub bg_stroke: ColorMeta,
+    pub text: ColorMeta,
+    #[serde(default)]
+    pub expansion: f32,
 }
 
-impl WidgetColors {
-    pub fn get_egui_widget_visuals(
-        &self,
-        border_radius: f32,
-        expansion: f32,
-    ) -> egui::style::WidgetVisuals {
+impl WidgetStyle {
+    pub fn get_egui_widget_visuals(&self, border_radius: f32) -> egui::style::WidgetVisuals {
         egui::style::WidgetVisuals {
             bg_fill: self.bg_fill.into(),
             bg_stroke: egui::Stroke::new(2.0, self.bg_stroke),
             fg_stroke: egui::Stroke::new(2.0, self.text),
             rounding: egui::Rounding::same(border_radius),
-            expansion,
+            expansion: self.expansion,
         }
     }
 }

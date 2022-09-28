@@ -59,4 +59,8 @@ pub struct ImageMeta {
     pub image_size: Vec2,
     #[serde(skip)]
     pub image_handle: Handle<Image>,
+    /// Egui texture ID may not be valid on all [`ImageMeta`] unless it is added to the egui context
+    /// during game load.
+    #[serde(skip)]
+    pub egui_texture_id: bevy_egui::egui::TextureId,
 }

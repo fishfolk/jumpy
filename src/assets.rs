@@ -118,6 +118,13 @@ impl AssetLoader for GameMetaLoader {
                 }
             }
 
+            // Load editor icons
+            for icon in meta.ui_theme.editor.icons.as_mut_list() {
+                let (path, handle) = get_relative_asset(load_context, self_path, &icon.image);
+                icon.image_handle = handle;
+                dependencies.push(path);
+            }
+
             // Load player handles
             for player_relative_path in &meta.players {
                 let (path, handle) =

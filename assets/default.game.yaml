@@ -80,22 +80,23 @@ default_settings:
       shoot: !Keyboard Period
 
 ui_theme:
-  scale: 0.8
+  scale: 0.65
   colors:
     positive: [62, 199, 97, 255]
+
   widgets:
-    border_radius: 2.0
+    border_radius: 1.5
     default: &default
       bg_fill: [58, 68, 68, 255]
-      bg_stroke: [24, 20, 68, 255]
+      bg_stroke: &default-stroke [24, 20, 37, 255]
       text: [255, 255, 255, 255]
     hovered:
       bg_fill: [86, 99, 99, 255]
-      bg_stroke: [24, 20, 68, 255]
+      bg_stroke: *default-stroke
       text: [255, 255, 255, 255]
-    disabled:
-      bg_fill: [36, 43, 43, 255]
-      bg_stroke: [24, 20, 68, 255]
+    active:
+      bg_fill: [86, 99, 99, 255]
+      bg_stroke: [134, 128, 155, 255]
       text: [255, 255, 255, 255]
     noninteractive:
       bg_fill: [38, 43, 68, 255]
@@ -124,6 +125,21 @@ ui_theme:
       family: ark
       size: 12
       color: [255, 255, 255, 255]
+
+  editor:
+    icons:
+      select:
+        image: ui/editor/Cursor.png
+        image_size: [64, 64]
+      tile:
+        image: ui/editor/Tile.png
+        image_size: [64, 64]
+      spawn:
+        image: ui/editor/Pointer and Map.png
+        image_size: [64, 64]
+      erase:
+        image: ui/editor/Eraser.png
+        image_size: [64, 64]
 
   hud:
     font:

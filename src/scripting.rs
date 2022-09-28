@@ -9,8 +9,8 @@ impl Plugin for ScriptingPlugin {
     fn build(&self, app: &mut App) {
         let custom_ops = ops::get_ops();
 
-        app.insert_non_send_resource(JsRuntimeConfig { custom_ops })
-            .add_plugin(JsScriptingPlugin)
-            .register_type::<Time>();
+        app.register_type::<Time>()
+            .insert_non_send_resource(JsRuntimeConfig { custom_ops })
+            .add_plugin(JsScriptingPlugin);
     }
 }

@@ -1,7 +1,7 @@
 use bevy::{
     ecs::system::SystemParam,
     hierarchy::DespawnRecursiveExt,
-    prelude::{Camera, Commands, Entity, Query, Transform, With, Without},
+    prelude::{Camera, Commands, Entity, OrthographicProjection, Query, Transform, With, Without},
 };
 
 use crate::player::PlayerIdx;
@@ -14,7 +14,8 @@ use crate::player::PlayerIdx;
 #[derive(SystemParam)]
 pub struct ResetController<'w, 's> {
     commands: Commands<'w, 's>,
-    camera_transform: Query<'w, 's, &'static mut Transform, With<Camera>>,
+    camera:
+        Query<'w, 's, (&'static mut Transform, &'static mut OrthographicProjection), With<Camera>>,
     entities_to_despawn: Query<'w, 's, Entity, (Without<Camera>, Without<PlayerIdx>)>,
 }
 
@@ -28,9 +29,10 @@ impl<'w, 's> ResetController<'w, 's> {
         }
 
         // Reset camera position
-        if let Some(mut camera_transform) = self.camera_transform.iter_mut().next() {
-            camera_transform.translation.x = 0.0;
-            camera_transform.translation.y = 0.0;
+        if let Some((mut transform, mut projection)) = self.camera.iter_mut().next() {
+            transform.translation.x = 0.0;
+            transform.translation.y = 0.0;
+            projection.scale = 1.0;
         }
     }
 }

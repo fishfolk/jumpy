@@ -1,6 +1,4 @@
-use std::marker::PhantomData;
-
-use bevy::ecs::system::SystemParam;
+use bevy::{ecs::system::SystemParam, sprite::MaterialMesh2dBundle};
 use bevy_egui::*;
 use bevy_fluent::Localization;
 
@@ -14,17 +12,30 @@ impl Plugin for EditorPlugin {
             editor
                 .run_in_state(GameState::InGame)
                 .run_in_state(InGameState::Editing),
-        );
+        )
+        .add_enter_system(InGameState::Editing, setup_editor);
     }
 }
 
 #[derive(SystemParam)]
 pub struct EditorParams<'w, 's> {
+    camera: Query<'w, 's, (&'static mut Transform, &'static mut OrthographicProjection)>,
     commands: Commands<'w, 's>,
     game: Res<'w, GameMeta>,
     localization: Res<'w, Localization>,
-    #[system_param(ignore)]
-    _phantom: PhantomData<&'s ()>,
+}
+
+fn setup_editor(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    commands.spawn_bundle(MaterialMesh2dBundle {
+        mesh: meshes.add(Mesh::from(shape::Quad::default())).into(),
+        transform: Transform::default().with_scale(Vec3::splat(128.)),
+        material: materials.add(ColorMaterial::from(Color::PURPLE)),
+        ..default()
+    });
 }
 
 /// The map editor system
@@ -79,4 +90,38 @@ pub fn editor(mut params: EditorParams, mut egui_ctx: ResMut<EguiContext>) {
             });
             ui.separator();
         });
+
+    let response = egui::CentralPanel::default()
+        .frame(egui::Frame::none())
+        .show(ctx, |ui| {
+            ui.allocate_response(ui.available_size(), egui::Sense::click_and_drag())
+        })
+        .inner;
+
+    let (mut camera_transform, mut projection): (Mut<Transform>, Mut<OrthographicProjection>) =
+        params.camera.single_mut();
+
+    // Handle zoom
+    if response.hovered() {
+        projection.scale -= ctx.input().scroll_delta.y * 0.005;
+        projection.scale = projection.scale.max(0.05);
+    }
+
+    // Handle pan
+    if response.dragged_by(egui::PointerButton::Middle) || ctx.input().modifiers.command {
+        let drag_delta = response.drag_delta() * params.game.ui_theme.scale * projection.scale;
+        camera_transform.translation.x -= drag_delta.x;
+        camera_transform.translation.y += drag_delta.y;
+    }
+
+    // Handle cursor
+    if response.dragged_by(egui::PointerButton::Middle)
+        || (ctx.input().modifiers.command && response.dragged_by(egui::PointerButton::Primary))
+    {
+        response.on_hover_cursor(egui::CursorIcon::Grabbing);
+    } else if ctx.input().modifiers.command {
+        response.on_hover_cursor(egui::CursorIcon::Grab);
+    } else {
+        response.on_hover_cursor(egui::CursorIcon::Crosshair);
+    }
 }

@@ -9,6 +9,7 @@ use crate::{
     platform::Storage,
     player::PlayerIdx,
     prelude::*,
+    utils::ResetController,
 };
 
 use self::settings::ControlInputBindingEvents;
@@ -27,7 +28,7 @@ pub struct MainMenuPlugin;
 impl Plugin for MainMenuPlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<MainMenuBackground>()
-            .add_enter_system(GameState::MainMenu, spawn_main_menu_background)
+            .add_enter_system(GameState::MainMenu, setup_main_menu)
             .add_exit_system(GameState::MainMenu, despawn_main_menu_background);
     }
 }
@@ -36,7 +37,14 @@ impl Plugin for MainMenuPlugin {
 pub struct MainMenuBackground;
 
 /// Spawns the background image for the main menu
-pub fn spawn_main_menu_background(mut commands: Commands, game: Res<GameMeta>) {
+pub fn setup_main_menu(
+    mut commands: Commands,
+    game: Res<GameMeta>,
+    reset_controller: ResetController,
+) {
+    // Reset the game world
+    reset_controller.reset_world();
+
     let bg_handle = game.main_menu.background_image.image_handle.clone();
     let img_size = game.main_menu.background_image.image_size;
     let ratio = img_size.x / img_size.y;

@@ -3,7 +3,7 @@ use bevy_egui::*;
 use bevy_fluent::Localization;
 use iyes_loopless::state::NextState;
 
-use crate::{localization::LocalizationExt, metadata::GameMeta, utils::ResetController, GameState};
+use crate::{localization::LocalizationExt, metadata::GameMeta, GameState};
 
 use super::{
     widgets::{bordered_button::BorderedButton, bordered_frame::BorderedFrame, EguiUIExt},
@@ -15,7 +15,6 @@ pub fn pause_menu(
     mut egui_context: ResMut<EguiContext>,
     game: Res<GameMeta>,
     localization: Res<Localization>,
-    reset_controller: ResetController,
 ) {
     let ui_theme = &game.ui_theme;
 
@@ -70,8 +69,6 @@ pub fn pause_menu(
                         .show(ui)
                         .clicked()
                         {
-                            reset_controller.reset_world();
-
                             // Show the main menu
                             commands.insert_resource(NextState(GameState::MainMenu));
                             ui.ctx().clear_focus();

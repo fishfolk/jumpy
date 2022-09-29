@@ -13,7 +13,8 @@ impl Plugin for EditorPlugin {
                 .run_in_state(GameState::InGame)
                 .run_in_state(InGameState::Editing),
         )
-        .add_enter_system(InGameState::Editing, setup_editor);
+        .add_enter_system(InGameState::Editing, setup_editor)
+        .add_exit_system(InGameState::Editing, cleanup_editor);
     }
 }
 
@@ -46,6 +47,15 @@ fn setup_editor(
     });
 }
 
+fn cleanup_editor(mut camera: Query<&mut Camera>, windows: Res<Windows>) {
+    // Reset the camera viewport
+    let window = windows.get_primary().unwrap();
+    camera.single_mut().viewport = Some(Viewport {
+        physical_size: UVec2::new(window.physical_width(), window.physical_height()),
+        ..default()
+    });
+}
+
 /// The map editor system
 pub fn editor(mut params: EditorParams, mut egui_ctx: ResMut<EguiContext>) {
     let ctx = egui_ctx.ctx_mut();
@@ -58,6 +68,11 @@ pub fn editor(mut params: EditorParams, mut egui_ctx: ResMut<EguiContext>) {
                     params
                         .commands
                         .insert_resource(NextState(GameState::MainMenu));
+                }
+                if ui.button(&params.localization.get("play")).clicked() {
+                    params
+                        .commands
+                        .insert_resource(NextState(InGameState::Playing));
                 }
             });
         });

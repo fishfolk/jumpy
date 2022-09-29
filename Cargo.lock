@@ -706,6 +706,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_mod_raycast"
+version = "0.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7aead49a20f5e694f4fb59c7312f9a1813b65a2a0ac2c385d53d40f25cae896f"
+dependencies = [
+ "bevy",
+]
+
+[[package]]
 name = "bevy_pbr"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2592,6 +2601,7 @@ dependencies = [
  "bevy_fluent",
  "bevy_kira_audio",
  "bevy_mod_js_scripting",
+ "bevy_mod_raycast",
  "bevy_rapier2d",
  "directories",
  "egui_extras",

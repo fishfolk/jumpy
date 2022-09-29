@@ -8,10 +8,12 @@ use bevy_parallax::ParallaxResource;
 mod animation;
 mod assets;
 mod config;
+mod debug;
 mod input;
 mod loading;
 mod localization;
 mod metadata;
+mod physics;
 mod platform;
 mod player;
 mod prelude;
@@ -20,9 +22,10 @@ mod ui;
 mod utils;
 
 use crate::{
-    animation::AnimationPlugin, assets::AssetPlugin, input::InputPlugin, loading::LoadingPlugin,
-    localization::LocalizationPlugin, metadata::GameMeta, platform::PlatformPlugin,
-    player::PlayerPlugin, prelude::*, scripting::ScriptingPlugin, ui::UiPlugin,
+    animation::AnimationPlugin, assets::AssetPlugin, debug::DebugPlugin, input::InputPlugin,
+    loading::LoadingPlugin, localization::LocalizationPlugin, metadata::GameMeta,
+    physics::PhysicsPlugin, platform::PlatformPlugin, player::PlayerPlugin, prelude::*,
+    scripting::ScriptingPlugin, ui::UiPlugin,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -87,7 +90,9 @@ pub fn main() {
         .add_plugin(AnimationPlugin)
         .add_plugin(UiPlugin)
         .add_plugin(PlayerPlugin)
-        .add_plugin(ScriptingPlugin);
+        .add_plugin(PhysicsPlugin)
+        .add_plugin(ScriptingPlugin)
+        .add_plugin(DebugPlugin);
 
     debug!(?engine_config, "Starting game");
 

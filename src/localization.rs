@@ -32,7 +32,16 @@ where
 {
     /// Request message content and get an empty string if it doesn't exist.
     fn get(&self, request: T) -> String {
-        self.content(request).unwrap_or_default()
+        let response = self.content(request);
+
+        if response.is_none() {
+            debug!(
+                "Missing response for {request:?}. \
+                ( Could be normal if localization is still loading )"
+            );
+        }
+
+        response.unwrap_or_default()
     }
 }
 

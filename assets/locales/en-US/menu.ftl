@@ -1,0 +1,17 @@
+# Menu Pages
+local-game = Local Game
+main-menu = Main Menu
+map-editor = Map Editor
+editor = Map Editor
+settings = Settings
+paused = Paused
+
+# Actions
+save = Save
+reset = Reset
+cancel = Cancel
+back = Back
+continue = Continue
+edit = Edit
+play = Play
+quit = Quit

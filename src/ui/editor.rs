@@ -47,13 +47,9 @@ fn setup_editor(
     });
 }
 
-fn cleanup_editor(mut camera: Query<&mut Camera>, windows: Res<Windows>) {
+fn cleanup_editor(mut camera: Query<&mut Camera>) {
     // Reset the camera viewport
-    let window = windows.get_primary().unwrap();
-    camera.single_mut().viewport = Some(Viewport {
-        physical_size: UVec2::new(window.physical_width(), window.physical_height()),
-        ..default()
-    });
+    camera.single_mut().viewport = default();
 }
 
 /// The map editor system
@@ -152,17 +148,11 @@ pub fn editor(mut params: EditorParams, mut egui_ctx: ResMut<EguiContext>) {
         response.on_hover_cursor(egui::CursorIcon::Crosshair);
     }
 
-    // We don't want to update the viewport while the user is dragging to resize the editing area.
-    if !ctx.input().pointer.any_down() {
-        // Update camera viewport
-        let ppp = ctx.pixels_per_point();
-        camera.viewport = Some(Viewport {
-            physical_position: UVec2::new(
-                (rect.min.x * ppp) as u32,
-                (rect.min.y.floor() * ppp) as u32,
-            ),
-            physical_size: UVec2::new((rect.width() * ppp) as u32, (rect.height() * ppp) as u32),
-            ..default()
-        });
-    }
+    // Update camera viewport
+    let ppp = ctx.pixels_per_point();
+    camera.viewport = Some(Viewport {
+        physical_position: UVec2::new((rect.min.x * ppp) as u32, (rect.min.y.floor() * ppp) as u32),
+        physical_size: UVec2::new((rect.width() * ppp) as u32, (rect.height() * ppp) as u32),
+        ..default()
+    });
 }

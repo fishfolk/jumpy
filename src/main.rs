@@ -20,12 +20,13 @@ mod prelude;
 mod scripting;
 mod ui;
 mod utils;
+mod workarounds;
 
 use crate::{
     animation::AnimationPlugin, assets::AssetPlugin, debug::DebugPlugin, input::InputPlugin,
     loading::LoadingPlugin, localization::LocalizationPlugin, metadata::GameMeta,
     physics::PhysicsPlugin, platform::PlatformPlugin, player::PlayerPlugin, prelude::*,
-    scripting::ScriptingPlugin, ui::UiPlugin,
+    scripting::ScriptingPlugin, ui::UiPlugin, workarounds::WorkaroundsPlugin,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -92,6 +93,7 @@ pub fn main() {
         .add_plugin(PlayerPlugin)
         .add_plugin(PhysicsPlugin)
         .add_plugin(ScriptingPlugin)
+        .add_plugin(WorkaroundsPlugin)
         .add_plugin(DebugPlugin);
 
     debug!(?engine_config, "Starting game");

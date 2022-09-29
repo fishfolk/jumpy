@@ -97,12 +97,12 @@ pub fn editor(mut params: EditorParams, mut egui_ctx: ResMut<EguiContext>) {
         .show(ctx, |ui| {
             ui.add_space(ui.spacing().window_margin.top);
             ui.horizontal(|ui| {
-                ui.label("Layers");
+                ui.label(&params.localization.get("layers"));
 
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     if ui
                         .button("➕")
-                        .on_hover_text("Create a new metatile")
+                        .on_hover_text(&params.localization.get("create-layer"))
                         .clicked()
                     {}
                 });

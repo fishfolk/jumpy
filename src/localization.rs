@@ -27,7 +27,7 @@ pub trait LocalizationExt<'a, T: Into<Request<'a, U>>, U: Borrow<FluentArgs<'a>>
 
 impl<'a, T, U> LocalizationExt<'a, T, U> for Localization
 where
-    T: Copy + Into<Request<'a, U>>,
+    T: Copy + Into<Request<'a, U>> + std::fmt::Debug,
     U: Borrow<FluentArgs<'a>>,
 {
     /// Request message content and get an empty string if it doesn't exist.

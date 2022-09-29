@@ -233,8 +233,8 @@ fn main_menu_ui(params: &mut MenuSystemParams, ui: &mut egui::Ui) {
     ui.vertical_centered(|ui| {
         let available_size = ui.available_size();
 
-        let pause_menu_width = 300.0;
-        let x_margin = (available_size.x - pause_menu_width) / 2.0;
+        let menu_width = game.main_menu.menu_width;
+        let x_margin = (available_size.x - menu_width) / 2.0;
         let outer_margin = egui::style::Margin::symmetric(x_margin, 0.0);
 
         BorderedFrame::new(&game.ui_theme.panel.border)

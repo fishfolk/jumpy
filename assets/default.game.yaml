@@ -19,15 +19,17 @@ main_menu:
   title_font:
     family: fairfax
     color: [255, 255, 255, 255]
-    size: 70
+    size: 85
   subtitle_font:
     family: fairfax
     color: [255, 255, 255, 255]
-    size: 50
+    size: 60
 
   background_image:
     image: ui/menu-background.png
     image_size: [896, 480]
+
+  menu_width: 350
 
 default_settings:
   player_controls:
@@ -111,19 +113,19 @@ ui_theme:
   font_styles:
     heading:
       family: ark
-      size: 30
+      size: 40
       color: [255, 255, 255, 255]
     bigger:
       family: ark
-      size: 20
+      size: 25
       color: [255, 255, 255, 255]
     normal:
       family: ark
-      size: 15
+      size: 20
       color: [255, 255, 255, 255]
     smaller:
       family: ark
-      size: 12
+      size: 15
       color: [255, 255, 255, 255]
 
   editor:
@@ -176,10 +178,10 @@ ui_theme:
   panel:
     font_color: [255, 255, 255, 255]
     padding:
-      top: 20
-      bottom: 20
-      left: 20
-      right: 20
+      top: 25
+      bottom: 25
+      left: 25
+      right: 25
     border:
       image: ui/panel.png
       image_size: [38, 34]
@@ -188,14 +190,14 @@ ui_theme:
         bottom: 11
         left: 12
         right: 21
-      scale: 3
+      scale: 4
 
   button_styles:
     normal:
       font:
         family: ark
         color: [255, 255, 255, 255]
-        size: 15
+        size: 20
       padding:
         top: 6
         left: 6
@@ -234,7 +236,7 @@ ui_theme:
       font:
         family: ark
         color: [255, 255, 255, 255]
-        size: 14
+        size: 17
       padding:
         top: 4
         left: 4

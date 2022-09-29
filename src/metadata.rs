@@ -47,6 +47,7 @@ pub struct MainMenuMeta {
     pub title_font: FontMeta,
     pub subtitle_font: FontMeta,
     pub background_image: ImageMeta,
+    pub menu_width: f32,
     // pub music: String,
     // #[serde(skip)]
     // pub music_handle: Handle<AudioSource>,

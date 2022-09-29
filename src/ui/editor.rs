@@ -141,7 +141,7 @@ pub fn editor(mut params: EditorParams, mut egui_ctx: ResMut<EguiContext>) {
     //
     // We only change the cursor if it's not been changed by another widget, for instance, for the
     // resize handle of the right sidebar.
-    if ctx.output().cursor_icon == default() { 
+    if ctx.output().cursor_icon == default() {
         if response.dragged_by(egui::PointerButton::Middle)
             || (ctx.input().modifiers.command && response.dragged_by(egui::PointerButton::Primary))
         {

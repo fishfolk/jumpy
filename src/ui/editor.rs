@@ -138,14 +138,19 @@ pub fn editor(mut params: EditorParams, mut egui_ctx: ResMut<EguiContext>) {
     }
 
     // Handle cursor
-    if response.dragged_by(egui::PointerButton::Middle)
-        || (ctx.input().modifiers.command && response.dragged_by(egui::PointerButton::Primary))
-    {
-        response.on_hover_cursor(egui::CursorIcon::Grabbing);
-    } else if ctx.input().modifiers.command {
-        response.on_hover_cursor(egui::CursorIcon::Grab);
-    } else {
-        response.on_hover_cursor(egui::CursorIcon::Crosshair);
+    //
+    // We only change the cursor if it's not been changed by another widget, for instance, for the
+    // resize handle of the right sidebar.
+    if ctx.output().cursor_icon == default() { 
+        if response.dragged_by(egui::PointerButton::Middle)
+            || (ctx.input().modifiers.command && response.dragged_by(egui::PointerButton::Primary))
+        {
+            response.on_hover_cursor(egui::CursorIcon::Grabbing);
+        } else if ctx.input().modifiers.command {
+            response.on_hover_cursor(egui::CursorIcon::Grab);
+        } else {
+            response.on_hover_cursor(egui::CursorIcon::Crosshair);
+        }
     }
 
     // Update camera viewport

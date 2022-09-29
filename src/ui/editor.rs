@@ -1,4 +1,4 @@
-use bevy::{ecs::system::SystemParam, sprite::MaterialMesh2dBundle};
+use bevy::{ecs::system::SystemParam, render::camera::Viewport, sprite::MaterialMesh2dBundle};
 use bevy_egui::*;
 use bevy_fluent::Localization;
 
@@ -19,7 +19,15 @@ impl Plugin for EditorPlugin {
 
 #[derive(SystemParam)]
 pub struct EditorParams<'w, 's> {
-    camera: Query<'w, 's, (&'static mut Transform, &'static mut OrthographicProjection)>,
+    camera: Query<
+        'w,
+        's,
+        (
+            &'static mut Camera,
+            &'static mut Transform,
+            &'static mut OrthographicProjection,
+        ),
+    >,
     commands: Commands<'w, 's>,
     game: Res<'w, GameMeta>,
     localization: Res<'w, Localization>,
@@ -97,9 +105,13 @@ pub fn editor(mut params: EditorParams, mut egui_ctx: ResMut<EguiContext>) {
             ui.allocate_response(ui.available_size(), egui::Sense::click_and_drag())
         })
         .inner;
+    let rect = response.rect;
 
-    let (mut camera_transform, mut projection): (Mut<Transform>, Mut<OrthographicProjection>) =
-        params.camera.single_mut();
+    let (mut camera, mut camera_transform, mut projection): (
+        Mut<Camera>,
+        Mut<Transform>,
+        Mut<OrthographicProjection>,
+    ) = params.camera.single_mut();
 
     // Handle zoom
     if response.hovered() {
@@ -123,5 +135,19 @@ pub fn editor(mut params: EditorParams, mut egui_ctx: ResMut<EguiContext>) {
         response.on_hover_cursor(egui::CursorIcon::Grab);
     } else {
         response.on_hover_cursor(egui::CursorIcon::Crosshair);
+    }
+
+    // We don't want to update the viewport while the user is dragging to resize the editing area.
+    if !ctx.input().pointer.any_down() {
+        // Update camera viewport
+        let ppp = ctx.pixels_per_point();
+        camera.viewport = Some(Viewport {
+            physical_position: UVec2::new(
+                (rect.min.x * ppp) as u32,
+                (rect.min.y.floor() * ppp) as u32,
+            ),
+            physical_size: UVec2::new((rect.width() * ppp) as u32, (rect.height() * ppp) as u32),
+            ..default()
+        });
     }
 }

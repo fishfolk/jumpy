@@ -29,6 +29,10 @@ controls = Controls
 sound = Sound
 reset = Reset
 
+# Editor
+play = Play
+edit = Edit
+
 # Controls
 action = Action
 keyboard = Keyboard

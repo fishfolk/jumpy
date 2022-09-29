@@ -1,9 +1,8 @@
-use bevy::prelude::*;
 use bevy_egui::*;
 use bevy_fluent::Localization;
 use iyes_loopless::state::NextState;
 
-use crate::{localization::LocalizationExt, metadata::GameMeta, GameState};
+use crate::{localization::LocalizationExt, metadata::GameMeta, prelude::*, GameState};
 
 use super::{
     widgets::{bordered_button::BorderedButton, bordered_frame::BorderedFrame, EguiUIExt},
@@ -59,6 +58,17 @@ pub fn pause_menu(
 
                         if continue_button.clicked() {
                             commands.insert_resource(NextState(GameState::InGame));
+                        }
+
+                        if BorderedButton::themed(
+                            &ui_theme.button_styles.normal,
+                            &localization.get("edit"),
+                        )
+                        .min_size(egui::vec2(width, 0.0))
+                        .show(ui)
+                        .clicked()
+                        {
+                            commands.insert_resource(NextState(InGameState::Editing))
                         }
 
                         if BorderedButton::themed(

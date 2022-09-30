@@ -1,5 +1,13 @@
-use bevy::{prelude::*, utils::HashMap, window::WindowId};
+use std::hash::Hasher;
+
+use bevy::{
+    ecs::system::{SystemParam, SystemState},
+    prelude::*,
+    utils::HashMap,
+    window::WindowId,
+};
 use bevy_egui::{egui, EguiContext, EguiInput, EguiPlugin, EguiSettings, EguiSystem};
+use bevy_rapier2d::parry::utils::hashmap::FxHasher32;
 use iyes_loopless::prelude::*;
 use leafwing_input_manager::{plugin::InputManagerSystem, prelude::ActionState};
 
@@ -37,12 +45,6 @@ impl Plugin for UiPlugin {
             )
             .add_system(update_egui_fonts)
             .add_system(update_ui_scale.run_if_resource_exists::<GameMeta>())
-            .add_system_set(
-                ConditionSet::new()
-                    .run_in_state(GameState::MainMenu)
-                    .with_system(main_menu::main_menu_system)
-                    .into(),
-            )
             .add_system(
                 unpause
                     .run_in_state(GameState::InGame)
@@ -83,6 +85,75 @@ fn unpause(mut commands: Commands, input: Query<&ActionState<MenuAction>>) {
     let input = input.single();
     if input.just_pressed(MenuAction::Pause) {
         commands.insert_resource(NextState(InGameState::Playing));
+    }
+}
+
+/// Awesome widget system shared by @aevyrie:
+/// <https://github.com/bevyengine/bevy/discussions/5522>
+pub trait WidgetSystem: SystemParam {
+    type Args;
+    fn system(
+        world: &mut World,
+        state: &mut SystemState<Self>,
+        ui: &mut egui::Ui,
+        id: WidgetId,
+        args: Self::Args,
+    );
+}
+
+pub fn widget<S: 'static + WidgetSystem>(
+    world: &mut World,
+    ui: &mut egui::Ui,
+    id: WidgetId,
+    args: S::Args,
+) {
+    // We need to cache `SystemState` to allow for a system's locally tracked state
+    if !world.contains_resource::<StateInstances<S>>() {
+        // Note, this message should only appear once! If you see it twice in the logs, the function
+        // may have been called recursively, and will panic.
+        trace!("Init widget system state {}", std::any::type_name::<S>());
+        world.insert_resource(StateInstances::<S> {
+            instances: HashMap::new(),
+        });
+    }
+    world.resource_scope(|world, mut states: Mut<StateInstances<S>>| {
+        if !states.instances.contains_key(&id) {
+            trace!(
+                "Registering widget system state for widget {id:?} of type {}",
+                std::any::type_name::<S>()
+            );
+            states.instances.insert(id, SystemState::new(world));
+        }
+        let cached_state = states.instances.get_mut(&id).unwrap();
+        S::system(world, cached_state, ui, id, args);
+        cached_state.apply(world);
+    });
+}
+
+/// A UI widget may have multiple instances. We need to ensure the local state of these instances is
+/// not shared. This hashmap allows us to dynamically store instance states.
+#[derive(Default)]
+struct StateInstances<S: WidgetSystem> {
+    instances: HashMap<WidgetId, SystemState<S>>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct WidgetId(pub u64);
+impl WidgetId {
+    pub fn new(name: &str) -> Self {
+        let bytes = name.as_bytes();
+        let mut hasher = FxHasher32::default();
+        hasher.write(bytes);
+        WidgetId(hasher.finish())
+    }
+    pub fn with(&self, name: &str) -> WidgetId {
+        Self::new(&format!("{}{name}", self.0))
+    }
+}
+
+impl From<&str> for WidgetId {
+    fn from(s: &str) -> Self {
+        Self::new(s)
     }
 }
 

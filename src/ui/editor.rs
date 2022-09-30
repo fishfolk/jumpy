@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use bevy::{ecs::system::SystemParam, render::camera::Viewport, sprite::MaterialMesh2dBundle};
+use bevy::{ecs::system::SystemParam, math::Vec3Swizzles, render::camera::Viewport};
 use bevy_egui::*;
 use bevy_fluent::Localization;
 use iyes_loopless::condition::IntoConditionalExclusiveSystem;
@@ -24,23 +24,11 @@ impl Plugin for EditorPlugin {
     }
 }
 
-fn setup_editor(
-    mut commands: Commands,
-    mut camera: Query<(&mut Transform, &mut OrthographicProjection), With<Camera>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
-    // Reset camera position
+fn setup_editor(mut camera: Query<(&mut Transform, &mut OrthographicProjection), With<Camera>>) {
+    // Reset camera position and scale
     let (mut camera_transform, mut projection) = camera.single_mut();
     *camera_transform = default();
     projection.scale = 1.0;
-
-    commands.spawn_bundle(MaterialMesh2dBundle {
-        mesh: meshes.add(Mesh::from(shape::Quad::default())).into(),
-        transform: Transform::default().with_scale(Vec3::splat(128.)),
-        material: materials.add(ColorMaterial::from(Color::PURPLE)),
-        ..default()
-    });
 }
 
 fn cleanup_editor(mut camera: Query<&mut Camera>) {
@@ -80,6 +68,7 @@ pub fn editor_system(world: &mut World) {
 #[derive(SystemParam)]
 struct EditorTopBar<'w, 's> {
     commands: Commands<'w, 's>,
+    camera: Query<'w, 's, (&'static mut Transform, &'static mut OrthographicProjection)>,
     localization: Res<'w, Localization>,
 }
 
@@ -94,8 +83,38 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
         _args: Self::Args,
     ) {
         let mut params: EditorTopBar = state.get_mut(world);
+        let (mut transform, mut projection): (Mut<Transform>, Mut<OrthographicProjection>) =
+            params.camera.single_mut();
+        let zoom = 1.0 / projection.scale * 100.0;
+        let [x, y]: [f32; 2] = transform.translation.xy().into();
+
         ui.horizontal_centered(|ui| {
             ui.label(&params.localization.get("editor"));
+            ui.separator();
+
+            if ui
+                .small_button(&params.localization.get("view-reset"))
+                .clicked()
+            {
+                projection.scale = 1.0;
+                *transform = default();
+            }
+            ui.label(
+                egui::RichText::new(
+                    params
+                        .localization
+                        .get(&format!("view-offset?x={x:.0}&y={y:.0}")),
+                )
+                .small(),
+            );
+            ui.label(
+                egui::RichText::new(
+                    params
+                        .localization
+                        .get(&format!("view-zoom?percent={zoom:.0}")),
+                )
+                .small(),
+            );
 
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 if ui.button(&params.localization.get("main-menu")).clicked() {

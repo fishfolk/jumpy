@@ -20,9 +20,6 @@ pub mod editor;
 pub mod main_menu;
 pub mod pause_menu;
 
-pub mod extensions;
-pub use extensions::*;
-
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {

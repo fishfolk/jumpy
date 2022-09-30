@@ -24,8 +24,11 @@ use self::settings::{ModifiedSettings, SettingsTab};
 
 use super::{
     widget,
-    widgets::{bordered_button::BorderedButton, bordered_frame::BorderedFrame, EguiUiExt},
-    DisableMenuInput, EguiContextExt, EguiResponseExt, WidgetAdjacencies, WidgetId, WidgetSystem,
+    widgets::{
+        bordered_button::BorderedButton, bordered_frame::BorderedFrame, EguiContextExt,
+        EguiResponseExt, EguiUiExt,
+    },
+    DisableMenuInput, WidgetAdjacencies, WidgetId, WidgetSystem,
 };
 
 mod map_select;

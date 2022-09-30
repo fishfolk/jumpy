@@ -6,9 +6,8 @@ use crate::{
     input::MenuAction, localization::LocalizationExt, metadata::GameMeta, prelude::*, GameState,
 };
 
-use super::{
-    widgets::{bordered_button::BorderedButton, bordered_frame::BorderedFrame, EguiUiExt},
-    EguiContextExt,
+use super::widgets::{
+    bordered_button::BorderedButton, bordered_frame::BorderedFrame, EguiContextExt, EguiUiExt,
 };
 
 pub struct PausePlugin;

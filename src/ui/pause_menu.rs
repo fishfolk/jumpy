@@ -2,12 +2,52 @@ use bevy_egui::*;
 use bevy_fluent::Localization;
 use iyes_loopless::state::NextState;
 
-use crate::{localization::LocalizationExt, metadata::GameMeta, prelude::*, GameState};
+use crate::{
+    input::MenuAction, localization::LocalizationExt, metadata::GameMeta, prelude::*, GameState,
+};
 
 use super::{
     widgets::{bordered_button::BorderedButton, bordered_frame::BorderedFrame, EguiUIExt},
     EguiContextExt,
 };
+
+pub struct PausePlugin;
+
+impl Plugin for PausePlugin {
+    fn build(&self, app: &mut App) {
+        app.add_system(
+            unpause_system
+                .run_in_state(GameState::InGame)
+                .run_in_state(InGameState::Paused),
+        )
+        .add_system(
+            pause_system
+                .run_in_state(GameState::InGame)
+                .run_in_state(InGameState::Playing),
+        )
+        .add_system(
+            pause_menu
+                .run_in_state(GameState::InGame)
+                .run_in_state(InGameState::Paused),
+        );
+    }
+}
+
+/// Transition game to pause state
+fn pause_system(mut commands: Commands, input: Query<&ActionState<MenuAction>>) {
+    let input = input.single();
+    if input.just_pressed(MenuAction::Pause) {
+        commands.insert_resource(NextState(InGameState::Paused));
+    }
+}
+
+// Transition game out of paused state
+fn unpause_system(mut commands: Commands, input: Query<&ActionState<MenuAction>>) {
+    let input = input.single();
+    if input.just_pressed(MenuAction::Pause) {
+        commands.insert_resource(NextState(InGameState::Playing));
+    }
+}
 
 pub fn pause_menu(
     mut commands: Commands,

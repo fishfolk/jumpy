@@ -24,7 +24,7 @@ use self::settings::{ModifiedSettings, SettingsTab};
 
 use super::{
     widget,
-    widgets::{bordered_button::BorderedButton, bordered_frame::BorderedFrame, EguiUIExt},
+    widgets::{bordered_button::BorderedButton, bordered_frame::BorderedFrame, EguiUiExt},
     DisableMenuInput, EguiContextExt, EguiResponseExt, WidgetAdjacencies, WidgetId, WidgetSystem,
 };
 

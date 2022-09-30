@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use bevy::utils::HashMap;
 use bevy_egui::egui;
+use serde::Deserializer;
 
 use crate::assets::EguiFont;
 
@@ -227,22 +228,45 @@ pub struct ButtonBordersMeta {
     pub clicked: Option<BorderImageMeta>,
 }
 
-#[derive(HasLoadProgress, Default, Deserialize, Clone, Copy, Debug)]
-#[serde(deny_unknown_fields)]
+#[derive(HasLoadProgress, Default, Clone, Copy, Debug)]
 #[has_load_progress(none)]
-pub struct ColorMeta([u8; 4]);
+pub struct ColorMeta(pub Color);
+
+impl<'de> Deserialize<'de> for ColorMeta {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_str(ColorVisitor)
+    }
+}
+
+struct ColorVisitor;
+impl<'de> serde::de::Visitor<'de> for ColorVisitor {
+    type Value = ColorMeta;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("A hex-encoded RGB or RGBA color")
+    }
+
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        Ok(ColorMeta(Color::hex(v).map_err(|e| E::custom(e))?))
+    }
+}
 
 impl From<ColorMeta> for egui::Color32 {
     fn from(c: ColorMeta) -> Self {
-        let [r, g, b, a] = c.0;
-        egui::Color32::from_rgba_premultiplied(r, g, b, a)
+        let [r, g, b, a] = c.0.as_linear_rgba_f32();
+        egui::Rgba::from_rgba_premultiplied(r, g, b, a).into()
     }
 }
 
 impl From<ColorMeta> for Color {
     fn from(c: ColorMeta) -> Self {
-        let [r, g, b, a] = c.0;
-        Color::rgba_u8(r, g, b, a)
+        c.0
     }
 }
 

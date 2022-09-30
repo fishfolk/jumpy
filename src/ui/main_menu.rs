@@ -1,22 +1,31 @@
-use bevy::{app::AppExit, ecs::system::SystemParam};
+use std::marker::PhantomData;
+
+use bevy::{
+    app::AppExit,
+    ecs::system::{SystemParam, SystemState},
+};
 use bevy_egui::*;
 use bevy_fluent::Localization;
+use iyes_loopless::condition::IntoConditionalExclusiveSystem;
 
 use crate::{
-    input::{MenuAction, PlayerAction},
+    input::MenuAction,
     localization::LocalizationExt,
-    metadata::{GameMeta, PlayerMeta, Settings},
+    metadata::{GameMeta, Settings},
     platform::Storage,
     player::PlayerIdx,
     prelude::*,
     utils::ResetController,
 };
 
-use self::settings::ControlInputBindingEvents;
+// use self::settings::ControlInputBindingEvents;
+
+use self::settings::{ModifiedSettings, SettingsTab};
 
 use super::{
+    widget,
     widgets::{bordered_button::BorderedButton, bordered_frame::BorderedFrame, EguiUIExt},
-    DisableMenuInput, EguiContextExt, EguiResponseExt, WidgetAdjacencies,
+    DisableMenuInput, EguiContextExt, EguiResponseExt, WidgetAdjacencies, WidgetId, WidgetSystem,
 };
 
 mod map_select;
@@ -28,8 +37,13 @@ pub struct MainMenuPlugin;
 impl Plugin for MainMenuPlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<MainMenuBackground>()
+            .init_resource::<MenuPage>()
+            .init_resource::<settings::SettingsTab>()
+            .init_resource::<settings::ModifiedSettings>()
+            .init_resource::<player_select::PlayerSelectState>()
+            .add_system(main_menu_system.run_in_state(GameState::MainMenu).at_end())
             .add_enter_system(GameState::MainMenu, setup_main_menu)
-            .add_exit_system(GameState::MainMenu, despawn_main_menu_background);
+            .add_exit_system(GameState::MainMenu, clean_up_main_menu);
     }
 }
 
@@ -92,7 +106,7 @@ pub fn setup_main_menu(
 }
 
 /// Despawns the background image for the main menu
-pub fn despawn_main_menu_background(
+pub fn clean_up_main_menu(
     mut commands: Commands,
     backgrounds: Query<Entity, With<MainMenuBackground>>,
 ) {
@@ -104,29 +118,15 @@ pub fn despawn_main_menu_background(
 /// Which page of the menu we are on
 #[derive(Clone, Copy)]
 pub enum MenuPage {
-    Main,
-    Settings { tab: SettingsTab },
+    Home,
+    Settings,
     PlayerSelect,
     MapSelect,
 }
 
-/// Which settings tab we are on
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub enum SettingsTab {
-    Controls,
-    #[allow(unused)] // TODO: Just for now until we get sound settings setup
-    Sound,
-}
-
 impl Default for MenuPage {
     fn default() -> Self {
-        Self::Main
-    }
-}
-
-impl Default for SettingsTab {
-    fn default() -> Self {
-        Self::Controls
+        Self::Home
     }
 }
 
@@ -138,167 +138,201 @@ impl SettingsTab {
     ];
 }
 
-/// Group of parameters needed by the main menu system
-#[derive(SystemParam)]
-pub struct MenuSystemParams<'w, 's> {
-    commands: Commands<'w, 's>,
-    menu_page: Local<'s, MenuPage>,
-    disable_menu_input: ResMut<'w, DisableMenuInput>,
-    player_select_state: Local<'s, player_select::PlayerSelectState>,
-    players: Query<'w, 's, (&'static PlayerIdx, &'static ActionState<PlayerAction>)>,
-    modified_settings: Local<'s, Option<Settings>>,
-    currently_binding_input_idx: Local<'s, Option<usize>>,
-    game: Res<'w, GameMeta>,
-    localization: Res<'w, Localization>,
-    menu_input: Query<'w, 's, &'static mut ActionState<MenuAction>>,
-    app_exit: EventWriter<'w, 's, AppExit>,
-    storage: ResMut<'w, Storage>,
-    adjacencies: ResMut<'w, WidgetAdjacencies>,
-    control_inputs: ControlInputBindingEvents<'w, 's>,
-    keyboard_input: Res<'w, Input<KeyCode>>,
-    player_meta_assets: Res<'w, Assets<PlayerMeta>>,
+/// Render the main menu UI
+pub fn main_menu_system(world: &mut World) {
+    world.resource_scope(|world: &mut World, mut egui_ctx: Mut<EguiContext>| {
+        egui::CentralPanel::default()
+            .frame(egui::Frame::none())
+            .show(egui_ctx.ctx_mut(), |ui| {
+                widget::<MainMenu>(world, ui, WidgetId::new("main-menu"), ());
+            });
+    });
 }
 
-/// Render the main menu UI
-pub fn main_menu_system(mut params: MenuSystemParams, mut egui_context: ResMut<EguiContext>) {
-    let menu_input = params.menu_input.single();
+#[derive(SystemParam)]
+struct MainMenu<'w, 's> {
+    menu_page: ResMut<'w, MenuPage>,
+    disable_menu_input: ResMut<'w, DisableMenuInput>,
+    menu_input: Query<'w, 's, &'static mut ActionState<MenuAction>>,
+    keyboard_input: Res<'w, Input<KeyCode>>,
+}
 
-    // Disable menu input handling on player select page, so each player can control their own
-    // player selection independently.
-    let is_player_select = matches!(*params.menu_page, MenuPage::PlayerSelect);
-    **params.disable_menu_input = is_player_select;
+impl<'w, 's> WidgetSystem for MainMenu<'w, 's> {
+    type Args = ();
+    fn system(
+        world: &mut World,
+        state: &mut SystemState<Self>,
+        ui: &mut egui::Ui,
+        id: WidgetId,
+        _args: (),
+    ) {
+        let mut params: MainMenu = state.get_mut(world);
 
-    // Go to previous menu if back button is pressed
-    if menu_input.just_pressed(MenuAction::Back) && !is_player_select {
+        let menu_input = params.menu_input.single();
+
+        // Disable menu input handling on player select page, so each player can control their own
+        // player selection independently.
+        let is_player_select = matches!(*params.menu_page, MenuPage::PlayerSelect);
+        **params.disable_menu_input = is_player_select;
+
+        // Go to previous menu if back button is pressed
+        if menu_input.just_pressed(MenuAction::Back) && !is_player_select {
+            match *params.menu_page {
+                MenuPage::Settings { .. } | MenuPage::PlayerSelect => {
+                    *params.menu_page = MenuPage::Home;
+                    ui.ctx().clear_focus();
+                }
+                MenuPage::MapSelect => {
+                    *params.menu_page = MenuPage::PlayerSelect;
+                    ui.ctx().clear_focus();
+                }
+                MenuPage::Home => (),
+            }
+        } else if is_player_select && params.keyboard_input.just_pressed(KeyCode::Escape) {
+            *params.menu_page = MenuPage::Home;
+            ui.ctx().clear_focus();
+        }
+
+        // Render the menu based on the current menu selection
         match *params.menu_page {
-            MenuPage::Settings { .. } | MenuPage::PlayerSelect => {
-                *params.menu_page = MenuPage::Main;
-                egui_context.ctx_mut().clear_focus();
+            MenuPage::Home => widget::<HomeMenu>(world, ui, id.with("home"), ()),
+            MenuPage::PlayerSelect => {
+                widget::<player_select::PlayerSelectMenu>(world, ui, id.with("player-select"), ())
             }
             MenuPage::MapSelect => {
-                *params.menu_page = MenuPage::PlayerSelect;
-                egui_context.ctx_mut().clear_focus();
+                widget::<map_select::MapSelectMenu>(world, ui, id.with("map-select"), ())
             }
-            MenuPage::Main => (),
+            MenuPage::Settings => {
+                widget::<settings::SettingsMenu>(world, ui, id.with("settings"), ())
+            }
         }
-    } else if is_player_select && params.keyboard_input.just_pressed(KeyCode::Escape) {
-        *params.menu_page = MenuPage::Main;
-        egui_context.ctx_mut().clear_focus();
     }
-
-    // Clear the player selection whenever we go to the main menu
-    if matches!(*params.menu_page, MenuPage::Main) {
-        *params.player_select_state = default();
-    }
-
-    egui::CentralPanel::default()
-        .frame(egui::Frame::none())
-        .show(egui_context.ctx_mut(), |ui| {
-            // Render the menu based on the current menu selection
-            match *params.menu_page {
-                MenuPage::Main => main_menu_ui(&mut params, ui),
-                MenuPage::PlayerSelect => player_select::player_select_ui(&mut params, ui),
-                MenuPage::MapSelect => map_select::map_select_ui(&mut params, ui),
-                MenuPage::Settings { tab } => settings::settings_menu_ui(&mut params, ui, tab),
-            }
-        });
 }
 
-/// Render the main menu
-fn main_menu_ui(params: &mut MenuSystemParams, ui: &mut egui::Ui) {
-    let MenuSystemParams {
-        menu_page,
-        modified_settings,
-        game,
-        localization,
-        app_exit,
-        storage,
-        commands,
-        ..
-    } = params;
+#[derive(SystemParam)]
+struct HomeMenu<'w, 's> {
+    commands: Commands<'w, 's>,
+    menu_page: ResMut<'w, MenuPage>,
+    player_select_state: ResMut<'w, player_select::PlayerSelectState>,
+    modified_settings: ResMut<'w, ModifiedSettings>,
+    game: Res<'w, GameMeta>,
+    localization: Res<'w, Localization>,
+    app_exit: EventWriter<'w, 's, AppExit>,
+    storage: ResMut<'w, Storage>,
+}
 
-    let ui_theme = &game.ui_theme;
+impl<'w, 's> WidgetSystem for HomeMenu<'w, 's> {
+    type Args = ();
+    fn system(
+        world: &mut World,
+        state: &mut SystemState<Self>,
+        ui: &mut egui::Ui,
+        _: WidgetId,
+        _: (),
+    ) {
+        let mut params: HomeMenu = state.get_mut(world);
 
-    if matches!(**menu_page, MenuPage::Main) {
+        // Reset player selection when comming to the home menu
+        if params.player_select_state.is_changed() {
+            *params.player_select_state = default();
+        }
+
+        let ui_theme = &params.game.ui_theme;
+
         ui.vertical_centered(|ui| {
-            ui.add_space(game.main_menu.title_font.size / 4.0);
-            ui.themed_label(&game.main_menu.title_font, &localization.get("title"));
-            ui.themed_label(&game.main_menu.subtitle_font, &localization.get("subtitle"));
+            ui.add_space(&params.game.main_menu.title_font.size / 4.0);
+            ui.themed_label(
+                &params.game.main_menu.title_font,
+                &params.localization.get("title"),
+            );
+            ui.themed_label(
+                &params.game.main_menu.subtitle_font,
+                &params.localization.get("subtitle"),
+            );
         });
 
-        ui.add_space(game.main_menu.subtitle_font.size / 2.0);
-    }
+        ui.add_space(params.game.main_menu.subtitle_font.size / 2.0);
 
-    // Create a vertical list of items, centered horizontally
-    ui.vertical_centered(|ui| {
-        let available_size = ui.available_size();
+        // Create a vertical list of items, centered horizontally
+        ui.vertical_centered(|ui| {
+            let available_size = ui.available_size();
 
-        let menu_width = game.main_menu.menu_width;
-        let x_margin = (available_size.x - menu_width) / 2.0;
-        let outer_margin = egui::style::Margin::symmetric(x_margin, 0.0);
+            let menu_width = params.game.main_menu.menu_width;
+            let x_margin = (available_size.x - menu_width) / 2.0;
+            let outer_margin = egui::style::Margin::symmetric(x_margin, 0.0);
 
-        BorderedFrame::new(&game.ui_theme.panel.border)
-            .margin(outer_margin)
-            .padding(game.ui_theme.panel.padding.into())
-            .show(ui, |ui| {
-                let min_button_size = egui::vec2(ui.available_width(), 0.0);
+            BorderedFrame::new(&params.game.ui_theme.panel.border)
+                .margin(outer_margin)
+                .padding(params.game.ui_theme.panel.padding.into())
+                .show(ui, |ui| {
+                    let min_button_size = egui::vec2(ui.available_width(), 0.0);
 
-                // Start button
-                let start_button = BorderedButton::themed(
-                    &ui_theme.button_styles.normal,
-                    &localization.get("local-game"),
-                )
-                .min_size(min_button_size)
-                .show(ui)
-                .focus_by_default(ui);
+                    // Start button
+                    let start_button = BorderedButton::themed(
+                        &ui_theme.button_styles.normal,
+                        &params.localization.get("local-game"),
+                    )
+                    .min_size(min_button_size)
+                    .show(ui)
+                    .focus_by_default(ui);
 
-                if start_button.clicked() {
-                    **menu_page = MenuPage::PlayerSelect;
-                }
+                    if start_button.clicked() {
+                        *params.menu_page = MenuPage::PlayerSelect;
+                    }
 
-                // Map editor
-                if BorderedButton::themed(
-                    &ui_theme.button_styles.normal,
-                    &localization.get("editor"),
-                )
-                .min_size(min_button_size)
-                .show(ui)
-                .clicked()
-                {
-                    commands.insert_resource(NextState(InGameState::Editing));
-                    commands.insert_resource(NextState(GameState::InGame));
-                }
-
-                // Settings button
-                if BorderedButton::themed(
-                    &ui_theme.button_styles.normal,
-                    &localization.get("settings"),
-                )
-                .min_size(min_button_size)
-                .show(ui)
-                .clicked()
-                {
-                    **menu_page = MenuPage::Settings { tab: default() };
-                    **modified_settings = Some(
-                        storage
-                            .get(Settings::STORAGE_KEY)
-                            .unwrap_or_else(|| game.default_settings.clone()),
-                    );
-                }
-
-                // Quit button
-                #[cfg(not(target_arch = "wasm32"))] // Quitting doesn't make sense in a web context
-                if BorderedButton::themed(&ui_theme.button_styles.normal, &localization.get("quit"))
+                    // Map editor
+                    if BorderedButton::themed(
+                        &ui_theme.button_styles.normal,
+                        &params.localization.get("editor"),
+                    )
                     .min_size(min_button_size)
                     .show(ui)
                     .clicked()
-                {
-                    app_exit.send(AppExit);
-                }
+                    {
+                        params
+                            .commands
+                            .insert_resource(NextState(InGameState::Editing));
+                        params
+                            .commands
+                            .insert_resource(NextState(GameState::InGame));
+                    }
 
-                // use the app exit variable on WASM to avoid warnings
-                #[cfg(target_arch = "wasm32")]
-                let _ = app_exit;
-            });
-    });
+                    // Settings button
+                    if BorderedButton::themed(
+                        &ui_theme.button_styles.normal,
+                        &params.localization.get("settings"),
+                    )
+                    .min_size(min_button_size)
+                    .show(ui)
+                    .clicked()
+                    {
+                        *params.menu_page = MenuPage::Settings;
+                        **params.modified_settings = Some(
+                            params
+                                .storage
+                                .get(Settings::STORAGE_KEY)
+                                .unwrap_or_else(|| params.game.default_settings.clone()),
+                        );
+                    }
+
+                    // Quit button
+                    #[cfg(not(target_arch = "wasm32"))]
+                    // Quitting doesn't make sense in a web context
+                    if BorderedButton::themed(
+                        &ui_theme.button_styles.normal,
+                        &params.localization.get("quit"),
+                    )
+                    .min_size(min_button_size)
+                    .show(ui)
+                    .clicked()
+                    {
+                        params.app_exit.send(AppExit);
+                    }
+
+                    // use the app exit variable on WASM to avoid warnings
+                    #[cfg(target_arch = "wasm32")]
+                    let _ = app_exit;
+                });
+        });
+    }
 }

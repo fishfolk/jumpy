@@ -7,7 +7,7 @@ use crate::{
 };
 
 use super::{
-    widgets::{bordered_button::BorderedButton, bordered_frame::BorderedFrame, EguiUIExt},
+    widgets::{bordered_button::BorderedButton, bordered_frame::BorderedFrame, EguiUiExt},
     EguiContextExt,
 };
 

@@ -10,8 +10,10 @@ mod assets;
 mod config;
 mod debug;
 mod input;
+mod lines;
 mod loading;
 mod localization;
+mod map;
 mod metadata;
 mod physics;
 mod platform;
@@ -24,9 +26,9 @@ mod workarounds;
 
 use crate::{
     animation::AnimationPlugin, assets::AssetPlugin, debug::DebugPlugin, input::InputPlugin,
-    loading::LoadingPlugin, localization::LocalizationPlugin, metadata::GameMeta,
-    physics::PhysicsPlugin, platform::PlatformPlugin, player::PlayerPlugin, prelude::*,
-    scripting::ScriptingPlugin, ui::UiPlugin, workarounds::WorkaroundsPlugin,
+    lines::LinesPlugin, loading::LoadingPlugin, localization::LocalizationPlugin, map::MapPlugin,
+    metadata::GameMeta, physics::PhysicsPlugin, platform::PlatformPlugin, player::PlayerPlugin,
+    prelude::*, scripting::ScriptingPlugin, ui::UiPlugin, workarounds::WorkaroundsPlugin,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -83,6 +85,7 @@ pub fn main() {
 
     // Install game plugins
     app.add_plugins(DefaultPlugins)
+        .add_plugin(LinesPlugin)
         .add_plugin(PlatformPlugin)
         .add_plugin(LoadingPlugin)
         .add_plugin(AssetPlugin)
@@ -92,6 +95,7 @@ pub fn main() {
         .add_plugin(UiPlugin)
         .add_plugin(PlayerPlugin)
         .add_plugin(PhysicsPlugin)
+        .add_plugin(MapPlugin)
         .add_plugin(ScriptingPlugin)
         .add_plugin(WorkaroundsPlugin)
         .add_plugin(DebugPlugin);

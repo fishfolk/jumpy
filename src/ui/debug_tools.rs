@@ -11,7 +11,18 @@ use bevy_rapier2d::{
     },
 };
 
-use crate::localization::LocalizationExt;
+use crate::{config::ENGINE_CONFIG, localization::LocalizationExt};
+
+pub struct DebugToolsPlugin;
+
+impl Plugin for DebugToolsPlugin {
+    fn build(&self, app: &mut App) {
+        if ENGINE_CONFIG.debug_tools {
+            app.add_system(debug_tools_window)
+                .add_system_to_stage(CoreStage::Last, rapier_debug_render);
+        }
+    }
+}
 
 /// System that renders the debug tools window which can be toggled by pressing F12
 pub fn debug_tools_window(

@@ -11,10 +11,7 @@ use bevy_rapier2d::parry::utils::hashmap::FxHasher32;
 use iyes_loopless::prelude::*;
 use leafwing_input_manager::{plugin::InputManagerSystem, prelude::ActionState};
 
-use crate::{
-    assets::EguiFont, config::ENGINE_CONFIG, input::MenuAction, metadata::GameMeta, GameState,
-    InGameState,
-};
+use crate::{assets::EguiFont, input::MenuAction, metadata::GameMeta};
 
 pub mod widgets;
 
@@ -31,10 +28,12 @@ pub struct UiPlugin;
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(EguiPlugin)
-            .init_resource::<WidgetAdjacencies>()
-            .init_resource::<DisableMenuInput>()
             .add_plugin(main_menu::MainMenuPlugin)
             .add_plugin(editor::EditorPlugin)
+            .add_plugin(debug_tools::DebugToolsPlugin)
+            .add_plugin(pause_menu::PausePlugin)
+            .init_resource::<WidgetAdjacencies>()
+            .init_resource::<DisableMenuInput>()
             .add_system_to_stage(
                 CoreStage::PreUpdate,
                 handle_menu_input
@@ -44,47 +43,7 @@ impl Plugin for UiPlugin {
                     .before(EguiSystem::BeginFrame),
             )
             .add_system(update_egui_fonts)
-            .add_system(update_ui_scale.run_if_resource_exists::<GameMeta>())
-            .add_system(
-                unpause
-                    .run_in_state(GameState::InGame)
-                    .run_in_state(InGameState::Paused),
-            )
-            .add_system_set(
-                ConditionSet::new()
-                    .run_in_state(GameState::InGame)
-                    .run_in_state(InGameState::Playing)
-                    .with_system(pause)
-                    .into(),
-            )
-            .add_system_set(
-                ConditionSet::new()
-                    .run_in_state(GameState::InGame)
-                    .run_in_state(InGameState::Paused)
-                    .with_system(pause_menu::pause_menu)
-                    .into(),
-            );
-
-        if ENGINE_CONFIG.debug_tools {
-            app.add_system(debug_tools::debug_tools_window)
-                .add_system_to_stage(CoreStage::Last, debug_tools::rapier_debug_render);
-        }
-    }
-}
-
-/// Transition game to pause state
-fn pause(mut commands: Commands, input: Query<&ActionState<MenuAction>>) {
-    let input = input.single();
-    if input.just_pressed(MenuAction::Pause) {
-        commands.insert_resource(NextState(InGameState::Paused));
-    }
-}
-
-// Transition game out of paused state
-fn unpause(mut commands: Commands, input: Query<&ActionState<MenuAction>>) {
-    let input = input.single();
-    if input.just_pressed(MenuAction::Pause) {
-        commands.insert_resource(NextState(InGameState::Playing));
+            .add_system(update_ui_scale.run_if_resource_exists::<GameMeta>());
     }
 }
 

@@ -331,7 +331,7 @@ impl<'w, 's> WidgetSystem for HomeMenu<'w, 's> {
 
                     // use the app exit variable on WASM to avoid warnings
                     #[cfg(target_arch = "wasm32")]
-                    let _ = app_exit;
+                    let _ = params.app_exit;
                 });
         });
     }

@@ -3,11 +3,16 @@ use std::marker::PhantomData;
 use bevy::{ecs::system::SystemParam, math::Vec3Swizzles, render::camera::Viewport};
 use bevy_egui::*;
 use bevy_fluent::Localization;
+use bevy_prototype_lyon::prelude::*;
 use iyes_loopless::condition::IntoConditionalExclusiveSystem;
 
-use crate::{localization::LocalizationExt, metadata::GameMeta, prelude::*};
+use crate::{
+    localization::LocalizationExt,
+    metadata::{GameMeta, MapMeta},
+    prelude::*,
+};
 
-use super::{widget, WidgetSystem};
+use super::{widget, widgets::bordered_button::BorderedButton, WidgetSystem};
 
 pub struct EditorPlugin;
 
@@ -70,6 +75,7 @@ struct EditorTopBar<'w, 's> {
     commands: Commands<'w, 's>,
     camera: Query<'w, 's, (&'static mut Transform, &'static mut OrthographicProjection)>,
     localization: Res<'w, Localization>,
+    map: Query<'w, 's, Entity, With<MapMeta>>,
 }
 
 impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
@@ -122,11 +128,15 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                         .commands
                         .insert_resource(NextState(GameState::MainMenu));
                 }
-                if ui.button(&params.localization.get("play")).clicked() {
-                    params
-                        .commands
-                        .insert_resource(NextState(InGameState::Playing));
-                }
+
+                ui.scope(|ui| {
+                    ui.set_enabled(params.map.get_single().is_ok());
+                    if ui.button(&params.localization.get("play")).clicked() {
+                        params
+                            .commands
+                            .insert_resource(NextState(InGameState::Playing));
+                    }
+                });
             });
         });
     }
@@ -201,7 +211,11 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
 
 #[derive(SystemParam)]
 struct EditorCentralPanel<'w, 's> {
+    commands: Commands<'w, 's>,
+    show_map_create: Local<'s, bool>,
+    map_create_info: Local<'s, MapCreateInfo>,
     game: Res<'w, GameMeta>,
+    map: Query<'w, 's, Entity, With<MapMeta>>,
     camera: Query<
         'w,
         's,
@@ -211,8 +225,29 @@ struct EditorCentralPanel<'w, 's> {
             &'static mut OrthographicProjection,
         ),
     >,
-    #[system_param(ignore)]
-    _phantom: PhantomData<(&'w (), &'s ())>,
+    localization: Res<'w, Localization>,
+}
+
+struct MapCreateInfo {
+    name: String,
+    map_width: u32,
+    map_height: u32,
+}
+
+impl Default for MapCreateInfo {
+    fn default() -> Self {
+        Self {
+            name: default(),
+            map_width: 27,
+            map_height: 21,
+        }
+    }
+}
+
+impl MapCreateInfo {
+    fn is_valid(&self) -> bool {
+        !self.name.is_empty() && self.map_width > 10 && self.map_height > 10
+    }
 }
 
 impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
@@ -226,56 +261,255 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
         _args: Self::Args,
     ) {
         let mut params: EditorCentralPanel = state.get_mut(world);
+        let has_map = params.map.get_single().is_ok();
 
-        let response = ui.allocate_response(ui.available_size(), egui::Sense::click_and_drag());
+        map_create_dialog(ui, &mut params);
 
-        let rect = response.rect;
+        if has_map {
+            let response = ui.allocate_response(ui.available_size(), egui::Sense::click_and_drag());
 
-        let (mut camera, mut camera_transform, mut projection): (
-            Mut<Camera>,
-            Mut<Transform>,
-            Mut<OrthographicProjection>,
-        ) = params.camera.single_mut();
+            let rect = response.rect;
 
-        // Handle zoom
-        if response.hovered() {
-            projection.scale -= ui.input().scroll_delta.y * 0.005;
-            projection.scale = projection.scale.max(0.05);
+            let (mut camera, mut camera_transform, mut projection): (
+                Mut<Camera>,
+                Mut<Transform>,
+                Mut<OrthographicProjection>,
+            ) = params.camera.single_mut();
+
+            // Handle zoom
+            if response.hovered() {
+                projection.scale -= ui.input().scroll_delta.y * 0.005;
+                projection.scale = projection.scale.max(0.05);
+            }
+
+            // Handle pan
+            if response.dragged_by(egui::PointerButton::Middle) || ui.input().modifiers.command {
+                let drag_delta =
+                    response.drag_delta() * params.game.ui_theme.scale * projection.scale;
+                camera_transform.translation.x -= drag_delta.x;
+                camera_transform.translation.y += drag_delta.y;
+            }
+
+            // Handle cursor
+            //
+            // We only change the cursor if it's not been changed by another widget, for instance, for the
+            // resize handle of the right sidebar.
+            if ui.output().cursor_icon == default() {
+                if response.dragged_by(egui::PointerButton::Middle)
+                    || (ui.input().modifiers.command
+                        && response.dragged_by(egui::PointerButton::Primary))
+                {
+                    response.on_hover_cursor(egui::CursorIcon::Grabbing);
+                } else if ui.input().modifiers.command {
+                    response.on_hover_cursor(egui::CursorIcon::Grab);
+                } else {
+                    response.on_hover_cursor(egui::CursorIcon::Crosshair);
+                }
+            }
+
+            // Update camera viewport
+            let ppp = ui.ctx().pixels_per_point();
+            camera.viewport = Some(Viewport {
+                physical_position: UVec2::new(
+                    (rect.min.x * ppp) as u32,
+                    (rect.min.y.floor() * ppp) as u32,
+                ),
+                physical_size: UVec2::new(
+                    (rect.width() * ppp) as u32,
+                    (rect.height() * ppp) as u32,
+                ),
+                ..default()
+            });
+        } else {
+            ui.add_space(ui.available_height() / 2.0);
+            ui.vertical_centered(|ui| {
+                if BorderedButton::themed(
+                    &params.game.ui_theme.button_styles.normal,
+                    &params.localization.get("open-map"),
+                )
+                .show(ui)
+                .clicked()
+                {
+                    error!("Unimplemented");
+                }
+
+                ui.add_space(ui.spacing().item_spacing.y);
+
+                if BorderedButton::themed(
+                    &params.game.ui_theme.button_styles.normal,
+                    &params.localization.get("create-map"),
+                )
+                .show(ui)
+                .clicked()
+                {
+                    *params.show_map_create = true;
+                    *params.map_create_info = default();
+                }
+            });
         }
+    }
+}
 
-        // Handle pan
-        if response.dragged_by(egui::PointerButton::Middle) || ui.input().modifiers.command {
-            let drag_delta = response.drag_delta() * params.game.ui_theme.scale * projection.scale;
-            camera_transform.translation.x -= drag_delta.x;
-            camera_transform.translation.y += drag_delta.y;
-        }
+fn map_create_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
+    let space = ui.spacing().icon_width;
 
-        // Handle cursor
-        //
-        // We only change the cursor if it's not been changed by another widget, for instance, for the
-        // resize handle of the right sidebar.
-        if ui.output().cursor_icon == default() {
-            if response.dragged_by(egui::PointerButton::Middle)
-                || (ui.input().modifiers.command
-                    && response.dragged_by(egui::PointerButton::Primary))
-            {
-                response.on_hover_cursor(egui::CursorIcon::Grabbing);
-            } else if ui.input().modifiers.command {
-                response.on_hover_cursor(egui::CursorIcon::Grab);
-            } else {
-                response.on_hover_cursor(egui::CursorIcon::Crosshair);
+    if *params.show_map_create {
+        let is_valid = params.map_create_info.is_valid();
+        themed_overlay_window(
+            ui,
+            "create-map-window",
+            &params.localization.get("create-map"),
+            params.game.main_menu.menu_width,
+            |ui| {
+                ui.vertical(|ui| {
+                    ui.horizontal(|ui| {
+                        ui.label(&params.localization.get("name"));
+                        ui.text_edit_singleline(&mut params.map_create_info.name);
+                    });
+
+                    ui.add_space(space / 2.0);
+
+                    ui.horizontal(|ui| {
+                        ui.label(&params.localization.get("tilemap-size"));
+                        ui.add(egui::DragValue::new(&mut params.map_create_info.map_width));
+                        ui.label("X");
+                        ui.add(egui::DragValue::new(&mut params.map_create_info.map_height));
+                    });
+
+                    ui.add_space(space);
+
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
+                        ui.scope(|ui| {
+                            ui.set_enabled(is_valid);
+
+                            if BorderedButton::themed(
+                                &params.game.ui_theme.button_styles.small,
+                                &params.localization.get("create"),
+                            )
+                            .show(ui)
+                            .clicked()
+                            {
+                                *params.show_map_create = false;
+                                create_map(params);
+                            }
+                        });
+
+                        ui.add_space(space);
+
+                        if BorderedButton::themed(
+                            &params.game.ui_theme.button_styles.small,
+                            &params.localization.get("cancel"),
+                        )
+                        .show(ui)
+                        .clicked()
+                        {
+                            *params.show_map_create = false;
+                        }
+                    });
+                });
+            },
+        );
+    }
+}
+
+fn create_map(params: &mut EditorCentralPanel) {
+    let info = &params.map_create_info;
+    let grid_size = UVec2::new(info.map_width, info.map_height);
+    let tile_size = UVec2::new(10, 10);
+
+    let grid = GeometryBuilder::build_as(
+        &grid::Grid {
+            grid_size,
+            tile_size,
+        },
+        DrawMode::Stroke(StrokeMode::new(Color::ANTIQUE_WHITE, 0.5)),
+        default(),
+    );
+
+    params
+        .commands
+        .spawn()
+        .insert(MapMeta {
+            grid_size,
+            tile_size,
+            ..default()
+        })
+        .insert_bundle(grid);
+}
+
+mod grid {
+    use bevy_prototype_lyon::prelude::tess::{
+        geom::{
+            euclid::{Point2D, Size2D},
+            Rect,
+        },
+        path::traits::PathBuilder,
+    };
+
+    use super::*;
+
+    pub struct Grid {
+        pub grid_size: UVec2,
+        pub tile_size: UVec2,
+    }
+
+    impl Geometry for Grid {
+        fn add_geometry(&self, b: &mut tess::path::path::Builder) {
+            for x in 0..self.grid_size.x {
+                for y in 0..self.grid_size.y {
+                    b.add_rectangle(
+                        &Rect {
+                            origin: Point2D::new(
+                                x as f32 * self.tile_size.x as f32,
+                                y as f32 * self.tile_size.y as f32,
+                            ),
+                            size: Size2D::new(self.tile_size.x as f32, self.tile_size.y as f32),
+                        },
+                        tess::path::Winding::Positive,
+                    );
+                }
             }
         }
+    }
+}
 
-        // Update camera viewport
-        let ppp = ui.ctx().pixels_per_point();
-        camera.viewport = Some(Viewport {
-            physical_position: UVec2::new(
-                (rect.min.x * ppp) as u32,
-                (rect.min.y.floor() * ppp) as u32,
-            ),
-            physical_size: UVec2::new((rect.width() * ppp) as u32, (rect.height() * ppp) as u32),
-            ..default()
-        });
+/// Helper to render an egui frame in the center of the screen as an overlay
+fn themed_overlay_window<R, F: FnOnce(&mut egui::Ui) -> R>(
+    ui: &mut egui::Ui,
+    id: &str,
+    title: &str,
+    width: f32,
+    f: F,
+) -> egui::InnerResponse<R> {
+    let space = ui.spacing().icon_width;
+    let i = egui::Window::new(title)
+        .auto_sized()
+        .id(egui::Id::new(id))
+        .frame(
+            egui::Frame::window(ui.style()).inner_margin(egui::style::Margin::symmetric(
+                space,
+                ui.spacing().window_margin.top,
+            )),
+        )
+        .default_width(width)
+        .collapsible(false)
+        .title_bar(false)
+        .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+        // .frame(egui::Frame::none())
+        .show(ui.ctx(), |ui| {
+            ui.vertical_centered(|ui| {
+                ui.heading(title);
+            });
+            ui.separator();
+            ui.add_space(space);
+            let r = f(ui);
+            ui.add_space(space / 2.0);
+            r
+        })
+        .unwrap();
+
+    egui::InnerResponse {
+        inner: i.inner.unwrap(),
+        response: i.response,
     }
 }

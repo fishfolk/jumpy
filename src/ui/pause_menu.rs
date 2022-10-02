@@ -61,7 +61,7 @@ pub fn pause_menu(
         .show(egui_context.ctx_mut(), |ui| {
             let screen_rect = ui.max_rect();
 
-            let pause_menu_width = 300.0;
+            let pause_menu_width = game.main_menu.menu_width;
             let x_margin = (screen_rect.width() - pause_menu_width) / 2.0;
             let outer_margin = egui::style::Margin::symmetric(x_margin, screen_rect.height() * 0.2);
 

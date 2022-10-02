@@ -2,7 +2,7 @@ use bevy_parallax::{LayerData as ParallaxLayerData, ParallaxResource};
 
 use super::*;
 
-#[derive(HasLoadProgress, TypeUuid, Deserialize, Serialize, Clone, Debug)]
+#[derive(Component, HasLoadProgress, TypeUuid, Deserialize, Serialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
 #[uuid = "8ede98c2-4f17-46f2-bcc5-ae0dc63b2137"]
 pub struct MapMeta {

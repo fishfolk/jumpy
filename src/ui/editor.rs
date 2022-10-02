@@ -223,6 +223,7 @@ impl<'w, 's> WidgetSystem for EditorLeftToolbar<'w, 's> {
 #[derive(SystemParam)]
 struct EditorRightToolbar<'w, 's> {
     localization: Res<'w, Localization>,
+    map: Query<'w, 's, &'static MapMeta>,
     #[system_param(ignore)]
     _phantom: PhantomData<(&'w (), &'s ())>,
 }
@@ -238,6 +239,9 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
         _args: Self::Args,
     ) {
         let params: EditorRightToolbar = state.get_mut(world);
+        let has_map = params.map.get_single().is_ok();
+        ui.set_enabled(has_map);
+
         ui.add_space(ui.spacing().window_margin.top);
         ui.horizontal(|ui| {
             ui.label(&params.localization.get("layers"));

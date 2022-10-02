@@ -11,3 +11,4 @@ open-map = Open Map
 view-zoom = Zoom { $percent }%
 view-offset = Camera Offset [ { $x }, { $y } ]
 view-reset = Reset View
+show-grid = Show Grid

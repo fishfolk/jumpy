@@ -4,7 +4,6 @@ use bevy::{ecs::system::SystemParam, math::Vec3Swizzles, render::camera::Viewpor
 use bevy_egui::*;
 use bevy_fluent::Localization;
 use bevy_prototype_lyon::prelude::*;
-use iyes_loopless::condition::IntoConditionalExclusiveSystem;
 
 use crate::{
     localization::LocalizationExt,
@@ -18,14 +17,35 @@ pub struct EditorPlugin;
 
 impl Plugin for EditorPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(
-            editor_system
-                .run_in_state(GameState::InGame)
+        app.init_resource::<EditorViewSettings>()
+            .add_system(
+                editor_update
+                    .run_in_state(GameState::InGame)
+                    .run_in_state(InGameState::Editing),
+            )
+            .add_system(
+                iyes_loopless::condition::IntoConditionalExclusiveSystem::run_in_state(
+                    editor_ui_system,
+                    GameState::InGame,
+                )
                 .run_in_state(InGameState::Editing)
                 .at_end(),
-        )
-        .add_enter_system(InGameState::Editing, setup_editor)
-        .add_exit_system(InGameState::Editing, cleanup_editor);
+            )
+            .add_enter_system(InGameState::Editing, setup_editor)
+            .add_exit_system(InGameState::Editing, cleanup_editor);
+    }
+}
+/// Marker component for the map grid
+#[derive(Component)]
+struct MapGridView;
+
+struct EditorViewSettings {
+    pub show_grid: bool,
+}
+
+impl Default for EditorViewSettings {
+    fn default() -> Self {
+        Self { show_grid: true }
     }
 }
 
@@ -36,12 +56,29 @@ fn setup_editor(mut camera: Query<(&mut Transform, &mut OrthographicProjection),
     projection.scale = 1.0;
 }
 
-fn cleanup_editor(mut camera: Query<&mut Camera>) {
-    // Reset the camera viewport
-    camera.single_mut().viewport = default();
+fn editor_update(
+    mut map_grid: Query<&mut Visibility, With<MapGridView>>,
+    settings: Res<EditorViewSettings>,
+) {
+    for mut visibility in &mut map_grid {
+        visibility.is_visible = settings.show_grid;
+    }
 }
 
-pub fn editor_system(world: &mut World) {
+fn cleanup_editor(
+    mut camera: Query<&mut Camera>,
+    mut map_grid: Query<&mut Visibility, With<MapGridView>>,
+) {
+    // Reset the camera viewport
+    camera.single_mut().viewport = default();
+
+    // Hide the map grid
+    for mut visibility in &mut map_grid {
+        visibility.is_visible = false;
+    }
+}
+
+pub fn editor_ui_system(world: &mut World) {
     world.resource_scope(|world: &mut World, mut egui_ctx: Mut<EguiContext>| {
         let ctx = egui_ctx.ctx_mut();
 
@@ -76,6 +113,7 @@ struct EditorTopBar<'w, 's> {
     camera: Query<'w, 's, (&'static mut Transform, &'static mut OrthographicProjection)>,
     localization: Res<'w, Localization>,
     map: Query<'w, 's, Entity, With<MapMeta>>,
+    settings: ResMut<'w, EditorViewSettings>,
 }
 
 impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
@@ -120,6 +158,13 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                         .get(&format!("view-zoom?percent={zoom:.0}")),
                 )
                 .small(),
+            );
+
+            ui.add_space(ui.spacing().icon_spacing);
+
+            ui.checkbox(
+                &mut params.settings.show_grid,
+                &params.localization.get("show-grid"),
             );
 
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
@@ -226,6 +271,7 @@ struct EditorCentralPanel<'w, 's> {
         ),
     >,
     localization: Res<'w, Localization>,
+    settings: Res<'w, EditorViewSettings>,
 }
 
 struct MapCreateInfo {
@@ -422,7 +468,7 @@ fn create_map(params: &mut EditorCentralPanel) {
             grid_size,
             tile_size,
         },
-        DrawMode::Stroke(StrokeMode::new(Color::ANTIQUE_WHITE, 0.5)),
+        DrawMode::Stroke(StrokeMode::new(Color::rgba(0.8, 0.8, 0.8, 0.8), 0.25)),
         default(),
     );
 
@@ -434,7 +480,27 @@ fn create_map(params: &mut EditorCentralPanel) {
             tile_size,
             ..default()
         })
-        .insert_bundle(grid);
+        .insert_bundle(VisibilityBundle::default())
+        .insert_bundle(TransformBundle {
+            local: Transform::from_xyz(
+                (grid_size.x * tile_size.x) as f32 / -2.0,
+                (grid_size.y * tile_size.y) as f32 / -2.0,
+                0.0,
+            ),
+            ..default()
+        })
+        .with_children(|parent| {
+            parent
+                .spawn()
+                .insert(MapGridView)
+                .insert_bundle(grid)
+                .insert_bundle(VisibilityBundle {
+                    visibility: Visibility {
+                        is_visible: params.settings.show_grid,
+                    },
+                    ..default()
+                });
+        });
 }
 
 mod grid {

@@ -118,9 +118,11 @@ pub fn editor_ui_system(world: &mut World) {
 #[derive(SystemParam)]
 struct EditorTopBar<'w, 's> {
     commands: Commands<'w, 's>,
+    game: Res<'w, GameMeta>,
     camera: Query<'w, 's, (&'static mut Transform, &'static mut OrthographicProjection)>,
+    show_map_export_window: Local<'s, bool>,
     localization: Res<'w, Localization>,
-    map: Query<'w, 's, Entity, With<MapMeta>>,
+    map: Query<'w, 's, &'static MapMeta>,
     settings: ResMut<'w, EditorState>,
 }
 
@@ -135,6 +137,9 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
         _args: Self::Args,
     ) {
         let mut params: EditorTopBar = state.get_mut(world);
+
+        map_export_window(ui, &mut params);
+
         let (mut transform, mut projection): (Mut<Transform>, Mut<OrthographicProjection>) =
             params.camera.single_mut();
         let zoom = 1.0 / projection.scale * 100.0;
@@ -189,10 +194,58 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                             .commands
                             .insert_resource(NextState(InGameState::Playing));
                     }
+
+                    if ui.button(&params.localization.get("export-map")).clicked() {
+                        *params.show_map_export_window = true;
+                    }
                 });
             });
         });
     }
+}
+
+fn map_export_window(ui: &mut egui::Ui, params: &mut EditorTopBar) {
+    if !*params.show_map_export_window {
+        return;
+    }
+    let map = params.map.single();
+    overlay_window(
+        ui,
+        "export-map-window",
+        &params.localization.get("map-export"),
+        params.game.main_menu.menu_width,
+        |ui| {
+            let mut export = serde_yaml::to_string(map).expect("Failure to export to YAMl");
+
+            ui.vertical(|ui| {
+                ui.set_height(params.game.camera_height as f32 * 0.6 * params.game.ui_theme.scale);
+                egui::ScrollArea::vertical().show(ui, |ui| {
+                    ui.add(
+                        egui::TextEdit::multiline(&mut export)
+                            .font(egui::TextStyle::Monospace) // for cursor height
+                            .code_editor()
+                            .desired_width(ui.available_width())
+                            .lock_focus(true),
+                    );
+                });
+
+                ui.add_space(ui.spacing().icon_width);
+
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    if BorderedButton::themed(
+                        &params.game.ui_theme.button_styles.small,
+                        &params.localization.get("close"),
+                    )
+                    .focus_on_hover(false)
+                    .show(ui)
+                    .clicked()
+                    {
+                        *params.show_map_export_window = false;
+                    }
+                });
+            });
+        },
+    );
 }
 
 #[derive(SystemParam)]
@@ -244,7 +297,6 @@ impl Default for LayerCreateInfo {
 
 #[derive(SystemParam)]
 struct EditorRightToolbar<'w, 's> {
-    asset_server: Res<'w, AssetServer>,
     commands: Commands<'w, 's>,
     show_layer_create: Local<'s, bool>,
     layer_create_info: Local<'s, LayerCreateInfo>,
@@ -427,8 +479,7 @@ fn layer_create_dialog(ui: &mut egui::Ui, params: &mut EditorRightToolbar) {
         return;
     }
 
-    let is_valid = matches!(params.layer_create_info.kind, MapLayerKindMeta::Tiles(_))
-        && params.map.get_single().is_ok();
+    let is_valid = params.map.get_single().is_ok();
     overlay_window(
         ui,
         "create-map-window",
@@ -468,40 +519,6 @@ fn layer_create_dialog(ui: &mut egui::Ui, params: &mut EditorRightToolbar) {
                         }
                     }
                 });
-                ui.separator();
-
-                ui.add_space(space);
-
-                match &mut params.layer_create_info.kind {
-                    MapLayerKindMeta::Tiles(tiles) => {
-                        let row_height = ui.spacing().interact_size.y;
-                        let table = egui_extras::TableBuilder::new(ui)
-                            .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
-                            .column(egui_extras::Size::relative(0.25))
-                            .column(egui_extras::Size::remainder())
-                            .resizable(false);
-
-                        table.body(|mut body| {
-                            body.row(row_height, |mut row| {
-                                row.col(|ui| {
-                                    ui.label(&format!(
-                                        "{}: ",
-                                        params.localization.get("tilemap-path")
-                                    ));
-                                });
-                                row.col(|ui| {
-                                    ui.text_edit_singleline(&mut tiles.tilemap);
-                                });
-                            });
-                        });
-                    }
-                    MapLayerKindMeta::Decorations(_) => {
-                        ui.label("TODO");
-                    }
-                    MapLayerKindMeta::Entities(_) => {
-                        ui.label("TODO");
-                    }
-                }
 
                 ui.add_space(space);
 
@@ -556,7 +573,7 @@ fn create_layer(params: &mut EditorRightToolbar) {
     });
 
     match &layer_info.kind {
-        MapLayerKindMeta::Tiles(tiles) => {
+        MapLayerKindMeta::Tiles(_) => {
             let grid_size = TilemapSize {
                 x: map.grid_size.x,
                 y: map.grid_size.y,
@@ -578,15 +595,14 @@ fn create_layer(params: &mut EditorRightToolbar) {
                 .entity(layer_entity)
                 .insert_bundle(TilemapBundle {
                     size: grid_size,
-                    texture: TilemapTexture(params.asset_server.load(&tiles.tilemap)),
                     storage,
                     tile_size,
                     transform: Transform::from_xyz(0.0, 0.0, layer_idx as f32),
                     ..default()
                 });
         }
-        MapLayerKindMeta::Decorations(_) => todo!(),
-        MapLayerKindMeta::Entities(_) => todo!(),
+        MapLayerKindMeta::Decorations(_) => (),
+        MapLayerKindMeta::Entities(_) => (),
     }
 
     *params.layer_create_info = default();
@@ -906,16 +922,18 @@ fn overlay_window<R, F: FnOnce(&mut egui::Ui) -> R>(
         .collapsible(false)
         .title_bar(false)
         .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
-        // .frame(egui::Frame::none())
         .show(ui.ctx(), |ui| {
-            ui.vertical_centered(|ui| {
-                ui.heading(title);
-            });
-            ui.separator();
-            ui.add_space(space);
-            let r = f(ui);
-            ui.add_space(space / 2.0);
-            r
+            ui.vertical(|ui| {
+                ui.vertical_centered(|ui| {
+                    ui.heading(title);
+                });
+                ui.separator();
+                ui.add_space(space);
+                let r = f(ui);
+                ui.add_space(space / 2.0);
+                r
+            })
+            .inner
         })
         .unwrap();
 

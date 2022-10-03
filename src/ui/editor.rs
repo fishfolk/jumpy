@@ -427,7 +427,7 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                                         ui.label(&params.localization.get("tile-layer-icon"))
                                             .on_hover_text(&params.localization.get("tile-layer"));
                                     }
-                                    MapLayerKind::Entity(_) => {
+                                    MapLayerKind::Element(_) => {
                                         ui.label(&params.localization.get("entity-layer-icon"))
                                             .on_hover_text(
                                                 &params.localization.get("entity-layer"),
@@ -498,7 +498,7 @@ fn layer_create_dialog(ui: &mut egui::Ui, params: &mut EditorRightToolbar) {
                         ),
                         (
                             params.localization.get("entity"),
-                            MapLayerKind::Entity(default()),
+                            MapLayerKind::Element(default()),
                         ),
                     ] {
                         let selected = discriminant(&params.layer_create_info.kind)
@@ -591,7 +591,7 @@ fn create_layer(params: &mut EditorRightToolbar) {
                     ..default()
                 });
         }
-        MapLayerKind::Entity(_) => (),
+        MapLayerKind::Element(_) => (),
     }
 
     *params.layer_create_info = default();
@@ -808,7 +808,7 @@ fn open_map(params: &mut EditorCentralPanel, handle: Handle<MapMeta>) {
             grid_size: map.grid_size,
             tile_size: map.tile_size,
         },
-        DrawMode::Stroke(StrokeMode::new(Color::rgba(0.8, 0.8, 0.8, 0.8), 0.25)),
+        DrawMode::Stroke(StrokeMode::new(Color::rgba(0.8, 0.8, 0.8, 0.25), 0.5)),
         default(),
     );
 
@@ -888,7 +888,7 @@ fn open_map(params: &mut EditorCentralPanel, handle: Handle<MapMeta>) {
                         ..default()
                     });
             }
-            MapLayerKind::Entity(_) => (),
+            MapLayerKind::Element(_) => (),
         }
     }
 

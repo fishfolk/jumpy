@@ -961,42 +961,52 @@
     {
       "id": "decorations",
       "kind": {
-        "entity": {
-          "entities": [
+        "element": {
+          "elements": [
             {
               "pos": [
                 320,
                 461
               ],
-              "item": "./items/anemones.item.yaml"
+              "name": "anemones",
+              "element": "./elements/anemones.item.yaml",
+              "category": "decoration"
             },
             {
               "pos": [
                 128,
                 301
               ],
-              "item": "./items/seaweed.item.yaml"
+              "name": "seaweed",
+              "element": "./elements/seaweed.item.yaml",
+              "category": "decoration"
             },
             {
               "pos": [
                 736,
                 301
               ],
-              "item": "./items/anemones.item.yaml"
+              "name": "anemones",
+              "element": "./elements/anemones.item.yaml",
+              "category": "decoration"
             },
             {
               "pos": [
                 352,
                 365
               ],
-              "item": "./items/seaweed.item.yaml"
+              "name": "seaweed",
+              "element": "./elements/seaweed.item.yaml",
+              "category": "decoration"
             },
             {
               "pos": [
                 640,
                 461
               ],
-              "item": "./items/seaweed.item.yaml"
+              "name": "seaweed",
+              "element": "./elements/seaweed.item.yaml",
+              "category": "decoration"
             }
           ]
         }
@@ -1005,98 +1015,124 @@
     {
       "id": "items",
       "kind": {
-        "entity": {
-          "entities": [
+        "element": {
+          "elements": [
             {
               "pos": [
                 706.4,
                 313.525
               ],
-              "item": "./items/grenades.item.yaml"
+              "name": "grenades",
+              "element": "./elements/grenades.item.yaml",
+              "category": "item"
             },
             {
               "pos": [
                 68.5,
                 301
               ],
-              "item": "./items/kick_bomb.item.yaml"
+              "name": "kick_bomb",
+              "element": "./elements/kick_bomb.item.yaml",
+              "category": "item"
             },
             {
               "pos": [
                 437.15137,
                 454.3866
               ],
-              "item": "./items/crab.item.yaml"
+              "name": "crab",
+              "element": "./elements/crab.item.yaml",
+              "category": "environment"
             },
             {
               "pos": [
                 426.4284,
                 305.14282
               ],
-              "item": "./items/crab.item.yaml"
+              "name": "crab",
+              "element": "./elements/crab.item.yaml",
+              "category": "environment"
             },
             {
               "pos": [
                 767.923,
                 323.23077
               ],
-              "item": "./items/crab.item.yaml"
+              "name": "crab",
+              "element": "./elements/crab.item.yaml",
+              "category": "environment"
             },
             {
               "pos": [
                 632.07684,
                 437.76926
               ],
-              "item": "./items/fish_school.item.yaml"
+              "name": "fish_school",
+              "element": "./elements/fish_school.item.yaml",
+              "category": "environment"
             },
             {
               "pos": [
                 124.46149,
                 282.15387
               ],
-              "item": "./items/fish_school.item.yaml"
+              "name": "fish_school",
+              "element": "./elements/fish_school.item.yaml",
+              "category": "environment"
             },
             {
               "pos": [
                 690.7143,
                 323.14285
               ],
-              "item": "./items/sword.item.yaml"
+              "name": "sword",
+              "element": "./elements/sword.item.yaml",
+              "category": "item"
             },
             {
               "pos": [
                 239.88235,
                 252.94118
               ],
-              "item": "./items/mines.item.yaml"
+              "name": "mines",
+              "element": "./elements/mines.item.yaml",
+              "category": "item"
             },
             {
               "pos": [
                 73.71431,
                 326
               ],
-              "item": "./items/sword.item.yaml"
+              "name": "sword",
+              "element": "./elements/sword.item.yaml",
+              "category": "item"
             },
             {
               "pos": [
                 410.4353,
                 484.04706
               ],
-              "item": "./items/blunderbass.item.yaml"
+              "name": "blunderbass",
+              "element": "./elements/blunderbass.item.yaml",
+              "category": "item"
             },
             {
               "pos": [
                 592.2353,
                 252.94118
               ],
-              "item": "./items/mines.item.yaml"
+              "name": "mines",
+              "element": "./elements/mines.item.yaml",
+              "category": "item"
             },
             {
               "pos": [
                 407.52942,
                 287.05884
               ],
-              "item": "./items/musket.item.yaml"
+              "name": "musket",
+              "element": "./elements/musket.item.yaml",
+              "category": "item"
             }
           ]
         }

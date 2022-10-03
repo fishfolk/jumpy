@@ -6,7 +6,6 @@ use bevy::{reflect::TypeUuid, utils::HashMap};
 use bevy_has_load_progress::HasLoadProgress;
 use bevy_mod_js_scripting::JsScript;
 
-mod item;
 mod localization;
 mod map;
 mod player;

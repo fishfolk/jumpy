@@ -118,12 +118,14 @@ for (const map of inMaps) {
         });
       }
     } else if (layer.objects && layer.objects.length > 0) {
-      newLayer.kind = { entity: { entities: [] } };
+      newLayer.kind = { element: { elements: [] } };
       for (const object of layer.objects) {
-        const entity = {} as any;
-        entity.pos = [object.position.x, object.position.y];
-        entity.item = `./items/${object.id}.item.yaml`;
-        newLayer.kind.entity.entities.push(entity);
+        const element = {} as any;
+        element.pos = [object.position.x, object.position.y];
+        element.name = object.id;
+        element.element = `./elements/${object.id}.item.yaml`;
+        element.category = object.kind;
+        newLayer.kind.element.elements.push(element);
       }
     } else {
       continue;

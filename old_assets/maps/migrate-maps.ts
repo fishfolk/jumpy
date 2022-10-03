@@ -107,7 +107,7 @@ for (const map of inMaps) {
 
         newLayer.kind.tile.tiles.push({
           pos: [posX, posY],
-          idx: tile,
+          idx: tile - 1,
         });
       }
     } else if (layer.objects && layer.objects.length > 0) {

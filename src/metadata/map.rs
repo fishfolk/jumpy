@@ -35,7 +35,7 @@ impl MapMeta {
 #[serde(deny_unknown_fields)]
 pub struct MapLayerMeta {
     pub id: String,
-    pub kind: MapLayerKindMeta,
+    pub kind: MapLayerKind,
     #[serde(skip)]
     pub entity: Option<Entity>,
 }
@@ -43,7 +43,7 @@ pub struct MapLayerMeta {
 #[derive(Deserialize, Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "snake_case")]
-pub enum MapLayerKindMeta {
+pub enum MapLayerKind {
     Tile(MapLayerKindTile),
     Entity(MapLayerKindEntity),
 }
@@ -73,7 +73,7 @@ pub struct MapEntity {
     pub item_handle: Handle<ItemMeta>,
 }
 
-impl HasLoadProgress for MapLayerKindMeta {
+impl HasLoadProgress for MapLayerKind {
     fn load_progress(
         &self,
         _loading_resources: &bevy_has_load_progress::LoadingResources,
@@ -86,8 +86,8 @@ impl HasLoadProgress for MapLayerKindMeta {
 #[derive(HasLoadProgress, Deserialize, Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct MapTileMeta {
-    pos: UVec2,
-    idx: u32,
+    pub pos: UVec2,
+    pub idx: u32,
 }
 
 #[derive(HasLoadProgress, Deserialize, Serialize, Clone, Debug)]

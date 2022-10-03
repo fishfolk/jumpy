@@ -7,6 +7,7 @@ settings = Settings
 paused = Paused
 
 # Actions
+close = Close
 save = Save
 reset = Reset
 cancel = Cancel

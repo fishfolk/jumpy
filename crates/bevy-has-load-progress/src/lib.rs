@@ -11,7 +11,7 @@ use bevy::{
     asset::{Asset, LoadState},
     ecs::system::SystemParam,
     math::{UVec2, Vec2, Vec3},
-    prelude::{AssetServer, Handle, Res},
+    prelude::{AssetServer, Entity, Handle, Res},
     utils::HashMap,
 };
 
@@ -92,7 +92,7 @@ macro_rules! impl_default_load_progress {
         )*
     };
 }
-impl_default_load_progress!(String, f32, usize, u32, Vec2, Vec3, UVec2, bool);
+impl_default_load_progress!(String, f32, usize, u32, Vec2, Vec3, UVec2, bool, Entity);
 
 #[cfg(feature = "bevy_egui")]
 impl_default_load_progress!(bevy_egui::egui::TextureId);

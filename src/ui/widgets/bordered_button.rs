@@ -15,6 +15,7 @@ pub struct BorderedButton<'a> {
     wrap: Option<bool>,
     sense: Sense,
     min_size: Vec2,
+    focus_on_hover: bool,
     default_border: Option<&'a BorderImageMeta>,
     on_focus_border: Option<&'a BorderImageMeta>,
     on_click_border: Option<&'a BorderImageMeta>,
@@ -30,6 +31,7 @@ impl<'a> BorderedButton<'a> {
             text: text.into(),
             sense: Sense::click(),
             min_size: Vec2::ZERO,
+            focus_on_hover: true,
             wrap: None,
             default_border: None,
             on_focus_border: None,
@@ -54,6 +56,12 @@ impl<'a> BorderedButton<'a> {
         .on_click_border(button_theme.borders.clicked.as_ref())
         .on_focus_border(button_theme.borders.focused.as_ref())
         .padding(button_theme.padding.into())
+    }
+
+    /// Set whether or not the button focuses itself automatically when it is hovered over.
+    pub fn focus_on_hover(mut self, focus_on_hover: bool) -> Self {
+        self.focus_on_hover = focus_on_hover;
+        self
     }
 
     /// If `true`, the text will wrap to stay within the max width of the [`Ui`].
@@ -135,6 +143,7 @@ impl<'a> Widget for BorderedButton<'a> {
             text,
             sense,
             min_size,
+            focus_on_hover,
             wrap,
             default_border,
             on_focus_border,
@@ -155,7 +164,10 @@ impl<'a> Widget for BorderedButton<'a> {
         response.widget_info(|| WidgetInfo::labeled(WidgetType::Button, text.text()));
 
         // Focus the button automatically when it is hovered and the mouse is moving
-        if response.hovered() && ui.ctx().input().pointer.velocity().length_sq() > 0.0 {
+        if response.hovered()
+            && ui.ctx().input().pointer.velocity().length_sq() > 0.0
+            && focus_on_hover
+        {
             response.request_focus();
         }
 
@@ -175,7 +187,7 @@ impl<'a> Widget for BorderedButton<'a> {
 
             let border = if response.is_pointer_button_down_on() {
                 on_click_border.or(default_border)
-            } else if response.has_focus() {
+            } else if response.has_focus() || response.hovered() {
                 on_focus_border.or(default_border)
             } else {
                 default_border

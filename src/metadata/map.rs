@@ -6,6 +6,7 @@ use super::*;
 #[serde(deny_unknown_fields)]
 #[uuid = "8ede98c2-4f17-46f2-bcc5-ae0dc63b2137"]
 pub struct MapMeta {
+    pub name: String,
     /// The parallax background layers
     #[serde(default)]
     pub background_layers: Vec<ParallaxLayerMeta>,
@@ -35,23 +36,44 @@ impl MapMeta {
 pub struct MapLayerMeta {
     pub name: String,
     pub kind: MapLayerKindMeta,
+    #[serde(skip)]
+    pub entity: Option<Entity>,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 pub enum MapLayerKindMeta {
-    Tiles {
-        tilemap: String,
-        #[serde(skip)]
-        tilemap_handle: Handle<Image>,
-        tiles: Vec<MapTileMeta>,
-    },
-    Decorations {
-        decorations: Vec<MapDecorationMeta>,
-    },
+    Tiles(MapLayerKindTiles),
+    Decorations(MapLayerKindDecorations),
+    Entities(MapLayerKindEntities),
 }
 
-impl HasLoadProgress for MapLayerKindMeta {}
+#[derive(Deserialize, Serialize, Clone, Debug, Default)]
+#[serde(deny_unknown_fields)]
+pub struct MapLayerKindTiles {
+    pub tilemap: String,
+    #[serde(skip)]
+    pub tilemap_handle: Handle<Image>,
+    pub tiles: Vec<MapTileMeta>,
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug, Default)]
+#[serde(deny_unknown_fields)]
+pub struct MapLayerKindDecorations {}
+
+#[derive(Deserialize, Serialize, Clone, Debug, Default)]
+#[serde(deny_unknown_fields)]
+pub struct MapLayerKindEntities {}
+
+impl HasLoadProgress for MapLayerKindMeta {
+    fn load_progress(
+        &self,
+        _loading_resources: &bevy_has_load_progress::LoadingResources,
+    ) -> bevy_has_load_progress::LoadProgress {
+        warn!("TODO: Implement load progress for MapLayerKindMeta");
+        bevy_has_load_progress::LoadProgress::default()
+    }
+}
 
 #[derive(HasLoadProgress, Deserialize, Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]

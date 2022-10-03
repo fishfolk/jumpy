@@ -10,7 +10,19 @@ players:
   - players/sharky/sharky.player.yaml
 
 maps:
-  - maps/level1.map.yaml
+  - maps/lev01.map.json
+  - maps/lev02.map.json
+  - maps/lev03.map.json
+  - maps/lev04.map.json
+  - maps/lev05.map.json
+  - maps/lev06.map.json
+  - maps/lev07.map.json
+  - maps/zyrafa01.map.json
+  - maps/zyrafa02.map.json
+  - maps/zyrafa03.map.json
+  - maps/zyrafa04.map.json
+  - maps/zyrafa05.map.json
+  - maps/zyrafa06.map.json
 
 scripts:
   - ui/menu-background-zoom.ts

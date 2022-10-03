@@ -1,10 +1,14 @@
-use std::path::{Path, PathBuf};
+use std::{
+    ffi::OsStr,
+    path::{Path, PathBuf},
+};
 
 use bevy::{
     asset::{Asset, AssetLoader, AssetPath, LoadedAsset},
     reflect::TypeUuid,
 };
 use bevy_egui::egui;
+use bevy_mod_js_scripting::serde_json;
 
 use crate::{
     metadata::{BorderImageMeta, GameMeta, MapMeta, PlayerMeta},
@@ -65,7 +69,11 @@ impl AssetLoader for GameMetaLoader {
     ) -> bevy::utils::BoxedFuture<'a, Result<(), anyhow::Error>> {
         Box::pin(async move {
             let self_path = load_context.path();
-            let mut meta: GameMeta = serde_yaml::from_slice(bytes)?;
+            let mut meta: GameMeta = if self_path.extension() == Some(OsStr::new("json")) {
+                serde_json::from_slice(bytes)?
+            } else {
+                serde_yaml::from_slice(bytes)?
+            };
             trace!(path=?self_path, ?meta, "Loaded game asset");
 
             // Detect the system locale
@@ -182,9 +190,13 @@ impl AssetLoader for PlayerMetaLoader {
         load_context: &'a mut bevy::asset::LoadContext,
     ) -> bevy::utils::BoxedFuture<'a, Result<(), anyhow::Error>> {
         Box::pin(async move {
-            let path = load_context.path();
-            let mut meta: PlayerMeta = serde_yaml::from_reader(bytes)?;
-            trace!(?path, ?meta, "Loaded player asset");
+            let self_path = load_context.path();
+            let mut meta: PlayerMeta = if self_path.extension() == Some(OsStr::new("json")) {
+                serde_json::from_slice(bytes)?
+            } else {
+                serde_yaml::from_slice(bytes)?
+            };
+            trace!(?self_path, ?meta, "Loaded player asset");
 
             let (atlas_path, atlas_handle) =
                 get_relative_asset(load_context, load_context.path(), &meta.spritesheet.image);
@@ -221,9 +233,13 @@ impl AssetLoader for MapMetaLoader {
         load_context: &'a mut bevy::asset::LoadContext,
     ) -> bevy::utils::BoxedFuture<'a, Result<(), anyhow::Error>> {
         Box::pin(async move {
-            let path = load_context.path();
-            let meta: MapMeta = serde_yaml::from_reader(bytes)?;
-            trace!(?path, ?meta, "Loaded map asset");
+            let self_path = load_context.path();
+            let meta: MapMeta = if self_path.extension() == Some(OsStr::new("json")) {
+                serde_json::from_slice(bytes)?
+            } else {
+                serde_yaml::from_slice(bytes)?
+            };
+            trace!(?self_path, ?meta, "Loaded map asset");
 
             load_context.set_default_asset(LoadedAsset::new(meta));
 

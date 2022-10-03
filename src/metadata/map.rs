@@ -1,6 +1,6 @@
 use bevy_parallax::{LayerData as ParallaxLayerData, ParallaxResource};
 
-use super::*;
+use super::{item::ItemMeta, *};
 
 #[derive(Component, HasLoadProgress, TypeUuid, Deserialize, Serialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
@@ -34,7 +34,7 @@ impl MapMeta {
 #[derive(HasLoadProgress, Deserialize, Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct MapLayerMeta {
-    pub name: String,
+    pub id: String,
     pub kind: MapLayerKindMeta,
     #[serde(skip)]
     pub entity: Option<Entity>,
@@ -42,28 +42,36 @@ pub struct MapLayerMeta {
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[serde(rename_all = "snake_case")]
 pub enum MapLayerKindMeta {
-    Tiles(MapLayerKindTiles),
-    Decorations(MapLayerKindDecorations),
-    Entities(MapLayerKindEntities),
+    Tile(MapLayerKindTile),
+    Entity(MapLayerKindEntity),
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
-pub struct MapLayerKindTiles {
+pub struct MapLayerKindTile {
     pub tilemap: String,
     #[serde(skip)]
     pub tilemap_handle: Handle<Image>,
+    pub has_collision: bool,
     pub tiles: Vec<MapTileMeta>,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
-pub struct MapLayerKindDecorations {}
+pub struct MapLayerKindEntity {
+    entities: Vec<MapEntity>,
+}
 
 #[derive(Deserialize, Serialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
-pub struct MapLayerKindEntities {}
+pub struct MapEntity {
+    pub pos: Vec2,
+    pub item: String,
+    #[serde(skip)]
+    pub item_handle: Handle<ItemMeta>,
+}
 
 impl HasLoadProgress for MapLayerKindMeta {
     fn load_progress(
@@ -80,15 +88,6 @@ impl HasLoadProgress for MapLayerKindMeta {
 pub struct MapTileMeta {
     pos: UVec2,
     idx: u32,
-}
-
-#[derive(HasLoadProgress, Deserialize, Serialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
-pub struct MapDecorationMeta {
-    pos: UVec2,
-    image: String,
-    #[serde(skip)]
-    image_handle: Handle<Image>,
 }
 
 #[derive(HasLoadProgress, Deserialize, Serialize, Clone, Debug)]

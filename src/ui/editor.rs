@@ -290,7 +290,7 @@ impl Default for LayerCreateInfo {
     fn default() -> Self {
         Self {
             name: Default::default(),
-            kind: MapLayerKindMeta::Tiles(default()),
+            kind: MapLayerKindMeta::Tile(default()),
         }
     }
 }
@@ -423,17 +423,11 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                             ui.vertical_centered(|ui| {
                                 ui.add_space(ui.spacing().interact_size.y * 0.2);
                                 match layer.kind {
-                                    MapLayerKindMeta::Tiles(_) => {
+                                    MapLayerKindMeta::Tile(_) => {
                                         ui.label(&params.localization.get("tile-layer-icon"))
                                             .on_hover_text(&params.localization.get("tile-layer"));
                                     }
-                                    MapLayerKindMeta::Decorations(_) => {
-                                        ui.label(&params.localization.get("decoration-layer-icon"))
-                                            .on_hover_text(
-                                                &params.localization.get("decoration-layer"),
-                                            );
-                                    }
-                                    MapLayerKindMeta::Entities(_) => {
+                                    MapLayerKindMeta::Entity(_) => {
                                         ui.label(&params.localization.get("entity-layer-icon"))
                                             .on_hover_text(
                                                 &params.localization.get("entity-layer"),
@@ -446,7 +440,7 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                         ui.vertical(|ui| {
                             ui.set_width(width * 0.8);
                             ui.add_space(ui.spacing().interact_size.y * 0.2);
-                            ui.label(&layer.name);
+                            ui.label(&layer.id);
                         });
 
                         ui.vertical_centered(|ui| {
@@ -500,15 +494,11 @@ fn layer_create_dialog(ui: &mut egui::Ui, params: &mut EditorRightToolbar) {
                     for (label, layer_kind) in [
                         (
                             params.localization.get("tile"),
-                            MapLayerKindMeta::Tiles(default()),
-                        ),
-                        (
-                            params.localization.get("decoration"),
-                            MapLayerKindMeta::Decorations(default()),
+                            MapLayerKindMeta::Tile(default()),
                         ),
                         (
                             params.localization.get("entity"),
-                            MapLayerKindMeta::Entities(default()),
+                            MapLayerKindMeta::Entity(default()),
                         ),
                     ] {
                         let selected = discriminant(&params.layer_create_info.kind)
@@ -567,13 +557,13 @@ fn create_layer(params: &mut EditorRightToolbar) {
     let layer_idx = map.layers.len();
     let layer_entity = params.commands.spawn().id();
     map.layers.push(MapLayerMeta {
-        name: layer_info.name.clone(),
+        id: layer_info.name.clone(),
         kind: layer_info.kind.clone(),
         entity: Some(layer_entity),
     });
 
     match &layer_info.kind {
-        MapLayerKindMeta::Tiles(_) => {
+        MapLayerKindMeta::Tile(_) => {
             let grid_size = TilemapSize {
                 x: map.grid_size.x,
                 y: map.grid_size.y,
@@ -601,8 +591,7 @@ fn create_layer(params: &mut EditorRightToolbar) {
                     ..default()
                 });
         }
-        MapLayerKindMeta::Decorations(_) => (),
-        MapLayerKindMeta::Entities(_) => (),
+        MapLayerKindMeta::Entity(_) => (),
     }
 
     *params.layer_create_info = default();

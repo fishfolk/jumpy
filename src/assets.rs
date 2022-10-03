@@ -11,7 +11,7 @@ use bevy_egui::egui;
 use bevy_mod_js_scripting::serde_json;
 
 use crate::{
-    metadata::{BorderImageMeta, GameMeta, MapMeta, PlayerMeta},
+    metadata::{BorderImageMeta, GameMeta, MapLayerKind, MapMeta, PlayerMeta},
     prelude::*,
 };
 
@@ -234,14 +234,26 @@ impl AssetLoader for MapMetaLoader {
     ) -> bevy::utils::BoxedFuture<'a, Result<(), anyhow::Error>> {
         Box::pin(async move {
             let self_path = load_context.path();
-            let meta: MapMeta = if self_path.extension() == Some(OsStr::new("json")) {
+            let mut meta: MapMeta = if self_path.extension() == Some(OsStr::new("json")) {
                 serde_json::from_slice(bytes)?
             } else {
                 serde_yaml::from_slice(bytes)?
             };
             trace!(?self_path, ?meta, "Loaded map asset");
 
-            load_context.set_default_asset(LoadedAsset::new(meta));
+            let mut dependencies = Vec::new();
+
+            // Load tile layer tilemaps
+            for layer in &mut meta.layers {
+                if let MapLayerKind::Tile(tile_layer) = &mut layer.kind {
+                    let (path, handle) =
+                        get_relative_asset(load_context, self_path, &tile_layer.tilemap);
+                    tile_layer.tilemap_handle = handle;
+                    dependencies.push(path);
+                }
+            }
+
+            load_context.set_default_asset(LoadedAsset::new(meta).with_dependencies(dependencies));
 
             Ok(())
         })

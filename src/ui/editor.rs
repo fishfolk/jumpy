@@ -9,7 +9,7 @@ use bevy_prototype_lyon::prelude::*;
 
 use crate::{
     localization::LocalizationExt,
-    metadata::{GameMeta, MapLayerKindMeta, MapLayerMeta, MapMeta},
+    metadata::{GameMeta, MapLayerKind, MapLayerMeta, MapMeta},
     prelude::*,
 };
 
@@ -283,14 +283,14 @@ impl<'w, 's> WidgetSystem for EditorLeftToolbar<'w, 's> {
 
 struct LayerCreateInfo {
     name: String,
-    kind: MapLayerKindMeta,
+    kind: MapLayerKind,
 }
 
 impl Default for LayerCreateInfo {
     fn default() -> Self {
         Self {
             name: Default::default(),
-            kind: MapLayerKindMeta::Tile(default()),
+            kind: MapLayerKind::Tile(default()),
         }
     }
 }
@@ -423,11 +423,11 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                             ui.vertical_centered(|ui| {
                                 ui.add_space(ui.spacing().interact_size.y * 0.2);
                                 match layer.kind {
-                                    MapLayerKindMeta::Tile(_) => {
+                                    MapLayerKind::Tile(_) => {
                                         ui.label(&params.localization.get("tile-layer-icon"))
                                             .on_hover_text(&params.localization.get("tile-layer"));
                                     }
-                                    MapLayerKindMeta::Entity(_) => {
+                                    MapLayerKind::Entity(_) => {
                                         ui.label(&params.localization.get("entity-layer-icon"))
                                             .on_hover_text(
                                                 &params.localization.get("entity-layer"),
@@ -494,11 +494,11 @@ fn layer_create_dialog(ui: &mut egui::Ui, params: &mut EditorRightToolbar) {
                     for (label, layer_kind) in [
                         (
                             params.localization.get("tile"),
-                            MapLayerKindMeta::Tile(default()),
+                            MapLayerKind::Tile(default()),
                         ),
                         (
                             params.localization.get("entity"),
-                            MapLayerKindMeta::Entity(default()),
+                            MapLayerKind::Entity(default()),
                         ),
                     ] {
                         let selected = discriminant(&params.layer_create_info.kind)
@@ -563,7 +563,7 @@ fn create_layer(params: &mut EditorRightToolbar) {
     });
 
     match &layer_info.kind {
-        MapLayerKindMeta::Tile(_) => {
+        MapLayerKind::Tile(_) => {
             let grid_size = TilemapSize {
                 x: map.grid_size.x,
                 y: map.grid_size.y,
@@ -591,7 +591,7 @@ fn create_layer(params: &mut EditorRightToolbar) {
                     ..default()
                 });
         }
-        MapLayerKindMeta::Entity(_) => (),
+        MapLayerKind::Entity(_) => (),
     }
 
     *params.layer_create_info = default();
@@ -601,6 +601,8 @@ fn create_layer(params: &mut EditorRightToolbar) {
 struct EditorCentralPanel<'w, 's> {
     commands: Commands<'w, 's>,
     show_map_create: Local<'s, bool>,
+    show_map_open: Local<'s, bool>,
+    map_assets: ResMut<'w, Assets<MapMeta>>,
     map_create_info: Local<'s, MapCreateInfo>,
     game: Res<'w, GameMeta>,
     map: Query<'w, 's, Entity, With<MapMeta>>,
@@ -652,7 +654,12 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
         let mut params: EditorCentralPanel = state.get_mut(world);
         let has_map = params.map.get_single().is_ok();
 
+        map_open_dialog(ui, &mut params);
         map_create_dialog(ui, &mut params);
+
+        if *params.show_map_create || *params.show_map_open {
+            ui.set_enabled(false);
+        }
 
         if has_map {
             let response = ui.allocate_response(ui.available_size(), egui::Sense::click_and_drag());
@@ -719,7 +726,7 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
                 .show(ui)
                 .clicked()
                 {
-                    error!("Unimplemented");
+                    *params.show_map_open = true;
                 }
 
                 ui.add_space(ui.spacing().item_spacing.y);
@@ -739,6 +746,166 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
     }
 }
 
+fn map_open_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
+    let space = ui.spacing().icon_width;
+
+    if !*params.show_map_open {
+        return;
+    }
+
+    overlay_window(
+        ui,
+        "open-map-window",
+        &params.localization.get("open-map"),
+        params.game.main_menu.menu_width,
+        |ui| {
+            ui.set_height(params.game.camera_height as f32 * 0.6);
+            ui.vertical_centered_justified(|ui| {
+                ui.add_space(space * 2.5);
+                egui::ScrollArea::vertical().show(ui, |ui| {
+                    #[allow(clippy::unnecessary_to_owned)]
+                    // False alarm, necessary to avoid borrowing params
+                    for (map, handle) in params.game.maps.to_vec().into_iter().zip(
+                        params
+                            .game
+                            .map_handles
+                            .iter()
+                            .map(|x| x.clone_weak())
+                            .collect::<Vec<_>>()
+                            .into_iter(),
+                    ) {
+                        if ui.button(map).clicked() {
+                            open_map(params, handle);
+                        }
+                    }
+                });
+            });
+
+            ui.add_space(space);
+
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
+                if BorderedButton::themed(
+                    &params.game.ui_theme.button_styles.small,
+                    &params.localization.get("cancel"),
+                )
+                .focus_on_hover(false)
+                .show(ui)
+                .clicked()
+                {
+                    *params.show_map_open = false;
+                }
+            });
+        },
+    );
+}
+
+fn open_map(params: &mut EditorCentralPanel, handle: Handle<MapMeta>) {
+    use bevy_ecs_tilemap::prelude::*;
+    let map = params.map_assets.get(&handle).unwrap();
+
+    let grid = GeometryBuilder::build_as(
+        &grid::Grid {
+            grid_size: map.grid_size,
+            tile_size: map.tile_size,
+        },
+        DrawMode::Stroke(StrokeMode::new(Color::rgba(0.8, 0.8, 0.8, 0.8), 0.25)),
+        default(),
+    );
+
+    let tilemap_size = TilemapSize {
+        x: map.grid_size.x,
+        y: map.grid_size.y,
+    };
+
+    let map_entity = params
+        .commands
+        .spawn()
+        .insert(map.clone())
+        .insert_bundle(VisibilityBundle::default())
+        .insert_bundle(TransformBundle::default())
+        .id();
+    let mut children = Vec::new();
+
+    // Spawn the grid
+    let grid_entity = params
+        .commands
+        .spawn()
+        .insert(MapGridView)
+        .insert_bundle(grid)
+        .insert_bundle(VisibilityBundle {
+            visibility: Visibility {
+                is_visible: params.state.show_grid,
+            },
+            ..default()
+        })
+        .id();
+    children.push(grid_entity);
+
+    // Spawn map layers
+    for (i, layer) in map.layers.iter().enumerate() {
+        let layer: &MapLayerMeta = layer;
+
+        match &layer.kind {
+            MapLayerKind::Tile(tile_layer) => {
+                let layer_entity = params.commands.spawn().id();
+                let mut storage = TileStorage::empty(tilemap_size);
+
+                for tile in &tile_layer.tiles {
+                    let tile_pos = TilePos {
+                        x: tile.pos.x,
+                        y: tile.pos.y,
+                    };
+
+                    let tile_entity = params
+                        .commands
+                        .spawn()
+                        .insert_bundle(TileBundle {
+                            position: tile_pos,
+                            tilemap_id: TilemapId(layer_entity),
+                            texture: TileTexture(tile.idx),
+                            ..default()
+                        })
+                        .id();
+
+                    storage.set(&tile_pos, Some(tile_entity));
+                }
+
+                params
+                    .commands
+                    .entity(layer_entity)
+                    .insert_bundle(TilemapBundle {
+                        grid_size: TilemapGridSize {
+                            x: map.grid_size.x as f32,
+                            y: map.grid_size.y as f32,
+                        },
+                        tile_size: TilemapTileSize {
+                            x: map.tile_size.x as f32,
+                            y: map.tile_size.y as f32,
+                        },
+                        texture: TilemapTexture(tile_layer.tilemap_handle.clone()),
+                        storage,
+                        transform: Transform::from_xyz(0.0, 0.0, -100.0 + i as f32),
+                        ..default()
+                    });
+            }
+            MapLayerKind::Entity(_) => (),
+        }
+    }
+
+    params.commands.entity(map_entity).push_children(&children);
+
+    let camera_pos = Vec3::new(
+        (map.grid_size.x * map.tile_size.x) as f32 / 2.0,
+        (map.grid_size.y * map.tile_size.y) as f32 / 2.0,
+        0.0,
+    );
+    let (_, mut camera_transform, _) = params.camera.single_mut();
+    camera_transform.translation = camera_pos;
+
+    *params.show_map_open = false;
+    *params.show_map_create = false;
+}
+
 fn map_create_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
     let space = ui.spacing().icon_width;
 
@@ -753,53 +920,51 @@ fn map_create_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
         &params.localization.get("create-map"),
         params.game.main_menu.menu_width,
         |ui| {
-            ui.vertical(|ui| {
-                ui.horizontal(|ui| {
-                    ui.label(&params.localization.get("name"));
-                    ui.text_edit_singleline(&mut params.map_create_info.name);
-                });
+            ui.horizontal(|ui| {
+                ui.label(&params.localization.get("name"));
+                ui.text_edit_singleline(&mut params.map_create_info.name);
+            });
 
-                ui.add_space(space / 2.0);
+            ui.add_space(space / 2.0);
 
-                ui.horizontal(|ui| {
-                    ui.label(&params.localization.get("grid-size"));
-                    ui.add(egui::DragValue::new(&mut params.map_create_info.map_width));
-                    ui.label("X");
-                    ui.add(egui::DragValue::new(&mut params.map_create_info.map_height));
-                });
+            ui.horizontal(|ui| {
+                ui.label(&params.localization.get("grid-size"));
+                ui.add(egui::DragValue::new(&mut params.map_create_info.map_width));
+                ui.label("X");
+                ui.add(egui::DragValue::new(&mut params.map_create_info.map_height));
+            });
 
-                ui.add_space(space);
+            ui.add_space(space);
 
-                ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
-                    ui.scope(|ui| {
-                        ui.set_enabled(is_valid);
-
-                        if BorderedButton::themed(
-                            &params.game.ui_theme.button_styles.small,
-                            &params.localization.get("create"),
-                        )
-                        .focus_on_hover(false)
-                        .show(ui)
-                        .clicked()
-                        {
-                            *params.show_map_create = false;
-                            create_map(params);
-                        }
-                    });
-
-                    ui.add_space(space);
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
+                ui.scope(|ui| {
+                    ui.set_enabled(is_valid);
 
                     if BorderedButton::themed(
                         &params.game.ui_theme.button_styles.small,
-                        &params.localization.get("cancel"),
+                        &params.localization.get("create"),
                     )
                     .focus_on_hover(false)
                     .show(ui)
                     .clicked()
                     {
                         *params.show_map_create = false;
+                        create_map(params);
                     }
                 });
+
+                ui.add_space(space);
+
+                if BorderedButton::themed(
+                    &params.game.ui_theme.button_styles.small,
+                    &params.localization.get("cancel"),
+                )
+                .focus_on_hover(false)
+                .show(ui)
+                .clicked()
+                {
+                    *params.show_map_create = false;
+                }
             });
         },
     );
@@ -807,50 +972,16 @@ fn map_create_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
 
 fn create_map(params: &mut EditorCentralPanel) {
     let info = &params.map_create_info;
-    let name = info.name.clone();
     let grid_size = UVec2::new(info.map_width, info.map_height);
     let tile_size = UVec2::new(10, 10);
-
-    let grid = GeometryBuilder::build_as(
-        &grid::Grid {
-            grid_size,
-            tile_size,
-        },
-        DrawMode::Stroke(StrokeMode::new(Color::rgba(0.8, 0.8, 0.8, 0.8), 0.25)),
-        default(),
-    );
-
-    params
-        .commands
-        .spawn()
-        .insert(MapMeta {
-            name,
-            grid_size,
-            tile_size,
-            background_layers: default(),
-            layers: default(),
-        })
-        .insert_bundle(VisibilityBundle::default())
-        .insert_bundle(TransformBundle {
-            local: Transform::from_xyz(
-                (grid_size.x * tile_size.x) as f32 / -2.0,
-                (grid_size.y * tile_size.y) as f32 / -2.0,
-                0.0,
-            ),
-            ..default()
-        })
-        .with_children(|parent| {
-            parent
-                .spawn()
-                .insert(MapGridView)
-                .insert_bundle(grid)
-                .insert_bundle(VisibilityBundle {
-                    visibility: Visibility {
-                        is_visible: params.state.show_grid,
-                    },
-                    ..default()
-                });
-        });
+    let handle = params.map_assets.add(MapMeta {
+        name: info.name.clone(),
+        grid_size,
+        tile_size,
+        layers: default(),
+        background_layers: default(),
+    });
+    open_map(params, handle)
 }
 
 mod grid {

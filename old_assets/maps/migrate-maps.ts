@@ -2,6 +2,8 @@
  * This is a deno script that converts the old Jumpy maps to the new map format.
  */
 
+import { assert } from "https://deno.land/std@0.158.0/testing/asserts.ts";
+
 export interface OldMap {
   name: string;
   background_color: BackgroundColor;
@@ -94,6 +96,8 @@ for (const map of inMaps) {
     newLayer.id = layer.id;
 
     if (layer.tiles && layer.tiles.length > 0) {
+      assert(layer.tiles.length == map.grid_size.x * map.grid_size.y);
+
       newLayer.kind = { tile: {} };
       newLayer.kind.tile.has_collision = layer.has_collision;
       newLayer.kind.tile.tiles = [];
@@ -103,7 +107,10 @@ for (const map of inMaps) {
         const tile = layer.tiles![i];
         if (tile == 0) continue;
         const posX = i % map.grid_size.x;
-        const posY = Math.floor(i / map.grid_size.y);
+        const posY = map.grid_size.y - 1 - Math.floor(i / map.grid_size.x);
+
+        assert(posX < map.grid_size.x);
+        assert(posY < map.grid_size.y, `posY ( ${posY} ) isn't less than map.grid_size.y ( ${map.grid_size.y} ) for tile index ${i}`);
 
         newLayer.kind.tile.tiles.push({
           pos: [posX, posY],

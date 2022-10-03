@@ -1,13 +1,15 @@
-use std::marker::PhantomData;
+use std::{marker::PhantomData, mem::discriminant};
 
-use bevy::{ecs::system::SystemParam, math::Vec3Swizzles, render::camera::Viewport};
+use bevy::{
+    ecs::system::SystemParam, math::Vec3Swizzles, render::camera::Viewport, utils::HashSet,
+};
 use bevy_egui::*;
 use bevy_fluent::Localization;
 use bevy_prototype_lyon::prelude::*;
 
 use crate::{
     localization::LocalizationExt,
-    metadata::{GameMeta, MapMeta},
+    metadata::{GameMeta, MapLayerKindMeta, MapLayerMeta, MapMeta},
     prelude::*,
 };
 
@@ -17,7 +19,7 @@ pub struct EditorPlugin;
 
 impl Plugin for EditorPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<EditorViewSettings>()
+        app.init_resource::<EditorState>()
             .add_system(
                 editor_update
                     .run_in_state(GameState::InGame)
@@ -39,13 +41,19 @@ impl Plugin for EditorPlugin {
 #[derive(Component)]
 struct MapGridView;
 
-struct EditorViewSettings {
+struct EditorState {
     pub show_grid: bool,
+    pub current_layer_idx: usize,
+    pub hidden_layers: HashSet<usize>,
 }
 
-impl Default for EditorViewSettings {
+impl Default for EditorState {
     fn default() -> Self {
-        Self { show_grid: true }
+        Self {
+            show_grid: true,
+            current_layer_idx: 0,
+            hidden_layers: default(),
+        }
     }
 }
 
@@ -58,7 +66,7 @@ fn setup_editor(mut camera: Query<(&mut Transform, &mut OrthographicProjection),
 
 fn editor_update(
     mut map_grid: Query<&mut Visibility, With<MapGridView>>,
-    settings: Res<EditorViewSettings>,
+    settings: Res<EditorState>,
 ) {
     for mut visibility in &mut map_grid {
         visibility.is_visible = settings.show_grid;
@@ -113,7 +121,7 @@ struct EditorTopBar<'w, 's> {
     camera: Query<'w, 's, (&'static mut Transform, &'static mut OrthographicProjection)>,
     localization: Res<'w, Localization>,
     map: Query<'w, 's, Entity, With<MapMeta>>,
-    settings: ResMut<'w, EditorViewSettings>,
+    settings: ResMut<'w, EditorState>,
 }
 
 impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
@@ -220,12 +228,30 @@ impl<'w, 's> WidgetSystem for EditorLeftToolbar<'w, 's> {
     }
 }
 
+struct LayerCreateInfo {
+    name: String,
+    kind: MapLayerKindMeta,
+}
+
+impl Default for LayerCreateInfo {
+    fn default() -> Self {
+        Self {
+            name: Default::default(),
+            kind: MapLayerKindMeta::Tiles(default()),
+        }
+    }
+}
+
 #[derive(SystemParam)]
 struct EditorRightToolbar<'w, 's> {
+    asset_server: Res<'w, AssetServer>,
+    commands: Commands<'w, 's>,
+    show_layer_create: Local<'s, bool>,
+    layer_create_info: Local<'s, LayerCreateInfo>,
+    game: Res<'w, GameMeta>,
     localization: Res<'w, Localization>,
-    map: Query<'w, 's, &'static MapMeta>,
-    #[system_param(ignore)]
-    _phantom: PhantomData<(&'w (), &'s ())>,
+    map: Query<'w, 's, (Entity, &'static mut MapMeta)>,
+    state: ResMut<'w, EditorState>,
 }
 
 impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
@@ -238,11 +264,54 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
         _id: super::WidgetId,
         _args: Self::Args,
     ) {
-        let params: EditorRightToolbar = state.get_mut(world);
-        let has_map = params.map.get_single().is_ok();
-        ui.set_enabled(has_map);
+        let mut params: EditorRightToolbar = state.get_mut(world);
+        layer_create_dialog(ui, &mut params);
 
+        let map_query: Option<(_, &MapMeta)> = params.map.get_single().ok();
+
+        ui.set_enabled(map_query.is_some());
         ui.add_space(ui.spacing().window_margin.top);
+
+        ui.horizontal(|ui| {
+            ui.label(&params.localization.get("map-info"));
+        });
+        ui.separator();
+
+        let row_height = ui.spacing().interact_size.y;
+        ui.push_id("info", |ui| {
+            let table = egui_extras::TableBuilder::new(ui)
+                .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
+                .column(egui_extras::Size::relative(0.5))
+                .column(egui_extras::Size::remainder())
+                .resizable(false);
+
+            table.body(|mut body| {
+                body.row(row_height, |mut row| {
+                    row.col(|ui| {
+                        ui.label(&params.localization.get("name"));
+                    });
+                    row.col(|ui| {
+                        ui.label(map_query.map(|(_, map)| map.name.as_str()).unwrap_or(""));
+                    });
+                });
+                body.row(row_height, |mut row| {
+                    row.col(|ui| {
+                        ui.label(&params.localization.get("grid-size"));
+                    });
+                    if let Some((_, map)) = map_query {
+                        let x = map.grid_size.x;
+                        let y = map.grid_size.y;
+                        row.col(|ui| {
+                            ui.label(format!("{x} x {y}"));
+                        });
+                    }
+                });
+            });
+        });
+
+        ui.add_space(ui.spacing().icon_width);
+
+        ui.separator();
         ui.horizontal(|ui| {
             ui.label(&params.localization.get("layers"));
 
@@ -251,11 +320,276 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                     .button("➕")
                     .on_hover_text(&params.localization.get("create-layer"))
                     .clicked()
-                {}
+                {
+                    *params.show_layer_create = true;
+                }
             });
         });
         ui.separator();
+
+        if let Some((_, map)) = map_query {
+            let row_height = ui.spacing().interact_size.y * 1.4;
+            ui.push_id("layers", |ui| {
+                let width = ui.available_width() - ui.spacing().item_spacing.x * 4.0;
+                for (i, layer) in map.layers.iter().enumerate() {
+                    let layer: &MapLayerMeta = layer;
+
+                    ui.horizontal(|ui| {
+                        ui.set_width(ui.available_width());
+                        ui.set_height(row_height);
+
+                        let row_rect = ui.max_rect();
+
+                        let hovered = ui
+                            .input()
+                            .pointer
+                            .hover_pos()
+                            .map(|pos| row_rect.contains(pos))
+                            .unwrap_or(false);
+                        let active = hovered && ui.input().pointer.primary_down();
+                        let highlighted = hovered || params.state.current_layer_idx == i;
+                        let clicked = ui.input().pointer.primary_released() && hovered;
+
+                        if highlighted {
+                            ui.painter().rect_filled(
+                                row_rect,
+                                0.0,
+                                if active {
+                                    ui.visuals().widgets.active.bg_stroke.color
+                                } else {
+                                    ui.visuals().widgets.hovered.bg_fill
+                                },
+                            );
+                        }
+
+                        if clicked {
+                            params.state.current_layer_idx = i;
+                        }
+
+                        ui.scope(|ui| {
+                            ui.set_width(width * 0.1);
+                            ui.vertical_centered(|ui| {
+                                ui.add_space(ui.spacing().interact_size.y * 0.2);
+                                match layer.kind {
+                                    MapLayerKindMeta::Tiles(_) => {
+                                        ui.label(&params.localization.get("tile-layer-icon"))
+                                            .on_hover_text(&params.localization.get("tile-layer"));
+                                    }
+                                    MapLayerKindMeta::Decorations(_) => {
+                                        ui.label(&params.localization.get("decoration-layer-icon"))
+                                            .on_hover_text(
+                                                &params.localization.get("decoration-layer"),
+                                            );
+                                    }
+                                    MapLayerKindMeta::Entities(_) => {
+                                        ui.label(&params.localization.get("entity-layer-icon"))
+                                            .on_hover_text(
+                                                &params.localization.get("entity-layer"),
+                                            );
+                                    }
+                                };
+                            });
+                        });
+
+                        ui.vertical(|ui| {
+                            ui.set_width(width * 0.8);
+                            ui.add_space(ui.spacing().interact_size.y * 0.2);
+                            ui.label(&layer.name);
+                        });
+
+                        ui.vertical_centered(|ui| {
+                            ui.set_width(width * 0.1);
+                            ui.add_space(ui.spacing().interact_size.y * 0.2);
+                            let is_visible = !params.state.hidden_layers.contains(&i);
+                            if ui
+                                .selectable_label(is_visible, "👁")
+                                .on_hover_text(&params.localization.get("toggle-visibility"))
+                                .clicked()
+                            {
+                                if is_visible {
+                                    params.state.hidden_layers.insert(i);
+                                } else {
+                                    params.state.hidden_layers.remove(&i);
+                                }
+                            };
+                        });
+                    });
+                }
+            });
+        }
     }
+}
+
+fn layer_create_dialog(ui: &mut egui::Ui, params: &mut EditorRightToolbar) {
+    let space = ui.spacing().icon_width;
+
+    if !*params.show_layer_create {
+        return;
+    }
+
+    let is_valid = matches!(params.layer_create_info.kind, MapLayerKindMeta::Tiles(_))
+        && params.map.get_single().is_ok();
+    overlay_window(
+        ui,
+        "create-map-window",
+        &params.localization.get("create-layer"),
+        params.game.main_menu.menu_width,
+        |ui| {
+            ui.vertical(|ui| {
+                ui.horizontal(|ui| {
+                    ui.label(&params.localization.get("name"));
+                    ui.text_edit_singleline(&mut params.layer_create_info.name);
+                });
+
+                ui.add_space(space / 2.0);
+
+                ui.horizontal(|ui| {
+                    ui.label(&format!("{}: ", params.localization.get("layer-kind")));
+                    ui.add_space(space);
+                    for (label, layer_kind) in [
+                        (
+                            params.localization.get("tile"),
+                            MapLayerKindMeta::Tiles(default()),
+                        ),
+                        (
+                            params.localization.get("decoration"),
+                            MapLayerKindMeta::Decorations(default()),
+                        ),
+                        (
+                            params.localization.get("entity"),
+                            MapLayerKindMeta::Entities(default()),
+                        ),
+                    ] {
+                        let selected = discriminant(&params.layer_create_info.kind)
+                            == discriminant(&layer_kind);
+
+                        if ui.selectable_label(selected, label).clicked() {
+                            params.layer_create_info.kind = layer_kind;
+                        }
+                    }
+                });
+                ui.separator();
+
+                ui.add_space(space);
+
+                match &mut params.layer_create_info.kind {
+                    MapLayerKindMeta::Tiles(tiles) => {
+                        let row_height = ui.spacing().interact_size.y;
+                        let table = egui_extras::TableBuilder::new(ui)
+                            .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
+                            .column(egui_extras::Size::relative(0.25))
+                            .column(egui_extras::Size::remainder())
+                            .resizable(false);
+
+                        table.body(|mut body| {
+                            body.row(row_height, |mut row| {
+                                row.col(|ui| {
+                                    ui.label(&format!(
+                                        "{}: ",
+                                        params.localization.get("tilemap-path")
+                                    ));
+                                });
+                                row.col(|ui| {
+                                    ui.text_edit_singleline(&mut tiles.tilemap);
+                                });
+                            });
+                        });
+                    }
+                    MapLayerKindMeta::Decorations(_) => {
+                        ui.label("TODO");
+                    }
+                    MapLayerKindMeta::Entities(_) => {
+                        ui.label("TODO");
+                    }
+                }
+
+                ui.add_space(space);
+
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
+                    ui.scope(|ui| {
+                        ui.set_enabled(is_valid);
+
+                        if BorderedButton::themed(
+                            &params.game.ui_theme.button_styles.small,
+                            &params.localization.get("create"),
+                        )
+                        .focus_on_hover(false)
+                        .show(ui)
+                        .clicked()
+                        {
+                            *params.show_layer_create = false;
+                            create_layer(params);
+                        }
+                    });
+
+                    ui.add_space(space);
+
+                    if BorderedButton::themed(
+                        &params.game.ui_theme.button_styles.small,
+                        &params.localization.get("cancel"),
+                    )
+                    .focus_on_hover(false)
+                    .show(ui)
+                    .clicked()
+                    {
+                        *params.layer_create_info = default();
+                        *params.show_layer_create = false;
+                    }
+                });
+            });
+        },
+    );
+}
+
+fn create_layer(params: &mut EditorRightToolbar) {
+    use bevy_ecs_tilemap::prelude::*;
+
+    let layer_info = &*params.layer_create_info;
+    let (map_entity, mut map): (Entity, Mut<MapMeta>) = params.map.single_mut();
+
+    let layer_idx = map.layers.len();
+    let layer_entity = params.commands.spawn().id();
+    map.layers.push(MapLayerMeta {
+        name: layer_info.name.clone(),
+        kind: layer_info.kind.clone(),
+        entity: Some(layer_entity),
+    });
+
+    match &layer_info.kind {
+        MapLayerKindMeta::Tiles(tiles) => {
+            let grid_size = TilemapSize {
+                x: map.grid_size.x,
+                y: map.grid_size.y,
+            };
+            let tile_size = TilemapTileSize {
+                x: map.tile_size.x as f32,
+                y: map.tile_size.y as f32,
+            };
+
+            let storage = TileStorage::empty(grid_size);
+
+            // Spawn the map layer
+            params
+                .commands
+                .entity(map_entity)
+                .push_children(&[layer_entity]);
+            params
+                .commands
+                .entity(layer_entity)
+                .insert_bundle(TilemapBundle {
+                    size: grid_size,
+                    texture: TilemapTexture(params.asset_server.load(&tiles.tilemap)),
+                    storage,
+                    tile_size,
+                    transform: Transform::from_xyz(0.0, 0.0, layer_idx as f32),
+                    ..default()
+                });
+        }
+        MapLayerKindMeta::Decorations(_) => todo!(),
+        MapLayerKindMeta::Entities(_) => todo!(),
+    }
+
+    *params.layer_create_info = default();
 }
 
 #[derive(SystemParam)]
@@ -275,7 +609,7 @@ struct EditorCentralPanel<'w, 's> {
         ),
     >,
     localization: Res<'w, Localization>,
-    settings: Res<'w, EditorViewSettings>,
+    state: Res<'w, EditorState>,
 }
 
 struct MapCreateInfo {
@@ -403,67 +737,72 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
 fn map_create_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
     let space = ui.spacing().icon_width;
 
-    if *params.show_map_create {
-        let is_valid = params.map_create_info.is_valid();
-        themed_overlay_window(
-            ui,
-            "create-map-window",
-            &params.localization.get("create-map"),
-            params.game.main_menu.menu_width,
-            |ui| {
-                ui.vertical(|ui| {
-                    ui.horizontal(|ui| {
-                        ui.label(&params.localization.get("name"));
-                        ui.text_edit_singleline(&mut params.map_create_info.name);
-                    });
+    if !*params.show_map_create {
+        return;
+    }
 
-                    ui.add_space(space / 2.0);
+    let is_valid = params.map_create_info.is_valid();
+    overlay_window(
+        ui,
+        "create-map-window",
+        &params.localization.get("create-map"),
+        params.game.main_menu.menu_width,
+        |ui| {
+            ui.vertical(|ui| {
+                ui.horizontal(|ui| {
+                    ui.label(&params.localization.get("name"));
+                    ui.text_edit_singleline(&mut params.map_create_info.name);
+                });
 
-                    ui.horizontal(|ui| {
-                        ui.label(&params.localization.get("tilemap-size"));
-                        ui.add(egui::DragValue::new(&mut params.map_create_info.map_width));
-                        ui.label("X");
-                        ui.add(egui::DragValue::new(&mut params.map_create_info.map_height));
-                    });
+                ui.add_space(space / 2.0);
 
-                    ui.add_space(space);
+                ui.horizontal(|ui| {
+                    ui.label(&params.localization.get("grid-size"));
+                    ui.add(egui::DragValue::new(&mut params.map_create_info.map_width));
+                    ui.label("X");
+                    ui.add(egui::DragValue::new(&mut params.map_create_info.map_height));
+                });
 
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
-                        ui.scope(|ui| {
-                            ui.set_enabled(is_valid);
+                ui.add_space(space);
 
-                            if BorderedButton::themed(
-                                &params.game.ui_theme.button_styles.small,
-                                &params.localization.get("create"),
-                            )
-                            .show(ui)
-                            .clicked()
-                            {
-                                *params.show_map_create = false;
-                                create_map(params);
-                            }
-                        });
-
-                        ui.add_space(space);
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
+                    ui.scope(|ui| {
+                        ui.set_enabled(is_valid);
 
                         if BorderedButton::themed(
                             &params.game.ui_theme.button_styles.small,
-                            &params.localization.get("cancel"),
+                            &params.localization.get("create"),
                         )
+                        .focus_on_hover(false)
                         .show(ui)
                         .clicked()
                         {
                             *params.show_map_create = false;
+                            create_map(params);
                         }
                     });
+
+                    ui.add_space(space);
+
+                    if BorderedButton::themed(
+                        &params.game.ui_theme.button_styles.small,
+                        &params.localization.get("cancel"),
+                    )
+                    .focus_on_hover(false)
+                    .show(ui)
+                    .clicked()
+                    {
+                        *params.show_map_create = false;
+                    }
                 });
-            },
-        );
-    }
+            });
+        },
+    );
 }
 
 fn create_map(params: &mut EditorCentralPanel) {
     let info = &params.map_create_info;
+    let name = info.name.clone();
     let grid_size = UVec2::new(info.map_width, info.map_height);
     let tile_size = UVec2::new(10, 10);
 
@@ -480,9 +819,11 @@ fn create_map(params: &mut EditorCentralPanel) {
         .commands
         .spawn()
         .insert(MapMeta {
+            name,
             grid_size,
             tile_size,
-            ..default()
+            background_layers: default(),
+            layers: default(),
         })
         .insert_bundle(VisibilityBundle::default())
         .insert_bundle(TransformBundle {
@@ -500,7 +841,7 @@ fn create_map(params: &mut EditorCentralPanel) {
                 .insert_bundle(grid)
                 .insert_bundle(VisibilityBundle {
                     visibility: Visibility {
-                        is_visible: params.settings.show_grid,
+                        is_visible: params.state.show_grid,
                     },
                     ..default()
                 });
@@ -544,7 +885,7 @@ mod grid {
 }
 
 /// Helper to render an egui frame in the center of the screen as an overlay
-fn themed_overlay_window<R, F: FnOnce(&mut egui::Ui) -> R>(
+fn overlay_window<R, F: FnOnce(&mut egui::Ui) -> R>(
     ui: &mut egui::Ui,
     id: &str,
     title: &str,

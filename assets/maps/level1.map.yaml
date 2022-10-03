@@ -1,3 +1,4 @@
+name: Level 1
 grid_size: [27, 21]
 tile_size: [32, 32]
 layers:

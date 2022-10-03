@@ -1,6 +1,6 @@
-use bevy_parallax::{LayerData as ParallaxLayerData, ParallaxResource};
+use super::*;
 
-use super::{item::ItemMeta, *};
+use bevy_parallax::{LayerData as ParallaxLayerData, ParallaxResource};
 
 #[derive(Component, HasLoadProgress, TypeUuid, Deserialize, Serialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
@@ -44,13 +44,13 @@ pub struct MapLayerMeta {
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "snake_case")]
 pub enum MapLayerKind {
-    Tile(MapLayerKindTile),
-    Entity(MapLayerKindEntity),
+    Tile(MapTileLayer),
+    Element(MapElementLayer),
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
-pub struct MapLayerKindTile {
+pub struct MapTileLayer {
     pub tilemap: String,
     #[serde(skip)]
     pub tilemap_handle: Handle<Image>,
@@ -60,17 +60,19 @@ pub struct MapLayerKindTile {
 
 #[derive(Deserialize, Serialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
-pub struct MapLayerKindEntity {
-    entities: Vec<MapEntity>,
+pub struct MapElementLayer {
+    elements: Vec<MapElementSpawn>,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
-pub struct MapEntity {
+pub struct MapElementSpawn {
     pub pos: Vec2,
-    pub item: String,
+    pub name: String,
+    pub category: String,
+    pub element: String,
     #[serde(skip)]
-    pub item_handle: Handle<ItemMeta>,
+    pub element_handle: Handle<MapElementMeta>,
 }
 
 impl HasLoadProgress for MapLayerKind {
@@ -122,3 +124,8 @@ impl From<ParallaxLayerMeta> for ParallaxLayerData {
         }
     }
 }
+
+#[derive(Component, HasLoadProgress, TypeUuid, Deserialize, Serialize, Clone, Debug, Default)]
+#[serde(deny_unknown_fields)]
+#[uuid = "0a4a0cc6-ee52-4b0d-a88b-871c49a06622"]
+pub struct MapElementMeta {}

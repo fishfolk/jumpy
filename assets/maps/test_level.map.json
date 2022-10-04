@@ -1,6 +1,6 @@
 {
   "name": "test_level",
-  "background_color": "7fb2b2ff",
+  "background_color": "7EA8A6",
   "grid_size": [
     31,
     23
@@ -1501,18 +1501,14 @@
                 313.01,
                 269.10092
               ],
-              "name": "anemones",
-              "element": "./elements/anemones.item.yaml",
-              "category": "decoration"
+              "element": "./elements/anemones/anemones.element.yaml"
             },
             {
               "pos": [
                 637.80585,
                 269.37476
               ],
-              "name": "seaweed",
-              "element": "./elements/seaweed.item.yaml",
-              "category": "decoration"
+              "element": "./elements/seaweed/seaweed.element.yaml"
             }
           ]
         }
@@ -1528,279 +1524,217 @@
                 782.8819,
                 675.5
               ],
-              "name": "starfish_launcher",
-              "element": "./elements/starfish_launcher.item.yaml",
-              "category": "item"
+              "element": "./elements/starfish_launcher/starfish_launcher.element.yaml"
             },
             {
               "pos": [
                 312.14642,
                 615.9121
               ],
-              "name": "fish_school",
-              "element": "./elements/fish_school.item.yaml",
-              "category": "environment"
+              "element": "./elements/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
                 466.00787,
                 497.32727
               ],
-              "name": "fish_school",
-              "element": "./elements/fish_school.item.yaml",
-              "category": "environment"
+              "element": "./elements/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
                 622.8744,
                 246.50894
               ],
-              "name": "fish_school",
-              "element": "./elements/fish_school.item.yaml",
-              "category": "environment"
+              "element": "./elements/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
                 486.8546,
                 178.04547
               ],
-              "name": "crab",
-              "element": "./elements/crab.item.yaml",
-              "category": "environment"
+              "element": "./elements/crab/crab.element.yaml"
             },
             {
               "pos": [
                 640.52356,
                 432.3415
               ],
-              "name": "crab",
-              "element": "./elements/crab.item.yaml",
-              "category": "environment"
+              "element": "./elements/crab/crab.element.yaml"
             },
             {
               "pos": [
                 414.69,
                 305.67166
               ],
-              "name": "crab",
-              "element": "./elements/crab.item.yaml",
-              "category": "environment"
+              "element": "./elements/crab/crab.element.yaml"
             },
             {
               "pos": [
                 610.0421,
                 302.41638
               ],
-              "name": "crab",
-              "element": "./elements/crab.item.yaml",
-              "category": "environment"
+              "element": "./elements/crab/crab.element.yaml"
             },
             {
               "pos": [
                 530.3602,
                 677.60126
               ],
-              "name": "crab",
-              "element": "./elements/crab.item.yaml",
-              "category": "environment"
+              "element": "./elements/crab/crab.element.yaml"
             },
             {
               "pos": [
                 702.3754,
                 287.63873
               ],
-              "name": "trident",
-              "element": "./elements/trident.item.yaml",
-              "category": "item"
+              "element": "./elements/trident/trident.element.yaml"
             },
             {
               "pos": [
                 519.0186,
                 405.68817
               ],
-              "name": "crown_hat",
-              "element": "./elements/crown_hat.item.yaml",
-              "category": "item"
+              "element": "./elements/crown_hat/crown_hat.element.yaml"
             },
             {
               "pos": [
                 307.5,
                 394
               ],
-              "name": "cowboy_hat",
-              "element": "./elements/cowboy_hat.item.yaml",
-              "category": "item"
+              "element": "./elements/cowboy_hat/cowboy_hat.element.yaml"
             },
             {
               "pos": [
                 421.5,
                 372
               ],
-              "name": "chest_hat",
-              "element": "./elements/chest_hat.item.yaml",
-              "category": "item"
+              "element": "./elements/chest_hat/chest_hat.element.yaml"
             },
             {
               "pos": [
                 731.4,
                 559.6
               ],
-              "name": "chefs_hat",
-              "element": "./elements/chefs_hat.item.yaml",
-              "category": "item"
+              "element": "./elements/chefs_hat/chefs_hat.element.yaml"
             },
             {
               "pos": [
                 656.5,
                 541
               ],
-              "name": "bucket_hat",
-              "element": "./elements/bucket_hat.item.yaml",
-              "category": "item"
+              "element": "./elements/bucket_hat/bucket_hat.element.yaml"
             },
             {
               "pos": [
                 332.5,
                 539
               ],
-              "name": "pirate_hat",
-              "element": "./elements/pirate_hat.item.yaml",
-              "category": "item"
+              "element": "./elements/pirate_hat/pirate_hat.element.yaml"
             },
             {
               "pos": [
                 66.916664,
                 684.9167
               ],
-              "name": "sproinger",
-              "element": "./elements/sproinger.item.yaml",
-              "category": "environment"
+              "element": "./elements/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
                 34.75,
                 364.91666
               ],
-              "name": "sproinger",
-              "element": "./elements/sproinger.item.yaml",
-              "category": "environment"
+              "element": "./elements/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
                 894.875,
                 685.375
               ],
-              "name": "sproinger",
-              "element": "./elements/sproinger.item.yaml",
-              "category": "environment"
+              "element": "./elements/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
                 933.5,
                 365.16666
               ],
-              "name": "sproinger",
-              "element": "./elements/sproinger.item.yaml",
-              "category": "environment"
+              "element": "./elements/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
                 186,
                 518
               ],
-              "name": "sword",
-              "element": "./elements/sword.item.yaml",
-              "category": "item"
+              "element": "./elements/sword/sword.element.yaml"
             },
             {
               "pos": [
                 185.66667,
                 132.33333
               ],
-              "name": "grenades",
-              "element": "./elements/grenades.item.yaml",
-              "category": "item"
+              "element": "./elements/grenades/grenades.element.yaml"
             },
             {
               "pos": [
                 184.33333,
                 258.66666
               ],
-              "name": "turtle_shell",
-              "element": "./elements/turtle_shell.item.yaml",
-              "category": "item"
+              "element": "./elements/turtle_shell/turtle_shell.element.yaml"
             },
             {
               "pos": [
                 185,
                 388
               ],
-              "name": "machine_gun",
-              "element": "./elements/machine_gun.item.yaml",
-              "category": "item"
+              "element": "./elements/machine_gun/machine_gun.element.yaml"
             },
             {
               "pos": [
                 764.6667,
                 50
               ],
-              "name": "cannon",
-              "element": "./elements/cannon.item.yaml",
-              "category": "item"
+              "element": "./elements/cannon/cannon.element.yaml"
             },
             {
               "pos": [
                 774,
                 403
               ],
-              "name": "mines",
-              "element": "./elements/mines.item.yaml",
-              "category": "item"
+              "element": "./elements/mines/mines.element.yaml"
             },
             {
               "pos": [
                 414.88895,
                 667.1703
               ],
-              "name": "sniper_rifle",
-              "element": "./elements/sniper_rifle.item.yaml",
-              "category": "item"
+              "element": "./elements/sniper_rifle/sniper_rifle.element.yaml"
             },
             {
               "pos": [
                 769.3333,
                 552
               ],
-              "name": "musket",
-              "element": "./elements/musket.item.yaml",
-              "category": "item"
+              "element": "./elements/musket/musket.element.yaml"
             },
             {
               "pos": [
                 600.5203,
                 656.10565
               ],
-              "name": "kick_bomb",
-              "element": "./elements/kick_bomb.item.yaml",
-              "category": "item"
+              "element": "./elements/kick_bomb/kick_bomb.element.yaml"
             },
             {
               "pos": [
                 176.682,
                 653.12787
               ],
-              "name": "blunderbuss",
-              "element": "./elements/blunderbuss.item.yaml",
-              "category": "item"
+              "element": "./elements/blunderbuss/blunderbuss.element.yaml"
             },
             {
               "pos": [
                 271.9712,
                 536.9942
               ],
-              "name": "crate",
-              "element": "./elements/crate.item.yaml",
-              "category": "item"
+              "element": "./elements/crate/crate.element.yaml"
             }
           ]
         }

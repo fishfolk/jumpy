@@ -69,6 +69,7 @@ pub fn setup_main_menu(
     let width = height * ratio;
     commands
         .spawn()
+        .insert(Name::new("Menu Background Parent"))
         .insert_bundle(VisibilityBundle::default())
         .insert_bundle(TransformBundle::default())
         .insert(MainMenuBackground)

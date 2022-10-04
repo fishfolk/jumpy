@@ -1,9 +1,8 @@
-use bevy::{ecs::system::SystemParam, render::camera::ScalingMode};
+use bevy::ecs::system::SystemParam;
 use bevy_egui::{egui, EguiContext};
 use bevy_fluent::Locale;
 use bevy_has_load_progress::{HasLoadProgress, LoadingResources};
 use bevy_mod_js_scripting::ActiveScripts;
-use bevy_parallax::ParallaxCameraComponent;
 use leafwing_input_manager::{
     axislike::{AxisType, SingleAxis},
     prelude::InputMap,
@@ -11,6 +10,7 @@ use leafwing_input_manager::{
 };
 
 use crate::{
+    camera::{spawn_editor_camera, spawn_game_camera},
     config::ENGINE_CONFIG,
     input::MenuAction,
     metadata::{BorderImageMeta, GameMeta, PlayerMeta, Settings},
@@ -24,7 +24,7 @@ pub struct LoadingPlugin;
 
 impl Plugin for LoadingPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(
+        app.add_startup_system(setup).add_system(
             load_game
                 .run_in_state(GameState::LoadingGameData)
                 .run_if(game_assets_loaded),
@@ -39,6 +39,16 @@ impl Plugin for LoadingPlugin {
                 );
         }
     }
+}
+
+fn setup(mut commands: Commands) {
+    commands
+        .spawn()
+        .insert(Name::new("Menu Input Collector"))
+        .insert_bundle(InputManagerBundle {
+            input_map: menu_input_map(),
+            ..default()
+        });
 }
 
 // Condition system used to make sure game assets have loaded
@@ -73,7 +83,7 @@ fn game_assets_loaded(
 #[derive(SystemParam)]
 pub struct GameLoader<'w, 's> {
     skip_next_asset_update_event: Local<'s, bool>,
-    camera: Query<'w, 's, Entity, With<Camera>>,
+    cameras: Query<'w, 's, Entity, With<Camera>>,
     commands: Commands<'w, 's>,
     game_handle: Res<'w, Handle<GameMeta>>,
     clear_color: ResMut<'w, ClearColor>,
@@ -101,7 +111,7 @@ impl<'w, 's> GameLoader<'w, 's> {
 
         let Self {
             mut skip_next_asset_update_event,
-            camera,
+            cameras,
             mut commands,
             game_handle,
             mut game_assets,
@@ -118,7 +128,7 @@ impl<'w, 's> GameLoader<'w, 's> {
             // Hot reload preparation
             if is_hot_reload {
                 // Despawn previous camera
-                if let Ok(camera) = camera.get_single() {
+                for camera in &cameras {
                     commands.entity(camera).despawn();
                 }
 
@@ -142,6 +152,21 @@ impl<'w, 's> GameLoader<'w, 's> {
                 egui_ctx.ctx_mut().set_fonts(egui_fonts.clone());
                 commands.insert_resource(egui_fonts);
 
+                // Spawn players. These aren't really playable players yet, but we spawn them now so
+                // that we can attatch input listeners to them for use in the player select screen.
+                let settings = storage.get(Settings::STORAGE_KEY);
+                let settings = settings.as_ref().unwrap_or(&game.default_settings);
+                for player in 0..MAX_PLAYERS {
+                    commands
+                        .spawn()
+                        .insert(Name::new(format!("Player Input Collector {player}")))
+                        .insert(PlayerIdx(player))
+                        .insert_bundle(InputManagerBundle {
+                            input_map: settings.player_controls.get_input_map(player),
+                            ..default()
+                        });
+                }
+
                 // Transition to the main menu when we are done
                 commands.insert_resource(NextState(GameState::MainMenu));
             }
@@ -156,18 +181,11 @@ impl<'w, 's> GameLoader<'w, 's> {
                     .with_default(translations.default_locale.clone()),
             );
 
-            // Spawn the camera
-            let mut camera_bundle = Camera2dBundle::default();
-            camera_bundle.projection.scaling_mode =
-                ScalingMode::FixedVertical(game.camera_height as f32);
-            commands
-                .spawn_bundle(camera_bundle)
-                .insert(ParallaxCameraComponent)
-                // We also add another input manager bundle for `MenuAction`s
-                .insert_bundle(InputManagerBundle {
-                    input_map: menu_input_map(),
-                    ..default()
-                });
+            // Spawn the game camera
+            spawn_game_camera(&mut commands, game);
+
+            // Spawn the editor camera
+            spawn_editor_camera(&mut commands, game);
 
             let mut visuals = egui::Visuals::dark();
             visuals.widgets = game.ui_theme.widgets.get_egui_widget_style();
@@ -206,20 +224,6 @@ impl<'w, 's> GameLoader<'w, 's> {
             // Add editor icons to egui context
             for icon in game.ui_theme.editor.icons.as_mut_list() {
                 icon.egui_texture_id = egui_ctx.add_image(icon.image_handle.clone_weak());
-            }
-
-            // Spawn players. These aren't really playable players yet, but we spawn them now so
-            // that we can attatch input listeners to them for use in the player select screen.
-            let settings = storage.get(Settings::STORAGE_KEY);
-            let settings = settings.as_ref().unwrap_or(&game.default_settings);
-            for player in 0..MAX_PLAYERS {
-                commands
-                    .spawn()
-                    .insert(PlayerIdx(player))
-                    .insert_bundle(InputManagerBundle {
-                        input_map: settings.player_controls.get_input_map(player),
-                        ..default()
-                    });
             }
 
             // Set the active scripts

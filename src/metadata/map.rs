@@ -63,15 +63,13 @@ pub struct MapTileLayer {
 #[derive(Deserialize, Serialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
 pub struct MapElementLayer {
-    elements: Vec<MapElementSpawn>,
+    pub elements: Vec<MapElementSpawn>,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
 pub struct MapElementSpawn {
     pub pos: Vec2,
-    pub name: String,
-    pub category: String,
     pub element: String,
     #[serde(skip)]
     pub element_handle: Handle<MapElementMeta>,
@@ -147,4 +145,10 @@ impl From<ParallaxLayerMeta> for ParallaxLayerData {
 #[derive(Component, HasLoadProgress, TypeUuid, Deserialize, Serialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
 #[uuid = "0a4a0cc6-ee52-4b0d-a88b-871c49a06622"]
-pub struct MapElementMeta {}
+pub struct MapElementMeta {
+    pub name: String,
+    pub category: String,
+    pub script: String,
+    #[serde(skip)]
+    pub script_handle: Handle<JsScript>,
+}

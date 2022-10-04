@@ -8,9 +8,9 @@ tiles = Tiles
 tile = Tile
 tile-layer = Tile Layer
 tile-layer-icon = T
-entity = Entity
-entity-layer = Entity Layer
-entity-layer-icon = E
+element = Element
+element-layer = Element Layer
+element-layer-icon = E
 toggle-visibility = Toggle Visibility
 
 create = Create

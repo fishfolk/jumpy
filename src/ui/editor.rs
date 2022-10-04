@@ -5,6 +5,7 @@ use bevy::{
 };
 use bevy_egui::*;
 use bevy_fluent::Localization;
+use bevy_parallax::ParallaxResource;
 use bevy_prototype_lyon::prelude::*;
 
 use crate::{
@@ -617,6 +618,10 @@ struct EditorCentralPanel<'w, 's> {
     >,
     localization: Res<'w, Localization>,
     state: Res<'w, EditorState>,
+    parallax: ResMut<'w, ParallaxResource>,
+    windows: Res<'w, Windows>,
+    asset_server: Res<'w, AssetServer>,
+    texture_atlas_assets: ResMut<'w, Assets<TextureAtlas>>,
 }
 
 struct MapCreateInfo {
@@ -812,6 +817,19 @@ fn open_map(params: &mut EditorCentralPanel, handle: Handle<MapMeta>) {
         default(),
     );
 
+    let window = params.windows.primary();
+    *params.parallax = map.get_parallax_resource();
+    params.parallax.window_size = Vec2::new(window.width(), window.height());
+    params.parallax.create_layers(
+        &mut params.commands,
+        &params.asset_server,
+        &mut params.texture_atlas_assets,
+    );
+
+    params
+        .commands
+        .insert_resource(ClearColor(map.background_color.into()));
+
     let tilemap_size = TilemapSize {
         x: map.grid_size.x,
         y: map.grid_size.y,
@@ -975,6 +993,7 @@ fn create_map(params: &mut EditorCentralPanel) {
     let grid_size = UVec2::new(info.map_width, info.map_height);
     let tile_size = UVec2::new(10, 10);
     let handle = params.map_assets.add(MapMeta {
+        background_color: params.game.clear_color,
         name: info.name.clone(),
         grid_size,
         tile_size,

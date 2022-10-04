@@ -3,6 +3,7 @@
  */
 
 import { assert } from "https://deno.land/std@0.158.0/testing/asserts.ts";
+import { bufferToHex } from "https://deno.land/x/hextools@v1.0.0/mod.ts";
 
 export interface OldMap {
   name: string;
@@ -86,9 +87,56 @@ for (const map of inMaps) {
 
   newMap.name = map.name;
 
+  // newMap.background_color = bufferToHex(
+  //   new Uint8Array([
+  //     255 * map.background_color.red,
+  //     255 * map.background_color.green,
+  //     255 * map.background_color.blue,
+  //     255 * map.background_color.alpha,
+  //   ])
+  // );
+
+  // This is the background color all maps should have but only some of them actually had it set, so
+  // we set it manually instead of pulling it from the map JSON like the commented code above does.
+  newMap.background_color = "7fb2b2ff"; 
   newMap.grid_size = [map.grid_size.x, map.grid_size.y];
   newMap.tile_size = [map.tile_size.x, map.tile_size.y];
   newMap.layers = [];
+
+  newMap.background_layers = [
+    {
+      image: "./resources/background_04.png",
+      speed: 0,
+      tile_size: [896, 480],
+      z: -110,
+      position: [0, 360],
+      scale: 2.0,
+    },
+    {
+      image: "./resources/background_03.png",
+      speed: 0.74,
+      tile_size: [896, 480],
+      z: -109,
+      position: [0, 360],
+      scale: 2.0,
+    },
+    {
+      image: "./resources/background_02.png",
+      speed: 0.82,
+      tile_size: [896, 480],
+      z: -108,
+      position: [0, 360],
+      scale: 2.0,
+    },
+    {
+      image: "./resources/background_01.png",
+      speed: 100,
+      tile_size: [896, 480],
+      z: -107,
+      position: [0, 360],
+      scale: 2.0,
+    },
+  ];
 
   for (const layer of map.layers) {
     const newLayer = {} as any;
@@ -110,7 +158,10 @@ for (const map of inMaps) {
         const posY = map.grid_size.y - 1 - Math.floor(i / map.grid_size.x);
 
         assert(posX < map.grid_size.x);
-        assert(posY < map.grid_size.y, `posY ( ${posY} ) isn't less than map.grid_size.y ( ${map.grid_size.y} ) for tile index ${i}`);
+        assert(
+          posY < map.grid_size.y,
+          `posY ( ${posY} ) isn't less than map.grid_size.y ( ${map.grid_size.y} ) for tile index ${i}`
+        );
 
         newLayer.kind.tile.tiles.push({
           pos: [posX, posY],

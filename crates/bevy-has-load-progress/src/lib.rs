@@ -11,7 +11,7 @@ use bevy::{
     asset::{Asset, LoadState},
     ecs::system::SystemParam,
     math::{UVec2, Vec2, Vec3},
-    prelude::{AssetServer, Entity, Handle, Res},
+    prelude::{AssetServer, Entity, Handle, HandleUntyped, Res},
     utils::HashMap,
 };
 
@@ -74,6 +74,17 @@ pub trait HasLoadProgress {
 
 // Implement `HasLoadProgress` for asset handles
 impl<T: Asset> HasLoadProgress for Handle<T> {
+    fn load_progress(&self, loading_resources: &LoadingResources) -> LoadProgress {
+        let loaded = loading_resources.asset_server.get_load_state(self) == LoadState::Loaded;
+
+        LoadProgress {
+            loaded: if loaded { 1 } else { 0 },
+            total: 1,
+        }
+    }
+}
+
+impl HasLoadProgress for HandleUntyped {
     fn load_progress(&self, loading_resources: &LoadingResources) -> LoadProgress {
         let loaded = loading_resources.asset_server.get_load_state(self) == LoadState::Loaded;
 

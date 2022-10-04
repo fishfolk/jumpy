@@ -98,7 +98,7 @@ for (const map of inMaps) {
 
   // This is the background color all maps should have but only some of them actually had it set, so
   // we set it manually instead of pulling it from the map JSON like the commented code above does.
-  newMap.background_color = "7fb2b2ff"; 
+  newMap.background_color = "7EA8A6"; 
   newMap.grid_size = [map.grid_size.x, map.grid_size.y];
   newMap.tile_size = [map.tile_size.x, map.tile_size.y];
   newMap.layers = [];
@@ -173,9 +173,7 @@ for (const map of inMaps) {
       for (const object of layer.objects) {
         const element = {} as any;
         element.pos = [object.position.x, object.position.y];
-        element.name = object.id;
-        element.element = `./elements/${object.id}.item.yaml`;
-        element.category = object.kind;
+        element.element = `./elements/${object.id}/${object.id}.element.yaml`;
         newLayer.kind.element.elements.push(element);
       }
     } else {

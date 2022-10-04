@@ -1,6 +1,6 @@
 {
   "name": "lev02",
-  "background_color": "7fb2b2ff",
+  "background_color": "7EA8A6",
   "grid_size": [
     27,
     21
@@ -1200,90 +1200,70 @@
                 770.25,
                 206.08333
               ],
-              "name": "seaweed",
-              "element": "./elements/seaweed.item.yaml",
-              "category": "decoration"
+              "element": "./elements/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 34.25,
                 492.75
               ],
-              "name": "seaweed",
-              "element": "./elements/seaweed.item.yaml",
-              "category": "decoration"
+              "element": "./elements/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 207.25,
                 111.416664
               ],
-              "name": "seaweed",
-              "element": "./elements/seaweed.item.yaml",
-              "category": "decoration"
+              "element": "./elements/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 457.25,
                 109.416664
               ],
-              "name": "seaweed",
-              "element": "./elements/seaweed.item.yaml",
-              "category": "decoration"
+              "element": "./elements/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 678.9167,
                 462.08334
               ],
-              "name": "seaweed",
-              "element": "./elements/seaweed.item.yaml",
-              "category": "decoration"
+              "element": "./elements/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 250.91667,
                 429.08334
               ],
-              "name": "seaweed",
-              "element": "./elements/seaweed.item.yaml",
-              "category": "decoration"
+              "element": "./elements/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 486.54868,
                 525.0937
               ],
-              "name": "anemones",
-              "element": "./elements/anemones.item.yaml",
-              "category": "decoration"
+              "element": "./elements/anemones/anemones.element.yaml"
             },
             {
               "pos": [
                 35.88199,
                 301.0937
               ],
-              "name": "anemones",
-              "element": "./elements/anemones.item.yaml",
-              "category": "decoration"
+              "element": "./elements/anemones/anemones.element.yaml"
             },
             {
               "pos": [
                 564.54865,
                 302.0937
               ],
-              "name": "anemones",
-              "element": "./elements/anemones.item.yaml",
-              "category": "decoration"
+              "element": "./elements/anemones/anemones.element.yaml"
             },
             {
               "pos": [
                 623.21533,
                 45.76034
               ],
-              "name": "anemones",
-              "element": "./elements/anemones.item.yaml",
-              "category": "decoration"
+              "element": "./elements/anemones/anemones.element.yaml"
             }
           ]
         }
@@ -1299,135 +1279,105 @@
                 798.1076,
                 120.600006
               ],
-              "name": "grenades",
-              "element": "./elements/grenades.item.yaml",
-              "category": "item"
+              "element": "./elements/grenades/grenades.element.yaml"
             },
             {
               "pos": [
                 419,
                 399.33334
               ],
-              "name": "crab",
-              "element": "./elements/crab.item.yaml",
-              "category": "environment"
+              "element": "./elements/crab/crab.element.yaml"
             },
             {
               "pos": [
                 608.94116,
                 82.56866
               ],
-              "name": "crab",
-              "element": "./elements/crab.item.yaml",
-              "category": "environment"
+              "element": "./elements/crab/crab.element.yaml"
             },
             {
               "pos": [
                 135.36362,
                 147.27274
               ],
-              "name": "crab",
-              "element": "./elements/crab.item.yaml",
-              "category": "environment"
+              "element": "./elements/crab/crab.element.yaml"
             },
             {
               "pos": [
                 248.2858,
                 424.99997
               ],
-              "name": "fish_school",
-              "element": "./elements/fish_school.item.yaml",
-              "category": "environment"
+              "element": "./elements/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
                 765.28577,
                 205.14287
               ],
-              "name": "fish_school",
-              "element": "./elements/fish_school.item.yaml",
-              "category": "environment"
+              "element": "./elements/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
                 204.00006,
                 108.42859
               ],
-              "name": "fish_school",
-              "element": "./elements/fish_school.item.yaml",
-              "category": "environment"
+              "element": "./elements/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
                 578.4286,
                 54.14292
               ],
-              "name": "sniper_rifle",
-              "element": "./elements/sniper_rifle.item.yaml",
-              "category": "item"
+              "element": "./elements/sniper_rifle/sniper_rifle.element.yaml"
             },
             {
               "pos": [
                 41.571472,
                 221.28577
               ],
-              "name": "mines",
-              "element": "./elements/mines.item.yaml",
-              "category": "item"
+              "element": "./elements/mines/mines.element.yaml"
             },
             {
               "pos": [
                 569.85706,
                 306.33325
               ],
-              "name": "musket",
-              "element": "./elements/musket.item.yaml",
-              "category": "item"
+              "element": "./elements/musket/musket.element.yaml"
             },
             {
               "pos": [
                 199.16669,
                 444.16672
               ],
-              "name": "musket",
-              "element": "./elements/musket.item.yaml",
-              "category": "item"
+              "element": "./elements/musket/musket.element.yaml"
             },
             {
               "pos": [
                 705.6667,
                 491.83334
               ],
-              "name": "sproinger",
-              "element": "./elements/sproinger.item.yaml",
-              "category": "environment"
+              "element": "./elements/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
                 143.18549,
                 612.7539
               ],
-              "name": "sword",
-              "element": "./elements/sword.item.yaml",
-              "category": "item"
+              "element": "./elements/sword/sword.element.yaml"
             },
             {
               "pos": [
                 401.6703,
                 385.7691
               ],
-              "name": "sword",
-              "element": "./elements/sword.item.yaml",
-              "category": "item"
+              "element": "./elements/sword/sword.element.yaml"
             },
             {
               "pos": [
                 274.90082,
                 32.108643
               ],
-              "name": "musket",
-              "element": "./elements/musket.item.yaml",
-              "category": "item"
+              "element": "./elements/musket/musket.element.yaml"
             }
           ]
         }

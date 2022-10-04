@@ -1,6 +1,6 @@
 use bevy::{ecs::system::SystemParam, hierarchy::DespawnRecursiveExt};
 
-use crate::{player::PlayerIdx, prelude::*};
+use crate::{input::MenuAction, player::PlayerIdx, prelude::*};
 
 /// System parameter that can be used to reset the game world.
 ///
@@ -20,7 +20,16 @@ pub struct ResetController<'w, 's> {
         ),
         With<Camera>,
     >,
-    entities_to_despawn: Query<'w, 's, Entity, (Without<Camera>, Without<PlayerIdx>)>,
+    entities_to_despawn: Query<
+        'w,
+        's,
+        Entity,
+        (
+            Without<Camera>,
+            Without<PlayerIdx>,
+            Without<ActionState<MenuAction>>,
+        ),
+    >,
 }
 
 impl<'w, 's> ResetController<'w, 's> {

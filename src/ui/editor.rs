@@ -5,11 +5,11 @@ use bevy::{
 };
 use bevy_egui::*;
 use bevy_fluent::Localization;
-use bevy_parallax::ParallaxResource;
-use bevy_prototype_lyon::prelude::*;
 
 use crate::{
+    camera::{EditorCamera, GameCamera},
     localization::LocalizationExt,
+    map::{spawn_map, MapGridView, MapSpawnSource, SpawnMapParams},
     metadata::{GameMeta, MapLayerKind, MapLayerMeta, MapMeta},
     prelude::*,
 };
@@ -38,9 +38,6 @@ impl Plugin for EditorPlugin {
             .add_exit_system(InGameState::Editing, cleanup_editor);
     }
 }
-/// Marker component for the map grid
-#[derive(Component)]
-struct MapGridView;
 
 struct EditorState {
     pub show_grid: bool,
@@ -58,11 +55,19 @@ impl Default for EditorState {
     }
 }
 
-fn setup_editor(mut camera: Query<(&mut Transform, &mut OrthographicProjection), With<Camera>>) {
+fn setup_editor(
+    mut game_camera: Query<&mut Camera, With<GameCamera>>,
+    mut editor_camera: Query<&mut Camera, (With<EditorCamera>, Without<GameCamera>)>,
+) {
+    // Disable the game camera
+    let mut game_camera = game_camera.single_mut();
+    game_camera.is_active = false;
+
     // Reset camera position and scale
-    let (mut camera_transform, mut projection) = camera.single_mut();
-    *camera_transform = default();
-    projection.scale = 1.0;
+    //
+    // TODO: Fit map inside of viewport
+    let mut camera = editor_camera.single_mut();
+    camera.is_active = true;
 }
 
 fn editor_update(
@@ -75,16 +80,16 @@ fn editor_update(
 }
 
 fn cleanup_editor(
-    mut camera: Query<&mut Camera>,
-    mut map_grid: Query<&mut Visibility, With<MapGridView>>,
+    mut game_camera: Query<&mut Camera, With<GameCamera>>,
+    mut editor_camera: Query<&mut Camera, (With<EditorCamera>, Without<GameCamera>)>,
 ) {
-    // Reset the camera viewport
-    camera.single_mut().viewport = default();
+    // Enable the game camera
+    let mut game_camera = game_camera.single_mut();
+    game_camera.is_active = true;
 
-    // Hide the map grid
-    for mut visibility in &mut map_grid {
-        visibility.is_visible = false;
-    }
+    // Disable the editor camera
+    let mut editor_camera = editor_camera.single_mut();
+    editor_camera.is_active = false;
 }
 
 pub fn editor_ui_system(world: &mut World) {
@@ -120,7 +125,12 @@ pub fn editor_ui_system(world: &mut World) {
 struct EditorTopBar<'w, 's> {
     commands: Commands<'w, 's>,
     game: Res<'w, GameMeta>,
-    camera: Query<'w, 's, (&'static mut Transform, &'static mut OrthographicProjection)>,
+    camera: Query<
+        'w,
+        's,
+        (&'static mut Transform, &'static mut OrthographicProjection),
+        With<EditorCamera>,
+    >,
     show_map_export_window: Local<'s, bool>,
     localization: Res<'w, Localization>,
     map: Query<'w, 's, &'static MapMeta>,
@@ -429,9 +439,9 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                                             .on_hover_text(&params.localization.get("tile-layer"));
                                     }
                                     MapLayerKind::Element(_) => {
-                                        ui.label(&params.localization.get("entity-layer-icon"))
+                                        ui.label(&params.localization.get("element-layer-icon"))
                                             .on_hover_text(
-                                                &params.localization.get("entity-layer"),
+                                                &params.localization.get("element-layer"),
                                             );
                                     }
                                 };
@@ -498,7 +508,7 @@ fn layer_create_dialog(ui: &mut egui::Ui, params: &mut EditorRightToolbar) {
                             MapLayerKind::Tile(default()),
                         ),
                         (
-                            params.localization.get("entity"),
+                            params.localization.get("element"),
                             MapLayerKind::Element(default()),
                         ),
                     ] {
@@ -600,10 +610,8 @@ fn create_layer(params: &mut EditorRightToolbar) {
 
 #[derive(SystemParam)]
 struct EditorCentralPanel<'w, 's> {
-    commands: Commands<'w, 's>,
     show_map_create: Local<'s, bool>,
     show_map_open: Local<'s, bool>,
-    map_assets: ResMut<'w, Assets<MapMeta>>,
     map_create_info: Local<'s, MapCreateInfo>,
     game: Res<'w, GameMeta>,
     map: Query<'w, 's, Entity, With<MapMeta>>,
@@ -615,13 +623,10 @@ struct EditorCentralPanel<'w, 's> {
             &'static mut Transform,
             &'static mut OrthographicProjection,
         ),
+        With<EditorCamera>,
     >,
     localization: Res<'w, Localization>,
-    state: Res<'w, EditorState>,
-    parallax: ResMut<'w, ParallaxResource>,
-    windows: Res<'w, Windows>,
-    asset_server: Res<'w, AssetServer>,
-    texture_atlas_assets: ResMut<'w, Assets<TextureAtlas>>,
+    spawn_map_params: SpawnMapParams<'w, 's>,
 }
 
 struct MapCreateInfo {
@@ -780,7 +785,11 @@ fn map_open_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
                             .into_iter(),
                     ) {
                         if ui.button(map).clicked() {
-                            open_map(params, handle);
+                            spawn_map(
+                                &mut params.spawn_map_params,
+                                &MapSpawnSource::Handle(handle),
+                            );
+                            *params.show_map_open = false;
                         }
                     }
                 });
@@ -802,126 +811,6 @@ fn map_open_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
             });
         },
     );
-}
-
-fn open_map(params: &mut EditorCentralPanel, handle: Handle<MapMeta>) {
-    use bevy_ecs_tilemap::prelude::*;
-    let map = params.map_assets.get(&handle).unwrap();
-
-    let grid = GeometryBuilder::build_as(
-        &grid::Grid {
-            grid_size: map.grid_size,
-            tile_size: map.tile_size,
-        },
-        DrawMode::Stroke(StrokeMode::new(Color::rgba(0.8, 0.8, 0.8, 0.25), 0.5)),
-        default(),
-    );
-
-    let window = params.windows.primary();
-    *params.parallax = map.get_parallax_resource();
-    params.parallax.window_size = Vec2::new(window.width(), window.height());
-    params.parallax.create_layers(
-        &mut params.commands,
-        &params.asset_server,
-        &mut params.texture_atlas_assets,
-    );
-
-    params
-        .commands
-        .insert_resource(ClearColor(map.background_color.into()));
-
-    let tilemap_size = TilemapSize {
-        x: map.grid_size.x,
-        y: map.grid_size.y,
-    };
-
-    let map_entity = params
-        .commands
-        .spawn()
-        .insert(map.clone())
-        .insert_bundle(VisibilityBundle::default())
-        .insert_bundle(TransformBundle::default())
-        .id();
-    let mut children = Vec::new();
-
-    // Spawn the grid
-    let grid_entity = params
-        .commands
-        .spawn()
-        .insert(MapGridView)
-        .insert_bundle(grid)
-        .insert_bundle(VisibilityBundle {
-            visibility: Visibility {
-                is_visible: params.state.show_grid,
-            },
-            ..default()
-        })
-        .id();
-    children.push(grid_entity);
-
-    // Spawn map layers
-    for (i, layer) in map.layers.iter().enumerate() {
-        let layer: &MapLayerMeta = layer;
-
-        match &layer.kind {
-            MapLayerKind::Tile(tile_layer) => {
-                let layer_entity = params.commands.spawn().id();
-                let mut storage = TileStorage::empty(tilemap_size);
-
-                for tile in &tile_layer.tiles {
-                    let tile_pos = TilePos {
-                        x: tile.pos.x,
-                        y: tile.pos.y,
-                    };
-
-                    let tile_entity = params
-                        .commands
-                        .spawn()
-                        .insert_bundle(TileBundle {
-                            position: tile_pos,
-                            tilemap_id: TilemapId(layer_entity),
-                            texture: TileTexture(tile.idx),
-                            ..default()
-                        })
-                        .id();
-
-                    storage.set(&tile_pos, Some(tile_entity));
-                }
-
-                params
-                    .commands
-                    .entity(layer_entity)
-                    .insert_bundle(TilemapBundle {
-                        grid_size: TilemapGridSize {
-                            x: map.grid_size.x as f32,
-                            y: map.grid_size.y as f32,
-                        },
-                        tile_size: TilemapTileSize {
-                            x: map.tile_size.x as f32,
-                            y: map.tile_size.y as f32,
-                        },
-                        texture: TilemapTexture(tile_layer.tilemap_handle.clone()),
-                        storage,
-                        transform: Transform::from_xyz(0.0, 0.0, -100.0 + i as f32),
-                        ..default()
-                    });
-            }
-            MapLayerKind::Element(_) => (),
-        }
-    }
-
-    params.commands.entity(map_entity).push_children(&children);
-
-    let camera_pos = Vec3::new(
-        (map.grid_size.x * map.tile_size.x) as f32 / 2.0,
-        (map.grid_size.y * map.tile_size.y) as f32 / 2.0,
-        0.0,
-    );
-    let (_, mut camera_transform, _) = params.camera.single_mut();
-    camera_transform.translation = camera_pos;
-
-    *params.show_map_open = false;
-    *params.show_map_create = false;
 }
 
 fn map_create_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
@@ -992,51 +881,17 @@ fn create_map(params: &mut EditorCentralPanel) {
     let info = &params.map_create_info;
     let grid_size = UVec2::new(info.map_width, info.map_height);
     let tile_size = UVec2::new(10, 10);
-    let handle = params.map_assets.add(MapMeta {
+    let meta = MapMeta {
         background_color: params.game.clear_color,
         name: info.name.clone(),
         grid_size,
         tile_size,
         layers: default(),
         background_layers: default(),
-    });
-    open_map(params, handle)
-}
-
-mod grid {
-    use bevy_prototype_lyon::prelude::tess::{
-        geom::{
-            euclid::{Point2D, Size2D},
-            Rect,
-        },
-        path::traits::PathBuilder,
     };
-
-    use super::*;
-
-    pub struct Grid {
-        pub grid_size: UVec2,
-        pub tile_size: UVec2,
-    }
-
-    impl Geometry for Grid {
-        fn add_geometry(&self, b: &mut tess::path::path::Builder) {
-            for x in 0..self.grid_size.x {
-                for y in 0..self.grid_size.y {
-                    b.add_rectangle(
-                        &Rect {
-                            origin: Point2D::new(
-                                x as f32 * self.tile_size.x as f32,
-                                y as f32 * self.tile_size.y as f32,
-                            ),
-                            size: Size2D::new(self.tile_size.x as f32, self.tile_size.y as f32),
-                        },
-                        tess::path::Winding::Positive,
-                    );
-                }
-            }
-        }
-    }
+    spawn_map(&mut params.spawn_map_params, &MapSpawnSource::Meta(meta));
+    *params.show_map_open = false;
+    *params.show_map_create = false;
 }
 
 /// Helper to render an egui frame in the center of the screen as an overlay

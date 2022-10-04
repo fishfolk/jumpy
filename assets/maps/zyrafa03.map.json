@@ -1,6 +1,6 @@
 {
   "name": "zyrafa03",
-  "background_color": "7fb2b2ff",
+  "background_color": "7EA8A6",
   "grid_size": [
     27,
     22
@@ -1837,72 +1837,56 @@
                 32,
                 461
               ],
-              "name": "sproinger",
-              "element": "./elements/sproinger.item.yaml",
-              "category": "environment"
+              "element": "./elements/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
                 768,
                 429
               ],
-              "name": "anemones",
-              "element": "./elements/anemones.item.yaml",
-              "category": "decoration"
+              "element": "./elements/anemones/anemones.element.yaml"
             },
             {
               "pos": [
                 64,
                 429
               ],
-              "name": "seaweed",
-              "element": "./elements/seaweed.item.yaml",
-              "category": "decoration"
+              "element": "./elements/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 288,
                 525
               ],
-              "name": "seaweed",
-              "element": "./elements/seaweed.item.yaml",
-              "category": "decoration"
+              "element": "./elements/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 288,
                 205
               ],
-              "name": "seaweed",
-              "element": "./elements/seaweed.item.yaml",
-              "category": "decoration"
+              "element": "./elements/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 224,
                 205
               ],
-              "name": "anemones",
-              "element": "./elements/anemones.item.yaml",
-              "category": "decoration"
+              "element": "./elements/anemones/anemones.element.yaml"
             },
             {
               "pos": [
                 576,
                 205
               ],
-              "name": "seaweed",
-              "element": "./elements/seaweed.item.yaml",
-              "category": "decoration"
+              "element": "./elements/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 512,
                 525
               ],
-              "name": "seaweed",
-              "element": "./elements/seaweed.item.yaml",
-              "category": "decoration"
+              "element": "./elements/seaweed/seaweed.element.yaml"
             }
           ]
         }
@@ -1918,99 +1902,77 @@
                 575.9231,
                 196.76924
               ],
-              "name": "fish_school",
-              "element": "./elements/fish_school.item.yaml",
-              "category": "environment"
+              "element": "./elements/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
                 284.90906,
                 194.54543
               ],
-              "name": "fish_school",
-              "element": "./elements/fish_school.item.yaml",
-              "category": "environment"
+              "element": "./elements/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
                 507.72723,
                 506.1818
               ],
-              "name": "fish_school",
-              "element": "./elements/fish_school.item.yaml",
-              "category": "environment"
+              "element": "./elements/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
                 383.70593,
                 556.70593
               ],
-              "name": "sproinger",
-              "element": "./elements/sproinger.item.yaml",
-              "category": "environment"
+              "element": "./elements/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
                 448.14288,
                 557.1429
               ],
-              "name": "sproinger",
-              "element": "./elements/sproinger.item.yaml",
-              "category": "environment"
+              "element": "./elements/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
                 801.16675,
                 460.05554
               ],
-              "name": "sproinger",
-              "element": "./elements/sproinger.item.yaml",
-              "category": "environment"
+              "element": "./elements/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
                 544,
                 544
               ],
-              "name": "musket",
-              "element": "./elements/musket.item.yaml",
-              "category": "item"
+              "element": "./elements/musket/musket.element.yaml"
             },
             {
               "pos": [
                 266.25003,
                 544.7352
               ],
-              "name": "musket",
-              "element": "./elements/musket.item.yaml",
-              "category": "item"
+              "element": "./elements/musket/musket.element.yaml"
             },
             {
               "pos": [
                 403.375,
                 326.875
               ],
-              "name": "sword",
-              "element": "./elements/sword.item.yaml",
-              "category": "item"
+              "element": "./elements/sword/sword.element.yaml"
             },
             {
               "pos": [
                 566.125,
                 227.75
               ],
-              "name": "sword",
-              "element": "./elements/sword.item.yaml",
-              "category": "item"
+              "element": "./elements/sword/sword.element.yaml"
             },
             {
               "pos": [
                 288,
                 224
               ],
-              "name": "sword",
-              "element": "./elements/sword.item.yaml",
-              "category": "item"
+              "element": "./elements/sword/sword.element.yaml"
             }
           ]
         }

@@ -2,11 +2,16 @@
 #![allow(clippy::forget_non_drop)]
 #![allow(clippy::too_many_arguments)]
 
-use bevy::{asset::AssetServerSettings, log::LogSettings, render::texture::ImageSettings};
+use bevy::{
+    asset::AssetServerSettings,
+    log::LogSettings,
+    render::{camera::CameraPlugin, texture::ImageSettings},
+};
 use bevy_parallax::ParallaxResource;
 
 mod animation;
 mod assets;
+mod camera;
 mod config;
 mod debug;
 mod input;
@@ -95,6 +100,7 @@ pub fn main() {
         .add_plugin(UiPlugin)
         .add_plugin(PlayerPlugin)
         .add_plugin(PhysicsPlugin)
+        .add_plugin(CameraPlugin)
         .add_plugin(MapPlugin)
         .add_plugin(ScriptingPlugin)
         .add_plugin(WorkaroundsPlugin)

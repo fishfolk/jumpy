@@ -684,7 +684,7 @@ dependencies = [
 [[package]]
 name = "bevy_mod_js_scripting"
 version = "0.1.0"
-source = "git+https://github.com/jakobhellermann/bevy_mod_js_scripting.git#39cfd70e91eb87aaf000c05a35ea4d2563097c37"
+source = "git+https://github.com/zicklag/bevy_mod_js_scripting.git?branch=jumpy#9a2cdf8c36d07a3f4224750a65decb2678993e1e"
 dependencies = [
  "anyhow",
  "bevy",
@@ -4001,9 +4001,9 @@ dependencies = [
 
 [[package]]
 name = "serde-wasm-bindgen"
-version = "0.4.3"
+version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1cfc62771e7b829b517cb213419236475f434fb480eddd76112ae182d274434a"
+checksum = "e3b4c031cd0d9014307d82b8abf653c0290fbdaeb4c02d00c63cf52f728628bf"
 dependencies = [
  "js-sys",
  "serde",

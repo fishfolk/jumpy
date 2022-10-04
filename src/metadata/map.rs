@@ -151,4 +151,9 @@ pub struct MapElementMeta {
     pub script: String,
     #[serde(skip)]
     pub script_handle: Handle<JsScript>,
+    /// Assets that should be pre-loaded by the game before starting
+    #[serde(default)]
+    pub preload_assets: Vec<String>,
+    #[serde(skip)]
+    pub preload_asset_handles: Vec<HandleUntyped>,
 }

@@ -253,6 +253,19 @@ impl AssetLoader for MapMetaLoader {
                 }
             }
 
+            for layer in &mut meta.background_layers {
+                let (path, handle) = get_relative_asset(load_context, self_path, &layer.image);
+                dependencies.push(path);
+                layer.image_handle = handle;
+
+                // Rewrite relative paths from the parallax background layer as an absolute path to
+                // make it compatible with the parallax plugin.
+                layer.image = relative_asset_path(self_path, &layer.image)
+                    .to_str()
+                    .unwrap()
+                    .into();
+            }
+
             load_context.set_default_asset(LoadedAsset::new(meta).with_dependencies(dependencies));
 
             Ok(())

@@ -10,6 +10,8 @@ pub struct MapMeta {
     /// The parallax background layers
     #[serde(default)]
     pub background_layers: Vec<ParallaxLayerMeta>,
+    /// The background color of the map, behind the parallax layers
+    pub background_color: ColorMeta,
     /// Size of the map in tiles
     pub grid_size: UVec2,
     /// The size of the tiles in pixels
@@ -94,9 +96,10 @@ pub struct MapTileMeta {
 
 #[derive(HasLoadProgress, Deserialize, Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
+#[serde(default)]
 pub struct ParallaxLayerMeta {
     pub speed: f32,
-    pub path: String,
+    pub image: String,
     #[serde(skip)]
     pub image_handle: Handle<Image>,
     pub tile_size: Vec2,
@@ -105,15 +108,31 @@ pub struct ParallaxLayerMeta {
     pub scale: f32,
     pub z: f32,
     pub transition_factor: f32,
-    #[serde(default)]
     pub position: Vec2,
+}
+
+impl Default for ParallaxLayerMeta {
+    fn default() -> Self {
+        Self {
+            speed: default(),
+            image: default(),
+            image_handle: default(),
+            tile_size: default(),
+            cols: 1,
+            rows: 1,
+            scale: 1.0,
+            z: default(),
+            transition_factor: 1.0,
+            position: default(),
+        }
+    }
 }
 
 impl From<ParallaxLayerMeta> for ParallaxLayerData {
     fn from(meta: ParallaxLayerMeta) -> Self {
         Self {
             speed: meta.speed,
-            path: meta.path,
+            path: meta.image,
             tile_size: meta.tile_size,
             cols: meta.cols,
             rows: meta.rows,

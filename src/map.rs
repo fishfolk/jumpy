@@ -6,6 +6,7 @@ pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(TilemapPlugin);
+        app.add_plugin(TilemapPlugin)
+            .add_plugin(bevy_parallax::ParallaxPlugin);
     }
 }

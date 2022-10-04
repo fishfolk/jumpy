@@ -241,6 +241,21 @@ impl<'de> Deserialize<'de> for ColorMeta {
     }
 }
 
+impl Serialize for ColorMeta {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&format!(
+            "{:X}{:X}{:X}{:X}",
+            (255.0 * self.0.r()) as u8,
+            (255.0 * self.0.g()) as u8,
+            (255.0 * self.0.b()) as u8,
+            (255.0 * self.0.a()) as u8,
+        ))
+    }
+}
+
 struct ColorVisitor;
 impl<'de> serde::de::Visitor<'de> for ColorVisitor {
     type Value = ColorMeta;

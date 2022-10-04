@@ -1,5 +1,6 @@
 {
   "name": "lev02",
+  "background_color": "7fb2b2ff",
   "grid_size": [
     27,
     21
@@ -1431,6 +1432,64 @@
           ]
         }
       }
+    }
+  ],
+  "background_layers": [
+    {
+      "image": "./resources/background_04.png",
+      "speed": 0,
+      "tile_size": [
+        896,
+        480
+      ],
+      "z": -110,
+      "position": [
+        0,
+        360
+      ],
+      "scale": 2
+    },
+    {
+      "image": "./resources/background_03.png",
+      "speed": 0.74,
+      "tile_size": [
+        896,
+        480
+      ],
+      "z": -109,
+      "position": [
+        0,
+        360
+      ],
+      "scale": 2
+    },
+    {
+      "image": "./resources/background_02.png",
+      "speed": 0.82,
+      "tile_size": [
+        896,
+        480
+      ],
+      "z": -108,
+      "position": [
+        0,
+        360
+      ],
+      "scale": 2
+    },
+    {
+      "image": "./resources/background_01.png",
+      "speed": 100,
+      "tile_size": [
+        896,
+        480
+      ],
+      "z": -107,
+      "position": [
+        0,
+        360
+      ],
+      "scale": 2
     }
   ]
 }

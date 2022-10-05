@@ -35,7 +35,8 @@ impl Plugin for EditorPlugin {
                 .at_end(),
             )
             .add_enter_system(InGameState::Editing, setup_editor)
-            .add_exit_system(InGameState::Editing, cleanup_editor);
+            .add_exit_system(InGameState::Editing, cleanup_editor)
+            .add_exit_system(GameState::InGame, cleanup_editor);
     }
 }
 
@@ -63,7 +64,7 @@ fn setup_editor(
     let mut game_camera = game_camera.single_mut();
     game_camera.is_active = false;
 
-    // Reset camera position and scale
+    // Enable editor camera
     //
     // TODO: Fit map inside of viewport
     let mut camera = editor_camera.single_mut();

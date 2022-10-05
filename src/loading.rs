@@ -1,4 +1,4 @@
-use bevy::ecs::system::SystemParam;
+use bevy::{ecs::system::SystemParam, render::camera::ScalingMode};
 use bevy_egui::{egui, EguiContext};
 use bevy_fluent::Locale;
 use bevy_has_load_progress::{HasLoadProgress, LoadingResources};
@@ -49,6 +49,12 @@ fn setup(mut commands: Commands) {
             input_map: menu_input_map(),
             ..default()
         });
+
+    // Spawn the game camera
+    spawn_game_camera(&mut commands);
+
+    // Spawn the editor camera
+    spawn_editor_camera(&mut commands);
 }
 
 // Condition system used to make sure game assets have loaded
@@ -83,7 +89,7 @@ fn game_assets_loaded(
 #[derive(SystemParam)]
 pub struct GameLoader<'w, 's> {
     skip_next_asset_update_event: Local<'s, bool>,
-    cameras: Query<'w, 's, Entity, With<Camera>>,
+    camera_projections: Query<'w, 's, &'static mut OrthographicProjection>,
     commands: Commands<'w, 's>,
     game_handle: Res<'w, Handle<GameMeta>>,
     clear_color: ResMut<'w, ClearColor>,
@@ -111,7 +117,7 @@ impl<'w, 's> GameLoader<'w, 's> {
 
         let Self {
             mut skip_next_asset_update_event,
-            cameras,
+            mut camera_projections,
             mut commands,
             game_handle,
             mut game_assets,
@@ -127,11 +133,6 @@ impl<'w, 's> GameLoader<'w, 's> {
         if let Some(game) = game_assets.get_mut(&game_handle) {
             // Hot reload preparation
             if is_hot_reload {
-                // Despawn previous camera
-                for camera in &cameras {
-                    commands.entity(camera).despawn();
-                }
-
                 // Since we are modifying the game asset, which will trigger another asset changed
                 // event, we need to skip the next update event.
                 *skip_next_asset_update_event = true;
@@ -171,6 +172,11 @@ impl<'w, 's> GameLoader<'w, 's> {
                 commands.insert_resource(NextState(GameState::MainMenu));
             }
 
+            // Update camera scaling mode
+            for mut projection in &mut camera_projections {
+                projection.scaling_mode = ScalingMode::FixedVertical(game.camera_height as f32);
+            }
+
             // set the clear color
             clear_color.0 = game.clear_color.into();
 
@@ -180,12 +186,6 @@ impl<'w, 's> GameLoader<'w, 's> {
                 Locale::new(translations.detected_locale.clone())
                     .with_default(translations.default_locale.clone()),
             );
-
-            // Spawn the game camera
-            spawn_game_camera(&mut commands, game);
-
-            // Spawn the editor camera
-            spawn_editor_camera(&mut commands, game);
 
             let mut visuals = egui::Visuals::dark();
             visuals.widgets = game.ui_theme.widgets.get_egui_widget_style();

@@ -11,7 +11,7 @@ use bevy_rapier2d::parry::utils::hashmap::FxHasher32;
 use iyes_loopless::prelude::*;
 use leafwing_input_manager::{plugin::InputManagerSystem, prelude::ActionState};
 
-use crate::{assets::EguiFont, input::MenuAction, metadata::GameMeta};
+use crate::{assets::EguiFont, camera::GameCamera, input::MenuAction, metadata::GameMeta};
 
 pub mod widgets;
 
@@ -342,7 +342,7 @@ fn update_ui_scale(
     game_meta: Res<GameMeta>,
     mut egui_settings: ResMut<EguiSettings>,
     windows: Res<Windows>,
-    projection: Query<&OrthographicProjection, With<Camera>>,
+    projection: Query<&OrthographicProjection, With<GameCamera>>,
 ) {
     if let Some(window) = windows.get_primary() {
         if let Ok(projection) = projection.get_single() {

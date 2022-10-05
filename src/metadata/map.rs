@@ -50,7 +50,19 @@ pub enum MapLayerKind {
     Element(MapElementLayer),
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug, Default)]
+impl HasLoadProgress for MapLayerKind {
+    fn load_progress(
+        &self,
+        loading_resources: &bevy_has_load_progress::LoadingResources,
+    ) -> bevy_has_load_progress::LoadProgress {
+        match self {
+            MapLayerKind::Tile(tile_layer) => tile_layer.load_progress(loading_resources),
+            MapLayerKind::Element(element_layer) => element_layer.load_progress(loading_resources),
+        }
+    }
+}
+
+#[derive(HasLoadProgress, Deserialize, Serialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
 pub struct MapTileLayer {
     pub tilemap: String,
@@ -60,29 +72,19 @@ pub struct MapTileLayer {
     pub tiles: Vec<MapTileMeta>,
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug, Default)]
+#[derive(HasLoadProgress, Deserialize, Serialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
 pub struct MapElementLayer {
     pub elements: Vec<MapElementSpawn>,
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug, Default)]
+#[derive(HasLoadProgress, Deserialize, Serialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
 pub struct MapElementSpawn {
     pub pos: Vec2,
     pub element: String,
     #[serde(skip)]
     pub element_handle: Handle<MapElementMeta>,
-}
-
-impl HasLoadProgress for MapLayerKind {
-    fn load_progress(
-        &self,
-        _loading_resources: &bevy_has_load_progress::LoadingResources,
-    ) -> bevy_has_load_progress::LoadProgress {
-        warn!("TODO: Implement load progress for MapLayerKindMeta");
-        bevy_has_load_progress::LoadProgress::default()
-    }
 }
 
 #[derive(HasLoadProgress, Deserialize, Serialize, Clone, Debug)]
@@ -149,6 +151,11 @@ pub struct MapElementMeta {
     pub name: String,
     pub category: String,
     pub script: String,
+
+    /// The size of the bounding rect for the element in the editor
+    #[serde(default = "editor_size_default")]
+    pub editor_size: Vec2,
+
     #[serde(skip)]
     pub script_handle: Handle<JsScript>,
     /// Assets that should be pre-loaded by the game before starting
@@ -156,4 +163,8 @@ pub struct MapElementMeta {
     pub preload_assets: Vec<String>,
     #[serde(skip)]
     pub preload_asset_handles: Vec<HandleUntyped>,
+}
+
+fn editor_size_default() -> Vec2 {
+    Vec2::splat(16.0)
 }

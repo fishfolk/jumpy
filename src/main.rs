@@ -2,11 +2,7 @@
 #![allow(clippy::forget_non_drop)]
 #![allow(clippy::too_many_arguments)]
 
-use bevy::{
-    asset::AssetServerSettings,
-    log::LogSettings,
-    render::{camera::CameraPlugin, texture::ImageSettings},
-};
+use bevy::{asset::AssetServerSettings, log::LogSettings, render::texture::ImageSettings};
 use bevy_parallax::ParallaxResource;
 
 mod animation;
@@ -30,10 +26,11 @@ mod utils;
 mod workarounds;
 
 use crate::{
-    animation::AnimationPlugin, assets::AssetPlugin, debug::DebugPlugin, input::InputPlugin,
-    lines::LinesPlugin, loading::LoadingPlugin, localization::LocalizationPlugin, map::MapPlugin,
-    metadata::GameMeta, physics::PhysicsPlugin, platform::PlatformPlugin, player::PlayerPlugin,
-    prelude::*, scripting::ScriptingPlugin, ui::UiPlugin, workarounds::WorkaroundsPlugin,
+    animation::AnimationPlugin, assets::AssetPlugin, camera::CameraPlugin, debug::DebugPlugin,
+    input::InputPlugin, lines::LinesPlugin, loading::LoadingPlugin,
+    localization::LocalizationPlugin, map::MapPlugin, metadata::GameMeta, physics::PhysicsPlugin,
+    platform::PlatformPlugin, player::PlayerPlugin, prelude::*, scripting::ScriptingPlugin,
+    ui::UiPlugin, workarounds::WorkaroundsPlugin,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

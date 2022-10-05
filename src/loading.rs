@@ -63,7 +63,7 @@ fn game_assets_loaded(
         debug!(
             %load_progress,
             "Loading game assets: {:.2}% ",
-            load_progress.as_percent()
+            load_progress.as_percent() * 100.0
         );
 
         // Wait until assets are loaded to start game

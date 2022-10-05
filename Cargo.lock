@@ -340,7 +340,7 @@ checksum = "53f1c2a525d27d3281890e9a4d39200a3f6b055c1f66b2be2305bcccd887239f"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
- "bevy_rapier2d",
+ "bevy_rapier2d 0.16.2",
 ]
 
 [[package]]
@@ -759,7 +759,20 @@ dependencies = [
  "bitflags",
  "log",
  "nalgebra",
- "rapier2d",
+ "rapier2d 0.14.0",
+]
+
+[[package]]
+name = "bevy_rapier2d"
+version = "0.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b8e0108d726673a74936b61d392253315a58d20a1ae5622f9663fd35683cc368"
+dependencies = [
+ "bevy",
+ "bitflags",
+ "log",
+ "nalgebra",
+ "rapier2d 0.15.0",
 ]
 
 [[package]]
@@ -2623,7 +2636,7 @@ dependencies = [
  "bevy_kira_audio",
  "bevy_mod_js_scripting",
  "bevy_prototype_lyon",
- "bevy_rapier2d",
+ "bevy_rapier2d 0.17.0",
  "directories",
  "egui_extras",
  "fluent",
@@ -3480,6 +3493,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "parry2d"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ee29895c34e7dae094c8ea355af4f6fb3f3ab6b76ea037b49bc51bf5972d2464"
+dependencies = [
+ "approx",
+ "arrayvec 0.7.2",
+ "bitflags",
+ "downcast-rs",
+ "either",
+ "nalgebra",
+ "num-derive",
+ "num-traits",
+ "rustc-hash",
+ "simba",
+ "slab",
+ "smallvec",
+ "spade",
+]
+
+[[package]]
 name = "paste"
 version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3788,7 +3822,27 @@ dependencies = [
  "nalgebra",
  "num-derive",
  "num-traits",
- "parry2d",
+ "parry2d 0.9.0",
+ "rustc-hash",
+ "simba",
+]
+
+[[package]]
+name = "rapier2d"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "daba24ce52b431f4bb3ac798f457db72de6b6cc4718201227a466d81ba705637"
+dependencies = [
+ "approx",
+ "arrayvec 0.7.2",
+ "bit-vec",
+ "bitflags",
+ "crossbeam",
+ "downcast-rs",
+ "nalgebra",
+ "num-derive",
+ "num-traits",
+ "parry2d 0.10.0",
  "rustc-hash",
  "simba",
 ]

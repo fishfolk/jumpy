@@ -17,11 +17,11 @@ export default {
       world.insert(
         entity,
         Value.create(AnimatedSprite, {
-          start: 0,
-          end: 4,
+          start: 5,
+          end: 9,
           repeat: true,
           fps: 6,
-          atlas_path: Assets.absolutePath("../../resources/default_decoration.atlas.yaml"),
+          atlas_path: Assets.absolutePath("../../../resources/default_decoration.atlas.yaml"),
         })
       );
     }

@@ -173,7 +173,7 @@ for (const map of inMaps) {
       for (const object of layer.objects) {
         const element = {} as any;
         element.pos = [object.position.x, object.position.y];
-        element.element = `./elements/${object.id}/${object.id}.element.yaml`;
+        element.element = `./elements/${object.kind}/${object.id}/${object.id}.element.yaml`;
         newLayer.kind.element.elements.push(element);
       }
     } else {

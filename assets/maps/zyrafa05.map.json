@@ -871,42 +871,42 @@
                 749.1538,
                 447.53845
               ],
-              "element": "./elements/fish_school/fish_school.element.yaml"
+              "element": "./elements/environment/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
                 416,
                 365
               ],
-              "element": "./elements/anemones/anemones.element.yaml"
+              "element": "./elements/decoration/anemones/anemones.element.yaml"
             },
             {
               "pos": [
                 77.57143,
                 462.14285
               ],
-              "element": "./elements/seaweed/seaweed.element.yaml"
+              "element": "./elements/decoration/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 448,
                 173
               ],
-              "element": "./elements/seaweed/seaweed.element.yaml"
+              "element": "./elements/decoration/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 757.28577,
                 462.14285
               ],
-              "element": "./elements/seaweed/seaweed.element.yaml"
+              "element": "./elements/decoration/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 544,
                 173
               ],
-              "element": "./elements/anemones/anemones.element.yaml"
+              "element": "./elements/decoration/anemones/anemones.element.yaml"
             }
           ]
         }
@@ -922,70 +922,70 @@
                 75.99994,
                 435.85715
               ],
-              "element": "./elements/fish_school/fish_school.element.yaml"
+              "element": "./elements/environment/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
                 501.14282,
                 402.2857
               ],
-              "element": "./elements/crab/crab.element.yaml"
+              "element": "./elements/environment/crab/crab.element.yaml"
             },
             {
               "pos": [
                 441.74994,
                 161.99997
               ],
-              "element": "./elements/fish_school/fish_school.element.yaml"
+              "element": "./elements/environment/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
                 160.76923,
                 492.00003
               ],
-              "element": "./elements/sproinger/sproinger.element.yaml"
+              "element": "./elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
                 830.46155,
                 492.00003
               ],
-              "element": "./elements/sproinger/sproinger.element.yaml"
+              "element": "./elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
                 512,
                 384
               ],
-              "element": "./elements/musket/musket.element.yaml"
+              "element": "./elements/item/musket/musket.element.yaml"
             },
             {
               "pos": [
                 366.00003,
                 200.46153
               ],
-              "element": "./elements/sword/sword.element.yaml"
+              "element": "./elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
                 597.6923,
                 199.6923
               ],
-              "element": "./elements/sword/sword.element.yaml"
+              "element": "./elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
                 195.84616,
                 185.84615
               ],
-              "element": "./elements/grenades/grenades.element.yaml"
+              "element": "./elements/item/grenades/grenades.element.yaml"
             },
             {
               "pos": [
                 865.53845,
                 185.07692
               ],
-              "element": "./elements/grenades/grenades.element.yaml"
+              "element": "./elements/item/grenades/grenades.element.yaml"
             }
           ]
         }

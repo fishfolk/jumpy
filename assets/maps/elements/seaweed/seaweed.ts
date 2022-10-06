@@ -21,7 +21,7 @@ export default {
           end: 4,
           repeat: true,
           fps: 6,
-          atlas_path: Assets.absolutePath("./seaweed.atlas.yaml"),
+          atlas_path: Assets.absolutePath("../../resources/default_decoration.atlas.yaml"),
         })
       );
     }

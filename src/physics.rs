@@ -3,6 +3,8 @@ use bevy_rapier2d::prelude::*;
 
 use crate::{config::ENGINE_CONFIG, prelude::*};
 
+mod debug;
+
 pub struct PhysicsPlugin;
 
 impl Plugin for PhysicsPlugin {
@@ -15,7 +17,8 @@ impl Plugin for PhysicsPlugin {
                 enabled: false,
                 ..default()
             })
-            .add_plugin(InspectableRapierPlugin);
+            .add_plugin(InspectableRapierPlugin)
+            .add_plugin(debug::DebugRenderPlugin);
         }
     }
 }

@@ -987,57 +987,57 @@
           "elements": [
             {
               "pos": [
-                512,
-                237
+                536,
+                187
               ],
               "element": "./elements/decoration/anemones/anemones.element.yaml"
             },
             {
               "pos": [
-                192,
-                333
+                216,
+                91
               ],
               "element": "./elements/decoration/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
-                416,
-                333
+                440,
+                91
               ],
               "element": "./elements/decoration/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
-                864,
-                205
+                888,
+                219
               ],
               "element": "./elements/decoration/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
-                736,
-                333
+                760,
+                91
               ],
               "element": "./elements/decoration/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
-                384,
-                141
+                408,
+                283
               ],
               "element": "./elements/decoration/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
-                896,
-                333
+                920,
+                91
               ],
               "element": "./elements/decoration/anemones/anemones.element.yaml"
             },
             {
               "pos": [
-                96,
-                333
+                120,
+                91
               ],
               "element": "./elements/decoration/anemones/anemones.element.yaml"
             }
@@ -1052,99 +1052,99 @@
           "elements": [
             {
               "pos": [
-                191.3334,
-                304.6667
+                215.3334,
+                119.33330000000001
               ],
               "element": "./elements/environment/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
-                415,
-                240.33337
+                439,
+                183.66663
               ],
               "element": "./elements/environment/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
-                694.00006,
-                370.6667
+                718.00006,
+                53.33330000000001
               ],
               "element": "./elements/environment/crab/crab.element.yaml"
             },
             {
               "pos": [
-                861.6666,
-                188.33334
+                885.6666,
+                235.66666
               ],
               "element": "./elements/environment/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
-                457.33334,
-                179.00003
+                481.33334,
+                244.99997
               ],
               "element": "./elements/environment/crab/crab.element.yaml"
             },
             {
               "pos": [
-                232.88095,
-                350.97617
+                256.88095,
+                73.02382999999998
               ],
               "element": "./elements/item/musket/musket.element.yaml"
             },
             {
               "pos": [
-                622.2857,
-                348.7143
+                646.2857,
+                75.28570000000002
               ],
               "element": "./elements/item/musket/musket.element.yaml"
             },
             {
               "pos": [
-                433,
-                146.00003
+                457,
+                277.99996999999996
               ],
               "element": "./elements/item/kick_bomb/kick_bomb.element.yaml"
             },
             {
               "pos": [
-                983.5714,
-                337.2857
+                1007.5714,
+                86.71429999999998
               ],
               "element": "./elements/item/kick_bomb/kick_bomb.element.yaml"
             },
             {
               "pos": [
-                321.5556,
-                364.6667
+                345.5556,
+                59.33330000000001
               ],
               "element": "./elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
-                737.05554,
-                364.86102
+                761.05554,
+                59.138980000000004
               ],
               "element": "./elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
-                928.71796,
-                364.87183
+                952.71796,
+                59.12817000000001
               ],
               "element": "./elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
-                687.4286,
-                103.14284
+                711.4286,
+                320.85716
               ],
               "element": "./elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
-                212.42856,
-                135.85715
+                236.42856,
+                288.14285
               ],
               "element": "./elements/item/sword/sword.element.yaml"
             }

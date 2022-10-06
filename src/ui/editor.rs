@@ -12,6 +12,7 @@ use crate::{
     map::{spawn_map, MapGridView, MapSpawnSource, SpawnMapParams},
     metadata::{GameMeta, MapLayerKind, MapLayerMeta, MapMeta},
     prelude::*,
+    utils::ResetController,
 };
 
 use super::{widget, widgets::bordered_button::BorderedButton, WidgetSystem};
@@ -126,16 +127,24 @@ pub fn editor_ui_system(world: &mut World) {
 struct EditorTopBar<'w, 's> {
     commands: Commands<'w, 's>,
     game: Res<'w, GameMeta>,
-    camera: Query<
+    camera_and_reset_controller: ParamSet<
         'w,
         's,
-        (&'static mut Transform, &'static mut OrthographicProjection),
-        With<EditorCamera>,
+        (
+            Query<
+                'w,
+                's,
+                (&'static mut Transform, &'static mut OrthographicProjection),
+                With<EditorCamera>,
+            >,
+            ResetController<'w, 's>,
+        ),
     >,
     show_map_export_window: Local<'s, bool>,
     localization: Res<'w, Localization>,
     map: Query<'w, 's, &'static MapMeta>,
     settings: ResMut<'w, EditorState>,
+    spawn_map_params: SpawnMapParams<'w, 's>,
 }
 
 impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
@@ -152,12 +161,13 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
 
         map_export_window(ui, &mut params);
 
-        let (mut transform, mut projection): (Mut<Transform>, Mut<OrthographicProjection>) =
-            params.camera.single_mut();
-        let zoom = 1.0 / projection.scale * 100.0;
-        let [x, y]: [f32; 2] = transform.translation.xy().into();
-
         ui.horizontal_centered(|ui| {
+            let mut camera = params.camera_and_reset_controller.p0();
+            let (mut transform, mut projection): (Mut<Transform>, Mut<OrthographicProjection>) =
+                camera.single_mut();
+            let zoom = 1.0 / projection.scale * 100.0;
+            let [x, y]: [f32; 2] = transform.translation.xy().into();
+
             ui.label(&params.localization.get("editor"));
             ui.separator();
 
@@ -207,8 +217,21 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                             .insert_resource(NextState(InGameState::Playing));
                     }
 
-                    if ui.button(&params.localization.get("export-map")).clicked() {
+                    let mut reset_controller = params.camera_and_reset_controller.p1();
+                    if ui.button(&params.localization.get("export")).clicked() {
                         *params.show_map_export_window = true;
+                    }
+
+                    if ui.button(&params.localization.get("close")).clicked() {
+                        reset_controller.reset_world();
+                    }
+
+                    if ui.button(&params.localization.get("reload")).clicked() {
+                        let map = params.map.get_single().ok().cloned();
+                        reset_controller.reset_world();
+                        if let Some(map) = map {
+                            spawn_map(&mut params.spawn_map_params, &MapSpawnSource::Meta(map));
+                        }
                     }
                 });
             });

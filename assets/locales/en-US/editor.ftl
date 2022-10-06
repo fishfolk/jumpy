@@ -3,7 +3,6 @@ create-layer = Create a New Layer
 
 map-info = Map Info
 map-export = Map Export
-export-map = Export Map
 tiles = Tiles
 tile = Tile
 tile-layer = Tile Layer

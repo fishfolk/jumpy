@@ -57,7 +57,7 @@ pub struct MainMenuBackground;
 pub fn setup_main_menu(
     mut commands: Commands,
     game: Res<GameMeta>,
-    reset_controller: ResetController,
+    mut reset_controller: ResetController,
 ) {
     // Reset the game world
     reset_controller.reset_world();

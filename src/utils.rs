@@ -35,7 +35,7 @@ pub struct ResetController<'w, 's> {
 impl<'w, 's> ResetController<'w, 's> {
     /// Clean up the game world, despawning all the gameplay entities, but leaving necessary
     /// entities like camera.
-    pub fn reset_world(mut self) {
+    pub fn reset_world(&mut self) {
         // Clean up all entities other than the camera and the player entities
         for entity in self.entities_to_despawn.iter() {
             self.commands.entity(entity).despawn_recursive();

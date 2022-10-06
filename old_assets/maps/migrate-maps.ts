@@ -172,7 +172,12 @@ for (const map of inMaps) {
       newLayer.kind = { element: { elements: [] } };
       for (const object of layer.objects) {
         const element = {} as any;
-        element.pos = [object.position.x, object.position.y];
+        // We have some weird offsets here because in the new format items are positioned at their
+        // center, intead of the bottom left.
+        //
+        // Optimizing for the anemone and seaweed positions is hacky, but works well enough for now
+        // and we can tweak the maps in the editor afterward.
+        element.pos = [object.position.x + 48 / 2, (map.grid_size.y - 1) * map.tile_size.y - object.position.y + 8];
         element.element = `./elements/${object.kind}/${object.id}/${object.id}.element.yaml`;
         newLayer.kind.element.elements.push(element);
       }

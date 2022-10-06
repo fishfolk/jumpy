@@ -1,7 +1,7 @@
 type AnimatedSprite = {
   start: usize;
   end: usize;
-  atlas_path: string;
+  atlas: HandleTextureAtlas;
   flip_x: boolean;
   flip_y: boolean;
   repeat: boolean;
@@ -21,7 +21,9 @@ export default {
           end: 9,
           repeat: true,
           fps: 6,
-          atlas_path: Assets.absolutePath("../../../resources/default_decoration.atlas.yaml"),
+          atlas: {
+            id: Assets.getHandleId("../../../resources/default_decoration.atlas.yaml"),
+          }
         })
       );
     }

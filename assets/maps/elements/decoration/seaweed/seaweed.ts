@@ -1,7 +1,7 @@
 type AnimatedSprite = {
   start: usize;
   end: usize;
-  atlas_path: string;
+  atlas: HandleTextureAtlas;
   flip_x: boolean;
   flip_y: boolean;
   repeat: boolean;
@@ -14,16 +14,19 @@ const AnimatedSprite: BevyType<AnimatedSprite> = {
 export default {
   preUpdate() {
     for (const entity of MapElement.getSpawnedEntities()) {
-      world.insert(
-        entity,
-        Value.create(AnimatedSprite, {
-          start: 0,
-          end: 4,
-          repeat: true,
-          fps: 6,
-          atlas_path: Assets.absolutePath("../../../resources/default_decoration.atlas.yaml"),
-        })
-      );
+      let animated_sprite = Value.create(AnimatedSprite, {
+        start: 0,
+        end: 4,
+        repeat: true,
+        fps: 6,
+        atlas: {
+          id: Assets.getHandleId(
+            "../../../resources/default_decoration.atlas.yaml"
+          ),
+        },
+      });
+
+      world.insert(entity, animated_sprite);
     }
   },
 };

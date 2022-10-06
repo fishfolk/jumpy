@@ -1,61 +1,113 @@
-use std::ops::Range;
+use std::time::Duration;
 
-use serde::{de::SeqAccess, Deserializer};
+use bevy::{
+    asset::{AssetPath, HandleId},
+    reflect::FromReflect,
+};
 
 use crate::prelude::*;
 
 pub struct AnimationPlugin;
 
 impl Plugin for AnimationPlugin {
-    fn build(&self, _app: &mut App) {}
-}
-
-#[derive(serde::Deserialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
-pub struct Clip {
-    #[serde(deserialize_with = "deserialize_range_from_array")]
-    pub frames: Range<usize>,
-    #[serde(default)]
-    pub repeat: bool,
-}
-
-fn deserialize_range_from_array<'de, D>(de: D) -> Result<Range<usize>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    de.deserialize_tuple(2, RangeVisitor)
-}
-
-struct RangeVisitor;
-
-impl<'de> serde::de::Visitor<'de> for RangeVisitor {
-    type Value = Range<usize>;
-
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        formatter.write_str("A sequence of 2 integers")
+    fn build(&self, app: &mut App) {
+        app.register_type::<AnimatedSprite>()
+            .add_system_to_stage(CoreStage::PostUpdate, update_animated_sprite_components)
+            .add_system_to_stage(
+                CoreStage::PostUpdate,
+                animate_sprites.after(update_animated_sprite_components),
+            );
     }
+}
 
-    fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
-    where
-        A: SeqAccess<'de>,
+#[derive(Component, Debug, Default, Reflect, FromReflect)]
+#[reflect(Component, Default)]
+pub struct AnimatedSprite {
+    pub start: usize,
+    pub end: usize,
+    pub atlas_path: String,
+    pub flip_x: bool,
+    pub flip_y: bool,
+    pub repeat: bool,
+    pub fps: f32,
+}
+
+#[derive(Component)]
+struct AnimatedSpriteState {
+    pub timer: Timer,
+}
+
+fn animate_sprites(
+    mut animated_sprites: Query<(
+        &AnimatedSprite,
+        &mut TextureAtlasSprite,
+        &mut AnimatedSpriteState,
+    )>,
+    time: Res<Time>,
+) {
+    for (animated_sprite, mut atlas_sprite, mut state) in &mut animated_sprites {
+        state.timer.tick(time.delta());
+
+        if state.timer.just_finished() {
+            if atlas_sprite.index < animated_sprite.end {
+                atlas_sprite.index += 1;
+            } else {
+                atlas_sprite.index = animated_sprite.start;
+            }
+        }
+    }
+}
+
+fn update_animated_sprite_components(
+    mut commands: Commands,
+    mut animated_sprites: Query<
+        (
+            Entity,
+            &AnimatedSprite,
+            Option<&mut Handle<TextureAtlas>>,
+            Option<&mut TextureAtlasSprite>,
+            Option<&mut AnimatedSpriteState>,
+        ),
+        Changed<AnimatedSprite>,
+    >,
+) {
+    for (entity, animated_sprite, texture_atlas, texture_atlas_sprite, state) in
+        &mut animated_sprites
     {
-        let start: usize = if let Some(start) = seq.next_element()? {
-            start
+        let mut cmd = commands.entity(entity);
+        let atlas_handle =
+            Handle::weak(HandleId::from(AssetPath::from(&animated_sprite.atlas_path)));
+        if let Some(mut texture) = texture_atlas {
+            *texture = atlas_handle;
         } else {
-            return Err(serde::de::Error::invalid_length(
-                0,
-                &"a sequence with a length of 2",
-            ));
-        };
-        let end: usize = if let Some(end) = seq.next_element()? {
-            end
-        } else {
-            return Err(serde::de::Error::invalid_length(
-                1,
-                &"a sequence with a length of 2",
-            ));
-        };
+            cmd.insert(atlas_handle);
+        }
 
-        Ok(start..end)
+        if let Some(mut sprite) = texture_atlas_sprite {
+            sprite.flip_x = animated_sprite.flip_x;
+            sprite.flip_y = animated_sprite.flip_y;
+            sprite.index = animated_sprite.start;
+        } else {
+            cmd.insert(TextureAtlasSprite {
+                index: animated_sprite.start,
+                flip_x: animated_sprite.flip_x,
+                flip_y: animated_sprite.flip_y,
+                ..default()
+            });
+        }
+
+        if let Some(mut state) = state {
+            state
+                .timer
+                .set_duration(Duration::from_secs_f32(1.0 / animated_sprite.fps));
+            state.timer.set_repeating(animated_sprite.repeat);
+        } else {
+            cmd.insert(AnimatedSpriteState {
+                timer: Timer::new(
+                    Duration::from_secs_f32(1.0 / animated_sprite.fps),
+                    animated_sprite.repeat,
+                ),
+            });
+        }
     }
 }

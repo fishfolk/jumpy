@@ -3,5 +3,5 @@ declare namespace MapElement {
 }
 
 declare namespace Assets {
-  function absolutePath(path: string): string;
+  function getHandleId(relative_path: string): HandleId;
 }

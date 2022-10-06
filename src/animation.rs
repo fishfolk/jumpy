@@ -1,9 +1,6 @@
 use std::time::Duration;
 
-use bevy::{
-    asset::{AssetPath, HandleId},
-    reflect::FromReflect,
-};
+use bevy::reflect::FromReflect;
 
 use crate::prelude::*;
 
@@ -25,7 +22,7 @@ impl Plugin for AnimationPlugin {
 pub struct AnimatedSprite {
     pub start: usize,
     pub end: usize,
-    pub atlas_path: String,
+    pub atlas: Handle<TextureAtlas>,
     pub flip_x: bool,
     pub flip_y: bool,
     pub repeat: bool,
@@ -76,7 +73,8 @@ fn update_animated_sprite_components(
     {
         let mut cmd = commands.entity(entity);
         let atlas_handle =
-            Handle::weak(HandleId::from(AssetPath::from(&animated_sprite.atlas_path)));
+            // Handle::weak(HandleId::from(AssetPath::from(&animated_sprite.atlas_path)));
+            animated_sprite.atlas.clone_weak();
         if let Some(mut texture) = texture_atlas {
             *texture = atlas_handle;
         } else {

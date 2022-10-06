@@ -22,9 +22,13 @@ declare interface BevyScript {
 
 declare type RawValueRef = unknown;
 
+type RecursivePartial<T> = {
+    [P in keyof T]?: RecursivePartial<T[P]>;
+};
+
 declare interface ValueGlobal {
-  create<T>(t: BevyType<T>, patch?: any): T;
-  patch<T>(value: any, patch: any): T;
+  create<T>(t: BevyType<T>, patch?: RecursivePartial<T>): T;
+  patch<T>(value: any, patch: RecursivePartial<T>): T;
 }
 
 declare let Value: ValueGlobal;

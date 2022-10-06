@@ -11,8 +11,8 @@ pub fn get_ops() -> OpMap {
         Box::new(map::ElementGetSpawnedEntities),
     );
     ops.insert(
-        "jumpy_asset_get_absolute_path",
-        Box::new(asset::AssetAbsolutePath),
+        "jumpy_asset_get_handle_id",
+        Box::new(asset::AssetGetHandleId),
     );
 
     ops

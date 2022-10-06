@@ -11,7 +11,10 @@ use bevy_egui::egui;
 use bevy_mod_js_scripting::serde_json;
 
 use crate::{
-    metadata::{BorderImageMeta, GameMeta, MapElementMeta, MapLayerKind, MapMeta, PlayerMeta},
+    metadata::{
+        BorderImageMeta, GameMeta, MapElementMeta, MapLayerKind, MapMeta, PlayerMeta,
+        TextureAtlasMeta,
+    },
     prelude::*,
 };
 
@@ -27,6 +30,7 @@ impl Plugin for AssetPlugin {
             .add_asset_loader(MapMetaLoader)
             .add_asset::<MapElementMeta>()
             .add_asset_loader(MapElementMetaLoader)
+            .add_asset_loader(TextureAtlasLoader)
             .add_asset::<EguiFont>()
             .add_asset_loader(EguiFontLoader);
     }
@@ -334,6 +338,46 @@ impl AssetLoader for MapElementMetaLoader {
 
     fn extensions(&self) -> &[&str] {
         &["element.yml", "element.yaml", "element.json"]
+    }
+}
+
+pub struct TextureAtlasLoader;
+
+impl AssetLoader for TextureAtlasLoader {
+    fn load<'a>(
+        &'a self,
+        bytes: &'a [u8],
+        load_context: &'a mut bevy::asset::LoadContext,
+    ) -> bevy::asset::BoxedFuture<'a, anyhow::Result<(), anyhow::Error>> {
+        Box::pin(async move {
+            let self_path = load_context.path();
+            let meta: TextureAtlasMeta = if self_path.extension() == Some(OsStr::new("json")) {
+                serde_json::from_slice(bytes)?
+            } else {
+                serde_yaml::from_slice(bytes)?
+            };
+            trace!(?self_path, ?meta, "Loaded texture atlas asset");
+
+            let (image_path, image_handle) =
+                get_relative_asset(load_context, self_path, &meta.image);
+
+            let atlas = TextureAtlas::from_grid_with_padding(
+                image_handle.typed(),
+                meta.tile_size,
+                meta.columns,
+                meta.rows,
+                meta.padding,
+                meta.offset,
+            );
+
+            load_context.set_default_asset(LoadedAsset::new(atlas).with_dependency(image_path));
+
+            Ok(())
+        })
+    }
+
+    fn extensions(&self) -> &[&str] {
+        &["atlas.yml", "atlas.yaml", "atlas.json"]
     }
 }
 

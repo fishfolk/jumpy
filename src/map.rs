@@ -1,5 +1,6 @@
-use bevy::{ecs::system::SystemParam, render::view::RenderLayers};
+use bevy::{ecs::system::SystemParam, render::view::RenderLayers, utils::HashSet};
 use bevy_ecs_tilemap::prelude::*;
+use bevy_mod_js_scripting::{ActiveScripts, JsScript};
 use bevy_parallax::ParallaxResource;
 use bevy_prototype_lyon::{prelude::*, shapes::Rectangle};
 
@@ -15,9 +16,13 @@ pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(TilemapPlugin);
+        app.init_resource::<MapScripts>().add_plugin(TilemapPlugin);
     }
 }
+
+/// Contains the scripts that have been added for the currently loaded map
+#[derive(Deref, DerefMut, Default)]
+pub struct MapScripts(pub HashSet<Handle<JsScript>>);
 
 #[derive(SystemParam)]
 pub struct SpawnMapParams<'w, 's> {
@@ -28,6 +33,8 @@ pub struct SpawnMapParams<'w, 's> {
     asset_server: Res<'w, AssetServer>,
     texture_atlas_assets: ResMut<'w, Assets<TextureAtlas>>,
     element_assets: ResMut<'w, Assets<MapElementMeta>>,
+    active_scripts: ResMut<'w, ActiveScripts>,
+    map_scripts: ResMut<'w, MapScripts>,
 }
 
 /// Marker component for the map grid
@@ -92,6 +99,11 @@ pub fn spawn_map(params: &mut SpawnMapParams, source: &MapSpawnSource) {
         .insert(RenderLayers::layer(GameRenderLayers::EDITOR))
         .id();
     map_children.push(grid_entity);
+
+    // Clear any previously loaded map scripts
+    for script in params.map_scripts.drain() {
+        params.active_scripts.remove(&script);
+    }
 
     // Spawn map layers
     for (i, layer) in map.layers.iter().enumerate() {
@@ -163,6 +175,13 @@ pub fn spawn_map(params: &mut SpawnMapParams, source: &MapSpawnSource) {
                         .get(&element.element_handle)
                         .unwrap()
                         .clone();
+                    params
+                        .active_scripts
+                        .insert(element_meta.script_handle.clone_weak());
+                    params
+                        .map_scripts
+                        .insert(element_meta.script_handle.clone_weak());
+
                     let element_name = &element_meta.name;
 
                     let entity = params
@@ -176,13 +195,14 @@ pub fn spawn_map(params: &mut SpawnMapParams, source: &MapSpawnSource) {
                             local: Transform::from_xyz(
                                 element.pos.x,
                                 element.pos.y,
-                                -100.0 - i as f32,
+                                -100.0 + i as f32,
                             ),
                             ..default()
                         })
                         .with_children(|parent| {
                             parent
                                 .spawn()
+                                .insert(Name::new("Map Element Debug Rect"))
                                 .insert(RenderLayers::layer(GameRenderLayers::EDITOR))
                                 .insert_bundle(GeometryBuilder::build_as(
                                     &Rectangle {

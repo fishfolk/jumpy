@@ -65,3 +65,15 @@ pub struct ImageMeta {
     #[serde(skip)]
     pub egui_texture_id: bevy_egui::egui::TextureId,
 }
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct TextureAtlasMeta {
+    pub image: String,
+    pub tile_size: Vec2,
+    pub columns: usize,
+    pub rows: usize,
+    #[serde(default)]
+    pub padding: Vec2,
+    #[serde(default)]
+    pub offset: Vec2,
+}

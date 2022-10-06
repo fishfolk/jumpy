@@ -20,6 +20,15 @@ declare interface BevyScript {
   last?: () => void;
 }
 
+declare type RawValueRef = unknown;
+
+declare interface ValueGlobal {
+  create<T>(t: BevyType<T>, patch?: any): T;
+  patch<T>(value: any, patch: any): T;
+}
+
+declare let Value: ValueGlobal;
+
 declare class ComponentId {
   index: number;
 }
@@ -69,10 +78,9 @@ declare class World {
   resource<T>(type: BevyType<T>): T | null;
 
   query<Q extends QueryParameter[]>(...query: Q): QueryItems<Q>;
-  get<Q extends QueryParameter[]>(
-    entity: Entity,
-    ...components: Q
-  ): MapQueryArgs<Q>;
+  get<T>(entity: Entity, component: BevyType<T>): T | undefined;
+  insert(entity: Entity, component: any): void;
+  spawn(): Entity;
 }
 
 declare let world: World;

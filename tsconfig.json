@@ -10,6 +10,6 @@
         "./assets/**/*",
         "./lib.bevy.d.ts",
         "./lib.bevy.types.ts",
-        "./lib.punchy.d.ts"
+        "./lib.jumpy.d.ts"
     ],
 }

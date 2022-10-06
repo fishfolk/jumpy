@@ -1,3 +1,6 @@
 name: Seaweed
 category: Decorations
 script: ./seaweed.ts
+editor_size: [48, 51]
+preload_assets:
+  - ./seaweed.atlas.yaml

@@ -9,7 +9,11 @@ pub struct AnimationPlugin;
 impl Plugin for AnimationPlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<AnimatedSprite>()
-            .add_system_to_stage(CoreStage::PostUpdate, update_animated_sprite_components)
+            .add_system_to_stage(CoreStage::PostUpdate, hydrate_animated_sprites)
+            .add_system_to_stage(
+                CoreStage::PostUpdate,
+                update_animated_sprite_components.after(hydrate_animated_sprites),
+            )
             .add_system_to_stage(
                 CoreStage::PostUpdate,
                 animate_sprites.after(update_animated_sprite_components),
@@ -29,7 +33,7 @@ pub struct AnimatedSprite {
     pub fps: f32,
 }
 
-#[derive(Component)]
+#[derive(Component, Default)]
 struct AnimatedSpriteState {
     pub timer: Timer,
 }
@@ -55,57 +59,40 @@ fn animate_sprites(
     }
 }
 
-fn update_animated_sprite_components(
+fn hydrate_animated_sprites(
     mut commands: Commands,
+    animated_sprites: Query<Entity, Added<AnimatedSprite>>,
+) {
+    for entity in &animated_sprites {
+        commands
+            .entity(entity)
+            .insert(Handle::<TextureAtlas>::default())
+            .insert(TextureAtlasSprite::default())
+            .insert(AnimatedSpriteState::default());
+    }
+}
+
+fn update_animated_sprite_components(
     mut animated_sprites: Query<
         (
-            Entity,
             &AnimatedSprite,
-            Option<&mut Handle<TextureAtlas>>,
-            Option<&mut TextureAtlasSprite>,
-            Option<&mut AnimatedSpriteState>,
+            &mut Handle<TextureAtlas>,
+            &mut TextureAtlasSprite,
+            &mut AnimatedSpriteState,
         ),
-        Changed<AnimatedSprite>,
+        Or<(Changed<AnimatedSprite>, Added<TextureAtlasSprite>)>,
     >,
 ) {
-    for (entity, animated_sprite, texture_atlas, texture_atlas_sprite, state) in
-        &mut animated_sprites
-    {
-        let mut cmd = commands.entity(entity);
-        let atlas_handle =
-            // Handle::weak(HandleId::from(AssetPath::from(&animated_sprite.atlas_path)));
-            animated_sprite.atlas.clone_weak();
-        if let Some(mut texture) = texture_atlas {
-            *texture = atlas_handle;
-        } else {
-            cmd.insert(atlas_handle);
-        }
+    for (animated_sprite, mut atlas_handle, mut atlas_sprite, mut state) in &mut animated_sprites {
+        *atlas_handle = animated_sprite.atlas.clone_weak();
 
-        if let Some(mut sprite) = texture_atlas_sprite {
-            sprite.flip_x = animated_sprite.flip_x;
-            sprite.flip_y = animated_sprite.flip_y;
-            sprite.index = animated_sprite.start;
-        } else {
-            cmd.insert(TextureAtlasSprite {
-                index: animated_sprite.start,
-                flip_x: animated_sprite.flip_x,
-                flip_y: animated_sprite.flip_y,
-                ..default()
-            });
-        }
+        atlas_sprite.flip_x = animated_sprite.flip_x;
+        atlas_sprite.flip_y = animated_sprite.flip_y;
+        atlas_sprite.index = animated_sprite.start;
 
-        if let Some(mut state) = state {
-            state
-                .timer
-                .set_duration(Duration::from_secs_f32(1.0 / animated_sprite.fps));
-            state.timer.set_repeating(animated_sprite.repeat);
-        } else {
-            cmd.insert(AnimatedSpriteState {
-                timer: Timer::new(
-                    Duration::from_secs_f32(1.0 / animated_sprite.fps),
-                    animated_sprite.repeat,
-                ),
-            });
-        }
+        state
+            .timer
+            .set_duration(Duration::from_secs_f32(1.0 / animated_sprite.fps));
+        state.timer.set_repeating(animated_sprite.repeat);
     }
 }

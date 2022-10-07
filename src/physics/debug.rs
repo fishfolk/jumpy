@@ -6,7 +6,11 @@ use bevy::{
 use bevy_prototype_lyon::{entity::ShapeBundle, prelude::*, shapes::Line};
 use bevy_rapier2d::{
     prelude::*,
-    rapier::{math::Point, pipeline::DebugRenderObject, prelude::DebugRenderBackend},
+    rapier::{
+        math::Point,
+        pipeline::DebugRenderObject,
+        prelude::{DebugRenderBackend, DebugRenderPipeline},
+    },
 };
 
 pub struct DebugRenderPlugin;
@@ -15,6 +19,14 @@ impl Plugin for DebugRenderPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(DebugRenderContext {
             enabled: false,
+            pipeline: {
+                let mut pipeline = DebugRenderPipeline::default();
+                pipeline.style = DebugRenderStyle {
+                    rigid_body_axes_length: 0.0,
+                    ..default()
+                };
+                pipeline
+            },
             ..default()
         })
         .add_system_to_stage(PhysicsStages::DetectDespawn, render_collision_shapes);
@@ -26,14 +38,16 @@ fn render_collision_shapes(
     mut renderer: RapierDebugRenderer,
     mut rapier_debug: ResMut<DebugRenderContext>,
 ) {
-    rapier_debug.pipeline.render(
-        &mut renderer,
-        &ctx.bodies,
-        &ctx.colliders,
-        &ctx.impulse_joints,
-        &ctx.multibody_joints,
-        &ctx.narrow_phase,
-    );
+    if rapier_debug.enabled {
+        rapier_debug.pipeline.render(
+            &mut renderer,
+            &ctx.bodies,
+            &ctx.colliders,
+            &ctx.impulse_joints,
+            &ctx.multibody_joints,
+            &ctx.narrow_phase,
+        );
+    }
 
     renderer.finish();
 }
@@ -84,7 +98,7 @@ impl<'w, 's> RapierDebugRenderer<'w, 's> {
 
         for (color, shape_path) in self.shape_paths.drain() {
             let path = shape_path.build();
-            let mode = DrawMode::Stroke(StrokeMode::new(*color, 1.5));
+            let mode = DrawMode::Stroke(StrokeMode::new(*color, 1.0));
 
             if let Some((mut old_path, mut old_mode)) = query_iter.next() {
                 *old_path = path;
@@ -94,6 +108,9 @@ impl<'w, 's> RapierDebugRenderer<'w, 's> {
                     .spawn_bundle(ShapeBundle {
                         path,
                         mode,
+                        // Set the rendering a tiny bit forward to avoid z-fighting with the editor
+                        // overlays.
+                        transform: Transform::from_xyz(0.0, 0.0, -0.1),
                         ..default()
                     })
                     .insert(RapierDebugRenderShapes);

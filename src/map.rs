@@ -3,6 +3,7 @@ use bevy_ecs_tilemap::prelude::*;
 use bevy_mod_js_scripting::{ActiveScripts, JsScript};
 use bevy_parallax::ParallaxResource;
 use bevy_prototype_lyon::{prelude::*, shapes::Rectangle};
+use bevy_rapier2d::prelude::{Collider, RigidBody};
 
 use crate::{
     camera::GameRenderLayers,
@@ -126,6 +127,8 @@ pub fn spawn_map(params: &mut SpawnMapParams, source: &MapSpawnSource) {
                         y: tile.pos.y,
                     };
 
+                    let half_tile_x = map.tile_size.x as f32 / 2.0;
+                    let half_tile_y = map.tile_size.y as f32 / 2.0;
                     let tile_entity = params
                         .commands
                         .spawn()
@@ -137,6 +140,16 @@ pub fn spawn_map(params: &mut SpawnMapParams, source: &MapSpawnSource) {
                             position: tile_pos,
                             tilemap_id: TilemapId(layer_entity),
                             texture: TileTexture(tile.idx),
+                            ..default()
+                        })
+                        .insert(RigidBody::Fixed)
+                        .insert(Collider::cuboid(half_tile_x, half_tile_y))
+                        .insert_bundle(TransformBundle {
+                            local: Transform::from_xyz(
+                                half_tile_x + map.tile_size.x as f32 * tile_pos.x as f32,
+                                half_tile_y + map.tile_size.y as f32 * tile_pos.y as f32,
+                                0.0,
+                            ),
                             ..default()
                         })
                         .id();

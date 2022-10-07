@@ -20,9 +20,7 @@ export default {
         repeat: true,
         fps: 6,
         atlas: {
-          id: Assets.getHandleId(
-            "../../../resources/default_decoration.atlas.yaml"
-          ),
+          id: Assets.getHandleId("./seaweed.atlas.yaml"),
         },
       });
 

@@ -3,4 +3,4 @@ category: Decorations
 script: ./anemones.ts
 editor_size: [48, 51]
 preload_assets:
-  - ../../../resources/default_decoration.atlas.yaml
+  - ./anemones.atlas.yaml

@@ -17,12 +17,12 @@ export default {
       world.insert(
         entity,
         Value.create(AnimatedSprite, {
-          start: 5,
-          end: 9,
+          start: 0,
+          end: 4,
           repeat: true,
           fps: 6,
           atlas: {
-            id: Assets.getHandleId("../../../resources/default_decoration.atlas.yaml"),
+            id: Assets.getHandleId("./anemones.atlas.yaml"),
           }
         })
       );

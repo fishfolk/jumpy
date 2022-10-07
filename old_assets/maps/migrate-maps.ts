@@ -98,7 +98,7 @@ for (const map of inMaps) {
 
   // This is the background color all maps should have but only some of them actually had it set, so
   // we set it manually instead of pulling it from the map JSON like the commented code above does.
-  newMap.background_color = "7EA8A6"; 
+  newMap.background_color = "7EA8A6";
   newMap.grid_size = [map.grid_size.x, map.grid_size.y];
   newMap.tile_size = [map.tile_size.x, map.tile_size.y];
   newMap.layers = [];
@@ -177,7 +177,18 @@ for (const map of inMaps) {
         //
         // Optimizing for the anemone and seaweed positions is hacky, but works well enough for now
         // and we can tweak the maps in the editor afterward.
-        element.pos = [object.position.x + 48 / 2, (map.grid_size.y - 1) * map.tile_size.y - object.position.y + 8];
+        let item_specific_offset = [0, 0];
+        switch (object.id) {
+          case "crab":
+            item_specific_offset = [0, 20];
+        }
+        element.pos = [
+          object.position.x + 48 / 2 + item_specific_offset[0],
+          (map.grid_size.y - 1) * map.tile_size.y -
+            object.position.y +
+            8 +
+            item_specific_offset[1],
+        ];
         element.element = `./elements/${object.kind}/${object.id}/${object.id}.element.yaml`;
         newLayer.kind.element.elements.push(element);
       }

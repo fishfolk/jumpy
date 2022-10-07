@@ -1,3 +1,6 @@
 name: Crab
 category: Critters
-script: ./sproinger.ts
+script: ./crab.ts
+editor_size: [17, 12]
+preload_assets:
+  - ./crab.atlas.yaml

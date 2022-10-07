@@ -3,4 +3,4 @@ category: Decorations
 script: ./seaweed.ts
 editor_size: [48, 51]
 preload_assets:
-  - ../../../resources/default_decoration.atlas.yaml
+  - ./seaweed.atlas.yaml

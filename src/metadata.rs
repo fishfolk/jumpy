@@ -34,11 +34,21 @@ pub struct GameMeta {
     pub ui_theme: ui::UIThemeMeta,
     pub main_menu: MainMenuMeta,
     pub default_settings: settings::Settings,
+    pub physics: PhysicsMeta,
 
     #[serde(default)]
     pub scripts: Vec<String>,
     #[serde(skip)]
     pub script_handles: Vec<Handle<JsScript>>,
+}
+
+#[derive(HasLoadProgress, Deserialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+pub struct PhysicsMeta {
+    pub gravity: f32,
+    pub terminal_velocity: f32,
+    pub friction_lerp: f32,
+    pub stop_threshold: f32,
 }
 
 #[derive(HasLoadProgress, Deserialize, Clone, Debug)]

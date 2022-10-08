@@ -1,5 +1,10 @@
 camera_height: 448
 clear_color: 27233B
+physics:
+  gravity: 2.5
+  terminal_velocity: 10000.0
+  friction_lerp: 0.96
+  stop_threshold: 1.0
 
 players:
   - players/catty/catty.player.yaml

@@ -15,6 +15,9 @@ use bevy_rapier2d::{
 
 pub struct DebugRenderPlugin;
 
+#[derive(StageLabel)]
+struct PhysicsDebugRenderStage;
+
 impl Plugin for DebugRenderPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(DebugRenderContext {
@@ -29,7 +32,11 @@ impl Plugin for DebugRenderPlugin {
             },
             ..default()
         })
-        .add_system_to_stage(PhysicsStages::DetectDespawn, render_collision_shapes);
+        .add_stage_after(
+            PhysicsStages::Writeback,
+            PhysicsDebugRenderStage,
+            SystemStage::single(render_collision_shapes),
+        );
     }
 }
 

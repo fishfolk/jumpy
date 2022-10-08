@@ -16,6 +16,7 @@ mod loading;
 mod localization;
 mod map;
 mod metadata;
+mod name;
 mod physics;
 mod platform;
 mod player;
@@ -28,9 +29,9 @@ mod workarounds;
 use crate::{
     animation::AnimationPlugin, assets::AssetPlugin, camera::CameraPlugin, debug::DebugPlugin,
     input::InputPlugin, lines::LinesPlugin, loading::LoadingPlugin,
-    localization::LocalizationPlugin, map::MapPlugin, metadata::GameMeta, physics::PhysicsPlugin,
-    platform::PlatformPlugin, player::PlayerPlugin, prelude::*, scripting::ScriptingPlugin,
-    ui::UiPlugin, workarounds::WorkaroundsPlugin,
+    localization::LocalizationPlugin, map::MapPlugin, metadata::GameMeta, name::NamePlugin,
+    physics::PhysicsPlugin, platform::PlatformPlugin, player::PlayerPlugin, prelude::*,
+    scripting::ScriptingPlugin, ui::UiPlugin, workarounds::WorkaroundsPlugin,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -93,6 +94,7 @@ pub fn main() {
         .add_plugin(AssetPlugin)
         .add_plugin(LocalizationPlugin)
         .add_plugin(InputPlugin)
+        .add_plugin(NamePlugin)
         .add_plugin(AnimationPlugin)
         .add_plugin(UiPlugin)
         .add_plugin(PlayerPlugin)

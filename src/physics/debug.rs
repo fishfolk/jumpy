@@ -120,6 +120,7 @@ impl<'w, 's> RapierDebugRenderer<'w, 's> {
                         transform: Transform::from_xyz(0.0, 0.0, -0.1),
                         ..default()
                     })
+                    .insert(Name::new("Rapier Debug Render Shapes"))
                     .insert(RapierDebugRenderShapes);
             }
         }

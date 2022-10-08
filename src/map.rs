@@ -83,7 +83,7 @@ pub fn spawn_map(params: &mut SpawnMapParams, source: &MapSpawnSource) {
     let map_entity = params
         .commands
         .spawn()
-        .insert(Name::new("Map Entity"))
+        .insert(Name::new("Map"))
         .insert(map.clone())
         .insert_bundle(VisibilityBundle::default())
         .insert_bundle(TransformBundle::default())
@@ -94,7 +94,7 @@ pub fn spawn_map(params: &mut SpawnMapParams, source: &MapSpawnSource) {
     let grid_entity = params
         .commands
         .spawn()
-        .insert(Name::new("Map Grid"))
+        .insert(Name::new("Grid"))
         .insert(MapGridView)
         .insert_bundle(grid)
         .insert(RenderLayers::layer(GameRenderLayers::EDITOR))

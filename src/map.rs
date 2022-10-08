@@ -154,6 +154,8 @@ pub fn spawn_map(params: &mut SpawnMapParams, source: &MapSpawnSource) {
                         })
                         .id();
 
+                    // TODO: Add platform tile component to tiles that are platforms
+
                     storage.set(&tile_pos, Some(tile_entity));
 
                     tile_entities.push(tile_entity);

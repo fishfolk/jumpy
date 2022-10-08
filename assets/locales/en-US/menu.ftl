@@ -17,5 +17,4 @@ edit = Edit
 play = Play
 quit = Quit
 export = Export
-close = Close
 reload = Reload

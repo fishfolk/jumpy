@@ -55,6 +55,7 @@ bevy_prototype_lyon = "0.6.0"
 # Debug tools
 bevy-inspector-egui = { version = "0.13.0" }
 bevy-inspector-egui-rapier = { version = "0.6.0", features = ["rapier2d"] }
+base64 = "0.13.0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 web-sys = { version = "0.3", features = ["Window","Location","Storage"] }

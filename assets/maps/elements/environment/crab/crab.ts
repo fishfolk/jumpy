@@ -84,11 +84,11 @@ export default {
             y: 12,
           },
           velocity: {
-            x: 0.0,
-            y: 600.0,
+            x: 5,
+            y: 10,
           },
-          gravity: 900.0,
-          bouncyness: 0.8,
+          gravity: 1,
+          bouncyness: 0.5,
           has_friction: true,
           has_mass: true,
         })
@@ -98,14 +98,10 @@ export default {
 
   update() {
     const state = ScriptInfo.state(initState);
-    const query = world.query(KinematicBody);
+    const query = world.query(KinematicBody, Transform);
 
     for (const crab of state.crabs) {
-      const [kinematicBody] = query.get(crab);
-
-      kinematicBody.velocity.x += 1;
-      kinematicBody.velocity.y -= 1;
-      kinematicBody.is_on_ground = false;
+      const [kinematicBody, transform] = query.get(crab);
     }
   },
 };

@@ -3,11 +3,11 @@ use bevy_ecs_tilemap::prelude::*;
 use bevy_mod_js_scripting::{ActiveScripts, JsScript};
 use bevy_parallax::ParallaxResource;
 use bevy_prototype_lyon::{prelude::*, shapes::Rectangle};
-use bevy_rapier2d::prelude::{Collider, RigidBody};
 
 use crate::{
     camera::GameRenderLayers,
     metadata::{MapElementMeta, MapLayerKind, MapLayerMeta, MapMeta},
+    physics::collisions::{CollisionLayerTag, TileCollision},
     prelude::*,
 };
 
@@ -142,8 +142,6 @@ pub fn spawn_map(params: &mut SpawnMapParams, source: &MapSpawnSource) {
                             texture: TileTexture(tile.idx),
                             ..default()
                         })
-                        .insert(RigidBody::Fixed)
-                        .insert(Collider::cuboid(half_tile_x, half_tile_y))
                         .insert_bundle(TransformBundle {
                             local: Transform::from_xyz(
                                 half_tile_x + map.tile_size.x as f32 * tile_pos.x as f32,
@@ -152,6 +150,8 @@ pub fn spawn_map(params: &mut SpawnMapParams, source: &MapSpawnSource) {
                             ),
                             ..default()
                         })
+                        // TODO: Jump through tiles
+                        .insert(TileCollision::Solid)
                         .id();
 
                     // TODO: Add platform tile component to tiles that are platforms
@@ -161,9 +161,9 @@ pub fn spawn_map(params: &mut SpawnMapParams, source: &MapSpawnSource) {
                     tile_entities.push(tile_entity);
                 }
 
-                let tile_layer = params
-                    .commands
-                    .entity(layer_entity)
+                let mut layer_commands = params.commands.entity(layer_entity);
+
+                layer_commands
                     .insert_bundle(TilemapBundle {
                         grid_size: TilemapGridSize {
                             x: map.grid_size.x as f32,
@@ -178,8 +178,13 @@ pub fn spawn_map(params: &mut SpawnMapParams, source: &MapSpawnSource) {
                         transform: Transform::from_xyz(0.0, 0.0, -100.0 + i as f32),
                         ..default()
                     })
-                    .push_children(&tile_entities)
-                    .id();
+                    .push_children(&tile_entities);
+
+                if tile_layer.has_collision {
+                    layer_commands.insert(CollisionLayerTag::default());
+                }
+
+                let tile_layer = layer_commands.id();
 
                 map_children.push(tile_layer);
             }

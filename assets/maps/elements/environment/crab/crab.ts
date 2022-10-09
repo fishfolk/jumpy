@@ -32,15 +32,29 @@ const EntityName: BevyType<EntityName> = {
   typeName: "jumpy::name::EntityName",
 };
 
+const initState: { crabs: Entity[] } = {
+  crabs: [],
+};
+
 export default {
   preUpdate() {
-    for (const spanwer_entity of MapElement.getSpawnedEntities()) {
+    const state = ScriptInfo.state(initState);
+
+    const spawnedEntities = MapElement.getSpawnedEntities();
+    if (spawnedEntities.length > 0) {
+      state.crabs = [];
+    }
+
+    // Handle newly spawned map entities
+    for (const spanwer_entity of spawnedEntities) {
       const [transform, global_transform, computed_visibility] = world
         .query(Transform, GlobalTransform, ComputedVisibility)
         .get(spanwer_entity);
 
       // Spawn a new entity for the crab and copy the transform and visibility from the map element
       const entity = world.spawn();
+      state.crabs.push(entity);
+
       world.insert(entity, Value.create(EntityName, ["Critter: Crab"]));
       world.insert(entity, transform);
       world.insert(entity, global_transform);
@@ -79,6 +93,19 @@ export default {
           has_mass: true,
         })
       );
+    }
+  },
+
+  update() {
+    const state = ScriptInfo.state(initState);
+    const query = world.query(KinematicBody);
+
+    for (const crab of state.crabs) {
+      const [kinematicBody] = query.get(crab);
+
+      kinematicBody.velocity.x += 1;
+      kinematicBody.velocity.y -= 1;
+      kinematicBody.is_on_ground = false;
     }
   },
 };

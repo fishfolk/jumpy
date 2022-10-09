@@ -2625,6 +2625,7 @@ version = "0.4.3"
 dependencies = [
  "anyhow",
  "async-channel",
+ "base64 0.13.0",
  "bevy",
  "bevy-has-load-progress",
  "bevy-inspector-egui",

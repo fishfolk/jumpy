@@ -1,4 +1,4 @@
-use std::hash::Hasher;
+use std::{collections::hash_map::DefaultHasher, hash::Hasher};
 
 use bevy::{
     ecs::system::{SystemParam, SystemState},
@@ -7,7 +7,6 @@ use bevy::{
     window::WindowId,
 };
 use bevy_egui::{egui, EguiContext, EguiInput, EguiPlugin, EguiSettings, EguiSystem};
-use bevy_rapier2d::parry::utils::hashmap::FxHasher32;
 use iyes_loopless::prelude::*;
 use leafwing_input_manager::{plugin::InputManagerSystem, prelude::ActionState};
 
@@ -98,7 +97,8 @@ pub struct WidgetId(pub u64);
 impl WidgetId {
     pub fn new(name: &str) -> Self {
         let bytes = name.as_bytes();
-        let mut hasher = FxHasher32::default();
+        // TODO: Use a faster, non-crypto hasher
+        let mut hasher = DefaultHasher::default();
         hasher.write(bytes);
         WidgetId(hasher.finish())
     }

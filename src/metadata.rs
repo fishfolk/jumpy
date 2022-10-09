@@ -45,7 +45,6 @@ pub struct GameMeta {
 #[derive(HasLoadProgress, Deserialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct PhysicsMeta {
-    pub gravity: f32,
     pub terminal_velocity: f32,
     pub friction_lerp: f32,
     pub stop_threshold: f32,

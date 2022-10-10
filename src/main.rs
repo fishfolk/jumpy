@@ -2,7 +2,10 @@
 #![allow(clippy::forget_non_drop)]
 #![allow(clippy::too_many_arguments)]
 
-use bevy::{asset::AssetServerSettings, log::LogSettings, render::texture::ImageSettings};
+use bevy::{
+    asset::AssetServerSettings, log::LogSettings, render::texture::ImageSettings,
+    time::FixedTimestep,
+};
 use bevy_parallax::ParallaxResource;
 
 mod animation;
@@ -49,6 +52,15 @@ pub enum InGameState {
     Paused,
 }
 
+#[derive(StageLabel)]
+pub enum FixedUpdateStage {
+    First,
+    PreUpdate,
+    Update,
+    PostUpdate,
+    Last,
+}
+
 pub fn main() {
     // Load engine config. This will parse CLI arguments or web query string so we want to do it
     // before we create the app to make sure everything is in order.
@@ -86,6 +98,33 @@ pub fn main() {
     app.add_loopless_state(GameState::LoadingPlatformStorage)
         .add_loopless_state(InGameState::Playing);
 
+    // Add fixed update stages
+    app.add_stage_after(
+        CoreStage::First,
+        FixedUpdateStage::First,
+        SystemStage::parallel().with_run_criteria(FixedTimestep::step(1.0 / 60.0)),
+    )
+    .add_stage_after(
+        CoreStage::PreUpdate,
+        FixedUpdateStage::PreUpdate,
+        SystemStage::parallel().with_run_criteria(FixedTimestep::step(1.0 / 60.0)),
+    )
+    .add_stage_after(
+        CoreStage::Update,
+        FixedUpdateStage::Update,
+        SystemStage::parallel().with_run_criteria(FixedTimestep::step(1.0 / 60.0)),
+    )
+    .add_stage_after(
+        CoreStage::PostUpdate,
+        FixedUpdateStage::PostUpdate,
+        SystemStage::parallel().with_run_criteria(FixedTimestep::step(1.0 / 60.0)),
+    )
+    .add_stage_after(
+        CoreStage::Last,
+        FixedUpdateStage::Last,
+        SystemStage::parallel().with_run_criteria(FixedTimestep::step(1.0 / 60.0)),
+    );
+
     // Install game plugins
     app.add_plugins(DefaultPlugins)
         .add_plugin(LinesPlugin)
@@ -101,9 +140,9 @@ pub fn main() {
         .add_plugin(PhysicsPlugin)
         .add_plugin(CameraPlugin)
         .add_plugin(MapPlugin)
-        .add_plugin(ScriptingPlugin)
         .add_plugin(WorkaroundsPlugin)
-        .add_plugin(DebugPlugin);
+        .add_plugin(DebugPlugin)
+        .add_plugin(ScriptingPlugin);
 
     debug!(?engine_config, "Starting game");
 

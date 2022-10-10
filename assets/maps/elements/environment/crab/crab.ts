@@ -101,9 +101,10 @@ export default {
     for (const crab of state.crabs) {
       const [kinematicBody] = query.get(crab);
 
-      if (i % 120 == 0) {
+      if (i % 100 == 0) {
+        i = 0;
         kinematicBody.velocity.x =
-          Math.random() * 2 * (Math.random() >= 0.5 ? -1 : 1);
+          Math.random() * 3 * (Math.random() >= 0.5 ? -1 : 1);
       }
     }
   },

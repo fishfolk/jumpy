@@ -93,7 +93,7 @@ export default {
     }
   },
 
-  update() {
+  updateInGame() {
     i++;
     const state = ScriptInfo.state(initState);
     const query = world.query(KinematicBody);

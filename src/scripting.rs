@@ -15,15 +15,35 @@ impl Plugin for ScriptingPlugin {
                 script_stages: [
                     (FixedUpdateStage::First.as_label(), "first".to_string()),
                     (
+                        FixedUpdateStage::FirstInGame.as_label(),
+                        "firstInGame".to_string(),
+                    ),
+                    (
                         FixedUpdateStage::PreUpdate.as_label(),
                         "preUpdate".to_string(),
                     ),
+                    (
+                        FixedUpdateStage::PreUpdateInGame.as_label(),
+                        "preUpdateInGame".to_string(),
+                    ),
                     (FixedUpdateStage::Update.as_label(), "update".to_string()),
+                    (
+                        FixedUpdateStage::UpdateInGame.as_label(),
+                        "updateInGame".to_string(),
+                    ),
                     (
                         FixedUpdateStage::PostUpdate.as_label(),
                         "postUpdate".to_string(),
                     ),
+                    (
+                        FixedUpdateStage::PostUpdateInGame.as_label(),
+                        "postUpdateInGame".to_string(),
+                    ),
                     (FixedUpdateStage::Last.as_label(), "last".to_string()),
+                    (
+                        FixedUpdateStage::LastInGame.as_label(),
+                        "lastInGame".to_string(),
+                    ),
                 ]
                 .into_iter()
                 .collect(),

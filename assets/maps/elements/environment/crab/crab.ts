@@ -36,6 +36,8 @@ const initState: { crabs: Entity[] } = {
   crabs: [],
 };
 
+let i = 0;
+
 export default {
   preUpdate() {
     const state = ScriptInfo.state(initState);
@@ -83,12 +85,7 @@ export default {
             x: 18,
             y: 12,
           },
-          velocity: {
-            x: 12,
-            y: 8,
-          },
           gravity: 1,
-          bouncyness: 0.6,
           has_friction: true,
           has_mass: true,
         })
@@ -97,11 +94,17 @@ export default {
   },
 
   update() {
+    i++;
     const state = ScriptInfo.state(initState);
-    const query = world.query(KinematicBody, Transform);
+    const query = world.query(KinematicBody);
 
     for (const crab of state.crabs) {
-      const [kinematicBody, transform] = query.get(crab);
+      const [kinematicBody] = query.get(crab);
+
+      if (i % 120 == 0) {
+        kinematicBody.velocity.x =
+          Math.random() * 2 * (Math.random() >= 0.5 ? -1 : 1);
+      }
     }
   },
 };

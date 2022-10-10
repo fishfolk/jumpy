@@ -76,6 +76,12 @@ fn hydrate_physics_bodies(
     bodies: Query<(Entity, &Transform, &KinematicBody), Without<Collider>>,
 ) {
     for (entity, transform, body) in &bodies {
+        if body.size.x.round() as i32 % 2 != 0 || body.size.y.round() as i32 % 2 != 0 {
+            warn!(
+                "TODO: Non-even widths and heights for colliders may currently \
+                behave incorrectly, getting stuck in walls."
+            );
+        }
         commands
             .entity(entity)
             .insert(Collider {

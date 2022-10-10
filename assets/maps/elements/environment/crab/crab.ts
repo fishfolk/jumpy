@@ -80,15 +80,15 @@ export default {
         entity,
         Value.create(KinematicBody, {
           size: {
-            x: 17,
+            x: 18,
             y: 12,
           },
           velocity: {
-            x: 5,
-            y: 10,
+            x: 12,
+            y: 8,
           },
           gravity: 1,
-          bouncyness: 0.5,
+          bouncyness: 0.6,
           has_friction: true,
           has_mass: true,
         })

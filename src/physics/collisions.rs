@@ -241,6 +241,7 @@ impl<'w, 's> CollisionWorld<'w, 's> {
                     collider.pos.y += sign as f32;
                     move_ -= sign;
                 } else {
+                    collider.pos.y = collider.pos.y.floor();
                     *self.actors.get_mut(entity).unwrap().1 = collider;
 
                     return false;
@@ -282,6 +283,7 @@ impl<'w, 's> CollisionWorld<'w, 's> {
                     collider.pos.x += sign as f32;
                     move_ -= sign;
                 } else {
+                    collider.pos.x = collider.pos.x.floor();
                     *self.actors.get_mut(entity).unwrap().1 = collider;
                     return false;
                 }

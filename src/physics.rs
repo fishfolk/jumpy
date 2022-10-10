@@ -21,17 +21,16 @@ impl Plugin for PhysicsPlugin {
             .add_stage_after(
                 CoreStage::PostUpdate,
                 GamePhysicsStages::Hydrate,
-                SystemStage::parallel().with_system(
-                    hydrate_physics_bodies
-                        .run_in_state(GameState::InGame)
-                        .run_not_in_state(InGameState::Paused),
-                ),
+                SystemStage::parallel().with_system(hydrate_physics_bodies),
             )
             .add_stage_after(
                 GamePhysicsStages::Hydrate,
                 GamePhysicsStages::UpdatePhysics,
                 SystemStage::parallel()
-                    .with_run_criteria(FixedTimestep::step(0.016))
+                    .with_run_criteria(
+                        FixedTimestep::step(crate::FIXED_TIMESTEP)
+                            .chain(crate::is_in_game_run_criteria),
+                    )
                     .with_system(
                         update_kinematic_bodies
                             .run_in_state(GameState::InGame)

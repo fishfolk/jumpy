@@ -3,7 +3,9 @@ use bevy_egui::*;
 use bevy_fluent::Localization;
 use bevy_inspector_egui::WorldInspectorParams;
 
-use crate::{config::ENGINE_CONFIG, localization::LocalizationExt};
+use crate::{
+    config::ENGINE_CONFIG, localization::LocalizationExt, physics::debug::PhysicsDebugRenderConfig,
+};
 
 pub struct DebugToolsPlugin;
 
@@ -19,6 +21,7 @@ impl Plugin for DebugToolsPlugin {
 pub fn debug_tools_window(
     mut visible: Local<bool>,
     mut egui_context: ResMut<EguiContext>,
+    mut physics_debug_render: ResMut<PhysicsDebugRenderConfig>,
     localization: Res<Localization>,
     input: Res<Input<KeyCode>>,
     mut inspector: ResMut<WorldInspectorParams>,
@@ -30,10 +33,10 @@ pub fn debug_tools_window(
         *visible = !*visible;
     }
 
-    // // Shortcut to toggle collision shapes without having to use the menu
-    // if input.just_pressed(KeyCode::F10) {
-    //     rapier_debug.enabled = !rapier_debug.enabled;
-    // }
+    // Shortcut to toggle collision shapes without having to use the menu
+    if input.just_pressed(KeyCode::F10) {
+        physics_debug_render.enabled = !physics_debug_render.enabled;
+    }
 
     // Shortcut to toggle the inspector without having to use the menu
     if input.just_pressed(KeyCode::F9) {
@@ -46,12 +49,11 @@ pub fn debug_tools_window(
         .id(egui::Id::new("debug_tools"))
         .open(&mut visible)
         .show(ctx, |ui| {
-            // TODO: Bring back collision shape debug render
-            // // Show collision shapes
-            // ui.checkbox(
-            //     &mut rapier_debug.enabled,
-            //     format!("{} ( F10 )", localization.get("show-collision-shapes")),
-            // );
+            // Show collision shapes
+            ui.checkbox(
+                &mut physics_debug_render.enabled,
+                format!("{} ( F10 )", localization.get("show-collision-shapes")),
+            );
 
             // Show world inspector
             ui.checkbox(

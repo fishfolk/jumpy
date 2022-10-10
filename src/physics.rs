@@ -1,16 +1,16 @@
 use bevy::{math::vec2, time::FixedTimestep};
 
-use crate::{metadata::GameMeta, prelude::*};
+use crate::{config::ENGINE_CONFIG, metadata::GameMeta, prelude::*};
 
 use self::collisions::{Actor, Collider, CollisionWorld, TileCollision};
 
 pub mod collisions;
-// mod debug;
+pub mod debug;
 
 pub struct PhysicsPlugin;
 
 #[derive(StageLabel)]
-pub enum GamePhysicsStages {
+pub enum PhysicsStages {
     Hydrate,
     UpdatePhysics,
 }
@@ -20,12 +20,12 @@ impl Plugin for PhysicsPlugin {
         app.register_type::<KinematicBody>()
             .add_stage_after(
                 CoreStage::PostUpdate,
-                GamePhysicsStages::Hydrate,
+                PhysicsStages::Hydrate,
                 SystemStage::parallel().with_system(hydrate_physics_bodies),
             )
             .add_stage_after(
-                GamePhysicsStages::Hydrate,
-                GamePhysicsStages::UpdatePhysics,
+                PhysicsStages::Hydrate,
+                PhysicsStages::UpdatePhysics,
                 SystemStage::parallel()
                     .with_run_criteria(
                         FixedTimestep::step(crate::FIXED_TIMESTEP)
@@ -37,6 +37,10 @@ impl Plugin for PhysicsPlugin {
                             .run_not_in_state(InGameState::Paused),
                     ),
             );
+
+        if ENGINE_CONFIG.debug_tools {
+            app.add_plugin(debug::PhysicsDebugRenderPlugin);
+        }
     }
 }
 

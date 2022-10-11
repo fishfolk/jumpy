@@ -42,6 +42,8 @@ const DEFAULT_COLOR: Color = Color::ORANGE;
 fn render_collision_shapes(mut renderer: DebugRenderer, config: Res<PhysicsDebugRenderConfig>) {
     if config.enabled {
         renderer.render();
+    } else {
+        renderer.finish();
     }
 }
 

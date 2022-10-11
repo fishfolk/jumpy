@@ -1,6 +1,6 @@
 use bevy::{ecs::system::SystemParam, hierarchy::DespawnRecursiveExt};
 
-use crate::{input::MenuAction, player::PlayerIdx, prelude::*};
+use crate::{ui::input::MenuAction, player::PlayerIdx, prelude::*};
 
 /// System parameter that can be used to reset the game world.
 ///

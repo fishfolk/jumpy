@@ -3,7 +3,7 @@ use bevy_fluent::Localization;
 use iyes_loopless::state::NextState;
 
 use crate::{
-    input::MenuAction, localization::LocalizationExt, metadata::GameMeta, prelude::*, GameState,
+    ui::input::MenuAction, localization::LocalizationExt, metadata::GameMeta, prelude::*, GameState,
 };
 
 use super::widgets::{

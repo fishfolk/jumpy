@@ -3,7 +3,7 @@ use bevy_has_load_progress::HasLoadProgress;
 use leafwing_input_manager::{axislike::VirtualDPad, prelude::InputMap, user_input::InputKind};
 use serde::{Deserialize, Serialize};
 
-use crate::input::PlayerAction;
+use crate::player::PlayerAction;
 
 /// Global settings, stored and accessed through [`crate::platform::Storage`]
 #[derive(HasLoadProgress, Deserialize, Serialize, Debug, Clone)]
@@ -41,6 +41,7 @@ impl PlayerControlMethods {
             input_map.insert(ctrls.jump, PlayerAction::Jump);
             input_map.insert(ctrls.grab, PlayerAction::Grab);
             input_map.insert(ctrls.shoot, PlayerAction::Shoot);
+            input_map.insert(ctrls.slide, PlayerAction::Slide);
         };
 
         add_controls(&self.gamepad);
@@ -62,4 +63,5 @@ pub struct PlayerControls {
     pub jump: InputKind,
     pub grab: InputKind,
     pub shoot: InputKind,
+    pub slide: InputKind,
 }

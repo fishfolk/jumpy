@@ -9,12 +9,12 @@ use bevy_fluent::Localization;
 use iyes_loopless::condition::IntoConditionalExclusiveSystem;
 
 use crate::{
-    input::MenuAction,
     localization::LocalizationExt,
     metadata::{GameMeta, Settings},
     platform::Storage,
     player::PlayerIdx,
     prelude::*,
+    ui::input::MenuAction,
     utils::ResetController,
 };
 

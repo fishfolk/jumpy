@@ -9,7 +9,7 @@ use bevy_fluent::Localization;
 use crate::{
     camera::{EditorCamera, GameCamera},
     localization::LocalizationExt,
-    map::{spawn_map, MapGridView, MapSpawnSource, SpawnMapParams},
+    map::{MapGridView, MapSpawnSource, MapSpawner},
     metadata::{GameMeta, MapLayerKind, MapLayerMeta, MapMeta},
     prelude::*,
     utils::ResetController,
@@ -144,7 +144,7 @@ struct EditorTopBar<'w, 's> {
     localization: Res<'w, Localization>,
     map: Query<'w, 's, &'static MapMeta>,
     settings: ResMut<'w, EditorState>,
-    spawn_map_params: SpawnMapParams<'w, 's>,
+    map_spawner: MapSpawner<'w, 's>,
 }
 
 impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
@@ -230,7 +230,7 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                         let map = params.map.get_single().ok().cloned();
                         reset_controller.reset_world();
                         if let Some(map) = map {
-                            spawn_map(&mut params.spawn_map_params, &MapSpawnSource::Meta(map));
+                            params.map_spawner.spawn(&MapSpawnSource::Meta(map));
                         }
                     }
                 });
@@ -650,7 +650,7 @@ struct EditorCentralPanel<'w, 's> {
         With<EditorCamera>,
     >,
     localization: Res<'w, Localization>,
-    spawn_map_params: SpawnMapParams<'w, 's>,
+    map_spawner: MapSpawner<'w, 's>,
 }
 
 struct MapCreateInfo {
@@ -809,10 +809,7 @@ fn map_open_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
                             .into_iter(),
                     ) {
                         if ui.button(map).clicked() {
-                            spawn_map(
-                                &mut params.spawn_map_params,
-                                &MapSpawnSource::Handle(handle),
-                            );
+                            params.map_spawner.spawn(&MapSpawnSource::Handle(handle));
                             *params.show_map_open = false;
                         }
                     }
@@ -913,7 +910,7 @@ fn create_map(params: &mut EditorCentralPanel) {
         layers: default(),
         background_layers: default(),
     };
-    spawn_map(&mut params.spawn_map_params, &MapSpawnSource::Meta(meta));
+    params.map_spawner.spawn(&MapSpawnSource::Meta(meta));
     *params.show_map_open = false;
     *params.show_map_create = false;
 }

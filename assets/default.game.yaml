@@ -74,6 +74,7 @@ default_settings:
       jump: !GamepadButton South
       grab: !GamepadButton East
       shoot: !GamepadButton West
+      slide: !GamepadButton North
 
     # Controls for the first keyboard player ( left side )
     keyboard1:
@@ -85,6 +86,7 @@ default_settings:
       jump: !Keyboard Space
       grab: !Keyboard V
       shoot: !Keyboard C
+      slide: !Keyboard B
 
     # Controls for the second keyboard player ( right side )
     keyboard2:
@@ -96,6 +98,7 @@ default_settings:
       jump: !Keyboard Comma
       grab: !Keyboard RShift
       shoot: !Keyboard Period
+      slide: !Keyboard Slash
 
 ui_theme:
   scale: 0.65

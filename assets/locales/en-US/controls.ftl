@@ -5,3 +5,4 @@ move-right = Move Right
 jump = Jump
 grab-drop = Grab / Drop
 shoot = Shoot
+slide = Slide

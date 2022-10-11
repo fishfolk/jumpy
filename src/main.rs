@@ -13,7 +13,6 @@ mod assets;
 mod camera;
 mod config;
 mod debug;
-mod input;
 mod lines;
 mod loading;
 mod localization;
@@ -31,7 +30,7 @@ mod workarounds;
 
 use crate::{
     animation::AnimationPlugin, assets::AssetPlugin, camera::CameraPlugin, debug::DebugPlugin,
-    input::InputPlugin, lines::LinesPlugin, loading::LoadingPlugin,
+    lines::LinesPlugin, loading::LoadingPlugin,
     localization::LocalizationPlugin, map::MapPlugin, metadata::GameMeta, name::NamePlugin,
     physics::PhysicsPlugin, platform::PlatformPlugin, player::PlayerPlugin, prelude::*,
     scripting::ScriptingPlugin, ui::UiPlugin, workarounds::WorkaroundsPlugin,
@@ -175,7 +174,6 @@ pub fn main() {
         .add_plugin(LoadingPlugin)
         .add_plugin(AssetPlugin)
         .add_plugin(LocalizationPlugin)
-        .add_plugin(InputPlugin)
         .add_plugin(NamePlugin)
         .add_plugin(AnimationPlugin)
         .add_plugin(UiPlugin)

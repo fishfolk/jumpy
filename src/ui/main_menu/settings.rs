@@ -298,6 +298,14 @@ fn controls_settings_ui(
                 &mut controls.gamepad.shoot,
             ],
         ),
+        (
+            &params.localization.get("slide"),
+            [
+                &mut controls.keyboard1.slide,
+                &mut controls.keyboard2.slide,
+                &mut controls.gamepad.slide,
+            ],
+        ),
     ];
 
     // Collect input button responses for building adjacency graph

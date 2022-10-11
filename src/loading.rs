@@ -12,7 +12,7 @@ use leafwing_input_manager::{
 use crate::{
     camera::{spawn_editor_camera, spawn_game_camera},
     config::ENGINE_CONFIG,
-    input::MenuAction,
+    ui::input::MenuAction,
     metadata::{BorderImageMeta, GameMeta, PlayerMeta, Settings},
     platform::Storage,
     player::{PlayerIdx, MAX_PLAYERS},

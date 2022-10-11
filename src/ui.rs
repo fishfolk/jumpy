@@ -10,8 +10,10 @@ use bevy_egui::{egui, EguiContext, EguiInput, EguiPlugin, EguiSettings, EguiSyst
 use iyes_loopless::prelude::*;
 use leafwing_input_manager::{plugin::InputManagerSystem, prelude::ActionState};
 
-use crate::{assets::EguiFont, camera::GameCamera, input::MenuAction, metadata::GameMeta};
+use self::input::MenuAction;
+use crate::{assets::EguiFont, camera::GameCamera, metadata::GameMeta};
 
+pub mod input;
 pub mod widgets;
 
 pub mod debug_tools;
@@ -24,6 +26,7 @@ pub struct UiPlugin;
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(EguiPlugin)
+            .add_plugin(input::UiInputPlugin)
             .add_plugin(main_menu::MainMenuPlugin)
             .add_plugin(editor::EditorPlugin)
             .add_plugin(debug_tools::DebugToolsPlugin)

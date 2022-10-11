@@ -91,11 +91,7 @@ impl From<Map> for MapDef {
             })
             .collect();
 
-        let tilesets = other
-            .tilesets
-            .into_iter()
-            .map(|(_, tileset)| tileset)
-            .collect();
+        let tilesets = other.tilesets.into_values().collect();
 
         MapDef {
             background_color: other.background_color,

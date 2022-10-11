@@ -142,7 +142,7 @@ impl TiledMap {
 
             let grid_size = uvec2(
                 tiled_tileset.columns as u32,
-                tiled_tileset.tilecount as u32 / tiled_tileset.columns as u32,
+                tiled_tileset.tilecount / tiled_tileset.columns as u32,
             );
 
             let mut tile_attributes: HashMap<u32, Vec<String>> = HashMap::new();

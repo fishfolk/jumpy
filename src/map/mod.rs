@@ -268,7 +268,7 @@ impl Map {
         let h = texture.height();
 
         let dest_rect = Rect::new(0., 0., w, h);
-        let parallax_w = w as f32 * 0.5;
+        let parallax_w = w * 0.5;
 
         let mut dest_rect2 = Rect::new(
             -parallax_w,
@@ -411,7 +411,7 @@ impl Map {
     }
 
     pub fn get_random_spawn_point(&self) -> Vec2 {
-        let i = rand::gen_range(0, self.spawn_points.len()) as usize;
+        let i = rand::gen_range(0, self.spawn_points.len());
         self.spawn_points[i]
     }
 }

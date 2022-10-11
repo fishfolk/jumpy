@@ -186,7 +186,7 @@ pub async fn show_select_map_menu() -> MapResource {
                 }
 
                 let begin = (current_page as usize * entries_per_page).clamp(0, map_cnt);
-                let end = (begin as usize + entries_per_page).clamp(begin, map_cnt);
+                let end = (begin + entries_per_page).clamp(begin, map_cnt);
 
                 for (pi, i) in (begin..end).enumerate() {
                     let map_entry = resources.maps.get(i).unwrap();

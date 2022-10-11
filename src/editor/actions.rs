@@ -1135,7 +1135,7 @@ impl UndoableAction for PlaceTileAction {
 
             if let Some(layer) = map.layers.get_mut(&self.layer_id) {
                 if let MapLayerKind::TileLayer = layer.kind {
-                    self.replaced_tile = layer.tiles.remove(i as usize);
+                    self.replaced_tile = layer.tiles.remove(i);
 
                     let tile = MapTile {
                         tile_id: self.id,
@@ -1145,7 +1145,7 @@ impl UndoableAction for PlaceTileAction {
                         attributes: vec![],
                     };
 
-                    layer.tiles.insert(i as usize, Some(tile));
+                    layer.tiles.insert(i, Some(tile));
                 } else {
                     return Err(Error::new_const(
                         ErrorKind::EditorAction,
@@ -1173,14 +1173,14 @@ impl UndoableAction for PlaceTileAction {
 
         if let Some(layer) = map.layers.get_mut(&self.layer_id) {
             if let MapLayerKind::TileLayer = layer.kind {
-                if layer.tiles.get(i as usize).is_none() {
+                if layer.tiles.get(i).is_none() {
                     return Err(Error::new_const(ErrorKind::EditorAction, &"PlaceTileAction (Undo): No tile at the specified coords, in the specified layer. Undo was probably called on an action that was never applied"));
                 }
 
                 if let Some(tile) = self.replaced_tile.take() {
-                    layer.tiles[i as usize] = Some(tile);
+                    layer.tiles[i] = Some(tile);
                 } else {
-                    layer.tiles[i as usize] = None;
+                    layer.tiles[i] = None;
                 }
             } else {
                 return Err(Error::new_const(
@@ -1233,7 +1233,7 @@ impl UndoableAction for RemoveTileAction {
 
         if let Some(layer) = map.layers.get_mut(&self.layer_id) {
             if let MapLayerKind::TileLayer = layer.kind {
-                if let Some(tile) = layer.tiles.remove(i as usize) {
+                if let Some(tile) = layer.tiles.remove(i) {
                     self.tile = Some(tile);
 
                     layer.tiles.insert(i, None);

@@ -496,7 +496,7 @@ impl Resources {
 }
 
 pub fn map_name_to_filename(name: &str) -> String {
-    name.replace(' ', "_").replace('.', "_").to_lowercase()
+    name.replace([' ', '.'], "_").to_lowercase()
 }
 
 pub fn is_valid_map_file_name(file_name: &str) -> bool {

@@ -3,7 +3,7 @@ use bevy_has_load_progress::HasLoadProgress;
 use leafwing_input_manager::{axislike::VirtualDPad, prelude::InputMap, user_input::InputKind};
 use serde::{Deserialize, Serialize};
 
-use crate::player::PlayerAction;
+use crate::player::input::PlayerAction;
 
 /// Global settings, stored and accessed through [`crate::platform::Storage`]
 #[derive(HasLoadProgress, Deserialize, Serialize, Debug, Clone)]

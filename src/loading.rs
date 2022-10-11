@@ -12,11 +12,11 @@ use leafwing_input_manager::{
 use crate::{
     camera::{spawn_editor_camera, spawn_game_camera},
     config::ENGINE_CONFIG,
-    ui::input::MenuAction,
     metadata::{BorderImageMeta, GameMeta, PlayerMeta, Settings},
     platform::Storage,
-    player::{PlayerIdx, MAX_PLAYERS},
+    player::MAX_PLAYERS,
     prelude::*,
+    ui::input::MenuAction,
     GameState,
 };
 
@@ -40,6 +40,9 @@ impl Plugin for LoadingPlugin {
         }
     }
 }
+
+#[derive(Component)]
+pub struct PlayerInputCollector;
 
 fn setup(mut commands: Commands) {
     commands
@@ -161,7 +164,7 @@ impl<'w, 's> GameLoader<'w, 's> {
                     commands
                         .spawn()
                         .insert(Name::new(format!("Player Input Collector {player}")))
-                        .insert(PlayerIdx(player))
+                        .insert(PlayerInputCollector)
                         .insert_bundle(InputManagerBundle {
                             input_map: settings.player_controls.get_input_map(player),
                             ..default()

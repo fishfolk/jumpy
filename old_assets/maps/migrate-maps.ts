@@ -199,6 +199,23 @@ for (const map of inMaps) {
     newMap.layers.push(newLayer);
   }
 
+  // Add spawn points
+  const spawnersLayer = {
+    id: "spawners",
+    kind: { element: { elements: [] } },
+  } as any;
+  for (const spawn_point of map.spawn_points) {
+    spawnersLayer.kind.element.elements.push({
+      pos: [
+        spawn_point.x,
+        (map.grid_size.y - 1) * map.tile_size.y - spawn_point.y,
+      ],
+      element: `./elements/environment/player_spawner/player_spawner.element.yaml`,
+    });
+  }
+
+  newMap.layers.push(spawnersLayer);
+
   newMaps.push(newMap);
 }
 

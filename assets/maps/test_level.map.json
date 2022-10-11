@@ -1739,6 +1739,29 @@
           ]
         }
       }
+    },
+    {
+      "id": "spawners",
+      "kind": {
+        "element": {
+          "elements": [
+            {
+              "pos": [
+                255.66667,
+                63
+              ],
+              "element": "./elements/environment/player_spawner/player_spawner.element.yaml"
+            },
+            {
+              "pos": [
+                715.6667,
+                64.33330000000001
+              ],
+              "element": "./elements/environment/player_spawner/player_spawner.element.yaml"
+            }
+          ]
+        }
+      }
     }
   ],
   "background_layers": [

@@ -2642,6 +2642,43 @@
           ]
         }
       }
+    },
+    {
+      "id": "spawners",
+      "kind": {
+        "element": {
+          "elements": [
+            {
+              "pos": [
+                128,
+                480
+              ],
+              "element": "./elements/environment/player_spawner/player_spawner.element.yaml"
+            },
+            {
+              "pos": [
+                608,
+                480
+              ],
+              "element": "./elements/environment/player_spawner/player_spawner.element.yaml"
+            },
+            {
+              "pos": [
+                128,
+                288
+              ],
+              "element": "./elements/environment/player_spawner/player_spawner.element.yaml"
+            },
+            {
+              "pos": [
+                608,
+                288
+              ],
+              "element": "./elements/environment/player_spawner/player_spawner.element.yaml"
+            }
+          ]
+        }
+      }
     }
   ],
   "background_layers": [

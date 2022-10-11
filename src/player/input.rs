@@ -14,6 +14,7 @@ impl Plugin for PlayerInputPlugin {
             .register_type::<PlayerControl>()
             .add_plugin(InputManagerPlugin::<PlayerAction>::default())
             .add_system_to_stage(CoreStage::PreUpdate, update_user_input)
+            .add_system_to_stage(FixedUpdateStage::PreUpdate, update_active_players)
             .add_system_to_stage(FixedUpdateStage::Last, reset_input);
     }
 }
@@ -117,4 +118,11 @@ fn reset_input(mut player_inputs: ResMut<PlayerInputs>) {
         player.previous_control = player.control.clone();
         player.control = default();
     }
+}
+
+/// Updates the [`active`][PlayerInput::active] status of players
+fn update_active_players(mut player_inputs: ResMut<PlayerInputs>) {
+    // For now, players one and to are always active
+    player_inputs.players[0].active = true;
+    player_inputs.players[1].active = true;
 }

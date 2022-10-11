@@ -65,8 +65,8 @@ impl GameCamera {
             let max = min + Vec2::new(playable.w, playable.h);
 
             self.player_rects.push(Rect::new(
-                rect.x.max(min.x).min(max.x),
-                rect.y.max(min.y).min(max.y),
+                rect.x.clamp(min.x, max.x),
+                rect.y.clamp(min.y, max.y),
                 rect.w,
                 rect.h,
             ));

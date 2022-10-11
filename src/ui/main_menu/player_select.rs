@@ -1,6 +1,6 @@
 use leafwing_input_manager::user_input::{InputKind, UserInput};
 
-use crate::{metadata::PlayerMeta, player::PlayerAction, player::MAX_PLAYERS};
+use crate::{metadata::PlayerMeta, player::input::PlayerAction, player::MAX_PLAYERS};
 
 use super::*;
 

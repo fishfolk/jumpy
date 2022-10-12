@@ -18,7 +18,9 @@ pub struct PlatformPlugin;
 impl Plugin for PlatformPlugin {
     fn build(&self, app: &mut App) {
         #[cfg(target_arch = "wasm32")]
-        app.add_system(wasm::update_canvas_size);
+        app.add_startup_system(
+            wasm::update_canvas_size
+        );
 
         app.init_resource::<Storage>()
             .add_system(load_storage.run_in_state(GameState::LoadingPlatformStorage));

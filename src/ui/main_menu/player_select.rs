@@ -1,6 +1,6 @@
 use leafwing_input_manager::user_input::{InputKind, UserInput};
 
-use crate::{metadata::PlayerMeta, player::input::PlayerAction, player::MAX_PLAYERS};
+use crate::{metadata::PlayerMeta, player::input::PlayerAction, player::MAX_PLAYERS, loading::PlayerInputCollector};
 
 use super::*;
 
@@ -146,7 +146,7 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
 struct PlayerSelectPanel<'w, 's> {
     game: Res<'w, GameMeta>,
     player_select_state: ResMut<'w, PlayerSelectState>,
-    players: Query<'w, 's, (&'static PlayerIdx, &'static ActionState<PlayerAction>)>,
+    players: Query<'w, 's, (&'static PlayerInputCollector, &'static ActionState<PlayerAction>)>,
     storage: ResMut<'w, Storage>,
     player_meta_assets: Res<'w, Assets<PlayerMeta>>,
     localization: Res<'w, Localization>,

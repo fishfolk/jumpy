@@ -57,7 +57,7 @@ const AnimatedSprite: BevyType<AnimatedSprite> = {
   typeName: "jumpy::animation::AnimatedSprite",
 };
 
-const initState: { spawners: Entity[] } = {
+const initState: { spawners: JsEntity[] } = {
   spawners: [],
 };
 
@@ -68,7 +68,7 @@ export default {
 
     const spawnedEntities = MapElement.getSpawnedEntities();
     if (spawnedEntities.length > 0) {
-      state.spawners = spawnedEntities;
+      state.spawners = spawnedEntities.map(e => EntityRef.toJs(e));
     }
 
     // Collect all the alive players on the map
@@ -83,7 +83,7 @@ export default {
       if (player.active && !(i in alive_players)) {
         // Get a random spawner
         const spawner_idx = Math.round(Math.random() * state.spawners.length);
-        const spawner = state.spawners[spawner_idx];
+        const spawner = EntityRef.fromJs(state.spawners[spawner_idx]);
 
         // Get the spawner transform
         const [
@@ -108,9 +108,9 @@ export default {
             start: 0,
             end: 13,
             repeat: true,
-            fps: 20,
+            fps: 10,
             atlas: {
-              id: Assets.getHandleId("./lionfishy.atlas.yaml"),
+              id: Assets.getHandleId("./pescy.atlas.yaml"),
             },
           })
         );

@@ -42,7 +42,7 @@ impl Plugin for LoadingPlugin {
 }
 
 #[derive(Component)]
-pub struct PlayerInputCollector;
+pub struct PlayerInputCollector(pub usize);
 
 fn setup(mut commands: Commands) {
     commands
@@ -164,7 +164,7 @@ impl<'w, 's> GameLoader<'w, 's> {
                     commands
                         .spawn()
                         .insert(Name::new(format!("Player Input Collector {player}")))
-                        .insert(PlayerInputCollector)
+                        .insert(PlayerInputCollector(player))
                         .insert_bundle(InputManagerBundle {
                             input_map: settings.player_controls.get_input_map(player),
                             ..default()

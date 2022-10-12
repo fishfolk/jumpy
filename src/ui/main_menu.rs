@@ -12,7 +12,6 @@ use crate::{
     localization::LocalizationExt,
     metadata::{GameMeta, Settings},
     platform::Storage,
-    player::PlayerIdx,
     prelude::*,
     ui::input::MenuAction,
     utils::ResetController,

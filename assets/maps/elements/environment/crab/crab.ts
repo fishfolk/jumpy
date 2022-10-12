@@ -32,7 +32,7 @@ const EntityName: BevyType<EntityName> = {
   typeName: "jumpy::name::EntityName",
 };
 
-const initState: { crabs: Entity[] } = {
+const initState: { crabs: JsEntity[] } = {
   crabs: [],
 };
 
@@ -55,7 +55,7 @@ export default {
 
       // Spawn a new entity for the crab and copy the transform and visibility from the map element
       const entity = world.spawn();
-      state.crabs.push(entity);
+      state.crabs.push(EntityRef.toJs(entity));
 
       world.insert(entity, Value.create(EntityName, ["Critter: Crab"]));
       world.insert(entity, transform);
@@ -99,7 +99,7 @@ export default {
     const query = world.query(KinematicBody);
 
     for (const crab of state.crabs) {
-      const [kinematicBody] = query.get(crab);
+      const [kinematicBody] = query.get(EntityRef.fromJs(crab));
 
       if (i % 100 == 0) {
         i = 0;

@@ -27,10 +27,7 @@ impl Plugin for PhysicsPlugin {
                 PhysicsStages::Hydrate,
                 PhysicsStages::UpdatePhysics,
                 SystemStage::parallel()
-                    .with_run_criteria(
-                        FixedTimestep::step(crate::FIXED_TIMESTEP)
-                            .chain(crate::is_in_game_run_criteria),
-                    )
+                    .with_run_criteria(FixedTimestep::step(crate::FIXED_TIMESTEP))
                     .with_system(
                         update_kinematic_bodies
                             .run_in_state(GameState::InGame)
@@ -101,9 +98,7 @@ fn update_kinematic_bodies(
     game: Res<GameMeta>,
     mut collision_world: CollisionWorld,
     mut bodies: Query<(Entity, &mut KinematicBody, &mut Transform)>,
-    time: Res<Time>,
 ) {
-    let dt = time.delta_seconds();
     for (actor, mut body, mut transform) in &mut bodies {
         collision_world.set_actor_position(actor, transform.translation.truncate() + body.offset);
 
@@ -146,7 +141,6 @@ fn update_kinematic_bodies(
                     body.velocity,
                     body.angular_velocity,
                     body.is_on_ground,
-                    dt,
                 );
             }
 
@@ -168,11 +162,10 @@ fn apply_rotation(
     velocity: Vec2,
     angular_velocity: f32,
     is_on_ground: bool,
-    dt: f32,
 ) {
     let mut angle = transform.rotation.to_euler(EulerRot::XYZ).2;
     if angular_velocity != 0.0 {
-        angle += (angular_velocity * dt).to_radians();
+        angle += (angular_velocity * crate::FIXED_TIMESTEP as f32).to_radians();
     } else if !is_on_ground {
         angle += velocity.x.abs() * 0.00045 + velocity.y.abs() * 0.00015;
     } else {

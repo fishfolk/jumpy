@@ -3,8 +3,8 @@
 #![allow(clippy::too_many_arguments)]
 
 use bevy::{
-    asset::AssetServerSettings, ecs::schedule::ShouldRun, log::LogSettings,
-    render::texture::ImageSettings, time::FixedTimestep,
+    asset::AssetServerSettings, log::LogSettings, render::texture::ImageSettings,
+    time::FixedTimestep,
 };
 use bevy_parallax::ParallaxResource;
 
@@ -30,10 +30,10 @@ mod workarounds;
 
 use crate::{
     animation::AnimationPlugin, assets::AssetPlugin, camera::CameraPlugin, debug::DebugPlugin,
-    lines::LinesPlugin, loading::LoadingPlugin,
-    localization::LocalizationPlugin, map::MapPlugin, metadata::GameMeta, name::NamePlugin,
-    physics::PhysicsPlugin, platform::PlatformPlugin, player::PlayerPlugin, prelude::*,
-    scripting::ScriptingPlugin, ui::UiPlugin, workarounds::WorkaroundsPlugin,
+    lines::LinesPlugin, loading::LoadingPlugin, localization::LocalizationPlugin, map::MapPlugin,
+    metadata::GameMeta, name::NamePlugin, physics::PhysicsPlugin, platform::PlatformPlugin,
+    player::PlayerPlugin, prelude::*, scripting::ScriptingPlugin, ui::UiPlugin,
+    workarounds::WorkaroundsPlugin,
 };
 
 /// The timestep used for fixed update systems
@@ -57,15 +57,10 @@ pub enum InGameState {
 #[derive(StageLabel)]
 pub enum FixedUpdateStage {
     First,
-    FirstInGame,
     PreUpdate,
-    PreUpdateInGame,
     Update,
-    UpdateInGame,
     PostUpdate,
-    PostUpdateInGame,
     Last,
-    LastInGame,
 }
 
 pub fn main() {
@@ -112,23 +107,9 @@ pub fn main() {
         SystemStage::parallel().with_run_criteria(FixedTimestep::step(crate::FIXED_TIMESTEP)),
     )
     .add_stage_after(
-        CoreStage::First,
-        FixedUpdateStage::FirstInGame,
-        SystemStage::parallel().with_run_criteria(
-            FixedTimestep::step(crate::FIXED_TIMESTEP).chain(is_in_game_run_criteria),
-        ),
-    )
-    .add_stage_after(
         CoreStage::PreUpdate,
         FixedUpdateStage::PreUpdate,
         SystemStage::parallel().with_run_criteria(FixedTimestep::step(crate::FIXED_TIMESTEP)),
-    )
-    .add_stage_after(
-        CoreStage::PreUpdate,
-        FixedUpdateStage::PreUpdateInGame,
-        SystemStage::parallel().with_run_criteria(
-            FixedTimestep::step(crate::FIXED_TIMESTEP).chain(is_in_game_run_criteria),
-        ),
     )
     .add_stage_after(
         CoreStage::Update,
@@ -136,35 +117,14 @@ pub fn main() {
         SystemStage::parallel().with_run_criteria(FixedTimestep::step(crate::FIXED_TIMESTEP)),
     )
     .add_stage_after(
-        CoreStage::Update,
-        FixedUpdateStage::UpdateInGame,
-        SystemStage::parallel().with_run_criteria(
-            FixedTimestep::step(crate::FIXED_TIMESTEP).chain(is_in_game_run_criteria),
-        ),
-    )
-    .add_stage_after(
         CoreStage::PostUpdate,
         FixedUpdateStage::PostUpdate,
         SystemStage::parallel().with_run_criteria(FixedTimestep::step(crate::FIXED_TIMESTEP)),
     )
     .add_stage_after(
-        CoreStage::PostUpdate,
-        FixedUpdateStage::PostUpdateInGame,
-        SystemStage::parallel().with_run_criteria(
-            FixedTimestep::step(crate::FIXED_TIMESTEP).chain(is_in_game_run_criteria),
-        ),
-    )
-    .add_stage_after(
         CoreStage::Last,
         FixedUpdateStage::Last,
         SystemStage::parallel().with_run_criteria(FixedTimestep::step(crate::FIXED_TIMESTEP)),
-    )
-    .add_stage_after(
-        CoreStage::Last,
-        FixedUpdateStage::LastInGame,
-        SystemStage::parallel().with_run_criteria(
-            FixedTimestep::step(crate::FIXED_TIMESTEP).chain(is_in_game_run_criteria),
-        ),
     );
 
     // Install game plugins
@@ -197,31 +157,4 @@ pub fn main() {
 
     // Start the game!
     app.run();
-}
-
-/// Heper stage run criteria that only runs if we are in a gameplay state.
-fn is_in_game_run_criteria(
-    should_run: In<ShouldRun>,
-    game_state: Option<Res<CurrentState<GameState>>>,
-    in_game_state: Option<Res<CurrentState<InGameState>>>,
-) -> ShouldRun {
-    match should_run.0 {
-        no @ (ShouldRun::NoAndCheckAgain | ShouldRun::No) => no,
-        yes @ (ShouldRun::Yes | ShouldRun::YesAndCheckAgain) => {
-            let is_in_game = game_state
-                .map(|x| x.0 == GameState::InGame)
-                .unwrap_or(false)
-                && in_game_state
-                    .map(|x| x.0 != InGameState::Paused)
-                    .unwrap_or(false);
-
-            if is_in_game {
-                yes
-            } else if yes == ShouldRun::YesAndCheckAgain {
-                ShouldRun::NoAndCheckAgain
-            } else {
-                ShouldRun::No
-            }
-        }
-    }
 }

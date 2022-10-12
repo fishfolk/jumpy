@@ -1,4 +1,7 @@
-use bevy::prelude::*;
+use bevy::{
+    diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
+    prelude::*,
+};
 use bevy_egui::*;
 use bevy_fluent::Localization;
 use bevy_inspector_egui::WorldInspectorParams;
@@ -12,16 +15,23 @@ pub struct DebugToolsPlugin;
 impl Plugin for DebugToolsPlugin {
     fn build(&self, app: &mut App) {
         if ENGINE_CONFIG.debug_tools {
-            app.add_system(debug_tools_window);
+            app.add_plugin(FrameTimeDiagnosticsPlugin)
+                .init_resource::<ShowFameTimeDiagnostics>()
+                .add_system(debug_tools_window)
+                .add_system(frame_diagnostic_window);
         }
     }
 }
 
+#[derive(Default, Deref, DerefMut)]
+struct ShowFameTimeDiagnostics(pub bool);
+
 /// System that renders the debug tools window which can be toggled by pressing F12
-pub fn debug_tools_window(
+fn debug_tools_window(
     mut visible: Local<bool>,
     mut egui_context: ResMut<EguiContext>,
     mut physics_debug_render: ResMut<PhysicsDebugRenderConfig>,
+    mut show_frame_diagnostics: ResMut<ShowFameTimeDiagnostics>,
     localization: Res<Localization>,
     input: Res<Input<KeyCode>>,
     mut inspector: ResMut<WorldInspectorParams>,
@@ -43,6 +53,11 @@ pub fn debug_tools_window(
         inspector.enabled = !inspector.enabled;
     }
 
+    // Shortcut to toggle frame diagnostics
+    if input.just_pressed(KeyCode::F8) {
+        **show_frame_diagnostics = !**show_frame_diagnostics;
+    }
+
     // Display debug tool window
     egui::Window::new(localization.get("debug-tools"))
         // ID is needed because title comes from localizaition which can change
@@ -61,4 +76,83 @@ pub fn debug_tools_window(
                 format!("{} ( F9 )", localization.get("show-world-inspector")),
             );
         });
+}
+
+struct FrameDiagState {
+    min_fps: f64,
+    max_fps: f64,
+    min_frame_time: f64,
+    max_frame_time: f64,
+}
+
+impl Default for FrameDiagState {
+    fn default() -> Self {
+        Self {
+            min_fps: f64::MAX,
+            max_fps: 0.0,
+            min_frame_time: f64::MAX,
+            max_frame_time: 0.0,
+        }
+    }
+}
+
+fn frame_diagnostic_window(
+    mut state: Local<FrameDiagState>,
+    mut egui_context: ResMut<EguiContext>,
+    mut show: ResMut<ShowFameTimeDiagnostics>,
+    diagnostics: Res<Diagnostics>,
+    localization: Res<Localization>,
+) {
+    if **show {
+        let ctx = egui_context.ctx_mut();
+
+        egui::Window::new(&localization.get("frame-diagnostics"))
+            .id(egui::Id::new("frame_diagnostics"))
+            .default_width(400.0)
+            .open(&mut **show)
+            .show(ctx, |ui| {
+                if ui.button(&localization.get("reset-min-max")).clicked() {
+                    *state = default();
+                }
+
+                let fps = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS).unwrap();
+                let fps_value = fps.value().unwrap();
+
+                if fps_value < state.min_fps {
+                    state.min_fps = fps_value;
+                }
+                if fps_value > state.max_fps {
+                    state.max_fps = fps_value;
+                }
+
+                let frame_time = diagnostics
+                    .get(FrameTimeDiagnosticsPlugin::FRAME_TIME)
+                    .unwrap();
+                let frame_time_value = frame_time.value().unwrap();
+
+                if frame_time_value < state.min_frame_time {
+                    state.min_frame_time = frame_time_value;
+                }
+                if frame_time_value > state.max_frame_time {
+                    state.max_frame_time = frame_time_value;
+                }
+
+                ui.monospace(&format!(
+                    "{label:20}: {fps:4.0}{suffix:3} ( {min:4.0}{suffix:3}, {max:4.0}{suffix:3} )",
+                    label = localization.get("frames-per-second"),
+                    fps = fps_value,
+                    suffix = fps.suffix,
+                    min = state.min_fps,
+                    max = state.max_fps,
+                ));
+                ui.monospace(&format!(
+                    "{label:20}: {fps:4.1}{suffix:3} ( {min:4.1}{suffix:3}, {max:4.1}{suffix:3} )",
+                    label = localization.get("frame-time"),
+                    fps = frame_time_value * 1000.0,
+                    suffix = "ms",
+                    min = state.min_frame_time * 1000.0,
+                    max = state.max_frame_time * 1000.0,
+                ));
+            });
+    }
 }

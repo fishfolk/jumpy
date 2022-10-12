@@ -20,3 +20,12 @@ declare namespace ScriptInfo {
   function get(): ScriptInfo;
   function state<T>(init?: T): T;
 }
+
+declare type JsEntity = {
+  bits: number;
+};
+
+declare namespace EntityRef {
+  function fromJs(js_ent: JsEntity): Entity;
+  function toJs(ent: Entity): JsEntity;
+}

@@ -24,12 +24,14 @@ impl Plugin for AnimationPlugin {
                 AnimationStage::Hydrate,
                 AnimationStage::Animate,
                 SystemStage::parallel()
-                    .with_run_criteria(
-                        FixedTimestep::step(crate::FIXED_TIMESTEP)
-                            .chain(crate::is_in_game_run_criteria),
-                    )
-                    .with_system(update_animated_sprite_components)
-                    .with_system(animate_sprites.after(update_animated_sprite_components)),
+                    .with_run_criteria(FixedTimestep::step(crate::FIXED_TIMESTEP))
+                    .with_system(update_animated_sprite_components.label("update_sprites"))
+                    .with_system(
+                        animate_sprites
+                            .run_in_state(GameState::InGame)
+                            .run_not_in_state(InGameState::Paused)
+                            .after("update_sprites"),
+                    ),
             );
     }
 }
@@ -55,10 +57,11 @@ pub struct AnimatedSprite {
 
 fn animate_sprites(
     mut animated_sprites: Query<(&mut AnimatedSprite, &mut TextureAtlasSprite)>,
-    time: Res<Time>,
 ) {
     for (mut animated_sprite, mut atlas_sprite) in &mut animated_sprites {
-        animated_sprite.timer.tick(time.delta());
+        animated_sprite
+            .timer
+            .tick(Duration::from_secs_f64(crate::FIXED_TIMESTEP));
 
         if animated_sprite.timer.just_finished() {
             animated_sprite.index += 1;

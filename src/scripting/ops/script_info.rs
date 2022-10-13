@@ -42,7 +42,7 @@ impl JsRuntimeOp for ScriptInfoGet {
         _world: &mut World,
         _args: serde_json::Value,
     ) -> anyhow::Result<serde_json::Value> {
-        let value_refs = ctx.op_state.get_mut().unwrap();
+        let value_refs = ctx.op_state.entry().or_insert_with(default);
 
         let mut hasher = DefaultHasher::default();
         ctx.script_info.handle.id.hash(&mut hasher);

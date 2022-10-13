@@ -108,7 +108,7 @@ fn frame_diagnostic_window(
 
         egui::Window::new(&localization.get("frame-diagnostics"))
             .id(egui::Id::new("frame_diagnostics"))
-            .default_width(400.0)
+            .default_width(500.0)
             .open(&mut **show)
             .show(ctx, |ui| {
                 if ui.button(&localization.get("reset-min-max")).clicked() {
@@ -138,19 +138,21 @@ fn frame_diagnostic_window(
                 }
 
                 ui.monospace(&format!(
-                    "{label:20}: {fps:4.0}{suffix:3} ( {min:4.0}{suffix:3}, {max:4.0}{suffix:3} )",
+                    "{label:20}: {fps:4.0}{suffix:3} ( {min:4.0}{suffix:3}, {avg:4.0}{suffix:3}, {max:4.0}{suffix:3} )",
                     label = localization.get("frames-per-second"),
                     fps = fps_value,
                     suffix = fps.suffix,
                     min = state.min_fps,
+                    avg = fps.average().unwrap(),
                     max = state.max_fps,
                 ));
                 ui.monospace(&format!(
-                    "{label:20}: {fps:4.1}{suffix:3} ( {min:4.1}{suffix:3}, {max:4.1}{suffix:3} )",
+                    "{label:20}: {fps:4.1}{suffix:3} ( {min:4.1}{suffix:3}, {avg:4.0}{suffix:3}, {max:4.1}{suffix:3} )",
                     label = localization.get("frame-time"),
                     fps = frame_time_value * 1000.0,
                     suffix = "ms",
                     min = state.min_frame_time * 1000.0,
+                    avg = frame_time.average().unwrap() * 1000.0,
                     max = state.max_frame_time * 1000.0,
                 ));
             });

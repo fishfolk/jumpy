@@ -118,7 +118,7 @@ export default {
           player,
           Value.create(KinematicBody, {
             size: {
-              x: 20,
+              x: 38,
               y: 48,
             },
             gravity: 1,

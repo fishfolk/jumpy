@@ -123,16 +123,6 @@ impl Collider {
     }
 }
 
-// #[derive(Component, Reflect, Default, Clone, Debug)]
-// #[reflect(Component, Default)]
-// pub struct StaticTiledLayer {
-//     static_colliders: Vec<Entity>,
-//     tile_width: f32,
-//     tile_height: f32,
-//     width: usize,
-//     tag: u8,
-// }
-
 #[derive(Component, Reflect, Default, PartialEq, Eq, Clone, Copy, Debug)]
 #[reflect_value(Component, Default, PartialEq)]
 pub enum TileCollision {
@@ -439,14 +429,13 @@ impl<'w, 's> CollisionWorld<'w, 's> {
             }
 
             if width as i32 > tile_size.x as i32 {
-                let mut x = pos.x;
+                let mut x = pos.x - hw;
 
                 while {
                     x += tile_size.x;
-                    x < pos.x + width as f32 - 1.
+                    x < pos.x + hw - 1.
                 } {
-                    let tile =
-                        check(vec2(x, pos.y)).or(check(vec2(x, pos.y + height as f32 - 1.0)));
+                    let tile = check(vec2(x, pos.y - hh)).or(check(vec2(x, pos.y + hh)));
                     if tile != TileCollision::Empty {
                         return tile;
                     }
@@ -454,13 +443,13 @@ impl<'w, 's> CollisionWorld<'w, 's> {
             }
 
             if height as i32 > tile_size.y as i32 {
-                let mut y = pos.y;
+                let mut y = pos.y - hh;
 
                 while {
                     y += tile_size.y;
-                    y < pos.y + height as f32 - 1.
+                    y < pos.y + hh - 1.
                 } {
-                    let tile = check(vec2(pos.x, y)).or(check(vec2(pos.x + width as f32 - 1., y)));
+                    let tile = check(vec2(pos.x - hw, y)).or(check(vec2(pos.x + hw, y)));
                     if tile != TileCollision::Empty {
                         return tile;
                     }

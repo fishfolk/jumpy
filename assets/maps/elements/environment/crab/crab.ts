@@ -38,10 +38,10 @@ const initState: { crabs: JsEntity[] } = {
 
 let i = 0;
 
+const state = ScriptInfo.state(initState);
+
 export default {
   preUpdate() {
-    const state = ScriptInfo.state(initState);
-
     const spawnedEntities = MapElement.getSpawnedEntities();
     if (spawnedEntities.length > 0) {
       state.crabs = [];
@@ -95,7 +95,6 @@ export default {
 
   updateInGame() {
     i++;
-    const state = ScriptInfo.state(initState);
     const query = world.query(KinematicBody);
 
     for (const crab of state.crabs) {

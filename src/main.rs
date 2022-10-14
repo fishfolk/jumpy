@@ -27,6 +27,7 @@ mod scripting;
 mod ui;
 mod utils;
 mod workarounds;
+mod run_criteria;
 
 use crate::{
     animation::AnimationPlugin, assets::AssetPlugin, camera::CameraPlugin, debug::DebugPlugin,

@@ -2733,7 +2733,7 @@
               "idx": 8
             }
           ],
-          "tilemap": "./resources/default_tileset.png"
+          "tilemap": "../resources/default_tileset.png"
         }
       }
     },
@@ -2747,35 +2747,35 @@
                 472,
                 283
               ],
-              "element": "./elements/decoration/anemones/anemones.element.yaml"
+              "element": "../elements/decoration/anemones/anemones.element.yaml"
             },
             {
               "pos": [
                 170.16666,
                 219
               ],
-              "element": "./elements/decoration/seaweed/seaweed.element.yaml"
+              "element": "../elements/decoration/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 441.6667,
                 473.33333
               ],
-              "element": "./elements/decoration/seaweed/seaweed.element.yaml"
+              "element": "../elements/decoration/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 888,
                 219
               ],
-              "element": "./elements/decoration/seaweed/seaweed.element.yaml"
+              "element": "../elements/decoration/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 952,
                 347
               ],
-              "element": "./elements/decoration/anemones/anemones.element.yaml"
+              "element": "../elements/decoration/anemones/anemones.element.yaml"
             }
           ]
         }
@@ -2791,91 +2791,91 @@
                 120.143555,
                 187.11005
               ],
-              "element": "./elements/environment/sproinger/sproinger.element.yaml"
+              "element": "../elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
                 985,
                 187.66660000000002
               ],
-              "element": "./elements/environment/sproinger/sproinger.element.yaml"
+              "element": "../elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
                 619.4545,
                 450.9091
               ],
-              "element": "./elements/item/sword/sword.element.yaml"
+              "element": "../elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
                 166.91943,
                 228.17399999999998
               ],
-              "element": "./elements/environment/fish_school/fish_school.element.yaml"
+              "element": "../elements/environment/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
                 882,
                 237.16663
               ],
-              "element": "./elements/environment/fish_school/fish_school.element.yaml"
+              "element": "../elements/environment/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
                 434.00006,
                 482
               ],
-              "element": "./elements/environment/fish_school/fish_school.element.yaml"
+              "element": "../elements/environment/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
                 894.3333,
                 327.83334
               ],
-              "element": "./elements/item/musket/musket.element.yaml"
+              "element": "../elements/item/musket/musket.element.yaml"
             },
             {
               "pos": [
                 245.50003,
                 208.83334000000002
               ],
-              "element": "./elements/item/grenades/grenades.element.yaml"
+              "element": "../elements/item/grenades/grenades.element.yaml"
             },
             {
               "pos": [
                 149.66667,
                 336
               ],
-              "element": "./elements/item/musket/musket.element.yaml"
+              "element": "../elements/item/musket/musket.element.yaml"
             },
             {
               "pos": [
                 552.1428,
                 250.5
               ],
-              "element": "./elements/environment/sproinger/sproinger.element.yaml"
+              "element": "../elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
                 864.83344,
                 208
               ],
-              "element": "./elements/item/grenades/grenades.element.yaml"
+              "element": "../elements/item/grenades/grenades.element.yaml"
             },
             {
               "pos": [
                 619.7143,
                 269
               ],
-              "element": "./elements/item/grenades/grenades.element.yaml"
+              "element": "../elements/item/grenades/grenades.element.yaml"
             },
             {
               "pos": [
                 490.52383,
                 271.0238
               ],
-              "element": "./elements/item/grenades/grenades.element.yaml"
+              "element": "../elements/item/grenades/grenades.element.yaml"
             }
           ]
         }
@@ -2891,28 +2891,28 @@
                 126.57143,
                 348.2857
               ],
-              "element": "./elements/environment/player_spawner/player_spawner.element.yaml"
+              "element": "../elements/environment/player_spawner/player_spawner.element.yaml"
             },
             {
               "pos": [
                 959.2857,
                 353.28568
               ],
-              "element": "./elements/environment/player_spawner/player_spawner.element.yaml"
+              "element": "../elements/environment/player_spawner/player_spawner.element.yaml"
             },
             {
               "pos": [
                 896,
                 224
               ],
-              "element": "./elements/environment/player_spawner/player_spawner.element.yaml"
+              "element": "../elements/environment/player_spawner/player_spawner.element.yaml"
             },
             {
               "pos": [
                 192,
                 224
               ],
-              "element": "./elements/environment/player_spawner/player_spawner.element.yaml"
+              "element": "../elements/environment/player_spawner/player_spawner.element.yaml"
             }
           ]
         }
@@ -2921,7 +2921,7 @@
   ],
   "background_layers": [
     {
-      "image": "./resources/background_04.png",
+      "image": "../resources/background_04.png",
       "speed": 0,
       "tile_size": [
         896,
@@ -2935,7 +2935,7 @@
       "scale": 2
     },
     {
-      "image": "./resources/background_03.png",
+      "image": "../resources/background_03.png",
       "speed": 0.74,
       "tile_size": [
         896,
@@ -2949,7 +2949,7 @@
       "scale": 2
     },
     {
-      "image": "./resources/background_02.png",
+      "image": "../resources/background_02.png",
       "speed": 0.82,
       "tile_size": [
         896,
@@ -2963,7 +2963,7 @@
       "scale": 2
     },
     {
-      "image": "./resources/background_01.png",
+      "image": "../resources/background_01.png",
       "speed": 100,
       "tile_size": [
         896,

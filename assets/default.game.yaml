@@ -1,37 +1,39 @@
 camera_height: 448
 clear_color: 27233B
 physics:
-  terminal_velocity: 10
+  terminal_velocity: 50
   friction_lerp: 0.96
   stop_threshold: 1.0
 
 players:
-  - players/catty/catty.player.yaml
-  - players/fishy/fishy.player.yaml
-  - players/lionfishy/lionfishy.player.yaml
-  - players/orcy/orcy.player.yaml
-  - players/pescy/pescy.player.yaml
-  - players/sharky/sharky.player.yaml
+  - player/skins/catty/catty.player.yaml
+  - player/skins/fishy/fishy.player.yaml
+  - player/skins/lionfishy/lionfishy.player.yaml
+  - player/skins/orcy/orcy.player.yaml
+  - player/skins/pescy/pescy.player.yaml
+  - player/skins/sharky/sharky.player.yaml
 
 maps:
-  - maps/lev01.map.json
-  - maps/lev02.map.json
-  - maps/lev03.map.json
-  - maps/lev04.map.json
-  - maps/lev05.map.json
-  - maps/lev06.map.json
-  - maps/lev07.map.json
-  - maps/zyrafa01.map.json
-  - maps/zyrafa02.map.json
-  - maps/zyrafa03.map.json
-  - maps/zyrafa04.map.json
-  - maps/zyrafa05.map.json
-  - maps/zyrafa06.map.json
+  - map/levels/lev01.map.json
+  - map/levels/lev02.map.json
+  - map/levels/lev03.map.json
+  - map/levels/lev04.map.json
+  - map/levels/lev05.map.json
+  - map/levels/lev06.map.json
+  - map/levels/lev07.map.json
+  - map/levels/zyrafa01.map.json
+  - map/levels/zyrafa02.map.json
+  - map/levels/zyrafa03.map.json
+  - map/levels/zyrafa04.map.json
+  - map/levels/zyrafa05.map.json
+  - map/levels/zyrafa06.map.json
 
 scripts:
   - ui/menu-background-zoom.ts
-  - players/states/default.ts
-  - players/states/idle.ts
+  - game/camera_controller.ts
+
+  - player/states/default.ts
+  - player/states/idle.ts
 
 main_menu:
   title_font:

@@ -17,11 +17,6 @@ pub struct PlatformPlugin;
 
 impl Plugin for PlatformPlugin {
     fn build(&self, app: &mut App) {
-        #[cfg(target_arch = "wasm32")]
-        app.add_startup_system(
-            wasm::update_canvas_size
-        );
-
         app.init_resource::<Storage>()
             .add_system(load_storage.run_in_state(GameState::LoadingPlatformStorage));
     }
@@ -376,19 +371,6 @@ mod wasm {
     use super::StorageRequest;
 
     const BROWSER_LOCAL_STORAGE_KEY: &str = "jumpy-platform-storage";
-
-    /// System to update the canvas size to match the size of the browser window
-    pub fn update_canvas_size(mut windows: ResMut<Windows>) {
-        // Get the browser window size
-        let browser_window = web_sys::window().unwrap();
-        let window_width = browser_window.inner_width().unwrap().as_f64().unwrap();
-        let window_height = browser_window.inner_height().unwrap().as_f64().unwrap();
-
-        let window = windows.get_primary_mut().unwrap();
-
-        // Set the canvas to the browser size
-        window.set_resolution(window_width as f32, window_height as f32);
-    }
 
     /// Initialize storage backend
     pub(super) fn init_storage(io_task_pool: &IoTaskPool) -> Sender<StorageRequest> {

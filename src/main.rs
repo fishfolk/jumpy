@@ -72,7 +72,7 @@ pub fn main() {
     let mut app = App::new();
     app.insert_resource(WindowDescriptor {
         title: "Fish Folk: Jumpy".to_string(),
-        scale_factor_override: Some(1.0),
+        fit_canvas_to_parent: true,
         ..default()
     })
     .insert_resource(ImageSettings::default_nearest());

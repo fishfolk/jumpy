@@ -16,7 +16,12 @@ pub enum PlayerStateStage {
 
 #[derive(Reflect, Component, Default)]
 #[reflect(Component)]
-pub struct PlayerState(u64);
+pub struct PlayerState {
+    /// The unique identifier for the current state
+    id: u64,
+    /// The number of frames that this state has been active
+    age: u64,
+}
 
 impl Plugin for PlayerStatePlugin {
     fn build(&self, app: &mut App) {
@@ -47,24 +52,25 @@ impl Plugin for PlayerStatePlugin {
             .add_stage_after(
                 PlayerStateStage::PerformTransitions,
                 PlayerStateStage::HandleState,
-                SystemStage::parallel().with_system(
-                    run_script_fn_system("handlePlayerState".into()).at_end(),
-                ),
-            );
+                SystemStage::parallel()
+                    .with_system(run_script_fn_system("handlePlayerState".into()).at_end()),
+            )
+            .add_system_to_stage(FixedUpdateStage::Last, update_player_state_age);
     }
 }
 
-fn state_transition_run_criteria(
-    mut run_once: Local<bool>,
-    changed_states: Query<Entity, Changed<PlayerState>>,
-) -> ShouldRun {
-    if !*run_once {
-        *run_once = true;
-        ShouldRun::YesAndCheckAgain
-    } else if changed_states.iter().count() > 0 {
+fn state_transition_run_criteria(changed_states: Query<Entity, Changed<PlayerState>>) -> ShouldRun {
+    // Note, this will always run once per frame, because the `update_player_state_age` system runs
+    // at the end of every frame.
+    if changed_states.iter().count() > 0 {
         ShouldRun::YesAndCheckAgain
     } else {
-        *run_once = false;
         ShouldRun::No
+    }
+}
+
+fn update_player_state_age(mut states: Query<&mut PlayerState>) {
+    for mut state in &mut states {
+        state.age = state.age.saturating_add(1);
     }
 }

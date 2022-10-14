@@ -1,4 +1,4 @@
-type PlayerState = [number];
+type PlayerState = { id: u64; age: u64 };
 const PlayerState: BevyType<PlayerState> = {
   typeName: "jumpy::player::state::PlayerState",
 };
@@ -59,9 +59,8 @@ export default {
     for (const [playerState, playerIdx, body] of world
       .query(PlayerState, PlayerIdx, KinematicBody)
       .map((x) => x.components)) {
-
       // In this state
-      if (playerState[0] != scriptId) continue;
+      if (playerState.id != scriptId) continue;
 
       // Add basic physics controls
       const control = player_inputs.players[playerIdx[0]].control;

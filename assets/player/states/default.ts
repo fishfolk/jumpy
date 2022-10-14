@@ -1,4 +1,4 @@
-type PlayerState = [number];
+type PlayerState = { id: number; age: number };
 const PlayerState: BevyType<PlayerState> = {
   typeName: "jumpy::player::state::PlayerState",
 };
@@ -11,10 +11,10 @@ export default {
       .query(PlayerState)
       .map((x) => x.components)) {
       // Loop over players in the default state
-      if (playerState[0] !== 0) continue;
+      if (playerState.id !== 0) continue;
 
       // Transition to the idle state
-      playerState[0] = Assets.getHandleId("./idle.ts").hash();
+      playerState.id = Assets.getHandleId("./idle.ts").hash();
     }
   },
 };

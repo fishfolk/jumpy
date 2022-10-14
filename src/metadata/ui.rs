@@ -228,7 +228,7 @@ pub struct ButtonBordersMeta {
     pub clicked: Option<BorderImageMeta>,
 }
 
-#[derive(HasLoadProgress, Default, Clone, Copy, Debug)]
+#[derive(Reflect, HasLoadProgress, Default, Clone, Copy, Debug)]
 #[has_load_progress(none)]
 pub struct ColorMeta(pub Color);
 

@@ -23,17 +23,29 @@ mod physics;
 mod platform;
 mod player;
 mod prelude;
+mod run_criteria;
 mod scripting;
 mod ui;
 mod utils;
 mod workarounds;
-mod run_criteria;
 
 use crate::{
-    animation::AnimationPlugin, assets::AssetPlugin, camera::CameraPlugin, debug::DebugPlugin,
-    lines::LinesPlugin, loading::LoadingPlugin, localization::LocalizationPlugin, map::MapPlugin,
-    metadata::GameMeta, name::NamePlugin, physics::PhysicsPlugin, platform::PlatformPlugin,
-    player::PlayerPlugin, prelude::*, scripting::ScriptingPlugin, ui::UiPlugin,
+    animation::AnimationPlugin,
+    assets::AssetPlugin,
+    camera::CameraPlugin,
+    debug::DebugPlugin,
+    lines::LinesPlugin,
+    loading::LoadingPlugin,
+    localization::LocalizationPlugin,
+    map::MapPlugin,
+    metadata::{GameMeta, MetadataPlugin},
+    name::NamePlugin,
+    physics::PhysicsPlugin,
+    platform::PlatformPlugin,
+    player::PlayerPlugin,
+    prelude::*,
+    scripting::ScriptingPlugin,
+    ui::UiPlugin,
     workarounds::WorkaroundsPlugin,
 };
 
@@ -130,6 +142,7 @@ pub fn main() {
 
     // Install game plugins
     app.add_plugins(DefaultPlugins)
+        .add_plugin(MetadataPlugin)
         .add_plugin(LinesPlugin)
         .add_plugin(PlatformPlugin)
         .add_plugin(LoadingPlugin)

@@ -18,6 +18,14 @@ pub use player::*;
 pub use settings::*;
 pub use ui::*;
 
+pub struct MetadataPlugin;
+
+impl Plugin for MetadataPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugin(MapMetadataPlugin);
+    }
+}
+
 #[derive(HasLoadProgress, TypeUuid, Deserialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[uuid = "b14f1630-64d0-4bb7-ba3d-e7b83f8a7f62"]

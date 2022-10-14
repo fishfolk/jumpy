@@ -1,8 +1,20 @@
 use super::*;
 
+use bevy::reflect::FromReflect;
 use bevy_parallax::{LayerData as ParallaxLayerData, ParallaxResource};
 
-#[derive(Component, HasLoadProgress, TypeUuid, Deserialize, Serialize, Clone, Debug, Default)]
+pub struct MapMetadataPlugin;
+
+impl Plugin for MapMetadataPlugin {
+    fn build(&self, app: &mut App) {
+        app.register_type::<MapMeta>();
+    }
+}
+
+#[derive(
+    Reflect, Component, HasLoadProgress, TypeUuid, Deserialize, Serialize, Clone, Debug, Default,
+)]
+#[reflect(Component, Default)]
 #[serde(deny_unknown_fields)]
 #[uuid = "8ede98c2-4f17-46f2-bcc5-ae0dc63b2137"]
 pub struct MapMeta {
@@ -33,7 +45,7 @@ impl MapMeta {
     }
 }
 
-#[derive(HasLoadProgress, Deserialize, Serialize, Clone, Debug)]
+#[derive(Reflect, FromReflect, HasLoadProgress, Deserialize, Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct MapLayerMeta {
     pub id: String,
@@ -42,7 +54,7 @@ pub struct MapLayerMeta {
     pub entity: Option<Entity>,
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug)]
+#[derive(Reflect, FromReflect, Deserialize, Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "snake_case")]
 pub enum MapLayerKind {
@@ -62,7 +74,7 @@ impl HasLoadProgress for MapLayerKind {
     }
 }
 
-#[derive(HasLoadProgress, Deserialize, Serialize, Clone, Debug, Default)]
+#[derive(Reflect, HasLoadProgress, Deserialize, Serialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
 pub struct MapTileLayer {
     pub tilemap: String,
@@ -87,14 +99,14 @@ pub struct MapElementSpawn {
     pub element_handle: Handle<MapElementMeta>,
 }
 
-#[derive(HasLoadProgress, Deserialize, Serialize, Clone, Debug)]
+#[derive(Reflect, FromReflect, HasLoadProgress, Deserialize, Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct MapTileMeta {
     pub pos: UVec2,
     pub idx: u32,
 }
 
-#[derive(HasLoadProgress, Deserialize, Serialize, Clone, Debug)]
+#[derive(Reflect, FromReflect, HasLoadProgress, Deserialize, Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[serde(default)]
 pub struct ParallaxLayerMeta {

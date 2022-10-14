@@ -7,7 +7,9 @@ pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(bevy_parallax::ParallaxPlugin);
+        app.register_type::<GameCamera>()
+            .register_type::<EditorCamera>()
+            .add_plugin(bevy_parallax::ParallaxPlugin);
     }
 }
 
@@ -21,10 +23,12 @@ impl GameRenderLayers {
     pub const EDITOR: u8 = 2;
 }
 
-#[derive(Component)]
+#[derive(Reflect, Component, Default)]
+#[reflect(Component, Default)]
 pub struct GameCamera;
 
-#[derive(Component)]
+#[derive(Reflect, Component, Default)]
+#[reflect(Component, Default)]
 pub struct EditorCamera;
 
 #[derive(Bundle)]

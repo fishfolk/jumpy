@@ -44,7 +44,7 @@ impl JsRuntimeOp for ScriptInfoGet {
         let mut hasher = fnv::FnvHasher::default();
         ctx.script_info.handle.id.hash(&mut hasher);
         // The bit shift makes the hash fit within the safe integer range for a JavaScript number
-        let hash = hasher.finish() >> 12;
+        let hash = hasher.finish() >> 11;
 
         Ok(serde_json::to_value(&JsScriptInfo {
             path: ctx.script_info.path.to_string_lossy().into(),

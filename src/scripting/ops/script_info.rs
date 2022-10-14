@@ -1,7 +1,4 @@
-use std::{
-    collections::hash_map::DefaultHasher,
-    hash::{Hash, Hasher},
-};
+use std::hash::{Hash, Hasher};
 
 use crate::prelude::*;
 use bevy_mod_js_scripting::{serde_json, JsRuntimeOp, JsValueRef, OpContext};
@@ -10,7 +7,7 @@ use bevy_mod_js_scripting::{serde_json, JsRuntimeOp, JsValueRef, OpContext};
 struct JsScriptInfo {
     path: String,
     handle: JsValueRef,
-    handle_id_hash: String,
+    handle_id_hash: u64,
 }
 
 pub struct ScriptInfoGet;
@@ -44,14 +41,15 @@ impl JsRuntimeOp for ScriptInfoGet {
     ) -> anyhow::Result<serde_json::Value> {
         let value_refs = ctx.op_state.entry().or_insert_with(default);
 
-        let mut hasher = DefaultHasher::default();
+        let mut hasher = fnv::FnvHasher::default();
         ctx.script_info.handle.id.hash(&mut hasher);
-        let handle_id_hash = base64::encode(hasher.finish().to_le_bytes());
+        // The bit shift makes the hash fit within the safe integer range for a JavaScript number
+        let hash = hasher.finish() >> 12;
 
         Ok(serde_json::to_value(&JsScriptInfo {
             path: ctx.script_info.path.to_string_lossy().into(),
             handle: JsValueRef::new_free(Box::new(ctx.script_info.handle.clone()), value_refs),
-            handle_id_hash,
+            handle_id_hash: hash,
         })?)
     }
 }

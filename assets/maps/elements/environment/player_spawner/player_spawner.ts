@@ -61,14 +61,15 @@ const initState: { spawners: JsEntity[] } = {
   spawners: [],
 };
 
+const state = ScriptInfo.state(initState);
+
 export default {
   preUpdate() {
     const player_inputs = world.resource(PlayerInputs);
-    const state = ScriptInfo.state(initState);
 
     const spawnedEntities = MapElement.getSpawnedEntities();
     if (spawnedEntities.length > 0) {
-      state.spawners = spawnedEntities.map(e => EntityRef.toJs(e));
+      state.spawners = spawnedEntities.map((e) => EntityRef.toJs(e));
     }
 
     // Collect all the alive players on the map
@@ -127,22 +128,6 @@ export default {
           })
         );
       }
-    }
-  },
-
-  updateInGame() {
-    const player_inputs = world.resource(PlayerInputs);
-
-    for (const [player_idx, body] of world
-      .query(PlayerIdx, KinematicBody)
-      .map((x) => x.components)) {
-        const control = player_inputs.players[player_idx[0]].control;
-
-        if (body.is_on_ground && control.shoot_just_pressed) {
-          body.velocity.y = 14.0;
-        }
-
-        body.velocity.x = control.move_direction.x * 5;
     }
   },
 };

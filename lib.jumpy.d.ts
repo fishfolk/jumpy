@@ -3,8 +3,13 @@ declare namespace MapElement {
   function mapReset(): boolean;
 }
 
+/** We've added a reflect function for hashing the HandleId to a JS Number */
+interface HandleIdWithFuncs {
+  hash(): number;
+}
+
 declare namespace Assets {
-  function getHandleId(relative_path: string): HandleId;
+  function getHandleId(relative_path: string): HandleIdWithFuncs;
 }
 
 // All handles have the same type, so just alias here
@@ -13,7 +18,7 @@ type HandleJsScript = HandleImage;
 declare interface ScriptInfo {
   path: string;
   handle: HandleJsScript;
-  handle_id_hash: string;
+  handle_id_hash: number;
 }
 
 declare namespace ScriptInfo {

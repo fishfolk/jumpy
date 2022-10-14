@@ -671,7 +671,7 @@ dependencies = [
 [[package]]
 name = "bevy_mod_js_scripting"
 version = "0.1.0"
-source = "git+https://github.com/zicklag/bevy_mod_js_scripting.git?branch=jumpy#1598b44cff1eb1cab9643da0bf2a652e88b17160"
+source = "git+https://github.com/zicklag/bevy_mod_js_scripting.git?branch=jumpy#eeca68061c4daf56cbaa5f044a33049e936435fa"
 dependencies = [
  "anyhow",
  "bevy",
@@ -2516,7 +2516,6 @@ version = "0.4.3"
 dependencies = [
  "anyhow",
  "async-channel",
- "base64 0.13.0",
  "bevy",
  "bevy-has-load-progress",
  "bevy-inspector-egui",
@@ -2530,6 +2529,7 @@ dependencies = [
  "directories",
  "egui_extras",
  "fluent",
+ "fnv",
  "getrandom",
  "iyes_loopless",
  "leafwing-input-manager",
@@ -4076,9 +4076,9 @@ dependencies = [
 
 [[package]]
 name = "swc_atoms"
-version = "0.4.20"
+version = "0.4.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a3cda50122fc217ac705ce33e8e9baa5ebde9ce441b797290914ab21a2060ff"
+checksum = "f5ffecde9d1a937a61b4799478d598121b539eb7da6127c16af86a044017e1e5"
 dependencies = [
  "once_cell",
  "rustc-hash",

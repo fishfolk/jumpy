@@ -30,6 +30,8 @@ maps:
 
 scripts:
   - ui/menu-background-zoom.ts
+  - players/states/default.ts
+  - players/states/idle.ts
 
 main_menu:
   title_font:

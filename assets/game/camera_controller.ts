@@ -42,7 +42,7 @@ export default {
     ];
 
     const playerComponents = world
-      .query(PlayerIdx, Transform, KinematicBody)
+      .query(PlayerIdx, Transform)
       .map((x) => x.components);
     const [_, cameraTransform, projection] = world.query(
       GameCamera,
@@ -56,7 +56,7 @@ export default {
 
     const player_count = playerComponents.length;
 
-    for (const [playerIdx, playerTransform, body] of playerComponents) {
+    for (const [_, playerTransform] of playerComponents) {
       const playerPos = playerTransform.translation;
       middlePoint.x += playerPos.x;
       middlePoint.y += playerPos.y;

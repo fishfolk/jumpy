@@ -2523,7 +2523,7 @@
               "idx": 8
             }
           ],
-          "tilemap": "./resources/default_tileset.png"
+          "tilemap": "../resources/default_tileset.png"
         }
       }
     },
@@ -2537,35 +2537,35 @@
                 440,
                 187
               ],
-              "element": "./elements/decoration/anemones/anemones.element.yaml"
+              "element": "../elements/decoration/anemones/anemones.element.yaml"
             },
             {
               "pos": [
                 216,
                 187
               ],
-              "element": "./elements/decoration/seaweed/seaweed.element.yaml"
+              "element": "../elements/decoration/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 376,
                 379
               ],
-              "element": "./elements/decoration/seaweed/seaweed.element.yaml"
+              "element": "../elements/decoration/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 600,
                 219
               ],
-              "element": "./elements/decoration/seaweed/seaweed.element.yaml"
+              "element": "../elements/decoration/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 120,
                 475
               ],
-              "element": "./elements/decoration/anemones/anemones.element.yaml"
+              "element": "../elements/decoration/anemones/anemones.element.yaml"
             }
           ]
         }
@@ -2581,63 +2581,63 @@
                 440.4546,
                 362.0909
               ],
-              "element": "./elements/environment/crab/crab.element.yaml"
+              "element": "../elements/environment/crab/crab.element.yaml"
             },
             {
               "pos": [
                 376.66663,
                 519.8485000000001
               ],
-              "element": "./elements/environment/crab/crab.element.yaml"
+              "element": "../elements/environment/crab/crab.element.yaml"
             },
             {
               "pos": [
                 374.99994,
                 400.5
               ],
-              "element": "./elements/environment/fish_school/fish_school.element.yaml"
+              "element": "../elements/environment/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
                 212.24997,
                 204.33349999999996
               ],
-              "element": "./elements/environment/fish_school/fish_school.element.yaml"
+              "element": "../elements/environment/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
                 265.66666,
                 521.44443
               ],
-              "element": "./elements/item/musket/musket.element.yaml"
+              "element": "../elements/item/musket/musket.element.yaml"
             },
             {
               "pos": [
                 447.5556,
                 522
               ],
-              "element": "./elements/item/musket/musket.element.yaml"
+              "element": "../elements/item/musket/musket.element.yaml"
             },
             {
               "pos": [
                 228.11111,
                 359.44446
               ],
-              "element": "./elements/item/musket/musket.element.yaml"
+              "element": "../elements/item/musket/musket.element.yaml"
             },
             {
               "pos": [
                 489,
                 363.3333
               ],
-              "element": "./elements/item/musket/musket.element.yaml"
+              "element": "../elements/item/musket/musket.element.yaml"
             },
             {
               "pos": [
                 362.88892,
                 161.33339999999998
               ],
-              "element": "./elements/item/sword/sword.element.yaml"
+              "element": "../elements/item/sword/sword.element.yaml"
             }
           ]
         }
@@ -2653,28 +2653,28 @@
                 128,
                 480
               ],
-              "element": "./elements/environment/player_spawner/player_spawner.element.yaml"
+              "element": "../elements/environment/player_spawner/player_spawner.element.yaml"
             },
             {
               "pos": [
                 608,
                 480
               ],
-              "element": "./elements/environment/player_spawner/player_spawner.element.yaml"
+              "element": "../elements/environment/player_spawner/player_spawner.element.yaml"
             },
             {
               "pos": [
                 128,
                 288
               ],
-              "element": "./elements/environment/player_spawner/player_spawner.element.yaml"
+              "element": "../elements/environment/player_spawner/player_spawner.element.yaml"
             },
             {
               "pos": [
                 608,
                 288
               ],
-              "element": "./elements/environment/player_spawner/player_spawner.element.yaml"
+              "element": "../elements/environment/player_spawner/player_spawner.element.yaml"
             }
           ]
         }
@@ -2683,7 +2683,7 @@
   ],
   "background_layers": [
     {
-      "image": "./resources/background_04.png",
+      "image": "../resources/background_04.png",
       "speed": 0,
       "tile_size": [
         896,
@@ -2697,7 +2697,7 @@
       "scale": 2
     },
     {
-      "image": "./resources/background_03.png",
+      "image": "../resources/background_03.png",
       "speed": 0.74,
       "tile_size": [
         896,
@@ -2711,7 +2711,7 @@
       "scale": 2
     },
     {
-      "image": "./resources/background_02.png",
+      "image": "../resources/background_02.png",
       "speed": 0.82,
       "tile_size": [
         896,
@@ -2725,7 +2725,7 @@
       "scale": 2
     },
     {
-      "image": "./resources/background_01.png",
+      "image": "../resources/background_01.png",
       "speed": 100,
       "tile_size": [
         896,

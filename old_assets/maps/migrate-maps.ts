@@ -105,7 +105,7 @@ for (const map of inMaps) {
 
   newMap.background_layers = [
     {
-      image: "./resources/background_04.png",
+      image: "../resources/background_04.png",
       speed: 0,
       tile_size: [896, 480],
       z: -110,
@@ -113,7 +113,7 @@ for (const map of inMaps) {
       scale: 2.0,
     },
     {
-      image: "./resources/background_03.png",
+      image: "../resources/background_03.png",
       speed: 0.74,
       tile_size: [896, 480],
       z: -109,
@@ -121,7 +121,7 @@ for (const map of inMaps) {
       scale: 2.0,
     },
     {
-      image: "./resources/background_02.png",
+      image: "../resources/background_02.png",
       speed: 0.82,
       tile_size: [896, 480],
       z: -108,
@@ -129,7 +129,7 @@ for (const map of inMaps) {
       scale: 2.0,
     },
     {
-      image: "./resources/background_01.png",
+      image: "../resources/background_01.png",
       speed: 100,
       tile_size: [896, 480],
       z: -107,
@@ -149,7 +149,7 @@ for (const map of inMaps) {
       newLayer.kind = { tile: {} };
       newLayer.kind.tile.has_collision = layer.has_collision;
       newLayer.kind.tile.tiles = [];
-      newLayer.kind.tile.tilemap = "./resources/default_tileset.png";
+      newLayer.kind.tile.tilemap = "../resources/default_tileset.png";
 
       for (let i = 0; i < layer.tiles!.length; i++) {
         const tile = layer.tiles![i];
@@ -189,7 +189,7 @@ for (const map of inMaps) {
             8 +
             item_specific_offset[1],
         ];
-        element.element = `./elements/${object.kind}/${object.id}/${object.id}.element.yaml`;
+        element.element = `../elements/${object.kind}/${object.id}/${object.id}.element.yaml`;
         newLayer.kind.element.elements.push(element);
       }
     } else {
@@ -210,7 +210,7 @@ for (const map of inMaps) {
         spawn_point.x,
         (map.grid_size.y - 1) * map.tile_size.y - spawn_point.y,
       ],
-      element: `./elements/environment/player_spawner/player_spawner.element.yaml`,
+      element: `../elements/environment/player_spawner/player_spawner.element.yaml`,
     });
   }
 
@@ -221,7 +221,7 @@ for (const map of inMaps) {
 
 for (const map of newMaps) {
   const name = map.name;
-  const filename = `../../assets/maps/${name}.map.json`;
+  const filename = `../../assets/map/levels/${name}.map.json`;
 
   await Deno.writeTextFile(filename, JSON.stringify(map, undefined, "  "));
 }

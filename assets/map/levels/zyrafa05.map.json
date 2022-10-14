@@ -857,7 +857,7 @@
               "idx": 9
             }
           ],
-          "tilemap": "./resources/default_tileset.png"
+          "tilemap": "../resources/default_tileset.png"
         }
       }
     },
@@ -871,42 +871,42 @@
                 773.1538,
                 264.46155
               ],
-              "element": "./elements/environment/fish_school/fish_school.element.yaml"
+              "element": "../elements/environment/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
                 440,
                 347
               ],
-              "element": "./elements/decoration/anemones/anemones.element.yaml"
+              "element": "../elements/decoration/anemones/anemones.element.yaml"
             },
             {
               "pos": [
                 101.57143,
                 249.85715
               ],
-              "element": "./elements/decoration/seaweed/seaweed.element.yaml"
+              "element": "../elements/decoration/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 472,
                 539
               ],
-              "element": "./elements/decoration/seaweed/seaweed.element.yaml"
+              "element": "../elements/decoration/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 781.28577,
                 249.85715
               ],
-              "element": "./elements/decoration/seaweed/seaweed.element.yaml"
+              "element": "../elements/decoration/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 568,
                 539
               ],
-              "element": "./elements/decoration/anemones/anemones.element.yaml"
+              "element": "../elements/decoration/anemones/anemones.element.yaml"
             }
           ]
         }
@@ -922,70 +922,70 @@
                 99.99994,
                 276.14285
               ],
-              "element": "./elements/environment/fish_school/fish_school.element.yaml"
+              "element": "../elements/environment/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
                 525.14282,
                 329.7143
               ],
-              "element": "./elements/environment/crab/crab.element.yaml"
+              "element": "../elements/environment/crab/crab.element.yaml"
             },
             {
               "pos": [
                 465.74994,
                 550.00003
               ],
-              "element": "./elements/environment/fish_school/fish_school.element.yaml"
+              "element": "../elements/environment/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
                 184.76923,
                 219.99997000000002
               ],
-              "element": "./elements/environment/sproinger/sproinger.element.yaml"
+              "element": "../elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
                 854.46155,
                 219.99997000000002
               ],
-              "element": "./elements/environment/sproinger/sproinger.element.yaml"
+              "element": "../elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
                 536,
                 328
               ],
-              "element": "./elements/item/musket/musket.element.yaml"
+              "element": "../elements/item/musket/musket.element.yaml"
             },
             {
               "pos": [
                 390.00003,
                 511.53846999999996
               ],
-              "element": "./elements/item/sword/sword.element.yaml"
+              "element": "../elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
                 621.6923,
                 512.3077000000001
               ],
-              "element": "./elements/item/sword/sword.element.yaml"
+              "element": "../elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
                 219.84616,
                 526.15385
               ],
-              "element": "./elements/item/grenades/grenades.element.yaml"
+              "element": "../elements/item/grenades/grenades.element.yaml"
             },
             {
               "pos": [
                 889.53845,
                 526.92308
               ],
-              "element": "./elements/item/grenades/grenades.element.yaml"
+              "element": "../elements/item/grenades/grenades.element.yaml"
             }
           ]
         }
@@ -1001,28 +1001,28 @@
                 172.61539,
                 533.69228
               ],
-              "element": "./elements/environment/player_spawner/player_spawner.element.yaml"
+              "element": "../elements/environment/player_spawner/player_spawner.element.yaml"
             },
             {
               "pos": [
                 224,
                 256
               ],
-              "element": "./elements/environment/player_spawner/player_spawner.element.yaml"
+              "element": "../elements/environment/player_spawner/player_spawner.element.yaml"
             },
             {
               "pos": [
                 800,
                 256
               ],
-              "element": "./elements/environment/player_spawner/player_spawner.element.yaml"
+              "element": "../elements/environment/player_spawner/player_spawner.element.yaml"
             },
             {
               "pos": [
                 842.1539,
                 531.38458
               ],
-              "element": "./elements/environment/player_spawner/player_spawner.element.yaml"
+              "element": "../elements/environment/player_spawner/player_spawner.element.yaml"
             }
           ]
         }
@@ -1031,7 +1031,7 @@
   ],
   "background_layers": [
     {
-      "image": "./resources/background_04.png",
+      "image": "../resources/background_04.png",
       "speed": 0,
       "tile_size": [
         896,
@@ -1045,7 +1045,7 @@
       "scale": 2
     },
     {
-      "image": "./resources/background_03.png",
+      "image": "../resources/background_03.png",
       "speed": 0.74,
       "tile_size": [
         896,
@@ -1059,7 +1059,7 @@
       "scale": 2
     },
     {
-      "image": "./resources/background_02.png",
+      "image": "../resources/background_02.png",
       "speed": 0.82,
       "tile_size": [
         896,
@@ -1073,7 +1073,7 @@
       "scale": 2
     },
     {
-      "image": "./resources/background_01.png",
+      "image": "../resources/background_01.png",
       "speed": 100,
       "tile_size": [
         896,

@@ -55,17 +55,19 @@ export default {
   handlePlayerState() {
     const player_inputs = world.resource(PlayerInputs);
 
+    // For every player
     for (const [playerState, playerIdx, body] of world
       .query(PlayerState, PlayerIdx, KinematicBody)
       .map((x) => x.components)) {
+
+      // In this state
       if (playerState[0] != scriptId) continue;
 
+      // Add basic physics controls
       const control = player_inputs.players[playerIdx[0]].control;
-
       if (body.is_on_ground && control.shoot_just_pressed) {
         body.velocity.y = 14.0;
       }
-
       body.velocity.x = control.move_direction.x * 5;
     }
   },

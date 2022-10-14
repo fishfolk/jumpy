@@ -171,7 +171,7 @@ fn hash_handle_id(id: HandleId) -> u64 {
     let mut hasher = fnv::FnvHasher::default();
     id.hash(&mut hasher);
     // The bit shift makes the hash fit within the safe integer range for a JavaScript number
-    hasher.finish() >> 12
+    hasher.finish() >> 11
 }
 
 /// Wrapper around [`hash_handle_id`] for exposing as a reflect function.

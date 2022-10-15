@@ -56,6 +56,9 @@ type AnimatedSprite = {
 const AnimatedSprite: BevyType<AnimatedSprite> = {
   typeName: "jumpy::animation::AnimatedSprite",
 };
+const MapMeta: BevyType<unknown> = {
+  typeName: "jumpy::metadata::map::MapMeta",
+};
 
 const initState: { spawners: JsEntity[] } = {
   spawners: [],
@@ -64,8 +67,14 @@ const initState: { spawners: JsEntity[] } = {
 const state = ScriptInfo.state(initState);
 
 export default {
-  preUpdate() {
+  preUpdateInGame() {
     const player_inputs = world.resource(PlayerInputs);
+
+    const mapQuery = world.query(MapMeta)[0];
+    if (!mapQuery) {
+      state.spawners = [];
+      return;
+    }
 
     const spawnedEntities = MapElement.getSpawnedEntities();
     if (spawnedEntities.length > 0) {

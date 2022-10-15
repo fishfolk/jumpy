@@ -1,10 +1,10 @@
 use crate::{
-    metadata::{GameMeta, Settings},
+    metadata::{GameMeta, PlayerMeta, Settings},
     platform::Storage,
     prelude::*,
 };
 
-use self::state::PlayerState;
+use self::{input::PlayerInputs, state::PlayerState};
 
 pub mod input;
 pub mod state;
@@ -36,15 +36,26 @@ fn hydrate_players(
     players: Query<(Entity, &PlayerIdx), Without<PlayerState>>,
     mut storage: ResMut<Storage>,
     game: Res<GameMeta>,
+    player_inputs: Res<PlayerInputs>,
+    player_meta_assets: Res<Assets<PlayerMeta>>,
 ) {
     let settings = storage.get(Settings::STORAGE_KEY);
     let settings = settings.as_ref().unwrap_or(&game.default_settings);
 
     for (entity, player_idx) in &players {
+        let input = &player_inputs.players[player_idx.0];
+        let meta = if let Some(meta) = player_meta_assets.get(&input.selected_player) {
+            meta
+        } else {
+            continue;
+        };
+
         commands
             .entity(entity)
             .insert(Name::new(format!("Player {}", player_idx.0)))
             .insert(PlayerState::default())
+            .insert(meta.clone())
+            .insert(meta.spritesheet.get_animation_bank_sprite())
             .insert_bundle(InputManagerBundle {
                 input_map: settings.player_controls.get_input_map(player_idx.0),
                 ..default()

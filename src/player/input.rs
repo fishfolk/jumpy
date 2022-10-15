@@ -32,7 +32,7 @@ pub enum PlayerAction {
 #[derive(Reflect, Clone, Debug)]
 #[reflect(Default)]
 pub struct PlayerInputs {
-    players: Vec<PlayerInput>,
+    pub players: Vec<PlayerInput>,
 }
 
 impl Default for PlayerInputs {

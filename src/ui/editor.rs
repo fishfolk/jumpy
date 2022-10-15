@@ -5,12 +5,14 @@ use bevy::{
 };
 use bevy_egui::*;
 use bevy_fluent::Localization;
+use rand::{seq::SliceRandom, thread_rng};
 
 use crate::{
     camera::{EditorCamera, GameCamera},
     localization::LocalizationExt,
     map::{MapGridView, MapSpawnSource, MapSpawner},
     metadata::{GameMeta, MapLayerKind, MapLayerMeta, MapMeta},
+    player::input::PlayerInputs,
     prelude::*,
     utils::ResetController,
 };
@@ -58,12 +60,30 @@ impl Default for EditorState {
 }
 
 fn setup_editor(
+    game: Res<GameMeta>,
     mut game_camera: Query<&mut Camera, With<GameCamera>>,
     mut editor_camera: Query<&mut Camera, (With<EditorCamera>, Without<GameCamera>)>,
+    mut player_inputs: ResMut<PlayerInputs>,
 ) {
     // Disable the game camera
     let mut game_camera = game_camera.single_mut();
     game_camera.is_active = false;
+
+    // TODO: This is pretty hacky for now, but every time we enter the editor, we select two random
+    // fish as our players.
+    let mut rng = thread_rng();
+    player_inputs
+        .players
+        .iter_mut()
+        .for_each(|player| player.active = false);
+    for i in 0..2 {
+        player_inputs.players[i].active = true;
+        player_inputs.players[i].selected_player = game
+            .player_handles
+            .choose(&mut rng)
+            .expect("No players in game meta")
+            .clone_weak();
+    }
 
     // Enable editor camera
     //

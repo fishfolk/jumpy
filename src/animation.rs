@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use bevy::{reflect::FromReflect, time::FixedTimestep};
+use bevy::{ecs::system::AsSystemLabel, reflect::FromReflect, time::FixedTimestep, utils::HashMap};
 
 use crate::prelude::*;
 
@@ -15,28 +15,34 @@ pub enum AnimationStage {
 impl Plugin for AnimationPlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<AnimatedSprite>()
+            .register_type::<AnimationBankSprite>()
             .add_stage_after(
                 CoreStage::PostUpdate,
                 AnimationStage::Hydrate,
-                SystemStage::single(hydrate_animated_sprites),
+                SystemStage::single_threaded()
+                    .with_system(hydrate_animation_bank_sprites)
+                    .with_system(hydrate_animated_sprites),
             )
             .add_stage_after(
                 AnimationStage::Hydrate,
                 AnimationStage::Animate,
                 SystemStage::parallel()
                     .with_run_criteria(FixedTimestep::step(crate::FIXED_TIMESTEP))
-                    .with_system(update_animated_sprite_components.label("update_sprites"))
+                    .with_system(update_animation_bank_sprites)
+                    .with_system(
+                        update_animated_sprite_components.after(update_animation_bank_sprites),
+                    )
                     .with_system(
                         animate_sprites
                             .run_in_state(GameState::InGame)
                             .run_not_in_state(InGameState::Paused)
-                            .after("update_sprites"),
+                            .after(update_animated_sprite_components.as_system_label()),
                     ),
             );
     }
 }
 
-#[derive(Component, Debug, Default, Reflect, FromReflect)]
+#[derive(Component, Debug, Default, Reflect, FromReflect, Clone)]
 #[reflect(Component, Default)]
 pub struct AnimatedSprite {
     /// This is the current index in the animation, with an `idx` of `0` meaning that the index in
@@ -55,9 +61,17 @@ pub struct AnimatedSprite {
     pub timer: Timer,
 }
 
-fn animate_sprites(
-    mut animated_sprites: Query<(&mut AnimatedSprite, &mut TextureAtlasSprite)>,
-) {
+/// Like an [`AnimatedSprite`] where you can chooose from multiple different animations.
+#[derive(Component, Debug, Default, Reflect, FromReflect)]
+#[reflect(Component, Default)]
+pub struct AnimationBankSprite {
+    pub current_animation: String,
+    pub flip_x: bool,
+    pub flip_y: bool,
+    pub animations: HashMap<String, AnimatedSprite>,
+}
+
+fn animate_sprites(mut animated_sprites: Query<(&mut AnimatedSprite, &mut TextureAtlasSprite)>) {
     for (mut animated_sprite, mut atlas_sprite) in &mut animated_sprites {
         animated_sprite
             .timer
@@ -72,6 +86,14 @@ fn animate_sprites(
     }
 }
 
+fn hydrate_animation_bank_sprites(
+    mut commands: Commands,
+    sprites: Query<Entity, (Added<AnimationBankSprite>, Without<AnimatedSprite>)>,
+) {
+    for entity in &sprites {
+        commands.entity(entity).insert(AnimatedSprite::default());
+    }
+}
 fn hydrate_animated_sprites(
     mut commands: Commands,
     animated_sprites: Query<Entity, Added<AnimatedSprite>>,
@@ -104,7 +126,31 @@ fn update_animated_sprite_components(
         let repeat = animated_sprite.repeat;
         animated_sprite
             .timer
-            .set_duration(Duration::from_secs_f32(1.0 / fps));
+            .set_duration(Duration::from_secs_f32(1.0 / fps.max(0.0001)));
         animated_sprite.timer.set_repeating(repeat);
+    }
+}
+
+fn update_animation_bank_sprites(
+    mut banks: Query<
+        (&AnimationBankSprite, &mut AnimatedSprite),
+        Or<(Changed<AnimationBankSprite>, Added<AnimatedSprite>)>,
+    >,
+) {
+    for (bank, mut animated_sprite) in &mut banks {
+        let mut animation = bank
+            .animations
+            .get(&bank.current_animation)
+            .cloned()
+            .unwrap_or_default();
+
+        if bank.flip_x {
+            animation.flip_x = !animation.flip_x;
+        }
+        if bank.flip_y {
+            animation.flip_y = !animation.flip_y;
+        }
+
+        *animated_sprite = animation;
     }
 }

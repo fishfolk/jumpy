@@ -6,7 +6,7 @@ spritesheet:
   columns: 14
   rows: 7
 
-  animation_fps: 0.12
+  animation_fps: 9
   animations:
     idle:
       frames: [0, 13]

@@ -56,7 +56,8 @@ impl PlayerSpritesheetMeta {
                         flip_y: false,
                         repeat: clip.repeat,
                         fps: self.animation_fps,
-                        ..default()
+                        timer: Timer::from_seconds(1.0 / self.animation_fps, clip.repeat),
+                        index: 0,
                     },
                 )
             })
@@ -64,10 +65,10 @@ impl PlayerSpritesheetMeta {
 
         AnimationBankSprite {
             current_animation: self.animations.keys().next().cloned().unwrap_or_default(),
-            last_animation: default(),
             flip_x: false,
             flip_y: false,
             animations,
+            last_animation: default()
         }
     }
 }

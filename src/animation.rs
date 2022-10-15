@@ -21,12 +21,12 @@ impl Plugin for AnimationPlugin {
                 AnimationStage::Hydrate,
                 SystemStage::single_threaded()
                     .with_system(hydrate_animation_bank_sprites)
-                    .with_system(hydrate_animated_sprites),
+                    .with_system(hydrate_animated_sprites.after(hydrate_animation_bank_sprites)),
             )
             .add_stage_after(
                 AnimationStage::Hydrate,
                 AnimationStage::Animate,
-                SystemStage::parallel()
+                SystemStage::single_threaded()
                     .with_run_criteria(FixedTimestep::step(crate::FIXED_TIMESTEP))
                     .with_system(update_animation_bank_sprites)
                     .with_system(
@@ -42,7 +42,7 @@ impl Plugin for AnimationPlugin {
     }
 }
 
-#[derive(Component, Debug, Default, Reflect, FromReflect, Clone)]
+#[derive(Component, Debug, Default, Reflect, FromReflect)]
 #[reflect(Component, Default)]
 pub struct AnimatedSprite {
     /// This is the current index in the animation, with an `idx` of `0` meaning that the index in
@@ -59,6 +59,25 @@ pub struct AnimatedSprite {
     pub fps: f32,
     #[reflect(ignore)]
     pub timer: Timer,
+}
+
+#[derive(Component, Debug, Default, Deref, DerefMut)]
+pub struct LastAnimatedSprite(pub Option<AnimatedSprite>);
+
+impl Clone for AnimatedSprite {
+    fn clone(&self) -> Self {
+        Self {
+            index: self.index,
+            start: self.start,
+            end: self.end,
+            flip_x: self.flip_x,
+            flip_y: self.flip_y,
+            repeat: self.repeat,
+            fps: self.fps,
+            atlas: self.atlas.clone_weak(),
+            timer: self.timer.clone(),
+        }
+    }
 }
 
 /// Like an [`AnimatedSprite`] where you can chooose from multiple different animations.
@@ -87,6 +106,19 @@ fn animate_sprites(mut animated_sprites: Query<(&mut AnimatedSprite, &mut Textur
     }
 }
 
+fn hydrate_animated_sprites(
+    mut commands: Commands,
+    animated_sprites: Query<Entity, Added<AnimatedSprite>>,
+) {
+    for entity in &animated_sprites {
+        commands
+            .entity(entity)
+            .insert(LastAnimatedSprite(None))
+            .insert(Handle::<TextureAtlas>::default())
+            .insert(TextureAtlasSprite::default());
+    }
+}
+
 fn hydrate_animation_bank_sprites(
     mut commands: Commands,
     sprites: Query<Entity, (Added<AnimationBankSprite>, Without<AnimatedSprite>)>,
@@ -95,40 +127,60 @@ fn hydrate_animation_bank_sprites(
         commands.entity(entity).insert(AnimatedSprite::default());
     }
 }
-fn hydrate_animated_sprites(
-    mut commands: Commands,
-    animated_sprites: Query<Entity, Added<AnimatedSprite>>,
-) {
-    for entity in &animated_sprites {
-        commands
-            .entity(entity)
-            .insert(Handle::<TextureAtlas>::default())
-            .insert(TextureAtlasSprite::default());
-    }
-}
 
 fn update_animated_sprite_components(
-    mut animated_sprites: Query<
-        (
-            &mut AnimatedSprite,
-            &mut Handle<TextureAtlas>,
-            &mut TextureAtlasSprite,
-        ),
-        Or<(Changed<AnimatedSprite>, Added<TextureAtlasSprite>)>,
-    >,
+    mut animated_sprites: Query<(
+        &mut AnimatedSprite,
+        &mut LastAnimatedSprite,
+        &mut Handle<TextureAtlas>,
+        &mut TextureAtlasSprite,
+    )>,
 ) {
-    for (mut animated_sprite, mut atlas_handle, mut atlas_sprite) in &mut animated_sprites {
-        *atlas_handle = animated_sprite.atlas.clone_weak();
+    for (mut animated_sprite, mut last_animated_sprite, mut atlas_handle, mut atlas_sprite) in
+        &mut animated_sprites
+    {
+        if *atlas_handle != animated_sprite.atlas {
+            *atlas_handle = animated_sprite.atlas.clone_weak();
+        }
 
         atlas_sprite.flip_x = animated_sprite.flip_x;
         atlas_sprite.flip_y = animated_sprite.flip_y;
 
         let fps = animated_sprite.fps;
         let repeat = animated_sprite.repeat;
-        animated_sprite
-            .timer
-            .set_duration(Duration::from_secs_f32(1.0 / fps.max(0.0001)));
-        animated_sprite.timer.set_repeating(repeat);
+
+        // If the FPS or repeat mode changed
+        if last_animated_sprite
+            .as_ref()
+            .as_ref()
+            .map(|last| fps != last.fps || repeat != last.repeat)
+            .unwrap_or(true)
+        {
+            // Restart the animation
+            animated_sprite.index = 0;
+            atlas_sprite.index = animated_sprite.start;
+
+            // Reset the timer
+            animated_sprite
+                .timer
+                .set_duration(Duration::from_secs_f32(1.0 / fps.max(0.0001)));
+            animated_sprite.timer.set_repeating(repeat);
+            animated_sprite.timer.reset();
+        }
+
+        // If the animation changed
+        if last_animated_sprite
+            .as_ref()
+            .as_ref()
+            .map(|last| animated_sprite.start != last.start || animated_sprite.end != last.end)
+            .unwrap_or(true)
+        {
+            // Restart the animation
+            animated_sprite.index = 0;
+            atlas_sprite.index = animated_sprite.start;
+        }
+
+        **last_animated_sprite = Some(animated_sprite.clone());
     }
 }
 
@@ -139,23 +191,19 @@ fn update_animation_bank_sprites(
     >,
 ) {
     for (mut bank, mut animated_sprite) in &mut banks {
-        if bank.last_animation != bank.current_animation {
-            let mut animation = bank
-                .animations
-                .get(&bank.current_animation)
-                .cloned()
-                .unwrap_or_default();
-
-            animation.index = 0;
-            if bank.flip_x {
-                animation.flip_x = !animation.flip_x;
+        if bank.current_animation != bank.last_animation {
+            if let Some(animation) = bank.animations.get(&bank.current_animation) {
+                *animated_sprite = animation.clone();
+                animated_sprite.flip_x = bank.flip_x && !animation.flip_x;
+                animated_sprite.flip_y = bank.flip_y && !animation.flip_y;
+            } else {
+                warn!(
+                    "Trying to play non-existent animation: {}",
+                    bank.current_animation
+                );
             }
-            if bank.flip_y {
-                animation.flip_y = !animation.flip_y;
-            }
-
-            *animated_sprite = animation;
         }
+
         bank.last_animation = bank.current_animation.clone();
     }
 }

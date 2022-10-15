@@ -36,12 +36,22 @@ const initState: { crabs: JsEntity[] } = {
   crabs: [],
 };
 
+const MapMeta: BevyType<unknown> = {
+  typeName: "jumpy::metadata::map::MapMeta",
+};
+
 let i = 0;
 
 const state = ScriptInfo.state(initState);
 
 export default {
-  preUpdate() {
+  preUpdateInGame() {
+    const mapQuery = world.query(MapMeta)[0];
+    if (!mapQuery) {
+      state.crabs = [];
+      return;
+    }
+
     const spawnedEntities = MapElement.getSpawnedEntities();
     if (spawnedEntities.length > 0) {
       state.crabs = [];

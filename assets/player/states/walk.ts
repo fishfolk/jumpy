@@ -1,4 +1,4 @@
-type PlayerState = { id: u64; age: u64; previous_state: u64 };
+type PlayerState = { id: string; age: u64; previous_state: string };
 const PlayerState: BevyType<PlayerState> = {
   typeName: "jumpy::player::state::PlayerState",
 };
@@ -109,9 +109,9 @@ export default {
         body.velocity.y = 15;
       }
       body.velocity.x = control.move_direction.x * 5;
-      if (body.velocity.x > 0) {
+      if (control.move_direction.x > 0) {
         animationBankSprite.flip_x = false;
-      } else if (body.velocity.x < 0) {
+      } else if (control.move_direction.x < 0) {
         animationBankSprite.flip_x = true;
       }
     }

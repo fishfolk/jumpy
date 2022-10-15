@@ -5,7 +5,7 @@ declare namespace MapElement {
 
 /** We've added a reflect function for hashing the HandleId to a JS Number */
 interface HandleIdWithFuncs {
-  hash(): number;
+  hash(): string;
 }
 
 declare namespace Assets {
@@ -18,7 +18,7 @@ type HandleJsScript = HandleImage;
 declare interface ScriptInfo {
   path: string;
   handle: HandleJsScript;
-  handle_id_hash: number;
+  handle_id_hash: string;
 }
 
 declare namespace ScriptInfo {

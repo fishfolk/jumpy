@@ -18,11 +18,11 @@ pub enum PlayerStateStage {
 #[reflect(Component)]
 pub struct PlayerState {
     /// The unique identifier for the current state
-    id: u64,
+    id: String,
     /// The number of frames that this state has been active
     age: u64,
     /// The ID of the state that the player was in in the last frame
-    last_state: u64,
+    last_state: String,
 }
 
 impl Plugin for PlayerStatePlugin {
@@ -83,6 +83,6 @@ fn state_transition_run_criteria(
 fn update_player_state_age(mut states: Query<&mut PlayerState>) {
     for mut state in &mut states {
         state.age = state.age.saturating_add(1);
-        state.last_state = state.id;
+        state.last_state = state.id.clone();
     }
 }

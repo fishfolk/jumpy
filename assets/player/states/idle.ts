@@ -1,4 +1,4 @@
-type PlayerState = { id: u64; age: u64; previous_state: u64 };
+type PlayerState = { id: string; age: u64; previous_state: string };
 const PlayerState: BevyType<PlayerState> = {
   typeName: "jumpy::player::state::PlayerState",
 };

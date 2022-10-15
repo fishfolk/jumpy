@@ -69,7 +69,7 @@ impl Plugin for ScriptingPlugin {
                     "hash",
                     ReflectFunction {
                         fn_name: "hash",
-                        signature: [(PassMode::Owned, TypeId::of::<u64>())]
+                        signature: [(PassMode::Owned, TypeId::of::<HandleId>())]
                             .into_iter()
                             .collect(),
                         f: hash_handle_id_reflect,

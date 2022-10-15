@@ -63,20 +63,15 @@ const scriptId = ScriptInfo.get().handle_id_hash;
 
 export default {
   playerStateTransition() {
-    const player_inputs = world.resource(PlayerInputs);
     const playerComponents = world
-      .query(PlayerState, PlayerIdx, KinematicBody)
+      .query(PlayerState, KinematicBody)
       .map((x) => x.components);
 
-    for (const [playerState, playerIdx, body] of playerComponents) {
+    for (const [playerState, body] of playerComponents) {
       if (playerState.id != scriptId) continue;
 
-      const control = player_inputs.players[playerIdx[0]].control;
-
-      if (!body.is_on_ground) {
-        playerState.id = Assets.getHandleId("./midair.ts").hash();
-      } else if (control.move_direction.x != 0) {
-        playerState.id = Assets.getHandleId("./walk.ts").hash();
+      if (body.is_on_ground) {
+        playerState.id = Assets.getHandleId("./idle.ts").hash();
       }
     }
   },
@@ -87,27 +82,30 @@ export default {
     const playerComponents = world
       .query(PlayerState, PlayerIdx, AnimationBankSprite, KinematicBody)
       .map((x) => x.components);
+
     for (const [
       playerState,
       playerIdx,
       animationBankSprite,
       body,
     ] of playerComponents) {
-      // In this state
       if (playerState.id != scriptId) continue;
 
       // Set the current animation
-      if (playerState.age == 0) {
-        animationBankSprite.current_animation = "idle";
+      if (body.velocity.y > 0) {
+        animationBankSprite.current_animation = "rise";
+      } else {
+        animationBankSprite.current_animation = "fall";
       }
 
-      // Add basic physics controls
+      // Add controls
       const control = player_inputs.players[playerIdx[0]].control;
-
-      if (control.shoot_just_pressed) {
-        body.velocity.y = 15;
+      body.velocity.x = control.move_direction.x * 5;
+      if (body.velocity.x > 0) {
+        animationBankSprite.flip_x = false;
+      } else if (body.velocity.x < 0) {
+        animationBankSprite.flip_x = true;
       }
-      body.velocity.x = 0;
     }
   },
 };

@@ -105,18 +105,6 @@ export default {
         world.insert(player, computed_visibility);
         world.insert(
           player,
-          Value.create(AnimatedSprite, {
-            start: 0,
-            end: 13,
-            repeat: true,
-            fps: 10,
-            atlas: {
-              id: Assets.getHandleId("./pescy.atlas.yaml"),
-            },
-          })
-        );
-        world.insert(
-          player,
           Value.create(KinematicBody, {
             size: {
               x: 38,

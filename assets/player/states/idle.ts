@@ -49,6 +49,16 @@ const PlayerIdx: BevyType<PlayerIdx> = {
   typeName: "jumpy::player::PlayerIdx",
 };
 
+type AnimationBankSprite = {
+  current_animation: string;
+  flip_x: boolean;
+  flip_y: boolean;
+  animations: unknown;
+};
+const AnimationBankSprite: BevyType<AnimationBankSprite> = {
+  typeName: "jumpy::animation::AnimationBankSprite",
+};
+
 const scriptId = ScriptInfo.get().handle_id_hash;
 
 export default {
@@ -56,11 +66,16 @@ export default {
     const player_inputs = world.resource(PlayerInputs);
 
     // For every player
-    for (const [playerState, playerIdx, body] of world
-      .query(PlayerState, PlayerIdx, KinematicBody)
+    for (const [playerState, playerIdx, animationBankSprite, body] of world
+      .query(PlayerState, PlayerIdx, AnimationBankSprite, KinematicBody)
       .map((x) => x.components)) {
       // In this state
       if (playerState.id != scriptId) continue;
+
+      // Set the current animation
+      if (playerState.age == 0) {
+        animationBankSprite.current_animation = "idle";
+      }
 
       // Add basic physics controls
       const control = player_inputs.players[playerIdx[0]].control;

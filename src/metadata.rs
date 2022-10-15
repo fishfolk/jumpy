@@ -22,7 +22,8 @@ pub struct MetadataPlugin;
 
 impl Plugin for MetadataPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(MapMetadataPlugin);
+        app.add_plugin(MapMetadataPlugin)
+            .add_plugin(PlayerMetadataPlugin);
     }
 }
 

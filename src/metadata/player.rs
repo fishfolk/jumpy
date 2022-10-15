@@ -1,10 +1,21 @@
 use std::ops::Range;
 
+use bevy::reflect::FromReflect;
 use serde::{de::SeqAccess, Deserializer};
+
+use crate::animation::{AnimatedSprite, AnimationBankSprite};
 
 use super::*;
 
-#[derive(TypeUuid, Deserialize, Clone, Debug, Component)]
+pub struct PlayerMetadataPlugin;
+
+impl Plugin for PlayerMetadataPlugin {
+    fn build(&self, app: &mut App) {
+        app.register_type::<PlayerMeta>();
+    }
+}
+
+#[derive(Reflect, TypeUuid, Deserialize, Clone, Debug, Component)]
 #[serde(deny_unknown_fields)]
 #[uuid = "a939278b-901a-47d4-8ee8-6ac97881cf4d"]
 pub struct PlayerMeta {
@@ -12,13 +23,14 @@ pub struct PlayerMeta {
     pub spritesheet: PlayerSpritesheetMeta,
 }
 
-#[derive(Deserialize, Clone, Debug)]
+#[derive(Reflect, Deserialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct PlayerSpritesheetMeta {
     pub image: String,
     #[serde(skip)]
     pub atlas_handle: Handle<TextureAtlas>,
     #[serde(skip)]
+    #[reflect(ignore)]
     pub egui_texture_id: bevy_egui::egui::TextureId,
     pub tile_size: UVec2,
     pub columns: usize,
@@ -27,7 +39,39 @@ pub struct PlayerSpritesheetMeta {
     pub animations: HashMap<String, AnimationClip>,
 }
 
-#[derive(serde::Deserialize, Clone, Debug)]
+impl PlayerSpritesheetMeta {
+    pub fn get_animation_bank_sprite(&self) -> AnimationBankSprite {
+        let animations = self
+            .animations
+            .clone()
+            .into_iter()
+            .map(|(name, clip)| {
+                (
+                    name,
+                    AnimatedSprite {
+                        start: clip.frames.start,
+                        end: clip.frames.end,
+                        atlas: self.atlas_handle.clone_weak(),
+                        flip_x: false,
+                        flip_y: false,
+                        repeat: clip.repeat,
+                        fps: self.animation_fps,
+                        ..default()
+                    },
+                )
+            })
+            .collect();
+
+        AnimationBankSprite {
+            current_animation: self.animations.keys().next().cloned().unwrap_or_default(),
+            flip_x: false,
+            flip_y: false,
+            animations,
+        }
+    }
+}
+
+#[derive(Reflect, FromReflect, serde::Deserialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct AnimationClip {
     #[serde(deserialize_with = "deserialize_range_from_array")]

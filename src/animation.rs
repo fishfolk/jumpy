@@ -191,17 +191,18 @@ fn update_animation_bank_sprites(
     >,
 ) {
     for (mut bank, mut animated_sprite) in &mut banks {
-        if bank.current_animation != bank.last_animation {
-            if let Some(animation) = bank.animations.get(&bank.current_animation) {
+        if let Some(animation) = bank.animations.get(&bank.current_animation) {
+            if bank.current_animation != bank.last_animation {
                 *animated_sprite = animation.clone();
-                animated_sprite.flip_x = bank.flip_x && !animation.flip_x;
-                animated_sprite.flip_y = bank.flip_y && !animation.flip_y;
-            } else {
-                warn!(
-                    "Trying to play non-existent animation: {}",
-                    bank.current_animation
-                );
             }
+
+            animated_sprite.flip_x = bank.flip_x && !animation.flip_x;
+            animated_sprite.flip_y = bank.flip_y && !animation.flip_y;
+        } else {
+            warn!(
+                "Trying to play non-existent animation: {}",
+                bank.current_animation
+            );
         }
 
         bank.last_animation = bank.current_animation.clone();

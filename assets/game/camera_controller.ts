@@ -35,7 +35,9 @@ const borderY = 200;
 export default {
   postUpdateInGame() {
     const aspect = 16 / 9; // TODO: Use screen aspect ratio
-    const [mapMeta] = world.query(MapMeta)[0].components;
+    const mapQuery = world.query(MapMeta)[0];
+    if (!mapQuery) return;
+    const [mapMeta] = mapQuery.components;
     const mapSize = [
       mapMeta.tile_size.x * mapMeta.grid_size.x,
       mapMeta.tile_size.y * mapMeta.grid_size.y,

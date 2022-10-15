@@ -64,6 +64,7 @@ impl PlayerSpritesheetMeta {
 
         AnimationBankSprite {
             current_animation: self.animations.keys().next().cloned().unwrap_or_default(),
+            last_animation: default(),
             flip_x: false,
             flip_y: false,
             animations,

@@ -69,6 +69,7 @@ pub struct AnimationBankSprite {
     pub flip_x: bool,
     pub flip_y: bool,
     pub animations: HashMap<String, AnimatedSprite>,
+    pub last_animation: String,
 }
 
 fn animate_sprites(mut animated_sprites: Query<(&mut AnimatedSprite, &mut TextureAtlasSprite)>) {
@@ -79,7 +80,7 @@ fn animate_sprites(mut animated_sprites: Query<(&mut AnimatedSprite, &mut Textur
 
         if animated_sprite.timer.just_finished() {
             animated_sprite.index += 1;
-            animated_sprite.index %= animated_sprite.end - animated_sprite.start;
+            animated_sprite.index %= (animated_sprite.end - animated_sprite.start).max(1);
 
             atlas_sprite.index = animated_sprite.start + animated_sprite.index;
         }
@@ -133,24 +134,28 @@ fn update_animated_sprite_components(
 
 fn update_animation_bank_sprites(
     mut banks: Query<
-        (&AnimationBankSprite, &mut AnimatedSprite),
+        (&mut AnimationBankSprite, &mut AnimatedSprite),
         Or<(Changed<AnimationBankSprite>, Added<AnimatedSprite>)>,
     >,
 ) {
-    for (bank, mut animated_sprite) in &mut banks {
-        let mut animation = bank
-            .animations
-            .get(&bank.current_animation)
-            .cloned()
-            .unwrap_or_default();
+    for (mut bank, mut animated_sprite) in &mut banks {
+        if bank.last_animation != bank.current_animation {
+            let mut animation = bank
+                .animations
+                .get(&bank.current_animation)
+                .cloned()
+                .unwrap_or_default();
 
-        if bank.flip_x {
-            animation.flip_x = !animation.flip_x;
-        }
-        if bank.flip_y {
-            animation.flip_y = !animation.flip_y;
-        }
+            animation.index = 0;
+            if bank.flip_x {
+                animation.flip_x = !animation.flip_x;
+            }
+            if bank.flip_y {
+                animation.flip_y = !animation.flip_y;
+            }
 
-        *animated_sprite = animation;
+            *animated_sprite = animation;
+        }
+        bank.last_animation = bank.current_animation.clone();
     }
 }

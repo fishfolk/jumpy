@@ -10,8 +10,8 @@ players:
   - player/skins/fishy/fishy.player.yaml
   - player/skins/lionfishy/lionfishy.player.yaml
   - player/skins/orcy/orcy.player.yaml
-  - player/skins/pescy/pescy.player.yaml
   - player/skins/sharky/sharky.player.yaml
+  - player/skins/pescy/pescy.player.yaml
 
 maps:
   - map/levels/lev01.map.json
@@ -34,6 +34,8 @@ scripts:
 
   - player/states/default.ts
   - player/states/idle.ts
+  - player/states/walk.ts
+  - player/states/midair.ts
 
 main_menu:
   title_font:

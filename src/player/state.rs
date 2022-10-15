@@ -21,6 +21,8 @@ pub struct PlayerState {
     id: u64,
     /// The number of frames that this state has been active
     age: u64,
+    /// The ID of the state that the player was in in the last frame
+    last_state: u64,
 }
 
 impl Plugin for PlayerStatePlugin {
@@ -59,10 +61,19 @@ impl Plugin for PlayerStatePlugin {
     }
 }
 
-fn state_transition_run_criteria(changed_states: Query<Entity, Changed<PlayerState>>) -> ShouldRun {
+fn state_transition_run_criteria(
+    mut changed_states: Query<&mut PlayerState, Changed<PlayerState>>,
+) -> ShouldRun {
     // Note, this will always run once per frame, because the `update_player_state_age` system runs
     // at the end of every frame.
-    if changed_states.iter().count() > 0 {
+    let mut has_changed = false;
+    for mut state in &mut changed_states {
+        has_changed = true;
+        if state.last_state != state.id {
+            state.age = 0;
+        }
+    }
+    if has_changed {
         ShouldRun::YesAndCheckAgain
     } else {
         ShouldRun::No
@@ -72,5 +83,6 @@ fn state_transition_run_criteria(changed_states: Query<Entity, Changed<PlayerSta
 fn update_player_state_age(mut states: Query<&mut PlayerState>) {
     for mut state in &mut states {
         state.age = state.age.saturating_add(1);
+        state.last_state = state.id;
     }
 }

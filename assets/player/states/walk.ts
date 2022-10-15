@@ -75,8 +75,8 @@ export default {
 
       if (!body.is_on_ground) {
         playerState.id = Assets.getHandleId("./midair.ts").hash();
-      } else if (control.move_direction.x != 0) {
-        playerState.id = Assets.getHandleId("./walk.ts").hash();
+      } else if (control.move_direction.x == 0) {
+        playerState.id = Assets.getHandleId("./idle.ts").hash();
       }
     }
   },
@@ -98,16 +98,22 @@ export default {
 
       // Set the current animation
       if (playerState.age == 0) {
-        animationBankSprite.current_animation = "idle";
+        animationBankSprite.current_animation = "walk";
       }
 
       // Add basic physics controls
       const control = player_inputs.players[playerIdx[0]].control;
 
+      // Add jump
       if (control.shoot_just_pressed) {
         body.velocity.y = 15;
       }
-      body.velocity.x = 0;
+      body.velocity.x = control.move_direction.x * 5;
+      if (body.velocity.x > 0) {
+        animationBankSprite.flip_x = false;
+      } else if (body.velocity.x < 0) {
+        animationBankSprite.flip_x = true;
+      }
     }
   },
 };

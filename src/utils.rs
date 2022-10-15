@@ -2,6 +2,14 @@ use bevy::{ecs::system::SystemParam, hierarchy::DespawnRecursiveExt};
 
 use crate::{loading::PlayerInputCollector, prelude::*, ui::input::MenuAction};
 
+/// Cache a string using [`wasm_bingen::intern`] when running on web platforms.
+#[allow(unused)]
+#[inline]
+pub fn cache_str(s: &str) {
+    #[cfg(target_arch = "wasm32")]
+    wasm_bindgen::intern(s);
+}
+
 /// System parameter that can be used to reset the game world.
 ///
 /// Currently this just means de-spawning all of the entities other than the camera and resetting

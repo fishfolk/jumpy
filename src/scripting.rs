@@ -167,11 +167,11 @@ fn is_in_game_run_criteria(
 }
 
 /// Helper function to hash a [`HandlId`].
-fn hash_handle_id(id: HandleId) -> u64 {
+fn hash_handle_id(id: HandleId) -> String {
     let mut hasher = fnv::FnvHasher::default();
     id.hash(&mut hasher);
     // The bit shift makes the hash fit within the safe integer range for a JavaScript number
-    hasher.finish() >> 11
+    base64::encode(hasher.finish().to_le_bytes())
 }
 
 /// Wrapper around [`hash_handle_id`] for exposing as a reflect function.

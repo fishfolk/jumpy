@@ -37,6 +37,7 @@ export default {
     const aspect = 16 / 9; // TODO: Use screen aspect ratio
     const mapQuery = world.query(MapMeta)[0];
     if (!mapQuery) return;
+
     const [mapMeta] = mapQuery.components;
     const mapSize = [
       mapMeta.tile_size.x * mapMeta.grid_size.x,
@@ -46,6 +47,7 @@ export default {
     const playerComponents = world
       .query(PlayerIdx, Transform)
       .map((x) => x.components);
+
     const [_, cameraTransform, projection] = world.query(
       GameCamera,
       Transform,
@@ -69,20 +71,11 @@ export default {
       max.y = Math.max(playerPos.y, max.y);
     }
 
-    middlePoint.x /= player_count;
-    middlePoint.y /= player_count;
-
-    const scaleX = Math.abs(max.x - min.x) + borderX * 2.0;
-    let scaleY = Math.abs(max.y - min.y) + borderY * 2.0;
-
-    if (scaleX > scaleY * aspect) {
-      scaleY = scaleX / aspect;
-    }
-
-    let zoom = scaleY / 500;
+    middlePoint.x /= Math.max(player_count, 1);
+    middlePoint.y /= Math.max(player_count, 1);
 
     cameraTransform.translation.x = middlePoint.x;
     cameraTransform.translation.y = middlePoint.y;
-    projection.scale = zoom;
+    projection.scale = 1.25;
   },
 };

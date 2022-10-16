@@ -32,12 +32,17 @@ pub enum PlayerAction {
 #[reflect(Default)]
 pub struct PlayerInputs {
     pub players: Vec<PlayerInput>,
+
+    /// This field indicates whether or not the user input has been updated since the last run of
+    /// the `reset_input` system.
+    pub has_updated: bool,
 }
 
 impl Default for PlayerInputs {
     fn default() -> Self {
         Self {
             players: vec![default(); MAX_PLAYERS],
+            has_updated: false,
         }
     }
 }
@@ -61,19 +66,19 @@ pub struct PlayerInput {
 #[derive(Reflect, Default, Clone, Debug, FromReflect)]
 #[reflect(Default)]
 pub struct PlayerControl {
-    move_direction: Vec2,
+    pub move_direction: Vec2,
 
-    jump_pressed: bool,
-    jump_just_pressed: bool,
+    pub jump_pressed: bool,
+    pub jump_just_pressed: bool,
 
-    shoot_pressed: bool,
-    shoot_just_pressed: bool,
+    pub shoot_pressed: bool,
+    pub shoot_just_pressed: bool,
 
-    grab_pressed: bool,
-    grab_just_pressed: bool,
+    pub grab_pressed: bool,
+    pub grab_just_pressed: bool,
 
-    slide_pressed: bool,
-    slide_just_pressed: bool,
+    pub slide_pressed: bool,
+    pub slide_just_pressed: bool,
 }
 
 fn update_user_input(
@@ -109,12 +114,18 @@ fn update_user_input(
             control.slide_just_pressed = !previous_control.slide_pressed;
         }
     }
+
+    player_inputs.has_updated = true;
 }
 
 /// Reset player inputs to prepare for the next update
 fn reset_input(mut player_inputs: ResMut<PlayerInputs>) {
-    for player in &mut player_inputs.players {
-        player.previous_control = player.control.clone();
-        player.control = default();
+    if player_inputs.has_updated {
+        for player in &mut player_inputs.players {
+            player.previous_control = player.control.clone();
+            player.control = default();
+        }
+
+        player_inputs.has_updated = false;
     }
 }

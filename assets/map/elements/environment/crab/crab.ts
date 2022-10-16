@@ -108,7 +108,9 @@ export default {
     const query = world.query(KinematicBody);
 
     for (const crab of state.crabs) {
-      const [kinematicBody] = query.get(EntityRef.fromJs(crab));
+      const components = query.get(EntityRef.fromJs(crab));
+      if (!components) continue;
+      const [kinematicBody] = components;
 
       if (i % 100 == 0) {
         i = 0;

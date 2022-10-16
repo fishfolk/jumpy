@@ -60,7 +60,8 @@ const MapMeta: BevyType<unknown> = {
   typeName: "jumpy::metadata::map::MapMeta",
 };
 
-const initState: { spawners: JsEntity[] } = {
+const initState: { spawners: JsEntity[]; currentSpawner: number } = {
+  currentSpawner: 0,
   spawners: [],
 };
 
@@ -90,10 +91,12 @@ export default {
       const player = player_inputs.players[i];
 
       // If the player is active, but not alive
-      if (player.active && !(i in alive_players)) {
-        // Get a random spawner
-        const spawner_idx = Math.round(Math.random() * state.spawners.length);
-        const spawner = EntityRef.fromJs(state.spawners[spawner_idx]);
+      if (player.active && !alive_players.includes(i)) {
+        // Get the next spawner
+        state.currentSpawner += 1;
+        state.currentSpawner %= state.spawners.length;
+
+        const spawner = EntityRef.fromJs(state.spawners[state.currentSpawner]);
 
         // Get the spawner transform
         const [

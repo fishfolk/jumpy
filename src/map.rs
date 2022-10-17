@@ -1,4 +1,4 @@
-use bevy::{asset::AssetPath, render::view::RenderLayers, utils::HashSet};
+use bevy::{render::view::RenderLayers, utils::HashSet};
 use bevy_ecs_tilemap::prelude::*;
 use bevy_mod_js_scripting::{ActiveScripts, JsScript};
 use bevy_parallax::ParallaxResource;
@@ -17,8 +17,7 @@ pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
-        app.register_type::<MapSpawnSource>()
-            .init_resource::<MapScripts>()
+        app.init_resource::<MapScripts>()
             .add_plugin(TilemapPlugin)
             .add_system(hydrate_maps);
     }
@@ -32,18 +31,6 @@ pub struct MapScripts(pub HashSet<Handle<JsScript>>);
 #[derive(Component)]
 pub struct MapGridView;
 
-#[derive(Reflect, Serialize, Deserialize, Component, Clone, Debug)]
-#[reflect_value(Serialize, Deserialize, Component, Default)]
-pub enum MapSpawnSource {
-    AssetPath(String),
-}
-
-impl Default for MapSpawnSource {
-    fn default() -> Self {
-        Self::AssetPath(default())
-    }
-}
-
 pub fn hydrate_maps(
     mut commands: Commands,
     mut parallax: ResMut<ParallaxResource>,
@@ -54,17 +41,10 @@ pub fn hydrate_maps(
     element_assets: ResMut<Assets<MapElementMeta>>,
     mut active_scripts: ResMut<ActiveScripts>,
     mut map_scripts: ResMut<MapScripts>,
-    unspawned_maps: Query<(Entity, &MapSpawnSource), Without<MapMeta>>,
+    unspawned_maps: Query<(Entity, &AssetHandle<MapMeta>), Without<MapMeta>>,
 ) {
-    for (map_entity, spawn_source) in &unspawned_maps {
-        let map = match spawn_source {
-            MapSpawnSource::AssetPath(path) => {
-                let path: AssetPath = path.into();
-                let handle = Handle::weak(path.into());
-                let map = map_assets.get(&handle).expect("Map not loaded");
-                map
-            }
-        };
+    for (map_entity, map_handle) in &unspawned_maps {
+        let map = map_assets.get(map_handle).expect("Map asset not loaded");
         let grid = GeometryBuilder::build_as(
             &grid::Grid {
                 grid_size: map.grid_size,
@@ -175,7 +155,7 @@ pub fn hydrate_maps(
                                 x: map.tile_size.x as f32,
                                 y: map.tile_size.y as f32,
                             },
-                            texture: TilemapTexture(tile_layer.tilemap_handle.clone()),
+                            texture: TilemapTexture(tile_layer.tilemap_handle.inner.clone_weak()),
                             storage,
                             transform: Transform::from_xyz(0.0, 0.0, -100.0 + i as f32),
                             ..default()
@@ -194,8 +174,8 @@ pub fn hydrate_maps(
                     for element in &element_layer.elements {
                         let element_meta =
                             element_assets.get(&element.element_handle).unwrap().clone();
-                        active_scripts.insert(element_meta.script_handle.clone_weak());
-                        map_scripts.insert(element_meta.script_handle.clone_weak());
+                        active_scripts.insert(element_meta.script_handle.inner.clone_weak());
+                        map_scripts.insert(element_meta.script_handle.inner.clone_weak());
 
                         let element_name = &element_meta.name;
 

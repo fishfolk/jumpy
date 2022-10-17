@@ -14,7 +14,7 @@ pub struct UIThemeMeta {
     pub scale: f32,
     pub font_families: HashMap<String, String>,
     #[serde(skip)]
-    pub font_handles: HashMap<String, Handle<EguiFont>>,
+    pub font_handles: HashMap<String, AssetHandle<EguiFont>>,
     pub font_styles: FontStylesMeta,
     pub button_styles: ButtonStylesMeta,
     pub hud: HudThemeMeta,
@@ -201,7 +201,7 @@ pub struct BorderImageMeta {
     pub scale: f32,
 
     #[serde(skip)]
-    pub handle: Handle<Image>,
+    pub handle: AssetHandle<Image>,
     #[serde(skip)]
     pub egui_texture: egui::TextureId,
 }

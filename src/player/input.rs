@@ -55,7 +55,7 @@ pub struct PlayerInput {
     /// The player is currently "connected" and actively providing input.
     pub active: bool,
     /// This may be a null handle if a player hasn't been selected yet
-    pub selected_player: Handle<PlayerMeta>,
+    pub selected_player: AssetHandle<PlayerMeta>,
     /// The player control input
     pub control: PlayerControl,
     /// The player control input from the last fixed update

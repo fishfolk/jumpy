@@ -76,7 +76,7 @@ pub fn setup_main_menu(
         .with_children(|parent| {
             parent
                 .spawn_bundle(SpriteBundle {
-                    texture: bg_handle.clone(),
+                    texture: bg_handle.inner.clone_weak(),
                     sprite: Sprite {
                         custom_size: Some(Vec2::new(width, height)),
                         ..default()
@@ -87,7 +87,7 @@ pub fn setup_main_menu(
                 .insert(Name::new("Main Menu Background Left"));
             parent
                 .spawn_bundle(SpriteBundle {
-                    texture: bg_handle.clone(),
+                    texture: bg_handle.inner.clone_weak(),
                     sprite: Sprite {
                         custom_size: Some(Vec2::new(width, height)),
                         ..default()
@@ -97,7 +97,7 @@ pub fn setup_main_menu(
                 .insert(Name::new("Main Menu Background Middle"));
             parent
                 .spawn_bundle(SpriteBundle {
-                    texture: bg_handle,
+                    texture: bg_handle.inner,
                     sprite: Sprite {
                         custom_size: Some(Vec2::new(width, height)),
                         ..default()

@@ -79,7 +79,7 @@ impl HasLoadProgress for MapLayerKind {
 pub struct MapTileLayer {
     pub tilemap: String,
     #[serde(skip)]
-    pub tilemap_handle: Handle<Image>,
+    pub tilemap_handle: AssetHandle<Image>,
     pub has_collision: bool,
     pub tiles: Vec<MapTileMeta>,
 }
@@ -96,7 +96,7 @@ pub struct MapElementSpawn {
     pub pos: Vec2,
     pub element: String,
     #[serde(skip)]
-    pub element_handle: Handle<MapElementMeta>,
+    pub element_handle: AssetHandle<MapElementMeta>,
 }
 
 #[derive(Reflect, FromReflect, HasLoadProgress, Deserialize, Serialize, Clone, Debug)]
@@ -113,7 +113,7 @@ pub struct ParallaxLayerMeta {
     pub speed: f32,
     pub image: String,
     #[serde(skip)]
-    pub image_handle: Handle<Image>,
+    pub image_handle: AssetHandle<Image>,
     pub tile_size: Vec2,
     pub cols: usize,
     pub rows: usize,
@@ -169,7 +169,7 @@ pub struct MapElementMeta {
     pub editor_size: Vec2,
 
     #[serde(skip)]
-    pub script_handle: Handle<JsScript>,
+    pub script_handle: AssetHandle<JsScript>,
     /// Assets that should be pre-loaded by the game before starting
     #[serde(default)]
     pub preload_assets: Vec<String>,

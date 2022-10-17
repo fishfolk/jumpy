@@ -14,7 +14,7 @@ impl Plugin for MapMetadataPlugin {
 #[derive(
     Reflect, Component, HasLoadProgress, TypeUuid, Deserialize, Serialize, Clone, Debug, Default,
 )]
-#[reflect(Component, Default)]
+#[reflect(Component, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 #[uuid = "8ede98c2-4f17-46f2-bcc5-ae0dc63b2137"]
 pub struct MapMeta {

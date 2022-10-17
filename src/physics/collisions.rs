@@ -98,7 +98,9 @@ pub struct Actor;
 #[reflect(Component, Default)]
 pub struct Solid;
 
-#[derive(Component, Default, Clone, Debug)]
+#[derive(Reflect, Component, Default, Clone, Debug, Serialize, Deserialize)]
+#[reflect(Component, Default)]
+#[reflect_value(Serialize, Deserialize)]
 pub struct Collider {
     pub collidable: bool,
     pub squished: bool,

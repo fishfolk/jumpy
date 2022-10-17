@@ -14,6 +14,18 @@ pub static ENGINE_CONFIG: Lazy<EngineConfig> = Lazy::new(|| {
 #[derive(Clone, Debug, StructOpt)]
 #[structopt(name = "Jumpy", about = "A 2.5D side-scroller beatemup.")]
 pub struct EngineConfig {
+    /// Run in client mode, connecting to the given server
+    #[structopt(long, short = "C", conflicts_with = "server")]
+    pub client: Option<String>,
+
+    /// Run in server mode listening on the specified host addr
+    #[structopt(long, short = "S")]
+    pub server: Option<String>,
+
+    /// The port to host/connect on when running in server or client mode
+    #[structopt(default_value = "9375")]
+    pub port: u16,
+
     /// Hot reload assets
     #[structopt(short = "R", long)]
     pub hot_reload: bool,

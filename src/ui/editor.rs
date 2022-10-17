@@ -9,8 +9,9 @@ use rand::{seq::SliceRandom, thread_rng};
 
 use crate::{
     camera::{EditorCamera, GameCamera},
+    config::ENGINE_CONFIG,
     localization::LocalizationExt,
-    map::{MapGridView, MapSpawnSource, MapSpawner},
+    map::{MapGridView, MapSpawnSource},
     metadata::{GameMeta, MapLayerKind, MapLayerMeta, MapMeta},
     player::input::PlayerInputs,
     prelude::*,
@@ -145,9 +146,8 @@ pub fn editor_ui_system(world: &mut World) {
 
 #[derive(SystemParam)]
 struct EditorTopBar<'w, 's> {
-    commands: Commands<'w, 's>,
     game: Res<'w, GameMeta>,
-    camera_and_reset_controller: ParamSet<
+    camera_netcommands_resetcontroller: ParamSet<
         'w,
         's,
         (
@@ -157,6 +157,7 @@ struct EditorTopBar<'w, 's> {
                 (&'static mut Transform, &'static mut OrthographicProjection),
                 With<EditorCamera>,
             >,
+            NetCommands<'w, 's>,
             ResetController<'w, 's>,
         ),
     >,
@@ -164,7 +165,6 @@ struct EditorTopBar<'w, 's> {
     localization: Res<'w, Localization>,
     map: Query<'w, 's, &'static MapMeta>,
     settings: ResMut<'w, EditorState>,
-    map_spawner: MapSpawner<'w, 's>,
 }
 
 impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
@@ -182,7 +182,7 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
         map_export_window(ui, &mut params);
 
         ui.horizontal_centered(|ui| {
-            let mut camera = params.camera_and_reset_controller.p0();
+            let mut camera = params.camera_netcommands_resetcontroller.p0();
             let (mut transform, mut projection): (Mut<Transform>, Mut<OrthographicProjection>) =
                 camera.single_mut();
             let zoom = 1.0 / projection.scale * 100.0;
@@ -225,19 +225,21 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 if ui.button(&params.localization.get("main-menu")).clicked() {
                     params
-                        .commands
-                        .insert_resource(NextState(GameState::MainMenu));
+                        .camera_netcommands_resetcontroller
+                        .p1()
+                        .next_state(GameState::MainMenu);
                 }
 
                 ui.scope(|ui| {
                     ui.set_enabled(params.map.get_single().is_ok());
                     if ui.button(&params.localization.get("play")).clicked() {
                         params
-                            .commands
-                            .insert_resource(NextState(InGameState::Playing));
+                            .camera_netcommands_resetcontroller
+                            .p1()
+                            .next_state(InGameState::Playing);
                     }
 
-                    let mut reset_controller = params.camera_and_reset_controller.p1();
+                    let mut reset_controller = params.camera_netcommands_resetcontroller.p2();
                     if ui.button(&params.localization.get("export")).clicked() {
                         *params.show_map_export_window = true;
                     }
@@ -249,8 +251,17 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                     if ui.button(&params.localization.get("reload")).clicked() {
                         let map = params.map.get_single().ok().cloned();
                         reset_controller.reset_world();
+
                         if let Some(map) = map {
-                            params.map_spawner.spawn(&MapSpawnSource::Meta(map));
+                            if ENGINE_CONFIG.server.is_none() {
+                                params
+                                    .camera_netcommands_resetcontroller
+                                    .p1()
+                                    .spawn()
+                                    .insert(map);
+                            } else {
+                                todo!("Map reload on server");
+                            }
                         }
                     }
                 });
@@ -657,6 +668,7 @@ struct EditorCentralPanel<'w, 's> {
     show_map_create: Local<'s, bool>,
     show_map_open: Local<'s, bool>,
     map_create_info: Local<'s, MapCreateInfo>,
+    net_commands: NetCommands<'w, 's>,
     game: Res<'w, GameMeta>,
     map: Query<'w, 's, Entity, With<MapMeta>>,
     camera: Query<
@@ -670,7 +682,6 @@ struct EditorCentralPanel<'w, 's> {
         With<EditorCamera>,
     >,
     localization: Res<'w, Localization>,
-    map_spawner: MapSpawner<'w, 's>,
 }
 
 struct MapCreateInfo {
@@ -819,7 +830,7 @@ fn map_open_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
                 egui::ScrollArea::vertical().show(ui, |ui| {
                     #[allow(clippy::unnecessary_to_owned)]
                     // False alarm, necessary to avoid borrowing params
-                    for (map, handle) in params.game.maps.to_vec().into_iter().zip(
+                    for (map_name, _map_handle) in params.game.maps.to_vec().into_iter().zip(
                         params
                             .game
                             .map_handles
@@ -828,8 +839,11 @@ fn map_open_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
                             .collect::<Vec<_>>()
                             .into_iter(),
                     ) {
-                        if ui.button(map).clicked() {
-                            params.map_spawner.spawn(&MapSpawnSource::Handle(handle));
+                        if ui.button(&map_name).clicked() {
+                            params
+                                .net_commands
+                                .spawn()
+                                .insert(MapSpawnSource::AssetPath(map_name));
                             *params.show_map_open = false;
                         }
                     }
@@ -930,7 +944,12 @@ fn create_map(params: &mut EditorCentralPanel) {
         layers: default(),
         background_layers: default(),
     };
-    params.map_spawner.spawn(&MapSpawnSource::Meta(meta));
+
+    if ENGINE_CONFIG.server.is_none() {
+        params.net_commands.spawn().insert(meta);
+    } else {
+        todo!("Map create on server");
+    }
     *params.show_map_open = false;
     *params.show_map_create = false;
 }

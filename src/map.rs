@@ -1,4 +1,4 @@
-use bevy::{ecs::system::SystemParam, render::view::RenderLayers, utils::HashSet};
+use bevy::{asset::AssetPath, render::view::RenderLayers, utils::HashSet};
 use bevy_ecs_tilemap::prelude::*;
 use bevy_mod_js_scripting::{ActiveScripts, JsScript};
 use bevy_parallax::ParallaxResource;
@@ -17,7 +17,10 @@ pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<MapScripts>().add_plugin(TilemapPlugin);
+        app.register_type::<MapSpawnSource>()
+            .init_resource::<MapScripts>()
+            .add_plugin(TilemapPlugin)
+            .add_system(hydrate_maps);
     }
 }
 
@@ -25,35 +28,43 @@ impl Plugin for MapPlugin {
 #[derive(Deref, DerefMut, Default)]
 pub struct MapScripts(pub HashSet<Handle<JsScript>>);
 
-#[derive(SystemParam)]
-pub struct MapSpawner<'w, 's> {
-    commands: Commands<'w, 's>,
-    map_assets: ResMut<'w, Assets<MapMeta>>,
-    parallax: ResMut<'w, ParallaxResource>,
-    windows: Res<'w, Windows>,
-    asset_server: Res<'w, AssetServer>,
-    texture_atlas_assets: ResMut<'w, Assets<TextureAtlas>>,
-    element_assets: ResMut<'w, Assets<MapElementMeta>>,
-    active_scripts: ResMut<'w, ActiveScripts>,
-    map_scripts: ResMut<'w, MapScripts>,
-}
-
 /// Marker component for the map grid
 #[derive(Component)]
 pub struct MapGridView;
 
+#[derive(Reflect, Serialize, Deserialize, Component, Clone, Debug)]
+#[reflect_value(Serialize, Deserialize, Component, Default)]
 pub enum MapSpawnSource {
-    Handle(Handle<MapMeta>),
-    Meta(MapMeta),
+    AssetPath(String),
 }
 
-impl<'w, 's> MapSpawner<'w, 's> {
-    pub fn spawn(&mut self, source: &MapSpawnSource) {
-        let map = match &source {
-            MapSpawnSource::Handle(handle) => self.map_assets.get(handle).unwrap(),
-            MapSpawnSource::Meta(meta) => meta,
-        };
+impl Default for MapSpawnSource {
+    fn default() -> Self {
+        Self::AssetPath(default())
+    }
+}
 
+pub fn hydrate_maps(
+    mut commands: Commands,
+    mut parallax: ResMut<ParallaxResource>,
+    map_assets: Res<Assets<MapMeta>>,
+    windows: Res<Windows>,
+    asset_server: Res<AssetServer>,
+    mut texture_atlas_assets: ResMut<Assets<TextureAtlas>>,
+    element_assets: ResMut<Assets<MapElementMeta>>,
+    mut active_scripts: ResMut<ActiveScripts>,
+    mut map_scripts: ResMut<MapScripts>,
+    unspawned_maps: Query<(Entity, &MapSpawnSource), Without<MapMeta>>,
+) {
+    for (map_entity, spawn_source) in &unspawned_maps {
+        let map = match spawn_source {
+            MapSpawnSource::AssetPath(path) => {
+                let path: AssetPath = path.into();
+                let handle = Handle::weak(path.into());
+                let map = map_assets.get(&handle).expect("Map not loaded");
+                map
+            }
+        };
         let grid = GeometryBuilder::build_as(
             &grid::Grid {
                 grid_size: map.grid_size,
@@ -63,37 +74,29 @@ impl<'w, 's> MapSpawner<'w, 's> {
             default(),
         );
 
-        let window = self.windows.primary();
-        *self.parallax = map.get_parallax_resource();
-        self.parallax.window_size = Vec2::new(window.width(), window.height());
-        self.parallax.create_layers(
-            &mut self.commands,
-            &self.asset_server,
-            &mut self.texture_atlas_assets,
-        );
+        let window = windows.primary();
+        *parallax = map.get_parallax_resource();
+        parallax.window_size = Vec2::new(window.width(), window.height());
+        parallax.create_layers(&mut commands, &asset_server, &mut texture_atlas_assets);
 
-        self
-            .commands
-            .insert_resource(ClearColor(map.background_color.into()));
+        commands.insert_resource(ClearColor(map.background_color.into()));
 
         let tilemap_size = TilemapSize {
             x: map.grid_size.x,
             y: map.grid_size.y,
         };
 
-        let map_entity = self
-            .commands
-            .spawn()
+        commands
+            .entity(map_entity)
+            .insert(map.clone())
             .insert(Name::new("Map"))
             .insert(map.clone())
             .insert_bundle(VisibilityBundle::default())
-            .insert_bundle(TransformBundle::default())
-            .id();
+            .insert_bundle(TransformBundle::default());
         let mut map_children = Vec::new();
 
         // Spawn the grid
-        let grid_entity = self
-            .commands
+        let grid_entity = commands
             .spawn()
             .insert(Name::new("Grid"))
             .insert(MapGridView)
@@ -103,8 +106,8 @@ impl<'w, 's> MapSpawner<'w, 's> {
         map_children.push(grid_entity);
 
         // Clear any previously loaded map scripts
-        for script in self.map_scripts.drain() {
-            self.active_scripts.remove(&script);
+        for script in map_scripts.drain() {
+            active_scripts.remove(&script);
         }
 
         // Spawn map layers
@@ -114,8 +117,7 @@ impl<'w, 's> MapSpawner<'w, 's> {
 
             match &layer.kind {
                 MapLayerKind::Tile(tile_layer) => {
-                    let layer_entity = self
-                        .commands
+                    let layer_entity = commands
                         .spawn()
                         .insert(Name::new(format!("Map Layer: {layer_id}")))
                         .id();
@@ -130,8 +132,7 @@ impl<'w, 's> MapSpawner<'w, 's> {
 
                         let half_tile_x = map.tile_size.x as f32 / 2.0;
                         let half_tile_y = map.tile_size.y as f32 / 2.0;
-                        let tile_entity = self
-                            .commands
+                        let tile_entity = commands
                             .spawn()
                             .insert(Name::new(format!(
                                 "Map Tile: {}: ( {} x {} )",
@@ -162,7 +163,7 @@ impl<'w, 's> MapSpawner<'w, 's> {
                         tile_entities.push(tile_entity);
                     }
 
-                    let mut layer_commands = self.commands.entity(layer_entity);
+                    let mut layer_commands = commands.entity(layer_entity);
 
                     layer_commands
                         .insert_bundle(TilemapBundle {
@@ -191,22 +192,14 @@ impl<'w, 's> MapSpawner<'w, 's> {
                 }
                 MapLayerKind::Element(element_layer) => {
                     for element in &element_layer.elements {
-                        let element_meta = self
-                            .element_assets
-                            .get(&element.element_handle)
-                            .unwrap()
-                            .clone();
-                        self
-                            .active_scripts
-                            .insert(element_meta.script_handle.clone_weak());
-                        self
-                            .map_scripts
-                            .insert(element_meta.script_handle.clone_weak());
+                        let element_meta =
+                            element_assets.get(&element.element_handle).unwrap().clone();
+                        active_scripts.insert(element_meta.script_handle.clone_weak());
+                        map_scripts.insert(element_meta.script_handle.clone_weak());
 
                         let element_name = &element_meta.name;
 
-                        let entity = self
-                            .commands
+                        let entity = commands
                             .spawn()
                             .insert(Name::new(format!(
                                 "Map Element ( {layer_id} ): {element_name}"
@@ -247,9 +240,6 @@ impl<'w, 's> MapSpawner<'w, 's> {
             }
         }
 
-        self
-            .commands
-            .entity(map_entity)
-            .push_children(&map_children);
+        commands.entity(map_entity).push_children(&map_children);
     }
 }

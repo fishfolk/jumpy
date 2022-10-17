@@ -50,11 +50,14 @@ once_cell = "1.13.0"
 bevy_mod_js_scripting = { git = "https://github.com/zicklag/bevy_mod_js_scripting.git", branch = "jumpy" }
 bevy_ecs_tilemap = { version = "0.7.0", features = ["atlas"] }
 bevy_prototype_lyon = "0.6.0"
+fnv = "1.0.7"
+base64 = "0.13.0"
+bevy_renet = { git = "https://github.com/zicklag/renet.git", branch = "jumpy" }
+postcard = { version = "1.0.2", default-features = false, features = ["alloc"] }
 
 # Debug tools
 bevy-inspector-egui = { version = "0.13.0" }
-fnv = "1.0.7"
-base64 = "0.13.0"
+ulid = { version = "1.0.0", features = ["serde"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "0.2.83"
@@ -66,4 +69,7 @@ debug = false
 
 [profile.release]
 lto = true
-codegen-units = 1 # Improves physics performance for release builds
+codegen-units = 1 # Improved rapier physics perf, so it might help other stuff, too
+
+[patch.crates-io]
+renet = { git = "https://github.com/zicklag/renet.git", branch = "jumpy" }

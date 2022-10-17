@@ -1,9 +1,8 @@
 use bevy_egui::*;
 use bevy_fluent::Localization;
-use iyes_loopless::state::NextState;
 
 use crate::{
-    ui::input::MenuAction, localization::LocalizationExt, metadata::GameMeta, prelude::*, GameState,
+    localization::LocalizationExt, metadata::GameMeta, prelude::*, ui::input::MenuAction, GameState,
 };
 
 use super::widgets::{
@@ -33,23 +32,23 @@ impl Plugin for PausePlugin {
 }
 
 /// Transition game to pause state
-fn pause_system(mut commands: Commands, input: Query<&ActionState<MenuAction>>) {
+fn pause_system(mut net_commands: NetCommands, input: Query<&ActionState<MenuAction>>) {
     let input = input.single();
     if input.just_pressed(MenuAction::Pause) {
-        commands.insert_resource(NextState(InGameState::Paused));
+        net_commands.next_state(InGameState::Paused);
     }
 }
 
 // Transition game out of paused state
-fn unpause_system(mut commands: Commands, input: Query<&ActionState<MenuAction>>) {
+fn unpause_system(mut net_commands: NetCommands, input: Query<&ActionState<MenuAction>>) {
     let input = input.single();
     if input.just_pressed(MenuAction::Pause) {
-        commands.insert_resource(NextState(InGameState::Playing));
+        net_commands.next_state(InGameState::Playing);
     }
 }
 
 pub fn pause_menu(
-    mut commands: Commands,
+    mut net_commands: NetCommands,
     mut egui_context: ResMut<EguiContext>,
     game: Res<GameMeta>,
     localization: Res<Localization>,
@@ -96,7 +95,7 @@ pub fn pause_menu(
                         }
 
                         if continue_button.clicked() {
-                            commands.insert_resource(NextState(GameState::InGame));
+                            net_commands.next_state(GameState::InGame);
                         }
 
                         if BorderedButton::themed(
@@ -107,7 +106,7 @@ pub fn pause_menu(
                         .show(ui)
                         .clicked()
                         {
-                            commands.insert_resource(NextState(InGameState::Editing))
+                            net_commands.next_state(InGameState::Editing);
                         }
 
                         if BorderedButton::themed(
@@ -119,7 +118,7 @@ pub fn pause_menu(
                         .clicked()
                         {
                             // Show the main menu
-                            commands.insert_resource(NextState(GameState::MainMenu));
+                            net_commands.next_state(GameState::MainMenu);
                             ui.ctx().clear_focus();
                         }
                     });

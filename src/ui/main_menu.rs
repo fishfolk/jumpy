@@ -6,6 +6,7 @@ use bevy::{
 };
 use bevy_egui::*;
 use bevy_fluent::Localization;
+use bevy_renet::renet::RenetClient;
 use iyes_loopless::condition::IntoConditionalExclusiveSystem;
 
 use crate::{
@@ -214,7 +215,7 @@ impl<'w, 's> WidgetSystem for MainMenu<'w, 's> {
 
 #[derive(SystemParam)]
 struct HomeMenu<'w, 's> {
-    commands: Commands<'w, 's>,
+    net_commands: NetCommands<'w, 's>,
     menu_page: ResMut<'w, MenuPage>,
     player_select_state: ResMut<'w, player_select::PlayerSelectState>,
     modified_settings: ResMut<'w, ModifiedSettings>,
@@ -233,6 +234,7 @@ impl<'w, 's> WidgetSystem for HomeMenu<'w, 's> {
         _: WidgetId,
         _: (),
     ) {
+        let is_client = world.contains_resource::<RenetClient>();
         let mut params: HomeMenu = state.get_mut(world);
 
         // Reset player selection when comming to the home menu
@@ -270,6 +272,8 @@ impl<'w, 's> WidgetSystem for HomeMenu<'w, 's> {
                 .show(ui, |ui| {
                     let min_button_size = egui::vec2(ui.available_width(), 0.0);
 
+                    ui.set_enabled(!is_client);
+
                     // Start button
                     let start_button = BorderedButton::themed(
                         &ui_theme.button_styles.normal,
@@ -292,12 +296,8 @@ impl<'w, 's> WidgetSystem for HomeMenu<'w, 's> {
                     .show(ui)
                     .clicked()
                     {
-                        params
-                            .commands
-                            .insert_resource(NextState(InGameState::Editing));
-                        params
-                            .commands
-                            .insert_resource(NextState(GameState::InGame));
+                        params.net_commands.next_state(InGameState::Editing);
+                        params.net_commands.next_state(GameState::InGame);
                     }
 
                     // Settings button

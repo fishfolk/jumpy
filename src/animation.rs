@@ -61,7 +61,7 @@ pub struct AnimatedSprite {
     pub timer: Timer,
 }
 
-#[derive(Component, Debug, Default, Deref, DerefMut)]
+#[derive(Reflect, Component, Debug, Default, Deref, DerefMut)]
 pub struct LastAnimatedSprite(pub Option<AnimatedSprite>);
 
 impl Clone for AnimatedSprite {

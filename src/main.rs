@@ -19,6 +19,7 @@ mod localization;
 mod map;
 mod metadata;
 mod name;
+mod networking;
 mod physics;
 mod platform;
 mod player;
@@ -40,6 +41,7 @@ use crate::{
     map::MapPlugin,
     metadata::{GameMeta, MetadataPlugin},
     name::NamePlugin,
+    networking::NetworkingPlugin,
     physics::PhysicsPlugin,
     platform::PlatformPlugin,
     player::PlayerPlugin,
@@ -52,7 +54,7 @@ use crate::{
 /// The timestep used for fixed update systems
 pub const FIXED_TIMESTEP: f64 = 1.0 / 60.;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum GameState {
     LoadingPlatformStorage,
     LoadingGameData,
@@ -60,7 +62,7 @@ pub enum GameState {
     InGame,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum InGameState {
     Playing,
     Editing,
@@ -157,7 +159,8 @@ pub fn main() {
         .add_plugin(MapPlugin)
         .add_plugin(WorkaroundsPlugin)
         .add_plugin(DebugPlugin)
-        .add_plugin(ScriptingPlugin);
+        .add_plugin(ScriptingPlugin)
+        .add_plugin(NetworkingPlugin);
 
     debug!(?engine_config, "Starting game");
 

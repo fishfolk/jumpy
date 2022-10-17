@@ -1,4 +1,4 @@
-use bevy::{ecs::system::SystemParam, hierarchy::DespawnRecursiveExt};
+use bevy::ecs::system::SystemParam;
 
 use crate::{loading::PlayerInputCollector, prelude::*, ui::input::MenuAction};
 
@@ -17,7 +17,7 @@ pub fn cache_str(s: &str) {
 /// logic here so it can be re-used.
 #[derive(SystemParam)]
 pub struct ResetController<'w, 's> {
-    commands: Commands<'w, 's>,
+    commands: NetCommands<'w, 's>,
     camera: Query<
         'w,
         's,

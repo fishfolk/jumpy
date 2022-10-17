@@ -1,6 +1,9 @@
 use leafwing_input_manager::user_input::{InputKind, UserInput};
 
-use crate::{metadata::PlayerMeta, player::input::PlayerAction, player::MAX_PLAYERS, loading::PlayerInputCollector};
+use crate::{
+    loading::PlayerInputCollector, metadata::PlayerMeta, player::input::PlayerAction,
+    player::MAX_PLAYERS,
+};
 
 use super::*;
 
@@ -10,7 +13,7 @@ pub struct PlayerSelectState {
 }
 
 struct PlayerSlot {
-    player_handle: Handle<PlayerMeta>,
+    player_handle: AssetHandle<PlayerMeta>,
     confirmed: bool,
 }
 
@@ -146,7 +149,14 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
 struct PlayerSelectPanel<'w, 's> {
     game: Res<'w, GameMeta>,
     player_select_state: ResMut<'w, PlayerSelectState>,
-    players: Query<'w, 's, (&'static PlayerInputCollector, &'static ActionState<PlayerAction>)>,
+    players: Query<
+        'w,
+        's,
+        (
+            &'static PlayerInputCollector,
+            &'static ActionState<PlayerAction>,
+        ),
+    >,
     storage: ResMut<'w, Storage>,
     player_meta_assets: Res<'w, Assets<PlayerMeta>>,
     localization: Res<'w, Localization>,
@@ -192,7 +202,7 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                     .player_handles
                     .iter()
                     .enumerate()
-                    .find(|(_, handle)| *handle == &slot.player_handle)
+                    .find(|(_, handle)| handle.inner == slot.player_handle.inner)
                     .unwrap();
 
                 if direction.x() > 0.0 {

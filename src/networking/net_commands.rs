@@ -2,7 +2,12 @@
 
 use std::marker::PhantomData;
 
-use bevy::ecs::system::{Command, Resource};
+use bevy::ecs::{
+    entity::Entities,
+    system::{Command, Resource},
+};
+
+use crate::utils::ResetController;
 
 use super::*;
 
@@ -25,6 +30,10 @@ pub enum CommandMessage {
         net_id: NetId,
     },
     NextState(State),
+    /// This corresponds to the action implemented by the [`jumpy::utils::ResetController`].
+    ///
+    /// Technically it's not a command, but it's similar enough we put it in here.
+    ResetWorld,
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize)]
@@ -45,10 +54,12 @@ impl From<InGameState> for State {
 }
 
 pub fn client_handle_net_commands(
+    entities: &Entities,
     mut commands: Commands,
     type_registry: Res<TypeRegistryArc>,
     mut client: ResMut<RenetClient>,
     mut net_ids: ResMut<NetIdMap>,
+    mut reset_controller: ResetController,
 ) {
     while let Some(message) = client.receive_message(NetChannels::Commands) {
         let message: CommandMessage =
@@ -116,13 +127,18 @@ pub fn client_handle_net_commands(
             },
             CommandMessage::Despawn { recursive, net_id } => {
                 if let Some(entity) = net_ids.remove_net_id(net_id) {
-                    let mut cmds = commands.entity(entity);
-                    if recursive {
-                        cmds.despawn_recursive()
-                    } else {
-                        cmds.despawn()
+                    if entities.contains(entity) {
+                        let mut cmds = commands.entity(entity);
+                        if recursive {
+                            cmds.despawn_recursive()
+                        } else {
+                            cmds.despawn()
+                        }
                     }
                 }
+            }
+            CommandMessage::ResetWorld => {
+                reset_controller.reset_world();
             }
         }
     }
@@ -304,7 +320,7 @@ impl<'w, 's, 'a> NetEntityCommands<'w, 's, 'a> {
     pub fn id(&self) -> Entity {
         self.entity_cmds.id()
     }
-    pub fn insert(&mut self, c: impl Reflect + Component) -> &mut Self {
+    pub fn insert<C: Reflect + Component>(&mut self, c: C) -> &mut Self {
         if let Some(server) = &mut self.res.server {
             let entity = self.entity_cmds.id();
 
@@ -318,9 +334,12 @@ impl<'w, 's, 'a> NetEntityCommands<'w, 's, 'a> {
             // Serialize the component
             let (component_bytes, type_name) = {
                 let type_registry = self.res.type_registry.read();
-                let type_registration = type_registry
-                    .get(c.type_id())
-                    .expect("Not registered in TypeRegistry");
+                let type_registration = type_registry.get(c.type_id()).unwrap_or_else(|| {
+                    panic!(
+                        "{} not registered in TypeRegistry",
+                        std::any::type_name::<C>()
+                    )
+                });
                 let reflect_serialize = type_registration
                     .data::<ReflectSerialize>()
                     .expect("Doesn't have ReflectSerialize");
@@ -330,7 +349,6 @@ impl<'w, 's, 'a> NetEntityCommands<'w, 's, 'a> {
                     postcard::to_allocvec(serializable.borrow()).expect("Serialize component"),
                     type_registration.type_name(),
                 )
-
             };
 
             // Send the clients/server the inserted component

@@ -33,10 +33,10 @@ impl Plugin for MetadataPlugin {
 pub struct GameMeta {
     pub players: Vec<String>,
     #[serde(skip)]
-    pub player_handles: Vec<Handle<player::PlayerMeta>>,
+    pub player_handles: Vec<AssetHandle<player::PlayerMeta>>,
     pub maps: Vec<String>,
     #[serde(skip)]
-    pub map_handles: Vec<Handle<map::MapMeta>>,
+    pub map_handles: Vec<AssetHandle<map::MapMeta>>,
     pub clear_color: ui::ColorMeta,
     pub camera_height: u32,
     pub translations: localization::TranslationsMeta,
@@ -48,7 +48,7 @@ pub struct GameMeta {
     #[serde(default)]
     pub scripts: Vec<String>,
     #[serde(skip)]
-    pub script_handles: Vec<Handle<JsScript>>,
+    pub script_handles: Vec<AssetHandle<JsScript>>,
 }
 
 #[derive(HasLoadProgress, Deserialize, Clone, Debug)]
@@ -77,7 +77,7 @@ pub struct ImageMeta {
     pub image: String,
     pub image_size: Vec2,
     #[serde(skip)]
-    pub image_handle: Handle<Image>,
+    pub image_handle: AssetHandle<Image>,
     /// Egui texture ID may not be valid on all [`ImageMeta`] unless it is added to the egui context
     /// during game load.
     #[serde(skip)]

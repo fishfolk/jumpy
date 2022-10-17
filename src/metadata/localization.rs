@@ -17,5 +17,5 @@ pub struct TranslationsMeta {
     pub locales: Vec<String>,
     /// The handles to the locale bundle assets
     #[serde(skip)]
-    pub locale_handles: Vec<Handle<BundleAsset>>,
+    pub locale_handles: Vec<AssetHandle<BundleAsset>>,
 }

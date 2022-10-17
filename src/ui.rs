@@ -309,7 +309,7 @@ fn update_egui_fonts(
                 .font_handles
                 .iter()
                 .find_map(|(font_name, font_handle)| {
-                    if font_handle == &handle {
+                    if font_handle.inner == handle {
                         Some(font_name.clone())
                     } else {
                         None

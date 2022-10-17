@@ -266,7 +266,7 @@ impl<'w, 's> GameLoader<'w, 's> {
 
             // Helper to load border images
             let mut load_border_image = |border: &mut BorderImageMeta| {
-                border.egui_texture = egui_ctx.add_image(border.handle.clone_weak());
+                border.egui_texture = egui_ctx.add_image(border.handle.inner.clone_weak());
             };
 
             // Add Border images to egui context
@@ -296,12 +296,12 @@ impl<'w, 's> GameLoader<'w, 's> {
 
             // Add editor icons to egui context
             for icon in game.ui_theme.editor.icons.as_mut_list() {
-                icon.egui_texture_id = egui_ctx.add_image(icon.image_handle.clone_weak());
+                icon.egui_texture_id = egui_ctx.add_image(icon.image_handle.inner.clone_weak());
             }
 
             // Set the active scripts
             for script_handle in &game.script_handles {
-                active_scripts.insert(script_handle.clone_weak());
+                active_scripts.insert(script_handle.inner.clone_weak());
             }
 
             // Insert the game resource

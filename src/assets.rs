@@ -4,7 +4,7 @@ use std::{
 };
 
 use bevy::{
-    asset::{AssetLoader, AssetPath, LoadedAsset},
+    asset::{Asset, AssetLoader, AssetPath, LoadedAsset},
     reflect::TypeUuid,
 };
 use bevy_egui::egui;
@@ -18,21 +18,33 @@ use crate::{
     prelude::*,
 };
 
+mod asset_handle;
+pub use asset_handle::AssetHandle;
+
 pub struct AssetPlugin;
 
 impl Plugin for AssetPlugin {
     fn build(&self, app: &mut App) {
-        app.add_asset::<GameMeta>()
+        app.add_jumpy_asset::<GameMeta>()
             .add_asset_loader(GameMetaLoader)
-            .add_asset::<PlayerMeta>()
+            .add_jumpy_asset::<PlayerMeta>()
             .add_asset_loader(PlayerMetaLoader)
-            .add_asset::<MapMeta>()
+            .add_jumpy_asset::<MapMeta>()
             .add_asset_loader(MapMetaLoader)
-            .add_asset::<MapElementMeta>()
+            .add_jumpy_asset::<MapElementMeta>()
             .add_asset_loader(MapElementMetaLoader)
             .add_asset_loader(TextureAtlasLoader)
-            .add_asset::<EguiFont>()
+            .add_jumpy_asset::<EguiFont>()
             .add_asset_loader(EguiFontLoader);
+    }
+}
+
+trait AppExt {
+    fn add_jumpy_asset<T: Asset>(&mut self) -> &mut Self;
+}
+impl AppExt for App {
+    fn add_jumpy_asset<T: Asset>(&mut self) -> &mut Self {
+        self.add_asset::<T>().register_type::<AssetHandle<T>>()
     }
 }
 
@@ -103,8 +115,10 @@ impl AssetLoader for GameMetaLoader {
             // Get locale handles
             for locale in &meta.translations.locales {
                 let (path, handle) = get_relative_asset(load_context, self_path, locale);
-                dependencies.push(path);
-                meta.translations.locale_handles.push(handle.typed());
+                dependencies.push(path.clone());
+                meta.translations
+                    .locale_handles
+                    .push(AssetHandle::new(path, handle.typed()));
             }
 
             // Load the main menu background
@@ -113,14 +127,17 @@ impl AssetLoader for GameMetaLoader {
                 self_path,
                 &meta.main_menu.background_image.image,
             );
-            meta.main_menu.background_image.image_handle = main_menu_background.typed();
+            meta.main_menu.background_image.image_handle = AssetHandle::new(
+                main_menu_background_path.clone(),
+                main_menu_background.typed(),
+            );
             dependencies.push(main_menu_background_path);
 
             // Load UI border images
             let mut load_border_image = |border: &mut BorderImageMeta| {
                 let (path, handle) = get_relative_asset(load_context, self_path, &border.image);
-                dependencies.push(path);
-                border.handle = handle.typed();
+                dependencies.push(path.clone());
+                border.handle = AssetHandle::new(path, handle.typed());
             };
             load_border_image(&mut meta.ui_theme.hud.portrait_frame);
             load_border_image(&mut meta.ui_theme.panel.border);
@@ -139,7 +156,7 @@ impl AssetLoader for GameMetaLoader {
             // Load editor icons
             for icon in meta.ui_theme.editor.icons.as_mut_list() {
                 let (path, handle) = get_relative_asset(load_context, self_path, &icon.image);
-                icon.image_handle = handle.typed();
+                icon.image_handle = AssetHandle::new(path.clone(), handle.typed());
                 dependencies.push(path);
             }
 
@@ -148,7 +165,8 @@ impl AssetLoader for GameMetaLoader {
                 let (path, handle) =
                     get_relative_asset(load_context, self_path, player_relative_path);
 
-                meta.player_handles.push(handle.typed());
+                meta.player_handles
+                    .push(AssetHandle::new(path.clone(), handle.typed()));
                 dependencies.push(path);
             }
 
@@ -156,7 +174,8 @@ impl AssetLoader for GameMetaLoader {
             for map_relative_path in &meta.maps {
                 let (path, handle) = get_relative_asset(load_context, self_path, map_relative_path);
 
-                meta.map_handles.push(handle.typed());
+                meta.map_handles
+                    .push(AssetHandle::new(path.clone(), handle.typed()));
                 dependencies.push(path);
             }
 
@@ -165,19 +184,21 @@ impl AssetLoader for GameMetaLoader {
                 let (font_path, font_handle) =
                     get_relative_asset(load_context, self_path, font_relative_path);
 
-                dependencies.push(font_path);
+                dependencies.push(font_path.clone());
 
-                meta.ui_theme
-                    .font_handles
-                    .insert(font_name.clone(), font_handle.typed());
+                meta.ui_theme.font_handles.insert(
+                    font_name.clone(),
+                    AssetHandle::new(font_path, font_handle.typed()),
+                );
             }
 
             // Load the script handles
             for script_relative_path in &meta.scripts {
                 let (script_path, script_handle) =
                     get_relative_asset(load_context, self_path, script_relative_path);
-                dependencies.push(script_path);
-                meta.script_handles.push(script_handle.typed());
+                dependencies.push(script_path.clone());
+                meta.script_handles
+                    .push(AssetHandle::new(script_path, script_handle.typed()));
             }
 
             load_context.set_default_asset(LoadedAsset::new(meta).with_dependencies(dependencies));
@@ -219,9 +240,9 @@ impl AssetLoader for PlayerMetaLoader {
                     meta.spritesheet.columns,
                     meta.spritesheet.rows,
                 ))
-                .with_dependency(atlas_path),
+                .with_dependency(atlas_path.clone()),
             );
-            meta.spritesheet.atlas_handle = atlas_handle;
+            meta.spritesheet.atlas_handle = AssetHandle::new(atlas_path, atlas_handle);
 
             load_context.set_default_asset(LoadedAsset::new(meta));
 
@@ -259,14 +280,14 @@ impl AssetLoader for MapMetaLoader {
                     MapLayerKind::Tile(tile_layer) => {
                         let (path, handle) =
                             get_relative_asset(load_context, self_path, &tile_layer.tilemap);
-                        tile_layer.tilemap_handle = handle.typed();
+                        tile_layer.tilemap_handle = AssetHandle::new(path.clone(), handle.typed());
                         dependencies.push(path);
                     }
                     MapLayerKind::Element(element_layer) => {
                         for element in &mut element_layer.elements {
                             let (path, handle) =
                                 get_relative_asset(load_context, self_path, &element.element);
-                            element.element_handle = handle.typed();
+                            element.element_handle = AssetHandle::new(path.clone(), handle.typed());
                             dependencies.push(path);
                         }
                     }
@@ -276,8 +297,8 @@ impl AssetLoader for MapMetaLoader {
             // Load parallax background layers
             for layer in &mut meta.background_layers {
                 let (path, handle) = get_relative_asset(load_context, self_path, &layer.image);
-                dependencies.push(path);
-                layer.image_handle = handle.typed();
+                dependencies.push(path.clone());
+                layer.image_handle = AssetHandle::new(path, handle.typed());
 
                 // Rewrite relative paths from the parallax background layer as an absolute path to
                 // make it compatible with the parallax plugin.
@@ -320,7 +341,7 @@ impl AssetLoader for MapElementMetaLoader {
             // Load the element script
             let (script_path, script_handle) =
                 get_relative_asset(load_context, self_path, &meta.script);
-            meta.script_handle = script_handle.typed();
+            meta.script_handle = AssetHandle::new(script_path.clone(), script_handle.typed());
             dependencies.push(script_path);
 
             // Load preloaded assets

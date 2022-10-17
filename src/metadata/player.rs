@@ -28,7 +28,7 @@ pub struct PlayerMeta {
 pub struct PlayerSpritesheetMeta {
     pub image: String,
     #[serde(skip)]
-    pub atlas_handle: Handle<TextureAtlas>,
+    pub atlas_handle: AssetHandle<TextureAtlas>,
     #[serde(skip)]
     #[reflect(ignore)]
     pub egui_texture_id: bevy_egui::egui::TextureId,
@@ -51,7 +51,7 @@ impl PlayerSpritesheetMeta {
                     AnimatedSprite {
                         start: clip.frames.start,
                         end: clip.frames.end,
-                        atlas: self.atlas_handle.clone_weak(),
+                        atlas: self.atlas_handle.inner.clone_weak(),
                         flip_x: false,
                         flip_y: false,
                         repeat: clip.repeat,
@@ -68,7 +68,7 @@ impl PlayerSpritesheetMeta {
             flip_x: false,
             flip_y: false,
             animations,
-            last_animation: default()
+            last_animation: default(),
         }
     }
 }

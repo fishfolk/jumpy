@@ -11,7 +11,7 @@ use crate::{
     camera::{EditorCamera, GameCamera},
     config::ENGINE_CONFIG,
     localization::LocalizationExt,
-    map::{MapGridView, MapSpawnSource},
+    map::MapGridView,
     metadata::{GameMeta, MapLayerKind, MapLayerMeta, MapMeta},
     player::input::PlayerInputs,
     prelude::*,
@@ -830,7 +830,7 @@ fn map_open_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
                 egui::ScrollArea::vertical().show(ui, |ui| {
                     #[allow(clippy::unnecessary_to_owned)]
                     // False alarm, necessary to avoid borrowing params
-                    for (map_name, _map_handle) in params.game.maps.to_vec().into_iter().zip(
+                    for (map_name, map_handle) in params.game.maps.to_vec().into_iter().zip(
                         params
                             .game
                             .map_handles
@@ -840,10 +840,7 @@ fn map_open_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
                             .into_iter(),
                     ) {
                         if ui.button(&map_name).clicked() {
-                            params
-                                .net_commands
-                                .spawn()
-                                .insert(MapSpawnSource::AssetPath(map_name));
+                            params.net_commands.spawn().insert(map_handle);
                             *params.show_map_open = false;
                         }
                     }

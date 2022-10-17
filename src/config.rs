@@ -100,6 +100,9 @@ impl EngineConfig {
             game_asset: "default.game.yaml".into(),
             auto_start: false,
             debug_tools: false,
+            port: 9375,
+            server: None,
+            client: None,
             log_level: DEFAULT_LOG_LEVEL.into(),
         }
     }

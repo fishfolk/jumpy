@@ -10,24 +10,21 @@ pub struct DynamicQueryInfo {
 
 impl DynamicQueryInfo {
     pub fn from_query(query: &DynamicQuery) -> Self {
-        let fetches = query
-            .fetches()
-            .iter()
-            .cloned()
-            .map(Into::into)
-            .collect();
-        let filters = query
-            .filters()
-            .iter()
-            .cloned()
-            .map(Into::into)
-            .collect();
+        let fetches = query.fetches().iter().cloned().map(Into::into).collect();
+        let filters = query.filters().iter().cloned().map(Into::into).collect();
         Self { fetches, filters }
     }
 
-    pub fn get_query(info: DynamicQueryInfo, world: &World) -> Result<DynamicQuery, QueryError> {
-        let fetches = info.fetches.into_iter().map(Into::into).collect();
-        let filters = info.filters.into_iter().map(Into::into).collect();
+    pub fn with_all_fetches_mutable(mut self) -> Self {
+        for fetch in &mut self.fetches {
+            *fetch = FetchKindInfo::RefMut(fetch.component_id());
+        }
+        self
+    }
+
+    pub fn get_query(self: DynamicQueryInfo, world: &World) -> Result<DynamicQuery, QueryError> {
+        let fetches = self.fetches.into_iter().map(Into::into).collect();
+        let filters = self.filters.into_iter().map(Into::into).collect();
         DynamicQuery::new(world, fetches, filters)
     }
 }
@@ -209,39 +206,5 @@ impl<'de> Visitor<'de> for U8U64SeqVisitor {
             .next_element::<u64>()?
             .ok_or_else(|| serde::de::Error::custom("Expected 64 in sequence"))?;
         Ok((uint1, uint2))
-    }
-}
-
-struct U8Visitor;
-
-impl<'de> Visitor<'de> for U8Visitor {
-    type Value = u8;
-
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(formatter, "u8")
-    }
-
-    fn visit_u8<E>(self, v: u8) -> Result<Self::Value, E>
-    where
-        E: serde::de::Error,
-    {
-        Ok(v)
-    }
-}
-
-struct U64Visitor;
-
-impl<'de> Visitor<'de> for U64Visitor {
-    type Value = u64;
-
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(formatter, "u64")
-    }
-
-    fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
-    where
-        E: serde::de::Error,
-    {
-        Ok(v)
     }
 }

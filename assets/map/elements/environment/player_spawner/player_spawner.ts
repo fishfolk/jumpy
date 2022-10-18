@@ -109,13 +109,13 @@ export default {
           .get(spawner);
 
         // Spawn the player
-        const player = world.spawn();
-        world.insert(player, Value.create(PlayerIdx, [i]));
-        world.insert(player, spawnerTransform);
-        world.insert(player, global_transform);
-        world.insert(player, visibility);
-        world.insert(player, computed_visibility);
-        world.insert(
+        const player = Commands.spawn();
+        Commands.insert(player, Value.create(PlayerIdx, [i]));
+        Commands.insert(player, spawnerTransform);
+        Commands.insert(player, global_transform);
+        Commands.insert(player, visibility);
+        Commands.insert(player, computed_visibility);
+        Commands.insert(
           player,
           Value.create(KinematicBody, {
             size: {

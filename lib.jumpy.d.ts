@@ -26,6 +26,11 @@ declare namespace ScriptInfo {
   function state<T>(init?: T): T;
 }
 
+declare namespace Commands {
+  function insert(entity: Entity, component: any): void;
+  function spawn(): Entity;
+}
+
 declare type JsEntity = {
   bits: number;
 };

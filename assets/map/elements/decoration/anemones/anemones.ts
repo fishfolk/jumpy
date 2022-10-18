@@ -14,7 +14,7 @@ const AnimatedSprite: BevyType<AnimatedSprite> = {
 export default {
   preUpdate() {
     for (const entity of MapElement.getSpawnedEntities()) {
-      world.insert(
+      Commands.insert(
         entity,
         Value.create(AnimatedSprite, {
           start: 0,

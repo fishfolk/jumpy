@@ -85,7 +85,6 @@ impl NetChannels {
         [
             ChannelConfig::Reliable(ReliableChannelConfig {
                 channel_id: NetChannels::Commands as _,
-                packet_budget: 3500,
                 max_message_size: 3500,
                 message_resend_time: Duration::ZERO,
                 ..default()

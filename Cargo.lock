@@ -2603,6 +2603,7 @@ dependencies = [
  "bevy-has-load-progress",
  "bevy-inspector-egui",
  "bevy-parallax",
+ "bevy_ecs_dynamic",
  "bevy_ecs_tilemap",
  "bevy_egui",
  "bevy_fluent",

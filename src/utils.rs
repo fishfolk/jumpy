@@ -3,7 +3,7 @@ use bevy_renet::renet::RenetServer;
 
 use crate::{
     loading::PlayerInputCollector,
-    networking::{CommandMessage, NetChannels},
+    networking::{commands::CommandMessage, NetChannels},
     prelude::*,
     ui::input::MenuAction,
 };

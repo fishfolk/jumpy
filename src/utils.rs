@@ -53,7 +53,7 @@ impl<'w, 's> ResetController<'w, 's> {
     pub fn reset_world(&mut self) {
         if let Some(server) = &mut self.server {
             let message =
-                postcard::to_allocvec(&CommandMessage::ResetWorld).expect("Serialize net message");
+                rmp_serde::to_vec(&CommandMessage::ResetWorld).expect("Serialize net message");
             server.broadcast_message(NetChannels::Commands, message);
         }
 

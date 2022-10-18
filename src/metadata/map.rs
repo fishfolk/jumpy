@@ -7,7 +7,8 @@ pub struct MapMetadataPlugin;
 
 impl Plugin for MapMetadataPlugin {
     fn build(&self, app: &mut App) {
-        app.register_type::<MapMeta>();
+        app.register_type::<MapMeta>()
+            .register_type::<MapElementMeta>();
     }
 }
 
@@ -156,7 +157,10 @@ impl From<ParallaxLayerMeta> for ParallaxLayerData {
     }
 }
 
-#[derive(Component, HasLoadProgress, TypeUuid, Deserialize, Serialize, Clone, Debug, Default)]
+#[derive(
+    Reflect, Component, HasLoadProgress, TypeUuid, Deserialize, Serialize, Clone, Debug, Default,
+)]
+#[reflect(Default, Component)]
 #[serde(deny_unknown_fields)]
 #[uuid = "0a4a0cc6-ee52-4b0d-a88b-871c49a06622"]
 pub struct MapElementMeta {
@@ -174,6 +178,7 @@ pub struct MapElementMeta {
     #[serde(default)]
     pub preload_assets: Vec<String>,
     #[serde(skip)]
+    #[reflect(ignore)]
     pub preload_asset_handles: Vec<HandleUntyped>,
 }
 

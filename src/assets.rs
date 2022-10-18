@@ -8,7 +8,7 @@ use bevy::{
     reflect::TypeUuid,
 };
 use bevy_egui::egui;
-use bevy_mod_js_scripting::serde_json;
+use bevy_mod_js_scripting::{serde_json, JsScript};
 
 use crate::{
     metadata::{
@@ -25,7 +25,8 @@ pub struct AssetPlugin;
 
 impl Plugin for AssetPlugin {
     fn build(&self, app: &mut App) {
-        app.add_jumpy_asset::<GameMeta>()
+        app.register_type::<AssetHandle<JsScript>>()
+            .add_jumpy_asset::<GameMeta>()
             .add_asset_loader(GameMetaLoader)
             .add_jumpy_asset::<PlayerMeta>()
             .add_asset_loader(PlayerMetaLoader)

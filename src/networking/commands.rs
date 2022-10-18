@@ -7,10 +7,13 @@ use bevy::{
         entity::Entities,
         system::{Command, EntityCommands, Resource, SystemParam},
     },
-    reflect::TypeRegistryArc,
+    reflect::{
+        serde::{ReflectDeserializer, ReflectSerializer},
+        TypeRegistryArc,
+    },
 };
 use bevy_renet::renet::{RenetClient, RenetServer};
-use serde::{Deserialize, Serialize};
+use serde::{de::DeserializeSeed, Deserialize, Serialize};
 
 use crate::{prelude::*, utils::ResetController};
 
@@ -25,7 +28,7 @@ impl Plugin for NetCommandsPlugin {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub enum CommandMessage {
     Spawn {
         net_id: NetId,
@@ -48,6 +51,39 @@ pub enum CommandMessage {
     ///
     /// Technically it's not a "Command", but it's similar enough that we put it in here.
     ResetWorld,
+}
+
+impl std::fmt::Debug for CommandMessage {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Spawn { net_id } => f.debug_struct("Spawn").field("net_id", net_id).finish(),
+            Self::Insert {
+                net_id,
+                component_bytes: _,
+                type_name,
+            } => f
+                .debug_struct("Insert")
+                .field("net_id", net_id)
+                .field("component_bytes", &"...")
+                .field("type_name", type_name)
+                .finish(),
+            Self::InsertResource {
+                resource_bytes: _,
+                type_name,
+            } => f
+                .debug_struct("InsertResource")
+                .field("resource_bytes", &"...")
+                .field("type_name", type_name)
+                .finish(),
+            Self::Despawn { recursive, net_id } => f
+                .debug_struct("Despawn")
+                .field("recursive", recursive)
+                .field("net_id", net_id)
+                .finish(),
+            Self::NextState(arg0) => f.debug_tuple("NextState").field(arg0).finish(),
+            Self::ResetWorld => write!(f, "ResetWorld"),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize)]
@@ -75,9 +111,12 @@ pub fn client_handle_net_commands(
     mut net_ids: ResMut<NetIdMap>,
     mut reset_controller: ResetController,
 ) {
+    let mut messages = 0;
     while let Some(message) = client.receive_message(NetChannels::Commands) {
+        messages += 1;
         let message: CommandMessage =
-            postcard::from_bytes(&message).expect("Deserialize server message");
+            rmp_serde::from_slice(&message).expect("Deserialize server message");
+        trace!(command=?message, "Received CommandMessage from server");
 
         match message {
             CommandMessage::Spawn { net_id } => {
@@ -94,16 +133,17 @@ pub fn client_handle_net_commands(
                 let type_registration = type_registry
                     .get_with_name(&type_name)
                     .expect("Not registered in TypeRegistry");
-                let reflect_deserialize = type_registration
-                    .data::<ReflectDeserialize>()
-                    .expect("Doesn't have ReflectDeserialize");
+
                 let reflect_component = type_registration
                     .data::<ReflectComponent>()
                     .expect("Doesn't have ReflectComponent")
                     .clone();
-                let component_data = reflect_deserialize
-                    .deserialize(&mut postcard::Deserializer::from_bytes(&component_bytes))
-                    .expect("Deserialize component");
+                let reflect_deserializer = ReflectDeserializer::new(&type_registry);
+                let component_data = reflect_deserializer
+                    .deserialize(&mut rmp_serde::Deserializer::from_read_ref(
+                        &component_bytes,
+                    ))
+                    .expect("Deserialize net component");
 
                 commands.add(InsertReflectComponent {
                     entity,
@@ -119,15 +159,13 @@ pub fn client_handle_net_commands(
                 let type_registration = type_registry
                     .get_with_name(&type_name)
                     .expect("Not registered in TypeRegistry");
-                let reflect_deserialize = type_registration
-                    .data::<ReflectDeserialize>()
-                    .expect("Doesn't have ReflectDeserialize");
                 let reflect_resource = type_registration
                     .data::<ReflectResource>()
                     .expect("Doesn't have ReflectComponent")
                     .clone();
-                let resource_data = reflect_deserialize
-                    .deserialize(&mut postcard::Deserializer::from_bytes(&resource_bytes))
+                let reflect_deserializer = ReflectDeserializer::new(&type_registry);
+                let resource_data = reflect_deserializer
+                    .deserialize(&mut rmp_serde::Deserializer::from_read_ref(&resource_bytes))
                     .expect("Deserialize component");
 
                 commands.add(InsertReflectResource {
@@ -156,6 +194,7 @@ pub fn client_handle_net_commands(
             }
         }
     }
+    info!("Got {} messages", messages);
 }
 
 struct InsertReflectComponent {
@@ -214,7 +253,7 @@ impl<'w, 's> NetCommands<'w, 's> {
             entity_cmds.insert(net_id);
 
             // Notify clients/server that an entity has been spawned
-            let message = postcard::to_allocvec(&CommandMessage::Spawn { net_id })
+            let message = rmp_serde::to_vec(&CommandMessage::Spawn { net_id })
                 .expect("Serialize network message");
             server.broadcast_message(NetChannels::Commands, message);
         }
@@ -237,7 +276,7 @@ impl<'w, 's> NetCommands<'w, 's> {
         let state = state.into();
 
         if let Some(server) = &mut self.res.server {
-            let message = postcard::to_allocvec(&CommandMessage::NextState(state))
+            let message = rmp_serde::to_vec(&CommandMessage::NextState(state))
                 .expect("Serialize network message");
             server.broadcast_message(NetChannels::Commands, message);
         }
@@ -264,13 +303,13 @@ impl<'w, 's> NetCommands<'w, 's> {
                 let serializable = reflect_serialize.get_serializable(&resource);
 
                 (
-                    postcard::to_allocvec(serializable.borrow()).expect("Serialize component"),
+                    rmp_serde::to_vec(serializable.borrow()).expect("Serialize component"),
                     type_registration.type_name(),
                 )
             };
 
             // Send the clients/server the inserted component
-            let message = postcard::to_allocvec(&CommandMessage::InsertResource {
+            let message = rmp_serde::to_vec(&CommandMessage::InsertResource {
                 resource_bytes,
                 type_name: type_name.into(),
             })
@@ -313,19 +352,16 @@ impl<'w, 's, 'a> NetEntityCommands<'w, 's, 'a> {
                         std::any::type_name::<C>()
                     )
                 });
-                let reflect_serialize = type_registration
-                    .data::<ReflectSerialize>()
-                    .expect("Doesn't have ReflectSerialize");
-                let serializable = reflect_serialize.get_serializable(&c);
+                let serializable = ReflectSerializer::new(c.as_reflect(), &type_registry);
 
                 (
-                    postcard::to_allocvec(serializable.borrow()).expect("Serialize component"),
+                    rmp_serde::to_vec(&serializable).unwrap_or_else(|e| panic!("{:#?}", e)),
                     type_registration.type_name(),
                 )
             };
 
             // Send the clients/server the inserted component
-            let message = postcard::to_allocvec(&CommandMessage::Insert {
+            let message = rmp_serde::to_vec(&CommandMessage::Insert {
                 net_id,
                 component_bytes,
                 type_name: type_name.into(),
@@ -342,7 +378,7 @@ impl<'w, 's, 'a> NetEntityCommands<'w, 's, 'a> {
     pub fn despawn_recursive(self) {
         if let Some(server) = &mut self.res.server {
             if let Some(net_id) = self.res.net_ids.remove_entity(self.entity_cmds.id()) {
-                let message = postcard::to_allocvec(&CommandMessage::Despawn {
+                let message = rmp_serde::to_vec(&CommandMessage::Despawn {
                     recursive: true,
                     net_id,
                 })

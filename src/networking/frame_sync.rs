@@ -89,7 +89,7 @@ fn impl_client_get_sync_data(
     if let Some(message) = message {
         // Deserialize it
         let message: FrameSyncMessage =
-            postcard::from_bytes(&message).expect("Deserialize net messag");
+            rmp_serde::from_slice(&message).expect("Deserialize net message");
 
         for net_query in message.queries {
             let mut query = net_query
@@ -154,7 +154,7 @@ fn impl_client_get_sync_data(
                     let target_reflect =
                         unsafe { reflect_from_ptr.as_reflect_ptr_mut(target_pointer) };
 
-                    let mut deserializer = postcard::Deserializer::from_bytes(&component_bytes);
+                    let mut deserializer = rmp_serde::Deserializer::from_read_ref(&component_bytes);
                     let component_data = reflect_deserialize
                         .deserialize(&mut deserializer)
                         .expect("Deserialize net component");
@@ -228,8 +228,7 @@ fn impl_server_send_sync_data(
 
                 let reflect = unsafe { reflect_from_ptr.as_reflect_ptr(ptr) };
                 let serializable = reflect_serialize.get_serializable(reflect);
-                let bytes =
-                    postcard::to_allocvec(&serializable.borrow()).expect("Serialize component");
+                let bytes = rmp_serde::to_vec(&serializable.borrow()).expect("Serialize component");
                 components_bytes.push(bytes);
             }
             serialized_items.push(FrameSyncQueryItem {
@@ -248,8 +247,10 @@ fn impl_server_send_sync_data(
         });
     }
 
-    let message =
-        postcard::to_allocvec(&frame_sync_queries).expect("Serialize frame sync net message");
+    let message = FrameSyncMessage {
+        queries: frame_sync_queries,
+    };
+    let message = rmp_serde::to_vec(&message).expect("Serialize frame sync net message");
     server.broadcast_message(NetChannels::FrameSync, message);
 }
 

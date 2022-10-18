@@ -54,6 +54,7 @@ fnv = "1.0.7"
 base64 = "0.13.0"
 bevy_renet = { git = "https://github.com/zicklag/renet.git", branch = "jumpy" }
 postcard = { version = "1.0.2", default-features = false, features = ["alloc"] }
+bevy_ecs_dynamic = { git = "https://github.com/jakobhellermann/bevy_ecs_dynamic" }
 
 # Debug tools
 bevy-inspector-egui = { version = "0.13.0" }

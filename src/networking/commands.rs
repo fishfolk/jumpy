@@ -2,14 +2,28 @@
 
 use std::marker::PhantomData;
 
-use bevy::ecs::{
-    entity::Entities,
-    system::{Command, Resource},
+use bevy::{
+    ecs::{
+        entity::Entities,
+        system::{Command, EntityCommands, Resource, SystemParam},
+    },
+    reflect::TypeRegistryArc,
 };
+use bevy_renet::renet::{RenetClient, RenetServer};
+use serde::{Deserialize, Serialize};
 
-use crate::utils::ResetController;
+use crate::{prelude::*, utils::ResetController};
 
-use super::*;
+use super::{NetChannels, NetId, NetIdMap};
+
+pub struct NetCommandsPlugin;
+
+impl Plugin for NetCommandsPlugin {
+    fn build(&self, app: &mut App) {
+        app.init_resource::<NetIdMap>()
+            .add_system(client_handle_net_commands.run_if(super::client_connected));
+    }
+}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum CommandMessage {
@@ -32,7 +46,7 @@ pub enum CommandMessage {
     NextState(State),
     /// This corresponds to the action implemented by the [`jumpy::utils::ResetController`].
     ///
-    /// Technically it's not a command, but it's similar enough we put it in here.
+    /// Technically it's not a "Command", but it's similar enough that we put it in here.
     ResetWorld,
 }
 
@@ -175,47 +189,6 @@ impl Command for InsertReflectResource {
 pub struct NetCommands<'w, 's> {
     commands: Commands<'w, 's>,
     res: NetResources<'w, 's>,
-}
-
-#[derive(Clone, Debug, Default)]
-pub struct NetIdMap {
-    ent_to_net: HashMap<Entity, NetId>,
-    net_to_ent: HashMap<NetId, Entity>,
-}
-
-impl NetIdMap {
-    fn insert(&mut self, entity: Entity, net_id: NetId) {
-        self.ent_to_net.insert(entity, net_id);
-        self.net_to_ent.insert(net_id, entity);
-    }
-
-    fn remove_entity(&mut self, entity: Entity) -> Option<NetId> {
-        if let Some(net_id) = self.ent_to_net.remove(&entity) {
-            self.net_to_ent.remove(&net_id);
-
-            Some(net_id)
-        } else {
-            None
-        }
-    }
-
-    fn remove_net_id(&mut self, net_id: NetId) -> Option<Entity> {
-        if let Some(entity) = self.net_to_ent.remove(&net_id) {
-            self.ent_to_net.remove(&entity);
-
-            Some(entity)
-        } else {
-            None
-        }
-    }
-
-    fn get_entity(&self, net_id: NetId) -> Option<Entity> {
-        self.net_to_ent.get(&net_id).cloned()
-    }
-
-    fn get_net_id(&self, entity: Entity) -> Option<NetId> {
-        self.ent_to_net.get(&entity).cloned()
-    }
 }
 
 #[derive(SystemParam)]
@@ -368,7 +341,7 @@ impl<'w, 's, 'a> NetEntityCommands<'w, 's, 'a> {
 
     pub fn despawn_recursive(self) {
         if let Some(server) = &mut self.res.server {
-            if let Some(net_id) = self.res.net_ids.get_net_id(self.entity_cmds.id()) {
+            if let Some(net_id) = self.res.net_ids.remove_entity(self.entity_cmds.id()) {
                 let message = postcard::to_allocvec(&CommandMessage::Despawn {
                     recursive: true,
                     net_id,

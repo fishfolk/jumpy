@@ -111,9 +111,7 @@ pub fn client_handle_net_commands(
     mut net_ids: ResMut<NetIdMap>,
     mut reset_controller: ResetController,
 ) {
-    let mut messages = 0;
     while let Some(message) = client.receive_message(NetChannels::Commands) {
-        messages += 1;
         let message: CommandMessage =
             rmp_serde::from_slice(&message).expect("Deserialize server message");
         trace!(command=?message, "Received CommandMessage from server");
@@ -194,7 +192,6 @@ pub fn client_handle_net_commands(
             }
         }
     }
-    info!("Got {} messages", messages);
 }
 
 struct InsertReflectComponent {

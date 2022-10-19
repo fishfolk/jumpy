@@ -1,9 +1,13 @@
 use bevy::{
     ecs::component::ComponentId,
-    reflect::{ReflectFromPtr, TypeRegistryArc, TypeRegistryInternal},
+    reflect::{
+        serde::{ReflectDeserializer, ReflectSerializer},
+        ReflectFromPtr, TypeRegistryArc, TypeRegistryInternal,
+    },
 };
 use bevy_ecs_dynamic::dynamic_query::{DynamicQuery, FetchKind, FetchResult};
 use bevy_renet::renet::{RenetClient, RenetServer};
+use serde::de::DeserializeSeed;
 
 use crate::prelude::*;
 
@@ -18,11 +22,11 @@ impl Plugin for NetFrameSyncPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<NetworkSyncQueries>()
             .add_system_to_stage(
-                FixedUpdateStage::First,
+                FixedUpdateStage::PreUpdate,
                 client_get_sync_data.exclusive_system().at_start(),
             )
             .add_system_to_stage(
-                FixedUpdateStage::Last,
+                FixedUpdateStage::PostUpdate,
                 server_send_sync_data.exclusive_system().at_end(),
             );
     }
@@ -32,20 +36,20 @@ impl Plugin for NetFrameSyncPlugin {
 pub struct NetworkSyncQueries(Vec<NetworkSyncQuery>);
 
 pub struct NetworkSyncQuery {
-    query: DynamicQuery,
-    prune: bool,
+    pub query: DynamicQuery,
+    pub prune: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct FrameSyncMessage {
-    queries: Vec<FrameSyncQuery>,
+    pub queries: Vec<FrameSyncQuery>,
 }
 
 type Bytes = Vec<u8>;
 type ComponentsBytes = Vec<Bytes>;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-struct FrameSyncQuery {
+pub struct FrameSyncQuery {
     query_info: DynamicQueryInfo,
     items: Vec<FrameSyncQueryItem>,
     prune: bool,
@@ -97,10 +101,10 @@ fn impl_client_get_sync_data(
                 .with_all_fetches_mutable()
                 .get_query(world)
                 .expect("Invalid query");
-            let reflect_tools = get_reflect_tools(world, type_registry, &query);
+            let reflect_tools = get_reflect_from_ptr(world, type_registry, &query);
 
             // Collect entities matching the query
-            let entities = query.iter(world).map(|x| x.entity).collect::<Vec<_>>();
+            let entities = query.iter_mut(world).map(|x| x.entity).collect::<Vec<_>>();
 
             // Collect entities that have a net ID
             let mut net_entities = Vec::with_capacity(entities.len());
@@ -144,19 +148,20 @@ fn impl_client_get_sync_data(
                     });
 
                 // Loop through the components and update them from the data from the network
-                for (
-                    (target_pointer, component_bytes),
-                    (reflect_from_ptr, _, reflect_deserialize),
-                ) in components_target_pointers
-                    .zip(components_bytes)
-                    .zip(&reflect_tools)
+                for ((target_pointer, component_bytes), reflect_from_ptr) in
+                    components_target_pointers
+                        .zip(components_bytes)
+                        .zip(&reflect_tools)
                 {
                     let target_reflect =
                         unsafe { reflect_from_ptr.as_reflect_ptr_mut(target_pointer) };
 
-                    let mut deserializer = rmp_serde::Deserializer::from_read_ref(&component_bytes);
-                    let component_data = reflect_deserialize
-                        .deserialize(&mut deserializer)
+                    let deserializer = ReflectDeserializer::new(type_registry);
+
+                    let component_data = deserializer
+                        .deserialize(&mut rmp_serde::Deserializer::from_read_ref(
+                            &component_bytes,
+                        ))
                         .expect("Deserialize net component");
 
                     target_reflect.apply(component_data.as_ref());
@@ -204,7 +209,7 @@ fn impl_server_send_sync_data(
         let query_info = DynamicQueryInfo::from_query(query);
 
         // Get the ReflectFromPtr and ReflectSerialize for each component type in the query
-        let reflect_tools = get_reflect_tools(world, type_registry, query);
+        let reflect_tools = get_reflect_from_ptr(world, type_registry, query);
 
         // Loop over all entities matching the query
         let mut serialized_items = Vec::new();
@@ -217,8 +222,7 @@ fn impl_server_send_sync_data(
             };
 
             let mut components_bytes = Vec::with_capacity(item.items.len());
-            for (fetch_result, (reflect_from_ptr, reflect_serialize, _)) in
-                item.items.into_iter().zip(reflect_tools.iter())
+            for (fetch_result, reflect_from_ptr) in item.items.into_iter().zip(reflect_tools.iter())
             {
                 let ptr = if let FetchResult::Ref(ptr) = fetch_result {
                     ptr
@@ -227,8 +231,8 @@ fn impl_server_send_sync_data(
                 };
 
                 let reflect = unsafe { reflect_from_ptr.as_reflect_ptr(ptr) };
-                let serializable = reflect_serialize.get_serializable(reflect);
-                let bytes = rmp_serde::to_vec(&serializable.borrow()).expect("Serialize component");
+                let serializable = ReflectSerializer::new(reflect, type_registry);
+                let bytes = rmp_serde::to_vec(&serializable).expect("Serialize component");
                 components_bytes.push(bytes);
             }
             serialized_items.push(FrameSyncQueryItem {
@@ -254,15 +258,11 @@ fn impl_server_send_sync_data(
     server.broadcast_message(NetChannels::FrameSync, message);
 }
 
-fn get_reflect_tools<'a, 'b>(
+fn get_reflect_from_ptr<'a, 'b>(
     world: &'b World,
     type_registry: &'a TypeRegistryInternal,
     query: &'b DynamicQuery,
-) -> Vec<(
-    &'a ReflectFromPtr,
-    &'a ReflectSerialize,
-    &'a ReflectDeserialize,
-)> {
+) -> Vec<&'a ReflectFromPtr> {
     query
         .fetches()
         .iter()
@@ -280,13 +280,7 @@ fn get_reflect_tools<'a, 'b>(
             let reflect_from_ptr = type_registration
                 .data::<ReflectFromPtr>()
                 .expect("Missing ReflectFromPtr");
-            let reflect_serialize = type_registration
-                .data::<ReflectSerialize>()
-                .expect("Missing ReflectFromPtr");
-            let reflect_deserialize = type_registration
-                .data::<ReflectDeserialize>()
-                .expect("Missing ReflectFromPtr");
-            (reflect_from_ptr, reflect_serialize, reflect_deserialize)
+            reflect_from_ptr
         })
         .collect::<Vec<_>>()
 }

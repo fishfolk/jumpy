@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use bevy::{reflect::FromReflect, utils::HashMap};
+use bevy_ecs_dynamic::dynamic_query::{DynamicQuery, FetchKind};
 use bevy_renet::{
     renet::{
         ChannelConfig, ReliableChannelConfig, RenetClient, RenetError, RenetServer, ServerEvent,
@@ -8,9 +9,12 @@ use bevy_renet::{
     },
     RenetClientPlugin, RenetServerPlugin,
 };
+use renet_visualizer::RenetServerVisualizer;
 use ulid::Ulid;
 
-use crate::prelude::*;
+use crate::{config::ENGINE_CONFIG, player::PlayerIdx, prelude::*, animation::AnimationBankSprite};
+
+use self::frame_sync::{NetworkSyncQueries, NetworkSyncQuery};
 
 pub mod commands;
 pub mod frame_sync;
@@ -26,7 +30,12 @@ impl Plugin for NetworkingPlugin {
             .add_plugin(RenetClientPlugin::default())
             .add_plugin(RenetServerPlugin::default())
             .add_system(handle_server_events.run_if_resource_exists::<RenetServer>())
-            .add_system(log_renet_errors);
+            .add_system(log_renet_errors)
+            .add_startup_system(setup_synced_queries.exclusive_system());
+
+        if ENGINE_CONFIG.debug_tools {
+            app.insert_resource(RenetServerVisualizer::<200>::default());
+        }
     }
 }
 
@@ -39,6 +48,27 @@ fn log_renet_errors(mut errors: EventReader<RenetError>) {
     for error in errors.iter() {
         error!("Network error: {}", error);
     }
+}
+
+fn setup_synced_queries(world: &mut World) {
+    world.init_component::<PlayerIdx>();
+    world.init_component::<Transform>();
+    world.init_component::<AnimationBankSprite>();
+    world.resource_scope(|world, mut queries: Mut<NetworkSyncQueries>| {
+        let query = DynamicQuery::new(
+            world,
+            [
+                FetchKind::Ref(world.component_id::<PlayerIdx>().unwrap()),
+                FetchKind::Ref(world.component_id::<Transform>().unwrap()),
+                FetchKind::Ref(world.component_id::<AnimationBankSprite>().unwrap()),
+            ]
+            .to_vec(),
+            [].to_vec(),
+        )
+        .unwrap();
+
+        queries.push(NetworkSyncQuery { query, prune: true })
+    });
 }
 
 #[derive(
@@ -91,6 +121,8 @@ impl NetChannels {
             }),
             ChannelConfig::Unreliable(UnreliableChannelConfig {
                 channel_id: NetChannels::FrameSync as _,
+                packet_budget: 10000,
+                max_message_size: 7500,
                 ..default()
             }),
             ChannelConfig::Unreliable(UnreliableChannelConfig {
@@ -149,11 +181,20 @@ impl NetIdMap {
     }
 }
 
-fn handle_server_events(mut server_events: EventReader<ServerEvent>) {
+fn handle_server_events(
+    mut server_events: EventReader<ServerEvent>,
+    mut visualizer: ResMut<RenetServerVisualizer<200>>,
+) {
     for event in server_events.iter() {
         match event {
-            ServerEvent::ClientConnected(id, _) => info!(%id, "Client connected"),
-            ServerEvent::ClientDisconnected(id) => info!(%id, "Client disconnected"),
+            ServerEvent::ClientConnected(id, _) => {
+                info!(%id, "Client connected");
+                visualizer.add_client(*id);
+            }
+            ServerEvent::ClientDisconnected(id) => {
+                info!(%id, "Client disconnected");
+                visualizer.remove_client(*id);
+            }
         }
     }
 }

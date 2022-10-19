@@ -2614,6 +2614,7 @@ dependencies = [
  "leafwing-input-manager",
  "once_cell",
  "rand",
+ "renet_visualizer",
  "rmp-serde",
  "serde",
  "serde_yaml",
@@ -3797,6 +3798,15 @@ dependencies = [
  "log",
  "rechannel",
  "renetcode",
+]
+
+[[package]]
+name = "renet_visualizer"
+version = "0.0.2"
+source = "git+https://github.com/zicklag/renet.git?branch=jumpy#45267f8076d90df9142e5542b5306f7682a6da09"
+dependencies = [
+ "egui",
+ "renet",
 ]
 
 [[package]]

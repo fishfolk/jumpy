@@ -59,6 +59,7 @@ bevy_ecs_dynamic = { git = "https://github.com/jakobhellermann/bevy_ecs_dynamic"
 # Debug tools
 bevy-inspector-egui = { version = "0.13.0" }
 ulid = { version = "1.0.0", features = ["serde"] }
+renet_visualizer = { git = "https://github.com/zicklag/renet.git", branch = "jumpy" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "0.2.83"

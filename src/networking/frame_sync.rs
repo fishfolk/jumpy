@@ -24,20 +24,22 @@ pub struct NetFrameSyncPlugin;
 
 impl Plugin for NetFrameSyncPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<NetworkSyncQueries>()
+        app.init_resource::<NetworkSyncConfig>()
             .add_system_to_stage(
-                FixedUpdateStage::PreUpdate,
+                FixedUpdateStage::First,
                 client_get_sync_data.exclusive_system().at_start(),
             )
             .add_system_to_stage(
-                FixedUpdateStage::PostUpdate,
+                FixedUpdateStage::First,
                 server_send_sync_data.exclusive_system().at_end(),
             );
     }
 }
 
-#[derive(Default, Deref, DerefMut)]
-pub struct NetworkSyncQueries(Vec<NetworkSyncQuery>);
+#[derive(Default)]
+pub struct NetworkSyncConfig {
+    pub queries: Vec<NetworkSyncQuery>,
+}
 
 pub struct NetworkSyncQuery {
     pub query: DynamicQuery,
@@ -189,7 +191,7 @@ fn server_send_sync_data(world: &mut World) {
     }
 
     world.resource_scope(|world, mut server: Mut<RenetServer>| {
-        world.resource_scope(|world, mut queries: Mut<NetworkSyncQueries>| {
+        world.resource_scope(|world, mut queries: Mut<NetworkSyncConfig>| {
             world.resource_scope(|world, net_ids: Mut<NetIdMap>| {
                 world.resource_scope(|world, type_registry: Mut<TypeRegistryArc>| {
                     world.resource_scope(|world, type_names: Mut<TypeNameCache>| {
@@ -212,15 +214,15 @@ fn server_send_sync_data(world: &mut World) {
 fn impl_server_send_sync_data(
     world: &mut World,
     server: &mut RenetServer,
-    queries: &mut NetworkSyncQueries,
+    network_sync: &mut NetworkSyncConfig,
     net_ids: &NetIdMap,
     type_registry: &TypeRegistryInternal,
     type_names: &TypeNameCache,
 ) {
-    let mut frame_sync_queries = Vec::with_capacity(queries.len());
+    let mut frame_sync_queries = Vec::with_capacity(network_sync.queries.len());
 
     // Iterate over queries that need to be synced
-    for net_query in queries.iter_mut() {
+    for net_query in network_sync.queries.iter_mut() {
         let query = &mut net_query.query;
         let query_info = DynamicQueryInfo::from_query(query);
 

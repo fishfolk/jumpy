@@ -24,7 +24,7 @@ export default {
         },
       });
 
-      Commands.insert(entity, animated_sprite);
+      world.insert(entity, animated_sprite);
     }
   },
 };

@@ -2,7 +2,7 @@ use bevy::{render::view::RenderLayers, utils::HashSet};
 use bevy_ecs_tilemap::prelude::*;
 use bevy_mod_js_scripting::{ActiveScripts, JsScript};
 use bevy_parallax::ParallaxResource;
-use bevy_prototype_lyon::prelude::*;
+use bevy_prototype_lyon::{prelude::*, shapes::Rectangle};
 
 use crate::{
     camera::GameRenderLayers,
@@ -34,7 +34,6 @@ pub struct MapGridView;
 
 pub fn hydrate_maps(
     mut commands: Commands,
-    mut net_commands: NetCommands,
     mut parallax: ResMut<ParallaxResource>,
     map_assets: Res<Assets<MapMeta>>,
     windows: Res<Windows>,
@@ -182,7 +181,7 @@ pub fn hydrate_maps(
                         let element_name = &element_meta.name;
 
                         // Note we use NetCommands to spawn the entity, because it needs to have
-                        let entity = net_commands
+                        let entity = commands
                             .spawn()
                             .insert(EntityName(format!(
                                 "Map Element ( {layer_id} ): {element_name}"
@@ -195,26 +194,26 @@ pub fn hydrate_maps(
                                 -100.0 + i as f32,
                             ))
                             .insert(GlobalTransform::default())
+                            .with_children(|parent| {
+                                parent
+                                    .spawn()
+                                    .insert(Name::new("Map Element Debug Rect"))
+                                    .insert(RenderLayers::layer(GameRenderLayers::EDITOR))
+                                    .insert_bundle(GeometryBuilder::build_as(
+                                        &Rectangle {
+                                            extents: element_meta.editor_size,
+                                            ..default()
+                                        },
+                                        #[allow(const_item_mutation)]
+                                        DrawMode::Stroke(StrokeMode::new(
+                                            *Color::GREEN.set_a(0.5),
+                                            0.5,
+                                        )),
+                                        default(),
+                                    ));
+                            })
                             .insert(element_meta)
                             .id();
-                        // let debug_rect =
-                        //         commands.spawn()
-                        //         .insert(Name::new("Map Element Debug Rect"))
-                        //         .insert(RenderLayers::layer(GameRenderLayers::EDITOR))
-                        //         .insert_bundle(GeometryBuilder::build_as(
-                        //             &Rectangle {
-                        //                 extents: element_meta.editor_size,
-                        //                 ..default()
-                        //             },
-                        //             #[allow(const_item_mutation)]
-                        //             DrawMode::Stroke(StrokeMode::new(
-                        //                 *Color::GREEN.set_a(0.5),
-                        //                 0.5,
-                        //             )),
-                        //             default(),
-                        //         ));
-                        // })
-
                         map_children.push(entity)
                     }
                 }

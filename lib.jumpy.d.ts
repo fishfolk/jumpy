@@ -26,7 +26,7 @@ declare namespace ScriptInfo {
   function state<T>(init?: T): T;
 }
 
-declare namespace Commands {
+declare namespace NetCommands {
   function insert(entity: Entity, component: any): void;
   function spawn(): Entity;
 }

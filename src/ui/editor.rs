@@ -9,7 +9,6 @@ use rand::{seq::SliceRandom, thread_rng};
 
 use crate::{
     camera::{EditorCamera, GameCamera},
-    config::ENGINE_CONFIG,
     localization::LocalizationExt,
     map::MapGridView,
     metadata::{GameMeta, MapLayerKind, MapLayerMeta, MapMeta},
@@ -253,15 +252,11 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                         reset_controller.reset_world();
 
                         if let Some(map) = map {
-                            if ENGINE_CONFIG.server.is_none() {
-                                params
-                                    .camera_netcommands_resetcontroller
-                                    .p1()
-                                    .spawn()
-                                    .insert(map);
-                            } else {
-                                todo!("Map reload on server");
-                            }
+                            params
+                                .camera_netcommands_resetcontroller
+                                .p1()
+                                .spawn()
+                                .insert(map);
                         }
                     }
                 });
@@ -942,11 +937,7 @@ fn create_map(params: &mut EditorCentralPanel) {
         background_layers: default(),
     };
 
-    if ENGINE_CONFIG.server.is_none() {
-        params.net_commands.spawn().insert(meta);
-    } else {
-        todo!("Map create on server");
-    }
+    params.net_commands.spawn().insert(meta);
     *params.show_map_open = false;
     *params.show_map_create = false;
 }

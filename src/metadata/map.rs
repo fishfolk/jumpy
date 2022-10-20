@@ -60,6 +60,7 @@ pub struct MapLayerMeta {
 }
 
 #[derive(Reflect, FromReflect, Deserialize, Serialize, Clone, Debug)]
+#[reflect_value(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "snake_case")]
 pub enum MapLayerKind {

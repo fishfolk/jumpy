@@ -26,6 +26,7 @@ pub struct AssetPlugin;
 impl Plugin for AssetPlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<AssetHandle<JsScript>>()
+            .register_type::<AssetHandle<Image>>()
             .add_jumpy_asset::<GameMeta>()
             .add_asset_loader(GameMetaLoader)
             .add_jumpy_asset::<PlayerMeta>()

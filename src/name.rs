@@ -12,8 +12,8 @@ impl Plugin for NamePlugin {
 /// Conceptually identical to the [`Name`] component, but structured so that it can be added and
 /// modified from scripts. Adding an [`EntityName`] component will cause a [`Name`] component to be
 /// added and synced automatically.
-#[derive(Reflect, Component, Default, Serialize, Deserialize)]
-#[reflect(Component, Default, Serialize, Deserialize)]
+#[derive(Reflect, Component, Default)]
+#[reflect(Component, Default)]
 pub struct EntityName(pub String);
 
 fn update_entity_names(

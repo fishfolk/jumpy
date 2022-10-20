@@ -1,9 +1,6 @@
 use bevy::{
     ecs::component::ComponentId,
-    reflect::{
-        serde::{ReflectDeserializer, ReflectSerializer},
-        ReflectFromPtr, TypeRegistryArc, TypeRegistryInternal,
-    },
+    reflect::{ReflectFromPtr, TypeRegistryArc, TypeRegistryInternal},
 };
 use bevy_ecs_dynamic::dynamic_query::{DynamicQuery, FetchKind, FetchResult};
 use bevy_renet::renet::{RenetClient, RenetServer};
@@ -11,7 +8,14 @@ use serde::de::DeserializeSeed;
 
 use crate::prelude::*;
 
-use super::{NetChannels, NetId, NetIdMap};
+use super::{
+    commands::TypeNameCache,
+    serialization::{
+        de::CompactReflectDeserializer, deserialize_from_bytes, deserializer_from_bytes,
+        ser::CompactReflectSerializer, serialize_to_bytes,
+    },
+    NetChannels, NetId, NetIdMap,
+};
 
 mod dynamic_query_info;
 use self::dynamic_query_info::DynamicQueryInfo;
@@ -69,8 +73,16 @@ fn client_get_sync_data(world: &mut World) {
     world.resource_scope(|world, mut client: Mut<RenetClient>| {
         world.resource_scope(|world, net_ids: Mut<NetIdMap>| {
             world.resource_scope(|world, type_registry: Mut<TypeRegistryArc>| {
-                let type_registry = type_registry.read();
-                impl_client_get_sync_data(world, &mut client, &net_ids, &*type_registry)
+                world.resource_scope(|world, type_names: Mut<TypeNameCache>| {
+                    let type_registry = type_registry.read();
+                    impl_client_get_sync_data(
+                        world,
+                        &mut client,
+                        &net_ids,
+                        &*type_registry,
+                        &type_names,
+                    )
+                });
             });
         });
     });
@@ -81,6 +93,7 @@ fn impl_client_get_sync_data(
     client: &mut RenetClient,
     net_ids: &NetIdMap,
     type_registry: &TypeRegistryInternal,
+    type_names: &TypeNameCache,
 ) {
     let mut message = None;
     // We only care about the last message, so loop until we stop getting messages and store the
@@ -93,7 +106,7 @@ fn impl_client_get_sync_data(
     if let Some(message) = message {
         // Deserialize it
         let message: FrameSyncMessage =
-            rmp_serde::from_slice(&message).expect("Deserialize net message");
+            deserialize_from_bytes(&message).expect("Deserialize net message");
 
         for net_query in message.queries {
             let mut query = net_query
@@ -156,12 +169,11 @@ fn impl_client_get_sync_data(
                     let target_reflect =
                         unsafe { reflect_from_ptr.as_reflect_ptr_mut(target_pointer) };
 
-                    let deserializer = ReflectDeserializer::new(type_registry);
+                    let deserializer =
+                        CompactReflectDeserializer::new(type_registry, &type_names.0);
 
                     let component_data = deserializer
-                        .deserialize(&mut rmp_serde::Deserializer::from_read_ref(
-                            &component_bytes,
-                        ))
+                        .deserialize(&mut deserializer_from_bytes(&component_bytes))
                         .expect("Deserialize net component");
 
                     target_reflect.apply(component_data.as_ref());
@@ -180,14 +192,17 @@ fn server_send_sync_data(world: &mut World) {
         world.resource_scope(|world, mut queries: Mut<NetworkSyncQueries>| {
             world.resource_scope(|world, net_ids: Mut<NetIdMap>| {
                 world.resource_scope(|world, type_registry: Mut<TypeRegistryArc>| {
-                    let type_registry = type_registry.read();
-                    impl_server_send_sync_data(
-                        world,
-                        &mut server,
-                        &mut queries,
-                        &net_ids,
-                        &*type_registry,
-                    );
+                    world.resource_scope(|world, type_names: Mut<TypeNameCache>| {
+                        let type_registry = type_registry.read();
+                        impl_server_send_sync_data(
+                            world,
+                            &mut server,
+                            &mut queries,
+                            &net_ids,
+                            &*type_registry,
+                            &type_names,
+                        );
+                    });
                 });
             });
         });
@@ -200,6 +215,7 @@ fn impl_server_send_sync_data(
     queries: &mut NetworkSyncQueries,
     net_ids: &NetIdMap,
     type_registry: &TypeRegistryInternal,
+    type_names: &TypeNameCache,
 ) {
     let mut frame_sync_queries = Vec::with_capacity(queries.len());
 
@@ -231,8 +247,9 @@ fn impl_server_send_sync_data(
                 };
 
                 let reflect = unsafe { reflect_from_ptr.as_reflect_ptr(ptr) };
-                let serializable = ReflectSerializer::new(reflect, type_registry);
-                let bytes = rmp_serde::to_vec(&serializable).expect("Serialize component");
+                let serializable =
+                    CompactReflectSerializer::new(reflect, type_registry, &type_names.0);
+                let bytes = serialize_to_bytes(&serializable).expect("Serialize component");
                 components_bytes.push(bytes);
             }
             serialized_items.push(FrameSyncQueryItem {
@@ -254,7 +271,8 @@ fn impl_server_send_sync_data(
     let message = FrameSyncMessage {
         queries: frame_sync_queries,
     };
-    let message = rmp_serde::to_vec(&message).expect("Serialize frame sync net message");
+
+    let message = serialize_to_bytes(&message).expect("Serialize frame sync net message");
     server.broadcast_message(NetChannels::FrameSync, message);
 }
 

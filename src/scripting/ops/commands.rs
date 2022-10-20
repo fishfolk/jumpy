@@ -1,13 +1,14 @@
 use anyhow::{format_err, Context};
 use bevy::ecs::system::SystemState;
 use bevy::prelude::{default, ReflectComponent};
-use bevy::reflect::serde::ReflectSerializer;
-use bevy::reflect::{TypeRegistryArc};
+use bevy::reflect::TypeRegistryArc;
 
 use bevy_mod_js_scripting::{serde_json, JsRuntimeOp, JsValueRef, JsValueRefs, OpContext};
 use bevy_renet::renet::RenetServer;
 
-use crate::networking::commands::CommandMessage;
+use crate::networking::commands::{CommandMessage, TypeNameCache};
+use crate::networking::serialization::ser::CompactReflectSerializer;
+use crate::networking::serialization::serialize_to_bytes;
 use crate::networking::{NetChannels, NetIdMap};
 use crate::prelude::NetCommands;
 
@@ -107,6 +108,7 @@ impl JsRuntimeOp for CommandsInsert {
 
         // Load the type registry
         let type_registry = world.resource::<TypeRegistryArc>();
+        let type_names = world.resource::<TypeNameCache>();
         let net_ids = world.resource::<NetIdMap>();
         let type_registry = type_registry.read();
 
@@ -124,14 +126,16 @@ impl JsRuntimeOp for CommandsInsert {
 
         if let Some(server) = &mut server {
             let net_id = net_ids.get_net_id(entity).expect("Entity has no NetId");
-            let serializable =
-                ReflectSerializer::new(reflect_value_ref.as_reflect(), &type_registry);
-            let component_bytes =
-                rmp_serde::to_vec(&serializable).expect("Serialize component");
+            let serializable = CompactReflectSerializer::new(
+                reflect_value_ref.as_reflect(),
+                &type_registry,
+                &type_names.0,
+            );
+            let component_bytes = serialize_to_bytes(&serializable).expect("Serialize component");
 
             // Send component insertion message over the network
             let type_name = type_registration.type_name();
-            let message = rmp_serde::to_vec(&CommandMessage::Insert {
+            let message = serialize_to_bytes(&CommandMessage::Insert {
                 net_id,
                 component_bytes,
                 type_name: type_name.into(),

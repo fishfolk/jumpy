@@ -1,6 +1,6 @@
 use bevy::{ecs::component::ComponentId, prelude::World};
 use bevy_ecs_dynamic::dynamic_query::{DynamicQuery, FetchKind, FilterKind, QueryError};
-use serde::{de::Visitor, ser::SerializeSeq, Deserialize, Serialize};
+use serde::{de::Visitor, ser::SerializeTuple, Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct DynamicQueryInfo {
@@ -75,10 +75,10 @@ impl Serialize for FetchKindInfo {
     {
         let tag = self.serde_tag();
         let component_id = self.component_id().index() as u64;
-        let mut seq = serializer.serialize_seq(Some(2))?;
-        seq.serialize_element(&tag)?;
-        seq.serialize_element(&component_id)?;
-        seq.end()
+        let mut tup = serializer.serialize_tuple(2)?;
+        tup.serialize_element(&tag)?;
+        tup.serialize_element(&component_id)?;
+        tup.end()
     }
 }
 
@@ -87,7 +87,7 @@ impl<'de> Deserialize<'de> for FetchKindInfo {
     where
         D: serde::Deserializer<'de>,
     {
-        let (tag, component_idx) = deserializer.deserialize_seq(U8U64SeqVisitor)?;
+        let (tag, component_idx) = deserializer.deserialize_tuple(2, U8U64SeqVisitor)?;
         let component_id = ComponentId::new(
             component_idx
                 .try_into()
@@ -158,10 +158,10 @@ impl Serialize for FilterKindInfo {
     {
         let tag = self.serde_tag();
         let component_id = self.component_id().index() as u64;
-        let mut seq = serializer.serialize_seq(Some(2))?;
-        seq.serialize_element(&tag)?;
-        seq.serialize_element(&component_id)?;
-        seq.end()
+        let mut tup = serializer.serialize_tuple(2)?;
+        tup.serialize_element(&tag)?;
+        tup.serialize_element(&component_id)?;
+        tup.end()
     }
 }
 
@@ -170,7 +170,7 @@ impl<'de> Deserialize<'de> for FilterKindInfo {
     where
         D: serde::Deserializer<'de>,
     {
-        let (tag, component_idx) = deserializer.deserialize_seq(U8U64SeqVisitor)?;
+        let (tag, component_idx) = deserializer.deserialize_tuple(2, U8U64SeqVisitor)?;
         let component_id = ComponentId::new(
             component_idx
                 .try_into()

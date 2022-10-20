@@ -3,7 +3,7 @@ use bevy_renet::renet::RenetServer;
 
 use crate::{
     loading::PlayerInputCollector,
-    networking::{commands::CommandMessage, NetChannels},
+    networking::{commands::CommandMessage, serialization::serialize_to_bytes, NetChannels},
     prelude::*,
     ui::input::MenuAction,
 };
@@ -53,7 +53,7 @@ impl<'w, 's> ResetController<'w, 's> {
     pub fn reset_world(&mut self) {
         if let Some(server) = &mut self.server {
             let message =
-                rmp_serde::to_vec(&CommandMessage::ResetWorld).expect("Serialize net message");
+                serialize_to_bytes(&CommandMessage::ResetWorld).expect("Serialize net message");
             server.broadcast_message(NetChannels::Commands, message);
         }
 

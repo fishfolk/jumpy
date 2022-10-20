@@ -1,3 +1,5 @@
+use crate::animation::AnimatedSprite;
+
 use super::*;
 
 use bevy::reflect::FromReflect;
@@ -8,6 +10,8 @@ pub struct MapMetadataPlugin;
 impl Plugin for MapMetadataPlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<MapMeta>()
+            .register_type::<Vec<String>>()
+            .register_type::<HashMap<String, AnimatedSprite>>()
             .register_type::<MapElementMeta>();
     }
 }
@@ -15,7 +19,7 @@ impl Plugin for MapMetadataPlugin {
 #[derive(
     Reflect, Component, HasLoadProgress, TypeUuid, Deserialize, Serialize, Clone, Debug, Default,
 )]
-#[reflect(Component, Default, Serialize, Deserialize)]
+#[reflect(Component, Default)]
 #[serde(deny_unknown_fields)]
 #[uuid = "8ede98c2-4f17-46f2-bcc5-ae0dc63b2137"]
 pub struct MapMeta {

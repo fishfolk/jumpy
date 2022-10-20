@@ -4,20 +4,28 @@ use bevy::{reflect::FromReflect, utils::HashMap};
 use bevy_ecs_dynamic::dynamic_query::{DynamicQuery, FetchKind};
 use bevy_renet::{
     renet::{
-        ChannelConfig, ReliableChannelConfig, RenetClient, RenetError, RenetServer, ServerEvent,
-        UnreliableChannelConfig,
+        BlockChannelConfig, ChannelConfig, ReliableChannelConfig, RenetClient, RenetError,
+        RenetServer, ServerEvent, UnreliableChannelConfig,
     },
     RenetClientPlugin, RenetServerPlugin,
 };
 use renet_visualizer::RenetServerVisualizer;
 use ulid::Ulid;
 
-use crate::{config::ENGINE_CONFIG, player::PlayerIdx, prelude::*, animation::AnimationBankSprite};
+use crate::{
+    animation::AnimationBankSprite, config::ENGINE_CONFIG,
+    networking::serialization::serialize_to_bytes, player::PlayerIdx, prelude::*,
+};
 
-use self::frame_sync::{NetworkSyncQueries, NetworkSyncQuery};
+use self::{
+    commands::TypeNameCache,
+    frame_sync::{NetworkSyncQueries, NetworkSyncQuery},
+    serialization::{deserialize_from_bytes, StringCache},
+};
 
 pub mod commands;
 pub mod frame_sync;
+pub mod serialization;
 
 pub const PROTOCOL_ID: u64 = 0;
 
@@ -26,11 +34,13 @@ pub struct NetworkingPlugin;
 impl Plugin for NetworkingPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(frame_sync::NetFrameSyncPlugin)
+            .add_plugin(serialization::SerializationPlugin)
             .add_plugin(commands::NetCommandsPlugin)
             .add_plugin(RenetClientPlugin::default())
             .add_plugin(RenetServerPlugin::default())
             .add_system(handle_server_events.run_if_resource_exists::<RenetServer>())
             .add_system(log_renet_errors)
+            .add_system(client_handle_block_messages.run_if(client_connected))
             .add_startup_system(setup_synced_queries.exclusive_system());
 
         if ENGINE_CONFIG.debug_tools {
@@ -108,6 +118,7 @@ pub enum NetChannels {
     Commands,
     FrameSync,
     PlayerInput,
+    Block,
 }
 
 impl NetChannels {
@@ -127,6 +138,10 @@ impl NetChannels {
             }),
             ChannelConfig::Unreliable(UnreliableChannelConfig {
                 channel_id: NetChannels::PlayerInput as _,
+                ..default()
+            }),
+            ChannelConfig::Block(BlockChannelConfig {
+                channel_id: NetChannels::Block as _,
                 ..default()
             }),
         ]
@@ -181,20 +196,47 @@ impl NetIdMap {
     }
 }
 
+#[derive(Serialize, Deserialize, Clone)]
+pub enum BlockMessage {
+    SetTypeNameCache(StringCache),
+}
+
 fn handle_server_events(
     mut server_events: EventReader<ServerEvent>,
     mut visualizer: ResMut<RenetServerVisualizer<200>>,
+    mut server: ResMut<RenetServer>,
+    type_names: Res<TypeNameCache>,
 ) {
     for event in server_events.iter() {
         match event {
             ServerEvent::ClientConnected(id, _) => {
                 info!(%id, "Client connected");
                 visualizer.add_client(*id);
+                server.send_message(
+                    *id,
+                    NetChannels::Block,
+                    serialize_to_bytes(&BlockMessage::SetTypeNameCache(type_names.0.clone()))
+                        .expect("Serialize net message"),
+                );
             }
             ServerEvent::ClientDisconnected(id) => {
                 info!(%id, "Client disconnected");
                 visualizer.remove_client(*id);
             }
+        }
+    }
+}
+
+fn client_handle_block_messages(
+    mut client: ResMut<RenetClient>,
+    mut type_names: ResMut<TypeNameCache>,
+) {
+    while let Some(message) = client.receive_message(NetChannels::Block) {
+        let message: BlockMessage =
+            deserialize_from_bytes(&message).expect("Deserialize net message");
+
+        match message {
+            BlockMessage::SetTypeNameCache(cache) => type_names.0 = cache,
         }
     }
 }

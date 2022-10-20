@@ -28,7 +28,7 @@ impl Plugin for PlayerPlugin {
 
 /// The player index, for example Player 1, Player 2, and so on
 #[derive(Component, Deref, DerefMut, Reflect, Default, Serialize, Deserialize)]
-#[reflect(Default, Component, Serialize, Deserialize)]
+#[reflect(Default, Component)]
 pub struct PlayerIdx(pub usize);
 
 fn hydrate_players(

@@ -2,7 +2,7 @@ use bevy::{render::view::RenderLayers, utils::HashSet};
 use bevy_ecs_tilemap::prelude::*;
 use bevy_mod_js_scripting::{ActiveScripts, JsScript};
 use bevy_parallax::ParallaxResource;
-use bevy_prototype_lyon::{prelude::*, shapes::Rectangle};
+use bevy_prototype_lyon::prelude::*;
 
 use crate::{
     camera::GameRenderLayers,

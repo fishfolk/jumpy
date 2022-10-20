@@ -19,7 +19,7 @@ use crate::{
 
 use self::{
     commands::TypeNameCache,
-    frame_sync::{NetworkSyncQueries, NetworkSyncQuery},
+    frame_sync::{NetworkSyncConfig, NetworkSyncQuery},
     serialization::{deserialize_from_bytes, StringCache},
 };
 
@@ -64,20 +64,21 @@ fn setup_synced_queries(world: &mut World) {
     world.init_component::<PlayerIdx>();
     world.init_component::<Transform>();
     world.init_component::<AnimationBankSprite>();
-    world.resource_scope(|world, mut queries: Mut<NetworkSyncQueries>| {
+    world.resource_scope(|world, mut network_sync: Mut<NetworkSyncConfig>| {
         let query = DynamicQuery::new(
             world,
             [
                 FetchKind::Ref(world.component_id::<PlayerIdx>().unwrap()),
                 FetchKind::Ref(world.component_id::<Transform>().unwrap()),
-                FetchKind::Ref(world.component_id::<AnimationBankSprite>().unwrap()),
             ]
             .to_vec(),
             [].to_vec(),
         )
         .unwrap();
 
-        queries.push(NetworkSyncQuery { query, prune: true })
+        network_sync
+            .queries
+            .push(NetworkSyncQuery { query, prune: true })
     });
 }
 

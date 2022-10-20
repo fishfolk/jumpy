@@ -14,7 +14,7 @@ const AnimatedSprite: BevyType<AnimatedSprite> = {
 export default {
   preUpdate() {
     for (const entity of MapElement.getSpawnedEntities()) {
-      Commands.insert(
+      world.insert(
         entity,
         Value.create(AnimatedSprite, {
           start: 0,
@@ -23,7 +23,7 @@ export default {
           fps: 6,
           atlas: {
             id: Assets.getHandleId("./anemones.atlas.yaml"),
-          }
+          },
         })
       );
     }

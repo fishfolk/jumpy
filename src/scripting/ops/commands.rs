@@ -12,18 +12,18 @@ use crate::networking::serialization::serialize_to_bytes;
 use crate::networking::{NetChannels, NetIdMap};
 use crate::prelude::NetCommands;
 
-pub struct CommandsSpawn;
-impl JsRuntimeOp for CommandsSpawn {
+pub struct NetCommandsSpawn;
+impl JsRuntimeOp for NetCommandsSpawn {
     fn js(&self) -> Option<&'static str> {
         Some(
             r#"
-            if (!globalThis.Commands) {
-                globalThis.Commands = {}
+            if (!globalThis.NetCommands) {
+                globalThis.NetCommands = {}
             }
             
-            globalThis.Commands.spawn = () => {
+            globalThis.NetCommands.spawn = () => {
                 return Value.wrapValueRef(
-                    bevyModJsScriptingOpSync("jumpy_commands_spawn")
+                    bevyModJsScriptingOpSync("jumpy_net_commands_spawn")
                 );
             }
             "#,
@@ -58,18 +58,18 @@ impl JsRuntimeOp for CommandsSpawn {
     }
 }
 
-pub struct CommandsInsert;
-impl JsRuntimeOp for CommandsInsert {
+pub struct NetCommandsInsert;
+impl JsRuntimeOp for NetCommandsInsert {
     fn js(&self) -> Option<&'static str> {
         Some(
             r#"
-            if (!globalThis.Commands) {
-                globalThis.Commands = {}
+            if (!globalThis.NetCommands) {
+                globalThis.NetCommands = {}
             }
             
-            globalThis.Commands.insert = (entity, component) => {
+            globalThis.NetCommands.insert = (entity, component) => {
                 bevyModJsScriptingOpSync(
-                    "jumpy_commands_insert",
+                    "jumpy_net_commands_insert",
                     Value.unwrapValueRef(entity),
                     Value.unwrapValueRef(component)
                 );

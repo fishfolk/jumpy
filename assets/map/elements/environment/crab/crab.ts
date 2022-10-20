@@ -64,17 +64,17 @@ export default {
         .get(spanwer_entity);
 
       // Spawn a new entity for the crab and copy the transform and visibility from the map element
-      const entity = Commands.spawn();
+      const entity = NetCommands.spawn();
       state.crabs.push(EntityRef.toJs(entity));
 
-      Commands.insert(entity, Value.create(EntityName, ["Critter: Crab"]));
-      Commands.insert(entity, transform);
-      Commands.insert(entity, global_transform);
-      Commands.insert(entity, computed_visibility);
-      Commands.insert(entity, Value.create(Visibility));
+      NetCommands.insert(entity, Value.create(EntityName, ["Critter: Crab"]));
+      NetCommands.insert(entity, transform);
+      NetCommands.insert(entity, global_transform);
+      NetCommands.insert(entity, computed_visibility);
+      NetCommands.insert(entity, Value.create(Visibility));
 
       // Add the animated sprite
-      Commands.insert(
+      NetCommands.insert(
         entity,
         Value.create(AnimatedSprite, {
           start: 0,
@@ -88,7 +88,7 @@ export default {
       );
 
       // And the kinematic body
-      Commands.insert(
+      NetCommands.insert(
         entity,
         Value.create(KinematicBody, {
           size: {

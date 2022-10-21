@@ -7,7 +7,7 @@ use bevy::{
         entity::Entities,
         system::{Command, EntityCommands, Resource, SystemParam},
     },
-    reflect::{serde::ReflectDeserializer, TypeRegistryArc},
+    reflect::TypeRegistryArc,
 };
 use bevy_renet::renet::{RenetClient, RenetServer};
 use serde::{de::DeserializeSeed, Deserialize, Serialize};
@@ -179,9 +179,10 @@ pub fn client_handle_net_commands(
                     .expect("Not registered in TypeRegistry");
                 let reflect_resource = type_registration
                     .data::<ReflectResource>()
-                    .expect("Doesn't have ReflectComponent")
+                    .expect("Doesn't have ReflectResource")
                     .clone();
-                let reflect_deserializer = ReflectDeserializer::new(&type_registry);
+                let reflect_deserializer =
+                    CompactReflectDeserializer::new(&type_registry, &type_names.0);
                 let resource_data = reflect_deserializer
                     .deserialize(&mut deserializer_from_bytes(&resource_bytes))
                     .expect("Deserialize component");

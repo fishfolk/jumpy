@@ -11,6 +11,7 @@ impl Plugin for PlayerInputPlugin {
         app.init_resource::<PlayerInputs>()
             .register_type::<PlayerInputs>()
             .register_type::<PlayerInput>()
+            .register_type::<Vec<PlayerInput>>()
             .register_type::<PlayerControl>()
             .add_plugin(InputManagerPlugin::<PlayerAction>::default())
             .add_system_to_stage(CoreStage::PreUpdate, update_user_input)
@@ -29,7 +30,7 @@ pub enum PlayerAction {
 }
 
 #[derive(Reflect, Clone, Debug)]
-#[reflect(Default)]
+#[reflect(Default, Resource)]
 pub struct PlayerInputs {
     pub players: Vec<PlayerInput>,
 

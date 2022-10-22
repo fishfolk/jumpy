@@ -12,7 +12,7 @@ pub static EXE: Lazy<SmolExecutor> =
 
 mod certs;
 pub mod cli;
-mod connection;
+mod matchmaker;
 
 #[derive(clap::Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -54,12 +54,7 @@ async fn server(args: Config) -> anyhow::Result<()> {
                 );
 
                 // Spawn a task to handle the new connection
-                EXE.spawn(async move {
-                    if let Err(e) = connection::handle_new_connection(conn).await {
-                        error!("Connection error: {e:?}");
-                    }
-                })
-                .detach();
+                EXE.spawn(matchmaker::handle_connection(conn)).detach();
             }
             Err(e) => error!("Error opening client connection: {e:?}"),
         }

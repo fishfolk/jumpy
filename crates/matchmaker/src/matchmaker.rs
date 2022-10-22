@@ -1,11 +1,11 @@
 use dashmap::DashMap;
 use futures_lite::future;
-use jumpy_matchmaker_proto::matchmaker::{MatchInfo, MatchmakerRequest, MatchmakerResponse};
+use jumpy_matchmaker_proto::{MatchInfo, MatchmakerRequest, MatchmakerResponse};
 use once_cell::sync::Lazy;
 use quinn::{Connection, ConnectionError, SendStream};
 use ulid::Ulid;
 
-pub async fn handle_matchmaker_conn(conn: Connection) {
+pub async fn handle_connection(conn: Connection) {
     let connection_id = conn.stable_id();
     debug!(connection_id, "Accepted matchmaker connection");
 
@@ -90,13 +90,16 @@ async fn impl_matchmaker(conn: Connection) -> anyhow::Result<()> {
 
                         // If we have a complete room
                         let member_count = members.len();
-                        debug!(?match_info, "Room now has {}/{} members", member_count, player_count);
+                        debug!(
+                            ?match_info,
+                            "Room now has {}/{} members", member_count, player_count
+                        );
                         if member_count >= player_count as _ {
                             let match_id = Ulid::new();
                             debug!(%match_id, "Creating new match ID");
 
                             // Create a new match ID
-                            let message = postcard::to_allocvec(&MatchmakerResponse::MatchId(match_id))?;
+                            let message = postcard::to_allocvec(&MatchmakerResponse::Success)?;
 
                             // Send the match ID to all of the clients in the room
                             for (_conn, mut send) in members.drain(..) {

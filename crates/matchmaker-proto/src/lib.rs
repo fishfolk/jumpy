@@ -1,10 +1,18 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
-pub enum ConnectionType {
-    Matchmaker,
-    Game,
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub enum MatchmakerRequest {
+    /// Request a match ID from the server
+    RequestMatch(MatchInfo),
 }
 
-pub mod game;
-pub mod matchmaker;
+/// Information about a match that is being requested
+#[derive(Serialize, Deserialize, Debug, Clone, Hash, Eq, PartialEq)]
+pub struct MatchInfo {
+    pub player_count: u8,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub enum MatchmakerResponse {
+    Success,
+}

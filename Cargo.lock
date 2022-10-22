@@ -2701,6 +2701,7 @@ name = "jumpy-matchmaker-proto"
 version = "0.1.0"
 dependencies = [
  "serde",
+ "ulid",
 ]
 
 [[package]]
@@ -2710,6 +2711,7 @@ dependencies = [
  "anyhow",
  "async-executor",
  "clap 4.0.18",
+ "dashmap",
  "either",
  "futures-lite",
  "jumpy-matchmaker-proto",
@@ -2723,6 +2725,7 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
+ "ulid",
 ]
 
 [[package]]

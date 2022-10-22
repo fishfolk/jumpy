@@ -11,8 +11,7 @@ default-run = "jumpy"
 resolver = "2"
 members = [
     ".",
-    "crates/bevy-has-load-progress",
-    "crates/bevy-has-load-progress/macros",
+    "crates/*"
 ]
 
 [dependencies.bevy]

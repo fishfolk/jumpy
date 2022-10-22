@@ -1,9 +1,14 @@
 #[macro_use]
 extern crate tracing;
 
-use std::net::SocketAddr;
+use std::{net::SocketAddr, sync::Arc};
 
-use quinn::{Endpoint, EndpointConfig, ServerConfig, TokioRuntime};
+use once_cell::sync::Lazy;
+use quinn::{Endpoint, EndpointConfig, ServerConfig};
+use quinn_smol::SmolExecutor;
+
+pub static EXE: Lazy<SmolExecutor> =
+    Lazy::new(|| SmolExecutor(Arc::new(async_executor::Executor::default())));
 
 mod certs;
 pub mod cli;
@@ -17,7 +22,6 @@ struct Config {
     listen_addr: SocketAddr,
 }
 
-#[tokio::main]
 async fn server(args: Config) -> anyhow::Result<()> {
     // Generate certificate
     let (cert, key) = certs::generate_self_signed_cert()?;
@@ -29,7 +33,7 @@ async fn server(args: Config) -> anyhow::Result<()> {
         EndpointConfig::default(),
         Some(server_config),
         socket,
-        TokioRuntime,
+        EXE.clone(),
     )?;
     info!(address=%endpoint.local_addr()?, "Started server");
 
@@ -39,14 +43,18 @@ async fn server(args: Config) -> anyhow::Result<()> {
 
         match connection {
             Ok(conn) => {
-                info!(client_id = "TODO", "Opened connection from client!");
+                info!(
+                    connection_id = conn.stable_id(),
+                    "Opened connection from client!"
+                );
 
                 // Spawn a task to handle the new connection
-                tokio::spawn(async move {
+                EXE.spawn(async move {
                     if let Err(e) = connection::handle_new_connection(conn).await {
                         error!("Connection error: {e:?}");
                     }
-                });
+                })
+                .detach();
             }
             Err(e) => error!("Error opening client connection: {e:?}"),
         }

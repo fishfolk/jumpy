@@ -1,5 +1,6 @@
 use std::{
     io,
+    ops::Deref,
     sync::Arc,
     task::{ready, Context, Poll},
 };
@@ -7,8 +8,16 @@ use std::{
 use async_io::Async;
 use quinn_proto::Transmit;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct SmolExecutor<'a>(pub Arc<async_executor::Executor<'a>>);
+
+impl<'a> Deref for SmolExecutor<'a> {
+    type Target = async_executor::Executor<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
 
 #[derive(Debug)]
 #[pin_project::pin_project]

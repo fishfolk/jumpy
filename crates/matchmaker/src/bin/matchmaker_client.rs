@@ -1,11 +1,7 @@
 use std::{net::SocketAddr, sync::Arc};
 
-use anyhow::Context;
 use certs::SkipServerVerification;
-use jumpy_matchmaker_proto::{
-    matchmaker::{MatchInfo, MatchmakerRequest, MatchmakerResponse},
-    ConnectionType,
-};
+use jumpy_matchmaker_proto::{MatchInfo, MatchmakerRequest, MatchmakerResponse};
 use once_cell::sync::Lazy;
 use quinn::{ClientConfig, Endpoint, EndpointConfig};
 use quinn_smol::SmolExecutor;
@@ -80,22 +76,11 @@ async fn client() -> anyhow::Result<()> {
         .connect_with(client_config, server_addr(), SERVER_NAME)?
         .await?;
 
-    let (mut send, recv) = conn.open_bi().await?;
-
-    let message = ConnectionType::Matchmaker;
-    let message = postcard::to_allocvec(&message).context("Serialize connection type")?;
-    send.write_all(&message).await?;
-    send.finish().await?;
-    // Wait for server response before continuing
-    recv.read_to_end(1).await?;
-
-    println!("Connection accepted!");
-
     // Send a match request to the server
     let (mut send, recv) = conn.open_bi().await?;
 
-    println!("Sending Request");
     let message = MatchmakerRequest::RequestMatch(MatchInfo { player_count: 2 });
+    println!("Sending match request: {message:?}");
     let message = postcard::to_allocvec(&message)?;
 
     send.write_all(&message).await?;
@@ -105,8 +90,8 @@ async fn client() -> anyhow::Result<()> {
     let message: MatchmakerResponse = postcard::from_bytes(&message)?;
 
     match message {
-        MatchmakerResponse::MatchId(id) => {
-            println!("Got match ID from server: {}", id);
+        MatchmakerResponse::Success => {
+            println!("Found a match!");
         }
     }
 

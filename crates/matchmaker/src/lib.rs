@@ -45,7 +45,7 @@ async fn server(args: Config) -> anyhow::Result<()> {
             Ok(conn) => {
                 info!(
                     connection_id = conn.stable_id(),
-                    "Opened connection from client!"
+                    "Accepted connection from client"
                 );
 
                 // Spawn a task to handle the new connection

@@ -21,3 +21,5 @@ tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
 clap = { version = "4.0.18", features = ["derive"] }
 tokio = { version = "1.0", features = ["full"] }
 either = "1.8.0"
+ulid = "1.0.0"
+dashmap = "5.4.0"

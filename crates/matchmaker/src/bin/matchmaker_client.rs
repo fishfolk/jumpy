@@ -3,7 +3,7 @@ use std::{net::SocketAddr, sync::Arc};
 use anyhow::Context;
 use certs::SkipServerVerification;
 use jumpy_matchmaker_proto::{
-    matchmaker::{MatchmakerRequest, MatchmakerResponse},
+    matchmaker::{MatchInfo, MatchmakerRequest, MatchmakerResponse},
     ConnectionType,
 };
 use once_cell::sync::Lazy;
@@ -91,11 +91,11 @@ async fn client() -> anyhow::Result<()> {
 
     println!("Connection accepted!");
 
-    // Open a bi-directional channel to the server
+    // Send a match request to the server
     let (mut send, recv) = conn.open_bi().await?;
 
     println!("Sending Request");
-    let message = MatchmakerRequest::RequestMatch { players: 4 };
+    let message = MatchmakerRequest::RequestMatch(MatchInfo { player_count: 2 });
     let message = postcard::to_allocvec(&message)?;
 
     send.write_all(&message).await?;
@@ -104,7 +104,11 @@ async fn client() -> anyhow::Result<()> {
     let message = recv.read_to_end(256).await?;
     let message: MatchmakerResponse = postcard::from_bytes(&message)?;
 
-    println!("Got match ID: {:?}", message);
+    match message {
+        MatchmakerResponse::MatchId(id) => {
+            println!("Got match ID from server: {}", id);
+        }
+    }
 
     conn.close(0u8.into(), b"done");
 

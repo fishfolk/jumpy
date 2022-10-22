@@ -68,7 +68,7 @@ async fn impl_matchmaker(conn: Connection) -> anyhow::Result<()> {
                         debug!(connection_id, ?match_info, "Request for match");
 
                         let player_count = match_info.player_count;
-                        let mut members = STATE.rooms.entry(match_info).or_default();
+                        let mut members = STATE.rooms.entry(match_info.clone()).or_default();
 
                         // Add the current client to the room
                         members.push((conn.clone(), send));
@@ -90,7 +90,7 @@ async fn impl_matchmaker(conn: Connection) -> anyhow::Result<()> {
 
                         // If we have a complete room
                         let member_count = members.len();
-                        debug!("Room now has {}/{} members", member_count, player_count);
+                        debug!(?match_info, "Room now has {}/{} members", member_count, player_count);
                         if member_count >= player_count as _ {
                             let match_id = Ulid::new();
                             debug!(%match_id, "Creating new match ID");

@@ -1,10 +1,10 @@
 #[macro_use]
 extern crate tracing;
 
-use std::{net::SocketAddr, sync::Arc};
+use std::{net::SocketAddr, sync::Arc, time::Duration};
 
 use once_cell::sync::Lazy;
-use quinn::{Endpoint, EndpointConfig, ServerConfig};
+use quinn::{Endpoint, EndpointConfig, ServerConfig, TransportConfig};
 use quinn_smol::SmolExecutor;
 
 pub static EXE: Lazy<SmolExecutor> =
@@ -25,7 +25,12 @@ struct Config {
 async fn server(args: Config) -> anyhow::Result<()> {
     // Generate certificate
     let (cert, key) = certs::generate_self_signed_cert()?;
-    let server_config = ServerConfig::with_single_cert([cert].to_vec(), key)?;
+
+    let mut transport_config = TransportConfig::default();
+    transport_config.keep_alive_interval(Some(Duration::from_secs(5)));
+
+    let mut server_config = ServerConfig::with_single_cert([cert].to_vec(), key)?;
+    server_config.transport = Arc::new(transport_config);
 
     // Open Socket and create endpoint
     let socket = std::net::UdpSocket::bind(args.listen_addr)?;

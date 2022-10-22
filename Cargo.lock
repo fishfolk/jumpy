@@ -3819,7 +3819,7 @@ checksum = "74605f360ce573babfe43964cbe520294dcb081afbf8c108fc6e23036b4da2df"
 [[package]]
 name = "quinn"
 version = "0.8.0"
-source = "git+https://github.com/quinn-rs/quinn.git?rev=feca8abebf#feca8abebf2b358141a675931b98043c355d4271"
+source = "git+https://github.com/quinn-rs/quinn.git#feca8abebf2b358141a675931b98043c355d4271"
 dependencies = [
  "bytes",
  "futures-io",
@@ -3837,7 +3837,7 @@ dependencies = [
 [[package]]
 name = "quinn-proto"
 version = "0.8.0"
-source = "git+https://github.com/quinn-rs/quinn.git?rev=feca8abebf#feca8abebf2b358141a675931b98043c355d4271"
+source = "git+https://github.com/quinn-rs/quinn.git#feca8abebf2b358141a675931b98043c355d4271"
 dependencies = [
  "bytes",
  "rand",
@@ -3868,7 +3868,7 @@ dependencies = [
 [[package]]
 name = "quinn-udp"
 version = "0.2.0"
-source = "git+https://github.com/quinn-rs/quinn.git?rev=feca8abebf#feca8abebf2b358141a675931b98043c355d4271"
+source = "git+https://github.com/quinn-rs/quinn.git#feca8abebf2b358141a675931b98043c355d4271"
 dependencies = [
  "libc",
  "quinn-proto",

@@ -3,6 +3,8 @@ use jumpy_matchmaker_proto::ConnectionType;
 
 use quinn::Connection;
 
+use crate::EXE;
+
 mod game;
 mod matchmaker;
 
@@ -26,7 +28,7 @@ pub async fn handle_new_connection(conn: Connection) -> anyhow::Result<()> {
 
     match message {
         ConnectionType::Matchmaker => {
-            tokio::spawn(matchmaker::handle_matchmaker_conn(conn));
+            EXE.spawn(matchmaker::handle_matchmaker_conn(conn)).detach();
         }
         ConnectionType::Game => {
             warn!("Match connection not implemented yet");

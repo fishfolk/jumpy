@@ -1,14 +1,18 @@
 use clap::Parser;
 use tracing::metadata::LevelFilter;
 
+use crate::EXE;
+
 pub fn start() {
     configure_logging();
 
     let args = crate::Config::parse();
 
-    if let Err(e) = super::server(args) {
-        eprintln!("Error: {e}");
-    }
+    futures_lite::future::block_on(EXE.run(async move {
+        if let Err(e) = super::server(args).await {
+            eprintln!("Error: {e}");
+        }
+    }));
 }
 
 fn configure_logging() {

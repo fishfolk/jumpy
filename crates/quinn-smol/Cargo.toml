@@ -6,9 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-quinn = { git = "https://github.com/quinn-rs/quinn.git", rev = "feca8abebf", default-features = false, features = ["native-certs", "tls-rustls"] }
-quinn-udp = { git = "https://github.com/quinn-rs/quinn.git", rev = "feca8abebf", default-features = false }
-quinn-proto = { git = "https://github.com/quinn-rs/quinn.git", rev = "feca8abebf", default-features = false }
+quinn = { git = "https://github.com/quinn-rs/quinn.git", default-features = false, features = ["native-certs", "tls-rustls"] }
+quinn-udp = { git = "https://github.com/quinn-rs/quinn.git",  default-features = false }
+quinn-proto = { git = "https://github.com/quinn-rs/quinn.git",  default-features = false }
 async-executor = "1.4.1"
 async-io = "1.9.0"
 pin-project = "1.0.12"

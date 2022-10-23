@@ -28,6 +28,24 @@ pub mod frame_sync;
 pub mod serialization;
 pub mod server;
 
+#[cfg(not(target_arch = "wasm32"))]
+pub type Connection = quinn::Connection;
+
+
+/// On web we create just enough of a stand-in for `quinn::Connection`, because we can't actually
+/// use it in WASM yet.
+/// 
+/// We don't do networking on WASM yet, though, so it doesn't need to function.
+#[cfg(target_arch = "wasm32")]
+pub struct Connection;
+
+#[cfg(target_arch = "wasm32")]
+impl Connection {
+    pub fn close_reason(&self) -> Option<()> {
+        None
+    }
+}
+
 pub struct NetworkingPlugin;
 
 impl Plugin for NetworkingPlugin {

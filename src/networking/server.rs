@@ -1,5 +1,5 @@
+use crate::networking::Connection;
 use bevy::app::AppExit;
-use quinn::Connection;
 
 use crate::prelude::*;
 
@@ -10,7 +10,10 @@ pub struct NetClients(pub Vec<Connection>);
 
 impl Plugin for ServerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_to_stage(CoreStage::First, exit_on_disconnect);
+        app.add_system_to_stage(
+            CoreStage::First,
+            exit_on_disconnect.run_if_resource_exists::<NetClients>(),
+        );
     }
 }
 

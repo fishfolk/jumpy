@@ -102,14 +102,12 @@ impl EngineConfig {
         // Note: It's unfortunate that we have to manually synchronize this with the defaults set
         // with structopt. If we find a way around that we should use it.
         Self {
+            server_mode: false,
             hot_reload: false,
             asset_dir: None,
             game_asset: "default.game.yaml".into(),
             auto_start: false,
             debug_tools: false,
-            port: 9375,
-            server: None,
-            client: None,
             log_level: DEFAULT_LOG_LEVEL.into(),
         }
     }

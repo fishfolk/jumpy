@@ -89,7 +89,7 @@ pub enum FixedUpdateStage {
     Last,
 }
 
-pub fn build_app(net_clients: Vec<quinn::Connection>) -> App {
+pub fn build_app(net_clients: Vec<networking::Connection>) -> App {
     // Load engine config. This will parse CLI arguments or web query string so we want to do it
     // before we create the app to make sure everything is in order.
     let engine_config = &*config::ENGINE_CONFIG;

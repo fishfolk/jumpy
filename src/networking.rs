@@ -26,8 +26,7 @@ use self::{
 pub mod commands;
 pub mod frame_sync;
 pub mod serialization;
-
-pub const PROTOCOL_ID: u64 = 0;
+pub mod server;
 
 pub struct NetworkingPlugin;
 
@@ -36,6 +35,7 @@ impl Plugin for NetworkingPlugin {
         app.add_plugin(frame_sync::NetFrameSyncPlugin)
             .add_plugin(serialization::SerializationPlugin)
             .add_plugin(commands::NetCommandsPlugin)
+            .add_plugin(server::ServerPlugin)
             .add_plugin(RenetClientPlugin::default())
             .add_plugin(RenetServerPlugin::default())
             .add_system(handle_server_events.run_if_resource_exists::<RenetServer>())

@@ -1,4 +1,4 @@
-use std::{net::SocketAddr, sync::Arc};
+use std::{net::SocketAddr, sync::Arc, time::Duration};
 
 use certs::SkipServerVerification;
 use jumpy_matchmaker_proto::{MatchInfo, MatchmakerRequest, MatchmakerResponse};
@@ -79,7 +79,7 @@ async fn client() -> anyhow::Result<()> {
     // Send a match request to the server
     let (mut send, recv) = conn.open_bi().await?;
 
-    let message = MatchmakerRequest::RequestMatch(MatchInfo { player_count: 2 });
+    let message = MatchmakerRequest::RequestMatch(MatchInfo { player_count: 1 });
     println!("Sending match request: {message:?}");
     let message = postcard::to_allocvec(&message)?;
 
@@ -94,6 +94,8 @@ async fn client() -> anyhow::Result<()> {
             println!("Found a match!");
         }
     }
+
+    async_io::Timer::after(Duration::from_secs(4)).await;
 
     conn.close(0u8.into(), b"done");
 

@@ -267,6 +267,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5450eca8ce5abcfd5520727e975ebab30ccca96030550406b0ca718b224ead10"
 
 [[package]]
+name = "atomic-waker"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "065374052e7df7ee4047b1160cca5e1467a12351a40b3da123c870ba0b8eda2a"
+
+[[package]]
 name = "atomic_refcell"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1100,6 +1106,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "69cce20737498f97b993470a6e536b8523f0af7892a4f928cceb1ac5e52ebe7e"
 dependencies = [
  "generic-array",
+]
+
+[[package]]
+name = "blocking"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c6ccb65d468978a086b69884437ded69a90faab3bbe6e67f242173ea728acccc"
+dependencies = [
+ "async-channel",
+ "async-task",
+ "atomic-waker",
+ "fastrand",
+ "futures-lite",
+ "once_cell",
 ]
 
 [[package]]
@@ -2683,6 +2703,7 @@ dependencies = [
  "leafwing-input-manager",
  "once_cell",
  "postcard 1.0.2 (git+https://github.com/zicklag/postcard.git?branch=custom-error-messages)",
+ "quinn",
  "rand",
  "renet_visualizer",
  "serde",
@@ -2710,10 +2731,12 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-executor",
+ "async-io",
+ "blocking",
  "clap 4.0.18",
- "dashmap",
  "either",
  "futures-lite",
+ "jumpy",
  "jumpy-matchmaker-proto",
  "once_cell",
  "postcard 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2721,11 +2744,11 @@ dependencies = [
  "quinn-smol",
  "rcgen",
  "rustls",
+ "scc",
  "serde",
  "tokio",
  "tracing",
  "tracing-subscriber",
- "ulid",
 ]
 
 [[package]]
@@ -4164,6 +4187,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502"
 dependencies = [
  "winapi-util",
+]
+
+[[package]]
+name = "scc"
+version = "0.11.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "054da6411906a6cfa45a4b5cc922a4fdfd395f4fd17d98ef4603d334b83d3639"
+dependencies = [
+ "scopeguard",
 ]
 
 [[package]]

@@ -1,11 +1,27 @@
 use once_cell::sync::Lazy;
 use structopt::StructOpt;
 
+pub const SERVER_MODE_ENV_VAR: &str = "JUMPY_SERVER_MODE";
 const DEFAULT_LOG_LEVEL: &str = "info,wgpu=error,bevy_fluent=warn,symphonia_core=warn,symphonia_format_ogg=warn,symphonia_bundle_mp3=warn";
 
 pub static ENGINE_CONFIG: Lazy<EngineConfig> = Lazy::new(|| {
     #[cfg(not(target_arch = "wasm32"))]
-    return EngineConfig::from_args();
+    {
+        let server_mode = std::env::var(SERVER_MODE_ENV_VAR).is_ok();
+        if server_mode {
+            EngineConfig {
+                server_mode: true,
+                hot_reload: false,
+                asset_dir: None,
+                game_asset: "default.game.yaml".into(),
+                auto_start: false,
+                debug_tools: false,
+                log_level: DEFAULT_LOG_LEVEL.into(),
+            }
+        } else {
+            EngineConfig::from_args()
+        }
+    }
 
     #[cfg(target_arch = "wasm32")]
     return EngineConfig::from_web_params();
@@ -14,17 +30,8 @@ pub static ENGINE_CONFIG: Lazy<EngineConfig> = Lazy::new(|| {
 #[derive(Clone, Debug, StructOpt)]
 #[structopt(name = "Jumpy", about = "A 2.5D side-scroller beatemup.")]
 pub struct EngineConfig {
-    /// Run in client mode, connecting to the given server
-    #[structopt(long, short = "C", conflicts_with = "server")]
-    pub client: Option<String>,
-
-    /// Run in server mode listening on the specified host addr
-    #[structopt(long, short = "S")]
-    pub server: Option<String>,
-
-    /// The port to host/connect on when running in server or client mode
-    #[structopt(default_value = "9375")]
-    pub port: u16,
+    #[structopt(skip)]
+    pub server_mode: bool,
 
     /// Hot reload assets
     #[structopt(short = "R", long)]

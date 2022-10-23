@@ -35,7 +35,7 @@ impl Plugin for NetCommandsPlugin {
         app.init_resource::<NetIdMap>()
             .add_system(client_handle_net_commands.run_if(super::client_connected));
 
-        if ENGINE_CONFIG.server.is_some() {
+        if ENGINE_CONFIG.server_mode {
             let type_registry = app.world.resource::<TypeRegistryArc>();
             let string_cache = get_type_name_cache(type_registry);
             app.world.insert_resource(TypeNameCache(string_cache));

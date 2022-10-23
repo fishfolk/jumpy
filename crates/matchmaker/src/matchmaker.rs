@@ -70,9 +70,17 @@ async fn impl_matchmaker(conn: Connection) -> anyhow::Result<()> {
 
                         let mut members_to_join = Vec::new();
 
+                        // Make sure room exists
                         STATE
                             .rooms
-                            .upsert_async(match_info.clone(), Vec::new, |match_info, members| {
+                            .insert_async(match_info.clone(), Vec::new())
+                            .await
+                            .ok();
+
+                        STATE
+                            .rooms
+                            .update_async(&match_info, |match_info, members| {
+                                debug!("Testing");
                                 // Add the current client to the room
                                 members.push((conn.clone(), send));
 

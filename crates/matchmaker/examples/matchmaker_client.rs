@@ -79,12 +79,19 @@ async fn client() -> anyhow::Result<()> {
     // Send a match request to the server
     let (mut send, recv) = conn.open_bi().await?;
 
-    let message = MatchmakerRequest::RequestMatch(MatchInfo { player_count: 1 });
+    let message = MatchmakerRequest::RequestMatch(MatchInfo {
+        player_count: std::env::args()
+            .nth(1)
+            .map(|x| x.parse().unwrap())
+            .unwrap_or(0),
+    });
     println!("Sending match request: {message:?}");
     let message = postcard::to_allocvec(&message)?;
 
     send.write_all(&message).await?;
     send.finish().await?;
+
+    println!("Waiting for response");
 
     let message = recv.read_to_end(256).await?;
     let message: MatchmakerResponse = postcard::from_bytes(&message)?;

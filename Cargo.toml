@@ -64,6 +64,7 @@ bevy_renet = { git = "https://github.com/zicklag/renet.git", branch = "jumpy" }
 bevy_ecs_dynamic = { git = "https://github.com/jakobhellermann/bevy_ecs_dynamic" }
 postcard = { git = "https://github.com/zicklag/postcard.git", branch = "custom-error-messages", default-features = false, features = ["alloc", "use-std"] }
 flume = "0.10.14"
+futures-lite = "1.12.0"
 
 # Debug tools
 bevy-inspector-egui = { version = "0.13.0" }

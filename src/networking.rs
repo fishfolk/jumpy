@@ -23,6 +23,7 @@ use self::{
     serialization::{deserialize_from_bytes, StringCache},
 };
 
+pub mod client;
 pub mod commands;
 pub mod frame_sync;
 pub mod serialization;
@@ -31,10 +32,9 @@ pub mod server;
 #[cfg(not(target_arch = "wasm32"))]
 pub type Connection = quinn::Connection;
 
-
 /// On web we create just enough of a stand-in for `quinn::Connection`, because we can't actually
 /// use it in WASM yet.
-/// 
+///
 /// We don't do networking on WASM yet, though, so it doesn't need to function.
 #[cfg(target_arch = "wasm32")]
 pub struct Connection;
@@ -54,6 +54,7 @@ impl Plugin for NetworkingPlugin {
             .add_plugin(serialization::SerializationPlugin)
             .add_plugin(commands::NetCommandsPlugin)
             .add_plugin(server::ServerPlugin)
+            .add_plugin(client::ClientPlugin)
             .add_plugin(RenetClientPlugin::default())
             .add_plugin(RenetServerPlugin::default())
             .add_system(handle_server_events.run_if_resource_exists::<RenetServer>())
@@ -123,6 +124,12 @@ pub struct NetId(pub Ulid);
 impl NetId {
     pub fn new() -> Self {
         Self(Ulid::new())
+    }
+}
+
+impl Default for NetId {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

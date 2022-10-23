@@ -1,4 +1,5 @@
 use blocking::unblock;
+use jumpy::networking::server::NetServer;
 use jumpy_matchmaker_proto::MatchInfo;
 use quinn::Connection;
 
@@ -13,7 +14,7 @@ pub async fn start_game_server(match_info: MatchInfo, clients: Vec<Connection>) 
 
 async fn impl_game_server(match_info: MatchInfo, clients: Vec<Connection>) -> anyhow::Result<()> {
     unblock(|| {
-        jumpy::build_app(clients).run();
+        jumpy::build_app(Some(NetServer::new(clients))).run();
     })
     .await;
 

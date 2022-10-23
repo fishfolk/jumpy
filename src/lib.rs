@@ -18,28 +18,27 @@ use bevy::{
 };
 use bevy_parallax::ParallaxResource;
 
+pub mod animation;
+pub mod assets;
+pub mod camera;
 pub mod config;
-
-mod animation;
-mod assets;
-mod camera;
-mod debug;
-mod lines;
-mod loading;
-mod localization;
-mod map;
-mod metadata;
-mod name;
-mod networking;
-mod physics;
-mod platform;
-mod player;
-mod prelude;
-mod run_criteria;
-mod scripting;
-mod ui;
-mod utils;
-mod workarounds;
+pub mod debug;
+pub mod lines;
+pub mod loading;
+pub mod localization;
+pub mod map;
+pub mod metadata;
+pub mod name;
+pub mod networking;
+pub mod physics;
+pub mod platform;
+pub mod player;
+pub mod prelude;
+pub mod run_criteria;
+pub mod scripting;
+pub mod ui;
+pub mod utils;
+pub mod workarounds;
 
 use crate::{
     animation::AnimationPlugin,
@@ -52,7 +51,7 @@ use crate::{
     map::MapPlugin,
     metadata::{GameMeta, MetadataPlugin},
     name::NamePlugin,
-    networking::{server::NetClients, NetworkingPlugin},
+    networking::{server::NetServer, NetworkingPlugin},
     physics::PhysicsPlugin,
     platform::PlatformPlugin,
     player::PlayerPlugin,
@@ -89,7 +88,7 @@ pub enum FixedUpdateStage {
     Last,
 }
 
-pub fn build_app(net_clients: Vec<networking::Connection>) -> App {
+pub fn build_app(net_server: Option<NetServer>) -> App {
     // Load engine config. This will parse CLI arguments or web query string so we want to do it
     // before we create the app to make sure everything is in order.
     let engine_config = &*config::ENGINE_CONFIG;
@@ -173,7 +172,7 @@ pub fn build_app(net_clients: Vec<networking::Connection>) -> App {
         })
         .init_resource::<Windows>()
         .add_asset::<TextureAtlas>()
-        .insert_resource(NetClients(net_clients))
+        .insert_resource(net_server)
         .add_plugin(ScheduleRunnerPlugin)
         .insert_resource(RunMode::Loop {
             wait: Some(Duration::from_secs_f64(FIXED_TIMESTEP)),

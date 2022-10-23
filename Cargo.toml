@@ -63,11 +63,13 @@ base64 = "0.13.0"
 bevy_renet = { git = "https://github.com/zicklag/renet.git", branch = "jumpy" }
 bevy_ecs_dynamic = { git = "https://github.com/jakobhellermann/bevy_ecs_dynamic" }
 postcard = { git = "https://github.com/zicklag/postcard.git", branch = "custom-error-messages", default-features = false, features = ["alloc", "use-std"] }
+flume = "0.10.14"
 
 # Debug tools
 bevy-inspector-egui = { version = "0.13.0" }
 ulid = { version = "1.0.0", features = ["serde"] }
 renet_visualizer = { git = "https://github.com/zicklag/renet.git", branch = "jumpy" }
+bytes = "1.2.1"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "0.2.83"

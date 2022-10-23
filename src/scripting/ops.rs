@@ -23,7 +23,10 @@ pub fn get_ops() -> OpMap {
     );
     ops.insert("entity_ref_to_js", Box::new(entity::EntityRefToJs));
     ops.insert("entity_ref_from_js", Box::new(entity::EntityRefFromJs));
-    ops.insert("jumpy_net_commands_spawn", Box::new(commands::NetCommandsSpawn));
+    ops.insert(
+        "jumpy_net_commands_spawn",
+        Box::new(commands::NetCommandsSpawn),
+    );
     ops.insert(
         "jumpy_net_commands_insert",
         Box::new(commands::NetCommandsInsert),

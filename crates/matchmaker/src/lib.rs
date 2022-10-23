@@ -33,6 +33,12 @@ async fn server(args: Config) -> anyhow::Result<()> {
     std::env::set_var(jumpy::config::SERVER_MODE_ENV_VAR, "true");
     std::env::set_var(jumpy::config::ASSET_DIR_ENV_VAR, args.asset_dir);
 
+    // Set allowed threads for blocking thread pool. This value represents the maxiumum number of
+    // matches that can run at the same time.
+    //
+    // 10000 is the max the `blocking` crate supports.
+    std::env::set_var("BLOCKING_MAX_THREADS", "5000");
+
     // Generate certificate
     let (cert, key) = certs::generate_self_signed_cert()?;
 

@@ -22,11 +22,16 @@ struct Config {
     /// The server address to listen on
     #[clap(short, long = "listen", default_value = "0.0.0.0:8943")]
     listen_addr: SocketAddr,
+
+    /// The directory containing the bevy assets
+    #[clap(short, long)]
+    asset_dir: String,
 }
 
 async fn server(args: Config) -> anyhow::Result<()> {
     // Put Jumpy in server mode
     std::env::set_var(jumpy::config::SERVER_MODE_ENV_VAR, "true");
+    std::env::set_var(jumpy::config::ASSET_DIR_ENV_VAR, args.asset_dir);
 
     // Generate certificate
     let (cert, key) = certs::generate_self_signed_cert()?;

@@ -2,6 +2,7 @@ use once_cell::sync::Lazy;
 use structopt::StructOpt;
 
 pub const SERVER_MODE_ENV_VAR: &str = "JUMPY_SERVER_MODE";
+pub const ASSET_DIR_ENV_VAR: &str = "JUMPY_ASSET_DIR";
 const DEFAULT_LOG_LEVEL: &str = "info,wgpu=error,bevy_fluent=warn,symphonia_core=warn,symphonia_format_ogg=warn,symphonia_bundle_mp3=warn";
 
 pub static ENGINE_CONFIG: Lazy<EngineConfig> = Lazy::new(|| {
@@ -12,7 +13,9 @@ pub static ENGINE_CONFIG: Lazy<EngineConfig> = Lazy::new(|| {
             EngineConfig {
                 server_mode: true,
                 hot_reload: false,
-                asset_dir: None,
+                asset_dir: Some(
+                    std::env::var(ASSET_DIR_ENV_VAR).expect("Missing asset dir env var"),
+                ),
                 game_asset: "default.game.yaml".into(),
                 auto_start: false,
                 debug_tools: false,

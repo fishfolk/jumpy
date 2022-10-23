@@ -14,6 +14,15 @@ members = [
     "crates/*"
 ]
 
+[features]
+default = ["render"]
+render = [
+    "bevy/x11",
+    "bevy/png",
+    "bevy/filesystem_watcher",
+    "bevy/bevy_gilrs",
+]
+
 [dependencies.bevy]
 version = "0.8"
 default-features = false
@@ -54,6 +63,7 @@ base64 = "0.13.0"
 bevy_renet = { git = "https://github.com/zicklag/renet.git", branch = "jumpy" }
 bevy_ecs_dynamic = { git = "https://github.com/jakobhellermann/bevy_ecs_dynamic" }
 postcard = { git = "https://github.com/zicklag/postcard.git", branch = "custom-error-messages", default-features = false, features = ["alloc", "use-std"] }
+quinn = { git = "https://github.com/quinn-rs/quinn.git", default-features = false, features = ["futures-io", "native-certs", "tls-rustls"] }
 
 # Debug tools
 bevy-inspector-egui = { version = "0.13.0" }

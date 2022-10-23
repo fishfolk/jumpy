@@ -1,9 +1,10 @@
-use dashmap::DashMap;
 use futures_lite::future;
 use jumpy_matchmaker_proto::{MatchInfo, MatchmakerRequest, MatchmakerResponse};
 use once_cell::sync::Lazy;
 use quinn::{Connection, ConnectionError, SendStream};
-use ulid::Ulid;
+use scc::HashMap;
+
+use crate::game_server::start_game_server;
 
 pub async fn handle_connection(conn: Connection) {
     let connection_id = conn.stable_id();
@@ -30,7 +31,7 @@ pub async fn handle_connection(conn: Connection) {
 #[derive(Default)]
 struct State {
     /// The mapping of match info to the vector connected clients in the waiting room.
-    rooms: DashMap<MatchInfo, Vec<(Connection, SendStream)>>,
+    rooms: HashMap<MatchInfo, Vec<(Connection, SendStream)>>,
 }
 
 static STATE: Lazy<State> = Lazy::new(State::default);
@@ -61,51 +62,63 @@ async fn impl_matchmaker(conn: Connection) -> anyhow::Result<()> {
                 let request: MatchmakerRequest =
                     postcard::from_bytes(&recv.read_to_end(256).await?)?;
 
-                info!(connection_id, ?request, "Got matchmaker request");
-
                 match request {
                     MatchmakerRequest::RequestMatch(match_info) => {
-                        debug!(connection_id, ?match_info, "Request for match");
+                        debug!(connection_id, ?match_info, "Got request for match");
 
                         let player_count = match_info.player_count;
-                        let mut members = STATE.rooms.entry(match_info.clone()).or_default();
 
-                        // Add the current client to the room
-                        members.push((conn.clone(), send));
+                        let mut members_to_join = Vec::new();
 
-                        // Remove any dropped connections from the list
-                        members.retain(|(conn, _send)| {
-                            if let Some(reason) = conn.close_reason() {
-                                let connection_id = conn.stable_id();
+                        STATE
+                            .rooms
+                            .upsert_async(match_info.clone(), Vec::new, |match_info, members| {
+                                // Add the current client to the room
+                                members.push((conn.clone(), send));
+
+                                // Remove any dropped connections from the list
+                                members.retain(|(conn, _send)| {
+                                    if let Some(reason) = conn.close_reason() {
+                                        let connection_id = conn.stable_id();
+                                        debug!(
+                                            connection_id,
+                                            "Removing disconnected client from room: {reason}"
+                                        );
+
+                                        false
+                                    } else {
+                                        true
+                                    }
+                                });
+
+                                let member_count = members.len();
+
+                                // If we have a complete room
                                 debug!(
-                                    connection_id,
-                                    "Removing disconnected client from room: {reason}"
+                                    ?match_info,
+                                    "Room now has {}/{} members", member_count, player_count
                                 );
+                                if member_count >= player_count as _ {
+                                    // Clear the room
+                                    members_to_join.append(members);
+                                }
+                            })
+                            .await;
 
-                                false
-                            } else {
-                                true
-                            }
-                        });
-
-                        // If we have a complete room
-                        let member_count = members.len();
-                        debug!(
-                            ?match_info,
-                            "Room now has {}/{} members", member_count, player_count
-                        );
-                        if member_count >= player_count as _ {
-                            let match_id = Ulid::new();
-                            debug!(%match_id, "Creating new match ID");
-
-                            // Create a new match ID
+                        if !members_to_join.is_empty() {
+                            // Respond with success
                             let message = postcard::to_allocvec(&MatchmakerResponse::Success)?;
 
                             // Send the match ID to all of the clients in the room
-                            for (_conn, mut send) in members.drain(..) {
+                            let mut clients = Vec::with_capacity(player_count as usize);
+                            for (conn, mut send) in members_to_join.drain(..) {
+                                clients.push(conn);
                                 send.write_all(&message).await?;
                                 send.finish().await?;
                             }
+
+                            // Hand the clients off to the game manager
+                            start_game_server(match_info, clients).await;
                         }
                     }
                 }

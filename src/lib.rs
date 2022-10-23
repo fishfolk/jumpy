@@ -2,16 +2,27 @@
 #![allow(clippy::forget_non_drop)]
 #![allow(clippy::too_many_arguments)]
 
+use std::time::Duration;
+
 use bevy::{
-    asset::AssetServerSettings, log::LogSettings, render::texture::ImageSettings,
+    app::{RunMode, ScheduleRunnerPlugin},
+    asset::AssetServerSettings,
+    log::{LogPlugin, LogSettings},
+    pbr::PbrPlugin,
+    render::{texture::ImageSettings, RenderPlugin},
+    sprite::SpritePlugin,
+    text::TextPlugin,
     time::FixedTimestep,
+    window::WindowPlugin,
+    winit::WinitPlugin,
 };
 use bevy_parallax::ParallaxResource;
+
+pub mod config;
 
 mod animation;
 mod assets;
 mod camera;
-mod config;
 mod debug;
 mod lines;
 mod loading;
@@ -41,7 +52,7 @@ use crate::{
     map::MapPlugin,
     metadata::{GameMeta, MetadataPlugin},
     name::NamePlugin,
-    networking::NetworkingPlugin,
+    networking::{server::NetClients, NetworkingPlugin},
     physics::PhysicsPlugin,
     platform::PlatformPlugin,
     player::PlayerPlugin,
@@ -78,18 +89,21 @@ pub enum FixedUpdateStage {
     Last,
 }
 
-pub fn run() {
+pub fn build_app(net_clients: Vec<quinn::Connection>) -> App {
     // Load engine config. This will parse CLI arguments or web query string so we want to do it
     // before we create the app to make sure everything is in order.
     let engine_config = &*config::ENGINE_CONFIG;
 
     let mut app = App::new();
-    app.insert_resource(WindowDescriptor {
-        title: "Fish Folk: Jumpy".to_string(),
-        fit_canvas_to_parent: true,
-        ..default()
-    })
-    .insert_resource(ImageSettings::default_nearest());
+
+    if !engine_config.server_mode {
+        app.insert_resource(WindowDescriptor {
+            title: "Fish Folk: Jumpy".to_string(),
+            fit_canvas_to_parent: true,
+            ..default()
+        })
+        .insert_resource(ImageSettings::default_nearest());
+    }
 
     // Configure log level
     app.insert_resource(LogSettings {
@@ -107,9 +121,11 @@ pub fn run() {
     }
     app.insert_resource(asset_server_settings);
 
-    // Initialize resources
-    app.insert_resource(ClearColor(Color::BLACK))
-        .init_resource::<ParallaxResource>();
+    if !engine_config.server_mode {
+        // Initialize resources
+        app.insert_resource(ClearColor(Color::BLACK))
+            .init_resource::<ParallaxResource>();
+    }
 
     // Set initial game state
     app.add_loopless_state(GameState::LoadingPlatformStorage)
@@ -143,16 +159,38 @@ pub fn run() {
     );
 
     // Install game plugins
-    app.add_plugins(DefaultPlugins)
-        .add_plugin(MetadataPlugin)
-        .add_plugin(LinesPlugin)
+    if engine_config.server_mode {
+        app.add_plugins_with(DefaultPlugins, |group| {
+            group
+                .disable::<LogPlugin>()
+                .disable::<RenderPlugin>()
+                .disable::<WindowPlugin>()
+                .disable::<WinitPlugin>()
+                .disable::<SpritePlugin>()
+                .disable::<bevy::ui::UiPlugin>()
+                .disable::<TextPlugin>()
+                .disable::<PbrPlugin>()
+        })
+        .init_resource::<Windows>()
+        .add_asset::<TextureAtlas>()
+        .insert_resource(NetClients(net_clients))
+        .add_plugin(ScheduleRunnerPlugin)
+        .insert_resource(RunMode::Loop {
+            wait: Some(Duration::from_secs_f64(FIXED_TIMESTEP)),
+        });
+    } else {
+        app.add_plugins(DefaultPlugins)
+            .add_plugin(LinesPlugin)
+            .add_plugin(UiPlugin);
+    }
+
+    app.add_plugin(MetadataPlugin)
         .add_plugin(PlatformPlugin)
         .add_plugin(LoadingPlugin)
         .add_plugin(AssetPlugin)
         .add_plugin(LocalizationPlugin)
         .add_plugin(NamePlugin)
         .add_plugin(AnimationPlugin)
-        .add_plugin(UiPlugin)
         .add_plugin(PlayerPlugin)
         .add_plugin(PhysicsPlugin)
         .add_plugin(CameraPlugin)
@@ -172,6 +210,5 @@ pub fn run() {
     // Insert game handle resource
     app.world.insert_resource(game_handle);
 
-    // Start the game!
-    app.run();
+    app
 }

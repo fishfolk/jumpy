@@ -10,8 +10,10 @@ use quinn_smol::SmolExecutor;
 pub static EXE: Lazy<SmolExecutor> =
     Lazy::new(|| SmolExecutor(Arc::new(async_executor::Executor::default())));
 
-mod certs;
 pub mod cli;
+
+mod certs;
+mod game_server;
 mod matchmaker;
 
 #[derive(clap::Parser, Debug)]
@@ -23,6 +25,9 @@ struct Config {
 }
 
 async fn server(args: Config) -> anyhow::Result<()> {
+    // Put Jumpy in server mode
+    std::env::set_var(jumpy::config::SERVER_MODE_ENV_VAR, "true");
+
     // Generate certificate
     let (cert, key) = certs::generate_self_signed_cert()?;
 

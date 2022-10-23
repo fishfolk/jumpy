@@ -1,3 +1,5 @@
 fn main() {
-    jumpy::run();
+    let mut app = jumpy::build_app(Vec::new());
+
+    app.run();
 }

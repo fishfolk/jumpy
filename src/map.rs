@@ -6,6 +6,7 @@ use bevy_prototype_lyon::{prelude::*, shapes::Rectangle};
 
 use crate::{
     camera::GameRenderLayers,
+    config::ENGINE_CONFIG,
     metadata::{MapElementMeta, MapLayerKind, MapLayerMeta, MapMeta},
     name::EntityName,
     physics::collisions::{CollisionLayerTag, TileCollision},
@@ -18,9 +19,11 @@ pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<MapScripts>()
-            .add_plugin(TilemapPlugin)
-            .add_system(hydrate_maps);
+        if !ENGINE_CONFIG.server_mode {
+            app.add_plugin(TilemapPlugin);
+        }
+
+        app.init_resource::<MapScripts>().add_system(hydrate_maps);
     }
 }
 

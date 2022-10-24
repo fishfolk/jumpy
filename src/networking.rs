@@ -89,21 +89,11 @@ impl Plugin for NetworkingPlugin {
 
 pub static NET_MESSAGE_TYPES: Lazy<Vec<TypeId>> = Lazy::new(|| {
     [
-        TypeId::of::<NetClientMessage>(),
-        TypeId::of::<NetServerMessage>(),
+        TypeId::of::<server::Ping>(),
+        TypeId::of::<server::Pong>(),
     ]
     .to_vec()
 });
-
-#[derive(Serialize, Deserialize, Debug)]
-pub enum NetClientMessage {
-    Ping,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub enum NetServerMessage {
-    Pong,
-}
 
 // /// Run condition for running systems if the client is connected
 // fn client_connected(client: Option<Res<NetClient>>) -> bool {

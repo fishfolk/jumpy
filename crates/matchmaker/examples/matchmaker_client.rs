@@ -1,7 +1,7 @@
 use std::{net::SocketAddr, sync::Arc, time::Duration};
 
 use certs::SkipServerVerification;
-use jumpy::networking::{NetClientMessage, NetServerMessage};
+use jumpy::networking::server::{Ping, Pong};
 use jumpy_matchmaker_proto::{MatchInfo, MatchmakerRequest, MatchmakerResponse};
 use once_cell::sync::Lazy;
 use quinn::{ClientConfig, Endpoint, EndpointConfig};
@@ -110,7 +110,7 @@ async fn client() -> anyhow::Result<()> {
 
         println!("Sending ping to server");
         sender
-            .write_all(&postcard::to_allocvec(&NetClientMessage::Ping)?)
+            .write_all(&postcard::to_allocvec(&Ping)?)
             .await?;
         sender.write_all(&u32::to_le_bytes(0)).await?;
         sender.finish().await?;
@@ -121,7 +121,7 @@ async fn client() -> anyhow::Result<()> {
         let type_idx_bytes: [u8; 4] = incomming.split_off(incomming.len() - 4).try_into().unwrap();
         let type_idx = u32::from_le_bytes(type_idx_bytes);
         assert_eq!(type_idx, 1, "Invalid type");
-        let message: NetServerMessage = postcard::from_bytes(&incomming).unwrap();
+        let message: Pong = postcard::from_bytes(&incomming).unwrap();
 
         println!("Got message: {:?}", message);
     }

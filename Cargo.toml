@@ -84,6 +84,3 @@ debug = false
 [profile.release]
 lto = true
 codegen-units = 1 # Improved rapier physics perf, so it might help other stuff, too
-
-[patch.crates-io]
-bevy_tasks = {path = "/home/zicklag/.rhack/bevy_tasks-0.8.1"}

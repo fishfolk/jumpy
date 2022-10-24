@@ -45,10 +45,23 @@ pub struct GameMeta {
     pub default_settings: settings::Settings,
     pub physics: PhysicsMeta,
 
+    /// Scripts that run on both the server and the client
     #[serde(default)]
     pub scripts: Vec<String>,
     #[serde(skip)]
     pub script_handles: Vec<AssetHandle<JsScript>>,
+
+    /// Scripts that run only on the client
+    #[serde(default)]
+    pub client_scripts: Vec<String>,
+    #[serde(skip)]
+    pub client_script_handles: Vec<AssetHandle<JsScript>>,
+
+    /// Scripts that run only on the server
+    #[serde(default)]
+    pub server_scripts: Vec<String>,
+    #[serde(skip)]
+    pub server_script_handles: Vec<AssetHandle<JsScript>>,
 }
 
 #[derive(HasLoadProgress, Deserialize, Clone, Debug)]

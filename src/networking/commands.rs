@@ -9,7 +9,6 @@ use bevy::{
     },
     reflect::TypeRegistryArc,
 };
-use bevy_renet::renet::{RenetClient, RenetServer};
 use serde::{de::DeserializeSeed, Deserialize, Serialize};
 
 use crate::{
@@ -25,7 +24,7 @@ use super::{
     serialization::{
         get_type_name_cache, ser::CompactReflectSerializer, serialize_to_bytes, StringCache,
     },
-    NetChannels, NetId, NetIdMap,
+    NetId, NetIdMap,
 };
 
 pub struct NetCommandsPlugin;

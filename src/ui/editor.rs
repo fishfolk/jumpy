@@ -156,7 +156,7 @@ struct EditorTopBar<'w, 's> {
                 (&'static mut Transform, &'static mut OrthographicProjection),
                 With<EditorCamera>,
             >,
-            NetCommands<'w, 's>,
+            Commands<'w, 's>,
             ResetController<'w, 's>,
         ),
     >,
@@ -226,7 +226,7 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                     params
                         .camera_netcommands_resetcontroller
                         .p1()
-                        .next_state(GameState::MainMenu);
+                        .insert_resource(NextState(GameState::MainMenu));
                 }
 
                 ui.scope(|ui| {
@@ -235,7 +235,7 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                         params
                             .camera_netcommands_resetcontroller
                             .p1()
-                            .next_state(InGameState::Playing);
+                            .insert_resource(NextState(InGameState::Playing));
                     }
 
                     let mut reset_controller = params.camera_netcommands_resetcontroller.p2();
@@ -663,7 +663,7 @@ struct EditorCentralPanel<'w, 's> {
     show_map_create: Local<'s, bool>,
     show_map_open: Local<'s, bool>,
     map_create_info: Local<'s, MapCreateInfo>,
-    net_commands: NetCommands<'w, 's>,
+    commands: Commands<'w, 's>,
     game: Res<'w, GameMeta>,
     map: Query<'w, 's, Entity, With<MapMeta>>,
     camera: Query<
@@ -835,7 +835,7 @@ fn map_open_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
                             .into_iter(),
                     ) {
                         if ui.button(&map_name).clicked() {
-                            params.net_commands.spawn().insert(map_handle);
+                            params.commands.spawn().insert(map_handle);
                             *params.show_map_open = false;
                         }
                     }
@@ -937,7 +937,7 @@ fn create_map(params: &mut EditorCentralPanel) {
         background_layers: default(),
     };
 
-    params.net_commands.spawn().insert(meta);
+    params.commands.spawn().insert(meta);
     *params.show_map_open = false;
     *params.show_map_create = false;
 }

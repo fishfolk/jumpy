@@ -5,12 +5,9 @@ use bevy::{
 use bevy_egui::*;
 use bevy_fluent::Localization;
 use bevy_inspector_egui::WorldInspectorParams;
-use bevy_renet::renet::RenetServer;
-use renet_visualizer::RenetServerVisualizer;
 
 use crate::{
     config::ENGINE_CONFIG, localization::LocalizationExt, physics::debug::PhysicsDebugRenderConfig,
-    prelude::*,
 };
 
 pub struct DebugToolsPlugin;
@@ -19,40 +16,35 @@ impl Plugin for DebugToolsPlugin {
     fn build(&self, app: &mut App) {
         if ENGINE_CONFIG.debug_tools {
             app.add_plugin(FrameTimeDiagnosticsPlugin)
-                .init_resource::<ShowNetworkVisualizer>()
+                // .init_resource::<ShowNetworkVisualizer>()
                 .init_resource::<ShowFameTimeDiagnostics>()
                 .add_system(debug_tools_window)
-                .add_system(frame_diagnostic_window)
-                .add_system(
-                    network_visualizer_window
-                        .run_if_resource_exists::<RenetServer>()
-                        .run_if_resource_exists::<RenetServerVisualizer<200>>(),
-                );
+                .add_system(frame_diagnostic_window);
         }
     }
 }
 
-#[derive(Deref, DerefMut, Default)]
-pub struct ShowNetworkVisualizer(pub bool);
+// #[derive(Deref, DerefMut, Default)]
+// pub struct ShowNetworkVisualizer(pub bool);
 
-fn network_visualizer_window(
-    show: Res<ShowNetworkVisualizer>,
-    mut egui_context: ResMut<EguiContext>,
-    mut visualizer: ResMut<RenetServerVisualizer<200>>,
-    server: Res<RenetServer>,
-) {
-    if **show {
-        visualizer.update(&server);
-        visualizer.show_window(egui_context.ctx_mut());
-    }
-}
+// fn network_visualizer_window(
+//     show: Res<ShowNetworkVisualizer>,
+//     mut egui_context: ResMut<EguiContext>,
+//     mut visualizer: ResMut<RenetServerVisualizer<200>>,
+//     server: Res<RenetServer>,
+// ) {
+//     if **show {
+//         visualizer.update(&server);
+//         visualizer.show_window(egui_context.ctx_mut());
+//     }
+// }
 
 #[derive(Default, Deref, DerefMut)]
 struct ShowFameTimeDiagnostics(pub bool);
 
 /// System that renders the debug tools window which can be toggled by pressing F12
 fn debug_tools_window(
-    mut show_network_visualizer: ResMut<ShowNetworkVisualizer>,
+    // mut show_network_visualizer: ResMut<ShowNetworkVisualizer>,
     mut visible: Local<bool>,
     mut egui_context: ResMut<EguiContext>,
     mut physics_debug_render: ResMut<PhysicsDebugRenderConfig>,
@@ -83,10 +75,10 @@ fn debug_tools_window(
         **show_frame_diagnostics = !**show_frame_diagnostics;
     }
 
-    // Shortcut to toggle network visualizers
-    if input.just_pressed(KeyCode::F7) {
-        **show_network_visualizer = !**show_network_visualizer;
-    }
+    // // Shortcut to toggle network visualizers
+    // if input.just_pressed(KeyCode::F7) {
+    //     **show_network_visualizer = !**show_network_visualizer;
+    // }
 
     // Display debug tool window
     egui::Window::new(localization.get("debug-tools"))
@@ -113,10 +105,10 @@ fn debug_tools_window(
             );
 
             // Show network visualizer
-            ui.checkbox(
-                &mut show_network_visualizer,
-                format!("{} ( F7 )", localization.get("show-network-visualizer")),
-            );
+            // ui.checkbox(
+            //     &mut show_network_visualizer,
+            //     format!("{} ( F7 )", localization.get("show-network-visualizer")),
+            // );
         });
 }
 

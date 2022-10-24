@@ -32,23 +32,23 @@ impl Plugin for PausePlugin {
 }
 
 /// Transition game to pause state
-fn pause_system(mut net_commands: NetCommands, input: Query<&ActionState<MenuAction>>) {
+fn pause_system(mut commands: Commands, input: Query<&ActionState<MenuAction>>) {
     let input = input.single();
     if input.just_pressed(MenuAction::Pause) {
-        net_commands.next_state(InGameState::Paused);
+        commands.insert_resource(NextState(InGameState::Paused));
     }
 }
 
 // Transition game out of paused state
-fn unpause_system(mut net_commands: NetCommands, input: Query<&ActionState<MenuAction>>) {
+fn unpause_system(mut commands: Commands, input: Query<&ActionState<MenuAction>>) {
     let input = input.single();
     if input.just_pressed(MenuAction::Pause) {
-        net_commands.next_state(InGameState::Playing);
+        commands.insert_resource(NextState(InGameState::Playing));
     }
 }
 
 pub fn pause_menu(
-    mut net_commands: NetCommands,
+    mut commands: Commands,
     mut egui_context: ResMut<EguiContext>,
     game: Res<GameMeta>,
     localization: Res<Localization>,
@@ -95,7 +95,7 @@ pub fn pause_menu(
                         }
 
                         if continue_button.clicked() {
-                            net_commands.next_state(GameState::InGame);
+                            commands.insert_resource(NextState(GameState::InGame));
                         }
 
                         if BorderedButton::themed(
@@ -106,7 +106,7 @@ pub fn pause_menu(
                         .show(ui)
                         .clicked()
                         {
-                            net_commands.next_state(InGameState::Editing);
+                            commands.insert_resource(NextState(InGameState::Editing));
                         }
 
                         if BorderedButton::themed(
@@ -118,7 +118,7 @@ pub fn pause_menu(
                         .clicked()
                         {
                             // Show the main menu
-                            net_commands.next_state(GameState::MainMenu);
+                            commands.insert_resource(NextState(GameState::MainMenu));
                             ui.ctx().clear_focus();
                         }
                     });

@@ -3,16 +3,18 @@
 
 use bevy::render::camera::CameraUpdateSystem;
 
-use crate::prelude::*;
+use crate::{config::ENGINE_CONFIG, prelude::*};
 
 pub struct WorkaroundsPlugin;
 
 impl Plugin for WorkaroundsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_to_stage(
-            CoreStage::PostUpdate,
-            update_camera_projection_when_camera_changes.before(CameraUpdateSystem),
-        );
+        if !ENGINE_CONFIG.server_mode {
+            app.add_system_to_stage(
+                CoreStage::PostUpdate,
+                update_camera_projection_when_camera_changes.before(CameraUpdateSystem),
+            );
+        }
     }
 }
 

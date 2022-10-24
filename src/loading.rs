@@ -97,7 +97,7 @@ pub struct GameLoader<'w, 's> {
     game_handle: Res<'w, Handle<GameMeta>>,
     clear_color: ResMut<'w, ClearColor>,
     game_assets: ResMut<'w, Assets<GameMeta>>,
-    egui_ctx: ResMut<'w, EguiContext>,
+    egui_ctx: Option<ResMut<'w, EguiContext>>,
     events: EventReader<'w, 's, AssetEvent<GameMeta>>,
     active_scripts: ResMut<'w, ActiveScripts>,
     storage: ResMut<'w, Storage>,
@@ -145,16 +145,18 @@ impl<'w, 's> GameLoader<'w, 's> {
 
                 // One-time initialization
             } else {
-                // Initialize empty fonts for all game fonts.
-                //
-                // This makes sure Egui will not panic if we try to use a font that is still loading.
-                let mut egui_fonts = egui::FontDefinitions::default();
-                for font_name in game.ui_theme.font_families.keys() {
-                    let font_family = egui::FontFamily::Name(font_name.clone().into());
-                    egui_fonts.families.insert(font_family, vec![]);
+                if let Some(ctx) = egui_ctx.as_mut() {
+                    // Initialize empty fonts for all game fonts.
+                    //
+                    // This makes sure Egui will not panic if we try to use a font that is still loading.
+                    let mut egui_fonts = egui::FontDefinitions::default();
+                    for font_name in game.ui_theme.font_families.keys() {
+                        let font_family = egui::FontFamily::Name(font_name.clone().into());
+                        egui_fonts.families.insert(font_family, vec![]);
+                    }
+                    ctx.ctx_mut().set_fonts(egui_fonts.clone());
+                    commands.insert_resource(egui_fonts);
                 }
-                egui_ctx.ctx_mut().set_fonts(egui_fonts.clone());
-                commands.insert_resource(egui_fonts);
 
                 // Spawn player input collectors.
                 let settings = storage.get(Settings::STORAGE_KEY);
@@ -234,8 +236,13 @@ impl<'w, 's> GameLoader<'w, 's> {
                 //     )
                 // }
 
-                // Transition to the main menu when we are done
-                commands.insert_resource(NextState(GameState::MainMenu));
+                if ENGINE_CONFIG.server_mode {
+                    // Go to server lobby
+                    commands.insert_resource(NextState(GameState::ServerLoby));
+                } else {
+                    // Transition to the main menu when we are done
+                    commands.insert_resource(NextState(GameState::MainMenu));
+                }
             }
 
             // Update camera scaling mode
@@ -253,48 +260,58 @@ impl<'w, 's> GameLoader<'w, 's> {
                     .with_default(translations.default_locale.clone()),
             );
 
-            let mut visuals = egui::Visuals::dark();
-            visuals.widgets = game.ui_theme.widgets.get_egui_widget_style();
-            egui_ctx.ctx_mut().set_visuals(visuals);
+            if let Some(egui_ctx) = &mut egui_ctx {
+                let mut visuals = egui::Visuals::dark();
+                visuals.widgets = game.ui_theme.widgets.get_egui_widget_style();
+                egui_ctx.ctx_mut().set_visuals(visuals);
 
-            // Helper to load border images
-            let mut load_border_image = |border: &mut BorderImageMeta| {
-                border.egui_texture = egui_ctx.add_image(border.handle.inner.clone_weak());
-            };
+                // Helper to load border images
+                let mut load_border_image = |border: &mut BorderImageMeta| {
+                    border.egui_texture = egui_ctx.add_image(border.handle.inner.clone_weak());
+                };
 
-            // Add Border images to egui context
-            load_border_image(&mut game.ui_theme.hud.portrait_frame);
-            load_border_image(&mut game.ui_theme.panel.border);
-            load_border_image(&mut game.ui_theme.hud.lifebar.background_image);
-            load_border_image(&mut game.ui_theme.hud.lifebar.progress_image);
-            for button in game.ui_theme.button_styles.as_list() {
-                load_border_image(&mut button.borders.default);
-                if let Some(border) = &mut button.borders.clicked {
-                    load_border_image(border);
+                // Add Border images to egui context
+                load_border_image(&mut game.ui_theme.hud.portrait_frame);
+                load_border_image(&mut game.ui_theme.panel.border);
+                load_border_image(&mut game.ui_theme.hud.lifebar.background_image);
+                load_border_image(&mut game.ui_theme.hud.lifebar.progress_image);
+                for button in game.ui_theme.button_styles.as_list() {
+                    load_border_image(&mut button.borders.default);
+                    if let Some(border) = &mut button.borders.clicked {
+                        load_border_image(border);
+                    }
+                    if let Some(border) = &mut button.borders.focused {
+                        load_border_image(border);
+                    }
                 }
-                if let Some(border) = &mut button.borders.focused {
-                    load_border_image(border);
+                // Add player sprite sheets to egui context
+                for player_handle in &game.player_handles {
+                    let player_meta = player_assets.get_mut(player_handle).unwrap();
+                    let atlas = texture_atlas_assets
+                        .get(&player_meta.spritesheet.atlas_handle)
+                        .unwrap();
+                    player_meta.spritesheet.egui_texture_id =
+                        egui_ctx.add_image(atlas.texture.clone_weak());
                 }
-            }
 
-            // Add player sprite sheets to egui context
-            for player_handle in &game.player_handles {
-                let player_meta = player_assets.get_mut(player_handle).unwrap();
-                let atlas = texture_atlas_assets
-                    .get(&player_meta.spritesheet.atlas_handle)
-                    .unwrap();
-                player_meta.spritesheet.egui_texture_id =
-                    egui_ctx.add_image(atlas.texture.clone_weak());
-            }
-
-            // Add editor icons to egui context
-            for icon in game.ui_theme.editor.icons.as_mut_list() {
-                icon.egui_texture_id = egui_ctx.add_image(icon.image_handle.inner.clone_weak());
+                // Add editor icons to egui context
+                for icon in game.ui_theme.editor.icons.as_mut_list() {
+                    icon.egui_texture_id = egui_ctx.add_image(icon.image_handle.inner.clone_weak());
+                }
             }
 
             // Set the active scripts
             for script_handle in &game.script_handles {
                 active_scripts.insert(script_handle.inner.clone_weak());
+            }
+            if ENGINE_CONFIG.server_mode {
+                for script_handle in &game.server_script_handles {
+                    active_scripts.insert(script_handle.inner.clone_weak());
+                }
+            } else {
+                for script_handle in &game.client_script_handles {
+                    active_scripts.insert(script_handle.inner.clone_weak());
+                }
             }
 
             // Insert the game resource

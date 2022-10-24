@@ -29,13 +29,15 @@ maps:
   - map/levels/zyrafa06.map.json
 
 scripts:
-  - ui/menu-background-zoom.ts
-  - game/camera_controller.ts
 
   - player/states/default.ts
   - player/states/idle.ts
   - player/states/walk.ts
   - player/states/midair.ts
+
+client_scripts:
+  - game/camera_controller.ts
+  - ui/menu-background-zoom.ts
 
 main_menu:
   title_font:

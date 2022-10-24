@@ -1,6 +1,7 @@
 use std::{net::SocketAddr, sync::Arc, time::Duration};
 
 use certs::SkipServerVerification;
+use jumpy::networking::{NetClientMessage, NetServerMessage};
 use jumpy_matchmaker_proto::{MatchInfo, MatchmakerRequest, MatchmakerResponse};
 use once_cell::sync::Lazy;
 use quinn::{ClientConfig, Endpoint, EndpointConfig};
@@ -102,8 +103,23 @@ async fn client() -> anyhow::Result<()> {
         }
     }
 
+    let mut sender = conn.open_uni().await?;
+
+    println!("Sending ping to server");
+    sender
+        .write_all(&postcard::to_allocvec(&NetClientMessage::Ping)?)
+        .await?;
+    sender.finish().await?;
+
+    println!("Waiting for pong");
+    let recv = conn.accept_uni().await?;
+    let message: NetServerMessage = postcard::from_bytes(&recv.read_to_end(256).await?)?;
+
+    println!("Got message: {:?}", message);
+
     async_io::Timer::after(Duration::from_secs(4)).await;
 
+    println!("Closing connection");
     conn.close(0u8.into(), b"done");
 
     endpoint.close(0u8.into(), b"done");

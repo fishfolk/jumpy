@@ -60,7 +60,6 @@ bevy_ecs_tilemap = { version = "0.7.0", features = ["atlas"] }
 bevy_prototype_lyon = "0.6.0"
 fnv = "1.0.7"
 base64 = "0.13.0"
-bevy_renet = { git = "https://github.com/zicklag/renet.git", branch = "jumpy" }
 bevy_ecs_dynamic = { git = "https://github.com/jakobhellermann/bevy_ecs_dynamic" }
 postcard = { git = "https://github.com/zicklag/postcard.git", branch = "custom-error-messages", default-features = false, features = ["alloc", "use-std"] }
 flume = "0.10.14"
@@ -69,7 +68,6 @@ futures-lite = "1.12.0"
 # Debug tools
 bevy-inspector-egui = { version = "0.13.0" }
 ulid = { version = "1.0.0", features = ["serde"] }
-renet_visualizer = { git = "https://github.com/zicklag/renet.git", branch = "jumpy" }
 bytes = "1.2.1"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
@@ -86,6 +84,3 @@ debug = false
 [profile.release]
 lto = true
 codegen-units = 1 # Improved rapier physics perf, so it might help other stuff, too
-
-[patch.crates-io]
-renet = { git = "https://github.com/zicklag/renet.git", branch = "jumpy" }

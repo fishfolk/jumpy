@@ -70,6 +70,7 @@ pub enum GameState {
     LoadingGameData,
     MainMenu,
     InGame,
+    ServerLoby,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -159,6 +160,12 @@ pub fn build_app(net_server: Option<NetServer>) -> App {
 
     // Install game plugins
     if engine_config.server_mode {
+        if let Some(net_server) = net_server {
+            app.insert_resource(net_server);
+        } else {
+            panic!("Net server required when in server mode");
+        }
+
         app.add_plugins_with(DefaultPlugins, |group| {
             group
                 .disable::<LogPlugin>()
@@ -172,7 +179,6 @@ pub fn build_app(net_server: Option<NetServer>) -> App {
         })
         .init_resource::<Windows>()
         .add_asset::<TextureAtlas>()
-        .insert_resource(net_server)
         .add_plugin(ScheduleRunnerPlugin)
         .insert_resource(RunMode::Loop {
             wait: Some(Duration::from_secs_f64(FIXED_TIMESTEP)),

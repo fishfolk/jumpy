@@ -3,7 +3,6 @@ use bevy::{
     reflect::{ReflectFromPtr, TypeRegistryArc, TypeRegistryInternal},
 };
 use bevy_ecs_dynamic::dynamic_query::{DynamicQuery, FetchKind, FetchResult};
-use bevy_renet::renet::{RenetClient, RenetServer};
 use serde::de::DeserializeSeed;
 
 use crate::prelude::*;

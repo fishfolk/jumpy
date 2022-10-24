@@ -1,3 +1,5 @@
+use std::net::SocketAddr;
+
 use once_cell::sync::Lazy;
 use structopt::StructOpt;
 
@@ -13,6 +15,7 @@ pub static ENGINE_CONFIG: Lazy<EngineConfig> = Lazy::new(|| {
             EngineConfig {
                 server_mode: true,
                 hot_reload: false,
+                matchmaking_server: "127.0.0.1:8943".parse().unwrap(), // Not actually used in serveer mode
                 asset_dir: Some(
                     std::env::var(ASSET_DIR_ENV_VAR).expect("Missing asset dir env var"),
                 ),
@@ -33,8 +36,13 @@ pub static ENGINE_CONFIG: Lazy<EngineConfig> = Lazy::new(|| {
 #[derive(Clone, Debug, StructOpt)]
 #[structopt(name = "Jumpy", about = "A 2.5D side-scroller beatemup.")]
 pub struct EngineConfig {
+    /// Whether or not to run the game headless server mode
     #[structopt(skip)]
     pub server_mode: bool,
+
+    /// The matchmaking server to use for online games
+    #[structopt(default_value = "127.0.0.1:8943")]
+    pub matchmaking_server: SocketAddr,
 
     /// Hot reload assets
     #[structopt(short = "R", long)]

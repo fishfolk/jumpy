@@ -14,5 +14,7 @@ pub struct MatchInfo {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum MatchmakerResponse {
+    Accepted,
+    PlayerCount(u8),
     Success,
 }

@@ -97,9 +97,26 @@ async fn client() -> anyhow::Result<()> {
     let message = recv.read_to_end(256).await?;
     let message: MatchmakerResponse = postcard::from_bytes(&message)?;
 
-    match message {
-        MatchmakerResponse::Success => {
-            println!("Found a match!");
+    if let MatchmakerResponse::Accepted = message {
+        println!("Request accepted, waiting for match");
+    } else {
+        panic!("Unexpected message from server!");
+    }
+
+    loop {
+        let recv = conn.accept_uni().await?;
+        let message = recv.read_to_end(256).await?;
+        let message: MatchmakerResponse = postcard::from_bytes(&message)?;
+
+        match message {
+            MatchmakerResponse::PlayerCount(count) => {
+                println!("{count} players in lobby");
+            }
+            MatchmakerResponse::Success => {
+                println!("Match is ready!");
+                break;
+            }
+            _ => panic!("Unexpected message from server"),
         }
     }
 
@@ -109,9 +126,7 @@ async fn client() -> anyhow::Result<()> {
         let mut sender = conn.open_uni().await?;
 
         println!("Sending ping to server");
-        sender
-            .write_all(&postcard::to_allocvec(&Ping)?)
-            .await?;
+        sender.write_all(&postcard::to_allocvec(&Ping)?).await?;
         sender.write_all(&u32::to_le_bytes(0)).await?;
         sender.finish().await?;
 

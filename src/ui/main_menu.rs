@@ -19,7 +19,10 @@ use crate::{
 
 // use self::settings::ControlInputBindingEvents;
 
-use self::settings::{ModifiedSettings, SettingsTab};
+use self::{
+    matchmaking::MatchmakingMenu,
+    settings::{ModifiedSettings, SettingsTab},
+};
 
 use super::{
     widget,
@@ -31,6 +34,7 @@ use super::{
 };
 
 mod map_select;
+mod matchmaking;
 mod player_select;
 mod settings;
 
@@ -125,6 +129,7 @@ pub enum MenuPage {
     Settings,
     PlayerSelect,
     MapSelect,
+    Matchmaking,
 }
 
 impl Default for MenuPage {
@@ -181,7 +186,7 @@ impl<'w, 's> WidgetSystem for MainMenu<'w, 's> {
         // Go to previous menu if back button is pressed
         if menu_input.just_pressed(MenuAction::Back) && !is_player_select {
             match *params.menu_page {
-                MenuPage::Settings { .. } | MenuPage::PlayerSelect => {
+                MenuPage::Settings { .. } | MenuPage::PlayerSelect | MenuPage::Matchmaking => {
                     *params.menu_page = MenuPage::Home;
                     ui.ctx().clear_focus();
                 }
@@ -199,6 +204,9 @@ impl<'w, 's> WidgetSystem for MainMenu<'w, 's> {
         // Render the menu based on the current menu selection
         match *params.menu_page {
             MenuPage::Home => widget::<HomeMenu>(world, ui, id.with("home"), ()),
+            MenuPage::Matchmaking => {
+                widget::<MatchmakingMenu>(world, ui, id.with("matchmaking"), ())
+            }
             MenuPage::PlayerSelect => {
                 widget::<player_select::PlayerSelectMenu>(world, ui, id.with("player-select"), ())
             }
@@ -270,8 +278,8 @@ impl<'w, 's> WidgetSystem for HomeMenu<'w, 's> {
                 .show(ui, |ui| {
                     let min_button_size = egui::vec2(ui.available_width(), 0.0);
 
-                    // Start button
-                    let start_button = BorderedButton::themed(
+                    // Local Game
+                    let local_game_button = BorderedButton::themed(
                         &ui_theme.button_styles.normal,
                         &params.localization.get("local-game"),
                     )
@@ -279,8 +287,21 @@ impl<'w, 's> WidgetSystem for HomeMenu<'w, 's> {
                     .show(ui)
                     .focus_by_default(ui);
 
-                    if start_button.clicked() {
+                    if local_game_button.clicked() {
                         *params.menu_page = MenuPage::PlayerSelect;
+                    }
+
+                    // Online Game
+                    let online_game_button = BorderedButton::themed(
+                        &ui_theme.button_styles.normal,
+                        &params.localization.get("online-game"),
+                    )
+                    .min_size(min_button_size)
+                    .show(ui)
+                    .focus_by_default(ui);
+
+                    if online_game_button.clicked() {
+                        *params.menu_page = MenuPage::Matchmaking;
                     }
 
                     // Map editor

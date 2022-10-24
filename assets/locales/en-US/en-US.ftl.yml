@@ -4,6 +4,7 @@ resources:
   - menu.ftl
   - debug-tools.ftl
 
+  - matchmaking.ftl
   - settings.ftl
   - editor.ftl
   - player-select.ftl

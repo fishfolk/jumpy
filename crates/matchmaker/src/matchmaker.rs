@@ -1,7 +1,7 @@
 use futures_lite::future;
 use jumpy_matchmaker_proto::{MatchInfo, MatchmakerRequest, MatchmakerResponse};
 use once_cell::sync::Lazy;
-use quinn::{Connection, ConnectionError, SendStream};
+use quinn::{Connection, ConnectionError};
 use scc::HashMap;
 
 use crate::game_server::start_game_server;
@@ -31,7 +31,7 @@ pub async fn handle_connection(conn: Connection) {
 #[derive(Default)]
 struct State {
     /// The mapping of match info to the vector connected clients in the waiting room.
-    rooms: HashMap<MatchInfo, Vec<(Connection, SendStream)>>,
+    rooms: HashMap<MatchInfo, Vec<Connection>>,
 }
 
 static STATE: Lazy<State> = Lazy::new(State::default);
@@ -56,7 +56,7 @@ async fn impl_matchmaker(conn: Connection) -> anyhow::Result<()> {
                 return Ok(());
             }
             either::Either::Right(bi) => {
-                let (send, recv) = bi?;
+                let (mut send, recv) = bi?;
 
                 // Parse matchmaker request
                 let request: MatchmakerRequest =
@@ -66,9 +66,15 @@ async fn impl_matchmaker(conn: Connection) -> anyhow::Result<()> {
                     MatchmakerRequest::RequestMatch(match_info) => {
                         debug!(connection_id, ?match_info, "Got request for match");
 
+                        // Accept request
+                        let message = postcard::to_allocvec(&MatchmakerResponse::Accepted)?;
+                        send.write_all(&message).await?;
+                        send.finish().await?;
+
                         let player_count = match_info.player_count;
 
                         let mut members_to_join = Vec::new();
+                        let mut members_to_notify = Vec::new();
 
                         // Make sure room exists
                         STATE
@@ -82,10 +88,10 @@ async fn impl_matchmaker(conn: Connection) -> anyhow::Result<()> {
                             .update_async(&match_info, |match_info, members| {
                                 debug!("Testing");
                                 // Add the current client to the room
-                                members.push((conn.clone(), send));
+                                members.push(conn.clone());
 
                                 // Remove any dropped connections from the list
-                                members.retain(|(conn, _send)| {
+                                members.retain(|conn| {
                                     if let Some(reason) = conn.close_reason() {
                                         let connection_id = conn.stable_id();
                                         debug!(
@@ -106,12 +112,24 @@ async fn impl_matchmaker(conn: Connection) -> anyhow::Result<()> {
                                     ?match_info,
                                     "Room now has {}/{} members", member_count, player_count
                                 );
+
                                 if member_count >= player_count as _ {
                                     // Clear the room
                                     members_to_join.append(members);
+                                } else {
+                                    members_to_notify = members.clone();
                                 }
                             })
                             .await;
+
+                        if !members_to_notify.is_empty() {
+                            let message = postcard::to_allocvec(&MatchmakerResponse::PlayerCount(
+                                members_to_notify.len() as u8,
+                            ))?;
+                            let mut send = conn.open_uni().await?;
+                            send.write_all(&message).await?;
+                            send.finish().await?;
+                        }
 
                         if !members_to_join.is_empty() {
                             // Respond with success
@@ -119,10 +137,12 @@ async fn impl_matchmaker(conn: Connection) -> anyhow::Result<()> {
 
                             // Send the match ID to all of the clients in the room
                             let mut clients = Vec::with_capacity(player_count as usize);
-                            for (conn, mut send) in members_to_join.drain(..) {
-                                clients.push(conn);
+                            for conn in members_to_join.drain(..) {
+                                let mut send = conn.open_uni().await?;
                                 send.write_all(&message).await?;
                                 send.finish().await?;
+
+                                clients.push(conn);
                             }
 
                             // Hand the clients off to the game manager

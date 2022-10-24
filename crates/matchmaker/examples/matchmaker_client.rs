@@ -103,19 +103,28 @@ async fn client() -> anyhow::Result<()> {
         }
     }
 
-    let mut sender = conn.open_uni().await?;
+    async_io::Timer::after(Duration::from_secs(2)).await;
 
-    println!("Sending ping to server");
-    sender
-        .write_all(&postcard::to_allocvec(&NetClientMessage::Ping)?)
-        .await?;
-    sender.finish().await?;
+    for _ in 0..3 {
+        let mut sender = conn.open_uni().await?;
 
-    println!("Waiting for pong");
-    let recv = conn.accept_uni().await?;
-    let message: NetServerMessage = postcard::from_bytes(&recv.read_to_end(256).await?)?;
+        println!("Sending ping to server");
+        sender
+            .write_all(&postcard::to_allocvec(&NetClientMessage::Ping)?)
+            .await?;
+        sender.write_all(&u32::to_le_bytes(0)).await?;
+        sender.finish().await?;
 
-    println!("Got message: {:?}", message);
+        println!("Waiting for pong");
+        let recv = conn.accept_uni().await?;
+        let mut incomming = recv.read_to_end(256).await?;
+        let type_idx_bytes: [u8; 4] = incomming.split_off(incomming.len() - 4).try_into().unwrap();
+        let type_idx = u32::from_le_bytes(type_idx_bytes);
+        assert_eq!(type_idx, 1, "Invalid type");
+        let message: NetServerMessage = postcard::from_bytes(&incomming).unwrap();
+
+        println!("Got message: {:?}", message);
+    }
 
     async_io::Timer::after(Duration::from_secs(4)).await;
 

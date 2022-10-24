@@ -1,35 +1,31 @@
+use std::{any::TypeId, collections::VecDeque};
+
 use crate::networking::{Connection, NetServerMessage};
-use bevy::{app::AppExit, tasks::IoTaskPool};
+use async_channel::{Receiver, RecvError, Sender};
+use bevy::{app::AppExit, tasks::IoTaskPool, utils::HashMap};
 use bytes::Bytes;
-use flume::{Receiver, Sender};
 use futures_lite::future;
 use serde::de::DeserializeOwned;
 
 use crate::prelude::*;
 
-use super::NetClientMessage;
+use super::{NetClientMessage, NET_MESSAGE_TYPES};
 
 pub struct ServerPlugin;
 
 impl Plugin for ServerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_to_stage(
-            CoreStage::First,
-            exit_on_disconnect.run_if_resource_exists::<NetServer>(),
-        )
-        .add_system_to_stage(
-            CoreStage::Last,
-            send_messages.run_if_resource_exists::<NetServer>(),
-        )
-        .add_system_to_stage(
-            CoreStage::Last,
-            receive_messages.run_if_resource_exists::<NetServer>(),
-        )
-        .add_system(reply_to_messages.run_if_resource_exists::<NetServer>());
+        app.add_startup_system(spawn_message_recv_tasks.run_if_resource_exists::<NetServer>())
+            .add_startup_system(spawn_message_send_task.run_if_resource_exists::<NetServer>())
+            .add_system_to_stage(
+                CoreStage::First,
+                exit_on_disconnect.run_if_resource_exists::<NetServer>(),
+            )
+            .add_system(reply_to_messages.run_if_resource_exists::<NetServer>());
     }
 }
 
-fn reply_to_messages(server: Res<NetServer>) {
+fn reply_to_messages(mut server: ResMut<NetServer>) {
     while let Some(incomming) = server.recv_reliable::<NetClientMessage>() {
         let client_idx = incomming.client_idx;
         match incomming.message {
@@ -52,18 +48,23 @@ pub struct NetServer {
     incomming_reliable_receiver: Receiver<Incomming>,
     incomming_unreliable_sender: Sender<Incomming>,
     incomming_unreliable_receiver: Receiver<Incomming>,
+    incomming_reliable_queue: HashMap<TypeId, VecDeque<Incomming>>,
+    incomming_unreliable_queue: HashMap<TypeId, VecDeque<Incomming>>,
 }
 
+#[derive(Debug)]
 struct Outgoing {
     data: Vec<u8>,
     target: MessageTarget,
 }
 
+#[derive(Debug, Clone)]
 struct Incomming {
     data: Vec<u8>,
     client_idx: usize,
 }
 
+#[derive(Debug, Clone)]
 enum MessageTarget {
     All,
     Client(usize),
@@ -71,10 +72,11 @@ enum MessageTarget {
 
 impl NetServer {
     pub fn new(clients: Vec<Connection>) -> Self {
-        let (outgoing_reliable_sender, outgoing_reliable_receiver) = flume::unbounded();
-        let (outgoing_unreliable_sender, outgoing_unreliable_receiver) = flume::unbounded();
-        let (incomming_reliable_sender, incomming_reliable_receiver) = flume::unbounded();
-        let (incomming_unreliable_sender, incomming_unreliable_receiver) = flume::unbounded();
+        let (outgoing_reliable_sender, outgoing_reliable_receiver) = async_channel::unbounded();
+        let (outgoing_unreliable_sender, outgoing_unreliable_receiver) = async_channel::unbounded();
+        let (incomming_reliable_sender, incomming_reliable_receiver) = async_channel::unbounded();
+        let (incomming_unreliable_sender, incomming_unreliable_receiver) =
+            async_channel::unbounded();
 
         Self {
             clients,
@@ -86,11 +88,48 @@ impl NetServer {
             incomming_reliable_receiver,
             incomming_unreliable_sender,
             incomming_unreliable_receiver,
+            incomming_reliable_queue: default(),
+            incomming_unreliable_queue: default(),
         }
     }
 
-    pub fn send_reliable<S: Serialize>(&self, message: &S, client_idx: usize) {
-        let message = postcard::to_allocvec(message).expect("Serialize net message");
+    /// Update the incomming message queue
+    fn update_queue(&mut self) {
+        while let Ok(mut incomming) = self.incomming_reliable_receiver.try_recv() {
+            let type_idx_bytes: [u8; 4] = incomming
+                .data
+                .split_off(incomming.data.len() - 4)
+                .try_into()
+                .unwrap();
+            let type_idx = u32::from_le_bytes(type_idx_bytes);
+            let type_id = NET_MESSAGE_TYPES[type_idx as usize];
+            self.incomming_reliable_queue
+                .entry(type_id)
+                .or_default()
+                .push_back(incomming);
+        }
+        while let Ok(mut incomming) = self.incomming_unreliable_receiver.try_recv() {
+            let type_idx_bytes: [u8; 4] = incomming
+                .data
+                .split_off(incomming.data.len() - 4)
+                .try_into()
+                .unwrap();
+            let type_idx = u32::from_le_bytes(type_idx_bytes);
+            let type_id = NET_MESSAGE_TYPES[type_idx as usize];
+            self.incomming_unreliable_queue
+                .entry(type_id)
+                .or_default()
+                .push_back(incomming);
+        }
+    }
+
+    pub fn send_reliable<S: 'static + Serialize>(&self, message: &S, client_idx: usize) {
+        let type_id = TypeId::of::<S>();
+        let type_idx = NET_MESSAGE_TYPES
+            .binary_search(&type_id)
+            .expect("Net message not registered") as u32;
+        let mut message = postcard::to_allocvec(message).expect("Serialize net message");
+        message.extend_from_slice(&(type_idx as u32).to_le_bytes());
         self.outgoing_reliable_sender
             .try_send(Outgoing {
                 data: message,
@@ -99,8 +138,14 @@ impl NetServer {
             .ok();
     }
 
-    pub fn send_unreliable<S: Serialize>(&self, message: &S, client_idx: usize) {
-        let message = postcard::to_allocvec(message).expect("Serialize net message");
+    pub fn send_unreliable<S: 'static + Serialize>(&self, message: &S, client_idx: usize) {
+        let type_id = TypeId::of::<S>();
+        let type_idx = NET_MESSAGE_TYPES
+            .binary_search(&type_id)
+            .expect("Net message not registered") as u32;
+        let mut message = postcard::to_allocvec(message).expect("Serialize net message");
+        message.extend_from_slice(&(type_idx as u32).to_le_bytes());
+
         self.outgoing_unreliable_sender
             .try_send(Outgoing {
                 data: message,
@@ -109,8 +154,14 @@ impl NetServer {
             .ok();
     }
 
-    pub fn broadcast_reliable<S: Serialize>(&self, message: &S) {
-        let message = postcard::to_allocvec(message).expect("Serialize net message");
+    pub fn broadcast_reliable<S: 'static + Serialize>(&self, message: &S) {
+        let type_id = TypeId::of::<S>();
+        let type_idx = NET_MESSAGE_TYPES
+            .binary_search(&type_id)
+            .expect("Net message not registered") as u32;
+        let mut message = postcard::to_allocvec(message).expect("Serialize net message");
+        message.extend_from_slice(&(type_idx as u32).to_le_bytes());
+
         self.outgoing_reliable_sender
             .try_send(Outgoing {
                 data: message,
@@ -119,8 +170,14 @@ impl NetServer {
             .ok();
     }
 
-    pub fn broadcast_unreliable<S: Serialize>(&self, message: &S) {
-        let message = postcard::to_allocvec(message).expect("Serialize net message");
+    pub fn broadcast_unreliable<S: 'static + Serialize>(&self, message: &S) {
+        let type_id = TypeId::of::<S>();
+        let type_idx = NET_MESSAGE_TYPES
+            .binary_search(&type_id)
+            .expect("Net message not registered") as u32;
+        let mut message = postcard::to_allocvec(message).expect("Serialize net message");
+        message.extend_from_slice(&(type_idx as u32).to_le_bytes());
+
         self.outgoing_unreliable_sender
             .try_send(Outgoing {
                 data: message,
@@ -129,24 +186,36 @@ impl NetServer {
             .ok();
     }
 
-    pub fn recv_reliable<D: DeserializeOwned>(&self) -> Option<IncommingMessage<D>> {
-        self.incomming_reliable_receiver
-            .try_recv()
+    pub fn recv_reliable<T: 'static + DeserializeOwned>(&mut self) -> Option<IncommingMessage<T>> {
+        let type_id = TypeId::of::<T>();
+        if !NET_MESSAGE_TYPES.contains(&type_id) {
+            panic!("Attempt to receive unregistered message type");
+        }
+        self.update_queue();
+        self.incomming_reliable_queue
+            .get_mut(&type_id)
+            .and_then(|queue| queue.pop_front())
             .map(|incomming| IncommingMessage {
                 message: postcard::from_bytes(&incomming.data).expect("Deserialize net message"),
                 client_idx: incomming.client_idx,
             })
-            .ok()
     }
 
-    pub fn recv_unreliable<D: DeserializeOwned>(&self) -> Option<IncommingMessage<D>> {
-        self.incomming_unreliable_receiver
-            .try_recv()
+    pub fn recv_unreliable<T: 'static + DeserializeOwned>(
+        &mut self,
+    ) -> Option<IncommingMessage<T>> {
+        let type_id = TypeId::of::<T>();
+        if !NET_MESSAGE_TYPES.contains(&type_id) {
+            panic!("Attempt to receive unregistered message type");
+        }
+        self.update_queue();
+        self.incomming_unreliable_queue
+            .get_mut(&type_id)
+            .and_then(|queue| queue.pop_front())
             .map(|incomming| IncommingMessage {
                 message: postcard::from_bytes(&incomming.data).expect("Deserialize net message"),
                 client_idx: incomming.client_idx,
             })
-            .ok()
     }
 }
 
@@ -155,66 +224,91 @@ pub struct IncommingMessage<T> {
     pub client_idx: usize,
 }
 
-fn send_messages(server: Res<NetServer>) {
+fn spawn_message_send_task(server: Res<NetServer>) {
     let io_pool = IoTaskPool::get();
 
-    while let Ok(message) = server.outgoing_reliable_receiver.try_recv() {
-        let data = Bytes::from(message.data);
+    let clients = server.clients.clone();
+    let outgoing_reliable_receiver = server.outgoing_reliable_receiver.clone();
+    let outgoing_unreliable_receiver = server.outgoing_unreliable_receiver.clone();
+    io_pool
+        .spawn(async move {
+            loop {
+                let handle_reliable_message = async {
+                    loop {
+                        let message = outgoing_reliable_receiver.recv().await?;
+                        let data = Bytes::from(message.data);
 
-        let targets = match message.target {
-            MessageTarget::All => server.clients.iter().collect::<Vec<_>>(),
-            MessageTarget::Client(idx) => [&server.clients[idx]].into_iter().collect::<Vec<_>>(),
-        };
+                        let targets = match message.target {
+                            MessageTarget::All => clients.iter().collect::<Vec<_>>(),
+                            MessageTarget::Client(idx) => {
+                                [&clients[idx]].into_iter().collect::<Vec<_>>()
+                            }
+                        };
 
-        // Broadcast reliable messages to clients
-        for conn in targets {
-            let conn_ = conn.clone();
-            let message_ = data.clone();
-            io_pool
-                .spawn(async move {
-                    let result = async move {
-                        let mut sender = conn_.open_uni().await?;
+                        // Broadcast reliable messages to clients
+                        for conn in targets {
+                            let message_ = data.clone();
 
-                        sender.write_all(&message_).await?;
-                        sender.finish().await?;
+                            let result = async {
+                                let mut sender = conn.open_uni().await?;
 
-                        Ok::<(), anyhow::Error>(())
-                    };
+                                sender.write_all(&message_).await?;
+                                sender.finish().await?;
 
-                    if let Err(e) = result.await {
-                        error!("Error sending reliable message: {e:?}");
+                                Ok::<(), anyhow::Error>(())
+                            };
+
+                            if let Err(e) = result.await {
+                                error!("Error sending reliable message: {e:?}");
+                            }
+                        }
                     }
-                })
-                .detach();
-        }
-    }
 
-    while let Ok(message) = server.outgoing_unreliable_receiver.try_recv() {
-        let data = Bytes::from(message.data);
+                    // This is needed to annotate the return type of the block
+                    #[allow(unreachable_code)]
+                    Ok::<(), RecvError>(())
+                };
 
-        let targets = match message.target {
-            MessageTarget::All => server.clients.iter().collect::<Vec<_>>(),
-            MessageTarget::Client(idx) => [&server.clients[idx]].into_iter().collect::<Vec<_>>(),
-        };
+                let handle_unreliable_message = async {
+                    loop {
+                        let message = outgoing_unreliable_receiver.recv().await?;
+                        let data = Bytes::from(message.data);
 
-        // Broadcast unreliable messages to clients
-        for conn in targets {
-            let conn_ = conn.clone();
-            let message_ = data.clone();
-            io_pool
-                .spawn(async move {
-                    let result = conn_.send_datagram(message_);
+                        let targets = match message.target {
+                            MessageTarget::All => clients.iter().collect::<Vec<_>>(),
+                            MessageTarget::Client(idx) => {
+                                [&clients[idx]].into_iter().collect::<Vec<_>>()
+                            }
+                        };
 
-                    if let Err(e) = result {
-                        error!("Error sending reliable message: {e:?}");
+                        // Broadcast unreliable messages to clients
+                        for conn in targets {
+                            let message_ = data.clone();
+                            let result = conn.send_datagram(message_);
+
+                            if let Err(e) = result {
+                                error!("Error sending reliable message: {e:?}");
+                            }
+                        }
                     }
-                })
-                .detach();
-        }
-    }
+
+                    // This is needed to annotate the return type of the block
+                    #[allow(unreachable_code)]
+                    Ok::<(), RecvError>(())
+                };
+
+                if future::race(handle_reliable_message, handle_unreliable_message)
+                    .await
+                    .is_err()
+                {
+                    break;
+                }
+            }
+        })
+        .detach();
 }
 
-fn receive_messages(server: Res<NetServer>) {
+fn spawn_message_recv_tasks(server: Res<NetServer>) {
     let io_pool = IoTaskPool::get();
 
     for (client_idx, conn) in server.clients.iter().enumerate() {
@@ -222,44 +316,65 @@ fn receive_messages(server: Res<NetServer>) {
         let unreliable_sender = server.incomming_unreliable_sender.clone();
         let conn = conn.clone();
 
-        io_pool.spawn(async move {
-            let result = async move {
-                future::zip(
-                    async {
-                        while let Ok(recv) = conn.accept_uni().await {
-                            let message = recv.read_to_end(1024 * 1024).await?;
+        io_pool
+            .spawn(async move {
+                'connection: loop {
+                    let receive_message_result = async {
+                        future::zip(
+                            async {
+                                while let Ok(recv) = conn.accept_uni().await {
+                                    let message = recv.read_to_end(1024 * 1024).await?;
+                                    info!("Got connection");
 
-                            reliable_sender
-                                .send(Incomming {
-                                    data: message,
-                                    client_idx,
-                                })
-                                .ok();
-                        }
+                                    reliable_sender
+                                        .try_send(Incomming {
+                                            data: message,
+                                            client_idx,
+                                        })
+                                        .ok();
+                                }
+
+                                Ok::<(), anyhow::Error>(())
+                            },
+                            async {
+                                while let Ok(message) = conn.read_datagram().await {
+                                    unreliable_sender
+                                        .try_send(Incomming {
+                                            data: message.to_vec(),
+                                            client_idx,
+                                        })
+                                        .ok();
+                                }
+                            },
+                        )
+                        .await
+                        .0?;
 
                         Ok::<(), anyhow::Error>(())
-                    },
-                    async {
-                        while let Ok(message) = conn.read_datagram().await {
-                            unreliable_sender
-                                .send(Incomming {
-                                    data: message.to_vec(),
-                                    client_idx,
-                                })
-                                .ok();
+                    };
+
+                    let connection_closed = conn.closed();
+
+                    let event = future::or(
+                        async move { either::Left(connection_closed.await) },
+                        async move { either::Right(receive_message_result.await) },
+                    )
+                    .await;
+
+                    match event {
+                        either::Either::Left(closed) => {
+                            debug!("Client connection closed: {closed:?}");
+                            break 'connection;
                         }
-                    },
-                )
-                .await
-                .0?;
-
-                Ok::<(), anyhow::Error>(())
-            };
-
-            if let Err(e) = result.await {
-                error!("Error receiving net messages: {e:?}");
-            }
-        });
+                        either::Either::Right(message_result) => {
+                            if let Err(e) = message_result {
+                                error!("Error receiving net messages: {e:?}");
+                            }
+                        }
+                    }
+                }
+            })
+            .detach();
     }
 }
 

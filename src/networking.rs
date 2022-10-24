@@ -17,12 +17,52 @@ pub type Connection = quinn::Connection;
 ///
 /// We don't do networking on WASM yet, though, so it doesn't need to function.
 #[cfg(target_arch = "wasm32")]
-pub struct Connection;
-
+pub use wasm_conn::Connection;
 #[cfg(target_arch = "wasm32")]
-impl Connection {
-    pub fn close_reason(&self) -> Option<()> {
-        None
+mod wasm_conn {
+    use bytes::Bytes;
+
+    #[derive(Clone, Debug)]
+    pub struct Connection;
+
+    impl Connection {
+        pub fn close_reason(&self) -> Option<()> {
+            None
+        }
+
+        pub async fn open_uni(&self) -> anyhow::Result<SendStream> {
+            Ok(SendStream)
+        }
+
+        pub async fn accept_uni(&self) -> anyhow::Result<RecvStream> {
+            Ok(RecvStream)
+        }
+
+        pub async fn read_datagram(&self) -> anyhow::Result<Vec<u8>> {
+            Ok(Vec::new())
+        }
+        pub fn send_datagram(&self, _: Bytes) -> anyhow::Result<()> {
+            Ok(())
+        }
+    }
+
+    pub struct RecvStream;
+
+    impl RecvStream {
+        pub async fn read_to_end(&self, _: usize) -> anyhow::Result<Vec<u8>> {
+            Ok(Vec::new())
+        }
+    }
+
+    pub struct SendStream;
+
+    impl SendStream {
+        pub async fn write_all(&mut self, _: &[u8]) -> anyhow::Result<()> {
+            Ok(())
+        }
+        pub async fn finish(self) -> anyhow::Result<()> {
+            Ok(())
+        }
     }
 }
 

@@ -1,4 +1,7 @@
+use std::any::TypeId;
+
 use bevy::{reflect::FromReflect, utils::HashMap};
+use once_cell::sync::Lazy;
 use ulid::Ulid;
 
 use crate::prelude::*;
@@ -44,6 +47,9 @@ mod wasm_conn {
         pub fn send_datagram(&self, _: Bytes) -> anyhow::Result<()> {
             Ok(())
         }
+        pub async fn closed(&self) -> String {
+            String::new()
+        }
     }
 
     pub struct RecvStream;
@@ -80,6 +86,14 @@ impl Plugin for NetworkingPlugin {
         // .add_startup_system(setup_synced_queries.exclusive_system());
     }
 }
+
+pub static NET_MESSAGE_TYPES: Lazy<Vec<TypeId>> = Lazy::new(|| {
+    [
+        TypeId::of::<NetClientMessage>(),
+        TypeId::of::<NetServerMessage>(),
+    ]
+    .to_vec()
+});
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum NetClientMessage {

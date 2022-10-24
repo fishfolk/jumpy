@@ -1,7 +1,7 @@
 //! Systems and utilities related to specific platform support or platform abstractions
 
 use async_channel::{Receiver, Sender};
-use bevy::{prelude::*, tasks::IoTaskPool, utils::HashMap};
+use bevy::{prelude::*, utils::HashMap};
 use iyes_loopless::prelude::*;
 use serde::{de::DeserializeOwned, Serialize};
 
@@ -61,8 +61,7 @@ pub struct Storage {
 
 impl FromWorld for Storage {
     fn from_world(_: &mut World) -> Self {
-        let io_task_pool = IoTaskPool::get();
-        let backend_sender = backend::init_storage(io_task_pool);
+        let backend_sender = backend::init_storage();
 
         Self {
             data: None,
@@ -289,8 +288,9 @@ mod native {
 
     use super::StorageRequest;
 
-    pub(super) fn init_storage(io_task_pool: &IoTaskPool) -> Sender<StorageRequest> {
+    pub(super) fn init_storage() -> Sender<StorageRequest> {
         trace!("Initialize platform storage backend");
+        let io_task_pool = IoTaskPool::get();
 
         // Create channel used for sending and receving storage requests
         let (sender, receiver) = async_channel::unbounded();
@@ -373,8 +373,9 @@ mod wasm {
     const BROWSER_LOCAL_STORAGE_KEY: &str = "jumpy-platform-storage";
 
     /// Initialize storage backend
-    pub(super) fn init_storage(io_task_pool: &IoTaskPool) -> Sender<StorageRequest> {
+    pub(super) fn init_storage() -> Sender<StorageRequest> {
         trace!("Initialize platform storage backend");
+        let io_task_pool = IoTaskPool::get();
 
         // Create channel used for sending and receving storage requests
         let (sender, receiver) = async_channel::unbounded();

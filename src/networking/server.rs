@@ -1,6 +1,6 @@
 use std::{any::TypeId, collections::VecDeque};
 
-use crate::networking::{Connection, NetServerMessage};
+use crate::networking::Connection;
 use async_channel::{Receiver, RecvError, Sender};
 use bevy::{app::AppExit, tasks::IoTaskPool, utils::HashMap};
 use bytes::Bytes;
@@ -9,7 +9,7 @@ use serde::de::DeserializeOwned;
 
 use crate::prelude::*;
 
-use super::{NetClientMessage, NET_MESSAGE_TYPES};
+use super::NET_MESSAGE_TYPES;
 
 pub struct ServerPlugin;
 
@@ -21,19 +21,20 @@ impl Plugin for ServerPlugin {
                 CoreStage::First,
                 exit_on_disconnect.run_if_resource_exists::<NetServer>(),
             )
-            .add_system(reply_to_messages.run_if_resource_exists::<NetServer>());
+            .add_system(reply_to_ping.run_if_resource_exists::<NetServer>());
     }
 }
 
-fn reply_to_messages(mut server: ResMut<NetServer>) {
-    while let Some(incomming) = server.recv_reliable::<NetClientMessage>() {
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Ping;
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Pong;
+
+fn reply_to_ping(mut server: ResMut<NetServer>) {
+    while let Some(incomming) = server.recv_reliable::<Ping>() {
         let client_idx = incomming.client_idx;
-        match incomming.message {
-            NetClientMessage::Ping => {
-                info!("Ping from client {client_idx}");
-                server.send_reliable(&NetServerMessage::Pong, client_idx);
-            }
-        }
+        info!("Ping from client {client_idx}");
+        server.send_reliable(&Pong, client_idx);
     }
 }
 

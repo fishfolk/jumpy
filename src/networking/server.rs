@@ -325,8 +325,6 @@ fn spawn_message_recv_tasks(server: Res<NetServer>) {
                             async {
                                 while let Ok(recv) = conn.accept_uni().await {
                                     let message = recv.read_to_end(1024 * 1024).await?;
-                                    info!("Got connection");
-
                                     reliable_sender
                                         .try_send(Incomming {
                                             data: message,

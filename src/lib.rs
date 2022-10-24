@@ -5,7 +5,7 @@
 use std::time::Duration;
 
 use bevy::{
-    app::{RunMode, ScheduleRunnerPlugin},
+    app::{RunMode, ScheduleRunnerPlugin, ScheduleRunnerSettings},
     asset::AssetServerSettings,
     log::{LogPlugin, LogSettings},
     pbr::PbrPlugin,
@@ -179,10 +179,12 @@ pub fn build_app(net_server: Option<NetServer>) -> App {
         })
         .init_resource::<Windows>()
         .add_asset::<TextureAtlas>()
-        .add_plugin(ScheduleRunnerPlugin)
-        .insert_resource(RunMode::Loop {
-            wait: Some(Duration::from_secs_f64(FIXED_TIMESTEP)),
-        });
+        .insert_resource(ScheduleRunnerSettings {
+            run_mode: RunMode::Loop {
+                wait: Some(Duration::from_secs_f64(FIXED_TIMESTEP)),
+            },
+        })
+        .add_plugin(ScheduleRunnerPlugin);
     } else {
         app.add_plugins(DefaultPlugins)
             .add_plugin(LinesPlugin)

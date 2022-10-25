@@ -1,3 +1,4 @@
+use bevy_tasks::IoTaskPool;
 use futures_lite::future;
 use jumpy_matchmaker_proto::{MatchInfo, MatchmakerRequest, MatchmakerResponse};
 use once_cell::sync::Lazy;
@@ -86,24 +87,54 @@ async fn impl_matchmaker(conn: Connection) -> anyhow::Result<()> {
                         STATE
                             .rooms
                             .update_async(&match_info, |match_info, members| {
-                                debug!("Testing");
                                 // Add the current client to the room
                                 members.push(conn.clone());
 
-                                // Remove any dropped connections from the list
-                                members.retain(|conn| {
-                                    if let Some(reason) = conn.close_reason() {
-                                        let connection_id = conn.stable_id();
-                                        debug!(
-                                            connection_id,
-                                            "Removing disconnected client from room: {reason}"
-                                        );
+                                // Spawn task to wait for connction to close and remove it from the room if it does
+                                let conn = conn.clone();
+                                let info = match_info.clone();
+                                IoTaskPool::get()
+                                    .spawn(async move {
+                                        conn.closed().await;
+                                        let members = STATE
+                                            .rooms
+                                            .update_async(&info, |_, members| {
+                                                let mut was_removed = false;
+                                                members.retain(|x| {
+                                                    if x.stable_id() != conn.stable_id() {
+                                                        true
+                                                    } else {
+                                                        was_removed = true;
+                                                        false
+                                                    }
+                                                });
 
-                                        false
-                                    } else {
-                                        true
-                                    }
-                                });
+                                                if was_removed {
+                                                    Some(members.clone())
+                                                } else {
+                                                    None
+                                                }
+                                            })
+                                            .await
+                                            .flatten();
+                                        if let Some(members) = members {
+                                            let result = async {
+                                                let message = postcard::to_allocvec(
+                                                    &MatchmakerResponse::PlayerCount(
+                                                        members.len() as u8
+                                                    ),
+                                                )?;
+                                                for conn in members {
+                                                    let mut send = conn.open_uni().await?;
+                                                    send.write_all(&message).await?;
+                                                    send.finish().await?;
+                                                }
+                                                Ok::<(), anyhow::Error>(())
+                                            };
+                                            result.await.ok();
+                                        }
+                                    })
+                                    .detach();
 
                                 let member_count = members.len();
 
@@ -126,9 +157,11 @@ async fn impl_matchmaker(conn: Connection) -> anyhow::Result<()> {
                             let message = postcard::to_allocvec(&MatchmakerResponse::PlayerCount(
                                 members_to_notify.len() as u8,
                             ))?;
-                            let mut send = conn.open_uni().await?;
-                            send.write_all(&message).await?;
-                            send.finish().await?;
+                            for conn in members_to_notify {
+                                let mut send = conn.open_uni().await?;
+                                send.write_all(&message).await?;
+                                send.finish().await?;
+                            }
                         }
 
                         if !members_to_join.is_empty() {

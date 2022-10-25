@@ -159,8 +159,8 @@ pub fn main_menu_system(world: &mut World) {
 struct MainMenu<'w, 's> {
     menu_page: ResMut<'w, MenuPage>,
     disable_menu_input: ResMut<'w, DisableMenuInput>,
-    menu_input: Query<'w, 's, &'static mut ActionState<MenuAction>>,
-    keyboard_input: Res<'w, Input<KeyCode>>,
+    #[system_param(ignore)]
+    _phantom: PhantomData<&'s ()>
 }
 
 impl<'w, 's> WidgetSystem for MainMenu<'w, 's> {
@@ -174,30 +174,10 @@ impl<'w, 's> WidgetSystem for MainMenu<'w, 's> {
     ) {
         let mut params: MainMenu = state.get_mut(world);
 
-        let menu_input = params.menu_input.single();
-
         // Disable menu input handling on player select page, so each player can control their own
         // player selection independently.
         let is_player_select = matches!(*params.menu_page, MenuPage::PlayerSelect);
         **params.disable_menu_input = is_player_select;
-
-        // Go to previous menu if back button is pressed
-        if menu_input.just_pressed(MenuAction::Back) && !is_player_select {
-            match *params.menu_page {
-                MenuPage::Settings { .. } | MenuPage::PlayerSelect | MenuPage::Matchmaking => {
-                    *params.menu_page = MenuPage::Home;
-                    ui.ctx().clear_focus();
-                }
-                MenuPage::MapSelect => {
-                    *params.menu_page = MenuPage::PlayerSelect;
-                    ui.ctx().clear_focus();
-                }
-                MenuPage::Home => (),
-            }
-        } else if is_player_select && params.keyboard_input.just_pressed(KeyCode::Escape) {
-            *params.menu_page = MenuPage::Home;
-            ui.ctx().clear_focus();
-        }
 
         // Render the menu based on the current menu selection
         match *params.menu_page {

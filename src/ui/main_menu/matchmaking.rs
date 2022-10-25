@@ -2,13 +2,15 @@ use async_channel::{Receiver, Sender};
 use bevy::tasks::IoTaskPool;
 use futures_lite::future;
 use jumpy_matchmaker_proto::{MatchInfo, MatchmakerRequest, MatchmakerResponse};
+use quinn::{Connection, Endpoint};
 
-use crate::{config::ENGINE_CONFIG, player::MAX_PLAYERS};
+use crate::{config::ENGINE_CONFIG, networking::client::NetClient, player::MAX_PLAYERS};
 
 use super::*;
 
 #[derive(SystemParam)]
 pub struct MatchmakingMenu<'w, 's> {
+    commands: Commands<'w, 's>,
     menu_page: ResMut<'w, MenuPage>,
     game: Res<'w, GameMeta>,
     localization: Res<'w, Localization>,
@@ -23,14 +25,26 @@ pub struct State {
     cancel_sender: Option<Sender<()>>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Default)]
 enum Status {
+    #[default]
     NotConnected,
     Connecting,
     Connected,
-    WaitingForPlayers { players: usize },
-    MatchReady,
+    WaitingForPlayers {
+        players: usize,
+    },
+    MatchReady(Endpoint, Connection),
     Errored(String),
+}
+
+impl Status {
+    fn is_not_connected(&self) -> bool {
+        matches!(self, Status::NotConnected)
+    }
+    fn is_match_ready(&self) -> bool {
+        matches!(self, Status::MatchReady(_, _))
+    }
 }
 
 impl State {
@@ -66,6 +80,22 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
         let mut params: MatchmakingMenu = state.get_mut(world);
         let menu_input = params.menu_input.single();
         params.state.update_status();
+
+        // Transition to player select if match is ready
+        if params.state.status.is_match_ready() {
+            let status = std::mem::take(&mut params.state.status);
+
+            if let Status::MatchReady(endpoint, conn) = status {
+                let client = NetClient::new(endpoint, conn);
+                params.commands.insert_resource(client);
+                *params.menu_page = MenuPage::PlayerSelect;
+                params.state.status_receiver = default();
+                params.state.status = default();
+                params.state.cancel_sender = default();
+            } else {
+                unreachable!("Programmer error in is_match_ready() helper method");
+            }
+        }
 
         let bigger_text_style = &params.game.ui_theme.font_styles.bigger;
         let normal_text_style = &params.game.ui_theme.font_styles.normal;
@@ -104,12 +134,12 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                         ui.scope(|ui| {
                             ui.set_enabled(
                                 params.state.player_count < MAX_PLAYERS as u8
-                                && params.state.status == Status::NotConnected,
+                                    && params.state.status.is_not_connected(),
                             );
                             if BorderedButton::themed(normal_button_style, "+")
-                            .focus_on_hover(false)
-                            .show(ui)
-                            .clicked()
+                                .focus_on_hover(false)
+                                .show(ui)
+                                .clicked()
                             {
                                 params.state.player_count += 1;
                             }
@@ -118,7 +148,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                         ui.scope(|ui| {
                             ui.set_enabled(
                                 params.state.player_count > 1
-                                    && params.state.status == Status::NotConnected,
+                                    && params.state.status.is_not_connected(),
                             );
                             if BorderedButton::themed(normal_button_style, "-")
                                 .focus_on_hover(false)
@@ -134,7 +164,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                 ui.add_space(normal_button_style.font.size);
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
                     ui.scope(|ui| {
-                        ui.set_enabled(params.state.status == Status::NotConnected);
+                        ui.set_enabled(params.state.status.is_not_connected());
                         if BorderedButton::themed(
                             normal_button_style,
                             &params.localization.get("search-for-match"),
@@ -172,7 +202,9 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                         if let Some(sender) = &mut params.state.cancel_sender {
                             sender.try_send(()).ok();
                         }
-                        *params.state = default();
+                        params.state.status_receiver = default();
+                        params.state.status = default();
+                        params.state.cancel_sender = default();
                         *params.menu_page = MenuPage::Home;
                     }
                 });
@@ -196,8 +228,8 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                             )),
                         );
                     }
-                    Status::MatchReady => {
-                        ui.themed_label(normal_text_style, &params.localization.get("match-ready"));
+                    Status::MatchReady(_, _) => {
+                        // We shouldn't get here because we check for a ready match above
                     }
                     Status::Errored(e) => {
                         ui.themed_label(
@@ -268,15 +300,14 @@ async fn impl_start_matchmaking(
                         .ok();
                 }
                 MatchmakerResponse::Success => {
-                    status.try_send(Status::MatchReady).ok();
+                    status
+                        .try_send(Status::MatchReady(endpoint, conn.clone()))
+                        .ok();
                     break;
                 }
                 _ => panic!("Unexpected message from server"),
             }
         }
-
-        conn.close(0u8.into(), b"not implemented");
-        endpoint.wait_idle().await;
 
         Ok(())
     };

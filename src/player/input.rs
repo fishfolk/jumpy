@@ -2,7 +2,7 @@ use super::*;
 
 use bevy::reflect::{FromReflect, Reflect};
 
-use crate::metadata::PlayerMeta;
+use crate::{metadata::PlayerMeta, networking::proto::NetClientMatchInfo};
 
 pub struct PlayerInputPlugin;
 
@@ -67,6 +67,8 @@ pub struct PlayerInput {
 #[derive(Reflect, Default, Clone, Debug, FromReflect)]
 #[reflect(Default)]
 pub struct PlayerControl {
+    pub just_moved: bool,
+    pub moving: bool,
     pub move_direction: Vec2,
 
     pub jump_pressed: bool,
@@ -85,14 +87,23 @@ pub struct PlayerControl {
 fn update_user_input(
     mut player_inputs: ResMut<PlayerInputs>,
     players: Query<(&PlayerIdx, &ActionState<PlayerAction>)>,
+    client_match_info: Option<Res<NetClientMatchInfo>>,
 ) {
     for (player_idx, action_state) in &players {
+        let actual_player_idx = if let Some(match_info) = &client_match_info {
+            match_info.player_idx
+        } else {
+            player_idx.0
+        };
+
         let PlayerInput {
             control,
             previous_control,
             ..
-        } = &mut player_inputs.players[player_idx.0];
+        } = &mut player_inputs.players[actual_player_idx];
 
+        control.moving = action_state.pressed(PlayerAction::Move);
+        control.just_moved = control.moving && !previous_control.moving;
         control.move_direction = action_state
             .axis_pair(PlayerAction::Move)
             .unwrap_or_default()

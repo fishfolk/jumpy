@@ -3,18 +3,58 @@ use std::{any::TypeId, collections::VecDeque, net::SocketAddr, sync::Arc};
 use async_channel::{Receiver, RecvError, Sender};
 use bevy::{tasks::IoTaskPool, utils::HashMap};
 use futures_lite::future;
-use quinn::{ClientConfig, Endpoint, EndpointConfig};
+use quinn::{ClientConfig, Connection, Endpoint, EndpointConfig};
 use quinn_bevy::BevyIoTaskPoolExecutor;
 use serde::de::DeserializeOwned;
 
-use crate::prelude::*;
+use crate::{metadata::GameMeta, player::input::PlayerInputs, prelude::*};
 
-use super::NET_MESSAGE_TYPES;
+use super::{proto::NetClientMatchInfo, NET_MESSAGE_TYPES};
 
 pub struct ClientPlugin;
 
 impl Plugin for ClientPlugin {
-    fn build(&self, _app: &mut App) {}
+    fn build(&self, app: &mut App) {
+        app.add_system_to_stage(
+            CoreStage::First,
+            remove_closed_client.run_if_resource_exists::<NetClient>(),
+        )
+        .add_system_to_stage(
+            CoreStage::First,
+            recv_client_match_info
+                .run_if_resource_exists::<NetClient>()
+                .run_unless_resource_exists::<NetClientMatchInfo>(),
+        );
+    }
+}
+
+fn recv_client_match_info(
+    mut commands: Commands,
+    mut client: ResMut<NetClient>,
+    mut player_inputs: ResMut<PlayerInputs>,
+    game: Res<GameMeta>,
+) {
+    if let Some(match_info) = client.recv_reliable::<NetClientMatchInfo>() {
+        info!("Got match info: {:?}", match_info);
+
+        for (i, player) in player_inputs.players.iter_mut().enumerate() {
+            player.active = i < match_info.player_count;
+            player.selected_player = game
+                .player_handles
+                .get(0)
+                .expect("No players in .game.yaml")
+                .clone_weak();
+        }
+
+        commands.insert_resource(match_info);
+    }
+}
+
+fn remove_closed_client(client: Res<NetClient>, mut commands: Commands) {
+    if client.is_closed() {
+        commands.remove_resource::<NetClient>();
+        commands.remove_resource::<NetClientMatchInfo>();
+    }
 }
 
 mod certs {
@@ -75,7 +115,8 @@ pub async fn open_connection(
 }
 
 pub struct NetClient {
-    conn: super::Connection,
+    endpoint: Endpoint,
+    conn: Connection,
     outgoing_reliable_sender: Sender<Vec<u8>>,
     outgoing_reliable_receiver: Receiver<Vec<u8>>,
     outgoing_unreliable_sender: Sender<Vec<u8>>,
@@ -89,14 +130,15 @@ pub struct NetClient {
 }
 
 impl NetClient {
-    pub fn new(conn: super::Connection) -> Self {
+    pub fn new(endpoint: Endpoint, conn: Connection) -> Self {
         let (outgoing_reliable_sender, outgoing_reliable_receiver) = async_channel::unbounded();
         let (outgoing_unreliable_sender, outgoing_unreliable_receiver) = async_channel::unbounded();
         let (incomming_reliable_sender, incomming_reliable_receiver) = async_channel::unbounded();
         let (incomming_unreliable_sender, incomming_unreliable_receiver) =
             async_channel::unbounded();
 
-        Self {
+        let client = Self {
+            endpoint,
             conn,
             outgoing_reliable_sender,
             outgoing_reliable_receiver,
@@ -108,7 +150,12 @@ impl NetClient {
             incomming_unreliable_receiver,
             incomming_reliable_queue: default(),
             incomming_unreliable_queue: default(),
-        }
+        };
+
+        spawn_message_recv_task(&client);
+        spawn_message_send_task(&client);
+
+        client
     }
 
     fn update_queue(&mut self) {
@@ -134,23 +181,25 @@ impl NetClient {
         }
     }
 
-    pub fn send_reliable<S: 'static + Serialize>(&self, message: S) {
+    pub fn send_reliable<S: 'static + Serialize>(&self, message: &S) {
         let type_id = TypeId::of::<S>();
         let type_idx = NET_MESSAGE_TYPES
-            .binary_search(&type_id)
-            .expect("Net message not registered") as u32;
-        let mut message = postcard::to_allocvec(&message).expect("Serialize net message");
+            .iter()
+            .position(|x| x == &type_id)
+            .expect("Net message type not registered") as u32;
+        let mut message = postcard::to_allocvec(message).expect("Serialize net message");
         message.extend_from_slice(&(type_idx as u32).to_le_bytes());
 
         self.outgoing_reliable_sender.try_send(message).ok();
     }
 
-    pub fn send_unreliable<S: 'static + Serialize>(&self, message: S) {
+    pub fn send_unreliable<S: 'static + Serialize>(&self, message: &S) {
         let type_id = TypeId::of::<S>();
         let type_idx = NET_MESSAGE_TYPES
-            .binary_search(&type_id)
+            .iter()
+            .position(|x| x == &type_id)
             .expect("Net message not registered") as u32;
-        let mut message = postcard::to_allocvec(&message).expect("Serialize net message");
+        let mut message = postcard::to_allocvec(message).expect("Serialize net message");
         message.extend_from_slice(&(type_idx as u32).to_le_bytes());
 
         self.outgoing_unreliable_sender.try_send(message).ok();
@@ -162,10 +211,10 @@ impl NetClient {
             panic!("Attempt to receive unregistered message type");
         }
         self.update_queue();
-        self.incomming_reliable_receiver
-            .try_recv()
+        self.incomming_reliable_queue
+            .get_mut(&type_id)
+            .and_then(|queue| queue.pop_front())
             .map(|message| postcard::from_bytes(&message).expect("Deserialize net message"))
-            .ok()
     }
 
     pub fn recv_unreliable<T: 'static + DeserializeOwned>(&mut self) -> Option<T> {
@@ -174,14 +223,25 @@ impl NetClient {
             panic!("Attempt to receive unregistered message type");
         }
         self.update_queue();
-        self.incomming_unreliable_receiver
-            .try_recv()
+        self.incomming_unreliable_queue
+            .get_mut(&type_id)
+            .and_then(|queue| queue.pop_front())
             .map(|message| postcard::from_bytes(&message).expect("Deserialize net message"))
-            .ok()
     }
 
-    pub fn conn(&self) -> &super::Connection {
+    pub fn conn(&self) -> &Connection {
         &self.conn
+    }
+    pub fn endpoint(&self) -> &Endpoint {
+        &self.endpoint
+    }
+
+    pub fn close(&self) {
+        self.conn.close(0u8.into(), b"NetClient::close()");
+    }
+
+    pub fn is_closed(&self) -> bool {
+        self.conn.close_reason().is_some()
     }
 }
 

@@ -172,73 +172,9 @@ impl<'w, 's> GameLoader<'w, 's> {
                         });
                 }
 
-                // // Setup networking if configured
-                // if let Some(server) = &ENGINE_CONFIG.server {
-                //     let server_addr = format!("{}:{}", server, ENGINE_CONFIG.port)
-                //         .parse()
-                //         .expect("Parse server address");
-                //     info!("Starting server at {:?}", server_addr);
-                //     let socket = UdpSocket::bind(server_addr).expect("Bind UDP addr");
-                //     let transport =
-                //         Box::new(UdpTransport::with_socket(socket).expect("Create UDP transport"))
-                //             as Box<dyn Transport + Sync + Send>;
-                //     let connection_config = RenetConnectionConfig {
-                //         send_channels_config: NetChannels::get_config(),
-                //         receive_channels_config: NetChannels::get_config(),
-                //         ..default()
-                //     };
-                //     let server_config = ServerConfig::new(
-                //         10,
-                //         PROTOCOL_ID,
-                //         server_addr,
-                //         ServerAuthentication::Unsecure,
-                //     );
-                //     let current_time = SystemTime::now()
-                //         .duration_since(SystemTime::UNIX_EPOCH)
-                //         .unwrap();
-                //     commands.insert_resource(RenetServer::new(
-                //         current_time,
-                //         server_config,
-                //         connection_config,
-                //         transport,
-                //     ));
-                // } else if let Some(server) = &ENGINE_CONFIG.client {
-                //     let server_addr = format!("{}:{}", server, ENGINE_CONFIG.port)
-                //         .parse()
-                //         .expect("Parse server addr");
-                //     info!("Connecting to server at {:?}", server_addr);
-                //     let socket = UdpSocket::bind("127.0.0.1:0").expect("Bind UDP socket");
-                //     let transport = Box::new(UdpTransport::with_socket(socket).unwrap())
-                //         as Box<dyn Transport + Sync + Send>;
-                //     let connection_config = RenetConnectionConfig {
-                //         send_channels_config: NetChannels::get_config(),
-                //         receive_channels_config: NetChannels::get_config(),
-                //         ..default()
-                //     };
-                //     let current_time = SystemTime::now()
-                //         .duration_since(SystemTime::UNIX_EPOCH)
-                //         .unwrap();
-                //     let client_id = current_time.as_millis() as u64;
-                //     let authentication = ClientAuthentication::Unsecure {
-                //         client_id,
-                //         protocol_id: PROTOCOL_ID,
-                //         server_addr,
-                //         user_data: None,
-                //     };
-                //     commands.insert_resource(
-                //         RenetClient::new(
-                //             current_time,
-                //             connection_config,
-                //             authentication,
-                //             transport,
-                //         )
-                //         .expect("Create net client"),
-                //     )
-                // }
-
                 if ENGINE_CONFIG.server_mode {
-                    // Go to server lobby
-                    commands.insert_resource(NextState(GameState::ServerLoby));
+                    // Go to server player selection state
+                    commands.insert_resource(NextState(GameState::ServerPlayerSelect));
                 } else {
                     // Transition to the main menu when we are done
                     commands.insert_resource(NextState(GameState::MainMenu));

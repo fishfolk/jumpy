@@ -10,6 +10,7 @@ use crate::prelude::*;
 pub mod client;
 // pub mod commands;
 // pub mod frame_sync;
+pub mod proto;
 pub mod serialization;
 pub mod server;
 
@@ -93,8 +94,16 @@ impl Plugin for NetworkingPlugin {
     }
 }
 
-pub static NET_MESSAGE_TYPES: Lazy<Vec<TypeId>> =
-    Lazy::new(|| [TypeId::of::<server::Ping>(), TypeId::of::<server::Pong>()].to_vec());
+pub static NET_MESSAGE_TYPES: Lazy<Vec<TypeId>> = Lazy::new(|| {
+    [
+        TypeId::of::<proto::Ping>(),
+        TypeId::of::<proto::Pong>(),
+        TypeId::of::<proto::NetClientMatchInfo>(),
+        TypeId::of::<proto::player_select::PlayerSelectFromClient>(),
+        TypeId::of::<proto::player_select::PlayerSelectFromServer>(),
+    ]
+    .to_vec()
+});
 
 // /// Run condition for running systems if the client is connected
 // fn client_connected(client: Option<Res<NetClient>>) -> bool {

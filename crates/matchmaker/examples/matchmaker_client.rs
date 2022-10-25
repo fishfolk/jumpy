@@ -1,14 +1,12 @@
 use std::{net::SocketAddr, sync::Arc, time::Duration};
 
+use bevy_tasks::{IoTaskPool, TaskPool};
 use certs::SkipServerVerification;
 use jumpy::networking::server::{Ping, Pong};
 use jumpy_matchmaker_proto::{MatchInfo, MatchmakerRequest, MatchmakerResponse};
 use once_cell::sync::Lazy;
 use quinn::{ClientConfig, Endpoint, EndpointConfig};
-use quinn_smol::SmolExecutor;
-
-static EXE: Lazy<SmolExecutor> =
-    Lazy::new(|| SmolExecutor(Arc::new(async_executor::Executor::default())));
+use quinn_bevy::BevyIoTaskPoolExecutor;
 
 static SERVER_NAME: &str = "localhost";
 
@@ -57,7 +55,9 @@ fn configure_client() -> ClientConfig {
 }
 
 pub fn main() {
-    futures_lite::future::block_on(EXE.run(async move {
+    IoTaskPool::init(TaskPool::new);
+    let task_pool = IoTaskPool::get();
+    futures_lite::future::block_on(task_pool.spawn(async move {
         if let Err(e) = client().await {
             eprintln!("Error: {e}");
         }
@@ -68,7 +68,13 @@ async fn client() -> anyhow::Result<()> {
     let client_config = configure_client();
     let socket = std::net::UdpSocket::bind(client_addr())?;
     // Bind this endpoint to a UDP socket on the given client address.
-    let endpoint = Endpoint::new(EndpointConfig::default(), None, socket, EXE.clone())?.0;
+    let endpoint = Endpoint::new(
+        EndpointConfig::default(),
+        None,
+        socket,
+        BevyIoTaskPoolExecutor,
+    )?
+    .0;
 
     println!("Opened client on {}", endpoint.local_addr()?);
 

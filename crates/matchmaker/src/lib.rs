@@ -3,12 +3,9 @@ extern crate tracing;
 
 use std::{net::SocketAddr, sync::Arc, time::Duration};
 
-use once_cell::sync::Lazy;
+use bevy_tasks::IoTaskPool;
 use quinn::{Endpoint, EndpointConfig, ServerConfig, TransportConfig};
-use quinn_smol::SmolExecutor;
-
-pub static EXE: Lazy<SmolExecutor> =
-    Lazy::new(|| SmolExecutor(Arc::new(async_executor::Executor::default())));
+use quinn_bevy::BevyIoTaskPoolExecutor;
 
 pub mod cli;
 
@@ -29,6 +26,8 @@ struct Config {
 }
 
 async fn server(args: Config) -> anyhow::Result<()> {
+    let task_pool = IoTaskPool::get();
+
     // Put Jumpy in server mode
     std::env::set_var(jumpy::config::SERVER_MODE_ENV_VAR, "true");
     std::env::set_var(jumpy::config::ASSET_DIR_ENV_VAR, args.asset_dir);
@@ -54,7 +53,7 @@ async fn server(args: Config) -> anyhow::Result<()> {
         EndpointConfig::default(),
         Some(server_config),
         socket,
-        EXE.clone(),
+        BevyIoTaskPoolExecutor,
     )?;
     info!(address=%endpoint.local_addr()?, "Started server");
 
@@ -70,7 +69,7 @@ async fn server(args: Config) -> anyhow::Result<()> {
                 );
 
                 // Spawn a task to handle the new connection
-                EXE.spawn(matchmaker::handle_connection(conn)).detach();
+                task_pool.spawn(matchmaker::handle_connection(conn)).detach();
             }
             Err(e) => error!("Error opening client connection: {e:?}"),
         }

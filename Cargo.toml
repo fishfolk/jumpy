@@ -64,11 +64,13 @@ bevy_ecs_dynamic = { git = "https://github.com/jakobhellermann/bevy_ecs_dynamic"
 postcard = { git = "https://github.com/zicklag/postcard.git", branch = "custom-error-messages", default-features = false, features = ["alloc", "use-std"] }
 futures-lite = "1.12.0"
 either = "1.8.0"
+jumpy-matchmaker-proto = { path = "crates/matchmaker-proto" }
 
 # Debug tools
 bevy-inspector-egui = { version = "0.13.0" }
 ulid = { version = "1.0.0", features = ["serde"] }
 bytes = "1.2.1"
+rustls = { version = "0.20.7", features = ["dangerous_configuration", "quic"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "0.2.83"
@@ -76,6 +78,7 @@ web-sys = { version = "0.3", features = ["Window","Location","Storage"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 quinn = { git = "https://github.com/quinn-rs/quinn.git", default-features = false, features = ["futures-io", "native-certs", "tls-rustls"] }
+quinn-bevy = { path = "crates/quinn-bevy" }
 
 [profile.dev.package."*"]
 opt-level = 1 # Set this to 3 if the game becomes slow to respond during gameplay

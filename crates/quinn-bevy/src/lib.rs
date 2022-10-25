@@ -6,12 +6,16 @@ use std::{
 };
 
 use async_io::Async;
+use bevy_tasks::IoTaskPool;
 use quinn_proto::Transmit;
 
 #[derive(Clone, Debug)]
-pub struct SmolExecutor<'a>(pub Arc<async_executor::Executor<'a>>);
+pub struct BevyIoTaskPoolExecutor;
 
-impl<'a> Deref for SmolExecutor<'a> {
+#[derive(Clone, Debug)]
+pub struct AsyncExecutor<'a>(pub Arc<async_executor::Executor<'a>>);
+
+impl<'a> Deref for AsyncExecutor<'a> {
     type Target = async_executor::Executor<'a>;
 
     fn deref(&self) -> &Self::Target {
@@ -21,9 +25,9 @@ impl<'a> Deref for SmolExecutor<'a> {
 
 #[derive(Debug)]
 #[pin_project::pin_project]
-pub struct SmolTimer(#[pin] pub async_io::Timer);
+pub struct AsyncIoTimer(#[pin] pub async_io::Timer);
 
-impl quinn::AsyncTimer for SmolTimer {
+impl quinn::AsyncTimer for AsyncIoTimer {
     fn reset(mut self: std::pin::Pin<&mut Self>, i: std::time::Instant) {
         self.0 = async_io::Timer::at(i);
     }
@@ -34,9 +38,9 @@ impl quinn::AsyncTimer for SmolTimer {
     }
 }
 
-impl quinn::Runtime for SmolExecutor<'static> {
+impl quinn::Runtime for AsyncExecutor<'static> {
     fn new_timer(&self, i: std::time::Instant) -> std::pin::Pin<Box<dyn quinn::AsyncTimer>> {
-        Box::pin(SmolTimer(async_io::Timer::at(i))) as _
+        Box::pin(AsyncIoTimer(async_io::Timer::at(i))) as _
     }
 
     fn spawn(&self, future: std::pin::Pin<Box<dyn std::future::Future<Output = ()> + Send>>) {
@@ -48,7 +52,29 @@ impl quinn::Runtime for SmolExecutor<'static> {
         sock: std::net::UdpSocket,
     ) -> io::Result<Box<dyn quinn::AsyncUdpSocket>> {
         quinn_udp::UdpSocketState::configure((&sock).into())?;
-        Ok(Box::new(UdpSocket {
+        Ok(Box::new(AsyncIoUdpSocket {
+            io: Async::new(sock)?,
+            inner: quinn_udp::UdpSocketState::new(),
+        }))
+    }
+}
+
+impl quinn::Runtime for BevyIoTaskPoolExecutor {
+    fn new_timer(&self, i: std::time::Instant) -> std::pin::Pin<Box<dyn quinn::AsyncTimer>> {
+        Box::pin(AsyncIoTimer(async_io::Timer::at(i))) as _
+    }
+
+    fn spawn(&self, future: std::pin::Pin<Box<dyn futures_lite::Future<Output = ()> + Send>>) {
+        let io_pool = IoTaskPool::get();
+
+        io_pool.spawn(future).detach();
+    }
+
+    fn wrap_udp_socket(
+        &self,
+        sock: std::net::UdpSocket,
+    ) -> io::Result<Box<dyn quinn::AsyncUdpSocket>> {
+        Ok(Box::new(AsyncIoUdpSocket {
             io: Async::new(sock)?,
             inner: quinn_udp::UdpSocketState::new(),
         }))
@@ -56,12 +82,12 @@ impl quinn::Runtime for SmolExecutor<'static> {
 }
 
 #[derive(Debug)]
-struct UdpSocket {
+struct AsyncIoUdpSocket {
     io: async_io::Async<std::net::UdpSocket>,
     inner: quinn_udp::UdpSocketState,
 }
 
-impl quinn::AsyncUdpSocket for UdpSocket {
+impl quinn::AsyncUdpSocket for AsyncIoUdpSocket {
     fn poll_send(
         &mut self,
         state: &quinn_udp::UdpState,

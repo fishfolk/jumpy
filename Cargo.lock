@@ -2626,11 +2626,14 @@ dependencies = [
  "futures-lite",
  "getrandom",
  "iyes_loopless",
+ "jumpy-matchmaker-proto",
  "leafwing-input-manager",
  "once_cell",
  "postcard 1.0.2 (git+https://github.com/zicklag/postcard.git?branch=custom-error-messages)",
  "quinn",
+ "quinn-bevy",
  "rand",
+ "rustls",
  "serde",
  "serde_yaml",
  "structopt",
@@ -2657,6 +2660,7 @@ dependencies = [
  "anyhow",
  "async-executor",
  "async-io",
+ "bevy_tasks",
  "blocking",
  "clap 4.0.18",
  "either",
@@ -2666,7 +2670,7 @@ dependencies = [
  "once_cell",
  "postcard 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "quinn",
- "quinn-smol",
+ "quinn-bevy",
  "rcgen",
  "rustls",
  "scc",
@@ -3769,6 +3773,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "quinn-bevy"
+version = "0.1.0"
+dependencies = [
+ "async-executor",
+ "async-io",
+ "bevy_tasks",
+ "futures-lite",
+ "pin-project",
+ "quinn",
+ "quinn-proto",
+ "quinn-udp",
+]
+
+[[package]]
 name = "quinn-proto"
 version = "0.8.0"
 source = "git+https://github.com/quinn-rs/quinn.git#feca8abebf2b358141a675931b98043c355d4271"
@@ -3784,19 +3802,6 @@ dependencies = [
  "tinyvec",
  "tracing",
  "webpki",
-]
-
-[[package]]
-name = "quinn-smol"
-version = "0.1.0"
-dependencies = [
- "async-executor",
- "async-io",
- "futures-lite",
- "pin-project",
- "quinn",
- "quinn-proto",
- "quinn-udp",
 ]
 
 [[package]]

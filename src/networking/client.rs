@@ -1,8 +1,10 @@
-use std::{any::TypeId, collections::VecDeque};
+use std::{any::TypeId, collections::VecDeque, net::SocketAddr, sync::Arc};
 
 use async_channel::{Receiver, RecvError, Sender};
 use bevy::{tasks::IoTaskPool, utils::HashMap};
 use futures_lite::future;
+use quinn::{ClientConfig, Endpoint, EndpointConfig};
+use quinn_bevy::BevyIoTaskPoolExecutor;
 use serde::de::DeserializeOwned;
 
 use crate::prelude::*;
@@ -13,6 +15,63 @@ pub struct ClientPlugin;
 
 impl Plugin for ClientPlugin {
     fn build(&self, _app: &mut App) {}
+}
+
+mod certs {
+    use std::sync::Arc;
+
+    // Implementation of `ServerCertVerifier` that verifies everything as trustworthy.
+    pub struct SkipServerVerification;
+
+    impl SkipServerVerification {
+        pub fn new() -> Arc<Self> {
+            Arc::new(Self)
+        }
+    }
+
+    impl rustls::client::ServerCertVerifier for SkipServerVerification {
+        fn verify_server_cert(
+            &self,
+            _end_entity: &rustls::Certificate,
+            _intermediates: &[rustls::Certificate],
+            _server_name: &rustls::ServerName,
+            _scts: &mut dyn Iterator<Item = &[u8]>,
+            _ocsp_response: &[u8],
+            _now: std::time::SystemTime,
+        ) -> Result<rustls::client::ServerCertVerified, rustls::Error> {
+            Ok(rustls::client::ServerCertVerified::assertion())
+        }
+    }
+}
+
+fn configure_quic_client() -> ClientConfig {
+    let crypto = rustls::ClientConfig::builder()
+        .with_safe_defaults()
+        .with_custom_certificate_verifier(certs::SkipServerVerification::new())
+        .with_no_client_auth();
+
+    ClientConfig::new(Arc::new(crypto))
+}
+
+pub async fn open_connection(
+    server_addr: impl Into<SocketAddr>,
+) -> anyhow::Result<(Endpoint, super::Connection)> {
+    let client_config = configure_quic_client();
+    let socket = std::net::UdpSocket::bind("0.0.0.0:0")?;
+    // Bind this endpoint to a UDP socket on the given client address.
+    let endpoint = Endpoint::new(
+        EndpointConfig::default(),
+        None,
+        socket,
+        BevyIoTaskPoolExecutor,
+    )?
+    .0;
+
+    let conn = endpoint
+        .connect_with(client_config, server_addr.into(), "server")?
+        .await?;
+
+    Ok((endpoint, conn))
 }
 
 pub struct NetClient {

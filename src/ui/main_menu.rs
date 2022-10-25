@@ -19,10 +19,7 @@ use crate::{
 
 // use self::settings::ControlInputBindingEvents;
 
-use self::{
-    matchmaking::MatchmakingMenu,
-    settings::{ModifiedSettings, SettingsTab},
-};
+use self::settings::{ModifiedSettings, SettingsTab};
 
 use super::{
     widget,
@@ -34,6 +31,7 @@ use super::{
 };
 
 mod map_select;
+#[cfg(not(target_arch = "wasm32"))]
 mod matchmaking;
 mod player_select;
 mod settings;
@@ -204,8 +202,10 @@ impl<'w, 's> WidgetSystem for MainMenu<'w, 's> {
         // Render the menu based on the current menu selection
         match *params.menu_page {
             MenuPage::Home => widget::<HomeMenu>(world, ui, id.with("home"), ()),
-            MenuPage::Matchmaking => {
-                widget::<MatchmakingMenu>(world, ui, id.with("matchmaking"), ())
+            MenuPage::Matchmaking =>
+            {
+                #[cfg(not(target_arch = "wasm32"))]
+                widget::<matchmaking::MatchmakingMenu>(world, ui, id.with("matchmaking"), ())
             }
             MenuPage::PlayerSelect => {
                 widget::<player_select::PlayerSelectMenu>(world, ui, id.with("player-select"), ())
@@ -292,16 +292,19 @@ impl<'w, 's> WidgetSystem for HomeMenu<'w, 's> {
                     }
 
                     // Online Game
-                    let online_game_button = BorderedButton::themed(
-                        &ui_theme.button_styles.normal,
-                        &params.localization.get("online-game"),
-                    )
-                    .min_size(min_button_size)
-                    .show(ui)
-                    .focus_by_default(ui);
+                    #[cfg(not(target_arch = "wasm32"))]
+                    {
+                        let online_game_button = BorderedButton::themed(
+                            &ui_theme.button_styles.normal,
+                            &params.localization.get("online-game"),
+                        )
+                        .min_size(min_button_size)
+                        .show(ui)
+                        .focus_by_default(ui);
 
-                    if online_game_button.clicked() {
-                        *params.menu_page = MenuPage::Matchmaking;
+                        if online_game_button.clicked() {
+                            *params.menu_page = MenuPage::Matchmaking;
+                        }
                     }
 
                     // Map editor

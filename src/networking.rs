@@ -6,6 +6,7 @@ use ulid::Ulid;
 
 use crate::prelude::*;
 
+#[cfg(not(target_arch = "wasm32"))]
 pub mod client;
 // pub mod commands;
 // pub mod frame_sync;
@@ -76,9 +77,14 @@ pub struct NetworkingPlugin;
 
 impl Plugin for NetworkingPlugin {
     fn build(&self, app: &mut App) {
+        #[cfg(target_arch = "wasm32")]
+        let _ = app;
+
+        #[cfg(not(target_arch = "wasm32"))]
         app.add_plugin(serialization::SerializationPlugin)
             .add_plugin(server::ServerPlugin)
             .add_plugin(client::ClientPlugin);
+
         // .add_plugin(commands::NetCommandsPlugin)
         // .add_plugin(frame_sync::NetFrameSyncPlugin)
         // .add_system(handle_server_events.run_if_resource_exists::<RenetServer>())
@@ -87,13 +93,8 @@ impl Plugin for NetworkingPlugin {
     }
 }
 
-pub static NET_MESSAGE_TYPES: Lazy<Vec<TypeId>> = Lazy::new(|| {
-    [
-        TypeId::of::<server::Ping>(),
-        TypeId::of::<server::Pong>(),
-    ]
-    .to_vec()
-});
+pub static NET_MESSAGE_TYPES: Lazy<Vec<TypeId>> =
+    Lazy::new(|| [TypeId::of::<server::Ping>(), TypeId::of::<server::Pong>()].to_vec());
 
 // /// Run condition for running systems if the client is connected
 // fn client_connected(client: Option<Res<NetClient>>) -> bool {

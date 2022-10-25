@@ -113,6 +113,7 @@ impl EngineConfig {
         // Note: It's unfortunate that we have to manually synchronize this with the defaults set
         // with structopt. If we find a way around that we should use it.
         Self {
+            matchmaking_server: "127.0.0.1:8943".parse().unwrap(),
             server_mode: false,
             hot_reload: false,
             asset_dir: None,

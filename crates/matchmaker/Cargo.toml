@@ -12,7 +12,8 @@ async-executor = "1.4.1"
 futures-lite = "1.12.0"
 once_cell = "1.15.0"
 quinn = { git = "https://github.com/quinn-rs/quinn.git", default-features = false, features = ["futures-io", "native-certs", "tls-rustls"] }
-quinn-smol = { path = "../quinn-smol" }
+quinn-bevy = { path = "../quinn-bevy" }
+bevy_tasks = "0.8.1"
 rcgen = "0.10.0"
 rustls = { version = "0.20.7", features = ["dangerous_configuration", "quic"] }
 postcard = { version = "1.0.2", default-features = false, features = ["alloc"] }

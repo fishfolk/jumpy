@@ -30,11 +30,11 @@ use super::{
     DisableMenuInput, WidgetAdjacencies, WidgetId, WidgetSystem,
 };
 
-mod map_select;
+pub mod map_select;
 #[cfg(not(target_arch = "wasm32"))]
-mod matchmaking;
-mod player_select;
-mod settings;
+pub mod matchmaking;
+pub mod player_select;
+pub mod settings;
 
 pub struct MainMenuPlugin;
 

@@ -2,9 +2,8 @@ use std::{net::SocketAddr, sync::Arc, time::Duration};
 
 use bevy_tasks::{IoTaskPool, TaskPool};
 use certs::SkipServerVerification;
-use jumpy::networking::server::{Ping, Pong};
+use jumpy::networking::proto::{Ping, Pong};
 use jumpy_matchmaker_proto::{MatchInfo, MatchmakerRequest, MatchmakerResponse};
-use once_cell::sync::Lazy;
 use quinn::{ClientConfig, Endpoint, EndpointConfig};
 use quinn_bevy::BevyIoTaskPoolExecutor;
 

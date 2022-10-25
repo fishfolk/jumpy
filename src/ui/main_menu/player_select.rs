@@ -1,19 +1,26 @@
-use leafwing_input_manager::user_input::{InputKind, UserInput};
-
 use crate::{
-    loading::PlayerInputCollector, metadata::PlayerMeta, player::input::PlayerAction,
-    player::MAX_PLAYERS,
+    loading::PlayerInputCollector,
+    metadata::PlayerMeta,
+    networking::{
+        client::NetClient,
+        proto::{
+            player_select::{PlayerSelectFromClient, PlayerSelectFromServer},
+            NetClientMatchInfo,
+        },
+    },
+    player::input::PlayerAction,
+    player::{input::PlayerInputs, MAX_PLAYERS},
 };
 
 use super::*;
 
 #[derive(Default)]
 pub struct PlayerSelectState {
-    player_slots: [Option<PlayerSlot>; MAX_PLAYERS],
+    player_slots: [PlayerSlot; MAX_PLAYERS],
 }
 
+#[derive(Default)]
 struct PlayerSlot {
-    player_handle: AssetHandle<PlayerMeta>,
     confirmed: bool,
 }
 
@@ -21,8 +28,11 @@ struct PlayerSlot {
 pub struct PlayerSelectMenu<'w, 's> {
     game: Res<'w, GameMeta>,
     menu_page: ResMut<'w, MenuPage>,
+    menu_input: Query<'w, 's, &'static mut ActionState<MenuAction>>,
+    player_inputs: ResMut<'w, PlayerInputs>,
     player_select_state: ResMut<'w, PlayerSelectState>,
     localization: Res<'w, Localization>,
+    client: Option<ResMut<'w, NetClient>>,
     #[system_param(ignore)]
     _phantom: PhantomData<&'s ()>,
 }
@@ -36,23 +46,23 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
         id: WidgetId,
         _: (),
     ) {
-        let params: PlayerSelectMenu = state.get_mut(world);
+        let mut params: PlayerSelectMenu = state.get_mut(world);
+
+        handle_server_messages(&mut params);
 
         // Whether or not the continue button should be enabled
         let mut ready_players = 0;
         let mut unconfirmed_players = 0;
 
-        #[allow(clippy::manual_flatten)] // False alarm
         for slot in &params.player_select_state.player_slots {
-            if let Some(PlayerSlot { confirmed, .. }) = slot {
-                if *confirmed {
-                    ready_players += 1;
-                } else {
-                    unconfirmed_players += 1;
-                }
+            if slot.confirmed {
+                ready_players += 1;
+            } else {
+                unconfirmed_players += 1;
             }
         }
-        let may_continue = ready_players >= 1 && unconfirmed_players == 0;
+        let may_continue =
+            ready_players >= 1 && unconfirmed_players == 0 && params.client.is_none();
 
         ui.vertical_centered(|ui| {
             let params: PlayerSelectMenu = state.get_mut(world);
@@ -95,8 +105,13 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
                     .focus_by_default(ui);
 
                     // Go to menu when back button is clicked
-                    if back_button.clicked() {
+                    if back_button.clicked()
+                        || params.menu_input.single().just_pressed(MenuAction::Back)
+                    {
                         *params.menu_page = MenuPage::Home;
+                        if let Some(client) = params.client {
+                            client.close();
+                        }
                         ui.ctx().clear_focus();
                     }
 
@@ -145,9 +160,34 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
     }
 }
 
+fn handle_server_messages(params: &mut PlayerSelectMenu) {
+    if let Some(client) = &mut params.client {
+        while let Some(message) = client.recv_reliable::<PlayerSelectFromServer>() {
+            match message {
+                PlayerSelectFromServer::PlayerSelection {
+                    player_idx,
+                    message,
+                } => match message {
+                    PlayerSelectFromClient::SelectPlayer(player_handle) => {
+                        params.player_inputs.players[player_idx as usize].selected_player =
+                            player_handle;
+                    }
+                    PlayerSelectFromClient::ConfirmSelection(confirmed) => {
+                        params.player_select_state.player_slots[player_idx as usize].confirmed =
+                            confirmed;
+                    }
+                },
+                PlayerSelectFromServer::StartGame => info!("Starting network game!"),
+            }
+        }
+    }
+}
+
 #[derive(SystemParam)]
 struct PlayerSelectPanel<'w, 's> {
     game: Res<'w, GameMeta>,
+    client_match_info: Option<Res<'w, NetClientMatchInfo>>,
+    player_inputs: ResMut<'w, PlayerInputs>,
     player_select_state: ResMut<'w, PlayerSelectState>,
     players: Query<
         'w,
@@ -157,8 +197,8 @@ struct PlayerSelectPanel<'w, 's> {
             &'static ActionState<PlayerAction>,
         ),
     >,
-    storage: ResMut<'w, Storage>,
     player_meta_assets: Res<'w, Assets<PlayerMeta>>,
+    client: Option<Res<'w, NetClient>>,
     localization: Res<'w, Localization>,
     #[system_param(ignore)]
     _phantom: PhantomData<&'s ()>,
@@ -174,68 +214,92 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
         idx: usize,
     ) {
         let mut params: PlayerSelectPanel = state.get_mut(world);
+        let dummy_actions = default();
 
-        let (_, player_actions): (_, &ActionState<PlayerAction>) = params
-            .players
-            .iter()
-            .find(|(player_idx, _)| player_idx.0 == idx)
-            .unwrap();
+        let player_actions = if let Some(match_info) = &params.client_match_info {
+            if idx == match_info.player_idx {
+                params
+                    .players
+                    .iter()
+                    .find(|(player_idx, _)| player_idx.0 == 0)
+                    .unwrap()
+                    .1
+            } else {
+                &dummy_actions
+            }
+        } else {
+            params
+                .players
+                .iter()
+                .find(|(player_idx, _)| player_idx.0 == idx)
+                .unwrap()
+                .1
+        };
 
-        let player_slot = &mut params.player_select_state.player_slots[idx];
+        let player_input = &mut params.player_inputs.players[idx];
+        if !player_input.active {
+            return;
+        }
 
-        if let Some(slot) = player_slot {
-            if player_actions.just_pressed(PlayerAction::Jump) {
-                slot.confirmed = true;
-            } else if player_actions.just_pressed(PlayerAction::Grab) {
-                if slot.confirmed {
-                    slot.confirmed = false;
-                } else {
-                    *player_slot = None;
-                }
-            } else if player_actions.just_pressed(PlayerAction::Move) && !slot.confirmed {
-                let direction = player_actions
-                    .clamped_axis_pair(PlayerAction::Move)
-                    .unwrap();
+        let player_handle = &mut player_input.selected_player;
 
-                let (current_player_handle_idx, _) = params
+        let slot = &mut params.player_select_state.player_slots[idx];
+
+        if player_actions.just_pressed(PlayerAction::Jump) {
+            slot.confirmed = true;
+            if let Some(client) = params.client {
+                client.send_reliable(&PlayerSelectFromClient::ConfirmSelection(slot.confirmed));
+            }
+        } else if player_actions.just_pressed(PlayerAction::Grab) {
+            slot.confirmed = false;
+            if let Some(client) = params.client {
+                client.send_reliable(&PlayerSelectFromClient::ConfirmSelection(slot.confirmed));
+            }
+        } else if player_actions.just_pressed(PlayerAction::Move) && !slot.confirmed {
+            let direction = player_actions
+                .clamped_axis_pair(PlayerAction::Move)
+                .unwrap();
+
+            let current_player_handle_idx = params
+                .game
+                .player_handles
+                .iter()
+                .enumerate()
+                .find(|(_, handle)| handle.inner == player_handle.inner)
+                .map(|(i, _)| i)
+                .unwrap_or(0);
+
+            if direction.x() > 0.0 {
+                *player_handle = params
                     .game
                     .player_handles
-                    .iter()
-                    .enumerate()
-                    .find(|(_, handle)| handle.inner == slot.player_handle.inner)
-                    .unwrap();
-
-                if direction.x() > 0.0 {
-                    slot.player_handle = params
+                    .get(current_player_handle_idx + 1)
+                    .map(|x| x.clone_weak())
+                    .unwrap_or_else(|| params.game.player_handles[0].clone_weak());
+            } else if direction.x() <= 0.0 {
+                if current_player_handle_idx > 0 {
+                    *player_handle = params
                         .game
                         .player_handles
-                        .get(current_player_handle_idx + 1)
+                        .get(current_player_handle_idx - 1)
                         .map(|x| x.clone_weak())
-                        .unwrap_or_else(|| params.game.player_handles[0].clone_weak());
-                } else if direction.x() <= 0.0 {
-                    if current_player_handle_idx > 0 {
-                        slot.player_handle = params
-                            .game
-                            .player_handles
-                            .get(current_player_handle_idx - 1)
-                            .map(|x| x.clone_weak())
-                            .unwrap();
-                    } else {
-                        slot.player_handle = params
-                            .game
-                            .player_handles
-                            .iter()
-                            .last()
-                            .unwrap()
-                            .clone_weak();
-                    }
+                        .unwrap();
+                } else {
+                    *player_handle = params
+                        .game
+                        .player_handles
+                        .iter()
+                        .last()
+                        .unwrap()
+                        .clone_weak();
                 }
             }
-        } else if player_actions.just_pressed(PlayerAction::Jump) {
-            *player_slot = Some(PlayerSlot {
-                player_handle: params.game.player_handles[0].clone_weak(),
-                confirmed: false,
-            });
+
+            if let Some(client) = params.client {
+                client.send_reliable(&PlayerSelectFromClient::SelectPlayer(
+                    player_handle.clone_weak(),
+                ));
+            }
         }
 
         BorderedFrame::new(&params.game.ui_theme.panel.border)
@@ -244,80 +308,61 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                 ui.set_width(ui.available_width());
                 ui.set_height(ui.available_height());
 
-                ui.vertical_centered(|ui| {
-                    let settings: Option<Settings> = params.storage.get(Settings::STORAGE_KEY);
-                    let settings = settings.as_ref().unwrap_or(&params.game.default_settings);
-                    let input_map = settings.player_controls.get_input_map(idx);
-
-                    if let Some(slot) = player_slot {
-                        let player_meta =
-                            params.player_meta_assets.get(&slot.player_handle).unwrap();
-
-                        ui.themed_label(
-                            &params.game.ui_theme.font_styles.normal,
-                            &params.localization.get("pick-a-fish"),
-                        );
-
+                let normal_font = &params.game.ui_theme.font_styles.normal;
+                if let Some(match_info) = params.client_match_info {
+                    if match_info.player_idx == idx {
                         ui.vertical_centered(|ui| {
-                            ui.set_height(params.game.ui_theme.font_styles.heading.size * 1.5);
-
-                            if slot.confirmed {
-                                ui.themed_label(
-                                    &params
-                                        .game
-                                        .ui_theme
-                                        .font_styles
-                                        .heading
-                                        .colored(params.game.ui_theme.colors.positive),
-                                    &params.localization.get("player-select-ready"),
-                                );
-                            }
-                        });
-
-                        ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
-                            let name_with_arrows = format!("<  {}  >", player_meta.name);
-                            ui.themed_label(
-                                &params.game.ui_theme.font_styles.normal,
-                                if slot.confirmed {
-                                    &player_meta.name
-                                } else {
-                                    &name_with_arrows
-                                },
-                            );
-
-                            player_image(ui, player_meta);
+                            ui.themed_label(normal_font, &params.localization.get("you-marker"));
                         });
                     } else {
+                        ui.add_space(normal_font.size);
+                    }
+                } else {
+                    ui.add_space(normal_font.size);
+                }
+
+                ui.vertical_centered(|ui| {
+                    let player_meta =
+                        if let Some(meta) = params.player_meta_assets.get(player_handle) {
+                            meta
+                        } else {
+                            return;
+                        };
+
+                    ui.themed_label(
+                        &params.game.ui_theme.font_styles.normal,
+                        &params.localization.get("pick-a-fish"),
+                    );
+
+                    ui.vertical_centered(|ui| {
+                        ui.set_height(params.game.ui_theme.font_styles.heading.size * 1.5);
+
+                        if slot.confirmed {
+                            ui.themed_label(
+                                &params
+                                    .game
+                                    .ui_theme
+                                    .font_styles
+                                    .heading
+                                    .colored(params.game.ui_theme.colors.positive),
+                                &params.localization.get("player-select-ready"),
+                            );
+                        }
+                    });
+
+                    ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
+                        let name_with_arrows = format!("<  {}  >", player_meta.name);
                         ui.themed_label(
                             &params.game.ui_theme.font_styles.normal,
-                            &params.localization.get(&"press-to-join".to_string()),
+                            if slot.confirmed {
+                                &player_meta.name
+                            } else {
+                                &name_with_arrows
+                            },
                         );
 
-                        ui.add_space(params.game.ui_theme.button_styles.normal.font.size);
-
-                        input_map
-                            .get(PlayerAction::Jump)
-                            .iter()
-                            .map(|x| match x {
-                                UserInput::Single(input) => match &input {
-                                    InputKind::GamepadButton(btn) => {
-                                        format!(
-                                            "{gamepad} {btn:?}",
-                                            gamepad = params.localization.get("gamepad")
-                                        )
-                                    }
-                                    InputKind::Keyboard(btn) => format!(
-                                        "{keyboard} {btn:?}",
-                                        keyboard = params.localization.get("keyboard")
-                                    ),
-                                    i => unimplemented!("Display input kind: {i:?}"),
-                                },
-                                _ => unimplemented!("Display non-single input type"),
-                            })
-                            .for_each(|btn| {
-                                ui.themed_label(&params.game.ui_theme.font_styles.smaller, &btn);
-                            });
-                    }
+                        player_image(ui, player_meta);
+                    });
                 });
             });
     }
@@ -341,7 +386,7 @@ fn player_image(ui: &mut egui::Ui, player_meta: &PlayerMeta) {
         .animations
         .get("idle")
         .expect("Missing `idle` animation");
-    let frame_in_time_idx = (time / fps).round() as usize;
+    let frame_in_time_idx = (time * fps).round() as usize;
     let frame_in_clip_idx = frame_in_time_idx % anim_clip.frames.len();
     let frame_in_sheet_idx = anim_clip.frames.clone().nth(frame_in_clip_idx).unwrap();
     let x_in_sheet_idx = frame_in_sheet_idx % spritesheet.columns;

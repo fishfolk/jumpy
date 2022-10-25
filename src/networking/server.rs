@@ -1,6 +1,6 @@
 use std::{any::TypeId, collections::VecDeque, time::Instant};
 
-use crate::networking::Connection;
+use crate::networking::{proto, Connection};
 use async_channel::{Receiver, RecvError, Sender};
 use bevy::{app::AppExit, tasks::IoTaskPool, utils::HashMap};
 use bytes::Bytes;
@@ -11,11 +11,14 @@ use crate::prelude::*;
 
 use super::NET_MESSAGE_TYPES;
 
+pub mod player_select;
+
 pub struct ServerPlugin;
 
 impl Plugin for ServerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(spawn_message_recv_tasks.run_if_resource_exists::<NetServer>())
+        app.add_plugin(player_select::ServerPlayerSelectPlugin)
+            .add_startup_system(spawn_message_recv_tasks.run_if_resource_exists::<NetServer>())
             .add_startup_system(spawn_message_send_task.run_if_resource_exists::<NetServer>())
             .add_system_to_stage(
                 CoreStage::First,
@@ -25,16 +28,11 @@ impl Plugin for ServerPlugin {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct Ping;
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct Pong;
-
 fn reply_to_ping(mut server: ResMut<NetServer>) {
-    while let Some(incomming) = server.recv_reliable::<Ping>() {
+    while let Some(incomming) = server.recv_reliable::<proto::Ping>() {
         let client_idx = incomming.client_idx;
         info!("Ping from client {client_idx}");
-        server.send_reliable(&Pong, client_idx);
+        server.send_reliable(&proto::Pong, client_idx);
     }
 }
 
@@ -66,8 +64,9 @@ struct Incomming {
 }
 
 #[derive(Debug, Clone)]
-enum MessageTarget {
+pub enum MessageTarget {
     All,
+    AllExcept(usize),
     Client(usize),
 }
 
@@ -92,6 +91,10 @@ impl NetServer {
             incomming_reliable_queue: default(),
             incomming_unreliable_queue: default(),
         }
+    }
+
+    pub fn client_count(&self) -> usize {
+        self.clients.len()
     }
 
     /// Update the incomming message queue
@@ -124,67 +127,53 @@ impl NetServer {
         }
     }
 
-    pub fn send_reliable<S: 'static + Serialize>(&self, message: &S, client_idx: usize) {
+    pub fn send_reliable_to<S: 'static + Serialize>(&self, message: &S, target: MessageTarget) {
         let type_id = TypeId::of::<S>();
         let type_idx = NET_MESSAGE_TYPES
-            .binary_search(&type_id)
+            .iter()
+            .position(|x| x == &type_id)
             .expect("Net message not registered") as u32;
         let mut message = postcard::to_allocvec(message).expect("Serialize net message");
         message.extend_from_slice(&(type_idx as u32).to_le_bytes());
         self.outgoing_reliable_sender
             .try_send(Outgoing {
                 data: message,
-                target: MessageTarget::Client(client_idx),
+                target,
             })
             .ok();
+    }
+
+    pub fn send_unreliable_to<S: 'static + Serialize>(&self, message: &S, target: MessageTarget) {
+        let type_id = TypeId::of::<S>();
+        let type_idx = NET_MESSAGE_TYPES
+            .iter()
+            .position(|x| x == &type_id)
+            .expect("Net message not registered") as u32;
+        let mut message = postcard::to_allocvec(message).expect("Serialize net message");
+        message.extend_from_slice(&(type_idx as u32).to_le_bytes());
+
+        self.outgoing_unreliable_sender
+            .try_send(Outgoing {
+                data: message,
+                target,
+            })
+            .ok();
+    }
+
+    pub fn send_reliable<S: 'static + Serialize>(&self, message: &S, client_idx: usize) {
+        self.send_reliable_to(message, MessageTarget::Client(client_idx));
     }
 
     pub fn send_unreliable<S: 'static + Serialize>(&self, message: &S, client_idx: usize) {
-        let type_id = TypeId::of::<S>();
-        let type_idx = NET_MESSAGE_TYPES
-            .binary_search(&type_id)
-            .expect("Net message not registered") as u32;
-        let mut message = postcard::to_allocvec(message).expect("Serialize net message");
-        message.extend_from_slice(&(type_idx as u32).to_le_bytes());
-
-        self.outgoing_unreliable_sender
-            .try_send(Outgoing {
-                data: message,
-                target: MessageTarget::Client(client_idx),
-            })
-            .ok();
+        self.send_unreliable_to(message, MessageTarget::Client(client_idx));
     }
 
     pub fn broadcast_reliable<S: 'static + Serialize>(&self, message: &S) {
-        let type_id = TypeId::of::<S>();
-        let type_idx = NET_MESSAGE_TYPES
-            .binary_search(&type_id)
-            .expect("Net message not registered") as u32;
-        let mut message = postcard::to_allocvec(message).expect("Serialize net message");
-        message.extend_from_slice(&(type_idx as u32).to_le_bytes());
-
-        self.outgoing_reliable_sender
-            .try_send(Outgoing {
-                data: message,
-                target: MessageTarget::All,
-            })
-            .ok();
+        self.send_reliable_to(message, MessageTarget::All);
     }
 
     pub fn broadcast_unreliable<S: 'static + Serialize>(&self, message: &S) {
-        let type_id = TypeId::of::<S>();
-        let type_idx = NET_MESSAGE_TYPES
-            .binary_search(&type_id)
-            .expect("Net message not registered") as u32;
-        let mut message = postcard::to_allocvec(message).expect("Serialize net message");
-        message.extend_from_slice(&(type_idx as u32).to_le_bytes());
-
-        self.outgoing_unreliable_sender
-            .try_send(Outgoing {
-                data: message,
-                target: MessageTarget::All,
-            })
-            .ok();
+        self.send_unreliable_to(message, MessageTarget::All);
     }
 
     pub fn recv_reliable<T: 'static + DeserializeOwned>(&mut self) -> Option<IncommingMessage<T>> {
@@ -241,6 +230,12 @@ fn spawn_message_send_task(server: Res<NetServer>) {
 
                         let targets = match message.target {
                             MessageTarget::All => clients.iter().collect::<Vec<_>>(),
+                            MessageTarget::AllExcept(idx) => clients
+                                .iter()
+                                .enumerate()
+                                .filter(|(i, _)| i != &idx)
+                                .map(|(_, x)| x)
+                                .collect::<Vec<_>>(),
                             MessageTarget::Client(idx) => {
                                 [&clients[idx]].into_iter().collect::<Vec<_>>()
                             }
@@ -277,6 +272,12 @@ fn spawn_message_send_task(server: Res<NetServer>) {
 
                         let targets = match message.target {
                             MessageTarget::All => clients.iter().collect::<Vec<_>>(),
+                            MessageTarget::AllExcept(idx) => clients
+                                .iter()
+                                .enumerate()
+                                .filter(|(i, _)| i != &idx)
+                                .map(|(_, x)| x)
+                                .collect::<Vec<_>>(),
                             MessageTarget::Client(idx) => {
                                 [&clients[idx]].into_iter().collect::<Vec<_>>()
                             }

@@ -128,7 +128,9 @@ impl<'w, 's> WidgetSystem for SettingsMenu<'w, 's> {
                                 .show(ui);
 
                                 // Go to menu when cancel is clicked
-                                if cancel_button.clicked() {
+                                if cancel_button.clicked()
+                                    || params.menu_input.single().just_pressed(MenuAction::Back)
+                                {
                                     *params.menu_page = MenuPage::Home;
                                     ui.ctx().clear_focus();
                                 }

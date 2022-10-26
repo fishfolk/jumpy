@@ -24,7 +24,8 @@ impl Plugin for ClientPlugin {
             recv_client_match_info
                 .run_if_resource_exists::<NetClient>()
                 .run_unless_resource_exists::<NetClientMatchInfo>(),
-        );
+        )
+        .add_exit_system(GameState::InGame, close_connection_when_leaving_game);
     }
 }
 
@@ -55,6 +56,10 @@ fn remove_closed_client(client: Res<NetClient>, mut commands: Commands) {
         commands.remove_resource::<NetClient>();
         commands.remove_resource::<NetClientMatchInfo>();
     }
+}
+
+fn close_connection_when_leaving_game(client: Res<NetClient>) {
+    client.close();
 }
 
 mod certs {

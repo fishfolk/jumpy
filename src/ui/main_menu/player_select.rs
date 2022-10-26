@@ -4,7 +4,7 @@ use crate::{
     networking::{
         client::NetClient,
         proto::{
-            player_select::{PlayerSelectFromClient, PlayerSelectFromServer},
+            match_setup::{MatchSetupFromClient, MatchSetupFromServer},
             NetClientMatchInfo,
         },
     },
@@ -48,7 +48,7 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
     ) {
         let mut params: PlayerSelectMenu = state.get_mut(world);
 
-        handle_server_messages(&mut params);
+        handle_match_setup_messages(&mut params);
 
         // Whether or not the continue button should be enabled
         let mut ready_players = 0;
@@ -132,7 +132,7 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
                         .inner;
 
                     if continue_button.clicked() {
-                        *params.menu_page = MenuPage::MapSelect;
+                        *params.menu_page = MenuPage::MapSelect { is_waiting: false };
                     }
                 });
 
@@ -160,24 +160,32 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
     }
 }
 
-fn handle_server_messages(params: &mut PlayerSelectMenu) {
+fn handle_match_setup_messages(params: &mut PlayerSelectMenu) {
     if let Some(client) = &mut params.client {
-        while let Some(message) = client.recv_reliable::<PlayerSelectFromServer>() {
+        while let Some(message) = client.recv_reliable::<MatchSetupFromServer>() {
             match message {
-                PlayerSelectFromServer::PlayerSelection {
+                MatchSetupFromServer::ClientMessage {
                     player_idx,
                     message,
                 } => match message {
-                    PlayerSelectFromClient::SelectPlayer(player_handle) => {
+                    MatchSetupFromClient::SelectPlayer(player_handle) => {
                         params.player_inputs.players[player_idx as usize].selected_player =
                             player_handle;
                     }
-                    PlayerSelectFromClient::ConfirmSelection(confirmed) => {
+                    MatchSetupFromClient::ConfirmSelection(confirmed) => {
                         params.player_select_state.player_slots[player_idx as usize].confirmed =
                             confirmed;
                     }
+                    message => {
+                        warn!("Unexpected message in player select menu: {message:?}");
+                    }
                 },
-                PlayerSelectFromServer::StartGame => info!("Starting network game!"),
+                MatchSetupFromServer::SelectMap => {
+                    *params.menu_page = MenuPage::MapSelect { is_waiting: false };
+                }
+                MatchSetupFromServer::WaitForMapSelect => {
+                    *params.menu_page = MenuPage::MapSelect { is_waiting: true };
+                }
             }
         }
     }
@@ -248,12 +256,12 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
         if player_actions.just_pressed(PlayerAction::Jump) {
             slot.confirmed = true;
             if let Some(client) = params.client {
-                client.send_reliable(&PlayerSelectFromClient::ConfirmSelection(slot.confirmed));
+                client.send_reliable(&MatchSetupFromClient::ConfirmSelection(slot.confirmed));
             }
         } else if player_actions.just_pressed(PlayerAction::Grab) {
             slot.confirmed = false;
             if let Some(client) = params.client {
-                client.send_reliable(&PlayerSelectFromClient::ConfirmSelection(slot.confirmed));
+                client.send_reliable(&MatchSetupFromClient::ConfirmSelection(slot.confirmed));
             }
         } else if player_actions.just_pressed(PlayerAction::Move) && !slot.confirmed {
             let direction = player_actions
@@ -296,7 +304,7 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
             }
 
             if let Some(client) = params.client {
-                client.send_reliable(&PlayerSelectFromClient::SelectPlayer(
+                client.send_reliable(&MatchSetupFromClient::SelectPlayer(
                     player_handle.clone_weak(),
                 ));
             }

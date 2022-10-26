@@ -58,12 +58,14 @@ pub fn hydrate_maps(
             default(),
         );
 
-        let window = windows.primary();
-        *parallax = map.get_parallax_resource();
-        parallax.window_size = Vec2::new(window.width(), window.height());
-        parallax.create_layers(&mut commands, &asset_server, &mut texture_atlas_assets);
+        if !ENGINE_CONFIG.server_mode {
+            let window = windows.primary();
+            *parallax = map.get_parallax_resource();
+            parallax.window_size = Vec2::new(window.width(), window.height());
+            parallax.create_layers(&mut commands, &asset_server, &mut texture_atlas_assets);
 
-        commands.insert_resource(ClearColor(map.background_color.into()));
+            commands.insert_resource(ClearColor(map.background_color.into()));
+        }
 
         let tilemap_size = TilemapSize {
             x: map.grid_size.x,

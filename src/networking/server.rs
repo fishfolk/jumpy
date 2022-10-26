@@ -15,12 +15,14 @@ use crate::prelude::*;
 use super::NET_MESSAGE_TYPES;
 
 pub mod match_setup;
+pub mod player_input;
 
 pub struct ServerPlugin;
 
 impl Plugin for ServerPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(match_setup::ServerPlayerSelectPlugin)
+            .add_plugin(player_input::ServerPlayerInputPlugin)
             .add_startup_system(spawn_message_recv_tasks)
             .add_startup_system(spawn_message_send_task)
             .add_system_to_stage(CoreStage::First, exit_on_disconnect)
@@ -297,7 +299,7 @@ fn spawn_message_send_task(server: Res<NetServer>) {
                             let result = conn.send_datagram(message_);
 
                             if let Err(e) = result {
-                                error!("Error sending reliable message: {e:?}");
+                                error!("Error sending unreliable message: {e:?}");
                             }
                         }
                     }

@@ -168,7 +168,7 @@ pub fn build_app(net_server: Option<NetServer>) -> App {
             for i in 0..player_count {
                 info!("Sending net idx for player {i}");
                 net_server.send_reliable(
-                    &proto::NetClientMatchInfo {
+                    &proto::ClientMatchInfo {
                         player_idx: i,
                         player_count,
                     },

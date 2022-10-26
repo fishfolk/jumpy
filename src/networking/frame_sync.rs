@@ -103,6 +103,10 @@ fn impl_client_get_sync_data(
     let mut message = None;
     // We only care about the last message, so loop until we stop getting messages and store the
     // latest one.
+    //
+    // FIXME: We currently send unordered packets, but assume that the latest one received is indeed the
+    // latest, when it could be older than a previously received packet. We need to keep a network tick
+    // so that we can tell which packet is the newest one we've seen.
     while let Some(m) = client.recv_unreliable::<FrameSyncMessage>() {
         message = Some(m);
     }

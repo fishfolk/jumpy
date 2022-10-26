@@ -1,11 +1,12 @@
 use crate::prelude::*;
 
 pub mod match_setup;
+pub mod player_input;
 
 /// A resource indicating which player this game client represents, and how many players there are
 /// in the match.j
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct NetClientMatchInfo {
+pub struct ClientMatchInfo {
     pub player_idx: usize,
     pub player_count: usize,
 }

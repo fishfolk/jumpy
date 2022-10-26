@@ -29,7 +29,6 @@ maps:
   - map/levels/zyrafa06.map.json
 
 scripts:
-
   - player/states/default.ts
   - player/states/idle.ts
   - player/states/walk.ts

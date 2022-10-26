@@ -2,7 +2,7 @@ use super::*;
 
 use bevy::reflect::{FromReflect, Reflect};
 
-use crate::{metadata::PlayerMeta, networking::proto::NetClientMatchInfo};
+use crate::{metadata::PlayerMeta, networking::proto::ClientMatchInfo};
 
 pub struct PlayerInputPlugin;
 
@@ -64,7 +64,7 @@ pub struct PlayerInput {
 }
 
 /// Player control input state
-#[derive(Reflect, Default, Clone, Debug, FromReflect)]
+#[derive(Reflect, Default, Clone, Debug, FromReflect, Deserialize, Serialize)]
 #[reflect(Default)]
 pub struct PlayerControl {
     pub just_moved: bool,
@@ -87,9 +87,11 @@ pub struct PlayerControl {
 fn update_user_input(
     mut player_inputs: ResMut<PlayerInputs>,
     players: Query<(&PlayerIdx, &ActionState<PlayerAction>)>,
-    client_match_info: Option<Res<NetClientMatchInfo>>,
+    client_match_info: Option<Res<ClientMatchInfo>>,
 ) {
     for (player_idx, action_state) in &players {
+        // Nuance: during a network game, this allows the player to use any of the control methods
+        // for any local player to control themselves.
         let actual_player_idx = if let Some(match_info) = &client_match_info {
             match_info.player_idx
         } else {

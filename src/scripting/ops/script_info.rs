@@ -43,7 +43,6 @@ impl JsRuntimeOp for ScriptInfoGet {
 
         let mut hasher = fnv::FnvHasher::default();
         ctx.script_info.handle.id.hash(&mut hasher);
-        // The bit shift makes the hash fit within the safe integer range for a JavaScript number
         let hash = base64::encode(hasher.finish().to_le_bytes());
         cache_str(&hash);
 

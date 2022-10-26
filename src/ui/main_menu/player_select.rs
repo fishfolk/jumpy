@@ -5,7 +5,7 @@ use crate::{
         client::NetClient,
         proto::{
             match_setup::{MatchSetupFromClient, MatchSetupFromServer},
-            NetClientMatchInfo,
+            ClientMatchInfo,
         },
     },
     player::input::PlayerAction,
@@ -194,7 +194,7 @@ fn handle_match_setup_messages(params: &mut PlayerSelectMenu) {
 #[derive(SystemParam)]
 struct PlayerSelectPanel<'w, 's> {
     game: Res<'w, GameMeta>,
-    client_match_info: Option<Res<'w, NetClientMatchInfo>>,
+    client_match_info: Option<Res<'w, ClientMatchInfo>>,
     player_inputs: ResMut<'w, PlayerInputs>,
     player_select_state: ResMut<'w, PlayerSelectState>,
     players: Query<

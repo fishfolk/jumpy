@@ -59,7 +59,7 @@ const AnimationBankSprite: BevyType<AnimationBankSprite> = {
   typeName: "jumpy::animation::AnimationBankSprite",
 };
 
-const scriptId = ScriptInfo.get().handle_id_hash;
+const scriptId = ScriptInfo.get().path;
 
 export default {
   playerStateTransition() {
@@ -71,7 +71,7 @@ export default {
       if (playerState.id != scriptId) continue;
 
       if (body.is_on_ground) {
-        playerState.id = Assets.getHandleId("./idle.ts").hash();
+        playerState.id = Assets.getAbsolutePath("./idle.ts");
       }
     }
   },

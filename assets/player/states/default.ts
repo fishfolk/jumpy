@@ -13,7 +13,7 @@ export default {
       if (playerState.id !== "") continue;
 
       // Transition to the idle state
-      playerState.id = Assets.getHandleId("./idle.ts").hash();
+      playerState.id = Assets.getAbsolutePath("./idle.ts");
     }
   },
 };

@@ -1,13 +1,11 @@
 use std::{any::TypeId, collections::VecDeque, time::Instant};
 
-use crate::{
-    networking::{proto, Connection},
-    player::input::PlayerInputs,
-};
+use crate::{networking::proto, player::input::PlayerInputs};
 use async_channel::{Receiver, RecvError, Sender};
 use bevy::{app::AppExit, tasks::IoTaskPool, utils::HashMap};
 use bytes::Bytes;
 use futures_lite::future;
+use quinn::Connection;
 use serde::de::DeserializeOwned;
 
 use crate::prelude::*;

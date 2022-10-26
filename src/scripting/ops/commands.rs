@@ -4,13 +4,17 @@ use bevy::prelude::{default, ReflectComponent};
 use bevy::reflect::TypeRegistryArc;
 
 use bevy_mod_js_scripting::{serde_json, JsRuntimeOp, JsValueRef, JsValueRefs, OpContext};
-use bevy_renet::renet::RenetServer;
 
-use crate::networking::commands::{CommandMessage, TypeNameCache};
-use crate::networking::serialization::ser::CompactReflectSerializer;
-use crate::networking::serialization::serialize_to_bytes;
-use crate::networking::{NetChannels, NetIdMap};
-use crate::prelude::NetCommands;
+use crate::networking::serialization::TypeNameCache;
+use crate::networking::server::NetServer;
+use crate::{
+    networking::{
+        commands::CommandMessage,
+        serialization::{ser::CompactReflectSerializer, serialize_to_bytes},
+        NetIdMap,
+    },
+    prelude::*,
+};
 
 pub struct NetCommandsSpawn;
 impl JsRuntimeOp for NetCommandsSpawn {
@@ -88,7 +92,7 @@ impl JsRuntimeOp for NetCommandsInsert {
         let (entity_value_ref, component_value_ref): (JsValueRef, JsValueRef) =
             serde_json::from_value(args).context("parse args")?;
 
-        let mut server = world.remove_resource::<RenetServer>();
+        let mut server = world.remove_resource::<NetServer>();
 
         let value_refs = context
             .op_state
@@ -135,13 +139,11 @@ impl JsRuntimeOp for NetCommandsInsert {
 
             // Send component insertion message over the network
             let type_name = type_registration.type_name();
-            let message = serialize_to_bytes(&CommandMessage::Insert {
+            server.broadcast_reliable(&CommandMessage::Insert {
                 net_id,
                 component_bytes,
                 type_name: type_name.into(),
-            })
-            .expect("Serialize net message");
-            server.broadcast_message(NetChannels::Commands, message);
+            });
         }
 
         // Drop our immutable borrow of the world

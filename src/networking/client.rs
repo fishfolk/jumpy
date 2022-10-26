@@ -25,7 +25,10 @@ impl Plugin for ClientPlugin {
                 .run_if_resource_exists::<NetClient>()
                 .run_unless_resource_exists::<NetClientMatchInfo>(),
         )
-        .add_exit_system(GameState::InGame, close_connection_when_leaving_game);
+        .add_exit_system(
+            GameState::InGame,
+            close_connection_when_leaving_game.run_if_resource_exists::<NetClient>(),
+        );
     }
 }
 

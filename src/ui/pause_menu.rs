@@ -97,7 +97,7 @@ pub fn pause_menu(
                         }
 
                         if continue_button.clicked() {
-                            commands.insert_resource(NextState(GameState::InGame));
+                            commands.insert_resource(NextState(InGameState::Playing));
                         }
 
                         ui.scope(|ui| {

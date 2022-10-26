@@ -11,19 +11,15 @@ use bevy::{
 };
 use serde::{de::DeserializeSeed, Deserialize, Serialize};
 
-use crate::{
-    config::ENGINE_CONFIG,
-    networking::serialization::{
-        de::CompactReflectDeserializer, deserialize_from_bytes, deserializer_from_bytes,
-    },
-    prelude::*,
-    utils::ResetController,
-};
+use crate::{config::ENGINE_CONFIG, prelude::*, utils::ResetController};
 
 use super::{
+    client::NetClient,
     serialization::{
-        get_type_name_cache, ser::CompactReflectSerializer, serialize_to_bytes, StringCache,
+        de::CompactReflectDeserializer, deserializer_from_bytes, get_type_name_cache,
+        ser::CompactReflectSerializer, serialize_to_bytes, TypeNameCache,
     },
+    server::NetServer,
     NetId, NetIdMap,
 };
 
@@ -31,21 +27,34 @@ pub struct NetCommandsPlugin;
 
 impl Plugin for NetCommandsPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<NetIdMap>()
-            .add_system(client_handle_net_commands.run_if(super::client_connected));
+        app.init_resource::<NetIdMap>().add_system(
+            client_handle_net_commands
+                .run_if_resource_exists::<NetClient>()
+                .run_if_resource_exists::<TypeNameCache>(),
+        );
 
         if ENGINE_CONFIG.server_mode {
-            let type_registry = app.world.resource::<TypeRegistryArc>();
-            let string_cache = get_type_name_cache(type_registry);
-            app.world.insert_resource(TypeNameCache(string_cache));
+            app.world.resource_scope(|world, server: Mut<NetServer>| {
+                let type_registry = world.resource::<TypeRegistryArc>();
+                let type_name_cache = get_type_name_cache(type_registry);
+
+                server.broadcast_reliable(&type_name_cache);
+
+                world.insert_resource(type_name_cache);
+            });
         } else {
-            app.world.insert_resource(TypeNameCache::default());
+            app.add_system(
+                update_type_name_cache_from_server.run_if_resource_exists::<NetClient>(),
+            );
         }
     }
 }
 
-#[derive(Default)]
-pub struct TypeNameCache(pub StringCache);
+fn update_type_name_cache_from_server(mut client: ResMut<NetClient>, mut commands: Commands) {
+    while let Some(type_name_cache) = client.recv_reliable::<TypeNameCache>() {
+        commands.insert_resource(type_name_cache);
+    }
+}
 
 #[derive(Serialize, Deserialize, Clone)]
 pub enum CommandMessage {
@@ -126,19 +135,18 @@ pub fn client_handle_net_commands(
     entities: &Entities,
     mut commands: Commands,
     type_registry: Res<TypeRegistryArc>,
-    mut client: ResMut<RenetClient>,
+    mut client: ResMut<NetClient>,
     mut net_ids: ResMut<NetIdMap>,
     type_names: Res<TypeNameCache>,
     mut reset_controller: ResetController,
 ) {
-    while let Some(message) = client.receive_message(NetChannels::Commands) {
-        let message: CommandMessage =
-            deserialize_from_bytes(&message).expect("Deserialize server message");
+    while let Some(message) = client.recv_reliable::<CommandMessage>() {
         trace!(command=?message, "Received CommandMessage from server");
 
         match message {
             CommandMessage::Spawn { net_id } => {
                 let entity = commands.spawn().insert(net_id).id();
+                info!("Spawning entity");
                 net_ids.insert(entity, net_id);
             }
             CommandMessage::Insert {
@@ -251,7 +259,7 @@ pub struct NetCommands<'w, 's> {
 pub struct NetResources<'w, 's> {
     type_registry: Res<'w, TypeRegistryArc>,
     net_ids: ResMut<'w, NetIdMap>,
-    server: Option<ResMut<'w, RenetServer>>,
+    server: Option<ResMut<'w, NetServer>>,
     type_names: Option<Res<'w, TypeNameCache>>,
     #[system_param(ignore)]
     _phantom: PhantomData<&'s ()>,
@@ -271,9 +279,7 @@ impl<'w, 's> NetCommands<'w, 's> {
             entity_cmds.insert(net_id);
 
             // Notify clients/server that an entity has been spawned
-            let message = serialize_to_bytes(&CommandMessage::Spawn { net_id })
-                .expect("Serialize network message");
-            server.broadcast_message(NetChannels::Commands, message);
+            server.broadcast_reliable(&CommandMessage::Spawn { net_id });
         }
 
         NetEntityCommands {
@@ -294,9 +300,7 @@ impl<'w, 's> NetCommands<'w, 's> {
         let state = state.into();
 
         if let Some(server) = &mut self.res.server {
-            let message = serialize_to_bytes(&CommandMessage::NextState(state))
-                .expect("Serialize network message");
-            server.broadcast_message(NetChannels::Commands, message);
+            server.broadcast_reliable(&CommandMessage::NextState(state));
         }
 
         match state {
@@ -327,12 +331,10 @@ impl<'w, 's> NetCommands<'w, 's> {
             };
 
             // Send the clients/server the inserted component
-            let message = serialize_to_bytes(&CommandMessage::InsertResource {
+            server.broadcast_reliable(&CommandMessage::InsertResource {
                 resource_bytes,
                 type_name: type_name.into(),
-            })
-            .expect("Serialize net message");
-            server.broadcast_message(NetChannels::Commands, message);
+            });
         }
 
         self.commands.insert_resource(resource);
@@ -382,13 +384,11 @@ impl<'w, 's, 'a> NetEntityCommands<'w, 's, 'a> {
             };
 
             // Send the clients/server the inserted component
-            let message = serialize_to_bytes(&CommandMessage::Insert {
+            server.broadcast_reliable(&CommandMessage::Insert {
                 net_id,
                 component_bytes,
                 type_name: type_name.into(),
-            })
-            .expect("Serialize net message");
-            server.broadcast_message(NetChannels::Commands, message);
+            });
         }
 
         self.entity_cmds.insert(c);
@@ -399,12 +399,10 @@ impl<'w, 's, 'a> NetEntityCommands<'w, 's, 'a> {
     pub fn despawn_recursive(self) {
         if let Some(server) = &mut self.res.server {
             if let Some(net_id) = self.res.net_ids.remove_entity(self.entity_cmds.id()) {
-                let message = serialize_to_bytes(&CommandMessage::Despawn {
+                server.broadcast_reliable(&CommandMessage::Despawn {
                     recursive: true,
                     net_id,
-                })
-                .expect("Serialize net message");
-                server.broadcast_message(NetChannels::Commands, message);
+                });
             }
         }
 

@@ -8,16 +8,17 @@ use serde::de::DeserializeSeed;
 use crate::prelude::*;
 
 use super::{
-    commands::TypeNameCache,
+    client::NetClient,
     serialization::{
-        de::CompactReflectDeserializer, deserialize_from_bytes, deserializer_from_bytes,
-        ser::CompactReflectSerializer, serialize_to_bytes,
+        de::CompactReflectDeserializer, deserializer_from_bytes, ser::CompactReflectSerializer,
+        serialize_to_bytes, TypeNameCache,
     },
-    NetChannels, NetId, NetIdMap,
+    server::NetServer,
+    NetId, NetIdMap,
 };
 
 mod dynamic_query_info;
-use self::dynamic_query_info::DynamicQueryInfo;
+use self::dynamic_query_info::{DynamicQueryInfo, DynamicQueryInfoResources};
 
 pub struct NetFrameSyncPlugin;
 
@@ -67,11 +68,14 @@ struct FrameSyncQueryItem {
 }
 
 fn client_get_sync_data(world: &mut World) {
-    if !world.contains_resource::<RenetClient>() {
+    if !world.contains_resource::<NetClient>() {
+        return;
+    }
+    if !world.contains_resource::<TypeNameCache>() {
         return;
     }
 
-    world.resource_scope(|world, mut client: Mut<RenetClient>| {
+    world.resource_scope(|world, mut client: Mut<NetClient>| {
         world.resource_scope(|world, net_ids: Mut<NetIdMap>| {
             world.resource_scope(|world, type_registry: Mut<TypeRegistryArc>| {
                 world.resource_scope(|world, type_names: Mut<TypeNameCache>| {
@@ -91,7 +95,7 @@ fn client_get_sync_data(world: &mut World) {
 
 fn impl_client_get_sync_data(
     world: &mut World,
-    client: &mut RenetClient,
+    client: &mut NetClient,
     net_ids: &NetIdMap,
     type_registry: &TypeRegistryInternal,
     type_names: &TypeNameCache,
@@ -99,21 +103,21 @@ fn impl_client_get_sync_data(
     let mut message = None;
     // We only care about the last message, so loop until we stop getting messages and store the
     // latest one.
-    while let Some(m) = client.receive_message(NetChannels::FrameSync) {
+    while let Some(m) = client.recv_unreliable::<FrameSyncMessage>() {
         message = Some(m);
     }
 
     // If we have a frame update
     if let Some(message) = message {
-        // Deserialize it
-        let message: FrameSyncMessage =
-            deserialize_from_bytes(&message).expect("Deserialize net message");
-
         for net_query in message.queries {
             let mut query = net_query
                 .query_info
                 .with_all_fetches_mutable()
-                .get_query(world)
+                .get_query(DynamicQueryInfoResources {
+                    world,
+                    type_names,
+                    type_registry,
+                })
                 .expect("Invalid query");
             let reflect_tools = get_reflect_from_ptr(world, type_registry, &query);
 
@@ -185,11 +189,14 @@ fn impl_client_get_sync_data(
 }
 
 fn server_send_sync_data(world: &mut World) {
-    if !world.contains_resource::<RenetServer>() {
+    if !world.contains_resource::<NetServer>() {
+        return;
+    }
+    if !world.contains_resource::<TypeNameCache>() {
         return;
     }
 
-    world.resource_scope(|world, mut server: Mut<RenetServer>| {
+    world.resource_scope(|world, mut server: Mut<NetServer>| {
         world.resource_scope(|world, mut queries: Mut<NetworkSyncConfig>| {
             world.resource_scope(|world, net_ids: Mut<NetIdMap>| {
                 world.resource_scope(|world, type_registry: Mut<TypeRegistryArc>| {
@@ -212,7 +219,7 @@ fn server_send_sync_data(world: &mut World) {
 
 fn impl_server_send_sync_data(
     world: &mut World,
-    server: &mut RenetServer,
+    server: &mut NetServer,
     network_sync: &mut NetworkSyncConfig,
     net_ids: &NetIdMap,
     type_registry: &TypeRegistryInternal,
@@ -223,7 +230,14 @@ fn impl_server_send_sync_data(
     // Iterate over queries that need to be synced
     for net_query in network_sync.queries.iter_mut() {
         let query = &mut net_query.query;
-        let query_info = DynamicQueryInfo::from_query(query);
+        let query_info = DynamicQueryInfo::from_query(
+            query,
+            DynamicQueryInfoResources {
+                world,
+                type_names,
+                type_registry,
+            },
+        );
 
         // Get the ReflectFromPtr and ReflectSerialize for each component type in the query
         let reflect_tools = get_reflect_from_ptr(world, type_registry, query);
@@ -273,8 +287,7 @@ fn impl_server_send_sync_data(
         queries: frame_sync_queries,
     };
 
-    let message = serialize_to_bytes(&message).expect("Serialize frame sync net message");
-    server.broadcast_message(NetChannels::FrameSync, message);
+    server.broadcast_unreliable(&message);
 }
 
 fn get_reflect_from_ptr<'a, 'b>(

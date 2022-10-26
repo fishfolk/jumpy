@@ -9,7 +9,6 @@ pub enum MatchSetupFromClient {
     SelectPlayer(AssetHandle<PlayerMeta>),
     ConfirmSelection(bool),
     SelectMap(AssetHandle<MapMeta>),
-    ReadyToStart,
 }
 
 /// Network message sent by server to notify clients of selected players

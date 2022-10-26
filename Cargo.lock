@@ -2646,15 +2646,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "jumpy-matchmaker-proto"
-version = "0.1.0"
-dependencies = [
- "serde",
- "ulid",
-]
-
-[[package]]
-name = "jumpy_matchmaker"
+name = "jumpy-matchmaker"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -2678,6 +2670,14 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "jumpy-matchmaker-proto"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "ulid",
 ]
 
 [[package]]

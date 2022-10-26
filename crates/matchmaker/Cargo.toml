@@ -1,5 +1,5 @@
 [package]
-name = "jumpy_matchmaker"
+name = "jumpy-matchmaker"
 version = "0.1.0"
 edition = "2021"
 authors = ["The Fish Fight Game & Spicy Lobster Developers"]

@@ -46,7 +46,6 @@ fn handle_client_messages(
     while let Some(incomming) = server.recv_reliable::<MatchSetupFromClient>() {
         match &incomming.message {
             MatchSetupFromClient::SelectPlayer(handle) => {
-                info!("player selection: {handle:?}");
                 player_inputs.players[incomming.client_idx].selected_player = handle.clone_weak();
             }
             MatchSetupFromClient::ConfirmSelection(confirmed) => {

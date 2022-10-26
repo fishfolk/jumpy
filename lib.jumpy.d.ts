@@ -10,6 +10,7 @@ interface HandleIdWithFuncs {
 
 declare namespace Assets {
   function getHandleId(relative_path: string): HandleIdWithFuncs;
+  function getAbsolutePath(relative_path: string): string;
 }
 
 // All handles have the same type, so just alias here

@@ -59,7 +59,7 @@ const AnimationBankSprite: BevyType<AnimationBankSprite> = {
   typeName: "jumpy::animation::AnimationBankSprite",
 };
 
-const scriptId = ScriptInfo.get().handle_id_hash;
+const scriptId = ScriptInfo.get().path;
 
 export default {
   playerStateTransition() {
@@ -74,9 +74,9 @@ export default {
       const control = player_inputs.players[playerIdx[0]].control;
 
       if (!body.is_on_ground) {
-        playerState.id = Assets.getHandleId("./midair.ts").hash();
+        playerState.id = Assets.getAbsolutePath("./midair.ts");
       } else if (control.move_direction.x == 0) {
-        playerState.id = Assets.getHandleId("./idle.ts").hash();
+        playerState.id = Assets.getAbsolutePath("./idle.ts");
       }
     }
   },

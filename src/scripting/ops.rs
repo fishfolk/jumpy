@@ -18,6 +18,10 @@ pub fn get_ops() -> OpMap {
         Box::new(asset::AssetGetHandleId),
     );
     ops.insert(
+        "jumpy_asset_get_absolute_path",
+        Box::new(asset::AssetGetAbsolutePath),
+    );
+    ops.insert(
         "jumpy_script_info_get",
         Box::new(script_info::ScriptInfoGet),
     );

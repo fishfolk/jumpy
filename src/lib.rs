@@ -159,6 +159,8 @@ pub fn build_app(net_server: Option<NetServer>) -> App {
     );
 
     // Install game plugins
+
+    // Server mode requires special configuration to disable rendering, etc.
     if engine_config.server_mode {
         if let Some(net_server) = net_server {
             // Send each client their player index
@@ -197,7 +199,11 @@ pub fn build_app(net_server: Option<NetServer>) -> App {
                 wait: Some(Duration::from_secs_f64(FIXED_TIMESTEP)),
             },
         })
-        .add_plugin(ScheduleRunnerPlugin);
+        .add_plugin(ScheduleRunnerPlugin)
+        .register_type::<bevy::render::view::ComputedVisibility>()
+        .register_type::<bevy::render::view::Visibility>();
+
+    // If we're not in server mode
     } else {
         app.add_plugins(DefaultPlugins)
             .add_plugin(LinesPlugin)

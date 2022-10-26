@@ -67,10 +67,16 @@ const initState: { spawners: JsEntity[]; currentSpawner: number } = {
 
 const state = ScriptInfo.state(initState);
 
+let firstRun = true;
+
 export default {
   preUpdateInGame() {
-    return;
     const player_inputs = world.resource(PlayerInputs);
+
+    if (firstRun) {
+      firstRun = false;
+      info("player inputs: " + player_inputs.toString());
+    }
 
     const mapQuery = world.query(MapMeta)[0];
     if (!mapQuery) {

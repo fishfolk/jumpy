@@ -1,6 +1,9 @@
 use std::{any::TypeId, collections::VecDeque, time::Instant};
 
-use crate::networking::{proto, Connection};
+use crate::{
+    networking::{proto, Connection},
+    player::input::PlayerInputs,
+};
 use async_channel::{Receiver, RecvError, Sender};
 use bevy::{app::AppExit, tasks::IoTaskPool, utils::HashMap};
 use bytes::Bytes;
@@ -18,13 +21,18 @@ pub struct ServerPlugin;
 impl Plugin for ServerPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(match_setup::ServerPlayerSelectPlugin)
-            .add_startup_system(spawn_message_recv_tasks.run_if_resource_exists::<NetServer>())
-            .add_startup_system(spawn_message_send_task.run_if_resource_exists::<NetServer>())
-            .add_system_to_stage(
-                CoreStage::First,
-                exit_on_disconnect.run_if_resource_exists::<NetServer>(),
-            )
-            .add_system(reply_to_ping.run_if_resource_exists::<NetServer>());
+            .add_startup_system(spawn_message_recv_tasks)
+            .add_startup_system(spawn_message_send_task)
+            .add_system_to_stage(CoreStage::First, exit_on_disconnect)
+            .add_system(reply_to_ping);
+
+        app.world.resource_scope(|world, server: Mut<NetServer>| {
+            let mut player_inputs = world.resource_mut::<PlayerInputs>();
+
+            for i in 0..server.client_count() {
+                player_inputs.players[i].active = true;
+            }
+        });
     }
 }
 

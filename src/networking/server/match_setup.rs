@@ -38,8 +38,6 @@ impl PlayerConfirmations {
 
 fn handle_client_messages(
     mut players_selected: Local<PlayerConfirmations>,
-    mut players_ready: Local<PlayerConfirmations>,
-    mut map_selected: Local<bool>,
     mut player_selecting_map: Local<Option<usize>>,
     mut commands: Commands,
     mut server: ResMut<NetServer>,
@@ -56,18 +54,14 @@ fn handle_client_messages(
             MatchSetupFromClient::SelectMap(map_handle) => {
                 if let Some(player_selecting_map) = &*player_selecting_map {
                     if *player_selecting_map == incomming.client_idx {
-                        *map_selected = true;
-
                         // Spawn the map
                         commands.spawn().insert(map_handle.clone_weak());
 
-                        // Go to the game, and pause it because the players haven't arrived yet
-                        commands.insert_resource(NextState(InGameState::Paused));
+                        // Start the game
+                        commands.insert_resource(NextState(GameState::InGame));
+                        commands.insert_resource(NextState(InGameState::Playing));
                     }
                 }
-            }
-            MatchSetupFromClient::ReadyToStart => {
-                players_ready[incomming.client_idx] = true;
             }
         }
 
@@ -82,12 +76,6 @@ fn handle_client_messages(
                 super::MessageTarget::AllExcept(idx),
             );
             server.send_reliable(&MatchSetupFromServer::SelectMap, idx);
-
-        // If we have selected the map and all players are ready
-        } else if *map_selected && players_ready.count() == server.client_count() {
-            // Start the game
-            commands.insert_resource(NextState(GameState::InGame));
-            commands.insert_resource(NextState(InGameState::Playing));
 
         // If we are still waiting for players to select fish, map, or get ready
         } else {

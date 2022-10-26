@@ -34,6 +34,9 @@ pub fn deserializer_from_bytes(
     postcard::Deserializer::from_bytes(bytes)
 }
 
+#[derive(Default, Serialize, Deserialize)]
+pub struct TypeNameCache(pub StringCache);
+
 /// String cache that can be used to map strings to indices in order to save space.
 #[derive(Debug, Clone, Reflect, Default, Serialize, Deserialize)]
 #[reflect(Default)]
@@ -59,7 +62,7 @@ impl StringCache {
     }
 }
 
-pub fn get_type_name_cache(type_registry: &TypeRegistry) -> StringCache {
+pub fn get_type_name_cache(type_registry: &TypeRegistry) -> TypeNameCache {
     let mut cache = StringCache::default();
 
     let type_registry = type_registry.read();
@@ -67,5 +70,5 @@ pub fn get_type_name_cache(type_registry: &TypeRegistry) -> StringCache {
         cache.insert(registration.type_name());
     }
 
-    cache
+    TypeNameCache(cache)
 }

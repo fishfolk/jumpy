@@ -1,6 +1,7 @@
-use bevy::{ecs::component::ComponentId, prelude::World};
+use bevy::{ecs::component::ComponentId, prelude::World, reflect::TypeRegistryInternal};
 use bevy_ecs_dynamic::dynamic_query::{DynamicQuery, FetchKind, FilterKind, QueryError};
-use serde::{de::Visitor, ser::SerializeTuple, Deserialize, Serialize};
+
+use crate::{networking::serialization::TypeNameCache, prelude::*};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct DynamicQueryInfo {
@@ -8,203 +9,162 @@ pub struct DynamicQueryInfo {
     filters: Vec<FilterKindInfo>,
 }
 
+/// References to the types needed to convert and construct [`DynamicQueryInfo`].
+#[derive(Copy, Clone)]
+pub struct DynamicQueryInfoResources<'a> {
+    pub world: &'a World,
+    pub type_names: &'a TypeNameCache,
+    pub type_registry: &'a TypeRegistryInternal,
+}
+
 impl DynamicQueryInfo {
-    pub fn from_query(query: &DynamicQuery) -> Self {
-        let fetches = query.fetches().iter().cloned().map(Into::into).collect();
-        let filters = query.filters().iter().cloned().map(Into::into).collect();
+    pub fn from_query(query: &DynamicQuery, info: DynamicQueryInfoResources) -> Self {
+        let fetches = query
+            .fetches()
+            .iter()
+            .cloned()
+            .map(|x| FetchKindInfo::from_fetch_kind(x, info))
+            .collect();
+        let filters = query
+            .filters()
+            .iter()
+            .cloned()
+            .map(|x| FilterKindInfo::from_filter_kind(x, info))
+            .collect();
         Self { fetches, filters }
     }
 
     pub fn with_all_fetches_mutable(mut self) -> Self {
         for fetch in &mut self.fetches {
-            *fetch = FetchKindInfo::RefMut(fetch.component_id());
+            *fetch = FetchKindInfo::RefMut(match fetch {
+                FetchKindInfo::Ref(id) | FetchKindInfo::RefMut(id) => *id,
+            });
         }
         self
     }
 
-    pub fn get_query(self: DynamicQueryInfo, world: &World) -> Result<DynamicQuery, QueryError> {
-        let fetches = self.fetches.into_iter().map(Into::into).collect();
-        let filters = self.filters.into_iter().map(Into::into).collect();
-        DynamicQuery::new(world, fetches, filters)
+    pub fn get_query(
+        self: DynamicQueryInfo,
+        info: DynamicQueryInfoResources,
+    ) -> Result<DynamicQuery, QueryError> {
+        let fetches = self
+            .fetches
+            .into_iter()
+            .map(|x| x.get_fetch_kind(info))
+            .collect();
+        let filters = self
+            .filters
+            .into_iter()
+            .map(|x| x.get_filter_kind(info))
+            .collect();
+        DynamicQuery::new(info.world, fetches, filters)
     }
 }
 
-#[derive(Clone, Debug)]
+/// The index into the type name cache for this component
+#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+struct ComponentTypeNameIdx(pub u32);
+
+impl ComponentTypeNameIdx {
+    fn get_component_id(&self, info: DynamicQueryInfoResources) -> ComponentId {
+        let type_registry = info.type_registry;
+
+        let type_name = info
+            .type_names
+            .0
+            .get_str(self.0)
+            .expect("Missing type name in cache");
+        let type_id = type_registry
+            .get_with_name(type_name)
+            .expect("Type not registered")
+            .type_id();
+
+        // FIXME(scripting): This can't support custom components created by scripts, because we
+        // assume the component ID can be directly tied to the type ID that we are syncing.
+        // We need to fix that and find a way to map component Ids on the server to component ids on the client
+        info.world
+            .components()
+            .get_id(type_id)
+            .expect("Component not found")
+    }
+
+    fn from_component_id(id: ComponentId, info: DynamicQueryInfoResources) -> Self {
+        let world = info.world;
+        let type_names = info.type_names;
+        let type_registry = info.type_registry;
+
+        let type_id = world
+            .components()
+            .get_info(id)
+            .expect("Component ID not found")
+            .type_id()
+            .expect("Component without Type ID");
+        let type_name = type_registry
+            .get(type_id)
+            .expect("Type not registered")
+            .type_name();
+
+        Self(
+            type_names
+                .0
+                .get_idx(type_name)
+                .expect("Missing type name in cache"),
+        )
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 enum FetchKindInfo {
-    Ref(ComponentId),
-    RefMut(ComponentId),
-}
-
-impl From<FetchKindInfo> for FetchKind {
-    fn from(i: FetchKindInfo) -> Self {
-        match i {
-            FetchKindInfo::Ref(id) => FetchKind::Ref(id),
-            FetchKindInfo::RefMut(id) => FetchKind::RefMut(id),
-        }
-    }
-}
-
-impl From<FetchKind> for FetchKindInfo {
-    fn from(f: FetchKind) -> Self {
-        match f {
-            FetchKind::Ref(id) => Self::Ref(id),
-            FetchKind::RefMut(id) => Self::RefMut(id),
-        }
-    }
+    Ref(ComponentTypeNameIdx),
+    RefMut(ComponentTypeNameIdx),
 }
 
 impl FetchKindInfo {
-    fn serde_tag(&self) -> u8 {
+    fn get_fetch_kind(&self, info: DynamicQueryInfoResources) -> FetchKind {
         match self {
-            FetchKindInfo::Ref(_) => 0,
-            FetchKindInfo::RefMut(_) => 1,
+            FetchKindInfo::Ref(id) => FetchKind::Ref(id.get_component_id(info)),
+            FetchKindInfo::RefMut(id) => FetchKind::RefMut(id.get_component_id(info)),
         }
     }
 
-    fn component_id(&self) -> ComponentId {
-        match self {
-            FetchKindInfo::Ref(id) | FetchKindInfo::RefMut(id) => *id,
-        }
-    }
-}
-
-impl Serialize for FetchKindInfo {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let tag = self.serde_tag();
-        let component_id = self.component_id().index() as u64;
-        let mut tup = serializer.serialize_tuple(2)?;
-        tup.serialize_element(&tag)?;
-        tup.serialize_element(&component_id)?;
-        tup.end()
-    }
-}
-
-impl<'de> Deserialize<'de> for FetchKindInfo {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let (tag, component_idx) = deserializer.deserialize_tuple(2, U8U64SeqVisitor)?;
-        let component_id = ComponentId::new(
-            component_idx
-                .try_into()
-                .expect("Component ID to big to fit into 32-bit target"),
-        );
-        Ok(match tag {
-            0 => Self::Ref(component_id),
-            1 => Self::RefMut(component_id),
-            _ => return Err(serde::de::Error::custom("Invalid tag")),
-        })
-    }
-}
-
-#[derive(Clone, Debug)]
-enum FilterKindInfo {
-    With(ComponentId),
-    Without(ComponentId),
-    Changed(ComponentId),
-    Added(ComponentId),
-}
-
-impl From<FilterKindInfo> for FilterKind {
-    fn from(i: FilterKindInfo) -> Self {
-        match i {
-            FilterKindInfo::With(id) => FilterKind::With(id),
-            FilterKindInfo::Without(id) => FilterKind::Without(id),
-            FilterKindInfo::Changed(id) => FilterKind::Changed(id),
-            FilterKindInfo::Added(id) => FilterKind::Added(id),
-        }
-    }
-}
-
-impl From<FilterKind> for FilterKindInfo {
-    fn from(f: FilterKind) -> Self {
+    fn from_fetch_kind(f: FetchKind, info: DynamicQueryInfoResources) -> Self {
         match f {
-            FilterKind::With(id) => Self::With(id),
-            FilterKind::Without(id) => Self::Without(id),
-            FilterKind::Changed(id) => Self::Changed(id),
-            FilterKind::Added(id) => Self::Added(id),
+            FetchKind::Ref(id) => Self::Ref(ComponentTypeNameIdx::from_component_id(id, info)),
+            FetchKind::RefMut(id) => {
+                Self::RefMut(ComponentTypeNameIdx::from_component_id(id, info))
+            }
         }
     }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+enum FilterKindInfo {
+    With(ComponentTypeNameIdx),
+    Without(ComponentTypeNameIdx),
+    Changed(ComponentTypeNameIdx),
+    Added(ComponentTypeNameIdx),
 }
 
 impl FilterKindInfo {
-    fn serde_tag(&self) -> u8 {
+    fn get_filter_kind(&self, info: DynamicQueryInfoResources) -> FilterKind {
         match self {
-            FilterKindInfo::With(_) => 0,
-            FilterKindInfo::Without(_) => 1,
-            FilterKindInfo::Changed(_) => 2,
-            FilterKindInfo::Added(_) => 3,
+            FilterKindInfo::With(id) => FilterKind::With(id.get_component_id(info)),
+            FilterKindInfo::Without(id) => FilterKind::Without(id.get_component_id(info)),
+            FilterKindInfo::Changed(id) => FilterKind::Changed(id.get_component_id(info)),
+            FilterKindInfo::Added(id) => FilterKind::Added(id.get_component_id(info)),
         }
     }
 
-    fn component_id(&self) -> ComponentId {
-        match self {
-            FilterKindInfo::With(id)
-            | FilterKindInfo::Without(id)
-            | FilterKindInfo::Changed(id)
-            | FilterKindInfo::Added(id) => *id,
+    fn from_filter_kind(f: FilterKind, info: DynamicQueryInfoResources) -> Self {
+        match f {
+            FilterKind::With(id) => Self::With(ComponentTypeNameIdx::from_component_id(id, info)),
+            FilterKind::Without(id) => {
+                Self::Without(ComponentTypeNameIdx::from_component_id(id, info))
+            }
+            FilterKind::Changed(id) => {
+                Self::Changed(ComponentTypeNameIdx::from_component_id(id, info))
+            }
+            FilterKind::Added(id) => Self::Added(ComponentTypeNameIdx::from_component_id(id, info)),
         }
-    }
-}
-
-impl Serialize for FilterKindInfo {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let tag = self.serde_tag();
-        let component_id = self.component_id().index() as u64;
-        let mut tup = serializer.serialize_tuple(2)?;
-        tup.serialize_element(&tag)?;
-        tup.serialize_element(&component_id)?;
-        tup.end()
-    }
-}
-
-impl<'de> Deserialize<'de> for FilterKindInfo {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let (tag, component_idx) = deserializer.deserialize_tuple(2, U8U64SeqVisitor)?;
-        let component_id = ComponentId::new(
-            component_idx
-                .try_into()
-                .expect("Component ID to big to fit into 32-bit target"),
-        );
-        Ok(match tag {
-            0 => Self::With(component_id),
-            1 => Self::Without(component_id),
-            2 => Self::Changed(component_id),
-            3 => Self::Added(component_id),
-            _ => return Err(serde::de::Error::custom("Invalid tag")),
-        })
-    }
-}
-
-struct U8U64SeqVisitor;
-
-impl<'de> Visitor<'de> for U8U64SeqVisitor {
-    type Value = (u8, u64);
-
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(formatter, "Sequence of a u8 followed by a u64")
-    }
-
-    fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
-    where
-        A: serde::de::SeqAccess<'de>,
-    {
-        let uint1 = seq
-            .next_element::<u8>()?
-            .ok_or_else(|| serde::de::Error::custom("Expected u8 in sequence"))?;
-        let uint2 = seq
-            .next_element::<u64>()?
-            .ok_or_else(|| serde::de::Error::custom("Expected 64 in sequence"))?;
-        Ok((uint1, uint2))
     }
 }

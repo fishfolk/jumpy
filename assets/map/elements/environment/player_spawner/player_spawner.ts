@@ -69,6 +69,7 @@ const state = ScriptInfo.state(initState);
 
 export default {
   preUpdateInGame() {
+    return;
     const player_inputs = world.resource(PlayerInputs);
 
     const mapQuery = world.query(MapMeta)[0];

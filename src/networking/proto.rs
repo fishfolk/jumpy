@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-pub mod player_select;
+pub mod match_setup;
 
 /// A resource indicating which player this game client represents, and how many players there are
 /// in the match.j

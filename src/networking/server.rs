@@ -11,13 +11,13 @@ use crate::prelude::*;
 
 use super::NET_MESSAGE_TYPES;
 
-pub mod player_select;
+pub mod match_setup;
 
 pub struct ServerPlugin;
 
 impl Plugin for ServerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(player_select::ServerPlayerSelectPlugin)
+        app.add_plugin(match_setup::ServerPlayerSelectPlugin)
             .add_startup_system(spawn_message_recv_tasks.run_if_resource_exists::<NetServer>())
             .add_startup_system(spawn_message_send_task.run_if_resource_exists::<NetServer>())
             .add_system_to_stage(

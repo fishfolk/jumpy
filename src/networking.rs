@@ -99,8 +99,8 @@ pub static NET_MESSAGE_TYPES: Lazy<Vec<TypeId>> = Lazy::new(|| {
         TypeId::of::<proto::Ping>(),
         TypeId::of::<proto::Pong>(),
         TypeId::of::<proto::NetClientMatchInfo>(),
-        TypeId::of::<proto::player_select::PlayerSelectFromClient>(),
-        TypeId::of::<proto::player_select::PlayerSelectFromServer>(),
+        TypeId::of::<proto::match_setup::MatchSetupFromClient>(),
+        TypeId::of::<proto::match_setup::MatchSetupFromServer>(),
     ]
     .to_vec()
 });

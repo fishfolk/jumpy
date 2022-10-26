@@ -126,7 +126,11 @@ pub enum MenuPage {
     Home,
     Settings,
     PlayerSelect,
-    MapSelect,
+    MapSelect {
+        /// Indicates the client is waiting for the map to be selected, not actually picking the
+        /// map.
+        is_waiting: bool,
+    },
     Matchmaking,
 }
 
@@ -160,7 +164,7 @@ struct MainMenu<'w, 's> {
     menu_page: ResMut<'w, MenuPage>,
     disable_menu_input: ResMut<'w, DisableMenuInput>,
     #[system_param(ignore)]
-    _phantom: PhantomData<&'s ()>
+    _phantom: PhantomData<&'s ()>,
 }
 
 impl<'w, 's> WidgetSystem for MainMenu<'w, 's> {
@@ -190,8 +194,8 @@ impl<'w, 's> WidgetSystem for MainMenu<'w, 's> {
             MenuPage::PlayerSelect => {
                 widget::<player_select::PlayerSelectMenu>(world, ui, id.with("player-select"), ())
             }
-            MenuPage::MapSelect => {
-                widget::<map_select::MapSelectMenu>(world, ui, id.with("map-select"), ())
+            MenuPage::MapSelect { is_waiting} => {
+                widget::<map_select::MapSelectMenu>(world, ui, id.with("map-select"), is_waiting)
             }
             MenuPage::Settings => {
                 widget::<settings::SettingsMenu>(world, ui, id.with("settings"), ())

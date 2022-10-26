@@ -8,5 +8,6 @@ resources:
   - settings.ftl
   - editor.ftl
   - player-select.ftl
+  - map-select.ftl
 
   - controls.ftl

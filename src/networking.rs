@@ -15,67 +15,7 @@ pub mod proto;
 pub mod serialization;
 pub mod server;
 
-#[cfg(not(target_arch = "wasm32"))]
-pub type Connection = quinn::Connection;
-
-/// On web we create just enough of a stand-in for `quinn::Connection`, because we can't actually
-/// use it in WASM yet.
-///
-/// We don't do networking on WASM yet, though, so it doesn't need to function.
-#[cfg(target_arch = "wasm32")]
-pub use wasm_conn::Connection;
-
 use self::frame_sync::{NetworkSyncConfig, NetworkSyncQuery};
-#[cfg(target_arch = "wasm32")]
-mod wasm_conn {
-    use bytes::Bytes;
-
-    #[derive(Clone, Debug)]
-    pub struct Connection;
-
-    impl Connection {
-        pub fn close_reason(&self) -> Option<()> {
-            None
-        }
-
-        pub async fn open_uni(&self) -> anyhow::Result<SendStream> {
-            Ok(SendStream)
-        }
-
-        pub async fn accept_uni(&self) -> anyhow::Result<RecvStream> {
-            Ok(RecvStream)
-        }
-
-        pub async fn read_datagram(&self) -> anyhow::Result<Vec<u8>> {
-            Ok(Vec::new())
-        }
-        pub fn send_datagram(&self, _: Bytes) -> anyhow::Result<()> {
-            Ok(())
-        }
-        pub async fn closed(&self) -> String {
-            String::new()
-        }
-    }
-
-    pub struct RecvStream;
-
-    impl RecvStream {
-        pub async fn read_to_end(&self, _: usize) -> anyhow::Result<Vec<u8>> {
-            Ok(Vec::new())
-        }
-    }
-
-    pub struct SendStream;
-
-    impl SendStream {
-        pub async fn write_all(&mut self, _: &[u8]) -> anyhow::Result<()> {
-            Ok(())
-        }
-        pub async fn finish(self) -> anyhow::Result<()> {
-            Ok(())
-        }
-    }
-}
 
 pub struct NetworkingPlugin;
 

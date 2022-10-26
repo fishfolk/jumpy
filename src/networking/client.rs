@@ -107,7 +107,7 @@ fn configure_quic_client() -> ClientConfig {
 
 pub async fn open_connection(
     server_addr: impl Into<SocketAddr>,
-) -> anyhow::Result<(Endpoint, super::Connection)> {
+) -> anyhow::Result<(Endpoint, Connection)> {
     let client_config = configure_quic_client();
     let socket = std::net::UdpSocket::bind("0.0.0.0:0")?;
     // Bind this endpoint to a UDP socket on the given client address.

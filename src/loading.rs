@@ -14,7 +14,7 @@ use crate::{
     config::ENGINE_CONFIG,
     metadata::{BorderImageMeta, GameMeta, PlayerMeta, Settings},
     platform::Storage,
-    player::MAX_PLAYERS,
+    player::{input::PlayerInputs, MAX_PLAYERS},
     prelude::*,
     ui::input::MenuAction,
     GameState,
@@ -103,6 +103,7 @@ pub struct GameLoader<'w, 's> {
     storage: ResMut<'w, Storage>,
     player_assets: ResMut<'w, Assets<PlayerMeta>>,
     texture_atlas_assets: Res<'w, Assets<TextureAtlas>>,
+    player_inputs: ResMut<'w, PlayerInputs>,
 }
 
 impl<'w, 's> GameLoader<'w, 's> {
@@ -130,6 +131,7 @@ impl<'w, 's> GameLoader<'w, 's> {
             mut storage,
             mut player_assets,
             texture_atlas_assets,
+            mut player_inputs,
             ..
         } = self;
 
@@ -143,7 +145,7 @@ impl<'w, 's> GameLoader<'w, 's> {
                 // Clear the active scripts
                 active_scripts.clear();
 
-                // One-time initialization
+            // One-time initialization
             } else {
                 if let Some(ctx) = egui_ctx.as_mut() {
                     // Initialize empty fonts for all game fonts.
@@ -170,6 +172,11 @@ impl<'w, 's> GameLoader<'w, 's> {
                             input_map: settings.player_controls.get_input_map(player),
                             ..default()
                         });
+                }
+
+                // Select default character for all players
+                for player in &mut player_inputs.players {
+                    player.selected_player = game.player_handles[0].clone_weak();
                 }
 
                 if ENGINE_CONFIG.server_mode {

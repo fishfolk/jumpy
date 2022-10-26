@@ -67,16 +67,9 @@ const initState: { spawners: JsEntity[]; currentSpawner: number } = {
 
 const state = ScriptInfo.state(initState);
 
-let firstRun = true;
-
 export default {
   preUpdateInGame() {
     const player_inputs = world.resource(PlayerInputs);
-
-    if (firstRun) {
-      firstRun = false;
-      info("player inputs: " + player_inputs.toString());
-    }
 
     const mapQuery = world.query(MapMeta)[0];
     if (!mapQuery) {
@@ -119,6 +112,7 @@ export default {
         const player = NetCommands.spawn();
         NetCommands.insert(player, Value.create(PlayerIdx, [i]));
         NetCommands.insert(player, spawnerTransform);
+        // TODO: Add these components during player hydration?
         NetCommands.insert(player, global_transform);
         NetCommands.insert(player, visibility);
         NetCommands.insert(player, computed_visibility);

@@ -9,13 +9,17 @@ use serde::de::DeserializeOwned;
 
 use crate::{metadata::GameMeta, player::input::PlayerInputs, prelude::*};
 
-use super::{proto::NetClientMatchInfo, NET_MESSAGE_TYPES};
+use super::{proto::ClientMatchInfo, NET_MESSAGE_TYPES};
+
+pub mod player_input;
 
 pub struct ClientPlugin;
 
 impl Plugin for ClientPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_to_stage(
+        app
+        .add_plugin(player_input::ClientPlayerInputPlugin)
+        .add_system_to_stage(
             CoreStage::First,
             remove_closed_client.run_if_resource_exists::<NetClient>(),
         )
@@ -23,7 +27,7 @@ impl Plugin for ClientPlugin {
             CoreStage::First,
             recv_client_match_info
                 .run_if_resource_exists::<NetClient>()
-                .run_unless_resource_exists::<NetClientMatchInfo>(),
+                .run_unless_resource_exists::<ClientMatchInfo>(),
         )
         .add_exit_system(
             GameState::InGame,
@@ -38,7 +42,7 @@ fn recv_client_match_info(
     mut player_inputs: ResMut<PlayerInputs>,
     game: Res<GameMeta>,
 ) {
-    if let Some(match_info) = client.recv_reliable::<NetClientMatchInfo>() {
+    if let Some(match_info) = client.recv_reliable::<ClientMatchInfo>() {
         info!("Got match info: {:?}", match_info);
 
         for (i, player) in player_inputs.players.iter_mut().enumerate() {
@@ -57,7 +61,7 @@ fn recv_client_match_info(
 fn remove_closed_client(client: Res<NetClient>, mut commands: Commands) {
     if client.is_closed() {
         commands.remove_resource::<NetClient>();
-        commands.remove_resource::<NetClientMatchInfo>();
+        commands.remove_resource::<ClientMatchInfo>();
     }
 }
 

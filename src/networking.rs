@@ -101,12 +101,14 @@ pub static NET_MESSAGE_TYPES: Lazy<Vec<TypeId>> = Lazy::new(|| {
     [
         TypeId::of::<proto::Ping>(),
         TypeId::of::<proto::Pong>(),
-        TypeId::of::<proto::NetClientMatchInfo>(),
+        TypeId::of::<proto::ClientMatchInfo>(),
         TypeId::of::<proto::match_setup::MatchSetupFromClient>(),
         TypeId::of::<proto::match_setup::MatchSetupFromServer>(),
         TypeId::of::<frame_sync::FrameSyncMessage>(),
         TypeId::of::<commands::CommandMessage>(),
         TypeId::of::<serialization::TypeNameCache>(),
+        TypeId::of::<proto::player_input::PlayerInputFromClient>(),
+        TypeId::of::<proto::player_input::PlayerInputFromServer>(),
     ]
     .to_vec()
 });

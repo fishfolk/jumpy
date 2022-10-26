@@ -116,7 +116,6 @@ pub static NET_MESSAGE_TYPES: Lazy<Vec<TypeId>> = Lazy::new(|| {
 fn setup_synced_queries(world: &mut World) {
     world.init_component::<crate::player::PlayerIdx>();
     world.init_component::<Transform>();
-    world.init_component::<crate::animation::AnimationBankSprite>();
     world.resource_scope(|world, mut network_sync: Mut<NetworkSyncConfig>| {
         let query = DynamicQuery::new(
             world,

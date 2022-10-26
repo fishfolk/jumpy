@@ -2,7 +2,10 @@ use super::*;
 
 use bevy::reflect::{FromReflect, Reflect};
 
-use crate::{metadata::PlayerMeta, networking::proto::ClientMatchInfo};
+use crate::{
+    metadata::PlayerMeta,
+    networking::{proto::ClientMatchInfo, server::NetServer},
+};
 
 pub struct PlayerInputPlugin;
 
@@ -14,8 +17,14 @@ impl Plugin for PlayerInputPlugin {
             .register_type::<Vec<PlayerInput>>()
             .register_type::<PlayerControl>()
             .add_plugin(InputManagerPlugin::<PlayerAction>::default())
-            .add_system_to_stage(CoreStage::PreUpdate, update_user_input)
-            .add_system_to_stage(FixedUpdateStage::Last, reset_input);
+            .add_system_to_stage(
+                CoreStage::PreUpdate,
+                update_user_input.run_unless_resource_exists::<NetServer>(),
+            )
+            .add_system_to_stage(
+                FixedUpdateStage::Last,
+                reset_input.run_unless_resource_exists::<NetServer>(),
+            );
     }
 }
 

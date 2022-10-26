@@ -73,8 +73,6 @@ export default {
 
       const control = player_inputs.players[playerIdx[0]].control;
 
-      info(control.toString());
-
       if (!body.is_on_ground) {
         playerState.id = Assets.getAbsolutePath("./midair.ts");
       } else if (control.move_direction.x != 0) {

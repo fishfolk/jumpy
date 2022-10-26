@@ -40,7 +40,7 @@ enum Status {
 
 impl Status {
     fn is_not_connected(&self) -> bool {
-        matches!(self, Status::NotConnected)
+        matches!(self, Status::NotConnected) || matches!(self, Status::Errored(_))
     }
     fn is_match_ready(&self) -> bool {
         matches!(self, Status::MatchReady(_, _))

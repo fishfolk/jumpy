@@ -1,7 +1,8 @@
 use crate::prelude::*;
 
 pub mod match_setup;
-pub mod player_input;
+pub mod game;
+// pub mod player_input;
 
 /// A resource indicating which player this game client represents, and how many players there are
 /// in the match.j

@@ -3,7 +3,7 @@ use std::ops::Range;
 use bevy::reflect::FromReflect;
 use serde::{de::SeqAccess, Deserializer};
 
-use crate::animation::{AnimatedSprite, AnimationBankSprite};
+use crate::animation::{AnimatedSprite, AnimationBank, AnimationBankSprite};
 
 use super::*;
 
@@ -40,7 +40,7 @@ pub struct PlayerSpritesheetMeta {
 }
 
 impl PlayerSpritesheetMeta {
-    pub fn get_animation_bank_sprite(&self) -> AnimationBankSprite {
+    pub fn get_animation_bank_and_sprite(&self) -> (AnimationBank, AnimationBankSprite) {
         let animations = self
             .animations
             .clone()
@@ -63,13 +63,17 @@ impl PlayerSpritesheetMeta {
             })
             .collect();
 
-        AnimationBankSprite {
-            current_animation: self.animations.keys().next().cloned().unwrap_or_default(),
-            flip_x: false,
-            flip_y: false,
-            animations,
-            last_animation: default(),
-        }
+        (
+            AnimationBank {
+                animations,
+                last_animation: default(),
+            },
+            AnimationBankSprite {
+                current_animation: self.animations.keys().next().cloned().unwrap_or_default(),
+                flip_x: false,
+                flip_y: false,
+            },
+        )
     }
 }
 

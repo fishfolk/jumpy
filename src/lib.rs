@@ -71,6 +71,7 @@ pub enum GameState {
     MainMenu,
     InGame,
     ServerPlayerSelect,
+    ServerInGame,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]

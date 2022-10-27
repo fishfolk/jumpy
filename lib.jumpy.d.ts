@@ -40,3 +40,12 @@ declare namespace EntityRef {
   function fromJs(js_ent: JsEntity): Entity;
   function toJs(ent: Entity): JsEntity;
 }
+
+interface NetInfo {
+  is_client: boolean;
+  is_server: boolean;
+}
+
+declare namespace NetInfo {
+  function get(): NetInfo;
+}

@@ -47,7 +47,7 @@ impl Plugin for PhysicsPlugin {
 /// they are standing on, etc.
 ///
 /// For now, all kinematic bodies have axis-aligned, rectangular colliders. This may or may not change in the future.
-#[derive(Reflect, Component, Default, Debug, Clone)]
+#[derive(Reflect, Component, Default, Debug, Clone, Serialize, Deserialize)]
 #[reflect(Component, Default)]
 pub struct KinematicBody {
     pub velocity: Vec2,

@@ -68,7 +68,9 @@ const initState: { spawners: JsEntity[]; currentSpawner: number } = {
 const state = ScriptInfo.state(initState);
 
 export default {
-  preUpdateInGame() {
+  preUpdate() {
+    if (NetInfo.get().is_client) return;
+
     const player_inputs = world.resource(PlayerInputs);
 
     const mapQuery = world.query(MapMeta)[0];
@@ -99,35 +101,12 @@ export default {
         const spawner = EntityRef.fromJs(state.spawners[state.currentSpawner]);
 
         // Get the spawner transform
-        const [
-          spawnerTransform,
-          global_transform,
-          visibility,
-          computed_visibility,
-        ] = world
-          .query(Transform, GlobalTransform, Visibility, ComputedVisibility)
-          .get(spawner);
+        const [spawnerTransform] = world.query(Transform).get(spawner);
 
         // Spawn the player
-        const player = NetCommands.spawn();
-        NetCommands.insert(player, Value.create(PlayerIdx, [i]));
-        NetCommands.insert(player, spawnerTransform);
-        // TODO: Add these components during player hydration?
-        NetCommands.insert(player, global_transform);
-        NetCommands.insert(player, visibility);
-        NetCommands.insert(player, computed_visibility);
-        NetCommands.insert(
-          player,
-          Value.create(KinematicBody, {
-            size: {
-              x: 38,
-              y: 48,
-            },
-            gravity: 1,
-            has_friction: true,
-            has_mass: true,
-          })
-        );
+        const player = world.spawn();
+        world.insert(player, Value.create(PlayerIdx, [i]));
+        world.insert(player, spawnerTransform);
       }
     }
   },

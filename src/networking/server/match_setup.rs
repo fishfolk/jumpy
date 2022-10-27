@@ -58,8 +58,7 @@ fn handle_client_messages(
                         commands.spawn().insert(map_handle.clone_weak());
 
                         // Start the game
-                        commands.insert_resource(NextState(GameState::InGame));
-                        commands.insert_resource(NextState(InGameState::Playing));
+                        commands.insert_resource(NextState(GameState::ServerInGame));
                     }
                 }
             }

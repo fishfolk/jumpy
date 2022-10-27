@@ -1,10 +1,11 @@
 use bevy_mod_js_scripting::OpMap;
 
-mod asset;
-mod commands;
-mod entity;
-mod map;
-mod script_info;
+pub mod asset;
+pub mod net;
+// mod commands;
+pub mod entity;
+pub mod map;
+pub mod script_info;
 
 pub fn get_ops() -> OpMap {
     let mut ops = OpMap::default();
@@ -27,14 +28,15 @@ pub fn get_ops() -> OpMap {
     );
     ops.insert("entity_ref_to_js", Box::new(entity::EntityRefToJs));
     ops.insert("entity_ref_from_js", Box::new(entity::EntityRefFromJs));
-    ops.insert(
-        "jumpy_net_commands_spawn",
-        Box::new(commands::NetCommandsSpawn),
-    );
-    ops.insert(
-        "jumpy_net_commands_insert",
-        Box::new(commands::NetCommandsInsert),
-    );
+    ops.insert("jumpy_net_info_get", Box::new(net::NetInfoGet));
+    // ops.insert(
+    //     "jumpy_net_commands_spawn",
+    //     Box::new(commands::NetCommandsSpawn),
+    // );
+    // ops.insert(
+    //     "jumpy_net_commands_insert",
+    //     Box::new(commands::NetCommandsInsert),
+    // );
 
     ops
 }

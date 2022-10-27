@@ -1,35 +1,32 @@
 use std::any::TypeId;
 
 use bevy::{reflect::FromReflect, utils::HashMap};
-use bevy_ecs_dynamic::dynamic_query::{DynamicQuery, FetchKind};
 use once_cell::sync::Lazy;
 use ulid::Ulid;
 
-use crate::{config::ENGINE_CONFIG, player::PlayerIdx, prelude::*};
+use crate::{config::ENGINE_CONFIG, prelude::*};
 
 #[cfg(not(target_arch = "wasm32"))]
 pub mod client;
-pub mod commands;
-pub mod frame_sync;
+// pub mod commands;
+// pub mod frame_sync;
 pub mod proto;
 pub mod serialization;
 pub mod server;
 
-use self::frame_sync::{NetworkSyncConfig, NetworkSyncQuery};
+// use self::frame_sync::{NetworkSyncConfig, NetworkSyncQuery};
 
 pub struct NetworkingPlugin;
 
 impl Plugin for NetworkingPlugin {
     fn build(&self, app: &mut App) {
-        #[cfg(target_arch = "wasm32")]
-        let _ = app;
-
-        #[cfg(not(target_arch = "wasm32"))]
         app.add_plugin(serialization::SerializationPlugin)
-            .add_plugin(client::ClientPlugin)
-            .add_plugin(commands::NetCommandsPlugin)
-            .add_plugin(frame_sync::NetFrameSyncPlugin)
-            .add_startup_system(setup_synced_queries.exclusive_system());
+            .add_plugin(client::ClientPlugin);
+
+        // app
+        // .add_plugin(commands::NetCommandsPlugin)
+        // .add_plugin(frame_sync::NetFrameSyncPlugin)
+        // .add_startup_system(setup_synced_queries.exclusive_system());
 
         if ENGINE_CONFIG.server_mode {
             app.add_plugin(server::ServerPlugin);
@@ -44,35 +41,37 @@ pub static NET_MESSAGE_TYPES: Lazy<Vec<TypeId>> = Lazy::new(|| {
         TypeId::of::<proto::ClientMatchInfo>(),
         TypeId::of::<proto::match_setup::MatchSetupFromClient>(),
         TypeId::of::<proto::match_setup::MatchSetupFromServer>(),
-        TypeId::of::<frame_sync::FrameSyncMessage>(),
-        TypeId::of::<commands::CommandMessage>(),
         TypeId::of::<serialization::TypeNameCache>(),
-        TypeId::of::<proto::player_input::PlayerInputFromClient>(),
-        TypeId::of::<proto::player_input::PlayerInputFromServer>(),
+        TypeId::of::<proto::game::GameEventFromServer>(),
+        TypeId::of::<proto::game::GamePlayerEvent>(),
+        // TypeId::of::<commands::CommandMessage>(),
+        // TypeId::of::<frame_sync::FrameSyncMessage>(),
+        // TypeId::of::<proto::player_input::PlayerInputFromClient>(),
+        // TypeId::of::<proto::player_input::PlayerInputFromServer>(),
     ]
     .to_vec()
 });
 
-fn setup_synced_queries(world: &mut World) {
-    world.init_component::<crate::player::PlayerIdx>();
-    world.init_component::<Transform>();
-    world.resource_scope(|world, mut network_sync: Mut<NetworkSyncConfig>| {
-        let query = DynamicQuery::new(
-            world,
-            [
-                FetchKind::Ref(world.component_id::<PlayerIdx>().unwrap()),
-                FetchKind::Ref(world.component_id::<Transform>().unwrap()),
-            ]
-            .to_vec(),
-            [].to_vec(),
-        )
-        .unwrap();
+// fn setup_synced_queries(world: &mut World) {
+//     world.init_component::<crate::player::PlayerIdx>();
+//     world.init_component::<Transform>();
+//     world.resource_scope(|world, mut network_sync: Mut<NetworkSyncConfig>| {
+//         let query = DynamicQuery::new(
+//             world,
+//             [
+//                 FetchKind::Ref(world.component_id::<PlayerIdx>().unwrap()),
+//                 FetchKind::Ref(world.component_id::<Transform>().unwrap()),
+//             ]
+//             .to_vec(),
+//             [].to_vec(),
+//         )
+//         .unwrap();
 
-        network_sync
-            .queries
-            .push(NetworkSyncQuery { query, prune: true })
-    });
-}
+//         network_sync
+//             .queries
+//             .push(NetworkSyncQuery { query, prune: true })
+//     });
+// }
 
 #[derive(
     Reflect,

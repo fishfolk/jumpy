@@ -1,5 +1,7 @@
 use crate::{
-    networking::proto::game::{GameEventFromServer, GamePlayerEvent},
+    networking::proto::game::{
+        PlayerEvent, PlayerEventFromServer, PlayerState, PlayerStateFromServer,
+    },
     prelude::*,
 };
 
@@ -18,20 +20,20 @@ impl Plugin for ServerGamePlugin {
 }
 
 fn handle_client_messages(mut server: ResMut<NetServer>) {
-    while let Some(incomming) = server.recv_reliable::<GamePlayerEvent>() {
+    while let Some(incomming) = server.recv_reliable::<PlayerEvent>() {
         server.send_reliable_to(
-            &GameEventFromServer::PlayerEvent {
+            &PlayerEventFromServer {
                 player_idx: incomming.client_idx.try_into().unwrap(),
-                event: incomming.message,
+                kind: incomming.message,
             },
             MessageTarget::AllExcept(incomming.client_idx),
         )
     }
-    while let Some(incomming) = server.recv_unreliable::<GamePlayerEvent>() {
+    while let Some(incomming) = server.recv_unreliable::<PlayerState>() {
         server.send_unreliable_to(
-            &GameEventFromServer::PlayerEvent {
+            &PlayerStateFromServer {
                 player_idx: incomming.client_idx.try_into().unwrap(),
-                event: incomming.message,
+                state: incomming.message,
             },
             MessageTarget::AllExcept(incomming.client_idx),
         )

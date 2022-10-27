@@ -29,20 +29,12 @@ const KinematicBody: BevyType<KinematicBody> = {
   typeName: "jumpy::physics::KinematicBody",
 };
 
-const borderX = 150;
-const borderY = 200;
+const lerpFactor = 0.1;
 
 export default {
   postUpdateInGame() {
-    const aspect = 16 / 9; // TODO: Use screen aspect ratio
     const mapQuery = world.query(MapMeta)[0];
     if (!mapQuery) return;
-
-    const [mapMeta] = mapQuery.components;
-    const mapSize = [
-      mapMeta.tile_size.x * mapMeta.grid_size.x,
-      mapMeta.tile_size.y * mapMeta.grid_size.y,
-    ];
 
     const playerComponents = world
       .query(PlayerIdx, Transform)
@@ -74,8 +66,12 @@ export default {
     middlePoint.x /= Math.max(player_count, 1);
     middlePoint.y /= Math.max(player_count, 1);
 
-    cameraTransform.translation.x = middlePoint.x;
-    cameraTransform.translation.y = middlePoint.y;
+    for (const dim of ["x", "y"]) {
+      let delta = cameraTransform.translation[dim] - middlePoint[dim];
+      let dist = delta * lerpFactor;
+      cameraTransform.translation[dim] -= dist;
+    }
+
     projection.scale = 1.25;
   },
 };

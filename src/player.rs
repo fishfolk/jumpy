@@ -1,7 +1,10 @@
 use crate::{
     metadata::{GameMeta, PlayerMeta, Settings},
     networking::{
-        proto::game::{GameEventFromServer, GamePlayerEvent},
+        proto::{
+            game::{PlayerEvent, PlayerEventFromServer},
+            ClientMatchInfo,
+        },
         server::NetServer,
     },
     physics::KinematicBody,
@@ -44,6 +47,7 @@ fn hydrate_players(
     player_inputs: Res<PlayerInputs>,
     player_meta_assets: Res<Assets<PlayerMeta>>,
     server: Option<Res<NetServer>>,
+    client_match_info: Option<Res<ClientMatchInfo>>,
 ) {
     let settings = storage.get(Settings::STORAGE_KEY);
     let settings = settings.as_ref().unwrap_or(&game.default_settings);
@@ -51,9 +55,9 @@ fn hydrate_players(
     for (entity, player_idx, player_transform) in &players {
         // If we are the server, broadcast a spawn event for each hydrated player
         if let Some(server) = &server {
-            server.broadcast_reliable(&GameEventFromServer::PlayerEvent {
+            server.broadcast_reliable(&PlayerEventFromServer {
                 player_idx: player_idx.0.try_into().unwrap(),
-                event: GamePlayerEvent::SpawnPlayer(player_transform.translation),
+                kind: PlayerEvent::SpawnPlayer(player_transform.translation),
             });
         }
 
@@ -67,25 +71,33 @@ fn hydrate_players(
         let (animation_bank, animation_bank_sprite) =
             meta.spritesheet.get_animation_bank_and_sprite();
 
-        commands
-            .entity(entity)
+        let mut entity_commands = commands.entity(entity);
+
+        entity_commands
             .insert(Name::new(format!("Player {}", player_idx.0)))
             .insert(PlayerState::default())
             .insert(meta.clone())
             .insert(animation_bank)
             .insert(animation_bank_sprite)
             .insert(GlobalTransform::default())
-            .insert_bundle(VisibilityBundle::default())
-            .insert(KinematicBody {
-                size: Vec2::new(38.0, 48.0), // FIXME: Don't hardcode! Load from player meta.
-                has_mass: true,
-                has_friction: true,
-                gravity: 1.0,
-                ..default()
-            })
-            .insert_bundle(InputManagerBundle {
-                input_map: settings.player_controls.get_input_map(player_idx.0),
-                ..default()
-            });
+            .insert_bundle(VisibilityBundle::default());
+
+        // Only add physics and input bundle for non-remote players if we are a multiplayer client
+        if let Some(match_info) = &client_match_info {
+            if match_info.player_idx == player_idx.0 {
+                entity_commands
+                    .insert(KinematicBody {
+                        size: Vec2::new(38.0, 48.0), // FIXME: Don't hardcode! Load from player meta.
+                        has_mass: true,
+                        has_friction: true,
+                        gravity: 1.0,
+                        ..default()
+                    })
+                    .insert_bundle(InputManagerBundle {
+                        input_map: settings.player_controls.get_input_map(player_idx.0),
+                        ..default()
+                    });
+            }
+        }
     }
 }

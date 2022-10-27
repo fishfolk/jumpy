@@ -11,7 +11,6 @@ use crate::{metadata::GameMeta, player::input::PlayerInputs, prelude::*};
 
 use super::{proto::ClientMatchInfo, NET_MESSAGE_TYPES};
 
-// pub mod player_input;
 pub mod game;
 
 pub struct ClientPlugin;
@@ -255,11 +254,6 @@ impl NetClient {
     pub fn is_closed(&self) -> bool {
         self.conn.close_reason().is_some()
     }
-}
-
-pub fn spawn_connection_handlers(client: &NetClient) {
-    spawn_message_recv_task(client);
-    spawn_message_send_task(client);
 }
 
 fn spawn_message_recv_task(client: &NetClient) {

@@ -12,9 +12,8 @@ use crate::prelude::*;
 
 use super::NET_MESSAGE_TYPES;
 
-mod game;
+pub mod game;
 pub mod match_setup;
-// pub mod player_input;
 
 pub struct ServerPlugin;
 
@@ -22,7 +21,6 @@ impl Plugin for ServerPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(match_setup::ServerPlayerSelectPlugin)
             .add_plugin(game::ServerGamePlugin)
-            // .add_plugin(player_input::ServerPlayerInputPlugin)
             .add_startup_system(spawn_message_recv_tasks)
             .add_startup_system(spawn_message_send_task)
             .add_system_to_stage(CoreStage::First, exit_on_disconnect)

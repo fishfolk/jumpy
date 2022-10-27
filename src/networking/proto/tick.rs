@@ -11,9 +11,8 @@ static COUNTER: AtomicU32 = AtomicU32::new(0);
 /// loop around to `0` when it gets to `u32::MAX`.
 ///
 /// One tick can be compared with another to find out which one is newer, but because of the
-/// wrapping, you can not accurately compare to [`Tick`]'s that are more than `u32::MAX / 2` appart.
-///
-/// In the case of using these ticks as a network tick to order packets, assuming you
+/// wrapping, you can not accurately compare to [`Tick`]'s that are more than `u32::MAX / 2` ticks
+/// appart.
 ///
 /// [`AtomicU32`]: std::sync::atomic::AtomicU32
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Default, Clone, Copy)]

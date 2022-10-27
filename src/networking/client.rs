@@ -11,28 +11,28 @@ use crate::{metadata::GameMeta, player::input::PlayerInputs, prelude::*};
 
 use super::{proto::ClientMatchInfo, NET_MESSAGE_TYPES};
 
-pub mod player_input;
+// pub mod player_input;
+pub mod game;
 
 pub struct ClientPlugin;
 
 impl Plugin for ClientPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .add_plugin(player_input::ClientPlayerInputPlugin)
-        .add_system_to_stage(
-            CoreStage::First,
-            remove_closed_client.run_if_resource_exists::<NetClient>(),
-        )
-        .add_system_to_stage(
-            CoreStage::First,
-            recv_client_match_info
-                .run_if_resource_exists::<NetClient>()
-                .run_unless_resource_exists::<ClientMatchInfo>(),
-        )
-        .add_exit_system(
-            GameState::InGame,
-            close_connection_when_leaving_game.run_if_resource_exists::<NetClient>(),
-        );
+        app.add_plugin(game::ClientGamePlugin)
+            .add_system_to_stage(
+                CoreStage::First,
+                remove_closed_client.run_if_resource_exists::<NetClient>(),
+            )
+            .add_system_to_stage(
+                CoreStage::First,
+                recv_client_match_info
+                    .run_if_resource_exists::<NetClient>()
+                    .run_unless_resource_exists::<ClientMatchInfo>(),
+            )
+            .add_exit_system(
+                GameState::InGame,
+                close_connection_when_leaving_game.run_if_resource_exists::<NetClient>(),
+            );
     }
 }
 

@@ -12,6 +12,8 @@ pub enum AnimationStage {
     Animate,
 }
 
+// TODO: I don't know that I like the way this module is designed. Maybe we can simplify it.
+
 impl Plugin for AnimationPlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<AnimatedSprite>()
@@ -81,12 +83,17 @@ impl Clone for AnimatedSprite {
 }
 
 /// Like an [`AnimatedSprite`] where you can chooose from multiple different animations.
-#[derive(Component, Debug, Default, Reflect, FromReflect)]
+#[derive(Component, Debug, Default, Reflect, FromReflect, Serialize, Deserialize, Clone)]
 #[reflect(Component, Default)]
 pub struct AnimationBankSprite {
     pub current_animation: String,
     pub flip_x: bool,
     pub flip_y: bool,
+}
+
+#[derive(Component, Debug, Default, Reflect, FromReflect, Clone)]
+#[reflect(Component, Default)]
+pub struct AnimationBank {
     pub animations: HashMap<String, AnimatedSprite>,
     pub last_animation: String,
 }
@@ -186,25 +193,29 @@ fn update_animated_sprite_components(
 
 fn update_animation_bank_sprites(
     mut banks: Query<
-        (&mut AnimationBankSprite, &mut AnimatedSprite),
+        (
+            &AnimationBankSprite,
+            &mut AnimationBank,
+            &mut AnimatedSprite,
+        ),
         Or<(Changed<AnimationBankSprite>, Added<AnimatedSprite>)>,
     >,
 ) {
-    for (mut bank, mut animated_sprite) in &mut banks {
-        if let Some(animation) = bank.animations.get(&bank.current_animation) {
-            if bank.current_animation != bank.last_animation {
+    for (bank_sprite, mut bank, mut animated_sprite) in &mut banks {
+        if let Some(animation) = bank.animations.get(&bank_sprite.current_animation) {
+            if bank_sprite.current_animation != bank.last_animation {
                 *animated_sprite = animation.clone();
             }
 
-            animated_sprite.flip_x = bank.flip_x && !animation.flip_x;
-            animated_sprite.flip_y = bank.flip_y && !animation.flip_y;
+            animated_sprite.flip_x = bank_sprite.flip_x && !animation.flip_x;
+            animated_sprite.flip_y = bank_sprite.flip_y && !animation.flip_y;
         } else {
             warn!(
                 "Trying to play non-existent animation: {}",
-                bank.current_animation
+                bank_sprite.current_animation
             );
         }
 
-        bank.last_animation = bank.current_animation.clone();
+        bank.last_animation = bank_sprite.current_animation.clone();
     }
 }

@@ -1,3 +1,5 @@
+use bevy_tweening::Animator;
+
 use crate::{
     metadata::{GameMeta, PlayerMeta, Settings},
     networking::{
@@ -82,8 +84,8 @@ fn hydrate_players(
             .insert(GlobalTransform::default())
             .insert_bundle(VisibilityBundle::default());
 
-        // Only add physics and input bundle for non-remote players if we are a multiplayer client
         if let Some(match_info) = &client_match_info {
+            // Only add physics and input bundle for non-remote players if we are a multiplayer client
             if match_info.player_idx == player_idx.0 {
                 entity_commands
                     .insert(KinematicBody {
@@ -97,6 +99,11 @@ fn hydrate_players(
                         input_map: settings.player_controls.get_input_map(player_idx.0),
                         ..default()
                     });
+
+            // For remote players we add an `Animator` that will be used to tween it's transform for
+            // smoothing player movement.
+            } else {
+                entity_commands.insert(Animator::<Transform>::default());
             }
         }
     }

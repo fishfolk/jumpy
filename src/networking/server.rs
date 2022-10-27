@@ -1,4 +1,4 @@
-use std::{any::TypeId, collections::VecDeque, time::Instant};
+use std::{any::TypeId, collections::VecDeque};
 
 use crate::{networking::proto, player::input::PlayerInputs};
 use async_channel::{Receiver, RecvError, Sender};
@@ -335,15 +335,7 @@ fn spawn_message_recv_tasks(server: Res<NetServer>) {
                         future::zip(
                             async {
                                 while let Ok(recv) = conn.accept_uni().await {
-                                    let start = Instant::now();
                                     let message = recv.read_to_end(usize::MAX).await?;
-                                    let time = Instant::now() - start;
-                                    let mib = message.len() as f32 / 1024.0 / 1024.0;
-                                    trace!(
-                                        "Got message of {} MiB: {} MiB/s",
-                                        mib,
-                                        mib as f32 / time.as_secs_f32()
-                                    );
                                     reliable_sender
                                         .try_send(Incomming {
                                             data: message,

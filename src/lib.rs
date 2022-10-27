@@ -211,7 +211,8 @@ pub fn build_app(net_server: Option<NetServer>) -> App {
             .add_plugin(UiPlugin);
     }
 
-    app.add_plugin(MetadataPlugin)
+    app.add_plugin(bevy_tweening::TweeningPlugin)
+        .add_plugin(MetadataPlugin)
         .add_plugin(PlatformPlugin)
         .add_plugin(LoadingPlugin)
         .add_plugin(AssetPlugin)

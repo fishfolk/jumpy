@@ -206,9 +206,15 @@ pub fn build_app(net_server: Option<NetServer>) -> App {
 
     // If we're not in server mode
     } else {
-        app.add_plugins(DefaultPlugins)
-            .add_plugin(LinesPlugin)
-            .add_plugin(UiPlugin);
+        app.add_plugins_with(DefaultPlugins, |group| {
+            // TODO: We should figure out how to not include these dependencies, so we can remove
+            // this disable section, too.
+            group
+                .disable::<bevy::ui::UiPlugin>()
+                .disable::<TextPlugin>()
+        })
+        .add_plugin(LinesPlugin)
+        .add_plugin(UiPlugin);
     }
 
     app.add_plugin(bevy_tweening::TweeningPlugin)

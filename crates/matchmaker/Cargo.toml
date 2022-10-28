@@ -20,7 +20,7 @@ postcard = { version = "1.0.2", default-features = false, features = ["alloc"] }
 serde = { version = "1.0.147", features = ["derive"] }
 tracing = "0.1.37"
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
-clap = { version = "4.0.18", features = ["derive"] }
+clap = { version = "4.0.18", features = ["derive", "env"] }
 tokio = { version = "1.0", features = ["full"] }
 either = "1.8.0"
 blocking = "1.2.0"

@@ -87,6 +87,14 @@ fn hydrate_players(
         if let Some(match_info) = &client_match_info {
             // Only add physics and input bundle for non-remote players if we are a multiplayer client
             if match_info.player_idx == player_idx.0 {
+                // If we are a client in a multiplayer game, use the first player's controls
+                let player_input_idx = if client_match_info.is_some() {
+                    0
+                // Otherwise, use the corresponding player's controls
+                } else {
+                    player_idx.0
+                };
+
                 entity_commands
                     .insert(KinematicBody {
                         size: Vec2::new(38.0, 48.0), // FIXME: Don't hardcode! Load from player meta.
@@ -96,7 +104,7 @@ fn hydrate_players(
                         ..default()
                     })
                     .insert_bundle(InputManagerBundle {
-                        input_map: settings.player_controls.get_input_map(player_idx.0),
+                        input_map: settings.player_controls.get_input_map(player_input_idx),
                         ..default()
                     });
 

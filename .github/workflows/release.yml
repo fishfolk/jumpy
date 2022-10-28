@@ -1,11 +1,11 @@
-# This action will generate Windows|Linux|MacOS binary releases
-
-name: Release
+name: CD
 
 on:
   push:
+    branches:
+      - main
     tags:
-      - "v*"
+      - 'v*'
 
 jobs:
   build_release:
@@ -16,15 +16,14 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - { os: ubuntu-latest, target: "x86_64-unknown-linux-gnu" }
-          - { os: macos-latest, target: "x86_64-apple-darwin" }
-          - { os: macos-latest, target: "aarch64-apple-darwin" }
-          - { os: windows-latest, target: "x86_64-pc-windows-msvc" }
-          - { os: windows-latest, target: "i686-pc-windows-msvc" }
+          - { os: ubuntu-latest, target: 'x86_64-unknown-linux-gnu' }
+          - { os: macos-latest, target: 'x86_64-apple-darwin' }
+          - { os: macos-latest, target: 'aarch64-apple-darwin' }
+          - { os: windows-latest, target: 'x86_64-pc-windows-msvc' }
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set the release version
         shell: bash
@@ -34,20 +33,18 @@ jobs:
         if: matrix.config.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install \
-            --allow-unauthenticated -y -qq \
+          sudo apt-get install -y -q \
               libasound2-dev \
-              libgl1-mesa-dev \
-              libx11-dev \
-              libxi-dev \
               libudev-dev
 
-      - name: Cache Cargo
-        uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: |
-            ~/.cargo/registry
-            ~/.cargo/git
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Setup Rust
@@ -60,9 +57,6 @@ jobs:
 
       - name: Build
         uses: actions-rs/cargo@v1
-        env:
-          SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
-          RUSTFLAGS: -L /usr/lib/x86_64-linux-gnu
         with:
           command: build
           args: --release --locked --target ${{ matrix.config.target }}
@@ -76,10 +70,8 @@ jobs:
           echo "ARTIFACT_PATH=$artifact_path" >> $GITHUB_ENV
           mkdir $release_dir
           cp target/${{ matrix.config.target }}/release/jumpy.exe $release_dir/
-          strip $release_dir/jumpy.exe
-          find assets -name "*.schema.json" -exec rm -f {} \;
-          cp -R assets/ mods/ licenses/ $release_dir/
-          cp LICENSE $release_dir/licenses/
+          cp -R assets/ $release_dir/
+          cp LICENSE.md $release_dir/
           7z a -tzip $artifact_path $release_dir/
 
       - name: Prepare artifacts [Unix]
@@ -91,10 +83,8 @@ jobs:
           echo "ARTIFACT_PATH=$artifact_path" >> $GITHUB_ENV
           mkdir $release_dir
           cp target/${{ matrix.config.target }}/release/jumpy $release_dir/
-          strip $release_dir/jumpy || true
-          find assets -name "*.schema.json" -exec rm -f {} \;
-          cp -R assets mods licenses $release_dir
-          cp LICENSE $release_dir/licenses
+          cp -R assets $release_dir
+          cp LICENSE.md $release_dir
           tar -czvf $artifact_path $release_dir/
 
       - name: Deploy | Upload artifacts
@@ -111,7 +101,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Download Artifacts
         uses: actions/download-artifact@v2
@@ -119,6 +109,16 @@ jobs:
       - name: Set the release version
         shell: bash
         run: echo "RELEASE_VERSION=${GITHUB_REF:10}" >> $GITHUB_ENV
+
+      - name: Set stable release name
+        shell: bash
+        if: env.release_VERSION != 'main'
+        run: echo "RELEASE_NAME=Jumpy ${GITHUB_REF:10}" >> $GITHUB_ENV
+
+      - name: Set pre-release name
+        shell: bash
+        if: env.release_VERSION == 'main'
+        run: echo "RELEASE_NAME=Jumpy Dev Snapshot" >> $GITHUB_ENV
 
       - name: Generate Checksums
         run: for file in jumpy-*/jumpy-*; do openssl dgst -sha256 -r "$file" | awk '{print $1}' > "${file}.sha256"; done
@@ -130,6 +130,7 @@ jobs:
           file: jumpy-*/jumpy-*
           file_glob: true
           overwrite: true
-          body: "Fish Folk: Jumpy ${{ env.RELEASE_VERSION }} 🐟"
+          prerelease: ${{ env.RELEASE_VERSION == 'main' }}
+          body: '${{ env.RELEASE_NAME }}'
           tag: ${{ github.ref }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}

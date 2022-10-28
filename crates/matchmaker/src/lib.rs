@@ -21,7 +21,7 @@ struct Config {
     listen_addr: SocketAddr,
 
     /// The directory containing the bevy assets
-    #[clap(short, long)]
+    #[clap(short, long, env = "JUMPY_ASSET_DIR")]
     asset_dir: String,
 }
 

@@ -7,6 +7,9 @@ on:
     tags:
       - 'v*'
 
+env:
+  RELEASE_VERSION: ${{ github.ref_name }}
+
 jobs:
   build_release:
     name: Build release binaries
@@ -24,10 +27,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Set the release version
-        shell: bash
-        run: echo "RELEASE_VERSION=${GITHUB_REF:10}" >> $GITHUB_ENV
 
       - name: Install dependencies
         if: matrix.config.os == 'ubuntu-latest'
@@ -71,7 +70,7 @@ jobs:
           mkdir $release_dir
           cp target/${{ matrix.config.target }}/release/jumpy.exe $release_dir/
           cp -R assets/ $release_dir/
-          cp LICENSE.md $release_dir/
+          cp LICENSE $release_dir/
           7z a -tzip $artifact_path $release_dir/
 
       - name: Prepare artifacts [Unix]
@@ -84,7 +83,7 @@ jobs:
           mkdir $release_dir
           cp target/${{ matrix.config.target }}/release/jumpy $release_dir/
           cp -R assets $release_dir
-          cp LICENSE.md $release_dir
+          cp LICENSE $release_dir
           tar -czvf $artifact_path $release_dir/
 
       - name: Deploy | Upload artifacts
@@ -105,10 +104,6 @@ jobs:
 
       - name: Download Artifacts
         uses: actions/download-artifact@v2
-
-      - name: Set the release version
-        shell: bash
-        run: echo "RELEASE_VERSION=${GITHUB_REF:10}" >> $GITHUB_ENV
 
       - name: Set stable release name
         shell: bash

@@ -2,8 +2,7 @@ use bevy_egui::*;
 use bevy_fluent::Localization;
 
 use crate::{
-    localization::LocalizationExt, metadata::GameMeta, networking::client::NetClient, prelude::*,
-    ui::input::MenuAction, GameState,
+    localization::LocalizationExt, metadata::GameMeta, prelude::*, ui::input::MenuAction, GameState,
 };
 
 use super::widgets::{
@@ -53,7 +52,6 @@ pub fn pause_menu(
     mut egui_context: ResMut<EguiContext>,
     game: Res<GameMeta>,
     localization: Res<Localization>,
-    client: Option<Res<NetClient>>,
 ) {
     let ui_theme = &game.ui_theme;
 
@@ -101,7 +99,6 @@ pub fn pause_menu(
                         }
 
                         ui.scope(|ui| {
-                            ui.set_enabled(client.is_some());
                             if BorderedButton::themed(
                                 &ui_theme.button_styles.normal,
                                 &localization.get("edit"),

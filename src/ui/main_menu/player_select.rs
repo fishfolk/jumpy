@@ -54,10 +54,10 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
         let mut ready_players = 0;
         let mut unconfirmed_players = 0;
 
-        for slot in &params.player_select_state.player_slots {
+        for (i, slot) in params.player_select_state.player_slots.iter().enumerate() {
             if slot.confirmed {
                 ready_players += 1;
-            } else {
+            } else if params.player_inputs.players[i].active {
                 unconfirmed_players += 1;
             }
         }
@@ -245,7 +245,7 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
         };
 
         let player_input = &mut params.player_inputs.players[idx];
-        if !player_input.active {
+        if !player_input.active && params.client.is_some() {
             return;
         }
 
@@ -254,12 +254,29 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
         let slot = &mut params.player_select_state.player_slots[idx];
 
         if player_actions.just_pressed(PlayerAction::Jump) {
-            slot.confirmed = true;
+            if params.client.is_none() {
+                if player_input.active {
+                    slot.confirmed = true;
+                } else {
+                    player_input.active = true;
+                }
+            } else {
+                slot.confirmed = true;
+            }
+
             if let Some(client) = params.client {
                 client.send_reliable(&MatchSetupFromClient::ConfirmSelection(slot.confirmed));
             }
         } else if player_actions.just_pressed(PlayerAction::Grab) {
-            slot.confirmed = false;
+            if params.client.is_none() {
+                if slot.confirmed {
+                    slot.confirmed = false;
+                } else {
+                    player_input.active = false;
+                }
+            } else {
+                slot.confirmed = false;
+            }
             if let Some(client) = params.client {
                 client.send_reliable(&MatchSetupFromClient::ConfirmSelection(slot.confirmed));
             }
@@ -317,6 +334,9 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                 ui.set_height(ui.available_height());
 
                 let normal_font = &params.game.ui_theme.font_styles.normal;
+                let heading_font = &params.game.ui_theme.font_styles.heading;
+
+                // Marker for current player in online matches
                 if let Some(match_info) = params.client_match_info {
                     if match_info.player_idx == idx {
                         ui.vertical_centered(|ui| {
@@ -329,49 +349,50 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                     ui.add_space(normal_font.size);
                 }
 
-                ui.vertical_centered(|ui| {
-                    let player_meta =
-                        if let Some(meta) = params.player_meta_assets.get(player_handle) {
-                            meta
-                        } else {
-                            return;
-                        };
-
-                    ui.themed_label(
-                        &params.game.ui_theme.font_styles.normal,
-                        &params.localization.get("pick-a-fish"),
-                    );
-
+                if player_input.active {
                     ui.vertical_centered(|ui| {
-                        ui.set_height(params.game.ui_theme.font_styles.heading.size * 1.5);
-
-                        if slot.confirmed {
-                            ui.themed_label(
-                                &params
-                                    .game
-                                    .ui_theme
-                                    .font_styles
-                                    .heading
-                                    .colored(params.game.ui_theme.colors.positive),
-                                &params.localization.get("player-select-ready"),
-                            );
-                        }
-                    });
-
-                    ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
-                        let name_with_arrows = format!("<  {}  >", player_meta.name);
-                        ui.themed_label(
-                            &params.game.ui_theme.font_styles.normal,
-                            if slot.confirmed {
-                                &player_meta.name
+                        let player_meta =
+                            if let Some(meta) = params.player_meta_assets.get(player_handle) {
+                                meta
                             } else {
-                                &name_with_arrows
-                            },
-                        );
+                                return;
+                            };
 
-                        player_image(ui, player_meta);
+                        ui.themed_label(normal_font, &params.localization.get("pick-a-fish"));
+
+                        ui.vertical_centered(|ui| {
+                            ui.set_height(heading_font.size * 1.5);
+
+                            if slot.confirmed {
+                                ui.themed_label(
+                                    &heading_font.colored(params.game.ui_theme.colors.positive),
+                                    &params.localization.get("player-select-ready"),
+                                );
+                            }
+                        });
+
+                        ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
+                            let name_with_arrows = format!("<  {}  >", player_meta.name);
+                            ui.themed_label(
+                                normal_font,
+                                if slot.confirmed {
+                                    &player_meta.name
+                                } else {
+                                    &name_with_arrows
+                                },
+                            );
+
+                            player_image(ui, player_meta);
+                        });
                     });
-                });
+                } else {
+                    ui.vertical_centered(|ui| {
+                        ui.themed_label(
+                            normal_font,
+                            &params.localization.get("press-jump-to-join"),
+                        );
+                    });
+                }
             });
     }
 }

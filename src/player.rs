@@ -43,7 +43,7 @@ pub struct PlayerIdx(pub usize);
 
 fn hydrate_players(
     mut commands: Commands,
-    players: Query<(Entity, &PlayerIdx, &Transform), Without<PlayerState>>,
+    mut players: Query<(Entity, &PlayerIdx, &mut Transform), Without<PlayerState>>,
     mut storage: ResMut<Storage>,
     game: Res<GameMeta>,
     player_inputs: Res<PlayerInputs>,
@@ -54,7 +54,12 @@ fn hydrate_players(
     let settings = storage.get(Settings::STORAGE_KEY);
     let settings = settings.as_ref().unwrap_or(&game.default_settings);
 
-    for (entity, player_idx, player_transform) in &players {
+    for (entity, player_idx, mut player_transform) in &mut players {
+        // Mutate the player transform to trigger an update to it's global transform component. This
+        // isn't normally necessary, but since the player may not start off with a GlobalTransform
+        // it may be required.
+        player_transform.set_changed();
+
         // If we are the server, broadcast a spawn event for each hydrated player
         if let Some(server) = &server {
             server.broadcast_reliable(&PlayerEventFromServer {
@@ -84,6 +89,18 @@ fn hydrate_players(
             .insert(GlobalTransform::default())
             .insert_bundle(VisibilityBundle::default());
 
+        let kinematic_body = KinematicBody {
+            size: Vec2::new(38.0, 48.0), // FIXME: Don't hardcode! Load from player meta.
+            has_mass: true,
+            has_friction: true,
+            gravity: 1.0,
+            ..default()
+        };
+        let input_manager_for_player = |player_idx| InputManagerBundle {
+            input_map: settings.player_controls.get_input_map(player_idx),
+            ..default()
+        };
+
         if let Some(match_info) = &client_match_info {
             // Only add physics and input bundle for non-remote players if we are a multiplayer client
             if match_info.player_idx == player_idx.0 {
@@ -96,23 +113,20 @@ fn hydrate_players(
                 };
 
                 entity_commands
-                    .insert(KinematicBody {
-                        size: Vec2::new(38.0, 48.0), // FIXME: Don't hardcode! Load from player meta.
-                        has_mass: true,
-                        has_friction: true,
-                        gravity: 1.0,
-                        ..default()
-                    })
-                    .insert_bundle(InputManagerBundle {
-                        input_map: settings.player_controls.get_input_map(player_input_idx),
-                        ..default()
-                    });
+                    .insert(kinematic_body)
+                    .insert_bundle(input_manager_for_player(player_input_idx));
 
             // For remote players we add an `Animator` that will be used to tween it's transform for
             // smoothing player movement.
             } else {
                 entity_commands.insert(Animator::<Transform>::default());
             }
+
+        // If this is a local game
+        } else {
+            entity_commands
+                .insert(kinematic_body)
+                .insert_bundle(input_manager_for_player(player_idx.0));
         }
     }
 }

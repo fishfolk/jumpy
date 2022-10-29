@@ -105,7 +105,7 @@ export default {
       const control = player_inputs.players[playerIdx[0]].control;
 
       // Add jump
-      if (control.shoot_just_pressed) {
+      if (control.jump_just_pressed) {
         body.velocity.y = 15;
       }
       body.velocity.x = control.move_direction.x * 5;

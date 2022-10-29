@@ -12,6 +12,7 @@ use crate::{
     localization::LocalizationExt,
     metadata::{GameMeta, Settings},
     platform::Storage,
+    player::input::PlayerInputs,
     prelude::*,
     ui::input::MenuAction,
     utils::ResetController,
@@ -59,10 +60,17 @@ pub fn setup_main_menu(
     mut commands: Commands,
     game: Res<GameMeta>,
     mut reset_controller: ResetController,
+    mut player_inputs: ResMut<PlayerInputs>,
 ) {
     // Reset the game world
     reset_controller.reset_world();
 
+    // Reset player list
+    for player in &mut player_inputs.players {
+        player.active = false;
+    }
+
+    // Spawn menu background
     let bg_handle = game.main_menu.background_image.image_handle.clone();
     let img_size = game.main_menu.background_image.image_size;
     let ratio = img_size.x / img_size.y;
@@ -143,9 +151,8 @@ impl Default for MenuPage {
 impl SettingsTab {
     const TABS: &'static [(Self, &'static str)] = &[
         (Self::Controls, "controls"),
-        (Self::Networking, "networking")
-        // For now, hide the sound tab because we don't have it working yet.
-        // (Self::Sound, "sound")
+        (Self::Networking, "networking"), // For now, hide the sound tab because we don't have it working yet.
+                                          // (Self::Sound, "sound")
     ];
 }
 
@@ -195,7 +202,7 @@ impl<'w, 's> WidgetSystem for MainMenu<'w, 's> {
             MenuPage::PlayerSelect => {
                 widget::<player_select::PlayerSelectMenu>(world, ui, id.with("player-select"), ())
             }
-            MenuPage::MapSelect { is_waiting} => {
+            MenuPage::MapSelect { is_waiting } => {
                 widget::<map_select::MapSelectMenu>(world, ui, id.with("map-select"), is_waiting)
             }
             MenuPage::Settings => {

@@ -137,6 +137,12 @@ impl From<String> for FontFamily {
     }
 }
 
+impl From<FontFamily> for egui::FontFamily {
+    fn from(family: FontFamily) -> Self {
+        Self::Name(family.0)
+    }
+}
+
 #[derive(HasLoadProgress, Deserialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[has_load_progress(none)]
@@ -145,6 +151,15 @@ pub struct FontMeta {
     pub size: f32,
     #[serde(default)]
     pub color: ColorMeta,
+}
+
+impl From<FontMeta> for egui::FontSelection {
+    fn from(meta: FontMeta) -> Self {
+        egui::FontSelection::FontId(egui::FontId {
+            size: meta.size,
+            family: meta.family.into(),
+        })
+    }
 }
 
 impl FontMeta {
@@ -157,7 +172,7 @@ impl FontMeta {
     pub fn font_id(&self) -> egui::FontId {
         egui::FontId {
             size: self.size,
-            family: egui::FontFamily::Name(self.family.0.clone()),
+            family: self.family.clone().into(),
         }
     }
 }

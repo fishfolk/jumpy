@@ -1,21 +1,35 @@
+use std::borrow::Cow;
+
 use bevy::prelude::Gamepad;
 use bevy_has_load_progress::HasLoadProgress;
 use leafwing_input_manager::{axislike::VirtualDPad, prelude::InputMap, user_input::InputKind};
 use serde::{Deserialize, Serialize};
 
-use crate::player::input::PlayerAction;
+use crate::{platform::Storage, player::input::PlayerAction};
+
+use super::GameMeta;
 
 /// Global settings, stored and accessed through [`crate::platform::Storage`]
 #[derive(HasLoadProgress, Deserialize, Serialize, Debug, Clone)]
 #[has_load_progress(none)]
 pub struct Settings {
-    // The player controller bindings
+    /// The player controller bindings
     pub player_controls: PlayerControlMethods,
+    /// The address of the matchmaking server to connect to for online games.
+    pub matchmaking_server: String,
 }
 
 impl Settings {
     /// The key used to store the settings in the [`crate::platform::Storage`] resource.
     pub const STORAGE_KEY: &'static str = "settings";
+
+    pub fn get_stored_or_default<'w>(game: &'w GameMeta, storage: &'w mut Storage) -> Cow<'w, Self> {
+        if let Some(settings) = storage.get::<Self>(Self::STORAGE_KEY) {
+            Cow::Owned(settings)
+        } else {
+            Cow::Borrowed(&game.default_settings)
+        }
+    }
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]

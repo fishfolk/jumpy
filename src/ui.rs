@@ -3,7 +3,7 @@ use std::{collections::hash_map::DefaultHasher, hash::Hasher};
 use bevy::{
     ecs::system::{SystemParam, SystemState},
     prelude::*,
-    utils::HashMap,
+    utils::{HashMap, HashSet},
     window::WindowId,
 };
 use bevy_egui::{egui, EguiContext, EguiInput, EguiPlugin, EguiSettings, EguiSystem};
@@ -121,19 +121,10 @@ impl From<&str> for WidgetId {
 /// This is used to figure out which widget to focus on next when you press a direction on the
 /// gamepad, for instance.
 #[derive(Debug, Clone, Default)]
-pub struct WidgetAdjacencies(HashMap<egui::Id, WidgetAdjacency>);
-
-impl std::ops::Deref for WidgetAdjacencies {
-    type Target = HashMap<egui::Id, WidgetAdjacency>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-impl std::ops::DerefMut for WidgetAdjacencies {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
+pub struct WidgetAdjacencies {
+    pub map: HashMap<egui::Id, WidgetAdjacency>,
+    /// These widgets will have the focus change when pressing directional inputs
+    pub text_boxes: HashSet<egui::Id>,
 }
 
 /// The list of widgets in each direction from another widget
@@ -163,26 +154,26 @@ pub struct WidgetAdjacencyEntry<'a> {
 impl<'a> WidgetAdjacencyEntry<'a> {
     pub fn to_left_of(self, resp: &egui::Response) -> Self {
         let other_id = resp.id;
-        self.adjacencies.0.entry(self.id).or_default().right = Some(other_id);
-        self.adjacencies.0.entry(other_id).or_default().left = Some(self.id);
+        self.adjacencies.map.entry(self.id).or_default().right = Some(other_id);
+        self.adjacencies.map.entry(other_id).or_default().left = Some(self.id);
         self
     }
     pub fn to_right_of(self, resp: &egui::Response) -> Self {
         let other_id = resp.id;
-        self.adjacencies.0.entry(self.id).or_default().left = Some(other_id);
-        self.adjacencies.0.entry(other_id).or_default().right = Some(self.id);
+        self.adjacencies.map.entry(self.id).or_default().left = Some(other_id);
+        self.adjacencies.map.entry(other_id).or_default().right = Some(self.id);
         self
     }
     pub fn above(self, resp: &egui::Response) -> Self {
         let other_id = resp.id;
-        self.adjacencies.0.entry(self.id).or_default().down = Some(other_id);
-        self.adjacencies.0.entry(other_id).or_default().up = Some(self.id);
+        self.adjacencies.map.entry(self.id).or_default().down = Some(other_id);
+        self.adjacencies.map.entry(other_id).or_default().up = Some(self.id);
         self
     }
     pub fn below(self, resp: &egui::Response) -> Self {
         let other_id = resp.id;
-        self.adjacencies.0.entry(self.id).or_default().up = Some(other_id);
-        self.adjacencies.0.entry(other_id).or_default().down = Some(self.id);
+        self.adjacencies.map.entry(self.id).or_default().up = Some(other_id);
+        self.adjacencies.map.entry(other_id).or_default().down = Some(self.id);
         self
     }
 }
@@ -194,6 +185,7 @@ fn handle_menu_input(
     disable_menu_input: Res<DisableMenuInput>,
     mut windows: ResMut<Windows>,
     input: Query<&ActionState<MenuAction>>,
+    keyboard: Res<Input<KeyCode>>,
     mut egui_inputs: ResMut<HashMap<WindowId, EguiInput>>,
     adjacencies: Res<WidgetAdjacencies>,
     mut egui_ctx: ResMut<EguiContext>,
@@ -252,34 +244,46 @@ fn handle_menu_input(
     };
 
     let mut memory = egui_ctx.ctx_mut().memory();
-    if let Some(adjacency) = memory.focus().and_then(|id| adjacencies.get(&id)) {
-        if input.just_pressed(MenuAction::Up) {
-            if let Some(adjacent) = adjacency.up {
-                memory.request_focus(adjacent);
-            } else {
-                tab_fallback()
+    let focused = memory.focus();
+    let is_text_box = focused
+        .map(|id| adjacencies.text_boxes.contains(&id))
+        .unwrap_or(false);
+
+    if !(is_text_box
+        && (keyboard.pressed(KeyCode::Up)
+            || keyboard.pressed(KeyCode::Down)
+            || keyboard.pressed(KeyCode::Left)
+            || keyboard.pressed(KeyCode::Right)))
+    {
+        if let Some(adjacency) = memory.focus().and_then(|id| adjacencies.map.get(&id)) {
+            if input.just_pressed(MenuAction::Up) {
+                if let Some(adjacent) = adjacency.up {
+                    memory.request_focus(adjacent);
+                } else {
+                    tab_fallback()
+                }
+            } else if input.just_pressed(MenuAction::Down) {
+                if let Some(adjacent) = adjacency.down {
+                    memory.request_focus(adjacent);
+                } else {
+                    tab_fallback()
+                }
+            } else if input.just_pressed(MenuAction::Left) {
+                if let Some(adjacent) = adjacency.left {
+                    memory.request_focus(adjacent);
+                } else {
+                    tab_fallback()
+                }
+            } else if input.just_pressed(MenuAction::Right) {
+                if let Some(adjacent) = adjacency.right {
+                    memory.request_focus(adjacent);
+                } else {
+                    tab_fallback()
+                }
             }
-        } else if input.just_pressed(MenuAction::Down) {
-            if let Some(adjacent) = adjacency.down {
-                memory.request_focus(adjacent);
-            } else {
-                tab_fallback()
-            }
-        } else if input.just_pressed(MenuAction::Left) {
-            if let Some(adjacent) = adjacency.left {
-                memory.request_focus(adjacent);
-            } else {
-                tab_fallback()
-            }
-        } else if input.just_pressed(MenuAction::Right) {
-            if let Some(adjacent) = adjacency.right {
-                memory.request_focus(adjacent);
-            } else {
-                tab_fallback()
-            }
+        } else {
+            tab_fallback();
         }
-    } else {
-        tab_fallback();
     }
 }
 

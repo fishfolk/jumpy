@@ -343,6 +343,8 @@ fn menu_input_map() -> InputMap<MenuAction> {
             },
             MenuAction::Right,
         )
+        // Start
+        .insert(GamepadButtonType::Start, MenuAction::Start)
         // Confirm
         .insert(KeyCode::Return, MenuAction::Confirm)
         .insert(GamepadButtonType::South, MenuAction::Confirm)

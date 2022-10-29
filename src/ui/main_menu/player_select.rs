@@ -106,7 +106,8 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
 
                     // Go to menu when back button is clicked
                     if back_button.clicked()
-                        || params.menu_input.single().just_pressed(MenuAction::Back)
+                        || (params.menu_input.single().just_pressed(MenuAction::Back)
+                            && !params.player_inputs.players[0].active)
                     {
                         *params.menu_page = MenuPage::Home;
                         if let Some(client) = params.client {
@@ -131,7 +132,9 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
                         })
                         .inner;
 
-                    if continue_button.clicked() || (params.menu_input.single().just_pressed(MenuAction::Start)) {
+                    if continue_button.clicked()
+                        || params.menu_input.single().just_pressed(MenuAction::Start)
+                    {
                         *params.menu_page = MenuPage::MapSelect { is_waiting: false };
                     }
                 });

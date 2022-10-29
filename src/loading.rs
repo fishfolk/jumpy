@@ -295,6 +295,7 @@ impl<'w, 's> GameLoader<'w, 's> {
 
 fn menu_input_map() -> InputMap<MenuAction> {
     InputMap::default()
+        .set_gamepad(Gamepad::new(0))
         // Up
         .insert(KeyCode::Up, MenuAction::Up)
         .insert(GamepadButtonType::DPadUp, MenuAction::Up)

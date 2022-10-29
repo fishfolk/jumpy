@@ -1,5 +1,5 @@
 keyboard = Keyboard
-press-to-join = Press to Join
+press-jump-to-join = Press Jump Button to Join
 player-select-title = Player Select
 pick-a-fish = Pick a Fish
 player-select-ready = Ready!

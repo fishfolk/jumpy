@@ -17,6 +17,8 @@ jobs:
   build-and-publish:
     name: Build and Publish Container
     runs-on: ubuntu-latest
+    env:
+      DEPLOY_HOOK: ${{ secrets.DEPLOY_HOOK }}
 
     steps:
       - name: Checkout
@@ -59,3 +61,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Re-deploy Container
+        run: |
+          $DEPLOY_HOOK

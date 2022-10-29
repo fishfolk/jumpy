@@ -33,5 +33,5 @@ RUN apt-get update && apt-get install -y libasound2 && rm -rf /var/lib/apt/lists
 COPY --from=builder /usr/local/bin/jumpy-matchmaker /usr/local/bin/jumpy-matchmaker
 COPY --from=builder /usr/src/jumpy/assets /usr/local/share/jumpy/assets
 ENV JUMPY_ASSET_DIR=/usr/local/share/jumpy/assets
-EXPOSE 8943
+EXPOSE 8943/udp
 ENTRYPOINT /usr/local/bin/jumpy-matchmaker

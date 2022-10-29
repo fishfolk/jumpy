@@ -75,7 +75,7 @@ impl Default for CollisionLayerTag {
 #[derive(SystemParam)]
 pub struct CollisionWorld<'w, 's> {
     commands: Commands<'w, 's>,
-    static_tiled_layers: Query<
+    pub static_tiled_layers: Query<
         'w,
         's,
         (
@@ -85,9 +85,9 @@ pub struct CollisionWorld<'w, 's> {
             &'static CollisionLayerTag,
         ),
     >,
-    tile_collisions: Query<'w, 's, &'static mut TileCollision>,
-    solids: Query<'w, 's, &'static mut Collider, (With<Solid>, Without<Actor>)>,
-    actors: Query<'w, 's, (Entity, &'static mut Collider), With<Actor>>,
+    pub tile_collisions: Query<'w, 's, &'static mut TileCollision>,
+    pub solids: Query<'w, 's, &'static mut Collider, (With<Solid>, Without<Actor>)>,
+    pub actors: Query<'w, 's, (Entity, &'static mut Collider), With<Actor>>,
 }
 
 #[derive(Component, Reflect, Default, Clone, Debug)]
@@ -223,7 +223,7 @@ impl<'w, 's> CollisionWorld<'w, 's> {
                     collider.seen_wood = true;
                 }
                 // collider wants to go up and encoutered jumpthrough obstace
-                if tile == TileCollision::JumpThrough && sign < 0 {
+                if tile == TileCollision::JumpThrough && sign > 0 {
                     collider.seen_wood = true;
                     collider.descent = true;
                 }

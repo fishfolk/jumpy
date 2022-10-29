@@ -406,175 +406,200 @@
                 1,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 2,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 3,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 4,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 5,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 6,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 7,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 8,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 9,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 10,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 11,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 12,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 13,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 14,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 15,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 16,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 17,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 18,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 19,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 20,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 21,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 22,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 23,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 24,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 25,
                 19
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
@@ -665,14 +690,16 @@
                 1,
                 13
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 2,
                 13
               ],
-              "idx": 60
+              "idx": 60,
+              "jump_through": true
             },
             {
               "pos": [
@@ -749,14 +776,16 @@
                 24,
                 13
               ],
-              "idx": 56
+              "idx": 56,
+              "jump_through": true
             },
             {
               "pos": [
                 25,
                 13
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
@@ -805,42 +834,48 @@
                 1,
                 10
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 2,
                 10
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 3,
                 10
               ],
-              "idx": 60
+              "idx": 60,
+              "jump_through": true
             },
             {
               "pos": [
                 23,
                 10
               ],
-              "idx": 56
+              "idx": 56,
+              "jump_through": true
             },
             {
               "pos": [
                 24,
                 10
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 25,
                 10
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
@@ -875,105 +910,120 @@
                 6,
                 8
               ],
-              "idx": 56
+              "idx": 56,
+              "jump_through": true
             },
             {
               "pos": [
                 7,
                 8
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 8,
                 8
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 9,
                 8
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 10,
                 8
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 11,
                 8
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 12,
                 8
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 13,
                 8
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 14,
                 8
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 15,
                 8
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 16,
                 8
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 17,
                 8
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 18,
                 8
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 19,
                 8
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 20,
                 8
               ],
-              "idx": 60
+              "idx": 60,
+              "jump_through": true
             },
             {
               "pos": [

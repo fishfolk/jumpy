@@ -21,21 +21,24 @@
                 4,
                 15
               ],
-              "idx": 56
+              "idx": 56,
+              "jump_through": true
             },
             {
               "pos": [
                 5,
                 15
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 6,
                 15
               ],
-              "idx": 60
+              "idx": 60,
+              "jump_through": true
             },
             {
               "pos": [
@@ -112,63 +115,72 @@
                 25,
                 15
               ],
-              "idx": 56
+              "idx": 56,
+              "jump_through": true
             },
             {
               "pos": [
                 26,
                 15
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 27,
                 15
               ],
-              "idx": 60
+              "idx": 60,
+              "jump_through": true
             },
             {
               "pos": [
                 13,
                 9
               ],
-              "idx": 56
+              "idx": 56,
+              "jump_through": true
             },
             {
               "pos": [
                 14,
                 9
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 15,
                 9
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 16,
                 9
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 17,
                 9
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 18,
                 9
               ],
-              "idx": 60
+              "idx": 60,
+              "jump_through": true
             },
             {
               "pos": [

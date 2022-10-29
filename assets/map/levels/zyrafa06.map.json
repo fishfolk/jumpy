@@ -21,42 +21,48 @@
                 21,
                 9
               ],
-              "idx": 56
+              "idx": 56,
+              "jump_through": true
             },
             {
               "pos": [
                 22,
                 9
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 23,
                 9
               ],
-              "idx": 60
+              "idx": 60,
+              "jump_through": true
             },
             {
               "pos": [
                 6,
                 8
               ],
-              "idx": 56
+              "idx": 56,
+              "jump_through": true
             },
             {
               "pos": [
                 7,
                 8
               ],
-              "idx": 58
+              "idx": 58,
+              "jump_through": true
             },
             {
               "pos": [
                 8,
                 8
               ],
-              "idx": 60
+              "idx": 60,
+              "jump_through": true
             },
             {
               "pos": [

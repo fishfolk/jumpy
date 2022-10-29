@@ -138,6 +138,8 @@ for (const map of inMaps) {
     },
   ];
 
+  const tileset = map.tilesets[0];
+
   for (const layer of map.layers) {
     const newLayer = {} as any;
 
@@ -163,9 +165,16 @@ for (const map of inMaps) {
           `posY ( ${posY} ) isn't less than map.grid_size.y ( ${map.grid_size.y} ) for tile index ${i}`
         );
 
+        const idx = tile - 1;
         newLayer.kind.tile.tiles.push({
           pos: [posX, posY],
-          idx: tile - 1,
+          idx,
+          jump_through:
+            (tileset.tile_attributes &&
+              tileset.tile_attributes[idx.toString()]?.includes(
+                "jumpthrough"
+              )) ||
+            undefined,
         });
       }
     } else if (layer.objects && layer.objects.length > 0) {

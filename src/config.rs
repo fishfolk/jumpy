@@ -1,74 +1,59 @@
 use std::net::SocketAddr;
 
+use clap::Parser;
 use once_cell::sync::Lazy;
-use structopt::StructOpt;
 
 pub const SERVER_MODE_ENV_VAR: &str = "JUMPY_SERVER_MODE";
 pub const ASSET_DIR_ENV_VAR: &str = "JUMPY_ASSET_DIR";
+
 const DEFAULT_LOG_LEVEL: &str = "info,wgpu=error,bevy_fluent=warn,symphonia_core=warn,symphonia_format_ogg=warn,symphonia_bundle_mp3=warn";
 
 pub static ENGINE_CONFIG: Lazy<EngineConfig> = Lazy::new(|| {
     #[cfg(not(target_arch = "wasm32"))]
-    {
-        let server_mode = std::env::var(SERVER_MODE_ENV_VAR).is_ok();
-        if server_mode {
-            EngineConfig {
-                server_mode: true,
-                hot_reload: false,
-                matchmaking_server: "127.0.0.1:8943".parse().unwrap(), // Not actually used in serveer mode
-                asset_dir: Some(
-                    std::env::var(ASSET_DIR_ENV_VAR).expect("Missing asset dir env var"),
-                ),
-                game_asset: "default.game.yaml".into(),
-                auto_start: false,
-                debug_tools: false,
-                log_level: DEFAULT_LOG_LEVEL.into(),
-            }
-        } else {
-            EngineConfig::from_args()
-        }
-    }
+    return EngineConfig::parse();
 
     #[cfg(target_arch = "wasm32")]
     return EngineConfig::from_web_params();
 });
 
-#[derive(Clone, Debug, StructOpt)]
-#[structopt(name = "Jumpy", about = "A 2.5D side-scroller beatemup.")]
+#[derive(Clone, Debug, clap::Parser)]
+#[command(author, version, about)]
 pub struct EngineConfig {
-    /// Whether or not to run the game headless server mode
-    #[structopt(skip)]
+    /// Whether or not to run the game headless server mode.
+    /// 
+    /// Useful only for development.
+    #[arg(hide = true, long, env = SERVER_MODE_ENV_VAR)]
     pub server_mode: bool,
 
     /// The matchmaking server to use for online games
-    #[structopt(default_value = "127.0.0.1:8943")]
+    #[arg(default_value = "127.0.0.1:8943")]
     pub matchmaking_server: SocketAddr,
 
     /// Hot reload assets
-    #[structopt(short = "R", long)]
+    #[arg(short = 'R', long)]
     pub hot_reload: bool,
 
     /// The directory to load assets from
-    #[structopt(short, long)]
+    #[arg(short, long, env = ASSET_DIR_ENV_VAR)]
     pub asset_dir: Option<String>,
 
     /// The .game.yaml asset to load at startup
-    #[structopt(default_value = "default.game.yaml")]
+    #[arg(default_value = "default.game.yaml")]
     pub game_asset: String,
 
     /// Skip the menu and automatically start the game
-    #[structopt(short = "s", long)]
+    #[arg(short = 's', long)]
     pub auto_start: bool,
 
     /// Enable the debug tools which can be accessed by pressing F12
-    #[structopt(short = "d", long)]
+    #[arg(short = 'd', long)]
     pub debug_tools: bool,
 
     /// Set the log level
     ///
     /// May additionally specify log levels for specific modules as a comma-separated list of
     /// `module=level` items.
-    #[structopt(short = "l", long, default_value = DEFAULT_LOG_LEVEL)]
+    #[arg(short = 'l', long, default_value = DEFAULT_LOG_LEVEL)]
     pub log_level: String,
 }
 

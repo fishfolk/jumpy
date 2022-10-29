@@ -1,6 +1,9 @@
-use crate::networking::{
-    client::NetClient,
-    proto::match_setup::{MatchSetupFromClient, MatchSetupFromServer},
+use crate::{
+    metadata::MapMeta,
+    networking::{
+        client::NetClient,
+        proto::match_setup::{MatchSetupFromClient, MatchSetupFromServer},
+    },
 };
 
 use super::*;
@@ -12,6 +15,7 @@ pub struct MapSelectMenu<'w, 's> {
     game: Res<'w, GameMeta>,
     commands: Commands<'w, 's>,
     localization: Res<'w, Localization>,
+    map_assets: Res<'w, Assets<MapMeta>>,
     #[system_param(ignore)]
     _phantom: PhantomData<(&'w (), &'s ())>,
 }
@@ -30,10 +34,10 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
 
         handle_match_setup_messages(&mut params);
 
-        ui.vertical_centered(|ui| {
+        ui.vertical_centered_justified(|ui| {
             let bigger_text_style = &params.game.ui_theme.font_styles.bigger;
             let heading_text_style = &params.game.ui_theme.font_styles.heading;
-            let normal_button_style = &params.game.ui_theme.button_styles.normal;
+            let small_button_style = &params.game.ui_theme.button_styles.small;
 
             ui.add_space(heading_text_style.size / 4.0);
             ui.themed_label(heading_text_style, &params.localization.get("local-game"));
@@ -41,7 +45,7 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                 bigger_text_style,
                 &params.localization.get("map-select-title"),
             );
-            ui.add_space(normal_button_style.font.size);
+            ui.add_space(small_button_style.font.size);
 
             let available_size = ui.available_size();
             let menu_width = params.game.main_menu.menu_width;
@@ -63,16 +67,21 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                         egui::ScrollArea::vertical().show(ui, |ui| {
                             // Clippy lint is a false alarm, necessary to avoid borrowing params
                             #[allow(clippy::unnecessary_to_owned)]
-                            for (map_name, map_handle) in params.game.maps.to_vec().into_iter().zip(
-                                params
-                                    .game
-                                    .map_handles
-                                    .iter()
-                                    .map(|x| x.clone_weak())
-                                    .collect::<Vec<_>>()
-                                    .into_iter(),
-                            ) {
-                                if ui.button(&map_name).clicked() {
+                            for map_handle in params
+                                .game
+                                .map_handles
+                                .iter()
+                                .map(|x| x.clone_weak())
+                                .collect::<Vec<_>>()
+                                .into_iter()
+                            {
+                                let map_meta = params.map_assets.get(&map_handle).unwrap();
+                                ui.add_space(ui.spacing().item_spacing.y);
+
+                                if BorderedButton::themed(small_button_style, &map_meta.name)
+                                    .show(ui)
+                                    .clicked()
+                                {
                                     *params.menu_page = MenuPage::Home;
                                     params.commands.spawn().insert(map_handle.clone_weak());
                                     params

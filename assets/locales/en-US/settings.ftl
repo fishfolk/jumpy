@@ -8,3 +8,7 @@ keyboard-2 = Keyboard 2
 gamepad = Gamepad
 
 action = Action
+
+# Networking settings
+networking = Networking
+matchmaking-server = Matchmaking Server

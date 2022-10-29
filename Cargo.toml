@@ -34,6 +34,7 @@ features = [
 ]
 
 [dependencies]
+blocking = "1.2.0"
 anyhow = "1.0.58"
 bevy-parallax = "0.2.0"
 bevy_egui = "0.16.1"

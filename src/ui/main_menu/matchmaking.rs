@@ -1,10 +1,13 @@
+use std::net::{SocketAddr, ToSocketAddrs};
+
+use anyhow::Context;
 use async_channel::{Receiver, Sender};
 use bevy::tasks::IoTaskPool;
 use futures_lite::future;
 use jumpy_matchmaker_proto::{MatchInfo, MatchmakerRequest, MatchmakerResponse};
 use quinn::{Connection, Endpoint};
 
-use crate::{config::ENGINE_CONFIG, networking::client::NetClient, player::MAX_PLAYERS};
+use crate::{networking::client::NetClient, player::MAX_PLAYERS};
 
 use super::*;
 
@@ -13,6 +16,7 @@ pub struct MatchmakingMenu<'w, 's> {
     commands: Commands<'w, 's>,
     menu_page: ResMut<'w, MenuPage>,
     game: Res<'w, GameMeta>,
+    storage: ResMut<'w, Storage>,
     localization: Res<'w, Localization>,
     state: Local<'s, State>,
     menu_input: Query<'w, 's, &'static mut ActionState<MenuAction>>,
@@ -173,6 +177,11 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                         .show(ui)
                         .clicked()
                         {
+                            let matchmaking_server =
+                                Settings::get_stored_or_default(&params.game, &mut params.storage)
+                                    .matchmaking_server
+                                    .clone();
+
                             let io_pool = IoTaskPool::get();
                             let (status_sender, status_receiver) = async_channel::unbounded();
                             let (cancel_sender, cancel_receiver) = async_channel::bounded(1);
@@ -185,6 +194,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                                     status_sender,
                                     cancel_receiver,
                                     params.state.player_count,
+                                    matchmaking_server,
                                 ))
                                 .detach();
                         }
@@ -246,19 +256,53 @@ async fn start_matchmaking(
     sender: Sender<Status>,
     cancel_receiver: Receiver<()>,
     player_count: u8,
+    matchmaking_server: String,
 ) {
-    if let Err(e) = impl_start_matchmaking(sender.clone(), cancel_receiver, player_count).await {
+    if let Err(e) = impl_start_matchmaking(
+        sender.clone(),
+        cancel_receiver,
+        player_count,
+        matchmaking_server,
+    )
+    .await
+    {
         sender.try_send(Status::Errored(e.to_string())).ok();
         error!("Error while matchmaking: {e}");
     }
+}
+
+/// Resolve a server address.
+///
+/// Note: This may block the thread
+fn resolve_addr_blocking(addr: &str) -> anyhow::Result<SocketAddr> {
+    let formatting_err =
+        || anyhow::format_err!("Matchmaking server must be in the format `host:port`");
+
+    let mut iter = addr.split(':');
+    let host = iter.next().ok_or_else(formatting_err)?;
+    let port = iter.next().ok_or_else(formatting_err)?;
+    let port: u16 = port.parse().context("Couldn't parse port number")?;
+    if iter.next().is_some() {
+        return Err(formatting_err());
+    }
+
+    let addr = (host, port)
+        .to_socket_addrs()
+        .context("Couldn't resolve matchmaker address")?
+        .find(|x| x.is_ipv4()) // For now, only support IpV4. I don't think IpV6 works right.
+        .ok_or_else(|| anyhow::format_err!("Couldn't resolve matchmaker address"))?;
+
+    Ok(addr)
 }
 
 async fn impl_start_matchmaking(
     status: Sender<Status>,
     cancel_receiver: Receiver<()>,
     player_count: u8,
+    matchmaking_server: String,
 ) -> anyhow::Result<()> {
-    let server_addr = ENGINE_CONFIG.matchmaking_server;
+    let server_addr = blocking::unblock(move || resolve_addr_blocking(&matchmaking_server)).await?;
+
     let (endpoint, conn) = crate::networking::client::open_connection(server_addr).await?;
 
     let matchmake = async {

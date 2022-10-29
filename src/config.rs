@@ -1,5 +1,3 @@
-use std::net::SocketAddr;
-
 use clap::Parser;
 use once_cell::sync::Lazy;
 
@@ -20,14 +18,10 @@ pub static ENGINE_CONFIG: Lazy<EngineConfig> = Lazy::new(|| {
 #[command(author, version, about)]
 pub struct EngineConfig {
     /// Whether or not to run the game headless server mode.
-    /// 
+    ///
     /// Useful only for development.
     #[arg(hide = true, long, env = SERVER_MODE_ENV_VAR)]
     pub server_mode: bool,
-
-    /// The matchmaking server to use for online games
-    #[arg(default_value = "127.0.0.1:8943")]
-    pub matchmaking_server: SocketAddr,
 
     /// Hot reload assets
     #[arg(short = 'R', long)]

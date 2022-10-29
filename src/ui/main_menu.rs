@@ -143,6 +143,7 @@ impl Default for MenuPage {
 impl SettingsTab {
     const TABS: &'static [(Self, &'static str)] = &[
         (Self::Controls, "controls"),
+        (Self::Networking, "networking")
         // For now, hide the sound tab because we don't have it working yet.
         // (Self::Sound, "sound")
     ];

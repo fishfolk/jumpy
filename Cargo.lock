@@ -2601,6 +2601,7 @@ dependencies = [
  "bevy_mod_js_scripting",
  "bevy_prototype_lyon",
  "bevy_tweening",
+ "blocking",
  "bytes",
  "clap",
  "directories",

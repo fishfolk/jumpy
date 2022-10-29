@@ -110,6 +110,8 @@ pub struct MapElementSpawn {
 pub struct MapTileMeta {
     pub pos: UVec2,
     pub idx: u32,
+    #[serde(default)]
+    pub jump_through: bool,
 }
 
 #[derive(Reflect, FromReflect, HasLoadProgress, Deserialize, Serialize, Clone, Debug)]

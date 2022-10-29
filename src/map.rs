@@ -118,8 +118,9 @@ pub fn hydrate_maps(
 
                         let half_tile_x = map.tile_size.x as f32 / 2.0;
                         let half_tile_y = map.tile_size.y as f32 / 2.0;
-                        let tile_entity = commands
-                            .spawn()
+                        let mut tile_entity_commands = commands.spawn();
+
+                        tile_entity_commands
                             .insert(Name::new(format!(
                                 "Map Tile: {}: ( {} x {} )",
                                 layer.id, tile.pos.x, tile.pos.y,
@@ -137,10 +138,14 @@ pub fn hydrate_maps(
                                     0.0,
                                 ),
                                 ..default()
-                            })
-                            // TODO: Jump through tiles
-                            .insert(TileCollision::Solid)
-                            .id();
+                            });
+
+                        if tile.jump_through {
+                            tile_entity_commands.insert(TileCollision::JumpThrough);
+                        } else {
+                            tile_entity_commands.insert(TileCollision::Solid);
+                        }
+                        let tile_entity = tile_entity_commands.id();
 
                         // TODO: Add platform tile component to tiles that are platforms
 

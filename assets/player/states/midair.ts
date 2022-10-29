@@ -39,6 +39,7 @@ type KinematicBody = {
   bouncyness: f32;
   is_deactivated: boolean;
   gravity: f32;
+  fall_through: boolean;
 };
 const KinematicBody: BevyType<KinematicBody> = {
   typeName: "jumpy::physics::KinematicBody",
@@ -101,6 +102,14 @@ export default {
       // Add controls
       const control = player_inputs.players[playerIdx[0]].control;
       body.velocity.x = control.move_direction.x * 5;
+
+      // Fall through platforms when pressing down
+      if (control.move_direction.y < -0.5) {
+        body.fall_through = true;
+      } else {
+        body.fall_through = false;
+      }
+
       if (body.velocity.x > 0) {
         animationBankSprite.flip_x = false;
       } else if (body.velocity.x < 0) {

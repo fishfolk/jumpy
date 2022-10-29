@@ -66,6 +66,8 @@ pub struct KinematicBody {
     pub bouncyness: f32,
     pub is_deactivated: bool,
     pub gravity: f32,
+    /// Whether or not the body should fall through jump_through platforms
+    pub fall_through: bool,
 }
 
 #[derive(Component)]
@@ -100,6 +102,9 @@ fn update_kinematic_bodies(
     mut bodies: Query<(Entity, &mut KinematicBody, &mut Transform)>,
 ) {
     for (actor, mut body, mut transform) in &mut bodies {
+        if body.fall_through {
+            collision_world.descent(actor);
+        }
         collision_world.set_actor_position(actor, transform.translation.truncate() + body.offset);
 
         if !body.is_deactivated {

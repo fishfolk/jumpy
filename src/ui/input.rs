@@ -15,6 +15,7 @@ pub enum MenuAction {
     Left,
     Right,
     Confirm,
+    Start,
     Back,
     Pause,
     ToggleFullscreen,

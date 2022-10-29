@@ -131,7 +131,7 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
                         })
                         .inner;
 
-                    if continue_button.clicked() {
+                    if continue_button.clicked() || (params.menu_input.single().just_pressed(MenuAction::Start)) {
                         *params.menu_page = MenuPage::MapSelect { is_waiting: false };
                     }
                 });

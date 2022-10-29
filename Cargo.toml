@@ -43,7 +43,7 @@ iyes_loopless = "0.7.0"
 serde = { version = "1.0.137", features = ["derive"] }
 serde_yaml = "0.9.2"
 thiserror = "1.0.31"
-structopt = "0.3.26"
+clap = { version = "4.0.18", features = ["derive", "env"] }
 rand = "0.8.5"
 getrandom = { version = "0.2", features = ["js"] }
 bevy-has-load-progress = { path = "crates/bevy-has-load-progress", features = ["bevy_egui"] }

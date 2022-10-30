@@ -20,3 +20,6 @@ spritesheet:
     walk:
       frames: [14, 19]
       repeat: true
+    crouch:
+      frames: [56, 56]
+      repeat: false

@@ -39,6 +39,7 @@ type KinematicBody = {
   bouncyness: f32;
   is_deactivated: boolean;
   gravity: f32;
+  fall_through: boolean;
 };
 const KinematicBody: BevyType<KinematicBody> = {
   typeName: "jumpy::physics::KinematicBody",
@@ -73,11 +74,7 @@ export default {
 
       const control = player_inputs.players[playerIdx[0]].control;
 
-      if (!body.is_on_ground) {
-        playerState.id = Assets.getAbsolutePath("./midair.ts");
-      } else if (body.is_on_ground && control.move_direction.y < -0.5) {
-        playerState.id = Assets.getAbsolutePath("./crouch.ts");
-      } else if (control.move_direction.x == 0) {
+      if (!body.is_on_ground || !(control.move_direction.y < -0.5)) {
         playerState.id = Assets.getAbsolutePath("./idle.ts");
       }
     }
@@ -100,21 +97,15 @@ export default {
 
       // Set the current animation
       if (playerState.age == 0) {
-        animationBankSprite.current_animation = "walk";
+        body.velocity.x = 0;
+        animationBankSprite.current_animation = "crouch";
       }
 
       // Add basic physics controls
       const control = player_inputs.players[playerIdx[0]].control;
 
-      // Add jump
       if (control.jump_just_pressed) {
-        body.velocity.y = 15;
-      }
-      body.velocity.x = control.move_direction.x * 5;
-      if (control.move_direction.x > 0) {
-        animationBankSprite.flip_x = false;
-      } else if (control.move_direction.x < 0) {
-        animationBankSprite.flip_x = true;
+        body.fall_through = true;
       }
     }
   },

@@ -4,7 +4,6 @@ use crate::metadata::FontMeta;
 
 pub mod bordered_button;
 pub mod bordered_frame;
-pub mod progress_bar;
 
 /// Extensions on [`egui::Ui`] for custom widgets
 pub trait EguiUiExt {

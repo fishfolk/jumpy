@@ -147,8 +147,6 @@ pub fn hydrate_maps(
                         }
                         let tile_entity = tile_entity_commands.id();
 
-                        // TODO: Add platform tile component to tiles that are platforms
-
                         storage.set(&tile_pos, Some(tile_entity));
 
                         tile_entities.push(tile_entity);

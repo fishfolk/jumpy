@@ -117,10 +117,7 @@ fn update_kinematic_bodies(
 
                 body.is_on_ground = collision_world.collide_check(actor, position);
 
-                // FIXME: Using this to set `is_on_ground` caused weird glitching behavior when
-                // jumping up through platforms
                 let tile = collision_world.collide_solids(position, body.size.x, body.size.y);
-
                 body.is_on_platform = tile == TileCollision::JumpThrough;
             }
 

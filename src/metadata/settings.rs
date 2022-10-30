@@ -23,7 +23,10 @@ impl Settings {
     /// The key used to store the settings in the [`crate::platform::Storage`] resource.
     pub const STORAGE_KEY: &'static str = "settings";
 
-    pub fn get_stored_or_default<'w>(game: &'w GameMeta, storage: &'w mut Storage) -> Cow<'w, Self> {
+    pub fn get_stored_or_default<'w>(
+        game: &'w GameMeta,
+        storage: &'w mut Storage,
+    ) -> Cow<'w, Self> {
         if let Some(settings) = storage.get::<Self>(Self::STORAGE_KEY) {
             Cow::Owned(settings)
         } else {
@@ -44,7 +47,6 @@ pub struct PlayerControlMethods {
 
 impl PlayerControlMethods {
     /// Get the input map for the given player index
-    #[allow(unused)] // TODO: Remove when we use it
     pub fn get_input_map(&self, player_idx: usize) -> InputMap<PlayerAction> {
         let mut input_map = InputMap::default();
 

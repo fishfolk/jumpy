@@ -5,6 +5,7 @@ pub mod net;
 // mod commands;
 pub mod entity;
 pub mod map;
+pub mod player;
 pub mod script_info;
 
 pub fn get_ops() -> OpMap {
@@ -29,6 +30,8 @@ pub fn get_ops() -> OpMap {
     ops.insert("entity_ref_to_js", Box::new(entity::EntityRefToJs));
     ops.insert("entity_ref_from_js", Box::new(entity::EntityRefFromJs));
     ops.insert("jumpy_net_info_get", Box::new(net::NetInfoGet));
+    ops.insert("jumpy_player_kill", Box::new(player::PlayerKill));
+
     // ops.insert(
     //     "jumpy_net_commands_spawn",
     //     Box::new(commands::NetCommandsSpawn),

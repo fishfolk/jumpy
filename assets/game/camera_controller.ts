@@ -1,34 +1,3 @@
-type PlayerIdx = [usize];
-const PlayerIdx: BevyType<PlayerIdx> = {
-  typeName: "jumpy::player::PlayerIdx",
-};
-
-const GameCamera: BevyType<unknown> = {
-  typeName: "jumpy::camera::GameCamera",
-};
-const MapMeta: BevyType<{
-  grid_size: UVec2;
-  tile_size: UVec2;
-}> = {
-  typeName: "jumpy::metadata::map::MapMeta",
-};
-
-type KinematicBody = {
-  offset: Vec2;
-  size: Vec2;
-  velocity: Vec2;
-  is_on_ground: boolean;
-  was_on_ground: boolean;
-  has_mass: boolean;
-  has_friction: boolean;
-  bouncyness: f32;
-  is_deactivated: boolean;
-  gravity: f32;
-};
-const KinematicBody: BevyType<KinematicBody> = {
-  typeName: "jumpy::physics::KinematicBody",
-};
-
 const lerpFactor = 0.1;
 
 export default {

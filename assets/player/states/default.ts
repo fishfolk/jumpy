@@ -1,8 +1,3 @@
-type PlayerState = { id: string; age: number };
-const PlayerState: BevyType<PlayerState> = {
-  typeName: "jumpy::player::state::PlayerState",
-};
-
 /** Responsible for transitioning players in the default, meaningless state to "idle" */
 export default {
   playerStateTransition() {

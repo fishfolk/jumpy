@@ -1,37 +1,3 @@
-type AnimatedSprite = {
-  start: usize;
-  end: usize;
-  atlas: HandleTextureAtlas;
-  flip_x: boolean;
-  flip_y: boolean;
-  repeat: boolean;
-  fps: f32;
-};
-const AnimatedSprite: BevyType<AnimatedSprite> = {
-  typeName: "jumpy::animation::AnimatedSprite",
-};
-
-type KinematicBody = {
-  offset: Vec2;
-  size: Vec2;
-  velocity: Vec2;
-  is_on_ground: boolean;
-  was_on_ground: boolean;
-  has_mass: boolean;
-  has_friction: boolean;
-  bouncyness: f32;
-  is_deactivated: boolean;
-  gravity: f32;
-};
-const KinematicBody: BevyType<KinematicBody> = {
-  typeName: "jumpy::physics::KinematicBody",
-};
-
-type EntityName = [string];
-const EntityName: BevyType<EntityName> = {
-  typeName: "jumpy::name::EntityName",
-};
-
 const initState: { crabs: JsEntity[] } = {
   crabs: [],
 };

@@ -1,3 +1,5 @@
 name: Sword
 category: Weapons
-script: ./sproinger.ts
+script: ./sword.ts
+preload_assets:
+  - ./sword.atlas.yaml

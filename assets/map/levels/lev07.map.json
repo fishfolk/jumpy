@@ -2118,21 +2118,21 @@
             {
               "pos": [
                 427.9903,
-                354.22385
+                374.22385
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
                 580.06573,
-                462.49248
+                482.49248
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
                 312,
-                456
+                476
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             }

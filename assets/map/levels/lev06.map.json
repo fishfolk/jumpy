@@ -1602,21 +1602,21 @@
             {
               "pos": [
                 69.75,
-                578.416664
+                598.416664
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
                 712,
-                163.66672
+                183.66672
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
                 158.00003,
-                163.33334000000002
+                183.33334000000002
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },

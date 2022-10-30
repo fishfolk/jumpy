@@ -1634,28 +1634,28 @@
             {
               "pos": [
                 1127.5,
-                257.83335999999997
+                277.83335999999997
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
                 583.8334,
-                416.500015
+                436.500015
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
                 911.5,
-                417.83333
+                437.83333
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
                 299.33334,
-                257.33334
+                277.33334
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             }

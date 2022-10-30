@@ -190,6 +190,8 @@ for (const map of inMaps) {
         switch (object.id) {
           case "crab":
             item_specific_offset = [0, 20];
+          case "sword":
+            item_specific_offset = [0, 20];
         }
         element.pos = [
           object.position.x + 48 / 2 + item_specific_offset[0],

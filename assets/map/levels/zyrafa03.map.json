@@ -1956,21 +1956,21 @@
             {
               "pos": [
                 427.375,
-                353.125
+                373.125
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
                 590.125,
-                452.25
+                472.25
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
                 312,
-                456
+                476
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             }

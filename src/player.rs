@@ -41,6 +41,20 @@ impl Plugin for PlayerPlugin {
 #[reflect(Default, Component)]
 pub struct PlayerIdx(pub usize);
 
+/// The item the player is carrying, if any.
+///
+/// The item will be an empty string if the player isn't carrying anything.
+///
+/// The string represents the path to the asset that the player is carrying. It doesn't matter what
+/// kind of asset, the scripts will determine what to do when you are carrying it.
+///
+/// Maybe this should be an untyped asset handle, or maybe a portable asset ID of some kind, but
+/// that makes it more difficult to interact with from scripts, so for now we just use a basic
+/// string.
+#[derive(Component, Deref, DerefMut, Reflect, Default, Serialize, Deserialize)]
+#[reflect(Default, Component)]
+pub struct PlayerItem(pub String);
+
 fn hydrate_players(
     mut commands: Commands,
     mut players: Query<(Entity, &PlayerIdx, &mut Transform), Without<PlayerState>>,
@@ -83,6 +97,7 @@ fn hydrate_players(
         entity_commands
             .insert(Name::new(format!("Player {}", player_idx.0)))
             .insert(PlayerState::default())
+            .insert(PlayerItem::default())
             .insert(meta.clone())
             .insert(animation_bank)
             .insert(animation_bank_sprite)

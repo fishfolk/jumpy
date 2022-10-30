@@ -135,7 +135,7 @@ pub fn editor_ui_system(world: &mut World) {
 #[derive(SystemParam)]
 struct EditorTopBar<'w, 's> {
     game: Res<'w, GameMeta>,
-    camera_netcommands_resetcontroller: ParamSet<
+    camera_commands_resetcontroller: ParamSet<
         'w,
         's,
         (
@@ -151,7 +151,8 @@ struct EditorTopBar<'w, 's> {
     >,
     show_map_export_window: Local<'s, bool>,
     localization: Res<'w, Localization>,
-    map: Query<'w, 's, &'static MapMeta>,
+    map_meta: Query<'w, 's, &'static MapMeta>,
+    map_handle: Query<'w, 's, &'static AssetHandle<MapMeta>>,
     settings: ResMut<'w, EditorState>,
 }
 
@@ -170,7 +171,7 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
         map_export_window(ui, &mut params);
 
         ui.horizontal_centered(|ui| {
-            let mut camera = params.camera_netcommands_resetcontroller.p0();
+            let mut camera = params.camera_commands_resetcontroller.p0();
             let (mut transform, mut projection): (Mut<Transform>, Mut<OrthographicProjection>) =
                 camera.single_mut();
             let zoom = 1.0 / projection.scale * 100.0;
@@ -213,21 +214,21 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 if ui.button(&params.localization.get("main-menu")).clicked() {
                     params
-                        .camera_netcommands_resetcontroller
+                        .camera_commands_resetcontroller
                         .p1()
                         .insert_resource(NextState(GameState::MainMenu));
                 }
 
                 ui.scope(|ui| {
-                    ui.set_enabled(params.map.get_single().is_ok());
+                    ui.set_enabled(params.map_meta.get_single().is_ok());
                     if ui.button(&params.localization.get("play")).clicked() {
                         params
-                            .camera_netcommands_resetcontroller
+                            .camera_commands_resetcontroller
                             .p1()
                             .insert_resource(NextState(InGameState::Playing));
                     }
 
-                    let mut reset_controller = params.camera_netcommands_resetcontroller.p2();
+                    let mut reset_controller = params.camera_commands_resetcontroller.p2();
                     if ui.button(&params.localization.get("export")).clicked() {
                         *params.show_map_export_window = true;
                     }
@@ -237,15 +238,15 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                     }
 
                     if ui.button(&params.localization.get("reload")).clicked() {
-                        let map = params.map.get_single().ok().cloned();
+                        let map_handle = params.map_handle.get_single().ok().cloned();
                         reset_controller.reset_world();
 
-                        if let Some(map) = map {
+                        if let Some(handle) = map_handle {
                             params
-                                .camera_netcommands_resetcontroller
+                                .camera_commands_resetcontroller
                                 .p1()
                                 .spawn()
-                                .insert(map);
+                                .insert(handle);
                         }
                     }
                 });
@@ -258,7 +259,7 @@ fn map_export_window(ui: &mut egui::Ui, params: &mut EditorTopBar) {
     if !*params.show_map_export_window {
         return;
     }
-    let map = params.map.single();
+    let map = params.map_meta.single();
     overlay_window(
         ui,
         "export-map-window",

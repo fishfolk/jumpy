@@ -104,7 +104,7 @@ export default {
       body.velocity.x = control.move_direction.x * 5;
 
       // Fall through platforms when pressing down
-      if (control.move_direction.y < -0.5) {
+      if (control.move_direction.y < -0.5 && control.jump_pressed) {
         body.fall_through = true;
       } else {
         body.fall_through = false;

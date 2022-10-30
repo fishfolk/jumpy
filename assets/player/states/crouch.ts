@@ -97,7 +97,6 @@ export default {
 
       // Set the current animation
       if (playerState.age == 0) {
-        body.velocity.x = 0;
         animationBankSprite.current_animation = "crouch";
       }
 

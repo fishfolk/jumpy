@@ -37,7 +37,7 @@ impl Plugin for PlayerPlugin {
 }
 
 /// The player index, for example Player 1, Player 2, and so on
-#[derive(Component, Deref, DerefMut, Reflect, Default, Serialize, Deserialize)]
+#[derive(Component, Deref, DerefMut, Reflect, Default, Serialize, Deserialize, Copy, Clone)]
 #[reflect(Default, Component)]
 pub struct PlayerIdx(pub usize);
 

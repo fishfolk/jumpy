@@ -44,8 +44,13 @@ declare namespace EntityRef {
 interface NetInfo {
   is_client: boolean;
   is_server: boolean;
+  player_idx: usize;
 }
 
 declare namespace NetInfo {
   function get(): NetInfo;
+}
+
+declare namespace Player {
+  function kill(entity: Entity): void;
 }

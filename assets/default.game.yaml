@@ -29,6 +29,7 @@ maps:
   - map/levels/zyrafa06.map.json
 
 scripts:
+  - map/scripts/kill_out_of_bounds.ts
   - player/states/default.ts
   - player/states/idle.ts
   - player/states/walk.ts

@@ -2,6 +2,7 @@ use crate::{
     networking::proto::game::{
         PlayerEvent, PlayerEventFromServer, PlayerState, PlayerStateFromServer,
     },
+    player::PlayerIdx,
     prelude::*,
 };
 
@@ -19,8 +20,21 @@ impl Plugin for ServerGamePlugin {
     }
 }
 
-fn handle_client_messages(mut server: ResMut<NetServer>) {
+fn handle_client_messages(
+    mut server: ResMut<NetServer>,
+    players: Query<(Entity, &PlayerIdx)>,
+    mut commands: Commands,
+) {
     while let Some(incomming) = server.recv_reliable::<PlayerEvent>() {
+        if let PlayerEvent::KillPlayer = incomming.message {
+            for (entity, player_idx) in &players {
+                if player_idx.0 == incomming.client_idx {
+                    commands.entity(entity).despawn_recursive();
+                    break;
+                }
+            }
+        }
+
         server.send_reliable_to(
             &PlayerEventFromServer {
                 player_idx: incomming.client_idx.try_into().unwrap(),

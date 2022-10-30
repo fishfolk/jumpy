@@ -25,17 +25,30 @@ pub fn networking_settings_ui(
             settings.matchmaking_server = params.game.default_settings.matchmaking_server.clone();
         }
 
-        let text_box_resp = ui.add(
+        let text_box = &ui.add(
             egui::TextEdit::singleline(&mut settings.matchmaking_server).font(normal_font.clone()),
         );
-        params.adjacencies.text_boxes.insert(text_box_resp.id);
+        let first_bottom_button = bottom_buttons.iter().next().unwrap();
+        let last_bottom_button = bottom_buttons.iter().last().unwrap();
+        let first_top_tab = settings_tabs.iter().next().unwrap();
+        let last_top_tab = settings_tabs.iter().last().unwrap();
+        params.adjacencies.text_boxes.insert(text_box.id);
+
+        params.adjacencies.widget(text_box).to_right_of(last_top_tab);
+        for tab in settings_tabs {
+            params.adjacencies.widget(text_box).below(tab);
+            params.adjacencies.widget(tab).below(first_bottom_button);
+        }
+        for button in bottom_buttons {
+            params.adjacencies.widget(button).below(text_box);
+        }
         params
             .adjacencies
-            .widget(&text_box_resp)
-            .below(settings_tabs.iter().last().unwrap());
+            .widget(text_box)
+            .above(first_bottom_button);
         params
             .adjacencies
-            .widget(&text_box_resp)
-            .below(bottom_buttons.iter().next().unwrap());
+            .widget(last_bottom_button)
+            .to_left_of(first_top_tab);
     });
 }

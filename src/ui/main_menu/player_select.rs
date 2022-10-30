@@ -31,6 +31,7 @@ pub struct PlayerSelectMenu<'w, 's> {
     menu_input: Query<'w, 's, &'static mut ActionState<MenuAction>>,
     player_inputs: ResMut<'w, PlayerInputs>,
     player_select_state: ResMut<'w, PlayerSelectState>,
+    keyboard_input: Res<'w, Input<KeyCode>>,
     localization: Res<'w, Localization>,
     client: Option<ResMut<'w, NetClient>>,
     #[system_param(ignore)]
@@ -133,7 +134,8 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
                         .inner;
 
                     if continue_button.clicked()
-                        || (params.menu_input.single().just_pressed(MenuAction::Start)
+                        || ((params.menu_input.single().just_pressed(MenuAction::Start)
+                            || params.keyboard_input.just_pressed(KeyCode::Return))
                             && may_continue)
                     {
                         *params.menu_page = MenuPage::MapSelect { is_waiting: false };

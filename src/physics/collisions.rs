@@ -15,17 +15,18 @@ use crate::prelude::*;
 
 use std::collections::HashSet;
 
+#[derive(Debug)]
 struct Rect {
     min: Vec2,
     max: Vec2,
 }
 
 impl Rect {
-    fn new(x: f32, y: f32, width: f32, height: f32) -> Rect {
+    fn new(x: f32, y: f32, width: f32, height: f32) -> Self {
         let half_size = vec2(width / 2.0, height / 2.0);
         let min = vec2(x, y) - half_size;
-        let max = min + half_size;
-        Rect { min, max }
+        let max = min + vec2(width, height);
+        Self { min, max }
     }
 
     #[inline]
@@ -51,8 +52,8 @@ impl Rect {
     fn overlaps(&self, other: &Rect) -> bool {
         self.left() <= other.right()
             && self.right() >= other.left()
-            && self.top() <= other.bottom()
-            && self.bottom() >= other.top()
+            && self.top() >= other.bottom()
+            && self.bottom() <= other.top()
     }
 
     fn contains(&self, point: Vec2) -> bool {
@@ -74,7 +75,7 @@ impl Default for CollisionLayerTag {
 
 #[derive(SystemParam)]
 pub struct CollisionWorld<'w, 's> {
-    commands: Commands<'w, 's>,
+    pub commands: Commands<'w, 's>,
     pub static_tiled_layers: Query<
         'w,
         's,
@@ -116,12 +117,7 @@ pub struct Collider {
 
 impl Collider {
     fn rect(&self) -> Rect {
-        Rect::new(
-            self.pos.x,
-            self.pos.y,
-            self.width as f32,
-            self.height as f32,
-        )
+        Rect::new(self.pos.x, self.pos.y, self.width, self.height)
     }
 }
 
@@ -193,6 +189,33 @@ impl<'w, 's> CollisionWorld<'w, 's> {
         collider.x_remainder = 0.0;
         collider.y_remainder = 0.0;
         collider.pos = pos;
+    }
+
+    /// Returns the collisions that one actor has with any other actors
+    pub fn actor_collisions(&mut self, entity: Entity) -> Vec<Entity> {
+        let mut collisions = Vec::new();
+
+        let collider = if let Ok((_, collider)) = self.actors.get(entity) {
+            collider.clone()
+        } else {
+            return collisions;
+        };
+        let rect = collider.rect();
+        info!("{rect:?}");
+
+        for (other_entity, collider) in &mut self.actors {
+            if entity == other_entity {
+                continue;
+            }
+            let other_rect = collider.rect();
+            info!("{other_rect:?}");
+            if rect.overlaps(&other_rect) {
+                info!("Overlap!");
+                collisions.push(other_entity);
+            }
+        }
+
+        collisions
     }
 
     #[allow(unused)]

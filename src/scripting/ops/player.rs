@@ -9,12 +9,6 @@ use crate::{
 use anyhow::Context;
 use bevy_mod_js_scripting::{serde_json, JsRuntimeOp, JsValueRef, JsValueRefs, OpContext};
 
-#[derive(Serialize)]
-struct JsNetInfo {
-    is_server: bool,
-    is_client: bool,
-}
-
 pub struct PlayerKill;
 impl JsRuntimeOp for PlayerKill {
     fn js(&self) -> Option<&'static str> {

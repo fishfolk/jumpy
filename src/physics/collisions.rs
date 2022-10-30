@@ -192,7 +192,7 @@ impl<'w, 's> CollisionWorld<'w, 's> {
     }
 
     /// Returns the collisions that one actor has with any other actors
-    pub fn actor_collisions(&mut self, entity: Entity) -> Vec<Entity> {
+    pub fn actor_collisions(&self, entity: Entity) -> Vec<Entity> {
         let mut collisions = Vec::new();
 
         let collider = if let Ok((_, collider)) = self.actors.get(entity) {
@@ -201,16 +201,13 @@ impl<'w, 's> CollisionWorld<'w, 's> {
             return collisions;
         };
         let rect = collider.rect();
-        info!("{rect:?}");
 
-        for (other_entity, collider) in &mut self.actors {
+        for (other_entity, collider) in &self.actors {
             if entity == other_entity {
                 continue;
             }
             let other_rect = collider.rect();
-            info!("{other_rect:?}");
             if rect.overlaps(&other_rect) {
-                info!("Overlap!");
                 collisions.push(other_entity);
             }
         }

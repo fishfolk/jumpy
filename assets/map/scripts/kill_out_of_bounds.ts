@@ -1,14 +1,3 @@
-type PlayerIdx = [usize];
-const PlayerIdx: BevyType<PlayerIdx> = {
-  typeName: "jumpy::player::PlayerIdx",
-};
-const MapMeta: BevyType<{
-  grid_size: UVec2;
-  tile_size: UVec2;
-}> = {
-  typeName: "jumpy::metadata::map::MapMeta",
-};
-
 const killZoneBorder = 500;
 
 export default {

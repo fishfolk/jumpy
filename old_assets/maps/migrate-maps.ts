@@ -200,6 +200,16 @@ for (const map of inMaps) {
             8 +
             item_specific_offset[1],
         ];
+
+        // Do some weird rounding to try and snap the elements to an 8x8 pixel grid and then
+        // compensate for weirdness.
+        let remainder = element.pos[0] % 8;
+        element.pos[0] = element.pos[0] + (remainder >= 4 ? remainder : - remainder);
+        element.pos[1] = Math.round(element.pos[1]);
+        remainder = element.pos[1] % 8;
+        element.pos[1] = element.pos[1] + (remainder >= 4 ? remainder : - remainder);
+        element.pos[1] += 1.5;
+
         element.element = `../elements/${object.kind}/${object.id}/${object.id}.element.yaml`;
         newLayer.kind.element.elements.push(element);
       }

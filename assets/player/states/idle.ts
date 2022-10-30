@@ -75,6 +75,8 @@ export default {
 
       if (!body.is_on_ground) {
         playerState.id = Assets.getAbsolutePath("./midair.ts");
+      } else if (control.move_direction.y < -0.5) {
+        playerState.id = Assets.getAbsolutePath("./crouch.ts");
       } else if (control.move_direction.x != 0) {
         playerState.id = Assets.getAbsolutePath("./walk.ts");
       }

@@ -880,43 +880,43 @@
           "elements": [
             {
               "pos": [
-                773.1538,
-                264.46155
+                778.3076000000001,
+                265.5
               ],
               "element": "../elements/environment/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
                 440,
-                347
+                345.5
               ],
               "element": "../elements/decoration/anemones/anemones.element.yaml"
             },
             {
               "pos": [
-                101.57143,
-                249.85715
+                107.14286000000001,
+                249.5
               ],
               "element": "../elements/decoration/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 472,
-                539
+                537.5
               ],
               "element": "../elements/decoration/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
-                781.28577,
-                249.85715
+                786.5715399999999,
+                249.5
               ],
               "element": "../elements/decoration/seaweed/seaweed.element.yaml"
             },
             {
               "pos": [
                 568,
-                539
+                537.5
               ],
               "element": "../elements/decoration/anemones/anemones.element.yaml"
             }
@@ -931,71 +931,71 @@
           "elements": [
             {
               "pos": [
-                99.99994,
-                276.14285
+                96,
+                281.5
               ],
               "element": "../elements/environment/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
-                525.14282,
-                329.7143
+                530.2856400000001,
+                329.5
               ],
               "element": "../elements/environment/crab/crab.element.yaml"
             },
             {
               "pos": [
-                465.74994,
-                550.00003
+                464,
+                557.5
               ],
               "element": "../elements/environment/fish_school/fish_school.element.yaml"
             },
             {
               "pos": [
-                184.76923,
-                219.99997000000002
+                184,
+                225.5
               ],
               "element": "../elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
-                854.46155,
-                219.99997000000002
+                860.9231,
+                225.5
               ],
               "element": "../elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
                 536,
-                328
+                329.5
               ],
               "element": "../elements/item/musket/musket.element.yaml"
             },
             {
               "pos": [
-                390.00003,
-                531.53847
+                396.00005999999996,
+                537.5
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
-                621.6923,
-                532.3077000000001
+                627.3846000000001,
+                537.5
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
-                219.84616,
-                526.15385
+                216,
+                533.5
               ],
               "element": "../elements/item/grenades/grenades.element.yaml"
             },
             {
               "pos": [
-                889.53845,
-                526.92308
+                888,
+                535.5
               ],
               "element": "../elements/item/grenades/grenades.element.yaml"
             }

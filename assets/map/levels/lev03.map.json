@@ -6009,28 +6009,28 @@
             {
               "pos": [
                 455.33334,
-                235.3333
+                255.3333
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
                 304.66666,
-                600.33334
+                620.33334
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
                 906.6667,
-                609.33334
+                629.33334
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
                 751.3333,
-                237
+                257
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             }

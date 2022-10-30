@@ -39,6 +39,7 @@ pub mod scripting;
 pub mod ui;
 pub mod utils;
 pub mod workarounds;
+pub mod item;
 
 use crate::{
     animation::AnimationPlugin,
@@ -58,7 +59,7 @@ use crate::{
     prelude::*,
     scripting::ScriptingPlugin,
     ui::UiPlugin,
-    workarounds::WorkaroundsPlugin,
+    workarounds::WorkaroundsPlugin, item::ItemPlugin,
 };
 
 /// The timestep used for fixed update systems
@@ -226,6 +227,7 @@ pub fn build_app(net_server: Option<NetServer>) -> App {
         .add_plugin(NamePlugin)
         .add_plugin(AnimationPlugin)
         .add_plugin(PlayerPlugin)
+        .add_plugin(ItemPlugin)
         .add_plugin(PhysicsPlugin)
         .add_plugin(CameraPlugin)
         .add_plugin(MapPlugin)

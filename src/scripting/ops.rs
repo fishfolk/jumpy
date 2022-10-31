@@ -4,6 +4,7 @@ pub mod asset;
 pub mod collision_world;
 pub mod entity;
 pub mod map;
+pub mod item;
 pub mod net;
 pub mod player;
 pub mod script_info;
@@ -15,6 +16,14 @@ pub fn get_ops() -> OpMap {
     ops.insert(
         "jumpy_element_get_spawned_entities",
         Box::new(map::ElementGetSpawnedEntities),
+    );
+    ops.insert(
+        "jumpy_item_grab_events",
+        Box::new(item::ItemGrabEvents),
+    );
+    ops.insert(
+        "jumpy_item_drop_events",
+        Box::new(item::ItemDropEvents),
     );
     ops.insert(
         "jumpy_asset_get_handle_id",

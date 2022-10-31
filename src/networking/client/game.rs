@@ -93,9 +93,11 @@ fn send_player_state(
 fn handle_game_events(
     mut commands: Commands,
     mut client: ResMut<NetClient>,
-    mut players: Query<(Entity, &PlayerIdx, Option<&Children>)>,
+    mut players: Query<(Entity, &PlayerIdx, &Transform, Option<&Children>), Without<Item>>,
     mut items: Query<&mut Transform, With<Item>>,
     mut net_ids: ResMut<NetIdMap>,
+    mut item_grab_events: EventWriter<ItemGrabEvent>,
+    mut item_drop_events: EventWriter<ItemDropEvent>,
 ) {
     while let Some(event) = client.recv_reliable::<PlayerEventFromServer>() {
         match event.kind {
@@ -115,13 +117,17 @@ fn handle_game_events(
             }
             PlayerEvent::GrabItem(net_id) => {
                 info!(?event.player_idx, "Grab event");
-                if let Some(item_entity) = net_ids.get_entity(net_id) {
-                    if let Some((player_ent, ..)) = players
+                if let Some(item_ent) = net_ids.get_entity(net_id) {
+                    if let Some((player_ent, _idx, transform, ..)) = players
                         .iter()
                         .find(|(_, player_idx, ..)| player_idx.0 == event.player_idx as usize)
                     {
-                        info!("Grabbing item for remote player");
-                        commands.entity(player_ent).push_children(&[item_entity]);
+                        item_grab_events.send(ItemGrabEvent {
+                            player: player_ent,
+                            item: item_ent,
+                            position: transform.translation,
+                        });
+                        commands.entity(player_ent).push_children(&[item_ent]);
                     } else {
                         warn!("Dead player grabbed item??");
                     }
@@ -130,7 +136,7 @@ fn handle_game_events(
                 }
             }
             PlayerEvent::DropItem(pos) => {
-                if let Some((player_ent, _idx, children)) = players
+                if let Some((player_ent, _idx, _trans, children)) = players
                     .iter()
                     .find(|(_, player_idx, ..)| player_idx.0 == event.player_idx as usize)
                 {
@@ -138,6 +144,11 @@ fn handle_game_events(
                         for child in children {
                             if let Ok(mut item_transform) = items.get_mut(*child) {
                                 item_transform.translation = pos;
+                                item_drop_events.send(ItemDropEvent {
+                                    player: player_ent,
+                                    item: *child,
+                                    position: pos,
+                                });
                                 commands.entity(player_ent).remove_children(&[*child]);
                             }
                         }

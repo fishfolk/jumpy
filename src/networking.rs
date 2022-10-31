@@ -31,7 +31,8 @@ pub static NET_MESSAGE_TYPES: Lazy<Vec<TypeId>> = Lazy::new(|| {
         TypeId::of::<proto::match_setup::MatchSetupFromClient>(),
         TypeId::of::<proto::match_setup::MatchSetupFromServer>(),
         TypeId::of::<proto::game::PlayerEventFromServer>(),
-        TypeId::of::<proto::game::GameEvent>(),
+        TypeId::of::<proto::game::PlayerEvent>(),
+        TypeId::of::<proto::game::GameEventFromServer>(),
         TypeId::of::<proto::game::PlayerStateFromServer>(),
         TypeId::of::<proto::game::PlayerState>(),
     ]

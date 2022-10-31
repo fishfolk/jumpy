@@ -7,7 +7,10 @@ use crate::{
     item::{Item, ItemDropEvent, ItemGrabEvent},
     networking::{
         proto::{
-            game::{GameEvent, PlayerEventFromServer, PlayerState, PlayerStateFromServer},
+            game::{
+                GameEventFromServer, PlayerEvent, PlayerEventFromServer, PlayerState,
+                PlayerStateFromServer,
+            },
             tick::{ClientTicks, Tick},
             ClientMatchInfo,
         },
@@ -56,7 +59,7 @@ fn send_game_events(
                 let net_id = net_ids
                     .get_net_id(event.item)
                     .expect("Item in network game without NetId");
-                client.send_reliable(&GameEvent::GrabItem(net_id));
+                client.send_reliable(&PlayerEvent::GrabItem(net_id));
             }
         }
     }
@@ -65,7 +68,7 @@ fn send_game_events(
         if let Ok((player_idx, player_transform)) = players.get(event.player) {
             // As the client, we're only allowed to drop and pick up items for our own player.
             if client_info.player_idx == player_idx.0 {
-                client.send_reliable(&GameEvent::DropItem(player_transform.translation));
+                client.send_reliable(&PlayerEvent::DropItem(player_transform.translation));
             }
         }
     }
@@ -90,19 +93,19 @@ fn send_player_state(
 fn handle_game_events(
     mut commands: Commands,
     mut client: ResMut<NetClient>,
-    mut players: Query<(Entity, &PlayerIdx, &Children)>,
+    mut players: Query<(Entity, &PlayerIdx, Option<&Children>)>,
     mut items: Query<&mut Transform, With<Item>>,
-    net_ids: Res<NetIdMap>,
+    mut net_ids: ResMut<NetIdMap>,
 ) {
     while let Some(event) = client.recv_reliable::<PlayerEventFromServer>() {
         match event.kind {
-            GameEvent::SpawnPlayer(pos) => {
+            PlayerEvent::SpawnPlayer(pos) => {
                 commands
                     .spawn()
                     .insert(PlayerIdx(event.player_idx as usize))
                     .insert(Transform::from_translation(pos));
             }
-            GameEvent::KillPlayer => {
+            PlayerEvent::KillPlayer => {
                 for (entity, idx, ..) in &mut players {
                     if idx.0 == event.player_idx as usize {
                         commands.entity(entity).despawn_recursive();
@@ -110,32 +113,56 @@ fn handle_game_events(
                     }
                 }
             }
-            GameEvent::GrabItem(net_id) => {
+            PlayerEvent::GrabItem(net_id) => {
+                info!(?event.player_idx, "Grab event");
                 if let Some(item_entity) = net_ids.get_entity(net_id) {
                     if let Some((player_ent, ..)) = players
                         .iter()
                         .find(|(_, player_idx, ..)| player_idx.0 == event.player_idx as usize)
                     {
+                        info!("Grabbing item for remote player");
                         commands.entity(player_ent).push_children(&[item_entity]);
                     } else {
                         warn!("Dead player grabbed item??");
                     }
+                } else {
+                    warn!("No entity found for Net ID");
                 }
             }
-            GameEvent::DropItem(pos) => {
+            PlayerEvent::DropItem(pos) => {
                 if let Some((player_ent, _idx, children)) = players
                     .iter()
                     .find(|(_, player_idx, ..)| player_idx.0 == event.player_idx as usize)
                 {
-                    for child in children {
-                        if let Ok(mut item_transform) = items.get_mut(*child) {
-                            item_transform.translation = pos;
-                            commands.entity(player_ent).remove_children(&[*child]);
+                    if let Some(children) = children {
+                        for child in children {
+                            if let Ok(mut item_transform) = items.get_mut(*child) {
+                                item_transform.translation = pos;
+                                commands.entity(player_ent).remove_children(&[*child]);
+                            }
                         }
+                    } else {
+                        warn!("Dropping item for player not carrying any");
                     }
                 } else {
-                    warn!("Dead player grabbed item??");
+                    warn!(?event.player_idx, "Trying to drop item for dead player??");
                 }
+            }
+        }
+    }
+    while let Some(event) = client.recv_reliable::<GameEventFromServer>() {
+        match event {
+            GameEventFromServer::SpawnItem {
+                net_id,
+                script,
+                pos,
+            } => {
+                let mut item = commands.spawn();
+                net_ids.insert(item.id(), net_id);
+                item.insert(Transform::from_translation(pos))
+                    .insert(GlobalTransform::default())
+                    .insert(Item { script })
+                    .insert_bundle(VisibilityBundle::default());
             }
         }
     }

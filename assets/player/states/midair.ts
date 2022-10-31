@@ -16,17 +16,16 @@ export default {
   },
   handlePlayerState() {
     const player_inputs = world.resource(PlayerInputs);
-    const items = world.query(Item, Transform);
+    const items = world.query(Item);
 
     // For every player
     for (const { entity: playerEnt, components } of world.query(
       PlayerState,
       PlayerIdx,
-      Transform,
       AnimationBankSprite,
       KinematicBody
     )) {
-      const [playerState, playerIdx, playerTransform, animationBankSprite, body] = components;
+      const [playerState, playerIdx, animationBankSprite, body] = components;
       if (playerState.id != scriptId) continue;
 
       // Set the current animation
@@ -46,18 +45,12 @@ export default {
           for (const collider of CollisionWorld.actorCollisions(playerEnt)) {
             const item = items.get(collider);
             if (!!item) {
-              const [_item, item_transform] = item;
-              info("Grab item!");
-              item_transform.translation.x = 0;
-              item_transform.translation.y = 0;
-              item_transform.translation.z = 0;
+              const [_item] = item;
               Player.setInventory(playerEnt, collider);
+              break;
             }
           }
         } else {
-          info("Already have item, dropping");
-          const [_item, item_transform] = items.get(current_inventory);
-          item_transform.translation = playerTransform.translation;
           Player.setInventory(playerEnt, null);
         }
       }

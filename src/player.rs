@@ -4,7 +4,7 @@ use crate::{
     metadata::{GameMeta, PlayerMeta, Settings},
     networking::{
         proto::{
-            game::{GameEvent, PlayerEventFromServer},
+            game::{PlayerEvent, PlayerEventFromServer},
             ClientMatchInfo,
         },
         server::NetServer,
@@ -64,7 +64,7 @@ fn hydrate_players(
         if let Some(server) = &server {
             server.broadcast_reliable(&PlayerEventFromServer {
                 player_idx: player_idx.0.try_into().unwrap(),
-                kind: GameEvent::SpawnPlayer(player_transform.translation),
+                kind: PlayerEvent::SpawnPlayer(player_transform.translation),
             });
         }
 

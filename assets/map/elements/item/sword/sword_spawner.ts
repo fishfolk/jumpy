@@ -1,5 +1,8 @@
 export default {
-  preUpdateInGame() {
+  preUpdate() {
+    // Clients may not spawn items
+    if (NetInfo.get().is_client) return;
+
     const spawnedEntities = MapElement.getSpawnedEntities();
 
     // Handle newly spawned map entities

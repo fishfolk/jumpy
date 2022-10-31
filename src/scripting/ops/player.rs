@@ -2,7 +2,8 @@ use crate::{
     item::Item,
     networking::{
         client::NetClient,
-        proto::{self, ClientMatchInfo},
+        proto::{self, game::PlayerEvent, ClientMatchInfo},
+        NetIdMap,
     },
     player::PlayerIdx,
     prelude::*,
@@ -43,7 +44,7 @@ impl JsRuntimeOp for PlayerKill {
                 if let Some(match_info) = world.get_resource::<ClientMatchInfo>() {
                     if match_info.player_idx == player_idx.0 {
                         // Send a network message to kill the player
-                        client.send_reliable(&proto::game::GameEvent::KillPlayer);
+                        client.send_reliable(&proto::game::PlayerEvent::KillPlayer);
                         despawn_with_children_recursive(world, entity);
                     } else {
                         warn!("Tried to kill remote player in local game");
@@ -149,13 +150,35 @@ impl JsRuntimeOp for PlayerSetInventory {
             .map(|x| x.get_entity(world, value_refs))
             .transpose()?;
 
+        let player_transform = *world
+            .get::<Transform>(player_ent)
+            .expect("Player missing transform");
+
         let current_inventory = get_player_inventory(world, player_ent);
+
+        let client = world.remove_resource::<NetClient>();
+        let net_ids = world.remove_resource::<NetIdMap>();
+
         let mut player = world.entity_mut(player_ent);
         if let Some(current_item) = current_inventory {
+            if let Some(client) = &client {
+                client.send_reliable(&PlayerEvent::DropItem(player_transform.translation))
+            }
             player.remove_children(&[current_item]);
         }
         if let Some(item) = item_ent {
+            if let Some((client, net_ids)) = client.as_ref().zip(net_ids.as_ref()) {
+                let net_id = net_ids.get_net_id(item).expect("Grab item without net id");
+                client.send_reliable(&PlayerEvent::GrabItem(net_id));
+            }
             player.push_children(&[item]);
+        }
+
+        if let Some(client) = client {
+            world.insert_resource(client);
+        }
+        if let Some(net_ids) = net_ids {
+            world.insert_resource(net_ids);
         }
 
         Ok(serde_json::Value::Null)

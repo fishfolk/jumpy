@@ -1,6 +1,7 @@
-use bevy::hierarchy::HierarchyEvent;
-
-use crate::{player::PlayerIdx, prelude::*};
+use crate::{
+    networking::{proto::game::GameEventFromServer, server::NetServer, NetId, NetIdMap},
+    prelude::*,
+};
 
 pub struct ItemPlugin;
 
@@ -9,7 +10,10 @@ impl Plugin for ItemPlugin {
         app.register_type::<Item>()
             .add_event::<ItemGrabEvent>()
             .add_event::<ItemDropEvent>()
-            .add_system_to_stage(CoreStage::PreUpdate, trigger_item_events);
+            .add_system_to_stage(
+                CoreStage::PreUpdate,
+                send_net_item_spawns.run_if_resource_exists::<NetServer>(),
+            );
     }
 }
 
@@ -19,7 +23,7 @@ impl Plugin for ItemPlugin {
 #[reflect(Default, Component)]
 pub struct Item {
     /// The path to the item's script
-    script: String
+    pub script: String,
 }
 
 /// An event triggered when an item is grabbed
@@ -36,40 +40,19 @@ pub struct ItemDropEvent {
     pub position: Vec3,
 }
 
-/// Listen for Bevy hierarchy events that mean an item has been grabbed or dropped and send
-/// [`ItemGrabEvent`] and [`ItemDropEvent`] events.
-fn trigger_item_events(
-    mut grab_events: EventWriter<ItemGrabEvent>,
-    mut drop_events: EventWriter<ItemDropEvent>,
-    mut hierarchy_events: EventReader<HierarchyEvent>,
-    items: Query<Entity, With<Item>>,
-    players: Query<&Transform, With<PlayerIdx>>,
+fn send_net_item_spawns(
+    server: Res<NetServer>,
+    new_items: Query<(Entity, &Transform, &Item), Added<Item>>,
+    mut net_ids: ResMut<NetIdMap>,
 ) {
-    for event in hierarchy_events.iter() {
-        match event {
-            HierarchyEvent::ChildAdded { child, parent } => {
-                if let Ok(player_transform) = players.get(*parent) {
-                    if items.contains(*child) {
-                        grab_events.send(ItemGrabEvent {
-                            player: *parent,
-                            item: *child,
-                            position: player_transform.translation,
-                        })
-                    }
-                }
-            }
-            HierarchyEvent::ChildRemoved { child, parent } => {
-                if let Ok(player_transform) = players.get(*parent) {
-                    if items.contains(*child) {
-                        drop_events.send(ItemDropEvent {
-                            player: *parent,
-                            item: *child,
-                            position: player_transform.translation,
-                        });
-                    }
-                }
-            }
-            HierarchyEvent::ChildMoved { .. } => (),
-        }
+    for (entity, transform, item) in &new_items {
+        let net_id = NetId::new();
+        net_ids.insert(entity, net_id);
+
+        server.broadcast_reliable(&GameEventFromServer::SpawnItem {
+            net_id,
+            script: item.script.clone(),
+            pos: transform.translation,
+        });
     }
 }

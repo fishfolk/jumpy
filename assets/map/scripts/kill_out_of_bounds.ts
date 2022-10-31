@@ -4,6 +4,7 @@ export default {
   updateInGame() {
     let netInfo = NetInfo.get();
     let map = world.query(MapMeta).map((x) => x.components[0])[0];
+    if (!map) return;
 
     let mapWidth = map.grid_size.x * map.tile_size.x;
     let leftKillZone = -killZoneBorder;

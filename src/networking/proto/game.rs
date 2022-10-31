@@ -5,7 +5,16 @@ use super::tick::Tick;
 #[derive(Serialize, Deserialize)]
 pub struct PlayerEventFromServer {
     pub player_idx: u8,
-    pub kind: GameEvent,
+    pub kind: PlayerEvent,
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum GameEventFromServer {
+    SpawnItem {
+        net_id: NetId,
+        script: String,
+        pos: Vec3,
+    },
 }
 
 #[derive(Serialize, Deserialize)]
@@ -15,7 +24,7 @@ pub struct PlayerStateFromServer {
 }
 
 #[derive(Serialize, Deserialize)]
-pub enum GameEvent {
+pub enum PlayerEvent {
     SpawnPlayer(Vec3),
     KillPlayer,
     GrabItem(NetId),

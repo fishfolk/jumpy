@@ -4,7 +4,7 @@ use crate::{
     metadata::{GameMeta, PlayerMeta, Settings},
     networking::{
         proto::{
-            game::{PlayerEvent, PlayerEventFromServer},
+            game::{GameEvent, PlayerEventFromServer},
             ClientMatchInfo,
         },
         server::NetServer,
@@ -41,10 +41,6 @@ impl Plugin for PlayerPlugin {
 #[reflect(Default, Component)]
 pub struct PlayerIdx(pub usize);
 
-#[derive(Component, Deref, DerefMut, Default, Reflect, Serialize, Deserialize)]
-#[reflect(Default, Component)]
-pub struct PlayerItem(pub Option<Entity>);
-
 fn hydrate_players(
     mut commands: Commands,
     mut players: Query<(Entity, &PlayerIdx, &mut Transform), Without<PlayerState>>,
@@ -68,7 +64,7 @@ fn hydrate_players(
         if let Some(server) = &server {
             server.broadcast_reliable(&PlayerEventFromServer {
                 player_idx: player_idx.0.try_into().unwrap(),
-                kind: PlayerEvent::SpawnPlayer(player_transform.translation),
+                kind: GameEvent::SpawnPlayer(player_transform.translation),
             });
         }
 
@@ -87,7 +83,6 @@ fn hydrate_players(
         entity_commands
             .insert(Name::new(format!("Player {}", player_idx.0)))
             .insert(PlayerState::default())
-            .insert(PlayerItem::default())
             .insert(meta.clone())
             .insert(animation_bank)
             .insert(animation_bank_sprite)

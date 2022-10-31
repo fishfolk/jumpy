@@ -24,14 +24,26 @@ export default {
   handlePlayerState() {
     const player_inputs = world.resource(PlayerInputs);
 
+    const items = world.query(Item, Transform);
+
     // For every player
-    for (const { entity, components } of world.query(
+    for (const { entity: playerEnt, components } of world.query(
       PlayerState,
       PlayerIdx,
+      Transform,
       AnimationBankSprite,
       KinematicBody
     )) {
-      const [playerState, playerIdx, animationBankSprite, body] = components;
+      const [
+        playerState,
+        playerIdx,
+        playerTransform,
+        animationBankSprite,
+        body,
+      ] = components;
+
+      // Add basic physics controls
+      const control = player_inputs.players[playerIdx[0]].control;
 
       // In this state
       if (playerState.id != scriptId) continue;
@@ -41,8 +53,29 @@ export default {
         animationBankSprite.current_animation = "walk";
       }
 
-      // Add basic physics controls
-      const control = player_inputs.players[playerIdx[0]].control;
+      // If we are grabbing
+      if (control.grab_just_pressed) {
+        const current_inventory = Player.getInventory(playerEnt);
+        if (!current_inventory) {
+          // For each actor colliding with the player
+          for (const collider of CollisionWorld.actorCollisions(playerEnt)) {
+            const item = items.get(collider);
+            if (!!item) {
+              const [_item, item_transform] = item;
+              info("Grab item!");
+              item_transform.translation.x = 0;
+              item_transform.translation.y = 0;
+              item_transform.translation.z = 0;
+              Player.setInventory(playerEnt, collider);
+            }
+          }
+        } else {
+          info("Already have item, dropping");
+          const [_item, item_transform] = items.get(current_inventory);
+          item_transform.translation = playerTransform.translation;
+          Player.setInventory(playerEnt, null);
+        }
+      }
 
       // Add jump
       if (control.jump_just_pressed) {

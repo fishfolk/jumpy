@@ -3,6 +3,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use crate::utils::path::NormalizePath;
 use bevy::{
     asset::{Asset, AssetLoader, AssetPath, LoadedAsset},
     reflect::TypeUuid,
@@ -61,7 +62,7 @@ impl AppExt for App {
 fn relative_asset_path(asset_path: &Path, relative_path: &str) -> PathBuf {
     let is_relative = !relative_path.starts_with('/');
 
-    if is_relative {
+    let path = if is_relative {
         let base = asset_path.parent().unwrap_or_else(|| Path::new(""));
         base.join(relative_path)
     } else {
@@ -69,7 +70,8 @@ fn relative_asset_path(asset_path: &Path, relative_path: &str) -> PathBuf {
             .strip_prefix("/")
             .unwrap()
             .to_owned()
-    }
+    };
+    path.normalize()
 }
 
 /// Helper to get relative asset paths and handles
@@ -366,10 +368,13 @@ impl AssetLoader for MapElementMetaLoader {
             let mut dependencies = Vec::new();
 
             // Load the element script
-            let (script_path, script_handle) =
-                get_relative_asset(load_context, self_path, &meta.script);
-            meta.script_handle = AssetHandle::new(script_path.clone(), script_handle.typed());
-            dependencies.push(script_path);
+            for script in &meta.scripts {
+                let (script_path, script_handle) =
+                    get_relative_asset(load_context, self_path, script);
+                meta.script_handles
+                    .push(AssetHandle::new(script_path.clone(), script_handle.typed()));
+                dependencies.push(script_path);
+            }
 
             // Load preloaded assets
             for asset in &meta.preload_assets {

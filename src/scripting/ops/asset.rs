@@ -1,8 +1,11 @@
+use std::path::PathBuf;
+
 use crate::prelude::*;
 
 use anyhow::Context;
 use bevy::asset::HandleId;
 use bevy_mod_js_scripting::{serde_json, JsRuntimeOp, JsValueRef, OpContext};
+use crate::utils::path::NormalizePath;
 
 pub struct AssetGetHandleId;
 impl JsRuntimeOp for AssetGetHandleId {
@@ -32,24 +35,18 @@ impl JsRuntimeOp for AssetGetHandleId {
 
         let path = &ctx.script_info.path;
         let absolute_path = if relative_path.starts_with('/') {
-            relative_path
+            PathBuf::from(relative_path)
         } else if relative_path.starts_with("./") {
             path.parent()
                 .unwrap()
                 .join(relative_path.strip_prefix("./").unwrap())
-                .to_str()
-                .expect("Non-utf8 path")
-                .to_owned()
         } else {
-            path.parent()
-                .unwrap()
-                .join(relative_path)
-                .to_str()
-                .expect("Non-utf8 path")
-                .to_owned()
+            path.parent().unwrap().join(relative_path)
         };
+        let absolute_path = absolute_path.normalize();
+        let path_str = absolute_path.to_str().expect("Non-unicode-path");
 
-        let handle_id: HandleId = absolute_path.into();
+        let handle_id: HandleId = path_str.into();
         let value_ref = JsValueRef::new_free(Box::new(handle_id), reflect_refs);
 
         Ok(serde_json::to_value(&value_ref)?)
@@ -82,23 +79,17 @@ impl JsRuntimeOp for AssetGetAbsolutePath {
 
         let path = &ctx.script_info.path;
         let absolute_path = if relative_path.starts_with('/') {
-            relative_path
+            PathBuf::from(relative_path)
         } else if relative_path.starts_with("./") {
             path.parent()
                 .unwrap()
                 .join(relative_path.strip_prefix("./").unwrap())
-                .to_str()
-                .expect("Non-utf8 path")
-                .to_owned()
         } else {
-            path.parent()
-                .unwrap()
-                .join(relative_path)
-                .to_str()
-                .expect("Non-utf8 path")
-                .to_owned()
+            path.parent().unwrap().join(relative_path)
         };
+        let absolute_path = absolute_path.normalize();
+        let path_str = absolute_path.to_str().expect("Non-unicode-path");
 
-        Ok(serde_json::to_value(&absolute_path)?)
+        Ok(serde_json::to_value(&path_str)?)
     }
 }

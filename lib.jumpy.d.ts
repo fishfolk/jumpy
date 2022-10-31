@@ -57,6 +57,8 @@ declare namespace NetInfo {
 
 declare namespace Player {
   function kill(entity: Entity): void;
+  function getInventory(player: Entity): Entity | null;
+  function setInventory(player: Entity, item: Entity): void;
 }
 
 declare namespace CollisionWorld {
@@ -107,7 +109,9 @@ type PlayerInputs = {
 };
 declare const PlayerInputs: BevyType<PlayerInputs>;
 
-type Item = unknown;
+type Item = {
+  script: string;
+};
 declare const Item: BevyType<Item>;
 
 type KinematicBody = {

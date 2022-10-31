@@ -183,8 +183,10 @@ pub fn hydrate_maps(
                     for element in &element_layer.elements {
                         let element_meta =
                             element_assets.get(&element.element_handle).unwrap().clone();
-                        active_scripts.insert(element_meta.script_handle.inner.clone_weak());
-                        map_scripts.insert(element_meta.script_handle.inner.clone_weak());
+                        for script_handle in &element_meta.script_handles {
+                            active_scripts.insert(script_handle.inner.clone_weak());
+                            map_scripts.insert(script_handle.inner.clone_weak());
+                        }
 
                         let element_name = &element_meta.name;
 

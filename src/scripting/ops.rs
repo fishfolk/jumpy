@@ -2,10 +2,9 @@ use bevy_mod_js_scripting::{JsRuntimeOp, OpMap};
 
 pub mod asset;
 pub mod collision_world;
-pub mod net;
-// mod commands;
 pub mod entity;
 pub mod map;
+pub mod net;
 pub mod player;
 pub mod script_info;
 
@@ -34,18 +33,17 @@ pub fn get_ops() -> OpMap {
     ops.insert("jumpy_net_info_get", Box::new(net::NetInfoGet));
     ops.insert("jumpy_player_kill", Box::new(player::PlayerKill));
     ops.insert(
+        "jumpy_player_get_inventory",
+        Box::new(player::PlayerGetInventory),
+    );
+    ops.insert(
+        "jumpy_player_set_inventory",
+        Box::new(player::PlayerSetInventory),
+    );
+    ops.insert(
         "jumpy_collision_world_actor_collisions",
         Box::new(collision_world::CollisionWorldActorCollisions),
     );
-
-    // ops.insert(
-    //     "jumpy_net_commands_spawn",
-    //     Box::new(commands::NetCommandsSpawn),
-    // );
-    // ops.insert(
-    //     "jumpy_net_commands_insert",
-    //     Box::new(commands::NetCommandsInsert),
-    // );
 
     ops
 }

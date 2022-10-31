@@ -1,3 +1,4 @@
 name: Grenades
 category: Weapons
-script: ./sproinger.ts
+scripts:
+  - ./sproinger.ts

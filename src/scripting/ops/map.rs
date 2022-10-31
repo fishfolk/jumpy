@@ -33,7 +33,11 @@ impl JsRuntimeOp for ElementGetSpawnedEntities {
         let entities = world
             .query_filtered::<(Entity, &MapElementMeta), Without<MapElementLoaded>>()
             .iter(world)
-            .filter(|(_, meta)| meta.script_handle.inner == ctx.script_info.handle)
+            .filter(|(_, meta)| {
+                meta.script_handles
+                    .iter()
+                    .any(|x| x.inner == ctx.script_info.handle)
+            })
             .map(|(entity, _)| entity)
             .collect::<Vec<_>>()
             .into_iter()

@@ -173,14 +173,14 @@ impl From<ParallaxLayerMeta> for ParallaxLayerData {
 pub struct MapElementMeta {
     pub name: String,
     pub category: String,
-    pub script: String,
+    pub scripts: Vec<String>,
 
     /// The size of the bounding rect for the element in the editor
     #[serde(default = "editor_size_default")]
     pub editor_size: Vec2,
 
     #[serde(skip)]
-    pub script_handle: AssetHandle<JsScript>,
+    pub script_handles: Vec<AssetHandle<JsScript>>,
     /// Assets that should be pre-loaded by the game before starting
     #[serde(default)]
     pub preload_assets: Vec<String>,

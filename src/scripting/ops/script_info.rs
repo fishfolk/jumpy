@@ -1,6 +1,9 @@
 use std::hash::{Hash, Hasher};
 
-use crate::{prelude::*, utils::cache_str};
+use crate::{
+    prelude::*,
+    utils::{cache_str, path::NormalizePath},
+};
 use bevy_mod_js_scripting::{serde_json, JsRuntimeOp, JsValueRef, OpContext};
 
 #[derive(Serialize)]
@@ -46,8 +49,11 @@ impl JsRuntimeOp for ScriptInfoGet {
         let hash = base64::encode(hasher.finish().to_le_bytes());
         cache_str(&hash);
 
+        let path = ctx.script_info.path.normalize();
+        let path_string = path.to_str().expect("Non-unicode path").to_owned();
+
         Ok(serde_json::to_value(&JsScriptInfo {
-            path: ctx.script_info.path.to_string_lossy().into(),
+            path: path_string,
             handle: JsValueRef::new_free(Box::new(ctx.script_info.handle.clone()), value_refs),
             handle_id_hash: hash,
         })?)

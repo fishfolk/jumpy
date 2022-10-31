@@ -1,6 +1,6 @@
 use crate::{
     networking::proto::game::{
-        PlayerEvent, PlayerEventFromServer, PlayerState, PlayerStateFromServer,
+        GameEvent, PlayerEventFromServer, PlayerState, PlayerStateFromServer,
     },
     player::PlayerIdx,
     prelude::*,
@@ -25,8 +25,8 @@ fn handle_client_messages(
     players: Query<(Entity, &PlayerIdx)>,
     mut commands: Commands,
 ) {
-    while let Some(incomming) = server.recv_reliable::<PlayerEvent>() {
-        if let PlayerEvent::KillPlayer = incomming.message {
+    while let Some(incomming) = server.recv_reliable::<GameEvent>() {
+        if let GameEvent::KillPlayer = incomming.message {
             for (entity, player_idx) in &players {
                 if player_idx.0 == incomming.client_idx {
                     commands.entity(entity).despawn_recursive();

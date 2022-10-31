@@ -2,7 +2,12 @@ use bevy_egui::*;
 use bevy_fluent::Localization;
 
 use crate::{
-    localization::LocalizationExt, metadata::GameMeta, prelude::*, ui::input::MenuAction, GameState,
+    localization::LocalizationExt,
+    metadata::{GameMeta, MapMeta},
+    prelude::*,
+    ui::input::MenuAction,
+    utils::ResetController,
+    GameState,
 };
 
 use super::widgets::{
@@ -52,6 +57,8 @@ pub fn pause_menu(
     mut egui_context: ResMut<EguiContext>,
     game: Res<GameMeta>,
     localization: Res<Localization>,
+    map_handle: Query<&AssetHandle<MapMeta>>,
+    mut reset_controller: ResetController,
 ) {
     let ui_theme = &game.ui_theme;
 
@@ -97,6 +104,25 @@ pub fn pause_menu(
                         if continue_button.clicked() {
                             commands.insert_resource(NextState(InGameState::Playing));
                         }
+
+                        ui.scope(|ui| {
+                            if BorderedButton::themed(
+                                &ui_theme.button_styles.normal,
+                                &localization.get("restart"),
+                            )
+                            .min_size(egui::vec2(width, 0.0))
+                            .show(ui)
+                            .clicked()
+                            {
+                                commands.insert_resource(NextState(InGameState::Playing));
+                                let map_handle = map_handle.get_single().ok().cloned();
+                                reset_controller.reset_world();
+
+                                if let Some(handle) = map_handle {
+                                    commands.spawn().insert(handle);
+                                }
+                            }
+                        });
 
                         ui.scope(|ui| {
                             if BorderedButton::themed(

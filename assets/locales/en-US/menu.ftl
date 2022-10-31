@@ -19,3 +19,4 @@ play = Play
 quit = Quit
 export = Export
 reload = Reload
+restart = Restart

@@ -14,7 +14,8 @@ pub struct NetworkingPlugin;
 
 impl Plugin for NetworkingPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(client::ClientPlugin);
+        app.init_resource::<NetIdMap>()
+            .add_plugin(client::ClientPlugin);
 
         if ENGINE_CONFIG.server_mode {
             app.add_plugin(server::ServerPlugin);
@@ -30,7 +31,7 @@ pub static NET_MESSAGE_TYPES: Lazy<Vec<TypeId>> = Lazy::new(|| {
         TypeId::of::<proto::match_setup::MatchSetupFromClient>(),
         TypeId::of::<proto::match_setup::MatchSetupFromServer>(),
         TypeId::of::<proto::game::PlayerEventFromServer>(),
-        TypeId::of::<proto::game::PlayerEvent>(),
+        TypeId::of::<proto::game::GameEvent>(),
         TypeId::of::<proto::game::PlayerStateFromServer>(),
         TypeId::of::<proto::game::PlayerState>(),
     ]

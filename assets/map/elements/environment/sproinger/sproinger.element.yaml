@@ -1,3 +1,4 @@
 name: Sproinger
 category: Gameplay
-script: ./sproinger.ts
+scripts:
+  - ./sproinger.ts

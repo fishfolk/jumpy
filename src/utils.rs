@@ -2,6 +2,8 @@ use bevy::ecs::system::SystemParam;
 
 use crate::{loading::PlayerInputCollector, prelude::*, ui::input::MenuAction};
 
+pub mod path;
+
 /// Cache a string using [`wasm_bingen::intern`] when running on web platforms.
 #[allow(unused)]
 #[inline]

@@ -1,3 +1,4 @@
 name: Machine Gun
 category: Weapons
-script: ./sproinger.ts
+scripts:
+  - ./sproinger.ts

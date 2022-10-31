@@ -1,11 +1,11 @@
-use crate::{animation::AnimationBankSprite, prelude::*};
+use crate::{animation::AnimationBankSprite, networking::NetId, prelude::*};
 
 use super::tick::Tick;
 
 #[derive(Serialize, Deserialize)]
 pub struct PlayerEventFromServer {
     pub player_idx: u8,
-    pub kind: PlayerEvent,
+    pub kind: GameEvent,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -15,9 +15,11 @@ pub struct PlayerStateFromServer {
 }
 
 #[derive(Serialize, Deserialize)]
-pub enum PlayerEvent {
+pub enum GameEvent {
     SpawnPlayer(Vec3),
     KillPlayer,
+    GrabItem(NetId),
+    DropItem(Vec3),
 }
 
 #[derive(Serialize, Deserialize)]

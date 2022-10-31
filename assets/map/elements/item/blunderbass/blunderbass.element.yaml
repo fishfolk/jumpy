@@ -1,3 +1,4 @@
 name: Blunderbass
 category: Weapons
-script: ./sproinger.ts
+scripts:
+  - ./sproinger.ts

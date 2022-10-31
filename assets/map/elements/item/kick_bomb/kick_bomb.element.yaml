@@ -1,3 +1,4 @@
 name: Kick Bomb
 category: Weapons
-script: ./sproinger.ts
+scripts:
+  - ./sproinger.ts

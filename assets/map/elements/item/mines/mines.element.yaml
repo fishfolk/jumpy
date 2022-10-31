@@ -1,3 +1,4 @@
 name: Mines
 category: Weapons
-script: ./sproinger.ts
+scripts:
+  - ./sproinger.ts

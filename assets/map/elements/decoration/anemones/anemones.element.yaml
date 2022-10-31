@@ -1,6 +1,7 @@
 name: Anemones
 category: Decorations
-script: ./anemones.ts
+scripts:
+  - ./anemones.ts
 editor_size: [48, 51]
 preload_assets:
   - ./anemones.atlas.yaml

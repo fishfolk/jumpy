@@ -10,8 +10,6 @@ export default {
 
       // If this is one of our items without a name
       if (item.script == scriptPath && !names.get(entity)) {
-        info("Hydrating sword!");
-
         // Hydrate the entity
         world.insert(entity, Value.create(EntityName, ["Item: Sword"]));
 
@@ -48,5 +46,20 @@ export default {
     }
   },
 
-  updateInGame() {},
+  updateInGame() {
+    const items = world.query(Transform, Item);
+    for (const event of Items.grabEvents()) {
+      info("Grab");
+      const [item_transform] = items.get(event.item);
+
+      item_transform.translation = Value.create(Vec3);
+    }
+
+    for (const event of Items.dropEvents()) {
+      info("Drop");
+      const [item_transform] = items.get(event.item);
+
+      item_transform.translation = event.position;
+    }
+  },
 };

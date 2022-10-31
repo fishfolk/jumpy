@@ -65,6 +65,21 @@ declare namespace CollisionWorld {
   function actorCollisions(entity: Entity): Entity[];
 }
 
+type ItemGrabEvent = {
+  player: Entity;
+  item: Entity;
+  position: Vec3;
+};
+type ItemDropEvent = {
+  player: Entity;
+  item: Entity;
+  position: Vec3;
+};
+declare namespace Items {
+  function grabEvents(): ItemGrabEvent[];
+  function dropEvents(): ItemDropEvent[];
+}
+
 //
 // Jumpy component types
 //

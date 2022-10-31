@@ -27,6 +27,7 @@ pub struct Item {
 }
 
 /// An event triggered when an item is grabbed
+#[derive(Reflect, Clone, Debug)]
 pub struct ItemGrabEvent {
     pub player: Entity,
     pub item: Entity,
@@ -34,6 +35,7 @@ pub struct ItemGrabEvent {
 }
 
 /// An event triggered when an item is dropped
+#[derive(Reflect, Clone, Debug)]
 pub struct ItemDropEvent {
     pub player: Entity,
     pub item: Entity,

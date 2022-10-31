@@ -1,15 +1,18 @@
+use std::sync::Mutex;
+
 use crate::{
-    item::Item,
+    item::{Item, ItemDropEvent, ItemGrabEvent},
     networking::{
         client::NetClient,
-        proto::{self, game::PlayerEvent, ClientMatchInfo},
-        NetIdMap,
+        proto::{self, ClientMatchInfo},
     },
     player::PlayerIdx,
     prelude::*,
 };
 use anyhow::Context;
+use bevy::ecs::system::SystemState;
 use bevy_mod_js_scripting::{serde_json, JsRuntimeOp, JsValueRef, JsValueRefs, OpContext};
+use once_cell::sync::OnceCell;
 
 pub struct PlayerKill;
 impl JsRuntimeOp for PlayerKill {
@@ -156,30 +159,37 @@ impl JsRuntimeOp for PlayerSetInventory {
 
         let current_inventory = get_player_inventory(world, player_ent);
 
-        let client = world.remove_resource::<NetClient>();
-        let net_ids = world.remove_resource::<NetIdMap>();
+        type Param<'w, 's> = (
+            Commands<'w, 's>,
+            EventWriter<'w, 's, ItemGrabEvent>,
+            EventWriter<'w, 's, ItemDropEvent>,
+        );
+        static STATE: OnceCell<Mutex<SystemState<Param>>> = OnceCell::new();
+        let mut state = STATE
+            .get_or_init(|| Mutex::new(SystemState::new(world)))
+            .lock()
+            .unwrap();
+        let (mut commands, mut grab_events, mut drop_events) = state.get_mut(world);
 
-        let mut player = world.entity_mut(player_ent);
+        let mut player = commands.entity(player_ent);
         if let Some(current_item) = current_inventory {
-            if let Some(client) = &client {
-                client.send_reliable(&PlayerEvent::DropItem(player_transform.translation))
-            }
+            drop_events.send(ItemDropEvent {
+                player: player_ent,
+                item: current_item,
+                position: player_transform.translation,
+            });
             player.remove_children(&[current_item]);
         }
         if let Some(item) = item_ent {
-            if let Some((client, net_ids)) = client.as_ref().zip(net_ids.as_ref()) {
-                let net_id = net_ids.get_net_id(item).expect("Grab item without net id");
-                client.send_reliable(&PlayerEvent::GrabItem(net_id));
-            }
+            grab_events.send(ItemGrabEvent {
+                player: player_ent,
+                item,
+                position: player_transform.translation,
+            });
             player.push_children(&[item]);
         }
 
-        if let Some(client) = client {
-            world.insert_resource(client);
-        }
-        if let Some(net_ids) = net_ids {
-            world.insert_resource(net_ids);
-        }
+        state.apply(world);
 
         Ok(serde_json::Value::Null)
     }

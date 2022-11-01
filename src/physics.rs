@@ -18,6 +18,7 @@ pub enum PhysicsStages {
 impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<KinematicBody>()
+            .register_type::<Collider>()
             .add_stage_after(
                 CoreStage::PostUpdate,
                 PhysicsStages::Hydrate,
@@ -68,6 +69,11 @@ pub struct KinematicBody {
     pub gravity: f32,
     /// Whether or not the body should fall through jump_through platforms
     pub fall_through: bool,
+    /// Indicates that we should reset the collider like it was just added to the world.
+    ///
+    /// This is important to make sure that it falls through JumpThrough platforms if it happens to
+    /// spawn inside of one.
+    pub is_spawning: bool,
 }
 
 #[derive(Component)]
@@ -102,60 +108,96 @@ fn update_kinematic_bodies(
     mut bodies: Query<(Entity, &mut KinematicBody, &mut Transform)>,
 ) {
     for (actor, mut body, mut transform) in &mut bodies {
+        if body.is_deactivated {
+            continue;
+        }
+
+        let mut position = transform.translation.truncate() + body.offset;
+
+        // Shove objects out of walls
+        while collision_world.collide_solids(position, body.size.x, body.size.y)
+            == TileCollision::Solid
+        {
+            let rect = collisions::Rect::new(position.x, position.y, body.size.x, body.size.y);
+
+            match (
+                collision_world.collide_tag(1, rect.top_left(), 0.0, 0.0) == TileCollision::Solid,
+                collision_world.collide_tag(1, rect.top_right(), 0.0, 0.0) == TileCollision::Solid,
+                collision_world.collide_tag(1, rect.bottom_right(), 0.0, 0.0)
+                    == TileCollision::Solid,
+                collision_world.collide_tag(1, rect.bottom_left(), 0.0, 0.0)
+                    == TileCollision::Solid,
+            ) {
+                // Check for collisions on each side of the rectangle
+                (false, false, _, _) => position.y += 1.0,
+                (_, false, false, _) => position.x += 1.0,
+                (_, _, false, false) => position.y -= 1.0,
+                (false, _, _, false) => position.x -= 1.0,
+                // If none of the sides of the rectangle are un-collided, then we don't know
+                // which direction to move to get out of the wall, and we just give up.
+                _ => {
+                    info!("bail");
+                    break;
+                }
+            }
+        }
+
+        if body.is_spawning {
+            collision_world.add_actor(actor, position, body.size.x, body.size.y);
+            body.is_spawning = false;
+        }
+
         if body.fall_through {
             collision_world.descent(actor);
         }
-        collision_world.set_actor_position(actor, transform.translation.truncate() + body.offset);
 
-        if !body.is_deactivated {
-            let position = collision_world.actor_pos(actor);
+        collision_world.set_actor_position(actor, position);
 
-            {
-                let position = position + vec2(0.0, -1.0);
+        {
+            let position = position + vec2(0.0, -1.0);
 
-                body.was_on_ground = body.is_on_ground;
+            body.was_on_ground = body.is_on_ground;
 
-                body.is_on_ground = collision_world.collide_check(actor, position);
+            body.is_on_ground = collision_world.collide_check(actor, position);
 
-                let tile = collision_world.collide_solids(position, body.size.x, body.size.y);
-                body.is_on_platform = tile == TileCollision::JumpThrough;
-            }
-
-            if !collision_world.move_h(actor, body.velocity.x) {
-                body.velocity.x *= -body.bouncyness;
-            }
-
-            if !collision_world.move_v(actor, body.velocity.y) {
-                body.velocity.y *= -body.bouncyness;
-            }
-
-            if !body.is_on_ground && body.has_mass {
-                body.velocity.y -= body.gravity;
-
-                if body.velocity.y < -game.physics.terminal_velocity {
-                    body.velocity.y = -game.physics.terminal_velocity;
-                }
-            }
-
-            if body.can_rotate {
-                apply_rotation(
-                    &mut transform,
-                    body.velocity,
-                    body.angular_velocity,
-                    body.is_on_ground,
-                );
-            }
-
-            if body.is_on_ground && body.has_friction {
-                body.velocity.x *= game.physics.friction_lerp;
-                if body.velocity.x.abs() <= game.physics.stop_threshold {
-                    body.velocity.x = 0.0;
-                }
-            }
-
-            transform.translation =
-                (collision_world.actor_pos(actor) - body.offset).extend(transform.translation.z);
+            let tile = collision_world.collide_solids(position, body.size.x, body.size.y);
+            body.is_on_platform = tile == TileCollision::JumpThrough;
         }
+
+        if !collision_world.move_h(actor, body.velocity.x) {
+            body.velocity.x *= -body.bouncyness;
+        }
+
+        if !collision_world.move_v(actor, body.velocity.y) {
+            body.velocity.y *= -body.bouncyness;
+        }
+
+        if !body.is_on_ground && body.has_mass {
+            body.velocity.y -= body.gravity;
+
+            if body.velocity.y < -game.physics.terminal_velocity {
+                body.velocity.y = -game.physics.terminal_velocity;
+            }
+        }
+
+        if body.can_rotate {
+            apply_rotation(
+                &mut transform,
+                body.velocity,
+                body.angular_velocity,
+                body.is_on_ground,
+            );
+        }
+
+        if body.is_on_ground && body.has_friction {
+            body.velocity.x *= game.physics.friction_lerp;
+            if body.velocity.x.abs() <= game.physics.stop_threshold {
+                body.velocity.x = 0.0;
+            }
+        }
+
+        transform.translation =
+            (collision_world.actor_pos(actor) - body.offset).extend(transform.translation.z);
     }
 }
 

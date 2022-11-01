@@ -141,6 +141,7 @@ type KinematicBody = {
   is_deactivated: boolean;
   gravity: f32;
   fall_through: boolean;
+  is_spawning: boolean;
 };
 declare const KinematicBody: BevyType<KinematicBody>;
 

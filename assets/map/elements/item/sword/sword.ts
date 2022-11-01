@@ -82,6 +82,7 @@ export default {
       sprite.start = 0;
       sprite.end = 0;
       body.velocity = playerBody.velocity;
+      body.is_spawning = true;
 
       item_transform.translation.y = event.position.y - 30;
       item_transform.translation.x = event.position.x;

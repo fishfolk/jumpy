@@ -47,7 +47,7 @@ export default {
   },
 
   updateInGame() {
-    const players = world.query(AnimatedSprite, KinematicBody, PlayerIdx);
+    const players = world.query(AnimatedSprite, PlayerIdx);
     const parents = world.query(Parent);
     const items = world.query(Transform, KinematicBody, AnimatedSprite, Item);
 
@@ -76,12 +76,11 @@ export default {
     // Update dropped items
     for (const event of Items.dropEvents()) {
       const [item_transform, body, sprite] = items.get(event.item);
-      const [_sprite, playerBody] = players.get(event.player);
 
       body.is_deactivated = false;
       sprite.start = 0;
       sprite.end = 0;
-      body.velocity = playerBody.velocity;
+      body.velocity = event.velocity;
       body.is_spawning = true;
 
       item_transform.translation.y = event.position.y - 30;

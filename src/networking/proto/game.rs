@@ -28,7 +28,10 @@ pub enum PlayerEvent {
     SpawnPlayer(Vec3),
     KillPlayer,
     GrabItem(NetId),
-    DropItem(Vec3),
+    DropItem {
+        position: Vec3,
+        velocity: Vec2,
+    },
 }
 
 #[derive(Serialize, Deserialize)]

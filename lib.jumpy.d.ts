@@ -74,6 +74,7 @@ type ItemDropEvent = {
   player: Entity;
   item: Entity;
   position: Vec3;
+  velocity: Vec2;
 };
 declare namespace Items {
   function grabEvents(): ItemGrabEvent[];

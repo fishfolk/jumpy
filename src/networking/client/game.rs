@@ -16,6 +16,7 @@ use crate::{
         },
         NetIdMap,
     },
+    physics::KinematicBody,
     player::PlayerIdx,
     prelude::*,
     FIXED_TIMESTEP,
@@ -47,7 +48,7 @@ impl Plugin for ClientGamePlugin {
 fn send_game_events(
     mut grab_events: EventReader<ItemGrabEvent>,
     mut drop_events: EventReader<ItemDropEvent>,
-    players: Query<(&PlayerIdx, &Transform)>,
+    players: Query<(&PlayerIdx, &Transform, &KinematicBody)>,
     client: Res<NetClient>,
     client_info: Res<ClientMatchInfo>,
     net_ids: Res<NetIdMap>,
@@ -65,10 +66,13 @@ fn send_game_events(
     }
 
     for event in drop_events.iter() {
-        if let Ok((player_idx, player_transform)) = players.get(event.player) {
+        if let Ok((player_idx, player_transform, body)) = players.get(event.player) {
             // As the client, we're only allowed to drop and pick up items for our own player.
             if client_info.player_idx == player_idx.0 {
-                client.send_reliable(&PlayerEvent::DropItem(player_transform.translation));
+                client.send_reliable(&PlayerEvent::DropItem {
+                    position: player_transform.translation,
+                    velocity: body.velocity,
+                });
             }
         }
     }
@@ -116,7 +120,6 @@ fn handle_game_events(
                 }
             }
             PlayerEvent::GrabItem(net_id) => {
-                info!(?event.player_idx, "Grab event");
                 if let Some(item_ent) = net_ids.get_entity(net_id) {
                     if let Some((player_ent, _idx, transform, ..)) = players
                         .iter()
@@ -135,7 +138,7 @@ fn handle_game_events(
                     warn!("No entity found for Net ID");
                 }
             }
-            PlayerEvent::DropItem(pos) => {
+            PlayerEvent::DropItem { position, velocity } => {
                 if let Some((player_ent, _idx, _trans, children)) = players
                     .iter()
                     .find(|(_, player_idx, ..)| player_idx.0 == event.player_idx as usize)
@@ -143,11 +146,12 @@ fn handle_game_events(
                     if let Some(children) = children {
                         for child in children {
                             if let Ok(mut item_transform) = items.get_mut(*child) {
-                                item_transform.translation = pos;
+                                item_transform.translation = position;
                                 item_drop_events.send(ItemDropEvent {
                                     player: player_ent,
                                     item: *child,
-                                    position: pos,
+                                    position,
+                                    velocity,
                                 });
                                 commands.entity(player_ent).remove_children(&[*child]);
                             }

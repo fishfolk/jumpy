@@ -40,6 +40,7 @@ pub struct ItemDropEvent {
     pub player: Entity,
     pub item: Entity,
     pub position: Vec3,
+    pub velocity: Vec2,
 }
 
 fn send_net_item_spawns(

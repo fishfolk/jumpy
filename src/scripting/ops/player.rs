@@ -6,6 +6,7 @@ use crate::{
         client::NetClient,
         proto::{self, ClientMatchInfo},
     },
+    physics::KinematicBody,
     player::PlayerIdx,
     prelude::*,
 };
@@ -156,6 +157,10 @@ impl JsRuntimeOp for PlayerSetInventory {
         let player_transform = *world
             .get::<Transform>(player_ent)
             .expect("Player missing transform");
+        let player_velocity = world
+            .get::<KinematicBody>(player_ent)
+            .expect("Player missing kinematic body")
+            .velocity;
 
         let current_inventory = get_player_inventory(world, player_ent);
 
@@ -177,6 +182,7 @@ impl JsRuntimeOp for PlayerSetInventory {
                 player: player_ent,
                 item: current_item,
                 position: player_transform.translation,
+                velocity: player_velocity,
             });
             player.remove_children(&[current_item]);
         }

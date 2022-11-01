@@ -4,7 +4,7 @@
 //!
 //! Initially adapted from the [`normalize_path`] crate
 //!
-//! [cargo-paths]: http://lib.rs/normalize_path
+//! [`normalize_path`]: http://lib.rs/normalize_path
 //!
 //! # Example
 //!

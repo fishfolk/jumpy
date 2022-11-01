@@ -4,7 +4,9 @@ use crate::{loading::PlayerInputCollector, prelude::*, ui::input::MenuAction};
 
 pub mod path;
 
-/// Cache a string using [`wasm_bingen::intern`] when running on web platforms.
+/// Cache a string using [`wasm_bindgen::intern`] when running on web platforms.
+/// 
+/// [`wasm_bindgen::intern`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/fn.intern.html
 #[allow(unused)]
 #[inline]
 pub fn cache_str(s: &str) {

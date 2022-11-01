@@ -3,10 +3,6 @@ use bevy_egui::egui;
 use crate::metadata::BorderImageMeta;
 
 /// A 9-patch style bordered frame.
-///
-/// # See Also
-///
-/// - [`UiBorderImage`]
 pub struct BorderedFrame {
     bg_texture: egui::TextureId,
     border_scale: f32,
@@ -18,7 +14,7 @@ pub struct BorderedFrame {
 }
 
 impl BorderedFrame {
-    /// Create a new frame with the given [`BorderImage`]
+    /// Create a new frame with the given [`BorderImageMeta`]
     #[must_use = "You must call .show() to render the frame"]
     pub fn new(border_image: &BorderImageMeta) -> Self {
         let s = border_image.image_size;

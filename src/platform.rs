@@ -25,7 +25,7 @@ impl Plugin for PlatformPlugin {
 /// Bevy system that will load the [`Storage`] and wait for it to finish loading so it can be used
 /// throughout the rest of the game without having to check that storage is loaded.
 ///
-/// Will transition to [`GameState::LoadingGame`] when finished.
+/// Will transition to [`GameState::LoadingGameData`] when finished.
 pub fn load_storage(
     mut started: Local<bool>,
     mut commands: Commands,
@@ -53,7 +53,7 @@ type StorageData = HashMap<String, serde_yaml::Value>;
 pub struct Storage {
     /// The in-memory storage data that we operate on when getting and setting values.
     data: Option<StorageData>,
-    /// A data receiver that gets set when we are awaiting the result of a [`load()`] operation.
+    /// A data receiver that gets set when we are awaiting the result of a [`Self::load()`] operation.
     data_receiver: Option<Receiver<StorageData>>,
     /// The sender we use to send storage requests to the storage backend
     backend_sender: Sender<StorageRequest>,
@@ -106,7 +106,7 @@ impl Storage {
     /// Load from platform storage into memory.
     ///
     /// This process is asynchronous. Loaded data will not be available immediately, and
-    /// [`is_loaded()`] can be used to check whether or not data has been loaded.
+    /// [`Self::is_loaded()`] can be used to check whether or not data has been loaded.
     pub fn try_load(&mut self) -> Result<(), StorageError> {
         let (result_sender, data_receiver) = async_channel::unbounded();
 
@@ -122,7 +122,7 @@ impl Storage {
     /// Load from platform storage into memory.
     ///
     /// This process is asynchronous. Loaded data will not be available immediately, and
-    /// [`is_loaded()`] can be used to check whether or not data has been loaded.
+    /// [`Self::is_loaded()`] can be used to check whether or not data has been loaded.
     ///
     /// # Panics
     ///
@@ -178,7 +178,7 @@ impl Storage {
 
     /// Set a value in the in-memory storage cache.
     ///
-    /// Changes will not be persisted until [`save()`] is called.
+    /// Changes will not be persisted until [`Self::save()`] is called.
     pub fn try_set<T>(&mut self, key: &str, value: &T) -> Result<(), StorageError>
     where
         T: Serialize + DeserializeOwned,
@@ -198,7 +198,7 @@ impl Storage {
     /// Set a value in the in-memory storage cache.
     ///
     ///
-    /// Changes will not be persisted until [`save()`] is called.
+    /// Changes will not be persisted until [`Self::save()`] is called.
     ///
     /// # Panics
     ///

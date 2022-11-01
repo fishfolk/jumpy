@@ -21,15 +21,15 @@ export default {
     const player_inputs = world.resource(PlayerInputs);
 
     // For every player
-    const playerComponents = world
-      .query(PlayerState, PlayerIdx, AnimationBankSprite, KinematicBody)
-      .map((x) => x.components);
-    for (const [
-      playerState,
-      playerIdx,
-      animationBankSprite,
-      body,
-    ] of playerComponents) {
+    for (const { entity, components } of world.query(
+      PlayerState,
+      PlayerIdx,
+      AnimationBankSprite,
+      KinematicBody,
+      LocalPlayer
+    )) {
+      const [playerState, playerIdx, animationBankSprite, body] = components;
+
       // In this state
       if (playerState.id != scriptId) continue;
 

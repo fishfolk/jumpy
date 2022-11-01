@@ -6,7 +6,7 @@ use bevy::{
 };
 use bevy_prototype_lyon::{entity::ShapeBundle, prelude::*};
 
-use super::{collisions::Collider, PhysicsStages};
+use super::{collisions::Collider, KinematicBody, PhysicsStages};
 
 /// Physics debug rendering plugin
 pub struct PhysicsDebugRenderPlugin;
@@ -84,6 +84,7 @@ struct DebugRenderer<'w, 's> {
         Query<'w, 's, (&'static mut Path, &'static mut DrawMode), With<RapierDebugRenderShapes>>,
     custom_colors: Query<'w, 's, &'static ColliderDebugColor>,
     colliders: Query<'w, 's, (Entity, &'static Collider)>,
+    kinematic_bodies: Query<'w, 's, &'static KinematicBody>,
 }
 
 impl<'w, 's> DebugRenderer<'w, 's> {
@@ -147,7 +148,20 @@ impl<'w, 's> DebugRenderer<'w, 's> {
             .get(entity)
             .map(|co| co.0)
             .ok()
-            .unwrap_or(DEFAULT_COLOR)
+            .unwrap_or_else(|| {
+                let is_deactivated = self
+                    .kinematic_bodies
+                    .get(entity)
+                    .map(|body| body.is_deactivated)
+                    .unwrap_or(false);
+
+                if is_deactivated {
+                    // Make deactivated bodies invisible
+                    Color::rgba(0.0, 0.0, 0.0, 0.0)
+                } else {
+                    DEFAULT_COLOR
+                }
+            })
     }
 }
 

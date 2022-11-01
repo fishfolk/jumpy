@@ -166,7 +166,7 @@ fn is_in_game_run_criteria(
     }
 }
 
-/// Helper function to hash a [`HandlId`].
+/// Helper function to hash a [`HandleId`].
 fn hash_handle_id(id: HandleId) -> String {
     let mut hasher = fnv::FnvHasher::default();
     id.hash(&mut hasher);

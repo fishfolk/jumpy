@@ -9,7 +9,7 @@ use crate::metadata::{BorderImageMeta, ButtonThemeMeta};
 
 use super::bordered_frame::BorderedFrame;
 
-/// A button rendered with a [`BorderImage`]
+/// A button rendered with a [`BorderImageMeta`]
 pub struct BorderedButton<'a> {
     text: WidgetText,
     wrap: Option<bool>,

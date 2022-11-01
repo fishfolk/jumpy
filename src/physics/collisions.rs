@@ -16,13 +16,13 @@ use crate::prelude::*;
 use std::collections::HashSet;
 
 #[derive(Debug)]
-struct Rect {
+pub struct Rect {
     min: Vec2,
     max: Vec2,
 }
 
 impl Rect {
-    fn new(x: f32, y: f32, width: f32, height: f32) -> Self {
+    pub fn new(x: f32, y: f32, width: f32, height: f32) -> Self {
         let half_size = vec2(width / 2.0, height / 2.0);
         let min = vec2(x, y) - half_size;
         let max = min + vec2(width, height);
@@ -30,37 +30,65 @@ impl Rect {
     }
 
     #[inline]
-    fn left(&self) -> f32 {
+    pub fn left(&self) -> f32 {
         self.min.x
     }
 
     #[inline]
-    fn right(&self) -> f32 {
+    pub fn right(&self) -> f32 {
         self.max.x
     }
 
     #[inline]
-    fn top(&self) -> f32 {
+    pub fn top(&self) -> f32 {
         self.max.y
     }
 
     #[inline]
-    fn bottom(&self) -> f32 {
+    pub fn bottom(&self) -> f32 {
         self.min.y
     }
 
-    fn overlaps(&self, other: &Rect) -> bool {
+    #[inline]
+    pub fn top_left(&self) -> Vec2 {
+        vec2(self.min.x, self.max.y)
+    }
+
+    #[inline]
+    pub fn top_right(&self) -> Vec2 {
+        vec2(self.max.x, self.max.y)
+    }
+
+    #[inline]
+    pub fn bottom_left(&self) -> Vec2 {
+        vec2(self.min.x, self.min.y)
+    }
+
+    #[inline]
+    pub fn bottom_right(&self) -> Vec2 {
+        vec2(self.max.x, self.min.y)
+    }
+
+    pub fn overlaps(&self, other: &Rect) -> bool {
         self.left() <= other.right()
             && self.right() >= other.left()
             && self.top() >= other.bottom()
             && self.bottom() <= other.top()
     }
 
-    fn contains(&self, point: Vec2) -> bool {
+    pub fn contains(&self, point: Vec2) -> bool {
         point.x >= self.left()
             && point.x < self.right()
             && point.y < self.bottom()
             && point.y >= self.top()
+    }
+
+    pub fn min(&self) -> Vec2 {
+        self.min
+    }
+
+    pub fn max(&self) -> Vec2 {
+        self.max
     }
 }
 
@@ -101,7 +129,6 @@ pub struct Solid;
 
 #[derive(Reflect, Component, Default, Clone, Debug, Serialize, Deserialize)]
 #[reflect(Component, Default)]
-#[reflect_value(Serialize, Deserialize)]
 pub struct Collider {
     pub collidable: bool,
     pub squished: bool,
@@ -110,6 +137,7 @@ pub struct Collider {
     pub height: f32,
     pub x_remainder: f32,
     pub y_remainder: f32,
+    #[reflect(ignore)]
     pub squishers: HashSet<Entity>,
     pub descent: bool,
     pub seen_wood: bool,

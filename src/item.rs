@@ -10,6 +10,7 @@ impl Plugin for ItemPlugin {
         app.register_type::<Item>()
             .add_event::<ItemGrabEvent>()
             .add_event::<ItemDropEvent>()
+            .add_event::<ItemUseEvent>()
             .add_system_to_stage(
                 CoreStage::PreUpdate,
                 send_net_item_spawns.run_if_resource_exists::<NetServer>(),
@@ -41,6 +42,14 @@ pub struct ItemDropEvent {
     pub item: Entity,
     pub position: Vec3,
     pub velocity: Vec2,
+}
+
+/// An event triggered when an item is used
+#[derive(Reflect, Clone, Debug)]
+pub struct ItemUseEvent {
+    pub player: Entity,
+    pub item: Entity,
+    pub position: Vec3,
 }
 
 fn send_net_item_spawns(

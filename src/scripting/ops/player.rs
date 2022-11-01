@@ -1,7 +1,7 @@
 use std::sync::Mutex;
 
 use crate::{
-    item::{Item, ItemDropEvent, ItemGrabEvent},
+    item::{Item, ItemDropEvent, ItemGrabEvent, ItemUseEvent},
     networking::{
         client::NetClient,
         proto::{self, ClientMatchInfo},
@@ -196,6 +196,65 @@ impl JsRuntimeOp for PlayerSetInventory {
         }
 
         state.apply(world);
+
+        Ok(serde_json::Value::Null)
+    }
+}
+
+pub struct PlayerUseItem;
+impl JsRuntimeOp for PlayerUseItem {
+    fn js(&self) -> Option<&'static str> {
+        Some(
+            r#"
+            if (!globalThis.Player) {
+                globalThis.Player = {}
+            }
+            
+            globalThis.Player.useItem = (player) => {
+                return bevyModJsScriptingOpSync(
+                    'jumpy_player_use_item',
+                    Value.unwrapValueRef(player)
+                );
+            }
+            "#,
+        )
+    }
+
+    fn run(
+        &self,
+        ctx: OpContext,
+        world: &mut World,
+        args: serde_json::Value,
+    ) -> anyhow::Result<serde_json::Value> {
+        let (player_ref,): (JsValueRef,) = serde_json::from_value(args).context("Parse args")?;
+        let value_refs = ctx.op_state.get_mut::<JsValueRefs>().unwrap();
+        let player_ent = player_ref.get_entity(world, value_refs)?;
+
+        let player_transform = *world
+            .get::<Transform>(player_ent)
+            .expect("Player missing transform");
+
+        let item_ent = get_player_inventory(world, player_ent);
+        let item_ent = if let Some(item) = item_ent {
+            item
+        } else {
+            warn!("Attempted to use item while inventory empty.");
+            return Ok(serde_json::Value::Null);
+        };
+
+        type Param<'w, 's> = EventWriter<'w, 's, ItemUseEvent>;
+        static STATE: OnceCell<Mutex<SystemState<Param>>> = OnceCell::new();
+        let mut state = STATE
+            .get_or_init(|| Mutex::new(SystemState::new(world)))
+            .lock()
+            .unwrap();
+        let mut use_events = state.get_mut(world);
+
+        use_events.send(ItemUseEvent {
+            player: player_ent,
+            item: item_ent,
+            position: player_transform.translation,
+        });
 
         Ok(serde_json::Value::Null)
     }

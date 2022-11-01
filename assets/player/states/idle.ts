@@ -48,8 +48,10 @@ export default {
 
       // If we are grabbing
       if (control.grab_just_pressed) {
-        const current_inventory = Player.getInventory(playerEnt);
-        if (!current_inventory) {
+        // Get inventory
+        const currentInventory = Player.getInventory(playerEnt);
+
+        if (!currentInventory) {
           // For each actor colliding with the player
           for (const collider of CollisionWorld.actorCollisions(playerEnt)) {
             const item = items.get(collider);
@@ -61,6 +63,11 @@ export default {
         } else {
           Player.setInventory(playerEnt, null);
         }
+      }
+
+      // Use item if we have one
+      if (control.shoot_just_pressed && Player.getInventory(playerEnt)) {
+        Player.useItem(playerEnt);
       }
 
       if (control.jump_just_pressed) {

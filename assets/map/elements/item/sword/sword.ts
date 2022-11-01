@@ -62,8 +62,13 @@ export default {
       const [playerSprite] = players.get(parent[0]);
 
       body.is_deactivated = true;
-      sprite.start = 4;
-      sprite.end = 4;
+      sprite.fps = 10;
+      if ((sprite.start == 8 && sprite.index == 3) || sprite.start == 0) {
+        sprite.start = 4;
+        sprite.end = 4;
+        sprite.index = 0;
+        sprite.repeat = false;
+      }
       const flip = playerSprite.flip_x;
       sprite.flip_x = flip;
 
@@ -71,6 +76,18 @@ export default {
         x: 13 * (flip ? -1 : 1),
         y: 21,
       });
+    }
+
+    // Trigger used items
+    for (const event of Items.useEvents()) {
+      const [item_transform, body, sprite] = items.get(event.item);
+
+      if (sprite.start == 4) {
+        sprite.index = 0;
+        sprite.start = 8;
+        sprite.end = 12;
+        sprite.repeat = true;
+      }
     }
 
     // Update dropped items

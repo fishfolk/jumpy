@@ -4,7 +4,7 @@ use bevy_tweening::{lens::TransformPositionLens, Animator, EaseMethod, Tween, Tw
 
 use crate::{
     animation::AnimationBankSprite,
-    item::{Item, ItemDropEvent, ItemGrabEvent},
+    item::{Item, ItemDropEvent, ItemGrabEvent, ItemUseEvent},
     networking::{
         proto::{
             game::{
@@ -46,14 +46,15 @@ impl Plugin for ClientGamePlugin {
 }
 
 fn send_game_events(
-    mut grab_events: EventReader<ItemGrabEvent>,
-    mut drop_events: EventReader<ItemDropEvent>,
+    mut item_grab_events: EventReader<ItemGrabEvent>,
+    mut item_drop_events: EventReader<ItemDropEvent>,
+    mut item_use_events: EventReader<ItemUseEvent>,
     players: Query<(&PlayerIdx, &Transform, &KinematicBody)>,
     client: Res<NetClient>,
     client_info: Res<ClientMatchInfo>,
     net_ids: Res<NetIdMap>,
 ) {
-    for event in grab_events.iter() {
+    for event in item_grab_events.iter() {
         if let Ok((player_idx, ..)) = players.get(event.player) {
             // As the client, we're only allowed to drop and pick up items for our own player.
             if client_info.player_idx == player_idx.0 {
@@ -65,13 +66,28 @@ fn send_game_events(
         }
     }
 
-    for event in drop_events.iter() {
+    for event in item_drop_events.iter() {
         if let Ok((player_idx, player_transform, body)) = players.get(event.player) {
             // As the client, we're only allowed to drop and pick up items for our own player.
             if client_info.player_idx == player_idx.0 {
                 client.send_reliable(&PlayerEvent::DropItem {
                     position: player_transform.translation,
                     velocity: body.velocity,
+                });
+            }
+        }
+    }
+
+    for event in item_use_events.iter() {
+        if let Ok((player_idx, ..)) = players.get(event.player) {
+            // As the client, we're only allowed to drop and pick up items for our own player.
+            if client_info.player_idx == player_idx.0 {
+                let item_id = net_ids
+                    .get_net_id(event.item)
+                    .expect("Item in network game without NetId");
+                client.send_reliable(&PlayerEvent::UseItem {
+                    position: event.position,
+                    item: item_id,
                 });
             }
         }
@@ -102,6 +118,7 @@ fn handle_game_events(
     mut net_ids: ResMut<NetIdMap>,
     mut item_grab_events: EventWriter<ItemGrabEvent>,
     mut item_drop_events: EventWriter<ItemDropEvent>,
+    mut item_use_events: EventWriter<ItemUseEvent>,
 ) {
     while let Some(event) = client.recv_reliable::<PlayerEventFromServer>() {
         match event.kind {
@@ -161,6 +178,24 @@ fn handle_game_events(
                     }
                 } else {
                     warn!(?event.player_idx, "Trying to drop item for dead player??");
+                }
+            }
+            PlayerEvent::UseItem { position, item } => {
+                if let Some(item_ent) = net_ids.get_entity(item) {
+                    if let Some((player_ent, ..)) = players
+                        .iter()
+                        .find(|(_, player_idx, ..)| player_idx.0 == event.player_idx as usize)
+                    {
+                        item_use_events.send(ItemUseEvent {
+                            player: player_ent,
+                            item: item_ent,
+                            position,
+                        });
+                    } else {
+                        warn!("Unknown player used item")
+                    }
+                } else {
+                    warn!("No entity found for Net ID");
                 }
             }
         }

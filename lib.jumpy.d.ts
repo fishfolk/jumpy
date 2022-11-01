@@ -97,7 +97,6 @@ declare const GameCamera: BevyType<unknown>;
 
 type PlayerIdx = [usize];
 declare const PlayerIdx: BevyType<PlayerIdx>;
-declare const LocalPlayer: BevyType<unknown>;
 
 type PlayerState = { id: string; age: u64; previous_state: string };
 declare const PlayerState: BevyType<PlayerState>;

@@ -23,8 +23,7 @@ export default {
       PlayerState,
       PlayerIdx,
       AnimationBankSprite,
-      KinematicBody,
-      LocalPlayer
+      KinematicBody
     )) {
       const [playerState, playerIdx, animationBankSprite, body] = components;
       if (playerState.id != scriptId) continue;

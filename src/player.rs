@@ -29,7 +29,6 @@ impl Plugin for PlayerPlugin {
         app.add_plugin(input::PlayerInputPlugin)
             .add_plugin(state::PlayerStatePlugin)
             .register_type::<PlayerIdx>()
-            .register_type::<LocalPlayer>()
             .add_system_to_stage(
                 FixedUpdateStage::PreUpdate,
                 hydrate_players.run_if_resource_exists::<GameMeta>(),
@@ -41,11 +40,6 @@ impl Plugin for PlayerPlugin {
 #[derive(Component, Deref, DerefMut, Reflect, Default, Serialize, Deserialize, Copy, Clone)]
 #[reflect(Default, Component)]
 pub struct PlayerIdx(pub usize);
-
-/// Marker component for players controlled locally, i.e. not remote players over the network.
-#[derive(Component, Reflect, Default, Serialize, Deserialize, Copy, Clone)]
-#[reflect(Default, Component)]
-pub struct LocalPlayer;
 
 fn hydrate_players(
     mut commands: Commands,
@@ -93,20 +87,15 @@ fn hydrate_players(
             .insert(animation_bank)
             .insert(animation_bank_sprite)
             .insert(GlobalTransform::default())
-            .insert_bundle(VisibilityBundle::default())
-            .insert(KinematicBody {
-                size: Vec2::new(38.0, 48.0), // FIXME: Don't hardcode! Load from player meta.
-                has_mass: true,
-                has_friction: true,
-                gravity: 1.0,
-                // Deactivate simulation for remote players in online matches
-                is_deactivated: client_match_info
-                    .as_ref()
-                    .map(|info| info.player_idx != player_idx.0)
-                    .unwrap_or(false),
-                ..default()
-            });
+            .insert_bundle(VisibilityBundle::default());
 
+        let kinematic_body = KinematicBody {
+            size: Vec2::new(38.0, 48.0), // FIXME: Don't hardcode! Load from player meta.
+            has_mass: true,
+            has_friction: true,
+            gravity: 1.0,
+            ..default()
+        };
         let input_manager_for_player = |player_idx| InputManagerBundle {
             input_map: settings.player_controls.get_input_map(player_idx),
             ..default()
@@ -124,7 +113,7 @@ fn hydrate_players(
                 };
 
                 entity_commands
-                    .insert(LocalPlayer)
+                    .insert(kinematic_body)
                     .insert_bundle(input_manager_for_player(player_input_idx));
 
             // For remote players we add an `Animator` that will be used to tween it's transform for
@@ -136,7 +125,7 @@ fn hydrate_players(
         // If this is a local game
         } else {
             entity_commands
-                .insert(LocalPlayer)
+                .insert(kinematic_body)
                 .insert_bundle(input_manager_for_player(player_idx.0));
         }
     }

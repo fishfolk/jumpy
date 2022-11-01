@@ -10,9 +10,6 @@ const MapMeta = {
 const PlayerIdx = {
     typeName: "jumpy::player::PlayerIdx"
 }
-const LocalPlayer = {
-    typeName: "jumpy::player::LocalPlayer"
-}
 const PlayerState = {
     typeName: "jumpy::player::state::PlayerState"
 }

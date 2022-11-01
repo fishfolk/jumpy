@@ -16,6 +16,7 @@ use crate::{
         },
         NetIdMap,
     },
+    physics::KinematicBody,
     player::PlayerIdx,
     prelude::*,
     FIXED_TIMESTEP,
@@ -76,14 +77,15 @@ fn send_game_events(
 
 fn send_player_state(
     client: Res<NetClient>,
-    players: Query<(&PlayerIdx, &Transform, &AnimationBankSprite)>,
+    players: Query<(&PlayerIdx, &Transform, &AnimationBankSprite, &KinematicBody)>,
     match_info: Res<ClientMatchInfo>,
 ) {
-    for (player_idx, transform, sprite) in &players {
+    for (player_idx, transform, sprite, body) in &players {
         if player_idx.0 == match_info.player_idx {
             client.send_unreliable(&PlayerState {
                 tick: Tick::next(),
                 pos: transform.translation,
+                velocity: body.velocity,
                 sprite: sprite.clone(),
             });
         }
@@ -116,7 +118,6 @@ fn handle_game_events(
                 }
             }
             PlayerEvent::GrabItem(net_id) => {
-                info!(?event.player_idx, "Grab event");
                 if let Some(item_ent) = net_ids.get_entity(net_id) {
                     if let Some((player_ent, _idx, transform, ..)) = players
                         .iter()
@@ -188,11 +189,12 @@ fn handle_player_state(
         &Transform,
         &mut Animator<Transform>,
         &mut AnimationBankSprite,
+        &mut KinematicBody,
     )>,
 ) {
     while let Some(message) = client.recv_unreliable::<PlayerStateFromServer>() {
         if client_ticks.is_latest(message.player_idx as usize, message.state.tick) {
-            for (_, idx, transform, mut animator, mut sprite) in &mut players {
+            for (_, idx, transform, mut animator, mut sprite, mut body) in &mut players {
                 if idx.0 == message.player_idx as usize {
                     animator.set_tweenable(Tween::new(
                         EaseMethod::Linear,
@@ -204,6 +206,7 @@ fn handle_player_state(
                         },
                     ));
                     *sprite = message.state.sprite;
+                    body.velocity = message.state.velocity;
                     break;
                 }
             }

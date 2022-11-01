@@ -35,6 +35,5 @@ pub enum PlayerEvent {
 pub struct PlayerState {
     pub tick: Tick,
     pub pos: Vec3,
-    pub velocity: Vec2,
     pub sprite: AnimationBankSprite,
 }

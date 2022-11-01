@@ -1,7 +1,7 @@
 use std::sync::Mutex;
 
 use crate::{
-    item::{Item, ItemDropEvent, ItemGrabEvent},
+    item::{Item, ItemDropEvent, ItemGrabEvent, ItemUseEvent},
     prelude::*,
 };
 use bevy::ecs::system::SystemState;
@@ -90,6 +90,60 @@ impl JsRuntimeOp for ItemDropEvents {
         type Param<'w, 's> = (
             Query<'w, 's, &'static Item>,
             EventReader<'w, 's, ItemDropEvent>,
+        );
+        static STATE: OnceCell<Mutex<SystemState<Param>>> = OnceCell::new();
+        let mut state = STATE
+            .get_or_init(|| Mutex::new(SystemState::new(world)))
+            .lock()
+            .unwrap();
+
+        let value_refs = ctx.op_state.get_mut().unwrap();
+
+        let (items, mut grab_events) = state.get_mut(world);
+
+        let events = grab_events
+            .iter()
+            .filter(|event| {
+                items
+                    .get(event.item)
+                    .map(|item| item.script == script_path)
+                    .unwrap_or(false)
+            })
+            .map(|x| JsValueRef::new_free(Box::new(x.clone()), value_refs))
+            .collect::<Vec<_>>();
+
+        Ok(serde_json::to_value(&events)?)
+    }
+}
+
+pub struct ItemUseEvents;
+impl JsRuntimeOp for ItemUseEvents {
+    fn js(&self) -> Option<&'static str> {
+        Some(
+            r#"
+            if (!globalThis.Items) {
+                globalThis.Items = {}
+            }
+            
+            globalThis.Items.useEvents = () => {
+                return bevyModJsScriptingOpSync('jumpy_item_use_events')
+                    .map(x => globalThis.Value.wrapValueRef(x));
+            }
+            "#,
+        )
+    }
+
+    fn run(
+        &self,
+        ctx: OpContext,
+        world: &mut World,
+        _args: serde_json::Value,
+    ) -> anyhow::Result<serde_json::Value> {
+        let script_path = ctx.script_info.path.to_str().expect("non-unicode path");
+
+        type Param<'w, 's> = (
+            Query<'w, 's, &'static Item>,
+            EventReader<'w, 's, ItemUseEvent>,
         );
         static STATE: OnceCell<Mutex<SystemState<Param>>> = OnceCell::new();
         let mut state = STATE

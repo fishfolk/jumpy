@@ -55,6 +55,11 @@ export default {
         }
       }
 
+      // Use item if we have one
+      if (control.shoot_just_pressed && Player.getInventory(playerEnt)) {
+        Player.useItem(playerEnt);
+      }
+
       // Add controls
       body.velocity.x = control.move_direction.x * 5;
 

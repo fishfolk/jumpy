@@ -26,6 +26,10 @@ pub fn get_ops() -> OpMap {
         Box::new(item::ItemDropEvents),
     );
     ops.insert(
+        "jumpy_item_use_events",
+        Box::new(item::ItemUseEvents),
+    );
+    ops.insert(
         "jumpy_asset_get_handle_id",
         Box::new(asset::AssetGetHandleId),
     );
@@ -41,6 +45,7 @@ pub fn get_ops() -> OpMap {
     ops.insert("entity_ref_from_js", Box::new(entity::EntityRefFromJs));
     ops.insert("jumpy_net_info_get", Box::new(net::NetInfoGet));
     ops.insert("jumpy_player_kill", Box::new(player::PlayerKill));
+    ops.insert("jumpy_player_use_item", Box::new(player::PlayerUseItem));
     ops.insert(
         "jumpy_player_get_inventory",
         Box::new(player::PlayerGetInventory),

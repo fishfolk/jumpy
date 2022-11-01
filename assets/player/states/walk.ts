@@ -63,6 +63,11 @@ export default {
         }
       }
 
+      // Use item if we have one
+      if (control.shoot_just_pressed && Player.getInventory(playerEnt)) {
+        Player.useItem(playerEnt);
+      }
+
       // Add jump
       if (control.jump_just_pressed) {
         body.velocity.y = 15;

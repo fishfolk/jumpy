@@ -59,6 +59,7 @@ declare namespace Player {
   function kill(entity: Entity): void;
   function getInventory(player: Entity): Entity | null;
   function setInventory(player: Entity, item: Entity): void;
+  function useItem(player: Entity): void;
 }
 
 declare namespace CollisionWorld {
@@ -76,9 +77,15 @@ type ItemDropEvent = {
   position: Vec3;
   velocity: Vec2;
 };
+type ItemUseEvent = {
+  player: Entity;
+  item: Entity;
+  position: Vec3;
+};
 declare namespace Items {
   function grabEvents(): ItemGrabEvent[];
   function dropEvents(): ItemDropEvent[];
+  function useEvents(): ItemUseEvent[];
 }
 
 //
@@ -155,6 +162,7 @@ type AnimationBankSprite = {
 declare const AnimationBankSprite: BevyType<AnimationBankSprite>;
 
 type AnimatedSprite = {
+  index: usize;
   start: usize;
   end: usize;
   atlas: HandleTextureAtlas;

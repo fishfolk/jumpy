@@ -2,7 +2,7 @@ use bevy::{math::vec2, time::FixedTimestep};
 
 use crate::{config::ENGINE_CONFIG, metadata::GameMeta, prelude::*};
 
-use self::collisions::{Actor, Collider, CollisionWorld, TileCollision};
+use self::collisions::{Actor, Collider, CollisionWorld, Rect, TileCollision};
 
 pub mod collisions;
 pub mod debug;
@@ -74,6 +74,17 @@ pub struct KinematicBody {
     /// This is important to make sure that it falls through JumpThrough platforms if it happens to
     /// spawn inside of one.
     pub is_spawning: bool,
+}
+
+impl KinematicBody {
+    pub fn collider_rect(&self, transform: &Transform) -> Rect {
+        Rect::new(
+            transform.translation.x + self.offset.x,
+            transform.translation.y + self.offset.y,
+            self.size.x,
+            self.size.y,
+        )
+    }
 }
 
 #[derive(Component)]

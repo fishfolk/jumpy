@@ -17,7 +17,10 @@ use crate::{
         NetIdMap,
     },
     physics::KinematicBody,
-    player::PlayerIdx,
+    player::{
+        PlayerIdx, PlayerKillCommand, PlayerKillEvent, PlayerSetInventoryCommand,
+        PlayerUseItemCommand,
+    },
     prelude::*,
     FIXED_TIMESTEP,
 };
@@ -37,7 +40,7 @@ impl Plugin for ClientGamePlugin {
         )
         .add_system_to_stage(
             FixedUpdateStage::First,
-            handle_game_events
+            handle_game_events_from_server
                 .chain(handle_player_state)
                 .run_if_resource_exists::<NetClient>()
                 .run_if_resource_exists::<ClientMatchInfo>(),
@@ -46,6 +49,7 @@ impl Plugin for ClientGamePlugin {
 }
 
 fn send_game_events(
+    mut player_kill_events: EventReader<PlayerKillEvent>,
     mut item_grab_events: EventReader<ItemGrabEvent>,
     mut item_drop_events: EventReader<ItemDropEvent>,
     mut item_use_events: EventReader<ItemUseEvent>,
@@ -92,6 +96,16 @@ fn send_game_events(
             }
         }
     }
+
+    for event in player_kill_events.iter() {
+        // As the client, we're only allowed to kill our own player
+        if client_info.player_idx == event.player_idx {
+            client.send_reliable(&PlayerEvent::KillPlayer {
+                position: event.position,
+                velocity: event.velocity,
+            });
+        }
+    }
 }
 
 fn send_player_state(
@@ -110,17 +124,18 @@ fn send_player_state(
     }
 }
 
-fn handle_game_events(
+fn handle_game_events_from_server(
     mut commands: Commands,
     mut client: ResMut<NetClient>,
-    mut players: Query<(Entity, &PlayerIdx, &Transform, Option<&Children>), Without<Item>>,
-    mut items: Query<&mut Transform, With<Item>>,
+    players: Query<(Entity, &PlayerIdx)>,
     mut net_ids: ResMut<NetIdMap>,
-    mut item_grab_events: EventWriter<ItemGrabEvent>,
-    mut item_drop_events: EventWriter<ItemDropEvent>,
-    mut item_use_events: EventWriter<ItemUseEvent>,
 ) {
     while let Some(event) = client.recv_reliable::<PlayerEventFromServer>() {
+        let player_ent = players
+            .iter()
+            .find(|x| x.1 .0 == event.player_idx as usize)
+            .map(|x| x.0);
+
         match event.kind {
             PlayerEvent::SpawnPlayer(pos) => {
                 commands
@@ -128,74 +143,62 @@ fn handle_game_events(
                     .insert(PlayerIdx(event.player_idx as usize))
                     .insert(Transform::from_translation(pos));
             }
-            PlayerEvent::KillPlayer => {
-                for (entity, idx, ..) in &mut players {
-                    if idx.0 == event.player_idx as usize {
-                        commands.entity(entity).despawn_recursive();
-                        break;
-                    }
+            PlayerEvent::KillPlayer { position, velocity } => {
+                if let Some(player_ent) = player_ent {
+                    commands.add(PlayerKillCommand {
+                        player: player_ent,
+                        position: Some(position),
+                        velocity: Some(velocity),
+                    });
+                } else {
+                    warn!(?event.player_idx, "Net event to kill player that doesn't exist locally");
                 }
             }
             PlayerEvent::GrabItem(net_id) => {
-                if let Some(item_ent) = net_ids.get_entity(net_id) {
-                    if let Some((player_ent, _idx, transform, ..)) = players
-                        .iter()
-                        .find(|(_, player_idx, ..)| player_idx.0 == event.player_idx as usize)
-                    {
-                        item_grab_events.send(ItemGrabEvent {
+                if let Some(player_ent) = player_ent {
+                    if let Some(item_ent) = net_ids.get_entity(net_id) {
+                        commands.add(PlayerSetInventoryCommand {
                             player: player_ent,
-                            item: item_ent,
-                            position: transform.translation,
+                            item: Some(item_ent),
+                            position: None,
+                            velocity: None,
                         });
-                        commands.entity(player_ent).push_children(&[item_ent]);
                     } else {
-                        warn!("Dead player grabbed item??");
+                        warn!(
+                            "Trying to grab item but could not find local item with given net ID"
+                        );
                     }
                 } else {
-                    warn!("No entity found for Net ID");
+                    warn!(?event.player_idx, "Net event to kill player that doesn't exist locally");
                 }
             }
             PlayerEvent::DropItem { position, velocity } => {
-                if let Some((player_ent, _idx, _trans, children)) = players
-                    .iter()
-                    .find(|(_, player_idx, ..)| player_idx.0 == event.player_idx as usize)
-                {
-                    if let Some(children) = children {
-                        for child in children {
-                            if let Ok(mut item_transform) = items.get_mut(*child) {
-                                item_transform.translation = position;
-                                item_drop_events.send(ItemDropEvent {
-                                    player: player_ent,
-                                    item: *child,
-                                    position,
-                                    velocity,
-                                });
-                                commands.entity(player_ent).remove_children(&[*child]);
-                            }
-                        }
-                    } else {
-                        warn!("Dropping item for player not carrying any");
-                    }
+                if let Some(player_ent) = player_ent {
+                    commands.add(PlayerSetInventoryCommand {
+                        player: player_ent,
+                        item: None,
+                        position: Some(position),
+                        velocity: Some(velocity),
+                    });
                 } else {
-                    warn!(?event.player_idx, "Trying to drop item for dead player??");
+                    warn!(?event.player_idx, "Net event to kill player that doesn't exist locally");
                 }
             }
             PlayerEvent::UseItem { position, item } => {
-                if let Some(item_ent) = net_ids.get_entity(item) {
-                    if let Some((player_ent, ..)) = players
-                        .iter()
-                        .find(|(_, player_idx, ..)| player_idx.0 == event.player_idx as usize)
-                    {
-                        item_use_events.send(ItemUseEvent {
+                if let Some(player_ent) = player_ent {
+                    if let Some(item_ent) = net_ids.get_entity(item) {
+                        commands.add(PlayerUseItemCommand {
                             player: player_ent,
-                            item: item_ent,
-                            position,
+                            position: Some(position),
+                            item: Some(item_ent),
                         });
                     } else {
-                        warn!("Unknown player used item")
+                        warn!(
+                            "Trying to use item but could not find entity for item with given ID"
+                        );
                     }
                 } else {
-                    warn!("No entity found for Net ID");
+                    warn!(?event.player_idx, "Net event to kill player that doesn't exist locally");
                 }
             }
         }

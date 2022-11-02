@@ -11,8 +11,8 @@ export default {
     let rightKillZone = killZoneBorder + mapWidth;
     let bottomKillZone = -killZoneBorder;
 
-    for (const item of world.query(PlayerIdx, Transform)) {
-      let [player_idx, transform] = item.components;
+    for (const { entity, components } of world.query(PlayerIdx, Transform)) {
+      let [player_idx, transform] = components;
 
       if (
         (netInfo.is_client && player_idx[0] == netInfo.player_idx) ||
@@ -25,7 +25,7 @@ export default {
           pos.x > rightKillZone ||
           pos.y < bottomKillZone
         ) {
-          Player.kill(item.entity);
+          Player.kill(entity);
         }
       }
     }

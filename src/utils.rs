@@ -3,9 +3,10 @@ use bevy::ecs::system::SystemParam;
 use crate::{loading::PlayerInputCollector, prelude::*, ui::input::MenuAction};
 
 pub mod path;
+pub mod event;
 
 /// Cache a string using [`wasm_bindgen::intern`] when running on web platforms.
-/// 
+///
 /// [`wasm_bindgen::intern`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/fn.intern.html
 #[allow(unused)]
 #[inline]
@@ -20,7 +21,7 @@ pub fn cache_str(s: &str) {
 /// the camera position, but in the future this process might be more involved so we centralize the
 /// logic here so it can be re-used.
 #[derive(SystemParam)]
-pub struct ResetController<'w, 's> {
+pub struct ResetManager<'w, 's> {
     commands: Commands<'w, 's>,
     camera: Query<
         'w,
@@ -44,7 +45,7 @@ pub struct ResetController<'w, 's> {
     >,
 }
 
-impl<'w, 's> ResetController<'w, 's> {
+impl<'w, 's> ResetManager<'w, 's> {
     /// Clean up the game world, despawning all the gameplay entities, but leaving necessary
     /// entities like camera.
     pub fn reset_world(&mut self) {

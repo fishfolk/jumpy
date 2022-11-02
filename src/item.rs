@@ -8,12 +8,12 @@ pub struct ItemPlugin;
 impl Plugin for ItemPlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<Item>()
-            .add_event::<ItemGrabEvent>()
-            .add_event::<ItemDropEvent>()
-            .add_event::<ItemUseEvent>()
+            .add_fixed_update_event::<ItemGrabEvent>()
+            .add_fixed_update_event::<ItemDropEvent>()
+            .add_fixed_update_event::<ItemUseEvent>()
             .add_system_to_stage(
                 CoreStage::PreUpdate,
-                send_net_item_spawns.run_if_resource_exists::<NetServer>(),
+                send_net_item_spawns_from_server.run_if_resource_exists::<NetServer>(),
             );
     }
 }
@@ -52,7 +52,8 @@ pub struct ItemUseEvent {
     pub position: Vec3,
 }
 
-fn send_net_item_spawns(
+/// System to send send net messages for item spawns when running as the server
+fn send_net_item_spawns_from_server(
     server: Res<NetServer>,
     new_items: Query<(Entity, &Transform, &Item), Added<Item>>,
     mut net_ids: ResMut<NetIdMap>,

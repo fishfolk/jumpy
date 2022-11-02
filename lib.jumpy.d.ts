@@ -137,6 +137,18 @@ type Item = {
 };
 declare const Item: BevyType<Item>;
 
+type DamageRegion = {
+  size: Vec2;
+};
+declare const DamageRegion: BevyType<DamageRegion>;
+declare const DamageRegionOwner: BevyType<[Entity]>;
+
+type Lifetime = {
+  lifetime: f32;
+  age: f32;
+};
+declare const Lifetime: BevyType<Lifetime>;
+
 type KinematicBody = {
   offset: Vec2;
   size: Vec2;

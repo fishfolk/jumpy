@@ -6,6 +6,8 @@ use bevy::{
 };
 use bevy_prototype_lyon::{entity::ShapeBundle, prelude::*};
 
+use crate::damage::DamageRegion;
+
 use super::{collisions::Collider, KinematicBody, PhysicsStages};
 
 /// Physics debug rendering plugin
@@ -36,7 +38,8 @@ impl Plugin for PhysicsDebugRenderPlugin {
     }
 }
 
-const DEFAULT_COLOR: Color = Color::ORANGE;
+const DEFAULT_COLLIDER_COLOR: Color = Color::ORANGE;
+const DEFAULT_DAMAGE_REGION_COLOR: Color = Color::RED;
 
 /// System that renders the debug shapes
 fn render_collision_shapes(mut renderer: DebugRenderer, config: Res<PhysicsDebugRenderConfig>) {
@@ -84,6 +87,7 @@ struct DebugRenderer<'w, 's> {
         Query<'w, 's, (&'static mut Path, &'static mut DrawMode), With<RapierDebugRenderShapes>>,
     custom_colors: Query<'w, 's, &'static ColliderDebugColor>,
     colliders: Query<'w, 's, (Entity, &'static Collider)>,
+    damage_regions: Query<'w, 's, (Entity, &'static DamageRegion, &'static Transform)>,
     kinematic_bodies: Query<'w, 's, &'static KinematicBody>,
 }
 
@@ -91,6 +95,7 @@ impl<'w, 's> DebugRenderer<'w, 's> {
     /// Render the shapes
     fn render(&mut self) {
         self.draw_colliders();
+        self.draw_damage_regions();
 
         self.finish();
     }
@@ -98,7 +103,7 @@ impl<'w, 's> DebugRenderer<'w, 's> {
     /// Draw collider shapes
     fn draw_colliders(&mut self) {
         for (entity, collider) in &self.colliders {
-            let color = self.color(entity);
+            let color = self.color(entity, DEFAULT_COLLIDER_COLOR);
 
             let shape_path_ref = self.shape_paths.entry(HashEqColor(color)).or_default();
             let shape_path = std::mem::take(shape_path_ref);
@@ -106,6 +111,21 @@ impl<'w, 's> DebugRenderer<'w, 's> {
             *shape_path_ref = shape_path.add(&ColliderRect {
                 pos: collider.pos,
                 size: vec2(collider.width, collider.height),
+            });
+        }
+    }
+
+    /// Draw damage region shapes
+    fn draw_damage_regions(&mut self) {
+        for (entity, damage_region, transform) in &self.damage_regions {
+            let color = self.color(entity, DEFAULT_DAMAGE_REGION_COLOR);
+
+            let shape_path_ref = self.shape_paths.entry(HashEqColor(color)).or_default();
+            let shape_path = std::mem::take(shape_path_ref);
+
+            *shape_path_ref = shape_path.add(&ColliderRect {
+                pos: transform.translation.truncate(),
+                size: vec2(damage_region.size.x, damage_region.size.y),
             });
         }
     }
@@ -143,7 +163,7 @@ impl<'w, 's> DebugRenderer<'w, 's> {
     }
 
     /// Helper to grab the objects custom collider color if it exists
-    fn color(&self, entity: Entity) -> Color {
+    fn color(&self, entity: Entity, default_color: Color) -> Color {
         self.custom_colors
             .get(entity)
             .map(|co| co.0)
@@ -159,7 +179,7 @@ impl<'w, 's> DebugRenderer<'w, 's> {
                     // Make deactivated bodies invisible
                     Color::rgba(0.0, 0.0, 0.0, 0.0)
                 } else {
-                    DEFAULT_COLOR
+                    default_color
                 }
             })
     }

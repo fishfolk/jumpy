@@ -15,7 +15,7 @@ use crate::{
     player::input::PlayerInputs,
     prelude::*,
     ui::input::MenuAction,
-    utils::ResetController,
+    utils::ResetManager,
 };
 
 // use self::settings::ControlInputBindingEvents;
@@ -59,7 +59,7 @@ pub struct MainMenuBackground;
 pub fn setup_main_menu(
     mut commands: Commands,
     game: Res<GameMeta>,
-    mut reset_controller: ResetController,
+    mut reset_controller: ResetManager,
     mut player_inputs: ResMut<PlayerInputs>,
 ) {
     // Reset the game world

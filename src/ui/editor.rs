@@ -13,7 +13,7 @@ use crate::{
     metadata::{GameMeta, MapLayerKind, MapLayerMeta, MapMeta},
     player::input::PlayerInputs,
     prelude::*,
-    utils::ResetController,
+    utils::ResetManager,
 };
 
 use super::{widget, widgets::bordered_button::BorderedButton, WidgetSystem};
@@ -146,7 +146,7 @@ struct EditorTopBar<'w, 's> {
                 With<EditorCamera>,
             >,
             Commands<'w, 's>,
-            ResetController<'w, 's>,
+            ResetManager<'w, 's>,
         ),
     >,
     show_map_export_window: Local<'s, bool>,

@@ -1,6 +1,8 @@
+use bevy::ecs::system::Command;
 use bevy_tweening::Animator;
 
 use crate::{
+    item::{Item, ItemDropEvent, ItemGrabEvent, ItemUseEvent},
     metadata::{GameMeta, PlayerMeta, Settings},
     networking::{
         proto::{
@@ -28,6 +30,7 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(input::PlayerInputPlugin)
             .add_plugin(state::PlayerStatePlugin)
+            .add_fixed_update_event::<PlayerKillEvent>()
             .register_type::<PlayerIdx>()
             .add_system_to_stage(
                 FixedUpdateStage::PreUpdate,
@@ -36,11 +39,267 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-/// The player index, for example Player 1, Player 2, and so on
+/// The player index, for example Player 1, Player 2, and so on.
 #[derive(Component, Deref, DerefMut, Reflect, Default, Serialize, Deserialize, Copy, Clone)]
 #[reflect(Default, Component)]
 pub struct PlayerIdx(pub usize);
 
+/// An event sent when a player is killed
+pub struct PlayerKillEvent {
+    /// The index of the player that was killed
+    pub player_idx: usize,
+    pub velocity: Vec2,
+    pub position: Vec3,
+}
+
+/// A [`Command`] to kill a player.
+///
+/// The command will perform any actions needed for the player kill sequence, including sending
+/// network messages, etc.
+pub struct PlayerKillCommand {
+    /// The player to kill
+    pub player: Entity,
+    /// An optional position for the kill event.
+    ///
+    /// If [`None`] the position will be automatically determined from the player's [`Transform`].
+    ///
+    /// It may need to be manually specified when killing remote players that don't have accurate
+    /// local positions.
+    pub position: Option<Vec3>,
+    /// An optional velocity for the kill event, used when determining how a carried item will be
+    /// dropped if the player was moving.
+    ///
+    /// If [`None`] the velocity will be automatically determined from the player's kinematic body.
+    ///
+    /// It may need to be manually specified when killing remote players that don't have local
+    /// velocities.
+    pub velocity: Option<Vec2>,
+}
+
+impl PlayerKillCommand {
+    /// Create a command to kill `player`.
+    pub fn new(player: Entity) -> Self {
+        Self {
+            player,
+            position: None,
+            velocity: None,
+        }
+    }
+}
+
+impl Command for PlayerKillCommand {
+    fn write(self, world: &mut World) {
+        world.resource_scope(|world, mut kill_events: Mut<Events<PlayerKillEvent>>| {
+            // If the entity is a player
+            if let Some(player_idx) = world.get::<PlayerIdx>(self.player) {
+                let position = self.position.unwrap_or_else(|| {
+                    world
+                        .get::<Transform>(self.player)
+                        .expect("Player without kinematic body")
+                        .translation
+                });
+                let velocity = self.velocity.unwrap_or_else(|| {
+                    world
+                        .get::<KinematicBody>(self.player)
+                        .expect("Player without kinematic body")
+                        .velocity
+                });
+
+                // Send kill event
+                kill_events.send(PlayerKillEvent {
+                    player_idx: player_idx.0,
+                    velocity,
+                    position,
+                });
+
+                // Drop any items player was carrying
+                PlayerSetInventoryCommand {
+                    player: self.player,
+                    item: None,
+                    position: Some(position),
+                    velocity: Some(velocity),
+                }
+                .write(world);
+
+                // Despawn the player
+                despawn_with_children_recursive(world, self.player);
+            } else {
+                warn!("Tried to kill non-player entity")
+            }
+        });
+    }
+}
+
+/// A [`Command`] to set the player's inventory.
+///
+/// The command will perform any actions needed including sending events, etc.
+pub struct PlayerSetInventoryCommand {
+    /// The player to set the inventory of.
+    pub player: Entity,
+    /// The item to put in the player inventory, or `None` if they should drop any existing item.
+    pub item: Option<Entity>,
+
+    /// An optional position for where to drop/grab the item.
+    ///
+    /// If `position` is [`None`] the position will be determined from the player's [`Transform`].
+    ///
+    /// This is useful when dropping an item for a remote, networked player, which we do not have a
+    /// reliable position for locally.
+    pub position: Option<Vec3>,
+    /// An optional velocity to use when dropping the item.
+    ///
+    /// See `position` above for details.
+    pub velocity: Option<Vec2>,
+}
+
+impl PlayerSetInventoryCommand {
+    /// Conveniently create a new [`PlayerSetInventoryCommand`].
+    pub fn new(player: Entity, item: Option<Entity>) -> Self {
+        Self {
+            player,
+            item,
+            position: None,
+            velocity: None,
+        }
+    }
+}
+
+impl Command for PlayerSetInventoryCommand {
+    fn write(self, world: &mut World) {
+        // Get the effective drop/grab position
+        let position = self.position.unwrap_or_else(|| {
+            world
+                .get::<Transform>(self.player)
+                .expect("Player missing transform")
+                .translation
+        });
+
+        let current_inventory = get_player_inventory(world, self.player);
+
+        world.resource_scope(|world, mut grab_events: Mut<Events<ItemGrabEvent>>| {
+            world.resource_scope(|world, mut drop_events: Mut<Events<ItemDropEvent>>| {
+                // If there was a previous item in the inventory, drop it
+                if let Some(current_item) = current_inventory {
+                    let velocity = self.velocity.unwrap_or_else(|| {
+                        world
+                            .get::<KinematicBody>(self.player)
+                            .map(|x| x.velocity)
+                            // If we get network notified to kill a player before we get notified to
+                            // drop the item they are carrying, we may end up calling this on a
+                            // remote player with no kinematic body.
+                            //
+                            // In this case, because we don't have a velocity for the drop action,
+                            // just do no movement on the drop.
+                            //
+                            // We may need to re-visit this if we find that this causes a de-sync.
+                            .unwrap_or_default()
+                    });
+
+                    drop_events.send(ItemDropEvent {
+                        player: self.player,
+                        item: current_item,
+                        position,
+                        velocity,
+                    });
+                    world
+                        .entity_mut(self.player)
+                        .remove_children(&[current_item]);
+                }
+
+                // If there is a new item in the inventory, add it
+                if let Some(item) = self.item {
+                    grab_events.send(ItemGrabEvent {
+                        player: self.player,
+                        item,
+                        position,
+                    });
+                    world.entity_mut(self.player).push_children(&[item]);
+                }
+            });
+        });
+    }
+}
+
+/// A [`Command`] to have the player use the item they carrying, if any.
+///
+/// This will generate an item use event if there is an item in the players inventory when the
+/// command is flushed.
+pub struct PlayerUseItemCommand {
+    /// The player that is using their item.
+    pub player: Entity,
+
+    /// An optional position to use the item from.
+    ///
+    /// If [`None`] the position will be taken from the player's [`Transform`].
+    ///
+    /// Specifying a specific position is useful when triggering an item use for a remote, networked
+    /// player for which we don't have a reliable position locally.
+    pub position: Option<Vec3>,
+    /// An optional item to use.
+    ///
+    /// If [`None`] the item will be taken from the player's inventory.
+    ///
+    /// Specifying a specific item is useful when triggering an item use for a remote, networked
+    /// player for which our local status for their current item might not be accurate.
+    pub item: Option<Entity>,
+}
+
+impl PlayerUseItemCommand {
+    /// Create a command to have `player` use their item.
+    pub fn new(player: Entity) -> Self {
+        Self {
+            player,
+            position: None,
+            item: None,
+        }
+    }
+}
+
+impl Command for PlayerUseItemCommand {
+    fn write(self, world: &mut World) {
+        let position = self.position.unwrap_or_else(|| {
+            let transform = world
+                .get::<Transform>(self.player)
+                .expect("Player missing transform");
+            transform.translation
+        });
+        let item = self
+            .item
+            .or_else(|| get_player_inventory(world, self.player));
+
+        if let Some(item) = item {
+            let mut use_events = world.resource_mut::<Events<ItemUseEvent>>();
+            use_events.send(ItemUseEvent {
+                player: self.player,
+                item,
+                position,
+            });
+        } else {
+            warn!("Tried to use item when not carrying one");
+        }
+    }
+}
+
+/// Helper function to get the inventory of the player, from the world
+pub fn get_player_inventory(world: &mut World, entity: Entity) -> Option<Entity> {
+    let mut item_ent = None;
+    let mut items_query = world.query_filtered::<Entity, With<Item>>();
+    if let Some(children) = world.get::<Children>(entity) {
+        for child in children {
+            if items_query.get(world, *child).is_ok() {
+                if item_ent.is_none() {
+                    item_ent = Some(*child);
+                } else {
+                    warn!("Multiple items in player inventory is not supported!");
+                }
+            }
+        }
+    }
+    item_ent
+}
+
+/// System to take entities with only a [`PlayerIdx`] and a [`Transform`] and to add the remaining
+/// components to them to make them complete players.
 fn hydrate_players(
     mut commands: Commands,
     mut players: Query<(Entity, &PlayerIdx, &mut Transform), Without<PlayerState>>,

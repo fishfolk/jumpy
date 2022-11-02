@@ -19,6 +19,15 @@ const PlayerInputs = {
 const Item = {
     typeName: "jumpy::item::Item"
 }
+const DamageRegion = {
+    typeName: "jumpy::damage::DamageRegion"
+}
+const DamageRegionOwner = {
+    typeName: "jumpy::damage::DamageRegionOwner"
+}
+const Lifetime = {
+    typeName: "jumpy::lifetime::Lifetime"
+}
 const KinematicBody = {
     typeName: "jumpy::physics::KinematicBody"
 }

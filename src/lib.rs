@@ -1,9 +1,9 @@
 //! Jumpy is a pixel-style, tactical 2D shooter with a fishy theme.
-//! 
+//!
 //! This is the project's internal developer API documentation. API documentation is usually meant
 //! for libraries with public APIs, but this is a game, so we use it to document the internal game
 //! architecture for contributors.
-//! 
+//!
 //! TODO: Write essentially an Architecture.md type of document here, and fill out the other game
 //! module's documentation.
 
@@ -31,7 +31,10 @@ pub mod animation;
 pub mod assets;
 pub mod camera;
 pub mod config;
+pub mod damage;
 pub mod debug;
+pub mod item;
+pub mod lifetime;
 pub mod lines;
 pub mod loading;
 pub mod localization;
@@ -48,14 +51,15 @@ pub mod scripting;
 pub mod ui;
 pub mod utils;
 pub mod workarounds;
-pub mod item;
-pub mod damage;
 
 use crate::{
     animation::AnimationPlugin,
     assets::AssetPlugin,
     camera::CameraPlugin,
+    damage::DamagePlugin,
     debug::DebugPlugin,
+    item::ItemPlugin,
+    lifetime::LifetimePlugin,
     lines::LinesPlugin,
     loading::LoadingPlugin,
     localization::LocalizationPlugin,
@@ -69,7 +73,7 @@ use crate::{
     prelude::*,
     scripting::ScriptingPlugin,
     ui::UiPlugin,
-    workarounds::WorkaroundsPlugin, item::ItemPlugin,
+    workarounds::WorkaroundsPlugin,
 };
 
 /// The timestep used for fixed update systems
@@ -241,6 +245,8 @@ pub fn build_app(net_server: Option<NetServer>) -> App {
         .add_plugin(PhysicsPlugin)
         .add_plugin(CameraPlugin)
         .add_plugin(MapPlugin)
+        .add_plugin(DamagePlugin)
+        .add_plugin(LifetimePlugin)
         .add_plugin(WorkaroundsPlugin)
         .add_plugin(DebugPlugin)
         .add_plugin(ScriptingPlugin)

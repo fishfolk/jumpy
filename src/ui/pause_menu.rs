@@ -6,7 +6,7 @@ use crate::{
     metadata::{GameMeta, MapMeta},
     prelude::*,
     ui::input::MenuAction,
-    utils::ResetController,
+    utils::ResetManager,
     GameState,
 };
 
@@ -58,7 +58,7 @@ pub fn pause_menu(
     game: Res<GameMeta>,
     localization: Res<Localization>,
     map_handle: Query<&AssetHandle<MapMeta>>,
-    mut reset_controller: ResetController,
+    mut reset_controller: ResetManager,
 ) {
     let ui_theme = &game.ui_theme;
 

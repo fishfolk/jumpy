@@ -47,9 +47,15 @@ export default {
   },
 
   updateInGame() {
-    const players = world.query(AnimatedSprite, PlayerIdx);
+    const players = world.query(AnimatedSprite, Transform, PlayerIdx);
     const parents = world.query(Parent);
-    const items = world.query(Transform, KinematicBody, AnimatedSprite, Item);
+    const items = world.query(
+      Transform,
+      KinematicBody,
+      AnimatedSprite,
+      GlobalTransform,
+      Item
+    );
 
     // Update items that are being held
     for (const { entity: itemEnt, components } of items) {
@@ -58,7 +64,6 @@ export default {
       let parentComponents = parents.get(itemEnt);
       if (!parentComponents) continue;
       const [parent] = parentComponents;
-
       const [playerSprite] = players.get(parent[0]);
 
       body.is_deactivated = true;
@@ -80,13 +85,47 @@ export default {
 
     // Trigger used items
     for (const event of Items.useEvents()) {
-      const [item_transform, body, sprite] = items.get(event.item);
+      const [_itemTransform, _body, sprite] = items.get(event.item);
+
+      let parentComponents = parents.get(event.item);
+      if (!parentComponents) continue;
+      const [parent] = parentComponents;
+      const [playerSprite, playerTransform] = players.get(parent[0]);
+      const flip = playerSprite.flip_x;
 
       if (sprite.start == 4) {
         sprite.index = 0;
         sprite.start = 8;
         sprite.end = 12;
         sprite.repeat = true;
+
+        // Spawn damage region
+        let entity = world.spawn();
+        world.insert(
+          entity,
+          Value.create(Transform, {
+            translation: {
+              x: playerTransform.translation.x + 20 * (flip ? -1 : 1),
+              y: playerTransform.translation.y + 20,
+            },
+          })
+        );
+        world.insert(
+          entity,
+          Value.create(DamageRegion, {
+            size: {
+              x: 50,
+              y: 80,
+            },
+          })
+        );
+        world.insert(entity, Value.create(DamageRegionOwner, [parent[0]]));
+        world.insert(
+          entity,
+          Value.create(Lifetime, {
+            lifetime: 0.1,
+          })
+        );
       }
     }
 

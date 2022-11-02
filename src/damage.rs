@@ -33,13 +33,8 @@ pub struct DamageRegion {
 
 impl DamageRegion {
     /// Get the collision rectangle of this damage region, given it's transform.
-    pub fn collider_rect(&self, transform: &Transform) -> Rect {
-        Rect::new(
-            transform.translation.x,
-            transform.translation.y,
-            self.size.x,
-            self.size.y,
-        )
+    pub fn collider_rect(&self, position: Vec3) -> Rect {
+        Rect::new(position.x, position.y, self.size.x, self.size.y)
     }
 }
 
@@ -68,11 +63,11 @@ impl Default for DamageRegionOwner {
 /// System that will eliminate players that are intersecting with a damage region.
 fn eliminate_players_in_damage_region(
     mut commands: Commands,
-    players: Query<(Entity, &PlayerIdx, &Transform, &KinematicBody)>,
-    damage_regions: Query<(&DamageRegion, &Transform, Option<&DamageRegionOwner>)>,
+    players: Query<(Entity, &PlayerIdx, &GlobalTransform, &KinematicBody)>,
+    damage_regions: Query<(&DamageRegion, &GlobalTransform, Option<&DamageRegionOwner>)>,
     client_match_info: Option<Res<ClientMatchInfo>>,
 ) {
-    for (player_ent, player_idx, player_transform, kinematic_body) in &players {
+    for (player_ent, player_idx, player_global_transform, kinematic_body) in &players {
         // For network games, only consider the local player. We're not allowed to kill the other
         // players.
         if let Some(info) = &client_match_info {
@@ -81,8 +76,8 @@ fn eliminate_players_in_damage_region(
             }
         }
 
-        let player_rect = kinematic_body.collider_rect(player_transform);
-        for (damage_region, transform, damage_region_owner) in &damage_regions {
+        let player_rect = kinematic_body.collider_rect(player_global_transform.translation());
+        for (damage_region, global_transform, damage_region_owner) in &damage_regions {
             // Don't damage the player that owns this damage region
             if let Some(owner) = damage_region_owner {
                 if owner.0 == player_ent {
@@ -90,7 +85,7 @@ fn eliminate_players_in_damage_region(
                 }
             }
 
-            let damage_rect = damage_region.collider_rect(transform);
+            let damage_rect = damage_region.collider_rect(global_transform.translation());
 
             if player_rect.overlaps(&damage_rect) {
                 commands.add(PlayerKillCommand::new(player_ent));

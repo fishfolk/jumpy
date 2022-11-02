@@ -77,10 +77,10 @@ pub struct KinematicBody {
 }
 
 impl KinematicBody {
-    pub fn collider_rect(&self, transform: &Transform) -> Rect {
+    pub fn collider_rect(&self, position: Vec3) -> Rect {
         Rect::new(
-            transform.translation.x + self.offset.x,
-            transform.translation.y + self.offset.y,
+            position.x + self.offset.x,
+            position.y + self.offset.y,
             self.size.x,
             self.size.y,
         )

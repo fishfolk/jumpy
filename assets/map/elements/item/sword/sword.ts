@@ -85,7 +85,9 @@ export default {
 
     // Trigger used items
     for (const event of Items.useEvents()) {
-      const [_itemTransform, _body, sprite] = items.get(event.item);
+      const [_itemTransform, _body, sprite, globalTransform] = items.get(
+        event.item
+      );
 
       let parentComponents = parents.get(event.item);
       if (!parentComponents) continue;
@@ -110,6 +112,7 @@ export default {
             },
           })
         );
+        world.insert(entity, globalTransform);
         world.insert(
           entity,
           Value.create(DamageRegion, {

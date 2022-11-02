@@ -18,8 +18,8 @@ use crate::{
     },
     physics::KinematicBody,
     player::{
-        PlayerIdx, PlayerKillCommand, PlayerKillEvent, PlayerSetInventoryCommand,
-        PlayerUseItemCommand,
+        PlayerDespawnCommand, PlayerDespawnEvent, PlayerIdx, PlayerKillCommand, PlayerKillEvent,
+        PlayerSetInventoryCommand, PlayerUseItemCommand,
     },
     prelude::*,
     FIXED_TIMESTEP,
@@ -50,6 +50,7 @@ impl Plugin for ClientGamePlugin {
 
 fn send_game_events(
     mut player_kill_events: EventReader<PlayerKillEvent>,
+    mut player_despawn_events: EventReader<PlayerDespawnEvent>,
     mut item_grab_events: EventReader<ItemGrabEvent>,
     mut item_drop_events: EventReader<ItemDropEvent>,
     mut item_use_events: EventReader<ItemUseEvent>,
@@ -98,12 +99,23 @@ fn send_game_events(
     }
 
     for event in player_kill_events.iter() {
-        // As the client, we're only allowed to kill our own player
+        if let Ok((player_idx, ..)) = players.get(event.player) {
+            // As the client, we're only allowed to kill our own player
+            if client_info.player_idx == player_idx.0 {
+                client.send_reliable(&PlayerEvent::KillPlayer {
+                    position: event.position,
+                    velocity: event.velocity,
+                });
+            }
+        } else {
+            warn!("Received kill event for player that isn't found");
+        }
+    }
+
+    for event in player_despawn_events.iter() {
+        // As the client, we're only able to despawn our own player
         if client_info.player_idx == event.player_idx {
-            client.send_reliable(&PlayerEvent::KillPlayer {
-                position: event.position,
-                velocity: event.velocity,
-            });
+            client.send_reliable(&PlayerEvent::DespawnPlayer);
         }
     }
 }
@@ -152,6 +164,13 @@ fn handle_game_events_from_server(
                     });
                 } else {
                     warn!(?event.player_idx, "Net event to kill player that doesn't exist locally");
+                }
+            }
+            PlayerEvent::DespawnPlayer => {
+                if let Some(player_ent) = player_ent {
+                    commands.add(PlayerDespawnCommand::new(player_ent));
+                } else {
+                    warn!(?event.player_idx, "Net event to despawn player that doesn't exist locally");
                 }
             }
             PlayerEvent::GrabItem(net_id) => {

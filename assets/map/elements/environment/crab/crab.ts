@@ -8,7 +8,7 @@ const MapMeta: BevyType<unknown> = {
 
 let i = 0;
 
-const state = ScriptInfo.state(initState);
+const state = Script.state(initState);
 
 export default {
   preUpdateInGame() {

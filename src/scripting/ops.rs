@@ -3,11 +3,11 @@ use bevy_mod_js_scripting::{JsRuntimeOp, OpMap};
 pub mod asset;
 pub mod collision_world;
 pub mod entity;
-pub mod map;
 pub mod item;
+pub mod map;
 pub mod net;
 pub mod player;
-pub mod script_info;
+pub mod script;
 
 pub fn get_ops() -> OpMap {
     let mut ops = OpMap::default();
@@ -17,18 +17,9 @@ pub fn get_ops() -> OpMap {
         "jumpy_element_get_spawned_entities",
         Box::new(map::ElementGetSpawnedEntities),
     );
-    ops.insert(
-        "jumpy_item_grab_events",
-        Box::new(item::ItemGrabEvents),
-    );
-    ops.insert(
-        "jumpy_item_drop_events",
-        Box::new(item::ItemDropEvents),
-    );
-    ops.insert(
-        "jumpy_item_use_events",
-        Box::new(item::ItemUseEvents),
-    );
+    ops.insert("jumpy_item_grab_events", Box::new(item::ItemGrabEvents));
+    ops.insert("jumpy_item_drop_events", Box::new(item::ItemDropEvents));
+    ops.insert("jumpy_item_use_events", Box::new(item::ItemUseEvents));
     ops.insert(
         "jumpy_asset_get_handle_id",
         Box::new(asset::AssetGetHandleId),
@@ -37,14 +28,16 @@ pub fn get_ops() -> OpMap {
         "jumpy_asset_get_absolute_path",
         Box::new(asset::AssetGetAbsolutePath),
     );
-    ops.insert(
-        "jumpy_script_info_get",
-        Box::new(script_info::ScriptInfoGet),
-    );
+    ops.insert("jumpy_script_get_info", Box::new(script::ScriptGetInfo));
     ops.insert("entity_ref_to_js", Box::new(entity::EntityRefToJs));
     ops.insert("entity_ref_from_js", Box::new(entity::EntityRefFromJs));
     ops.insert("jumpy_net_info_get", Box::new(net::NetInfoGet));
     ops.insert("jumpy_player_kill", Box::new(player::PlayerKill));
+    ops.insert("jumpy_player_despawn", Box::new(player::PlayerDespawn));
+    ops.insert(
+        "jumpy_player_kill_events",
+        Box::new(player::PlayerKillEvents),
+    );
     ops.insert("jumpy_player_use_item", Box::new(player::PlayerUseItem));
     ops.insert(
         "jumpy_player_get_inventory",

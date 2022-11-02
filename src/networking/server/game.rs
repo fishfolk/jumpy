@@ -2,7 +2,7 @@ use crate::{
     networking::proto::game::{
         PlayerEvent, PlayerEventFromServer, PlayerState, PlayerStateFromServer,
     },
-    player::{PlayerIdx, PlayerKillCommand},
+    player::{PlayerDespawnCommand, PlayerIdx, PlayerKillCommand},
     prelude::*,
 };
 
@@ -34,6 +34,13 @@ fn handle_client_messages(
                         position: Some(position),
                         velocity: Some(velocity),
                     });
+                    break;
+                }
+            }
+        } else if let PlayerEvent::DespawnPlayer = incomming.message {
+            for (entity, player_idx) in &players {
+                if player_idx.0 == incomming.client_idx {
+                    commands.add(PlayerDespawnCommand::new(entity));
                     break;
                 }
             }

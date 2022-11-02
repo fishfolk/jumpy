@@ -1,4 +1,4 @@
-const scriptId = ScriptInfo.get().path;
+const scriptId = Script.getInfo().path;
 
 export default {
   playerStateTransition() {

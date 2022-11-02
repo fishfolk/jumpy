@@ -30,6 +30,7 @@ pub enum PlayerEvent {
         position: Vec3,
         velocity: Vec2,
     },
+    DespawnPlayer,
     GrabItem(NetId),
     DropItem { position: Vec3, velocity: Vec2 },
     UseItem { position: Vec3, item: NetId },

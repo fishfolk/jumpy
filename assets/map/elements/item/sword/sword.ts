@@ -1,5 +1,11 @@
 const scriptPath = Script.getInfo().path;
 
+type ItemState = {
+  attackingFrame?: number;
+  cooldownFrame?: number;
+};
+const itemStateInit: ItemState = {};
+
 export default {
   preUpdateInGame() {
     // Hydrate newly spawned sword items
@@ -58,6 +64,9 @@ export default {
     );
 
     // Update items that are being held
+    //
+    // This section will make the item follow the player around and match the player's facing
+    // direction.
     for (const { entity: itemEnt, components } of items) {
       const [itemTransform, body, sprite] = components;
 

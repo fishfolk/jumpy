@@ -26,9 +26,12 @@ declare interface ScriptInfo {
   handle_id_hash: string;
 }
 
-declare namespace ScriptInfo {
-  function get(): ScriptInfo;
+declare namespace Script {
+  function getInfo(): ScriptInfo;
   function state<T>(init?: T): T;
+  function entityStates(): object;
+  function getEntityState<T>(entity: Entity, init?: T): T;
+  function setEntityState<T>(entity: Entity, value: T): void;
 }
 
 declare namespace NetCommands {
@@ -55,8 +58,15 @@ declare namespace NetInfo {
   function get(): NetInfo;
 }
 
+type PlayerKillEvent = {
+  player: Entity;
+  velocity: Vec2;
+  position: Vec3;
+};
 declare namespace Player {
   function kill(entity: Entity): void;
+  function despawn(entity: Entity): void;
+  function killEvents(): PlayerKillEvent[];
   function getInventory(player: Entity): Entity | null;
   function setInventory(player: Entity, item: Entity): void;
   function useItem(player: Entity): void;
@@ -105,6 +115,7 @@ declare const GameCamera: BevyType<unknown>;
 
 type PlayerIdx = [usize];
 declare const PlayerIdx: BevyType<PlayerIdx>;
+declare const PlayerKilled: BevyType<unknown>;
 
 type PlayerState = { id: string; age: u64; previous_state: string };
 declare const PlayerState: BevyType<PlayerState>;

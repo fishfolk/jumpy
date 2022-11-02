@@ -31,6 +31,7 @@ maps:
 scripts:
   - map/scripts/kill_out_of_bounds.ts
   - player/states/default.ts
+  - player/states/dead.ts
   - player/states/idle.ts
   - player/states/walk.ts
   - player/states/midair.ts

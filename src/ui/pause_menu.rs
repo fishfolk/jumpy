@@ -7,7 +7,7 @@ use crate::{
     prelude::*,
     ui::input::MenuAction,
     utils::ResetManager,
-    GameState,
+    GameState, networking::client::NetClient,
 };
 
 use super::widgets::{
@@ -59,7 +59,9 @@ pub fn pause_menu(
     localization: Res<Localization>,
     map_handle: Query<&AssetHandle<MapMeta>>,
     mut reset_controller: ResetManager,
+    client: Option<Res<NetClient>>
 ) {
+    let is_online = client.is_some();
     let ui_theme = &game.ui_theme;
 
     egui::CentralPanel::default()
@@ -106,6 +108,7 @@ pub fn pause_menu(
                         }
 
                         ui.scope(|ui| {
+                            ui.set_enabled(!is_online);
                             if BorderedButton::themed(
                                 &ui_theme.button_styles.normal,
                                 &localization.get("restart"),

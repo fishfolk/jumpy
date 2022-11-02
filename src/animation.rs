@@ -105,6 +105,15 @@ fn animate_sprites(mut animated_sprites: Query<(&mut AnimatedSprite, &mut Textur
             .tick(Duration::from_secs_f64(crate::FIXED_TIMESTEP));
 
         if animated_sprite.timer.just_finished() {
+            if animated_sprite.index
+                >= animated_sprite
+                    .end
+                    .saturating_sub(animated_sprite.start)
+                    .saturating_sub(1)
+                && !animated_sprite.repeat
+            {
+                continue;
+            }
             animated_sprite.index += 1;
             animated_sprite.index %= (animated_sprite.end - animated_sprite.start).max(1);
 
@@ -171,7 +180,7 @@ fn update_animated_sprite_components(
             animated_sprite
                 .timer
                 .set_duration(Duration::from_secs_f32(1.0 / fps.max(0.0001)));
-            animated_sprite.timer.set_repeating(repeat);
+            animated_sprite.timer.set_repeating(true);
             animated_sprite.timer.reset();
         }
 

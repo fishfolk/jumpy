@@ -1,4 +1,4 @@
-const scriptPath = ScriptInfo.get().path;
+const scriptPath = Script.getInfo().path;
 
 export default {
   preUpdateInGame() {

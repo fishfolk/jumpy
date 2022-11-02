@@ -31,6 +31,7 @@ impl Plugin for PlayerPlugin {
         app.add_plugin(input::PlayerInputPlugin)
             .add_plugin(state::PlayerStatePlugin)
             .add_fixed_update_event::<PlayerKillEvent>()
+            .add_fixed_update_event::<PlayerDespawnEvent>()
             .register_type::<PlayerIdx>()
             .add_system_to_stage(
                 FixedUpdateStage::PreUpdate,
@@ -40,22 +41,45 @@ impl Plugin for PlayerPlugin {
 }
 
 /// The player index, for example Player 1, Player 2, and so on.
-#[derive(Component, Deref, DerefMut, Reflect, Default, Serialize, Deserialize, Copy, Clone)]
+#[derive(
+    Component, Deref, DerefMut, Reflect, Default, Serialize, Deserialize, Copy, Clone, Debug,
+)]
 #[reflect(Default, Component)]
 pub struct PlayerIdx(pub usize);
 
-/// An event sent when a player is killed
+/// Marker component indicating that a player has been killed.
+///
+/// This usually means their death animation is playing, and they are about to be de-spawned.
+#[derive(Component, Reflect, Default, Copy, Clone, Debug)]
+#[reflect(Default, Component)]
+pub struct PlayerKilled;
+
+/// An event sent when a player is killed.
+///
+/// > **Note:** This is different than when the player is despawned. A player is usually killed to
+/// > play their death animation before they are despawned.
+#[derive(Reflect, Clone, Debug)]
 pub struct PlayerKillEvent {
-    /// The index of the player that was killed
-    pub player_idx: usize,
+    /// The index of the player that was killed.
+    pub player: Entity,
     pub velocity: Vec2,
     pub position: Vec3,
+}
+
+/// An event sent when a player is despawned.
+///
+/// > **Note:** This is different than when the player is killed. A player is usually killed to
+/// > play their death animation before they are despawned.
+pub struct PlayerDespawnEvent {
+    pub player_idx: usize,
 }
 
 /// A [`Command`] to kill a player.
 ///
 /// The command will perform any actions needed for the player kill sequence, including sending
 /// network messages, etc.
+///
+/// > **Note:** This doesn't despawn the player, it just puts the player into it's death animation.
 pub struct PlayerKillCommand {
     /// The player to kill
     pub player: Entity,
@@ -89,9 +113,15 @@ impl PlayerKillCommand {
 
 impl Command for PlayerKillCommand {
     fn write(self, world: &mut World) {
+        let already_killed = world.get::<PlayerKilled>(self.player).is_some();
+        if already_killed {
+            // No need to kill him again.
+            return;
+        }
+
         world.resource_scope(|world, mut kill_events: Mut<Events<PlayerKillEvent>>| {
             // If the entity is a player
-            if let Some(player_idx) = world.get::<PlayerIdx>(self.player) {
+            if world.get::<PlayerIdx>(self.player).is_some() {
                 let position = self.position.unwrap_or_else(|| {
                     world
                         .get::<Transform>(self.player)
@@ -107,7 +137,7 @@ impl Command for PlayerKillCommand {
 
                 // Send kill event
                 kill_events.send(PlayerKillEvent {
-                    player_idx: player_idx.0,
+                    player: self.player,
                     velocity,
                     position,
                 });
@@ -120,13 +150,52 @@ impl Command for PlayerKillCommand {
                     velocity: Some(velocity),
                 }
                 .write(world);
-
-                // Despawn the player
-                despawn_with_children_recursive(world, self.player);
+                world.entity_mut(self.player).insert(PlayerKilled);
             } else {
                 warn!("Tried to kill non-player entity")
             }
         });
+    }
+}
+
+/// A [`Command`] to despawn a player.
+///
+/// This will send any required network messages.
+///
+/// > **Note:** This is different than the [`PlayerKillCommand`] in that it immediately removes the
+/// > player from the world, while [`PlayerKillCommand`] will usually cause the player to enter the
+/// > death animation.
+/// >
+/// > [`PlayerDespawnCommand`] is usually sent at the end of the player death animation.
+pub struct PlayerDespawnCommand {
+    player: Entity,
+}
+
+impl PlayerDespawnCommand {
+    /// Create a new [`PlayerDespawnCommand`].
+    pub fn new(player: Entity) -> Self {
+        Self { player }
+    }
+}
+
+impl Command for PlayerDespawnCommand {
+    fn write(self, world: &mut World) {
+        world.resource_scope(
+            |world, mut despawn_events: Mut<Events<PlayerDespawnEvent>>| {
+                // If the entity is a player
+                if let Some(player_idx) = world.get::<PlayerIdx>(self.player) {
+                    // Send despawn event
+                    despawn_events.send(PlayerDespawnEvent {
+                        player_idx: player_idx.0,
+                    });
+
+                    // Despawn the player entity
+                    despawn_with_children_recursive(world, self.player);
+                } else {
+                    warn!("Tried to despawn non-player entity")
+                }
+            },
+        );
     }
 }
 
@@ -328,11 +397,9 @@ fn hydrate_players(
         }
 
         let input = &player_inputs.players[player_idx.0];
-        let meta = if let Some(meta) = player_meta_assets.get(&input.selected_player) {
-            meta
-        } else {
-            continue;
-        };
+        let meta = player_meta_assets
+            .get(&input.selected_player)
+            .expect("Player meta not loaded");
 
         let (animation_bank, animation_bank_sprite) =
             meta.spritesheet.get_animation_bank_and_sprite();

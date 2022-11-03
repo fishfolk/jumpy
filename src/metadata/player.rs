@@ -56,7 +56,7 @@ impl PlayerSpritesheetMeta {
                         flip_y: false,
                         repeat: clip.repeat,
                         fps: self.animation_fps,
-                        timer: Timer::from_seconds(1.0 / self.animation_fps, clip.repeat),
+                        timer: Timer::from_seconds(1.0 / self.animation_fps, true),
                         index: 0,
                     },
                 )

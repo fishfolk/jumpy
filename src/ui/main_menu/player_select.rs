@@ -48,6 +48,7 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
         _: (),
     ) {
         let mut params: PlayerSelectMenu = state.get_mut(world);
+        let is_online = params.client.is_some();
 
         handle_match_setup_messages(&mut params);
 
@@ -73,7 +74,11 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
             let normal_button_style = &params.game.ui_theme.button_styles.normal;
 
             ui.add_space(heading_text_style.size / 4.0);
-            ui.themed_label(heading_text_style, &params.localization.get("local-game"));
+            if is_online {
+                ui.themed_label(heading_text_style, &params.localization.get("online-game"));
+            } else {
+                ui.themed_label(heading_text_style, &params.localization.get("local-game"));
+            }
             ui.themed_label(
                 bigger_text_style,
                 &params.localization.get("player-select-title"),

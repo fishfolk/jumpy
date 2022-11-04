@@ -938,8 +938,8 @@
             },
             {
               "pos": [
-                530.2856400000001,
-                329.5
+                512,
+                331.5
               ],
               "element": "../elements/environment/crab/crab.element.yaml"
             },
@@ -952,15 +952,15 @@
             },
             {
               "pos": [
-                184,
-                225.5
+                181.53846,
+                233.5
               ],
               "element": "../elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
-                860.9231,
-                225.5
+                848.9231,
+                233.5
               ],
               "element": "../elements/environment/sproinger/sproinger.element.yaml"
             },
@@ -973,15 +973,15 @@
             },
             {
               "pos": [
-                396.00005999999996,
-                537.5
+                384.00005999999996,
+                535.5
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
-                627.3846000000001,
-                537.5
+                608,
+                535.5
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },

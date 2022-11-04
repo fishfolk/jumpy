@@ -147,7 +147,6 @@ fn update_kinematic_bodies(
                 // If none of the sides of the rectangle are un-collided, then we don't know
                 // which direction to move to get out of the wall, and we just give up.
                 _ => {
-                    info!("bail");
                     break;
                 }
             }

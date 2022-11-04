@@ -2788,22 +2788,22 @@
           "elements": [
             {
               "pos": [
-                120,
-                185.5
+                116.28711000000001,
+                201.5
               ],
               "element": "../elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
-                984,
-                193.5
+                982,
+                201.5
               ],
               "element": "../elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
-                616,
-                479.5
+                608,
+                465.5
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },
@@ -2851,8 +2851,8 @@
             },
             {
               "pos": [
-                552,
-                249.5
+                548.2855999999999,
+                265.5
               ],
               "element": "../elements/environment/sproinger/sproinger.element.yaml"
             },

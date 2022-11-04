@@ -192,6 +192,8 @@ for (const map of inMaps) {
             item_specific_offset = [0, 20];
           case "sword":
             item_specific_offset = [0, 20];
+          case "sproinger":
+            item_specific_offset = [-10, 15];
         }
         element.pos = [
           object.position.x + 48 / 2 + item_specific_offset[0],

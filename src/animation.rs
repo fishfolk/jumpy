@@ -116,9 +116,9 @@ fn animate_sprites(mut animated_sprites: Query<(&mut AnimatedSprite, &mut Textur
             }
             animated_sprite.index += 1;
             animated_sprite.index %= (animated_sprite.end - animated_sprite.start).max(1);
-
-            atlas_sprite.index = animated_sprite.start + animated_sprite.index;
         }
+
+        atlas_sprite.index = animated_sprite.start + animated_sprite.index;
     }
 }
 

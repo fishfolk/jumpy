@@ -2602,15 +2602,15 @@
           "elements": [
             {
               "pos": [
-                440,
-                361.5
+                436.90920000000006,
+                363.5
               ],
               "element": "../elements/environment/crab/crab.element.yaml"
             },
             {
               "pos": [
-                376,
-                521.5
+                373.33326,
+                513.5
               ],
               "element": "../elements/environment/crab/crab.element.yaml"
             },
@@ -2658,8 +2658,8 @@
             },
             {
               "pos": [
-                360,
-                187.5
+                352,
+                177.5
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             }

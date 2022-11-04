@@ -1,4 +1,7 @@
 name: Kick Bomb
 category: Weapons
 scripts:
-  - ./sproinger.ts
+  - ./kick_bomb_spawner.ts
+  - ./kick_bomb.ts
+preload_assets:
+  - ./kick_bomb.atlas.yaml

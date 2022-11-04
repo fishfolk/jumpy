@@ -1,14 +1,16 @@
 name: Publish Web Demo
 
 on:
+  - workflow_dispatch
   # Disable temporarily while web build is broken
-  # 
+  #
   # push:
   #   tags:
   #     - "v*"
   #   branches:
   #     - bevy-rewrite
   #     - main
+
 jobs:
   publish-web-demo:
     runs-on: ubuntu-latest

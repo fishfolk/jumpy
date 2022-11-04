@@ -2,8 +2,9 @@ use std::hash::{Hash, Hasher};
 
 use crate::{
     prelude::*,
-    utils::{cache_str, path::NormalizePath},
+    utils::{cache_str},
 };
+use normalize_path::NormalizePath;
 use bevy_mod_js_scripting::{serde_json, JsRuntimeOp, JsValueRef, OpContext};
 
 #[derive(Serialize)]

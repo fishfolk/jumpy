@@ -5,7 +5,7 @@ use crate::prelude::*;
 use anyhow::Context;
 use bevy::asset::HandleId;
 use bevy_mod_js_scripting::{serde_json, JsRuntimeOp, JsValueRef, OpContext};
-use crate::utils::path::NormalizePath;
+use normalize_path::NormalizePath;
 
 pub struct AssetGetHandleId;
 impl JsRuntimeOp for AssetGetHandleId {

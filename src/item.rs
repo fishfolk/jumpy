@@ -20,7 +20,7 @@ impl Plugin for ItemPlugin {
 
 /// Component indicating that the entity it is attached to is an item that can be picked up
 /// by a player.
-#[derive(Component, Reflect, Default, Serialize, Deserialize)]
+#[derive(Component, Reflect, Default, Serialize, Deserialize, Debug)]
 #[reflect(Default, Component)]
 pub struct Item {
     /// The path to the item's script

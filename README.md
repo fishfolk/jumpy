@@ -19,8 +19,9 @@ Fish Folk: Jumpy is a tactical 2D shooter, played by up to 4 players online or o
 
 ### Status
 
-The game is fully playable: \
-https://twitter.com/spicylobsterfam/status/1424084016467226624
+The game is currently under re-construction as it is being rewritten to use the [Bevy] game engine. The game is playable, but some maps have not been fully ported, many items are missing, and there are several bugs.
+
+[Bevy]: https://bevyengine.org
 
 ## Community
 
@@ -64,10 +65,6 @@ pacman -S jumpy
 1. Install Rust with [rustup.rs](https://rustup.rs/)
 2. Clone this repository: `git clone https://github.com/fishfolks/jumpy.git`
 3. `cargo run`
-
-## Default Keybindings
-
-You can view and modify the default keybindings in [config.toml](./config.toml).
 
 ## Credits
 

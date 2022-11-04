@@ -14,6 +14,10 @@ jobs:
     name: Check Rust formatting
     steps:
       - uses: actions/checkout@v3
+      - name: Install Rustfmt
+        uses: actions-rs/toolchain@v1
+        with:
+          components: rustfmt
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
@@ -41,8 +45,12 @@ jobs:
         if: matrix.config.target == 'wasm32-unknown-unknown'
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
           target: ${{ matrix.config.target }}
+          components: clippy
+      - name: Install Clippy
+        if: matrix.config.target != 'wasm32-unknown-unknown'
+        uses: actions-rs/toolchain@v1
+        with:
           components: clippy
       - uses: actions/cache@v3
         with:

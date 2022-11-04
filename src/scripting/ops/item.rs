@@ -1,10 +1,10 @@
-use std::sync::Mutex;
+use std::{path::PathBuf, sync::Mutex};
 
 use crate::{
     item::{Item, ItemDropEvent, ItemGrabEvent, ItemUseEvent},
     prelude::*,
 };
-use bevy::ecs::system::SystemState;
+use bevy::{ecs::system::SystemState, utils::HashMap};
 use bevy_mod_js_scripting::{serde_json, JsRuntimeOp, JsValueRef, OpContext};
 use once_cell::sync::OnceCell;
 
@@ -37,11 +37,14 @@ impl JsRuntimeOp for ItemGrabEvents {
             Query<'w, 's, &'static Item>,
             EventReader<'w, 's, ItemGrabEvent>,
         );
-        static STATE: OnceCell<Mutex<SystemState<Param>>> = OnceCell::new();
-        let mut state = STATE
-            .get_or_init(|| Mutex::new(SystemState::new(world)))
+        static STATE: OnceCell<Mutex<HashMap<PathBuf, SystemState<Param>>>> = OnceCell::new();
+        let mut states = STATE
+            .get_or_init(|| Mutex::new(HashMap::default()))
             .lock()
             .unwrap();
+        let state = states
+            .entry(ctx.script_info.path.clone())
+            .or_insert_with(|| SystemState::new(world));
 
         let value_refs = ctx.op_state.get_mut().unwrap();
 
@@ -91,17 +94,20 @@ impl JsRuntimeOp for ItemDropEvents {
             Query<'w, 's, &'static Item>,
             EventReader<'w, 's, ItemDropEvent>,
         );
-        static STATE: OnceCell<Mutex<SystemState<Param>>> = OnceCell::new();
-        let mut state = STATE
-            .get_or_init(|| Mutex::new(SystemState::new(world)))
+        static STATE: OnceCell<Mutex<HashMap<PathBuf, SystemState<Param>>>> = OnceCell::new();
+        let mut states = STATE
+            .get_or_init(|| Mutex::new(HashMap::default()))
             .lock()
             .unwrap();
+        let state = states
+            .entry(ctx.script_info.path.clone())
+            .or_insert_with(|| SystemState::new(world));
 
         let value_refs = ctx.op_state.get_mut().unwrap();
 
-        let (items, mut grab_events) = state.get_mut(world);
+        let (items, mut drop_events) = state.get_mut(world);
 
-        let events = grab_events
+        let events = drop_events
             .iter()
             .filter(|event| {
                 items
@@ -145,17 +151,20 @@ impl JsRuntimeOp for ItemUseEvents {
             Query<'w, 's, &'static Item>,
             EventReader<'w, 's, ItemUseEvent>,
         );
-        static STATE: OnceCell<Mutex<SystemState<Param>>> = OnceCell::new();
-        let mut state = STATE
-            .get_or_init(|| Mutex::new(SystemState::new(world)))
+        static STATE: OnceCell<Mutex<HashMap<PathBuf, SystemState<Param>>>> = OnceCell::new();
+        let mut states = STATE
+            .get_or_init(|| Mutex::new(HashMap::default()))
             .lock()
             .unwrap();
+        let state = states
+            .entry(ctx.script_info.path.clone())
+            .or_insert_with(|| SystemState::new(world));
 
         let value_refs = ctx.op_state.get_mut().unwrap();
 
-        let (items, mut grab_events) = state.get_mut(world);
+        let (items, mut use_events) = state.get_mut(world);
 
-        let events = grab_events
+        let events = use_events
             .iter()
             .filter(|event| {
                 items

@@ -169,6 +169,7 @@ export default {
               30,
               70
             );
+            break;
           case 1:
             spawnDamageRegion(
               parent[0],
@@ -177,6 +178,7 @@ export default {
               40,
               50
             );
+            break;
           case 2:
             spawnDamageRegion(
               parent[0],
@@ -185,6 +187,7 @@ export default {
               40,
               50
             );
+            break;
         }
 
         state.frame += 1;

@@ -3,7 +3,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::utils::path::NormalizePath;
+use normalize_path::NormalizePath;
 use bevy::{
     asset::{Asset, AssetLoader, AssetPath, LoadedAsset},
     reflect::TypeUuid,

@@ -73,6 +73,7 @@ bevy-inspector-egui = { version = "0.13.0" }
 ulid = { version = "1.0.0", features = ["serde"] }
 bytes = "1.2.1"
 rustls = { version = "0.20.7", features = ["dangerous_configuration", "quic"] }
+normalize-path = "0.2.0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "0.2.83"

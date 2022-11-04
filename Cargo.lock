@@ -2614,6 +2614,7 @@ dependencies = [
  "iyes_loopless",
  "jumpy-matchmaker-proto",
  "leafwing-input-manager",
+ "normalize-path",
  "once_cell",
  "postcard 1.0.2 (git+https://github.com/zicklag/postcard.git?branch=custom-error-messages)",
  "quinn",
@@ -3167,6 +3168,12 @@ dependencies = [
  "memchr",
  "minimal-lexical",
 ]
+
+[[package]]
+name = "normalize-path"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf22e319b2e3cb517350572e3b70c6822e0a520abfb5c78f690e829a73e8d9f2"
 
 [[package]]
 name = "notify"

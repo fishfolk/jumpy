@@ -154,6 +154,11 @@
                 <div id="content" class="content">
                     <main>
                         <!-- markdownlint-disable MD041 -->
+<blockquote>
+<p><strong>⚠️ Warning:</strong> The information in this book is largely out of date with the work-in-progress Bevy
+rewrite that was recently merged. Once the rewrite stabilizes a little bit we will begin updating
+the documentation to match.</p>
+</blockquote>
 <h1><a class="header" href="#fish-folk-jumpy" id="fish-folk-jumpy">Fish Folk: Jumpy</a></h1>
 <p><a href="https://github.com/fishfolks/jumpy/actions"><img src="https://img.shields.io/github/workflow/status/fishfolks/jumpy/Continuous%20integration?logo=github&amp;labelColor=1e1c24&amp;color=8bcfcf" alt="Build Status" /></a> <a href="https://fishfolks.github.io/jumpy/"><img src="https://img.shields.io/badge/documentation-fishfolks.github.io-green.svg?labelColor=1e1c24&amp;color=f3ee7a" alt="Documentation" /></a> <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT%20or%20Apache%202-green.svg?label=license&amp;labelColor=1e1c24&amp;color=34925e" alt="License" /></a> <a href="https://discord.gg/4smxjcheE5"><img src="https://img.shields.io/badge/chat-on%20discord-green.svg?logo=discord&amp;logoColor=fff&amp;labelColor=1e1c24&amp;color=8d5b3f" alt="Discord" /></a></p>
 <p><img src="https://user-images.githubusercontent.com/24392180/151969075-399e9fea-e2de-4340-96a4-0a0e5b79c281.gif" alt="Fish Folk: Jumpy Preview" /></p>
@@ -169,8 +174,7 @@
 <li>Tournaments &amp; matchmaking built in</li>
 </ul>
 <h3><a class="header" href="#status" id="status">Status</a></h3>
-<p>The game is fully playable: <br />
-https://twitter.com/spicylobsterfam/status/1424084016467226624</p>
+<p>The game is currently under re-construction as it is being rewritten to use the <a href="https://bevyengine.org">Bevy</a> game engine. The game is playable, but some maps have not been fully ported, many items are missing, and there are several bugs.</p>
 <h2><a class="header" href="#community" id="community">Community</a></h2>
 <h3><a class="header" href="#contributing" id="contributing">Contributing</a></h3>
 <p>Anyone involved in the Fish Folk community must follow our <a href="https://github.com/fishfolks/jumpy/blob/main/CODE_OF_CONDUCT.md">code of conduct</a>.</p>
@@ -206,8 +210,6 @@ https://twitter.com/spicylobsterfam/status/1424084016467226624</p>
 <li>Clone this repository: <code>git clone https://github.com/fishfolks/jumpy.git</code></li>
 <li><code>cargo run</code></li>
 </ol>
-<h2><a class="header" href="#default-keybindings" id="default-keybindings">Default Keybindings</a></h2>
-<p>You can view and modify the default keybindings in <a href="./config.toml">config.toml</a>.</p>
 <h2><a class="header" href="#credits" id="credits">Credits</a></h2>
 <ul>
 <li><a href="./CREDITS.html">Fish Folk: Jumpy Credits</a></li>
@@ -365,26 +367,7 @@ https://www.contributor-covenant.org/translations.</p>
 <!--| Jellyfish | ![jellyfish](assets/jellyfish.png) | Fires a jellyfish that is controlled by the player and explodes impact. |-->
 <!--| Sproinger | ![sproinger](assets/sproinger.png) | Bounces player when jumped on. |-->
 <h1><a class="header" href="#multiplayer" id="multiplayer">Multiplayer</a></h1>
-<p>Connection process in the FishFight is extremely low-level right now.<br />
-We do not have a matchmaking server and we want to collect data and network setups and possible problems before doing the process fully automatic.</p>
-<p><img src="https://user-images.githubusercontent.com/910977/133952684-19e7f10a-ed80-49e6-8a31-205f28a78c39.png" alt="image" /></p>
-<p>The only supported game mode right now: 1v1.</p>
-<h2><a class="header" href="#connection-types" id="connection-types">Connection Types</a></h2>
-<h3><a class="header" href="#lan" id="lan">LAN</a></h3>
-<p>When both computers are connected to the same router: are on the same wifi, home network etc.</p>
-<p>Send your local IP from &quot;Self addr&quot; field to your opponent, click &quot;Probe connection&quot; and if connection can be established - click &quot;Connect&quot;.</p>
-<h3><a class="header" href="#stun" id="stun">STUN</a></h3>
-<p>When each player is under a NAT. Usually when its two players over internet with different network providers.
-This option may work, but may not, it depends on the type of nat, router configs etc.</p>
-<p>Idea is exactly the same as with LAN: copy-paste your own &quot;Self addr&quot; over discord, probe connection, if it works - click &quot;Connect&quot;</p>
-<h3><a class="header" href="#relay" id="relay">Relay</a></h3>
-<p>When both players are on remote computers over internet, but STUN connection did not work and router reconfiguration is not an option - there is a relay server available.</p>
-<p>Relay server will introduce additional LAG - each packet will be forwarded through a server.</p>
-<p>Connection idea is still the same, but instead of IP &quot;Self addr&quot; will be an ID on the relay server. Copy-paste it over internet, set &quot;Opponent addr&quot;, push &quot;Connect&quot;</p>
-<h2><a class="header" href="#router-configuration" id="router-configuration">Router Configuration</a></h2>
-<p>When STUN server failed, but Relay is too slow - there is a way to improve gameplay experience. Go to router settings and forward ports 3400, 3401, 3402, 3403 to computer with the FishFight.</p>
-<p>It still may depend on the internet provider, maybe the router itself is behind some global provider NAT or something.</p>
-<p>TODO: Make a better &quot;Router configuration&quot; section here.</p>
+<p>TODO: Update for Bevy Rewrite</p>
 <h1><a class="header" href="#contributing-1" id="contributing-1">Contributing</a></h1>
 <p>Fish Fight aims to be a highly contributor-friendly game. If you haven't already, please take some time to read the <a href="code_of_conduct.html">community guidelines</a>.</p>
 <h4><a class="header" href="#a-hrefhttpsgithubcomfishfightfishfightissues124development-tracksa" id="a-hrefhttpsgithubcomfishfightfishfightissues124development-tracksa"><a href="https://github.com/fishfight/FishFight/issues/124">Development Tracks</a></a></h4>

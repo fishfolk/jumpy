@@ -152,26 +152,7 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#multiplayer" id="multiplayer">Multiplayer</a></h1>
-<p>Connection process in the FishFight is extremely low-level right now.<br />
-We do not have a matchmaking server and we want to collect data and network setups and possible problems before doing the process fully automatic.</p>
-<p><img src="https://user-images.githubusercontent.com/910977/133952684-19e7f10a-ed80-49e6-8a31-205f28a78c39.png" alt="image" /></p>
-<p>The only supported game mode right now: 1v1.</p>
-<h2><a class="header" href="#connection-types" id="connection-types">Connection Types</a></h2>
-<h3><a class="header" href="#lan" id="lan">LAN</a></h3>
-<p>When both computers are connected to the same router: are on the same wifi, home network etc.</p>
-<p>Send your local IP from &quot;Self addr&quot; field to your opponent, click &quot;Probe connection&quot; and if connection can be established - click &quot;Connect&quot;.</p>
-<h3><a class="header" href="#stun" id="stun">STUN</a></h3>
-<p>When each player is under a NAT. Usually when its two players over internet with different network providers.
-This option may work, but may not, it depends on the type of nat, router configs etc.</p>
-<p>Idea is exactly the same as with LAN: copy-paste your own &quot;Self addr&quot; over discord, probe connection, if it works - click &quot;Connect&quot;</p>
-<h3><a class="header" href="#relay" id="relay">Relay</a></h3>
-<p>When both players are on remote computers over internet, but STUN connection did not work and router reconfiguration is not an option - there is a relay server available.</p>
-<p>Relay server will introduce additional LAG - each packet will be forwarded through a server.</p>
-<p>Connection idea is still the same, but instead of IP &quot;Self addr&quot; will be an ID on the relay server. Copy-paste it over internet, set &quot;Opponent addr&quot;, push &quot;Connect&quot;</p>
-<h2><a class="header" href="#router-configuration" id="router-configuration">Router Configuration</a></h2>
-<p>When STUN server failed, but Relay is too slow - there is a way to improve gameplay experience. Go to router settings and forward ports 3400, 3401, 3402, 3403 to computer with the FishFight.</p>
-<p>It still may depend on the internet provider, maybe the router itself is behind some global provider NAT or something.</p>
-<p>TODO: Make a better &quot;Router configuration&quot; section here.</p>
+<p>TODO: Update for Bevy Rewrite</p>
 
                     </main>
 

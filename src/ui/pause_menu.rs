@@ -4,10 +4,11 @@ use bevy_fluent::Localization;
 use crate::{
     localization::LocalizationExt,
     metadata::{GameMeta, MapMeta},
+    networking::client::NetClient,
     prelude::*,
     ui::input::MenuAction,
     utils::ResetManager,
-    GameState, networking::client::NetClient,
+    GameState,
 };
 
 use super::widgets::{
@@ -59,7 +60,7 @@ pub fn pause_menu(
     localization: Res<Localization>,
     map_handle: Query<&AssetHandle<MapMeta>>,
     mut reset_controller: ResetManager,
-    client: Option<Res<NetClient>>
+    client: Option<Res<NetClient>>,
 ) {
     let is_online = client.is_some();
     let ui_theme = &game.ui_theme;

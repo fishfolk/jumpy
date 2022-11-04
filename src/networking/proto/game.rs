@@ -26,10 +26,7 @@ pub struct PlayerStateFromServer {
 #[derive(Serialize, Deserialize)]
 pub enum PlayerEvent {
     SpawnPlayer(Vec3),
-    KillPlayer {
-        position: Vec3,
-        velocity: Vec2,
-    },
+    KillPlayer { position: Vec3, velocity: Vec2 },
     DespawnPlayer,
     GrabItem(NetId),
     DropItem { position: Vec3, velocity: Vec2 },

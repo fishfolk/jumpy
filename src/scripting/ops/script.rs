@@ -1,11 +1,8 @@
 use std::hash::{Hash, Hasher};
 
-use crate::{
-    prelude::*,
-    utils::{cache_str},
-};
-use normalize_path::NormalizePath;
+use crate::{prelude::*, utils::cache_str};
 use bevy_mod_js_scripting::{serde_json, JsRuntimeOp, JsValueRef, OpContext};
+use normalize_path::NormalizePath;
 
 #[derive(Serialize)]
 struct JsScriptInfo {

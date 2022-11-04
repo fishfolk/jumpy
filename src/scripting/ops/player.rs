@@ -1,7 +1,10 @@
 use std::sync::Mutex;
 
 use crate::{
-    player::{PlayerKillCommand, PlayerKillEvent, PlayerSetInventoryCommand, PlayerUseItemCommand, PlayerDespawnCommand},
+    player::{
+        PlayerDespawnCommand, PlayerKillCommand, PlayerKillEvent, PlayerSetInventoryCommand,
+        PlayerUseItemCommand,
+    },
     prelude::*,
 };
 use anyhow::Context;

@@ -203,9 +203,8 @@ pub fn controls_settings_ui(
 
                                                 // See if there has been any inputs of the kind we
                                                 // are binding.
-                                                let get_input = params
-                                                    .control_inputs
-                                                    .get_event(binding_kind);
+                                                let get_input =
+                                                    params.control_inputs.get_event(binding_kind);
 
                                                 // If there has been an input
                                                 if let Ok(Some(input_kind)) = get_input {
@@ -230,8 +229,7 @@ pub fn controls_settings_ui(
                                                 // Make sure we don't double-trigger any menu
                                                 // actions while on this menu by consuming all menu
                                                 // actions.
-                                                let mut menu_input =
-                                                    params.menu_input.single_mut();
+                                                let mut menu_input = params.menu_input.single_mut();
                                                 for action in MenuAction::variants() {
                                                     menu_input.consume(action);
                                                 }
@@ -367,8 +365,7 @@ impl<'w, 's> ControlInputBindingEvents<'w, 's> {
                 } else {
                     // Look for axes tilted more than 0.5 in either direction.
                     for gamepad_event in self.gamepad_events.iter() {
-                        if let GamepadEventType::AxisChanged(axis, value) =
-                            gamepad_event.event_type
+                        if let GamepadEventType::AxisChanged(axis, value) = gamepad_event.event_type
                         {
                             // Create an axis positive movement binding
                             if value > 0.5 {

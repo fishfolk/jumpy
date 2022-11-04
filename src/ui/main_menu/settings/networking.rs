@@ -34,7 +34,10 @@ pub fn networking_settings_ui(
         let last_top_tab = settings_tabs.iter().last().unwrap();
         params.adjacencies.text_boxes.insert(text_box.id);
 
-        params.adjacencies.widget(text_box).to_right_of(last_top_tab);
+        params
+            .adjacencies
+            .widget(text_box)
+            .to_right_of(last_top_tab);
         for tab in settings_tabs {
             params.adjacencies.widget(text_box).below(tab);
             params.adjacencies.widget(tab).below(first_bottom_button);

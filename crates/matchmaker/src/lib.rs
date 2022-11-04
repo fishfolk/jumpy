@@ -69,7 +69,9 @@ async fn server(args: Config) -> anyhow::Result<()> {
                 );
 
                 // Spawn a task to handle the new connection
-                task_pool.spawn(matchmaker::handle_connection(conn)).detach();
+                task_pool
+                    .spawn(matchmaker::handle_connection(conn))
+                    .detach();
             }
             Err(e) => error!("Error opening client connection: {e:?}"),
         }

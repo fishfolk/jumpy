@@ -59,11 +59,11 @@ export default {
     const players = world.query(AnimatedSprite, Transform, PlayerIdx);
     const parents = world.query(Parent);
     const items = world.query(
+      Item,
       Transform,
       KinematicBody,
       AnimatedSprite,
       GlobalTransform,
-      Item
     );
 
     // Helper to spawn a damage region
@@ -113,7 +113,9 @@ export default {
     // This section will make the item follow the player around and match the player's facing
     // direction.
     for (const { entity: itemEnt, components } of items) {
-      const [itemTransform, body, sprite] = components;
+      const [item, itemTransform, body, sprite] = components;
+      if (item.script != scriptPath) continue;
+
       const state = Script.getEntityState<ItemState>(itemEnt, itemStateInit);
 
       let parentComponents = parents.get(itemEnt);
@@ -210,7 +212,7 @@ export default {
       const state = Script.getEntityState<ItemState>(event.item, itemStateInit);
 
       if (state.status == "idle") {
-        const [_itemTransform, _body, sprite] = items.get(event.item);
+        const [_item, _itemTransform, _body, sprite] = items.get(event.item);
 
         // Start attacking animation
         sprite.index = 0;
@@ -227,7 +229,7 @@ export default {
 
     // Update dropped items
     for (const event of Items.dropEvents()) {
-      const [item_transform, body, sprite] = items.get(event.item);
+      const [_item, itemTransform, body, sprite] = items.get(event.item);
 
       // Re-activate physics body on the item
       body.is_deactivated = false;
@@ -239,9 +241,9 @@ export default {
       body.is_spawning = true;
 
       // Drop item at the middle of the player
-      item_transform.translation.y = event.position.y - 30;
-      item_transform.translation.x = event.position.x;
-      item_transform.translation.z = event.position.z;
+      itemTransform.translation.y = event.position.y - 30;
+      itemTransform.translation.x = event.position.x;
+      itemTransform.translation.z = event.position.z;
     }
   },
 };

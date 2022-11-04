@@ -3,7 +3,6 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use normalize_path::NormalizePath;
 use bevy::{
     asset::{Asset, AssetLoader, AssetPath, LoadedAsset},
     reflect::TypeUuid,
@@ -11,6 +10,7 @@ use bevy::{
 };
 use bevy_egui::egui;
 use bevy_mod_js_scripting::{serde_json, JsScript};
+use normalize_path::NormalizePath;
 
 use crate::{
     config::ENGINE_CONFIG,

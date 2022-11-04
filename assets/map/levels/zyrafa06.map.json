@@ -1072,7 +1072,7 @@
             },
             {
               "pos": [
-                724.0001199999999,
+                712.0001199999999,
                 73.5
               ],
               "element": "../elements/environment/crab/crab.element.yaml"
@@ -1086,7 +1086,7 @@
             },
             {
               "pos": [
-                480,
+                478.66668000000004,
                 265.5
               ],
               "element": "../elements/environment/crab/crab.element.yaml"
@@ -1121,36 +1121,36 @@
             },
             {
               "pos": [
-                344,
-                57.5
+                343.11120000000005,
+                73.5
               ],
               "element": "../elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
-                760,
-                57.5
+                758.1110799999999,
+                73.5
               ],
               "element": "../elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
-                952,
-                57.5
+                949.4359199999999,
+                73.5
               ],
               "element": "../elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
-                718.8571999999999,
-                347.5
+                706.8571999999999,
+                337.5
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
-                240.85712,
-                313.5
+                224,
+                311.5
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             }

@@ -5938,15 +5938,15 @@
             },
             {
               "pos": [
-                260.51264,
-                313.5
+                248.51263999999998,
+                329.5
               ],
               "element": "../elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
-                880,
-                323.5
+                872,
+                337.5
               ],
               "element": "../elements/environment/sproinger/sproinger.element.yaml"
             },
@@ -5959,8 +5959,8 @@
             },
             {
               "pos": [
-                816,
-                585.5
+                808,
+                587.5
               ],
               "element": "../elements/environment/crab/crab.element.yaml"
             },
@@ -5994,7 +5994,7 @@
             },
             {
               "pos": [
-                544,
+                543.6886,
                 713.5
               ],
               "element": "../elements/environment/crab/crab.element.yaml"
@@ -6008,28 +6008,28 @@
             },
             {
               "pos": [
-                462.66668000000004,
-                263.5
+                450.66668000000004,
+                249.5
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
-                304,
+                301.33331999999996,
+                623.5
+              ],
+              "element": "../elements/item/sword/sword.element.yaml"
+            },
+            {
+              "pos": [
+                896,
                 625.5
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
-                904,
-                635.5
-              ],
-              "element": "../elements/item/sword/sword.element.yaml"
-            },
-            {
-              "pos": [
-                758.6666,
+                746.6666,
                 257.5
               ],
               "element": "../elements/item/sword/sword.element.yaml"

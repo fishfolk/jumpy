@@ -1569,36 +1569,36 @@
             },
             {
               "pos": [
-                517.7092,
-                553.5
+                505.7092,
+                555.5
               ],
               "element": "../elements/environment/crab/crab.element.yaml"
             },
             {
               "pos": [
-                664,
-                305.5
+                661.04712,
+                303.5
               ],
               "element": "../elements/environment/crab/crab.element.yaml"
             },
             {
               "pos": [
-                445.38,
+                433.38,
+                427.5
+              ],
+              "element": "../elements/environment/crab/crab.element.yaml"
+            },
+            {
+              "pos": [
+                624,
                 425.5
               ],
               "element": "../elements/environment/crab/crab.element.yaml"
             },
             {
               "pos": [
-                632,
-                437.5
-              ],
-              "element": "../elements/environment/crab/crab.element.yaml"
-            },
-            {
-              "pos": [
-                552,
-                61.5
+                544,
+                49.5
               ],
               "element": "../elements/environment/crab/crab.element.yaml"
             },
@@ -1653,36 +1653,36 @@
             },
             {
               "pos": [
-                88,
-                25.5
+                80,
+                41.5
               ],
               "element": "../elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
-                56,
-                345.5
+                48,
+                361.5
               ],
               "element": "../elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
-                925.75,
-                25.5
+                913.75,
+                41.5
               ],
               "element": "../elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
-                963,
-                345.5
+                944,
+                361.5
               ],
               "element": "../elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
-                208,
-                221.5
+                200,
+                209.5
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },

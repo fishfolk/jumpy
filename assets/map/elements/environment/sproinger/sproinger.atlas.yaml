@@ -1,0 +1,4 @@
+image: ./sproinger.png
+tile_size: [32, 20]
+rows: 3
+columns: 2

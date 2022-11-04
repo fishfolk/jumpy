@@ -1968,15 +1968,15 @@
           "elements": [
             {
               "pos": [
-                60,
-                225.5
+                48,
+                233.5
               ],
               "element": "../elements/environment/sproinger/sproinger.element.yaml"
             },
             {
               "pos": [
-                824,
-                225.5
+                820,
+                233.5
               ],
               "element": "../elements/environment/sproinger/sproinger.element.yaml"
             },
@@ -2054,8 +2054,8 @@
             },
             {
               "pos": [
-                453.41045999999994,
-                145.5
+                441.41045999999994,
+                143.5
               ],
               "element": "../elements/environment/crab/crab.element.yaml"
             },
@@ -2089,15 +2089,15 @@
             },
             {
               "pos": [
-                568,
-                297.5
+                560,
+                299.5
               ],
               "element": "../elements/environment/crab/crab.element.yaml"
             },
             {
               "pos": [
-                312.96106,
-                305.5
+                296,
+                303.5
               ],
               "element": "../elements/environment/crab/crab.element.yaml"
             },
@@ -2117,22 +2117,22 @@
             },
             {
               "pos": [
-                424,
-                381.5
+                416,
+                369.5
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
-                584.1314600000001,
-                481.5
+                568,
+                483.5
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             },
             {
               "pos": [
-                312,
-                481.5
+                308,
+                479.5
               ],
               "element": "../elements/item/sword/sword.element.yaml"
             }

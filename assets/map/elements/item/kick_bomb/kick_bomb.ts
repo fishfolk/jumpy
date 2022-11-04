@@ -1,9 +1,14 @@
 const scriptPath = Script.getInfo().path;
 
-type ItemState = null;
-const itemStateInit: ItemState = null;
-
-const COOLDOWN_FRAMES = 15;
+type LitBombState = {
+  frames: number;
+};
+type ScriptState = {
+  litBombs: JsEntity[];
+};
+const scriptState = Script.state<ScriptState>({
+  litBombs: [],
+});
 
 export default {
   preUpdateInGame() {
@@ -23,7 +28,7 @@ export default {
           entity,
           Value.create(AnimatedSprite, {
             start: 0,
-            end: 6,
+            end: 5,
             repeat: false,
             fps: 0,
             atlas: {
@@ -49,7 +54,13 @@ export default {
   },
 
   updateInGame() {
-    const players = world.query(AnimatedSprite, Transform, PlayerIdx);
+    const players = world.query(
+      AnimatedSprite,
+      Transform,
+      PlayerIdx,
+      GlobalTransform,
+      ComputedVisibility
+    );
     const parents = world.query(Parent);
     const items = world.query(
       Item,
@@ -57,6 +68,12 @@ export default {
       KinematicBody,
       AnimatedSprite,
       GlobalTransform
+    );
+    const transforms = world.query(
+      Transform,
+      GlobalTransform,
+      Visibility,
+      ComputedVisibility
     );
 
     // Update items that are being held
@@ -66,8 +83,6 @@ export default {
     for (const { entity: itemEnt, components } of items) {
       const [item, itemTransform, body, sprite] = components;
       if (item.script != scriptPath) continue;
-
-      const state = Script.getEntityState<ItemState>(itemEnt, itemStateInit);
 
       let parentComponents = parents.get(itemEnt);
       // If this item isn't being held, skip the item
@@ -95,8 +110,130 @@ export default {
 
     // For every item that is being used
     for (const event of Items.useEvents()) {
-      // Get the current item state
-      const state = Script.getEntityState<ItemState>(event.item, itemStateInit);
+      let parentComponents = parents.get(event.item);
+      // If this item isn't being held, skip the item
+      if (!parentComponents) continue;
+
+      // Get the player info
+      const [parent] = parentComponents;
+      const [
+        playerSprite,
+        transform,
+        _idx,
+        globalTransform,
+        computedVisibility,
+      ] = players.get(parent[0]);
+      const flip = playerSprite.flip_x;
+      const flipFactor = flip ? -1 : 1;
+
+      // Despawn the item from the player's hand
+      WorldTemp.despawnRecursive(event.item);
+
+      // Spawn a new, lit bomb to the map
+      const entity = world.spawn();
+      scriptState.litBombs.push(EntityRef.toJs(entity));
+      world.insert(entity, transform);
+      world.insert(entity, globalTransform);
+      world.insert(entity, computedVisibility);
+      world.insert(entity, Value.create(Visibility));
+
+      // Add the animated sprite
+      world.insert(
+        entity,
+        Value.create(AnimatedSprite, {
+          start: 3,
+          end: 5,
+          repeat: true,
+          fps: 8,
+          atlas: {
+            id: Assets.getHandleId("kick_bomb.atlas.yaml"),
+          },
+        })
+      );
+      // And the kinematic body
+      world.insert(
+        entity,
+        Value.create(KinematicBody, {
+          size: {
+            x: 26,
+            y: 26,
+          },
+          velocity: {
+            x: 10 * flipFactor,
+          },
+          gravity: 1,
+          has_friction: true,
+          has_mass: true,
+        })
+      );
+    }
+
+    // Handle lit bombs
+    const litBombs = scriptState.litBombs;
+    scriptState.litBombs = [];
+    for (const jsEntity of litBombs) {
+      const bombEntity = EntityRef.fromJs(jsEntity);
+
+      // Get the bomb's state
+      const state = Script.getEntityState<LitBombState>(bombEntity, {
+        frames: 0,
+      });
+      const [transform, globalTransform, visibility, computedVisibility] =
+        transforms.get(bombEntity);
+
+      if (state.frames >= 60) {
+        // Spawn damage region entity
+        const damageRegionEnt = world.spawn();
+        world.insert(damageRegionEnt, transform);
+        world.insert(damageRegionEnt, globalTransform);
+        world.insert(damageRegionEnt, visibility);
+        world.insert(damageRegionEnt, computedVisibility);
+        world.insert(
+          damageRegionEnt,
+          Value.create(DamageRegion, {
+            size: {
+              x: 26 * 3.5,
+              y: 26 * 3.5,
+            },
+          })
+        );
+        world.insert(
+          damageRegionEnt,
+          Value.create(Lifetime, {
+            lifetime: 1 / 9 * 4,
+          })
+        );
+        // Spawn explosion sprite entity
+        const explosionSpriteEnt = world.spawn();
+        world.insert(explosionSpriteEnt, transform);
+        world.insert(explosionSpriteEnt, globalTransform);
+        world.insert(explosionSpriteEnt, visibility);
+        world.insert(explosionSpriteEnt, computedVisibility);
+        world.insert(
+          explosionSpriteEnt,
+          Value.create(AnimatedSprite, {
+            start: 0,
+            end: 11,
+            repeat: false,
+            fps: 9,
+            atlas: {
+              id: Assets.getHandleId("explosion.atlas.yaml"),
+            },
+          })
+        );
+        world.insert(
+          explosionSpriteEnt,
+          Value.create(Lifetime, {
+            lifetime: 1 / 9 * 11,
+          })
+        );
+
+        // Despawn the lit bomb
+        WorldTemp.despawnRecursive(bombEntity);
+      } else {
+        state.frames += 1;
+        scriptState.litBombs.push(jsEntity);
+      }
     }
 
     // Update dropped items

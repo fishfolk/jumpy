@@ -17,6 +17,10 @@ declare namespace Assets {
   function getAbsolutePath(relative_path: string): string;
 }
 
+declare namespace WorldTemp {
+  function despawnRecursive(entity: Entity): void;
+}
+
 // All handles have the same type, so just alias here
 type HandleJsScript = HandleImage;
 

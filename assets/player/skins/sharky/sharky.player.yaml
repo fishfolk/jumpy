@@ -24,6 +24,6 @@ spritesheet:
       frames: [56, 56]
       repeat: false
     death_1:
-      frames: [65, 71]
+      frames: [70, 76]
       repeat: false
 

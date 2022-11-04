@@ -8,6 +8,7 @@ pub mod map;
 pub mod net;
 pub mod player;
 pub mod script;
+pub mod world;
 
 pub fn get_ops() -> OpMap {
     let mut ops = OpMap::default();
@@ -50,6 +51,11 @@ pub fn get_ops() -> OpMap {
     ops.insert(
         "jumpy_collision_world_actor_collisions",
         Box::new(collision_world::CollisionWorldActorCollisions),
+    );
+
+    ops.insert(
+        "jumpy_world_despawn_recursive",
+        Box::new(world::WorldDespawnRecursive),
     );
 
     ops

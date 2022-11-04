@@ -5,3 +5,4 @@ scripts:
   - ./kick_bomb.ts
 preload_assets:
   - ./kick_bomb.atlas.yaml
+  - ./explosion.atlas.yaml

@@ -416,7 +416,7 @@ fn hydrate_players(
             .insert_bundle(VisibilityBundle::default());
 
         let kinematic_body = KinematicBody {
-            size: Vec2::new(38.0, 48.0), // FIXME: Don't hardcode! Load from player meta.
+            size: Vec2::new(32.0, 48.0), // FIXME: Don't hardcode! Load from player meta.
             has_mass: true,
             has_friction: true,
             gravity: 1.0,

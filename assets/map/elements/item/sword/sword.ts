@@ -63,7 +63,7 @@ export default {
       Transform,
       KinematicBody,
       AnimatedSprite,
-      GlobalTransform,
+      GlobalTransform
     );
 
     // Helper to spawn a damage region
@@ -76,7 +76,13 @@ export default {
     ) => {
       /// This is a hack to get a global transform because scripts can't construct it with
       /// Value.create(). ( Fixed in Bevy 0.9 )
-      const globalTransform = items[0].components[3];
+      const [
+        _item,
+        _transform,
+        _kinematicBody,
+        _animatedSprite,
+        globalTransform,
+      ] = items[0].components;
 
       // Spawn damage region entity
       let entity = world.spawn();

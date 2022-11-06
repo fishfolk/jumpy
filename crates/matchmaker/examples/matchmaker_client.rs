@@ -2,10 +2,10 @@ use std::{net::SocketAddr, sync::Arc, time::Duration};
 
 use bevy_tasks::{IoTaskPool, TaskPool};
 use certs::SkipServerVerification;
-use jumpy::networking::proto::{Ping, Pong};
 use jumpy_matchmaker_proto::{MatchInfo, MatchmakerRequest, MatchmakerResponse};
 use quinn::{ClientConfig, Endpoint, EndpointConfig};
 use quinn_bevy::BevyIoTaskPoolExecutor;
+use serde::{Deserialize, Serialize};
 
 static SERVER_NAME: &str = "localhost";
 
@@ -15,6 +15,11 @@ fn client_addr() -> SocketAddr {
 
 fn server_addr() -> SocketAddr {
     "127.0.0.1:8943".parse::<SocketAddr>().unwrap()
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct Hello {
+    i_am: String,
 }
 
 mod certs {
@@ -75,7 +80,9 @@ async fn client() -> anyhow::Result<()> {
     )?
     .0;
 
-    println!("Opened client on {}", endpoint.local_addr()?);
+    let i_am = std::env::args().nth(2).unwrap();
+    let hello = Hello { i_am };
+    println!("o  Opened client on {}. {hello:?}", endpoint.local_addr()?);
 
     // Connect to the server passing in the server name which is supposed to be in the server certificate.
     let conn = endpoint
@@ -86,26 +93,26 @@ async fn client() -> anyhow::Result<()> {
     let (mut send, recv) = conn.open_bi().await?;
 
     let message = MatchmakerRequest::RequestMatch(MatchInfo {
-        player_count: std::env::args()
+        client_count: std::env::args()
             .nth(1)
             .map(|x| x.parse().unwrap())
             .unwrap_or(0),
     });
-    println!("Sending match request: {message:?}");
+    println!("=> Sending match request: {message:?}");
     let message = postcard::to_allocvec(&message)?;
 
     send.write_all(&message).await?;
     send.finish().await?;
 
-    println!("Waiting for response");
+    println!("o  Waiting for response");
 
     let message = recv.read_to_end(256).await?;
     let message: MatchmakerResponse = postcard::from_bytes(&message)?;
 
     if let MatchmakerResponse::Accepted = message {
-        println!("Request accepted, waiting for match");
+        println!("<= Request accepted, waiting for match");
     } else {
-        panic!("Unexpected message from server!");
+        panic!("<= Unexpected message from server!");
     }
 
     loop {
@@ -114,37 +121,64 @@ async fn client() -> anyhow::Result<()> {
         let message: MatchmakerResponse = postcard::from_bytes(&message)?;
 
         match message {
-            MatchmakerResponse::PlayerCount(count) => {
-                println!("{count} players in lobby");
+            MatchmakerResponse::ClientCount(count) => {
+                println!("<= {count} players in lobby");
             }
             MatchmakerResponse::Success => {
-                println!("Match is ready!");
+                println!("<= Match is ready!");
                 break;
             }
-            _ => panic!("Unexpected message from server"),
+            _ => panic!("<= Unexpected message from server"),
         }
     }
 
-    async_io::Timer::after(Duration::from_secs(2)).await;
+    let task_pool = IoTaskPool::get();
 
-    for _ in 0..3 {
-        let mut sender = conn.open_uni().await?;
+    let conn_ = conn.clone();
+    task_pool
+        .spawn(async move {
+            let result = async move {
+                for _ in 0..3 {
+                    println!("=> {hello:?}");
+                    let mut sender = conn_.open_uni().await?;
+                    sender
+                        .write_all(&postcard::to_allocvec(&hello.clone())?)
+                        .await?;
+                    sender.finish().await?;
 
-        println!("Sending ping to server");
-        sender.write_all(&postcard::to_allocvec(&Ping)?).await?;
-        sender.write_all(&u32::to_le_bytes(0)).await?;
-        sender.finish().await?;
+                    async_io::Timer::after(Duration::from_secs(1)).await;
+                }
 
-        println!("Waiting for pong");
-        let recv = conn.accept_uni().await?;
-        let mut incomming = recv.read_to_end(256).await?;
-        let type_idx_bytes: [u8; 4] = incomming.split_off(incomming.len() - 4).try_into().unwrap();
-        let type_idx = u32::from_le_bytes(type_idx_bytes);
-        assert_eq!(type_idx, 1, "Invalid type");
-        let message: Pong = postcard::from_bytes(&incomming).unwrap();
+                Ok::<_, anyhow::Error>(())
+            };
 
-        println!("Got message: {:?}", message);
-    }
+            if let Err(e) = result.await {
+                eprintln!("<= Error: {e:?}");
+            }
+        })
+        .detach();
+
+    let conn_ = conn.clone();
+    task_pool
+        .spawn(async move {
+            loop {
+                let result = async {
+                    let recv = conn_.accept_uni().await?;
+
+                    let incomming = recv.read_to_end(256).await?;
+                    let message: Hello = postcard::from_bytes(&incomming).unwrap();
+
+                    println!("<= {message:?}");
+
+                    Ok::<_, anyhow::Error>(())
+                };
+                if let Err(e) = result.await {
+                    eprintln!("Error: {e:?}");
+                    break;
+                }
+            }
+        })
+        .detach();
 
     async_io::Timer::after(Duration::from_secs(4)).await;
 

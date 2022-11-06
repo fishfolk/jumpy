@@ -5,7 +5,6 @@ edition = "2021"
 authors = ["The Fish Fight Game & Spicy Lobster Developers"]
 
 [dependencies]
-jumpy = { path = "../../", default-features = false }
 jumpy-matchmaker-proto = { path = "../matchmaker-proto" }
 anyhow = "1.0.66"
 async-executor = "1.4.1"
@@ -23,8 +22,9 @@ tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
 clap = { version = "4.0.18", features = ["derive", "env"] }
 tokio = { version = "1.0", features = ["full"] }
 either = "1.8.0"
-blocking = "1.2.0"
 scc = "0.11.1"
+bytes = "1.2.1"
+futures = { version = "0.3.25", default-features = false, features = ["std", "async-await"] }
 
 [dev-dependencies]
 async-io = "1.9.0"

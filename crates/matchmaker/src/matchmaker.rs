@@ -5,7 +5,7 @@ use once_cell::sync::Lazy;
 use quinn::{Connection, ConnectionError};
 use scc::HashMap;
 
-use crate::game_server::start_game_server;
+use crate::proxy::start_proxy;
 
 pub async fn handle_connection(conn: Connection) {
     let connection_id = conn.stable_id();
@@ -72,7 +72,7 @@ async fn impl_matchmaker(conn: Connection) -> anyhow::Result<()> {
                         send.write_all(&message).await?;
                         send.finish().await?;
 
-                        let player_count = match_info.player_count;
+                        let player_count = match_info.client_count;
 
                         let mut members_to_join = Vec::new();
                         let mut members_to_notify = Vec::new();
@@ -120,7 +120,7 @@ async fn impl_matchmaker(conn: Connection) -> anyhow::Result<()> {
                                         if let Some(members) = members {
                                             let result = async {
                                                 let message = postcard::to_allocvec(
-                                                    &MatchmakerResponse::PlayerCount(
+                                                    &MatchmakerResponse::ClientCount(
                                                         members.len() as u8
                                                     ),
                                                 )?;
@@ -154,7 +154,7 @@ async fn impl_matchmaker(conn: Connection) -> anyhow::Result<()> {
                             .await;
 
                         if !members_to_notify.is_empty() {
-                            let message = postcard::to_allocvec(&MatchmakerResponse::PlayerCount(
+                            let message = postcard::to_allocvec(&MatchmakerResponse::ClientCount(
                                 members_to_notify.len() as u8,
                             ))?;
                             for conn in members_to_notify {
@@ -179,7 +179,7 @@ async fn impl_matchmaker(conn: Connection) -> anyhow::Result<()> {
                             }
 
                             // Hand the clients off to the game manager
-                            start_game_server(match_info, clients).await;
+                            start_proxy(match_info, clients).await;
                         }
                     }
                 }

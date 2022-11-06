@@ -10,8 +10,8 @@ use quinn_bevy::BevyIoTaskPoolExecutor;
 pub mod cli;
 
 mod certs;
-mod game_server;
 mod matchmaker;
+mod proxy;
 
 #[derive(clap::Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -19,18 +19,10 @@ struct Config {
     /// The server address to listen on
     #[clap(short, long = "listen", default_value = "0.0.0.0:8943")]
     listen_addr: SocketAddr,
-
-    /// The directory containing the bevy assets
-    #[clap(short, long, env = "JUMPY_ASSET_DIR")]
-    asset_dir: String,
 }
 
 async fn server(args: Config) -> anyhow::Result<()> {
     let task_pool = IoTaskPool::get();
-
-    // Put Jumpy in server mode
-    std::env::set_var(jumpy::config::SERVER_MODE_ENV_VAR, "true");
-    std::env::set_var(jumpy::config::ASSET_DIR_ENV_VAR, args.asset_dir);
 
     // Set allowed threads for blocking thread pool. This value represents the maxiumum number of
     // matches that can run at the same time.

@@ -41,7 +41,7 @@ async fn server(args: Config) -> anyhow::Result<()> {
 
     // Open Socket and create endpoint
     let socket = std::net::UdpSocket::bind(args.listen_addr)?;
-    let (endpoint, mut incoming) = Endpoint::new(
+    let endpoint = Endpoint::new(
         EndpointConfig::default(),
         Some(server_config),
         socket,
@@ -50,7 +50,7 @@ async fn server(args: Config) -> anyhow::Result<()> {
     info!(address=%endpoint.local_addr()?, "Started server");
 
     // Listen for incomming connections
-    while let Some(connecting) = incoming.next().await {
+    while let Some(connecting) = endpoint.accept().await {
         let connection = connecting.await;
 
         match connection {

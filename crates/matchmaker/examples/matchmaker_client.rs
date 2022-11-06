@@ -77,8 +77,7 @@ async fn client() -> anyhow::Result<()> {
         None,
         socket,
         BevyIoTaskPoolExecutor,
-    )?
-    .0;
+    )?;
 
     let i_am = std::env::args().nth(2).unwrap();
     let hello = Hello { i_am };

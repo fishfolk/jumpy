@@ -78,7 +78,7 @@ wasm-bindgen = "0.2.83"
 web-sys = { version = "0.3", features = ["Window","Location","Storage"] } 
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-quinn = { git = "https://github.com/quinn-rs/quinn.git", default-features = false, features = ["futures-io", "native-certs", "tls-rustls"] }
+quinn = { version = "0.9", default-features = false, features = ["futures-io", "native-certs", "tls-rustls"] }
 quinn-bevy = { path = "crates/quinn-bevy" }
 
 [profile.dev.package."*"]

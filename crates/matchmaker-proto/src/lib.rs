@@ -9,12 +9,12 @@ pub enum MatchmakerRequest {
 /// Information about a match that is being requested
 #[derive(Serialize, Deserialize, Debug, Clone, Hash, Eq, PartialEq)]
 pub struct MatchInfo {
-    pub player_count: u8,
+    pub client_count: u8,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum MatchmakerResponse {
     Accepted,
-    PlayerCount(u8),
+    ClientCount(u8),
     Success,
 }

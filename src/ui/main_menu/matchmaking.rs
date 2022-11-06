@@ -310,7 +310,9 @@ async fn impl_start_matchmaking(
 
         let (mut send, recv) = conn.open_bi().await?;
 
-        let message = MatchmakerRequest::RequestMatch(MatchInfo { player_count });
+        let message = MatchmakerRequest::RequestMatch(MatchInfo {
+            client_count: player_count,
+        });
 
         let message = postcard::to_allocvec(&message)?;
         send.write_all(&message).await?;
@@ -336,7 +338,7 @@ async fn impl_start_matchmaking(
             let message: MatchmakerResponse = postcard::from_bytes(&message)?;
 
             match message {
-                MatchmakerResponse::PlayerCount(count) => {
+                MatchmakerResponse::ClientCount(count) => {
                     status
                         .try_send(Status::WaitingForPlayers {
                             players: count as usize,

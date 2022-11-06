@@ -6,7 +6,6 @@ use bevy::{
 };
 use bevy_egui::*;
 use bevy_fluent::Localization;
-use iyes_loopless::condition::IntoConditionalExclusiveSystem;
 
 use crate::{
     localization::LocalizationExt,
@@ -46,7 +45,12 @@ impl Plugin for MainMenuPlugin {
             .init_resource::<settings::SettingsTab>()
             .init_resource::<settings::ModifiedSettings>()
             .init_resource::<player_select::PlayerSelectState>()
-            .add_system(main_menu_system.run_in_state(GameState::MainMenu).at_end())
+            .add_system(
+                main_menu_system
+                    .into_conditional_exclusive()
+                    .run_in_state(GameState::MainMenu)
+                    .at_end(),
+            )
             .add_enter_system(GameState::MainMenu, setup_main_menu)
             .add_exit_system(GameState::MainMenu, clean_up_main_menu);
     }

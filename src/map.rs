@@ -147,7 +147,7 @@ pub fn hydrate_maps(
                         }
                         let tile_entity = tile_entity_commands.id();
 
-                        storage.set(&tile_pos, Some(tile_entity));
+                        storage.set(&tile_pos, tile_entity);
 
                         tile_entities.push(tile_entity);
                     }
@@ -164,7 +164,9 @@ pub fn hydrate_maps(
                                 x: map.tile_size.x as f32,
                                 y: map.tile_size.y as f32,
                             },
-                            texture: TilemapTexture(tile_layer.tilemap_handle.inner.clone_weak()),
+                            texture: TilemapTexture::Single(
+                                tile_layer.tilemap_handle.inner.clone_weak(),
+                            ),
                             storage,
                             transform: Transform::from_xyz(0.0, 0.0, -100.0 + i as f32),
                             ..default()

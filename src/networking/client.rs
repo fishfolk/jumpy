@@ -115,8 +115,7 @@ pub async fn open_connection(
         None,
         socket,
         BevyIoTaskPoolExecutor,
-    )?
-    .0;
+    )?;
 
     let conn = endpoint
         .connect_with(client_config, server_addr.into(), "server")?

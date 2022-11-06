@@ -47,6 +47,7 @@ impl Plugin for PlayerStatePlugin {
                 // the `app.add_system_to_stage()` method.
                 FixedTimestepStage::from_stage(
                     Duration::from_secs_f64(crate::FIXED_TIMESTEP),
+                    "playerStateTransition",
                     SystemStage::single_threaded()
                         .with_run_criteria(state_transition_run_criteria)
                         .with_system(

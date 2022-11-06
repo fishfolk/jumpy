@@ -29,12 +29,11 @@ impl Plugin for EditorPlugin {
                     .run_in_state(InGameState::Editing),
             )
             .add_system(
-                iyes_loopless::condition::IntoConditionalExclusiveSystem::run_in_state(
-                    editor_ui_system,
-                    GameState::InGame,
-                )
-                .run_in_state(InGameState::Editing)
-                .at_end(),
+                editor_ui_system
+                    .into_conditional_exclusive()
+                    .run_in_state(GameState::InGame)
+                    .run_in_state(InGameState::Editing)
+                    .at_end(),
             )
             .add_enter_system(InGameState::Editing, setup_editor)
             .add_exit_system(InGameState::Editing, cleanup_editor)

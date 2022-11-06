@@ -31,7 +31,7 @@ bevy-has-load-progress = { path = "crates/bevy-has-load-progress", features = ["
 bevy-inspector-egui = { version = "0.13.0" }
 bevy-parallax = "0.2.0"
 bevy_ecs_dynamic = { git = "https://github.com/jakobhellermann/bevy_ecs_dynamic" }
-bevy_ecs_tilemap = { version = "0.7.0", features = ["atlas"] }
+bevy_ecs_tilemap = { version = "0.8.0", features = ["atlas"] }
 bevy_egui = "0.16.1"
 bevy_fluent = "0.4.0"
 bevy_kira_audio = { version = "0.12.0", features = ["mp3"] }
@@ -48,9 +48,9 @@ fluent = "0.16.0"
 fnv = "1.0.7"
 futures-lite = "1.12.0"
 getrandom = { version = "0.2", features = ["js"] }
-iyes_loopless = "0.7.0"
+iyes_loopless = "0.8.0"
 jumpy-matchmaker-proto = { path = "crates/matchmaker-proto" }
-leafwing-input-manager = { version = "0.5.2", default-features = false }
+leafwing-input-manager = { version = "0.6.1", default-features = false }
 normalize-path = "0.2.0"
 once_cell = "1.13.0"
 postcard = { git = "https://github.com/zicklag/postcard.git", branch = "custom-error-messages", default-features = false, features = ["alloc", "use-std"] }

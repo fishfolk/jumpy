@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use bevy::{ecs::system::AsSystemLabel, reflect::FromReflect, time::FixedTimestep, utils::HashMap};
+use bevy::{ecs::system::AsSystemLabel, reflect::FromReflect, utils::HashMap};
 
 use crate::prelude::*;
 
@@ -18,29 +18,34 @@ impl Plugin for AnimationPlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<AnimatedSprite>()
             .register_type::<AnimationBankSprite>()
-            .add_stage_after(
-                CoreStage::PostUpdate,
-                AnimationStage::Hydrate,
-                SystemStage::single_threaded()
-                    .with_system(hydrate_animation_bank_sprites)
-                    .with_system(hydrate_animated_sprites.after(hydrate_animation_bank_sprites)),
-            )
-            .add_stage_after(
-                AnimationStage::Hydrate,
-                AnimationStage::Animate,
-                SystemStage::single_threaded()
-                    .with_run_criteria(FixedTimestep::step(crate::FIXED_TIMESTEP))
-                    .with_system(update_animation_bank_sprites)
-                    .with_system(
-                        update_animated_sprite_components.after(update_animation_bank_sprites),
+            .extend_rollback_schedule(|schedule| {
+                schedule
+                    .add_stage_after(
+                        RollbackStage::PostUpdate,
+                        AnimationStage::Hydrate,
+                        SystemStage::single_threaded()
+                            .with_system(hydrate_animation_bank_sprites)
+                            .with_system(
+                                hydrate_animated_sprites.after(hydrate_animation_bank_sprites),
+                            ),
                     )
-                    .with_system(
-                        animate_sprites
-                            .run_in_state(GameState::InGame)
-                            .run_not_in_state(InGameState::Paused)
-                            .after(update_animated_sprite_components.as_system_label()),
-                    ),
-            );
+                    .add_stage_after(
+                        AnimationStage::Hydrate,
+                        AnimationStage::Animate,
+                        SystemStage::single_threaded()
+                            .with_system(update_animation_bank_sprites)
+                            .with_system(
+                                update_animated_sprite_components
+                                    .after(update_animation_bank_sprites),
+                            )
+                            .with_system(
+                                animate_sprites
+                                    .run_in_state(GameState::InGame)
+                                    .run_not_in_state(InGameState::Paused)
+                                    .after(update_animated_sprite_components.as_system_label()),
+                            ),
+                    );
+            });
     }
 }
 
@@ -102,7 +107,7 @@ fn animate_sprites(mut animated_sprites: Query<(&mut AnimatedSprite, &mut Textur
     for (mut animated_sprite, mut atlas_sprite) in &mut animated_sprites {
         animated_sprite
             .timer
-            .tick(Duration::from_secs_f64(crate::FIXED_TIMESTEP));
+            .tick(Duration::from_secs_f32(1.0 / crate::FPS as f32));
 
         if animated_sprite.timer.just_finished() {
             if animated_sprite.index

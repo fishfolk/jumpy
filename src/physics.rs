@@ -1,4 +1,4 @@
-use bevy::{math::vec2, time::FixedTimestep};
+use bevy::math::vec2;
 
 use crate::{config::ENGINE_CONFIG, metadata::GameMeta, prelude::*};
 
@@ -19,22 +19,23 @@ impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<KinematicBody>()
             .register_type::<Collider>()
-            .add_stage_after(
-                CoreStage::PostUpdate,
-                PhysicsStages::Hydrate,
-                SystemStage::parallel().with_system(hydrate_physics_bodies),
-            )
-            .add_stage_after(
-                PhysicsStages::Hydrate,
-                PhysicsStages::UpdatePhysics,
-                SystemStage::parallel()
-                    .with_run_criteria(FixedTimestep::step(crate::FIXED_TIMESTEP))
-                    .with_system(
-                        update_kinematic_bodies
-                            .run_in_state(GameState::InGame)
-                            .run_not_in_state(InGameState::Paused),
-                    ),
-            );
+            .extend_rollback_schedule(|schedule| {
+                schedule
+                    .add_stage_after(
+                        RollbackStage::PostUpdate,
+                        PhysicsStages::Hydrate,
+                        SystemStage::parallel().with_system(hydrate_physics_bodies),
+                    )
+                    .add_stage_after(
+                        PhysicsStages::Hydrate,
+                        PhysicsStages::UpdatePhysics,
+                        SystemStage::parallel().with_system(
+                            update_kinematic_bodies
+                                .run_in_state(GameState::InGame)
+                                .run_not_in_state(InGameState::Paused),
+                        ),
+                    );
+            });
 
         if ENGINE_CONFIG.debug_tools {
             app.add_plugin(debug::PhysicsDebugRenderPlugin);
@@ -219,7 +220,7 @@ fn apply_rotation(
 ) {
     let mut angle = transform.rotation.to_euler(EulerRot::XYZ).2;
     if angular_velocity != 0.0 {
-        angle += (angular_velocity * crate::FIXED_TIMESTEP as f32).to_radians();
+        angle += (angular_velocity * crate::FPS as f32).to_radians();
     } else if !is_on_ground {
         angle += velocity.x.abs() * 0.00045 + velocity.y.abs() * 0.00015;
     } else {

@@ -1,7 +1,7 @@
 use bevy::render::view::RenderLayers;
-use bevy_parallax::{ParallaxCameraComponent, ParallaxResource};
+use bevy_parallax::ParallaxCameraComponent;
 
-use crate::{config::ENGINE_CONFIG, prelude::*};
+use crate::prelude::*;
 
 pub struct CameraPlugin;
 
@@ -10,11 +10,7 @@ impl Plugin for CameraPlugin {
         app.register_type::<GameCamera>()
             .register_type::<EditorCamera>();
 
-        if !ENGINE_CONFIG.server_mode {
-            app.add_plugin(bevy_parallax::ParallaxPlugin);
-        } else {
-            app.init_resource::<ParallaxResource>();
-        }
+        app.add_plugin(bevy_parallax::ParallaxPlugin);
     }
 }
 

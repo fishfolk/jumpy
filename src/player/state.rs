@@ -1,6 +1,4 @@
-use std::time::Duration;
-
-use bevy::{ecs::schedule::ShouldRun, time::FixedTimestep};
+use bevy::ecs::schedule::ShouldRun;
 use bevy_mod_js_scripting::run_script_fn_system;
 
 use crate::prelude::*;
@@ -36,39 +34,30 @@ impl Plugin for PlayerStatePlugin {
             //         run_script_fn_system("playerStateCollectTransitions".into()).at_end(),
             //     ),
             // )
-            .add_stage_after(
-                CoreStage::PreUpdate,
-                PlayerStateStage::PerformTransitions,
-                // Note: We use the iyes_loopless FixedTimestepStage here, instead of the FixedTimestep
-                // run critera that we use elsewhere, because it is much easier to compose it with our
-                // state_transition_run_critera.
-                //
-                // The reason we don't _always_ use `FixedTimestepStage` is because it doesn't work with
-                // the `app.add_system_to_stage()` method.
-                FixedTimestepStage::from_stage(
-                    Duration::from_secs_f64(crate::FIXED_TIMESTEP),
-                    "playerStateTransition",
-                    SystemStage::single_threaded()
-                        .with_run_criteria(state_transition_run_criteria)
-                        .with_system(
-                            run_script_fn_system("playerStateTransition".into())
+            .extend_rollback_schedule(|schedule| {
+                schedule
+                    .add_stage_after(
+                        RollbackStage::PreUpdate,
+                        PlayerStateStage::PerformTransitions,
+                        SystemStage::single_threaded()
+                            .with_run_criteria(state_transition_run_criteria)
+                            .with_system(
+                                run_script_fn_system("playerStateTransition".into())
+                                    .with_run_criteria(in_game_not_paused)
+                                    .at_end(),
+                            ),
+                    )
+                    .add_stage_after(
+                        PlayerStateStage::PerformTransitions,
+                        PlayerStateStage::HandleState,
+                        SystemStage::parallel().with_system(
+                            run_script_fn_system("handlePlayerState".into())
                                 .with_run_criteria(in_game_not_paused)
                                 .at_end(),
                         ),
-                ),
-            )
-            .add_stage_after(
-                PlayerStateStage::PerformTransitions,
-                PlayerStateStage::HandleState,
-                SystemStage::parallel()
-                    .with_run_criteria(FixedTimestep::step(crate::FIXED_TIMESTEP))
-                    .with_system(
-                        run_script_fn_system("handlePlayerState".into())
-                            .with_run_criteria(in_game_not_paused)
-                            .at_end(),
-                    ),
-            )
-            .add_system_to_stage(FixedUpdateStage::Last, update_player_state_age);
+                    )
+                    .add_system_to_stage(RollbackStage::Last, update_player_state_age);
+            });
     }
 }
 

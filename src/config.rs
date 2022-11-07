@@ -17,12 +17,6 @@ pub static ENGINE_CONFIG: Lazy<EngineConfig> = Lazy::new(|| {
 #[derive(Clone, Debug, clap::Parser)]
 #[command(author, version, about)]
 pub struct EngineConfig {
-    /// Whether or not to run the game headless server mode.
-    ///
-    /// Useful only for development.
-    #[arg(hide = true, long, env = SERVER_MODE_ENV_VAR)]
-    pub server_mode: bool,
-
     /// Hot reload assets
     #[arg(short = 'R', long)]
     pub hot_reload: bool,

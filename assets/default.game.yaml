@@ -36,8 +36,6 @@ scripts:
   - player/states/walk.ts
   - player/states/midair.ts
   - player/states/crouch.ts
-
-client_scripts:
   - game/camera_controller.ts
   - ui/menu-background-zoom.ts
 

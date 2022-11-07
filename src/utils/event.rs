@@ -9,7 +9,9 @@ pub trait FixedUpdateEventAppExt {
 impl FixedUpdateEventAppExt for bevy::app::App {
     fn add_fixed_update_event<E: Event>(&mut self) -> &mut Self {
         self.init_resource::<Events<E>>()
-            .add_system_to_stage(FixedUpdateStage::First, Events::<E>::update_system);
+            .extend_rollback_schedule(|schedule| {
+                schedule.add_system_to_stage(RollbackStage::First, Events::<E>::update_system);
+            });
 
         self
     }

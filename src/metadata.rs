@@ -50,18 +50,6 @@ pub struct GameMeta {
     pub scripts: Vec<String>,
     #[serde(skip)]
     pub script_handles: Vec<AssetHandle<JsScript>>,
-
-    /// Scripts that run only on the client
-    #[serde(default)]
-    pub client_scripts: Vec<String>,
-    #[serde(skip)]
-    pub client_script_handles: Vec<AssetHandle<JsScript>>,
-
-    /// Scripts that run only on the server
-    #[serde(default)]
-    pub server_scripts: Vec<String>,
-    #[serde(skip)]
-    pub server_script_handles: Vec<AssetHandle<JsScript>>,
 }
 
 #[derive(HasLoadProgress, Deserialize, Clone, Debug)]

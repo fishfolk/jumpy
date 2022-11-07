@@ -1,13 +1,15 @@
 //! Module providing entity lifetime components and systems
 
-use crate::{prelude::*, FIXED_TIMESTEP};
+use crate::{prelude::*, FPS};
 
 pub struct LifetimePlugin;
 
 impl Plugin for LifetimePlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<Lifetime>()
-            .add_system_to_stage(FixedUpdateStage::PostUpdate, lifetime_system);
+            .extend_rollback_schedule(|schedule| {
+                schedule.add_system_to_stage(RollbackStage::PostUpdate, lifetime_system);
+            });
     }
 }
 
@@ -34,7 +36,7 @@ pub struct Lifetime {
 /// Despawns entities that have an expired lifetime
 fn lifetime_system(mut commands: Commands, mut entities: Query<(Entity, &mut Lifetime)>) {
     for (entity, mut lifetime) in &mut entities {
-        lifetime.age += FIXED_TIMESTEP as f32;
+        lifetime.age += FPS as f32;
         if lifetime.age >= lifetime.lifetime {
             if lifetime.non_recursive_despawn {
                 commands.entity(entity).despawn();

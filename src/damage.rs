@@ -13,10 +13,12 @@ impl Plugin for DamagePlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<DamageRegion>()
             .register_type::<DamageRegionOwner>()
-            .add_system_to_stage(
-                FixedUpdateStage::PostUpdate,
-                eliminate_players_in_damage_region,
-            );
+            .extend_rollback_schedule(|schedule| {
+                schedule.add_system_to_stage(
+                    RollbackStage::PostUpdate,
+                    eliminate_players_in_damage_region,
+                );
+            });
     }
 }
 

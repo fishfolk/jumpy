@@ -4,13 +4,7 @@ use bevy_tweening::Animator;
 use crate::{
     item::{Item, ItemDropEvent, ItemGrabEvent, ItemUseEvent},
     metadata::{GameMeta, PlayerMeta, Settings},
-    networking::{
-        proto::{
-            game::{PlayerEvent, PlayerEventFromServer},
-            ClientMatchInfo,
-        },
-        server::NetServer,
-    },
+    networking::proto::ClientMatchInfo,
     physics::KinematicBody,
     platform::Storage,
     prelude::*,
@@ -33,10 +27,12 @@ impl Plugin for PlayerPlugin {
             .add_fixed_update_event::<PlayerKillEvent>()
             .add_fixed_update_event::<PlayerDespawnEvent>()
             .register_type::<PlayerIdx>()
-            .add_system_to_stage(
-                FixedUpdateStage::PreUpdate,
-                hydrate_players.run_if_resource_exists::<GameMeta>(),
-            );
+            .extend_rollback_schedule(|schedule| {
+                schedule.add_system_to_stage(
+                    RollbackStage::PreUpdate,
+                    hydrate_players.run_if_resource_exists::<GameMeta>(),
+                );
+            });
     }
 }
 
@@ -376,7 +372,6 @@ fn hydrate_players(
     game: Res<GameMeta>,
     player_inputs: Res<PlayerInputs>,
     player_meta_assets: Res<Assets<PlayerMeta>>,
-    server: Option<Res<NetServer>>,
     client_match_info: Option<Res<ClientMatchInfo>>,
 ) {
     let settings = storage.get(Settings::STORAGE_KEY);
@@ -387,14 +382,6 @@ fn hydrate_players(
         // isn't normally necessary, but since the player may not start off with a GlobalTransform
         // it may be required.
         player_transform.set_changed();
-
-        // If we are the server, broadcast a spawn event for each hydrated player
-        if let Some(server) = &server {
-            server.broadcast_reliable(&PlayerEventFromServer {
-                player_idx: player_idx.0.try_into().unwrap(),
-                kind: PlayerEvent::SpawnPlayer(player_transform.translation),
-            });
-        }
 
         let input = &player_inputs.players[player_idx.0];
         let meta = player_meta_assets

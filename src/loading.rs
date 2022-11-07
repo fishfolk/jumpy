@@ -179,13 +179,8 @@ impl<'w, 's> GameLoader<'w, 's> {
                     player.selected_player = game.player_handles[0].clone_weak();
                 }
 
-                if ENGINE_CONFIG.server_mode {
-                    // Go to server player selection state
-                    commands.insert_resource(NextState(GameState::ServerPlayerSelect));
-                } else {
-                    // Transition to the main menu when we are done
-                    commands.insert_resource(NextState(GameState::MainMenu));
-                }
+                // Transition to the main menu when we are done
+                commands.insert_resource(NextState(GameState::MainMenu));
             }
 
             // Update camera scaling mode
@@ -246,15 +241,6 @@ impl<'w, 's> GameLoader<'w, 's> {
             // Set the active scripts
             for script_handle in &game.script_handles {
                 active_scripts.insert(script_handle.inner.clone_weak());
-            }
-            if ENGINE_CONFIG.server_mode {
-                for script_handle in &game.server_script_handles {
-                    active_scripts.insert(script_handle.inner.clone_weak());
-                }
-            } else {
-                for script_handle in &game.client_script_handles {
-                    active_scripts.insert(script_handle.inner.clone_weak());
-                }
             }
 
             // Insert the game resource

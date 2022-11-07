@@ -6,14 +6,12 @@ use std::{
 use bevy::{
     asset::{Asset, AssetLoader, AssetPath, LoadedAsset},
     reflect::TypeUuid,
-    render::texture::ImageTextureLoader,
 };
 use bevy_egui::egui;
 use bevy_mod_js_scripting::{serde_json, JsScript};
 use normalize_path::NormalizePath;
 
 use crate::{
-    config::ENGINE_CONFIG,
     metadata::{
         BorderImageMeta, GameMeta, MapElementMeta, MapLayerKind, MapMeta, PlayerMeta,
         TextureAtlasMeta,
@@ -41,11 +39,6 @@ impl Plugin for AssetPlugin {
             .add_asset_loader(TextureAtlasLoader)
             .add_jumpy_asset::<EguiFont>()
             .add_asset_loader(EguiFontLoader);
-
-        if ENGINE_CONFIG.server_mode {
-            let image_loader = ImageTextureLoader::from_world(&mut app.world);
-            app.add_asset::<Image>().add_asset_loader(image_loader);
-        }
     }
 }
 
@@ -209,24 +202,6 @@ impl AssetLoader for GameMetaLoader {
                     get_relative_asset(load_context, self_path, script_relative_path);
                 dependencies.push(script_path.clone());
                 meta.script_handles
-                    .push(AssetHandle::new(script_path, script_handle.typed()));
-            }
-
-            // Load the client_script handles
-            for script_relative_path in &meta.client_scripts {
-                let (script_path, script_handle) =
-                    get_relative_asset(load_context, self_path, script_relative_path);
-                dependencies.push(script_path.clone());
-                meta.client_script_handles
-                    .push(AssetHandle::new(script_path, script_handle.typed()));
-            }
-
-            // Load the serer_script handles
-            for script_relative_path in &meta.server_scripts {
-                let (script_path, script_handle) =
-                    get_relative_asset(load_context, self_path, script_relative_path);
-                dependencies.push(script_path.clone());
-                meta.server_script_handles
                     .push(AssetHandle::new(script_path, script_handle.typed()));
             }
 

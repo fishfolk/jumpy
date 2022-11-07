@@ -1,7 +1,4 @@
-use crate::{
-    networking::{proto::game::GameEventFromServer, server::NetServer, NetId, NetIdMap},
-    prelude::*,
-};
+use crate::prelude::*;
 
 pub struct ItemPlugin;
 
@@ -10,11 +7,7 @@ impl Plugin for ItemPlugin {
         app.register_type::<Item>()
             .add_fixed_update_event::<ItemGrabEvent>()
             .add_fixed_update_event::<ItemDropEvent>()
-            .add_fixed_update_event::<ItemUseEvent>()
-            .add_system_to_stage(
-                CoreStage::PreUpdate,
-                send_net_item_spawns_from_server.run_if_resource_exists::<NetServer>(),
-            );
+            .add_fixed_update_event::<ItemUseEvent>();
     }
 }
 
@@ -50,22 +43,4 @@ pub struct ItemUseEvent {
     pub player: Entity,
     pub item: Entity,
     pub position: Vec3,
-}
-
-/// System to send send net messages for item spawns when running as the server
-fn send_net_item_spawns_from_server(
-    server: Res<NetServer>,
-    new_items: Query<(Entity, &Transform, &Item), Added<Item>>,
-    mut net_ids: ResMut<NetIdMap>,
-) {
-    for (entity, transform, item) in &new_items {
-        let net_id = NetId::new();
-        net_ids.insert(entity, net_id);
-
-        server.broadcast_reliable(&GameEventFromServer::SpawnItem {
-            net_id,
-            script: item.script.clone(),
-            pos: transform.translation,
-        });
-    }
 }

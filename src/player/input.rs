@@ -1,11 +1,10 @@
 use super::*;
 
 use bevy::reflect::{FromReflect, Reflect};
+use ggrs::{InputStatus, PlayerHandle};
+use numquant::{IntRange, Quantized};
 
-use crate::{
-    metadata::PlayerMeta,
-    networking::{proto::ClientMatchInfo, server::NetServer},
-};
+use crate::metadata::PlayerMeta;
 
 pub struct PlayerInputPlugin;
 
@@ -17,14 +16,37 @@ impl Plugin for PlayerInputPlugin {
             .register_type::<Vec<PlayerInput>>()
             .register_type::<PlayerControl>()
             .add_plugin(InputManagerPlugin::<PlayerAction>::default())
-            .add_system_to_stage(
-                CoreStage::PreUpdate,
-                update_user_input.run_unless_resource_exists::<NetServer>(),
-            )
-            .add_system_to_stage(
-                FixedUpdateStage::Last,
-                reset_input.run_unless_resource_exists::<NetServer>(),
-            );
+            .extend_rollback_schedule(|schedule| {
+                schedule.add_system_to_stage(RollbackStage::PreUpdate, update_user_input);
+                // .add_system_to_stage(FixedUpdateStage::Last, reset_input);
+            });
+    }
+}
+
+/// The GGRS input system
+pub fn input_system(
+    player_handle: In<PlayerHandle>,
+    players: Query<(&PlayerIdx, &ActionState<PlayerAction>)>,
+) -> DensePlayerControl {
+    if let Some((_, action_state)) = players.iter().find(|(idx, ..)| idx.0 == player_handle.0) {
+        let mut control = DensePlayerControl(0);
+
+        control.set_move_direction(DenseMoveDirection(
+            action_state
+                .axis_pair(PlayerAction::Move)
+                .unwrap_or_default()
+                .xy(),
+        ));
+
+        control.set_jump_pressed(action_state.pressed(PlayerAction::Jump));
+        control.set_shoot_pressed(action_state.pressed(PlayerAction::Shoot));
+        control.set_slide_pressed(action_state.pressed(PlayerAction::Slide));
+        control.set_grab_pressed(action_state.pressed(PlayerAction::Grab));
+
+        control
+    } else {
+        warn!("Couldn't find player input");
+        DensePlayerControl(0)
     }
 }
 
@@ -42,17 +64,16 @@ pub enum PlayerAction {
 #[reflect(Default, Resource)]
 pub struct PlayerInputs {
     pub players: Vec<PlayerInput>,
-
-    /// This field indicates whether or not the user input has been updated since the last run of
-    /// the `reset_input` system.
-    pub has_updated: bool,
+    // /// This field indicates whether or not the user input has been updated since the last run of
+    // /// the `reset_input` system.
+    // pub has_updated: bool,
 }
 
 impl Default for PlayerInputs {
     fn default() -> Self {
         Self {
             players: vec![default(); MAX_PLAYERS],
-            has_updated: false,
+            // has_updated: false,
         }
     }
 }
@@ -93,62 +114,110 @@ pub struct PlayerControl {
     pub slide_just_pressed: bool,
 }
 
-fn update_user_input(
-    mut player_inputs: ResMut<PlayerInputs>,
-    players: Query<(&PlayerIdx, &ActionState<PlayerAction>)>,
-    client_match_info: Option<Res<ClientMatchInfo>>,
-) {
-    for (player_idx, action_state) in &players {
-        // Nuance: during a network game, this allows the player to use any of the control methods
-        // for any local player to control themselves.
-        let actual_player_idx = if let Some(match_info) = &client_match_info {
-            match_info.player_idx
-        } else {
-            player_idx.0
-        };
+bitfield::bitfield! {
+    /// A player's controller inputs densely packed into a single u16.
+    ///
+    /// This is used when sending player inputs across the network.
+    #[derive(bytemuck::Pod, bytemuck::Zeroable, Copy, Clone, PartialEq, Eq)]
+    #[repr(transparent)]
+    pub struct DensePlayerControl(u16);
+    impl Debug;
+    jump_pressed, set_jump_pressed: 0;
+    shoot_pressed, set_shoot_pressed: 1;
+    grab_pressed, set_grab_pressed: 2;
+    slide_pressed, set_slide_pressed: 3;
+    from into DenseMoveDirection, move_direction, set_move_direction: 16, 4;
+}
 
+/// A newtype around [`Vec2`] that implements [`From<u16>`] and [`Into<u16>`] as a way to compress
+/// user stick input for use in [`DensePlayerControl`].
+#[derive(Debug, Deref, DerefMut)]
+struct DenseMoveDirection(pub Vec2);
+
+/// This is the specific [`Quantized`] type that we use to represent movement directions in
+/// [`DenseMoveDirection`].
+type MoveDirQuant = Quantized<IntRange<u16, 0b111111, -1, 1>>;
+
+impl From<u16> for DenseMoveDirection {
+    fn from(bits: u16) -> Self {
+        // maximum movement value representable, we use 6 bits to represent each movement direction.
+        let max = 0b111111;
+        // The first six bits represent the x movement
+        let x_move_bits = bits & max;
+        // The second six bits represents the y movement
+        let y_move_bits = (bits >> 6) & max;
+
+        // Round near-zero values to zero
+        let mut x = MoveDirQuant::from_raw(x_move_bits).to_f32();
+        if x.abs() < 0.02 {
+            x = 0.0;
+        }
+        let mut y = MoveDirQuant::from_raw(y_move_bits).to_f32();
+        if y.abs() < 0.02 {
+            y = 0.0;
+        }
+
+        DenseMoveDirection(Vec2::new(x, y))
+    }
+}
+
+impl From<DenseMoveDirection> for u16 {
+    fn from(dir: DenseMoveDirection) -> Self {
+        let x_bits = MoveDirQuant::from_f32(dir.x).raw();
+        let y_bits = MoveDirQuant::from_f32(dir.y).raw();
+
+        x_bits | (y_bits << 6)
+    }
+}
+
+/// Updates the [`PlayerInputs`] resource from input collected from GGRS.
+fn update_user_input(
+    inputs: Res<Vec<(DensePlayerControl, InputStatus)>>,
+    mut player_inputs: ResMut<PlayerInputs>,
+) {
+    for (player_idx, (input, _)) in inputs.iter().enumerate() {
         let PlayerInput {
             control,
             previous_control,
             ..
-        } = &mut player_inputs.players[actual_player_idx];
+        } = &mut player_inputs.players[player_idx];
 
-        control.moving = action_state.pressed(PlayerAction::Move);
+        let move_direction = input.move_direction();
+
+        control.moving = move_direction.0 != Vec2::ZERO;
         control.just_moved = control.moving && !previous_control.moving;
-        control.move_direction = action_state
-            .axis_pair(PlayerAction::Move)
-            .unwrap_or_default()
-            .xy();
 
-        if action_state.pressed(PlayerAction::Jump) {
+        control.move_direction = move_direction.0;
+
+        if input.jump_pressed() {
             control.jump_pressed = true;
             control.jump_just_pressed = !previous_control.jump_pressed;
         }
-        if action_state.pressed(PlayerAction::Grab) {
+        if input.grab_pressed() {
             control.grab_pressed = true;
             control.grab_just_pressed = !previous_control.grab_pressed;
         }
-        if action_state.pressed(PlayerAction::Shoot) {
+        if input.shoot_pressed() {
             control.shoot_pressed = true;
             control.shoot_just_pressed = !previous_control.shoot_pressed;
         }
-        if action_state.pressed(PlayerAction::Slide) {
+        if input.slide_pressed() {
             control.slide_pressed = true;
             control.slide_just_pressed = !previous_control.slide_pressed;
         }
     }
 
-    player_inputs.has_updated = true;
+    // player_inputs.has_updated = true;
 }
 
-/// Reset player inputs to prepare for the next update
-fn reset_input(mut player_inputs: ResMut<PlayerInputs>) {
-    if player_inputs.has_updated {
-        for player in &mut player_inputs.players {
-            player.previous_control = player.control.clone();
-            player.control = default();
-        }
+// /// Reset player inputs to prepare for the next update
+// fn reset_input(mut player_inputs: ResMut<PlayerInputs>) {
+//     if player_inputs.has_updated {
+//         for player in &mut player_inputs.players {
+//             player.previous_control = player.control.clone();
+//             player.control = default();
+//         }
 
-        player_inputs.has_updated = false;
-    }
-}
+//         player_inputs.has_updated = false;
+//     }
+// }

@@ -1,6 +1,5 @@
 use crate::prelude::*;
 
-pub mod game;
 pub mod match_setup;
 pub mod tick;
 
@@ -8,6 +7,7 @@ pub mod tick;
 /// in the match.j
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ClientMatchInfo {
+    pub player_handle: usize,
     pub player_idx: usize,
     pub player_count: usize,
 }

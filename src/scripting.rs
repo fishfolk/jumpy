@@ -4,9 +4,7 @@ use std::{
 };
 
 use crate::{prelude::*, run_criteria::ShouldRunExt};
-use bevy::{
-    asset::HandleId, ecs::schedule::ShouldRun, reflect::TypeRegistryArc, time::FixedTimestep,
-};
+use bevy::{asset::HandleId, ecs::schedule::ShouldRun, reflect::TypeRegistryArc};
 use bevy_mod_js_scripting::{
     bevy_reflect_fns::{
         PassMode, ReflectArg, ReflectFunction, ReflectFunctionError, ReflectMethods,
@@ -78,92 +76,80 @@ impl Plugin for ScriptingPlugin {
         }
 
         // Add fixed update stages
-        app.add_stage_after(
-            FixedUpdateStage::First,
-            ScriptUpdateStage::First,
-            SystemStage::single(run_script_fn_system("first".into()))
-                .with_run_criteria(FixedTimestep::step(crate::FIXED_TIMESTEP)),
-        )
-        .add_stage_after(
-            FixedUpdateStage::First,
-            ScriptUpdateStage::FirstInGame,
-            SystemStage::single(run_script_fn_system("firstInGame".into())).with_run_criteria(
-                FixedTimestep::step(crate::FIXED_TIMESTEP).chain(is_in_game_run_criteria),
-            ),
-        )
-        .add_stage_after(
-            FixedUpdateStage::PreUpdate,
-            ScriptUpdateStage::PreUpdate,
-            SystemStage::single(run_script_fn_system("preUpdate".into()))
-                .with_run_criteria(FixedTimestep::step(crate::FIXED_TIMESTEP)),
-        )
-        .add_stage_after(
-            FixedUpdateStage::PreUpdate,
-            ScriptUpdateStage::PreUpdateInGame,
-            SystemStage::single(run_script_fn_system("preUpdateInGame".into())).with_run_criteria(
-                FixedTimestep::step(crate::FIXED_TIMESTEP).chain(is_in_game_run_criteria),
-            ),
-        )
-        .add_stage_after(
-            FixedUpdateStage::Update,
-            ScriptUpdateStage::Update,
-            SystemStage::single(run_script_fn_system("update".into()))
-                .with_run_criteria(FixedTimestep::step(crate::FIXED_TIMESTEP)),
-        )
-        .add_stage_after(
-            FixedUpdateStage::Update,
-            ScriptUpdateStage::UpdateInGame,
-            SystemStage::single(run_script_fn_system("updateInGame".into())).with_run_criteria(
-                FixedTimestep::step(crate::FIXED_TIMESTEP).chain(is_in_game_run_criteria),
-            ),
-        )
-        .add_stage_after(
-            FixedUpdateStage::PostUpdate,
-            ScriptUpdateStage::PostUpdate,
-            SystemStage::single(run_script_fn_system("postUpdate".into()))
-                .with_run_criteria(FixedTimestep::step(crate::FIXED_TIMESTEP)),
-        )
-        .add_stage_after(
-            FixedUpdateStage::PostUpdate,
-            ScriptUpdateStage::PostUpdateInGame,
-            SystemStage::single(run_script_fn_system("postUpdateInGame".into())).with_run_criteria(
-                FixedTimestep::step(crate::FIXED_TIMESTEP).chain(is_in_game_run_criteria),
-            ),
-        )
-        .add_stage_after(
-            FixedUpdateStage::Last,
-            ScriptUpdateStage::Last,
-            SystemStage::single(run_script_fn_system("last".into()))
-                .with_run_criteria(FixedTimestep::step(crate::FIXED_TIMESTEP)),
-        )
-        .add_stage_after(
-            FixedUpdateStage::Last,
-            ScriptUpdateStage::LastInGame,
-            SystemStage::single(run_script_fn_system("lastInGame".into())).with_run_criteria(
-                FixedTimestep::step(crate::FIXED_TIMESTEP).chain(is_in_game_run_criteria),
-            ),
-        );
+        app.extend_rollback_schedule(|schedule| {
+            schedule
+                .add_stage_after(
+                    RollbackStage::First,
+                    ScriptUpdateStage::First,
+                    SystemStage::single(run_script_fn_system("first".into())),
+                )
+                .add_stage_after(
+                    RollbackStage::First,
+                    ScriptUpdateStage::FirstInGame,
+                    SystemStage::single(run_script_fn_system("firstInGame".into()))
+                        .with_run_criteria(is_in_game_run_criteria),
+                )
+                .add_stage_after(
+                    RollbackStage::PreUpdate,
+                    ScriptUpdateStage::PreUpdate,
+                    SystemStage::single(run_script_fn_system("preUpdate".into())),
+                )
+                .add_stage_after(
+                    RollbackStage::PreUpdate,
+                    ScriptUpdateStage::PreUpdateInGame,
+                    SystemStage::single(run_script_fn_system("preUpdateInGame".into()))
+                        .with_run_criteria(is_in_game_run_criteria),
+                )
+                .add_stage_after(
+                    RollbackStage::Update,
+                    ScriptUpdateStage::Update,
+                    SystemStage::single(run_script_fn_system("update".into())),
+                )
+                .add_stage_after(
+                    RollbackStage::Update,
+                    ScriptUpdateStage::UpdateInGame,
+                    SystemStage::single(run_script_fn_system("updateInGame".into()))
+                        .with_run_criteria(is_in_game_run_criteria),
+                )
+                .add_stage_after(
+                    RollbackStage::PostUpdate,
+                    ScriptUpdateStage::PostUpdate,
+                    SystemStage::single(run_script_fn_system("postUpdate".into())),
+                )
+                .add_stage_after(
+                    RollbackStage::PostUpdate,
+                    ScriptUpdateStage::PostUpdateInGame,
+                    SystemStage::single(run_script_fn_system("postUpdateInGame".into()))
+                        .with_run_criteria(is_in_game_run_criteria),
+                )
+                .add_stage_after(
+                    RollbackStage::Last,
+                    ScriptUpdateStage::Last,
+                    SystemStage::single(run_script_fn_system("last".into())),
+                )
+                .add_stage_after(
+                    RollbackStage::Last,
+                    ScriptUpdateStage::LastInGame,
+                    SystemStage::single(run_script_fn_system("lastInGame".into()))
+                        .with_run_criteria(is_in_game_run_criteria),
+                );
+        });
     }
 }
 
 /// Heper stage run criteria that only runs if we are in a gameplay state.
 fn is_in_game_run_criteria(
-    should_run: In<ShouldRun>,
     game_state: Option<Res<CurrentState<GameState>>>,
     in_game_state: Option<Res<CurrentState<InGameState>>>,
 ) -> ShouldRun {
-    if should_run.0.should_run() {
-        let is_in_game = game_state
-            .map(|x| x.0 == GameState::InGame)
-            .unwrap_or(false)
-            && in_game_state
-                .map(|x| x.0 != InGameState::Paused)
-                .unwrap_or(false);
+    let is_in_game = game_state
+        .map(|x| x.0 == GameState::InGame)
+        .unwrap_or(false)
+        && in_game_state
+            .map(|x| x.0 != InGameState::Paused)
+            .unwrap_or(false);
 
-        ShouldRun::new(is_in_game, should_run.0.check_again())
-    } else {
-        should_run.0
-    }
+    ShouldRun::new(is_in_game, false)
 }
 
 /// Helper function to hash a [`HandleId`].

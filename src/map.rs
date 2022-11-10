@@ -42,6 +42,7 @@ pub fn hydrate_maps(
     element_assets: ResMut<Assets<MapElementMeta>>,
     mut active_scripts: ResMut<ActiveScripts>,
     mut map_scripts: ResMut<MapScripts>,
+    mut rids: ResMut<RollbackIdProvider>,
     unspawned_maps: Query<(Entity, &AssetHandle<MapMeta>), Without<MapMeta>>,
 ) {
     for (map_entity, map_handle) in &unspawned_maps {
@@ -142,7 +143,7 @@ pub fn hydrate_maps(
                         }
                         let tile_entity = tile_entity_commands.id();
 
-                        storage.set(&tile_pos, tile_entity);
+                        storage.set(&tile_pos, Some(tile_entity));
 
                         tile_entities.push(tile_entity);
                     }
@@ -159,9 +160,7 @@ pub fn hydrate_maps(
                                 x: map.tile_size.x as f32,
                                 y: map.tile_size.y as f32,
                             },
-                            texture: TilemapTexture::Single(
-                                tile_layer.tilemap_handle.inner.clone_weak(),
-                            ),
+                            texture: TilemapTexture(tile_layer.tilemap_handle.inner.clone_weak()),
                             storage,
                             transform: Transform::from_xyz(0.0, 0.0, -100.0 + i as f32),
                             ..default()
@@ -187,7 +186,6 @@ pub fn hydrate_maps(
 
                         let element_name = &element_meta.name;
 
-                        // Note we use NetCommands to spawn the entity, because it needs to have
                         let entity = commands
                             .spawn()
                             .insert(EntityName(format!(
@@ -220,6 +218,7 @@ pub fn hydrate_maps(
                                     ));
                             })
                             .insert(element_meta)
+                            .insert(Rollback::new(rids.next_id()))
                             .id();
                         map_children.push(entity)
                     }

@@ -12,7 +12,7 @@ use bevy_mod_js_scripting::{
     run_script_fn_system, JsRuntimeConfig, JsScriptingPlugin,
 };
 
-mod ops;
+pub mod ops;
 
 pub struct ScriptingPlugin;
 

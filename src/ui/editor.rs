@@ -148,6 +148,7 @@ struct EditorTopBar<'w, 's> {
             ResetManager<'w, 's>,
         ),
     >,
+    rids: ResMut<'w, RollbackIdProvider>,
     show_map_export_window: Local<'s, bool>,
     localization: Res<'w, Localization>,
     map_meta: Query<'w, 's, &'static MapMeta>,
@@ -245,7 +246,8 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                                 .camera_commands_resetcontroller
                                 .p1()
                                 .spawn()
-                                .insert(handle);
+                                .insert(handle)
+                                .insert(Rollback::new(params.rids.next_id()));
                         }
                     }
                 });

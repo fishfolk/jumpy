@@ -7,8 +7,6 @@ const state = Script.state(initState);
 
 export default {
   preUpdate() {
-    if (NetInfo.get().is_client) return;
-
     const player_inputs = world.resource(PlayerInputs);
 
     const mapQuery = world.query(MapMeta)[0];
@@ -42,7 +40,7 @@ export default {
         const [spawnerTransform] = world.query(Transform).get(spawner);
 
         // Spawn the player
-        const player = world.spawn();
+        const player = WorldTemp.spawn();
         world.insert(player, Value.create(PlayerIdx, [i]));
         world.insert(player, spawnerTransform);
       }

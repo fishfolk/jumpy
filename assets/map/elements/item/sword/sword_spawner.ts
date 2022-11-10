@@ -1,8 +1,5 @@
 export default {
   preUpdate() {
-    // Clients may not spawn items
-    if (NetInfo.get().is_client) return;
-
     const spawnedEntities = MapElement.getSpawnedEntities();
 
     // Handle newly spawned map entities
@@ -12,7 +9,7 @@ export default {
         .get(spanwer_entity);
 
       // Spawn a new entity for the sword and copy the transform and visibility from the map element
-      const entity = world.spawn();
+      const entity = WorldTemp.spawn();
       world.insert(
         entity,
         Value.create(Item, {

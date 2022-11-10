@@ -1,7 +1,7 @@
 use super::*;
 
 use bevy::reflect::{FromReflect, Reflect};
-use ggrs::{InputStatus, PlayerHandle};
+use bevy_ggrs::ggrs::{InputStatus, PlayerHandle};
 use numquant::{IntRange, Quantized};
 
 use crate::metadata::PlayerMeta;
@@ -45,7 +45,6 @@ pub fn input_system(
 
         control
     } else {
-        warn!("Couldn't find player input");
         DensePlayerControl(0)
     }
 }
@@ -126,7 +125,7 @@ bitfield::bitfield! {
     shoot_pressed, set_shoot_pressed: 1;
     grab_pressed, set_grab_pressed: 2;
     slide_pressed, set_slide_pressed: 3;
-    from into DenseMoveDirection, move_direction, set_move_direction: 16, 4;
+    from into DenseMoveDirection, move_direction, set_move_direction: 15, 4;
 }
 
 /// A newtype around [`Vec2`] that implements [`From<u16>`] and [`Into<u16>`] as a way to compress
@@ -189,22 +188,17 @@ fn update_user_input(
 
         control.move_direction = move_direction.0;
 
-        if input.jump_pressed() {
-            control.jump_pressed = true;
-            control.jump_just_pressed = !previous_control.jump_pressed;
-        }
-        if input.grab_pressed() {
-            control.grab_pressed = true;
-            control.grab_just_pressed = !previous_control.grab_pressed;
-        }
-        if input.shoot_pressed() {
-            control.shoot_pressed = true;
-            control.shoot_just_pressed = !previous_control.shoot_pressed;
-        }
-        if input.slide_pressed() {
-            control.slide_pressed = true;
-            control.slide_just_pressed = !previous_control.slide_pressed;
-        }
+        control.jump_pressed = input.jump_pressed();
+        control.jump_just_pressed = control.jump_pressed && !previous_control.jump_pressed;
+
+        control.shoot_pressed = input.shoot_pressed();
+        control.shoot_just_pressed = control.shoot_pressed && !previous_control.shoot_pressed;
+
+        control.grab_pressed = input.grab_pressed();
+        control.grab_just_pressed = control.grab_pressed && !previous_control.grab_pressed;
+
+        control.slide_pressed = input.slide_pressed();
+        control.slide_just_pressed = control.slide_pressed && !previous_control.slide_pressed;
     }
 
     // player_inputs.has_updated = true;

@@ -130,7 +130,7 @@ export default {
       WorldTemp.despawnRecursive(event.item);
 
       // Spawn a new, lit bomb to the map
-      const entity = world.spawn();
+      const entity = WorldTemp.spawn();
       scriptState.litBombs.push(EntityRef.toJs(entity));
       world.insert(entity, transform);
       world.insert(entity, globalTransform);
@@ -183,7 +183,7 @@ export default {
 
       if (state.frames >= 60) {
         // Spawn damage region entity
-        const damageRegionEnt = world.spawn();
+        const damageRegionEnt = WorldTemp.spawn();
         world.insert(damageRegionEnt, transform);
         world.insert(damageRegionEnt, globalTransform);
         world.insert(damageRegionEnt, visibility);
@@ -200,11 +200,11 @@ export default {
         world.insert(
           damageRegionEnt,
           Value.create(Lifetime, {
-            lifetime: 1 / 9 * 4,
+            lifetime: (1 / 9) * 4,
           })
         );
         // Spawn explosion sprite entity
-        const explosionSpriteEnt = world.spawn();
+        const explosionSpriteEnt = WorldTemp.spawn();
         world.insert(explosionSpriteEnt, transform);
         world.insert(explosionSpriteEnt, globalTransform);
         world.insert(explosionSpriteEnt, visibility);
@@ -224,7 +224,7 @@ export default {
         world.insert(
           explosionSpriteEnt,
           Value.create(Lifetime, {
-            lifetime: 1 / 9 * 11,
+            lifetime: (1 / 9) * 11,
           })
         );
 

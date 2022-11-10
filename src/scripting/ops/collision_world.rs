@@ -6,12 +6,6 @@ use bevy::ecs::system::SystemState;
 use bevy_mod_js_scripting::{serde_json, JsRuntimeOp, JsValueRef, JsValueRefs, OpContext};
 use once_cell::sync::OnceCell;
 
-#[derive(Serialize)]
-struct JsNetInfo {
-    is_server: bool,
-    is_client: bool,
-}
-
 pub struct CollisionWorldActorCollisions;
 impl JsRuntimeOp for CollisionWorldActorCollisions {
     fn js(&self) -> Option<&'static str> {

@@ -14,7 +14,10 @@
 use bevy::{
     asset::AssetServerSettings, log::LogSettings, render::texture::ImageSettings, text::TextPlugin,
 };
-use bevy_ggrs::GGRSPlugin;
+use bevy_ggrs::{
+    ggrs::{self},
+    GGRSPlugin,
+};
 use bevy_parallax::ParallaxResource;
 
 pub mod animation;
@@ -36,33 +39,42 @@ pub mod physics;
 pub mod platform;
 pub mod player;
 pub mod prelude;
+pub mod random;
 pub mod run_criteria;
 pub mod schedule;
 pub mod scripting;
+pub mod session;
 pub mod ui;
 pub mod utils;
 pub mod workarounds;
 
 use crate::{
-    animation::AnimationPlugin,
+    animation::{
+        AnimatedSprite, AnimationBank, AnimationBankSprite, AnimationPlugin, LastAnimatedSprite,
+    },
     assets::AssetPlugin,
     camera::CameraPlugin,
     damage::DamagePlugin,
     debug::DebugPlugin,
-    item::ItemPlugin,
+    item::{Item, ItemPlugin},
     lifetime::LifetimePlugin,
     lines::LinesPlugin,
     loading::LoadingPlugin,
     localization::LocalizationPlugin,
     map::MapPlugin,
-    metadata::{GameMeta, MetadataPlugin},
-    name::NamePlugin,
+    metadata::{GameMeta, MetadataPlugin, PlayerMeta},
+    name::{EntityName, NamePlugin},
     networking::NetworkingPlugin,
-    physics::PhysicsPlugin,
+    physics::{
+        collisions::{Actor, Collider},
+        KinematicBody, PhysicsPlugin,
+    },
     platform::PlatformPlugin,
-    player::PlayerPlugin,
+    player::{state::PlayerState, PlayerIdx, PlayerPlugin},
     prelude::*,
-    scripting::ScriptingPlugin,
+    random::{GlobalRng, RandomPlugin},
+    scripting::{ops::map::MapElementLoaded, ScriptingPlugin},
+    session::SessionPlugin,
     ui::UiPlugin,
     workarounds::WorkaroundsPlugin,
 };
@@ -95,8 +107,8 @@ pub enum RollbackStage {
 }
 
 #[derive(Debug)]
-pub struct GGRSConfig;
-impl ggrs::Config for GGRSConfig {
+pub struct GgrsConfig;
+impl ggrs::Config for GgrsConfig {
     type Input = player::input::DensePlayerControl;
     type State = u8;
     /// Addresses are the same as the player handle for our custom socket.
@@ -201,18 +213,47 @@ pub fn main() {
         .add_plugin(LifetimePlugin)
         .add_plugin(WorkaroundsPlugin)
         .add_plugin(DebugPlugin)
+        .add_plugin(RandomPlugin)
         .add_plugin(ScriptingPlugin)
-        .add_plugin(NetworkingPlugin);
+        .add_plugin(NetworkingPlugin)
+        .add_plugin(SessionPlugin);
 
     // Pull the schedule back out of the world
-    let schedule = app.world.remove_resource().unwrap();
+    let schedule: Schedule = app.world.remove_resource().unwrap();
 
     // Build the GGRS plugin
-    GGRSPlugin::<GGRSConfig>::new()
+    GGRSPlugin::<GgrsConfig>::new()
         .with_input_system(player::input::input_system)
-        .with_update_frequency(FPS)
+        .with_update_frequency(crate::FPS)
         .with_rollback_schedule(schedule)
+        .register_rollback_type::<GlobalRng>()
+        .register_rollback_type::<Transform>()
+        .register_rollback_type::<Collider>()
+        .register_rollback_type::<KinematicBody>()
+        .register_rollback_type::<AnimatedSprite>()
+        .register_rollback_type::<AnimationBank>()
+        .register_rollback_type::<AnimationBankSprite>()
+        .register_rollback_type::<Actor>()
+        .register_rollback_type::<Handle<Image>>()
+        .register_rollback_type::<LastAnimatedSprite>()
+        .register_rollback_type::<PlayerIdx>()
+        .register_rollback_type::<PlayerState>()
+        .register_rollback_type::<PlayerMeta>()
+        .register_rollback_type::<Item>()
+        .register_rollback_type::<MapElementLoaded>()
+        .register_rollback_type::<EntityName>()
         .build(&mut app);
+
+    // This will start the game without any networking enabled ( and input doesn't work either ),
+    // and may be useful developer testing.
+    //
+    // app.init_resource::<Vec<(DensePlayerControl, InputStatus)>>();
+    // app.init_resource::<RollbackIdProvider>();
+    // app.add_stage_before(
+    //     CoreStage::Update,
+    //     "rollback_stage",
+    //     schedule.with_run_criteria(FixedTimestep::steps_per_second(60.0)),
+    // );
 
     debug!(?engine_config, "Starting game");
 

@@ -6,7 +6,7 @@ use bevy::{
 };
 use bevy_prototype_lyon::{entity::ShapeBundle, prelude::*};
 
-use crate::damage::DamageRegion;
+use crate::{damage::DamageRegion, prelude::RollbackScheduleAppExt};
 
 use super::{collisions::Collider, KinematicBody, PhysicsStages};
 
@@ -30,11 +30,13 @@ struct PhysicsDebugRenderStage;
 impl Plugin for PhysicsDebugRenderPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<PhysicsDebugRenderConfig>()
-            .add_stage_after(
-                PhysicsStages::UpdatePhysics,
-                PhysicsDebugRenderStage,
-                SystemStage::single(render_collision_shapes),
-            );
+            .extend_rollback_schedule(|schedule| {
+                schedule.add_stage_after(
+                    PhysicsStages::UpdatePhysics,
+                    PhysicsDebugRenderStage,
+                    SystemStage::single(render_collision_shapes),
+                );
+            });
     }
 }
 

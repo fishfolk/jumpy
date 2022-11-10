@@ -1,3 +1,5 @@
+use bevy_ggrs::RollbackIdProvider;
+
 use crate::{
     metadata::MapMeta,
     networking::{
@@ -16,6 +18,7 @@ pub struct MapSelectMenu<'w, 's> {
     commands: Commands<'w, 's>,
     localization: Res<'w, Localization>,
     map_assets: Res<'w, Assets<MapMeta>>,
+    rids: ResMut<'w, RollbackIdProvider>,
     #[system_param(ignore)]
     _phantom: PhantomData<(&'w (), &'s ())>,
 }
@@ -114,7 +117,11 @@ fn handle_match_setup_messages(params: &mut MapSelectMenu) {
                     message: MatchSetupFromClient::SelectMap(map_handle),
                 } => {
                     *params.menu_page = MenuPage::Home;
-                    params.commands.spawn().insert(map_handle);
+                    params
+                        .commands
+                        .spawn()
+                        .insert(map_handle)
+                        .insert(Rollback::new(params.rids.next_id()));
                     params
                         .commands
                         .insert_resource(NextState(GameState::InGame));

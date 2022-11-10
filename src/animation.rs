@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use bevy::{ecs::system::AsSystemLabel, reflect::FromReflect, utils::HashMap};
 
 use crate::prelude::*;
@@ -64,8 +62,7 @@ pub struct AnimatedSprite {
     pub flip_y: bool,
     pub repeat: bool,
     pub fps: f32,
-    #[reflect(ignore)]
-    pub timer: Timer,
+    pub timer: f32,
 }
 
 #[derive(Reflect, Component, Debug, Default, Deref, DerefMut)]
@@ -82,7 +79,7 @@ impl Clone for AnimatedSprite {
             repeat: self.repeat,
             fps: self.fps,
             atlas: self.atlas.clone_weak(),
-            timer: self.timer.clone(),
+            timer: self.timer,
         }
     }
 }
@@ -105,11 +102,11 @@ pub struct AnimationBank {
 
 fn animate_sprites(mut animated_sprites: Query<(&mut AnimatedSprite, &mut TextureAtlasSprite)>) {
     for (mut animated_sprite, mut atlas_sprite) in &mut animated_sprites {
-        animated_sprite
-            .timer
-            .tick(Duration::from_secs_f32(1.0 / crate::FPS as f32));
+        animated_sprite.timer += 1.0 / crate::FPS as f32;
+        atlas_sprite.flip_x = animated_sprite.flip_x;
 
-        if animated_sprite.timer.just_finished() {
+        if animated_sprite.timer > 1.0 / animated_sprite.fps {
+            animated_sprite.timer = 0.0;
             if animated_sprite.index
                 >= animated_sprite
                     .end
@@ -182,11 +179,7 @@ fn update_animated_sprite_components(
             atlas_sprite.index = animated_sprite.start;
 
             // Reset the timer
-            animated_sprite
-                .timer
-                .set_duration(Duration::from_secs_f32(1.0 / fps.max(0.0001)));
-            animated_sprite.timer.set_repeating(true);
-            animated_sprite.timer.reset();
+            animated_sprite.timer = 0.0;
         }
 
         // If the animation changed

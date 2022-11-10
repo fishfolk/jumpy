@@ -1,8 +1,8 @@
 use crate::{metadata::MapElementMeta, prelude::*};
 use bevy_mod_js_scripting::{serde_json, JsRuntimeOp, JsValueRef, OpContext};
 
-#[derive(Component)]
-#[component(storage = "SparseSet")]
+#[derive(Reflect, Component, Default)]
+#[reflect(Component, Default)]
 pub struct MapElementLoaded;
 
 pub struct ElementGetSpawnedEntities;

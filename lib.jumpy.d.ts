@@ -53,9 +53,8 @@ declare namespace EntityRef {
 }
 
 interface NetInfo {
-  is_client: boolean;
-  is_server: boolean;
   player_idx: usize;
+  player_count: usize;
 }
 
 declare namespace NetInfo {
@@ -74,6 +73,12 @@ declare namespace Player {
   function getInventory(player: Entity): Entity | null;
   function setInventory(player: Entity, item: Entity): void;
   function useItem(player: Entity): void;
+}
+declare namespace WorldTemp {
+  function spawn(): Entity;
+}
+declare namespace Random {
+  function gen(): number;
 }
 
 declare namespace CollisionWorld {

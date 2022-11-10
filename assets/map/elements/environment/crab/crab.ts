@@ -30,7 +30,7 @@ export default {
         .get(spanwer_entity);
 
       // Spawn a new entity for the crab and copy the transform and visibility from the map element
-      const entity = world.spawn();
+      const entity = WorldTemp.spawn();
       state.crabs.push(EntityRef.toJs(entity));
 
       world.insert(entity, Value.create(EntityName, ["Critter: Crab"]));
@@ -66,6 +66,7 @@ export default {
           has_mass: true,
         })
       );
+      break;
     }
   },
 
@@ -81,7 +82,7 @@ export default {
       if (i % 100 == 0) {
         i = 0;
         kinematicBody.velocity.x =
-          Math.random() * 3 * (Math.random() >= 0.5 ? -1 : 1);
+          Random.gen() * 3 * (Random.gen() >= 0.5 ? -1 : 1);
       }
     }
   },

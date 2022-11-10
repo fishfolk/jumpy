@@ -85,7 +85,7 @@ export default {
       ] = items[0].components;
 
       // Spawn damage region entity
-      let entity = world.spawn();
+      let entity = WorldTemp.spawn();
       world.insert(
         entity,
         Value.create(Transform, {

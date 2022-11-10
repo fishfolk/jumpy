@@ -7,6 +7,7 @@ pub mod item;
 pub mod map;
 pub mod net;
 pub mod player;
+pub mod random;
 pub mod script;
 pub mod world;
 
@@ -57,6 +58,8 @@ pub fn get_ops() -> OpMap {
         "jumpy_world_despawn_recursive",
         Box::new(world::WorldDespawnRecursive),
     );
+    ops.insert("jumpy_world_spawn", Box::new(world::WorldSpawn));
+    ops.insert("jumpy_random", Box::new(random::Random));
 
     ops
 }

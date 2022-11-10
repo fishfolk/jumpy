@@ -15,7 +15,7 @@ impl Plugin for PlayerMetadataPlugin {
     }
 }
 
-#[derive(Reflect, TypeUuid, Deserialize, Clone, Debug, Component)]
+#[derive(Reflect, TypeUuid, Deserialize, Clone, Debug, Component, Default)]
 #[serde(deny_unknown_fields)]
 #[uuid = "a939278b-901a-47d4-8ee8-6ac97881cf4d"]
 pub struct PlayerMeta {
@@ -23,7 +23,7 @@ pub struct PlayerMeta {
     pub spritesheet: PlayerSpritesheetMeta,
 }
 
-#[derive(Reflect, Deserialize, Clone, Debug)]
+#[derive(Reflect, Deserialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
 pub struct PlayerSpritesheetMeta {
     pub image: String,
@@ -56,7 +56,7 @@ impl PlayerSpritesheetMeta {
                         flip_y: false,
                         repeat: clip.repeat,
                         fps: self.animation_fps,
-                        timer: Timer::from_seconds(1.0 / self.animation_fps, true),
+                        timer: 0.0,
                         index: 0,
                     },
                 )

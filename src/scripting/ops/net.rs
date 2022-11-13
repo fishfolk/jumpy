@@ -24,6 +24,6 @@ impl JsRuntimeOp for NetInfoGet {
         _args: serde_json::Value,
     ) -> anyhow::Result<serde_json::Value> {
         let match_info = world.get_resource::<ClientMatchInfo>();
-        Ok(serde_json::to_value(&match_info)?)
+        Ok(serde_json::to_value(match_info)?)
     }
 }

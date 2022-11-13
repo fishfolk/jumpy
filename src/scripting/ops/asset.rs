@@ -90,6 +90,6 @@ impl JsRuntimeOp for AssetGetAbsolutePath {
         let absolute_path = absolute_path.normalize();
         let path_str = absolute_path.to_str().expect("Non-unicode-path");
 
-        Ok(serde_json::to_value(&path_str)?)
+        Ok(serde_json::to_value(path_str)?)
     }
 }

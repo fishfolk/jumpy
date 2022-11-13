@@ -103,6 +103,7 @@ impl<T: Asset> HasLoadProgress for AssetHandle<T> {
             loading_resources.asset_server.get_load_state(&self.inner) == LoadState::Loaded;
 
         LoadProgress {
+            #[allow(clippy::bool_to_int_with_if)]
             loaded: if loaded { 1 } else { 0 },
             total: 1,
         }

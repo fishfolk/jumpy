@@ -143,7 +143,7 @@ fn frame_diagnostic_window(
         egui::Window::new(&localization.get("frame-diagnostics"))
             .id(egui::Id::new("frame_diagnostics"))
             .default_width(500.0)
-            .open(&mut **show)
+            .open(&mut show)
             .show(ctx, |ui| {
                 if ui.button(&localization.get("reset-min-max")).clicked() {
                     *state = default();

@@ -249,9 +249,7 @@ fn impl_server_send_sync_data(
         // Loop over all entities matching the query
         let mut serialized_items = Vec::new();
         for item in query.iter_mut(world) {
-            let net_id = if let Some(id) = net_ids.get_net_id(item.entity) {
-                id
-            } else {
+            let Some(net_id) = net_ids.get_net_id(item.entity) else {
                 warn!("Skipping sync of entity without known NetId");
                 continue;
             };

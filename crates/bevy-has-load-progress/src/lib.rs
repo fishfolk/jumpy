@@ -5,6 +5,8 @@
 //! inside, maybe deeply nested or stored in vectors, etc., and you need to be able to get the load
 //! progress of _all_ of the handles inside that struct.
 
+#![allow(clippy::bool_to_int_with_if)]
+
 use std::marker::PhantomData;
 
 use bevy::{

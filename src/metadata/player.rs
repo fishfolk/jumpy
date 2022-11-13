@@ -106,17 +106,13 @@ impl<'de> serde::de::Visitor<'de> for RangeVisitor {
     where
         A: SeqAccess<'de>,
     {
-        let start: usize = if let Some(start) = seq.next_element()? {
-            start
-        } else {
+        let Some(start) = seq.next_element()? else {
             return Err(serde::de::Error::invalid_length(
                 0,
                 &"a sequence with a length of 2",
             ));
         };
-        let end: usize = if let Some(end) = seq.next_element()? {
-            end
-        } else {
+        let Some(end) = seq.next_element()? else {
             return Err(serde::de::Error::invalid_length(
                 1,
                 &"a sequence with a length of 2",

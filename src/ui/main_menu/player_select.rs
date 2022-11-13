@@ -362,12 +362,7 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
 
                 if player_input.active {
                     ui.vertical_centered(|ui| {
-                        let player_meta =
-                            if let Some(meta) = params.player_meta_assets.get(player_handle) {
-                                meta
-                            } else {
-                                return;
-                            };
+                        let Some(player_meta) = params.player_meta_assets.get(player_handle) else { return; };
 
                         ui.themed_label(normal_font, &params.localization.get("pick-a-fish"));
 

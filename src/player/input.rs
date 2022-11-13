@@ -2,6 +2,7 @@ use super::*;
 
 use bevy::reflect::{FromReflect, Reflect};
 use bevy_ggrs::ggrs::{InputStatus, PlayerHandle};
+use leafwing_input_manager::plugin::InputManagerSystem;
 use numquant::{IntRange, Quantized};
 
 use crate::metadata::PlayerMeta;
@@ -17,7 +18,11 @@ impl Plugin for PlayerInputPlugin {
             .register_type::<Vec<PlayerInput>>()
             .register_type::<PlayerControl>()
             .add_plugin(InputManagerPlugin::<PlayerAction>::default())
-            .add_system(update_input_buffer)
+            .add_system_to_stage(
+                CoreStage::PreUpdate,
+                update_input_buffer.after(InputManagerSystem::Update),
+            )
+            .add_system_to_stage(CoreStage::Last, clear_input_buffer)
             .extend_rollback_schedule(|schedule| {
                 schedule.add_system_to_stage(RollbackStage::PreUpdate, update_user_input);
                 // .add_system_to_stage(FixedUpdateStage::Last, reset_input);
@@ -25,15 +30,23 @@ impl Plugin for PlayerInputPlugin {
     }
 }
 
-#[derive(Default, Deref, DerefMut)]
-pub struct LocalPlayerInputBuffer([DensePlayerControl; MAX_PLAYERS]);
+/// A buffer holding the player inputs until they are read by the game simulation.
+#[derive(Reflect, Default)]
+pub struct LocalPlayerInputBuffer {
+    /// The buffers for each player. Non-local players will have empty buffers.
+    pub players: [DensePlayerControl; MAX_PLAYERS],
+    /// Indicates that the buffer has been read and should be reset at the end of the render frame.
+    pub has_been_read: bool,
+}
 
+/// Update the player input buffer. This makes sure that if the frame rate exceeds the simulation
+/// updates per second that any inputs pressed in between frames will be detected.
 fn update_input_buffer(
     mut buffer: ResMut<LocalPlayerInputBuffer>,
     players: Query<(&PlayerIdx, &ActionState<PlayerAction>)>,
 ) {
     for (player_idx, action_state) in &players {
-        let control = &mut buffer[player_idx.0];
+        let control = &mut buffer.players[player_idx.0];
 
         control.set_move_direction(DenseMoveDirection(
             action_state
@@ -55,24 +68,23 @@ fn update_input_buffer(
     }
 }
 
+/// Clear the input buffer if it has been read this frame
+fn clear_input_buffer(mut buffer: ResMut<LocalPlayerInputBuffer>) {
+    if buffer.has_been_read {
+        *buffer = default()
+    }
+}
+
 /// The GGRS input system
 pub fn input_system(
     player_handle: In<PlayerHandle>,
     mut buffer: ResMut<LocalPlayerInputBuffer>,
 ) -> DensePlayerControl {
-    let control = &mut buffer[player_handle.0];
-
-    // Copy the current controls
-    let out = *control;
-
-    // Reset the controls in the buffer
-    *control = DensePlayerControl(0);
-
-    // Return the current controls
-    out
+    buffer.has_been_read = true;
+    buffer.players[player_handle.0]
 }
 
-/// The control inputs that a player may make
+/// The control inputs that a player may make.
 #[derive(Debug, Copy, Clone, Actionlike, Deserialize, Eq, PartialEq, Hash)]
 pub enum PlayerAction {
     Move,
@@ -82,13 +94,11 @@ pub enum PlayerAction {
     Slide,
 }
 
-#[derive(Reflect, Clone, Debug)]
+/// The inputs for each player in this simulation frame.
+#[derive(Reflect, Clone, Debug, Component)]
 #[reflect(Default, Resource)]
 pub struct PlayerInputs {
     pub players: Vec<PlayerInput>,
-    // /// This field indicates whether or not the user input has been updated since the last run of
-    // /// the `reset_input` system.
-    // pub has_updated: bool,
 }
 
 impl Default for PlayerInputs {
@@ -140,7 +150,7 @@ bitfield::bitfield! {
     /// A player's controller inputs densely packed into a single u16.
     ///
     /// This is used when sending player inputs across the network.
-    #[derive(bytemuck::Pod, bytemuck::Zeroable, Copy, Clone, PartialEq, Eq, Default)]
+    #[derive(bytemuck::Pod, bytemuck::Zeroable, Copy, Clone, PartialEq, Eq, Reflect)]
     #[repr(transparent)]
     pub struct DensePlayerControl(u16);
     impl Debug;
@@ -151,9 +161,19 @@ bitfield::bitfield! {
     from into DenseMoveDirection, move_direction, set_move_direction: 15, 4;
 }
 
+impl Default for DensePlayerControl {
+    fn default() -> Self {
+        let mut control = Self(0);
+
+        control.set_move_direction(default());
+
+        control
+    }
+}
+
 /// A newtype around [`Vec2`] that implements [`From<u16>`] and [`Into<u16>`] as a way to compress
 /// user stick input for use in [`DensePlayerControl`].
-#[derive(Debug, Deref, DerefMut)]
+#[derive(Debug, Deref, DerefMut, Default)]
 struct DenseMoveDirection(pub Vec2);
 
 /// This is the specific [`Quantized`] type that we use to represent movement directions in
@@ -225,18 +245,4 @@ fn update_user_input(
 
         *previous_control = control.clone();
     }
-
-    // player_inputs.has_updated = true;
 }
-
-// /// Reset player inputs to prepare for the next update
-// fn reset_input(mut player_inputs: ResMut<PlayerInputs>) {
-//     if player_inputs.has_updated {
-//         for player in &mut player_inputs.players {
-//             player.previous_control = player.control.clone();
-//             player.control = default();
-//         }
-
-//         player_inputs.has_updated = false;
-//     }
-// }

@@ -16,6 +16,9 @@ impl Plugin for SessionPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<FrameIdx>()
             .add_enter_system(GameState::InGame, setup_session)
+            .extend_rollback_plugin(|plugin| {
+                plugin.register_rollback_type::<FrameIdx>()
+            })
             .extend_rollback_schedule(|schedule| {
                 schedule.add_system_to_stage(
                     RollbackStage::Last,

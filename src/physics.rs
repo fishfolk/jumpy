@@ -19,6 +19,12 @@ impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<KinematicBody>()
             .register_type::<Collider>()
+            .extend_rollback_plugin(|plugin| {
+                plugin
+                    .register_rollback_type::<Collider>()
+                    .register_rollback_type::<KinematicBody>()
+                    .register_rollback_type::<Actor>()
+            })
             .extend_rollback_schedule(|schedule| {
                 schedule
                     .add_stage_after(

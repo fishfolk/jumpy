@@ -16,6 +16,13 @@ impl Plugin for AnimationPlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<AnimatedSprite>()
             .register_type::<AnimationBankSprite>()
+            .extend_rollback_plugin(|plugin| {
+                plugin
+                    .register_rollback_type::<AnimatedSprite>()
+                    .register_rollback_type::<AnimationBank>()
+                    .register_rollback_type::<AnimationBankSprite>()
+                    .register_rollback_type::<LastAnimatedSprite>()
+            })
             .extend_rollback_schedule(|schedule| {
                 schedule
                     .add_stage_after(

@@ -20,9 +20,18 @@ impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(TilemapPlugin)
             .init_resource::<MapScripts>()
-            .add_system(hydrate_maps);
+            .add_system(hydrate_maps)
+            .extend_rollback_plugin(|plugin| {
+                plugin.register_rollback_type::<MapElementScriptAcknowledged>()
+            });
     }
 }
+
+/// Marker component indicating that a map element load event has been handled by the map element's
+/// script.
+#[derive(Reflect, Component, Default)]
+#[reflect(Component, Default)]
+pub struct MapElementScriptAcknowledged;
 
 /// Contains the scripts that have been added for the currently loaded map
 #[derive(Deref, DerefMut, Default)]

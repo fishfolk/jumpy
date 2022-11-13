@@ -5,7 +5,8 @@ pub struct RandomPlugin;
 
 impl Plugin for RandomPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<GlobalRng>();
+        app.init_resource::<GlobalRng>()
+            .extend_rollback_plugin(|plugin| plugin.register_rollback_type::<GlobalRng>());
     }
 }
 

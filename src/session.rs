@@ -27,7 +27,7 @@ fn setup_session(mut commands: Commands, client_match_info: Option<Res<ClientMat
 
         builder = builder
             .with_num_players(player::MAX_PLAYERS)
-            .with_check_distance(2);
+            .with_check_distance(0);
 
         for i in 0..player::MAX_PLAYERS {
             builder = builder.add_player(ggrs::PlayerType::Local, i).unwrap();

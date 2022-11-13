@@ -11,11 +11,13 @@ pub struct PlayerInputPlugin;
 impl Plugin for PlayerInputPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<PlayerInputs>()
+            .init_resource::<LocalPlayerInputBuffer>()
             .register_type::<PlayerInputs>()
             .register_type::<PlayerInput>()
             .register_type::<Vec<PlayerInput>>()
             .register_type::<PlayerControl>()
             .add_plugin(InputManagerPlugin::<PlayerAction>::default())
+            .add_system(update_input_buffer)
             .extend_rollback_schedule(|schedule| {
                 schedule.add_system_to_stage(RollbackStage::PreUpdate, update_user_input);
                 // .add_system_to_stage(FixedUpdateStage::Last, reset_input);
@@ -23,13 +25,15 @@ impl Plugin for PlayerInputPlugin {
     }
 }
 
-/// The GGRS input system
-pub fn input_system(
-    player_handle: In<PlayerHandle>,
+#[derive(Default, Deref, DerefMut)]
+pub struct LocalPlayerInputBuffer([DensePlayerControl; MAX_PLAYERS]);
+
+fn update_input_buffer(
+    mut buffer: ResMut<LocalPlayerInputBuffer>,
     players: Query<(&PlayerIdx, &ActionState<PlayerAction>)>,
-) -> DensePlayerControl {
-    if let Some((_, action_state)) = players.iter().find(|(idx, ..)| idx.0 == player_handle.0) {
-        let mut control = DensePlayerControl(0);
+) {
+    for (player_idx, action_state) in &players {
+        let control = &mut buffer[player_idx.0];
 
         control.set_move_direction(DenseMoveDirection(
             action_state
@@ -38,15 +42,34 @@ pub fn input_system(
                 .xy(),
         ));
 
-        control.set_jump_pressed(action_state.pressed(PlayerAction::Jump));
-        control.set_shoot_pressed(action_state.pressed(PlayerAction::Shoot));
-        control.set_slide_pressed(action_state.pressed(PlayerAction::Slide));
-        control.set_grab_pressed(action_state.pressed(PlayerAction::Grab));
-
         control
-    } else {
-        DensePlayerControl(0)
+            .set_jump_pressed(action_state.pressed(PlayerAction::Jump) || control.jump_pressed());
+        control.set_shoot_pressed(
+            action_state.pressed(PlayerAction::Shoot) || control.shoot_pressed(),
+        );
+        control.set_slide_pressed(
+            action_state.pressed(PlayerAction::Slide) || control.slide_pressed(),
+        );
+        control
+            .set_grab_pressed(action_state.pressed(PlayerAction::Grab) || control.grab_pressed());
     }
+}
+
+/// The GGRS input system
+pub fn input_system(
+    player_handle: In<PlayerHandle>,
+    mut buffer: ResMut<LocalPlayerInputBuffer>,
+) -> DensePlayerControl {
+    let control = &mut buffer[player_handle.0];
+
+    // Copy the current controls
+    let out = *control;
+
+    // Reset the controls in the buffer
+    *control = DensePlayerControl(0);
+
+    // Return the current controls
+    out
 }
 
 /// The control inputs that a player may make
@@ -117,7 +140,7 @@ bitfield::bitfield! {
     /// A player's controller inputs densely packed into a single u16.
     ///
     /// This is used when sending player inputs across the network.
-    #[derive(bytemuck::Pod, bytemuck::Zeroable, Copy, Clone, PartialEq, Eq)]
+    #[derive(bytemuck::Pod, bytemuck::Zeroable, Copy, Clone, PartialEq, Eq, Default)]
     #[repr(transparent)]
     pub struct DensePlayerControl(u16);
     impl Debug;
@@ -199,6 +222,8 @@ fn update_user_input(
 
         control.slide_pressed = input.slide_pressed();
         control.slide_just_pressed = control.slide_pressed && !previous_control.slide_pressed;
+
+        *previous_control = control.clone();
     }
 
     // player_inputs.has_updated = true;

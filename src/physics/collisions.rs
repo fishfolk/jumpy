@@ -223,9 +223,7 @@ impl<'w, 's> CollisionWorld<'w, 's> {
     pub fn actor_collisions(&self, entity: Entity) -> Vec<Entity> {
         let mut collisions = Vec::new();
 
-        let collider = if let Ok((_, collider)) = self.actors.get(entity) {
-            collider.clone()
-        } else {
+        let Ok((_, collider)) = self.actors.get(entity) else {
             return collisions;
         };
         let rect = collider.rect();

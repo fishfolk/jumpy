@@ -1,9 +1,5 @@
-use crate::{metadata::MapElementMeta, prelude::*};
+use crate::{map::MapElementScriptAcknowledged, metadata::MapElementMeta, prelude::*};
 use bevy_mod_js_scripting::{serde_json, JsRuntimeOp, JsValueRef, OpContext};
-
-#[derive(Reflect, Component, Default)]
-#[reflect(Component, Default)]
-pub struct MapElementLoaded;
 
 pub struct ElementGetSpawnedEntities;
 impl JsRuntimeOp for ElementGetSpawnedEntities {
@@ -31,7 +27,7 @@ impl JsRuntimeOp for ElementGetSpawnedEntities {
         let value_refs = ctx.op_state.get_mut().unwrap();
 
         let entities = world
-            .query_filtered::<(Entity, &MapElementMeta), Without<MapElementLoaded>>()
+            .query_filtered::<(Entity, &MapElementMeta), Without<MapElementScriptAcknowledged>>()
             .iter(world)
             .filter(|(_, meta)| {
                 meta.script_handles
@@ -42,7 +38,9 @@ impl JsRuntimeOp for ElementGetSpawnedEntities {
             .collect::<Vec<_>>()
             .into_iter()
             .map(|entity| {
-                world.entity_mut(entity).insert(MapElementLoaded);
+                world
+                    .entity_mut(entity)
+                    .insert(MapElementScriptAcknowledged);
                 JsValueRef::new_free(Box::new(entity), value_refs)
             })
             .collect::<Vec<_>>();

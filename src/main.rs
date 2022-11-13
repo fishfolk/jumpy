@@ -49,32 +49,27 @@ pub mod utils;
 pub mod workarounds;
 
 use crate::{
-    animation::{
-        AnimatedSprite, AnimationBank, AnimationBankSprite, AnimationPlugin, LastAnimatedSprite,
-    },
+    animation::AnimationPlugin,
     assets::AssetPlugin,
     camera::CameraPlugin,
     damage::DamagePlugin,
     debug::DebugPlugin,
-    item::{Item, ItemPlugin},
+    item::ItemPlugin,
     lifetime::LifetimePlugin,
     lines::LinesPlugin,
     loading::LoadingPlugin,
     localization::LocalizationPlugin,
     map::MapPlugin,
-    metadata::{GameMeta, MetadataPlugin, PlayerMeta},
-    name::{EntityName, NamePlugin},
+    metadata::{GameMeta, MetadataPlugin},
+    name::NamePlugin,
     networking::NetworkingPlugin,
-    physics::{
-        collisions::{Actor, Collider},
-        KinematicBody, PhysicsPlugin,
-    },
+    physics::PhysicsPlugin,
     platform::PlatformPlugin,
-    player::{input::PlayerInputs, state::PlayerState, PlayerIdx, PlayerPlugin},
+    player::PlayerPlugin,
     prelude::*,
-    random::{GlobalRng, RandomPlugin},
-    scripting::{ops::map::MapElementLoaded, ScriptingPlugin},
-    session::{FrameIdx, SessionPlugin},
+    random::RandomPlugin,
+    scripting::ScriptingPlugin,
+    session::SessionPlugin,
     ui::UiPlugin,
     workarounds::WorkaroundsPlugin,
 };
@@ -153,10 +148,11 @@ pub fn main() {
     app.add_loopless_state(GameState::LoadingPlatformStorage)
         .add_loopless_state(InGameState::Playing);
 
-    // Create the GGRS rollback schedule
+    // Create the GGRS rollback schedule and plugin
     let mut rollback_schedule = Schedule::default();
+    let rollback_plugin = GGRSPlugin::<GgrsConfig>::new();
 
-    // Add fixed update stages
+    // Add fixed update stagesrefs/branchless/2fd80952e26d905aa258ebb7e6175a7cfc4cb76f
     rollback_schedule
         .add_stage(RollbackStage::First, SystemStage::parallel())
         .add_stage_after(
@@ -180,9 +176,10 @@ pub fn main() {
             SystemStage::parallel(),
         );
 
-    // Add the rollback schedule as a resource, temporarily.
-    // This allows plugins to modify the schedule using `crate::schedule::RollbackScheduleAppExt`.
+    // Add the rollback schedule and plugin as resources, temporarily.
+    // This allows plugins to modify them using `crate::schedule::RollbackScheduleAppExt`.
     app.insert_resource(rollback_schedule);
+    app.insert_resource(rollback_plugin);
 
     // Install game plugins
 
@@ -219,43 +216,17 @@ pub fn main() {
         .add_plugin(SessionPlugin);
 
     // Pull the schedule back out of the world
-    let schedule: Schedule = app.world.remove_resource().unwrap();
+    let rollback_schedule: Schedule = app.world.remove_resource().unwrap();
+    let ggrs_plugin: GGRSPlugin<GgrsConfig> = app.world.remove_resource().unwrap();
 
     // Build the GGRS plugin
-    GGRSPlugin::<GgrsConfig>::new()
+    ggrs_plugin
         .with_input_system(player::input::input_system)
         .with_update_frequency(crate::FPS)
-        .with_rollback_schedule(schedule)
-        .register_rollback_type::<GlobalRng>()
+        .with_rollback_schedule(rollback_schedule)
         .register_rollback_type::<Transform>()
-        .register_rollback_type::<Collider>()
-        .register_rollback_type::<KinematicBody>()
-        .register_rollback_type::<AnimatedSprite>()
-        .register_rollback_type::<AnimationBank>()
-        .register_rollback_type::<AnimationBankSprite>()
-        .register_rollback_type::<Actor>()
         .register_rollback_type::<Handle<Image>>()
-        .register_rollback_type::<LastAnimatedSprite>()
-        .register_rollback_type::<PlayerIdx>()
-        .register_rollback_type::<PlayerState>()
-        .register_rollback_type::<PlayerMeta>()
-        .register_rollback_type::<Item>()
-        .register_rollback_type::<MapElementLoaded>()
-        .register_rollback_type::<EntityName>()
-        .register_rollback_type::<FrameIdx>()
-        .register_rollback_type::<PlayerInputs>()
         .build(&mut app);
-
-    // This will start the game without any networking enabled ( and input doesn't work either ),
-    // and may be useful developer testing.
-    //
-    // app.init_resource::<Vec<(DensePlayerControl, InputStatus)>>();
-    // app.init_resource::<RollbackIdProvider>();
-    // app.add_stage_before(
-    //     CoreStage::Update,
-    //     "rollback_stage",
-    //     schedule.with_run_criteria(FixedTimestep::steps_per_second(60.0)),
-    // );
 
     debug!(?engine_config, "Starting game");
 

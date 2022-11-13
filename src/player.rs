@@ -27,6 +27,12 @@ impl Plugin for PlayerPlugin {
             .add_fixed_update_event::<PlayerKillEvent>()
             .add_fixed_update_event::<PlayerDespawnEvent>()
             .register_type::<PlayerIdx>()
+            .extend_rollback_plugin(|plugin| {
+                plugin
+                    .register_rollback_type::<PlayerIdx>()
+                    .register_rollback_type::<PlayerState>()
+                    .register_rollback_type::<PlayerMeta>()
+            })
             .extend_rollback_schedule(|schedule| {
                 schedule.add_system_to_stage(
                     RollbackStage::PreUpdate,

@@ -7,7 +7,8 @@ impl Plugin for ItemPlugin {
         app.register_type::<Item>()
             .add_fixed_update_event::<ItemGrabEvent>()
             .add_fixed_update_event::<ItemDropEvent>()
-            .add_fixed_update_event::<ItemUseEvent>();
+            .add_fixed_update_event::<ItemUseEvent>()
+            .extend_rollback_plugin(|plugin| plugin.register_rollback_type::<Item>());
     }
 }
 

@@ -96,6 +96,7 @@ async fn client() -> anyhow::Result<()> {
             .nth(1)
             .map(|x| x.parse().unwrap())
             .unwrap_or(0),
+        match_data: b"example-client".to_vec(),
     });
     println!("=> Sending match request: {message:?}");
     let message = postcard::to_allocvec(&message)?;

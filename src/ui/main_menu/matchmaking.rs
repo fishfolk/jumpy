@@ -312,6 +312,7 @@ async fn impl_start_matchmaking(
 
         let message = MatchmakerRequest::RequestMatch(MatchInfo {
             client_count: player_count,
+            match_data: b"jumpy_default_game".to_vec(),
         });
 
         let message = postcard::to_allocvec(&message)?;

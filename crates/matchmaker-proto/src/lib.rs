@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-
 //
 // === Matchmaking Mode ===
 //
@@ -22,7 +21,7 @@ pub struct MatchInfo {
     pub client_count: u8,
     /// This is an arbitrary set of bytes that must match exactly for clients to end up in the same
     /// match.
-    /// 
+    ///
     /// This allows us to support matchmaking for different games/modes with the same matchmaking
     /// server.
     pub match_data: Vec<u8>,

@@ -70,11 +70,11 @@ use crate::{
         KinematicBody, PhysicsPlugin,
     },
     platform::PlatformPlugin,
-    player::{state::PlayerState, PlayerIdx, PlayerPlugin},
+    player::{input::PlayerInputs, state::PlayerState, PlayerIdx, PlayerPlugin},
     prelude::*,
     random::{GlobalRng, RandomPlugin},
     scripting::{ops::map::MapElementLoaded, ScriptingPlugin},
-    session::SessionPlugin,
+    session::{FrameIdx, SessionPlugin},
     ui::UiPlugin,
     workarounds::WorkaroundsPlugin,
 };
@@ -242,6 +242,8 @@ pub fn main() {
         .register_rollback_type::<Item>()
         .register_rollback_type::<MapElementLoaded>()
         .register_rollback_type::<EntityName>()
+        .register_rollback_type::<FrameIdx>()
+        .register_rollback_type::<PlayerInputs>()
         .build(&mut app);
 
     // This will start the game without any networking enabled ( and input doesn't work either ),

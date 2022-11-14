@@ -27,33 +27,35 @@ impl JsRuntimeOp for ScriptGetInfo {
 
             globalThis.Script.state = (init) => {
                 const scriptId = Script.getInfo().path;
-                if (!globalThis.scriptState) globalThis.scriptState = {};
-                if (!globalThis.scriptState[scriptId]) globalThis.scriptState[scriptId] = cloneObj(init) || {};
-                return globalThis.scriptState[scriptId];
+                if (!globalThis.jsState) globalThis.jsState = {};
+                if (!globalThis.jsState.script) globalThis.jsState.script = {};
+                if (!globalThis.jsState.script[scriptId]) globalThis.jsState.script[scriptId] = cloneObj(init) || {};
+                return globalThis.jsState.script[scriptId];
             }
 
             globalThis.Script.entityStates = () => {
-                if (!globalThis.scriptEntityState) globalThis.scriptState = {};
-                if (!globalThis.scriptEntityState[scriptId]) globalThis.scriptState[scriptId] = {};
-                return globalThis.scriptEntityState[scriptId];
+                if (!globalThis.jsState) globalThis.jsState = {};
+                if (!globalThis.jsState.entity) globalThis.jsState.script = {};
+                if (!globalThis.jsState.entity[scriptId]) globalThis.jsState.script[scriptId] = {};
+                return globalThis.jsState.entity[scriptId];
             }
 
             globalThis.Script.getEntityState = (entity, init) => {
                 const jsEntity = EntityRef.toJs(entity);
                 const entityKey = JSON.stringify(jsEntity);
                 const scriptId = Script.getInfo().path;
-                if (!globalThis.scriptEntityState) globalThis.scriptEntityState = {};
-                if (!globalThis.scriptEntityState[scriptId]) globalThis.scriptEntityState[scriptId] = {};
-                if (!globalThis.scriptEntityState[scriptId][entityKey]) globalThis.scriptEntityState[scriptId][entityKey] = cloneObj(init) || {};
-                return globalThis.scriptEntityState[scriptId][entityKey];
+                if (!globalThis.jsState.entity) globalThis.jsState.entity = {};
+                if (!globalThis.jsState.entity[scriptId]) globalThis.jsState.entity[scriptId] = {};
+                if (!globalThis.jsState.entity[scriptId][entityKey]) globalThis.jsState.entity[scriptId][entityKey] = cloneObj(init) || {};
+                return globalThis.jsState.entity[scriptId][entityKey];
             }
             globalThis.Script.setEntityState = (entity, state) => {
                 const jsEntity = EntityRef.toJs(entity);
                 const entityKey = JSON.stringify(jsEntity);
                 const scriptId = Script.getInfo().path;
-                if (!globalThis.scriptEntityState) globalThis.scriptEntityState = {};
-                if (!globalThis.scriptEntityState[scriptId]) globalThis.scriptEntityState[scriptId] = {};
-                globalThis.scriptEntityState[scriptId][entityKey] = state;
+                if (!globalThis.jsState.entity) globalThis.jsState.entity = {};
+                if (!globalThis.jsState.entity[scriptId]) globalThis.jsState.entity[scriptId] = {};
+                globalThis.jsState.entity[scriptId][entityKey] = state;
             }
             "#,
         )

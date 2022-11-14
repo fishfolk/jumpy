@@ -514,7 +514,7 @@ dependencies = [
 [[package]]
 name = "bevy_ecs_dynamic"
 version = "0.1.0"
-source = "git+https://github.com/jakobhellermann/bevy_ecs_dynamic#aa7a051a49bd134cfd8c169542e16526bf2b36b3"
+source = "git+https://github.com/jakobhellermann/bevy_ecs_dynamic?rev=aa7a051a49bd134cfd8c169542e16526bf2b36b3#aa7a051a49bd134cfd8c169542e16526bf2b36b3"
 dependencies = [
  "bevy_ecs",
  "bevy_reflect",
@@ -592,7 +592,7 @@ dependencies = [
 [[package]]
 name = "bevy_ggrs"
 version = "0.10.0"
-source = "git+https://github.com/zicklag/bevy_ggrs.git?branch=jumpy#7a016aab3ce314208dd992b18af30f65a63a5767"
+source = "git+https://github.com/zicklag/bevy_ggrs.git?branch=jumpy#739acc24108332af8572e495edc3d9de16153be9"
 dependencies = [
  "bevy",
  "bytemuck",
@@ -736,7 +736,7 @@ dependencies = [
 [[package]]
 name = "bevy_mod_js_scripting"
 version = "0.1.0"
-source = "git+https://github.com/zicklag/bevy_mod_js_scripting.git?branch=jumpy#b8be476b4409a5dd065c48c1211336e16fb0c87c"
+source = "git+https://github.com/zicklag/bevy_mod_js_scripting.git?branch=jumpy#9781be0f8035ba43fa4498d88f1efba658ab4ed5"
 dependencies = [
  "anyhow",
  "bevy",
@@ -751,6 +751,7 @@ dependencies = [
  "serde",
  "serde-wasm-bindgen",
  "serde_json",
+ "serde_v8",
  "slotmap",
  "swc_atoms",
  "swc_common",
@@ -837,7 +838,7 @@ dependencies = [
 [[package]]
 name = "bevy_reflect_fns"
 version = "0.1.0"
-source = "git+https://github.com/jakobhellermann/bevy_reflect_fns#22e85021851e0cfe27b87e428f6313dd8c26abde"
+source = "git+https://github.com/jakobhellermann/bevy_reflect_fns?rev=22e85021851e0cfe27b87e428f6313dd8c26abde#22e85021851e0cfe27b87e428f6313dd8c26abde"
 dependencies = [
  "bevy_reflect",
  "thiserror",

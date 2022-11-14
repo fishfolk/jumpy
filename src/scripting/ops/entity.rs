@@ -5,23 +5,8 @@
 use anyhow::Context;
 use bevy::prelude::Entity;
 use bevy_mod_js_scripting::{serde_json, JsRuntimeOp, JsValueRef, JsValueRefs};
-use serde::{Deserialize, Serialize};
 
-use crate::scripting::JsU64;
-
-#[derive(Serialize, Deserialize)]
-struct JsEntity(JsU64);
-
-impl From<Entity> for JsEntity {
-    fn from(e: Entity) -> Self {
-        Self(e.to_bits().into())
-    }
-}
-impl From<JsEntity> for Entity {
-    fn from(e: JsEntity) -> Self {
-        Entity::from_bits(e.0.into())
-    }
-}
+use crate::scripting::JsEntity;
 
 pub struct EntityRefToJs;
 impl JsRuntimeOp for EntityRefToJs {

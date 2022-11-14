@@ -8,12 +8,14 @@ pub mod map;
 pub mod net;
 pub mod player;
 pub mod random;
+pub mod rollback;
 pub mod script;
 pub mod world;
 
 pub fn get_ops() -> OpMap {
     let mut ops = OpMap::default();
 
+    ops.insert("_rollback_hooks", Box::new(rollback::RollbackHooks));
     ops.insert("_component_types_include", Box::new(ComponentTypesInclude));
     ops.insert(
         "jumpy_element_get_spawned_entities",

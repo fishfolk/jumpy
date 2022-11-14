@@ -30,7 +30,7 @@ base64 = "0.13.0"
 bevy-has-load-progress = { path = "crates/bevy-has-load-progress", features = ["bevy_egui"] }
 bevy-inspector-egui = { version = "0.13.0" }
 bevy-parallax = "0.2.0"
-bevy_ecs_dynamic = { git = "https://github.com/jakobhellermann/bevy_ecs_dynamic" }
+bevy_ecs_dynamic = { git = "https://github.com/jakobhellermann/bevy_ecs_dynamic", rev = "aa7a051a49bd134cfd8c169542e16526bf2b36b3" }
 bevy_ecs_tilemap = { version = "0.7.0", features = ["atlas"] }
 bevy_egui = "0.16.1"
 bevy_fluent = "0.4.0"

@@ -4,14 +4,6 @@ type SproingerState = {
   frame: number;
 };
 
-// Initialize script state.
-//
-// This will be used to keep track of which entities in the world are sproingers.
-const initState: { sproingers: JsEntity[] } = {
-  sproingers: [],
-};
-const state = Script.state(initState);
-
 // Add our constants
 const FORCE = 25;
 
@@ -21,8 +13,8 @@ export default {
     const map = world.query(MapMeta)[0];
     // If there is no map
     if (!map) {
-      // lear our sproinger list
-      state.sproingers = [];
+      // clear our sproinger list
+      Script.clearEntityList("sproingers");
       return;
     }
 
@@ -31,7 +23,7 @@ export default {
     // If there are spawned entities, that means the map was loaded or reloaded.
     if (spawnedEntities.length > 0) {
       // So clear our sproinger list
-      state.sproingers = [];
+      Script.clearEntityList("sproingers");
     }
 
     // For every new sproinger entity
@@ -40,7 +32,7 @@ export default {
       //
       // Note: Because we cannot persist entity refs across frames,
       // we must first convert the entity to a JSON representation.
-      state.sproingers.push(EntityRef.toJs(entity));
+      Script.addEntityToList("sproingers", entity);
 
       // Add the sprite
       world.insert(
@@ -77,10 +69,7 @@ export default {
     const animatedSprites = world.query(AnimatedSprite);
 
     // Loop over all our sproingers
-    for (const jsEntity of state.sproingers) {
-      // We must convert our JsEntities to entity refs to use in world queries.
-      const entity = EntityRef.fromJs(jsEntity);
-
+    for (const entity of Script.getEntityList("sproingers")) {
       // Get our sproinger sprite
       const [sprite] = animatedSprites.get(entity);
 

@@ -33,6 +33,10 @@ declare interface ScriptInfo {
 declare namespace Script {
   function getInfo(): ScriptInfo;
   function state<T>(init?: T): T;
+  function addEntityToList(listName: string, entity: Entity): void;
+  function getEntityList(listName: string): Entity[];
+  function removeEntityFromList(listName: string, entity: Entity): void;
+  function clearEntityList(listName: string): void;
   function entityStates(): object;
   function getEntityState<T>(entity: Entity, init?: T): T;
   function setEntityState<T>(entity: Entity, value: T): void;

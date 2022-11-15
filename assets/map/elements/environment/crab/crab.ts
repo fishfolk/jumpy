@@ -1,26 +1,22 @@
-const initState: { crabs: JsEntity[] } = {
-  crabs: [],
-};
-
 const MapMeta: BevyType<unknown> = {
   typeName: "jumpy::metadata::map::MapMeta",
 };
 
 let i = 0;
 
-const state = Script.state(initState);
+const CRABS = "crabs";
 
 export default {
   preUpdateInGame() {
     const mapQuery = world.query(MapMeta)[0];
     if (!mapQuery) {
-      state.crabs = [];
+      Script.clearEntityList(CRABS);
       return;
     }
 
     const spawnedEntities = MapElement.getSpawnedEntities();
     if (spawnedEntities.length > 0) {
-      state.crabs = [];
+      Script.clearEntityList(CRABS);
     }
 
     // Handle newly spawned map entities
@@ -31,7 +27,7 @@ export default {
 
       // Spawn a new entity for the crab and copy the transform and visibility from the map element
       const entity = WorldTemp.spawn();
-      state.crabs.push(EntityRef.toJs(entity));
+      Script.addEntityToList(CRABS, entity);
 
       world.insert(entity, Value.create(EntityName, ["Critter: Crab"]));
       world.insert(entity, transform);
@@ -66,7 +62,6 @@ export default {
           has_mass: true,
         })
       );
-      break;
     }
   },
 
@@ -74,8 +69,8 @@ export default {
     i++;
     const query = world.query(KinematicBody);
 
-    for (const crab of state.crabs) {
-      const components = query.get(EntityRef.fromJs(crab));
+    for (const crab of Script.getEntityList(CRABS)) {
+      const components = query.get(crab);
       if (!components) continue;
       const [kinematicBody] = components;
 

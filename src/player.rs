@@ -255,15 +255,7 @@ impl Command for PlayerSetInventoryCommand {
                         world
                             .get::<KinematicBody>(self.player)
                             .map(|x| x.velocity)
-                            // If we get network notified to kill a player before we get notified to
-                            // drop the item they are carrying, we may end up calling this on a
-                            // remote player with no kinematic body.
-                            //
-                            // In this case, because we don't have a velocity for the drop action,
-                            // just do no movement on the drop.
-                            //
-                            // We may need to re-visit this if we find that this causes a de-sync.
-                            .unwrap_or_default()
+                            .unwrap()
                     });
 
                     drop_events.send(ItemDropEvent {

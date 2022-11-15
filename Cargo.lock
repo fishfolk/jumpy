@@ -592,7 +592,7 @@ dependencies = [
 [[package]]
 name = "bevy_ggrs"
 version = "0.10.0"
-source = "git+https://github.com/zicklag/bevy_ggrs.git?branch=jumpy#739acc24108332af8572e495edc3d9de16153be9"
+source = "git+https://github.com/zicklag/bevy_ggrs.git?branch=jumpy#cf4c4051f5c2a6121d45078b478b7d248b77326d"
 dependencies = [
  "bevy",
  "bytemuck",
@@ -1301,9 +1301,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.0.23"
+version = "4.0.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0eb41c13df48950b20eb4cd0eefa618819469df1bffc49d11e8487c4ba0037e5"
+checksum = "60494cedb60cb47462c0ff7be53de32c0e42a6fc2c772184554fa12bd9489c03"
 dependencies = [
  "atty",
  "bitflags",
@@ -2292,7 +2292,7 @@ dependencies = [
 [[package]]
 name = "ggrs"
 version = "0.9.2"
-source = "git+https://github.com/gschup/ggrs#0d70f4524b02a945999cdfed83a111e8c1140ed0"
+source = "git+https://github.com/gschup/ggrs#99f8a139d599d94db7397e65c33d6fabe45c4acf"
 dependencies = [
  "bincode",
  "bitfield-rle",
@@ -5398,9 +5398,9 @@ dependencies = [
 
 [[package]]
 name = "uuid"
-version = "1.2.1"
+version = "1.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "feb41e78f93363bb2df8b0e86a2ca30eed7806ea16ea0c790d757cf93f79be83"
+checksum = "422ee0de9031b5b948b97a8fc04e3aa35230001a722ddd27943e0be31564ce4c"
 dependencies = [
  "getrandom",
  "serde",

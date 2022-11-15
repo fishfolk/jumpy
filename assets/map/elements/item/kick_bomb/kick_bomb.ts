@@ -3,12 +3,8 @@ const scriptPath = Script.getInfo().path;
 type LitBombState = {
   frames: number;
 };
-type ScriptState = {
-  litBombs: JsEntity[];
-};
-const scriptState = Script.state<ScriptState>({
-  litBombs: [],
-});
+
+const LIT_BOMBS = "kickBombsLit";
 
 export default {
   preUpdateInGame() {
@@ -131,7 +127,7 @@ export default {
 
       // Spawn a new, lit bomb to the map
       const entity = WorldTemp.spawn();
-      scriptState.litBombs.push(EntityRef.toJs(entity));
+      Script.addEntityToList(LIT_BOMBS, entity);
       world.insert(entity, transform);
       world.insert(entity, globalTransform);
       world.insert(entity, computedVisibility);
@@ -169,11 +165,9 @@ export default {
     }
 
     // Handle lit bombs
-    const litBombs = scriptState.litBombs;
-    scriptState.litBombs = [];
-    for (const jsEntity of litBombs) {
-      const bombEntity = EntityRef.fromJs(jsEntity);
-
+    const litBombs = Script.getEntityList(LIT_BOMBS);
+    Script.clearEntityList(LIT_BOMBS);
+    for (const bombEntity of litBombs) {
       // Get the bomb's state
       const state = Script.getEntityState<LitBombState>(bombEntity, {
         frames: 0,
@@ -232,7 +226,7 @@ export default {
         WorldTemp.despawnRecursive(bombEntity);
       } else {
         state.frames += 1;
-        scriptState.litBombs.push(jsEntity);
+        Script.addEntityToList(LIT_BOMBS, bombEntity);
       }
     }
 

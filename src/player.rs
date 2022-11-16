@@ -2,7 +2,7 @@ use bevy::ecs::system::Command;
 use bevy_tweening::Animator;
 
 use crate::{
-    item::{Item, ItemDropEvent, ItemGrabEvent, ItemUseEvent},
+    item::{Item, ItemDropped, ItemGrabbed, ItemUsed},
     metadata::{GameMeta, PlayerMeta, Settings},
     networking::proto::ClientMatchInfo,
     physics::KinematicBody,
@@ -22,16 +22,17 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
+        app.world.init_component::<PlayerKilled>();
         app.add_plugin(input::PlayerInputPlugin)
             .add_plugin(state::PlayerStatePlugin)
-            .add_fixed_update_event::<PlayerKillEvent>()
-            .add_fixed_update_event::<PlayerDespawnEvent>()
             .register_type::<PlayerIdx>()
+            .register_type::<PlayerKilled>()
             .extend_rollback_plugin(|plugin| {
                 plugin
                     .register_rollback_type::<PlayerIdx>()
                     .register_rollback_type::<PlayerState>()
                     .register_rollback_type::<PlayerMeta>()
+                    .register_rollback_type::<PlayerKilled>()
             })
             .extend_rollback_schedule(|schedule| {
                 schedule.add_system_to_stage(
@@ -55,26 +56,6 @@ pub struct PlayerIdx(pub usize);
 #[derive(Component, Reflect, Default, Copy, Clone, Debug)]
 #[reflect(Default, Component)]
 pub struct PlayerKilled;
-
-/// An event sent when a player is killed.
-///
-/// > **Note:** This is different than when the player is despawned. A player is usually killed to
-/// > play their death animation before they are despawned.
-#[derive(Reflect, Clone, Debug)]
-pub struct PlayerKillEvent {
-    /// The index of the player that was killed.
-    pub player: Entity,
-    pub velocity: Vec2,
-    pub position: Vec3,
-}
-
-/// An event sent when a player is despawned.
-///
-/// > **Note:** This is different than when the player is killed. A player is usually killed to
-/// > play their death animation before they are despawned.
-pub struct PlayerDespawnEvent {
-    pub player_idx: usize,
-}
 
 /// A [`Command`] to kill a player.
 ///
@@ -121,42 +102,35 @@ impl Command for PlayerKillCommand {
             return;
         }
 
-        world.resource_scope(|world, mut kill_events: Mut<Events<PlayerKillEvent>>| {
-            // If the entity is a player
-            if world.get::<PlayerIdx>(self.player).is_some() {
-                let position = self.position.unwrap_or_else(|| {
-                    world
-                        .get::<Transform>(self.player)
-                        .expect("Player without kinematic body")
-                        .translation
-                });
-                let velocity = self.velocity.unwrap_or_else(|| {
-                    world
-                        .get::<KinematicBody>(self.player)
-                        .expect("Player without kinematic body")
-                        .velocity
-                });
+        // If the entity is a player
+        if world.get::<PlayerIdx>(self.player).is_some() {
+            let position = self.position.unwrap_or_else(|| {
+                world
+                    .get::<Transform>(self.player)
+                    .expect("Player without kinematic body")
+                    .translation
+            });
+            let velocity = self.velocity.unwrap_or_else(|| {
+                world
+                    .get::<KinematicBody>(self.player)
+                    .expect("Player without kinematic body")
+                    .velocity
+            });
 
-                // Send kill event
-                kill_events.send(PlayerKillEvent {
-                    player: self.player,
-                    velocity,
-                    position,
-                });
-
-                // Drop any items player was carrying
-                PlayerSetInventoryCommand {
-                    player: self.player,
-                    item: None,
-                    position: Some(position),
-                    velocity: Some(velocity),
-                }
-                .write(world);
-                world.entity_mut(self.player).insert(PlayerKilled);
-            } else {
-                warn!("Tried to kill non-player entity")
+            // Drop any items player was carrying
+            PlayerSetInventoryCommand {
+                player: self.player,
+                item: None,
+                position: Some(position),
+                velocity: Some(velocity),
             }
-        });
+            .write(world);
+
+            // Add the maker component
+            world.entity_mut(self.player).insert(PlayerKilled);
+        } else {
+            warn!("Tried to kill non-player entity")
+        }
     }
 }
 
@@ -182,22 +156,13 @@ impl PlayerDespawnCommand {
 
 impl Command for PlayerDespawnCommand {
     fn write(self, world: &mut World) {
-        world.resource_scope(
-            |world, mut despawn_events: Mut<Events<PlayerDespawnEvent>>| {
-                // If the entity is a player
-                if let Some(player_idx) = world.get::<PlayerIdx>(self.player) {
-                    // Send despawn event
-                    despawn_events.send(PlayerDespawnEvent {
-                        player_idx: player_idx.0,
-                    });
-
-                    // Despawn the player entity
-                    despawn_with_children_recursive(world, self.player);
-                } else {
-                    warn!("Tried to despawn non-player entity")
-                }
-            },
-        );
+        // If the entity is a player
+        if world.get::<PlayerIdx>(self.player).is_some() {
+            // Despawn the player entity
+            despawn_with_children_recursive(world, self.player);
+        } else {
+            warn!("Tried to despawn non-player entity")
+        }
     }
 }
 
@@ -237,49 +202,28 @@ impl PlayerSetInventoryCommand {
 
 impl Command for PlayerSetInventoryCommand {
     fn write(self, world: &mut World) {
-        // Get the effective drop/grab position
-        let position = self.position.unwrap_or_else(|| {
-            world
-                .get::<Transform>(self.player)
-                .expect("Player missing transform")
-                .translation
-        });
-
         let current_inventory = get_player_inventory(world, self.player);
 
-        world.resource_scope(|world, mut grab_events: Mut<Events<ItemGrabEvent>>| {
-            world.resource_scope(|world, mut drop_events: Mut<Events<ItemDropEvent>>| {
-                // If there was a previous item in the inventory, drop it
-                if let Some(current_item) = current_inventory {
-                    let velocity = self.velocity.unwrap_or_else(|| {
-                        world
-                            .get::<KinematicBody>(self.player)
-                            .map(|x| x.velocity)
-                            .unwrap()
-                    });
-
-                    drop_events.send(ItemDropEvent {
-                        player: self.player,
-                        item: current_item,
-                        position,
-                        velocity,
-                    });
-                    world
-                        .entity_mut(self.player)
-                        .remove_children(&[current_item]);
-                }
-
-                // If there is a new item in the inventory, add it
-                if let Some(item) = self.item {
-                    grab_events.send(ItemGrabEvent {
-                        player: self.player,
-                        item,
-                        position,
-                    });
-                    world.entity_mut(self.player).push_children(&[item]);
-                }
+        // If there was a previous item in the inventory, drop it
+        if let Some(current_item) = current_inventory {
+            // Add the drop marker
+            world.entity_mut(current_item).insert(ItemDropped {
+                player: self.player,
             });
-        });
+
+            world
+                .entity_mut(self.player)
+                .remove_children(&[current_item]);
+        }
+
+        // If there is a new item in the inventory, add it
+        if let Some(item) = self.item {
+            // Add the grab marker
+            world.entity_mut(item).insert(ItemGrabbed {
+                player: self.player,
+            });
+            world.entity_mut(self.player).push_children(&[item]);
+        }
     }
 }
 
@@ -320,22 +264,13 @@ impl PlayerUseItemCommand {
 
 impl Command for PlayerUseItemCommand {
     fn write(self, world: &mut World) {
-        let position = self.position.unwrap_or_else(|| {
-            let transform = world
-                .get::<Transform>(self.player)
-                .expect("Player missing transform");
-            transform.translation
-        });
         let item = self
             .item
             .or_else(|| get_player_inventory(world, self.player));
 
         if let Some(item) = item {
-            let mut use_events = world.resource_mut::<Events<ItemUseEvent>>();
-            use_events.send(ItemUseEvent {
+            world.entity_mut(item).insert(ItemUsed {
                 player: self.player,
-                item,
-                position,
             });
         } else {
             warn!("Tried to use item when not carrying one");

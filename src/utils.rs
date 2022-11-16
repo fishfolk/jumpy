@@ -14,6 +14,19 @@ pub fn cache_str(s: &str) {
     wasm_bindgen::intern(s);
 }
 
+/// Returns the hypothetical "invalid entity" ( `Entity::from_raw(u32::MAX)` ).
+///
+/// This serves as a workaround for the fact that [`Entity`] does not implement [`Default`], but
+/// [`Default`] is required to reflect [`Component`].
+///
+/// It would be best to find a way to get rid of this, but I ( @zicklag ) belive that the chances of
+/// the invalid entity turning out to be a real entity that happened to get all the way up to
+/// index [`u32::MAX`] is highly unlikely.
+#[inline]
+pub fn invalid_entity() -> Entity {
+    Entity::from_raw(u32::MAX)
+}
+
 /// System parameter that can be used to reset the game world.
 ///
 /// Currently this just means de-spawning all of the entities other than the camera and resetting

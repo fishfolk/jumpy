@@ -14,6 +14,10 @@ pub enum AnimationStage {
 
 impl Plugin for AnimationPlugin {
     fn build(&self, app: &mut App) {
+        // Pre-initialize components so that the scripting engine doesn't throw an error if a script
+        // tries to access the component before it has been added to the world by a Rust system.
+        app.world.init_component::<AnimationBankSprite>();
+        
         app.register_type::<AnimatedSprite>()
             .register_type::<AnimationBankSprite>()
             .extend_rollback_plugin(|plugin| {

@@ -56,7 +56,12 @@ export default {
   },
 
   updateInGame() {
-    const players = world.query(AnimatedSprite, Transform, PlayerIdx);
+    const players = world.query(
+      AnimatedSprite,
+      Transform,
+      KinematicBody,
+      PlayerIdx
+    );
     const parents = world.query(Parent);
     const items = world.query(
       Item,
@@ -65,6 +70,8 @@ export default {
       AnimatedSprite,
       GlobalTransform
     );
+    const usedItems = world.query(ItemUsed);
+    const droppedItems = world.query(ItemDropped);
 
     // Helper to spawn a damage region
     const spawnDamageRegion = (
@@ -109,7 +116,7 @@ export default {
       world.insert(
         entity,
         Value.create(Lifetime, {
-          lifetime: 1 / 60,
+          lifetime: 2 / 60,
         })
       );
     };
@@ -210,46 +217,58 @@ export default {
           state.frame += 1;
         }
       }
-    }
 
-    // For every item that is being used
-    for (const event of Items.useEvents()) {
-      // Get the current item state
-      const state = Script.getEntityState<ItemState>(event.item, itemStateInit);
+      // If the item is being used
+      if (!!usedItems.get(itemEnt)) {
+        // Get the current item state
+        const state = Script.getEntityState<ItemState>(itemEnt, itemStateInit);
 
-      if (state.status == "idle") {
-        const [_item, _itemTransform, _body, sprite] = items.get(event.item);
+        if (state.status == "idle") {
+          const [_item, _itemTransform, _body, sprite] = items.get(itemEnt);
 
-        // Start attacking animation
-        sprite.index = 0;
-        sprite.start = 8;
-        sprite.end = 12;
+          // Start attacking animation
+          sprite.index = 0;
+          sprite.start = 8;
+          sprite.end = 12;
 
-        // And move to an attacking state
-        Script.setEntityState<ItemState>(event.item, {
-          status: "swinging",
-          frame: 0,
-        });
+          // And move to an attacking state
+          Script.setEntityState<ItemState>(itemEnt, {
+            status: "swinging",
+            frame: 0,
+          });
+        }
       }
     }
 
     // Update dropped items
-    for (const event of Items.dropEvents()) {
-      const [_item, itemTransform, body, sprite] = items.get(event.item);
+    for (const {
+      entity: itemEnt,
+      components: [item],
+    } of items) {
+      if (item.script != scriptPath) continue;
 
-      // Re-activate physics body on the item
-      body.is_deactivated = false;
-      // Put sword in rest position
-      sprite.start = 0;
-      sprite.end = 0;
-      // Make sure item maintains player velocity
-      body.velocity = event.velocity;
-      body.is_spawning = true;
+      const droppedItemComponents = droppedItems.get(itemEnt);
+      if (!!droppedItemComponents) {
+        const [droppedItem] = droppedItemComponents;
+        const [_item, itemTransform, body, sprite] = items.get(itemEnt);
+        const [_, playerTransform, playerBody] = players.get(
+          droppedItem.player
+        );
 
-      // Drop item at the middle of the player
-      itemTransform.translation.y = event.position.y - 30;
-      itemTransform.translation.x = event.position.x;
-      itemTransform.translation.z = event.position.z;
+        // Re-activate physics body on the item
+        body.is_deactivated = false;
+        // Put sword in rest position
+        sprite.start = 0;
+        sprite.end = 0;
+        // Make sure item maintains player velocity
+        body.velocity = playerBody.velocity;
+        body.is_spawning = true;
+
+        // Drop item at the middle of the player
+        itemTransform.translation.y = playerTransform.translation.y - 30;
+        itemTransform.translation.x = playerTransform.translation.x;
+        itemTransform.translation.z = playerTransform.translation.z;
+      }
     }
   },
 };

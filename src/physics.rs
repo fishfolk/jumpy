@@ -17,6 +17,7 @@ pub enum PhysicsStages {
 
 impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
+        app.world.init_component::<KinematicBody>();
         app.register_type::<KinematicBody>()
             .register_type::<Collider>()
             .extend_rollback_plugin(|plugin| {

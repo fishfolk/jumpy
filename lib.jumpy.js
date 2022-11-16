@@ -22,6 +22,15 @@ const PlayerInputs = {
 const Item = {
     typeName: "jumpy::item::Item"
 }
+const ItemDropped = {
+    typeName: "jumpy::item::ItemDropped"
+}
+const ItemUsed = {
+    typeName: "jumpy::item::ItemUsed"
+}
+const ItemGrabbed = {
+    typeName: "jumpy::item::ItemGrabbed"
+}
 const DamageRegion = {
     typeName: "jumpy::damage::DamageRegion"
 }

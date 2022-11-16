@@ -7,6 +7,7 @@ pub struct LifetimePlugin;
 impl Plugin for LifetimePlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<Lifetime>()
+            .extend_rollback_plugin(|plugin| plugin.register_rollback_type::<Lifetime>())
             .extend_rollback_schedule(|schedule| {
                 schedule.add_system_to_stage(RollbackStage::PostUpdate, lifetime_system);
             });
@@ -36,7 +37,7 @@ pub struct Lifetime {
 /// Despawns entities that have an expired lifetime
 fn lifetime_system(mut commands: Commands, mut entities: Query<(Entity, &mut Lifetime)>) {
     for (entity, mut lifetime) in &mut entities {
-        lifetime.age += FPS as f32;
+        lifetime.age += 1.0 / FPS as f32;
         if lifetime.age >= lifetime.lifetime {
             if lifetime.non_recursive_despawn {
                 commands.entity(entity).despawn();

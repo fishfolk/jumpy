@@ -1,16 +1,12 @@
-use std::sync::Mutex;
-
 use crate::{
     player::{
-        PlayerDespawnCommand, PlayerKillCommand, PlayerKillEvent, PlayerSetInventoryCommand,
-        PlayerUseItemCommand,
+        PlayerDespawnCommand, PlayerKillCommand, PlayerSetInventoryCommand, PlayerUseItemCommand,
     },
     prelude::*,
 };
 use anyhow::Context;
-use bevy::ecs::system::{Command, SystemState};
+use bevy::ecs::system::Command;
 use bevy_mod_js_scripting::{serde_json, JsRuntimeOp, JsValueRef, JsValueRefs, OpContext};
-use once_cell::sync::OnceCell;
 
 pub struct PlayerKill;
 impl JsRuntimeOp for PlayerKill {
@@ -109,50 +105,6 @@ impl JsRuntimeOp for PlayerGetInventory {
         let inventory = item_ent.map(|x| JsValueRef::new_free(Box::new(x), value_refs));
 
         Ok(serde_json::to_value(&inventory)?)
-    }
-}
-
-pub struct PlayerKillEvents;
-impl JsRuntimeOp for PlayerKillEvents {
-    fn js(&self) -> Option<&'static str> {
-        Some(
-            r#"
-            if (!globalThis.Player) {
-                globalThis.Player = {}
-            }
-            
-            globalThis.Player.killEvents = () => {
-                return bevyModJsScriptingOpSync('jumpy_player_kill_events')
-                    .map(x => globalThis.Value.wrapValueRef(x));
-            }
-            "#,
-        )
-    }
-
-    fn run(
-        &self,
-        ctx: OpContext,
-        world: &mut World,
-        _args: serde_json::Value,
-    ) -> anyhow::Result<serde_json::Value> {
-        type Param<'w, 's> = EventReader<'w, 's, PlayerKillEvent>;
-
-        static STATE: OnceCell<Mutex<SystemState<Param>>> = OnceCell::new();
-        let mut state = STATE
-            .get_or_init(|| Mutex::new(SystemState::new(world)))
-            .lock()
-            .unwrap();
-
-        let value_refs = ctx.op_state.get_mut().unwrap();
-
-        let events = state
-            .get_mut(world)
-            .iter()
-            .cloned()
-            .map(|x| JsValueRef::new_free(Box::new(x), value_refs))
-            .collect::<Vec<_>>();
-
-        Ok(serde_json::to_value(&events)?)
     }
 }
 

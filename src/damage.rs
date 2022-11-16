@@ -1,9 +1,8 @@
 //! Systems and components related to damage/kill zones
 
 use crate::{
-    networking::proto::ClientMatchInfo,
     physics::{collisions::Rect, KinematicBody},
-    player::{PlayerIdx, PlayerKillCommand},
+    player::{PlayerKillCommand, PlayerIdx},
     prelude::*,
 };
 
@@ -13,10 +12,15 @@ impl Plugin for DamagePlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<DamageRegion>()
             .register_type::<DamageRegionOwner>()
+            .extend_rollback_plugin(|plugin| {
+                plugin
+                    .register_rollback_type::<DamageRegion>()
+                    .register_rollback_type::<DamageRegionOwner>()
+            })
             .extend_rollback_schedule(|schedule| {
                 schedule.add_system_to_stage(
                     RollbackStage::PostUpdate,
-                    eliminate_players_in_damage_region,
+                    kill_players_in_damage_region,
                 );
             });
     }
@@ -63,21 +67,12 @@ impl Default for DamageRegionOwner {
 }
 
 /// System that will eliminate players that are intersecting with a damage region.
-fn eliminate_players_in_damage_region(
+fn kill_players_in_damage_region(
     mut commands: Commands,
-    players: Query<(Entity, &PlayerIdx, &GlobalTransform, &KinematicBody)>,
+    players: Query<(Entity, &GlobalTransform, &KinematicBody), With<PlayerIdx>>,
     damage_regions: Query<(&DamageRegion, &GlobalTransform, Option<&DamageRegionOwner>)>,
-    client_match_info: Option<Res<ClientMatchInfo>>,
 ) {
-    for (player_ent, player_idx, player_global_transform, kinematic_body) in &players {
-        // For network games, only consider the local player. We're not allowed to kill the other
-        // players.
-        if let Some(info) = &client_match_info {
-            if player_idx.0 != info.player_idx {
-                continue;
-            }
-        }
-
+    for (player_ent, player_global_transform, kinematic_body) in &players {
         let player_rect = kinematic_body.collider_rect(player_global_transform.translation());
         for (damage_region, global_transform, damage_region_owner) in &damage_regions {
             // Don't damage the player that owns this damage region

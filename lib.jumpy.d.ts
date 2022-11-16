@@ -35,6 +35,7 @@ declare namespace Script {
   function state<T>(init?: T): T;
   function addEntityToList(listName: string, entity: Entity): void;
   function getEntityList(listName: string): Entity[];
+  function entityListContains(listName: string, entity: Entity): boolean;
   function removeEntityFromList(listName: string, entity: Entity): void;
   function clearEntityList(listName: string): void;
   function entityStates(): object;
@@ -88,29 +89,6 @@ declare namespace Random {
 declare namespace CollisionWorld {
   function actorCollisions(entity: Entity): Entity[];
 }
-
-type ItemGrabEvent = {
-  player: Entity;
-  item: Entity;
-  position: Vec3;
-};
-type ItemDropEvent = {
-  player: Entity;
-  item: Entity;
-  position: Vec3;
-  velocity: Vec2;
-};
-type ItemUseEvent = {
-  player: Entity;
-  item: Entity;
-  position: Vec3;
-};
-declare namespace Items {
-  function grabEvents(): ItemGrabEvent[];
-  function dropEvents(): ItemDropEvent[];
-  function useEvents(): ItemUseEvent[];
-}
-
 //
 // Jumpy component types
 //
@@ -160,6 +138,19 @@ type Item = {
   script: string;
 };
 declare const Item: BevyType<Item>;
+type ItemGrabbed = {
+  player: Entity;
+};
+declare const ItemGrabbed: BevyType<ItemGrabbed>;
+type ItemDropped = {
+  player: Entity;
+};
+declare const ItemDropped: BevyType<ItemDropped>;
+type ItemUsed = {
+  player: Entity;
+};
+declare const ItemUsed: BevyType<ItemUsed>;
+
 
 type DamageRegion = {
   size: Vec2;

@@ -1,14 +1,40 @@
-use crate::prelude::*;
+use crate::{prelude::*, utils::invalid_entity};
 
 pub struct ItemPlugin;
 
 impl Plugin for ItemPlugin {
     fn build(&self, app: &mut App) {
+        // Pre-initialize components so that the scripting engine doesn't throw an error if a script
+        // tries to access the component before it has been added to the world by a Rust system.
+        app.world.init_component::<ItemDropped>();
+        app.world.init_component::<ItemGrabbed>();
+        app.world.init_component::<ItemUsed>();
+        app.world.init_component::<Item>();
+
         app.register_type::<Item>()
-            .add_fixed_update_event::<ItemGrabEvent>()
-            .add_fixed_update_event::<ItemDropEvent>()
-            .add_fixed_update_event::<ItemUseEvent>()
-            .extend_rollback_plugin(|plugin| plugin.register_rollback_type::<Item>());
+            .register_type::<ItemDropped>()
+            .register_type::<ItemGrabbed>()
+            .register_type::<ItemUsed>()
+            .extend_rollback_plugin(|plugin| {
+                plugin
+                    .register_rollback_type::<Item>()
+                    .register_rollback_type::<ItemDropped>()
+                    .register_rollback_type::<ItemUsed>()
+                    .register_rollback_type::<ItemGrabbed>()
+            })
+            .extend_rollback_schedule(|schedule| {
+                schedule
+                    .add_system_to_stage(RollbackStage::Last, clear_marker_components)
+                    .add_system_to_stage(
+                        RollbackStage::Last,
+                        |mut query: Query<&mut Transform>| {
+                            for mut item in &mut query {
+                                item.set_changed();
+                            }
+                        },
+                    )
+                    ;
+            });
     }
 }
 
@@ -21,27 +47,76 @@ pub struct Item {
     pub script: String,
 }
 
-/// An event triggered when an item is grabbed
-#[derive(Reflect, Clone, Debug)]
-pub struct ItemGrabEvent {
+/// Marker component added to items that have been drop in the current frame.
+///
+/// This component will be removed from the item at the end of the frame.
+#[derive(Component, Reflect, Debug)]
+#[reflect(Default, Component)]
+#[component(storage = "SparseSet")]
+pub struct ItemDropped {
+    /// The player that dropped the item
     pub player: Entity,
-    pub item: Entity,
-    pub position: Vec3,
 }
 
-/// An event triggered when an item is dropped
-#[derive(Reflect, Clone, Debug)]
-pub struct ItemDropEvent {
-    pub player: Entity,
-    pub item: Entity,
-    pub position: Vec3,
-    pub velocity: Vec2,
+impl Default for ItemDropped {
+    fn default() -> Self {
+        Self {
+            player: invalid_entity(),
+        }
+    }
 }
 
-/// An event triggered when an item is used
-#[derive(Reflect, Clone, Debug)]
-pub struct ItemUseEvent {
+/// Marker component indicating the item has been used this frame.
+///
+/// This component will be removed from the item at the end of the frame.
+#[derive(Component, Reflect, Debug)]
+#[reflect(Default, Component)]
+#[component(storage = "SparseSet")]
+pub struct ItemUsed {
+    /// The player that dropped the item
     pub player: Entity,
-    pub item: Entity,
-    pub position: Vec3,
+}
+
+impl Default for ItemUsed {
+    fn default() -> Self {
+        Self {
+            player: invalid_entity(),
+        }
+    }
+}
+
+/// Marker component indicating the item has been grabbed this frame.
+///
+/// This component will be removed from the item at the end of the frame.
+#[derive(Component, Reflect, Debug)]
+#[reflect(Default, Component)]
+#[component(storage = "SparseSet")]
+pub struct ItemGrabbed {
+    /// The player that dropped the item
+    pub player: Entity,
+}
+
+impl Default for ItemGrabbed {
+    fn default() -> Self {
+        Self {
+            player: invalid_entity(),
+        }
+    }
+}
+
+fn clear_marker_components(
+    mut commands: Commands,
+    dropped: Query<Entity, With<ItemDropped>>,
+    grabbed: Query<Entity, With<ItemGrabbed>>,
+    used: Query<Entity, With<ItemUsed>>,
+) {
+    for entity in &dropped {
+        commands.entity(entity).remove::<ItemDropped>();
+    }
+    for entity in &grabbed {
+        commands.entity(entity).remove::<ItemGrabbed>();
+    }
+    for entity in &used {
+        commands.entity(entity).remove::<ItemUsed>();
+    }
 }

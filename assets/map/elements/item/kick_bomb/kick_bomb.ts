@@ -53,6 +53,7 @@ export default {
     const players = world.query(
       AnimatedSprite,
       Transform,
+      KinematicBody,
       PlayerIdx,
       GlobalTransform,
       ComputedVisibility
@@ -71,6 +72,8 @@ export default {
       Visibility,
       ComputedVisibility
     );
+    const usedItems = world.query(ItemUsed);
+    const droppedItems = world.query(ItemDropped);
 
     // Update items that are being held
     //
@@ -102,66 +105,69 @@ export default {
         x: 13 * flipFactor,
         y: 0,
       });
-    }
 
-    // For every item that is being used
-    for (const event of Items.useEvents()) {
-      let parentComponents = parents.get(event.item);
-      // If this item isn't being held, skip the item
-      if (!parentComponents) continue;
+      // For every item that is being used
+      if (!!usedItems.get(itemEnt)) {
+        let parentComponents = parents.get(itemEnt);
+        // If this item isn't being held, skip the item
+        if (!parentComponents) continue;
 
-      // Get the player info
-      const [parent] = parentComponents;
-      const [
-        playerSprite,
-        transform,
-        _idx,
-        globalTransform,
-        computedVisibility,
-      ] = players.get(parent[0]);
-      const flip = playerSprite.flip_x;
-      const flipFactor = flip ? -1 : 1;
+        // Get the player info
+        const [parent] = parentComponents;
+        const playerEnt = parent[0];
+        const [
+          playerSprite,
+          transform,
+          _body,
+          _idx,
+          globalTransform,
+          computedVisibility,
+        ] = players.get(playerEnt);
+        const flip = playerSprite.flip_x;
+        const flipFactor = flip ? -1 : 1;
 
-      // Despawn the item from the player's hand
-      WorldTemp.despawnRecursive(event.item);
+        // Despawn the item from the player's hand
+        Player.setInventory(playerEnt, null);
+        WorldTemp.despawnRecursive(itemEnt);
 
-      // Spawn a new, lit bomb to the map
-      const entity = WorldTemp.spawn();
-      Script.addEntityToList(LIT_BOMBS, entity);
-      world.insert(entity, transform);
-      world.insert(entity, globalTransform);
-      world.insert(entity, computedVisibility);
-      world.insert(entity, Value.create(Visibility));
+        // Spawn a new, lit bomb to the map
+        const entity = WorldTemp.spawn();
+        Script.addEntityToList(LIT_BOMBS, entity);
+        world.insert(entity, transform);
+        world.insert(entity, globalTransform);
+        world.insert(entity, computedVisibility);
+        world.insert(entity, Value.create(Visibility));
 
-      // Add the animated sprite
-      world.insert(
-        entity,
-        Value.create(AnimatedSprite, {
-          start: 3,
-          end: 5,
-          repeat: true,
-          fps: 8,
-          atlas: {
-            id: Assets.getHandleId("kick_bomb.atlas.yaml"),
-          },
-        })
-      );
-      // And the kinematic body
-      world.insert(
-        entity,
-        Value.create(KinematicBody, {
-          size: {
-            x: 26,
-            y: 26,
-          },
-          velocity: {
-            x: 10 * flipFactor,
-          },
-          gravity: 1,
-          has_friction: true,
-          has_mass: true,
-        })
-      );
+        // Add the animated sprite
+        world.insert(
+          entity,
+          Value.create(AnimatedSprite, {
+            start: 3,
+            end: 5,
+            repeat: true,
+            fps: 8,
+            atlas: {
+              id: Assets.getHandleId("kick_bomb.atlas.yaml"),
+            },
+          })
+        );
+        // And the kinematic body
+        world.insert(
+          entity,
+          Value.create(KinematicBody, {
+            size: {
+              x: 26,
+              y: 26,
+            },
+            velocity: {
+              x: 10 * flipFactor,
+            },
+            gravity: 1,
+            has_friction: true,
+            has_mass: true,
+          })
+        );
+      }
     }
 
     // Handle lit bombs
@@ -231,21 +237,34 @@ export default {
     }
 
     // Update dropped items
-    for (const event of Items.dropEvents()) {
-      const [_item, itemTransform, body, sprite] = items.get(event.item);
-      let flip = sprite.flip_x;
-      let flipFactor = flip ? -1 : 1;
+    for (const {
+      entity: itemEnt,
+      components: [item],
+    } of items) {
+      if (item.script != scriptPath) continue;
 
-      // Re-activate physics body on the item
-      body.is_deactivated = false;
-      // Make sure item maintains player velocity
-      body.velocity = event.velocity;
-      body.is_spawning = true;
+      const droppedItemComponents = droppedItems.get(itemEnt);
+      if (!!droppedItemComponents) {
+        const [droppedItem] = droppedItemComponents;
+        const [_item, itemTransform, body, sprite] = items.get(itemEnt);
+        const [_, playerTransform, playerBody] = players.get(
+          droppedItem.player
+        );
+        let flip = sprite.flip_x;
+        let flipFactor = flip ? -1 : 1;
 
-      // Drop item at the middle of the player
-      itemTransform.translation.y = event.position.y;
-      itemTransform.translation.x = event.position.x + 13 * flipFactor;
-      itemTransform.translation.z = event.position.z;
+        // Re-activate physics body on the item
+        body.is_deactivated = false;
+        // Make sure item maintains player velocity
+        body.velocity = playerBody.velocity;
+        body.is_spawning = true;
+
+        // Drop item at the middle of the player
+        itemTransform.translation.y = playerTransform.translation.y;
+        itemTransform.translation.x =
+          playerTransform.translation.x + 13 * flipFactor;
+        itemTransform.translation.z = playerTransform.translation.z;
+      }
     }
   },
 };

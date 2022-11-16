@@ -87,7 +87,7 @@ quinn = { version = "0.9", default-features = false, features = ["futures-io", "
 quinn-bevy = { path = "crates/quinn-bevy" }
 
 [profile.dev.package."*"]
-opt-level = 1 # Set this to 3 if the game becomes slow to respond during gameplay
+opt-level = 3 # Set this to 3 if the game becomes slow to respond during gameplay
 debug = false
 
 [profile.release]

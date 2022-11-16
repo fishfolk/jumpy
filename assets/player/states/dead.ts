@@ -1,14 +1,19 @@
 const scriptId = Script.getInfo().path;
 
+const DYING_PLAYERS = "dyingPlayers";
+
 /** Responsible for transitioning players to the dead state whenever they are killed */
 export default {
   playerStateTransition() {
-    const players = world.query(PlayerState);
+    const players = world.query(PlayerState, PlayerKilled);
 
-    // Transition all players tht have been killed to this state
-    for (const event of Player.killEvents()) {
-      const [playerState] = players.get(event.player);
-      playerState.id = Assets.getAbsolutePath("./dead.ts");
+    // Transition all players that have been killed to this state
+    for (const { entity } of players) {
+      if (!Script.entityListContains(DYING_PLAYERS, entity)) {
+        const [playerState] = players.get(entity);
+        playerState.id = Assets.getAbsolutePath("./dead.ts");
+        Script.addEntityToList(DYING_PLAYERS, entity);
+      }
     }
   },
   handlePlayerState() {
@@ -28,6 +33,7 @@ export default {
 
       // Despawn player after 1.5 seconds ( 90 frames )
       if (playerState.age >= 90) {
+        Script.removeEntityFromList(DYING_PLAYERS, entity);
         Player.despawn(entity);
         Script.setEntityState(entity, undefined);
       }

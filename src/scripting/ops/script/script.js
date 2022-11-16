@@ -1,4 +1,7 @@
 const cloneObj = x => JSON.parse(JSON.stringify(x));
+const jsEntityEq = (ent1, ent2) => {
+    return ent1[0] == ent2[0] && ent1[1] == ent2[1];
+}
 if (!globalThis.Script) {
     globalThis.Script = {}
 }
@@ -31,11 +34,30 @@ globalThis.Script.addEntityToList = (listName, entity) => {
     list.push(jsEntity);
 }
 
+globalThis.Script.entityListContains = (listName, entity) => {
+    if (!globalThis.jsState) globalThis.jsState = {};
+    if (!globalThis.jsState.entityLists) globalThis.jsState.entityLists = {};
+    if (!globalThis.jsState.entityLists[listName]) globalThis.jsState.entityLists[listName] = [];
+    let list = globalThis.jsState.entityLists[listName];
+    const jsEntity = EntityRef.toJs(entity);
+
+    // Look for entity in list
+    for (const item of list) {
+        if (jsEntityEq(item, jsEntity)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 globalThis.Script.removeEntityFromList = (listName, entity) => {
     if (!globalThis.jsState) globalThis.jsState = {};
     if (!globalThis.jsState.entityLists) globalThis.jsState.entityLists = {};
     if (!globalThis.jsState.entityLists[listName]) globalThis.jsState.entityLists[listname] = [];
-    error("TODO: Implement removeEntityFromList");
+    let list = globalThis.jsState.entityLists[listName];
+    const jsEntity = EntityRef.toJs(entity);
+    globalThis.jsState.entityLists[listName] = list.filter(x => !jsEntityEq(x, jsEntity));
 }
 
 globalThis.Script.clearEntityList = (listName) => {

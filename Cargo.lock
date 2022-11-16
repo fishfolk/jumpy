@@ -592,7 +592,7 @@ dependencies = [
 [[package]]
 name = "bevy_ggrs"
 version = "0.10.0"
-source = "git+https://github.com/zicklag/bevy_ggrs.git?branch=jumpy#cf4c4051f5c2a6121d45078b478b7d248b77326d"
+source = "git+https://github.com/zicklag/bevy_ggrs.git?branch=jumpy#ae6f0c35027881ecef6f84991701e2ee2f5429f2"
 dependencies = [
  "bevy",
  "bytemuck",
@@ -1301,9 +1301,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.0.24"
+version = "4.0.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "60494cedb60cb47462c0ff7be53de32c0e42a6fc2c772184554fa12bd9489c03"
+checksum = "389ca505fd2c00136e0d0cd34bcd8b6bd0b59d5779aab396054b716334230c1c"
 dependencies = [
  "atty",
  "bitflags",

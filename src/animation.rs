@@ -21,7 +21,6 @@ impl Plugin for AnimationPlugin {
                     .register_rollback_type::<AnimatedSprite>()
                     .register_rollback_type::<AnimationBank>()
                     .register_rollback_type::<AnimationBankSprite>()
-                    .register_rollback_type::<LastAnimatedSprite>()
             })
             .extend_rollback_schedule(|schedule| {
                 schedule
@@ -71,9 +70,6 @@ pub struct AnimatedSprite {
     pub fps: f32,
     pub timer: f32,
 }
-
-#[derive(Reflect, Component, Debug, Default, Deref, DerefMut)]
-pub struct LastAnimatedSprite(pub Option<AnimatedSprite>);
 
 impl Clone for AnimatedSprite {
     fn clone(&self) -> Self {
@@ -138,7 +134,6 @@ fn hydrate_animated_sprites(
     for entity in &animated_sprites {
         commands
             .entity(entity)
-            .insert(LastAnimatedSprite(None))
             .insert(Handle::<TextureAtlas>::default())
             .insert(TextureAtlasSprite::default());
     }
@@ -155,53 +150,18 @@ fn hydrate_animation_bank_sprites(
 
 fn update_animated_sprite_components(
     mut animated_sprites: Query<(
-        &mut AnimatedSprite,
-        &mut LastAnimatedSprite,
+        &AnimatedSprite,
         &mut Handle<TextureAtlas>,
         &mut TextureAtlasSprite,
     )>,
 ) {
-    for (mut animated_sprite, mut last_animated_sprite, mut atlas_handle, mut atlas_sprite) in
-        &mut animated_sprites
-    {
+    for (animated_sprite, mut atlas_handle, mut atlas_sprite) in &mut animated_sprites {
         if *atlas_handle != animated_sprite.atlas {
             *atlas_handle = animated_sprite.atlas.clone_weak();
         }
 
         atlas_sprite.flip_x = animated_sprite.flip_x;
         atlas_sprite.flip_y = animated_sprite.flip_y;
-
-        let fps = animated_sprite.fps;
-        let repeat = animated_sprite.repeat;
-
-        // If the FPS or repeat mode changed
-        if last_animated_sprite
-            .as_ref()
-            .as_ref()
-            .map(|last| fps != last.fps || repeat != last.repeat)
-            .unwrap_or(true)
-        {
-            // Restart the animation
-            animated_sprite.index = 0;
-            atlas_sprite.index = animated_sprite.start;
-
-            // Reset the timer
-            animated_sprite.timer = 0.0;
-        }
-
-        // If the animation changed
-        if last_animated_sprite
-            .as_ref()
-            .as_ref()
-            .map(|last| animated_sprite.start != last.start || animated_sprite.end != last.end)
-            .unwrap_or(true)
-        {
-            // Restart the animation
-            animated_sprite.index = 0;
-            atlas_sprite.index = animated_sprite.start;
-        }
-
-        **last_animated_sprite = Some(animated_sprite.clone());
     }
 }
 

@@ -63,13 +63,7 @@ export default {
       PlayerIdx
     );
     const parents = world.query(Parent);
-    const items = world.query(
-      Item,
-      Transform,
-      KinematicBody,
-      AnimatedSprite,
-      GlobalTransform
-    );
+    const items = world.query(Item, Transform, KinematicBody, AnimatedSprite);
     const usedItems = world.query(ItemUsed);
     const droppedItems = world.query(ItemDropped);
 
@@ -83,13 +77,8 @@ export default {
     ) => {
       /// This is a hack to get a global transform because scripts can't construct it with
       /// Value.create(). ( Fixed in Bevy 0.9 )
-      const [
-        _item,
-        _transform,
-        _kinematicBody,
-        _animatedSprite,
-        globalTransform,
-      ] = items[0].components;
+      const [_item, _transform, _kinematicBody, _animatedSprite] =
+        items[0].components;
 
       // Spawn damage region entity
       let entity = WorldTemp.spawn();
@@ -102,7 +91,6 @@ export default {
           },
         })
       );
-      world.insert(entity, globalTransform);
       world.insert(
         entity,
         Value.create(DamageRegion, {
@@ -116,7 +104,7 @@ export default {
       world.insert(
         entity,
         Value.create(Lifetime, {
-          lifetime: 2 / 60,
+          lifetime: 1 / 60,
         })
       );
     };

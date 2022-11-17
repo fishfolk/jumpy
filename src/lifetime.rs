@@ -38,7 +38,7 @@ pub struct Lifetime {
 fn lifetime_system(mut commands: Commands, mut entities: Query<(Entity, &mut Lifetime)>) {
     for (entity, mut lifetime) in &mut entities {
         lifetime.age += 1.0 / FPS as f32;
-        if lifetime.age >= lifetime.lifetime {
+        if lifetime.age > lifetime.lifetime {
             if lifetime.non_recursive_despawn {
                 commands.entity(entity).despawn();
             } else {

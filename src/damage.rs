@@ -2,7 +2,7 @@
 
 use crate::{
     physics::{collisions::Rect, KinematicBody},
-    player::{PlayerKillCommand, PlayerIdx},
+    player::{PlayerIdx, PlayerKillCommand},
     prelude::*,
 };
 
@@ -18,10 +18,8 @@ impl Plugin for DamagePlugin {
                     .register_rollback_type::<DamageRegionOwner>()
             })
             .extend_rollback_schedule(|schedule| {
-                schedule.add_system_to_stage(
-                    RollbackStage::PostUpdate,
-                    kill_players_in_damage_region,
-                );
+                schedule
+                    .add_system_to_stage(RollbackStage::PostUpdate, kill_players_in_damage_region);
             });
     }
 }
@@ -70,11 +68,15 @@ impl Default for DamageRegionOwner {
 fn kill_players_in_damage_region(
     mut commands: Commands,
     players: Query<(Entity, &GlobalTransform, &KinematicBody), With<PlayerIdx>>,
-    damage_regions: Query<(&DamageRegion, &GlobalTransform, Option<&DamageRegionOwner>)>,
+    // FIXME: We should technically be using the GlobalTransform of the damage region, but after
+    // adding rollback for some reason we run into a scenario where the GlobalTransform updates are
+    // not propagated for several frames. Using only the transform avoids the need for the
+    // propagation and temporarily works around the issue, but it's not a good final solution.
+    damage_regions: Query<(&DamageRegion, &Transform, Option<&DamageRegionOwner>)>,
 ) {
     for (player_ent, player_global_transform, kinematic_body) in &players {
         let player_rect = kinematic_body.collider_rect(player_global_transform.translation());
-        for (damage_region, global_transform, damage_region_owner) in &damage_regions {
+        for (damage_region, transform, damage_region_owner) in &damage_regions {
             // Don't damage the player that owns this damage region
             if let Some(owner) = damage_region_owner {
                 if owner.0 == player_ent {
@@ -82,7 +84,7 @@ fn kill_players_in_damage_region(
                 }
             }
 
-            let damage_rect = damage_region.collider_rect(global_transform.translation());
+            let damage_rect = damage_region.collider_rect(transform.translation);
 
             if player_rect.overlaps(&damage_rect) {
                 commands.add(PlayerKillCommand::new(player_ent));

@@ -23,17 +23,7 @@ impl Plugin for ItemPlugin {
                     .register_rollback_type::<ItemGrabbed>()
             })
             .extend_rollback_schedule(|schedule| {
-                schedule
-                    .add_system_to_stage(RollbackStage::Last, clear_marker_components)
-                    .add_system_to_stage(
-                        RollbackStage::Last,
-                        |mut query: Query<&mut Transform>| {
-                            for mut item in &mut query {
-                                item.set_changed();
-                            }
-                        },
-                    )
-                    ;
+                schedule.add_system_to_stage(RollbackStage::Last, clear_marker_components);
             });
     }
 }

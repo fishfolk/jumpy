@@ -89,7 +89,7 @@ struct DebugRenderer<'w, 's> {
         Query<'w, 's, (&'static mut Path, &'static mut DrawMode), With<RapierDebugRenderShapes>>,
     custom_colors: Query<'w, 's, &'static ColliderDebugColor>,
     colliders: Query<'w, 's, (Entity, &'static Collider)>,
-    damage_regions: Query<'w, 's, (Entity, &'static DamageRegion, &'static GlobalTransform)>,
+    damage_regions: Query<'w, 's, (Entity, &'static DamageRegion, &'static Transform)>,
     kinematic_bodies: Query<'w, 's, &'static KinematicBody>,
 }
 
@@ -126,7 +126,7 @@ impl<'w, 's> DebugRenderer<'w, 's> {
             let shape_path = std::mem::take(shape_path_ref);
 
             *shape_path_ref = shape_path.add(&ColliderRect {
-                pos: transform.translation().truncate(),
+                pos: transform.translation.truncate(),
                 size: vec2(damage_region.size.x, damage_region.size.y),
             });
         }

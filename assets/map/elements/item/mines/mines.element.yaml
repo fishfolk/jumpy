@@ -1,4 +1,4 @@
 name: Mines
 category: Weapons
 scripts:
-  - ./sproinger.ts
+  # - ./sproinger.ts

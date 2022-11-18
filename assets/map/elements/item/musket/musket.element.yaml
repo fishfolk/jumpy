@@ -1,4 +1,4 @@
 name: Musket
 category: Weapons
 scripts:
-  - ./musket.ts
+  # - ./musket.ts

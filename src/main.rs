@@ -19,6 +19,10 @@ use bevy_ggrs::{
     GGRSPlugin,
 };
 use bevy_parallax::ParallaxResource;
+use mimalloc::MiMalloc;
+
+#[global_allocator]
+static GLOBAL: MiMalloc = MiMalloc;
 
 pub mod animation;
 pub mod assets;

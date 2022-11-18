@@ -592,7 +592,7 @@ dependencies = [
 [[package]]
 name = "bevy_ggrs"
 version = "0.10.0"
-source = "git+https://github.com/zicklag/bevy_ggrs.git?branch=jumpy#ae6f0c35027881ecef6f84991701e2ee2f5429f2"
+source = "git+https://github.com/zicklag/bevy_ggrs.git?branch=jumpy#7ecc57cda6bcc9a03a431dadde2f81474672a650"
 dependencies = [
  "bevy",
  "bytemuck",
@@ -600,6 +600,7 @@ dependencies = [
  "instant",
  "log",
  "parking_lot 0.12.1",
+ "tracing",
 ]
 
 [[package]]
@@ -2767,6 +2768,8 @@ dependencies = [
  "iyes_loopless",
  "jumpy-matchmaker-proto",
  "leafwing-input-manager",
+ "log",
+ "mimalloc",
  "normalize-path",
  "numquant",
  "once_cell",
@@ -2779,6 +2782,7 @@ dependencies = [
  "serde_yaml",
  "sys-locale",
  "thiserror",
+ "tracing",
  "turborand",
  "unic-langid",
  "wasm-bindgen",
@@ -2991,6 +2995,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "libmimalloc-sys"
+version = "0.1.28"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "04d1c67deb83e6b75fa4fe3309e09cfeade12e7721d95322af500d3814ea60c9"
+dependencies = [
+ "cc",
+ "libc",
+]
+
+[[package]]
 name = "libudev-sys"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3103,6 +3117,15 @@ dependencies = [
  "foreign-types",
  "log",
  "objc",
+]
+
+[[package]]
+name = "mimalloc"
+version = "0.1.32"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9b2374e2999959a7b583e1811a1ddbf1d3a4b9496eceb9746f1192a59d871eca"
+dependencies = [
+ "libmimalloc-sys",
 ]
 
 [[package]]

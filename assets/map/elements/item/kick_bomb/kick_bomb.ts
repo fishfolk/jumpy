@@ -108,10 +108,6 @@ export default {
 
       // For every item that is being used
       if (!!usedItems.get(itemEnt)) {
-        let parentComponents = parents.get(itemEnt);
-        // If this item isn't being held, skip the item
-        if (!parentComponents) continue;
-
         // Get the player info
         const [parent] = parentComponents;
         const playerEnt = parent[0];
@@ -128,11 +124,12 @@ export default {
 
         // Despawn the item from the player's hand
         Player.setInventory(playerEnt, null);
-        WorldTemp.despawnRecursive(itemEnt);
+        // WorldTemp.despawnRecursive(itemEnt);
 
         // Spawn a new, lit bomb to the map
         const entity = WorldTemp.spawn();
         Script.addEntityToList(LIT_BOMBS, entity);
+        world.insert(entity, Value.create(EntityName, ["Kick Bomb ( Lit )"]));
         world.insert(entity, transform);
         world.insert(entity, globalTransform);
         world.insert(entity, computedVisibility);

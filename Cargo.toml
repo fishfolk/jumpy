@@ -24,6 +24,8 @@ render = [
 ]
 
 [dependencies]
+tracing = { version = "0.1.37", features = ["release_max_level_debug"]}
+log = { version = "0.4.17", features = ["release_max_level_debug"] }
 anyhow = "1.0.58"
 async-channel = "1.7.1"
 base64 = "0.13.0"
@@ -37,7 +39,6 @@ bevy_fluent = "0.4.0"
 bevy_ggrs = { git = "https://github.com/zicklag/bevy_ggrs.git", branch = "jumpy" }
 bevy_kira_audio = { version = "0.12.0", features = ["mp3"] }
 bevy_mod_js_scripting = { git = "https://github.com/zicklag/bevy_mod_js_scripting.git", branch = "jumpy" }
-# bevy_mod_js_scripting = { path = "../bevy_mod_js_scripting" }
 bevy_prototype_lyon = "0.6.0"
 bevy_tweening = { version = "0.5", default-features = false }
 bitfield = "0.14.0"
@@ -67,6 +68,7 @@ sys-locale = "0.2.1"
 thiserror = "1.0.31"
 unic-langid = "0.9.0"
 turborand = { version = "0.8.0", features = ["atomic", "serialize"] }
+mimalloc = "0.1.32"
 
 [dependencies.bevy]
 version = "0.8"
@@ -88,7 +90,7 @@ quinn-bevy = { path = "crates/quinn-bevy" }
 
 [profile.dev.package."*"]
 opt-level = 3 # Set this to 3 if the game becomes slow to respond during gameplay
-debug = false
+debug = true
 
 [profile.release]
 lto = true

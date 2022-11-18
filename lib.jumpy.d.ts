@@ -17,7 +17,14 @@ declare namespace Assets {
   function getAbsolutePath(relative_path: string): string;
 }
 
+/**
+ * TODO: These are functions that need to be moved to a different namespace, or built into
+ * bevy_mod_js_scripting.
+ *
+ * Sorry for the weird naming!
+ */
 declare namespace WorldTemp {
+  function spawn(): Entity;
   function despawnRecursive(entity: Entity): void;
 }
 
@@ -78,9 +85,6 @@ declare namespace Player {
   function getInventory(player: Entity): Entity | null;
   function setInventory(player: Entity, item: Entity): void;
   function useItem(player: Entity): void;
-}
-declare namespace WorldTemp {
-  function spawn(): Entity;
 }
 declare namespace Random {
   function gen(): number;

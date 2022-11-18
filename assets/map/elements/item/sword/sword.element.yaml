@@ -1,7 +1,7 @@
 name: Sword
 category: Weapons
 scripts:
-  - ./sword_spawner.ts
-  - ./sword.ts
+  # - ./sword_spawner.ts
+  # - ./sword.ts
 preload_assets:
   - ./sword.atlas.yaml

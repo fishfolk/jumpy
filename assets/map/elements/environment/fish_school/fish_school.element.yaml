@@ -1,4 +1,4 @@
 name: Fish School
 category: Critters
 scripts:
-  - ./sproinger.ts
+  # - ./sproinger.ts

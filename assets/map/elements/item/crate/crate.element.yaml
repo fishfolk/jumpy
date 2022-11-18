@@ -1,4 +1,4 @@
 name: Crate
 category: Weapons
 scripts:
-  - ./sproinger.ts
+  # - ./sproinger.ts

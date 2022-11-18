@@ -1,10 +1,10 @@
 globalThis.snapshots = [];
 
 globalThis.saveSnapshot = ({ f: frame, m: maxSnapshots }) => {
-    globalThis.snapshots[frame % maxSnapshots] = JSON.stringify(globalThis.jsState);
+    globalThis.snapshots[frame % maxSnapshots] = JSON.stringify(globalThis.jsState || {});
 }
 globalThis.loadSnapshot = ({ f: frame, m: maxSnapshots, e: entityMap }) => {
-    globalThis.jsState = JSON.parse(globalThis.snapshots[frame % maxSnapshots]);
+    globalThis.jsState = JSON.parse(globalThis.snapshots[frame % maxSnapshots] || '{}');
 
     if (globalThis.jsState.entityLists && entityMap.length > 0) {
         for (const listName in globalThis.jsState.entityLists) {

@@ -6,3 +6,6 @@ src/.DS_Store
 /.idea/
 book/book
 .vscode
+trace-*.json
+perf.data*
+callgrind.out*

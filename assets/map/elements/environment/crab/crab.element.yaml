@@ -1,7 +1,7 @@
 name: Crab
 category: Critters
 scripts:
-  - ./crab.ts
+  # - ./crab.ts
 editor_size: [17, 12]
 preload_assets:
   - ./crab.atlas.yaml

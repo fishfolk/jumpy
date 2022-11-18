@@ -1,4 +1,4 @@
 name: Machine Gun
 category: Weapons
 scripts:
-  - ./sproinger.ts
+  # - ./sproinger.ts

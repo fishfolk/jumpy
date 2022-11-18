@@ -1,6 +1,6 @@
 name: Sproinger
 category: Gameplay
 scripts:
-  - ./sproinger.ts
+  # - ./sproinger.ts
 preload_assets:
   - ./sproinger.atlas.yaml

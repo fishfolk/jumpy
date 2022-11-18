@@ -1,4 +1,4 @@
 name: Canon
 category: Weapons
 scripts:
-  - ./sproinger.ts
+  # - ./sproinger.ts

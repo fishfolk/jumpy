@@ -12,6 +12,7 @@ use crate::{
     prelude::*,
 };
 
+pub mod elements;
 pub mod grid;
 
 pub struct MapPlugin;
@@ -21,9 +22,8 @@ impl Plugin for MapPlugin {
         app.add_plugin(TilemapPlugin)
             .init_resource::<MapScripts>()
             .add_system(hydrate_maps)
-            .extend_rollback_plugin(|plugin| {
-                plugin.register_rollback_type::<MapElementScriptAcknowledged>()
-            });
+            .extend_rollback_plugin(|plugin| plugin.register_rollback_type::<MapElementHydrated>())
+            .add_plugin(elements::MapElementsPlugin);
     }
 }
 
@@ -31,7 +31,7 @@ impl Plugin for MapPlugin {
 /// script.
 #[derive(Reflect, Component, Default)]
 #[reflect(Component, Default)]
-pub struct MapElementScriptAcknowledged;
+pub struct MapElementHydrated;
 
 /// Contains the scripts that have been added for the currently loaded map
 #[derive(Deref, DerefMut, Default)]

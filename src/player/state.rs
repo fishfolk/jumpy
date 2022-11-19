@@ -3,6 +3,8 @@ use bevy_mod_js_scripting::run_script_fn_system;
 
 use crate::prelude::*;
 
+mod states;
+
 pub struct PlayerStatePlugin;
 
 #[derive(StageLabel)]
@@ -57,7 +59,8 @@ impl Plugin for PlayerStatePlugin {
                         ),
                     )
                     .add_system_to_stage(RollbackStage::Last, update_player_state_age);
-            });
+            })
+            .add_plugin(states::StatesPlugin);
     }
 }
 

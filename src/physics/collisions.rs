@@ -228,7 +228,11 @@ impl<'w, 's> CollisionWorld<'w, 's> {
         };
         let rect = collider.rect();
 
-        for (other_entity, collider) in &self.actors {
+        let mut actors = self.actors.iter().collect::<Vec<_>>();
+        // Sort for determinism's sake. ( Maybe entity's aren't deterministic, though...? )
+        actors.sort_by_key(|x| x.0);
+
+        for (other_entity, collider) in actors {
             if entity == other_entity {
                 continue;
             }

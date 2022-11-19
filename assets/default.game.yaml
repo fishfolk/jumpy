@@ -30,12 +30,6 @@ maps:
 
 scripts:
   - map/scripts/kill_out_of_bounds.ts
-  - player/states/default.ts
-  - player/states/dead.ts
-  - player/states/idle.ts
-  - player/states/walk.ts
-  - player/states/midair.ts
-  - player/states/crouch.ts
   - game/camera_controller.ts
   - ui/menu-background-zoom.ts
 

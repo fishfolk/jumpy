@@ -1,5 +1,5 @@
 name: Player Spawner
 category: Gampelay
 scripts:
-  # - ./player_spawner.ts
+  - ./player_spawner.ts
 editor_size: [16, 32]

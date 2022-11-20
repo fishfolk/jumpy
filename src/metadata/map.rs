@@ -173,7 +173,11 @@ impl From<ParallaxLayerMeta> for ParallaxLayerData {
 pub struct MapElementMeta {
     pub name: String,
     pub category: String,
+    #[serde(default)]
     pub scripts: Vec<String>,
+    #[serde(default)]
+    #[has_load_progress(none)]
+    pub builtin: BuiltinElementKind,
 
     /// The size of the bounding rect for the element in the editor
     #[serde(default = "editor_size_default")]
@@ -191,4 +195,22 @@ pub struct MapElementMeta {
 
 fn editor_size_default() -> Vec2 {
     Vec2::splat(16.0)
+}
+
+/// The kind of built-in
+#[derive(Reflect, Component, Deserialize, Serialize, Clone, Debug, Default)]
+#[reflect(Default, Component)]
+#[serde(deny_unknown_fields)]
+pub enum BuiltinElementKind {
+    /// This is not a built-in item
+    #[default]
+    None,
+    /// Player spawner
+    PlayerSpawner,
+    /// This is a sproinger
+    Sproinger {
+        atlas: String,
+        #[serde(skip)]
+        atlas_handle: AssetHandle<TextureAtlas>,
+    },
 }

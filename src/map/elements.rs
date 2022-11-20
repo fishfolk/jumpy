@@ -70,12 +70,14 @@ mod player_spawner {
                 *current_spawner += 1;
                 *current_spawner %= spawn_points.len().max(1);
 
-                let spawn_point = spawn_points[current_spawner.min(spawn_points.len())];
+                let Some(spawn_point) = spawn_points.get(*current_spawner) else {
+                    break;
+                };
 
                 commands
                     .spawn()
                     .insert(PlayerIdx(i))
-                    .insert(*spawn_point)
+                    .insert(**spawn_point)
                     .insert(Rollback::new(ridp.next_id()));
             }
         }
@@ -115,7 +117,6 @@ mod sproinger {
         // Hydrate any newly-spawned sproingers
         for (entity, map_element) in &non_hydrated_map_elements {
             if let BuiltinElementKind::Sproinger { atlas_handle, .. } = &map_element.builtin {
-                info!("Hydrate");
                 commands
                     .entity(entity)
                     .insert(MapElementHydrated)

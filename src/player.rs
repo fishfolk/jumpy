@@ -31,7 +31,6 @@ impl Plugin for PlayerPlugin {
                 plugin
                     .register_rollback_type::<PlayerIdx>()
                     .register_rollback_type::<PlayerState>()
-                    .register_rollback_type::<PlayerMeta>()
                     .register_rollback_type::<PlayerKilled>()
             })
             .extend_rollback_schedule(|schedule| {
@@ -311,6 +310,7 @@ fn hydrate_players(
     let settings = settings.as_ref().unwrap_or(&game.default_settings);
 
     for (entity, player_idx, mut player_transform) in &mut players {
+        info!("Hydrate player");
         // Mutate the player transform to trigger an update to it's global transform component. This
         // isn't normally necessary, but since the player may not start off with a GlobalTransform
         // it may be required.
@@ -329,7 +329,6 @@ fn hydrate_players(
         entity_commands
             .insert(Name::new(format!("Player {}", player_idx.0)))
             .insert(PlayerState::default())
-            .insert(meta.clone())
             .insert(animation_bank)
             .insert(animation_bank_sprite)
             .insert(GlobalTransform::default())

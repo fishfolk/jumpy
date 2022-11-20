@@ -1,5 +1,4 @@
 use bevy::ecs::schedule::ShouldRun;
-use bevy_mod_js_scripting::run_script_fn_system;
 
 use crate::prelude::*;
 
@@ -42,21 +41,22 @@ impl Plugin for PlayerStatePlugin {
                         RollbackStage::PreUpdate,
                         PlayerStateStage::PerformTransitions,
                         SystemStage::single_threaded()
-                            .with_run_criteria(state_transition_run_criteria)
-                            .with_system(
-                                run_script_fn_system("playerStateTransition".into())
-                                    .with_run_criteria(in_game_not_paused)
-                                    .at_end(),
-                            ),
+                            .with_run_criteria(state_transition_run_criteria),
+                        // .with_system(
+                        //     run_script_fn_system("playerStateTransition".into())
+                        //         .with_run_criteria(in_game_not_paused)
+                        //         .at_end(),
+                        // ),
                     )
                     .add_stage_after(
                         PlayerStateStage::PerformTransitions,
                         PlayerStateStage::HandleState,
-                        SystemStage::parallel().with_system(
-                            run_script_fn_system("handlePlayerState".into())
-                                .with_run_criteria(in_game_not_paused)
-                                .at_end(),
-                        ),
+                        SystemStage::parallel(),
+                        // .with_system(
+                        //     run_script_fn_system("handlePlayerState".into())
+                        //         .with_run_criteria(in_game_not_paused)
+                        //         .at_end(),
+                        // ),
                     )
                     .add_system_to_stage(RollbackStage::Last, update_player_state_age);
             })
@@ -64,17 +64,17 @@ impl Plugin for PlayerStatePlugin {
     }
 }
 
-/// Bevy run criteria for when the game is not paused
-fn in_game_not_paused(
-    game_state: Res<CurrentState<GameState>>,
-    in_game_state: Res<CurrentState<InGameState>>,
-) -> ShouldRun {
-    if game_state.0 == GameState::InGame && in_game_state.0 != InGameState::Paused {
-        return ShouldRun::Yes;
-    }
+// /// Bevy run criteria for when the game is not paused
+// fn in_game_not_paused(
+//     game_state: Res<CurrentState<GameState>>,
+//     in_game_state: Res<CurrentState<InGameState>>,
+// ) -> ShouldRun {
+//     if game_state.0 == GameState::InGame && in_game_state.0 != InGameState::Paused {
+//         return ShouldRun::Yes;
+//     }
 
-    ShouldRun::No
-}
+//     ShouldRun::No
+// }
 
 fn state_transition_run_criteria(
     mut changed_states: Query<&mut PlayerState, Changed<PlayerState>>,

@@ -89,7 +89,7 @@ mod sproinger {
 
     use super::*;
 
-    const FORCE: f32 = 25.0;
+    const FORCE: f32 = 30.0;
 
     pub struct SproingerPlugin;
     impl Plugin for SproingerPlugin {

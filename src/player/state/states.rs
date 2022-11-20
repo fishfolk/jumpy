@@ -64,7 +64,7 @@ pub mod default {
     }
 }
 
-pub const JUMP_SPEED: f32 = 15.0;
+pub const JUMP_SPEED: f32 = 17.0;
 
 /// The idling state, when the player is standing still
 pub mod idle {
@@ -171,7 +171,7 @@ pub mod midair {
 
     pub const ID: &str = "core:midair";
 
-    pub const AIR_MOVE_SPEED: f32 = 5.0;
+    pub const AIR_MOVE_SPEED: f32 = 7.0;
 
     pub fn player_state_transition(mut players: Query<(&mut PlayerState, &KinematicBody)>) {
         for (mut player_state, body) in &mut players {
@@ -266,7 +266,7 @@ pub mod walk {
     use super::*;
 
     pub const ID: &str = "core:walk";
-    pub const WALK_SPEED: f32 = 5.0;
+    pub const WALK_SPEED: f32 = 7.0;
 
     pub fn player_state_transition(
         player_inputs: Res<PlayerInputs>,

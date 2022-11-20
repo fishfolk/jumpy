@@ -1,6 +1,8 @@
-use bevy::ecs::system::SystemParam;
+use bevy::ecs::{schedule::ShouldRun, system::SystemParam};
 
-use crate::{loading::PlayerInputCollector, prelude::*, ui::input::MenuAction};
+use crate::{
+    loading::PlayerInputCollector, prelude::*, run_criteria::ShouldRunExt, ui::input::MenuAction,
+};
 
 pub mod event;
 
@@ -74,4 +76,19 @@ impl<'w, 's> ResetManager<'w, 's> {
             projection.scale = 1.0;
         }
     }
+}
+
+/// Heper stage run criteria that only runs if we are in a gameplay state.
+pub fn is_in_game_run_criteria(
+    game_state: Option<Res<CurrentState<GameState>>>,
+    in_game_state: Option<Res<CurrentState<InGameState>>>,
+) -> ShouldRun {
+    let is_in_game = game_state
+        .map(|x| x.0 == GameState::InGame)
+        .unwrap_or(false)
+        && in_game_state
+            .map(|x| x.0 != InGameState::Paused)
+            .unwrap_or(false);
+
+    ShouldRun::new(is_in_game, false)
 }

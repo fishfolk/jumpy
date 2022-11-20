@@ -351,6 +351,20 @@ impl AssetLoader for MapElementMetaLoader {
                 dependencies.push(script_path);
             }
 
+            // Load assets for built-in types
+            match &mut meta.builtin {
+                crate::metadata::BuiltinElementKind::None => (),
+                crate::metadata::BuiltinElementKind::PlayerSpawner => (),
+                crate::metadata::BuiltinElementKind::Sproinger {
+                    atlas,
+                    atlas_handle,
+                } => {
+                    let (path, handle) = get_relative_asset(load_context, self_path, atlas);
+                    *atlas_handle = AssetHandle::new(path.clone(), handle.typed());
+                    dependencies.push(path);
+                }
+            }
+
             // Load preloaded assets
             for asset in &meta.preload_assets {
                 let (path, handle) = get_relative_asset(load_context, self_path, asset);

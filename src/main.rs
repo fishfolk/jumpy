@@ -75,6 +75,7 @@ use crate::{
     scripting::ScriptingPlugin,
     session::SessionPlugin,
     ui::UiPlugin,
+    utils::is_in_game_run_criteria,
     workarounds::WorkaroundsPlugin,
 };
 
@@ -100,7 +101,9 @@ pub enum InGameState {
 pub enum RollbackStage {
     First,
     PreUpdate,
+    PreUpdateInGame,
     Update,
+    UpdateInGame,
     PostUpdate,
     Last,
 }
@@ -170,9 +173,19 @@ pub fn main() {
             SystemStage::parallel(),
         )
         .add_stage_after(
+            RollbackStage::PreUpdate,
+            RollbackStage::PreUpdateInGame,
+            SystemStage::parallel().with_run_criteria(is_in_game_run_criteria),
+        )
+        .add_stage_after(
             RollbackStage::Update,
             RollbackStage::PostUpdate,
             SystemStage::parallel(),
+        )
+        .add_stage_after(
+            RollbackStage::Update,
+            RollbackStage::UpdateInGame,
+            SystemStage::parallel().with_run_criteria(is_in_game_run_criteria),
         )
         .add_stage_after(
             RollbackStage::PostUpdate,

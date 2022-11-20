@@ -3,12 +3,8 @@ use std::{
     hash::{Hash, Hasher},
 };
 
-use crate::{prelude::*, run_criteria::ShouldRunExt};
-use bevy::{
-    asset::HandleId,
-    ecs::{entity::EntityMap, schedule::ShouldRun},
-    reflect::TypeRegistryArc,
-};
+use crate::{prelude::*, utils::is_in_game_run_criteria};
+use bevy::{asset::HandleId, ecs::entity::EntityMap, reflect::TypeRegistryArc};
 use bevy_ggrs::{ggrs::Frame, RollbackEventHook};
 use bevy_mod_js_scripting::{
     bevy_reflect_fns::{
@@ -208,21 +204,6 @@ impl Plugin for ScriptingPlugin {
                 );
         });
     }
-}
-
-/// Heper stage run criteria that only runs if we are in a gameplay state.
-fn is_in_game_run_criteria(
-    game_state: Option<Res<CurrentState<GameState>>>,
-    in_game_state: Option<Res<CurrentState<InGameState>>>,
-) -> ShouldRun {
-    let is_in_game = game_state
-        .map(|x| x.0 == GameState::InGame)
-        .unwrap_or(false)
-        && in_game_state
-            .map(|x| x.0 != InGameState::Paused)
-            .unwrap_or(false);
-
-    ShouldRun::new(is_in_game, false)
 }
 
 /// Helper function to hash a [`HandleId`].

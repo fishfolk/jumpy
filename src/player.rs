@@ -310,7 +310,6 @@ fn hydrate_players(
     let settings = settings.as_ref().unwrap_or(&game.default_settings);
 
     for (entity, player_idx, mut player_transform) in &mut players {
-        info!("Hydrate player");
         // Mutate the player transform to trigger an update to it's global transform component. This
         // isn't normally necessary, but since the player may not start off with a GlobalTransform
         // it may be required.
@@ -338,7 +337,7 @@ fn hydrate_players(
             size: Vec2::new(32.0, 48.0), // FIXME: Don't hardcode! Load from player meta.
             has_mass: true,
             has_friction: true,
-            gravity: 1.0,
+            gravity: 1.5,
             ..default()
         };
         let input_manager_for_player = |player_idx| InputManagerBundle {

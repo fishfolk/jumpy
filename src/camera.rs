@@ -10,7 +10,7 @@ impl Plugin for CameraPlugin {
         app.register_type::<GameCamera>()
             .register_type::<EditorCamera>()
             .extend_rollback_schedule(|schedule| {
-                schedule.add_system_to_stage(RollbackStage::UpdateInGame, camera_controller);
+                schedule.add_system_to_stage(RollbackStage::Update, camera_controller);
             });
 
         app.add_plugin(bevy_parallax::ParallaxPlugin);

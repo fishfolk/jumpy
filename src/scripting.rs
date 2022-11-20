@@ -3,14 +3,14 @@ use std::{
     hash::{Hash, Hasher},
 };
 
-use crate::{prelude::*, utils::is_in_game_run_criteria};
+use crate::prelude::*;
 use bevy::{asset::HandleId, ecs::entity::EntityMap, reflect::TypeRegistryArc};
 use bevy_ggrs::{ggrs::Frame, RollbackEventHook};
 use bevy_mod_js_scripting::{
     bevy_reflect_fns::{
         PassMode, ReflectArg, ReflectFunction, ReflectFunctionError, ReflectMethods,
     },
-    run_script_fn_system, serde_json, JsRuntime, JsRuntimeApi, JsRuntimeConfig, JsScriptingPlugin,
+    serde_json, JsRuntime, JsRuntimeApi, JsRuntimeConfig, JsScriptingPlugin,
 };
 
 pub mod ops;
@@ -144,65 +144,67 @@ impl Plugin for ScriptingPlugin {
                 )]));
         }
 
+        // TODO: For now scripting is disabled for performance reasons.
+
         // Add fixed update stages
-        app.extend_rollback_schedule(|schedule| {
-            schedule
-                .add_stage_after(
-                    RollbackStage::First,
-                    ScriptUpdateStage::First,
-                    SystemStage::single(run_script_fn_system("first".into())),
-                )
-                .add_stage_after(
-                    RollbackStage::First,
-                    ScriptUpdateStage::FirstInGame,
-                    SystemStage::single(run_script_fn_system("firstInGame".into()))
-                        .with_run_criteria(is_in_game_run_criteria),
-                )
-                .add_stage_after(
-                    RollbackStage::PreUpdate,
-                    ScriptUpdateStage::PreUpdate,
-                    SystemStage::single(run_script_fn_system("preUpdate".into())),
-                )
-                .add_stage_after(
-                    RollbackStage::PreUpdate,
-                    ScriptUpdateStage::PreUpdateInGame,
-                    SystemStage::single(run_script_fn_system("preUpdateInGame".into()))
-                        .with_run_criteria(is_in_game_run_criteria),
-                )
-                .add_stage_after(
-                    RollbackStage::Update,
-                    ScriptUpdateStage::Update,
-                    SystemStage::single(run_script_fn_system("update".into())),
-                )
-                .add_stage_after(
-                    RollbackStage::Update,
-                    ScriptUpdateStage::UpdateInGame,
-                    SystemStage::single(run_script_fn_system("updateInGame".into()))
-                        .with_run_criteria(is_in_game_run_criteria),
-                )
-                .add_stage_after(
-                    RollbackStage::PostUpdate,
-                    ScriptUpdateStage::PostUpdate,
-                    SystemStage::single(run_script_fn_system("postUpdate".into())),
-                )
-                .add_stage_after(
-                    RollbackStage::PostUpdate,
-                    ScriptUpdateStage::PostUpdateInGame,
-                    SystemStage::single(run_script_fn_system("postUpdateInGame".into()))
-                        .with_run_criteria(is_in_game_run_criteria),
-                )
-                .add_stage_after(
-                    RollbackStage::Last,
-                    ScriptUpdateStage::Last,
-                    SystemStage::single(run_script_fn_system("last".into())),
-                )
-                .add_stage_after(
-                    RollbackStage::Last,
-                    ScriptUpdateStage::LastInGame,
-                    SystemStage::single(run_script_fn_system("lastInGame".into()))
-                        .with_run_criteria(is_in_game_run_criteria),
-                );
-        });
+        // app.extend_rollback_schedule(|schedule| {
+        // schedule
+        //     .add_stage_after(
+        //         RollbackStage::First,
+        //         ScriptUpdateStage::First,
+        //         SystemStage::single(run_script_fn_system("first".into())),
+        //     )
+        //     .add_stage_after(
+        //         RollbackStage::First,
+        //         ScriptUpdateStage::FirstInGame,
+        //         SystemStage::single(run_script_fn_system("firstInGame".into()))
+        //             .with_run_criteria(is_in_game_run_criteria),
+        //     )
+        //     .add_stage_after(
+        //         RollbackStage::PreUpdate,
+        //         ScriptUpdateStage::PreUpdate,
+        //         SystemStage::single(run_script_fn_system("preUpdate".into())),
+        //     )
+        //     .add_stage_after(
+        //         RollbackStage::PreUpdate,
+        //         ScriptUpdateStage::PreUpdateInGame,
+        //         SystemStage::single(run_script_fn_system("preUpdateInGame".into()))
+        //             .with_run_criteria(is_in_game_run_criteria),
+        //     )
+        //     .add_stage_after(
+        //         RollbackStage::Update,
+        //         ScriptUpdateStage::Update,
+        //         SystemStage::single(run_script_fn_system("update".into())),
+        //     )
+        //     .add_stage_after(
+        //         RollbackStage::Update,
+        //         ScriptUpdateStage::UpdateInGame,
+        //         SystemStage::single(run_script_fn_system("updateInGame".into()))
+        //             .with_run_criteria(is_in_game_run_criteria),
+        //     )
+        //     .add_stage_after(
+        //         RollbackStage::PostUpdate,
+        //         ScriptUpdateStage::PostUpdate,
+        //         SystemStage::single(run_script_fn_system("postUpdate".into())),
+        //     )
+        //     .add_stage_after(
+        //         RollbackStage::PostUpdate,
+        //         ScriptUpdateStage::PostUpdateInGame,
+        //         SystemStage::single(run_script_fn_system("postUpdateInGame".into()))
+        //             .with_run_criteria(is_in_game_run_criteria),
+        //     )
+        //     .add_stage_after(
+        //         RollbackStage::Last,
+        //         ScriptUpdateStage::Last,
+        //         SystemStage::single(run_script_fn_system("last".into())),
+        //     )
+        //     .add_stage_after(
+        //         RollbackStage::Last,
+        //         ScriptUpdateStage::LastInGame,
+        //         SystemStage::single(run_script_fn_system("lastInGame".into()))
+        //             .with_run_criteria(is_in_game_run_criteria),
+        //     );
+        // });
     }
 }
 

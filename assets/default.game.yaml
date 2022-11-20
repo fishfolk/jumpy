@@ -30,7 +30,6 @@ maps:
 
 scripts:
   - map/scripts/kill_out_of_bounds.ts
-  - game/camera_controller.ts
   - ui/menu-background-zoom.ts
 
 main_menu:

@@ -80,7 +80,7 @@ use crate::{
 };
 
 /// The game logic frames per second, aka. the fixed updates per second ( UPS/FPS ).
-pub const FPS: usize = 60;
+pub const FPS: usize = 45;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum GameState {

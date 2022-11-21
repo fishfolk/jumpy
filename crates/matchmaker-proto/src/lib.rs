@@ -53,6 +53,7 @@ pub struct SendProxyMessage {
 }
 
 /// The format of a message forwarded by the proxy to a client.
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RecvProxyMessage {
     /// The client that the message came from.
     pub from_client: u8,

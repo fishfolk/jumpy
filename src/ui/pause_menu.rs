@@ -6,6 +6,7 @@ use crate::{
     metadata::{GameMeta, MapMeta},
     networking::client::NetClient,
     prelude::*,
+    session::SessionManager,
     ui::input::MenuAction,
     utils::ResetManager,
     GameState,
@@ -61,6 +62,7 @@ pub fn pause_menu(
     map_handle: Query<&AssetHandle<MapMeta>>,
     mut reset_controller: ResetManager,
     client: Option<Res<NetClient>>,
+    mut session_manager: SessionManager,
 ) {
     let is_online = client.is_some();
     let ui_theme = &game.ui_theme;
@@ -125,6 +127,8 @@ pub fn pause_menu(
                                 if let Some(handle) = map_handle {
                                     commands.spawn().insert(handle);
                                 }
+
+                                session_manager.start_session();
                             }
                         });
 

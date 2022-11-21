@@ -30,9 +30,19 @@ pub struct MatchInfo {
 /// Responses that may be returned in matchmaking mode
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum MatchmakerResponse {
+    /// The conneciton has been accepted
     Accepted,
+    /// This is the current number of connected clients
     ClientCount(u8),
-    Success,
+    /// The desired client count has been reached, and you may start the match.
+    Success {
+        /// The random seed that each client should use.
+        random_seed: u64,
+        /// The client idx of the current client
+        player_idx: u8,
+        /// The number of connected clients in the match
+        client_count: u8,
+    },
 }
 
 //
@@ -47,9 +57,15 @@ pub enum MatchmakerResponse {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SendProxyMessage {
     /// The client that the message should go to.
-    pub target_client: u8,
+    pub target_client: TargetClient,
     /// The message data.
     pub message: Vec<u8>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub enum TargetClient {
+    All,
+    One(u8),
 }
 
 /// The format of a message forwarded by the proxy to a client.

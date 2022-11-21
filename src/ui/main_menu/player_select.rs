@@ -1,15 +1,15 @@
+use jumpy_matchmaker_proto::TargetClient;
+
 use crate::{
     loading::PlayerInputCollector,
     metadata::PlayerMeta,
     networking::{
         client::NetClient,
-        proto::{
-            match_setup::{MatchSetupFromClient, MatchSetupFromServer},
-            ClientMatchInfo,
-        },
+        proto::{match_setup::MatchSetupMessage, ClientMatchInfo},
     },
     player::input::PlayerAction,
     player::{input::PlayerInputs, MAX_PLAYERS},
+    random::GlobalRng,
 };
 
 use super::*;
@@ -34,6 +34,8 @@ pub struct PlayerSelectMenu<'w, 's> {
     keyboard_input: Res<'w, Input<KeyCode>>,
     localization: Res<'w, Localization>,
     client: Option<ResMut<'w, NetClient>>,
+    client_info: Option<Res<'w, ClientMatchInfo>>,
+    global_rng: Res<'w, GlobalRng>,
     #[system_param(ignore)]
     _phantom: PhantomData<&'s ()>,
 }
@@ -63,8 +65,24 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
                 unconfirmed_players += 1;
             }
         }
-        let may_continue =
-            ready_players >= 1 && unconfirmed_players == 0 && params.client.is_none();
+        let may_continue = ready_players >= 1 && unconfirmed_players == 0;
+
+        if let Some(client_info) = params.client_info {
+            if may_continue {
+                let player_to_select_map = *params
+                    .global_rng
+                    .sample(
+                        &(0usize..client_info.player_count)
+                            .into_iter()
+                            .collect::<Vec<_>>(),
+                    )
+                    .unwrap();
+                info!(%player_to_select_map, %client_info.player_idx);
+                let is_waiting = player_to_select_map == client_info.player_idx;
+
+                *params.menu_page = MenuPage::MapSelect { is_waiting };
+            }
+        }
 
         ui.vertical_centered(|ui| {
             let params: PlayerSelectMenu = state.get_mut(world);
@@ -173,30 +191,22 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
 
 fn handle_match_setup_messages(params: &mut PlayerSelectMenu) {
     if let Some(client) = &mut params.client {
-        while let Some(message) = client.recv_reliable::<MatchSetupFromServer>() {
-            match message {
-                MatchSetupFromServer::ClientMessage {
-                    player_idx,
-                    message,
-                } => match message {
-                    MatchSetupFromClient::SelectPlayer(player_handle) => {
-                        params.player_inputs.players[player_idx as usize].selected_player =
-                            player_handle;
+        while let Some(message) = client.recv_reliable() {
+            match message.kind {
+                crate::networking::proto::ReliableGameMessageKind::MatchSetup(setup) => match setup
+                {
+                    MatchSetupMessage::SelectPlayer(player_handle) => {
+                        params.player_inputs.players[message.from_player_idx as usize]
+                            .selected_player = player_handle
                     }
-                    MatchSetupFromClient::ConfirmSelection(confirmed) => {
-                        params.player_select_state.player_slots[player_idx as usize].confirmed =
-                            confirmed;
+                    MatchSetupMessage::ConfirmSelection(confirmed) => {
+                        params.player_select_state.player_slots[message.from_player_idx as usize]
+                            .confirmed = confirmed;
                     }
-                    message => {
-                        warn!("Unexpected message in player select menu: {message:?}");
+                    MatchSetupMessage::SelectMap(_) => {
+                        warn!("Unexpected map select message: player selection not yet confirmed");
                     }
                 },
-                MatchSetupFromServer::SelectMap => {
-                    *params.menu_page = MenuPage::MapSelect { is_waiting: false };
-                }
-                MatchSetupFromServer::WaitForMapSelect => {
-                    *params.menu_page = MenuPage::MapSelect { is_waiting: true };
-                }
             }
         }
     }
@@ -276,7 +286,10 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
             }
 
             if let Some(client) = params.client {
-                client.send_reliable(&MatchSetupFromClient::ConfirmSelection(slot.confirmed));
+                client.send_reliable(
+                    MatchSetupMessage::ConfirmSelection(slot.confirmed),
+                    TargetClient::All,
+                );
             }
         } else if player_actions.just_pressed(PlayerAction::Grab) {
             if params.client.is_none() {
@@ -289,7 +302,10 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                 slot.confirmed = false;
             }
             if let Some(client) = params.client {
-                client.send_reliable(&MatchSetupFromClient::ConfirmSelection(slot.confirmed));
+                client.send_reliable(
+                    MatchSetupMessage::ConfirmSelection(slot.confirmed),
+                    TargetClient::All,
+                );
             }
         } else if player_actions.just_pressed(PlayerAction::Move) && !slot.confirmed {
             let direction = player_actions
@@ -332,9 +348,10 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
             }
 
             if let Some(client) = params.client {
-                client.send_reliable(&MatchSetupFromClient::SelectPlayer(
-                    player_handle.clone_weak(),
-                ));
+                client.send_reliable(
+                    MatchSetupMessage::SelectPlayer(player_handle.clone_weak()),
+                    TargetClient::All,
+                );
             }
         }
 

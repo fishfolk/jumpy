@@ -7,7 +7,11 @@ use futures_lite::future;
 use jumpy_matchmaker_proto::{MatchInfo, MatchmakerRequest, MatchmakerResponse};
 use quinn::{Connection, Endpoint};
 
-use crate::{networking::client::NetClient, player::MAX_PLAYERS};
+use crate::{
+    networking::{client::NetClient, proto::ClientMatchInfo},
+    player::MAX_PLAYERS,
+    random::GlobalRng,
+};
 
 use super::*;
 
@@ -20,6 +24,8 @@ pub struct MatchmakingMenu<'w, 's> {
     localization: Res<'w, Localization>,
     state: Local<'s, State>,
     menu_input: Query<'w, 's, &'static mut ActionState<MenuAction>>,
+    global_rng: Res<'w, GlobalRng>,
+    player_inputs: ResMut<'w, PlayerInputs>,
 }
 
 pub struct State {
@@ -38,7 +44,12 @@ enum Status {
     WaitingForPlayers {
         players: usize,
     },
-    MatchReady(Endpoint, Connection),
+    MatchReady {
+        endpoint: Endpoint,
+        conn: Connection,
+        random_seed: u64,
+        client_info: ClientMatchInfo,
+    },
     Errored(String),
 }
 
@@ -47,7 +58,7 @@ impl Status {
         matches!(self, Status::NotConnected) || matches!(self, Status::Errored(_))
     }
     fn is_match_ready(&self) -> bool {
-        matches!(self, Status::MatchReady(_, _))
+        matches!(self, Status::MatchReady { .. })
     }
 }
 
@@ -89,13 +100,24 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
         if params.state.status.is_match_ready() {
             let status = std::mem::take(&mut params.state.status);
 
-            if let Status::MatchReady(endpoint, conn) = status {
+            if let Status::MatchReady {
+                endpoint,
+                conn,
+                random_seed,
+                client_info,
+            } = status
+            {
+                for i in 0..client_info.player_count {
+                    params.player_inputs.players[i].active = true;
+                }
                 let client = NetClient::new(endpoint, conn);
                 params.commands.insert_resource(client);
+                params.commands.insert_resource(client_info);
                 *params.menu_page = MenuPage::PlayerSelect;
                 params.state.status_receiver = default();
                 params.state.status = default();
                 params.state.cancel_sender = default();
+                params.global_rng.reseed(random_seed);
             } else {
                 unreachable!("Programmer error in is_match_ready() helper method");
             }
@@ -238,7 +260,7 @@ impl<'w, 's> WidgetSystem for MatchmakingMenu<'w, 's> {
                             )),
                         );
                     }
-                    Status::MatchReady(_, _) => {
+                    Status::MatchReady { .. } => {
                         // We shouldn't get here because we check for a ready match above
                     }
                     Status::Errored(e) => {
@@ -346,9 +368,23 @@ async fn impl_start_matchmaking(
                         })
                         .ok();
                 }
-                MatchmakerResponse::Success => {
+                MatchmakerResponse::Success {
+                    random_seed,
+                    player_idx,
+                    client_count,
+                } => {
+                    info!(%random_seed, %player_idx, %client_count, "Match established");
+                    let client_info = ClientMatchInfo {
+                        player_idx: player_idx as usize,
+                        player_count: client_count as usize,
+                    };
                     status
-                        .try_send(Status::MatchReady(endpoint, conn.clone()))
+                        .try_send(Status::MatchReady {
+                            endpoint,
+                            conn: conn.clone(),
+                            random_seed,
+                            client_info,
+                        })
                         .ok();
                     break;
                 }

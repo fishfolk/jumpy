@@ -1,15 +1,18 @@
-use std::{any::TypeId, collections::VecDeque, net::SocketAddr, sync::Arc};
+use std::{net::SocketAddr, sync::Arc};
 
 use async_channel::{Receiver, RecvError, Sender};
-use bevy::{tasks::IoTaskPool, utils::HashMap};
+use bevy::tasks::IoTaskPool;
 use futures_lite::future;
+use jumpy_matchmaker_proto::{RecvProxyMessage, SendProxyMessage, TargetClient};
 use quinn::{ClientConfig, Connection, Endpoint, EndpointConfig};
 use quinn_bevy::BevyIoTaskPoolExecutor;
-use serde::de::DeserializeOwned;
 
-use crate::{metadata::GameMeta, player::input::PlayerInputs, prelude::*};
+use crate::prelude::*;
 
-use super::{proto::ClientMatchInfo, NET_MESSAGE_TYPES};
+use super::proto::{
+    ClientMatchInfo, RecvReliableGameMessage, RecvUnreliableGameMessage, ReliableGameMessageKind,
+    UnreliableGameMessageKind,
+};
 
 pub struct ClientPlugin;
 
@@ -19,38 +22,10 @@ impl Plugin for ClientPlugin {
             CoreStage::First,
             remove_closed_client.run_if_resource_exists::<NetClient>(),
         )
-        .add_system_to_stage(
-            CoreStage::First,
-            recv_client_match_info
-                .run_if_resource_exists::<NetClient>()
-                .run_unless_resource_exists::<ClientMatchInfo>(),
-        )
         .add_exit_system(
             GameState::InGame,
             close_connection_when_leaving_game.run_if_resource_exists::<NetClient>(),
         );
-    }
-}
-
-fn recv_client_match_info(
-    mut commands: Commands,
-    mut client: ResMut<NetClient>,
-    mut player_inputs: ResMut<PlayerInputs>,
-    game: Res<GameMeta>,
-) {
-    if let Some(match_info) = client.recv_reliable::<ClientMatchInfo>() {
-        info!("Got match info: {:?}", match_info);
-
-        for (i, player) in player_inputs.players.iter_mut().enumerate() {
-            player.active = i < match_info.player_count;
-            player.selected_player = game
-                .player_handles
-                .get(0)
-                .expect("No players in .game.yaml")
-                .clone_weak();
-        }
-
-        commands.insert_resource(match_info);
     }
 }
 
@@ -124,16 +99,14 @@ pub async fn open_connection(
 pub struct NetClient {
     endpoint: Endpoint,
     conn: Connection,
-    outgoing_reliable_sender: Sender<Vec<u8>>,
-    outgoing_reliable_receiver: Receiver<Vec<u8>>,
-    outgoing_unreliable_sender: Sender<Vec<u8>>,
-    outgoing_unreliable_receiver: Receiver<Vec<u8>>,
-    incomming_reliable_sender: Sender<Vec<u8>>,
-    incomming_reliable_receiver: Receiver<Vec<u8>>,
-    incomming_unreliable_sender: Sender<Vec<u8>>,
-    incomming_unreliable_receiver: Receiver<Vec<u8>>,
-    incomming_reliable_queue: HashMap<TypeId, VecDeque<Vec<u8>>>,
-    incomming_unreliable_queue: HashMap<TypeId, VecDeque<Vec<u8>>>,
+    outgoing_reliable_sender: Sender<SendProxyMessage>,
+    outgoing_reliable_receiver: Receiver<SendProxyMessage>,
+    outgoing_unreliable_sender: Sender<SendProxyMessage>,
+    outgoing_unreliable_receiver: Receiver<SendProxyMessage>,
+    incomming_reliable_sender: Sender<RecvProxyMessage>,
+    incomming_reliable_receiver: Receiver<RecvProxyMessage>,
+    incomming_unreliable_sender: Sender<RecvProxyMessage>,
+    incomming_unreliable_receiver: Receiver<RecvProxyMessage>,
 }
 
 impl NetClient {
@@ -155,8 +128,6 @@ impl NetClient {
             incomming_reliable_receiver,
             incomming_unreliable_sender,
             incomming_unreliable_receiver,
-            incomming_reliable_queue: default(),
-            incomming_unreliable_queue: default(),
         };
 
         spawn_message_recv_task(&client);
@@ -165,75 +136,54 @@ impl NetClient {
         client
     }
 
-    fn update_queue(&mut self) {
-        while let Ok(mut incomming) = self.incomming_reliable_receiver.try_recv() {
-            let type_idx_bytes: [u8; 4] =
-                incomming.split_off(incomming.len() - 4).try_into().unwrap();
-            let type_idx = u32::from_le_bytes(type_idx_bytes);
-            let type_id = NET_MESSAGE_TYPES[type_idx as usize];
-            self.incomming_reliable_queue
-                .entry(type_id)
-                .or_default()
-                .push_back(incomming);
-        }
-        while let Ok(mut incomming) = self.incomming_unreliable_receiver.try_recv() {
-            let type_idx_bytes: [u8; 4] =
-                incomming.split_off(incomming.len() - 4).try_into().unwrap();
-            let type_idx = u32::from_le_bytes(type_idx_bytes);
-            let type_id = NET_MESSAGE_TYPES[type_idx as usize];
-            self.incomming_unreliable_queue
-                .entry(type_id)
-                .or_default()
-                .push_back(incomming);
-        }
+    pub fn send_reliable<M: Into<ReliableGameMessageKind>>(
+        &self,
+        message: M,
+        target_client: TargetClient,
+    ) {
+        let message = message.into();
+        let message = postcard::to_allocvec(&message).expect("Serialize net message");
+        let proxy_message = SendProxyMessage {
+            target_client,
+            message,
+        };
+        self.outgoing_reliable_sender.try_send(proxy_message).ok();
     }
 
-    pub fn send_reliable<S: 'static + Serialize>(&self, message: &S) {
-        let type_id = TypeId::of::<S>();
-        let type_idx = NET_MESSAGE_TYPES
-            .iter()
-            .position(|x| x == &type_id)
-            .expect("Net message type not registered") as u32;
-        let mut message = postcard::to_allocvec(message).expect("Serialize net message");
-        message.extend_from_slice(&(type_idx as u32).to_le_bytes());
-
-        self.outgoing_reliable_sender.try_send(message).ok();
+    pub fn send_unreliable<M: Into<UnreliableGameMessageKind>>(
+        &self,
+        message: M,
+        target_client: TargetClient,
+    ) {
+        let message = message.into();
+        let message = postcard::to_allocvec(&message).expect("Serialize net message");
+        let proxy_message = SendProxyMessage {
+            target_client,
+            message,
+        };
+        self.outgoing_unreliable_sender.try_send(proxy_message).ok();
     }
 
-    pub fn send_unreliable<S: 'static + Serialize>(&self, message: &S) {
-        let type_id = TypeId::of::<S>();
-        let type_idx = NET_MESSAGE_TYPES
-            .iter()
-            .position(|x| x == &type_id)
-            .expect("Net message not registered") as u32;
-        let mut message = postcard::to_allocvec(message).expect("Serialize net message");
-        message.extend_from_slice(&(type_idx as u32).to_le_bytes());
-
-        self.outgoing_unreliable_sender.try_send(message).ok();
+    pub fn recv_reliable(&mut self) -> Option<RecvReliableGameMessage> {
+        self.incomming_reliable_receiver
+            .try_recv()
+            .map(|message| RecvReliableGameMessage {
+                from_player_idx: message.from_client as usize,
+                kind: postcard::from_bytes(&message.message)
+                    .expect("TODO: Handle error: Net deserialize error"),
+            })
+            .ok()
     }
 
-    pub fn recv_reliable<T: 'static + DeserializeOwned>(&mut self) -> Option<T> {
-        let type_id = TypeId::of::<T>();
-        if !NET_MESSAGE_TYPES.contains(&type_id) {
-            panic!("Attempt to receive unregistered message type");
-        }
-        self.update_queue();
-        self.incomming_reliable_queue
-            .get_mut(&type_id)
-            .and_then(|queue| queue.pop_front())
-            .map(|message| postcard::from_bytes(&message).expect("Deserialize net message"))
-    }
-
-    pub fn recv_unreliable<T: 'static + DeserializeOwned>(&mut self) -> Option<T> {
-        let type_id = TypeId::of::<T>();
-        if !NET_MESSAGE_TYPES.contains(&type_id) {
-            panic!("Attempt to receive unregistered message type");
-        }
-        self.update_queue();
-        self.incomming_unreliable_queue
-            .get_mut(&type_id)
-            .and_then(|queue| queue.pop_front())
-            .map(|message| postcard::from_bytes(&message).expect("Deserialize net message"))
+    pub fn recv_unreliable(&mut self) -> Option<RecvUnreliableGameMessage> {
+        self.incomming_unreliable_receiver
+            .try_recv()
+            .map(|message| RecvUnreliableGameMessage {
+                from_player_idx: message.from_client as usize,
+                kind: postcard::from_bytes(&message.message)
+                    .expect("TODO: Handle error: Net deserialize error"),
+            })
+            .ok()
     }
 
     pub fn conn(&self) -> &Connection {
@@ -267,6 +217,7 @@ fn spawn_message_recv_task(client: &NetClient) {
                         async {
                             while let Ok(recv) = conn.accept_uni().await {
                                 let message = recv.read_to_end(1024 * 1024).await?;
+                                let message = postcard::from_bytes::<RecvProxyMessage>(&message)?;
 
                                 reliable_sender.try_send(message).ok();
                             }
@@ -275,7 +226,10 @@ fn spawn_message_recv_task(client: &NetClient) {
                         },
                         async {
                             while let Ok(message) = conn.read_datagram().await {
-                                unreliable_sender.try_send(message.to_vec()).ok();
+                                let message = postcard::from_bytes::<RecvProxyMessage>(&message)
+                                    .expect("TODO: Handle error: deserialize net message.");
+
+                                unreliable_sender.try_send(message).ok();
                             }
                         },
                     )
@@ -321,6 +275,9 @@ fn spawn_message_send_task(client: &NetClient) {
                 let handle_reliable_message = async {
                     loop {
                         let message = outgoing_reliable_receiver.recv().await?;
+                        let message =
+                            postcard::to_allocvec(&message).expect("Serialize net message");
+
                         let result = async {
                             let mut sender = conn.open_uni().await?;
 
@@ -343,6 +300,9 @@ fn spawn_message_send_task(client: &NetClient) {
                 let handle_unreliable_message = async {
                     loop {
                         let message = outgoing_unreliable_receiver.recv().await?;
+                        let message =
+                            postcard::to_allocvec(&message).expect("Serialize net message");
+
                         let result = conn.send_datagram(message.into());
 
                         if let Err(e) = result {

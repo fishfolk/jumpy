@@ -1,10 +1,11 @@
 use bevy_ggrs::RollbackIdProvider;
+use jumpy_matchmaker_proto::TargetClient;
 
 use crate::{
     metadata::MapMeta,
     networking::{
         client::NetClient,
-        proto::match_setup::{MatchSetupFromClient, MatchSetupFromServer},
+        proto::{match_setup::MatchSetupMessage, ReliableGameMessageKind},
     },
     session::SessionManager,
 };
@@ -98,9 +99,10 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                     params.session_manager.start_session();
 
                                     if let Some(client) = &mut params.client {
-                                        client.send_reliable(&MatchSetupFromClient::SelectMap(
-                                            map_handle,
-                                        ));
+                                        client.send_reliable(
+                                            MatchSetupMessage::SelectMap(map_handle),
+                                            TargetClient::All,
+                                        );
                                     }
                                 }
                             }
@@ -113,28 +115,25 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
 
 fn handle_match_setup_messages(params: &mut MapSelectMenu) {
     if let Some(client) = &mut params.client {
-        while let Some(message) = client.recv_reliable::<MatchSetupFromServer>() {
-            match message {
-                MatchSetupFromServer::ClientMessage {
-                    player_idx: _,
-                    message: MatchSetupFromClient::SelectMap(map_handle),
-                } => {
-                    *params.menu_page = MenuPage::Home;
-                    params
-                        .commands
-                        .spawn()
-                        .insert(map_handle)
-                        .insert(Rollback::new(params.rids.next_id()));
-                    params
-                        .commands
-                        .insert_resource(NextState(GameState::InGame));
-                    params
-                        .commands
-                        .insert_resource(NextState(InGameState::Playing));
-                }
-                message => {
-                    warn!("Unexpected message in map select: {message:?}");
-                }
+        while let Some(message) = client.recv_reliable() {
+            match message.kind {
+                ReliableGameMessageKind::MatchSetup(setup) => match setup {
+                    MatchSetupMessage::SelectMap(map_handle) => {
+                        *params.menu_page = MenuPage::Home;
+                        params
+                            .commands
+                            .spawn()
+                            .insert(map_handle)
+                            .insert(Rollback::new(params.rids.next_id()));
+                        params
+                            .commands
+                            .insert_resource(NextState(GameState::InGame));
+                        params
+                            .commands
+                            .insert_resource(NextState(InGameState::Playing));
+                    }
+                    other => warn!("Unexpected message: {other:?}"),
+                },
             }
         }
     }

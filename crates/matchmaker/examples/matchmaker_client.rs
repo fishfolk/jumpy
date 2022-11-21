@@ -124,8 +124,12 @@ async fn client() -> anyhow::Result<()> {
             MatchmakerResponse::ClientCount(count) => {
                 println!("<= {count} players in lobby");
             }
-            MatchmakerResponse::Success => {
-                println!("<= Match is ready!");
+            MatchmakerResponse::Success {
+                random_seed,
+                player_idx,
+                client_count,
+            } => {
+                println!("<= Match is ready! Random seed: {random_seed}. Player IDX: {player_idx}. Client count: {client_count}");
                 break;
             }
             _ => panic!("<= Unexpected message from server"),

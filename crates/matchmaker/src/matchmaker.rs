@@ -165,12 +165,17 @@ async fn impl_matchmaker(conn: Connection) -> anyhow::Result<()> {
                         }
 
                         if !members_to_join.is_empty() {
-                            // Respond with success
-                            let message = postcard::to_allocvec(&MatchmakerResponse::Success)?;
-
                             // Send the match ID to all of the clients in the room
                             let mut clients = Vec::with_capacity(player_count as usize);
-                            for conn in members_to_join.drain(..) {
+                            let random_seed = rand::random();
+                            for (idx, conn) in members_to_join.drain(..).enumerate() {
+                                // Respond with success
+                                let message =
+                                    postcard::to_allocvec(&MatchmakerResponse::Success {
+                                        random_seed,
+                                        client_count: player_count,
+                                        player_idx: idx as u8,
+                                    })?;
                                 let mut send = conn.open_uni().await?;
                                 send.write_all(&message).await?;
                                 send.finish().await?;

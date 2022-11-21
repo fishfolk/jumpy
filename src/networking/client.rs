@@ -165,11 +165,15 @@ impl NetClient {
             target_client,
             message,
         };
-        self.0.outgoing_unreliable_sender.try_send(proxy_message).ok();
+        self.0
+            .outgoing_unreliable_sender
+            .try_send(proxy_message)
+            .ok();
     }
 
     pub fn recv_reliable(&self) -> Option<RecvReliableGameMessage> {
-        self.0.incomming_reliable_receiver
+        self.0
+            .incomming_reliable_receiver
             .try_recv()
             .map(|message| RecvReliableGameMessage {
                 from_player_idx: message.from_client as usize,
@@ -180,7 +184,8 @@ impl NetClient {
     }
 
     pub fn recv_unreliable(&self) -> Option<RecvUnreliableGameMessage> {
-        self.0.incomming_unreliable_receiver
+        self.0
+            .incomming_unreliable_receiver
             .try_recv()
             .map(|message| RecvUnreliableGameMessage {
                 from_player_idx: message.from_client as usize,

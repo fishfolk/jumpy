@@ -27,7 +27,7 @@ impl Plugin for ClientPlayerInputPlugin {
 }
 
 fn recv_player_input_from_server(
-    mut client: ResMut<NetClient>,
+    mut client: ResMut<Net>,
     mut player_inputs: ResMut<PlayerInputs>,
 ) {
     // FIXME: Unordered packets not handled correctly. We need a network tick.

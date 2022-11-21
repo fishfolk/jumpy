@@ -1,5 +1,4 @@
 use bevy::ecs::system::Command;
-use bevy_tweening::Animator;
 
 use crate::{
     item::{Item, ItemDropped, ItemGrabbed, ItemUsed},
@@ -345,26 +344,18 @@ fn hydrate_players(
             ..default()
         };
 
-        if let Some(match_info) = &client_match_info {
-            // Only add physics and input bundle for non-remote players if we are a multiplayer client
-            if match_info.player_idx == player_idx.0 {
-                // If we are a client in a multiplayer game, use the first player's controls
-                let player_input_idx = if client_match_info.is_some() {
-                    0
-                // Otherwise, use the corresponding player's controls
-                } else {
-                    player_idx.0
-                };
-
-                entity_commands
-                    .insert(kinematic_body)
-                    .insert_bundle(input_manager_for_player(player_input_idx));
-
-            // For remote players we add an `Animator` that will be used to tween it's transform for
-            // smoothing player movement.
+        if let Some(_match_info) = &client_match_info {
+            // If we are a client in a multiplayer game, use the first player's controls
+            let player_input_idx = if client_match_info.is_some() {
+                0
+            // Otherwise, use the corresponding player's controls
             } else {
-                entity_commands.insert(Animator::<Transform>::default());
-            }
+                player_idx.0
+            };
+
+            entity_commands
+                .insert(kinematic_body)
+                .insert_bundle(input_manager_for_player(player_input_idx));
 
         // If this is a local game
         } else {

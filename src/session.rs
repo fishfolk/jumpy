@@ -5,11 +5,17 @@
 
 use bevy::ecs::system::SystemParam;
 use bevy_ggrs::{
-    ggrs::{self, SessionBuilder},
+    ggrs::{self, NonBlockingSocket, SessionBuilder},
     SessionType,
 };
+use jumpy_matchmaker_proto::TargetClient;
 
-use crate::{networking::proto::ClientMatchInfo, player, prelude::*, GgrsConfig};
+use crate::{
+    networking::{client::NetClient, proto::ClientMatchInfo},
+    player,
+    prelude::*,
+    GgrsConfig,
+};
 
 pub struct SessionPlugin;
 
@@ -40,18 +46,65 @@ pub struct FrameIdx(pub u32);
 pub struct SessionManager<'w, 's> {
     commands: Commands<'w, 's>,
     client_match_info: Option<Res<'w, ClientMatchInfo>>,
+    client: Option<Res<'w, NetClient>>,
+}
+
+impl NonBlockingSocket<usize> for NetClient {
+    fn send_to(&mut self, msg: &ggrs::Message, addr: &usize) {
+        self.send_unreliable(msg.clone(), TargetClient::One(*addr as u8));
+    }
+
+    fn receive_all_messages(&mut self) -> Vec<(usize, ggrs::Message)> {
+        let mut messages = Vec::new();
+        while let Some(message) = self.recv_unreliable() {
+            match message.kind {
+                crate::networking::proto::UnreliableGameMessageKind::Ggrs(msg) => {
+                    messages.push((message.from_player_idx, msg));
+                }
+            }
+        }
+        messages
+    }
 }
 
 impl<'w, 's> SessionManager<'w, 's> {
     /// Setup the game session
     pub fn start_session(&mut self) {
-        if let Some(_info) = &self.client_match_info {
-            todo!("Network session");
+        const INPUT_DELAY: usize = 1;
+
+        if let Some((info, client)) = self.client_match_info.as_ref().zip(self.client.as_ref()) {
+            let client = (*client).clone();
+
+            let mut builder = SessionBuilder::<GgrsConfig>::new();
+            builder = builder
+                .with_input_delay(INPUT_DELAY)
+                .with_num_players(info.player_count);
+
+            for i in 0..info.player_count {
+                builder = builder
+                    .add_player(
+                        if i == info.player_idx {
+                            ggrs::PlayerType::Local
+                        } else {
+                            ggrs::PlayerType::Remote(i)
+                        },
+                        i,
+                    )
+                    .expect("Invalid player handle");
+            }
+
+            let session = builder.start_p2p_session(client).unwrap();
+            self.commands.insert_resource(session);
+            self.commands.insert_resource(SessionType::P2PSession);
+            info!("Started P2P session");
         } else {
             let mut builder = SessionBuilder::<GgrsConfig>::new();
 
             builder = builder
+                .with_input_delay(INPUT_DELAY)
                 .with_num_players(player::MAX_PLAYERS)
+                // TODO: Add some flag to enable the non-zero check distance, instead of wasting
+                // processing power for local games.
                 .with_check_distance(7);
 
             for i in 0..player::MAX_PLAYERS {
@@ -61,6 +114,7 @@ impl<'w, 's> SessionManager<'w, 's> {
             let session = builder.start_synctest_session().unwrap();
             self.commands.insert_resource(session);
             self.commands.insert_resource(SessionType::SyncTestSession);
+            info!("Started Local session");
         }
     }
 }

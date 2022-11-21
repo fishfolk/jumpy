@@ -96,7 +96,11 @@ pub async fn open_connection(
     Ok((endpoint, conn))
 }
 
-pub struct NetClient {
+/// Networking client. Can be cloned to get another handle to the same network client.
+#[derive(Clone)]
+pub struct NetClient(Arc<NetClientInner>);
+
+struct NetClientInner {
     endpoint: Endpoint,
     conn: Connection,
     outgoing_reliable_sender: Sender<SendProxyMessage>,
@@ -117,7 +121,7 @@ impl NetClient {
         let (incomming_unreliable_sender, incomming_unreliable_receiver) =
             async_channel::unbounded();
 
-        let client = Self {
+        let client = Self(Arc::new(NetClientInner {
             endpoint,
             conn,
             outgoing_reliable_sender,
@@ -128,7 +132,7 @@ impl NetClient {
             incomming_reliable_receiver,
             incomming_unreliable_sender,
             incomming_unreliable_receiver,
-        };
+        }));
 
         spawn_message_recv_task(&client);
         spawn_message_send_task(&client);
@@ -147,7 +151,7 @@ impl NetClient {
             target_client,
             message,
         };
-        self.outgoing_reliable_sender.try_send(proxy_message).ok();
+        self.0.outgoing_reliable_sender.try_send(proxy_message).ok();
     }
 
     pub fn send_unreliable<M: Into<UnreliableGameMessageKind>>(
@@ -161,11 +165,11 @@ impl NetClient {
             target_client,
             message,
         };
-        self.outgoing_unreliable_sender.try_send(proxy_message).ok();
+        self.0.outgoing_unreliable_sender.try_send(proxy_message).ok();
     }
 
-    pub fn recv_reliable(&mut self) -> Option<RecvReliableGameMessage> {
-        self.incomming_reliable_receiver
+    pub fn recv_reliable(&self) -> Option<RecvReliableGameMessage> {
+        self.0.incomming_reliable_receiver
             .try_recv()
             .map(|message| RecvReliableGameMessage {
                 from_player_idx: message.from_client as usize,
@@ -175,8 +179,8 @@ impl NetClient {
             .ok()
     }
 
-    pub fn recv_unreliable(&mut self) -> Option<RecvUnreliableGameMessage> {
-        self.incomming_unreliable_receiver
+    pub fn recv_unreliable(&self) -> Option<RecvUnreliableGameMessage> {
+        self.0.incomming_unreliable_receiver
             .try_recv()
             .map(|message| RecvUnreliableGameMessage {
                 from_player_idx: message.from_client as usize,
@@ -187,27 +191,27 @@ impl NetClient {
     }
 
     pub fn conn(&self) -> &Connection {
-        &self.conn
+        &self.0.conn
     }
     pub fn endpoint(&self) -> &Endpoint {
-        &self.endpoint
+        &self.0.endpoint
     }
 
     pub fn close(&self) {
-        self.conn.close(0u8.into(), b"NetClient::close()");
+        self.0.conn.close(0u8.into(), b"NetClient::close()");
     }
 
     pub fn is_closed(&self) -> bool {
-        self.conn.close_reason().is_some()
+        self.0.conn.close_reason().is_some()
     }
 }
 
 fn spawn_message_recv_task(client: &NetClient) {
     let io_pool = IoTaskPool::get();
 
-    let reliable_sender = client.incomming_reliable_sender.clone();
-    let unreliable_sender = client.incomming_unreliable_sender.clone();
-    let conn = client.conn.clone();
+    let reliable_sender = client.0.incomming_reliable_sender.clone();
+    let unreliable_sender = client.0.incomming_unreliable_sender.clone();
+    let conn = client.0.conn.clone();
 
     io_pool
         .spawn(async move {
@@ -265,9 +269,9 @@ fn spawn_message_recv_task(client: &NetClient) {
 
 fn spawn_message_send_task(client: &NetClient) {
     let io_pool = IoTaskPool::get();
-    let conn = client.conn.clone();
-    let outgoing_reliable_receiver = client.outgoing_reliable_receiver.clone();
-    let outgoing_unreliable_receiver = client.outgoing_unreliable_receiver.clone();
+    let conn = client.0.conn.clone();
+    let outgoing_reliable_receiver = client.0.outgoing_reliable_receiver.clone();
+    let outgoing_unreliable_receiver = client.0.outgoing_unreliable_receiver.clone();
 
     io_pool
         .spawn(async move {

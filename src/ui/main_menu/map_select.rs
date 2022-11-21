@@ -14,7 +14,7 @@ use super::*;
 
 #[derive(SystemParam)]
 pub struct MapSelectMenu<'w, 's> {
-    client: Option<ResMut<'w, NetClient>>,
+    client: Option<Res<'w, NetClient>>,
     menu_page: ResMut<'w, MenuPage>,
     game: Res<'w, GameMeta>,
     commands: Commands<'w, 's>,
@@ -88,6 +88,7 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                     .show(ui)
                                     .clicked()
                                 {
+                                    info!("Selected map, starting game");
                                     *params.menu_page = MenuPage::Home;
                                     params.commands.spawn().insert(map_handle.clone_weak());
                                     params
@@ -119,6 +120,7 @@ fn handle_match_setup_messages(params: &mut MapSelectMenu) {
             match message.kind {
                 ReliableGameMessageKind::MatchSetup(setup) => match setup {
                     MatchSetupMessage::SelectMap(map_handle) => {
+                        info!("Other player selected map, starting game");
                         *params.menu_page = MenuPage::Home;
                         params
                             .commands
@@ -131,6 +133,7 @@ fn handle_match_setup_messages(params: &mut MapSelectMenu) {
                         params
                             .commands
                             .insert_resource(NextState(InGameState::Playing));
+                        params.session_manager.start_session();
                     }
                     other => warn!("Unexpected message: {other:?}"),
                 },

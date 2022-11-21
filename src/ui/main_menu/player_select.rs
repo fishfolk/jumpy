@@ -33,7 +33,7 @@ pub struct PlayerSelectMenu<'w, 's> {
     player_select_state: ResMut<'w, PlayerSelectState>,
     keyboard_input: Res<'w, Input<KeyCode>>,
     localization: Res<'w, Localization>,
-    client: Option<ResMut<'w, NetClient>>,
+    client: Option<Res<'w, NetClient>>,
     client_info: Option<Res<'w, ClientMatchInfo>>,
     global_rng: Res<'w, GlobalRng>,
     #[system_param(ignore)]

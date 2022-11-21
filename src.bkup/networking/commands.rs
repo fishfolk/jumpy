@@ -135,7 +135,7 @@ pub fn client_handle_net_commands(
     entities: &Entities,
     mut commands: Commands,
     type_registry: Res<TypeRegistryArc>,
-    mut client: ResMut<NetClient>,
+    mut client: Res<NetClient>,
     mut net_ids: ResMut<NetIdMap>,
     type_names: Res<TypeNameCache>,
     mut reset_controller: ResetController,

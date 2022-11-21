@@ -18,6 +18,12 @@ pub enum UnreliableGameMessageKind {
     Ggrs(bevy_ggrs::ggrs::Message),
 }
 
+impl From<bevy_ggrs::ggrs::Message> for UnreliableGameMessageKind {
+    fn from(m: bevy_ggrs::ggrs::Message) -> Self {
+        Self::Ggrs(m)
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RecvUnreliableGameMessage {
     pub from_player_idx: usize,

@@ -78,7 +78,7 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
                     )
                     .unwrap();
                 info!(%player_to_select_map, %client_info.player_idx);
-                let is_waiting = player_to_select_map == client_info.player_idx;
+                let is_waiting = player_to_select_map != client_info.player_idx;
 
                 *params.menu_page = MenuPage::MapSelect { is_waiting };
             }

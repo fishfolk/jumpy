@@ -1,5 +1,5 @@
 use bevy::ecs::{schedule::ShouldRun, system::SystemParam};
-use bevy_ggrs::{ggrs::SyncTestSession, SessionType};
+use bevy_ggrs::{ggrs::SyncTestSession, ResetGGRSSession, SessionType};
 
 use crate::{
     loading::PlayerInputCollector, prelude::*, run_criteria::ShouldRunExt, ui::input::MenuAction,
@@ -12,7 +12,8 @@ pub struct UtilsPlugin;
 
 impl Plugin for UtilsPlugin {
     fn build(&self, app: &mut App) {
-        app.extend_rollback_plugin(|plugin| plugin.register_rollback_type::<Sort>());
+        app.register_type::<Sort>()
+            .extend_rollback_plugin(|plugin| plugin.register_rollback_type::<Sort>());
     }
 }
 
@@ -31,6 +32,7 @@ pub fn cache_str(s: &str) {
 #[derive(
     Deref, DerefMut, Component, Ord, PartialOrd, Eq, PartialEq, Copy, Clone, Reflect, Default,
 )]
+#[reflect(Component)]
 pub struct Sort(pub u32);
 
 /// Returns the hypothetical "invalid entity" ( `Entity::from_raw(u32::MAX)` ).
@@ -94,6 +96,7 @@ impl<'w, 's> ResetManager<'w, 's> {
         }
 
         // Clear the game session
+        self.commands.insert_resource(ResetGGRSSession);
         self.commands.remove_resource::<SessionType>();
         self.commands
             .remove_resource::<SyncTestSession<GgrsConfig>>();

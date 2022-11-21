@@ -6,6 +6,7 @@ use crate::{
         client::NetClient,
         proto::match_setup::{MatchSetupFromClient, MatchSetupFromServer},
     },
+    session::SessionManager,
 };
 
 use super::*;
@@ -19,6 +20,7 @@ pub struct MapSelectMenu<'w, 's> {
     localization: Res<'w, Localization>,
     map_assets: Res<'w, Assets<MapMeta>>,
     rids: ResMut<'w, RollbackIdProvider>,
+    session_manager: SessionManager<'w, 's>,
     #[system_param(ignore)]
     _phantom: PhantomData<(&'w (), &'s ())>,
 }
@@ -93,6 +95,7 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                     params
                                         .commands
                                         .insert_resource(NextState(InGameState::Playing));
+                                    params.session_manager.start_session();
 
                                     if let Some(client) = &mut params.client {
                                         client.send_reliable(&MatchSetupFromClient::SelectMap(

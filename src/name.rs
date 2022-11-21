@@ -5,7 +5,7 @@ pub struct NamePlugin;
 impl Plugin for NamePlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<EntityName>()
-            .add_system(update_entity_names)
+            .add_system_to_stage(CoreStage::Last, update_entity_names)
             .extend_rollback_plugin(|plugin| plugin.register_rollback_type::<EntityName>());
     }
 }

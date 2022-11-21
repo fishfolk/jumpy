@@ -3,6 +3,7 @@
 //! A "session" in this context means either a local or networked game session, which for network
 //! games will be synced with peers.
 
+use bevy::ecs::system::SystemParam;
 use bevy_ggrs::{
     ggrs::{self, SessionBuilder},
     SessionType,
@@ -15,7 +16,6 @@ pub struct SessionPlugin;
 impl Plugin for SessionPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<FrameIdx>()
-            .add_enter_system(GameState::InGame, setup_session)
             .extend_rollback_plugin(|plugin| plugin.register_rollback_type::<FrameIdx>())
             .extend_rollback_schedule(|schedule| {
                 schedule.add_system_to_stage(
@@ -36,23 +36,31 @@ impl Plugin for SessionPlugin {
 #[reflect(Default)]
 pub struct FrameIdx(pub u32);
 
-/// Setup the game session
-fn setup_session(mut commands: Commands, client_match_info: Option<Res<ClientMatchInfo>>) {
-    if let Some(_info) = client_match_info {
-        todo!("Network session");
-    } else {
-        let mut builder = SessionBuilder::<GgrsConfig>::new();
+#[derive(SystemParam)]
+pub struct SessionManager<'w, 's> {
+    commands: Commands<'w, 's>,
+    client_match_info: Option<Res<'w, ClientMatchInfo>>,
+}
 
-        builder = builder
-            .with_num_players(player::MAX_PLAYERS)
-            .with_check_distance(7);
+impl<'w, 's> SessionManager<'w, 's> {
+    /// Setup the game session
+    pub fn start_session(&mut self) {
+        if let Some(_info) = &self.client_match_info {
+            todo!("Network session");
+        } else {
+            let mut builder = SessionBuilder::<GgrsConfig>::new();
 
-        for i in 0..player::MAX_PLAYERS {
-            builder = builder.add_player(ggrs::PlayerType::Local, i).unwrap();
+            builder = builder
+                .with_num_players(player::MAX_PLAYERS)
+                .with_check_distance(7);
+
+            for i in 0..player::MAX_PLAYERS {
+                builder = builder.add_player(ggrs::PlayerType::Local, i).unwrap();
+            }
+
+            let session = builder.start_synctest_session().unwrap();
+            self.commands.insert_resource(session);
+            self.commands.insert_resource(SessionType::SyncTestSession);
         }
-
-        let session = builder.start_synctest_session().unwrap();
-        commands.insert_resource(session);
-        commands.insert_resource(SessionType::SyncTestSession);
     }
 }

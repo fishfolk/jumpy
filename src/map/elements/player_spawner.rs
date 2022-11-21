@@ -5,10 +5,15 @@ use super::*;
 pub struct PlayerSpawnerPlugin;
 impl Plugin for PlayerSpawnerPlugin {
     fn build(&self, app: &mut App) {
-        app.extend_rollback_schedule(|schedule| {
-            schedule.add_system_to_stage(RollbackStage::PreUpdateInGame, pre_update_in_game);
-        })
-        .extend_rollback_plugin(|plugin| plugin.register_rollback_type::<PlayerSpawner>());
+        app.init_resource::<CurrentPlayerSpawner>()
+            .extend_rollback_schedule(|schedule| {
+                schedule.add_system_to_stage(RollbackStage::PreUpdateInGame, pre_update_in_game);
+            })
+            .extend_rollback_plugin(|plugin| {
+                plugin
+                    .register_rollback_type::<PlayerSpawner>()
+                    .register_rollback_type::<CurrentPlayerSpawner>()
+            });
     }
 }
 
@@ -17,8 +22,11 @@ impl Plugin for PlayerSpawnerPlugin {
 #[reflect(Component, Default)]
 pub struct PlayerSpawner;
 
+#[derive(Component, Reflect, Default, Deref, DerefMut)]
+#[reflect(Component, Default)]
+pub struct CurrentPlayerSpawner(pub usize);
+
 fn pre_update_in_game(
-    mut current_spawner: Local<usize>,
     mut commands: Commands,
     player_inputs: Res<PlayerInputs>,
     players: Query<&PlayerIdx>,
@@ -28,6 +36,7 @@ fn pre_update_in_game(
         Without<MapElementHydrated>,
     >,
     mut ridp: ResMut<RollbackIdProvider>,
+    mut current_spawner: ResMut<CurrentPlayerSpawner>,
 ) {
     let mut spawn_points = player_spawners.iter().collect::<Vec<_>>();
     // Hydrate any newly-spawned spawn points
@@ -49,10 +58,10 @@ fn pre_update_in_game(
 
         // If the player is active, but not alive
         if player.active && !players.iter().any(|x| x.0 == i) {
-            *current_spawner += 1;
-            *current_spawner %= spawn_points.len().max(1);
+            **current_spawner += 1;
+            **current_spawner %= spawn_points.len().max(1);
 
-            let Some((_, spawn_point)) = spawn_points.get(*current_spawner) else {
+            let Some((_, spawn_point)) = spawn_points.get(**current_spawner) else {
                 break;
             };
 

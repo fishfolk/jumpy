@@ -7,8 +7,8 @@ use crate::{
     prelude::*,
 };
 
-mod player_spawner;
-mod sproinger;
+pub mod player_spawner;
+pub mod sproinger;
 
 pub struct MapElementsPlugin;
 

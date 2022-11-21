@@ -1,7 +1,5 @@
 use bevy_tasks::IoTaskPool;
-use bytes::Bytes;
-use futures::future::join_all;
-use jumpy_matchmaker_proto::MatchInfo;
+use jumpy_matchmaker_proto::{MatchInfo, RecvProxyMessage, SendProxyMessage};
 use quinn::Connection;
 
 pub async fn start_proxy(match_info: MatchInfo, clients: Vec<Connection>) {
@@ -16,49 +14,43 @@ pub async fn start_proxy(match_info: MatchInfo, clients: Vec<Connection>) {
 async fn impl_proxy(match_info: MatchInfo, clients: Vec<Connection>) -> anyhow::Result<()> {
     let task_pool = IoTaskPool::get();
 
+    // For each connected client
     for (i, conn) in clients.iter().enumerate() {
-        let mut peers = clients.clone();
-        peers.remove(i);
-
+        // Get the client connection
         let conn = conn.clone();
 
+        // And all the connections to it's peers
+        let peers = clients.clone();
+
+        // Spawn a task for handling this client's connections
         task_pool
             .spawn(async move {
                 let result = async {
                     loop {
-                        let mut accept = conn.accept_uni().await?;
+                        // Wait for an incomming connection
+                        let accept = conn.accept_uni().await?;
 
-                        let mut peer_channels = Vec::with_capacity(peers.len());
-                        for peer_conn in &peers {
-                            match peer_conn.open_uni().await {
-                                Ok(send) => peer_channels.push(send),
-                                Err(e) => {
-                                    warn!("Error opening stream to peer: {e:?}");
-                                }
-                            }
-                        }
+                        // Parse the message
+                        let message = accept.read_to_end(1024).await?;
+                        let message = postcard::from_bytes::<SendProxyMessage>(&message)?;
+                        let target_client = message.target_client;
+                        let message = message.message;
 
-                        loop {
-                            let mut buf = std::array::from_fn::<_, 32, _>(|_| Bytes::new());
-                            if let Some(len) = accept.read_chunks(&mut buf).await? {
-                                let data = buf[..len].to_vec();
+                        // Get the connection to the client that the message should be proxied to
+                        let Some(target_client_conn) = peers.get(target_client as usize) else {
+                            warn!("Tried to send message to non-existent client: {target_client}");
+                            continue;
+                        };
 
-                                let mut send_tasks = Vec::with_capacity(peers.len() * len);
-                                for send in &mut peer_channels {
-                                    let mut data = data.clone();
-                                    send_tasks.push(async move {
-                                        if let Err(e) = send.write_all_chunks(&mut data).await {
-                                            warn!("Error sending data over channel: {e:?}");
-                                        }
-                                    });
-                                }
-
-                                join_all(send_tasks).await;
-                            } else {
-                                // Stream finished
-                                break;
-                            }
-                        }
+                        // Send the message to the target client
+                        let mut send = target_client_conn.open_uni().await?;
+                        let send_message = RecvProxyMessage {
+                            from_client: i as u8,
+                            message,
+                        };
+                        let send_message = postcard::to_allocvec(&send_message)?;
+                        send.write_all(&send_message).await?;
+                        send.finish().await?;
                     }
 
                     #[allow(unreachable_code)]

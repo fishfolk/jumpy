@@ -1,10 +1,20 @@
 use bevy::ecs::{schedule::ShouldRun, system::SystemParam};
+use bevy_ggrs::{ggrs::SyncTestSession, SessionType};
 
 use crate::{
     loading::PlayerInputCollector, prelude::*, run_criteria::ShouldRunExt, ui::input::MenuAction,
+    GgrsConfig,
 };
 
 pub mod event;
+
+pub struct UtilsPlugin;
+
+impl Plugin for UtilsPlugin {
+    fn build(&self, app: &mut App) {
+        app.extend_rollback_plugin(|plugin| plugin.register_rollback_type::<Sort>());
+    }
+}
 
 /// Cache a string using [`wasm_bindgen::intern`] when running on web platforms.
 ///
@@ -15,6 +25,13 @@ pub fn cache_str(s: &str) {
     #[cfg(target_arch = "wasm32")]
     wasm_bindgen::intern(s);
 }
+
+/// A [`Component`] that is simply an index that may be used to sort elements for deterministic
+/// iteration.
+#[derive(
+    Deref, DerefMut, Component, Ord, PartialOrd, Eq, PartialEq, Copy, Clone, Reflect, Default,
+)]
+pub struct Sort(pub u32);
 
 /// Returns the hypothetical "invalid entity" ( `Entity::from_raw(u32::MAX)` ).
 ///
@@ -75,6 +92,11 @@ impl<'w, 's> ResetManager<'w, 's> {
             transform.translation.y = 0.0;
             projection.scale = 1.0;
         }
+
+        // Clear the game session
+        self.commands.remove_resource::<SessionType>();
+        self.commands
+            .remove_resource::<SyncTestSession<GgrsConfig>>();
     }
 }
 

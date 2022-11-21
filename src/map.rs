@@ -10,6 +10,7 @@ use crate::{
     name::EntityName,
     physics::collisions::{CollisionLayerTag, TileCollision},
     prelude::*,
+    utils::Sort,
 };
 
 pub mod elements;
@@ -100,6 +101,8 @@ pub fn hydrate_maps(
         for script in map_scripts.drain() {
             active_scripts.remove(&script);
         }
+
+        let mut current_map_element_idx = 0;
 
         // Spawn map layers
         for (i, layer) in map.layers.iter().enumerate() {
@@ -195,6 +198,9 @@ pub fn hydrate_maps(
 
                         let element_name = &element_meta.name;
 
+                        let sort = Sort(current_map_element_idx);
+                        current_map_element_idx += 1;
+
                         let entity = commands
                             .spawn()
                             .insert(EntityName(format!(
@@ -208,6 +214,7 @@ pub fn hydrate_maps(
                                 -100.0 + i as f32,
                             ))
                             .insert(GlobalTransform::default())
+                            .insert(sort)
                             .with_children(|parent| {
                                 parent
                                     .spawn()

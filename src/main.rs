@@ -75,7 +75,7 @@ use crate::{
     scripting::ScriptingPlugin,
     session::SessionPlugin,
     ui::UiPlugin,
-    utils::is_in_game_run_criteria,
+    utils::{is_in_game_run_criteria, UtilsPlugin},
     workarounds::WorkaroundsPlugin,
 };
 
@@ -211,6 +211,7 @@ pub fn main() {
     .add_plugin(UiPlugin);
 
     app.add_plugin(bevy_tweening::TweeningPlugin)
+        .add_plugin(UtilsPlugin)
         .add_plugin(MetadataPlugin)
         .add_plugin(PlatformPlugin)
         .add_plugin(LoadingPlugin)

@@ -21,9 +21,6 @@ impl Plugin for ItemPlugin {
                     .register_rollback_type::<ItemDropped>()
                     .register_rollback_type::<ItemUsed>()
                     .register_rollback_type::<ItemGrabbed>()
-            })
-            .extend_rollback_schedule(|schedule| {
-                schedule.add_system_to_stage(RollbackStage::Last, clear_marker_components);
             });
     }
 }
@@ -33,7 +30,7 @@ impl Plugin for ItemPlugin {
 #[derive(Component, Reflect, Default, Serialize, Deserialize, Debug)]
 #[reflect(Default, Component)]
 pub struct Item {
-    /// The path to the item's script
+    /// The path to the item's script, or if the item is built-in a string like `core:sword`.
     pub script: String,
 }
 
@@ -91,22 +88,5 @@ impl Default for ItemGrabbed {
         Self {
             player: invalid_entity(),
         }
-    }
-}
-
-fn clear_marker_components(
-    mut commands: Commands,
-    dropped: Query<Entity, With<ItemDropped>>,
-    grabbed: Query<Entity, With<ItemGrabbed>>,
-    used: Query<Entity, With<ItemUsed>>,
-) {
-    for entity in &dropped {
-        commands.entity(entity).remove::<ItemDropped>();
-    }
-    for entity in &grabbed {
-        commands.entity(entity).remove::<ItemGrabbed>();
-    }
-    for entity in &used {
-        commands.entity(entity).remove::<ItemUsed>();
     }
 }

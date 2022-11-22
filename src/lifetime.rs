@@ -34,6 +34,15 @@ pub struct Lifetime {
     pub non_recursive_despawn: bool,
 }
 
+impl Lifetime {
+    pub fn new(lifetime: f32) -> Self {
+        Self {
+            lifetime,
+            ..default()
+        }
+    }
+}
+
 /// Despawns entities that have an expired lifetime
 fn lifetime_system(mut commands: Commands, mut entities: Query<(Entity, &mut Lifetime)>) {
     for (entity, mut lifetime) in &mut entities {

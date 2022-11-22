@@ -363,6 +363,14 @@ impl AssetLoader for MapElementMetaLoader {
                     *atlas_handle = AssetHandle::new(path.clone(), handle.typed());
                     dependencies.push(path);
                 }
+                crate::metadata::BuiltinElementKind::Sword {
+                    atlas,
+                    atlas_handle,
+                } => {
+                    let (path, handle) = get_relative_asset(load_context, self_path, atlas);
+                    *atlas_handle = AssetHandle::new(path.clone(), handle.typed());
+                    dependencies.push(path);
+                }
             }
 
             // Load preloaded assets

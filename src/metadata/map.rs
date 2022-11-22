@@ -213,4 +213,10 @@ pub enum BuiltinElementKind {
         #[serde(skip)]
         atlas_handle: AssetHandle<TextureAtlas>,
     },
+    /// This is a sword
+    Sword {
+        atlas: String,
+        #[serde(skip)]
+        atlas_handle: AssetHandle<TextureAtlas>,
+    },
 }

@@ -101,7 +101,8 @@ impl Command for PlayerKillCommand {
         }
 
         // If the entity is a player
-        if world.get::<PlayerIdx>(self.player).is_some() {
+        if let Some(idx) = world.get::<PlayerIdx>(self.player) {
+            debug!("Killing player {}", idx.0);
             let position = self.position.unwrap_or_else(|| {
                 world
                     .get::<Transform>(self.player)

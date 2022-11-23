@@ -14,9 +14,9 @@ players:
   - player/skins/pescy/pescy.player.yaml
 
 maps:
-  - map/levels/level1.map.json
-  - map/levels/level2.map.json
-  - map/levels/level3.map.json
+  - map/levels/level1.map.yaml
+  - map/levels/level2.map.yaml
+  - map/levels/level3.map.yaml
   # - map/levels/lev01.map.json
   # - map/levels/lev02.map.json
   # - map/levels/lev03.map.json

@@ -155,7 +155,7 @@ fn update_in_game(
                 SwordState::Idle => (),
                 SwordState::Swinging { frame } => {
                     // If we're at the end of the swinging animation
-                    if sprite.index >= sprite.end - sprite.start - 1 {
+                    if sprite.index >= sprite.end.saturating_sub(sprite.start).saturating_sub(1) {
                         // Go to cooldown frames
                         next_state = Some(SwordState::Cooldown { frame: 0 });
 

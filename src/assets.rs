@@ -13,8 +13,8 @@ use normalize_path::NormalizePath;
 
 use crate::{
     metadata::{
-        BorderImageMeta, GameMeta, MapElementMeta, MapLayerKind, MapMeta, PlayerMeta,
-        TextureAtlasMeta,
+        BorderImageMeta, BuiltinElementKind, GameMeta, MapElementMeta, MapLayerKind, MapMeta,
+        PlayerMeta, TextureAtlasMeta,
     },
     prelude::*,
 };
@@ -353,17 +353,18 @@ impl AssetLoader for MapElementMetaLoader {
 
             // Load assets for built-in types
             match &mut meta.builtin {
-                crate::metadata::BuiltinElementKind::None => (),
-                crate::metadata::BuiltinElementKind::PlayerSpawner => (),
-                crate::metadata::BuiltinElementKind::Sproinger {
+                BuiltinElementKind::None => (),
+                BuiltinElementKind::PlayerSpawner => (),
+                BuiltinElementKind::Sproinger {
                     atlas,
                     atlas_handle,
-                } => {
-                    let (path, handle) = get_relative_asset(load_context, self_path, atlas);
-                    *atlas_handle = AssetHandle::new(path.clone(), handle.typed());
-                    dependencies.push(path);
                 }
-                crate::metadata::BuiltinElementKind::Sword {
+                | BuiltinElementKind::AnimatedDecoration {
+                    atlas,
+                    atlas_handle,
+                    ..
+                }
+                | BuiltinElementKind::Sword {
                     atlas,
                     atlas_handle,
                 } => {

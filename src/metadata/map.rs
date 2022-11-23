@@ -207,6 +207,15 @@ pub enum BuiltinElementKind {
     None,
     /// Player spawner
     PlayerSpawner,
+    /// An animated decoration such as seaweed or anemones
+    AnimatedDecoration {
+        start_frame: usize,
+        end_frame: usize,
+        fps: f32,
+        atlas: String,
+        #[serde(skip)]
+        atlas_handle: AssetHandle<TextureAtlas>,
+    },
     /// This is a sproinger
     Sproinger {
         atlas: String,

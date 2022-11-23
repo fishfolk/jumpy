@@ -7,6 +7,7 @@ use crate::{
     prelude::*,
 };
 
+pub mod decoration;
 pub mod player_spawner;
 pub mod sproinger;
 pub mod sword;
@@ -15,7 +16,8 @@ pub struct MapElementsPlugin;
 
 impl Plugin for MapElementsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(player_spawner::PlayerSpawnerPlugin)
+        app.add_plugin(decoration::DecorationPlugin)
+            .add_plugin(player_spawner::PlayerSpawnerPlugin)
             .add_plugin(sproinger::SproingerPlugin)
             .add_plugin(sword::SwordPlugin);
     }

@@ -26,7 +26,7 @@ pub fn player_state_transition(
 pub fn handle_player_state(
     mut commands: Commands,
     player_inputs: Res<PlayerInputs>,
-    items: Query<(Option<&Parent>, &KinematicBody), (With<Item>, Without<PlayerIdx>)>,
+    items: Query<(Option<&Parent>, &Rollback), With<Item>>,
     mut players: Query<(
         Entity,
         &PlayerState,
@@ -62,16 +62,22 @@ pub fn handle_player_state(
         if control.grab_just_pressed {
             // If we don't have an item
             if !has_item {
-                // For each actor colliding with the player
-                'colliders: for collider in collision_world.actor_collisions(player_ent) {
-                    // If this is an item
-                    if let Ok((.., item_body)) = items.get(collider) {
-                        if !item_body.is_deactivated {
-                            commands
-                                .add(PlayerSetInventoryCommand::new(player_ent, Some(collider)));
-                            break 'colliders;
-                        }
-                    }
+                let mut colliders = collision_world
+                    // Get all things colliding with the player
+                    .actor_collisions(player_ent)
+                    .into_iter()
+                    // Filter out anything not an item
+                    .filter_map(|ent| items.get(ent).ok().map(|x| (ent, x)))
+                    // Filter out any items that are being held by another player
+                    .filter(|(_ent, (parent, _))| parent.is_none())
+                    .collect::<Vec<_>>();
+
+                // Sort the items to provide deterministic item selection if we hare touching multiples
+                colliders.sort_by_key(|(_, (_, rollback))| rollback.id());
+
+                // Grab the first item we are touching
+                if let Some((item, _)) = colliders.get(0) {
+                    commands.add(PlayerSetInventoryCommand::new(player_ent, Some(*item)));
                 }
 
             // If we are already carrying an item

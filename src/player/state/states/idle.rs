@@ -26,7 +26,7 @@ pub fn player_state_transition(
 pub fn handle_player_state(
     mut commands: Commands,
     player_inputs: Res<PlayerInputs>,
-    items: Query<Option<&Parent>, With<Item>>,
+    items: Query<(Option<&Parent>, &KinematicBody), (With<Item>, Without<PlayerIdx>)>,
     mut players: Query<(
         Entity,
         &PlayerState,
@@ -51,7 +51,7 @@ pub fn handle_player_state(
 
         // Check for item in player inventory
         let mut has_item = false;
-        'items: for item_parent in &items {
+        'items: for (item_parent, ..) in &items {
             if item_parent.filter(|x| x.get() == player_ent).is_some() {
                 has_item = true;
                 break 'items;
@@ -65,9 +65,12 @@ pub fn handle_player_state(
                 // For each actor colliding with the player
                 'colliders: for collider in collision_world.actor_collisions(player_ent) {
                     // If this is an item
-                    if items.contains(collider) {
-                        commands.add(PlayerSetInventoryCommand::new(player_ent, Some(collider)));
-                        break 'colliders;
+                    if let Ok((.., item_body)) = items.get(collider) {
+                        if !item_body.is_deactivated {
+                            commands
+                                .add(PlayerSetInventoryCommand::new(player_ent, Some(collider)));
+                            break 'colliders;
+                        }
                     }
                 }
 

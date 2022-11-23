@@ -14,19 +14,22 @@ players:
   - player/skins/pescy/pescy.player.yaml
 
 maps:
-  - map/levels/lev01.map.json
-  - map/levels/lev02.map.json
-  - map/levels/lev03.map.json
-  - map/levels/lev04.map.json
-  - map/levels/lev05.map.json
-  - map/levels/lev06.map.json
-  - map/levels/lev07.map.json
-  - map/levels/zyrafa01.map.json
-  - map/levels/zyrafa02.map.json
-  - map/levels/zyrafa03.map.json
-  - map/levels/zyrafa04.map.json
-  - map/levels/zyrafa05.map.json
-  - map/levels/zyrafa06.map.json
+  - map/levels/level1.map.json
+  - map/levels/level2.map.json
+  - map/levels/level3.map.json
+  # - map/levels/lev01.map.json
+  # - map/levels/lev02.map.json
+  # - map/levels/lev03.map.json
+  # - map/levels/lev04.map.json
+  # - map/levels/lev05.map.json
+  # - map/levels/lev06.map.json
+  # - map/levels/lev07.map.json
+  # - map/levels/zyrafa01.map.json
+  # - map/levels/zyrafa02.map.json
+  # - map/levels/zyrafa03.map.json
+  # - map/levels/zyrafa04.map.json
+  # - map/levels/zyrafa05.map.json
+  # - map/levels/zyrafa06.map.json
 
 scripts:
   - map/scripts/kill_out_of_bounds.ts

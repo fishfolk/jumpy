@@ -11,6 +11,7 @@ use bevy_ggrs::{
 use jumpy_matchmaker_proto::TargetClient;
 
 use crate::{
+    config::ENGINE_CONFIG,
     networking::{client::NetClient, proto::ClientMatchInfo},
     player,
     prelude::*,
@@ -103,9 +104,7 @@ impl<'w, 's> SessionManager<'w, 's> {
             builder = builder
                 .with_input_delay(INPUT_DELAY)
                 .with_num_players(player::MAX_PLAYERS)
-                // TODO: Add some flag to enable the non-zero check distance, instead of wasting
-                // processing power for local games.
-                .with_check_distance(7);
+                .with_check_distance(ENGINE_CONFIG.sync_test_check_distance);
 
             for i in 0..player::MAX_PLAYERS {
                 builder = builder.add_player(ggrs::PlayerType::Local, i).unwrap();

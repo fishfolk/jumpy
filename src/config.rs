@@ -21,6 +21,13 @@ pub struct EngineConfig {
     #[arg(short = 'R', long)]
     pub hot_reload: bool,
 
+    /// Sets the sync test distance during local play.
+    ///
+    /// This is useful for developers for testing game rollback determinism without having to start
+    /// a network game.
+    #[arg(short = 'C', long, default_value = "0")]
+    pub sync_test_check_distance: usize,
+
     /// The directory to load assets from
     #[arg(short, long, env = ASSET_DIR_ENV_VAR)]
     pub asset_dir: Option<String>,

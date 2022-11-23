@@ -13,6 +13,7 @@ use crate::{
     metadata::{GameMeta, MapLayerKind, MapLayerMeta, MapMeta},
     player::input::PlayerInputs,
     prelude::*,
+    session::SessionManager,
     utils::ResetManager,
 };
 
@@ -154,6 +155,7 @@ struct EditorTopBar<'w, 's> {
     map_meta: Query<'w, 's, &'static MapMeta>,
     map_handle: Query<'w, 's, &'static AssetHandle<MapMeta>>,
     settings: ResMut<'w, EditorState>,
+    session_manager: SessionManager<'w, 's>,
 }
 
 impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
@@ -248,6 +250,7 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                                 .spawn()
                                 .insert(handle)
                                 .insert(Rollback::new(params.rids.next_id()));
+                            params.session_manager.start_session();
                         }
                     }
                 });
@@ -668,6 +671,7 @@ struct EditorCentralPanel<'w, 's> {
         With<EditorCamera>,
     >,
     localization: Res<'w, Localization>,
+    session_manager: SessionManager<'w, 's>,
 }
 
 struct MapCreateInfo {
@@ -827,6 +831,7 @@ fn map_open_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
                     ) {
                         if ui.button(&map_name).clicked() {
                             params.commands.spawn().insert(map_handle);
+                            params.session_manager.start_session();
                             *params.show_map_open = false;
                         }
                     }

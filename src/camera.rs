@@ -1,7 +1,7 @@
 use bevy::render::view::RenderLayers;
 use bevy_parallax::ParallaxCameraComponent;
 
-use crate::{player::PlayerIdx, prelude::*};
+use crate::{metadata::GameMeta, player::PlayerIdx, prelude::*};
 
 pub struct CameraPlugin;
 
@@ -93,12 +93,23 @@ fn camera_controller(
         (&mut Transform, &mut OrthographicProjection),
         (With<GameCamera>, Without<PlayerIdx>),
     >,
+    windows: Res<Windows>,
+    game: Res<GameMeta>,
 ) {
-    const LERP_FACTOR: f32 = 0.1;
+    const CAMERA_PADDING: f32 = 300.0;
+    const MOVE_LERP_FACTOR: f32 = 0.05;
+    const ZOOM_IN_LERP_FACTOR: f32 = 0.04;
+    const ZOOM_OUT_LERP_FACTOR: f32 = 0.1;
+    const MIN_BOUND: f32 = 350.0;
 
     let Ok((mut camera_transform, mut projection)) = camera.get_single_mut() else {
         return;
     };
+
+    let window = windows.primary();
+    let window_aspect = window.physical_width() as f32 / window.physical_height() as f32;
+    let default_height = game.camera_height as f32;
+    let default_width = window_aspect * default_height;
 
     let mut middle_point = Vec2::ZERO;
     let mut min = Vec2::new(100000.0, 100000.0);
@@ -118,9 +129,21 @@ fn camera_controller(
 
     middle_point /= player_count.max(1) as f32;
 
-    let delta = camera_transform.translation.truncate() - middle_point;
-    let dist = delta * LERP_FACTOR;
-    camera_transform.translation -= dist.extend(0.0);
+    let size = (max - min) + CAMERA_PADDING;
+    let size = size.max(Vec2::splat(MIN_BOUND));
 
-    projection.scale = 1.25;
+    let rh = size.y / default_height;
+    let rw = size.x / default_width;
+    let r_target = if rh > rw { rh } else { rw };
+    let r_diff = r_target - projection.scale;
+    // We zoom out twice as fast as we zoom in
+    if r_diff > 0.0 {
+        projection.scale += r_diff * ZOOM_OUT_LERP_FACTOR;
+    } else {
+        projection.scale += r_diff * ZOOM_IN_LERP_FACTOR;
+    }
+
+    let delta = camera_transform.translation.truncate() - middle_point;
+    let dist = delta * MOVE_LERP_FACTOR;
+    camera_transform.translation -= dist.extend(0.0);
 }

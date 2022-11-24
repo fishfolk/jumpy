@@ -34,12 +34,6 @@ fn hydrate_decorations(
                     repeat: true,
                     fps: *fps,
                     ..default()
-                })
-                .insert(KinematicBody {
-                    size: Vec2::new(32.0, 8.0),
-                    offset: Vec2::new(0.0, -6.0),
-                    has_mass: false,
-                    ..default()
                 });
         }
     }

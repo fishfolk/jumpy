@@ -21,7 +21,7 @@ impl Plugin for LifetimePlugin {
 /// > later, after it was spawned.
 /// >
 /// > Also, the age and lifetime are public, subject to other system's modification.
-#[derive(Reflect, Debug, Clone, Component, Default)]
+#[derive(Reflect, Component, Default)]
 #[reflect(Component, Default)]
 pub struct Lifetime {
     /// How long the entity should be allowed to live in seconds.
@@ -32,6 +32,24 @@ pub struct Lifetime {
     ///
     /// By default this is set to false and will despawn the entity recursively.
     pub non_recursive_despawn: bool,
+    #[reflect(ignore)]
+    /// An optional [`Command`] that should be run when the entity is despawned.
+    pub despawn_command: Option<Box<dyn FnOnce(&mut World) + Sync + Send>>,
+}
+
+impl Clone for Lifetime {
+    fn clone(&self) -> Self {
+        if self.despawn_command.is_some() {
+            panic!("Cannot clone a `Lifetime` component with a non-None despawn command");
+        }
+
+        Self {
+            lifetime: self.lifetime,
+            age: self.age,
+            non_recursive_despawn: self.non_recursive_despawn,
+            despawn_command: None,
+        }
+    }
 }
 
 impl Lifetime {
@@ -52,6 +70,10 @@ fn lifetime_system(mut commands: Commands, mut entities: Query<(Entity, &mut Lif
                 commands.entity(entity).despawn();
             } else {
                 commands.entity(entity).despawn_recursive();
+            }
+
+            if let Some(despawn_command) = lifetime.despawn_command.take() {
+                commands.add(despawn_command);
             }
         }
     }

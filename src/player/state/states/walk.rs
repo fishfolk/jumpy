@@ -76,6 +76,11 @@ pub fn handle_player_state(
                 // Sort the items to provide deterministic item selection if we hare touching multiples
                 colliders.sort_by_key(|(_, (_, rollback))| rollback.id());
 
+                // Grab the first item we are touching
+                if let Some((item, _)) = colliders.get(0) {
+                    commands.add(PlayerSetInventoryCommand::new(player_ent, Some(*item)));
+                }
+
             // If we are already carrying an item
             } else {
                 // Drop it

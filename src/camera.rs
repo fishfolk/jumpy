@@ -97,7 +97,7 @@ fn camera_controller(
     game: Res<GameMeta>,
 ) {
     const CAMERA_PADDING: f32 = 300.0;
-    const MOVE_LERP_FACTOR: f32 = 0.05;
+    const MOVE_LERP_FACTOR: f32 = 0.1;
     const ZOOM_IN_LERP_FACTOR: f32 = 0.04;
     const ZOOM_OUT_LERP_FACTOR: f32 = 0.1;
     const MIN_BOUND: f32 = 350.0;

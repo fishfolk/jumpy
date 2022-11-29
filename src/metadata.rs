@@ -4,6 +4,7 @@ use crate::prelude::*;
 
 use bevy::{reflect::TypeUuid, utils::HashMap};
 use bevy_has_load_progress::HasLoadProgress;
+use bevy_kira_audio::AudioSource;
 use bevy_mod_js_scripting::JsScript;
 
 mod localization;
@@ -47,6 +48,9 @@ pub struct GameMeta {
     pub main_menu: MainMenuMeta,
     pub default_settings: settings::Settings,
     pub physics: PhysicsMeta,
+    pub playlist: Vec<String>,
+    #[serde(skip)]
+    pub playlist_handles: Vec<Handle<AudioSource>>,
 
     /// Scripts that run on both the server and the client
     #[serde(default)]

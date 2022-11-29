@@ -1,0 +1,64 @@
+use std::time::Duration;
+
+use bevy_kira_audio::{
+    AudioApp, AudioChannel, AudioControl, AudioInstance, AudioSource, PlaybackState,
+};
+use rand::{seq::SliceRandom, thread_rng};
+
+use crate::{metadata::GameMeta, prelude::*};
+
+pub struct AudioPlugin;
+
+impl Plugin for AudioPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugin(bevy_kira_audio::AudioPlugin)
+            .init_resource::<CurrentMusic>()
+            .init_resource::<ShuffledPlaylist>()
+            .add_audio_channel::<MusicChannel>()
+            .add_system(music_system.run_if_resource_exists::<GameMeta>());
+    }
+}
+
+pub struct MusicChannel;
+
+#[derive(Clone, Debug, Default)]
+pub struct CurrentMusic {
+    pub instance: Handle<AudioInstance>,
+    pub idx: usize,
+}
+
+#[derive(Deref, DerefMut, Clone, Debug, Default)]
+pub struct ShuffledPlaylist(pub Vec<Handle<AudioSource>>);
+
+/// Loops through all the game music as the game is on.
+fn music_system(
+    game: Res<GameMeta>,
+    mut playlist: ResMut<ShuffledPlaylist>,
+    mut current_music: ResMut<CurrentMusic>,
+    audio_instances: Res<Assets<AudioInstance>>,
+    music: Res<AudioChannel<MusicChannel>>,
+) {
+    if playlist.is_empty() {
+        let mut songs = game.playlist_handles.clone();
+        songs.shuffle(&mut thread_rng());
+        **playlist = songs;
+    }
+
+    if let Some(instance) = audio_instances.get(&current_music.instance) {
+        if let PlaybackState::Stopped = instance.state() {
+            current_music.idx += 1;
+            current_music.idx %= playlist.len();
+
+            current_music.instance = music
+                .play(playlist[current_music.idx].clone())
+                .linear_fade_in(Duration::from_secs_f32(0.5))
+                .handle();
+        }
+    } else if let Some(song) = playlist.get(0) {
+        current_music.instance = music
+            .play(song.clone())
+            .linear_fade_in(Duration::from_secs_f32(0.5))
+            .handle();
+        current_music.idx = 0;
+    }
+}

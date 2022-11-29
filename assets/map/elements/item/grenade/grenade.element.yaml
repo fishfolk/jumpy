@@ -10,6 +10,8 @@ builtin: !Grenades
   explosion_lifetime: 1.0
   explosion_frames: 12
   explosion_fps: 8
+  explosion_sound:
+    file: ./explosion.ogg
 
   body_size: [18, 18]
   grab_offset: [-7, -6]

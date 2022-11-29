@@ -371,14 +371,24 @@ impl AssetLoader for MapElementMetaLoader {
                     atlas,
                     atlas_handle,
                     ..
-                }
-                | BuiltinElementKind::Sword {
-                    atlas,
-                    atlas_handle,
                 } => {
                     let (path, handle) = get_relative_asset(load_context, self_path, atlas);
                     *atlas_handle = AssetHandle::new(path.clone(), handle.typed());
                     dependencies.push(path);
+                }
+                BuiltinElementKind::Sword {
+                    atlas,
+                    atlas_handle,
+                    sound,
+                } => {
+                    let (path, handle) = get_relative_asset(load_context, self_path, atlas);
+                    *atlas_handle = AssetHandle::new(path.clone(), handle.typed());
+                    dependencies.push(path);
+
+                    let (sound_path, sound_handle) =
+                        get_relative_asset(load_context, self_path, &sound.file);
+                    dependencies.push(sound_path);
+                    sound.handle = sound_handle.typed();
                 }
                 BuiltinElementKind::Sproinger {
                     atlas,
@@ -399,6 +409,7 @@ impl AssetLoader for MapElementMetaLoader {
                     atlas_handle,
                     explosion_atlas,
                     explosion_atlas_handle,
+                    explosion_sound,
                     ..
                 } => {
                     for (atlas, atlas_handle) in [
@@ -409,6 +420,10 @@ impl AssetLoader for MapElementMetaLoader {
                         *atlas_handle = AssetHandle::new(path.clone(), handle.typed());
                         dependencies.push(path);
                     }
+                    let (sound_path, sound_handle) =
+                        get_relative_asset(load_context, self_path, &explosion_sound.file);
+                    dependencies.push(sound_path);
+                    explosion_sound.handle = sound_handle.typed();
                 }
             }
 

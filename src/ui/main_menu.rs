@@ -75,7 +75,7 @@ pub fn setup_main_menu(
     }
 
     // Spawn menu background
-    let bg_handle = game.main_menu.background_image.image_handle.clone();
+    let bg_handle = game.main_menu.background_image.image_handle.clone_weak();
     let img_size = game.main_menu.background_image.image_size;
     let ratio = img_size.x / img_size.y;
     let height = game.camera_height as f32;

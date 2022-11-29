@@ -92,7 +92,7 @@ fn pre_update_in_game(
                     repeat: false,
                     ..default()
                 })
-                .insert(map_element_handle.clone())
+                .insert(map_element_handle.clone_weak())
                 .insert_bundle(VisibilityBundle::default())
                 .insert_bundle(TransformBundle {
                     local: *transform,
@@ -194,7 +194,7 @@ fn update_idle_grenades(
                         atlas: atlas_handle.inner.clone(),
                         ..default()
                     })
-                    .insert(meta_handle.clone())
+                    .insert(meta_handle.clone_weak())
                     .insert(body.clone())
                     .insert(LitGrenade {
                         spawner: grenade.spawner,
@@ -243,6 +243,8 @@ fn update_lit_grenades(
     >,
     mut ridp: ResMut<RollbackIdProvider>,
     element_assets: ResMut<Assets<MapElementMeta>>,
+    player_inputs: Res<PlayerInputs>,
+    effects: Res<AudioChannel<EffectsChannel>>,
 ) {
     let mut items = grenades.iter_mut().collect::<Vec<_>>();
     items.sort_by_key(|x| x.0.id());
@@ -256,6 +258,7 @@ fn update_lit_grenades(
             explosion_lifetime,
             explosion_fps,
             explosion_frames,
+            explosion_sound,
             ..
         } = &meta.builtin else {
             unreachable!();
@@ -264,6 +267,10 @@ fn update_lit_grenades(
         grenade.age += 1.0 / crate::FPS as f32;
 
         if grenade.age >= *fuse_time {
+            if player_inputs.is_confirmed {
+                effects.play(explosion_sound.handle.clone_weak());
+            }
+
             // Despawn the grenade
             commands.entity(item_ent).despawn();
             // Cause the item to re-spawn by re-triggering spawner hydration

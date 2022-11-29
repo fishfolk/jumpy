@@ -37,8 +37,8 @@ fn setup_audio_defaults(
     music: Res<AudioChannel<MusicChannel>>,
     effects: Res<AudioChannel<EffectsChannel>>,
 ) {
-    music.set_volume(0.15);
-    effects.set_volume(0.075);
+    music.set_volume(0.12);
+    effects.set_volume(0.1);
 }
 
 /// Loops through all the game music as the game is on.

@@ -90,6 +90,7 @@ fn update_in_game(
             &mut SwordState,
             &mut AnimatedSprite,
             &mut KinematicBody,
+            &Handle<MapElementMeta>,
             Option<&Parent>,
             Option<&ItemUsed>,
             Option<&ItemDropped>,
@@ -97,6 +98,9 @@ fn update_in_game(
         Without<PlayerIdx>,
     >,
     mut ridp: ResMut<RollbackIdProvider>,
+    player_inputs: Res<PlayerInputs>,
+    effects: Res<AudioChannel<EffectsChannel>>,
+    element_assets: Res<Assets<MapElementMeta>>,
 ) {
     // Helper to spawn damage regions
     let mut spawn_damage_region =
@@ -117,11 +121,17 @@ fn update_in_game(
         mut state,
         mut sprite,
         mut body,
+        meta_handle,
         parent,
         item_used,
         item_dropped,
     ) in &mut swords
     {
+        let meta = element_assets.get(meta_handle).unwrap();
+        let BuiltinElementKind::Sword { sound, .. } = &meta.builtin else {
+            unreachable!();
+        };
+
         // For all tiems that are being held
         if let Some(parent) = parent {
             let (player_sprite, player_transform, ..) =
@@ -217,6 +227,9 @@ fn update_in_game(
                 sprite.start = 8;
                 sprite.end = 12;
                 *state = SwordState::Swinging { frame: 0 };
+                if player_inputs.is_confirmed {
+                    effects.play(sound.handle.clone_weak());
+                }
             }
         }
 

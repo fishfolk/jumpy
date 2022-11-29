@@ -175,12 +175,17 @@ impl AssetLoader for GameMetaLoader {
             }
 
             // Load map handles
-            for map_relative_path in &meta.maps {
-                let (path, handle) = get_relative_asset(load_context, self_path, map_relative_path);
+            for (map_list, handle_list) in [
+                (&meta.stable_maps, &mut meta.stable_map_handles),
+                (&meta.experimental_maps, &mut meta.experimental_map_handles),
+            ] {
+                for map_relative_path in map_list {
+                    let (path, handle) =
+                        get_relative_asset(load_context, self_path, map_relative_path);
 
-                meta.map_handles
-                    .push(AssetHandle::new(path.clone(), handle.typed()));
-                dependencies.push(path);
+                    handle_list.push(AssetHandle::new(path.clone(), handle.typed()));
+                    dependencies.push(path);
+                }
             }
 
             // Load UI fonts

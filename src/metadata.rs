@@ -34,9 +34,12 @@ pub struct GameMeta {
     pub players: Vec<String>,
     #[serde(skip)]
     pub player_handles: Vec<AssetHandle<player::PlayerMeta>>,
-    pub maps: Vec<String>,
+    pub stable_maps: Vec<String>,
     #[serde(skip)]
-    pub map_handles: Vec<AssetHandle<map::MapMeta>>,
+    pub stable_map_handles: Vec<AssetHandle<map::MapMeta>>,
+    pub experimental_maps: Vec<String>,
+    #[serde(skip)]
+    pub experimental_map_handles: Vec<AssetHandle<map::MapMeta>>,
     pub clear_color: ui::ColorMeta,
     pub camera_height: u32,
     pub translations: localization::TranslationsMeta,

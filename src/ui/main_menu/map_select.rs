@@ -56,7 +56,7 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
             let available_size = ui.available_size();
             let menu_width = params.game.main_menu.menu_width;
             let x_margin = (available_size.x - menu_width) / 2.0;
-            let outer_margin = egui::style::Margin::symmetric(x_margin, 0.0);
+            let outer_margin = egui::style::Margin::symmetric(x_margin, heading_text_style.size);
 
             if is_waiting {
                 ui.themed_label(
@@ -71,39 +71,51 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                         ui.set_width(ui.available_width());
 
                         egui::ScrollArea::vertical().show(ui, |ui| {
-                            // Clippy lint is a false alarm, necessary to avoid borrowing params
-                            #[allow(clippy::unnecessary_to_owned)]
-                            for map_handle in params
-                                .game
-                                .map_handles
-                                .iter()
-                                .map(|x| x.clone_weak())
-                                .collect::<Vec<_>>()
-                                .into_iter()
-                            {
-                                let map_meta = params.map_assets.get(&map_handle).unwrap();
-                                ui.add_space(ui.spacing().item_spacing.y);
+                            for (section_title, map_handles) in [
+                                (
+                                    params.localization.get("default-maps"),
+                                    &params.game.stable_map_handles,
+                                ),
+                                (
+                                    params.localization.get("experimental-maps"),
+                                    &params.game.experimental_map_handles,
+                                ),
+                            ] {
+                                ui.add_space(bigger_text_style.size / 2.0);
+                                ui.themed_label(bigger_text_style, &section_title);
 
-                                if BorderedButton::themed(small_button_style, &map_meta.name)
-                                    .show(ui)
-                                    .clicked()
+                                // Clippy lint is a false alarm, necessary to avoid borrowing params
+                                #[allow(clippy::unnecessary_to_owned)]
+                                for map_handle in map_handles
+                                    .iter()
+                                    .map(|x| x.clone_weak())
+                                    .collect::<Vec<_>>()
+                                    .into_iter()
                                 {
-                                    info!("Selected map, starting game");
-                                    *params.menu_page = MenuPage::Home;
-                                    params.commands.spawn().insert(map_handle.clone_weak());
-                                    params
-                                        .commands
-                                        .insert_resource(NextState(GameState::InGame));
-                                    params
-                                        .commands
-                                        .insert_resource(NextState(InGameState::Playing));
-                                    params.session_manager.start_session();
+                                    let map_meta = params.map_assets.get(&map_handle).unwrap();
+                                    ui.add_space(ui.spacing().item_spacing.y);
 
-                                    if let Some(client) = &mut params.client {
-                                        client.send_reliable(
-                                            MatchSetupMessage::SelectMap(map_handle),
-                                            TargetClient::All,
-                                        );
+                                    if BorderedButton::themed(small_button_style, &map_meta.name)
+                                        .show(ui)
+                                        .clicked()
+                                    {
+                                        info!("Selected map, starting game");
+                                        *params.menu_page = MenuPage::Home;
+                                        params.commands.spawn().insert(map_handle.clone_weak());
+                                        params
+                                            .commands
+                                            .insert_resource(NextState(GameState::InGame));
+                                        params
+                                            .commands
+                                            .insert_resource(NextState(InGameState::Playing));
+                                        params.session_manager.start_session();
+
+                                        if let Some(client) = &mut params.client {
+                                            client.send_reliable(
+                                                MatchSetupMessage::SelectMap(map_handle),
+                                                TargetClient::All,
+                                            );
+                                        }
                                     }
                                 }
                             }

@@ -820,15 +820,23 @@ fn map_open_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
                 egui::ScrollArea::vertical().show(ui, |ui| {
                     #[allow(clippy::unnecessary_to_owned)]
                     // False alarm, necessary to avoid borrowing params
-                    for (map_name, map_handle) in params.game.maps.to_vec().into_iter().zip(
-                        params
-                            .game
-                            .map_handles
-                            .iter()
-                            .map(|x| x.clone_weak())
-                            .collect::<Vec<_>>()
-                            .into_iter(),
-                    ) {
+                    for (map_name, map_handle) in params
+                        .game
+                        .stable_maps
+                        .to_vec()
+                        .into_iter()
+                        .chain(params.game.experimental_maps.to_vec().into_iter())
+                        .zip(
+                            params
+                                .game
+                                .stable_map_handles
+                                .iter()
+                                .chain(params.game.experimental_map_handles.iter())
+                                .map(|x| x.clone_weak())
+                                .collect::<Vec<_>>()
+                                .into_iter(),
+                        )
+                    {
                         if ui.button(&map_name).clicked() {
                             params.commands.spawn().insert(map_handle);
                             params.session_manager.start_session();

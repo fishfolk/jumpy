@@ -60,6 +60,7 @@ pub fn pause_menu(
     game: Res<GameMeta>,
     localization: Res<Localization>,
     map_handle: Query<&AssetHandle<MapMeta>>,
+    map_assets: Res<Assets<MapMeta>>,
     mut reset_controller: ResetManager,
     client: Option<Res<NetClient>>,
     mut session_manager: SessionManager,
@@ -86,8 +87,19 @@ pub fn pause_menu(
                         .font_styles
                         .heading
                         .colored(ui_theme.panel.font_color);
+                    let bigger_font = ui_theme
+                        .font_styles
+                        .bigger
+                        .colored(ui_theme.panel.font_color);
 
                     ui.vertical_centered(|ui| {
+                        if let Some(map_meta) = map_handle
+                            .get_single()
+                            .ok()
+                            .and_then(|handle| map_assets.get(handle))
+                        {
+                            ui.themed_label(&bigger_font, &map_meta.name);
+                        }
                         ui.themed_label(&heading_font, &localization.get("paused"));
 
                         ui.add_space(10.0);

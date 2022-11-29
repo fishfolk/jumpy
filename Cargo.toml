@@ -95,3 +95,6 @@ debug = true
 [profile.release]
 lto = true
 codegen-units = 1 # Improved rapier physics perf, so it might help other stuff, too
+
+[patch.crates-io]
+bevy_hierarchy = { git = "https://github.com/zicklag/bevy.git", branch = "dont-error-on-non-mapped-children-entities" }

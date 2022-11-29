@@ -45,7 +45,11 @@ impl Plugin for GrenadePlugin {
                 )
                 .add_system_to_stage(RollbackStage::UpdateInGame, update_idle_grenades);
         })
-        .extend_rollback_plugin(|plugin| plugin.register_rollback_type::<IdleGrenade>());
+        .extend_rollback_plugin(|plugin| {
+            plugin
+                .register_rollback_type::<IdleGrenade>()
+                .register_rollback_type::<LitGrenade>()
+        });
     }
 }
 

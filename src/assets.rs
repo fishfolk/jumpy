@@ -8,7 +8,6 @@ use bevy::{
     reflect::TypeUuid,
 };
 use bevy_egui::egui;
-use bevy_mod_js_scripting::{serde_json, JsScript};
 use normalize_path::NormalizePath;
 
 use crate::{
@@ -26,7 +25,8 @@ pub struct AssetPlugin;
 
 impl Plugin for AssetPlugin {
     fn build(&self, app: &mut App) {
-        app.register_type::<AssetHandle<JsScript>>()
+        app
+            // .register_type::<AssetHandle<JsScript>>()
             .register_type::<AssetHandle<Image>>()
             .add_jumpy_asset::<GameMeta>()
             .add_asset_loader(GameMetaLoader)
@@ -208,14 +208,14 @@ impl AssetLoader for GameMetaLoader {
                 );
             }
 
-            // Load the script handles
-            for script_relative_path in &meta.scripts {
-                let (script_path, script_handle) =
-                    get_relative_asset(load_context, self_path, script_relative_path);
-                dependencies.push(script_path.clone());
-                meta.script_handles
-                    .push(AssetHandle::new(script_path, script_handle.typed()));
-            }
+            // // Load the script handles
+            // for script_relative_path in &meta.scripts {
+            //     let (script_path, script_handle) =
+            //         get_relative_asset(load_context, self_path, script_relative_path);
+            //     dependencies.push(script_path.clone());
+            //     meta.script_handles
+            //         .push(AssetHandle::new(script_path, script_handle.typed()));
+            // }
 
             load_context.set_default_asset(LoadedAsset::new(meta).with_dependencies(dependencies));
 
@@ -366,14 +366,14 @@ impl AssetLoader for MapElementMetaLoader {
 
             let mut dependencies = Vec::new();
 
-            // Load the element script
-            for script in &meta.scripts {
-                let (script_path, script_handle) =
-                    get_relative_asset(load_context, self_path, script);
-                meta.script_handles
-                    .push(AssetHandle::new(script_path.clone(), script_handle.typed()));
-                dependencies.push(script_path);
-            }
+            // // Load the element script
+            // for script in &meta.scripts {
+            //     let (script_path, script_handle) =
+            //         get_relative_asset(load_context, self_path, script);
+            //     meta.script_handles
+            //         .push(AssetHandle::new(script_path.clone(), script_handle.typed()));
+            //     dependencies.push(script_path);
+            // }
 
             // Load assets for built-in types
             match &mut meta.builtin {

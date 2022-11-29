@@ -5,7 +5,6 @@ use crate::prelude::*;
 use bevy::{reflect::TypeUuid, utils::HashMap};
 use bevy_has_load_progress::HasLoadProgress;
 use bevy_kira_audio::AudioSource;
-use bevy_mod_js_scripting::JsScript;
 
 mod localization;
 mod map;
@@ -51,12 +50,11 @@ pub struct GameMeta {
     pub playlist: Vec<String>,
     #[serde(skip)]
     pub playlist_handles: Vec<Handle<AudioSource>>,
-
-    /// Scripts that run on both the server and the client
-    #[serde(default)]
-    pub scripts: Vec<String>,
-    #[serde(skip)]
-    pub script_handles: Vec<AssetHandle<JsScript>>,
+    // /// Scripts that run on both the server and the client
+    // #[serde(default)]
+    // pub scripts: Vec<String>,
+    // #[serde(skip)]
+    // pub script_handles: Vec<AssetHandle<JsScript>>,
 }
 
 #[derive(HasLoadProgress, Deserialize, Clone, Debug)]

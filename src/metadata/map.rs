@@ -173,8 +173,8 @@ impl From<ParallaxLayerMeta> for ParallaxLayerData {
 pub struct MapElementMeta {
     pub name: String,
     pub category: String,
-    #[serde(default)]
-    pub scripts: Vec<String>,
+    // #[serde(default)]
+    // pub scripts: Vec<String>,
     #[serde(default)]
     #[has_load_progress(none)]
     pub builtin: BuiltinElementKind,
@@ -183,8 +183,8 @@ pub struct MapElementMeta {
     #[serde(default = "editor_size_default")]
     pub editor_size: Vec2,
 
-    #[serde(skip)]
-    pub script_handles: Vec<AssetHandle<JsScript>>,
+    // #[serde(skip)]
+    // pub script_handles: Vec<AssetHandle<JsScript>>,
     /// Assets that should be pre-loaded by the game before starting
     #[serde(default)]
     pub preload_assets: Vec<String>,

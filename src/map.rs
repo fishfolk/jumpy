@@ -1,6 +1,6 @@
-use bevy::{render::view::RenderLayers, utils::HashSet};
+use bevy::render::view::RenderLayers;
 use bevy_ecs_tilemap::prelude::*;
-use bevy_mod_js_scripting::{ActiveScripts, JsScript};
+// use bevy_mod_js_scripting::{ActiveScripts, JsScript};
 use bevy_parallax::ParallaxResource;
 use bevy_prototype_lyon::{prelude::*, shapes::Rectangle};
 
@@ -21,7 +21,7 @@ pub struct MapPlugin;
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(TilemapPlugin)
-            .init_resource::<MapScripts>()
+            // .init_resource::<MapScripts>()
             .add_system(hydrate_maps)
             .extend_rollback_plugin(|plugin| {
                 plugin
@@ -38,9 +38,9 @@ impl Plugin for MapPlugin {
 #[reflect(Component, Default)]
 pub struct MapElementHydrated;
 
-/// Contains the scripts that have been added for the currently loaded map
-#[derive(Deref, DerefMut, Default)]
-pub struct MapScripts(pub HashSet<Handle<JsScript>>);
+// /// Contains the scripts that have been added for the currently loaded map
+// #[derive(Deref, DerefMut, Default)]
+// pub struct MapScripts(pub HashSet<Handle<JsScript>>);
 
 /// Marker component for the map grid
 #[derive(Component)]
@@ -54,8 +54,8 @@ pub fn hydrate_maps(
     asset_server: Res<AssetServer>,
     mut texture_atlas_assets: ResMut<Assets<TextureAtlas>>,
     element_assets: ResMut<Assets<MapElementMeta>>,
-    mut active_scripts: ResMut<ActiveScripts>,
-    mut map_scripts: ResMut<MapScripts>,
+    // mut active_scripts: ResMut<ActiveScripts>,
+    // mut map_scripts: ResMut<MapScripts>,
     mut rids: ResMut<RollbackIdProvider>,
     unspawned_maps: Query<(Entity, &AssetHandle<MapMeta>), Without<MapMeta>>,
 ) {
@@ -101,10 +101,10 @@ pub fn hydrate_maps(
             .id();
         map_children.push(grid_entity);
 
-        // Clear any previously loaded map scripts
-        for script in map_scripts.drain() {
-            active_scripts.remove(&script);
-        }
+        // // Clear any previously loaded map scripts
+        // for script in map_scripts.drain() {
+        //     active_scripts.remove(&script);
+        // }
 
         let mut current_map_element_idx = 0;
 
@@ -195,10 +195,10 @@ pub fn hydrate_maps(
                     for element in &element_layer.elements {
                         let element_meta =
                             element_assets.get(&element.element_handle).unwrap().clone();
-                        for script_handle in &element_meta.script_handles {
-                            active_scripts.insert(script_handle.inner.clone_weak());
-                            map_scripts.insert(script_handle.inner.clone_weak());
-                        }
+                        // for script_handle in &element_meta.script_handles {
+                        //     active_scripts.insert(script_handle.inner.clone_weak());
+                        //     map_scripts.insert(script_handle.inner.clone_weak());
+                        // }
 
                         let element_name = &element_meta.name;
 

@@ -1,8 +1,5 @@
 name: Kick Bomb
 category: Weapons
-scripts:
-  # - ./kick_bomb_spawner.ts
-  # - ./kick_bomb.ts
 preload_assets:
   - ./kick_bomb.atlas.yaml
   - ./explosion.atlas.yaml

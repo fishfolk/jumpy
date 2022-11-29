@@ -4,13 +4,12 @@ use std::{
 };
 
 use crate::prelude::*;
-use bevy::{asset::HandleId, ecs::entity::EntityMap, reflect::TypeRegistryArc};
-use bevy_ggrs::{ggrs::Frame, RollbackEventHook};
+use bevy::{asset::HandleId, reflect::TypeRegistryArc};
 use bevy_mod_js_scripting::{
     bevy_reflect_fns::{
         PassMode, ReflectArg, ReflectFunction, ReflectFunctionError, ReflectMethods,
     },
-    serde_json, JsRuntime, JsRuntimeApi, JsRuntimeConfig, JsScriptingPlugin,
+    JsRuntimeConfig, JsScriptingPlugin,
 };
 
 pub mod ops;
@@ -62,58 +61,58 @@ impl From<JsEntity> for Entity {
     }
 }
 
-struct ScriptingRollbackHooks;
+// struct ScriptingRollbackHooks;
 
-impl RollbackEventHook for ScriptingRollbackHooks {
-    fn pre_save(&mut self, frame: Frame, max_snapshots: usize, world: &mut World) {
-        let runtime = world.remove_non_send_resource::<JsRuntime>().unwrap();
+// impl RollbackEventHook for ScriptingRollbackHooks {
+//     fn pre_save(&mut self, frame: Frame, max_snapshots: usize, world: &mut World) {
+//         let runtime = world.remove_non_send_resource::<JsRuntime>().unwrap();
 
-        // We use extremely brief keys here to avoid encoding more string across the FFI
-        let args = serde_json::json!({
-            "f": frame,
-            "m": max_snapshots,
-        });
-        if let Err(e) = runtime.eval(&format!("globalThis.saveSnapshot({})", args), world) {
-            error!("Error running JS save snapshot hook: {e:?}");
-        }
+//         // We use extremely brief keys here to avoid encoding more string across the FFI
+//         let args = serde_json::json!({
+//             "f": frame,
+//             "m": max_snapshots,
+//         });
+//         if let Err(e) = runtime.eval(&format!("globalThis.saveSnapshot({})", args), world) {
+//             error!("Error running JS save snapshot hook: {e:?}");
+//         }
 
-        world.insert_non_send_resource(runtime);
-    }
+//         world.insert_non_send_resource(runtime);
+//     }
 
-    fn post_load(
-        &mut self,
-        frame: Frame,
-        max_snapshots: usize,
-        entity_map: &EntityMap,
-        world: &mut World,
-    ) {
-        let runtime = world.remove_non_send_resource::<JsRuntime>().unwrap();
+//     fn post_load(
+//         &mut self,
+//         frame: Frame,
+//         max_snapshots: usize,
+//         entity_map: &EntityMap,
+//         world: &mut World,
+//     ) {
+//         let runtime = world.remove_non_send_resource::<JsRuntime>().unwrap();
 
-        let mut entity_map_json = Vec::new();
+//         let mut entity_map_json = Vec::new();
 
-        for from in entity_map.keys() {
-            let to = entity_map.get(from).unwrap();
-            if from != to {
-                entity_map_json.push(serde_json::json!({
-                    "f": JsEntity::from(from),
-                    "t": JsEntity::from(to),
-                }));
-            }
-        }
+//         for from in entity_map.keys() {
+//             let to = entity_map.get(from).unwrap();
+//             if from != to {
+//                 entity_map_json.push(serde_json::json!({
+//                     "f": JsEntity::from(from),
+//                     "t": JsEntity::from(to),
+//                 }));
+//             }
+//         }
 
-        // We use extremely brief keys here to avoid encoding more string across the FFI
-        let args = serde_json::json!({
-            "f": frame,
-            "m": max_snapshots,
-            "e": entity_map_json,
-        });
-        if let Err(e) = runtime.eval(&format!("globalThis.loadSnapshot({})", args), world) {
-            error!("Error running JS save snapshot hook: {e:?}");
-        }
+//         // We use extremely brief keys here to avoid encoding more string across the FFI
+//         let args = serde_json::json!({
+//             "f": frame,
+//             "m": max_snapshots,
+//             "e": entity_map_json,
+//         });
+//         if let Err(e) = runtime.eval(&format!("globalThis.loadSnapshot({})", args), world) {
+//             error!("Error running JS save snapshot hook: {e:?}");
+//         }
 
-        world.insert_non_send_resource(runtime);
-    }
-}
+//         world.insert_non_send_resource(runtime);
+//     }
+// }
 
 impl Plugin for ScriptingPlugin {
     fn build(&self, app: &mut App) {
@@ -123,8 +122,8 @@ impl Plugin for ScriptingPlugin {
             .insert_non_send_resource(JsRuntimeConfig { custom_ops })
             .add_plugin(JsScriptingPlugin {
                 skip_core_stage_setup: true,
-            })
-            .extend_rollback_plugin(|plugin| plugin.add_rollback_hook(ScriptingRollbackHooks));
+            });
+        // .extend_rollback_plugin(|plugin| plugin.add_rollback_hook(ScriptingRollbackHooks));
 
         {
             let type_registry = app.world.resource::<TypeRegistryArc>();

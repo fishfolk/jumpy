@@ -1460,11 +1460,11 @@ layers:
         - pos:
             - 65.399994
             - 471.5
-          element: ../elements/item/grenades/grenades.element.yaml
+          element: ../elements/item/grenade/grenade.element.yaml
         - pos:
             - 824.0
             - 469.5
-          element: ../elements/item/grenades/grenades.element.yaml
+          element: ../elements/item/grenade/grenade.element.yaml
         - pos:
             - 441.41046
             - 143.5

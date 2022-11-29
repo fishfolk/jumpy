@@ -32,16 +32,17 @@ fn pre_update_in_game(
     players: Query<&PlayerIdx>,
     player_spawners: Query<(&Sort, &Transform), With<PlayerSpawner>>,
     non_hydrated_map_elements: Query<
-        (Entity, &Sort, &Transform, &MapElementMeta),
+        (Entity, &Sort, &Transform, &Handle<MapElementMeta>),
         Without<MapElementHydrated>,
     >,
     mut ridp: ResMut<RollbackIdProvider>,
     mut current_spawner: ResMut<CurrentPlayerSpawner>,
+    element_assets: Res<Assets<MapElementMeta>>,
 ) {
     let mut spawn_points = player_spawners.iter().collect::<Vec<_>>();
     // Hydrate any newly-spawned spawn points
-    for (entity, sort, transform, map_element) in &non_hydrated_map_elements {
-        // TODO: Better way to tie the behavior to the map element?
+    for (entity, sort, transform, map_element_handle) in &non_hydrated_map_elements {
+        let map_element = element_assets.get(map_element_handle).unwrap();
         if matches!(map_element.builtin, BuiltinElementKind::PlayerSpawner) {
             commands
                 .entity(entity)

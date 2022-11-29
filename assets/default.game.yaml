@@ -2,7 +2,7 @@ camera_height: 448
 clear_color: 27233B
 physics:
   terminal_velocity: 30
-  friction_lerp: 0.96
+  friction_lerp: 0.85
   stop_threshold: 1.0
 
 players:

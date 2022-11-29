@@ -372,6 +372,22 @@ impl AssetLoader for MapElementMetaLoader {
                     *atlas_handle = AssetHandle::new(path.clone(), handle.typed());
                     dependencies.push(path);
                 }
+                BuiltinElementKind::Grenades {
+                    atlas,
+                    atlas_handle,
+                    explosion_atlas,
+                    explosion_atlas_handle,
+                    ..
+                } => {
+                    for (atlas, atlas_handle) in [
+                        (atlas, atlas_handle),
+                        (explosion_atlas, explosion_atlas_handle),
+                    ] {
+                        let (path, handle) = get_relative_asset(load_context, self_path, atlas);
+                        *atlas_handle = AssetHandle::new(path.clone(), handle.typed());
+                        dependencies.push(path);
+                    }
+                }
             }
 
             // Load preloaded assets

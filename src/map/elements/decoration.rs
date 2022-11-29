@@ -12,10 +12,15 @@ impl Plugin for DecorationPlugin {
 
 fn hydrate_decorations(
     mut commands: Commands,
-    non_hydrated_map_elements: Query<(Entity, &MapElementMeta), Without<MapElementHydrated>>,
+    non_hydrated_map_elements: Query<
+        (Entity, &Handle<MapElementMeta>),
+        Without<MapElementHydrated>,
+    >,
+    element_assets: Res<Assets<MapElementMeta>>,
 ) {
     // Hydrate any newly-spawned decorations
-    for (entity, map_element) in &non_hydrated_map_elements {
+    for (entity, map_element_handle) in &non_hydrated_map_elements {
+        let map_element = element_assets.get(map_element_handle).unwrap();
         if let BuiltinElementKind::AnimatedDecoration {
             atlas_handle,
             start_frame,

@@ -128,7 +128,7 @@ fn update_in_game(
     ) in &mut swords
     {
         let meta = element_assets.get(meta_handle).unwrap();
-        let BuiltinElementKind::Sword { sound, .. } = &meta.builtin else {
+        let BuiltinElementKind::Sword { sound_handle, .. } = &meta.builtin else {
             unreachable!();
         };
 
@@ -228,7 +228,7 @@ fn update_in_game(
                 sprite.end = 12;
                 *state = SwordState::Swinging { frame: 0 };
                 if player_inputs.is_confirmed {
-                    effects.play(sound.handle.clone_weak());
+                    effects.play(sound_handle.clone_weak());
                 }
             }
         }

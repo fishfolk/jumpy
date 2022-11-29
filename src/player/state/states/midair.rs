@@ -4,13 +4,28 @@ pub const ID: &str = "core:midair";
 
 pub const AIR_MOVE_SPEED: f32 = 7.0;
 
-pub fn player_state_transition(mut players: Query<(&mut PlayerState, &KinematicBody)>) {
-    for (mut player_state, body) in &mut players {
+pub fn player_state_transition(
+    mut players: Query<(&mut PlayerState, &KinematicBody, &Handle<PlayerMeta>)>,
+    player_inputs: Res<PlayerInputs>,
+    effects: Res<AudioChannel<EffectsChannel>>,
+    player_assets: Res<Assets<PlayerMeta>>,
+) {
+    for (mut player_state, body, meta_handle) in &mut players {
+        let meta = player_assets.get(meta_handle).unwrap();
+
         if player_state.id != ID {
             continue;
         }
 
         if body.is_on_ground {
+            // Play land sound
+            if player_inputs.is_confirmed {
+                effects
+                    .play(meta.sounds.land_handle.clone_weak())
+                    // TODO: This volume should be relative to the current channel volume, not
+                    // hard-coded, so that when the user changes the sound effect volume it's relative.
+                    .with_volume(meta.sounds.land_volume as _);
+            }
             player_state.id = idle::ID.into();
         }
     }

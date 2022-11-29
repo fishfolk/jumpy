@@ -32,12 +32,17 @@ pub fn handle_player_state(
         Entity,
         &PlayerState,
         &PlayerIdx,
+        &Handle<PlayerMeta>,
         &mut AnimationBankSprite,
         &mut KinematicBody,
     )>,
     collision_world: CollisionWorld,
+    effects: Res<AudioChannel<EffectsChannel>>,
+    player_assets: Res<Assets<PlayerMeta>>,
 ) {
-    for (player_ent, player_state, player_idx, mut sprite, mut body) in &mut players {
+    for (player_ent, player_state, player_idx, meta_handle, mut sprite, mut body) in &mut players {
+        let meta = player_assets.get(meta_handle).unwrap();
+
         if player_state.id != ID {
             continue;
         }
@@ -95,6 +100,15 @@ pub fn handle_player_state(
 
         // If we are jumping
         if control.jump_just_pressed {
+            // Play jump sound
+            if player_inputs.is_confirmed {
+                effects
+                    .play(meta.sounds.jump_handle.clone_weak())
+                    // TODO: This volume should be relative to the current channel volume, not
+                    // hard-coded, so that when the user changes the sound effect volume it's relative.
+                    .with_volume(meta.sounds.jump_volume as _);
+            }
+
             // Move up
             body.velocity.y = JUMP_SPEED;
         }

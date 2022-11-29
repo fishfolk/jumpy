@@ -327,6 +327,7 @@ fn hydrate_players(
 
         entity_commands
             .insert(Name::new(format!("Player {}", player_idx.0)))
+            .insert(input.selected_player.inner.clone_weak())
             .insert(PlayerState::default())
             .insert(animation_bank)
             .insert(animation_bank_sprite)

@@ -218,7 +218,9 @@ pub enum BuiltinElementKind {
         explosion_lifetime: f32,
         explosion_frames: usize,
         explosion_fps: f32,
-        explosion_sound: SoundMeta,
+        explosion_sound: String,
+        #[serde(skip)]
+        explosion_sound_handle: Handle<AudioSource>,
         /// The time in seconds before a grenade explodes
         fuse_time: f32,
         #[serde(default)]
@@ -245,13 +247,17 @@ pub enum BuiltinElementKind {
         atlas: String,
         #[serde(skip)]
         atlas_handle: AssetHandle<TextureAtlas>,
-        sound: SoundMeta,
+        sound: String,
+        #[serde(skip)]
+        sound_handle: Handle<AudioSource>,
     },
     /// This is a sword
     Sword {
         atlas: String,
         #[serde(skip)]
         atlas_handle: AssetHandle<TextureAtlas>,
-        sound: SoundMeta,
+        sound: String,
+        #[serde(skip)]
+        sound_handle: Handle<AudioSource>,
     },
 }

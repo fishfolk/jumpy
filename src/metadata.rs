@@ -92,21 +92,6 @@ pub struct ImageMeta {
     pub egui_texture_id: bevy_egui::egui::TextureId,
 }
 
-#[derive(HasLoadProgress, Deserialize, Serialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
-pub struct SoundMeta {
-    pub file: String,
-    #[serde(skip)]
-    pub handle: Handle<AudioSource>,
-
-    #[serde(default = "default_one")]
-    pub volume: f32,
-}
-
-fn default_one() -> f32 {
-    1.0
-}
-
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct TextureAtlasMeta {
     pub image: String,

@@ -258,7 +258,7 @@ fn update_lit_grenades(
             explosion_lifetime,
             explosion_fps,
             explosion_frames,
-            explosion_sound,
+            explosion_sound_handle,
             ..
         } = &meta.builtin else {
             unreachable!();
@@ -268,7 +268,7 @@ fn update_lit_grenades(
 
         if grenade.age >= *fuse_time {
             if player_inputs.is_confirmed {
-                effects.play(explosion_sound.handle.clone_weak());
+                effects.play(explosion_sound_handle.clone_weak());
             }
 
             // Despawn the grenade

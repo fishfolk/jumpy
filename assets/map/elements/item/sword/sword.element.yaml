@@ -2,6 +2,5 @@ name: Sword
 category: Weapons
 builtin: !Sword
   atlas: ./sword.atlas.yaml
-  sound:
-    file: ./sword.ogg
+  sound: ./sword.ogg
   

@@ -21,6 +21,7 @@ impl Plugin for PlayerMetadataPlugin {
 pub struct PlayerMeta {
     pub name: String,
     pub spritesheet: PlayerSpritesheetMeta,
+    pub sounds: PlayerSounds,
 }
 
 #[derive(Reflect, Deserialize, Clone, Debug, Default)]
@@ -37,6 +38,20 @@ pub struct PlayerSpritesheetMeta {
     pub rows: usize,
     pub animation_fps: f32,
     pub animations: HashMap<String, AnimationClip>,
+}
+
+#[derive(Reflect, Deserialize, Clone, Debug, Default)]
+#[serde(deny_unknown_fields)]
+pub struct PlayerSounds {
+    pub land: String,
+    pub land_volume: f32,
+    #[serde(skip)]
+    pub land_handle: Handle<AudioSource>,
+
+    pub jump: String,
+    pub jump_volume: f32,
+    #[serde(skip)]
+    pub jump_handle: Handle<AudioSource>,
 }
 
 impl PlayerSpritesheetMeta {

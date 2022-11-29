@@ -1,5 +1,11 @@
 name: Sharky
 
+sounds:
+  jump: ../../sounds/jump.ogg
+  jump_volume: 0.05
+  land: ../../sounds/land.ogg
+  land_volume: 0.05
+
 spritesheet:
   image: sharky.png
   tile_size: [96, 80]
@@ -26,4 +32,3 @@ spritesheet:
     death_1:
       frames: [70, 76]
       repeat: false
-

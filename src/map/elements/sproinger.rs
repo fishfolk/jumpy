@@ -70,7 +70,7 @@ fn update_in_game(
 ) {
     for (sproinger_ent, mut sproinger, meta_handle, mut sprite) in &mut sproingers {
         let meta = element_assets.get(meta_handle).unwrap();
-        let BuiltinElementKind::Sproinger { sound, .. } = &meta.builtin else {
+        let BuiltinElementKind::Sproinger { sound_handle, .. } = &meta.builtin else {
             continue;
         };
 
@@ -79,7 +79,7 @@ fn update_in_game(
                 1 => {
                     // Only play the sound effect if this is a frame that will not be rolled back
                     if player_inputs.is_confirmed {
-                        sound_effects.play(sound.handle.clone());
+                        sound_effects.play(sound_handle.clone_weak());
                     }
                     sprite.index = 2
                 }

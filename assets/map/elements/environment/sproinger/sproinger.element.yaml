@@ -2,5 +2,4 @@ name: Sproinger
 category: Gameplay
 builtin: !Sproinger
   atlas: ./sproinger.atlas.yaml
-  sound:
-    file: ./jump.ogg
+  sound: ./jump.ogg

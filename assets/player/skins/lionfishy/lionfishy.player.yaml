@@ -1,5 +1,11 @@
 name: Lionfishy
 
+sounds:
+  jump: ../../sounds/jump.ogg
+  jump_volume: 0.05
+  land: ../../sounds/land.ogg
+  land_volume: 0.05
+
 spritesheet:
   image: lionfishy.png
   tile_size: [96, 80]

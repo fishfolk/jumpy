@@ -238,6 +238,7 @@ impl AssetLoader for PlayerMetaLoader {
     ) -> bevy::utils::BoxedFuture<'a, Result<(), anyhow::Error>> {
         Box::pin(async move {
             let self_path = load_context.path();
+            let mut dependencies = Vec::new();
             let mut meta: PlayerMeta = if self_path.extension() == Some(OsStr::new("json")) {
                 serde_json::from_slice(bytes)?
             } else {
@@ -247,6 +248,15 @@ impl AssetLoader for PlayerMetaLoader {
 
             let (atlas_path, atlas_handle) =
                 get_relative_asset(load_context, load_context.path(), &meta.spritesheet.image);
+
+            for (sound, sound_handle) in [
+                (&meta.sounds.jump, &mut meta.sounds.jump_handle),
+                (&meta.sounds.land, &mut meta.sounds.land_handle),
+            ] {
+                let (path, handle) = get_relative_asset(load_context, self_path, sound);
+                dependencies.push(path);
+                *sound_handle = handle.typed();
+            }
 
             let atlas_handle = load_context.set_labeled_asset(
                 "atlas",
@@ -260,7 +270,7 @@ impl AssetLoader for PlayerMetaLoader {
             );
             meta.spritesheet.atlas_handle = AssetHandle::new(atlas_path, atlas_handle);
 
-            load_context.set_default_asset(LoadedAsset::new(meta));
+            load_context.set_default_asset(LoadedAsset::new(meta).with_dependencies(dependencies));
 
             Ok(())
         })
@@ -380,29 +390,29 @@ impl AssetLoader for MapElementMetaLoader {
                     atlas,
                     atlas_handle,
                     sound,
+                    sound_handle,
                 } => {
                     let (path, handle) = get_relative_asset(load_context, self_path, atlas);
                     *atlas_handle = AssetHandle::new(path.clone(), handle.typed());
                     dependencies.push(path);
 
-                    let (sound_path, sound_handle) =
-                        get_relative_asset(load_context, self_path, &sound.file);
-                    dependencies.push(sound_path);
-                    sound.handle = sound_handle.typed();
+                    let (path, handle) = get_relative_asset(load_context, self_path, sound);
+                    dependencies.push(path);
+                    *sound_handle = handle.typed();
                 }
                 BuiltinElementKind::Sproinger {
                     atlas,
                     atlas_handle,
                     sound,
+                    sound_handle,
                 } => {
                     let (path, handle) = get_relative_asset(load_context, self_path, atlas);
                     *atlas_handle = AssetHandle::new(path.clone(), handle.typed());
                     dependencies.push(path);
 
-                    let (sound_path, sound_handle) =
-                        get_relative_asset(load_context, self_path, &sound.file);
-                    dependencies.push(sound_path);
-                    sound.handle = sound_handle.typed();
+                    let (path, handle) = get_relative_asset(load_context, self_path, sound);
+                    dependencies.push(path);
+                    *sound_handle = handle.typed();
                 }
                 BuiltinElementKind::Grenades {
                     atlas,
@@ -410,6 +420,7 @@ impl AssetLoader for MapElementMetaLoader {
                     explosion_atlas,
                     explosion_atlas_handle,
                     explosion_sound,
+                    explosion_sound_handle,
                     ..
                 } => {
                     for (atlas, atlas_handle) in [
@@ -421,9 +432,9 @@ impl AssetLoader for MapElementMetaLoader {
                         dependencies.push(path);
                     }
                     let (sound_path, sound_handle) =
-                        get_relative_asset(load_context, self_path, &explosion_sound.file);
+                        get_relative_asset(load_context, self_path, explosion_sound);
                     dependencies.push(sound_path);
-                    explosion_sound.handle = sound_handle.typed();
+                    *explosion_sound_handle = sound_handle.typed();
                 }
             }
 

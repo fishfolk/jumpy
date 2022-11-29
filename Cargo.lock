@@ -2293,7 +2293,7 @@ dependencies = [
 [[package]]
 name = "ggrs"
 version = "0.9.2"
-source = "git+https://github.com/gschup/ggrs#99f8a139d599d94db7397e65c33d6fabe45c4acf"
+source = "git+https://github.com/gschup/ggrs#3d4adea97ed5268d376cc44663e43c3a32359dbe"
 dependencies = [
  "bincode",
  "bitfield-rle",

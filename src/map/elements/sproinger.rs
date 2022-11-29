@@ -25,10 +25,15 @@ pub struct Sproinger {
 
 fn pre_update_in_game(
     mut commands: Commands,
-    non_hydrated_map_elements: Query<(Entity, &MapElementMeta), Without<MapElementHydrated>>,
+    non_hydrated_map_elements: Query<
+        (Entity, &Handle<MapElementMeta>),
+        Without<MapElementHydrated>,
+    >,
+    element_assets: Res<Assets<MapElementMeta>>,
 ) {
     // Hydrate any newly-spawned sproingers
-    for (entity, map_element) in &non_hydrated_map_elements {
+    for (entity, map_element_handle) in &non_hydrated_map_elements {
+        let map_element = element_assets.get(map_element_handle).unwrap();
         if let BuiltinElementKind::Sproinger { atlas_handle, .. } = &map_element.builtin {
             commands
                 .entity(entity)

@@ -1,11 +1,3 @@
-use crate::{
-    damage::{DamageRegion, DamageRegionOwner},
-    item::{Item, ItemDropped, ItemUsed},
-    lifetime::Lifetime,
-    name::EntityName,
-    utils::Sort,
-};
-
 use super::*;
 
 pub struct SwordPlugin;
@@ -39,15 +31,18 @@ const ATTACK_FPS: f32 = 10.0;
 fn pre_update_in_game(
     mut commands: Commands,
     non_hydrated_map_elements: Query<
-        (Entity, &Sort, &MapElementMeta, &Transform),
+        (Entity, &Sort, &Handle<MapElementMeta>, &Transform),
         Without<MapElementHydrated>,
     >,
     mut ridp: ResMut<RollbackIdProvider>,
+    element_assets: Res<Assets<MapElementMeta>>,
 ) {
     // Hydrate any newly-spawned swords
     let mut elements = non_hydrated_map_elements.iter().collect::<Vec<_>>();
     elements.sort_by_key(|x| x.1);
-    for (entity, _sort, map_element, transform) in elements {
+    for (entity, _sort, map_element_handle, transform) in elements {
+        let map_element = element_assets.get(map_element_handle).unwrap();
+
         if let BuiltinElementKind::Sword { atlas_handle, .. } = &map_element.builtin {
             commands.entity(entity).insert(MapElementHydrated);
 
@@ -72,6 +67,7 @@ fn pre_update_in_game(
                     local: *transform,
                     ..default()
                 })
+                .insert(map_element_handle.clone())
                 .insert(KinematicBody {
                     size: Vec2::new(64.0, 16.0),
                     offset: Vec2::new(0.0, 38.0),

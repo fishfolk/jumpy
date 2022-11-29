@@ -207,6 +207,29 @@ pub enum BuiltinElementKind {
     None,
     /// Player spawner
     PlayerSpawner,
+    /// Grenades item
+    Grenades {
+        body_size: Vec2,
+        body_offset: Vec2,
+        grab_offset: Vec2,
+        damage_region_size: Vec2,
+        damage_region_lifetime: f32,
+        throw_velocity: Vec2,
+        explosion_lifetime: f32,
+        explosion_frames: usize,
+        explosion_fps: f32,
+        /// The time in seconds before a grenade explodes
+        fuse_time: f32,
+        #[serde(default)]
+        can_rotate: bool,
+        /// The grenade atlas
+        atlas: String,
+        #[serde(skip)]
+        atlas_handle: AssetHandle<TextureAtlas>,
+        explosion_atlas: String,
+        #[serde(skip)]
+        explosion_atlas_handle: AssetHandle<TextureAtlas>,
+    },
     /// An animated decoration such as seaweed or anemones
     AnimatedDecoration {
         start_frame: usize,

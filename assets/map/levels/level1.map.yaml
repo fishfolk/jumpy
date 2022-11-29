@@ -1213,7 +1213,7 @@ layers:
         - pos:
             - 536.0
             - 309.5
-          element: ../elements/item/musket/musket.element.yaml
+          element: ../elements/item/grenade/grenade.element.yaml
         - pos:
             - 292.2272
             - 609.5
@@ -1237,7 +1237,7 @@ layers:
         - pos:
             - 312.0556
             - 311.5
-          element: ../elements/item/musket/musket.element.yaml
+          element: ../elements/item/grenade/grenade.element.yaml
         - pos:
             - 132.02469
             - 121.5

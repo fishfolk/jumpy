@@ -23,7 +23,11 @@ impl Plugin for MapPlugin {
         app.add_plugin(TilemapPlugin)
             .init_resource::<MapScripts>()
             .add_system(hydrate_maps)
-            .extend_rollback_plugin(|plugin| plugin.register_rollback_type::<MapElementHydrated>())
+            .extend_rollback_plugin(|plugin| {
+                plugin
+                    .register_rollback_type::<MapElementHydrated>()
+                    .register_rollback_type::<Handle<MapElementMeta>>()
+            })
             .add_plugin(elements::MapElementsPlugin);
     }
 }
@@ -233,7 +237,7 @@ pub fn hydrate_maps(
                                         default(),
                                     ));
                             })
-                            .insert(element_meta)
+                            .insert(element.element_handle.inner.clone())
                             .insert(Rollback::new(rids.next_id()))
                             .id();
                         map_children.push(entity)

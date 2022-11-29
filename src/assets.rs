@@ -8,7 +8,6 @@ use bevy::{
     reflect::TypeUuid,
 };
 use bevy_egui::egui;
-use bevy_mod_js_scripting::{serde_json, JsScript};
 use normalize_path::NormalizePath;
 
 use crate::{
@@ -26,7 +25,8 @@ pub struct AssetPlugin;
 
 impl Plugin for AssetPlugin {
     fn build(&self, app: &mut App) {
-        app.register_type::<AssetHandle<JsScript>>()
+        app
+            // .register_type::<AssetHandle<JsScript>>()
             .register_type::<AssetHandle<Image>>()
             .add_jumpy_asset::<GameMeta>()
             .add_asset_loader(GameMetaLoader)
@@ -208,14 +208,14 @@ impl AssetLoader for GameMetaLoader {
                 );
             }
 
-            // Load the script handles
-            for script_relative_path in &meta.scripts {
-                let (script_path, script_handle) =
-                    get_relative_asset(load_context, self_path, script_relative_path);
-                dependencies.push(script_path.clone());
-                meta.script_handles
-                    .push(AssetHandle::new(script_path, script_handle.typed()));
-            }
+            // // Load the script handles
+            // for script_relative_path in &meta.scripts {
+            //     let (script_path, script_handle) =
+            //         get_relative_asset(load_context, self_path, script_relative_path);
+            //     dependencies.push(script_path.clone());
+            //     meta.script_handles
+            //         .push(AssetHandle::new(script_path, script_handle.typed()));
+            // }
 
             load_context.set_default_asset(LoadedAsset::new(meta).with_dependencies(dependencies));
 
@@ -238,6 +238,7 @@ impl AssetLoader for PlayerMetaLoader {
     ) -> bevy::utils::BoxedFuture<'a, Result<(), anyhow::Error>> {
         Box::pin(async move {
             let self_path = load_context.path();
+            let mut dependencies = Vec::new();
             let mut meta: PlayerMeta = if self_path.extension() == Some(OsStr::new("json")) {
                 serde_json::from_slice(bytes)?
             } else {
@@ -247,6 +248,17 @@ impl AssetLoader for PlayerMetaLoader {
 
             let (atlas_path, atlas_handle) =
                 get_relative_asset(load_context, load_context.path(), &meta.spritesheet.image);
+
+            for (sound, sound_handle) in [
+                (&meta.sounds.jump, &mut meta.sounds.jump_handle),
+                (&meta.sounds.land, &mut meta.sounds.land_handle),
+                (&meta.sounds.grab, &mut meta.sounds.grab_handle),
+                (&meta.sounds.drop, &mut meta.sounds.drop_handle),
+            ] {
+                let (path, handle) = get_relative_asset(load_context, self_path, sound);
+                dependencies.push(path);
+                *sound_handle = handle.typed();
+            }
 
             let atlas_handle = load_context.set_labeled_asset(
                 "atlas",
@@ -260,7 +272,7 @@ impl AssetLoader for PlayerMetaLoader {
             );
             meta.spritesheet.atlas_handle = AssetHandle::new(atlas_path, atlas_handle);
 
-            load_context.set_default_asset(LoadedAsset::new(meta));
+            load_context.set_default_asset(LoadedAsset::new(meta).with_dependencies(dependencies));
 
             Ok(())
         })
@@ -354,41 +366,63 @@ impl AssetLoader for MapElementMetaLoader {
 
             let mut dependencies = Vec::new();
 
-            // Load the element script
-            for script in &meta.scripts {
-                let (script_path, script_handle) =
-                    get_relative_asset(load_context, self_path, script);
-                meta.script_handles
-                    .push(AssetHandle::new(script_path.clone(), script_handle.typed()));
-                dependencies.push(script_path);
-            }
+            // // Load the element script
+            // for script in &meta.scripts {
+            //     let (script_path, script_handle) =
+            //         get_relative_asset(load_context, self_path, script);
+            //     meta.script_handles
+            //         .push(AssetHandle::new(script_path.clone(), script_handle.typed()));
+            //     dependencies.push(script_path);
+            // }
 
             // Load assets for built-in types
             match &mut meta.builtin {
                 BuiltinElementKind::None => (),
                 BuiltinElementKind::PlayerSpawner => (),
-                BuiltinElementKind::Sproinger {
-                    atlas,
-                    atlas_handle,
-                }
-                | BuiltinElementKind::AnimatedDecoration {
+                BuiltinElementKind::AnimatedDecoration {
                     atlas,
                     atlas_handle,
                     ..
-                }
-                | BuiltinElementKind::Sword {
-                    atlas,
-                    atlas_handle,
                 } => {
                     let (path, handle) = get_relative_asset(load_context, self_path, atlas);
                     *atlas_handle = AssetHandle::new(path.clone(), handle.typed());
                     dependencies.push(path);
+                }
+                BuiltinElementKind::Sword {
+                    atlas,
+                    atlas_handle,
+                    sound,
+                    sound_handle,
+                } => {
+                    let (path, handle) = get_relative_asset(load_context, self_path, atlas);
+                    *atlas_handle = AssetHandle::new(path.clone(), handle.typed());
+                    dependencies.push(path);
+
+                    let (path, handle) = get_relative_asset(load_context, self_path, sound);
+                    dependencies.push(path);
+                    *sound_handle = handle.typed();
+                }
+                BuiltinElementKind::Sproinger {
+                    atlas,
+                    atlas_handle,
+                    sound,
+                    sound_handle,
+                } => {
+                    let (path, handle) = get_relative_asset(load_context, self_path, atlas);
+                    *atlas_handle = AssetHandle::new(path.clone(), handle.typed());
+                    dependencies.push(path);
+
+                    let (path, handle) = get_relative_asset(load_context, self_path, sound);
+                    dependencies.push(path);
+                    *sound_handle = handle.typed();
                 }
                 BuiltinElementKind::Grenades {
                     atlas,
                     atlas_handle,
                     explosion_atlas,
                     explosion_atlas_handle,
+                    explosion_sound,
+                    explosion_sound_handle,
                     ..
                 } => {
                     for (atlas, atlas_handle) in [
@@ -399,6 +433,10 @@ impl AssetLoader for MapElementMetaLoader {
                         *atlas_handle = AssetHandle::new(path.clone(), handle.typed());
                         dependencies.push(path);
                     }
+                    let (sound_path, sound_handle) =
+                        get_relative_asset(load_context, self_path, explosion_sound);
+                    dependencies.push(sound_path);
+                    *explosion_sound_handle = sound_handle.typed();
                 }
             }
 

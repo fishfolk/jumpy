@@ -1,5 +1,3 @@
-use crate::metadata::BuiltinElementKind;
-
 use super::*;
 
 const FORCE: f32 = 30.0;
@@ -58,14 +56,33 @@ fn pre_update_in_game(
 }
 
 fn update_in_game(
-    mut sproingers: Query<(Entity, &mut Sproinger, &mut AnimatedSprite)>,
+    mut sproingers: Query<(
+        Entity,
+        &mut Sproinger,
+        &Handle<MapElementMeta>,
+        &mut AnimatedSprite,
+    )>,
     mut bodies: Query<&mut KinematicBody>,
     collision_world: CollisionWorld,
+    element_assets: ResMut<Assets<MapElementMeta>>,
+    player_inputs: Res<PlayerInputs>,
+    sound_effects: Res<AudioChannel<EffectsChannel>>,
 ) {
-    for (sproinger_ent, mut sproinger, mut sprite) in &mut sproingers {
+    for (sproinger_ent, mut sproinger, meta_handle, mut sprite) in &mut sproingers {
+        let meta = element_assets.get(meta_handle).unwrap();
+        let BuiltinElementKind::Sproinger { sound_handle, .. } = &meta.builtin else {
+            continue;
+        };
+
         if sproinger.sproinging {
             match sproinger.frame {
-                1 => sprite.index = 2,
+                1 => {
+                    // Only play the sound effect if this is a frame that will not be rolled back
+                    if player_inputs.is_confirmed {
+                        sound_effects.play(sound_handle.clone_weak());
+                    }
+                    sprite.index = 2
+                }
                 4 => sprite.index = 3,
                 8 => sprite.index = 4,
                 12 => sprite.index = 5,

@@ -45,10 +45,6 @@ playlist:
   - music/krill_or_be_krilled.ogg
   - music/whale_theme.ogg
 
-scripts:
-  - map/scripts/kill_out_of_bounds.ts
-  - ui/menu-background-zoom.ts
-
 main_menu:
   title_font:
     family: fairfax

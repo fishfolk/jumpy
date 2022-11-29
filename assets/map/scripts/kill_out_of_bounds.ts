@@ -1,3 +1,8 @@
+/**
+ * TODO: Migrate to rust.
+ * 
+ * This script isn't currently running.
+ */
 const killZoneBorder = 500;
 
 export default {

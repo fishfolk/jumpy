@@ -173,8 +173,8 @@ impl From<ParallaxLayerMeta> for ParallaxLayerData {
 pub struct MapElementMeta {
     pub name: String,
     pub category: String,
-    #[serde(default)]
-    pub scripts: Vec<String>,
+    // #[serde(default)]
+    // pub scripts: Vec<String>,
     #[serde(default)]
     #[has_load_progress(none)]
     pub builtin: BuiltinElementKind,
@@ -183,8 +183,8 @@ pub struct MapElementMeta {
     #[serde(default = "editor_size_default")]
     pub editor_size: Vec2,
 
-    #[serde(skip)]
-    pub script_handles: Vec<AssetHandle<JsScript>>,
+    // #[serde(skip)]
+    // pub script_handles: Vec<AssetHandle<JsScript>>,
     /// Assets that should be pre-loaded by the game before starting
     #[serde(default)]
     pub preload_assets: Vec<String>,
@@ -218,6 +218,9 @@ pub enum BuiltinElementKind {
         explosion_lifetime: f32,
         explosion_frames: usize,
         explosion_fps: f32,
+        explosion_sound: String,
+        #[serde(skip)]
+        explosion_sound_handle: Handle<AudioSource>,
         /// The time in seconds before a grenade explodes
         fuse_time: f32,
         #[serde(default)]
@@ -244,11 +247,17 @@ pub enum BuiltinElementKind {
         atlas: String,
         #[serde(skip)]
         atlas_handle: AssetHandle<TextureAtlas>,
+        sound: String,
+        #[serde(skip)]
+        sound_handle: Handle<AudioSource>,
     },
     /// This is a sword
     Sword {
         atlas: String,
         #[serde(skip)]
         atlas_handle: AssetHandle<TextureAtlas>,
+        sound: String,
+        #[serde(skip)]
+        sound_handle: Handle<AudioSource>,
     },
 }

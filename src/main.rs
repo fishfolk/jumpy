@@ -47,7 +47,7 @@ pub mod prelude;
 pub mod random;
 pub mod run_criteria;
 pub mod schedule;
-pub mod scripting;
+// pub mod scripting;
 pub mod session;
 pub mod ui;
 pub mod utils;
@@ -74,7 +74,6 @@ use crate::{
     player::PlayerPlugin,
     prelude::*,
     random::RandomPlugin,
-    scripting::ScriptingPlugin,
     session::SessionPlugin,
     ui::UiPlugin,
     utils::{is_in_game_run_criteria, UtilsPlugin},
@@ -232,7 +231,7 @@ pub fn main() {
         .add_plugin(WorkaroundsPlugin)
         .add_plugin(DebugPlugin)
         .add_plugin(RandomPlugin)
-        .add_plugin(ScriptingPlugin)
+        // .add_plugin(ScriptingPlugin)
         .add_plugin(NetworkingPlugin)
         .add_plugin(SessionPlugin);
 

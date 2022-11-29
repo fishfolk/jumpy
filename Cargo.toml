@@ -36,7 +36,7 @@ bevy_egui = "0.16.1"
 bevy_fluent = "0.4.0"
 bevy_ggrs = { git = "https://github.com/zicklag/bevy_ggrs.git", branch = "jumpy" }
 bevy_kira_audio = { version = "0.12.0", features = ["ogg"], default-features = false }
-bevy_mod_js_scripting = { git = "https://github.com/zicklag/bevy_mod_js_scripting.git", branch = "jumpy" }
+# bevy_mod_js_scripting = { git = "https://github.com/zicklag/bevy_mod_js_scripting.git", branch = "jumpy" }
 bevy_prototype_lyon = "0.6.0"
 bevy_tweening = { version = "0.5", default-features = false }
 bitfield = "0.14.0"
@@ -69,6 +69,7 @@ thiserror = "1.0.31"
 tracing = { version = "0.1.37", features = ["release_max_level_debug"] }
 turborand = { version = "0.8.0", features = ["atomic", "serialize"] }
 unic-langid = "0.9.0"
+serde_json = "1.0.89"
 
 [dependencies.bevy]
 version = "0.8"

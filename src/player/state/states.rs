@@ -3,6 +3,7 @@ use crate::prelude::*;
 use crate::{
     animation::AnimationBankSprite,
     item::Item,
+    metadata::PlayerMeta,
     physics::collisions::CollisionWorld,
     physics::KinematicBody,
     player::{

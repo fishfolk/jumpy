@@ -2,7 +2,6 @@ use bevy::{ecs::system::SystemParam, render::camera::ScalingMode};
 use bevy_egui::{egui, EguiContext};
 use bevy_fluent::Locale;
 use bevy_has_load_progress::{HasLoadProgress, LoadingResources};
-use bevy_mod_js_scripting::ActiveScripts;
 use leafwing_input_manager::{
     axislike::{AxisType, SingleAxis},
     prelude::InputMap,
@@ -99,7 +98,7 @@ pub struct GameLoader<'w, 's> {
     game_assets: ResMut<'w, Assets<GameMeta>>,
     egui_ctx: Option<ResMut<'w, EguiContext>>,
     events: EventReader<'w, 's, AssetEvent<GameMeta>>,
-    active_scripts: ResMut<'w, ActiveScripts>,
+    // active_scripts: ResMut<'w, ActiveScripts>,
     storage: ResMut<'w, Storage>,
     player_assets: ResMut<'w, Assets<PlayerMeta>>,
     texture_atlas_assets: Res<'w, Assets<TextureAtlas>>,
@@ -126,7 +125,7 @@ impl<'w, 's> GameLoader<'w, 's> {
             game_handle,
             mut game_assets,
             mut egui_ctx,
-            mut active_scripts,
+            // mut active_scripts,
             mut clear_color,
             mut storage,
             mut player_assets,
@@ -142,10 +141,10 @@ impl<'w, 's> GameLoader<'w, 's> {
                 // event, we need to skip the next update event.
                 *skip_next_asset_update_event = true;
 
-                // Clear the active scripts
-                active_scripts.clear();
+                // // Clear the active scripts
+                // active_scripts.clear();
 
-            // One-time initialization
+                // One-time initialization
             } else {
                 if let Some(ctx) = egui_ctx.as_mut() {
                     // Initialize empty fonts for all game fonts.
@@ -238,10 +237,10 @@ impl<'w, 's> GameLoader<'w, 's> {
                 }
             }
 
-            // Set the active scripts
-            for script_handle in &game.script_handles {
-                active_scripts.insert(script_handle.inner.clone_weak());
-            }
+            // // Set the active scripts
+            // for script_handle in &game.script_handles {
+            //     active_scripts.insert(script_handle.inner.clone_weak());
+            // }
 
             // Insert the game resource
             commands.insert_resource(game.clone());

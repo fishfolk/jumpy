@@ -1,5 +1,15 @@
 name: Catty
 
+sounds:
+  jump: ../../sounds/jump.ogg
+  jump_volume: 0.05
+  land: ../../sounds/land.ogg
+  land_volume: 0.05
+  grab: ../../sounds/grab.ogg
+  grab_volume: 0.05
+  drop: ../../sounds/drop.ogg
+  drop_volume: 0.05
+
 spritesheet:
   image: catty.png
   tile_size: [96, 80]

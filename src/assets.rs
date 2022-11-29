@@ -252,6 +252,8 @@ impl AssetLoader for PlayerMetaLoader {
             for (sound, sound_handle) in [
                 (&meta.sounds.jump, &mut meta.sounds.jump_handle),
                 (&meta.sounds.land, &mut meta.sounds.land_handle),
+                (&meta.sounds.grab, &mut meta.sounds.grab_handle),
+                (&meta.sounds.drop, &mut meta.sounds.drop_handle),
             ] {
                 let (path, handle) = get_relative_asset(load_context, self_path, sound);
                 dependencies.push(path);

@@ -52,6 +52,16 @@ pub struct PlayerSounds {
     pub jump_volume: f32,
     #[serde(skip)]
     pub jump_handle: Handle<AudioSource>,
+
+    pub grab: String,
+    pub grab_volume: f32,
+    #[serde(skip)]
+    pub grab_handle: Handle<AudioSource>,
+
+    pub drop: String,
+    pub drop_volume: f32,
+    #[serde(skip)]
+    pub drop_handle: Handle<AudioSource>,
 }
 
 impl PlayerSpritesheetMeta {

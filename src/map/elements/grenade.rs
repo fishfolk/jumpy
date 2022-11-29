@@ -211,7 +211,7 @@ fn update_idle_grenades(
         // If the item is dropped
         if let Some(dropped) = dropped {
             commands.entity(item_ent).remove::<ItemDropped>();
-            let (.., player_transform, player_body) =
+            let (player_sprite, player_transform, player_body) =
                 players.get(dropped.player).expect("Parent is not a player");
 
             // Re-activate physics
@@ -223,8 +223,15 @@ fn update_idle_grenades(
             body.velocity = player_body.velocity;
             body.is_spawning = true;
 
+            let horizontal_flip_factor = if player_sprite.flip_x {
+                Vec2::new(-1.0, 1.0)
+            } else {
+                Vec2::ONE
+            };
+
             // Drop item at player position
-            transform.translation = player_transform.translation + grab_offset.extend(0.0);
+            transform.translation =
+                player_transform.translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
         }
     }
 }

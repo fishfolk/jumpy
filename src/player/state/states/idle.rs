@@ -31,12 +31,17 @@ pub fn handle_player_state(
         Entity,
         &PlayerState,
         &PlayerIdx,
+        &Handle<PlayerMeta>,
         &mut AnimationBankSprite,
         &mut KinematicBody,
     )>,
     collision_world: CollisionWorld,
+    player_assets: Res<Assets<PlayerMeta>>,
+    effects: Res<AudioChannel<EffectsChannel>>,
 ) {
-    for (player_ent, player_state, player_idx, mut sprite, mut body) in &mut players {
+    for (player_ent, player_state, player_idx, meta_handle, mut sprite, mut body) in &mut players {
+        let meta = player_assets.get(meta_handle).unwrap();
+
         if player_state.id != ID {
             continue;
         }
@@ -78,12 +83,26 @@ pub fn handle_player_state(
                 // Grab the first item we are touching
                 if let Some((item, _)) = colliders.get(0) {
                     commands.add(PlayerSetInventoryCommand::new(player_ent, Some(*item)));
+
+                    // Play grab sound
+                    if player_inputs.is_confirmed {
+                        effects
+                            .play(meta.sounds.grab_handle.clone_weak())
+                            .with_volume(meta.sounds.grab_volume as _);
+                    }
                 }
 
             // If we are already carrying an item
             } else {
                 // Drop it
                 commands.add(PlayerSetInventoryCommand::new(player_ent, None));
+
+                // Play drop sound
+                if player_inputs.is_confirmed {
+                    effects
+                        .play(meta.sounds.drop_handle.clone_weak())
+                        .with_volume(meta.sounds.drop_volume as _);
+                }
             }
         }
 
@@ -94,6 +113,15 @@ pub fn handle_player_state(
 
         // If we are jumping
         if control.jump_just_pressed {
+            // Play jump sound
+            if player_inputs.is_confirmed {
+                effects
+                    .play(meta.sounds.jump_handle.clone_weak())
+                    // TODO: This volume should be relative to the current channel volume, not
+                    // hard-coded, so that when the user changes the sound effect volume it's relative.
+                    .with_volume(meta.sounds.jump_volume as _);
+            }
+
             // Move up
             body.velocity.y = JUMP_SPEED;
         }

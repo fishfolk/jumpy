@@ -84,12 +84,26 @@ pub fn handle_player_state(
                 // Grab the first item we are touching
                 if let Some((item, _)) = colliders.get(0) {
                     commands.add(PlayerSetInventoryCommand::new(player_ent, Some(*item)));
+
+                    // Play grab sound
+                    if player_inputs.is_confirmed {
+                        effects
+                            .play(meta.sounds.grab_handle.clone_weak())
+                            .with_volume(meta.sounds.grab_volume as _);
+                    }
                 }
 
             // If we are already carrying an item
             } else {
                 // Drop it
                 commands.add(PlayerSetInventoryCommand::new(player_ent, None));
+
+                // Play drop sound
+                if player_inputs.is_confirmed {
+                    effects
+                        .play(meta.sounds.drop_handle.clone_weak())
+                        .with_volume(meta.sounds.drop_volume as _);
+                }
             }
         }
 

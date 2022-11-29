@@ -244,6 +244,7 @@ pub enum BuiltinElementKind {
         atlas: String,
         #[serde(skip)]
         atlas_handle: AssetHandle<TextureAtlas>,
+        sound: SoundMeta,
     },
     /// This is a sword
     Sword {

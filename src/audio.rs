@@ -15,11 +15,14 @@ impl Plugin for AudioPlugin {
             .init_resource::<CurrentMusic>()
             .init_resource::<ShuffledPlaylist>()
             .add_audio_channel::<MusicChannel>()
+            .add_audio_channel::<EffectsChannel>()
+            .add_startup_system(setup_audio_defaults)
             .add_system(music_system.run_if_resource_exists::<GameMeta>());
     }
 }
 
 pub struct MusicChannel;
+pub struct EffectsChannel;
 
 #[derive(Clone, Debug, Default)]
 pub struct CurrentMusic {
@@ -29,6 +32,14 @@ pub struct CurrentMusic {
 
 #[derive(Deref, DerefMut, Clone, Debug, Default)]
 pub struct ShuffledPlaylist(pub Vec<Handle<AudioSource>>);
+
+fn setup_audio_defaults(
+    music: Res<AudioChannel<MusicChannel>>,
+    effects: Res<AudioChannel<EffectsChannel>>,
+) {
+    music.set_volume(0.15);
+    effects.set_volume(0.075);
+}
 
 /// Loops through all the game music as the game is on.
 fn music_system(

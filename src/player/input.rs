@@ -99,12 +99,16 @@ pub enum PlayerAction {
 #[derive(Reflect, Clone, Debug, Component)]
 #[reflect(Default, Resource)]
 pub struct PlayerInputs {
+    /// This will be `true` if _all_ of the inputs for all players for this frame have been
+    /// confirmed and will not be rolled back.
+    pub is_confirmed: bool,
     pub players: Vec<PlayerInput>,
 }
 
 impl Default for PlayerInputs {
     fn default() -> Self {
         Self {
+            is_confirmed: false,
             players: vec![default(); MAX_PLAYERS],
             // has_updated: false,
         }
@@ -218,6 +222,11 @@ fn update_user_input(
     inputs: Res<Vec<(DensePlayerControl, InputStatus)>>,
     mut player_inputs: ResMut<PlayerInputs>,
 ) {
+    player_inputs.is_confirmed = inputs
+        .iter()
+        .map(|x| x.1)
+        .all(|x| x == InputStatus::Confirmed);
+
     for (player_idx, (input, _)) in inputs.iter().enumerate() {
         let PlayerInput {
             control,

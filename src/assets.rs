@@ -367,11 +367,7 @@ impl AssetLoader for MapElementMetaLoader {
             match &mut meta.builtin {
                 BuiltinElementKind::None => (),
                 BuiltinElementKind::PlayerSpawner => (),
-                BuiltinElementKind::Sproinger {
-                    atlas,
-                    atlas_handle,
-                }
-                | BuiltinElementKind::AnimatedDecoration {
+                BuiltinElementKind::AnimatedDecoration {
                     atlas,
                     atlas_handle,
                     ..
@@ -383,6 +379,20 @@ impl AssetLoader for MapElementMetaLoader {
                     let (path, handle) = get_relative_asset(load_context, self_path, atlas);
                     *atlas_handle = AssetHandle::new(path.clone(), handle.typed());
                     dependencies.push(path);
+                }
+                BuiltinElementKind::Sproinger {
+                    atlas,
+                    atlas_handle,
+                    sound,
+                } => {
+                    let (path, handle) = get_relative_asset(load_context, self_path, atlas);
+                    *atlas_handle = AssetHandle::new(path.clone(), handle.typed());
+                    dependencies.push(path);
+
+                    let (sound_path, sound_handle) =
+                        get_relative_asset(load_context, self_path, &sound.file);
+                    dependencies.push(sound_path);
+                    sound.handle = sound_handle.typed();
                 }
                 BuiltinElementKind::Grenades {
                     atlas,

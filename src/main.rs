@@ -26,6 +26,7 @@ static GLOBAL: MiMalloc = MiMalloc;
 
 pub mod animation;
 pub mod assets;
+pub mod audio;
 pub mod camera;
 pub mod config;
 pub mod damage;
@@ -55,6 +56,7 @@ pub mod workarounds;
 use crate::{
     animation::AnimationPlugin,
     assets::AssetPlugin,
+    audio::AudioPlugin,
     camera::CameraPlugin,
     damage::DamagePlugin,
     debug::DebugPlugin,
@@ -211,6 +213,7 @@ pub fn main() {
     .add_plugin(UiPlugin);
 
     app.add_plugin(bevy_tweening::TweeningPlugin)
+        .add_plugin(AudioPlugin)
         .add_plugin(UtilsPlugin)
         .add_plugin(MetadataPlugin)
         .add_plugin(PlatformPlugin)

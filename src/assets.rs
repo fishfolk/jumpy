@@ -137,6 +137,13 @@ impl AssetLoader for GameMetaLoader {
             );
             dependencies.push(main_menu_background_path);
 
+            // Load the music playlist
+            for song in &meta.playlist {
+                let (path, handle) = get_relative_asset(load_context, self_path, song);
+                dependencies.push(path.clone());
+                meta.playlist_handles.push(handle.typed());
+            }
+
             // Load UI border images
             let mut load_border_image = |border: &mut BorderImageMeta| {
                 let (path, handle) = get_relative_asset(load_context, self_path, &border.image);

@@ -1,3 +1,7 @@
+/**
+ * TODO: Migrate to Rust
+ */
+
 type MenuBackground = unknown;
 const MenuBackground: BevyType<MenuBackground> = {
   typeName: "jumpy::ui::main_menu::MainMenuBackground",

@@ -7,7 +7,7 @@ impl Plugin for PlayerSpawnerPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<CurrentPlayerSpawner>()
             .extend_rollback_schedule(|schedule| {
-                schedule.add_system_to_stage(RollbackStage::PreUpdateInGame, pre_update_in_game);
+                schedule.add_system_to_stage(RollbackStage::PreUpdate, pre_update_in_game);
             })
             .extend_rollback_plugin(|plugin| {
                 plugin

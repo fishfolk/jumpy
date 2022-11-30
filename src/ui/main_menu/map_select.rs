@@ -138,9 +138,6 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                         params
                                             .commands
                                             .insert_resource(NextState(GameState::InGame));
-                                        params
-                                            .commands
-                                            .insert_resource(NextState(InGameState::Playing));
 
                                         if let Some(client) = &mut params.client {
                                             client.send_reliable(
@@ -175,9 +172,6 @@ fn handle_match_setup_messages(params: &mut MapSelectMenu) {
                         params
                             .commands
                             .insert_resource(NextState(GameState::InGame));
-                        params
-                            .commands
-                            .insert_resource(NextState(InGameState::Playing));
                     }
                     other => warn!("Unexpected message: {other:?}"),
                 },

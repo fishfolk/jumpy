@@ -111,7 +111,7 @@ impl<'w, 's> ResetManager<'w, 's> {
 }
 
 /// Heper stage run criteria that only runs if we are in a gameplay state.
-pub fn is_in_game_run_criteria(
+pub fn run_criteria_game_not_paused(
     game_state: Option<Res<CurrentState<GameState>>>,
     in_game_state: Option<Res<CurrentState<InGameState>>>,
 ) -> ShouldRun {

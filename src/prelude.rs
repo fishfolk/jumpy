@@ -3,7 +3,7 @@ pub use crate::{
     audio::{EffectsChannel, MusicChannel},
     schedule::RollbackScheduleAppExt,
     utils::event::FixedUpdateEventAppExt,
-    GameState, InGameState, RollbackStage,
+    GameEditorState, GameState, InGameState, RollbackStage,
 };
 pub use bevy::prelude::*;
 pub use bevy_ggrs::{Rollback, RollbackIdProvider};

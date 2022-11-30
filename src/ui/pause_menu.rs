@@ -5,6 +5,7 @@ use crate::{
     localization::LocalizationExt,
     metadata::{GameMeta, MapMeta},
     networking::client::NetClient,
+    player::input::WantsGamePause,
     prelude::*,
     session::SessionManager,
     ui::input::MenuAction,
@@ -60,7 +61,7 @@ impl Plugin for PausePlugin {
 fn pause_system(mut commands: Commands, input: Query<&ActionState<MenuAction>>) {
     let input = input.single();
     if input.just_pressed(MenuAction::Pause) {
-        commands.insert_resource(NextState(InGameState::Paused));
+        commands.insert_resource(WantsGamePause(true));
     }
 }
 
@@ -73,7 +74,7 @@ fn unpause_system(
     let input = input.single();
     if input.just_pressed(MenuAction::Pause) {
         *pause_page = default();
-        commands.insert_resource(NextState(InGameState::Playing));
+        commands.insert_resource(WantsGamePause(false));
     }
 }
 
@@ -150,7 +151,7 @@ pub fn pause_menu_default(
                         }
 
                         if continue_button.clicked() {
-                            commands.insert_resource(NextState(InGameState::Playing));
+                            commands.insert_resource(WantsGamePause(false));
                         }
 
                         ui.scope(|ui| {
@@ -175,7 +176,6 @@ pub fn pause_menu_default(
                             .show(ui)
                             .clicked()
                             {
-                                commands.insert_resource(NextState(InGameState::Playing));
                                 let map_handle = map_handle.get_single().ok().cloned();
                                 reset_controller.reset_world();
 
@@ -196,7 +196,7 @@ pub fn pause_menu_default(
                             .show(ui)
                             .clicked()
                             {
-                                commands.insert_resource(NextState(InGameState::Editing));
+                                commands.insert_resource(NextState(GameEditorState::Visible));
                             }
                         });
 

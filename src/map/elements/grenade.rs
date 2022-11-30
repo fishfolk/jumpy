@@ -38,12 +38,12 @@ impl Plugin for GrenadePlugin {
     fn build(&self, app: &mut App) {
         app.extend_rollback_schedule(|schedule| {
             schedule
-                .add_system_to_stage(RollbackStage::PreUpdateInGame, pre_update_in_game)
+                .add_system_to_stage(RollbackStage::PreUpdate, pre_update_in_game)
                 .add_system_to_stage(
-                    RollbackStage::UpdateInGame,
+                    RollbackStage::Update,
                     update_lit_grenades.before(update_idle_grenades),
                 )
-                .add_system_to_stage(RollbackStage::UpdateInGame, update_idle_grenades);
+                .add_system_to_stage(RollbackStage::Update, update_idle_grenades);
         })
         .extend_rollback_plugin(|plugin| {
             plugin

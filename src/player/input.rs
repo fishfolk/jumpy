@@ -25,11 +25,17 @@ impl Plugin for PlayerInputPlugin {
             .add_system_to_stage(CoreStage::Last, clear_input_buffer)
             .extend_rollback_plugin(|plugin| plugin.register_rollback_type::<PlayerInputs>())
             .extend_rollback_schedule(|schedule| {
-                schedule.add_system_to_stage(RollbackStage::PreUpdate, update_user_input);
-                // .add_system_to_stage(FixedUpdateStage::Last, reset_input);
+                schedule.add_system_to_stage(RollbackStage::Input, update_user_input);
             });
     }
 }
+
+/// This is a resource that gets inserted every time the menu wants to modify the pause state of the
+/// game.
+///
+/// The resource is removed every time it is read, so it will only be present in the world when
+/// there is an intent to change the pause state.
+pub struct WantsGamePause(pub bool);
 
 /// A buffer holding the player inputs until they are read by the game simulation.
 #[derive(Reflect, Default)]
@@ -79,10 +85,20 @@ fn clear_input_buffer(mut buffer: ResMut<LocalPlayerInputBuffer>) {
 /// The GGRS input system
 pub fn input_system(
     player_handle: In<PlayerHandle>,
+    mut commands: Commands,
     mut buffer: ResMut<LocalPlayerInputBuffer>,
+    wants_game_pause: Option<Res<WantsGamePause>>,
 ) -> DensePlayerControl {
     buffer.has_been_read = true;
-    buffer.players[player_handle.0]
+    let mut input = buffer.players[player_handle.0];
+
+    if let Some(wants_game_pause) = wants_game_pause {
+        commands.remove_resource::<WantsGamePause>();
+        input.set_wants_to_set_pause(true);
+        input.set_pause_value(wants_game_pause.0);
+    }
+
+    input
 }
 
 /// The control inputs that a player may make.
@@ -100,7 +116,7 @@ pub enum PlayerAction {
 #[reflect(Default, Resource)]
 pub struct PlayerInputs {
     /// This will be `true` if _all_ of the inputs for all players for this frame have been
-    /// confirmed and will not be rolled back.
+    /// confirmed ( so presumably will not be rolled back ).
     pub is_confirmed: bool,
     pub players: Vec<PlayerInput>,
 }
@@ -157,21 +173,24 @@ bitfield::bitfield! {
     /// This is used when sending player inputs across the network.
     #[derive(bytemuck::Pod, bytemuck::Zeroable, Copy, Clone, PartialEq, Eq, Reflect)]
     #[repr(transparent)]
-    pub struct DensePlayerControl(u16);
+    pub struct DensePlayerControl(u32);
     impl Debug;
     jump_pressed, set_jump_pressed: 0;
     shoot_pressed, set_shoot_pressed: 1;
     grab_pressed, set_grab_pressed: 2;
     slide_pressed, set_slide_pressed: 3;
     from into DenseMoveDirection, move_direction, set_move_direction: 15, 4;
+    /// This bit will be set if this player wants to try and pause or un-pause the game
+    wants_to_set_pause, set_wants_to_set_pause: 16;
+    /// This value is only relevant if `wants_to_set_pause` is true, and it indicates whether the
+    /// player wants to pause or unpause the game.
+    pause_value, set_pause_value: 17;
 }
 
 impl Default for DensePlayerControl {
     fn default() -> Self {
         let mut control = Self(0);
-
         control.set_move_direction(default());
-
         control
     }
 }
@@ -183,10 +202,10 @@ struct DenseMoveDirection(pub Vec2);
 
 /// This is the specific [`Quantized`] type that we use to represent movement directions in
 /// [`DenseMoveDirection`].
-type MoveDirQuant = Quantized<IntRange<u16, 0b111111, -1, 1>>;
+type MoveDirQuant = Quantized<IntRange<u32, 0b111111, -1, 1>>;
 
-impl From<u16> for DenseMoveDirection {
-    fn from(bits: u16) -> Self {
+impl From<u32> for DenseMoveDirection {
+    fn from(bits: u32) -> Self {
         // maximum movement value representable, we use 6 bits to represent each movement direction.
         let max = 0b111111;
         // The first six bits represent the x movement
@@ -208,7 +227,7 @@ impl From<u16> for DenseMoveDirection {
     }
 }
 
-impl From<DenseMoveDirection> for u16 {
+impl From<DenseMoveDirection> for u32 {
     fn from(dir: DenseMoveDirection) -> Self {
         let x_bits = MoveDirQuant::from_f32(dir.x).raw();
         let y_bits = MoveDirQuant::from_f32(dir.y).raw();
@@ -219,6 +238,7 @@ impl From<DenseMoveDirection> for u16 {
 
 /// Updates the [`PlayerInputs`] resource from input collected from GGRS.
 fn update_user_input(
+    mut commands: Commands,
     inputs: Res<Vec<(DensePlayerControl, InputStatus)>>,
     mut player_inputs: ResMut<PlayerInputs>,
 ) {
@@ -226,6 +246,19 @@ fn update_user_input(
         .iter()
         .map(|x| x.1)
         .all(|x| x == InputStatus::Confirmed);
+
+    let someone_wants_to_pause = inputs
+        .iter()
+        .any(|x| x.0.wants_to_set_pause() && x.0.pause_value());
+    let someone_wants_to_unpause = inputs
+        .iter()
+        .any(|x| x.0.wants_to_set_pause() && !x.0.pause_value());
+
+    if someone_wants_to_pause {
+        commands.insert_resource(NextState(InGameState::Paused));
+    } else if someone_wants_to_unpause {
+        commands.insert_resource(NextState(InGameState::Playing));
+    }
 
     for (player_idx, (input, _)) in inputs.iter().enumerate() {
         let PlayerInput {

@@ -7,6 +7,12 @@ pub enum ReliableGameMessageKind {
     MatchSetup(match_setup::MatchSetupMessage),
 }
 
+impl From<match_setup::MatchSetupMessage> for ReliableGameMessageKind {
+    fn from(x: match_setup::MatchSetupMessage) -> Self {
+        Self::MatchSetup(x)
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RecvReliableGameMessage {
     pub from_player_idx: usize,
@@ -28,12 +34,6 @@ impl From<bevy_ggrs::ggrs::Message> for UnreliableGameMessageKind {
 pub struct RecvUnreliableGameMessage {
     pub from_player_idx: usize,
     pub kind: UnreliableGameMessageKind,
-}
-
-impl From<match_setup::MatchSetupMessage> for ReliableGameMessageKind {
-    fn from(x: match_setup::MatchSetupMessage) -> Self {
-        Self::MatchSetup(x)
-    }
 }
 
 /// A resource indicating which player this game client represents, and how many players there are

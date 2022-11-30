@@ -76,7 +76,7 @@ use crate::{
     random::RandomPlugin,
     session::SessionPlugin,
     ui::UiPlugin,
-    utils::{is_in_game_run_criteria, UtilsPlugin},
+    utils::{run_criteria_game_not_paused, UtilsPlugin},
     workarounds::WorkaroundsPlugin,
 };
 
@@ -94,17 +94,21 @@ pub enum GameState {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum InGameState {
     Playing,
-    Editing,
     Paused,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum GameEditorState {
+    Hidden,
+    Visible,
 }
 
 #[derive(StageLabel)]
 pub enum RollbackStage {
+    Input,
     First,
     PreUpdate,
-    PreUpdateInGame,
     Update,
-    UpdateInGame,
     PostUpdate,
     Last,
 }
@@ -154,7 +158,8 @@ pub fn main() {
 
     // Set initial game state
     app.add_loopless_state(GameState::LoadingPlatformStorage)
-        .add_loopless_state(InGameState::Playing);
+        .add_loopless_state(InGameState::Playing)
+        .add_loopless_state(GameEditorState::Hidden);
 
     // Create the GGRS rollback schedule and plugin
     let mut rollback_schedule = Schedule::default();
@@ -162,36 +167,31 @@ pub fn main() {
 
     // Add fixed update stagesrefs/branchless/2fd80952e26d905aa258ebb7e6175a7cfc4cb76f
     rollback_schedule
-        .add_stage(RollbackStage::First, SystemStage::parallel())
+        .add_stage(RollbackStage::Input, SystemStage::parallel())
+        .add_stage_after(
+            RollbackStage::Input,
+            RollbackStage::First,
+            SystemStage::parallel().with_run_criteria(run_criteria_game_not_paused),
+        )
         .add_stage_after(
             RollbackStage::First,
             RollbackStage::PreUpdate,
-            SystemStage::parallel(),
+            SystemStage::parallel().with_run_criteria(run_criteria_game_not_paused),
         )
         .add_stage_after(
             RollbackStage::PreUpdate,
             RollbackStage::Update,
-            SystemStage::parallel(),
-        )
-        .add_stage_after(
-            RollbackStage::PreUpdate,
-            RollbackStage::PreUpdateInGame,
-            SystemStage::parallel().with_run_criteria(is_in_game_run_criteria),
+            SystemStage::parallel().with_run_criteria(run_criteria_game_not_paused),
         )
         .add_stage_after(
             RollbackStage::Update,
             RollbackStage::PostUpdate,
-            SystemStage::parallel(),
-        )
-        .add_stage_after(
-            RollbackStage::Update,
-            RollbackStage::UpdateInGame,
-            SystemStage::parallel().with_run_criteria(is_in_game_run_criteria),
+            SystemStage::parallel().with_run_criteria(run_criteria_game_not_paused),
         )
         .add_stage_after(
             RollbackStage::PostUpdate,
             RollbackStage::Last,
-            SystemStage::parallel(),
+            SystemStage::parallel().with_run_criteria(run_criteria_game_not_paused),
         );
 
     // Add the rollback schedule and plugin as resources, temporarily.

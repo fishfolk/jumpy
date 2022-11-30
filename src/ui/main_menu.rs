@@ -314,7 +314,7 @@ impl<'w, 's> WidgetSystem for HomeMenu<'w, 's> {
                     {
                         params
                             .commands
-                            .insert_resource(NextState(InGameState::Editing));
+                            .insert_resource(NextState(GameEditorState::Visible));
                         params
                             .commands
                             .insert_resource(NextState(GameState::InGame));

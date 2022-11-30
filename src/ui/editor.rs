@@ -27,18 +27,17 @@ impl Plugin for EditorPlugin {
             .add_system(
                 editor_update
                     .run_in_state(GameState::InGame)
-                    .run_in_state(InGameState::Editing),
+                    .run_in_state(GameEditorState::Visible),
             )
             .add_system(
                 editor_ui_system
                     .into_conditional_exclusive()
                     .run_in_state(GameState::InGame)
-                    .run_in_state(InGameState::Editing)
+                    .run_in_state(GameEditorState::Visible)
                     .at_end(),
             )
-            .add_enter_system(InGameState::Editing, setup_editor)
-            .add_exit_system(InGameState::Editing, cleanup_editor)
-            .add_exit_system(GameState::InGame, cleanup_editor);
+            .add_enter_system(GameEditorState::Visible, setup_editor)
+            .add_exit_system(GameEditorState::Visible, cleanup_editor);
     }
 }
 
@@ -227,7 +226,7 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                         params
                             .camera_commands_resetcontroller
                             .p1()
-                            .insert_resource(NextState(InGameState::Playing));
+                            .insert_resource(NextState(GameEditorState::Hidden));
                     }
 
                     let mut reset_controller = params.camera_commands_resetcontroller.p2();

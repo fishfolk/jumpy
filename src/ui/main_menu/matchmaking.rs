@@ -332,9 +332,16 @@ async fn impl_start_matchmaking(
 
         let (mut send, recv) = conn.open_bi().await?;
 
+        let jumpy_version = env!("CARGO_PKG_VERSION");
+
         let message = MatchmakerRequest::RequestMatch(MatchInfo {
             client_count: player_count,
-            match_data: b"jumpy_default_game".to_vec(),
+            match_data: b"jumpy_"
+                .iter()
+                .chain(jumpy_version.as_bytes().iter())
+                .chain(b"_default".iter())
+                .cloned()
+                .collect(),
         });
 
         let message = postcard::to_allocvec(&message)?;

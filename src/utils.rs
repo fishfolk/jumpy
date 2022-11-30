@@ -1,12 +1,8 @@
 use bevy::ecs::{schedule::ShouldRun, system::SystemParam};
-use bevy_ggrs::{
-    ggrs::{P2PSession, SyncTestSession},
-    ResetGGRSSession, SessionType,
-};
 
 use crate::{
     loading::PlayerInputCollector, map::elements::player_spawner::CurrentPlayerSpawner, prelude::*,
-    run_criteria::ShouldRunExt, ui::input::MenuAction, GgrsConfig,
+    run_criteria::ShouldRunExt, session::SessionManager, ui::input::MenuAction,
 };
 
 pub mod event;
@@ -80,6 +76,7 @@ pub struct ResetManager<'w, 's> {
         ),
     >,
     current_player_spawner: ResMut<'w, CurrentPlayerSpawner>,
+    session_manager: SessionManager<'w, 's>,
 }
 
 impl<'w, 's> ResetManager<'w, 's> {
@@ -102,11 +99,7 @@ impl<'w, 's> ResetManager<'w, 's> {
         **self.current_player_spawner = 0;
 
         // Clear the game session
-        self.commands.insert_resource(ResetGGRSSession);
-        self.commands.remove_resource::<SessionType>();
-        self.commands
-            .remove_resource::<SyncTestSession<GgrsConfig>>();
-        self.commands.remove_resource::<P2PSession<GgrsConfig>>();
+        self.session_manager.drop_session();
     }
 }
 

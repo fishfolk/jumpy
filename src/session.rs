@@ -5,8 +5,8 @@
 
 use bevy::ecs::system::SystemParam;
 use bevy_ggrs::{
-    ggrs::{self, NonBlockingSocket, SessionBuilder},
-    SessionType,
+    ggrs::{self, NonBlockingSocket, P2PSession, SessionBuilder, SyncTestSession},
+    ResetGGRSSession, SessionType,
 };
 use jumpy_matchmaker_proto::TargetClient;
 
@@ -69,6 +69,14 @@ impl NonBlockingSocket<usize> for NetClient {
 }
 
 impl<'w, 's> SessionManager<'w, 's> {
+    pub fn drop_session(&mut self) {
+        self.commands.insert_resource(ResetGGRSSession);
+        self.commands.remove_resource::<SessionType>();
+        self.commands.remove_resource::<P2PSession<GgrsConfig>>();
+        self.commands
+            .remove_resource::<SyncTestSession<GgrsConfig>>();
+    }
+
     /// Setup the game session
     pub fn start_session(&mut self) {
         const INPUT_DELAY: usize = 1;

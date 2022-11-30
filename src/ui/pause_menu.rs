@@ -12,29 +12,47 @@ use crate::{
     GameState,
 };
 
-use super::widgets::{
-    bordered_button::BorderedButton, bordered_frame::BorderedFrame, EguiContextExt, EguiUiExt,
+use super::{
+    main_menu::map_select::MapSelectMenu,
+    widget,
+    widgets::{
+        bordered_button::BorderedButton, bordered_frame::BorderedFrame, EguiContextExt, EguiUiExt,
+    },
+    WidgetId,
 };
 
 pub struct PausePlugin;
 
 impl Plugin for PausePlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(
-            unpause_system
-                .run_in_state(GameState::InGame)
-                .run_in_state(InGameState::Paused),
-        )
-        .add_system(
-            pause_system
-                .run_in_state(GameState::InGame)
-                .run_in_state(InGameState::Playing),
-        )
-        .add_system(
-            pause_menu
-                .run_in_state(GameState::InGame)
-                .run_in_state(InGameState::Paused),
-        );
+        app.init_resource::<PauseMenuPage>()
+            .add_system(
+                unpause_system
+                    .run_in_state(GameState::InGame)
+                    .run_in_state(InGameState::Paused),
+            )
+            .add_system(
+                pause_system
+                    .run_in_state(GameState::InGame)
+                    .run_in_state(InGameState::Playing),
+            )
+            .add_system(
+                pause_menu_default
+                    .run_in_state(GameState::InGame)
+                    .run_in_state(InGameState::Paused)
+                    .run_if_resource_equals(PauseMenuPage::Default),
+            );
+
+        {
+            app.add_system(
+                pause_menu_map_select
+                    .into_conditional_exclusive()
+                    .run_in_state(GameState::InGame)
+                    .run_in_state(InGameState::Paused)
+                    .run_if_resource_equals(PauseMenuPage::MapSelect)
+                    .at_end(),
+            );
+        }
     }
 }
 
@@ -47,20 +65,33 @@ fn pause_system(mut commands: Commands, input: Query<&ActionState<MenuAction>>) 
 }
 
 // Transition game out of paused state
-fn unpause_system(mut commands: Commands, input: Query<&ActionState<MenuAction>>) {
+fn unpause_system(
+    mut commands: Commands,
+    input: Query<&ActionState<MenuAction>>,
+    mut pause_page: ResMut<PauseMenuPage>,
+) {
     let input = input.single();
     if input.just_pressed(MenuAction::Pause) {
+        *pause_page = default();
         commands.insert_resource(NextState(InGameState::Playing));
     }
 }
 
-pub fn pause_menu(
+#[derive(Default, Eq, PartialEq, Copy, Clone)]
+pub enum PauseMenuPage {
+    #[default]
+    Default,
+    MapSelect,
+}
+
+pub fn pause_menu_default(
     mut commands: Commands,
     mut egui_context: ResMut<EguiContext>,
     game: Res<GameMeta>,
     localization: Res<Localization>,
     map_handle: Query<&AssetHandle<MapMeta>>,
     map_assets: Res<Assets<MapMeta>>,
+    mut pause_page: ResMut<PauseMenuPage>,
     mut reset_controller: ResetManager,
     client: Option<Res<NetClient>>,
     mut session_manager: SessionManager,
@@ -124,6 +155,18 @@ pub fn pause_menu(
 
                         ui.scope(|ui| {
                             ui.set_enabled(!is_online);
+
+                            if BorderedButton::themed(
+                                &ui_theme.button_styles.normal,
+                                &localization.get("map-select-title"),
+                            )
+                            .min_size(egui::vec2(width, 0.0))
+                            .show(ui)
+                            .clicked()
+                            {
+                                *pause_page = PauseMenuPage::MapSelect;
+                            }
+
                             if BorderedButton::themed(
                                 &ui_theme.button_styles.normal,
                                 &localization.get("restart"),
@@ -170,6 +213,16 @@ pub fn pause_menu(
                             ui.ctx().clear_focus();
                         }
                     });
-                })
+                });
         });
+}
+
+fn pause_menu_map_select(world: &mut World) {
+    world.resource_scope(|world: &mut World, mut egui_ctx: Mut<EguiContext>| {
+        egui::CentralPanel::default()
+            .frame(egui::Frame::none())
+            .show(egui_ctx.ctx_mut(), |ui| {
+                widget::<MapSelectMenu>(world, ui, WidgetId::new("map-select"), false);
+            });
+    });
 }

@@ -7,7 +7,7 @@ use crate::{
         client::NetClient,
         proto::{match_setup::MatchSetupMessage, ReliableGameMessageKind},
     },
-    session::SessionManager,
+    ui::pause_menu::PauseMenuPage,
 };
 
 use super::*;
@@ -15,13 +15,16 @@ use super::*;
 #[derive(SystemParam)]
 pub struct MapSelectMenu<'w, 's> {
     client: Option<Res<'w, NetClient>>,
+    menu_input: Query<'w, 's, &'static mut ActionState<MenuAction>>,
     menu_page: ResMut<'w, MenuPage>,
     game: Res<'w, GameMeta>,
+    game_state: Res<'w, CurrentState<GameState>>,
+    pause_page: ResMut<'w, PauseMenuPage>,
     commands: Commands<'w, 's>,
     localization: Res<'w, Localization>,
     map_assets: Res<'w, Assets<MapMeta>>,
     rids: ResMut<'w, RollbackIdProvider>,
-    session_manager: SessionManager<'w, 's>,
+    reset_manager: ResetManager<'w, 's>,
     #[system_param(ignore)]
     _phantom: PhantomData<(&'w (), &'s ())>,
 }
@@ -40,18 +43,33 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
 
         handle_match_setup_messages(&mut params);
 
+        let in_game = params.game_state.0 == GameState::InGame;
+
+        if params.menu_input.single().just_pressed(MenuAction::Back) {
+            // If we are on the main menu
+            if params.game_state.0 == GameState::MainMenu {
+                *params.menu_page = MenuPage::PlayerSelect;
+
+            // If we're on a map selection in game, we must be in the pause menu
+            } else if in_game {
+                *params.pause_page = PauseMenuPage::Default;
+            }
+        }
+
         ui.vertical_centered_justified(|ui| {
             let bigger_text_style = &params.game.ui_theme.font_styles.bigger;
             let heading_text_style = &params.game.ui_theme.font_styles.heading;
             let small_button_style = &params.game.ui_theme.button_styles.small;
 
-            ui.add_space(heading_text_style.size / 4.0);
-            ui.themed_label(heading_text_style, &params.localization.get("local-game"));
-            ui.themed_label(
-                bigger_text_style,
-                &params.localization.get("map-select-title"),
-            );
-            ui.add_space(small_button_style.font.size);
+            if !in_game {
+                ui.add_space(heading_text_style.size / 4.0);
+                ui.themed_label(heading_text_style, &params.localization.get("local-game"));
+                ui.themed_label(
+                    bigger_text_style,
+                    &params.localization.get("map-select-title"),
+                );
+                ui.add_space(small_button_style.font.size);
+            }
 
             let available_size = ui.available_size();
             let menu_width = params.game.main_menu.menu_width;
@@ -70,6 +88,8 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                     .show(ui, |ui| {
                         ui.set_width(ui.available_width());
 
+                        let mut first_button = true;
+
                         egui::ScrollArea::vertical().show(ui, |ui| {
                             for (section_title, map_handles) in [
                                 (
@@ -82,7 +102,7 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                 ),
                             ] {
                                 ui.add_space(bigger_text_style.size / 2.0);
-                                ui.themed_label(bigger_text_style, &section_title);
+                                let label = ui.themed_label(bigger_text_style, &section_title);
 
                                 // Clippy lint is a false alarm, necessary to avoid borrowing params
                                 #[allow(clippy::unnecessary_to_owned)]
@@ -95,12 +115,25 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                     let map_meta = params.map_assets.get(&map_handle).unwrap();
                                     ui.add_space(ui.spacing().item_spacing.y);
 
-                                    if BorderedButton::themed(small_button_style, &map_meta.name)
-                                        .show(ui)
-                                        .clicked()
-                                    {
+                                    let button =
+                                        BorderedButton::themed(small_button_style, &map_meta.name)
+                                            .show(ui);
+
+                                    if first_button {
+                                        first_button = false;
+                                        // There's something weird where egui focuses on the first
+                                        // thing in the scroll area, so we have to re-focus on the
+                                        // button, instead of the label.
+                                        if label.has_focus() {
+                                            ui.ctx().memory().request_focus(button.id);
+                                        }
+                                    }
+
+                                    if button.clicked() {
                                         info!("Selected map, starting game");
+                                        *params.pause_page = PauseMenuPage::Default;
                                         *params.menu_page = MenuPage::Home;
+                                        params.reset_manager.reset_world();
                                         params.commands.spawn().insert(map_handle.clone_weak());
                                         params
                                             .commands
@@ -108,7 +141,6 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                         params
                                             .commands
                                             .insert_resource(NextState(InGameState::Playing));
-                                        params.session_manager.start_session();
 
                                         if let Some(client) = &mut params.client {
                                             client.send_reliable(
@@ -134,6 +166,7 @@ fn handle_match_setup_messages(params: &mut MapSelectMenu) {
                     MatchSetupMessage::SelectMap(map_handle) => {
                         info!("Other player selected map, starting game");
                         *params.menu_page = MenuPage::Home;
+                        params.reset_manager.reset_world();
                         params
                             .commands
                             .spawn()
@@ -145,7 +178,6 @@ fn handle_match_setup_messages(params: &mut MapSelectMenu) {
                         params
                             .commands
                             .insert_resource(NextState(InGameState::Playing));
-                        params.session_manager.start_session();
                     }
                     other => warn!("Unexpected message: {other:?}"),
                 },

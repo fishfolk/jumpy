@@ -3,7 +3,7 @@ category: Weapons
 builtin: !Grenades
   atlas: ./grenade.atlas.yaml
   explosion_atlas: ./explosion.atlas.yaml
-  fuse_time: 1.0
+  fuse_time: 4.0
   throw_velocity: [7, 5]
   damage_region_size: [60, 60]
   damage_region_lifetime: 0.6

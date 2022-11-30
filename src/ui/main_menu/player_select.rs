@@ -132,6 +132,7 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
                     if back_button.clicked()
                         || (params.menu_input.single().just_pressed(MenuAction::Back)
                             && !params.player_inputs.players[0].active)
+                        || params.keyboard_input.just_pressed(KeyCode::Escape)
                     {
                         *params.menu_page = MenuPage::Home;
                         if let Some(client) = params.client {

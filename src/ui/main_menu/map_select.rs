@@ -15,6 +15,7 @@ use super::*;
 #[derive(SystemParam)]
 pub struct MapSelectMenu<'w, 's> {
     client: Option<Res<'w, NetClient>>,
+    menu_input: Query<'w, 's, &'static mut ActionState<MenuAction>>,
     menu_page: ResMut<'w, MenuPage>,
     game: Res<'w, GameMeta>,
     commands: Commands<'w, 's>,
@@ -39,6 +40,12 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
         let mut params: MapSelectMenu = state.get_mut(world);
 
         handle_match_setup_messages(&mut params);
+
+        if params.menu_input.single().just_pressed(MenuAction::Back)
+            && matches!(*params.menu_page, MenuPage::MapSelect { is_waiting: false })
+        {
+            *params.menu_page = MenuPage::PlayerSelect;
+        }
 
         ui.vertical_centered_justified(|ui| {
             let bigger_text_style = &params.game.ui_theme.font_styles.bigger;
@@ -70,6 +77,8 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                     .show(ui, |ui| {
                         ui.set_width(ui.available_width());
 
+                        let mut first_button = true;
+
                         egui::ScrollArea::vertical().show(ui, |ui| {
                             for (section_title, map_handles) in [
                                 (
@@ -82,7 +91,7 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                 ),
                             ] {
                                 ui.add_space(bigger_text_style.size / 2.0);
-                                ui.themed_label(bigger_text_style, &section_title);
+                                let label = ui.themed_label(bigger_text_style, &section_title);
 
                                 // Clippy lint is a false alarm, necessary to avoid borrowing params
                                 #[allow(clippy::unnecessary_to_owned)]
@@ -95,10 +104,21 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                     let map_meta = params.map_assets.get(&map_handle).unwrap();
                                     ui.add_space(ui.spacing().item_spacing.y);
 
-                                    if BorderedButton::themed(small_button_style, &map_meta.name)
-                                        .show(ui)
-                                        .clicked()
-                                    {
+                                    let button =
+                                        BorderedButton::themed(small_button_style, &map_meta.name)
+                                            .show(ui);
+
+                                    if first_button {
+                                        first_button = false;
+                                        // There's something weird where egui focuses on the first
+                                        // thing in the scroll area, so we have to re-focus on the
+                                        // button, instead of the label.
+                                        if label.has_focus() {
+                                            ui.ctx().memory().request_focus(button.id);
+                                        }
+                                    }
+
+                                    if button.clicked() {
                                         info!("Selected map, starting game");
                                         *params.menu_page = MenuPage::Home;
                                         params.commands.spawn().insert(map_handle.clone_weak());

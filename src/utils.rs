@@ -1,5 +1,8 @@
 use bevy::ecs::{schedule::ShouldRun, system::SystemParam};
-use bevy_ggrs::{ggrs::SyncTestSession, ResetGGRSSession, SessionType};
+use bevy_ggrs::{
+    ggrs::{P2PSession, SyncTestSession},
+    ResetGGRSSession, SessionType,
+};
 
 use crate::{
     loading::PlayerInputCollector, map::elements::player_spawner::CurrentPlayerSpawner, prelude::*,
@@ -83,7 +86,7 @@ impl<'w, 's> ResetManager<'w, 's> {
     /// Clean up the game world, despawning all the gameplay entities, but leaving necessary
     /// entities like camera.
     pub fn reset_world(&mut self) {
-        // Clean up all entities other than the camera and the player entities
+        // Clean up all entities other than the camera and the player input collectors
         for entity in self.entities_to_despawn.iter() {
             self.commands.entity(entity).despawn_recursive();
         }
@@ -103,6 +106,7 @@ impl<'w, 's> ResetManager<'w, 's> {
         self.commands.remove_resource::<SessionType>();
         self.commands
             .remove_resource::<SyncTestSession<GgrsConfig>>();
+        self.commands.remove_resource::<P2PSession<GgrsConfig>>();
     }
 }
 

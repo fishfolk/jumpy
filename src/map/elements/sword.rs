@@ -63,6 +63,7 @@ fn pre_update_in_game(
                     ..default()
                 })
                 .insert_bundle(VisibilityBundle::default())
+                .insert(MapRespawnPoint(transform.translation))
                 .insert_bundle(TransformBundle {
                     local: *transform,
                     ..default()

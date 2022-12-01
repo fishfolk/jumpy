@@ -3,7 +3,7 @@ use crate::{
     damage::{DamageRegion, DamageRegionOwner},
     item::{Item, ItemDropped, ItemUsed},
     lifetime::Lifetime,
-    map::MapElementHydrated,
+    map::{MapElementHydrated, MapRespawnPoint},
     metadata::{BuiltinElementKind, MapElementMeta},
     name::EntityName,
     physics::{collisions::CollisionWorld, KinematicBody},

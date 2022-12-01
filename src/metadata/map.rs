@@ -221,6 +221,9 @@ pub enum BuiltinElementKind {
         explosion_sound: String,
         #[serde(skip)]
         explosion_sound_handle: Handle<AudioSource>,
+        fuse_sound: String,
+        #[serde(skip)]
+        fuse_sound_handle: Handle<AudioSource>,
         /// The time in seconds before a grenade explodes
         fuse_time: f32,
         #[serde(default)]

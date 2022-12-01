@@ -868,6 +868,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_system_graph"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "01982006dc7d468bc38c6362066299bcffeb742066483b131cd1acc3648ecb5f"
+dependencies = [
+ "bevy_ecs",
+ "bevy_utils",
+]
+
+[[package]]
 name = "bevy_tasks"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2490,6 +2500,7 @@ dependencies = [
  "bevy_ggrs",
  "bevy_kira_audio",
  "bevy_prototype_lyon",
+ "bevy_system_graph",
  "bevy_tweening",
  "bitfield",
  "blocking",

@@ -3,12 +3,9 @@ use super::*;
 pub struct SwordPlugin;
 impl Plugin for SwordPlugin {
     fn build(&self, app: &mut App) {
-        app.extend_rollback_schedule(|schedule| {
-            schedule
-                .add_system_to_stage(RollbackStage::PreUpdate, pre_update_in_game)
-                .add_system_to_stage(RollbackStage::Update, update_in_game);
-        })
-        .extend_rollback_plugin(|plugin| plugin.register_rollback_type::<SwordState>());
+        app.add_rollback_system(RollbackStage::PreUpdate, pre_update_in_game)
+            .add_rollback_system(RollbackStage::Update, update_in_game)
+            .extend_rollback_plugin(|plugin| plugin.register_rollback_type::<SwordState>());
     }
 }
 

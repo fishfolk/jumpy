@@ -30,12 +30,7 @@ impl Plugin for MapPlugin {
                     .register_rollback_type::<MapElementHydrated>()
                     .register_rollback_type::<Handle<MapElementMeta>>()
             })
-            .extend_rollback_schedule(|schedule| {
-                schedule.add_system_to_stage(
-                    RollbackStage::Last,
-                    handle_out_of_bounds_players_and_items,
-                );
-            })
+            .add_rollback_system(RollbackStage::Last, handle_out_of_bounds_players_and_items)
             .add_plugin(elements::MapElementsPlugin);
     }
 }

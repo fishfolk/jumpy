@@ -47,7 +47,6 @@ pub mod prelude;
 pub mod random;
 pub mod run_criteria;
 pub mod schedule;
-// pub mod scripting;
 pub mod session;
 pub mod ui;
 pub mod utils;
@@ -74,6 +73,7 @@ use crate::{
     player::PlayerPlugin,
     prelude::*,
     random::RandomPlugin,
+    schedule::RollbackSystems,
     session::SessionPlugin,
     ui::UiPlugin,
     utils::{run_criteria_game_not_paused, UtilsPlugin},
@@ -103,7 +103,7 @@ pub enum GameEditorState {
     Visible,
 }
 
-#[derive(StageLabel)]
+#[derive(StageLabel, Eq, PartialEq, Hash)]
 pub enum RollbackStage {
     Input,
     First,
@@ -161,42 +161,43 @@ pub fn main() {
         .add_loopless_state(InGameState::Playing)
         .add_loopless_state(GameEditorState::Hidden);
 
-    // Create the GGRS rollback schedule and plugin
+    // Create the GGRS rollback schedule, systems, and plugin
     let mut rollback_schedule = Schedule::default();
+    let rollback_systems = RollbackSystems::default();
     let rollback_plugin = GGRSPlugin::<GgrsConfig>::new();
 
-    // Add fixed update stagesrefs/branchless/2fd80952e26d905aa258ebb7e6175a7cfc4cb76f
     rollback_schedule
         .add_stage(RollbackStage::Input, SystemStage::parallel())
         .add_stage_after(
             RollbackStage::Input,
             RollbackStage::First,
-            SystemStage::parallel().with_run_criteria(run_criteria_game_not_paused),
+            SystemStage::single_threaded().with_run_criteria(run_criteria_game_not_paused),
         )
         .add_stage_after(
             RollbackStage::First,
             RollbackStage::PreUpdate,
-            SystemStage::parallel().with_run_criteria(run_criteria_game_not_paused),
+            SystemStage::single_threaded().with_run_criteria(run_criteria_game_not_paused),
         )
         .add_stage_after(
             RollbackStage::PreUpdate,
             RollbackStage::Update,
-            SystemStage::parallel().with_run_criteria(run_criteria_game_not_paused),
+            SystemStage::single_threaded().with_run_criteria(run_criteria_game_not_paused),
         )
         .add_stage_after(
             RollbackStage::Update,
             RollbackStage::PostUpdate,
-            SystemStage::parallel().with_run_criteria(run_criteria_game_not_paused),
+            SystemStage::single_threaded().with_run_criteria(run_criteria_game_not_paused),
         )
         .add_stage_after(
             RollbackStage::PostUpdate,
             RollbackStage::Last,
-            SystemStage::parallel().with_run_criteria(run_criteria_game_not_paused),
+            SystemStage::single_threaded().with_run_criteria(run_criteria_game_not_paused),
         );
 
     // Add the rollback schedule and plugin as resources, temporarily.
     // This allows plugins to modify them using `crate::schedule::RollbackScheduleAppExt`.
     app.insert_resource(rollback_schedule);
+    app.insert_non_send_resource(rollback_systems);
     app.insert_resource(rollback_plugin);
 
     // Install game plugins
@@ -235,9 +236,15 @@ pub fn main() {
         .add_plugin(NetworkingPlugin)
         .add_plugin(SessionPlugin);
 
-    // Pull the schedule back out of the world
-    let rollback_schedule: Schedule = app.world.remove_resource().unwrap();
+    // Pull the rollback systems back out of the world
+    let mut rollback_schedule: Schedule = app.world.remove_resource().unwrap();
+    let rollback_systems: RollbackSystems = app.world.remove_non_send_resource().unwrap();
     let ggrs_plugin: GGRSPlugin<GgrsConfig> = app.world.remove_resource().unwrap();
+
+    // Add the rollback systems to the schedule
+    for (stage, set) in rollback_systems {
+        rollback_schedule.add_system_set_to_stage(stage, set.graph.into());
+    }
 
     // Build the GGRS plugin
     ggrs_plugin

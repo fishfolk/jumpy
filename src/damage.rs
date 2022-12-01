@@ -17,10 +17,7 @@ impl Plugin for DamagePlugin {
                     .register_rollback_type::<DamageRegion>()
                     .register_rollback_type::<DamageRegionOwner>()
             })
-            .extend_rollback_schedule(|schedule| {
-                schedule
-                    .add_system_to_stage(RollbackStage::PostUpdate, kill_players_in_damage_region);
-            });
+            .add_rollback_system(RollbackStage::PostUpdate, kill_players_in_damage_region);
     }
 }
 

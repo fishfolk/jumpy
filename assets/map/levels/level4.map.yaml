@@ -52,7 +52,7 @@ background_layers:
     position:
       - 0.0
       - 360.0
-background_color: 7EA8A6FF
+background_color: 5B5772FF
 grid_size:
   - 35
   - 15

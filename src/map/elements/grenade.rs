@@ -98,6 +98,7 @@ fn pre_update_in_game(
                 })
                 .insert(map_element_handle.clone_weak())
                 .insert_bundle(VisibilityBundle::default())
+                .insert(MapRespawnPoint(transform.translation))
                 .insert_bundle(TransformBundle {
                     local: *transform,
                     ..default()

@@ -7,6 +7,7 @@ use crate::{
         client::NetClient,
         proto::{match_setup::MatchSetupMessage, ReliableGameMessageKind},
     },
+    player::input::WantsGamePause,
     ui::pause_menu::PauseMenuPage,
 };
 
@@ -135,6 +136,7 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                         *params.menu_page = MenuPage::Home;
                                         params.reset_manager.reset_world();
                                         params.commands.spawn().insert(map_handle.clone_weak());
+                                        params.commands.insert_resource(WantsGamePause(false));
                                         params
                                             .commands
                                             .insert_resource(NextState(GameState::InGame));

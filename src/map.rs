@@ -9,6 +9,7 @@ use crate::{
     metadata::{MapElementMeta, MapLayerKind, MapLayerMeta, MapMeta},
     name::EntityName,
     physics::collisions::{CollisionLayerTag, TileCollision},
+    player::{PlayerIdx, PlayerKillCommand},
     prelude::*,
     session::SessionManager,
     utils::Sort,
@@ -29,6 +30,12 @@ impl Plugin for MapPlugin {
                     .register_rollback_type::<MapElementHydrated>()
                     .register_rollback_type::<Handle<MapElementMeta>>()
             })
+            .extend_rollback_schedule(|schedule| {
+                schedule.add_system_to_stage(
+                    RollbackStage::Last,
+                    handle_out_of_bounds_players_and_items,
+                );
+            })
             .add_plugin(elements::MapElementsPlugin);
     }
 }
@@ -38,6 +45,12 @@ impl Plugin for MapPlugin {
 #[derive(Reflect, Component, Default)]
 #[reflect(Component, Default)]
 pub struct MapElementHydrated;
+
+/// If this component and a [`Transform`] component is added to any entity, it will be moved back to
+/// given position if the entity ever ends up outside the map bounds.
+#[derive(Deref, DerefMut, Component, Reflect, Default, Debug)]
+#[reflect(Default, Component)]
+pub struct MapRespawnPoint(pub Vec3);
 
 // /// Contains the scripts that have been added for the currently loaded map
 // #[derive(Deref, DerefMut, Default)]
@@ -254,4 +267,39 @@ pub fn hydrate_map(
 
     // Start the game session
     session_manager.start_session();
+}
+
+fn handle_out_of_bounds_players_and_items(
+    mut commands: Commands,
+    map: Query<&MapMeta>,
+    players: Query<(Entity, &Transform), With<PlayerIdx>>,
+    mut items: Query<(&mut Transform, &MapRespawnPoint), Without<PlayerIdx>>,
+) {
+    const KILL_ZONE_BORDER: f32 = 500.0;
+    let Ok(map) = map.get_single() else {
+        return;
+    };
+
+    let map_width = (map.grid_size.x * map.tile_size.x) as f32;
+    let left_kill_zone = -KILL_ZONE_BORDER;
+    let right_kill_zone = map_width + KILL_ZONE_BORDER;
+    let bottom_kill_zone = -KILL_ZONE_BORDER;
+
+    // Kill out of bounds players
+    for (player_ent, transform) in &players {
+        let pos = transform.translation;
+
+        if pos.x < left_kill_zone || pos.x > right_kill_zone || pos.y < bottom_kill_zone {
+            commands.add(PlayerKillCommand::new(player_ent));
+        }
+    }
+
+    // Reset out of bound item positions
+    for (mut transform, respawn_point) in &mut items {
+        let pos = transform.translation;
+
+        if pos.x < left_kill_zone || pos.x > right_kill_zone || pos.y < bottom_kill_zone {
+            transform.translation = respawn_point.0;
+        }
+    }
 }

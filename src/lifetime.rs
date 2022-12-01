@@ -8,9 +8,7 @@ impl Plugin for LifetimePlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<Lifetime>()
             .extend_rollback_plugin(|plugin| plugin.register_rollback_type::<Lifetime>())
-            .extend_rollback_schedule(|schedule| {
-                schedule.add_system_to_stage(RollbackStage::PostUpdate, lifetime_system);
-            });
+            .add_rollback_system(RollbackStage::PostUpdate, lifetime_system);
     }
 }
 

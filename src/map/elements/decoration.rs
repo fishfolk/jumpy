@@ -4,9 +4,7 @@ pub struct DecorationPlugin;
 
 impl Plugin for DecorationPlugin {
     fn build(&self, app: &mut App) {
-        app.extend_rollback_schedule(|schedule| {
-            schedule.add_system_to_stage(RollbackStage::PreUpdate, hydrate_decorations);
-        });
+        app.add_rollback_system(RollbackStage::PreUpdate, hydrate_decorations);
     }
 }
 

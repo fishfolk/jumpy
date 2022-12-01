@@ -24,9 +24,7 @@ impl Plugin for PlayerInputPlugin {
             )
             .add_system_to_stage(CoreStage::Last, clear_input_buffer)
             .extend_rollback_plugin(|plugin| plugin.register_rollback_type::<PlayerInputs>())
-            .extend_rollback_schedule(|schedule| {
-                schedule.add_system_to_stage(RollbackStage::Input, update_user_input);
-            });
+            .add_rollback_system(RollbackStage::Input, update_user_input);
     }
 }
 

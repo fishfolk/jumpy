@@ -24,14 +24,9 @@ impl Plugin for SessionPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<FrameIdx>()
             .extend_rollback_plugin(|plugin| plugin.register_rollback_type::<FrameIdx>())
-            .extend_rollback_schedule(|schedule| {
-                schedule.add_system_to_stage(
-                    RollbackStage::Last,
-                    |mut frame_idx: ResMut<FrameIdx>| {
-                        frame_idx.0 = frame_idx.0.wrapping_add(1);
-                        trace!("End of simulation frame {}", frame_idx.0);
-                    },
-                );
+            .add_rollback_system(RollbackStage::Last, |mut frame_idx: ResMut<FrameIdx>| {
+                frame_idx.0 = frame_idx.0.wrapping_add(1);
+                trace!("End of simulation frame {}", frame_idx.0);
             });
     }
 }

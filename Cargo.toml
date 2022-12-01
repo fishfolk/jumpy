@@ -38,6 +38,7 @@ bevy_ggrs = { git = "https://github.com/zicklag/bevy_ggrs.git", branch = "jumpy"
 bevy_kira_audio = { version = "0.12.0", features = ["ogg"], default-features = false }
 # bevy_mod_js_scripting = { git = "https://github.com/zicklag/bevy_mod_js_scripting.git", branch = "jumpy" }
 bevy_prototype_lyon = "0.6.0"
+bevy_system_graph = "0.3.0"
 bevy_tweening = { version = "0.5", default-features = false }
 bitfield = "0.14.0"
 blocking = "1.2.0"
@@ -63,13 +64,13 @@ postcard = { git = "https://github.com/zicklag/postcard.git", branch = "custom-e
 rand = "0.8.5"
 rustls = { version = "0.20.7", features = ["dangerous_configuration", "quic"] }
 serde = { version = "1.0.137", features = ["derive"] }
+serde_json = "1.0.89"
 serde_yaml = "0.9.2"
 sys-locale = "0.2.1"
 thiserror = "1.0.31"
 tracing = { version = "0.1.37", features = ["release_max_level_debug"] }
 turborand = { version = "0.8.0", features = ["atomic", "serialize"] }
 unic-langid = "0.9.0"
-serde_json = "1.0.89"
 
 [dependencies.bevy]
 version = "0.8"

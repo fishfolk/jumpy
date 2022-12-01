@@ -32,12 +32,10 @@ impl Plugin for PlayerPlugin {
                     .register_rollback_type::<PlayerState>()
                     .register_rollback_type::<PlayerKilled>()
             })
-            .extend_rollback_schedule(|schedule| {
-                schedule.add_system_to_stage(
-                    RollbackStage::PreUpdate,
-                    hydrate_players.run_if_resource_exists::<GameMeta>(),
-                );
-            });
+            .add_rollback_system(
+                RollbackStage::PreUpdate,
+                hydrate_players.run_if_resource_exists::<GameMeta>(),
+            );
     }
 }
 

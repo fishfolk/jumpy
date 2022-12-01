@@ -26,34 +26,17 @@ impl Plugin for AnimationPlugin {
                     .register_rollback_type::<AnimationBank>()
                     .register_rollback_type::<AnimationBankSprite>()
             })
-            .extend_rollback_schedule(|schedule| {
-                schedule
-                    .add_stage_after(
-                        RollbackStage::PostUpdate,
-                        AnimationStage::Hydrate,
-                        SystemStage::single_threaded()
-                            .with_system(hydrate_animation_bank_sprites)
-                            .with_system(
-                                hydrate_animated_sprites.after(hydrate_animation_bank_sprites),
-                            ),
-                    )
-                    .add_stage_after(
-                        AnimationStage::Hydrate,
-                        AnimationStage::Animate,
-                        SystemStage::single_threaded()
-                            .with_system(update_animation_bank_sprites)
-                            .with_system(
-                                update_animated_sprite_components
-                                    .after(update_animation_bank_sprites),
-                            )
-                            .with_system(
-                                animate_sprites
-                                    .run_in_state(GameState::InGame)
-                                    .run_not_in_state(InGameState::Paused)
-                                    .after(update_animated_sprite_components.as_system_label()),
-                            ),
-                    );
-            });
+            .add_rollback_system(RollbackStage::PostUpdate, hydrate_animation_bank_sprites)
+            .add_rollback_system(RollbackStage::PostUpdate, hydrate_animated_sprites)
+            .add_rollback_system(RollbackStage::PostUpdate, update_animation_bank_sprites)
+            .add_rollback_system(RollbackStage::PostUpdate, update_animated_sprite_components)
+            .add_rollback_system(
+                RollbackStage::PostUpdate,
+                animate_sprites
+                    .run_in_state(GameState::InGame)
+                    .run_not_in_state(InGameState::Paused)
+                    .after(update_animated_sprite_components.as_system_label()),
+            );
     }
 }
 

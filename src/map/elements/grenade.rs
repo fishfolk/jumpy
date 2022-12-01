@@ -40,20 +40,14 @@ impl Default for LitGrenade {
 
 impl Plugin for GrenadePlugin {
     fn build(&self, app: &mut App) {
-        app.extend_rollback_schedule(|schedule| {
-            schedule
-                .add_system_to_stage(RollbackStage::PreUpdate, pre_update_in_game)
-                .add_system_to_stage(
-                    RollbackStage::Update,
-                    update_lit_grenades.before(update_idle_grenades),
-                )
-                .add_system_to_stage(RollbackStage::Update, update_idle_grenades);
-        })
-        .extend_rollback_plugin(|plugin| {
-            plugin
-                .register_rollback_type::<IdleGrenade>()
-                .register_rollback_type::<LitGrenade>()
-        });
+        app.add_rollback_system(RollbackStage::PreUpdate, pre_update_in_game)
+            .add_rollback_system(RollbackStage::Update, update_lit_grenades)
+            .add_rollback_system(RollbackStage::Update, update_idle_grenades)
+            .extend_rollback_plugin(|plugin| {
+                plugin
+                    .register_rollback_type::<IdleGrenade>()
+                    .register_rollback_type::<LitGrenade>()
+            });
     }
 }
 

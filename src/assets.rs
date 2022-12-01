@@ -423,6 +423,8 @@ impl AssetLoader for MapElementMetaLoader {
                     explosion_atlas_handle,
                     explosion_sound,
                     explosion_sound_handle,
+                    fuse_sound,
+                    fuse_sound_handle,
                     ..
                 } => {
                     for (atlas, atlas_handle) in [
@@ -433,10 +435,15 @@ impl AssetLoader for MapElementMetaLoader {
                         *atlas_handle = AssetHandle::new(path.clone(), handle.typed());
                         dependencies.push(path);
                     }
-                    let (sound_path, sound_handle) =
-                        get_relative_asset(load_context, self_path, explosion_sound);
-                    dependencies.push(sound_path);
-                    *explosion_sound_handle = sound_handle.typed();
+                    for (sound, handle) in [
+                        (explosion_sound, explosion_sound_handle),
+                        (fuse_sound, fuse_sound_handle),
+                    ] {
+                        let (sound_path, sound_handle) =
+                            get_relative_asset(load_context, self_path, sound);
+                        dependencies.push(sound_path);
+                        *handle = sound_handle.typed();
+                    }
                 }
             }
 

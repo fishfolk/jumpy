@@ -11,7 +11,7 @@ builtin: !Grenades
   explosion_frames: 12
   explosion_fps: 8
   explosion_sound: ./explosion.ogg
-
+  fuse_sound: ./fuse.ogg
   body_size: [18, 18]
   grab_offset: [-7, -6]
   body_offset: [0, 2]

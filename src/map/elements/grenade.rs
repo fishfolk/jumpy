@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use super::*;
 
 pub struct GrenadePlugin;
@@ -22,6 +24,7 @@ impl Default for IdleGrenade {
 pub struct LitGrenade {
     /// The entity ID of the map element that spawned the grenade
     spawner: Entity,
+    fuse_sound: Handle<AudioInstance>,
     age: f32,
 }
 
@@ -29,6 +32,7 @@ impl Default for LitGrenade {
     fn default() -> Self {
         Self {
             spawner: crate::utils::invalid_entity(),
+            fuse_sound: default(),
             age: 0.0,
         }
     }
@@ -131,6 +135,7 @@ fn update_idle_grenades(
     >,
     mut ridp: ResMut<RollbackIdProvider>,
     element_assets: ResMut<Assets<MapElementMeta>>,
+    effects: Res<AudioChannel<EffectsChannel>>,
 ) {
     let mut items = grenades.iter_mut().collect::<Vec<_>>();
     items.sort_by_key(|x| x.0.id());
@@ -148,7 +153,13 @@ fn update_idle_grenades(
     ) in items
     {
         let meta = element_assets.get(meta_handle).unwrap();
-        let BuiltinElementKind::Grenades { grab_offset, atlas_handle, throw_velocity, .. } = &meta.builtin else {
+        let BuiltinElementKind::Grenades {
+            grab_offset,
+            atlas_handle,
+            throw_velocity,
+            fuse_sound_handle,
+            ..
+        } = &meta.builtin else {
             unreachable!();
         };
 
@@ -198,6 +209,7 @@ fn update_idle_grenades(
                     .insert(body.clone())
                     .insert(LitGrenade {
                         spawner: grenade.spawner,
+                        fuse_sound: effects.play(fuse_sound_handle.clone_weak()).handle(),
                         ..default()
                     })
                     .insert(KinematicBody {
@@ -252,6 +264,7 @@ fn update_lit_grenades(
     element_assets: ResMut<Assets<MapElementMeta>>,
     player_inputs: Res<PlayerInputs>,
     effects: Res<AudioChannel<EffectsChannel>>,
+    mut audio_instances: ResMut<Assets<AudioInstance>>,
 ) {
     let mut items = grenades.iter_mut().collect::<Vec<_>>();
     items.sort_by_key(|x| x.0.id());
@@ -276,6 +289,9 @@ fn update_lit_grenades(
         if grenade.age >= *fuse_time {
             if player_inputs.is_confirmed {
                 effects.play(explosion_sound_handle.clone_weak());
+                audio_instances
+                    .get_mut(&grenade.fuse_sound)
+                    .map(|x| x.stop(AudioTween::linear(Duration::from_secs_f32(0.1))));
             }
 
             // Despawn the grenade

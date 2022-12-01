@@ -9,6 +9,7 @@ use crate::{
     metadata::{MapElementMeta, MapLayerKind, MapLayerMeta, MapMeta},
     name::EntityName,
     physics::collisions::{CollisionLayerTag, TileCollision},
+    player::{PlayerIdx, PlayerKillCommand},
     prelude::*,
     session::SessionManager,
     utils::Sort,
@@ -28,6 +29,9 @@ impl Plugin for MapPlugin {
                 plugin
                     .register_rollback_type::<MapElementHydrated>()
                     .register_rollback_type::<Handle<MapElementMeta>>()
+            })
+            .extend_rollback_schedule(|schedule| {
+                schedule.add_system_to_stage(RollbackStage::Last, despawn_out_of_bounds);
             })
             .add_plugin(elements::MapElementsPlugin);
     }
@@ -254,4 +258,28 @@ pub fn hydrate_map(
 
     // Start the game session
     session_manager.start_session();
+}
+
+fn despawn_out_of_bounds(
+    mut commands: Commands,
+    map: Query<&MapMeta>,
+    players: Query<(Entity, &Transform), With<PlayerIdx>>,
+) {
+    const KILL_ZONE_BORDER: f32 = 500.0;
+    let Ok(map) = map.get_single() else {
+        return;
+    };
+
+    let map_width = (map.grid_size.x * map.tile_size.x) as f32;
+    let left_kill_zone = -KILL_ZONE_BORDER;
+    let right_kill_zone = map_width + KILL_ZONE_BORDER;
+    let bottom_kill_zone = -KILL_ZONE_BORDER;
+
+    for (player_ent, transform) in &players {
+        let pos = transform.translation;
+
+        if pos.x < left_kill_zone || pos.x > right_kill_zone || pos.y < bottom_kill_zone {
+            commands.add(PlayerKillCommand::new(player_ent));
+        }
+    }
 }

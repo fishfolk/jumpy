@@ -1,7 +1,11 @@
 use bevy::render::view::RenderLayers;
 use bevy_parallax::ParallaxCameraComponent;
 
-use crate::{metadata::GameMeta, player::PlayerIdx, prelude::*};
+use crate::{
+    metadata::{GameMeta, MapMeta},
+    player::PlayerIdx,
+    prelude::*,
+};
 
 pub struct CameraPlugin;
 
@@ -89,6 +93,7 @@ pub fn spawn_editor_camera(commands: &mut Commands) -> Entity {
 
 fn camera_controller(
     players: Query<&Transform, With<PlayerIdx>>,
+    map: Query<&MapMeta>,
     mut camera: Query<
         (&mut Transform, &mut OrthographicProjection),
         (With<GameCamera>, Without<PlayerIdx>),
@@ -102,6 +107,10 @@ fn camera_controller(
     const ZOOM_OUT_LERP_FACTOR: f32 = 0.1;
     const MIN_BOUND: f32 = 350.0;
 
+    let Ok(map) = map.get_single() else {
+        return;
+    };
+
     let Ok((mut camera_transform, mut projection)) = camera.get_single_mut() else {
         return;
     };
@@ -111,6 +120,11 @@ fn camera_controller(
     let default_height = game.camera_height as f32;
     let default_width = window_aspect * default_height;
 
+    let map_width = (map.tile_size.x * map.grid_size.x) as f32;
+    let map_height = (map.tile_size.y * map.grid_size.y) as f32;
+    let min_player_pos = Vec2::new(-CAMERA_PADDING, -CAMERA_PADDING);
+    let max_player_pos = Vec2::new(map_width + CAMERA_PADDING, map_height + CAMERA_PADDING);
+
     let mut middle_point = Vec2::ZERO;
     let mut min = Vec2::new(100000.0, 100000.0);
     let mut max = Vec2::new(-100000.0, -100000.0);
@@ -119,6 +133,7 @@ fn camera_controller(
 
     for player_transform in &players {
         let pos = player_transform.translation.truncate();
+        let pos = pos.max(min_player_pos).min(max_player_pos);
         middle_point += pos;
 
         min.x = pos.x.min(min.x);

@@ -243,6 +243,7 @@ fn update_in_game(
             body.is_deactivated = false;
 
             // Put sword in rest position
+            sprite.index = 0;
             sprite.start = 0;
             sprite.end = 0;
             body.velocity = player_body.velocity;

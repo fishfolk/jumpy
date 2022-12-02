@@ -208,7 +208,7 @@ pub enum BuiltinElementKind {
     /// Player spawner
     PlayerSpawner,
     /// Grenades item
-    Grenades {
+    Grenade {
         body_size: Vec2,
         body_offset: Vec2,
         grab_offset: Vec2,
@@ -262,5 +262,29 @@ pub enum BuiltinElementKind {
         sound: String,
         #[serde(skip)]
         sound_handle: Handle<AudioSource>,
+    },
+    ///
+    Crate {
+        atlas: String,
+        #[serde(skip)]
+        atlas_handle: AssetHandle<TextureAtlas>,
+
+        breaking_atlas: String,
+        #[serde(skip)]
+        breaking_atlas_handle: AssetHandle<TextureAtlas>,
+        breaking_anim_length: usize,
+        breaking_anim_fps: f32,
+
+        break_sound: String,
+        #[serde(skip)]
+        break_sound_handle: Handle<AudioSource>,
+
+        throw_velocity: Vec2,
+
+        body_size: Vec2,
+        body_offset: Vec2,
+        grab_offset: Vec2,
+        // How long to wait before despawning a thrown crate, if it hans't it anything yet.
+        break_timeout: f32,
     },
 }

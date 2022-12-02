@@ -1,17 +1,22 @@
-use std::time::Duration;
+//! The crate item.
+//!
+//! This module is inconsistently named with the rest of the modules ( i.e. has an `_item` suffix )
+//! because `crate` is a Rust keyword.
+
+use crate::{physics::collisions::TileCollision, player::PlayerKillCommand};
 
 use super::*;
 
-pub struct GrenadePlugin;
+pub struct CrateItemPlugin;
 
 #[derive(Reflect, Component, Clone, Debug)]
 #[reflect(Component)]
-pub struct IdleGrenade {
-    /// The entity ID of the map element that spawned the grenade
+pub struct IdleCrateItem {
+    /// The entity ID of the map element that spawned the crate
     spawner: Entity,
 }
 
-impl Default for IdleGrenade {
+impl Default for IdleCrateItem {
     fn default() -> Self {
         Self {
             spawner: crate::utils::invalid_entity(),
@@ -21,32 +26,33 @@ impl Default for IdleGrenade {
 
 #[derive(Reflect, Component, Clone, Debug)]
 #[reflect(Component, Default)]
-pub struct LitGrenade {
-    /// The entity ID of the map element that spawned the grenade
+pub struct ThrownCrateItem {
+    /// The entity ID of the map element that spawned the crate
     spawner: Entity,
-    fuse_sound: Handle<AudioInstance>,
+    /// The entity ID of the player that threw the box
+    owner: Entity,
     age: f32,
 }
 
-impl Default for LitGrenade {
+impl Default for ThrownCrateItem {
     fn default() -> Self {
         Self {
             spawner: crate::utils::invalid_entity(),
-            fuse_sound: default(),
+            owner: crate::utils::invalid_entity(),
             age: 0.0,
         }
     }
 }
 
-impl Plugin for GrenadePlugin {
+impl Plugin for CrateItemPlugin {
     fn build(&self, app: &mut App) {
         app.add_rollback_system(RollbackStage::PreUpdate, pre_update_in_game)
-            .add_rollback_system(RollbackStage::Update, update_lit_grenades)
-            .add_rollback_system(RollbackStage::Update, update_idle_grenades)
+            .add_rollback_system(RollbackStage::Update, update_thrown_crates)
+            .add_rollback_system(RollbackStage::Update, update_idle_crates)
             .extend_rollback_plugin(|plugin| {
                 plugin
-                    .register_rollback_type::<IdleGrenade>()
-                    .register_rollback_type::<LitGrenade>()
+                    .register_rollback_type::<IdleCrateItem>()
+                    .register_rollback_type::<ThrownCrateItem>()
             });
     }
 }
@@ -60,16 +66,15 @@ fn pre_update_in_game(
     mut ridp: ResMut<RollbackIdProvider>,
     element_assets: ResMut<Assets<MapElementMeta>>,
 ) {
-    // Hydrate any newly-spawned grenades
+    // Hydrate any newly-spawned crates
     let mut elements = non_hydrated_map_elements.iter().collect::<Vec<_>>();
     elements.sort_by_key(|x| x.1);
     for (entity, _sort, map_element_handle, transform) in elements {
         let map_element = element_assets.get(map_element_handle).unwrap();
-        if let BuiltinElementKind::Grenade {
+        if let BuiltinElementKind::Crate {
             body_size,
             body_offset,
             atlas_handle,
-            can_rotate,
             ..
         } = &map_element.builtin
         {
@@ -79,10 +84,10 @@ fn pre_update_in_game(
                 .spawn()
                 .insert(Rollback::new(ridp.next_id()))
                 .insert(Item {
-                    script: "core:grenade".into(),
+                    script: "core:crate".into(),
                 })
-                .insert(IdleGrenade { spawner: entity })
-                .insert(EntityName("Item: Grenade".into()))
+                .insert(IdleCrateItem { spawner: entity })
+                .insert(EntityName("Item: Crate".into()))
                 .insert(AnimatedSprite {
                     start: 0,
                     end: 0,
@@ -103,21 +108,20 @@ fn pre_update_in_game(
                     gravity: 1.0,
                     has_mass: true,
                     has_friction: true,
-                    can_rotate: *can_rotate,
                     ..default()
                 });
         }
     }
 }
 
-fn update_idle_grenades(
+fn update_idle_crates(
     mut commands: Commands,
     players: Query<(&AnimatedSprite, &Transform, &KinematicBody), With<PlayerIdx>>,
     mut grenades: Query<
         (
             &Rollback,
             Entity,
-            &IdleGrenade,
+            &IdleCrateItem,
             &mut Transform,
             &mut AnimatedSprite,
             &mut KinematicBody,
@@ -130,14 +134,13 @@ fn update_idle_grenades(
     >,
     mut ridp: ResMut<RollbackIdProvider>,
     element_assets: ResMut<Assets<MapElementMeta>>,
-    effects: Res<AudioChannel<EffectsChannel>>,
 ) {
     let mut items = grenades.iter_mut().collect::<Vec<_>>();
     items.sort_by_key(|x| x.0.id());
     for (
         _,
         item_ent,
-        grenade,
+        crate_item,
         mut transform,
         mut sprite,
         mut body,
@@ -148,11 +151,10 @@ fn update_idle_grenades(
     ) in items
     {
         let meta = element_assets.get(meta_handle).unwrap();
-        let BuiltinElementKind::Grenade {
+        let BuiltinElementKind::Crate {
             grab_offset,
             atlas_handle,
             throw_velocity,
-            fuse_sound_handle,
             ..
         } = &meta.builtin else {
             unreachable!();
@@ -184,7 +186,7 @@ fn update_idle_grenades(
                 commands
                     .spawn()
                     .insert(Rollback::new(ridp.next_id()))
-                    .insert(Name::new("Grenade ( Lit )"))
+                    .insert(Name::new("Crate ( Thrown )"))
                     .insert(Transform::from_translation(
                         player_transform.translation
                             + (*grab_offset * horizontal_flip_factor).extend(0.0),
@@ -193,23 +195,20 @@ fn update_idle_grenades(
                     .insert(Visibility::default())
                     .insert(ComputedVisibility::default())
                     .insert(AnimatedSprite {
-                        start: 3,
-                        end: 5,
-                        repeat: true,
-                        fps: 8.0,
                         atlas: atlas_handle.inner.clone(),
                         ..default()
                     })
                     .insert(meta_handle.clone_weak())
                     .insert(body.clone())
-                    .insert(LitGrenade {
-                        spawner: grenade.spawner,
-                        fuse_sound: effects.play(fuse_sound_handle.clone_weak()).handle(),
+                    .insert(ThrownCrateItem {
+                        spawner: crate_item.spawner,
+                        owner: parent.get(),
                         ..default()
                     })
                     .insert(KinematicBody {
                         velocity: *throw_velocity * horizontal_flip_factor + player_body.velocity,
                         is_deactivated: false,
+                        fall_through: true,
                         ..body.clone()
                     });
             }
@@ -243,13 +242,14 @@ fn update_idle_grenades(
     }
 }
 
-fn update_lit_grenades(
+fn update_thrown_crates(
     mut commands: Commands,
+    players: Query<Entity, With<PlayerIdx>>,
     mut grenades: Query<
         (
             &Rollback,
             Entity,
-            &mut LitGrenade,
+            &mut ThrownCrateItem,
             &Transform,
             &Handle<MapElementMeta>,
         ),
@@ -259,55 +259,59 @@ fn update_lit_grenades(
     element_assets: ResMut<Assets<MapElementMeta>>,
     player_inputs: Res<PlayerInputs>,
     effects: Res<AudioChannel<EffectsChannel>>,
-    mut audio_instances: ResMut<Assets<AudioInstance>>,
+    collision_world: CollisionWorld,
 ) {
     let mut items = grenades.iter_mut().collect::<Vec<_>>();
     items.sort_by_key(|x| x.0.id());
-    for (_, item_ent, mut grenade, transform, meta_handle) in items {
+    for (_, item_ent, mut crate_item, transform, meta_handle) in items {
         let meta = element_assets.get(meta_handle).unwrap();
-        let BuiltinElementKind::Grenade {
-            fuse_time,
-            damage_region_size,
-            damage_region_lifetime,
-            explosion_atlas_handle,
-            explosion_lifetime,
-            explosion_fps,
-            explosion_frames,
-            explosion_sound_handle,
+        let BuiltinElementKind::Crate {
+            breaking_atlas_handle,
+            breaking_anim_fps,
+            breaking_anim_length,
+            break_sound_handle,
+            break_timeout,
             ..
         } = &meta.builtin else {
             unreachable!();
         };
+        let frame_time = 1.0 / crate::FPS as f32;
 
-        grenade.age += 1.0 / crate::FPS as f32;
+        crate_item.age += frame_time;
 
-        if grenade.age >= *fuse_time {
+        let colliding_with_wall = {
+            let collider = collision_world.get_collider(item_ent);
+            let width = collider.width + 2.0;
+            let height = collider.width + 2.0;
+            let pos = transform.translation.truncate();
+            collision_world.collide_solids(pos, width, height) == TileCollision::Solid
+        };
+
+        let colliding_with_players = collision_world
+            .actor_collisions(item_ent)
+            .into_iter()
+            .filter(|&x| x != crate_item.owner && players.contains(x))
+            .collect::<Vec<_>>();
+
+        for &player in &colliding_with_players {
+            commands.add(PlayerKillCommand::new(player));
+        }
+
+        if !colliding_with_players.is_empty()
+            || colliding_with_wall
+            || crate_item.age > *break_timeout
+        {
             if player_inputs.is_confirmed {
-                effects.play(explosion_sound_handle.clone_weak());
-                audio_instances
-                    .get_mut(&grenade.fuse_sound)
-                    .map(|x| x.stop(AudioTween::linear(Duration::from_secs_f32(0.1))));
+                effects.play(break_sound_handle.clone_weak());
             }
 
             // Despawn the grenade
             commands.entity(item_ent).despawn();
             // Cause the item to re-spawn by re-triggering spawner hydration
             commands
-                .entity(grenade.spawner)
+                .entity(crate_item.spawner)
                 .remove::<MapElementHydrated>();
 
-            // Spawn the damage region entity
-            commands
-                .spawn()
-                .insert(Rollback::new(ridp.next_id()))
-                .insert(*transform)
-                .insert(GlobalTransform::default())
-                .insert(Visibility::default())
-                .insert(ComputedVisibility::default())
-                .insert(DamageRegion {
-                    size: *damage_region_size,
-                })
-                .insert(Lifetime::new(*damage_region_lifetime));
             // Spawn the explosion sprite entity
             commands
                 .spawn()
@@ -318,13 +322,15 @@ fn update_lit_grenades(
                 .insert(ComputedVisibility::default())
                 .insert(AnimatedSprite {
                     start: 0,
-                    end: *explosion_frames,
-                    atlas: explosion_atlas_handle.inner.clone(),
+                    end: *breaking_anim_length,
+                    atlas: breaking_atlas_handle.inner.clone(),
                     repeat: false,
-                    fps: *explosion_fps,
+                    fps: *breaking_anim_fps,
                     ..default()
                 })
-                .insert(Lifetime::new(*explosion_lifetime));
+                .insert(Lifetime::new(
+                    *breaking_anim_fps * *breaking_anim_length as f32,
+                ));
         }
     }
 }

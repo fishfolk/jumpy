@@ -538,4 +538,8 @@ impl<'w, 's> CollisionWorld<'w, 's> {
                 || tile == TileCollision::JumpThrough
         }
     }
+
+    pub fn get_collider(&self, collider: Entity) -> &Collider {
+        self.actors.get(collider).unwrap().1
+    }
 }

@@ -18,6 +18,7 @@ pub mod player_spawner;
 pub mod sproinger;
 
 // Items
+pub mod crate_item;
 pub mod grenade;
 pub mod sword;
 
@@ -27,6 +28,7 @@ impl Plugin for MapElementsPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(decoration::DecorationPlugin)
             .add_plugin(grenade::GrenadePlugin)
+            .add_plugin(crate_item::CrateItemPlugin)
             .add_plugin(player_spawner::PlayerSpawnerPlugin)
             .add_plugin(sproinger::SproingerPlugin)
             .add_plugin(sword::SwordPlugin);

@@ -1223,6 +1223,10 @@ layers:
             - 309.5
           element: ../elements/item/grenade/grenade.element.yaml
         - pos:
+            - 719.0
+            - 400.5
+          element: ../elements/item/crate/crate.element.yaml
+        - pos:
             - 292.2272
             - 609.5
           element: ../elements/environment/fish_school/fish_school.element.yaml

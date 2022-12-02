@@ -445,6 +445,30 @@ impl AssetLoader for MapElementMetaLoader {
                         *handle = sound_handle.typed();
                     }
                 }
+                BuiltinElementKind::Crate {
+                    atlas,
+                    atlas_handle,
+                    breaking_atlas,
+                    breaking_atlas_handle,
+                    break_sound,
+                    break_sound_handle,
+                    ..
+                } => {
+                    for (atlas, atlas_handle) in [
+                        (atlas, atlas_handle),
+                        (breaking_atlas, breaking_atlas_handle),
+                    ] {
+                        let (path, handle) = get_relative_asset(load_context, self_path, atlas);
+                        *atlas_handle = AssetHandle::new(path.clone(), handle.typed());
+                        dependencies.push(path);
+                    }
+
+                    let (sound, handle) = (break_sound, break_sound_handle);
+                    let (sound_path, sound_handle) =
+                        get_relative_asset(load_context, self_path, sound);
+                    dependencies.push(sound_path);
+                    *handle = sound_handle.typed();
+                }
             }
 
             // Load preloaded assets

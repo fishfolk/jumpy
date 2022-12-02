@@ -39,6 +39,7 @@ impl Plugin for MapPlugin {
 /// script.
 #[derive(Reflect, Component, Default)]
 #[reflect(Component, Default)]
+#[component(storage = "SparseSet")]
 pub struct MapElementHydrated;
 
 /// If this component and a [`Transform`] component is added to any entity, it will be moved back to

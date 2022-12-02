@@ -416,7 +416,7 @@ impl AssetLoader for MapElementMetaLoader {
                     dependencies.push(path);
                     *sound_handle = handle.typed();
                 }
-                BuiltinElementKind::Grenades {
+                BuiltinElementKind::Grenade {
                     atlas,
                     atlas_handle,
                     explosion_atlas,

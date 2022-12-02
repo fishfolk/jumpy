@@ -208,7 +208,7 @@ pub enum BuiltinElementKind {
     /// Player spawner
     PlayerSpawner,
     /// Grenades item
-    Grenades {
+    Grenade {
         body_size: Vec2,
         body_offset: Vec2,
         grab_offset: Vec2,

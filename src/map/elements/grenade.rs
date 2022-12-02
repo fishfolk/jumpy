@@ -65,7 +65,7 @@ fn pre_update_in_game(
     elements.sort_by_key(|x| x.1);
     for (entity, _sort, map_element_handle, transform) in elements {
         let map_element = element_assets.get(map_element_handle).unwrap();
-        if let BuiltinElementKind::Grenades {
+        if let BuiltinElementKind::Grenade {
             body_size,
             body_offset,
             atlas_handle,
@@ -148,7 +148,7 @@ fn update_idle_grenades(
     ) in items
     {
         let meta = element_assets.get(meta_handle).unwrap();
-        let BuiltinElementKind::Grenades {
+        let BuiltinElementKind::Grenade {
             grab_offset,
             atlas_handle,
             throw_velocity,
@@ -265,7 +265,7 @@ fn update_lit_grenades(
     items.sort_by_key(|x| x.0.id());
     for (_, item_ent, mut grenade, transform, meta_handle) in items {
         let meta = element_assets.get(meta_handle).unwrap();
-        let BuiltinElementKind::Grenades {
+        let BuiltinElementKind::Grenade {
             fuse_time,
             damage_region_size,
             damage_region_lifetime,

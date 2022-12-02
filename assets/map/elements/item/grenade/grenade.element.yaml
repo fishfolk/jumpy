@@ -1,6 +1,6 @@
 name: Grenades
 category: Weapons
-builtin: !Grenades
+builtin: !Grenade
   atlas: ./grenade.atlas.yaml
   explosion_atlas: ./explosion.atlas.yaml
   fuse_time: 4.0

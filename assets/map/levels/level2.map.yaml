@@ -754,6 +754,22 @@ layers:
     kind: !element
       elements:
         - pos:
+            - 336
+            - 74
+          element: ../elements/environment/sproinger/sproinger.element.yaml
+        - pos:
+            - 752
+            - 74
+          element: ../elements/environment/sproinger/sproinger.element.yaml
+        - pos:
+            - 944
+            - 74
+          element: ../elements/environment/sproinger/sproinger.element.yaml
+        - pos:
+            - 706.8572
+            - 337.5
+          element: ../elements/item/sword/sword.element.yaml
+        - pos:
             - 536.0
             - 185.5
           element: ../elements/decoration/anemones/anemones.element.yaml
@@ -825,22 +841,6 @@ layers:
             - 95.5
           element: ../elements/item/kick_bomb/kick_bomb.element.yaml
         - pos:
-            - 343.1112
-            - 73.5
-          element: ../elements/environment/sproinger/sproinger.element.yaml
-        - pos:
-            - 758.1111
-            - 73.5
-          element: ../elements/environment/sproinger/sproinger.element.yaml
-        - pos:
-            - 949.4359
-            - 73.5
-          element: ../elements/environment/sproinger/sproinger.element.yaml
-        - pos:
-            - 706.8572
-            - 337.5
-          element: ../elements/item/sword/sword.element.yaml
-        - pos:
             - 224.0
             - 311.5
           element: ../elements/item/sword/sword.element.yaml
@@ -852,7 +852,7 @@ layers:
             - 192.0
           element: ../elements/environment/player_spawner/player_spawner.element.yaml
         - pos:
-            - 320.0
+            - 290.0
             - 96.0
           element: ../elements/environment/player_spawner/player_spawner.element.yaml
         - pos:

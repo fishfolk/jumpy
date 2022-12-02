@@ -1144,16 +1144,24 @@ layers:
     kind: !element
       elements:
         - pos:
-            - 434.74872
-            - 361.5
+            - 434
+            - 361
           element: ../elements/environment/sproinger/sproinger.element.yaml
         - pos:
-            - 84.00006
-            - 201.5
+            - 80
+            - 202
           element: ../elements/environment/sproinger/sproinger.element.yaml
         - pos:
-            - 787.7432
-            - 201.5
+            - 784
+            - 202
+          element: ../elements/environment/sproinger/sproinger.element.yaml
+        - pos:
+            - 288.0
+            - 105.5
+          element: ../elements/environment/sproinger/sproinger.element.yaml
+        - pos:
+            - 576.0
+            - 105.5
           element: ../elements/environment/sproinger/sproinger.element.yaml
         - pos:
             - 90.666664
@@ -1262,14 +1270,6 @@ layers:
             - 720.9998
             - 121.5
           element: ../elements/item/cannon/cannon.element.yaml
-        - pos:
-            - 312.0
-            - 105.5
-          element: ../elements/environment/sproinger/sproinger.element.yaml
-        - pos:
-            - 576.0
-            - 105.5
-          element: ../elements/environment/sproinger/sproinger.element.yaml
   - id: spawners
     kind: !element
       elements:

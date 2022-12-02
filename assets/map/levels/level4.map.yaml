@@ -1164,13 +1164,13 @@ layers:
     kind: !element
       elements:
         - pos:
+            - 560
+            - 106
+          element: ../elements/environment/sproinger/sproinger.element.yaml
+        - pos:
             - 984.5713
             - 247.5
           element: ../elements/item/sniper_rifle/sniper_rifle.element.yaml
-        - pos:
-            - 107.4286
-            - 225.5
-          element: ../elements/item/blunderbass/blunderbass.element.yaml
         - pos:
             - 560.0
             - 271.5
@@ -1221,11 +1221,15 @@ layers:
           element: ../elements/decoration/anemones/anemones.element.yaml
         - pos:
             - 968.0
-            - 257.5
+            - 249.5
           element: ../elements/decoration/anemones/anemones.element.yaml
   - id: items
     kind: !element
       elements:
+        - pos:
+            - 107.4286
+            - 225.5
+          element: ../elements/item/blunderbass/blunderbass.element.yaml
         - pos:
             - 120.40002
             - 129.5
@@ -1274,10 +1278,6 @@ layers:
             - 800.0
             - 425.5
           element: ../elements/item/mines/mines.element.yaml
-        - pos:
-            - 564.9702
-            - 105.5
-          element: ../elements/environment/sproinger/sproinger.element.yaml
   - id: spawners
     kind: !element
       elements:

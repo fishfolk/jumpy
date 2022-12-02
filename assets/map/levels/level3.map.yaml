@@ -1420,11 +1420,11 @@ layers:
       elements:
         - pos:
             - 48.0
-            - 233.5
+            - 234
           element: ../elements/environment/sproinger/sproinger.element.yaml
         - pos:
-            - 820.0
-            - 233.5
+            - 816.0
+            - 234
           element: ../elements/environment/sproinger/sproinger.element.yaml
         - pos:
             - 792.0

@@ -133,29 +133,33 @@ fn update_kinematic_bodies(
 
         let mut position = transform.translation.truncate() + body.offset;
 
-        // Shove objects out of walls
-        while collision_world.collide_solids(position, body.size.x, body.size.y)
-            == TileCollision::Solid
-        {
-            let rect = collisions::Rect::new(position.x, position.y, body.size.x, body.size.y);
+        if body.has_mass {
+            // Shove objects out of walls
+            while collision_world.collide_solids(position, body.size.x, body.size.y)
+                == TileCollision::Solid
+            {
+                let rect = collisions::Rect::new(position.x, position.y, body.size.x, body.size.y);
 
-            match (
-                collision_world.collide_tag(1, rect.top_left(), 0.0, 0.0) == TileCollision::Solid,
-                collision_world.collide_tag(1, rect.top_right(), 0.0, 0.0) == TileCollision::Solid,
-                collision_world.collide_tag(1, rect.bottom_right(), 0.0, 0.0)
-                    == TileCollision::Solid,
-                collision_world.collide_tag(1, rect.bottom_left(), 0.0, 0.0)
-                    == TileCollision::Solid,
-            ) {
-                // Check for collisions on each side of the rectangle
-                (false, false, _, _) => position.y += 1.0,
-                (_, false, false, _) => position.x += 1.0,
-                (_, _, false, false) => position.y -= 1.0,
-                (false, _, _, false) => position.x -= 1.0,
-                // If none of the sides of the rectangle are un-collided, then we don't know
-                // which direction to move to get out of the wall, and we just give up.
-                _ => {
-                    break;
+                match (
+                    collision_world.collide_tag(1, rect.top_left(), 0.0, 0.0)
+                        == TileCollision::Solid,
+                    collision_world.collide_tag(1, rect.top_right(), 0.0, 0.0)
+                        == TileCollision::Solid,
+                    collision_world.collide_tag(1, rect.bottom_right(), 0.0, 0.0)
+                        == TileCollision::Solid,
+                    collision_world.collide_tag(1, rect.bottom_left(), 0.0, 0.0)
+                        == TileCollision::Solid,
+                ) {
+                    // Check for collisions on each side of the rectangle
+                    (false, false, _, _) => position.y += 1.0,
+                    (_, false, false, _) => position.x += 1.0,
+                    (_, _, false, false) => position.y -= 1.0,
+                    (false, _, _, false) => position.x -= 1.0,
+                    // If none of the sides of the rectangle are un-collided, then we don't know
+                    // which direction to move to get out of the wall, and we just give up.
+                    _ => {
+                        break;
+                    }
                 }
             }
         }

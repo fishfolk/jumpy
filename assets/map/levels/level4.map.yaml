@@ -1277,7 +1277,7 @@ layers:
         - pos:
             - 800.0
             - 425.5
-          element: ../elements/item/mines/mines.element.yaml
+          element: ../elements/item/mine/mine.element.yaml
   - id: spawners
     kind: !element
       elements:

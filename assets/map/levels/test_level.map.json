@@ -999,7 +999,7 @@
                         },
                         {
                             "pos": [804, 315.5],
-                            "element": "../elements/item/mines/mines.element.yaml"
+                            "element": "../elements/item/mine/mine.element.yaml"
                         },
                         {
                             "pos": [445.77790000000005, 51.5],

@@ -263,7 +263,7 @@ pub enum BuiltinElementKind {
         #[serde(skip)]
         sound_handle: Handle<AudioSource>,
     },
-    ///
+    /// The throwable crate item
     Crate {
         atlas: String,
         #[serde(skip)]
@@ -272,7 +272,7 @@ pub enum BuiltinElementKind {
         breaking_atlas: String,
         #[serde(skip)]
         breaking_atlas_handle: AssetHandle<TextureAtlas>,
-        breaking_anim_length: usize,
+        breaking_anim_frames: usize,
         breaking_anim_fps: f32,
 
         break_sound: String,
@@ -286,5 +286,37 @@ pub enum BuiltinElementKind {
         grab_offset: Vec2,
         // How long to wait before despawning a thrown crate, if it hans't it anything yet.
         break_timeout: f32,
+    },
+    /// The mine item
+    Mine {
+        atlas: String,
+        #[serde(skip)]
+        atlas_handle: AssetHandle<TextureAtlas>,
+
+        damage_region_size: Vec2,
+        damage_region_lifetime: f32,
+        explosion_atlas: String,
+        #[serde(skip)]
+        explosion_atlas_handle: AssetHandle<TextureAtlas>,
+        explosion_anim_frames: usize,
+        explosion_anim_fps: f32,
+
+        arm_sound: String,
+        armed_anim_start: usize,
+        armed_anim_end: usize,
+        armed_anim_fps: f32,
+        #[serde(skip)]
+        arm_sound_handle: Handle<AudioSource>,
+        explosion_sound: String,
+        #[serde(skip)]
+        explosion_sound_handle: Handle<AudioSource>,
+
+        throw_velocity: Vec2,
+        /// The delay after throwing the mine, before it becomes armed and will blow up on contact.
+        arm_delay: f32,
+
+        body_size: Vec2,
+        body_offset: Vec2,
+        grab_offset: Vec2,
     },
 }

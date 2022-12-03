@@ -3,20 +3,20 @@
 //! This module is inconsistently named with the rest of the modules ( i.e. has an `_item` suffix )
 //! because `crate` is a Rust keyword.
 
-use crate::{physics::collisions::TileCollision, player::PlayerKillCommand};
+use crate::player::PlayerKillCommand;
 
 use super::*;
 
-pub struct CrateItemPlugin;
+pub struct MinePlugin;
 
 #[derive(Reflect, Component, Clone, Debug)]
 #[reflect(Component)]
-pub struct IdleCrateItem {
+pub struct IdleMine {
     /// The entity ID of the map element that spawned the crate
     spawner: Entity,
 }
 
-impl Default for IdleCrateItem {
+impl Default for IdleMine {
     fn default() -> Self {
         Self {
             spawner: crate::utils::invalid_entity(),
@@ -26,33 +26,30 @@ impl Default for IdleCrateItem {
 
 #[derive(Reflect, Component, Clone, Debug)]
 #[reflect(Component, Default)]
-pub struct ThrownCrateItem {
+pub struct ThrownMine {
     /// The entity ID of the map element that spawned the crate
     spawner: Entity,
-    /// The entity ID of the player that threw the box
-    owner: Entity,
     age: f32,
 }
 
-impl Default for ThrownCrateItem {
+impl Default for ThrownMine {
     fn default() -> Self {
         Self {
             spawner: crate::utils::invalid_entity(),
-            owner: crate::utils::invalid_entity(),
             age: 0.0,
         }
     }
 }
 
-impl Plugin for CrateItemPlugin {
+impl Plugin for MinePlugin {
     fn build(&self, app: &mut App) {
         app.add_rollback_system(RollbackStage::PreUpdate, pre_update_in_game)
-            .add_rollback_system(RollbackStage::Update, update_thrown_crates)
-            .add_rollback_system(RollbackStage::Update, update_idle_crates)
+            .add_rollback_system(RollbackStage::Update, update_thrown_mines)
+            .add_rollback_system(RollbackStage::Update, update_idle_mines)
             .extend_rollback_plugin(|plugin| {
                 plugin
-                    .register_rollback_type::<IdleCrateItem>()
-                    .register_rollback_type::<ThrownCrateItem>()
+                    .register_rollback_type::<IdleMine>()
+                    .register_rollback_type::<ThrownMine>()
             });
     }
 }
@@ -71,7 +68,7 @@ fn pre_update_in_game(
     elements.sort_by_key(|x| x.1);
     for (entity, _sort, map_element_handle, transform) in elements {
         let map_element = element_assets.get(map_element_handle).unwrap();
-        if let BuiltinElementKind::Crate {
+        if let BuiltinElementKind::Mine {
             body_size,
             body_offset,
             atlas_handle,
@@ -84,10 +81,10 @@ fn pre_update_in_game(
                 .spawn()
                 .insert(Rollback::new(ridp.next_id()))
                 .insert(Item {
-                    script: "core:crate".into(),
+                    script: "core:mine".into(),
                 })
-                .insert(IdleCrateItem { spawner: entity })
-                .insert(EntityName("Item: Crate".into()))
+                .insert(IdleMine { spawner: entity })
+                .insert(EntityName("Item: Mine".into()))
                 .insert(AnimatedSprite {
                     start: 0,
                     end: 0,
@@ -114,14 +111,14 @@ fn pre_update_in_game(
     }
 }
 
-fn update_idle_crates(
+fn update_idle_mines(
     mut commands: Commands,
     players: Query<(&AnimatedSprite, &Transform, &KinematicBody), With<PlayerIdx>>,
     mut grenades: Query<
         (
             &Rollback,
             Entity,
-            &IdleCrateItem,
+            &IdleMine,
             &mut Transform,
             &mut AnimatedSprite,
             &mut KinematicBody,
@@ -151,7 +148,7 @@ fn update_idle_crates(
     ) in items
     {
         let meta = element_assets.get(meta_handle).unwrap();
-        let BuiltinElementKind::Crate {
+        let BuiltinElementKind::Mine {
             grab_offset,
             atlas_handle,
             throw_velocity,
@@ -182,15 +179,15 @@ fn update_idle_crates(
                 // Despawn the item from the player's hand
                 commands.entity(item_ent).despawn();
 
-                // Spawn a new, lit grenade
+                // Spawn a new, thrown mine
+                let pos = player_transform.translation
+                    + (*grab_offset * horizontal_flip_factor).extend(0.0);
                 commands
                     .spawn()
                     .insert(Rollback::new(ridp.next_id()))
-                    .insert(Name::new("Crate ( Thrown )"))
-                    .insert(Transform::from_translation(
-                        player_transform.translation
-                            + (*grab_offset * horizontal_flip_factor).extend(0.0),
-                    ))
+                    .insert(Name::new("Mine ( Thrown )"))
+                    .insert(MapRespawnPoint(pos))
+                    .insert(Transform::from_translation(pos))
                     .insert(GlobalTransform::default())
                     .insert(Visibility::default())
                     .insert(ComputedVisibility::default())
@@ -200,15 +197,13 @@ fn update_idle_crates(
                     })
                     .insert(meta_handle.clone_weak())
                     .insert(body.clone())
-                    .insert(ThrownCrateItem {
+                    .insert(ThrownMine {
                         spawner: crate_item.spawner,
-                        owner: parent.get(),
                         ..default()
                     })
                     .insert(KinematicBody {
                         velocity: *throw_velocity * horizontal_flip_factor + player_body.velocity,
                         is_deactivated: false,
-                        fall_through: true,
                         ..body.clone()
                     });
             }
@@ -242,15 +237,16 @@ fn update_idle_crates(
     }
 }
 
-fn update_thrown_crates(
+fn update_thrown_mines(
     mut commands: Commands,
     players: Query<Entity, With<PlayerIdx>>,
-    mut crates: Query<
+    mut mines: Query<
         (
             &Rollback,
             Entity,
-            &mut ThrownCrateItem,
+            &mut ThrownMine,
             &Transform,
+            &mut AnimatedSprite,
             &Handle<MapElementMeta>,
         ),
         Without<PlayerIdx>,
@@ -261,16 +257,22 @@ fn update_thrown_crates(
     effects: Res<AudioChannel<EffectsChannel>>,
     collision_world: CollisionWorld,
 ) {
-    let mut items = crates.iter_mut().collect::<Vec<_>>();
+    let mut items = mines.iter_mut().collect::<Vec<_>>();
     items.sort_by_key(|x| x.0.id());
-    for (_, item_ent, mut crate_item, transform, meta_handle) in items {
+    for (_, item_ent, mut crate_item, transform, mut sprite, meta_handle) in items {
         let meta = element_assets.get(meta_handle).unwrap();
-        let BuiltinElementKind::Crate {
-            breaking_atlas_handle,
-            breaking_anim_fps,
-            breaking_anim_frames: breaking_anim_length,
-            break_sound_handle,
-            break_timeout,
+        let BuiltinElementKind::Mine {
+            explosion_atlas_handle,
+            explosion_anim_fps,
+            explosion_anim_frames,
+            explosion_sound_handle,
+            arm_delay,
+            arm_sound_handle,
+            armed_anim_start,
+            armed_anim_end,
+            armed_anim_fps,
+            damage_region_size,
+            damage_region_lifetime,
             ..
         } = &meta.builtin else {
             unreachable!();
@@ -279,30 +281,30 @@ fn update_thrown_crates(
 
         crate_item.age += frame_time;
 
-        let colliding_with_wall = {
-            let collider = collision_world.get_collider(item_ent);
-            let width = collider.width + 2.0;
-            let height = collider.width + 2.0;
-            let pos = transform.translation.truncate();
-            collision_world.collide_solids(pos, width, height) == TileCollision::Solid
-        };
+        if crate_item.age >= *arm_delay && crate_item.age - *arm_delay < frame_time {
+            if player_inputs.is_confirmed {
+                effects.play(arm_sound_handle.clone_weak());
+            }
+
+            sprite.start = *armed_anim_start;
+            sprite.end = *armed_anim_end;
+            sprite.fps = *armed_anim_fps;
+            sprite.repeat = true;
+        }
 
         let colliding_with_players = collision_world
             .actor_collisions(item_ent)
             .into_iter()
-            .filter(|&x| x != crate_item.owner && players.contains(x))
+            .filter(|&x| players.contains(x))
             .collect::<Vec<_>>();
 
-        for &player in &colliding_with_players {
-            commands.add(PlayerKillCommand::new(player));
-        }
+        if !colliding_with_players.is_empty() && crate_item.age >= *arm_delay {
+            for &player in &colliding_with_players {
+                commands.add(PlayerKillCommand::new(player));
+            }
 
-        if !colliding_with_players.is_empty()
-            || colliding_with_wall
-            || crate_item.age > *break_timeout
-        {
             if player_inputs.is_confirmed {
-                effects.play(break_sound_handle.clone_weak());
+                effects.play(explosion_sound_handle.clone_weak());
             }
 
             // Despawn the grenade
@@ -312,6 +314,18 @@ fn update_thrown_crates(
                 .entity(crate_item.spawner)
                 .remove::<MapElementHydrated>();
 
+            // Spawn the damage region entity
+            commands
+                .spawn()
+                .insert(Rollback::new(ridp.next_id()))
+                .insert(*transform)
+                .insert(GlobalTransform::default())
+                .insert(Visibility::default())
+                .insert(ComputedVisibility::default())
+                .insert(DamageRegion {
+                    size: *damage_region_size,
+                })
+                .insert(Lifetime::new(*damage_region_lifetime));
             // Spawn the explosion sprite entity
             commands
                 .spawn()
@@ -322,14 +336,14 @@ fn update_thrown_crates(
                 .insert(ComputedVisibility::default())
                 .insert(AnimatedSprite {
                     start: 0,
-                    end: *breaking_anim_length,
-                    atlas: breaking_atlas_handle.inner.clone(),
+                    end: *explosion_anim_frames,
+                    atlas: explosion_atlas_handle.inner.clone(),
                     repeat: false,
-                    fps: *breaking_anim_fps,
+                    fps: *explosion_anim_fps,
                     ..default()
                 })
                 .insert(Lifetime::new(
-                    *breaking_anim_fps * *breaking_anim_length as f32,
+                    *explosion_anim_fps * *explosion_anim_frames as f32,
                 ));
         }
     }

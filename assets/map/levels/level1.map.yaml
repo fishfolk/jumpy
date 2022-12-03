@@ -1227,6 +1227,10 @@ layers:
             - 400.5
           element: ../elements/item/crate/crate.element.yaml
         - pos:
+            - 143
+            - 410
+          element: ../elements/item/mine/mine.element.yaml
+        - pos:
             - 292.2272
             - 609.5
           element: ../elements/environment/fish_school/fish_school.element.yaml
@@ -1269,7 +1273,7 @@ layers:
         - pos:
             - 712.0
             - 393.5
-          element: ../elements/item/mines/mines.element.yaml
+          element: ../elements/item/mine/mine.element.yaml
         - pos:
             - 720.9998
             - 121.5

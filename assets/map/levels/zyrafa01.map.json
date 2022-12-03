@@ -630,7 +630,7 @@
                         },
                         {
                             "pos": [271.76469999999995, 393.5],
-                            "element": "../elements/item/mines/mines.element.yaml"
+                            "element": "../elements/item/mine/mine.element.yaml"
                         },
                         {
                             "pos": [95.42862, 337.5],
@@ -642,7 +642,7 @@
                         },
                         {
                             "pos": [616, 393.5],
-                            "element": "../elements/item/mines/mines.element.yaml"
+                            "element": "../elements/item/mine/mine.element.yaml"
                         },
                         {
                             "pos": [439.05884000000003, 361.5],

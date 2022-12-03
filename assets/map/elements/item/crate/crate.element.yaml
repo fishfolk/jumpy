@@ -6,7 +6,7 @@ builtin: !Crate
   atlas: ./crate.atlas.yaml
 
   breaking_atlas: ./crate_breaking.atlas.yaml
-  breaking_anim_length: 25
+  breaking_anim_frames: 25
   breaking_anim_fps: 30
 
   # TODO: Better break sound

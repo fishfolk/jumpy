@@ -1227,57 +1227,49 @@ layers:
     kind: !element
       elements:
         - pos:
-            - 107.4286
-            - 225.5
-          element: ../elements/item/blunderbass/blunderbass.element.yaml
-        - pos:
-            - 120.40002
-            - 129.5
-          element: ../elements/item/crate/crate.element.yaml
-        - pos:
-            - 1024.0
-            - 137.5
-          element: ../elements/item/crate/crate.element.yaml
-        - pos:
-            - 111.40014
-            - 337.5
-          element: ../elements/item/crate/crate.element.yaml
-        - pos:
-            - 1043.9714
-            - 329.5
-          element: ../elements/item/crate/crate.element.yaml
-        - pos:
-            - 392.0
-            - 433.5
-          element: ../elements/item/crate/crate.element.yaml
-        - pos:
-            - 677.2236
-            - 433.5
-          element: ../elements/item/crate/crate.element.yaml
-        - pos:
-            - 616.0
-            - 111.5
-          element: ../elements/item/musket/musket.element.yaml
-        - pos:
-            - 808.0
-            - 463.5
+            - 562
+            - 275
           element: ../elements/item/sword/sword.element.yaml
         - pos:
-            - 536.1026
-            - 441.5
-          element: ../elements/item/sword/sword.element.yaml
+            - 1038
+            - 130
+          element: ../elements/item/stomp_boots/stomp_boots.element.yaml
         - pos:
-            - 884.0
-            - 145.5
-          element: ../elements/item/sword/sword.element.yaml
+            - 76
+            - 130
+          element: ../elements/item/stomp_boots/stomp_boots.element.yaml
         - pos:
-            - 277.7143
-            - 121.5
-          element: ../elements/item/sword/sword.element.yaml
-        - pos:
-            - 800.0
-            - 425.5
+            - 1024
+            - 258
           element: ../elements/item/mine/mine.element.yaml
+        - pos:
+            - 127
+            - 257
+          element: ../elements/item/mine/mine.element.yaml
+        - pos:
+            - 385
+            - 446
+          element: ../elements/item/grenade/grenade.element.yaml
+        - pos:
+            - 800
+            - 446
+          element: ../elements/item/grenade/grenade.element.yaml
+        - pos:
+            - 1023
+            - 352
+          element: ../elements/item/grenade/grenade.element.yaml
+        - pos:
+            - 128
+            - 352
+          element: ../elements/item/grenade/grenade.element.yaml
+        - pos:
+            - 247
+            - 124
+          element: ../elements/item/grenade/grenade.element.yaml
+        - pos:
+            - 822
+            - 124
+          element: ../elements/item/grenade/grenade.element.yaml
   - id: spawners
     kind: !element
       elements:

@@ -1227,6 +1227,22 @@ layers:
             - 309.5
           element: ../elements/item/grenade/grenade.element.yaml
         - pos:
+            - 738
+            - 111
+          element: ../elements/item/grenade/grenade.element.yaml
+        - pos:
+            - 643
+            - 520
+          element: ../elements/item/grenade/grenade.element.yaml
+        - pos:
+            - 223
+            - 520
+          element: ../elements/item/grenade/grenade.element.yaml
+        - pos:
+            - 131
+            - 111
+          element: ../elements/item/grenade/grenade.element.yaml
+        - pos:
             - 719.0
             - 400.5
           element: ../elements/item/crate/crate.element.yaml

@@ -38,6 +38,10 @@ pub struct PlayerSpritesheetMeta {
     pub rows: usize,
     pub animation_fps: f32,
     pub animations: HashMap<String, AnimationClip>,
+    #[serde(default)]
+    pub decorations: Vec<String>,
+    #[serde(skip)]
+    pub decoration_handles: Vec<Handle<TextureAtlas>>,
 }
 
 #[derive(Reflect, Deserialize, Clone, Debug, Default)]
@@ -77,6 +81,7 @@ impl PlayerSpritesheetMeta {
                         start: clip.frames.start,
                         end: clip.frames.end,
                         atlas: self.atlas_handle.inner.clone_weak(),
+                        stacked_atlases: self.decoration_handles.clone(),
                         flip_x: false,
                         flip_y: false,
                         repeat: clip.repeat,

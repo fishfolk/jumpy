@@ -64,10 +64,13 @@ fn pre_update_in_game(
                 break;
             };
 
+            let mut spawn_location = spawn_point.translation;
+            spawn_location.z += i as f32 * 0.1;
+
             commands
                 .spawn()
                 .insert(PlayerIdx(i))
-                .insert(**spawn_point)
+                .insert(Transform::from_translation(spawn_location))
                 .insert(Rollback::new(ridp.next_id()));
         }
     }

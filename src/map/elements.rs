@@ -21,6 +21,7 @@ pub mod sproinger;
 pub mod crate_item;
 pub mod grenade;
 pub mod mine;
+pub mod stomp_boots;
 pub mod sword;
 
 pub struct MapElementsPlugin;
@@ -33,6 +34,7 @@ impl Plugin for MapElementsPlugin {
             .add_plugin(player_spawner::PlayerSpawnerPlugin)
             .add_plugin(sproinger::SproingerPlugin)
             .add_plugin(mine::MinePlugin)
+            .add_plugin(stomp_boots::StompBootsPlugin)
             .add_plugin(sword::SwordPlugin);
     }
 }

@@ -319,4 +319,18 @@ pub enum BuiltinElementKind {
         body_offset: Vec2,
         grab_offset: Vec2,
     },
+
+    StompBoots {
+        map_icon: String,
+        #[serde(skip)]
+        map_icon_handle: Handle<TextureAtlas>,
+
+        player_decoration: String,
+        #[serde(skip)]
+        player_decoration_handle: Handle<TextureAtlas>,
+
+        body_size: Vec2,
+        body_offset: Vec2,
+        grab_offset: Vec2,
+    },
 }

@@ -1219,6 +1219,10 @@ layers:
     kind: !element
       elements:
         - pos:
+            - 365
+            - 110
+          element: ../elements/item/stomp_boots/stomp_boots.element.yaml
+        - pos:
             - 536.0
             - 309.5
           element: ../elements/item/grenade/grenade.element.yaml
@@ -1270,14 +1274,6 @@ layers:
             - 171.5714
             - 409.5
           element: ../elements/item/kick_bomb/kick_bomb.element.yaml
-        - pos:
-            - 712.0
-            - 393.5
-          element: ../elements/item/mine/mine.element.yaml
-        - pos:
-            - 720.9998
-            - 121.5
-          element: ../elements/item/cannon/cannon.element.yaml
   - id: spawners
     kind: !element
       elements:

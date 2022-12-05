@@ -766,10 +766,6 @@ layers:
             - 74
           element: ../elements/environment/sproinger/sproinger.element.yaml
         - pos:
-            - 706.8572
-            - 337.5
-          element: ../elements/item/sword/sword.element.yaml
-        - pos:
             - 536.0
             - 185.5
           element: ../elements/decoration/anemones/anemones.element.yaml
@@ -801,9 +797,6 @@ layers:
             - 120.0
             - 89.5
           element: ../elements/decoration/anemones/anemones.element.yaml
-  - id: items
-    kind: !element
-      elements:
         - pos:
             - 222.6668
             - 127.5
@@ -813,37 +806,64 @@ layers:
             - 185.5
           element: ../elements/environment/fish_school/fish_school.element.yaml
         - pos:
-            - 712.0001
-            - 73.5
-          element: ../elements/environment/crab/crab.element.yaml
-        - pos:
             - 891.3332
             - 241.5
           element: ../elements/environment/fish_school/fish_school.element.yaml
         - pos:
+            - 712.0001
+            - 73.5
+          element: ../elements/environment/crab/crab.element.yaml
+        - pos:
             - 478.6667
             - 265.5
           element: ../elements/environment/crab/crab.element.yaml
+  - id: items
+    kind: !element
+      elements:
         - pos:
-            - 256.0
-            - 73.5
-          element: ../elements/item/musket/musket.element.yaml
-        - pos:
-            - 652.5714
-            - 73.5
-          element: ../elements/item/musket/musket.element.yaml
-        - pos:
-            - 456.0
-            - 285.5
-          element: ../elements/item/kick_bomb/kick_bomb.element.yaml
-        - pos:
-            - 1015.1428
-            - 95.5
-          element: ../elements/item/kick_bomb/kick_bomb.element.yaml
+            - 706.8572
+            - 337.5
+          element: ../elements/item/sword/sword.element.yaml
         - pos:
             - 224.0
             - 311.5
           element: ../elements/item/sword/sword.element.yaml
+        - pos:
+            - 500
+            - 263
+          element: ../elements/item/mine/mine.element.yaml
+        - pos:
+            - 180
+            - 178
+          element: ../elements/item/crate/crate.element.yaml
+        - pos:
+            - 994
+            - 81
+          element: ../elements/item/crate/crate.element.yaml
+        - pos:
+            - 800
+            - 207
+          element: ../elements/item/crate/crate.element.yaml
+        - pos:
+            - 449 
+            - 276
+          element: ../elements/item/crate/crate.element.yaml
+        - pos:
+            - 854
+            - 207
+          element: ../elements/item/grenade/grenade.element.yaml
+        - pos:
+            - 644
+            - 89
+          element: ../elements/item/grenade/grenade.element.yaml
+        - pos:
+            - 93
+            - 89
+          element: ../elements/item/grenade/grenade.element.yaml
+        - pos:
+            - 262
+            - 89
+          element: ../elements/item/grenade/grenade.element.yaml
   - id: spawners
     kind: !element
       elements:

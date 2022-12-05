@@ -170,7 +170,7 @@ fn animate_sprites(
                             flip_y: animated_sprite.flip_y,
                             ..default()
                         },
-                        transform: Transform::from_xyz(0.0, 0.0, i as f32 * STACK_Z_DIFF),
+                        transform: Transform::from_xyz(0.0, 0.0, (i + 1) as f32 * STACK_Z_DIFF),
                         ..default()
                     })
                     .insert(StackedAtlas)

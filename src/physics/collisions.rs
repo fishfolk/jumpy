@@ -30,6 +30,16 @@ impl Rect {
     }
 
     #[inline]
+    pub fn width(&self) -> f32 {
+        self.max.x - self.min.x
+    }
+
+    #[inline]
+    pub fn height(&self) -> f32 {
+        self.max.y - self.min.y
+    }
+
+    #[inline]
     pub fn left(&self) -> f32 {
         self.min.x
     }
@@ -144,7 +154,7 @@ pub struct Collider {
 }
 
 impl Collider {
-    fn rect(&self) -> Rect {
+    pub fn rect(&self) -> Rect {
         Rect::new(self.pos.x, self.pos.y, self.width, self.height)
     }
 }

@@ -512,6 +512,22 @@ impl AssetLoader for MapElementMetaLoader {
                         *handle = sound_handle.typed();
                     }
                 }
+                BuiltinElementKind::StompBoots {
+                    map_icon,
+                    map_icon_handle: map_icon_atlas,
+                    player_decoration,
+                    player_decoration_handle,
+                    ..
+                } => {
+                    for (atlas, atlas_handle) in [
+                        (map_icon, map_icon_atlas),
+                        (player_decoration, player_decoration_handle),
+                    ] {
+                        let (path, handle) = get_relative_asset(load_context, self_path, atlas);
+                        *atlas_handle = handle.typed();
+                        dependencies.push(path);
+                    }
+                }
             }
 
             // Load preloaded assets

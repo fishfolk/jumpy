@@ -237,7 +237,7 @@ impl AssetLoader for PlayerMetaLoader {
         load_context: &'a mut bevy::asset::LoadContext,
     ) -> bevy::utils::BoxedFuture<'a, Result<(), anyhow::Error>> {
         Box::pin(async move {
-            let self_path = load_context.path();
+            let self_path = &load_context.path().to_owned();
             let mut dependencies = Vec::new();
             let mut meta: PlayerMeta = if self_path.extension() == Some(OsStr::new("json")) {
                 serde_json::from_slice(bytes)?
@@ -271,6 +271,20 @@ impl AssetLoader for PlayerMetaLoader {
                 .with_dependency(atlas_path.clone()),
             );
             meta.spritesheet.atlas_handle = AssetHandle::new(atlas_path, atlas_handle);
+            for (i, decoration) in meta.spritesheet.decorations.iter().enumerate() {
+                let (path, handle) = get_relative_asset(load_context, self_path, decoration);
+                dependencies.push(path);
+                let atlas_handle = load_context.set_labeled_asset(
+                    &format!("decoration_atlas_{}", i),
+                    LoadedAsset::new(TextureAtlas::from_grid(
+                        handle.typed(),
+                        meta.spritesheet.tile_size.as_vec2(),
+                        meta.spritesheet.columns,
+                        meta.spritesheet.rows,
+                    )),
+                );
+                meta.spritesheet.decoration_handles.push(atlas_handle);
+            }
 
             load_context.set_default_asset(LoadedAsset::new(meta).with_dependencies(dependencies));
 

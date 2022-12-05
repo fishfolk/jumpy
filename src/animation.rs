@@ -56,6 +56,7 @@ pub struct AnimatedSprite {
     pub repeat: bool,
     pub fps: f32,
     pub timer: f32,
+    pub stacked_atlases: Vec<Handle<TextureAtlas>>,
 }
 
 impl Clone for AnimatedSprite {
@@ -69,6 +70,7 @@ impl Clone for AnimatedSprite {
             repeat: self.repeat,
             fps: self.fps,
             atlas: self.atlas.clone_weak(),
+            stacked_atlases: self.stacked_atlases.clone(),
             timer: self.timer,
         }
     }
@@ -90,10 +92,25 @@ pub struct AnimationBank {
     pub last_animation: String,
 }
 
-fn animate_sprites(mut animated_sprites: Query<(&mut AnimatedSprite, &mut TextureAtlasSprite)>) {
-    for (mut animated_sprite, mut atlas_sprite) in &mut animated_sprites {
+#[derive(Component, Clone, Copy, Default)]
+pub struct StackedAtlas;
+
+fn animate_sprites(
+    mut commands: Commands,
+    mut animated_sprites: Query<(Entity, &mut AnimatedSprite), With<TextureAtlasSprite>>,
+    mut texture_atlases: Query<(
+        &mut TextureAtlasSprite,
+        &Handle<TextureAtlas>,
+        Option<&Parent>,
+        Option<&StackedAtlas>,
+    )>,
+) {
+    for (sprite_ent, mut animated_sprite) in &mut animated_sprites {
+        let (mut atlas_sprite, ..) = texture_atlases.get_mut(sprite_ent).unwrap();
+
         animated_sprite.timer += 1.0 / crate::FPS as f32;
         atlas_sprite.flip_x = animated_sprite.flip_x;
+        atlas_sprite.flip_y = animated_sprite.flip_y;
 
         if animated_sprite.timer > 1.0 / animated_sprite.fps {
             animated_sprite.timer = 0.0;
@@ -110,7 +127,57 @@ fn animate_sprites(mut animated_sprites: Query<(&mut AnimatedSprite, &mut Textur
             animated_sprite.index %= (animated_sprite.end - animated_sprite.start).max(1);
         }
 
-        atlas_sprite.index = animated_sprite.start + animated_sprite.index;
+        let sprite_index = animated_sprite.start + animated_sprite.index;
+        atlas_sprite.index = sprite_index;
+
+        // Now we need to handle all the decorations
+        let mut pending_stacks = animated_sprite
+            .stacked_atlases
+            .iter()
+            .map(Some)
+            .collect::<Vec<_>>();
+
+        // If there are already spawned images for these stacked atlases, then update them
+        for (mut sprite, atlas_handle, ..) in
+            texture_atlases
+                .iter_mut()
+                .filter(|(_, _, parent, stacked)| {
+                    parent.map(|x| x.get()) == Some(sprite_ent) && stacked.is_some()
+                })
+        {
+            // Take this sprite out of the list of pending stacks
+            for item in &mut pending_stacks {
+                if *item == Some(atlas_handle) {
+                    *item = None;
+                }
+            }
+            sprite.flip_x = animated_sprite.flip_x;
+            sprite.flip_y = animated_sprite.flip_y;
+            sprite.index = sprite_index;
+        }
+
+        // For any stacked sprite that we haven't done yet
+        const STACK_Z_DIFF: f32 = 0.01;
+        for (i, atlas) in pending_stacks.into_iter().enumerate() {
+            if let Some(atlas) = atlas {
+                let stack_ent = commands
+                    .spawn()
+                    .insert_bundle(SpriteSheetBundle {
+                        texture_atlas: atlas.clone_weak(),
+                        sprite: TextureAtlasSprite {
+                            index: sprite_index,
+                            flip_x: animated_sprite.flip_x,
+                            flip_y: animated_sprite.flip_y,
+                            ..default()
+                        },
+                        transform: Transform::from_xyz(0.0, 0.0, i as f32 * STACK_Z_DIFF),
+                        ..default()
+                    })
+                    .insert(StackedAtlas)
+                    .id();
+                commands.entity(sprite_ent).add_child(stack_ent);
+            }
+        }
     }
 }
 

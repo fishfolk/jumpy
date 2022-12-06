@@ -19,7 +19,7 @@ Fish Folk: Jumpy is a tactical 2D shooter, played by up to 4 players online or o
 
 ### Status
 
-The game is currently under re-construction as it is being rewritten to use the [Bevy] game engine. The game is playable, but some maps have not been fully ported, many items are missing, and there are several bugs.
+The game is currently under re-construction as it is being rewritten to use the [Bevy] game engine. There are now 4 stable maps and 4 items in the new version, and the game is nearly ready for another release.
 
 [Bevy]: https://bevyengine.org
 
@@ -32,16 +32,21 @@ Anyone involved in the Fish Folk community must follow our [code of conduct](htt
 If you'd like to make something for Fish Folk, check out our [help-wanted](https://github.com/fishfolks/jumpy/labels/help%20wanted) issues or just ask us on [Discord](https://discord.gg/4smxjcheE5). We'll soon post an updated roadmap for the next month or two of work ahead.
 
 Before committing and opening a PR, please run the following commands and follow their instructions:
+
 1. `cargo clippy -- -W clippy::correctness -D warnings`
 2. `cargo fmt`
 
 ### Learning Materials
-- https://fishfolks.github.io/jumpy/
-- https://macroquad.rs/tutorials/fish-tutorial/ (outdated)
-- https://not-fl3.github.io/platformer-book/intro.html (wip)
-- https://cleancut.github.io/rusty_engine/
-- https://sokoban.iolivia.me/
-- https://pragprog.com/titles/hwrust/hands-on-rust/
+
+#### Rust
+
+- [Rusty Engine Tutorial](https://cleancut.github.io/rusty_engine/)
+- [Rust sokoban](https://sokoban.iolivia.me/)
+- <https://pragprog.com/titles/hwrust/hands-on-rust/>
+
+#### Bevy
+
+- [Unofficial Bevy Cheat Book](https://bevy-cheatbook.github.io/)
 
 ## Download & play
 
@@ -64,7 +69,8 @@ pacman -S jumpy
 
 1. Install Rust with [rustup.rs](https://rustup.rs/)
 2. Clone this repository: `git clone https://github.com/fishfolks/jumpy.git`
-3. `cargo run`
+3. `cd jumpy`
+4. `cargo run`
 
 ## Credits
 

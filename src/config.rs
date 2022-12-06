@@ -36,14 +36,6 @@ pub struct EngineConfig {
     #[arg(default_value = "default.game.yaml")]
     pub game_asset: String,
 
-    /// Skip the menu and automatically start the game
-    #[arg(short = 's', long)]
-    pub auto_start: bool,
-
-    /// Enable the debug tools which can be accessed by pressing F12
-    #[arg(short = 'd', long)]
-    pub debug_tools: bool,
-
     /// Set the log level
     ///
     /// May additionally specify log levels for specific modules as a comma-separated list of
@@ -72,12 +64,6 @@ impl EngineConfig {
                 config.auto_start = auto_start;
             }
 
-            if let Some(debug_tools) =
-                parse_url_query_string(&query, "debug_tools").and_then(|s| s.parse().ok())
-            {
-                config.debug_tools = debug_tools;
-            }
-
             if let Some(log_level) = parse_url_query_string(&query, "log_level") {
                 config.log_level = log_level.into();
             }
@@ -98,7 +84,6 @@ impl EngineConfig {
             hot_reload: false,
             asset_dir: None,
             game_asset: "default.game.yaml".into(),
-            auto_start: false,
             debug_tools: false,
             log_level: DEFAULT_LOG_LEVEL.into(),
         }

@@ -1,6 +1,6 @@
 use bevy::math::vec2;
 
-use crate::{config::ENGINE_CONFIG, metadata::GameMeta, prelude::*};
+use crate::{metadata::GameMeta, prelude::*};
 
 use self::collisions::{Actor, Collider, CollisionWorld, Rect, TileCollision};
 
@@ -44,9 +44,7 @@ impl Plugin for PhysicsPlugin {
                     );
             });
 
-        if ENGINE_CONFIG.debug_tools {
-            app.add_plugin(debug::PhysicsDebugRenderPlugin);
-        }
+        app.add_plugin(debug::PhysicsDebugRenderPlugin);
     }
 }
 

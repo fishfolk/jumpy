@@ -2,8 +2,6 @@ use super::*;
 
 pub const ID: &str = "core:midair";
 
-pub const AIR_MOVE_SPEED: f32 = 7.0;
-
 pub fn player_state_transition(
     mut players: Query<(&mut PlayerState, &KinematicBody, &Handle<PlayerMeta>)>,
     player_inputs: Res<PlayerInputs>,
@@ -39,12 +37,15 @@ pub fn handle_player_state(
         Entity,
         &PlayerState,
         &PlayerIdx,
+        &Handle<PlayerMeta>,
         &mut AnimationBankSprite,
         &mut KinematicBody,
     )>,
     collision_world: CollisionWorld,
+    player_assets: Res<Assets<PlayerMeta>>,
 ) {
-    for (player_ent, player_state, player_idx, mut sprite, mut body) in &mut players {
+    for (player_ent, player_state, player_idx, meta_handle, mut sprite, mut body) in &mut players {
+        let meta = player_assets.get(meta_handle).unwrap();
         if player_state.id != ID {
             continue;
         }
@@ -56,6 +57,11 @@ pub fn handle_player_state(
         }
 
         let control = &player_inputs.players[player_idx.0].control;
+
+        // Limit fall speed if holding jump button
+        if control.jump_pressed {
+            body.velocity.y = body.velocity.y.max(-meta.movement.slow_fall_speed);
+        }
 
         // Check for item in player inventory
         let mut has_item = false;
@@ -100,7 +106,7 @@ pub fn handle_player_state(
         }
 
         // Add controls
-        body.velocity.x = control.move_direction.x * AIR_MOVE_SPEED;
+        body.velocity.x = control.move_direction.x * meta.movement.air_move_speed;
 
         // Fall through platforms
         body.fall_through = control.move_direction.y < -0.5 && control.jump_pressed;

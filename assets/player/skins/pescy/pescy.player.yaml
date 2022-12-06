@@ -10,6 +10,10 @@ sounds:
   drop: ../../sounds/drop.ogg
   drop_volume: 0.05
 
+movement:
+  air_move_speed: 7
+  slow_fall_speed: 1.5
+
 spritesheet:
   image: pescy.png
   tile_size: [96, 80]

@@ -6,21 +6,17 @@ use bevy_egui::*;
 use bevy_fluent::Localization;
 use bevy_inspector_egui::WorldInspectorParams;
 
-use crate::{
-    config::ENGINE_CONFIG, localization::LocalizationExt, physics::debug::PhysicsDebugRenderConfig,
-};
+use crate::{localization::LocalizationExt, physics::debug::PhysicsDebugRenderConfig};
 
 pub struct DebugToolsPlugin;
 
 impl Plugin for DebugToolsPlugin {
     fn build(&self, app: &mut App) {
-        if ENGINE_CONFIG.debug_tools {
-            app.add_plugin(FrameTimeDiagnosticsPlugin)
-                // .init_resource::<ShowNetworkVisualizer>()
-                .init_resource::<ShowFameTimeDiagnostics>()
-                .add_system(debug_tools_window)
-                .add_system(frame_diagnostic_window);
-        }
+        app.add_plugin(FrameTimeDiagnosticsPlugin)
+            // .init_resource::<ShowNetworkVisualizer>()
+            .init_resource::<ShowFameTimeDiagnostics>()
+            .add_system(debug_tools_window)
+            .add_system(frame_diagnostic_window);
     }
 }
 

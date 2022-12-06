@@ -22,6 +22,14 @@ pub struct PlayerMeta {
     pub name: String,
     pub spritesheet: PlayerSpritesheetMeta,
     pub sounds: PlayerSounds,
+    pub movement: PlayerMovementMeta,
+}
+
+#[derive(Reflect, Deserialize, Clone, Debug, Default)]
+#[serde(deny_unknown_fields)]
+pub struct PlayerMovementMeta {
+    pub slow_fall_speed: f32,
+    pub air_move_speed: f32,
 }
 
 #[derive(Reflect, Deserialize, Clone, Debug, Default)]

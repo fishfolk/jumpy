@@ -1,24 +1,21 @@
-# Summary
+# Overview
 
-- [Community](./introduction.md)
-  - [Code of Conduct](./code_of_conduct.md)
-  - [Gameplay](./gameplay.md)
-    - [Controls](./controls.md)
-    - [Items](./items.md)
-    - [Multiplayer](./multiplayer.md)
-  - [Contributing](./contributing.md)
-    - [Contributing Code](./contributing_code.md)
-    - [Simple Gun Weapon](./simple_gun_weapon.md)
-    - [Contributing Art](./contributing_art.md)
-  - [Releases](./docs/releases.md)
-    - [0.3](./09-12-2021.md)
-  - [Credits](./credits.md)
-- [Dev](./mechanics.md)
-  - [Physics](./physics.md)
-  - [Environmental Weapons](./environmental_weapons.md)
-  - [Netcode](./netcode.md)
-  - [Juice](./juice.md)
-    - [Screen Shake](./docs/screenshake.md)
-    - [Particles](./docs/particles.md)
-  - [Editor](./editor.md)
-- [Platformer Guide](./documentation.md) (WIP)
+[Introduction](./introduction.md)
+[Code of Conduct](./code_of_conduct.md)
+
+# Community
+
+- [Contributing art](./community/contributing_art.md)
+
+# Developers
+
+- [Architecture](./developers/architecture.md)
+- [Contributing Code](./developers/contributing_code.md)
+
+# Game Design
+
+- [Juice](./game_design/juice.md)
+
+# Extra
+
+- [Legacy Docs](./extra/legacy_documentation.md)

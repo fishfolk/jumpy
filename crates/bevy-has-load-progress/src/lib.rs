@@ -1,10 +1,8 @@
-//! Loading progress helper for Bevy
-//!
-//! This crate exposes a trait [`HasLoadProgress`] that may be derived on structs that contain Bevy
-//! asset [`Handle`]s. The idea is that you may have a struct with asset handles contained somewhere
-//! inside, maybe deeply nested or stored in vectors, etc., and you need to be able to get the load
-//! progress of _all_ of the handles inside that struct.
-
+#![doc = include_str!("../README.md")]
+#![doc(html_logo_url = "https://avatars.githubusercontent.com/u/87333478?s=200&v=4")]
+// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
+#![cfg_attr(doc, allow(unknown_lints))]
+#![deny(rustdoc::all)]
 #![allow(clippy::bool_to_int_with_if)]
 
 use std::marker::PhantomData;

@@ -1,0 +1,1344 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js navy">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Fish Fight Legacy Documentation</title>
+        <meta name="robots" content="noindex" />
+        <!-- Custom HTML head -->
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "navy";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('navy')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Community</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="code_of_conduct.html"><strong aria-hidden="true">1.1.</strong> Code of Conduct</a></li><li class="chapter-item expanded "><a href="gameplay.html"><strong aria-hidden="true">1.2.</strong> Gameplay</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="controls.html"><strong aria-hidden="true">1.2.1.</strong> Controls</a></li><li class="chapter-item expanded "><a href="items.html"><strong aria-hidden="true">1.2.2.</strong> Items</a></li><li class="chapter-item expanded "><a href="multiplayer.html"><strong aria-hidden="true">1.2.3.</strong> Multiplayer</a></li></ol></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">1.3.</strong> Contributing</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="contributing_code.html"><strong aria-hidden="true">1.3.1.</strong> Contributing Code</a></li><li class="chapter-item expanded "><a href="simple_gun_weapon.html"><strong aria-hidden="true">1.3.2.</strong> Simple Gun Weapon</a></li><li class="chapter-item expanded "><a href="contributing_art.html"><strong aria-hidden="true">1.3.3.</strong> Contributing Art</a></li></ol></li><li class="chapter-item expanded "><a href="docs/releases.html"><strong aria-hidden="true">1.4.</strong> Releases</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="09-12-2021.html"><strong aria-hidden="true">1.4.1.</strong> 0.3</a></li></ol></li><li class="chapter-item expanded "><a href="credits.html"><strong aria-hidden="true">1.5.</strong> Credits</a></li></ol></li><li class="chapter-item expanded "><a href="mechanics.html"><strong aria-hidden="true">2.</strong> Dev</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="physics.html"><strong aria-hidden="true">2.1.</strong> Physics</a></li><li class="chapter-item expanded "><a href="environmental_weapons.html"><strong aria-hidden="true">2.2.</strong> Environmental Weapons</a></li><li class="chapter-item expanded "><a href="netcode.html"><strong aria-hidden="true">2.3.</strong> Netcode</a></li><li class="chapter-item expanded "><a href="juice.html"><strong aria-hidden="true">2.4.</strong> Juice</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="docs/screenshake.html"><strong aria-hidden="true">2.4.1.</strong> Screen Shake</a></li><li class="chapter-item expanded "><a href="docs/particles.html"><strong aria-hidden="true">2.4.2.</strong> Particles</a></li></ol></li><li class="chapter-item expanded "><a href="editor.html"><strong aria-hidden="true">2.5.</strong> Editor</a></li></ol></li><li class="chapter-item expanded "><a href="documentation.html"><strong aria-hidden="true">3.</strong> Platformer Guide</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Fish Fight Legacy Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/fishfight/jumpy" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <!-- markdownlint-disable MD041 -->
+<blockquote>
+<p><strong>⚠️ Warning:</strong> The information in this book is largely out of date with the work-in-progress Bevy
+rewrite that was recently merged. Once the rewrite stabilizes a little bit we will begin updating
+the documentation to match.</p>
+</blockquote>
+<h1 id="fish-folk-jumpy"><a class="header" href="#fish-folk-jumpy">Fish Folk: Jumpy</a></h1>
+<p><a href="https://github.com/fishfolks/jumpy/actions"><img src="https://img.shields.io/github/workflow/status/fishfolks/jumpy/Continuous%20integration?logo=github&amp;labelColor=1e1c24&amp;color=8bcfcf" alt="Build Status" /></a> <a href="https://fishfolks.github.io/jumpy/"><img src="https://img.shields.io/badge/documentation-fishfolks.github.io-green.svg?labelColor=1e1c24&amp;color=f3ee7a" alt="Documentation" /></a> <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT%20or%20Apache%202-green.svg?label=license&amp;labelColor=1e1c24&amp;color=34925e" alt="License" /></a> <a href="https://discord.gg/4smxjcheE5"><img src="https://img.shields.io/badge/chat-on%20discord-green.svg?logo=discord&amp;logoColor=fff&amp;labelColor=1e1c24&amp;color=8d5b3f" alt="Discord" /></a></p>
+<p><img src="https://user-images.githubusercontent.com/24392180/151969075-399e9fea-e2de-4340-96a4-0a0e5b79c281.gif" alt="Fish Folk: Jumpy Preview" /></p>
+<h2 id="introduction"><a class="header" href="#introduction">Introduction</a></h2>
+<p>Fish Folk: Jumpy is a tactical 2D shooter, played by up to 4 players online or on a shared screen. Aim either left or right; the rest is up to clever movement and positioning in this fish-on-fish brawler! For more information about our origin story (Duck Game et.al.) and big-picture plans, see our <a href="https://www.notion.so/erlendsh/Fish-Fight-1647ed74217e4e38a59bd28f4f5bc81a">design document</a>.</p>
+<h3 id="key-features-wip"><a class="header" href="#key-features-wip">Key Features (WIP)</a></h3>
+<ul>
+<li>2 to 4 players in either Local Multiplayer or Online Play</li>
+<li>Easy to pick up, emphasizing strategy over twitch reaction</li>
+<li>Customize characters with hats, saved to your cross-platform profile</li>
+<li>Create &amp; explore user-made weapons, levels, audio and other scripted extensions</li>
+<li>Smart level creation tools</li>
+<li>Tournaments &amp; matchmaking built in</li>
+</ul>
+<h3 id="status"><a class="header" href="#status">Status</a></h3>
+<p>The game is currently under re-construction as it is being rewritten to use the <a href="https://bevyengine.org">Bevy</a> game engine. There are now 4 stable maps and 4 items in the new version, and the game is nearly ready for another release.</p>
+<h2 id="community"><a class="header" href="#community">Community</a></h2>
+<h3 id="contributing"><a class="header" href="#contributing">Contributing</a></h3>
+<p>Anyone involved in the Fish Folk community must follow our <a href="https://github.com/fishfolks/jumpy/blob/main/CODE_OF_CONDUCT.md">code of conduct</a>.</p>
+<p>If you'd like to make something for Fish Folk, check out our <a href="https://github.com/fishfolks/jumpy/labels/help%20wanted">help-wanted</a> issues or just ask us on <a href="https://discord.gg/4smxjcheE5">Discord</a>. We'll soon post an updated roadmap for the next month or two of work ahead.</p>
+<p>Before committing and opening a PR, please run the following commands and follow their instructions:</p>
+<ol>
+<li><code>cargo clippy -- -W clippy::correctness -D warnings</code></li>
+<li><code>cargo fmt</code></li>
+</ol>
+<h3 id="learning-materials"><a class="header" href="#learning-materials">Learning Materials</a></h3>
+<h4 id="rust"><a class="header" href="#rust">Rust</a></h4>
+<ul>
+<li><a href="https://cleancut.github.io/rusty_engine/">Rusty Engine Tutorial</a></li>
+<li><a href="https://sokoban.iolivia.me/">Rust sokoban</a></li>
+<li><a href="https://pragprog.com/titles/hwrust/hands-on-rust/">https://pragprog.com/titles/hwrust/hands-on-rust/</a></li>
+</ul>
+<h4 id="bevy"><a class="header" href="#bevy">Bevy</a></h4>
+<ul>
+<li><a href="https://bevy-cheatbook.github.io/">Unofficial Bevy Cheat Book</a></li>
+</ul>
+<h2 id="download--play"><a class="header" href="#download--play">Download &amp; play</a></h2>
+<ol>
+<li>Download the latest version from the <a href="https://github.com/fishfolks/jumpy/releases">releases</a> page.</li>
+<li>Extract the archive and run the executable. (e.g. <code>./jumpy</code> or <code>jumpy.exe</code>)</li>
+</ol>
+<h3 id="launcher"><a class="header" href="#launcher">Launcher</a></h3>
+<p><a href="https://github.com/spicylobstergames/SpicyLauncher">A cross-platform launcher</a> is also available for downloading and launching the game easily.</p>
+<h3 id="distro-packages"><a class="header" href="#distro-packages">Distro Packages</a></h3>
+<h4 id="arch-linux"><a class="header" href="#arch-linux">Arch Linux</a></h4>
+<pre><code class="language-sh">pacman -S jumpy
+</code></pre>
+<h2 id="building"><a class="header" href="#building">Building</a></h2>
+<ol>
+<li>Install Rust with <a href="https://rustup.rs/">rustup.rs</a></li>
+<li>Clone this repository: <code>git clone https://github.com/fishfolks/jumpy.git</code></li>
+<li><code>cd jumpy</code></li>
+<li><code>cargo run</code></li>
+</ol>
+<h2 id="credits"><a class="header" href="#credits">Credits</a></h2>
+<ul>
+<li><a href="./CREDITS.html">Fish Folk: Jumpy Credits</a></li>
+<li>Input Icons: <a href="https://kadith.itch.io/kadiths-free-icons">Kadith's Icons</a> by Kadith</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><!-- markdownlint-disable MD041 -->
+<h1 id="contributor-covenant-code-of-conduct"><a class="header" href="#contributor-covenant-code-of-conduct">Contributor Covenant Code of Conduct</a></h1>
+<h2 id="our-pledge"><a class="header" href="#our-pledge">Our Pledge</a></h2>
+<p>We as members, contributors, and leaders pledge to make participation in our
+community a harassment-free experience for everyone, regardless of age, body
+size, visible or invisible disability, ethnicity, sex characteristics, gender
+identity and expression, level of experience, education, socio-economic status,
+nationality, personal appearance, race, religion, or sexual identity
+and orientation.</p>
+<p>We pledge to act and interact in ways that contribute to an open, welcoming,
+diverse, inclusive, and healthy community.</p>
+<h2 id="our-standards"><a class="header" href="#our-standards">Our Standards</a></h2>
+<p>Examples of behavior that contributes to a positive environment for our
+community include:</p>
+<ul>
+<li>Demonstrating empathy and kindness toward other people</li>
+<li>Being respectful of differing opinions, viewpoints, and experiences</li>
+<li>Giving and gracefully accepting constructive feedback</li>
+<li>Accepting responsibility and apologizing to those affected by our mistakes,
+and learning from the experience</li>
+<li>Focusing on what is best not just for us as individuals, but for the
+overall community</li>
+</ul>
+<p>Examples of unacceptable behavior include:</p>
+<ul>
+<li>The use of sexualized language or imagery, and sexual attention or
+advances of any kind</li>
+<li>Trolling, insulting or derogatory comments, and personal or political attacks</li>
+<li>Public or private harassment</li>
+<li>Publishing others' private information, such as a physical or email
+address, without their explicit permission</li>
+<li>Other conduct which could reasonably be considered inappropriate in a
+professional setting</li>
+</ul>
+<h2 id="enforcement-responsibilities"><a class="header" href="#enforcement-responsibilities">Enforcement Responsibilities</a></h2>
+<p>Community leaders are responsible for clarifying and enforcing our standards of
+acceptable behavior and will take appropriate and fair corrective action in
+response to any behavior that they deem inappropriate, threatening, offensive,
+or harmful.</p>
+<p>Community leaders have the right and responsibility to remove, edit, or reject
+comments, commits, code, wiki edits, issues, and other contributions that are
+not aligned to this Code of Conduct, and will communicate reasons for moderation
+decisions when appropriate.</p>
+<h2 id="scope"><a class="header" href="#scope">Scope</a></h2>
+<p>This Code of Conduct applies within all community spaces, and also applies when
+an individual is officially representing the community in public spaces.
+Examples of representing our community include using an official e-mail address,
+posting via an official social media account, or acting as an appointed
+representative at an online or offline event.</p>
+<h2 id="enforcement"><a class="header" href="#enforcement">Enforcement</a></h2>
+<p>Instances of abusive, harassing, or otherwise unacceptable behavior may be
+reported to the community leaders responsible for enforcement at
+e.soghe@gmail.com.
+All complaints will be reviewed and investigated promptly and fairly.</p>
+<p>All community leaders are obligated to respect the privacy and security of the
+reporter of any incident.</p>
+<h2 id="enforcement-guidelines"><a class="header" href="#enforcement-guidelines">Enforcement Guidelines</a></h2>
+<p>Community leaders will follow these Community Impact Guidelines in determining
+the consequences for any action they deem in violation of this Code of Conduct:</p>
+<h3 id="1-correction"><a class="header" href="#1-correction">1. Correction</a></h3>
+<p><strong>Community Impact</strong>: Use of inappropriate language or other behavior deemed
+unprofessional or unwelcome in the community.</p>
+<p><strong>Consequence</strong>: A private, written warning from community leaders, providing
+clarity around the nature of the violation and an explanation of why the
+behavior was inappropriate. A public apology may be requested.</p>
+<h3 id="2-warning"><a class="header" href="#2-warning">2. Warning</a></h3>
+<p><strong>Community Impact</strong>: A violation through a single incident or series
+of actions.</p>
+<p><strong>Consequence</strong>: A warning with consequences for continued behavior. No
+interaction with the people involved, including unsolicited interaction with
+those enforcing the Code of Conduct, for a specified period of time. This
+includes avoiding interactions in community spaces as well as external channels
+like social media. Violating these terms may lead to a temporary or
+permanent ban.</p>
+<h3 id="3-temporary-ban"><a class="header" href="#3-temporary-ban">3. Temporary Ban</a></h3>
+<p><strong>Community Impact</strong>: A serious violation of community standards, including
+sustained inappropriate behavior.</p>
+<p><strong>Consequence</strong>: A temporary ban from any sort of interaction or public
+communication with the community for a specified period of time. No public or
+private interaction with the people involved, including unsolicited interaction
+with those enforcing the Code of Conduct, is allowed during this period.
+Violating these terms may lead to a permanent ban.</p>
+<h3 id="4-permanent-ban"><a class="header" href="#4-permanent-ban">4. Permanent Ban</a></h3>
+<p><strong>Community Impact</strong>: Demonstrating a pattern of violation of community
+standards, including sustained inappropriate behavior,  harassment of an
+individual, or aggression toward or disparagement of classes of individuals.</p>
+<p><strong>Consequence</strong>: A permanent ban from any sort of public interaction within
+the community.</p>
+<h2 id="attribution"><a class="header" href="#attribution">Attribution</a></h2>
+<p>This Code of Conduct is adapted from the <a href="https://www.contributor-covenant.org">Contributor Covenant</a>,
+version 2.0, available at
+https://www.contributor-covenant.org/version/2/0/code_of_conduct.html.</p>
+<p>Community Impact Guidelines were inspired by <a href="https://github.com/mozilla/diversity">Mozilla's code of conduct
+enforcement ladder</a>.</p>
+<p>For answers to common questions about this code of conduct, see the FAQ at
+https://www.contributor-covenant.org/faq. Translations are available at
+https://www.contributor-covenant.org/translations.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="gameplay"><a class="header" href="#gameplay">Gameplay</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="controls"><a class="header" href="#controls">Controls</a></h1>
+<h2 id="keyboard-right"><a class="header" href="#keyboard-right">Keyboard Right</a></h2>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: center">Key</th><th style="text-align: center"></th><th style="text-align: center">Action</th></tr></thead><tbody>
+<tr><td style="text-align: center">Up</td><td style="text-align: center"><img src="assets/up_key.gif" alt="up_key" /></td><td style="text-align: center">Jump</td></tr>
+<tr><td style="text-align: center">Down</td><td style="text-align: center"><img src="assets/down_key.gif" alt="down_key" /></td><td style="text-align: center">Crouch</td></tr>
+<tr><td style="text-align: center">Left</td><td style="text-align: center"><img src="assets/left_key.gif" alt="left_key" /></td><td style="text-align: center">Move left</td></tr>
+<tr><td style="text-align: center">Right</td><td style="text-align: center"><img src="assets/right_key.gif" alt="right_key" /></td><td style="text-align: center">Move right</td></tr>
+<tr><td style="text-align: center">K</td><td style="text-align: center"><img src="assets/k_key.gif" alt="k_key" /></td><td style="text-align: center">Pickup/Drop</td></tr>
+<tr><td style="text-align: center">L</td><td style="text-align: center"><img src="assets/l_key.gif" alt="l_key" /></td><td style="text-align: center">Attack</td></tr>
+<tr><td style="text-align: center">0</td><td style="text-align: center"><img src="assets/0_key.gif" alt="0_key" /></td><td style="text-align: center">Toggle AI</td></tr>
+</tbody></table>
+</div>
+<h2 id="keyboard-left"><a class="header" href="#keyboard-left">Keyboard Left</a></h2>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: center">Key</th><th style="text-align: center"></th><th style="text-align: center">Action</th></tr></thead><tbody>
+<tr><td style="text-align: center">W</td><td style="text-align: center"><img src="assets/w_key.gif" alt="w_key" /></td><td style="text-align: center">Jump</td></tr>
+<tr><td style="text-align: center">S</td><td style="text-align: center"><img src="assets/s_key.gif" alt="s_key" /></td><td style="text-align: center">Crouch</td></tr>
+<tr><td style="text-align: center">A</td><td style="text-align: center"><img src="assets/a_key.gif" alt="a_key" /></td><td style="text-align: center">Move left</td></tr>
+<tr><td style="text-align: center">D</td><td style="text-align: center"><img src="assets/d_key.gif" alt="d_key" /></td><td style="text-align: center">Move right</td></tr>
+<tr><td style="text-align: center">C</td><td style="text-align: center"><img src="assets/c_key.gif" alt="c_key" /></td><td style="text-align: center">Pickup/Drop</td></tr>
+<tr><td style="text-align: center">V</td><td style="text-align: center"><img src="assets/v_key.gif" alt="v_key" /></td><td style="text-align: center">Attack</td></tr>
+<tr><td style="text-align: center">1</td><td style="text-align: center"><img src="assets/1_key.gif" alt="1_key" /></td><td style="text-align: center">Toggle AI</td></tr>
+</tbody></table>
+</div>
+<h2 id="gamepad"><a class="header" href="#gamepad">Gamepad</a></h2>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: center">Input</th><th style="text-align: center"></th><th style="text-align: center">Action</th></tr></thead><tbody>
+<tr><td style="text-align: center">A Button</td><td style="text-align: center"><img src="assets/a_button.gif" alt="a_button" /></td><td style="text-align: center">Jump</td></tr>
+<tr><td style="text-align: center">Y Button</td><td style="text-align: center"><img src="assets/y_button.gif" alt="y_button" /></td><td style="text-align: center">Crouch</td></tr>
+<tr><td style="text-align: center">Left Thumbstick</td><td style="text-align: center"><img src="assets/left_thumb.gif" alt="left_thumb" /></td><td style="text-align: center">Move left</td></tr>
+<tr><td style="text-align: center">Right Thumbstick</td><td style="text-align: center"><img src="assets/right_thumb.gif" alt="right_thumb" /></td><td style="text-align: center">Move right</td></tr>
+<tr><td style="text-align: center">X Button</td><td style="text-align: center"><img src="assets/x_button.gif" alt="x_button" /></td><td style="text-align: center">Pickup/Drop</td></tr>
+<tr><td style="text-align: center">B Button</td><td style="text-align: center"><img src="assets/b_button.gif" alt="b_button" /></td><td style="text-align: center">Attack</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h1 id="items"><a class="header" href="#items">Items</a></h1>
+<p>Items are placed in levels and can be interacted with by players.</p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: center">Name</th><th style="text-align: center"></th><th style="text-align: center">Description</th></tr></thead><tbody>
+<tr><td style="text-align: center">Sword</td><td style="text-align: center"><img src="assets/sword.png" alt="sword" /></td><td style="text-align: center">Standard melee weapon.</td></tr>
+<tr><td style="text-align: center">Musket</td><td style="text-align: center"><img src="assets/musket.png" alt="musket" /></td><td style="text-align: center">Fires up to three bullets, normal recoil, normal bullet speed.</td></tr>
+<tr><td style="text-align: center">Sniper Rifle</td><td style="text-align: center"><img src="assets/sniper.png" alt="sniper" /></td><td style="text-align: center">Fires up to two bullets, high recoil, high bullet speed.</td></tr>
+<tr><td style="text-align: center">Machine Gun</td><td style="text-align: center"><img src="assets/machine_gun.png" alt="machine_gun" /></td><td style="text-align: center">Fires many bullets, low recoil, normal bullet speed.</td></tr>
+<tr><td style="text-align: center">Cannon</td><td style="text-align: center"><img src="assets/cannon.png" alt="cannon" /></td><td style="text-align: center">Fires up to three bombs, normal recoil.</td></tr>
+<tr><td style="text-align: center">Turtle Shell</td><td style="text-align: center"><img src="assets/turtle_shell.png" alt="turtle_shell" /></td><td style="text-align: center">Blocks two attacks from behind, then breaks.</td></tr>
+<tr><td style="text-align: center">Grenades</td><td style="text-align: center"><img src="assets/grenades.png" alt="grenades" /></td><td style="text-align: center">Throws up to three bombs that explode after short duration or on impact.</td></tr>
+<tr><td style="text-align: center">Mines</td><td style="text-align: center"><img src="assets/mines.png" alt="mines" /></td><td style="text-align: center">Place up to three mines that explode on contact.</td></tr>
+<tr><td style="text-align: center">Kick-Bomb</td><td style="text-align: center"><img src="assets/kickbomb.png" alt="kickbomb" /></td><td style="text-align: center">Explodes a set period of time after being thrown. Can be kicked by players.</td></tr>
+<tr><td style="text-align: center">Blunderbuss</td><td style="text-align: center"><img src="assets/blunderbuss.png" alt="blunderbuss" /></td><td style="text-align: center">Fires up to two spread shots, each containing five bullets.</td></tr>
+<tr><td style="text-align: center">Blunderbass</td><td style="text-align: center"><img src="assets/blunderbass.png" alt="blunderbass" /></td><td style="text-align: center">A blunderbuss that ate the Fish-Fish fruit.</td></tr>
+</tbody></table>
+</div><!--| Life Ring | ![lifering](assets/lifering.png) | Inverts gravity for the user. |-->
+<!--| Shoes | ![shoes](assets/shoes.png) | Allows user to attack players by jumping on their heads. |-->
+<!--| Flippers | ![flippers](assets/flippers.png) | Allows user to attack players by jumping on their heads and allows player to jump multiple times. |-->
+<!--| Galleon | ![galleon](assets/galleon.png) | Summons a galleon that travels across the arena. Kills anything in its path. |-->
+<!--| Volcano | ![volcano](assets/volcano.png) | Summons a volcano that randomly shoots bombs into the arena. |-->
+<!--| Shark Rain | ![shark_rain](assets/shark_rain.png) | Summons sharks that rain down from above. Kills anything in their path. |-->
+<!--| Jellyfish | ![jellyfish](assets/jellyfish.png) | Fires a jellyfish that is controlled by the player and explodes impact. |-->
+<!--| Sproinger | ![sproinger](assets/sproinger.png) | Bounces player when jumped on. |-->
+<div style="break-before: page; page-break-before: always;"></div><h1 id="multiplayer"><a class="header" href="#multiplayer">Multiplayer</a></h1>
+<p>TODO: Update for Bevy Rewrite</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="contributing-1"><a class="header" href="#contributing-1">Contributing</a></h1>
+<p>Fish Fight aims to be a highly contributor-friendly game. If you haven't already, please take some time to read the <a href="code_of_conduct.html">community guidelines</a>.</p>
+<h4 id="development-tracks"><a class="header" href="#development-tracks"><a href="https://github.com/fishfight/FishFight/issues/124">Development Tracks</a></a></h4>
+<p>Our <em>Tracks</em> are ongoing projects with one or more leads. Some are permanent (e.g. Items or Editor) while others are temporary (e.g. Special Tiles or Physics). These are the recommended jumping-on points for new contributors.</p>
+<h4 id="fields-of-contribution"><a class="header" href="#fields-of-contribution">Fields of contribution</a></h4>
+<p>Games are a synthesis of many different talents. Like most games, we're starting out code-heavy as we're building out the core functionality. Thanks to our deep focus on modding however, over time we expect contributions like level editing or pixel remixing to be even more plentiful and diverse than the field of coding.</p>
+<h2 id="code-"><a class="header" href="#code-">Code 💻</a></h2>
+<p>If you're interested in making a change that will involve hacking on the game's source code, we have a quick reference on how to get started at <a href="./contributing_code.html">Contributing Code</a>!</p>
+<p>Sub-tracks:</p>
+<ul>
+<li><a href="https://github.com/fishfight/FishFight/issues/129">Items</a></li>
+<li><a href="https://github.com/fishfight/FishFight/issues/160">Level Editor</a></li>
+<li><a href="https://github.com/fishfight/FishFight/issues/43">Special Tiles</a></li>
+<li><a href="https://github.com/fishfight/FishFight/issues/120">Juicing</a></li>
+<li><a href="https://github.com/fishfight/FishFight/issues/30">Physics</a> (parent track missing)</li>
+<li><a href="https://github.com/fishfight/FishFight/issues/127">Infrastructure</a> (parent track missing)</li>
+</ul>
+<h2 id="pixels-"><a class="header" href="#pixels-">Pixels 🎨</a></h2>
+<p>There are three primary types of art assets in Fish Fight:</p>
+<ul>
+<li>Items</li>
+<li>Tiles &amp; Objects</li>
+<li>Characters</li>
+</ul>
+<p>Soon to be a proper book page:
+https://cdn.discordapp.com/attachments/785221806214479872/899304557979504650/How_to_draw_a_weapon_the_Fish_Fight_way.pdf</p>
+<p>Any of our items labeled <a href="https://github.com/fishfight/FishFight/labels/art-needed">art-needed</a> are missing an art asset.</p>
+<h2 id="audio-"><a class="header" href="#audio-">Audio 🎶</a></h2>
+<h3 id="sfx"><a class="header" href="#sfx">SFX</a></h3>
+<p>Right now the easiest way in is to create new SFX for an <a href="https://github.com/fishfight/FishFight/labels/item">item</a>.</p>
+<p>Prior art in https://github.com/fishfight/FishFight/tree/main/assets/sounds</p>
+<h3 id="music-compositions"><a class="header" href="#music-compositions">Music compositions</a></h3>
+<p>Prior art in https://github.com/fishfight/FishFight/tree/main/assets/music</p>
+<h2 id="game-design-"><a class="header" href="#game-design-">Game Design 👾</a></h2>
+<h3 id="items-1"><a class="header" href="#items-1">Items</a></h3>
+<p>See the <a href="https://github.com/fishfight/FishFight/issues/129">Items</a> track.</p>
+<h3 id="levels"><a class="header" href="#levels">Levels</a></h3>
+<p>With the v1 completion of our upcoming <a href="https://github.com/fishfight/FishFight/issues/160">Level Editor</a>, it will be possible to create new levels from within the game itself.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="contributing-code-to-fish-fight"><a class="header" href="#contributing-code-to-fish-fight">Contributing Code to Fish Fight</a></h1>
+<p>Proposing code changes has 3 main steps:</p>
+<ol>
+<li>Setting up your development environment</li>
+<li>Pick an issue to work on</li>
+<li>Write code and submitting for review</li>
+</ol>
+<h2 id="1-setting-up-your-development-environment"><a class="header" href="#1-setting-up-your-development-environment">1. Setting up your development environment</a></h2>
+<h3 id="before-starting"><a class="header" href="#before-starting">Before starting</a></h3>
+<p>Make sure <a href="https://www.rust-lang.org/">Rust</a> is installed with <a href="https://rustup.rs/">Rustup.rs</a>.</p>
+<p>Have an account on <a href="https://github.com/">GitHub</a>: this is where you'll find the <a href="https://github.com/fishfight/FishFight">source code</a> for Fish Fight.</p>
+<h3 id="getting-the-source-code"><a class="header" href="#getting-the-source-code">Getting the source code</a></h3>
+<p>Fish Fight uses <a href="https://git-scm.com/">git</a> as its established choice of version control. You'll be
+using it to clone, track, and manage the source code locally on your machine.</p>
+<p>To get a copy of the code, you'll first need to <a href="https://docs.github.com/en/get-started/quickstart/fork-a-repo">fork the repository</a>.
+The GitHub repository for Fight Fight is <a href="https://github.com/fishfight/FishFight">available here</a>.
+This will allow you to make changes to the project without affecting the original one.</p>
+<p>Once you've forked the Fish Fight repository, you can now clone it:</p>
+<p><code>git clone https://github.com/YOUR_ACCOUNT_NAME/FishFight.git</code></p>
+<p>It's also possible to clone the repo using SSH or GitHub CLI. For more information on how to do
+this, see the <a href="https://docs.github.com/en/get-started/quickstart/fork-a-repo#cloning-your-forked-repository">official GitHub documentation</a>.</p>
+<p>Depending on your connection, the clone can take around 1 minute.</p>
+<p>By the end of this step, you should have successfully forked and downloaded a clone of Fish Fight on your machine.</p>
+<h3 id="build-and-run"><a class="header" href="#build-and-run">Build and run</a></h3>
+<p>You can now build your forked copy of Fish Fight:</p>
+<p><code>cargo build</code></p>
+<p>This process should take about a minute or two depending on your machine. You can also <strong>build and run</strong> the game with a single command:</p>
+<p><code>cargo run</code></p>
+<h2 id="2-finding-a-good-first-issue"><a class="header" href="#2-finding-a-good-first-issue">2. Finding a good first issue</a></h2>
+<p>Now that you can build and run Fish Fight source code, let's find something to work on!
+We recommend all newcomers start with our <a href="https://github.com/fishfight/FishFight/issues/124">Development Tracks</a>.
+You can also browse <a href="https://github.com/fishfight/FishFight/issues">project's issues list</a> and pick something with a <a href="https://github.com/fishfight/FishFight/labels/help%20wanted">help wanted label</a>.
+In general, you can comment on an issue expressing interest and someone will assign it to you.</p>
+<p>Additionally, if there's a track or issue you're particularly interested in, but you don't know where to start, feel free to
+reach out to the <a href="https://discord.gg/4smxjcheE5">Fish Fight Discord community</a> with your questions
+and someone should reach out shortly!</p>
+<h2 id="3-write-code-and-submitting-for-review"><a class="header" href="#3-write-code-and-submitting-for-review">3. Write code and submitting for review</a></h2>
+<p>In general, Fish Fight uses a branch-based workflow (or <a href="https://docs.github.com/en/get-started/quickstart/github-flow">GitHub flow</a>) for submitting changes to the project.</p>
+<h3 id="create-a-new-branch"><a class="header" href="#create-a-new-branch">Create a new branch</a></h3>
+<p>You'll want to <a href="https://docs.github.com/en/get-started/quickstart/github-flow#create-a-branch">create a new branch</a> off <code>main</code>:</p>
+<p><code>git checkout -b &lt;branch_name&gt; main</code></p>
+<p>You'll replace <code>&lt;branch-name&gt;</code> with something short and descriptive. For example, if you're adding a new
+item to Fish Fight, your branch name might look like this:</p>
+<p><code>git checkout -b add_new_weapon main</code></p>
+<h3 id="commit-your-changes"><a class="header" href="#commit-your-changes">Commit your changes</a></h3>
+<p>Once you've made the desired changes to the code and you're ready for someone on the Fish Fight
+team to review, you need to <a href="https://git-scm.com/docs/git-commit">commit your work</a>. But first,
+we have to run a few commands to ensure the code you're submitting is properly formatted:</p>
+<ol>
+<li><code>cargo clippy -- -W clippy::correctness -D warnings</code></li>
+<li><code>cargo fmt</code></li>
+</ol>
+<p>Now we can start committing your work. First, stage your changes:
+<code>git add</code></p>
+<p>Now commit. It's always good practice to provide a short message that details what the changes are. For example:
+<code>git commit -m &quot;Add a new weapon&quot;</code></p>
+<h3 id="submitting-for-review"><a class="header" href="#submitting-for-review">Submitting for review</a></h3>
+<p>You can now start submitting your work for review. First, push your changes:</p>
+<p><code>git push</code></p>
+<p>This will create a new branch on your forked copy of Fish Fight. You can then proceed <a href="https://docs.github.com/en/desktop/contributing-and-collaborating-using-github-desktop/working-with-your-remote-repository-on-github-or-github-enterprise/creating-an-issue-or-pull-request#creating-a-pull-request">making a pull request</a>.
+This is how the Fish Fight team will review and provide feedback on your work.</p>
+<p><a href="https://docs.github.com/en/desktop/contributing-and-collaborating-using-github-desktop">More information on contributing using GitHub</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="simple-gun-weapon"><a class="header" href="#simple-gun-weapon">Simple Gun Weapon</a></h1>
+<p>In this section we will walk through the process of adding a new gun weapon to Fish Fight. The instructions here will outline how we added the sniper rifle to the game, but our intent is for readers to follow along and be able to add their own gun weapons to the game.</p>
+<h2 id="planning"><a class="header" href="#planning">Planning</a></h2>
+<p>Before jumping into the games code, it is a good idea to do some planning about what you want your new weapon to do. I determined that my sniper weapon should have the following properties:</p>
+<ul>
+<li>High bullet speed</li>
+<li>High recoil</li>
+<li>High range</li>
+<li>2 bullets</li>
+</ul>
+<h2 id="implementation"><a class="header" href="#implementation">Implementation</a></h2>
+<p>If you haven't already, fork FishFight and create branch with the name of the weapon you intend on adding. Then clone your forked repository, open the directory in your editor of choice, and checkout your new branch.</p>
+<h3 id="defining-the-item"><a class="header" href="#defining-the-item">Defining the Item</a></h3>
+<p>To add any item to the game (including weapons), you will first have to define the item in a data file. These files are located in
+<code>assets/items</code> and will typically have the same name as the item's id. Since we are creating a sniper rifle, we can give this file the
+name <code>sniper_rifle.json</code>. This path to the file must also be added to <code>assets/items.json</code>, so that the game will know where to look
+for it. This is done by simply adding the path (relative to <code>items.json</code>) to the array within the file. In this case, the path
+that we add will be <code>items/sniper_rifle.json</code>.</p>
+<pre><code class="language-json">[
+  ...
+  &quot;items/sniper_rifle.json&quot;,
+]
+</code></pre>
+<p>Now, it is time to define the weapons parameters inside the <code>sniper_rifle.json</code> file. Begin by creating a new object using curly braces and adding the item's id (<code>sniper_rifle</code>), it's display name (<code>Sniper Rifle</code>) and the item's type (<code>weapon</code>):</p>
+<pre><code class="language-json">...
+{
+  &quot;id&quot;: &quot;sniper_rifle&quot;,
+  &quot;name&quot;: &quot;Sniper Rifle&quot;,
+  &quot;type&quot;: &quot;weapon&quot;,
+}
+...
+</code></pre>
+<p>The item will need a collider defined for it. A collider is a rectangular boundary around the position of the item that is used for checking whether a player is close enough to pick it up. We'll set the collider for the sniper rifle to be a 16 by 16 box.</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;sniper_rifle&quot;,
+  &quot;name&quot;: &quot;Sniper Rifle&quot;,
+  &quot;type&quot;: &quot;weapon&quot;,
+  &quot;collider_size&quot;: {
+    &quot;x&quot;: 16,
+    &quot;y&quot;: 16
+  },
+}
+</code></pre>
+<p>This is all the required data for the item part (<code>ItemParams</code>) of our definition. Next, we need to add the parameters required for weapon items.</p>
+<h3 id="adding-weapon-parameters"><a class="header" href="#adding-weapon-parameters">Adding Weapon Parameters</a></h3>
+<p>We have quite a few options for customization that can be explored by looking at the <code>WeaponParams</code> struct in the source code.</p>
+<p>First we'll add any attributes for the weapon that describe it's behavior. As we said at the beginning of the section, we wanted the sniper rifle to have high recoil, and 2 uses. We can add these to <code>sniper_rifle.json</code>. We'll set <code>uses</code> to 2 so that the sniper rifle can be shot twice and we'll set <code>recoil</code> to 1400 so that the player will be knocked back significantly when the gun is fired.</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;sniper_rifle&quot;,
+  &quot;name&quot;: &quot;Sniper Rifle&quot;,
+  &quot;type&quot;: &quot;weapon&quot;,
+  &quot;collider_size&quot;: {
+    &quot;x&quot;: 16,
+    &quot;y&quot;: 16
+  },
+  &quot;uses&quot;: 2,
+  &quot;recoil&quot;: 14.0,
+}
+</code></pre>
+<p>Next we'll need to define more subtle values that also will effect the behavior of the sniper rifle weapon: <code>cooldown</code> and <code>attack_duration</code>. <code>cooldown</code> is a period of time that governs how frequently the weapon can be used and <code>attack_duration</code> is the amount of time the player is locked in the attack state (input blocked) when the weapon is used. For the sniper rifle we'll set <code>cooldown</code> to 1.5 and <code>attack_duration</code> to 1.0.</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;sniper_rifle&quot;,
+  &quot;name&quot;: &quot;Sniper Rifle&quot;,
+  &quot;type&quot;: &quot;weapon&quot;,
+  &quot;sprite&quot;: {
+    &quot;texture&quot;: &quot;musket&quot;
+  },
+  &quot;collider_size&quot;: {
+    &quot;x&quot;: 16,
+    &quot;y&quot;: 16
+  },
+  &quot;uses&quot;: 2,
+  &quot;recoil&quot;: 14.0,
+  &quot;cooldown&quot;: 1.5,
+  &quot;attack_duration&quot;: 1.0,
+}
+</code></pre>
+<p>Next, we can add a <code>sound_effect</code> that will played when the weapon is used. You add a new sound by putting a sound file in <code>assets/sounds</code> and registering it with id in <code>assets/sounds.json</code>, but for the sniper rifle weapon, we can use the same sound effect for the musket called &quot;shoot&quot;.</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;sniper_rifle&quot;,
+  &quot;name&quot;: &quot;Sniper Rifle&quot;,
+  &quot;type&quot;: &quot;weapon&quot;,
+  &quot;collider_size&quot;: {
+    &quot;x&quot;: 16,
+    &quot;y&quot;: 16
+  },
+  &quot;uses&quot;: 2,
+  &quot;recoil&quot;: 14.0,
+  &quot;cooldown&quot;: 1.5,
+  &quot;attack_duration&quot;: 1.0,
+  &quot;sound_effect&quot;: &quot;shoot&quot;,
+}
+</code></pre>
+<p>Next we'll define the active effects (<code>ActiveEffectParams</code>) of the weapon, or in other words, what happens when the weapon is used. In this case, we want the sniper rifle to shoot a projectile, so we will put <code>projectile</code> in the <code>type</code> field under <code>effects</code>. Then, also under <code>effects</code> we need to define the <code>projectile</code> effect. First we'll set the projectile's type to <code>sprite</code> and define the <code>sprite</code>  with a <code>texture</code> of the already existing <code>small_projectile</code> with a size of 8 by 4. Here, we can also give the projectile a <code>tint</code>.</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;sniper_rifle&quot;,
+  &quot;name&quot;: &quot;Sniper Rifle&quot;,
+  &quot;type&quot;: &quot;weapon&quot;,
+  &quot;collider_size&quot;: {
+    &quot;x&quot;: 16,
+    &quot;y&quot;: 16
+  },
+  &quot;uses&quot;: 2,
+  &quot;recoil&quot;: 14.0,
+  &quot;cooldown&quot;: 1.5,
+  &quot;attack_duration&quot;: 1.0,
+  &quot;sound_effect&quot;: &quot;shoot&quot;,
+  &quot;effects&quot;: {
+    &quot;type&quot;: &quot;projectile&quot;,
+    &quot;projectile&quot;: {
+      &quot;type&quot;: &quot;sprite&quot;,
+      &quot;sprite&quot;: {
+        &quot;texture&quot;: &quot;small_projectile&quot;,
+        &quot;size&quot;: {
+          &quot;x&quot;: 8,
+          &quot;y&quot;: 4
+        },
+        &quot;tint&quot;: {
+          &quot;r&quot;: 0.9,
+          &quot;g&quot;: 0.75,
+          &quot;b&quot;: 0.12,
+          &quot;a&quot;: 1.0
+        }
+      }
+    },
+  },
+}
+</code></pre>
+<p>This is the place where we can implement the remaining attributes that we outlined at the top of the file: high bullet speed, and high range. We'll give the <code>projectile</code> a range of 600 and a speed of 25.</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;sniper_rifle&quot;,
+  &quot;name&quot;: &quot;Sniper Rifle&quot;,
+  &quot;type&quot;: &quot;weapon&quot;,
+  &quot;collider_size&quot;: {
+    &quot;x&quot;: 16,
+    &quot;y&quot;: 16
+  },
+  &quot;uses&quot;: 2,
+  &quot;recoil&quot;: 14.0,
+  &quot;cooldown&quot;: 1.5,
+  &quot;attack_duration&quot;: 1.0,
+  &quot;sound_effect&quot;: &quot;shoot&quot;,
+  &quot;effects&quot;: {
+    &quot;type&quot;: &quot;projectile&quot;,
+    &quot;projectile&quot;: {
+      &quot;type&quot;: &quot;sprite&quot;,
+      &quot;sprite&quot;: {
+        &quot;texture&quot;: &quot;small_projectile&quot;,
+        &quot;size&quot;: {
+          &quot;x&quot;: 8,
+          &quot;y&quot;: 4
+        },
+        &quot;tint&quot;: {
+          &quot;r&quot;: 0.9,
+          &quot;g&quot;: 0.75,
+          &quot;b&quot;: 0.12,
+          &quot;a&quot;: 1.0
+        }
+      }
+    },
+    &quot;range&quot;: 600.0,
+    &quot;speed&quot;: 25.0
+  },
+}
+</code></pre>
+<p>The next step is to add the <code>animation</code> for the sniper rifle weapon to the json object. For now, we will give the sniper the same animation as the musket. We can set the <code>texture</code> of the animation to musket and define the <code>idle</code> and <code>attack</code> animation sequences by providing a <code>row</code> in the spritesheet, the amount of <code>frames</code> in the animation, and the speed (<code>fps</code>: frames per second) of the animation.</p>
+<p>By default, the animation with an id of <code>idle</code> will be used when an item is on the ground, unless overridden by adding an animation with the id <code>ground</code>.</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;sniper_rifle&quot;,
+  &quot;name&quot;: &quot;Sniper Rifle&quot;,
+  &quot;type&quot;: &quot;weapon&quot;,
+  &quot;collider_size&quot;: {
+    &quot;x&quot;: 64,
+    &quot;y&quot;: 24
+  },
+  &quot;uses&quot;: 2,
+  &quot;cooldown&quot;: 1.5,
+  &quot;attack_duration&quot;: 1.0,
+  &quot;recoil&quot;: 14.0,
+  &quot;sound_effect&quot;: &quot;shoot&quot;,
+  &quot;effect_offset&quot;: {
+    &quot;x&quot;: 64,
+    &quot;y&quot;: 16
+  },
+  &quot;effects&quot;: {
+    &quot;type&quot;: &quot;projectile&quot;,
+    &quot;projectile&quot;: {
+      &quot;type&quot;: &quot;sprite&quot;,
+      &quot;sprite&quot;: {
+        &quot;texture&quot;: &quot;small_projectile&quot;,
+        &quot;size&quot;: {
+          &quot;x&quot;: 8,
+          &quot;y&quot;: 4
+        },
+        &quot;tint&quot;: {
+          &quot;r&quot;: 0.9,
+          &quot;g&quot;: 0.75,
+          &quot;b&quot;: 0.12,
+          &quot;a&quot;: 1.0
+        }
+      }
+    },
+    &quot;range&quot;: 600.0,
+    &quot;speed&quot;: 25.0
+  },
+  &quot;animation&quot;: {
+    &quot;texture&quot;: &quot;musket&quot;,
+    &quot;autoplay_id&quot;: &quot;idle&quot;,
+    &quot;animations&quot;: [
+      {
+        &quot;id&quot;: &quot;idle&quot;,
+        &quot;row&quot;: 0,
+        &quot;frames&quot;: 1,
+        &quot;fps&quot;: 1
+      },
+      {
+        &quot;id&quot;: &quot;attack&quot;,
+        &quot;row&quot;: 1,
+        &quot;frames&quot;: 3,
+        &quot;fps&quot;: 15
+      }
+    ]
+  }
+}
+</code></pre>
+<p>The last thing that we need to add to the json object definition of the sniper rifle weapon is an <code>effect_animation</code>. This is a visual effect that is shown. For the sniper rifle, we want to see a &quot;blast&quot; effect from the end of the barrel of the sniper when the weapon is used (just like for the musket). To implement this we can add <code>effect_animation</code> to the json object. First, we can set the <code>texture</code> to <code>musket</code> and provide an animation called <code>attack</code> with the correct <code>row</code>, <code>frames</code>, and <code>fps</code>.</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;sniper_rifle&quot;,
+  &quot;name&quot;: &quot;Sniper Rifle&quot;,
+  &quot;type&quot;: &quot;weapon&quot;,
+  &quot;collider_size&quot;: {
+    &quot;x&quot;: 64,
+    &quot;y&quot;: 24
+  },
+  &quot;uses&quot;: 2,
+  &quot;cooldown&quot;: 1.5,
+  &quot;attack_duration&quot;: 1.0,
+  &quot;recoil&quot;: 14.0,
+  &quot;sound_effect&quot;: &quot;shoot&quot;,
+  &quot;effect_offset&quot;: {
+    &quot;x&quot;: 64,
+    &quot;y&quot;: 16
+  },
+  &quot;effects&quot;: {
+    &quot;type&quot;: &quot;projectile&quot;,
+    &quot;projectile&quot;: {
+      &quot;type&quot;: &quot;sprite&quot;,
+      &quot;sprite&quot;: {
+        &quot;texture&quot;: &quot;small_projectile&quot;,
+        &quot;size&quot;: {
+          &quot;x&quot;: 8,
+          &quot;y&quot;: 4
+        },
+        &quot;tint&quot;: {
+          &quot;r&quot;: 0.9,
+          &quot;g&quot;: 0.75,
+          &quot;b&quot;: 0.12,
+          &quot;a&quot;: 1.0
+        }
+      }
+    },
+    &quot;range&quot;: 600.0,
+    &quot;speed&quot;: 25.0
+  },
+  &quot;animation&quot;: {
+    &quot;texture&quot;: &quot;musket&quot;,
+    &quot;autoplay_id&quot;: &quot;idle&quot;,
+    &quot;animations&quot;: [
+      {
+        &quot;id&quot;: &quot;idle&quot;,
+        &quot;row&quot;: 0,
+        &quot;frames&quot;: 1,
+        &quot;fps&quot;: 1
+      },
+      {
+        &quot;id&quot;: &quot;attack&quot;,
+        &quot;row&quot;: 1,
+        &quot;frames&quot;: 3,
+        &quot;fps&quot;: 15
+      }
+    ]
+  },
+  &quot;effect_animation&quot;: {
+    &quot;texture&quot;: &quot;musket&quot;,
+    &quot;animations&quot;: [
+      {
+        &quot;id&quot;: &quot;attack&quot;,
+        &quot;row&quot;: 2,
+        &quot;frames&quot;: 4,
+        &quot;fps&quot;: 12
+      }
+    ]
+  }
+}
+</code></pre>
+<p>If you like, you can skip to the testing section to test your new weapon, but if you haven't added a new texture or modified an existing texture, you will not be able to visually recognize your item before picking it up. For this reason, I recommend you continue to the <a href="simple_gun_weapon.html#texture">Texture</a> section next.</p>
+<h2 id="texture-optional"><a class="header" href="#texture-optional">Texture (Optional)</a></h2>
+<p>It is important to make sure that your weapon is able to be visually distinguished between the other weapons in the game. When we created the sniper rifle object, we used the musket texture for the <code>sprite</code>, <code>animation</code>, and <code>effect_animation</code>. In this section we will create a new custom texture for the sniper rifle and register it in <code>assets/textures.json</code>, then we will change <code>assets/items/sniper_rifle.json</code> to use this new texture.</p>
+<p>To start off I'll copy the musket spritesheet image, <code>assets/textures/items/Musket(92x32)</code>, the &quot;92x32&quot; in the file name indicates that the size of each frame on the sprite sheet. I'll open this file with my pixel editor of choice, <a href="https://www.aseprite.org/">Aseprite</a> (<a href="https://www.gimp.org/">GIMP</a> would also work fine).</p>
+<p><img src="assets/open_gun_texture.png" alt="open_gun_texture" /></p>
+<p>I don't consider myself an artist so I'm just going to modify the hue of the golden part of the gun texture to a reddish color. First I'll select a color range and adjust the threshold to select only the golden part of the gun texture.</p>
+<p><img src="assets/select_gun_colors.png" alt="select_gun_colors" /></p>
+<p>Then I'll adjust the hue of the selected colors to turn all of the gold color red.</p>
+<p><img src="assets/adjust_gun_hue.png" alt="adjust_gun_hue" /></p>
+<p>This texture is now distinguishable from the other gun textures in the game.</p>
+<p>This, of course, is just one way of distinguishing the texture from the other textures in the game. Feel free to copy and modify textures using your own methods, or if you feel inclined, make your own unique texture for your weapon!</p>
+<p>Now, all that remains is to add the new texture to the game. This is done by copying the texture file to the <code>assets/textures/items</code> directory and adding an entry to the file <code>assets/textures.json</code>.</p>
+<p>Assuming a texture file name of <code>SniperRifle(92x32).png</code>, the following entry should be added to <code>assets/textures.json</code>:</p>
+<pre><code class="language-json">...
+{
+  &quot;id&quot;: &quot;sniper_rifle&quot;,
+  &quot;path&quot;: &quot;textures/items/SniperRifle(92x32).png&quot;,
+  &quot;type&quot;: &quot;spritesheet&quot;,
+  &quot;sprite_size&quot;: {
+    &quot;x&quot;: 92,
+    &quot;y&quot;: 32
+  }
+}
+...
+</code></pre>
+<p>You will also have to change your weapons data file, so that it references this new texture, <code>&quot;sniper_rifle&quot;</code>, instead of <code>&quot;musket&quot;</code>. This is done by changing the <code>&quot;texture&quot;</code> fields of your weapon's <code>&quot;sprite&quot;</code>, <code>&quot;animation&quot;</code>, and <code>&quot;effect_animation&quot;</code> members to <code>&quot;sniper_rifle&quot;</code>.</p>
+<h2 id="size-optional"><a class="header" href="#size-optional">Size (Optional)</a></h2>
+<h3 id="sprite"><a class="header" href="#sprite">Sprite</a></h3>
+<p>This section will go over how to go beyond changing the hue of an existing sprite to also changing the size of your new item's sprite. For my sniper, I want to change the length of the sprite in the x direction so the sniper will look significantly longer than the musket.</p>
+<p>To start off, I'll open my existing sniper rifle texture (<code>assets/textures/items/SniperRifle(92x32).png</code>) in Aseprite. Then, to visualize the tiled sprites, I use Aseprite's grid feature (View &gt; Grid Settings) to draw boxes around them. The size of the sprite sheet's tiles are the x and y values defined in <code>assets/textures.json</code> or included in the name of the texture file name. The size of the sprites in the sniper rifle texture is currently 92 (x) by 32 (y). In Aseprite I can enter these dimensions for width and height in the Grid Settings dialogue box. After entering these values, a grid will appear around the sprites as shown below.</p>
+<p><img src="assets/sniper_grid.png" alt="sniper_grid" /></p>
+<p>Next, I need to determine by how much I want to change the sprite dimensions. For my sniper rifle, I only want to change the width of the sprite so that it has a longer barrel than the musket. Arbitrarily, I chose to extend the width of the spite by 20 pixels. This will make my new sprites' tiles dimensions 112 wide by 32 tall.</p>
+<p>Now I need to do a little math to determine the size of the new spritesheet. Since the old spritesheet had 4 sprites across and 5 sprites up, the new spritesheet size will be (112 X 4) wide by (32 x 5) tall. This comes out to 448 wide by 160 tall. I'll create a new sprite sheet in Aseprite with these dimensions. With the new sprite sheet open in Aseprite, I'll again show the grid (View &gt; Grid Settings), but this time with my new frame dimensions, 112 wide by 32 tall.</p>
+<p><img src="assets/new_sniper_grid.png" alt="new_sniper_grid" /></p>
+<p>Next, one at a time, we can copy sprite frames from the old sprite sheet into the new one and modify them to fit the new weapon. I tried my best to match the art style of the musket and just add a 20 pixel long section of barrel to make the sniper rifle appear longer. Below is my new completed sprite sheet.</p>
+<p><img src="assets/new_sniper_spritesheet.png" alt="new_sniper_spritesheet" /></p>
+<p>After you are done modifying the sprite sheet save the new sprite sheet as the name of your item followed by the dimensions of the each frame in the spritesheet surrounded by parentheses. I named my new sniper rifle sprite sheet <code>SniperRifle(112x32).png</code> and saved it into the the <code>assets/items/textures</code> directory.</p>
+<p>The final step is to now change <code>assets/textures.json</code> to use the new sniper rifle spritesheet. I changed the <code>&quot;path&quot;</code> field use the name of the new file, and I changed the <code>&quot;x&quot;</code> and <code>&quot;y&quot;</code> dimensions in the <code>&quot;sprite_size&quot;</code> field to the new dimensions of the sniper rifle's frames:</p>
+<pre><code class="language-json">  ...
+  {
+    &quot;id&quot;: &quot;sniper_rifle&quot;,
+    &quot;path&quot;: &quot;textures/items/SniperRifle(112x32).png&quot;,
+    &quot;type&quot;: &quot;spritesheet&quot;,
+    &quot;sprite_size&quot;: {
+      &quot;x&quot;: 112,
+      &quot;y&quot;: 32
+    }
+  },
+  ...
+</code></pre>
+<h2 id="testing"><a class="header" href="#testing">Testing</a></h2>
+<p>The last thing we need to do is put our new weapon in the game and test it! This can be achieved by opening the game and selecting <code>Editor</code> from the main menu (see editor documentation for more information)</p>
+<p>If you followed all of these steps correctly, your new weapon should be in the game. Run the game using <code>cargo run</code>, then select the test level. You should see your gun in the level and be able to try it out.</p>
+<p><img src="assets/sniper_weapon_test.gif" alt="sniper_weapon_test" /></p>
+<p>Now all you need to do is modify the values in <code>src/items/your_weapon.rs</code> until the weapon feels right to you! Then you are ready to make a pull request.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="contributing-art"><a class="header" href="#contributing-art">Contributing Art</a></h1>
+<p><img src="./assets/art_section_header.png" alt="art_section_header" /></p>
+<p>This guide will show you the steps to draw art using the Fish Fight style. Following these steps will help your custom art fit better in the Fish Fight world. For this example, we will focus on creating a cannon weapon, but these principles can be applied to other assets as well. If you are completely new to pixel art, make sure to take a look at the <a href="contributing_art.html#additional-resources">Additional Resources</a> section first.</p>
+<h2 id="concept"><a class="header" href="#concept">Concept</a></h2>
+<p>Before you start drawing, you need to have a clear idea of what it is you are creating. We recommend finding a few reference images that you can look at while creating your art. Even the best artists do this. Drawing something completely from memory tends to not give the best results. Below are some reference images we found for cannons.</p>
+<p><img src="./assets/cannon_references.PNG" alt="cannon_references" /></p>
+<h2 id="outline"><a class="header" href="#outline">Outline</a></h2>
+<p>Now that you have some references, you can start drawing your art! To start off, draw an outline of the object's prominent features. Keep outlining more details until it is recognizable as the object you are creating. Below is the outline for the cannon weapon:</p>
+<p><img src="./assets/cannon_outlines.png" alt="cannon_outlines" /></p>
+<p>Here are the guidelines we use for outlining:</p>
+<ul>
+<li>All details for the object should be completely surrounded by outlines</li>
+<li>All outlines should be 1 pixel thick</li>
+<li>Outlines should use a dark color</li>
+<li>Generally, all outlines should be the same color</li>
+<li>Only non-solid materials like smoke, fire, etc. should be drawn without outlines</li>
+<li>If the object has holes, make them the same color as the outline</li>
+</ul>
+<h2 id="color"><a class="header" href="#color">Color</a></h2>
+<p>After you've finished outlining your object you are ready to begin coloring. Below is the cannon weapon after being colored:</p>
+<p><img src="./assets/cannon_colors.png" alt="cannon_colors" /></p>
+<p>Here are the guidelines we use for applying color:</p>
+<ul>
+<li>Use colors that have a similar saturation level with game's existing assets</li>
+<li>Use contrasting colors to distinguish different parts of the object</li>
+<li>The entire object should be filled with color (no transparency)</li>
+</ul>
+<h2 id="shadows-and-details"><a class="header" href="#shadows-and-details">Shadows and Details</a></h2>
+<p>After coloring, shadows and details can be added to the object, but try to keep it clean and recognizable. Below is the cannon after adding shadows and details.</p>
+<p><img src="./assets/cannon_details.png" alt="cannon_details" /></p>
+<p>Here are the guidelines we use for adding shadows and details:</p>
+<ul>
+<li>For contrasting shadows, use one light and one dark color</li>
+<li>Use hue shifting to create color ramps</li>
+<li>Avoid anti-aliasing</li>
+</ul>
+<h2 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h2>
+<p>Below is the full process for creating the cannon art:</p>
+<p><img src="./assets/cannon_art.gif" alt="cannon_art" /></p>
+<h3 id="additional-resources"><a class="header" href="#additional-resources">Additional Resources</a></h3>
+<p>If you are new to pixel art, we recommend that you take a look at these tutorials to learn the basics first.</p>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=gW1G_FLsuEs">3 PixelArt Techniques/Common Mistakes</a></li>
+<li><a href="https://www.youtube.com/watch?v=PNtMAxYaGyg">Hue Shifting in Pixel Art</a></li>
+<li><a href="https://www.youtube.com/watch?v=u7v4uEDwW9o">Light &amp; Shading Basics</a></li>
+</ul>
+<p>We hope this guide was helpful for understanding the Fish Fight art style. If you have any more questions feel free to ask on the <a href="https://discord.com/channels/865004050357682246/868813078119202886">#pixels</a> Discord channel.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="releases"><a class="header" href="#releases">Releases</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="03"><a class="header" href="#03">0.3</a></h1>
+<h2 id="whats-changed"><a class="header" href="#whats-changed">What's Changed</a></h2>
+<h3 id="gameplay-1"><a class="header" href="#gameplay-1">Gameplay</a></h3>
+<ul>
+<li>New <a href="items.html">items</a>!
+<ul>
+<li>Blunderbuss</li>
+<li>Blunderbass</li>
+<li>Cannon</li>
+<li>Crate</li>
+<li>Grenades</li>
+<li>Kick-Bomb</li>
+<li>Machine Gun</li>
+<li>Mines</li>
+<li>Sniper Rifle</li>
+<li>Sword</li>
+<li>Turtle Shell</li>
+</ul>
+</li>
+<li>New Characters!
+<ul>
+<li>Pescy</li>
+<li>Sharky</li>
+<li>Orcy</li>
+<li>Fishy</li>
+</ul>
+</li>
+<li>Reworked the game's menus</li>
+</ul>
+<h3 id="development"><a class="header" href="#development">Development</a></h3>
+<ul>
+<li>Overhauled system for implementing items.
+<ul>
+<li>Items now primarily implemented through JSON files.</li>
+<li>Read the <a href="./simple_gun_weapon.html">Simple Gun Weapon</a> section in the <a href="./contributing.html">Contributing</a> chapter for more details.</li>
+</ul>
+</li>
+<li>New level editor!
+<ul>
+<li>Create new levels for FishFight in-game</li>
+<li>Import tiled maps</li>
+<li>Read the <a href="./editor.html">Editor</a> chapter for more details.</li>
+</ul>
+</li>
+<li>Dynamic loading of assets through JSON manifest files.</li>
+<li>Created a book for everything FishFight (still a WIP)
+<ul>
+<li>Gameplay</li>
+<li>Contribution guides</li>
+<li>Mechanics</li>
+<li>and more!</li>
+</ul>
+</li>
+</ul>
+<h2 id="whats-next"><a class="header" href="#whats-next">What's Next</a></h2>
+<p>The new item system and dynamic asset loading will facilitate user mods for an upcoming release.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="credits-1"><a class="header" href="#credits-1">Credits</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="mechanics"><a class="header" href="#mechanics">Mechanics</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="physics"><a class="header" href="#physics">Physics</a></h1>
+<p>As you might already know, Fish Fight is a homage to the excellent Duck Game and thus we have chosen to replicate the rather simple and straight forward linear physics found in that game. It follows standard platformer physics, with force being translated to two-dimensional velocity, acting against gravity and drag, every physics update (<code>fixed_update</code>).</p>
+<p><a href="https://maddythorson.medium.com/celeste-and-towerfall-physics-d24bd2ae0fc5">The same physics system is used in Towerfall and Celeste.</a></p>
+<p>To learn more about basic game physics, as they are implemented in Fish Fight, you can explore the following sources:</p>
+<p><code>[Ask us about missing links!]</code></p>
+<h2 id="fish-fights-physics-implementation"><a class="header" href="#fish-fights-physics-implementation">Fish Fight's physics implementation</a></h2>
+<p>As for the specifics of Fish Fight, I will elaborate in the following paragraphs. Please note, however, that the game is currently in a very early prototype stage, so the implementation is neither perfect nor, in any way, optimized, at this stage.</p>
+<h3 id="scene-nodes"><a class="header" href="#scene-nodes">Scene nodes</a></h3>
+<p>The game uses the <a href="https://github.com/not-fl3/macroquad">Macroquad library</a>, by <a href="https://github.com/not-fl3">Fedor</a>, who is also part of the core team of Fish Fight. This means that our scenes are composed of scene nodes, made by implementing the <code>Node</code> type. The most relevant method, when discussing physics, is the <code>fixed_update</code> method, which is called for every node, every physics frame. This means that, in order to explore the existing physics of any existing in-game object, you should browse to the corresponding node source file, in <a href="https://github.com/fishfight/fish2/tree/master/src/nodes"><code>src/nodes</code></a>, and look for the <code>impl Node for T</code> section and the encapsulated <code>fixed_update</code> implementation.</p>
+<p>This method takes a <code>RefMut&lt;T&gt;</code> as an argument (can be both mutable and immutable), where <code>T</code> is the type of the node that it is being implemented for. From here, you can do many things; like manipulating the node, itself, through the <code>RefMut&lt;T&gt;</code> parameter, as well as access other nodes by fetching them from the scene, either by type, or by specific traits, made by calling <code>node.provides([...])</code> in a nodes <code>ready</code> implementation. For examples of this, you can check the code of most nodes for the code providing the <code>Sproingable</code> trait, for example.</p>
+<p>Examples of code for accessing other nodes:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// This is from the ArmedGrenade node, showing how we iterate over players, checking for
+// collision and killing the player if the explosion &quot;collides&quot; with the player
+for mut player in scene::find_nodes_by_type::&lt;crate::nodes::Player&gt;() {
+    let intersect =
+        grenade_rect.intersect(Rect::new(
+            player.body.pos.x,
+            player.body.pos.y,
+            PLAYER_HITBOX_WIDTH,
+            PLAYER_HITBOX_HEIGHT,
+        ));
+    if !intersect.is_none() {
+        let direction = node.body.pos.x &gt; (player.body.pos.x + 10.);
+        scene::find_node_by_type::&lt;crate::nodes::Camera&gt;()
+            .unwrap()
+            .shake();
+        player.kill(direction);
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// This is from the Sproinger node, iterating through nodes providing the Sproingable trait
+// and checking for collision, before performing a &quot;sproing&quot; on them, if they overlap
+for (_actor, mut body_lens, size) in scene::find_nodes_with::&lt;Sproingable&gt;() {
+    if body_lens.get().is_some() {
+        let body = body_lens.get().unwrap();
+        if body.speed.length() &gt; Self::STOPPED_THRESHOLD {
+            let intersect = sproinger_rect
+                .intersect(Rect::new(body.pos.x, body.pos.y, size.x, size.y));
+            if !intersect.is_none() {
+                let resources = storage::get_mut::&lt;Resources&gt;();
+                play_sound_once(resources.jump_sound);
+
+                body.speed.y = -Self::FORCE;
+                node.has_sproinged = true;
+                // self.sprite.set_animation(1);
+                // self.sprite.playing = true;
+                Sproinger::animate(node.handle());
+            }
+        }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="collision"><a class="header" href="#collision">Collision</a></h3>
+<p>Collision between nodes is done by creating collider <code>Rect</code> or <code>Circle</code> objects and calling their <code>intersect</code> (<code>Rect</code> only) or <code>overlaps</code> methods. The former will return an<code>Option&lt;Rect&gt;</code>, where the contained <code>Rect</code> represents the intersection between the two colliding <code>Rect</code> objects, or <code>None</code>, if there was no intersection. The latter will return a <code>bool</code> that is <code>true</code> if there was any overlap between the two objects. To check for collisions with the map, you have several methods in the <code>scene</code> module that lets you check for collisions on the various map layers. For examples of map collisions, once again, the <a href="https://github.com/fishfight/fish2/tree/master/src/nodes/player.rs"><code>Player</code></a> implementation is a good place to start. Furthermore, <code>PhysicsBody</code> members may hold a collider that Macroquads physics engine will collide against <code>Solid</code> objects in the scene (ground tiles, for the most part). These colliders will have to be added to the collision world, as actors. See the constructor of the <a href="https://github.com/fishfight/fish2/tree/master/src/nodes/player.rs"><code>player node</code></a> for an example of how this is done.</p>
+<p>NOTE: To get the hitbox of a Player node, use <code>Player::get_hitbox()</code>, so that you get the correct size if the player node, for example, is in a crouched state.</p>
+<h3 id="force"><a class="header" href="#force">Force</a></h3>
+<p>When it comes to enacting force on nodes, this is done by setting a speed on a node. Most nodes will have a body, but not all, as the primary use for a body is to hold a collider. For simpler nodes, we might just put a position vector and a speed vector directly on the node, in stead. This can be checked in the specific nodes implementation. As mentioned, we set the velocity directly, in stead of accumulating force over several frames, as this leads to much more predictable and precise game physics (the age old Mario, using acceleration, vs Megaman, using binary force, dichotomy).</p>
+<p>This means that, in order to implement an explosion, for example, you would decide on a force, find the node(s) that the explosion will act upon and apply this force by setting the speed of the node, or the nodes body, depending on its implementation, to the value of the force in the appropriate direction. See below for a simplified example of something exerting a force, on the x-axis, on a player, if an arbitrary hit check condition is fulfilled:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl T {
+    pub const FORCE: f32 = 900.0;
+}
+
+impl Node for T {
+    for mut player in scene::find_nodes_by_type::&lt;crate::nodes::Player&gt;() {
+        [hit detection]
+        if is_hit {
+            let direction_is_right = node.body.pos.x &gt; (player.body.pos.x + 10.);
+            player.body.speed.x = if direction_is_right {
+                FORCE
+            } else {
+                -FORCE // negative force
+            }
+        }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>The same methods would be used for movement, for example, but instead of checking for a collision, you would check for input. For examples of this, check out the <a href="https://github.com/fishfight/fish2/tree/master/src/nodes/player.rs"><code>player node implementation</code></a>.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="environmental-weapons"><a class="header" href="#environmental-weapons">Environmental weapons</a></h1>
+<ul>
+<li><a href="environmental_weapons.html#environmental-weapons">Environmental weapons</a>
+<ul>
+<li><a href="environmental_weapons.html#document-notes">Document notes</a></li>
+<li><a href="environmental_weapons.html#mechanics-and-examples">Mechanics and examples</a></li>
+<li><a href="environmental_weapons.html#code-design">Code design</a></li>
+</ul>
+</li>
+</ul>
+<p>Environmental weapons are weapons that don't follow the structure of weapon and projectile, rather, they spawn one or more entities intended to harm enemy.</p>
+<h2 id="document-notes"><a class="header" href="#document-notes">Document notes</a></h2>
+<p>This document doesn't explain all the concepts, since some are already explained in <a href="physics.html">Physics</a>.</p>
+<p><code>EW</code> is used as abbreviation for <code>E</code>nvironmental <code>W</code>eapon.</p>
+<h2 id="mechanics-and-examples"><a class="header" href="#mechanics-and-examples">Mechanics and examples</a></h2>
+<p>For each pickup, it's possible to spawn the weapon only once; after usage, most will disappear entirely from the level.</p>
+<p>Currently, there are a few EWs:</p>
+<ul>
+<li>Curse: a skull that chases the closest enemy, in a sinusoidal motion, for a limited amount of time;</li>
+<li>Galleon: a large vessel that crosses the screen horizontally;</li>
+<li>Shark rain: a group of sharks falling vertically from the top, at random horizontal positions.</li>
+</ul>
+<p>EWs may, or may not, self-pwn the owner.</p>
+<h2 id="code-design"><a class="header" href="#code-design">Code design</a></h2>
+<p>EWs are typically designed in two main types: the item, which is what the player can pick up/hold/throw, and the weapon itself, which is the set of entities that are summoned and harm the enemies.</p>
+<p>The general design is very similar to all the other weapons, with a few distinctions.</p>
+<p>The <code>shoot()</code> routine, itself common to the other weapons, is a good starting point:</p>
+<pre><code class="language-rs">pub fn shoot(galleon: Handle&lt;Galleon&gt;, player: Handle&lt;Player&gt;) -&gt; Coroutine {
+    let coroutine = async move {
+        /* ... */
+
+        if galleon.used {
+            player.state_machine.set_state(Player::ST_NORMAL);
+            return;
+        }
+
+        galleon.used = true;
+
+        FlyingGalleon::spawn(player.id);
+
+        player.weapon = None;
+        
+        /* ... */
+
+        galleon.delete();
+
+        player.state_machine.set_state(Player::ST_NORMAL);
+    };
+
+    start_coroutine(coroutine)
+}
+</code></pre>
+<p>A very important concept is that we must avoid race conditions on multiple shots. Since shooting is asynchronous, on the first shot, we need to set a flag (in this case, <code>used</code>) that makes other concurrent executions return.</p>
+<p>Most EWs are usable only once per level; this is implemented by removing the weapon from the player (see above), and deleting the item from the node graph.</p>
+<p>Since most of the EWs don't kill the owner, we store the Player id in the spawned type, and skip it on collision test:</p>
+<pre><code class="language-rs">pub struct FlyingGalleon {
+    /* ... */
+    owner_id: u8,
+}
+
+impl scene::Node for FlyingGalleon {
+    fn fixed_update(mut flying_galleon: RefMut&lt;Self&gt;) {
+        /* ... */
+
+        for mut player in scene::find_nodes_by_type::&lt;crate::nodes::Player&gt;() {
+            if player.dead {
+                continue;
+            }
+
+            if flying_galleon.owner_id != player.id {
+                /* Collision test here */
+</code></pre>
+<p>We also check if a player is dead, before performing the the collision check: since the EWs are generally large, performing the test multiple times is not correct; for example, it has the immediate effect of causing multiple death effects.</p>
+<p>EWs typically need to know the boundaries of the map; see the <code>FlyingGalleon#start_position_data()</code> routine:</p>
+<pre><code class="language-rs">fn start_position_data() -&gt; (Vec2, bool) {
+    let resources = storage::get::&lt;Resources&gt;();
+
+    // We query the map size from the raw tiled map data:
+
+    let map_width =
+        resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width;
+    let map_height =
+        resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height;
+
+    // Note also how we generate a random boolean via MacroQuad `rand` APIs:
+
+    let (start_x, direction) = if gen_range(0., 1.) &lt; 0.5 {
+        (0. - FLYING_GALLEON_WIDTH, true)
+    } else {
+        ((map_width - 1) as f32, false)
+    };
+
+    let start_y = gen_range(0., map_height as f32 - FLYING_GALLEON_HEIGHT);
+
+    (vec2(start_x, start_y), direction)
+}
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="netcode"><a class="header" href="#netcode">Netcode</a></h1>
+<p>The netcode in <a href="https://github.com/fishfight/FishFight">Fish Fight</a> is something called delay-based netcode by many players, but is more  specifically deterministic lockstep. A peer-to-peer architecture that is completely deterministic.</p>
+<p>This video was the main inspiration for our netcode architecture:</p>
+<iframe src="https://www.youtube.com/embed/7jb0FOcImdg" allowfullscreen="" width="500" height="281" frameborder="0"></iframe>
+<p>What is described from 6:09 to 7:15 is the current state of our  netcode. The video proceeds to explain the limitations of this approach  and how they iterated from there to what can more accurately be called <a href="https://en.wikipedia.org/wiki/GGPO">GGPO</a>. That is where we are headed as well, beginning with a minimal  foundation that we have a full grasp and agency over. From the  intentionally naive “Player Unhappy” model we will gradually work our  way towards “Player Very Happy”.</p>
+<h2 id="terms-and-concepts"><a class="header" href="#terms-and-concepts">Terms and Concepts</a></h2>
+<p>Before we go any further, let’s explain some terms and concepts.</p>
+<p>First off, what makes online multiplayer games difficult to make?  There are two main issues: (1) The latency (travel time) for information over the internet, and (2) when circumventing that, ensuring that  nobody can cheat while also fairly integrating everyone’s input. What’s  important isn’t that the solution is ”correct”, but that it feels great  to your players. Game networking consists largely of clever tricks and  smoke and mirrors, all to disguise the inherent limits of space-time.</p>
+<p>A peer/client is someone who joins an online game session. (We will  use these terms interchangeably, but there might be reasons to  differentiate the two). For example, when you play Minecraft, you join  servers as a client. Most games these days use a server-client  architecture, where clients will join a server that handles everything  in the online game session, and streams necessary data to the clients.</p>
+<p>However, this isn’t the only way of handling things. Indeed, before  the server-client architecture became commonplace, there was the  peer-to-peer (P2P) architecture. Instead of relying on an authoritative  server to tell the clients what’s happening, the peers instead tell EACH OTHER what is happening. This means that any one peer has to send out  data to every single other peer, and as such the required bandwidth  scales linearly as more players join. For this reason most games just  use the server-client system for anything more than 6-8 players.  However, for a game like Fish Fight which will only have 2-4 players in  any one given match, a peer-to-peer system will make more sense.</p>
+<p>This has several benefits. First and foremost, there’s no need to pay for hosting. While for a small project like Fish Fight, with a  relatively simple simulation, that cost would likely be low. But there’s a plethora of problems that must be addressed: that cost isn’t zero and still has to be paid somehow, and if the game gets immensely popular  the price will quickly skyrocket. And then you must also write a load  distribution system, and DDOS protection, the list goes on. A  peer-to-peer architecture offloads all the costs to the players, who are in any case already running the simulation. This also means that you  don’t need to maintain two separate client and server codebases, that  must exactly line up in behaviour. Peer-to-peer might even offer lower  latency, since the packets don’t have to go back and forth through a  server.</p>
+<p>This is because hosting servers is EXPENSIVE. For example, hosting a  Minecraft server on Minecraft Realms is $8 dollars per month. That’s not much, but it's only one session. If we assume that this will “only”  have a max player count of 40 people per day, that means we have to host 10 servers. That means $80 dollars per month. This doesn’t even take  into account all of the other things we might have to worry about when  developing a server-client architecture, like having to maintain two  different codebases at the same time.</p>
+<p>As such, making a peer-to-peer game makes sense at this scale.  However, any one who wants to make an online multiplayer game MUST  understand that every multiplayer solution is specialized to your  use-case. The server-client architecture has many other benefits, mainly scalability. But also, in Fish Fight there is no persistent state or  complex systems that must always be online. The ”servers” in P2P go  offline as soon as a player quits.</p>
+<p>The Authority is whoever decides what is true, and can overwrite  anyone else’s state. The authority isn’t necessarily one party, but  rather authority is held over singular objects or values. For example, a player might hold authority over a ball they are kicking, so they don’t have to ask the server for confirmation before interacting resulting in a snappier experience. This isn’t exactly applicable in a lockstep P2P  architecture, but is foundational for client-servers so you’ll likely  see the term if you ever read anything about networking. In those cases  the server is almost always the authority, so the players can’t cheat.</p>
+<p>Listen Servers are a network architecture/topology not to be confused with peer-to-peer. It is simply a client-server architecture where one  of the clients hosts the server. This combines the cost benefits of a  P2P topology while also allowing for better lag compensation methods. It still requires the same bandwidth as P2P, but only for the client who  is running the server so the game is no longer capped by the slowest  connection. Fish Fight might eventually move to this topology or move to a P2P model.</p>
+<p>Ping/Latency/Round Trip Time all relate to the time it takes for a  message to travel over a network. Latency is the time it takes to travel from the sender to the recipient, while Round Trip Time (RTT) and Ping  refers to the time it takes both back and forth. RTT however is not  necessarily twice the latency, although often very close. On the  network, different conditions and even routes means that times will  vary.</p>
+<p>Jitter is related to latency, and is the amount by which it varies. A bad connection does not only have long latency, but the time it takes  for packets to arrive will also vary greatly. This is a major hindrance  when you want data to arrive in a smooth and regular manner, such as  frames in a video, sound in a voice chat or input for a player. This is  managed by adding a Buffer, which stores values for a short while and  then dispenses them like an even flow. The tradeoff is that the fastest  packets are slowed down to be in time with the slowest packets, leading  to an overall slowdown.</p>
+<p>Then there’s Packet Loss, where a packet gets completely lost at some crossroad of the internet. Bad connections also means that not all  packets will arrive. This is countered by adding Redundancy. Common ways to compensate is to send packets multiple times, so at least one is  likely to arrive, or send a confirmation once a packet is received. If  the confirmation is not received, resend the packet until you get a  response.</p>
+<p>For some slightly more low-level things that you can do without:</p>
+<p>TCP/UDP relates to packet loss. UDP is a transport protocol on the IP stack that “simply” sends messages, fire-and-forget, with no regard to  whether it arrives. TCP on the other hand has more overhead but  guarantees that your messages arrive. FishFight uses UDP for speed, and  implements a custom redundancy layer on top of that for extra  performance. TCP is often overkill, and a custom built solution almost  always works better since it can exploit the exact workings of your  game. Overhead is the extra data that is sent every packet, and adds to  the required bandwidth. By sending more data per packet, the overhead  will make up a smaller part of the data sent.</p>
+<h2 id="delayed-lockstep"><a class="header" href="#delayed-lockstep">Delayed Lockstep</a></h2>
+<p>Anyways, we explained the peer-to-peer part, but you’re probably  wondering what is deterministic lockstep. Gaffer on Games already wrote  about this in <a href="https://gafferongames.com/post/deterministic_lockstep/">an article you can read here</a>, but in summary.</p>
+<p>At its very basics, lockstep works by collecting input from every  player and then simulating one frame once all input is gathered. In  other words, the only thing that gets transmitted between players is  their input. Input often can be packed into a single byte, and therefore very little bandwidth is required. When the input then arrives, the  simulation is advanced one step. Since everyone waits for input from  each other, everyone steps in sync.</p>
+<p>But however small the packets are, the latency will remain largely  the same. To wait for every player to send their input each time would  mean that the game can not update faster than (in the best case) 1/RTT/2 Hz (confirmation can be sent later). If you want your game loop to run  at 60Hz, you can’t have an RTT over 30 ms which is difficult to achieve  outside of wired and geographically small networks.</p>
+<p>Enter: Delayed Lockstep. The ”delay” part is an input buffer that  stores inputs for a short while before executing them. Now every input  packet also contains a frame timestamp so that all remote input can be  matched up with the local input and executed at the same frame. As input rolls in it is stored in the matching slot in a buffer, and by the time a frame should be simulated the corresponding buffer slot should be  filled with input from all players. The latest input is then popped off  the buffer, which shifts one frame forward, and the game progresses one  step. By maintaining this buffer (barring major interruptions) the game  always has input at hand, and can as soon and as quickly as it wants.  But as you might guess, there’s a tradeoff, and that is of course the  added delay. The remote players already have some delay so it doesn’t  matter too much, but the local input must be slowed down to match the  slowest player, leading to slower response to keyboard input. To  minimise this delay, the buffer should be as short as possible. To give  everyone’s input time to arrive the buffer must be as long as the  slowest players ping + their jitter. To improve the experience, your  networking should continually measure how long it is between the last  player’s input arriving and the buffer running out, and then adjusting  the buffer to be as short as possible. A too long buffer means  unnecessary input delay, but if the buffer is too short and runs out the game must freeze until input arrives. It’s a fine line to walk, but  it’s usually better to lean towards too long than having interruptions.</p>
+<p>However, there’s one big, or rather HUGE, issue: Determinism. Since  all that is sent between clients is their inputs, one requirement must  be met. Given the same world state and inputs, every time, on every  computer, OS, architecture, instruction set, etc. etc. the game must be  able to generate the exact same next frame. The tiniest deviation  accumulates and quickly makes the game unplayable. The main source of  nondeterminism is floating point arithmetic. Performing operations with  floating point numbers famously produces varying results, which depends  on many factors. Random number generators must also be kept in sync.</p>
+<p>We want to reduce the amount of data being sent online by each peer,  AND we don’t want to have people hack the game. The way to do this then, is to have players only send their inputs to each other, so that you  can’t have people change their position all willy nilly <a href="https://www.youtube.com/watch?v=yMVkh4BJe7k">like this</a>.</p>
+<p>However, we want to make sure that when inputs are sent to each  player, the game itself is fully deterministic: the same thing must  happen with the same inputs every time to prevent clients from desyncing with each other. There’s a lot of ways to handle this that we not going to get into, but I’m sure could make for a very interesting separate  article.</p>
+<p>For now, we are going to assume that the game itself is fully deterministic and just take a look at the code itself in <a href="https://github.com/fishfight/FishFight/blob/main/src/nodes/network.rs">src/nodes/network.rs</a>.</p>
+<p>We are first going to take a look at the data being sent online, the  packets. In this case, the packets in network.rs are called messages,  which is what they are so it makes sense.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(DeBin, SerBin)]
+enum Message {
+    Input {
+        // position in the buffer
+        pos: u8,
+        // current simulation frame
+        frame: u64,
+        input: Input,
+    },
+    Ack {
+        // last simulated frame
+        frame: u64,
+        /// bitmask for last 8 frames
+        /// one bit - one received input in a frames_buffer
+        ack: u8,
+    },
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Each message has two different parts to it. It has an Input struct,  which contains the position in the input buffer, the frame that the game is currently on, and the actual input. It also has an Ack struct (which is sent to assure the other clients they received their input) that  contains the frame the game is on. The Ack struct also has a bitflag  that tells what inputs they got from what clients.</p>
+<p>Now, the person reading this might wonder: why is there an input  buffer here? Well, we forgot to mention one thing. See, in the real  world, deterministic lockstep doesn’t actually work. Well, it doesn’t work the way you might think at first.</p>
+<p>Every packet being sent online is always going to have a little bit  of delay to it (latency) since there is going to be some distance that  is covered by the packet as it travels. Even at the speed of light, it  still takes a nanosecond for a packet to get across from one side of the room to the other.</p>
+<p>As such, if you were to have a naive interpretation of deterministic  lockstep without accounting for latency, it would just freeze every  single frame as it waits for inputs to appear.</p>
+<p>This image taken from <a href="https://ki.infil.net/w02-netcode.html">Infil’s article about the netcode in Killer Instinct</a> (with permission!) should show what that looks like.</p>
+<iframe src='https://gfycat.com/ifr/FaithfulImmaculateBug' frameborder='0' scrolling='no' allowfullscreen width='640' height='405'></iframe>
+<p>(Note that this isn’t actually delay-based netcode either, but that’s a discussion for another time)</p>
+<p>What instead is done is adding in an artificial delay to the program  itself, and having a buffer of input of a certain amount of frames. This allows the inputs time to arrive.</p>
+<iframe src='https://gfycat.com/ifr/ActiveFormalAtlanticsharpnosepuffer' frameborder='0' scrolling='no' allowfullscreen width='640' height='405'></iframe>
+<p>When the inputs come to the other players, it gets added into the  input buffer which also lasts a certain amount of frames. This means  that most moves and stuff feel noticeably slower with added delay.</p>
+<iframe src='https://gfycat.com/ifr/AffectionateDescriptiveAiredaleterrier' frameborder='0' scrolling='no' allowfullscreen width='640' height='405'></iframe>
+<hr />
+<p>This concludes part 1 of our &quot;Netcode Explained&quot; series. In part 2 we will do a code walk-through and piecemeal analysis.</p>
+<p><em>Written by Srayan “ValorZard” Jana and grufkok, with editing by Erlend</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="juice-and-feel"><a class="header" href="#juice-and-feel">Juice and Feel</a></h1>
+<p><strong>Juice</strong>, or <strong>game feel</strong>, is the science and art of making pushing a button viscerally satisfying. Well, more precisely it's about giving feedback to confirm the player's actions. For games where flow and feeling matter, juice is the thing that makes the player understand your game without reading dials and processing numbers. Juice gives a game life and soul that makes the player feel like a part of the world. Juice is what makes a game feel fun without actually making any mechanical difference. And juice might just be what makes or breaks your game.</p>
+<p>Whenever you do something in real life you get a wide range of sensory input in return indicating that what you tried to do actually happened. That response grounds you and makes you realise the reality and weight of things. As you might guess, replicating that kind of feedback on a flatscreen is hard. To get anywhere near reality you need hyperreal effects and nerve-blasting feedback to fill in for all the missing senses, all the while walking the fine line of overloading your player and making a dry, unresponsive world.</p>
+<p>Of course, not all games need equal amounts of juice. Some games are played mostly in your head, and therefore all that visual feedback is not needed. Civilization has little more than flavour animations when a unit attacks, a town is built or a nuke blows up (actually the last one is pretty nice, but the real juice is your enemy’s tears). These are rather abstract both mechanically and visually, rarely pertaining to situations and perspectives we encounter in our everyday life. These games would still work with nothing but coloured circles and lines, because the strategy and the story exists in the player’s head. These games are <em>planning</em> games, where the payoff is to after thousands of years of careful strategising triumph over your enemy. </p>
+<p>On the other side of the spectrum are <em>execution</em> games that test your reflexes and motor skills. These are played visually with the game continually telling the player what is going on. Here, the payoff is landing that single-frame-margin combo and watching your enemy explode into a glorious cloud of gibs. The juice that in a planning game exists in the player’s head must here be given by the game. </p>
+<p>For realistic first-person games, juicing is difficult and labour-intensive in practice but easier in concept, as you can model the feedback off reality to align with the player’s expectations. But a side-scrolling shooter like Fish Fight is more difficult in theory. I’d doubt you have a clear picture of how stylised two-dimensional fish running and shooting each other would look in real life. For something so far detached from reality, you must work a lot in the same way as with symbol drawing: finding effects that represent their real-life counterparts without actually being them. You'll have to unhinge your expectations and think out of the box to find the feel you need.</p>
+<h2 id="working-with-game-feel"><a class="header" href="#working-with-game-feel">Working with game feel</a></h2>
+<p>The worst part about working with game feel is that it is only ever noticed if it is bad. Good game feel is only felt, never seen. If the juice is so grandiose that the player starts thinking of it, it will wear them out and possibly even make them sick if too much stuff is moving onscreen. But if there is not enough of it, the game will feel dry and lifeless. The juice is there to constantly trigger and must therefore be <em>just</em> right. On that matter, juicing games is more artsy compared to, for instance, UI design. There are certain guidelines to follow, but mostly it's lots of tuning and testing. The easiest way to try the feel is simply to play the game! If even mundane actions like walking feels nice, you have really succeeded.</p>
+<p>Juicing also regards making the world feel alive by making it respond, cause and effect, to the player's actions. Whipping up dust while running or jostling foliage when walking through it are common effects that give the impression of a breathing coherent world in which all its separate parts coexist and interact. This doesn't do anything mechanically, but is equivalent to hitting a wooden crate and it not breaking. Now you maybe even shudder a bit at the thought of how lifeless, bland and plain wrong it would feel. Well, the player too has expectations on how the world should respond. Your task is to meet and feed into those expectations on all levels, from the core greyboxed mechanics to minute tweens and particle effects. </p>
+<p>Now, for some ways to actually squeeze some juice out of your games!</p>
+<h2 id="screen-shake"><a class="header" href="#screen-shake">Screen Shake</a></h2>
+<p>Screen shake is an immensely powerful tool for giving heavy, visceral feedback that disorients the player as if their whole body was actually rumbling. When the entire scene shakes the player <em>feels</em> it, usually without thinking of it. Regular flatscreen games are only connected to two of the players senses, vision and hearing, and that is all you have to work with. The ears can be shaken about with some explosion noises, but to equally rustle the player’s eyes you need screen shake. </p>
+<p>Screen shake moves the player’s viewpoint around, translationally and/or rotationally, to make it appear the world is rumbling. Adding the right amount of shake is an art; it is crucial to not overdo screen shake as it can hamper readability and even make sensitive players motion sick, but at the same time it must be significant enough to be felt. People usually have very split opinions on screen shake. Some love the punch it gives, others detest the blurry jostling. Try to take a step back and don't get too caught up in the looks, the game must still be playable.</p>
+<h3 id="screen-shake-in-practice-in-fish-fight"><a class="header" href="#screen-shake-in-practice-in-fish-fight">Screen shake in practice in Fish Fight</a></h3>
+<p>Screen shake is a lot about feel, and as such requires a lot of dialling in. In fish fight there are three kinds of screen shake: noise (Perlin) translational, sinusoidal translational and rotational. Translational noise moves the world up- and sideways, while the rotational noise rotates the world around the screen midpoint. To that, you can also make the screen shake only in a certain axis to give it directionality. Omnidirectional shaking is the most common and can be used for pretty much everything. It fits explosions really well, but won't feel out of place for anything else either. The directional type on the other hand is more specialised and can for example be used vertically for jump impacts or horizontally for guns firing sideways. This further enhances feedback and narrows its meaning down, increasing clarity and readability.</p>
+<p>To those types there’s three parameters: magnitude, frequency and length. Magnitude affects how far the screen moves when shaking (the amplitude of the oscillation) while frequency controls how ”many” shakes happen per second. The length decides for how long the shake will last for, and the magnitude decreases over this time to zero.</p>
+<p>By mixing and matching different values for these parameters different effects can be made. Here are a few examples:</p>
+<ul>
+<li>Gunshot: a short omnidirectional shake with low amplitude and high frequency. This gives a small kick that doesn’t move the screen too much, just enough to confirm the firing.
+Fish Fight supports setting multipliers for X/Y movement, so a 1 for X and a smaller number for Y makes the player feel the direction of the action.</li>
+<li>Explosion: a medium-length omnidirectional shake with decent amplitude and lower frequency. This makes a kind of rumble that seriously jostles the screen. The bigger the explosive the lower the frequency!</li>
+<li>Jump impact: a directional sinusoidal shake makes the world bounce like a spring. </li>
+</ul>
+<p>To calculate the final scene position, the current position of every active shake is added together. That value is then capped using a logarithmic function so that if many explosives go off at once, the scene does not fly off-screen. The second logarithm (log<sub>2</sub>x) is useful for this, as it is almost linear from 0-1 and then quickly flattens.</p>
+<h2 id="particles"><a class="header" href="#particles">Particles</a></h2>
+<p>Particles like those in games rarely occur in real life, as most of us go through our daily routine avoiding high-impact situations. But games tend to be a bit more forceful and violent, and that of course means heaps of particles! Particles are a great way to create dynamic and exciting effects that further give impact and weight to actions, but also make the world seem more alive and responsive. Some examples are sparks flying when a bullet hits a wall or dust blowing around in a storm. </p>
+<p>In Fish Fight, <a href="https://crates.io/crates/macroquad-particles">macroquad-particles</a> submodule is used to handle particles. While it might look rudimentary, it is deceptively so. With several particles, blending modes and curse pretty impressive effects can be made. The explosions in FishFight used to be entirely procedural! Now it is used for muzzle smoke, trails, bubbles and whatever other details will be added in the future. </p>
+<p>Particle presets are stored in .json files, which can be either generated manually or using <a href="https://fedorgames.itch.io/macroquad-particles">this excellent editor</a> which provides previews and live tweaking. It might not be entirely up to date with the latest particle system format, but should get you up and running quickly.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="screen-shake-1"><a class="header" href="#screen-shake-1">Screen Shake</a></h1>
+<p>Screen shake in FishFight is accessed through the Camera node in the scene. It has multiple functions to apply different kinds of noise.</p>
+<p>To camera node is accessed as follows:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut camera = scene::find_node_by_type::&lt;crate::game::GameCamera&gt;().unwrap();
+<span class="boring">}</span></code></pre></pre>
+<p>Unless you use the camera multiple times, it's better to not assign it to a variable but to use the value straight away: </p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut camera = scene::find_node_by_type::&lt;crate::game::GameCamera&gt;().unwrap().shake_noise(magnitude, length, frequency);
+<span class="boring">}</span></code></pre></pre>
+<p>This prevents some ownership issues that would otherwise require separate scopes.</p>
+<h3 id="parameters"><a class="header" href="#parameters">Parameters</a></h3>
+<p><code>magnitude</code>: How far the shake moves the screen in pixels. Values around 10-20 are sane.</p>
+<p><code>length</code>: For how long the shake will last in frames. The magnitude is multiplied by <code>age/length</code> to fade the shake over time.</p>
+<p><code>frequency</code>: 1 is normal, 0.2 is a punch. With a frequency of 0.2 and length of 10 frames it will oscillate max twice. 0.5 is more of a rumble. Worth noting is that <code>shake_sinusodial</code> has a different base frequency.</p>
+<p><a href="docs/../juice.html#screen-shake-in-practice-in-fish-fight">See this</a> for more information.</p>
+<h3 id="noise-types"><a class="header" href="#noise-types">Noise types</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>camera.shake_noise(magnitude: f32, length: i32, frequency: f32);
+<span class="boring">}</span></code></pre></pre>
+<p>Shakes the screen around randomly using Perlin noise. Applicable for almost anything. </p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>camera.shake_noise_dir(magnitude: f32, length: i32, frequency: f32, direction: (f32, f32));
+<span class="boring">}</span></code></pre></pre>
+<p>Like <code>shake_noise</code>, but the X and Y components of the resulting shake will be multiplied by the direction tuple. Can be used to make the screen shake more on one axis than the other, or only on one axis.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>camera.shake_sinusoidal(magnitude: f32, length: i32, frequency:f32, angle: f32);
+<span class="boring">}</span></code></pre></pre>
+<p>Shakes the screen sinusoidally along the angle given in radians. </p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>camera.shake_rotational(magnitude: f32, length: i32);
+<span class="boring">}</span></code></pre></pre>
+<p>Rotates the scene around the screen's centre. Combines well with other types of screen shake for extra punchiness.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="particles-1"><a class="header" href="#particles-1">Particles</a></h1>
+<p>FishFight uses macroquad's <a href="https://crates.io/crates/macroquad-particles">macroquad-particles</a> for simulating and drawing particles. While it might seem simple, it is deceptively so. With a little creativity plenty impressive effects can be created!</p>
+<p>Also see the <a href="docs/../juice.html#particles">the particle section of the juice page.</a></p>
+<h3 id="the-components-of-a-particle-effect"><a class="header" href="#the-components-of-a-particle-effect">The components of a particle effect</a></h3>
+<p>A particle effect consists of several parts that must be set up as following:</p>
+<p>First, you need to design your effect! Each effect has a <code>json</code> file that describes how the system spawns, looks, flies, brakes and fades. Check out some of the other effects  in <code>assets/particles/</code>, or easier, try <a href="https://fedorgames.itch.io/macroquad-particles">Fedor's tool</a> with previews and live tweaking to generate the file for you. </p>
+<p>Now that you got your <strong>particle system definition</strong>, give it a descriptive name and put it in <code>assets/particle_effects/</code> with the others. Then open <code>assets/particle_effects.json</code> (a file, not a directory this time) and add your particle effect to it. Preferably use the same ID as your filename, excluding the extension. This tells the game to load your effect into the <code>Resources</code> object, so you can actually access it.</p>
+<h3 id="spawning-a-particle"><a class="header" href="#spawning-a-particle">Spawning a particle</a></h3>
+<p>The easiest way to use your particle is through an effect that spawns a particle system. Just supply the ID of your effect in the JSON-definition of your object and the item's code will handle the rest. It can look something like this, depending on the effect:</p>
+<pre><code class="language-json">&quot;effects&quot;: [
+	...
+	{
+		&quot;type&quot;: &quot;particle_controller&quot;,
+		&quot;id&quot;: &quot;0&quot;,
+		&quot;particle_id&quot;: &quot;musket_muzzle_smoke&quot;,
+		&quot;start_delay&quot;: 1,
+		&quot;is_can_be_interrupted&quot;: true,
+		&quot;amount&quot;: 6,
+		&quot;interval&quot;: 0.05
+	},
+	...
+]
+</code></pre>
+<h4 id="spawning-in-code"><a class="header" href="#spawning-in-code">Spawning in code</a></h4>
+<p>Soon you'll probably want to trigger particle effects from your own code. You do that as following:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>scene::find_node_by_type::&lt;ParticleEmitters&gt;().unwrap().spawn(&quot;particle_id_here&quot;, position: Vec2);
+<span class="boring">}</span></code></pre></pre>
+<p>If you want to spawn multiple systems, you can store a reference:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut particles = scene::find_node_by_type::&lt;ParticleEmitters&gt;().unwrap();
+<span class="boring">}</span></code></pre></pre>
+<p>You can also use a <code>ParticleController</code> which manages spawning particles over time for you, useful for leaving trails (this is currently used for the smoke puffs left behind bullets). Its <code>new</code>-constructor takes a <code>ParticleControllerParameters</code>, where you can control spawn rates and such. It is documented in the code. Note that the <code>ParticleController</code> has an <code>update()</code> function that has to be called each frame to make it tick.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="editor"><a class="header" href="#editor">Editor</a></h1>
+<p>The editor is a tool for designing custom levels in Fish Fight. You can use it to examine and edit
+existing levels, and also create your own.
+This chapter will contain guides on how to use all of the features the editor has to offer and even a
+high-level overview of its API for those who are interested in contributing to its development.</p>
+<p><img src="./assets/editor.png" alt="Screenshot of the Fish Fight editor. The map area and layers toolbar are visible. Default textures for platforms occupy the map area." /></p>
+<h2 id="controls-1"><a class="header" href="#controls-1">Controls</a></h2>
+<p>Only mouse and keyboard is supported, for now. We will implement gamepad support for the editor in the future, however.</p>
+<ul>
+<li><code>Arrows or WASD</code> pan map</li>
+<li><code>Left Mouse Button</code> use selected tool</li>
+<li><code>Middle Mouse Button</code> hold to pan map</li>
+<li><code>Right Mouse Button</code> open context menu</li>
+<li><code>Del</code> delete selected object or tile</li>
+<li><code>ctrl + S</code> save</li>
+<li><code>ctrl + shift + S</code> save as</li>
+<li><code>ctrl + L</code> load</li>
+<li><code>ctrl + Z</code> undo</li>
+<li><code>ctrl + shift + Z</code> redo</li>
+<li><code>G</code> toggle grid</li>
+<li><code>ctrl + G</code> toggle object snap to grid</li>
+<li><code>P</code> toggle background parallax effect</li>
+</ul>
+<h2 id="accessing-the-editor"><a class="header" href="#accessing-the-editor">Accessing the editor</a></h2>
+<p>The editor can be accessed from the main menu by selecting the &quot;Editor&quot; option. This will then present two options: &quot;Create Map&quot; and &quot;Load Map&quot;.</p>
+<p><img src="./assets/editor_menu.png" alt="Screenshot of the main menu displaying options for the editor: &quot;create map&quot;, &quot;load map&quot;, and &quot;quit&quot;." /></p>
+<h2 id="user-interface-overview"><a class="header" href="#user-interface-overview">User-interface overview</a></h2>
+<p>There are 3 main areas of the UI for designing your level: the <strong>tool selector</strong>, <strong>map</strong>, and <strong>layers list</strong>. Perhaps the most important area is the map as it acts as a preview of your level. The tool selector and layers list are available as toolbars that provide a set of tools for you to edit and examine your level as needed.</p>
+<p><img src="./assets/editor_gui_highlights.png" alt="Screenshot of editor user interface with each major area highlighted." /></p>
+<h3 id="toolbars"><a class="header" href="#toolbars">Toolbars</a></h3>
+<p>There are currently 2 primary toolbars available for the editor: the layers list and tool selector.</p>
+<h4 id="layers-list"><a class="header" href="#layers-list">Layers list</a></h4>
+<p>Create or edit layers of your Fish Fight level. This toolbar provides a list of selectable layers. Selecting a layer will display another view containing a list of the components grouped under that layer. There are currently 2 types of layers: tiles and objects:</p>
+<p><strong>Tile layers</strong> contain textures that can be placed in the map area. They can be created to be collision layers as well, allowing them to behave like collidable objects.</p>
+<p><strong>Object layers</strong> are composed of game objects categorized by a <code>MapObjectKind</code>. The current types of objects available are: <code>Item</code>, <code>Environment,</code> and <code>Decoration</code>.</p>
+<h4 id="tool-selector"><a class="header" href="#tool-selector">Tool selector</a></h4>
+<p>As the name describes: provides a set of tools for editing layers in the map area of the editor. Currently, the following tools are available:</p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: center">Name</th><th style="text-align: center"></th><th style="text-align: center">Description</th></tr></thead><tbody>
+<tr><td style="text-align: center">Cursor</td><td style="text-align: center"><img src="assets/cursor_tool.png" alt="cursor" /></td><td style="text-align: center">Select a tile or object</td></tr>
+<tr><td style="text-align: center">Tile</td><td style="text-align: center"><img src="assets/tile_tool.png" alt="tile" /></td><td style="text-align: center">Place a tile</td></tr>
+<tr><td style="text-align: center">Object</td><td style="text-align: center"><img src="assets/object_tool.png" alt="object" /></td><td style="text-align: center">Create an object</td></tr>
+<tr><td style="text-align: center">Spawn</td><td style="text-align: center"><img src="assets/spawn_point_tool.png" alt="spawn_point" /></td><td style="text-align: center">Create a spawn point</td></tr>
+<tr><td style="text-align: center">Erasor</td><td style="text-align: center"><img src="assets/erasor_tool.png" alt="erasor" /></td><td style="text-align: center">Erase a tile or object</td></tr>
+</tbody></table>
+</div>
+<h4 id="creating-a-new-map"><a class="header" href="#creating-a-new-map">Creating a new map</a></h4>
+<p>A new map can be created either by loading one of the core game maps and save a copy (save as) or by creating a brand new one.
+If you choose the latter, you can import the parallax backgrounds and tilesets from an existing map, by selecting <code>Open/Import</code> from the in-editor menu (opened by pressing <code>esc</code>), selecting a map from the list and clicking <code>Import</code>.
+This will open a menu that let you select what tilesets you want to import and whether you want to import the background layers, as well.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="documentation"><a class="header" href="#documentation">Documentation</a></h1>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+            </nav>
+
+        </div>
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script>
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+    </body>
+</html>

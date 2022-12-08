@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["pre_update_in_game",""],["update_idle_grenades",""],["update_lit_grenades",""]],"struct":[["GrenadePlugin",""],["IdleGrenade",""],["LitGrenade",""]]};

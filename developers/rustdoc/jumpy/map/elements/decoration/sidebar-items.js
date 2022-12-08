@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["hydrate_decorations",""]],"struct":[["DecorationPlugin",""]]};

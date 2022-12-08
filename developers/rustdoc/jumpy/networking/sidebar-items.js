@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["listen_for_map_changes",""]],"mod":[["client",""],["proto",""]],"struct":[["NetworkingPlugin",""]]};

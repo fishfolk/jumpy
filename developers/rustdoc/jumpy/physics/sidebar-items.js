@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["PhysicsStages",""]],"fn":[["apply_rotation",""],["hydrate_physics_bodies",""],["update_kinematic_bodies",""]],"mod":[["collisions","Modified from macroquad platformer:"],["debug",""]],"struct":[["KinematicBody","A kinematic physics body"],["KinematicBodyCollider",""],["PhysicsPlugin",""]]};

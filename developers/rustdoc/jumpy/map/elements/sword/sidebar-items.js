@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":[["ATTACK_FPS",""],["COOLDOWN_FRAMES",""]],"enum":[["SwordState",""]],"fn":[["pre_update_in_game",""],["update_in_game",""]],"struct":[["SwordPlugin",""]]};

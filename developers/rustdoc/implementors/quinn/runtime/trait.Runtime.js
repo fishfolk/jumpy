@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"quinn_bevy":[["impl Runtime for <a class=\"struct\" href=\"quinn_bevy/struct.AsyncExecutor.html\" title=\"struct quinn_bevy::AsyncExecutor\">AsyncExecutor</a>&lt;'static&gt;"],["impl Runtime for <a class=\"struct\" href=\"quinn_bevy/struct.BevyIoTaskPoolExecutor.html\" title=\"struct quinn_bevy::BevyIoTaskPoolExecutor\">BevyIoTaskPoolExecutor</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

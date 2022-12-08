@@ -1,0 +1,71 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Materials are used alongside [`MaterialPlugin`] and `MaterialMeshBundle` to spawn entities that are rendered with a specific [`Material`] type. They serve as an easy to use high level way to render [`Mesh`] entities with custom shader logic."><meta name="keywords" content="rust, rustlang, rust-lang, Material"><title>Material in jumpy::prelude - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../jumpy/index.html"><div class="logo-container"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../jumpy/index.html"><div class="logo-container">
+                    <img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></div></a><h2 class="location"><a href="#">Material</a></h2><div class="sidebar-elems"><section><div class="block"><h3 class="sidebar-title"><a href="#provided-methods">Provided Methods</a></h3><ul><li><a href="#method.alpha_mode">alpha_mode</a></li><li><a href="#method.depth_bias">depth_bias</a></li><li><a href="#method.fragment_shader">fragment_shader</a></li><li><a href="#method.specialize">specialize</a></li><li><a href="#method.vertex_shader">vertex_shader</a></li></ul></div><div class="block"><h3 class="sidebar-title"><a href="#implementors">Implementors</a></h3></div></section><h2 class="location"><a href="index.html">In jumpy::prelude</a></h2></div></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../jumpy/index.html">
+                        <img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn"><span class="in-band">Trait <a href="../index.html">jumpy</a>::<wbr><a href="index.html">prelude</a>::<wbr><a class="trait" href="#">Material</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><div class="docblock item-decl"><pre class="rust trait"><code>pub trait Material: 'static + AsBindGroup + <a class="trait" href="https://doc.rust-lang.org/1.65.0/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> + <a class="trait" href="https://doc.rust-lang.org/1.65.0/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> + <a class="trait" href="https://doc.rust-lang.org/1.65.0/core/clone/trait.Clone.html" title="trait core::clone::Clone">Clone</a> + TypeUuid {
+    fn <a href="#method.vertex_shader" class="fnname">vertex_shader</a>() -&gt; ShaderRef { ... }
+<span class="item-spacer"></span>    fn <a href="#method.fragment_shader" class="fnname">fragment_shader</a>() -&gt; ShaderRef { ... }
+<span class="item-spacer"></span>    fn <a href="#method.alpha_mode" class="fnname">alpha_mode</a>(&amp;self) -&gt; <a class="enum" href="enum.AlphaMode.html" title="enum jumpy::prelude::AlphaMode">AlphaMode</a> { ... }
+<span class="item-spacer"></span>    fn <a href="#method.depth_bias" class="fnname">depth_bias</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.65.0/std/primitive.f32.html">f32</a> { ... }
+<span class="item-spacer"></span>    fn <a href="#method.specialize" class="fnname">specialize</a>(<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pipeline: &amp;MaterialPipeline&lt;Self&gt;,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;descriptor: &amp;mut RenderPipelineDescriptor,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;layout: &amp;Hashed&lt;InnerMeshVertexBufferLayout, FixedState&gt;,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;key: MaterialPipelineKey&lt;Self&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.65.0/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.65.0/std/primitive.unit.html">()</a>, SpecializedMeshPipelineError&gt; { ... }
+}</code></pre></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Materials are used alongside <a href="struct.MaterialPlugin.html" title="MaterialPlugin"><code>MaterialPlugin</code></a> and <a href="struct.MaterialMeshBundle.html"><code>MaterialMeshBundle</code></a>
+to spawn entities that are rendered with a specific <a href="trait.Material.html" title="Material"><code>Material</code></a> type. They serve as an easy to use high level
+way to render <a href="struct.Mesh.html" title="Mesh"><code>Mesh</code></a> entities with custom shader logic.</p>
+<p>Materials must implement [<code>AsBindGroup</code>] to define how data will be transferred to the GPU and bound in shaders.
+[<code>AsBindGroup</code>] can be derived, which makes generating bindings straightforward. See the [<code>AsBindGroup</code>] docs for details.</p>
+<p>Materials must also implement [<code>TypeUuid</code>] so they can be treated as an <a href="bevy_asset::Asset"><code>Asset</code></a>.</p>
+<h2 id="example"><a href="#example">Example</a></h2>
+<p>Here is a simple Material implementation. The [<code>AsBindGroup</code>] derive has many features. To see what else is available,
+check out the [<code>AsBindGroup</code>] documentation.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>
+<span class="attribute">#[derive(AsBindGroup, TypeUuid, Debug, Clone)]
+#[uuid = <span class="string">&quot;f690fdae-d598-45ab-8225-97e2a3f056e0&quot;</span>]
+</span><span class="kw">pub struct </span>CustomMaterial {
+    <span class="comment">// Uniform bindings must implement `ShaderType`, which will be used to convert the value to
+    // its shader-compatible equivalent. Most core math types already implement `ShaderType`.
+    </span><span class="attribute">#[uniform(<span class="number">0</span>)]
+    </span>color: Color,
+    <span class="comment">// Images can be bound as textures in shaders. If the Image&#39;s sampler is also needed, just
+    // add the sampler attribute with a different binding index.
+    </span><span class="attribute">#[texture(<span class="number">1</span>)]
+    #[sampler(<span class="number">2</span>)]
+    </span>color_texture: Handle&lt;Image&gt;,
+}
+
+<span class="comment">// All functions on `Material` have default impls. You only need to implement the
+// functions that are relevant for your material.
+</span><span class="kw">impl </span>Material <span class="kw">for </span>CustomMaterial {
+    <span class="kw">fn </span>fragment_shader() -&gt; ShaderRef {
+        <span class="string">&quot;shaders/custom_material.wgsl&quot;</span>.into()
+    }
+}
+
+<span class="comment">// Spawn an entity using `CustomMaterial`.
+</span><span class="kw">fn </span>setup(<span class="kw-2">mut </span>commands: Commands, <span class="kw-2">mut </span>materials: ResMut&lt;Assets&lt;CustomMaterial&gt;&gt;, asset_server: Res&lt;AssetServer&gt;) {
+    commands.spawn_bundle(MaterialMeshBundle {
+        material: materials.add(CustomMaterial {
+            color: Color::RED,
+            color_texture: asset_server.load(<span class="string">&quot;some_image.png&quot;</span>),
+        }),
+        ..Default::default()
+    });
+}</code></pre></div>
+<p>In WGSL shaders, the material’s binding would look like this:</p>
+<div class="example-wrap"><pre class="language-wgsl"><code>struct CustomMaterial {
+    color: vec4&lt;f32&gt;,
+};
+
+@group(1) @binding(0)
+var&lt;uniform&gt; material: CustomMaterial;
+@group(1) @binding(1)
+var color_texture: texture_2d&lt;f32&gt;;
+@group(1) @binding(2)
+var color_sampler: sampler;</code></pre></div></div></details><h2 id="provided-methods" class="small-section-header">Provided Methods<a href="#provided-methods" class="anchor"></a></h2><div class="methods"><details class="rustdoc-toggle" open><summary><div id="method.vertex_shader" class="method has-srclink"><h4 class="code-header">fn <a href="#method.vertex_shader" class="fnname">vertex_shader</a>() -&gt; ShaderRef</h4></div></summary><div class="docblock"><p>Returns this material’s vertex shader. If [<code>ShaderRef::Default</code>] is returned, the default mesh vertex shader
+will be used.</p>
+</div></details><details class="rustdoc-toggle" open><summary><div id="method.fragment_shader" class="method has-srclink"><h4 class="code-header">fn <a href="#method.fragment_shader" class="fnname">fragment_shader</a>() -&gt; ShaderRef</h4></div></summary><div class="docblock"><p>Returns this material’s fragment shader. If [<code>ShaderRef::Default</code>] is returned, the default mesh fragment shader
+will be used.</p>
+</div></details><details class="rustdoc-toggle" open><summary><div id="method.alpha_mode" class="method has-srclink"><h4 class="code-header">fn <a href="#method.alpha_mode" class="fnname">alpha_mode</a>(&amp;self) -&gt; <a class="enum" href="enum.AlphaMode.html" title="enum jumpy::prelude::AlphaMode">AlphaMode</a></h4></div></summary><div class="docblock"><p>Returns this material’s <a href="enum.AlphaMode.html" title="AlphaMode"><code>AlphaMode</code></a>. Defaults to <a href="enum.AlphaMode.html#variant.Opaque" title="AlphaMode::Opaque"><code>AlphaMode::Opaque</code></a>.</p>
+</div></details><details class="rustdoc-toggle" open><summary><div id="method.depth_bias" class="method has-srclink"><h4 class="code-header">fn <a href="#method.depth_bias" class="fnname">depth_bias</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.65.0/std/primitive.f32.html">f32</a></h4></div></summary><div class="docblock"><p>Add a bias to the view depth of the mesh which can be used to force a specific render order
+for meshes with equal depth, to avoid z-fighting.</p>
+</div></details><details class="rustdoc-toggle" open><summary><div id="method.specialize" class="method has-srclink"><h4 class="code-header">fn <a href="#method.specialize" class="fnname">specialize</a>(<br>&nbsp;&nbsp;&nbsp;&nbsp;pipeline: &amp;MaterialPipeline&lt;Self&gt;,<br>&nbsp;&nbsp;&nbsp;&nbsp;descriptor: &amp;mut RenderPipelineDescriptor,<br>&nbsp;&nbsp;&nbsp;&nbsp;layout: &amp;Hashed&lt;InnerMeshVertexBufferLayout, FixedState&gt;,<br>&nbsp;&nbsp;&nbsp;&nbsp;key: MaterialPipelineKey&lt;Self&gt;<br>) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.65.0/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.65.0/std/primitive.unit.html">()</a>, SpecializedMeshPipelineError&gt;</h4></div></summary><div class="docblock"><p>Customizes the default [<code>RenderPipelineDescriptor</code>] for a specific entity using the entity’s
+[<code>MaterialPipelineKey</code>] and [<code>MeshVertexBufferLayout</code>] as input.</p>
+</div></details></div><h2 id="implementors" class="small-section-header">Implementors<a href="#implementors" class="anchor"></a></h2><div class="item-list" id="implementors-list"><section id="impl-Material-for-StandardMaterial" class="impl has-srclink"><a href="#impl-Material-for-StandardMaterial" class="anchor"></a><h3 class="code-header in-band">impl <a class="trait" href="trait.Material.html" title="trait jumpy::prelude::Material">Material</a> for <a class="struct" href="struct.StandardMaterial.html" title="struct jumpy::prelude::StandardMaterial">StandardMaterial</a></h3></section></div><script src="../../implementors/bevy_pbr/material/trait.Material.js" data-ignore-extern-crates="bevy_pbr" async></script></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="jumpy" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

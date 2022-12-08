@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"trait":[["ShouldRunExt","Helper trait for dealing with the [`ShouldRun`] type"]]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["ReliableGameMessageKind",""],["UnreliableGameMessageKind",""]],"mod":[["match_setup",""]],"struct":[["ClientMatchInfo","A resource indicating which player this game client represents, and how many players there are in the match.j"],["RecvReliableGameMessage",""],["RecvUnreliableGameMessage",""]]};

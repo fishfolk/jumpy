@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["pre_update_in_game",""]],"struct":[["CurrentPlayerSpawner",""],["PlayerSpawner","Marker component for player spawners"],["PlayerSpawnerPlugin",""]]};

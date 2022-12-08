@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Status",""]],"fn":[["impl_start_matchmaking",""],["resolve_addr_blocking","Resolve a server address."],["start_matchmaking",""]],"struct":[["MatchmakingMenu",""],["State",""]]};

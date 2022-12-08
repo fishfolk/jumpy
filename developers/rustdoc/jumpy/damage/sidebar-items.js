@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["kill_players_in_damage_region","System that will eliminate players that are intersecting with a damage region."]],"struct":[["DamagePlugin",""],["DamageRegion","A rectangular damage region."],["DamageRegionOwner","A component that may be added to a damage region entity to indicate the triggering entity."]]};

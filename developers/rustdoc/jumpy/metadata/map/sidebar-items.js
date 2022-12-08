@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["BuiltinElementKind","The kind of built-in"],["MapLayerKind",""]],"fn":[["editor_size_default",""]],"struct":[["MapElementLayer",""],["MapElementMeta",""],["MapElementSpawn",""],["MapLayerMeta",""],["MapMeta",""],["MapMetadataPlugin",""],["MapTileLayer",""],["MapTileMeta",""],["ParallaxLayerMeta",""]]};

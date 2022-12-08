@@ -1,0 +1,4 @@
+(function() {var implementors = {
+"bevy_has_load_progress":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.65.0/core/fmt/trait.Display.html\" title=\"trait core::fmt::Display\">Display</a> for <a class=\"struct\" href=\"bevy_has_load_progress/struct.LoadProgress.html\" title=\"struct bevy_has_load_progress::LoadProgress\">LoadProgress</a>"]],
+"jumpy":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.65.0/core/fmt/trait.Display.html\" title=\"trait core::fmt::Display\">Display</a> for <a class=\"enum\" href=\"jumpy/platform/enum.StorageError.html\" title=\"enum jumpy::platform::StorageError\">StorageError</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

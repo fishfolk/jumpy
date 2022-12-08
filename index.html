@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Community - Fish Fight Documentation</title>
+        <title>Introduction - Jumpy Documentation</title>
         
 
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
@@ -81,7 +81,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Community</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="code_of_conduct.html"><strong aria-hidden="true">1.1.</strong> Code of Conduct</a></li><li class="chapter-item expanded "><a href="gameplay.html"><strong aria-hidden="true">1.2.</strong> Gameplay</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="controls.html"><strong aria-hidden="true">1.2.1.</strong> Controls</a></li><li class="chapter-item expanded "><a href="items.html"><strong aria-hidden="true">1.2.2.</strong> Items</a></li><li class="chapter-item expanded "><a href="multiplayer.html"><strong aria-hidden="true">1.2.3.</strong> Multiplayer</a></li></ol></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">1.3.</strong> Contributing</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="contributing_code.html"><strong aria-hidden="true">1.3.1.</strong> Contributing Code</a></li><li class="chapter-item expanded "><a href="simple_gun_weapon.html"><strong aria-hidden="true">1.3.2.</strong> Simple Gun Weapon</a></li><li class="chapter-item expanded "><a href="contributing_art.html"><strong aria-hidden="true">1.3.3.</strong> Contributing Art</a></li></ol></li><li class="chapter-item expanded "><a href="docs/releases.html"><strong aria-hidden="true">1.4.</strong> Releases</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="09-12-2021.html"><strong aria-hidden="true">1.4.1.</strong> 0.3</a></li></ol></li><li class="chapter-item expanded "><a href="credits.html"><strong aria-hidden="true">1.5.</strong> Credits</a></li></ol></li><li class="chapter-item expanded "><a href="mechanics.html"><strong aria-hidden="true">2.</strong> Dev</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="physics.html"><strong aria-hidden="true">2.1.</strong> Physics</a></li><li class="chapter-item expanded "><a href="environmental_weapons.html"><strong aria-hidden="true">2.2.</strong> Environmental Weapons</a></li><li class="chapter-item expanded "><a href="netcode.html"><strong aria-hidden="true">2.3.</strong> Netcode</a></li><li class="chapter-item expanded "><a href="juice.html"><strong aria-hidden="true">2.4.</strong> Juice</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="docs/screenshake.html"><strong aria-hidden="true">2.4.1.</strong> Screen Shake</a></li><li class="chapter-item expanded "><a href="docs/particles.html"><strong aria-hidden="true">2.4.2.</strong> Particles</a></li></ol></li><li class="chapter-item expanded "><a href="editor.html"><strong aria-hidden="true">2.5.</strong> Editor</a></li></ol></li><li class="chapter-item expanded "><a href="documentation.html"><strong aria-hidden="true">3.</strong> Platformer Guide</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded affix "><a href="code_of_conduct.html">Code of Conduct</a></li><li class="chapter-item expanded "><a href="community/contributing_art.html"><strong aria-hidden="true">1.</strong> Contributing art</a></li><li class="chapter-item expanded "><a href="developers/architecture.html"><strong aria-hidden="true">2.</strong> Architecture</a></li><li class="chapter-item expanded "><a href="developers/contributing_code.html"><strong aria-hidden="true">3.</strong> Contributing Code</a></li><li class="chapter-item expanded "><a href="game_design/juice.html"><strong aria-hidden="true">4.</strong> Juice</a></li><li class="chapter-item expanded "><a href="extra/legacy_documentation.html"><strong aria-hidden="true">5.</strong> Legacy Docs</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -113,14 +113,14 @@
                         
                     </div>
 
-                    <h1 class="menu-title">Fish Fight Documentation</h1>
+                    <h1 class="menu-title">Jumpy Documentation</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
                         
-                        <a href="https://github.com/fishfight/jumpy" title="Git repository" aria-label="Git repository">
+                        <a href="https://github.com/fishfolk/jumpy" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
                         
@@ -151,13 +151,7 @@
 
                 <div id="content" class="content">
                     <main>
-                        <!-- markdownlint-disable MD041 -->
-<blockquote>
-<p><strong>⚠️ Warning:</strong> The information in this book is largely out of date with the work-in-progress Bevy
-rewrite that was recently merged. Once the rewrite stabilizes a little bit we will begin updating
-the documentation to match.</p>
-</blockquote>
-<h1><a class="header" href="#fish-folk-jumpy" id="fish-folk-jumpy">Fish Folk: Jumpy</a></h1>
+                        <h1><a class="header" href="#fish-folk-jumpy" id="fish-folk-jumpy">Fish Folk: Jumpy</a></h1>
 <p><a href="https://github.com/fishfolks/jumpy/actions"><img src="https://img.shields.io/github/workflow/status/fishfolks/jumpy/Continuous%20integration?logo=github&amp;labelColor=1e1c24&amp;color=8bcfcf" alt="Build Status" /></a> <a href="https://fishfolks.github.io/jumpy/"><img src="https://img.shields.io/badge/documentation-fishfolks.github.io-green.svg?labelColor=1e1c24&amp;color=f3ee7a" alt="Documentation" /></a> <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT%20or%20Apache%202-green.svg?label=license&amp;labelColor=1e1c24&amp;color=34925e" alt="License" /></a> <a href="https://discord.gg/4smxjcheE5"><img src="https://img.shields.io/badge/chat-on%20discord-green.svg?logo=discord&amp;logoColor=fff&amp;labelColor=1e1c24&amp;color=8d5b3f" alt="Discord" /></a></p>
 <p><img src="https://user-images.githubusercontent.com/24392180/151969075-399e9fea-e2de-4340-96a4-0a0e5b79c281.gif" alt="Fish Folk: Jumpy Preview" /></p>
 <h2><a class="header" href="#introduction" id="introduction">Introduction</a></h2>

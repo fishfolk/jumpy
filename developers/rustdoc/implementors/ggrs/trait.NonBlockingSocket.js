@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"jumpy":[["impl NonBlockingSocket&lt;<a class=\"primitive\" href=\"https://doc.rust-lang.org/1.65.0/std/primitive.usize.html\">usize</a>&gt; for <a class=\"struct\" href=\"jumpy/networking/client/struct.NetClient.html\" title=\"struct jumpy::networking::client::NetClient\">NetClient</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

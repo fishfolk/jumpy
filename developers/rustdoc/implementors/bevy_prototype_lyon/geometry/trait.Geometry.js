@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"jumpy":[["impl Geometry for <a class=\"struct\" href=\"jumpy/map/grid/struct.Grid.html\" title=\"struct jumpy::map::grid::Grid\">Grid</a>"],["impl Geometry for <a class=\"struct\" href=\"jumpy/physics/debug/struct.ColliderRect.html\" title=\"struct jumpy::physics::debug::ColliderRect\">ColliderRect</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

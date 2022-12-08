@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["lifetime_system","Despawns entities that have an expired lifetime"]],"struct":[["Lifetime","The lifetime state of an entity"],["LifetimePlugin",""]]};

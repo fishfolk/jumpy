@@ -1,0 +1,1 @@
+window.ALL_CRATES = ["bevy_has_load_progress","jumpy","jumpy_matchmaker","jumpy_matchmaker_proto","quinn_bevy"];

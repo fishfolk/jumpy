@@ -1,12 +1,8 @@
-//! Jumpy is a pixel-style, tactical 2D shooter with a fishy theme.
-//!
-//! This is the project's internal developer API documentation. API documentation is usually meant
-//! for libraries with public APIs, but this is a game, so we use it to document the internal game
-//! architecture for contributors.
-//!
-//! TODO: Write essentially an Architecture.md type of document here, and fill out the other game
-//! module's documentation.
-
+#![doc = include_str!("./README.md")]
+#![doc(html_logo_url = "https://avatars.githubusercontent.com/u/87333478?s=200&v=4")]
+// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
+#![cfg_attr(doc, allow(unknown_lints))]
+#![deny(rustdoc::all)]
 #![allow(clippy::type_complexity)]
 #![allow(clippy::forget_non_drop)]
 #![allow(clippy::too_many_arguments)]

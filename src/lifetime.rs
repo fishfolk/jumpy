@@ -31,7 +31,8 @@ pub struct Lifetime {
     /// By default this is set to false and will despawn the entity recursively.
     pub non_recursive_despawn: bool,
     #[reflect(ignore)]
-    /// An optional [`Command`] that should be run when the entity is despawned.
+    /// An optional [`Command`][bevy::ecs::system::Command] that should be run when the entity is
+    /// despawned.
     pub despawn_command: Option<Box<dyn FnOnce(&mut World) + Sync + Send>>,
 }
 

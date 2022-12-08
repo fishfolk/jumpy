@@ -1,0 +1,1 @@
+Network protocol structs for the Jumpy matchmaker.

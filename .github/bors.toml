@@ -1,5 +1,6 @@
 status = [
   "Check Rust formatting",
   "Clippy correctness checks (x86_64-unknown-linux-gnu, target)",
+  "Build Docs",
 #   "Clippy correctness checks (wasm32-unknown-unknown, web-target)",
 ]

@@ -1,3 +1,5 @@
+#![doc = include_str!("./networking.md")]
+
 use bevy_ggrs::ggrs::P2PSession;
 
 use crate::{

@@ -3,9 +3,13 @@ authors = ["Carlo Supina", "Srayan Jana", "grufkork", "Micah Tigley"]
 language = "en"
 multilingual = false
 src = "src"
-title = "Fish Fight Documentation"
+title = "Jumpy Documentation"
+
+[build]
+build-dir = "dist"
+create-missing = false
 
 [output.html]
 default-theme = "navy"
-git-repository-url = "https://github.com/fishfight/jumpy"
+git-repository-url = "https://github.com/fishfolk/jumpy"
 git-repository-icon = "fa-github"

@@ -4,7 +4,7 @@
 src/.DS_Store
 .DS_Store
 /.idea/
-book/book
+book/dist
 .vscode
 trace-*.json
 perf.data*

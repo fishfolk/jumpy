@@ -68,9 +68,12 @@ pub struct SendProxyMessage {
     pub message: Vec<u8>,
 }
 
+/// The client to send a network message to.
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum TargetClient {
+    /// Send the message to all connected clients.
     All,
+    /// Send the message to the client with the specified index.
     One(u8),
 }
 

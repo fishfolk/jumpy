@@ -82,7 +82,7 @@ fn pre_update_in_game(
                     script: "core:grenade".into(),
                 })
                 .insert(IdleGrenade { spawner: entity })
-                .insert(EntityName("Item: Grenade".into()))
+                .insert(Name::new("Item: Grenade"))
                 .insert(AnimatedSprite {
                     start: 0,
                     end: 0,

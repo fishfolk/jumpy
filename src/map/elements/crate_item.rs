@@ -87,7 +87,7 @@ fn pre_update_in_game(
                     script: "core:crate".into(),
                 })
                 .insert(IdleCrateItem { spawner: entity })
-                .insert(EntityName("Item: Crate".into()))
+                .insert(Name::new("Item: Crate"))
                 .insert(AnimatedSprite {
                     start: 0,
                     end: 0,

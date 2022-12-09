@@ -1,3 +1,11 @@
+//! The Bevy network client implementation.
+//!
+//! This plugin provides bevy the [`NetClient`] resource which is used to send and receive messages
+//! over the the network.
+//!
+//! Note that, because we use a P2P rollback networking model, Bevy only ever acts as a client and
+//! is never a "server". Messages are sent to other peers by means of the matchmaking server.
+
 use std::{net::SocketAddr, sync::Arc};
 
 use async_channel::{Receiver, RecvError, Sender};

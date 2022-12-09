@@ -1,3 +1,5 @@
+//! Serializable data types for network messages used by the game.
+
 use crate::prelude::*;
 
 pub mod match_setup;

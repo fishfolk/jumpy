@@ -22,7 +22,7 @@ impl Plugin for NetworkingPlugin {
     }
 }
 
-// TODO: Map changes aren't working on network games for now.
+/// TODO: Map changes aren't working on network games for now, so this isn't properly used/working.
 fn listen_for_map_changes(
     mut commands: Commands,
     client: Res<NetClient>,

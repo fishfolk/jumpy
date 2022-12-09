@@ -49,7 +49,7 @@ fn pre_update_in_game(
                 .insert(Item {
                     script: "core:sword".into(),
                 })
-                .insert(EntityName("Item: Sword".into()))
+                .insert(Name::new("Item: Sword"))
                 .insert(SwordState::default())
                 .insert(AnimatedSprite {
                     start: 0,

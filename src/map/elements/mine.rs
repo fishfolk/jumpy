@@ -84,7 +84,7 @@ fn pre_update_in_game(
                     script: "core:mine".into(),
                 })
                 .insert(IdleMine { spawner: entity })
-                .insert(EntityName("Item: Mine".into()))
+                .insert(Name::new("Item: Mine"))
                 .insert(AnimatedSprite {
                     start: 0,
                     end: 0,

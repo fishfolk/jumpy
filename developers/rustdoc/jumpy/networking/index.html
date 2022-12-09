@@ -115,7 +115,7 @@ use to sort query results where it matters.</p>
 <p>It’s easy to accidentally forget to sort entities when querying, and you may not notice issues until
 you try to run a network game, and the clients end up playing a “different version” of the same
 game. We hope we can improve this: see <a href="#future-changes">Future Changes</a>.</p>
-<h4 id="spawning-entities"><a href="#spawning-entities">Spawning Entities</a></h4>
+<h5 id="spawning-entities"><a href="#spawning-entities">Spawning Entities</a></h5>
 <p>When spawning entities, we need to attach <a href="../prelude/struct.Rollback.html" title="bevy_ggrs::Rollback"><code>Rollback</code></a> components to them, that
 contain a unique index identifying the entity across rollbacks and restores, which may modify the
 Entity’s entity ID.</p>

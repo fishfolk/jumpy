@@ -436,7 +436,7 @@
                     script: <span class="string">&quot;core:mine&quot;</span>.into(),
                 })
                 .insert(IdleMine { spawner: entity })
-                .insert(EntityName(<span class="string">&quot;Item: Mine&quot;</span>.into()))
+                .insert(Name::new(<span class="string">&quot;Item: Mine&quot;</span>))
                 .insert(AnimatedSprite {
                     start: <span class="number">0</span>,
                     end: <span class="number">0</span>,

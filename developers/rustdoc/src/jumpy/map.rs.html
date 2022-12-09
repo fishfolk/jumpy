@@ -300,7 +300,6 @@
 <span id="298">298</span>
 <span id="299">299</span>
 <span id="300">300</span>
-<span id="301">301</span>
 </pre><pre class="rust"><code><span class="kw">use </span>bevy::render::view::RenderLayers;
 <span class="kw">use </span>bevy_ecs_tilemap::prelude::<span class="kw-2">*</span>;
 <span class="comment">// use bevy_mod_js_scripting::{ActiveScripts, JsScript};
@@ -310,7 +309,6 @@
 <span class="kw">use crate</span>::{
     camera::GameRenderLayers,
     metadata::{MapElementMeta, MapLayerKind, MapLayerMeta, MapMeta},
-    name::EntityName,
     physics::collisions::{CollisionLayerTag, TileCollision},
     player::{PlayerIdx, PlayerKillCommand},
     prelude::<span class="kw-2">*</span>,
@@ -523,7 +521,7 @@
 
                     <span class="kw">let </span>entity = commands
                         .spawn()
-                        .insert(EntityName(<span class="macro">format!</span>(
+                        .insert(Name::new(<span class="macro">format!</span>(
                             <span class="string">&quot;Map Element ( {layer_id} ): {element_name}&quot;
                         </span>)))
                         .insert(Visibility::default())

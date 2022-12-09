@@ -262,9 +262,6 @@
 <span id="260">260</span>
 <span id="261">261</span>
 <span id="262">262</span>
-<span id="263">263</span>
-<span id="264">264</span>
-<span id="265">265</span>
 </pre><pre class="rust"><code><span class="attribute">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;./README.md&quot;</span>)]
 #![doc(html_logo_url = <span class="string">&quot;https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4&quot;</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
@@ -301,7 +298,6 @@
 <span class="kw">pub mod </span>localization;
 <span class="kw">pub mod </span>map;
 <span class="kw">pub mod </span>metadata;
-<span class="kw">pub mod </span>name;
 <span class="kw">pub mod </span>networking;
 <span class="kw">pub mod </span>physics;
 <span class="kw">pub mod </span>platform;
@@ -329,7 +325,6 @@
     localization::LocalizationPlugin,
     map::MapPlugin,
     metadata::{GameMeta, MetadataPlugin},
-    name::NamePlugin,
     networking::NetworkingPlugin,
     physics::PhysicsPlugin,
     platform::PlatformPlugin,
@@ -483,7 +478,6 @@
         .add_plugin(LoadingPlugin)
         .add_plugin(AssetPlugin)
         .add_plugin(LocalizationPlugin)
-        .add_plugin(NamePlugin)
         .add_plugin(AnimationPlugin)
         .add_plugin(PlayerPlugin)
         .add_plugin(ItemPlugin)

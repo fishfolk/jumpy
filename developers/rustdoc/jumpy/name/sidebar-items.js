@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["update_entity_names",""]],"struct":[["EntityName","Conceptually identical to the [`Name`] component, but structured so that it can be added and modified from scripts. Adding an [`EntityName`] component will cause a [`Name`] component to be added and synced automatically."],["NamePlugin",""]]};

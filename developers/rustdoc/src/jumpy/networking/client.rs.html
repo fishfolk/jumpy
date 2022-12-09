@@ -336,7 +336,23 @@
 <span id="334">334</span>
 <span id="335">335</span>
 <span id="336">336</span>
-</pre><pre class="rust"><code><span class="kw">use </span>std::{net::SocketAddr, sync::Arc};
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+</pre><pre class="rust"><code><span class="doccomment">//! The Bevy network client implementation.
+//!
+//! This plugin provides bevy the [`NetClient`] resource which is used to send and receive messages
+//! over the the network.
+//!
+//! Note that, because we use a P2P rollback networking model, Bevy only ever acts as a client and
+//! is never a &quot;server&quot;. Messages are sent to other peers by means of the matchmaking server.
+
+</span><span class="kw">use </span>std::{net::SocketAddr, sync::Arc};
 
 <span class="kw">use </span>async_channel::{Receiver, RecvError, Sender};
 <span class="kw">use </span>bevy::tasks::IoTaskPool;

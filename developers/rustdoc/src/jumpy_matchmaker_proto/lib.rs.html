@@ -84,6 +84,9 @@
 <span id="82">82</span>
 <span id="83">83</span>
 <span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
 </pre><pre class="rust"><code><span class="attribute">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;../README.md&quot;</span>)]
 #![doc(html_logo_url = <span class="string">&quot;https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4&quot;</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
@@ -154,10 +157,13 @@
     </span><span class="kw">pub </span>message: Vec&lt;u8&gt;,
 }
 
-<span class="attribute">#[derive(Serialize, Deserialize, Debug, Clone)]
+<span class="doccomment">/// The client to send a network message to.
+</span><span class="attribute">#[derive(Serialize, Deserialize, Debug, Clone)]
 </span><span class="kw">pub enum </span>TargetClient {
-    All,
-    One(u8),
+    <span class="doccomment">/// Send the message to all connected clients.
+    </span>All,
+    <span class="doccomment">/// Send the message to the client with the specified index.
+    </span>One(u8),
 }
 
 <span class="doccomment">/// The format of a message forwarded by the proxy to a client.

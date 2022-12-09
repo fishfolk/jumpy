@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["AsyncExecutor",""],["AsyncIoTimer",""],["BevyIoTaskPoolExecutor",""]]};
+window.SIDEBAR_ITEMS = {"struct":[["AsyncExecutor",""],["AsyncIoTimer",""],["AsyncIoUdpSocket",""],["BevyIoTaskPoolExecutor",""]]};

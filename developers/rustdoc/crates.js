@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["bevy_has_load_progress","jumpy","jumpy_matchmaker","jumpy_matchmaker_proto","quinn_bevy"];
+window.ALL_CRATES = ["bevy_has_load_progress","bevy_has_load_progress_macros","jumpy","jumpy_matchmaker","jumpy_matchmaker_proto","quinn_bevy"];

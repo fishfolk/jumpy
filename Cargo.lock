@@ -551,6 +551,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_framepace"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "327027bd161a95a03962d03ba4cf71013a8d2500bf288838f6046278806cb383"
+dependencies = [
+ "bevy",
+]
+
+[[package]]
 name = "bevy_ggrs"
 version = "0.10.0"
 source = "git+https://github.com/zicklag/bevy_ggrs.git?branch=jumpy#306683bbad3ed12e81175879a1ecb020d1873ea1"
@@ -2497,6 +2506,7 @@ dependencies = [
  "bevy_ecs_tilemap",
  "bevy_egui",
  "bevy_fluent",
+ "bevy_framepace",
  "bevy_ggrs",
  "bevy_kira_audio",
  "bevy_prototype_lyon",

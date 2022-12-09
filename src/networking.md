@@ -151,7 +151,7 @@ game. We hope we can improve this: see [Future Changes](#future-changes).
 
 [ggpo]: https://www.ggpo.net/
 
-### Spawning Entities
+#### Spawning Entities
 
 When spawning entities, we need to attach [`Rollback`][bevy_ggrs::Rollback] components to them, that
 contain a unique index identifying the entity across rollbacks and restores, which may modify the

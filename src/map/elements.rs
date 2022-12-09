@@ -5,7 +5,6 @@ use crate::{
     lifetime::Lifetime,
     map::{MapElementHydrated, MapRespawnPoint},
     metadata::{BuiltinElementKind, MapElementMeta},
-    name::EntityName,
     physics::{collisions::CollisionWorld, KinematicBody},
     player::{input::PlayerInputs, PlayerIdx, MAX_PLAYERS},
     prelude::*,

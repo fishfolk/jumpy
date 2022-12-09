@@ -34,7 +34,6 @@ pub mod loading;
 pub mod localization;
 pub mod map;
 pub mod metadata;
-pub mod name;
 pub mod networking;
 pub mod physics;
 pub mod platform;
@@ -62,7 +61,6 @@ use crate::{
     localization::LocalizationPlugin,
     map::MapPlugin,
     metadata::{GameMeta, MetadataPlugin},
-    name::NamePlugin,
     networking::NetworkingPlugin,
     physics::PhysicsPlugin,
     platform::PlatformPlugin,
@@ -216,7 +214,6 @@ pub fn main() {
         .add_plugin(LoadingPlugin)
         .add_plugin(AssetPlugin)
         .add_plugin(LocalizationPlugin)
-        .add_plugin(NamePlugin)
         .add_plugin(AnimationPlugin)
         .add_plugin(PlayerPlugin)
         .add_plugin(ItemPlugin)

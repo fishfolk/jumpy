@@ -7,7 +7,6 @@ use bevy_prototype_lyon::{prelude::*, shapes::Rectangle};
 use crate::{
     camera::GameRenderLayers,
     metadata::{MapElementMeta, MapLayerKind, MapLayerMeta, MapMeta},
-    name::EntityName,
     physics::collisions::{CollisionLayerTag, TileCollision},
     player::{PlayerIdx, PlayerKillCommand},
     prelude::*,
@@ -220,7 +219,7 @@ pub fn hydrate_map(
 
                     let entity = commands
                         .spawn()
-                        .insert(EntityName(format!(
+                        .insert(Name::new(format!(
                             "Map Element ( {layer_id} ): {element_name}"
                         )))
                         .insert(Visibility::default())

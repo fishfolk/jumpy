@@ -58,7 +58,7 @@ fn pre_update_in_game(
                 .insert(Item {
                     script: "core:stomp_boots".into(),
                 })
-                .insert(EntityName("Item: Stomp Boots".into()))
+                .insert(Name::new("Item: Stomp Boots"))
                 .insert(IdleStompBoots { spawner: entity })
                 .insert(AnimatedSprite {
                     start: 0,

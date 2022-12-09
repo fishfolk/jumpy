@@ -207,6 +207,7 @@ pub fn main() {
     .add_plugin(UiPlugin);
 
     app.add_plugin(bevy_tweening::TweeningPlugin)
+        .add_plugin(bevy_framepace::FramepacePlugin)
         .add_plugin(AudioPlugin)
         .add_plugin(UtilsPlugin)
         .add_plugin(MetadataPlugin)

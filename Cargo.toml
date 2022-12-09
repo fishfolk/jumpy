@@ -34,6 +34,7 @@ bevy_ecs_dynamic = { git = "https://github.com/jakobhellermann/bevy_ecs_dynamic"
 bevy_ecs_tilemap = { version = "0.7.0", features = ["atlas"] }
 bevy_egui = "0.16.1"
 bevy_fluent = "0.4.0"
+bevy_framepace = "0.7"
 bevy_ggrs = { git = "https://github.com/zicklag/bevy_ggrs.git", branch = "jumpy" }
 bevy_kira_audio = { version = "0.12.0", features = ["ogg"], default-features = false }
 # bevy_mod_js_scripting = { git = "https://github.com/zicklag/bevy_mod_js_scripting.git", branch = "jumpy" }

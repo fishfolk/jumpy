@@ -91,8 +91,11 @@ and the index of the client that sent the message.</p>
 <p>The matchmaking server supports forwarding both reliable and unreliable message in this way,
 allowing the game to chose any kind of protocol it sees fit to synchronize the match data.</p>
 <h3 id="synchronization"><a href="#synchronization">Synchronization</a></h3>
-<p>Match synchronization, as mentioned above, is accomplished with <a href="https://github.com/gschup/ggrs">GGRS</a>. GGRS re-imagines <a href="https://www.ggpo.net/">GGPO</a>
-network SDK.</p>
+<p>Match synchronization, as mentioned above, is accomplished with <a href="https://github.com/gschup/ggrs">GGRS</a>, wich is a re-imagining of
+the <a href="https://www.ggpo.net/">GGPO</a> network SDK.</p>
+<p>We implement GGRS’s <a href="https://docs.rs/ggrs/0.9.2/ggrs/trait.NonBlockingSocket.html"><code>NonBlockingSocket</code></a> trait on top of our QUIC <code>Connection</code>, using QUIC’s raw
+datagram feature to send messages unreliably. This way we can proxy all of the GGRS traffic through
+the matchmaking server, while still allowing it to use it’s own reliability protocol.</p>
 <p>All of the Bevy systems that need to be synchronized during a match are added to their own Bevy
 <a href="../prelude/struct.Schedule.html" title="bevy::ecs::schedule::Schedule">Schedule</a>. We use an <a href="../schedule/trait.RollbackScheduleAppExt.html" title="crate::schedule::RollbackScheduleAppExt">extension
 trait</a> on the Bevy <a href="../prelude/struct.App.html" title="bevy::app::App"><code>App</code></a> to make it
@@ -110,8 +113,11 @@ allocation.</p>
 <h5 id="sorting-queries"><a href="#sorting-queries">Sorting Queries</a></h5>
 <p>Because Bevy doesn’t guarantee any specific order for entity iteration, we have to manually collect
 and sort queries when a different order could produce a different in-game result.</p>
-<p>To aid in this we have a simple <a href="../utils/struct.Sort.html" title="crate::utils::Sort"><code>Sort</code></a> component that we add to entities and
-use to sort query results where it matters.</p>
+<p>For all rollback entities, we can simply collect the query results into a <a href="https://doc.rust-lang.org/1.65.0/alloc/vec/struct.Vec.html" title="Vec"><code>Vec</code></a> and sort by the
+<a href="../prelude/struct.Rollback.html" title="Rollback"><code>Rollback</code></a> component’s id, but sometimes we have non-rollback entities such as the map element
+spawners that we also need to iterate over. For those we have a simple <a href="../utils/struct.Sort.html" title="crate::utils::Sort"><code>Sort</code></a>
+component that just stores an index. We get that index from something deterministic, such as the
+order that the map elements appear in the map YAML file.</p>
 <p>It’s easy to accidentally forget to sort entities when querying, and you may not notice issues until
 you try to run a network game, and the clients end up playing a “different version” of the same
 game. We hope we can improve this: see <a href="#future-changes">Future Changes</a>.</p>

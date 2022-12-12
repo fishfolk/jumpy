@@ -117,8 +117,12 @@ allowing the game to chose any kind of protocol it sees fit to synchronize the m
 
 ## Synchronization
 
-Match synchronization, as mentioned above, is accomplished with [GGRS]. GGRS re-imagines [GGPO]
-network SDK.
+Match synchronization, as mentioned above, is accomplished with [GGRS], wich is a re-imagining of
+the [GGPO] network SDK.
+
+We implement GGRS's [`NonBlockingSocket`] trait on top of our QUIC `Connection`, using QUIC's raw
+datagram feature to send messages unreliably. This way we can proxy all of the GGRS traffic through
+the matchmaking server, while still allowing it to use it's own reliability protocol.
 
 All of the Bevy systems that need to be synchronized during a match are added to their own Bevy
 [Schedule][bevy::ecs::schedule::Schedule]. We use an [extension
@@ -131,6 +135,8 @@ The key requirement for rollback networking is:
 - We must have the ability to **snapshot** and **restore** the game state.
 - We must be able to run up to 8 game simulation frames in 16ms ( to achieve a 60 FPS frame rate ).
 
+[`NonBlockingSocket`]: https://docs.rs/ggrs/0.9.2/ggrs/trait.NonBlockingSocket.html
+
 ### Determinism
 
 Luckily, Jumpy's physics and game logic is simple and we don't face any major non-determinism
@@ -142,8 +148,11 @@ allocation.
 Because Bevy doesn't guarantee any specific order for entity iteration, we have to manually collect
 and sort queries when a different order could produce a different in-game result.
 
-To aid in this we have a simple [`Sort`][crate::utils::Sort] component that we add to entities and
-use to sort query results where it matters.
+For all rollback entities, we can simply collect the query results into a [`Vec`] and sort by the
+[`Rollback`] component's id, but sometimes we have non-rollback entities such as the map element
+spawners that we also need to iterate over. For those we have a simple [`Sort`][crate::utils::Sort]
+component that just stores an index. We get that index from something deterministic, such as the
+order that the map elements appear in the map YAML file.
 
 It's easy to accidentally forget to sort entities when querying, and you may not notice issues until
 you try to run a network game, and the clients end up playing a "different version" of the same

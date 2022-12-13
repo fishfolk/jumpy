@@ -61,7 +61,7 @@ mimalloc = { version = "0.1.32", default-features = false }
 normalize-path = "0.2.0"
 numquant = "0.2.0"
 once_cell = "1.13.0"
-postcard = { git = "https://github.com/zicklag/postcard.git", branch = "custom-error-messages", default-features = false, features = ["alloc", "use-std"] }
+postcard = { version = "1.0.2", default-features = false, features = ["alloc", "use-std"] }
 rand = "0.8.5"
 rustls = { version = "0.20.7", features = ["dangerous_configuration", "quic"] }
 serde = { version = "1.0.137", features = ["derive"] }

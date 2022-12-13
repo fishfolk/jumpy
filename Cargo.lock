@@ -3448,7 +3448,8 @@ dependencies = [
 [[package]]
 name = "postcard"
 version = "1.0.2"
-source = "git+https://github.com/zicklag/postcard.git?branch=custom-error-messages#b7d417ce3dffa67d8fc3a7128100962701a6b6e2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1c2b180dc0bade59f03fd005cb967d3f1e5f69b13922dad0cd6e047cb8af2363"
 dependencies = [
  "cobs",
  "serde",

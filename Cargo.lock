@@ -2493,7 +2493,7 @@ dependencies = [
 
 [[package]]
 name = "jumpy"
-version = "0.5.0-dev"
+version = "0.5.0"
 dependencies = [
  "anyhow",
  "async-channel",

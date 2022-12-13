@@ -2532,7 +2532,7 @@ dependencies = [
  "normalize-path",
  "numquant",
  "once_cell",
- "postcard 1.0.2 (git+https://github.com/zicklag/postcard.git?branch=custom-error-messages)",
+ "postcard",
  "quinn",
  "quinn-bevy",
  "rand",
@@ -2564,7 +2564,7 @@ dependencies = [
  "futures-lite",
  "jumpy-matchmaker-proto",
  "once_cell",
- "postcard 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "postcard",
  "quinn",
  "quinn-bevy",
  "rand",
@@ -3443,16 +3443,6 @@ dependencies = [
  "log",
  "wepoll-ffi",
  "winapi",
-]
-
-[[package]]
-name = "postcard"
-version = "1.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1c2b180dc0bade59f03fd005cb967d3f1e5f69b13922dad0cd6e047cb8af2363"
-dependencies = [
- "cobs",
- "serde",
 ]
 
 [[package]]

@@ -1,6 +1,6 @@
 [package]
 name = "jumpy"
-version = "0.5.0"
+version = "0.5.1"
 description = "A tactical 2D shooter"
 authors = ["The Fish Fight Game & Spicy Lobster Developers"]
 license = "MIT OR Apache-2.0"

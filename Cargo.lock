@@ -2493,7 +2493,7 @@ dependencies = [
 
 [[package]]
 name = "jumpy"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "anyhow",
  "async-channel",
@@ -2551,7 +2551,7 @@ dependencies = [
 
 [[package]]
 name = "jumpy-matchmaker"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "async-executor",

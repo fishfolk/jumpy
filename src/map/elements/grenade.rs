@@ -128,7 +128,6 @@ fn update_idle_grenades(
         ),
         Without<PlayerIdx>,
     >,
-    mut ridp: ResMut<RollbackIdProvider>,
     element_assets: ResMut<Assets<MapElementMeta>>,
     effects: Res<AudioChannel<EffectsChannel>>,
 ) {
@@ -150,8 +149,6 @@ fn update_idle_grenades(
         let meta = element_assets.get(meta_handle).unwrap();
         let BuiltinElementKind::Grenade {
             grab_offset,
-            atlas_handle,
-            throw_velocity,
             fuse_sound_handle,
             ..
         } = &meta.builtin else {
@@ -160,8 +157,7 @@ fn update_idle_grenades(
 
         // If the item is being held
         if let Some(parent) = parent {
-            let (player_sprite, player_transform, player_body) =
-                players.get(parent.get()).expect("Parent is not player");
+            let (player_sprite, ..) = players.get(parent.get()).expect("Parent is not player");
 
             // Deactivate items while held
             body.is_deactivated = true;
@@ -170,47 +166,24 @@ fn update_idle_grenades(
             let flip = player_sprite.flip_x;
             sprite.flip_x = flip;
             let flip_factor = if flip { -1.0 } else { 1.0 };
-            let horizontal_flip_factor = Vec2::new(flip_factor, 1.0);
             transform.translation.x = grab_offset.x * flip_factor;
             transform.translation.y = grab_offset.y;
             transform.translation.z = 0.0;
 
             // If the item is being used
             if used.is_some() {
-                // Despawn the item from the player's hand
-                commands.entity(item_ent).despawn();
-
-                // Spawn a new, lit grenade
+                // Light the grenade
+                sprite.start = 3;
+                sprite.end = 5;
+                sprite.repeat = true;
+                sprite.fps = 8.0;
                 commands
-                    .spawn()
-                    .insert(Rollback::new(ridp.next_id()))
-                    .insert(Name::new("Grenade ( Lit )"))
-                    .insert(Transform::from_translation(
-                        player_transform.translation
-                            + (*grab_offset * horizontal_flip_factor).extend(0.0),
-                    ))
-                    .insert(GlobalTransform::default())
-                    .insert(Visibility::default())
-                    .insert(ComputedVisibility::default())
-                    .insert(AnimatedSprite {
-                        start: 3,
-                        end: 5,
-                        repeat: true,
-                        fps: 8.0,
-                        atlas: atlas_handle.inner.clone(),
-                        ..default()
-                    })
-                    .insert(meta_handle.clone_weak())
-                    .insert(body.clone())
+                    .entity(item_ent)
+                    .remove::<IdleGrenade>()
                     .insert(LitGrenade {
                         spawner: grenade.spawner,
                         fuse_sound: effects.play(fuse_sound_handle.clone_weak()).handle(),
                         ..default()
-                    })
-                    .insert(KinematicBody {
-                        velocity: *throw_velocity * horizontal_flip_factor + player_body.velocity,
-                        is_deactivated: false,
-                        ..body.clone()
                     });
             }
         }
@@ -224,7 +197,6 @@ fn update_idle_grenades(
             // Re-activate physics
             body.is_deactivated = false;
 
-            // Put sword in rest position
             sprite.start = 0;
             sprite.end = 0;
             body.velocity = player_body.velocity;
@@ -245,13 +217,19 @@ fn update_idle_grenades(
 
 fn update_lit_grenades(
     mut commands: Commands,
+    players: Query<(&AnimatedSprite, &Transform, &KinematicBody), With<PlayerIdx>>,
     mut grenades: Query<
         (
             &Rollback,
             Entity,
             &mut LitGrenade,
-            &Transform,
+            &mut Transform,
+            &GlobalTransform,
+            &mut KinematicBody,
+            &mut AnimatedSprite,
             &Handle<MapElementMeta>,
+            Option<&Parent>,
+            Option<&ItemDropped>,
         ),
         Without<PlayerIdx>,
     >,
@@ -263,7 +241,19 @@ fn update_lit_grenades(
 ) {
     let mut items = grenades.iter_mut().collect::<Vec<_>>();
     items.sort_by_key(|x| x.0.id());
-    for (_, item_ent, mut grenade, transform, meta_handle) in items {
+    for (
+        _,
+        item_ent,
+        mut grenade,
+        mut transform,
+        global_transform,
+        mut body,
+        mut sprite,
+        meta_handle,
+        parent,
+        dropped,
+    ) in items
+    {
         let meta = element_assets.get(meta_handle).unwrap();
         let BuiltinElementKind::Grenade {
             fuse_time,
@@ -274,12 +264,53 @@ fn update_lit_grenades(
             explosion_fps,
             explosion_frames,
             explosion_sound_handle,
+            grab_offset,
+            throw_velocity,
             ..
         } = &meta.builtin else {
             unreachable!();
         };
 
         grenade.age += 1.0 / crate::FPS as f32;
+
+        if let Some(parent) = parent {
+            let (player_sprite, ..) = players.get(parent.get()).expect("Parent is not player");
+
+            // Deactivate items while held
+            body.is_deactivated = true;
+
+            // Flip the sprite to match the player orientation
+            let flip = player_sprite.flip_x;
+            sprite.flip_x = flip;
+            let flip_factor = if flip { -1.0 } else { 1.0 };
+            transform.translation.x = grab_offset.x * flip_factor;
+            transform.translation.y = grab_offset.y;
+            transform.translation.z = 0.0;
+        }
+
+        // If the item is dropped
+        if let Some(dropped) = dropped {
+            commands.entity(item_ent).remove::<ItemDropped>();
+            let (player_sprite, player_transform, player_body) =
+                players.get(dropped.player).expect("Parent is not a player");
+
+            // Re-activate physics
+            body.is_deactivated = false;
+
+            let horizontal_flip_factor = if sprite.flip_x { Vec2::NEG_X } else { Vec2::X };
+            body.velocity = *throw_velocity * horizontal_flip_factor + player_body.velocity;
+            body.is_spawning = true;
+
+            let horizontal_flip_factor = if player_sprite.flip_x {
+                Vec2::new(-1.0, 1.0)
+            } else {
+                Vec2::ONE
+            };
+
+            // Drop item at player position
+            transform.translation =
+                player_transform.translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
+        }
 
         if grenade.age >= *fuse_time {
             if player_inputs.is_confirmed {
@@ -297,10 +328,11 @@ fn update_lit_grenades(
                 .remove::<MapElementHydrated>();
 
             // Spawn the damage region entity
+            let spawn_transform = global_transform.compute_transform();
             commands
                 .spawn()
                 .insert(Rollback::new(ridp.next_id()))
-                .insert(*transform)
+                .insert(spawn_transform)
                 .insert(GlobalTransform::default())
                 .insert(Visibility::default())
                 .insert(ComputedVisibility::default())
@@ -312,7 +344,7 @@ fn update_lit_grenades(
             commands
                 .spawn()
                 .insert(Rollback::new(ridp.next_id()))
-                .insert(*transform)
+                .insert(spawn_transform)
                 .insert(GlobalTransform::default())
                 .insert(Visibility::default())
                 .insert(ComputedVisibility::default())

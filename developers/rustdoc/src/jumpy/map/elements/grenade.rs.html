@@ -330,6 +330,38 @@
 <span id="328">328</span>
 <span id="329">329</span>
 <span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::time::Duration;
 
 <span class="kw">use super</span>::<span class="kw-2">*</span>;
@@ -460,7 +492,6 @@
         ),
         Without&lt;PlayerIdx&gt;,
     &gt;,
-    <span class="kw-2">mut </span>ridp: ResMut&lt;RollbackIdProvider&gt;,
     element_assets: ResMut&lt;Assets&lt;MapElementMeta&gt;&gt;,
     effects: Res&lt;AudioChannel&lt;EffectsChannel&gt;&gt;,
 ) {
@@ -482,8 +513,6 @@
         <span class="kw">let </span>meta = element_assets.get(meta_handle).unwrap();
         <span class="kw">let </span>BuiltinElementKind::Grenade {
             grab_offset,
-            atlas_handle,
-            throw_velocity,
             fuse_sound_handle,
             ..
         } = <span class="kw-2">&amp;</span>meta.builtin <span class="kw">else </span>{
@@ -492,8 +521,7 @@
 
         <span class="comment">// If the item is being held
         </span><span class="kw">if let </span><span class="prelude-val">Some</span>(parent) = parent {
-            <span class="kw">let </span>(player_sprite, player_transform, player_body) =
-                players.get(parent.get()).expect(<span class="string">&quot;Parent is not player&quot;</span>);
+            <span class="kw">let </span>(player_sprite, ..) = players.get(parent.get()).expect(<span class="string">&quot;Parent is not player&quot;</span>);
 
             <span class="comment">// Deactivate items while held
             </span>body.is_deactivated = <span class="bool-val">true</span>;
@@ -502,47 +530,24 @@
             </span><span class="kw">let </span>flip = player_sprite.flip_x;
             sprite.flip_x = flip;
             <span class="kw">let </span>flip_factor = <span class="kw">if </span>flip { -<span class="number">1.0 </span>} <span class="kw">else </span>{ <span class="number">1.0 </span>};
-            <span class="kw">let </span>horizontal_flip_factor = Vec2::new(flip_factor, <span class="number">1.0</span>);
             transform.translation.x = grab_offset.x * flip_factor;
             transform.translation.y = grab_offset.y;
             transform.translation.z = <span class="number">0.0</span>;
 
             <span class="comment">// If the item is being used
             </span><span class="kw">if </span>used.is_some() {
-                <span class="comment">// Despawn the item from the player&#39;s hand
-                </span>commands.entity(item_ent).despawn();
-
-                <span class="comment">// Spawn a new, lit grenade
-                </span>commands
-                    .spawn()
-                    .insert(Rollback::new(ridp.next_id()))
-                    .insert(Name::new(<span class="string">&quot;Grenade ( Lit )&quot;</span>))
-                    .insert(Transform::from_translation(
-                        player_transform.translation
-                            + (<span class="kw-2">*</span>grab_offset * horizontal_flip_factor).extend(<span class="number">0.0</span>),
-                    ))
-                    .insert(GlobalTransform::default())
-                    .insert(Visibility::default())
-                    .insert(ComputedVisibility::default())
-                    .insert(AnimatedSprite {
-                        start: <span class="number">3</span>,
-                        end: <span class="number">5</span>,
-                        repeat: <span class="bool-val">true</span>,
-                        fps: <span class="number">8.0</span>,
-                        atlas: atlas_handle.inner.clone(),
-                        ..default()
-                    })
-                    .insert(meta_handle.clone_weak())
-                    .insert(body.clone())
+                <span class="comment">// Light the grenade
+                </span>sprite.start = <span class="number">3</span>;
+                sprite.end = <span class="number">5</span>;
+                sprite.repeat = <span class="bool-val">true</span>;
+                sprite.fps = <span class="number">8.0</span>;
+                commands
+                    .entity(item_ent)
+                    .remove::&lt;IdleGrenade&gt;()
                     .insert(LitGrenade {
                         spawner: grenade.spawner,
                         fuse_sound: effects.play(fuse_sound_handle.clone_weak()).handle(),
                         ..default()
-                    })
-                    .insert(KinematicBody {
-                        velocity: <span class="kw-2">*</span>throw_velocity * horizontal_flip_factor + player_body.velocity,
-                        is_deactivated: <span class="bool-val">false</span>,
-                        ..body.clone()
                     });
             }
         }
@@ -556,8 +561,7 @@
             <span class="comment">// Re-activate physics
             </span>body.is_deactivated = <span class="bool-val">false</span>;
 
-            <span class="comment">// Put sword in rest position
-            </span>sprite.start = <span class="number">0</span>;
+            sprite.start = <span class="number">0</span>;
             sprite.end = <span class="number">0</span>;
             body.velocity = player_body.velocity;
             body.is_spawning = <span class="bool-val">true</span>;
@@ -577,13 +581,19 @@
 
 <span class="kw">fn </span>update_lit_grenades(
     <span class="kw-2">mut </span>commands: Commands,
+    players: Query&lt;(<span class="kw-2">&amp;</span>AnimatedSprite, <span class="kw-2">&amp;</span>Transform, <span class="kw-2">&amp;</span>KinematicBody), With&lt;PlayerIdx&gt;&gt;,
     <span class="kw-2">mut </span>grenades: Query&lt;
         (
             <span class="kw-2">&amp;</span>Rollback,
             Entity,
             <span class="kw-2">&amp;mut </span>LitGrenade,
-            <span class="kw-2">&amp;</span>Transform,
+            <span class="kw-2">&amp;mut </span>Transform,
+            <span class="kw-2">&amp;</span>GlobalTransform,
+            <span class="kw-2">&amp;mut </span>KinematicBody,
+            <span class="kw-2">&amp;mut </span>AnimatedSprite,
             <span class="kw-2">&amp;</span>Handle&lt;MapElementMeta&gt;,
+            <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Parent&gt;,
+            <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>ItemDropped&gt;,
         ),
         Without&lt;PlayerIdx&gt;,
     &gt;,
@@ -595,7 +605,19 @@
 ) {
     <span class="kw">let </span><span class="kw-2">mut </span>items = grenades.iter_mut().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
     items.sort_by_key(|x| x.<span class="number">0</span>.id());
-    <span class="kw">for </span>(<span class="kw">_</span>, item_ent, <span class="kw-2">mut </span>grenade, transform, meta_handle) <span class="kw">in </span>items {
+    <span class="kw">for </span>(
+        <span class="kw">_</span>,
+        item_ent,
+        <span class="kw-2">mut </span>grenade,
+        <span class="kw-2">mut </span>transform,
+        global_transform,
+        <span class="kw-2">mut </span>body,
+        <span class="kw-2">mut </span>sprite,
+        meta_handle,
+        parent,
+        dropped,
+    ) <span class="kw">in </span>items
+    {
         <span class="kw">let </span>meta = element_assets.get(meta_handle).unwrap();
         <span class="kw">let </span>BuiltinElementKind::Grenade {
             fuse_time,
@@ -606,12 +628,53 @@
             explosion_fps,
             explosion_frames,
             explosion_sound_handle,
+            grab_offset,
+            throw_velocity,
             ..
         } = <span class="kw-2">&amp;</span>meta.builtin <span class="kw">else </span>{
             <span class="macro">unreachable!</span>();
         };
 
         grenade.age += <span class="number">1.0 </span>/ <span class="kw">crate</span>::FPS <span class="kw">as </span>f32;
+
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(parent) = parent {
+            <span class="kw">let </span>(player_sprite, ..) = players.get(parent.get()).expect(<span class="string">&quot;Parent is not player&quot;</span>);
+
+            <span class="comment">// Deactivate items while held
+            </span>body.is_deactivated = <span class="bool-val">true</span>;
+
+            <span class="comment">// Flip the sprite to match the player orientation
+            </span><span class="kw">let </span>flip = player_sprite.flip_x;
+            sprite.flip_x = flip;
+            <span class="kw">let </span>flip_factor = <span class="kw">if </span>flip { -<span class="number">1.0 </span>} <span class="kw">else </span>{ <span class="number">1.0 </span>};
+            transform.translation.x = grab_offset.x * flip_factor;
+            transform.translation.y = grab_offset.y;
+            transform.translation.z = <span class="number">0.0</span>;
+        }
+
+        <span class="comment">// If the item is dropped
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(dropped) = dropped {
+            commands.entity(item_ent).remove::&lt;ItemDropped&gt;();
+            <span class="kw">let </span>(player_sprite, player_transform, player_body) =
+                players.get(dropped.player).expect(<span class="string">&quot;Parent is not a player&quot;</span>);
+
+            <span class="comment">// Re-activate physics
+            </span>body.is_deactivated = <span class="bool-val">false</span>;
+
+            <span class="kw">let </span>horizontal_flip_factor = <span class="kw">if </span>sprite.flip_x { Vec2::NEG_X } <span class="kw">else </span>{ Vec2::X };
+            body.velocity = <span class="kw-2">*</span>throw_velocity * horizontal_flip_factor + player_body.velocity;
+            body.is_spawning = <span class="bool-val">true</span>;
+
+            <span class="kw">let </span>horizontal_flip_factor = <span class="kw">if </span>player_sprite.flip_x {
+                Vec2::new(-<span class="number">1.0</span>, <span class="number">1.0</span>)
+            } <span class="kw">else </span>{
+                Vec2::ONE
+            };
+
+            <span class="comment">// Drop item at player position
+            </span>transform.translation =
+                player_transform.translation + (<span class="kw-2">*</span>grab_offset * horizontal_flip_factor).extend(<span class="number">0.0</span>);
+        }
 
         <span class="kw">if </span>grenade.age &gt;= <span class="kw-2">*</span>fuse_time {
             <span class="kw">if </span>player_inputs.is_confirmed {
@@ -629,10 +692,11 @@
                 .remove::&lt;MapElementHydrated&gt;();
 
             <span class="comment">// Spawn the damage region entity
-            </span>commands
+            </span><span class="kw">let </span>spawn_transform = global_transform.compute_transform();
+            commands
                 .spawn()
                 .insert(Rollback::new(ridp.next_id()))
-                .insert(<span class="kw-2">*</span>transform)
+                .insert(spawn_transform)
                 .insert(GlobalTransform::default())
                 .insert(Visibility::default())
                 .insert(ComputedVisibility::default())
@@ -644,7 +708,7 @@
             </span>commands
                 .spawn()
                 .insert(Rollback::new(ridp.next_id()))
-                .insert(<span class="kw-2">*</span>transform)
+                .insert(spawn_transform)
                 .insert(GlobalTransform::default())
                 .insert(Visibility::default())
                 .insert(ComputedVisibility::default())

@@ -1,6 +1,6 @@
 # Fish Folk: Jumpy
 
-[![Build Status](https://img.shields.io/github/workflow/status/fishfolks/jumpy/Continuous%20integration?logo=github&labelColor=1e1c24&color=8bcfcf)](https://github.com/fishfolks/jumpy/actions) [![Documentation](https://img.shields.io/badge/documentation-fishfolks.github.io-green.svg?labelColor=1e1c24&color=f3ee7a)](https://fishfolks.github.io/jumpy/) [![License](https://img.shields.io/badge/License-MIT%20or%20Apache%202-green.svg?label=license&labelColor=1e1c24&color=34925e)](./LICENSE) [![Discord](https://img.shields.io/badge/chat-on%20discord-green.svg?logo=discord&logoColor=fff&labelColor=1e1c24&color=8d5b3f)](https://discord.gg/4smxjcheE5)
+[![Build Status](https://img.shields.io/github/workflow/status/fishfolk/jumpy/Continuous%20integration?logo=github&labelColor=1e1c24&color=8bcfcf)](https://github.com/fishfolk/jumpy/actions) [![Documentation](https://img.shields.io/badge/documentation-fishfolk.github.io-green.svg?labelColor=1e1c24&color=f3ee7a)](https://fishfolk.github.io/jumpy/) [![License](https://img.shields.io/badge/License-MIT%20or%20Apache%202-green.svg?label=license&labelColor=1e1c24&color=34925e)](./LICENSE) [![Discord](https://img.shields.io/badge/chat-on%20discord-green.svg?logo=discord&logoColor=fff&labelColor=1e1c24&color=8d5b3f)](https://discord.gg/4smxjcheE5)
 
 ![Fish Folk: Jumpy Preview](https://user-images.githubusercontent.com/24392180/151969075-399e9fea-e2de-4340-96a4-0a0e5b79c281.gif)
 
@@ -27,9 +27,9 @@ The game is currently under re-construction as it is being rewritten to use the 
 
 ### Contributing
 
-Anyone involved in the Fish Folk community must follow our [code of conduct](https://github.com/fishfolks/jumpy/blob/main/CODE_OF_CONDUCT.md).
+Anyone involved in the Fish Folk community must follow our [code of conduct](https://github.com/fishfolk/jumpy/blob/main/CODE_OF_CONDUCT.md).
 
-If you'd like to make something for Fish Folk, check out our [help-wanted](https://github.com/fishfolks/jumpy/labels/help%20wanted) issues or just ask us on [Discord](https://discord.gg/4smxjcheE5). We'll soon post an updated roadmap for the next month or two of work ahead.
+If you'd like to make something for Fish Folk, check out our [help-wanted](https://github.com/fishfolk/jumpy/labels/help%20wanted) issues or just ask us on [Discord](https://discord.gg/4smxjcheE5). We'll soon post an updated roadmap for the next month or two of work ahead.
 
 Before committing and opening a PR, please run the following commands and follow their instructions:
 
@@ -50,7 +50,7 @@ Before committing and opening a PR, please run the following commands and follow
 
 ## Download & play
 
-1. Download the latest version from the [releases](https://github.com/fishfolks/jumpy/releases) page.
+1. Download the latest version from the [releases](https://github.com/fishfolk/jumpy/releases) page.
 2. Extract the archive and run the executable. (e.g. `./jumpy` or `jumpy.exe`)
 
 ### Launcher
@@ -68,7 +68,7 @@ pacman -S jumpy
 ## Building
 
 1. Install Rust with [rustup.rs](https://rustup.rs/)
-2. Clone this repository: `git clone https://github.com/fishfolks/jumpy.git`
+2. Clone this repository: `git clone https://github.com/fishfolk/jumpy.git`
 3. `cd jumpy`
 4. `cargo run`
 

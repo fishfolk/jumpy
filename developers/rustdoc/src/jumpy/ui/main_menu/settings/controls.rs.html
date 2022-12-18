@@ -401,6 +401,11 @@
 <span id="399">399</span>
 <span id="400">400</span>
 <span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="comment">// Render the control input grid
@@ -554,7 +559,7 @@
                         </span><span class="kw">let </span>binding_kind = <span class="kw">if </span>button_idx == <span class="number">2 </span>{
                             BindingKind::Gamepad
                         } <span class="kw">else </span>{
-                            BindingKind::Keyboard
+                            BindingKind::KeyboardMouse
                         };
 
                         <span class="comment">// Render the button
@@ -733,11 +738,12 @@
     keys: Res&lt;<span class="lifetime">&#39;w</span>, Input&lt;KeyCode&gt;&gt;,
     gamepad_buttons: Res&lt;<span class="lifetime">&#39;w</span>, Input&lt;GamepadButton&gt;&gt;,
     gamepad_events: EventReader&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>, GamepadEvent&gt;,
+    mouse: Res&lt;<span class="lifetime">&#39;w</span>, Input&lt;MouseButton&gt;&gt;,
 }
 
 <span class="doccomment">/// The kind of input binding to listen for.
 </span><span class="kw">enum </span>BindingKind {
-    Keyboard,
+    KeyboardMouse,
     Gamepad,
 }
 
@@ -749,8 +755,12 @@
         }
 
         <span class="prelude-val">Ok</span>(<span class="kw">match </span>binding_kind {
-            <span class="comment">// If we are looking for keyboard inputs
-            </span>BindingKind::Keyboard =&gt; {
+            <span class="comment">// If we are looking for keyboard or mouse inputs
+            </span>BindingKind::KeyboardMouse =&gt; {
+                <span class="comment">// Check for mouse input first
+                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>mouse_button) = <span class="self">self</span>.mouse.get_just_pressed().next() {
+                    <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(mouse_button.into()));
+                }
                 <span class="comment">// Just return the first pressed button we find
                 </span><span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>key_code) = <span class="self">self</span>.keys.get_just_pressed().next() {
                     <span class="prelude-val">Some</span>(key_code.into())

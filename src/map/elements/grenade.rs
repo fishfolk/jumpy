@@ -70,6 +70,7 @@ fn pre_update_in_game(
             body_offset,
             atlas_handle,
             can_rotate,
+            bouncyness,
             ..
         } = &map_element.builtin
         {
@@ -104,6 +105,7 @@ fn pre_update_in_game(
                     has_mass: true,
                     has_friction: true,
                     can_rotate: *can_rotate,
+                    bouncyness: *bouncyness,
                     ..default()
                 });
         }

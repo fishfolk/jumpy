@@ -235,6 +235,8 @@ pub enum BuiltinElementKind {
         explosion_atlas: String,
         #[serde(skip)]
         explosion_atlas_handle: AssetHandle<TextureAtlas>,
+        #[serde(default)]
+        bouncyness: f32
     },
     /// An animated decoration such as seaweed or anemones
     AnimatedDecoration {

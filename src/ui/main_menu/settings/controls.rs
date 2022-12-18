@@ -151,7 +151,7 @@ pub fn controls_settings_ui(
                         let binding_kind = if button_idx == 2 {
                             BindingKind::Gamepad
                         } else {
-                            BindingKind::Keyboard
+                            BindingKind::KeyboardMouse
                         };
 
                         // Render the button
@@ -330,11 +330,12 @@ pub struct ControlInputBindingEvents<'w, 's> {
     keys: Res<'w, Input<KeyCode>>,
     gamepad_buttons: Res<'w, Input<GamepadButton>>,
     gamepad_events: EventReader<'w, 's, GamepadEvent>,
+    mouse: Res<'w, Input<MouseButton>>,
 }
 
 /// The kind of input binding to listen for.
 enum BindingKind {
-    Keyboard,
+    KeyboardMouse,
     Gamepad,
 }
 
@@ -346,8 +347,12 @@ impl<'w, 's> ControlInputBindingEvents<'w, 's> {
         }
 
         Ok(match binding_kind {
-            // If we are looking for keyboard inputs
-            BindingKind::Keyboard => {
+            // If we are looking for keyboard or mouse inputs
+            BindingKind::KeyboardMouse => {
+                // Check for mouse input first
+                if let Some(&mouse_button) = self.mouse.get_just_pressed().next() {
+                    return Ok(Some(mouse_button.into()));
+                }
                 // Just return the first pressed button we find
                 if let Some(&key_code) = self.keys.get_just_pressed().next() {
                     Some(key_code.into())

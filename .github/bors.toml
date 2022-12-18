@@ -1,6 +1,11 @@
+use_squash_merge = true
+cut_body_after = "_ _ _"
+pr_status = [
+# This must be un-commented once Bors merges the PR that new CI check
+#  "Validate conventional PR title",
+]
 status = [
   "Check Rust formatting",
-  "Clippy correctness checks (x86_64-unknown-linux-gnu, target)",
+  "Clippy correctness checks (%)",
   "Build Docs",
-#   "Clippy correctness checks (wasm32-unknown-unknown, web-target)",
 ]

@@ -357,24 +357,19 @@ impl<'w, 's> CollisionWorld<'w, 's> {
         let mut riding_actors = vec![];
         let mut pushing_actors = vec![];
 
-        let riding_rect = Rect::new(
-            collider.pos.x,
-            collider.pos.y - 1.0,
-            collider.width as f32,
-            1.0,
-        );
+        let riding_rect = Rect::new(collider.pos.x, collider.pos.y - 1.0, collider.width, 1.0);
         let pushing_rect = Rect::new(
             collider.pos.x + move_x as f32,
             collider.pos.y,
-            collider.width as f32,
-            collider.height as f32,
+            collider.width,
+            collider.height,
         );
 
         for (actor, mut actor_collider) in &mut self.actors {
             let rider_rect = Rect::new(
                 actor_collider.pos.x,
-                actor_collider.pos.y + actor_collider.height as f32 - 1.0,
-                actor_collider.width as f32,
+                actor_collider.pos.y + actor_collider.height - 1.0,
+                actor_collider.width,
                 1.0,
             );
 

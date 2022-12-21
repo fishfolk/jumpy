@@ -1415,7 +1415,7 @@
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 <span class="kw">if </span>ui
                     .button(<span class="string">&quot;➕&quot;</span>)
-                    .on_hover_text(<span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;create-layer&quot;</span>))
+                    .on_hover_text(params.localization.get(<span class="string">&quot;create-layer&quot;</span>))
                     .clicked()
                 {
                     <span class="kw-2">*</span>params.show_layer_create = <span class="bool-val">true</span>;
@@ -1470,12 +1470,12 @@
                                 <span class="kw">match </span>layer.kind {
                                     MapLayerKind::Tile(<span class="kw">_</span>) =&gt; {
                                         ui.label(<span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;tile-layer-icon&quot;</span>))
-                                            .on_hover_text(<span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;tile-layer&quot;</span>));
+                                            .on_hover_text(params.localization.get(<span class="string">&quot;tile-layer&quot;</span>));
                                     }
                                     MapLayerKind::Element(<span class="kw">_</span>) =&gt; {
                                         ui.label(<span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;element-layer-icon&quot;</span>))
                                             .on_hover_text(
-                                                <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;element-layer&quot;</span>),
+                                                params.localization.get(<span class="string">&quot;element-layer&quot;</span>),
                                             );
                                     }
                                 };
@@ -1494,7 +1494,7 @@
                             <span class="kw">let </span>is_visible = !params.state.hidden_layers.contains(<span class="kw-2">&amp;</span>i);
                             <span class="kw">if </span>ui
                                 .selectable_label(is_visible, <span class="string">&quot;👁&quot;</span>)
-                                .on_hover_text(<span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;toggle-visibility&quot;</span>))
+                                .on_hover_text(params.localization.get(<span class="string">&quot;toggle-visibility&quot;</span>))
                                 .clicked()
                             {
                                 <span class="kw">if </span>is_visible {

@@ -197,11 +197,11 @@ fn handle_match_setup_messages(params: &mut PlayerSelectMenu) {
                 crate::networking::proto::ReliableGameMessageKind::MatchSetup(setup) => match setup
                 {
                     MatchSetupMessage::SelectPlayer(player_handle) => {
-                        params.player_inputs.players[message.from_player_idx as usize]
-                            .selected_player = player_handle
+                        params.player_inputs.players[message.from_player_idx].selected_player =
+                            player_handle
                     }
                     MatchSetupMessage::ConfirmSelection(confirmed) => {
-                        params.player_select_state.player_slots[message.from_player_idx as usize]
+                        params.player_select_state.player_slots[message.from_player_idx]
                             .confirmed = confirmed;
                     }
                     MatchSetupMessage::SelectMap(_) => {

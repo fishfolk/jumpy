@@ -2,7 +2,7 @@ name: Grenades
 category: Weapons
 builtin: !Grenade
   fuse_time: 4.0
-  throw_velocity: [7, 5]
+  throw_velocity: [7, 6]
   damage_region_size: [60, 60]
   damage_region_lifetime: 0.6
 
@@ -19,6 +19,6 @@ builtin: !Grenade
   body_size: [18, 18]
   grab_offset: [-7, -6]
   body_offset: [0, 2]
-  # TODO: Enable and fix rotation problems
-  can_rotate: false
+  can_rotate: true
   bouncyness: 0.6
+  angular_velocity: 0.1

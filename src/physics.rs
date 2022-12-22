@@ -228,19 +228,11 @@ fn apply_rotation(
     is_on_ground: bool,
 ) {
     let mut angle = transform.rotation.to_euler(EulerRot::XYZ).2;
-    if angular_velocity != 0.0 {
-        angle += (angular_velocity * crate::FPS as f32).to_radians();
-    } else if !is_on_ground {
-        angle += velocity.x.abs() * 0.00045 + velocity.y.abs() * 0.00015;
+
+    if is_on_ground {
+        angle += velocity.x.abs() * angular_velocity;
     } else {
-        angle %= std::f32::consts::PI * 2.0;
-
-        let goal = std::f32::consts::PI * 2.0;
-
-        let rest = goal - angle;
-        if rest.abs() >= 0.1 {
-            angle += (rest * 0.1).max(0.1);
-        }
+        angle += (angular_velocity * crate::FPS as f32).to_radians();
     }
 
     transform.rotation = Quat::from_rotation_z(angle);

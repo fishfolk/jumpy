@@ -120,6 +120,28 @@
 <span id="120">120</span>
 <span id="121">121</span>
 <span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
 </pre><pre class="rust"><code><span class="doccomment">//! A minimal ECS ( Entity Component System ) designed for easy snapshotting and future moddability.
 //!
 //! Originally forked from the [Planck ECS][planck], with heavy modifications.
@@ -231,15 +253,37 @@
 
 <span class="kw">impl</span>&lt;T: Clone&gt; RawFns <span class="kw">for </span>T {
     <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>raw_drop(ptr: <span class="kw-2">*mut </span>u8) {
-        <span class="kw">if </span>std::mem::needs_drop::&lt;T&gt;() {
-            (ptr <span class="kw">as </span><span class="kw-2">*mut </span>T).drop_in_place()
+        <span class="kw">let </span>result = std::panic::catch_unwind(|| {
+            <span class="kw">if </span>std::mem::needs_drop::&lt;T&gt;() {
+                (ptr <span class="kw">as </span><span class="kw-2">*mut </span>T).drop_in_place()
+            }
+        });
+
+        <span class="kw">if </span>result.is_err() {
+            <span class="macro">eprintln!</span>(
+                <span class="string">&quot;Rust type {} panicked in destructor.\n\
+                Unable to panic across C ABI: aborting.&quot;</span>,
+                std::any::type_name::&lt;T&gt;()
+            );
+            std::process::abort();
         }
     }
 
     <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>raw_clone(src: <span class="kw-2">*const </span>u8, dst: <span class="kw-2">*mut </span>u8) {
-        <span class="kw">let </span>t = <span class="kw-2">&amp;*</span>(src <span class="kw">as </span><span class="kw-2">*const </span>T);
-        <span class="kw">let </span>t = t.clone();
-        (dst <span class="kw">as </span><span class="kw-2">*mut </span>T).write(t)
+        <span class="kw">let </span>result = std::panic::catch_unwind(|| {
+            <span class="kw">let </span>t = <span class="kw-2">&amp;*</span>(src <span class="kw">as </span><span class="kw-2">*const </span>T);
+            <span class="kw">let </span>t = t.clone();
+            (dst <span class="kw">as </span><span class="kw-2">*mut </span>T).write(t)
+        });
+
+        <span class="kw">if </span>result.is_err() {
+            <span class="macro">eprintln!</span>(
+                <span class="string">&quot;Rust type {} panicked in clone implementation.\n\
+                Unable to panic across C ABI: aborting.&quot;</span>,
+                std::any::type_name::&lt;T&gt;()
+            );
+            std::process::abort();
+        }
     }
 }
 </code></pre></div>

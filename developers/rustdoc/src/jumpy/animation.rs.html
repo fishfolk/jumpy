@@ -375,7 +375,7 @@
                 <span class="kw">continue</span>;
             }
             animated_sprite.index += <span class="number">1</span>;
-            animated_sprite.index %= (animated_sprite.end - animated_sprite.start).max(<span class="number">1</span>);
+            animated_sprite.index %= (animated_sprite.end + <span class="number">1 </span>- animated_sprite.start).max(<span class="number">1</span>);
         }
 
         <span class="kw">let </span>sprite_index = animated_sprite.start + animated_sprite.index;

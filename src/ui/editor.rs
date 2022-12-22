@@ -424,7 +424,7 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 if ui
                     .button("➕")
-                    .on_hover_text(&params.localization.get("create-layer"))
+                    .on_hover_text(params.localization.get("create-layer"))
                     .clicked()
                 {
                     *params.show_layer_create = true;
@@ -479,12 +479,12 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                                 match layer.kind {
                                     MapLayerKind::Tile(_) => {
                                         ui.label(&params.localization.get("tile-layer-icon"))
-                                            .on_hover_text(&params.localization.get("tile-layer"));
+                                            .on_hover_text(params.localization.get("tile-layer"));
                                     }
                                     MapLayerKind::Element(_) => {
                                         ui.label(&params.localization.get("element-layer-icon"))
                                             .on_hover_text(
-                                                &params.localization.get("element-layer"),
+                                                params.localization.get("element-layer"),
                                             );
                                     }
                                 };
@@ -503,7 +503,7 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                             let is_visible = !params.state.hidden_layers.contains(&i);
                             if ui
                                 .selectable_label(is_visible, "👁")
-                                .on_hover_text(&params.localization.get("toggle-visibility"))
+                                .on_hover_text(params.localization.get("toggle-visibility"))
                                 .clicked()
                             {
                                 if is_visible {

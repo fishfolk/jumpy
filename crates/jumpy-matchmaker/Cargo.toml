@@ -5,7 +5,7 @@ edition = "2021"
 authors = ["The Fish Fight Game & Spicy Lobster Developers"]
 
 [dependencies]
-jumpy-matchmaker-proto = { path = "../matchmaker-proto" }
+jumpy-matchmaker-proto = { path = "../jumpy-matchmaker-proto" }
 anyhow = "1.0.66"
 async-executor = "1.4.1"
 futures-lite = "1.12.0"

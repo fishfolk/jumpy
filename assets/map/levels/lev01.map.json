@@ -972,7 +972,11 @@
                         {
                             "pos": [88, 409.5],
                             "element": "../elements/decoration/seaweed/seaweed.element.yaml"
-                        }
+                        },
+			{
+				"pos": [100, 100],
+				"element": "../elements/environment/crab/crab.element.yaml"
+			}
                     ]
                 }
             }

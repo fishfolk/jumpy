@@ -12,6 +12,7 @@ use crate::{
 };
 
 // Meta/environment elements
+pub mod crab;
 pub mod decoration;
 pub mod player_spawner;
 pub mod sproinger;
@@ -34,6 +35,7 @@ impl Plugin for MapElementsPlugin {
             .add_plugin(sproinger::SproingerPlugin)
             .add_plugin(mine::MinePlugin)
             .add_plugin(stomp_boots::StompBootsPlugin)
-            .add_plugin(sword::SwordPlugin);
+            .add_plugin(sword::SwordPlugin)
+            .add_plugin(crab::CrabDecorationPlugin);
     }
 }

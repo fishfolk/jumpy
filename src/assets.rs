@@ -402,6 +402,15 @@ impl AssetLoader for MapElementMetaLoader {
                     *atlas_handle = AssetHandle::new(path.clone(), handle.typed());
                     dependencies.push(path);
                 }
+                BuiltinElementKind::Crab {
+                    atlas,
+                    atlas_handle,
+                    ..
+                } => {
+                    let (path, handle) = get_relative_asset(load_context, self_path, atlas);
+                    *atlas_handle = AssetHandle::new(path.clone(), handle.typed());
+                    dependencies.push(path);
+                }
                 BuiltinElementKind::Sword {
                     atlas,
                     atlas_handle,

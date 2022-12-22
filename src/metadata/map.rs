@@ -238,7 +238,7 @@ pub enum BuiltinElementKind {
         #[serde(default)]
         bouncyness: f32,
         #[serde(default)]
-        angular_velocity: f32
+        angular_velocity: f32,
     },
     /// An animated decoration such as seaweed or anemones
     AnimatedDecoration {

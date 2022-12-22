@@ -109,14 +109,36 @@ pub trait RawFns {
 
 impl<T: Clone> RawFns for T {
     unsafe extern "C" fn raw_drop(ptr: *mut u8) {
-        if std::mem::needs_drop::<T>() {
-            (ptr as *mut T).drop_in_place()
+        let result = std::panic::catch_unwind(|| {
+            if std::mem::needs_drop::<T>() {
+                (ptr as *mut T).drop_in_place()
+            }
+        });
+
+        if result.is_err() {
+            eprintln!(
+                "Rust type {} panicked in destructor.\n\
+                Unable to panic across C ABI: aborting.",
+                std::any::type_name::<T>()
+            );
+            std::process::abort();
         }
     }
 
     unsafe extern "C" fn raw_clone(src: *const u8, dst: *mut u8) {
-        let t = &*(src as *const T);
-        let t = t.clone();
-        (dst as *mut T).write(t)
+        let result = std::panic::catch_unwind(|| {
+            let t = &*(src as *const T);
+            let t = t.clone();
+            (dst as *mut T).write(t)
+        });
+
+        if result.is_err() {
+            eprintln!(
+                "Rust type {} panicked in clone implementation.\n\
+                Unable to panic across C ABI: aborting.",
+                std::any::type_name::<T>()
+            );
+            std::process::abort();
+        }
     }
 }

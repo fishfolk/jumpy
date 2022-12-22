@@ -124,7 +124,7 @@ fn animate_sprites(
                 continue;
             }
             animated_sprite.index += 1;
-            animated_sprite.index %= (animated_sprite.end - animated_sprite.start).max(1);
+            animated_sprite.index %= (animated_sprite.end + 1 - animated_sprite.start).max(1);
         }
 
         let sprite_index = animated_sprite.start + animated_sprite.index;

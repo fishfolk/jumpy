@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["EcsError","The types of errors used throughout the ECS."]],"type":[["SystemResult","The result of a `System`’s execution."]]};

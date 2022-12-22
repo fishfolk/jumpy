@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Entities","Holds a list of alive entities."],["Entity","An entity index."],["EntityIterator","Iterator over entities using the provided bitset."]]};

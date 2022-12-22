@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Dispatcher","A dispatcher is used to execute a collection of `System` in order."],["DispatcherBuilder","A builder that accumulates systems to be inserted into a [`Dispatcher`]."]]};

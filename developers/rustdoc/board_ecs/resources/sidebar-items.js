@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["AtomicResource","A handle to a resource from a [`Resources`] collection."],["Resources","A collection of resources."],["UntypedResource","An untyped resource that may be inserted into [`UntypedResources`]."],["UntypedResourceInfo","Used to construct an [`UntypedResource`]."],["UntypedResources","Storage for un-typed resources."]]};

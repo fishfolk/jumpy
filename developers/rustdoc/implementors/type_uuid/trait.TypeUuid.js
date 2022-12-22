@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"board_ecs":[["impl <a class=\"trait\" href=\"board_ecs/prelude/trait.TypeUuid.html\" title=\"trait board_ecs::prelude::TypeUuid\">TypeUuid</a> for <a class=\"struct\" href=\"board_ecs/entities/struct.Entities.html\" title=\"struct board_ecs::entities::Entities\">Entities</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

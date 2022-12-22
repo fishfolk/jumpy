@@ -239,14 +239,6 @@
 <span id="237">237</span>
 <span id="238">238</span>
 <span id="239">239</span>
-<span id="240">240</span>
-<span id="241">241</span>
-<span id="242">242</span>
-<span id="243">243</span>
-<span id="244">244</span>
-<span id="245">245</span>
-<span id="246">246</span>
-<span id="247">247</span>
 </pre><pre class="rust"><code><span class="kw">use </span>bevy::math::vec2;
 
 <span class="kw">use crate</span>::{metadata::GameMeta, prelude::<span class="kw-2">*</span>};
@@ -477,19 +469,11 @@
     is_on_ground: bool,
 ) {
     <span class="kw">let </span><span class="kw-2">mut </span>angle = transform.rotation.to_euler(EulerRot::XYZ).<span class="number">2</span>;
-    <span class="kw">if </span>angular_velocity != <span class="number">0.0 </span>{
-        angle += (angular_velocity * <span class="kw">crate</span>::FPS <span class="kw">as </span>f32).to_radians();
-    } <span class="kw">else if </span>!is_on_ground {
-        angle += velocity.x.abs() * <span class="number">0.00045 </span>+ velocity.y.abs() * <span class="number">0.00015</span>;
+
+    <span class="kw">if </span>is_on_ground {
+        angle += velocity.x.abs() * angular_velocity;
     } <span class="kw">else </span>{
-        angle %= std::f32::consts::PI * <span class="number">2.0</span>;
-
-        <span class="kw">let </span>goal = std::f32::consts::PI * <span class="number">2.0</span>;
-
-        <span class="kw">let </span>rest = goal - angle;
-        <span class="kw">if </span>rest.abs() &gt;= <span class="number">0.1 </span>{
-            angle += (rest * <span class="number">0.1</span>).max(<span class="number">0.1</span>);
-        }
+        angle += (angular_velocity * <span class="kw">crate</span>::FPS <span class="kw">as </span>f32).to_radians();
     }
 
     transform.rotation = Quat::from_rotation_z(angle);

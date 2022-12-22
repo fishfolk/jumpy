@@ -12,7 +12,7 @@ builtin: !Mine
 
   arm_sound: ./arm.ogg
   armed_anim_start: 1
-  armed_anim_end: 13
+  armed_anim_end: 12
   armed_anim_fps: 15
 
   damage_region_size: [60, 60]

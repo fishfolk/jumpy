@@ -70,6 +70,7 @@ fn pre_update_in_game(
             body_offset,
             atlas_handle,
             can_rotate,
+            bouncyness,
             ..
         } = &map_element.builtin
         {
@@ -104,6 +105,7 @@ fn pre_update_in_game(
                     has_mass: true,
                     has_friction: true,
                     can_rotate: *can_rotate,
+                    bouncyness: *bouncyness,
                     ..default()
                 });
         }
@@ -150,6 +152,7 @@ fn update_idle_grenades(
         let BuiltinElementKind::Grenade {
             grab_offset,
             fuse_sound_handle,
+            angular_velocity,
             ..
         } = &meta.builtin else {
             unreachable!();
@@ -177,6 +180,7 @@ fn update_idle_grenades(
                 sprite.end = 5;
                 sprite.repeat = true;
                 sprite.fps = 8.0;
+                body.angular_velocity = *angular_velocity;
                 commands
                     .entity(item_ent)
                     .remove::<IdleGrenade>()
@@ -297,7 +301,11 @@ fn update_lit_grenades(
             // Re-activate physics
             body.is_deactivated = false;
 
-            let horizontal_flip_factor = if sprite.flip_x { Vec2::NEG_X } else { Vec2::X };
+            let horizontal_flip_factor = if sprite.flip_x {
+                Vec2::new(-1.0, 1.0)
+            } else {
+                Vec2::ONE
+            };
             body.velocity = *throw_velocity * horizontal_flip_factor + player_body.velocity;
             body.is_spawning = true;
 
@@ -328,7 +336,9 @@ fn update_lit_grenades(
                 .remove::<MapElementHydrated>();
 
             // Spawn the damage region entity
-            let spawn_transform = global_transform.compute_transform();
+            let mut spawn_transform = global_transform.compute_transform();
+            spawn_transform.rotation = Quat::IDENTITY;
+
             commands
                 .spawn()
                 .insert(Rollback::new(ridp.next_id()))

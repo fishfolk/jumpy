@@ -36,16 +36,6 @@ jobs:
               libasound2-dev \
               libudev-dev
 
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
       - name: Setup Rust
         uses: actions-rs/toolchain@v1
         with:
@@ -53,6 +43,22 @@ jobs:
           override: true
           profile: minimal
           target: ${{ matrix.config.target }}
+
+      - uses: actions/cache@v3
+        name: Cache cargo registry
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: cargo-registry
+      - uses: actions/cache@v3
+        name: Cache cargo target
+        with:
+          path: |
+            target/
+            web-target/
+          key: ${{ runner.os }}-cargo-target-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build
         uses: actions-rs/cargo@v1

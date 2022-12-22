@@ -31,17 +31,21 @@ jobs:
         with:
           mdbook-version: "0.4.22"
 
-
-      - name: Load Cache
-        uses: actions/cache@v3
+      - uses: actions/cache@v3
+        name: Cache cargo registry
         with:
           path: |
-            ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
+          key: cargo-registry
+      - uses: actions/cache@v3
+        name: Cache cargo target
+        with:
+          path: |
             target/
-          key: rustdoc
+            web-target/
+          key: Linux-cargo-target-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build Rustdoc
         run: |

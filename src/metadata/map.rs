@@ -249,6 +249,23 @@ pub enum BuiltinElementKind {
         #[serde(skip)]
         atlas_handle: AssetHandle<TextureAtlas>,
     },
+    /// A crab roaming on the ocean floor
+    Crab {
+        start_frame: usize,
+        end_frame: usize,
+        fps: f32,
+        atlas: String,
+        comfortable_spawn_distance: f32,
+        comfortable_scared_distance: f32,
+        same_level_threshold: f32,
+        walk_speed: f32,
+        run_speed: f32,
+        /// 45 fix updates per second, so if this is 45 the maximum delay between actions
+        /// will be 1 second
+        timer_delay_max: u8,
+        #[serde(skip)]
+        atlas_handle: AssetHandle<TextureAtlas>,
+    },
     /// This is a sproinger
     Sproinger {
         atlas: String,

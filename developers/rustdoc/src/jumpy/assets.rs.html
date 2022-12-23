@@ -617,6 +617,15 @@
 <span id="615">615</span>
 <span id="616">616</span>
 <span id="617">617</span>
+<span id="618">618</span>
+<span id="619">619</span>
+<span id="620">620</span>
+<span id="621">621</span>
+<span id="622">622</span>
+<span id="623">623</span>
+<span id="624">624</span>
+<span id="625">625</span>
+<span id="626">626</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     ffi::OsStr,
     path::{Path, PathBuf},
@@ -1013,6 +1022,15 @@
                 BuiltinElementKind::None =&gt; (),
                 BuiltinElementKind::PlayerSpawner =&gt; (),
                 BuiltinElementKind::AnimatedDecoration {
+                    atlas,
+                    atlas_handle,
+                    ..
+                } =&gt; {
+                    <span class="kw">let </span>(path, handle) = get_relative_asset(load_context, self_path, atlas);
+                    <span class="kw-2">*</span>atlas_handle = AssetHandle::new(path.clone(), handle.typed());
+                    dependencies.push(path);
+                }
+                BuiltinElementKind::Crab {
                     atlas,
                     atlas_handle,
                     ..

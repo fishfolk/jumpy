@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["CrabState",""]],"fn":[["hydrate_crab",""],["update_crabs",""]],"struct":[["CrabConfig",""],["CrabCritter",""],["CrabDecorationPlugin",""]]};

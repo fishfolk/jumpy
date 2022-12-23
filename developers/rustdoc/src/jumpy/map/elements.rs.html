@@ -39,6 +39,8 @@
 <span id="37">37</span>
 <span id="38">38</span>
 <span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     animation::AnimatedSprite,
     damage::{DamageRegion, DamageRegionOwner},
@@ -53,7 +55,8 @@
 };
 
 <span class="comment">// Meta/environment elements
-</span><span class="kw">pub mod </span>decoration;
+</span><span class="kw">pub mod </span>crab;
+<span class="kw">pub mod </span>decoration;
 <span class="kw">pub mod </span>player_spawner;
 <span class="kw">pub mod </span>sproinger;
 
@@ -75,7 +78,8 @@
             .add_plugin(sproinger::SproingerPlugin)
             .add_plugin(mine::MinePlugin)
             .add_plugin(stomp_boots::StompBootsPlugin)
-            .add_plugin(sword::SwordPlugin);
+            .add_plugin(sword::SwordPlugin)
+            .add_plugin(crab::CrabDecorationPlugin);
     }
 }
 </code></pre></div>

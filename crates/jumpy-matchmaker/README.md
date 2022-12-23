@@ -1,1 +1,0 @@
-Matchmaking server for Jumpy.

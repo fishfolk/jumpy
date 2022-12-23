@@ -1,5 +1,5 @@
 use bevy_ggrs::RollbackIdProvider;
-use jumpy_matchmaker_proto::TargetClient;
+use bones_matchmaker_proto::TargetClient;
 
 use crate::{
     metadata::MapMeta,

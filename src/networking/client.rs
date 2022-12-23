@@ -10,10 +10,10 @@ use std::{net::SocketAddr, sync::Arc};
 
 use async_channel::{Receiver, RecvError, Sender};
 use bevy::tasks::IoTaskPool;
+use bones_matchmaker_proto::{RecvProxyMessage, SendProxyMessage, TargetClient};
 use futures_lite::future;
-use jumpy_matchmaker_proto::{RecvProxyMessage, SendProxyMessage, TargetClient};
 use quinn::{ClientConfig, Connection, Endpoint, EndpointConfig};
-use quinn_bevy::BevyIoTaskPoolExecutor;
+use quinn_runtime_bevy::BevyIoTaskPoolExecutor;
 
 use crate::prelude::*;
 

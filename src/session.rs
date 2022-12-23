@@ -8,7 +8,7 @@ use bevy_ggrs::{
     ggrs::{self, NonBlockingSocket, P2PSession, SessionBuilder, SyncTestSession},
     ResetGGRSSession, SessionType,
 };
-use jumpy_matchmaker_proto::TargetClient;
+use bones_matchmaker_proto::TargetClient;
 
 use crate::{
     config::ENGINE_CONFIG,

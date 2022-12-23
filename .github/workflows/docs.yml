@@ -49,7 +49,8 @@ jobs:
 
       - name: Build Rustdoc
         run: |
-          cargo doc --workspace --document-private-items --no-deps
+          cargo doc --no-deps -p bones_matchmaker_proto
+          cargo doc --no-deps
           mv target/doc book/src/developers/rustdoc
 
       - name: Build MDBook

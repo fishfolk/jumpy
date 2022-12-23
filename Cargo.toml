@@ -7,13 +7,6 @@ license = "MIT OR Apache-2.0"
 edition = "2021"
 default-run = "jumpy"
 
-[workspace]
-resolver = "2"
-members = [
-    ".",
-    "crates/*"
-]
-
 [features]
 default = ["render"]
 render = [
@@ -27,7 +20,6 @@ render = [
 anyhow = "1.0.58"
 async-channel = "1.7.1"
 base64 = "0.13.0"
-bevy-has-load-progress = { path = "crates/bevy-has-load-progress", features = ["bevy_egui"] }
 bevy-inspector-egui = { version = "0.13.0" }
 bevy-parallax = "0.2.0"
 bevy_ecs_dynamic = { git = "https://github.com/jakobhellermann/bevy_ecs_dynamic", rev = "aa7a051a49bd134cfd8c169542e16526bf2b36b3" }
@@ -43,6 +35,8 @@ bevy_system_graph = "0.3.0"
 bevy_tweening = { version = "0.5", default-features = false }
 bitfield = "0.14.0"
 blocking = "1.2.0"
+bones_has_load_progress = { git = "https://github.com/fishfolk/bones.git", features = ["bevy_egui"] }
+bones_matchmaker_proto = { git = "https://github.com/fishfolk/bones.git" }
 bytemuck = "1.12.3"
 bytes = "1.2.1"
 clap = { version = "4.0.18", features = ["derive", "env"] }
@@ -54,7 +48,6 @@ fnv = "1.0.7"
 futures-lite = "1.12.0"
 getrandom = { version = "0.2", features = ["js"] }
 iyes_loopless = "0.8.0"
-jumpy-matchmaker-proto = { path = "crates/jumpy-matchmaker-proto" }
 leafwing-input-manager = { version = "0.6.1", default-features = false }
 log = { version = "0.4.17", features = ["release_max_level_debug"] }
 mimalloc = { version = "0.1.32", default-features = false }
@@ -89,7 +82,7 @@ web-sys = { version = "0.3", features = ["Window","Location","Storage"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 quinn = { version = "0.9", default-features = false, features = ["futures-io", "native-certs", "tls-rustls"] }
-quinn-bevy = { path = "crates/quinn-bevy" }
+quinn_runtime_bevy = { git = "https://github.com/fishfolk/bones.git" }
 
 [profile.dev.package."*"]
 opt-level = 3 # Set this to 3 if the game becomes slow to respond during gameplay

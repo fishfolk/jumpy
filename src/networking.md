@@ -65,10 +65,10 @@ needing a matchmaking server.
 #### Initial Connection
 
 When a client connects to the matchmaking server, the very first thing it will do is send a
-[`RequestMatch`][jumpy_matchmaker_proto::MatchmakerRequest::RequestMatch] message to the server over
+[`RequestMatch`][bones_matchmaker_proto::MatchmakerRequest::RequestMatch] message to the server over
 a reliable channel.
 
-This message contains the [`MatchInfo`][`jumpy_matchmaker_proto::MatchInfo`] that tells the server
+This message contains the [`MatchInfo`][`bones_matchmaker_proto::MatchInfo`] that tells the server
 how many players the client wants to connect to for the match, along with an arbitrary byte sequence
 for the `match_data`.
 
@@ -88,10 +88,10 @@ they are only connected to players playing the same game, by specifying a unique
 #### Waiting For Players
 
 After the initial connection and match request, the server will send the client an
-[`Accepted`][`jumpy_matchmaker_proto::MatchmakerResponse::Accepted`] message.
+[`Accepted`][`bones_matchmaker_proto::MatchmakerResponse::Accepted`] message.
 
 If the waiting room for that match already has the desired number of players in it, the server will
-then respond immediately with a [`Success`][jumpy_matchmaker_proto::MatchmakerResponse::Success]
+then respond immediately with a [`Success`][bones_matchmaker_proto::MatchmakerResponse::Success]
 message. This message comes with:
 
 -   a `random_seed` that can be used by all clients to generate deterministic random numbers, and
@@ -104,12 +104,12 @@ Immediately after the desired number of clients have joined and the `Success` me
 to all players, the matchmaker goes into proxy mode for all clients in the match.
 
 Once in proxy mode, the server listens for
-[`SendProxyMessage`][`jumpy_matchmaker_proto::SendProxyMessage`]s from clients. Each message simply
-specifies a [`TargetClient`][jumpy_matchmaker_proto::TargetClient] ( either a specific client or all
+[`SendProxyMessage`][`bones_matchmaker_proto::SendProxyMessage`]s from clients. Each message simply
+specifies a [`TargetClient`][bones_matchmaker_proto::TargetClient] ( either a specific client or all
 of them ), and a binary message data.
 
 Once it a `SendProxyMessage` it will send it to the target client, which will receive it in the form
-of a [`RecvProxyMessage`][jumpy_matchmaker_proto::RecvProxyMessage], containing the message data,
+of a [`RecvProxyMessage`][bones_matchmaker_proto::RecvProxyMessage], containing the message data,
 and the index of the client that sent the message.
 
 The matchmaking server supports forwarding both reliable and unreliable message in this way,

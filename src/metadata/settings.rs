@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use bevy::prelude::Gamepad;
-use bevy_has_load_progress::HasLoadProgress;
+use bones_has_load_progress::HasLoadProgress;
 use leafwing_input_manager::{axislike::VirtualDPad, prelude::InputMap, user_input::InputKind};
 use serde::{Deserialize, Serialize};
 

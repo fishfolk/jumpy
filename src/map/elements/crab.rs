@@ -1,12 +1,14 @@
 use super::*;
-use rand::Rng;
+use crate::random::GlobalRng;
+use bevy::prelude::*;
 
 pub struct CrabDecorationPlugin;
 
 impl Plugin for CrabDecorationPlugin {
     fn build(&self, app: &mut App) {
         app.add_rollback_system(RollbackStage::PreUpdate, hydrate_crab)
-            .add_rollback_system(RollbackStage::Update, update_crabs);
+            .add_rollback_system(RollbackStage::Update, update_crabs)
+            .extend_rollback_plugin(|plugin| plugin.register_rollback_type::<CrabCritter>());
     }
 }
 
@@ -31,6 +33,7 @@ fn hydrate_crab(
             same_level_threshold,
             walk_speed,
             run_speed,
+            timer_delay_max,
             ..
         } = &map_element.builtin
         {
@@ -40,6 +43,7 @@ fn hydrate_crab(
                 same_level_threshold: *same_level_threshold,
                 walk_speed: *walk_speed,
                 run_speed: *run_speed,
+                timer_delay_max: *timer_delay_max,
             };
 
             commands
@@ -55,8 +59,9 @@ fn hydrate_crab(
                     ..default()
                 })
                 .insert(CrabCritter {
-                    state: CrabState::Walking { left: false },
-                    state_timer: Timer::default(),
+                    state: CrabState::Paused,
+                    state_count: 0,
+                    state_count_max: 60,
                     config,
                     start_pos: Vec2::new(initial_pos.translation.x, initial_pos.translation.y),
                 })
@@ -72,7 +77,8 @@ fn hydrate_crab(
     }
 }
 
-#[derive(Debug)]
+#[derive(Reflect, Copy, Clone, PartialEq, Serialize, Deserialize)]
+#[reflect_value(PartialEq, Serialize, Deserialize)]
 pub enum CrabState {
     Paused,
     Walking { left: bool },
@@ -85,20 +91,41 @@ impl CrabState {
     }
 }
 
+impl Default for CrabState {
+    fn default() -> Self {
+        Self::Paused
+    }
+}
+
+#[derive(Reflect, Default, Clone)]
 pub struct CrabConfig {
     comfortable_spawn_distance: f32,
     comfortable_scared_distance: f32,
     same_level_threshold: f32,
     walk_speed: f32,
     run_speed: f32,
+    timer_delay_max: u8,
 }
 
-#[derive(Component)]
+#[derive(Component, Reflect, Clone)]
 pub struct CrabCritter {
     state: CrabState,
     start_pos: Vec2,
     config: CrabConfig,
-    state_timer: Timer,
+    state_count: u8,
+    state_count_max: u8,
+}
+
+impl Default for CrabCritter {
+    fn default() -> Self {
+        Self {
+            state: CrabState::default(),
+            start_pos: Vec2::default(),
+            config: CrabConfig::default(),
+            state_count: u8::default(),
+            state_count_max: u8::default(),
+        }
+    }
 }
 
 fn update_crabs(
@@ -109,20 +136,16 @@ fn update_crabs(
         &mut KinematicBody,
     )>,
     scary_things_query: Query<&Transform, (With<PlayerIdx>, Without<CrabCritter>)>,
-    time: Res<Time>,
+    rng: Res<GlobalRng>,
 ) {
-    let mut rng_bool = rand::thread_rng();
-    let mut rng_timer_delay = rand::thread_rng();
     for (mut crab, mut sprite, transform, mut body) in crab_query.iter_mut() {
         let pos = Vec2::new(transform.translation.x, transform.translation.y);
 
-        crab.state_timer.tick(time.delta());
-        let mut rand_bool =
-            |true_bias: u8| -> bool { rng_bool.gen_range(0..(1_u8 + true_bias)) > 0 };
-        let mut rand_timer_delay =
-            |min: f32, max: f32| Timer::from_seconds(rng_timer_delay.gen_range(min..max), false);
+        crab.state_count += 1;
+        let mut rand_bool = |true_bias: u8| -> bool { rng.u8(0..(1_u8 + true_bias)) > 0 };
+        let mut rand_timer_delay = |max: u8| rng.u8(0..max);
 
-        let next_scary_thing = || {
+        let next_scary_thing = |crab: &CrabCritter| {
             for scary_thing_transform in scary_things_query.iter() {
                 let scary_thing_pos = Vec2::new(
                     scary_thing_transform.translation.x,
@@ -138,12 +161,15 @@ fn update_crabs(
             None
         };
 
-        let mut pick_next_move = || {
+        let mut pick_next_move = |crab: &CrabCritter| {
             let distance_from_home = pos.x - crab.start_pos.x;
             let pause_bias = if crab.state.is_moving() { 2 } else { 0 };
 
             if rand_bool(pause_bias) {
-                (CrabState::Paused, rand_timer_delay(1.0, 2.5))
+                (
+                    CrabState::Paused,
+                    rand_timer_delay(crab.config.timer_delay_max),
+                )
             } else {
                 let left = if distance_from_home > crab.config.comfortable_spawn_distance
                     && rand_bool(2)
@@ -152,32 +178,37 @@ fn update_crabs(
                 } else {
                     rand_bool(0)
                 };
-                (CrabState::Walking { left }, rand_timer_delay(0.5, 1.2))
+                (
+                    CrabState::Walking { left },
+                    rand_timer_delay(crab.config.timer_delay_max),
+                )
             }
         };
 
-        if crab.state_timer.finished() {
-            if let Some(scared_of_pos) = next_scary_thing() {
+        if crab.state_count >= crab.state_count_max {
+            crab.state_count = 0;
+            if let Some(scared_of_pos) = next_scary_thing(&crab) {
                 crab.state = CrabState::Fleeing {
                     scared_of: scared_of_pos,
                 };
-                crab.state_timer = rand_timer_delay(1.0, 2.5);
+                crab.state_count_max = rand_timer_delay(crab.config.timer_delay_max);
             } else {
                 match &crab.state {
                     CrabState::Paused | CrabState::Walking { .. } => {
-                        let (state, timer) = pick_next_move();
+                        let (state, timer) = pick_next_move(&crab);
                         crab.state = state;
-                        crab.state_timer = timer;
+                        crab.state_count_max = timer;
                     }
                     CrabState::Fleeing { scared_of } => {
                         if pos.distance(*scared_of) > crab.config.comfortable_scared_distance {
-                            if let Some(scared_of) = next_scary_thing() {
+                            if let Some(scared_of) = next_scary_thing(&crab) {
                                 crab.state = CrabState::Fleeing { scared_of };
-                                crab.state_timer = rand_timer_delay(0.3, 0.7);
+                                crab.state_count_max =
+                                    rand_timer_delay(crab.config.timer_delay_max / 3);
                             } else {
-                                let (state, timer) = pick_next_move();
+                                let (state, timer) = pick_next_move(&crab);
                                 crab.state = state;
-                                crab.state_timer = timer;
+                                crab.state_count_max = timer;
                             }
                         }
                     }

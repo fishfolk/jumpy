@@ -256,6 +256,9 @@ pub enum BuiltinElementKind {
         same_level_threshold: f32,
         walk_speed: f32,
         run_speed: f32,
+        /// 45 fix updates per second, so if this is 45 the maximum delay between actions
+        /// will be 1 second
+        timer_delay_max: u8,
         #[serde(skip)]
         atlas_handle: AssetHandle<TextureAtlas>,
     },

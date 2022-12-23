@@ -10,3 +10,5 @@ builtin: !Crab
   walk_speed: 0.5
   run_speed: 2.5
   fps: 6
+  # around about 2.5 seconds (45 fix updates per second) 
+  timer_delay_max: 113

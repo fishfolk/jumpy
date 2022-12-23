@@ -20,7 +20,7 @@ development.</li>
 </ul>
 <h3 id="matchmaking"><a href="#matchmaking">Matchmaking</a></h3>
 <p>In order to establish the peer connections we use a matchmaking server implemented in the
-<a href="https://fishfolk.github.io/jumpy/developers/rustdoc/jumpy_matchmaker/index.html"><code>jumpy_matchmaker</code></a> crate. This server binds one UDP port and listens for client connections.
+<a href="https://github.com/fishfolk/bones/tree/main/crates/bones_matchmaker"><code>bones_matchmaker</code></a> crate. This server binds one UDP port and listens for client connections.
 Because QUIC supports mutliplexing connections, we are able to handle any number of clients on a
 single UDP port.</p>
 <p>All client traffic is proxied to other peers through the matchmaking server. In this way it is not

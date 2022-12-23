@@ -4,7 +4,7 @@ use bevy::{
     asset::{Asset, AssetPath, LoadState},
     reflect::FromReflect,
 };
-use bevy_has_load_progress::{HasLoadProgress, LoadProgress, LoadingResources};
+use bones_has_load_progress::{HasLoadProgress, LoadProgress, LoadingResources};
 
 use crate::prelude::*;
 

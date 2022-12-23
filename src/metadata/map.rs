@@ -71,8 +71,8 @@ pub enum MapLayerKind {
 impl HasLoadProgress for MapLayerKind {
     fn load_progress(
         &self,
-        loading_resources: &bevy_has_load_progress::LoadingResources,
-    ) -> bevy_has_load_progress::LoadProgress {
+        loading_resources: &bones_has_load_progress::LoadingResources,
+    ) -> bones_has_load_progress::LoadProgress {
         match self {
             MapLayerKind::Tile(tile_layer) => tile_layer.load_progress(loading_resources),
             MapLayerKind::Element(element_layer) => element_layer.load_progress(loading_resources),

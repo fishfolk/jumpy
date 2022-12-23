@@ -3,8 +3,8 @@ use std::net::{SocketAddr, ToSocketAddrs};
 use anyhow::Context;
 use async_channel::{Receiver, Sender};
 use bevy::tasks::IoTaskPool;
+use bones_matchmaker_proto::{MatchInfo, MatchmakerRequest, MatchmakerResponse};
 use futures_lite::future;
-use jumpy_matchmaker_proto::{MatchInfo, MatchmakerRequest, MatchmakerResponse};
 use quinn::{Connection, Endpoint};
 
 use crate::{

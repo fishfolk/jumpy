@@ -1,1 +1,0 @@
-Bevy executor backend for [`quinn`].

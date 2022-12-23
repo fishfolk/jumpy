@@ -1,7 +1,7 @@
 use bevy::{ecs::system::SystemParam, render::camera::ScalingMode};
 use bevy_egui::{egui, EguiContext};
 use bevy_fluent::Locale;
-use bevy_has_load_progress::{HasLoadProgress, LoadingResources};
+use bones_has_load_progress::{HasLoadProgress, LoadingResources};
 use leafwing_input_manager::{
     axislike::{AxisType, SingleAxis},
     prelude::InputMap,

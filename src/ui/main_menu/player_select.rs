@@ -1,4 +1,4 @@
-use jumpy_matchmaker_proto::TargetClient;
+use bones_matchmaker_proto::TargetClient;
 
 use crate::{
     loading::PlayerInputCollector,

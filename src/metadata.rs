@@ -3,8 +3,8 @@
 use crate::prelude::*;
 
 use bevy::{reflect::TypeUuid, utils::HashMap};
-use bevy_has_load_progress::HasLoadProgress;
 use bevy_kira_audio::AudioSource;
+use bones_has_load_progress::HasLoadProgress;
 
 mod localization;
 mod map;

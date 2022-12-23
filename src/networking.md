@@ -10,14 +10,14 @@ crate.
 
 The major facets of our networking are:
 
--   [Matchmaking](#matchmaking): How we connect clients to each-other and start an online match.
--   [Synchronization](#synchronization): How we synchronize a network game between multiple players.
+- [Matchmaking](#matchmaking): How we connect clients to each-other and start an online match.
+- [Synchronization](#synchronization): How we synchronize a network game between multiple players.
 
 You may also want to see:
 
--   [Future Changes](#future-changes) for some thoughts on changes we
+- [Future Changes](#future-changes) for some thoughts on changes we
     might make to the current design.
--   [Development & Debuggin](#development--debugging) for tips on testing networking during
+- [Development & Debuggin](#development--debugging) for tips on testing networking during
     development.
 
 [ggrs]: https://github.com/gschup/ggrs
@@ -28,7 +28,7 @@ You may also want to see:
 ## Matchmaking
 
 In order to establish the peer connections we use a matchmaking server implemented in the
-[`jumpy_matchmaker`] crate. This server binds one UDP port and listens for client connections.
+[`bones_matchmaker`] crate. This server binds one UDP port and listens for client connections.
 Because QUIC supports mutliplexing connections, we are able to handle any number of clients on a
 single UDP port.
 
@@ -40,22 +40,22 @@ Having the matchmaker proxy client messages has the following pros and cons:
 
 **Cons:**
 
--   It uses up more of the matchmaking server's bandwidth
--   It adds an extra network hop between peers, increasing latency.
+- It uses up more of the matchmaking server's bandwidth
+- It adds an extra network hop between peers, increasing latency.
 
 **Pros:**
 
--   It reduces the number of connections each peer needs to make. Each peer only holds one
-    connection to the matchmaking server and nothing else.
--   It hides the IP addresses of clients from each-other. This is an important privacy feature.
--   It avoids a number of difficulties that you may run into while trying to establish true
-    peer-to-peer connections, and makes it much easier to bypass firewalls, NATs, etc.
+- It reduces the number of connections each peer needs to make. Each peer only holds one
+  connection to the matchmaking server and nothing else.
+- It hides the IP addresses of clients from each-other. This is an important privacy feature.
+- It avoids a number of difficulties that you may run into while trying to establish true
+  peer-to-peer connections, and makes it much easier to bypass firewalls, NATs, etc.
 
 This doesn't prevent us from supporting true peer-to-peer connections in the future, though.
 Similarly, another scenario we will support in the future is LAN games that you can join without
 needing a matchmaking server.
 
-[`jumpy_matchmaker`]: https://fishfolk.github.io/jumpy/developers/rustdoc/jumpy_matchmaker/index.html
+[`bones_matchmaker`]: https://github.com/fishfolk/bones/tree/main/crates/bones_matchmaker
 
 ### Matchmaking Protocol
 
@@ -94,8 +94,8 @@ If the waiting room for that match already has the desired number of players in 
 then respond immediately with a [`Success`][bones_matchmaker_proto::MatchmakerResponse::Success]
 message. This message comes with:
 
--   a `random_seed` that can be used by all clients to generate deterministic random numbers, and
--   a `player_idx` that tells the client _which_ player in the match it is. This is used throughout
+- a `random_seed` that can be used by all clients to generate deterministic random numbers, and
+- a `player_idx` that tells the client _which_ player in the match it is. This is used throughout
     the game to keep track of the players, and is between `0` and `player_count - 1`.
 
 #### In the Match

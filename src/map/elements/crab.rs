@@ -107,25 +107,13 @@ pub struct CrabConfig {
     timer_delay_max: u8,
 }
 
-#[derive(Component, Reflect, Clone)]
+#[derive(Component, Reflect, Clone, Default)]
 pub struct CrabCritter {
     state: CrabState,
     start_pos: Vec2,
     config: CrabConfig,
     state_count: u8,
     state_count_max: u8,
-}
-
-impl Default for CrabCritter {
-    fn default() -> Self {
-        Self {
-            state: CrabState::default(),
-            start_pos: Vec2::default(),
-            config: CrabConfig::default(),
-            state_count: u8::default(),
-            state_count_max: u8::default(),
-        }
-    }
 }
 
 fn update_crabs(
@@ -142,8 +130,8 @@ fn update_crabs(
         let pos = Vec2::new(transform.translation.x, transform.translation.y);
 
         crab.state_count += 1;
-        let mut rand_bool = |true_bias: u8| -> bool { rng.u8(0..(1_u8 + true_bias)) > 0 };
-        let mut rand_timer_delay = |max: u8| rng.u8(0..max);
+        let rand_bool = |true_bias: u8| -> bool { rng.u8(0..(1_u8 + true_bias)) > 0 };
+        let rand_timer_delay = |max: u8| rng.u8(0..max);
 
         let next_scary_thing = |crab: &CrabCritter| {
             for scary_thing_transform in scary_things_query.iter() {
@@ -161,7 +149,7 @@ fn update_crabs(
             None
         };
 
-        let mut pick_next_move = |crab: &CrabCritter| {
+        let pick_next_move = |crab: &CrabCritter| {
             let distance_from_home = pos.x - crab.start_pos.x;
             let pause_bias = if crab.state.is_moving() { 2 } else { 0 };
 

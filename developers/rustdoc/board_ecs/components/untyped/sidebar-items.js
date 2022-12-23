@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["UntypedComponentStore","Holds components of a given type indexed by `Entity`."]]};

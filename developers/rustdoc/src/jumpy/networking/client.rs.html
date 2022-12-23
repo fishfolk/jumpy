@@ -356,10 +356,10 @@
 
 <span class="kw">use </span>async_channel::{Receiver, RecvError, Sender};
 <span class="kw">use </span>bevy::tasks::IoTaskPool;
+<span class="kw">use </span>bones_matchmaker_proto::{RecvProxyMessage, SendProxyMessage, TargetClient};
 <span class="kw">use </span>futures_lite::future;
-<span class="kw">use </span>jumpy_matchmaker_proto::{RecvProxyMessage, SendProxyMessage, TargetClient};
 <span class="kw">use </span>quinn::{ClientConfig, Connection, Endpoint, EndpointConfig};
-<span class="kw">use </span>quinn_bevy::BevyIoTaskPoolExecutor;
+<span class="kw">use </span>quinn_runtime_bevy::BevyIoTaskPoolExecutor;
 
 <span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 

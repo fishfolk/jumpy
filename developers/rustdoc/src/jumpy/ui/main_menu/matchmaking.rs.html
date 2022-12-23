@@ -422,8 +422,8 @@
 <span class="kw">use </span>anyhow::Context;
 <span class="kw">use </span>async_channel::{Receiver, Sender};
 <span class="kw">use </span>bevy::tasks::IoTaskPool;
+<span class="kw">use </span>bones_matchmaker_proto::{MatchInfo, MatchmakerRequest, MatchmakerResponse};
 <span class="kw">use </span>futures_lite::future;
-<span class="kw">use </span>jumpy_matchmaker_proto::{MatchInfo, MatchmakerRequest, MatchmakerResponse};
 <span class="kw">use </span>quinn::{Connection, Endpoint};
 
 <span class="kw">use crate</span>::{

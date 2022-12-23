@@ -50,9 +50,9 @@ protocol.</p>
 </blockquote>
 <h5 id="initial-connection"><a href="#initial-connection">Initial Connection</a></h5>
 <p>When a client connects to the matchmaking server, the very first thing it will do is send a
-<a href="../../jumpy_matchmaker_proto/enum.MatchmakerRequest.html#variant.RequestMatch" title="jumpy_matchmaker_proto::MatchmakerRequest::RequestMatch"><code>RequestMatch</code></a> message to the server over
+<a href="../../bones_matchmaker_proto/enum.MatchmakerRequest.html#variant.RequestMatch" title="bones_matchmaker_proto::MatchmakerRequest::RequestMatch"><code>RequestMatch</code></a> message to the server over
 a reliable channel.</p>
-<p>This message contains the <a href="../../jumpy_matchmaker_proto/struct.MatchInfo.html" title="jumpy_matchmaker_proto::MatchInfo"><code>MatchInfo</code></a> that tells the server
+<p>This message contains the <a href="../../bones_matchmaker_proto/struct.MatchInfo.html" title="bones_matchmaker_proto::MatchInfo"><code>MatchInfo</code></a> that tells the server
 how many players the client wants to connect to for the match, along with an arbitrary byte sequence
 for the <code>match_data</code>.</p>
 <p>In order for players to end up in the same match as each-other, they must specify the <em>exact</em> same
@@ -69,9 +69,9 @@ never exposed directly to the concept of the <code>match_data</code>.</p>
 </blockquote>
 <h5 id="waiting-for-players"><a href="#waiting-for-players">Waiting For Players</a></h5>
 <p>After the initial connection and match request, the server will send the client an
-<a href="../../jumpy_matchmaker_proto/enum.MatchmakerResponse.html#variant.Accepted" title="jumpy_matchmaker_proto::MatchmakerResponse::Accepted"><code>Accepted</code></a> message.</p>
+<a href="../../bones_matchmaker_proto/enum.MatchmakerResponse.html#variant.Accepted" title="bones_matchmaker_proto::MatchmakerResponse::Accepted"><code>Accepted</code></a> message.</p>
 <p>If the waiting room for that match already has the desired number of players in it, the server will
-then respond immediately with a <a href="../../jumpy_matchmaker_proto/enum.MatchmakerResponse.html#variant.Success" title="jumpy_matchmaker_proto::MatchmakerResponse::Success"><code>Success</code></a>
+then respond immediately with a <a href="../../bones_matchmaker_proto/enum.MatchmakerResponse.html#variant.Success" title="bones_matchmaker_proto::MatchmakerResponse::Success"><code>Success</code></a>
 message. This message comes with:</p>
 <ul>
 <li>a <code>random_seed</code> that can be used by all clients to generate deterministic random numbers, and</li>
@@ -82,11 +82,11 @@ the game to keep track of the players, and is between <code>0</code> and <code>p
 <p>Immediately after the desired number of clients have joined and the <code>Success</code> message has been sent
 to all players, the matchmaker goes into proxy mode for all clients in the match.</p>
 <p>Once in proxy mode, the server listens for
-<a href="../../jumpy_matchmaker_proto/struct.SendProxyMessage.html" title="jumpy_matchmaker_proto::SendProxyMessage"><code>SendProxyMessage</code></a>s from clients. Each message simply
-specifies a <a href="../../jumpy_matchmaker_proto/enum.TargetClient.html" title="jumpy_matchmaker_proto::TargetClient"><code>TargetClient</code></a> ( either a specific client or all
+<a href="../../bones_matchmaker_proto/struct.SendProxyMessage.html" title="bones_matchmaker_proto::SendProxyMessage"><code>SendProxyMessage</code></a>s from clients. Each message simply
+specifies a <a href="../../bones_matchmaker_proto/enum.TargetClient.html" title="bones_matchmaker_proto::TargetClient"><code>TargetClient</code></a> ( either a specific client or all
 of them ), and a binary message data.</p>
 <p>Once it a <code>SendProxyMessage</code> it will send it to the target client, which will receive it in the form
-of a <a href="../../jumpy_matchmaker_proto/struct.RecvProxyMessage.html" title="jumpy_matchmaker_proto::RecvProxyMessage"><code>RecvProxyMessage</code></a>, containing the message data,
+of a <a href="../../bones_matchmaker_proto/struct.RecvProxyMessage.html" title="bones_matchmaker_proto::RecvProxyMessage"><code>RecvProxyMessage</code></a>, containing the message data,
 and the index of the client that sent the message.</p>
 <p>The matchmaking server supports forwarding both reliable and unreliable message in this way,
 allowing the game to chose any kind of protocol it sees fit to synchronize the match data.</p>

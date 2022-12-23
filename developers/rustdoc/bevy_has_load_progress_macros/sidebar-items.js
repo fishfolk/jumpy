@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"derive":[["HasLoadProgress","Derive macro for `HasLoadProgress`"]],"fn":[["impl_has_load_progress",""]]};

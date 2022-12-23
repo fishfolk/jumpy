@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["World","The [`World`] is simply a collection of [`Resources`], and [`ComponentStores`]."]]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["handle_connection",""],["impl_matchmaker","After a matchmaker connection is established, it will open a bi-directional channel with the client."]],"static":[["STATE",""]],"struct":[["State","The matchmaker state"]]};

@@ -20,6 +20,7 @@ pub mod sproinger;
 // Items
 pub mod crate_item;
 pub mod grenade;
+pub mod kick_bomb;
 pub mod mine;
 pub mod stomp_boots;
 pub mod sword;
@@ -36,6 +37,7 @@ impl Plugin for MapElementsPlugin {
             .add_plugin(mine::MinePlugin)
             .add_plugin(stomp_boots::StompBootsPlugin)
             .add_plugin(sword::SwordPlugin)
-            .add_plugin(crab::CrabDecorationPlugin);
+            .add_plugin(crab::CrabDecorationPlugin)
+            .add_plugin(kick_bomb::KickBombPlugin);
     }
 }

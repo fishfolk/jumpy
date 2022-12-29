@@ -41,6 +41,8 @@
 <span id="39">39</span>
 <span id="40">40</span>
 <span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     animation::AnimatedSprite,
     damage::{DamageRegion, DamageRegionOwner},
@@ -63,6 +65,7 @@
 <span class="comment">// Items
 </span><span class="kw">pub mod </span>crate_item;
 <span class="kw">pub mod </span>grenade;
+<span class="kw">pub mod </span>kick_bomb;
 <span class="kw">pub mod </span>mine;
 <span class="kw">pub mod </span>stomp_boots;
 <span class="kw">pub mod </span>sword;
@@ -79,7 +82,8 @@
             .add_plugin(mine::MinePlugin)
             .add_plugin(stomp_boots::StompBootsPlugin)
             .add_plugin(sword::SwordPlugin)
-            .add_plugin(crab::CrabDecorationPlugin);
+            .add_plugin(crab::CrabDecorationPlugin)
+            .add_plugin(kick_bomb::KickBombPlugin);
     }
 }
 </code></pre></div>

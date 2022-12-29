@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["pre_update_in_game",""],["update_idle_kick_bombs",""],["update_lit_kick_bombs",""]],"struct":[["IdleKickBomb",""],["KickBombPlugin",""],["LitKickBomb",""]]};

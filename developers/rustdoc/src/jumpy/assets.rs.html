@@ -626,6 +626,35 @@
 <span id="624">624</span>
 <span id="625">625</span>
 <span id="626">626</span>
+<span id="627">627</span>
+<span id="628">628</span>
+<span id="629">629</span>
+<span id="630">630</span>
+<span id="631">631</span>
+<span id="632">632</span>
+<span id="633">633</span>
+<span id="634">634</span>
+<span id="635">635</span>
+<span id="636">636</span>
+<span id="637">637</span>
+<span id="638">638</span>
+<span id="639">639</span>
+<span id="640">640</span>
+<span id="641">641</span>
+<span id="642">642</span>
+<span id="643">643</span>
+<span id="644">644</span>
+<span id="645">645</span>
+<span id="646">646</span>
+<span id="647">647</span>
+<span id="648">648</span>
+<span id="649">649</span>
+<span id="650">650</span>
+<span id="651">651</span>
+<span id="652">652</span>
+<span id="653">653</span>
+<span id="654">654</span>
+<span id="655">655</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     ffi::OsStr,
     path::{Path, PathBuf},
@@ -1163,6 +1192,35 @@
                         <span class="kw">let </span>(path, handle) = get_relative_asset(load_context, self_path, atlas);
                         <span class="kw-2">*</span>atlas_handle = handle.typed();
                         dependencies.push(path);
+                    }
+                }
+                BuiltinElementKind::KickBomb {
+                    atlas,
+                    atlas_handle,
+                    explosion_atlas,
+                    explosion_atlas_handle,
+                    explosion_sound,
+                    explosion_sound_handle,
+                    fuse_sound,
+                    fuse_sound_handle,
+                    ..
+                } =&gt; {
+                    <span class="kw">for </span>(atlas, atlas_handle) <span class="kw">in </span>[
+                        (atlas, atlas_handle),
+                        (explosion_atlas, explosion_atlas_handle),
+                    ] {
+                        <span class="kw">let </span>(path, handle) = get_relative_asset(load_context, self_path, atlas);
+                        <span class="kw-2">*</span>atlas_handle = AssetHandle::new(path.clone(), handle.typed());
+                        dependencies.push(path);
+                    }
+                    <span class="kw">for </span>(sound, handle) <span class="kw">in </span>[
+                        (explosion_sound, explosion_sound_handle),
+                        (fuse_sound, fuse_sound_handle),
+                    ] {
+                        <span class="kw">let </span>(sound_path, sound_handle) =
+                            get_relative_asset(load_context, self_path, sound);
+                        dependencies.push(sound_path);
+                        <span class="kw-2">*</span>handle = sound_handle.typed();
                     }
                 }
             }

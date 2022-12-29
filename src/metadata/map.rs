@@ -354,4 +354,38 @@ pub enum BuiltinElementKind {
         body_offset: Vec2,
         grab_offset: Vec2,
     },
+    KickBomb {
+        body_size: Vec2,
+        body_offset: Vec2,
+        grab_offset: Vec2,
+        damage_region_size: Vec2,
+        damage_region_lifetime: f32,
+        throw_velocity: Vec2,
+        explosion_lifetime: f32,
+        explosion_frames: usize,
+        explosion_fps: f32,
+        explosion_sound: String,
+        #[serde(skip)]
+        explosion_sound_handle: Handle<AudioSource>,
+        fuse_sound: String,
+        #[serde(skip)]
+        fuse_sound_handle: Handle<AudioSource>,
+        /// The time in seconds before a grenade explodes
+        fuse_time: f32,
+        #[serde(default)]
+        can_rotate: bool,
+        /// The grenade atlas
+        atlas: String,
+        #[serde(skip)]
+        atlas_handle: AssetHandle<TextureAtlas>,
+        explosion_atlas: String,
+        #[serde(skip)]
+        explosion_atlas_handle: AssetHandle<TextureAtlas>,
+        #[serde(default)]
+        bouncyness: f32,
+        #[serde(default)]
+        angular_velocity: f32,
+        #[serde(default)]
+        arm_delay: f32,
+    },
 }

@@ -2,15 +2,8 @@ use bevy_egui::*;
 use bevy_fluent::Localization;
 
 use crate::{
-    localization::LocalizationExt,
-    metadata::{GameMeta, MapMeta},
-    networking::client::NetClient,
-    player::input::WantsGamePause,
-    prelude::*,
-    session::SessionManager,
-    ui::input::MenuAction,
-    utils::ResetManager,
-    GameState,
+    localization::LocalizationExt, metadata::GameMeta, prelude::*, ui::input::MenuAction,
+    EngineState,
 };
 
 use super::{
@@ -27,28 +20,31 @@ pub struct PausePlugin;
 impl Plugin for PausePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<PauseMenuPage>()
-            .add_system(
+            .add_system_to_stage(
+                CoreStage::PostUpdate,
                 unpause_system
-                    .run_in_state(GameState::InGame)
+                    .run_in_state(EngineState::InGame)
                     .run_in_state(InGameState::Paused),
             )
-            .add_system(
+            .add_system_to_stage(
+                CoreStage::PostUpdate,
                 pause_system
-                    .run_in_state(GameState::InGame)
+                    .run_in_state(EngineState::InGame)
                     .run_in_state(InGameState::Playing),
             )
-            .add_system(
+            .add_system_to_stage(
+                CoreStage::Update,
                 pause_menu_default
-                    .run_in_state(GameState::InGame)
+                    .run_in_state(EngineState::InGame)
                     .run_in_state(InGameState::Paused)
                     .run_if_resource_equals(PauseMenuPage::Default),
             );
 
         {
-            app.add_system(
+            app.add_system_to_stage(
+                CoreStage::PostUpdate,
                 pause_menu_map_select
-                    .into_conditional_exclusive()
-                    .run_in_state(GameState::InGame)
+                    .run_in_state(EngineState::InGame)
                     .run_in_state(InGameState::Paused)
                     .run_if_resource_equals(PauseMenuPage::MapSelect)
                     .at_end(),
@@ -61,7 +57,7 @@ impl Plugin for PausePlugin {
 fn pause_system(mut commands: Commands, input: Query<&ActionState<MenuAction>>) {
     let input = input.single();
     if input.just_pressed(MenuAction::Pause) {
-        commands.insert_resource(WantsGamePause(true));
+        commands.insert_resource(NextState(InGameState::Paused));
     }
 }
 
@@ -74,11 +70,11 @@ fn unpause_system(
     let input = input.single();
     if input.just_pressed(MenuAction::Pause) {
         *pause_page = default();
-        commands.insert_resource(WantsGamePause(false));
+        commands.insert_resource(NextState(InGameState::Playing));
     }
 }
 
-#[derive(Default, Eq, PartialEq, Copy, Clone)]
+#[derive(Resource, Default, Eq, PartialEq, Copy, Clone)]
 pub enum PauseMenuPage {
     #[default]
     Default,
@@ -93,11 +89,9 @@ pub fn pause_menu_default(
     map_handle: Query<&AssetHandle<MapMeta>>,
     map_assets: Res<Assets<MapMeta>>,
     mut pause_page: ResMut<PauseMenuPage>,
-    mut reset_controller: ResetManager,
-    client: Option<Res<NetClient>>,
     mut session_manager: SessionManager,
 ) {
-    let is_online = client.is_some();
+    let is_online = false;
     let ui_theme = &game.ui_theme;
 
     egui::CentralPanel::default()
@@ -151,7 +145,7 @@ pub fn pause_menu_default(
                         }
 
                         if continue_button.clicked() {
-                            commands.insert_resource(WantsGamePause(false));
+                            commands.insert_resource(NextState(InGameState::Playing));
                         }
 
                         ui.scope(|ui| {
@@ -176,14 +170,8 @@ pub fn pause_menu_default(
                             .show(ui)
                             .clicked()
                             {
-                                let map_handle = map_handle.get_single().ok().cloned();
-                                reset_controller.reset_world();
-
-                                if let Some(handle) = map_handle {
-                                    commands.spawn().insert(handle);
-                                }
-
-                                session_manager.start_session();
+                                session_manager.restart();
+                                commands.insert_resource(NextState(InGameState::Playing));
                             }
                         });
 
@@ -209,7 +197,7 @@ pub fn pause_menu_default(
                         .clicked()
                         {
                             // Show the main menu
-                            commands.insert_resource(NextState(GameState::MainMenu));
+                            commands.insert_resource(NextState(EngineState::MainMenu));
                             ui.ctx().clear_focus();
                         }
                     });

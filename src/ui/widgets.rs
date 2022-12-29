@@ -1,6 +1,6 @@
 use bevy_egui::egui;
 
-use crate::metadata::FontMeta;
+use crate::prelude::*;
 
 pub mod bordered_button;
 pub mod bordered_frame;
@@ -14,7 +14,7 @@ impl EguiUiExt for &mut egui::Ui {
     fn themed_label(self, font_meta: &FontMeta, label: &str) -> egui::Response {
         self.add(egui::Label::new(
             egui::RichText::new(label)
-                .color(font_meta.color)
+                .color(font_meta.color.into_egui())
                 .font(font_meta.font_id()),
         ))
     }

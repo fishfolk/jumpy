@@ -1,10 +1,11 @@
-use std::sync::Arc;
-
-use bevy::{
-    asset::{Asset, AssetPath, LoadState},
-    reflect::FromReflect,
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
 };
-use bones_has_load_progress::{HasLoadProgress, LoadProgress, LoadingResources};
+
+use bevy::asset::{Asset, AssetPath};
+use bones_bevy_asset::BonesBevyAssetLoad;
+use normalize_path::NormalizePath;
 
 use crate::prelude::*;
 
@@ -14,8 +15,7 @@ use crate::prelude::*;
 /// network.
 ///
 /// > **ℹ️ Note:** When deserializing an [`AssetHandle`] you will always get a **weak** handle.
-#[derive(Component, Reflect, FromReflect)]
-#[reflect_value(Component, Serialize, Deserialize)]
+#[derive(Component)]
 pub struct AssetHandle<T: Asset> {
     pub inner: Handle<T>,
     pub asset_path: Arc<AssetPath<'static>>,
@@ -86,7 +86,8 @@ impl<'de, T: Asset> Deserialize<'de> for AssetHandle<T> {
     where
         D: serde::Deserializer<'de>,
     {
-        let asset_path = AssetPath::deserialize(deserializer)?;
+        let asset_path = String::deserialize(deserializer)?;
+        let asset_path: AssetPath = asset_path.into();
         let handle = Handle::<T>::weak(asset_path.get_id().into());
 
         Ok(Self {
@@ -96,16 +97,34 @@ impl<'de, T: Asset> Deserialize<'de> for AssetHandle<T> {
     }
 }
 
-// Implement `HasLoadProgress` for asset handles
-impl<T: Asset> HasLoadProgress for AssetHandle<T> {
-    fn load_progress(&self, loading_resources: &LoadingResources) -> LoadProgress {
-        let loaded =
-            loading_resources.asset_server.get_load_state(&self.inner) == LoadState::Loaded;
+impl<T: Asset> BonesBevyAssetLoad for AssetHandle<T> {
+    fn load(
+        &mut self,
+        load_context: &mut bevy::asset::LoadContext,
+        dependencies: &mut Vec<bevy::asset::AssetPath<'static>>,
+    ) {
+        let base_path = load_context.path();
+        let new_path = get_normalized_relative_path(base_path, self.asset_path.path());
+        let new_path = AssetPath::new(new_path, self.asset_path.label().map(|x| x.to_owned()));
+        dependencies.push(new_path.clone());
+        self.asset_path = Arc::new(new_path);
 
-        LoadProgress {
-            #[allow(clippy::bool_to_int_with_if)]
-            loaded: if loaded { 1 } else { 0 },
-            total: 1,
-        }
+        self.inner = load_context.get_handle(self.asset_path.get_id());
     }
+}
+
+/// Calculate an asset's full path relative to another asset
+fn get_normalized_relative_path(base_path: &Path, relative_path: &Path) -> PathBuf {
+    let is_relative = !relative_path.starts_with("/");
+
+    let path = if is_relative {
+        let base = base_path.parent().unwrap_or_else(|| Path::new(""));
+        base.join(relative_path)
+    } else {
+        Path::new(relative_path)
+            .strip_prefix("/")
+            .unwrap()
+            .to_owned()
+    };
+    path.normalize()
 }

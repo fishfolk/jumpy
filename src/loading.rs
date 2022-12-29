@@ -1,32 +1,22 @@
-use bevy::{ecs::system::SystemParam, render::camera::ScalingMode};
+use bevy::ecs::system::SystemParam;
 use bevy_egui::{egui, EguiContext};
 use bevy_fluent::Locale;
-use bones_has_load_progress::{HasLoadProgress, LoadingResources};
 use leafwing_input_manager::{
     axislike::{AxisType, SingleAxis},
     prelude::InputMap,
     InputManagerBundle,
 };
 
-use crate::{
-    camera::{spawn_editor_camera, spawn_game_camera},
-    config::ENGINE_CONFIG,
-    metadata::{BorderImageMeta, GameMeta, PlayerMeta, Settings},
-    platform::Storage,
-    player::{input::PlayerInputs, MAX_PLAYERS},
-    prelude::*,
-    ui::input::MenuAction,
-    GameState,
-};
+use crate::{main_menu::player_select::PlayerAtlasEguiTextures, prelude::*};
 
-pub struct LoadingPlugin;
+pub struct JumpyLoadingPlugin;
 
-impl Plugin for LoadingPlugin {
+impl Plugin for JumpyLoadingPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(setup).add_system(
             load_game
-                .run_in_state(GameState::LoadingGameData)
-                .run_if(game_assets_loaded),
+                .run_in_state(EngineState::LoadingGameData)
+                .run_if(core_assets_loaded),
         );
 
         // Configure hot reload
@@ -34,75 +24,76 @@ impl Plugin for LoadingPlugin {
             app.add_system_to_stage(CoreStage::Last, hot_reload_game)
                 .add_system_set_to_stage(
                     CoreStage::Last,
-                    ConditionSet::new().run_in_state(GameState::InGame).into(),
+                    ConditionSet::new().run_in_state(EngineState::InGame).into(),
                 );
         }
     }
+}
+
+/// Run criteria that waits until the necessary core assets have loaded.
+///
+/// Not all the assets need to be loaded, just the ones we need immediately for the menu load, the
+/// rest will be loading while the menu is running, in the background.
+fn core_assets_loaded(
+    game_handle: Res<GameMetaHandle>,
+    game_assets: Res<Assets<GameMeta>>,
+    core_assets: Res<Assets<CoreMeta>>,
+    player_assets: Res<Assets<PlayerMeta>>,
+    atlas_assets: Res<Assets<TextureAtlas>>,
+) -> bool {
+    // The game asset
+    let Some(game) = game_assets.get(&game_handle) else {
+        return false;
+    };
+    // The core asset
+    let Some(core) = core_assets.get(&game.core.inner) else {
+        return false;
+    };
+    // The player assets
+    for player in &core.players {
+        let Some(player) = player_assets.get(&player.get_bevy_handle()) else {
+            return false;
+        };
+
+        // The player atlases ( needed for the player selection screen )
+        if atlas_assets
+            .get(&player.atlas.get_bevy_handle_untyped().typed())
+            .is_none()
+        {
+            return false;
+        }
+    }
+
+    true
 }
 
 #[derive(Component)]
 pub struct PlayerInputCollector(pub usize);
 
 fn setup(mut commands: Commands) {
-    commands
-        .spawn()
-        .insert(Name::new("Menu Input Collector"))
-        .insert_bundle(InputManagerBundle {
+    commands.spawn((
+        Name::new("Menu Input Collector"),
+        InputManagerBundle {
             input_map: menu_input_map(),
             ..default()
-        });
-
-    // Spawn the game camera
-    spawn_game_camera(&mut commands);
-
-    // Spawn the editor camera
-    spawn_editor_camera(&mut commands);
-}
-
-// Condition system used to make sure game assets have loaded
-fn game_assets_loaded(
-    game_handle: Res<Handle<GameMeta>>,
-    loading_resources: LoadingResources,
-    game_assets: Res<Assets<GameMeta>>,
-) -> bool {
-    if let Some(game) = game_assets.get(&game_handle) {
-        // Track load progress
-        let load_progress = game.load_progress(&loading_resources);
-        debug!(
-            %load_progress,
-            "Loading game assets: {:.2}% ",
-            load_progress.as_percent() * 100.0
-        );
-
-        // Wait until assets are loaded to start game
-        let done = load_progress.as_percent() >= 1.0;
-
-        if done {
-            info!("Game assets loaded");
-        }
-
-        done
-    } else {
-        false
-    }
+        },
+    ));
 }
 
 /// System param used to load and hot reload the game
 #[derive(SystemParam)]
 pub struct GameLoader<'w, 's> {
     skip_next_asset_update_event: Local<'s, bool>,
-    camera_projections: Query<'w, 's, &'static mut OrthographicProjection>,
     commands: Commands<'w, 's>,
-    game_handle: Res<'w, Handle<GameMeta>>,
-    clear_color: ResMut<'w, ClearColor>,
+    game_handle: Res<'w, GameMetaHandle>,
     game_assets: ResMut<'w, Assets<GameMeta>>,
-    egui_ctx: Option<ResMut<'w, EguiContext>>,
+    core_assets: ResMut<'w, Assets<CoreMeta>>,
+    egui_ctx: ResMut<'w, EguiContext>,
     events: EventReader<'w, 's, AssetEvent<GameMeta>>,
     // active_scripts: ResMut<'w, ActiveScripts>,
     storage: ResMut<'w, Storage>,
     player_assets: ResMut<'w, Assets<PlayerMeta>>,
     texture_atlas_assets: Res<'w, Assets<TextureAtlas>>,
-    player_inputs: ResMut<'w, PlayerInputs>,
 }
 
 impl<'w, 's> GameLoader<'w, 's> {
@@ -120,135 +111,116 @@ impl<'w, 's> GameLoader<'w, 's> {
 
         let Self {
             mut skip_next_asset_update_event,
-            mut camera_projections,
             mut commands,
             game_handle,
             mut game_assets,
+            mut core_assets,
             mut egui_ctx,
-            // mut active_scripts,
-            mut clear_color,
             mut storage,
-            mut player_assets,
-            texture_atlas_assets,
-            mut player_inputs,
             ..
         } = self;
 
-        if let Some(game) = game_assets.get_mut(&game_handle) {
-            // Hot reload preparation
-            if is_hot_reload {
-                // Since we are modifying the game asset, which will trigger another asset changed
-                // event, we need to skip the next update event.
-                *skip_next_asset_update_event = true;
+        let game = game_assets.get_mut(&game_handle).unwrap();
+        let core = core_assets.get_mut(&game.core).unwrap();
 
-                // // Clear the active scripts
-                // active_scripts.clear();
+        // Hot reload preparation
+        if is_hot_reload {
+            // Since we are modifying the game asset, which will trigger another asset changed
+            // event, we need to skip the next update event.
+            *skip_next_asset_update_event = true;
 
-                // One-time initialization
-            } else {
-                if let Some(ctx) = egui_ctx.as_mut() {
-                    // Initialize empty fonts for all game fonts.
-                    //
-                    // This makes sure Egui will not panic if we try to use a font that is still loading.
-                    let mut egui_fonts = egui::FontDefinitions::default();
-                    for font_name in game.ui_theme.font_families.keys() {
-                        let font_family = egui::FontFamily::Name(font_name.clone().into());
-                        egui_fonts.families.insert(font_family, vec![]);
-                    }
-                    ctx.ctx_mut().set_fonts(egui_fonts.clone());
-                    commands.insert_resource(egui_fonts);
-                }
+            // // Clear the active scripts
+            // active_scripts.clear();
 
-                // Spawn player input collectors.
-                let settings = storage.get(Settings::STORAGE_KEY);
-                let settings = settings.as_ref().unwrap_or(&game.default_settings);
-                for player in 0..MAX_PLAYERS {
-                    commands
-                        .spawn()
-                        .insert(Name::new(format!("Player Input Collector {player}")))
-                        .insert(PlayerInputCollector(player))
-                        .insert_bundle(InputManagerBundle {
-                            input_map: settings.player_controls.get_input_map(player),
-                            ..default()
-                        });
-                }
-
-                // Select default character for all players
-                for player in &mut player_inputs.players {
-                    player.selected_player = game.player_handles[0].clone_weak();
-                }
-
-                // Transition to the main menu when we are done
-                commands.insert_resource(NextState(GameState::MainMenu));
-            }
-
-            // Update camera scaling mode
-            for mut projection in &mut camera_projections {
-                projection.scaling_mode = ScalingMode::FixedVertical(game.camera_height as f32);
-            }
-
-            // set the clear color
-            clear_color.0 = game.clear_color.into();
-
-            // Set the locale resource
-            let translations = &game.translations;
-            commands.insert_resource(
-                Locale::new(translations.detected_locale.clone())
-                    .with_default(translations.default_locale.clone()),
-            );
-
-            if let Some(egui_ctx) = &mut egui_ctx {
-                let mut visuals = egui::Visuals::dark();
-                visuals.widgets = game.ui_theme.widgets.get_egui_widget_style();
-                egui_ctx.ctx_mut().set_visuals(visuals);
-
-                // Helper to load border images
-                let mut load_border_image = |border: &mut BorderImageMeta| {
-                    border.egui_texture = egui_ctx.add_image(border.handle.inner.clone_weak());
-                };
-
-                // Add Border images to egui context
-                load_border_image(&mut game.ui_theme.hud.portrait_frame);
-                load_border_image(&mut game.ui_theme.panel.border);
-                load_border_image(&mut game.ui_theme.hud.lifebar.background_image);
-                load_border_image(&mut game.ui_theme.hud.lifebar.progress_image);
-                for button in game.ui_theme.button_styles.as_list() {
-                    load_border_image(&mut button.borders.default);
-                    if let Some(border) = &mut button.borders.clicked {
-                        load_border_image(border);
-                    }
-                    if let Some(border) = &mut button.borders.focused {
-                        load_border_image(border);
-                    }
-                }
-                // Add player sprite sheets to egui context
-                for player_handle in &game.player_handles {
-                    let player_meta = player_assets.get_mut(player_handle).unwrap();
-                    let atlas = texture_atlas_assets
-                        .get(&player_meta.spritesheet.atlas_handle)
-                        .unwrap();
-                    player_meta.spritesheet.egui_texture_id =
-                        egui_ctx.add_image(atlas.texture.clone_weak());
-                }
-
-                // Add editor icons to egui context
-                for icon in game.ui_theme.editor.icons.as_mut_list() {
-                    icon.egui_texture_id = egui_ctx.add_image(icon.image_handle.inner.clone_weak());
-                }
-            }
-
-            // // Set the active scripts
-            // for script_handle in &game.script_handles {
-            //     active_scripts.insert(script_handle.inner.clone_weak());
-            // }
-
-            // Insert the game resource
-            commands.insert_resource(game.clone());
-
-            // If the game asset isn't loaded yet
+            // One-time initialization
         } else {
-            trace!("Awaiting game load")
+            spawn_menu_camera(&mut commands, core);
+
+            // Initialize empty fonts for all game fonts.
+            //
+            // This makes sure Egui will not panic if we try to use a font that is still loading.
+            let mut egui_fonts = egui::FontDefinitions::default();
+            for font_name in game.ui_theme.font_families.keys() {
+                let font_family = egui::FontFamily::Name(font_name.clone().into());
+                egui_fonts.families.insert(font_family, vec![]);
+            }
+            egui_ctx.ctx_mut().set_fonts(egui_fonts.clone());
+            commands.insert_resource(EguiFontDefinitions(egui_fonts));
+
+            // Spawn player input collectors.
+            let settings = storage.get(Settings::STORAGE_KEY);
+            let settings = settings.as_ref().unwrap_or(&game.default_settings);
+            for player in 0..MAX_PLAYERS {
+                commands.spawn((
+                    Name::new(format!("Player Input Collector {player}")),
+                    PlayerInputCollector(player),
+                    InputManagerBundle {
+                        input_map: settings.player_controls.get_input_map(player),
+                        ..default()
+                    },
+                ));
+            }
+
+            // Transition to the main menu when we are done
+            commands.insert_resource(NextState(EngineState::MainMenu));
         }
+
+        // Set the locale resource
+        let translations = &game.translations;
+        commands.insert_resource(
+            Locale::new(translations.detected_locale.clone())
+                .with_default(translations.default_locale.clone()),
+        );
+
+        let mut visuals = egui::Visuals::dark();
+        visuals.widgets = game.ui_theme.widgets.get_egui_widget_style();
+        visuals.window_fill = game.ui_theme.debug_window_fill.into_egui();
+        egui_ctx.ctx_mut().set_visuals(visuals);
+
+        // Helper to load border images
+        let mut load_border_image = |border: &mut BorderImageMeta| {
+            border.egui_texture = egui_ctx.add_image(border.image.inner.clone_weak());
+        };
+
+        // Add Border images to egui context
+        load_border_image(&mut game.ui_theme.hud.portrait_frame);
+        load_border_image(&mut game.ui_theme.panel.border);
+        load_border_image(&mut game.ui_theme.hud.lifebar.background_image);
+        load_border_image(&mut game.ui_theme.hud.lifebar.progress_image);
+        for button in game.ui_theme.button_styles.as_list() {
+            load_border_image(&mut button.borders.default);
+            if let Some(border) = &mut button.borders.clicked {
+                load_border_image(border);
+            }
+            if let Some(border) = &mut button.borders.focused {
+                load_border_image(border);
+            }
+        }
+
+        // Add editor icons to egui context
+        for icon in game.ui_theme.editor.icons.as_mut_list() {
+            icon.egui_texture_id = egui_ctx.add_image(icon.image.inner.clone_weak());
+        }
+
+        // Insert the game resource
+        commands.insert_resource(game.clone());
+        commands.insert_resource(CoreMetaArc(Arc::new(core.clone())));
+
+        let mut player_atlas_egui_textures = HashMap::default();
+        for player_handle in &core.players {
+            let player_meta = self
+                .player_assets
+                .get(&player_handle.get_bevy_handle())
+                .unwrap();
+            let texture_atlas = self
+                .texture_atlas_assets
+                .get(&player_meta.atlas.get_bevy_handle_untyped().typed())
+                .unwrap();
+
+            let egui_texture = egui_ctx.add_image(texture_atlas.texture.clone_weak());
+            player_atlas_egui_textures.insert(player_handle.path.clone(), egui_texture);
+        }
+        commands.insert_resource(PlayerAtlasEguiTextures(player_atlas_egui_textures));
     }
 
     // Run checks to see if we should skip running the system

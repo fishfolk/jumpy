@@ -1,0 +1,23 @@
+[package]
+name = "jumpy_core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bones_bevy_asset = { git = "https://github.com/fishfolk/bones" }
+bones_lib = { git = "https://github.com/fishfolk/bones", features = ["serde"] }
+type_ulid = { git = "https://github.com/fishfolk/bones" }
+
+bytemuck = { version = "1.12.3", features = ["derive"] }
+glam = { version = "0.22.0", features = ["bytemuck"] }
+serde = { version = "1.0.152", features = ["derive"] }
+tracing = "0.1.37"
+hex = "0.4.3"
+csscolorparser = "0.6.2"
+
+[dependencies.bevy]
+version = "0.9.0"
+default-features = false
+features = [
+    "bevy_asset"
+]

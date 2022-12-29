@@ -5,7 +5,10 @@
 /// Adapted from <https://docs.rs/egui/0.18.1/src/egui/widgets/button.rs.html>
 use bevy_egui::egui::{self, *};
 
-use crate::metadata::{BorderImageMeta, ButtonThemeMeta};
+use crate::{
+    metadata::{BorderImageMeta, ButtonThemeMeta},
+    ColorMetaExt,
+};
 
 use super::bordered_frame::BorderedFrame;
 
@@ -50,7 +53,7 @@ impl<'a> BorderedButton<'a> {
             label
                 .into()
                 .font(button_theme.font.font_id())
-                .color(button_theme.font.color),
+                .color(button_theme.font.color.into_egui()),
         )
         .border(&button_theme.borders.default)
         .on_click_border(button_theme.borders.clicked.as_ref())

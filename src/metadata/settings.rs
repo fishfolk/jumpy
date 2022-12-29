@@ -1,17 +1,15 @@
 use std::borrow::Cow;
 
 use bevy::prelude::Gamepad;
-use bones_has_load_progress::HasLoadProgress;
 use leafwing_input_manager::{axislike::VirtualDPad, prelude::InputMap, user_input::InputKind};
 use serde::{Deserialize, Serialize};
 
-use crate::{platform::Storage, player::input::PlayerAction};
+use crate::{input::PlayerAction, platform::Storage};
 
 use super::GameMeta;
 
 /// Global settings, stored and accessed through [`crate::platform::Storage`]
-#[derive(HasLoadProgress, Deserialize, Serialize, Debug, Clone)]
-#[has_load_progress(none)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Settings {
     /// The player controller bindings
     pub player_controls: PlayerControlMethods,

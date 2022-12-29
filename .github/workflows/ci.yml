@@ -31,8 +31,7 @@ jobs:
       matrix:
         config:
           - { target: "x86_64-unknown-linux-gnu", target_dir: "target" }
-          # Disable WASM Target until we fix WASM compile
-          # - { target: 'wasm32-unknown-unknown', target_dir: 'web-target' }
+          - { target: 'wasm32-unknown-unknown', target_dir: 'web-target' }
     steps:
       - name: Install dependencies
         run: |

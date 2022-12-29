@@ -1,34 +1,25 @@
-use std::{collections::hash_map::DefaultHasher, hash::Hasher};
+use bevy::ecs::system::SystemState;
 
-use bevy::{
-    ecs::system::{SystemParam, SystemState},
-    prelude::*,
-    utils::{HashMap, HashSet},
-    window::WindowId,
-};
-use bevy_egui::{egui, EguiContext, EguiInput, EguiPlugin, EguiSettings, EguiSystem};
-use iyes_loopless::prelude::*;
-use leafwing_input_manager::{plugin::InputManagerSystem, prelude::ActionState};
+use crate::prelude::*;
 
 use self::input::MenuAction;
-use crate::{assets::EguiFont, camera::GameCamera, metadata::GameMeta};
 
 pub mod input;
 pub mod widgets;
 
 pub mod debug_tools;
-pub mod editor;
+// pub mod editor;
 pub mod main_menu;
 pub mod pause_menu;
 
-pub struct UiPlugin;
+pub struct JumpyUiPlugin;
 
-impl Plugin for UiPlugin {
+impl Plugin for JumpyUiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(EguiPlugin)
+        app.add_plugin(bevy_egui::EguiPlugin)
             .add_plugin(input::UiInputPlugin)
             .add_plugin(main_menu::MainMenuPlugin)
-            .add_plugin(editor::EditorPlugin)
+            // .add_plugin(editor::EditorPlugin)
             .add_plugin(debug_tools::DebugToolsPlugin)
             .add_plugin(pause_menu::PausePlugin)
             .init_resource::<WidgetAdjacencies>()
@@ -37,9 +28,9 @@ impl Plugin for UiPlugin {
                 CoreStage::PreUpdate,
                 handle_menu_input
                     .run_if_resource_exists::<GameMeta>()
-                    .after(InputManagerSystem::Update)
-                    .after(EguiSystem::ProcessInput)
-                    .before(EguiSystem::BeginFrame),
+                    .after(leafwing_input_manager::plugin::InputManagerSystem::Update)
+                    .after(bevy_egui::EguiSystem::ProcessInput)
+                    .before(bevy_egui::EguiSystem::BeginFrame),
             )
             .add_system(update_egui_fonts)
             .add_system(update_ui_scale.run_if_resource_exists::<GameMeta>());
@@ -90,8 +81,8 @@ pub fn widget<S: 'static + WidgetSystem>(
 
 /// A UI widget may have multiple instances. We need to ensure the local state of these instances is
 /// not shared. This hashmap allows us to dynamically store instance states.
-#[derive(Default)]
-struct StateInstances<S: WidgetSystem> {
+#[derive(Resource, Default)]
+struct StateInstances<S: WidgetSystem + 'static> {
     instances: HashMap<WidgetId, SystemState<S>>,
 }
 
@@ -99,9 +90,9 @@ struct StateInstances<S: WidgetSystem> {
 pub struct WidgetId(pub u64);
 impl WidgetId {
     pub fn new(name: &str) -> Self {
+        use std::hash::Hasher;
         let bytes = name.as_bytes();
-        // TODO: Use a faster, non-crypto hasher
-        let mut hasher = DefaultHasher::default();
+        let mut hasher = bevy::utils::AHasher::default();
         hasher.write(bytes);
         WidgetId(hasher.finish())
     }
@@ -120,7 +111,7 @@ impl From<&str> for WidgetId {
 ///
 /// This is used to figure out which widget to focus on next when you press a direction on the
 /// gamepad, for instance.
-#[derive(Debug, Clone, Default)]
+#[derive(Resource, Debug, Clone, Default)]
 pub struct WidgetAdjacencies {
     pub map: HashMap<egui::Id, WidgetAdjacency>,
     /// These widgets will have the focus change when pressing directional inputs
@@ -178,7 +169,7 @@ impl<'a> WidgetAdjacencyEntry<'a> {
     }
 }
 
-#[derive(Default, Deref, DerefMut)]
+#[derive(Resource, Default, Deref, DerefMut)]
 pub struct DisableMenuInput(pub bool);
 
 fn handle_menu_input(
@@ -186,11 +177,10 @@ fn handle_menu_input(
     mut windows: ResMut<Windows>,
     input: Query<&ActionState<MenuAction>>,
     keyboard: Res<Input<KeyCode>>,
-    mut egui_inputs: ResMut<HashMap<WindowId, EguiInput>>,
+    mut egui_inputs: ResMut<bevy_egui::EguiRenderInputContainer>,
     adjacencies: Res<WidgetAdjacencies>,
-    mut egui_ctx: ResMut<EguiContext>,
+    mut egui_ctx: ResMut<bevy_egui::EguiContext>,
 ) {
-    use bevy::window::WindowMode;
     let input = input.single();
 
     // Handle fullscreen toggling
@@ -204,9 +194,8 @@ fn handle_menu_input(
     }
 
     let events = &mut egui_inputs
-        .get_mut(&WindowId::primary())
+        .get_mut(&bevy::window::WindowId::primary())
         .unwrap()
-        .raw_input
         .events;
 
     if **disable_menu_input {
@@ -287,12 +276,16 @@ fn handle_menu_input(
     }
 }
 
+/// Resource containing the font definitions to use for Egui.
+#[derive(Resource, Deref, DerefMut)]
+pub struct EguiFontDefinitions(pub egui::FontDefinitions);
+
 /// Watches for asset events for [`EguiFont`] assets and updates the corresponding fonts from the
 /// [`GameMeta`], inserting the font data into the egui context.
 fn update_egui_fonts(
     mut font_queue: Local<Vec<Handle<EguiFont>>>,
-    mut egui_ctx: ResMut<EguiContext>,
-    egui_font_definitions: Option<ResMut<egui::FontDefinitions>>,
+    mut egui_ctx: ResMut<bevy_egui::EguiContext>,
+    egui_font_definitions: Option<ResMut<EguiFontDefinitions>>,
     game: Option<Res<GameMeta>>,
     mut events: EventReader<AssetEvent<EguiFont>>,
     assets: Res<Assets<EguiFont>>,
@@ -310,7 +303,7 @@ fn update_egui_fonts(
             // Get the game font name associated to this handle
             let name = game
                 .ui_theme
-                .font_handles
+                .font_families
                 .iter()
                 .find_map(|(font_name, font_handle)| {
                     if font_handle.inner == handle {
@@ -343,13 +336,11 @@ fn update_egui_fonts(
     }
 }
 
-/// This system makes sure that the UI scale of Egui matches our game scale so that a pixel in egui
-/// will be the same size as a pixel in our sprites.
 fn update_ui_scale(
     game_meta: Res<GameMeta>,
-    mut egui_settings: ResMut<EguiSettings>,
+    mut egui_settings: ResMut<bevy_egui::EguiSettings>,
     windows: Res<Windows>,
-    projection: Query<&OrthographicProjection, With<GameCamera>>,
+    projection: Query<&OrthographicProjection, With<MenuCamera>>,
 ) {
     if let Some(window) = windows.get_primary() {
         if let Ok(projection) = projection.get_single() {

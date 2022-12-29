@@ -1,33 +1,20 @@
-use bevy_ggrs::RollbackIdProvider;
-use bones_matchmaker_proto::TargetClient;
-
-use crate::{
-    metadata::MapMeta,
-    networking::{
-        client::NetClient,
-        proto::{match_setup::MatchSetupMessage, ReliableGameMessageKind},
-    },
-    player::input::WantsGamePause,
-    ui::pause_menu::PauseMenuPage,
-};
+use crate::ui::pause_menu::PauseMenuPage;
 
 use super::*;
 
 #[derive(SystemParam)]
 pub struct MapSelectMenu<'w, 's> {
-    client: Option<Res<'w, NetClient>>,
     menu_input: Query<'w, 's, &'static mut ActionState<MenuAction>>,
     menu_page: ResMut<'w, MenuPage>,
+    session_manager: SessionManager<'w, 's>,
     game: Res<'w, GameMeta>,
-    game_state: Res<'w, CurrentState<GameState>>,
+    core: Res<'w, CoreMetaArc>,
+    player_select_state: Res<'w, super::player_select::PlayerSelectState>,
+    game_state: Res<'w, CurrentState<EngineState>>,
     pause_page: ResMut<'w, PauseMenuPage>,
     commands: Commands<'w, 's>,
     localization: Res<'w, Localization>,
     map_assets: Res<'w, Assets<MapMeta>>,
-    rids: ResMut<'w, RollbackIdProvider>,
-    reset_manager: ResetManager<'w, 's>,
-    #[system_param(ignore)]
-    _phantom: PhantomData<(&'w (), &'s ())>,
 }
 
 impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
@@ -44,11 +31,11 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
 
         handle_match_setup_messages(&mut params);
 
-        let in_game = params.game_state.0 == GameState::InGame;
+        let in_game = params.game_state.0 == EngineState::InGame;
 
         if params.menu_input.single().just_pressed(MenuAction::Back) {
             // If we are on the main menu
-            if params.game_state.0 == GameState::MainMenu {
+            if params.game_state.0 == EngineState::MainMenu {
                 *params.menu_page = MenuPage::PlayerSelect;
 
             // If we're on a map selection in game, we must be in the pause menu
@@ -94,26 +81,24 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                         egui::ScrollArea::vertical().show(ui, |ui| {
                             for (section_title, map_handles) in [
                                 (
-                                    params.localization.get("default-maps"),
-                                    &params.game.stable_map_handles,
+                                    &params.localization.get("default-maps"),
+                                    &params.core.stable_maps,
                                 ),
                                 (
-                                    params.localization.get("experimental-maps"),
-                                    &params.game.experimental_map_handles,
+                                    &params.localization.get("experimental-maps"),
+                                    &params.core.experimental_maps,
                                 ),
                             ] {
                                 ui.add_space(bigger_text_style.size / 2.0);
-                                let label = ui.themed_label(bigger_text_style, &section_title);
+                                let label = ui.themed_label(bigger_text_style, section_title);
 
                                 // Clippy lint is a false alarm, necessary to avoid borrowing params
                                 #[allow(clippy::unnecessary_to_owned)]
-                                for map_handle in map_handles
-                                    .iter()
-                                    .map(|x| x.clone_weak())
-                                    .collect::<Vec<_>>()
-                                    .into_iter()
-                                {
-                                    let map_meta = params.map_assets.get(&map_handle).unwrap();
+                                for map_handle in map_handles.to_vec().into_iter() {
+                                    let map_meta = params
+                                        .map_assets
+                                        .get(&map_handle.get_bevy_handle())
+                                        .unwrap();
                                     ui.add_space(ui.spacing().item_spacing.y);
 
                                     let button =
@@ -134,19 +119,34 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                         info!("Selected map, starting game");
                                         *params.pause_page = PauseMenuPage::Default;
                                         *params.menu_page = MenuPage::Home;
-                                        params.reset_manager.reset_world();
-                                        params.commands.spawn().insert(map_handle.clone_weak());
-                                        params.commands.insert_resource(WantsGamePause(false));
+
+                                        let mut player_info = <[Option<bones::Handle<PlayerMeta>>;
+                                            MAX_PLAYERS]>::default(
+                                        );
+                                        (0..MAX_PLAYERS).for_each(|i| {
+                                            let slot = &params.player_select_state.slots[i];
+                                            if slot.active {
+                                                player_info[i] = Some(slot.selected_player.clone());
+                                            }
+                                        });
+                                        params.session_manager.start(GameSessionInfo {
+                                            meta: params.core.0.clone(),
+                                            map: map_handle.clone(),
+                                            player_info,
+                                        });
                                         params
                                             .commands
-                                            .insert_resource(NextState(GameState::InGame));
+                                            .insert_resource(NextState(EngineState::InGame));
+                                        params
+                                            .commands
+                                            .insert_resource(NextState(InGameState::Playing));
 
-                                        if let Some(client) = &mut params.client {
-                                            client.send_reliable(
-                                                MatchSetupMessage::SelectMap(map_handle),
-                                                TargetClient::All,
-                                            );
-                                        }
+                                        // if let Some(client) = &mut params.client {
+                                        //     client.send_reliable(
+                                        //         MatchSetupMessage::SelectMap(map_handle),
+                                        //         TargetClient::All,
+                                        //     );
+                                        // }
                                     }
                                 }
                             }
@@ -157,27 +157,27 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
     }
 }
 
-fn handle_match_setup_messages(params: &mut MapSelectMenu) {
-    if let Some(client) = &mut params.client {
-        while let Some(message) = client.recv_reliable() {
-            match message.kind {
-                ReliableGameMessageKind::MatchSetup(setup) => match setup {
-                    MatchSetupMessage::SelectMap(map_handle) => {
-                        info!("Other player selected map, starting game");
-                        *params.menu_page = MenuPage::Home;
-                        params.reset_manager.reset_world();
-                        params
-                            .commands
-                            .spawn()
-                            .insert(map_handle)
-                            .insert(Rollback::new(params.rids.next_id()));
-                        params
-                            .commands
-                            .insert_resource(NextState(GameState::InGame));
-                    }
-                    other => warn!("Unexpected message: {other:?}"),
-                },
-            }
-        }
-    }
+fn handle_match_setup_messages(_params: &mut MapSelectMenu) {
+    // if let Some(client) = &mut params.client {
+    //     while let Some(message) = client.recv_reliable() {
+    //         match message.kind {
+    //             ReliableGameMessageKind::MatchSetup(setup) => match setup {
+    //                 MatchSetupMessage::SelectMap(map_handle) => {
+    //                     info!("Other player selected map, starting game");
+    //                     *params.menu_page = MenuPage::Home;
+    //                     params.reset_manager.reset_world();
+    //                     params
+    //                         .commands
+    //                         .spawn()
+    //                         .insert(map_handle)
+    //                         .insert(Rollback::new(params.rids.next_id()));
+    //                     params
+    //                         .commands
+    //                         .insert_resource(NextState(GameState::InGame));
+    //                 }
+    //                 other => warn!("Unexpected message: {other:?}"),
+    //             },
+    //         }
+    //     }
+    // }
 }

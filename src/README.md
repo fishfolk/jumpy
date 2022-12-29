@@ -12,6 +12,4 @@ This is the project's internal developer API and Architecture documentation.
 You can explore the documentation for each of the modules below to get a better idea of what each
 one does.
 
-Some, like the [`networking`] module, have guide-level explanations of how Jumpy is architected.
-
 Have fun!

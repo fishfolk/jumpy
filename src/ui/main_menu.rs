@@ -11,13 +11,9 @@ use crate::{
     localization::LocalizationExt,
     metadata::{GameMeta, Settings},
     platform::Storage,
-    player::input::PlayerInputs,
     prelude::*,
     ui::input::MenuAction,
-    utils::ResetManager,
 };
-
-// use self::settings::ControlInputBindingEvents;
 
 use self::settings::{ModifiedSettings, SettingsTab};
 
@@ -31,8 +27,8 @@ use super::{
 };
 
 pub mod map_select;
-#[cfg(not(target_arch = "wasm32"))]
-pub mod matchmaking;
+// #[cfg(not(target_arch = "wasm32"))]
+// pub mod matchmaking;
 pub mod player_select;
 pub mod settings;
 
@@ -47,12 +43,11 @@ impl Plugin for MainMenuPlugin {
             .init_resource::<player_select::PlayerSelectState>()
             .add_system(
                 main_menu_system
-                    .into_conditional_exclusive()
-                    .run_in_state(GameState::MainMenu)
+                    .run_in_state(EngineState::MainMenu)
                     .at_end(),
             )
-            .add_enter_system(GameState::MainMenu, setup_main_menu)
-            .add_exit_system(GameState::MainMenu, clean_up_main_menu);
+            .add_enter_system(EngineState::MainMenu, setup_main_menu)
+            .add_exit_system(EngineState::MainMenu, clean_up_main_menu);
     }
 }
 
@@ -60,65 +55,64 @@ impl Plugin for MainMenuPlugin {
 pub struct MainMenuBackground;
 
 /// Spawns the background image for the main menu
+#[allow(unreachable_code)]
 pub fn setup_main_menu(
     mut commands: Commands,
     game: Res<GameMeta>,
-    mut reset_controller: ResetManager,
-    mut player_inputs: ResMut<PlayerInputs>,
+    core: Res<CoreMetaArc>,
+    mut session_manager: SessionManager,
 ) {
-    // Reset the game world
-    reset_controller.reset_world();
-
-    // Reset player list
-    for player in &mut player_inputs.players {
-        player.active = false;
-    }
+    session_manager.stop();
 
     // Spawn menu background
-    let bg_handle = game.main_menu.background_image.image_handle.clone_weak();
+    let bg_handle = game.main_menu.background_image.image.inner.clone_weak();
     let img_size = game.main_menu.background_image.image_size;
     let ratio = img_size.x / img_size.y;
-    let height = game.camera_height as f32;
+    let height = core.camera_height;
     let width = height * ratio;
     commands
-        .spawn()
-        .insert(Name::new("Menu Background Parent"))
-        .insert_bundle(VisibilityBundle::default())
-        .insert_bundle(TransformBundle::default())
-        .insert(MainMenuBackground)
+        .spawn((
+            Name::new("Menu Background Parent"),
+            VisibilityBundle::default(),
+            TransformBundle::default(),
+            MainMenuBackground,
+        ))
         .with_children(|parent| {
-            parent
-                .spawn_bundle(SpriteBundle {
-                    texture: bg_handle.inner.clone_weak(),
+            parent.spawn((
+                SpriteBundle {
+                    texture: bg_handle.clone_weak(),
                     sprite: Sprite {
                         custom_size: Some(Vec2::new(width, height)),
                         ..default()
                     },
                     transform: Transform::from_translation(Vec3::new(-width, 0.0, 0.0)),
                     ..default()
-                })
-                .insert(Name::new("Main Menu Background Left"));
-            parent
-                .spawn_bundle(SpriteBundle {
-                    texture: bg_handle.inner.clone_weak(),
+                },
+                Name::new("Main Menu Background Left"),
+            ));
+            parent.spawn((
+                SpriteBundle {
+                    texture: bg_handle.clone_weak(),
                     sprite: Sprite {
                         custom_size: Some(Vec2::new(width, height)),
                         ..default()
                     },
                     ..default()
-                })
-                .insert(Name::new("Main Menu Background Middle"));
-            parent
-                .spawn_bundle(SpriteBundle {
-                    texture: bg_handle.inner,
+                },
+                Name::new("Main Menu Background Middle"),
+            ));
+            parent.spawn((
+                SpriteBundle {
+                    texture: bg_handle,
                     sprite: Sprite {
                         custom_size: Some(Vec2::new(width, height)),
                         ..default()
                     },
                     transform: Transform::from_translation(Vec3::new(width, 0.0, 0.0)),
                     ..default()
-                })
-                .insert(Name::new("Main Menu Background Right"));
+                },
+                Name::new("Main Menu Background Right"),
+            ));
         });
 }
 
@@ -133,7 +127,7 @@ pub fn clean_up_main_menu(
 }
 
 /// Which page of the menu we are on
-#[derive(Clone, Copy)]
+#[derive(Resource, Clone, Copy)]
 pub enum MenuPage {
     Home,
     Settings,
@@ -143,7 +137,7 @@ pub enum MenuPage {
         /// map.
         is_waiting: bool,
     },
-    Matchmaking,
+    // Matchmaking,
 }
 
 impl Default for MenuPage {
@@ -198,11 +192,11 @@ impl<'w, 's> WidgetSystem for MainMenu<'w, 's> {
         // Render the menu based on the current menu selection
         match *params.menu_page {
             MenuPage::Home => widget::<HomeMenu>(world, ui, id.with("home"), ()),
-            MenuPage::Matchmaking =>
-            {
-                #[cfg(not(target_arch = "wasm32"))]
-                widget::<matchmaking::MatchmakingMenu>(world, ui, id.with("matchmaking"), ())
-            }
+            // MenuPage::Matchmaking =>
+            // {
+            //     #[cfg(not(target_arch = "wasm32"))]
+            //     widget::<matchmaking::MatchmakingMenu>(world, ui, id.with("matchmaking"), ())
+            // }
             MenuPage::PlayerSelect => {
                 widget::<player_select::PlayerSelectMenu>(world, ui, id.with("player-select"), ())
             }
@@ -290,35 +284,41 @@ impl<'w, 's> WidgetSystem for HomeMenu<'w, 's> {
                     // Online Game
                     #[cfg(not(target_arch = "wasm32"))]
                     {
-                        let online_game_button = BorderedButton::themed(
-                            &ui_theme.button_styles.normal,
-                            &params.localization.get("online-game"),
-                        )
-                        .min_size(min_button_size)
-                        .show(ui)
-                        .focus_by_default(ui);
+                        ui.scope(|ui| {
+                            ui.set_enabled(false);
+                            let online_game_button = BorderedButton::themed(
+                                &ui_theme.button_styles.normal,
+                                &params.localization.get("online-game"),
+                            )
+                            .min_size(min_button_size)
+                            .show(ui);
 
-                        if online_game_button.clicked() {
-                            *params.menu_page = MenuPage::Matchmaking;
-                        }
+                            if online_game_button.clicked() {
+                                todo!();
+                                // *params.menu_page = MenuPage::Matchmaking;
+                            }
+                        });
                     }
 
                     // Map editor
-                    if BorderedButton::themed(
-                        &ui_theme.button_styles.normal,
-                        &params.localization.get("editor"),
-                    )
-                    .min_size(min_button_size)
-                    .show(ui)
-                    .clicked()
-                    {
-                        params
-                            .commands
-                            .insert_resource(NextState(GameEditorState::Visible));
-                        params
-                            .commands
-                            .insert_resource(NextState(GameState::InGame));
-                    }
+                    ui.scope(|ui| {
+                        ui.set_enabled(false);
+                        if BorderedButton::themed(
+                            &ui_theme.button_styles.normal,
+                            &params.localization.get("map-editor"),
+                        )
+                        .min_size(min_button_size)
+                        .show(ui)
+                        .clicked()
+                        {
+                            params
+                                .commands
+                                .insert_resource(NextState(GameEditorState::Visible));
+                            params
+                                .commands
+                                .insert_resource(NextState(EngineState::InGame));
+                        }
+                    });
 
                     // Settings button
                     if BorderedButton::themed(

@@ -4,9 +4,8 @@ use bevy::{
 };
 use bevy_egui::*;
 use bevy_fluent::Localization;
-use bevy_inspector_egui::WorldInspectorParams;
 
-use crate::{localization::LocalizationExt, physics::debug::PhysicsDebugRenderConfig};
+use crate::prelude::*;
 
 pub struct DebugToolsPlugin;
 
@@ -35,7 +34,7 @@ impl Plugin for DebugToolsPlugin {
 //     }
 // }
 
-#[derive(Default, Deref, DerefMut)]
+#[derive(Resource, Default, Deref, DerefMut)]
 struct ShowFameTimeDiagnostics(pub bool);
 
 /// System that renders the debug tools window which can be toggled by pressing F12
@@ -43,11 +42,11 @@ fn debug_tools_window(
     // mut show_network_visualizer: ResMut<ShowNetworkVisualizer>,
     mut visible: Local<bool>,
     mut egui_context: ResMut<EguiContext>,
-    mut physics_debug_render: ResMut<PhysicsDebugRenderConfig>,
+    // mut physics_debug_render: ResMut<PhysicsDebugRenderConfig>,
     mut show_frame_diagnostics: ResMut<ShowFameTimeDiagnostics>,
     localization: Res<Localization>,
     input: Res<Input<KeyCode>>,
-    mut inspector: ResMut<WorldInspectorParams>,
+    mut show_inspector: ResMut<WorldInspectorEnabled>,
 ) {
     let ctx = egui_context.ctx_mut();
 
@@ -56,14 +55,14 @@ fn debug_tools_window(
         *visible = !*visible;
     }
 
-    // Shortcut to toggle collision shapes without having to use the menu
-    if input.just_pressed(KeyCode::F10) {
-        physics_debug_render.enabled = !physics_debug_render.enabled;
-    }
+    // // Shortcut to toggle collision shapes without having to use the menu
+    // if input.just_pressed(KeyCode::F10) {
+    //     physics_debug_render.enabled = !physics_debug_render.enabled;
+    // }
 
     // Shortcut to toggle the inspector without having to use the menu
     if input.just_pressed(KeyCode::F9) {
-        inspector.enabled = !inspector.enabled;
+        show_inspector.0 = !show_inspector.0;
     }
 
     // Shortcut to toggle frame diagnostics
@@ -82,15 +81,15 @@ fn debug_tools_window(
         .id(egui::Id::new("debug_tools"))
         .open(&mut visible)
         .show(ctx, |ui| {
-            // Show collision shapes
-            ui.checkbox(
-                &mut physics_debug_render.enabled,
-                format!("{} ( F10 )", localization.get("show-collision-shapes")),
-            );
+            // // Show collision shapes
+            // ui.checkbox(
+            //     &mut physics_debug_render.enabled,
+            //     format!("{} ( F10 )", localization.get("show-collision-shapes")),
+            // );
 
             // Show world inspector
             ui.checkbox(
-                &mut inspector.enabled,
+                &mut show_inspector.0,
                 format!("{} ( F9 )", localization.get("show-world-inspector")),
             );
 

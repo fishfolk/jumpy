@@ -1,5 +1,6 @@
 use bevy::render::view::RenderLayers;
 use bevy_parallax::ParallaxCameraComponent;
+use bones_camera_shake::CameraShake;
 
 use crate::{
     metadata::{GameMeta, MapMeta},
@@ -47,10 +48,7 @@ pub struct CameraBundle {
 
 pub fn spawn_game_camera(commands: &mut Commands) -> Entity {
     commands
-        .spawn()
-        .insert(Name::new("Game Camera"))
-        .insert(GameCamera)
-        .insert_bundle(CameraBundle {
+        .spawn_bundle(CameraBundle {
             camera_bundle: Camera2dBundle {
                 // This is different than just omitting this transform field because
                 // Camera2DBundle's default transform is not the same as Transform::default().
@@ -61,15 +59,15 @@ pub fn spawn_game_camera(commands: &mut Commands) -> Entity {
                 .with(GameRenderLayers::GAME),
             parallax_camera_component: ParallaxCameraComponent,
         })
+        .insert(CameraShake::new(90.0, Vec2::splat(100.0), 0.5))
+        .insert(Name::new("Game Camera"))
+        .insert(GameCamera)
         .id()
 }
 
 pub fn spawn_editor_camera(commands: &mut Commands) -> Entity {
     commands
-        .spawn()
-        .insert(Name::new("Editor Camera"))
-        .insert(EditorCamera)
-        .insert_bundle(CameraBundle {
+        .spawn_bundle(CameraBundle {
             camera_bundle: Camera2dBundle {
                 // This is different than just omitting this transform field because
                 // Camera2DBundle's default transform is not the same as Transform::default().
@@ -86,6 +84,8 @@ pub fn spawn_editor_camera(commands: &mut Commands) -> Entity {
                 .with(GameRenderLayers::EDITOR),
             parallax_camera_component: ParallaxCameraComponent,
         })
+        .insert(Name::new("Editor Camera"))
+        .insert(EditorCamera)
         .id()
 }
 
@@ -93,7 +93,11 @@ fn camera_controller(
     players: Query<&Transform, With<PlayerIdx>>,
     map: Query<&MapMeta>,
     mut camera: Query<
-        (&mut Transform, &mut OrthographicProjection),
+        (
+            &mut CameraShake,
+            &mut Transform,
+            &mut OrthographicProjection,
+        ),
         (With<GameCamera>, Without<PlayerIdx>),
     >,
     windows: Res<Windows>,
@@ -109,7 +113,7 @@ fn camera_controller(
         return;
     };
 
-    let Ok((mut camera_transform, mut projection)) = camera.get_single_mut() else {
+    let Ok((mut camera_shake, camera_transform, mut projection)) = camera.get_single_mut() else {
         return;
     };
 
@@ -158,5 +162,5 @@ fn camera_controller(
 
     let delta = camera_transform.translation.truncate() - middle_point;
     let dist = delta * MOVE_LERP_FACTOR;
-    camera_transform.translation -= dist.extend(0.0);
+    camera_shake.center -= dist.extend(0.0);
 }

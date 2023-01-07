@@ -372,7 +372,14 @@
 <span id="370">370</span>
 <span id="371">371</span>
 <span id="372">372</span>
-</pre><pre class="rust"><code><span class="kw">use </span>std::time::Duration;
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+</pre><pre class="rust"><code><span class="kw">use </span>bones_camera_shake::CameraTrauma;
+
+<span class="kw">use </span>std::time::Duration;
 
 <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
@@ -616,6 +623,7 @@
     player_inputs: Res&lt;PlayerInputs&gt;,
     effects: Res&lt;AudioChannel&lt;EffectsChannel&gt;&gt;,
     <span class="kw-2">mut </span>audio_instances: ResMut&lt;Assets&lt;AudioInstance&gt;&gt;,
+    <span class="kw-2">mut </span>shake_event: EventWriter&lt;CameraTrauma&gt;,
 ) {
     <span class="kw">let </span><span class="kw-2">mut </span>items = grenades.iter_mut().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
     items.sort_by_key(|x| x.<span class="number">0</span>.id());
@@ -701,6 +709,8 @@
                     .get_mut(<span class="kw-2">&amp;</span>grenade.fuse_sound)
                     .map(|x| x.stop(AudioTween::linear(Duration::from_secs_f32(<span class="number">0.1</span>))));
             }
+
+            shake_event.send(CameraTrauma(<span class="number">0.5</span>));
 
             <span class="comment">// Despawn the grenade
             </span>commands.entity(item_ent).despawn();

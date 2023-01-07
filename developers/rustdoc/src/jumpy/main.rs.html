@@ -263,6 +263,8 @@
 <span id="261">261</span>
 <span id="262">262</span>
 <span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
 </pre><pre class="rust"><code><span class="attribute">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;./README.md&quot;</span>)]
 #![doc(html_logo_url = <span class="string">&quot;https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4&quot;</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
@@ -280,6 +282,7 @@
     GGRSPlugin,
 };
 <span class="kw">use </span>bevy_parallax::ParallaxResource;
+<span class="kw">use </span>bones_camera_shake::CameraShakePlugin;
 <span class="kw">use </span>mimalloc::MiMalloc;
 
 <span class="attribute">#[global_allocator]
@@ -485,6 +488,7 @@
         .add_plugin(ItemPlugin)
         .add_plugin(PhysicsPlugin)
         .add_plugin(CameraPlugin)
+        .add_plugin(CameraShakePlugin)
         .add_plugin(MapPlugin)
         .add_plugin(DamagePlugin)
         .add_plugin(LifetimePlugin)

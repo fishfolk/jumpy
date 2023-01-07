@@ -162,8 +162,13 @@
 <span id="160">160</span>
 <span id="161">161</span>
 <span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
 </pre><pre class="rust"><code><span class="kw">use </span>bevy::render::view::RenderLayers;
 <span class="kw">use </span>bevy_parallax::ParallaxCameraComponent;
+<span class="kw">use </span>bones_camera_shake::CameraShake;
 
 <span class="kw">use crate</span>::{
     metadata::{GameMeta, MapMeta},
@@ -211,10 +216,7 @@
 
 <span class="kw">pub fn </span>spawn_game_camera(commands: <span class="kw-2">&amp;mut </span>Commands) -&gt; Entity {
     commands
-        .spawn()
-        .insert(Name::new(<span class="string">&quot;Game Camera&quot;</span>))
-        .insert(GameCamera)
-        .insert_bundle(CameraBundle {
+        .spawn_bundle(CameraBundle {
             camera_bundle: Camera2dBundle {
                 <span class="comment">// This is different than just omitting this transform field because
                 // Camera2DBundle&#39;s default transform is not the same as Transform::default().
@@ -225,15 +227,15 @@
                 .with(GameRenderLayers::GAME),
             parallax_camera_component: ParallaxCameraComponent,
         })
+        .insert(CameraShake::new(<span class="number">90.0</span>, Vec2::splat(<span class="number">100.0</span>), <span class="number">0.5</span>))
+        .insert(Name::new(<span class="string">&quot;Game Camera&quot;</span>))
+        .insert(GameCamera)
         .id()
 }
 
 <span class="kw">pub fn </span>spawn_editor_camera(commands: <span class="kw-2">&amp;mut </span>Commands) -&gt; Entity {
     commands
-        .spawn()
-        .insert(Name::new(<span class="string">&quot;Editor Camera&quot;</span>))
-        .insert(EditorCamera)
-        .insert_bundle(CameraBundle {
+        .spawn_bundle(CameraBundle {
             camera_bundle: Camera2dBundle {
                 <span class="comment">// This is different than just omitting this transform field because
                 // Camera2DBundle&#39;s default transform is not the same as Transform::default().
@@ -250,6 +252,8 @@
                 .with(GameRenderLayers::EDITOR),
             parallax_camera_component: ParallaxCameraComponent,
         })
+        .insert(Name::new(<span class="string">&quot;Editor Camera&quot;</span>))
+        .insert(EditorCamera)
         .id()
 }
 
@@ -257,7 +261,11 @@
     players: Query&lt;<span class="kw-2">&amp;</span>Transform, With&lt;PlayerIdx&gt;&gt;,
     map: Query&lt;<span class="kw-2">&amp;</span>MapMeta&gt;,
     <span class="kw-2">mut </span>camera: Query&lt;
-        (<span class="kw-2">&amp;mut </span>Transform, <span class="kw-2">&amp;mut </span>OrthographicProjection),
+        (
+            <span class="kw-2">&amp;mut </span>CameraShake,
+            <span class="kw-2">&amp;mut </span>Transform,
+            <span class="kw-2">&amp;mut </span>OrthographicProjection,
+        ),
         (With&lt;GameCamera&gt;, Without&lt;PlayerIdx&gt;),
     &gt;,
     windows: Res&lt;Windows&gt;,
@@ -273,7 +281,7 @@
         <span class="kw">return</span>;
     };
 
-    <span class="kw">let </span><span class="prelude-val">Ok</span>((<span class="kw-2">mut </span>camera_transform, <span class="kw-2">mut </span>projection)) = camera.get_single_mut() <span class="kw">else </span>{
+    <span class="kw">let </span><span class="prelude-val">Ok</span>((<span class="kw-2">mut </span>camera_shake, camera_transform, <span class="kw-2">mut </span>projection)) = camera.get_single_mut() <span class="kw">else </span>{
         <span class="kw">return</span>;
     };
 
@@ -322,7 +330,7 @@
 
     <span class="kw">let </span>delta = camera_transform.translation.truncate() - middle_point;
     <span class="kw">let </span>dist = delta * MOVE_LERP_FACTOR;
-    camera_transform.translation -= dist.extend(<span class="number">0.0</span>);
+    camera_shake.center -= dist.extend(<span class="number">0.0</span>);
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="jumpy" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

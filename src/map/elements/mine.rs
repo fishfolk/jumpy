@@ -2,6 +2,7 @@
 //!
 //! This module is inconsistently named with the rest of the modules ( i.e. has an `_item` suffix )
 //! because `crate` is a Rust keyword.
+use bones_camera_shake::CameraTrauma;
 
 use crate::player::PlayerKillCommand;
 
@@ -256,6 +257,7 @@ fn update_thrown_mines(
     player_inputs: Res<PlayerInputs>,
     effects: Res<AudioChannel<EffectsChannel>>,
     collision_world: CollisionWorld,
+    mut shake_event: EventWriter<CameraTrauma>,
 ) {
     let mut items = mines.iter_mut().collect::<Vec<_>>();
     items.sort_by_key(|x| x.0.id());
@@ -306,6 +308,8 @@ fn update_thrown_mines(
             if player_inputs.is_confirmed {
                 effects.play(explosion_sound_handle.clone_weak());
             }
+
+            shake_event.send(CameraTrauma(0.75));
 
             // Despawn the grenade
             commands.entity(item_ent).despawn();

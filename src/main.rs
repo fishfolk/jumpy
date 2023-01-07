@@ -15,6 +15,7 @@ use bevy_ggrs::{
     GGRSPlugin,
 };
 use bevy_parallax::ParallaxResource;
+use bones_camera_shake::CameraShakePlugin;
 use mimalloc::MiMalloc;
 
 #[global_allocator]
@@ -220,6 +221,7 @@ pub fn main() {
         .add_plugin(ItemPlugin)
         .add_plugin(PhysicsPlugin)
         .add_plugin(CameraPlugin)
+        .add_plugin(CameraShakePlugin)
         .add_plugin(MapPlugin)
         .add_plugin(DamagePlugin)
         .add_plugin(LifetimePlugin)

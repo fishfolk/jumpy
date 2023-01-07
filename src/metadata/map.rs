@@ -283,6 +283,13 @@ pub enum BuiltinElementKind {
         sound: String,
         #[serde(skip)]
         sound_handle: Handle<AudioSource>,
+        #[serde(default)]
+        angular_velocity: f32,
+        #[serde(default)]
+        can_rotate: bool,
+        #[serde(default)]
+        arm_delay: f32,
+        throw_velocity: Vec2,
     },
     /// The throwable crate item
     Crate {

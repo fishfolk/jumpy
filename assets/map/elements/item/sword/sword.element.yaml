@@ -3,4 +3,7 @@ category: Weapons
 builtin: !Sword
   atlas: ./sword.atlas.yaml
   sound: ./sword.ogg
-  
+  angular_velocity: -0.02
+  can_rotate: true
+  arm_delay: 0.3
+  throw_velocity: [0, 4]

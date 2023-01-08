@@ -256,15 +256,65 @@
 <span id="254">254</span>
 <span id="255">255</span>
 <span id="256">256</span>
-</pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::player::PlayerKillCommand;
+
+<span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="kw">pub struct </span>SwordPlugin;
 <span class="kw">impl </span>Plugin <span class="kw">for </span>SwordPlugin {
     <span class="kw">fn </span>build(<span class="kw-2">&amp;</span><span class="self">self</span>, app: <span class="kw-2">&amp;mut </span>App) {
         app.add_rollback_system(RollbackStage::PreUpdate, pre_update_in_game)
             .add_rollback_system(RollbackStage::Update, update_in_game)
-            .extend_rollback_plugin(|plugin| plugin.register_rollback_type::&lt;SwordState&gt;());
+            .extend_rollback_plugin(|plugin| plugin.register_rollback_type::&lt;Sword&gt;());
     }
+}
+
+<span class="attribute">#[derive(Component, Reflect, Default, Clone)]
+#[reflect(Component, Default)]
+</span><span class="kw">pub struct </span>Sword {
+    <span class="kw">pub </span>state: SwordState,
+    dropped_time: f32,
 }
 
 <span class="attribute">#[derive(Component, Reflect, Default, Clone)]
@@ -298,7 +348,13 @@
     <span class="kw">for </span>(entity, _sort, map_element_handle, transform) <span class="kw">in </span>elements {
         <span class="kw">let </span>map_element = element_assets.get(map_element_handle).unwrap();
 
-        <span class="kw">if let </span>BuiltinElementKind::Sword { atlas_handle, .. } = <span class="kw-2">&amp;</span>map_element.builtin {
+        <span class="kw">if let </span>BuiltinElementKind::Sword {
+            atlas_handle,
+            can_rotate,
+            bouncyness,
+            ..
+        } = <span class="kw-2">&amp;</span>map_element.builtin
+        {
             commands.entity(entity).insert(MapElementHydrated);
 
             commands
@@ -308,7 +364,7 @@
                     script: <span class="string">&quot;core:sword&quot;</span>.into(),
                 })
                 .insert(Name::new(<span class="string">&quot;Item: Sword&quot;</span>))
-                .insert(SwordState::default())
+                .insert(Sword::default())
                 .insert(AnimatedSprite {
                     start: <span class="number">0</span>,
                     end: <span class="number">0</span>,
@@ -326,10 +382,11 @@
                 .insert(map_element_handle.clone())
                 .insert(KinematicBody {
                     size: Vec2::new(<span class="number">64.0</span>, <span class="number">16.0</span>),
-                    offset: Vec2::new(<span class="number">0.0</span>, <span class="number">38.0</span>),
                     gravity: <span class="number">1.0</span>,
                     has_mass: <span class="bool-val">true</span>,
                     has_friction: <span class="bool-val">true</span>,
+                    can_rotate: <span class="kw-2">*</span>can_rotate,
+                    bouncyness: <span class="kw-2">*</span>bouncyness,
                     ..default()
                 });
         }
@@ -343,7 +400,7 @@
         (
             Entity,
             <span class="kw-2">&amp;mut </span>Transform,
-            <span class="kw-2">&amp;mut </span>SwordState,
+            <span class="kw-2">&amp;mut </span>Sword,
             <span class="kw-2">&amp;mut </span>AnimatedSprite,
             <span class="kw-2">&amp;mut </span>KinematicBody,
             <span class="kw-2">&amp;</span>Handle&lt;MapElementMeta&gt;,
@@ -357,6 +414,7 @@
     player_inputs: Res&lt;PlayerInputs&gt;,
     effects: Res&lt;AudioChannel&lt;EffectsChannel&gt;&gt;,
     element_assets: Res&lt;Assets&lt;MapElementMeta&gt;&gt;,
+    collision_world: CollisionWorld,
 ) {
     <span class="comment">// Helper to spawn damage regions
     </span><span class="kw">let </span><span class="kw-2">mut </span>spawn_damage_region =
@@ -374,7 +432,7 @@
     <span class="kw">for </span>(
         item_ent,
         <span class="kw-2">mut </span>transform,
-        <span class="kw-2">mut </span>state,
+        <span class="kw-2">mut </span>sword,
         <span class="kw-2">mut </span>sprite,
         <span class="kw-2">mut </span>body,
         meta_handle,
@@ -384,7 +442,7 @@
     ) <span class="kw">in </span><span class="kw-2">&amp;mut </span>swords
     {
         <span class="kw">let </span>meta = element_assets.get(meta_handle).unwrap();
-        <span class="kw">let </span>BuiltinElementKind::Sword { sound_handle, .. } = <span class="kw-2">&amp;</span>meta.builtin <span class="kw">else </span>{
+        <span class="kw">let </span>BuiltinElementKind::Sword { sound_handle, angular_velocity, throw_velocity, arm_delay, .. } = <span class="kw-2">&amp;</span>meta.builtin <span class="kw">else </span>{
             <span class="macro">unreachable!</span>();
         };
 
@@ -403,9 +461,10 @@
             transform.translation.x = <span class="number">13.0 </span>* flip_factor;
             transform.translation.y = <span class="number">21.0</span>;
             transform.translation.z = <span class="number">0.0</span>;
+            transform.rotation = Quat::IDENTITY;
 
             <span class="comment">// Reset the sword animation if we&#39;re not swinging it
-            </span><span class="kw">if </span>!<span class="macro">matches!</span>(<span class="kw-2">&amp;*</span>state, SwordState::Swinging { .. }) {
+            </span><span class="kw">if </span>!<span class="macro">matches!</span>(sword.state, SwordState::Swinging { .. }) {
                 sprite.start = <span class="number">4</span>;
                 sprite.end = <span class="number">4</span>;
                 sprite.index = <span class="number">0</span>;
@@ -413,7 +472,7 @@
             }
 
             <span class="kw">let </span><span class="kw-2">mut </span>next_state = <span class="prelude-val">None</span>;
-            <span class="kw">match </span><span class="kw-2">&amp;mut *</span>state {
+            <span class="kw">match </span><span class="kw-2">&amp;mut </span>sword.state {
                 SwordState::Idle =&gt; (),
                 SwordState::Swinging { frame } =&gt; {
                     <span class="comment">// If we&#39;re at the end of the swinging animation
@@ -471,26 +530,41 @@
             }
 
             <span class="kw">if let </span><span class="prelude-val">Some</span>(next) = next_state {
-                <span class="kw-2">*</span>state = next;
+                sword.state = next;
             }
             <span class="kw">if </span>item_used.is_some() {
                 commands.entity(item_ent).remove::&lt;ItemUsed&gt;();
             }
 
             <span class="comment">// If the item is being used
-            </span><span class="kw">if </span>item_used.is_some() &amp;&amp; <span class="macro">matches!</span>(<span class="kw-2">*</span>state, SwordState::Idle) {
+            </span><span class="kw">if </span>item_used.is_some() &amp;&amp; <span class="macro">matches!</span>(sword.state, SwordState::Idle) {
                 sprite.index = <span class="number">0</span>;
                 sprite.start = <span class="number">8</span>;
                 sprite.end = <span class="number">12</span>;
-                <span class="kw-2">*</span>state = SwordState::Swinging { frame: <span class="number">0 </span>};
+                sword.state = SwordState::Swinging { frame: <span class="number">0 </span>};
                 <span class="kw">if </span>player_inputs.is_confirmed {
                     effects.play(sound_handle.clone_weak());
                 }
+            }
+        } <span class="kw">else </span>{
+            sword.dropped_time += <span class="number">1.0 </span>/ <span class="kw">crate</span>::FPS <span class="kw">as </span>f32;
+
+            <span class="kw">let </span>is_on_floor = body.is_on_ground || body.is_on_platform;
+            <span class="kw">let </span>is_deals_damage = (is_on_floor &amp;&amp; body.velocity.x != <span class="number">0.0</span>)
+                || (!is_on_floor &amp;&amp; body.velocity != Vec2::ZERO);
+            <span class="kw">if </span>is_deals_damage &amp;&amp; sword.dropped_time &gt;= <span class="kw-2">*</span>arm_delay {
+                collision_world
+                    .actor_collisions(item_ent)
+                    .into_iter()
+                    .filter(|<span class="kw-2">&amp;</span>x| players.contains(x))
+                    .for_each(|player| commands.add(PlayerKillCommand::new(player)));
             }
         }
 
         <span class="comment">// If the item was dropped
         </span><span class="kw">if let </span><span class="prelude-val">Some</span>(dropped) = item_dropped {
+            sword.dropped_time = <span class="number">0.0</span>;
+
             commands.entity(item_ent).remove::&lt;ItemDropped&gt;();
             <span class="kw">let </span>(.., player_transform, player_body) =
                 players.get(dropped.player).expect(<span class="string">&quot;Parent is not a player&quot;</span>);
@@ -502,11 +576,19 @@
             </span>sprite.index = <span class="number">0</span>;
             sprite.start = <span class="number">0</span>;
             sprite.end = <span class="number">0</span>;
-            body.velocity = player_body.velocity;
+
+            <span class="kw">if </span>player_body.velocity != Vec2::ZERO {
+                <span class="kw">let </span>horizontal_flip_factor = <span class="kw">if </span>sprite.flip_x {
+                    Vec2::new(-<span class="number">1.0</span>, <span class="number">1.0</span>)
+                } <span class="kw">else </span>{
+                    Vec2::ONE
+                };
+                body.velocity = <span class="kw-2">*</span>throw_velocity * horizontal_flip_factor + player_body.velocity;
+                body.angular_velocity = <span class="kw-2">*</span>angular_velocity * <span class="kw">if </span>sprite.flip_x { -<span class="number">1.0 </span>} <span class="kw">else </span>{ <span class="number">1.0 </span>};
+            }
             body.is_spawning = <span class="bool-val">true</span>;
 
-            <span class="comment">// Drop item at middle of player
-            </span>transform.translation.y = player_transform.translation.y - <span class="number">30.0</span>;
+            transform.translation.y = player_transform.translation.y;
             transform.translation.x = player_transform.translation.x;
             transform.translation.z = player_transform.translation.z;
         }

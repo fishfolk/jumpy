@@ -655,6 +655,7 @@
 <span id="653">653</span>
 <span id="654">654</span>
 <span id="655">655</span>
+<span id="656">656</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     ffi::OsStr,
     path::{Path, PathBuf},
@@ -1073,6 +1074,7 @@
                     atlas_handle,
                     sound,
                     sound_handle,
+                    ..
                 } =&gt; {
                     <span class="kw">let </span>(path, handle) = get_relative_asset(load_context, self_path, atlas);
                     <span class="kw-2">*</span>atlas_handle = AssetHandle::new(path.clone(), handle.typed());

@@ -1,3 +1,5 @@
+use bones_camera_shake::CameraTrauma;
+
 use std::time::Duration;
 
 use super::*;
@@ -267,6 +269,7 @@ fn update_lit_kick_bombs(
     effects: Res<AudioChannel<EffectsChannel>>,
     mut audio_instances: ResMut<Assets<AudioInstance>>,
     collision_world: CollisionWorld,
+    mut shake_event: EventWriter<CameraTrauma>,
 ) {
     let mut items = kick_bombs.iter_mut().collect::<Vec<_>>();
     items.sort_by_key(|x| x.0.id());
@@ -351,6 +354,8 @@ fn update_lit_kick_bombs(
                     .get_mut(&kick_bomb.fuse_sound)
                     .map(|x| x.stop(AudioTween::linear(Duration::from_secs_f32(0.1))));
             }
+
+            shake_event.send(CameraTrauma(0.75));
 
             commands.entity(item_ent).despawn();
             // Cause the item to re-spawn by re-triggering spawner hydration

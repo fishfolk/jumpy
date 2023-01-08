@@ -37,7 +37,7 @@ bitfield = "0.14.0"
 blocking = "1.2.0"
 bones_has_load_progress = { git = "https://github.com/fishfolk/bones.git", features = ["bevy_egui"] }
 bones_matchmaker_proto = { git = "https://github.com/fishfolk/bones.git" }
-bones_camera_shake = { git = "https://github.com/DRuppFv/bones", branch = "camera_shake_bevy0.8" }
+bones_camera_shake = { git = "https://github.com/fishfolk/bones", branch = "bevy-0.8" }
 bytemuck = "1.12.3"
 bytes = "1.2.1"
 clap = { version = "4.0.18", features = ["derive", "env"] }

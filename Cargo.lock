@@ -1097,7 +1097,7 @@ dependencies = [
 [[package]]
 name = "bones_camera_shake"
 version = "0.1.0"
-source = "git+https://github.com/DRuppFv/bones?branch=camera_shake_bevy0.8#edfe71fa07340b1bf9a8ea0cf1472b75684d5623"
+source = "git+https://github.com/fishfolk/bones?branch=bevy-0.8#9982c714a4306c5b703a2711e1974a90f296aa69"
 dependencies = [
  "bevy",
  "noise",

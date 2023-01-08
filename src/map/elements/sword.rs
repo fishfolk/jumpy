@@ -52,6 +52,7 @@ fn pre_update_in_game(
         if let BuiltinElementKind::Sword {
             atlas_handle,
             can_rotate,
+            bouncyness,
             ..
         } = &map_element.builtin
         {
@@ -86,6 +87,7 @@ fn pre_update_in_game(
                     has_mass: true,
                     has_friction: true,
                     can_rotate: *can_rotate,
+                    bouncyness: *bouncyness,
                     ..default()
                 });
         }
@@ -247,6 +249,17 @@ fn update_in_game(
             }
         } else {
             sword.dropped_time += 1.0 / crate::FPS as f32;
+
+            let is_on_floor = body.is_on_ground || body.is_on_platform;
+            let is_deals_damage = (is_on_floor && body.velocity.x != 0.0)
+                || (!is_on_floor && body.velocity != Vec2::ZERO);
+            if is_deals_damage && sword.dropped_time >= *arm_delay {
+                collision_world
+                    .actor_collisions(item_ent)
+                    .into_iter()
+                    .filter(|&x| players.contains(x))
+                    .for_each(|player| commands.add(PlayerKillCommand::new(player)));
+            }
         }
 
         // If the item was dropped
@@ -279,16 +292,6 @@ fn update_in_game(
             transform.translation.y = player_transform.translation.y;
             transform.translation.x = player_transform.translation.x;
             transform.translation.z = player_transform.translation.z;
-        }
-
-        if parent.is_none() && body.velocity != Vec2::ZERO && sword.dropped_time >= *arm_delay {
-            for player in collision_world
-                .actor_collisions(item_ent)
-                .into_iter()
-                .filter(|&x| players.contains(x))
-            {
-                commands.add(PlayerKillCommand::new(player));
-            }
         }
     }
 }

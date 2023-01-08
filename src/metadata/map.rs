@@ -290,6 +290,8 @@ pub enum BuiltinElementKind {
         #[serde(default)]
         arm_delay: f32,
         throw_velocity: Vec2,
+        #[serde(default)]
+        bouncyness: f32,
     },
     /// The throwable crate item
     Crate {

@@ -416,6 +416,7 @@ impl AssetLoader for MapElementMetaLoader {
                     atlas_handle,
                     sound,
                     sound_handle,
+                    ..
                 } => {
                     let (path, handle) = get_relative_asset(load_context, self_path, atlas);
                     *atlas_handle = AssetHandle::new(path.clone(), handle.typed());

@@ -50,6 +50,7 @@ pub fn load_storage(
 type StorageData = HashMap<String, serde_yaml::Value>;
 
 /// Resource for accessing platform specific persistent storage apis through a simple interface.
+#[derive(Resource)]
 pub struct Storage {
     /// The in-memory storage data that we operate on when getting and setting values.
     data: Option<StorageData>,

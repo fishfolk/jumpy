@@ -24,13 +24,13 @@ impl Plugin for AudioPlugin {
 pub struct MusicChannel;
 pub struct EffectsChannel;
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Resource)]
 pub struct CurrentMusic {
     pub instance: Handle<AudioInstance>,
     pub idx: usize,
 }
 
-#[derive(Deref, DerefMut, Clone, Debug, Default)]
+#[derive(Deref, DerefMut, Clone, Debug, Default, Resource)]
 pub struct ShuffledPlaylist(pub Vec<Handle<AudioSource>>);
 
 fn setup_audio_defaults(

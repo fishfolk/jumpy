@@ -1,4 +1,3 @@
-use bevy_ggrs::RollbackIdProvider;
 use bones_matchmaker_proto::TargetClient;
 
 use crate::{
@@ -6,6 +5,7 @@ use crate::{
     networking::{
         client::NetClient,
         proto::{match_setup::MatchSetupMessage, ReliableGameMessageKind},
+        RollbackIdWrapper,
     },
     player::input::WantsGamePause,
     ui::pause_menu::PauseMenuPage,
@@ -24,7 +24,7 @@ pub struct MapSelectMenu<'w, 's> {
     commands: Commands<'w, 's>,
     localization: Res<'w, Localization>,
     map_assets: Res<'w, Assets<MapMeta>>,
-    rids: ResMut<'w, RollbackIdProvider>,
+    rids: ResMut<'w, RollbackIdWrapper>,
     reset_manager: ResetManager<'w, 's>,
     #[system_param(ignore)]
     _phantom: PhantomData<(&'w (), &'s ())>,
@@ -135,7 +135,7 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                         *params.pause_page = PauseMenuPage::Default;
                                         *params.menu_page = MenuPage::Home;
                                         params.reset_manager.reset_world();
-                                        params.commands.spawn().insert(map_handle.clone_weak());
+                                        params.commands.spawn(map_handle.clone_weak());
                                         params.commands.insert_resource(WantsGamePause(false));
                                         params
                                             .commands
@@ -168,9 +168,7 @@ fn handle_match_setup_messages(params: &mut MapSelectMenu) {
                         params.reset_manager.reset_world();
                         params
                             .commands
-                            .spawn()
-                            .insert(map_handle)
-                            .insert(Rollback::new(params.rids.next_id()));
+                            .spawn((map_handle, Rollback::new(params.rids.next_id())));
                         params
                             .commands
                             .insert_resource(NextState(GameState::InGame));

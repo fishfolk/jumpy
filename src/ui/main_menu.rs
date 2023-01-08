@@ -81,11 +81,12 @@ pub fn setup_main_menu(
     let height = game.camera_height as f32;
     let width = height * ratio;
     commands
-        .spawn()
-        .insert(Name::new("Menu Background Parent"))
-        .insert_bundle(VisibilityBundle::default())
-        .insert_bundle(TransformBundle::default())
-        .insert(MainMenuBackground)
+        .spawn((
+            Name::new("Menu Background Parent"),
+            VisibilityBundle::default(),
+            TransformBundle::default(),
+            MainMenuBackground,
+        ))
         .with_children(|parent| {
             parent
                 .spawn_bundle(SpriteBundle {
@@ -133,7 +134,7 @@ pub fn clean_up_main_menu(
 }
 
 /// Which page of the menu we are on
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Resource)]
 pub enum MenuPage {
     Home,
     Settings,

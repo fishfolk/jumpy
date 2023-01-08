@@ -40,7 +40,7 @@ pub struct RecvUnreliableGameMessage {
 
 /// A resource indicating which player this game client represents, and how many players there are
 /// in the match.j
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Resource)]
 pub struct ClientMatchInfo {
     pub player_idx: usize,
     pub player_count: usize,

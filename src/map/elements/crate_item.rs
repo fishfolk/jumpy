@@ -3,7 +3,9 @@
 //! This module is inconsistently named with the rest of the modules ( i.e. has an `_item` suffix )
 //! because `crate` is a Rust keyword.
 
-use crate::{physics::collisions::TileCollision, player::PlayerKillCommand};
+use crate::{
+    networking::RollbackIdWrapper, physics::collisions::TileCollision, player::PlayerKillCommand,
+};
 
 use super::*;
 
@@ -63,7 +65,7 @@ fn pre_update_in_game(
         (Entity, &Sort, &Handle<MapElementMeta>, &Transform),
         Without<MapElementHydrated>,
     >,
-    mut ridp: ResMut<RollbackIdProvider>,
+    mut ridp: ResMut<RollbackIdWrapper>,
     element_assets: ResMut<Assets<MapElementMeta>>,
 ) {
     // Hydrate any newly-spawned crates
@@ -80,36 +82,36 @@ fn pre_update_in_game(
         {
             commands.entity(entity).insert(MapElementHydrated);
 
-            commands
-                .spawn()
-                .insert(Rollback::new(ridp.next_id()))
-                .insert(Item {
+            commands.spawn((
+                Rollback::new(ridp.next_id()),
+                Item {
                     script: "core:crate".into(),
-                })
-                .insert(IdleCrateItem { spawner: entity })
-                .insert(Name::new("Item: Crate"))
-                .insert(AnimatedSprite {
+                },
+                IdleCrateItem { spawner: entity },
+                Name::new("Item: Crate"),
+                AnimatedSprite {
                     start: 0,
                     end: 0,
                     atlas: atlas_handle.inner.clone(),
                     repeat: false,
                     ..default()
-                })
-                .insert(map_element_handle.clone_weak())
-                .insert_bundle(VisibilityBundle::default())
-                .insert(MapRespawnPoint(transform.translation))
-                .insert_bundle(TransformBundle {
+                },
+                map_element_handle.clone_weak(),
+                VisibilityBundle::default(),
+                MapRespawnPoint(transform.translation),
+                TransformBundle {
                     local: *transform,
                     ..default()
-                })
-                .insert(KinematicBody {
+                },
+                KinematicBody {
                     size: *body_size,
                     offset: *body_offset,
                     gravity: 1.0,
                     has_mass: true,
                     has_friction: true,
                     ..default()
-                });
+                },
+            ));
         }
     }
 }
@@ -132,7 +134,7 @@ fn update_idle_crates(
         ),
         Without<PlayerIdx>,
     >,
-    mut ridp: ResMut<RollbackIdProvider>,
+    mut ridp: ResMut<RollbackIdWrapper>,
     element_assets: ResMut<Assets<MapElementMeta>>,
 ) {
     let mut items = grenades.iter_mut().collect::<Vec<_>>();
@@ -183,34 +185,34 @@ fn update_idle_crates(
                 commands.entity(item_ent).despawn();
 
                 // Spawn a new, lit grenade
-                commands
-                    .spawn()
-                    .insert(Rollback::new(ridp.next_id()))
-                    .insert(Name::new("Crate ( Thrown )"))
-                    .insert(Transform::from_translation(
+                commands.spawn((
+                    Rollback::new(ridp.next_id()),
+                    Name::new("Crate ( Thrown )"),
+                    Transform::from_translation(
                         player_transform.translation
                             + (*grab_offset * horizontal_flip_factor).extend(0.0),
-                    ))
-                    .insert(GlobalTransform::default())
-                    .insert(Visibility::default())
-                    .insert(ComputedVisibility::default())
-                    .insert(AnimatedSprite {
+                    ),
+                    GlobalTransform::default(),
+                    Visibility::default(),
+                    ComputedVisibility::default(),
+                    AnimatedSprite {
                         atlas: atlas_handle.inner.clone(),
                         ..default()
-                    })
-                    .insert(meta_handle.clone_weak())
-                    .insert(body.clone())
-                    .insert(ThrownCrateItem {
+                    },
+                    meta_handle.clone_weak(),
+                    body.clone(),
+                    ThrownCrateItem {
                         spawner: crate_item.spawner,
                         owner: parent.get(),
                         ..default()
-                    })
-                    .insert(KinematicBody {
+                    },
+                    KinematicBody {
                         velocity: *throw_velocity * horizontal_flip_factor + player_body.velocity,
                         is_deactivated: false,
                         fall_through: true,
                         ..body.clone()
-                    });
+                    },
+                ));
             }
         }
 
@@ -255,7 +257,7 @@ fn update_thrown_crates(
         ),
         Without<PlayerIdx>,
     >,
-    mut ridp: ResMut<RollbackIdProvider>,
+    mut ridp: ResMut<RollbackIdWrapper>,
     element_assets: ResMut<Assets<MapElementMeta>>,
     player_inputs: Res<PlayerInputs>,
     effects: Res<AudioChannel<EffectsChannel>>,
@@ -313,24 +315,22 @@ fn update_thrown_crates(
                 .remove::<MapElementHydrated>();
 
             // Spawn the explosion sprite entity
-            commands
-                .spawn()
-                .insert(Rollback::new(ridp.next_id()))
-                .insert(*transform)
-                .insert(GlobalTransform::default())
-                .insert(Visibility::default())
-                .insert(ComputedVisibility::default())
-                .insert(AnimatedSprite {
+            commands.spawn((
+                Rollback::new(ridp.next_id()),
+                *transform,
+                GlobalTransform::default(),
+                Visibility::default(),
+                ComputedVisibility::default(),
+                AnimatedSprite {
                     start: 0,
                     end: *breaking_anim_length,
                     atlas: breaking_atlas_handle.inner.clone(),
                     repeat: false,
                     fps: *breaking_anim_fps,
                     ..default()
-                })
-                .insert(Lifetime::new(
-                    *breaking_anim_fps * *breaking_anim_length as f32,
-                ));
+                },
+                Lifetime::new(*breaking_anim_fps * *breaking_anim_length as f32),
+            ));
         }
     }
 }

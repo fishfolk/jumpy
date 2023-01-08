@@ -1,4 +1,4 @@
-use crate::{metadata::BuiltinElementKind, utils::Sort};
+use crate::{metadata::BuiltinElementKind, networking::RollbackIdWrapper, utils::Sort};
 
 use super::*;
 
@@ -20,8 +20,8 @@ impl Plugin for PlayerSpawnerPlugin {
 #[reflect(Component, Default)]
 pub struct PlayerSpawner;
 
-#[derive(Component, Reflect, Default, Deref, DerefMut)]
-#[reflect(Component, Default)]
+#[derive(Resource, Reflect, Default, Deref, DerefMut)]
+#[reflect(Resource, Default)]
 pub struct CurrentPlayerSpawner(pub usize);
 
 fn pre_update_in_game(
@@ -33,7 +33,7 @@ fn pre_update_in_game(
         (Entity, &Sort, &Transform, &Handle<MapElementMeta>),
         Without<MapElementHydrated>,
     >,
-    mut ridp: ResMut<RollbackIdProvider>,
+    mut ridp: ResMut<RollbackIdWrapper>,
     mut current_spawner: ResMut<CurrentPlayerSpawner>,
     element_assets: Res<Assets<MapElementMeta>>,
 ) {
@@ -67,11 +67,11 @@ fn pre_update_in_game(
             let mut spawn_location = spawn_point.translation;
             spawn_location.z += i as f32 * 0.1;
 
-            commands
-                .spawn()
-                .insert(PlayerIdx(i))
-                .insert(Transform::from_translation(spawn_location))
-                .insert(Rollback::new(ridp.next_id()));
+            commands.spawn((
+                PlayerIdx(i),
+                Transform::from_translation(spawn_location),
+                Rollback::new(ridp.next_id()),
+            ));
         }
     }
 }

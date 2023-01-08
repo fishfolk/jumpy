@@ -267,6 +267,8 @@ impl AssetLoader for PlayerMetaLoader {
                     meta.spritesheet.tile_size.as_vec2(),
                     meta.spritesheet.columns,
                     meta.spritesheet.rows,
+                    None,
+                    None,
                 ))
                 .with_dependency(atlas_path.clone()),
             );
@@ -281,6 +283,8 @@ impl AssetLoader for PlayerMetaLoader {
                         meta.spritesheet.tile_size.as_vec2(),
                         meta.spritesheet.columns,
                         meta.spritesheet.rows,
+                        None,
+                        None,
                     )),
                 );
                 meta.spritesheet.decoration_handles.push(atlas_handle);
@@ -651,5 +655,14 @@ impl AssetLoader for EguiFontLoader {
 
     fn extensions(&self) -> &[&str] {
         &["ttf"]
+    }
+}
+
+#[derive(Debug, Clone, Resource, Deref, DerefMut)]
+pub struct EguiFontDefinitions(pub egui::FontDefinitions);
+
+impl EguiFontDefinitions {
+    pub fn get_fonts(&self) -> &egui::FontDefinitions {
+        &self.0
     }
 }

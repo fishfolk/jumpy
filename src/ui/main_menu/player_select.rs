@@ -14,7 +14,7 @@ use crate::{
 
 use super::*;
 
-#[derive(Default)]
+#[derive(Default, Resource)]
 pub struct PlayerSelectState {
     player_slots: [PlayerSlot; MAX_PLAYERS],
 }

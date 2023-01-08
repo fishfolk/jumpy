@@ -1,3 +1,5 @@
+use crate::networking::RollbackIdWrapper;
+
 use super::*;
 
 pub struct SwordPlugin;
@@ -31,7 +33,7 @@ fn pre_update_in_game(
         (Entity, &Sort, &Handle<MapElementMeta>, &Transform),
         Without<MapElementHydrated>,
     >,
-    mut ridp: ResMut<RollbackIdProvider>,
+    mut ridp: ResMut<RollbackIdWrapper>,
     element_assets: Res<Assets<MapElementMeta>>,
 ) {
     // Hydrate any newly-spawned swords
@@ -43,37 +45,39 @@ fn pre_update_in_game(
         if let BuiltinElementKind::Sword { atlas_handle, .. } = &map_element.builtin {
             commands.entity(entity).insert(MapElementHydrated);
 
-            commands
-                .spawn()
-                .insert(Rollback::new(ridp.next_id()))
-                .insert(Item {
+            commands.spawn((
+                Rollback::new(ridp.next_id()),
+                Item {
                     script: "core:sword".into(),
-                })
-                .insert(Name::new("Item: Sword"))
-                .insert(SwordState::default())
-                .insert(AnimatedSprite {
+                },
+                Name::new("Item: Sword"),
+                SwordState::default(),
+                AnimatedSprite {
                     start: 0,
                     end: 0,
                     atlas: atlas_handle.inner.clone(),
                     repeat: false,
                     fps: ATTACK_FPS,
                     ..default()
-                })
-                .insert_bundle(VisibilityBundle::default())
-                .insert(MapRespawnPoint(transform.translation))
-                .insert_bundle(TransformBundle {
-                    local: *transform,
-                    ..default()
-                })
-                .insert(map_element_handle.clone())
-                .insert(KinematicBody {
-                    size: Vec2::new(64.0, 16.0),
-                    offset: Vec2::new(0.0, 38.0),
-                    gravity: 1.0,
-                    has_mass: true,
-                    has_friction: true,
-                    ..default()
-                });
+                },
+                (
+                    VisibilityBundle::default(),
+                    MapRespawnPoint(transform.translation),
+                    TransformBundle {
+                        local: *transform,
+                        ..default()
+                    },
+                    map_element_handle.clone(),
+                    KinematicBody {
+                        size: Vec2::new(64.0, 16.0),
+                        offset: Vec2::new(0.0, 38.0),
+                        gravity: 1.0,
+                        has_mass: true,
+                        has_friction: true,
+                        ..default()
+                    },
+                ),
+            ));
         }
     }
 }
@@ -95,7 +99,7 @@ fn update_in_game(
         ),
         Without<PlayerIdx>,
     >,
-    mut ridp: ResMut<RollbackIdProvider>,
+    mut ridp: ResMut<RollbackIdWrapper>,
     player_inputs: Res<PlayerInputs>,
     effects: Res<AudioChannel<EffectsChannel>>,
     element_assets: Res<Assets<MapElementMeta>>,
@@ -103,14 +107,14 @@ fn update_in_game(
     // Helper to spawn damage regions
     let mut spawn_damage_region =
         |commands: &mut Commands, pos: Vec2, size: Vec2, owner: Entity| {
-            commands
-                .spawn()
-                .insert(Rollback::new(ridp.next_id()))
-                .insert(Transform::from_translation(pos.extend(0.0)))
-                .insert(GlobalTransform::default())
-                .insert(DamageRegion { size })
-                .insert(DamageRegionOwner(owner))
-                .insert(Lifetime::new(2.0 / 60.0));
+            commands.spawn((
+                Rollback::new(ridp.next_id()),
+                Transform::from_translation(pos.extend(0.0)),
+                GlobalTransform::default(),
+                DamageRegion { size },
+                DamageRegionOwner(owner),
+                Lifetime::new(2.0 / 60.0),
+            ));
         };
 
     for (

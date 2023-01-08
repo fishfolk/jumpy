@@ -1,5 +1,7 @@
 use std::time::Duration;
 
+use crate::networking::RollbackIdWrapper;
+
 use super::*;
 
 pub struct GrenadePlugin;
@@ -57,7 +59,7 @@ fn pre_update_in_game(
         (Entity, &Sort, &Handle<MapElementMeta>, &Transform),
         Without<MapElementHydrated>,
     >,
-    mut ridp: ResMut<RollbackIdProvider>,
+    mut ridp: ResMut<RollbackIdWrapper>,
     element_assets: ResMut<Assets<MapElementMeta>>,
 ) {
     // Hydrate any newly-spawned grenades
@@ -76,29 +78,28 @@ fn pre_update_in_game(
         {
             commands.entity(entity).insert(MapElementHydrated);
 
-            commands
-                .spawn()
-                .insert(Rollback::new(ridp.next_id()))
-                .insert(Item {
+            commands.spawn((
+                Rollback::new(ridp.next_id()),
+                Item {
                     script: "core:grenade".into(),
-                })
-                .insert(IdleGrenade { spawner: entity })
-                .insert(Name::new("Item: Grenade"))
-                .insert(AnimatedSprite {
+                },
+                IdleGrenade { spawner: entity },
+                Name::new("Item: Grenade"),
+                AnimatedSprite {
                     start: 0,
                     end: 0,
                     atlas: atlas_handle.inner.clone(),
                     repeat: false,
                     ..default()
-                })
-                .insert(map_element_handle.clone_weak())
-                .insert_bundle(VisibilityBundle::default())
-                .insert(MapRespawnPoint(transform.translation))
-                .insert_bundle(TransformBundle {
+                },
+                map_element_handle.clone_weak(),
+                VisibilityBundle::default(),
+                MapRespawnPoint(transform.translation),
+                TransformBundle {
                     local: *transform,
                     ..default()
-                })
-                .insert(KinematicBody {
+                },
+                KinematicBody {
                     size: *body_size,
                     offset: *body_offset,
                     gravity: 1.0,
@@ -107,7 +108,8 @@ fn pre_update_in_game(
                     can_rotate: *can_rotate,
                     bouncyness: *bouncyness,
                     ..default()
-                });
+                },
+            ));
         }
     }
 }
@@ -237,7 +239,7 @@ fn update_lit_grenades(
         ),
         Without<PlayerIdx>,
     >,
-    mut ridp: ResMut<RollbackIdProvider>,
+    mut ridp: ResMut<RollbackIdWrapper>,
     element_assets: ResMut<Assets<MapElementMeta>>,
     player_inputs: Res<PlayerInputs>,
     effects: Res<AudioChannel<EffectsChannel>>,
@@ -339,34 +341,35 @@ fn update_lit_grenades(
             let mut spawn_transform = global_transform.compute_transform();
             spawn_transform.rotation = Quat::IDENTITY;
 
-            commands
-                .spawn()
-                .insert(Rollback::new(ridp.next_id()))
-                .insert(spawn_transform)
-                .insert(GlobalTransform::default())
-                .insert(Visibility::default())
-                .insert(ComputedVisibility::default())
-                .insert(DamageRegion {
+            commands.spawn((
+                Rollback::new(ridp.next_id()),
+                spawn_transform,
+                GlobalTransform::default(),
+                Visibility::default(),
+                ComputedVisibility::default(),
+                DamageRegion {
                     size: *damage_region_size,
-                })
-                .insert(Lifetime::new(*damage_region_lifetime));
+                },
+                Lifetime::new(*damage_region_lifetime),
+            ));
+
             // Spawn the explosion sprite entity
-            commands
-                .spawn()
-                .insert(Rollback::new(ridp.next_id()))
-                .insert(spawn_transform)
-                .insert(GlobalTransform::default())
-                .insert(Visibility::default())
-                .insert(ComputedVisibility::default())
-                .insert(AnimatedSprite {
+            commands.spawn((
+                Rollback::new(ridp.next_id()),
+                spawn_transform,
+                GlobalTransform::default(),
+                Visibility::default(),
+                ComputedVisibility::default(),
+                AnimatedSprite {
                     start: 0,
                     end: *explosion_frames,
                     atlas: explosion_atlas_handle.inner.clone(),
                     repeat: false,
                     fps: *explosion_fps,
                     ..default()
-                })
-                .insert(Lifetime::new(*explosion_lifetime));
+                },
+                Lifetime::new(*explosion_lifetime),
+            ));
         }
     }
 }

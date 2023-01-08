@@ -4,7 +4,6 @@ use bevy::{
 };
 use bevy_egui::*;
 use bevy_fluent::Localization;
-use bevy_inspector_egui::WorldInspectorParams;
 
 use crate::{localization::LocalizationExt, physics::debug::PhysicsDebugRenderConfig};
 
@@ -35,19 +34,18 @@ impl Plugin for DebugToolsPlugin {
 //     }
 // }
 
-#[derive(Default, Deref, DerefMut)]
+#[derive(Default, Deref, DerefMut, Resource)]
 struct ShowFameTimeDiagnostics(pub bool);
 
 /// System that renders the debug tools window which can be toggled by pressing F12
 fn debug_tools_window(
     // mut show_network_visualizer: ResMut<ShowNetworkVisualizer>,
     mut visible: Local<bool>,
+    input: Res<Input<KeyCode>>,
+    localization: Res<Localization>,
     mut egui_context: ResMut<EguiContext>,
     mut physics_debug_render: ResMut<PhysicsDebugRenderConfig>,
     mut show_frame_diagnostics: ResMut<ShowFameTimeDiagnostics>,
-    localization: Res<Localization>,
-    input: Res<Input<KeyCode>>,
-    mut inspector: ResMut<WorldInspectorParams>,
 ) {
     let ctx = egui_context.ctx_mut();
 

@@ -47,45 +47,47 @@ pub struct CameraBundle {
 
 pub fn spawn_game_camera(commands: &mut Commands) -> Entity {
     commands
-        .spawn()
-        .insert(Name::new("Game Camera"))
-        .insert(GameCamera)
-        .insert_bundle(CameraBundle {
-            camera_bundle: Camera2dBundle {
-                // This is different than just omitting this transform field because
-                // Camera2DBundle's default transform is not the same as Transform::default().
-                transform: default(),
-                ..default()
+        .spawn((
+            Name::new("Game Camera"),
+            GameCamera,
+            CameraBundle {
+                camera_bundle: Camera2dBundle {
+                    // This is different than just omitting this transform field because
+                    // Camera2DBundle's default transform is not the same as Transform::default().
+                    transform: default(),
+                    ..default()
+                },
+                render_layers: RenderLayers::layer(GameRenderLayers::DEFAULT)
+                    .with(GameRenderLayers::GAME),
+                parallax_camera_component: ParallaxCameraComponent,
             },
-            render_layers: RenderLayers::layer(GameRenderLayers::DEFAULT)
-                .with(GameRenderLayers::GAME),
-            parallax_camera_component: ParallaxCameraComponent,
-        })
+        ))
         .id()
 }
 
 pub fn spawn_editor_camera(commands: &mut Commands) -> Entity {
     commands
-        .spawn()
-        .insert(Name::new("Editor Camera"))
-        .insert(EditorCamera)
-        .insert_bundle(CameraBundle {
-            camera_bundle: Camera2dBundle {
-                // This is different than just omitting this transform field because
-                // Camera2DBundle's default transform is not the same as Transform::default().
-                transform: default(),
-                camera: Camera {
-                    // Disable editor camera by default
-                    is_active: false,
+        .spawn((
+            Name::new("Editor Camera"),
+            EditorCamera,
+            CameraBundle {
+                camera_bundle: Camera2dBundle {
+                    // This is different than just omitting this transform field because
+                    // Camera2DBundle's default transform is not the same as Transform::default().
+                    transform: default(),
+                    camera: Camera {
+                        // Disable editor camera by default
+                        is_active: false,
+                        ..default()
+                    },
                     ..default()
                 },
-                ..default()
-            },
 
-            render_layers: RenderLayers::layer(GameRenderLayers::DEFAULT)
-                .with(GameRenderLayers::EDITOR),
-            parallax_camera_component: ParallaxCameraComponent,
-        })
+                render_layers: RenderLayers::layer(GameRenderLayers::DEFAULT)
+                    .with(GameRenderLayers::EDITOR),
+                parallax_camera_component: ParallaxCameraComponent,
+            },
+        ))
         .id()
 }
 

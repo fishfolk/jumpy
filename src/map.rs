@@ -7,6 +7,7 @@ use bevy_prototype_lyon::{prelude::*, shapes::Rectangle};
 use crate::{
     camera::GameRenderLayers,
     metadata::{MapElementMeta, MapLayerKind, MapLayerMeta, MapMeta},
+    networking::RollbackIdWrapper,
     physics::collisions::{CollisionLayerTag, TileCollision},
     player::{PlayerIdx, PlayerKillCommand},
     prelude::*,
@@ -66,7 +67,7 @@ pub fn hydrate_map(
     element_assets: ResMut<Assets<MapElementMeta>>,
     // mut active_scripts: ResMut<ActiveScripts>,
     // mut map_scripts: ResMut<MapScripts>,
-    mut rids: ResMut<RollbackIdProvider>,
+    mut rids: ResMut<RollbackIdWrapper>,
     unspawned_maps: Query<(Entity, &AssetHandle<MapMeta>), Without<MapMeta>>,
     mut session_manager: SessionManager,
 ) {
@@ -106,11 +107,12 @@ pub fn hydrate_map(
 
     // Spawn the grid
     let grid_entity = commands
-        .spawn()
-        .insert(Name::new("Grid"))
-        .insert(MapGridView)
-        .insert_bundle(grid)
-        .insert(RenderLayers::layer(GameRenderLayers::EDITOR))
+        .spawn((
+            Name::new("Grid"),
+            MapGridView,
+            grid,
+            RenderLayers::layer(GameRenderLayers::EDITOR),
+        ))
         .id();
     map_children.push(grid_entity);
 
@@ -129,8 +131,7 @@ pub fn hydrate_map(
         match &layer.kind {
             MapLayerKind::Tile(tile_layer) => {
                 let layer_entity = commands
-                    .spawn()
-                    .insert(Name::new(format!("Map Layer: {layer_id}")))
+                    .spawn(Name::new(format!("Map Layer: {layer_id}")))
                     .id();
                 let mut storage = TileStorage::empty(tilemap_size);
 
@@ -143,7 +144,7 @@ pub fn hydrate_map(
 
                     let half_tile_x = map.tile_size.x as f32 / 2.0;
                     let half_tile_y = map.tile_size.y as f32 / 2.0;
-                    let mut tile_entity_commands = commands.spawn();
+                    let mut tile_entity_commands = commands.spawn_empty();
 
                     tile_entity_commands
                         .insert(Name::new(format!(
@@ -153,7 +154,7 @@ pub fn hydrate_map(
                         .insert_bundle(TileBundle {
                             position: tile_pos,
                             tilemap_id: TilemapId(layer_entity),
-                            texture: TileTexture(tile.idx),
+                            texture_index: TileTextureIndex(tile.idx),
                             ..default()
                         })
                         .insert_bundle(TransformBundle {
@@ -181,6 +182,7 @@ pub fn hydrate_map(
 
                 layer_commands
                     .insert_bundle(TilemapBundle {
+                        storage,
                         grid_size: TilemapGridSize {
                             x: map.grid_size.x as f32,
                             y: map.grid_size.y as f32,
@@ -189,9 +191,10 @@ pub fn hydrate_map(
                             x: map.tile_size.x as f32,
                             y: map.tile_size.y as f32,
                         },
-                        texture: TilemapTexture(tile_layer.tilemap_handle.inner.clone_weak()),
-                        storage,
                         transform: Transform::from_xyz(0.0, 0.0, -100.0 + i as f32),
+                        texture: TilemapTexture::Single(
+                            tile_layer.tilemap_handle.inner.clone_weak(),
+                        ),
                         ..default()
                     })
                     .push_children(&tile_entities);
@@ -218,25 +221,19 @@ pub fn hydrate_map(
                     current_map_element_idx += 1;
 
                     let entity = commands
-                        .spawn()
-                        .insert(Name::new(format!(
-                            "Map Element ( {layer_id} ): {element_name}"
-                        )))
-                        .insert(Visibility::default())
-                        .insert(ComputedVisibility::default())
-                        .insert(Transform::from_xyz(
-                            element.pos.x,
-                            element.pos.y,
-                            -100.0 + i as f32,
+                        .spawn((
+                            Name::new(format!("Map Element ( {layer_id} ): {element_name}")),
+                            Visibility::default(),
+                            ComputedVisibility::default(),
+                            Transform::from_xyz(element.pos.x, element.pos.y, -100.0 + i as f32),
+                            GlobalTransform::default(),
+                            sort,
                         ))
-                        .insert(GlobalTransform::default())
-                        .insert(sort)
                         .with_children(|parent| {
-                            parent
-                                .spawn()
-                                .insert(Name::new("Map Element Debug Rect"))
-                                .insert(RenderLayers::layer(GameRenderLayers::EDITOR))
-                                .insert_bundle(GeometryBuilder::build_as(
+                            parent.spawn((
+                                Name::new("Map Element Debug Rect"),
+                                RenderLayers::layer(GameRenderLayers::EDITOR),
+                                GeometryBuilder::build_as(
                                     &Rectangle {
                                         extents: element_meta.editor_size,
                                         ..default()
@@ -247,7 +244,8 @@ pub fn hydrate_map(
                                         0.5,
                                     )),
                                     default(),
-                                ));
+                                ),
+                            ));
                         })
                         .insert(element.element_handle.inner.clone())
                         .insert(Rollback::new(rids.next_id()))

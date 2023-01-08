@@ -78,7 +78,7 @@ fn unpause_system(
     }
 }
 
-#[derive(Default, Eq, PartialEq, Copy, Clone)]
+#[derive(Default, Eq, PartialEq, Copy, Clone, Resource)]
 pub enum PauseMenuPage {
     #[default]
     Default,
@@ -180,7 +180,7 @@ pub fn pause_menu_default(
                                 reset_controller.reset_world();
 
                                 if let Some(handle) = map_handle {
-                                    commands.spawn().insert(handle);
+                                    commands.spawn(handle);
                                 }
 
                                 session_manager.start_session();

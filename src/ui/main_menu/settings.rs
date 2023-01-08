@@ -8,7 +8,7 @@ mod networking;
 mod sound;
 
 /// Which settings tab we are on
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Resource)]
 pub enum SettingsTab {
     Controls,
     #[allow(unused)] // TODO: Just for now until we get sound settings setup
@@ -22,7 +22,7 @@ impl Default for SettingsTab {
     }
 }
 
-#[derive(Default, Deref, DerefMut)]
+#[derive(Default, Deref, DerefMut, Resource)]
 pub struct ModifiedSettings(pub Option<Settings>);
 
 #[derive(SystemParam)]

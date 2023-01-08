@@ -161,19 +161,20 @@ fn animate_sprites(
         for (i, atlas) in pending_stacks.into_iter().enumerate() {
             if let Some(atlas) = atlas {
                 let stack_ent = commands
-                    .spawn()
-                    .insert_bundle(SpriteSheetBundle {
-                        texture_atlas: atlas.clone_weak(),
-                        sprite: TextureAtlasSprite {
-                            index: sprite_index,
-                            flip_x: animated_sprite.flip_x,
-                            flip_y: animated_sprite.flip_y,
+                    .spawn((
+                        SpriteSheetBundle {
+                            texture_atlas: atlas.clone_weak(),
+                            sprite: TextureAtlasSprite {
+                                index: sprite_index,
+                                flip_x: animated_sprite.flip_x,
+                                flip_y: animated_sprite.flip_y,
+                                ..default()
+                            },
+                            transform: Transform::from_xyz(0.0, 0.0, (i + 1) as f32 * STACK_Z_DIFF),
                             ..default()
                         },
-                        transform: Transform::from_xyz(0.0, 0.0, (i + 1) as f32 * STACK_Z_DIFF),
-                        ..default()
-                    })
-                    .insert(StackedAtlas)
+                        StackedAtlas,
+                    ))
                     .id();
                 commands.entity(sprite_ent).add_child(stack_ent);
             }

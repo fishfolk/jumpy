@@ -105,7 +105,7 @@ pub async fn open_connection(
 }
 
 /// Networking client. Can be cloned to get another handle to the same network client.
-#[derive(Clone)]
+#[derive(Clone, Resource)]
 pub struct NetClient(Arc<NetClientInner>);
 
 struct NetClientInner {

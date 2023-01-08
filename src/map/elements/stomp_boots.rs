@@ -5,7 +5,7 @@
 
 use std::cmp::Ordering;
 
-use crate::{physics::collisions::Rect, player::PlayerKillCommand};
+use crate::{networking::RollbackIdWrapper, physics::collisions::Rect, player::PlayerKillCommand};
 
 use super::*;
 
@@ -35,7 +35,7 @@ fn pre_update_in_game(
         (Entity, &Sort, &Handle<MapElementMeta>, &Transform),
         Without<MapElementHydrated>,
     >,
-    mut ridp: ResMut<RollbackIdProvider>,
+    mut ridp: ResMut<RollbackIdWrapper>,
     element_assets: ResMut<Assets<MapElementMeta>>,
 ) {
     // Hydrate any newly-spawned crates
@@ -52,35 +52,35 @@ fn pre_update_in_game(
         {
             commands.entity(entity).insert(MapElementHydrated);
 
-            commands
-                .spawn()
-                .insert(Rollback::new(ridp.next_id()))
-                .insert(Item {
+            commands.spawn((
+                Rollback::new(ridp.next_id()),
+                Item {
                     script: "core:stomp_boots".into(),
-                })
-                .insert(Name::new("Item: Stomp Boots"))
-                .insert(IdleStompBoots { spawner: entity })
-                .insert(AnimatedSprite {
+                },
+                Name::new("Item: Stomp Boots"),
+                IdleStompBoots { spawner: entity },
+                AnimatedSprite {
                     start: 0,
                     end: 0,
                     atlas: map_icon_handle.clone_weak(),
                     repeat: false,
                     ..default()
-                })
-                .insert(map_element_handle.clone_weak())
-                .insert_bundle(VisibilityBundle::default())
-                .insert_bundle(TransformBundle {
+                },
+                map_element_handle.clone_weak(),
+                VisibilityBundle::default(),
+                TransformBundle {
                     local: *transform,
                     ..default()
-                })
-                .insert(KinematicBody {
+                },
+                KinematicBody {
                     size: *body_size,
                     offset: *body_offset,
                     gravity: 1.0,
                     has_mass: true,
                     has_friction: true,
                     ..default()
-                });
+                },
+            ));
         }
     }
 }

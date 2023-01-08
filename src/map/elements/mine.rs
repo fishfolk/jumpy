@@ -3,7 +3,7 @@
 //! This module is inconsistently named with the rest of the modules ( i.e. has an `_item` suffix )
 //! because `crate` is a Rust keyword.
 
-use crate::player::PlayerKillCommand;
+use crate::{networking::RollbackIdWrapper, player::PlayerKillCommand};
 
 use super::*;
 
@@ -60,7 +60,7 @@ fn pre_update_in_game(
         (Entity, &Sort, &Handle<MapElementMeta>, &Transform),
         Without<MapElementHydrated>,
     >,
-    mut ridp: ResMut<RollbackIdProvider>,
+    mut ridp: ResMut<RollbackIdWrapper>,
     element_assets: ResMut<Assets<MapElementMeta>>,
 ) {
     // Hydrate any newly-spawned crates
@@ -77,36 +77,36 @@ fn pre_update_in_game(
         {
             commands.entity(entity).insert(MapElementHydrated);
 
-            commands
-                .spawn()
-                .insert(Rollback::new(ridp.next_id()))
-                .insert(Item {
+            commands.spawn((
+                Rollback::new(ridp.next_id()),
+                Item {
                     script: "core:mine".into(),
-                })
-                .insert(IdleMine { spawner: entity })
-                .insert(Name::new("Item: Mine"))
-                .insert(AnimatedSprite {
+                },
+                IdleMine { spawner: entity },
+                Name::new("Item: Mine"),
+                AnimatedSprite {
                     start: 0,
                     end: 0,
                     atlas: atlas_handle.inner.clone(),
                     repeat: false,
                     ..default()
-                })
-                .insert(map_element_handle.clone_weak())
-                .insert_bundle(VisibilityBundle::default())
-                .insert(MapRespawnPoint(transform.translation))
-                .insert_bundle(TransformBundle {
+                },
+                map_element_handle.clone_weak(),
+                VisibilityBundle::default(),
+                MapRespawnPoint(transform.translation),
+                TransformBundle {
                     local: *transform,
                     ..default()
-                })
-                .insert(KinematicBody {
+                },
+                KinematicBody {
                     size: *body_size,
                     offset: *body_offset,
                     gravity: 1.0,
                     has_mass: true,
                     has_friction: true,
                     ..default()
-                });
+                },
+            ));
         }
     }
 }
@@ -129,7 +129,7 @@ fn update_idle_mines(
         ),
         Without<PlayerIdx>,
     >,
-    mut ridp: ResMut<RollbackIdProvider>,
+    mut ridp: ResMut<RollbackIdWrapper>,
     element_assets: ResMut<Assets<MapElementMeta>>,
 ) {
     let mut items = grenades.iter_mut().collect::<Vec<_>>();
@@ -182,30 +182,30 @@ fn update_idle_mines(
                 // Spawn a new, thrown mine
                 let pos = player_transform.translation
                     + (*grab_offset * horizontal_flip_factor).extend(0.0);
-                commands
-                    .spawn()
-                    .insert(Rollback::new(ridp.next_id()))
-                    .insert(Name::new("Mine ( Thrown )"))
-                    .insert(MapRespawnPoint(pos))
-                    .insert(Transform::from_translation(pos))
-                    .insert(GlobalTransform::default())
-                    .insert(Visibility::default())
-                    .insert(ComputedVisibility::default())
-                    .insert(AnimatedSprite {
+                commands.spawn((
+                    Rollback::new(ridp.next_id()),
+                    Name::new("Mine ( Thrown )"),
+                    MapRespawnPoint(pos),
+                    Transform::from_translation(pos),
+                    GlobalTransform::default(),
+                    Visibility::default(),
+                    ComputedVisibility::default(),
+                    AnimatedSprite {
                         atlas: atlas_handle.inner.clone(),
                         ..default()
-                    })
-                    .insert(meta_handle.clone_weak())
-                    .insert(body.clone())
-                    .insert(ThrownMine {
+                    },
+                    meta_handle.clone_weak(),
+                    body.clone(),
+                    ThrownMine {
                         spawner: crate_item.spawner,
                         ..default()
-                    })
-                    .insert(KinematicBody {
+                    },
+                    KinematicBody {
                         velocity: *throw_velocity * horizontal_flip_factor + player_body.velocity,
                         is_deactivated: false,
                         ..body.clone()
-                    });
+                    },
+                ));
             }
         }
 
@@ -251,7 +251,7 @@ fn update_thrown_mines(
         ),
         Without<PlayerIdx>,
     >,
-    mut ridp: ResMut<RollbackIdProvider>,
+    mut ridp: ResMut<RollbackIdWrapper>,
     element_assets: ResMut<Assets<MapElementMeta>>,
     player_inputs: Res<PlayerInputs>,
     effects: Res<AudioChannel<EffectsChannel>>,
@@ -315,36 +315,35 @@ fn update_thrown_mines(
                 .remove::<MapElementHydrated>();
 
             // Spawn the damage region entity
-            commands
-                .spawn()
-                .insert(Rollback::new(ridp.next_id()))
-                .insert(*transform)
-                .insert(GlobalTransform::default())
-                .insert(Visibility::default())
-                .insert(ComputedVisibility::default())
-                .insert(DamageRegion {
+            commands.spawn((
+                Rollback::new(ridp.next_id()),
+                *transform,
+                GlobalTransform::default(),
+                Visibility::default(),
+                ComputedVisibility::default(),
+                DamageRegion {
                     size: *damage_region_size,
-                })
-                .insert(Lifetime::new(*damage_region_lifetime));
+                },
+                Lifetime::new(*damage_region_lifetime),
+            ));
+
             // Spawn the explosion sprite entity
-            commands
-                .spawn()
-                .insert(Rollback::new(ridp.next_id()))
-                .insert(*transform)
-                .insert(GlobalTransform::default())
-                .insert(Visibility::default())
-                .insert(ComputedVisibility::default())
-                .insert(AnimatedSprite {
+            commands.spawn((
+                Rollback::new(ridp.next_id()),
+                *transform,
+                GlobalTransform::default(),
+                Visibility::default(),
+                ComputedVisibility::default(),
+                AnimatedSprite {
                     start: 0,
                     end: *explosion_anim_frames,
                     atlas: explosion_atlas_handle.inner.clone(),
                     repeat: false,
                     fps: *explosion_anim_fps,
                     ..default()
-                })
-                .insert(Lifetime::new(
-                    *explosion_anim_fps * *explosion_anim_frames as f32,
-                ));
+                },
+                Lifetime::new(*explosion_anim_fps * *explosion_anim_frames as f32),
+            ));
         }
     }
 }

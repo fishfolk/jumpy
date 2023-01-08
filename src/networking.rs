@@ -22,6 +22,9 @@ impl Plugin for NetworkingPlugin {
     }
 }
 
+#[derive(Resource, Deref, DerefMut, Clone, Debug, Default)]
+pub struct RollbackIdWrapper(pub RollbackIdProvider);
+
 /// TODO: Map changes aren't working on network games for now, so this isn't properly used/working.
 fn listen_for_map_changes(
     mut commands: Commands,
@@ -29,7 +32,7 @@ fn listen_for_map_changes(
     mut reset_manager: ResetManager,
     mut session_manager: SessionManager,
     mut menu_page: ResMut<MenuPage>,
-    mut ridp: ResMut<RollbackIdProvider>,
+    mut ridp: ResMut<RollbackIdWrapper>,
 ) {
     while let Some(message) = client.recv_reliable() {
         match message.kind {
@@ -39,10 +42,7 @@ fn listen_for_map_changes(
                     *menu_page = MenuPage::Home;
                     reset_manager.reset_world();
 
-                    commands
-                        .spawn()
-                        .insert(map_handle)
-                        .insert(Rollback::new(ridp.next_id()));
+                    commands.spawn((map_handle, Rollback::new(ridp.next_id())));
                     commands.insert_resource(NextState(GameState::InGame));
                     session_manager.start_session();
                 }

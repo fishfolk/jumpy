@@ -14,7 +14,7 @@ use super::{collisions::Collider, KinematicBody, PhysicsStages};
 pub struct PhysicsDebugRenderPlugin;
 
 /// Resource used to configure debug rendering
-#[derive(Default)]
+#[derive(Default, Resource)]
 pub struct PhysicsDebugRenderConfig {
     pub enabled: bool,
 }
@@ -195,8 +195,7 @@ struct ColliderRect {
 
 mod geom {
     use bevy_prototype_lyon::prelude::tess::{
-        geom::euclid::{Point2D, Size2D},
-        math::Rect,
+        geom::euclid::{Point2D, Rect, Size2D},
         path::traits::PathBuilder,
     };
 

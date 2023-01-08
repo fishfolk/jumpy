@@ -7,9 +7,6 @@
 #![allow(clippy::forget_non_drop)]
 #![allow(clippy::too_many_arguments)]
 
-use bevy::{
-    asset::AssetServerSettings, log::LogSettings, render::texture::ImageSettings, text::TextPlugin,
-};
 use bevy_ggrs::{
     ggrs::{self},
     GGRSPlugin,
@@ -70,6 +67,7 @@ use crate::{
     schedule::RollbackSystems,
     session::SessionPlugin,
     ui::UiPlugin,
+    // ui::UiPlugin,
     utils::{run_criteria_game_not_paused, UtilsPlugin},
     workarounds::WorkaroundsPlugin,
 };
@@ -123,28 +121,45 @@ pub fn main() {
 
     let mut app = App::new();
 
-    app.insert_resource(WindowDescriptor {
-        title: "Fish Folk: Jumpy".to_string(),
-        fit_canvas_to_parent: true,
-        ..default()
-    })
-    .insert_resource(ImageSettings::default_nearest());
+    app.add_plugins({
+        let mut builder = DefaultPlugins.build();
 
-    // Configure log level
-    app.insert_resource(LogSettings {
-        filter: engine_config.log_level.clone(),
-        ..default()
+        // Configure Window
+        builder = builder
+            .set(WindowPlugin {
+                window: WindowDescriptor {
+                    title: "Fish Folk: Jumpy".to_string(),
+                    fit_canvas_to_parent: true,
+                    ..default()
+                },
+                ..default()
+            })
+            .set(ImagePlugin::default_nearest());
+
+        // Configure asset server
+        let mut asset_plugin = bevy::prelude::AssetPlugin {
+            watch_for_changes: engine_config.hot_reload,
+            ..default()
+        };
+        if let Some(asset_folder) = &engine_config.asset_dir {
+            asset_plugin.asset_folder = asset_folder.clone();
+        }
+        builder = builder.set(asset_plugin);
+
+        // Configure log level
+        builder = builder.set(bevy::log::LogPlugin {
+            filter: engine_config.log_level.clone(),
+            ..default()
+        });
+
+        #[cfg(feature = "schedule_graph")]
+        {
+            builder.disable::<bevy::log::LogPlugin>()
+        }
+
+        #[cfg(not(feature = "schedule_graph"))]
+        builder
     });
-
-    // Configure asset server
-    let mut asset_server_settings = AssetServerSettings {
-        watch_for_changes: engine_config.hot_reload,
-        ..default()
-    };
-    if let Some(asset_dir) = &engine_config.asset_dir {
-        asset_server_settings.asset_folder = asset_dir.clone();
-    }
-    app.insert_resource(asset_server_settings);
 
     // Initialize resources
     app.insert_resource(ClearColor(Color::BLACK))
@@ -195,19 +210,10 @@ pub fn main() {
     app.insert_resource(rollback_plugin);
 
     // Install game plugins
-
-    app.add_plugins_with(DefaultPlugins, |group| {
-        // TODO: We should figure out how to not include these dependencies, so we can remove
-        // this disable section.
-        group
-            .disable::<bevy::ui::UiPlugin>()
-            .disable::<TextPlugin>()
-    })
-    .add_plugin(LinesPlugin)
-    .add_plugin(UiPlugin);
-
     app.add_plugin(bevy_tweening::TweeningPlugin)
         .add_plugin(bevy_framepace::FramepacePlugin)
+        .add_plugin(LinesPlugin)
+        .add_plugin(UiPlugin)
         .add_plugin(AudioPlugin)
         .add_plugin(UtilsPlugin)
         .add_plugin(MetadataPlugin)

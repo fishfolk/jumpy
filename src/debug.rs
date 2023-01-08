@@ -1,4 +1,4 @@
-use bevy_inspector_egui::{WorldInspectorParams, WorldInspectorPlugin};
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 use crate::prelude::*;
 
@@ -6,10 +6,11 @@ pub struct DebugPlugin;
 
 impl Plugin for DebugPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(WorldInspectorParams {
-            enabled: false,
-            ..default()
-        })
-        .add_plugin(WorldInspectorPlugin::new());
+        app
+            // .insert_resource(WorldInspectorParams {
+            //     enabled: false,
+            //     ..default()
+            // })
+            .add_plugin(WorldInspectorPlugin::new());
     }
 }

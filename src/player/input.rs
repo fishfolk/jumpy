@@ -33,10 +33,11 @@ impl Plugin for PlayerInputPlugin {
 ///
 /// The resource is removed every time it is read, so it will only be present in the world when
 /// there is an intent to change the pause state.
+#[derive(Resource)]
 pub struct WantsGamePause(pub bool);
 
 /// A buffer holding the player inputs until they are read by the game simulation.
-#[derive(Reflect, Default)]
+#[derive(Reflect, Default, Resource)]
 pub struct LocalPlayerInputBuffer {
     /// The buffers for each player. Non-local players will have empty buffers.
     pub players: [DensePlayerControl; MAX_PLAYERS],
@@ -110,7 +111,7 @@ pub enum PlayerAction {
 }
 
 /// The inputs for each player in this simulation frame.
-#[derive(Reflect, Clone, Debug, Component)]
+#[derive(Reflect, Clone, Debug, Component, Resource)]
 #[reflect(Default, Resource)]
 pub struct PlayerInputs {
     /// This will be `true` if _all_ of the inputs for all players for this frame have been
@@ -234,10 +235,13 @@ impl From<DenseMoveDirection> for u32 {
     }
 }
 
+#[derive(Resource, Default, Deref, DerefMut, Clone, Debug)]
+pub struct Inputs(pub Vec<(DensePlayerControl, InputStatus)>);
+
 /// Updates the [`PlayerInputs`] resource from input collected from GGRS.
 fn update_user_input(
     mut commands: Commands,
-    inputs: Res<Vec<(DensePlayerControl, InputStatus)>>,
+    inputs: Res<Inputs>,
     mut player_inputs: ResMut<PlayerInputs>,
 ) {
     player_inputs.is_confirmed = inputs

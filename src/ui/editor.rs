@@ -11,6 +11,7 @@ use crate::{
     localization::LocalizationExt,
     map::MapGridView,
     metadata::{GameMeta, MapLayerKind, MapLayerMeta, MapMeta},
+    networking::RollbackIdWrapper,
     player::input::PlayerInputs,
     prelude::*,
     session::SessionManager,
@@ -41,6 +42,7 @@ impl Plugin for EditorPlugin {
     }
 }
 
+#[derive(Resource)]
 struct EditorState {
     pub show_grid: bool,
     pub current_layer_idx: usize,
@@ -148,7 +150,7 @@ struct EditorTopBar<'w, 's> {
             ResetManager<'w, 's>,
         ),
     >,
-    rids: ResMut<'w, RollbackIdProvider>,
+    rids: ResMut<'w, RollbackIdWrapper>,
     show_map_export_window: Local<'s, bool>,
     localization: Res<'w, Localization>,
     map_meta: Query<'w, 's, &'static MapMeta>,
@@ -246,9 +248,7 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                             params
                                 .camera_commands_resetcontroller
                                 .p1()
-                                .spawn()
-                                .insert(handle)
-                                .insert(Rollback::new(params.rids.next_id()));
+                                .spawn((handle, Rollback::new(params.rids.next_id())));
                             params.session_manager.start_session();
                         }
                     }
@@ -609,7 +609,7 @@ fn create_layer(params: &mut EditorRightToolbar) {
     let (map_entity, mut map): (Entity, Mut<MapMeta>) = params.map.single_mut();
 
     let layer_idx = map.layers.len();
-    let layer_entity = params.commands.spawn().id();
+    let layer_entity = params.commands.spawn_empty().id();
     map.layers.push(MapLayerMeta {
         id: layer_info.name.clone(),
         kind: layer_info.kind.clone(),
@@ -837,7 +837,7 @@ fn map_open_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
                         )
                     {
                         if ui.button(&map_name).clicked() {
-                            params.commands.spawn().insert(map_handle);
+                            params.commands.spawn(map_handle);
                             params.session_manager.start_session();
                             *params.show_map_open = false;
                         }
@@ -940,7 +940,7 @@ fn create_map(params: &mut EditorCentralPanel) {
         background_layers: default(),
     };
 
-    params.commands.spawn().insert(meta);
+    params.commands.spawn(meta);
     *params.show_map_open = false;
     *params.show_map_create = false;
 }

@@ -10,7 +10,7 @@ impl Plugin for RandomPlugin {
     }
 }
 
-#[derive(Reflect, Component, Serialize, Deserialize, Debug, Deref, DerefMut)]
+#[derive(Reflect, Component, Serialize, Deserialize, Debug, Deref, DerefMut, Resource)]
 #[reflect_value(Component, Resource, Default, Serialize, Deserialize)]
 pub struct GlobalRng(AtomicRng);
 

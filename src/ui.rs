@@ -6,12 +6,18 @@ use bevy::{
     utils::{HashMap, HashSet},
     window::WindowId,
 };
-use bevy_egui::{egui, EguiContext, EguiInput, EguiPlugin, EguiSettings, EguiSystem};
+use bevy_egui::{
+    egui, EguiContext, EguiPlugin, EguiRenderInputContainer, EguiSettings, EguiSystem,
+};
 use iyes_loopless::prelude::*;
 use leafwing_input_manager::{plugin::InputManagerSystem, prelude::ActionState};
 
 use self::input::MenuAction;
-use crate::{assets::EguiFont, camera::GameCamera, metadata::GameMeta};
+use crate::{
+    assets::{EguiFont, EguiFontDefinitions},
+    camera::GameCamera,
+    metadata::GameMeta,
+};
 
 pub mod input;
 pub mod widgets;
@@ -91,7 +97,7 @@ pub fn widget<S: 'static + WidgetSystem>(
 /// A UI widget may have multiple instances. We need to ensure the local state of these instances is
 /// not shared. This hashmap allows us to dynamically store instance states.
 #[derive(Default)]
-struct StateInstances<S: WidgetSystem> {
+struct StateInstances<S: WidgetSystem + 'static> {
     instances: HashMap<WidgetId, SystemState<S>>,
 }
 
@@ -120,7 +126,7 @@ impl From<&str> for WidgetId {
 ///
 /// This is used to figure out which widget to focus on next when you press a direction on the
 /// gamepad, for instance.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Resource)]
 pub struct WidgetAdjacencies {
     pub map: HashMap<egui::Id, WidgetAdjacency>,
     /// These widgets will have the focus change when pressing directional inputs
@@ -178,7 +184,7 @@ impl<'a> WidgetAdjacencyEntry<'a> {
     }
 }
 
-#[derive(Default, Deref, DerefMut)]
+#[derive(Default, Deref, DerefMut, Resource)]
 pub struct DisableMenuInput(pub bool);
 
 fn handle_menu_input(
@@ -186,11 +192,10 @@ fn handle_menu_input(
     mut windows: ResMut<Windows>,
     input: Query<&ActionState<MenuAction>>,
     keyboard: Res<Input<KeyCode>>,
-    mut egui_inputs: ResMut<HashMap<WindowId, EguiInput>>,
+    mut egui_inputs: ResMut<EguiRenderInputContainer>,
     adjacencies: Res<WidgetAdjacencies>,
     mut egui_ctx: ResMut<EguiContext>,
 ) {
-    use bevy::window::WindowMode;
     let input = input.single();
 
     // Handle fullscreen toggling
@@ -292,7 +297,7 @@ fn handle_menu_input(
 fn update_egui_fonts(
     mut font_queue: Local<Vec<Handle<EguiFont>>>,
     mut egui_ctx: ResMut<EguiContext>,
-    egui_font_definitions: Option<ResMut<egui::FontDefinitions>>,
+    egui_font_definitions: Option<ResMut<EguiFontDefinitions>>,
     game: Option<Res<GameMeta>>,
     mut events: EventReader<AssetEvent<EguiFont>>,
     assets: Res<Assets<EguiFont>>,

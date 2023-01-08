@@ -11,7 +11,7 @@ use leafwing_input_manager::{
 use crate::{
     camera::{spawn_editor_camera, spawn_game_camera},
     config::ENGINE_CONFIG,
-    metadata::{BorderImageMeta, GameMeta, PlayerMeta, Settings},
+    metadata::{BorderImageMeta, GameHandle, GameMeta, PlayerMeta, Settings},
     platform::Storage,
     player::{input::PlayerInputs, MAX_PLAYERS},
     prelude::*,
@@ -44,13 +44,13 @@ impl Plugin for LoadingPlugin {
 pub struct PlayerInputCollector(pub usize);
 
 fn setup(mut commands: Commands) {
-    commands
-        .spawn()
-        .insert(Name::new("Menu Input Collector"))
-        .insert_bundle(InputManagerBundle {
+    commands.spawn((
+        Name::new("Menu Input Collector"),
+        InputManagerBundle {
             input_map: menu_input_map(),
             ..default()
-        });
+        },
+    ));
 
     // Spawn the game camera
     spawn_game_camera(&mut commands);
@@ -61,7 +61,7 @@ fn setup(mut commands: Commands) {
 
 // Condition system used to make sure game assets have loaded
 fn game_assets_loaded(
-    game_handle: Res<Handle<GameMeta>>,
+    game_handle: Res<GameHandle>,
     loading_resources: LoadingResources,
     game_assets: Res<Assets<GameMeta>>,
 ) -> bool {
@@ -93,7 +93,7 @@ pub struct GameLoader<'w, 's> {
     skip_next_asset_update_event: Local<'s, bool>,
     camera_projections: Query<'w, 's, &'static mut OrthographicProjection>,
     commands: Commands<'w, 's>,
-    game_handle: Res<'w, Handle<GameMeta>>,
+    game_handle: Res<'w, GameHandle>,
     clear_color: ResMut<'w, ClearColor>,
     game_assets: ResMut<'w, Assets<GameMeta>>,
     egui_ctx: Option<ResMut<'w, EguiContext>>,
@@ -163,14 +163,14 @@ impl<'w, 's> GameLoader<'w, 's> {
                 let settings = storage.get(Settings::STORAGE_KEY);
                 let settings = settings.as_ref().unwrap_or(&game.default_settings);
                 for player in 0..MAX_PLAYERS {
-                    commands
-                        .spawn()
-                        .insert(Name::new(format!("Player Input Collector {player}")))
-                        .insert(PlayerInputCollector(player))
-                        .insert_bundle(InputManagerBundle {
+                    commands.spawn((
+                        Name::new(format!("Player Input Collector {player}")),
+                        PlayerInputCollector(player),
+                        InputManagerBundle {
                             input_map: settings.player_controls.get_input_map(player),
                             ..default()
-                        });
+                        },
+                    ));
                 }
 
                 // Select default character for all players

@@ -1,5 +1,7 @@
 use std::time::Duration;
 
+use crate::networking::RollbackIdWrapper;
+
 use super::*;
 
 pub struct KickBombPlugin;
@@ -55,7 +57,7 @@ fn pre_update_in_game(
         (Entity, &Sort, &Handle<MapElementMeta>, &Transform),
         Without<MapElementHydrated>,
     >,
-    mut ridp: ResMut<RollbackIdProvider>,
+    mut ridp: ResMut<RollbackIdWrapper>,
     element_assets: ResMut<Assets<MapElementMeta>>,
 ) {
     let mut elements = non_hydrated_map_elements.iter().collect::<Vec<_>>();
@@ -73,29 +75,28 @@ fn pre_update_in_game(
         {
             commands.entity(entity).insert(MapElementHydrated);
 
-            commands
-                .spawn()
-                .insert(Rollback::new(ridp.next_id()))
-                .insert(Item {
+            commands.spawn((
+                Rollback::new(ridp.next_id()),
+                Item {
                     script: "core:kick_bomb".into(),
-                })
-                .insert(IdleKickBomb { spawner: entity })
-                .insert(Name::new("Item: Kick Bomb"))
-                .insert(AnimatedSprite {
+                },
+                IdleKickBomb { spawner: entity },
+                Name::new("Item: Kick Bomb"),
+                AnimatedSprite {
                     start: 0,
                     end: 0,
                     atlas: atlas_handle.inner.clone(),
                     repeat: false,
                     ..default()
-                })
-                .insert(map_element_handle.clone_weak())
-                .insert_bundle(VisibilityBundle::default())
-                .insert(MapRespawnPoint(transform.translation))
-                .insert_bundle(TransformBundle {
+                },
+                map_element_handle.clone_weak(),
+                VisibilityBundle::default(),
+                MapRespawnPoint(transform.translation),
+                TransformBundle {
                     local: *transform,
                     ..default()
-                })
-                .insert(KinematicBody {
+                },
+                KinematicBody {
                     size: *body_size,
                     offset: *body_offset,
                     gravity: 1.0,
@@ -104,7 +105,8 @@ fn pre_update_in_game(
                     can_rotate: *can_rotate,
                     bouncyness: *bouncyness,
                     ..default()
-                });
+                },
+            ));
         }
     }
 }
@@ -127,7 +129,7 @@ fn update_idle_kick_bombs(
         ),
         Without<PlayerIdx>,
     >,
-    mut ridp: ResMut<RollbackIdProvider>,
+    mut ridp: ResMut<RollbackIdWrapper>,
     element_assets: ResMut<Assets<MapElementMeta>>,
     effects: Res<AudioChannel<EffectsChannel>>,
 ) {
@@ -209,35 +211,35 @@ fn update_idle_kick_bombs(
 
                 let pos = player_transform.translation
                     + (*grab_offset * horizontal_flip_factor).extend(0.0);
-                commands
-                    .spawn()
-                    .insert(Rollback::new(ridp.next_id()))
-                    .insert(Name::new("Lit Kick Bomb"))
-                    .insert(MapRespawnPoint(pos))
-                    .insert(Transform::from_translation(pos))
-                    .insert(GlobalTransform::default())
-                    .insert(Visibility::default())
-                    .insert(ComputedVisibility::default())
-                    .insert(AnimatedSprite {
+                commands.spawn((
+                    Rollback::new(ridp.next_id()),
+                    Name::new("Lit Kick Bomb"),
+                    MapRespawnPoint(pos),
+                    Transform::from_translation(pos),
+                    GlobalTransform::default(),
+                    Visibility::default(),
+                    ComputedVisibility::default(),
+                    AnimatedSprite {
                         atlas: atlas_handle.inner.clone(),
                         start: 3,
                         end: 5,
                         repeat: true,
                         fps: 8.0,
                         ..default()
-                    })
-                    .insert(meta_handle.clone_weak())
-                    .insert(body.clone())
-                    .insert(LitKickBomb {
+                    },
+                    meta_handle.clone_weak(),
+                    body.clone(),
+                    LitKickBomb {
                         spawner: kick_bomb.spawner,
                         fuse_sound: effects.play(fuse_sound_handle.clone_weak()).handle(),
                         ..default()
-                    })
-                    .insert(KinematicBody {
+                    },
+                    KinematicBody {
                         velocity: *throw_velocity * horizontal_flip_factor + player_body.velocity,
                         is_deactivated: false,
                         ..body.clone()
-                    });
+                    },
+                ));
             }
         }
     }
@@ -261,7 +263,7 @@ fn update_lit_kick_bombs(
         ),
         Without<PlayerIdx>,
     >,
-    mut ridp: ResMut<RollbackIdProvider>,
+    mut ridp: ResMut<RollbackIdWrapper>,
     element_assets: ResMut<Assets<MapElementMeta>>,
     player_inputs: Res<PlayerInputs>,
     effects: Res<AudioChannel<EffectsChannel>>,
@@ -374,22 +376,21 @@ fn update_lit_kick_bombs(
                 })
                 .insert(Lifetime::new(*damage_region_lifetime));
             // Spawn the explosion sprite entity
-            commands
-                .spawn()
-                .insert(Rollback::new(ridp.next_id()))
-                .insert(spawn_transform)
-                .insert(GlobalTransform::default())
-                .insert(Visibility::default())
-                .insert(ComputedVisibility::default())
-                .insert(AnimatedSprite {
+            commands.spawn((
+                Rollback::new(ridp.next_id()),
+                spawn_transform,
+                GlobalTransform::default(),
+                ComputedVisibility::default(),
+                AnimatedSprite {
                     start: 0,
                     end: *explosion_frames,
                     atlas: explosion_atlas_handle.inner.clone(),
                     repeat: false,
                     fps: *explosion_fps,
                     ..default()
-                })
-                .insert(Lifetime::new(*explosion_lifetime));
+                },
+                Lifetime::new(*explosion_lifetime),
+            ));
         }
     }
 }

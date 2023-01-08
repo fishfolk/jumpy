@@ -1,8 +1,5 @@
 use bevy_prototype_lyon::prelude::tess::{
-    geom::{
-        euclid::{Point2D, Size2D},
-        Rect,
-    },
+    geom::euclid::{Point2D, Rect, Size2D},
     path::traits::PathBuilder,
 };
 

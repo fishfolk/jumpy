@@ -350,12 +350,17 @@
 <span id="348">348</span>
 <span id="349">349</span>
 <span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
 </pre><pre class="rust"><code><span class="doccomment">//! The crate item.
 //!
 //! This module is inconsistently named with the rest of the modules ( i.e. has an `_item` suffix )
 //! because `crate` is a Rust keyword.
+</span><span class="kw">use </span>bones_camera_shake::CameraTrauma;
 
-</span><span class="kw">use </span><span class="kw">crate</span>::player::PlayerKillCommand;
+<span class="kw">use </span><span class="kw">crate</span>::player::PlayerKillCommand;
 
 <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
@@ -608,6 +613,7 @@
     player_inputs: Res&lt;PlayerInputs&gt;,
     effects: Res&lt;AudioChannel&lt;EffectsChannel&gt;&gt;,
     collision_world: CollisionWorld,
+    <span class="kw-2">mut </span>shake_event: EventWriter&lt;CameraTrauma&gt;,
 ) {
     <span class="kw">let </span><span class="kw-2">mut </span>items = mines.iter_mut().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
     items.sort_by_key(|x| x.<span class="number">0</span>.id());
@@ -658,6 +664,8 @@
             <span class="kw">if </span>player_inputs.is_confirmed {
                 effects.play(explosion_sound_handle.clone_weak());
             }
+
+            shake_event.send(CameraTrauma(<span class="number">0.75</span>));
 
             <span class="comment">// Despawn the grenade
             </span>commands.entity(item_ent).despawn();

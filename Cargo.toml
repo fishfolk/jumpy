@@ -30,6 +30,7 @@ bevy_system_graph = "0.4"
 bevy_tweening = { version = "0.6", default-features = false }
 bitfield = "0.14.0"
 blocking = "1.2.0"
+bones_camera_shake = { git = "https://github.com/DRuppFv/bones", branch = "camera_shake_bevy0.8" }
 bones_has_load_progress = { git = "https://github.com/fishfolk/bones.git", features = [
     "bevy_egui",
 ] }

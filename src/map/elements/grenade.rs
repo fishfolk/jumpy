@@ -1,3 +1,5 @@
+use bones_camera_shake::CameraTrauma;
+
 use std::time::Duration;
 
 use crate::networking::RollbackIdWrapper;
@@ -244,6 +246,7 @@ fn update_lit_grenades(
     player_inputs: Res<PlayerInputs>,
     effects: Res<AudioChannel<EffectsChannel>>,
     mut audio_instances: ResMut<Assets<AudioInstance>>,
+    mut shake_event: EventWriter<CameraTrauma>,
 ) {
     let mut items = grenades.iter_mut().collect::<Vec<_>>();
     items.sort_by_key(|x| x.0.id());
@@ -329,6 +332,8 @@ fn update_lit_grenades(
                     .get_mut(&grenade.fuse_sound)
                     .map(|x| x.stop(AudioTween::linear(Duration::from_secs_f32(0.1))));
             }
+
+            shake_event.send(CameraTrauma(0.5));
 
             // Despawn the grenade
             commands.entity(item_ent).despawn();

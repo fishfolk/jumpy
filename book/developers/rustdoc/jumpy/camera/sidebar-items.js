@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["spawn_menu_camera",""]],"struct":[["MenuCamera",""]]};

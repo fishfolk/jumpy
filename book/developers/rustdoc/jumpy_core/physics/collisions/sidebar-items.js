@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Actor","An actor in the physics simulation."],["Collider","A collider body in the physics simulation."],["CollisionWorld",""],["Rect",""],["Solid","A solid in the physics simulation."],["TileCollision",""],["TileCollisionTag",""]]};

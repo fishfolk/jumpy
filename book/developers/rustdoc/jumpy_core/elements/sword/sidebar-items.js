@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["SwordState",""]],"fn":[["install",""]],"struct":[["Sword",""]]};

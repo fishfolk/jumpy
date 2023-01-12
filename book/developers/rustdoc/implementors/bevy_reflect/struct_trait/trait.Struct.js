@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"jumpy":[["impl <a class=\"trait\" href=\"jumpy/prelude/trait.Struct.html\" title=\"trait jumpy::prelude::Struct\">Struct</a> for <a class=\"struct\" href=\"jumpy/ui/main_menu/struct.MainMenuBackground.html\" title=\"struct jumpy::ui::main_menu::MainMenuBackground\">MainMenuBackground</a>"],["impl <a class=\"trait\" href=\"jumpy/prelude/trait.Struct.html\" title=\"trait jumpy::prelude::Struct\">Struct</a> for <a class=\"struct\" href=\"jumpy/camera/struct.MenuCamera.html\" title=\"struct jumpy::camera::MenuCamera\">MenuCamera</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

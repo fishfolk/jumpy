@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":[["asset_handle",""]],"struct":[["AssetHandle","A wrapper around [`Handle<T>`] that also contains the [`AssetPath`] used to load the asset."],["EguiFont",""],["EguiFontLoader",""],["JumpyAssetPlugin",""]]};

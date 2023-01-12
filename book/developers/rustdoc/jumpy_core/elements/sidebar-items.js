@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["install",""]],"mod":[["decoration",""],["player_spawner",""],["sproinger",""],["sword",""]],"struct":[["ElementHandle","Component containing an element’s metadata handle."],["MapElementHydrated","Marker component added to map elements that have been hydrated."]]};

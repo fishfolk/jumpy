@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["get_normalized_relative_path","Calculate an asset’s full path relative to another asset"]],"struct":[["AssetHandle","A wrapper around [`Handle<T>`] that also contains the [`AssetPath`] used to load the asset."]]};

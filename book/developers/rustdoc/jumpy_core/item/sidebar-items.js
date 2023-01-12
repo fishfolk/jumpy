@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Item","Marker component for items."],["ItemDropped","Marker component added to items when they are dropped."],["ItemGrabbed","Marker component added to items when they are grabbed."],["ItemUsed","Marker component added to items when they are used."]]};

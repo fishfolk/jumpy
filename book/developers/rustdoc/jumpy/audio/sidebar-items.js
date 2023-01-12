@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["music_system","Loops through all the game music as the game is on."],["setup_audio_defaults",""]],"struct":[["CurrentMusic",""],["EffectsChannel",""],["JumpyAudioPlugin",""],["MusicChannel",""],["ShuffledPlaylist",""]]};

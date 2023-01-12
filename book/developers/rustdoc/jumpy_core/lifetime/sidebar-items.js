@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["install",""]],"struct":[["Lifetime","The lifetime state of an entity"]]};

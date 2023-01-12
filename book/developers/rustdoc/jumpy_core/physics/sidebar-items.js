@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["install",""]],"mod":[["collisions","Modified from macroquad platformer:"]],"struct":[["KinematicBody","A kinematic physics body"]]};

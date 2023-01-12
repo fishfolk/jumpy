@@ -1,0 +1,552 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/ui/widgets/bordered_frame.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>bordered_frame.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../normalize.css"><link rel="stylesheet" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../dark.css" disabled><link rel="stylesheet" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../jumpy/index.html"><div class="logo-container"><img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../jumpy/index.html"><div class="logo-container">
+                    <img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../jumpy/index.html">
+                        <img src="https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+</pre><pre class="rust"><code><span class="kw">use </span>bevy_egui::egui;
+
+<span class="kw">use </span><span class="kw">crate</span>::metadata::BorderImageMeta;
+
+<span class="doccomment">/// A 9-patch style bordered frame.
+</span><span class="kw">pub struct </span>BorderedFrame {
+    bg_texture: egui::TextureId,
+    border_scale: f32,
+    texture_size: egui::Vec2,
+    texture_border_size: egui::style::Margin,
+    padding: egui::style::Margin,
+    margin: egui::style::Margin,
+    border_only: bool,
+}
+
+<span class="kw">impl </span>BorderedFrame {
+    <span class="doccomment">/// Create a new frame with the given [`BorderImageMeta`]
+    </span><span class="attribute">#[must_use = <span class="string">&quot;You must call .show() to render the frame&quot;</span>]
+    </span><span class="kw">pub fn </span>new(border_image: <span class="kw-2">&amp;</span>BorderImageMeta) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>s = border_image.image_size;
+        <span class="self">Self </span>{
+            bg_texture: border_image.egui_texture,
+            border_scale: border_image.scale,
+            texture_size: egui::Vec2::new(s.x <span class="kw">as </span>f32, s.y <span class="kw">as </span>f32),
+            texture_border_size: border_image.border_size.into(),
+            padding: Default::default(),
+            margin: Default::default(),
+            border_only: <span class="bool-val">false</span>,
+        }
+    }
+
+    <span class="doccomment">/// Set the padding. This will be applied on the inside of the border.
+    </span><span class="attribute">#[must_use = <span class="string">&quot;You must call .show() to render the frame&quot;</span>]
+    </span><span class="kw">pub fn </span>padding(<span class="kw-2">mut </span><span class="self">self</span>, margin: egui::style::Margin) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.padding = margin;
+
+        <span class="self">self
+    </span>}
+
+    <span class="doccomment">/// Set the margin. This will be applied on the outside of the border.
+    </span><span class="attribute">#[must_use = <span class="string">&quot;You must call .show() to render the frame&quot;</span>]
+    </span><span class="kw">pub fn </span>margin(<span class="kw-2">mut </span><span class="self">self</span>, margin: egui::style::Margin) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.margin = margin;
+
+        <span class="self">self
+    </span>}
+
+    <span class="attribute">#[allow(unused)] </span><span class="comment">// We just haven&#39;t needed this method yet
+    </span><span class="attribute">#[must_use = <span class="string">&quot;You must call .show() to render the frame&quot;</span>]
+    </span><span class="kw">pub fn </span>border_scale(<span class="kw-2">mut </span><span class="self">self</span>, scale: f32) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.border_scale = scale;
+
+        <span class="self">self
+    </span>}
+
+    <span class="attribute">#[allow(unused)] </span><span class="comment">// We just haven&#39;t needed this method yet
+    </span><span class="doccomment">/// If border_only is set to `true`, then the middle section of the frame will be transparent,
+    /// only the border will be rendered.
+    </span><span class="attribute">#[must_use = <span class="string">&quot;You must call .show() to render the frame&quot;</span>]
+    </span><span class="kw">pub fn </span>border_only(<span class="kw-2">mut </span><span class="self">self</span>, border_only: bool) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.border_only = border_only;
+
+        <span class="self">self
+    </span>}
+
+    <span class="doccomment">/// Render the frame
+    </span><span class="kw">pub fn </span>show&lt;R&gt;(
+        <span class="self">self</span>,
+        ui: <span class="kw-2">&amp;mut </span>egui::Ui,
+        add_contents: <span class="kw">impl </span>FnOnce(<span class="kw-2">&amp;mut </span>egui::Ui) -&gt; R,
+    ) -&gt; egui::InnerResponse&lt;R&gt; {
+        <span class="self">self</span>.show_dyn(ui, Box::new(add_contents))
+    }
+
+    <span class="kw">fn </span>show_dyn&lt;<span class="lifetime">&#39;c</span>, R&gt;(
+        <span class="self">self</span>,
+        ui: <span class="kw-2">&amp;mut </span>egui::Ui,
+        add_contents: Box&lt;<span class="kw">dyn </span>FnOnce(<span class="kw-2">&amp;mut </span>egui::Ui) -&gt; R + <span class="lifetime">&#39;c</span>&gt;,
+    ) -&gt; egui::InnerResponse&lt;R&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>prepared = <span class="self">self</span>.begin(ui);
+        <span class="kw">let </span>ret = add_contents(<span class="kw-2">&amp;mut </span>prepared.content_ui);
+        <span class="kw">let </span>response = prepared.end(ui);
+
+        egui::InnerResponse {
+            inner: ret,
+            response,
+        }
+    }
+
+    <span class="kw">fn </span>begin(<span class="self">self</span>, ui: <span class="kw-2">&amp;mut </span>egui::Ui) -&gt; BorderedFramePrepared {
+        <span class="kw">let </span>background_shape_idx = ui.painter().add(egui::Shape::Noop);
+
+        <span class="kw">let </span><span class="kw-2">mut </span>content_rect = ui.available_rect_before_wrap();
+        content_rect.min += <span class="self">self</span>.padding.left_top() + <span class="self">self</span>.margin.left_top();
+        content_rect.max -= <span class="self">self</span>.padding.right_bottom() + <span class="self">self</span>.margin.right_bottom();
+
+        <span class="comment">// Avoid negative size
+        </span>content_rect.max.x = content_rect.max.x.max(content_rect.min.x);
+        content_rect.max.y = content_rect.max.y.max(content_rect.min.y);
+
+        <span class="kw">let </span>content_ui = ui.child_ui(content_rect, <span class="kw-2">*</span>ui.layout());
+
+        BorderedFramePrepared {
+            frame: <span class="self">self</span>,
+            background_shape_idx,
+            content_ui,
+        }
+    }
+
+    <span class="kw">pub fn </span>paint(<span class="kw-2">&amp;</span><span class="self">self</span>, paint_rect: egui::Rect) -&gt; egui::Shape {
+        <span class="kw">use </span>egui::{Pos2, Rect, Vec2};
+        <span class="kw">let </span>white = egui::Color32::WHITE;
+
+        <span class="kw">let </span><span class="kw-2">mut </span>mesh = egui::Mesh {
+            texture_id: <span class="self">self</span>.bg_texture,
+            ..Default::default()
+        };
+
+        <span class="kw">let </span>s = <span class="self">self</span>.texture_size;
+        <span class="kw">let </span>b = <span class="self">self</span>.texture_border_size;
+        <span class="kw">let </span>pr = paint_rect;
+        <span class="comment">// UV border
+        </span><span class="kw">let </span>buv = egui::style::Margin {
+            left: b.left / s.x,
+            right: b.right / s.x,
+            top: b.top / s.y,
+            bottom: b.bottom / s.y,
+        };
+        <span class="kw">let </span>b = egui::style::Margin {
+            left: b.left * <span class="self">self</span>.border_scale,
+            right: b.right * <span class="self">self</span>.border_scale,
+            top: b.top * <span class="self">self</span>.border_scale,
+            bottom: b.bottom * <span class="self">self</span>.border_scale,
+        };
+
+        <span class="comment">// Build the 9-patches
+
+        // Top left
+        </span>mesh.add_rect_with_uv(
+            Rect::from_min_size(pr.min, Vec2::new(b.left, b.top)),
+            egui::Rect::from_min_size(Pos2::ZERO, Vec2::new(buv.left, buv.top)),
+            white,
+        );
+        <span class="comment">// Top center
+        </span>mesh.add_rect_with_uv(
+            Rect::from_min_size(
+                pr.min + Vec2::new(b.left, <span class="number">0.0</span>),
+                Vec2::new(pr.width() - b.left - b.right, b.top),
+            ),
+            egui::Rect::from_min_size(
+                Pos2::new(buv.left, <span class="number">0.0</span>),
+                Vec2::new(<span class="number">1.0 </span>- buv.left - buv.right, buv.top),
+            ),
+            white,
+        );
+        <span class="comment">// Top right
+        </span>mesh.add_rect_with_uv(
+            Rect::from_min_size(
+                pr.right_top() - Vec2::new(b.right, <span class="number">0.0</span>),
+                Vec2::new(b.right, b.top),
+            ),
+            egui::Rect::from_min_size(
+                Pos2::new(<span class="number">1.0 </span>- buv.right, <span class="number">0.0</span>),
+                Vec2::new(buv.right, buv.top),
+            ),
+            white,
+        );
+        <span class="comment">// Middle left
+        </span>mesh.add_rect_with_uv(
+            Rect::from_min_size(
+                pr.min + Vec2::new(<span class="number">0.0</span>, b.top),
+                Vec2::new(b.left, pr.height() - b.top - b.bottom),
+            ),
+            egui::Rect::from_min_size(
+                Pos2::new(<span class="number">0.0</span>, buv.top),
+                Vec2::new(buv.left, <span class="number">1.0 </span>- buv.top - buv.bottom),
+            ),
+            white,
+        );
+        <span class="comment">// Middle center
+        </span><span class="kw">if </span>!<span class="self">self</span>.border_only {
+            mesh.add_rect_with_uv(
+                Rect::from_min_size(
+                    pr.min + Vec2::new(b.left, b.top),
+                    Vec2::new(
+                        pr.width() - b.left - b.right,
+                        pr.height() - b.top - b.bottom,
+                    ),
+                ),
+                egui::Rect::from_min_size(
+                    Pos2::new(buv.left, buv.top),
+                    Vec2::new(<span class="number">1.0 </span>- buv.left - buv.top, <span class="number">1.0 </span>- buv.top - buv.bottom),
+                ),
+                white,
+            );
+        }
+        <span class="comment">// Middle right
+        </span>mesh.add_rect_with_uv(
+            Rect::from_min_size(
+                pr.min + Vec2::new(pr.width() - b.right, b.top),
+                Vec2::new(b.right, pr.height() - b.top - b.bottom),
+            ),
+            egui::Rect::from_min_size(
+                Pos2::new(<span class="number">1.0 </span>- buv.right, buv.top),
+                Vec2::new(buv.right, <span class="number">1.0 </span>- buv.top - buv.bottom),
+            ),
+            white,
+        );
+        <span class="comment">// Bottom left
+        </span>mesh.add_rect_with_uv(
+            Rect::from_min_size(
+                pr.min + Vec2::new(<span class="number">0.0</span>, pr.height() - b.bottom),
+                Vec2::new(b.left, b.bottom),
+            ),
+            egui::Rect::from_min_size(
+                Pos2::new(<span class="number">0.0</span>, <span class="number">1.0 </span>- buv.bottom),
+                Vec2::new(buv.left, buv.bottom),
+            ),
+            white,
+        );
+        <span class="comment">// Bottom center
+        </span>mesh.add_rect_with_uv(
+            Rect::from_min_size(
+                pr.min + Vec2::new(b.left, pr.height() - b.bottom),
+                Vec2::new(pr.width() - b.left - b.right, b.bottom),
+            ),
+            egui::Rect::from_min_size(
+                Pos2::new(buv.left, <span class="number">1.0 </span>- buv.bottom),
+                Vec2::new(<span class="number">1.0 </span>- buv.left - buv.right, buv.bottom),
+            ),
+            white,
+        );
+        <span class="comment">// Bottom right
+        </span>mesh.add_rect_with_uv(
+            Rect::from_min_size(
+                pr.min + Vec2::new(pr.width() - b.right, pr.height() - b.bottom),
+                Vec2::new(b.right, b.bottom),
+            ),
+            egui::Rect::from_min_size(
+                Pos2::new(<span class="number">1.0 </span>- buv.right, <span class="number">1.0 </span>- buv.bottom),
+                Vec2::new(buv.right, buv.bottom),
+            ),
+            white,
+        );
+
+        egui::Shape::Mesh(mesh)
+    }
+}
+
+<span class="doccomment">/// Internal helper struct for rendering the [`BorderedFrame`]
+</span><span class="kw">struct </span>BorderedFramePrepared {
+    frame: BorderedFrame,
+    background_shape_idx: egui::layers::ShapeIdx,
+    content_ui: egui::Ui,
+}
+
+<span class="kw">impl </span>BorderedFramePrepared {
+    <span class="kw">fn </span>end(<span class="self">self</span>, ui: <span class="kw-2">&amp;mut </span>egui::Ui) -&gt; egui::Response {
+        <span class="kw">use </span>egui::Vec2;
+
+        <span class="kw">let </span>min_rect = <span class="self">self</span>.content_ui.min_rect();
+        <span class="kw">let </span>m = <span class="self">self</span>.frame.padding;
+        <span class="kw">let </span>paint_rect = egui::Rect {
+            min: min_rect.min - Vec2::new(m.left, m.top),
+            max: min_rect.max + Vec2::new(m.right, m.bottom),
+        };
+        <span class="kw">if </span>ui.is_rect_visible(paint_rect) {
+            <span class="kw">let </span>shape = <span class="self">self</span>.frame.paint(paint_rect);
+            ui.painter().set(<span class="self">self</span>.background_shape_idx, shape);
+        }
+
+        ui.allocate_rect(paint_rect, egui::Sense::hover())
+    }
+}
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="jumpy" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

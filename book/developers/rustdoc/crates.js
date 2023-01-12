@@ -1,0 +1,1 @@
+window.ALL_CRATES = ["core","jumpy","jumpy_core"];

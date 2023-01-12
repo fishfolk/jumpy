@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"jumpy":[["impl AssetLoader for <a class=\"struct\" href=\"jumpy/assets/struct.EguiFontLoader.html\" title=\"struct jumpy::assets::EguiFontLoader\">EguiFontLoader</a>"],["impl AssetLoader for <a class=\"struct\" href=\"jumpy/metadata/gamemeta_derive_bevy_asset/struct.AssetLoader.html\" title=\"struct jumpy::metadata::gamemeta_derive_bevy_asset::AssetLoader\">AssetLoader</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["world_inspector",""]],"struct":[["JumpyDebugPlugin",""],["WorldInspectorEnabled",""]]};

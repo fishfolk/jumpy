@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["debug_tools_window","System that renders the debug tools window which can be toggled by pressing F12"],["frame_diagnostic_window",""]],"struct":[["DebugToolsPlugin",""],["FrameDiagState",""],["ShowFameTimeDiagnostics",""]]};

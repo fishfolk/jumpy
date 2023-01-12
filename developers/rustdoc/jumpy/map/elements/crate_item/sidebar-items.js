@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["pre_update_in_game",""],["update_idle_crates",""],["update_thrown_crates",""]],"struct":[["CrateItemPlugin",""],["IdleCrateItem",""],["ThrownCrateItem",""]]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["FrameIdx","The current game logic frame, as distict from a render frame, in the presence of rollback."],["SessionManager",""],["SessionPlugin",""]]};

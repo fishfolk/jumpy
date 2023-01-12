@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["TileCollision",""]],"struct":[["Actor",""],["Collider",""],["CollisionLayerTag",""],["CollisionWorld",""],["Rect",""],["Solid",""]]};

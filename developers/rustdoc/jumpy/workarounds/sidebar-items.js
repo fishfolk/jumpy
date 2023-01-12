@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["update_camera_projection_when_camera_changes","Workaround for bevy not updating camera projection when viewport changes: https://github.com/bevyengine/bevy/issues/5944"]],"struct":[["WorkaroundsPlugin",""]]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["pre_update_in_game",""],["update_idle_mines",""],["update_thrown_mines",""]],"struct":[["IdleMine",""],["MinePlugin",""],["ThrownMine",""]]};

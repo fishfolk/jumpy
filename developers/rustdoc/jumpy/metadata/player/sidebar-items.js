@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["deserialize_range_from_array",""]],"struct":[["AnimationClip",""],["PlayerMeta",""],["PlayerMetadataPlugin",""],["PlayerMovementMeta",""],["PlayerSounds",""],["PlayerSpritesheetMeta",""],["RangeVisitor",""]]};

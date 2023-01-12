@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["camera_controller",""],["spawn_editor_camera",""],["spawn_game_camera",""]],"struct":[["CameraBundle",""],["CameraPlugin",""],["EditorCamera",""],["GameCamera",""],["GameRenderLayers","Named [`RenderLayers`][bevy::render::view::visibility::RenderLayers] bitmasks used throughout the game."]]};

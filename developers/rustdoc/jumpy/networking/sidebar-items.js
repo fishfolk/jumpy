@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["listen_for_map_changes","TODO: Map changes aren’t working on network games for now, so this isn’t properly used/working."]],"mod":[["client","The Bevy network client implementation."],["proto","Serializable data types for network messages used by the game."]],"struct":[["NetworkingPlugin",""]]};

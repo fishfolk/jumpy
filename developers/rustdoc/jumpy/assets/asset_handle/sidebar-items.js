@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["AssetHandle","A wrapper around [`Handle<T>`] that also contains the [`AssetPath`] used to load the asset."]]};

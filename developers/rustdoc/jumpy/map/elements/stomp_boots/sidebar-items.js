@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["kill_stomped_players",""],["pre_update_in_game",""],["update_idle_stomp_boots",""]],"struct":[["IdleStompBoots",""],["StompBootsPlugin",""],["WearingStompBoots","Marker component added to things ( presumably players, but not necessarily! ) that are wearing stomp boots"]]};

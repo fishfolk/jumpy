@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["handle_match_setup_messages",""],["player_image",""]],"struct":[["PlayerSelectMenu",""],["PlayerSelectPanel",""],["PlayerSelectState",""],["PlayerSlot",""]]};

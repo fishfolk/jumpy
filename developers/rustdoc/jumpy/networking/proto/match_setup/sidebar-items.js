@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["MatchSetupMessage","Network message sent by client to select a player"]]};

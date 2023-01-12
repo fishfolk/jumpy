@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["music_system","Loops through all the game music as the game is on."],["setup_audio_defaults",""]],"struct":[["AudioPlugin",""],["CurrentMusic",""],["EffectsChannel",""],["MusicChannel",""],["ShuffledPlaylist",""]]};

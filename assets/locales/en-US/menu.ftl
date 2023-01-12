@@ -3,7 +3,6 @@ local-game = Local Game
 online-game = Online Game
 main-menu = Main Menu
 map-editor = Map Editor
-editor = Map Editor
 settings = Settings
 paused = Paused
 

@@ -62,7 +62,7 @@ tile_size:
 layers:
   - id: main layer
     kind: !tile
-      tilemap: ../resources/default_tileset.png
+      tilemap: ../resources/default_tileset.atlas.yaml
       has_collision: true
       tiles:
         - pos:
@@ -1421,142 +1421,142 @@ layers:
         - pos:
             - 48.0
             - 234
-          element: ../elements/environment/sproinger/sproinger.element.yaml
+          element: /elements/environment/sproinger/sproinger.element.yaml
         - pos:
             - 816.0
             - 234
-          element: ../elements/environment/sproinger/sproinger.element.yaml
+          element: /elements/environment/sproinger/sproinger.element.yaml
         - pos:
             - 792.0
             - 249.5
-          element: ../elements/decoration/anemones/anemones.element.yaml
+          element: /elements/decoration/anemones/anemones.element.yaml
         - pos:
             - 48.0
             - 249.5
-          element: ../elements/decoration/seaweed/seaweed.element.yaml
+          element: /elements/decoration/seaweed/seaweed.element.yaml
         - pos:
             - 312.0
             - 153.5
-          element: ../elements/decoration/seaweed/seaweed.element.yaml
+          element: /elements/decoration/seaweed/seaweed.element.yaml
         - pos:
             - 312.0
             - 473.5
-          element: ../elements/decoration/seaweed/seaweed.element.yaml
+          element: /elements/decoration/seaweed/seaweed.element.yaml
         - pos:
             - 248.0
             - 473.5
-          element: ../elements/decoration/anemones/anemones.element.yaml
+          element: /elements/decoration/anemones/anemones.element.yaml
         - pos:
             - 600.0
             - 473.5
-          element: ../elements/decoration/seaweed/seaweed.element.yaml
+          element: /elements/decoration/seaweed/seaweed.element.yaml
         - pos:
             - 536.0
             - 153.5
-          element: ../elements/decoration/seaweed/seaweed.element.yaml
+          element: /elements/decoration/seaweed/seaweed.element.yaml
   - id: items
     kind: !element
       elements:
         - pos:
             - 441.41046
             - 143.5
-          element: ../elements/environment/crab/crab.element.yaml
+          element: /elements/environment/crab/crab.element.yaml
         - pos:
             - 310.07715
             - 203.5
-          element: ../elements/environment/fish_school/fish_school.element.yaml
+          element: /elements/environment/fish_school/fish_school.element.yaml
         - pos:
             - 528.0
             - 203.5
-          element: ../elements/environment/fish_school/fish_school.element.yaml
+          element: /elements/environment/fish_school/fish_school.element.yaml
         - pos:
             - 304.0
             - 525.5
-          element: ../elements/environment/fish_school/fish_school.element.yaml
+          element: /elements/environment/fish_school/fish_school.element.yaml
         - pos:
             - 592.0
             - 513.5
-          element: ../elements/environment/fish_school/fish_school.element.yaml
+          element: /elements/environment/fish_school/fish_school.element.yaml
         - pos:
             - 560.0
             - 299.5
-          element: ../elements/environment/crab/crab.element.yaml
+          element: /elements/environment/crab/crab.element.yaml
         - pos:
             - 296.0
             - 303.5
-          element: ../elements/environment/crab/crab.element.yaml
+          element: /elements/environment/crab/crab.element.yaml
         - pos:
             - 700
             - 148
-          element: ../elements/item/mine/mine.element.yaml
+          element: /elements/item/mine/mine.element.yaml
         - pos:
             - 177
             - 148
-          element: ../elements/item/mine/mine.element.yaml
+          element: /elements/item/mine/mine.element.yaml
         - pos:
             - 65.399994
             - 471.5
-          element: ../elements/item/grenade/grenade.element.yaml
+          element: /elements/item/grenade/grenade.element.yaml
         - pos:
             - 800.0
             - 469.5
-          element: ../elements/item/grenade/grenade.element.yaml
+          element: /elements/item/grenade/grenade.element.yaml
         - pos:
             - 549
             - 475
-          element: ../elements/item/grenade/grenade.element.yaml
+          element: /elements/item/grenade/grenade.element.yaml
         - pos:
             - 304
             - 475
-          element: ../elements/item/grenade/grenade.element.yaml
+          element: /elements/item/grenade/grenade.element.yaml
         - pos:
             - 104
             - 374
-          element: ../elements/item/grenade/grenade.element.yaml
+          element: /elements/item/grenade/grenade.element.yaml
         - pos:
             - 760
             - 363
-          element: ../elements/item/grenade/grenade.element.yaml
+          element: /elements/item/grenade/grenade.element.yaml
         - pos:
             - 428
             - 159
-          element: ../elements/item/stomp_boots/stomp_boots.element.yaml
+          element: /elements/item/stomp_boots/stomp_boots.element.yaml
         - pos:
             - 416.0
             - 369.5
-          element: ../elements/item/sword/sword.element.yaml
+          element: /elements/item/sword/sword.element.yaml
         - pos:
             - 567
             - 306
-          element: ../elements/item/crate/crate.element.yaml
+          element: /elements/item/crate/crate.element.yaml
         - pos:
             - 300
             - 306
-          element: ../elements/item/crate/crate.element.yaml
+          element: /elements/item/crate/crate.element.yaml
         - pos:
             - 557
             - 161
-          element: ../elements/item/crate/crate.element.yaml
+          element: /elements/item/crate/crate.element.yaml
         - pos:
             - 345
             - 161
-          element: ../elements/item/crate/crate.element.yaml
+          element: /elements/item/crate/crate.element.yaml
   - id: spawners
     kind: !element
       elements:
         - pos:
             - 253.37262
             - 487.27
-          element: ../elements/environment/player_spawner/player_spawner.element.yaml
+          element: /elements/environment/player_spawner/player_spawner.element.yaml
         - pos:
             - 572.10425
             - 478.44418
-          element: ../elements/environment/player_spawner/player_spawner.element.yaml
+          element: /elements/environment/player_spawner/player_spawner.element.yaml
         - pos:
             - 240.5694
             - 173.61493
-          element: ../elements/environment/player_spawner/player_spawner.element.yaml
+          element: /elements/environment/player_spawner/player_spawner.element.yaml
         - pos:
             - 628.5847
             - 161.02252
-          element: ../elements/environment/player_spawner/player_spawner.element.yaml
+          element: /elements/environment/player_spawner/player_spawner.element.yaml

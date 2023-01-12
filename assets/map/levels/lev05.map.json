@@ -843,7 +843,7 @@
                             "idx": 10
                         }
                     ],
-                    "tilemap": "../resources/default_tileset.png"
+                    "tilemap": "../resources/default_tileset.atlas.yaml"
                 }
             }
         },
@@ -854,39 +854,39 @@
                     "elements": [
                         {
                             "pos": [723.2670800000001, 169.5],
-                            "element": "../elements/environment/sproinger/sproinger.element.yaml"
+                            "element": "/elements/environment/sproinger/sproinger.element.yaml"
                         },
                         {
                             "pos": [664, 185.5],
-                            "element": "../elements/decoration/anemones/anemones.element.yaml"
+                            "element": "/elements/decoration/anemones/anemones.element.yaml"
                         },
                         {
                             "pos": [1357, 377.5],
-                            "element": "../elements/decoration/anemones/anemones.element.yaml"
+                            "element": "/elements/decoration/anemones/anemones.element.yaml"
                         },
                         {
                             "pos": [776.3334, 345.5],
-                            "element": "../elements/decoration/anemones/anemones.element.yaml"
+                            "element": "/elements/decoration/anemones/anemones.element.yaml"
                         },
                         {
                             "pos": [496, 185.5],
-                            "element": "../elements/decoration/seaweed/seaweed.element.yaml"
+                            "element": "/elements/decoration/seaweed/seaweed.element.yaml"
                         },
                         {
                             "pos": [1008, 441.5],
-                            "element": "../elements/decoration/seaweed/seaweed.element.yaml"
+                            "element": "/elements/decoration/seaweed/seaweed.element.yaml"
                         },
                         {
                             "pos": [104, 377.5],
-                            "element": "../elements/decoration/seaweed/seaweed.element.yaml"
+                            "element": "/elements/decoration/seaweed/seaweed.element.yaml"
                         },
                         {
                             "pos": [328, 441.5],
-                            "element": "../elements/decoration/anemones/anemones.element.yaml"
+                            "element": "/elements/decoration/anemones/anemones.element.yaml"
                         },
                         {
                             "pos": [1136.3332, 281.5],
-                            "element": "../elements/decoration/anemones/anemones.element.yaml"
+                            "element": "/elements/decoration/anemones/anemones.element.yaml"
                         }
                     ]
                 }
@@ -899,63 +899,63 @@
                     "elements": [
                         {
                             "pos": [859.96912, 437.5],
-                            "element": "../elements/item/grenade/grenade.element.yaml"
+                            "element": "/elements/item/grenade/grenade.element.yaml"
                         },
                         {
                             "pos": [952, 185.5],
-                            "element": "../elements/item/kick_bomb/kick_bomb.element.yaml"
+                            "element": "/elements/item/kick_bomb/kick_bomb.element.yaml"
                         },
                         {
                             "pos": [376, 437.5],
-                            "element": "../elements/item/sniper_rifle/sniper_rifle.element.yaml"
+                            "element": "/elements/item/sniper_rifle/sniper_rifle.element.yaml"
                         },
                         {
                             "pos": [1104.6666, 441.5],
-                            "element": "../elements/item/cannon/cannon.element.yaml"
+                            "element": "/elements/item/cannon/cannon.element.yaml"
                         },
                         {
                             "pos": [918.5881400000001, 427.5],
-                            "element": "../elements/environment/crab/crab.element.yaml"
+                            "element": "/elements/environment/crab/crab.element.yaml"
                         },
                         {
                             "pos": [461.2156, 429.5],
-                            "element": "../elements/environment/crab/crab.element.yaml"
+                            "element": "/elements/environment/crab/crab.element.yaml"
                         },
                         {
                             "pos": [1012.6668, 449.5],
-                            "element": "../elements/environment/fish_school/fish_school.element.yaml"
+                            "element": "/elements/environment/fish_school/fish_school.element.yaml"
                         },
                         {
                             "pos": [740, 335.5],
-                            "element": "../elements/environment/crab/crab.element.yaml"
+                            "element": "/elements/environment/crab/crab.element.yaml"
                         },
                         {
                             "pos": [496, 203.5],
-                            "element": "../elements/environment/fish_school/fish_school.element.yaml"
+                            "element": "/elements/environment/fish_school/fish_school.element.yaml"
                         },
                         {
                             "pos": [480.72724000000005, 169.5],
-                            "element": "../elements/item/mine/mine.element.yaml"
+                            "element": "/elements/item/mine/mine.element.yaml"
                         },
                         {
                             "pos": [686.0571199999999, 329.5],
-                            "element": "../elements/item/musket/musket.element.yaml"
+                            "element": "/elements/item/musket/musket.element.yaml"
                         },
                         {
                             "pos": [1123, 273.5],
-                            "element": "../elements/item/sword/sword.element.yaml"
+                            "element": "/elements/item/sword/sword.element.yaml"
                         },
                         {
                             "pos": [579.6668, 433.5],
-                            "element": "../elements/item/sword/sword.element.yaml"
+                            "element": "/elements/item/sword/sword.element.yaml"
                         },
                         {
                             "pos": [907, 433.5],
-                            "element": "../elements/item/sword/sword.element.yaml"
+                            "element": "/elements/item/sword/sword.element.yaml"
                         },
                         {
                             "pos": [288, 273.5],
-                            "element": "../elements/item/sword/sword.element.yaml"
+                            "element": "/elements/item/sword/sword.element.yaml"
                         }
                     ]
                 }
@@ -968,11 +968,11 @@
                     "elements": [
                         {
                             "pos": [114.5, 399],
-                            "element": "../elements/environment/player_spawner/player_spawner.element.yaml"
+                            "element": "/elements/environment/player_spawner/player_spawner.element.yaml"
                         },
                         {
                             "pos": [1334.3334, 399],
-                            "element": "../elements/environment/player_spawner/player_spawner.element.yaml"
+                            "element": "/elements/environment/player_spawner/player_spawner.element.yaml"
                         }
                     ]
                 }

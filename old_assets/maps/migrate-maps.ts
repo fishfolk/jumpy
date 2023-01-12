@@ -151,7 +151,7 @@ for (const map of inMaps) {
       newLayer.kind = { tile: {} };
       newLayer.kind.tile.has_collision = layer.has_collision;
       newLayer.kind.tile.tiles = [];
-      newLayer.kind.tile.tilemap = "../resources/default_tileset.png";
+      newLayer.kind.tile.tilemap = "../resources/default_tileset.atlas.yaml";
 
       for (let i = 0; i < layer.tiles!.length; i++) {
         const tile = layer.tiles![i];
@@ -206,13 +206,15 @@ for (const map of inMaps) {
         // Do some weird rounding to try and snap the elements to an 8x8 pixel grid and then
         // compensate for weirdness.
         let remainder = element.pos[0] % 8;
-        element.pos[0] = element.pos[0] + (remainder >= 4 ? remainder : - remainder);
+        element.pos[0] =
+          element.pos[0] + (remainder >= 4 ? remainder : -remainder);
         element.pos[1] = Math.round(element.pos[1]);
         remainder = element.pos[1] % 8;
-        element.pos[1] = element.pos[1] + (remainder >= 4 ? remainder : - remainder);
+        element.pos[1] =
+          element.pos[1] + (remainder >= 4 ? remainder : -remainder);
         element.pos[1] += 1.5;
 
-        element.element = `../elements/${object.kind}/${object.id}/${object.id}.element.yaml`;
+        element.element = `/elements/${object.kind}/${object.id}/${object.id}.element.yaml`;
         newLayer.kind.element.elements.push(element);
       }
     } else {
@@ -233,7 +235,7 @@ for (const map of inMaps) {
         spawn_point.x,
         (map.grid_size.y - 1) * map.tile_size.y - spawn_point.y,
       ],
-      element: `../elements/environment/player_spawner/player_spawner.element.yaml`,
+      element: `/elements/environment/player_spawner/player_spawner.element.yaml`,
     });
   }
 

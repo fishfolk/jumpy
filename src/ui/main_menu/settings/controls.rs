@@ -1,3 +1,5 @@
+use egui_extras::Column;
+
 use super::*;
 
 // Render the control input grid
@@ -8,8 +10,6 @@ pub fn controls_settings_ui(
     settings_tabs: &[egui::Response],
     bottom_buttons: &[egui::Response],
 ) {
-    use egui_extras::Size;
-
     let ui_theme = &params.game.ui_theme;
 
     // Reset the settings when reset button is clicked
@@ -115,10 +115,10 @@ pub fn controls_settings_ui(
         .cell_layout(egui::Layout::centered_and_justified(
             egui::Direction::LeftToRight,
         ))
-        .column(Size::exact(label_font.size * 7.0))
-        .column(Size::remainder())
-        .column(Size::remainder())
-        .column(Size::remainder())
+        .column(Column::exact(label_font.size * 7.0))
+        .column(Column::remainder())
+        .column(Column::remainder())
+        .column(Column::remainder())
         .header(bigger_font.size * 1.5, |mut row| {
             row.col(|ui| {
                 ui.themed_label(bigger_font, &params.localization.get("action"));

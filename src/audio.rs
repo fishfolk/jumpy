@@ -7,9 +7,9 @@ use rand::{seq::SliceRandom, thread_rng};
 
 use crate::{metadata::GameMeta, prelude::*};
 
-pub struct AudioPlugin;
+pub struct JumpyAudioPlugin;
 
-impl Plugin for AudioPlugin {
+impl Plugin for JumpyAudioPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(bevy_kira_audio::AudioPlugin)
             .init_resource::<CurrentMusic>()
@@ -21,17 +21,19 @@ impl Plugin for AudioPlugin {
     }
 }
 
+#[derive(Resource)]
 pub struct MusicChannel;
+#[derive(Resource)]
 pub struct EffectsChannel;
 
-#[derive(Clone, Debug, Default)]
+#[derive(Resource, Clone, Debug, Default)]
 pub struct CurrentMusic {
     pub instance: Handle<AudioInstance>,
     pub idx: usize,
 }
 
-#[derive(Deref, DerefMut, Clone, Debug, Default)]
-pub struct ShuffledPlaylist(pub Vec<Handle<AudioSource>>);
+#[derive(Resource, Deref, DerefMut, Clone, Debug, Default)]
+pub struct ShuffledPlaylist(pub Vec<AssetHandle<AudioSource>>);
 
 fn setup_audio_defaults(
     music: Res<AudioChannel<MusicChannel>>,
@@ -50,7 +52,7 @@ fn music_system(
     music: Res<AudioChannel<MusicChannel>>,
 ) {
     if playlist.is_empty() {
-        let mut songs = game.playlist_handles.clone();
+        let mut songs = game.playlist.clone();
         songs.shuffle(&mut thread_rng());
         **playlist = songs;
     }
@@ -61,15 +63,17 @@ fn music_system(
             current_music.idx %= playlist.len();
 
             current_music.instance = music
-                .play(playlist[current_music.idx].clone())
+                .play(playlist[current_music.idx].inner.clone_weak())
                 .linear_fade_in(Duration::from_secs_f32(0.5))
                 .handle();
         }
     } else if let Some(song) = playlist.get(0) {
-        current_music.instance = music
-            .play(song.clone())
-            .linear_fade_in(Duration::from_secs_f32(0.5))
-            .handle();
-        current_music.idx = 0;
+        if current_music.instance == default() {
+            current_music.instance = music
+                .play(song.inner.clone_weak())
+                .linear_fade_in(Duration::from_secs_f32(0.5))
+                .handle();
+            current_music.idx = 0;
+        }
     }
 }

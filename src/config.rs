@@ -1,4 +1,3 @@
-use clap::Parser;
 use once_cell::sync::Lazy;
 
 pub const SERVER_MODE_ENV_VAR: &str = "JUMPY_SERVER_MODE";
@@ -8,7 +7,7 @@ const DEFAULT_LOG_LEVEL: &str = "info,wgpu=error,bevy_fluent=warn,symphonia_core
 
 pub static ENGINE_CONFIG: Lazy<EngineConfig> = Lazy::new(|| {
     #[cfg(not(target_arch = "wasm32"))]
-    return EngineConfig::parse();
+    return <EngineConfig as clap::Parser>::parse();
 
     #[cfg(target_arch = "wasm32")]
     return EngineConfig::from_web_params();
@@ -58,12 +57,6 @@ impl EngineConfig {
                 config.game_asset = game_asset.into();
             }
 
-            if let Some(auto_start) =
-                parse_url_query_string(&query, "auto_start").and_then(|s| s.parse().ok())
-            {
-                config.auto_start = auto_start;
-            }
-
             if let Some(log_level) = parse_url_query_string(&query, "log_level") {
                 config.log_level = log_level.into();
             }
@@ -79,13 +72,11 @@ impl EngineConfig {
         // Note: It's unfortunate that we have to manually synchronize this with the defaults set
         // with structopt. If we find a way around that we should use it.
         Self {
-            matchmaking_server: "127.0.0.1:8943".parse().unwrap(),
-            server_mode: false,
             hot_reload: false,
             asset_dir: None,
             game_asset: "default.game.yaml".into(),
-            debug_tools: false,
             log_level: DEFAULT_LOG_LEVEL.into(),
+            sync_test_check_distance: 0,
         }
     }
 }

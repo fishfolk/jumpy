@@ -1,15 +1,14 @@
 use std::borrow::Borrow;
 
 use bevy::{prelude::*, utils::HashMap};
-use bevy_fluent::{
-    exts::fluent::content::Request, BundleAsset, Content, FluentPlugin, Locale, Localization,
-};
+use bevy_fluent::prelude::*;
 use fluent::FluentArgs;
+use fluent_content::{Content, Request};
 
 /// Plugin for initializing and loading the [`Localization`] resource.
-pub struct LocalizationPlugin;
+pub struct JumpyLocalizationPlugin;
 
-impl Plugin for LocalizationPlugin {
+impl Plugin for JumpyLocalizationPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(FluentPlugin)
             .init_resource::<Locale>()

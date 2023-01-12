@@ -8,6 +8,14 @@
 
 Fish Folk: Jumpy is a tactical 2D shooter, played by up to 4 players online or on a shared screen. Aim either left or right; the rest is up to clever movement and positioning in this fish-on-fish brawler! For more information about our origin story (Duck Game et.al.) and big-picture plans, see our [design document](https://www.notion.so/erlendsh/Fish-Fight-1647ed74217e4e38a59bd28f4f5bc81a).
 
+## Web Demo
+
+Jumpy runs in the browser! You can play [web demo][web_demo] to try out the game, without needing to install anything on your computer.
+
+We recommend using the Chrome browser or other derivatives for best performance, or if you have issues with other browsers.
+
+[web_demo]: https://fishfolk.github.io/jumpy/player/latest/
+
 ### Key Features (WIP)
 
 - 2 to 4 players in either Local Multiplayer or Online Play

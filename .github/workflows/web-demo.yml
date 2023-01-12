@@ -1,15 +1,11 @@
 name: Publish Web Demo
 
 on:
-  - workflow_dispatch
-  # Disable temporarily while web build is broken
-  #
-  # push:
-  #   tags:
-  #     - "v*"
-  #   branches:
-  #     - bevy-rewrite
-  #     - main
+  push:
+    tags:
+      - "v*"
+    branches:
+      - main
 
 jobs:
   publish-web-demo:
@@ -49,19 +45,17 @@ jobs:
           branch: gh-pages
           folder: web-target/wasm-release
           target-folder: player/${{ github.ref_name }}
-          ssh-key: ${{ secrets.MASTER_GH_PAGES_DEPLOY_KEY }}
 
-    #   - name: Symlink Latest Build
-    #     run: |
-    #       mkdir latest-symlink-dir
-    #       ln -s ./${{ github.ref_name }} latest
-    #       mv latest latest-symlink-dir
+      - name: Symlink Latest Build
+        run: |
+          mkdir latest-symlink-dir
+          ln -s ./${{ github.ref_name }} latest
+          mv latest latest-symlink-dir
 
-    #   - name: Deploy Symlinked Latest Build 🚀
-    #     uses: JamesIves/github-pages-deploy-action@4.1.3
-    #     with:
-    #       branch: gh-pages
-    #       folder: latest-symlink-dir
-    #       clean: false
-    #       target-folder: player
-    #       ssh-key: ${{ secrets.MASTER_GH_PAGES_DEPLOY_KEY }}
+      - name: Deploy Symlinked Latest Build 🚀
+        uses: JamesIves/github-pages-deploy-action@4.1.3
+        with:
+          branch: gh-pages
+          folder: latest-symlink-dir
+          clean: false
+          target-folder: player

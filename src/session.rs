@@ -1,122 +1,145 @@
-//! Game session handling.
-//!
-//! A "session" in this context means either a local or networked game session, which for network
-//! games will be synced with peers.
+use crate::prelude::*;
 
-use bevy::ecs::system::SystemParam;
-use bevy_ggrs::{
-    ggrs::{self, NonBlockingSocket, P2PSession, SessionBuilder, SyncTestSession},
-    ResetGGRSSession, SessionType,
-};
-use bones_matchmaker_proto::TargetClient;
+pub struct JumpySessionPlugin;
 
-use crate::{
-    config::ENGINE_CONFIG,
-    networking::{client::NetClient, proto::ClientMatchInfo},
-    player,
-    prelude::*,
-    GgrsConfig,
-};
+/// Stage label for the game session stages
+#[derive(StageLabel)]
+pub enum SessionStage {
+    /// Update the game session.
+    Update,
+}
 
-pub struct SessionPlugin;
-
-impl Plugin for SessionPlugin {
+impl Plugin for JumpySessionPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<FrameIdx>()
-            .extend_rollback_plugin(|plugin| plugin.register_rollback_type::<FrameIdx>())
-            .add_rollback_system(RollbackStage::Last, |mut frame_idx: ResMut<FrameIdx>| {
-                frame_idx.0 = frame_idx.0.wrapping_add(1);
-                trace!("End of simulation frame {}", frame_idx.0);
-            });
+        app.add_plugin(bones_bevy_renderer::BonesRendererPlugin::<Session>::new())
+            .add_plugin(jumpy_core::metadata::JumpyCoreAssetsPlugin)
+            .add_stage_before(
+                CoreStage::Update,
+                SessionStage::Update,
+                SystemStage::single_threaded()
+                    .with_system(update_input)
+                    .with_system(
+                        update_game
+                            .run_in_state(EngineState::InGame)
+                            .run_in_state(InGameState::Playing),
+                    )
+                    .with_system(play_sounds)
+                    .with_run_criteria(FixedTimestep::step(1.0 / jumpy_core::FPS as f64)),
+            );
     }
 }
 
-/// The current game logic frame, as distict from a render frame, in the presence of rollback.
-///
-/// Primarily used for diagnostics.
-#[derive(Reflect, Component, Default)]
-#[reflect(Default)]
-pub struct FrameIdx(pub u32);
+/// A resource containing an in-progress game session.
+#[derive(Resource, Deref, DerefMut)]
+pub struct Session(pub GameSession);
 
+// Give bones_bevy_render plugin access to the bones world in our game session.
+impl bones_bevy_renderer::HasBonesWorld for Session {
+    fn world(&mut self) -> &mut bones::World {
+        &mut self.0.world
+    }
+}
+
+/// Helper for creating and stopping game sessions.
 #[derive(SystemParam)]
 pub struct SessionManager<'w, 's> {
     commands: Commands<'w, 's>,
-    client_match_info: Option<Res<'w, ClientMatchInfo>>,
-    client: Option<Res<'w, NetClient>>,
-}
-
-impl NonBlockingSocket<usize> for NetClient {
-    fn send_to(&mut self, msg: &ggrs::Message, addr: &usize) {
-        self.send_unreliable(msg.clone(), TargetClient::One(*addr as u8));
-    }
-
-    fn receive_all_messages(&mut self) -> Vec<(usize, ggrs::Message)> {
-        let mut messages = Vec::new();
-        while let Some(message) = self.recv_unreliable() {
-            match message.kind {
-                crate::networking::proto::UnreliableGameMessageKind::Ggrs(msg) => {
-                    messages.push((message.from_player_idx, msg));
-                }
-            }
-        }
-        messages
-    }
+    menu_camera: Query<'w, 's, &'static mut Camera, With<MenuCamera>>,
+    session: Option<ResMut<'w, Session>>,
 }
 
 impl<'w, 's> SessionManager<'w, 's> {
-    pub fn drop_session(&mut self) {
-        self.commands.insert_resource(ResetGGRSSession);
-        self.commands.remove_resource::<SessionType>();
-        self.commands.remove_resource::<P2PSession<GgrsConfig>>();
-        self.commands
-            .remove_resource::<SyncTestSession<GgrsConfig>>();
+    /// Start a game session
+    pub fn start(&mut self, info: GameSessionInfo) {
+        let session = Session(GameSession::new(info));
+        self.commands.insert_resource(session);
+        self.menu_camera.for_each_mut(|mut x| x.is_active = false);
     }
 
-    /// Setup the game session
-    pub fn start_session(&mut self) {
-        const INPUT_DELAY: usize = 1;
+    /// Restart a game session without changing the settings
+    pub fn restart(&mut self) {
+        if let Some(session) = self.session.as_mut() {
+            session.restart();
+        }
+    }
 
-        if let Some((info, client)) = self.client_match_info.as_ref().zip(self.client.as_ref()) {
-            let client = (*client).clone();
+    /// Stop a game session
+    pub fn stop(&mut self) {
+        self.commands.remove_resource::<Session>();
+        self.menu_camera.for_each_mut(|mut x| x.is_active = true);
+    }
+}
 
-            let mut builder = SessionBuilder::<GgrsConfig>::new();
-            builder = builder
-                .with_input_delay(INPUT_DELAY)
-                .with_num_players(info.player_count);
+/// Update the input to the game session.
+fn update_input(
+    session: Option<ResMut<Session>>,
+    player_input_collectors: Query<(&PlayerInputCollector, &ActionState<PlayerAction>)>,
+) {
+    let Some(mut session) = session else {
+        return;
+    };
 
-            for i in 0..info.player_count {
-                builder = builder
-                    .add_player(
-                        if i == info.player_idx {
-                            ggrs::PlayerType::Local
-                        } else {
-                            ggrs::PlayerType::Remote(i)
-                        },
-                        i,
-                    )
-                    .expect("Invalid player handle");
+    session.update_input(|inputs| {
+        for (player_idx, action_state) in &player_input_collectors {
+            let control = &mut inputs.players[player_idx.0].control;
+
+            let jump_pressed = action_state.pressed(PlayerAction::Jump);
+            control.jump_just_pressed = jump_pressed && !control.jump_pressed;
+            control.jump_pressed = jump_pressed;
+
+            let grab_pressed = action_state.pressed(PlayerAction::Grab);
+            control.grab_just_pressed = grab_pressed && !control.grab_pressed;
+            control.grab_pressed = grab_pressed;
+
+            let shoot_pressed = action_state.pressed(PlayerAction::Shoot);
+            control.shoot_just_pressed = shoot_pressed && !control.shoot_pressed;
+            control.shoot_pressed = shoot_pressed;
+
+            let was_moving = control.move_direction.length_squared() > f32::MIN_POSITIVE;
+            control.move_direction = action_state.axis_pair(PlayerAction::Move).unwrap().xy();
+            let is_moving = control.move_direction.length_squared() > f32::MIN_POSITIVE;
+            control.just_moved = !was_moving && is_moving;
+        }
+    });
+}
+
+/// Update the game session simulation.
+fn update_game(world: &mut World) {
+    let Some(mut session) = world.remove_resource::<Session>() else {
+        return;
+    };
+
+    // Advance the game session
+    session.advance(world);
+
+    world.insert_resource(session);
+}
+
+/// Play sounds from the game session.
+fn play_sounds(audio: Res<AudioChannel<EffectsChannel>>, session: Option<Res<Session>>) {
+    let Some(session) = session else {
+        return;
+    };
+
+    // Get the sound queue out of the world
+    let queue = session
+        .world
+        .run_initialized_system(move |mut audio_events: bones::ResMut<bones::AudioEvents>| {
+            Ok(audio_events.queue.drain(..).collect::<Vec<_>>())
+        })
+        .unwrap();
+
+    // Play all the sounds in the queue
+    for event in queue {
+        match event {
+            bones::AudioEvent::PlaySound {
+                sound_source,
+                volume,
+            } => {
+                audio
+                    .play(sound_source.get_bevy_handle_untyped().typed())
+                    .with_volume(volume.into());
             }
-
-            let session = builder.start_p2p_session(client).unwrap();
-            self.commands.insert_resource(session);
-            self.commands.insert_resource(SessionType::P2PSession);
-            info!("Started P2P session");
-        } else {
-            let mut builder = SessionBuilder::<GgrsConfig>::new();
-
-            builder = builder
-                .with_input_delay(INPUT_DELAY)
-                .with_num_players(player::MAX_PLAYERS)
-                .with_check_distance(ENGINE_CONFIG.sync_test_check_distance);
-
-            for i in 0..player::MAX_PLAYERS {
-                builder = builder.add_player(ggrs::PlayerType::Local, i).unwrap();
-            }
-
-            let session = builder.start_synctest_session().unwrap();
-            self.commands.insert_resource(session);
-            self.commands.insert_resource(SessionType::SyncTestSession);
-            info!("Started Local session");
         }
     }
 }

@@ -1,11 +1,11 @@
 //! Systems and utilities related to specific platform support or platform abstractions
 
+use crate::prelude::*;
+
 use async_channel::{Receiver, Sender};
-use bevy::{prelude::*, utils::HashMap};
+use bevy::utils::HashMap;
 use iyes_loopless::prelude::*;
 use serde::{de::DeserializeOwned, Serialize};
-
-use crate::prelude::*;
 
 #[cfg(not(target_arch = "wasm32"))]
 use native as backend;
@@ -13,19 +13,19 @@ use native as backend;
 #[cfg(target_arch = "wasm32")]
 use wasm as backend;
 
-pub struct PlatformPlugin;
+pub struct JumpyPlatformPlugin;
 
-impl Plugin for PlatformPlugin {
+impl Plugin for JumpyPlatformPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Storage>()
-            .add_system(load_storage.run_in_state(GameState::LoadingPlatformStorage));
+            .add_system(load_storage.run_in_state(EngineState::LoadingPlatformStorage));
     }
 }
 
 /// Bevy system that will load the [`Storage`] and wait for it to finish loading so it can be used
 /// throughout the rest of the game without having to check that storage is loaded.
 ///
-/// Will transition to [`GameState::LoadingGameData`] when finished.
+/// Will transition to [`EngineState::LoadingGameData`] when finished.
 pub fn load_storage(
     mut started: Local<bool>,
     mut commands: Commands,
@@ -42,7 +42,7 @@ pub fn load_storage(
     } else if storage.is_loaded() {
         debug!("Done loading platform storage");
         // Load game
-        commands.insert_resource(NextState(GameState::LoadingGameData));
+        commands.insert_resource(NextState(EngineState::LoadingGameData));
     }
 }
 
@@ -50,6 +50,7 @@ pub fn load_storage(
 type StorageData = HashMap<String, serde_yaml::Value>;
 
 /// Resource for accessing platform specific persistent storage apis through a simple interface.
+#[derive(Resource)]
 pub struct Storage {
     /// The in-memory storage data that we operate on when getting and setting values.
     data: Option<StorageData>,

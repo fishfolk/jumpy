@@ -4,39 +4,50 @@ sounds:
   jump: ../../sounds/jump.ogg
   jump_volume: 0.05
   land: ../../sounds/land.ogg
-  land_volume: 0.05
+  land_volume: 0.025
   grab: ../../sounds/grab.ogg
   grab_volume: 0.05
   drop: ../../sounds/drop.ogg
   drop_volume: 0.05
 
-movement:
-  air_move_speed: 7
+stats:
+  air_move_speed: 6
+  walk_speed: 6
+  jump_speed: 14
   slow_fall_speed: 1.5
 
-spritesheet:
-  image: catty.png
-  tile_size: [96, 80]
-  columns: 14
-  rows: 7
+atlas: ./catty.atlas.yaml
+body_size: [32, 48]
+gravity: 1
 
-  animation_fps: 9
-  animations:
-    idle:
-      frames: [0, 13]
-      repeat: true
-    fall:
-      frames: [42, 42]
-      repeat: false
-    rise:
-      frames: [28, 28]
-      repeat: false
-    walk:
-      frames: [14, 19]
-      repeat: true
-    crouch:
-      frames: [56, 56]
-      repeat: false
-    death_1:
-      frames: [70, 76]
-      repeat: false
+animations:
+  idle:
+    start: 0
+    end: 13
+    fps: &fps 9
+    repeat: true
+  fall:
+    start: 42
+    end: 42
+    fps: *fps
+    repeat: false
+  rise:
+    start: 28
+    end: 28
+    fps: *fps
+    repeat: false
+  walk:
+    start: 14
+    end: 19
+    fps: *fps
+    repeat: true
+  crouch:
+    start: 56
+    end: 56
+    fps: *fps
+    repeat: false
+  death_1:
+    start: 70
+    end: 76
+    fps: *fps
+    repeat: false

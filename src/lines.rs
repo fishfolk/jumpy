@@ -3,9 +3,9 @@
 use crate::prelude::*;
 use bevy_prototype_lyon::prelude::*;
 
-pub struct LinesPlugin;
+pub struct JumpyLinesPlugin;
 
-impl Plugin for LinesPlugin {
+impl Plugin for JumpyLinesPlugin {
     fn build(&self, app: &mut App) {
         // WIP
         app.add_plugin(ShapePlugin);

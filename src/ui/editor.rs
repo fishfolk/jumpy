@@ -6,16 +6,7 @@ use bevy::{
 use bevy_egui::*;
 use bevy_fluent::Localization;
 
-use crate::{
-    camera::{EditorCamera, GameCamera},
-    localization::LocalizationExt,
-    map::MapGridView,
-    metadata::{GameMeta, MapLayerKind, MapLayerMeta, MapMeta},
-    player::input::PlayerInputs,
-    prelude::*,
-    session::SessionManager,
-    utils::ResetManager,
-};
+use crate::prelude::*;
 
 use super::{widget, widgets::bordered_button::BorderedButton, WidgetSystem};
 

@@ -1,10 +1,8 @@
 #![doc = include_str!("./networking.md")]
 
-use bevy_ggrs::ggrs::P2PSession;
+use ggrs::P2PSession;
 
-use crate::{
-    prelude::*, session::SessionManager, ui::main_menu::MenuPage, utils::ResetManager, GgrsConfig,
-};
+use crate::{prelude::*, session::SessionManager, ui::main_menu::MenuPage};
 
 use self::{
     client::NetClient,
@@ -20,6 +18,15 @@ impl Plugin for NetworkingPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(listen_for_map_changes.run_if_resource_exists::<P2PSession<GgrsConfig>>());
     }
+}
+
+#[derive(Debug)]
+pub struct GgrsConfig;
+impl ggrs::Config for GgrsConfig {
+    type Input = networking::DensePlayerControl;
+    type State = u8;
+    /// Addresses are the same as the player handle for our custom socket.
+    type Address = usize;
 }
 
 /// TODO: Map changes aren't working on network games for now, so this isn't properly used/working.
@@ -39,10 +46,7 @@ fn listen_for_map_changes(
                     *menu_page = MenuPage::Home;
                     reset_manager.reset_world();
 
-                    commands
-                        .spawn()
-                        .insert(map_handle)
-                        .insert(Rollback::new(ridp.next_id()));
+                    commands.spawn((map_handle, Rollback::new(ridp.next_id())));
                     commands.insert_resource(NextState(GameState::InGame));
                     session_manager.start_session();
                 }

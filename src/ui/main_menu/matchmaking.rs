@@ -7,12 +7,6 @@ use bones_matchmaker_proto::{MatchInfo, MatchmakerRequest, MatchmakerResponse};
 use futures_lite::future;
 use quinn::{Connection, Endpoint};
 
-use crate::{
-    networking::{client::NetClient, proto::ClientMatchInfo},
-    player::MAX_PLAYERS,
-    random::GlobalRng,
-};
-
 use super::*;
 
 #[derive(SystemParam)]
@@ -24,7 +18,6 @@ pub struct MatchmakingMenu<'w, 's> {
     localization: Res<'w, Localization>,
     state: Local<'s, State>,
     menu_input: Query<'w, 's, &'static mut ActionState<MenuAction>>,
-    global_rng: Res<'w, GlobalRng>,
     player_inputs: ResMut<'w, PlayerInputs>,
 }
 

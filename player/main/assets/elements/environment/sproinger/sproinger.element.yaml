@@ -1,0 +1,9 @@
+name: Sproinger
+category: Gameplay
+builtin: !Sproinger
+  atlas: ./sproinger.atlas.yaml
+  sound: ./jump.ogg
+  sound_volume: 0.1
+  body_size: [8, 8]
+  body_offset: [0, 0]
+  spring_velocity: 20

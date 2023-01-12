@@ -1,0 +1,281 @@
+core: default.core.yaml
+
+playlist:
+  - music/across_the_pond.ogg
+  - music/ahoy!.ogg
+  - music/bait_the_hook.ogg
+  - music/fish_and_ships.ogg
+  - music/fish_bowl.ogg
+  - music/fish_tide.ogg
+  - music/fishsticks.ogg
+  - music/krill_or_be_krilled.ogg
+  - music/whale_theme.ogg
+
+main_menu:
+  title_font:
+    family: fairfax
+    color: FFFFFF
+    size: 85
+  subtitle_font:
+    family: fairfax
+    color: FFFFFF
+    size: 60
+
+  background_image:
+    image: ui/menu-background.png
+    image_size: [896, 480]
+
+  menu_width: 350
+
+default_settings:
+  matchmaking_server: localhost:8943
+  player_controls:
+    # Gamepad controls
+    gamepad:
+      movement:
+        up: !SingleAxis
+          axis_type: !Gamepad LeftStickY
+          positive_low: 0.1
+          negative_low: -1.0
+
+        left: !SingleAxis
+          axis_type: !Gamepad LeftStickX
+          positive_low: 1.0
+          negative_low: -0.1
+
+        down: !SingleAxis
+          axis_type: !Gamepad LeftStickY
+          positive_low: 1.0
+          negative_low: -0.1
+
+        right: !SingleAxis
+          axis_type: !Gamepad LeftStickX
+          positive_low: 0.1
+          negative_low: -1.0
+      jump: !GamepadButton South
+      grab: !GamepadButton East
+      shoot: !GamepadButton West
+      slide: !GamepadButton North
+
+    # Controls for the first keyboard player ( left side )
+    keyboard1:
+      movement:
+        up: !Keyboard W
+        down: !Keyboard S
+        left: !Keyboard A
+        right: !Keyboard D
+      jump: !Keyboard Space
+      grab: !Keyboard V
+      shoot: !Keyboard C
+      slide: !Keyboard B
+
+    # Controls for the second keyboard player ( right side )
+    keyboard2:
+      movement:
+        up: !Keyboard Up
+        down: !Keyboard Down
+        left: !Keyboard Left
+        right: !Keyboard Right
+      jump: !Keyboard Comma
+      grab: !Keyboard RShift
+      shoot: !Keyboard Period
+      slide: !Keyboard Slash
+
+ui_theme:
+  scale: 0.60
+  colors:
+    positive: 3EC761
+
+  widgets:
+    border_radius: 1.5
+    default: &default
+      bg_fill: 3A4444
+      bg_stroke: &default-stroke 181425
+      text: FFFFFF
+    hovered:
+      bg_fill: 566363
+      bg_stroke: *default-stroke
+      text: FFFFFF
+    active:
+      bg_fill: 566363
+      bg_stroke: 86809B
+      text: FFFFFF
+    noninteractive:
+      bg_fill: 262B44
+      bg_stroke: 181425
+      text: FFFFFF
+    menu: *default
+  debug_window_fill: 262B44
+
+  font_families:
+    fairfax: ui/FairfaxSM.ttf
+    ark: ui/ark-pixel-16px-latin.ttf
+
+  font_styles:
+    heading:
+      family: ark
+      size: 40
+      color: FFFFFF
+    bigger:
+      family: ark
+      size: 25
+      color: FFFFFF
+    normal:
+      family: ark
+      size: 20
+      color: FFFFFF
+    smaller:
+      family: ark
+      size: 15
+      color: FFFFFF
+
+  editor:
+    icons:
+      select:
+        image: ui/editor/Cursor.png
+        image_size: [64, 64]
+      tile:
+        image: ui/editor/Tile.png
+        image_size: [64, 64]
+      spawn:
+        image: ui/editor/Pointer and Map.png
+        image_size: [64, 64]
+      erase:
+        image: ui/editor/Eraser.png
+        image_size: [64, 64]
+
+  hud:
+    font:
+      family: ark
+      size: 15
+      color: FFFFFF
+
+    player_hud_width: 165
+
+    portrait_frame:
+      image: ui/panel.png
+      image_size: [32, 32]
+      border_size:
+        top: 8
+        left: 8
+        right: 8
+        bottom: 8
+
+    lifebar:
+      height: 16
+      background_image:
+        image: ui/lifebar.png
+        image_size: [19, 7]
+        border_size:
+          left: 3
+          right: 3
+          top: 3
+          bottom: 3
+        scale: 2
+      progress_image:
+        image: ui/lifebar-progress.png
+        image_size: [1, 1]
+
+  panel:
+    font_color: FFFFFF
+    padding:
+      top: 25
+      bottom: 25
+      left: 25
+      right: 25
+    border:
+      image: ui/panel.png
+      image_size: [38, 34]
+      border_size:
+        top: 11
+        bottom: 11
+        left: 12
+        right: 21
+      scale: 4
+
+  button_styles:
+    normal:
+      font:
+        family: ark
+        color: FFFFFF
+        size: 20
+      padding:
+        top: 6
+        left: 6
+        right: 6
+        bottom: 9
+      borders:
+        default:
+          image: ui/button.png
+          image_size: [14, 14]
+          border_size:
+            top: 5
+            bottom: 5
+            right: 5
+            left: 5
+          scale: 2
+        focused:
+          image: ui/button-focused.png
+          image_size: [14, 14]
+          border_size:
+            top: 5
+            bottom: 5
+            right: 5
+            left: 5
+          scale: 2
+        clicked:
+          image: ui/button-down.png
+          image_size: [14, 14]
+          border_size:
+            top: 5
+            bottom: 5
+            right: 5
+            left: 5
+          scale: 2
+
+    small:
+      font:
+        family: ark
+        color: FFFFFF
+        size: 17
+      padding:
+        top: 4
+        left: 4
+        right: 4
+        bottom: 6
+      borders:
+        default:
+          image: ui/button.png
+          image_size: [14, 14]
+          border_size:
+            top: 5
+            bottom: 5
+            right: 5
+            left: 5
+          scale: 2
+        focused:
+          image: ui/button-focused.png
+          image_size: [14, 14]
+          border_size:
+            top: 5
+            bottom: 5
+            right: 5
+            left: 5
+          scale: 2
+        clicked:
+          image: ui/button-down.png
+          image_size: [14, 14]
+          border_size:
+            top: 5
+            bottom: 5
+            right: 5
+            left: 5
+          scale: 2
+
+translations:
+  # This is the locale that we will fallback to if the selected locale doesn't have
+  # translation for a certain message.
+  default_locale: en-US
+  locales:
+    - locales/en-US/en-US.ftl.yml
+    - locales/fr-FR/fr-FR.ftl.yml

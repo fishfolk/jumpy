@@ -1,0 +1,8 @@
+name: Anemones
+category: Decorations
+editor_size: [48, 51]
+builtin: !AnimatedDecoration
+  start_frame: 0
+  end_frame: 4
+  fps: 6
+  atlas: ./anemones.atlas.yaml

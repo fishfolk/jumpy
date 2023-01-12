@@ -1,0 +1,14 @@
+name: Crab
+category: Critters
+builtin: !Crab
+  atlas: ./crab.atlas.yaml
+  start_frame: 0
+  end_frame: 1
+  comfortable_spawn_distance: 25.0
+  comfortable_scared_distance: 100.0
+  same_level_threshold: 50.0
+  walk_speed: 0.5
+  run_speed: 2.5
+  fps: 6
+  # around about 2.5 seconds (45 fix updates per second) 
+  timer_delay_max: 113

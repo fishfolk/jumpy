@@ -1,0 +1,36 @@
+camera_height: 448
+
+physics:
+  terminal_velocity: 30
+  friction_lerp: 0.85
+  stop_threshold: 1.0
+  gravity: 1
+
+players:
+  - player/skins/catty/catty.player.yaml
+  - player/skins/fishy/fishy.player.yaml
+  - player/skins/lionfishy/lionfishy.player.yaml
+  - player/skins/orcy/orcy.player.yaml
+  - player/skins/pescy/pescy.player.yaml
+  - player/skins/sharky/sharky.player.yaml
+
+stable_maps:
+  - map/levels/level1.map.yaml
+  - map/levels/level2.map.yaml
+  - map/levels/level3.map.yaml
+  - map/levels/level4.map.yaml
+
+experimental_maps:
+  # - map/levels/lev01.map.json # Renamed to Level 1
+  - map/levels/lev02.map.json
+  - map/levels/lev03.map.json
+  # - map/levels/lev04.map.json # Renamed to Level 4
+  - map/levels/lev05.map.json
+  - map/levels/lev06.map.json
+  # - map/levels/lev07.map.json # Renamed to Level 3
+  - map/levels/zyrafa01.map.json
+  - map/levels/zyrafa02.map.json
+  - map/levels/zyrafa03.map.json
+  - map/levels/zyrafa04.map.json
+  - map/levels/zyrafa05.map.json
+  # - map/levels/zyrafa06.map.json # Renamed to Level 2

@@ -1,0 +1,4 @@
+name: Player Spawner
+category: Gampelay
+builtin: !PlayerSpawner
+editor_size: [16, 32]

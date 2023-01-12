@@ -1,0 +1,24 @@
+name: Grenades
+category: Weapons
+builtin: !Grenade
+  fuse_time: 4.0
+  throw_velocity: [7, 6]
+  damage_region_size: [60, 60]
+  damage_region_lifetime: 0.6
+
+  atlas: ./grenade.atlas.yaml
+
+  explosion_atlas: ./explosion.atlas.yaml
+  explosion_lifetime: 1.0
+  explosion_frames: 12
+  explosion_fps: 8
+  explosion_sound: ./explosion.ogg
+
+  fuse_sound: ./fuse.ogg
+
+  body_size: [18, 18]
+  grab_offset: [-7, -6]
+  body_offset: [0, 2]
+  can_rotate: true
+  bouncyness: 0.6
+  angular_velocity: 0.1

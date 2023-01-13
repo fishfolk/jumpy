@@ -4,10 +4,12 @@ use crate::prelude::*;
 
 pub fn install(session: &mut GameSession) {
     bones_lib::install(&mut session.stages);
-    session
-        .stages
-        .add_system_to_stage(CoreStage::Update, handle_input);
+    // session
+    //     .stages
+    //     .add_system_to_stage(CoreStage::Update, testing);
 }
-fn handle_input(inputs: Res<PlayerInputs>, mut _bodies: CompMut<KinematicBody>) {
-    let _control = &inputs.players[0].control;
-}
+// fn testing(entities: Res<Entities>, transforms: Comp<Transform>, players: Comp<PlayerIdx>) {
+//     for (_ent, (trans, _idx)) in entities.iter_with((&transforms, &players)) {
+//         dbg!(trans.translation.truncate());
+//     }
+// }

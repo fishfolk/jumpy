@@ -1683,38 +1683,36 @@
             }
         }
     ],
-    "background_layers": [
-        {
-            "image": "../resources/background_04.png",
-            "speed": 0,
-            "tile_size": [896, 480],
-            "z": -110,
-            "position": [0, 360],
-            "scale": 2
-        },
-        {
-            "image": "../resources/background_03.png",
-            "speed": 0.74,
-            "tile_size": [896, 480],
-            "z": -109,
-            "position": [0, 360],
-            "scale": 2
-        },
-        {
-            "image": "../resources/background_02.png",
-            "speed": 0.82,
-            "tile_size": [896, 480],
-            "z": -108,
-            "position": [0, 360],
-            "scale": 2
-        },
-        {
-            "image": "../resources/background_01.png",
-            "speed": 100,
-            "tile_size": [896, 480],
-            "z": -107,
-            "position": [0, 360],
-            "scale": 2
-        }
-    ]
+    "background": {
+        "speed": [0.07, 0.02],
+        "layers": [
+            {
+                "image": "../resources/background_04.png",
+                "size": [896, 480],
+                "depth": 6,
+                "scale": 6
+            },
+            {
+                "image": "../resources/background_03.png",
+                "size": [896, 480],
+                "depth": 5.8,
+                "scale": 2.2,
+                "offset": [100, 0]
+            },
+            {
+                "image": "../resources/background_02.png",
+                "size": [896, 480],
+                "depth": 4,
+                "scale": 2.2,
+                "offset": [600, 0]
+            },
+            {
+                "image": "../resources/background_01.png",
+                "size": [896, 480],
+                "depth": 1,
+                "scale": 2.2,
+                "offset": [500, 0]
+            }
+        ]
+    }
 }

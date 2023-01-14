@@ -136,6 +136,31 @@
 <span id="134">134</span>
 <span id="135">135</span>
 <span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::{collisions::TileCollision, <span class="kw-2">*</span>};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -170,6 +195,8 @@
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>element_handles: CompMut&lt;ElementHandle&gt;,
     <span class="kw-2">mut </span>tile_collisions: CompMut&lt;TileCollision&gt;,
+    <span class="kw-2">mut </span>parallax_bg_sprites: CompMut&lt;ParallaxBackgroundSprite&gt;,
+    <span class="kw-2">mut </span>sprites: CompMut&lt;Sprite&gt;,
 ) {
     <span class="kw">if </span>map_spawned.<span class="number">0 </span>{
         <span class="kw">return</span>;
@@ -180,8 +207,31 @@
     map_spawned.<span class="number">0 </span>= <span class="bool-val">true</span>;
     <span class="kw-2">**</span>clear_color = map.background_color.<span class="number">0</span>;
 
-    <span class="kw">for </span>(i, layer) <span class="kw">in </span>map.layers.iter().enumerate() {
-        <span class="kw">let </span>layer_z = -<span class="number">1000.0 </span>+ i <span class="kw">as </span>f32;
+    <span class="comment">// Spawn parallax backgrounds
+    </span><span class="kw">for </span>layer <span class="kw">in </span><span class="kw-2">&amp;</span>map.background.layers {
+        <span class="kw">for </span>i <span class="kw">in </span>-<span class="number">1</span>..=<span class="number">1 </span>{
+            <span class="kw">let </span>ent = entities.create();
+            sprites.insert(
+                ent,
+                Sprite {
+                    image: layer.image.clone(),
+                    ..default()
+                },
+            );
+            transforms.insert(ent, default());
+            parallax_bg_sprites.insert(
+                ent,
+                ParallaxBackgroundSprite {
+                    idx: i,
+                    meta: layer.clone(),
+                },
+            );
+        }
+    }
+
+    <span class="comment">// Load tiles
+    </span><span class="kw">for </span>(i, layer) <span class="kw">in </span>map.layers.iter().enumerate() {
+        <span class="kw">let </span>layer_z = -<span class="number">900.0 </span>+ i <span class="kw">as </span>f32;
         <span class="kw">match </span><span class="kw-2">&amp;</span>layer.kind {
             MapLayerKind::Tile(tile_layer_meta) =&gt; {
                 <span class="kw">let </span><span class="kw-2">mut </span>tile_layer = TileLayer::new(

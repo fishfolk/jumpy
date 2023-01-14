@@ -176,6 +176,7 @@ pub fn pause_menu_default(
                         });
 
                         ui.scope(|ui| {
+                            ui.set_enabled(false); // Waiting for editor
                             if BorderedButton::themed(
                                 &ui_theme.button_styles.normal,
                                 &localization.get("edit"),

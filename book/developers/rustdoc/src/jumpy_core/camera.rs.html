@@ -150,6 +150,8 @@
 <span id="148">148</span>
 <span id="149">149</span>
 <span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -159,9 +161,11 @@
         .run_system(
             |<span class="kw-2">mut </span>entities: ResMut&lt;Entities&gt;,
              <span class="kw-2">mut </span>cameras: CompMut&lt;Camera&gt;,
-             <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;| {
+             <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
+             <span class="kw-2">mut </span>camera_shakes: CompMut&lt;CameraShake&gt;| {
                 <span class="kw">let </span>ent = entities.create();
 
+                camera_shakes.insert(ent, CameraShake::new(<span class="number">6.0</span>, glam::vec2(<span class="number">3.0</span>, <span class="number">3.0</span>), <span class="number">1.0</span>));
                 cameras.insert(ent, default());
                 transforms.insert(ent, default());
             },
@@ -189,7 +193,8 @@
     map_handle: Res&lt;MapHandle&gt;,
     map_assets: BevyAssets&lt;MapMeta&gt;,
     <span class="kw-2">mut </span>cameras: CompMut&lt;Camera&gt;,
-    <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
+    transforms: Comp&lt;Transform&gt;,
+    <span class="kw-2">mut </span>camera_shakes: CompMut&lt;CameraShake&gt;,
     player_indexes: Comp&lt;PlayerIdx&gt;,
     window: Res&lt;Window&gt;,
 ) {
@@ -203,10 +208,10 @@
     <span class="kw">let </span><span class="prelude-val">Some</span>(map) = map_assets.get(<span class="kw-2">&amp;</span>map_handle.get_bevy_handle()) <span class="kw">else </span>{
         <span class="kw">return</span>;
     };
-    <span class="kw">let </span><span class="prelude-val">Some</span>((camera_ent, (camera, camera_transform))) = entities.iter_with((<span class="kw-2">&amp;mut </span>cameras, <span class="kw-2">&amp;mut </span>transforms)).next() <span class="kw">else </span>{
+    <span class="kw">let </span><span class="prelude-val">Some</span>((_ent, (camera, camera_shake))) = entities.iter_with((<span class="kw-2">&amp;mut </span>cameras, <span class="kw-2">&amp;mut </span>camera_shakes)).next() <span class="kw">else </span>{
         <span class="kw">return
     </span>};
-    <span class="kw">let </span><span class="kw-2">mut </span>camera_transform = <span class="kw-2">*</span>camera_transform;
+    <span class="kw">let </span>camera_pos = <span class="kw-2">&amp;mut </span>camera_shake.center;
 
     <span class="kw">let </span>window_aspect = window.size.x / window.size.y;
     <span class="kw">let </span>default_height = meta.camera_height;
@@ -255,11 +260,10 @@
         scale += r_diff * ZOOM_IN_LERP_FACTOR;
     }
 
-    <span class="kw">let </span>delta = camera_transform.translation.truncate() - middle_point;
+    <span class="kw">let </span>delta = camera_pos.truncate() - middle_point;
     <span class="kw">let </span>dist = delta * MOVE_LERP_FACTOR;
     camera.height = scale * default_height;
-    camera_transform.translation -= dist.extend(<span class="number">0.0</span>);
-    transforms.insert(camera_ent, camera_transform);
+    <span class="kw-2">*</span>camera_pos -= dist.extend(<span class="number">0.0</span>);
 }
 
 <span class="kw">fn </span>camera_parallax(

@@ -216,6 +216,7 @@
 <span id="214">214</span>
 <span id="215">215</span>
 <span id="216">216</span>
+<span id="217">217</span>
 </pre><pre class="rust"><code><span class="kw">use </span>bevy_egui::<span class="kw-2">*</span>;
 <span class="kw">use </span>bevy_fluent::Localization;
 
@@ -394,7 +395,8 @@
                         });
 
                         ui.scope(|ui| {
-                            <span class="kw">if </span>BorderedButton::themed(
+                            ui.set_enabled(<span class="bool-val">false</span>); <span class="comment">// Waiting for editor
+                            </span><span class="kw">if </span>BorderedButton::themed(
                                 <span class="kw-2">&amp;</span>ui_theme.button_styles.normal,
                                 <span class="kw-2">&amp;</span>localization.get(<span class="string">&quot;edit&quot;</span>),
                             )

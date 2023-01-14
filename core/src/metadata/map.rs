@@ -2,11 +2,12 @@ use super::*;
 #[derive(BonesBevyAsset, Deserialize, Clone, TypeUlid, Debug)]
 #[ulid = "01GP264BT87MAAHMEK52Y5P7BW"]
 #[asset_id = "map"]
+#[serde(deny_unknown_fields)]
 pub struct MapMeta {
     pub name: String,
     /// The parallax background layers
     #[serde(default)]
-    pub background_layers: Vec<ParallaxLayerMeta>,
+    pub background: BackgroundMeta,
     /// The background color of the map, behind the parallax layers
     pub background_color: ColorMeta,
     /// Size of the map in tiles
@@ -17,35 +18,23 @@ pub struct MapMeta {
     pub layers: Vec<MapLayerMeta>,
 }
 
-#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug)]
+#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
-#[serde(default)]
-pub struct ParallaxLayerMeta {
-    pub speed: f32,
-    pub image: Handle<Image>,
-    pub tile_size: Vec2,
-    pub cols: usize,
-    pub rows: usize,
-    pub scale: f32,
-    pub z: f32,
-    pub transition_factor: f32,
-    pub position: Vec2,
+pub struct BackgroundMeta {
+    pub speed: Vec2,
+    pub layers: Vec<ParallaxLayerMeta>,
 }
 
-impl Default for ParallaxLayerMeta {
-    fn default() -> Self {
-        Self {
-            speed: default(),
-            image: default(),
-            tile_size: default(),
-            cols: 1,
-            rows: 1,
-            scale: 1.0,
-            z: default(),
-            transition_factor: 1.0,
-            position: default(),
-        }
-    }
+#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug, TypeUlid)]
+#[serde(deny_unknown_fields)]
+#[ulid = "01GPP1QJFVQN3HYW4N7ZE3S89Y"]
+pub struct ParallaxLayerMeta {
+    pub image: Handle<Image>,
+    pub size: Vec2,
+    pub depth: f32,
+    pub scale: f32,
+    #[serde(default)]
+    pub offset: Vec2,
 }
 
 #[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug)]

@@ -32,6 +32,8 @@ fn spawn_map(
     mut transforms: CompMut<Transform>,
     mut element_handles: CompMut<ElementHandle>,
     mut tile_collisions: CompMut<TileCollision>,
+    mut parallax_bg_sprites: CompMut<ParallaxBackgroundSprite>,
+    mut sprites: CompMut<Sprite>,
 ) {
     if map_spawned.0 {
         return;
@@ -42,8 +44,31 @@ fn spawn_map(
     map_spawned.0 = true;
     **clear_color = map.background_color.0;
 
+    // Spawn parallax backgrounds
+    for layer in &map.background.layers {
+        for i in -1..=1 {
+            let ent = entities.create();
+            sprites.insert(
+                ent,
+                Sprite {
+                    image: layer.image.clone(),
+                    ..default()
+                },
+            );
+            transforms.insert(ent, default());
+            parallax_bg_sprites.insert(
+                ent,
+                ParallaxBackgroundSprite {
+                    idx: i,
+                    meta: layer.clone(),
+                },
+            );
+        }
+    }
+
+    // Load tiles
     for (i, layer) in map.layers.iter().enumerate() {
-        let layer_z = -1000.0 + i as f32;
+        let layer_z = -900.0 + i as f32;
         match &layer.kind {
             MapLayerKind::Tile(tile_layer_meta) => {
                 let mut tile_layer = TileLayer::new(

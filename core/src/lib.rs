@@ -9,7 +9,7 @@
 mod prelude {
     pub use {
         crate::{
-            damage::*, elements::*, input::*, item::*, lifetime::*, map::*, metadata::*,
+            camera::*, damage::*, elements::*, input::*, item::*, lifetime::*, map::*, metadata::*,
             physics::*, player::*, session::*, MAX_PLAYERS,
         },
         bones_bevy_asset::{BevyAssets, BonesBevyAsset, BonesBevyAssetLoad},

@@ -7,9 +7,11 @@ pub fn install(session: &mut GameSession) {
         .run_system(
             |mut entities: ResMut<Entities>,
              mut cameras: CompMut<Camera>,
-             mut transforms: CompMut<Transform>| {
+             mut transforms: CompMut<Transform>,
+             mut camera_shakes: CompMut<CameraShake>| {
                 let ent = entities.create();
 
+                camera_shakes.insert(ent, CameraShake::new(6.0, glam::vec2(3.0, 3.0), 1.0));
                 cameras.insert(ent, default());
                 transforms.insert(ent, default());
             },
@@ -37,7 +39,8 @@ fn camera_controller(
     map_handle: Res<MapHandle>,
     map_assets: BevyAssets<MapMeta>,
     mut cameras: CompMut<Camera>,
-    mut transforms: CompMut<Transform>,
+    transforms: Comp<Transform>,
+    mut camera_shakes: CompMut<CameraShake>,
     player_indexes: Comp<PlayerIdx>,
     window: Res<Window>,
 ) {
@@ -51,10 +54,10 @@ fn camera_controller(
     let Some(map) = map_assets.get(&map_handle.get_bevy_handle()) else {
         return;
     };
-    let Some((camera_ent, (camera, camera_transform))) = entities.iter_with((&mut cameras, &mut transforms)).next() else {
+    let Some((_ent, (camera, camera_shake))) = entities.iter_with((&mut cameras, &mut camera_shakes)).next() else {
         return
     };
-    let mut camera_transform = *camera_transform;
+    let camera_pos = &mut camera_shake.center;
 
     let window_aspect = window.size.x / window.size.y;
     let default_height = meta.camera_height;
@@ -103,11 +106,10 @@ fn camera_controller(
         scale += r_diff * ZOOM_IN_LERP_FACTOR;
     }
 
-    let delta = camera_transform.translation.truncate() - middle_point;
+    let delta = camera_pos.truncate() - middle_point;
     let dist = delta * MOVE_LERP_FACTOR;
     camera.height = scale * default_height;
-    camera_transform.translation -= dist.extend(0.0);
-    transforms.insert(camera_ent, camera_transform);
+    *camera_pos -= dist.extend(0.0);
 }
 
 fn camera_parallax(

@@ -8,12 +8,14 @@ pub fn install(session: &mut GameSession) {
             |mut entities: ResMut<Entities>,
              mut cameras: CompMut<Camera>,
              mut transforms: CompMut<Transform>,
-             mut camera_shakes: CompMut<CameraShake>| {
+             mut camera_shakes: CompMut<CameraShake>,
+             mut camera_follows: CompMut<CameraState>| {
                 let ent = entities.create();
 
                 camera_shakes.insert(ent, CameraShake::new(6.0, glam::vec2(3.0, 3.0), 1.0));
                 cameras.insert(ent, default());
                 transforms.insert(ent, default());
+                camera_follows.insert(ent, default());
             },
         )
         .unwrap();
@@ -33,81 +35,123 @@ pub struct ParallaxBackgroundSprite {
     pub meta: ParallaxLayerMeta,
 }
 
+#[derive(Clone, Debug, TypeUlid, Default)]
+#[ulid = "01GPV6M1KY0GBRQVJ3WG5CSBBS"]
+pub struct CameraState {
+    pub player_camera_rects: [Rect; MAX_PLAYERS],
+}
+
 fn camera_controller(
-    meta: Res<CoreMetaArc>,
+    game_meta: Res<CoreMetaArc>,
     entities: Res<Entities>,
     map_handle: Res<MapHandle>,
     map_assets: BevyAssets<MapMeta>,
     mut cameras: CompMut<Camera>,
-    transforms: Comp<Transform>,
     mut camera_shakes: CompMut<CameraShake>,
+    mut camera_states: CompMut<CameraState>,
+    transforms: Comp<Transform>,
     player_indexes: Comp<PlayerIdx>,
+    bodies: Comp<KinematicBody>,
     window: Res<Window>,
 ) {
-    const CAMERA_PADDING: f32 = 120.0;
-    const MOVE_LERP_FACTOR: f32 = 0.08;
-    const ZOOM_IN_LERP_FACTOR: f32 = 0.01;
-    const ZOOM_OUT_LERP_FACTOR: f32 = 0.1;
-    const BELOW_GROUND_VIEW: f32 = 100.0;
-    const MIN_SIZE: f32 = 530.0;
+    let meta = &game_meta.camera;
 
     let Some(map) = map_assets.get(&map_handle.get_bevy_handle()) else {
         return;
     };
-    let Some((_ent, (camera, camera_shake))) = entities.iter_with((&mut cameras, &mut camera_shakes)).next() else {
+    let Some((_ent, (camera, camera_shake, camera_state))) = entities.iter_with((&mut cameras, &mut camera_shakes, &mut camera_states)).next() else {
         return
     };
+
     let camera_pos = &mut camera_shake.center;
 
-    let window_aspect = window.size.x / window.size.y;
-    let default_height = meta.camera_height;
-    let mut scale = camera.height / default_height;
-    let default_width = window_aspect * default_height;
+    // Update player camera rects
+    for (_ent, (transform, player_idx, body)) in
+        entities.iter_with((&transforms, &player_indexes, &bodies))
+    {
+        let camera_box_size = meta.player_camera_box_size;
 
-    let map_width = map.tile_size.x * map.grid_size.x as f32;
-    let map_height = map.tile_size.y * map.grid_size.y as f32;
-    let min_player_pos = Vec2::new(-CAMERA_PADDING, CAMERA_PADDING - BELOW_GROUND_VIEW);
-    let max_player_pos = Vec2::new(map_width + CAMERA_PADDING, map_height + CAMERA_PADDING);
+        // Get the player's camera box
+        let camera_box = &mut camera_state.player_camera_rects[player_idx.0];
+        // If it's not be initialized.
+        if camera_box.min == Vec2::ZERO && camera_box.max == Vec2::ZERO {
+            // Set it's size and position according to the player
+            *camera_box = Rect::new(
+                transform.translation.x,
+                transform.translation.y,
+                camera_box_size.x,
+                camera_box_size.y,
+            );
+        }
 
-    let mut middle_point = Vec2::ZERO;
-    let mut min = Vec2::new(100000.0, 100000.0);
-    let mut max = Vec2::new(-100000.0, -100000.0);
+        // Get the player's body rect
+        let rect = body.collider_rect(transform.translation);
 
-    let players: Vec<&Transform> = entities
-        .iter_with((&player_indexes, &transforms))
-        .map(|x| x.1 .1)
-        .collect();
-
-    let player_count = players.len();
-
-    for player_transform in &players {
-        let pos = player_transform.translation.truncate();
-        let pos = pos.max(min_player_pos).min(max_player_pos);
-        middle_point += pos;
-
-        min.x = (pos.x - CAMERA_PADDING).min(min.x);
-        min.y = (pos.y - CAMERA_PADDING).min(min.y);
-        max.x = (pos.x + CAMERA_PADDING).max(max.x);
-        max.y = (pos.y + CAMERA_PADDING).max(max.y);
+        // Push the camera rect just enough to contain the player's body rect
+        if rect.min.x < camera_box.min.x {
+            camera_box.min.x = rect.min.x;
+            camera_box.max.x = camera_box.min.x + camera_box_size.x;
+        }
+        if rect.max.x > camera_box.max.x {
+            camera_box.max.x = rect.max.x;
+            camera_box.min.x = rect.max.x - camera_box_size.x;
+        }
+        if rect.min.y < camera_box.min.y {
+            camera_box.min.y = rect.min.y;
+            camera_box.max.y = camera_box.min.y + camera_box_size.y;
+        }
+        if rect.max.y > camera_box.max.y {
+            camera_box.max.y = rect.max.y;
+            camera_box.min.y = rect.max.y - camera_box_size.y;
+        }
     }
 
-    middle_point /= player_count.max(1) as f32;
+    let window_aspect = window.size.x / window.size.y;
+    let default_height = meta.default_height;
+    let mut scale = camera.height / default_height;
+    let default_width = window_aspect * default_height;
+    let map_size = map.grid_size.as_vec2() * map.tile_size;
+
+    let mut min = Vec2::new(f32::MAX, f32::MAX);
+    let mut max = Vec2::new(f32::MIN, f32::MIN);
+
+    let players: Vec<usize> = entities
+        .iter_with(&player_indexes)
+        .map(|x| x.1 .0)
+        .collect();
+
+    for player_idx in players {
+        let rect = camera_state.player_camera_rects[player_idx];
+
+        min = (rect.min - vec2(meta.border_left, meta.border_bottom))
+            .min(min)
+            .max(Vec2::ZERO);
+        max = (rect.max + vec2(meta.border_right, meta.border_top)).max(max);
+        max.x = max.x.min(map_size.x)
+    }
+
+    let mut middle_point = Rect { min, max }.center();
 
     let size = max - min;
-    let size = size.max(Vec2::splat(MIN_SIZE));
+    let size = size.max(meta.min_camera_size);
 
     let rh = size.y / default_height;
     let rw = size.x / default_width;
     let r_target = if rh > rw { rh } else { rw };
     let r_diff = r_target - scale;
     if r_diff > 0.0 {
-        scale += r_diff * ZOOM_OUT_LERP_FACTOR;
+        scale += r_diff * meta.zoom_out_lerp_factor;
     } else {
-        scale += r_diff * ZOOM_IN_LERP_FACTOR;
+        scale += r_diff * meta.zoom_in_lerp_factor;
+    }
+
+    // Keep camera above the map floor
+    if middle_point.y - size.y / 2. < 0.0 {
+        middle_point.y = size.y / 2.0;
     }
 
     let delta = camera_pos.truncate() - middle_point;
-    let dist = delta * MOVE_LERP_FACTOR;
+    let dist = delta * meta.move_lerp_factor;
     camera.height = scale * default_height;
     *camera_pos -= dist.extend(0.0);
 }

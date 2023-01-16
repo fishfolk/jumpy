@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-use self::collisions::{Actor, Collider, Rect, TileCollision};
+use self::collisions::{Actor, Collider, TileCollision};
 pub use collisions::CollisionWorld;
 
 pub mod collisions;
@@ -112,7 +112,7 @@ fn update_kinematic_bodies(
             while collision_world.collide_solids(position, body.size.x, body.size.y)
                 == TileCollision::SOLID
             {
-                let rect = collisions::Rect::new(position.x, position.y, body.size.x, body.size.y);
+                let rect = Rect::new(position.x, position.y, body.size.x, body.size.y);
 
                 match (
                     collision_world.collide_tag(default(), rect.top_left(), 0.0, 0.0)

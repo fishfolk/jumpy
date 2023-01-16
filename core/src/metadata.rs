@@ -38,11 +38,44 @@ impl ::bevy::prelude::Plugin for JumpyCoreAssetsPlugin {
 #[ulid = "01GNWT2Q8EZ5CEV3MHWNMGEEA6"]
 #[serde(deny_unknown_fields)]
 pub struct CoreMeta {
-    pub camera_height: f32,
+    pub camera: CameraMeta,
     pub physics: PhysicsMeta,
     pub players: Vec<Handle<PlayerMeta>>,
     pub stable_maps: Vec<Handle<MapMeta>>,
     pub experimental_maps: Vec<Handle<MapMeta>>,
+}
+
+#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[serde(default)]
+pub struct CameraMeta {
+    pub default_height: f32,
+    pub border_top: f32,
+    pub border_bottom: f32,
+    pub border_left: f32,
+    pub border_right: f32,
+    pub move_lerp_factor: f32,
+    pub zoom_in_lerp_factor: f32,
+    pub zoom_out_lerp_factor: f32,
+    pub min_camera_size: Vec2,
+    pub player_camera_box_size: Vec2,
+}
+
+impl Default for CameraMeta {
+    fn default() -> Self {
+        Self {
+            default_height: 400.0,
+            border_top: 0.0,
+            border_bottom: 0.0,
+            border_left: 0.0,
+            border_right: 0.0,
+            move_lerp_factor: 1.0,
+            zoom_in_lerp_factor: 1.0,
+            zoom_out_lerp_factor: 1.0,
+            min_camera_size: Vec2::ZERO,
+            player_camera_box_size: Vec2::ZERO,
+        }
+    }
 }
 
 #[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug, Default)]

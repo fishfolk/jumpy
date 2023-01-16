@@ -1,6 +1,6 @@
 name: Level 2
 background:
-  speed: [0.09, 0.01]
+  speed: [0.09, 0.04]
   layers:
     - image: ../resources/background_04.png
       size:

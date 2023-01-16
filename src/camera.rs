@@ -16,7 +16,7 @@ pub fn spawn_menu_camera(commands: &mut Commands, core: &CoreMeta) -> Entity {
                 // Camera2DBundle's default transform is not the same as Transform::default().
                 transform: default(),
                 projection: OrthographicProjection {
-                    scaling_mode: ScalingMode::FixedVertical(core.camera_height),
+                    scaling_mode: ScalingMode::FixedVertical(core.camera.default_height),
                     ..default()
                 },
                 ..default()

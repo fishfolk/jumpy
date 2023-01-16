@@ -1,6 +1,6 @@
 //! Systems and components related to damage/kill zones
 
-use crate::{physics::collisions::Rect, prelude::*};
+use crate::prelude::*;
 
 pub fn install(session: &mut GameSession) {
     session

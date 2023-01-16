@@ -178,11 +178,6 @@
 <span id="176">176</span>
 <span id="177">177</span>
 <span id="178">178</span>
-<span id="179">179</span>
-<span id="180">180</span>
-<span id="181">181</span>
-<span id="182">182</span>
-<span id="183">183</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::ui::pause_menu::PauseMenuPage;
 
 <span class="kw">use super</span>::<span class="kw-2">*</span>;
@@ -275,7 +270,7 @@
                                 ),
                             ] {
                                 ui.add_space(bigger_text_style.size / <span class="number">2.0</span>);
-                                <span class="kw">let </span>label = ui.themed_label(bigger_text_style, section_title);
+                                ui.themed_label(bigger_text_style, section_title);
 
                                 <span class="comment">// Clippy lint is a false alarm, necessary to avoid borrowing params
                                 </span><span class="attribute">#[allow(clippy::unnecessary_to_owned)]
@@ -286,18 +281,13 @@
                                         .unwrap();
                                     ui.add_space(ui.spacing().item_spacing.y);
 
-                                    <span class="kw">let </span>button =
+                                    <span class="kw">let </span><span class="kw-2">mut </span>button =
                                         BorderedButton::themed(small_button_style, <span class="kw-2">&amp;</span>map_meta.name)
                                             .show(ui);
 
                                     <span class="kw">if </span>first_button {
                                         first_button = <span class="bool-val">false</span>;
-                                        <span class="comment">// There&#39;s something weird where egui focuses on the first
-                                        // thing in the scroll area, so we have to re-focus on the
-                                        // button, instead of the label.
-                                        </span><span class="kw">if </span>label.has_focus() {
-                                            ui.ctx().memory().request_focus(button.id);
-                                        }
+                                        button = button.focus_by_default(ui);
                                     }
 
                                     <span class="kw">if </span>button.clicked() {

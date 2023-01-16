@@ -1,4 +1,14 @@
-camera_height: 448
+camera:
+  default_height: 448
+  border_right: 75
+  border_left: 75
+  border_top: 50
+  border_bottom: 200
+  player_camera_box_size: [100, 250]
+  min_camera_size: [400, 500]
+  zoom_in_lerp_factor: 0.05
+  zoom_out_lerp_factor: 0.1
+  move_lerp_factor: 0.1
 
 physics:
   terminal_velocity: 30

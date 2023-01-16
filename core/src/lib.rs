@@ -9,8 +9,8 @@
 mod prelude {
     pub use {
         crate::{
-            camera::*, damage::*, elements::*, input::*, item::*, lifetime::*, map::*, metadata::*,
-            physics::*, player::*, session::*, MAX_PLAYERS,
+            camera::*, damage::*, elements::*, input::*, item::*, lifetime::*, map::*, math::*,
+            metadata::*, physics::*, player::*, session::*, MAX_PLAYERS,
         },
         bones_bevy_asset::{BevyAssets, BonesBevyAsset, BonesBevyAssetLoad},
         bones_lib::prelude::*,
@@ -41,6 +41,7 @@ pub mod input;
 pub mod item;
 pub mod lifetime;
 pub mod map;
+pub mod math;
 pub mod metadata;
 pub mod physics;
 pub mod player;

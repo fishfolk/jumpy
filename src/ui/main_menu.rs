@@ -68,7 +68,7 @@ pub fn setup_main_menu(
     let bg_handle = game.main_menu.background_image.image.inner.clone_weak();
     let img_size = game.main_menu.background_image.image_size;
     let ratio = img_size.x / img_size.y;
-    let height = core.camera_height;
+    let height = core.camera.default_height;
     let width = height * ratio;
     commands
         .spawn((

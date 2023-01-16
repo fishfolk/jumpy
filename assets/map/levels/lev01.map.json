@@ -1077,7 +1077,7 @@
         }
     ],
     "background": {
-        "speed": [0.07, 0.02],
+        "speed": [0.09, 0.04],
         "layers": [
             {
                 "image": "../resources/background_04.png",

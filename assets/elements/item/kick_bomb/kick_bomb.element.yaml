@@ -20,6 +20,6 @@ builtin: !KickBomb
   grab_offset: [14, -2]
   body_offset: [0, 2]
   can_rotate: true
-  bouncyness: 0.6
+  bounciness: 0.6
   angular_velocity: 0.1
   arm_delay: 0.02

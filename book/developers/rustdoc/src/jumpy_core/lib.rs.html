@@ -53,6 +53,7 @@
 <span id="51">51</span>
 <span id="52">52</span>
 <span id="53">53</span>
+<span id="54">54</span>
 </pre><pre class="rust"><code><span class="attribute">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;../README.md&quot;</span>)]
 #![doc(html_logo_url = <span class="string">&quot;https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4&quot;</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
@@ -64,8 +65,8 @@
 </span><span class="kw">mod </span>prelude {
     <span class="kw">pub use </span>{
         <span class="kw">crate</span>::{
-            camera::<span class="kw-2">*</span>, damage::<span class="kw-2">*</span>, elements::<span class="kw-2">*</span>, input::<span class="kw-2">*</span>, item::<span class="kw-2">*</span>, lifetime::<span class="kw-2">*</span>, map::<span class="kw-2">*</span>, metadata::<span class="kw-2">*</span>,
-            physics::<span class="kw-2">*</span>, player::<span class="kw-2">*</span>, session::<span class="kw-2">*</span>, MAX_PLAYERS,
+            camera::<span class="kw-2">*</span>, damage::<span class="kw-2">*</span>, elements::<span class="kw-2">*</span>, input::<span class="kw-2">*</span>, item::<span class="kw-2">*</span>, lifetime::<span class="kw-2">*</span>, map::<span class="kw-2">*</span>, math::<span class="kw-2">*</span>,
+            metadata::<span class="kw-2">*</span>, physics::<span class="kw-2">*</span>, player::<span class="kw-2">*</span>, session::<span class="kw-2">*</span>, MAX_PLAYERS,
         },
         bones_bevy_asset::{BevyAssets, BonesBevyAsset, BonesBevyAssetLoad},
         bones_lib::prelude::<span class="kw-2">*</span>,
@@ -96,6 +97,7 @@
 <span class="kw">pub mod </span>item;
 <span class="kw">pub mod </span>lifetime;
 <span class="kw">pub mod </span>map;
+<span class="kw">pub mod </span>math;
 <span class="kw">pub mod </span>metadata;
 <span class="kw">pub mod </span>physics;
 <span class="kw">pub mod </span>player;

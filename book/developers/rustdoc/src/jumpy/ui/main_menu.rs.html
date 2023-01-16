@@ -431,7 +431,7 @@
     </span><span class="kw">let </span>bg_handle = game.main_menu.background_image.image.inner.clone_weak();
     <span class="kw">let </span>img_size = game.main_menu.background_image.image_size;
     <span class="kw">let </span>ratio = img_size.x / img_size.y;
-    <span class="kw">let </span>height = core.camera_height;
+    <span class="kw">let </span>height = core.camera.default_height;
     <span class="kw">let </span>width = height * ratio;
     commands
         .spawn((

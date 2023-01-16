@@ -217,7 +217,7 @@
 <span id="215">215</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
-<span class="kw">use </span><span class="self">self</span>::collisions::{Actor, Collider, Rect, TileCollision};
+<span class="kw">use </span><span class="self">self</span>::collisions::{Actor, Collider, TileCollision};
 <span class="kw">pub use </span>collisions::CollisionWorld;
 
 <span class="kw">pub mod </span>collisions;
@@ -329,7 +329,7 @@
             </span><span class="kw">while </span>collision_world.collide_solids(position, body.size.x, body.size.y)
                 == TileCollision::SOLID
             {
-                <span class="kw">let </span>rect = collisions::Rect::new(position.x, position.y, body.size.x, body.size.y);
+                <span class="kw">let </span>rect = Rect::new(position.x, position.y, body.size.x, body.size.y);
 
                 <span class="kw">match </span>(
                     collision_world.collide_tag(default(), rect.top_left(), <span class="number">0.0</span>, <span class="number">0.0</span>)

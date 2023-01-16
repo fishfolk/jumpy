@@ -44,7 +44,7 @@
                 // Camera2DBundle&#39;s default transform is not the same as Transform::default().
                 </span>transform: default(),
                 projection: OrthographicProjection {
-                    scaling_mode: ScalingMode::FixedVertical(core.camera_height),
+                    scaling_mode: ScalingMode::FixedVertical(core.camera.default_height),
                     ..default()
                 },
                 ..default()

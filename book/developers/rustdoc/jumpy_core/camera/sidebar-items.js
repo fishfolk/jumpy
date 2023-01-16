@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["install",""]],"struct":[["ParallaxBackgroundSprite",""]]};
+window.SIDEBAR_ITEMS = {"fn":[["install",""]],"struct":[["CameraState",""],["ParallaxBackgroundSprite",""]]};

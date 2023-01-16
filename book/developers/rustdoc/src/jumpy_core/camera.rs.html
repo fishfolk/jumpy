@@ -152,6 +152,50 @@
 <span id="150">150</span>
 <span id="151">151</span>
 <span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -162,12 +206,14 @@
             |<span class="kw-2">mut </span>entities: ResMut&lt;Entities&gt;,
              <span class="kw-2">mut </span>cameras: CompMut&lt;Camera&gt;,
              <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
-             <span class="kw-2">mut </span>camera_shakes: CompMut&lt;CameraShake&gt;| {
+             <span class="kw-2">mut </span>camera_shakes: CompMut&lt;CameraShake&gt;,
+             <span class="kw-2">mut </span>camera_follows: CompMut&lt;CameraState&gt;| {
                 <span class="kw">let </span>ent = entities.create();
 
                 camera_shakes.insert(ent, CameraShake::new(<span class="number">6.0</span>, glam::vec2(<span class="number">3.0</span>, <span class="number">3.0</span>), <span class="number">1.0</span>));
                 cameras.insert(ent, default());
                 transforms.insert(ent, default());
+                camera_follows.insert(ent, default());
             },
         )
         .unwrap();
@@ -187,81 +233,123 @@
     <span class="kw">pub </span>meta: ParallaxLayerMeta,
 }
 
+<span class="attribute">#[derive(Clone, Debug, TypeUlid, Default)]
+#[ulid = <span class="string">&quot;01GPV6M1KY0GBRQVJ3WG5CSBBS&quot;</span>]
+</span><span class="kw">pub struct </span>CameraState {
+    <span class="kw">pub </span>player_camera_rects: [Rect; MAX_PLAYERS],
+}
+
 <span class="kw">fn </span>camera_controller(
-    meta: Res&lt;CoreMetaArc&gt;,
+    game_meta: Res&lt;CoreMetaArc&gt;,
     entities: Res&lt;Entities&gt;,
     map_handle: Res&lt;MapHandle&gt;,
     map_assets: BevyAssets&lt;MapMeta&gt;,
     <span class="kw-2">mut </span>cameras: CompMut&lt;Camera&gt;,
-    transforms: Comp&lt;Transform&gt;,
     <span class="kw-2">mut </span>camera_shakes: CompMut&lt;CameraShake&gt;,
+    <span class="kw-2">mut </span>camera_states: CompMut&lt;CameraState&gt;,
+    transforms: Comp&lt;Transform&gt;,
     player_indexes: Comp&lt;PlayerIdx&gt;,
+    bodies: Comp&lt;KinematicBody&gt;,
     window: Res&lt;Window&gt;,
 ) {
-    <span class="kw">const </span>CAMERA_PADDING: f32 = <span class="number">120.0</span>;
-    <span class="kw">const </span>MOVE_LERP_FACTOR: f32 = <span class="number">0.08</span>;
-    <span class="kw">const </span>ZOOM_IN_LERP_FACTOR: f32 = <span class="number">0.01</span>;
-    <span class="kw">const </span>ZOOM_OUT_LERP_FACTOR: f32 = <span class="number">0.1</span>;
-    <span class="kw">const </span>BELOW_GROUND_VIEW: f32 = <span class="number">100.0</span>;
-    <span class="kw">const </span>MIN_SIZE: f32 = <span class="number">530.0</span>;
+    <span class="kw">let </span>meta = <span class="kw-2">&amp;</span>game_meta.camera;
 
     <span class="kw">let </span><span class="prelude-val">Some</span>(map) = map_assets.get(<span class="kw-2">&amp;</span>map_handle.get_bevy_handle()) <span class="kw">else </span>{
         <span class="kw">return</span>;
     };
-    <span class="kw">let </span><span class="prelude-val">Some</span>((_ent, (camera, camera_shake))) = entities.iter_with((<span class="kw-2">&amp;mut </span>cameras, <span class="kw-2">&amp;mut </span>camera_shakes)).next() <span class="kw">else </span>{
+    <span class="kw">let </span><span class="prelude-val">Some</span>((_ent, (camera, camera_shake, camera_state))) = entities.iter_with((<span class="kw-2">&amp;mut </span>cameras, <span class="kw-2">&amp;mut </span>camera_shakes, <span class="kw-2">&amp;mut </span>camera_states)).next() <span class="kw">else </span>{
         <span class="kw">return
     </span>};
+
     <span class="kw">let </span>camera_pos = <span class="kw-2">&amp;mut </span>camera_shake.center;
 
-    <span class="kw">let </span>window_aspect = window.size.x / window.size.y;
-    <span class="kw">let </span>default_height = meta.camera_height;
-    <span class="kw">let </span><span class="kw-2">mut </span>scale = camera.height / default_height;
-    <span class="kw">let </span>default_width = window_aspect * default_height;
+    <span class="comment">// Update player camera rects
+    </span><span class="kw">for </span>(_ent, (transform, player_idx, body)) <span class="kw">in
+        </span>entities.iter_with((<span class="kw-2">&amp;</span>transforms, <span class="kw-2">&amp;</span>player_indexes, <span class="kw-2">&amp;</span>bodies))
+    {
+        <span class="kw">let </span>camera_box_size = meta.player_camera_box_size;
 
-    <span class="kw">let </span>map_width = map.tile_size.x * map.grid_size.x <span class="kw">as </span>f32;
-    <span class="kw">let </span>map_height = map.tile_size.y * map.grid_size.y <span class="kw">as </span>f32;
-    <span class="kw">let </span>min_player_pos = Vec2::new(-CAMERA_PADDING, CAMERA_PADDING - BELOW_GROUND_VIEW);
-    <span class="kw">let </span>max_player_pos = Vec2::new(map_width + CAMERA_PADDING, map_height + CAMERA_PADDING);
+        <span class="comment">// Get the player&#39;s camera box
+        </span><span class="kw">let </span>camera_box = <span class="kw-2">&amp;mut </span>camera_state.player_camera_rects[player_idx.<span class="number">0</span>];
+        <span class="comment">// If it&#39;s not be initialized.
+        </span><span class="kw">if </span>camera_box.min == Vec2::ZERO &amp;&amp; camera_box.max == Vec2::ZERO {
+            <span class="comment">// Set it&#39;s size and position according to the player
+            </span><span class="kw-2">*</span>camera_box = Rect::new(
+                transform.translation.x,
+                transform.translation.y,
+                camera_box_size.x,
+                camera_box_size.y,
+            );
+        }
 
-    <span class="kw">let </span><span class="kw-2">mut </span>middle_point = Vec2::ZERO;
-    <span class="kw">let </span><span class="kw-2">mut </span>min = Vec2::new(<span class="number">100000.0</span>, <span class="number">100000.0</span>);
-    <span class="kw">let </span><span class="kw-2">mut </span>max = Vec2::new(-<span class="number">100000.0</span>, -<span class="number">100000.0</span>);
+        <span class="comment">// Get the player&#39;s body rect
+        </span><span class="kw">let </span>rect = body.collider_rect(transform.translation);
 
-    <span class="kw">let </span>players: Vec&lt;<span class="kw-2">&amp;</span>Transform&gt; = entities
-        .iter_with((<span class="kw-2">&amp;</span>player_indexes, <span class="kw-2">&amp;</span>transforms))
-        .map(|x| x.<span class="number">1 </span>.<span class="number">1</span>)
-        .collect();
-
-    <span class="kw">let </span>player_count = players.len();
-
-    <span class="kw">for </span>player_transform <span class="kw">in </span><span class="kw-2">&amp;</span>players {
-        <span class="kw">let </span>pos = player_transform.translation.truncate();
-        <span class="kw">let </span>pos = pos.max(min_player_pos).min(max_player_pos);
-        middle_point += pos;
-
-        min.x = (pos.x - CAMERA_PADDING).min(min.x);
-        min.y = (pos.y - CAMERA_PADDING).min(min.y);
-        max.x = (pos.x + CAMERA_PADDING).max(max.x);
-        max.y = (pos.y + CAMERA_PADDING).max(max.y);
+        <span class="comment">// Push the camera rect just enough to contain the player&#39;s body rect
+        </span><span class="kw">if </span>rect.min.x &lt; camera_box.min.x {
+            camera_box.min.x = rect.min.x;
+            camera_box.max.x = camera_box.min.x + camera_box_size.x;
+        }
+        <span class="kw">if </span>rect.max.x &gt; camera_box.max.x {
+            camera_box.max.x = rect.max.x;
+            camera_box.min.x = rect.max.x - camera_box_size.x;
+        }
+        <span class="kw">if </span>rect.min.y &lt; camera_box.min.y {
+            camera_box.min.y = rect.min.y;
+            camera_box.max.y = camera_box.min.y + camera_box_size.y;
+        }
+        <span class="kw">if </span>rect.max.y &gt; camera_box.max.y {
+            camera_box.max.y = rect.max.y;
+            camera_box.min.y = rect.max.y - camera_box_size.y;
+        }
     }
 
-    middle_point /= player_count.max(<span class="number">1</span>) <span class="kw">as </span>f32;
+    <span class="kw">let </span>window_aspect = window.size.x / window.size.y;
+    <span class="kw">let </span>default_height = meta.default_height;
+    <span class="kw">let </span><span class="kw-2">mut </span>scale = camera.height / default_height;
+    <span class="kw">let </span>default_width = window_aspect * default_height;
+    <span class="kw">let </span>map_size = map.grid_size.as_vec2() * map.tile_size;
+
+    <span class="kw">let </span><span class="kw-2">mut </span>min = Vec2::new(f32::MAX, f32::MAX);
+    <span class="kw">let </span><span class="kw-2">mut </span>max = Vec2::new(f32::MIN, f32::MIN);
+
+    <span class="kw">let </span>players: Vec&lt;usize&gt; = entities
+        .iter_with(<span class="kw-2">&amp;</span>player_indexes)
+        .map(|x| x.<span class="number">1 </span>.<span class="number">0</span>)
+        .collect();
+
+    <span class="kw">for </span>player_idx <span class="kw">in </span>players {
+        <span class="kw">let </span>rect = camera_state.player_camera_rects[player_idx];
+
+        min = (rect.min - vec2(meta.border_left, meta.border_bottom))
+            .min(min)
+            .max(Vec2::ZERO);
+        max = (rect.max + vec2(meta.border_right, meta.border_top)).max(max);
+        max.x = max.x.min(map_size.x)
+    }
+
+    <span class="kw">let </span><span class="kw-2">mut </span>middle_point = Rect { min, max }.center();
 
     <span class="kw">let </span>size = max - min;
-    <span class="kw">let </span>size = size.max(Vec2::splat(MIN_SIZE));
+    <span class="kw">let </span>size = size.max(meta.min_camera_size);
 
     <span class="kw">let </span>rh = size.y / default_height;
     <span class="kw">let </span>rw = size.x / default_width;
     <span class="kw">let </span>r_target = <span class="kw">if </span>rh &gt; rw { rh } <span class="kw">else </span>{ rw };
     <span class="kw">let </span>r_diff = r_target - scale;
     <span class="kw">if </span>r_diff &gt; <span class="number">0.0 </span>{
-        scale += r_diff * ZOOM_OUT_LERP_FACTOR;
+        scale += r_diff * meta.zoom_out_lerp_factor;
     } <span class="kw">else </span>{
-        scale += r_diff * ZOOM_IN_LERP_FACTOR;
+        scale += r_diff * meta.zoom_in_lerp_factor;
+    }
+
+    <span class="comment">// Keep camera above the map floor
+    </span><span class="kw">if </span>middle_point.y - size.y / <span class="number">2. </span>&lt; <span class="number">0.0 </span>{
+        middle_point.y = size.y / <span class="number">2.0</span>;
     }
 
     <span class="kw">let </span>delta = camera_pos.truncate() - middle_point;
-    <span class="kw">let </span>dist = delta * MOVE_LERP_FACTOR;
+    <span class="kw">let </span>dist = delta * meta.move_lerp_factor;
     camera.height = scale * default_height;
     <span class="kw-2">*</span>camera_pos -= dist.extend(<span class="number">0.0</span>);
 }

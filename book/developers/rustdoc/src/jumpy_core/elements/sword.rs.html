@@ -297,34 +297,13 @@
 <span id="295">295</span>
 <span id="296">296</span>
 <span id="297">297</span>
-<span id="298">298</span>
-<span id="299">299</span>
-<span id="300">300</span>
-<span id="301">301</span>
-<span id="302">302</span>
-<span id="303">303</span>
-<span id="304">304</span>
-<span id="305">305</span>
-<span id="306">306</span>
-<span id="307">307</span>
-<span id="308">308</span>
-<span id="309">309</span>
-<span id="310">310</span>
-<span id="311">311</span>
-<span id="312">312</span>
-<span id="313">313</span>
-<span id="314">314</span>
-<span id="315">315</span>
-<span id="316">316</span>
-<span id="317">317</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{damage::DamageRegion, prelude::<span class="kw-2">*</span>};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)
-        .add_system_to_stage(CoreStage::Last, update)
-        .add_system_to_stage(CoreStage::Last, spawn_damage_regions);
+        .add_system_to_stage(CoreStage::PostUpdate, update);
 }
 
 <span class="attribute">#[derive(Copy, Clone, Debug, TypeUlid, Default)]
@@ -427,26 +406,31 @@
     <span class="kw-2">mut </span>items_used: CompMut&lt;ItemUsed&gt;,
     <span class="kw-2">mut </span>items_dropped: CompMut&lt;ItemDropped&gt;,
     player_indexes: Comp&lt;PlayerIdx&gt;,
-    inventories: Comp&lt;Inventory&gt;,
+    player_inventories: PlayerInventories,
     <span class="kw-2">mut </span>player_events: ResMut&lt;PlayerEvents&gt;,
-    <span class="kw-2">mut </span>pending_damage_regions: ResMut&lt;PendingDamageRegions&gt;,
+    <span class="kw-2">mut </span>commands: Commands,
 ) {
-    <span class="comment">// Collect player inventories
-    </span><span class="attribute">#[derive(Copy, Clone)]
-    </span><span class="kw">struct </span>Inv {
-        player: Entity,
-        item: Entity,
-    }
-    <span class="kw">let </span><span class="kw-2">mut </span>player_inventories: [<span class="prelude-ty">Option</span>&lt;Inv&gt;; MAX_PLAYERS] = [<span class="prelude-val">None</span>; MAX_PLAYERS];
-    <span class="kw">for </span>(player, (idx, inventory)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;</span>player_indexes, <span class="kw-2">&amp;</span>inventories)) {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(item) = inventory.<span class="number">0 </span>{
-            player_inventories[idx.<span class="number">0</span>] = <span class="prelude-val">Some</span>(Inv { player, item });
-        }
-    }
-
     <span class="kw">for </span>(entity, (sword, element_handle)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;mut </span>swords, <span class="kw-2">&amp;</span>element_handles)) {
         <span class="kw">let </span><span class="prelude-val">Some</span>(element_meta) = element_assets.get(<span class="kw-2">&amp;</span>element_handle.get_bevy_handle()) <span class="kw">else </span>{
             <span class="kw">continue</span>;
+        };
+
+        <span class="comment">// Helper to spawn a damage region for the sword attack
+        </span><span class="kw">let </span><span class="kw-2">mut </span>spawn_damage_region = |pos: Vec2, size: Vec2, owner: Entity| {
+            commands.add(
+                <span class="kw">move </span>|<span class="kw-2">mut </span>entities: ResMut&lt;Entities&gt;,
+                      <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
+                      <span class="kw-2">mut </span>damage_regions: CompMut&lt;DamageRegion&gt;,
+                      <span class="kw-2">mut </span>damage_region_owners: CompMut&lt;DamageRegionOwner&gt;,
+                      <span class="kw-2">mut </span>lifetimes: CompMut&lt;Lifetime&gt;| {
+                    <span class="kw">let </span>entity = entities.create();
+
+                    transforms.insert(entity, Transform::from_translation(pos.extend(<span class="number">0.0</span>)));
+                    damage_regions.insert(entity, DamageRegion { size });
+                    damage_region_owners.insert(entity, DamageRegionOwner(owner));
+                    lifetimes.insert(entity, Lifetime::new(<span class="number">2.0 </span>/ <span class="number">60.0</span>));
+                },
+            );
         };
 
         <span class="kw">let </span>BuiltinElementKind::Sword {
@@ -464,7 +448,7 @@
         <span class="comment">// If the item is being held
         </span><span class="kw">if let </span><span class="prelude-val">Some</span>(inventory) = player_inventories
             .iter()
-            .find_map(|x| x.filter(|x| x.item == entity))
+            .find_map(|x| x.filter(|x| x.inventory == entity))
         {
             <span class="kw">let </span>player = inventory.player;
             <span class="kw">let </span>body = bodies.get_mut(entity).unwrap();
@@ -506,30 +490,30 @@
 
                     <span class="comment">// TODO: Move all these constants to the builtin item config
                     </span><span class="kw">match </span><span class="kw-2">*</span>frame / <span class="number">3 </span>{
-                        <span class="number">0 </span>=&gt; pending_damage_regions.push((
+                        <span class="number">0 </span>=&gt; spawn_damage_region(
                             Vec2::new(
                                 player_translation.x + <span class="number">20.0 </span>* flip_factor,
                                 player_translation.y + <span class="number">20.0</span>,
                             ),
                             Vec2::new(<span class="number">30.0</span>, <span class="number">70.0</span>),
                             player,
-                        )),
-                        <span class="number">1 </span>=&gt; pending_damage_regions.push((
+                        ),
+                        <span class="number">1 </span>=&gt; spawn_damage_region(
                             Vec2::new(
                                 player_translation.x + <span class="number">25.0 </span>* flip_factor,
                                 player_translation.y + <span class="number">20.0</span>,
                             ),
                             Vec2::new(<span class="number">40.0</span>, <span class="number">50.0</span>),
                             player,
-                        )),
-                        <span class="number">2 </span>=&gt; pending_damage_regions.push((
+                        ),
+                        <span class="number">2 </span>=&gt; spawn_damage_region(
                             Vec2::new(
                                 player_translation.x + <span class="number">20.0 </span>* flip_factor,
                                 player_translation.y,
                             ),
                             Vec2::new(<span class="number">40.0</span>, <span class="number">50.0</span>),
                             player,
-                        )),
+                        ),
                         <span class="kw">_ </span>=&gt; (),
                     }
 
@@ -608,30 +592,6 @@
             transform.translation.x = player_translation.x;
             transform.translation.z = player_translation.z;
         }
-    }
-}
-
-<span class="doccomment">/// NOTE: This is in a separate system because the [`CollisionWorld`] param in the system above
-/// requires an immutable borrow of [`Res&lt;Entities&gt;`] internally, which conflicts with our need to
-/// borrow [`ResMut&lt;Entities&gt;`] so that we can spawn entities.
-///
-/// TODO: We should add a command-queue abstraction like Bevy&#39;s `Commands` to bones ECS to help
-/// allow queueing these kinds of operations and preventing the need for using separate systems.
-</span><span class="kw">fn </span>spawn_damage_regions(
-    <span class="kw-2">mut </span>entities: ResMut&lt;Entities&gt;,
-    <span class="kw-2">mut </span>pending_damage_regions: ResMut&lt;PendingDamageRegions&gt;,
-    <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
-    <span class="kw-2">mut </span>damage_regions: CompMut&lt;DamageRegion&gt;,
-    <span class="kw-2">mut </span>damage_region_owners: CompMut&lt;DamageRegionOwner&gt;,
-    <span class="kw-2">mut </span>lifetimes: CompMut&lt;Lifetime&gt;,
-) {
-    <span class="kw">for </span>(pos, size, owner) <span class="kw">in </span>pending_damage_regions.<span class="number">0</span>.drain(..) {
-        <span class="kw">let </span>entity = entities.create();
-
-        transforms.insert(entity, Transform::from_translation(pos.extend(<span class="number">0.0</span>)));
-        damage_regions.insert(entity, DamageRegion { size });
-        damage_region_owners.insert(entity, DamageRegionOwner(owner));
-        lifetimes.insert(entity, Lifetime::new(<span class="number">2.0 </span>/ <span class="number">60.0</span>));
     }
 }
 </code></pre></div>

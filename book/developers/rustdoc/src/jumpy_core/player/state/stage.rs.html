@@ -155,7 +155,7 @@
         }
     }
 
-    <span class="kw">fn </span>run(<span class="kw-2">&amp;mut </span><span class="self">self</span>, world: <span class="kw-2">&amp;</span>World) -&gt; SystemResult {
+    <span class="kw">fn </span>run(<span class="kw-2">&amp;mut </span><span class="self">self</span>, world: <span class="kw-2">&amp;mut </span>World) -&gt; SystemResult {
         <span class="macro">trace!</span>(<span class="string">&quot;Starting player state transitions&quot;</span>);
         <span class="kw">loop </span>{
             <span class="comment">// Get the current player states

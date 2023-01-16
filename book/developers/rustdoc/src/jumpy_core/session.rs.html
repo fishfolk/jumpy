@@ -257,7 +257,7 @@
             world_resource.<span class="number">0 </span>= <span class="prelude-val">Some</span>(scratch_world);
         }
         <span class="kw">for </span>stage <span class="kw">in </span><span class="kw-2">&amp;mut </span><span class="self">self</span>.stages.stages {
-            stage.run(<span class="kw-2">&amp;</span><span class="self">self</span>.world).unwrap();
+            stage.run(<span class="kw-2">&amp;mut </span><span class="self">self</span>.world).unwrap();
         }
 
         <span class="comment">// Advance the simulation time

@@ -21,11 +21,6 @@ pub fn install(session: &mut GameSession) {
 #[ulid = "01GP49B2AMTYB6W8DWKBRF27FT"]
 pub struct PlayerIdx(pub usize);
 
-/// An intventory component, indicating that entiy
-#[derive(Clone, TypeUlid, Default, Deref, DerefMut)]
-#[ulid = "01GP4D6M2QBSKZMEZMM22YGG41"]
-pub struct Inventory(pub Option<Entity>);
-
 /// Marker component indicating that a player has been killed.
 ///
 /// This usually means their death animation is playing, and they are about to be de-spawned.

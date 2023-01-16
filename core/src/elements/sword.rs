@@ -4,8 +4,7 @@ pub fn install(session: &mut GameSession) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)
-        .add_system_to_stage(CoreStage::Last, update)
-        .add_system_to_stage(CoreStage::Last, spawn_damage_regions);
+        .add_system_to_stage(CoreStage::PostUpdate, update);
 }
 
 #[derive(Copy, Clone, Debug, TypeUlid, Default)]
@@ -108,26 +107,31 @@ fn update(
     mut items_used: CompMut<ItemUsed>,
     mut items_dropped: CompMut<ItemDropped>,
     player_indexes: Comp<PlayerIdx>,
-    inventories: Comp<Inventory>,
+    player_inventories: PlayerInventories,
     mut player_events: ResMut<PlayerEvents>,
-    mut pending_damage_regions: ResMut<PendingDamageRegions>,
+    mut commands: Commands,
 ) {
-    // Collect player inventories
-    #[derive(Copy, Clone)]
-    struct Inv {
-        player: Entity,
-        item: Entity,
-    }
-    let mut player_inventories: [Option<Inv>; MAX_PLAYERS] = [None; MAX_PLAYERS];
-    for (player, (idx, inventory)) in entities.iter_with((&player_indexes, &inventories)) {
-        if let Some(item) = inventory.0 {
-            player_inventories[idx.0] = Some(Inv { player, item });
-        }
-    }
-
     for (entity, (sword, element_handle)) in entities.iter_with((&mut swords, &element_handles)) {
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
             continue;
+        };
+
+        // Helper to spawn a damage region for the sword attack
+        let mut spawn_damage_region = |pos: Vec2, size: Vec2, owner: Entity| {
+            commands.add(
+                move |mut entities: ResMut<Entities>,
+                      mut transforms: CompMut<Transform>,
+                      mut damage_regions: CompMut<DamageRegion>,
+                      mut damage_region_owners: CompMut<DamageRegionOwner>,
+                      mut lifetimes: CompMut<Lifetime>| {
+                    let entity = entities.create();
+
+                    transforms.insert(entity, Transform::from_translation(pos.extend(0.0)));
+                    damage_regions.insert(entity, DamageRegion { size });
+                    damage_region_owners.insert(entity, DamageRegionOwner(owner));
+                    lifetimes.insert(entity, Lifetime::new(2.0 / 60.0));
+                },
+            );
         };
 
         let BuiltinElementKind::Sword {
@@ -145,7 +149,7 @@ fn update(
         // If the item is being held
         if let Some(inventory) = player_inventories
             .iter()
-            .find_map(|x| x.filter(|x| x.item == entity))
+            .find_map(|x| x.filter(|x| x.inventory == entity))
         {
             let player = inventory.player;
             let body = bodies.get_mut(entity).unwrap();
@@ -187,30 +191,30 @@ fn update(
 
                     // TODO: Move all these constants to the builtin item config
                     match *frame / 3 {
-                        0 => pending_damage_regions.push((
+                        0 => spawn_damage_region(
                             Vec2::new(
                                 player_translation.x + 20.0 * flip_factor,
                                 player_translation.y + 20.0,
                             ),
                             Vec2::new(30.0, 70.0),
                             player,
-                        )),
-                        1 => pending_damage_regions.push((
+                        ),
+                        1 => spawn_damage_region(
                             Vec2::new(
                                 player_translation.x + 25.0 * flip_factor,
                                 player_translation.y + 20.0,
                             ),
                             Vec2::new(40.0, 50.0),
                             player,
-                        )),
-                        2 => pending_damage_regions.push((
+                        ),
+                        2 => spawn_damage_region(
                             Vec2::new(
                                 player_translation.x + 20.0 * flip_factor,
                                 player_translation.y,
                             ),
                             Vec2::new(40.0, 50.0),
                             player,
-                        )),
+                        ),
                         _ => (),
                     }
 
@@ -289,29 +293,5 @@ fn update(
             transform.translation.x = player_translation.x;
             transform.translation.z = player_translation.z;
         }
-    }
-}
-
-/// NOTE: This is in a separate system because the [`CollisionWorld`] param in the system above
-/// requires an immutable borrow of [`Res<Entities>`] internally, which conflicts with our need to
-/// borrow [`ResMut<Entities>`] so that we can spawn entities.
-///
-/// TODO: We should add a command-queue abstraction like Bevy's `Commands` to bones ECS to help
-/// allow queueing these kinds of operations and preventing the need for using separate systems.
-fn spawn_damage_regions(
-    mut entities: ResMut<Entities>,
-    mut pending_damage_regions: ResMut<PendingDamageRegions>,
-    mut transforms: CompMut<Transform>,
-    mut damage_regions: CompMut<DamageRegion>,
-    mut damage_region_owners: CompMut<DamageRegionOwner>,
-    mut lifetimes: CompMut<Lifetime>,
-) {
-    for (pos, size, owner) in pending_damage_regions.0.drain(..) {
-        let entity = entities.create();
-
-        transforms.insert(entity, Transform::from_translation(pos.extend(0.0)));
-        damage_regions.insert(entity, DamageRegion { size });
-        damage_region_owners.insert(entity, DamageRegionOwner(owner));
-        lifetimes.insert(entity, Lifetime::new(2.0 / 60.0));
     }
 }

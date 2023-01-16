@@ -45,7 +45,7 @@ impl SystemStage for PlayerStateStageImpl {
         }
     }
 
-    fn run(&mut self, world: &World) -> SystemResult {
+    fn run(&mut self, world: &mut World) -> SystemResult {
         trace!("Starting player state transitions");
         loop {
             // Get the current player states

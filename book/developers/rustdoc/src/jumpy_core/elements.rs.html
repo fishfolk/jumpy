@@ -23,9 +23,12 @@
 <span id="21">21</span>
 <span id="22">22</span>
 <span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub mod </span>decoration;
+<span class="kw">pub mod </span>grenade;
 <span class="kw">pub mod </span>player_spawner;
 <span class="kw">pub mod </span>sproinger;
 <span class="kw">pub mod </span>sword;
@@ -45,6 +48,7 @@
     player_spawner::install(session);
     sproinger::install(session);
     sword::install(session);
+    grenade::install(session);
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="jumpy_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

@@ -12,8 +12,10 @@ builtin: !Grenade
   explosion_lifetime: 1.0
   explosion_frames: 12
   explosion_fps: 8
+  explosion_volume: 0.1
   explosion_sound: ./explosion.ogg
 
+  fuse_sound_volume: 0.1
   fuse_sound: ./fuse.ogg
 
   body_size: [18, 18]

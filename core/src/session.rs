@@ -111,7 +111,7 @@ impl GameSession {
             world_resource.0 = Some(scratch_world);
         }
         for stage in &mut self.stages.stages {
-            stage.run(&self.world).unwrap();
+            stage.run(&mut self.world).unwrap();
         }
 
         // Advance the simulation time

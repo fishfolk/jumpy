@@ -236,7 +236,7 @@ pub enum BuiltinElementKind {
         #[serde(skip)]
         explosion_atlas_handle: AssetHandle<TextureAtlas>,
         #[serde(default)]
-        bouncyness: f32,
+        bounciness: f32,
         #[serde(default)]
         angular_velocity: f32,
     },
@@ -291,7 +291,7 @@ pub enum BuiltinElementKind {
         arm_delay: f32,
         throw_velocity: Vec2,
         #[serde(default)]
-        bouncyness: f32,
+        bounciness: f32,
     },
     /// The throwable crate item
     Crate {
@@ -391,7 +391,7 @@ pub enum BuiltinElementKind {
         #[serde(skip)]
         explosion_atlas_handle: AssetHandle<TextureAtlas>,
         #[serde(default)]
-        bouncyness: f32,
+        bounciness: f32,
         #[serde(default)]
         angular_velocity: f32,
         #[serde(default)]

@@ -51,7 +51,7 @@ pub enum BuiltinElementKind {
         atlas: Handle<Atlas>,
         explosion_atlas: Handle<Atlas>,
         #[serde(default)]
-        bouncyness: f32,
+        bounciness: f32,
         #[serde(default)]
         angular_velocity: f32,
     },
@@ -180,7 +180,7 @@ pub enum BuiltinElementKind {
         atlas: Handle<Atlas>,
         explosion_atlas: Handle<Atlas>,
         #[serde(default)]
-        bouncyness: f32,
+        bounciness: f32,
         #[serde(default)]
         angular_velocity: f32,
         #[serde(default)]

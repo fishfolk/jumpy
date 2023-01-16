@@ -90,7 +90,7 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                 ),
                             ] {
                                 ui.add_space(bigger_text_style.size / 2.0);
-                                let label = ui.themed_label(bigger_text_style, section_title);
+                                ui.themed_label(bigger_text_style, section_title);
 
                                 // Clippy lint is a false alarm, necessary to avoid borrowing params
                                 #[allow(clippy::unnecessary_to_owned)]
@@ -101,18 +101,13 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                         .unwrap();
                                     ui.add_space(ui.spacing().item_spacing.y);
 
-                                    let button =
+                                    let mut button =
                                         BorderedButton::themed(small_button_style, &map_meta.name)
                                             .show(ui);
 
                                     if first_button {
                                         first_button = false;
-                                        // There's something weird where egui focuses on the first
-                                        // thing in the scroll area, so we have to re-focus on the
-                                        // button, instead of the label.
-                                        if label.has_focus() {
-                                            ui.ctx().memory().request_focus(button.id);
-                                        }
+                                        button = button.focus_by_default(ui);
                                     }
 
                                     if button.clicked() {

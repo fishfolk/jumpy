@@ -3,7 +3,7 @@ use bevy_fluent::Localization;
 
 use crate::{
     localization::LocalizationExt, metadata::GameMeta, prelude::*, ui::input::MenuAction,
-    EngineState,
+    widgets::EguiResponseExt, EngineState,
 };
 
 use super::{
@@ -38,18 +38,15 @@ impl Plugin for PausePlugin {
                     .run_in_state(EngineState::InGame)
                     .run_in_state(InGameState::Paused)
                     .run_if_resource_equals(PauseMenuPage::Default),
-            );
-
-        {
-            app.add_system_to_stage(
-                CoreStage::PostUpdate,
+            )
+            .add_system_to_stage(
+                CoreStage::Update,
                 pause_menu_map_select
                     .run_in_state(EngineState::InGame)
                     .run_in_state(InGameState::Paused)
                     .run_if_resource_equals(PauseMenuPage::MapSelect)
                     .at_end(),
             );
-        }
     }
 }
 
@@ -132,17 +129,14 @@ pub fn pause_menu_default(
 
                         let width = ui.available_width();
 
-                        let continue_button = BorderedButton::themed(
+                        let mut continue_button = BorderedButton::themed(
                             &ui_theme.button_styles.normal,
                             &localization.get("continue"),
                         )
                         .min_size(egui::vec2(width, 0.0))
                         .show(ui);
 
-                        // Focus continue button by default
-                        if ui.memory().focus().is_none() {
-                            continue_button.request_focus();
-                        }
+                        continue_button = continue_button.focus_by_default(ui);
 
                         if continue_button.clicked() {
                             commands.insert_resource(NextState(InGameState::Playing));

@@ -54,6 +54,8 @@
 <span id="52">52</span>
 <span id="53">53</span>
 <span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
 </pre><pre class="rust"><code><span class="attribute">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;../README.md&quot;</span>)]
 #![doc(html_logo_url = <span class="string">&quot;https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4&quot;</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
@@ -75,6 +77,7 @@
         serde::{Deserialize, Serialize},
         std::sync::Arc,
         tracing::{debug, error, info, trace, warn},
+        turborand::TurboRand,
     };
 }
 
@@ -101,6 +104,7 @@
 <span class="kw">pub mod </span>metadata;
 <span class="kw">pub mod </span>physics;
 <span class="kw">pub mod </span>player;
+<span class="kw">pub mod </span>random;
 <span class="kw">pub mod </span>session;
 <span class="kw">pub mod </span>testing;
 

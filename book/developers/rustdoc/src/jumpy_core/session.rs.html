@@ -144,6 +144,7 @@
 <span id="142">142</span>
 <span id="143">143</span>
 <span id="144">144</span>
+<span id="145">145</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// The implementation of a Jumpy game session.
@@ -192,6 +193,7 @@
         <span class="kw">crate</span>::camera::install(<span class="kw-2">&amp;mut </span>session);
         <span class="kw">crate</span>::damage::install(<span class="kw-2">&amp;mut </span>session);
         <span class="kw">crate</span>::lifetime::install(<span class="kw-2">&amp;mut </span>session);
+        <span class="kw">crate</span>::random::install(<span class="kw-2">&amp;mut </span>session);
 
         <span class="comment">// Initialize systems
         </span><span class="kw">for </span>stage <span class="kw">in </span><span class="kw-2">&amp;mut </span>session.stages.stages {

@@ -13,7 +13,9 @@ builtin: !KickBomb
   explosion_frames: 12
   explosion_fps: 8
   explosion_sound: ./explosion.ogg
+  explosion_volume: 0.1
 
+  fuse_sound_volume: 0.1
   fuse_sound: ./fuse.ogg
 
   body_size: [30, 30]

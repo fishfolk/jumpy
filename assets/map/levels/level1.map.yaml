@@ -1192,10 +1192,6 @@ layers:
             - 88.0
             - 409.5
           element: /elements/decoration/seaweed/seaweed.element.yaml
-        - pos:
-            - 80.0
-            - 230.0
-          element: /elements/environment/crab/crab.element.yaml
   - id: items
     kind: !element
       elements:
@@ -1238,10 +1234,6 @@ layers:
         - pos:
             - 552.0
             - 289.5
-          element: /elements/environment/crab/crab.element.yaml
-        - pos:
-            - 496.0
-            - 545.5
           element: /elements/environment/crab/crab.element.yaml
         - pos:
             - 184.0

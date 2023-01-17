@@ -16,7 +16,7 @@ pub enum CrabState {
         left: bool,
     },
     Fleeing {
-        scared_of: Vec2,
+        scared_of: Entity,
     },
 }
 
@@ -148,7 +148,7 @@ fn update_crabs(
         let rand_timer_delay = |max: u8| rng.u8(0..max);
 
         let next_scary_thing = || {
-            for (_ent, (_player_idx, scary_thing_transform)) in
+            for (scary_entity, (_player_idx, scary_thing_transform)) in
                 entities.iter_with((&player_indexes, &transforms))
             {
                 let scary_thing_pos = Vec2::new(
@@ -159,7 +159,7 @@ fn update_crabs(
                 if pos.distance(scary_thing_pos) < *comfortable_scared_distance
                     && (pos.y - scary_thing_pos.y).abs() < *same_level_threshold
                 {
-                    return Some(scary_thing_pos);
+                    return Some(scary_entity);
                 }
             }
             None
@@ -172,7 +172,8 @@ fn update_crabs(
             if rand_bool(pause_bias) {
                 (CrabState::Paused, rand_timer_delay(*timer_delay_max))
             } else {
-                let left = if distance_from_home > *comfortable_spawn_distance && rand_bool(2) {
+                let left = if distance_from_home.abs() > *comfortable_spawn_distance && rand_bool(2)
+                {
                     distance_from_home > 0.0
                 } else {
                     rand_bool(0)
@@ -184,8 +185,21 @@ fn update_crabs(
             }
         };
 
+        let get_scared_of_pos = |scared_of: Entity| {
+            let scared_of_transform = transforms.get(scared_of).unwrap();
+            let scared_of_pos = Vec2::new(
+                scared_of_transform.translation.x,
+                scared_of_transform.translation.y,
+            );
+
+            scared_of_pos
+        };
+
         if crab.state_count >= crab.state_count_max {
+            println!("crab state: {:?} - {:?}", crab.state, next_scary_thing());
+
             crab.state_count = 0;
+
             if let Some(scared_of_pos) = next_scary_thing() {
                 crab.state = CrabState::Fleeing {
                     scared_of: scared_of_pos,
@@ -199,7 +213,9 @@ fn update_crabs(
                         crab.state_count_max = timer;
                     }
                     CrabState::Fleeing { scared_of } => {
-                        if pos.distance(*scared_of) > *comfortable_scared_distance {
+                        let scared_of_pos = get_scared_of_pos(*scared_of);
+
+                        if pos.distance(scared_of_pos) > *comfortable_scared_distance {
                             if let Some(scared_of) = next_scary_thing() {
                                 crab.state = CrabState::Fleeing { scared_of };
                                 crab.state_count_max = rand_timer_delay(*timer_delay_max / 3);
@@ -228,7 +244,8 @@ fn update_crabs(
                 body.velocity.x = *walk_speed * direction;
             }
             CrabState::Fleeing { scared_of } => {
-                let direction = (pos.x - scared_of.x).signum();
+                let scared_of_pos = get_scared_of_pos(*scared_of);
+                let direction = (pos.x - scared_of_pos.x).signum();
                 body.velocity.x = direction * *run_speed;
             }
         }

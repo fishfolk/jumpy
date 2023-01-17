@@ -2504,6 +2504,7 @@ dependencies = [
  "hex",
  "serde",
  "tracing",
+ "turborand",
  "type_ulid",
 ]
 
@@ -4098,6 +4099,16 @@ name = "ttf-parser"
 version = "0.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0609f771ad9c6155384897e1df4d948e692667cc0588548b68eb44d052b27633"
+
+[[package]]
+name = "turborand"
+version = "0.8.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5c966547fb89f2d5bd1736e5caf8a9b1e5473d34e1246799274eaabcac1b8fbe"
+dependencies = [
+ "getrandom",
+ "instant",
+]
 
 [[package]]
 name = "type-map"

@@ -21,3 +21,7 @@ default-features = false
 features = [
     "bevy_asset"
 ]
+
+[dependencies.turborand]
+version = "0.8"
+features = ["atomic"]

@@ -62,8 +62,6 @@ fn hydrate(
             ..
         } = &element_meta.builtin
         {
-            println!("Spawning g");
-
             hydrated.insert(spawner_ent, MapElementHydrated);
 
             let entity = entities.create();

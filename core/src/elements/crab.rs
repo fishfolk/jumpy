@@ -187,17 +187,14 @@ fn update_crabs(
 
         let get_scared_of_pos = |scared_of: Entity| {
             let scared_of_transform = transforms.get(scared_of).unwrap();
-            let scared_of_pos = Vec2::new(
+
+            Vec2::new(
                 scared_of_transform.translation.x,
                 scared_of_transform.translation.y,
-            );
-
-            scared_of_pos
+            )
         };
 
         if crab.state_count >= crab.state_count_max {
-            println!("crab state: {:?} - {:?}", crab.state, next_scary_thing());
-
             crab.state_count = 0;
 
             if let Some(scared_of_pos) = next_scary_thing() {
@@ -208,7 +205,7 @@ fn update_crabs(
             } else {
                 match &crab.state {
                     CrabState::Paused | CrabState::Walking { .. } => {
-                        let (state, timer) = pick_next_move(&crab);
+                        let (state, timer) = pick_next_move(crab);
                         crab.state = state;
                         crab.state_count_max = timer;
                     }
@@ -220,7 +217,7 @@ fn update_crabs(
                                 crab.state = CrabState::Fleeing { scared_of };
                                 crab.state_count_max = rand_timer_delay(*timer_delay_max / 3);
                             } else {
-                                let (state, timer) = pick_next_move(&crab);
+                                let (state, timer) = pick_next_move(crab);
                                 crab.state = state;
                                 crab.state_count_max = timer;
                             }

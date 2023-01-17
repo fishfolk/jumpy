@@ -972,10 +972,6 @@
                         {
                             "pos": [88, 409.5],
                             "element": "/elements/decoration/seaweed/seaweed.element.yaml"
-                        },
-                        {
-                            "pos": [100, 100],
-                            "element": "/elements/environment/crab/crab.element.yaml"
                         }
                     ]
                 }
@@ -993,14 +989,6 @@
                         {
                             "pos": [292.22720000000004, 609.5],
                             "element": "/elements/environment/fish_school/fish_school.element.yaml"
-                        },
-                        {
-                            "pos": [552, 289.5],
-                            "element": "/elements/environment/crab/crab.element.yaml"
-                        },
-                        {
-                            "pos": [496, 545.5],
-                            "element": "/elements/environment/crab/crab.element.yaml"
                         },
                         {
                             "pos": [184, 155.5],

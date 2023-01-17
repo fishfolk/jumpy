@@ -19,6 +19,7 @@ mod prelude {
         serde::{Deserialize, Serialize},
         std::sync::Arc,
         tracing::{debug, error, info, trace, warn},
+        turborand::TurboRand,
     };
 }
 
@@ -45,6 +46,7 @@ pub mod math;
 pub mod metadata;
 pub mod physics;
 pub mod player;
+pub mod random;
 pub mod session;
 pub mod testing;
 

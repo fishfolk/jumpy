@@ -118,6 +118,7 @@ fn camera_controller(
         .iter_with(&player_indexes)
         .map(|x| x.1 .0)
         .collect();
+    let player_count = players.len();
 
     for player_idx in players {
         let rect = camera_state.player_camera_rects[player_idx];
@@ -129,7 +130,13 @@ fn camera_controller(
         max.x = max.x.min(map_size.x)
     }
 
-    let mut middle_point = Rect { min, max }.center();
+    let camera_pos = &mut camera_shake.center;
+
+    let mut middle_point = if player_count == 0 {
+        camera_pos.truncate()
+    } else {
+        Rect { min, max }.center()
+    };
 
     let size = max - min;
     let size = size.max(meta.min_camera_size);
@@ -147,12 +154,6 @@ fn camera_controller(
     // Keep camera above the map floor
     if middle_point.y - size.y / 2. < 0.0 {
         middle_point.y = size.y / 2.0;
-    }
-
-    // Reset camera_pos to middle_point if it's NaN
-    let camera_pos = &mut camera_shake.center;
-    if camera_pos.is_nan() {
-        *camera_pos = middle_point.extend(0.0);
     }
 
     let delta = camera_pos.truncate() - middle_point;

@@ -177,8 +177,6 @@ fn hydrate_players(
             continue;
         };
 
-        println!("Hydrating player: {:?}", entity);
-
         let animation_bank_sprite = AnimationBankSprite {
             current: "idle".try_into().unwrap(),
             animations: meta.animations.clone(),

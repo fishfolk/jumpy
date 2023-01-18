@@ -196,6 +196,11 @@
 <span id="194">194</span>
 <span id="195">195</span>
 <span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -261,8 +266,6 @@
         <span class="kw">return
     </span>};
 
-    <span class="kw">let </span>camera_pos = <span class="kw-2">&amp;mut </span>camera_shake.center;
-
     <span class="comment">// Update player camera rects
     </span><span class="kw">for </span>(_ent, (transform, player_idx, body)) <span class="kw">in
         </span>entities.iter_with((<span class="kw-2">&amp;</span>transforms, <span class="kw-2">&amp;</span>player_indexes, <span class="kw-2">&amp;</span>bodies))
@@ -271,6 +274,7 @@
 
         <span class="comment">// Get the player&#39;s camera box
         </span><span class="kw">let </span>camera_box = <span class="kw-2">&amp;mut </span>camera_state.player_camera_rects[player_idx.<span class="number">0</span>];
+
         <span class="comment">// If it&#39;s not be initialized.
         </span><span class="kw">if </span>camera_box.min == Vec2::ZERO &amp;&amp; camera_box.max == Vec2::ZERO {
             <span class="comment">// Set it&#39;s size and position according to the player
@@ -346,6 +350,12 @@
     <span class="comment">// Keep camera above the map floor
     </span><span class="kw">if </span>middle_point.y - size.y / <span class="number">2. </span>&lt; <span class="number">0.0 </span>{
         middle_point.y = size.y / <span class="number">2.0</span>;
+    }
+
+    <span class="comment">// Reset camera_pos to middle_point if it&#39;s NaN
+    </span><span class="kw">let </span>camera_pos = <span class="kw-2">&amp;mut </span>camera_shake.center;
+    <span class="kw">if </span>camera_pos.is_nan() {
+        <span class="kw-2">*</span>camera_pos = middle_point.extend(<span class="number">0.0</span>);
     }
 
     <span class="kw">let </span>delta = camera_pos.truncate() - middle_point;

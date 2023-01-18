@@ -226,7 +226,7 @@
 }
 
 <span class="doccomment">/// The player index, for example Player 1, Player 2, and so on.
-</span><span class="attribute">#[derive(Clone, TypeUlid)]
+</span><span class="attribute">#[derive(Clone, TypeUlid, Deref, DerefMut)]
 #[ulid = <span class="string">&quot;01GP49B2AMTYB6W8DWKBRF27FT&quot;</span>]
 </span><span class="kw">pub struct </span>PlayerIdx(<span class="kw">pub </span>usize);
 

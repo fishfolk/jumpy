@@ -63,8 +63,6 @@ fn camera_controller(
         return
     };
 
-    let camera_pos = &mut camera_shake.center;
-
     // Update player camera rects
     for (_ent, (transform, player_idx, body)) in
         entities.iter_with((&transforms, &player_indexes, &bodies))
@@ -73,6 +71,7 @@ fn camera_controller(
 
         // Get the player's camera box
         let camera_box = &mut camera_state.player_camera_rects[player_idx.0];
+
         // If it's not be initialized.
         if camera_box.min == Vec2::ZERO && camera_box.max == Vec2::ZERO {
             // Set it's size and position according to the player
@@ -148,6 +147,12 @@ fn camera_controller(
     // Keep camera above the map floor
     if middle_point.y - size.y / 2. < 0.0 {
         middle_point.y = size.y / 2.0;
+    }
+
+    // Reset camera_pos to middle_point if it's NaN
+    let camera_pos = &mut camera_shake.center;
+    if camera_pos.is_nan() {
+        *camera_pos = middle_point.extend(0.0);
     }
 
     let delta = camera_pos.truncate() - middle_point;

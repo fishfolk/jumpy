@@ -58,7 +58,6 @@ fn kill_players_in_damage_region(
             }
 
             let damage_rect = damage_region.collider_rect(transform.translation);
-
             if player_rect.overlaps(&damage_rect) {
                 player_events.kill(player_ent);
             }

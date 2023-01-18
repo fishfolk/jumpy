@@ -181,7 +181,7 @@ fn snapshot_restore(
     }
 }
 
-fn play_sounds(audio: Res<Audio>, session: Option<Res<Session>>) {
+fn play_sounds(audio: Res<bevy_kira_audio::Audio>, session: Option<Res<Session>>) {
     let Some(session) = session else {
         return;
     };

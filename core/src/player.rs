@@ -17,7 +17,7 @@ pub fn install(session: &mut GameSession) {
 }
 
 /// The player index, for example Player 1, Player 2, and so on.
-#[derive(Clone, TypeUlid)]
+#[derive(Clone, TypeUlid, Deref, DerefMut)]
 #[ulid = "01GP49B2AMTYB6W8DWKBRF27FT"]
 pub struct PlayerIdx(pub usize);
 
@@ -176,6 +176,8 @@ fn hydrate_players(
         let Some(meta) = player_assets.get(&player_handle.get_bevy_handle()) else {
             continue;
         };
+
+        println!("Hydrating player: {:?}", entity);
 
         let animation_bank_sprite = AnimationBankSprite {
             current: "idle".try_into().unwrap(),

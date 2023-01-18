@@ -202,6 +202,9 @@ fn update_lit_kick_bombs(
     entities: Res<Entities>,
     element_handles: Comp<ElementHandle>,
     element_assets: BevyAssets<ElementMeta>,
+
+    collision_world: CollisionWorld,
+    player_indexes: Comp<PlayerIdx>,
     mut audio_events: ResMut<AudioEvents>,
     mut transforms: CompMut<Transform>,
     mut lit_grenades: CompMut<LitKickBomb>,
@@ -210,6 +213,7 @@ fn update_lit_kick_bombs(
     mut items_dropped: CompMut<ItemDropped>,
     mut hydrated: CompMut<MapElementHydrated>,
     player_inventories: PlayerInventories,
+
     mut commands: Commands,
 ) {
     for (entity, (kick_bomb, element_handle)) in
@@ -232,6 +236,7 @@ fn update_lit_kick_bombs(
             explosion_atlas,
             explosion_fps,
             explosion_frames,
+            arm_delay,
             ..
         } = &element_meta.builtin else {
             unreachable!();
@@ -240,6 +245,7 @@ fn update_lit_kick_bombs(
         kick_bomb.age += 1.0 / crate::FPS;
         let spawner = kick_bomb.spawner;
 
+        let mut should_explode = false;
         // If the item is being held
         if let Some(inventory) = player_inventories
             .iter()
@@ -262,6 +268,37 @@ fn update_lit_kick_bombs(
             let offset = Vec3::new(grab_offset.x * flip_factor, grab_offset.y, 1.0);
             transform.translation = player_translation + offset;
             transform.rotation = Quat::IDENTITY;
+        }
+        // The item is on the ground
+        else {
+            if let Some(player_entity) = collision_world
+                .actor_collisions(entity)
+                .into_iter()
+                .find(|&x| player_indexes.contains(x))
+            {
+                let body = bodies.get_mut(entity).unwrap();
+                let translation = transforms.get_mut(entity).unwrap().translation;
+
+                let player_sprite = sprites.get_mut(player_entity).unwrap();
+                let player_translation = transforms.get(player_entity).unwrap().translation;
+
+                let player_standing_left = player_translation.x <= translation.x;
+
+                if body.velocity.x == 0.0 {
+                    body.velocity = *throw_velocity;
+                    if player_sprite.flip_x {
+                        body.velocity.x *= -1.0;
+                    }
+                } else if player_standing_left && !player_sprite.flip_x {
+                    body.velocity.x = throw_velocity.x;
+                    body.velocity.y = throw_velocity.y;
+                } else if !player_standing_left && player_sprite.flip_x {
+                    body.velocity.x = -throw_velocity.x;
+                    body.velocity.y = throw_velocity.y;
+                } else if kick_bomb.age >= *arm_delay {
+                    should_explode = true;
+                }
+            }
         }
 
         // If the item was dropped
@@ -293,7 +330,7 @@ fn update_lit_kick_bombs(
         }
 
         // If it's time to explode
-        if kick_bomb.age >= *fuse_time {
+        if kick_bomb.age >= *fuse_time || should_explode {
             audio_events.play(explosion_sound.clone(), *explosion_volume);
 
             // Cause the item to respawn by un-hydrating it's spawner.

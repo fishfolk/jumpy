@@ -24,4 +24,5 @@ builtin: !KickBomb
   can_rotate: true
   bounciness: 0.6
   angular_velocity: 0.1
-  arm_delay: 0.02
+  # arm_delay: 0.02
+  arm_delay: 0.5

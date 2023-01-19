@@ -3,6 +3,7 @@ use crate::prelude::*;
 pub mod crab;
 pub mod decoration;
 pub mod grenade;
+pub mod kick_bomb;
 pub mod player_spawner;
 pub mod sproinger;
 pub mod sword;
@@ -24,4 +25,5 @@ pub fn install(session: &mut GameSession) {
     sword::install(session);
     grenade::install(session);
     crab::install(session);
+    kick_bomb::install(session);
 }

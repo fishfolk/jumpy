@@ -166,10 +166,10 @@ pub enum BuiltinElementKind {
         explosion_lifetime: f32,
         explosion_frames: usize,
         explosion_fps: f32,
-        explosion_sound: String,
-        #[serde(skip)]
-        explosion_sound_handle: Handle<AudioSource>,
-        fuse_sound: String,
+        explosion_sound: Handle<AudioSource>,
+        explosion_volume: f32,
+        fuse_sound: Handle<AudioSource>,
+        fuse_sound_volume: f32,
         #[serde(skip)]
         fuse_sound_handle: Handle<AudioSource>,
         /// The time in seconds before a grenade explodes

@@ -77,11 +77,14 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
             let normal_button_style = &params.game.ui_theme.button_styles.normal;
 
             ui.add_space(heading_text_style.size / 4.0);
+
+            // Title
             if is_online {
                 ui.themed_label(heading_text_style, &params.localization.get("online-game"));
             } else {
                 ui.themed_label(heading_text_style, &params.localization.get("local-game"));
             }
+
             ui.themed_label(
                 bigger_text_style,
                 &params.localization.get("player-select-title"),
@@ -209,6 +212,7 @@ struct PlayerSelectPanel<'w, 's> {
         (
             &'static PlayerInputCollector,
             &'static ActionState<PlayerAction>,
+            &'static InputMap<PlayerAction>,
         ),
     >,
     player_meta_assets: Res<'w, Assets<PlayerMeta>>,
@@ -232,9 +236,17 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
         let player_actions = params
             .players
             .iter()
-            .find(|(player_idx, _)| player_idx.0 == idx)
+            .find(|(player_idx, _, _)| player_idx.0 == idx)
             .unwrap()
             .1;
+
+        let player_map = params
+            .players
+            .iter()
+            .find(|(player_idx, _, _)| player_idx.0 == idx)
+            .unwrap()
+            .2;
+
         // let player_actions = if let Some(match_info) = &params.client_match_info {
         //     if idx == match_info.player_idx {
         //         params
@@ -372,6 +384,26 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
 
                         ui.themed_label(normal_font, &params.localization.get("pick-a-fish"));
 
+                        if !slot.confirmed {
+                            if let Some(action) = get_user_action(PlayerAction::Jump, player_map) {
+                                ui.themed_label(
+                                    normal_font,
+                                    &params
+                                        .localization
+                                        .get(&format!("press-button-to-lock-in?button={action}")),
+                                );
+                            }
+
+                            if let Some(action) = get_user_action(PlayerAction::Grab, player_map) {
+                                ui.themed_label(
+                                    normal_font,
+                                    &params
+                                        .localization
+                                        .get(&format!("press-button-to-remove?button={action}")),
+                                );
+                            }
+                        }
+
                         ui.vertical_centered(|ui| {
                             ui.set_height(heading_font.size * 1.5);
 
@@ -380,6 +412,16 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                                     &heading_font.colored(params.game.ui_theme.colors.positive),
                                     &params.localization.get("player-select-ready"),
                                 );
+
+                                if let Some(action) = get_user_action(PlayerAction::Grab, player_map) {
+                                    ui.themed_label(
+                                        normal_font,
+                                        &params
+                                            .localization
+                                            .get(&format!("player-select-unready?button={action}")),
+                                    );
+                                }
+
                             }
                         });
 
@@ -399,10 +441,14 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                     });
                 } else {
                     ui.vertical_centered(|ui| {
-                        ui.themed_label(
-                            normal_font,
-                            &params.localization.get("press-jump-to-join"),
-                        );
+                        if let Some(action) = get_user_action(PlayerAction::Jump, player_map) {
+                            ui.themed_label(
+                                normal_font,
+                                &params
+                                    .localization
+                                    .get(&format!("press-button-to-join?button={action}")),
+                            );
+                        }
                     });
                 }
             });
@@ -454,4 +500,13 @@ fn player_image(
     mesh.translate(egui::vec2(0.0, y_offset));
 
     ui.painter().add(mesh);
+}
+
+fn get_user_action(action: PlayerAction, map: &InputMap<PlayerAction>) -> Option<&'_ UserInput> {
+    let action = map.get(action).get_at(1);
+    if let Some(action) = action {
+        Some(action)
+    } else {
+        None
+    }
 }

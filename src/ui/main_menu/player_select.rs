@@ -19,10 +19,10 @@ pub struct PlayerSlot {
 pub struct PlayerSelectMenu<'w, 's> {
     game: Res<'w, GameMeta>,
     menu_page: ResMut<'w, MenuPage>,
-    menu_input: Query<'w, 's, &'static mut ActionState<MenuAction>>,
-    player_select_state: ResMut<'w, PlayerSelectState>,
-    keyboard_input: Res<'w, Input<KeyCode>>,
     localization: Res<'w, Localization>,
+    keyboard_input: Res<'w, Input<KeyCode>>,
+    player_select_state: ResMut<'w, PlayerSelectState>,
+    menu_input: Query<'w, 's, &'static mut ActionState<MenuAction>>,
 }
 
 impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
@@ -201,11 +201,43 @@ fn handle_match_setup_messages(_params: &mut PlayerSelectMenu) {
     // }
 }
 
+#[derive(Debug)]
+struct PlayerActionMap<'a> {
+    jump: Option<&'a UserInput>,
+    grab: Option<&'a UserInput>,
+}
+
+fn get_player_actions(idx: usize, map: &InputMap<PlayerAction>) -> PlayerActionMap {
+    let map_idx = if idx > 1 { 0 } else { 1 };
+
+    PlayerActionMap {
+        jump: get_user_action(map_idx, PlayerAction::Jump, map),
+        grab: get_user_action(map_idx, PlayerAction::Grab, map),
+    }
+}
+
+fn get_user_action(
+    idx: usize,
+    action: PlayerAction,
+    map: &InputMap<PlayerAction>,
+) -> Option<&'_ UserInput> {
+    let action = map.get(action).get_at(idx);
+    if let Some(action) = action {
+        Some(action)
+    } else {
+        None
+    }
+}
+
 #[derive(SystemParam)]
 struct PlayerSelectPanel<'w, 's> {
     game: Res<'w, GameMeta>,
     core: Res<'w, CoreMetaArc>,
+    localization: Res<'w, Localization>,
+    player_meta_assets: Res<'w, Assets<PlayerMeta>>,
     player_select_state: ResMut<'w, PlayerSelectState>,
+    atlas_meta_assets: Res<'w, Assets<TextureAtlas>>,
+    player_atlas_egui_textures: Res<'w, PlayerAtlasEguiTextures>,
     players: Query<
         'w,
         's,
@@ -215,10 +247,6 @@ struct PlayerSelectPanel<'w, 's> {
             &'static InputMap<PlayerAction>,
         ),
     >,
-    player_meta_assets: Res<'w, Assets<PlayerMeta>>,
-    atlas_meta_assets: Res<'w, Assets<TextureAtlas>>,
-    player_atlas_egui_textures: Res<'w, PlayerAtlasEguiTextures>,
-    localization: Res<'w, Localization>,
 }
 
 impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
@@ -231,7 +259,6 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
         idx: usize,
     ) {
         let mut params: PlayerSelectPanel = state.get_mut(world);
-        // let dummy_actions = default();
 
         let player_actions = params
             .players
@@ -246,6 +273,8 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
             .find(|(player_idx, _, _)| player_idx.0 == idx)
             .unwrap()
             .2;
+
+        let player_action_map = get_player_actions(idx, player_map);
 
         // let player_actions = if let Some(match_info) = &params.client_match_info {
         //     if idx == match_info.player_idx {
@@ -385,7 +414,7 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                         ui.themed_label(normal_font, &params.localization.get("pick-a-fish"));
 
                         if !slot.confirmed {
-                            if let Some(action) = get_user_action(PlayerAction::Jump, player_map) {
+                            if let Some(action) = player_action_map.jump {
                                 ui.themed_label(
                                     normal_font,
                                     &params
@@ -394,7 +423,7 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                                 );
                             }
 
-                            if let Some(action) = get_user_action(PlayerAction::Grab, player_map) {
+                            if let Some(action) = player_action_map.grab {
                                 ui.themed_label(
                                     normal_font,
                                     &params
@@ -413,7 +442,7 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                                     &params.localization.get("player-select-ready"),
                                 );
 
-                                if let Some(action) = get_user_action(PlayerAction::Grab, player_map) {
+                                if let Some(action) = player_action_map.grab {
                                     ui.themed_label(
                                         normal_font,
                                         &params
@@ -441,7 +470,7 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                     });
                 } else {
                     ui.vertical_centered(|ui| {
-                        if let Some(action) = get_user_action(PlayerAction::Jump, player_map) {
+                        if let Some(action) = player_action_map.jump {
                             ui.themed_label(
                                 normal_font,
                                 &params
@@ -500,13 +529,4 @@ fn player_image(
     mesh.translate(egui::vec2(0.0, y_offset));
 
     ui.painter().add(mesh);
-}
-
-fn get_user_action(action: PlayerAction, map: &InputMap<PlayerAction>) -> Option<&'_ UserInput> {
-    let action = map.get(action).get_at(1);
-    if let Some(action) = action {
-        Some(action)
-    } else {
-        None
-    }
 }

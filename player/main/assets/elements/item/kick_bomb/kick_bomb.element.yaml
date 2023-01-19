@@ -13,7 +13,9 @@ builtin: !KickBomb
   explosion_frames: 12
   explosion_fps: 8
   explosion_sound: ./explosion.ogg
+  explosion_volume: 0.1
 
+  fuse_sound_volume: 0.1
   fuse_sound: ./fuse.ogg
 
   body_size: [30, 30]
@@ -22,4 +24,5 @@ builtin: !KickBomb
   can_rotate: true
   bounciness: 0.6
   angular_velocity: 0.1
-  arm_delay: 0.02
+  # arm_delay: 0.02
+  arm_delay: 0.5

@@ -270,34 +270,32 @@ fn update_lit_kick_bombs(
             transform.rotation = Quat::IDENTITY;
         }
         // The item is on the ground
-        else {
-            if let Some(player_entity) = collision_world
-                .actor_collisions(entity)
-                .into_iter()
-                .find(|&x| player_indexes.contains(x))
-            {
-                let body = bodies.get_mut(entity).unwrap();
-                let translation = transforms.get_mut(entity).unwrap().translation;
+        else if let Some(player_entity) = collision_world
+            .actor_collisions(entity)
+            .into_iter()
+            .find(|&x| player_indexes.contains(x))
+        {
+            let body = bodies.get_mut(entity).unwrap();
+            let translation = transforms.get_mut(entity).unwrap().translation;
 
-                let player_sprite = sprites.get_mut(player_entity).unwrap();
-                let player_translation = transforms.get(player_entity).unwrap().translation;
+            let player_sprite = sprites.get_mut(player_entity).unwrap();
+            let player_translation = transforms.get(player_entity).unwrap().translation;
 
-                let player_standing_left = player_translation.x <= translation.x;
+            let player_standing_left = player_translation.x <= translation.x;
 
-                if body.velocity.x == 0.0 {
-                    body.velocity = *throw_velocity;
-                    if player_sprite.flip_x {
-                        body.velocity.x *= -1.0;
-                    }
-                } else if player_standing_left && !player_sprite.flip_x {
-                    body.velocity.x = throw_velocity.x;
-                    body.velocity.y = throw_velocity.y;
-                } else if !player_standing_left && player_sprite.flip_x {
-                    body.velocity.x = -throw_velocity.x;
-                    body.velocity.y = throw_velocity.y;
-                } else if kick_bomb.age >= *arm_delay {
-                    should_explode = true;
+            if body.velocity.x == 0.0 {
+                body.velocity = *throw_velocity;
+                if player_sprite.flip_x {
+                    body.velocity.x *= -1.0;
                 }
+            } else if player_standing_left && !player_sprite.flip_x {
+                body.velocity.x = throw_velocity.x;
+                body.velocity.y = throw_velocity.y;
+            } else if !player_standing_left && player_sprite.flip_x {
+                body.velocity.x = -throw_velocity.x;
+                body.velocity.y = throw_velocity.y;
+            } else if kick_bomb.age >= *arm_delay {
+                should_explode = true;
             }
         }
 

@@ -201,6 +201,7 @@
 <span id="199">199</span>
 <span id="200">200</span>
 <span id="201">201</span>
+<span id="202">202</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -321,6 +322,7 @@
         .iter_with(<span class="kw-2">&amp;</span>player_indexes)
         .map(|x| x.<span class="number">1 </span>.<span class="number">0</span>)
         .collect();
+    <span class="kw">let </span>player_count = players.len();
 
     <span class="kw">for </span>player_idx <span class="kw">in </span>players {
         <span class="kw">let </span>rect = camera_state.player_camera_rects[player_idx];
@@ -332,7 +334,13 @@
         max.x = max.x.min(map_size.x)
     }
 
-    <span class="kw">let </span><span class="kw-2">mut </span>middle_point = Rect { min, max }.center();
+    <span class="kw">let </span>camera_pos = <span class="kw-2">&amp;mut </span>camera_shake.center;
+
+    <span class="kw">let </span><span class="kw-2">mut </span>middle_point = <span class="kw">if </span>player_count == <span class="number">0 </span>{
+        camera_pos.truncate()
+    } <span class="kw">else </span>{
+        Rect { min, max }.center()
+    };
 
     <span class="kw">let </span>size = max - min;
     <span class="kw">let </span>size = size.max(meta.min_camera_size);
@@ -350,12 +358,6 @@
     <span class="comment">// Keep camera above the map floor
     </span><span class="kw">if </span>middle_point.y - size.y / <span class="number">2. </span>&lt; <span class="number">0.0 </span>{
         middle_point.y = size.y / <span class="number">2.0</span>;
-    }
-
-    <span class="comment">// Reset camera_pos to middle_point if it&#39;s NaN
-    </span><span class="kw">let </span>camera_pos = <span class="kw-2">&amp;mut </span>camera_shake.center;
-    <span class="kw">if </span>camera_pos.is_nan() {
-        <span class="kw-2">*</span>camera_pos = middle_point.extend(<span class="number">0.0</span>);
     }
 
     <span class="kw">let </span>delta = camera_pos.truncate() - middle_point;

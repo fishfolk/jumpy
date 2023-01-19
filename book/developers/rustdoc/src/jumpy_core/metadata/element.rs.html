@@ -357,10 +357,10 @@
         explosion_lifetime: f32,
         explosion_frames: usize,
         explosion_fps: f32,
-        explosion_sound: String,
-        <span class="attribute">#[serde(skip)]
-        </span>explosion_sound_handle: Handle&lt;AudioSource&gt;,
-        fuse_sound: String,
+        explosion_sound: Handle&lt;AudioSource&gt;,
+        explosion_volume: f32,
+        fuse_sound: Handle&lt;AudioSource&gt;,
+        fuse_sound_volume: f32,
         <span class="attribute">#[serde(skip)]
         </span>fuse_sound_handle: Handle&lt;AudioSource&gt;,
         <span class="doccomment">/// The time in seconds before a grenade explodes

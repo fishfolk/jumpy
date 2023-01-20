@@ -3,6 +3,9 @@ use bones_lib::prelude::{key, Key, KeyError};
 
 use super::*;
 
+const GAMEPAD_ACTION_IDX: usize = 0;
+const KEYPAD_ACTION_IDX: usize = 1;
+
 #[derive(Resource, Default)]
 pub struct PlayerSelectState {
     pub slots: [PlayerSlot; MAX_PLAYERS],
@@ -168,7 +171,7 @@ impl<'w, 's> WidgetSystem for PlayerSelectMenu<'w, 's> {
                                 world,
                                 ui,
                                 id.with(&format!("player_panel{i}")),
-                                i,
+                                (i, ready_players, unconfirmed_players),
                             );
                         }
                     });
@@ -202,18 +205,45 @@ fn handle_match_setup_messages(_params: &mut PlayerSelectMenu) {
 }
 
 #[derive(Debug)]
-struct PlayerActionMap<'a> {
-    jump: Option<&'a UserInput>,
-    grab: Option<&'a UserInput>,
+struct PlayerActionMap<'a>(HashMap<PlayerAction, Vec<Option<&'a UserInput>>>);
+
+impl PlayerActionMap<'_> {
+    fn get_text(&self, action: PlayerAction) -> String {
+        self.0
+            .get(&action)
+            .unwrap_or(&vec![])
+            .iter()
+            .filter_map(|action| *action)
+            .map(|action| action.to_string())
+            .fold("".to_string(), |acc, curr| {
+                if acc.is_empty() {
+                    curr
+                } else {
+                    format!("{} / {}", acc, curr)
+                }
+            })
+    }
 }
 
 fn get_player_actions(idx: usize, map: &InputMap<PlayerAction>) -> PlayerActionMap {
-    let map_idx = if idx > 1 { 0 } else { 1 };
+    let map_idx = if idx > 1 {
+        GAMEPAD_ACTION_IDX
+    } else {
+        KEYPAD_ACTION_IDX
+    };
 
-    PlayerActionMap {
-        jump: get_user_action(map_idx, PlayerAction::Jump, map),
-        grab: get_user_action(map_idx, PlayerAction::Grab, map),
+    let mut jump_actions = vec![get_user_action(map_idx, PlayerAction::Jump, map)];
+    let mut grab_actions = vec![get_user_action(map_idx, PlayerAction::Grab, map)];
+
+    if idx <= 1 {
+        jump_actions.push(get_user_action(GAMEPAD_ACTION_IDX, PlayerAction::Jump, map));
+        grab_actions.push(get_user_action(GAMEPAD_ACTION_IDX, PlayerAction::Grab, map));
     }
+
+    PlayerActionMap(HashMap::from_iter(vec![
+        (PlayerAction::Jump, jump_actions),
+        (PlayerAction::Grab, grab_actions),
+    ]))
 }
 
 fn get_user_action(
@@ -250,31 +280,34 @@ struct PlayerSelectPanel<'w, 's> {
 }
 
 impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
-    type Args = usize;
+    type Args = (usize, usize, usize); // Player Idx, Unconfirmed Players, Ready Players
     fn system(
         world: &mut World,
         state: &mut SystemState<Self>,
         ui: &mut egui::Ui,
         _id: WidgetId,
-        idx: usize,
+        args: (usize, usize, usize),
     ) {
         let mut params: PlayerSelectPanel = state.get_mut(world);
+
+        let (player_id, unconfirmed_players, ready_players) = args;
+        let total_players = unconfirmed_players + ready_players;
 
         let player_actions = params
             .players
             .iter()
-            .find(|(player_idx, _, _)| player_idx.0 == idx)
+            .find(|(player_idx, _, _)| player_idx.0 == player_id)
             .unwrap()
             .1;
 
         let player_map = params
             .players
             .iter()
-            .find(|(player_idx, _, _)| player_idx.0 == idx)
+            .find(|(player_idx, _, _)| player_idx.0 == player_id)
             .unwrap()
             .2;
 
-        let player_action_map = get_player_actions(idx, player_map);
+        let player_action_map = get_player_actions(player_id, player_map);
 
         // let player_actions = if let Some(match_info) = &params.client_match_info {
         //     if idx == match_info.player_idx {
@@ -296,7 +329,7 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
         //         .1
         // };
 
-        let slot = &mut params.player_select_state.slots[idx];
+        let slot = &mut params.player_select_state.slots[player_id];
         // if !player_input.active && params.client.is_some() {
         //     return;
         // }
@@ -406,7 +439,18 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                     ui.add_space(normal_font.size);
                 // }
 
-                if slot.active {
+
+                if total_players < MAX_PLAYERS / 2 && player_id > MAX_PLAYERS / 2 - 1{
+                    ui.vertical_centered(|ui| {
+                        ui.themed_label(
+                            normal_font,
+                            &params
+                                .localization
+                                .get(&"waiting-for-more-players".to_string()),
+                        );
+                    });
+                }
+                else if slot.active {
                     ui.vertical_centered(|ui| {
                         let Some(player_meta) = params.player_meta_assets.get(&player_handle.get_bevy_handle()) else { return; };
                         let Some(atlas_meta) = params.atlas_meta_assets.get(&player_meta.atlas.get_bevy_handle_untyped().typed()) else { return; };
@@ -414,23 +458,19 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                         ui.themed_label(normal_font, &params.localization.get("pick-a-fish"));
 
                         if !slot.confirmed {
-                            if let Some(action) = player_action_map.jump {
-                                ui.themed_label(
-                                    normal_font,
-                                    &params
-                                        .localization
-                                        .get(&format!("press-button-to-lock-in?button={action}")),
-                                );
-                            }
+                            ui.themed_label(
+                                normal_font,
+                                &params
+                                    .localization
+                                    .get(&format!("press-button-to-lock-in?button={}", player_action_map.get_text(PlayerAction::Jump))),
+                            );
 
-                            if let Some(action) = player_action_map.grab {
-                                ui.themed_label(
-                                    normal_font,
-                                    &params
-                                        .localization
-                                        .get(&format!("press-button-to-remove?button={action}")),
-                                );
-                            }
+                            ui.themed_label(
+                                normal_font,
+                                &params
+                                    .localization
+                                    .get(&format!("press-button-to-remove?button={}", player_action_map.get_text(PlayerAction::Grab))),
+                            );
                         }
 
                         ui.vertical_centered(|ui| {
@@ -442,14 +482,12 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                                     &params.localization.get("player-select-ready"),
                                 );
 
-                                if let Some(action) = player_action_map.grab {
-                                    ui.themed_label(
-                                        normal_font,
-                                        &params
-                                            .localization
-                                            .get(&format!("player-select-unready?button={action}")),
-                                    );
-                                }
+                                ui.themed_label(
+                                    normal_font,
+                                    &params
+                                        .localization
+                                        .get(&format!("player-select-unready?button={}", player_action_map.get_text(PlayerAction::Grab))),
+                                );
 
                             }
                         });
@@ -470,14 +508,12 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                     });
                 } else {
                     ui.vertical_centered(|ui| {
-                        if let Some(action) = player_action_map.jump {
-                            ui.themed_label(
-                                normal_font,
-                                &params
-                                    .localization
-                                    .get(&format!("press-button-to-join?button={action}")),
-                            );
-                        }
+                        ui.themed_label(
+                            normal_font,
+                            &params
+                                .localization
+                                .get(&format!("press-button-to-join?button={}", player_action_map.get_text(PlayerAction::Jump))),
+                        );
                     });
                 }
             });

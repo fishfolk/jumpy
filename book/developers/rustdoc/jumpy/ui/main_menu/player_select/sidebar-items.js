@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["handle_match_setup_messages",""],["player_image",""]],"struct":[["PlayerAtlasEguiTextures",""],["PlayerSelectMenu",""],["PlayerSelectPanel",""],["PlayerSelectState",""],["PlayerSlot",""]]};
+window.SIDEBAR_ITEMS = {"constant":[["GAMEPAD_ACTION_IDX",""],["KEYPAD_ACTION_IDX",""]],"fn":[["get_player_actions",""],["get_user_action",""],["handle_match_setup_messages",""],["player_image",""]],"struct":[["PlayerActionMap",""],["PlayerAtlasEguiTextures",""],["PlayerSelectMenu",""],["PlayerSelectPanel",""],["PlayerSelectState",""],["PlayerSlot",""]]};

@@ -6,22 +6,7 @@
 #![allow(clippy::too_many_arguments)]
 
 /// Prelude for inside the crate
-mod prelude {
-    pub use {
-        crate::{
-            camera::*, damage::*, elements::*, input::*, item::*, lifetime::*, map::*, math::*,
-            metadata::*, physics::*, player::*, session::*, MAX_PLAYERS,
-        },
-        bones_bevy_asset::{BevyAssets, BonesBevyAsset, BonesBevyAssetLoad},
-        bones_lib::prelude::*,
-        bytemuck::{Pod, Zeroable},
-        glam::*,
-        serde::{Deserialize, Serialize},
-        std::sync::Arc,
-        tracing::{debug, error, info, trace, warn},
-        turborand::TurboRand,
-    };
-}
+mod prelude;
 
 /// Prelude for use outside the crate
 pub mod bevy_prelude {
@@ -37,6 +22,7 @@ pub mod bevy_prelude {
 
 pub mod camera;
 pub mod damage;
+pub mod debug;
 pub mod elements;
 pub mod input;
 pub mod item;

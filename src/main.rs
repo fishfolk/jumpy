@@ -16,7 +16,6 @@ pub mod audio;
 pub mod config;
 pub mod debug;
 pub mod input;
-pub mod lines;
 pub mod loading;
 pub mod localization;
 pub mod metadata;
@@ -100,7 +99,6 @@ pub fn main() {
         .add_plugin(bevy_framepace::FramepacePlugin)
         .add_plugin(JumpyPlayerInputPlugin)
         .add_plugin(JumpySessionPlugin)
-        .add_plugin(JumpyLinesPlugin)
         .add_plugin(JumpyUiPlugin)
         .add_plugin(JumpyAudioPlugin)
         .add_plugin(JumpyPlatformPlugin)

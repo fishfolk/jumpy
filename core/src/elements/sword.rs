@@ -117,7 +117,7 @@ fn update(
         };
 
         // Helper to spawn a damage region for the sword attack
-        let mut spawn_damage_region = |pos: Vec2, size: Vec2, owner: Entity| {
+        let mut spawn_damage_region = |pos: Vec3, size: Vec2, owner: Entity| {
             commands.add(
                 move |mut entities: ResMut<Entities>,
                       mut transforms: CompMut<Transform>,
@@ -126,7 +126,7 @@ fn update(
                       mut lifetimes: CompMut<Lifetime>| {
                     let entity = entities.create();
 
-                    transforms.insert(entity, Transform::from_translation(pos.extend(0.0)));
+                    transforms.insert(entity, Transform::from_translation(pos));
                     damage_regions.insert(entity, DamageRegion { size });
                     damage_region_owners.insert(entity, DamageRegionOwner(owner));
                     lifetimes.insert(entity, Lifetime::new(2.0 / 60.0));
@@ -192,25 +192,28 @@ fn update(
                     // TODO: Move all these constants to the builtin item config
                     match *frame / 3 {
                         0 => spawn_damage_region(
-                            Vec2::new(
+                            Vec3::new(
                                 player_translation.x + 20.0 * flip_factor,
                                 player_translation.y + 20.0,
+                                player_translation.z,
                             ),
                             Vec2::new(30.0, 70.0),
                             player,
                         ),
                         1 => spawn_damage_region(
-                            Vec2::new(
+                            Vec3::new(
                                 player_translation.x + 25.0 * flip_factor,
                                 player_translation.y + 20.0,
+                                player_translation.z,
                             ),
                             Vec2::new(40.0, 50.0),
                             player,
                         ),
                         2 => spawn_damage_region(
-                            Vec2::new(
+                            Vec3::new(
                                 player_translation.x + 20.0 * flip_factor,
                                 player_translation.y,
+                                player_translation.z,
                             ),
                             Vec2::new(40.0, 50.0),
                             player,

@@ -122,8 +122,6 @@
 <span id="120">120</span>
 <span id="121">121</span>
 <span id="122">122</span>
-<span id="123">123</span>
-<span id="124">124</span>
 </pre><pre class="rust"><code><span class="attribute">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;./README.md&quot;</span>)]
 #![doc(html_logo_url = <span class="string">&quot;https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4&quot;</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
@@ -142,7 +140,6 @@
 <span class="kw">pub mod </span>config;
 <span class="kw">pub mod </span>debug;
 <span class="kw">pub mod </span>input;
-<span class="kw">pub mod </span>lines;
 <span class="kw">pub mod </span>loading;
 <span class="kw">pub mod </span>localization;
 <span class="kw">pub mod </span>metadata;
@@ -226,7 +223,6 @@
         .add_plugin(bevy_framepace::FramepacePlugin)
         .add_plugin(JumpyPlayerInputPlugin)
         .add_plugin(JumpySessionPlugin)
-        .add_plugin(JumpyLinesPlugin)
         .add_plugin(JumpyUiPlugin)
         .add_plugin(JumpyAudioPlugin)
         .add_plugin(JumpyPlatformPlugin)

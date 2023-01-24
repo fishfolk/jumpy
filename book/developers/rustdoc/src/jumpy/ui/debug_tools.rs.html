@@ -189,6 +189,25 @@
 <span id="187">187</span>
 <span id="188">188</span>
 <span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
 </pre><pre class="rust"><code><span class="kw">use </span>bevy::{
     diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
     prelude::<span class="kw-2">*</span>,
@@ -204,9 +223,24 @@
     <span class="kw">fn </span>build(<span class="kw-2">&amp;</span><span class="self">self</span>, app: <span class="kw-2">&amp;mut </span>App) {
         app.add_plugin(FrameTimeDiagnosticsPlugin)
             <span class="comment">// .init_resource::&lt;ShowNetworkVisualizer&gt;()
-            </span>.init_resource::&lt;ShowFameTimeDiagnostics&gt;()
+            </span>.init_resource::&lt;CoreDebugSettings&gt;()
+            .init_resource::&lt;ShowFameTimeDiagnostics&gt;()
+            .add_system(sync_core_debug_settings)
             .add_system(debug_tools_window)
             .add_system(frame_diagnostic_window);
+    }
+}
+
+<span class="doccomment">/// Bevy resource containing the core debug settings that will be used for game sessions.
+</span><span class="attribute">#[derive(Resource, Default, Deref, DerefMut)]
+</span><span class="kw">pub struct </span>CoreDebugSettings(<span class="kw">pub </span>jumpy_core::debug::DebugSettings);
+
+<span class="doccomment">/// System to sync the core debug settings with any active bones sessions.
+</span><span class="kw">fn </span>sync_core_debug_settings(session: <span class="prelude-ty">Option</span>&lt;ResMut&lt;Session&gt;&gt;, settings: Res&lt;CoreDebugSettings&gt;) {
+    <span class="kw">if </span>settings.is_changed() {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>session) = session {
+            session.world.resources.insert(settings.<span class="number">0</span>);
+        }
     }
 }
 
@@ -230,11 +264,10 @@
 
 <span class="doccomment">/// System that renders the debug tools window which can be toggled by pressing F12
 </span><span class="kw">fn </span>debug_tools_window(
-    <span class="comment">// mut show_network_visualizer: ResMut&lt;ShowNetworkVisualizer&gt;,
-    </span><span class="kw-2">mut </span>visible: Local&lt;bool&gt;,
+    <span class="kw-2">mut </span>core_debug_settings: ResMut&lt;CoreDebugSettings&gt;,
+    <span class="kw-2">mut </span>visible: Local&lt;bool&gt;,
     <span class="kw-2">mut </span>egui_context: ResMut&lt;EguiContext&gt;,
-    <span class="comment">// mut physics_debug_render: ResMut&lt;PhysicsDebugRenderConfig&gt;,
-    </span><span class="kw-2">mut </span>show_frame_diagnostics: ResMut&lt;ShowFameTimeDiagnostics&gt;,
+    <span class="kw-2">mut </span>show_frame_diagnostics: ResMut&lt;ShowFameTimeDiagnostics&gt;,
     localization: Res&lt;Localization&gt;,
     input: Res&lt;Input&lt;KeyCode&gt;&gt;,
     <span class="kw-2">mut </span>show_inspector: ResMut&lt;WorldInspectorEnabled&gt;,
@@ -246,12 +279,13 @@
         <span class="kw-2">*</span>visible = !<span class="kw-2">*</span>visible;
     }
 
-    <span class="comment">// // Shortcut to toggle collision shapes without having to use the menu
-    // if input.just_pressed(KeyCode::F10) {
-    //     physics_debug_render.enabled = !physics_debug_render.enabled;
-    // }
+    <span class="comment">// Shortcut to toggle collision shapes without having to use the menu
+    </span><span class="kw">if </span>input.just_pressed(KeyCode::F10) {
+        core_debug_settings.show_damage_regions = !core_debug_settings.show_damage_regions;
+        core_debug_settings.show_kinematic_colliders = core_debug_settings.show_damage_regions;
+    }
 
-    // Shortcut to toggle the inspector without having to use the menu
+    <span class="comment">// Shortcut to toggle the inspector without having to use the menu
     </span><span class="kw">if </span>input.just_pressed(KeyCode::F9) {
         show_inspector.<span class="number">0 </span>= !show_inspector.<span class="number">0</span>;
     }
@@ -272,13 +306,17 @@
         </span>.id(egui::Id::new(<span class="string">&quot;debug_tools&quot;</span>))
         .open(<span class="kw-2">&amp;mut </span>visible)
         .show(ctx, |ui| {
-            <span class="comment">// // Show collision shapes
-            // ui.checkbox(
-            //     &amp;mut physics_debug_render.enabled,
-            //     format!(&quot;{} ( F10 )&quot;, localization.get(&quot;show-collision-shapes&quot;)),
-            // );
+            <span class="comment">// Show collision shapes
+            </span>ui.checkbox(
+                <span class="kw-2">&amp;mut </span>core_debug_settings.show_kinematic_colliders,
+                <span class="macro">format!</span>(<span class="string">&quot;{} ( F10 )&quot;</span>, localization.get(<span class="string">&quot;show-kinematic-colliders&quot;</span>)),
+            );
+            ui.checkbox(
+                <span class="kw-2">&amp;mut </span>core_debug_settings.show_damage_regions,
+                <span class="macro">format!</span>(<span class="string">&quot;{} ( F10 )&quot;</span>, localization.get(<span class="string">&quot;show-damage-regions&quot;</span>)),
+            );
 
-            // Show world inspector
+            <span class="comment">// Show world inspector
             </span>ui.checkbox(
                 <span class="kw-2">&amp;mut </span>show_inspector.<span class="number">0</span>,
                 <span class="macro">format!</span>(<span class="string">&quot;{} ( F9 )&quot;</span>, localization.get(<span class="string">&quot;show-world-inspector&quot;</span>)),

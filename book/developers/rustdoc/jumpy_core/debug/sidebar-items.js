@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["install",""]],"struct":[["DebugSettings","Resource configuring various debugging settings."]]};

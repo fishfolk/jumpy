@@ -42,20 +42,6 @@
 <span id="40">40</span>
 <span id="41">41</span>
 <span id="42">42</span>
-<span id="43">43</span>
-<span id="44">44</span>
-<span id="45">45</span>
-<span id="46">46</span>
-<span id="47">47</span>
-<span id="48">48</span>
-<span id="49">49</span>
-<span id="50">50</span>
-<span id="51">51</span>
-<span id="52">52</span>
-<span id="53">53</span>
-<span id="54">54</span>
-<span id="55">55</span>
-<span id="56">56</span>
 </pre><pre class="rust"><code><span class="attribute">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;../README.md&quot;</span>)]
 #![doc(html_logo_url = <span class="string">&quot;https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4&quot;</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
@@ -64,22 +50,7 @@
 #![allow(clippy::too_many_arguments)]
 
 </span><span class="doccomment">/// Prelude for inside the crate
-</span><span class="kw">mod </span>prelude {
-    <span class="kw">pub use </span>{
-        <span class="kw">crate</span>::{
-            camera::<span class="kw-2">*</span>, damage::<span class="kw-2">*</span>, elements::<span class="kw-2">*</span>, input::<span class="kw-2">*</span>, item::<span class="kw-2">*</span>, lifetime::<span class="kw-2">*</span>, map::<span class="kw-2">*</span>, math::<span class="kw-2">*</span>,
-            metadata::<span class="kw-2">*</span>, physics::<span class="kw-2">*</span>, player::<span class="kw-2">*</span>, session::<span class="kw-2">*</span>, MAX_PLAYERS,
-        },
-        bones_bevy_asset::{BevyAssets, BonesBevyAsset, BonesBevyAssetLoad},
-        bones_lib::prelude::<span class="kw-2">*</span>,
-        bytemuck::{Pod, Zeroable},
-        glam::<span class="kw-2">*</span>,
-        serde::{Deserialize, Serialize},
-        std::sync::Arc,
-        tracing::{debug, error, info, trace, warn},
-        turborand::TurboRand,
-    };
-}
+</span><span class="kw">mod </span>prelude;
 
 <span class="doccomment">/// Prelude for use outside the crate
 </span><span class="kw">pub mod </span>bevy_prelude {
@@ -95,6 +66,7 @@
 
 <span class="kw">pub mod </span>camera;
 <span class="kw">pub mod </span>damage;
+<span class="kw">pub mod </span>debug;
 <span class="kw">pub mod </span>elements;
 <span class="kw">pub mod </span>input;
 <span class="kw">pub mod </span>item;

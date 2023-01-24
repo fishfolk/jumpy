@@ -42,6 +42,7 @@
 <span id="40">40</span>
 <span id="41">41</span>
 <span id="42">42</span>
+<span id="43">43</span>
 </pre><pre class="rust"><code><span class="attribute">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;../README.md&quot;</span>)]
 #![doc(html_logo_url = <span class="string">&quot;https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4&quot;</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
@@ -64,6 +65,7 @@
     };
 }
 
+<span class="kw">pub mod </span>attachment;
 <span class="kw">pub mod </span>camera;
 <span class="kw">pub mod </span>damage;
 <span class="kw">pub mod </span>debug;

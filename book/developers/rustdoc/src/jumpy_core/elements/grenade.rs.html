@@ -470,6 +470,7 @@
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>items_used: CompMut&lt;ItemUsed&gt;,
     <span class="kw-2">mut </span>items_dropped: CompMut&lt;ItemDropped&gt;,
+    <span class="kw-2">mut </span>attachments: CompMut&lt;Attachment&gt;,
     player_inventories: PlayerInventories,
     <span class="kw-2">mut </span>commands: Commands,
 ) {
@@ -503,17 +504,14 @@
             <span class="comment">// Deactivate held items
             </span>body.is_deactivated = <span class="bool-val">true</span>;
 
-            <span class="comment">// Flip the sprite to match the player orientation
-            </span><span class="kw">let </span>flip = sprites.get(player).unwrap().flip_x;
-            <span class="kw">let </span>sprite = sprites.get_mut(entity).unwrap();
-            sprite.flip_x = flip;
-            <span class="kw">let </span>flip_factor = <span class="kw">if </span>flip { -<span class="number">1.0 </span>} <span class="kw">else </span>{ <span class="number">1.0 </span>};
-
-            <span class="kw">let </span>player_translation = transforms.get(player).unwrap().translation;
-            <span class="kw">let </span>transform = transforms.get_mut(entity).unwrap();
-            <span class="kw">let </span>offset = Vec3::new(grab_offset.x * flip_factor, grab_offset.y, <span class="number">1.0</span>);
-            transform.translation = player_translation + offset;
-            transform.rotation = Quat::IDENTITY;
+            <span class="comment">// Attach to the player
+            </span>attachments.insert(
+                entity,
+                Attachment {
+                    entity: player,
+                    offset: grab_offset.extend(<span class="number">0.1</span>),
+                },
+            );
 
             <span class="comment">// If the item is being used
             </span><span class="kw">let </span>item_used = items_used.get(entity).is_some();
@@ -540,22 +538,24 @@
             <span class="kw">let </span>player = dropped.player;
 
             items_dropped.remove(entity);
+            attachments.remove(entity);
             <span class="kw">let </span>player_translation = transforms.get(dropped.player).unwrap().translation;
             <span class="kw">let </span>player_velocity = bodies.get(player).unwrap().velocity;
 
             <span class="kw">let </span>body = bodies.get_mut(entity).unwrap();
-            <span class="kw">let </span>sprite = sprites.get_mut(entity).unwrap();
+            <span class="kw">let </span>player_sprite = sprites.get_mut(player).unwrap();
 
             <span class="comment">// Re-activate physics
             </span>body.is_deactivated = <span class="bool-val">false</span>;
 
-            <span class="kw">let </span>horizontal_flip_factor = <span class="kw">if </span>sprite.flip_x {
+            <span class="kw">let </span>horizontal_flip_factor = <span class="kw">if </span>player_sprite.flip_x {
                 Vec2::new(-<span class="number">1.0</span>, <span class="number">1.0</span>)
             } <span class="kw">else </span>{
                 Vec2::ONE
             };
             body.velocity = <span class="kw-2">*</span>throw_velocity * horizontal_flip_factor + player_velocity;
-            body.angular_velocity = <span class="kw-2">*</span>angular_velocity * <span class="kw">if </span>sprite.flip_x { -<span class="number">1.0 </span>} <span class="kw">else </span>{ <span class="number">1.0 </span>};
+            body.angular_velocity =
+                <span class="kw-2">*</span>angular_velocity * <span class="kw">if </span>player_sprite.flip_x { -<span class="number">1.0 </span>} <span class="kw">else </span>{ <span class="number">1.0 </span>};
 
             body.is_spawning = <span class="bool-val">true</span>;
 
@@ -576,6 +576,7 @@
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>items_dropped: CompMut&lt;ItemDropped&gt;,
     <span class="kw-2">mut </span>hydrated: CompMut&lt;MapElementHydrated&gt;,
+    <span class="kw-2">mut </span>attachments: CompMut&lt;Attachment&gt;,
     player_inventories: PlayerInventories,
     <span class="kw-2">mut </span>commands: Commands,
 ) {
@@ -618,17 +619,14 @@
             <span class="comment">// Deactivate held items
             </span>body.is_deactivated = <span class="bool-val">true</span>;
 
-            <span class="comment">// Flip the sprite to match the player orientation
-            </span><span class="kw">let </span>flip = sprites.get(player).unwrap().flip_x;
-            <span class="kw">let </span>sprite = sprites.get_mut(entity).unwrap();
-            sprite.flip_x = flip;
-            <span class="kw">let </span>flip_factor = <span class="kw">if </span>flip { -<span class="number">1.0 </span>} <span class="kw">else </span>{ <span class="number">1.0 </span>};
-
-            <span class="kw">let </span>player_translation = transforms.get(player).unwrap().translation;
-            <span class="kw">let </span>transform = transforms.get_mut(entity).unwrap();
-            <span class="kw">let </span>offset = Vec3::new(grab_offset.x * flip_factor, grab_offset.y, <span class="number">1.0</span>);
-            transform.translation = player_translation + offset;
-            transform.rotation = Quat::IDENTITY;
+            <span class="comment">// Attach to the player
+            </span>attachments.insert(
+                entity,
+                Attachment {
+                    entity: player,
+                    offset: grab_offset.extend(<span class="number">1.0</span>),
+                },
+            );
         }
 
         <span class="comment">// If the item was dropped
@@ -636,22 +634,24 @@
             <span class="kw">let </span>player = dropped.player;
 
             items_dropped.remove(entity);
+            attachments.remove(entity);
             <span class="kw">let </span>player_translation = transforms.get(dropped.player).unwrap().translation;
             <span class="kw">let </span>player_velocity = bodies.get(player).unwrap().velocity;
 
             <span class="kw">let </span>body = bodies.get_mut(entity).unwrap();
-            <span class="kw">let </span>sprite = sprites.get_mut(entity).unwrap();
+            <span class="kw">let </span>player_sprite = sprites.get_mut(player).unwrap();
 
             <span class="comment">// Re-activate physics
             </span>body.is_deactivated = <span class="bool-val">false</span>;
 
-            <span class="kw">let </span>horizontal_flip_factor = <span class="kw">if </span>sprite.flip_x {
+            <span class="kw">let </span>horizontal_flip_factor = <span class="kw">if </span>player_sprite.flip_x {
                 Vec2::new(-<span class="number">1.0</span>, <span class="number">1.0</span>)
             } <span class="kw">else </span>{
                 Vec2::ONE
             };
             body.velocity = <span class="kw-2">*</span>throw_velocity * horizontal_flip_factor + player_velocity;
-            body.angular_velocity = <span class="kw-2">*</span>angular_velocity * <span class="kw">if </span>sprite.flip_x { -<span class="number">1.0 </span>} <span class="kw">else </span>{ <span class="number">1.0 </span>};
+            body.angular_velocity =
+                <span class="kw-2">*</span>angular_velocity * <span class="kw">if </span>player_sprite.flip_x { -<span class="number">1.0 </span>} <span class="kw">else </span>{ <span class="number">1.0 </span>};
 
             body.is_spawning = <span class="bool-val">true</span>;
 

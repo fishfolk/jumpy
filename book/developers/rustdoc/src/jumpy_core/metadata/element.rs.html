@@ -189,6 +189,8 @@
 <span id="187">187</span>
 <span id="188">188</span>
 <span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="attribute">#[derive(BonesBevyAsset, TypeUlid, Deserialize, Clone, Debug, Default)]
@@ -285,6 +287,8 @@
         body_size: Vec2,
         <span class="attribute">#[serde(default)]
         </span>body_offset: Vec2,
+        <span class="attribute">#[serde(default)]
+        </span>grab_offset: Vec2,
         angular_velocity: f32,
         can_rotate: bool,
         arm_delay: f32,

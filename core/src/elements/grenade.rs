@@ -107,6 +107,7 @@ fn update_idle_grenades(
     mut bodies: CompMut<KinematicBody>,
     mut items_used: CompMut<ItemUsed>,
     mut items_dropped: CompMut<ItemDropped>,
+    mut attachments: CompMut<Attachment>,
     player_inventories: PlayerInventories,
     mut commands: Commands,
 ) {
@@ -140,17 +141,14 @@ fn update_idle_grenades(
             // Deactivate held items
             body.is_deactivated = true;
 
-            // Flip the sprite to match the player orientation
-            let flip = sprites.get(player).unwrap().flip_x;
-            let sprite = sprites.get_mut(entity).unwrap();
-            sprite.flip_x = flip;
-            let flip_factor = if flip { -1.0 } else { 1.0 };
-
-            let player_translation = transforms.get(player).unwrap().translation;
-            let transform = transforms.get_mut(entity).unwrap();
-            let offset = Vec3::new(grab_offset.x * flip_factor, grab_offset.y, 1.0);
-            transform.translation = player_translation + offset;
-            transform.rotation = Quat::IDENTITY;
+            // Attach to the player
+            attachments.insert(
+                entity,
+                Attachment {
+                    entity: player,
+                    offset: grab_offset.extend(0.1),
+                },
+            );
 
             // If the item is being used
             let item_used = items_used.get(entity).is_some();
@@ -177,22 +175,24 @@ fn update_idle_grenades(
             let player = dropped.player;
 
             items_dropped.remove(entity);
+            attachments.remove(entity);
             let player_translation = transforms.get(dropped.player).unwrap().translation;
             let player_velocity = bodies.get(player).unwrap().velocity;
 
             let body = bodies.get_mut(entity).unwrap();
-            let sprite = sprites.get_mut(entity).unwrap();
+            let player_sprite = sprites.get_mut(player).unwrap();
 
             // Re-activate physics
             body.is_deactivated = false;
 
-            let horizontal_flip_factor = if sprite.flip_x {
+            let horizontal_flip_factor = if player_sprite.flip_x {
                 Vec2::new(-1.0, 1.0)
             } else {
                 Vec2::ONE
             };
             body.velocity = *throw_velocity * horizontal_flip_factor + player_velocity;
-            body.angular_velocity = *angular_velocity * if sprite.flip_x { -1.0 } else { 1.0 };
+            body.angular_velocity =
+                *angular_velocity * if player_sprite.flip_x { -1.0 } else { 1.0 };
 
             body.is_spawning = true;
 
@@ -213,6 +213,7 @@ fn update_lit_grenades(
     mut bodies: CompMut<KinematicBody>,
     mut items_dropped: CompMut<ItemDropped>,
     mut hydrated: CompMut<MapElementHydrated>,
+    mut attachments: CompMut<Attachment>,
     player_inventories: PlayerInventories,
     mut commands: Commands,
 ) {
@@ -255,17 +256,14 @@ fn update_lit_grenades(
             // Deactivate held items
             body.is_deactivated = true;
 
-            // Flip the sprite to match the player orientation
-            let flip = sprites.get(player).unwrap().flip_x;
-            let sprite = sprites.get_mut(entity).unwrap();
-            sprite.flip_x = flip;
-            let flip_factor = if flip { -1.0 } else { 1.0 };
-
-            let player_translation = transforms.get(player).unwrap().translation;
-            let transform = transforms.get_mut(entity).unwrap();
-            let offset = Vec3::new(grab_offset.x * flip_factor, grab_offset.y, 1.0);
-            transform.translation = player_translation + offset;
-            transform.rotation = Quat::IDENTITY;
+            // Attach to the player
+            attachments.insert(
+                entity,
+                Attachment {
+                    entity: player,
+                    offset: grab_offset.extend(1.0),
+                },
+            );
         }
 
         // If the item was dropped
@@ -273,22 +271,24 @@ fn update_lit_grenades(
             let player = dropped.player;
 
             items_dropped.remove(entity);
+            attachments.remove(entity);
             let player_translation = transforms.get(dropped.player).unwrap().translation;
             let player_velocity = bodies.get(player).unwrap().velocity;
 
             let body = bodies.get_mut(entity).unwrap();
-            let sprite = sprites.get_mut(entity).unwrap();
+            let player_sprite = sprites.get_mut(player).unwrap();
 
             // Re-activate physics
             body.is_deactivated = false;
 
-            let horizontal_flip_factor = if sprite.flip_x {
+            let horizontal_flip_factor = if player_sprite.flip_x {
                 Vec2::new(-1.0, 1.0)
             } else {
                 Vec2::ONE
             };
             body.velocity = *throw_velocity * horizontal_flip_factor + player_velocity;
-            body.angular_velocity = *angular_velocity * if sprite.flip_x { -1.0 } else { 1.0 };
+            body.angular_velocity =
+                *angular_velocity * if player_sprite.flip_x { -1.0 } else { 1.0 };
 
             body.is_spawning = true;
 

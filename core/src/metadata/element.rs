@@ -94,6 +94,8 @@ pub enum BuiltinElementKind {
         body_size: Vec2,
         #[serde(default)]
         body_offset: Vec2,
+        #[serde(default)]
+        grab_offset: Vec2,
         angular_velocity: f32,
         can_rotate: bool,
         arm_delay: f32,

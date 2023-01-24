@@ -20,6 +20,7 @@ pub mod bevy_prelude {
     };
 }
 
+pub mod attachment;
 pub mod camera;
 pub mod damage;
 pub mod debug;

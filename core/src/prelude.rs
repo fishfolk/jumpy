@@ -1,7 +1,7 @@
 pub use {
     crate::{
-        camera::*, damage::*, debug::*, debug::*, elements::*, input::*, item::*, lifetime::*,
-        map::*, math::*, metadata::*, physics::*, player::*, session::*, MAX_PLAYERS,
+        attachment::*, camera::*, damage::*, debug::*, debug::*, elements::*, input::*, item::*,
+        lifetime::*, map::*, math::*, metadata::*, physics::*, player::*, session::*, MAX_PLAYERS,
     },
     bones_bevy_asset::{BevyAssets, BonesBevyAsset, BonesBevyAssetLoad},
     bones_lib::prelude::*,

@@ -47,6 +47,7 @@ impl GameSession {
         crate::damage::install(&mut session);
         crate::lifetime::install(&mut session);
         crate::random::install(&mut session);
+        crate::debug::install(&mut session);
 
         // Initialize systems
         for stage in &mut session.stages.stages {

@@ -5,7 +5,6 @@ pub use crate::{
     config::*,
     debug::*,
     input::*,
-    lines::*,
     loading::*,
     localization::*,
     metadata::*,

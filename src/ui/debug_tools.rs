@@ -13,9 +13,24 @@ impl Plugin for DebugToolsPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(FrameTimeDiagnosticsPlugin)
             // .init_resource::<ShowNetworkVisualizer>()
+            .init_resource::<CoreDebugSettings>()
             .init_resource::<ShowFameTimeDiagnostics>()
+            .add_system(sync_core_debug_settings)
             .add_system(debug_tools_window)
             .add_system(frame_diagnostic_window);
+    }
+}
+
+/// Bevy resource containing the core debug settings that will be used for game sessions.
+#[derive(Resource, Default, Deref, DerefMut)]
+pub struct CoreDebugSettings(pub jumpy_core::debug::DebugSettings);
+
+/// System to sync the core debug settings with any active bones sessions.
+fn sync_core_debug_settings(session: Option<ResMut<Session>>, settings: Res<CoreDebugSettings>) {
+    if settings.is_changed() {
+        if let Some(mut session) = session {
+            session.world.resources.insert(settings.0);
+        }
     }
 }
 
@@ -39,10 +54,9 @@ struct ShowFameTimeDiagnostics(pub bool);
 
 /// System that renders the debug tools window which can be toggled by pressing F12
 fn debug_tools_window(
-    // mut show_network_visualizer: ResMut<ShowNetworkVisualizer>,
+    mut core_debug_settings: ResMut<CoreDebugSettings>,
     mut visible: Local<bool>,
     mut egui_context: ResMut<EguiContext>,
-    // mut physics_debug_render: ResMut<PhysicsDebugRenderConfig>,
     mut show_frame_diagnostics: ResMut<ShowFameTimeDiagnostics>,
     localization: Res<Localization>,
     input: Res<Input<KeyCode>>,
@@ -55,10 +69,11 @@ fn debug_tools_window(
         *visible = !*visible;
     }
 
-    // // Shortcut to toggle collision shapes without having to use the menu
-    // if input.just_pressed(KeyCode::F10) {
-    //     physics_debug_render.enabled = !physics_debug_render.enabled;
-    // }
+    // Shortcut to toggle collision shapes without having to use the menu
+    if input.just_pressed(KeyCode::F10) {
+        core_debug_settings.show_damage_regions = !core_debug_settings.show_damage_regions;
+        core_debug_settings.show_kinematic_colliders = core_debug_settings.show_damage_regions;
+    }
 
     // Shortcut to toggle the inspector without having to use the menu
     if input.just_pressed(KeyCode::F9) {
@@ -81,11 +96,15 @@ fn debug_tools_window(
         .id(egui::Id::new("debug_tools"))
         .open(&mut visible)
         .show(ctx, |ui| {
-            // // Show collision shapes
-            // ui.checkbox(
-            //     &mut physics_debug_render.enabled,
-            //     format!("{} ( F10 )", localization.get("show-collision-shapes")),
-            // );
+            // Show collision shapes
+            ui.checkbox(
+                &mut core_debug_settings.show_kinematic_colliders,
+                format!("{} ( F10 )", localization.get("show-kinematic-colliders")),
+            );
+            ui.checkbox(
+                &mut core_debug_settings.show_damage_regions,
+                format!("{} ( F10 )", localization.get("show-damage-regions")),
+            );
 
             // Show world inspector
             ui.checkbox(

@@ -1,5 +1,6 @@
 debug-tools = Debug Tools
-show-collision-shapes = Show Collision Shapes
+show-kinematic-colliders = Show Kinematic Colliders
+show-damage-regions = Show Damage Regions
 show-world-inspector = Show World Inspector
 show-frame-time-diagnostics = Show Frame Time Diagnostics
 show-network-visualizer = Show Network Visualizer

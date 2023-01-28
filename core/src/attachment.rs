@@ -58,7 +58,7 @@ pub fn update_attachments(
             }
 
             if let Some((self_flip_x, self_flip_y)) = atlas_sprites
-                .get_mut(attachment.entity)
+                .get_mut(ent)
                 .map(|x| (&mut x.flip_x, &mut x.flip_y))
                 .or_else(|| {
                     sprites

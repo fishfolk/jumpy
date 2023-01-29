@@ -5,6 +5,7 @@ pub mod decoration;
 pub mod grenade;
 pub mod kick_bomb;
 pub mod musket;
+pub mod musket_bullet;
 pub mod player_spawner;
 pub mod sproinger;
 pub mod sword;
@@ -27,5 +28,7 @@ pub fn install(session: &mut GameSession) {
     grenade::install(session);
     crab::install(session);
     kick_bomb::install(session);
+
     musket::install(session);
+    musket_bullet::install(session);
 }

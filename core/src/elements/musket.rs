@@ -1,32 +1,19 @@
-use crate::{
-    physics::collisions::{Actor, Collider, TileCollision},
-    prelude::*,
-};
+use crate::prelude::*;
+
+use super::musket_bullet::MusketBullet;
 
 pub fn install(session: &mut GameSession) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)
-        .add_system_to_stage(CoreStage::PostUpdate, bullet_update)
         .add_system_to_stage(CoreStage::PostUpdate, update);
 }
 
 #[derive(Clone, Debug, TypeUlid, Default)]
 #[ulid = "01GQWRRV9HV52X9JAYYF1AFFS7"]
-pub struct Musket;
-
-#[derive(Clone, Debug, TypeUlid, Default)]
-#[ulid = "01GQX3KM2A4WPV2NKJNG85TJ3P"]
-pub struct MusketBullet {
-    size: Vec2,
-    velocity: Vec2,
-    direction: f32,
-    explosion_fps: f32,
-    explosion_volume: f32,
-    explosion_lifetime: f32,
-    explosion_frames: usize,
-    explosion_atlas: Handle<Atlas>,
-    explosion_sound: Handle<AudioSource>,
+pub struct Musket {
+    pub ammo: usize,
+    pub cooldown_frame: usize,
 }
 
 fn hydrate(
@@ -59,6 +46,7 @@ fn hydrate(
 
         if let BuiltinElementKind::Musket {
             atlas,
+            max_ammo,
             body_size,
             body_offset,
             can_rotate,
@@ -70,7 +58,13 @@ fn hydrate(
 
             let entity = entities.create();
             items.insert(entity, Item);
-            muskets.insert(entity, Musket::default());
+            muskets.insert(
+                entity,
+                Musket {
+                    ammo: *max_ammo,
+                    cooldown_frame: 0,
+                },
+            );
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
             respawn_points.insert(entity, MapRespawnPoint(transform.translation));
             transforms.insert(entity, transform);
@@ -110,39 +104,35 @@ fn update(
     mut attachments: CompMut<Attachment>,
     mut items_dropped: CompMut<ItemDropped>,
 ) {
-    for (entity, (_musket, element_handle)) in entities.iter_with((&mut muskets, &element_handles))
-    {
+    for (entity, (musket, element_handle)) in entities.iter_with((&mut muskets, &element_handles)) {
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
             continue;
         };
 
         let BuiltinElementKind::Musket {
+            max_ammo,
             shoot_fps,
             shoot_atlas,
             shoot_frames,
             shoot_lifetime,
 
-            bullet_atlas,
-            bullet_velocity,
-            bullet_body_size,
-            bullet_body_offset,
-
-            explosion_fps,
-            explosion_volume,
-            explosion_sound,
-            explosion_atlas,
-            explosion_frames,
-            explosion_lifetime,
 
             grab_offset,
-            shoot_sound,
             throw_velocity,
             angular_velocity,
+
+            bullet_meta,
+            shoot_sound,
+            cooldown_frames,
+            empty_shoot_sound,
             shoot_sound_volume,
+            empty_shoot_sound_volume,
             ..
         } = &element_meta.builtin else {
             unreachable!();
         };
+
+        musket.cooldown_frame += 1;
 
         // If the item is being held
         if let Some(inventory) = player_inventories
@@ -166,8 +156,19 @@ fn update(
 
             // If the item is being used
             let item_used = items_used.get(entity).is_some();
-            if item_used {
+            let can_fire = musket.cooldown_frame >= *cooldown_frames;
+            if item_used && can_fire {
                 items_used.remove(entity);
+
+                // Empty
+                if musket.ammo.eq(&0) {
+                    audio_events.play(empty_shoot_sound.clone(), *empty_shoot_sound_volume);
+                    continue;
+                }
+
+                // Reset fire cooldown and subtract ammo
+                musket.cooldown_frame = 0;
+                musket.ammo = musket.ammo.saturating_sub(1).clamp(0, musket.ammo);
                 audio_events.play(shoot_sound.clone(), *shoot_sound_volume);
 
                 let player_sprite = sprites.get_mut(player).unwrap();
@@ -183,26 +184,15 @@ fn update(
                 let shoot_lifetime = *shoot_lifetime;
                 let shoot_atlas = shoot_atlas.clone();
 
-                let bullet_velocity = *bullet_velocity;
-                let bullet_atlas = bullet_atlas.clone();
-                let bullet_body_size = *bullet_body_size;
-                let bullet_body_offset = *bullet_body_offset;
-
-                let explosion_fps = *explosion_fps;
-                let explosion_volume = *explosion_volume;
-                let explosion_frames = *explosion_frames;
-                let explosion_lifetime = *explosion_lifetime;
-                let explosion_atlas = explosion_atlas.clone();
-                let explosion_sound = explosion_sound.clone();
+                let bullet_meta = bullet_meta.clone();
 
                 commands.add(
-                    move |mut actors: CompMut<Actor>,
-                          mut colliders: CompMut<Collider>,
-                          mut entities: ResMut<Entities>,
+                    move |mut entities: ResMut<Entities>,
                           mut lifetimes: CompMut<Lifetime>,
                           mut sprites: CompMut<AtlasSprite>,
-                          mut bullets: CompMut<MusketBullet>,
                           mut transforms: CompMut<Transform>,
+                          mut bullets: CompMut<MusketBullet>,
+                          mut element_handles: CompMut<ElementHandle>,
                           mut animated_sprites: CompMut<AnimatedSprite>| {
                         // spawn fire animation
                         {
@@ -236,40 +226,11 @@ fn update(
                             bullets.insert(
                                 ent,
                                 MusketBullet {
-                                    explosion_fps,
-                                    explosion_volume,
-                                    explosion_frames,
-                                    explosion_lifetime,
-                                    size: bullet_body_size,
-                                    velocity: bullet_velocity,
                                     direction: if player_flip_x { -1.0 } else { 1.0 },
-                                    explosion_atlas: explosion_atlas.clone(),
-                                    explosion_sound: explosion_sound.clone(),
                                 },
                             );
                             transforms.insert(ent, shoot_animation_transform);
-                            sprites.insert(
-                                ent,
-                                AtlasSprite {
-                                    atlas: bullet_atlas.clone(),
-                                    ..default()
-                                },
-                            );
-
-                            // Setup custom collider
-                            colliders.insert(
-                                ent,
-                                Collider {
-                                    pos: shoot_animation_transform.translation.truncate()
-                                        + bullet_body_offset,
-                                    width: bullet_body_size.x,
-                                    height: bullet_body_size.y,
-                                    ..default()
-                                },
-                            );
-                            actors.insert(ent, Actor);
-
-                            lifetimes.insert(ent, Lifetime::new(1.0));
+                            element_handles.insert(ent, ElementHandle(bullet_meta.clone()));
                         }
                     },
                 );
@@ -282,6 +243,10 @@ fn update(
 
             items_dropped.remove(entity);
             attachments.remove(entity);
+
+            // reload gun
+            musket.ammo = *max_ammo;
+
             let player_translation = transforms.get(dropped.player).unwrap().translation;
             let player_velocity = bodies.get(player).unwrap().velocity;
 
@@ -307,103 +272,6 @@ fn update(
 
             let transform = transforms.get_mut(entity).unwrap();
             transform.translation = player_translation;
-        }
-    }
-}
-
-fn bullet_update(
-    entities: Res<Entities>,
-    mut commands: Commands,
-
-    mut collision_world: CollisionWorld,
-    player_indexes: Comp<PlayerIdx>,
-    mut player_events: ResMut<PlayerEvents>,
-
-    mut bullets: CompMut<MusketBullet>,
-    mut transforms: CompMut<Transform>,
-    mut audio_events: ResMut<AudioEvents>,
-) {
-    for (entity, bullet) in entities.iter_with(&mut bullets) {
-        let MusketBullet {
-            size,
-            velocity,
-            explosion_fps,
-            explosion_volume,
-            explosion_sound,
-            explosion_atlas,
-            explosion_frames,
-            explosion_lifetime,
-            ..
-        } = &bullet;
-
-        // Move bullet
-        let position = transforms.get_mut(entity).unwrap();
-        position.translation += bullet.direction * velocity.extend(0.0);
-        collision_world.set_actor_position(entity, position.translation.truncate());
-
-        // Check actor collisions
-        let mut hit_player = false;
-        collision_world
-            .actor_collisions(entity)
-            .into_iter()
-            .filter(|&x| player_indexes.contains(x))
-            .for_each(|player| {
-                hit_player = true;
-                player_events.kill(player);
-            });
-
-        // check solid tile collisions
-        let hit_solid =
-            collision_world.collide_solids(position.translation.truncate(), size.x, size.y)
-                != TileCollision::EMPTY;
-
-        // Bullet hit something
-        if hit_player || hit_solid {
-            audio_events.play(explosion_sound.clone(), *explosion_volume);
-
-            let mut explosion_transform = *transforms.get(entity).unwrap();
-            explosion_transform.translation.z += 1.0;
-
-            let explosion_fps = *explosion_fps;
-            let explosion_frames = *explosion_frames;
-            let explosion_lifetime = *explosion_lifetime;
-            let explosion_atlas = explosion_atlas.clone();
-
-            commands.add(
-                move |mut entities: ResMut<Entities>,
-                      mut transforms: CompMut<Transform>,
-                      mut lifetimes: CompMut<Lifetime>,
-                      mut sprites: CompMut<AtlasSprite>,
-                      mut animated_sprites: CompMut<AnimatedSprite>| {
-                    // Despawn the bullet
-                    entities.kill(entity);
-
-                    // spawn bullet explosion animation
-                    {
-                        let ent = entities.create();
-                        transforms.insert(ent, explosion_transform);
-                        sprites.insert(
-                            ent,
-                            AtlasSprite {
-                                atlas: explosion_atlas.clone(),
-                                ..default()
-                            },
-                        );
-
-                        animated_sprites.insert(
-                            ent,
-                            AnimatedSprite {
-                                start: 0,
-                                end: explosion_frames,
-                                fps: explosion_fps,
-                                repeat: false,
-                                ..default()
-                            },
-                        );
-                        lifetimes.insert(ent, Lifetime::new(explosion_lifetime));
-                    }
-                },
-            );
         }
     }
 }

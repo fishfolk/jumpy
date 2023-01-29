@@ -3,24 +3,18 @@ category: Weapons
 builtin: !Musket
   atlas: ./musket.atlas.yaml
 
-  bullet_velocity: [10, 0]
-  bullet_body_offset: [0, 0]
-  bullet_body_size: [15, 15]
-  bullet_atlas: ./bullet/musket_bullet.atlas.yaml
+  max_ammo: 4
+  cooldown_frames: 50
+  bullet_meta: ./bullet/musket_bullet.element.yaml
 
   shoot_fps: 15
   shoot_frames: 3
   shoot_lifetime: 0.2
   shoot_sound_volume: 0.1
   shoot_sound: ./shoot/shoot.ogg
+  empty_shoot_sound_volume: 0.1
+  empty_shoot_sound: ./shoot/gun_empty.ogg
   shoot_atlas: ./shoot/musket_shoot.atlas.yaml
-
-  explosion_fps: 12
-  explosion_frames: 3
-  explosion_volume: 0.1
-  explosion_lifetime: 0.4
-  explosion_sound: ./explosion/bullet_hit_dull.wav
-  explosion_atlas: ./explosion/explosion.atlas.yaml
 
   bounciness: 0.3
   can_rotate: true

@@ -1271,6 +1271,10 @@ layers:
             - 370.0
             - 350.5
           element: /elements/item/kick_bomb/kick_bomb.element.yaml
+        - pos:
+            - 180.0
+            - 470.5
+          element: /elements/item/musket/musket.element.yaml
   - id: spawners
     kind: !element
       elements:

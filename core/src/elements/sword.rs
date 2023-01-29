@@ -292,9 +292,7 @@ fn update(
             body.is_spawning = true;
 
             let transform = transforms.get_mut(entity).unwrap();
-            transform.translation.y = player_translation.y;
-            transform.translation.x = player_translation.x;
-            transform.translation.z = player_translation.z;
+            transform.translation = player_translation;
         }
     }
 }

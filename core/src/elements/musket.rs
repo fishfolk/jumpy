@@ -18,6 +18,7 @@ pub struct Musket;
 #[derive(Clone, Debug, TypeUlid, Default)]
 #[ulid = "01GQX3KM2A4WPV2NKJNG85TJ3P"]
 pub struct MusketBullet {
+    size: Vec2,
     velocity: Vec2,
     direction: f32,
     explosion_fps: f32,
@@ -239,6 +240,7 @@ fn update(
                                     explosion_volume,
                                     explosion_frames,
                                     explosion_lifetime,
+                                    size: bullet_body_size,
                                     velocity: bullet_velocity,
                                     direction: if player_flip_x { -1.0 } else { 1.0 },
                                     explosion_atlas: explosion_atlas.clone(),
@@ -313,7 +315,7 @@ fn bullet_update(
     entities: Res<Entities>,
     mut commands: Commands,
 
-    collision_world: CollisionWorld,
+    mut collision_world: CollisionWorld,
     player_indexes: Comp<PlayerIdx>,
     mut player_events: ResMut<PlayerEvents>,
 
@@ -323,6 +325,7 @@ fn bullet_update(
 ) {
     for (entity, bullet) in entities.iter_with(&mut bullets) {
         let MusketBullet {
+            size,
             velocity,
             explosion_fps,
             explosion_volume,
@@ -334,8 +337,9 @@ fn bullet_update(
         } = &bullet;
 
         // Move bullet
-        let pos = transforms.get_mut(entity).unwrap();
-        pos.translation += bullet.direction * velocity.extend(0.0);
+        let position = transforms.get_mut(entity).unwrap();
+        position.translation += bullet.direction * velocity.extend(0.0);
+        collision_world.set_actor_position(entity, position.translation.truncate());
 
         // Check actor collisions
         let mut hit_player = false;
@@ -349,8 +353,9 @@ fn bullet_update(
             });
 
         // check solid tile collisions
-        let hit_solid = collision_world.collide_solids(pos.translation.truncate(), 15.0, 15.0)
-            != TileCollision::EMPTY;
+        let hit_solid =
+            collision_world.collide_solids(position.translation.truncate(), size.x, size.y)
+                != TileCollision::EMPTY;
 
         // Bullet hit something
         if hit_player || hit_solid {
@@ -359,10 +364,10 @@ fn bullet_update(
             let mut explosion_transform = *transforms.get(entity).unwrap();
             explosion_transform.translation.z += 1.0;
 
-            let explosion_lifetime = *explosion_lifetime;
-            let explosion_atlas = explosion_atlas.clone();
             let explosion_fps = *explosion_fps;
             let explosion_frames = *explosion_frames;
+            let explosion_lifetime = *explosion_lifetime;
+            let explosion_atlas = explosion_atlas.clone();
 
             commands.add(
                 move |mut entities: ResMut<Entities>,
@@ -370,7 +375,7 @@ fn bullet_update(
                       mut lifetimes: CompMut<Lifetime>,
                       mut sprites: CompMut<AtlasSprite>,
                       mut animated_sprites: CompMut<AnimatedSprite>| {
-                    // Despawn the bullet bomb
+                    // Despawn the bullet
                     entities.kill(entity);
 
                     // spawn bullet explosion animation

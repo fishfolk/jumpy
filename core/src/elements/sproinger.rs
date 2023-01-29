@@ -100,11 +100,10 @@ fn update(
             sproinger.frame += 1;
         } else {
             for collider_ent in collision_world.actor_collisions(entity) {
-                let mut body = bodies.get_mut(collider_ent).unwrap();
-
-                body.velocity.y = *spring_velocity;
-
-                sproinger.sproinging = true;
+                if let Some(body) = bodies.get_mut(collider_ent) {
+                    body.velocity.y = *spring_velocity;
+                    sproinger.sproinging = true;
+                }
             }
         }
     }

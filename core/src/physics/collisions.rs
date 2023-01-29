@@ -230,6 +230,7 @@ impl<'a> CollisionWorld<'a> {
         };
 
         let rect = collider.rect();
+        println!("rect: {:?}", rect);
 
         for (other_entity, (_actor, collider)) in
             self.entities.iter_with((&self.actors, &self.colliders))

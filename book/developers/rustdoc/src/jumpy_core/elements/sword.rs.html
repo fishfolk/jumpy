@@ -298,8 +298,6 @@
 <span id="296">296</span>
 <span id="297">297</span>
 <span id="298">298</span>
-<span id="299">299</span>
-<span id="300">300</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{damage::DamageRegion, prelude::<span class="kw-2">*</span>};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -594,9 +592,7 @@
             body.is_spawning = <span class="bool-val">true</span>;
 
             <span class="kw">let </span>transform = transforms.get_mut(entity).unwrap();
-            transform.translation.y = player_translation.y;
-            transform.translation.x = player_translation.x;
-            transform.translation.z = player_translation.z;
+            transform.translation = player_translation;
         }
     }
 }

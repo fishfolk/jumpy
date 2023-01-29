@@ -191,6 +191,40 @@
 <span id="189">189</span>
 <span id="190">190</span>
 <span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="attribute">#[derive(BonesBevyAsset, TypeUlid, Deserialize, Clone, Debug, Default)]
@@ -381,6 +415,40 @@
         <span class="attribute">#[serde(default)]
         </span>arm_delay: f32,
     },
+    Musket {
+        body_size: Vec2,
+        atlas: Handle&lt;Atlas&gt;,
+
+        bullet_velocity: Vec2,
+        bullet_body_size: Vec2,
+        bullet_body_offset: Vec2,
+        bullet_atlas: Handle&lt;Atlas&gt;,
+
+        shoot_fps: f32,
+        shoot_lifetime: f32,
+        shoot_frames: usize,
+        shoot_sound_volume: f32,
+        shoot_atlas: Handle&lt;Atlas&gt;,
+        shoot_sound: Handle&lt;AudioSource&gt;,
+
+        explosion_fps: f32,
+        explosion_volume: f32,
+        explosion_lifetime: f32,
+        explosion_frames: usize,
+        explosion_atlas: Handle&lt;Atlas&gt;,
+        explosion_sound: Handle&lt;AudioSource&gt;,
+
+        <span class="attribute">#[serde(default)]
+        </span>body_offset: Vec2,
+        <span class="attribute">#[serde(default)]
+        </span>grab_offset: Vec2,
+        angular_velocity: f32,
+        can_rotate: bool,
+        <span class="comment">// arm_delay: f32,
+        </span>bounciness: f32,
+        throw_velocity: Vec2,
+        <span class="comment">// cooldown_frames: usize,
+    </span>},
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="jumpy_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

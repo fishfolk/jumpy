@@ -155,9 +155,10 @@ fn update(
             // If the item is being used
             let item_used = items_used.get(entity).is_some();
             let can_fire = musket.cooldown_frame >= *cooldown_frames;
-            if item_used && can_fire {
+            if item_used {
                 items_used.remove(entity);
-
+            }
+            if item_used && can_fire {
                 // Empty
                 if musket.ammo.eq(&0) {
                     audio_events.play(empty_shoot_sound.clone(), *empty_shoot_sound_volume);

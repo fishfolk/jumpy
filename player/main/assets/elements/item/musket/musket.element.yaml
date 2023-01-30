@@ -5,7 +5,7 @@ builtin: !Musket
 
   max_ammo: 4
   cooldown_frames: 50
-  bullet_meta: ./bullet/musket_bullet.element.yaml
+  bullet_meta: ./bullet/musket.bullet.yaml
 
   shoot_fps: 15
   shoot_frames: 3

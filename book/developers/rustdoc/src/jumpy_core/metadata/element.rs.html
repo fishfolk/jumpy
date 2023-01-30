@@ -225,6 +225,13 @@
 <span id="223">223</span>
 <span id="224">224</span>
 <span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="attribute">#[derive(BonesBevyAsset, TypeUlid, Deserialize, Clone, Debug, Default)]
@@ -416,20 +423,38 @@
         </span>arm_delay: f32,
     },
     Musket {
+        <span class="attribute">#[serde(default)]
+        </span>body_offset: Vec2,
+        <span class="attribute">#[serde(default)]
+        </span>grab_offset: Vec2,
+
         body_size: Vec2,
+        bounciness: f32,
+        can_rotate: bool,
+        throw_velocity: Vec2,
+        angular_velocity: f32,
         atlas: Handle&lt;Atlas&gt;,
 
-        bullet_velocity: Vec2,
-        bullet_body_size: Vec2,
-        bullet_body_offset: Vec2,
-        bullet_atlas: Handle&lt;Atlas&gt;,
+        max_ammo: usize,
+        cooldown_frames: usize,
+        bullet_meta: Handle&lt;ElementMeta&gt;,
 
         shoot_fps: f32,
         shoot_lifetime: f32,
         shoot_frames: usize,
         shoot_sound_volume: f32,
+        empty_shoot_sound_volume: f32,
         shoot_atlas: Handle&lt;Atlas&gt;,
         shoot_sound: Handle&lt;AudioSource&gt;,
+        empty_shoot_sound: Handle&lt;AudioSource&gt;,
+    },
+    MusketBullet {
+        <span class="attribute">#[serde(default)]
+        </span>body_offset: Vec2,
+
+        velocity: Vec2,
+        body_size: Vec2,
+        atlas: Handle&lt;Atlas&gt;,
 
         explosion_fps: f32,
         explosion_volume: f32,
@@ -437,18 +462,7 @@
         explosion_frames: usize,
         explosion_atlas: Handle&lt;Atlas&gt;,
         explosion_sound: Handle&lt;AudioSource&gt;,
-
-        <span class="attribute">#[serde(default)]
-        </span>body_offset: Vec2,
-        <span class="attribute">#[serde(default)]
-        </span>grab_offset: Vec2,
-        angular_velocity: f32,
-        can_rotate: bool,
-        <span class="comment">// arm_delay: f32,
-        </span>bounciness: f32,
-        throw_velocity: Vec2,
-        <span class="comment">// cooldown_frames: usize,
-    </span>},
+    },
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="jumpy_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

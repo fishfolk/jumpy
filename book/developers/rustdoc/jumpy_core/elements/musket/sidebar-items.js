@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["install",""]],"struct":[["Musket",""],["MusketBullet",""]]};
+window.SIDEBAR_ITEMS = {"fn":[["install",""]],"struct":[["Musket",""]]};

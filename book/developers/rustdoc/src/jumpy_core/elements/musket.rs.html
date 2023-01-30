@@ -277,167 +277,22 @@
 <span id="275">275</span>
 <span id="276">276</span>
 <span id="277">277</span>
-<span id="278">278</span>
-<span id="279">279</span>
-<span id="280">280</span>
-<span id="281">281</span>
-<span id="282">282</span>
-<span id="283">283</span>
-<span id="284">284</span>
-<span id="285">285</span>
-<span id="286">286</span>
-<span id="287">287</span>
-<span id="288">288</span>
-<span id="289">289</span>
-<span id="290">290</span>
-<span id="291">291</span>
-<span id="292">292</span>
-<span id="293">293</span>
-<span id="294">294</span>
-<span id="295">295</span>
-<span id="296">296</span>
-<span id="297">297</span>
-<span id="298">298</span>
-<span id="299">299</span>
-<span id="300">300</span>
-<span id="301">301</span>
-<span id="302">302</span>
-<span id="303">303</span>
-<span id="304">304</span>
-<span id="305">305</span>
-<span id="306">306</span>
-<span id="307">307</span>
-<span id="308">308</span>
-<span id="309">309</span>
-<span id="310">310</span>
-<span id="311">311</span>
-<span id="312">312</span>
-<span id="313">313</span>
-<span id="314">314</span>
-<span id="315">315</span>
-<span id="316">316</span>
-<span id="317">317</span>
-<span id="318">318</span>
-<span id="319">319</span>
-<span id="320">320</span>
-<span id="321">321</span>
-<span id="322">322</span>
-<span id="323">323</span>
-<span id="324">324</span>
-<span id="325">325</span>
-<span id="326">326</span>
-<span id="327">327</span>
-<span id="328">328</span>
-<span id="329">329</span>
-<span id="330">330</span>
-<span id="331">331</span>
-<span id="332">332</span>
-<span id="333">333</span>
-<span id="334">334</span>
-<span id="335">335</span>
-<span id="336">336</span>
-<span id="337">337</span>
-<span id="338">338</span>
-<span id="339">339</span>
-<span id="340">340</span>
-<span id="341">341</span>
-<span id="342">342</span>
-<span id="343">343</span>
-<span id="344">344</span>
-<span id="345">345</span>
-<span id="346">346</span>
-<span id="347">347</span>
-<span id="348">348</span>
-<span id="349">349</span>
-<span id="350">350</span>
-<span id="351">351</span>
-<span id="352">352</span>
-<span id="353">353</span>
-<span id="354">354</span>
-<span id="355">355</span>
-<span id="356">356</span>
-<span id="357">357</span>
-<span id="358">358</span>
-<span id="359">359</span>
-<span id="360">360</span>
-<span id="361">361</span>
-<span id="362">362</span>
-<span id="363">363</span>
-<span id="364">364</span>
-<span id="365">365</span>
-<span id="366">366</span>
-<span id="367">367</span>
-<span id="368">368</span>
-<span id="369">369</span>
-<span id="370">370</span>
-<span id="371">371</span>
-<span id="372">372</span>
-<span id="373">373</span>
-<span id="374">374</span>
-<span id="375">375</span>
-<span id="376">376</span>
-<span id="377">377</span>
-<span id="378">378</span>
-<span id="379">379</span>
-<span id="380">380</span>
-<span id="381">381</span>
-<span id="382">382</span>
-<span id="383">383</span>
-<span id="384">384</span>
-<span id="385">385</span>
-<span id="386">386</span>
-<span id="387">387</span>
-<span id="388">388</span>
-<span id="389">389</span>
-<span id="390">390</span>
-<span id="391">391</span>
-<span id="392">392</span>
-<span id="393">393</span>
-<span id="394">394</span>
-<span id="395">395</span>
-<span id="396">396</span>
-<span id="397">397</span>
-<span id="398">398</span>
-<span id="399">399</span>
-<span id="400">400</span>
-<span id="401">401</span>
-<span id="402">402</span>
-<span id="403">403</span>
-<span id="404">404</span>
-<span id="405">405</span>
-<span id="406">406</span>
-<span id="407">407</span>
-<span id="408">408</span>
-<span id="409">409</span>
-</pre><pre class="rust"><code><span class="kw">use crate</span>::{
-    physics::collisions::{Actor, Collider, TileCollision},
-    prelude::<span class="kw-2">*</span>,
-};
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
+
+<span class="kw">use </span><span class="kw">super</span>::musket_bullet::MusketBullet;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
     session
         .stages
         .add_system_to_stage(CoreStage::PreUpdate, hydrate)
-        .add_system_to_stage(CoreStage::PostUpdate, bullet_update)
         .add_system_to_stage(CoreStage::PostUpdate, update);
 }
 
 <span class="attribute">#[derive(Clone, Debug, TypeUlid, Default)]
 #[ulid = <span class="string">&quot;01GQWRRV9HV52X9JAYYF1AFFS7&quot;</span>]
-</span><span class="kw">pub struct </span>Musket;
-
-<span class="attribute">#[derive(Clone, Debug, TypeUlid, Default)]
-#[ulid = <span class="string">&quot;01GQX3KM2A4WPV2NKJNG85TJ3P&quot;</span>]
-</span><span class="kw">pub struct </span>MusketBullet {
-    size: Vec2,
-    velocity: Vec2,
-    direction: f32,
-    explosion_fps: f32,
-    explosion_volume: f32,
-    explosion_lifetime: f32,
-    explosion_frames: usize,
-    explosion_atlas: Handle&lt;Atlas&gt;,
-    explosion_sound: Handle&lt;AudioSource&gt;,
+</span><span class="kw">pub struct </span>Musket {
+    <span class="kw">pub </span>ammo: usize,
+    <span class="kw">pub </span>cooldown_frame: usize,
 }
 
 <span class="kw">fn </span>hydrate(
@@ -470,6 +325,7 @@
 
         <span class="kw">if let </span>BuiltinElementKind::Musket {
             atlas,
+            max_ammo,
             body_size,
             body_offset,
             can_rotate,
@@ -481,7 +337,13 @@
 
             <span class="kw">let </span>entity = entities.create();
             items.insert(entity, Item);
-            muskets.insert(entity, Musket::default());
+            muskets.insert(
+                entity,
+                Musket {
+                    ammo: <span class="kw-2">*</span>max_ammo,
+                    cooldown_frame: <span class="number">0</span>,
+                },
+            );
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
             respawn_points.insert(entity, MapRespawnPoint(transform.translation));
             transforms.insert(entity, transform);
@@ -521,39 +383,35 @@
     <span class="kw-2">mut </span>attachments: CompMut&lt;Attachment&gt;,
     <span class="kw-2">mut </span>items_dropped: CompMut&lt;ItemDropped&gt;,
 ) {
-    <span class="kw">for </span>(entity, (_musket, element_handle)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;mut </span>muskets, <span class="kw-2">&amp;</span>element_handles))
-    {
+    <span class="kw">for </span>(entity, (musket, element_handle)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;mut </span>muskets, <span class="kw-2">&amp;</span>element_handles)) {
         <span class="kw">let </span><span class="prelude-val">Some</span>(element_meta) = element_assets.get(<span class="kw-2">&amp;</span>element_handle.get_bevy_handle()) <span class="kw">else </span>{
             <span class="kw">continue</span>;
         };
 
         <span class="kw">let </span>BuiltinElementKind::Musket {
+            max_ammo,
             shoot_fps,
             shoot_atlas,
             shoot_frames,
             shoot_lifetime,
 
-            bullet_atlas,
-            bullet_velocity,
-            bullet_body_size,
-            bullet_body_offset,
-
-            explosion_fps,
-            explosion_volume,
-            explosion_sound,
-            explosion_atlas,
-            explosion_frames,
-            explosion_lifetime,
 
             grab_offset,
-            shoot_sound,
             throw_velocity,
             angular_velocity,
+
+            bullet_meta,
+            shoot_sound,
+            cooldown_frames,
+            empty_shoot_sound,
             shoot_sound_volume,
+            empty_shoot_sound_volume,
             ..
         } = <span class="kw-2">&amp;</span>element_meta.builtin <span class="kw">else </span>{
             <span class="macro">unreachable!</span>();
         };
+
+        musket.cooldown_frame += <span class="number">1</span>;
 
         <span class="comment">// If the item is being held
         </span><span class="kw">if let </span><span class="prelude-val">Some</span>(inventory) = player_inventories
@@ -577,8 +435,19 @@
 
             <span class="comment">// If the item is being used
             </span><span class="kw">let </span>item_used = items_used.get(entity).is_some();
-            <span class="kw">if </span>item_used {
+            <span class="kw">let </span>can_fire = musket.cooldown_frame &gt;= <span class="kw-2">*</span>cooldown_frames;
+            <span class="kw">if </span>item_used &amp;&amp; can_fire {
                 items_used.remove(entity);
+
+                <span class="comment">// Empty
+                </span><span class="kw">if </span>musket.ammo.eq(<span class="kw-2">&amp;</span><span class="number">0</span>) {
+                    audio_events.play(empty_shoot_sound.clone(), <span class="kw-2">*</span>empty_shoot_sound_volume);
+                    <span class="kw">continue</span>;
+                }
+
+                <span class="comment">// Reset fire cooldown and subtract ammo
+                </span>musket.cooldown_frame = <span class="number">0</span>;
+                musket.ammo = musket.ammo.saturating_sub(<span class="number">1</span>).clamp(<span class="number">0</span>, musket.ammo);
                 audio_events.play(shoot_sound.clone(), <span class="kw-2">*</span>shoot_sound_volume);
 
                 <span class="kw">let </span>player_sprite = sprites.get_mut(player).unwrap();
@@ -594,26 +463,15 @@
                 <span class="kw">let </span>shoot_lifetime = <span class="kw-2">*</span>shoot_lifetime;
                 <span class="kw">let </span>shoot_atlas = shoot_atlas.clone();
 
-                <span class="kw">let </span>bullet_velocity = <span class="kw-2">*</span>bullet_velocity;
-                <span class="kw">let </span>bullet_atlas = bullet_atlas.clone();
-                <span class="kw">let </span>bullet_body_size = <span class="kw-2">*</span>bullet_body_size;
-                <span class="kw">let </span>bullet_body_offset = <span class="kw-2">*</span>bullet_body_offset;
-
-                <span class="kw">let </span>explosion_fps = <span class="kw-2">*</span>explosion_fps;
-                <span class="kw">let </span>explosion_volume = <span class="kw-2">*</span>explosion_volume;
-                <span class="kw">let </span>explosion_frames = <span class="kw-2">*</span>explosion_frames;
-                <span class="kw">let </span>explosion_lifetime = <span class="kw-2">*</span>explosion_lifetime;
-                <span class="kw">let </span>explosion_atlas = explosion_atlas.clone();
-                <span class="kw">let </span>explosion_sound = explosion_sound.clone();
+                <span class="kw">let </span>bullet_meta = bullet_meta.clone();
 
                 commands.add(
-                    <span class="kw">move </span>|<span class="kw-2">mut </span>actors: CompMut&lt;Actor&gt;,
-                          <span class="kw-2">mut </span>colliders: CompMut&lt;Collider&gt;,
-                          <span class="kw-2">mut </span>entities: ResMut&lt;Entities&gt;,
+                    <span class="kw">move </span>|<span class="kw-2">mut </span>entities: ResMut&lt;Entities&gt;,
                           <span class="kw-2">mut </span>lifetimes: CompMut&lt;Lifetime&gt;,
                           <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;,
-                          <span class="kw-2">mut </span>bullets: CompMut&lt;MusketBullet&gt;,
                           <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
+                          <span class="kw-2">mut </span>bullets: CompMut&lt;MusketBullet&gt;,
+                          <span class="kw-2">mut </span>element_handles: CompMut&lt;ElementHandle&gt;,
                           <span class="kw-2">mut </span>animated_sprites: CompMut&lt;AnimatedSprite&gt;| {
                         <span class="comment">// spawn fire animation
                         </span>{
@@ -647,40 +505,11 @@
                             bullets.insert(
                                 ent,
                                 MusketBullet {
-                                    explosion_fps,
-                                    explosion_volume,
-                                    explosion_frames,
-                                    explosion_lifetime,
-                                    size: bullet_body_size,
-                                    velocity: bullet_velocity,
                                     direction: <span class="kw">if </span>player_flip_x { -<span class="number">1.0 </span>} <span class="kw">else </span>{ <span class="number">1.0 </span>},
-                                    explosion_atlas: explosion_atlas.clone(),
-                                    explosion_sound: explosion_sound.clone(),
                                 },
                             );
                             transforms.insert(ent, shoot_animation_transform);
-                            sprites.insert(
-                                ent,
-                                AtlasSprite {
-                                    atlas: bullet_atlas.clone(),
-                                    ..default()
-                                },
-                            );
-
-                            <span class="comment">// Setup custom collider
-                            </span>colliders.insert(
-                                ent,
-                                Collider {
-                                    pos: shoot_animation_transform.translation.truncate()
-                                        + bullet_body_offset,
-                                    width: bullet_body_size.x,
-                                    height: bullet_body_size.y,
-                                    ..default()
-                                },
-                            );
-                            actors.insert(ent, Actor);
-
-                            lifetimes.insert(ent, Lifetime::new(<span class="number">1.0</span>));
+                            element_handles.insert(ent, ElementHandle(bullet_meta.clone()));
                         }
                     },
                 );
@@ -693,6 +522,10 @@
 
             items_dropped.remove(entity);
             attachments.remove(entity);
+
+            <span class="comment">// reload gun
+            </span>musket.ammo = <span class="kw-2">*</span>max_ammo;
+
             <span class="kw">let </span>player_translation = transforms.get(dropped.player).unwrap().translation;
             <span class="kw">let </span>player_velocity = bodies.get(player).unwrap().velocity;
 
@@ -718,103 +551,6 @@
 
             <span class="kw">let </span>transform = transforms.get_mut(entity).unwrap();
             transform.translation = player_translation;
-        }
-    }
-}
-
-<span class="kw">fn </span>bullet_update(
-    entities: Res&lt;Entities&gt;,
-    <span class="kw-2">mut </span>commands: Commands,
-
-    <span class="kw-2">mut </span>collision_world: CollisionWorld,
-    player_indexes: Comp&lt;PlayerIdx&gt;,
-    <span class="kw-2">mut </span>player_events: ResMut&lt;PlayerEvents&gt;,
-
-    <span class="kw-2">mut </span>bullets: CompMut&lt;MusketBullet&gt;,
-    <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
-    <span class="kw-2">mut </span>audio_events: ResMut&lt;AudioEvents&gt;,
-) {
-    <span class="kw">for </span>(entity, bullet) <span class="kw">in </span>entities.iter_with(<span class="kw-2">&amp;mut </span>bullets) {
-        <span class="kw">let </span>MusketBullet {
-            size,
-            velocity,
-            explosion_fps,
-            explosion_volume,
-            explosion_sound,
-            explosion_atlas,
-            explosion_frames,
-            explosion_lifetime,
-            ..
-        } = <span class="kw-2">&amp;</span>bullet;
-
-        <span class="comment">// Move bullet
-        </span><span class="kw">let </span>position = transforms.get_mut(entity).unwrap();
-        position.translation += bullet.direction * velocity.extend(<span class="number">0.0</span>);
-        collision_world.set_actor_position(entity, position.translation.truncate());
-
-        <span class="comment">// Check actor collisions
-        </span><span class="kw">let </span><span class="kw-2">mut </span>hit_player = <span class="bool-val">false</span>;
-        collision_world
-            .actor_collisions(entity)
-            .into_iter()
-            .filter(|<span class="kw-2">&amp;</span>x| player_indexes.contains(x))
-            .for_each(|player| {
-                hit_player = <span class="bool-val">true</span>;
-                player_events.kill(player);
-            });
-
-        <span class="comment">// check solid tile collisions
-        </span><span class="kw">let </span>hit_solid =
-            collision_world.collide_solids(position.translation.truncate(), size.x, size.y)
-                != TileCollision::EMPTY;
-
-        <span class="comment">// Bullet hit something
-        </span><span class="kw">if </span>hit_player || hit_solid {
-            audio_events.play(explosion_sound.clone(), <span class="kw-2">*</span>explosion_volume);
-
-            <span class="kw">let </span><span class="kw-2">mut </span>explosion_transform = <span class="kw-2">*</span>transforms.get(entity).unwrap();
-            explosion_transform.translation.z += <span class="number">1.0</span>;
-
-            <span class="kw">let </span>explosion_fps = <span class="kw-2">*</span>explosion_fps;
-            <span class="kw">let </span>explosion_frames = <span class="kw-2">*</span>explosion_frames;
-            <span class="kw">let </span>explosion_lifetime = <span class="kw-2">*</span>explosion_lifetime;
-            <span class="kw">let </span>explosion_atlas = explosion_atlas.clone();
-
-            commands.add(
-                <span class="kw">move </span>|<span class="kw-2">mut </span>entities: ResMut&lt;Entities&gt;,
-                      <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
-                      <span class="kw-2">mut </span>lifetimes: CompMut&lt;Lifetime&gt;,
-                      <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;,
-                      <span class="kw-2">mut </span>animated_sprites: CompMut&lt;AnimatedSprite&gt;| {
-                    <span class="comment">// Despawn the bullet
-                    </span>entities.kill(entity);
-
-                    <span class="comment">// spawn bullet explosion animation
-                    </span>{
-                        <span class="kw">let </span>ent = entities.create();
-                        transforms.insert(ent, explosion_transform);
-                        sprites.insert(
-                            ent,
-                            AtlasSprite {
-                                atlas: explosion_atlas.clone(),
-                                ..default()
-                            },
-                        );
-
-                        animated_sprites.insert(
-                            ent,
-                            AnimatedSprite {
-                                start: <span class="number">0</span>,
-                                end: explosion_frames,
-                                fps: explosion_fps,
-                                repeat: <span class="bool-val">false</span>,
-                                ..default()
-                            },
-                        );
-                        lifetimes.insert(ent, Lifetime::new(explosion_lifetime));
-                    }
-                },
-            );
         }
     }
 }

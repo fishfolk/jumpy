@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["install",""]],"struct":[["Bullet",""],["BulletHandle","Component containing the bullet’s metadata handle."]]};

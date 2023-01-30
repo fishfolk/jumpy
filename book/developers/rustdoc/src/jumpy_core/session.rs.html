@@ -136,17 +136,6 @@
 <span id="134">134</span>
 <span id="135">135</span>
 <span id="136">136</span>
-<span id="137">137</span>
-<span id="138">138</span>
-<span id="139">139</span>
-<span id="140">140</span>
-<span id="141">141</span>
-<span id="142">142</span>
-<span id="143">143</span>
-<span id="144">144</span>
-<span id="145">145</span>
-<span id="146">146</span>
-<span id="147">147</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// The implementation of a Jumpy game session.
@@ -186,18 +175,7 @@
         };
 
         <span class="comment">// Install modules
-        </span><span class="kw">crate</span>::testing::install(<span class="kw-2">&amp;mut </span>session);
-        <span class="kw">crate</span>::physics::install(<span class="kw-2">&amp;mut </span>session);
-        <span class="kw">crate</span>::input::install(<span class="kw-2">&amp;mut </span>session);
-        <span class="kw">crate</span>::map::install(<span class="kw-2">&amp;mut </span>session);
-        <span class="kw">crate</span>::elements::install(<span class="kw-2">&amp;mut </span>session);
-        <span class="kw">crate</span>::player::install(<span class="kw-2">&amp;mut </span>session);
-        <span class="kw">crate</span>::camera::install(<span class="kw-2">&amp;mut </span>session);
-        <span class="kw">crate</span>::damage::install(<span class="kw-2">&amp;mut </span>session);
-        <span class="kw">crate</span>::lifetime::install(<span class="kw-2">&amp;mut </span>session);
-        <span class="kw">crate</span>::random::install(<span class="kw-2">&amp;mut </span>session);
-        <span class="kw">crate</span>::debug::install(<span class="kw-2">&amp;mut </span>session);
-        <span class="kw">crate</span>::attachment::install(<span class="kw-2">&amp;mut </span>session);
+        </span><span class="kw">crate</span>::install_modules(<span class="kw-2">&amp;mut </span>session);
 
         <span class="comment">// Initialize systems
         </span><span class="kw">for </span>stage <span class="kw">in </span><span class="kw-2">&amp;mut </span>session.stages.stages {

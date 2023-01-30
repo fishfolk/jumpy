@@ -275,11 +275,7 @@
 <span id="273">273</span>
 <span id="274">274</span>
 <span id="275">275</span>
-<span id="276">276</span>
-<span id="277">277</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
-
-<span class="kw">use </span><span class="kw">super</span>::musket_bullet::MusketBullet;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
     session
@@ -470,8 +466,8 @@
                           <span class="kw-2">mut </span>lifetimes: CompMut&lt;Lifetime&gt;,
                           <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;,
                           <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
-                          <span class="kw-2">mut </span>bullets: CompMut&lt;MusketBullet&gt;,
-                          <span class="kw-2">mut </span>element_handles: CompMut&lt;ElementHandle&gt;,
+                          <span class="kw-2">mut </span>bullets: CompMut&lt;Bullet&gt;,
+                          <span class="kw-2">mut </span>bullet_handles: CompMut&lt;BulletHandle&gt;,
                           <span class="kw-2">mut </span>animated_sprites: CompMut&lt;AnimatedSprite&gt;| {
                         <span class="comment">// spawn fire animation
                         </span>{
@@ -504,12 +500,12 @@
                             <span class="kw">let </span>ent = entities.create();
                             bullets.insert(
                                 ent,
-                                MusketBullet {
+                                Bullet {
                                     direction: <span class="kw">if </span>player_flip_x { -<span class="number">1.0 </span>} <span class="kw">else </span>{ <span class="number">1.0 </span>},
                                 },
                             );
                             transforms.insert(ent, shoot_animation_transform);
-                            element_handles.insert(ent, ElementHandle(bullet_meta.clone()));
+                            bullet_handles.insert(ent, BulletHandle(bullet_meta.clone()));
                         }
                     },
                 );

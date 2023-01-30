@@ -275,6 +275,7 @@
 <span id="273">273</span>
 <span id="274">274</span>
 <span id="275">275</span>
+<span id="276">276</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -432,9 +433,10 @@
             <span class="comment">// If the item is being used
             </span><span class="kw">let </span>item_used = items_used.get(entity).is_some();
             <span class="kw">let </span>can_fire = musket.cooldown_frame &gt;= <span class="kw-2">*</span>cooldown_frames;
-            <span class="kw">if </span>item_used &amp;&amp; can_fire {
+            <span class="kw">if </span>item_used {
                 items_used.remove(entity);
-
+            }
+            <span class="kw">if </span>item_used &amp;&amp; can_fire {
                 <span class="comment">// Empty
                 </span><span class="kw">if </span>musket.ammo.eq(<span class="kw-2">&amp;</span><span class="number">0</span>) {
                     audio_events.play(empty_shoot_sound.clone(), <span class="kw-2">*</span>empty_shoot_sound_volume);

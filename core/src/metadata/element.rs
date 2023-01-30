@@ -189,20 +189,38 @@ pub enum BuiltinElementKind {
         arm_delay: f32,
     },
     Musket {
+        #[serde(default)]
+        body_offset: Vec2,
+        #[serde(default)]
+        grab_offset: Vec2,
+
         body_size: Vec2,
+        bounciness: f32,
+        can_rotate: bool,
+        throw_velocity: Vec2,
+        angular_velocity: f32,
         atlas: Handle<Atlas>,
 
-        bullet_velocity: Vec2,
-        bullet_body_size: Vec2,
-        bullet_body_offset: Vec2,
-        bullet_atlas: Handle<Atlas>,
+        max_ammo: usize,
+        cooldown_frames: usize,
+        bullet_meta: Handle<ElementMeta>,
 
         shoot_fps: f32,
         shoot_lifetime: f32,
         shoot_frames: usize,
         shoot_sound_volume: f32,
+        empty_shoot_sound_volume: f32,
         shoot_atlas: Handle<Atlas>,
         shoot_sound: Handle<AudioSource>,
+        empty_shoot_sound: Handle<AudioSource>,
+    },
+    MusketBullet {
+        #[serde(default)]
+        body_offset: Vec2,
+
+        velocity: Vec2,
+        body_size: Vec2,
+        atlas: Handle<Atlas>,
 
         explosion_fps: f32,
         explosion_volume: f32,
@@ -210,16 +228,5 @@ pub enum BuiltinElementKind {
         explosion_frames: usize,
         explosion_atlas: Handle<Atlas>,
         explosion_sound: Handle<AudioSource>,
-
-        #[serde(default)]
-        body_offset: Vec2,
-        #[serde(default)]
-        grab_offset: Vec2,
-        angular_velocity: f32,
-        can_rotate: bool,
-        // arm_delay: f32,
-        bounciness: f32,
-        throw_velocity: Vec2,
-        // cooldown_frames: usize,
     },
 }

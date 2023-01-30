@@ -21,6 +21,7 @@ pub mod bevy_prelude {
 }
 
 pub mod attachment;
+pub mod bullet;
 pub mod camera;
 pub mod damage;
 pub mod debug;
@@ -38,6 +39,22 @@ pub mod session;
 pub mod testing;
 
 /// The target fixed frames-per-second that the game sumulation runs at.
-
 pub const FPS: f32 = 60.0;
 pub const MAX_PLAYERS: usize = 4;
+
+/// Install game modules into the session.
+pub fn install_modules(session: &mut session::GameSession) {
+    testing::install(session);
+    physics::install(session);
+    input::install(session);
+    map::install(session);
+    elements::install(session);
+    player::install(session);
+    camera::install(session);
+    damage::install(session);
+    lifetime::install(session);
+    random::install(session);
+    debug::install(session);
+    attachment::install(session);
+    bullet::install(session);
+}

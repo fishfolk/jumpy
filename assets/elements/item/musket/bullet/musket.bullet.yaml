@@ -1,0 +1,12 @@
+lifetime: 1.0
+velocity: [10, 0]
+body_offset: [0, 0]
+body_size: [15, 15]
+atlas: ./musket_bullet.atlas.yaml
+
+explosion_fps: 12
+explosion_frames: 3
+explosion_volume: 0.025
+explosion_lifetime: 0.4
+explosion_sound: ../explosion/bullet_hit_dull.ogg
+explosion_atlas: ../explosion/explosion.atlas.yaml

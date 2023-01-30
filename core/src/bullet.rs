@@ -12,105 +12,93 @@ pub fn install(session: &mut GameSession) {
 
 #[derive(Clone, Debug, TypeUlid, Copy)]
 #[ulid = "01GQX3KM2A4WPV2NKJNG85TJ3P"]
-pub struct MusketBullet {
+pub struct Bullet {
     pub direction: f32,
 }
 
-impl Default for MusketBullet {
+impl Default for Bullet {
     fn default() -> Self {
         Self { direction: 1.0 }
     }
 }
 
+/// Component containing the bullet's metadata handle.
+#[derive(Deref, DerefMut, TypeUlid, Clone)]
+#[ulid = "01GR1WH27X84VX22G0JY9J71PC"]
+pub struct BulletHandle(pub Handle<BulletMeta>);
+
 fn hydrate(
-    mut items: CompMut<Item>,
+    entities: Res<Entities>,
     mut actors: CompMut<Actor>,
-    mut entities: ResMut<Entities>,
     mut colliders: CompMut<Collider>,
     mut lifetimes: CompMut<Lifetime>,
-    mut bullets: CompMut<MusketBullet>,
-    mut transforms: CompMut<Transform>,
+    transforms: Comp<Transform>,
     mut atlas_sprites: CompMut<AtlasSprite>,
-    element_assets: BevyAssets<ElementMeta>,
-    mut hydrated: CompMut<MapElementHydrated>,
-    mut element_handles: CompMut<ElementHandle>,
+    bullet_assets: BevyAssets<BulletMeta>,
+    bullet_handles: Comp<BulletHandle>,
 ) {
-    let mut not_hydrated_bitset = hydrated.bitset().clone();
+    // We consider all entities with bullet handles, but that don't have physics actors on them to
+    // be non-hydrated.
+    let mut not_hydrated_bitset = actors.bitset().clone();
     not_hydrated_bitset.bit_not();
-    not_hydrated_bitset.bit_and(element_handles.bitset());
+    not_hydrated_bitset.bit_and(bullet_handles.bitset());
 
-    let spawners = entities
+    let bullets = entities
         .iter_with_bitset(&not_hydrated_bitset)
         .collect::<Vec<_>>();
 
-    for spawner_ent in spawners {
-        let element_handle = element_handles.get(spawner_ent).unwrap();
-        let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
+    for entity in bullets {
+        let bullet_handle = bullet_handles.get(entity).unwrap();
+        let Some(bullet_meta) = bullet_assets.get(&bullet_handle.get_bevy_handle()) else {
                 continue;
             };
 
-        if let BuiltinElementKind::MusketBullet {
+        let BulletMeta {
             atlas,
             body_size,
             body_offset,
             ..
-        } = &element_meta.builtin
-        {
-            let transform = *transforms.get(spawner_ent).unwrap();
-            let bullet = if let Some(bullet) = bullets.get(spawner_ent) {
-                *bullet
-            } else {
-                MusketBullet::default()
-            };
+        } = &bullet_meta;
+        let transform = *transforms.get(entity).unwrap();
 
-            hydrated.insert(spawner_ent, MapElementHydrated);
+        atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
 
-            let entity = entities.create();
-            items.insert(entity, Item);
-            bullets.insert(entity, bullet);
+        // Setup custom collider
+        actors.insert(entity, Actor);
+        colliders.insert(
+            entity,
+            Collider {
+                width: body_size.x,
+                height: body_size.y,
+                pos: transform.translation.truncate() + *body_offset,
+                ..default()
+            },
+        );
 
-            transforms.insert(entity, transform);
-            hydrated.insert(entity, MapElementHydrated);
-            element_handles.insert(entity, element_handle.clone());
-            atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
-
-            // Setup custom collider
-            actors.insert(entity, Actor);
-            colliders.insert(
-                entity,
-                Collider {
-                    width: body_size.x,
-                    height: body_size.y,
-                    pos: transform.translation.truncate() + *body_offset,
-                    ..default()
-                },
-            );
-
-            lifetimes.insert(entity, Lifetime::new(1.0));
-        }
+        lifetimes.insert(entity, Lifetime::new(bullet_meta.lifetime));
     }
 }
 
 fn update(
     entities: Res<Entities>,
     mut commands: Commands,
-    element_handles: Comp<ElementHandle>,
-    element_assets: BevyAssets<ElementMeta>,
+    bullet_handles: Comp<BulletHandle>,
+    bullet_assets: BevyAssets<BulletMeta>,
 
     player_indexes: Comp<PlayerIdx>,
     mut collision_world: CollisionWorld,
     mut player_events: ResMut<PlayerEvents>,
 
-    mut bullets: CompMut<MusketBullet>,
+    mut bullets: CompMut<Bullet>,
     mut transforms: CompMut<Transform>,
     mut audio_events: ResMut<AudioEvents>,
 ) {
-    for (entity, (bullet, element_handle)) in entities.iter_with((&mut bullets, &element_handles)) {
-        let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
+    for (entity, (bullet, bullet_handle)) in entities.iter_with((&mut bullets, &bullet_handles)) {
+        let Some(bullet_meta) = bullet_assets.get(&bullet_handle.get_bevy_handle()) else {
             continue;
         };
 
-        let BuiltinElementKind::MusketBullet {
+        let BulletMeta {
             velocity,
             body_size,
             explosion_fps,
@@ -120,9 +108,7 @@ fn update(
             explosion_frames,
             explosion_lifetime,
             ..
-        } = &element_meta.builtin else {
-            unreachable!();
-        };
+        } = bullet_meta;
 
         // Move bullet
         let position = transforms.get_mut(entity).unwrap();

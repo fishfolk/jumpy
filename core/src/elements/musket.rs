@@ -1,7 +1,5 @@
 use crate::prelude::*;
 
-use super::musket_bullet::MusketBullet;
-
 pub fn install(session: &mut GameSession) {
     session
         .stages
@@ -191,8 +189,8 @@ fn update(
                           mut lifetimes: CompMut<Lifetime>,
                           mut sprites: CompMut<AtlasSprite>,
                           mut transforms: CompMut<Transform>,
-                          mut bullets: CompMut<MusketBullet>,
-                          mut element_handles: CompMut<ElementHandle>,
+                          mut bullets: CompMut<Bullet>,
+                          mut bullet_handles: CompMut<BulletHandle>,
                           mut animated_sprites: CompMut<AnimatedSprite>| {
                         // spawn fire animation
                         {
@@ -225,12 +223,12 @@ fn update(
                             let ent = entities.create();
                             bullets.insert(
                                 ent,
-                                MusketBullet {
+                                Bullet {
                                     direction: if player_flip_x { -1.0 } else { 1.0 },
                                 },
                             );
                             transforms.insert(ent, shoot_animation_transform);
-                            element_handles.insert(ent, ElementHandle(bullet_meta.clone()));
+                            bullet_handles.insert(ent, BulletHandle(bullet_meta.clone()));
                         }
                     },
                 );

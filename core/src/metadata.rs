@@ -29,7 +29,8 @@ impl ::bevy::prelude::Plugin for JumpyCoreAssetsPlugin {
         app.add_bones_asset::<CoreMeta>()
             .add_bones_asset::<PlayerMeta>()
             .add_bones_asset::<MapMeta>()
-            .add_bones_asset::<ElementMeta>();
+            .add_bones_asset::<ElementMeta>()
+            .add_bones_asset::<BulletMeta>();
     }
 }
 

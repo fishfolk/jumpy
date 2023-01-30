@@ -37,18 +37,7 @@ impl GameSession {
         };
 
         // Install modules
-        crate::testing::install(&mut session);
-        crate::physics::install(&mut session);
-        crate::input::install(&mut session);
-        crate::map::install(&mut session);
-        crate::elements::install(&mut session);
-        crate::player::install(&mut session);
-        crate::camera::install(&mut session);
-        crate::damage::install(&mut session);
-        crate::lifetime::install(&mut session);
-        crate::random::install(&mut session);
-        crate::debug::install(&mut session);
-        crate::attachment::install(&mut session);
+        crate::install_modules(&mut session);
 
         // Initialize systems
         for stage in &mut session.stages.stages {

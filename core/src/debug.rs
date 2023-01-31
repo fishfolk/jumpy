@@ -18,8 +18,8 @@ pub struct DebugSettings {
 }
 
 fn debug_render_kinematic_colliders(
-    settings: Res<DebugSettings>,
     entities: Res<Entities>,
+    settings: Res<DebugSettings>,
     bodies: Comp<KinematicBody>,
     transforms: Comp<Transform>,
     mut paths: CompMut<Path2d>,

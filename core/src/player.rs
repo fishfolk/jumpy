@@ -13,7 +13,8 @@ pub fn install(session: &mut GameSession) {
     session
         .stages
         .add_system_to_stage(CoreStage::PostUpdate, handle_player_events)
-        .add_system_to_stage(CoreStage::First, hydrate_players);
+        .add_system_to_stage(CoreStage::First, hydrate_players)
+        .add_system_to_stage(CoreStage::First, player_2_ai);
 }
 
 /// The player index, for example Player 1, Player 2, and so on.
@@ -149,6 +150,91 @@ fn handle_player_events(
                     // Use it
                     items_used.insert(item, ItemUsed);
                 }
+            }
+        }
+    }
+}
+
+#[derive(Default, Deref, DerefMut, Clone, Debug, TypeUlid)]
+#[ulid = "01GQWND0P969BCZF5JET9MY944"]
+pub struct AiMovementBuffer(Option<VecDeque<PlayerControl>>);
+
+fn player_2_ai(
+    entities: Res<Entities>,
+    nav_graph: ResMut<NavGraph>,
+    mut player_inputs: ResMut<PlayerInputs>,
+    mut ai_movement_buffer: ResMut<AiMovementBuffer>,
+    player_indexes: Comp<PlayerIdx>,
+    map_handle: Res<MapHandle>,
+    map_assets: BevyAssets<MapMeta>,
+    transforms: Comp<Transform>,
+) {
+    let Some(map) = map_assets.get(&map_handle.get_bevy_handle()) else {
+        return;
+    };
+    let map: &MapMeta = map;
+    let Some(nav_graph) = &nav_graph.0 else {
+        return;
+    };
+
+    let Some(player1) = entities
+        .iter_with(&player_indexes)
+        .filter(|(_ent, idx)| idx.0 == 0)
+        .map(|(ent, _idx)| ent)
+        .next() else {
+        return
+    };
+    let transform = transforms.get(player1).unwrap();
+    let pos = transform.translation.truncate();
+    let tile = (pos / map.tile_size).floor().as_uvec2();
+    let target_node = NavNode(tile);
+
+    let Some(player2) = entities
+        .iter_with(&player_indexes)
+        .filter(|(_ent, idx)| idx.0 == 1)
+        .map(|(ent, _idx)| ent)
+        .next() else {
+        return
+    };
+    let transform = transforms.get(player2).unwrap();
+    let pos = transform.translation.truncate();
+    let tile = (pos / map.tile_size).floor().as_uvec2();
+    let current_node = NavNode(tile);
+
+    // Complete any previous movement instructions if we are in the middle of any
+    if let Some(movement_buffer) = &mut ai_movement_buffer.0 {
+        if let Some(control) = movement_buffer.pop_front() {
+            player_inputs.players[1].control = control;
+            if movement_buffer.is_empty() {
+                ai_movement_buffer.0 = None;
+            }
+            return;
+        }
+    }
+
+    let path = petgraph::algo::astar(
+        &**nav_graph,
+        current_node,
+        |x| x == target_node,
+        |(_, _, edge)| edge.distance,
+        |_| 0.0,
+    );
+
+    let edges = nav_graph
+        .edges_directed(current_node, petgraph::Direction::Outgoing)
+        .map(|x| x.1)
+        .collect::<Vec<_>>();
+
+    info!(?current_node, ?edges);
+
+    if let Some((_cost, path)) = path {
+        if let Some(&next_node) = path.get(1) {
+            let edge = nav_graph.edge_weight(current_node, next_node).unwrap();
+            let mut movement_buffer = edge.inputs.clone();
+            let first_movement = movement_buffer.pop_front().unwrap();
+            player_inputs.players[1].control = first_movement;
+            if !movement_buffer.is_empty() {
+                ai_movement_buffer.0 = Some(movement_buffer)
             }
         }
     }

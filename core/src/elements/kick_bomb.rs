@@ -143,6 +143,7 @@ fn update_idle_kick_bombs(
                 Attachment {
                     entity: player,
                     offset: grab_offset.extend(1.0),
+                    sync_animation: false,
                 },
             );
 
@@ -264,6 +265,7 @@ fn update_lit_kick_bombs(
                 Attachment {
                     entity: player,
                     offset: grab_offset.extend(1.0),
+                    sync_animation: false,
                 },
             );
         }

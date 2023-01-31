@@ -147,6 +147,7 @@ fn update_idle_grenades(
                 Attachment {
                     entity: player,
                     offset: grab_offset.extend(0.1),
+                    sync_animation: false,
                 },
             );
 
@@ -262,6 +263,7 @@ fn update_lit_grenades(
                 Attachment {
                     entity: player,
                     offset: grab_offset.extend(1.0),
+                    sync_animation: false,
                 },
             );
         }

@@ -149,6 +149,7 @@ fn update(
                 Attachment {
                     entity: player,
                     offset: grab_offset.extend(0.1),
+                    sync_animation: false,
                 },
             );
 

@@ -83,7 +83,8 @@ fn debug_tools_window(
     // Shortcut to toggle collision shapes without having to use the menu
     if input.just_pressed(KeyCode::F10) {
         core_debug_settings.show_damage_regions = !core_debug_settings.show_damage_regions;
-        core_debug_settings.show_kinematic_colliders = core_debug_settings.show_damage_regions;
+        core_debug_settings.show_kinematic_colliders =
+            !core_debug_settings.show_kinematic_colliders;
     }
 
     // Shortcut to toggle the inspector without having to use the menu

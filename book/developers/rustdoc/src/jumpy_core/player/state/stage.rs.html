@@ -115,7 +115,7 @@
 
 <span class="kw">impl </span>StageLabel <span class="kw">for </span>PlayerStateStage {
     <span class="kw">fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="self">self</span>)
+        <span class="macro">format!</span>(<span class="string">&quot;{self:?}&quot;</span>)
     }
 
     <span class="kw">fn </span>id(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Ulid {
@@ -144,7 +144,7 @@
     }
 
     <span class="kw">fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="self">self</span>)
+        <span class="macro">format!</span>(<span class="string">&quot;{self:?}&quot;</span>)
     }
 
     <span class="kw">fn </span>initialize(<span class="kw-2">&amp;mut </span><span class="self">self</span>, world: <span class="kw-2">&amp;mut </span>World) {

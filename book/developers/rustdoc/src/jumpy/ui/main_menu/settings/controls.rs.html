@@ -721,12 +721,12 @@
 
             <span class="kw">let </span>stick = <span class="kw">match </span>axis.axis_type {
                 leafwing_input_manager::axislike::AxisType::Gamepad(axis) =&gt; {
-                    <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, axis)
+                    <span class="macro">format!</span>(<span class="string">&quot;{axis:?}&quot;</span>)
                 }
-                other =&gt; <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, other),
+                other =&gt; <span class="macro">format!</span>(<span class="string">&quot;{other:?}&quot;</span>),
             };
 
-            <span class="macro">format!</span>(<span class="string">&quot;{} {}&quot;</span>, stick, direction)
+            <span class="macro">format!</span>(<span class="string">&quot;{stick} {direction}&quot;</span>)
         }
         other =&gt; other.to_string(),
     }

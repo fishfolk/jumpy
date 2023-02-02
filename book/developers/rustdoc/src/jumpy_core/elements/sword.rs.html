@@ -548,7 +548,7 @@
             }
         } <span class="kw">else </span>{
             <span class="kw">let </span>body = bodies.get_mut(entity).unwrap();
-            sword.dropped_time += <span class="number">1.0 </span>/ <span class="kw">crate</span>::FPS <span class="kw">as </span>f32;
+            sword.dropped_time += <span class="number">1.0 </span>/ <span class="kw">crate</span>::FPS;
 
             <span class="kw">let </span>is_on_floor = body.is_on_ground || body.is_on_platform;
             <span class="kw">let </span>is_deals_damage = (is_on_floor &amp;&amp; body.velocity.x != <span class="number">0.0</span>)

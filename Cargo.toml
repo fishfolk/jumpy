@@ -66,8 +66,18 @@ web-sys      = { version = "0.3", features = ["Window", "Location", "Storage"] }
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 mimalloc = { version = "0.1.32", default-features = false }
 
+# Optimize dependencies even in development
+[profile.dev.package."*"]
+opt-level = 3
+
+# Optimize our code a little bit.
+#
+# Set these to 3 if the game becomes slow to respond during gameplay,
+# or change them to 0 to get faster re-compiles.
+[profile.dev.package.jumpy_core]
+opt-level = 1
 [profile.dev]
-opt-level = 3 # Set this to 3 if the game becomes slow to respond during gameplay
+opt-level = 1 
 
 [profile.release]
 codegen-units = 1    # Improved rapier physics perf, so it might help other stuff, too

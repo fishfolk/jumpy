@@ -19,7 +19,8 @@ builtin: !KickBomb
   fuse_sound: ./fuse.ogg
 
   body_size: [30, 30]
-  grab_offset: [14, -2]
+  grab_offset: [5, -2]
+  fin_anim: grab_2
   body_offset: [0, 2]
   can_rotate: true
   bounciness: 0.6

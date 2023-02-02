@@ -106,10 +106,12 @@ fn update(
     mut bodies: CompMut<KinematicBody>,
     mut items_used: CompMut<ItemUsed>,
     mut items_dropped: CompMut<ItemDropped>,
+    mut attachments: CompMut<PlayerBodyAttachment>,
     player_indexes: Comp<PlayerIdx>,
     player_inventories: PlayerInventories,
     mut player_events: ResMut<PlayerEvents>,
     mut commands: Commands,
+    mut player_layers: CompMut<PlayerLayers>,
 ) {
     for (entity, (sword, element_handle)) in entities.iter_with((&mut swords, &element_handles)) {
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
@@ -139,8 +141,10 @@ fn update(
             sound,
             sound_volume,
             arm_delay,
+            grab_offset,
             throw_velocity,
             angular_velocity,
+            fin_anim,
             ..
         } = &element_meta.builtin else {
             unreachable!();
@@ -153,21 +157,25 @@ fn update(
         {
             let player = inventory.player;
             let body = bodies.get_mut(entity).unwrap();
+            let sprite = sprites.get_mut(entity).unwrap();
+            let player_translation = transforms.get(player).unwrap().translation;
+            let flip = sprite.flip_x;
+            let flip_factor = if flip { -1.0 } else { 1.0 };
+
+            let player_layer = player_layers.get_mut(player).unwrap();
+            player_layer.fin_anim = *fin_anim;
 
             // Deactivate collisions while being held
             body.is_deactivated = true;
 
-            // Flip the sprite to match the player orientation
-            let flip = sprites.get(player).unwrap().flip_x;
-            let sprite = sprites.get_mut(entity).unwrap();
-            sprite.flip_x = flip;
-            let flip_factor = if flip { -1.0 } else { 1.0 };
-
-            let player_translation = transforms.get(player).unwrap().translation;
-            let transform = transforms.get_mut(entity).unwrap();
-            let offset = Vec3::new(13.0 * flip_factor, 21.0, 1.0);
-            transform.translation = player_translation + offset;
-            transform.rotation = Quat::IDENTITY;
+            attachments.insert(
+                entity,
+                PlayerBodyAttachment {
+                    player,
+                    offset: grab_offset.extend(1.0),
+                    sync_animation: false,
+                },
+            );
 
             // Reset the sword animation if we're not swinging it
             if !matches!(sword.state, SwordState::Swinging { .. }) {
@@ -180,6 +188,7 @@ fn update(
                 SwordState::Swinging { frame } => {
                     // If we're at the end of the swinging animation
                     if sprite.index >= 11 {
+                        player_layer.fin_offset = Vec2::ZERO;
                         // Go to cooldown frames
                         next_state = Some(SwordState::Cooldown { frame: 0 });
 
@@ -191,33 +200,43 @@ fn update(
 
                     // TODO: Move all these constants to the builtin item config
                     match *frame / 3 {
-                        0 => spawn_damage_region(
-                            Vec3::new(
-                                player_translation.x + 20.0 * flip_factor,
-                                player_translation.y + 20.0,
-                                player_translation.z,
-                            ),
-                            Vec2::new(30.0, 70.0),
-                            player,
-                        ),
-                        1 => spawn_damage_region(
-                            Vec3::new(
-                                player_translation.x + 25.0 * flip_factor,
-                                player_translation.y + 20.0,
-                                player_translation.z,
-                            ),
-                            Vec2::new(40.0, 50.0),
-                            player,
-                        ),
-                        2 => spawn_damage_region(
-                            Vec3::new(
-                                player_translation.x + 20.0 * flip_factor,
-                                player_translation.y,
-                                player_translation.z,
-                            ),
-                            Vec2::new(40.0, 50.0),
-                            player,
-                        ),
+                        0 => {
+                            spawn_damage_region(
+                                Vec3::new(
+                                    player_translation.x + 20.0 * flip_factor,
+                                    player_translation.y + 20.0,
+                                    player_translation.z,
+                                ),
+                                Vec2::new(30.0, 70.0),
+                                player,
+                            );
+
+                            player_layer.fin_offset = vec2(-1.0, 2.0);
+                        }
+                        1 => {
+                            spawn_damage_region(
+                                Vec3::new(
+                                    player_translation.x + 25.0 * flip_factor,
+                                    player_translation.y + 20.0,
+                                    player_translation.z,
+                                ),
+                                Vec2::new(40.0, 50.0),
+                                player,
+                            );
+                            player_layer.fin_offset = vec2(0.0, -1.0);
+                        }
+                        2 => {
+                            spawn_damage_region(
+                                Vec3::new(
+                                    player_translation.x + 20.0 * flip_factor,
+                                    player_translation.y,
+                                    player_translation.z,
+                                ),
+                                Vec2::new(40.0, 40.0),
+                                player,
+                            );
+                            player_layer.fin_offset = vec2(0.0, -2.0);
+                        }
                         _ => (),
                     }
 
@@ -264,6 +283,7 @@ fn update(
 
         // If the item was dropped
         if let Some(dropped) = items_dropped.get(entity).copied() {
+            attachments.remove(entity);
             let player = dropped.player;
             sword.dropped_time = 0.0;
 

@@ -17,12 +17,10 @@ physics:
   gravity: 1
 
 players:
-  - player/skins/catty/catty.player.yaml
   - player/skins/fishy/fishy.player.yaml
-  - player/skins/lionfishy/lionfishy.player.yaml
-  - player/skins/orcy/orcy.player.yaml
   - player/skins/pescy/pescy.player.yaml
   - player/skins/sharky/sharky.player.yaml
+  - player/skins/orcy/orcy.player.yaml
 
 stable_maps:
   - map/levels/level1.map.yaml

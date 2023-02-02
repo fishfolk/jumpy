@@ -453,7 +453,6 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                 else if slot.active {
                     ui.vertical_centered(|ui| {
                         let Some(player_meta) = params.player_meta_assets.get(&player_handle.get_bevy_handle()) else { return; };
-                        let Some(atlas_meta) = params.atlas_meta_assets.get(&player_meta.atlas.get_bevy_handle_untyped().typed()) else { return; };
 
                         ui.themed_label(normal_font, &params.localization.get("pick-a-fish"));
 
@@ -503,7 +502,7 @@ impl<'w, 's> WidgetSystem for PlayerSelectPanel<'w, 's> {
                                 },
                             );
 
-                            player_image(ui, player_handle, player_meta, atlas_meta, &params.player_atlas_egui_textures);
+                            player_image(ui, player_meta, &params.atlas_meta_assets, &params.player_atlas_egui_textures);
                         });
                     });
                 } else {
@@ -525,44 +524,146 @@ pub struct PlayerAtlasEguiTextures(pub HashMap<bones::AssetPath, egui::TextureId
 
 fn player_image(
     ui: &mut egui::Ui,
-    player_handle: &bones::Handle<PlayerMeta>,
     player_meta: &PlayerMeta,
-    atlas: &TextureAtlas,
+    atlas_assets: &Assets<TextureAtlas>,
     egui_textures: &PlayerAtlasEguiTextures,
 ) {
     let time = ui.ctx().input().time as f32;
-    let anim_clip = player_meta
-        .animations
-        .get(&key!("idle"))
-        .expect("Missing `idle` animation");
-    let fps = anim_clip.fps;
-    let frame_in_time_idx = (time * fps).round() as usize;
-    let frame_in_clip_idx = frame_in_time_idx % (anim_clip.end - anim_clip.start);
-    let frame_in_sheet_idx = anim_clip.start + frame_in_clip_idx;
-    let sprite_rect = &atlas.textures[frame_in_sheet_idx];
-
-    let sprite_aspect = sprite_rect.height() / sprite_rect.width();
     let width = ui.available_width();
-    let height = sprite_aspect * width;
-    let available_height = ui.available_height();
-    let y_offset = -(available_height - height) / 2.0;
-    let (rect, _) = ui.allocate_exact_size(egui::vec2(width, height), egui::Sense::hover());
+    let available_height = ui.available_width();
 
-    let uv_min = sprite_rect.min / atlas.size;
-    let uv_max = sprite_rect.max / atlas.size;
-    let uv = egui::Rect {
-        min: egui::pos2(uv_min.x, uv_min.y),
-        max: egui::pos2(uv_max.x, uv_max.y),
-    };
+    let body_rect;
+    let body_scale;
+    let body_offset;
+    let y_offset;
+    // Render the body sprite
+    {
+        let atlas_handle = &player_meta.layers.body.atlas;
+        let atlas = atlas_assets
+            .get(&atlas_handle.get_bevy_handle_untyped().typed())
+            .unwrap();
+        let atlas_path = &atlas_handle.path;
+        let anim_clip = player_meta
+            .layers
+            .body
+            .animations
+            .frames
+            .get(&key!("idle"))
+            .unwrap();
+        let fps = anim_clip.fps;
+        let frame_in_time_idx = (time * fps).round() as usize;
+        let frame_in_clip_idx = frame_in_time_idx % anim_clip.frames.len();
+        let frame_in_sheet_idx = anim_clip.frames[frame_in_clip_idx];
+        let sprite_rect = &atlas.textures[frame_in_sheet_idx];
+        body_offset =
+            player_meta.layers.body.animations.body_offsets[&key!("idle")][frame_in_clip_idx];
 
-    let mut mesh = egui::Mesh {
-        texture_id: *egui_textures.0.get(&player_handle.path).unwrap(),
-        ..default()
-    };
+        let sprite_aspect = sprite_rect.height() / sprite_rect.width();
+        let height = sprite_aspect * width;
+        y_offset = -(available_height - height) / 2.0;
+        let (rect, _) = ui.allocate_exact_size(egui::vec2(width, height), egui::Sense::hover());
 
-    mesh.add_rect_with_uv(rect, uv, egui::Color32::WHITE);
+        let uv_min = sprite_rect.min / atlas.size;
+        let uv_max = sprite_rect.max / atlas.size;
+        let uv = egui::Rect {
+            min: egui::pos2(uv_min.x, uv_min.y),
+            max: egui::pos2(uv_max.x, uv_max.y),
+        };
 
-    mesh.translate(egui::vec2(0.0, y_offset));
+        let mut mesh = egui::Mesh {
+            texture_id: *egui_textures.0.get(atlas_path).unwrap(),
+            ..default()
+        };
 
-    ui.painter().add(mesh);
+        mesh.add_rect_with_uv(rect, uv, egui::Color32::WHITE);
+        mesh.translate(egui::vec2(0.0, y_offset));
+        ui.painter().add(mesh);
+
+        body_rect = rect;
+        body_scale = width / sprite_rect.size().x;
+    }
+
+    // Render the fin animation
+    {
+        let atlas_handle = &player_meta.layers.fin.atlas;
+        let atlas = atlas_assets
+            .get(&atlas_handle.get_bevy_handle_untyped().typed())
+            .unwrap();
+        let atlas_path = &atlas_handle.path;
+        let anim_clip = player_meta
+            .layers
+            .fin
+            .animations
+            .get(&key!("idle"))
+            .unwrap();
+        let fps = anim_clip.fps;
+        let frame_in_time_idx = (time * fps).round() as usize;
+        let frame_in_clip_idx = frame_in_time_idx % anim_clip.frames.len();
+        let frame_in_sheet_idx = anim_clip.frames[frame_in_clip_idx];
+        let sprite_rect = &atlas.textures[frame_in_sheet_idx];
+
+        let uv_min = sprite_rect.min / atlas.size;
+        let uv_max = sprite_rect.max / atlas.size;
+        let uv = egui::Rect {
+            min: egui::pos2(uv_min.x, uv_min.y),
+            max: egui::pos2(uv_max.x, uv_max.y),
+        };
+
+        let mut mesh = egui::Mesh {
+            texture_id: *egui_textures.0.get(atlas_path).unwrap(),
+            ..default()
+        };
+
+        let sprite_size = sprite_rect.size() * body_scale;
+        let offset = (player_meta.layers.fin.offset + body_offset) * body_scale;
+        let rect = egui::Rect::from_center_size(
+            body_rect.center() + egui::vec2(offset.x, -offset.y + y_offset),
+            egui::vec2(sprite_size.x, sprite_size.y),
+        );
+
+        mesh.add_rect_with_uv(rect, uv, egui::Color32::WHITE);
+        ui.painter().add(mesh);
+    }
+
+    // Render face animation
+    {
+        let atlas_handle = &player_meta.layers.face.atlas;
+        let atlas = atlas_assets
+            .get(&atlas_handle.get_bevy_handle_untyped().typed())
+            .unwrap();
+        let atlas_path = &atlas_handle.path;
+        let anim_clip = player_meta
+            .layers
+            .face
+            .animations
+            .get(&key!("idle"))
+            .unwrap();
+        let fps = anim_clip.fps;
+        let frame_in_time_idx = (time * fps).round() as usize;
+        let frame_in_clip_idx = frame_in_time_idx % anim_clip.frames.len();
+        let frame_in_sheet_idx = anim_clip.frames[frame_in_clip_idx];
+        let sprite_rect = &atlas.textures[frame_in_sheet_idx];
+
+        let uv_min = sprite_rect.min / atlas.size;
+        let uv_max = sprite_rect.max / atlas.size;
+        let uv = egui::Rect {
+            min: egui::pos2(uv_min.x, uv_min.y),
+            max: egui::pos2(uv_max.x, uv_max.y),
+        };
+
+        let mut mesh = egui::Mesh {
+            texture_id: *egui_textures.0.get(atlas_path).unwrap(),
+            ..default()
+        };
+
+        let sprite_size = sprite_rect.size() * body_scale;
+        let offset = (player_meta.layers.face.offset + body_offset) * body_scale;
+        let rect = egui::Rect::from_center_size(
+            body_rect.center() + egui::vec2(offset.x, -offset.y + y_offset),
+            egui::vec2(sprite_size.x, sprite_size.y),
+        );
+
+        mesh.add_rect_with_uv(rect, uv, egui::Color32::WHITE);
+        ui.painter().add(mesh);
+    }
 }

@@ -19,7 +19,8 @@ builtin: !Grenade
   fuse_sound: ./fuse.ogg
 
   body_size: [18, 18]
-  grab_offset: [-7, -6]
+  grab_offset: [0, -6]
+  fin_anim: grab_2
   body_offset: [0, 2]
   can_rotate: true
   bounciness: 0.6

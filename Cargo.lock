@@ -933,8 +933,7 @@ checksum = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
 [[package]]
 name = "bones_asset"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c07c156276cc97b4f469da80f7da4e06fd627498421fc33118ba86dd4e0a06b7"
+source = "git+https://github.com/fishfolk/bones#02d654ca2ed38105ecec7faccf8a9a83e24c961f"
 dependencies = [
  "bevy_asset",
  "bones_bevy_utils",
@@ -947,8 +946,7 @@ dependencies = [
 [[package]]
 name = "bones_bevy_asset"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a5692a8b722a1a7ba8297ab352456774f8512e019854a60e7773d55b46f72ceb"
+source = "git+https://github.com/fishfolk/bones#02d654ca2ed38105ecec7faccf8a9a83e24c961f"
 dependencies = [
  "bevy_app",
  "bevy_asset",
@@ -968,8 +966,7 @@ dependencies = [
 [[package]]
 name = "bones_bevy_asset_macros"
 version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09c56106e7019deb3a4d187866752d458203e768bf92c0696fa4b89cba18e9e2"
+source = "git+https://github.com/fishfolk/bones#02d654ca2ed38105ecec7faccf8a9a83e24c961f"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -981,8 +978,7 @@ dependencies = [
 [[package]]
 name = "bones_bevy_renderer"
 version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bdcbe80cf0d2e48391ffac70d7c2f4354c736bf12fe6e48399eb3472c8bd1a7f"
+source = "git+https://github.com/fishfolk/bones#02d654ca2ed38105ecec7faccf8a9a83e24c961f"
 dependencies = [
  "bevy",
  "bevy_prototype_lyon",
@@ -999,8 +995,7 @@ dependencies = [
 [[package]]
 name = "bones_bevy_utils"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a994c446263486fd310882ef3b6113c15e672441f723b89eea7a503666290e3e"
+source = "git+https://github.com/fishfolk/bones#02d654ca2ed38105ecec7faccf8a9a83e24c961f"
 dependencies = [
  "bevy_ecs",
  "type_ulid",
@@ -1009,8 +1004,7 @@ dependencies = [
 [[package]]
 name = "bones_ecs"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "24e1604684668c4da2b99cc0dac2da4d96cbc3c8447ec5571618f1e1abbd0890"
+source = "git+https://github.com/fishfolk/bones#02d654ca2ed38105ecec7faccf8a9a83e24c961f"
 dependencies = [
  "aligned-vec",
  "anyhow",
@@ -1029,8 +1023,7 @@ dependencies = [
 [[package]]
 name = "bones_input"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc2e638953f673de13646d977c95e1ece06379c9e057edbcc3514f145cf1dc2c"
+source = "git+https://github.com/fishfolk/bones#02d654ca2ed38105ecec7faccf8a9a83e24c961f"
 dependencies = [
  "glam",
  "type_ulid",
@@ -1039,8 +1032,7 @@ dependencies = [
 [[package]]
 name = "bones_lib"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "21c16b9a6de5b1908d02b2b64c265d5770af2139eb7ead745bce37a44326ef0f"
+source = "git+https://github.com/fishfolk/bones#02d654ca2ed38105ecec7faccf8a9a83e24c961f"
 dependencies = [
  "bones_asset",
  "bones_bevy_utils",
@@ -1055,8 +1047,7 @@ dependencies = [
 [[package]]
 name = "bones_render"
 version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f9b2548139a6e7a546f1b084a65c015e7ade94ea05a9ea0a8620e90d82c4bb6"
+source = "git+https://github.com/fishfolk/bones#02d654ca2ed38105ecec7faccf8a9a83e24c961f"
 dependencies = [
  "bevy_transform",
  "bones_asset",
@@ -4035,8 +4026,7 @@ dependencies = [
 [[package]]
 name = "type_ulid"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4a49de107e2cb1e3c78894002dea39fe431691872cdb8166557cddff6ad54170"
+source = "git+https://github.com/fishfolk/bones#02d654ca2ed38105ecec7faccf8a9a83e24c961f"
 dependencies = [
  "type_ulid_macros",
  "ulid",
@@ -4045,8 +4035,7 @@ dependencies = [
 [[package]]
 name = "type_ulid_macros"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ebd5cee300f8cbd116167c9fa7ab08dd6276d3e597c09a9edc392da0784a1074"
+source = "git+https://github.com/fishfolk/bones#02d654ca2ed38105ecec7faccf8a9a83e24c961f"
 dependencies = [
  "proc-macro2",
  "quote",

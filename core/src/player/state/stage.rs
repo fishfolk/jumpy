@@ -5,7 +5,7 @@ pub struct PlayerStateStage;
 
 impl StageLabel for PlayerStateStage {
     fn name(&self) -> String {
-        format!("{:?}", self)
+        format!("{self:?}")
     }
 
     fn id(&self) -> Ulid {
@@ -34,7 +34,7 @@ impl SystemStage for PlayerStateStageImpl {
     }
 
     fn name(&self) -> String {
-        format!("{:?}", self)
+        format!("{self:?}")
     }
 
     fn initialize(&mut self, world: &mut World) {

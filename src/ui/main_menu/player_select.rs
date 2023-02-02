@@ -219,7 +219,7 @@ impl PlayerActionMap<'_> {
                 if acc.is_empty() {
                     curr
                 } else {
-                    format!("{} / {}", acc, curr)
+                    format!("{acc} / {curr}")
                 }
             })
     }

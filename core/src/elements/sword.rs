@@ -248,7 +248,7 @@ fn update(
             }
         } else {
             let body = bodies.get_mut(entity).unwrap();
-            sword.dropped_time += 1.0 / crate::FPS as f32;
+            sword.dropped_time += 1.0 / crate::FPS;
 
             let is_on_floor = body.is_on_ground || body.is_on_platform;
             let is_deals_damage = (is_on_floor && body.velocity.x != 0.0)

@@ -16,38 +16,194 @@ stats:
   jump_speed: 14
   slow_fall_speed: 1.5
 
-atlas: ./orcy.atlas.yaml
 body_size: [32, 48]
 gravity: 1
 
-animations:
-  idle:
-    start: 0
-    end: 13
-    fps: &fps 9
-    repeat: true
-  fall:
-    start: 42
-    end: 42
-    fps: *fps
-    repeat: false
-  rise:
-    start: 28
-    end: 28
-    fps: *fps
-    repeat: false
-  walk:
-    start: 14
-    end: 19
-    fps: *fps
-    repeat: true
-  crouch:
-    start: 56
-    end: 56
-    fps: *fps
-    repeat: false
-  death_1:
-    start: 70
-    end: 76
-    fps: *fps
-    repeat: false
+layers:
+  body:
+    atlas: ./orcy-body.atlas.yaml
+    animations: &default_anims
+      idle:
+        frames:
+          - idx: 0
+            offset: [0, 0]
+          - idx: 1
+            offset: [0, 0]
+          - idx: 2
+            offset: [0, -1]
+          - idx: 3
+            offset: [0, -2]
+          - idx: 4
+            offset: [0, -2]
+          - idx: 5
+            offset: [0, -1]
+          - idx: 6
+            offset: [0, 0]
+          - idx: 7
+            offset: [0, 0]
+          - idx: 8
+            offset: [0, 0]
+          - idx: 9
+            offset: [0, -1]
+          - idx: 10
+            offset: [0, -2]
+          - idx: 11
+            offset: [0, -2]
+          - idx: 12
+            offset: [0, -1]
+          - idx: 13
+            offset: [0, 0]
+        fps: &fps 9
+        repeat: true
+      fall:
+        frames:
+          - idx: 42
+            offset: [0, 3]
+        fps: *fps
+        repeat: false
+      rise:
+        frames:
+          - idx: 28
+            offset: [0, 3]
+        fps: *fps
+        repeat: false
+      walk:
+        frames:
+          - idx: 14
+            offset: [0, 0]
+          - idx: 15
+            offset: [0, -1]
+          - idx: 16
+            offset: [0, -2]
+          - idx: 17
+            offset: [0, 0]
+          - idx: 18
+            offset: [0, -1]
+          - idx: 19
+            offset: [0, -2]
+        fps: *fps
+        repeat: true
+      crouch:
+        frames:
+          - idx: 56
+            offset: [0, -4]
+        fps: *fps
+        repeat: false
+      death_1:
+        frames:
+          - idx: 70
+          - idx: 71
+          - idx: 72
+          - idx: 73
+          - idx: 74
+          - idx: 75
+          - idx: 76
+        fps: *fps
+        repeat: false
+  fin:
+    atlas: ./orcy-fin.atlas.yaml
+    offset: [-11, 3]
+    animations:
+      idle:
+        fps: *fps
+        frames:
+          - 0
+          - 0
+          - 1
+          - 1
+          - 0
+          - 2
+          - 2
+          - 0
+          - 0
+          - 1
+          - 1
+          - 0
+          - 2
+          - 2
+      walk:
+        fps: *fps
+        frames:
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+      rise:
+        fps: *fps
+        frames:
+          - 10
+      fall:
+        fps: *fps
+        frames:
+          - 15
+      crouch:
+        fps: *fps
+        frames:
+          - 20
+      death_1:
+        fps: *fps
+        frames:
+          - 3 # Intentionally an invisible frame
+      grab_1:
+        fps: *fps
+        frames:
+          - 25
+      grab_2:
+        fps: *fps
+        frames:
+          - 30
+  face:
+    atlas: ./orcy-face.atlas.yaml
+    offset: [7, 20]
+    animations:
+      idle:
+        fps: *fps
+        frames:
+          - 0
+          - 0
+          - 0
+          - 0
+          - 0
+          - 0
+          - 0
+          - 0
+          - 0
+          - 0
+          - 0
+          - 0
+          - 5
+          - 4
+          - 0
+      walk:
+        fps: *fps
+        frames:
+          - 0
+      rise:
+        fps: *fps
+        frames:
+          - 1
+      fall:
+        fps: *fps
+        frames:
+          - 2
+      crouch:
+        fps: *fps
+        frames:
+          - 4
+      death_1:
+        fps: *fps
+        frames:
+          - 8 # Intentionally an invisible frame
+      emote_alarm:
+        fps: *fps
+        frames:
+          - 0
+          - 0
+          - 0
+          - 7
+          - 6
+          - 7
+          - 6
+          - 7
+          - 6

@@ -1,34 +1,77 @@
-name: CD
+name: 🚀 Release
 
 on:
+  schedule:
+    # Run every night
+    - cron: "0 0 * * *"
+  workflow_dispatch:
   push:
-    branches:
-      - main
     tags:
-      - 'v*'
+      - "v*"
 
-env:
-  RELEASE_VERSION: ${{ github.ref_name }}
+defaults:
+  run:
+    shell: bash
 
 jobs:
+  generate_changelog:
+    name: 📜 Generate Changelog
+    runs-on: ubuntu-latest
+    outputs:
+      release_body: ${{ steps.git-cliff.outputs.content }}
+    steps:
+      - name: ⬇️ Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: 📠 Calculate Git Cliff Args
+        id: cliff-args
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "args=--latest" >> $GITHUB_OUTPUT
+          else 
+            echo "args=--unreleased" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 📜 Generate Changelog
+        uses: orhun/git-cliff-action@v2
+        id: git-cliff
+        with:
+          args: -vv --strip all ${{ steps.cliff-args.outputs.args }}
+
+      - name: 📝 Set Job Summary
+        run: |
+          echo "${{ steps.git-cliff.outputs.content }}" >> $GITHUB_STEP_SUMMARY
+
   build_release:
-    name: Build release binaries
+    name: 🔨 Build
     runs-on: ${{ matrix.config.os }}
     continue-on-error: true
+    outputs:
+      release_version: ${{ env.RELEASE_VERSION }}
     strategy:
       fail-fast: false
       matrix:
         config:
-          - { os: ubuntu-latest, target: 'x86_64-unknown-linux-gnu' }
-          - { os: macos-latest, target: 'x86_64-apple-darwin' }
-          - { os: macos-latest, target: 'aarch64-apple-darwin' }
-          - { os: windows-latest, target: 'x86_64-pc-windows-msvc' }
+          - { os: ubuntu-latest, target: "x86_64-unknown-linux-gnu" }
+          - { os: macos-latest, target: "x86_64-apple-darwin" }
+          - { os: macos-latest, target: "aarch64-apple-darwin" }
+          - { os: windows-latest, target: "x86_64-pc-windows-msvc" }
 
     steps:
-      - name: Checkout
+      - name: 📠 Calculate Release Version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" -o "${{ github.event_name }}" = "schedule" ]; then
+            echo "RELEASE_VERSION=nightly-$(date '+%Y-%m-%d')" >> $GITHUB_ENV
+          else
+            echo "RELEASE_VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+          fi
+
+      - name: ⬇️ Checkout
         uses: actions/checkout@v3
 
-      - name: Install dependencies
+      - name: 🧰 Install dependencies
         if: matrix.config.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
@@ -36,7 +79,7 @@ jobs:
               libasound2-dev \
               libudev-dev
 
-      - name: Setup Rust
+      - name: 🦀 Setup Rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -45,28 +88,21 @@ jobs:
           target: ${{ matrix.config.target }}
 
       - uses: actions/cache@v3
-        name: Cache cargo registry
+        name: ♻️ Cache Cargo Registry
         with:
           path: |
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
           key: cargo-registry
-      - uses: actions/cache@v3
-        name: Cache cargo target
-        with:
-          path: |
-            target/
-            web-target/
-          key: ${{ runner.os }}-cargo-target-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Build
+      - name: 🔨 Build
         uses: actions-rs/cargo@v1
         with:
           command: build
           args: --release --locked --target ${{ matrix.config.target }}
 
-      - name: Prepare artifacts [Windows]
+      - name: ⚙️ Prepare artifacts [Windows]
         shell: bash
         if: matrix.config.os == 'windows-latest'
         run: |
@@ -79,7 +115,7 @@ jobs:
           cp LICENSE $release_dir/
           7z a -tzip $artifact_path $release_dir/
 
-      - name: Prepare artifacts [Unix]
+      - name: ⚙️ Prepare artifacts [Unix]
         shell: bash
         if: matrix.config.os != 'windows-latest'
         run: |
@@ -92,7 +128,7 @@ jobs:
           cp LICENSE $release_dir
           tar -czvf $artifact_path $release_dir/
 
-      - name: Deploy | Upload artifacts
+      - name: ⏫️ Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.ARTIFACT_PATH }}
@@ -100,38 +136,27 @@ jobs:
           if-no-files-found: error
 
   publish_release:
-    name: Create and Publish GitHub Release
-    needs: build_release
+    name: 🚀 Publish
+    needs:
+      - generate_changelog
+      - build_release
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Download Artifacts
+      - name: ⬇️ Download Artifacts
         uses: actions/download-artifact@v2
 
-      - name: Set stable release name
-        shell: bash
-        if: env.release_VERSION != 'main'
-        run: echo "RELEASE_NAME=Jumpy ${GITHUB_REF:10}" >> $GITHUB_ENV
-
-      - name: Set pre-release name
-        shell: bash
-        if: env.release_VERSION == 'main'
-        run: echo "RELEASE_NAME=Jumpy Dev Snapshot" >> $GITHUB_ENV
-
-      - name: Generate Checksums
+      - name: 🔒 Generate Checksums
         run: for file in jumpy-*/jumpy-*; do openssl dgst -sha256 -r "$file" | awk '{print $1}' > "${file}.sha256"; done
 
-      - name: Publish Release
+      - name: 🚀 Publish Release
         uses: svenstaro/upload-release-action@v2
         with:
-          release_name: Release ${{ env.RELEASE_VERSION }}
+          release_name: ${{ needs.build_release.outputs.release_version }}
           file: jumpy-*/jumpy-*
           file_glob: true
           overwrite: true
-          prerelease: ${{ env.RELEASE_VERSION == 'main' }}
-          body: '${{ env.RELEASE_NAME }}'
-          tag: ${{ github.ref }}
+          prerelease: ${{ github.event_name != 'push' }}
+          body: ${{ needs.generate_changelog.outputs.release_body }}
+          tag: ${{ needs.build_release.outputs.release_version }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}

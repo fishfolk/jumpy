@@ -103,8 +103,7 @@ fn hydrate(
                 AnimatedSprite {
                     fps: *fps,
                     repeat: true,
-                    start: *start_frame,
-                    end: *end_frame,
+                    frames: (*start_frame..*end_frame).collect(),
                     ..default()
                 },
             );

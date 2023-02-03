@@ -53,6 +53,7 @@ pub enum BuiltinElementKind {
     Grenade {
         body_size: Vec2,
         body_offset: Vec2,
+        fin_anim: Key,
         grab_offset: Vec2,
         damage_region_size: Vec2,
         damage_region_lifetime: f32,
@@ -113,6 +114,7 @@ pub enum BuiltinElementKind {
         sound: Handle<AudioSource>,
         sound_volume: f32,
         body_size: Vec2,
+        fin_anim: Key,
         #[serde(default)]
         body_offset: Vec2,
         #[serde(default)]
@@ -182,6 +184,7 @@ pub enum BuiltinElementKind {
     KickBomb {
         body_size: Vec2,
         body_offset: Vec2,
+        fin_anim: Key,
         grab_offset: Vec2,
         damage_region_size: Vec2,
         damage_region_lifetime: f32,
@@ -214,6 +217,7 @@ pub enum BuiltinElementKind {
         body_offset: Vec2,
         #[serde(default)]
         grab_offset: Vec2,
+        fin_anim: Key,
 
         body_size: Vec2,
         bounciness: f32,

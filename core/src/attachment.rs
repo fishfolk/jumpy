@@ -5,6 +5,8 @@ use crate::prelude::*;
 pub fn install(session: &mut GameSession) {
     session
         .stages
+        .add_system_to_stage(CoreStage::Last, update_player_body_attachments)
+        .add_system_to_stage(CoreStage::Last, remove_player_body_attachments)
         .add_system_to_stage(CoreStage::Last, update_attachments);
 }
 
@@ -62,11 +64,7 @@ pub fn update_attachments(
             if let Some((self_flip_x, self_flip_y)) = atlas_sprites
                 .get_mut(ent)
                 .map(|x| (&mut x.flip_x, &mut x.flip_y))
-                .or_else(|| {
-                    sprites
-                        .get_mut(attachment.entity)
-                        .map(|x| (&mut x.flip_x, &mut x.flip_y))
-                })
+                .or_else(|| sprites.get_mut(ent).map(|x| (&mut x.flip_x, &mut x.flip_y)))
             {
                 *self_flip_x = flip_x;
                 *self_flip_y = flip_y;
@@ -84,5 +82,78 @@ pub fn update_attachments(
         }
 
         transform.translation += offset;
+    }
+}
+
+/// A component for attaching an entity to the player's body.
+///
+/// This is similar to the [`Attachment`] component, but it is special in the way that it will
+/// follow the body as it bobs up and down in animations such as standing and walking. This makes it
+/// useful for things like hats, etc., that will stick to the player's body.
+#[derive(Clone, TypeUlid)]
+#[ulid = "01GQQSZS823YZS2RBAPFNBKB8B"]
+pub struct PlayerBodyAttachment {
+    /// The player to attach to
+    pub player: Entity,
+    /// The offset relative to the center of the player's sprite.
+    pub offset: Vec3,
+    /// Whether or not to automatically play the same animation bank animation as the sprite that it
+    /// is attached to.
+    pub sync_animation: bool,
+}
+
+#[derive(Clone, Copy, TypeUlid)]
+#[ulid = "01GQQWDPHAJKNM686ZY425V4XF"]
+pub struct HadPlayerBodyAttachmentMarker;
+
+fn update_player_body_attachments(
+    entities: Res<Entities>,
+    mut attachments: CompMut<Attachment>,
+    mut player_body_attachment_markers: CompMut<HadPlayerBodyAttachmentMarker>,
+    animated_sprites: Comp<AnimatedSprite>,
+    animation_banks: Comp<AnimationBankSprite>,
+    player_body_attachments: Comp<PlayerBodyAttachment>,
+    player_inputs: Res<PlayerInputs>,
+    player_indexes: Comp<PlayerIdx>,
+    player_assets: BevyAssets<PlayerMeta>,
+) {
+    for (ent, body_attachment) in entities.iter_with(&player_body_attachments) {
+        let player_ent = body_attachment.player;
+        let player_idx = player_indexes.get(player_ent).unwrap();
+        let player_handle = &player_inputs.players[player_idx.0].selected_player;
+        let Some(meta) = player_assets.get(&player_handle.get_bevy_handle()) else {
+            continue;
+        };
+        let player_sprite = animated_sprites.get(player_ent).unwrap();
+        let current_frame = player_sprite.index;
+        let current_anim = animation_banks.get(player_ent).unwrap().current;
+
+        let current_body_offset =
+            meta.layers.body.animations.body_offsets[&current_anim][current_frame];
+
+        player_body_attachment_markers.insert(ent, HadPlayerBodyAttachmentMarker);
+        attachments.insert(
+            ent,
+            Attachment {
+                entity: player_ent,
+                offset: current_body_offset.extend(0.0) + body_attachment.offset,
+                sync_animation: body_attachment.sync_animation,
+            },
+        );
+    }
+}
+
+fn remove_player_body_attachments(
+    entities: Res<Entities>,
+    player_body_attachments: Comp<PlayerBodyAttachment>,
+    mut had_player_body_attachment_markers: CompMut<HadPlayerBodyAttachmentMarker>,
+    mut attachments: CompMut<Attachment>,
+) {
+    let mut bitset = had_player_body_attachment_markers.bitset().clone();
+    bitset.bit_andnot(player_body_attachments.bitset());
+
+    for entity in entities.iter_with_bitset(&bitset) {
+        attachments.remove(entity);
+        had_player_body_attachment_markers.remove(entity);
     }
 }

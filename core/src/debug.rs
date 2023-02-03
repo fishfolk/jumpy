@@ -4,7 +4,8 @@ pub fn install(session: &mut GameSession) {
     session
         .stages
         .add_system_to_stage(CoreStage::Last, debug_render_kinematic_colliders)
-        .add_system_to_stage(CoreStage::Last, debug_render_damage_regions);
+        .add_system_to_stage(CoreStage::Last, debug_render_damage_regions)
+        .add_system_to_stage(CoreStage::Last, debug_render_emote_regions);
 }
 
 /// Resource configuring various debugging settings.
@@ -31,9 +32,10 @@ fn debug_render_kinematic_colliders(
         // debug lines to keep it upright.
         let angle = Vec2::from_angle(-rotation);
 
+        // An orange-y color
+        const COLOR: [f32; 4] = [205.0 / 255.0, 94.0 / 255.0, 15.0 / 255.0, 1.0];
         Path2d {
-            // An orange-y color
-            color: [205.0 / 255.0, 94.0 / 255.0, 15.0 / 255.0, 1.0],
+            color: COLOR,
             points: vec![
                 angle.rotate(rect.top_left()),
                 angle.rotate(rect.top_right()),
@@ -78,9 +80,54 @@ fn debug_render_damage_regions(
         // debug lines to keep it upright.
         let angle = Vec2::from_angle(-rotation);
 
+        // Red color
+        const COLOR: [f32; 4] = [1.0, 0.0, 0.0, 1.0];
         Path2d {
-            // Red color
-            color: [1.0, 0.0, 0.0, 1.0],
+            color: COLOR,
+            points: vec![
+                angle.rotate(rect.top_left()),
+                angle.rotate(rect.top_right()),
+                angle.rotate(rect.bottom_right()),
+                angle.rotate(rect.bottom_left()),
+                angle.rotate(rect.top_left()),
+            ],
+            thickness: 1.0,
+            ..default()
+        }
+    };
+
+    if settings.show_damage_regions {
+        for (ent, (region, transform)) in entities.iter_with((&regions, &transforms)) {
+            paths.insert(
+                ent,
+                path_for_region(transform.rotation.to_euler(glam::EulerRot::XYZ).2, region),
+            );
+        }
+    } else {
+        for ent in entities.iter_with_bitset(regions.bitset()) {
+            paths.remove(ent);
+        }
+    }
+}
+
+fn debug_render_emote_regions(
+    settings: Res<DebugSettings>,
+    entities: Res<Entities>,
+    regions: Comp<EmoteRegion>,
+    transforms: Comp<Transform>,
+    mut paths: CompMut<Path2d>,
+) {
+    let path_for_region = |rotation: f32, region: &EmoteRegion| {
+        let rect = Rect::new(0.0, 0.0, region.size.x, region.size.y);
+
+        // The collision boxes don't rotate, so apply the opposite rotation of the object to the
+        // debug lines to keep it upright.
+        let angle = Vec2::from_angle(-rotation);
+
+        // Green color
+        const COLOR: [f32; 4] = [39.0 / 255.0, 191.0 / 255.0, 68.0 / 255.0, 1.0];
+        Path2d {
+            color: COLOR,
             points: vec![
                 angle.rotate(rect.top_left()),
                 angle.rotate(rect.top_right()),

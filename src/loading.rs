@@ -57,7 +57,7 @@ fn core_assets_loaded(
 
         // The player atlases ( needed for the player selection screen )
         if atlas_assets
-            .get(&player.atlas.get_bevy_handle_untyped().typed())
+            .get(&player.layers.body.atlas.get_bevy_handle_untyped().typed())
             .is_none()
         {
             return false;
@@ -212,13 +212,26 @@ impl<'w, 's> GameLoader<'w, 's> {
                 .player_assets
                 .get(&player_handle.get_bevy_handle())
                 .unwrap();
-            let texture_atlas = self
-                .texture_atlas_assets
-                .get(&player_meta.atlas.get_bevy_handle_untyped().typed())
-                .unwrap();
 
-            let egui_texture = egui_ctx.add_image(texture_atlas.texture.clone_weak());
-            player_atlas_egui_textures.insert(player_handle.path.clone(), egui_texture);
+            for (path, handle) in [
+                (
+                    player_meta.layers.body.atlas.path.clone(),
+                    player_meta.layers.body.atlas.get_bevy_handle_untyped(),
+                ),
+                (
+                    player_meta.layers.fin.atlas.path.clone(),
+                    player_meta.layers.fin.atlas.get_bevy_handle_untyped(),
+                ),
+                (
+                    player_meta.layers.face.atlas.path.clone(),
+                    player_meta.layers.face.atlas.get_bevy_handle_untyped(),
+                ),
+            ] {
+                let texture_atlas = self.texture_atlas_assets.get(&handle.typed()).unwrap();
+
+                let egui_texture = egui_ctx.add_image(texture_atlas.texture.clone_weak());
+                player_atlas_egui_textures.insert(path, egui_texture);
+            }
         }
         commands.insert_resource(PlayerAtlasEguiTextures(player_atlas_egui_textures));
     }

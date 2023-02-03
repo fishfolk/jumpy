@@ -169,8 +169,7 @@ fn update(
                         animated_sprites.insert(
                             ent,
                             AnimatedSprite {
-                                start: 0,
-                                end: explosion_frames,
+                                frames: (0..explosion_frames).collect(),
                                 fps: explosion_fps,
                                 repeat: false,
                                 ..default()

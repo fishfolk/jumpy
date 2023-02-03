@@ -42,8 +42,7 @@ fn hydrate(
             animated_sprites.insert(
                 entity,
                 AnimatedSprite {
-                    start: *start_frame,
-                    end: *end_frame,
+                    frames: (*start_frame..*end_frame).collect(),
                     fps: *fps,
                     repeat: true,
                     ..default()

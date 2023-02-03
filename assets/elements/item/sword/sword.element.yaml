@@ -4,6 +4,8 @@ builtin: !Sword
   atlas: ./sword.atlas.yaml
   sound: ./sword.ogg
   sound_volume: 0.05
+  fin_anim: grab_2
+  grab_offset: [18, 26] 
   body_size: [64, 16]
   angular_velocity: -0.04
   can_rotate: true
@@ -11,5 +13,4 @@ builtin: !Sword
   bounciness: 0.3
   throw_velocity: [1, 4]
   cooldown_frames: 22
-
   

@@ -96,10 +96,11 @@ fn update(
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
     mut audio_events: ResMut<AudioEvents>,
+    mut player_layers: CompMut<PlayerLayers>,
 
     player_inventories: PlayerInventories,
     mut items_used: CompMut<ItemUsed>,
-    mut attachments: CompMut<Attachment>,
+    mut attachments: CompMut<PlayerBodyAttachment>,
     mut items_dropped: CompMut<ItemDropped>,
 ) {
     for (entity, (musket, element_handle)) in entities.iter_with((&mut muskets, &element_handles)) {
@@ -115,6 +116,7 @@ fn update(
             shoot_lifetime,
 
 
+            fin_anim,
             grab_offset,
             throw_velocity,
             angular_velocity,
@@ -139,6 +141,7 @@ fn update(
         {
             let player = inventory.player;
             let body = bodies.get_mut(entity).unwrap();
+            player_layers.get_mut(player).unwrap().fin_anim = *fin_anim;
 
             // Deactivate collisions while being held
             body.is_deactivated = true;
@@ -146,8 +149,8 @@ fn update(
             // Attach to the player
             attachments.insert(
                 entity,
-                Attachment {
-                    entity: player,
+                PlayerBodyAttachment {
+                    player,
                     offset: grab_offset.extend(0.1),
                     sync_animation: false,
                 },
@@ -210,8 +213,7 @@ fn update(
                             animated_sprites.insert(
                                 ent,
                                 AnimatedSprite {
-                                    start: 0,
-                                    end: shoot_frames,
+                                    frames: (0..shoot_frames).collect(),
                                     fps: shoot_fps,
                                     repeat: false,
                                     ..default()

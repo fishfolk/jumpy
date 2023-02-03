@@ -361,6 +361,8 @@
 <span id="359">359</span>
 <span id="360">360</span>
 <span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -510,6 +512,7 @@
                 Attachment {
                     entity: player,
                     offset: grab_offset.extend(<span class="number">0.1</span>),
+                    sync_animation: <span class="bool-val">false</span>,
                 },
             );
 
@@ -625,6 +628,7 @@
                 Attachment {
                     entity: player,
                     offset: grab_offset.extend(<span class="number">1.0</span>),
+                    sync_animation: <span class="bool-val">false</span>,
                 },
             );
         }

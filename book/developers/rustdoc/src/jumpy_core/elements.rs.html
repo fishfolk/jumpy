@@ -32,6 +32,7 @@
 <span id="30">30</span>
 <span id="31">31</span>
 <span id="32">32</span>
+<span id="33">33</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub mod </span>crab;
@@ -41,6 +42,7 @@
 <span class="kw">pub mod </span>musket;
 <span class="kw">pub mod </span>player_spawner;
 <span class="kw">pub mod </span>sproinger;
+<span class="kw">pub mod </span>stomp_boots;
 <span class="kw">pub mod </span>sword;
 
 <span class="doccomment">/// Marker component added to map elements that have been hydrated.
@@ -61,8 +63,8 @@
     grenade::install(session);
     crab::install(session);
     kick_bomb::install(session);
-
     musket::install(session);
+    stomp_boots::install(session);
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="jumpy_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

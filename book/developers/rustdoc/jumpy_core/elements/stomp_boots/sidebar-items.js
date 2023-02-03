@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["install",""]],"struct":[["StompBoots",""],["WearingStompBoots","Marker component added to things ( presumably players, but not necessarily! ) that are wearing stomp boots"]]};

@@ -1,4 +1,4 @@
-name: Lint commit message
+name: 🕵 Lint Bors Commit Message
 on:
   push:
     branches:
@@ -7,12 +7,14 @@ on:
 
 jobs:
   commitlint:
-    name: Lint commit message
+    name: 🔎 Lint Commit Message
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: ⬇️ Checkout Source
+        uses: actions/checkout@v3
         with:
           fetch-depth: 2
-      - uses: wagoid/commitlint-github-action@v5
+      - name: 🔎 Lint Commit Message
+        uses: wagoid/commitlint-github-action@v5
         with:
           commitDepth: 1

@@ -238,6 +238,10 @@
 <span id="236">236</span>
 <span id="237">237</span>
 <span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="attribute">#[derive(BonesBevyAsset, TypeUlid, Deserialize, Clone, Debug, Default)]
@@ -293,6 +297,7 @@
     </span>Grenade {
         body_size: Vec2,
         body_offset: Vec2,
+        fin_anim: Key,
         grab_offset: Vec2,
         damage_region_size: Vec2,
         damage_region_lifetime: f32,
@@ -353,6 +358,7 @@
         sound: Handle&lt;AudioSource&gt;,
         sound_volume: f32,
         body_size: Vec2,
+        fin_anim: Key,
         <span class="attribute">#[serde(default)]
         </span>body_offset: Vec2,
         <span class="attribute">#[serde(default)]
@@ -422,6 +428,7 @@
     KickBomb {
         body_size: Vec2,
         body_offset: Vec2,
+        fin_anim: Key,
         grab_offset: Vec2,
         damage_region_size: Vec2,
         damage_region_lifetime: f32,
@@ -454,6 +461,7 @@
         </span>body_offset: Vec2,
         <span class="attribute">#[serde(default)]
         </span>grab_offset: Vec2,
+        fin_anim: Key,
 
         body_size: Vec2,
         bounciness: f32,

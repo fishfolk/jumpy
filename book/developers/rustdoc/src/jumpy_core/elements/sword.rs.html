@@ -298,6 +298,26 @@
 <span id="296">296</span>
 <span id="297">297</span>
 <span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{damage::DamageRegion, prelude::<span class="kw-2">*</span>};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -406,10 +426,12 @@
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>items_used: CompMut&lt;ItemUsed&gt;,
     <span class="kw-2">mut </span>items_dropped: CompMut&lt;ItemDropped&gt;,
+    <span class="kw-2">mut </span>attachments: CompMut&lt;PlayerBodyAttachment&gt;,
     player_indexes: Comp&lt;PlayerIdx&gt;,
     player_inventories: PlayerInventories,
     <span class="kw-2">mut </span>player_events: ResMut&lt;PlayerEvents&gt;,
     <span class="kw-2">mut </span>commands: Commands,
+    <span class="kw-2">mut </span>player_layers: CompMut&lt;PlayerLayers&gt;,
 ) {
     <span class="kw">for </span>(entity, (sword, element_handle)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;mut </span>swords, <span class="kw-2">&amp;</span>element_handles)) {
         <span class="kw">let </span><span class="prelude-val">Some</span>(element_meta) = element_assets.get(<span class="kw-2">&amp;</span>element_handle.get_bevy_handle()) <span class="kw">else </span>{
@@ -439,8 +461,10 @@
             sound,
             sound_volume,
             arm_delay,
+            grab_offset,
             throw_velocity,
             angular_velocity,
+            fin_anim,
             ..
         } = <span class="kw-2">&amp;</span>element_meta.builtin <span class="kw">else </span>{
             <span class="macro">unreachable!</span>();
@@ -453,21 +477,25 @@
         {
             <span class="kw">let </span>player = inventory.player;
             <span class="kw">let </span>body = bodies.get_mut(entity).unwrap();
+            <span class="kw">let </span>sprite = sprites.get_mut(entity).unwrap();
+            <span class="kw">let </span>player_translation = transforms.get(player).unwrap().translation;
+            <span class="kw">let </span>flip = sprite.flip_x;
+            <span class="kw">let </span>flip_factor = <span class="kw">if </span>flip { -<span class="number">1.0 </span>} <span class="kw">else </span>{ <span class="number">1.0 </span>};
+
+            <span class="kw">let </span>player_layer = player_layers.get_mut(player).unwrap();
+            player_layer.fin_anim = <span class="kw-2">*</span>fin_anim;
 
             <span class="comment">// Deactivate collisions while being held
             </span>body.is_deactivated = <span class="bool-val">true</span>;
 
-            <span class="comment">// Flip the sprite to match the player orientation
-            </span><span class="kw">let </span>flip = sprites.get(player).unwrap().flip_x;
-            <span class="kw">let </span>sprite = sprites.get_mut(entity).unwrap();
-            sprite.flip_x = flip;
-            <span class="kw">let </span>flip_factor = <span class="kw">if </span>flip { -<span class="number">1.0 </span>} <span class="kw">else </span>{ <span class="number">1.0 </span>};
-
-            <span class="kw">let </span>player_translation = transforms.get(player).unwrap().translation;
-            <span class="kw">let </span>transform = transforms.get_mut(entity).unwrap();
-            <span class="kw">let </span>offset = Vec3::new(<span class="number">13.0 </span>* flip_factor, <span class="number">21.0</span>, <span class="number">1.0</span>);
-            transform.translation = player_translation + offset;
-            transform.rotation = Quat::IDENTITY;
+            attachments.insert(
+                entity,
+                PlayerBodyAttachment {
+                    player,
+                    offset: grab_offset.extend(<span class="number">1.0</span>),
+                    sync_animation: <span class="bool-val">false</span>,
+                },
+            );
 
             <span class="comment">// Reset the sword animation if we&#39;re not swinging it
             </span><span class="kw">if </span>!<span class="macro">matches!</span>(sword.state, SwordState::Swinging { .. }) {
@@ -480,6 +508,7 @@
                 SwordState::Swinging { frame } =&gt; {
                     <span class="comment">// If we&#39;re at the end of the swinging animation
                     </span><span class="kw">if </span>sprite.index &gt;= <span class="number">11 </span>{
+                        player_layer.fin_offset = Vec2::ZERO;
                         <span class="comment">// Go to cooldown frames
                         </span>next_state = <span class="prelude-val">Some</span>(SwordState::Cooldown { frame: <span class="number">0 </span>});
 
@@ -491,33 +520,43 @@
 
                     <span class="comment">// TODO: Move all these constants to the builtin item config
                     </span><span class="kw">match </span><span class="kw-2">*</span>frame / <span class="number">3 </span>{
-                        <span class="number">0 </span>=&gt; spawn_damage_region(
-                            Vec3::new(
-                                player_translation.x + <span class="number">20.0 </span>* flip_factor,
-                                player_translation.y + <span class="number">20.0</span>,
-                                player_translation.z,
-                            ),
-                            Vec2::new(<span class="number">30.0</span>, <span class="number">70.0</span>),
-                            player,
-                        ),
-                        <span class="number">1 </span>=&gt; spawn_damage_region(
-                            Vec3::new(
-                                player_translation.x + <span class="number">25.0 </span>* flip_factor,
-                                player_translation.y + <span class="number">20.0</span>,
-                                player_translation.z,
-                            ),
-                            Vec2::new(<span class="number">40.0</span>, <span class="number">50.0</span>),
-                            player,
-                        ),
-                        <span class="number">2 </span>=&gt; spawn_damage_region(
-                            Vec3::new(
-                                player_translation.x + <span class="number">20.0 </span>* flip_factor,
-                                player_translation.y,
-                                player_translation.z,
-                            ),
-                            Vec2::new(<span class="number">40.0</span>, <span class="number">50.0</span>),
-                            player,
-                        ),
+                        <span class="number">0 </span>=&gt; {
+                            spawn_damage_region(
+                                Vec3::new(
+                                    player_translation.x + <span class="number">20.0 </span>* flip_factor,
+                                    player_translation.y + <span class="number">20.0</span>,
+                                    player_translation.z,
+                                ),
+                                Vec2::new(<span class="number">30.0</span>, <span class="number">70.0</span>),
+                                player,
+                            );
+
+                            player_layer.fin_offset = vec2(-<span class="number">1.0</span>, <span class="number">2.0</span>);
+                        }
+                        <span class="number">1 </span>=&gt; {
+                            spawn_damage_region(
+                                Vec3::new(
+                                    player_translation.x + <span class="number">25.0 </span>* flip_factor,
+                                    player_translation.y + <span class="number">20.0</span>,
+                                    player_translation.z,
+                                ),
+                                Vec2::new(<span class="number">40.0</span>, <span class="number">50.0</span>),
+                                player,
+                            );
+                            player_layer.fin_offset = vec2(<span class="number">0.0</span>, -<span class="number">1.0</span>);
+                        }
+                        <span class="number">2 </span>=&gt; {
+                            spawn_damage_region(
+                                Vec3::new(
+                                    player_translation.x + <span class="number">20.0 </span>* flip_factor,
+                                    player_translation.y,
+                                    player_translation.z,
+                                ),
+                                Vec2::new(<span class="number">40.0</span>, <span class="number">40.0</span>),
+                                player,
+                            );
+                            player_layer.fin_offset = vec2(<span class="number">0.0</span>, -<span class="number">2.0</span>);
+                        }
                         <span class="kw">_ </span>=&gt; (),
                     }
 
@@ -564,6 +603,7 @@
 
         <span class="comment">// If the item was dropped
         </span><span class="kw">if let </span><span class="prelude-val">Some</span>(dropped) = items_dropped.get(entity).copied() {
+            attachments.remove(entity);
             <span class="kw">let </span>player = dropped.player;
             sword.dropped_time = <span class="number">0.0</span>;
 

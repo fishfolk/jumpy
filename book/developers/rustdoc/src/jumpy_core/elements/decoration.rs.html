@@ -53,7 +53,6 @@
 <span id="51">51</span>
 <span id="52">52</span>
 <span id="53">53</span>
-<span id="54">54</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -98,8 +97,7 @@
             animated_sprites.insert(
                 entity,
                 AnimatedSprite {
-                    start: <span class="kw-2">*</span>start_frame,
-                    end: <span class="kw-2">*</span>end_frame,
+                    frames: (<span class="kw-2">*</span>start_frame..<span class="kw-2">*</span>end_frame).collect(),
                     fps: <span class="kw-2">*</span>fps,
                     repeat: <span class="bool-val">true</span>,
                     ..default()

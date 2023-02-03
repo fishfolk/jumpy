@@ -568,6 +568,107 @@
 <span id="566">566</span>
 <span id="567">567</span>
 <span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
+<span id="596">596</span>
+<span id="597">597</span>
+<span id="598">598</span>
+<span id="599">599</span>
+<span id="600">600</span>
+<span id="601">601</span>
+<span id="602">602</span>
+<span id="603">603</span>
+<span id="604">604</span>
+<span id="605">605</span>
+<span id="606">606</span>
+<span id="607">607</span>
+<span id="608">608</span>
+<span id="609">609</span>
+<span id="610">610</span>
+<span id="611">611</span>
+<span id="612">612</span>
+<span id="613">613</span>
+<span id="614">614</span>
+<span id="615">615</span>
+<span id="616">616</span>
+<span id="617">617</span>
+<span id="618">618</span>
+<span id="619">619</span>
+<span id="620">620</span>
+<span id="621">621</span>
+<span id="622">622</span>
+<span id="623">623</span>
+<span id="624">624</span>
+<span id="625">625</span>
+<span id="626">626</span>
+<span id="627">627</span>
+<span id="628">628</span>
+<span id="629">629</span>
+<span id="630">630</span>
+<span id="631">631</span>
+<span id="632">632</span>
+<span id="633">633</span>
+<span id="634">634</span>
+<span id="635">635</span>
+<span id="636">636</span>
+<span id="637">637</span>
+<span id="638">638</span>
+<span id="639">639</span>
+<span id="640">640</span>
+<span id="641">641</span>
+<span id="642">642</span>
+<span id="643">643</span>
+<span id="644">644</span>
+<span id="645">645</span>
+<span id="646">646</span>
+<span id="647">647</span>
+<span id="648">648</span>
+<span id="649">649</span>
+<span id="650">650</span>
+<span id="651">651</span>
+<span id="652">652</span>
+<span id="653">653</span>
+<span id="654">654</span>
+<span id="655">655</span>
+<span id="656">656</span>
+<span id="657">657</span>
+<span id="658">658</span>
+<span id="659">659</span>
+<span id="660">660</span>
+<span id="661">661</span>
+<span id="662">662</span>
+<span id="663">663</span>
+<span id="664">664</span>
+<span id="665">665</span>
+<span id="666">666</span>
+<span id="667">667</span>
+<span id="668">668</span>
+<span id="669">669</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::loading::PlayerInputCollector;
 <span class="kw">use </span>bones_lib::prelude::{key, Key, KeyError};
 
@@ -1023,7 +1124,6 @@
                 <span class="kw">else if </span>slot.active {
                     ui.vertical_centered(|ui| {
                         <span class="kw">let </span><span class="prelude-val">Some</span>(player_meta) = params.player_meta_assets.get(<span class="kw-2">&amp;</span>player_handle.get_bevy_handle()) <span class="kw">else </span>{ <span class="kw">return</span>; };
-                        <span class="kw">let </span><span class="prelude-val">Some</span>(atlas_meta) = params.atlas_meta_assets.get(<span class="kw-2">&amp;</span>player_meta.atlas.get_bevy_handle_untyped().typed()) <span class="kw">else </span>{ <span class="kw">return</span>; };
 
                         ui.themed_label(normal_font, <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;pick-a-fish&quot;</span>));
 
@@ -1073,7 +1173,7 @@
                                 },
                             );
 
-                            player_image(ui, player_handle, player_meta, atlas_meta, <span class="kw-2">&amp;</span>params.player_atlas_egui_textures);
+                            player_image(ui, player_meta, <span class="kw-2">&amp;</span>params.atlas_meta_assets, <span class="kw-2">&amp;</span>params.player_atlas_egui_textures);
                         });
                     });
                 } <span class="kw">else </span>{
@@ -1095,46 +1195,148 @@
 
 <span class="kw">fn </span>player_image(
     ui: <span class="kw-2">&amp;mut </span>egui::Ui,
-    player_handle: <span class="kw-2">&amp;</span>bones::Handle&lt;PlayerMeta&gt;,
     player_meta: <span class="kw-2">&amp;</span>PlayerMeta,
-    atlas: <span class="kw-2">&amp;</span>TextureAtlas,
+    atlas_assets: <span class="kw-2">&amp;</span>Assets&lt;TextureAtlas&gt;,
     egui_textures: <span class="kw-2">&amp;</span>PlayerAtlasEguiTextures,
 ) {
     <span class="kw">let </span>time = ui.ctx().input().time <span class="kw">as </span>f32;
-    <span class="kw">let </span>anim_clip = player_meta
-        .animations
-        .get(<span class="kw-2">&amp;</span><span class="macro">key!</span>(<span class="string">&quot;idle&quot;</span>))
-        .expect(<span class="string">&quot;Missing `idle` animation&quot;</span>);
-    <span class="kw">let </span>fps = anim_clip.fps;
-    <span class="kw">let </span>frame_in_time_idx = (time * fps).round() <span class="kw">as </span>usize;
-    <span class="kw">let </span>frame_in_clip_idx = frame_in_time_idx % (anim_clip.end - anim_clip.start);
-    <span class="kw">let </span>frame_in_sheet_idx = anim_clip.start + frame_in_clip_idx;
-    <span class="kw">let </span>sprite_rect = <span class="kw-2">&amp;</span>atlas.textures[frame_in_sheet_idx];
-
-    <span class="kw">let </span>sprite_aspect = sprite_rect.height() / sprite_rect.width();
     <span class="kw">let </span>width = ui.available_width();
-    <span class="kw">let </span>height = sprite_aspect * width;
-    <span class="kw">let </span>available_height = ui.available_height();
-    <span class="kw">let </span>y_offset = -(available_height - height) / <span class="number">2.0</span>;
-    <span class="kw">let </span>(rect, <span class="kw">_</span>) = ui.allocate_exact_size(egui::vec2(width, height), egui::Sense::hover());
+    <span class="kw">let </span>available_height = ui.available_width();
 
-    <span class="kw">let </span>uv_min = sprite_rect.min / atlas.size;
-    <span class="kw">let </span>uv_max = sprite_rect.max / atlas.size;
-    <span class="kw">let </span>uv = egui::Rect {
-        min: egui::pos2(uv_min.x, uv_min.y),
-        max: egui::pos2(uv_max.x, uv_max.y),
-    };
+    <span class="kw">let </span>body_rect;
+    <span class="kw">let </span>body_scale;
+    <span class="kw">let </span>body_offset;
+    <span class="kw">let </span>y_offset;
+    <span class="comment">// Render the body sprite
+    </span>{
+        <span class="kw">let </span>atlas_handle = <span class="kw-2">&amp;</span>player_meta.layers.body.atlas;
+        <span class="kw">let </span>atlas = atlas_assets
+            .get(<span class="kw-2">&amp;</span>atlas_handle.get_bevy_handle_untyped().typed())
+            .unwrap();
+        <span class="kw">let </span>atlas_path = <span class="kw-2">&amp;</span>atlas_handle.path;
+        <span class="kw">let </span>anim_clip = player_meta
+            .layers
+            .body
+            .animations
+            .frames
+            .get(<span class="kw-2">&amp;</span><span class="macro">key!</span>(<span class="string">&quot;idle&quot;</span>))
+            .unwrap();
+        <span class="kw">let </span>fps = anim_clip.fps;
+        <span class="kw">let </span>frame_in_time_idx = (time * fps).round() <span class="kw">as </span>usize;
+        <span class="kw">let </span>frame_in_clip_idx = frame_in_time_idx % anim_clip.frames.len();
+        <span class="kw">let </span>frame_in_sheet_idx = anim_clip.frames[frame_in_clip_idx];
+        <span class="kw">let </span>sprite_rect = <span class="kw-2">&amp;</span>atlas.textures[frame_in_sheet_idx];
+        body_offset =
+            player_meta.layers.body.animations.body_offsets[<span class="kw-2">&amp;</span><span class="macro">key!</span>(<span class="string">&quot;idle&quot;</span>)][frame_in_clip_idx];
 
-    <span class="kw">let </span><span class="kw-2">mut </span>mesh = egui::Mesh {
-        texture_id: <span class="kw-2">*</span>egui_textures.<span class="number">0</span>.get(<span class="kw-2">&amp;</span>player_handle.path).unwrap(),
-        ..default()
-    };
+        <span class="kw">let </span>sprite_aspect = sprite_rect.height() / sprite_rect.width();
+        <span class="kw">let </span>height = sprite_aspect * width;
+        y_offset = -(available_height - height) / <span class="number">2.0</span>;
+        <span class="kw">let </span>(rect, <span class="kw">_</span>) = ui.allocate_exact_size(egui::vec2(width, height), egui::Sense::hover());
 
-    mesh.add_rect_with_uv(rect, uv, egui::Color32::WHITE);
+        <span class="kw">let </span>uv_min = sprite_rect.min / atlas.size;
+        <span class="kw">let </span>uv_max = sprite_rect.max / atlas.size;
+        <span class="kw">let </span>uv = egui::Rect {
+            min: egui::pos2(uv_min.x, uv_min.y),
+            max: egui::pos2(uv_max.x, uv_max.y),
+        };
 
-    mesh.translate(egui::vec2(<span class="number">0.0</span>, y_offset));
+        <span class="kw">let </span><span class="kw-2">mut </span>mesh = egui::Mesh {
+            texture_id: <span class="kw-2">*</span>egui_textures.<span class="number">0</span>.get(atlas_path).unwrap(),
+            ..default()
+        };
 
-    ui.painter().add(mesh);
+        mesh.add_rect_with_uv(rect, uv, egui::Color32::WHITE);
+        mesh.translate(egui::vec2(<span class="number">0.0</span>, y_offset));
+        ui.painter().add(mesh);
+
+        body_rect = rect;
+        body_scale = width / sprite_rect.size().x;
+    }
+
+    <span class="comment">// Render the fin animation
+    </span>{
+        <span class="kw">let </span>atlas_handle = <span class="kw-2">&amp;</span>player_meta.layers.fin.atlas;
+        <span class="kw">let </span>atlas = atlas_assets
+            .get(<span class="kw-2">&amp;</span>atlas_handle.get_bevy_handle_untyped().typed())
+            .unwrap();
+        <span class="kw">let </span>atlas_path = <span class="kw-2">&amp;</span>atlas_handle.path;
+        <span class="kw">let </span>anim_clip = player_meta
+            .layers
+            .fin
+            .animations
+            .get(<span class="kw-2">&amp;</span><span class="macro">key!</span>(<span class="string">&quot;idle&quot;</span>))
+            .unwrap();
+        <span class="kw">let </span>fps = anim_clip.fps;
+        <span class="kw">let </span>frame_in_time_idx = (time * fps).round() <span class="kw">as </span>usize;
+        <span class="kw">let </span>frame_in_clip_idx = frame_in_time_idx % anim_clip.frames.len();
+        <span class="kw">let </span>frame_in_sheet_idx = anim_clip.frames[frame_in_clip_idx];
+        <span class="kw">let </span>sprite_rect = <span class="kw-2">&amp;</span>atlas.textures[frame_in_sheet_idx];
+
+        <span class="kw">let </span>uv_min = sprite_rect.min / atlas.size;
+        <span class="kw">let </span>uv_max = sprite_rect.max / atlas.size;
+        <span class="kw">let </span>uv = egui::Rect {
+            min: egui::pos2(uv_min.x, uv_min.y),
+            max: egui::pos2(uv_max.x, uv_max.y),
+        };
+
+        <span class="kw">let </span><span class="kw-2">mut </span>mesh = egui::Mesh {
+            texture_id: <span class="kw-2">*</span>egui_textures.<span class="number">0</span>.get(atlas_path).unwrap(),
+            ..default()
+        };
+
+        <span class="kw">let </span>sprite_size = sprite_rect.size() * body_scale;
+        <span class="kw">let </span>offset = (player_meta.layers.fin.offset + body_offset) * body_scale;
+        <span class="kw">let </span>rect = egui::Rect::from_center_size(
+            body_rect.center() + egui::vec2(offset.x, -offset.y + y_offset),
+            egui::vec2(sprite_size.x, sprite_size.y),
+        );
+
+        mesh.add_rect_with_uv(rect, uv, egui::Color32::WHITE);
+        ui.painter().add(mesh);
+    }
+
+    <span class="comment">// Render face animation
+    </span>{
+        <span class="kw">let </span>atlas_handle = <span class="kw-2">&amp;</span>player_meta.layers.face.atlas;
+        <span class="kw">let </span>atlas = atlas_assets
+            .get(<span class="kw-2">&amp;</span>atlas_handle.get_bevy_handle_untyped().typed())
+            .unwrap();
+        <span class="kw">let </span>atlas_path = <span class="kw-2">&amp;</span>atlas_handle.path;
+        <span class="kw">let </span>anim_clip = player_meta
+            .layers
+            .face
+            .animations
+            .get(<span class="kw-2">&amp;</span><span class="macro">key!</span>(<span class="string">&quot;idle&quot;</span>))
+            .unwrap();
+        <span class="kw">let </span>fps = anim_clip.fps;
+        <span class="kw">let </span>frame_in_time_idx = (time * fps).round() <span class="kw">as </span>usize;
+        <span class="kw">let </span>frame_in_clip_idx = frame_in_time_idx % anim_clip.frames.len();
+        <span class="kw">let </span>frame_in_sheet_idx = anim_clip.frames[frame_in_clip_idx];
+        <span class="kw">let </span>sprite_rect = <span class="kw-2">&amp;</span>atlas.textures[frame_in_sheet_idx];
+
+        <span class="kw">let </span>uv_min = sprite_rect.min / atlas.size;
+        <span class="kw">let </span>uv_max = sprite_rect.max / atlas.size;
+        <span class="kw">let </span>uv = egui::Rect {
+            min: egui::pos2(uv_min.x, uv_min.y),
+            max: egui::pos2(uv_max.x, uv_max.y),
+        };
+
+        <span class="kw">let </span><span class="kw-2">mut </span>mesh = egui::Mesh {
+            texture_id: <span class="kw-2">*</span>egui_textures.<span class="number">0</span>.get(atlas_path).unwrap(),
+            ..default()
+        };
+
+        <span class="kw">let </span>sprite_size = sprite_rect.size() * body_scale;
+        <span class="kw">let </span>offset = (player_meta.layers.face.offset + body_offset) * body_scale;
+        <span class="kw">let </span>rect = egui::Rect::from_center_size(
+            body_rect.center() + egui::vec2(offset.x, -offset.y + y_offset),
+            egui::vec2(sprite_size.x, sprite_size.y),
+        );
+
+        mesh.add_rect_with_uv(rect, uv, egui::Color32::WHITE);
+        ui.painter().add(mesh);
+    }
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="jumpy" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

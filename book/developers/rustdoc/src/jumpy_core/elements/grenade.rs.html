@@ -363,6 +363,32 @@
 <span id="361">361</span>
 <span id="362">362</span>
 <span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -472,7 +498,8 @@
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>items_used: CompMut&lt;ItemUsed&gt;,
     <span class="kw-2">mut </span>items_dropped: CompMut&lt;ItemDropped&gt;,
-    <span class="kw-2">mut </span>attachments: CompMut&lt;Attachment&gt;,
+    <span class="kw-2">mut </span>attachments: CompMut&lt;PlayerBodyAttachment&gt;,
+    <span class="kw-2">mut </span>player_layers: CompMut&lt;PlayerLayers&gt;,
     player_inventories: PlayerInventories,
     <span class="kw-2">mut </span>commands: Commands,
 ) {
@@ -490,6 +517,7 @@
             fuse_sound,
             fuse_sound_volume,
             throw_velocity,
+            fin_anim,
             ..
         } = <span class="kw-2">&amp;</span>element_meta.builtin <span class="kw">else </span>{
             <span class="macro">unreachable!</span>();
@@ -501,6 +529,8 @@
             .find_map(|x| x.filter(|x| x.inventory == entity))
         {
             <span class="kw">let </span>player = inventory.player;
+            <span class="kw">let </span>player_layers = player_layers.get_mut(player).unwrap();
+            player_layers.fin_anim = <span class="kw-2">*</span>fin_anim;
             <span class="kw">let </span>body = bodies.get_mut(entity).unwrap();
 
             <span class="comment">// Deactivate held items
@@ -509,8 +539,8 @@
             <span class="comment">// Attach to the player
             </span>attachments.insert(
                 entity,
-                Attachment {
-                    entity: player,
+                PlayerBodyAttachment {
+                    player,
                     offset: grab_offset.extend(<span class="number">0.1</span>),
                     sync_animation: <span class="bool-val">false</span>,
                 },
@@ -522,8 +552,7 @@
                 audio_events.play(fuse_sound.clone(), <span class="kw-2">*</span>fuse_sound_volume);
                 items_used.remove(entity);
                 <span class="kw">let </span>animated_sprite = animated_sprites.get_mut(entity).unwrap();
-                animated_sprite.start = <span class="number">3</span>;
-                animated_sprite.end = <span class="number">5</span>;
+                animated_sprite.frames = Arc::from([<span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]);
                 animated_sprite.repeat = <span class="bool-val">true</span>;
                 animated_sprite.fps = <span class="number">8.0</span>;
                 body.angular_velocity = <span class="kw-2">*</span>angular_velocity;
@@ -579,7 +608,9 @@
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>items_dropped: CompMut&lt;ItemDropped&gt;,
     <span class="kw-2">mut </span>hydrated: CompMut&lt;MapElementHydrated&gt;,
-    <span class="kw-2">mut </span>attachments: CompMut&lt;Attachment&gt;,
+    <span class="kw-2">mut </span>attachments: CompMut&lt;PlayerBodyAttachment&gt;,
+    <span class="kw-2">mut </span>emote_regions: CompMut&lt;EmoteRegion&gt;,
+    <span class="kw-2">mut </span>player_layers: CompMut&lt;PlayerLayers&gt;,
     player_inventories: PlayerInventories,
     <span class="kw-2">mut </span>commands: Commands,
 ) {
@@ -603,6 +634,7 @@
             explosion_atlas,
             explosion_fps,
             explosion_frames,
+            fin_anim,
             ..
         } = <span class="kw-2">&amp;</span>element_meta.builtin <span class="kw">else </span>{
             <span class="macro">unreachable!</span>();
@@ -611,12 +643,27 @@
         grenade.age += <span class="number">1.0 </span>/ <span class="kw">crate</span>::FPS;
         <span class="kw">let </span>spawner = grenade.spawner;
 
+        <span class="kw">if </span>!emote_regions.contains(entity) {
+            emote_regions.insert(
+                entity,
+                EmoteRegion {
+                    direction_sensitive: <span class="bool-val">true</span>,
+                    size: <span class="kw-2">*</span>damage_region_size * <span class="number">2.0</span>,
+                    emote: Emote::Alarm,
+                    active: <span class="bool-val">true</span>,
+                },
+            );
+        }
+        <span class="kw">let </span>emote_region = emote_regions.get_mut(entity).unwrap();
+
         <span class="comment">// If the item is being held
         </span><span class="kw">if let </span><span class="prelude-val">Some</span>(inventory) = player_inventories
             .iter()
             .find_map(|x| x.filter(|x| x.inventory == entity))
         {
             <span class="kw">let </span>player = inventory.player;
+            <span class="kw">let </span>layers = player_layers.get_mut(player).unwrap();
+            layers.fin_anim = <span class="kw-2">*</span>fin_anim;
             <span class="kw">let </span>body = bodies.get_mut(entity).unwrap();
 
             <span class="comment">// Deactivate held items
@@ -625,12 +672,18 @@
             <span class="comment">// Attach to the player
             </span>attachments.insert(
                 entity,
-                Attachment {
-                    entity: player,
+                PlayerBodyAttachment {
+                    player,
                     offset: grab_offset.extend(<span class="number">1.0</span>),
                     sync_animation: <span class="bool-val">false</span>,
                 },
             );
+
+            emote_region.active = <span class="bool-val">false</span>;
+
+        <span class="comment">// If the item is not being held
+        </span>} <span class="kw">else </span>{
+            emote_region.active = <span class="bool-val">true</span>;
         }
 
         <span class="comment">// If the item was dropped
@@ -713,8 +766,7 @@
                     animated_sprites.insert(
                         ent,
                         AnimatedSprite {
-                            start: <span class="number">0</span>,
-                            end: explosion_frames,
+                            frames: (<span class="number">0</span>..explosion_frames).collect(),
                             fps: explosion_fps,
                             repeat: <span class="bool-val">false</span>,
                             ..default()

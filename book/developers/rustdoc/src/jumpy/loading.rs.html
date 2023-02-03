@@ -330,6 +330,19 @@
 <span id="328">328</span>
 <span id="329">329</span>
 <span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
 </pre><pre class="rust"><code><span class="kw">use </span>bevy::ecs::system::SystemParam;
 <span class="kw">use </span>bevy_egui::{egui, EguiContext};
 <span class="kw">use </span>bevy_fluent::Locale;
@@ -389,7 +402,7 @@
 
         <span class="comment">// The player atlases ( needed for the player selection screen )
         </span><span class="kw">if </span>atlas_assets
-            .get(<span class="kw-2">&amp;</span>player.atlas.get_bevy_handle_untyped().typed())
+            .get(<span class="kw-2">&amp;</span>player.layers.body.atlas.get_bevy_handle_untyped().typed())
             .is_none()
         {
             <span class="kw">return </span><span class="bool-val">false</span>;
@@ -544,13 +557,26 @@
                 </span>.player_assets
                 .get(<span class="kw-2">&amp;</span>player_handle.get_bevy_handle())
                 .unwrap();
-            <span class="kw">let </span>texture_atlas = <span class="self">self
-                </span>.texture_atlas_assets
-                .get(<span class="kw-2">&amp;</span>player_meta.atlas.get_bevy_handle_untyped().typed())
-                .unwrap();
 
-            <span class="kw">let </span>egui_texture = egui_ctx.add_image(texture_atlas.texture.clone_weak());
-            player_atlas_egui_textures.insert(player_handle.path.clone(), egui_texture);
+            <span class="kw">for </span>(path, handle) <span class="kw">in </span>[
+                (
+                    player_meta.layers.body.atlas.path.clone(),
+                    player_meta.layers.body.atlas.get_bevy_handle_untyped(),
+                ),
+                (
+                    player_meta.layers.fin.atlas.path.clone(),
+                    player_meta.layers.fin.atlas.get_bevy_handle_untyped(),
+                ),
+                (
+                    player_meta.layers.face.atlas.path.clone(),
+                    player_meta.layers.face.atlas.get_bevy_handle_untyped(),
+                ),
+            ] {
+                <span class="kw">let </span>texture_atlas = <span class="self">self</span>.texture_atlas_assets.get(<span class="kw-2">&amp;</span>handle.typed()).unwrap();
+
+                <span class="kw">let </span>egui_texture = egui_ctx.add_image(texture_atlas.texture.clone_weak());
+                player_atlas_egui_textures.insert(path, egui_texture);
+            }
         }
         commands.insert_resource(PlayerAtlasEguiTextures(player_atlas_egui_textures));
     }

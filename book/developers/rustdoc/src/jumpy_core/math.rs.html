@@ -184,10 +184,10 @@
     }
 
     <span class="kw">pub fn </span>contains(<span class="kw-2">&amp;</span><span class="self">self</span>, point: Vec2) -&gt; bool {
-        point.x &gt;= <span class="self">self</span>.left()
-            &amp;&amp; point.x &lt; <span class="self">self</span>.right()
-            &amp;&amp; point.y &lt; <span class="self">self</span>.bottom()
-            &amp;&amp; point.y &gt;= <span class="self">self</span>.top()
+        point.x &lt;= <span class="self">self</span>.right()
+            &amp;&amp; point.x &gt;= <span class="self">self</span>.left()
+            &amp;&amp; point.y &gt;= <span class="self">self</span>.bottom()
+            &amp;&amp; point.y &lt;= <span class="self">self</span>.top()
     }
 
     <span class="attribute">#[inline]

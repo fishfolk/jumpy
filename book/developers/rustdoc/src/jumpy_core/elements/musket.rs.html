@@ -277,6 +277,8 @@
 <span id="275">275</span>
 <span id="276">276</span>
 <span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -375,10 +377,11 @@
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>audio_events: ResMut&lt;AudioEvents&gt;,
+    <span class="kw-2">mut </span>player_layers: CompMut&lt;PlayerLayers&gt;,
 
     player_inventories: PlayerInventories,
     <span class="kw-2">mut </span>items_used: CompMut&lt;ItemUsed&gt;,
-    <span class="kw-2">mut </span>attachments: CompMut&lt;Attachment&gt;,
+    <span class="kw-2">mut </span>attachments: CompMut&lt;PlayerBodyAttachment&gt;,
     <span class="kw-2">mut </span>items_dropped: CompMut&lt;ItemDropped&gt;,
 ) {
     <span class="kw">for </span>(entity, (musket, element_handle)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;mut </span>muskets, <span class="kw-2">&amp;</span>element_handles)) {
@@ -394,6 +397,7 @@
             shoot_lifetime,
 
 
+            fin_anim,
             grab_offset,
             throw_velocity,
             angular_velocity,
@@ -418,6 +422,7 @@
         {
             <span class="kw">let </span>player = inventory.player;
             <span class="kw">let </span>body = bodies.get_mut(entity).unwrap();
+            player_layers.get_mut(player).unwrap().fin_anim = <span class="kw-2">*</span>fin_anim;
 
             <span class="comment">// Deactivate collisions while being held
             </span>body.is_deactivated = <span class="bool-val">true</span>;
@@ -425,8 +430,8 @@
             <span class="comment">// Attach to the player
             </span>attachments.insert(
                 entity,
-                Attachment {
-                    entity: player,
+                PlayerBodyAttachment {
+                    player,
                     offset: grab_offset.extend(<span class="number">0.1</span>),
                     sync_animation: <span class="bool-val">false</span>,
                 },
@@ -489,8 +494,7 @@
                             animated_sprites.insert(
                                 ent,
                                 AnimatedSprite {
-                                    start: <span class="number">0</span>,
-                                    end: shoot_frames,
+                                    frames: (<span class="number">0</span>..shoot_frames).collect(),
                                     fps: shoot_fps,
                                     repeat: <span class="bool-val">false</span>,
                                     ..default()

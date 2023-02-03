@@ -184,7 +184,6 @@
 <span id="182">182</span>
 <span id="183">183</span>
 <span id="184">184</span>
-<span id="185">185</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     physics::collisions::{Actor, Collider, TileCollision},
     prelude::<span class="kw-2">*</span>,
@@ -356,8 +355,7 @@
                         animated_sprites.insert(
                             ent,
                             AnimatedSprite {
-                                start: <span class="number">0</span>,
-                                end: explosion_frames,
+                                frames: (<span class="number">0</span>..explosion_frames).collect(),
                                 fps: explosion_fps,
                                 repeat: <span class="bool-val">false</span>,
                                 ..default()

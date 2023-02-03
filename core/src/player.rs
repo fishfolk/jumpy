@@ -95,6 +95,7 @@ fn handle_player_events(
     mut items_dropped: CompMut<ItemDropped>,
     mut items_used: CompMut<ItemUsed>,
     mut inventories: CompMut<Inventory>,
+    attachments: Comp<Attachment>,
     player_indexes: Comp<PlayerIdx>,
 ) {
     while let Some(event) = player_events.queue.pop_front() {
@@ -121,6 +122,16 @@ fn handle_player_events(
                 players_killed.insert(player, PlayerKilled);
             }
             PlayerEvent::Despawn { player } => {
+                entities
+                    .iter_with(&attachments)
+                    .filter(|(_, attachment)| attachment.entity == player)
+                    .map(|(entity, _)| entity)
+                    .collect::<Vec<_>>()
+                    .iter()
+                    .for_each(|entity| {
+                        entities.kill(*entity);
+                    });
+
                 if player_indexes.contains(player) {
                     entities.kill(player);
                 } else {
@@ -186,6 +197,7 @@ fn hydrate_players(
         player_states.insert(entity, default());
         animation_bank_sprites.insert(entity, animation_bank_sprite);
         inventories.insert(entity, default());
+
         atlas_sprites.insert(
             entity,
             AtlasSprite {

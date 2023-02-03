@@ -24,6 +24,8 @@ pub struct Attachment {
     pub entity: Entity,
     /// The offset to the attached entity.
     pub offset: Vec3,
+    /// Synchronize [`AtlasSprite`] animation with entity animation
+    pub sync_animation: bool,
 }
 
 /// System to update the transforms of entities with the [`Attachment`] component.
@@ -68,6 +70,16 @@ pub fn update_attachments(
             {
                 *self_flip_x = flip_x;
                 *self_flip_y = flip_y;
+            }
+        }
+
+        if attachment.sync_animation {
+            if let Some((index, attach_atlas)) = atlas_sprites
+                .get(attachment.entity)
+                .map(|atlas| atlas.index)
+                .zip(atlas_sprites.get_mut(ent))
+            {
+                attach_atlas.index = index
             }
         }
 

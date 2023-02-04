@@ -1,4 +1,4 @@
-name: Publish Web Demo
+name: 🌐 Publish Web Demo
 
 on:
   push:
@@ -7,16 +7,21 @@ on:
     branches:
       - main
 
+concurrency:
+  group: web-demo
+  cancel-in-progress: true
+
 jobs:
   publish-web-demo:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        name: ⬇️ Checkout
 
-      - name: Install Just ⚙️
+      - name: 🧰 Install Just
         run: curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | sudo bash -s -- --to /usr/local/bin
 
-      - name: Cargo Registry Cache
+      - name: ♻ ️Cargo Registry Cache
         uses: actions/cache@v2
         with:
           path: |
@@ -25,7 +30,7 @@ jobs:
             ~/.cargo/git/db
           key: cargo-registry
 
-      - name: Rust Toolchain
+      - name: 🦀 Install Rust Toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -33,26 +38,27 @@ jobs:
           override: true
 
       - uses: jetli/wasm-bindgen-action@v0.1.0
+        name: 🔧 Wasm Bindgen
         with:
           version: "0.2.84"
 
-      - name: Build WASM Release 🔨
+      - name: 🔨 Build WASM Release
         run: just build-release-web
 
-      - name: Deploy 🚀
+      - name: 🚀 Deploy
         uses: JamesIves/github-pages-deploy-action@4.1.3
         with:
           branch: gh-pages
           folder: web-target/wasm-release
           target-folder: player/${{ github.ref_name }}
 
-      - name: Symlink Latest Build
+      - name: 🔗 Symlink Latest Build
         run: |
           mkdir latest-symlink-dir
           ln -s ./${{ github.ref_name }} latest
           mv latest latest-symlink-dir
 
-      - name: Deploy Symlinked Latest Build 🚀
+      - name: 🚀 Deploy Symlinked Latest Build
         uses: JamesIves/github-pages-deploy-action@4.1.3
         with:
           branch: gh-pages

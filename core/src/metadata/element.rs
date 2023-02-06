@@ -135,6 +135,9 @@ pub enum BuiltinElementKind {
         breaking_anim_fps: f32,
 
         break_sound: Handle<AudioSource>,
+        break_sound_volume: f32,
+        bounce_sound: Handle<AudioSource>,
+        bounce_sound_volume: f32,
 
         throw_velocity: Vec2,
 

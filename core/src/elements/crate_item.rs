@@ -203,6 +203,7 @@ fn update_thrown_crates(
     collision_world: CollisionWorld,
     mut player_events: ResMut<PlayerEvents>,
     mut bodies: CompMut<KinematicBody>,
+    mut audio_events: ResMut<AudioEvents>,
 ) {
     for (entity, (mut thrown_crate, element_handle, transform, atlas_sprite, body)) in entities
         .iter_with((
@@ -222,6 +223,10 @@ fn update_thrown_crates(
             breaking_atlas,
             breaking_anim_fps,
             break_timeout,
+            break_sound,
+            break_sound_volume,
+            bounce_sound,
+            bounce_sound_volume,
             crate_break_state_1,
             crate_break_state_2,
             ..
@@ -243,6 +248,7 @@ fn update_thrown_crates(
         if colliding_with_tile && !thrown_crate.was_colliding {
             thrown_crate.was_colliding = true;
             thrown_crate.crate_break_state += 1;
+            audio_events.play(bounce_sound.clone(), *bounce_sound_volume);
         } else if !colliding_with_tile {
             thrown_crate.was_colliding = false;
         }
@@ -279,6 +285,7 @@ fn update_thrown_crates(
             let breaking_anim_fps = *breaking_anim_fps;
             let atlas = breaking_atlas.clone();
 
+            audio_events.play(break_sound.clone(), *break_sound_volume);
             commands.add(
                 move |mut entities: ResMut<Entities>,
                       mut transforms: CompMut<Transform>,

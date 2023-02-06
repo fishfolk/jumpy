@@ -13,6 +13,10 @@ builtin: !Crate
 
   # TODO: Better break sound
   break_sound: ./fuse.ogg
+  break_sound_volume: 0.1
+
+  bounce_sound: ./land.ogg
+  bounce_sound_volume: 0.035
 
   body_size: [36, 30]
   body_offset: [0, 0]

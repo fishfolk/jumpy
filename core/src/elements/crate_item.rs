@@ -104,6 +104,7 @@ fn update_idle_crates(
     mut player_layers: CompMut<PlayerLayers>,
     player_inventories: PlayerInventories,
     mut commands: Commands,
+    mut player_events: ResMut<PlayerEvents>,
 ) {
     for (entity, (crate_item, element_handle)) in
         entities.iter_with((&mut idle_crates, &element_handles))
@@ -143,6 +144,7 @@ fn update_idle_crates(
 
             if items_used.get(entity).is_some() {
                 items_used.remove(entity);
+                player_events.set_inventory(player, None);
                 let [body, player_body] = bodies.get_many_mut([entity, player]).unwrap_many();
                 let player_velocity = player_body.velocity;
                 let player_sprite = sprites.get_mut(entity).unwrap();

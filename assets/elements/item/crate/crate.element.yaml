@@ -8,11 +8,20 @@ builtin: !Crate
   breaking_atlas: ./crate_breaking.atlas.yaml
   breaking_anim_frames: 25
   breaking_anim_fps: 30
+  crate_break_state_1: 0
+  crate_break_state_2: 1
 
   # TODO: Better break sound
   break_sound: ./fuse.ogg
+  break_sound_volume: 0.1
+
+  bounce_sound: ./land.ogg
+  bounce_sound_volume: 0.035
 
   body_size: [36, 30]
   body_offset: [0, 0]
   grab_offset: [14, -2]
   break_timeout: 4
+  bounciness: 0.5
+  fin_anim: grab_2
+

@@ -135,6 +135,9 @@ pub enum BuiltinElementKind {
         breaking_anim_fps: f32,
 
         break_sound: Handle<AudioSource>,
+        break_sound_volume: f32,
+        bounce_sound: Handle<AudioSource>,
+        bounce_sound_volume: f32,
 
         throw_velocity: Vec2,
 
@@ -143,6 +146,10 @@ pub enum BuiltinElementKind {
         grab_offset: Vec2,
         // How long to wait before despawning a thrown crate, if it hans't it anything yet.
         break_timeout: f32,
+        bounciness: f32,
+        fin_anim: Key,
+        crate_break_state_1: usize,
+        crate_break_state_2: usize,
     },
     /// The mine item
     Mine {

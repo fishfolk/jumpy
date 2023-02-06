@@ -1,6 +1,7 @@
 use crate::prelude::*;
 
 pub mod crab;
+pub mod crate_item;
 pub mod decoration;
 pub mod grenade;
 pub mod kick_bomb;
@@ -30,4 +31,5 @@ pub fn install(session: &mut GameSession) {
     kick_bomb::install(session);
     musket::install(session);
     stomp_boots::install(session);
+    crate_item::install(session);
 }

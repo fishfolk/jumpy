@@ -202,13 +202,15 @@ fn update_thrown_crates(
     players: Comp<PlayerIdx>,
     collision_world: CollisionWorld,
     mut player_events: ResMut<PlayerEvents>,
+    mut bodies: CompMut<KinematicBody>,
 ) {
-    for (entity, (mut thrown_crate, element_handle, transform, mut atlas_sprite)) in entities
+    for (entity, (mut thrown_crate, element_handle, transform, atlas_sprite, body)) in entities
         .iter_with((
             &mut thrown_crates,
             &element_handles,
             &transforms,
             &mut atlas_sprites,
+            &mut bodies,
         ))
     {
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
@@ -269,6 +271,7 @@ fn update_thrown_crates(
         if !colliding_with_players.is_empty()
             || thrown_crate.age >= *break_timeout
             || thrown_crate.crate_break_state >= 4
+            || body.velocity.length_squared() < 0.1
         {
             hydrated.remove(thrown_crate.spawner);
 

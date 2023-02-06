@@ -140,7 +140,6 @@ fn update_idle_crates(
                     sync_animation: false,
                 },
             );
-            drop(body);
 
             if items_used.get(entity).is_some() {
                 items_used.remove(entity);
@@ -271,8 +270,8 @@ fn update_thrown_crates(
         {
             hydrated.remove(thrown_crate.spawner);
 
-            let breaking_anim_frames = breaking_anim_frames.clone();
-            let breaking_anim_fps = breaking_anim_fps.clone();
+            let breaking_anim_frames = *breaking_anim_frames;
+            let breaking_anim_fps = *breaking_anim_fps;
             let atlas = breaking_atlas.clone();
 
             commands.add(

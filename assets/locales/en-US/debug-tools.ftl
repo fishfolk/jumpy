@@ -9,3 +9,7 @@ frame-diagnostics = Frame Diagnostics
 frames-per-second = Frames Per Second
 frame-time = Frame Time
 reset-min-max = Reset Min/Max
+
+snapshot = Snapshot
+take-snapshot = Take Snapshot
+restore-snapshot = Restore Snapshot

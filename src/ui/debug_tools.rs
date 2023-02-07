@@ -13,6 +13,7 @@ impl Plugin for DebugToolsPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(FrameTimeDiagnosticsPlugin)
             // .init_resource::<ShowNetworkVisualizer>()
+            .init_resource::<BonesSnapshot>()
             .init_resource::<CoreDebugSettings>()
             .init_resource::<ShowFameTimeDiagnostics>()
             .add_system(sync_core_debug_settings)
@@ -52,6 +53,10 @@ fn sync_core_debug_settings(session: Option<ResMut<Session>>, settings: Res<Core
 #[derive(Resource, Default, Deref, DerefMut)]
 struct ShowFameTimeDiagnostics(pub bool);
 
+/// Resource containing the bones snapshot.
+#[derive(Default, Resource)]
+struct BonesSnapshot(Option<bones::World>);
+
 /// System that renders the debug tools window which can be toggled by pressing F12
 fn debug_tools_window(
     mut core_debug_settings: ResMut<CoreDebugSettings>,
@@ -61,6 +66,8 @@ fn debug_tools_window(
     localization: Res<Localization>,
     input: Res<Input<KeyCode>>,
     mut show_inspector: ResMut<WorldInspectorEnabled>,
+    mut bones_world_snapshot: ResMut<BonesSnapshot>,
+    session: Option<ResMut<Session>>,
 ) {
     let ctx = egui_context.ctx_mut();
 
@@ -117,6 +124,33 @@ fn debug_tools_window(
                 &mut show_frame_diagnostics,
                 format!("{} ( F9 )", localization.get("show-frame-time-diagnostics")),
             );
+
+            // Snapshot/Restore buttons
+            ui.add_space(2.0);
+            ui.heading(localization.get("snapshot"));
+            ui.horizontal(|ui| {
+                ui.scope(|ui| {
+                    ui.set_enabled(session.is_some());
+
+                    if ui.button(localization.get("take-snapshot")).clicked() {
+                        if let Some(session) = &session {
+                            bones_world_snapshot.0 = Some(session.snapshot());
+                        }
+                    }
+
+                    ui.scope(|ui| {
+                        ui.set_enabled(bones_world_snapshot.0.is_some());
+
+                        if ui.button(localization.get("restore-snapshot")).clicked() {
+                            if let Some(mut session) = session {
+                                if let Some(snapshot) = &mut bones_world_snapshot.0 {
+                                    session.restore(&mut snapshot.clone())
+                                }
+                            }
+                        }
+                    });
+                });
+            });
 
             // Show network visualizer
             // ui.checkbox(

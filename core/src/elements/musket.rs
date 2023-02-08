@@ -258,13 +258,13 @@ fn update(
             // Re-activate physics
             body.is_deactivated = false;
 
-            if player_velocity != Vec2::ZERO {
-                let horizontal_flip_factor = if player_sprite.flip_x {
-                    Vec2::new(-1.0, 1.0)
-                } else {
-                    Vec2::ONE
-                };
+            let horizontal_flip_factor = if player_sprite.flip_x {
+                Vec2::new(-1.0, 1.0)
+            } else {
+                Vec2::ONE
+            };
 
+            if player_velocity != Vec2::ZERO {
                 body.velocity = *throw_velocity * horizontal_flip_factor + player_velocity;
                 body.angular_velocity =
                     *angular_velocity * if player_sprite.flip_x { -1.0 } else { 1.0 };
@@ -273,7 +273,7 @@ fn update(
             body.is_spawning = true;
 
             let transform = transforms.get_mut(entity).unwrap();
-            transform.translation = player_translation;
+            transform.translation = player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
         }
     }
 }

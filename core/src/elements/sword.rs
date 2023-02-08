@@ -300,19 +300,20 @@ fn update(
             // Put sword in rest position
             sprite.index = 0;
 
+            let horizontal_flip_factor = if sprite.flip_x {
+                Vec2::new(-1.0, 1.0)
+            } else {
+                Vec2::ONE
+            };
+
             if player_velocity != Vec2::ZERO {
-                let horizontal_flip_factor = if sprite.flip_x {
-                    Vec2::new(-1.0, 1.0)
-                } else {
-                    Vec2::ONE
-                };
                 body.velocity = *throw_velocity * horizontal_flip_factor + player_velocity;
                 body.angular_velocity = *angular_velocity * if sprite.flip_x { -1.0 } else { 1.0 };
             }
             body.is_spawning = true;
 
             let transform = transforms.get_mut(entity).unwrap();
-            transform.translation = player_translation;
+            transform.translation = player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
         }
     }
 }

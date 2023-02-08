@@ -241,7 +241,7 @@ fn update_thrown_mines(
             continue;
         };
 
-        let BuiltinElementKind::Mine { 
+        let BuiltinElementKind::Mine {
             explosion_fps,
             explosion_frames,
             explosion_sound,

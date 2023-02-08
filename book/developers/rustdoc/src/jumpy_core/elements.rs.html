@@ -34,6 +34,8 @@
 <a href="#33" id="33">33</a>
 <a href="#34" id="34">34</a>
 <a href="#35" id="35">35</a>
+<a href="#36" id="36">36</a>
+<a href="#37" id="37">37</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub mod </span>crab;
@@ -41,6 +43,7 @@
 <span class="kw">pub mod </span>decoration;
 <span class="kw">pub mod </span>grenade;
 <span class="kw">pub mod </span>kick_bomb;
+<span class="kw">pub mod </span>mine;
 <span class="kw">pub mod </span>musket;
 <span class="kw">pub mod </span>player_spawner;
 <span class="kw">pub mod </span>sproinger;
@@ -65,6 +68,7 @@
     grenade::install(session);
     crab::install(session);
     kick_bomb::install(session);
+    mine::install(session);
     musket::install(session);
     stomp_boots::install(session);
     crate_item::install(session);

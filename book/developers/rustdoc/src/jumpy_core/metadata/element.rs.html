@@ -247,7 +247,6 @@
 <a href="#246" id="246">246</a>
 <a href="#247" id="247">247</a>
 <a href="#248" id="248">248</a>
-<a href="#249" id="249">249</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="attr">#[derive(BonesBevyAsset, TypeUlid, Deserialize, Clone, Debug, Default)]
@@ -408,26 +407,25 @@
         damage_region_size: Vec2,
         damage_region_lifetime: f32,
         explosion_atlas: Handle&lt;Atlas&gt;,
-        explosion_anim_frames: usize,
-        explosion_anim_fps: f32,
+        explosion_lifetime: f32,
+        explosion_frames: usize,
+        explosion_fps: f32,
+        explosion_volume: f32,
+        explosion_sound: Handle&lt;AudioSource&gt;,
 
-        arm_sound: String,
-        armed_anim_start: usize,
-        armed_anim_end: usize,
-        armed_anim_fps: f32,
-        <span class="attr">#[serde(skip)]
-        </span>arm_sound_handle: Handle&lt;AudioSource&gt;,
-        explosion_sound: String,
-        <span class="attr">#[serde(skip)]
-        </span>explosion_sound_handle: Handle&lt;AudioSource&gt;,
-
-        throw_velocity: Vec2,
         <span class="doccomment">/// The delay after throwing the mine, before it becomes armed and will blow up on contact.
         </span>arm_delay: f32,
+        armed_frames: usize,
+        armed_fps: f32,
+        arm_sound_volume: f32,
+        arm_sound: Handle&lt;AudioSource&gt;,
 
+        throw_velocity: Vec2,
         body_size: Vec2,
         body_offset: Vec2,
         grab_offset: Vec2,
+        fin_anim: Key,
+        bounciness: f32,
     },
 
     StompBoots {

@@ -278,6 +278,7 @@
 <a href="#277" id="277">277</a>
 <a href="#278" id="278">278</a>
 <a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -538,13 +539,13 @@
             <span class="comment">// Re-activate physics
             </span>body.is_deactivated = <span class="bool-val">false</span>;
 
-            <span class="kw">if </span>player_velocity != Vec2::ZERO {
-                <span class="kw">let </span>horizontal_flip_factor = <span class="kw">if </span>player_sprite.flip_x {
-                    Vec2::new(-<span class="number">1.0</span>, <span class="number">1.0</span>)
-                } <span class="kw">else </span>{
-                    Vec2::ONE
-                };
+            <span class="kw">let </span>horizontal_flip_factor = <span class="kw">if </span>player_sprite.flip_x {
+                Vec2::new(-<span class="number">1.0</span>, <span class="number">1.0</span>)
+            } <span class="kw">else </span>{
+                Vec2::ONE
+            };
 
+            <span class="kw">if </span>player_velocity != Vec2::ZERO {
                 body.velocity = <span class="kw-2">*</span>throw_velocity * horizontal_flip_factor + player_velocity;
                 body.angular_velocity =
                     <span class="kw-2">*</span>angular_velocity * <span class="kw">if </span>player_sprite.flip_x { -<span class="number">1.0 </span>} <span class="kw">else </span>{ <span class="number">1.0 </span>};
@@ -553,7 +554,8 @@
             body.is_spawning = <span class="bool-val">true</span>;
 
             <span class="kw">let </span>transform = transforms.get_mut(entity).unwrap();
-            transform.translation = player_translation;
+            transform.translation =
+                player_translation + (<span class="kw-2">*</span>grab_offset * horizontal_flip_factor).extend(<span class="number">0.0</span>);
         }
     }
 }

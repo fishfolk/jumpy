@@ -317,6 +317,8 @@
 <a href="#316" id="316">316</a>
 <a href="#317" id="317">317</a>
 <a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{damage::DamageRegion, prelude::<span class="kw-2">*</span>};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -619,19 +621,21 @@
             <span class="comment">// Put sword in rest position
             </span>sprite.index = <span class="number">0</span>;
 
+            <span class="kw">let </span>horizontal_flip_factor = <span class="kw">if </span>sprite.flip_x {
+                Vec2::new(-<span class="number">1.0</span>, <span class="number">1.0</span>)
+            } <span class="kw">else </span>{
+                Vec2::ONE
+            };
+
             <span class="kw">if </span>player_velocity != Vec2::ZERO {
-                <span class="kw">let </span>horizontal_flip_factor = <span class="kw">if </span>sprite.flip_x {
-                    Vec2::new(-<span class="number">1.0</span>, <span class="number">1.0</span>)
-                } <span class="kw">else </span>{
-                    Vec2::ONE
-                };
                 body.velocity = <span class="kw-2">*</span>throw_velocity * horizontal_flip_factor + player_velocity;
                 body.angular_velocity = <span class="kw-2">*</span>angular_velocity * <span class="kw">if </span>sprite.flip_x { -<span class="number">1.0 </span>} <span class="kw">else </span>{ <span class="number">1.0 </span>};
             }
             body.is_spawning = <span class="bool-val">true</span>;
 
             <span class="kw">let </span>transform = transforms.get_mut(entity).unwrap();
-            transform.translation = player_translation;
+            transform.translation =
+                player_translation + (<span class="kw-2">*</span>grab_offset * horizontal_flip_factor).extend(<span class="number">0.0</span>);
         }
     }
 }

@@ -95,7 +95,13 @@ pub fn handle_player_state(
             body.velocity.y = meta.stats.jump_speed;
         }
 
-        // Since we are idling, don't move
-        body.velocity.x = 0.0;
+        // Since we are idling, slide
+        if body.velocity.x != 0.0 {
+            if body.velocity.x.is_sign_positive() {
+                body.velocity.x = (body.velocity.x - meta.stats.slowdown).max(0.0);
+            } else {
+                body.velocity.x = (body.velocity.x + meta.stats.slowdown).min(0.0);
+            }
+        }
     }
 }

@@ -298,7 +298,7 @@ fn hydrate_players(
             KinematicBody {
                 size: meta.body_size,
                 has_mass: true,
-                has_friction: true,
+                has_friction: false,
                 gravity: meta.gravity,
                 ..default()
             },

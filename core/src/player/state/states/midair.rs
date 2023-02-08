@@ -97,8 +97,21 @@ pub fn handle_player_state(
             body.velocity.y = body.velocity.y.max(-meta.stats.slow_fall_speed);
         }
 
-        // Add controls
-        body.velocity.x = control.move_direction.x * meta.stats.air_move_speed;
+        // Walk in movement direction
+        body.velocity.x += meta.stats.accel_air_speed * control.move_direction.x;
+        if control.move_direction.x.is_sign_positive() {
+            body.velocity.x = body.velocity.x.min(meta.stats.air_speed);
+        } else {
+            body.velocity.x = body.velocity.x.max(-meta.stats.air_speed);
+        }
+
+        if control.move_direction.x == 0.0 {
+            if body.velocity.x.is_sign_positive() {
+                body.velocity.x = (body.velocity.x - meta.stats.slowdown).max(0.0);
+            } else {
+                body.velocity.x = (body.velocity.x + meta.stats.slowdown).min(0.0);
+            }
+        }
 
         // Fall through platforms
         body.fall_through = control.move_direction.y < -0.5 && control.jump_pressed;

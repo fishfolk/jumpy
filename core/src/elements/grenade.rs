@@ -201,7 +201,8 @@ fn update_idle_grenades(
             body.is_spawning = true;
 
             let transform = transforms.get_mut(entity).unwrap();
-            transform.translation = player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
+            transform.translation =
+                player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
         }
     }
 }
@@ -322,7 +323,8 @@ fn update_lit_grenades(
             body.is_spawning = true;
 
             let transform = transforms.get_mut(entity).unwrap();
-            transform.translation = player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
+            transform.translation =
+                player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
         }
 
         // If it's time to explode

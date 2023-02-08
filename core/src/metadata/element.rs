@@ -158,26 +158,25 @@ pub enum BuiltinElementKind {
         damage_region_size: Vec2,
         damage_region_lifetime: f32,
         explosion_atlas: Handle<Atlas>,
-        explosion_anim_frames: usize,
-        explosion_anim_fps: f32,
+        explosion_lifetime: f32,
+        explosion_frames: usize,
+        explosion_fps: f32,
+        explosion_volume: f32,
+        explosion_sound: Handle<AudioSource>,
 
-        arm_sound: String,
-        armed_anim_start: usize,
-        armed_anim_end: usize,
-        armed_anim_fps: f32,
-        #[serde(skip)]
-        arm_sound_handle: Handle<AudioSource>,
-        explosion_sound: String,
-        #[serde(skip)]
-        explosion_sound_handle: Handle<AudioSource>,
-
-        throw_velocity: Vec2,
         /// The delay after throwing the mine, before it becomes armed and will blow up on contact.
         arm_delay: f32,
+        armed_frames: usize,
+        armed_fps: f32,
+        arm_sound_volume: f32,
+        arm_sound: Handle<AudioSource>,
 
+        throw_velocity: Vec2,
         body_size: Vec2,
         body_offset: Vec2,
         grab_offset: Vec2,
+        fin_anim: Key,
+        bounciness: f32,
     },
 
     StompBoots {

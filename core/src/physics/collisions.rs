@@ -1,13 +1,12 @@
-//! Modified from macroquad platformer:
-//!
-//! Copyright: @ 2019-2021 Fedor Logachev <not.fl3@gmail.com>
-//! Licenses:
-//!   - <https://github.com/not-fl3/macroquad/blob/master/LICENSE-MIT>
-//!   - <https://github.com/not-fl3/macroquad/blob/d706128463f2656c9e0d1a46e48de27403a8feb7/LICENSE-APACHE>
+//! Collision detection implementation.
 
-use std::collections::HashSet;
-
+use ::bevy::utils::{HashMap, HashSet};
 use bytemuck::Zeroable;
+
+pub use rapier2d::prelude as rapier;
+pub use shape::*;
+
+mod shape;
 
 use crate::prelude::*;
 
@@ -16,6 +15,7 @@ macro_rules! impl_system_param {
     (
         pub struct $t:ident<'a> {
             $(
+                $( #[$attrs:meta] )*
                 $f_name:ident: $f_ty:ty
             ),*
             $(,)?
@@ -23,7 +23,8 @@ macro_rules! impl_system_param {
     ) => {
         pub struct $t<'a> {
             $(
-                $f_name: $f_ty
+                $( #[$attrs] )*
+                pub $f_name: $f_ty
             ),*
         }
 
@@ -75,18 +76,136 @@ macro_rules! impl_system_param {
     };
 }
 
+/// Resource containing the data structures needed for rapier collision detection.
+#[derive(TypeUlid, Default)]
+#[ulid = "01GRYFB82VW5CXGK56KKPAVA5B"]
+pub struct RapierContext {
+    pub collision_pipeline: rapier::CollisionPipeline,
+    pub broad_phase: rapier::BroadPhase,
+    pub narrow_phase: rapier::NarrowPhase,
+    pub query_pipeline: rapier::QueryPipeline,
+    pub collider_set: rapier::ColliderSet,
+    pub rigid_body_set: rapier::RigidBodySet,
+    pub collider_shape_cache: ColliderShapeCache,
+    pub collision_cache: CollisionCache,
+}
+
+impl Clone for RapierContext {
+    fn clone(&self) -> Self {
+        Self {
+            // The collision pipeline is just a cache and while we can't clone it, creating a new one is
+            // perfectly valid.
+            collision_pipeline: default(),
+            broad_phase: self.broad_phase.clone(),
+            narrow_phase: self.narrow_phase.clone(),
+            query_pipeline: self.query_pipeline.clone(),
+            collider_set: self.collider_set.clone(),
+            rigid_body_set: self.rigid_body_set.clone(),
+            collider_shape_cache: self.collider_shape_cache.clone(),
+            collision_cache: self.collision_cache.clone(),
+        }
+    }
+}
+
+/// A cache containing a map of entities, to the list of entities that each entity is currently
+/// intersecting with.
+#[derive(Clone, Default)]
+pub struct CollisionCache {
+    /// The collisions in the cache.
+    pub collisions: Arc<AtomicRefCell<HashMap<Entity, HashSet<Entity>>>>,
+}
+
+impl CollisionCache {
+    /// Get the set of entities that the given `entity` is intersecting.
+    pub fn get(&self, entity: Entity) -> AtomicRefMut<'_, HashSet<Entity>> {
+        AtomicRefMut::map(self.collisions.borrow_mut(), |x| {
+            x.entry(entity).or_default()
+        })
+    }
+}
+
+/// Update the collision cache with rapier collision events.
+impl rapier::EventHandler for &mut CollisionCache {
+    fn handle_collision_event(
+        &self,
+        _bodies: &rapier::RigidBodySet,
+        colliders: &rapier::ColliderSet,
+        event: rapier::CollisionEvent,
+        _contact_pair: Option<&rapier::ContactPair>,
+    ) {
+        match event {
+            rapier::CollisionEvent::Started(a, b, _) => {
+                let a_ent = RapierUserData::entity(colliders.get(a).unwrap().user_data);
+                let b_ent = RapierUserData::entity(colliders.get(b).unwrap().user_data);
+
+                self.collisions
+                    .borrow_mut()
+                    .entry(a_ent)
+                    .or_default()
+                    .insert(b_ent);
+                self.collisions
+                    .borrow_mut()
+                    .entry(b_ent)
+                    .or_default()
+                    .insert(a_ent);
+            }
+            rapier::CollisionEvent::Stopped(a, b, _) => {
+                let Some(a_ent) = colliders.get(a).map(|x| RapierUserData::entity(x.user_data)) else {
+                    return;
+                };
+                let Some(b_ent) = colliders.get(b).map(|x| RapierUserData::entity(x.user_data)) else {
+                    return;
+                };
+
+                self.collisions
+                    .borrow_mut()
+                    .entry(a_ent)
+                    .or_default()
+                    .remove(&b_ent);
+                self.collisions
+                    .borrow_mut()
+                    .entry(b_ent)
+                    .or_default()
+                    .remove(&a_ent);
+            }
+        }
+    }
+
+    fn handle_contact_force_event(
+        &self,
+        _dt: rapier::Real,
+        _bodies: &rapier::RigidBodySet,
+        _colliders: &rapier::ColliderSet,
+        _contact_pair: &rapier::ContactPair,
+        _total_force_magnitude: rapier::Real,
+    ) {
+    }
+}
+
 impl_system_param! {
     pub struct CollisionWorld<'a> {
         entities: Res<'a, Entities>,
 
-        // Each collider is either an actor or a solid
+        /// The rapier context.
+        ctx: ResMut<'a, RapierContext>,
+
+        /// Actors are things like players that move around and detect collisions, but don't collide
+        /// with other actors.
         actors: CompMut<'a, Actor>,
+        /// Solids are things like walls and platforms, that aren't tiles, that have solid
+        /// collisions.
+        ///
+        /// > **⚠️ Warning:** Solids have not been fully implemented yet and may not work. They were
+        /// > from the old physics system and haven't been fully ported.
         solids: CompMut<'a, Solid>,
+        /// A collider is anything that can detect collisions in the world other than tiles, and
+        /// must either be an [`Actor`] or `Solid`] to participate in collision detection.
         colliders: CompMut<'a, Collider>,
+        /// Contains the rapier collider handles for each map tile.
+        tile_rapier_handles: CompMut<'a, TileRapierHandle>,
 
         tile_layers: Comp<'a, TileLayer>,
-        tile_collision_tags: Comp<'a, TileCollisionTag>,
-        tile_collisions: Comp<'a, TileCollision>,
+        tile_collision_kinds: Comp<'a, TileCollisionKind>,
     }
 }
 
@@ -103,150 +222,299 @@ pub struct Actor;
 pub struct Solid;
 
 /// A collider body in the physics simulation.
+///
+/// This is used for actors and solids in the simulation, not for tiles.
 #[derive(Default, Clone, Debug, TypeUlid)]
 #[ulid = "01GNF72YMMDM831S0TGAR2SWZ9"]
 #[repr(C)]
 pub struct Collider {
-    pub pos: Vec2,
-    pub width: f32,
-    pub height: f32,
-    pub x_remainder: f32,
-    pub y_remainder: f32,
-    pub collidable: bool,
-    pub squished: bool,
+    // TODO: We used to have an offset here in the `Collider` struct, but I think maybe that should
+    // become a part of the collision shape, not part of the collider. So if you need an offset
+    // collider, maybe that means a compound collider shape with an offset collider in it.
+    //
+    // When we have a separate offset here, we have to remember and correctly apply the offset,
+    // every time we check a collision between this colliders shape, at the colliders transform. It
+    // kept causing bugs in colliders with offsets. That may still be the best option, and we just
+    // have to deal with it, but we should consider the offset being included in the collider shape.
+    pub shape: ColliderShape,
+    // Whether or not the collider is disabled.
+    pub disabled: bool,
+    /// Whether or not the collider wants to drop through jump-through platforms.
     pub descent: bool,
+    /// Whether or not the collider is in the process of going through a jump-through platform.
     pub seen_wood: bool,
-    pub squishers: HashSet<Entity>,
+    /// The handle to the Rapier rigid body associated to this collider, if one has been spawned as
+    /// of yet.
+    pub rapier_handle: Option<rapier::RigidBodyHandle>,
 }
 
-impl Collider {
-    pub fn rect(&self) -> Rect {
-        Rect::new(self.pos.x, self.pos.y, self.width, self.height)
+/// Component added to tiles that have been given corresponding rapier colliders.
+#[derive(Default, Clone, Debug, TypeUlid, Deref, DerefMut)]
+#[ulid = "01GRYDJ1NVAA07RWSPGRJR6809"]
+pub struct TileRapierHandle(pub rapier::RigidBodyHandle);
+
+/// Namespace struct for converting rapier collider user data to/from [`Entity`].
+pub struct RapierUserData;
+impl RapierUserData {
+    /// Create rapier user data value from the entity `e`.
+    pub fn from(e: Entity) -> u128 {
+        let mut out = 0u128;
+
+        out |= e.index() as u128;
+        out |= (e.generation() as u128) << 32;
+
+        out
+    }
+
+    /// Get an [`Entity`] from the given Rapier user data ( assuming the user data was created with
+    /// [`RapierUserData::from`] ).
+    pub fn entity(user_data: u128) -> Entity {
+        let index = (u32::MAX as u128) & user_data;
+        let generation = (u32::MAX as u128) & (user_data >> 32);
+        Entity::new(index as u32, generation as u32)
     }
 }
 
-#[derive(Clone, Debug, TypeUlid, PartialEq, Eq, Copy)]
-#[ulid = "01GNQKQGJMMF6AY8DRVY5YY4TF"]
-#[repr(C)]
-pub struct TileCollisionTag(u8);
-
-impl Default for TileCollisionTag {
-    fn default() -> Self {
-        Self(1)
-    }
-}
-
+/// The kind of collision that a map tile has.
+///
+/// The integer value should come from one of the associated constants.
+///
+/// > **TODO:** Evaluate putting this in a normal enum. If I ( zicklag ) remember correctly, I
+/// > didn't use an enum to make scripting easier, but I don't know that this actually helps.
 #[derive(Default, PartialEq, Eq, Clone, Copy, Debug, TypeUlid)]
 #[ulid = "01GNF746HB9N9GE9E2KG4X7X4K"]
 #[repr(transparent)]
-pub struct TileCollision(pub u8);
+pub struct TileCollisionKind(pub u8);
 
-impl TileCollision {
-    pub const EMPTY: TileCollision = TileCollision(0);
-    pub const SOLID: TileCollision = TileCollision(1);
-    pub const JUMP_THROUGH: TileCollision = TileCollision(2);
-    pub const COLLIDER: TileCollision = TileCollision(3);
-}
-
-impl TileCollision {
-    fn or(self, other: TileCollision) -> TileCollision {
-        match (self, other) {
-            (TileCollision::EMPTY, TileCollision::EMPTY) => TileCollision::EMPTY,
-            (TileCollision::JUMP_THROUGH, TileCollision::JUMP_THROUGH) => {
-                TileCollision::JUMP_THROUGH
-            }
-            (TileCollision::JUMP_THROUGH, TileCollision::EMPTY) => TileCollision::JUMP_THROUGH,
-            (TileCollision::EMPTY, TileCollision::JUMP_THROUGH) => TileCollision::JUMP_THROUGH,
-            _ => TileCollision::SOLID,
-        }
-    }
+impl TileCollisionKind {
+    /// The tile has no collision.
+    pub const EMPTY: TileCollisionKind = TileCollisionKind(0);
+    /// The tile is solid.
+    pub const SOLID: TileCollisionKind = TileCollisionKind(1);
+    /// The tile may be jumped/dropped through.
+    pub const JUMP_THROUGH: TileCollisionKind = TileCollisionKind(2);
 }
 
 impl<'a> CollisionWorld<'a> {
-    #[allow(unused)]
-    pub fn add_actor(&mut self, actor: Entity, pos: Vec2, width: f32, height: f32) {
-        let mut descent = false;
-        let mut seen_wood = false;
-        let tile = self.collide_solids(pos, width, height);
-        if tile == TileCollision::JUMP_THROUGH {
-            descent = true;
-            seen_wood = true;
+    /// Updates the collision world with the entity's actual transforms.
+    ///
+    /// If the transform of an entity is changed without calling `update()`, then collision queries
+    /// will be out-of-date with the actual entity positions.
+    ///
+    /// > **⚠️ Warning:** This does **not** update the map tile collisions. To do that, call
+    /// > [`update_tiles()`][Self::update_tiles] instead.
+    pub fn update<'b, Tq>(&mut self, transforms: Tq)
+    where
+        Tq: QueryItem,
+        Tq::Iter: Iterator<Item = &'b Transform>,
+    {
+        self.sync_colliders(transforms);
+
+        let RapierContext {
+            broad_phase,
+            collider_set,
+            query_pipeline,
+            collision_cache,
+            rigid_body_set,
+            narrow_phase,
+            collision_pipeline,
+            ..
+        } = &mut *self.ctx;
+
+        // Delete any bodies that don't have alive entities
+        let mut to_delete = Vec::new();
+        for (handle, body) in rigid_body_set.iter() {
+            let entity = RapierUserData::entity(body.user_data);
+
+            if !self.entities.is_alive(entity) {
+                // Remove any collisions with the killed entity from the collision cache.
+                let mut collisions = collision_cache.collisions.borrow_mut();
+                let colliding_with = collisions.remove(&entity);
+                if let Some(colliding_with) = colliding_with {
+                    for other_entity in colliding_with {
+                        if let Some(collisions) = collisions.get_mut(&other_entity) {
+                            collisions.remove(&entity);
+                        }
+                    }
+                }
+
+                // Delete the rigid body
+                to_delete.push(handle);
+            }
         }
-        self.colliders.insert(
-            actor,
-            Collider {
-                collidable: true,
-                squished: false,
-                pos,
-                width,
-                height,
-                x_remainder: 0.,
-                y_remainder: 0.,
-                squishers: HashSet::new(),
-                descent,
-                seen_wood,
-            },
-        );
+        for body_handle in to_delete {
+            rigid_body_set.remove(
+                body_handle,
+                &mut default(),
+                collider_set,
+                &mut default(),
+                &mut default(),
+                true,
+            );
+        }
+
+        // Update the collision pipeline
+        collision_pipeline.step(
+            0.0,
+            broad_phase,
+            narrow_phase,
+            rigid_body_set,
+            collider_set,
+            Some(query_pipeline),
+            &(),
+            &collision_cache,
+        )
     }
 
-    #[allow(unused)]
-    pub fn add_solid(&mut self, solid: Entity, pos: Vec2, width: f32, height: f32) {
-        self.colliders.insert(
-            solid,
-            Collider {
-                collidable: true,
-                squished: false,
-                pos,
-                width,
-                height,
-                x_remainder: 0.,
-                y_remainder: 0.,
-                squishers: HashSet::new(),
-                descent: false,
-                seen_wood: false,
-            },
-        );
+    /// Sync the transforms and attributes ( like `disabled` ) of the colliders. ( Does not update
+    /// collision pipeline, and is only for use internally. )
+    fn sync_colliders<'b, Tq>(&mut self, transforms: Tq)
+    where
+        Tq: QueryItem,
+        Tq::Iter: Iterator<Item = &'b Transform>,
+    {
+        let RapierContext {
+            rigid_body_set,
+            collider_set,
+            collider_shape_cache,
+            ..
+        } = &mut *self.ctx;
+        for (ent, (transform, collider)) in
+            self.entities.iter_with((transforms, &mut self.colliders))
+        {
+            // Get the rapier shape.
+            //
+            // TODO: Evaluate whether or not caching the colliders like this actually improves
+            // performance.
+            let shared_shape = collider_shape_cache.shared_shape(collider.shape);
+
+            // Get the handle to the rapier collider, creating it if it doesn't exist.
+            let rapier_handle = collider.rapier_handle.get_or_insert_with(|| {
+                let body_handle = rigid_body_set.insert(
+                    rapier::RigidBodyBuilder::dynamic().user_data(RapierUserData::from(ent)),
+                );
+                collider_set.insert_with_parent(
+                    rapier::ColliderBuilder::new(shared_shape.clone())
+                        .active_events(rapier::ActiveEvents::COLLISION_EVENTS)
+                        .active_collision_types(rapier::ActiveCollisionTypes::all())
+                        .user_data(RapierUserData::from(ent)),
+                    body_handle,
+                    rigid_body_set,
+                );
+                body_handle
+            });
+            let rapier_body = rigid_body_set.get_mut(*rapier_handle).unwrap();
+
+            // Set the transform of the collider.
+            rapier_body.set_position(
+                rapier::Isometry::new(
+                    transform.translation.truncate().to_array().into(),
+                    transform.rotation.to_euler(EulerRot::XYZ).2,
+                ),
+                true,
+            );
+            let rapier_collider = collider_set.get_mut(rapier_body.colliders()[0]).unwrap();
+            rapier_collider.set_enabled(!collider.disabled);
+            rapier_collider.set_position_wrt_parent(rapier::Isometry::new(default(), 0.0));
+        }
     }
 
-    pub fn set_actor_position(&mut self, entity: Entity, pos: Vec2) {
-        if self.actors.contains(entity) {
-            if let Some(collider) = self.colliders.get_mut(entity) {
-                collider.x_remainder = 0.0;
-                collider.y_remainder = 0.0;
-                collider.pos = pos;
+    /// Update the collisions for map tiles.
+    ///
+    /// This should only be called when the map tiles have been changed, which should be relatively
+    /// uncommon.
+    pub fn update_tiles(&mut self) {
+        let RapierContext {
+            rigid_body_set,
+            collider_set,
+            collider_shape_cache,
+            ..
+        } = &mut *self.ctx;
+        for (entity, layer) in self.entities.iter_with(&self.tile_layers) {
+            let bones_shape = ColliderShape::Rectangle {
+                size: layer.tile_size,
+            };
+            let shared_shape = collider_shape_cache.shared_shape(bones_shape);
+
+            for x in 0..layer.grid_size.x {
+                for y in 0..layer.grid_size.y {
+                    let Some(tile_ent) = layer.get(uvec2(x, y)) else {
+                        continue;
+                    };
+                    let collider_x = x as f32 * layer.tile_size.x + layer.tile_size.x / 2.0;
+                    let collider_y = y as f32 * layer.tile_size.y + layer.tile_size.y / 2.0;
+
+                    // Get or create a collider for the tile
+                    let handle = self
+                        .tile_rapier_handles
+                        .get(entity)
+                        .map(|x| **x)
+                        .unwrap_or_else(|| {
+                            let body_handle = rigid_body_set.insert(
+                                rapier::RigidBodyBuilder::fixed()
+                                    .user_data(RapierUserData::from(tile_ent)),
+                            );
+                            collider_set.insert_with_parent(
+                                rapier::ColliderBuilder::new(shared_shape.clone())
+                                    .active_events(rapier::ActiveEvents::COLLISION_EVENTS)
+                                    .active_collision_types(rapier::ActiveCollisionTypes::all())
+                                    .user_data(RapierUserData::from(tile_ent)),
+                                body_handle,
+                                rigid_body_set,
+                            );
+                            self.tile_rapier_handles
+                                .insert(tile_ent, TileRapierHandle(body_handle));
+                            body_handle
+                        });
+                    let tile_body = rigid_body_set.get_mut(handle).unwrap();
+
+                    // Update the collider position
+                    tile_body.set_translation(rapier::Vector::new(collider_x, collider_y), false);
+                }
             }
         }
     }
 
-    /// Returns the collisions that one actor has with any other actors
-    pub fn actor_collisions(&self, entity: Entity) -> Vec<Entity> {
-        let mut collisions = Vec::new();
-
-        if !self.actors.contains(entity) {
-            return collisions;
+    /// When spawning or teleporting an entity, this should be called to make sure the entity
+    /// doesn't get stuck in semi-solid platforms, and properly falls out of them if it happens to
+    /// be colliding with one when spawned.
+    //
+    // TODO: I believe we can make this method unnecessary by correctly detecting when a body is
+    // stuck in a wood platform, with no ground below it.
+    pub fn handle_teleport(&mut self, entity: Entity) {
+        if self
+            .ctx
+            .collision_cache
+            .get(entity)
+            .iter()
+            .any(|x| self.tile_collision_kinds.get(*x) == Some(&TileCollisionKind::JUMP_THROUGH))
+        {
+            let collider = self.colliders.get_mut(entity).unwrap();
+            collider.descent = true;
+            collider.seen_wood = true;
         }
-        let Some(collider) = self.colliders.get(entity) else {
-            return collisions;
+    }
+
+    /// Returns the collisions that one actor has with any other actors.
+    pub fn actor_collisions(&self, entity: Entity) -> Vec<Entity> {
+        if !self.actors.contains(entity) {
+            return default();
+        }
+        if !self.colliders.contains(entity) {
+            return default();
         };
 
-        let rect = collider.rect();
-
-        for (other_entity, (_actor, collider)) in
-            self.entities.iter_with((&self.actors, &self.colliders))
-        {
-            if entity == other_entity {
-                continue;
-            }
-            let other_rect = collider.rect();
-            if rect.overlaps(&other_rect) {
-                collisions.push(other_entity);
-            }
-        }
-
-        collisions
+        self.ctx
+            .collision_cache
+            .get(entity)
+            .iter()
+            .filter(|x| self.actors.contains(**x))
+            .copied()
+            .collect()
     }
 
-    #[allow(unused)]
+    /// Put the entity's collider into descent mode so that it will fall through jump-through
+    /// platforms.
     pub fn descent(&mut self, entity: Entity) {
         if self.actors.contains(entity) {
             let mut collider = self.colliders.get_mut(entity).unwrap();
@@ -254,168 +522,255 @@ impl<'a> CollisionWorld<'a> {
         }
     }
 
-    pub fn move_v(&mut self, entity: Entity, dy: f32) -> bool {
+    /// Attempt to move a body vertically. This will return `true` if an obstacle was run into that
+    /// caused the movement to stop short.
+    pub fn move_vertical(
+        &mut self,
+        transforms: &mut CompMut<Transform>,
+        entity: Entity,
+        mut dy: f32,
+    ) -> bool {
+        let RapierContext {
+            query_pipeline,
+            collider_set,
+            rigid_body_set,
+            collider_shape_cache,
+            ..
+        } = &mut *self.ctx;
         assert!(self.actors.contains(entity));
-        let mut collider = self.colliders.get(entity).unwrap().clone();
+        if dy == 0.0 {
+            return false;
+        }
 
-        collider.y_remainder += dy;
+        // Get the shape and position info for the given entity
+        let collider = self.colliders.get_mut(entity).unwrap();
+        let transform = *transforms.get(entity).unwrap();
+        let mut position = rapier::Isometry::new(
+            transform.translation.truncate().into(),
+            transform.rotation.to_euler(EulerRot::XYZ).2,
+        );
+        let shape = collider_shape_cache.shared_shape(collider.shape);
 
-        let mut move_ = collider.y_remainder.round() as i32;
-        if move_ != 0 {
-            collider.y_remainder -= move_ as f32;
-            let sign = move_.signum();
+        let mut movement = 0.0;
+        let collided = loop {
+            // Do a shape cast in the direction of movement
+            let velocity = rapier::Vector::new(0.0, dy);
+            let collision = query_pipeline.cast_shape(
+                rigid_body_set,
+                collider_set,
+                &position,
+                &velocity,
+                &**shape,
+                1.0,
+                true,
+                rapier::QueryFilter::new().predicate(&|_handle, rapier_collider| {
+                    let ent = RapierUserData::entity(rapier_collider.user_data);
 
-            while move_ != 0 {
-                let tile = self.collide_solids(
-                    collider.pos + vec2(0., sign as f32),
-                    collider.width,
-                    collider.height,
-                );
+                    let Some(tile_kind) = self.tile_collision_kinds.get(ent) else {
+                        // Ignore non-tile collisions
+                        return false;
+                    };
+
+                    // Ignore jump-through tiles if we have already seen wood
+                    !(collider.seen_wood && *tile_kind == TileCollisionKind::JUMP_THROUGH)
+                }),
+            );
+
+            if let Some((handle, toi)) = collision {
+                let ent = RapierUserData::entity(collider_set.get(handle).unwrap().user_data);
+
+                // Move up to the point of collision
+                let diff = dy * toi.toi;
+                movement += diff;
+                position.translation.y += diff;
+
+                // Subtract from the remaining attempted movement
+                dy -= diff;
+
+                let tile_kind = *self.tile_collision_kinds.get(ent).unwrap();
 
                 // collider wants to go down and collided with jumpthrough tile
-                if tile == TileCollision::JUMP_THROUGH && collider.descent {
+                if tile_kind == TileCollisionKind::JUMP_THROUGH && collider.descent {
                     collider.seen_wood = true;
                 }
                 // collider wants to go up and encoutered jumpthrough obstace
-                if tile == TileCollision::JUMP_THROUGH && sign > 0 {
+                if tile_kind == TileCollisionKind::JUMP_THROUGH && dy > 0.0 {
                     collider.seen_wood = true;
                     collider.descent = true;
                 }
-                if tile == TileCollision::EMPTY
-                    || (tile == TileCollision::JUMP_THROUGH && collider.descent)
-                {
-                    collider.pos.y += sign as f32;
-                    move_ -= sign;
-                } else {
-                    collider.pos.y = collider.pos.y.floor();
-                    *self.colliders.get_mut(entity).unwrap() = collider;
 
-                    return false;
+                // If we hit a solid block, or a jumpthrough tile that we aren't falling through
+                if !(tile_kind == TileCollisionKind::JUMP_THROUGH
+                    && (collider.descent || dy > 0.0 || collider.seen_wood))
+                {
+                    // Indicate we ran into something and stop processing
+                    break true;
                 }
+
+            // If there is no collision
+            } else {
+                movement += dy;
+                // Indicate we didn't run into anything and stop processing
+                break false;
             }
-        }
+        };
+
+        // Move the entity
+        let transform = transforms.get_mut(entity).unwrap();
+        transform.translation.y += movement - if collided { 0.1 * dy.signum() } else { 0.0 };
 
         // Final check, if we are out of woods after the move - reset wood flags
-        let tile = self.collide_solids(collider.pos, collider.width, collider.height);
-        if tile != TileCollision::JUMP_THROUGH {
+        let is_in_jump_through = query_pipeline
+            .intersection_with_shape(
+                rigid_body_set,
+                collider_set,
+                &(
+                    transform.translation.truncate(),
+                    transform.rotation.to_euler(EulerRot::XYZ).2,
+                )
+                    .into(),
+                &**shape,
+                rapier::QueryFilter::new().predicate(&|_handle, collider| {
+                    let ent = RapierUserData::entity(collider.user_data);
+                    self.tile_collision_kinds.get(ent) == Some(&TileCollisionKind::JUMP_THROUGH)
+                }),
+            )
+            .is_some();
+
+        if !is_in_jump_through {
             collider.seen_wood = false;
             collider.descent = false;
         }
 
-        *self.colliders.get_mut(entity).unwrap() = collider;
-        true
+        collided
     }
 
-    pub fn move_h(&mut self, entity: Entity, dx: f32) -> bool {
+    /// Attempt to move a body horizontally. This will return `true` if an obstacle was run into
+    /// that caused the movement to stop short.
+    pub fn move_horizontal(
+        &mut self,
+        transforms: &mut CompMut<Transform>,
+        entity: Entity,
+        mut dx: f32,
+    ) -> bool {
+        let RapierContext {
+            query_pipeline,
+            collider_set,
+            rigid_body_set,
+            collider_shape_cache,
+            ..
+        } = &mut *self.ctx;
         assert!(self.actors.contains(entity));
-        let mut collider = self.colliders.get(entity).unwrap().clone();
-        collider.x_remainder += dx;
-
-        let mut move_ = collider.x_remainder.round() as i32;
-        if move_ != 0 {
-            collider.x_remainder -= move_ as f32;
-            let sign = move_.signum();
-
-            while move_ != 0 {
-                let tile = self.collide_solids(
-                    collider.pos + vec2(sign as f32, 0.),
-                    collider.width,
-                    collider.height,
-                );
-                if tile == TileCollision::JUMP_THROUGH {
-                    collider.descent = true;
-                    collider.seen_wood = true;
-                }
-                if tile == TileCollision::EMPTY || tile == TileCollision::JUMP_THROUGH {
-                    collider.pos.x += sign as f32;
-                    move_ -= sign;
-                } else {
-                    collider.pos.x = collider.pos.x.floor();
-                    *self.colliders.get_mut(entity).unwrap() = collider;
-                    return false;
-                }
-            }
+        if dx == 0.0 {
+            return false;
         }
-        *self.colliders.get_mut(entity).unwrap() = collider;
-        true
-    }
 
-    #[allow(unused)]
-    pub fn solid_move(&mut self, solid: Entity, dx: f32, dy: f32) {
-        assert!(self.solids.contains(solid));
-        let mut collider = self.colliders.get_mut(solid).unwrap();
+        // Get the shape and position info for the given entity
+        let collider = self.colliders.get_mut(entity).unwrap();
+        let transform = *transforms.get(entity).unwrap();
+        let mut position = (
+            transform.translation.truncate(),
+            transform.rotation.to_euler(EulerRot::XYZ).2,
+        )
+            .into();
+        let shape = collider_shape_cache.shared_shape(collider.shape);
 
-        collider.x_remainder += dx;
-        collider.y_remainder += dy;
-        let move_x = collider.x_remainder.round() as i32;
-        let move_y = collider.y_remainder.round() as i32;
-
-        let mut riding_actors = vec![];
-        let mut pushing_actors = vec![];
-
-        let riding_rect = Rect::new(collider.pos.x, collider.pos.y - 1.0, collider.width, 1.0);
-        let pushing_rect = Rect::new(
-            collider.pos.x + move_x as f32,
-            collider.pos.y,
-            collider.width,
-            collider.height,
-        );
-
-        for actor in self.entities.iter_with_bitset(self.actors.bitset()) {
-            let actor_collider = self.colliders.get_mut(actor).unwrap();
-            let rider_rect = Rect::new(
-                actor_collider.pos.x,
-                actor_collider.pos.y + actor_collider.height - 1.0,
-                actor_collider.width,
+        let mut movement = 0.0;
+        let collided = 'collision: loop {
+            // Do a shape cast in the direction of movement
+            let velocity = rapier::Vector::new(dx, 0.0);
+            let collision = query_pipeline.cast_shape(
+                rigid_body_set,
+                collider_set,
+                &position,
+                &velocity,
+                &**shape,
                 1.0,
+                true,
+                rapier::QueryFilter::new().predicate(&|_handle, rapier_collider| {
+                    let ent = RapierUserData::entity(rapier_collider.user_data);
+
+                    let Some(tile_kind) = self.tile_collision_kinds.get(ent) else {
+                        // Ignore non-tile collisions
+                        return false;
+                    };
+
+                    // Ignore jump-through tiles if we have already seen wood.
+                    !(collider.seen_wood && *tile_kind == TileCollisionKind::JUMP_THROUGH)
+                }),
             );
 
-            if riding_rect.overlaps(&rider_rect) {
-                riding_actors.push(actor);
-            } else if pushing_rect.overlaps(&actor_collider.rect()) && !actor_collider.squished {
-                pushing_actors.push(actor);
-            }
+            if let Some((handle, toi)) = collision {
+                let ent = RapierUserData::entity(collider_set.get(handle).unwrap().user_data);
 
-            if !pushing_rect.overlaps(&actor_collider.rect()) {
-                actor_collider.squishers.remove(&solid);
-                if actor_collider.squishers.is_empty() {
-                    actor_collider.squished = false;
+                // Move up to the point of collision
+                let diff = dx * toi.toi;
+                movement += diff;
+                position.translation.x += diff;
+
+                // Subtract from the remaining attempted movement
+                dx -= diff;
+
+                let tile_kind = *self.tile_collision_kinds.get(ent).unwrap();
+
+                // If we ran into a jump-through tile, go through it and continue casting
+                if tile_kind == TileCollisionKind::JUMP_THROUGH {
+                    collider.seen_wood = true;
+                    collider.descent = true;
+
+                // If we ran into any other kind of tile
+                } else {
+                    // Indicate we ran into something and stop processing
+                    break 'collision true;
                 }
+
+            // If there is no collision
+            } else {
+                movement += dx;
+                // Indicate we didn't run into anything and stop processing
+                break 'collision false;
             }
+        };
+
+        // Move the entity
+        let transform = transforms.get_mut(entity).unwrap();
+        transform.translation.x += movement - if collided { 0.1 * dx.signum() } else { 0.0 };
+
+        // Final check, if we are out of woods after the move - reset wood flags
+        let is_in_jump_through = query_pipeline
+            .intersection_with_shape(
+                rigid_body_set,
+                collider_set,
+                &(
+                    transform.translation.truncate(),
+                    transform.rotation.to_euler(EulerRot::XYZ).2,
+                )
+                    .into(),
+                &**shape,
+                rapier::QueryFilter::new().predicate(&|_handle, collider| {
+                    let ent = RapierUserData::entity(collider.user_data);
+                    self.tile_collision_kinds.get(ent) == Some(&TileCollisionKind::JUMP_THROUGH)
+                }),
+            )
+            .is_some();
+
+        if !is_in_jump_through {
+            collider.seen_wood = false;
+            collider.descent = false;
         }
 
-        self.colliders.get_mut(solid).unwrap().collidable = false;
-        for actor in riding_actors {
-            self.move_h(actor, move_x as f32);
-        }
-        for actor in pushing_actors {
-            let squished = !self.move_h(actor, move_x as f32);
-            if squished {
-                let mut collider = self.colliders.get_mut(actor).unwrap();
-                collider.squished = true;
-                collider.squishers.insert(solid);
-            }
-        }
-        self.colliders.get_mut(solid).unwrap().collidable = true;
-
-        let mut collider = self.colliders.get_mut(solid).unwrap();
-        if move_x != 0 {
-            collider.x_remainder -= move_x as f32;
-            collider.pos.x += move_x as f32;
-        }
-        if move_y != 0 {
-            collider.y_remainder -= move_y as f32;
-            collider.pos.y += move_y as f32;
-        }
+        collided
     }
 
+    /// Returns whether or not there is a tile or solid at the given position.
     #[allow(unused)]
     pub fn solid_at(&self, pos: Vec2) -> bool {
-        self.tag_at(pos, TileCollisionTag::default())
+        self.tile_collision_point(pos) == TileCollisionKind::SOLID
     }
 
+    /// Returns the tile collision at the given point.
     #[allow(unused)]
-    pub fn tag_at(&self, pos: Vec2, tag: TileCollisionTag) -> bool {
+    pub fn tile_collision_point(&self, pos: Vec2) -> TileCollisionKind {
         for (entity, tile_layer) in self.entities.iter_with(&self.tile_layers) {
             let TileLayer {
                 tiles,
@@ -427,150 +782,58 @@ impl<'a> CollisionWorld<'a> {
             let x = (pos.x / tile_size.y) as i32;
             let y = (pos.y / tile_size.x) as i32;
             let tile_entity = tile_layer.get(UVec2::new(x as _, y as _));
-            if x >= 0
-                && x < grid_size.x as i32
-                && y >= 0
-                && y < grid_size.y as i32
-                && tile_entity.is_some()
-            {
-                let tile_tag = tile_entity
-                    .map(|e| self.tile_collision_tags.get(e).copied().unwrap_or_default());
-                return tile_tag == Some(tag);
+            if let Some(tile_entity) = tile_entity {
+                return self
+                    .tile_collision_kinds
+                    .get(tile_entity)
+                    .copied()
+                    .unwrap_or_default();
             }
         }
 
-        self.entities
-            .iter_with((&self.solids, &self.colliders))
-            .any(|(_, (_, collider))| collider.collidable && collider.rect().contains(pos))
+        TileCollisionKind::EMPTY
     }
 
-    pub fn collide_solids(&self, pos: Vec2, width: f32, height: f32) -> TileCollision {
-        let tile = self.collide_tag(TileCollisionTag::default(), pos, width, height);
-        if tile != TileCollision::EMPTY {
-            return tile;
-        }
-
-        self.entities
-            .iter_with((&self.solids, &self.colliders))
-            .find(|(_entity, (_solid, collider))| {
-                collider.collidable
-                    && collider
-                        .rect()
-                        .overlaps(&Rect::new(pos.x, pos.y, width, height))
-            })
-            .map_or(TileCollision::EMPTY, |_| TileCollision::COLLIDER)
+    /// Get the [`TileCollisionKind`] of the first tile detected colliding with the `shape` at the
+    /// given `transform`.
+    pub fn tile_collision(&self, transform: Transform, shape: ColliderShape) -> TileCollisionKind {
+        self.ctx
+            .query_pipeline
+            .intersection_with_shape(
+                &self.ctx.rigid_body_set,
+                &self.ctx.collider_set,
+                &(
+                    transform.translation.truncate(),
+                    transform.rotation.to_euler(EulerRot::XYZ).2,
+                )
+                    .into(),
+                &*shape.shared_shape(),
+                rapier::QueryFilter::new().predicate(&|_handle, collider| {
+                    let ent = RapierUserData::entity(collider.user_data);
+                    self.tile_collision_kinds.contains(ent)
+                }),
+            )
+            .map(|x| RapierUserData::entity(self.ctx.collider_set.get(x).unwrap().user_data))
+            .and_then(|e| self.tile_collision_kinds.get(e).copied())
+            .unwrap_or_default()
     }
 
-    pub fn collide_tag(
-        &self,
-        tag: TileCollisionTag,
-        pos: Vec2,
-        width: f32,
-        height: f32,
-    ) -> TileCollision {
-        for (_, tile_layer) in self.entities.iter_with(&self.tile_layers) {
-            let TileLayer {
-                grid_size,
-                tile_size,
-                ..
-            } = tile_layer;
-
-            let check = |pos: Vec2| {
-                let y = (pos.y / tile_size.x) as i32;
-                let x = (pos.x / tile_size.y) as i32;
-                let tile_entity = tile_layer.get(UVec2::new(x as _, y as _));
-                let tile_tag = tile_entity
-                    .map(|e| self.tile_collision_tags.get(e).copied().unwrap_or_default());
-                if x >= 0
-                    && x < grid_size.x as i32
-                    && y >= 0
-                    && y < grid_size.y as i32
-                    && tile_tag == Some(tag)
-                {
-                    tile_entity
-                        .map(|entity| *self.tile_collisions.get(entity).unwrap())
-                        .unwrap_or_default()
-                } else {
-                    TileCollision::EMPTY
-                }
-            };
-
-            let hw = width / 2.0;
-            let hh = height / 2.0;
-            let tile = check(pos + vec2(-hw, -hh))
-                .or(check(pos + vec2(-hw, hh)))
-                .or(check(pos + vec2(hw, hh)))
-                .or(check(pos + vec2(hw, -hh)));
-
-            if tile != TileCollision::EMPTY {
-                return tile;
-            }
-
-            if width as i32 > tile_size.x as i32 {
-                let mut x = pos.x - hw;
-
-                while {
-                    x += tile_size.x;
-                    x < pos.x + hw - 1.
-                } {
-                    let tile = check(vec2(x, pos.y - hh)).or(check(vec2(x, pos.y + hh)));
-                    if tile != TileCollision::EMPTY {
-                        return tile;
-                    }
-                }
-            }
-
-            if height as i32 > tile_size.y as i32 {
-                let mut y = pos.y - hh;
-
-                while {
-                    y += tile_size.y;
-                    y < pos.y + hh - 1.
-                } {
-                    let tile = check(vec2(pos.x - hw, y)).or(check(vec2(pos.x + hw, y)));
-                    if tile != TileCollision::EMPTY {
-                        return tile;
-                    }
-                }
-            }
-        }
-
-        TileCollision::EMPTY
-    }
-
-    #[allow(unused)]
-    pub fn squished(&self, actor: Entity) -> bool {
-        assert!(self.actors.contains(actor));
-        self.colliders.get(actor).unwrap().squished
-    }
-
-    pub fn actor_pos(&self, actor: Entity) -> Vec2 {
-        assert!(self.actors.contains(actor));
-        self.colliders.get(actor).unwrap().pos
-    }
-
-    #[allow(unused)]
-    pub fn solid_pos(&self, solid: Entity) -> Vec2 {
-        assert!(self.solids.contains(solid));
-        self.colliders.get(solid).unwrap().pos
-    }
-
-    pub fn collide_check(&self, actor: Entity, pos: Vec2) -> bool {
-        assert!(self.actors.contains(actor));
-        let collider = self.colliders.get(actor).unwrap();
-
-        let tile = self.collide_solids(pos, collider.width, collider.height);
-        if collider.descent {
-            tile == TileCollision::SOLID || tile == TileCollision::COLLIDER
-        } else {
-            tile == TileCollision::SOLID
-                || tile == TileCollision::COLLIDER
-                || tile == TileCollision::JUMP_THROUGH
-        }
-    }
-
+    /// Get the collider for the given entity.
     pub fn get_collider(&self, actor: Entity) -> &Collider {
         assert!(self.actors.contains(actor));
         self.colliders.get(actor).unwrap()
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn convert_entity_to_from_user_data() {
+        let e1 = Entity::new(102395950, 10394875);
+        let bits = RapierUserData::from(e1);
+        let e2 = RapierUserData::entity(bits);
+        assert_eq!(e1, e2);
     }
 }

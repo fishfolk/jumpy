@@ -46,7 +46,7 @@ fn kill_players_in_damage_region(
     for (player_ent, (_idx, transform, body)) in
         entities.iter_with((&player_indexes, &transforms, &bodies))
     {
-        let player_rect = body.collider_rect(transform.translation);
+        let player_rect = body.bounding_box(*transform);
         for (ent, (damage_region, transform)) in entities.iter_with((&damage_regions, &transforms))
         {
             let owner = damage_region_owners.get(ent);

@@ -1,5 +1,5 @@
 use crate::{
-    physics::collisions::{Actor, Collider, TileCollision},
+    physics::collisions::{Actor, Collider, TileCollisionKind},
     prelude::*,
 };
 
@@ -32,7 +32,6 @@ fn hydrate(
     mut actors: CompMut<Actor>,
     mut colliders: CompMut<Collider>,
     mut lifetimes: CompMut<Lifetime>,
-    transforms: Comp<Transform>,
     mut atlas_sprites: CompMut<AtlasSprite>,
     bullet_assets: BevyAssets<BulletMeta>,
     bullet_handles: Comp<BulletHandle>,
@@ -55,11 +54,9 @@ fn hydrate(
 
         let BulletMeta {
             atlas,
-            body_size,
-            body_offset,
+            body_diameter,
             ..
         } = &bullet_meta;
-        let transform = *transforms.get(entity).unwrap();
 
         atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
 
@@ -68,9 +65,9 @@ fn hydrate(
         colliders.insert(
             entity,
             Collider {
-                width: body_size.x,
-                height: body_size.y,
-                pos: transform.translation.truncate() + *body_offset,
+                shape: ColliderShape::Circle {
+                    diameter: *body_diameter,
+                },
                 ..default()
             },
         );
@@ -86,11 +83,10 @@ fn update(
     bullet_assets: BevyAssets<BulletMeta>,
 
     player_indexes: Comp<PlayerIdx>,
-    mut collision_world: CollisionWorld,
+    collision_world: CollisionWorld,
     mut player_events: ResMut<PlayerEvents>,
-
-    mut bullets: CompMut<Bullet>,
     mut transforms: CompMut<Transform>,
+    mut bullets: CompMut<Bullet>,
     mut audio_events: ResMut<AudioEvents>,
 ) {
     for (entity, (bullet, bullet_handle)) in entities.iter_with((&mut bullets, &bullet_handles)) {
@@ -100,7 +96,7 @@ fn update(
 
         let BulletMeta {
             velocity,
-            body_size,
+            body_diameter,
             explosion_fps,
             explosion_volume,
             explosion_sound,
@@ -111,9 +107,11 @@ fn update(
         } = bullet_meta;
 
         // Move bullet
-        let position = transforms.get_mut(entity).unwrap();
-        position.translation += bullet.direction * velocity.extend(0.0);
-        collision_world.set_actor_position(entity, position.translation.truncate());
+        let position = {
+            let position = transforms.get_mut(entity).unwrap();
+            position.translation += bullet.direction * velocity.extend(0.0);
+            *position
+        };
 
         // Check actor collisions
         let mut hit_player = false;
@@ -127,11 +125,12 @@ fn update(
             });
 
         // check solid tile collisions
-        let hit_solid = collision_world.collide_solids(
-            position.translation.truncate(),
-            body_size.x,
-            body_size.y,
-        ) != TileCollision::EMPTY;
+        let hit_solid = collision_world.tile_collision(
+            position,
+            ColliderShape::Circle {
+                diameter: *body_diameter,
+            },
+        ) != TileCollisionKind::EMPTY;
 
         // Bullet hit something
         if hit_player || hit_solid {

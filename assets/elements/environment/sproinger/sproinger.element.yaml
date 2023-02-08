@@ -5,5 +5,4 @@ builtin: !Sproinger
   sound: ./jump.ogg
   sound_volume: 0.1
   body_size: [8, 8]
-  body_offset: [0, 0]
   spring_velocity: 16

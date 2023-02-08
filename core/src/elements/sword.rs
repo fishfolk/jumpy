@@ -57,7 +57,6 @@ fn hydrate(
         if let BuiltinElementKind::Sword {
             atlas,
             body_size,
-            body_offset,
             can_rotate,
             bounciness,
             ..
@@ -76,8 +75,7 @@ fn hydrate(
             bodies.insert(
                 entity,
                 KinematicBody {
-                    size: *body_size,
-                    offset: *body_offset,
+                    shape: ColliderShape::Rectangle { size: *body_size },
                     has_mass: true,
                     has_friction: true,
                     can_rotate: *can_rotate,
@@ -100,7 +98,6 @@ fn update(
     element_assets: BevyAssets<ElementMeta>,
     collision_world: CollisionWorld,
     mut audio_events: ResMut<AudioEvents>,
-    mut transforms: CompMut<Transform>,
     mut swords: CompMut<Sword>,
     mut sprites: CompMut<AtlasSprite>,
     mut bodies: CompMut<KinematicBody>,
@@ -112,6 +109,7 @@ fn update(
     mut player_events: ResMut<PlayerEvents>,
     mut commands: Commands,
     mut player_layers: CompMut<PlayerLayers>,
+    mut transforms: CompMut<Transform>,
 ) {
     for (entity, (sword, element_handle)) in entities.iter_with((&mut swords, &element_handles)) {
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
@@ -140,11 +138,11 @@ fn update(
             cooldown_frames,
             sound,
             sound_volume,
-            arm_delay,
             grab_offset,
             throw_velocity,
             angular_velocity,
             fin_anim,
+            killing_speed,
             ..
         } = &element_meta.builtin else {
             unreachable!();
@@ -266,17 +264,19 @@ fn update(
                 }
             }
         } else {
-            let body = bodies.get_mut(entity).unwrap();
+            let body = bodies.get(entity).unwrap();
             sword.dropped_time += 1.0 / crate::FPS;
 
-            let is_on_floor = body.is_on_ground || body.is_on_platform;
-            let is_deals_damage = (is_on_floor && body.velocity.x != 0.0)
-                || (!is_on_floor && body.velocity != Vec2::ZERO);
-            if is_deals_damage && sword.dropped_time >= *arm_delay {
+            if body.velocity.length() >= *killing_speed {
                 collision_world
                     .actor_collisions(entity)
                     .into_iter()
-                    .filter(|&x| player_indexes.contains(x))
+                    .filter(|&x| {
+                        player_indexes.contains(x) && {
+                            let player_body = bodies.get(x).unwrap();
+                            (player_body.velocity - body.velocity).length() >= *killing_speed
+                        }
+                    })
                     .for_each(|player| player_events.kill(player));
             }
         }

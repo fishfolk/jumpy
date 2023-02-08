@@ -56,7 +56,6 @@ fn hydrate(
         if let BuiltinElementKind::Mine {
             atlas,
             body_size,
-            body_offset,
             bounciness,
             ..
         } = &element_meta.builtin
@@ -80,8 +79,7 @@ fn hydrate(
             bodies.insert(
                 entity,
                 KinematicBody {
-                    size: *body_size,
-                    offset: *body_offset,
+                    shape: ColliderShape::Rectangle { size: *body_size },
                     has_mass: true,
                     has_friction: true,
                     bounciness: *bounciness,

@@ -210,7 +210,6 @@ pub enum BuiltinElementKind {
     /// Grenades item
     Grenade {
         body_size: Vec2,
-        body_offset: Vec2,
         grab_offset: Vec2,
         damage_region_size: Vec2,
         damage_region_lifetime: f32,
@@ -312,7 +311,6 @@ pub enum BuiltinElementKind {
         throw_velocity: Vec2,
 
         body_size: Vec2,
-        body_offset: Vec2,
         grab_offset: Vec2,
         // How long to wait before despawning a thrown crate, if it hans't it anything yet.
         break_timeout: f32,
@@ -346,7 +344,6 @@ pub enum BuiltinElementKind {
         arm_delay: f32,
 
         body_size: Vec2,
-        body_offset: Vec2,
         grab_offset: Vec2,
     },
 
@@ -360,12 +357,10 @@ pub enum BuiltinElementKind {
         player_decoration_handle: Handle<TextureAtlas>,
 
         body_size: Vec2,
-        body_offset: Vec2,
         grab_offset: Vec2,
     },
     KickBomb {
         body_size: Vec2,
-        body_offset: Vec2,
         grab_offset: Vec2,
         damage_region_size: Vec2,
         damage_region_lifetime: f32,

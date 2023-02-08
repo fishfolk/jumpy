@@ -34,10 +34,7 @@ fn hydrate(
         };
 
         if let BuiltinElementKind::Sproinger {
-            atlas,
-            body_size,
-            body_offset,
-            ..
+            atlas, body_size, ..
         } = &element_meta.builtin
         {
             hydrated.insert(entity, MapElementHydrated);
@@ -45,8 +42,7 @@ fn hydrate(
             bodies.insert(
                 entity,
                 KinematicBody {
-                    size: *body_size,
-                    offset: *body_offset,
+                    shape: ColliderShape::Rectangle { size: *body_size },
                     has_mass: false,
                     ..default()
                 },

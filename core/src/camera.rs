@@ -84,7 +84,7 @@ fn camera_controller(
         }
 
         // Get the player's body rect
-        let rect = body.collider_rect(transform.translation);
+        let rect = body.bounding_box(*transform);
 
         // Push the camera rect just enough to contain the player's body rect
         if rect.min.x < camera_box.min.x {

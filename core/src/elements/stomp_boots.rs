@@ -50,7 +50,6 @@ fn hydrate(
 
         if let BuiltinElementKind::StompBoots {
             body_size,
-            body_offset,
             map_icon,
             ..
         } = &element_meta.builtin
@@ -73,8 +72,7 @@ fn hydrate(
             bodies.insert(
                 entity,
                 KinematicBody {
-                    size: *body_size,
-                    offset: *body_offset,
+                    shape: ColliderShape::Rectangle { size: *body_size },
                     has_mass: true,
                     has_friction: true,
                     gravity: game_meta.physics.gravity,
@@ -224,11 +222,9 @@ fn update_wearer(
                     .expect("stomp boots wearer should have Transform component");
                 let player_transform = transforms.get(player).unwrap();
                 let player_kinematic_body = kinematic_bodies.get(player).unwrap();
-                if kinematic_body
-                    .collider_rect(wearer_transform.translation)
-                    .bottom()
+                if kinematic_body.bounding_box(*wearer_transform).bottom()
                     > player_kinematic_body
-                        .collider_rect(player_transform.translation)
+                        .bounding_box(*player_transform)
                         .center()
                         .y
                 {

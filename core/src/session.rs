@@ -45,14 +45,14 @@ impl GameSession {
         }
 
         // Initialize time resource
-        session.world.resources.init::<Time>();
+        session.world.init_resource::<Time>();
         // Initialize bevy world resource with an empty bevy world
-        session.world.resources.init::<BevyWorld>();
+        session.world.init_resource::<BevyWorld>();
         // Set the map
-        session.world.resources.insert(MapHandle(info.map));
+        session.world.insert_resource(MapHandle(info.map));
 
         // Set player initial character selections
-        let player_inputs = session.world.resources.get::<PlayerInputs>();
+        let player_inputs = session.world.resource::<PlayerInputs>();
         let mut player_inputs = player_inputs.borrow_mut();
         for i in 0..MAX_PLAYERS {
             if let Some(player) = info.player_info[i].take() {
@@ -70,12 +70,12 @@ impl GameSession {
     ///
     /// This may be used to change game metadata in the middle of the session.
     pub fn set_metadata(&mut self, metadata: Arc<CoreMeta>) {
-        self.world.resources.insert(CoreMetaArc(metadata));
+        self.world.insert_resource(CoreMetaArc(metadata));
     }
 
     /// Provide a closure to update the game inputs.
     pub fn update_input<R, F: FnOnce(&mut PlayerInputs) -> R>(&mut self, update: F) -> R {
-        let inputs = self.world.resources.get::<PlayerInputs>();
+        let inputs = self.world.resource::<PlayerInputs>();
         let mut inputs = inputs.borrow_mut();
 
         update(&mut inputs)
@@ -88,7 +88,7 @@ impl GameSession {
     /// Run a single simulation frame
     pub fn advance(&mut self, bevy_world: &mut ::bevy::prelude::World) {
         // Update the window resource
-        let window_resource = self.world.resources.get::<Window>();
+        let window_resource = self.world.resource::<Window>();
         let bevy_windows = bevy_world.resource::<::bevy::window::Windows>();
         if let Some(window) = bevy_windows.get_primary() {
             window_resource.borrow_mut().size = Vec2::new(window.width(), window.height());
@@ -96,7 +96,7 @@ impl GameSession {
 
         // Make bevy world available to the bones ECS world.
         {
-            let world_resource = self.world.resources.get::<BevyWorld>();
+            let world_resource = self.world.resource::<BevyWorld>();
             let mut world_resource = world_resource.borrow_mut();
             let mut scratch_world = self.scratch_world.take().unwrap();
             std::mem::swap(&mut scratch_world, bevy_world);
@@ -107,14 +107,14 @@ impl GameSession {
         }
 
         // Advance the simulation time
-        let time_resource = self.world.resources.get::<Time>();
+        let time_resource = self.world.resource::<Time>();
         time_resource.borrow_mut().elapsed += 1.0 / crate::FPS;
 
         self.world.maintain();
 
         // Swap the bevy world back to normal.
         {
-            let world_resource = self.world.resources.get::<BevyWorld>();
+            let world_resource = self.world.resource::<BevyWorld>();
             let mut world_resource = world_resource.borrow_mut();
             let mut scratch_world = world_resource.0.take().unwrap();
             std::mem::swap(bevy_world, &mut scratch_world);

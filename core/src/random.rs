@@ -2,7 +2,7 @@ use crate::prelude::*;
 pub use turborand::prelude::*;
 
 pub fn install(session: &mut GameSession) {
-    session.world.resources.init::<GlobalRng>();
+    session.world.init_resource::<GlobalRng>();
 }
 
 #[derive(Clone, TypeUlid, Deref, DerefMut)]

@@ -46,7 +46,6 @@ fn hydrate(
             atlas,
             max_ammo,
             body_size,
-            body_offset,
             can_rotate,
             bounciness,
             ..
@@ -71,8 +70,7 @@ fn hydrate(
             bodies.insert(
                 entity,
                 KinematicBody {
-                    size: *body_size,
-                    offset: *body_offset,
+                    shape: ColliderShape::Rectangle { size: *body_size },
                     has_mass: true,
                     has_friction: true,
                     can_rotate: *can_rotate,

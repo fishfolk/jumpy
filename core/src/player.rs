@@ -196,17 +196,16 @@ fn handle_player_events(
                 players_killed.insert(player, PlayerKilled);
             }
             PlayerEvent::Despawn { player } => {
-                entities
-                    .iter_with(&attachments)
-                    .filter(|(_, attachment)| attachment.entity == player)
-                    .map(|(entity, _)| entity)
-                    .collect::<Vec<_>>()
-                    .iter()
-                    .for_each(|entity| {
-                        entities.kill(*entity);
-                    });
-
                 if player_indexes.contains(player) {
+                    entities
+                        .iter_with(&attachments)
+                        .filter(|(_, attachment)| attachment.entity == player)
+                        .map(|(entity, _)| entity)
+                        .collect::<Vec<_>>()
+                        .iter()
+                        .for_each(|entity| {
+                            entities.kill(*entity);
+                        });
                     let layers = player_layers.get(player).unwrap();
                     entities.kill(layers.fin_ent);
                     entities.kill(layers.face_ent);
@@ -296,7 +295,9 @@ fn hydrate_players(
         kinematic_bodies.insert(
             player_entity,
             KinematicBody {
-                size: meta.body_size,
+                shape: ColliderShape::Rectangle {
+                    size: meta.body_size,
+                },
                 has_mass: true,
                 has_friction: false,
                 gravity: meta.gravity,

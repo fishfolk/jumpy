@@ -1,7 +1,7 @@
 use crate::{prelude::*, MAX_PLAYERS};
 
 pub fn install(session: &mut GameSession) {
-    session.world.resources.init::<PlayerInputs>();
+    session.world.init_resource::<PlayerInputs>();
 }
 
 /// The inputs for each player in this simulation frame.

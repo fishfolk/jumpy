@@ -255,7 +255,7 @@ fn update_thrown_mines(
             unreachable!();
         };
 
-        let frame_time = 1.0 / crate::FPS as f32;
+        let frame_time = 1.0 / crate::FPS;
         thrown_mine.age += 1.0 / crate::FPS;
 
         if thrown_mine.age >= *arm_delay && thrown_mine.age - *arm_delay < frame_time {

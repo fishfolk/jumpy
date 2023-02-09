@@ -145,17 +145,27 @@ fn update_idle_crates(
             if items_used.get(entity).is_some() {
                 items_used.remove(entity);
                 player_events.set_inventory(player, None);
-                let [body, player_body] = bodies.get_many_mut([entity, player]).unwrap_many();
-                let player_velocity = player_body.velocity;
-                let player_sprite = sprites.get_mut(entity).unwrap();
-                let signum = if player_sprite.flip_x {
+                attachments.remove(entity);
+
+                let player_velocity = bodies.get(player).unwrap().velocity;
+                let player_sprite = sprites.get_mut(player).unwrap();
+                let player_translation = transforms.get(player).unwrap().translation;
+
+                let body = bodies.get_mut(entity).unwrap();
+
+                let horizontal_flip_factor = if player_sprite.flip_x {
                     Vec2::new(-1.0, 1.0)
                 } else {
                     Vec2::ONE
                 };
-                body.velocity = *throw_velocity * signum + player_velocity;
-                attachments.remove(entity);
+
+                body.velocity = *throw_velocity * horizontal_flip_factor + player_velocity;
                 body.is_deactivated = false;
+
+                let transform = transforms.get_mut(entity).unwrap();
+                transform.translation =
+                    player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
+
                 commands.add(
                     move |mut idle: CompMut<IdleCrate>, mut thrown: CompMut<ThrownCrate>| {
                         idle.remove(entity);
@@ -176,16 +186,33 @@ fn update_idle_crates(
 
         if let Some(dropped) = items_dropped.get(entity).copied() {
             let player = dropped.player;
+
             items_dropped.remove(entity);
             attachments.remove(entity);
 
             let player_translation = transforms.get(player).unwrap().translation;
+            let player_sprite = sprites.get_mut(player).unwrap();
+            let player_velocity = bodies.get(player).unwrap().velocity;
+
             let body = bodies.get_mut(entity).unwrap();
 
             body.is_deactivated = false;
             body.is_spawning = true;
+
+            let horizontal_flip_factor = if player_sprite.flip_x {
+                Vec2::new(-1.0, 1.0)
+            } else {
+                Vec2::ONE
+            };
+
+            if player_velocity != Vec2::ZERO {
+                body.velocity =
+                    *throw_velocity / 5.0 * horizontal_flip_factor + player_velocity / 5.0;
+            }
+
             let transform = transforms.get_mut(entity).unwrap();
-            transform.translation = player_translation;
+            transform.translation =
+                player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
         }
     }
 }

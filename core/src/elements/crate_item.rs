@@ -193,7 +193,7 @@ fn update_idle_crates(
             let player_translation = transforms.get(player).unwrap().translation;
             let player_sprite = sprites.get_mut(player).unwrap();
             let player_velocity = bodies.get(player).unwrap().velocity;
-            
+
             let body = bodies.get_mut(entity).unwrap();
 
             body.is_deactivated = false;
@@ -206,12 +206,13 @@ fn update_idle_crates(
             };
 
             if player_velocity != Vec2::ZERO {
-                body.velocity = *throw_velocity/5.0 * horizontal_flip_factor + player_velocity/5.0;
+                body.velocity =
+                    *throw_velocity / 5.0 * horizontal_flip_factor + player_velocity / 5.0;
             }
 
             let transform = transforms.get_mut(entity).unwrap();
             transform.translation =
-                    player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
+                player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
         }
     }
 }

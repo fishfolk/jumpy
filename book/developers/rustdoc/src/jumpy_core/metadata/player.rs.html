@@ -149,6 +149,9 @@
 <a href="#148" id="148">148</a>
 <a href="#149" id="149">149</a>
 <a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="attr">#[derive(BonesBevyAsset, Clone, Debug, Default, Deserialize, TypeUlid)]
@@ -202,8 +205,11 @@
 </span><span class="kw">pub struct </span>PlayerStatsMeta {
     <span class="kw">pub </span>jump_speed: f32,
     <span class="kw">pub </span>slow_fall_speed: f32,
-    <span class="kw">pub </span>air_move_speed: f32,
+    <span class="kw">pub </span>air_speed: f32,
+    <span class="kw">pub </span>accel_air_speed: f32,
     <span class="kw">pub </span>walk_speed: f32,
+    <span class="kw">pub </span>slowdown: f32,
+    <span class="kw">pub </span>accel_walk_speed: f32,
 }
 
 <span class="attr">#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug, Default)]

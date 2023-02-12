@@ -112,6 +112,19 @@
 <a href="#111" id="111">111</a>
 <a href="#112" id="112">112</a>
 <a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="kw">pub const </span>ID: Key = <span class="macro">key!</span>(<span class="string">&quot;core::midair&quot;</span>);
@@ -211,8 +224,21 @@
             body.velocity.y = body.velocity.y.max(-meta.stats.slow_fall_speed);
         }
 
-        <span class="comment">// Add controls
-        </span>body.velocity.x = control.move_direction.x * meta.stats.air_move_speed;
+        <span class="comment">// Walk in movement direction
+        </span>body.velocity.x += meta.stats.accel_air_speed * control.move_direction.x;
+        <span class="kw">if </span>control.move_direction.x.is_sign_positive() {
+            body.velocity.x = body.velocity.x.min(meta.stats.air_speed);
+        } <span class="kw">else </span>{
+            body.velocity.x = body.velocity.x.max(-meta.stats.air_speed);
+        }
+
+        <span class="kw">if </span>control.move_direction.x == <span class="number">0.0 </span>{
+            <span class="kw">if </span>body.velocity.x.is_sign_positive() {
+                body.velocity.x = (body.velocity.x - meta.stats.slowdown).max(<span class="number">0.0</span>);
+            } <span class="kw">else </span>{
+                body.velocity.x = (body.velocity.x + meta.stats.slowdown).min(<span class="number">0.0</span>);
+            }
+        }
 
         <span class="comment">// Fall through platforms
         </span>body.fall_through = control.move_direction.y &lt; -<span class="number">0.5 </span>&amp;&amp; control.jump_pressed;

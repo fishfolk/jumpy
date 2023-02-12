@@ -100,6 +100,12 @@
 <a href="#99" id="99">99</a>
 <a href="#100" id="100">100</a>
 <a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="kw">pub const </span>ID: Key = <span class="macro">key!</span>(<span class="string">&quot;core::idle&quot;</span>);
@@ -197,8 +203,14 @@
             </span>body.velocity.y = meta.stats.jump_speed;
         }
 
-        <span class="comment">// Since we are idling, don&#39;t move
-        </span>body.velocity.x = <span class="number">0.0</span>;
+        <span class="comment">// Since we are idling, slide
+        </span><span class="kw">if </span>body.velocity.x != <span class="number">0.0 </span>{
+            <span class="kw">if </span>body.velocity.x.is_sign_positive() {
+                body.velocity.x = (body.velocity.x - meta.stats.slowdown).max(<span class="number">0.0</span>);
+            } <span class="kw">else </span>{
+                body.velocity.x = (body.velocity.x + meta.stats.slowdown).min(<span class="number">0.0</span>);
+            }
+        }
     }
 }
 </code></pre></div>

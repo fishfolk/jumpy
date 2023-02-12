@@ -380,16 +380,16 @@
             body.velocity.x <span class="kw-2">*</span>= -body.bounciness;
         }
 
-        <span class="kw">if </span>!collision_world.move_v(entity, body.velocity.y) {
-            body.velocity.y <span class="kw-2">*</span>= -body.bounciness;
-        }
-
         <span class="kw">if </span>!body.is_on_ground &amp;&amp; body.has_mass {
             body.velocity.y -= body.gravity;
 
             <span class="kw">if </span>body.velocity.y &lt; -game.physics.terminal_velocity {
                 body.velocity.y = -game.physics.terminal_velocity;
             }
+        }
+
+        <span class="kw">if </span>!collision_world.move_v(entity, body.velocity.y) {
+            body.velocity.y <span class="kw-2">*</span>= -body.bounciness;
         }
 
         <span class="kw">if </span>body.can_rotate {

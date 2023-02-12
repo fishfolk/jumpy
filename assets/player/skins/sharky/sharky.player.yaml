@@ -20,7 +20,7 @@ stats:
   slowdown: 0.8
 
 body_size: [32, 48]
-gravity: 1
+gravity: 0.6
 
 layers:
   body:

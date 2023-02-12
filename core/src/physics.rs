@@ -164,16 +164,16 @@ fn update_kinematic_bodies(
             body.velocity.x *= -body.bounciness;
         }
 
-        if !collision_world.move_v(entity, body.velocity.y) {
-            body.velocity.y *= -body.bounciness;
-        }
-
         if !body.is_on_ground && body.has_mass {
             body.velocity.y -= body.gravity;
 
             if body.velocity.y < -game.physics.terminal_velocity {
                 body.velocity.y = -game.physics.terminal_velocity;
             }
+        }
+
+        if !collision_world.move_v(entity, body.velocity.y) {
+            body.velocity.y *= -body.bounciness;
         }
 
         if body.can_rotate {

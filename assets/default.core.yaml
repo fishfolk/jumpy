@@ -14,7 +14,7 @@ physics:
   terminal_velocity: 30
   friction_lerp: 0.85
   stop_threshold: 1.0
-  gravity: 1
+  gravity: 0.6
 
 players:
   - player/skins/fishy/fishy.player.yaml

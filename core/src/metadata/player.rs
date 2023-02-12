@@ -51,8 +51,11 @@ pub struct PlayerLayerMeta {
 pub struct PlayerStatsMeta {
     pub jump_speed: f32,
     pub slow_fall_speed: f32,
-    pub air_move_speed: f32,
+    pub air_speed: f32,
+    pub accel_air_speed: f32,
     pub walk_speed: f32,
+    pub slowdown: f32,
+    pub accel_walk_speed: f32,
 }
 
 #[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug, Default)]

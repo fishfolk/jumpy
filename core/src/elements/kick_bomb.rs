@@ -22,6 +22,7 @@ pub struct LitKickBomb {
 }
 
 fn hydrate(
+    game_meta: Res<CoreMetaArc>,
     mut items: CompMut<Item>,
     mut entities: ResMut<Entities>,
     mut bodies: CompMut<KinematicBody>,
@@ -79,7 +80,7 @@ fn hydrate(
                 KinematicBody {
                     size: *body_size,
                     offset: *body_offset,
-                    gravity: 1.0,
+                    gravity: game_meta.physics.gravity,
                     has_mass: true,
                     has_friction: true,
                     can_rotate: *can_rotate,

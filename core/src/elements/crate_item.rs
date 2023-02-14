@@ -1,4 +1,4 @@
-use crate::{physics::collisions::TileCollision, prelude::*};
+use crate::{physics::collisions::TileCollisionKind, prelude::*};
 
 pub fn install(session: &mut GameSession) {
     session
@@ -56,7 +56,6 @@ fn hydrate_crates(
         let BuiltinElementKind::Crate{
             atlas,
             body_size,
-            body_offset,
             bounciness,
             ..
         } = &element_meta.builtin else{
@@ -77,8 +76,7 @@ fn hydrate_crates(
         bodies.insert(
             entity,
             KinematicBody {
-                size: *body_size,
-                offset: *body_offset,
+                shape: ColliderShape::Rectangle { size: *body_size },
                 has_mass: true,
                 can_rotate: false,
                 has_friction: true,
@@ -222,7 +220,6 @@ fn update_thrown_crates(
     mut hydrated: CompMut<MapElementHydrated>,
     element_assets: BevyAssets<ElementMeta>,
     element_handles: Comp<ElementHandle>,
-    transforms: Comp<Transform>,
     mut thrown_crates: CompMut<ThrownCrate>,
     mut commands: Commands,
     mut atlas_sprites: CompMut<AtlasSprite>,
@@ -231,6 +228,7 @@ fn update_thrown_crates(
     mut player_events: ResMut<PlayerEvents>,
     mut bodies: CompMut<KinematicBody>,
     mut audio_events: ResMut<AudioEvents>,
+    transforms: Comp<Transform>,
 ) {
     for (entity, (mut thrown_crate, element_handle, transform, atlas_sprite, body)) in entities
         .iter_with((
@@ -265,11 +263,15 @@ fn update_thrown_crates(
 
         let colliding_with_tile = {
             let collider = collision_world.get_collider(entity);
-            let width = collider.width + 2.0;
-            let height = collider.height + 2.0;
-            let pos = transform.translation.truncate();
-            collision_world.collide_solids(pos, width, height) == TileCollision::SOLID
-                || collision_world.collide_solids(pos, width, height) == TileCollision::JUMP_THROUGH
+            let aabb = collider.shape.compute_aabb(default());
+            let width = aabb.extents().x + 2.0;
+            let height = aabb.extents().y + 2.0;
+            collision_world.tile_collision(
+                Transform::from_translation(transform.translation),
+                ColliderShape::Rectangle {
+                    size: vec2(width, height),
+                },
+            ) != TileCollisionKind::EMPTY
         };
 
         if colliding_with_tile && !thrown_crate.was_colliding {

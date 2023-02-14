@@ -52,8 +52,7 @@ fn hydrate(
 
         if let BuiltinElementKind::KickBomb {
             atlas,
-            body_size,
-            body_offset,
+            body_diameter,
             can_rotate,
             bounciness,
             ..
@@ -78,8 +77,9 @@ fn hydrate(
             bodies.insert(
                 entity,
                 KinematicBody {
-                    size: *body_size,
-                    offset: *body_offset,
+                    shape: ColliderShape::Circle {
+                        diameter: *body_diameter,
+                    },
                     gravity: game_meta.physics.gravity,
                     has_mass: true,
                     has_friction: true,
@@ -212,7 +212,6 @@ fn update_lit_kick_bombs(
     collision_world: CollisionWorld,
     player_indexes: Comp<PlayerIdx>,
     mut audio_events: ResMut<AudioEvents>,
-    mut transforms: CompMut<Transform>,
     mut lit_grenades: CompMut<LitKickBomb>,
     mut sprites: CompMut<AtlasSprite>,
     mut bodies: CompMut<KinematicBody>,
@@ -221,7 +220,7 @@ fn update_lit_kick_bombs(
     mut attachments: CompMut<PlayerBodyAttachment>,
     mut player_layers: CompMut<PlayerLayers>,
     player_inventories: PlayerInventories,
-
+    mut transforms: CompMut<Transform>,
     mut commands: Commands,
 ) {
     for (entity, (kick_bomb, element_handle)) in

@@ -1,7 +1,6 @@
 lifetime: 1.0
 velocity: [10, 0]
-body_offset: [0, 0]
-body_size: [15, 15]
+body_diameter: 15
 atlas: ./musket_bullet.atlas.yaml
 
 explosion_fps: 12

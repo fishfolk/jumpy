@@ -93,8 +93,9 @@ fn hydrate(
                     gravity: game_meta.physics.gravity,
                     has_mass: true,
                     has_friction: true,
-                    size: Vec2::new(17.0, 12.0),
-                    offset: Vec2::new(0.0, 0.0),
+                    shape: ColliderShape::Rectangle {
+                        size: Vec2::new(17.0, 12.0),
+                    },
                     ..default()
                 },
             );

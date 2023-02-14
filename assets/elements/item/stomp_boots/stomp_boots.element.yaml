@@ -5,5 +5,4 @@ builtin: !StompBoots
   player_decoration: ./stomp_boots.atlas.yaml
   
   body_size: [32, 18]
-  body_offset: [0, 0]
   grab_offset: [-8, -4]

@@ -30,7 +30,7 @@ pub struct CoreDebugSettings(pub jumpy_core::debug::DebugSettings);
 fn sync_core_debug_settings(session: Option<ResMut<Session>>, settings: Res<CoreDebugSettings>) {
     if settings.is_changed() {
         if let Some(mut session) = session {
-            session.world.resources.insert(settings.0);
+            session.world.insert_resource(settings.0);
         }
     }
 }

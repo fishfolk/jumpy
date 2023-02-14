@@ -24,11 +24,8 @@ fn editor_size_default() -> Vec2 {
 #[asset_id = "bullet"]
 #[serde(deny_unknown_fields)]
 pub struct BulletMeta {
-    #[serde(default)]
-    pub body_offset: Vec2,
-
     pub velocity: Vec2,
-    pub body_size: Vec2,
+    pub body_diameter: f32,
     pub atlas: Handle<Atlas>,
 
     pub lifetime: f32,
@@ -51,8 +48,7 @@ pub enum BuiltinElementKind {
     PlayerSpawner,
     /// Grenades item
     Grenade {
-        body_size: Vec2,
-        body_offset: Vec2,
+        body_diameter: f32,
         fin_anim: Key,
         grab_offset: Vec2,
         damage_region_size: Vec2,
@@ -105,7 +101,6 @@ pub enum BuiltinElementKind {
         sound: Handle<AudioSource>,
         sound_volume: f32,
         body_size: Vec2,
-        body_offset: Vec2,
         spring_velocity: f32,
     },
     /// This is a sword
@@ -116,12 +111,10 @@ pub enum BuiltinElementKind {
         body_size: Vec2,
         fin_anim: Key,
         #[serde(default)]
-        body_offset: Vec2,
-        #[serde(default)]
         grab_offset: Vec2,
+        killing_speed: f32,
         angular_velocity: f32,
         can_rotate: bool,
-        arm_delay: f32,
         bounciness: f32,
         throw_velocity: Vec2,
         cooldown_frames: usize,
@@ -142,7 +135,6 @@ pub enum BuiltinElementKind {
         throw_velocity: Vec2,
 
         body_size: Vec2,
-        body_offset: Vec2,
         grab_offset: Vec2,
         // How long to wait before despawning a thrown crate, if it hans't it anything yet.
         break_timeout: f32,
@@ -173,7 +165,6 @@ pub enum BuiltinElementKind {
 
         throw_velocity: Vec2,
         body_size: Vec2,
-        body_offset: Vec2,
         grab_offset: Vec2,
         fin_anim: Key,
         bounciness: f32,
@@ -184,12 +175,10 @@ pub enum BuiltinElementKind {
         player_decoration: Handle<Atlas>,
 
         body_size: Vec2,
-        body_offset: Vec2,
         grab_offset: Vec2,
     },
     KickBomb {
-        body_size: Vec2,
-        body_offset: Vec2,
+        body_diameter: f32,
         fin_anim: Key,
         grab_offset: Vec2,
         damage_region_size: Vec2,
@@ -219,8 +208,6 @@ pub enum BuiltinElementKind {
         arm_delay: f32,
     },
     Musket {
-        #[serde(default)]
-        body_offset: Vec2,
         #[serde(default)]
         grab_offset: Vec2,
         fin_anim: Key,

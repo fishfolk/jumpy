@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"jumpy_core":[["impl <a class=\"trait\" href=\"jumpy_core/physics/collisions/rapier/trait.EventHandler.html\" title=\"trait jumpy_core::physics::collisions::rapier::EventHandler\">EventHandler</a> for &amp;mut <a class=\"struct\" href=\"jumpy_core/physics/collisions/struct.CollisionCache.html\" title=\"struct jumpy_core::physics::collisions::CollisionCache\">CollisionCache</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

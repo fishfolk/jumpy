@@ -182,14 +182,14 @@
         }
 
         <span class="comment">// Initialize time resource
-        </span>session.world.resources.init::&lt;Time&gt;();
+        </span>session.world.init_resource::&lt;Time&gt;();
         <span class="comment">// Initialize bevy world resource with an empty bevy world
-        </span>session.world.resources.init::&lt;BevyWorld&gt;();
+        </span>session.world.init_resource::&lt;BevyWorld&gt;();
         <span class="comment">// Set the map
-        </span>session.world.resources.insert(MapHandle(info.map));
+        </span>session.world.insert_resource(MapHandle(info.map));
 
         <span class="comment">// Set player initial character selections
-        </span><span class="kw">let </span>player_inputs = session.world.resources.get::&lt;PlayerInputs&gt;();
+        </span><span class="kw">let </span>player_inputs = session.world.resource::&lt;PlayerInputs&gt;();
         <span class="kw">let </span><span class="kw-2">mut </span>player_inputs = player_inputs.borrow_mut();
         <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..MAX_PLAYERS {
             <span class="kw">if let </span><span class="prelude-val">Some</span>(player) = info.player_info[i].take() {
@@ -207,12 +207,12 @@
     ///
     /// This may be used to change game metadata in the middle of the session.
     </span><span class="kw">pub fn </span>set_metadata(<span class="kw-2">&amp;mut </span><span class="self">self</span>, metadata: Arc&lt;CoreMeta&gt;) {
-        <span class="self">self</span>.world.resources.insert(CoreMetaArc(metadata));
+        <span class="self">self</span>.world.insert_resource(CoreMetaArc(metadata));
     }
 
     <span class="doccomment">/// Provide a closure to update the game inputs.
     </span><span class="kw">pub fn </span>update_input&lt;R, F: FnOnce(<span class="kw-2">&amp;mut </span>PlayerInputs) -&gt; R&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, update: F) -&gt; R {
-        <span class="kw">let </span>inputs = <span class="self">self</span>.world.resources.get::&lt;PlayerInputs&gt;();
+        <span class="kw">let </span>inputs = <span class="self">self</span>.world.resource::&lt;PlayerInputs&gt;();
         <span class="kw">let </span><span class="kw-2">mut </span>inputs = inputs.borrow_mut();
 
         update(<span class="kw-2">&amp;mut </span>inputs)
@@ -225,7 +225,7 @@
     <span class="doccomment">/// Run a single simulation frame
     </span><span class="kw">pub fn </span>advance(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bevy_world: <span class="kw-2">&amp;mut </span>::bevy::prelude::World) {
         <span class="comment">// Update the window resource
-        </span><span class="kw">let </span>window_resource = <span class="self">self</span>.world.resources.get::&lt;Window&gt;();
+        </span><span class="kw">let </span>window_resource = <span class="self">self</span>.world.resource::&lt;Window&gt;();
         <span class="kw">let </span>bevy_windows = bevy_world.resource::&lt;::bevy::window::Windows&gt;();
         <span class="kw">if let </span><span class="prelude-val">Some</span>(window) = bevy_windows.get_primary() {
             window_resource.borrow_mut().size = Vec2::new(window.width(), window.height());
@@ -233,7 +233,7 @@
 
         <span class="comment">// Make bevy world available to the bones ECS world.
         </span>{
-            <span class="kw">let </span>world_resource = <span class="self">self</span>.world.resources.get::&lt;BevyWorld&gt;();
+            <span class="kw">let </span>world_resource = <span class="self">self</span>.world.resource::&lt;BevyWorld&gt;();
             <span class="kw">let </span><span class="kw-2">mut </span>world_resource = world_resource.borrow_mut();
             <span class="kw">let </span><span class="kw-2">mut </span>scratch_world = <span class="self">self</span>.scratch_world.take().unwrap();
             std::mem::swap(<span class="kw-2">&amp;mut </span>scratch_world, bevy_world);
@@ -244,14 +244,14 @@
         }
 
         <span class="comment">// Advance the simulation time
-        </span><span class="kw">let </span>time_resource = <span class="self">self</span>.world.resources.get::&lt;Time&gt;();
+        </span><span class="kw">let </span>time_resource = <span class="self">self</span>.world.resource::&lt;Time&gt;();
         time_resource.borrow_mut().elapsed += <span class="number">1.0 </span>/ <span class="kw">crate</span>::FPS;
 
         <span class="self">self</span>.world.maintain();
 
         <span class="comment">// Swap the bevy world back to normal.
         </span>{
-            <span class="kw">let </span>world_resource = <span class="self">self</span>.world.resources.get::&lt;BevyWorld&gt;();
+            <span class="kw">let </span>world_resource = <span class="self">self</span>.world.resource::&lt;BevyWorld&gt;();
             <span class="kw">let </span><span class="kw-2">mut </span>world_resource = world_resource.borrow_mut();
             <span class="kw">let </span><span class="kw-2">mut </span>scratch_world = world_resource.<span class="number">0</span>.take().unwrap();
             std::mem::swap(bevy_world, <span class="kw-2">&amp;mut </span>scratch_world);

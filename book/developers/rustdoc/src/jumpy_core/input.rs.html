@@ -59,7 +59,7 @@
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{prelude::<span class="kw-2">*</span>, MAX_PLAYERS};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
-    session.world.resources.init::&lt;PlayerInputs&gt;();
+    session.world.init_resource::&lt;PlayerInputs&gt;();
 }
 
 <span class="doccomment">/// The inputs for each player in this simulation frame.

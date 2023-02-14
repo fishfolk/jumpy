@@ -400,7 +400,6 @@
 <a href="#399" id="399">399</a>
 <a href="#400" id="400">400</a>
 <a href="#401" id="401">401</a>
-<a href="#402" id="402">402</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -455,8 +454,7 @@
 
         <span class="kw">if let </span>BuiltinElementKind::KickBomb {
             atlas,
-            body_size,
-            body_offset,
+            body_diameter,
             can_rotate,
             bounciness,
             ..
@@ -481,8 +479,9 @@
             bodies.insert(
                 entity,
                 KinematicBody {
-                    size: <span class="kw-2">*</span>body_size,
-                    offset: <span class="kw-2">*</span>body_offset,
+                    shape: ColliderShape::Circle {
+                        diameter: <span class="kw-2">*</span>body_diameter,
+                    },
                     gravity: game_meta.physics.gravity,
                     has_mass: <span class="bool-val">true</span>,
                     has_friction: <span class="bool-val">true</span>,
@@ -615,7 +614,6 @@
     collision_world: CollisionWorld,
     player_indexes: Comp&lt;PlayerIdx&gt;,
     <span class="kw-2">mut </span>audio_events: ResMut&lt;AudioEvents&gt;,
-    <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>lit_grenades: CompMut&lt;LitKickBomb&gt;,
     <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;,
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
@@ -624,7 +622,7 @@
     <span class="kw-2">mut </span>attachments: CompMut&lt;PlayerBodyAttachment&gt;,
     <span class="kw-2">mut </span>player_layers: CompMut&lt;PlayerLayers&gt;,
     player_inventories: PlayerInventories,
-
+    <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>commands: Commands,
 ) {
     <span class="kw">for </span>(entity, (kick_bomb, element_handle)) <span class="kw">in

@@ -487,6 +487,7 @@
 <a href="#486" id="486">486</a>
 <a href="#487" id="487">487</a>
 <a href="#488" id="488">488</a>
+<a href="#489" id="489">489</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::VecDeque;
 
 <span class="kw">use crate</span>::{item::ItemGrabbed, physics::KinematicBody, prelude::<span class="kw-2">*</span>};
@@ -685,17 +686,16 @@
                 players_killed.insert(player, PlayerKilled);
             }
             PlayerEvent::Despawn { player } =&gt; {
-                entities
-                    .iter_with(<span class="kw-2">&amp;</span>attachments)
-                    .filter(|(<span class="kw">_</span>, attachment)| attachment.entity == player)
-                    .map(|(entity, <span class="kw">_</span>)| entity)
-                    .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;()
-                    .iter()
-                    .for_each(|entity| {
-                        entities.kill(<span class="kw-2">*</span>entity);
-                    });
-
                 <span class="kw">if </span>player_indexes.contains(player) {
+                    entities
+                        .iter_with(<span class="kw-2">&amp;</span>attachments)
+                        .filter(|(<span class="kw">_</span>, attachment)| attachment.entity == player)
+                        .map(|(entity, <span class="kw">_</span>)| entity)
+                        .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;()
+                        .iter()
+                        .for_each(|entity| {
+                            entities.kill(<span class="kw-2">*</span>entity);
+                        });
                     <span class="kw">let </span>layers = player_layers.get(player).unwrap();
                     entities.kill(layers.fin_ent);
                     entities.kill(layers.face_ent);
@@ -785,7 +785,9 @@
         kinematic_bodies.insert(
             player_entity,
             KinematicBody {
-                size: meta.body_size,
+                shape: ColliderShape::Rectangle {
+                    size: meta.body_size,
+                },
                 has_mass: <span class="bool-val">true</span>,
                 has_friction: <span class="bool-val">false</span>,
                 gravity: meta.gravity,

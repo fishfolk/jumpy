@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["balance_parlett_reinsch","Applies in-place a modified Parlett and Reinsch matrix balancing with 2-norm to the matrix and returns the corresponding diagonal transformation."],["unbalance","Computes in-place `D * m * D.inverse()`, where `D` is the matrix with diagonal `d`."]]};

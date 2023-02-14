@@ -287,7 +287,7 @@
         }
 
         <span class="comment">// Get the player&#39;s body rect
-        </span><span class="kw">let </span>rect = body.collider_rect(transform.translation);
+        </span><span class="kw">let </span>rect = body.bounding_box(<span class="kw-2">*</span>transform);
 
         <span class="comment">// Push the camera rect just enough to contain the player&#39;s body rect
         </span><span class="kw">if </span>rect.min.x &lt; camera_box.min.x {

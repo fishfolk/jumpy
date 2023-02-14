@@ -273,7 +273,7 @@
 </span><span class="kw">fn </span>sync_core_debug_settings(session: <span class="prelude-ty">Option</span>&lt;ResMut&lt;Session&gt;&gt;, settings: Res&lt;CoreDebugSettings&gt;) {
     <span class="kw">if </span>settings.is_changed() {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>session) = session {
-            session.world.resources.insert(settings.<span class="number">0</span>);
+            session.world.insert_resource(settings.<span class="number">0</span>);
         }
     }
 }

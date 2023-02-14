@@ -113,7 +113,7 @@
     <span class="kw">for </span>(player_ent, (_idx, transform, body)) <span class="kw">in
         </span>entities.iter_with((<span class="kw-2">&amp;</span>player_indexes, <span class="kw-2">&amp;</span>transforms, <span class="kw-2">&amp;</span>bodies))
     {
-        <span class="kw">let </span>player_rect = body.collider_rect(transform.translation);
+        <span class="kw">let </span>player_rect = body.bounding_box(<span class="kw-2">*</span>transform);
         <span class="kw">for </span>(ent, (damage_region, transform)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;</span>damage_regions, <span class="kw-2">&amp;</span>transforms))
         {
             <span class="kw">let </span>owner = damage_region_owners.get(ent);

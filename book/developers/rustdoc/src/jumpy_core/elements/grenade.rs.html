@@ -447,8 +447,7 @@
 
         <span class="kw">if let </span>BuiltinElementKind::Grenade {
             atlas,
-            body_size,
-            body_offset,
+            body_diameter,
             can_rotate,
             bounciness,
             ..
@@ -473,8 +472,9 @@
             bodies.insert(
                 entity,
                 KinematicBody {
-                    size: <span class="kw-2">*</span>body_size,
-                    offset: <span class="kw-2">*</span>body_offset,
+                    shape: ColliderShape::Circle {
+                        diameter: <span class="kw-2">*</span>body_diameter,
+                    },
                     has_mass: <span class="bool-val">true</span>,
                     has_friction: <span class="bool-val">true</span>,
                     can_rotate: <span class="kw-2">*</span>can_rotate,

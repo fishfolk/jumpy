@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["install",""]],"mod":[["collisions","Modified from macroquad platformer:"]],"struct":[["KinematicBody","A kinematic physics body"]]};
+window.SIDEBAR_ITEMS = {"enum":[["ColliderShape","The Jumpy collision shape type."]],"fn":[["install",""]],"mod":[["collisions","Collision detection implementation."]],"struct":[["KinematicBody","A kinematic physics body"]]};

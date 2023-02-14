@@ -378,7 +378,6 @@
         <span class="kw">if let </span>BuiltinElementKind::Sword {
             atlas,
             body_size,
-            body_offset,
             can_rotate,
             bounciness,
             ..
@@ -397,8 +396,7 @@
             bodies.insert(
                 entity,
                 KinematicBody {
-                    size: <span class="kw-2">*</span>body_size,
-                    offset: <span class="kw-2">*</span>body_offset,
+                    shape: ColliderShape::Rectangle { size: <span class="kw-2">*</span>body_size },
                     has_mass: <span class="bool-val">true</span>,
                     has_friction: <span class="bool-val">true</span>,
                     can_rotate: <span class="kw-2">*</span>can_rotate,
@@ -421,7 +419,6 @@
     element_assets: BevyAssets&lt;ElementMeta&gt;,
     collision_world: CollisionWorld,
     <span class="kw-2">mut </span>audio_events: ResMut&lt;AudioEvents&gt;,
-    <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>swords: CompMut&lt;Sword&gt;,
     <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;,
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
@@ -433,6 +430,7 @@
     <span class="kw-2">mut </span>player_events: ResMut&lt;PlayerEvents&gt;,
     <span class="kw-2">mut </span>commands: Commands,
     <span class="kw-2">mut </span>player_layers: CompMut&lt;PlayerLayers&gt;,
+    <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
 ) {
     <span class="kw">for </span>(entity, (sword, element_handle)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;mut </span>swords, <span class="kw-2">&amp;</span>element_handles)) {
         <span class="kw">let </span><span class="prelude-val">Some</span>(element_meta) = element_assets.get(<span class="kw-2">&amp;</span>element_handle.get_bevy_handle()) <span class="kw">else </span>{
@@ -461,11 +459,11 @@
             cooldown_frames,
             sound,
             sound_volume,
-            arm_delay,
             grab_offset,
             throw_velocity,
             angular_velocity,
             fin_anim,
+            killing_speed,
             ..
         } = <span class="kw-2">&amp;</span>element_meta.builtin <span class="kw">else </span>{
             <span class="macro">unreachable!</span>();
@@ -587,17 +585,19 @@
                 }
             }
         } <span class="kw">else </span>{
-            <span class="kw">let </span>body = bodies.get_mut(entity).unwrap();
+            <span class="kw">let </span>body = bodies.get(entity).unwrap();
             sword.dropped_time += <span class="number">1.0 </span>/ <span class="kw">crate</span>::FPS;
 
-            <span class="kw">let </span>is_on_floor = body.is_on_ground || body.is_on_platform;
-            <span class="kw">let </span>is_deals_damage = (is_on_floor &amp;&amp; body.velocity.x != <span class="number">0.0</span>)
-                || (!is_on_floor &amp;&amp; body.velocity != Vec2::ZERO);
-            <span class="kw">if </span>is_deals_damage &amp;&amp; sword.dropped_time &gt;= <span class="kw-2">*</span>arm_delay {
+            <span class="kw">if </span>body.velocity.length() &gt;= <span class="kw-2">*</span>killing_speed {
                 collision_world
                     .actor_collisions(entity)
                     .into_iter()
-                    .filter(|<span class="kw-2">&amp;</span>x| player_indexes.contains(x))
+                    .filter(|<span class="kw-2">&amp;</span>x| {
+                        player_indexes.contains(x) &amp;&amp; {
+                            <span class="kw">let </span>player_body = bodies.get(x).unwrap();
+                            (player_body.velocity - body.velocity).length() &gt;= <span class="kw-2">*</span>killing_speed
+                        }
+                    })
                     .for_each(|player| player_events.kill(player));
             }
         }

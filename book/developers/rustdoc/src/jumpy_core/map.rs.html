@@ -160,7 +160,13 @@
 <a href="#159" id="159">159</a>
 <a href="#160" id="160">160</a>
 <a href="#161" id="161">161</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::{collisions::TileCollision, <span class="kw-2">*</span>};
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::{collisions::TileCollisionKind, <span class="kw-2">*</span>};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
     session
@@ -184,6 +190,7 @@
 </span><span class="kw">pub struct </span>MapRespawnPoint(<span class="kw">pub </span>Vec3);
 
 <span class="kw">fn </span>spawn_map(
+    <span class="kw-2">mut </span>commands: Commands,
     <span class="kw-2">mut </span>entities: ResMut&lt;Entities&gt;,
     <span class="kw-2">mut </span>clear_color: ResMut&lt;ClearColor&gt;,
     map_handle: Res&lt;MapHandle&gt;,
@@ -193,7 +200,7 @@
     <span class="kw-2">mut </span>tile_layers: CompMut&lt;TileLayer&gt;,
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>element_handles: CompMut&lt;ElementHandle&gt;,
-    <span class="kw-2">mut </span>tile_collisions: CompMut&lt;TileCollision&gt;,
+    <span class="kw-2">mut </span>tile_collisions: CompMut&lt;TileCollisionKind&gt;,
     <span class="kw-2">mut </span>parallax_bg_sprites: CompMut&lt;ParallaxBackgroundSprite&gt;,
     <span class="kw-2">mut </span>sprites: CompMut&lt;Sprite&gt;,
 ) {
@@ -252,9 +259,9 @@
                     tile_collisions.insert(
                         tile_ent,
                         <span class="kw">if </span>tile_meta.jump_through {
-                            TileCollision::JUMP_THROUGH
+                            TileCollisionKind::JUMP_THROUGH
                         } <span class="kw">else </span>{
-                            TileCollision::SOLID
+                            TileCollisionKind::SOLID
                         },
                     );
                 }
@@ -279,6 +286,11 @@
             }
         }
     }
+
+    <span class="comment">// Update collision world with map tiles
+    </span>commands.add(|<span class="kw-2">mut </span>collision_world: CollisionWorld| {
+        collision_world.update_tiles();
+    });
 }
 
 <span class="kw">fn </span>handle_out_of_bounds_players_and_items(

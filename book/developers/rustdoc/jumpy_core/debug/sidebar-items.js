@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["install",""]],"struct":[["DebugSettings","Resource configuring various debugging settings."]]};
+window.SIDEBAR_ITEMS = {"fn":[["install",""]],"struct":[["DebugSettings","Resource configuring various debugging settings."],["RapierDebugContext","Resource containing the physics debug line entity."]]};

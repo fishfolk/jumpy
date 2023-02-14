@@ -234,19 +234,6 @@
 <a href="#233" id="233">233</a>
 <a href="#234" id="234">234</a>
 <a href="#235" id="235">235</a>
-<a href="#236" id="236">236</a>
-<a href="#237" id="237">237</a>
-<a href="#238" id="238">238</a>
-<a href="#239" id="239">239</a>
-<a href="#240" id="240">240</a>
-<a href="#241" id="241">241</a>
-<a href="#242" id="242">242</a>
-<a href="#243" id="243">243</a>
-<a href="#244" id="244">244</a>
-<a href="#245" id="245">245</a>
-<a href="#246" id="246">246</a>
-<a href="#247" id="247">247</a>
-<a href="#248" id="248">248</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="attr">#[derive(BonesBevyAsset, TypeUlid, Deserialize, Clone, Debug, Default)]
@@ -273,11 +260,8 @@
 #[asset_id = <span class="string">&quot;bullet&quot;</span>]
 #[serde(deny_unknown_fields)]
 </span><span class="kw">pub struct </span>BulletMeta {
-    <span class="attr">#[serde(default)]
-    </span><span class="kw">pub </span>body_offset: Vec2,
-
     <span class="kw">pub </span>velocity: Vec2,
-    <span class="kw">pub </span>body_size: Vec2,
+    <span class="kw">pub </span>body_diameter: f32,
     <span class="kw">pub </span>atlas: Handle&lt;Atlas&gt;,
 
     <span class="kw">pub </span>lifetime: f32,
@@ -300,8 +284,7 @@
     </span>PlayerSpawner,
     <span class="doccomment">/// Grenades item
     </span>Grenade {
-        body_size: Vec2,
-        body_offset: Vec2,
+        body_diameter: f32,
         fin_anim: Key,
         grab_offset: Vec2,
         damage_region_size: Vec2,
@@ -354,7 +337,6 @@
         sound: Handle&lt;AudioSource&gt;,
         sound_volume: f32,
         body_size: Vec2,
-        body_offset: Vec2,
         spring_velocity: f32,
     },
     <span class="doccomment">/// This is a sword
@@ -365,12 +347,10 @@
         body_size: Vec2,
         fin_anim: Key,
         <span class="attr">#[serde(default)]
-        </span>body_offset: Vec2,
-        <span class="attr">#[serde(default)]
         </span>grab_offset: Vec2,
+        killing_speed: f32,
         angular_velocity: f32,
         can_rotate: bool,
-        arm_delay: f32,
         bounciness: f32,
         throw_velocity: Vec2,
         cooldown_frames: usize,
@@ -391,7 +371,6 @@
         throw_velocity: Vec2,
 
         body_size: Vec2,
-        body_offset: Vec2,
         grab_offset: Vec2,
         <span class="comment">// How long to wait before despawning a thrown crate, if it hans&#39;t it anything yet.
         </span>break_timeout: f32,
@@ -422,7 +401,6 @@
 
         throw_velocity: Vec2,
         body_size: Vec2,
-        body_offset: Vec2,
         grab_offset: Vec2,
         fin_anim: Key,
         bounciness: f32,
@@ -433,12 +411,10 @@
         player_decoration: Handle&lt;Atlas&gt;,
 
         body_size: Vec2,
-        body_offset: Vec2,
         grab_offset: Vec2,
     },
     KickBomb {
-        body_size: Vec2,
-        body_offset: Vec2,
+        body_diameter: f32,
         fin_anim: Key,
         grab_offset: Vec2,
         damage_region_size: Vec2,
@@ -468,8 +444,6 @@
         </span>arm_delay: f32,
     },
     Musket {
-        <span class="attr">#[serde(default)]
-        </span>body_offset: Vec2,
         <span class="attr">#[serde(default)]
         </span>grab_offset: Vec2,
         fin_anim: Key,

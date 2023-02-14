@@ -5,12 +5,12 @@ builtin: !Sword
   sound: ./sword.ogg
   sound_volume: 0.05
   fin_anim: grab_2
-  grab_offset: [18, 26] 
-  body_size: [64, 16]
+  grab_offset: [18, 26]
+  body_size: [50, 8]
+  # The minimum speed the sword must be moving to kill somebody
+  killing_speed: 7
   angular_velocity: -0.04
   can_rotate: true
-  arm_delay: 0.45
   bounciness: 0.32
   throw_velocity: [1, 4]
   cooldown_frames: 22
-  

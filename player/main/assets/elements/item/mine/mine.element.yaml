@@ -20,8 +20,7 @@ builtin: !Mine
   arm_sound_volume: 0.1
   arm_sound: ./arm.ogg
 
-  body_size: [34, 36]
-  body_offset: [0, 0]
+  body_size: [34, 34]
   grab_offset: [14, -2]
   fin_anim: grab_2
   bounciness: 0.3

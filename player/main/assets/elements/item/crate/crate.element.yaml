@@ -19,7 +19,6 @@ builtin: !Crate
   bounce_sound_volume: 0.035
 
   body_size: [36, 30]
-  body_offset: [0, 0]
   grab_offset: [14, -2]
   break_timeout: 4
   bounciness: 0.5

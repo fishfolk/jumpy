@@ -15,11 +15,11 @@ default = ["render"]
 render  = ["bevy/x11", "bevy/png", "bevy/filesystem_watcher", "bevy/bevy_gilrs"]
 
 [dependencies]
-
 anyhow                 = "1.0.58"
 async-channel          = "1.7.1"
 base64                 = "0.21.0"
 bevy-inspector-egui    = { version = "0.17.0" }
+bevy_dylib             = "0.9.1"
 bevy_egui              = "0.19.0"
 bevy_fluent            = "0.5.0"
 bevy_framepace         = "0.11.0"
@@ -69,15 +69,22 @@ mimalloc = { version = "0.1.32", default-features = false }
 # Optimize dependencies even in development
 [profile.dev.package."*"]
 opt-level = 3
+codegen-units = 1
+debug = 1 # Only keep line numbers
 
 # Optimize our code a little bit.
-#
-# Set these to 3 if the game becomes slow to respond during gameplay,
-# or change them to 0 to get faster re-compiles.
 [profile.dev.package.jumpy_core]
-opt-level = 1
+opt-level = 0
+codegen-units = 512
+
 [profile.dev]
-opt-level = 1 
+opt-level = 0
+codegen-units = 128
+
+[profile.dev-optimized]
+inherits = "dev"
+opt-level = 3
+debug = 1
 
 [profile.release]
 codegen-units = 1    # Improved rapier physics perf, so it might help other stuff, too

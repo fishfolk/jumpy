@@ -10,15 +10,12 @@ pub fn install(session: &mut GameSession) {
 
 #[derive(Clone, TypeUlid, Debug, Copy)]
 #[ulid = "01GQ0ZWBNA8HZRXYKZXCT05CXT"]
-pub struct IdleKickBomb {
-    spawner: Entity,
-}
+pub struct IdleKickBomb;
 
 #[derive(Clone, TypeUlid, Debug, Copy)]
 #[ulid = "01GQ0ZWFYZSHJPESPY9QPSTARR"]
 pub struct LitKickBomb {
     age: f32,
-    spawner: Entity,
 }
 
 fn hydrate(
@@ -33,7 +30,7 @@ fn hydrate(
     mut hydrated: CompMut<MapElementHydrated>,
     mut element_handles: CompMut<ElementHandle>,
     mut animated_sprites: CompMut<AnimatedSprite>,
-    mut respawn_points: CompMut<MapRespawnPoint>,
+    mut respawn_points: CompMut<MapSpawner>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -62,14 +59,9 @@ fn hydrate(
 
             let entity = entities.create();
             items.insert(entity, Item);
-            idle_bombs.insert(
-                entity,
-                IdleKickBomb {
-                    spawner: spawner_ent,
-                },
-            );
+            idle_bombs.insert(entity, IdleKickBomb);
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
-            respawn_points.insert(entity, MapRespawnPoint(transform.translation));
+            respawn_points.insert(entity, MapSpawner(spawner_ent));
             transforms.insert(entity, transform);
             element_handles.insert(entity, element_handle.clone());
             hydrated.insert(entity, MapElementHydrated);
@@ -109,10 +101,9 @@ fn update_idle_kick_bombs(
     mut attachments: CompMut<PlayerBodyAttachment>,
     mut player_layers: CompMut<PlayerLayers>,
 ) {
-    for (entity, (kick_bomb, element_handle)) in
+    for (entity, (_kick_bomb, element_handle)) in
         entities.iter_with((&mut idle_bombs, &element_handles))
     {
-        let spawner = kick_bomb.spawner;
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
             continue;
         };
@@ -165,7 +156,7 @@ fn update_idle_kick_bombs(
                 commands.add(
                     move |mut idle: CompMut<IdleKickBomb>, mut lit: CompMut<LitKickBomb>| {
                         idle.remove(entity);
-                        lit.insert(entity, LitKickBomb { spawner, age: 0.0 });
+                        lit.insert(entity, LitKickBomb { age: 0.0 });
                     },
                 );
             }
@@ -222,10 +213,12 @@ fn update_lit_kick_bombs(
     player_inventories: PlayerInventories,
     mut transforms: CompMut<Transform>,
     mut commands: Commands,
+    spawners: Comp<MapSpawner>,
 ) {
     for (entity, (kick_bomb, element_handle)) in
         entities.iter_with((&mut lit_grenades, &element_handles))
     {
+        let Some(spawner) = spawners.get(entity) else { continue };
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
             continue;
         };
@@ -251,7 +244,6 @@ fn update_lit_kick_bombs(
         };
 
         kick_bomb.age += 1.0 / crate::FPS;
-        let spawner = kick_bomb.spawner;
 
         let mut should_explode = false;
         // If the item is being held
@@ -342,7 +334,7 @@ fn update_lit_kick_bombs(
             audio_events.play(explosion_sound.clone(), *explosion_volume);
 
             // Cause the item to respawn by un-hydrating it's spawner.
-            hydrated.remove(spawner);
+            hydrated.remove(**spawner);
             let mut explosion_transform = *transforms.get(entity).unwrap();
             explosion_transform.translation.z += 1.0;
 

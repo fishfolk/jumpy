@@ -4,7 +4,8 @@ pub fn install(session: &mut GameSession) {
     session
         .stages
         .add_system_to_stage(CoreStage::First, spawn_map)
-        .add_system_to_stage(CoreStage::First, handle_out_of_bounds_players_and_items);
+        .add_system_to_stage(CoreStage::First, handle_out_of_bounds_items)
+        .add_system_to_stage(CoreStage::First, handle_out_of_bounds_players);
 }
 
 /// Resource containing the map metadata for this game session.
@@ -17,9 +18,10 @@ pub struct MapHandle(pub Handle<MapMeta>);
 #[ulid = "01GP3Z38HKE37JB6GRHHPPTY38"]
 pub struct MapSpawned(pub bool);
 
-#[derive(Clone, TypeUlid, Default, Deref, DerefMut)]
+/// Component defining the entity's spawner entity
+#[derive(Clone, TypeUlid, Deref, DerefMut)]
 #[ulid = "01GP9NY0Y50Y2A8M4A7E9NN8VE"]
-pub struct MapRespawnPoint(pub Vec3);
+pub struct MapSpawner(pub Entity);
 
 fn spawn_map(
     mut commands: Commands,
@@ -125,43 +127,42 @@ fn spawn_map(
     });
 }
 
-fn handle_out_of_bounds_players_and_items(
+fn handle_out_of_bounds_players(
     entities: Res<Entities>,
-    mut transforms: CompMut<Transform>,
+    transforms: CompMut<Transform>,
     player_indexes: Comp<PlayerIdx>,
     map_handle: Res<MapHandle>,
     map_assets: BevyAssets<MapMeta>,
     mut player_events: ResMut<PlayerEvents>,
-    map_respawn_points: Comp<MapRespawnPoint>,
 ) {
-    const KILL_ZONE_BORDER: f32 = 500.0;
-    let Some(map) = map_assets.get(&map_handle.get_bevy_handle()) else {
-        return;
+    if let Some(map) = map_assets.get(&map_handle.get_bevy_handle()) {
+        for (player_ent, (_player_idx, transform)) in
+            entities.iter_with((&player_indexes, &transforms))
+        {
+            if map.ob(&transform.translation) {
+                player_events.kill(player_ent);
+            }
+        }
     };
+}
 
-    let map_width = map.grid_size.x as f32 * map.tile_size.x;
-    let left_kill_zone = -KILL_ZONE_BORDER;
-    let right_kill_zone = map_width + KILL_ZONE_BORDER;
-    let bottom_kill_zone = -KILL_ZONE_BORDER;
-
-    // Kill out of bounds players
-    for (player_ent, (_player_idx, transform)) in entities.iter_with((&player_indexes, &transforms))
-    {
-        let pos = transform.translation;
-
-        if pos.x < left_kill_zone || pos.x > right_kill_zone || pos.y < bottom_kill_zone {
-            player_events.kill(player_ent);
+fn handle_out_of_bounds_items(
+    mut commands: Commands,
+    mut hydrated: CompMut<MapElementHydrated>,
+    entities: ResMut<Entities>,
+    transforms: CompMut<Transform>,
+    spawners: Comp<MapSpawner>,
+    map_handle: Res<MapHandle>,
+    map_assets: BevyAssets<MapMeta>,
+) {
+    if let Some(map) = map_assets.get(&map_handle.get_bevy_handle()) {
+        for (item_ent, (transform, spawner)) in entities.iter_with((&transforms, &spawners)) {
+            if map.ob(&transform.translation) {
+                hydrated.remove(**spawner);
+                commands.add(move |mut entities: ResMut<Entities>| {
+                    entities.kill(item_ent);
+                });
+            }
         }
-    }
-
-    // Reset out of bound item positions
-    for (_ent, (respawn_point, transform)) in
-        entities.iter_with((&map_respawn_points, &mut transforms))
-    {
-        let pos = transform.translation;
-
-        if pos.x < left_kill_zone || pos.x > right_kill_zone || pos.y < bottom_kill_zone {
-            transform.translation = respawn_point.0;
-        }
-    }
+    };
 }

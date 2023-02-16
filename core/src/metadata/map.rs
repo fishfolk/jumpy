@@ -84,3 +84,15 @@ pub struct MapTileMeta {
     #[serde(default)]
     pub jump_through: bool,
 }
+
+impl MapMeta {
+    /// Checks for out-of-bounds requirements
+    pub fn ob(&self, pos: &Vec3) -> bool {
+        const KILL_ZONE_BORDER: f32 = 500.0;
+        let map_width = self.grid_size.x as f32 * self.tile_size.x;
+        let left_kill_zone = -KILL_ZONE_BORDER;
+        let right_kill_zone = map_width + KILL_ZONE_BORDER;
+        let bottom_kill_zone = -KILL_ZONE_BORDER;
+        pos.x < left_kill_zone || pos.x > right_kill_zone || pos.y < bottom_kill_zone
+    }
+}

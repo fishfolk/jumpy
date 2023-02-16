@@ -16,9 +16,7 @@ pub struct WearingStompBoots;
 
 #[derive(Copy, Clone, Debug, TypeUlid)]
 #[ulid = "01GR0G9X4TME8E7NG0Z3DD26QW"]
-pub struct StompBoots {
-    spawner: Entity,
-}
+pub struct StompBoots;
 
 fn hydrate(
     game_meta: Res<CoreMetaArc>,
@@ -31,7 +29,7 @@ fn hydrate(
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
     mut items: CompMut<Item>,
-    mut respawn_points: CompMut<MapRespawnPoint>,
+    mut respawn_points: CompMut<MapSpawner>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -58,14 +56,9 @@ fn hydrate(
 
             let entity = entities.create();
             items.insert(entity, Item);
-            stomp_boots.insert(
-                entity,
-                StompBoots {
-                    spawner: spawner_ent,
-                },
-            );
+            stomp_boots.insert(entity, StompBoots);
             atlas_sprites.insert(entity, AtlasSprite::new(map_icon.clone()));
-            respawn_points.insert(entity, MapRespawnPoint(transform.translation));
+            respawn_points.insert(entity, MapSpawner(spawner_ent));
             transforms.insert(entity, transform);
             element_handles.insert(entity, element_handle.clone());
             hydrated.insert(entity, MapElementHydrated);
@@ -97,11 +90,12 @@ fn update(
     mut inventoris: CompMut<Inventory>,
     mut hydrated: CompMut<MapElementHydrated>,
     mut commands: Commands,
+    spawners: Comp<MapSpawner>,
 ) {
-    for (entity, (stomp_boots, element_handle)) in
+    for (entity, (_stomp_boots, element_handle)) in
         entities.iter_with((&mut stomp_boots, &element_handles))
     {
-        let spawner = stomp_boots.spawner;
+        let Some(spawner) = spawners.get(entity) else { continue };
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
             continue;
         };
@@ -140,7 +134,7 @@ fn update(
             let player_decoration = player_decoration.clone();
 
             if is_item_used {
-                hydrated.remove(spawner);
+                hydrated.remove(**spawner);
                 inventoris.insert(player, Inventory(None));
                 commands.add(
                     move |mut entities: ResMut<Entities>,

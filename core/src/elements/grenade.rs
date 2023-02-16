@@ -10,16 +10,11 @@ pub fn install(session: &mut GameSession) {
 
 #[derive(Clone, TypeUlid, Debug, Copy)]
 #[ulid = "01GPRSBWQ3X0QJC37BDDQXDN84"]
-pub struct IdleGrenade {
-    /// The entity ID of the map element that spawned the grenade
-    pub spawner: Entity,
-}
+pub struct IdleGrenade;
 
 #[derive(Clone, TypeUlid, Debug, Copy)]
 #[ulid = "01GPY9N9CBR6EFJX0RS2H2K58J"]
 pub struct LitGrenade {
-    /// The entity ID of the map element that spawned the grenade.
-    pub spawner: Entity,
     /// How long the grenade has been lit.
     pub age: f32,
 }
@@ -36,7 +31,7 @@ fn hydrate(
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
     mut items: CompMut<Item>,
-    mut respawn_points: CompMut<MapRespawnPoint>,
+    mut respawn_points: CompMut<DeHydrateOutOfBounds>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -65,14 +60,9 @@ fn hydrate(
 
             let entity = entities.create();
             items.insert(entity, Item);
-            idle_grenades.insert(
-                entity,
-                IdleGrenade {
-                    spawner: spawner_ent,
-                },
-            );
+            idle_grenades.insert(entity, IdleGrenade);
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
-            respawn_points.insert(entity, MapRespawnPoint(transform.translation));
+            respawn_points.insert(entity, DeHydrateOutOfBounds(spawner_ent));
             transforms.insert(entity, transform);
             element_handles.insert(entity, element_handle.clone());
             hydrated.insert(entity, MapElementHydrated);
@@ -112,10 +102,9 @@ fn update_idle_grenades(
     player_inventories: PlayerInventories,
     mut commands: Commands,
 ) {
-    for (entity, (grenade, element_handle)) in
+    for (entity, (_grenade, element_handle)) in
         entities.iter_with((&mut idle_grenades, &element_handles))
     {
-        let spawner = grenade.spawner;
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
             continue;
         };
@@ -168,7 +157,7 @@ fn update_idle_grenades(
                 commands.add(
                     move |mut idle: CompMut<IdleGrenade>, mut lit: CompMut<LitGrenade>| {
                         idle.remove(entity);
-                        lit.insert(entity, LitGrenade { spawner, age: 0.0 });
+                        lit.insert(entity, LitGrenade { age: 0.0 });
                     },
                 );
             }
@@ -223,9 +212,10 @@ fn update_lit_grenades(
     mut player_layers: CompMut<PlayerLayers>,
     player_inventories: PlayerInventories,
     mut commands: Commands,
+    spawners: Comp<DeHydrateOutOfBounds>,
 ) {
-    for (entity, (grenade, element_handle)) in
-        entities.iter_with((&mut lit_grenades, &element_handles))
+    for (entity, (grenade, element_handle, spawner)) in
+        entities.iter_with((&mut lit_grenades, &element_handles, &spawners))
     {
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
             continue;
@@ -251,7 +241,6 @@ fn update_lit_grenades(
         };
 
         grenade.age += 1.0 / crate::FPS;
-        let spawner = grenade.spawner;
 
         if !emote_regions.contains(entity) {
             emote_regions.insert(
@@ -332,7 +321,7 @@ fn update_lit_grenades(
             audio_events.play(explosion_sound.clone(), *explosion_volume);
 
             // Cause the item to respawn by un-hydrating it's spawner.
-            hydrated.remove(spawner);
+            hydrated.remove(**spawner);
             let mut explosion_transform = *transforms.get(entity).unwrap();
             explosion_transform.translation.z += 1.0;
 

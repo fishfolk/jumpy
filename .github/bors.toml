@@ -5,4 +5,5 @@ status = [
   "🗒 Check Rust formatting",
   "🔧 Clippy correctness checks (%)",
   "🔨 Build Docs",
+  "©️ License and advisories check (bans licenses sources)",
 ]

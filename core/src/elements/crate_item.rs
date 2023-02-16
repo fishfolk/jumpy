@@ -10,14 +10,11 @@ pub fn install(session: &mut GameSession) {
 
 #[derive(Clone, TypeUlid)]
 #[ulid = "01GREP3MZXY4A14PQ8GRKS0RVY"]
-struct IdleCrate {
-    spawner: Entity,
-}
+struct IdleCrate;
 
 #[derive(Clone, TypeUlid)]
 #[ulid = "01GREP80RJSH9T9MWC88CG2G03"]
 struct ThrownCrate {
-    spawner: Entity,
     owner: Entity,
     age: f32,
     crate_break_state: u8,
@@ -36,7 +33,7 @@ fn hydrate_crates(
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
     mut items: CompMut<Item>,
-    mut respawn_points: CompMut<MapRespawnPoint>,
+    mut respawn_points: CompMut<DespawnOutOfBounds>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -66,9 +63,9 @@ fn hydrate_crates(
 
         let entity = entities.create();
         items.insert(entity, Item);
-        idle_crates.insert(entity, IdleCrate { spawner });
+        idle_crates.insert(entity, IdleCrate);
         atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
-        respawn_points.insert(entity, MapRespawnPoint(transform.translation));
+        respawn_points.insert(entity, DespawnOutOfBounds(spawner));
         transforms.insert(entity, transform);
         element_handles.insert(entity, element_handle.clone());
         hydrated.insert(entity, MapElementHydrated);
@@ -104,10 +101,9 @@ fn update_idle_crates(
     mut commands: Commands,
     mut player_events: ResMut<PlayerEvents>,
 ) {
-    for (entity, (crate_item, element_handle)) in
+    for (entity, (_idle_crate, element_handle)) in
         entities.iter_with((&mut idle_crates, &element_handles))
     {
-        let spawner = crate_item.spawner;
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
             continue;
         };
@@ -170,7 +166,6 @@ fn update_idle_crates(
                         thrown.insert(
                             entity,
                             ThrownCrate {
-                                spawner,
                                 owner: player,
                                 age: 0.0,
                                 was_colliding: false,
@@ -229,14 +224,16 @@ fn update_thrown_crates(
     mut bodies: CompMut<KinematicBody>,
     mut audio_events: ResMut<AudioEvents>,
     transforms: Comp<Transform>,
+    spawners: Comp<DespawnOutOfBounds>,
 ) {
-    for (entity, (mut thrown_crate, element_handle, transform, atlas_sprite, body)) in entities
-        .iter_with((
+    for (entity, (mut thrown_crate, element_handle, transform, atlas_sprite, body, spawner)) in
+        entities.iter_with((
             &mut thrown_crates,
             &element_handles,
             &transforms,
             &mut atlas_sprites,
             &mut bodies,
+            &spawners,
         ))
     {
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
@@ -308,7 +305,7 @@ fn update_thrown_crates(
             || thrown_crate.crate_break_state >= 4
             || body.velocity.length_squared() < 0.1
         {
-            hydrated.remove(thrown_crate.spawner);
+            hydrated.remove(**spawner);
 
             let breaking_anim_frames = *breaking_anim_frames;
             let breaking_anim_fps = *breaking_anim_fps;

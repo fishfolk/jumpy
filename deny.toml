@@ -1,0 +1,28 @@
+# This section is considered when running `cargo deny check licenses`
+# More documentation for the licenses section can be found here:
+# https://embarkstudios.github.io/cargo-deny/checks/licenses/cfg.html
+[licenses]
+unlicensed = "deny"
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Unlicense",
+    "Zlib",
+    "Apache-2.0 WITH LLVM-exception",
+    "Unicode-DFS-2016",
+    "BSD-3-Clause",
+    "BSL-1.0",
+    "MIT-0",
+    "OFL-1.1",
+    "LicenseRef-UFL-1.0",
+    "CC0-1.0",
+    "ISC",
+    "BSD-2-Clause",
+    "MPL-2.0", # TODO(zicklag): I believe MPL is fine for us, but maybe double-check this.
+]
+default = "deny"
+
+[sources.allow-org]
+github = [
+    "fishfolk",
+]

@@ -121,6 +121,13 @@
 <a href="#120" id="120">120</a>
 <a href="#121" id="121">121</a>
 <a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
 </pre><pre class="rust"><code><span class="attr">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;./README.md&quot;</span>)]
 #![doc(html_logo_url = <span class="string">&quot;https://avatars.githubusercontent.com/u/87333478?s=200&amp;v=4&quot;</span>)]
 </span><span class="comment">// This cfg_attr is needed because `rustdoc::all` includes lints not supported on stable
@@ -133,6 +140,13 @@
 #[cfg(not(target_arch = <span class="string">&quot;wasm32&quot;</span>))]
 #[global_allocator]
 </span><span class="kw">static </span>GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
+<span class="comment">// This will cause Bevy to be dynamically linked during development,
+// which can greatly reduce re-compile times in some circumstances.
+</span><span class="attr">#[cfg(all(debug_assertions, not(target_arch = <span class="string">&quot;wasm32&quot;</span>)))]
+#[allow(unused_imports)]
+#[allow(clippy::single_component_path_imports)]
+</span><span class="kw">use </span>bevy_dylib;
 
 <span class="kw">pub mod </span>assets;
 <span class="kw">pub mod </span>audio;

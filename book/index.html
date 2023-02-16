@@ -164,6 +164,10 @@
 <li><code>cargo clippy -- -W clippy::correctness -D warnings</code></li>
 <li><code>cargo fmt</code></li>
 </ol>
+<h3 id="development-build-profiles"><a class="header" href="#development-build-profiles">Development Build Profiles</a></h3>
+<p>By default, Jumpy will build without optimizations for the <code>jumpy_core</code> and <code>jumpy</code> crates. This helps reduce re-compile times at the expense of some runtime performance. If you need increased runtime performance during development, you can build with the <code>--profile dev-optimized</code> option, to optimize all of the crates:</p>
+<pre><code class="language-bash">cargo r --profile dev-optimized
+</code></pre>
 <h3 id="learning-materials"><a class="header" href="#learning-materials">Learning Materials</a></h3>
 <h4 id="rust"><a class="header" href="#rust">Rust</a></h4>
 <ul>

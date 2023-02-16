@@ -389,6 +389,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_dylib"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5d193c3d56e3bdd106596327d15dd67ddfd862f8b5aa8260677efefe3ddef736"
+dependencies = [
+ "bevy_internal",
+]
+
+[[package]]
 name = "bevy_ecs"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2370,6 +2379,7 @@ dependencies = [
  "base64 0.21.0",
  "bevy",
  "bevy-inspector-egui",
+ "bevy_dylib",
  "bevy_egui",
  "bevy_fluent",
  "bevy_framepace",

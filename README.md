@@ -44,6 +44,14 @@ Before committing and opening a PR, please run the following commands and follow
 1. `cargo clippy -- -W clippy::correctness -D warnings`
 2. `cargo fmt`
 
+### Development Build Profiles
+
+By default, Jumpy will build without optimizations for the `jumpy_core` and `jumpy` crates. This helps reduce re-compile times at the expense of some runtime performance. If you need increased runtime performance during development, you can build with the `--profile dev-optimized` option, to optimize all of the crates:
+
+```bash
+cargo r --profile dev-optimized
+```
+
 ### Learning Materials
 
 #### Rust

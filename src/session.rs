@@ -11,7 +11,7 @@ pub enum SessionStage {
 
 impl Plugin for JumpySessionPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(bones_bevy_renderer::BonesRendererPlugin::<Session>::new())
+        app.add_plugin(bones_bevy_renderer::BonesRendererPlugin::<Session>::with_sync_time(false))
             .add_plugin(jumpy_core::metadata::JumpyCoreAssetsPlugin)
             .add_stage_before(
                 CoreStage::Update,

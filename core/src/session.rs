@@ -108,7 +108,9 @@ impl GameSession {
 
         // Advance the simulation time
         let time_resource = self.world.resource::<Time>();
-        time_resource.borrow_mut().elapsed += 1.0 / crate::FPS;
+        time_resource
+            .borrow_mut()
+            .advance_exact(std::time::Duration::from_secs_f32(crate::FPS));
 
         self.world.maintain();
 

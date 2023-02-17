@@ -8,7 +8,7 @@ pub mod input;
 pub mod widgets;
 
 pub mod debug_tools;
-// pub mod editor;
+pub mod editor;
 pub mod main_menu;
 pub mod pause_menu;
 
@@ -19,7 +19,7 @@ impl Plugin for JumpyUiPlugin {
         app.add_plugin(bevy_egui::EguiPlugin)
             .add_plugin(input::UiInputPlugin)
             .add_plugin(main_menu::MainMenuPlugin)
-            // .add_plugin(editor::EditorPlugin)
+            .add_plugin(editor::EditorPlugin)
             .add_plugin(debug_tools::DebugToolsPlugin)
             .add_plugin(pause_menu::PausePlugin)
             .init_resource::<WidgetAdjacencies>()

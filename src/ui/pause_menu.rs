@@ -30,6 +30,7 @@ impl Plugin for PausePlugin {
                 CoreStage::PostUpdate,
                 pause_system
                     .run_in_state(EngineState::InGame)
+                    .run_in_state(GameEditorState::Hidden)
                     .run_in_state(InGameState::Playing),
             )
             .add_system_to_stage(
@@ -170,7 +171,6 @@ pub fn pause_menu_default(
                         });
 
                         ui.scope(|ui| {
-                            ui.set_enabled(false); // Waiting for editor
                             if BorderedButton::themed(
                                 &ui_theme.button_styles.normal,
                                 &localization.get("edit"),
@@ -180,6 +180,7 @@ pub fn pause_menu_default(
                             .clicked()
                             {
                                 commands.insert_resource(NextState(GameEditorState::Visible));
+                                commands.insert_resource(NextState(InGameState::Playing));
                             }
                         });
 

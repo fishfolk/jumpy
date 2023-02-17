@@ -95,3 +95,9 @@ bones_lib = { git = "https://github.com/fishfolk/bones" }
 bones_bevy_asset = { git = "https://github.com/fishfolk/bones" }
 type_ulid = { git = "https://github.com/fishfolk/bones" }
 bones_bevy_renderer = { git = "https://github.com/fishfolk/bones" }
+
+# bones_lib = { path = "../bones/" }
+# bones_bevy_asset = { path = "../bones/crates/bones_bevy_asset" }
+# type_ulid = { path = "../bones/crates/type_ulid" }
+# bones_bevy_renderer = { path = "../bones/crates/bones_bevy_renderer" }
+

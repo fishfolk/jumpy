@@ -220,7 +220,7 @@ pub enum BuiltinElementKind {
         atlas: Handle<Atlas>,
 
         max_ammo: usize,
-        cooldown_frames: usize,
+        cooldown_in_ms: u64,
         bullet_meta: Handle<BulletMeta>,
 
         shoot_fps: f32,

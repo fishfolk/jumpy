@@ -110,7 +110,7 @@ impl GameSession {
         let time_resource = self.world.resource::<Time>();
         time_resource
             .borrow_mut()
-            .advance_exact(std::time::Duration::from_secs_f32(crate::FPS));
+            .advance_exact(std::time::Duration::from_secs_f32(1.0 / crate::FPS));
 
         self.world.maintain();
 

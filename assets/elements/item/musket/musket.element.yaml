@@ -4,7 +4,7 @@ builtin: !Musket
   atlas: ./musket.atlas.yaml
 
   max_ammo: 4
-  cooldown_frames: 50
+  cooldown_in_ms: 600
   bullet_meta: ./bullet/musket.bullet.yaml
 
   shoot_fps: 15
@@ -22,4 +22,4 @@ builtin: !Musket
   fin_anim: grab_2
   angular_velocity: 0.1
   throw_velocity: [7, 6]
-  grab_offset: [23  , 0]
+  grab_offset: [23, 0]

@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::prelude::*;
 
 pub fn install(session: &mut GameSession) {
@@ -11,7 +13,7 @@ pub fn install(session: &mut GameSession) {
 #[ulid = "01GQWRRV9HV52X9JAYYF1AFFS7"]
 pub struct Musket {
     pub ammo: usize,
-    pub cooldown_frame: usize,
+    pub cooldown: Timer,
 }
 
 fn hydrate(
@@ -59,7 +61,7 @@ fn hydrate(
                 entity,
                 Musket {
                     ammo: *max_ammo,
-                    cooldown_frame: 0,
+                    cooldown: Timer::new(Duration::from_millis(0), TimerMode::Once),
                 },
             );
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
@@ -100,6 +102,7 @@ fn update(
     mut items_used: CompMut<ItemUsed>,
     mut attachments: CompMut<PlayerBodyAttachment>,
     mut items_dropped: CompMut<ItemDropped>,
+    time: Res<Time>,
 ) {
     for (entity, (musket, element_handle)) in entities.iter_with((&mut muskets, &element_handles)) {
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
@@ -112,7 +115,7 @@ fn update(
             shoot_atlas,
             shoot_frames,
             shoot_lifetime,
-
+            cooldown_in_ms,
 
             fin_anim,
             grab_offset,
@@ -121,7 +124,6 @@ fn update(
 
             bullet_meta,
             shoot_sound,
-            cooldown_frames,
             empty_shoot_sound,
             shoot_sound_volume,
             empty_shoot_sound_volume,
@@ -130,7 +132,8 @@ fn update(
             unreachable!();
         };
 
-        musket.cooldown_frame += 1;
+        println!("musket ammo: {:?}", musket.cooldown);
+        musket.cooldown.tick(time.delta());
 
         // If the item is being held
         if let Some(inventory) = player_inventories
@@ -156,11 +159,10 @@ fn update(
 
             // If the item is being used
             let item_used = items_used.get(entity).is_some();
-            let can_fire = musket.cooldown_frame >= *cooldown_frames;
             if item_used {
                 items_used.remove(entity);
             }
-            if item_used && can_fire {
+            if item_used && musket.cooldown.finished() {
                 // Empty
                 if musket.ammo.eq(&0) {
                     audio_events.play(empty_shoot_sound.clone(), *empty_shoot_sound_volume);
@@ -168,7 +170,8 @@ fn update(
                 }
 
                 // Reset fire cooldown and subtract ammo
-                musket.cooldown_frame = 0;
+                musket.cooldown =
+                    Timer::new(Duration::from_millis(*cooldown_in_ms), TimerMode::Once);
                 musket.ammo = musket.ammo.saturating_sub(1).clamp(0, musket.ammo);
                 audio_events.play(shoot_sound.clone(), *shoot_sound_volume);
 

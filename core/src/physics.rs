@@ -143,15 +143,27 @@ fn update_kinematic_bodies(
                     break;
                 }
 
-                let aabb = body.shape.compute_aabb(transform);
+                let rect = body.bounding_box(transform);
+                // We add a small border, because rapier will consider the collision box colliding
+                // if it is perfectly lined up along the edge of a tile, and `solid_at` won't.
+                let border = 0.1;
 
                 let collisions = (
-                    collision_world.solid_at(vec2(aabb.mins.x, aabb.maxs.y)), // Top left
-                    collision_world.solid_at(vec2(aabb.maxs.x, aabb.maxs.y)), // Top right
-                    collision_world.solid_at(vec2(aabb.maxs.x, aabb.mins.y)), // Bottom right
-                    collision_world.solid_at(vec2(aabb.mins.x, aabb.mins.y)), // Bottom left
+                    collision_world.solid_at(vec2(rect.min.x - border, rect.max.y + border)), // Top left
+                    collision_world.solid_at(vec2(rect.max.x + border, rect.max.y + border)), // Top right
+                    collision_world.solid_at(vec2(rect.max.x + border, rect.min.y - border)), // Bottom right
+                    collision_world.solid_at(vec2(rect.min.x - border, rect.min.y - border)), // Bottom left
                 );
                 match collisions {
+                    // If we have no solid collisions at any corner.
+                    (false, false, false, false) => {
+                        // For some reason the `tile_collision` test did detect a collision, but
+                        // `solid_at` did not detect a collision at any of the corners of the aabb.
+                        panic!(
+                            "Collision test error resulting in physics \
+                            body stuck in wall at {rect:?}",
+                        );
+                    }
                     // Check for collisions on each side of the rectangle
                     (false, false, _, _) => transform.translation.y += 1.0,
                     (_, false, false, _) => transform.translation.x += 1.0,

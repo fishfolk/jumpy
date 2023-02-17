@@ -314,7 +314,7 @@ fn update(
 
             let transform = transforms.get_mut(entity).unwrap();
             transform.translation =
-                player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
+                player_translation + (vec2(grab_offset.x, 0.0) *  horizontal_flip_factor).extend(0.0);
         }
     }
 }

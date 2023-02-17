@@ -634,8 +634,8 @@
             body.is_spawning = <span class="bool-val">true</span>;
 
             <span class="kw">let </span>transform = transforms.get_mut(entity).unwrap();
-            transform.translation =
-                player_translation + (<span class="kw-2">*</span>grab_offset * horizontal_flip_factor).extend(<span class="number">0.0</span>);
+            transform.translation = player_translation
+                + (vec2(grab_offset.x, <span class="number">0.0</span>) * horizontal_flip_factor).extend(<span class="number">0.0</span>);
         }
     }
 }

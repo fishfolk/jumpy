@@ -157,7 +157,7 @@
 
 <span class="kw">impl </span>Plugin <span class="kw">for </span>JumpySessionPlugin {
     <span class="kw">fn </span>build(<span class="kw-2">&amp;</span><span class="self">self</span>, app: <span class="kw-2">&amp;mut </span>App) {
-        app.add_plugin(bones_bevy_renderer::BonesRendererPlugin::&lt;Session&gt;::new())
+        app.add_plugin(bones_bevy_renderer::BonesRendererPlugin::&lt;Session&gt;::with_sync_time(<span class="bool-val">false</span>))
             .add_plugin(jumpy_core::metadata::JumpyCoreAssetsPlugin)
             .add_stage_before(
                 CoreStage::Update,

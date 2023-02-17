@@ -135,6 +135,8 @@
 <a href="#134" id="134">134</a>
 <a href="#135" id="135">135</a>
 <a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// The implementation of a Jumpy game session.
@@ -245,7 +247,9 @@
 
         <span class="comment">// Advance the simulation time
         </span><span class="kw">let </span>time_resource = <span class="self">self</span>.world.resource::&lt;Time&gt;();
-        time_resource.borrow_mut().elapsed += <span class="number">1.0 </span>/ <span class="kw">crate</span>::FPS;
+        time_resource
+            .borrow_mut()
+            .advance_exact(std::time::Duration::from_secs_f32(<span class="kw">crate</span>::FPS));
 
         <span class="self">self</span>.world.maintain();
 

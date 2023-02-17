@@ -264,6 +264,18 @@
 <a href="#263" id="263">263</a>
 <a href="#264" id="264">264</a>
 <a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub use </span>collisions::{
@@ -409,15 +421,27 @@
                     <span class="kw">break</span>;
                 }
 
-                <span class="kw">let </span>aabb = body.shape.compute_aabb(transform);
+                <span class="kw">let </span>rect = body.bounding_box(transform);
+                <span class="comment">// We add a small border, because rapier will consider the collision box colliding
+                // if it is perfectly lined up along the edge of a tile, and `solid_at` won&#39;t.
+                </span><span class="kw">let </span>border = <span class="number">0.1</span>;
 
                 <span class="kw">let </span>collisions = (
-                    collision_world.solid_at(vec2(aabb.mins.x, aabb.maxs.y)), <span class="comment">// Top left
-                    </span>collision_world.solid_at(vec2(aabb.maxs.x, aabb.maxs.y)), <span class="comment">// Top right
-                    </span>collision_world.solid_at(vec2(aabb.maxs.x, aabb.mins.y)), <span class="comment">// Bottom right
-                    </span>collision_world.solid_at(vec2(aabb.mins.x, aabb.mins.y)), <span class="comment">// Bottom left
+                    collision_world.solid_at(vec2(rect.min.x - border, rect.max.y + border)), <span class="comment">// Top left
+                    </span>collision_world.solid_at(vec2(rect.max.x + border, rect.max.y + border)), <span class="comment">// Top right
+                    </span>collision_world.solid_at(vec2(rect.max.x + border, rect.min.y - border)), <span class="comment">// Bottom right
+                    </span>collision_world.solid_at(vec2(rect.min.x - border, rect.min.y - border)), <span class="comment">// Bottom left
                 </span>);
                 <span class="kw">match </span>collisions {
+                    <span class="comment">// If we have no solid collisions at any corner.
+                    </span>(<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; {
+                        <span class="comment">// For some reason the `tile_collision` test did detect a collision, but
+                        // `solid_at` did not detect a collision at any of the corners of the aabb.
+                        </span><span class="macro">panic!</span>(
+                            <span class="string">&quot;Collision test error resulting in physics \
+                            body stuck in wall at {rect:?}&quot;</span>,
+                        );
+                    }
                     <span class="comment">// Check for collisions on each side of the rectangle
                     </span>(<span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="kw">_</span>, <span class="kw">_</span>) =&gt; transform.translation.y += <span class="number">1.0</span>,
                     (<span class="kw">_</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="kw">_</span>) =&gt; transform.translation.x += <span class="number">1.0</span>,

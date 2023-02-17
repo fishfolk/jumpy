@@ -838,6 +838,13 @@
 <a href="#837" id="837">837</a>
 <a href="#838" id="838">838</a>
 <a href="#839" id="839">839</a>
+<a href="#840" id="840">840</a>
+<a href="#841" id="841">841</a>
+<a href="#842" id="842">842</a>
+<a href="#843" id="843">843</a>
+<a href="#844" id="844">844</a>
+<a href="#845" id="845">845</a>
+<a href="#846" id="846">846</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Collision detection implementation.
 
 </span><span class="kw">use </span>::bevy::utils::{HashMap, HashSet};
@@ -1603,25 +1610,32 @@
     }
 
     <span class="doccomment">/// Returns whether or not there is a tile or solid at the given position.
+    ///
+    /// &gt; ⚠️ **Warning:** There is a slight difference to how `tile_collision_point` and
+    /// &gt; [`tile_collision`][Self::tile_collision] reports collisions.
+    /// &gt;
+    /// &gt; [`tile_collision`][Self::tile_collision] will report a collision if the collider shape is
+    /// &gt; perfectly lined up along the edge of a tile, but `tile_collision_point` won&#39;t.
     </span><span class="attr">#[allow(unused)]
     </span><span class="kw">pub fn </span>solid_at(<span class="kw-2">&amp;</span><span class="self">self</span>, pos: Vec2) -&gt; bool {
         <span class="self">self</span>.tile_collision_point(pos) == TileCollisionKind::SOLID
     }
 
     <span class="doccomment">/// Returns the tile collision at the given point.
+    ///
+    /// &gt; ⚠️ **Warning:** There is a slight difference to how `tile_collision_point` and
+    /// &gt; [`tile_collision`][Self::tile_collision] reports collisions.
+    /// &gt;
+    /// &gt; [`tile_collision`][Self::tile_collision] will report a collision if the collider shape is
+    /// &gt; perfectly lined up along the edge of a tile, but `tile_collision_point` won&#39;t.
     </span><span class="attr">#[allow(unused)]
     </span><span class="kw">pub fn </span>tile_collision_point(<span class="kw-2">&amp;</span><span class="self">self</span>, pos: Vec2) -&gt; TileCollisionKind {
         <span class="kw">for </span>(entity, tile_layer) <span class="kw">in </span><span class="self">self</span>.entities.iter_with(<span class="kw-2">&amp;</span><span class="self">self</span>.tile_layers) {
-            <span class="kw">let </span>TileLayer {
-                tiles,
-                grid_size,
-                tile_size,
-                ..
-            } = tile_layer;
+            <span class="kw">let </span>TileLayer { tile_size, .. } = tile_layer;
 
-            <span class="kw">let </span>x = (pos.x / tile_size.y) <span class="kw">as </span>i32;
-            <span class="kw">let </span>y = (pos.y / tile_size.x) <span class="kw">as </span>i32;
-            <span class="kw">let </span>tile_entity = tile_layer.get(UVec2::new(x <span class="kw">as _</span>, y <span class="kw">as _</span>));
+            <span class="kw">let </span>x = (pos.x / tile_size.y).floor() <span class="kw">as </span>u32;
+            <span class="kw">let </span>y = (pos.y / tile_size.x).floor() <span class="kw">as </span>u32;
+            <span class="kw">let </span>tile_entity = tile_layer.get(UVec2::new(x, y));
             <span class="kw">if let </span><span class="prelude-val">Some</span>(tile_entity) = tile_entity {
                 <span class="kw">return </span><span class="self">self
                     </span>.tile_collision_kinds

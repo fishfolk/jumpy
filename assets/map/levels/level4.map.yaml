@@ -1212,7 +1212,7 @@ layers:
             - 130
           element: /elements/item/stomp_boots/stomp_boots.element.yaml
         - pos:
-            - 76
+            - 83
             - 130
           element: /elements/item/stomp_boots/stomp_boots.element.yaml
         - pos:

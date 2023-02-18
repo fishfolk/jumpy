@@ -28,5 +28,6 @@ no-map-loaded = No map loaded
 
 view-zoom = Zoom { $percent }%
 view-offset = Camera Offset [ { $x }, { $y } ]
+cursor-position = Cursor Position [ { $x }, { $y } ]
 view-reset = Reset View
 show-grid = Show Grid

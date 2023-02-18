@@ -128,8 +128,12 @@ pub fn editor_ui_system(world: &mut World) {
 type CameraQuery<'w, 's> = Query<
     'w,
     's,
-    (&'static mut Transform, &'static mut OrthographicProjection),
-    With<BevyBonesEntity>,
+    (
+        &'static Camera,
+        &'static mut Transform,
+        &'static mut OrthographicProjection,
+    ),
+    (With<BevyBonesEntity>, Without<MenuCamera>),
 >;
 
 #[derive(SystemParam)]
@@ -143,6 +147,7 @@ struct EditorTopBar<'w, 's> {
     session_manager: SessionManager<'w, 's>,
     camera: CameraQuery<'w, 's>,
     clipboard: ResMut<'w, bevy_egui::EguiClipboard>,
+    windows: Res<'w, Windows>,
 }
 
 impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
@@ -163,19 +168,23 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
             ui.label(&params.localization.get("map-editor"));
             ui.separator();
 
-            if let Ok((transform, projection)) = params.camera.get_single() {
+            if let Ok((camera, transform, projection)) = params.camera.get_single() {
                 let height = match projection.scaling_mode {
                     bevy::render::camera::ScalingMode::FixedVertical(height) => height,
                     _ => 1.0, // This shouldn't happen for now
                 };
                 let zoom = params.core_meta.camera.default_height / height * 100.0;
-                let [x, y]: [f32; 2] = transform.translation.xy().into();
+                let [view_x, view_y]: [f32; 2] = transform.translation.xy().into();
+                let window = params.windows.primary();
+                let cursor_pos = window.cursor_position().and_then(|pos| {
+                    camera.viewport_to_world(&GlobalTransform::from(*transform), pos)
+                });
 
                 ui.label(
                     egui::RichText::new(
                         params
                             .localization
-                            .get(&format!("view-offset?x={x:.0}&y={y:.0}")),
+                            .get(&format!("view-offset?x={view_x:.0}&y={view_y:.0}")),
                     )
                     .small(),
                 );
@@ -187,6 +196,18 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                     )
                     .small(),
                 );
+                if let Some(cursor_pos) = cursor_pos {
+                    let cursor_x = cursor_pos.origin.x;
+                    let cursor_y = cursor_pos.origin.y;
+                    ui.label(
+                        egui::RichText::new(
+                            params
+                                .localization
+                                .get(&format!("cursor-position?x={cursor_x:.0}&y={cursor_y:.0}")),
+                        )
+                        .small(),
+                    );
+                }
             }
 
             ui.add_space(ui.spacing().icon_spacing);
@@ -222,11 +243,6 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                         params.commands.add(CenterGameCamera);
                     }
                 });
-
-                ui.label(
-                    egui::RichText::new(params.localization.get("map-editor-preview-warning"))
-                        .color(egui::Color32::RED),
-                );
             });
         });
     }
@@ -371,7 +387,6 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
             .session_manager
             .map_handle()
             .and_then(|handle| params.map_assets.get(&handle));
-        ui.set_enabled(map_meta.is_some());
 
         ui.add_space(ui.spacing().window_margin.top);
 
@@ -382,6 +397,7 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
 
         let row_height = ui.spacing().interact_size.y;
         ui.push_id("info", |ui| {
+            ui.set_enabled(map_meta.is_some());
             let table = egui_extras::TableBuilder::new(ui)
                 .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
                 .column(egui_extras::Column::auto())
@@ -416,6 +432,7 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
 
         ui.separator();
         ui.horizontal(|ui| {
+            ui.set_enabled(map_meta.is_some());
             ui.label(&params.localization.get("layers"));
 
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
@@ -514,6 +531,15 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                 }
             });
         }
+
+        ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
+            ui.add_space(ui.spacing().item_spacing.y);
+            ui.label(
+                egui::RichText::new(params.localization.get("map-editor-preview-warning"))
+                    .size(15.0)
+                    .color(egui::Color32::YELLOW),
+            );
+        });
     }
 }
 
@@ -662,12 +688,8 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
         if params.session_manager.session.is_some() {
             let response = ui.allocate_response(ui.available_size(), egui::Sense::click_and_drag());
 
-            let rect = response.rect;
-
             'camera_control: {
                 if let Some(session) = &mut params.session_manager.session {
-                    let ppp = ui.ctx().pixels_per_point();
-
                     let core_meta = session.world.resource::<CoreMetaArc>();
                     let core_meta = core_meta.borrow();
 
@@ -678,15 +700,20 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
                     let Some(camera) = cameras.iter_mut().next() else {
                         break 'camera_control;
                     };
-                    camera.viewport = Some(bones::Viewport {
-                        position: UVec2::new(
-                            (rect.min.x * ppp) as u32,
-                            (rect.min.y.floor() * ppp) as u32,
-                        ),
-                        size: UVec2::new((rect.width() * ppp) as u32, (rect.height() * ppp) as u32),
-                        depth_min: 0.0,
-                        depth_max: 1.0,
-                    });
+                    // We comment the viewport modification temporarily because it breaks Bevy's
+                    // `camera.viewport_to_world()` unfortunately.
+                    //
+                    // let rect = response.rect;
+                    // let ppp = ui.ctx().pixels_per_point();
+                    // camera.viewport = Some(bones::Viewport {
+                    //     position: UVec2::new(
+                    //         (rect.min.x * ppp) as u32,
+                    //         (rect.min.y.floor() * ppp) as u32,
+                    //     ),
+                    //     size: UVec2::new((rect.width() * ppp) as u32, (rect.height() * ppp) as u32),
+                    //     depth_min: 0.0,
+                    //     depth_max: 1.0,
+                    // });
 
                     // Disable the default camera controller
                     let camera_states = session
@@ -750,16 +777,19 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
 
                 ui.add_space(ui.spacing().item_spacing.y);
 
-                if BorderedButton::themed(
-                    &params.game.ui_theme.button_styles.normal,
-                    &params.localization.get("create-map"),
-                )
-                .show(ui)
-                .clicked()
-                {
-                    *params.show_map_create = true;
-                    *params.map_create_info = default();
-                }
+                ui.scope(|ui| {
+                    ui.set_enabled(false);
+                    if BorderedButton::themed(
+                        &params.game.ui_theme.button_styles.normal,
+                        &params.localization.get("create-map"),
+                    )
+                    .show(ui)
+                    .clicked()
+                    {
+                        *params.show_map_create = true;
+                        *params.map_create_info = default();
+                    }
+                });
             });
         }
     }

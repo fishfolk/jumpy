@@ -1,5 +1,5 @@
 use super::*;
-#[derive(BonesBevyAsset, Deserialize, Clone, TypeUlid, Debug)]
+#[derive(BonesBevyAsset, Serialize, Deserialize, Clone, TypeUlid, Debug)]
 #[ulid = "01GP264BT87MAAHMEK52Y5P7BW"]
 #[asset_id = "map"]
 #[serde(deny_unknown_fields)]
@@ -18,14 +18,14 @@ pub struct MapMeta {
     pub layers: Vec<MapLayerMeta>,
 }
 
-#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug, Default)]
+#[derive(BonesBevyAssetLoad, Serialize, Deserialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
 pub struct BackgroundMeta {
     pub speed: Vec2,
     pub layers: Vec<ParallaxLayerMeta>,
 }
 
-#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug, TypeUlid)]
+#[derive(BonesBevyAssetLoad, Serialize, Deserialize, Clone, Debug, TypeUlid)]
 #[serde(deny_unknown_fields)]
 #[ulid = "01GPP1QJFVQN3HYW4N7ZE3S89Y"]
 pub struct ParallaxLayerMeta {
@@ -37,7 +37,7 @@ pub struct ParallaxLayerMeta {
     pub offset: Vec2,
 }
 
-#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug)]
+#[derive(BonesBevyAssetLoad, Serialize, Deserialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct MapLayerMeta {
     pub id: String,
@@ -47,7 +47,7 @@ pub struct MapLayerMeta {
     pub entity: Option<Entity>,
 }
 
-#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug)]
+#[derive(BonesBevyAssetLoad, Serialize, Deserialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "snake_case")]
 pub enum MapLayerKind {
@@ -55,7 +55,7 @@ pub enum MapLayerKind {
     Element(ElementLayer),
 }
 
-#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug, Default)]
+#[derive(BonesBevyAssetLoad, Serialize, Deserialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
 pub struct MapTileLayer {
     pub tilemap: Handle<Atlas>,
@@ -63,20 +63,20 @@ pub struct MapTileLayer {
     pub tiles: Vec<MapTileMeta>,
 }
 
-#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug, Default)]
+#[derive(BonesBevyAssetLoad, Serialize, Deserialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
 pub struct ElementLayer {
     pub elements: Vec<ElementSpawn>,
 }
 
-#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug, Default)]
+#[derive(BonesBevyAssetLoad, Serialize, Deserialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
 pub struct ElementSpawn {
     pub pos: Vec2,
     pub element: Handle<ElementMeta>,
 }
 
-#[derive(BonesBevyAssetLoad, Deserialize, Serialize, Clone, Debug)]
+#[derive(BonesBevyAssetLoad, Serialize, Deserialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct MapTileMeta {
     pub pos: UVec2,

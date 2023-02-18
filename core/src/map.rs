@@ -35,6 +35,9 @@ fn spawn_map(
     mut tile_collisions: CompMut<TileCollisionKind>,
     mut parallax_bg_sprites: CompMut<ParallaxBackgroundSprite>,
     mut sprites: CompMut<Sprite>,
+    mut cameras: CompMut<Camera>,
+    mut camera_shakes: CompMut<CameraShake>,
+    mut camera_states: CompMut<CameraState>,
 ) {
     if map_spawned.0 {
         return;
@@ -42,6 +45,22 @@ fn spawn_map(
     let Some(map) = map_assets.get(&map_handle.get_bevy_handle()) else {
         return;
     };
+
+    // Spawn the camera
+    {
+        let ent = entities.create();
+        camera_shakes.insert(
+            ent,
+            CameraShake {
+                center: (map.tile_size * (map.grid_size / 2).as_vec2()).extend(0.0),
+                ..CameraShake::new(6.0, glam::vec2(3.0, 3.0), 1.0)
+            },
+        );
+        cameras.insert(ent, default());
+        transforms.insert(ent, default());
+        camera_states.insert(ent, default());
+    }
+
     map_spawned.0 = true;
     **clear_color = map.background_color.0;
 

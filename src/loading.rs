@@ -175,6 +175,20 @@ impl<'w, 's> GameLoader<'w, 's> {
         let mut visuals = egui::Visuals::dark();
         visuals.widgets = game.ui_theme.widgets.get_egui_widget_style();
         visuals.window_fill = game.ui_theme.debug_window_fill.into_egui();
+        visuals.panel_fill = visuals.window_fill;
+        let [red, green, blue, alpha] = visuals.window_fill.to_srgba_unmultiplied();
+        let [red, green, blue, alpha] = [
+            red as f32 / 255.0,
+            green as f32 / 255.0,
+            blue as f32 / 255.0,
+            alpha as f32 / 255.0,
+        ];
+        commands.insert_resource(ClearColor(Color::Rgba {
+            red,
+            green,
+            blue,
+            alpha,
+        }));
         egui_ctx.ctx_mut().set_visuals(visuals);
 
         // Helper to load border images

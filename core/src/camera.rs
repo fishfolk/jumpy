@@ -1,25 +1,6 @@
 use crate::prelude::*;
 
 pub fn install(session: &mut GameSession) {
-    // Spawn the camera and parallax background.
-    session
-        .world
-        .run_system(
-            |mut entities: ResMut<Entities>,
-             mut cameras: CompMut<Camera>,
-             mut transforms: CompMut<Transform>,
-             mut camera_shakes: CompMut<CameraShake>,
-             mut camera_follows: CompMut<CameraState>| {
-                let ent = entities.create();
-
-                camera_shakes.insert(ent, CameraShake::new(6.0, glam::vec2(3.0, 3.0), 1.0));
-                cameras.insert(ent, default());
-                transforms.insert(ent, default());
-                camera_follows.insert(ent, default());
-            },
-        )
-        .unwrap();
-
     session
         .stages
         .add_system_to_stage(CoreStage::Last, camera_controller);
@@ -39,6 +20,9 @@ pub struct ParallaxBackgroundSprite {
 #[ulid = "01GPV6M1KY0GBRQVJ3WG5CSBBS"]
 pub struct CameraState {
     pub player_camera_rects: [Rect; MAX_PLAYERS],
+    /// Disables the default camera controller. Useful, for example, when taking over the camera
+    /// from the editor.
+    pub disable_controller: bool,
 }
 
 fn camera_controller(
@@ -62,6 +46,9 @@ fn camera_controller(
     let Some((_ent, (camera, camera_shake, camera_state))) = entities.iter_with((&mut cameras, &mut camera_shakes, &mut camera_states)).next() else {
         return
     };
+    if camera_state.disable_controller {
+        return;
+    }
 
     // Update player camera rects
     for (_ent, (transform, player_idx, body)) in
@@ -105,10 +92,14 @@ fn camera_controller(
         }
     }
 
-    let window_aspect = window.size.x / window.size.y;
+    let viewport_size = camera
+        .viewport
+        .map(|x| x.size.as_vec2())
+        .unwrap_or(window.size);
+    let viewport_aspect = viewport_size.x / viewport_size.y;
     let default_height = meta.default_height;
     let mut scale = camera.height / default_height;
-    let default_width = window_aspect * default_height;
+    let default_width = viewport_aspect * default_height;
     let map_size = map.grid_size.as_vec2() * map.tile_size;
 
     let mut min = Vec2::new(f32::MAX, f32::MAX);

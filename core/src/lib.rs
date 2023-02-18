@@ -50,8 +50,8 @@ pub fn install_modules(session: &mut session::GameSession) {
     map::install(session);
     elements::install(session);
     player::install(session);
-    camera::install(session);
     damage::install(session);
+    camera::install(session);
     lifetime::install(session);
     random::install(session);
     debug::install(session);

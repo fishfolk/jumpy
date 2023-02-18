@@ -144,6 +144,40 @@
 <a href="#143" id="143">143</a>
 <a href="#144" id="144">144</a>
 <a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub struct </span>JumpySessionPlugin;
@@ -163,6 +197,11 @@
                 CoreStage::Update,
                 SessionStage::Update,
                 SystemStage::single_threaded()
+                    .with_system(
+                        ensure_2_players
+                            .run_in_state(EngineState::InGame)
+                            .run_in_state(InGameState::Playing),
+                    )
                     .with_system(update_input)
                     .with_system(
                         update_game
@@ -189,9 +228,10 @@
 <span class="doccomment">/// Helper for creating and stopping game sessions.
 </span><span class="attr">#[derive(SystemParam)]
 </span><span class="kw">pub struct </span>SessionManager&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; {
-    commands: Commands&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt;,
-    menu_camera: Query&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><span class="kw-2">mut </span>Camera, With&lt;MenuCamera&gt;&gt;,
-    session: <span class="prelude-ty">Option</span>&lt;ResMut&lt;<span class="lifetime">&#39;w</span>, Session&gt;&gt;,
+    <span class="kw">pub </span>commands: Commands&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt;,
+    <span class="kw">pub </span>menu_camera: Query&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><span class="kw-2">mut </span>Camera, With&lt;MenuCamera&gt;&gt;,
+    <span class="kw">pub </span>session: <span class="prelude-ty">Option</span>&lt;ResMut&lt;<span class="lifetime">&#39;w</span>, Session&gt;&gt;,
+    <span class="kw">pub </span>core_meta_arc: Res&lt;<span class="lifetime">&#39;w</span>, CoreMetaArc&gt;,
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; SessionManager&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; {
@@ -209,10 +249,38 @@
         }
     }
 
+    <span class="kw">pub fn </span>map_handle(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Handle&lt;MapMeta&gt;&gt; {
+        <span class="self">self</span>.session.as_ref().map(|session| {
+            <span class="kw">let </span>map_handle = session.world.resource::&lt;jumpy_core::map::MapHandle&gt;();
+            <span class="kw">let </span>map_handle = map_handle.borrow();
+
+            map_handle.get_bevy_handle()
+        })
+    }
+
     <span class="doccomment">/// Stop a game session
     </span><span class="kw">pub fn </span>stop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
         <span class="self">self</span>.commands.remove_resource::&lt;Session&gt;();
         <span class="self">self</span>.menu_camera.for_each_mut(|<span class="kw-2">mut </span>x| x.is_active = <span class="bool-val">true</span>);
+    }
+}
+
+<span class="doccomment">/// Helper system to make sure there are two players on the board, if ever the game is in the middle
+/// of playing and there are no players on the board.
+///
+/// This is primarily for the editor, which may be started without going through the player
+/// selection screen.
+</span><span class="kw">fn </span>ensure_2_players(session: <span class="prelude-ty">Option</span>&lt;ResMut&lt;Session&gt;&gt;, core_meta: Res&lt;CoreMetaArc&gt;) {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(session) = session {
+        <span class="kw">let </span>player_inputs = session.world.resource::&lt;jumpy_core::input::PlayerInputs&gt;();
+        <span class="kw">let </span><span class="kw-2">mut </span>player_inputs = player_inputs.borrow_mut();
+
+        <span class="kw">if </span>player_inputs.players.iter().all(|x| !x.active) {
+            <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..<span class="number">2 </span>{
+                player_inputs.players[i].active = <span class="bool-val">true</span>;
+                player_inputs.players[i].selected_player = core_meta.players[i].clone();
+            }
+        }
     }
 }
 

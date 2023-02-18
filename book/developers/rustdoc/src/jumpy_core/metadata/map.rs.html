@@ -86,7 +86,7 @@
 <a href="#85" id="85">85</a>
 <a href="#86" id="86">86</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
-<span class="attr">#[derive(BonesBevyAsset, Deserialize, Clone, TypeUlid, Debug)]
+<span class="attr">#[derive(BonesBevyAsset, Serialize, Deserialize, Clone, TypeUlid, Debug)]
 #[ulid = <span class="string">&quot;01GP264BT87MAAHMEK52Y5P7BW&quot;</span>]
 #[asset_id = <span class="string">&quot;map&quot;</span>]
 #[serde(deny_unknown_fields)]
@@ -105,14 +105,14 @@
     </span><span class="kw">pub </span>layers: Vec&lt;MapLayerMeta&gt;,
 }
 
-<span class="attr">#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug, Default)]
+<span class="attr">#[derive(BonesBevyAssetLoad, Serialize, Deserialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
 </span><span class="kw">pub struct </span>BackgroundMeta {
     <span class="kw">pub </span>speed: Vec2,
     <span class="kw">pub </span>layers: Vec&lt;ParallaxLayerMeta&gt;,
 }
 
-<span class="attr">#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug, TypeUlid)]
+<span class="attr">#[derive(BonesBevyAssetLoad, Serialize, Deserialize, Clone, Debug, TypeUlid)]
 #[serde(deny_unknown_fields)]
 #[ulid = <span class="string">&quot;01GPP1QJFVQN3HYW4N7ZE3S89Y&quot;</span>]
 </span><span class="kw">pub struct </span>ParallaxLayerMeta {
@@ -124,7 +124,7 @@
     </span><span class="kw">pub </span>offset: Vec2,
 }
 
-<span class="attr">#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug)]
+<span class="attr">#[derive(BonesBevyAssetLoad, Serialize, Deserialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 </span><span class="kw">pub struct </span>MapLayerMeta {
     <span class="kw">pub </span>id: String,
@@ -134,7 +134,7 @@
     </span><span class="kw">pub </span>entity: <span class="prelude-ty">Option</span>&lt;Entity&gt;,
 }
 
-<span class="attr">#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug)]
+<span class="attr">#[derive(BonesBevyAssetLoad, Serialize, Deserialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = <span class="string">&quot;snake_case&quot;</span>)]
 </span><span class="kw">pub enum </span>MapLayerKind {
@@ -142,7 +142,7 @@
     Element(ElementLayer),
 }
 
-<span class="attr">#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug, Default)]
+<span class="attr">#[derive(BonesBevyAssetLoad, Serialize, Deserialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
 </span><span class="kw">pub struct </span>MapTileLayer {
     <span class="kw">pub </span>tilemap: Handle&lt;Atlas&gt;,
@@ -150,20 +150,20 @@
     <span class="kw">pub </span>tiles: Vec&lt;MapTileMeta&gt;,
 }
 
-<span class="attr">#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug, Default)]
+<span class="attr">#[derive(BonesBevyAssetLoad, Serialize, Deserialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
 </span><span class="kw">pub struct </span>ElementLayer {
     <span class="kw">pub </span>elements: Vec&lt;ElementSpawn&gt;,
 }
 
-<span class="attr">#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug, Default)]
+<span class="attr">#[derive(BonesBevyAssetLoad, Serialize, Deserialize, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
 </span><span class="kw">pub struct </span>ElementSpawn {
     <span class="kw">pub </span>pos: Vec2,
     <span class="kw">pub </span>element: Handle&lt;ElementMeta&gt;,
 }
 
-<span class="attr">#[derive(BonesBevyAssetLoad, Deserialize, Serialize, Clone, Debug)]
+<span class="attr">#[derive(BonesBevyAssetLoad, Serialize, Deserialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 </span><span class="kw">pub struct </span>MapTileMeta {
     <span class="kw">pub </span>pos: UVec2,

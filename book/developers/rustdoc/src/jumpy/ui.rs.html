@@ -373,8 +373,8 @@
 <span class="kw">pub mod </span>widgets;
 
 <span class="kw">pub mod </span>debug_tools;
-<span class="comment">// pub mod editor;
-</span><span class="kw">pub mod </span>main_menu;
+<span class="kw">pub mod </span>editor;
+<span class="kw">pub mod </span>main_menu;
 <span class="kw">pub mod </span>pause_menu;
 
 <span class="kw">pub struct </span>JumpyUiPlugin;
@@ -384,8 +384,8 @@
         app.add_plugin(bevy_egui::EguiPlugin)
             .add_plugin(input::UiInputPlugin)
             .add_plugin(main_menu::MainMenuPlugin)
-            <span class="comment">// .add_plugin(editor::EditorPlugin)
-            </span>.add_plugin(debug_tools::DebugToolsPlugin)
+            .add_plugin(editor::EditorPlugin)
+            .add_plugin(debug_tools::DebugToolsPlugin)
             .add_plugin(pause_menu::PausePlugin)
             .init_resource::&lt;WidgetAdjacencies&gt;()
             .init_resource::&lt;DisableMenuInput&gt;()

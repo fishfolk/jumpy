@@ -360,6 +360,11 @@
 <a href="#359" id="359">359</a>
 <a href="#360" id="360">360</a>
 <a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::marker::PhantomData;
 
 <span class="kw">use </span>bevy::{
@@ -425,6 +430,9 @@
     <span class="kw-2">mut </span>session_manager: SessionManager,
 ) {
     session_manager.stop();
+
+    <span class="comment">// Make sure the game editor is hidden
+    </span>commands.insert_resource(NextState(GameEditorState::Hidden));
 
     <span class="comment">// Spawn menu background
     </span><span class="kw">let </span>bg_handle = game.main_menu.background_image.image.inner.clone_weak();
@@ -664,7 +672,6 @@
 
                     <span class="comment">// Map editor
                     </span>ui.scope(|ui| {
-                        ui.set_enabled(<span class="bool-val">false</span>);
                         <span class="kw">if </span>BorderedButton::themed(
                             <span class="kw-2">&amp;</span>ui_theme.button_styles.normal,
                             <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;map-editor&quot;</span>),
@@ -679,6 +686,9 @@
                             params
                                 .commands
                                 .insert_resource(NextState(EngineState::InGame));
+                            params
+                                .commands
+                                .insert_resource(NextState(InGameState::Playing));
                         }
                     });
 

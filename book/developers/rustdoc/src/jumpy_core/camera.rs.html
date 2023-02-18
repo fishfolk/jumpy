@@ -192,37 +192,9 @@
 <a href="#191" id="191">191</a>
 <a href="#192" id="192">192</a>
 <a href="#193" id="193">193</a>
-<a href="#194" id="194">194</a>
-<a href="#195" id="195">195</a>
-<a href="#196" id="196">196</a>
-<a href="#197" id="197">197</a>
-<a href="#198" id="198">198</a>
-<a href="#199" id="199">199</a>
-<a href="#200" id="200">200</a>
-<a href="#201" id="201">201</a>
-<a href="#202" id="202">202</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
-    <span class="comment">// Spawn the camera and parallax background.
-    </span>session
-        .world
-        .run_system(
-            |<span class="kw-2">mut </span>entities: ResMut&lt;Entities&gt;,
-             <span class="kw-2">mut </span>cameras: CompMut&lt;Camera&gt;,
-             <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
-             <span class="kw-2">mut </span>camera_shakes: CompMut&lt;CameraShake&gt;,
-             <span class="kw-2">mut </span>camera_follows: CompMut&lt;CameraState&gt;| {
-                <span class="kw">let </span>ent = entities.create();
-
-                camera_shakes.insert(ent, CameraShake::new(<span class="number">6.0</span>, glam::vec2(<span class="number">3.0</span>, <span class="number">3.0</span>), <span class="number">1.0</span>));
-                cameras.insert(ent, default());
-                transforms.insert(ent, default());
-                camera_follows.insert(ent, default());
-            },
-        )
-        .unwrap();
-
     session
         .stages
         .add_system_to_stage(CoreStage::Last, camera_controller);
@@ -242,6 +214,9 @@
 #[ulid = <span class="string">&quot;01GPV6M1KY0GBRQVJ3WG5CSBBS&quot;</span>]
 </span><span class="kw">pub struct </span>CameraState {
     <span class="kw">pub </span>player_camera_rects: [Rect; MAX_PLAYERS],
+    <span class="doccomment">/// Disables the default camera controller. Useful, for example, when taking over the camera
+    /// from the editor.
+    </span><span class="kw">pub </span>disable_controller: bool,
 }
 
 <span class="kw">fn </span>camera_controller(
@@ -265,6 +240,9 @@
     <span class="kw">let </span><span class="prelude-val">Some</span>((_ent, (camera, camera_shake, camera_state))) = entities.iter_with((<span class="kw-2">&amp;mut </span>cameras, <span class="kw-2">&amp;mut </span>camera_shakes, <span class="kw-2">&amp;mut </span>camera_states)).next() <span class="kw">else </span>{
         <span class="kw">return
     </span>};
+    <span class="kw">if </span>camera_state.disable_controller {
+        <span class="kw">return</span>;
+    }
 
     <span class="comment">// Update player camera rects
     </span><span class="kw">for </span>(_ent, (transform, player_idx, body)) <span class="kw">in
@@ -308,10 +286,14 @@
         }
     }
 
-    <span class="kw">let </span>window_aspect = window.size.x / window.size.y;
+    <span class="kw">let </span>viewport_size = camera
+        .viewport
+        .map(|x| x.size.as_vec2())
+        .unwrap_or(window.size);
+    <span class="kw">let </span>viewport_aspect = viewport_size.x / viewport_size.y;
     <span class="kw">let </span>default_height = meta.default_height;
     <span class="kw">let </span><span class="kw-2">mut </span>scale = camera.height / default_height;
-    <span class="kw">let </span>default_width = window_aspect * default_height;
+    <span class="kw">let </span>default_width = viewport_aspect * default_height;
     <span class="kw">let </span>map_size = map.grid_size.as_vec2() * map.tile_size;
 
     <span class="kw">let </span><span class="kw-2">mut </span>min = Vec2::new(f32::MAX, f32::MAX);

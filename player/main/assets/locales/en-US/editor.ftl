@@ -1,6 +1,8 @@
 layers = Layers
 create-layer = Create a New Layer
+map-editor-preview-warning = ⚠ Warning: the map editor is a work-in-progress preview and may be broken or crash.
 
+map-editor = Map Editor
 map-info = Map Info
 map-export = Map Export
 tiles = Tiles
@@ -17,6 +19,7 @@ layer-kind = Layer Kind
 create-map = Create Map
 name = Name
 grid-size = Grid Size
+copy-to-clipboard = Copy to Clipboard
 
 tilemap-path = Tilemap Path
 

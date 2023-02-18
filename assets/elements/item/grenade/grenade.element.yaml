@@ -4,7 +4,7 @@ editor:
   grab_size: [30, 30]
 builtin: !Grenade
   fuse_time: 4.0
-  throw_velocity: [7, 6]
+  throw_velocity: 12
   damage_region_size: [60, 60]
   damage_region_lifetime: 0.6
 

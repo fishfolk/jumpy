@@ -31,6 +31,7 @@ fn hydrate(
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
     mut items: CompMut<Item>,
+    mut item_throws: CompMut<ItemThrow>,
     mut respawn_points: CompMut<DehydrateOutOfBounds>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
@@ -53,6 +54,8 @@ fn hydrate(
             body_diameter,
             can_rotate,
             bounciness,
+            throw_velocity,
+            angular_velocity,
             ..
         } = &element_meta.builtin
         {
@@ -61,6 +64,10 @@ fn hydrate(
             let entity = entities.create();
             items.insert(entity, Item);
             idle_grenades.insert(entity, IdleGrenade);
+            item_throws.insert(
+                entity,
+                ItemThrow::strength(*throw_velocity).with_spin(*angular_velocity),
+            );
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
             respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
             transforms.insert(entity, transform);
@@ -90,13 +97,10 @@ fn update_idle_grenades(
     element_handles: Comp<ElementHandle>,
     element_assets: BevyAssets<ElementMeta>,
     mut audio_events: ResMut<AudioEvents>,
-    mut transforms: CompMut<Transform>,
     mut idle_grenades: CompMut<IdleGrenade>,
-    mut sprites: CompMut<AtlasSprite>,
     mut animated_sprites: CompMut<AnimatedSprite>,
     mut bodies: CompMut<KinematicBody>,
     mut items_used: CompMut<ItemUsed>,
-    mut items_dropped: CompMut<ItemDropped>,
     mut attachments: CompMut<PlayerBodyAttachment>,
     mut player_layers: CompMut<PlayerLayers>,
     player_inventories: PlayerInventories,
@@ -111,10 +115,8 @@ fn update_idle_grenades(
 
         let BuiltinElementKind::Grenade {
             grab_offset,
-            angular_velocity,
             fuse_sound,
             fuse_sound_volume,
-            throw_velocity,
             fin_anim,
             ..
         } = &element_meta.builtin else {
@@ -153,7 +155,6 @@ fn update_idle_grenades(
                 animated_sprite.frames = Arc::from([3, 4, 5]);
                 animated_sprite.repeat = true;
                 animated_sprite.fps = 8.0;
-                body.angular_velocity = *angular_velocity;
                 commands.add(
                     move |mut idle: CompMut<IdleGrenade>, mut lit: CompMut<LitGrenade>| {
                         idle.remove(entity);
@@ -162,37 +163,6 @@ fn update_idle_grenades(
                 );
             }
         }
-
-        // If the item was dropped
-        if let Some(dropped) = items_dropped.get(entity).copied() {
-            let player = dropped.player;
-
-            items_dropped.remove(entity);
-            attachments.remove(entity);
-            let player_translation = transforms.get(dropped.player).unwrap().translation;
-            let player_velocity = bodies.get(player).unwrap().velocity;
-
-            let body = bodies.get_mut(entity).unwrap();
-            let player_sprite = sprites.get_mut(player).unwrap();
-
-            // Re-activate physics
-            body.is_deactivated = false;
-
-            let horizontal_flip_factor = if player_sprite.flip_x {
-                Vec2::new(-1.0, 1.0)
-            } else {
-                Vec2::ONE
-            };
-            body.velocity = *throw_velocity * horizontal_flip_factor + player_velocity;
-            body.angular_velocity =
-                *angular_velocity * if player_sprite.flip_x { -1.0 } else { 1.0 };
-
-            body.is_spawning = true;
-
-            let transform = transforms.get_mut(entity).unwrap();
-            transform.translation =
-                player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
-        }
     }
 }
 
@@ -200,12 +170,10 @@ fn update_lit_grenades(
     entities: Res<Entities>,
     element_handles: Comp<ElementHandle>,
     element_assets: BevyAssets<ElementMeta>,
+    transforms: CompMut<Transform>,
     mut audio_events: ResMut<AudioEvents>,
-    mut transforms: CompMut<Transform>,
     mut lit_grenades: CompMut<LitGrenade>,
-    mut sprites: CompMut<AtlasSprite>,
     mut bodies: CompMut<KinematicBody>,
-    mut items_dropped: CompMut<ItemDropped>,
     mut hydrated: CompMut<MapElementHydrated>,
     mut attachments: CompMut<PlayerBodyAttachment>,
     mut emote_regions: CompMut<EmoteRegion>,
@@ -223,10 +191,8 @@ fn update_lit_grenades(
 
         let BuiltinElementKind::Grenade {
             grab_offset,
-            angular_velocity,
             explosion_sound,
             explosion_volume,
-            throw_velocity,
             fuse_time,
             damage_region_lifetime,
             damage_region_size,
@@ -283,37 +249,6 @@ fn update_lit_grenades(
         // If the item is not being held
         } else {
             emote_region.active = true;
-        }
-
-        // If the item was dropped
-        if let Some(dropped) = items_dropped.get(entity).copied() {
-            let player = dropped.player;
-
-            items_dropped.remove(entity);
-            attachments.remove(entity);
-            let player_translation = transforms.get(dropped.player).unwrap().translation;
-            let player_velocity = bodies.get(player).unwrap().velocity;
-
-            let body = bodies.get_mut(entity).unwrap();
-            let player_sprite = sprites.get_mut(player).unwrap();
-
-            // Re-activate physics
-            body.is_deactivated = false;
-
-            let horizontal_flip_factor = if player_sprite.flip_x {
-                Vec2::new(-1.0, 1.0)
-            } else {
-                Vec2::ONE
-            };
-            body.velocity = *throw_velocity * horizontal_flip_factor + player_velocity;
-            body.angular_velocity =
-                *angular_velocity * if player_sprite.flip_x { -1.0 } else { 1.0 };
-
-            body.is_spawning = true;
-
-            let transform = transforms.get_mut(entity).unwrap();
-            transform.translation =
-                player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
         }
 
         // If it's time to explode

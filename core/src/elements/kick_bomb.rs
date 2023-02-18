@@ -24,6 +24,7 @@ pub struct LitKickBomb {
 fn hydrate(
     game_meta: Res<CoreMetaArc>,
     mut items: CompMut<Item>,
+    mut item_throws: CompMut<ItemThrow>,
     mut entities: ResMut<Entities>,
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
@@ -55,6 +56,8 @@ fn hydrate(
             body_diameter,
             can_rotate,
             bounciness,
+            throw_velocity,
+            angular_velocity,
             ..
         } = &element_meta.builtin
         {
@@ -62,6 +65,10 @@ fn hydrate(
 
             let entity = entities.create();
             items.insert(entity, Item);
+            item_throws.insert(
+                entity,
+                ItemThrow::strength(*throw_velocity).with_spin(*angular_velocity),
+            );
             idle_bombs.insert(
                 entity,
                 IdleKickBomb {
@@ -95,16 +102,13 @@ fn hydrate(
 fn update_idle_kick_bombs(
     entities: Res<Entities>,
     mut commands: Commands,
-    mut sprites: CompMut<AtlasSprite>,
     player_inventories: PlayerInventories,
     mut bodies: CompMut<KinematicBody>,
     mut items_used: CompMut<ItemUsed>,
-    mut transforms: CompMut<Transform>,
     mut audio_events: ResMut<AudioEvents>,
     element_handles: Comp<ElementHandle>,
     mut idle_bombs: CompMut<IdleKickBomb>,
     element_assets: BevyAssets<ElementMeta>,
-    mut items_dropped: CompMut<ItemDropped>,
     mut animated_sprites: CompMut<AnimatedSprite>,
     mut attachments: CompMut<PlayerBodyAttachment>,
     mut player_layers: CompMut<PlayerLayers>,
@@ -119,10 +123,8 @@ fn update_idle_kick_bombs(
 
         let BuiltinElementKind::KickBomb {
             grab_offset,
-            angular_velocity,
             fuse_sound,
             fuse_sound_volume,
-            throw_velocity,
             fin_anim,
             ..
         } = &element_meta.builtin else {
@@ -161,7 +163,6 @@ fn update_idle_kick_bombs(
                 animated_sprite.frames = Arc::from([3, 4, 5]);
                 animated_sprite.repeat = true;
                 animated_sprite.fps = 8.0;
-                body.angular_velocity = *angular_velocity;
                 commands.add(
                     move |mut idle: CompMut<IdleKickBomb>, mut lit: CompMut<LitKickBomb>| {
                         idle.remove(entity);
@@ -169,37 +170,6 @@ fn update_idle_kick_bombs(
                     },
                 );
             }
-        }
-
-        // If the item was dropped
-        if let Some(dropped) = items_dropped.get(entity).copied() {
-            let player = dropped.player;
-
-            items_dropped.remove(entity);
-            attachments.remove(entity);
-            let player_translation = transforms.get(dropped.player).unwrap().translation;
-            let player_velocity = bodies.get(player).unwrap().velocity;
-
-            let body = bodies.get_mut(entity).unwrap();
-            let player_sprite = sprites.get_mut(player).unwrap();
-
-            // Re-activate physics
-            body.is_deactivated = false;
-
-            let horizontal_flip_factor = if player_sprite.flip_x {
-                Vec2::new(-1.0, 1.0)
-            } else {
-                Vec2::ONE
-            };
-            body.velocity = *throw_velocity * horizontal_flip_factor + player_velocity;
-            body.angular_velocity =
-                *angular_velocity * if player_sprite.flip_x { -1.0 } else { 1.0 };
-
-            body.is_spawning = true;
-
-            let transform = transforms.get_mut(entity).unwrap();
-            transform.translation =
-                player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
         }
     }
 }
@@ -215,7 +185,6 @@ fn update_lit_kick_bombs(
     mut lit_grenades: CompMut<LitKickBomb>,
     mut sprites: CompMut<AtlasSprite>,
     mut bodies: CompMut<KinematicBody>,
-    mut items_dropped: CompMut<ItemDropped>,
     mut hydrated: CompMut<MapElementHydrated>,
     mut attachments: CompMut<PlayerBodyAttachment>,
     mut player_layers: CompMut<PlayerLayers>,
@@ -232,10 +201,9 @@ fn update_lit_kick_bombs(
 
         let BuiltinElementKind::KickBomb {
             grab_offset,
-            angular_velocity,
             explosion_sound,
             explosion_volume,
-            throw_velocity,
+            kick_velocity,
             fuse_time,
             damage_region_lifetime,
             damage_region_size,
@@ -291,50 +259,19 @@ fn update_lit_kick_bombs(
             let player_standing_left = player_translation.x <= translation.x;
 
             if body.velocity.x == 0.0 {
-                body.velocity = *throw_velocity;
+                body.velocity = *kick_velocity;
                 if player_sprite.flip_x {
                     body.velocity.x *= -1.0;
                 }
             } else if player_standing_left && !player_sprite.flip_x {
-                body.velocity.x = throw_velocity.x;
-                body.velocity.y = throw_velocity.y;
+                body.velocity.x = kick_velocity.x;
+                body.velocity.y = kick_velocity.y;
             } else if !player_standing_left && player_sprite.flip_x {
-                body.velocity.x = -throw_velocity.x;
-                body.velocity.y = throw_velocity.y;
+                body.velocity.x = -kick_velocity.x;
+                body.velocity.y = kick_velocity.y;
             } else if kick_bomb.age >= *arm_delay {
                 should_explode = true;
             }
-        }
-
-        // If the item was dropped
-        if let Some(dropped) = items_dropped.get(entity).copied() {
-            let player = dropped.player;
-
-            items_dropped.remove(entity);
-            attachments.remove(entity);
-            let player_translation = transforms.get(dropped.player).unwrap().translation;
-            let player_velocity = bodies.get(player).unwrap().velocity;
-
-            let body = bodies.get_mut(entity).unwrap();
-            let player_sprite = sprites.get_mut(player).unwrap();
-
-            // Re-activate physics
-            body.is_deactivated = false;
-
-            let horizontal_flip_factor = if player_sprite.flip_x {
-                Vec2::new(-1.0, 1.0)
-            } else {
-                Vec2::ONE
-            };
-            body.velocity = *throw_velocity * horizontal_flip_factor + player_velocity;
-            body.angular_velocity =
-                *angular_velocity * if player_sprite.flip_x { -1.0 } else { 1.0 };
-
-            body.is_spawning = true;
-
-            let transform = transforms.get_mut(entity).unwrap();
-            transform.translation =
-                player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
         }
 
         // If it's time to explode

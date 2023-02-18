@@ -192,10 +192,10 @@ fn spawn_map(
 
 fn handle_out_of_bounds_players_and_items(
     entities: Res<Entities>,
+    mut commands: Commands,
     mut transforms: CompMut<Transform>,
     player_indexes: Comp<PlayerIdx>,
     map: Res<LoadedMap>,
-    mut player_events: ResMut<PlayerEvents>,
     map_respawn_points: Comp<MapRespawnPoint>,
 ) {
     const KILL_ZONE_BORDER: f32 = 500.0;
@@ -211,7 +211,7 @@ fn handle_out_of_bounds_players_and_items(
         let pos = transform.translation;
 
         if pos.x < left_kill_zone || pos.x > right_kill_zone || pos.y < bottom_kill_zone {
-            player_events.kill(player_ent, None);
+            commands.add(PlayerEvent::kill(player_ent, None));
         }
     }
 

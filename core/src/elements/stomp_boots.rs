@@ -197,10 +197,10 @@ fn update(
 
 fn update_wearer(
     entities: Res<Entities>,
+    mut commands: Commands,
     wearing_stomp_boots: Comp<WearingStompBoots>,
     player_indexes: Comp<PlayerIdx>,
     collision_world: CollisionWorld,
-    mut player_events: ResMut<PlayerEvents>,
     kinematic_bodies: Comp<KinematicBody>,
     transforms: Comp<Transform>,
 ) {
@@ -228,7 +228,10 @@ fn update_wearer(
                         .center()
                         .y
                 {
-                    player_events.kill(player, Some(player_transform.translation.xy()))
+                    commands.add(PlayerEvent::kill(
+                        player,
+                        Some(player_transform.translation.xy()),
+                    ))
                 }
             });
     }

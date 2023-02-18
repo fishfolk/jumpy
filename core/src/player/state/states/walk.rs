@@ -39,9 +39,9 @@ pub fn handle_player_state(
     mut animations: CompMut<AnimationBankSprite>,
     mut bodies: CompMut<KinematicBody>,
     items: Comp<Item>,
-    mut player_events: ResMut<PlayerEvents>,
     mut audio_events: ResMut<AudioEvents>,
     collision_world: CollisionWorld,
+    mut commands: Commands,
 ) {
     // Collect a list of items that are being held by players
     let held_items = entities
@@ -82,8 +82,8 @@ pub fn handle_player_state(
             &collision_world,
             &items,
             &held_items,
-            &mut player_events,
             &mut audio_events,
+            &mut commands,
         );
 
         // If we are jumping

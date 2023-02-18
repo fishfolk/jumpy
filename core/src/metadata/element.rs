@@ -70,7 +70,7 @@ pub enum BuiltinElementKind {
         grab_offset: Vec2,
         damage_region_size: Vec2,
         damage_region_lifetime: f32,
-        throw_velocity: Vec2,
+        throw_velocity: f32,
         explosion_lifetime: f32,
         explosion_frames: usize,
         explosion_fps: f32,
@@ -133,7 +133,7 @@ pub enum BuiltinElementKind {
         angular_velocity: f32,
         can_rotate: bool,
         bounciness: f32,
-        throw_velocity: Vec2,
+        throw_velocity: f32,
         cooldown_frames: usize,
     },
     /// The throwable crate item
@@ -149,7 +149,7 @@ pub enum BuiltinElementKind {
         bounce_sound: Handle<AudioSource>,
         bounce_sound_volume: f32,
 
-        throw_velocity: Vec2,
+        throw_velocity: f32,
 
         body_size: Vec2,
         grab_offset: Vec2,
@@ -180,7 +180,7 @@ pub enum BuiltinElementKind {
         arm_sound_volume: f32,
         arm_sound: Handle<AudioSource>,
 
-        throw_velocity: Vec2,
+        throw_velocity: f32,
         body_size: Vec2,
         grab_offset: Vec2,
         fin_anim: Key,
@@ -200,7 +200,8 @@ pub enum BuiltinElementKind {
         grab_offset: Vec2,
         damage_region_size: Vec2,
         damage_region_lifetime: f32,
-        throw_velocity: Vec2,
+        kick_velocity: Vec2,
+        throw_velocity: f32,
         explosion_lifetime: f32,
         explosion_frames: usize,
         explosion_fps: f32,
@@ -232,7 +233,7 @@ pub enum BuiltinElementKind {
         body_size: Vec2,
         bounciness: f32,
         can_rotate: bool,
-        throw_velocity: Vec2,
+        throw_velocity: f32,
         angular_velocity: f32,
         atlas: Handle<Atlas>,
 

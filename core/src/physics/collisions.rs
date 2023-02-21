@@ -763,25 +763,32 @@ impl<'a> CollisionWorld<'a> {
     }
 
     /// Returns whether or not there is a tile or solid at the given position.
+    ///
+    /// > ⚠️ **Warning:** There is a slight difference to how `tile_collision_point` and
+    /// > [`tile_collision`][Self::tile_collision] reports collisions.
+    /// >
+    /// > [`tile_collision`][Self::tile_collision] will report a collision if the collider shape is
+    /// > perfectly lined up along the edge of a tile, but `tile_collision_point` won't.
     #[allow(unused)]
     pub fn solid_at(&self, pos: Vec2) -> bool {
         self.tile_collision_point(pos) == TileCollisionKind::SOLID
     }
 
     /// Returns the tile collision at the given point.
+    ///
+    /// > ⚠️ **Warning:** There is a slight difference to how `tile_collision_point` and
+    /// > [`tile_collision`][Self::tile_collision] reports collisions.
+    /// >
+    /// > [`tile_collision`][Self::tile_collision] will report a collision if the collider shape is
+    /// > perfectly lined up along the edge of a tile, but `tile_collision_point` won't.
     #[allow(unused)]
     pub fn tile_collision_point(&self, pos: Vec2) -> TileCollisionKind {
         for (entity, tile_layer) in self.entities.iter_with(&self.tile_layers) {
-            let TileLayer {
-                tiles,
-                grid_size,
-                tile_size,
-                ..
-            } = tile_layer;
+            let TileLayer { tile_size, .. } = tile_layer;
 
-            let x = (pos.x / tile_size.y) as i32;
-            let y = (pos.y / tile_size.x) as i32;
-            let tile_entity = tile_layer.get(UVec2::new(x as _, y as _));
+            let x = (pos.x / tile_size.y).floor() as u32;
+            let y = (pos.y / tile_size.x).floor() as u32;
+            let tile_entity = tile_layer.get(UVec2::new(x, y));
             if let Some(tile_entity) = tile_entity {
                 return self
                     .tile_collision_kinds

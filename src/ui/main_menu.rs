@@ -64,6 +64,9 @@ pub fn setup_main_menu(
 ) {
     session_manager.stop();
 
+    // Make sure the game editor is hidden
+    commands.insert_resource(NextState(GameEditorState::Hidden));
+
     // Spawn menu background
     let bg_handle = game.main_menu.background_image.image.inner.clone_weak();
     let img_size = game.main_menu.background_image.image_size;
@@ -302,7 +305,6 @@ impl<'w, 's> WidgetSystem for HomeMenu<'w, 's> {
 
                     // Map editor
                     ui.scope(|ui| {
-                        ui.set_enabled(false);
                         if BorderedButton::themed(
                             &ui_theme.button_styles.normal,
                             &params.localization.get("map-editor"),
@@ -317,6 +319,9 @@ impl<'w, 's> WidgetSystem for HomeMenu<'w, 's> {
                             params
                                 .commands
                                 .insert_resource(NextState(EngineState::InGame));
+                            params
+                                .commands
+                                .insert_resource(NextState(InGameState::Playing));
                         }
                     });
 

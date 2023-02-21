@@ -17,6 +17,11 @@ impl Plugin for JumpySessionPlugin {
                 CoreStage::Update,
                 SessionStage::Update,
                 SystemStage::single_threaded()
+                    .with_system(
+                        ensure_2_players
+                            .run_in_state(EngineState::InGame)
+                            .run_in_state(InGameState::Playing),
+                    )
                     .with_system(update_input)
                     .with_system(
                         update_game
@@ -43,9 +48,10 @@ impl bones_bevy_renderer::HasBonesWorld for Session {
 /// Helper for creating and stopping game sessions.
 #[derive(SystemParam)]
 pub struct SessionManager<'w, 's> {
-    commands: Commands<'w, 's>,
-    menu_camera: Query<'w, 's, &'static mut Camera, With<MenuCamera>>,
-    session: Option<ResMut<'w, Session>>,
+    pub commands: Commands<'w, 's>,
+    pub menu_camera: Query<'w, 's, &'static mut Camera, With<MenuCamera>>,
+    pub session: Option<ResMut<'w, Session>>,
+    pub core_meta_arc: Res<'w, CoreMetaArc>,
 }
 
 impl<'w, 's> SessionManager<'w, 's> {
@@ -63,10 +69,38 @@ impl<'w, 's> SessionManager<'w, 's> {
         }
     }
 
+    pub fn map_handle(&self) -> Option<Handle<MapMeta>> {
+        self.session.as_ref().map(|session| {
+            let map_handle = session.world.resource::<jumpy_core::map::MapHandle>();
+            let map_handle = map_handle.borrow();
+
+            map_handle.get_bevy_handle()
+        })
+    }
+
     /// Stop a game session
     pub fn stop(&mut self) {
         self.commands.remove_resource::<Session>();
         self.menu_camera.for_each_mut(|mut x| x.is_active = true);
+    }
+}
+
+/// Helper system to make sure there are two players on the board, if ever the game is in the middle
+/// of playing and there are no players on the board.
+///
+/// This is primarily for the editor, which may be started without going through the player
+/// selection screen.
+fn ensure_2_players(session: Option<ResMut<Session>>, core_meta: Res<CoreMetaArc>) {
+    if let Some(session) = session {
+        let player_inputs = session.world.resource::<jumpy_core::input::PlayerInputs>();
+        let mut player_inputs = player_inputs.borrow_mut();
+
+        if player_inputs.players.iter().all(|x| !x.active) {
+            for i in 0..2 {
+                player_inputs.players[i].active = true;
+                player_inputs.players[i].selected_player = core_meta.players[i].clone();
+            }
+        }
     }
 }
 

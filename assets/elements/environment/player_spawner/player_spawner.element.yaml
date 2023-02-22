@@ -1,4 +1,4 @@
 name: Player Spawner
-category: Gampelay
+category: Map
 builtin: !PlayerSpawner
 editor_size: [16, 32]

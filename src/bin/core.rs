@@ -70,6 +70,7 @@ fn load(
     session: Option<ResMut<Session>>,
     meta_handle: Option<Res<CoreMetaHandle>>,
     mut core_meta_assets: ResMut<Assets<CoreMeta>>,
+    map_assets: Res<Assets<MapMeta>>,
 ) {
     if session.is_some() {
         return;
@@ -82,7 +83,10 @@ fn load(
     };
 
     let session = GameSession::new(GameSessionInfo {
-        map: meta.stable_maps[0].clone(),
+        map_meta: map_assets
+            .get(&meta.stable_maps[0].get_bevy_handle())
+            .unwrap()
+            .clone(),
         player_info: [
             Some(meta.players[0].clone()),
             Some(meta.players[0].clone()),

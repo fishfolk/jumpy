@@ -126,7 +126,7 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                         });
                                         params.session_manager.start(GameSessionInfo {
                                             meta: params.core.0.clone(),
-                                            map: map_handle.clone(),
+                                            map_meta: map_meta.clone(),
                                             player_info,
                                         });
                                         params

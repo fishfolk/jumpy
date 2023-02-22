@@ -2,16 +2,17 @@ layers = Layers
 create-layer = Create a New Layer
 map-editor-preview-warning = ⚠ Warning: the map editor is a work-in-progress preview and may be broken or crash.
 
-map-editor = Map Editor
 map-info = Map Info
 map-export = Map Export
 tiles = Tiles
 tile = Tile
 tile-layer = Tile Layer
 tile-layer-icon = T
+elements = Elements
 element = Element
 element-layer = Element Layer
 element-layer-icon = E
+add-element = Add Element
 toggle-visibility = Toggle Visibility
 
 create = Create

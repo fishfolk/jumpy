@@ -28,8 +28,7 @@ pub struct CameraState {
 fn camera_controller(
     game_meta: Res<CoreMetaArc>,
     entities: Res<Entities>,
-    map_handle: Res<MapHandle>,
-    map_assets: BevyAssets<MapMeta>,
+    map: Res<LoadedMap>,
     mut cameras: CompMut<Camera>,
     mut camera_shakes: CompMut<CameraShake>,
     mut camera_states: CompMut<CameraState>,
@@ -40,9 +39,6 @@ fn camera_controller(
 ) {
     let meta = &game_meta.camera;
 
-    let Some(map) = map_assets.get(&map_handle.get_bevy_handle()) else {
-        return;
-    };
     let Some((_ent, (camera, camera_shake, camera_state))) = entities.iter_with((&mut cameras, &mut camera_shakes, &mut camera_states)).next() else {
         return
     };
@@ -158,16 +154,12 @@ fn camera_parallax(
     mut transforms: CompMut<Transform>,
     parallax_bg_sprites: Comp<ParallaxBackgroundSprite>,
     cameras: Comp<Camera>,
-    map_handle: Res<MapHandle>,
-    map_assets: BevyAssets<MapMeta>,
+    map: Res<LoadedMap>,
 ) {
     // TODO: This constant represents that maximum camera-visible distance, and should be moved
     // somewhere more appropriate.
     const FAR_PLANE: f32 = 1000.0;
 
-    let Some(map) = map_assets.get(&map_handle.get_bevy_handle()) else {
-        return;
-    };
     let map_size = map.grid_size.as_vec2() * map.tile_size;
 
     let camera_transform = entities

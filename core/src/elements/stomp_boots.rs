@@ -228,7 +228,7 @@ fn update_wearer(
                         .center()
                         .y
                 {
-                    player_events.kill(player)
+                    player_events.kill(player, Some(player_transform.translation.xy()))
                 }
             });
     }

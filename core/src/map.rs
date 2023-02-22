@@ -169,7 +169,7 @@ fn handle_out_of_bounds_players_and_items(
         let pos = transform.translation;
 
         if pos.x < left_kill_zone || pos.x > right_kill_zone || pos.y < bottom_kill_zone {
-            player_events.kill(player_ent);
+            player_events.kill(player_ent, None);
         }
     }
 

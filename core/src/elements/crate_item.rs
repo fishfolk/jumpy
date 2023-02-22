@@ -300,7 +300,7 @@ fn update_thrown_crates(
             .collect::<Vec<_>>();
 
         for player_entity in &colliding_with_players {
-            player_events.kill(*player_entity);
+            player_events.kill(*player_entity, Some(transform.translation.xy()));
         }
 
         if !colliding_with_players.is_empty()

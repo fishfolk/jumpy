@@ -268,6 +268,8 @@ fn update(
             sword.dropped_time += 1.0 / crate::FPS;
 
             if body.velocity.length() >= *killing_speed {
+                let sword_transform = transforms.get(entity).unwrap();
+
                 collision_world
                     .actor_collisions(entity)
                     .into_iter()
@@ -277,7 +279,9 @@ fn update(
                             (player_body.velocity - body.velocity).length() >= *killing_speed
                         }
                     })
-                    .for_each(|player| player_events.kill(player));
+                    .for_each(|player| {
+                        player_events.kill(player, Some(sword_transform.translation.xy()))
+                    });
             }
         }
 

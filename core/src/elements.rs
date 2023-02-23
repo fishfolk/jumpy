@@ -50,6 +50,7 @@ pub struct ItemThrow {
     up: Vec2,
     drop: Vec2,
     lob: Vec2,
+    roll: Vec2,
     spin: f32,
 }
 
@@ -62,6 +63,7 @@ impl ItemThrow {
             up: Vec2::new(0.0, 1.1),
             drop: Vec2::new(0.0, 0.0),
             lob: Vec2::new(1.0, 2.5).normalize() * 1.1,
+            roll: Vec2::new(0.4, -0.1),
             spin: 0.0,
         }
     }
@@ -73,6 +75,7 @@ impl ItemThrow {
             up: Self::standard().up * strength,
             drop: Self::standard().drop * strength,
             lob: Self::standard().lob * strength,
+            roll: Self::standard().roll * strength,
             spin: 0.0,
         }
     }
@@ -85,7 +88,11 @@ impl ItemThrow {
         let y = move_direction.y;
         let moving = move_direction.x.abs() > 0.0;
         if y < 0.0 {
-            return self.drop;
+            if moving {
+                return self.roll;
+            } else {
+                return self.drop;
+            }
         }
         if moving {
             if y > 0.0 {
@@ -139,7 +146,8 @@ fn throw_dropped_items(
             );
 
             body.velocity = throw_velocity * horizontal_flip_factor;
-            body.angular_velocity = item_throw.spin * if player_sprite.flip_x { -1.0 } else { 1.0 };
+            body.angular_velocity =
+                item_throw.spin * horizontal_flip_factor.x * throw_velocity.y.signum();
 
             body.is_deactivated = false;
         }

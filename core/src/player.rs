@@ -141,11 +141,11 @@ impl PlayerEvent {
     }
     /// Despawn a player.
     ///
-    /// > **Note:** This is different than the [`Kill`][Self::Kill] event in that it immediately
-    /// > removes the player from the world, while [`Kill`][Self::Kill] will usually cause the
+    /// > **Note:** This is different than the [`kill`][Self::kill] event in that it immediately
+    /// > removes the player from the world, while [`kill`][Self::kill] will usually cause the
     /// > player to enter the death animation.
     /// >
-    /// > [`Despawn`][Self::Despawn] is usually sent at the end of the player death animation.
+    /// > [`despawn`][Self::despawn] is usually sent at the end of the player death animation.
     pub fn despawn(player: Entity) -> System {
         (move |mut entities: ResMut<Entities>,
                attachments: Comp<Attachment>,

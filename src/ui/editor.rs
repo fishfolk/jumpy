@@ -1,9 +1,6 @@
 use std::marker::PhantomData;
 
-use bevy::{
-    ecs::system::{Command, SystemParam, SystemState},
-    math::Vec3Swizzles,
-};
+use bevy::{ecs::system::SystemParam, math::Vec3Swizzles};
 use bevy_egui::*;
 use bevy_fluent::Localization;
 use bones_bevy_renderer::BevyBonesEntity;
@@ -23,7 +20,6 @@ impl Plugin for EditorPlugin {
                     .run_in_state(GameEditorState::Visible)
                     .at_end(),
             )
-            .add_enter_system(GameEditorState::Visible, setup_editor)
             .add_exit_system(GameEditorState::Visible, cleanup_editor);
     }
 }
@@ -40,7 +36,23 @@ struct EditorState {
     pub cursor: EditorCursor,
     pub current_layer_idx: usize,
     pub current_tool: EditorTool,
+    pub camera: EditorCameraPos,
     // pub hidden_layers: HashSet<usize>,
+}
+
+#[derive(Clone, Copy)]
+struct EditorCameraPos {
+    pos: Vec2,
+    height: f32,
+}
+
+impl Default for EditorCameraPos {
+    fn default() -> Self {
+        Self {
+            pos: Vec2::new(500.0, 350.0),
+            height: 800.0,
+        }
+    }
 }
 
 /// The current export of the world's map metadata, if a map is loaded.
@@ -63,48 +75,6 @@ impl EditorTool {
     }
 }
 
-/// Bevy [`Command`] for centering the game camera.
-///
-/// TODO: Maybe move this logic to the [`SessionManager`] and add a way to load a map with the
-/// camera initially set centered over the map.
-struct CenterGameCamera;
-impl Command for CenterGameCamera {
-    fn write(self, world: &mut World) {
-        let mut state = SystemState::<Option<ResMut<Session>>>::new(world);
-        let session = state.get_mut(world);
-
-        if let Some(session) = session {
-            let map = session.world.resource::<jumpy_core::map::LoadedMap>();
-            let map = map.borrow();
-            let (grid_size, tile_size) = (map.grid_size, map.tile_size);
-
-            session
-                .world
-                .run_initialized_system(move |mut commands: bones::Commands| {
-                    // Using commands here instead of directly will make sure that it waits the next
-                    // frame until the camera is spawned.
-                    commands.add(
-                        move |mut cameras: bones::CompMut<bones::Camera>,
-                              mut camera_shakes: bones::CompMut<bones::CameraShake>,
-                              core_meta: bones::Res<CoreMetaArc>| {
-                            let camera = cameras.iter_mut().next().unwrap();
-                            let camera_shake = camera_shakes.iter_mut().next().unwrap();
-
-                            camera.height = core_meta.camera.default_height * 2.0;
-                            camera_shake.center =
-                                (tile_size * (grid_size / 2).as_vec2()).extend(0.0);
-                        },
-                    )
-                })
-                .unwrap();
-        }
-    }
-}
-
-pub fn setup_editor(mut commands: Commands) {
-    commands.add(CenterGameCamera);
-}
-
 pub fn cleanup_editor(session: Option<ResMut<Session>>) {
     // Update camera viewport to fit into central editor area.
     if let Some(session) = session {
@@ -125,6 +95,28 @@ pub fn cleanup_editor(session: Option<ResMut<Session>>) {
 }
 
 pub fn editor_ui_system(world: &mut World) {
+    // Force set the camera position
+    {
+        let world = world.cell();
+        let session = world.get_resource::<Session>();
+        let editor_state = world.resource_mut::<EditorState>();
+        let camera_info = editor_state.camera;
+        if let Some(session) = session {
+            session.world.run_initialized_system(
+                move |
+                mut cameras: bones::CompMut<bones::Camera>,
+                mut camera_shakes: bones::CompMut<bones::CameraShake>,
+                mut camera_states: bones::CompMut<jumpy_core::camera::CameraState>| {
+                    let Some(camera) = cameras.iter_mut().next() else { return };
+                    let camera_shake = camera_shakes.iter_mut().next().unwrap();
+                    let camera_state = camera_states.iter_mut().next().unwrap();
+                    camera.height = camera_info.height;
+                    camera_shake.center = camera_info.pos.extend(0.0);
+                    camera_state.disable_controller = true;
+            }).ok();
+        }
+    }
+
     // Get the world cursor position
     let cursor_pos = {
         let mut camera_query =
@@ -298,7 +290,6 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                         params
                             .commands
                             .insert_resource(NextState(InGameState::Playing));
-                        params.commands.add(CenterGameCamera);
                     }
                 });
             });
@@ -760,61 +751,26 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
                 });
             }
 
-            'camera_control: {
-                if let Some(session) = &mut params.session_manager.session {
-                    let core_meta = session.world.resource::<CoreMetaArc>();
-                    let core_meta = core_meta.borrow();
+            if let Some(session) = &mut params.session_manager.session {
+                let core_meta = session.world.resource::<CoreMetaArc>();
+                let core_meta = core_meta.borrow();
 
-                    let cameras = session.world.components.get::<bones::Camera>();
-                    let mut cameras = cameras.borrow_mut();
+                let camera = &mut params.state.camera;
 
-                    // Update camera viewport to fit into central editor area.
-                    let Some(camera) = cameras.iter_mut().next() else {
-                        break 'camera_control;
-                    };
-                    // We comment the viewport modification temporarily because it breaks Bevy's
-                    // `camera.viewport_to_world()` unfortunately.
-                    //
-                    // let rect = response.rect;
-                    // let ppp = ui.ctx().pixels_per_point();
-                    // camera.viewport = Some(bones::Viewport {
-                    //     position: UVec2::new(
-                    //         (rect.min.x * ppp) as u32,
-                    //         (rect.min.y.floor() * ppp) as u32,
-                    //     ),
-                    //     size: UVec2::new((rect.width() * ppp) as u32, (rect.height() * ppp) as u32),
-                    //     depth_min: 0.0,
-                    //     depth_max: 1.0,
-                    // });
+                // Handle camera zoom
+                if response.hovered() {
+                    camera.height -= ui.input().scroll_delta.y;
+                    camera.height = camera.height.max(10.0);
+                }
 
-                    // Disable the default camera controller
-                    let camera_states = session
-                        .world
-                        .components
-                        .get::<jumpy_core::camera::CameraState>();
-                    let mut camera_states = camera_states.borrow_mut();
-                    camera_states.iter_mut().next().unwrap().disable_controller = true;
-
-                    // Handle camera zoom
-                    if response.hovered() {
-                        camera.height -= ui.input().scroll_delta.y;
-                        camera.height = camera.height.max(10.0);
-                    }
-
-                    // Handle camera pan
-                    if response.dragged_by(egui::PointerButton::Middle)
-                        || ui.input().modifiers.command
-                    {
-                        let camera_shakes = session.world.components.get::<bones::CameraShake>();
-                        let mut camera_shakes = camera_shakes.borrow_mut();
-                        let camera_shake = camera_shakes.iter_mut().next().unwrap();
-
-                        let drag_delta =
-                            response.drag_delta() * params.game.ui_theme.scale * camera.height
-                                / core_meta.camera.default_height;
-                        camera_shake.center.x -= drag_delta.x;
-                        camera_shake.center.y += drag_delta.y;
-                    }
+                // Handle camera pan
+                if response.dragged_by(egui::PointerButton::Middle) || ui.input().modifiers.command
+                {
+                    let drag_delta =
+                        response.drag_delta() * params.game.ui_theme.scale * camera.height
+                            / core_meta.camera.default_height;
+                    camera.pos.x -= drag_delta.x;
+                    camera.pos.y += drag_delta.y;
                 }
             }
 

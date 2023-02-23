@@ -131,17 +131,14 @@ ui_theme:
 
   editor:
     icons:
-      select:
-        image: ui/editor/Cursor.png
+      elements:
+        image: ui/editor/Object.png
         image_size: [64, 64]
-      tile:
+      tiles:
         image: ui/editor/Tile.png
         image_size: [64, 64]
-      spawn:
-        image: ui/editor/Pointer and Map.png
-        image_size: [64, 64]
-      erase:
-        image: ui/editor/Eraser.png
+      select:
+        image: ui/editor/Cursor.png
         image_size: [64, 64]
 
   hud:

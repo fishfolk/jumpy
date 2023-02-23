@@ -379,8 +379,8 @@ impl<'w, 's> WidgetSystem for EditorLeftToolbar<'w, 's> {
         let width = ui.available_width();
         for tool in [EditorTool::Element, EditorTool::Tile] {
             let (image, hover_text) = match tool {
-                EditorTool::Element => (&icons.select, params.localization.get("elements")),
-                EditorTool::Tile => (&icons.tile, params.localization.get("tiles")),
+                EditorTool::Element => (&icons.elements, params.localization.get("elements")),
+                EditorTool::Tile => (&icons.tiles, params.localization.get("tiles")),
             };
             ui.add_space(ui.spacing().window_margin.top);
 
@@ -556,15 +556,6 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                 }
             });
         }
-
-        ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
-            ui.add_space(ui.spacing().item_spacing.y);
-            ui.label(
-                egui::RichText::new(params.localization.get("map-editor-preview-warning"))
-                    .size(15.0)
-                    .color(egui::Color32::YELLOW),
-            );
-        });
     }
 }
 
@@ -804,131 +795,150 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
             let ppp = params.game.ui_theme.scale * camera_zoom;
 
             // Collect map elements
-            if let Ok((camera, camera_transform, _)) = params.camera.get_single() {
-                let elements = session
-                    .world
-                    .run_initialized_system(
-                        |entities: bones::Res<bones::Entities>,
-                         transforms: bones::Comp<bones::Transform>,
-                         element_handles: bones::Comp<jumpy_core::elements::ElementHandle>,
-                         spawned_map_layer_metas: bones::Comp<
-                            jumpy_core::map::SpawnedMapLayerMeta,
-                        >| {
-                            Ok(entities
-                                .iter_with((
-                                    &element_handles,
-                                    &transforms,
-                                    &spawned_map_layer_metas,
-                                ))
-                                .map(|(ent, (handle, transform, layer))| {
-                                    (
-                                        ent,
-                                        handle.get_bevy_handle(),
-                                        transform.translation,
-                                        layer.layer_idx,
-                                    )
-                                })
-                                .collect::<Vec<_>>())
-                        },
-                    )
-                    .unwrap();
-                for (entity, handle, translation, layer_idx) in elements {
-                    if layer_idx != params.state.current_layer_idx {
-                        continue;
-                    }
+            if params.state.current_tool == EditorTool::Element {
+                if let Ok((camera, camera_transform, _)) = params.camera.get_single() {
+                    let elements = session
+                        .world
+                        .run_initialized_system(
+                            |entities: bones::Res<bones::Entities>,
+                             transforms: bones::Comp<bones::Transform>,
+                             element_handles: bones::Comp<jumpy_core::elements::ElementHandle>,
+                             spawned_map_layer_metas: bones::Comp<
+                                jumpy_core::map::SpawnedMapLayerMeta,
+                            >| {
+                                Ok(entities
+                                    .iter_with((
+                                        &element_handles,
+                                        &transforms,
+                                        &spawned_map_layer_metas,
+                                    ))
+                                    .map(|(ent, (handle, transform, layer))| {
+                                        (
+                                            ent,
+                                            handle.get_bevy_handle(),
+                                            transform.translation,
+                                            layer.layer_idx,
+                                        )
+                                    })
+                                    .collect::<Vec<_>>())
+                            },
+                        )
+                        .unwrap();
 
-                    let element_meta = params.element_assets.get(&handle).unwrap();
-                    let grab_size = element_meta.editor.grab_size;
-                    let grab_offset = element_meta.editor.grab_offset;
+                    for (entity, handle, translation, layer_idx) in elements {
+                        if layer_idx != params.state.current_layer_idx {
+                            continue;
+                        }
 
-                    let screen_rect = ui.input().screen_rect();
-                    let window_size = screen_rect.size();
-                    let Some(ndc) = camera
+                        let element_meta = params.element_assets.get(&handle).unwrap();
+                        let grab_size = element_meta.editor.grab_size;
+                        let grab_offset = element_meta.editor.grab_offset;
+
+                        let screen_rect = ui.input().screen_rect();
+                        let window_size = screen_rect.size();
+                        let Some(ndc) = camera
                         .world_to_ndc(
                             &(*camera_transform).into(),
                             translation
                         ) else { continue };
-                    let ndc = (ndc + 1.0) / 2.0;
-                    let pos =
-                        egui::pos2(window_size.x * ndc.x, window_size.y - window_size.y * ndc.y);
-
-                    let rect = egui::Rect::from_center_size(
-                        pos + egui::vec2(grab_offset.x, -grab_offset.y) / ppp,
-                        egui::vec2(grab_size.x, grab_size.y) / ppp,
-                    );
-                    let mut color_override = None;
-                    let response = ui
-                        .allocate_rect(rect, egui::Sense::click_and_drag())
-                        .context_menu(|ui| {
-                            color_override = Some(egui::Color32::RED);
-                            if ui
-                                .button(&format!("🗑 {}", params.localization.get("delete-element")))
-                                .clicked()
-                            {
-                                ui.close_menu();
-                                **params.editor_action = Some(EditorInput::DeleteEntity { entity });
-                            }
-                        });
-
-                    #[derive(Clone)]
-                    struct ElementDrag {
-                        offset: Vec2,
-                    }
-                    let drag_id = egui::Id::from("element_drag");
-                    if response.drag_started() {
-                        ui.data().insert_temp(
-                            drag_id,
-                            ElementDrag {
-                                offset: params.state.cursor.current_pos.unwrap()
-                                    - translation.truncate(),
-                            },
+                        let ndc = (ndc + 1.0) / 2.0;
+                        let pos = egui::pos2(
+                            window_size.x * ndc.x,
+                            window_size.y - window_size.y * ndc.y,
                         );
-                    } else if response.drag_released() {
-                        ui.data().remove::<ElementDrag>(drag_id);
-                    }
 
-                    let half_pixel_offset = Vec2::new(
-                        if grab_size.x % 2.0 != 0.0 { 0.5 } else { 0.0 },
-                        if grab_size.y % 2.0 != 0.0 { 0.5 } else { 0.0 },
-                    );
-                    let snap_to_grid = ui.input().modifiers.shift_only();
-                    let ctrl_modifier = ui.input().modifiers.command;
+                        let rect = egui::Rect::from_center_size(
+                            pos + egui::vec2(grab_offset.x, -grab_offset.y) / ppp,
+                            egui::vec2(grab_size.x, grab_size.y) / ppp,
+                        );
+                        let mut color_override = None;
+                        let response = ui
+                            .allocate_rect(rect, egui::Sense::click_and_drag())
+                            .context_menu(|ui| {
+                                color_override = Some(egui::Color32::RED);
+                                if ui
+                                    .button(&format!(
+                                        "🗑 {}",
+                                        params.localization.get("delete-element")
+                                    ))
+                                    .clicked()
+                                {
+                                    ui.close_menu();
+                                    **params.editor_action =
+                                        Some(EditorInput::DeleteEntity { entity });
+                                }
+                            });
 
-                    let default_color = if response.dragged_by(egui::PointerButton::Primary)
-                        && map_response_rect.contains(ui.input().pointer.hover_pos().unwrap())
-                        && !ctrl_modifier
-                    {
-                        let element_drag: ElementDrag = ui.data().get_temp(drag_id).unwrap();
+                        #[derive(Clone)]
+                        struct ElementDrag {
+                            offset: Vec2,
+                        }
+                        let drag_id = egui::Id::from("element_drag");
+                        if response.drag_started() {
+                            ui.data().insert_temp(
+                                drag_id,
+                                ElementDrag {
+                                    offset: params.state.cursor.current_pos.unwrap()
+                                        - translation.truncate(),
+                                },
+                            );
+                        } else if response.drag_released() {
+                            ui.data().remove::<ElementDrag>(drag_id);
+                        }
 
-                        let new_pos =
-                            params.state.cursor.current_pos.unwrap() - element_drag.offset;
+                        let half_pixel_offset = Vec2::new(
+                            if grab_size.x % 2.0 != 0.0 { 0.5 } else { 0.0 },
+                            if grab_size.y % 2.0 != 0.0 { 0.5 } else { 0.0 },
+                        );
+                        let snap_to_grid = ui.input().modifiers.shift_only();
+                        let ctrl_modifier = ui.input().modifiers.command;
 
-                        let new_pos = if snap_to_grid {
-                            let bottom_center_offset =
-                                -grab_offset + Vec2::new(0.0, grab_size.y / 2.0);
-                            let bottom_center = new_pos - bottom_center_offset;
+                        let default_color = if response.dragged_by(egui::PointerButton::Primary)
+                            && map_response_rect.contains(ui.input().pointer.hover_pos().unwrap())
+                            && !ctrl_modifier
+                        {
+                            let element_drag: ElementDrag = ui.data().get_temp(drag_id).unwrap();
 
-                            let increment = params.map.0.as_ref().unwrap().tile_size / 4.0;
-                            let snapped_bottom_center =
-                                (bottom_center / increment).floor() * increment;
-                            snapped_bottom_center + bottom_center_offset
+                            let new_pos =
+                                params.state.cursor.current_pos.unwrap() - element_drag.offset;
+
+                            let new_pos = if snap_to_grid {
+                                let bottom_center_offset =
+                                    -grab_offset + Vec2::new(0.0, grab_size.y / 2.0);
+                                let bottom_center = new_pos - bottom_center_offset;
+
+                                let increment = params.map.0.as_ref().unwrap().tile_size / 4.0;
+                                let snapped_bottom_center =
+                                    (bottom_center / increment).floor() * increment;
+                                snapped_bottom_center + bottom_center_offset
+                            } else {
+                                new_pos.floor() + half_pixel_offset
+                            };
+
+                            **params.editor_action = Some(EditorInput::MoveEntity {
+                                entity,
+                                pos: new_pos,
+                            });
+                            response.on_hover_cursor(egui::CursorIcon::Grabbing);
+                            egui::Color32::GREEN
                         } else {
-                            new_pos.floor() + half_pixel_offset
+                            response.on_hover_cursor(egui::CursorIcon::PointingHand);
+                            egui::Color32::LIGHT_GRAY
                         };
-
-                        **params.editor_action = Some(EditorInput::MoveEntity {
-                            entity,
-                            pos: new_pos,
-                        });
-                        response.on_hover_cursor(egui::CursorIcon::Grabbing);
-                        egui::Color32::GREEN
-                    } else {
-                        response.on_hover_cursor(egui::CursorIcon::PointingHand);
-                        egui::Color32::LIGHT_GRAY
-                    };
-                    let mut painter = ui.painter_at(screen_rect);
-                    painter.set_clip_rect(map_response_rect);
-                    painter.rect_stroke(rect, 2.0, (1.0, color_override.unwrap_or(default_color)));
+                        let mut painter = ui.painter_at(screen_rect);
+                        let color = color_override.unwrap_or(default_color);
+                        painter.set_clip_rect(map_response_rect);
+                        if element_meta.editor.show_name {
+                            painter.text(
+                                rect.center_top(),
+                                egui::Align2::CENTER_BOTTOM,
+                                &element_meta.name,
+                                egui::FontId::new(15.0, egui::FontFamily::Proportional),
+                                color,
+                            );
+                        }
+                        painter.rect_stroke(rect, 2.0, (1.0, color));
+                    }
                 }
             }
 

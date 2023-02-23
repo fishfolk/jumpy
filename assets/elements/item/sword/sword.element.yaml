@@ -1,5 +1,7 @@
 name: Sword
 category: Weapons
+editor:
+  grab_size: [70, 20]
 builtin: !Sword
   atlas: ./sword.atlas.yaml
   sound: ./sword.ogg

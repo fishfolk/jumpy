@@ -22,6 +22,8 @@ pub struct ElementEditorMeta {
     pub grab_size: Vec2,
     /// The offset of the bounding rect for the element in the editor.
     pub grab_offset: Vec2,
+    /// Show the element name above the bounding rect in the editor.
+    pub show_name: bool,
 }
 
 impl Default for ElementEditorMeta {
@@ -29,6 +31,7 @@ impl Default for ElementEditorMeta {
         Self {
             grab_size: Vec2::splat(45.0),
             grab_offset: Vec2::ZERO,
+            show_name: true,
         }
     }
 }

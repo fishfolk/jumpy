@@ -3,6 +3,7 @@ category: Gameplay
 editor:
   grab_size: [30, 10]
   grab_offset: [0, -5]
+  show_name: false
 builtin: !Sproinger
   atlas: ./sproinger.atlas.yaml
   sound: ./jump.ogg

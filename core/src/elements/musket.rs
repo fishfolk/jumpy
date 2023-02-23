@@ -119,10 +119,8 @@ fn update(
             shoot_atlas,
             shoot_frames,
             shoot_lifetime,
-            
             fin_anim,
             grab_offset,
-
             bullet_meta,
             shoot_sound,
             cooldown_frames,

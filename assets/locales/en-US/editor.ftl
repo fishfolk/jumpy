@@ -13,6 +13,7 @@ element = Element
 element-layer = Element Layer
 element-layer-icon = E
 add-element = Add Element
+delete-element = Delete Element
 toggle-visibility = Toggle Visibility
 
 create = Create

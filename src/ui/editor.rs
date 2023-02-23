@@ -69,7 +69,7 @@ enum EditorTool {
 impl EditorTool {
     pub fn cursor(&self) -> egui::CursorIcon {
         match self {
-            EditorTool::Element => egui::CursorIcon::PointingHand,
+            EditorTool::Element => egui::CursorIcon::Default,
             EditorTool::Tile => egui::CursorIcon::Crosshair,
         }
     }
@@ -643,6 +643,8 @@ struct EditorCentralPanel<'w, 's> {
     localization: Res<'w, Localization>,
     session_manager: SessionManager<'w, 's>,
     editor_action: ResMut<'w, EditorAction>,
+    camera: CameraQuery<'w, 's>,
+    map: Res<'w, EditorMapExport>,
 }
 
 struct MapCreateInfo {
@@ -709,13 +711,17 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
             .collect::<Vec<_>>();
         element_categories.sort_by(|a, b| a.0.cmp(&b.0));
 
-        if params.session_manager.session.is_some() {
-            let mut response =
-                ui.allocate_response(ui.available_size(), egui::Sense::click_and_drag());
+        if let Some(session) = params.session_manager.session {
+            let core_meta = session.world.resource::<CoreMetaArc>();
+            let core_meta = core_meta.borrow();
 
-            // Create context menu
+            let mut map_response =
+                ui.allocate_response(ui.available_size(), egui::Sense::click_and_drag());
+            let map_response_rect = map_response.rect;
+
+            // Element context menu
             if let EditorTool::Element = params.state.current_tool {
-                response = response.context_menu(|ui| {
+                map_response = map_response.context_menu(|ui| {
                     if ui.input().pointer.secondary_clicked() {
                         params.state.cursor.context_click_pos = params.state.cursor.current_pos;
                     }
@@ -751,45 +757,182 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
                 });
             }
 
-            if let Some(session) = &mut params.session_manager.session {
-                let core_meta = session.world.resource::<CoreMetaArc>();
-                let core_meta = core_meta.borrow();
-
-                let camera = &mut params.state.camera;
-
+            // Move camera
+            let camera_zoom = {
+                let cursor_icon = ui.output().cursor_icon;
+                let input = ui.input();
+                let ctrl_modifier = input.modifiers.command;
+                let pointer = &input.pointer;
+                let editor_camera_pos = &mut params.state.camera;
                 // Handle camera zoom
-                if response.hovered() {
-                    camera.height -= ui.input().scroll_delta.y;
-                    camera.height = camera.height.max(10.0);
+                let hovered = pointer
+                    .hover_pos()
+                    .map(|pos| map_response_rect.contains(pos))
+                    .unwrap_or_default();
+                if hovered {
+                    editor_camera_pos.height -= input.scroll_delta.y;
+                    editor_camera_pos.height = editor_camera_pos.height.max(10.0);
                 }
+                let zoom = editor_camera_pos.height / core_meta.camera.default_height;
 
                 // Handle camera pan
-                if response.dragged_by(egui::PointerButton::Middle) || ui.input().modifiers.command
-                {
-                    let drag_delta =
-                        response.drag_delta() * params.game.ui_theme.scale * camera.height
-                            / core_meta.camera.default_height;
-                    camera.pos.x -= drag_delta.x;
-                    camera.pos.y += drag_delta.y;
+                let panning = pointer.is_moving()
+                    && (pointer.middle_down() || (ctrl_modifier && pointer.primary_down()));
+                if panning {
+                    let drag_delta = pointer.delta() * params.game.ui_theme.scale * zoom;
+                    editor_camera_pos.pos.x -= drag_delta.x;
+                    editor_camera_pos.pos.y += drag_delta.y;
+                }
+                drop(input);
+
+                // Handle cursor
+                //
+                // We only change the cursor if it's not been changed by another widget, for instance, for the
+                // resize handle of the right sidebar.
+                if cursor_icon == default() {
+                    if panning {
+                        map_response.on_hover_cursor(egui::CursorIcon::Grabbing);
+                    } else if ctrl_modifier {
+                        map_response.on_hover_cursor(egui::CursorIcon::Grab);
+                    } else {
+                        map_response.on_hover_cursor(params.state.current_tool.cursor());
+                    }
+                }
+
+                zoom
+            };
+            let ppp = params.game.ui_theme.scale * camera_zoom;
+
+            // Collect map elements
+            if let Ok((camera, camera_transform, _)) = params.camera.get_single() {
+                let elements = session
+                    .world
+                    .run_initialized_system(
+                        |entities: bones::Res<bones::Entities>,
+                         transforms: bones::Comp<bones::Transform>,
+                         element_handles: bones::Comp<jumpy_core::elements::ElementHandle>,
+                         spawned_map_layer_metas: bones::Comp<
+                            jumpy_core::map::SpawnedMapLayerMeta,
+                        >| {
+                            Ok(entities
+                                .iter_with((
+                                    &element_handles,
+                                    &transforms,
+                                    &spawned_map_layer_metas,
+                                ))
+                                .map(|(ent, (handle, transform, layer))| {
+                                    (
+                                        ent,
+                                        handle.get_bevy_handle(),
+                                        transform.translation,
+                                        layer.layer_idx,
+                                    )
+                                })
+                                .collect::<Vec<_>>())
+                        },
+                    )
+                    .unwrap();
+                for (entity, handle, translation, layer_idx) in elements {
+                    if layer_idx != params.state.current_layer_idx {
+                        continue;
+                    }
+
+                    let element_meta = params.element_assets.get(&handle).unwrap();
+                    let grab_size = element_meta.editor.grab_size;
+                    let grab_offset = element_meta.editor.grab_offset;
+
+                    let screen_rect = ui.input().screen_rect();
+                    let window_size = screen_rect.size();
+                    let Some(ndc) = camera
+                        .world_to_ndc(
+                            &(*camera_transform).into(),
+                            translation
+                        ) else { continue };
+                    let ndc = (ndc + 1.0) / 2.0;
+                    let pos =
+                        egui::pos2(window_size.x * ndc.x, window_size.y - window_size.y * ndc.y);
+
+                    let rect = egui::Rect::from_center_size(
+                        pos + egui::vec2(grab_offset.x, -grab_offset.y) / ppp,
+                        egui::vec2(grab_size.x, grab_size.y) / ppp,
+                    );
+                    let mut color_override = None;
+                    let response = ui
+                        .allocate_rect(rect, egui::Sense::click_and_drag())
+                        .context_menu(|ui| {
+                            color_override = Some(egui::Color32::RED);
+                            if ui
+                                .button(&format!("🗑 {}", params.localization.get("delete-element")))
+                                .clicked()
+                            {
+                                ui.close_menu();
+                                **params.editor_action = Some(EditorInput::DeleteEntity { entity });
+                            }
+                        });
+
+                    #[derive(Clone)]
+                    struct ElementDrag {
+                        offset: Vec2,
+                    }
+                    let drag_id = egui::Id::from("element_drag");
+                    if response.drag_started() {
+                        ui.data().insert_temp(
+                            drag_id,
+                            ElementDrag {
+                                offset: params.state.cursor.current_pos.unwrap()
+                                    - translation.truncate(),
+                            },
+                        );
+                    } else if response.drag_released() {
+                        ui.data().remove::<ElementDrag>(drag_id);
+                    }
+
+                    let half_pixel_offset = Vec2::new(
+                        if grab_size.x % 2.0 != 0.0 { 0.5 } else { 0.0 },
+                        if grab_size.y % 2.0 != 0.0 { 0.5 } else { 0.0 },
+                    );
+                    let snap_to_grid = ui.input().modifiers.shift_only();
+                    let ctrl_modifier = ui.input().modifiers.command;
+
+                    let default_color = if response.dragged_by(egui::PointerButton::Primary)
+                        && map_response_rect.contains(ui.input().pointer.hover_pos().unwrap())
+                        && !ctrl_modifier
+                    {
+                        let element_drag: ElementDrag = ui.data().get_temp(drag_id).unwrap();
+
+                        let new_pos =
+                            params.state.cursor.current_pos.unwrap() - element_drag.offset;
+
+                        let new_pos = if snap_to_grid {
+                            let bottom_center_offset =
+                                -grab_offset + Vec2::new(0.0, grab_size.y / 2.0);
+                            let bottom_center = new_pos - bottom_center_offset;
+
+                            let increment = params.map.0.as_ref().unwrap().tile_size / 4.0;
+                            let snapped_bottom_center =
+                                (bottom_center / increment).floor() * increment;
+                            snapped_bottom_center + bottom_center_offset
+                        } else {
+                            new_pos.floor() + half_pixel_offset
+                        };
+
+                        **params.editor_action = Some(EditorInput::MoveEntity {
+                            entity,
+                            pos: new_pos,
+                        });
+                        response.on_hover_cursor(egui::CursorIcon::Grabbing);
+                        egui::Color32::GREEN
+                    } else {
+                        response.on_hover_cursor(egui::CursorIcon::PointingHand);
+                        egui::Color32::LIGHT_GRAY
+                    };
+                    let mut painter = ui.painter_at(screen_rect);
+                    painter.set_clip_rect(map_response_rect);
+                    painter.rect_stroke(rect, 2.0, (1.0, color_override.unwrap_or(default_color)));
                 }
             }
 
-            // Handle cursor
-            //
-            // We only change the cursor if it's not been changed by another widget, for instance, for the
-            // resize handle of the right sidebar.
-            if ui.output().cursor_icon == default() {
-                if response.dragged_by(egui::PointerButton::Middle)
-                    || (ui.input().modifiers.command
-                        && response.dragged_by(egui::PointerButton::Primary))
-                {
-                    response.on_hover_cursor(egui::CursorIcon::Grabbing);
-                } else if ui.input().modifiers.command {
-                    response.on_hover_cursor(egui::CursorIcon::Grab);
-                } else {
-                    response.on_hover_cursor(params.state.current_tool.cursor());
-                }
-            }
+        // If there is no current map
         } else {
             ui.add_space(ui.available_height() / 2.0);
             ui.vertical_centered(|ui| {

@@ -10,13 +10,27 @@ pub struct ElementMeta {
     #[serde(default)]
     pub builtin: BuiltinElementKind,
 
-    /// The size of the bounding rect for the element in the editor
-    #[serde(default = "editor_size_default")]
-    pub editor_size: Vec2,
+    #[serde(default)]
+    pub editor: ElementEditorMeta,
 }
 
-fn editor_size_default() -> Vec2 {
-    Vec2::splat(16.0)
+#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
+#[serde(default)]
+pub struct ElementEditorMeta {
+    /// The size of the bounding rect for the element in the editor
+    pub grab_size: Vec2,
+    /// The offset of the bounding rect for the element in the editor.
+    pub grab_offset: Vec2,
+}
+
+impl Default for ElementEditorMeta {
+    fn default() -> Self {
+        Self {
+            grab_size: Vec2::splat(45.0),
+            grab_offset: Vec2::ZERO,
+        }
+    }
 }
 
 #[derive(BonesBevyAsset, Deserialize, Clone, Debug, Default, TypeUlid)]

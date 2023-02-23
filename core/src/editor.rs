@@ -48,6 +48,14 @@ fn handle_editor_input(
                         .collect();
                     spawned_map_layer_metas.insert(ent, SpawnedMapLayerMeta { layer_idx });
                 }
+                EditorInput::MoveEntity { entity, pos } => {
+                    let transform = transforms.get_mut(*entity).unwrap();
+                    transform.translation.x = pos.x;
+                    transform.translation.y = pos.y;
+                }
+                EditorInput::DeleteEntity { entity } => {
+                    entities.kill(*entity);
+                }
             }
         }
     }

@@ -70,9 +70,19 @@ pub enum EditorInput {
         /// The map layer index to spawn the element on.
         layer: u8,
     },
+    MoveEntity {
+        /// The entity to move.
+        entity: Entity,
+        /// The amount to move the entity.
+        pos: Vec2,
+    },
+    DeleteEntity {
+        /// The entity to delete.
+        entity: Entity,
+    },
     /// Create a new layer
     CreateLayer {
-        /// The name of the layer
+        /// The name of the layer.
         id: String,
     },
 }

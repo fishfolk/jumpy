@@ -794,37 +794,37 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
             };
             let ppp = params.game.ui_theme.scale * camera_zoom;
 
-            // Collect map elements
-            if params.state.current_tool == EditorTool::Element {
-                if let Ok((camera, camera_transform, _)) = params.camera.get_single() {
-                    let elements = session
-                        .world
-                        .run_initialized_system(
-                            |entities: bones::Res<bones::Entities>,
-                             transforms: bones::Comp<bones::Transform>,
-                             element_handles: bones::Comp<jumpy_core::elements::ElementHandle>,
-                             spawned_map_layer_metas: bones::Comp<
-                                jumpy_core::map::SpawnedMapLayerMeta,
-                            >| {
-                                Ok(entities
-                                    .iter_with((
-                                        &element_handles,
-                                        &transforms,
-                                        &spawned_map_layer_metas,
-                                    ))
-                                    .map(|(ent, (handle, transform, layer))| {
-                                        (
-                                            ent,
-                                            handle.get_bevy_handle(),
-                                            transform.translation,
-                                            layer.layer_idx,
-                                        )
-                                    })
-                                    .collect::<Vec<_>>())
-                            },
-                        )
-                        .unwrap();
+            if let Ok((camera, camera_transform, _)) = params.camera.get_single() {
+                let elements = session
+                    .world
+                    .run_initialized_system(
+                        |entities: bones::Res<bones::Entities>,
+                         transforms: bones::Comp<bones::Transform>,
+                         element_handles: bones::Comp<jumpy_core::elements::ElementHandle>,
+                         spawned_map_layer_metas: bones::Comp<
+                            jumpy_core::map::SpawnedMapLayerMeta,
+                        >| {
+                            Ok(entities
+                                .iter_with((
+                                    &element_handles,
+                                    &transforms,
+                                    &spawned_map_layer_metas,
+                                ))
+                                .map(|(ent, (handle, transform, layer))| {
+                                    (
+                                        ent,
+                                        handle.get_bevy_handle(),
+                                        transform.translation,
+                                        layer.layer_idx,
+                                    )
+                                })
+                                .collect::<Vec<_>>())
+                        },
+                    )
+                    .unwrap();
 
+                // Map element tool
+                if params.state.current_tool == EditorTool::Element {
                     for (entity, handle, translation, layer_idx) in elements {
                         if layer_idx != params.state.current_layer_idx {
                             continue;
@@ -939,6 +939,9 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
                         }
                         painter.rect_stroke(rect, 2.0, (1.0, color));
                     }
+
+                // Tile tool
+                } else if params.state.current_tool == EditorTool::Tile {
                 }
             }
 

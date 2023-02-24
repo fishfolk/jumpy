@@ -1,5 +1,6 @@
 use super::*;
-#[derive(BonesBevyAsset, Serialize, Deserialize, Clone, TypeUlid, Debug)]
+
+#[derive(BonesBevyAsset, Serialize, Deserialize, Clone, TypeUlid, Debug, Default)]
 #[ulid = "01GP264BT87MAAHMEK52Y5P7BW"]
 #[asset_id = "map"]
 #[serde(deny_unknown_fields)]
@@ -41,31 +42,11 @@ pub struct ParallaxLayerMeta {
 #[serde(deny_unknown_fields)]
 pub struct MapLayerMeta {
     pub id: String,
-    pub kind: MapLayerKind,
-    #[asset(deserialize_only)]
-    #[serde(skip)]
-    pub entity: Option<Entity>,
-}
-
-#[derive(BonesBevyAssetLoad, Serialize, Deserialize, Clone, Debug)]
-#[serde(deny_unknown_fields)]
-#[serde(rename_all = "snake_case")]
-pub enum MapLayerKind {
-    Tile(MapTileLayer),
-    Element(ElementLayer),
-}
-
-#[derive(BonesBevyAssetLoad, Serialize, Deserialize, Clone, Debug, Default)]
-#[serde(deny_unknown_fields)]
-pub struct MapTileLayer {
-    pub tilemap: Handle<Atlas>,
-    pub has_collision: bool,
+    #[serde(default)]
+    pub tilemap: Option<Handle<Atlas>>,
+    #[serde(default)]
     pub tiles: Vec<MapTileMeta>,
-}
-
-#[derive(BonesBevyAssetLoad, Serialize, Deserialize, Clone, Debug, Default)]
-#[serde(deny_unknown_fields)]
-pub struct ElementLayer {
+    #[serde(default)]
     pub elements: Vec<ElementSpawn>,
 }
 

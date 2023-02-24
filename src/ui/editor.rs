@@ -1,9 +1,6 @@
-use std::{marker::PhantomData, mem::discriminant};
+use std::marker::PhantomData;
 
-use bevy::{
-    ecs::system::{Command, SystemParam, SystemState},
-    math::Vec3Swizzles,
-};
+use bevy::{ecs::system::SystemParam, math::Vec3Swizzles};
 use bevy_egui::*;
 use bevy_fluent::Localization;
 use bones_bevy_renderer::BevyBonesEntity;
@@ -23,58 +20,59 @@ impl Plugin for EditorPlugin {
                     .run_in_state(GameEditorState::Visible)
                     .at_end(),
             )
-            .add_enter_system(GameEditorState::Visible, setup_editor)
             .add_exit_system(GameEditorState::Visible, cleanup_editor);
     }
 }
 
+/// Resource containing the current position of the mouse cursor in the editor.
+#[derive(Default)]
+struct EditorCursor {
+    pub current_pos: Option<Vec2>,
+    pub context_click_pos: Option<Vec2>,
+}
+
 #[derive(Resource, Default)]
 struct EditorState {
+    pub cursor: EditorCursor,
     pub current_layer_idx: usize,
+    pub current_tool: EditorTool,
+    pub camera: EditorCameraPos,
     // pub hidden_layers: HashSet<usize>,
 }
 
-/// Bevy [`Command`] for centering the game camera.
-///
-/// TODO: Maybe move this logic to the [`SessionManager`] and add a way to load a map with the
-/// camera initially set centered over the map.
-struct CenterGameCamera;
-impl Command for CenterGameCamera {
-    fn write(self, world: &mut World) {
-        let mut state = SystemState::<(Res<Assets<MapMeta>>, Option<ResMut<Session>>)>::new(world);
-        let (map_assets, session) = state.get_mut(world);
+#[derive(Clone, Copy)]
+struct EditorCameraPos {
+    pos: Vec2,
+    height: f32,
+}
 
-        if let Some(session) = session {
-            let map_handle = session.world.resource::<jumpy_core::map::MapHandle>();
-            let map_handle = map_handle.borrow();
-            let map = map_assets.get(&map_handle.get_bevy_handle()).unwrap();
-            let (grid_size, tile_size) = (map.grid_size, map.tile_size);
-
-            session
-                .world
-                .run_initialized_system(move |mut commands: bones::Commands| {
-                    // Using commands here instead of directly will make sure that it waits the next
-                    // frame until the camera is spawned.
-                    commands.add(
-                        move |mut cameras: bones::CompMut<bones::Camera>,
-                              mut camera_shakes: bones::CompMut<bones::CameraShake>,
-                              core_meta: bones::Res<CoreMetaArc>| {
-                            let camera = cameras.iter_mut().next().unwrap();
-                            let camera_shake = camera_shakes.iter_mut().next().unwrap();
-
-                            camera.height = core_meta.camera.default_height * 2.0;
-                            camera_shake.center =
-                                (tile_size * (grid_size / 2).as_vec2()).extend(0.0);
-                        },
-                    )
-                })
-                .unwrap();
+impl Default for EditorCameraPos {
+    fn default() -> Self {
+        Self {
+            pos: Vec2::new(500.0, 350.0),
+            height: 800.0,
         }
     }
 }
 
-pub fn setup_editor(mut commands: Commands) {
-    commands.add(CenterGameCamera);
+/// The current export of the world's map metadata, if a map is loaded.
+#[derive(Resource, Default, Deref, DerefMut)]
+struct EditorMapExport(Option<MapMeta>);
+
+#[derive(Default, PartialEq, Eq)]
+enum EditorTool {
+    #[default]
+    Element,
+    Tile,
+}
+
+impl EditorTool {
+    pub fn cursor(&self) -> egui::CursorIcon {
+        match self {
+            EditorTool::Element => egui::CursorIcon::Default,
+            EditorTool::Tile => egui::CursorIcon::Crosshair,
+        }
+    }
 }
 
 pub fn cleanup_editor(session: Option<ResMut<Session>>) {
@@ -97,6 +95,58 @@ pub fn cleanup_editor(session: Option<ResMut<Session>>) {
 }
 
 pub fn editor_ui_system(world: &mut World) {
+    // Force set the camera position
+    {
+        let world = world.cell();
+        let session = world.get_resource::<Session>();
+        let editor_state = world.resource_mut::<EditorState>();
+        let camera_info = editor_state.camera;
+        if let Some(session) = session {
+            session.world.run_initialized_system(
+                move |
+                mut cameras: bones::CompMut<bones::Camera>,
+                mut camera_shakes: bones::CompMut<bones::CameraShake>,
+                mut camera_states: bones::CompMut<jumpy_core::camera::CameraState>| {
+                    let Some(camera) = cameras.iter_mut().next() else { return };
+                    let camera_shake = camera_shakes.iter_mut().next().unwrap();
+                    let camera_state = camera_states.iter_mut().next().unwrap();
+                    camera.height = camera_info.height;
+                    camera_shake.center = camera_info.pos.extend(0.0);
+                    camera_state.disable_controller = true;
+            }).ok();
+        }
+    }
+
+    // Get the world cursor position
+    let cursor_pos = {
+        let mut camera_query =
+            world.query_filtered::<(&Camera, &Transform), With<BevyBonesEntity>>();
+        let windows = world.resource::<Windows>();
+        let window = windows.primary();
+        camera_query
+            .get_single(world)
+            .ok()
+            .and_then(|(camera, transform)| {
+                window
+                    .cursor_position()
+                    .and_then(|pos| {
+                        camera.viewport_to_world(&GlobalTransform::from(*transform), pos)
+                    })
+                    .map(|x| x.origin.truncate())
+            })
+    };
+
+    // Get the up-to-date map meta export from the world
+    let map_meta = {
+        world
+            .get_resource::<Session>()
+            .map(|sess| sess.export_map())
+    };
+    world.insert_resource(EditorMapExport(map_meta));
+
+    let mut state = world.resource_mut::<EditorState>();
+    state.cursor.current_pos = cursor_pos;
+
     world.resource_scope(|world: &mut World, mut egui_ctx: Mut<EguiContext>| {
         let ctx = egui_ctx.ctx_mut();
 
@@ -128,8 +178,12 @@ pub fn editor_ui_system(world: &mut World) {
 type CameraQuery<'w, 's> = Query<
     'w,
     's,
-    (&'static mut Transform, &'static mut OrthographicProjection),
-    With<BevyBonesEntity>,
+    (
+        &'static Camera,
+        &'static mut Transform,
+        &'static mut OrthographicProjection,
+    ),
+    (With<BevyBonesEntity>, Without<MenuCamera>),
 >;
 
 #[derive(SystemParam)]
@@ -137,12 +191,13 @@ struct EditorTopBar<'w, 's> {
     commands: Commands<'w, 's>,
     game: Res<'w, GameMeta>,
     core_meta: Res<'w, CoreMetaArc>,
-    map_assets: Res<'w, Assets<MapMeta>>,
     show_map_export_window: Local<'s, bool>,
+    state: Res<'w, EditorState>,
     localization: Res<'w, Localization>,
     session_manager: SessionManager<'w, 's>,
     camera: CameraQuery<'w, 's>,
     clipboard: ResMut<'w, bevy_egui::EguiClipboard>,
+    map_export: Res<'w, EditorMapExport>,
 }
 
 impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
@@ -163,19 +218,19 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
             ui.label(&params.localization.get("map-editor"));
             ui.separator();
 
-            if let Ok((transform, projection)) = params.camera.get_single() {
+            if let Ok((_camera, transform, projection)) = params.camera.get_single() {
                 let height = match projection.scaling_mode {
                     bevy::render::camera::ScalingMode::FixedVertical(height) => height,
                     _ => 1.0, // This shouldn't happen for now
                 };
                 let zoom = params.core_meta.camera.default_height / height * 100.0;
-                let [x, y]: [f32; 2] = transform.translation.xy().into();
+                let [view_x, view_y]: [f32; 2] = transform.translation.xy().into();
 
                 ui.label(
                     egui::RichText::new(
                         params
                             .localization
-                            .get(&format!("view-offset?x={x:.0}&y={y:.0}")),
+                            .get(&format!("view-offset?x={view_x:.0}&y={view_y:.0}")),
                     )
                     .small(),
                 );
@@ -187,6 +242,17 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                     )
                     .small(),
                 );
+                if let Some(cursor_pos) = params.state.cursor.current_pos.as_ref() {
+                    let (cursor_x, cursor_y) = (cursor_pos.x, cursor_pos.y);
+                    ui.label(
+                        egui::RichText::new(
+                            params
+                                .localization
+                                .get(&format!("cursor-position?x={cursor_x:.0}&y={cursor_y:.0}")),
+                        )
+                        .small(),
+                    );
+                }
             }
 
             ui.add_space(ui.spacing().icon_spacing);
@@ -215,18 +281,17 @@ impl<'w, 's> WidgetSystem for EditorTopBar<'w, 's> {
                     }
 
                     if ui.button(&params.localization.get("reload")).clicked() {
-                        params.session_manager.restart();
+                        params.session_manager.stop();
+                        params.session_manager.start(GameSessionInfo {
+                            meta: params.core_meta.0.clone(),
+                            map_meta: params.map_export.0.as_ref().unwrap().clone(),
+                            player_info: default(),
+                        });
                         params
                             .commands
                             .insert_resource(NextState(InGameState::Playing));
-                        params.commands.add(CenterGameCamera);
                     }
                 });
-
-                ui.label(
-                    egui::RichText::new(params.localization.get("map-editor-preview-warning"))
-                        .color(egui::Color32::RED),
-                );
             });
         });
     }
@@ -243,13 +308,7 @@ fn map_export_window(ui: &mut egui::Ui, params: &mut EditorTopBar) {
         &params.localization.get("map-export"),
         params.game.main_menu.menu_width,
         |ui| {
-            let Some(session) = params.session_manager.session.as_mut() else { return };
-            let map_handle = session.world.resource::<jumpy_core::map::MapHandle>();
-            let map_handle = map_handle.borrow();
-            let map_meta = params
-                .map_assets
-                .get(&map_handle.get_bevy_handle())
-                .unwrap();
+            let Some(map_meta) = params.map_export.0.as_ref() else { return };
             let mut export = serde_yaml::to_string(map_meta).unwrap();
 
             ui.vertical(|ui| {
@@ -299,6 +358,8 @@ fn map_export_window(ui: &mut egui::Ui, params: &mut EditorTopBar) {
 #[derive(SystemParam)]
 struct EditorLeftToolbar<'w, 's> {
     game: Res<'w, GameMeta>,
+    state: ResMut<'w, EditorState>,
+    localization: Res<'w, Localization>,
     #[system_param(ignore)]
     _phantom: PhantomData<(&'w (), &'s ())>,
 }
@@ -313,45 +374,46 @@ impl<'w, 's> WidgetSystem for EditorLeftToolbar<'w, 's> {
         _id: super::WidgetId,
         _args: Self::Args,
     ) {
-        let params: EditorLeftToolbar = state.get_mut(world);
+        let mut params: EditorLeftToolbar = state.get_mut(world);
         let icons = &params.game.ui_theme.editor.icons;
         let width = ui.available_width();
-        for image in &[&icons.select, &icons.tile, &icons.spawn, &icons.erase] {
+        for tool in [EditorTool::Element, EditorTool::Tile] {
+            let (image, hover_text) = match tool {
+                EditorTool::Element => (&icons.elements, params.localization.get("elements")),
+                EditorTool::Tile => (&icons.tiles, params.localization.get("tiles")),
+            };
             ui.add_space(ui.spacing().window_margin.top);
 
             let image_aspect = image.image_size.y / image.image_size.x;
             let height = width * image_aspect;
-            ui.add(egui::ImageButton::new(
-                image.egui_texture_id,
-                egui::vec2(width, height),
-            ));
+            let button = ui
+                .add(
+                    egui::ImageButton::new(image.egui_texture_id, egui::vec2(width, height))
+                        .selected(params.state.current_tool == tool),
+                )
+                .on_hover_text_at_pointer(&hover_text);
+
+            if button.clicked() {
+                params.state.current_tool = tool;
+            }
         }
     }
 }
 
+#[derive(Default)]
 struct LayerCreateInfo {
     name: String,
-    kind: MapLayerKind,
-}
-
-impl Default for LayerCreateInfo {
-    fn default() -> Self {
-        Self {
-            name: Default::default(),
-            kind: MapLayerKind::Tile(default()),
-        }
-    }
 }
 
 #[derive(SystemParam)]
 struct EditorRightToolbar<'w, 's> {
-    map_assets: Res<'w, Assets<MapMeta>>,
     show_layer_create: Local<'s, bool>,
     layer_create_info: Local<'s, LayerCreateInfo>,
     game: Res<'w, GameMeta>,
     localization: Res<'w, Localization>,
     state: ResMut<'w, EditorState>,
-    session_manager: SessionManager<'w, 's>,
+    editor_input: ResMut<'w, CurrentEditorInput>,
+    map_export: Res<'w, EditorMapExport>,
 }
 
 impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
@@ -367,11 +429,7 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
         let mut params: EditorRightToolbar = state.get_mut(world);
         layer_create_dialog(ui, &mut params);
 
-        let map_meta = params
-            .session_manager
-            .map_handle()
-            .and_then(|handle| params.map_assets.get(&handle));
-        ui.set_enabled(map_meta.is_some());
+        let map_meta = params.map_export.0.as_ref();
 
         ui.add_space(ui.spacing().window_margin.top);
 
@@ -382,6 +440,7 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
 
         let row_height = ui.spacing().interact_size.y;
         ui.push_id("info", |ui| {
+            ui.set_enabled(map_meta.is_some());
             let table = egui_extras::TableBuilder::new(ui)
                 .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
                 .column(egui_extras::Column::auto())
@@ -416,6 +475,7 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
 
         ui.separator();
         ui.horizontal(|ui| {
+            ui.set_enabled(map_meta.is_some());
             ui.label(&params.localization.get("layers"));
 
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
@@ -440,6 +500,7 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                     ui.horizontal(|ui| {
                         ui.set_width(ui.available_width());
                         ui.set_height(row_height);
+                        ui.add_space(ui.spacing().item_spacing.x);
 
                         let row_rect = ui.max_rect();
 
@@ -468,25 +529,6 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                         if clicked {
                             params.state.current_layer_idx = i;
                         }
-
-                        ui.scope(|ui| {
-                            ui.set_width(width * 0.1);
-                            ui.vertical_centered(|ui| {
-                                ui.add_space(ui.spacing().interact_size.y * 0.2);
-                                match layer.kind {
-                                    MapLayerKind::Tile(_) => {
-                                        ui.label(&params.localization.get("tile-layer-icon"))
-                                            .on_hover_text(params.localization.get("tile-layer"));
-                                    }
-                                    MapLayerKind::Element(_) => {
-                                        ui.label(&params.localization.get("element-layer-icon"))
-                                            .on_hover_text(
-                                                params.localization.get("element-layer"),
-                                            );
-                                    }
-                                };
-                            });
-                        });
 
                         ui.vertical(|ui| {
                             ui.set_width(width * 0.8);
@@ -524,11 +566,10 @@ fn layer_create_dialog(ui: &mut egui::Ui, params: &mut EditorRightToolbar) {
         return;
     }
 
-    // let is_valid = params.map.get_single().is_ok();
-    let is_valid = false;
+    let is_valid = !params.layer_create_info.name.is_empty();
     overlay_window(
         ui,
-        "create-map-window",
+        "create-layer-window",
         &params.localization.get("create-layer"),
         params.game.main_menu.menu_width,
         |ui| {
@@ -539,28 +580,6 @@ fn layer_create_dialog(ui: &mut egui::Ui, params: &mut EditorRightToolbar) {
                 });
 
                 ui.add_space(space / 2.0);
-
-                ui.horizontal(|ui| {
-                    ui.label(&format!("{}: ", params.localization.get("layer-kind")));
-                    ui.add_space(space);
-                    for (label, layer_kind) in [
-                        (
-                            params.localization.get("tile"),
-                            MapLayerKind::Tile(default()),
-                        ),
-                        (
-                            params.localization.get("element"),
-                            MapLayerKind::Element(default()),
-                        ),
-                    ] {
-                        let selected = discriminant(&params.layer_create_info.kind)
-                            == discriminant(&layer_kind);
-
-                        if ui.selectable_label(selected, label).clicked() {
-                            params.layer_create_info.kind = layer_kind;
-                        }
-                    }
-                });
 
                 ui.add_space(space);
 
@@ -577,7 +596,9 @@ fn layer_create_dialog(ui: &mut egui::Ui, params: &mut EditorRightToolbar) {
                         .clicked()
                         {
                             *params.show_layer_create = false;
-                            create_layer(params);
+                            **params.editor_input = Some(EditorInput::CreateLayer {
+                                id: params.layer_create_info.name.clone(),
+                            });
                         }
                     });
 
@@ -600,12 +621,6 @@ fn layer_create_dialog(ui: &mut egui::Ui, params: &mut EditorRightToolbar) {
     );
 }
 
-fn create_layer(_params: &mut EditorRightToolbar) {
-    // let layer_info = &*params.layer_create_info;
-
-    todo!();
-}
-
 #[derive(SystemParam)]
 struct EditorCentralPanel<'w, 's> {
     show_map_create: Local<'s, bool>,
@@ -613,9 +628,14 @@ struct EditorCentralPanel<'w, 's> {
     map_create_info: Local<'s, MapCreateInfo>,
     game: Res<'w, GameMeta>,
     core_meta: Res<'w, CoreMetaArc>,
+    state: ResMut<'w, EditorState>,
     map_assets: Res<'w, Assets<MapMeta>>,
+    element_assets: Res<'w, Assets<ElementMeta>>,
     localization: Res<'w, Localization>,
     session_manager: SessionManager<'w, 's>,
+    editor_input: ResMut<'w, CurrentEditorInput>,
+    camera: CameraQuery<'w, 's>,
+    map: Res<'w, EditorMapExport>,
 }
 
 struct MapCreateInfo {
@@ -659,82 +679,273 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
             ui.set_enabled(false);
         }
 
-        if params.session_manager.session.is_some() {
-            let response = ui.allocate_response(ui.available_size(), egui::Sense::click_and_drag());
+        // Collect map element list
+        let element_handles: &Vec<bones::Handle<ElementMeta>> = &params.core_meta.map_elements;
+        let mut element_categories =
+            HashMap::<String, Vec<(bones::Handle<ElementMeta>, &ElementMeta)>>::new();
+        element_handles
+            .iter()
+            .map(|handle| (handle.clone(), handle.get_bevy_handle()))
+            .map(|(handle, bevy_handle)| (handle, params.element_assets.get(&bevy_handle).unwrap()))
+            .for_each(|(handle, element)| {
+                element_categories
+                    .entry(element.category.clone())
+                    .or_default()
+                    .push((handle, element));
+            });
+        let mut element_categories = element_categories
+            .into_iter()
+            .map(|(k, mut v)| {
+                v.sort_by_key(|x| &x.1.name);
+                (k, v)
+            })
+            .collect::<Vec<_>>();
+        element_categories.sort_by(|a, b| a.0.cmp(&b.0));
 
-            let rect = response.rect;
+        if let Some(session) = params.session_manager.session {
+            let core_meta = session.world.resource::<CoreMetaArc>();
+            let core_meta = core_meta.borrow();
 
-            'camera_control: {
-                if let Some(session) = &mut params.session_manager.session {
-                    let ppp = ui.ctx().pixels_per_point();
+            let mut map_response =
+                ui.allocate_response(ui.available_size(), egui::Sense::click_and_drag());
+            let map_response_rect = map_response.rect;
 
-                    let core_meta = session.world.resource::<CoreMetaArc>();
-                    let core_meta = core_meta.borrow();
+            // Element context menu
+            if let EditorTool::Element = params.state.current_tool {
+                map_response = map_response.context_menu(|ui| {
+                    if ui.input().pointer.secondary_clicked() {
+                        params.state.cursor.context_click_pos = params.state.cursor.current_pos;
+                    }
+                    ui.menu_button(
+                        &format!("➕ {}", params.localization.get("add-element")),
+                        |ui| {
+                            for (category, elements) in element_categories {
+                                ui.menu_button(&category, |ui| {
+                                    for (handle, element) in elements {
+                                        if ui.button(&element.name).clicked() {
+                                            **params.editor_input =
+                                                Some(EditorInput::SpawnElement {
+                                                    handle,
+                                                    translation: params
+                                                        .state
+                                                        .cursor
+                                                        .context_click_pos
+                                                        .unwrap(),
+                                                    layer: params
+                                                        .state
+                                                        .current_layer_idx
+                                                        .try_into()
+                                                        .unwrap(),
+                                                });
+                                            ui.close_menu();
+                                            params.state.cursor.context_click_pos = None;
+                                        }
+                                    }
+                                });
+                            }
+                        },
+                    );
+                });
+            }
 
-                    let cameras = session.world.components.get::<bones::Camera>();
-                    let mut cameras = cameras.borrow_mut();
+            // Move camera
+            let camera_zoom = {
+                let cursor_icon = ui.output().cursor_icon;
+                let input = ui.input();
+                let ctrl_modifier = input.modifiers.command;
+                let pointer = &input.pointer;
+                let editor_camera_pos = &mut params.state.camera;
+                // Handle camera zoom
+                let hovered = pointer
+                    .hover_pos()
+                    .map(|pos| map_response_rect.contains(pos))
+                    .unwrap_or_default();
+                if hovered {
+                    editor_camera_pos.height -= input.scroll_delta.y;
+                    editor_camera_pos.height = editor_camera_pos.height.max(10.0);
+                }
+                let zoom = editor_camera_pos.height / core_meta.camera.default_height;
 
-                    // Update camera viewport to fit into central editor area.
-                    let Some(camera) = cameras.iter_mut().next() else {
-                        break 'camera_control;
-                    };
-                    camera.viewport = Some(bones::Viewport {
-                        position: UVec2::new(
-                            (rect.min.x * ppp) as u32,
-                            (rect.min.y.floor() * ppp) as u32,
-                        ),
-                        size: UVec2::new((rect.width() * ppp) as u32, (rect.height() * ppp) as u32),
-                        depth_min: 0.0,
-                        depth_max: 1.0,
-                    });
+                // Handle camera pan
+                let panning = pointer.is_moving()
+                    && (pointer.middle_down() || (ctrl_modifier && pointer.primary_down()));
+                if panning {
+                    let drag_delta = pointer.delta() * params.game.ui_theme.scale * zoom;
+                    editor_camera_pos.pos.x -= drag_delta.x;
+                    editor_camera_pos.pos.y += drag_delta.y;
+                }
+                drop(input);
 
-                    // Disable the default camera controller
-                    let camera_states = session
-                        .world
-                        .components
-                        .get::<jumpy_core::camera::CameraState>();
-                    let mut camera_states = camera_states.borrow_mut();
-                    camera_states.iter_mut().next().unwrap().disable_controller = true;
+                // Handle cursor
+                //
+                // We only change the cursor if it's not been changed by another widget, for instance, for the
+                // resize handle of the right sidebar.
+                if cursor_icon == default() {
+                    if panning {
+                        map_response.on_hover_cursor(egui::CursorIcon::Grabbing);
+                    } else if ctrl_modifier {
+                        map_response.on_hover_cursor(egui::CursorIcon::Grab);
+                    } else {
+                        map_response.on_hover_cursor(params.state.current_tool.cursor());
+                    }
+                }
 
-                    // Handle camera zoom
-                    if response.hovered() {
-                        camera.height -= ui.input().scroll_delta.y;
-                        camera.height = camera.height.max(10.0);
+                zoom
+            };
+            let ppp = params.game.ui_theme.scale * camera_zoom;
+
+            if let Ok((camera, camera_transform, _)) = params.camera.get_single() {
+                let elements = session
+                    .world
+                    .run_initialized_system(
+                        |entities: bones::Res<bones::Entities>,
+                         transforms: bones::Comp<bones::Transform>,
+                         element_handles: bones::Comp<jumpy_core::elements::ElementHandle>,
+                         spawned_map_layer_metas: bones::Comp<
+                            jumpy_core::map::SpawnedMapLayerMeta,
+                        >| {
+                            Ok(entities
+                                .iter_with((
+                                    &element_handles,
+                                    &transforms,
+                                    &spawned_map_layer_metas,
+                                ))
+                                .map(|(ent, (handle, transform, layer))| {
+                                    (
+                                        ent,
+                                        handle.get_bevy_handle(),
+                                        transform.translation,
+                                        layer.layer_idx,
+                                    )
+                                })
+                                .collect::<Vec<_>>())
+                        },
+                    )
+                    .unwrap();
+
+                // Map element tool
+                if params.state.current_tool == EditorTool::Element {
+                    for (entity, handle, translation, layer_idx) in elements {
+                        if layer_idx != params.state.current_layer_idx {
+                            continue;
+                        }
+
+                        let element_meta = params.element_assets.get(&handle).unwrap();
+                        let grab_size = element_meta.editor.grab_size;
+                        let grab_offset = element_meta.editor.grab_offset;
+
+                        let screen_rect = ui.input().screen_rect();
+                        let window_size = screen_rect.size();
+                        let Some(ndc) = camera
+                        .world_to_ndc(
+                            &(*camera_transform).into(),
+                            translation
+                        ) else { continue };
+                        let ndc = (ndc + 1.0) / 2.0;
+                        let pos = egui::pos2(
+                            window_size.x * ndc.x,
+                            window_size.y - window_size.y * ndc.y,
+                        );
+
+                        let rect = egui::Rect::from_center_size(
+                            pos + egui::vec2(grab_offset.x, -grab_offset.y) / ppp,
+                            egui::vec2(grab_size.x, grab_size.y) / ppp,
+                        );
+                        let mut color_override = None;
+                        let response = ui
+                            .allocate_rect(rect, egui::Sense::click_and_drag())
+                            .context_menu(|ui| {
+                                color_override = Some(egui::Color32::RED);
+                                if ui
+                                    .button(&format!(
+                                        "🗑 {}",
+                                        params.localization.get("delete-element")
+                                    ))
+                                    .clicked()
+                                {
+                                    ui.close_menu();
+                                    **params.editor_input =
+                                        Some(EditorInput::DeleteEntity { entity });
+                                }
+                            });
+
+                        #[derive(Clone)]
+                        struct ElementDrag {
+                            offset: Vec2,
+                        }
+                        let drag_id = egui::Id::from("element_drag");
+                        if response.drag_started() {
+                            ui.data().insert_temp(
+                                drag_id,
+                                ElementDrag {
+                                    offset: params.state.cursor.current_pos.unwrap()
+                                        - translation.truncate(),
+                                },
+                            );
+                        } else if response.drag_released() {
+                            ui.data().remove::<ElementDrag>(drag_id);
+                        }
+
+                        let half_pixel_offset = Vec2::new(
+                            if grab_size.x % 2.0 != 0.0 { 0.5 } else { 0.0 },
+                            if grab_size.y % 2.0 != 0.0 { 0.5 } else { 0.0 },
+                        );
+                        let snap_to_grid = ui.input().modifiers.shift_only();
+                        let ctrl_modifier = ui.input().modifiers.command;
+
+                        let default_color = if response.dragged_by(egui::PointerButton::Primary)
+                            && map_response_rect.contains(ui.input().pointer.hover_pos().unwrap())
+                            && !ctrl_modifier
+                        {
+                            let element_drag: ElementDrag = ui.data().get_temp(drag_id).unwrap();
+
+                            let new_pos =
+                                params.state.cursor.current_pos.unwrap() - element_drag.offset;
+
+                            let new_pos = if snap_to_grid {
+                                let bottom_center_offset =
+                                    -grab_offset + Vec2::new(0.0, grab_size.y / 2.0);
+                                let bottom_center = new_pos - bottom_center_offset;
+
+                                let increment = params.map.0.as_ref().unwrap().tile_size / 4.0;
+                                let snapped_bottom_center =
+                                    (bottom_center / increment).floor() * increment;
+                                snapped_bottom_center + bottom_center_offset
+                            } else {
+                                new_pos.floor() + half_pixel_offset
+                            };
+
+                            **params.editor_input = Some(EditorInput::MoveEntity {
+                                entity,
+                                pos: new_pos,
+                            });
+                            response.on_hover_cursor(egui::CursorIcon::Grabbing);
+                            egui::Color32::GREEN
+                        } else {
+                            response.on_hover_cursor(egui::CursorIcon::PointingHand);
+                            egui::Color32::LIGHT_GRAY
+                        };
+                        let mut painter = ui.painter_at(screen_rect);
+                        let color = color_override.unwrap_or(default_color);
+                        painter.set_clip_rect(map_response_rect);
+                        if element_meta.editor.show_name {
+                            painter.text(
+                                rect.center_top(),
+                                egui::Align2::CENTER_BOTTOM,
+                                &element_meta.name,
+                                egui::FontId::new(15.0, egui::FontFamily::Proportional),
+                                color,
+                            );
+                        }
+                        painter.rect_stroke(rect, 2.0, (1.0, color));
                     }
 
-                    // Handle camera pan
-                    if response.dragged_by(egui::PointerButton::Middle)
-                        || ui.input().modifiers.command
-                    {
-                        let camera_shakes = session.world.components.get::<bones::CameraShake>();
-                        let mut camera_shakes = camera_shakes.borrow_mut();
-                        let camera_shake = camera_shakes.iter_mut().next().unwrap();
-
-                        let drag_delta =
-                            response.drag_delta() * params.game.ui_theme.scale * camera.height
-                                / core_meta.camera.default_height;
-                        camera_shake.center.x -= drag_delta.x;
-                        camera_shake.center.y += drag_delta.y;
-                    }
+                // Tile tool
+                } else if params.state.current_tool == EditorTool::Tile {
                 }
             }
 
-            // Handle cursor
-            //
-            // We only change the cursor if it's not been changed by another widget, for instance, for the
-            // resize handle of the right sidebar.
-            if ui.output().cursor_icon == default() {
-                if response.dragged_by(egui::PointerButton::Middle)
-                    || (ui.input().modifiers.command
-                        && response.dragged_by(egui::PointerButton::Primary))
-                {
-                    response.on_hover_cursor(egui::CursorIcon::Grabbing);
-                } else if ui.input().modifiers.command {
-                    response.on_hover_cursor(egui::CursorIcon::Grab);
-                } else {
-                    response.on_hover_cursor(egui::CursorIcon::Crosshair);
-                }
-            }
+        // If there is no current map
         } else {
             ui.add_space(ui.available_height() / 2.0);
             ui.vertical_centered(|ui| {
@@ -750,16 +961,19 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
 
                 ui.add_space(ui.spacing().item_spacing.y);
 
-                if BorderedButton::themed(
-                    &params.game.ui_theme.button_styles.normal,
-                    &params.localization.get("create-map"),
-                )
-                .show(ui)
-                .clicked()
-                {
-                    *params.show_map_create = true;
-                    *params.map_create_info = default();
-                }
+                ui.scope(|ui| {
+                    ui.set_enabled(false);
+                    if BorderedButton::themed(
+                        &params.game.ui_theme.button_styles.normal,
+                        &params.localization.get("create-map"),
+                    )
+                    .show(ui)
+                    .clicked()
+                    {
+                        *params.show_map_create = true;
+                        *params.map_create_info = default();
+                    }
+                });
             });
         }
     }
@@ -789,15 +1003,14 @@ fn map_open_dialog(ui: &mut egui::Ui, params: &mut EditorCentralPanel) {
                         .into_iter()
                         .chain(params.core_meta.experimental_maps.to_vec().into_iter())
                     {
-                        let map_name = &params
+                        let map_meta = &params
                             .map_assets
                             .get(&map_handle.get_bevy_handle())
-                            .unwrap()
-                            .name;
-                        if ui.button(map_name).clicked() {
+                            .unwrap();
+                        if ui.button(&map_meta.name).clicked() {
                             params.session_manager.start(GameSessionInfo {
                                 meta: params.core_meta.0.clone(),
-                                map: map_handle.clone(),
+                                map_meta: (*map_meta).clone(),
                                 player_info: default(),
                             });
                             *params.show_map_open = false;

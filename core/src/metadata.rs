@@ -43,6 +43,7 @@ pub struct CoreMeta {
     pub physics: PhysicsMeta,
     pub players: Vec<Handle<PlayerMeta>>,
     pub stable_maps: Vec<Handle<MapMeta>>,
+    pub map_elements: Vec<Handle<ElementMeta>>,
     pub experimental_maps: Vec<Handle<MapMeta>>,
 }
 

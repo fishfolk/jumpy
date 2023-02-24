@@ -1,5 +1,7 @@
-name: Grenades
+name: Grenade
 category: Weapons
+editor:
+  grab_size: [30, 30]
 builtin: !Grenade
   fuse_time: 4.0
   throw_velocity: [7, 6]

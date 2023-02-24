@@ -28,8 +28,8 @@ pub fn z_depth_for_map_layer(layer_idx: usize) -> f32 {
 }
 
 /// Resource containing essential the map metadata for the map once spawned. This allows the
-/// complete map metadata to be re-constructed after the map has been spawned and potentially
-/// modified.
+/// complete map metadata to be re-constructed from the world after the map has been spawned and
+/// potentially modified.
 #[derive(TypeUlid, Clone)]
 #[ulid = "01GSR8V683B3EH5QAB2PMGN9J7"]
 pub struct SpawnedMapMeta {
@@ -54,7 +54,10 @@ impl Default for SpawnedMapMeta {
     }
 }
 
-/// Component containing map metadata associated with spawned map elements.
+/// Component containing the map layer that an entity is associated to.
+///
+/// This is used when exporting the world to `MapMeta` to decide which layer to put an element or
+/// tile layer in.
 #[derive(TypeUlid, Clone, Copy, Default)]
 #[ulid = "01GSR8GSRJHGTJ8J9Y38W7C5S3"]
 pub struct SpawnedMapLayerMeta {

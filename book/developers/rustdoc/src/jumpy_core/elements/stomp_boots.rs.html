@@ -464,7 +464,7 @@
                         .center()
                         .y
                 {
-                    player_events.kill(player)
+                    player_events.kill(player, <span class="prelude-val">Some</span>(player_transform.translation.xy()))
                 }
             });
     }

@@ -305,7 +305,7 @@
             .filter(|<span class="kw-2">&amp;</span>x| player_indexes.contains(x))
             .for_each(|player| {
                 hit_player = <span class="bool-val">true</span>;
-                player_events.kill(player);
+                player_events.kill(player, <span class="prelude-val">Some</span>(position.translation.xy()));
             });
 
         <span class="comment">// check solid tile collisions

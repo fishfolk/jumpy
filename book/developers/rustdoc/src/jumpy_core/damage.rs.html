@@ -126,7 +126,7 @@
 
             <span class="kw">let </span>damage_rect = damage_region.collider_rect(transform.translation);
             <span class="kw">if </span>player_rect.overlaps(<span class="kw-2">&amp;</span>damage_rect) {
-                player_events.kill(player_ent);
+                player_events.kill(player_ent, <span class="prelude-val">Some</span>(transform.translation.xy()));
             }
         }
     }

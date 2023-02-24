@@ -319,6 +319,10 @@
 <a href="#318" id="318">318</a>
 <a href="#319" id="319">319</a>
 <a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{damage::DamageRegion, prelude::<span class="kw-2">*</span>};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -589,6 +593,8 @@
             sword.dropped_time += <span class="number">1.0 </span>/ <span class="kw">crate</span>::FPS;
 
             <span class="kw">if </span>body.velocity.length() &gt;= <span class="kw-2">*</span>killing_speed {
+                <span class="kw">let </span>sword_transform = transforms.get(entity).unwrap();
+
                 collision_world
                     .actor_collisions(entity)
                     .into_iter()
@@ -598,7 +604,9 @@
                             (player_body.velocity - body.velocity).length() &gt;= <span class="kw-2">*</span>killing_speed
                         }
                     })
-                    .for_each(|player| player_events.kill(player));
+                    .for_each(|player| {
+                        player_events.kill(player, <span class="prelude-val">Some</span>(sword_transform.translation.xy()))
+                    });
             }
         }
 

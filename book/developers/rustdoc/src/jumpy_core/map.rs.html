@@ -356,7 +356,7 @@
         <span class="kw">let </span>pos = transform.translation;
 
         <span class="kw">if </span>pos.x &lt; left_kill_zone || pos.x &gt; right_kill_zone || pos.y &lt; bottom_kill_zone {
-            player_events.kill(player_ent);
+            player_events.kill(player_ent, <span class="prelude-val">None</span>);
         }
     }
 

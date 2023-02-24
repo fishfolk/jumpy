@@ -335,6 +335,9 @@
 <a href="#334" id="334">334</a>
 <a href="#335" id="335">335</a>
 <a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -564,6 +567,7 @@
     <span class="kw-2">mut </span>player_events: ResMut&lt;PlayerEvents&gt;,
     <span class="kw-2">mut </span>commands: Commands,
     collision_world: CollisionWorld,
+    transforms: Comp&lt;Transform&gt;,
 ) {
     <span class="kw">let </span>players = entities
         .iter_with(<span class="kw-2">&amp;</span>player_indexes)
@@ -608,8 +612,10 @@
             .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
 
         <span class="kw">if </span>!colliding_with_players.is_empty() &amp;&amp; thrown_mine.age &gt;= <span class="kw-2">*</span>arm_delay {
+            <span class="kw">let </span>mine_transform = <span class="kw-2">*</span>transforms.get(entity).unwrap();
+
             <span class="kw">for </span>player <span class="kw">in </span><span class="kw-2">&amp;</span>colliding_with_players {
-                player_events.kill(<span class="kw-2">*</span>player);
+                player_events.kill(<span class="kw-2">*</span>player, <span class="prelude-val">Some</span>(mine_transform.translation.xy()));
             }
 
             audio_events.play(explosion_sound.clone(), <span class="kw-2">*</span>explosion_volume);
@@ -630,7 +636,7 @@
                       <span class="kw-2">mut </span>lifetimes: CompMut&lt;Lifetime&gt;,
                       <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;,
                       <span class="kw-2">mut </span>animated_sprites: CompMut&lt;AnimatedSprite&gt;| {
-                    <span class="kw">let </span>explosion_transform = <span class="kw-2">*</span>transforms.get(entity).unwrap();
+                    <span class="kw">let </span>explosion_transform = mine_transform;
 
                     <span class="comment">// Despawn the grenade
                     </span>entities.kill(entity);

@@ -227,6 +227,7 @@ fn update_thrown_mines(
     mut player_events: ResMut<PlayerEvents>,
     mut commands: Commands,
     collision_world: CollisionWorld,
+    transforms: Comp<Transform>,
 ) {
     let players = entities
         .iter_with(&player_indexes)
@@ -271,8 +272,10 @@ fn update_thrown_mines(
             .collect::<Vec<_>>();
 
         if !colliding_with_players.is_empty() && thrown_mine.age >= *arm_delay {
+            let mine_transform = *transforms.get(entity).unwrap();
+
             for player in &colliding_with_players {
-                player_events.kill(*player);
+                player_events.kill(*player, Some(mine_transform.translation.xy()));
             }
 
             audio_events.play(explosion_sound.clone(), *explosion_volume);
@@ -293,7 +296,7 @@ fn update_thrown_mines(
                       mut lifetimes: CompMut<Lifetime>,
                       mut sprites: CompMut<AtlasSprite>,
                       mut animated_sprites: CompMut<AnimatedSprite>| {
-                    let explosion_transform = *transforms.get(entity).unwrap();
+                    let explosion_transform = mine_transform;
 
                     // Despawn the grenade
                     entities.kill(entity);

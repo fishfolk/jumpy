@@ -92,7 +92,7 @@ layers:
             offset: [0, -4]
         fps: *fps
         repeat: false
-      death_1:
+      death_spine:
         frames:
           - idx: 70
           - idx: 71
@@ -101,6 +101,17 @@ layers:
           - idx: 74
           - idx: 75
           - idx: 76
+        fps: *fps
+        repeat: false
+      death_belly:
+        frames:
+          - idx: 84
+          - idx: 85
+          - idx: 86
+          - idx: 87
+          - idx: 88
+          - idx: 89
+          - idx: 90
         fps: *fps
         repeat: false
   fin:
@@ -144,7 +155,11 @@ layers:
         fps: *fps
         frames:
           - 20
-      death_1:
+      death_spine:
+        fps: *fps
+        frames:
+          - 3 # Intentionally an invisible frame
+      death_belly:
         fps: *fps
         frames:
           - 3 # Intentionally an invisible frame
@@ -192,7 +207,11 @@ layers:
         fps: *fps
         frames:
           - 5
-      death_1:
+      death_spine:
+        fps: *fps
+        frames:
+          - 10 # Intentionally an invisible frame
+      death_belly:
         fps: *fps
         frames:
           - 10 # Intentionally an invisible frame

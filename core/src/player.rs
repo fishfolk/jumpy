@@ -99,7 +99,9 @@ impl Emote {
 /// This usually means their death animation is playing, and they are about to be de-spawned.
 #[derive(Clone, TypeUlid)]
 #[ulid = "01GP49AK25A8S9G2GYNAVE4PTN"]
-pub struct PlayerKilled;
+pub struct PlayerKilled {
+    pub hit_from: Option<Vec2>,
+}
 
 /// Resource containing the player event queue.
 #[derive(Clone, TypeUlid, Debug, Default)]
@@ -126,8 +128,8 @@ impl PlayerEvents {
     }
 
     #[inline]
-    pub fn kill(&mut self, player: Entity) {
-        self.queue.push_back(PlayerEvent::Kill { player })
+    pub fn kill(&mut self, player: Entity, hit_from: Option<Vec2>) {
+        self.queue.push_back(PlayerEvent::Kill { player, hit_from })
     }
 
     #[inline]
@@ -142,7 +144,10 @@ pub enum PlayerEvent {
     /// Kill a player.
     ///
     /// > **Note:** This doesn't despawn the player, it just puts the player into it's death animation.
-    Kill { player: Entity },
+    Kill {
+        player: Entity,
+        hit_from: Option<Vec2>,
+    },
     /// Despawn a player.
     ///
     /// > **Note:** This is different than the [`Kill`][Self::Kill] event in that it immediately
@@ -174,7 +179,7 @@ fn handle_player_events(
 ) {
     while let Some(event) = player_events.queue.pop_front() {
         match event {
-            PlayerEvent::Kill { player } => {
+            PlayerEvent::Kill { player, hit_from } => {
                 if players_killed.contains(player) {
                     // No need to kill him again
                     continue;
@@ -193,7 +198,7 @@ fn handle_player_events(
                     .queue
                     .push_front(PlayerEvent::SetInventory { player, item: None });
 
-                players_killed.insert(player, PlayerKilled);
+                players_killed.insert(player, PlayerKilled { hit_from });
             }
             PlayerEvent::Despawn { player } => {
                 if player_indexes.contains(player) {

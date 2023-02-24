@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use bevy_inspector_egui::{bevy_inspector, DefaultInspectorConfigPlugin};
+use bevy_inspector_egui::{bevy_inspector, inspector_egui_impls};
 
 pub struct JumpyDebugPlugin;
 
@@ -9,8 +9,14 @@ pub struct WorldInspectorEnabled(pub bool);
 impl Plugin for JumpyDebugPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<WorldInspectorEnabled>()
-            .add_plugin(DefaultInspectorConfigPlugin)
             .add_system(world_inspector);
+
+        let type_registry = app.world.resource::<bevy::app::AppTypeRegistry>();
+        let mut type_registry = type_registry.write();
+
+        inspector_egui_impls::register_std_impls(&mut type_registry);
+        inspector_egui_impls::register_glam_impls(&mut type_registry);
+        inspector_egui_impls::register_bevy_impls(&mut type_registry);
     }
 }
 

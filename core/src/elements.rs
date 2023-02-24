@@ -17,11 +17,14 @@ pub mod sword;
 #[ulid = "01GP42Q5GCY5Y4JC7SQ1YRHYKN"]
 pub struct MapElementHydrated;
 
-/// Component that contains the [`Entity`] to de-hydrate when the
-/// entity with this component is out of the [`LoadedMap`] bounds.
+/// Component that contains the [`Entity`] to de-hydrate when the entity with this component is out
+/// of the [`LoadedMap`] bounds.
+///
+/// This is useful for map elements that spawn items: when the item falls off the map, it should
+/// de-hydrate it's spawner, so that the spawner will re-spawn the item in it's default state.
 #[derive(Clone, TypeUlid, Deref, DerefMut)]
 #[ulid = "01GP9NY0Y50Y2A8M4A7E9NN8VE"]
-pub struct DeHydrateOutOfBounds(pub Entity);
+pub struct DehydrateOutOfBounds(pub Entity);
 
 /// Component containing an element's metadata handle.
 #[derive(Clone, TypeUlid, Deref, DerefMut, Default)]
@@ -51,7 +54,7 @@ fn handle_out_of_bounds_items(
     mut hydrated: CompMut<MapElementHydrated>,
     entities: ResMut<Entities>,
     transforms: CompMut<Transform>,
-    spawners: Comp<DeHydrateOutOfBounds>,
+    spawners: Comp<DehydrateOutOfBounds>,
     map: Res<LoadedMap>,
 ) {
     for (item_ent, (transform, spawner)) in entities.iter_with((&transforms, &spawners)) {

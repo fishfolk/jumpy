@@ -33,7 +33,7 @@ fn hydrate_crates(
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
     mut items: CompMut<Item>,
-    mut respawn_points: CompMut<DeHydrateOutOfBounds>,
+    mut respawn_points: CompMut<DehydrateOutOfBounds>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -65,7 +65,7 @@ fn hydrate_crates(
         items.insert(entity, Item);
         idle_crates.insert(entity, IdleCrate);
         atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
-        respawn_points.insert(entity, DeHydrateOutOfBounds(spawner));
+        respawn_points.insert(entity, DehydrateOutOfBounds(spawner));
         transforms.insert(entity, transform);
         element_handles.insert(entity, element_handle.clone());
         hydrated.insert(entity, MapElementHydrated);
@@ -224,7 +224,7 @@ fn update_thrown_crates(
     mut bodies: CompMut<KinematicBody>,
     mut audio_events: ResMut<AudioEvents>,
     transforms: Comp<Transform>,
-    spawners: Comp<DeHydrateOutOfBounds>,
+    spawners: Comp<DehydrateOutOfBounds>,
 ) {
     for (entity, (mut thrown_crate, element_handle, transform, atlas_sprite, body, spawner)) in
         entities.iter_with((

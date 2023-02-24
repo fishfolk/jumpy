@@ -29,7 +29,7 @@ fn hydrate(
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
     mut items: CompMut<Item>,
-    mut respawn_points: CompMut<DeHydrateOutOfBounds>,
+    mut respawn_points: CompMut<DehydrateOutOfBounds>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -58,7 +58,7 @@ fn hydrate(
             items.insert(entity, Item);
             stomp_boots.insert(entity, StompBoots);
             atlas_sprites.insert(entity, AtlasSprite::new(map_icon.clone()));
-            respawn_points.insert(entity, DeHydrateOutOfBounds(spawner_ent));
+            respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
             transforms.insert(entity, transform);
             element_handles.insert(entity, element_handle.clone());
             hydrated.insert(entity, MapElementHydrated);
@@ -90,7 +90,7 @@ fn update(
     mut inventoris: CompMut<Inventory>,
     mut hydrated: CompMut<MapElementHydrated>,
     mut commands: Commands,
-    spawners: Comp<DeHydrateOutOfBounds>,
+    spawners: Comp<DehydrateOutOfBounds>,
 ) {
     for (entity, (_stomp_boots, element_handle)) in
         entities.iter_with((&mut stomp_boots, &element_handles))

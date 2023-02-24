@@ -184,14 +184,6 @@
 <a href="#183" id="183">183</a>
 <a href="#184" id="184">184</a>
 <a href="#185" id="185">185</a>
-<a href="#186" id="186">186</a>
-<a href="#187" id="187">187</a>
-<a href="#188" id="188">188</a>
-<a href="#189" id="189">189</a>
-<a href="#190" id="190">190</a>
-<a href="#191" id="191">191</a>
-<a href="#192" id="192">192</a>
-<a href="#193" id="193">193</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -222,8 +214,7 @@
 <span class="kw">fn </span>camera_controller(
     game_meta: Res&lt;CoreMetaArc&gt;,
     entities: Res&lt;Entities&gt;,
-    map_handle: Res&lt;MapHandle&gt;,
-    map_assets: BevyAssets&lt;MapMeta&gt;,
+    map: Res&lt;LoadedMap&gt;,
     <span class="kw-2">mut </span>cameras: CompMut&lt;Camera&gt;,
     <span class="kw-2">mut </span>camera_shakes: CompMut&lt;CameraShake&gt;,
     <span class="kw-2">mut </span>camera_states: CompMut&lt;CameraState&gt;,
@@ -234,9 +225,6 @@
 ) {
     <span class="kw">let </span>meta = <span class="kw-2">&amp;</span>game_meta.camera;
 
-    <span class="kw">let </span><span class="prelude-val">Some</span>(map) = map_assets.get(<span class="kw-2">&amp;</span>map_handle.get_bevy_handle()) <span class="kw">else </span>{
-        <span class="kw">return</span>;
-    };
     <span class="kw">let </span><span class="prelude-val">Some</span>((_ent, (camera, camera_shake, camera_state))) = entities.iter_with((<span class="kw-2">&amp;mut </span>cameras, <span class="kw-2">&amp;mut </span>camera_shakes, <span class="kw-2">&amp;mut </span>camera_states)).next() <span class="kw">else </span>{
         <span class="kw">return
     </span>};
@@ -352,16 +340,12 @@
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     parallax_bg_sprites: Comp&lt;ParallaxBackgroundSprite&gt;,
     cameras: Comp&lt;Camera&gt;,
-    map_handle: Res&lt;MapHandle&gt;,
-    map_assets: BevyAssets&lt;MapMeta&gt;,
+    map: Res&lt;LoadedMap&gt;,
 ) {
     <span class="comment">// TODO: This constant represents that maximum camera-visible distance, and should be moved
     // somewhere more appropriate.
     </span><span class="kw">const </span>FAR_PLANE: f32 = <span class="number">1000.0</span>;
 
-    <span class="kw">let </span><span class="prelude-val">Some</span>(map) = map_assets.get(<span class="kw-2">&amp;</span>map_handle.get_bevy_handle()) <span class="kw">else </span>{
-        <span class="kw">return</span>;
-    };
     <span class="kw">let </span>map_size = map.grid_size.as_vec2() * map.tile_size;
 
     <span class="kw">let </span>camera_transform = entities

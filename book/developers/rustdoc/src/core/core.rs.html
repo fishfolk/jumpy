@@ -207,6 +207,10 @@
 <a href="#207" id="207">207</a>
 <a href="#208" id="208">208</a>
 <a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::sync::Arc;
 
 <span class="kw">use </span>bevy::{prelude::<span class="kw-2">*</span>, time::FixedTimestep};
@@ -279,6 +283,7 @@
     session: <span class="prelude-ty">Option</span>&lt;ResMut&lt;Session&gt;&gt;,
     meta_handle: <span class="prelude-ty">Option</span>&lt;Res&lt;CoreMetaHandle&gt;&gt;,
     <span class="kw-2">mut </span>core_meta_assets: ResMut&lt;Assets&lt;CoreMeta&gt;&gt;,
+    map_assets: Res&lt;Assets&lt;MapMeta&gt;&gt;,
 ) {
     <span class="kw">if </span>session.is_some() {
         <span class="kw">return</span>;
@@ -291,7 +296,10 @@
     };
 
     <span class="kw">let </span>session = GameSession::new(GameSessionInfo {
-        map: meta.stable_maps[<span class="number">0</span>].clone(),
+        map_meta: map_assets
+            .get(<span class="kw-2">&amp;</span>meta.stable_maps[<span class="number">0</span>].get_bevy_handle())
+            .unwrap()
+            .clone(),
         player_info: [
             <span class="prelude-val">Some</span>(meta.players[<span class="number">0</span>].clone()),
             <span class="prelude-val">Some</span>(meta.players[<span class="number">0</span>].clone()),

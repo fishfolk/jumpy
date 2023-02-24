@@ -18,6 +18,10 @@
 <a href="#17" id="17">17</a>
 <a href="#18" id="18">18</a>
 <a href="#19" id="19">19</a>
+<a href="#20" id="20">20</a>
+<a href="#21" id="21">21</a>
+<a href="#22" id="22">22</a>
+<a href="#23" id="23">23</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub struct </span>JumpyPlayerInputPlugin;
@@ -37,5 +41,9 @@
     Grab,
     Slide,
 }
+
+<span class="doccomment">/// Bevy resource containing the editor action to perform for this frame.
+</span><span class="attr">#[derive(Resource, Default, Deref, DerefMut)]
+</span><span class="kw">pub struct </span>CurrentEditorInput(<span class="prelude-ty">Option</span>&lt;jumpy_core::input::EditorInput&gt;);
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="jumpy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0 (fc594f156 2023-01-24)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>

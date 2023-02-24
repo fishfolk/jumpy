@@ -185,6 +185,48 @@
 <a href="#184" id="184">184</a>
 <a href="#185" id="185">185</a>
 <a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
+<a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::{collisions::TileCollisionKind, <span class="kw-2">*</span>};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -197,7 +239,7 @@
 <span class="doccomment">/// Resource containing the map metadata for this game session.
 </span><span class="attr">#[derive(Clone, TypeUlid, Deref, DerefMut, Default)]
 #[ulid = <span class="string">&quot;01GP2H6K9H3JEEMXFCKV4TGMWZ&quot;</span>]
-</span><span class="kw">pub struct </span>MapHandle(<span class="kw">pub </span>Handle&lt;MapMeta&gt;);
+</span><span class="kw">pub struct </span>LoadedMap(<span class="kw">pub </span>Arc&lt;MapMeta&gt;);
 
 <span class="doccomment">/// Resource indicating whether the map has been spawned.
 </span><span class="attr">#[derive(Clone, TypeUlid, Default, Deref, DerefMut)]
@@ -208,12 +250,55 @@
 #[ulid = <span class="string">&quot;01GP9NY0Y50Y2A8M4A7E9NN8VE&quot;</span>]
 </span><span class="kw">pub struct </span>MapRespawnPoint(<span class="kw">pub </span>Vec3);
 
+<span class="doccomment">/// Helper for getting the z-depth of the map layer with the given index.
+</span><span class="kw">pub fn </span>z_depth_for_map_layer(layer_idx: usize) -&gt; f32 {
+    <span class="comment">// We start map layers at -900 and for ever layer we place a gap of 2 units in between
+    </span>-<span class="number">900.0 </span>+ layer_idx <span class="kw">as </span>f32 * <span class="number">2.0
+</span>}
+
+<span class="doccomment">/// Resource containing essential the map metadata for the map once spawned. This allows the
+/// complete map metadata to be re-constructed from the world after the map has been spawned and
+/// potentially modified.
+</span><span class="attr">#[derive(TypeUlid, Clone)]
+#[ulid = <span class="string">&quot;01GSR8V683B3EH5QAB2PMGN9J7&quot;</span>]
+</span><span class="kw">pub struct </span>SpawnedMapMeta {
+    <span class="kw">pub </span>name: Arc&lt;str&gt;,
+    <span class="kw">pub </span>background: Arc&lt;BackgroundMeta&gt;,
+    <span class="kw">pub </span>background_color: ColorMeta,
+    <span class="kw">pub </span>grid_size: UVec2,
+    <span class="kw">pub </span>tile_size: Vec2,
+    <span class="kw">pub </span>layer_names: Arc&lt;[String]&gt;,
+}
+
+<span class="kw">impl </span>Default <span class="kw">for </span>SpawnedMapMeta {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            name: <span class="string">&quot;&quot;</span>.into(),
+            background: default(),
+            background_color: default(),
+            grid_size: default(),
+            tile_size: default(),
+            layer_names: Arc::new([]),
+        }
+    }
+}
+
+<span class="doccomment">/// Component containing the map layer that an entity is associated to.
+///
+/// This is used when exporting the world to `MapMeta` to decide which layer to put an element or
+/// tile layer in.
+</span><span class="attr">#[derive(TypeUlid, Clone, Copy, Default)]
+#[ulid = <span class="string">&quot;01GSR8GSRJHGTJ8J9Y38W7C5S3&quot;</span>]
+</span><span class="kw">pub struct </span>SpawnedMapLayerMeta {
+    <span class="doccomment">/// The layer index of the layer that the element belongs to in the map.
+    </span><span class="kw">pub </span>layer_idx: usize,
+}
+
 <span class="kw">fn </span>spawn_map(
     <span class="kw-2">mut </span>commands: Commands,
     <span class="kw-2">mut </span>entities: ResMut&lt;Entities&gt;,
     <span class="kw-2">mut </span>clear_color: ResMut&lt;ClearColor&gt;,
-    map_handle: Res&lt;MapHandle&gt;,
-    map_assets: BevyAssets&lt;MapMeta&gt;,
+    map: Res&lt;LoadedMap&gt;,
     <span class="kw-2">mut </span>map_spawned: ResMut&lt;MapSpawned&gt;,
     <span class="kw-2">mut </span>tiles: CompMut&lt;Tile&gt;,
     <span class="kw-2">mut </span>tile_layers: CompMut&lt;TileLayer&gt;,
@@ -225,12 +310,21 @@
     <span class="kw-2">mut </span>cameras: CompMut&lt;Camera&gt;,
     <span class="kw-2">mut </span>camera_shakes: CompMut&lt;CameraShake&gt;,
     <span class="kw-2">mut </span>camera_states: CompMut&lt;CameraState&gt;,
+    <span class="kw-2">mut </span>spawned_map_layer_metas: CompMut&lt;SpawnedMapLayerMeta&gt;,
+    <span class="kw-2">mut </span>spawned_map_meta: ResMut&lt;SpawnedMapMeta&gt;,
 ) {
     <span class="kw">if </span>map_spawned.<span class="number">0 </span>{
         <span class="kw">return</span>;
     }
-    <span class="kw">let </span><span class="prelude-val">Some</span>(map) = map_assets.get(<span class="kw-2">&amp;</span>map_handle.get_bevy_handle()) <span class="kw">else </span>{
-        <span class="kw">return</span>;
+
+    <span class="comment">// Fill in the spawned map metadata
+    </span><span class="kw-2">*</span>spawned_map_meta = SpawnedMapMeta {
+        name: map.name.clone().into(),
+        background: Arc::new(map.background.clone()),
+        background_color: map.background_color,
+        grid_size: map.grid_size,
+        tile_size: map.tile_size,
+        layer_names: map.layers.iter().map(|x| x.id.to_string()).collect(),
     };
 
     <span class="comment">// Spawn the camera
@@ -274,54 +368,48 @@
     }
 
     <span class="comment">// Load tiles
-    </span><span class="kw">for </span>(i, layer) <span class="kw">in </span>map.layers.iter().enumerate() {
-        <span class="kw">let </span>layer_z = -<span class="number">900.0 </span>+ i <span class="kw">as </span>f32;
-        <span class="kw">match </span><span class="kw-2">&amp;</span>layer.kind {
-            MapLayerKind::Tile(tile_layer_meta) =&gt; {
-                <span class="kw">let </span><span class="kw-2">mut </span>tile_layer = TileLayer::new(
-                    map.grid_size,
-                    map.tile_size,
-                    tile_layer_meta.tilemap.clone(),
-                );
+    </span><span class="kw">for </span>(layer_idx, layer) <span class="kw">in </span>map.layers.iter().enumerate() {
+        <span class="kw">let </span>layer_z = z_depth_for_map_layer(layer_idx);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(atlas) = layer.tilemap.clone() {
+            <span class="kw">let </span><span class="kw-2">mut </span>tile_layer = TileLayer::new(map.grid_size, map.tile_size, atlas);
 
-                <span class="kw">for </span>tile_meta <span class="kw">in </span><span class="kw-2">&amp;</span>tile_layer_meta.tiles {
-                    <span class="kw">let </span>tile_ent = entities.create();
-                    tile_layer.set(tile_meta.pos, <span class="prelude-val">Some</span>(tile_ent));
-                    tiles.insert(
-                        tile_ent,
-                        Tile {
-                            idx: tile_meta.idx <span class="kw">as </span>usize,
-                            ..default()
-                        },
-                    );
-                    tile_collisions.insert(
-                        tile_ent,
-                        <span class="kw">if </span>tile_meta.jump_through {
-                            TileCollisionKind::JUMP_THROUGH
-                        } <span class="kw">else </span>{
-                            TileCollisionKind::SOLID
-                        },
-                    );
-                }
-                <span class="kw">let </span>layer_ent = entities.create();
-                tile_layers.insert(layer_ent, tile_layer);
-                transforms.insert(
-                    layer_ent,
-                    Transform::from_translation(Vec3::new(<span class="number">0.0</span>, <span class="number">0.0</span>, layer_z)),
+            <span class="kw">for </span>tile_meta <span class="kw">in </span><span class="kw-2">&amp;</span>layer.tiles {
+                <span class="kw">let </span>tile_ent = entities.create();
+                tile_layer.set(tile_meta.pos, <span class="prelude-val">Some</span>(tile_ent));
+                tiles.insert(
+                    tile_ent,
+                    Tile {
+                        idx: tile_meta.idx <span class="kw">as </span>usize,
+                        ..default()
+                    },
+                );
+                tile_collisions.insert(
+                    tile_ent,
+                    <span class="kw">if </span>tile_meta.jump_through {
+                        TileCollisionKind::JUMP_THROUGH
+                    } <span class="kw">else </span>{
+                        TileCollisionKind::SOLID
+                    },
                 );
             }
-            MapLayerKind::Element(element_layer_meta) =&gt; {
-                <span class="kw">for </span>element_meta <span class="kw">in </span><span class="kw-2">&amp;</span>element_layer_meta.elements {
-                    <span class="kw">let </span>element_ent = entities.create();
+            <span class="kw">let </span>layer_ent = entities.create();
+            spawned_map_layer_metas.insert(layer_ent, SpawnedMapLayerMeta { layer_idx });
+            tile_layers.insert(layer_ent, tile_layer);
+            transforms.insert(
+                layer_ent,
+                Transform::from_translation(Vec3::new(<span class="number">0.0</span>, <span class="number">0.0</span>, layer_z)),
+            );
+        }
 
-                    transforms.insert(
-                        element_ent,
-                        Transform::from_translation(element_meta.pos.extend(layer_z)),
-                    );
-                    element_handles
-                        .insert(element_ent, ElementHandle(element_meta.element.clone()));
-                }
-            }
+        <span class="kw">for </span>element_meta <span class="kw">in </span><span class="kw-2">&amp;</span>layer.elements {
+            <span class="kw">let </span>element_ent = entities.create();
+
+            spawned_map_layer_metas.insert(element_ent, SpawnedMapLayerMeta { layer_idx });
+            transforms.insert(
+                element_ent,
+                Transform::from_translation(element_meta.pos.extend(layer_z)),
+            );
+            element_handles.insert(element_ent, ElementHandle(element_meta.element.clone()));
         }
     }
 
@@ -335,15 +423,11 @@
     entities: Res&lt;Entities&gt;,
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     player_indexes: Comp&lt;PlayerIdx&gt;,
-    map_handle: Res&lt;MapHandle&gt;,
-    map_assets: BevyAssets&lt;MapMeta&gt;,
+    map: Res&lt;LoadedMap&gt;,
     <span class="kw-2">mut </span>player_events: ResMut&lt;PlayerEvents&gt;,
     map_respawn_points: Comp&lt;MapRespawnPoint&gt;,
 ) {
     <span class="kw">const </span>KILL_ZONE_BORDER: f32 = <span class="number">500.0</span>;
-    <span class="kw">let </span><span class="prelude-val">Some</span>(map) = map_assets.get(<span class="kw-2">&amp;</span>map_handle.get_bevy_handle()) <span class="kw">else </span>{
-        <span class="kw">return</span>;
-    };
 
     <span class="kw">let </span>map_width = map.grid_size.x <span class="kw">as </span>f32 * map.tile_size.x;
     <span class="kw">let </span>left_kill_zone = -KILL_ZONE_BORDER;

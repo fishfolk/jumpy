@@ -177,7 +177,6 @@
 <a href="#176" id="176">176</a>
 <a href="#177" id="177">177</a>
 <a href="#178" id="178">178</a>
-<a href="#179" id="179">179</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub struct </span>JumpySessionPlugin;
@@ -193,6 +192,7 @@
     <span class="kw">fn </span>build(<span class="kw-2">&amp;</span><span class="self">self</span>, app: <span class="kw-2">&amp;mut </span>App) {
         app.add_plugin(bones_bevy_renderer::BonesRendererPlugin::&lt;Session&gt;::with_sync_time(<span class="bool-val">false</span>))
             .add_plugin(jumpy_core::metadata::JumpyCoreAssetsPlugin)
+            .init_resource::&lt;CurrentEditorInput&gt;()
             .add_stage_before(
                 CoreStage::Update,
                 SessionStage::Update,
@@ -249,15 +249,6 @@
         }
     }
 
-    <span class="kw">pub fn </span>map_handle(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Handle&lt;MapMeta&gt;&gt; {
-        <span class="self">self</span>.session.as_ref().map(|session| {
-            <span class="kw">let </span>map_handle = session.world.resource::&lt;jumpy_core::map::MapHandle&gt;();
-            <span class="kw">let </span>map_handle = map_handle.borrow();
-
-            map_handle.get_bevy_handle()
-        })
-    }
-
     <span class="doccomment">/// Stop a game session
     </span><span class="kw">pub fn </span>stop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
         <span class="self">self</span>.commands.remove_resource::&lt;Session&gt;();
@@ -288,12 +279,19 @@
 </span><span class="kw">fn </span>update_input(
     session: <span class="prelude-ty">Option</span>&lt;ResMut&lt;Session&gt;&gt;,
     player_input_collectors: Query&lt;(<span class="kw-2">&amp;</span>PlayerInputCollector, <span class="kw-2">&amp;</span>ActionState&lt;PlayerAction&gt;)&gt;,
+    <span class="kw-2">mut </span>current_editor_input: ResMut&lt;CurrentEditorInput&gt;,
 ) {
     <span class="kw">let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>session) = session <span class="kw">else </span>{
         <span class="kw">return</span>;
     };
 
+    <span class="kw">let </span><span class="kw-2">mut </span>editor_input = current_editor_input.take();
+
     session.update_input(|inputs| {
+        <span class="comment">// TODO: Properly handle which player is taking the editor input, which is important in
+        // networked multiplayer.
+        </span>inputs.players[<span class="number">0</span>].editor_input = editor_input.take();
+
         <span class="kw">for </span>(player_idx, action_state) <span class="kw">in </span><span class="kw-2">&amp;</span>player_input_collectors {
             <span class="kw">let </span>control = <span class="kw-2">&amp;mut </span>inputs.players[player_idx.<span class="number">0</span>].control;
 

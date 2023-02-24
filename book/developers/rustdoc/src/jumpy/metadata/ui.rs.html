@@ -254,12 +254,6 @@
 <a href="#253" id="253">253</a>
 <a href="#254" id="254">254</a>
 <a href="#255" id="255">255</a>
-<a href="#256" id="256">256</a>
-<a href="#257" id="257">257</a>
-<a href="#258" id="258">258</a>
-<a href="#259" id="259">259</a>
-<a href="#260" id="260">260</a>
-<a href="#261" id="261">261</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::sync::Arc;
 
 <span class="kw">use </span><span class="kw">crate</span>::assets::EguiFont;
@@ -290,20 +284,14 @@
 <span class="attr">#[derive(BonesBevyAssetLoad, Deserialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 </span><span class="kw">pub struct </span>UiThemeEditorIcons {
+    <span class="kw">pub </span>elements: ImageMeta,
+    <span class="kw">pub </span>tiles: ImageMeta,
     <span class="kw">pub </span>select: ImageMeta,
-    <span class="kw">pub </span>spawn: ImageMeta,
-    <span class="kw">pub </span>tile: ImageMeta,
-    <span class="kw">pub </span>erase: ImageMeta,
 }
 
 <span class="kw">impl </span>UiThemeEditorIcons {
-    <span class="kw">pub fn </span>as_mut_list(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; [<span class="kw-2">&amp;mut </span>ImageMeta; <span class="number">4</span>] {
-        [
-            <span class="kw-2">&amp;mut </span><span class="self">self</span>.select,
-            <span class="kw-2">&amp;mut </span><span class="self">self</span>.spawn,
-            <span class="kw-2">&amp;mut </span><span class="self">self</span>.tile,
-            <span class="kw-2">&amp;mut </span><span class="self">self</span>.erase,
-        ]
+    <span class="kw">pub fn </span>as_mut_list(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; [<span class="kw-2">&amp;mut </span>ImageMeta; <span class="number">3</span>] {
+        [<span class="kw-2">&amp;mut </span><span class="self">self</span>.elements, <span class="kw-2">&amp;mut </span><span class="self">self</span>.select, <span class="kw-2">&amp;mut </span><span class="self">self</span>.tiles]
     }
 }
 

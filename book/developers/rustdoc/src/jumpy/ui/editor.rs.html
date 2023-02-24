@@ -952,12 +952,222 @@
 <a href="#951" id="951">951</a>
 <a href="#952" id="952">952</a>
 <a href="#953" id="953">953</a>
-</pre><pre class="rust"><code><span class="kw">use </span>std::{marker::PhantomData, mem::discriminant};
+<a href="#954" id="954">954</a>
+<a href="#955" id="955">955</a>
+<a href="#956" id="956">956</a>
+<a href="#957" id="957">957</a>
+<a href="#958" id="958">958</a>
+<a href="#959" id="959">959</a>
+<a href="#960" id="960">960</a>
+<a href="#961" id="961">961</a>
+<a href="#962" id="962">962</a>
+<a href="#963" id="963">963</a>
+<a href="#964" id="964">964</a>
+<a href="#965" id="965">965</a>
+<a href="#966" id="966">966</a>
+<a href="#967" id="967">967</a>
+<a href="#968" id="968">968</a>
+<a href="#969" id="969">969</a>
+<a href="#970" id="970">970</a>
+<a href="#971" id="971">971</a>
+<a href="#972" id="972">972</a>
+<a href="#973" id="973">973</a>
+<a href="#974" id="974">974</a>
+<a href="#975" id="975">975</a>
+<a href="#976" id="976">976</a>
+<a href="#977" id="977">977</a>
+<a href="#978" id="978">978</a>
+<a href="#979" id="979">979</a>
+<a href="#980" id="980">980</a>
+<a href="#981" id="981">981</a>
+<a href="#982" id="982">982</a>
+<a href="#983" id="983">983</a>
+<a href="#984" id="984">984</a>
+<a href="#985" id="985">985</a>
+<a href="#986" id="986">986</a>
+<a href="#987" id="987">987</a>
+<a href="#988" id="988">988</a>
+<a href="#989" id="989">989</a>
+<a href="#990" id="990">990</a>
+<a href="#991" id="991">991</a>
+<a href="#992" id="992">992</a>
+<a href="#993" id="993">993</a>
+<a href="#994" id="994">994</a>
+<a href="#995" id="995">995</a>
+<a href="#996" id="996">996</a>
+<a href="#997" id="997">997</a>
+<a href="#998" id="998">998</a>
+<a href="#999" id="999">999</a>
+<a href="#1000" id="1000">1000</a>
+<a href="#1001" id="1001">1001</a>
+<a href="#1002" id="1002">1002</a>
+<a href="#1003" id="1003">1003</a>
+<a href="#1004" id="1004">1004</a>
+<a href="#1005" id="1005">1005</a>
+<a href="#1006" id="1006">1006</a>
+<a href="#1007" id="1007">1007</a>
+<a href="#1008" id="1008">1008</a>
+<a href="#1009" id="1009">1009</a>
+<a href="#1010" id="1010">1010</a>
+<a href="#1011" id="1011">1011</a>
+<a href="#1012" id="1012">1012</a>
+<a href="#1013" id="1013">1013</a>
+<a href="#1014" id="1014">1014</a>
+<a href="#1015" id="1015">1015</a>
+<a href="#1016" id="1016">1016</a>
+<a href="#1017" id="1017">1017</a>
+<a href="#1018" id="1018">1018</a>
+<a href="#1019" id="1019">1019</a>
+<a href="#1020" id="1020">1020</a>
+<a href="#1021" id="1021">1021</a>
+<a href="#1022" id="1022">1022</a>
+<a href="#1023" id="1023">1023</a>
+<a href="#1024" id="1024">1024</a>
+<a href="#1025" id="1025">1025</a>
+<a href="#1026" id="1026">1026</a>
+<a href="#1027" id="1027">1027</a>
+<a href="#1028" id="1028">1028</a>
+<a href="#1029" id="1029">1029</a>
+<a href="#1030" id="1030">1030</a>
+<a href="#1031" id="1031">1031</a>
+<a href="#1032" id="1032">1032</a>
+<a href="#1033" id="1033">1033</a>
+<a href="#1034" id="1034">1034</a>
+<a href="#1035" id="1035">1035</a>
+<a href="#1036" id="1036">1036</a>
+<a href="#1037" id="1037">1037</a>
+<a href="#1038" id="1038">1038</a>
+<a href="#1039" id="1039">1039</a>
+<a href="#1040" id="1040">1040</a>
+<a href="#1041" id="1041">1041</a>
+<a href="#1042" id="1042">1042</a>
+<a href="#1043" id="1043">1043</a>
+<a href="#1044" id="1044">1044</a>
+<a href="#1045" id="1045">1045</a>
+<a href="#1046" id="1046">1046</a>
+<a href="#1047" id="1047">1047</a>
+<a href="#1048" id="1048">1048</a>
+<a href="#1049" id="1049">1049</a>
+<a href="#1050" id="1050">1050</a>
+<a href="#1051" id="1051">1051</a>
+<a href="#1052" id="1052">1052</a>
+<a href="#1053" id="1053">1053</a>
+<a href="#1054" id="1054">1054</a>
+<a href="#1055" id="1055">1055</a>
+<a href="#1056" id="1056">1056</a>
+<a href="#1057" id="1057">1057</a>
+<a href="#1058" id="1058">1058</a>
+<a href="#1059" id="1059">1059</a>
+<a href="#1060" id="1060">1060</a>
+<a href="#1061" id="1061">1061</a>
+<a href="#1062" id="1062">1062</a>
+<a href="#1063" id="1063">1063</a>
+<a href="#1064" id="1064">1064</a>
+<a href="#1065" id="1065">1065</a>
+<a href="#1066" id="1066">1066</a>
+<a href="#1067" id="1067">1067</a>
+<a href="#1068" id="1068">1068</a>
+<a href="#1069" id="1069">1069</a>
+<a href="#1070" id="1070">1070</a>
+<a href="#1071" id="1071">1071</a>
+<a href="#1072" id="1072">1072</a>
+<a href="#1073" id="1073">1073</a>
+<a href="#1074" id="1074">1074</a>
+<a href="#1075" id="1075">1075</a>
+<a href="#1076" id="1076">1076</a>
+<a href="#1077" id="1077">1077</a>
+<a href="#1078" id="1078">1078</a>
+<a href="#1079" id="1079">1079</a>
+<a href="#1080" id="1080">1080</a>
+<a href="#1081" id="1081">1081</a>
+<a href="#1082" id="1082">1082</a>
+<a href="#1083" id="1083">1083</a>
+<a href="#1084" id="1084">1084</a>
+<a href="#1085" id="1085">1085</a>
+<a href="#1086" id="1086">1086</a>
+<a href="#1087" id="1087">1087</a>
+<a href="#1088" id="1088">1088</a>
+<a href="#1089" id="1089">1089</a>
+<a href="#1090" id="1090">1090</a>
+<a href="#1091" id="1091">1091</a>
+<a href="#1092" id="1092">1092</a>
+<a href="#1093" id="1093">1093</a>
+<a href="#1094" id="1094">1094</a>
+<a href="#1095" id="1095">1095</a>
+<a href="#1096" id="1096">1096</a>
+<a href="#1097" id="1097">1097</a>
+<a href="#1098" id="1098">1098</a>
+<a href="#1099" id="1099">1099</a>
+<a href="#1100" id="1100">1100</a>
+<a href="#1101" id="1101">1101</a>
+<a href="#1102" id="1102">1102</a>
+<a href="#1103" id="1103">1103</a>
+<a href="#1104" id="1104">1104</a>
+<a href="#1105" id="1105">1105</a>
+<a href="#1106" id="1106">1106</a>
+<a href="#1107" id="1107">1107</a>
+<a href="#1108" id="1108">1108</a>
+<a href="#1109" id="1109">1109</a>
+<a href="#1110" id="1110">1110</a>
+<a href="#1111" id="1111">1111</a>
+<a href="#1112" id="1112">1112</a>
+<a href="#1113" id="1113">1113</a>
+<a href="#1114" id="1114">1114</a>
+<a href="#1115" id="1115">1115</a>
+<a href="#1116" id="1116">1116</a>
+<a href="#1117" id="1117">1117</a>
+<a href="#1118" id="1118">1118</a>
+<a href="#1119" id="1119">1119</a>
+<a href="#1120" id="1120">1120</a>
+<a href="#1121" id="1121">1121</a>
+<a href="#1122" id="1122">1122</a>
+<a href="#1123" id="1123">1123</a>
+<a href="#1124" id="1124">1124</a>
+<a href="#1125" id="1125">1125</a>
+<a href="#1126" id="1126">1126</a>
+<a href="#1127" id="1127">1127</a>
+<a href="#1128" id="1128">1128</a>
+<a href="#1129" id="1129">1129</a>
+<a href="#1130" id="1130">1130</a>
+<a href="#1131" id="1131">1131</a>
+<a href="#1132" id="1132">1132</a>
+<a href="#1133" id="1133">1133</a>
+<a href="#1134" id="1134">1134</a>
+<a href="#1135" id="1135">1135</a>
+<a href="#1136" id="1136">1136</a>
+<a href="#1137" id="1137">1137</a>
+<a href="#1138" id="1138">1138</a>
+<a href="#1139" id="1139">1139</a>
+<a href="#1140" id="1140">1140</a>
+<a href="#1141" id="1141">1141</a>
+<a href="#1142" id="1142">1142</a>
+<a href="#1143" id="1143">1143</a>
+<a href="#1144" id="1144">1144</a>
+<a href="#1145" id="1145">1145</a>
+<a href="#1146" id="1146">1146</a>
+<a href="#1147" id="1147">1147</a>
+<a href="#1148" id="1148">1148</a>
+<a href="#1149" id="1149">1149</a>
+<a href="#1150" id="1150">1150</a>
+<a href="#1151" id="1151">1151</a>
+<a href="#1152" id="1152">1152</a>
+<a href="#1153" id="1153">1153</a>
+<a href="#1154" id="1154">1154</a>
+<a href="#1155" id="1155">1155</a>
+<a href="#1156" id="1156">1156</a>
+<a href="#1157" id="1157">1157</a>
+<a href="#1158" id="1158">1158</a>
+<a href="#1159" id="1159">1159</a>
+<a href="#1160" id="1160">1160</a>
+<a href="#1161" id="1161">1161</a>
+<a href="#1162" id="1162">1162</a>
+<a href="#1163" id="1163">1163</a>
+<a href="#1164" id="1164">1164</a>
+<a href="#1165" id="1165">1165</a>
+<a href="#1166" id="1166">1166</a>
+</pre><pre class="rust"><code><span class="kw">use </span>std::marker::PhantomData;
 
-<span class="kw">use </span>bevy::{
-    ecs::system::{Command, SystemParam, SystemState},
-    math::Vec3Swizzles,
-};
+<span class="kw">use </span>bevy::{ecs::system::SystemParam, math::Vec3Swizzles};
 <span class="kw">use </span>bevy_egui::<span class="kw-2">*</span>;
 <span class="kw">use </span>bevy_fluent::Localization;
 <span class="kw">use </span>bones_bevy_renderer::BevyBonesEntity;
@@ -977,58 +1187,59 @@
                     .run_in_state(GameEditorState::Visible)
                     .at_end(),
             )
-            .add_enter_system(GameEditorState::Visible, setup_editor)
             .add_exit_system(GameEditorState::Visible, cleanup_editor);
     }
 }
 
+<span class="doccomment">/// Resource containing the current position of the mouse cursor in the editor.
+</span><span class="attr">#[derive(Default)]
+</span><span class="kw">struct </span>EditorCursor {
+    <span class="kw">pub </span>current_pos: <span class="prelude-ty">Option</span>&lt;Vec2&gt;,
+    <span class="kw">pub </span>context_click_pos: <span class="prelude-ty">Option</span>&lt;Vec2&gt;,
+}
+
 <span class="attr">#[derive(Resource, Default)]
 </span><span class="kw">struct </span>EditorState {
+    <span class="kw">pub </span>cursor: EditorCursor,
     <span class="kw">pub </span>current_layer_idx: usize,
+    <span class="kw">pub </span>current_tool: EditorTool,
+    <span class="kw">pub </span>camera: EditorCameraPos,
     <span class="comment">// pub hidden_layers: HashSet&lt;usize&gt;,
 </span>}
 
-<span class="doccomment">/// Bevy [`Command`] for centering the game camera.
-///
-/// TODO: Maybe move this logic to the [`SessionManager`] and add a way to load a map with the
-/// camera initially set centered over the map.
-</span><span class="kw">struct </span>CenterGameCamera;
-<span class="kw">impl </span>Command <span class="kw">for </span>CenterGameCamera {
-    <span class="kw">fn </span>write(<span class="self">self</span>, world: <span class="kw-2">&amp;mut </span>World) {
-        <span class="kw">let </span><span class="kw-2">mut </span>state = SystemState::&lt;(Res&lt;Assets&lt;MapMeta&gt;&gt;, <span class="prelude-ty">Option</span>&lt;ResMut&lt;Session&gt;&gt;)&gt;::new(world);
-        <span class="kw">let </span>(map_assets, session) = state.get_mut(world);
+<span class="attr">#[derive(Clone, Copy)]
+</span><span class="kw">struct </span>EditorCameraPos {
+    pos: Vec2,
+    height: f32,
+}
 
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(session) = session {
-            <span class="kw">let </span>map_handle = session.world.resource::&lt;jumpy_core::map::MapHandle&gt;();
-            <span class="kw">let </span>map_handle = map_handle.borrow();
-            <span class="kw">let </span>map = map_assets.get(<span class="kw-2">&amp;</span>map_handle.get_bevy_handle()).unwrap();
-            <span class="kw">let </span>(grid_size, tile_size) = (map.grid_size, map.tile_size);
-
-            session
-                .world
-                .run_initialized_system(<span class="kw">move </span>|<span class="kw-2">mut </span>commands: bones::Commands| {
-                    <span class="comment">// Using commands here instead of directly will make sure that it waits the next
-                    // frame until the camera is spawned.
-                    </span>commands.add(
-                        <span class="kw">move </span>|<span class="kw-2">mut </span>cameras: bones::CompMut&lt;bones::Camera&gt;,
-                              <span class="kw-2">mut </span>camera_shakes: bones::CompMut&lt;bones::CameraShake&gt;,
-                              core_meta: bones::Res&lt;CoreMetaArc&gt;| {
-                            <span class="kw">let </span>camera = cameras.iter_mut().next().unwrap();
-                            <span class="kw">let </span>camera_shake = camera_shakes.iter_mut().next().unwrap();
-
-                            camera.height = core_meta.camera.default_height * <span class="number">2.0</span>;
-                            camera_shake.center =
-                                (tile_size * (grid_size / <span class="number">2</span>).as_vec2()).extend(<span class="number">0.0</span>);
-                        },
-                    )
-                })
-                .unwrap();
+<span class="kw">impl </span>Default <span class="kw">for </span>EditorCameraPos {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            pos: Vec2::new(<span class="number">500.0</span>, <span class="number">350.0</span>),
+            height: <span class="number">800.0</span>,
         }
     }
 }
 
-<span class="kw">pub fn </span>setup_editor(<span class="kw-2">mut </span>commands: Commands) {
-    commands.add(CenterGameCamera);
+<span class="doccomment">/// The current export of the world&#39;s map metadata, if a map is loaded.
+</span><span class="attr">#[derive(Resource, Default, Deref, DerefMut)]
+</span><span class="kw">struct </span>EditorMapExport(<span class="prelude-ty">Option</span>&lt;MapMeta&gt;);
+
+<span class="attr">#[derive(Default, PartialEq, Eq)]
+</span><span class="kw">enum </span>EditorTool {
+    <span class="attr">#[default]
+    </span>Element,
+    Tile,
+}
+
+<span class="kw">impl </span>EditorTool {
+    <span class="kw">pub fn </span>cursor(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; egui::CursorIcon {
+        <span class="kw">match </span><span class="self">self </span>{
+            EditorTool::Element =&gt; egui::CursorIcon::Default,
+            EditorTool::Tile =&gt; egui::CursorIcon::Crosshair,
+        }
+    }
 }
 
 <span class="kw">pub fn </span>cleanup_editor(session: <span class="prelude-ty">Option</span>&lt;ResMut&lt;Session&gt;&gt;) {
@@ -1051,6 +1262,58 @@
 }
 
 <span class="kw">pub fn </span>editor_ui_system(world: <span class="kw-2">&amp;mut </span>World) {
+    <span class="comment">// Force set the camera position
+    </span>{
+        <span class="kw">let </span>world = world.cell();
+        <span class="kw">let </span>session = world.get_resource::&lt;Session&gt;();
+        <span class="kw">let </span>editor_state = world.resource_mut::&lt;EditorState&gt;();
+        <span class="kw">let </span>camera_info = editor_state.camera;
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(session) = session {
+            session.world.run_initialized_system(
+                <span class="kw">move </span>|
+                <span class="kw-2">mut </span>cameras: bones::CompMut&lt;bones::Camera&gt;,
+                <span class="kw-2">mut </span>camera_shakes: bones::CompMut&lt;bones::CameraShake&gt;,
+                <span class="kw-2">mut </span>camera_states: bones::CompMut&lt;jumpy_core::camera::CameraState&gt;| {
+                    <span class="kw">let </span><span class="prelude-val">Some</span>(camera) = cameras.iter_mut().next() <span class="kw">else </span>{ <span class="kw">return </span>};
+                    <span class="kw">let </span>camera_shake = camera_shakes.iter_mut().next().unwrap();
+                    <span class="kw">let </span>camera_state = camera_states.iter_mut().next().unwrap();
+                    camera.height = camera_info.height;
+                    camera_shake.center = camera_info.pos.extend(<span class="number">0.0</span>);
+                    camera_state.disable_controller = <span class="bool-val">true</span>;
+            }).ok();
+        }
+    }
+
+    <span class="comment">// Get the world cursor position
+    </span><span class="kw">let </span>cursor_pos = {
+        <span class="kw">let </span><span class="kw-2">mut </span>camera_query =
+            world.query_filtered::&lt;(<span class="kw-2">&amp;</span>Camera, <span class="kw-2">&amp;</span>Transform), With&lt;BevyBonesEntity&gt;&gt;();
+        <span class="kw">let </span>windows = world.resource::&lt;Windows&gt;();
+        <span class="kw">let </span>window = windows.primary();
+        camera_query
+            .get_single(world)
+            .ok()
+            .and_then(|(camera, transform)| {
+                window
+                    .cursor_position()
+                    .and_then(|pos| {
+                        camera.viewport_to_world(<span class="kw-2">&amp;</span>GlobalTransform::from(<span class="kw-2">*</span>transform), pos)
+                    })
+                    .map(|x| x.origin.truncate())
+            })
+    };
+
+    <span class="comment">// Get the up-to-date map meta export from the world
+    </span><span class="kw">let </span>map_meta = {
+        world
+            .get_resource::&lt;Session&gt;()
+            .map(|sess| sess.export_map())
+    };
+    world.insert_resource(EditorMapExport(map_meta));
+
+    <span class="kw">let </span><span class="kw-2">mut </span>state = world.resource_mut::&lt;EditorState&gt;();
+    state.cursor.current_pos = cursor_pos;
+
     world.resource_scope(|world: <span class="kw-2">&amp;mut </span>World, <span class="kw-2">mut </span>egui_ctx: Mut&lt;EguiContext&gt;| {
         <span class="kw">let </span>ctx = egui_ctx.ctx_mut();
 
@@ -1082,8 +1345,12 @@
 <span class="kw">type </span>CameraQuery&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; = Query&lt;
     <span class="lifetime">&#39;w</span>,
     <span class="lifetime">&#39;s</span>,
-    (<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><span class="kw-2">mut </span>Transform, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><span class="kw-2">mut </span>OrthographicProjection),
-    With&lt;BevyBonesEntity&gt;,
+    (
+        <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>Camera,
+        <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><span class="kw-2">mut </span>Transform,
+        <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><span class="kw-2">mut </span>OrthographicProjection,
+    ),
+    (With&lt;BevyBonesEntity&gt;, Without&lt;MenuCamera&gt;),
 &gt;;
 
 <span class="attr">#[derive(SystemParam)]
@@ -1091,12 +1358,13 @@
     commands: Commands&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt;,
     game: Res&lt;<span class="lifetime">&#39;w</span>, GameMeta&gt;,
     core_meta: Res&lt;<span class="lifetime">&#39;w</span>, CoreMetaArc&gt;,
-    map_assets: Res&lt;<span class="lifetime">&#39;w</span>, Assets&lt;MapMeta&gt;&gt;,
     show_map_export_window: Local&lt;<span class="lifetime">&#39;s</span>, bool&gt;,
+    state: Res&lt;<span class="lifetime">&#39;w</span>, EditorState&gt;,
     localization: Res&lt;<span class="lifetime">&#39;w</span>, Localization&gt;,
     session_manager: SessionManager&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt;,
     camera: CameraQuery&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt;,
     clipboard: ResMut&lt;<span class="lifetime">&#39;w</span>, bevy_egui::EguiClipboard&gt;,
+    map_export: Res&lt;<span class="lifetime">&#39;w</span>, EditorMapExport&gt;,
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; WidgetSystem <span class="kw">for </span>EditorTopBar&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; {
@@ -1117,19 +1385,19 @@
             ui.label(<span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;map-editor&quot;</span>));
             ui.separator();
 
-            <span class="kw">if let </span><span class="prelude-val">Ok</span>((transform, projection)) = params.camera.get_single() {
+            <span class="kw">if let </span><span class="prelude-val">Ok</span>((_camera, transform, projection)) = params.camera.get_single() {
                 <span class="kw">let </span>height = <span class="kw">match </span>projection.scaling_mode {
                     bevy::render::camera::ScalingMode::FixedVertical(height) =&gt; height,
                     <span class="kw">_ </span>=&gt; <span class="number">1.0</span>, <span class="comment">// This shouldn&#39;t happen for now
                 </span>};
                 <span class="kw">let </span>zoom = params.core_meta.camera.default_height / height * <span class="number">100.0</span>;
-                <span class="kw">let </span>[x, y]: [f32; <span class="number">2</span>] = transform.translation.xy().into();
+                <span class="kw">let </span>[view_x, view_y]: [f32; <span class="number">2</span>] = transform.translation.xy().into();
 
                 ui.label(
                     egui::RichText::new(
                         params
                             .localization
-                            .get(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;view-offset?x={x:.0}&amp;y={y:.0}&quot;</span>)),
+                            .get(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;view-offset?x={view_x:.0}&amp;y={view_y:.0}&quot;</span>)),
                     )
                     .small(),
                 );
@@ -1141,6 +1409,17 @@
                     )
                     .small(),
                 );
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(cursor_pos) = params.state.cursor.current_pos.as_ref() {
+                    <span class="kw">let </span>(cursor_x, cursor_y) = (cursor_pos.x, cursor_pos.y);
+                    ui.label(
+                        egui::RichText::new(
+                            params
+                                .localization
+                                .get(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;cursor-position?x={cursor_x:.0}&amp;y={cursor_y:.0}&quot;</span>)),
+                        )
+                        .small(),
+                    );
+                }
             }
 
             ui.add_space(ui.spacing().icon_spacing);
@@ -1169,18 +1448,17 @@
                     }
 
                     <span class="kw">if </span>ui.button(<span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;reload&quot;</span>)).clicked() {
-                        params.session_manager.restart();
+                        params.session_manager.stop();
+                        params.session_manager.start(GameSessionInfo {
+                            meta: params.core_meta.<span class="number">0</span>.clone(),
+                            map_meta: params.map_export.<span class="number">0</span>.as_ref().unwrap().clone(),
+                            player_info: default(),
+                        });
                         params
                             .commands
                             .insert_resource(NextState(InGameState::Playing));
-                        params.commands.add(CenterGameCamera);
                     }
                 });
-
-                ui.label(
-                    egui::RichText::new(params.localization.get(<span class="string">&quot;map-editor-preview-warning&quot;</span>))
-                        .color(egui::Color32::RED),
-                );
             });
         });
     }
@@ -1197,13 +1475,7 @@
         <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;map-export&quot;</span>),
         params.game.main_menu.menu_width,
         |ui| {
-            <span class="kw">let </span><span class="prelude-val">Some</span>(session) = params.session_manager.session.as_mut() <span class="kw">else </span>{ <span class="kw">return </span>};
-            <span class="kw">let </span>map_handle = session.world.resource::&lt;jumpy_core::map::MapHandle&gt;();
-            <span class="kw">let </span>map_handle = map_handle.borrow();
-            <span class="kw">let </span>map_meta = params
-                .map_assets
-                .get(<span class="kw-2">&amp;</span>map_handle.get_bevy_handle())
-                .unwrap();
+            <span class="kw">let </span><span class="prelude-val">Some</span>(map_meta) = params.map_export.<span class="number">0</span>.as_ref() <span class="kw">else </span>{ <span class="kw">return </span>};
             <span class="kw">let </span><span class="kw-2">mut </span>export = serde_yaml::to_string(map_meta).unwrap();
 
             ui.vertical(|ui| {
@@ -1253,6 +1525,8 @@
 <span class="attr">#[derive(SystemParam)]
 </span><span class="kw">struct </span>EditorLeftToolbar&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; {
     game: Res&lt;<span class="lifetime">&#39;w</span>, GameMeta&gt;,
+    state: ResMut&lt;<span class="lifetime">&#39;w</span>, EditorState&gt;,
+    localization: Res&lt;<span class="lifetime">&#39;w</span>, Localization&gt;,
     <span class="attr">#[system_param(ignore)]
     </span>_phantom: PhantomData&lt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;w </span>(), <span class="kw-2">&amp;</span><span class="lifetime">&#39;s </span>())&gt;,
 }
@@ -1267,45 +1541,46 @@
         _id: <span class="kw">super</span>::WidgetId,
         _args: <span class="self">Self</span>::Args,
     ) {
-        <span class="kw">let </span>params: EditorLeftToolbar = state.get_mut(world);
+        <span class="kw">let </span><span class="kw-2">mut </span>params: EditorLeftToolbar = state.get_mut(world);
         <span class="kw">let </span>icons = <span class="kw-2">&amp;</span>params.game.ui_theme.editor.icons;
         <span class="kw">let </span>width = ui.available_width();
-        <span class="kw">for </span>image <span class="kw">in </span><span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>icons.select, <span class="kw-2">&amp;</span>icons.tile, <span class="kw-2">&amp;</span>icons.spawn, <span class="kw-2">&amp;</span>icons.erase] {
+        <span class="kw">for </span>tool <span class="kw">in </span>[EditorTool::Element, EditorTool::Tile] {
+            <span class="kw">let </span>(image, hover_text) = <span class="kw">match </span>tool {
+                EditorTool::Element =&gt; (<span class="kw-2">&amp;</span>icons.elements, params.localization.get(<span class="string">&quot;elements&quot;</span>)),
+                EditorTool::Tile =&gt; (<span class="kw-2">&amp;</span>icons.tiles, params.localization.get(<span class="string">&quot;tiles&quot;</span>)),
+            };
             ui.add_space(ui.spacing().window_margin.top);
 
             <span class="kw">let </span>image_aspect = image.image_size.y / image.image_size.x;
             <span class="kw">let </span>height = width * image_aspect;
-            ui.add(egui::ImageButton::new(
-                image.egui_texture_id,
-                egui::vec2(width, height),
-            ));
+            <span class="kw">let </span>button = ui
+                .add(
+                    egui::ImageButton::new(image.egui_texture_id, egui::vec2(width, height))
+                        .selected(params.state.current_tool == tool),
+                )
+                .on_hover_text_at_pointer(<span class="kw-2">&amp;</span>hover_text);
+
+            <span class="kw">if </span>button.clicked() {
+                params.state.current_tool = tool;
+            }
         }
     }
 }
 
-<span class="kw">struct </span>LayerCreateInfo {
+<span class="attr">#[derive(Default)]
+</span><span class="kw">struct </span>LayerCreateInfo {
     name: String,
-    kind: MapLayerKind,
-}
-
-<span class="kw">impl </span>Default <span class="kw">for </span>LayerCreateInfo {
-    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{
-            name: Default::default(),
-            kind: MapLayerKind::Tile(default()),
-        }
-    }
 }
 
 <span class="attr">#[derive(SystemParam)]
 </span><span class="kw">struct </span>EditorRightToolbar&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; {
-    map_assets: Res&lt;<span class="lifetime">&#39;w</span>, Assets&lt;MapMeta&gt;&gt;,
     show_layer_create: Local&lt;<span class="lifetime">&#39;s</span>, bool&gt;,
     layer_create_info: Local&lt;<span class="lifetime">&#39;s</span>, LayerCreateInfo&gt;,
     game: Res&lt;<span class="lifetime">&#39;w</span>, GameMeta&gt;,
     localization: Res&lt;<span class="lifetime">&#39;w</span>, Localization&gt;,
     state: ResMut&lt;<span class="lifetime">&#39;w</span>, EditorState&gt;,
-    session_manager: SessionManager&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt;,
+    editor_input: ResMut&lt;<span class="lifetime">&#39;w</span>, CurrentEditorInput&gt;,
+    map_export: Res&lt;<span class="lifetime">&#39;w</span>, EditorMapExport&gt;,
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; WidgetSystem <span class="kw">for </span>EditorRightToolbar&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; {
@@ -1321,11 +1596,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>params: EditorRightToolbar = state.get_mut(world);
         layer_create_dialog(ui, <span class="kw-2">&amp;mut </span>params);
 
-        <span class="kw">let </span>map_meta = params
-            .session_manager
-            .map_handle()
-            .and_then(|handle| params.map_assets.get(<span class="kw-2">&amp;</span>handle));
-        ui.set_enabled(map_meta.is_some());
+        <span class="kw">let </span>map_meta = params.map_export.<span class="number">0</span>.as_ref();
 
         ui.add_space(ui.spacing().window_margin.top);
 
@@ -1336,6 +1607,7 @@
 
         <span class="kw">let </span>row_height = ui.spacing().interact_size.y;
         ui.push_id(<span class="string">&quot;info&quot;</span>, |ui| {
+            ui.set_enabled(map_meta.is_some());
             <span class="kw">let </span>table = egui_extras::TableBuilder::new(ui)
                 .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
                 .column(egui_extras::Column::auto())
@@ -1370,6 +1642,7 @@
 
         ui.separator();
         ui.horizontal(|ui| {
+            ui.set_enabled(map_meta.is_some());
             ui.label(<span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;layers&quot;</span>));
 
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
@@ -1394,6 +1667,7 @@
                     ui.horizontal(|ui| {
                         ui.set_width(ui.available_width());
                         ui.set_height(row_height);
+                        ui.add_space(ui.spacing().item_spacing.x);
 
                         <span class="kw">let </span>row_rect = ui.max_rect();
 
@@ -1422,25 +1696,6 @@
                         <span class="kw">if </span>clicked {
                             params.state.current_layer_idx = i;
                         }
-
-                        ui.scope(|ui| {
-                            ui.set_width(width * <span class="number">0.1</span>);
-                            ui.vertical_centered(|ui| {
-                                ui.add_space(ui.spacing().interact_size.y * <span class="number">0.2</span>);
-                                <span class="kw">match </span>layer.kind {
-                                    MapLayerKind::Tile(<span class="kw">_</span>) =&gt; {
-                                        ui.label(<span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;tile-layer-icon&quot;</span>))
-                                            .on_hover_text(params.localization.get(<span class="string">&quot;tile-layer&quot;</span>));
-                                    }
-                                    MapLayerKind::Element(<span class="kw">_</span>) =&gt; {
-                                        ui.label(<span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;element-layer-icon&quot;</span>))
-                                            .on_hover_text(
-                                                params.localization.get(<span class="string">&quot;element-layer&quot;</span>),
-                                            );
-                                    }
-                                };
-                            });
-                        });
 
                         ui.vertical(|ui| {
                             ui.set_width(width * <span class="number">0.8</span>);
@@ -1478,11 +1733,10 @@
         <span class="kw">return</span>;
     }
 
-    <span class="comment">// let is_valid = params.map.get_single().is_ok();
-    </span><span class="kw">let </span>is_valid = <span class="bool-val">false</span>;
+    <span class="kw">let </span>is_valid = !params.layer_create_info.name.is_empty();
     overlay_window(
         ui,
-        <span class="string">&quot;create-map-window&quot;</span>,
+        <span class="string">&quot;create-layer-window&quot;</span>,
         <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;create-layer&quot;</span>),
         params.game.main_menu.menu_width,
         |ui| {
@@ -1493,28 +1747,6 @@
                 });
 
                 ui.add_space(space / <span class="number">2.0</span>);
-
-                ui.horizontal(|ui| {
-                    ui.label(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{}: &quot;</span>, params.localization.get(<span class="string">&quot;layer-kind&quot;</span>)));
-                    ui.add_space(space);
-                    <span class="kw">for </span>(label, layer_kind) <span class="kw">in </span>[
-                        (
-                            params.localization.get(<span class="string">&quot;tile&quot;</span>),
-                            MapLayerKind::Tile(default()),
-                        ),
-                        (
-                            params.localization.get(<span class="string">&quot;element&quot;</span>),
-                            MapLayerKind::Element(default()),
-                        ),
-                    ] {
-                        <span class="kw">let </span>selected = discriminant(<span class="kw-2">&amp;</span>params.layer_create_info.kind)
-                            == discriminant(<span class="kw-2">&amp;</span>layer_kind);
-
-                        <span class="kw">if </span>ui.selectable_label(selected, label).clicked() {
-                            params.layer_create_info.kind = layer_kind;
-                        }
-                    }
-                });
 
                 ui.add_space(space);
 
@@ -1531,7 +1763,9 @@
                         .clicked()
                         {
                             <span class="kw-2">*</span>params.show_layer_create = <span class="bool-val">false</span>;
-                            create_layer(params);
+                            <span class="kw-2">**</span>params.editor_input = <span class="prelude-val">Some</span>(EditorInput::CreateLayer {
+                                id: params.layer_create_info.name.clone(),
+                            });
                         }
                     });
 
@@ -1554,12 +1788,6 @@
     );
 }
 
-<span class="kw">fn </span>create_layer(_params: <span class="kw-2">&amp;mut </span>EditorRightToolbar) {
-    <span class="comment">// let layer_info = &amp;*params.layer_create_info;
-
-    </span><span class="macro">todo!</span>();
-}
-
 <span class="attr">#[derive(SystemParam)]
 </span><span class="kw">struct </span>EditorCentralPanel&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt; {
     show_map_create: Local&lt;<span class="lifetime">&#39;s</span>, bool&gt;,
@@ -1567,9 +1795,14 @@
     map_create_info: Local&lt;<span class="lifetime">&#39;s</span>, MapCreateInfo&gt;,
     game: Res&lt;<span class="lifetime">&#39;w</span>, GameMeta&gt;,
     core_meta: Res&lt;<span class="lifetime">&#39;w</span>, CoreMetaArc&gt;,
+    state: ResMut&lt;<span class="lifetime">&#39;w</span>, EditorState&gt;,
     map_assets: Res&lt;<span class="lifetime">&#39;w</span>, Assets&lt;MapMeta&gt;&gt;,
+    element_assets: Res&lt;<span class="lifetime">&#39;w</span>, Assets&lt;ElementMeta&gt;&gt;,
     localization: Res&lt;<span class="lifetime">&#39;w</span>, Localization&gt;,
     session_manager: SessionManager&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt;,
+    editor_input: ResMut&lt;<span class="lifetime">&#39;w</span>, CurrentEditorInput&gt;,
+    camera: CameraQuery&lt;<span class="lifetime">&#39;w</span>, <span class="lifetime">&#39;s</span>&gt;,
+    map: Res&lt;<span class="lifetime">&#39;w</span>, EditorMapExport&gt;,
 }
 
 <span class="kw">struct </span>MapCreateInfo {
@@ -1613,83 +1846,274 @@
             ui.set_enabled(<span class="bool-val">false</span>);
         }
 
-        <span class="kw">if </span>params.session_manager.session.is_some() {
-            <span class="kw">let </span>response = ui.allocate_response(ui.available_size(), egui::Sense::click_and_drag());
+        <span class="comment">// Collect map element list
+        </span><span class="kw">let </span>element_handles: <span class="kw-2">&amp;</span>Vec&lt;bones::Handle&lt;ElementMeta&gt;&gt; = <span class="kw-2">&amp;</span>params.core_meta.map_elements;
+        <span class="kw">let </span><span class="kw-2">mut </span>element_categories =
+            HashMap::&lt;String, Vec&lt;(bones::Handle&lt;ElementMeta&gt;, <span class="kw-2">&amp;</span>ElementMeta)&gt;&gt;::new();
+        element_handles
+            .iter()
+            .map(|handle| (handle.clone(), handle.get_bevy_handle()))
+            .map(|(handle, bevy_handle)| (handle, params.element_assets.get(<span class="kw-2">&amp;</span>bevy_handle).unwrap()))
+            .for_each(|(handle, element)| {
+                element_categories
+                    .entry(element.category.clone())
+                    .or_default()
+                    .push((handle, element));
+            });
+        <span class="kw">let </span><span class="kw-2">mut </span>element_categories = element_categories
+            .into_iter()
+            .map(|(k, <span class="kw-2">mut </span>v)| {
+                v.sort_by_key(|x| <span class="kw-2">&amp;</span>x.<span class="number">1</span>.name);
+                (k, v)
+            })
+            .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+        element_categories.sort_by(|a, b| a.<span class="number">0</span>.cmp(<span class="kw-2">&amp;</span>b.<span class="number">0</span>));
 
-            <span class="kw">let </span>rect = response.rect;
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(session) = params.session_manager.session {
+            <span class="kw">let </span>core_meta = session.world.resource::&lt;CoreMetaArc&gt;();
+            <span class="kw">let </span>core_meta = core_meta.borrow();
 
-            <span class="lifetime">&#39;camera_control</span>: {
-                <span class="kw">if let </span><span class="prelude-val">Some</span>(session) = <span class="kw-2">&amp;mut </span>params.session_manager.session {
-                    <span class="kw">let </span>ppp = ui.ctx().pixels_per_point();
+            <span class="kw">let </span><span class="kw-2">mut </span>map_response =
+                ui.allocate_response(ui.available_size(), egui::Sense::click_and_drag());
+            <span class="kw">let </span>map_response_rect = map_response.rect;
 
-                    <span class="kw">let </span>core_meta = session.world.resource::&lt;CoreMetaArc&gt;();
-                    <span class="kw">let </span>core_meta = core_meta.borrow();
+            <span class="comment">// Element context menu
+            </span><span class="kw">if let </span>EditorTool::Element = params.state.current_tool {
+                map_response = map_response.context_menu(|ui| {
+                    <span class="kw">if </span>ui.input().pointer.secondary_clicked() {
+                        params.state.cursor.context_click_pos = params.state.cursor.current_pos;
+                    }
+                    ui.menu_button(
+                        <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;➕ {}&quot;</span>, params.localization.get(<span class="string">&quot;add-element&quot;</span>)),
+                        |ui| {
+                            <span class="kw">for </span>(category, elements) <span class="kw">in </span>element_categories {
+                                ui.menu_button(<span class="kw-2">&amp;</span>category, |ui| {
+                                    <span class="kw">for </span>(handle, element) <span class="kw">in </span>elements {
+                                        <span class="kw">if </span>ui.button(<span class="kw-2">&amp;</span>element.name).clicked() {
+                                            <span class="kw-2">**</span>params.editor_input =
+                                                <span class="prelude-val">Some</span>(EditorInput::SpawnElement {
+                                                    handle,
+                                                    translation: params
+                                                        .state
+                                                        .cursor
+                                                        .context_click_pos
+                                                        .unwrap(),
+                                                    layer: params
+                                                        .state
+                                                        .current_layer_idx
+                                                        .try_into()
+                                                        .unwrap(),
+                                                });
+                                            ui.close_menu();
+                                            params.state.cursor.context_click_pos = <span class="prelude-val">None</span>;
+                                        }
+                                    }
+                                });
+                            }
+                        },
+                    );
+                });
+            }
 
-                    <span class="kw">let </span>cameras = session.world.components.get::&lt;bones::Camera&gt;();
-                    <span class="kw">let </span><span class="kw-2">mut </span>cameras = cameras.borrow_mut();
+            <span class="comment">// Move camera
+            </span><span class="kw">let </span>camera_zoom = {
+                <span class="kw">let </span>cursor_icon = ui.output().cursor_icon;
+                <span class="kw">let </span>input = ui.input();
+                <span class="kw">let </span>ctrl_modifier = input.modifiers.command;
+                <span class="kw">let </span>pointer = <span class="kw-2">&amp;</span>input.pointer;
+                <span class="kw">let </span>editor_camera_pos = <span class="kw-2">&amp;mut </span>params.state.camera;
+                <span class="comment">// Handle camera zoom
+                </span><span class="kw">let </span>hovered = pointer
+                    .hover_pos()
+                    .map(|pos| map_response_rect.contains(pos))
+                    .unwrap_or_default();
+                <span class="kw">if </span>hovered {
+                    editor_camera_pos.height -= input.scroll_delta.y;
+                    editor_camera_pos.height = editor_camera_pos.height.max(<span class="number">10.0</span>);
+                }
+                <span class="kw">let </span>zoom = editor_camera_pos.height / core_meta.camera.default_height;
 
-                    <span class="comment">// Update camera viewport to fit into central editor area.
-                    </span><span class="kw">let </span><span class="prelude-val">Some</span>(camera) = cameras.iter_mut().next() <span class="kw">else </span>{
-                        <span class="kw">break </span><span class="lifetime">&#39;camera_control</span>;
-                    };
-                    camera.viewport = <span class="prelude-val">Some</span>(bones::Viewport {
-                        position: UVec2::new(
-                            (rect.min.x * ppp) <span class="kw">as </span>u32,
-                            (rect.min.y.floor() * ppp) <span class="kw">as </span>u32,
-                        ),
-                        size: UVec2::new((rect.width() * ppp) <span class="kw">as </span>u32, (rect.height() * ppp) <span class="kw">as </span>u32),
-                        depth_min: <span class="number">0.0</span>,
-                        depth_max: <span class="number">1.0</span>,
-                    });
+                <span class="comment">// Handle camera pan
+                </span><span class="kw">let </span>panning = pointer.is_moving()
+                    &amp;&amp; (pointer.middle_down() || (ctrl_modifier &amp;&amp; pointer.primary_down()));
+                <span class="kw">if </span>panning {
+                    <span class="kw">let </span>drag_delta = pointer.delta() * params.game.ui_theme.scale * zoom;
+                    editor_camera_pos.pos.x -= drag_delta.x;
+                    editor_camera_pos.pos.y += drag_delta.y;
+                }
+                drop(input);
 
-                    <span class="comment">// Disable the default camera controller
-                    </span><span class="kw">let </span>camera_states = session
-                        .world
-                        .components
-                        .get::&lt;jumpy_core::camera::CameraState&gt;();
-                    <span class="kw">let </span><span class="kw-2">mut </span>camera_states = camera_states.borrow_mut();
-                    camera_states.iter_mut().next().unwrap().disable_controller = <span class="bool-val">true</span>;
+                <span class="comment">// Handle cursor
+                //
+                // We only change the cursor if it&#39;s not been changed by another widget, for instance, for the
+                // resize handle of the right sidebar.
+                </span><span class="kw">if </span>cursor_icon == default() {
+                    <span class="kw">if </span>panning {
+                        map_response.on_hover_cursor(egui::CursorIcon::Grabbing);
+                    } <span class="kw">else if </span>ctrl_modifier {
+                        map_response.on_hover_cursor(egui::CursorIcon::Grab);
+                    } <span class="kw">else </span>{
+                        map_response.on_hover_cursor(params.state.current_tool.cursor());
+                    }
+                }
 
-                    <span class="comment">// Handle camera zoom
-                    </span><span class="kw">if </span>response.hovered() {
-                        camera.height -= ui.input().scroll_delta.y;
-                        camera.height = camera.height.max(<span class="number">10.0</span>);
+                zoom
+            };
+            <span class="kw">let </span>ppp = params.game.ui_theme.scale * camera_zoom;
+
+            <span class="kw">if let </span><span class="prelude-val">Ok</span>((camera, camera_transform, <span class="kw">_</span>)) = params.camera.get_single() {
+                <span class="kw">let </span>elements = session
+                    .world
+                    .run_initialized_system(
+                        |entities: bones::Res&lt;bones::Entities&gt;,
+                         transforms: bones::Comp&lt;bones::Transform&gt;,
+                         element_handles: bones::Comp&lt;jumpy_core::elements::ElementHandle&gt;,
+                         spawned_map_layer_metas: bones::Comp&lt;
+                            jumpy_core::map::SpawnedMapLayerMeta,
+                        &gt;| {
+                            <span class="prelude-val">Ok</span>(entities
+                                .iter_with((
+                                    <span class="kw-2">&amp;</span>element_handles,
+                                    <span class="kw-2">&amp;</span>transforms,
+                                    <span class="kw-2">&amp;</span>spawned_map_layer_metas,
+                                ))
+                                .map(|(ent, (handle, transform, layer))| {
+                                    (
+                                        ent,
+                                        handle.get_bevy_handle(),
+                                        transform.translation,
+                                        layer.layer_idx,
+                                    )
+                                })
+                                .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;())
+                        },
+                    )
+                    .unwrap();
+
+                <span class="comment">// Map element tool
+                </span><span class="kw">if </span>params.state.current_tool == EditorTool::Element {
+                    <span class="kw">for </span>(entity, handle, translation, layer_idx) <span class="kw">in </span>elements {
+                        <span class="kw">if </span>layer_idx != params.state.current_layer_idx {
+                            <span class="kw">continue</span>;
+                        }
+
+                        <span class="kw">let </span>element_meta = params.element_assets.get(<span class="kw-2">&amp;</span>handle).unwrap();
+                        <span class="kw">let </span>grab_size = element_meta.editor.grab_size;
+                        <span class="kw">let </span>grab_offset = element_meta.editor.grab_offset;
+
+                        <span class="kw">let </span>screen_rect = ui.input().screen_rect();
+                        <span class="kw">let </span>window_size = screen_rect.size();
+                        <span class="kw">let </span><span class="prelude-val">Some</span>(ndc) = camera
+                        .world_to_ndc(
+                            <span class="kw-2">&amp;</span>(<span class="kw-2">*</span>camera_transform).into(),
+                            translation
+                        ) <span class="kw">else </span>{ <span class="kw">continue </span>};
+                        <span class="kw">let </span>ndc = (ndc + <span class="number">1.0</span>) / <span class="number">2.0</span>;
+                        <span class="kw">let </span>pos = egui::pos2(
+                            window_size.x * ndc.x,
+                            window_size.y - window_size.y * ndc.y,
+                        );
+
+                        <span class="kw">let </span>rect = egui::Rect::from_center_size(
+                            pos + egui::vec2(grab_offset.x, -grab_offset.y) / ppp,
+                            egui::vec2(grab_size.x, grab_size.y) / ppp,
+                        );
+                        <span class="kw">let </span><span class="kw-2">mut </span>color_override = <span class="prelude-val">None</span>;
+                        <span class="kw">let </span>response = ui
+                            .allocate_rect(rect, egui::Sense::click_and_drag())
+                            .context_menu(|ui| {
+                                color_override = <span class="prelude-val">Some</span>(egui::Color32::RED);
+                                <span class="kw">if </span>ui
+                                    .button(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
+                                        <span class="string">&quot;🗑 {}&quot;</span>,
+                                        params.localization.get(<span class="string">&quot;delete-element&quot;</span>)
+                                    ))
+                                    .clicked()
+                                {
+                                    ui.close_menu();
+                                    <span class="kw-2">**</span>params.editor_input =
+                                        <span class="prelude-val">Some</span>(EditorInput::DeleteEntity { entity });
+                                }
+                            });
+
+                        <span class="attr">#[derive(Clone)]
+                        </span><span class="kw">struct </span>ElementDrag {
+                            offset: Vec2,
+                        }
+                        <span class="kw">let </span>drag_id = egui::Id::from(<span class="string">&quot;element_drag&quot;</span>);
+                        <span class="kw">if </span>response.drag_started() {
+                            ui.data().insert_temp(
+                                drag_id,
+                                ElementDrag {
+                                    offset: params.state.cursor.current_pos.unwrap()
+                                        - translation.truncate(),
+                                },
+                            );
+                        } <span class="kw">else if </span>response.drag_released() {
+                            ui.data().remove::&lt;ElementDrag&gt;(drag_id);
+                        }
+
+                        <span class="kw">let </span>half_pixel_offset = Vec2::new(
+                            <span class="kw">if </span>grab_size.x % <span class="number">2.0 </span>!= <span class="number">0.0 </span>{ <span class="number">0.5 </span>} <span class="kw">else </span>{ <span class="number">0.0 </span>},
+                            <span class="kw">if </span>grab_size.y % <span class="number">2.0 </span>!= <span class="number">0.0 </span>{ <span class="number">0.5 </span>} <span class="kw">else </span>{ <span class="number">0.0 </span>},
+                        );
+                        <span class="kw">let </span>snap_to_grid = ui.input().modifiers.shift_only();
+                        <span class="kw">let </span>ctrl_modifier = ui.input().modifiers.command;
+
+                        <span class="kw">let </span>default_color = <span class="kw">if </span>response.dragged_by(egui::PointerButton::Primary)
+                            &amp;&amp; map_response_rect.contains(ui.input().pointer.hover_pos().unwrap())
+                            &amp;&amp; !ctrl_modifier
+                        {
+                            <span class="kw">let </span>element_drag: ElementDrag = ui.data().get_temp(drag_id).unwrap();
+
+                            <span class="kw">let </span>new_pos =
+                                params.state.cursor.current_pos.unwrap() - element_drag.offset;
+
+                            <span class="kw">let </span>new_pos = <span class="kw">if </span>snap_to_grid {
+                                <span class="kw">let </span>bottom_center_offset =
+                                    -grab_offset + Vec2::new(<span class="number">0.0</span>, grab_size.y / <span class="number">2.0</span>);
+                                <span class="kw">let </span>bottom_center = new_pos - bottom_center_offset;
+
+                                <span class="kw">let </span>increment = params.map.<span class="number">0</span>.as_ref().unwrap().tile_size / <span class="number">4.0</span>;
+                                <span class="kw">let </span>snapped_bottom_center =
+                                    (bottom_center / increment).floor() * increment;
+                                snapped_bottom_center + bottom_center_offset
+                            } <span class="kw">else </span>{
+                                new_pos.floor() + half_pixel_offset
+                            };
+
+                            <span class="kw-2">**</span>params.editor_input = <span class="prelude-val">Some</span>(EditorInput::MoveEntity {
+                                entity,
+                                pos: new_pos,
+                            });
+                            response.on_hover_cursor(egui::CursorIcon::Grabbing);
+                            egui::Color32::GREEN
+                        } <span class="kw">else </span>{
+                            response.on_hover_cursor(egui::CursorIcon::PointingHand);
+                            egui::Color32::LIGHT_GRAY
+                        };
+                        <span class="kw">let </span><span class="kw-2">mut </span>painter = ui.painter_at(screen_rect);
+                        <span class="kw">let </span>color = color_override.unwrap_or(default_color);
+                        painter.set_clip_rect(map_response_rect);
+                        <span class="kw">if </span>element_meta.editor.show_name {
+                            painter.text(
+                                rect.center_top(),
+                                egui::Align2::CENTER_BOTTOM,
+                                <span class="kw-2">&amp;</span>element_meta.name,
+                                egui::FontId::new(<span class="number">15.0</span>, egui::FontFamily::Proportional),
+                                color,
+                            );
+                        }
+                        painter.rect_stroke(rect, <span class="number">2.0</span>, (<span class="number">1.0</span>, color));
                     }
 
-                    <span class="comment">// Handle camera pan
-                    </span><span class="kw">if </span>response.dragged_by(egui::PointerButton::Middle)
-                        || ui.input().modifiers.command
-                    {
-                        <span class="kw">let </span>camera_shakes = session.world.components.get::&lt;bones::CameraShake&gt;();
-                        <span class="kw">let </span><span class="kw-2">mut </span>camera_shakes = camera_shakes.borrow_mut();
-                        <span class="kw">let </span>camera_shake = camera_shakes.iter_mut().next().unwrap();
-
-                        <span class="kw">let </span>drag_delta =
-                            response.drag_delta() * params.game.ui_theme.scale * camera.height
-                                / core_meta.camera.default_height;
-                        camera_shake.center.x -= drag_delta.x;
-                        camera_shake.center.y += drag_delta.y;
-                    }
+                <span class="comment">// Tile tool
+                </span>} <span class="kw">else if </span>params.state.current_tool == EditorTool::Tile {
                 }
             }
 
-            <span class="comment">// Handle cursor
-            //
-            // We only change the cursor if it&#39;s not been changed by another widget, for instance, for the
-            // resize handle of the right sidebar.
-            </span><span class="kw">if </span>ui.output().cursor_icon == default() {
-                <span class="kw">if </span>response.dragged_by(egui::PointerButton::Middle)
-                    || (ui.input().modifiers.command
-                        &amp;&amp; response.dragged_by(egui::PointerButton::Primary))
-                {
-                    response.on_hover_cursor(egui::CursorIcon::Grabbing);
-                } <span class="kw">else if </span>ui.input().modifiers.command {
-                    response.on_hover_cursor(egui::CursorIcon::Grab);
-                } <span class="kw">else </span>{
-                    response.on_hover_cursor(egui::CursorIcon::Crosshair);
-                }
-            }
-        } <span class="kw">else </span>{
+        <span class="comment">// If there is no current map
+        </span>} <span class="kw">else </span>{
             ui.add_space(ui.available_height() / <span class="number">2.0</span>);
             ui.vertical_centered(|ui| {
                 <span class="kw">if </span>BorderedButton::themed(
@@ -1704,16 +2128,19 @@
 
                 ui.add_space(ui.spacing().item_spacing.y);
 
-                <span class="kw">if </span>BorderedButton::themed(
-                    <span class="kw-2">&amp;</span>params.game.ui_theme.button_styles.normal,
-                    <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;create-map&quot;</span>),
-                )
-                .show(ui)
-                .clicked()
-                {
-                    <span class="kw-2">*</span>params.show_map_create = <span class="bool-val">true</span>;
-                    <span class="kw-2">*</span>params.map_create_info = default();
-                }
+                ui.scope(|ui| {
+                    ui.set_enabled(<span class="bool-val">false</span>);
+                    <span class="kw">if </span>BorderedButton::themed(
+                        <span class="kw-2">&amp;</span>params.game.ui_theme.button_styles.normal,
+                        <span class="kw-2">&amp;</span>params.localization.get(<span class="string">&quot;create-map&quot;</span>),
+                    )
+                    .show(ui)
+                    .clicked()
+                    {
+                        <span class="kw-2">*</span>params.show_map_create = <span class="bool-val">true</span>;
+                        <span class="kw-2">*</span>params.map_create_info = default();
+                    }
+                });
             });
         }
     }
@@ -1743,15 +2170,14 @@
                         .into_iter()
                         .chain(params.core_meta.experimental_maps.to_vec().into_iter())
                     {
-                        <span class="kw">let </span>map_name = <span class="kw-2">&amp;</span>params
+                        <span class="kw">let </span>map_meta = <span class="kw-2">&amp;</span>params
                             .map_assets
                             .get(<span class="kw-2">&amp;</span>map_handle.get_bevy_handle())
-                            .unwrap()
-                            .name;
-                        <span class="kw">if </span>ui.button(map_name).clicked() {
+                            .unwrap();
+                        <span class="kw">if </span>ui.button(<span class="kw-2">&amp;</span>map_meta.name).clicked() {
                             params.session_manager.start(GameSessionInfo {
                                 meta: params.core_meta.<span class="number">0</span>.clone(),
-                                map: map_handle.clone(),
+                                map_meta: (<span class="kw-2">*</span>map_meta).clone(),
                                 player_info: default(),
                             });
                             <span class="kw-2">*</span>params.show_map_open = <span class="bool-val">false</span>;

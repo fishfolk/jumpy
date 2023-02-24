@@ -250,6 +250,12 @@
 <a href="#249" id="249">249</a>
 <a href="#250" id="250">250</a>
 <a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
+<a href="#253" id="253">253</a>
+<a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{prelude::<span class="kw-2">*</span>, random::GlobalRng};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -357,7 +363,7 @@
                 AnimatedSprite {
                     fps: <span class="kw-2">*</span>fps,
                     repeat: <span class="bool-val">true</span>,
-                    frames: (<span class="kw-2">*</span>start_frame..<span class="kw-2">*</span>end_frame).collect(),
+                    frames: (<span class="kw-2">*</span>start_frame..=<span class="kw-2">*</span>end_frame).collect(),
                     ..default()
                 },
             );
@@ -371,6 +377,7 @@
     player_indexes: Comp&lt;PlayerIdx&gt;,
     <span class="kw-2">mut </span>crabs: CompMut&lt;CrabCritter&gt;,
     <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;,
+    <span class="kw-2">mut </span>animated_sprites: CompMut&lt;AnimatedSprite&gt;,
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     element_handles: Comp&lt;ElementHandle&gt;,
@@ -382,6 +389,7 @@
         };
 
         <span class="kw">let </span>BuiltinElementKind::Crab {
+            fps,
             run_speed,
             walk_speed,
             comfortable_spawn_distance,
@@ -482,18 +490,22 @@
 
         <span class="kw">let </span>body = bodies.get_mut(entity).unwrap();
         <span class="kw">let </span>sprite = sprites.get_mut(entity).unwrap();
+        <span class="kw">let </span>animated_sprite = animated_sprites.get_mut(entity).unwrap();
 
         <span class="kw">match </span><span class="kw-2">&amp;</span>crab.state {
             CrabState::Paused =&gt; {
+                animated_sprite.fps = <span class="number">0.0</span>;
                 body.velocity.x = <span class="number">0.0</span>;
             }
             CrabState::Walking { left } =&gt; {
+                animated_sprite.fps = <span class="kw-2">*</span>fps;
                 sprite.flip_x = <span class="kw-2">*</span>left;
 
                 <span class="kw">let </span>direction = <span class="kw">if </span><span class="kw-2">*</span>left { -<span class="number">1.0 </span>} <span class="kw">else </span>{ <span class="number">1.0 </span>};
                 body.velocity.x = <span class="kw-2">*</span>walk_speed * direction;
             }
             CrabState::Fleeing { scared_of } =&gt; {
+                animated_sprite.fps <span class="kw-2">*</span>= <span class="number">2.0</span>;
                 <span class="kw">let </span>scared_of_pos = get_scared_of_pos(<span class="kw-2">*</span>scared_of);
                 <span class="kw">let </span>direction = (pos.x - scared_of_pos.x).signum();
                 body.velocity.x = direction * <span class="kw-2">*</span>run_speed;

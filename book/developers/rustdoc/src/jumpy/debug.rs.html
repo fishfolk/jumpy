@@ -33,8 +33,14 @@
 <a href="#32" id="32">32</a>
 <a href="#33" id="33">33</a>
 <a href="#34" id="34">34</a>
+<a href="#35" id="35">35</a>
+<a href="#36" id="36">36</a>
+<a href="#37" id="37">37</a>
+<a href="#38" id="38">38</a>
+<a href="#39" id="39">39</a>
+<a href="#40" id="40">40</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
-<span class="kw">use </span>bevy_inspector_egui::{bevy_inspector, DefaultInspectorConfigPlugin};
+<span class="kw">use </span>bevy_inspector_egui::{bevy_inspector, inspector_egui_impls};
 
 <span class="kw">pub struct </span>JumpyDebugPlugin;
 
@@ -44,8 +50,14 @@
 <span class="kw">impl </span>Plugin <span class="kw">for </span>JumpyDebugPlugin {
     <span class="kw">fn </span>build(<span class="kw-2">&amp;</span><span class="self">self</span>, app: <span class="kw-2">&amp;mut </span>App) {
         app.init_resource::&lt;WorldInspectorEnabled&gt;()
-            .add_plugin(DefaultInspectorConfigPlugin)
             .add_system(world_inspector);
+
+        <span class="kw">let </span>type_registry = app.world.resource::&lt;bevy::app::AppTypeRegistry&gt;();
+        <span class="kw">let </span><span class="kw-2">mut </span>type_registry = type_registry.write();
+
+        inspector_egui_impls::register_std_impls(<span class="kw-2">&amp;mut </span>type_registry);
+        inspector_egui_impls::register_glam_impls(<span class="kw-2">&amp;mut </span>type_registry);
+        inspector_egui_impls::register_bevy_impls(<span class="kw-2">&amp;mut </span>type_registry);
     }
 }
 

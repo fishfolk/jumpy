@@ -412,7 +412,7 @@ struct EditorRightToolbar<'w, 's> {
     game: Res<'w, GameMeta>,
     localization: Res<'w, Localization>,
     state: ResMut<'w, EditorState>,
-    editor_action: ResMut<'w, EditorAction>,
+    editor_input: ResMut<'w, CurrentEditorInput>,
     map_export: Res<'w, EditorMapExport>,
 }
 
@@ -596,7 +596,7 @@ fn layer_create_dialog(ui: &mut egui::Ui, params: &mut EditorRightToolbar) {
                         .clicked()
                         {
                             *params.show_layer_create = false;
-                            **params.editor_action = Some(EditorInput::CreateLayer {
+                            **params.editor_input = Some(EditorInput::CreateLayer {
                                 id: params.layer_create_info.name.clone(),
                             });
                         }
@@ -633,7 +633,7 @@ struct EditorCentralPanel<'w, 's> {
     element_assets: Res<'w, Assets<ElementMeta>>,
     localization: Res<'w, Localization>,
     session_manager: SessionManager<'w, 's>,
-    editor_action: ResMut<'w, EditorAction>,
+    editor_input: ResMut<'w, CurrentEditorInput>,
     camera: CameraQuery<'w, 's>,
     map: Res<'w, EditorMapExport>,
 }
@@ -723,7 +723,7 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
                                 ui.menu_button(&category, |ui| {
                                     for (handle, element) in elements {
                                         if ui.button(&element.name).clicked() {
-                                            **params.editor_action =
+                                            **params.editor_input =
                                                 Some(EditorInput::SpawnElement {
                                                     handle,
                                                     translation: params
@@ -864,7 +864,7 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
                                     .clicked()
                                 {
                                     ui.close_menu();
-                                    **params.editor_action =
+                                    **params.editor_input =
                                         Some(EditorInput::DeleteEntity { entity });
                                 }
                             });
@@ -915,7 +915,7 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
                                 new_pos.floor() + half_pixel_offset
                             };
 
-                            **params.editor_action = Some(EditorInput::MoveEntity {
+                            **params.editor_input = Some(EditorInput::MoveEntity {
                                 entity,
                                 pos: new_pos,
                             });

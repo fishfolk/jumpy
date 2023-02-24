@@ -13,7 +13,7 @@ impl Plugin for JumpySessionPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(bones_bevy_renderer::BonesRendererPlugin::<Session>::with_sync_time(false))
             .add_plugin(jumpy_core::metadata::JumpyCoreAssetsPlugin)
-            .init_resource::<EditorAction>()
+            .init_resource::<CurrentEditorInput>()
             .add_stage_before(
                 CoreStage::Update,
                 SessionStage::Update,
@@ -100,13 +100,13 @@ fn ensure_2_players(session: Option<ResMut<Session>>, core_meta: Res<CoreMetaArc
 fn update_input(
     session: Option<ResMut<Session>>,
     player_input_collectors: Query<(&PlayerInputCollector, &ActionState<PlayerAction>)>,
-    mut editor_action: ResMut<EditorAction>,
+    mut current_editor_input: ResMut<CurrentEditorInput>,
 ) {
     let Some(mut session) = session else {
         return;
     };
 
-    let mut editor_input = editor_action.take();
+    let mut editor_input = current_editor_input.take();
 
     session.update_input(|inputs| {
         // TODO: Properly handle which player is taking the editor input, which is important in

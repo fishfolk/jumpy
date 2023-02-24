@@ -20,4 +20,4 @@ pub enum PlayerAction {
 
 /// Bevy resource containing the editor action to perform for this frame.
 #[derive(Resource, Default, Deref, DerefMut)]
-pub struct EditorAction(Option<jumpy_core::input::EditorInput>);
+pub struct CurrentEditorInput(Option<jumpy_core::input::EditorInput>);

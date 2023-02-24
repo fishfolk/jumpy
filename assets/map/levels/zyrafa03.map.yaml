@@ -53,752 +53,407 @@ layers:
   tiles:
   - pos:
     - 0
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 1
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 2
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 3
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 4
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 5
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 6
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 7
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 8
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 9
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 10
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 11
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 12
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 13
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 14
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 15
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 16
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 17
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 18
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 19
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 20
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 21
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 22
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 23
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 24
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 25
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 26
-    - 21
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 0
-    - 20
-    idx: 4
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 1
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 2
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 3
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 4
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 5
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 6
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 7
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 8
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 9
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 10
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 11
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 12
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 13
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 14
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 15
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 16
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 17
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 18
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 19
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 20
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 21
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 22
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 23
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 24
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 25
-    - 20
-    idx: 15
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 26
-    - 20
-    idx: 5
+    - 1
+    idx: 8
     jump_through: false
   - pos:
     - 0
-    - 19
-    idx: 9
+    - 2
+    idx: 8
     jump_through: false
   - pos:
     - 1
-    - 19
-    idx: 58
+    - 2
+    idx: 8
     jump_through: false
   - pos:
     - 2
-    - 19
-    idx: 58
+    - 2
+    idx: 8
     jump_through: false
   - pos:
     - 3
-    - 19
-    idx: 58
+    - 2
+    idx: 8
     jump_through: false
   - pos:
     - 4
-    - 19
-    idx: 58
+    - 2
+    idx: 1
     jump_through: false
   - pos:
     - 5
-    - 19
-    idx: 58
+    - 2
+    idx: 8
     jump_through: false
   - pos:
     - 6
-    - 19
-    idx: 58
+    - 2
+    idx: 1
     jump_through: false
   - pos:
     - 7
-    - 19
-    idx: 58
+    - 2
+    idx: 8
     jump_through: false
   - pos:
     - 8
-    - 19
-    idx: 58
+    - 2
+    idx: 1
     jump_through: false
   - pos:
     - 9
-    - 19
-    idx: 58
+    - 2
+    idx: 8
     jump_through: false
   - pos:
     - 10
-    - 19
-    idx: 58
+    - 2
+    idx: 1
     jump_through: false
   - pos:
     - 11
-    - 19
-    idx: 58
+    - 2
+    idx: 8
     jump_through: false
   - pos:
     - 12
-    - 19
-    idx: 58
+    - 2
+    idx: 8
     jump_through: false
   - pos:
     - 13
-    - 19
-    idx: 58
+    - 2
+    idx: 8
     jump_through: false
   - pos:
     - 14
-    - 19
-    idx: 58
+    - 2
+    idx: 8
     jump_through: false
   - pos:
     - 15
-    - 19
-    idx: 58
+    - 2
+    idx: 8
     jump_through: false
   - pos:
     - 16
-    - 19
-    idx: 58
+    - 2
+    idx: 1
     jump_through: false
   - pos:
     - 17
-    - 19
-    idx: 58
+    - 2
+    idx: 8
     jump_through: false
   - pos:
     - 18
-    - 19
-    idx: 58
+    - 2
+    idx: 1
     jump_through: false
   - pos:
     - 19
-    - 19
-    idx: 58
+    - 2
+    idx: 8
     jump_through: false
   - pos:
     - 20
-    - 19
-    idx: 58
+    - 2
+    idx: 1
     jump_through: false
   - pos:
     - 21
-    - 19
-    idx: 58
+    - 2
+    idx: 8
     jump_through: false
   - pos:
     - 22
-    - 19
-    idx: 58
-    jump_through: false
-  - pos:
-    - 23
-    - 19
-    idx: 58
-    jump_through: false
-  - pos:
-    - 24
-    - 19
-    idx: 58
-    jump_through: false
-  - pos:
-    - 25
-    - 19
-    idx: 58
-    jump_through: false
-  - pos:
-    - 26
-    - 19
-    idx: 7
-    jump_through: false
-  - pos:
-    - 0
-    - 18
-    idx: 9
-    jump_through: false
-  - pos:
-    - 26
-    - 18
-    idx: 7
-    jump_through: false
-  - pos:
-    - 0
-    - 17
-    idx: 9
-    jump_through: false
-  - pos:
-    - 26
-    - 17
-    idx: 7
-    jump_through: false
-  - pos:
-    - 0
-    - 16
-    idx: 9
-    jump_through: false
-  - pos:
-    - 26
-    - 16
-    idx: 7
-    jump_through: false
-  - pos:
-    - 0
-    - 15
-    idx: 9
-    jump_through: false
-  - pos:
-    - 26
-    - 15
-    idx: 7
-    jump_through: false
-  - pos:
-    - 0
-    - 14
-    idx: 9
-    jump_through: false
-  - pos:
-    - 26
-    - 14
-    idx: 7
-    jump_through: false
-  - pos:
-    - 0
-    - 13
-    idx: 9
-    jump_through: false
-  - pos:
-    - 6
-    - 13
-    idx: 21
-    jump_through: false
-  - pos:
-    - 7
-    - 13
-    idx: 22
-    jump_through: false
-  - pos:
-    - 8
-    - 13
-    idx: 22
-    jump_through: false
-  - pos:
-    - 9
-    - 13
-    idx: 22
-    jump_through: false
-  - pos:
-    - 10
-    - 13
-    idx: 23
-    jump_through: false
-  - pos:
-    - 16
-    - 13
-    idx: 21
-    jump_through: false
-  - pos:
-    - 17
-    - 13
-    idx: 22
-    jump_through: false
-  - pos:
-    - 18
-    - 13
-    idx: 22
-    jump_through: false
-  - pos:
-    - 19
-    - 13
-    idx: 22
-    jump_through: false
-  - pos:
-    - 20
-    - 13
-    idx: 23
-    jump_through: false
-  - pos:
-    - 26
-    - 13
-    idx: 7
-    jump_through: false
-  - pos:
-    - 0
-    - 12
-    idx: 9
-    jump_through: false
-  - pos:
-    - 26
-    - 12
-    idx: 7
-    jump_through: false
-  - pos:
-    - 0
-    - 11
-    idx: 9
-    jump_through: false
-  - pos:
-    - 26
-    - 11
-    idx: 7
-    jump_through: false
-  - pos:
-    - 0
-    - 10
-    idx: 9
-    jump_through: false
-  - pos:
-    - 1
-    - 10
-    idx: 58
-    jump_through: false
-  - pos:
     - 2
-    - 10
-    idx: 60
-    jump_through: false
-  - pos:
-    - 12
-    - 10
-    idx: 56
-    jump_through: false
-  - pos:
-    - 13
-    - 10
-    idx: 58
-    jump_through: false
-  - pos:
-    - 14
-    - 10
-    idx: 60
-    jump_through: false
-  - pos:
-    - 24
-    - 10
-    idx: 56
-    jump_through: false
-  - pos:
-    - 25
-    - 10
-    idx: 58
-    jump_through: false
-  - pos:
-    - 26
-    - 10
-    idx: 7
-    jump_through: false
-  - pos:
-    - 0
-    - 9
-    idx: 9
-    jump_through: false
-  - pos:
-    - 26
-    - 9
-    idx: 7
-    jump_through: false
-  - pos:
-    - 0
-    - 8
-    idx: 9
-    jump_through: false
-  - pos:
-    - 26
-    - 8
-    idx: 7
-    jump_through: false
-  - pos:
-    - 0
-    - 7
-    idx: 9
-    jump_through: false
-  - pos:
-    - 13
-    - 7
-    idx: 3
-    jump_through: false
-  - pos:
-    - 26
-    - 7
-    idx: 7
-    jump_through: false
-  - pos:
-    - 0
-    - 6
-    idx: 11
-    jump_through: false
-  - pos:
-    - 1
-    - 6
     idx: 1
     jump_through: false
   - pos:
-    - 2
-    - 6
-    idx: 1
-    jump_through: false
-  - pos:
-    - 3
-    - 6
-    idx: 2
-    jump_through: false
-  - pos:
-    - 13
-    - 6
-    idx: 10
-    jump_through: false
-  - pos:
     - 23
-    - 6
-    idx: 0
+    - 2
+    idx: 8
     jump_through: false
   - pos:
     - 24
-    - 6
-    idx: 1
-    jump_through: false
-  - pos:
-    - 25
-    - 6
-    idx: 1
-    jump_through: false
-  - pos:
-    - 26
-    - 6
-    idx: 12
-    jump_through: false
-  - pos:
-    - 0
-    - 5
-    idx: 8
-    jump_through: false
-  - pos:
-    - 1
-    - 5
-    idx: 8
-    jump_through: false
-  - pos:
     - 2
-    - 5
-    idx: 11
-    jump_through: false
-  - pos:
-    - 3
-    - 5
-    idx: 9
-    jump_through: false
-  - pos:
-    - 13
-    - 5
-    idx: 10
-    jump_through: false
-  - pos:
-    - 23
-    - 5
-    idx: 7
-    jump_through: false
-  - pos:
-    - 24
-    - 5
-    idx: 12
-    jump_through: false
-  - pos:
-    - 25
-    - 5
-    idx: 8
-    jump_through: false
-  - pos:
-    - 26
-    - 5
-    idx: 8
-    jump_through: false
-  - pos:
-    - 0
-    - 4
-    idx: 8
-    jump_through: false
-  - pos:
-    - 1
-    - 4
-    idx: 8
-    jump_through: false
-  - pos:
-    - 2
-    - 4
-    idx: 8
-    jump_through: false
-  - pos:
-    - 3
-    - 4
-    idx: 9
-    jump_through: false
-  - pos:
-    - 13
-    - 4
-    idx: 10
-    jump_through: false
-  - pos:
-    - 23
-    - 4
-    idx: 7
-    jump_through: false
-  - pos:
-    - 24
-    - 4
     idx: 8
     jump_through: false
   - pos:
     - 25
-    - 4
+    - 2
     idx: 8
     jump_through: false
   - pos:
     - 26
-    - 4
+    - 2
     idx: 8
     jump_through: false
   - pos:
@@ -938,407 +593,752 @@ layers:
     jump_through: false
   - pos:
     - 0
-    - 2
+    - 4
     idx: 8
     jump_through: false
   - pos:
     - 1
-    - 2
+    - 4
     idx: 8
     jump_through: false
   - pos:
     - 2
-    - 2
+    - 4
     idx: 8
     jump_through: false
   - pos:
     - 3
-    - 2
-    idx: 8
-    jump_through: false
-  - pos:
     - 4
-    - 2
-    idx: 1
-    jump_through: false
-  - pos:
-    - 5
-    - 2
-    idx: 8
-    jump_through: false
-  - pos:
-    - 6
-    - 2
-    idx: 1
-    jump_through: false
-  - pos:
-    - 7
-    - 2
-    idx: 8
-    jump_through: false
-  - pos:
-    - 8
-    - 2
-    idx: 1
-    jump_through: false
-  - pos:
-    - 9
-    - 2
-    idx: 8
-    jump_through: false
-  - pos:
-    - 10
-    - 2
-    idx: 1
-    jump_through: false
-  - pos:
-    - 11
-    - 2
-    idx: 8
-    jump_through: false
-  - pos:
-    - 12
-    - 2
-    idx: 8
+    idx: 9
     jump_through: false
   - pos:
     - 13
-    - 2
-    idx: 8
-    jump_through: false
-  - pos:
-    - 14
-    - 2
-    idx: 8
-    jump_through: false
-  - pos:
-    - 15
-    - 2
-    idx: 8
-    jump_through: false
-  - pos:
-    - 16
-    - 2
-    idx: 1
-    jump_through: false
-  - pos:
-    - 17
-    - 2
-    idx: 8
-    jump_through: false
-  - pos:
-    - 18
-    - 2
-    idx: 1
-    jump_through: false
-  - pos:
-    - 19
-    - 2
-    idx: 8
-    jump_through: false
-  - pos:
-    - 20
-    - 2
-    idx: 1
-    jump_through: false
-  - pos:
-    - 21
-    - 2
-    idx: 8
-    jump_through: false
-  - pos:
-    - 22
-    - 2
-    idx: 1
+    - 4
+    idx: 10
     jump_through: false
   - pos:
     - 23
-    - 2
-    idx: 8
+    - 4
+    idx: 7
     jump_through: false
   - pos:
     - 24
-    - 2
+    - 4
     idx: 8
     jump_through: false
   - pos:
     - 25
-    - 2
+    - 4
     idx: 8
     jump_through: false
   - pos:
     - 26
-    - 2
+    - 4
     idx: 8
     jump_through: false
   - pos:
     - 0
-    - 1
+    - 5
     idx: 8
     jump_through: false
   - pos:
     - 1
-    - 1
+    - 5
     idx: 8
     jump_through: false
   - pos:
     - 2
+    - 5
+    idx: 11
+    jump_through: false
+  - pos:
+    - 3
+    - 5
+    idx: 9
+    jump_through: false
+  - pos:
+    - 13
+    - 5
+    idx: 10
+    jump_through: false
+  - pos:
+    - 23
+    - 5
+    idx: 7
+    jump_through: false
+  - pos:
+    - 24
+    - 5
+    idx: 12
+    jump_through: false
+  - pos:
+    - 25
+    - 5
+    idx: 8
+    jump_through: false
+  - pos:
+    - 26
+    - 5
+    idx: 8
+    jump_through: false
+  - pos:
+    - 0
+    - 6
+    idx: 11
+    jump_through: false
+  - pos:
     - 1
+    - 6
+    idx: 1
+    jump_through: false
+  - pos:
+    - 2
+    - 6
+    idx: 1
+    jump_through: false
+  - pos:
+    - 3
+    - 6
+    idx: 2
+    jump_through: false
+  - pos:
+    - 13
+    - 6
+    idx: 10
+    jump_through: false
+  - pos:
+    - 23
+    - 6
+    idx: 0
+    jump_through: false
+  - pos:
+    - 24
+    - 6
+    idx: 1
+    jump_through: false
+  - pos:
+    - 25
+    - 6
+    idx: 1
+    jump_through: false
+  - pos:
+    - 26
+    - 6
+    idx: 12
+    jump_through: false
+  - pos:
+    - 0
+    - 7
+    idx: 9
+    jump_through: false
+  - pos:
+    - 13
+    - 7
+    idx: 3
+    jump_through: false
+  - pos:
+    - 26
+    - 7
+    idx: 7
+    jump_through: false
+  - pos:
+    - 0
+    - 8
+    idx: 9
+    jump_through: false
+  - pos:
+    - 26
+    - 8
+    idx: 7
+    jump_through: false
+  - pos:
+    - 0
+    - 9
+    idx: 9
+    jump_through: false
+  - pos:
+    - 26
+    - 9
+    idx: 7
+    jump_through: false
+  - pos:
+    - 0
+    - 10
+    idx: 9
+    jump_through: false
+  - pos:
+    - 1
+    - 10
+    idx: 58
+    jump_through: false
+  - pos:
+    - 2
+    - 10
+    idx: 60
+    jump_through: false
+  - pos:
+    - 12
+    - 10
+    idx: 56
+    jump_through: false
+  - pos:
+    - 13
+    - 10
+    idx: 58
+    jump_through: false
+  - pos:
+    - 14
+    - 10
+    idx: 60
+    jump_through: false
+  - pos:
+    - 24
+    - 10
+    idx: 56
+    jump_through: false
+  - pos:
+    - 25
+    - 10
+    idx: 58
+    jump_through: false
+  - pos:
+    - 26
+    - 10
+    idx: 7
+    jump_through: false
+  - pos:
+    - 0
+    - 11
+    idx: 9
+    jump_through: false
+  - pos:
+    - 26
+    - 11
+    idx: 7
+    jump_through: false
+  - pos:
+    - 0
+    - 12
+    idx: 9
+    jump_through: false
+  - pos:
+    - 26
+    - 12
+    idx: 7
+    jump_through: false
+  - pos:
+    - 0
+    - 13
+    idx: 9
+    jump_through: false
+  - pos:
+    - 6
+    - 13
+    idx: 21
+    jump_through: false
+  - pos:
+    - 7
+    - 13
+    idx: 22
+    jump_through: false
+  - pos:
+    - 8
+    - 13
+    idx: 22
+    jump_through: false
+  - pos:
+    - 9
+    - 13
+    idx: 22
+    jump_through: false
+  - pos:
+    - 10
+    - 13
+    idx: 23
+    jump_through: false
+  - pos:
+    - 16
+    - 13
+    idx: 21
+    jump_through: false
+  - pos:
+    - 17
+    - 13
+    idx: 22
+    jump_through: false
+  - pos:
+    - 18
+    - 13
+    idx: 22
+    jump_through: false
+  - pos:
+    - 19
+    - 13
+    idx: 22
+    jump_through: false
+  - pos:
+    - 20
+    - 13
+    idx: 23
+    jump_through: false
+  - pos:
+    - 26
+    - 13
+    idx: 7
+    jump_through: false
+  - pos:
+    - 0
+    - 14
+    idx: 9
+    jump_through: false
+  - pos:
+    - 26
+    - 14
+    idx: 7
+    jump_through: false
+  - pos:
+    - 0
+    - 15
+    idx: 9
+    jump_through: false
+  - pos:
+    - 26
+    - 15
+    idx: 7
+    jump_through: false
+  - pos:
+    - 0
+    - 16
+    idx: 9
+    jump_through: false
+  - pos:
+    - 26
+    - 16
+    idx: 7
+    jump_through: false
+  - pos:
+    - 0
+    - 17
+    idx: 9
+    jump_through: false
+  - pos:
+    - 26
+    - 17
+    idx: 7
+    jump_through: false
+  - pos:
+    - 0
+    - 18
+    idx: 9
+    jump_through: false
+  - pos:
+    - 26
+    - 18
+    idx: 7
+    jump_through: false
+  - pos:
+    - 0
+    - 19
+    idx: 9
+    jump_through: false
+  - pos:
+    - 1
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 2
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 3
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 4
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 5
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 6
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 7
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 8
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 9
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 10
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 11
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 12
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 13
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 14
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 15
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 16
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 17
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 18
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 19
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 20
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 21
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 22
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 23
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 24
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 25
+    - 19
+    idx: 58
+    jump_through: false
+  - pos:
+    - 26
+    - 19
+    idx: 7
+    jump_through: false
+  - pos:
+    - 0
+    - 20
+    idx: 4
+    jump_through: false
+  - pos:
+    - 1
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 2
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 3
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 4
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 5
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 6
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 7
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 8
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 9
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 10
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 11
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 12
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 13
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 14
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 15
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 16
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 17
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 18
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 19
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 20
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 21
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 22
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 23
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 24
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 25
+    - 20
+    idx: 15
+    jump_through: false
+  - pos:
+    - 26
+    - 20
+    idx: 5
+    jump_through: false
+  - pos:
+    - 0
+    - 21
+    idx: 8
+    jump_through: false
+  - pos:
+    - 1
+    - 21
+    idx: 8
+    jump_through: false
+  - pos:
+    - 2
+    - 21
     idx: 8
     jump_through: false
   - pos:
     - 3
-    - 1
+    - 21
     idx: 8
     jump_through: false
   - pos:
     - 4
-    - 1
+    - 21
     idx: 8
     jump_through: false
   - pos:
     - 5
-    - 1
+    - 21
     idx: 8
     jump_through: false
   - pos:
     - 6
-    - 1
+    - 21
     idx: 8
     jump_through: false
   - pos:
     - 7
-    - 1
+    - 21
     idx: 8
     jump_through: false
   - pos:
     - 8
-    - 1
+    - 21
     idx: 8
     jump_through: false
   - pos:
     - 9
-    - 1
+    - 21
     idx: 8
     jump_through: false
   - pos:
     - 10
-    - 1
+    - 21
     idx: 8
     jump_through: false
   - pos:
     - 11
-    - 1
+    - 21
     idx: 8
     jump_through: false
   - pos:
     - 12
-    - 1
+    - 21
     idx: 8
     jump_through: false
   - pos:
     - 13
-    - 1
+    - 21
     idx: 8
     jump_through: false
   - pos:
     - 14
-    - 1
+    - 21
     idx: 8
     jump_through: false
   - pos:
     - 15
-    - 1
+    - 21
     idx: 8
     jump_through: false
   - pos:
     - 16
-    - 1
+    - 21
     idx: 8
     jump_through: false
   - pos:
     - 17
-    - 1
+    - 21
     idx: 8
     jump_through: false
   - pos:
     - 18
-    - 1
+    - 21
     idx: 8
     jump_through: false
   - pos:
     - 19
-    - 1
+    - 21
     idx: 8
     jump_through: false
   - pos:
     - 20
-    - 1
+    - 21
     idx: 8
     jump_through: false
   - pos:
     - 21
-    - 1
-    idx: 8
-    jump_through: false
-  - pos:
-    - 22
-    - 1
-    idx: 8
-    jump_through: false
-  - pos:
-    - 23
-    - 1
-    idx: 8
-    jump_through: false
-  - pos:
-    - 24
-    - 1
-    idx: 8
-    jump_through: false
-  - pos:
-    - 25
-    - 1
-    idx: 8
-    jump_through: false
-  - pos:
-    - 26
-    - 1
-    idx: 8
-    jump_through: false
-  - pos:
-    - 0
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 1
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 2
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 3
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 4
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 5
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 6
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 7
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 8
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 9
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 10
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 11
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 12
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 13
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 14
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 15
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 16
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 17
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 18
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 19
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 20
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
     - 21
-    - 0
     idx: 8
     jump_through: false
   - pos:
     - 22
-    - 0
+    - 21
     idx: 8
     jump_through: false
   - pos:
     - 23
-    - 0
+    - 21
     idx: 8
     jump_through: false
   - pos:
     - 24
-    - 0
+    - 21
     idx: 8
     jump_through: false
   - pos:
     - 25
-    - 0
+    - 21
     idx: 8
     jump_through: false
   - pos:
     - 26
-    - 0
+    - 21
     idx: 8
     jump_through: false
   elements: []
@@ -1347,15 +1347,15 @@ layers:
   tiles: []
   elements:
   - pos:
-    - 52.0
-    - 233.5
+    - 48.0
+    - 234.0
     element: /elements/environment/sproinger/sproinger.element.yaml
   - pos:
-    - 792.0
+    - 800.0
     - 249.5
     element: /elements/decoration/anemones/anemones.element.yaml
   - pos:
-    - 88.0
+    - 48.0
     - 249.5
     element: /elements/decoration/seaweed/seaweed.element.yaml
   - pos:
@@ -1395,16 +1395,16 @@ layers:
     - 181.5
     element: /elements/environment/fish_school/fish_school.element.yaml
   - pos:
-    - 403.41187
-    - 137.5
+    - 400.0
+    - 138.0
     element: /elements/environment/sproinger/sproinger.element.yaml
   - pos:
-    - 468.28577
-    - 137.5
+    - 464.0
+    - 138.0
     element: /elements/environment/sproinger/sproinger.element.yaml
   - pos:
-    - 822.3335
-    - 233.5
+    - 816.0
+    - 234.0
     element: /elements/environment/sproinger/sproinger.element.yaml
   - pos:
     - 568.0
@@ -1415,16 +1415,16 @@ layers:
     - 143.5
     element: /elements/item/musket/musket.element.yaml
   - pos:
-    - 416.0
-    - 369.5
+    - 432.0
+    - 362.0
     element: /elements/item/sword/sword.element.yaml
   - pos:
-    - 584.25
-    - 465.5
+    - 584.0
+    - 458.0
     element: /elements/item/sword/sword.element.yaml
   - pos:
-    - 308.0
-    - 479.5
+    - 312.0
+    - 458.0
     element: /elements/item/sword/sword.element.yaml
 - id: spawners
   tilemap: null

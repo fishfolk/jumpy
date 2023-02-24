@@ -92,10 +92,9 @@ fn update(
     mut commands: Commands,
     spawners: Comp<DehydrateOutOfBounds>,
 ) {
-    for (entity, (_stomp_boots, element_handle)) in
-        entities.iter_with((&mut stomp_boots, &element_handles))
+    for (entity, (_stomp_boots, element_handle, spawner)) in
+        entities.iter_with((&mut stomp_boots, &element_handles, &spawners))
     {
-        let Some(spawner) = spawners.get(entity) else { continue };
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
             continue;
         };

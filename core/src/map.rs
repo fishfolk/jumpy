@@ -4,7 +4,7 @@ pub fn install(session: &mut GameSession) {
     session
         .stages
         .add_system_to_stage(CoreStage::First, spawn_map)
-        .add_system_to_stage(CoreStage::First, handle_out_of_bounds_players_and_items);
+        .add_system_to_stage(CoreStage::First, handle_out_of_bounds_players);
 }
 
 /// Resource containing the map metadata for this game session.
@@ -16,10 +16,6 @@ pub struct LoadedMap(pub Arc<MapMeta>);
 #[derive(Clone, TypeUlid, Default, Deref, DerefMut)]
 #[ulid = "01GP3Z38HKE37JB6GRHHPPTY38"]
 pub struct MapSpawned(pub bool);
-
-#[derive(Clone, TypeUlid, Default, Deref, DerefMut)]
-#[ulid = "01GP9NY0Y50Y2A8M4A7E9NN8VE"]
-pub struct MapRespawnPoint(pub Vec3);
 
 /// Helper for getting the z-depth of the map layer with the given index.
 pub fn z_depth_for_map_layer(layer_idx: usize) -> f32 {
@@ -190,39 +186,17 @@ fn spawn_map(
     });
 }
 
-fn handle_out_of_bounds_players_and_items(
+fn handle_out_of_bounds_players(
     entities: Res<Entities>,
-    mut transforms: CompMut<Transform>,
+    transforms: CompMut<Transform>,
     player_indexes: Comp<PlayerIdx>,
     map: Res<LoadedMap>,
     mut player_events: ResMut<PlayerEvents>,
-    map_respawn_points: Comp<MapRespawnPoint>,
 ) {
-    const KILL_ZONE_BORDER: f32 = 500.0;
-
-    let map_width = map.grid_size.x as f32 * map.tile_size.x;
-    let left_kill_zone = -KILL_ZONE_BORDER;
-    let right_kill_zone = map_width + KILL_ZONE_BORDER;
-    let bottom_kill_zone = -KILL_ZONE_BORDER;
-
-    // Kill out of bounds players
     for (player_ent, (_player_idx, transform)) in entities.iter_with((&player_indexes, &transforms))
     {
-        let pos = transform.translation;
-
-        if pos.x < left_kill_zone || pos.x > right_kill_zone || pos.y < bottom_kill_zone {
+        if map.is_out_of_bounds(&transform.translation) {
             player_events.kill(player_ent, None);
-        }
-    }
-
-    // Reset out of bound item positions
-    for (_ent, (respawn_point, transform)) in
-        entities.iter_with((&map_respawn_points, &mut transforms))
-    {
-        let pos = transform.translation;
-
-        if pos.x < left_kill_zone || pos.x > right_kill_zone || pos.y < bottom_kill_zone {
-            transform.translation = respawn_point.0;
         }
     }
 }

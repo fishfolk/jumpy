@@ -10,16 +10,11 @@ pub fn install(session: &mut GameSession) {
 
 #[derive(Clone, TypeUlid, Debug, Copy)]
 #[ulid = "01GPRSBWQ3X0QJC37BDDQXDNF3"]
-pub struct IdleMine {
-    /// The entity ID of the map element that spawned the mine
-    pub spawner: Entity,
-}
+pub struct IdleMine;
 
 #[derive(Clone, TypeUlid, Debug, Copy)]
 #[ulid = "01GPRSBWQ3X0QJC37BDQXDNASF"]
 pub struct ThrownMine {
-    // The entity ID of the map element that spawned the mine.
-    spawner: Entity,
     // How long the mine has been thrown.
     age: f32,
 }
@@ -36,7 +31,7 @@ fn hydrate(
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
     mut items: CompMut<Item>,
-    mut respawn_points: CompMut<MapRespawnPoint>,
+    mut respawn_points: CompMut<DehydrateOutOfBounds>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -64,14 +59,9 @@ fn hydrate(
 
             let entity = entities.create();
             items.insert(entity, Item);
-            idle_mines.insert(
-                entity,
-                IdleMine {
-                    spawner: spawner_ent,
-                },
-            );
+            idle_mines.insert(entity, IdleMine);
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
-            respawn_points.insert(entity, MapRespawnPoint(transform.translation));
+            respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
             transforms.insert(entity, transform);
             element_handles.insert(entity, element_handle.clone());
             hydrated.insert(entity, MapElementHydrated);
@@ -107,9 +97,8 @@ fn update_idle_mines(
     mut commands: Commands,
     mut player_events: ResMut<PlayerEvents>,
 ) {
-    for (entity, (mine, element_handle)) in entities.iter_with((&mut idle_mines, &element_handles))
+    for (entity, (_mine, element_handle)) in entities.iter_with((&mut idle_mines, &element_handles))
     {
-        let spawner = mine.spawner;
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
         continue;
     };
@@ -174,7 +163,7 @@ fn update_idle_mines(
                 commands.add(
                     move |mut idle: CompMut<IdleMine>, mut thrown: CompMut<ThrownMine>| {
                         idle.remove(entity);
-                        thrown.insert(entity, ThrownMine { spawner, age: 0.0 });
+                        thrown.insert(entity, ThrownMine { age: 0.0 });
                     },
                 );
             }
@@ -228,14 +217,18 @@ fn update_thrown_mines(
     mut commands: Commands,
     collision_world: CollisionWorld,
     transforms: Comp<Transform>,
+    spawners: Comp<DehydrateOutOfBounds>,
 ) {
     let players = entities
         .iter_with(&player_indexes)
         .map(|x| x.0)
         .collect::<Vec<_>>();
-    for (entity, (thrown_mine, element_handle, sprite)) in
-        entities.iter_with((&mut thrown_mines, &element_handles, &mut animated_sprites))
-    {
+    for (entity, (thrown_mine, element_handle, sprite, spawner)) in entities.iter_with((
+        &mut thrown_mines,
+        &element_handles,
+        &mut animated_sprites,
+        &spawners,
+    )) {
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
             continue;
         };
@@ -280,7 +273,7 @@ fn update_thrown_mines(
 
             audio_events.play(explosion_sound.clone(), *explosion_volume);
 
-            hydrated.remove(thrown_mine.spawner);
+            hydrated.remove(**spawner);
 
             // Clone types for move into closure
             let damage_region_size = *damage_region_size;

@@ -391,15 +391,6 @@
 <a href="#390" id="390">390</a>
 <a href="#391" id="391">391</a>
 <a href="#392" id="392">392</a>
-<a href="#393" id="393">393</a>
-<a href="#394" id="394">394</a>
-<a href="#395" id="395">395</a>
-<a href="#396" id="396">396</a>
-<a href="#397" id="397">397</a>
-<a href="#398" id="398">398</a>
-<a href="#399" id="399">399</a>
-<a href="#400" id="400">400</a>
-<a href="#401" id="401">401</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -412,15 +403,12 @@
 
 <span class="attr">#[derive(Clone, TypeUlid, Debug, Copy)]
 #[ulid = <span class="string">&quot;01GQ0ZWBNA8HZRXYKZXCT05CXT&quot;</span>]
-</span><span class="kw">pub struct </span>IdleKickBomb {
-    spawner: Entity,
-}
+</span><span class="kw">pub struct </span>IdleKickBomb;
 
 <span class="attr">#[derive(Clone, TypeUlid, Debug, Copy)]
 #[ulid = <span class="string">&quot;01GQ0ZWFYZSHJPESPY9QPSTARR&quot;</span>]
 </span><span class="kw">pub struct </span>LitKickBomb {
     age: f32,
-    spawner: Entity,
 }
 
 <span class="kw">fn </span>hydrate(
@@ -435,7 +423,7 @@
     <span class="kw-2">mut </span>hydrated: CompMut&lt;MapElementHydrated&gt;,
     <span class="kw-2">mut </span>element_handles: CompMut&lt;ElementHandle&gt;,
     <span class="kw-2">mut </span>animated_sprites: CompMut&lt;AnimatedSprite&gt;,
-    <span class="kw-2">mut </span>respawn_points: CompMut&lt;MapRespawnPoint&gt;,
+    <span class="kw-2">mut </span>respawn_points: CompMut&lt;DehydrateOutOfBounds&gt;,
 ) {
     <span class="kw">let </span><span class="kw-2">mut </span>not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -464,14 +452,9 @@
 
             <span class="kw">let </span>entity = entities.create();
             items.insert(entity, Item);
-            idle_bombs.insert(
-                entity,
-                IdleKickBomb {
-                    spawner: spawner_ent,
-                },
-            );
+            idle_bombs.insert(entity, IdleKickBomb);
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
-            respawn_points.insert(entity, MapRespawnPoint(transform.translation));
+            respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
             transforms.insert(entity, transform);
             element_handles.insert(entity, element_handle.clone());
             hydrated.insert(entity, MapElementHydrated);
@@ -511,10 +494,9 @@
     <span class="kw-2">mut </span>attachments: CompMut&lt;PlayerBodyAttachment&gt;,
     <span class="kw-2">mut </span>player_layers: CompMut&lt;PlayerLayers&gt;,
 ) {
-    <span class="kw">for </span>(entity, (kick_bomb, element_handle)) <span class="kw">in
+    <span class="kw">for </span>(entity, (_kick_bomb, element_handle)) <span class="kw">in
         </span>entities.iter_with((<span class="kw-2">&amp;mut </span>idle_bombs, <span class="kw-2">&amp;</span>element_handles))
     {
-        <span class="kw">let </span>spawner = kick_bomb.spawner;
         <span class="kw">let </span><span class="prelude-val">Some</span>(element_meta) = element_assets.get(<span class="kw-2">&amp;</span>element_handle.get_bevy_handle()) <span class="kw">else </span>{
             <span class="kw">continue</span>;
         };
@@ -567,7 +549,7 @@
                 commands.add(
                     <span class="kw">move </span>|<span class="kw-2">mut </span>idle: CompMut&lt;IdleKickBomb&gt;, <span class="kw-2">mut </span>lit: CompMut&lt;LitKickBomb&gt;| {
                         idle.remove(entity);
-                        lit.insert(entity, LitKickBomb { spawner, age: <span class="number">0.0 </span>});
+                        lit.insert(entity, LitKickBomb { age: <span class="number">0.0 </span>});
                     },
                 );
             }
@@ -624,9 +606,10 @@
     player_inventories: PlayerInventories,
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>commands: Commands,
+    spawners: Comp&lt;DehydrateOutOfBounds&gt;,
 ) {
-    <span class="kw">for </span>(entity, (kick_bomb, element_handle)) <span class="kw">in
-        </span>entities.iter_with((<span class="kw-2">&amp;mut </span>lit_grenades, <span class="kw-2">&amp;</span>element_handles))
+    <span class="kw">for </span>(entity, (kick_bomb, element_handle, spawner)) <span class="kw">in
+        </span>entities.iter_with((<span class="kw-2">&amp;mut </span>lit_grenades, <span class="kw-2">&amp;</span>element_handles, <span class="kw-2">&amp;</span>spawners))
     {
         <span class="kw">let </span><span class="prelude-val">Some</span>(element_meta) = element_assets.get(<span class="kw-2">&amp;</span>element_handle.get_bevy_handle()) <span class="kw">else </span>{
             <span class="kw">continue</span>;
@@ -653,7 +636,6 @@
         };
 
         kick_bomb.age += <span class="number">1.0 </span>/ <span class="kw">crate</span>::FPS;
-        <span class="kw">let </span>spawner = kick_bomb.spawner;
 
         <span class="kw">let </span><span class="kw-2">mut </span>should_explode = <span class="bool-val">false</span>;
         <span class="comment">// If the item is being held
@@ -744,7 +726,7 @@
             audio_events.play(explosion_sound.clone(), <span class="kw-2">*</span>explosion_volume);
 
             <span class="comment">// Cause the item to respawn by un-hydrating it&#39;s spawner.
-            </span>hydrated.remove(spawner);
+            </span>hydrated.remove(<span class="kw-2">**</span>spawner);
             <span class="kw">let </span><span class="kw-2">mut </span>explosion_transform = <span class="kw-2">*</span>transforms.get(entity).unwrap();
             explosion_transform.translation.z += <span class="number">1.0</span>;
 

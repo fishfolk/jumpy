@@ -331,13 +331,6 @@
 <a href="#330" id="330">330</a>
 <a href="#331" id="331">331</a>
 <a href="#332" id="332">332</a>
-<a href="#333" id="333">333</a>
-<a href="#334" id="334">334</a>
-<a href="#335" id="335">335</a>
-<a href="#336" id="336">336</a>
-<a href="#337" id="337">337</a>
-<a href="#338" id="338">338</a>
-<a href="#339" id="339">339</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -350,16 +343,11 @@
 
 <span class="attr">#[derive(Clone, TypeUlid, Debug, Copy)]
 #[ulid = <span class="string">&quot;01GPRSBWQ3X0QJC37BDDQXDNF3&quot;</span>]
-</span><span class="kw">pub struct </span>IdleMine {
-    <span class="doccomment">/// The entity ID of the map element that spawned the mine
-    </span><span class="kw">pub </span>spawner: Entity,
-}
+</span><span class="kw">pub struct </span>IdleMine;
 
 <span class="attr">#[derive(Clone, TypeUlid, Debug, Copy)]
 #[ulid = <span class="string">&quot;01GPRSBWQ3X0QJC37BDQXDNASF&quot;</span>]
 </span><span class="kw">pub struct </span>ThrownMine {
-    <span class="comment">// The entity ID of the map element that spawned the mine.
-    </span>spawner: Entity,
     <span class="comment">// How long the mine has been thrown.
     </span>age: f32,
 }
@@ -376,7 +364,7 @@
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>items: CompMut&lt;Item&gt;,
-    <span class="kw-2">mut </span>respawn_points: CompMut&lt;MapRespawnPoint&gt;,
+    <span class="kw-2">mut </span>respawn_points: CompMut&lt;DehydrateOutOfBounds&gt;,
 ) {
     <span class="kw">let </span><span class="kw-2">mut </span>not_hydrated_bitset = hydrated.bitset().clone();
     not_hydrated_bitset.bit_not();
@@ -404,14 +392,9 @@
 
             <span class="kw">let </span>entity = entities.create();
             items.insert(entity, Item);
-            idle_mines.insert(
-                entity,
-                IdleMine {
-                    spawner: spawner_ent,
-                },
-            );
+            idle_mines.insert(entity, IdleMine);
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
-            respawn_points.insert(entity, MapRespawnPoint(transform.translation));
+            respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
             transforms.insert(entity, transform);
             element_handles.insert(entity, element_handle.clone());
             hydrated.insert(entity, MapElementHydrated);
@@ -447,9 +430,8 @@
     <span class="kw-2">mut </span>commands: Commands,
     <span class="kw-2">mut </span>player_events: ResMut&lt;PlayerEvents&gt;,
 ) {
-    <span class="kw">for </span>(entity, (mine, element_handle)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;mut </span>idle_mines, <span class="kw-2">&amp;</span>element_handles))
+    <span class="kw">for </span>(entity, (_mine, element_handle)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;mut </span>idle_mines, <span class="kw-2">&amp;</span>element_handles))
     {
-        <span class="kw">let </span>spawner = mine.spawner;
         <span class="kw">let </span><span class="prelude-val">Some</span>(element_meta) = element_assets.get(<span class="kw-2">&amp;</span>element_handle.get_bevy_handle()) <span class="kw">else </span>{
         <span class="kw">continue</span>;
     };
@@ -514,7 +496,7 @@
                 commands.add(
                     <span class="kw">move </span>|<span class="kw-2">mut </span>idle: CompMut&lt;IdleMine&gt;, <span class="kw-2">mut </span>thrown: CompMut&lt;ThrownMine&gt;| {
                         idle.remove(entity);
-                        thrown.insert(entity, ThrownMine { spawner, age: <span class="number">0.0 </span>});
+                        thrown.insert(entity, ThrownMine { age: <span class="number">0.0 </span>});
                     },
                 );
             }
@@ -568,14 +550,18 @@
     <span class="kw-2">mut </span>commands: Commands,
     collision_world: CollisionWorld,
     transforms: Comp&lt;Transform&gt;,
+    spawners: Comp&lt;DehydrateOutOfBounds&gt;,
 ) {
     <span class="kw">let </span>players = entities
         .iter_with(<span class="kw-2">&amp;</span>player_indexes)
         .map(|x| x.<span class="number">0</span>)
         .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
-    <span class="kw">for </span>(entity, (thrown_mine, element_handle, sprite)) <span class="kw">in
-        </span>entities.iter_with((<span class="kw-2">&amp;mut </span>thrown_mines, <span class="kw-2">&amp;</span>element_handles, <span class="kw-2">&amp;mut </span>animated_sprites))
-    {
+    <span class="kw">for </span>(entity, (thrown_mine, element_handle, sprite, spawner)) <span class="kw">in </span>entities.iter_with((
+        <span class="kw-2">&amp;mut </span>thrown_mines,
+        <span class="kw-2">&amp;</span>element_handles,
+        <span class="kw-2">&amp;mut </span>animated_sprites,
+        <span class="kw-2">&amp;</span>spawners,
+    )) {
         <span class="kw">let </span><span class="prelude-val">Some</span>(element_meta) = element_assets.get(<span class="kw-2">&amp;</span>element_handle.get_bevy_handle()) <span class="kw">else </span>{
             <span class="kw">continue</span>;
         };
@@ -620,7 +606,7 @@
 
             audio_events.play(explosion_sound.clone(), <span class="kw-2">*</span>explosion_volume);
 
-            hydrated.remove(thrown_mine.spawner);
+            hydrated.remove(<span class="kw-2">**</span>spawner);
 
             <span class="comment">// Clone types for move into closure
             </span><span class="kw">let </span>damage_region_size = <span class="kw-2">*</span>damage_region_size;

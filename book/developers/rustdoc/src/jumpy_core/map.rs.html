@@ -201,39 +201,13 @@
 <a href="#200" id="200">200</a>
 <a href="#201" id="201">201</a>
 <a href="#202" id="202">202</a>
-<a href="#203" id="203">203</a>
-<a href="#204" id="204">204</a>
-<a href="#205" id="205">205</a>
-<a href="#206" id="206">206</a>
-<a href="#207" id="207">207</a>
-<a href="#208" id="208">208</a>
-<a href="#209" id="209">209</a>
-<a href="#210" id="210">210</a>
-<a href="#211" id="211">211</a>
-<a href="#212" id="212">212</a>
-<a href="#213" id="213">213</a>
-<a href="#214" id="214">214</a>
-<a href="#215" id="215">215</a>
-<a href="#216" id="216">216</a>
-<a href="#217" id="217">217</a>
-<a href="#218" id="218">218</a>
-<a href="#219" id="219">219</a>
-<a href="#220" id="220">220</a>
-<a href="#221" id="221">221</a>
-<a href="#222" id="222">222</a>
-<a href="#223" id="223">223</a>
-<a href="#224" id="224">224</a>
-<a href="#225" id="225">225</a>
-<a href="#226" id="226">226</a>
-<a href="#227" id="227">227</a>
-<a href="#228" id="228">228</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::{collisions::TileCollisionKind, <span class="kw-2">*</span>};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
     session
         .stages
         .add_system_to_stage(CoreStage::First, spawn_map)
-        .add_system_to_stage(CoreStage::First, handle_out_of_bounds_players_and_items);
+        .add_system_to_stage(CoreStage::First, handle_out_of_bounds_players);
 }
 
 <span class="doccomment">/// Resource containing the map metadata for this game session.
@@ -245,10 +219,6 @@
 </span><span class="attr">#[derive(Clone, TypeUlid, Default, Deref, DerefMut)]
 #[ulid = <span class="string">&quot;01GP3Z38HKE37JB6GRHHPPTY38&quot;</span>]
 </span><span class="kw">pub struct </span>MapSpawned(<span class="kw">pub </span>bool);
-
-<span class="attr">#[derive(Clone, TypeUlid, Default, Deref, DerefMut)]
-#[ulid = <span class="string">&quot;01GP9NY0Y50Y2A8M4A7E9NN8VE&quot;</span>]
-</span><span class="kw">pub struct </span>MapRespawnPoint(<span class="kw">pub </span>Vec3);
 
 <span class="doccomment">/// Helper for getting the z-depth of the map layer with the given index.
 </span><span class="kw">pub fn </span>z_depth_for_map_layer(layer_idx: usize) -&gt; f32 {
@@ -419,39 +389,17 @@
     });
 }
 
-<span class="kw">fn </span>handle_out_of_bounds_players_and_items(
+<span class="kw">fn </span>handle_out_of_bounds_players(
     entities: Res&lt;Entities&gt;,
-    <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
+    transforms: CompMut&lt;Transform&gt;,
     player_indexes: Comp&lt;PlayerIdx&gt;,
     map: Res&lt;LoadedMap&gt;,
     <span class="kw-2">mut </span>player_events: ResMut&lt;PlayerEvents&gt;,
-    map_respawn_points: Comp&lt;MapRespawnPoint&gt;,
 ) {
-    <span class="kw">const </span>KILL_ZONE_BORDER: f32 = <span class="number">500.0</span>;
-
-    <span class="kw">let </span>map_width = map.grid_size.x <span class="kw">as </span>f32 * map.tile_size.x;
-    <span class="kw">let </span>left_kill_zone = -KILL_ZONE_BORDER;
-    <span class="kw">let </span>right_kill_zone = map_width + KILL_ZONE_BORDER;
-    <span class="kw">let </span>bottom_kill_zone = -KILL_ZONE_BORDER;
-
-    <span class="comment">// Kill out of bounds players
-    </span><span class="kw">for </span>(player_ent, (_player_idx, transform)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;</span>player_indexes, <span class="kw-2">&amp;</span>transforms))
+    <span class="kw">for </span>(player_ent, (_player_idx, transform)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;</span>player_indexes, <span class="kw-2">&amp;</span>transforms))
     {
-        <span class="kw">let </span>pos = transform.translation;
-
-        <span class="kw">if </span>pos.x &lt; left_kill_zone || pos.x &gt; right_kill_zone || pos.y &lt; bottom_kill_zone {
+        <span class="kw">if </span>map.is_out_of_bounds(<span class="kw-2">&amp;</span>transform.translation) {
             player_events.kill(player_ent, <span class="prelude-val">None</span>);
-        }
-    }
-
-    <span class="comment">// Reset out of bound item positions
-    </span><span class="kw">for </span>(_ent, (respawn_point, transform)) <span class="kw">in
-        </span>entities.iter_with((<span class="kw-2">&amp;</span>map_respawn_points, <span class="kw-2">&amp;mut </span>transforms))
-    {
-        <span class="kw">let </span>pos = transform.translation;
-
-        <span class="kw">if </span>pos.x &lt; left_kill_zone || pos.x &gt; right_kill_zone || pos.y &lt; bottom_kill_zone {
-            transform.translation = respawn_point.<span class="number">0</span>;
         }
     }
 }

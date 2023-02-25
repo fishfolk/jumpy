@@ -1,7 +1,7 @@
 name: Crate
 category: Weapons
 builtin: !Crate
-  throw_velocity: [7, 5]
+  throw_velocity: 10
 
   atlas: ./crate.atlas.yaml
 

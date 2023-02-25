@@ -101,7 +101,7 @@ fn spawn_map(
             ent,
             CameraShake {
                 center: (map.tile_size * (map.grid_size / 2).as_vec2()).extend(0.0),
-                ..CameraShake::new(6.0, glam::vec2(3.0, 3.0), 1.0)
+                ..CameraShake::new(2.0, glam::vec2(20.0, 20.0), 1.0, 1.0)
             },
         );
         cameras.insert(ent, default());

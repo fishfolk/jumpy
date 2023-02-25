@@ -2,7 +2,8 @@ name: Kick Bomb
 category: Weapons
 builtin: !KickBomb
   fuse_time: 8.0
-  throw_velocity: [10, 6]
+  kick_velocity: [10, 6]
+  throw_velocity: 10
   damage_region_size: [60, 60]
   damage_region_lifetime: 0.6
 

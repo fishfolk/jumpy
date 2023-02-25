@@ -37,6 +37,7 @@ fn hydrate(
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
     mut items: CompMut<Item>,
+    mut item_throws: CompMut<ItemThrow>,
     mut respawn_points: CompMut<DehydrateOutOfBounds>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
@@ -59,6 +60,8 @@ fn hydrate(
             body_size,
             can_rotate,
             bounciness,
+            throw_velocity,
+            angular_velocity,
             ..
         } = &element_meta.builtin
         {
@@ -66,6 +69,10 @@ fn hydrate(
 
             let entity = entities.create();
             items.insert(entity, Item);
+            item_throws.insert(
+                entity,
+                ItemThrow::strength(*throw_velocity).with_spin(*angular_velocity),
+            );
             swords.insert(entity, Sword::default());
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
             respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
@@ -102,14 +109,13 @@ fn update(
     mut sprites: CompMut<AtlasSprite>,
     mut bodies: CompMut<KinematicBody>,
     mut items_used: CompMut<ItemUsed>,
-    mut items_dropped: CompMut<ItemDropped>,
+    items_dropped: CompMut<ItemDropped>,
     mut attachments: CompMut<PlayerBodyAttachment>,
     player_indexes: Comp<PlayerIdx>,
     player_inventories: PlayerInventories,
-    mut player_events: ResMut<PlayerEvents>,
     mut commands: Commands,
     mut player_layers: CompMut<PlayerLayers>,
-    mut transforms: CompMut<Transform>,
+    transforms: CompMut<Transform>,
 ) {
     for (entity, (sword, element_handle)) in entities.iter_with((&mut swords, &element_handles)) {
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
@@ -139,8 +145,6 @@ fn update(
             sound,
             sound_volume,
             grab_offset,
-            throw_velocity,
-            angular_velocity,
             fin_anim,
             killing_speed,
             ..
@@ -280,45 +284,21 @@ fn update(
                         }
                     })
                     .for_each(|player| {
-                        player_events.kill(player, Some(sword_transform.translation.xy()))
+                        commands.add(PlayerCommand::kill(
+                            player,
+                            Some(sword_transform.translation.xy()),
+                        ))
                     });
             }
         }
 
         // If the item was dropped
-        if let Some(dropped) = items_dropped.get(entity).copied() {
-            attachments.remove(entity);
-            let player = dropped.player;
+        if items_dropped.get(entity).is_some() {
             sword.dropped_time = 0.0;
-
-            items_dropped.remove(entity);
-            let player_translation = transforms.get(dropped.player).unwrap().translation;
-            let player_velocity = bodies.get(player).unwrap().velocity;
-
-            let body = bodies.get_mut(entity).unwrap();
             let sprite = sprites.get_mut(entity).unwrap();
-
-            // Re-activate physics
-            body.is_deactivated = false;
 
             // Put sword in rest position
             sprite.index = 0;
-
-            let horizontal_flip_factor = if sprite.flip_x {
-                Vec2::new(-1.0, 1.0)
-            } else {
-                Vec2::ONE
-            };
-
-            if player_velocity != Vec2::ZERO {
-                body.velocity = *throw_velocity * horizontal_flip_factor + player_velocity;
-                body.angular_velocity = *angular_velocity * if sprite.flip_x { -1.0 } else { 1.0 };
-            }
-            body.is_spawning = true;
-
-            let transform = transforms.get_mut(entity).unwrap();
-            transform.translation = player_translation
-                + (vec2(grab_offset.x, 0.0) * horizontal_flip_factor).extend(0.0);
         }
     }
 }

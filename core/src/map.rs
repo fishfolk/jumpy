@@ -188,15 +188,15 @@ fn spawn_map(
 
 fn handle_out_of_bounds_players(
     entities: Res<Entities>,
+    mut commands: Commands,
     transforms: CompMut<Transform>,
     player_indexes: Comp<PlayerIdx>,
     map: Res<LoadedMap>,
-    mut player_events: ResMut<PlayerEvents>,
 ) {
     for (player_ent, (_player_idx, transform)) in entities.iter_with((&player_indexes, &transforms))
     {
         if map.is_out_of_bounds(&transform.translation) {
-            player_events.kill(player_ent, None);
+            commands.add(PlayerCommand::kill(player_ent, None));
         }
     }
 }

@@ -31,6 +31,7 @@ fn hydrate(
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
     mut items: CompMut<Item>,
+    mut item_throws: CompMut<ItemThrow>,
     mut respawn_points: CompMut<DehydrateOutOfBounds>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
@@ -52,6 +53,7 @@ fn hydrate(
             atlas,
             body_size,
             bounciness,
+            throw_velocity,
             ..
         } = &element_meta.builtin
         {
@@ -61,6 +63,7 @@ fn hydrate(
             items.insert(entity, Item);
             idle_mines.insert(entity, IdleMine);
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
+            item_throws.insert(entity, ItemThrow::strength(*throw_velocity));
             respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
             transforms.insert(entity, transform);
             element_handles.insert(entity, element_handle.clone());
@@ -85,17 +88,13 @@ fn update_idle_mines(
     entities: Res<Entities>,
     element_handles: Comp<ElementHandle>,
     element_assets: BevyAssets<ElementMeta>,
-    mut transforms: CompMut<Transform>,
     mut idle_mines: CompMut<IdleMine>,
-    mut sprites: CompMut<AtlasSprite>,
     mut bodies: CompMut<KinematicBody>,
     mut items_used: CompMut<ItemUsed>,
-    mut items_dropped: CompMut<ItemDropped>,
     player_inventories: PlayerInventories,
     mut attachments: CompMut<PlayerBodyAttachment>,
     mut player_layers: CompMut<PlayerLayers>,
     mut commands: Commands,
-    mut player_events: ResMut<PlayerEvents>,
 ) {
     for (entity, (_mine, element_handle)) in entities.iter_with((&mut idle_mines, &element_handles))
     {
@@ -105,7 +104,6 @@ fn update_idle_mines(
 
         let BuiltinElementKind::Mine {
         grab_offset,
-        throw_velocity,
         fin_anim,
         ..
     } = &element_meta.builtin else {
@@ -138,27 +136,7 @@ fn update_idle_mines(
             // If the item is being used
             if items_used.get(entity).is_some() {
                 items_used.remove(entity);
-                player_events.set_inventory(player, None);
-                attachments.remove(entity);
-
-                let player_velocity = bodies.get(player).unwrap().velocity;
-                let player_sprite = sprites.get_mut(player).unwrap();
-                let player_translation = transforms.get(player).unwrap().translation;
-
-                let body = bodies.get_mut(entity).unwrap();
-
-                let horizontal_flip_factor = if player_sprite.flip_x {
-                    Vec2::new(-1.0, 1.0)
-                } else {
-                    Vec2::ONE
-                };
-
-                body.velocity = *throw_velocity * horizontal_flip_factor + player_velocity;
-                body.is_deactivated = false;
-
-                let transform = transforms.get_mut(entity).unwrap();
-                transform.translation =
-                    player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
+                commands.add(PlayerCommand::set_inventory(player, None));
 
                 commands.add(
                     move |mut idle: CompMut<IdleMine>, mut thrown: CompMut<ThrownMine>| {
@@ -167,39 +145,6 @@ fn update_idle_mines(
                     },
                 );
             }
-        }
-
-        // If the item was dropped
-        if let Some(dropped) = items_dropped.get(entity).copied() {
-            let player = dropped.player;
-
-            items_dropped.remove(entity);
-            attachments.remove(entity);
-
-            let player_translation = transforms.get(dropped.player).unwrap().translation;
-            let player_velocity = bodies.get(player).unwrap().velocity;
-            let player_sprite = sprites.get_mut(player).unwrap();
-
-            let body = bodies.get_mut(entity).unwrap();
-
-            // Re-activate physics
-            body.is_deactivated = false;
-
-            let horizontal_flip_factor = if player_sprite.flip_x {
-                Vec2::new(-1.0, 1.0)
-            } else {
-                Vec2::ONE
-            };
-
-            if player_velocity != Vec2::ZERO {
-                body.velocity = *throw_velocity * horizontal_flip_factor + player_velocity;
-            }
-
-            body.is_spawning = true;
-
-            let transform = transforms.get_mut(entity).unwrap();
-            transform.translation =
-                player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
         }
     }
 }
@@ -213,7 +158,6 @@ fn update_thrown_mines(
     mut animated_sprites: CompMut<AnimatedSprite>,
     mut hydrated: CompMut<MapElementHydrated>,
     player_indexes: Comp<PlayerIdx>,
-    mut player_events: ResMut<PlayerEvents>,
     mut commands: Commands,
     collision_world: CollisionWorld,
     transforms: Comp<Transform>,
@@ -268,7 +212,10 @@ fn update_thrown_mines(
             let mine_transform = *transforms.get(entity).unwrap();
 
             for player in &colliding_with_players {
-                player_events.kill(*player, Some(mine_transform.translation.xy()));
+                commands.add(PlayerCommand::kill(
+                    *player,
+                    Some(mine_transform.translation.xy()),
+                ));
             }
 
             audio_events.play(explosion_sound.clone(), *explosion_volume);

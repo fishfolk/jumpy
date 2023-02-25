@@ -14,12 +14,12 @@ pub fn player_state_transition(
 
 pub fn handle_player_state(
     entities: Res<Entities>,
+    mut commands: Commands,
     player_states: Comp<PlayerState>,
     killed_players: Comp<PlayerKilled>,
     sprites: Comp<AtlasSprite>,
     transform: Comp<Transform>,
     mut animations: CompMut<AnimationBankSprite>,
-    mut player_events: ResMut<PlayerEvents>,
 ) {
     for (player_ent, (state, animation, killed_player)) in
         entities.iter_with((&player_states, &mut animations, &killed_players))
@@ -47,7 +47,7 @@ pub fn handle_player_state(
         }
 
         if state.age >= 80 {
-            player_events.despawn(player_ent);
+            commands.add(PlayerCommand::despawn(player_ent));
         }
     }
 }

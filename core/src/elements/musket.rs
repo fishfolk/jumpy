@@ -25,6 +25,7 @@ fn hydrate(
     mut bodies: CompMut<KinematicBody>,
     mut transforms: CompMut<Transform>,
     mut items: CompMut<Item>,
+    mut item_throws: CompMut<ItemThrow>,
     mut respawn_points: CompMut<DehydrateOutOfBounds>,
 ) {
     let mut not_hydrated_bitset = hydrated.bitset().clone();
@@ -48,6 +49,8 @@ fn hydrate(
             body_size,
             can_rotate,
             bounciness,
+            throw_velocity,
+            angular_velocity,
             ..
         } = &element_meta.builtin
         {
@@ -55,6 +58,10 @@ fn hydrate(
 
             let entity = entities.create();
             items.insert(entity, Item);
+            item_throws.insert(
+                entity,
+                ItemThrow::strength(*throw_velocity).with_spin(*angular_velocity),
+            );
             muskets.insert(
                 entity,
                 Musket {
@@ -92,14 +99,14 @@ fn update(
     mut muskets: CompMut<Musket>,
     mut sprites: CompMut<AtlasSprite>,
     mut bodies: CompMut<KinematicBody>,
-    mut transforms: CompMut<Transform>,
+    transforms: CompMut<Transform>,
     mut audio_events: ResMut<AudioEvents>,
     mut player_layers: CompMut<PlayerLayers>,
 
     player_inventories: PlayerInventories,
     mut items_used: CompMut<ItemUsed>,
     mut attachments: CompMut<PlayerBodyAttachment>,
-    mut items_dropped: CompMut<ItemDropped>,
+    items_dropped: CompMut<ItemDropped>,
 ) {
     for (entity, (musket, element_handle)) in entities.iter_with((&mut muskets, &element_handles)) {
         let Some(element_meta) = element_assets.get(&element_handle.get_bevy_handle()) else {
@@ -112,13 +119,8 @@ fn update(
             shoot_atlas,
             shoot_frames,
             shoot_lifetime,
-
-
             fin_anim,
             grab_offset,
-            throw_velocity,
-            angular_velocity,
-
             bullet_meta,
             shoot_sound,
             cooldown_frames,
@@ -238,41 +240,9 @@ fn update(
         }
 
         // If the item was dropped
-        if let Some(dropped) = items_dropped.get(entity).copied() {
-            let player = dropped.player;
-
-            items_dropped.remove(entity);
-            attachments.remove(entity);
-
+        if items_dropped.get(entity).is_some() {
             // reload gun
             musket.ammo = *max_ammo;
-
-            let player_translation = transforms.get(dropped.player).unwrap().translation;
-            let player_velocity = bodies.get(player).unwrap().velocity;
-
-            let body = bodies.get_mut(entity).unwrap();
-            let player_sprite = sprites.get_mut(player).unwrap();
-
-            // Re-activate physics
-            body.is_deactivated = false;
-
-            let horizontal_flip_factor = if player_sprite.flip_x {
-                Vec2::new(-1.0, 1.0)
-            } else {
-                Vec2::ONE
-            };
-
-            if player_velocity != Vec2::ZERO {
-                body.velocity = *throw_velocity * horizontal_flip_factor + player_velocity;
-                body.angular_velocity =
-                    *angular_velocity * if player_sprite.flip_x { -1.0 } else { 1.0 };
-            }
-
-            body.is_spawning = true;
-
-            let transform = transforms.get_mut(entity).unwrap();
-            transform.translation =
-                player_translation + (*grab_offset * horizontal_flip_factor).extend(0.0);
         }
     }
 }

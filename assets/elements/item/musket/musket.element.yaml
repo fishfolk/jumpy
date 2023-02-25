@@ -21,5 +21,5 @@ builtin: !Musket
   body_size: [32, 8]
   fin_anim: grab_2
   angular_velocity: 0.1
-  throw_velocity: [7, 6]
+  throw_velocity: 6
   grab_offset: [23  , 0]

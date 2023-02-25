@@ -278,6 +278,9 @@
 <a href="#277" id="277">277</a>
 <a href="#278" id="278">278</a>
 <a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -434,6 +437,7 @@
     element_handles: Comp&lt;ElementHandle&gt;,
     element_assets: BevyAssets&lt;ElementMeta&gt;,
     <span class="kw-2">mut </span>audio_events: ResMut&lt;AudioEvents&gt;,
+    <span class="kw-2">mut </span>trauma_events: ResMut&lt;CameraTraumaEvents&gt;,
     <span class="kw-2">mut </span>thrown_mines: CompMut&lt;ThrownMine&gt;,
     <span class="kw-2">mut </span>animated_sprites: CompMut&lt;AnimatedSprite&gt;,
     <span class="kw-2">mut </span>hydrated: CompMut&lt;MapElementHydrated&gt;,
@@ -490,6 +494,8 @@
 
         <span class="kw">if </span>!colliding_with_players.is_empty() &amp;&amp; thrown_mine.age &gt;= <span class="kw-2">*</span>arm_delay {
             <span class="kw">let </span>mine_transform = <span class="kw-2">*</span>transforms.get(entity).unwrap();
+
+            trauma_events.send(<span class="number">6.0</span>);
 
             <span class="kw">for </span>player <span class="kw">in </span><span class="kw-2">&amp;</span>colliding_with_players {
                 commands.add(PlayerCommand::kill(

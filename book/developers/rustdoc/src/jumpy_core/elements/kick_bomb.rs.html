@@ -328,6 +328,9 @@
 <a href="#327" id="327">327</a>
 <a href="#328" id="328">328</a>
 <a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -503,6 +506,7 @@
     collision_world: CollisionWorld,
     player_indexes: Comp&lt;PlayerIdx&gt;,
     <span class="kw-2">mut </span>audio_events: ResMut&lt;AudioEvents&gt;,
+    <span class="kw-2">mut </span>trauma_events: ResMut&lt;CameraTraumaEvents&gt;,
     <span class="kw-2">mut </span>lit_grenades: CompMut&lt;LitKickBomb&gt;,
     <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;,
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
@@ -598,6 +602,8 @@
         <span class="comment">// If it&#39;s time to explode
         </span><span class="kw">if </span>kick_bomb.age &gt;= <span class="kw-2">*</span>fuse_time || should_explode {
             audio_events.play(explosion_sound.clone(), <span class="kw-2">*</span>explosion_volume);
+
+            trauma_events.send(<span class="number">7.5</span>);
 
             <span class="comment">// Cause the item to respawn by un-hydrating it&#39;s spawner.
             </span>hydrated.remove(<span class="kw-2">**</span>spawner);

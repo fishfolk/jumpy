@@ -314,6 +314,9 @@
 <a href="#313" id="313">313</a>
 <a href="#314" id="314">314</a>
 <a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -488,6 +491,7 @@
     element_assets: BevyAssets&lt;ElementMeta&gt;,
     transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>audio_events: ResMut&lt;AudioEvents&gt;,
+    <span class="kw-2">mut </span>trauma_events: ResMut&lt;CameraTraumaEvents&gt;,
     <span class="kw-2">mut </span>lit_grenades: CompMut&lt;LitGrenade&gt;,
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>hydrated: CompMut&lt;MapElementHydrated&gt;,
@@ -570,6 +574,8 @@
         <span class="comment">// If it&#39;s time to explode
         </span><span class="kw">if </span>grenade.age &gt;= <span class="kw-2">*</span>fuse_time {
             audio_events.play(explosion_sound.clone(), <span class="kw-2">*</span>explosion_volume);
+
+            trauma_events.send(<span class="number">5.0</span>);
 
             <span class="comment">// Cause the item to respawn by un-hydrating it&#39;s spawner.
             </span>hydrated.remove(<span class="kw-2">**</span>spawner);

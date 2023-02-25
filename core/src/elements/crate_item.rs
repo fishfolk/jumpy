@@ -168,7 +168,6 @@ fn update_thrown_crates(
     collision_world: CollisionWorld,
     mut bodies: CompMut<KinematicBody>,
     mut audio_events: ResMut<AudioEvents>,
-    mut trauma_events: ResMut<CameraTraumaEvents>,
     transforms: Comp<Transform>,
     spawners: Comp<DehydrateOutOfBounds>,
 ) {
@@ -221,7 +220,6 @@ fn update_thrown_crates(
             thrown_crate.was_colliding = true;
             thrown_crate.crate_break_state += 1;
             audio_events.play(bounce_sound.clone(), *bounce_sound_volume);
-            trauma_events.send(0.25);
         } else if !colliding_with_tile {
             thrown_crate.was_colliding = false;
         }
@@ -262,8 +260,6 @@ fn update_thrown_crates(
             let atlas = breaking_atlas.clone();
 
             audio_events.play(break_sound.clone(), *break_sound_volume);
-
-            trauma_events.send(2.5);
 
             commands.add(
                 move |mut entities: ResMut<Entities>,

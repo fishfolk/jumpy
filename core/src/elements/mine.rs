@@ -154,6 +154,7 @@ fn update_thrown_mines(
     element_handles: Comp<ElementHandle>,
     element_assets: BevyAssets<ElementMeta>,
     mut audio_events: ResMut<AudioEvents>,
+    mut trauma_events: ResMut<CameraTraumaEvents>,
     mut thrown_mines: CompMut<ThrownMine>,
     mut animated_sprites: CompMut<AnimatedSprite>,
     mut hydrated: CompMut<MapElementHydrated>,
@@ -210,6 +211,8 @@ fn update_thrown_mines(
 
         if !colliding_with_players.is_empty() && thrown_mine.age >= *arm_delay {
             let mine_transform = *transforms.get(entity).unwrap();
+
+            trauma_events.send(6.0);
 
             for player in &colliding_with_players {
                 commands.add(PlayerCommand::kill(

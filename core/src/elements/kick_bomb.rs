@@ -173,6 +173,7 @@ fn update_lit_kick_bombs(
     collision_world: CollisionWorld,
     player_indexes: Comp<PlayerIdx>,
     mut audio_events: ResMut<AudioEvents>,
+    mut trauma_events: ResMut<CameraTraumaEvents>,
     mut lit_grenades: CompMut<LitKickBomb>,
     mut sprites: CompMut<AtlasSprite>,
     mut bodies: CompMut<KinematicBody>,
@@ -268,6 +269,8 @@ fn update_lit_kick_bombs(
         // If it's time to explode
         if kick_bomb.age >= *fuse_time || should_explode {
             audio_events.play(explosion_sound.clone(), *explosion_volume);
+
+            trauma_events.send(7.5);
 
             // Cause the item to respawn by un-hydrating it's spawner.
             hydrated.remove(**spawner);

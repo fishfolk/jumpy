@@ -172,6 +172,7 @@ fn update_lit_grenades(
     element_assets: BevyAssets<ElementMeta>,
     transforms: CompMut<Transform>,
     mut audio_events: ResMut<AudioEvents>,
+    mut trauma_events: ResMut<CameraTraumaEvents>,
     mut lit_grenades: CompMut<LitGrenade>,
     mut bodies: CompMut<KinematicBody>,
     mut hydrated: CompMut<MapElementHydrated>,
@@ -254,6 +255,8 @@ fn update_lit_grenades(
         // If it's time to explode
         if grenade.age >= *fuse_time {
             audio_events.play(explosion_sound.clone(), *explosion_volume);
+
+            trauma_events.send(5.0);
 
             // Cause the item to respawn by un-hydrating it's spawner.
             hydrated.remove(**spawner);

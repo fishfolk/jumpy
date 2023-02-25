@@ -196,7 +196,7 @@ fn handle_out_of_bounds_players(
     for (player_ent, (_player_idx, transform)) in entities.iter_with((&player_indexes, &transforms))
     {
         if map.is_out_of_bounds(&transform.translation) {
-            commands.add(PlayerEvent::kill(player_ent, None));
+            commands.add(PlayerCommand::kill(player_ent, None));
         }
     }
 }

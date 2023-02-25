@@ -120,7 +120,7 @@ fn update(
             .filter(|&x| player_indexes.contains(x))
             .for_each(|player| {
                 hit_player = true;
-                commands.add(PlayerEvent::kill(player, Some(position.translation.xy())));
+                commands.add(PlayerCommand::kill(player, Some(position.translation.xy())));
             });
 
         // check solid tile collisions

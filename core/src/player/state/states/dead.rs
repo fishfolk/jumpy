@@ -47,7 +47,7 @@ pub fn handle_player_state(
         }
 
         if state.age >= 80 {
-            commands.add(PlayerEvent::despawn(player_ent));
+            commands.add(PlayerCommand::despawn(player_ent));
         }
     }
 }

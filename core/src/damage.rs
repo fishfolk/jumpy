@@ -59,7 +59,7 @@ fn kill_players_in_damage_region(
 
             let damage_rect = damage_region.collider_rect(transform.translation);
             if player_rect.overlaps(&damage_rect) {
-                commands.add(PlayerEvent::kill(
+                commands.add(PlayerCommand::kill(
                     player_ent,
                     Some(transform.translation.xy()),
                 ));

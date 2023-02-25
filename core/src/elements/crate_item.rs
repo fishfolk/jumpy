@@ -136,7 +136,7 @@ fn update_idle_crates(
 
             if items_used.get(entity).is_some() {
                 items_used.remove(entity);
-                commands.add(PlayerEvent::set_inventory(player, None));
+                commands.add(PlayerCommand::set_inventory(player, None));
                 commands.add(
                     move |mut idle: CompMut<IdleCrate>, mut thrown: CompMut<ThrownCrate>| {
                         idle.remove(entity);
@@ -242,7 +242,7 @@ fn update_thrown_crates(
             .collect::<Vec<_>>();
 
         for player_entity in &colliding_with_players {
-            commands.add(PlayerEvent::kill(
+            commands.add(PlayerCommand::kill(
                 *player_entity,
                 Some(transform.translation.xy()),
             ));

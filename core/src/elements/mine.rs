@@ -136,7 +136,7 @@ fn update_idle_mines(
             // If the item is being used
             if items_used.get(entity).is_some() {
                 items_used.remove(entity);
-                commands.add(PlayerEvent::set_inventory(player, None));
+                commands.add(PlayerCommand::set_inventory(player, None));
 
                 commands.add(
                     move |mut idle: CompMut<IdleMine>, mut thrown: CompMut<ThrownMine>| {
@@ -212,7 +212,7 @@ fn update_thrown_mines(
             let mine_transform = *transforms.get(entity).unwrap();
 
             for player in &colliding_with_players {
-                commands.add(PlayerEvent::kill(
+                commands.add(PlayerCommand::kill(
                     *player,
                     Some(mine_transform.translation.xy()),
                 ));

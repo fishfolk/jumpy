@@ -284,7 +284,7 @@ fn update(
                         }
                     })
                     .for_each(|player| {
-                        commands.add(PlayerEvent::kill(
+                        commands.add(PlayerCommand::kill(
                             player,
                             Some(sword_transform.translation.xy()),
                         ))

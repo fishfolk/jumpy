@@ -102,9 +102,9 @@ pub struct PlayerKilled {
 
 /// Events that can be used to trigger player actions, such as killing, setting inventory, etc.
 #[derive(Clone, Debug)]
-pub struct PlayerEvent;
+pub struct PlayerCommand;
 
-impl PlayerEvent {
+impl PlayerCommand {
     /// Kill a player.
     ///
     /// > **Note:** This doesn't despawn the player, it just puts the player into it's death animation.

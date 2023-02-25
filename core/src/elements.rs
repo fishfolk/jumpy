@@ -155,7 +155,7 @@ fn throw_dropped_items(
         entities.iter_with((&items, &item_throws, &mut bodies))
     {
         if let Some(ItemDropped { player }) = items_dropped.remove(entity) {
-            commands.add(PlayerEvent::set_inventory(player, None));
+            commands.add(PlayerCommand::set_inventory(player, None));
             attachments.remove(entity);
 
             let player_sprite = sprites.get_mut(player).unwrap();

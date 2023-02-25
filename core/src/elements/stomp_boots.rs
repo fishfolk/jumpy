@@ -221,7 +221,7 @@ fn update_wearer(
                         .center()
                         .y
                 {
-                    commands.add(PlayerEvent::kill(
+                    commands.add(PlayerCommand::kill(
                         player,
                         Some(player_transform.translation.xy()),
                     ))

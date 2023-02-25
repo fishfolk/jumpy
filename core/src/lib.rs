@@ -58,6 +58,7 @@ pub fn install_modules(session: &mut session::GameSession) {
     random::install(session);
     debug::install(session);
     attachment::install(session);
+    item::install(session);
     bullet::install(session);
     editor::install(session);
 }

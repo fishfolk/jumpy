@@ -260,6 +260,7 @@ fn update_thrown_crates(
             let atlas = breaking_atlas.clone();
 
             audio_events.play(break_sound.clone(), *break_sound_volume);
+
             commands.add(
                 move |mut entities: ResMut<Entities>,
                       mut transforms: CompMut<Transform>,

@@ -278,59 +278,6 @@
 <a href="#277" id="277">277</a>
 <a href="#278" id="278">278</a>
 <a href="#279" id="279">279</a>
-<a href="#280" id="280">280</a>
-<a href="#281" id="281">281</a>
-<a href="#282" id="282">282</a>
-<a href="#283" id="283">283</a>
-<a href="#284" id="284">284</a>
-<a href="#285" id="285">285</a>
-<a href="#286" id="286">286</a>
-<a href="#287" id="287">287</a>
-<a href="#288" id="288">288</a>
-<a href="#289" id="289">289</a>
-<a href="#290" id="290">290</a>
-<a href="#291" id="291">291</a>
-<a href="#292" id="292">292</a>
-<a href="#293" id="293">293</a>
-<a href="#294" id="294">294</a>
-<a href="#295" id="295">295</a>
-<a href="#296" id="296">296</a>
-<a href="#297" id="297">297</a>
-<a href="#298" id="298">298</a>
-<a href="#299" id="299">299</a>
-<a href="#300" id="300">300</a>
-<a href="#301" id="301">301</a>
-<a href="#302" id="302">302</a>
-<a href="#303" id="303">303</a>
-<a href="#304" id="304">304</a>
-<a href="#305" id="305">305</a>
-<a href="#306" id="306">306</a>
-<a href="#307" id="307">307</a>
-<a href="#308" id="308">308</a>
-<a href="#309" id="309">309</a>
-<a href="#310" id="310">310</a>
-<a href="#311" id="311">311</a>
-<a href="#312" id="312">312</a>
-<a href="#313" id="313">313</a>
-<a href="#314" id="314">314</a>
-<a href="#315" id="315">315</a>
-<a href="#316" id="316">316</a>
-<a href="#317" id="317">317</a>
-<a href="#318" id="318">318</a>
-<a href="#319" id="319">319</a>
-<a href="#320" id="320">320</a>
-<a href="#321" id="321">321</a>
-<a href="#322" id="322">322</a>
-<a href="#323" id="323">323</a>
-<a href="#324" id="324">324</a>
-<a href="#325" id="325">325</a>
-<a href="#326" id="326">326</a>
-<a href="#327" id="327">327</a>
-<a href="#328" id="328">328</a>
-<a href="#329" id="329">329</a>
-<a href="#330" id="330">330</a>
-<a href="#331" id="331">331</a>
-<a href="#332" id="332">332</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -364,6 +311,7 @@
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>items: CompMut&lt;Item&gt;,
+    <span class="kw-2">mut </span>item_throws: CompMut&lt;ItemThrow&gt;,
     <span class="kw-2">mut </span>respawn_points: CompMut&lt;DehydrateOutOfBounds&gt;,
 ) {
     <span class="kw">let </span><span class="kw-2">mut </span>not_hydrated_bitset = hydrated.bitset().clone();
@@ -385,6 +333,7 @@
             atlas,
             body_size,
             bounciness,
+            throw_velocity,
             ..
         } = <span class="kw-2">&amp;</span>element_meta.builtin
         {
@@ -394,6 +343,7 @@
             items.insert(entity, Item);
             idle_mines.insert(entity, IdleMine);
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
+            item_throws.insert(entity, ItemThrow::strength(<span class="kw-2">*</span>throw_velocity));
             respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
             transforms.insert(entity, transform);
             element_handles.insert(entity, element_handle.clone());
@@ -418,17 +368,13 @@
     entities: Res&lt;Entities&gt;,
     element_handles: Comp&lt;ElementHandle&gt;,
     element_assets: BevyAssets&lt;ElementMeta&gt;,
-    <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>idle_mines: CompMut&lt;IdleMine&gt;,
-    <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;,
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>items_used: CompMut&lt;ItemUsed&gt;,
-    <span class="kw-2">mut </span>items_dropped: CompMut&lt;ItemDropped&gt;,
     player_inventories: PlayerInventories,
     <span class="kw-2">mut </span>attachments: CompMut&lt;PlayerBodyAttachment&gt;,
     <span class="kw-2">mut </span>player_layers: CompMut&lt;PlayerLayers&gt;,
     <span class="kw-2">mut </span>commands: Commands,
-    <span class="kw-2">mut </span>player_events: ResMut&lt;PlayerEvents&gt;,
 ) {
     <span class="kw">for </span>(entity, (_mine, element_handle)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;mut </span>idle_mines, <span class="kw-2">&amp;</span>element_handles))
     {
@@ -438,7 +384,6 @@
 
         <span class="kw">let </span>BuiltinElementKind::Mine {
         grab_offset,
-        throw_velocity,
         fin_anim,
         ..
     } = <span class="kw-2">&amp;</span>element_meta.builtin <span class="kw">else </span>{
@@ -471,27 +416,7 @@
             <span class="comment">// If the item is being used
             </span><span class="kw">if </span>items_used.get(entity).is_some() {
                 items_used.remove(entity);
-                player_events.set_inventory(player, <span class="prelude-val">None</span>);
-                attachments.remove(entity);
-
-                <span class="kw">let </span>player_velocity = bodies.get(player).unwrap().velocity;
-                <span class="kw">let </span>player_sprite = sprites.get_mut(player).unwrap();
-                <span class="kw">let </span>player_translation = transforms.get(player).unwrap().translation;
-
-                <span class="kw">let </span>body = bodies.get_mut(entity).unwrap();
-
-                <span class="kw">let </span>horizontal_flip_factor = <span class="kw">if </span>player_sprite.flip_x {
-                    Vec2::new(-<span class="number">1.0</span>, <span class="number">1.0</span>)
-                } <span class="kw">else </span>{
-                    Vec2::ONE
-                };
-
-                body.velocity = <span class="kw-2">*</span>throw_velocity * horizontal_flip_factor + player_velocity;
-                body.is_deactivated = <span class="bool-val">false</span>;
-
-                <span class="kw">let </span>transform = transforms.get_mut(entity).unwrap();
-                transform.translation =
-                    player_translation + (<span class="kw-2">*</span>grab_offset * horizontal_flip_factor).extend(<span class="number">0.0</span>);
+                commands.add(PlayerCommand::set_inventory(player, <span class="prelude-val">None</span>));
 
                 commands.add(
                     <span class="kw">move </span>|<span class="kw-2">mut </span>idle: CompMut&lt;IdleMine&gt;, <span class="kw-2">mut </span>thrown: CompMut&lt;ThrownMine&gt;| {
@@ -500,39 +425,6 @@
                     },
                 );
             }
-        }
-
-        <span class="comment">// If the item was dropped
-        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(dropped) = items_dropped.get(entity).copied() {
-            <span class="kw">let </span>player = dropped.player;
-
-            items_dropped.remove(entity);
-            attachments.remove(entity);
-
-            <span class="kw">let </span>player_translation = transforms.get(dropped.player).unwrap().translation;
-            <span class="kw">let </span>player_velocity = bodies.get(player).unwrap().velocity;
-            <span class="kw">let </span>player_sprite = sprites.get_mut(player).unwrap();
-
-            <span class="kw">let </span>body = bodies.get_mut(entity).unwrap();
-
-            <span class="comment">// Re-activate physics
-            </span>body.is_deactivated = <span class="bool-val">false</span>;
-
-            <span class="kw">let </span>horizontal_flip_factor = <span class="kw">if </span>player_sprite.flip_x {
-                Vec2::new(-<span class="number">1.0</span>, <span class="number">1.0</span>)
-            } <span class="kw">else </span>{
-                Vec2::ONE
-            };
-
-            <span class="kw">if </span>player_velocity != Vec2::ZERO {
-                body.velocity = <span class="kw-2">*</span>throw_velocity * horizontal_flip_factor + player_velocity;
-            }
-
-            body.is_spawning = <span class="bool-val">true</span>;
-
-            <span class="kw">let </span>transform = transforms.get_mut(entity).unwrap();
-            transform.translation =
-                player_translation + (<span class="kw-2">*</span>grab_offset * horizontal_flip_factor).extend(<span class="number">0.0</span>);
         }
     }
 }
@@ -546,7 +438,6 @@
     <span class="kw-2">mut </span>animated_sprites: CompMut&lt;AnimatedSprite&gt;,
     <span class="kw-2">mut </span>hydrated: CompMut&lt;MapElementHydrated&gt;,
     player_indexes: Comp&lt;PlayerIdx&gt;,
-    <span class="kw-2">mut </span>player_events: ResMut&lt;PlayerEvents&gt;,
     <span class="kw-2">mut </span>commands: Commands,
     collision_world: CollisionWorld,
     transforms: Comp&lt;Transform&gt;,
@@ -601,7 +492,10 @@
             <span class="kw">let </span>mine_transform = <span class="kw-2">*</span>transforms.get(entity).unwrap();
 
             <span class="kw">for </span>player <span class="kw">in </span><span class="kw-2">&amp;</span>colliding_with_players {
-                player_events.kill(<span class="kw-2">*</span>player, <span class="prelude-val">Some</span>(mine_transform.translation.xy()));
+                commands.add(PlayerCommand::kill(
+                    <span class="kw-2">*</span>player,
+                    <span class="prelude-val">Some</span>(mine_transform.translation.xy()),
+                ));
             }
 
             audio_events.play(explosion_sound.clone(), <span class="kw-2">*</span>explosion_volume);

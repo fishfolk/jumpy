@@ -391,15 +391,15 @@
 
 <span class="kw">fn </span>handle_out_of_bounds_players(
     entities: Res&lt;Entities&gt;,
+    <span class="kw-2">mut </span>commands: Commands,
     transforms: CompMut&lt;Transform&gt;,
     player_indexes: Comp&lt;PlayerIdx&gt;,
     map: Res&lt;LoadedMap&gt;,
-    <span class="kw-2">mut </span>player_events: ResMut&lt;PlayerEvents&gt;,
 ) {
     <span class="kw">for </span>(player_ent, (_player_idx, transform)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;</span>player_indexes, <span class="kw-2">&amp;</span>transforms))
     {
         <span class="kw">if </span>map.is_out_of_bounds(<span class="kw-2">&amp;</span>transform.translation) {
-            player_events.kill(player_ent, <span class="prelude-val">None</span>);
+            commands.add(PlayerCommand::kill(player_ent, <span class="prelude-val">None</span>));
         }
     }
 }

@@ -314,71 +314,6 @@
 <a href="#313" id="313">313</a>
 <a href="#314" id="314">314</a>
 <a href="#315" id="315">315</a>
-<a href="#316" id="316">316</a>
-<a href="#317" id="317">317</a>
-<a href="#318" id="318">318</a>
-<a href="#319" id="319">319</a>
-<a href="#320" id="320">320</a>
-<a href="#321" id="321">321</a>
-<a href="#322" id="322">322</a>
-<a href="#323" id="323">323</a>
-<a href="#324" id="324">324</a>
-<a href="#325" id="325">325</a>
-<a href="#326" id="326">326</a>
-<a href="#327" id="327">327</a>
-<a href="#328" id="328">328</a>
-<a href="#329" id="329">329</a>
-<a href="#330" id="330">330</a>
-<a href="#331" id="331">331</a>
-<a href="#332" id="332">332</a>
-<a href="#333" id="333">333</a>
-<a href="#334" id="334">334</a>
-<a href="#335" id="335">335</a>
-<a href="#336" id="336">336</a>
-<a href="#337" id="337">337</a>
-<a href="#338" id="338">338</a>
-<a href="#339" id="339">339</a>
-<a href="#340" id="340">340</a>
-<a href="#341" id="341">341</a>
-<a href="#342" id="342">342</a>
-<a href="#343" id="343">343</a>
-<a href="#344" id="344">344</a>
-<a href="#345" id="345">345</a>
-<a href="#346" id="346">346</a>
-<a href="#347" id="347">347</a>
-<a href="#348" id="348">348</a>
-<a href="#349" id="349">349</a>
-<a href="#350" id="350">350</a>
-<a href="#351" id="351">351</a>
-<a href="#352" id="352">352</a>
-<a href="#353" id="353">353</a>
-<a href="#354" id="354">354</a>
-<a href="#355" id="355">355</a>
-<a href="#356" id="356">356</a>
-<a href="#357" id="357">357</a>
-<a href="#358" id="358">358</a>
-<a href="#359" id="359">359</a>
-<a href="#360" id="360">360</a>
-<a href="#361" id="361">361</a>
-<a href="#362" id="362">362</a>
-<a href="#363" id="363">363</a>
-<a href="#364" id="364">364</a>
-<a href="#365" id="365">365</a>
-<a href="#366" id="366">366</a>
-<a href="#367" id="367">367</a>
-<a href="#368" id="368">368</a>
-<a href="#369" id="369">369</a>
-<a href="#370" id="370">370</a>
-<a href="#371" id="371">371</a>
-<a href="#372" id="372">372</a>
-<a href="#373" id="373">373</a>
-<a href="#374" id="374">374</a>
-<a href="#375" id="375">375</a>
-<a href="#376" id="376">376</a>
-<a href="#377" id="377">377</a>
-<a href="#378" id="378">378</a>
-<a href="#379" id="379">379</a>
-<a href="#380" id="380">380</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -412,6 +347,7 @@
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>items: CompMut&lt;Item&gt;,
+    <span class="kw-2">mut </span>item_throws: CompMut&lt;ItemThrow&gt;,
     <span class="kw-2">mut </span>respawn_points: CompMut&lt;DehydrateOutOfBounds&gt;,
 ) {
     <span class="kw">let </span><span class="kw-2">mut </span>not_hydrated_bitset = hydrated.bitset().clone();
@@ -434,6 +370,8 @@
             body_diameter,
             can_rotate,
             bounciness,
+            throw_velocity,
+            angular_velocity,
             ..
         } = <span class="kw-2">&amp;</span>element_meta.builtin
         {
@@ -442,6 +380,10 @@
             <span class="kw">let </span>entity = entities.create();
             items.insert(entity, Item);
             idle_grenades.insert(entity, IdleGrenade);
+            item_throws.insert(
+                entity,
+                ItemThrow::strength(<span class="kw-2">*</span>throw_velocity).with_spin(<span class="kw-2">*</span>angular_velocity),
+            );
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
             respawn_points.insert(entity, DehydrateOutOfBounds(spawner_ent));
             transforms.insert(entity, transform);
@@ -471,13 +413,10 @@
     element_handles: Comp&lt;ElementHandle&gt;,
     element_assets: BevyAssets&lt;ElementMeta&gt;,
     <span class="kw-2">mut </span>audio_events: ResMut&lt;AudioEvents&gt;,
-    <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>idle_grenades: CompMut&lt;IdleGrenade&gt;,
-    <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;,
     <span class="kw-2">mut </span>animated_sprites: CompMut&lt;AnimatedSprite&gt;,
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     <span class="kw-2">mut </span>items_used: CompMut&lt;ItemUsed&gt;,
-    <span class="kw-2">mut </span>items_dropped: CompMut&lt;ItemDropped&gt;,
     <span class="kw-2">mut </span>attachments: CompMut&lt;PlayerBodyAttachment&gt;,
     <span class="kw-2">mut </span>player_layers: CompMut&lt;PlayerLayers&gt;,
     player_inventories: PlayerInventories,
@@ -492,10 +431,8 @@
 
         <span class="kw">let </span>BuiltinElementKind::Grenade {
             grab_offset,
-            angular_velocity,
             fuse_sound,
             fuse_sound_volume,
-            throw_velocity,
             fin_anim,
             ..
         } = <span class="kw-2">&amp;</span>element_meta.builtin <span class="kw">else </span>{
@@ -534,7 +471,6 @@
                 animated_sprite.frames = Arc::from([<span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]);
                 animated_sprite.repeat = <span class="bool-val">true</span>;
                 animated_sprite.fps = <span class="number">8.0</span>;
-                body.angular_velocity = <span class="kw-2">*</span>angular_velocity;
                 commands.add(
                     <span class="kw">move </span>|<span class="kw-2">mut </span>idle: CompMut&lt;IdleGrenade&gt;, <span class="kw-2">mut </span>lit: CompMut&lt;LitGrenade&gt;| {
                         idle.remove(entity);
@@ -543,37 +479,6 @@
                 );
             }
         }
-
-        <span class="comment">// If the item was dropped
-        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(dropped) = items_dropped.get(entity).copied() {
-            <span class="kw">let </span>player = dropped.player;
-
-            items_dropped.remove(entity);
-            attachments.remove(entity);
-            <span class="kw">let </span>player_translation = transforms.get(dropped.player).unwrap().translation;
-            <span class="kw">let </span>player_velocity = bodies.get(player).unwrap().velocity;
-
-            <span class="kw">let </span>body = bodies.get_mut(entity).unwrap();
-            <span class="kw">let </span>player_sprite = sprites.get_mut(player).unwrap();
-
-            <span class="comment">// Re-activate physics
-            </span>body.is_deactivated = <span class="bool-val">false</span>;
-
-            <span class="kw">let </span>horizontal_flip_factor = <span class="kw">if </span>player_sprite.flip_x {
-                Vec2::new(-<span class="number">1.0</span>, <span class="number">1.0</span>)
-            } <span class="kw">else </span>{
-                Vec2::ONE
-            };
-            body.velocity = <span class="kw-2">*</span>throw_velocity * horizontal_flip_factor + player_velocity;
-            body.angular_velocity =
-                <span class="kw-2">*</span>angular_velocity * <span class="kw">if </span>player_sprite.flip_x { -<span class="number">1.0 </span>} <span class="kw">else </span>{ <span class="number">1.0 </span>};
-
-            body.is_spawning = <span class="bool-val">true</span>;
-
-            <span class="kw">let </span>transform = transforms.get_mut(entity).unwrap();
-            transform.translation =
-                player_translation + (<span class="kw-2">*</span>grab_offset * horizontal_flip_factor).extend(<span class="number">0.0</span>);
-        }
     }
 }
 
@@ -581,12 +486,10 @@
     entities: Res&lt;Entities&gt;,
     element_handles: Comp&lt;ElementHandle&gt;,
     element_assets: BevyAssets&lt;ElementMeta&gt;,
+    transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>audio_events: ResMut&lt;AudioEvents&gt;,
-    <span class="kw-2">mut </span>transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>lit_grenades: CompMut&lt;LitGrenade&gt;,
-    <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;,
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
-    <span class="kw-2">mut </span>items_dropped: CompMut&lt;ItemDropped&gt;,
     <span class="kw-2">mut </span>hydrated: CompMut&lt;MapElementHydrated&gt;,
     <span class="kw-2">mut </span>attachments: CompMut&lt;PlayerBodyAttachment&gt;,
     <span class="kw-2">mut </span>emote_regions: CompMut&lt;EmoteRegion&gt;,
@@ -604,10 +507,8 @@
 
         <span class="kw">let </span>BuiltinElementKind::Grenade {
             grab_offset,
-            angular_velocity,
             explosion_sound,
             explosion_volume,
-            throw_velocity,
             fuse_time,
             damage_region_lifetime,
             damage_region_size,
@@ -664,37 +565,6 @@
         <span class="comment">// If the item is not being held
         </span>} <span class="kw">else </span>{
             emote_region.active = <span class="bool-val">true</span>;
-        }
-
-        <span class="comment">// If the item was dropped
-        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(dropped) = items_dropped.get(entity).copied() {
-            <span class="kw">let </span>player = dropped.player;
-
-            items_dropped.remove(entity);
-            attachments.remove(entity);
-            <span class="kw">let </span>player_translation = transforms.get(dropped.player).unwrap().translation;
-            <span class="kw">let </span>player_velocity = bodies.get(player).unwrap().velocity;
-
-            <span class="kw">let </span>body = bodies.get_mut(entity).unwrap();
-            <span class="kw">let </span>player_sprite = sprites.get_mut(player).unwrap();
-
-            <span class="comment">// Re-activate physics
-            </span>body.is_deactivated = <span class="bool-val">false</span>;
-
-            <span class="kw">let </span>horizontal_flip_factor = <span class="kw">if </span>player_sprite.flip_x {
-                Vec2::new(-<span class="number">1.0</span>, <span class="number">1.0</span>)
-            } <span class="kw">else </span>{
-                Vec2::ONE
-            };
-            body.velocity = <span class="kw-2">*</span>throw_velocity * horizontal_flip_factor + player_velocity;
-            body.angular_velocity =
-                <span class="kw-2">*</span>angular_velocity * <span class="kw">if </span>player_sprite.flip_x { -<span class="number">1.0 </span>} <span class="kw">else </span>{ <span class="number">1.0 </span>};
-
-            body.is_spawning = <span class="bool-val">true</span>;
-
-            <span class="kw">let </span>transform = transforms.get_mut(entity).unwrap();
-            transform.translation =
-                player_translation + (<span class="kw-2">*</span>grab_offset * horizontal_flip_factor).extend(<span class="number">0.0</span>);
         }
 
         <span class="comment">// If it&#39;s time to explode

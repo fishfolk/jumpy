@@ -171,9 +171,9 @@
     <span class="kw-2">mut </span>animations: CompMut&lt;AnimationBankSprite&gt;,
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
     items: Comp&lt;Item&gt;,
-    <span class="kw-2">mut </span>player_events: ResMut&lt;PlayerEvents&gt;,
     <span class="kw-2">mut </span>audio_events: ResMut&lt;AudioEvents&gt;,
     collision_world: CollisionWorld,
+    <span class="kw-2">mut </span>commands: Commands,
 ) {
     <span class="comment">// Collect a list of items that are being held by players
     </span><span class="kw">let </span>held_items = entities
@@ -215,8 +215,8 @@
             <span class="kw-2">&amp;</span>collision_world,
             <span class="kw-2">&amp;</span>items,
             <span class="kw-2">&amp;</span>held_items,
-            <span class="kw-2">&amp;mut </span>player_events,
             <span class="kw-2">&amp;mut </span>audio_events,
+            <span class="kw-2">&amp;mut </span>commands,
         );
 
         <span class="comment">// Limit fall speed if holding jump button

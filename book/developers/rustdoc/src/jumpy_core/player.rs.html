@@ -453,49 +453,7 @@
 <a href="#452" id="452">452</a>
 <a href="#453" id="453">453</a>
 <a href="#454" id="454">454</a>
-<a href="#455" id="455">455</a>
-<a href="#456" id="456">456</a>
-<a href="#457" id="457">457</a>
-<a href="#458" id="458">458</a>
-<a href="#459" id="459">459</a>
-<a href="#460" id="460">460</a>
-<a href="#461" id="461">461</a>
-<a href="#462" id="462">462</a>
-<a href="#463" id="463">463</a>
-<a href="#464" id="464">464</a>
-<a href="#465" id="465">465</a>
-<a href="#466" id="466">466</a>
-<a href="#467" id="467">467</a>
-<a href="#468" id="468">468</a>
-<a href="#469" id="469">469</a>
-<a href="#470" id="470">470</a>
-<a href="#471" id="471">471</a>
-<a href="#472" id="472">472</a>
-<a href="#473" id="473">473</a>
-<a href="#474" id="474">474</a>
-<a href="#475" id="475">475</a>
-<a href="#476" id="476">476</a>
-<a href="#477" id="477">477</a>
-<a href="#478" id="478">478</a>
-<a href="#479" id="479">479</a>
-<a href="#480" id="480">480</a>
-<a href="#481" id="481">481</a>
-<a href="#482" id="482">482</a>
-<a href="#483" id="483">483</a>
-<a href="#484" id="484">484</a>
-<a href="#485" id="485">485</a>
-<a href="#486" id="486">486</a>
-<a href="#487" id="487">487</a>
-<a href="#488" id="488">488</a>
-<a href="#489" id="489">489</a>
-<a href="#490" id="490">490</a>
-<a href="#491" id="491">491</a>
-<a href="#492" id="492">492</a>
-<a href="#493" id="493">493</a>
-<a href="#494" id="494">494</a>
-</pre><pre class="rust"><code><span class="kw">use </span>std::collections::VecDeque;
-
-<span class="kw">use crate</span>::{item::ItemGrabbed, physics::KinematicBody, prelude::<span class="kw-2">*</span>};
+</pre><pre class="rust"><code><span class="kw">use crate</span>::{item::ItemGrabbed, physics::KinematicBody, prelude::<span class="kw-2">*</span>};
 
 <span class="kw">mod </span>state;
 <span class="kw">use </span>bones_lib::animation::AnimationBankSprite;
@@ -508,7 +466,6 @@
     </span>session
         .stages
         .add_system_to_stage(CoreStage::First, hydrate_players)
-        .add_system_to_stage(CoreStage::PostUpdate, handle_player_events)
         .add_system_to_stage(CoreStage::PostUpdate, play_itemless_fin_animations)
         .add_system_to_stage(CoreStage::PostUpdate, player_facial_animations)
         .add_system_to_stage(CoreStage::Last, update_player_layers);
@@ -598,146 +555,109 @@
     <span class="kw">pub </span>hit_from: <span class="prelude-ty">Option</span>&lt;Vec2&gt;,
 }
 
-<span class="doccomment">/// Resource containing the player event queue.
-</span><span class="attr">#[derive(Clone, TypeUlid, Debug, Default)]
-#[ulid = <span class="string">&quot;01GP49AK25A8S9G2GYNAVE4PTN&quot;</span>]
-</span><span class="kw">pub struct </span>PlayerEvents {
-    <span class="kw">pub </span>queue: VecDeque&lt;PlayerEvent&gt;,
-}
-
-<span class="kw">impl </span>PlayerEvents {
-    <span class="doccomment">/// Send a player event.
-    </span><span class="kw">pub fn </span>send(<span class="kw-2">&amp;mut </span><span class="self">self</span>, event: PlayerEvent) {
-        <span class="self">self</span>.queue.push_back(event);
-    }
-
-    <span class="attr">#[inline]
-    </span><span class="kw">pub fn </span>set_inventory(<span class="kw-2">&amp;mut </span><span class="self">self</span>, player: Entity, item: <span class="prelude-ty">Option</span>&lt;Entity&gt;) {
-        <span class="self">self</span>.queue
-            .push_back(PlayerEvent::SetInventory { player, item })
-    }
-
-    <span class="attr">#[inline]
-    </span><span class="kw">pub fn </span>use_item(<span class="kw-2">&amp;mut </span><span class="self">self</span>, player: Entity) {
-        <span class="self">self</span>.queue.push_back(PlayerEvent::UseItem { player })
-    }
-
-    <span class="attr">#[inline]
-    </span><span class="kw">pub fn </span>kill(<span class="kw-2">&amp;mut </span><span class="self">self</span>, player: Entity, hit_from: <span class="prelude-ty">Option</span>&lt;Vec2&gt;) {
-        <span class="self">self</span>.queue.push_back(PlayerEvent::Kill { player, hit_from })
-    }
-
-    <span class="attr">#[inline]
-    </span><span class="kw">pub fn </span>despawn(<span class="kw-2">&amp;mut </span><span class="self">self</span>, player: Entity) {
-        <span class="self">self</span>.queue.push_back(PlayerEvent::Despawn { player })
-    }
-}
-
 <span class="doccomment">/// Events that can be used to trigger player actions, such as killing, setting inventory, etc.
 </span><span class="attr">#[derive(Clone, Debug)]
-</span><span class="kw">pub enum </span>PlayerEvent {
+</span><span class="kw">pub struct </span>PlayerCommand;
+
+<span class="kw">impl </span>PlayerCommand {
     <span class="doccomment">/// Kill a player.
     ///
     /// &gt; **Note:** This doesn&#39;t despawn the player, it just puts the player into it&#39;s death animation.
-    </span>Kill {
-        player: Entity,
-        hit_from: <span class="prelude-ty">Option</span>&lt;Vec2&gt;,
-    },
-    <span class="doccomment">/// Despawn a player.
-    ///
-    /// &gt; **Note:** This is different than the [`Kill`][Self::Kill] event in that it immediately
-    /// &gt; removes the player from the world, while [`Kill`][Self::Kill] will usually cause the
-    /// &gt; player to enter the death animation.
-    /// &gt;
-    /// &gt; [`Despawn`][Self::Despawn] is usually sent at the end of the player death animation.
-    </span>Despawn { player: Entity },
-    <span class="doccomment">/// Set the player&#39;s inventory
-    </span>SetInventory {
-        player: Entity,
-        item: <span class="prelude-ty">Option</span>&lt;Entity&gt;,
-    },
-    <span class="doccomment">/// Have the player use the item they are carrying, if any.
-    </span>UseItem { player: Entity },
-}
+    </span><span class="kw">pub fn </span>kill(player: Entity, hit_from: <span class="prelude-ty">Option</span>&lt;Vec2&gt;) -&gt; System {
+        (<span class="kw">move </span>|<span class="kw-2">mut </span>players_killed: CompMut&lt;PlayerKilled&gt;,
+               <span class="kw-2">mut </span>items_dropped: CompMut&lt;ItemDropped&gt;,
+               <span class="kw-2">mut </span>inventories: CompMut&lt;Inventory&gt;,
+               player_indexes: Comp&lt;PlayerIdx&gt;| {
+            <span class="kw">if </span>players_killed.contains(player) {
+                <span class="comment">// No need to kill him again
+                </span><span class="kw">return</span>;
+            }
 
-<span class="kw">fn </span>handle_player_events(
-    <span class="kw-2">mut </span>entities: ResMut&lt;Entities&gt;,
-    <span class="kw-2">mut </span>player_events: ResMut&lt;PlayerEvents&gt;,
-    <span class="kw-2">mut </span>players_killed: CompMut&lt;PlayerKilled&gt;,
-    <span class="kw-2">mut </span>items_grabbed: CompMut&lt;ItemGrabbed&gt;,
-    <span class="kw-2">mut </span>items_dropped: CompMut&lt;ItemDropped&gt;,
-    <span class="kw-2">mut </span>items_used: CompMut&lt;ItemUsed&gt;,
-    <span class="kw-2">mut </span>inventories: CompMut&lt;Inventory&gt;,
-    attachments: Comp&lt;Attachment&gt;,
-    player_indexes: Comp&lt;PlayerIdx&gt;,
-    player_layers: Comp&lt;PlayerLayers&gt;,
-) {
-    <span class="kw">while let </span><span class="prelude-val">Some</span>(event) = player_events.queue.pop_front() {
-        <span class="kw">match </span>event {
-            PlayerEvent::Kill { player, hit_from } =&gt; {
-                <span class="kw">if </span>players_killed.contains(player) {
-                    <span class="comment">// No need to kill him again
-                    </span><span class="kw">continue</span>;
-                }
-
-                <span class="kw">let </span><span class="prelude-val">Some</span>(idx) = player_indexes.get(player) <span class="kw">else </span>{
+            <span class="kw">let </span><span class="prelude-val">Some</span>(idx) = player_indexes.get(player) <span class="kw">else </span>{
                     <span class="comment">// Not a player, just ignore it.
                     </span><span class="macro">warn!</span>(<span class="string">&quot;Tried to kill non-player entity.&quot;</span>);
-                    <span class="kw">continue</span>;
+                    <span class="kw">return</span>;
                 };
 
-                <span class="macro">debug!</span>(<span class="string">&quot;Killing player: {}&quot;</span>, idx.<span class="number">0</span>);
+            <span class="macro">debug!</span>(<span class="string">&quot;Killing player: {}&quot;</span>, idx.<span class="number">0</span>);
 
-                <span class="comment">// Drop any items the player was carrying
-                </span>player_events
-                    .queue
-                    .push_front(PlayerEvent::SetInventory { player, item: <span class="prelude-val">None </span>});
-
-                players_killed.insert(player, PlayerKilled { hit_from });
+            <span class="comment">// Drop any items the player was carrying
+            </span><span class="kw">let </span>inventory = inventories.get(player).cloned().unwrap_or_default();
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(item) = inventory.<span class="number">0 </span>{
+                items_dropped.insert(item, ItemDropped { player });
             }
-            PlayerEvent::Despawn { player } =&gt; {
-                <span class="kw">if </span>player_indexes.contains(player) {
-                    entities
-                        .iter_with(<span class="kw-2">&amp;</span>attachments)
-                        .filter(|(<span class="kw">_</span>, attachment)| attachment.entity == player)
-                        .map(|(entity, <span class="kw">_</span>)| entity)
-                        .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;()
-                        .iter()
-                        .for_each(|entity| {
-                            entities.kill(<span class="kw-2">*</span>entity);
-                        });
-                    <span class="kw">let </span>layers = player_layers.get(player).unwrap();
-                    entities.kill(layers.fin_ent);
-                    entities.kill(layers.face_ent);
-                    entities.kill(player);
-                } <span class="kw">else </span>{
-                    <span class="macro">warn!</span>(<span class="string">&quot;Tried to despawn non-player entity.&quot;</span>);
-                }
-            }
-            PlayerEvent::SetInventory { player, item } =&gt; {
-                <span class="kw">let </span>inventory = inventories.get(player).cloned().unwrap_or_default();
 
-                <span class="comment">// If there was a previous item, drop it
-                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(item) = inventory.<span class="number">0 </span>{
-                    items_dropped.insert(item, ItemDropped { player });
-                }
+            <span class="comment">// Update the inventory
+            </span>inventories.insert(player, Inventory(<span class="prelude-val">None</span>));
 
-                <span class="comment">// If there is a new item, grab it
-                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(item) = item {
-                    items_grabbed.insert(item, ItemGrabbed);
-                }
+            players_killed.insert(player, PlayerKilled { hit_from });
+        })
+        .system()
+    }
+    <span class="doccomment">/// Despawn a player.
+    ///
+    /// &gt; **Note:** This is different than the [`kill`][Self::kill] event in that it immediately
+    /// &gt; removes the player from the world, while [`kill`][Self::kill] will usually cause the
+    /// &gt; player to enter the death animation.
+    /// &gt;
+    /// &gt; [`despawn`][Self::despawn] is usually sent at the end of the player death animation.
+    </span><span class="kw">pub fn </span>despawn(player: Entity) -&gt; System {
+        (<span class="kw">move </span>|<span class="kw-2">mut </span>entities: ResMut&lt;Entities&gt;,
+               attachments: Comp&lt;Attachment&gt;,
+               player_indexes: Comp&lt;PlayerIdx&gt;,
+               player_layers: Comp&lt;PlayerLayers&gt;| {
+            <span class="kw">if </span>player_indexes.contains(player) {
+                entities
+                    .iter_with(<span class="kw-2">&amp;</span>attachments)
+                    .filter(|(<span class="kw">_</span>, attachment)| attachment.entity == player)
+                    .map(|(entity, <span class="kw">_</span>)| entity)
+                    .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;()
+                    .iter()
+                    .for_each(|entity| {
+                        entities.kill(<span class="kw-2">*</span>entity);
+                    });
+                <span class="kw">let </span>layers = player_layers.get(player).unwrap();
+                entities.kill(layers.fin_ent);
+                entities.kill(layers.face_ent);
+                entities.kill(player);
+            } <span class="kw">else </span>{
+                <span class="macro">warn!</span>(<span class="string">&quot;Tried to despawn non-player entity.&quot;</span>);
+            }
+        })
+        .system()
+    }
+    <span class="doccomment">/// Set the player&#39;s inventory
+    </span><span class="kw">pub fn </span>set_inventory(player: Entity, item: <span class="prelude-ty">Option</span>&lt;Entity&gt;) -&gt; System {
+        (<span class="kw">move </span>|<span class="kw-2">mut </span>items_grabbed: CompMut&lt;ItemGrabbed&gt;,
+               <span class="kw-2">mut </span>items_dropped: CompMut&lt;ItemDropped&gt;,
+               <span class="kw-2">mut </span>inventories: CompMut&lt;Inventory&gt;| {
+            <span class="kw">let </span>inventory = inventories.get(player).cloned().unwrap_or_default();
 
-                <span class="comment">// Update the inventory
-                </span>inventories.insert(player, Inventory(item));
+            <span class="comment">// If there was a previous item, drop it
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(item) = inventory.<span class="number">0 </span>{
+                items_dropped.insert(item, ItemDropped { player });
             }
-            PlayerEvent::UseItem { player } =&gt; {
-                <span class="comment">// If the player has an item
-                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(item) = inventories.get(player).and_then(|x| x.<span class="number">0</span>) {
-                    <span class="comment">// Use it
-                    </span>items_used.insert(item, ItemUsed);
-                }
+
+            <span class="comment">// If there is a new item, grab it
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(item) = item {
+                items_grabbed.insert(item, ItemGrabbed);
             }
-        }
+
+            <span class="comment">// Update the inventory
+            </span>inventories.insert(player, Inventory(item));
+        })
+        .system()
+    }
+    <span class="doccomment">/// Have the player use the item they are carrying, if any.
+    </span><span class="kw">pub fn </span>use_item(player: Entity) -&gt; System {
+        (<span class="kw">move </span>|<span class="kw-2">mut </span>items_used: CompMut&lt;ItemUsed&gt;, inventories: CompMut&lt;Inventory&gt;| {
+            <span class="comment">// If the player has an item
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(item) = inventories.get(player).and_then(|x| x.<span class="number">0</span>) {
+                <span class="comment">// Use it
+                </span>items_used.insert(item, ItemUsed);
+            }
+        })
+        .system()
     }
 }
 

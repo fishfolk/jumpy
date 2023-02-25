@@ -68,12 +68,12 @@
 
 <span class="kw">pub fn </span>handle_player_state(
     entities: Res&lt;Entities&gt;,
+    <span class="kw-2">mut </span>commands: Commands,
     player_states: Comp&lt;PlayerState&gt;,
     killed_players: Comp&lt;PlayerKilled&gt;,
     sprites: Comp&lt;AtlasSprite&gt;,
     transform: Comp&lt;Transform&gt;,
     <span class="kw-2">mut </span>animations: CompMut&lt;AnimationBankSprite&gt;,
-    <span class="kw-2">mut </span>player_events: ResMut&lt;PlayerEvents&gt;,
 ) {
     <span class="kw">for </span>(player_ent, (state, animation, killed_player)) <span class="kw">in
         </span>entities.iter_with((<span class="kw-2">&amp;</span>player_states, <span class="kw-2">&amp;mut </span>animations, <span class="kw-2">&amp;</span>killed_players))
@@ -101,7 +101,7 @@
         }
 
         <span class="kw">if </span>state.age &gt;= <span class="number">80 </span>{
-            player_events.despawn(player_ent);
+            commands.add(PlayerCommand::despawn(player_ent));
         }
     }
 }

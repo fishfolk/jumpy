@@ -170,8 +170,8 @@
     collision_world: <span class="kw-2">&amp;</span>CollisionWorld,
     items: <span class="kw-2">&amp;</span>Comp&lt;Item&gt;,
     held_items: <span class="kw-2">&amp;</span>[Entity],
-    player_events: <span class="kw-2">&amp;mut </span>PlayerEvents,
     audio_events: <span class="kw-2">&amp;mut </span>AudioEvents,
+    commands: <span class="kw-2">&amp;mut </span>Commands,
 ) {
     <span class="comment">// If we are grabbing
     </span><span class="kw">if </span>control.grab_just_pressed {
@@ -190,7 +190,7 @@
             <span class="comment">// Grab the first item we are touching
             </span><span class="kw">if let </span><span class="prelude-val">Some</span>(item) = colliders.get(<span class="number">0</span>) {
                 <span class="comment">// Add the item to the player inventory
-                </span>player_events.set_inventory(player_ent, <span class="prelude-val">Some</span>(<span class="kw-2">*</span>item));
+                </span>commands.add(PlayerCommand::set_inventory(player_ent, <span class="prelude-val">Some</span>(<span class="kw-2">*</span>item)));
 
                 <span class="comment">// Play grab sound
                 </span>audio_events.play(meta.sounds.grab.clone(), meta.sounds.grab_volume);
@@ -199,7 +199,7 @@
         <span class="comment">// If we are already carrying an item
         </span>} <span class="kw">else </span>{
             <span class="comment">// Drop it
-            </span>player_events.set_inventory(player_ent, <span class="prelude-val">None</span>);
+            </span>commands.add(PlayerCommand::set_inventory(player_ent, <span class="prelude-val">None</span>));
 
             <span class="comment">// Play drop sound
             </span>audio_events.play(meta.sounds.drop.clone(), meta.sounds.drop_volume);
@@ -208,7 +208,7 @@
 
     <span class="comment">// If we are using an item
     </span><span class="kw">if </span>control.shoot_just_pressed &amp;&amp; inventory.is_some() {
-        player_events.use_item(player_ent);
+        commands.add(PlayerCommand::use_item(player_ent));
     }
 }
 </code></pre></div>

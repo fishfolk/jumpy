@@ -227,6 +227,14 @@
 <a href="#226" id="226">226</a>
 <a href="#227" id="227">227</a>
 <a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
+<a href="#236" id="236">236</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// The implementation of a Jumpy game session.
@@ -318,6 +326,8 @@
 
     <span class="doccomment">/// Run a single simulation frame
     </span><span class="kw">pub fn </span>advance(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bevy_world: <span class="kw-2">&amp;mut </span>::bevy::prelude::World) {
+        <span class="macro">puffin::profile_function!</span>();
+
         <span class="comment">// Update the window resource
         </span><span class="kw">let </span>window_resource = <span class="self">self</span>.world.resource::&lt;Window&gt;();
         <span class="kw">let </span>bevy_windows = bevy_world.resource::&lt;::bevy::window::Windows&gt;();
@@ -334,6 +344,8 @@
             world_resource.<span class="number">0 </span>= <span class="prelude-val">Some</span>(scratch_world);
         }
         <span class="kw">for </span>stage <span class="kw">in </span><span class="kw-2">&amp;mut </span><span class="self">self</span>.stages.stages {
+            <span class="kw">let </span>stage_name = stage.name();
+            <span class="macro">puffin::profile_scope!</span>(<span class="string">&quot;Run Stage&quot;</span>, stage_name);
             stage.run(<span class="kw-2">&amp;mut </span><span class="self">self</span>.world).unwrap();
         }
 
@@ -393,6 +405,10 @@
                 {
                     <span class="kw">let </span>layer_idx = layer_meta.layer_idx;
                     <span class="kw">let </span>layer = <span class="kw-2">&amp;mut </span>layers[layer_idx];
+                    <span class="kw">if </span>tile_layer.atlas.path == AssetPath::default() {
+                        <span class="comment">// Skip layers with dummy atlases
+                        </span><span class="kw">continue</span>;
+                    }
                     layer.tilemap = <span class="prelude-val">Some</span>(tile_layer.atlas.clone());
                     layer.tiles = tile_layer
                         .tiles

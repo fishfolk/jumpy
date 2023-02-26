@@ -87,6 +87,23 @@
 <a href="#86" id="86">86</a>
 <a href="#87" id="87">87</a>
 <a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{prelude::<span class="kw-2">*</span>, MAX_PLAYERS};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -173,6 +190,23 @@
     </span>CreateLayer {
         <span class="doccomment">/// The name of the layer.
         </span>id: String,
+    },
+    <span class="doccomment">/// Update the tilemap of a layer.
+    </span>SetTilemap {
+        <span class="doccomment">/// The layer index of the layer to update.
+        </span>layer: u8,
+        <span class="doccomment">/// The handle to the tilemap to use or [`None`] to clear the tilemap.
+        </span>handle: <span class="prelude-ty">Option</span>&lt;Handle&lt;Atlas&gt;&gt;,
+    },
+    SetTile {
+        <span class="doccomment">/// The layer index of the layer to update
+        </span>layer: u8,
+        <span class="doccomment">/// The position of the tile to set
+        </span>pos: UVec2,
+        <span class="doccomment">/// The index in the tilemap to set the tile, or [`None`] to delete the tile.
+        </span>tilemap_tile_idx: <span class="prelude-ty">Option</span>&lt;usize&gt;,
+        <span class="doccomment">/// The tile collision kind
+        </span>collision: TileCollisionKind,
     },
 }
 </code></pre></div>

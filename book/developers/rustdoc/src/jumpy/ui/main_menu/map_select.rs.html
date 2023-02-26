@@ -277,7 +277,7 @@
                                     <span class="kw">let </span>map_meta = params
                                         .map_assets
                                         .get(<span class="kw-2">&amp;</span>map_handle.get_bevy_handle())
-                                        .unwrap();
+                                        .expect(<span class="string">&quot;Error loading map&quot;</span>);
                                     ui.add_space(ui.spacing().item_spacing.y);
 
                                     <span class="kw">let </span><span class="kw-2">mut </span>button =

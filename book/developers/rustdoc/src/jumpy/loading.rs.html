@@ -356,6 +356,33 @@
 <a href="#355" id="355">355</a>
 <a href="#356" id="356">356</a>
 <a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
 </pre><pre class="rust"><code><span class="kw">use </span>bevy::ecs::system::SystemParam;
 <span class="kw">use </span>bevy_egui::{egui, EguiContext};
 <span class="kw">use </span>bevy_fluent::Locale;
@@ -365,7 +392,11 @@
     InputManagerBundle,
 };
 
-<span class="kw">use crate</span>::{main_menu::player_select::PlayerAtlasEguiTextures, prelude::<span class="kw-2">*</span>};
+<span class="kw">use crate</span>::{
+    editor::{MapTilesetEguiTextureinfo, MapTilesetEguiTextures},
+    main_menu::player_select::PlayerAtlasEguiTextures,
+    prelude::<span class="kw-2">*</span>,
+};
 
 <span class="kw">pub struct </span>JumpyLoadingPlugin;
 
@@ -578,7 +609,8 @@
         </span>commands.insert_resource(game.clone());
         commands.insert_resource(CoreMetaArc(Arc::new(core.clone())));
 
-        <span class="kw">let </span><span class="kw-2">mut </span>player_atlas_egui_textures = HashMap::default();
+        <span class="comment">// Load player atlas egui handles
+        </span><span class="kw">let </span><span class="kw-2">mut </span>player_atlas_egui_textures = HashMap::default();
         <span class="kw">for </span>player_handle <span class="kw">in </span><span class="kw-2">&amp;</span>core.players {
             <span class="kw">let </span>player_meta = <span class="self">self
                 </span>.player_assets
@@ -606,6 +638,28 @@
             }
         }
         commands.insert_resource(PlayerAtlasEguiTextures(player_atlas_egui_textures));
+
+        <span class="comment">// load map tileset egui handles
+        </span><span class="kw">let </span><span class="kw-2">mut </span>map_tileset_egui_textures = HashMap::default();
+        <span class="kw">for </span>tileset_handle <span class="kw">in </span><span class="kw-2">&amp;</span>core.map_tilesets {
+            <span class="kw">let </span>tileset_meta = <span class="self">self
+                </span>.texture_atlas_assets
+                .get(<span class="kw-2">&amp;</span>tileset_handle.get_bevy_handle_untyped().typed())
+                .unwrap();
+            <span class="kw">let </span>size = tileset_meta.size;
+            <span class="kw">let </span>tile_size = tileset_meta.textures[<span class="number">0</span>].size(); <span class="comment">// All tiles have to be the same size
+            </span><span class="kw">let </span>texture = egui_ctx.add_image(tileset_meta.texture.clone_weak());
+
+            map_tileset_egui_textures.insert(
+                tileset_handle.path.clone(),
+                MapTilesetEguiTextureinfo {
+                    texture,
+                    size,
+                    tile_size,
+                },
+            );
+        }
+        commands.insert_resource(MapTilesetEguiTextures(map_tileset_egui_textures));
     }
 
     <span class="comment">// Run checks to see if we should skip running the system

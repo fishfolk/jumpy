@@ -201,6 +201,9 @@
 <a href="#200" id="200">200</a>
 <a href="#201" id="201">201</a>
 <a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::{collisions::TileCollisionKind, <span class="kw-2">*</span>};
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
@@ -340,36 +343,39 @@
     <span class="comment">// Load tiles
     </span><span class="kw">for </span>(layer_idx, layer) <span class="kw">in </span>map.layers.iter().enumerate() {
         <span class="kw">let </span>layer_z = z_depth_for_map_layer(layer_idx);
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(atlas) = layer.tilemap.clone() {
-            <span class="kw">let </span><span class="kw-2">mut </span>tile_layer = TileLayer::new(map.grid_size, map.tile_size, atlas);
+        <span class="kw">let </span><span class="kw-2">mut </span>tile_layer = TileLayer::new(
+            map.grid_size,
+            map.tile_size,
+            <span class="comment">// Just use a dummy atlas if one is not specified
+            </span>layer.tilemap.clone().unwrap_or_default(),
+        );
 
-            <span class="kw">for </span>tile_meta <span class="kw">in </span><span class="kw-2">&amp;</span>layer.tiles {
-                <span class="kw">let </span>tile_ent = entities.create();
-                tile_layer.set(tile_meta.pos, <span class="prelude-val">Some</span>(tile_ent));
-                tiles.insert(
-                    tile_ent,
-                    Tile {
-                        idx: tile_meta.idx <span class="kw">as </span>usize,
-                        ..default()
-                    },
-                );
-                tile_collisions.insert(
-                    tile_ent,
-                    <span class="kw">if </span>tile_meta.jump_through {
-                        TileCollisionKind::JUMP_THROUGH
-                    } <span class="kw">else </span>{
-                        TileCollisionKind::SOLID
-                    },
-                );
-            }
-            <span class="kw">let </span>layer_ent = entities.create();
-            spawned_map_layer_metas.insert(layer_ent, SpawnedMapLayerMeta { layer_idx });
-            tile_layers.insert(layer_ent, tile_layer);
-            transforms.insert(
-                layer_ent,
-                Transform::from_translation(Vec3::new(<span class="number">0.0</span>, <span class="number">0.0</span>, layer_z)),
+        <span class="kw">for </span>tile_meta <span class="kw">in </span><span class="kw-2">&amp;</span>layer.tiles {
+            <span class="kw">let </span>tile_ent = entities.create();
+            tile_layer.set(tile_meta.pos, <span class="prelude-val">Some</span>(tile_ent));
+            tiles.insert(
+                tile_ent,
+                Tile {
+                    idx: tile_meta.idx <span class="kw">as </span>usize,
+                    ..default()
+                },
+            );
+            tile_collisions.insert(
+                tile_ent,
+                <span class="kw">if </span>tile_meta.jump_through {
+                    TileCollisionKind::JUMP_THROUGH
+                } <span class="kw">else </span>{
+                    TileCollisionKind::SOLID
+                },
             );
         }
+        <span class="kw">let </span>layer_ent = entities.create();
+        spawned_map_layer_metas.insert(layer_ent, SpawnedMapLayerMeta { layer_idx });
+        tile_layers.insert(layer_ent, tile_layer);
+        transforms.insert(
+            layer_ent,
+            Transform::from_translation(Vec3::new(<span class="number">0.0</span>, <span class="number">0.0</span>, layer_z)),
+        );
 
         <span class="kw">for </span>element_meta <span class="kw">in </span><span class="kw-2">&amp;</span>layer.elements {
             <span class="kw">let </span>element_ent = entities.create();

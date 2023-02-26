@@ -76,11 +76,11 @@ debug = 1 # Only keep line numbers
 
 # Optimize our code a little bit.
 [profile.dev.package.jumpy_core]
-opt-level = 0
+opt-level = 1
 codegen-units = 512
 
 [profile.dev]
-opt-level = 0
+opt-level = 1
 codegen-units = 128
 
 [profile.dev-optimized]

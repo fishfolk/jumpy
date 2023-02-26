@@ -38,6 +38,10 @@ stable_maps:
 
 map_tilesets:
   - map/resources/default_tileset.atlas.yaml
+  - map/resources/ground_rock.atlas.yaml
+  - map/resources/ground_wood.atlas.yaml
+  - map/resources/ground_metal.atlas.yaml
+  - map/resources/ship_decorations.atlas.yaml
 
 map_elements:
   - elements/decoration/anemones/anemones.element.yaml

@@ -206,6 +206,7 @@ impl_system_param! {
 
         tile_layers: Comp<'a, TileLayer>,
         tile_collision_kinds: Comp<'a, TileCollisionKind>,
+        spawned_map_layer_metas: Comp<'a, SpawnedMapLayerMeta>,
     }
 }
 
@@ -308,6 +309,8 @@ impl<'a> CollisionWorld<'a> {
         Tq: QueryItem,
         Tq::Iter: Iterator<Item = &'b Transform>,
     {
+        puffin::profile_function!();
+
         self.sync_colliders(transforms);
 
         let RapierContext {
@@ -354,16 +357,19 @@ impl<'a> CollisionWorld<'a> {
         }
 
         // Update the collision pipeline
-        collision_pipeline.step(
-            0.0,
-            broad_phase,
-            narrow_phase,
-            rigid_body_set,
-            collider_set,
-            Some(query_pipeline),
-            &(),
-            &collision_cache,
-        )
+        {
+            puffin::profile_scope!("Collision Pipeline Step");
+            collision_pipeline.step(
+                0.0,
+                broad_phase,
+                narrow_phase,
+                rigid_body_set,
+                collider_set,
+                Some(query_pipeline),
+                &(),
+                &collision_cache,
+            )
+        }
     }
 
     /// Sync the transforms and attributes ( like `disabled` ) of the colliders. ( Does not update
@@ -373,6 +379,8 @@ impl<'a> CollisionWorld<'a> {
         Tq: QueryItem,
         Tq::Iter: Iterator<Item = &'b Transform>,
     {
+        puffin::profile_function!();
+
         let RapierContext {
             rigid_body_set,
             collider_set,
@@ -419,18 +427,36 @@ impl<'a> CollisionWorld<'a> {
         }
     }
 
-    /// Update the collisions for map tiles.
+    /// Update all of the map tile collisions.
     ///
-    /// This should only be called when the map tiles have been changed, which should be relatively
-    /// uncommon.
+    /// You should only need to call this when spawning or otherwise completely rebuilding the map
+    /// layout.
     pub fn update_tiles(&mut self) {
+        self.update_tiles_with_filter(|_, _| true);
+    }
+
+    /// Update the collision for the tile with the given layer index and map grid position.
+    pub fn update_tile(&mut self, layer_idx: usize, pos: UVec2) {
+        self.update_tiles_with_filter(|idx, p| layer_idx == idx && pos == p);
+    }
+
+    /// Update the collisions for map tiles that pass the given filter.
+    ///
+    /// The filter is a function that takes the layer index and the tile position as an argument.
+    pub fn update_tiles_with_filter<F>(&mut self, mut filter: F)
+    where
+        F: FnMut(usize, UVec2) -> bool,
+    {
         let RapierContext {
             rigid_body_set,
             collider_set,
             collider_shape_cache,
             ..
         } = &mut *self.ctx;
-        for (entity, layer) in self.entities.iter_with(&self.tile_layers) {
+        for (entity, (layer, meta)) in self
+            .entities
+            .iter_with((&self.tile_layers, &self.spawned_map_layer_metas))
+        {
             let bones_shape = ColliderShape::Rectangle {
                 size: layer.tile_size,
             };
@@ -438,7 +464,12 @@ impl<'a> CollisionWorld<'a> {
 
             for x in 0..layer.grid_size.x {
                 for y in 0..layer.grid_size.y {
-                    let Some(tile_ent) = layer.get(uvec2(x, y)) else {
+                    let pos = uvec2(x, y);
+                    if !filter(meta.layer_idx, pos) {
+                        continue;
+                    };
+
+                    let Some(tile_ent) = layer.get(pos) else {
                         continue;
                     };
                     let collider_x = x as f32 * layer.tile_size.x + layer.tile_size.x / 2.0;

@@ -1,4 +1,4 @@
-name: zyrafa05
+name: Level 12
 background:
   speed:
   - 0.09
@@ -573,17 +573,32 @@ layers:
     jump_through: true
   - pos:
     - 4
-    - 15
+    - 12
     idx: 56
     jump_through: true
   - pos:
     - 5
-    - 15
+    - 12
     idx: 58
     jump_through: true
   - pos:
     - 6
-    - 15
+    - 12
+    idx: 60
+    jump_through: true
+  - pos:
+    - 25
+    - 12
+    idx: 56
+    jump_through: true
+  - pos:
+    - 26
+    - 12
+    idx: 58
+    jump_through: true
+  - pos:
+    - 27
+    - 12
     idx: 60
     jump_through: true
   - pos:
@@ -636,21 +651,6 @@ layers:
     - 15
     idx: 23
     jump_through: false
-  - pos:
-    - 25
-    - 15
-    idx: 56
-    jump_through: true
-  - pos:
-    - 26
-    - 15
-    idx: 58
-    jump_through: true
-  - pos:
-    - 27
-    - 15
-    idx: 60
-    jump_through: true
   elements: []
 - id: decorations
   tilemap: null

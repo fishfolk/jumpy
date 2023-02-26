@@ -7,12 +7,16 @@ pub fn install(session: &mut GameSession) {
 }
 
 fn handle_editor_input(
+    mut commands: Commands,
     player_inputs: Res<PlayerInputs>,
     mut entities: ResMut<Entities>,
     mut spawned_map_meta: ResMut<SpawnedMapMeta>,
     mut element_handles: CompMut<ElementHandle>,
     mut transforms: CompMut<Transform>,
     mut spawned_map_layer_metas: CompMut<SpawnedMapLayerMeta>,
+    mut tile_layers: CompMut<TileLayer>,
+    mut tiles: CompMut<Tile>,
+    mut tile_collisions: CompMut<TileCollisionKind>,
 ) {
     for player in &player_inputs.players {
         if let Some(editor_input) = &player.editor_input {
@@ -55,6 +59,57 @@ fn handle_editor_input(
                 }
                 EditorInput::DeleteEntity { entity } => {
                     entities.kill(*entity);
+                }
+                EditorInput::SetTilemap { layer, handle } => {
+                    if let Some((_ent, (tile_layer, _))) = entities
+                        .iter_with((&mut tile_layers, &spawned_map_layer_metas))
+                        .find(|x| x.1 .1.layer_idx == *layer as usize)
+                    {
+                        if let Some(handle) = handle {
+                            tile_layer.atlas = handle.clone();
+                        } else {
+                            tile_layer.atlas = default();
+                        }
+                    };
+                }
+                EditorInput::SetTile {
+                    layer,
+                    pos,
+                    tilemap_tile_idx,
+                    collision,
+                } => {
+                    let layer = *layer as usize;
+                    let pos = *pos;
+
+                    if let Some((_ent, (tile_layer, _))) = entities
+                        .iter_with((&mut tile_layers, &spawned_map_layer_metas))
+                        .find(|x| x.1 .1.layer_idx == layer)
+                    {
+                        if let Some(ent) = tile_layer.get(pos) {
+                            if let Some(idx) = tilemap_tile_idx.as_ref() {
+                                tiles.get_mut(ent).unwrap().idx = *idx;
+                                tile_collisions.insert(ent, *collision);
+                            } else {
+                                entities.kill(ent);
+                                tile_layer.set(pos, None);
+                            }
+                        } else if let Some(idx) = tilemap_tile_idx {
+                            let ent = entities.create();
+                            tile_layer.set(pos, Some(ent));
+                            tiles.insert(
+                                ent,
+                                Tile {
+                                    idx: *idx,
+                                    ..default()
+                                },
+                            );
+                            tile_collisions.insert(ent, *collision);
+                        }
+
+                        commands.add(move |mut collision_world: CollisionWorld| {
+                            collision_world.update_tile(layer, pos);
+                        });
+                    };
                 }
             }
         }

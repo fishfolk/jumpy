@@ -89,6 +89,8 @@ impl GameSession {
 
     /// Run a single simulation frame
     pub fn advance(&mut self, bevy_world: &mut ::bevy::prelude::World) {
+        puffin::profile_function!();
+
         // Update the window resource
         let window_resource = self.world.resource::<Window>();
         let bevy_windows = bevy_world.resource::<::bevy::window::Windows>();
@@ -105,6 +107,8 @@ impl GameSession {
             world_resource.0 = Some(scratch_world);
         }
         for stage in &mut self.stages.stages {
+            let stage_name = stage.name();
+            puffin::profile_scope!("Run Stage", stage_name);
             stage.run(&mut self.world).unwrap();
         }
 
@@ -164,6 +168,10 @@ impl GameSession {
                 {
                     let layer_idx = layer_meta.layer_idx;
                     let layer = &mut layers[layer_idx];
+                    if tile_layer.atlas.path == AssetPath::default() {
+                        // Skip layers with dummy atlases
+                        continue;
+                    }
                     layer.tilemap = Some(tile_layer.atlas.clone());
                     layer.tiles = tile_layer
                         .tiles

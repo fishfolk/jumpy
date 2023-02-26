@@ -4,6 +4,9 @@ show-damage-regions = Show Damage Regions
 show-world-inspector = Show World Inspector
 show-frame-time-diagnostics = Show Frame Time Diagnostics
 show-network-visualizer = Show Network Visualizer
+show-profiler = Show Profiler
+
+profiler = Profiler
 
 frame-diagnostics = Frame Diagnostics
 frames-per-second = Frames Per Second

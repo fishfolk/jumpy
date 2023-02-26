@@ -7,7 +7,11 @@ use leafwing_input_manager::{
     InputManagerBundle,
 };
 
-use crate::{main_menu::player_select::PlayerAtlasEguiTextures, prelude::*};
+use crate::{
+    editor::{MapTilesetEguiTextureinfo, MapTilesetEguiTextures},
+    main_menu::player_select::PlayerAtlasEguiTextures,
+    prelude::*,
+};
 
 pub struct JumpyLoadingPlugin;
 
@@ -220,6 +224,7 @@ impl<'w, 's> GameLoader<'w, 's> {
         commands.insert_resource(game.clone());
         commands.insert_resource(CoreMetaArc(Arc::new(core.clone())));
 
+        // Load player atlas egui handles
         let mut player_atlas_egui_textures = HashMap::default();
         for player_handle in &core.players {
             let player_meta = self
@@ -248,6 +253,28 @@ impl<'w, 's> GameLoader<'w, 's> {
             }
         }
         commands.insert_resource(PlayerAtlasEguiTextures(player_atlas_egui_textures));
+
+        // load map tileset egui handles
+        let mut map_tileset_egui_textures = HashMap::default();
+        for tileset_handle in &core.map_tilesets {
+            let tileset_meta = self
+                .texture_atlas_assets
+                .get(&tileset_handle.get_bevy_handle_untyped().typed())
+                .unwrap();
+            let size = tileset_meta.size;
+            let tile_size = tileset_meta.textures[0].size(); // All tiles have to be the same size
+            let texture = egui_ctx.add_image(tileset_meta.texture.clone_weak());
+
+            map_tileset_egui_textures.insert(
+                tileset_handle.path.clone(),
+                MapTilesetEguiTextureinfo {
+                    texture,
+                    size,
+                    tile_size,
+                },
+            );
+        }
+        commands.insert_resource(MapTilesetEguiTextures(map_tileset_egui_textures));
     }
 
     // Run checks to see if we should skip running the system

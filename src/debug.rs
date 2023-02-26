@@ -9,7 +9,10 @@ pub struct WorldInspectorEnabled(pub bool);
 impl Plugin for JumpyDebugPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<WorldInspectorEnabled>()
-            .add_system(world_inspector);
+            .add_system(world_inspector)
+            .add_system_to_stage(CoreStage::Last, || {
+                puffin::GlobalProfiler::lock().new_frame();
+            });
 
         let type_registry = app.world.resource::<bevy::app::AppTypeRegistry>();
         let mut type_registry = type_registry.write();

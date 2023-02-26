@@ -98,7 +98,7 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                     let map_meta = params
                                         .map_assets
                                         .get(&map_handle.get_bevy_handle())
-                                        .unwrap();
+                                        .expect("Error loading map");
                                     ui.add_space(ui.spacing().item_spacing.y);
 
                                     let mut button =

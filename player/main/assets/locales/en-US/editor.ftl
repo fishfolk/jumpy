@@ -23,6 +23,10 @@ name = Name
 grid-size = Grid Size
 copy-to-clipboard = Copy to Clipboard
 
+none = None
+jump-through = Jump Through
+
+tilemap = Tilemap
 tilemap-path = Tilemap Path
 
 open-map = Open Map

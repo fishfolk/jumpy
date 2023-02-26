@@ -4,6 +4,7 @@ use bevy::{ecs::system::SystemParam, math::Vec3Swizzles};
 use bevy_egui::*;
 use bevy_fluent::Localization;
 use bones_bevy_renderer::BevyBonesEntity;
+use jumpy_core::physics::TileCollisionKind;
 
 use crate::prelude::*;
 
@@ -35,6 +36,7 @@ struct EditorCursor {
 struct EditorState {
     pub cursor: EditorCursor,
     pub current_layer_idx: usize,
+    pub current_tilemap_tile: usize,
     pub current_tool: EditorTool,
     pub camera: EditorCameraPos,
     // pub hidden_layers: HashSet<usize>,
@@ -73,6 +75,17 @@ impl EditorTool {
             EditorTool::Tile => egui::CursorIcon::Crosshair,
         }
     }
+}
+
+/// Resource that maps the map tileset paths to their egui textures.
+#[derive(Resource)]
+pub struct MapTilesetEguiTextures(pub HashMap<bones::AssetPath, MapTilesetEguiTextureinfo>);
+
+/// Information about an egui tileset texture. Used in [`MapTilesetEguiTextures`].
+pub struct MapTilesetEguiTextureinfo {
+    pub texture: egui::TextureId,
+    pub size: Vec2,
+    pub tile_size: Vec2,
 }
 
 pub fn cleanup_editor(session: Option<ResMut<Session>>) {
@@ -414,6 +427,7 @@ struct EditorRightToolbar<'w, 's> {
     state: ResMut<'w, EditorState>,
     editor_input: ResMut<'w, CurrentEditorInput>,
     map_export: Res<'w, EditorMapExport>,
+    tilesets: Res<'w, MapTilesetEguiTextures>,
 }
 
 impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
@@ -556,6 +570,123 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                 }
             });
         }
+
+        // Tilemap section
+        if params.state.current_tool == EditorTool::Tile {
+            if let Some(map_meta) = map_meta {
+                if map_meta.layers.is_empty() {
+                    return;
+                }
+
+                ui.separator();
+                ui.horizontal(|ui| {
+                    ui.label(&params.localization.get("tilemap"));
+                });
+                ui.separator();
+
+                let tilemap = &map_meta.layers[params.state.current_layer_idx].tilemap;
+                ui.horizontal(|ui| {
+                    let none_string = params.localization.get("none");
+                    let tilemap_name = move |tilemap: Option<&bones::AssetPath>| {
+                        tilemap
+                            .as_ref()
+                            .map(|handle| {
+                                handle
+                                    .path
+                                    .file_name()
+                                    .unwrap()
+                                    .to_str()
+                                    .unwrap()
+                                    .strip_suffix(".atlas.yaml")
+                                    .unwrap()
+                                    .to_owned()
+                            })
+                            .unwrap_or_else(|| none_string.clone())
+                    };
+                    let name = tilemap_name(tilemap.as_ref().map(|x| &x.path));
+                    let mut selected_tilemap = tilemap.as_ref().map(|x| x.path.clone());
+                    egui::ComboBox::new("tilemap-select", "")
+                        .selected_text(name)
+                        .width(ui.available_width() - ui.spacing().item_spacing.x)
+                        .show_ui(ui, |ui| {
+                            for tilemap_path in std::iter::once(None)
+                                .chain(params.tilesets.0.keys().cloned().map(Some))
+                            {
+                                let name = tilemap_name(tilemap_path.as_ref());
+                                ui.selectable_value(&mut selected_tilemap, tilemap_path, name);
+                            }
+                        });
+
+                    // If a new tilemap was selected
+                    if selected_tilemap.as_ref() != tilemap.as_ref().map(|x| &x.path) {
+                        // Update the tilemap
+                        **params.editor_input = Some(EditorInput::SetTilemap {
+                            layer: params.state.current_layer_idx as u8,
+                            handle: selected_tilemap
+                                .map(|path| bones::UntypedHandle { path }.typed()),
+                        });
+                    }
+                });
+
+                // Render the tilemap
+                if let Some(tilemap) = tilemap {
+                    let info = params.tilesets.0.get(&tilemap.path).unwrap();
+
+                    let aspect = info.size.y / info.size.x;
+                    let width = ui.available_width();
+                    let height = width * aspect;
+                    let size = egui::vec2(width, height);
+
+                    let grid_size = egui::Vec2::from((info.size / info.tile_size).to_array());
+                    let rendered_tile_size = size / grid_size;
+
+                    let (rect, response) = ui.allocate_exact_size(size, egui::Sense::click());
+                    let mut painter = ui.painter_at(rect);
+                    painter.set_clip_rect(rect.expand(2.0));
+                    painter.image(
+                        info.texture,
+                        rect,
+                        egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)),
+                        egui::Color32::WHITE,
+                    );
+
+                    // Render hover tile
+                    if let Some(hover_pos) = response.hover_pos() {
+                        let relative_pos = hover_pos - rect.min;
+                        let tile_pos = (relative_pos / rendered_tile_size)
+                            .floor()
+                            .max(egui::vec2(0.0, 0.0));
+
+                        let min = rect.min + tile_pos * rendered_tile_size;
+                        let max = min + rendered_tile_size;
+                        let tile_rect = egui::Rect { min, max };
+                        painter.rect_stroke(
+                            tile_rect,
+                            1.0,
+                            (1.0, ui.visuals().widgets.inactive.fg_stroke.color),
+                        );
+
+                        if response.clicked() {
+                            let (x, y) = (tile_pos.x as usize, tile_pos.y as usize);
+                            let i = y * grid_size.x as usize + x;
+                            params.state.current_tilemap_tile = i;
+                        }
+                    }
+
+                    // Render selected tile
+                    let y = params.state.current_tilemap_tile / grid_size.x as usize;
+                    let x = params.state.current_tilemap_tile - (y * grid_size.x as usize);
+                    let pos = egui::vec2(
+                        x as f32 * rendered_tile_size.x,
+                        y as f32 * rendered_tile_size.y,
+                    );
+                    let min = rect.min + pos;
+                    let max = min + rendered_tile_size;
+                    let tile_rect = egui::Rect { min, max };
+                    painter.rect_stroke(tile_rect, 1.0, (1.5, egui::Color32::GREEN));
+                }
+            }
+        }
     }
 }
 
@@ -674,79 +805,20 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
 
         map_open_dialog(ui, &mut params);
         map_create_dialog(ui, &mut params);
-
         if *params.show_map_create || *params.show_map_open {
             ui.set_enabled(false);
         }
 
-        // Collect map element list
-        let element_handles: &Vec<bones::Handle<ElementMeta>> = &params.core_meta.map_elements;
-        let mut element_categories =
-            HashMap::<String, Vec<(bones::Handle<ElementMeta>, &ElementMeta)>>::new();
-        element_handles
-            .iter()
-            .map(|handle| (handle.clone(), handle.get_bevy_handle()))
-            .map(|(handle, bevy_handle)| (handle, params.element_assets.get(&bevy_handle).unwrap()))
-            .for_each(|(handle, element)| {
-                element_categories
-                    .entry(element.category.clone())
-                    .or_default()
-                    .push((handle, element));
-            });
-        let mut element_categories = element_categories
-            .into_iter()
-            .map(|(k, mut v)| {
-                v.sort_by_key(|x| &x.1.name);
-                (k, v)
-            })
-            .collect::<Vec<_>>();
-        element_categories.sort_by(|a, b| a.0.cmp(&b.0));
-
         if let Some(session) = params.session_manager.session {
+            let Ok((camera, camera_transform, _)) = params.camera.get_single() else { return };
+            let Some(map) = params.map.0.as_ref() else { return; };
+
             let core_meta = session.world.resource::<CoreMetaArc>();
             let core_meta = core_meta.borrow();
 
             let mut map_response =
                 ui.allocate_response(ui.available_size(), egui::Sense::click_and_drag());
             let map_response_rect = map_response.rect;
-
-            // Element context menu
-            if let EditorTool::Element = params.state.current_tool {
-                map_response = map_response.context_menu(|ui| {
-                    if ui.input().pointer.secondary_clicked() {
-                        params.state.cursor.context_click_pos = params.state.cursor.current_pos;
-                    }
-                    ui.menu_button(
-                        &format!("➕ {}", params.localization.get("add-element")),
-                        |ui| {
-                            for (category, elements) in element_categories {
-                                ui.menu_button(&category, |ui| {
-                                    for (handle, element) in elements {
-                                        if ui.button(&element.name).clicked() {
-                                            **params.editor_input =
-                                                Some(EditorInput::SpawnElement {
-                                                    handle,
-                                                    translation: params
-                                                        .state
-                                                        .cursor
-                                                        .context_click_pos
-                                                        .unwrap(),
-                                                    layer: params
-                                                        .state
-                                                        .current_layer_idx
-                                                        .try_into()
-                                                        .unwrap(),
-                                                });
-                                            ui.close_menu();
-                                            params.state.cursor.context_click_pos = None;
-                                        }
-                                    }
-                                });
-                            }
-                        },
-                    );
-                });
-            }
 
             // Move camera
             let camera_zoom = {
@@ -782,11 +854,12 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
                 // resize handle of the right sidebar.
                 if cursor_icon == default() {
                     if panning {
-                        map_response.on_hover_cursor(egui::CursorIcon::Grabbing);
+                        map_response = map_response.on_hover_cursor(egui::CursorIcon::Grabbing);
                     } else if ctrl_modifier {
-                        map_response.on_hover_cursor(egui::CursorIcon::Grab);
+                        map_response = map_response.on_hover_cursor(egui::CursorIcon::Grab);
                     } else {
-                        map_response.on_hover_cursor(params.state.current_tool.cursor());
+                        map_response =
+                            map_response.on_hover_cursor(params.state.current_tool.cursor());
                     }
                 }
 
@@ -794,8 +867,8 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
             };
             let ppp = params.game.ui_theme.scale * camera_zoom;
 
-            if let Ok((camera, camera_transform, _)) = params.camera.get_single() {
-                let elements = session
+            let elements =
+                session
                     .world
                     .run_initialized_system(
                         |entities: bones::Res<bones::Entities>,
@@ -823,126 +896,289 @@ impl<'w, 's> WidgetSystem for EditorCentralPanel<'w, 's> {
                     )
                     .unwrap();
 
-                // Map element tool
-                if params.state.current_tool == EditorTool::Element {
-                    for (entity, handle, translation, layer_idx) in elements {
-                        if layer_idx != params.state.current_layer_idx {
-                            continue;
-                        }
+            let screen_rect = ui.input().screen_rect();
+            let window_size = screen_rect.size();
 
-                        let element_meta = params.element_assets.get(&handle).unwrap();
-                        let grab_size = element_meta.editor.grab_size;
-                        let grab_offset = element_meta.editor.grab_offset;
+            // Map element tool
+            if params.state.current_tool == EditorTool::Element {
+                // Collect map element list
+                let element_handles: &Vec<bones::Handle<ElementMeta>> =
+                    &params.core_meta.map_elements;
+                let mut element_categories =
+                    HashMap::<String, Vec<(bones::Handle<ElementMeta>, &ElementMeta)>>::new();
+                element_handles
+                    .iter()
+                    .map(|handle| (handle.clone(), handle.get_bevy_handle()))
+                    .map(|(handle, bevy_handle)| {
+                        (handle, params.element_assets.get(&bevy_handle).unwrap())
+                    })
+                    .for_each(|(handle, element)| {
+                        element_categories
+                            .entry(element.category.clone())
+                            .or_default()
+                            .push((handle, element));
+                    });
+                let mut element_categories = element_categories
+                    .into_iter()
+                    .map(|(k, mut v)| {
+                        v.sort_by_key(|x| &x.1.name);
+                        (k, v)
+                    })
+                    .collect::<Vec<_>>();
+                element_categories.sort_by(|a, b| a.0.cmp(&b.0));
 
-                        let screen_rect = ui.input().screen_rect();
-                        let window_size = screen_rect.size();
-                        let Some(ndc) = camera
+                // Element context menu
+                map_response.context_menu(|ui| {
+                    if ui.input().pointer.secondary_clicked() {
+                        params.state.cursor.context_click_pos = params.state.cursor.current_pos;
+                    }
+                    ui.menu_button(
+                        &format!("➕ {}", params.localization.get("add-element")),
+                        |ui| {
+                            for (category, elements) in element_categories {
+                                ui.menu_button(&category, |ui| {
+                                    for (handle, element) in elements {
+                                        if ui.button(&element.name).clicked() {
+                                            **params.editor_input =
+                                                Some(EditorInput::SpawnElement {
+                                                    handle,
+                                                    translation: params
+                                                        .state
+                                                        .cursor
+                                                        .context_click_pos
+                                                        .unwrap(),
+                                                    layer: params
+                                                        .state
+                                                        .current_layer_idx
+                                                        .try_into()
+                                                        .unwrap(),
+                                                });
+                                            ui.close_menu();
+                                            params.state.cursor.context_click_pos = None;
+                                        }
+                                    }
+                                });
+                            }
+                        },
+                    );
+                });
+
+                // Selectable element rendering and handling
+                for (entity, handle, translation, layer_idx) in elements {
+                    if layer_idx != params.state.current_layer_idx {
+                        continue;
+                    }
+
+                    let element_meta = params.element_assets.get(&handle).unwrap();
+                    let grab_size = element_meta.editor.grab_size;
+                    let grab_offset = element_meta.editor.grab_offset;
+
+                    let Some(ndc) = camera
                         .world_to_ndc(
                             &(*camera_transform).into(),
                             translation
                         ) else { continue };
+                    let ndc = (ndc + 1.0) / 2.0;
+                    let pos =
+                        egui::pos2(window_size.x * ndc.x, window_size.y - window_size.y * ndc.y);
+
+                    let rect = egui::Rect::from_center_size(
+                        pos + egui::vec2(grab_offset.x, -grab_offset.y) / ppp,
+                        egui::vec2(grab_size.x, grab_size.y) / ppp,
+                    );
+                    let mut color_override = None;
+                    let response = ui
+                        .allocate_rect(rect, egui::Sense::click_and_drag())
+                        .context_menu(|ui| {
+                            color_override = Some(egui::Color32::RED);
+                            if ui
+                                .button(&format!("🗑 {}", params.localization.get("delete-element")))
+                                .clicked()
+                            {
+                                ui.close_menu();
+                                **params.editor_input = Some(EditorInput::DeleteEntity { entity });
+                            }
+                        });
+
+                    #[derive(Clone)]
+                    struct ElementDrag {
+                        offset: Vec2,
+                    }
+                    let drag_id = egui::Id::from("element_drag");
+                    if response.drag_started() {
+                        ui.data().insert_temp(
+                            drag_id,
+                            ElementDrag {
+                                offset: params.state.cursor.current_pos.unwrap()
+                                    - translation.truncate(),
+                            },
+                        );
+                    } else if response.drag_released() {
+                        ui.data().remove::<ElementDrag>(drag_id);
+                    }
+
+                    let half_pixel_offset = Vec2::new(
+                        if grab_size.x % 2.0 != 0.0 { 0.5 } else { 0.0 },
+                        if grab_size.y % 2.0 != 0.0 { 0.5 } else { 0.0 },
+                    );
+                    let snap_to_grid = ui.input().modifiers.shift_only();
+                    let ctrl_modifier = ui.input().modifiers.command;
+
+                    let default_color = if response.dragged_by(egui::PointerButton::Primary)
+                        && map_response_rect.contains(ui.input().pointer.hover_pos().unwrap())
+                        && !ctrl_modifier
+                    {
+                        let element_drag: ElementDrag = ui.data().get_temp(drag_id).unwrap();
+
+                        let new_pos =
+                            params.state.cursor.current_pos.unwrap() - element_drag.offset;
+
+                        let new_pos = if snap_to_grid {
+                            let bottom_center_offset =
+                                -grab_offset + Vec2::new(0.0, grab_size.y / 2.0);
+                            let bottom_center = new_pos - bottom_center_offset;
+
+                            let increment = params.map.0.as_ref().unwrap().tile_size / 4.0;
+                            let snapped_bottom_center =
+                                (bottom_center / increment).floor() * increment;
+                            snapped_bottom_center + bottom_center_offset
+                        } else {
+                            new_pos.floor() + half_pixel_offset
+                        };
+
+                        **params.editor_input = Some(EditorInput::MoveEntity {
+                            entity,
+                            pos: new_pos,
+                        });
+                        response.on_hover_cursor(egui::CursorIcon::Grabbing);
+                        egui::Color32::GREEN
+                    } else {
+                        response.on_hover_cursor(egui::CursorIcon::PointingHand);
+                        egui::Color32::LIGHT_GRAY
+                    };
+                    let mut painter = ui.painter_at(screen_rect);
+                    let color = color_override.unwrap_or(default_color);
+                    painter.set_clip_rect(map_response_rect);
+                    if element_meta.editor.show_name {
+                        painter.text(
+                            rect.center_top(),
+                            egui::Align2::CENTER_BOTTOM,
+                            &element_meta.name,
+                            egui::FontId::new(15.0, egui::FontFamily::Proportional),
+                            color,
+                        );
+                    }
+                    painter.rect_stroke(rect, 2.0, (1.0, color));
+                }
+
+            // Tile tool
+            } else if params.state.current_tool == EditorTool::Tile {
+                #[allow(clippy::unnecessary_operation)] // false alarm
+                'tile_tool: {
+                    if let Some(cursor_pos) = params.state.cursor.current_pos {
+                        if cursor_pos.x < 0.0
+                            || cursor_pos.y < 0.0
+                            || cursor_pos.y > map.grid_size.y as f32 * map.tile_size.y
+                            || cursor_pos.x > map.grid_size.x as f32 * map.tile_size.x
+                        {
+                            break 'tile_tool;
+                        }
+
+                        let tile_pos = (cursor_pos / map.tile_size).floor() * map.tile_size;
+                        let Some(ndc) = camera
+                        .world_to_ndc(
+                            &(*camera_transform).into(),
+                            tile_pos.extend(0.0)
+                        ) else { break 'tile_tool };
+
                         let ndc = (ndc + 1.0) / 2.0;
-                        let pos = egui::pos2(
+                        let bottom_left = egui::pos2(
                             window_size.x * ndc.x,
                             window_size.y - window_size.y * ndc.y,
                         );
+                        let size = egui::vec2(map.tile_size.x, map.tile_size.y) / ppp;
+                        let top_right = egui::pos2(bottom_left.x + size.x, bottom_left.y - size.y);
+                        let rect = egui::Rect::from_two_pos(bottom_left, top_right);
 
-                        let rect = egui::Rect::from_center_size(
-                            pos + egui::vec2(grab_offset.x, -grab_offset.y) / ppp,
-                            egui::vec2(grab_size.x, grab_size.y) / ppp,
-                        );
-                        let mut color_override = None;
-                        let response = ui
-                            .allocate_rect(rect, egui::Sense::click_and_drag())
-                            .context_menu(|ui| {
-                                color_override = Some(egui::Color32::RED);
+                        if !map_response_rect.contains_rect(rect) {
+                            break 'tile_tool;
+                        }
+
+                        let response = ui.allocate_rect(rect, egui::Sense::click_and_drag());
+
+                        let mut painter = ui.painter_at(map_response_rect);
+                        painter.set_clip_rect(map_response_rect);
+                        painter.rect_stroke(rect, 1.0, ui.visuals().widgets.active.fg_stroke);
+
+                        let tile_xy = (cursor_pos / map.tile_size).floor().as_uvec2();
+                        if response.dragged_by(egui::PointerButton::Primary)
+                            && !ui.input().modifiers.command
+                        {
+                            if !ui.input().modifiers.shift {
+                                **params.editor_input = Some(EditorInput::SetTile {
+                                    layer: params.state.current_layer_idx as u8,
+                                    pos: tile_xy,
+                                    tilemap_tile_idx: Some(params.state.current_tilemap_tile),
+                                    collision: TileCollisionKind::SOLID,
+                                });
+                            } else {
+                                **params.editor_input = Some(EditorInput::SetTile {
+                                    layer: params.state.current_layer_idx as u8,
+                                    pos: tile_xy,
+                                    tilemap_tile_idx: None,
+                                    collision: TileCollisionKind::SOLID,
+                                });
+                            }
+                        }
+
+                        response.context_menu(|ui| {
+                            #[derive(Clone)]
+                            struct ClickedTile {
+                                tile_xy: UVec2,
+                            }
+
+                            let data_id = egui::Id::new("tile_context_menu");
+
+                            if ui.input().pointer.secondary_clicked() {
+                                ui.data().insert_temp(data_id, ClickedTile { tile_xy });
+                            }
+                            let ClickedTile { tile_xy } = ui.data().get_temp(data_id).unwrap();
+
+                            if let Some(tile) = map.layers[params.state.current_layer_idx]
+                                .tiles
+                                .iter()
+                                .find(|x| x.pos == tile_xy)
+                            {
+                                let mut jump_through = tile.jump_through;
+                                let tilemap_tile_idx = tile.idx as usize;
                                 if ui
-                                    .button(&format!(
-                                        "🗑 {}",
-                                        params.localization.get("delete-element")
-                                    ))
+                                    .checkbox(
+                                        &mut jump_through,
+                                        &params.localization.get("jump-through"),
+                                    )
                                     .clicked()
                                 {
-                                    ui.close_menu();
-                                    **params.editor_input =
-                                        Some(EditorInput::DeleteEntity { entity });
+                                    **params.editor_input = Some(EditorInput::SetTile {
+                                        layer: params.state.current_layer_idx as u8,
+                                        pos: tile_xy,
+                                        tilemap_tile_idx: Some(tilemap_tile_idx),
+                                        collision: if jump_through {
+                                            TileCollisionKind::JUMP_THROUGH
+                                        } else {
+                                            TileCollisionKind::SOLID
+                                        },
+                                    });
                                 }
-                            });
 
-                        #[derive(Clone)]
-                        struct ElementDrag {
-                            offset: Vec2,
-                        }
-                        let drag_id = egui::Id::from("element_drag");
-                        if response.drag_started() {
-                            ui.data().insert_temp(
-                                drag_id,
-                                ElementDrag {
-                                    offset: params.state.cursor.current_pos.unwrap()
-                                        - translation.truncate(),
-                                },
-                            );
-                        } else if response.drag_released() {
-                            ui.data().remove::<ElementDrag>(drag_id);
-                        }
-
-                        let half_pixel_offset = Vec2::new(
-                            if grab_size.x % 2.0 != 0.0 { 0.5 } else { 0.0 },
-                            if grab_size.y % 2.0 != 0.0 { 0.5 } else { 0.0 },
-                        );
-                        let snap_to_grid = ui.input().modifiers.shift_only();
-                        let ctrl_modifier = ui.input().modifiers.command;
-
-                        let default_color = if response.dragged_by(egui::PointerButton::Primary)
-                            && map_response_rect.contains(ui.input().pointer.hover_pos().unwrap())
-                            && !ctrl_modifier
-                        {
-                            let element_drag: ElementDrag = ui.data().get_temp(drag_id).unwrap();
-
-                            let new_pos =
-                                params.state.cursor.current_pos.unwrap() - element_drag.offset;
-
-                            let new_pos = if snap_to_grid {
-                                let bottom_center_offset =
-                                    -grab_offset + Vec2::new(0.0, grab_size.y / 2.0);
-                                let bottom_center = new_pos - bottom_center_offset;
-
-                                let increment = params.map.0.as_ref().unwrap().tile_size / 4.0;
-                                let snapped_bottom_center =
-                                    (bottom_center / increment).floor() * increment;
-                                snapped_bottom_center + bottom_center_offset
+                                if ui.button(&params.localization.get("close")).clicked() {
+                                    ui.close_menu();
+                                }
                             } else {
-                                new_pos.floor() + half_pixel_offset
-                            };
-
-                            **params.editor_input = Some(EditorInput::MoveEntity {
-                                entity,
-                                pos: new_pos,
-                            });
-                            response.on_hover_cursor(egui::CursorIcon::Grabbing);
-                            egui::Color32::GREEN
-                        } else {
-                            response.on_hover_cursor(egui::CursorIcon::PointingHand);
-                            egui::Color32::LIGHT_GRAY
-                        };
-                        let mut painter = ui.painter_at(screen_rect);
-                        let color = color_override.unwrap_or(default_color);
-                        painter.set_clip_rect(map_response_rect);
-                        if element_meta.editor.show_name {
-                            painter.text(
-                                rect.center_top(),
-                                egui::Align2::CENTER_BOTTOM,
-                                &element_meta.name,
-                                egui::FontId::new(15.0, egui::FontFamily::Proportional),
-                                color,
-                            );
-                        }
-                        painter.rect_stroke(rect, 2.0, (1.0, color));
+                                ui.close_menu();
+                            }
+                        });
                     }
-
-                // Tile tool
-                } else if params.state.current_tool == EditorTool::Tile {
-                }
+                };
             }
 
         // If there is no current map

@@ -18,6 +18,7 @@ tracing        = "0.1.37"
 rapier2d       = { version = "0.17.1", features = ["enhanced-determinism", "debug-render"] }
 nalgebra       = { version = "0.32", features = ["convert-glam022"] } 
 ordered-float  = "3.4.0"
+puffin         = "0.14.3"
 
 [dependencies.bevy]
 default-features = false

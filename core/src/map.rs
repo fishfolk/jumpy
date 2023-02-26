@@ -137,36 +137,39 @@ fn spawn_map(
     // Load tiles
     for (layer_idx, layer) in map.layers.iter().enumerate() {
         let layer_z = z_depth_for_map_layer(layer_idx);
-        if let Some(atlas) = layer.tilemap.clone() {
-            let mut tile_layer = TileLayer::new(map.grid_size, map.tile_size, atlas);
+        let mut tile_layer = TileLayer::new(
+            map.grid_size,
+            map.tile_size,
+            // Just use a dummy atlas if one is not specified
+            layer.tilemap.clone().unwrap_or_default(),
+        );
 
-            for tile_meta in &layer.tiles {
-                let tile_ent = entities.create();
-                tile_layer.set(tile_meta.pos, Some(tile_ent));
-                tiles.insert(
-                    tile_ent,
-                    Tile {
-                        idx: tile_meta.idx as usize,
-                        ..default()
-                    },
-                );
-                tile_collisions.insert(
-                    tile_ent,
-                    if tile_meta.jump_through {
-                        TileCollisionKind::JUMP_THROUGH
-                    } else {
-                        TileCollisionKind::SOLID
-                    },
-                );
-            }
-            let layer_ent = entities.create();
-            spawned_map_layer_metas.insert(layer_ent, SpawnedMapLayerMeta { layer_idx });
-            tile_layers.insert(layer_ent, tile_layer);
-            transforms.insert(
-                layer_ent,
-                Transform::from_translation(Vec3::new(0.0, 0.0, layer_z)),
+        for tile_meta in &layer.tiles {
+            let tile_ent = entities.create();
+            tile_layer.set(tile_meta.pos, Some(tile_ent));
+            tiles.insert(
+                tile_ent,
+                Tile {
+                    idx: tile_meta.idx as usize,
+                    ..default()
+                },
+            );
+            tile_collisions.insert(
+                tile_ent,
+                if tile_meta.jump_through {
+                    TileCollisionKind::JUMP_THROUGH
+                } else {
+                    TileCollisionKind::SOLID
+                },
             );
         }
+        let layer_ent = entities.create();
+        spawned_map_layer_metas.insert(layer_ent, SpawnedMapLayerMeta { layer_idx });
+        tile_layers.insert(layer_ent, tile_layer);
+        transforms.insert(
+            layer_ent,
+            Transform::from_translation(Vec3::new(0.0, 0.0, layer_z)),
+        );
 
         for element_meta in &layer.elements {
             let element_ent = entities.create();

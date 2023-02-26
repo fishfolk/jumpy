@@ -52,388 +52,153 @@ layers:
   tilemap: /map/resources/default_tileset.atlas.yaml
   tiles:
   - pos:
-    - 21
+    - 2
+    - 0
+    idx: 7
+    jump_through: false
+  - pos:
+    - 3
+    - 0
+    idx: 8
+    jump_through: false
+  - pos:
+    - 4
+    - 0
+    idx: 8
+    jump_through: false
+  - pos:
+    - 5
+    - 0
+    idx: 8
+    jump_through: false
+  - pos:
+    - 6
+    - 0
+    idx: 8
+    jump_through: false
+  - pos:
+    - 7
+    - 0
+    idx: 8
+    jump_through: false
+  - pos:
+    - 8
+    - 0
+    idx: 8
+    jump_through: false
+  - pos:
     - 9
-    idx: 56
-    jump_through: true
+    - 0
+    idx: 8
+    jump_through: false
+  - pos:
+    - 10
+    - 0
+    idx: 8
+    jump_through: false
+  - pos:
+    - 11
+    - 0
+    idx: 8
+    jump_through: false
+  - pos:
+    - 12
+    - 0
+    idx: 8
+    jump_through: false
+  - pos:
+    - 13
+    - 0
+    idx: 8
+    jump_through: false
+  - pos:
+    - 14
+    - 0
+    idx: 8
+    jump_through: false
+  - pos:
+    - 15
+    - 0
+    idx: 8
+    jump_through: false
+  - pos:
+    - 16
+    - 0
+    idx: 8
+    jump_through: false
+  - pos:
+    - 17
+    - 0
+    idx: 8
+    jump_through: false
+  - pos:
+    - 18
+    - 0
+    idx: 8
+    jump_through: false
+  - pos:
+    - 19
+    - 0
+    idx: 8
+    jump_through: false
+  - pos:
+    - 20
+    - 0
+    idx: 8
+    jump_through: false
+  - pos:
+    - 21
+    - 0
+    idx: 8
+    jump_through: false
   - pos:
     - 22
-    - 9
-    idx: 58
-    jump_through: true
+    - 0
+    idx: 8
+    jump_through: false
   - pos:
     - 23
-    - 9
-    idx: 60
-    jump_through: true
-  - pos:
-    - 6
-    - 8
-    idx: 56
-    jump_through: true
-  - pos:
-    - 7
-    - 8
-    idx: 58
-    jump_through: true
-  - pos:
-    - 8
-    - 8
-    idx: 60
-    jump_through: true
-  - pos:
-    - 11
-    - 7
-    idx: 0
-    jump_through: false
-  - pos:
-    - 12
-    - 7
-    idx: 1
-    jump_through: false
-  - pos:
-    - 13
-    - 7
-    idx: 1
-    jump_through: false
-  - pos:
-    - 14
-    - 7
-    idx: 1
-    jump_through: false
-  - pos:
-    - 15
-    - 7
-    idx: 1
-    jump_through: false
-  - pos:
-    - 16
-    - 7
-    idx: 2
-    jump_through: false
-  - pos:
-    - 11
-    - 6
-    idx: 7
-    jump_through: false
-  - pos:
-    - 12
-    - 6
+    - 0
     idx: 8
-    jump_through: false
-  - pos:
-    - 13
-    - 6
-    idx: 8
-    jump_through: false
-  - pos:
-    - 14
-    - 6
-    idx: 8
-    jump_through: false
-  - pos:
-    - 15
-    - 6
-    idx: 8
-    jump_through: false
-  - pos:
-    - 16
-    - 6
-    idx: 9
-    jump_through: false
-  - pos:
-    - 11
-    - 5
-    idx: 7
-    jump_through: false
-  - pos:
-    - 12
-    - 5
-    idx: 8
-    jump_through: false
-  - pos:
-    - 13
-    - 5
-    idx: 8
-    jump_through: false
-  - pos:
-    - 14
-    - 5
-    idx: 8
-    jump_through: false
-  - pos:
-    - 15
-    - 5
-    idx: 8
-    jump_through: false
-  - pos:
-    - 16
-    - 5
-    idx: 9
     jump_through: false
   - pos:
     - 24
-    - 5
-    idx: 0
+    - 0
+    idx: 8
     jump_through: false
   - pos:
     - 25
-    - 5
-    idx: 1
-    jump_through: false
-  - pos:
-    - 26
-    - 5
-    idx: 1
-    jump_through: false
-  - pos:
-    - 27
-    - 5
-    idx: 1
-    jump_through: false
-  - pos:
-    - 28
-    - 5
-    idx: 2
-    jump_through: false
-  - pos:
-    - 4
-    - 4
-    idx: 0
-    jump_through: false
-  - pos:
-    - 5
-    - 4
-    idx: 1
-    jump_through: false
-  - pos:
-    - 6
-    - 4
-    idx: 2
-    jump_through: false
-  - pos:
-    - 11
-    - 4
-    idx: 7
-    jump_through: false
-  - pos:
-    - 12
-    - 4
-    idx: 8
-    jump_through: false
-  - pos:
-    - 13
-    - 4
-    idx: 8
-    jump_through: false
-  - pos:
-    - 14
-    - 4
-    idx: 8
-    jump_through: false
-  - pos:
-    - 15
-    - 4
-    idx: 0
-    jump_through: false
-  - pos:
-    - 16
-    - 4
-    idx: 1
-    jump_through: false
-  - pos:
-    - 17
-    - 4
-    idx: 1
-    jump_through: false
-  - pos:
-    - 18
-    - 4
-    idx: 2
-    jump_through: false
-  - pos:
-    - 24
-    - 4
-    idx: 7
-    jump_through: false
-  - pos:
-    - 25
-    - 4
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 26
-    - 4
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 27
-    - 4
+    - 0
     idx: 8
     jump_through: false
   - pos:
     - 28
-    - 4
-    idx: 9
-    jump_through: false
-  - pos:
-    - 4
-    - 3
-    idx: 7
-    jump_through: false
-  - pos:
-    - 5
-    - 3
+    - 0
     idx: 8
     jump_through: false
   - pos:
-    - 6
-    - 3
-    idx: 9
-    jump_through: false
-  - pos:
-    - 11
-    - 3
-    idx: 7
-    jump_through: false
-  - pos:
-    - 12
-    - 3
+    - 29
+    - 0
     idx: 8
     jump_through: false
   - pos:
-    - 13
-    - 3
+    - 30
+    - 0
     idx: 8
     jump_through: false
   - pos:
-    - 14
-    - 3
-    idx: 8
-    jump_through: false
-  - pos:
-    - 15
-    - 3
-    idx: 7
-    jump_through: false
-  - pos:
-    - 16
-    - 3
-    idx: 8
-    jump_through: false
-  - pos:
-    - 17
-    - 3
-    idx: 8
-    jump_through: false
-  - pos:
-    - 18
-    - 3
-    idx: 9
-    jump_through: false
-  - pos:
-    - 24
-    - 3
-    idx: 7
-    jump_through: false
-  - pos:
-    - 25
-    - 3
-    idx: 8
-    jump_through: false
-  - pos:
-    - 26
-    - 3
-    idx: 8
-    jump_through: false
-  - pos:
-    - 27
-    - 3
-    idx: 8
-    jump_through: false
-  - pos:
-    - 28
-    - 3
-    idx: 9
-    jump_through: false
-  - pos:
-    - 4
-    - 2
-    idx: 7
-    jump_through: false
-  - pos:
-    - 5
-    - 2
-    idx: 8
-    jump_through: false
-  - pos:
-    - 6
-    - 2
-    idx: 9
-    jump_through: false
-  - pos:
-    - 11
-    - 2
-    idx: 7
-    jump_through: false
-  - pos:
-    - 12
-    - 2
-    idx: 8
-    jump_through: false
-  - pos:
-    - 13
-    - 2
-    idx: 8
-    jump_through: false
-  - pos:
-    - 14
-    - 2
-    idx: 8
-    jump_through: false
-  - pos:
-    - 15
-    - 2
-    idx: 7
-    jump_through: false
-  - pos:
-    - 16
-    - 2
-    idx: 8
-    jump_through: false
-  - pos:
-    - 17
-    - 2
-    idx: 8
-    jump_through: false
-  - pos:
-    - 18
-    - 2
-    idx: 9
-    jump_through: false
-  - pos:
-    - 24
-    - 2
-    idx: 7
-    jump_through: false
-  - pos:
-    - 25
-    - 2
-    idx: 8
-    jump_through: false
-  - pos:
-    - 26
-    - 2
-    idx: 8
-    jump_through: false
-  - pos:
-    - 27
-    - 2
-    idx: 8
-    jump_through: false
-  - pos:
-    - 28
-    - 2
+    - 31
+    - 0
     idx: 9
     jump_through: false
   - pos:
@@ -587,155 +352,390 @@ layers:
     idx: 2
     jump_through: false
   - pos:
+    - 4
     - 2
-    - 0
     idx: 7
     jump_through: false
   - pos:
-    - 3
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 4
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
     - 5
-    - 0
+    - 2
     idx: 8
     jump_through: false
   - pos:
     - 6
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 7
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 8
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 9
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 10
-    - 0
-    idx: 8
+    - 2
+    idx: 9
     jump_through: false
   - pos:
     - 11
-    - 0
-    idx: 8
+    - 2
+    idx: 7
     jump_through: false
   - pos:
     - 12
-    - 0
+    - 2
     idx: 8
     jump_through: false
   - pos:
     - 13
-    - 0
+    - 2
     idx: 8
     jump_through: false
   - pos:
     - 14
-    - 0
+    - 2
     idx: 8
     jump_through: false
   - pos:
     - 15
-    - 0
-    idx: 8
+    - 2
+    idx: 7
     jump_through: false
   - pos:
     - 16
-    - 0
+    - 2
     idx: 8
     jump_through: false
   - pos:
     - 17
-    - 0
+    - 2
     idx: 8
     jump_through: false
   - pos:
     - 18
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 19
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 20
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 21
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 22
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 23
-    - 0
-    idx: 8
+    - 2
+    idx: 9
     jump_through: false
   - pos:
     - 24
-    - 0
-    idx: 8
+    - 2
+    idx: 7
     jump_through: false
   - pos:
     - 25
-    - 0
+    - 2
     idx: 8
     jump_through: false
   - pos:
     - 26
-    - 0
+    - 2
     idx: 8
     jump_through: false
   - pos:
     - 27
-    - 0
+    - 2
     idx: 8
     jump_through: false
   - pos:
     - 28
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 29
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 30
-    - 0
-    idx: 8
-    jump_through: false
-  - pos:
-    - 31
-    - 0
+    - 2
     idx: 9
     jump_through: false
+  - pos:
+    - 4
+    - 3
+    idx: 7
+    jump_through: false
+  - pos:
+    - 5
+    - 3
+    idx: 8
+    jump_through: false
+  - pos:
+    - 6
+    - 3
+    idx: 9
+    jump_through: false
+  - pos:
+    - 11
+    - 3
+    idx: 7
+    jump_through: false
+  - pos:
+    - 12
+    - 3
+    idx: 8
+    jump_through: false
+  - pos:
+    - 13
+    - 3
+    idx: 8
+    jump_through: false
+  - pos:
+    - 14
+    - 3
+    idx: 8
+    jump_through: false
+  - pos:
+    - 15
+    - 3
+    idx: 7
+    jump_through: false
+  - pos:
+    - 16
+    - 3
+    idx: 8
+    jump_through: false
+  - pos:
+    - 17
+    - 3
+    idx: 8
+    jump_through: false
+  - pos:
+    - 18
+    - 3
+    idx: 9
+    jump_through: false
+  - pos:
+    - 24
+    - 3
+    idx: 7
+    jump_through: false
+  - pos:
+    - 25
+    - 3
+    idx: 8
+    jump_through: false
+  - pos:
+    - 26
+    - 3
+    idx: 8
+    jump_through: false
+  - pos:
+    - 27
+    - 3
+    idx: 8
+    jump_through: false
+  - pos:
+    - 28
+    - 3
+    idx: 9
+    jump_through: false
+  - pos:
+    - 4
+    - 4
+    idx: 0
+    jump_through: false
+  - pos:
+    - 5
+    - 4
+    idx: 1
+    jump_through: false
+  - pos:
+    - 6
+    - 4
+    idx: 2
+    jump_through: false
+  - pos:
+    - 11
+    - 4
+    idx: 7
+    jump_through: false
+  - pos:
+    - 12
+    - 4
+    idx: 8
+    jump_through: false
+  - pos:
+    - 13
+    - 4
+    idx: 8
+    jump_through: false
+  - pos:
+    - 14
+    - 4
+    idx: 8
+    jump_through: false
+  - pos:
+    - 15
+    - 4
+    idx: 0
+    jump_through: false
+  - pos:
+    - 16
+    - 4
+    idx: 1
+    jump_through: false
+  - pos:
+    - 17
+    - 4
+    idx: 1
+    jump_through: false
+  - pos:
+    - 18
+    - 4
+    idx: 2
+    jump_through: false
+  - pos:
+    - 24
+    - 4
+    idx: 7
+    jump_through: false
+  - pos:
+    - 25
+    - 4
+    idx: 8
+    jump_through: false
+  - pos:
+    - 26
+    - 4
+    idx: 8
+    jump_through: false
+  - pos:
+    - 27
+    - 4
+    idx: 8
+    jump_through: false
+  - pos:
+    - 28
+    - 4
+    idx: 9
+    jump_through: false
+  - pos:
+    - 11
+    - 5
+    idx: 7
+    jump_through: false
+  - pos:
+    - 12
+    - 5
+    idx: 8
+    jump_through: false
+  - pos:
+    - 13
+    - 5
+    idx: 8
+    jump_through: false
+  - pos:
+    - 14
+    - 5
+    idx: 8
+    jump_through: false
+  - pos:
+    - 15
+    - 5
+    idx: 8
+    jump_through: false
+  - pos:
+    - 16
+    - 5
+    idx: 9
+    jump_through: false
+  - pos:
+    - 24
+    - 5
+    idx: 0
+    jump_through: false
+  - pos:
+    - 25
+    - 5
+    idx: 1
+    jump_through: false
+  - pos:
+    - 26
+    - 5
+    idx: 1
+    jump_through: false
+  - pos:
+    - 27
+    - 5
+    idx: 1
+    jump_through: false
+  - pos:
+    - 28
+    - 5
+    idx: 2
+    jump_through: false
+  - pos:
+    - 11
+    - 6
+    idx: 7
+    jump_through: false
+  - pos:
+    - 12
+    - 6
+    idx: 8
+    jump_through: false
+  - pos:
+    - 13
+    - 6
+    idx: 8
+    jump_through: false
+  - pos:
+    - 14
+    - 6
+    idx: 8
+    jump_through: false
+  - pos:
+    - 15
+    - 6
+    idx: 8
+    jump_through: false
+  - pos:
+    - 16
+    - 6
+    idx: 9
+    jump_through: false
+  - pos:
+    - 11
+    - 7
+    idx: 0
+    jump_through: false
+  - pos:
+    - 12
+    - 7
+    idx: 1
+    jump_through: false
+  - pos:
+    - 13
+    - 7
+    idx: 1
+    jump_through: false
+  - pos:
+    - 14
+    - 7
+    idx: 1
+    jump_through: false
+  - pos:
+    - 15
+    - 7
+    idx: 1
+    jump_through: false
+  - pos:
+    - 16
+    - 7
+    idx: 2
+    jump_through: false
+  - pos:
+    - 6
+    - 8
+    idx: 56
+    jump_through: true
+  - pos:
+    - 7
+    - 8
+    idx: 58
+    jump_through: true
+  - pos:
+    - 8
+    - 8
+    idx: 60
+    jump_through: true
+  - pos:
+    - 21
+    - 9
+    idx: 56
+    jump_through: true
+  - pos:
+    - 22
+    - 9
+    idx: 58
+    jump_through: true
+  - pos:
+    - 23
+    - 9
+    idx: 60
+    jump_through: true
   elements: []
 - id: decorations
   tilemap: null
@@ -802,36 +802,36 @@ layers:
     - 73.5
     element: /elements/environment/crab/crab.element.yaml
   - pos:
-    - 478.6667
-    - 265.5
+    - 480.0
+    - 263.5
     element: /elements/environment/crab/crab.element.yaml
 - id: items
   tilemap: null
   tiles: []
   elements:
   - pos:
-    - 706.8572
-    - 337.5
+    - 712.0
+    - 330.0
     element: /elements/item/sword/sword.element.yaml
   - pos:
-    - 224.0
-    - 311.5
+    - 232.0
+    - 298.0
     element: /elements/item/sword/sword.element.yaml
   - pos:
-    - 500.0
-    - 263.0
+    - 512.0
+    - 278.5
     element: /elements/item/mine/mine.element.yaml
   - pos:
-    - 180.0
-    - 178.0
+    - 176.0
+    - 182.5
     element: /elements/item/crate/crate.element.yaml
   - pos:
-    - 994.0
-    - 81.0
+    - 992.0
+    - 86.5
     element: /elements/item/crate/crate.element.yaml
   - pos:
     - 800.0
-    - 207.0
+    - 214.5
     element: /elements/item/crate/crate.element.yaml
   - pos:
     - 449.0
@@ -842,16 +842,16 @@ layers:
     - 207.0
     element: /elements/item/grenade/grenade.element.yaml
   - pos:
-    - 644.0
-    - 89.0
+    - 640.0
+    - 79.0
     element: /elements/item/grenade/grenade.element.yaml
   - pos:
-    - 93.0
-    - 89.0
+    - 88.0
+    - 79.0
     element: /elements/item/grenade/grenade.element.yaml
   - pos:
-    - 262.0
-    - 89.0
+    - 256.0
+    - 79.0
     element: /elements/item/grenade/grenade.element.yaml
 - id: spawners
   tilemap: null

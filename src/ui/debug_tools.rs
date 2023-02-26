@@ -15,10 +15,11 @@ impl Plugin for DebugToolsPlugin {
             // .init_resource::<ShowNetworkVisualizer>()
             .init_resource::<BonesSnapshot>()
             .init_resource::<CoreDebugSettings>()
-            .init_resource::<ShowFameTimeDiagnostics>()
+            .init_resource::<ShowDebugWindows>()
             .add_system(sync_core_debug_settings)
             .add_system(debug_tools_window)
-            .add_system(frame_diagnostic_window);
+            .add_system(frame_diagnostic_window)
+            .add_system(profiler_window);
     }
 }
 
@@ -50,8 +51,11 @@ fn sync_core_debug_settings(session: Option<ResMut<Session>>, settings: Res<Core
 //     }
 // }
 
-#[derive(Resource, Default, Deref, DerefMut)]
-struct ShowFameTimeDiagnostics(pub bool);
+#[derive(Resource, Default)]
+struct ShowDebugWindows {
+    pub frame_time_diagnostics: bool,
+    pub profiler: bool,
+}
 
 /// Resource containing the bones snapshot.
 #[derive(Default, Resource)]
@@ -62,7 +66,7 @@ fn debug_tools_window(
     mut core_debug_settings: ResMut<CoreDebugSettings>,
     mut visible: Local<bool>,
     mut egui_context: ResMut<EguiContext>,
-    mut show_frame_diagnostics: ResMut<ShowFameTimeDiagnostics>,
+    mut show_debug_windows: ResMut<ShowDebugWindows>,
     localization: Res<Localization>,
     input: Res<Input<KeyCode>>,
     mut show_inspector: ResMut<WorldInspectorEnabled>,
@@ -89,7 +93,11 @@ fn debug_tools_window(
 
     // Shortcut to toggle frame diagnostics
     if input.just_pressed(KeyCode::F8) {
-        **show_frame_diagnostics = !**show_frame_diagnostics;
+        show_debug_windows.frame_time_diagnostics = !show_debug_windows.frame_time_diagnostics;
+    }
+
+    if input.just_pressed(KeyCode::F7) {
+        show_debug_windows.profiler = !show_debug_windows.profiler;
     }
 
     // // Shortcut to toggle network visualizers
@@ -121,8 +129,14 @@ fn debug_tools_window(
 
             // Show frame time diagnostics
             ui.checkbox(
-                &mut show_frame_diagnostics,
-                format!("{} ( F9 )", localization.get("show-frame-time-diagnostics")),
+                &mut show_debug_windows.frame_time_diagnostics,
+                format!("{} ( F8 )", localization.get("show-frame-time-diagnostics")),
+            );
+
+            // Show profiler
+            ui.checkbox(
+                &mut show_debug_windows.frame_time_diagnostics,
+                format!("{} ( F7 )", localization.get("show-profiler")),
             );
 
             // Snapshot/Restore buttons
@@ -181,17 +195,17 @@ impl Default for FrameDiagState {
 fn frame_diagnostic_window(
     mut state: Local<FrameDiagState>,
     mut egui_context: ResMut<EguiContext>,
-    mut show: ResMut<ShowFameTimeDiagnostics>,
+    mut show: ResMut<ShowDebugWindows>,
     diagnostics: Res<Diagnostics>,
     localization: Res<Localization>,
 ) {
-    if **show {
+    if show.frame_time_diagnostics {
         let ctx = egui_context.ctx_mut();
 
         egui::Window::new(&localization.get("frame-diagnostics"))
             .id(egui::Id::new("frame_diagnostics"))
             .default_width(500.0)
-            .open(&mut show)
+            .open(&mut show.frame_time_diagnostics)
             .show(ctx, |ui| {
                 if ui.button(&localization.get("reset-min-max")).clicked() {
                     *state = default();
@@ -237,6 +251,22 @@ fn frame_diagnostic_window(
                     avg = frame_time.average().unwrap() * 1000.0,
                     max = state.max_frame_time * 1000.0,
                 ));
+            });
+    }
+}
+
+fn profiler_window(
+    mut show: ResMut<ShowDebugWindows>,
+    mut egui_context: ResMut<EguiContext>,
+    localization: Res<Localization>,
+) {
+    puffin::set_scopes_on(show.profiler);
+    if show.profiler {
+        egui::Window::new(&localization.get("profiler"))
+            .id(egui::Id::new("profiler"))
+            .open(&mut show.profiler)
+            .show(egui_context.ctx_mut(), |ui| {
+                puffin_egui::profiler_ui(ui);
             });
     }
 }

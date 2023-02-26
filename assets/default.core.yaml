@@ -28,6 +28,16 @@ stable_maps:
   - map/levels/level_3.map.yaml
   - map/levels/level_4.map.yaml
   - map/levels/level_5.map.yaml
+  - map/levels/level_6.map.yaml
+  - map/levels/level_7.map.yaml
+  - map/levels/level_8.map.yaml
+  - map/levels/level_9.map.yaml
+  - map/levels/level_10.map.yaml
+  - map/levels/level_11.map.yaml
+  - map/levels/level_12.map.yaml
+
+map_tilesets:
+  - map/resources/default_tileset.atlas.yaml
 
 map_elements:
   - elements/decoration/anemones/anemones.element.yaml
@@ -44,11 +54,5 @@ map_elements:
   - elements/item/sword/sword.element.yaml
 
 experimental_maps:
+  # TODO: This one has a performance glitch.
   - map/levels/lev03.map.yaml
-  - map/levels/lev05.map.yaml
-  - map/levels/lev06.map.yaml
-  - map/levels/zyrafa01.map.yaml
-  - map/levels/zyrafa02.map.yaml
-  - map/levels/zyrafa03.map.yaml
-  - map/levels/zyrafa04.map.yaml
-  - map/levels/zyrafa05.map.yaml

@@ -85,4 +85,21 @@ pub enum EditorInput {
         /// The name of the layer.
         id: String,
     },
+    /// Update the tilemap of a layer.
+    SetTilemap {
+        /// The layer index of the layer to update.
+        layer: u8,
+        /// The handle to the tilemap to use or [`None`] to clear the tilemap.
+        handle: Option<Handle<Atlas>>,
+    },
+    SetTile {
+        /// The layer index of the layer to update
+        layer: u8,
+        /// The position of the tile to set
+        pos: UVec2,
+        /// The index in the tilemap to set the tile, or [`None`] to delete the tile.
+        tilemap_tile_idx: Option<usize>,
+        /// The tile collision kind
+        collision: TileCollisionKind,
+    },
 }

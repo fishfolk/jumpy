@@ -163,10 +163,11 @@ fn update_kinematic_bodies(
                     (false, false, false, false) => {
                         // For some reason the `tile_collision` test did detect a collision, but
                         // `solid_at` did not detect a collision at any of the corners of the aabb.
-                        panic!(
+                        warn!(
                             "Collision test error resulting in physics \
                             body stuck in wall at {rect:?}",
                         );
+                        break;
                     }
                     // Check for collisions on each side of the rectangle
                     (false, false, _, _) => transform.translation.y += 1.0,

@@ -620,6 +620,7 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                     // If a new tilemap was selected
                     if selected_tilemap.as_ref() != tilemap.as_ref().map(|x| &x.path) {
                         // Update the tilemap
+                        params.state.current_tilemap_tile = 0;
                         **params.editor_input = Some(EditorInput::SetTilemap {
                             layer: params.state.current_layer_idx as u8,
                             handle: selected_tilemap
@@ -655,7 +656,8 @@ impl<'w, 's> WidgetSystem for EditorRightToolbar<'w, 's> {
                         let relative_pos = hover_pos - rect.min;
                         let tile_pos = (relative_pos / rendered_tile_size)
                             .floor()
-                            .max(egui::vec2(0.0, 0.0));
+                            .max(egui::vec2(0.0, 0.0))
+                            .min(egui::vec2(grid_size.x - 1.0, grid_size.y - 1.0));
 
                         let min = rect.min + tile_pos * rendered_tile_size;
                         let max = min + rendered_tile_size;

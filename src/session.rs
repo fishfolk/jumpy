@@ -1,3 +1,5 @@
+use bevy::{ecs::schedule::ShouldRun, utils::Instant};
+
 use crate::prelude::*;
 
 pub struct JumpySessionPlugin;
@@ -30,8 +32,39 @@ impl Plugin for JumpySessionPlugin {
                             .run_in_state(InGameState::Playing),
                     )
                     .with_system(play_sounds)
-                    .with_run_criteria(FixedTimestep::step(1.0 / jumpy_core::FPS as f64)),
+                    .with_run_criteria(fixed_timestep),
             );
+    }
+}
+
+fn fixed_timestep(
+    mut accumulator: Local<f64>,
+    mut loop_start: Local<Option<Instant>>,
+    time: Res<Time>,
+) -> ShouldRun {
+    const STEP: f64 = 1.0 / jumpy_core::FPS as f64;
+    let delta = time.delta_seconds_f64();
+    if loop_start.is_none() {
+        *accumulator += delta;
+    }
+
+    if *accumulator >= STEP {
+        let start = loop_start.get_or_insert_with(Instant::now);
+
+        let loop_too_long = (Instant::now() - *start).as_secs_f64() > STEP;
+
+        if loop_too_long {
+            warn!("Frame took too long: couldn't keep up with fixed update.");
+            *accumulator = 0.0;
+            *loop_start = None;
+            ShouldRun::No
+        } else {
+            *accumulator -= STEP;
+            ShouldRun::YesAndCheckAgain
+        }
+    } else {
+        *loop_start = None;
+        ShouldRun::No
     }
 }
 

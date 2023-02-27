@@ -89,6 +89,9 @@ impl<'w, 's> WidgetSystem for MapSelectMenu<'w, 's> {
                                     &params.core.experimental_maps,
                                 ),
                             ] {
+                                if map_handles.is_empty() {
+                                    continue;
+                                }
                                 ui.add_space(bigger_text_style.size / 2.0);
                                 ui.themed_label(bigger_text_style, section_title);
 

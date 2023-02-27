@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use super::*;
 
 #[derive(BonesBevyAsset, TypeUlid, Deserialize, Clone, Debug, Default)]
@@ -238,7 +240,8 @@ pub enum BuiltinElementKind {
         atlas: Handle<Atlas>,
 
         max_ammo: usize,
-        cooldown_frames: usize,
+        #[serde(with = "humantime_serde")]
+        cooldown: Duration,
         bullet_meta: Handle<BulletMeta>,
 
         shoot_fps: f32,

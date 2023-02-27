@@ -99,16 +99,16 @@ fn update(
     element_assets: BevyAssets<ElementMeta>,
 
     mut muskets: CompMut<Musket>,
+    transforms: CompMut<Transform>,
     mut sprites: CompMut<AtlasSprite>,
     mut bodies: CompMut<KinematicBody>,
-    transforms: CompMut<Transform>,
     mut audio_events: ResMut<AudioEvents>,
     mut player_layers: CompMut<PlayerLayers>,
 
     player_inventories: PlayerInventories,
     mut items_used: CompMut<ItemUsed>,
+    items_dropped: CompMut<ItemDropped>,
     mut attachments: CompMut<PlayerBodyAttachment>,
-    mut items_dropped: CompMut<ItemDropped>,
     time: Res<Time>,
 ) {
     for (entity, (musket, element_handle)) in entities.iter_with((&mut muskets, &element_handles)) {
@@ -122,7 +122,7 @@ fn update(
             shoot_atlas,
             shoot_frames,
             shoot_lifetime,
-            cooldown_in_ms,
+            cooldown,
             fin_anim,
             grab_offset,
             bullet_meta,
@@ -135,7 +135,6 @@ fn update(
             unreachable!();
         };
 
-        println!("musket ammo: {:?}", musket.cooldown);
         musket.cooldown.tick(time.delta());
 
         // If the item is being held
@@ -173,8 +172,7 @@ fn update(
                 }
 
                 // Reset fire cooldown and subtract ammo
-                musket.cooldown =
-                    Timer::new(Duration::from_millis(*cooldown_in_ms), TimerMode::Once);
+                musket.cooldown = Timer::new(*cooldown, TimerMode::Once);
                 musket.ammo = musket.ammo.saturating_sub(1).clamp(0, musket.ammo);
                 audio_events.play(shoot_sound.clone(), *shoot_sound_volume);
 

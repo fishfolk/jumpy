@@ -353,7 +353,7 @@
         </span><span class="kw">let </span>time_resource = <span class="self">self</span>.world.resource::&lt;Time&gt;();
         time_resource
             .borrow_mut()
-            .advance_exact(std::time::Duration::from_secs_f32(<span class="kw">crate</span>::FPS));
+            .advance_exact(std::time::Duration::from_secs_f32(<span class="number">1.0 </span>/ <span class="kw">crate</span>::FPS));
 
         <span class="self">self</span>.world.maintain();
 

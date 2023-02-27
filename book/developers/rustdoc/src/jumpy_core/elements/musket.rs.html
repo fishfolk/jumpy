@@ -247,7 +247,11 @@
 <a href="#246" id="246">246</a>
 <a href="#247" id="247">247</a>
 <a href="#248" id="248">248</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
+<a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+</pre><pre class="rust"><code><span class="kw">use </span>std::time::Duration;
+
+<span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub fn </span>install(session: <span class="kw-2">&amp;mut </span>GameSession) {
     session
@@ -260,7 +264,7 @@
 #[ulid = <span class="string">&quot;01GQWRRV9HV52X9JAYYF1AFFS7&quot;</span>]
 </span><span class="kw">pub struct </span>Musket {
     <span class="kw">pub </span>ammo: usize,
-    <span class="kw">pub </span>cooldown_frame: usize,
+    <span class="kw">pub </span>cooldown: Timer,
 }
 
 <span class="kw">fn </span>hydrate(
@@ -315,7 +319,7 @@
                 entity,
                 Musket {
                     ammo: <span class="kw-2">*</span>max_ammo,
-                    cooldown_frame: <span class="number">0</span>,
+                    cooldown: Timer::new(Duration::from_millis(<span class="number">0</span>), TimerMode::Once),
                 },
             );
             atlas_sprites.insert(entity, AtlasSprite::new(atlas.clone()));
@@ -346,16 +350,17 @@
     element_assets: BevyAssets&lt;ElementMeta&gt;,
 
     <span class="kw-2">mut </span>muskets: CompMut&lt;Musket&gt;,
+    transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>sprites: CompMut&lt;AtlasSprite&gt;,
     <span class="kw-2">mut </span>bodies: CompMut&lt;KinematicBody&gt;,
-    transforms: CompMut&lt;Transform&gt;,
     <span class="kw-2">mut </span>audio_events: ResMut&lt;AudioEvents&gt;,
     <span class="kw-2">mut </span>player_layers: CompMut&lt;PlayerLayers&gt;,
 
     player_inventories: PlayerInventories,
     <span class="kw-2">mut </span>items_used: CompMut&lt;ItemUsed&gt;,
-    <span class="kw-2">mut </span>attachments: CompMut&lt;PlayerBodyAttachment&gt;,
     items_dropped: CompMut&lt;ItemDropped&gt;,
+    <span class="kw-2">mut </span>attachments: CompMut&lt;PlayerBodyAttachment&gt;,
+    time: Res&lt;Time&gt;,
 ) {
     <span class="kw">for </span>(entity, (musket, element_handle)) <span class="kw">in </span>entities.iter_with((<span class="kw-2">&amp;mut </span>muskets, <span class="kw-2">&amp;</span>element_handles)) {
         <span class="kw">let </span><span class="prelude-val">Some</span>(element_meta) = element_assets.get(<span class="kw-2">&amp;</span>element_handle.get_bevy_handle()) <span class="kw">else </span>{
@@ -368,11 +373,11 @@
             shoot_atlas,
             shoot_frames,
             shoot_lifetime,
+            cooldown,
             fin_anim,
             grab_offset,
             bullet_meta,
             shoot_sound,
-            cooldown_frames,
             empty_shoot_sound,
             shoot_sound_volume,
             empty_shoot_sound_volume,
@@ -381,7 +386,7 @@
             <span class="macro">unreachable!</span>();
         };
 
-        musket.cooldown_frame += <span class="number">1</span>;
+        musket.cooldown.tick(time.delta());
 
         <span class="comment">// If the item is being held
         </span><span class="kw">if let </span><span class="prelude-val">Some</span>(inventory) = player_inventories
@@ -407,11 +412,10 @@
 
             <span class="comment">// If the item is being used
             </span><span class="kw">let </span>item_used = items_used.get(entity).is_some();
-            <span class="kw">let </span>can_fire = musket.cooldown_frame &gt;= <span class="kw-2">*</span>cooldown_frames;
             <span class="kw">if </span>item_used {
                 items_used.remove(entity);
             }
-            <span class="kw">if </span>item_used &amp;&amp; can_fire {
+            <span class="kw">if </span>item_used &amp;&amp; musket.cooldown.finished() {
                 <span class="comment">// Empty
                 </span><span class="kw">if </span>musket.ammo.eq(<span class="kw-2">&amp;</span><span class="number">0</span>) {
                     audio_events.play(empty_shoot_sound.clone(), <span class="kw-2">*</span>empty_shoot_sound_volume);
@@ -419,7 +423,7 @@
                 }
 
                 <span class="comment">// Reset fire cooldown and subtract ammo
-                </span>musket.cooldown_frame = <span class="number">0</span>;
+                </span>musket.cooldown = Timer::new(<span class="kw-2">*</span>cooldown, TimerMode::Once);
                 musket.ammo = musket.ammo.saturating_sub(<span class="number">1</span>).clamp(<span class="number">0</span>, musket.ammo);
                 audio_events.play(shoot_sound.clone(), <span class="kw-2">*</span>shoot_sound_volume);
 

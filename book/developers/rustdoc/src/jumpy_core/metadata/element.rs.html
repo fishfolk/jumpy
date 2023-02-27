@@ -252,7 +252,12 @@
 <a href="#251" id="251">251</a>
 <a href="#252" id="252">252</a>
 <a href="#253" id="253">253</a>
-</pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
+<a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+</pre><pre class="rust"><code><span class="kw">use </span>std::time::Duration;
+
+<span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="attr">#[derive(BonesBevyAsset, TypeUlid, Deserialize, Clone, Debug, Default)]
 #[asset_id = <span class="string">&quot;element&quot;</span>]
@@ -492,7 +497,8 @@
         atlas: Handle&lt;Atlas&gt;,
 
         max_ammo: usize,
-        cooldown_frames: usize,
+        <span class="attr">#[serde(with = <span class="string">&quot;humantime_serde&quot;</span>)]
+        </span>cooldown: Duration,
         bullet_meta: Handle&lt;BulletMeta&gt;,
 
         shoot_fps: f32,

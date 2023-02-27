@@ -749,8 +749,7 @@ dependencies = [
 [[package]]
 name = "bevy_simple_tilemap"
 version = "0.10.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9eda3ef72997c971dd4e03757dda2e58d47778a2d2ecb92cc9df73d5b2010e34"
+source = "git+https://github.com/forbjok/bevy_simple_tilemap.git#963d447fa1fd2d6f89228106275b7086840be762"
 dependencies = [
  "bevy",
  "bitflags",
@@ -951,7 +950,7 @@ checksum = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
 [[package]]
 name = "bones_asset"
 version = "0.1.0"
-source = "git+https://github.com/fishfolk/bones#473af7fcea22f1c76a84dd3f243fc5c282b142a5"
+source = "git+https://github.com/fishfolk/bones#29fd36e25797749b73094b0324389d9777394552"
 dependencies = [
  "bevy_asset",
  "bones_bevy_utils",
@@ -964,7 +963,7 @@ dependencies = [
 [[package]]
 name = "bones_bevy_asset"
 version = "0.1.0"
-source = "git+https://github.com/fishfolk/bones#473af7fcea22f1c76a84dd3f243fc5c282b142a5"
+source = "git+https://github.com/fishfolk/bones#29fd36e25797749b73094b0324389d9777394552"
 dependencies = [
  "bevy_app",
  "bevy_asset",
@@ -984,7 +983,7 @@ dependencies = [
 [[package]]
 name = "bones_bevy_asset_macros"
 version = "0.2.0"
-source = "git+https://github.com/fishfolk/bones#473af7fcea22f1c76a84dd3f243fc5c282b142a5"
+source = "git+https://github.com/fishfolk/bones#29fd36e25797749b73094b0324389d9777394552"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -996,7 +995,7 @@ dependencies = [
 [[package]]
 name = "bones_bevy_renderer"
 version = "0.1.1"
-source = "git+https://github.com/fishfolk/bones#473af7fcea22f1c76a84dd3f243fc5c282b142a5"
+source = "git+https://github.com/fishfolk/bones#29fd36e25797749b73094b0324389d9777394552"
 dependencies = [
  "bevy",
  "bevy_prototype_lyon",
@@ -1013,7 +1012,7 @@ dependencies = [
 [[package]]
 name = "bones_bevy_utils"
 version = "0.1.0"
-source = "git+https://github.com/fishfolk/bones#473af7fcea22f1c76a84dd3f243fc5c282b142a5"
+source = "git+https://github.com/fishfolk/bones#29fd36e25797749b73094b0324389d9777394552"
 dependencies = [
  "bevy_ecs",
  "type_ulid",
@@ -1022,7 +1021,7 @@ dependencies = [
 [[package]]
 name = "bones_ecs"
 version = "0.1.0"
-source = "git+https://github.com/fishfolk/bones#473af7fcea22f1c76a84dd3f243fc5c282b142a5"
+source = "git+https://github.com/fishfolk/bones#29fd36e25797749b73094b0324389d9777394552"
 dependencies = [
  "aligned-vec",
  "anyhow",
@@ -1041,7 +1040,7 @@ dependencies = [
 [[package]]
 name = "bones_input"
 version = "0.1.0"
-source = "git+https://github.com/fishfolk/bones#473af7fcea22f1c76a84dd3f243fc5c282b142a5"
+source = "git+https://github.com/fishfolk/bones#29fd36e25797749b73094b0324389d9777394552"
 dependencies = [
  "bevy",
  "bones_bevy_utils",
@@ -1053,7 +1052,7 @@ dependencies = [
 [[package]]
 name = "bones_lib"
 version = "0.1.0"
-source = "git+https://github.com/fishfolk/bones#473af7fcea22f1c76a84dd3f243fc5c282b142a5"
+source = "git+https://github.com/fishfolk/bones#29fd36e25797749b73094b0324389d9777394552"
 dependencies = [
  "bones_asset",
  "bones_bevy_utils",
@@ -1068,7 +1067,7 @@ dependencies = [
 [[package]]
 name = "bones_render"
 version = "0.1.1"
-source = "git+https://github.com/fishfolk/bones#473af7fcea22f1c76a84dd3f243fc5c282b142a5"
+source = "git+https://github.com/fishfolk/bones#29fd36e25797749b73094b0324389d9777394552"
 dependencies = [
  "bevy_transform",
  "bones_asset",
@@ -1182,9 +1181,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.1.6"
+version = "4.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec0b0588d44d4d63a87dbd75c136c166bbfd9a86a31cb89e09906521c7d3f5e3"
+checksum = "2f3061d6db6d8fcbbd4b05e057f2acace52e64e96b498c08c2d7a4e65addd340"
 dependencies = [
  "bitflags",
  "clap_derive",
@@ -1197,9 +1196,9 @@ dependencies = [
 
 [[package]]
 name = "clap_derive"
-version = "4.1.0"
+version = "4.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "684a277d672e91966334af371f1a7b5833f9aa00b07c84e92fbce95e00208ce8"
+checksum = "34d122164198950ba84a918270a3bb3f7ededd25e15f7451673d986f55bd2667"
 dependencies = [
  "heck",
  "proc-macro-error",
@@ -2963,15 +2962,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "nom8"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ae01545c9c7fc4486ab7debaf2aad7003ac19431791868fb2e8066df97fad2f8"
-dependencies = [
- "memchr",
-]
-
-[[package]]
 name = "normalize-path"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3222,9 +3212,9 @@ dependencies = [
 
 [[package]]
 name = "parry2d"
-version = "0.13.0"
+version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2342b33d77a0393879b1b85eac2a30cc4b36d10b30e111f55a5e9280cf5eb87"
+checksum = "d47e1c37cdc185e5df1979e98c900f5209c9023a4dd79f64ae4ea6465010c4df"
 dependencies = [
  "approx",
  "arrayvec",
@@ -3368,9 +3358,9 @@ checksum = "f0f73cdaf19b52e6143685c3606206e114a4dfa969d6b14ec3894c88eb38bd4b"
 
 [[package]]
 name = "proc-macro-crate"
-version = "1.3.0"
+version = "1.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "66618389e4ec1c7afe67d51a9bf34ff9236480f8d51e7489b7d5ab0303c13f34"
+checksum = "7f4c021e1093a56626774e81216a4ce732a735e5bad4868a03f3ed65ca0c3919"
 dependencies = [
  "once_cell",
  "toml_edit",
@@ -3551,9 +3541,9 @@ checksum = "9c8a99fddc9f0ba0a85884b8d14e3592853e787d581ca1816c91349b10e4eeab"
 
 [[package]]
 name = "rapier2d"
-version = "0.17.1"
+version = "0.17.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dcd37fc7fad61534f35ce9cb198283cd7055c08cdc4a1565d0974a1fe74d5e59"
+checksum = "f94d294a9b96694c14888dd0e8ce77620dcc4f2f49264109ef835fa5e2285b84"
 dependencies = [
  "approx",
  "arrayvec",
@@ -4220,19 +4210,19 @@ dependencies = [
 
 [[package]]
 name = "toml_datetime"
-version = "0.5.1"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4553f467ac8e3d374bc9a177a26801e5d0f9b211aa1673fb137a403afd1c9cf5"
+checksum = "3ab8ed2edee10b50132aed5f331333428b011c99402b5a534154ed15746f9622"
 
 [[package]]
 name = "toml_edit"
-version = "0.18.1"
+version = "0.19.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56c59d8dd7d0dcbc6428bf7aa2f0e823e26e43b3c9aca15bbc9475d23e5fa12b"
+checksum = "9a1eb0622d28f4b9c90adc4ea4b2b46b47663fde9ac5fafcb14a1369d5508825"
 dependencies = [
  "indexmap",
- "nom8",
  "toml_datetime",
+ "winnow",
 ]
 
 [[package]]
@@ -4346,7 +4336,7 @@ dependencies = [
 [[package]]
 name = "type_ulid"
 version = "0.1.0"
-source = "git+https://github.com/fishfolk/bones#473af7fcea22f1c76a84dd3f243fc5c282b142a5"
+source = "git+https://github.com/fishfolk/bones#29fd36e25797749b73094b0324389d9777394552"
 dependencies = [
  "type_ulid_macros",
  "ulid",
@@ -4355,7 +4345,7 @@ dependencies = [
 [[package]]
 name = "type_ulid_macros"
 version = "0.1.0"
-source = "git+https://github.com/fishfolk/bones#473af7fcea22f1c76a84dd3f243fc5c282b142a5"
+source = "git+https://github.com/fishfolk/bones#29fd36e25797749b73094b0324389d9777394552"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4706,9 +4696,9 @@ dependencies = [
 
 [[package]]
 name = "wide"
-version = "0.7.7"
+version = "0.7.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b3c11d2adfe89e9da42f01023d2c2998c53aa916ef4d26ca716dbb983725c0d2"
+checksum = "b689b6c49d6549434bf944e6b0f39238cf63693cb7a147e9d887507fffa3b223"
 dependencies = [
  "bytemuck",
  "safe_arch",
@@ -4963,6 +4953,15 @@ dependencies = [
  "web-sys",
  "windows-sys 0.36.1",
  "x11-dl",
+]
+
+[[package]]
+name = "winnow"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "faf09497b8f8b5ac5d3bb4d05c0a99be20f26fd3d5f2db7b0716e946d5103658"
+dependencies = [
+ "memchr",
 ]
 
 [[package]]

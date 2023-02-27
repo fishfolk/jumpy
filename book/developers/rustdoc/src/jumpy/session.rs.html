@@ -177,7 +177,42 @@
 <a href="#176" id="176">176</a>
 <a href="#177" id="177">177</a>
 <a href="#178" id="178">178</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
+<a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+</pre><pre class="rust"><code><span class="kw">use </span>bevy::{ecs::schedule::ShouldRun, utils::Instant};
+
+<span class="kw">use </span><span class="kw">crate</span>::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub struct </span>JumpySessionPlugin;
 
@@ -209,8 +244,39 @@
                             .run_in_state(InGameState::Playing),
                     )
                     .with_system(play_sounds)
-                    .with_run_criteria(FixedTimestep::step(<span class="number">1.0 </span>/ jumpy_core::FPS <span class="kw">as </span>f64)),
+                    .with_run_criteria(fixed_timestep),
             );
+    }
+}
+
+<span class="kw">fn </span>fixed_timestep(
+    <span class="kw-2">mut </span>accumulator: Local&lt;f64&gt;,
+    <span class="kw-2">mut </span>loop_start: Local&lt;<span class="prelude-ty">Option</span>&lt;Instant&gt;&gt;,
+    time: Res&lt;Time&gt;,
+) -&gt; ShouldRun {
+    <span class="kw">const </span>STEP: f64 = <span class="number">1.0 </span>/ jumpy_core::FPS <span class="kw">as </span>f64;
+    <span class="kw">let </span>delta = time.delta_seconds_f64();
+    <span class="kw">if </span>loop_start.is_none() {
+        <span class="kw-2">*</span>accumulator += delta;
+    }
+
+    <span class="kw">if </span><span class="kw-2">*</span>accumulator &gt;= STEP {
+        <span class="kw">let </span>start = loop_start.get_or_insert_with(Instant::now);
+
+        <span class="kw">let </span>loop_too_long = (Instant::now() - <span class="kw-2">*</span>start).as_secs_f64() &gt; STEP;
+
+        <span class="kw">if </span>loop_too_long {
+            <span class="macro">warn!</span>(<span class="string">&quot;Frame took too long: couldn&#39;t keep up with fixed update.&quot;</span>);
+            <span class="kw-2">*</span>accumulator = <span class="number">0.0</span>;
+            <span class="kw-2">*</span>loop_start = <span class="prelude-val">None</span>;
+            ShouldRun::No
+        } <span class="kw">else </span>{
+            <span class="kw-2">*</span>accumulator -= STEP;
+            ShouldRun::YesAndCheckAgain
+        }
+    } <span class="kw">else </span>{
+        <span class="kw-2">*</span>loop_start = <span class="prelude-val">None</span>;
+        ShouldRun::No
     }
 }
 
